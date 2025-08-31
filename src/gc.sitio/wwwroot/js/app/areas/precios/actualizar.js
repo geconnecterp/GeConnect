@@ -235,15 +235,20 @@ async function confirmarActualizacion() {
         return;
     }
 
+    // Limpiar estado del modal antes de mostrar confirmación
+    limpiarEstadoModal();
+
     // Confirmar antes de proceder
     AbrirMensaje("Confirmar Actualización",
         `¿Confirmar actualización de <strong>${proveedoresSeleccionados.length}</strong> proveedores?<br>
          <small class="text-muted">Esta acción aplicará los cambios de precios definitivamente.</small>`,
-        async () => {
+        async (resp) => {
             $("#msjModal").modal("hide");
-            await ejecutarConfirmacionActualizacion(proveedoresSeleccionados);
+            if (resp === "SI") {                
+                await ejecutarConfirmacionActualizacion(proveedoresSeleccionados);
+            }
         },
-        false, ["Confirmar", "Cancelar"], "warn!", null);
+        true, ["Confirmar", "Cancelar"], "warn!", null);
 }
 
 /**
@@ -334,6 +339,9 @@ function procesarRespuestaConfirmacion(response, $btn, cantidadProveedores) {
  * Maneja errores de confirmación
  */
 function manejarErrorConfirmacion(mensaje, $btn) {
+    // Limpiar estado del modal antes de mostrar error
+    limpiarEstadoModal();
+
     AbrirMensaje("Error", mensaje,
         () => $("#msjModal").modal("hide"),
         false, ["Aceptar"], "error!", null);
@@ -346,6 +354,9 @@ function manejarErrorConfirmacion(mensaje, $btn) {
  * Maneja advertencias de confirmación (no relacionadas con auth)
  */
 function manejarAdvertenciaConfirmacion(mensaje, $btn) {
+    // Limpiar estado del modal antes de mostrar error
+    limpiarEstadoModal();
+
     AbrirMensaje("Advertencia", mensaje,
         () => $("#msjModal").modal("hide"),
         false, ["Aceptar"], "warn!", null);
@@ -358,6 +369,9 @@ function manejarAdvertenciaConfirmacion(mensaje, $btn) {
  * Maneja error de autenticación con redirección a home
  */
 function manejarErrorAutenticacion($btn) {
+    // Limpiar estado del modal antes de mostrar error
+    limpiarEstadoModal();
+
     AbrirMensaje("Sesión Expirada", "Su sesión ha terminado. Debe volver a autenticarse.",
         () => {
             $("#msjModal").modal("hide");
@@ -385,6 +399,9 @@ function manejarExitoConfirmacion(mensaje, $btn, cantidadProveedores) {
     $('#selectAllProveedores').prop('checked', false);
     actualizarContadores();
 
+    // Limpiar estado del modal antes de mostrar éxito
+    limpiarEstadoModal();
+
     // Mostrar mensaje de éxito
     AbrirMensaje("Actualización Completada",
         `${mensaje}<br><small class="text-muted">Se procesaron ${cantidadProveedores} proveedores exitosamente.</small>`,
@@ -408,6 +425,9 @@ function restaurarBotonConfirmar($btn) {
 }
 // Función cancelar permanece igual
 function cancelarActualizacion() {
+    // Limpiar estado del modal antes de mostrar cancelación
+    limpiarEstadoModal();
+
     AbrirMensaje("Cancelar Selección", '¿Cancelar y descartar todos los cambios?',
         () => {
             $("#msjModal").modal("hide");
@@ -423,4 +443,28 @@ function cancelarActualizacion() {
         "warn!",
         null
     );
+}
+
+/**
+* Limpia el estado visual del modal antes de mostrar un nuevo mensaje
+*/
+function limpiarEstadoModal() {
+    // Limpiar clases de estado del modal
+    const $modal = $('#msjModal');
+    if ($modal.length) {
+        // Remover clases de estado de Bootstrap
+        $modal.removeClass('modal-error modal-warning modal-success modal-info modal-danger');
+
+        // Limpiar header del modal
+        const $modalHeader = $modal.find('.modal-header');
+        if ($modalHeader.length) {
+            $modalHeader.removeClass('bg-danger bg-warning bg-success bg-info text-white text-dark');
+        }
+
+        // Limpiar contenido del modal
+        const $modalBody = $modal.find('.modal-body');
+        if ($modalBody.length) {
+            $modalBody.removeClass('text-danger text-warning text-success text-info');
+        }
+    }
 }

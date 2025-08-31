@@ -127,11 +127,12 @@ namespace gc.sitio.Areas.Productos.Controllers
                     throw new NegocioException("Para confirmar es necesario especificar al menos una cuenta de proveedor.");
                 }
 
+                var proveedores = ProvedoresParaActualizar.Where(p => ctasId.Contains(p.cta_id)).ToList();
 
                 //prod.P_Obs = prod.P_Obs.ToUpper();
                 AbmGenDto abm = new AbmGenDto()
                 {
-                    Json = JsonConvert.SerializeObject(ctasId),
+                    Json = JsonConvert.SerializeObject(proveedores),
                     Objeto = "Cuentas",
                     Administracion = AdministracionId,
                     Usuario = UserName,
@@ -141,13 +142,21 @@ namespace gc.sitio.Areas.Productos.Controllers
                 var res = await _importarServicio.ConfirmarActualizacionPrecioProductosDeProveedor(abm, TokenCookie);
                 if (res.Ok)
                 {
-                    string msg;
-                    
-                    msg = $"EL PROCESAMIENTO de 9 SE REALIZO SATISFACTORIAMENTE";
+                    if (res.Entidad.resultado == 0)
+                    {
+                        string msg;
 
-                    ProvedoresParaActualizar = [];
+                        msg = $"EL PROCESAMIENTO de 9 SE REALIZO SATISFACTORIAMENTE";
 
-                    return Json(new { error = false, warn = false, msg });
+                        ProvedoresParaActualizar = [];
+
+                        return Json(new { error = false, warn = false, msg });
+                    }
+                    else
+                    {
+                        throw new NegocioException(res.Entidad.resultado_msj);
+                    }
+                   
                 }
                 else
                 {

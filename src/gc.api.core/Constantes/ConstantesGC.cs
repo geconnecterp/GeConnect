@@ -69,7 +69,7 @@ namespace gc.api.core.Constantes
 			//SP para la Actualización de precios de proveedores.
 			public const string SP_PROD_ACTUALIZA_PRECIO_PROV = "SPGECO_P_PR_Actu_Proveedores";
 			public const string SP_PROD_ACTUALIZA_PRECIO_PROV_D = "SPGECO_P_PR_Actu_Proveedores_d";
-            public const string SP_PROD_ACTUALIZA_CONFIRMAR = "SPGECO_P_PR_Confirma";
+            public const string SP_PROD_ACTUALIZA_CONFIRMAR = "SPGECO_P_PR_ACTU_Confirma";
             #endregion
 
 
