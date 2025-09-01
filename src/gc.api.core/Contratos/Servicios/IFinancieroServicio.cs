@@ -21,5 +21,6 @@ namespace gc.api.core.Contratos.Servicios
         List<FinancieroCuentaAlCobroRelaDto> GetCuentaAlCobroRela(string ctaf_id);
 		List<FinancieroChequeDepositadoDto> GetFinancieroChequeDepositado(FinancieroChequeDepositadoRequest r);
         List<PerfilUserDto> GetFinancieroTraUsu(FinancieroTraUsuRequest request);
+        List<MovimientoFinancieroListaDto> BuscarMovimientoFinanciero(ConsultaMovFinancierosRequest filtros);
 	}
 }

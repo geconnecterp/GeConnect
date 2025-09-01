@@ -1,18 +1,216 @@
 ﻿$(function () {
+	$("#pagEstado").on("change", function () {
+		var div = $("#divPaginacion");
+		cargaPaginacion();
+	});
+	$("#chkDesdeHasta").prop('checked', true);
+	$("#chkDesdeHasta").trigger("change");
+	$("#chkDesdeHasta").prop("disabled", true);
+
 	$("#Date1, #Date2").on("blur", ValidarFechasClick);
 
 	$(document).on("change", "#listaCFO", ControlalistaCFOSelected);
 	$(document).on("change", "#listaCFD", ControlalistaCFDSelected);
 	$(document).on("change", "#listaTT", ControlalistaTTSelected);
 	$(document).on("change", "#listaUsu", ControlalistaUsuSelected);
+	//$(document).on("click", "#btnBuscar", btnBuscarClick);
+	$(document).on("change", "#btnCancelar", btnCancelarClick);
+	//btnCancelar
+
 
 	$("#CFOList").on("dblclick", 'option', function () { $(this).remove(); })
 	$("#CFDList").on("dblclick", 'option', function () { $(this).remove(); })
 	$("#TTList").on("dblclick", 'option', function () { $(this).remove(); })
 	$("#UsuList").on("dblclick", 'option', function () { $(this).remove(); })
 
+	$("#btnBuscar").on("click", function () {
+		dataBak = "";
+		pagina = 1;
+		BuscarMovimientosFinancieros(pagina);
+	});
+
 	InicializarCamposEnFiltros();
+	funcCallBack = BuscarMovimientosFinancieros;
 });
+
+
+
+function cargaPaginacion() {
+	$("#divPaginacion").pagination({
+		items: totalRegs,
+		itemsOnPage: pagRegs,
+		cssStyle: "dark-theme",
+		currentPage: pagina,
+		onPageClick: function (num) {
+			BuscarMovimientosFinancieros(num);
+		}
+	});
+	$("#pagEstado").val(false);
+	$("#divFiltro").collapse("hide")
+	return true;
+}
+
+function BuscarMovimientosFinancieros(pag) {
+	AbrirWaiting();
+	var desde = $("#Date1").val();
+	var hasta = $("#Date2").val();
+	var ctaf_ori_list = [];
+	var ctaf_des_list = [];
+	var tipo_list = [];
+	var usu_list = [];
+	if ($("#chkCFO").is(":checked")) {
+		$("#CFOList").children().each(function (i, item) { ctaf_ori_list.push($(item).val()) });
+	}
+	if ($("#chkCFD").is(":checked")) {
+		$("#CFDList").children().each(function (i, item) { ctaf_des_list.push($(item).val()) });
+	}
+	if ($("#chkTT").is(":checked")) {
+		$("#TTList").children().each(function (i, item) { tipo_list.push($(item).val()) });
+	}
+	if ($("#chkUsu").is(":checked")) {
+		$("#UsuList").children().each(function (i, item) { usu_list.push($(item).val()) });
+	}
+	var ctaf_ori = $("#chkCFO")[0].checked;
+	var ctaf_des = $("#chkCFD")[0].checked;
+	var tipo = $("#chkTT")[0].checked;
+	var usu = $("#chkUsu")[0].checked;
+	var data1 = { desde, hasta, ctaf_ori_list, ctaf_ori, ctaf_des_list, ctaf_des, tipo_list, tipo, usu_list, usu };
+	var buscaNew = true;
+	var sort = null;
+	var sortDir = null
+	pagina = pag;
+	var data2 = { sort, sortDir, pag, buscaNew }
+	var data = $.extend({}, data1, data2);
+	PostGenHtml(data, buscarMovimientosFinancieros2URL, function (obj) {
+		CerrarWaiting();
+		$("#divDatosMovimientoFinanciero").html(obj);
+
+		$("#divFiltros").removeClass("show").addClass("collapse");
+		$("#divDetalle").collapse("show");
+		$("#btnCancelar").on("click", function () {
+			btnCancelarClick();
+		});
+		$("#btnImprimirMovSele").on("click", function () {
+			btnImprimirMovSele();
+		});
+		$("#btnImprimirLista").on("click", function () {
+			ControlaMensajeWarning("Método no implementado.");
+		});
+		$("#btnAnularMovi").on("click", function () {
+			ControlaMensajeWarning("Método no implementado.");
+		});
+
+		PostGen({}, buscarMetadataURL, function (obj) {
+			if (obj.error === true) {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				totalRegs = obj.metadata.totalCount;
+				pags = obj.metadata.totalPages;
+				pagRegs = obj.metadata.pageSize;
+
+				$("#pagEstado").val(true).trigger("change");
+				$("#divPaginacion").removeClass("collapse");
+			}
+
+		});
+		PostGen({}, actualizarTotalUrl, function (obj) {
+			if (obj.error === true) {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				$("#txtTotales").val(formatter.format(obj.totales));
+			}
+		});
+
+		CerrarWaiting();
+		return true
+	}, function (obj) {
+		ControlaMensajeError(obj.message);
+		CerrarWaiting();
+	});
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
+function btnImprimirMovSele() {
+	if (ttraSelected == "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar el comprobante a imprimir.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Imprimiendo comprobante seleccionado...");
+		var tipoReporte = 1;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				//ControlaMensajeWarning(obj.msg);
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				CerrarWaiting();
+				ImprimirComprobanteSeleccionadas();
+			}
+		});
+	}
+}
+
+function ImprimirTRA_Generada(traCompte) {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		let data = { tra_compte: traCompte };
+		cargarReporteEnArre(25, data, "TRANSFERENCIA ENTRE CUENTAS", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function ImprimirComprobanteSeleccionadas() {
+	var traCompte = ttraSelected;
+	ImprimirTRA_Generada(traCompte);
+}
+
+const formatter = new Intl.NumberFormat('de-DE', {
+	minimumFractionDigits: 2,
+	maximumFractionDigits: 2
+});
+
+function btnBuscarClick(pag) {
+	
+}
+
+function ImprimirTRA_Generada(traCompte) {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		let data = { tra_compte: traCompte };
+		cargarReporteEnArre(25, data, "TRANSFERENCIA ENTRE CUENTAS", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function selectReg(x, gridId) {
+	$("#" + gridId + " tbody tr").each(function (index) {
+		$(this).removeClass("selected-row");
+		//$(this).removeClass("selectedEdit-row");
+	});
+	$(x).addClass("selected-row");
+	ttraSelected = x.childNodes[1].innerText;
+}
 
 function ValidarFechasClick() {
 	const desde = $("#Date1").val();
@@ -85,6 +283,48 @@ function ControlalistaTTSelected() {
 	}
 }
 
+function btnCancelarClick() {
+	$("#divFiltros").removeClass("collapse").addClass("show");
+	$("#divDetalle").collapse("hide");
+	$("#chkCFO").prop('checked', false);
+	$("#chkCFO").trigger("change");
+	$("#chkCFD").prop('checked', false);
+	$("#chkCFD").trigger("change");
+	$("#chkTT").prop('checked', false);
+	$("#chkTT").trigger("change");
+	$("#chkUsu").prop('checked', false);
+	$("#chkUsu").trigger("change");
+	$("#CFOList").empty();
+	$("#CFDList").empty();
+	$("#TTList").empty();
+	$("#UsuList").empty();
+	$("#listaCFO").val("");
+	$("#listaCFD").val();
+	$("#listaTT").val();
+	$("#listaUsu").val();
+	$("#listaCFO").prop("disabled", true);
+	$("#listaCFD").prop("disabled", true);
+	$("#listaTT").prop("disabled", true);
+	$("#listaUsu").prop("disabled", true);
+	$("#CFOList").prop("disabled", true);
+	$("#CFDList").prop("disabled", true);
+	$("#TTList").prop("disabled", true);
+	$("#UsuList").prop("disabled", true);
+	InicializarDatosEnSesion();
+}
+
+function InicializarDatosEnSesion() {
+	ttraSelected = "";
+	PostGen({}, inicializarDatosEnSesionURL, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+	});
+}
+
 function InicializarCamposEnFiltros() {
 	$("#chkDesdeHasta").on("click", function () {
 		if ($("#chkDesdeHasta").is(":checked")) {
@@ -141,4 +381,5 @@ function InicializarCamposEnFiltros() {
 			$("#UsuList").prop("disabled", true);
 		}
 	});
+	$("#Date1, #Date2").prop("disabled", false);
 }

@@ -1,8 +1,11 @@
-﻿using gc.api.core.Contratos.Servicios;
+﻿using gc.api.core.Constantes;
+using gc.api.core.Contratos.Servicios;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
+using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
@@ -10,6 +13,7 @@ using gc.infraestructura.Dtos.OrdenDePago.Request;
 using gc.infraestructura.Dtos.Users;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
+using System.Text;
 
 namespace gc.api.core.Servicios
 {
@@ -180,6 +184,98 @@ namespace gc.api.core.Servicios
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<PerfilUserDto>(sp, ps, true);
 			return listaTemp;
+		}
+
+		public List<MovimientoFinancieroListaDto> BuscarMovimientoFinanciero(ConsultaMovFinancierosRequest filtros)
+		{
+			filtros.Pagina = filtros.Pagina == null || filtros.Pagina <= 0 ? _pagSet.DefaultPageNumber : filtros.Pagina;
+			filtros.Registros = filtros.Registros == null || filtros.Registros <= 0 ? _pagSet.DefaultPageSize : filtros.Registros;
+
+			string sp = ConstantesGC.StoredProcedures.SP_F_TR_LISTA;
+
+			var ps = new List<SqlParameter>
+			{
+				new("@fecha_d", filtros.desde),
+				new("@fecha_h", filtros.hasta),
+				new("@ctaf_ori", filtros.ctaf_ori),
+				new("@ctaf_des", filtros.ctaf_des),
+				new("@tipo", filtros.tipo),
+				new("@usu", filtros.usu)
+			};
+
+			//debo cargar aca todos los filtros sobre los parametros a utilizar
+			if (filtros.ctaf_ori_list != null && filtros.ctaf_ori_list.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.ctaf_ori_list)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+
+				ps.Add(new SqlParameter("@ctaf_ori_list", sb.ToString() + ','));
+			}
+			if (filtros.ctaf_des_list != null && filtros.ctaf_des_list.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.ctaf_des_list)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+
+				ps.Add(new SqlParameter("@ctaf_des_list", sb.ToString() + ','));
+			}
+			if (filtros.tipo_list != null && filtros.tipo_list.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.tipo_list)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+
+				ps.Add(new SqlParameter("@tipo_list", sb.ToString() + ','));
+			}
+			if (filtros.usu_list != null && filtros.usu_list.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.usu_list)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+
+				ps.Add(new SqlParameter("@usu_list", sb.ToString() + ','));
+			}
+
+			ps.Add(new SqlParameter("@registros", filtros.Registros));
+			ps.Add(new SqlParameter("@pagina", filtros.Pagina));
+			ps.Add(new SqlParameter("@ordenar", filtros.Sort ?? ""));
+
+			List<MovimientoFinancieroListaDto> movFinan = _repository.EjecutarLstSpExt<MovimientoFinancieroListaDto>(sp, ps, true);
+
+			return movFinan;
 		}
 	}
 }

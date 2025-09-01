@@ -1,0 +1,110 @@
+﻿@model GridCoreSmart<MovimientoFinancieroListaDto>
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	var alt = true;
+	string clase = string.Empty;
+	string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+	var total = 0;
+}
+<style>
+	thead th {
+		position: sticky;
+		top: 0px;
+	}
+</style>
+<div class="card">
+	<div class="card-body">
+		<div class="row">
+			<div class="col-10">
+				<div class="table-responsive text-nowrap  table-wrapper">
+					<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridMovFin">
+						<thead class="table-dark">
+							<tr class="header">
+								<th scope="col" class="align-center">N° Tra.</th>
+								<th scope="col" class="align-center">Fecha</th>
+								<th scope="col" class="align-center">Tipo</th>
+								<th scope="col" class="align-center">Concepto</th>
+								<th scope="col" class="align-center">Anulada</th>
+								<th scope="col" class="align-center">Usuario</th>
+								<th scope="col" class="align-center">Importe</th>
+							</tr>
+						</thead>
+						<tbody>
+							@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
+							{
+								@foreach (var item in Model.ListaDatos)
+								{
+									if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+									<tr class="@clase" onclick="selectReg(this, 'tbGridMovFin')">
+										<td class="@Model.ObtenerClase(item.tra_compte) align-center cell-fit-content">@Model.FormatearDato(item.tra_compte, FormatDato.Ninguno)</td>
+										<td class="@Model.ObtenerClase(item.tra_fecha) align-center cell-fit-content">@Model.FormatearDato(item.tra_fecha, FormatDato.Fecha)</td>
+										<td class="@Model.ObtenerClase(item.ttra_desc) align-left cell-fit-content">@Model.FormatearDato(item.ttra_desc, FormatDato.Ninguno)</td>
+										<td class="@Model.ObtenerClase(item.tra_concepto) align-left cell-fit-content">@Model.FormatearDato(item.tra_concepto, FormatDato.Ninguno)</td>
+										<td class="@Model.ObtenerClase(item.strAnulada) align-center cell-fit-content">@Model.FormatearDato(item.strAnulada, FormatDato.Ninguno)</td>
+										<td class="@Model.ObtenerClase(item.usu_apellidoynombre) align-left cell-fit-content">@Model.FormatearDato(item.usu_apellidoynombre, FormatDato.Ninguno)</td>
+										<td class="@Model.ObtenerClase(item.tra_importe) align-right cell-fit-content">@Model.FormatearDato(item.tra_importe, FormatDato.Monto)</td>
+									</tr>
+								}
+							}
+						</tbody>
+					</table>
+					<div class="row mt-3">
+						<div class="offset-md-3 col-md-6">
+							<div id="divPaginacion" class="">
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-8">
+					</div>
+					<div class="col-4">
+						<div class="input-group input-group-sm mt-1">
+							<span class="input-group-text fixed-lbl-for-abm-100">Totales: </span>
+							<input type="text" id="txtTotales" class="form-control" style="text-align: right;" value="0" disabled />
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-2">
+				<div class="row">
+					<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px; width:88%;" id="btnImprimirLista">
+						<div class="row" style="display: contents">
+							<div class="col-2">
+								<span class="tf-icons bx bx-check-circle"></span>
+							</div>
+							<div class="col-10" style="font-size: small;">
+								Imprimir Lista
+							</div>
+						</div>
+					</button>
+				</div>
+				<div class="row mt-1">
+					<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px; width:88%;" id="btnImprimirMovSele">
+						<div class="row" style="display: contents">
+							<div class="col-2">
+								<span class="tf-icons bx bx-x-circle"></span>
+							</div>
+							<div class="col-10" style="font-size: small;">
+								Imprimir Mov Sele
+							</div>
+						</div>
+					</button>
+				</div>
+				<div class="row mt-1">
+					<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px; width:88%;" id="btnAnularMovi">
+						<div class="row" style="display: contents">
+							<div class="col-2">
+								<span class="tf-icons bx bx-eraser"></span>
+							</div>
+							<div class="col-10" style="font-size: small;">
+								Anular Movimiento
+							</div>
+						</div>
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
