@@ -137,9 +137,77 @@ function BuscarMovimientosFinancieros(pag) {
 	});
 }
 
+function btnAnularMovimiento() {
+	if (ttraSelected == "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar el comprobante a anular.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirMensaje("ATENCIÓN", "¿Confirma que desea anular el comprobante seleccionado?", function () {
+			$("#msjModal").modal("hide");
+			AbrirWaiting("Anulando comprobante...");
+			var traCompte = ttraSelected;
+			var data = { tra_compte: traCompte };
+			PostGen(data, anularMovimientoFinancieroUrl, function (obj) {
+				CerrarWaiting();
+				if (obj.error === true) {
+					AbrirMensaje("ATENCIÓN", obj.msg, function () {
+						$("#msjModal").modal("hide");
+						return true;
+					}, false, ["Aceptar"], "error!", null);
+				}
+				else {
+					AbrirMensaje("ATENCIÓN", obj.msg, function () {
+						$("#msjModal").modal("hide");
+						BuscarMovimientosFinancieros(pagina);
+						return true;
+					}, false, ["Aceptar"], "info!", null);
+				}
+			});
+			return true;
+		}, true, ["Cancelar", "Aceptar"], "question", null);
+	}
+}
+
 function ReseteoDeReportes() {
 	console.log("Reseto de reportes");
 	ReporteResetArre();
+}
+
+function btnImprimirLista() {
+	var filas = $("#tbGridMovFin tbody tr").length;
+	if (filas == 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos para imprimir.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Imprimiendo listado...");
+		var tipoReporte = 2;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				//ControlaMensajeWarning(obj.msg);
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				CerrarWaiting();
+				ImprimirListadoDeMovimientos();
+			}
+		});
+	}
+}
+
+function ImprimirListadoDeMovimientos() {
+	//TODO Marce: Esperar a que Carlos pase el modelo de reporte de listado de movimientos financieros
 }
 
 function btnImprimirMovSele() {
@@ -171,6 +239,11 @@ function btnImprimirMovSele() {
 	}
 }
 
+function ImprimirComprobanteSeleccionadas() {
+	var traCompte = ttraSelected;
+	ImprimirTRA_Generada(traCompte);
+}
+
 function ImprimirTRA_Generada(traCompte) {
 	ReseteoDeReportes();
 	setTimeout(() => {
@@ -178,11 +251,6 @@ function ImprimirTRA_Generada(traCompte) {
 		cargarReporteEnArre(25, data, "TRANSFERENCIA ENTRE CUENTAS", "", "");
 		invocacionGestorDoc({});
 	}, 500);
-}
-
-function ImprimirComprobanteSeleccionadas() {
-	var traCompte = ttraSelected;
-	ImprimirTRA_Generada(traCompte);
 }
 
 const formatter = new Intl.NumberFormat('de-DE', {
@@ -310,6 +378,9 @@ function btnCancelarClick() {
 	$("#CFDList").prop("disabled", true);
 	$("#TTList").prop("disabled", true);
 	$("#UsuList").prop("disabled", true);
+	$("#btnCancel").on("click", function () {
+		btnCancelarClick();
+	});
 	InicializarDatosEnSesion();
 }
 
@@ -382,4 +453,7 @@ function InicializarCamposEnFiltros() {
 		}
 	});
 	$("#Date1, #Date2").prop("disabled", false);
+	$("#btnCancel").on("click", function () {
+		btnCancelarClick();
+	});
 }

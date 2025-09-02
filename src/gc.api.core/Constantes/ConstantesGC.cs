@@ -141,7 +141,7 @@ namespace gc.api.core.Constantes
 			public const string SP_F_CHEQUES_DEPOSITADOS = "SPGECO_F_Cheques_Depositados";
 			public const string SP_F_TR_USUARIOS = "SPGECO_F_TR_Usu";
 			public const string SP_F_TR_LISTA = "SPGECO_F_TR_Lista";
-			//
+			public const string SP_F_TR_ANULAR = "SPGECO_F_TR_Anular";
 			#endregion
 
 			#region SP Depositos

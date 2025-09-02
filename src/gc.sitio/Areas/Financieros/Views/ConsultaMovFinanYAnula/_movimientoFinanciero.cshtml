@@ -11,6 +11,16 @@
 		position: sticky;
 		top: 0px;
 	}
+
+	.table-wrapper-fixed-head th,
+	.table-wrapper-fixed-head td {
+		box-sizing: border-box;
+	}
+
+	.table-wrapper {
+		overflow-x: hidden;
+	}
+
 </style>
 <div class="card">
 	<div class="card-body">
@@ -20,13 +30,13 @@
 					<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridMovFin">
 						<thead class="table-dark">
 							<tr class="header">
-								<th scope="col" class="align-center">N° Tra.</th>
-								<th scope="col" class="align-center">Fecha</th>
-								<th scope="col" class="align-center">Tipo</th>
-								<th scope="col" class="align-center">Concepto</th>
-								<th scope="col" class="align-center">Anulada</th>
-								<th scope="col" class="align-center">Usuario</th>
-								<th scope="col" class="align-center">Importe</th>
+								<th style="width:10%;" class="col-header-small align-center tiny-row">N° Tra.</th>
+								<th style="width:10%;" class="col-header-small align-center tiny-row">Fecha</th>
+								<th style="width:25%;" class="col-header-small align-center tiny-row">Tipo</th>
+								<th style="width:30%;" class="col-header-small align-center tiny-row">Concepto</th>
+								<th style="width:5%;" class="col-header-small align-center tiny-row">Anulada</th>
+								<th style="width:10%;" class="col-header-small align-center tiny-row">Usuario</th>
+								<th style="width:10%;" class="col-header-small align-center tiny-row">Importe</th>
 							</tr>
 						</thead>
 						<tbody>

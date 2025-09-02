@@ -22,5 +22,6 @@ namespace gc.api.core.Contratos.Servicios
 		List<FinancieroChequeDepositadoDto> GetFinancieroChequeDepositado(FinancieroChequeDepositadoRequest r);
         List<PerfilUserDto> GetFinancieroTraUsu(FinancieroTraUsuRequest request);
         List<MovimientoFinancieroListaDto> BuscarMovimientoFinanciero(ConsultaMovFinancierosRequest filtros);
+        List<RespuestaDto> MovimientoFinancieroAnular(MovimientoFinancieroAnularRequest request);
 	}
 }

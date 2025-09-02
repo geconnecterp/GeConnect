@@ -227,6 +227,27 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
+		public JsonResult AnularMovimientoFinanciero(string tra_compte)
+		{
+			try
+			{
+				if (string.IsNullOrEmpty(tra_compte))
+					return Json(new { error = true, warn = false, msg = "Debe seleccionar un movimiento financiero para anular." });
+				var request = new MovimientoFinancieroAnularRequest()
+				{
+					tra_compte = tra_compte,
+					adm_id = AdministracionId,
+					usu_id = UserName
+				};
+				var respuesta = _financieroServicio.MovimientoFinancieroAnular(request, TokenCookie);
+				return Json(new { error = false, warn = false, msg = $"El movimiento financiero ({tra_compte}) se ha anulado con éxito." });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar anular el movimiento financiero: {ex.Message}" });
+			}
+		}
+		
 		#region Métodos privados
 		private void CargarDatosIniciales(ConsultaMovFinanYAnulaModel model)
 		{

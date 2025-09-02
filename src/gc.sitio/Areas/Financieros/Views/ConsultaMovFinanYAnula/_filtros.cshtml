@@ -5,6 +5,17 @@
 	var ls02 = new SelectList(list, "Id", "Descripcion");
 
 }
+<style>
+	.listbox-sm {
+		height: 80px; /* o el valor que prefieras */
+		font-size: 0.85rem; /* opcional para achicar texto */
+	}
+
+	.lbl-sm {
+		width: 160px;
+
+	}
+</style>
 <div class="card card-golden">
 	<div class="card-header mb-2">
 		<h5 class="mb-0" id="tituloLegend">Filtros </h5>
@@ -45,12 +56,12 @@
 		<div class="row">
 			<div class="col-md-6" id="divCFO">
 				<div class="input-group input-group-sm">
-					<span class="input-group-text">Cuenta Financiera Origen</span>
+					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Cuenta Financiera Origen</span>
 					@Html.DropDownListFor(m => m.selectedValue, Model.ListaCFO, "Seleccionar", new { @id = "listaCFO", disabled = "disabled", @class = "form-control inputEditable activable" })
 				</div>
 			</div>
 			<div class="col-sm-6">
-				@Html.ListBox("CFOList", null, new { @class = "form-control", @disabled = "disabled" })
+				@Html.ListBox("CFOList", null, new { @class = "form-control listbox-sm", @disabled = "disabled" })
 			</div>
 		</div>
 		<div class="row">
@@ -66,12 +77,12 @@
 		<div class="row">
 			<div class="col-md-6" id="divCFD">
 				<div class="input-group input-group-sm">
-					<span class="input-group-text">Cuenta Financiera Destino</span>
+					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Cuenta Financiera Destino</span>
 					@Html.DropDownListFor(m => m.selectedValue, Model.ListaCFD, "Seleccionar", new { @id = "listaCFD", disabled = "disabled", @class = "form-control inputEditable activable" })
 				</div>
 			</div>
 			<div class="col-sm-6">
-				@Html.ListBox("CFDList", null, new { @class = "form-control", @disabled = "disabled" })
+				@Html.ListBox("CFDList", null, new { @class = "form-control listbox-sm", @disabled = "disabled" })
 			</div>
 		</div>
 		<div class="row">
@@ -87,12 +98,12 @@
 		<div class="row">
 			<div class="col-md-6" id="divTT">
 				<div class="input-group input-group-sm">
-					<span class="input-group-text">Tipo Movimiento</span>
+					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Tipo Movimiento</span>
 					@Html.DropDownListFor(m => m.selectedValue, Model.ListaTT, "Seleccionar", new { @id = "listaTT", disabled = "disabled", @class = "form-control inputEditable activable" })
 				</div>
 			</div>
 			<div class="col-sm-6">
-				@Html.ListBox("TTList", null, new { @class = "form-control", @disabled = "disabled" })
+				@Html.ListBox("TTList", null, new { @class = "form-control listbox-sm", @disabled = "disabled" })
 			</div>
 		</div>
 		<div id="divUsuarios">
@@ -109,12 +120,12 @@
 			<div class="row">
 				<div class="col-md-6" id="divUsu">
 					<div class="input-group input-group-sm">
-						<span class="input-group-text">Usuario</span>
+						<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Usuario</span>
 						@Html.DropDownListFor(m => m.selectedValue, Model.ListaUsu, "Seleccionar", new { @id = "listaUsu", disabled = "disabled", @class = "form-control inputEditable activable" })
 					</div>
 				</div>
 				<div class="col-sm-6">
-					@Html.ListBox("UsuList", null, new { @class = "form-control", @disabled = "disabled" })
+					@Html.ListBox("UsuList", null, new { @class = "form-control listbox-sm", @disabled = "disabled" })
 				</div>
 			</div>
 		</div>

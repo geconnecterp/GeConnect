@@ -277,5 +277,18 @@ namespace gc.api.core.Servicios
 
 			return movFinan;
 		}
+
+		public List<RespuestaDto> MovimientoFinancieroAnular(MovimientoFinancieroAnularRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_TR_ANULAR;
+			var ps = new List<SqlParameter>()
+			{
+				new("@tra_compte",request.tra_compte),
+				new("@usu_id",request.usu_id),
+				new("@adm_id",request.adm_id),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }
