@@ -4,6 +4,8 @@ namespace gc.infraestructura.Dtos.Productos
 {
     public class ProductoDetalleDto
     {
+        public int Total_Registros { get; set; }
+        public int Total_Paginas { get; set; }
         public string p_id { get; set; } = string.Empty;
         public string p_id_prov { get; set; } = string.Empty;
         public string p_id_barrado { get; set; } = string.Empty;

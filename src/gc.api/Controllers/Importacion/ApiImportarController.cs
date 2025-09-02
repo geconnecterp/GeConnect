@@ -119,15 +119,41 @@ namespace gc.api.Controllers.Importacion
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public IActionResult ObtenerProductosDelProveedorParaActualizar(QueryFilters filters)
         {
+            var reg = new ProductoDetalleDto { Total_Paginas = 0, Total_Registros = 0 };
+            var lista = _importarServicio.ObtenerProductosDelProveedorParaActualizar(filters);
 
-            var resultado = _importarServicio.ObtenerProductosDelProveedorParaActualizar(filters);
+            //if (lista == null)
+            //{
+            //    return BadRequest("No se pudo obtener el listado de los datos de referencia para la importación de listas de precio. Verifique los datos ingresados.");
+            //}
 
-            if (resultado == null)
+            if (lista.Count > 0)
             {
-                return BadRequest("No se pudo obtener el listado de los datos de referencia para la importación de listas de precio. Verifique los datos ingresados.");
+                reg = lista.First();
+            }
+            else
+            {
+                return NotFound("No se pudo obtener el listado de los datos de referencia para la importación de listas de precio. Verifique los datos ingresados.");
             }
 
-            return Ok(new ApiResponse<List<ProductoDetalleDto>>(resultado));
+            var metadata = new MetadataGrid
+            {
+                TotalCount = reg.Total_Registros,
+                PageSize = filters.Registros ?? 0,
+                CurrentPage = filters.Pagina ?? 0,
+                TotalPages = reg.Total_Paginas,
+                HasNextPage = (filters.Pagina ?? 0) < reg.Total_Paginas,
+                HasPreviousPage = (filters.Pagina ?? 0) > 1,
+                //NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(ObtenerVendedores)) ?? "").ToString(),
+                //PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(ObtenerVendedores)) ?? "").ToString(),
+            };
+
+            var response = new ApiResponse<List<ProductoDetalleDto>>(lista)
+            {
+                Meta = metadata
+            };
+
+            return Ok(response);
         }
 
         [HttpPost("confirmar-actualizacion-precio")]

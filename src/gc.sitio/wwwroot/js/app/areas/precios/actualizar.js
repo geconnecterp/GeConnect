@@ -1,4 +1,6 @@
-﻿$(function () {
+﻿let ctaActual = "";
+
+$(function () {
     // Inicializar eventos del documento
     initializeDocumentEvents();
 
@@ -7,6 +9,13 @@
         cargarProveedores();
     }, 500);
 
+    $("#pagEstado").on("change", function () {
+        var div = $("#divPaginacion");
+        presentaPaginacion(div);
+    });
+
+    //callback para que funcione la paginación
+    funcCallBack = cargarProductosProveedor;
     // Exponer funciones globales (mantener solo las necesarias)
     window.ActualizarPP = {
         obtenerProveedoresSeleccionados: obtenerProveedoresSeleccionados,
@@ -34,7 +43,9 @@ function initializeDocumentEvents() {
 
         const ctaId = $(this).data('cta-id');
         if (ctaId) {
-            cargarProductosProveedor(ctaId);
+            ctaActual = ctaId;
+            pagina = 1;
+            cargarProductosProveedor(pagina);
             // Cambiar a la pestaña de productos
             $('#productos-tab').tab('show');
         }
@@ -96,17 +107,25 @@ async function cargarProveedores() {
  * Carga los productos de un proveedor específico
  * @param {string} ctaId - ID del proveedor
  */
-async function cargarProductosProveedor(ctaId) {
+async function cargarProductosProveedor(pag) {
     const $container = $('#productosContainer');
 
     try {
+        if (typeof ctaActual === "undefined" || ctaActual === "") {
+            AbrirMensaje("Atención!!", "La cuenta no se ha identificado. Intente nuevamente por favor",
+                () => $("#msjModal").modal("hide"), false, ["Aceptar"], "warn!", null);
+
+            return;
+        }
+
+
         mostrarSpinnerCarga($container, 'Obteniendo productos del proveedor...');
 
         const response = await $.ajax({
             url: '/Productos/ActualizarPP/ObtenerProductosProveedor',
             type: 'POST',
             contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-            data: { ctaId: ctaId },
+            data: { ctaId: ctaActual,pag },
             timeout: 15000,
             headers: {
                 'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() || ''
@@ -115,7 +134,23 @@ async function cargarProductosProveedor(ctaId) {
 
         // Ahora response es HTML, no JSON
         $container.html(response);
+        //presentamos la metadata de la paginacion
+        PostGen({}, buscarActuProductoMetadataURL, function (obj) {
+            if (obj.error === true) {
+                AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                    $("#msjModal").modal("hide");
+                    return true;
+                }, false, ["Aceptar"], "error!", null);
+            }
+            else {
+                totalRegs = obj.metadata.totalCount;
+                pags = obj.metadata.totalPages;
+                pagRegs = obj.metadata.pageSize;
+                pagina = pag;
+                $("#pagEstado").val(true).trigger("change");
+            }
 
+        });
     } catch (error) {
         console.error('Error al cargar productos:', error);
         mostrarErrorConRecarga($container, 'Error al cargar los productos.', function () {

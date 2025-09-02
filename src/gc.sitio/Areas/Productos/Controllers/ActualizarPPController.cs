@@ -19,13 +19,14 @@ namespace gc.sitio.Areas.Productos.Controllers
     public class ActualizarPPController : ControladorActualizarPPBase
     {
         private readonly IImportarServicio _importarServicio;
-
+        private readonly AppSettings _configuracion;
         public ActualizarPPController(IOptions<AppSettings> options,
            IHttpContextAccessor contexto, ILogger<ActualizarPPController> logger,
            IImportarServicio importarServicio) :
             base(options, contexto, logger)
         {
             _importarServicio = importarServicio;
+            _configuracion = options.Value;
         }
 
         /// <summary>
@@ -46,6 +47,9 @@ namespace gc.sitio.Areas.Productos.Controllers
         {
             try
             {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
                 var respuesta = await _importarServicio.ObtenerProveedoresConProductosParaActualizar(TokenCookie);
 
                 if (!respuesta.Ok)
@@ -53,10 +57,10 @@ namespace gc.sitio.Areas.Productos.Controllers
                     return PartialView("_gridMensaje", CrearRespuestaError(respuesta.Mensaje ?? "Error al obtener proveedores"));
                 }
 
-                if (respuesta?.ListaEntidad == null || !respuesta.ListaEntidad.Any())
-                {
-                    return PartialView("_gridMensaje", CrearRespuestaError("No se encontraron proveedores con productos para actualizar"));
-                }
+                //if (respuesta?.ListaEntidad == null || !respuesta.ListaEntidad.Any())
+                //{
+                //    return PartialView("_gridMensaje", CrearRespuestaWarning("No se encontraron proveedores con productos para actualizar"));
+                //}
 
                 ProvedoresParaActualizar = respuesta.ListaEntidad;
                 var grid = GenerarGridProveedores(respuesta.ListaEntidad);
@@ -66,7 +70,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             catch (NegocioException ex)
             {
                 _logger?.LogError(ex, "Error de negocio al obtener proveedores para actualizar");
-                return PartialView("_gridMensaje", CrearRespuestaError(ex.Message));
+                return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
             }
             catch (Exception ex)
             {
@@ -79,8 +83,9 @@ namespace gc.sitio.Areas.Productos.Controllers
         /// Obtiene los productos de un proveedor específico y retorna vista parcial
         /// </summary>
         [HttpPost]
-        public async Task<IActionResult> ObtenerProductosProveedor(string ctaId)
+        public async Task<IActionResult> ObtenerProductosProveedor(string ctaId, int pag = 1)
         {
+            GridCoreSmart<ProductoDetalleDto> grillaDatos;
             try
             {
                 if (string.IsNullOrWhiteSpace(ctaId))
@@ -88,7 +93,12 @@ namespace gc.sitio.Areas.Productos.Controllers
                     return PartialView("_gridMensaje", CrearRespuestaError("ID de proveedor requerido"));
                 }
 
-                var filters = new QueryFilters { Id = ctaId };
+                var filters = new QueryFilters
+                {
+                    Id = ctaId,
+                    Pagina = pag,
+                    Registros = _configuracion.NroRegistrosPagina
+                };
                 var respuesta = await _importarServicio.ObtenerProductosDelProveedorParaActualizar(filters, TokenCookie);
 
                 if (!respuesta.Ok || respuesta.EsError)
@@ -101,8 +111,13 @@ namespace gc.sitio.Areas.Productos.Controllers
                     return PartialView("_gridMensaje", CrearRespuestaError("No se encontraron productos para este proveedor"));
                 }
 
-                var grid = GenerarGridProductos(respuesta.ListaEntidad);
-                return PartialView("_gridActuProducto", grid);
+                //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
+                grillaDatos = GenerarGrillaSmart(respuesta.ListaEntidad, "p_desc",
+                    _configuracion.NroRegistrosPagina, pag,
+                    MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, "desc");
+
+                //var grid = GenerarGridProductos(respuesta.ListaEntidad,MetadataGeneral);
+                return PartialView("_gridActuProducto", grillaDatos);
             }
             catch (Exception ex)
             {
@@ -156,7 +171,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                     {
                         throw new NegocioException(res.Entidad.resultado_msj);
                     }
-                   
+
                 }
                 else
                 {
@@ -185,7 +200,7 @@ namespace gc.sitio.Areas.Productos.Controllers
         /// <summary>
         /// Genera el grid optimizado para productos usando GridCoreSmart
         /// </summary>
-        private GridCoreSmart<ProductoDetalleDto> GenerarGridProductos(List<ProductoDetalleDto> productos)
+        private GridCoreSmart<ProductoDetalleDto> GenerarGridProductos(List<ProductoDetalleDto> productos, MetadataGrid metadata)
         {
             var productosOrdenados = productos
                 .OrderBy(p => p.p_id)
@@ -201,13 +216,13 @@ namespace gc.sitio.Areas.Productos.Controllers
             return new GridCoreSmart<ProductoDetalleDto>
             {
                 ListaDatos = pagedList,
-                CantidadReg = productos.Count,
+                CantidadReg = _configuracion.NroRegistrosPagina,
                 PrimerRegistro = 1,
                 UltimoRegistro = productos.Count,
                 RegistroFinal = productos.Count,
-                CantidadPaginas = 1,
-                PaginaActual = 1,
-                Sort = "p_id",
+                CantidadPaginas = metadata.TotalPages,
+                PaginaActual = metadata.CurrentPage,
+                Sort = "p_desc",
                 SortDir = "ASC",
                 DatoAux01 = $"Productos cargados: {DateTime.Now:HH:mm:ss}"
             };
@@ -225,8 +240,8 @@ namespace gc.sitio.Areas.Productos.Controllers
             var pagedList = new StaticPagedList<ActualizaProveedorDto>(
                 proveedoresOrdenados,
                 1,
-                proveedores.Count,
-                proveedores.Count
+                proveedores.Count == 0 ? 1 : proveedores.Count,
+                proveedores.Count == 0 ? 1 : proveedores.Count
             );
 
             return new GridCoreSmart<ActualizaProveedorDto>
@@ -241,6 +256,20 @@ namespace gc.sitio.Areas.Productos.Controllers
                 Sort = "cta_denominacion",
                 SortDir = "ASC",
                 DatoAux01 = $"Proveedores cargados: {DateTime.Now:HH:mm:ss}"
+            };
+        }
+
+        /// <summary>
+        /// Crea una respuesta de Warning estandarizada
+        /// </summary>
+        private RespuestaGenerica<EntidadBase> CrearRespuestaWarning(string mensaje)
+        {
+            return new RespuestaGenerica<EntidadBase>
+            {
+                Mensaje = mensaje,
+                Ok = false,
+                EsWarn = true,
+                EsError = false
             };
         }
 
@@ -261,5 +290,5 @@ namespace gc.sitio.Areas.Productos.Controllers
         #endregion
     }
 
-    
+
 }

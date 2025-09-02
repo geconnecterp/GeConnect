@@ -1,6 +1,9 @@
 ﻿@{
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+@section styles{
+    <link rel="stylesheet" href="~/css/simplePagination.css" />
+}
 
 <div class="container-fluid">
     <div class="row">
@@ -62,7 +65,7 @@
 
                                         <!-- Botón Cancelar -->
                                         <button type="button"
-                                                class="btn btn-outline-secondary btn-lg w-100"
+                                                class="btn btn-danger btn-lg w-100"
                                                 id="btnCancelarActualizacion"
                                                 onclick="cancelarActualizacion()">
                                             <i class="bx bx-x-circle me-2"></i>
@@ -90,6 +93,7 @@
                         <!-- Tab Productos (sin cambios) -->
                         <div class="tab-pane fade" id="productos-panel" role="tabpanel"
                              aria-labelledby="productos-tab">
+                            @Html.Hidden("pagEstado", false)
                             <div class="mt-3">
                                 <div id="productosContainer">
                                     <div class="alert alert-info" role="alert">
@@ -98,6 +102,7 @@
                                     </div>
                                 </div>
                             </div>
+                           
                         </div>
                     </div>
                 </div>
@@ -112,7 +117,10 @@
         let CargarProveedoresUrl = '@Url.Action("CargarProveedores", "ActualizarPP", new { area = "Productos" })';
         let ObtenerProductosProveedorUrl = '@Url.Action("ObtenerProductosProveedor", "ActualizarPP", new { area = "Productos" })';
         let ConfirmarProveedoresUrl = '@Url.Action("ConfirmarProveedores", "ActualizarPP", new { area = "Productos" })';
-        
+
+        let buscarActuProductoMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "ActualizarPP", new { area = "Productos" })';
     </script>
+    <script src="~/js/plugins/jquery.simplePagination.js"></script>
     <script src="~/js/app/areas/precios/actualizar.js"></script>
+
 }
