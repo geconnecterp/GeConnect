@@ -37,5 +37,6 @@ namespace gc.infraestructura.Enumeraciones
 		R023_OrdenDePagoDirecta = 23,
 		R024_ConsultaDeOrdenesDePago = 24,
 		R025_TransferenciaEntreCuentas = 25,
+		R026_ConsultaDeMovimientoFinanciero = 26,
 	}
 }

@@ -142,6 +142,7 @@ namespace gc.api.core.Constantes
 			public const string SP_F_TR_USUARIOS = "SPGECO_F_TR_Usu";
 			public const string SP_F_TR_LISTA = "SPGECO_F_TR_Lista";
 			public const string SP_F_TR_ANULAR = "SPGECO_F_TR_Anular";
+			public const string SP_F_TR_LISTA_REPORTE = "SPGECO_F_TR_Lista_Reporte";
 			#endregion
 
 			#region SP Depositos

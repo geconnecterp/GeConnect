@@ -290,5 +290,89 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<MovimientoFinancieroListaDto> BuscarMovimientoFinancieroReporte(ConsultaMovFinancierosRequest filtros)
+		{
+			string sp = ConstantesGC.StoredProcedures.SP_F_TR_LISTA;
+
+			var ps = new List<SqlParameter>
+			{
+				new("@fecha_d", filtros.desde),
+				new("@fecha_h", filtros.hasta),
+				new("@ctaf_ori", filtros.ctaf_ori),
+				new("@ctaf_des", filtros.ctaf_des),
+				new("@tipo", filtros.tipo),
+				new("@usu", filtros.usu)
+			};
+
+			if (filtros.ctaf_ori_list != null && filtros.ctaf_ori_list.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.ctaf_ori_list)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+
+				ps.Add(new SqlParameter("@ctaf_ori_list", sb.ToString() + ','));
+			}
+			if (filtros.ctaf_des_list != null && filtros.ctaf_des_list.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.ctaf_des_list)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+
+				ps.Add(new SqlParameter("@ctaf_des_list", sb.ToString() + ','));
+			}
+			if (filtros.tipo_list != null && filtros.tipo_list.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.tipo_list)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+
+				ps.Add(new SqlParameter("@tipo_list", sb.ToString() + ','));
+			}
+			if (filtros.usu_list != null && filtros.usu_list.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.usu_list)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+
+				ps.Add(new SqlParameter("@usu_list", sb.ToString() + ','));
+			}
+
+			List<MovimientoFinancieroListaDto> movFinan = _repository.EjecutarLstSpExt<MovimientoFinancieroListaDto>(sp, ps, true);
+
+			return movFinan;
+		}
 	}
 }

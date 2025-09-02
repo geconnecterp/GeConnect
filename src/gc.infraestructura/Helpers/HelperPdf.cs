@@ -1860,6 +1860,44 @@ namespace gc.infraestructura.Helpers
 			pdf.Add(tablaTotal);
 		}
 
+		public static void CargarTablaMovimientosFinancieros(Document pdf, List<MovimientoFinancieroListaDto> regs, Font fuenteEtiqueta, Font fuenteValor)
+		{
+			List<string> _campos = ["op_compte", "opt_desc", "op_fecha", "cta_denominacion", "op_anulada_desc", "usu_apellidoynombre", "op_importe",];
+			List<string> _titulosTabla = ["Nro", "Fecha", "Tipo", "Concepto", "Anulada", "Usuario", "Importe",];
+			float[] _anchosTitulosTabla = [10f, 20f, 10, 20, 10f, 20, 10];
+			PdfPTable tablaTitulo = GeneraTabla(1, [100f], 100, 10, 0);
+
+			// FILA 1
+			HelperPdf.GeneraCabeceraLista(pdf, _titulosTabla, _anchosTitulosTabla, HelperPdf.FontNormalPredeterminado(true));
+
+			// FILA 2
+			var regsAux = regs.Select(x => new
+			{
+				Nro = x.tra_compte,
+				Fecha = x.tra_fecha,
+				Tipo = x.ttra_desc,
+				Concepto = x.tra_concepto,
+				Anulada = x.strAnulada,
+				Usuario = x.usu_apellidoynombre,
+				Importe = x.tra_importe
+			}).ToList();
+			HelperPdf.GenerarListadoDesdeLista(pdf, regsAux, _titulosTabla, _anchosTitulosTabla, fuenteEtiqueta);
+
+			// FILA 3
+			PdfPTable tablaTotal = GeneraTabla(1, [100f], 100, 0, 10);
+			PdfPCell celdaTotal = new(new Phrase($"Total Ordenes de Pago: {regs.Sum(y => y.tra_importe).ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				PaddingTop = 0f,
+				BackgroundColor = BaseColor.LightGray
+			};
+
+			tablaTotal.AddCell(celdaTotal);
+			pdf.Add(tablaTotal);
+		}
+
 		public static void GenerarListadoAgrupado<T>(
 					Document pdf,
 					List<T> lista,

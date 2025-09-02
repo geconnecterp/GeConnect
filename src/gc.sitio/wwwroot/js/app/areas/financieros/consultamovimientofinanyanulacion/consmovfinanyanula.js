@@ -94,7 +94,7 @@ function BuscarMovimientosFinancieros(pag) {
 			btnImprimirMovSele();
 		});
 		$("#btnImprimirLista").on("click", function () {
-			ControlaMensajeWarning("Método no implementado.");
+			btnImprimirLista();
 		});
 		$("#btnAnularMovi").on("click", function () {
 			ControlaMensajeWarning("Método no implementado.");
@@ -208,6 +208,36 @@ function btnImprimirLista() {
 
 function ImprimirListadoDeMovimientos() {
 	//TODO Marce: Esperar a que Carlos pase el modelo de reporte de listado de movimientos financieros
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var desde = $("#Date1").val();
+		var hasta = $("#Date2").val();
+		var Date1Print = moment($("#Date1").val()).format('DD/MM/yyyy')
+		var Date2Print = moment($("#Date2").val()).format('DD/MM/yyyy')
+		var ctaf_ori_list = [];
+		var ctaf_des_list = [];
+		var tipo_list = [];
+		var usu_list = [];
+		if ($("#chkCFO").is(":checked")) {
+			$("#CFOList").children().each(function (i, item) { ctaf_ori_list.push($(item).val()) });
+		}
+		if ($("#chkCFD").is(":checked")) {
+			$("#CFDList").children().each(function (i, item) { ctaf_des_list.push($(item).val()) });
+		}
+		if ($("#chkTT").is(":checked")) {
+			$("#TTList").children().each(function (i, item) { tipo_list.push($(item).val()) });
+		}
+		if ($("#chkUsu").is(":checked")) {
+			$("#UsuList").children().each(function (i, item) { usu_list.push($(item).val()) });
+		}
+		var ctaf_ori = $("#chkCFO")[0].checked;
+		var ctaf_des = $("#chkCFD")[0].checked;
+		var tipo = $("#chkTT")[0].checked;
+		var usu = $("#chkUsu")[0].checked;
+		var data = { desde, hasta, ctaf_ori_list, ctaf_ori, ctaf_des_list, ctaf_des, tipo_list, tipo, usu_list, usu, Date1Print, Date2Print };
+		cargarReporteEnArre(26, data, "CONSULTA DE MOVIMIENTO FINANCIERO", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function btnImprimirMovSele() {

@@ -28,7 +28,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 		private AppModulo _modulo; //tengo el AppModulo que corresponde a la impresión del comprobante
 		private AppModulo _modulo_2; //tengo el AppModulo que corresponde a la consulta de cuentas
 		private string APP_MODULO = AppModulos.TEC.ToString();
-		private string APP_MODULO_2 = AppModulos.OPP.ToString();
+		private string APP_MODULO_2 = AppModulos.CMF.ToString();
 		private readonly IDocManagerServicio _docMSv;
 
 		//************************
@@ -209,7 +209,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				}
 				else
 				{
-					string titulo = "CONSULTA DE ORDENES DE PAGO";
+					string titulo = "CONSULTA DE MOVIMIENTO FINANCIERO";
 					#region Gestor Impresion - Inicializacion de variables
 					//Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
 					DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_2);
