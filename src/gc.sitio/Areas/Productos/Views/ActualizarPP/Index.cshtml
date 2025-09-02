@@ -1,6 +1,9 @@
 ﻿@{
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+@section styles{
+    <link rel="stylesheet" href="~/css/simplePagination.css" />
+}
 
 <div class="container-fluid">
     <div class="row">
@@ -30,17 +33,67 @@
 
                     <!-- Tabs Content con clase Bootstrap correcta -->
                     <div class="tab-content tab-content-compact" id="actualizarTabsContent">
-                        <!-- Tab Proveedores -->
+                        <!-- Tab Proveedores con layout de columnas -->
                         <div class="tab-pane fade show active" id="proveedores-panel" role="tabpanel"
                              aria-labelledby="proveedores-tab">
-                            <div id="proveedoresContainer" class="mt-3">
-                                <!-- El contenido se carga automáticamente -->
+                            <div class="row mt-3 g-3">
+                                <!-- Grid de proveedores - 10/12 columnas -->
+                                <div class="col-lg-10 col-md-9 col-12">
+                                    <div id="proveedoresContainer">
+                                        <!-- El contenido se carga automáticamente -->
+                                    </div>
+                                </div>
+
+                                <!-- Panel de botones - 2/12 columnas -->
+                                <div class="col-lg-2 col-md-3 col-12">
+                                    <div class="d-flex flex-column gap-3 sticky-top" style="top: 1rem;">
+                                        <!-- Botón Confirmar -->
+                                        <button type="button"
+                                                class="btn btn-success btn-lg w-100"
+                                                id="btnConfirmarActualizacion"
+                                                onclick="confirmarActualizacion()"
+                                                disabled>
+                                            <i class="bx bx-check-circle me-2"></i>
+                                            <div class="d-flex flex-column">
+                                                <span class="fw-bold">CONFIRMAR</span>
+                                                <small class="opacity-75">Aplicar cambios</small>
+                                            </div>
+                                        </button>
+
+                                        <!-- Separador visual -->
+                                        <hr class="my-2 opacity-50">
+
+                                        <!-- Botón Cancelar -->
+                                        <button type="button"
+                                                class="btn btn-danger btn-lg w-100"
+                                                id="btnCancelarActualizacion"
+                                                onclick="cancelarActualizacion()">
+                                            <i class="bx bx-x-circle me-2"></i>
+                                            <div class="d-flex flex-column">
+                                                <span class="fw-bold">CANCELAR</span>
+                                                <small class="opacity-75">Descartar cambios</small>
+                                            </div>
+                                        </button>
+
+                                        <!-- Panel de información -->
+                                        <div class="card card-body bg-light p-3 mt-3">
+                                            <div class="text-center">
+                                                <i class="bx bx-info-circle text-info fs-4"></i>
+                                                <div class="mt-2">
+                                                    <small class="text-muted d-block">Proveedores seleccionados</small>
+                                                    <span class="badge bg-primary fs-6" id="contadorSeleccionados">0</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Tab Productos -->
+                        <!-- Tab Productos (sin cambios) -->
                         <div class="tab-pane fade" id="productos-panel" role="tabpanel"
                              aria-labelledby="productos-tab">
+                            @Html.Hidden("pagEstado", false)
                             <div class="mt-3">
                                 <div id="productosContainer">
                                     <div class="alert alert-info" role="alert">
@@ -49,6 +102,7 @@
                                     </div>
                                 </div>
                             </div>
+                           
                         </div>
                     </div>
                 </div>
@@ -62,6 +116,11 @@
         let homeActuUrl = '@Url.Action("Index", "ActualizarPP", new { area = "Productos" })';
         let CargarProveedoresUrl = '@Url.Action("CargarProveedores", "ActualizarPP", new { area = "Productos" })';
         let ObtenerProductosProveedorUrl = '@Url.Action("ObtenerProductosProveedor", "ActualizarPP", new { area = "Productos" })';
+        let ConfirmarProveedoresUrl = '@Url.Action("ConfirmarProveedores", "ActualizarPP", new { area = "Productos" })';
+
+        let buscarActuProductoMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "ActualizarPP", new { area = "Productos" })';
     </script>
+    <script src="~/js/plugins/jquery.simplePagination.js"></script>
     <script src="~/js/app/areas/precios/actualizar.js"></script>
+
 }

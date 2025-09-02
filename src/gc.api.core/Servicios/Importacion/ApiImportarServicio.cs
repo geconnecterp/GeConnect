@@ -111,10 +111,9 @@ namespace gc.api.core.Servicios.Importacion
             var sp = ConstantesGC.StoredProcedures.SP_PROD_ACTUALIZA_CONFIRMAR;
 
             var ps = new List<SqlParameter>() {
-                new SqlParameter("@cta_id",req.Objeto),
                 new SqlParameter("@usu_id",req.Usuario),
                 new SqlParameter("@adm_id",req.Administracion),
-                new SqlParameter("@json",req.Json)
+                new SqlParameter("@json_cta",req.Json)
             };
             List<RespuestaDto> resultado = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
             if (resultado.Count == 0)

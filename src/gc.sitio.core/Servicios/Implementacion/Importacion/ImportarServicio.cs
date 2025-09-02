@@ -11,12 +11,14 @@ using gc.infraestructura.Dtos.Importacion;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Productos.Actualiza;
 using gc.sitio.core.Servicios.Contratos.Importacion;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OfficeOpenXml.FormulaParsing.LexicalAnalysis;
 using Org.BouncyCastle.Ocsp;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +26,7 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using static OfficeOpenXml.ExcelErrorValue;
 
 namespace gc.sitio.core.Servicios.Implementacion.Importacion
 {
@@ -40,9 +43,12 @@ namespace gc.sitio.core.Servicios.Implementacion.Importacion
         private const string ACTUALIZA_CONFIRMAR = "/confirmar-actualizacion-precio";
 
         private readonly AppSettings _appSettings;
-        public ImportarServicio(IOptions<AppSettings> options, ILogger<ImportarServicio> logger) : base(options, logger)
+        private readonly IHttpContextAccessor _contexto;
+        public ImportarServicio(IOptions<AppSettings> options, ILogger<ImportarServicio> logger,
+            IHttpContextAccessor contexto) : base(options, logger)
         {
             _appSettings = options.Value;
+            _contexto = contexto;
         }
 
         #region Métodos de Importación
@@ -282,7 +288,8 @@ namespace gc.sitio.core.Servicios.Implementacion.Importacion
                     }
 
                     var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoDetalleDto>>>(stringData);
-
+                    var valor = JsonConvert.SerializeObject(apiResponse?.Meta);
+                    _contexto.HttpContext?.Session.SetString("MetadataGeneral", valor);
                     return new RespuestaGenerica<ProductoDetalleDto>
                     {
                         Ok = true,

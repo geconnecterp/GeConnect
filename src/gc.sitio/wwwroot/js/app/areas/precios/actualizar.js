@@ -1,4 +1,6 @@
-﻿$(function () {
+﻿let ctaActual = "";
+
+$(function () {
     // Inicializar eventos del documento
     initializeDocumentEvents();
 
@@ -7,6 +9,13 @@
         cargarProveedores();
     }, 500);
 
+    $("#pagEstado").on("change", function () {
+        var div = $("#divPaginacion");
+        presentaPaginacion(div);
+    });
+
+    //callback para que funcione la paginación
+    funcCallBack = cargarProductosProveedor;
     // Exponer funciones globales (mantener solo las necesarias)
     window.ActualizarPP = {
         obtenerProveedoresSeleccionados: obtenerProveedoresSeleccionados,
@@ -22,11 +31,11 @@ function initializeDocumentEvents() {
     // Event delegation para elementos dinámicos
     $(document).on('change', '#selectAllProveedores', function () {
         $('.proveedor-check').prop('checked', $(this).prop('checked'));
-        actualizarContadorSeleccionados();
+        actualizarContadores();
     });
 
     $(document).on('change', '.proveedor-check', function () {
-        actualizarContadorSeleccionados();
+        actualizarContadores();
     });
 
     $(document).on('click', '.proveedor-row', function (e) {
@@ -34,7 +43,9 @@ function initializeDocumentEvents() {
 
         const ctaId = $(this).data('cta-id');
         if (ctaId) {
-            cargarProductosProveedor(ctaId);
+            ctaActual = ctaId;
+            pagina = 1;
+            cargarProductosProveedor(pagina);
             // Cambiar a la pestaña de productos
             $('#productos-tab').tab('show');
         }
@@ -68,8 +79,8 @@ async function cargarProveedores() {
 
         $container.html(response);
 
-        // Inicializar contador después de cargar
-        actualizarContadorSeleccionados();
+        // Inicializar contadores después de cargar
+        actualizarContadores();
 
         console.log('Proveedores cargados exitosamente');
 
@@ -96,17 +107,25 @@ async function cargarProveedores() {
  * Carga los productos de un proveedor específico
  * @param {string} ctaId - ID del proveedor
  */
-async function cargarProductosProveedor(ctaId) {
+async function cargarProductosProveedor(pag) {
     const $container = $('#productosContainer');
 
     try {
+        if (typeof ctaActual === "undefined" || ctaActual === "") {
+            AbrirMensaje("Atención!!", "La cuenta no se ha identificado. Intente nuevamente por favor",
+                () => $("#msjModal").modal("hide"), false, ["Aceptar"], "warn!", null);
+
+            return;
+        }
+
+
         mostrarSpinnerCarga($container, 'Obteniendo productos del proveedor...');
 
         const response = await $.ajax({
             url: '/Productos/ActualizarPP/ObtenerProductosProveedor',
             type: 'POST',
             contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-            data: { ctaId: ctaId },
+            data: { ctaId: ctaActual,pag },
             timeout: 15000,
             headers: {
                 'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() || ''
@@ -115,7 +134,23 @@ async function cargarProductosProveedor(ctaId) {
 
         // Ahora response es HTML, no JSON
         $container.html(response);
+        //presentamos la metadata de la paginacion
+        PostGen({}, buscarActuProductoMetadataURL, function (obj) {
+            if (obj.error === true) {
+                AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                    $("#msjModal").modal("hide");
+                    return true;
+                }, false, ["Aceptar"], "error!", null);
+            }
+            else {
+                totalRegs = obj.metadata.totalCount;
+                pags = obj.metadata.totalPages;
+                pagRegs = obj.metadata.pageSize;
+                pagina = pag;
+                $("#pagEstado").val(true).trigger("change");
+            }
 
+        });
     } catch (error) {
         console.error('Error al cargar productos:', error);
         mostrarErrorConRecarga($container, 'Error al cargar los productos.', function () {
@@ -135,14 +170,15 @@ function obtenerProveedoresSeleccionados() {
 }
 
 /**
- * Actualiza el contador de elementos seleccionados
+ * Función unificada para actualizar todos los contadores
  */
-function actualizarContadorSeleccionados() {
+function actualizarContadores() {
     const seleccionados = $('.proveedor-check:checked').length;
     const total = $('.proveedor-check').length;
 
-    // Actualizar contador en la interfaz
+    // Actualizar contadores en la interfaz
     $('#selectedCount').text(seleccionados);
+    $('#contadorSeleccionados').text(seleccionados);
 
     // Actualizar estado del checkbox principal
     const $selectAll = $('#selectAllProveedores');
@@ -155,6 +191,9 @@ function actualizarContadorSeleccionados() {
             $selectAll.prop('indeterminate', true).prop('checked', false);
         }
     }
+
+    // Habilitar/deshabilitar botón confirmar
+    $('#btnConfirmarActualizacion').prop('disabled', seleccionados === 0);
 }
 
 // ===== FUNCIONES DE UTILIDAD OPTIMIZADAS =====
@@ -218,4 +257,249 @@ function mostrarAlertaInfo($container, message) {
             ${message}
         </div>
     `);
+}
+
+// Funciones para los botones
+async function confirmarActualizacion() {
+    const proveedoresSeleccionados = ActualizarPP.obtenerProveedoresSeleccionados();
+
+    if (proveedoresSeleccionados.length === 0) {
+        AbrirMensaje("Validación", 'Debe seleccionar al menos un proveedor para confirmar la actualización.',
+            () => $("#msjModal").modal("hide"),
+            false, ["Aceptar"], "warn!", null);
+        return;
+    }
+
+    // Limpiar estado del modal antes de mostrar confirmación
+    limpiarEstadoModal();
+
+    // Confirmar antes de proceder
+    AbrirMensaje("Confirmar Actualización",
+        `¿Confirmar actualización de <strong>${proveedoresSeleccionados.length}</strong> proveedores?<br>
+         <small class="text-muted">Esta acción aplicará los cambios de precios definitivamente.</small>`,
+        async (resp) => {
+            $("#msjModal").modal("hide");
+            if (resp === "SI") {                
+                await ejecutarConfirmacionActualizacion(proveedoresSeleccionados);
+            }
+        },
+        true, ["Confirmar", "Cancelar"], "warn!", null);
+}
+
+/**
+ * Ejecuta la confirmación de actualización llamando al controller
+ * @param {Array} ctasId - Array de IDs de proveedores seleccionados
+ */
+async function ejecutarConfirmacionActualizacion(ctasId) {
+    const $btn = $('#btnConfirmarActualizacion');
+
+    try {
+        // Estado de carga
+        $btn.prop('disabled', true)
+            .html('<i class="bx bx-loader-alt bx-spin me-2"></i><span>Procesando actualización...</span>');
+
+        console.log('Confirmando actualización para proveedores:', ctasId);
+
+        const response = await $.ajax({
+            url: ConfirmarProveedoresUrl,
+            type: 'POST',
+            traditional: true, // Para enviar arrays correctamente
+            data: { ctasId: ctasId },
+            timeout: 60000, // 1 minuto para operaciones de actualización
+            headers: {
+                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() || ''
+            }
+        });
+
+        console.log('Respuesta del servidor:', response);
+
+        // Procesar respuesta según el patrón del controller optimizado
+        procesarRespuestaConfirmacion(response, $btn, ctasId.length);
+
+    } catch (error) {
+        console.error('Error AJAX en confirmación:', error);
+
+        let errorMessage = 'Error de comunicación con el servidor';
+        if (error.status === 0) {
+            errorMessage = 'Error de conexión. Verifique su conexión a internet.';
+        } else if (error.status >= 500) {
+            errorMessage = 'Error interno del servidor. Intente nuevamente.';
+        } else if (error.status === 404) {
+            errorMessage = 'Servicio de confirmación no encontrado.';
+        } else if (error.timeout) {
+            errorMessage = 'Tiempo de espera agotado. La operación puede haber tardado demasiado.';
+        }
+
+        manejarErrorConfirmacion(errorMessage, $btn);
+    }
+}
+
+/**
+ * Procesa la respuesta del servidor según el patrón del controller
+ * @param {Object} response - Respuesta del servidor
+ * @param {jQuery} $btn - Botón de confirmación
+ * @param {number} cantidadProveedores - Cantidad de proveedores procesados
+ */
+function procesarRespuestaConfirmacion(response, $btn, cantidadProveedores) {
+    // Validar estructura de respuesta
+    if (!response || typeof response !== 'object') {
+        manejarErrorConfirmacion('Respuesta inválida del servidor', $btn);
+        return;
+    }
+
+    // Verificar errores críticos primero
+    if (response.error === true) {
+        manejarErrorConfirmacion(response.msg || 'Error crítico en el servidor', $btn);
+        return;
+    }
+
+    // Verificar advertencias y autenticación
+    if (response.warn === true) {
+        // Si auth = true, es un problema de autenticación
+        if (response.auth === true) {
+            manejarErrorAutenticacion($btn);
+            return;
+        }
+
+        // Si auth = false o undefined, es una advertencia de negocio
+        manejarAdvertenciaConfirmacion(response.msg || 'Advertencia del sistema', $btn);
+        return;
+    }
+
+    // Si no hay errores ni advertencias, es éxito
+    manejarExitoConfirmacion(response.msg || 'Actualización completada exitosamente', $btn, cantidadProveedores);
+}
+
+/**
+ * Maneja errores de confirmación
+ */
+function manejarErrorConfirmacion(mensaje, $btn) {
+    // Limpiar estado del modal antes de mostrar error
+    limpiarEstadoModal();
+
+    AbrirMensaje("Error", mensaje,
+        () => $("#msjModal").modal("hide"),
+        false, ["Aceptar"], "error!", null);
+
+    // Restaurar botón
+    restaurarBotonConfirmar($btn);
+}
+
+/**
+ * Maneja advertencias de confirmación (no relacionadas con auth)
+ */
+function manejarAdvertenciaConfirmacion(mensaje, $btn) {
+    // Limpiar estado del modal antes de mostrar error
+    limpiarEstadoModal();
+
+    AbrirMensaje("Advertencia", mensaje,
+        () => $("#msjModal").modal("hide"),
+        false, ["Aceptar"], "warn!", null);
+
+    // Restaurar botón
+    restaurarBotonConfirmar($btn);
+}
+
+/**
+ * Maneja error de autenticación con redirección a home
+ */
+function manejarErrorAutenticacion($btn) {
+    // Limpiar estado del modal antes de mostrar error
+    limpiarEstadoModal();
+
+    AbrirMensaje("Sesión Expirada", "Su sesión ha terminado. Debe volver a autenticarse.",
+        () => {
+            $("#msjModal").modal("hide");
+            // Redirigir a home usando variable global
+            window.location.href = home;
+        },
+        false, ["Aceptar"], "warn!", null);
+
+    // Restaurar botón (aunque no se verá por la redirección)
+    restaurarBotonConfirmar($btn);
+}
+
+/**
+ * Maneja éxito de confirmación
+ */
+function manejarExitoConfirmacion(mensaje, $btn, cantidadProveedores) {
+    // Cambiar estado visual del botón a completado
+    $btn.html('<i class="bx bxs-check-circle text-success me-2"></i><span class="text-success">COMPLETADO</span>')
+        .removeClass('btn-success')
+        .addClass('btn-outline-success')
+        .prop('disabled', true);
+
+    // Limpiar selecciones
+    $('.proveedor-check').prop('checked', false);
+    $('#selectAllProveedores').prop('checked', false);
+    actualizarContadores();
+
+    // Limpiar estado del modal antes de mostrar éxito
+    limpiarEstadoModal();
+
+    // Mostrar mensaje de éxito
+    AbrirMensaje("Actualización Completada",
+        `${mensaje}<br><small class="text-muted">Se procesaron ${cantidadProveedores} proveedores exitosamente.</small>`,
+        () => {
+            $("#msjModal").modal("hide");
+            // Recargar grid para reflejar cambios
+            ActualizarPP.recargarProveedores();
+        },
+        false, ["Aceptar"], "succ!", null);
+
+    console.log('Actualización completada exitosamente');
+}
+
+/**
+ * Función utilitaria para restaurar el estado original del botón
+ * @param {jQuery} $btn - Botón a restaurar
+ */
+function restaurarBotonConfirmar($btn) {
+    $btn.prop('disabled', false)
+        .html('<i class="bx bx-check-circle me-2"></i><div class="d-flex flex-column"><span class="fw-bold">CONFIRMAR</span><small class="opacity-75">Aplicar cambios</small></div>');
+}
+// Función cancelar permanece igual
+function cancelarActualizacion() {
+    // Limpiar estado del modal antes de mostrar cancelación
+    limpiarEstadoModal();
+
+    AbrirMensaje("Cancelar Selección", '¿Cancelar y descartar todos los cambios?',
+        () => {
+            $("#msjModal").modal("hide");
+            // Limpiar selecciones
+            $('.proveedor-check').prop('checked', false);
+            $('#selectAllProveedores').prop('checked', false);
+            actualizarContadores();
+
+            console.log('Actualizaciones canceladas');
+        },
+        false,
+        ["Continuar", "Cancelar"],
+        "warn!",
+        null
+    );
+}
+
+/**
+* Limpia el estado visual del modal antes de mostrar un nuevo mensaje
+*/
+function limpiarEstadoModal() {
+    // Limpiar clases de estado del modal
+    const $modal = $('#msjModal');
+    if ($modal.length) {
+        // Remover clases de estado de Bootstrap
+        $modal.removeClass('modal-error modal-warning modal-success modal-info modal-danger');
+
+        // Limpiar header del modal
+        const $modalHeader = $modal.find('.modal-header');
+        if ($modalHeader.length) {
+            $modalHeader.removeClass('bg-danger bg-warning bg-success bg-info text-white text-dark');
+        }
+
+        // Limpiar contenido del modal
+        const $modalBody = $modal.find('.modal-body');
+        if ($modalBody.length) {
+            $modalBody.removeClass('text-danger text-warning text-success text-info');
+        }
+    }
 }
