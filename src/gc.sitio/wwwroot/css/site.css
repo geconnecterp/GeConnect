@@ -832,7 +832,13 @@ activable {
 
     /* Estilos alternos para filas */
     .table-golden .alt {
-        background-color: rgba(218, 165, 32, 0.03);
+        /**background-color: rgba(218, 165, 32, 0.03);*/
+        background-color: #e3f2fd !important;
+    }
+
+/* ✅ MEJORADO: Asegurar que las filas alternas se mantengan visibles con hover */
+    .table-golden tbody tr.alt:hover {
+        background-color: #d1ecf1 !important; /* Celeste claro pero más visible al hover */
     }
 
     /* Estilos para ordenación en columnas */
@@ -1080,7 +1086,7 @@ table > thead > tr > th {
 
 /*---CONFIGURACION SOBRE TABLAS----*/
 tr.alt {
-    background-color: #C0FFC0; /*!important**/
+    background-color: #e3f2fd;/*#C0FFC0; /*!important**/
 }
 
 tr.sel {
