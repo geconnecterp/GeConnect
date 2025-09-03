@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Azure;
 using DocumentFormat.OpenXml.Spreadsheet;
 using gc.api.core.Contratos.Servicios;
 using gc.infraestructura.Core.EntidadesComunes;
@@ -137,6 +138,51 @@ namespace gc.api.Controllers.Financieros
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _financieroServicio.MovimientoFinancieroAnular(r);
 			response = new ApiResponse<List<RespuestaDto>>(res);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FinancieroTraRepoDDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFinancieroTraRepoDDto(string tra_compte)
+		{
+			ApiResponse<List<FinancieroTraRepoDDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetFinancieroTraRepoDDto(tra_compte);
+
+			response = new ApiResponse<List<FinancieroTraRepoDDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FinancieroTraRepoCtagDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFinancieroTraRepoCtag(string tra_compte)
+		{
+			ApiResponse<List<FinancieroTraRepoCtagDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetFinancieroTraRepoCtag(tra_compte);
+
+			response = new ApiResponse<List<FinancieroTraRepoCtagDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<MovimientoFinancieroListaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult BuscarMovimientoFinancieroReporte(ConsultaMovFinancierosRequest request)
+		{
+			ApiResponse<List<MovimientoFinancieroListaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.BuscarMovimientoFinancieroReporte(request);
+
+			response = new ApiResponse<List<MovimientoFinancieroListaDto>>(res);
+
 			return Ok(response);
 		}
 	}

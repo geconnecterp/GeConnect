@@ -21,5 +21,8 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<PerfilUserDto> GetFinancieroTraUsu(DateTime fechaDesde, DateTime fechaHasta, string token);
 		Task<(List<MovimientoFinancieroListaDto>, MetadataGrid)> BuscarMovimientoFinanciero(ConsultaMovFinancierosRequest filters, string token);
 		RespuestaGenerica<RespuestaDto> MovimientoFinancieroAnular(MovimientoFinancieroAnularRequest request, string token);
+		List<FinancieroTraRepoCtagDto> GetFinancieroTraRepoCtag(string tra_compte, string token);
+		List<FinancieroTraRepoDDto> GetFinancieroTraRepoDDto(string tra_compte, string token);
+		List<MovimientoFinancieroListaDto> BuscarMovimientoFinancieroReporte(ConsultaMovFinancierosRequest filtros, string token);
 	}
 }

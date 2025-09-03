@@ -1,9 +1,9 @@
-﻿@model GridCoreSmart<MovimientoFinancieroListaDto>
+﻿@model MovimientoFinancieroModel
 @using static gc.infraestructura.Helpers.GridHelper
 @{
 	var alt = true;
 	string clase = string.Empty;
-	string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+	string sortDirInv = Model.GrillaMovimientoFinanciero.SortDir.Equals("ASC") ? "DESC" : "ASC";
 	var total = 0;
 }
 <style>
@@ -26,8 +26,8 @@
 	<div class="card-body">
 		<div class="row">
 			<div class="col-10">
-				<div class="table-responsive text-nowrap  table-wrapper">
-					<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridMovFin">
+				<div class="table-responsive table-wrapper">
+					<table class="table table-sm" id="tbGridMovFin">
 						<thead class="table-dark">
 							<tr class="header">
 								<th style="width:10%;" class="col-header-small align-center tiny-row">N° Tra.</th>
@@ -40,20 +40,20 @@
 							</tr>
 						</thead>
 						<tbody>
-							@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
+							@if (Model != null && Model.GrillaMovimientoFinanciero != null && Model.GrillaMovimientoFinanciero.ListaDatos != null && Model.GrillaMovimientoFinanciero.ListaDatos.Count > 0)
 							{
-								@foreach (var item in Model.ListaDatos)
+								@foreach (var item in Model.GrillaMovimientoFinanciero.ListaDatos)
 								{
 									if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
 									<tr class="@clase" onclick="selectReg(this, 'tbGridMovFin')">
-										<td class="@Model.ObtenerClase(item.tra_compte) align-center cell-fit-content">@Model.FormatearDato(item.tra_compte, FormatDato.Ninguno)</td>
-										<td class="@Model.ObtenerClase(item.tra_fecha) align-center cell-fit-content">@Model.FormatearDato(item.tra_fecha, FormatDato.Fecha)</td>
-										<td class="@Model.ObtenerClase(item.ttra_desc) align-left cell-fit-content">@Model.FormatearDato(item.ttra_desc, FormatDato.Ninguno)</td>
-										<td class="@Model.ObtenerClase(item.tra_concepto) align-left cell-fit-content">@Model.FormatearDato(item.tra_concepto, FormatDato.Ninguno)</td>
-										<td class="@Model.ObtenerClase(item.strAnulada) align-center cell-fit-content">@Model.FormatearDato(item.strAnulada, FormatDato.Ninguno)</td>
-										<td class="@Model.ObtenerClase(item.usu_apellidoynombre) align-left cell-fit-content">@Model.FormatearDato(item.usu_apellidoynombre, FormatDato.Ninguno)</td>
-										<td class="@Model.ObtenerClase(item.tra_importe) align-right cell-fit-content">@Model.FormatearDato(item.tra_importe, FormatDato.Monto)</td>
+										<td class="@Model.GrillaMovimientoFinanciero.ObtenerClase(item.tra_compte) align-center cell-fit-content">@Model.GrillaMovimientoFinanciero.FormatearDato(item.tra_compte, FormatDato.Ninguno)</td>
+										<td class="@Model.GrillaMovimientoFinanciero.ObtenerClase(item.tra_fecha) align-center cell-fit-content">@Model.GrillaMovimientoFinanciero.FormatearDato(item.tra_fecha, FormatDato.Fecha)</td>
+										<td class="@Model.GrillaMovimientoFinanciero.ObtenerClase(item.ttra_desc) align-left cell-fit-content">@Model.GrillaMovimientoFinanciero.FormatearDato(item.ttra_desc, FormatDato.Ninguno)</td>
+										<td class="@Model.GrillaMovimientoFinanciero.ObtenerClase(item.tra_concepto) align-left cell-fit-content">@Model.GrillaMovimientoFinanciero.FormatearDato(item.tra_concepto, FormatDato.Ninguno)</td>
+										<td class="@Model.GrillaMovimientoFinanciero.ObtenerClase(item.strAnulada) align-center cell-fit-content">@Model.GrillaMovimientoFinanciero.FormatearDato(item.strAnulada, FormatDato.Ninguno)</td>
+										<td class="@Model.GrillaMovimientoFinanciero.ObtenerClase(item.usu_apellidoynombre) align-left cell-fit-content">@Model.GrillaMovimientoFinanciero.FormatearDato(item.usu_apellidoynombre, FormatDato.Ninguno)</td>
+										<td class="@Model.GrillaMovimientoFinanciero.ObtenerClase(item.tra_importe) align-right cell-fit-content">@Model.GrillaMovimientoFinanciero.FormatearDato(item.tra_importe, FormatDato.Monto)</td>
 									</tr>
 								}
 							}
@@ -72,7 +72,7 @@
 					<div class="col-4">
 						<div class="input-group input-group-sm mt-1">
 							<span class="input-group-text fixed-lbl-for-abm-100">Totales: </span>
-							<input type="text" id="txtTotales" class="form-control" style="text-align: right;" value="0" disabled />
+							<input type="text" asp-for="Totales" class="form-control" style="text-align: right;" disabled />
 						</div>
 					</div>
 				</div>

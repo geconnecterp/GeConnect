@@ -293,7 +293,7 @@ namespace gc.api.core.Servicios
 
 		public List<MovimientoFinancieroListaDto> BuscarMovimientoFinancieroReporte(ConsultaMovFinancierosRequest filtros)
 		{
-			string sp = ConstantesGC.StoredProcedures.SP_F_TR_LISTA;
+			string sp = ConstantesGC.StoredProcedures.SP_F_TR_LISTA_REPORTE;
 
 			var ps = new List<SqlParameter>
 			{

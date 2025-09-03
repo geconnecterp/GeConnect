@@ -13,10 +13,7 @@
 	$(document).on("change", "#listaCFD", ControlalistaCFDSelected);
 	$(document).on("change", "#listaTT", ControlalistaTTSelected);
 	$(document).on("change", "#listaUsu", ControlalistaUsuSelected);
-	//$(document).on("click", "#btnBuscar", btnBuscarClick);
 	$(document).on("change", "#btnCancelar", btnCancelarClick);
-	//btnCancelar
-
 
 	$("#CFOList").on("dblclick", 'option', function () { $(this).remove(); })
 	$("#CFDList").on("dblclick", 'option', function () { $(this).remove(); })
@@ -84,7 +81,7 @@ function BuscarMovimientosFinancieros(pag) {
 	PostGenHtml(data, buscarMovimientosFinancieros2URL, function (obj) {
 		CerrarWaiting();
 		$("#divDatosMovimientoFinanciero").html(obj);
-
+		$("#divDetalleMovimiento").empty();
 		$("#divFiltros").removeClass("show").addClass("collapse");
 		$("#divDetalle").collapse("show");
 		$("#btnCancelar").on("click", function () {
@@ -97,9 +94,9 @@ function BuscarMovimientosFinancieros(pag) {
 			btnImprimirLista();
 		});
 		$("#btnAnularMovi").on("click", function () {
-			ControlaMensajeWarning("Método no implementado.");
+			btnAnularMovimiento();
 		});
-
+		$("#Totales").val(formatter.format($("#Totales").val()));
 		PostGen({}, buscarMetadataURL, function (obj) {
 			if (obj.error === true) {
 				AbrirMensaje("ATENCIÓN", obj.msg, function () {
@@ -117,18 +114,8 @@ function BuscarMovimientosFinancieros(pag) {
 			}
 
 		});
-		PostGen({}, actualizarTotalUrl, function (obj) {
-			if (obj.error === true) {
-				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
-			}
-			else {
-				$("#txtTotales").val(formatter.format(obj.totales));
-			}
-		});
-
+		ttraSelected = "";
+		controlarTabs();
 		CerrarWaiting();
 		return true
 	}, function (obj) {
@@ -172,7 +159,6 @@ function btnAnularMovimiento() {
 }
 
 function ReseteoDeReportes() {
-	console.log("Reseto de reportes");
 	ReporteResetArre();
 }
 
@@ -192,7 +178,6 @@ function btnImprimirLista() {
 			CerrarWaiting();
 			if (obj.error === true) {
 				CerrarWaiting();
-				//ControlaMensajeWarning(obj.msg);
 				AbrirMensaje("ATENCIÓN", obj.msg, function () {
 					$("#msjModal").modal("hide");
 					return true;
@@ -207,7 +192,6 @@ function btnImprimirLista() {
 }
 
 function ImprimirListadoDeMovimientos() {
-	//TODO Marce: Esperar a que Carlos pase el modelo de reporte de listado de movimientos financieros
 	ReseteoDeReportes();
 	setTimeout(() => {
 		var desde = $("#Date1").val();
@@ -255,7 +239,6 @@ function btnImprimirMovSele() {
 			CerrarWaiting();
 			if (obj.error === true) {
 				CerrarWaiting();
-				//ControlaMensajeWarning(obj.msg);
 				AbrirMensaje("ATENCIÓN", obj.msg, function () {
 					$("#msjModal").modal("hide");
 					return true;
@@ -289,7 +272,7 @@ const formatter = new Intl.NumberFormat('de-DE', {
 });
 
 function btnBuscarClick(pag) {
-	
+
 }
 
 function ImprimirTRA_Generada(traCompte) {
@@ -304,11 +287,63 @@ function ImprimirTRA_Generada(traCompte) {
 function selectReg(x, gridId) {
 	$("#" + gridId + " tbody tr").each(function (index) {
 		$(this).removeClass("selected-row");
-		//$(this).removeClass("selectedEdit-row");
 	});
 	$(x).addClass("selected-row");
-	ttraSelected = x.childNodes[1].innerText;
+	if (gridId == "tbGridMovFin") {
+		ttraSelected = x.childNodes[1].innerText;
+		CargarDetalleDeMovimientoFinanciero(ttraSelected);
+		if (x.childNodes[9].innerText == "No") {
+			$("#btnAnularMovi").prop("disabled", false);
+		}
+		else {
+			$("#btnAnularMovi").prop("disabled", true);
+		}
+	}
 }
+
+function CargarDetalleDeMovimientoFinanciero(ttraSelected) {
+	AbrirWaiting("Cargando detalle del movimiento...");
+	var data = { tra_compte: ttraSelected };
+	PostGenHtml(data, cargarDetalleDeMovimientoFinancieroURL, function (obj) {
+		CerrarWaiting();
+		$("#divDetalleMovimiento").html(obj);
+		$("#TotalOrigen").val(formatter.format($("#TotalOrigen").val()));
+		$("#TotalDestino").val(formatter.format($("#TotalDestino").val()));
+		if ($("#TotalCtag").length) {
+			$("#TotalCtag").val(formatter.format($("#TotalCtag").val()));
+		}
+		controlarTabs();
+		return true
+	}, function (obj) {
+		CerrarWaiting();
+		ControlaMensajeError(obj.message);
+	});
+}
+
+function controlarTabs() {
+	var habilitarTabs = false;
+	if ($("#MostrarSeccionGrillaOrigen").length) {
+		if ($("#MostrarSeccionGrillaOrigen").val() == "True") {
+			habilitarTabs = true;
+		}
+	}
+	if (!habilitarTabs && $("#MostrarSeccionGrillaDestino").length) {
+		if ($("#MostrarSeccionGrillaDestino").val() == "True") {
+			habilitarTabs = true;
+		}
+	}
+	if (!habilitarTabs && $("#MostrarSeccionGrillaCtag").length) {
+		if ($("#MostrarSeccionGrillaCtag").val() == "True") {
+			habilitarTabs = true;
+		}
+	}
+	if (!habilitarTabs) {
+		$("#btnTabDetalle").removeAttr("data-bs-toggle").addClass("disabled-tab");
+	} else {
+		$("#btnTabDetalle").attr("data-bs-toggle", "tab").removeClass("disabled-tab");
+	}
+}
+
 
 function ValidarFechasClick() {
 	const desde = $("#Date1").val();
