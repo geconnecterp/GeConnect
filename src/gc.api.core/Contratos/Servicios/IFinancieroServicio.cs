@@ -24,5 +24,6 @@ namespace gc.api.core.Contratos.Servicios
         List<MovimientoFinancieroListaDto> BuscarMovimientoFinanciero(ConsultaMovFinancierosRequest filtros);
         List<RespuestaDto> MovimientoFinancieroAnular(MovimientoFinancieroAnularRequest request);
         List<MovimientoFinancieroListaDto> BuscarMovimientoFinancieroReporte(ConsultaMovFinancierosRequest filtros);
+		List<FinancieroBcoExtractoDto> GetFinancieroBcoExtracto(FinancieroBcoExtractoRequest request);
 	}
 }

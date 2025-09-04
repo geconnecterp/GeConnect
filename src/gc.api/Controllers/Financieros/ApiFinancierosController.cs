@@ -185,5 +185,20 @@ namespace gc.api.Controllers.Financieros
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FinancieroBcoExtractoDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFinancieroBcoExtracto(FinancieroBcoExtractoRequest request)
+		{
+			ApiResponse<List<FinancieroBcoExtractoDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetFinancieroBcoExtracto(request);
+
+			response = new ApiResponse<List<FinancieroBcoExtractoDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }

@@ -24,5 +24,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<FinancieroTraRepoCtagDto> GetFinancieroTraRepoCtag(string tra_compte, string token);
 		List<FinancieroTraRepoDDto> GetFinancieroTraRepoDDto(string tra_compte, string token);
 		List<MovimientoFinancieroListaDto> BuscarMovimientoFinancieroReporte(ConsultaMovFinancierosRequest filtros, string token);
+		List<FinancieroBcoExtractoDto> GetFinancieroBcoExtracto(FinancieroBcoExtractoRequest request, string token);
 	}
 }

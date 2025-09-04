@@ -1,0 +1,59 @@
+﻿@model ExtractoBancarioModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.GrillaExtracto.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+<div class="card">
+	<div class="card-body">
+        <div class="table-responsive text-nowrap  table-wrapper-500">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridExtractoBancario">
+                <thead class="table-dark">
+                    <tr class="header">
+                        <th class="text-sm-center" scope="col">FECHA MOV.</th>
+                        <th class="text-sm-center" scope="col">COD. MOV.</th>
+                        <th class="text-sm-center" scope="col" title="Origen del Movimiento para el Sistema">ORIGEN</th>
+                        <th class="text-sm-center" scope="col">CONCEPTO</th>
+                        <th class="text-sm-center" scope="col">DEBE</th>
+                        <th class="text-sm-center" scope="col">HABER</th>
+                        <th class="text-sm-center" scope="col">SALDO</th>
+                        <th class="text-sm-center" scope="col">Conciliado</th>
+                        <th class="text-sm-center" scope="col">Cierre</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.GrillaExtracto != null && Model.GrillaExtracto.ListaDatos != null && Model.GrillaExtracto.ListaDatos.Count > 0)
+                    {
+                        @foreach (var item in Model.GrillaExtracto.ListaDatos)
+                        {
+                            if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                            <tr class="@clase" onclick="selectReg(this,'tbGridExtractoBancario')">
+                                <td class="@Model.GrillaExtracto.ObtenerClase(item.ext_fecha) align-center">@Model.GrillaExtracto.FormatearDato(item.ext_fecha, FormatDato.Fecha)</td>
+                                <td class="@Model.GrillaExtracto.ObtenerClase(item.extr_id) align-center">@Model.GrillaExtracto.FormatearDato(item.extr_id, FormatDato.Ninguno)</td>
+                                <td class="@Model.GrillaExtracto.ObtenerClase(item.extr_desc) align-left">@Model.GrillaExtracto.FormatearDato(item.extr_desc, FormatDato.Ninguno)</td>
+                                <td class="@Model.GrillaExtracto.ObtenerClase(item.ext_concepto) align-left">@Model.GrillaExtracto.FormatearDato(item.ext_concepto, FormatDato.Ninguno)</td>
+                                <td class="@Model.GrillaExtracto.ObtenerClase(item.ext_debe) align-right">@Model.GrillaExtracto.FormatearDato(item.ext_debe, FormatDato.Monto)</td>
+                                <td class="@Model.GrillaExtracto.ObtenerClase(item.ext_haber) align-right">@Model.GrillaExtracto.FormatearDato(item.ext_haber, FormatDato.Monto)</td>
+                                <td class="@Model.GrillaExtracto.ObtenerClase(item.ext_saldo) align-right">@Model.GrillaExtracto.FormatearDato(item.ext_saldo, FormatDato.Monto)</td>
+                                <td>
+                                    @if (item.strCierre)
+                                    {
+                                        <i class="fas fa-check text-success"></i>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.strCierre)
+                                    {
+                                        <i class="fas fa-check text-success"></i>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+	</div>
+</div>

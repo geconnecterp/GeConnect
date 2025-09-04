@@ -374,5 +374,18 @@ namespace gc.api.core.Servicios
 
 			return movFinan;
 		}
+
+		public List<FinancieroBcoExtractoDto> GetFinancieroBcoExtracto(FinancieroBcoExtractoRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_BCO_EXTRACTO;
+			var ps = new List<SqlParameter>()
+			{
+				new("@ctaf_id",request.ctaf_id),
+				new("@desde",request.FechaDesde),
+				new("@hasta",request.FechaHasta),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<FinancieroBcoExtractoDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }
