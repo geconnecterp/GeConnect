@@ -11,15 +11,15 @@
             <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridExtractoBancario">
                 <thead class="table-dark">
                     <tr class="header">
-                        <th class="text-sm-center" scope="col">FECHA MOV.</th>
-                        <th class="text-sm-center" scope="col">COD. MOV.</th>
-                        <th class="text-sm-center" scope="col" title="Origen del Movimiento para el Sistema">ORIGEN</th>
-                        <th class="text-sm-center" scope="col">CONCEPTO</th>
-                        <th class="text-sm-center" scope="col">DEBE</th>
-                        <th class="text-sm-center" scope="col">HABER</th>
-                        <th class="text-sm-center" scope="col">SALDO</th>
-                        <th class="text-sm-center" scope="col">Conciliado</th>
-                        <th class="text-sm-center" scope="col">Cierre</th>
+                        <th style="width: 5%;" class="text-sm-center" scope="col">FECHA MOV.</th>
+                        <th style="width: 5%;" class="text-sm-center" scope="col">COD. MOV.</th>
+                        <th style="width: 25%;" class="text-sm-center" scope="col">ORIGEN DEL MOVIMIENTO PARA EL SISTEMA</th>
+                        <th style="width: 25%;" class="text-sm-center" scope="col">CONCEPTO</th>
+                        <th style="width: 10%;" class="text-sm-center" scope="col">DEBE</th>
+                        <th style="width: 10%;" class="text-sm-center" scope="col">HABER</th>
+                        <th style="width: 10%;" class="text-sm-center" scope="col">SALDO</th>
+                        <th style="width: 5%;" class="text-sm-center" scope="col">Conciliado</th>
+                        <th style="width: 5%;" class="text-sm-center" scope="col">Cierre</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -37,16 +37,16 @@
                                 <td class="@Model.GrillaExtracto.ObtenerClase(item.ext_debe) align-right">@Model.GrillaExtracto.FormatearDato(item.ext_debe, FormatDato.Monto)</td>
                                 <td class="@Model.GrillaExtracto.ObtenerClase(item.ext_haber) align-right">@Model.GrillaExtracto.FormatearDato(item.ext_haber, FormatDato.Monto)</td>
                                 <td class="@Model.GrillaExtracto.ObtenerClase(item.ext_saldo) align-right">@Model.GrillaExtracto.FormatearDato(item.ext_saldo, FormatDato.Monto)</td>
-                                <td>
-                                    @if (item.strCierre)
+                                <td class="align-center">
+                                    @if (item.strConciliado)
                                     {
-                                        <i class="fas fa-check text-success"></i>
+                                        <i class='bx bx-check text-danger'></i>
                                     }
                                 </td>
-                                <td>
+                                <td class="align-center">
                                     @if (item.strCierre)
                                     {
-                                        <i class="fas fa-check text-success"></i>
+                                        <i class='bx bx-check text-primary'></i>
                                     }
                                 </td>
                             </tr>

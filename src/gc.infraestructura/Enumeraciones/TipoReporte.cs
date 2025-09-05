@@ -38,5 +38,10 @@ namespace gc.infraestructura.Enumeraciones
 		R024_ConsultaDeOrdenesDePago = 24,
 		R025_TransferenciaEntreCuentas = 25,
 		R026_ConsultaDeMovimientoFinanciero = 26,
+		R027_VencimientoChequesEmitidos = 27,
+		R028_LibroBancosDetalle = 28,
+		R029_LibroBancosResumen = 29,
+		R030_HistoricoLibro = 30,
+		R031_ExtractoBancario = 31
 	}
 }

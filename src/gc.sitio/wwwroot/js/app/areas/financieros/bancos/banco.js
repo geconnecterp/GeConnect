@@ -6,6 +6,8 @@
 
 	$(document).on("change", "#btnCancelar", btnCancelarClick);
 	$(document).on("change", "#listaCuentaBanco", ControlalistaCuentaBancoSelected);
+	$(document).on("click", "#btnBuscarExtractoBancario", ControlaBuscarExtractoBancarioClick);
+	//
 
 	$("#CuentaBancoList").on("dblclick", 'option', function () { $(this).remove(); })
 
@@ -62,6 +64,22 @@ const tabs = {
 	historico: 'btnTabHistoricoLibro',
 	extracto: 'btnTabExtractoBancario'
 };
+
+function ControlaBuscarExtractoBancarioClick() {
+	AbrirWaiting();
+	var ctaf_id = $("#listaCuentaBanco").val();
+	var FechaDesde = $("#fechaDesdeExtractoBancario").val();
+	var FechaHasta = $("#fechaHastaExtractoBancario").val();
+	var data = { ctaf_id, FechaDesde, FechaHasta };
+	PostGenHtml(data, buscarExtractoBancarioURL, function (obj) {
+		CerrarWaiting();
+		$("#divExtractoBancario").html(obj);
+		return true
+	}, function (obj) {
+		ControlaMensajeError(obj.message);
+		CerrarWaiting();
+	});
+}
 
 function SetearCamposExtractoBancario() {
 	var now = moment().format('yyyy-MM-DD');

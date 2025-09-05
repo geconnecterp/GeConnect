@@ -22,24 +22,24 @@ namespace gc.infraestructura.Dtos.Financieros
 		public DateTime ban_cierre_extracto { get; set; }
 		public char? ctl_cierre { get; set; }
 
-		//private bool _strConciliado;
+		private bool _strConciliado;
 
-		//public bool strConciliado
-		//{
-		//	get { return ext_conciliado != null && ext_conciliado == 'S'; }
-		//	set { _strConciliado = value; }
-		//}
-		public bool strConciliado => ext_conciliado == 'S';
+		public bool strConciliado
+		{
+			get { return ext_conciliado != null && ext_conciliado == 'S'; }
+			set { _strConciliado = value; }
+		}
+		//public bool strConciliado => ext_conciliado == 'S';
 
-		public bool strCierre => ctl_cierre == 'S';
+		//public bool strCierre => ctl_cierre == 'S';
 
-		//private bool _strCierre;
+		private bool _strCierre;
 
-		//public bool strCierre
-		//{
-		//	get { return ctl_cierre != null && ctl_cierre == 'S'; }
-		//	set { _strCierre = value; }
-		//}
+		public bool strCierre
+		{
+			get { return ctl_cierre != null && ctl_cierre == 'S'; }
+			set { _strCierre = value; }
+		}
 
 	}
 }

@@ -24,9 +24,9 @@
 		<partial name="_filtros" model="Model" />
 	</div>
 	<div class="collapse" id="divDetalle" style="">
-		<div class="row mt-2">
+		<div class="row mt-1">
 			<div class="col-md-5">
-				<div class="input-group input-group-sm mt-1" id="divCuentaBanco">
+				<div class="input-group input-group-sm" id="divCuentaBanco">
 					<span class="input-group-text fixed-lbl-for-abm-70">Cuenta: </span>
 					<input type="text" id="CtafId" class="form-control" style="max-width: 100px;text-align: right;" disabled />
 					<input type="text" id="CtafDesc" class="form-control" disabled />
@@ -119,6 +119,7 @@
 		var ctafDenominacionSelected = "";
 
 		var posicionarseEnTabVencimientoChequeEmitidoURL = "@Url.Action("PosicionarseEnTabVencimientoChequeEmitido", "Bancos", new { area = "Financieros" })";
+		var buscarExtractoBancarioURL = "@Url.Action("ObtenerExtractoBancario", "Bancos", new { area = "Financieros" })";
 
 		// Gestor de impresión
 		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
