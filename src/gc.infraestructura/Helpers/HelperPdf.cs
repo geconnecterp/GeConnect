@@ -744,6 +744,11 @@ namespace gc.infraestructura.Helpers
 			pdf.Add(tabla);
 		}
 
+		public static bool ObtenerBooleanoSeguro(object valor)
+		{
+			return valor is bool resultado && resultado;
+		}
+
 		public static void GenerarListadoDesdeLista<T>(
 	Document pdf,
 	List<T> lista,
@@ -755,7 +760,9 @@ namespace gc.infraestructura.Helpers
 	Dictionary<string, decimal>? totalesPorCampo = null,
 	bool formatearBooleanos = false,
 	BooleanDisplayFormat formatoBooleano = BooleanDisplayFormat.SiNo,
-	bool valorExitoEsTrue = true)
+	bool valorExitoEsTrue = true,
+	bool anioEnCuatroDigitos = true,
+	bool estableceColorCamposBooleanos = false)
 		{
 			if (lista == null || lista.Count == 0 || campos == null || campos.Count == 0)
 				return;
@@ -790,14 +797,17 @@ namespace gc.infraestructura.Helpers
 						switch (formatoBooleano)
 						{
 							case BooleanDisplayFormat.SiNo:
-								valorTexto = representaExito ? "SI" : "NO";
+								valorTexto = ObtenerBooleanoSeguro(valorObj) ? "SI" : "NO";
 								break;
 							case BooleanDisplayFormat.XOk:
 								valorTexto = representaExito ? "OK" : "X";
 								break;
 							case BooleanDisplayFormat.CheckX:
 								// Usamos símbolos Unicode para check (✓) y X (✗)
-								valorTexto = representaExito ? "✓" : "✗";
+								if (representaExito)
+									valorTexto = ObtenerBooleanoSeguro(valorObj) ? "✓" : "✗";
+								else
+									valorTexto = ObtenerBooleanoSeguro(valorObj) ? "✓" : "";
 								break;
 							case BooleanDisplayFormat.TrueFalse:
 								valorTexto = valorBooleano ? "True" : "False";
@@ -805,12 +815,18 @@ namespace gc.infraestructura.Helpers
 						}
 
 						// Asignar colores según el valor (verde para éxito, rojo para error)
-						colorTexto = representaExito ? new BaseColor(0, 128, 0) : BaseColor.Red; // Verde o Rojo
+						if (estableceColorCamposBooleanos)
+							colorTexto = representaExito ? new BaseColor(0, 128, 0) : BaseColor.Red; // Verde o Rojo
+						else
+							colorTexto = null;
 						alineacion = Element.ALIGN_CENTER;
 					}
 					else if (valorObj is DateTime dt)
 					{
-						valorTexto = incluirHoraEnFechas ? dt.ToString("dd/MM/yyyy HH:mm") : dt.ToString("dd/MM/yyyy");
+						if (anioEnCuatroDigitos)
+							valorTexto = incluirHoraEnFechas ? dt.ToString("dd/MM/yyyy HH:mm") : dt.ToString("dd/MM/yyyy");
+						else
+							valorTexto = incluirHoraEnFechas ? dt.ToString("dd/MM/yy HH:mm") : dt.ToString("dd/MM/yy");
 						alineacion = Element.ALIGN_CENTER;
 					}
 					else if (valorObj is decimal or double or float)
@@ -1848,7 +1864,7 @@ namespace gc.infraestructura.Helpers
 		{
 			//PdfPCell celdaTotal = new PdfPCell(new Phrase($"Total Egreso Cuentas Origen: {registros.Sum(y => y.fc_importe).ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
 			PdfPTable tablaTotal = GeneraTabla(1, [100f], 100, 0, 10);
-			PdfPCell celdaTotal = new PdfPCell(new Phrase($"Total de Ingreso en Cuentas Destino y Gastos Asociados: {regs.Where(x=>x.grupo.Equals(1)).Sum(y => y.fc_importe).ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			PdfPCell celdaTotal = new PdfPCell(new Phrase($"Total de Ingreso en Cuentas Destino y Gastos Asociados: {regs.Where(x => x.grupo.Equals(1)).Sum(y => y.fc_importe).ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
 			{
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_RIGHT,
@@ -1896,6 +1912,85 @@ namespace gc.infraestructura.Helpers
 
 			tablaTotal.AddCell(celdaTotal);
 			pdf.Add(tablaTotal);
+		}
+
+		public static void CargarTablaExtractoBancarioFinancieros(Document pdf, List<FinancieroBcoExtractoDto> regs, Font fuenteEtiqueta, Font fuenteValor)
+		{
+			List<string> _campos = ["Fecha", "Codigo", "Origen", "Concepto", "Debe", "Haber", "Saldo", "strConciliado", "strCierre",];
+			List<string> _titulosTabla = ["Fecha Movi", "Cod. Movi", "Origen", "Concepto", "Debe", "Haber", "Saldo", "Conciliado", "Cierre",];
+			float[] _anchosTitulosTabla = [5, 5, 25, 25, 10, 10, 10, 5, 5];
+			PdfPTable tablaTitulo = GeneraTabla(1, [100f], 100, 10, 0);
+
+			// FILA 1
+			HelperPdf.GeneraCabeceraLista(pdf, _titulosTabla, _anchosTitulosTabla, HelperPdf.FontNormalPredeterminado(true));
+
+			// FILA 2
+			var regsAux = regs.Select(x => new
+			{
+				Fecha = x.ext_fecha,
+				Codigo = x.extr_id,
+				Origen = x.extr_desc,
+				Concepto = x.ext_concepto,
+				Debe = x.ext_debe,
+				Haber = x.ext_haber,
+				Saldo = x.ext_saldo,
+				strConciliado = x.strConciliado,
+				strCierre = x.strCierre
+			}).ToList();
+			HelperPdf.GenerarListadoDesdeLista(pdf, regsAux, _campos, _anchosTitulosTabla, fuenteEtiqueta, false, false, null, true, BooleanDisplayFormat.SiNo, false, false);
+
+			//// FILA 3
+			//PdfPTable tablaTotal = GeneraTabla(1, [100f], 100, 0, 10);
+			//PdfPCell celdaTotal = new(new Phrase($"Total Ordenes de Pago: {regs.Sum(y => y.tra_importe).ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			//{
+			//	Border = Rectangle.NO_BORDER,
+			//	HorizontalAlignment = Element.ALIGN_RIGHT,
+			//	VerticalAlignment = Element.ALIGN_MIDDLE,
+			//	PaddingTop = 0f,
+			//	BackgroundColor = BaseColor.LightGray
+			//};
+
+			//tablaTotal.AddCell(celdaTotal);
+			//pdf.Add(tablaTotal);
+		}
+
+		public static void CargarTablaCtaCteFinancieros(Document pdf, List<FinancieroBcoCtaCteDto> regs, Font fuenteEtiqueta, Font fuenteValor)
+		{
+			List<string> _campos = ["Movimiento", "Fecha", "Vencimiento", "Percibido", "Concepto", "Debe", "Haber", "strConciliado",];
+			List<string> _titulosTabla = ["Movimiento", "Fecha", "Vencimiento", "Percibido", "Concepto", "Debe", "Haber", "Conciliado",];
+			float[] _anchosTitulosTabla = [10, 6, 7, 7, 30, 15, 15, 10];
+			PdfPTable tablaTitulo = GeneraTabla(1, [100f], 100, 10, 0);
+
+			// FILA 1
+			HelperPdf.GeneraCabeceraLista(pdf, _titulosTabla, _anchosTitulosTabla, HelperPdf.FontNormalPredeterminado(true));
+
+			// FILA 2
+			var regsAux = regs.Select(x => new
+			{
+				Movimiento = x.dia_movi,
+				Fecha = x.cf_fecha,
+				Vencimiento = x.cf_fecha_concilia,
+				Percibido = x.fecha_cheque,
+				Concepto = x.cf_concepto,
+				Debe = x.cf_debe,
+				Haber = x.cf_haber,
+				strConciliado = x.strConciliado,
+			}).ToList();
+			HelperPdf.GenerarListadoDesdeLista(pdf, regsAux, _campos, _anchosTitulosTabla, fuenteEtiqueta, false, false, null, true, BooleanDisplayFormat.SiNo, false, false);
+
+			//// FILA 3
+			//PdfPTable tablaTotal = GeneraTabla(1, [100f], 100, 0, 10);
+			//PdfPCell celdaTotal = new(new Phrase($"Total Ordenes de Pago: {regs.Sum(y => y.tra_importe).ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			//{
+			//	Border = Rectangle.NO_BORDER,
+			//	HorizontalAlignment = Element.ALIGN_RIGHT,
+			//	VerticalAlignment = Element.ALIGN_MIDDLE,
+			//	PaddingTop = 0f,
+			//	BackgroundColor = BaseColor.LightGray
+			//};
+
+			//tablaTotal.AddCell(celdaTotal);
+			//pdf.Add(tablaTotal);
 		}
 
 		public static void GenerarListadoAgrupado<T>(

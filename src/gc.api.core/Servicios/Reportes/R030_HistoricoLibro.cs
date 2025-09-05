@@ -58,9 +58,7 @@ namespace gc.api.core.Servicios.Reportes
 				string tit;
 				string fDesde;
 				string fHasta;
-				List<MovimientoFinancieroListaDto> registros = ObtenerDatos(solicitud, out tit, out fDesde, out fHasta);
-
-				var importe = registros.Sum(x => x.tra_importe);
+				List<FinancieroBcoCtaCteDto> registros = ObtenerDatos(solicitud, out tit, out fDesde, out fHasta);
 
 				//COMPLETAMOS EL TITULO DEL REPORTE AGREGANDO LA DENOMINACIÓN DE LA CUENTA
 				//tit += cliente.Cta_Denominacion;
@@ -116,7 +114,7 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Open();
 
 				#region Lista de Movimientos Financieros
-				HelperPdf.CargarTablaMovimientosFinancieros(pdf, registros, chico, normalBold);
+				HelperPdf.CargarTablaCtaCteFinancieros(pdf, registros, chico, normalBold);
 				#endregion
 
 				//Chunk linebreak = new Chunk(new LineSeparator(1f, 100f, BaseColor.Black, Element.ALIGN_CENTER, 5));
@@ -150,33 +148,21 @@ namespace gc.api.core.Servicios.Reportes
 
 
 
-		private List<MovimientoFinancieroListaDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo, out string fDesdePrint, out string fHastaPrint)
+		private List<FinancieroBcoCtaCteDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo, out string fDesdePrint, out string fHastaPrint)
 		{
 			fDesdePrint = solicitud.Parametros.GetValueOrDefault("Date1Print", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
 			fHastaPrint = solicitud.Parametros.GetValueOrDefault("Date2Print", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
 			var fDesde = solicitud.Parametros.GetValueOrDefault("desde", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
 			var fHasta = solicitud.Parametros.GetValueOrDefault("hasta", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
-			var ctaf_ori = GetBoolParam(solicitud.Parametros, "ctaf_ori");
-			var ctaf_des = GetBoolParam(solicitud.Parametros, "ctaf_des");
-			var tipo = GetBoolParam(solicitud.Parametros, "tipo");
-			var usu = GetBoolParam(solicitud.Parametros, "usu");
-			var ctaf_ori_list = solicitud.Parametros.GetValueOrDefault("ctaf_ori_list", "") == null ? [] : solicitud.Parametros.GetValueOrDefault("ctaf_ori_list", "").ToString().Split(",").ToList();
-			var ctaf_des_list = solicitud.Parametros.GetValueOrDefault("ctaf_des_list", "") == null ? [] : solicitud.Parametros.GetValueOrDefault("ctaf_des_list", "").ToString().Split(",").ToList();
-			var tipo_list = solicitud.Parametros.GetValueOrDefault("tipo_list", "") == null ? [] : solicitud.Parametros.GetValueOrDefault("tipo_list", "").ToString().Split(",").ToList();
-			var usu_list = solicitud.Parametros.GetValueOrDefault("usu_list", "") == null ? [] : solicitud.Parametros.GetValueOrDefault("usu_list", "").ToString().Split(",").ToList();
-			titulo = $"Consulta de Movimiento Financiero";
-			return _financieroServicio.BuscarMovimientoFinancieroReporte(new ConsultaMovFinancierosRequest() 
+			string ctaf_id = solicitud.Parametros.GetValueOrDefault("ctaf_id", "").ToString();
+			string tipo_filtro = solicitud.Parametros.GetValueOrDefault("tipo_filtro", "0").ToString() ?? "0";
+			titulo = $"Consulta Histórico Libro Banco";
+			return _financieroServicio.GetFinancieroBcoCtaCte(new FinancieroBcoCtaCteRequest() 
 			{ 
-				desde = DateTime.Parse(fDesde),
-				hasta = DateTime.Parse(fHasta),
-				ctaf_ori = ctaf_ori,
-				ctaf_ori_list = ctaf_ori_list,
-				ctaf_des = ctaf_des,
-				ctaf_des_list = ctaf_des_list,
-				tipo = tipo,
-				tipo_list = tipo_list,
-				usu = usu,
-				usu_list = usu_list,
+				FechaDesde = DateTime.Parse(fDesde),
+				FechaHasta = DateTime.Parse(fHasta),
+				ctaf_id = ctaf_id,
+				tipo_filtro = tipo_filtro,
 			});
 		}
 
@@ -186,7 +172,7 @@ namespace gc.api.core.Servicios.Reportes
 			string tit;
 			string fDesde;
 			string fHasta;
-			List<MovimientoFinancieroListaDto> registros = ObtenerDatos(solicitud, out tit, out fDesde, out fHasta);
+			List<FinancieroBcoCtaCteDto> registros = ObtenerDatos(solicitud, out tit, out fDesde, out fHasta);
 
 			if (registros == null || registros.Count == 0)
 			{
@@ -211,7 +197,7 @@ namespace gc.api.core.Servicios.Reportes
 			string tit;
 			string fDesde;
 			string fHasta;
-			List<MovimientoFinancieroListaDto> registros = ObtenerDatos(solicitud, out tit, out fDesde, out fHasta);
+			List<FinancieroBcoCtaCteDto> registros = ObtenerDatos(solicitud, out tit, out fDesde, out fHasta);
 
 			if (registros == null || registros.Count == 0)
 			{

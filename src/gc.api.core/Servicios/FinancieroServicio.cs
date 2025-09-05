@@ -387,5 +387,20 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<FinancieroBcoExtractoDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<FinancieroBcoCtaCteDto> GetFinancieroBcoCtaCte(FinancieroBcoCtaCteRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_BCO_CTA_CTE;
+			var ps = new List<SqlParameter>()
+			{
+				new("@ctaf_id",request.ctaf_id),
+				new("@desde",request.FechaDesde),
+				new("@hasta",request.FechaHasta),
+				new("@tipo_filtro",request.tipo_filtro),
+				new("@ct_tipo",request.ct_tipo),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<FinancieroBcoCtaCteDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

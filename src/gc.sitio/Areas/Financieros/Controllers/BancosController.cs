@@ -192,6 +192,80 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
+		public IActionResult PosicionarseEnTabHistoricoLibro(FinancieroBcoCtaCteRequest request)
+		{
+			var model = new HistoricoLibroModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				if (request == null)
+				{
+					RespuestaGenerica<EntidadBase> response = new()
+					{
+						Ok = false,
+						EsError = true,
+						EsWarn = false,
+						Mensaje = "Request vacío"
+					};
+					return PartialView("_gridMensaje", response);
+				}
+
+				model.GrillaHistorico = new GridCoreSmart<FinancieroBcoCtaCteDto>();
+				return PartialView("_tabHistoricoLibro", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult ObtenerHistoricoLibro(FinancieroBcoCtaCteRequest request)
+		{
+			var model = new HistoricoLibroModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				if (request == null)
+				{
+					RespuestaGenerica<EntidadBase> response = new()
+					{
+						Ok = false,
+						EsError = true,
+						EsWarn = false,
+						Mensaje = "Request vacío"
+					};
+					return PartialView("_gridMensaje", response);
+				}
+
+				var lista = _financieroServicio.GetFinancieroBcoCtaCte(request, TokenCookie);
+				model.GrillaHistorico = ObtenerGridCoreSmart<FinancieroBcoCtaCteDto>(lista);
+				return PartialView("_tabHistoricoLibro", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
 		/// <summary>
 		/// Establece el tipo de reporte seleccionado por el usuario para la consulta de órdenes de pago.
 		/// Inicializa el gestor de impresión y carga los documentos disponibles según el tipo de reporte.
@@ -213,6 +287,11 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					case TipoDeReporte.LibroBancoResumen:
 						break;
 					case TipoDeReporte.HistoricoLibro:
+						#region Gestor Impresion - Inicializacion de variables
+						titulo = "HISTÓRICO LIBRO";
+						DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_4);
+						ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_4);
+						#endregion
 						break;
 					case TipoDeReporte.ExtractoBancario:
 						#region Gestor Impresion - Inicializacion de variables

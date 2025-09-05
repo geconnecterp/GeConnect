@@ -144,6 +144,7 @@ namespace gc.api.core.Constantes
 			public const string SP_F_TR_ANULAR = "SPGECO_F_TR_Anula_Confirma";
 			public const string SP_F_TR_LISTA_REPORTE = "SPGECO_F_TR_Lista_Reporte";
 			public const string SP_F_BCO_EXTRACTO = "SPGECO_F_BCO_Extracto";
+			public const string SP_F_BCO_CTA_CTE = "SPGECO_F_BCO_CtaCte";
 			#endregion
 
 			#region SP Depositos

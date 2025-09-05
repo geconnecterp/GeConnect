@@ -7,6 +7,9 @@
 	$(document).on("change", "#btnCancelar", btnCancelarClick);
 	$(document).on("change", "#listaCuentaBanco", ControlalistaCuentaBancoSelected);
 	$(document).on("click", "#btnBuscarExtractoBancario", ControlaBuscarExtractoBancarioClick);
+	$(document).on("click", "#btnImprimirExtractoBancario", ControlaImpimirExtractoBancarioClick);
+	$(document).on("click", "#btnBuscarHistoricoLibro", ControlaBuscarHistoricoLibroClick);
+	$(document).on("click", "#btnImprimirHistoricoLibro", ControlaImpimirHistoricoLibroClick);
 	//
 
 	$("#CuentaBancoList").on("dblclick", 'option', function () { $(this).remove(); })
@@ -46,6 +49,7 @@
 				break;
 			case 'btnTabHistoricoLibro':
 				console.log("btnTabHistoricoLibro");
+				SetearCamposHistoricoLibro();
 				break;
 			case 'btnTabExtractoBancario':
 				console.log("btnTabExtractoBancario");
@@ -65,6 +69,115 @@ const tabs = {
 	extracto: 'btnTabExtractoBancario'
 };
 
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
+function ControlaImpimirHistoricoLibroClick() {
+	var filas = $("#tbGridHistoricoLibro tbody tr").length;
+	if (filas == 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos para imprimir.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Imprimiendo listado...");
+		var tipoReporte = 4;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				CerrarWaiting();
+				ImpimirHistoricoLibro();
+			}
+		});
+	}
+}
+
+function ControlaImpimirExtractoBancarioClick() {
+	var filas = $("#tbGridExtractoBancario tbody tr").length;
+	if (filas == 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos para imprimir.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Imprimiendo listado...");
+		var tipoReporte = 5;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				CerrarWaiting();
+				ImpimirExtractoBancario();
+			}
+		});
+	}
+}
+
+function ImpimirHistoricoLibro() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var desde = $("#fechaDesdeHistoricoLibro").val();
+		var hasta = $("#fechaHastaHistoricoLibro").val();
+		var Date1Print = moment($("#fechaDesdeHistoricoLibro").val()).format('DD/MM/yyyy')
+		var Date2Print = moment($("#fechaHastaHistoricoLibro").val()).format('DD/MM/yyyy')
+		var ctaf_id = ctafIdSelected;
+		const tipo_filtro = $('input[name="tipoFiltro"]:checked').val();
+		let data = { desde, hasta, ctaf_id, tipo_filtro, Date1Print, Date2Print };
+		cargarReporteEnArre(30, data, "HISTORICO LIBRO BANCO", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function ImpimirExtractoBancario() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var desde = $("#fechaDesdeExtractoBancario").val();
+		var hasta = $("#fechaHastaExtractoBancario").val();
+		var Date1Print = moment($("#fechaDesdeExtractoBancario").val()).format('DD/MM/yyyy')
+		var Date2Print = moment($("#fechaHastaExtractoBancario").val()).format('DD/MM/yyyy')
+		var ctaf_id = ctafIdSelected;
+		let data = { desde, hasta, ctaf_id, Date1Print, Date2Print };
+		cargarReporteEnArre(31, data, "EXTRACTO BANCARIO", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function ControlaBuscarHistoricoLibroClick() {
+	AbrirWaiting();
+	var ctaf_id = ctafIdSelected;
+	var FechaDesde = $("#fechaDesdeHistoricoLibro").val();
+	var FechaHasta = $("#fechaHastaHistoricoLibro").val();
+	const tipo_filtro = $('input[name="tipoFiltro"]:checked').val();
+	var data = { ctaf_id, FechaDesde, FechaHasta, tipo_filtro };
+	PostGenHtml(data, buscarHistoricoLibroURL, function (obj) {
+		CerrarWaiting();
+		$("#divHistoricoLibro").html(obj);
+		return true
+	}, function (obj) {
+		ControlaMensajeError(obj.message);
+		CerrarWaiting();
+	});
+}
+
 function ControlaBuscarExtractoBancarioClick() {
 	AbrirWaiting();
 	var ctaf_id = $("#listaCuentaBanco").val();
@@ -79,6 +192,13 @@ function ControlaBuscarExtractoBancarioClick() {
 		ControlaMensajeError(obj.message);
 		CerrarWaiting();
 	});
+}
+
+function SetearCamposHistoricoLibro() {
+	var now = moment().format('yyyy-MM-DD');
+	var now2 = moment().subtract(30, 'days');
+	$("#fechaDesdeHistoricoLibro").val(now2.format('yyyy-MM-DD'));
+	$("#fechaHastaHistoricoLibro").val(now);
 }
 
 function SetearCamposExtractoBancario() {

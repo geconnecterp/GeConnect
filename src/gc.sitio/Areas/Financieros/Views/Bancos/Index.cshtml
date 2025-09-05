@@ -79,6 +79,42 @@
 				</div>
 			</div>
 			<div class="tab-pane fade" id="navs-top-dog" role="tabpanel">
+				<div class="row">
+					<div class="col-md-3 col-sm-6">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text">Desde:</span>
+							<input type="date" class="form-control" id="fechaDesdeHistoricoLibro" />
+						</div>
+					</div>
+					<div class="col-md-3 col-sm-6">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text">Hasta:</span>
+							<input type="date" class="form-control" id="fechaHastaHistoricoLibro" />
+						</div>
+					</div>
+					<div class="col-md-3 col-sm-6">
+						<div class="input-group input-group-sm">
+							<button type="button" class="btn btn-success" id="btnBuscarHistoricoLibro"><i class="bx bx-play"></i></button>
+							<button type="button" class="btn btn-warning" id="btnImprimirHistoricoLibro"><i class="bx bx-printer"></i></button>
+						</div>
+					</div>
+					<div class="col-md-3 col-sm-6">
+						<div class="input-group input-group-sm">
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="tipoFiltro" id="radioFecha" value="R" checked>
+								<label class="form-check-label" for="radioFecha">Fecha</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="tipoFiltro" id="radioVencimiento" value="V">
+								<label class="form-check-label" for="radioVencimiento">Vencimiento</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="tipoFiltro" id="radioPercibido" value="P">
+								<label class="form-check-label" for="radioPercibido">Percibido</label>
+							</div>
+						</div>
+					</div>
+				</div>
 				<div id="divHistoricoLibro">
 				</div>
 			</div>
@@ -120,6 +156,9 @@
 
 		var posicionarseEnTabVencimientoChequeEmitidoURL = "@Url.Action("PosicionarseEnTabVencimientoChequeEmitido", "Bancos", new { area = "Financieros" })";
 		var buscarExtractoBancarioURL = "@Url.Action("ObtenerExtractoBancario", "Bancos", new { area = "Financieros" })";
+		var posicionarseEnTabHistoricoLibroURL = "@Url.Action("PosicionarseEnTabHistoricoLibro", "Bancos", new { area = "Financieros" })";
+		var buscarHistoricoLibroURL = "@Url.Action("ObtenerHistoricoLibro", "Bancos", new { area = "Financieros" })";
+		var setearTipoDeReporteUrl = "@Url.Action("SetearTipoDeReporte", "Bancos", new { area = "Financieros" })";
 
 		// Gestor de impresión
 		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
