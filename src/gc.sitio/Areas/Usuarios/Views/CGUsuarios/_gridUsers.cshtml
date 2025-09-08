@@ -11,8 +11,18 @@
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
 }
 
-<div class="card">
-    <div class="card-body">
+<div class="grid-golden">
+    <div class="grid-golden-header">
+        <div class="row align-items-md-center">
+            <div class="col-md-10 col-sm-6">
+                <h5 class="mb-0">
+                    <i class="bx bx-package me-2"></i>
+                    <strong>##LEYENDA##</strong>
+                </h5>
+            </div>
+        </div>
+    </div>
+    <div class="grid-golden-body">
         <div class="table-responsive text-nowrap  table-wrapper">
             <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridUsers">
                 <thead class="table-dark">
@@ -48,6 +58,9 @@
                 </tbody>
             </table>
         </div>
+       
+    </div>
+    <div class="grid-golden-footer">
         <div class="row m-3">
             <table style="width:300px;text-align:center">
                 <tr><td colspan="3" class="text-md-center"><strong>ESTADOS</strong></td></tr>

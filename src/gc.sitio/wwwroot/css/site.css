@@ -307,9 +307,9 @@ activable {
 
 /*ESTILO GOLDE PARA MENSAJES*/
 /* Estilos para mensajes Golden */
-.selected-row {
-    background-color: #e3f2fd !important;
-}
+/*.selected-row {
+    background-color: #B8DFFA !important;
+}*/
 
 #divAajDet .grid-golden {
     margin-top: 0;
@@ -1171,12 +1171,12 @@ td.corta-linea {
 }
 /*---------------------------------------------------------*/
 .selected-row > td {
-    background-color: lightslategray;
+    background-color: #FCD25F; /*lightslategray;*/
     color: black;
 }
 
 .selectedEdit-row > td {
-    background-color: firebrick;
+    background-color: #A07603; /*firebrick;*/
     color: black;
 }
 
@@ -1249,7 +1249,7 @@ fieldset {
 }
 
 /*para desactivar la grilla*/
-.disable-table-rows {
+    .disable-table-rows {
     /*filter: blur(1px);*/
     pointer-events: none;
 }
@@ -2115,3 +2115,41 @@ input, select, textarea, button, checkbox, radio {
 }
 
 /* FIN ESTILOS OPTIMIZADOS PARA CONTENIDO DE TABS */
+
+/* UNIFICACIÓN: Estilo base para todos los campos numéricos */
+.input-numeric {
+    text-align: right;
+    padding-right: 5px;
+    font-size: 0.7rem !important; /* Reducido para todos */
+    letter-spacing: -0.4px; /* Mismo espaciado entre caracteres para todos */
+}
+
+/* Ajustar el padding interno para aprovechar mejor el espacio */
+.form-control-sm.input-numeric {
+    padding: 0.1rem 0.2rem !important; /* Padding reducido para todos */
+    height: auto !important;
+}
+
+/* NUEVO: Campos de descuento y flete ya con tamaño reducido */
+.input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete {
+    min-width: 35px !important;
+    width: 50px !important;
+    padding-left: 0.1rem !important;
+    padding-right: 0.1rem !important;
+}
+
+/* NUEVO: Campos con 3 decimales */
+.input-tp_plista, .input-tp_pcosto, .input-tp_pneto {
+    min-width: 60px !important;
+    width: 80px !important;
+    padding-left: 0.1rem !important;
+    padding-right: 0.1rem !important;
+}
+
+/* NUEVO: Campos con 2 decimales */
+.input-tp_margen, .input-tin_alicuota, .input-tp_pvta {
+    min-width: 50px !important;
+    width: 65px !important;
+    padding-left: 0.1rem !important;
+    padding-right: 0.1rem !important;
+}
