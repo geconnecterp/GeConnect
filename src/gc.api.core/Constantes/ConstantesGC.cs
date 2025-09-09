@@ -147,6 +147,8 @@ namespace gc.api.core.Constantes
 			public const string SP_F_BCO_CTA_CTE = "SPGECO_F_BCO_CtaCte";
 			public const string SP_F_BCO_LIBRO_RESUMEN = "SPGECO_F_BCO_Libro_Resumen";
 			public const string SP_F_BCO_LIBRO = "SPGECO_F_BCO_Libro";
+			public const string SP_F_BCO_CH_VTO_PROY = "SPGECO_F_BCO_CH_Vto_Proy";
+			public const string SP_F_BCO_CH_EMITIDOS_LISTA = "SPGECO_F_BCO_CH_Emitidos_lista";
 			#endregion
 
 			#region SP Depositos
