@@ -1969,8 +1969,8 @@ namespace gc.infraestructura.Helpers
 			{
 				Movimiento = x.dia_movi,
 				Fecha = x.cf_fecha,
-				Vencimiento = x.cf_fecha_concilia,
-				Percibido = x.fecha_cheque,
+				Vencimiento = x.fecha_cheque,
+				Percibido = x.cf_fecha_concilia,
 				Concepto = x.cf_concepto,
 				Debe = x.cf_debe,
 				Haber = x.cf_haber,

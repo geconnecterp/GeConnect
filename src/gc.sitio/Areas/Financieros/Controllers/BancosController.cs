@@ -44,7 +44,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 			//PARA MODULO DE IMPRESION
 			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
-			_modulo_1 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_1); 
+			_modulo_1 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_1);
 			_modulo_2 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_2);
 			_modulo_3 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_3);
 			_modulo_4 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_4);
@@ -92,17 +92,17 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 				model.FechaDesde = DateTime.Today;
 				model.FechaHasta = DateTime.Today;
-				
+
 				if (ListaChequesAgrupados == null || ListaChequesAgrupados.Count == 0)
 					model.GrillaCheques = new GridCoreSmart<FinancieroChequeDepositadoDto>();
 				else
 					model.GrillaCheques = ObtenerGridCoreSmart<FinancieroChequeDepositadoDto>(ListaChequesAgrupados);
-				
+
 				if (ListaChequesDetalles == null || ListaChequesDetalles.Count == 0)
 					model.GrillaChequesDetalle = new GridCoreSmart<FinancieroChequeDepositadoDto>();
 				else
 					model.GrillaChequesDetalle = ObtenerGridCoreSmart<FinancieroChequeDepositadoDto>(ListaChequesDetalles);
-				
+
 				model.Total = 0;
 				return PartialView("_tabVencimientoChequeEmitido", model);
 			}
@@ -120,7 +120,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 		}
 
 		public IActionResult PosicionarseEnTabExtractoBancario(FinancieroBcoExtractoRequest request)
-		{ 
+		{
 			var model = new ExtractoBancarioModel();
 			try
 			{
@@ -266,6 +266,80 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
+		public IActionResult PosicionarseEnTabLibroResumen(FinancieroBcoLibroResumenRequest request)
+		{
+			var model = new LibroBancoResumenModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				if (request == null)
+				{
+					RespuestaGenerica<EntidadBase> response = new()
+					{
+						Ok = false,
+						EsError = true,
+						EsWarn = false,
+						Mensaje = "Request vacío"
+					};
+					return PartialView("_gridMensaje", response);
+				}
+
+				return PartialView("_tabLibroBancoResumen", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult ObtenerLibroResumen(FinancieroBcoLibroResumenRequest request)
+		{
+			var model = new LibroBancoResumenModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				if (request == null)
+				{
+					RespuestaGenerica<EntidadBase> response = new()
+					{
+						Ok = false,
+						EsError = true,
+						EsWarn = false,
+						Mensaje = "Request vacío"
+					};
+					return PartialView("_gridMensaje", response);
+				}
+
+				var lista = _financieroServicio.GetFinancieroBcoLibroResumen(request, TokenCookie);
+				model.GrillaCuentaFin = ObtenerGridCoreSmart<LibroBancoResumenDto>(ObtenerGrillaCuentaFinanciera(lista, TipoGrillaCuentaFinanciera.CuentaFinanciera));
+				model.GrillaCuentaBan = ObtenerGridCoreSmart<LibroBancoResumenDto>(ObtenerGrillaCuentaFinanciera(lista, TipoGrillaCuentaFinanciera.CuentaBanco));
+				return PartialView("_tabLibroBancoResumen", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
 		/// <summary>
 		/// Establece el tipo de reporte seleccionado por el usuario para la consulta de órdenes de pago.
 		/// Inicializa el gestor de impresión y carga los documentos disponibles según el tipo de reporte.
@@ -303,7 +377,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					default:
 						break;
 				}
-				
+
 				return Json(new { error = false, warn = false, msg = "Tipo de reporte actualizado correctamente." });
 			}
 			catch (Exception ex)
@@ -313,6 +387,54 @@ namespace gc.sitio.Areas.Financieros.Controllers
 		}
 
 		#region Métodos privados
+		private List<LibroBancoResumenDto> ObtenerGrillaCuentaFinanciera(List<FinancieroBcoLibroResumenDto> lista, TipoGrillaCuentaFinanciera tipoGrilla)
+		{
+			var listaCuentaFin = new List<LibroBancoResumenDto>();
+			if (lista == null || lista.Count == 0)
+				return listaCuentaFin;
+
+			var itemFinan = lista.First();
+			var item = new LibroBancoResumenDto();
+
+			if (tipoGrilla == TipoGrillaCuentaFinanciera.CuentaFinanciera)
+			{
+				item = new LibroBancoResumenDto { descripcion = "Saldo Estado de Cuenta Financiera al Cierre", saldo = $"({itemFinan.saldo_sis.ToString("C", ForzarObtenerFormatoMonetario()).Trim()})", es_fuente_negrita = true, background = "#D3D047", es_header_1 = true };
+				listaCuentaFin.Add(item);
+			}
+			else
+			{
+				item = new LibroBancoResumenDto { descripcion = "Saldo Estado de Cuenta Banco al Cierre", saldo = $"{itemFinan.saldo_ext.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}", es_fuente_negrita = true, background = "#D3D047", es_header_1 = true };
+				listaCuentaFin.Add(item);
+			}
+			//ToString("C", ForzarObtenerFormatoMonetario())
+			var mas = itemFinan.cheques_sis + itemFinan.transferencias_h_sis + itemFinan.creditos_ext;
+			item = new LibroBancoResumenDto { descripcion = (tipoGrilla == TipoGrillaCuentaFinanciera.CuentaFinanciera ? "Mas" : "Menos"), saldo = (tipoGrilla == TipoGrillaCuentaFinanciera.CuentaFinanciera ? $"{mas.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}" : $"({mas.ToString("C", ForzarObtenerFormatoMonetario()).Trim()})"), es_fuente_negrita = true, background = "#60A5F3", es_header_2 = true };
+			listaCuentaFin.Add(item);
+			item = new LibroBancoResumenDto { descripcion = "Cheques emitidos no conciliados en el Sistema", saldo = $"{itemFinan.cheques_sis.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}", es_fuente_negrita = false, background = "" };
+			listaCuentaFin.Add(item);
+			item = new LibroBancoResumenDto { descripcion = "Transferencias hacia bancos (extracciones, retiros) no conciliados en el Sistema", saldo = $"{itemFinan.transferencias_h_sis.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}", es_fuente_negrita = false, background = "" };
+			listaCuentaFin.Add(item);
+			item = new LibroBancoResumenDto { descripcion = "Créditos realizadios por el banco (Perc., Imp., Ret., Com., etc.) no conciliados en Extracto", saldo = $"{itemFinan.creditos_ext.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}", es_fuente_negrita = false, background = "" };
+			listaCuentaFin.Add(item);
+			var menos = itemFinan.depositos_sis + itemFinan.transferencias_d_sis + itemFinan.debitos_ext;
+			item = new LibroBancoResumenDto { descripcion = tipoGrilla == TipoGrillaCuentaFinanciera.CuentaFinanciera ? "Menos" : "Mas", saldo = (tipoGrilla == TipoGrillaCuentaFinanciera.CuentaFinanciera ? $"({menos.ToString("C", ForzarObtenerFormatoMonetario()).Trim()})" : $"{menos.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}"), es_fuente_negrita = true, background = "#60A5F3", es_header_2 = true };
+			listaCuentaFin.Add(item);
+			item = new LibroBancoResumenDto { descripcion = "Cheques de terceros depositados no conciliados en Sistema", saldo = $"{itemFinan.depositos_sis.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}", es_fuente_negrita = false, background = "" };
+			listaCuentaFin.Add(item);
+			item = new LibroBancoResumenDto { descripcion = "Transferencias desde otros bancos (depósitos) pendientes no conciliados en el Sistema", saldo = $"{itemFinan.transferencias_d_sis.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}", es_fuente_negrita = false, background = "" };
+			listaCuentaFin.Add(item);
+			item = new LibroBancoResumenDto { descripcion = "Débitos realizadios por el banco (Int., Dev. de Perc., Dev. de Int., Dev. de Ret., Dev. de Com.) no conciliados en Extracto", saldo = $"{itemFinan.debitos_ext.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}", es_fuente_negrita = false, background = "" };
+			listaCuentaFin.Add(item);
+			var subTotal = mas - menos;
+			if (subTotal < 0) subTotal *= -1;
+			item = new LibroBancoResumenDto { descripcion = "SubTotal", saldo = (tipoGrilla == TipoGrillaCuentaFinanciera.CuentaFinanciera ? $"{subTotal.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}" : $"({subTotal.ToString("C", ForzarObtenerFormatoMonetario()).Trim()})"), es_fuente_negrita = true, background = "#60A5F3", es_header_2 = true };
+			listaCuentaFin.Add(item);
+			var saldo = ((-1) * itemFinan.saldo_sis) + subTotal;
+			if (saldo < 0) saldo *= -1;
+			item = new LibroBancoResumenDto { descripcion = (tipoGrilla == TipoGrillaCuentaFinanciera.CuentaFinanciera ? "Saldo Cuenta Banco al Cierre" : "Saldo Estado de Cuenta Financiera al Cierre"), saldo = (tipoGrilla == TipoGrillaCuentaFinanciera.CuentaFinanciera ? $"{saldo.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}" : $"({saldo.ToString("C", ForzarObtenerFormatoMonetario()).Trim()})"), es_fuente_negrita = true, background = "#D3D047", es_header_1 = true };
+			listaCuentaFin.Add(item);
+			return listaCuentaFin;
+		}
 		private void CargarDatosIniciales(FiltroModel model)
 		{
 			var ctfLista = _financieroServicio.GetFinancieroDesdeTipoParaSeleccionDeValores("BA", AdministracionId, TokenCookie);
@@ -328,6 +450,12 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			LibroBancoResumen = 3,
 			HistoricoLibro = 4,
 			ExtractoBancario = 5
+		}
+
+		enum TipoGrillaCuentaFinanciera
+		{
+			CuentaFinanciera = 1,
+			CuentaBanco = 2
 		}
 		#endregion
 	}

@@ -10,6 +10,8 @@
 	$(document).on("click", "#btnImprimirExtractoBancario", ControlaImpimirExtractoBancarioClick);
 	$(document).on("click", "#btnBuscarHistoricoLibro", ControlaBuscarHistoricoLibroClick);
 	$(document).on("click", "#btnImprimirHistoricoLibro", ControlaImpimirHistoricoLibroClick);
+	$(document).on("click", "#btnBuscarLibroBancoResumen", ControlaBuscarLibroBancoResumenClick);
+	$(document).on("click", "#btnImprimirLibroBancoResumen", ControlaLibroBancoResumenClick);
 	//
 
 	$("#CuentaBancoList").on("dblclick", 'option', function () { $(this).remove(); })
@@ -46,6 +48,7 @@
 				break;
 			case 'btnTabLibroBancoResumen':
 				console.log("btnTabLibroBancoResumen");
+				SetearCamposLibroBancoResumen();
 				break;
 			case 'btnTabHistoricoLibro':
 				console.log("btnTabHistoricoLibro");
@@ -72,6 +75,10 @@ const tabs = {
 function ReseteoDeReportes() {
 	console.log("Reseto de reportes");
 	ReporteResetArre();
+}
+
+function ControlaLibroBancoResumenClick() {
+	ControlaMensajeInfo("Servicio no implementado.");
 }
 
 function ControlaImpimirHistoricoLibroClick() {
@@ -161,6 +168,21 @@ function ImpimirExtractoBancario() {
 	}, 500);
 }
 
+function ControlaBuscarLibroBancoResumenClick() {
+	AbrirWaiting();
+	var ctaf_id = ctafIdSelected;
+	var hasta = $("#fechaHastaLibroBancoResumen").val();
+	var data = { ctaf_id, hasta };
+	PostGenHtml(data, obtenerLibroResumenURL, function (obj) {
+		CerrarWaiting();
+		$("#divLibroBancoResumen").html(obj);
+		return true
+	}, function (obj) {
+		ControlaMensajeError(obj.message);
+		CerrarWaiting();
+	});
+}
+
 function ControlaBuscarHistoricoLibroClick() {
 	AbrirWaiting();
 	var ctaf_id = ctafIdSelected;
@@ -192,6 +214,11 @@ function ControlaBuscarExtractoBancarioClick() {
 		ControlaMensajeError(obj.message);
 		CerrarWaiting();
 	});
+}
+
+function SetearCamposLibroBancoResumen(){
+	var now = moment().format('yyyy-MM-DD');
+	$("#fechaHastaLibroBancoResumen").val(now);
 }
 
 function SetearCamposHistoricoLibro() {
@@ -308,4 +335,22 @@ function btnCancelarClick() {
 		btnCancelarClick();
 	});
 	InicializarDatosEnSesion();
+}
+
+const formatter = new Intl.NumberFormat('de-DE', {
+	minimumFractionDigits: 2,
+	maximumFractionDigits: 2
+});
+
+function FormatearValores(grilla, idx) {
+	$(grilla).find('tr').each(function (i, el) {
+		var td = $(this).find('td');
+		if (td.length > 0) {
+			for (var i = 0; i < idx.length; i++) {
+				if (td[idx[i]].innerText !== undefined) {
+					td[idx[i]].innerText = formatter.format(td[idx[i]].innerText);
+				}
+			}
+		}
+	});
 }
