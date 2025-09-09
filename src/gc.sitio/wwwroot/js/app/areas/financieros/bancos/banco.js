@@ -11,15 +11,30 @@
 	$(document).on("click", "#btnBuscarHistoricoLibro", ControlaBuscarHistoricoLibroClick);
 	$(document).on("click", "#btnImprimirHistoricoLibro", ControlaImpimirHistoricoLibroClick);
 	$(document).on("click", "#btnBuscarLibroBancoResumen", ControlaBuscarLibroBancoResumenClick);
-	$(document).on("click", "#btnImprimirLibroBancoResumen", ControlaLibroBancoResumenClick);
-	//
+	$(document).on("click", "#btnImprimirLibroBancoResumen", ControlaImprimirLibroBancoResumenClick);
+	$(document).on("click", "#btnBuscarVencChequeEmitido", ControlaBuscarVencChequeEmitidoClick);
+	$(document).on("click", "#btnImprimirVencChequeEmitido", ControlaImprimirVencChequeEmitidoClick);
+	$(document).on("click", "#btnBuscarLibroBancoDetalle", ControlaBuscarLibroBancoDetalleClick);
+	$(document).on("click", "#btnImprimirLibroBancoDetalle", ControlaImprimirLibroBancoDetalleClick);
+	$(document).on("click", "#btnCancel", btnCancelarClick);
+	//btnCancel
 
 	$("#CuentaBancoList").on("dblclick", 'option', function () { $(this).remove(); })
 
 	$("#btnBuscar").on("click", function () {
 		ctafIdSelected = $("#listaCuentaBanco").val();
-		ctafDenominacionSelected = $("#listaCuentaBanco option:selected").text();
-		PosicionarseEnTabVencimientoChequeEmitido();
+		if (ctafIdSelected == "") {
+			AbrirMensaje("ATENCIÓN", "Debe seleccionar una cuenta banco.", function () {
+				$("#msjModal").modal("hide");
+				$("#listaCuentaBanco").trigger("focus");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			ctafDenominacionSelected = $("#listaCuentaBanco option:selected").text();
+			LimpiarDivs();
+			PosicionarseEnTabVencimientoChequeEmitido();
+		}
 	});
 
 	$("#btnFiltro").on("click", function () {
@@ -42,9 +57,11 @@
 		switch (tabId) {
 			case 'btnTabVencimientoChequeEmitido':
 				console.log("btnTabVencimientoChequeEmitido");
+				SetearCamposVencChequeEmitido();
 				break;
 			case 'btnTabLibroBancoDetalle':
 				console.log("btnTabLibroBancoDetalle");
+				SetearCamposLibroBancoDetalle();
 				break;
 			case 'btnTabLibroBancoResumen':
 				console.log("btnTabLibroBancoResumen");
@@ -77,8 +94,69 @@ function ReseteoDeReportes() {
 	ReporteResetArre();
 }
 
-function ControlaLibroBancoResumenClick() {
-	ControlaMensajeInfo("Servicio no implementado.");
+function LimpiarDivs() {
+	$("#divExtractoBancario").empty();
+	$("#divHistoricoLibro").empty();
+	$("#divLibroBancoResumen").empty();
+	$("#divLibroBancoDetalle").empty();
+	$("#divVencimientoChequeEmitido").empty();
+}
+
+function ControlaImprimirLibroBancoDetalleClick() {
+	ControlaMensajeInfo("Método no implementado.");
+}
+
+function ControlaBuscarLibroBancoDetalleClick() {
+	ControlaMensajeInfo("Método no implementado.");
+}
+
+function ControlaBuscarVencChequeEmitidoClick() {
+	ControlaMensajeInfo("Método no implementado.");
+}
+
+function ControlaImprimirVencChequeEmitidoClick() {
+	ControlaMensajeInfo("Método no implementado.");
+}
+
+function ControlaImprimirLibroBancoResumenClick() {
+	var filas = $("#tbGridCuentaFin tbody tr").length;
+	if (filas == 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos para imprimir.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Imprimiendo listado...");
+		var tipoReporte = 3;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				CerrarWaiting();
+				ImpimirLibroBancoResumen();
+			}
+		});
+	}
+}
+
+function ImpimirLibroBancoResumen() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var hasta = $("#fechaHastaLibroBancoResumen").val();
+		var ctaf_id = ctafIdSelected;
+		var Date1Print = moment($("#fechaHastaLibroBancoResumen").val()).format('DD/MM/yyyy')
+		var data = { hasta, ctaf_id, Date1Print };
+		cargarReporteEnArre(29, data, "LIBRO BANCO RESUMEN", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function ControlaImpimirHistoricoLibroClick() {
@@ -234,6 +312,19 @@ function SetearCamposExtractoBancario() {
 	$("#fechaDesdeExtractoBancario").val(now2.format('yyyy-MM-DD'));
 	$("#fechaHastaExtractoBancario").val(now);
 }
+
+function SetearCamposLibroBancoDetalle() {
+	var now = moment().format('yyyy-MM-DD');
+	$("#fechaHastaLibroBancoDetalle").val(now);
+}
+
+function SetearCamposVencChequeEmitido() {
+	var now = moment().format('yyyy-MM-DD');
+	var now2 = moment().subtract(30, 'days');
+	$("#fechaDesdeVencChequeEmitido").val(now2.format('yyyy-MM-DD'));
+	$("#fechaHastaVencChequeEmitido").val(now);
+}
+
 //const tab = bootstrap.Tab.getOrCreateInstance($('#btnTabVencimientoChequeEmitido')[0]);
 //tab.show();
 function ActivarTabPorId(idBotonTab) {
@@ -287,7 +378,7 @@ function PosicionarseEnTabVencimientoChequeEmitido() {
 		$("#btnCancelar").on("click", function () {
 			btnCancelarClick();
 		});
-		
+		SetearCamposVencChequeEmitido();
 		CerrarWaiting();
 		return true
 	}, function (obj) {
@@ -307,34 +398,11 @@ function ControlalistaCuentaBancoSelected() {
 function btnCancelarClick() {
 	$("#divFiltros").removeClass("collapse").addClass("show");
 	$("#divDetalle").collapse("hide");
-	$("#chkCFO").prop('checked', false);
-	$("#chkCFO").trigger("change");
-	$("#chkCFD").prop('checked', false);
-	$("#chkCFD").trigger("change");
-	$("#chkTT").prop('checked', false);
-	$("#chkTT").trigger("change");
-	$("#chkUsu").prop('checked', false);
-	$("#chkUsu").trigger("change");
-	$("#CFOList").empty();
-	$("#CFDList").empty();
-	$("#TTList").empty();
-	$("#UsuList").empty();
-	$("#listaCFO").val("");
-	$("#listaCFD").val();
-	$("#listaTT").val();
-	$("#listaUsu").val();
-	$("#listaCFO").prop("disabled", true);
-	$("#listaCFD").prop("disabled", true);
-	$("#listaTT").prop("disabled", true);
-	$("#listaUsu").prop("disabled", true);
-	$("#CFOList").prop("disabled", true);
-	$("#CFDList").prop("disabled", true);
-	$("#TTList").prop("disabled", true);
-	$("#UsuList").prop("disabled", true);
+	$("#CuentaBancoList").empty();
+	$("#listaCuentaBanco").val("");
 	$("#btnCancel").on("click", function () {
 		btnCancelarClick();
 	});
-	InicializarDatosEnSesion();
 }
 
 const formatter = new Intl.NumberFormat('de-DE', {

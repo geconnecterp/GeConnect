@@ -27,5 +27,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<FinancieroBcoExtractoDto> GetFinancieroBcoExtracto(FinancieroBcoExtractoRequest request, string token);
 		List<FinancieroBcoCtaCteDto> GetFinancieroBcoCtaCte(FinancieroBcoCtaCteRequest request, string token);
 		List<FinancieroBcoLibroResumenDto> GetFinancieroBcoLibroResumen(FinancieroBcoLibroResumenRequest request, string token);
+		List<FinancieroBcoLibroDto> GetFinancieroBcoLibroResumen(FinancieroBcoLibroRequest request, string token);
 	}
 }

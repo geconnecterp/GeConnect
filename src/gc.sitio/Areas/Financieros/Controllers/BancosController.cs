@@ -359,6 +359,11 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					case TipoDeReporte.LibroBancoDetalle:
 						break;
 					case TipoDeReporte.LibroBancoResumen:
+						#region Gestor Impresion - Inicializacion de variables
+						titulo = "LIBRO BANCO RESUMEN";
+						DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_3);
+						ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_3);
+						#endregion
 						break;
 					case TipoDeReporte.HistoricoLibro:
 						#region Gestor Impresion - Inicializacion de variables
@@ -398,15 +403,28 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 			if (tipoGrilla == TipoGrillaCuentaFinanciera.CuentaFinanciera)
 			{
-				item = new LibroBancoResumenDto { descripcion = "Saldo Estado de Cuenta Financiera al Cierre", saldo = $"({itemFinan.saldo_sis.ToString("C", ForzarObtenerFormatoMonetario()).Trim()})", es_fuente_negrita = true, background = "#D3D047", es_header_1 = true };
+				item = new LibroBancoResumenDto
+				{
+					descripcion = "Saldo Estado de Cuenta Financiera al Cierre",
+					saldo = $"({(itemFinan.saldo_sis).ToString("C", ForzarObtenerFormatoMonetario()).Trim()})",
+					es_fuente_negrita = true,
+					background = "#D3D047",
+					es_header_1 = true
+				};
 				listaCuentaFin.Add(item);
 			}
 			else
 			{
-				item = new LibroBancoResumenDto { descripcion = "Saldo Estado de Cuenta Banco al Cierre", saldo = $"{itemFinan.saldo_ext.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}", es_fuente_negrita = true, background = "#D3D047", es_header_1 = true };
+				item = new LibroBancoResumenDto
+				{
+					descripcion = "Saldo Estado de Cuenta Banco al Cierre",
+					saldo = $"{(itemFinan.saldo_ext).ToString("C", ForzarObtenerFormatoMonetario()).Trim()}",
+					es_fuente_negrita = true,
+					background = "#D3D047",
+					es_header_1 = true
+				};
 				listaCuentaFin.Add(item);
 			}
-			//ToString("C", ForzarObtenerFormatoMonetario())
 			var mas = itemFinan.cheques_sis + itemFinan.transferencias_h_sis + itemFinan.creditos_ext;
 			item = new LibroBancoResumenDto { descripcion = (tipoGrilla == TipoGrillaCuentaFinanciera.CuentaFinanciera ? "Mas" : "Menos"), saldo = (tipoGrilla == TipoGrillaCuentaFinanciera.CuentaFinanciera ? $"{mas.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}" : $"({mas.ToString("C", ForzarObtenerFormatoMonetario()).Trim()})"), es_fuente_negrita = true, background = "#60A5F3", es_header_2 = true };
 			listaCuentaFin.Add(item);
@@ -426,13 +444,54 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			item = new LibroBancoResumenDto { descripcion = "Débitos realizadios por el banco (Int., Dev. de Perc., Dev. de Int., Dev. de Ret., Dev. de Com.) no conciliados en Extracto", saldo = $"{itemFinan.debitos_ext.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}", es_fuente_negrita = false, background = "" };
 			listaCuentaFin.Add(item);
 			var subTotal = mas - menos;
-			if (subTotal < 0) subTotal *= -1;
-			item = new LibroBancoResumenDto { descripcion = "SubTotal", saldo = (tipoGrilla == TipoGrillaCuentaFinanciera.CuentaFinanciera ? $"{subTotal.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}" : $"({subTotal.ToString("C", ForzarObtenerFormatoMonetario()).Trim()})"), es_fuente_negrita = true, background = "#60A5F3", es_header_2 = true };
-			listaCuentaFin.Add(item);
-			var saldo = ((-1) * itemFinan.saldo_sis) + subTotal;
-			if (saldo < 0) saldo *= -1;
-			item = new LibroBancoResumenDto { descripcion = (tipoGrilla == TipoGrillaCuentaFinanciera.CuentaFinanciera ? "Saldo Cuenta Banco al Cierre" : "Saldo Estado de Cuenta Financiera al Cierre"), saldo = (tipoGrilla == TipoGrillaCuentaFinanciera.CuentaFinanciera ? $"{saldo.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}" : $"({saldo.ToString("C", ForzarObtenerFormatoMonetario()).Trim()})"), es_fuente_negrita = true, background = "#D3D047", es_header_1 = true };
-			listaCuentaFin.Add(item);
+			if (tipoGrilla == TipoGrillaCuentaFinanciera.CuentaFinanciera)
+			{
+				item = new LibroBancoResumenDto
+				{
+					descripcion = "SubTotal",
+					saldo = subTotal < 0 ? $"{(-1 * subTotal).ToString("C", ForzarObtenerFormatoMonetario()).Trim()}" : $"{subTotal.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}",
+					es_fuente_negrita = true,
+					background = "#60A5F3",
+					es_header_2 = true
+				};
+				listaCuentaFin.Add(item);
+
+				var saldo = itemFinan.saldo_sis + subTotal;
+				if (saldo < 0) saldo *= -1;
+				item = new LibroBancoResumenDto
+				{
+					descripcion = "Saldo Cuenta Banco al Cierre",
+					saldo = $"{saldo.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}",
+					es_fuente_negrita = true,
+					background = "#D3D047",
+					es_header_1 = true
+				};
+				listaCuentaFin.Add(item);
+			}
+			else
+			{
+				item = new LibroBancoResumenDto
+				{
+					descripcion = "SubTotal",
+					saldo = subTotal < 0 ? $"({(-1 * subTotal).ToString("C", ForzarObtenerFormatoMonetario()).Trim()})" : $"({subTotal.ToString("C", ForzarObtenerFormatoMonetario()).Trim()})",
+					es_fuente_negrita = true,
+					background = "#60A5F3",
+					es_header_2 = true
+				};
+				listaCuentaFin.Add(item);
+
+				var saldo = subTotal - itemFinan.saldo_ext;
+				if (saldo < 0) saldo *= -1;
+				item = new LibroBancoResumenDto
+				{
+					descripcion = "Saldo Estado de Cuenta Financiera al Cierre",
+					saldo = $"({saldo.ToString("C", ForzarObtenerFormatoMonetario()).Trim()})",
+					es_fuente_negrita = true,
+					background = "#D3D047",
+					es_header_1 = true
+				};
+				listaCuentaFin.Add(item);
+			}
 			return listaCuentaFin;
 		}
 		private void CargarDatosIniciales(FiltroModel model)

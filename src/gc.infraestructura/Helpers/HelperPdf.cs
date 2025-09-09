@@ -750,19 +750,19 @@ namespace gc.infraestructura.Helpers
 		}
 
 		public static void GenerarListadoDesdeLista<T>(
-	Document pdf,
-	List<T> lista,
-	List<string> campos,
-	float[] anchos,
-	Font fuente,
-	bool incluirHoraEnFechas = false,
-	bool agregarFilaTotal = false,
-	Dictionary<string, decimal>? totalesPorCampo = null,
-	bool formatearBooleanos = false,
-	BooleanDisplayFormat formatoBooleano = BooleanDisplayFormat.SiNo,
-	bool valorExitoEsTrue = true,
-	bool anioEnCuatroDigitos = true,
-	bool estableceColorCamposBooleanos = false)
+			Document pdf,
+			List<T> lista,
+			List<string> campos,
+			float[] anchos,
+			Font fuente,
+			bool incluirHoraEnFechas = false,
+			bool agregarFilaTotal = false,
+			Dictionary<string, decimal>? totalesPorCampo = null,
+			bool formatearBooleanos = false,
+			BooleanDisplayFormat formatoBooleano = BooleanDisplayFormat.SiNo,
+			bool valorExitoEsTrue = true,
+			bool anioEnCuatroDigitos = true,
+			bool estableceColorCamposBooleanos = false)
 		{
 			if (lista == null || lista.Count == 0 || campos == null || campos.Count == 0)
 				return;
@@ -1993,6 +1993,198 @@ namespace gc.infraestructura.Helpers
 			//pdf.Add(tablaTotal);
 		}
 
+		public static void CargarTablaLibroBancoResumenFinancieros(Document pdf, List<FinancieroBcoLibroResumenDto> regs, Font fuenteEtiqueta, Font fuenteValor)
+		{
+			List<string> _campos = ["Descripcion", "Saldo", "H1", "H2", ];
+			float[] _anchoCampoTabla = [75, 25, 0, 0];
+			PdfPTable tablaTitulo = new(3)
+			{
+				WidthPercentage = 100
+			};
+			tablaTitulo.SetWidths(new float[] { 49, 2, 49 }); // espacio central del 4%
+
+			// CELDA #1
+			var regsAux = ObtenerGrillaCuentaFinanciera(regs, TipoGrillaCuentaFinanciera.CuentaFinanciera).Select(x => new
+			{
+				Descripcion = x.descripcion,
+				Saldo = x.saldo,
+				H1 = x.es_header_1,
+				H2 = x.es_header_2
+			}).ToList();
+			PdfPTable tablaInterna = HelperPdf.GenerarListadoDesdeLista(regsAux, _campos, _anchoCampoTabla, fuenteEtiqueta, true, true, null, true, BooleanDisplayFormat.SiNo, false, true);
+			PdfPCell celdaConTabla = new(tablaInterna)
+			{
+				Border = Rectangle.NO_BORDER,
+				Padding = 5,
+			};
+			tablaTitulo.AddCell(celdaConTabla);
+
+			
+			//Celda #2 (espacio en blanco)
+			tablaTitulo.AddCell(new PdfPCell(new Phrase("")) { Border = Rectangle.NO_BORDER });
+
+			
+			//Celda #3
+			var regsAux2 = ObtenerGrillaCuentaFinanciera(regs, TipoGrillaCuentaFinanciera.CuentaBanco).Select(x => new
+			{
+				Descripcion = x.descripcion,
+				Saldo = x.saldo,
+				H1 = x.es_header_1,
+				H2 = x.es_header_2
+			}).ToList();
+			PdfPTable tablaInterna2 = HelperPdf.GenerarListadoDesdeLista(regsAux2, _campos, _anchoCampoTabla, fuenteEtiqueta, true, true, null, true, BooleanDisplayFormat.SiNo, false, true);
+			PdfPCell celdaConTabla2 = new(tablaInterna2)
+			{
+				Border = Rectangle.NO_BORDER,
+				Padding = 5,
+			};
+			tablaTitulo.AddCell(celdaConTabla2);
+			pdf.Add(tablaTitulo);
+		}
+
+		private static PdfPCell AplicarEstiloCelda(PdfPCell celda, string claseCss, Font fuente)
+		{
+			switch (claseCss)
+			{
+				case "destacado-header-1":
+					celda.BackgroundColor = new BaseColor(211, 208, 71);
+					celda.Phrase.Font = new Font(fuente.BaseFont, fuente.Size, Font.BOLD);
+					break;
+				case "destacado-header-2":
+					celda.BackgroundColor = new BaseColor(96, 165, 243);
+					celda.Phrase.Font = new Font(fuente.BaseFont, fuente.Size, Font.BOLD);
+					break;
+				case "no-destacado":
+					celda.BackgroundColor = BaseColor.White;
+					break;
+			}
+			return celda;
+		}
+
+
+		public static PdfPTable GenerarListadoDesdeLista<T>(
+			List<T> lista,
+			List<string> campos,
+			float[] anchoColumnas,
+			Font fuente,
+			bool mostrarCabecera = true,
+			bool mostrarBordes = true,
+			string titulo = null,
+			bool ajustarAncho = true,
+			BooleanDisplayFormat formatoBooleano = BooleanDisplayFormat.SiNo,
+			bool mostrarTotales = false,
+			bool aplicarFormatoMoneda = false
+		)
+		{
+			PdfPTable tabla = new PdfPTable(campos.Count);
+			tabla.WidthPercentage = 100;
+
+			if (ajustarAncho && anchoColumnas != null)
+				tabla.SetWidths(anchoColumnas);
+
+			if (!string.IsNullOrEmpty(titulo))
+			{
+				PdfPCell celdaTitulo = new PdfPCell(new Phrase(titulo, fuente))
+				{
+					Colspan = campos.Count,
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					Border = Rectangle.NO_BORDER,
+					PaddingBottom = 5f
+				};
+				tabla.AddCell(celdaTitulo);
+			}
+
+			if (mostrarCabecera)
+			{
+				foreach (var campo in campos)
+				{
+					PdfPCell celdaCabecera = new PdfPCell(new Phrase(campo, fuente))
+					{
+						BackgroundColor = BaseColor.LightGray,
+						HorizontalAlignment = Element.ALIGN_CENTER
+					};
+					tabla.AddCell(celdaCabecera);
+				}
+			}
+
+			foreach (var item in lista)
+			{
+				for (int i = 0; i < campos.Count; i++)
+				{
+					var h1 = item.GetType().GetProperty(campos[2])?.GetValue(item, null);
+					var h2 = item.GetType().GetProperty(campos[3])?.GetValue(item, null);
+					var campo = campos[i];
+					object valor = item.GetType().GetProperty(campo)?.GetValue(item, null);
+					string texto = FormatearValor(valor, formatoBooleano, aplicarFormatoMoneda);
+
+					PdfPCell celda = new(new Phrase(texto, fuente))
+					{
+						HorizontalAlignment = i == 1 ? Element.ALIGN_RIGHT : Element.ALIGN_LEFT
+					};
+
+					string claseFila = (bool)h1 ? "destacado-header-1" : (bool)h2 ? "destacado-header-2" : "no-destacado";
+					celda = AplicarEstiloCelda(celda, claseFila, fuente);
+					tabla.AddCell(celda);
+				}
+
+			}
+
+			return tabla;
+		}
+		private static string FormatearValor(object valor, BooleanDisplayFormat formatoBooleano, bool aplicarFormatoMoneda)
+		{
+			if (valor == null) return "";
+
+			if (valor is bool b)
+				return formatoBooleano == BooleanDisplayFormat.SiNo ? (b ? "Sí" : "No") : b.ToString();
+
+			if (aplicarFormatoMoneda && valor is decimal d)
+				return d.ToString("C", new CultureInfo("es-AR"));
+
+			return valor.ToString();
+		}
+
+
+		/*
+		 PdfPTable tabla = GeneraTabla(1, [100f], 100, 10, 10);
+			PdfPTable tablaDatos = GeneraTabla(4, [20f, 45f, 15f, 20f], 100, 10, 10);
+
+			// FILA 0
+			tablaDatos.AddCell(CeldaSinBorde(string.Empty, fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos.AddCell(CeldaSinBorde(string.Empty, fuenteValor, Element.ALIGN_LEFT));
+			tablaDatos.AddCell(CeldaSinBorde(string.Empty, fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos.AddCell(CeldaSinBorde(string.Empty, fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 1
+			tablaDatos.AddCell(CeldaSinBorde("Tipo de Transferencia:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos.AddCell(CeldaSinBorde(fTra.ttra_desc, fuenteValor, Element.ALIGN_LEFT));
+			tablaDatos.AddCell(CeldaSinBorde("Fec. Registro:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos.AddCell(CeldaSinBorde(fTra.tra_fecha.ToString("dd/MM/yyyy"), fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 2
+			tablaDatos.AddCell(CeldaSinBorde("Concepto:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos.AddCell(CeldaSinBorde(fTra.tra_concepto, fuenteValor, Element.ALIGN_LEFT));
+			tablaDatos.AddCell(CeldaSinBorde(string.Empty, fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos.AddCell(CeldaSinBorde(string.Empty, fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 3 
+			tablaDatos.AddCell(CeldaSinBorde("Fec. Movimiento:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos.AddCell(CeldaSinBorde(fTra.tra_fecha_movi.ToString("dd/MM/yyyy"), fuenteValor, Element.ALIGN_LEFT));
+			tablaDatos.AddCell(CeldaSinBorde("Registrado por:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos.AddCell(CeldaSinBorde(fTra.usu_apellidoynombre, fuenteValor, Element.ALIGN_LEFT));
+
+			PdfPCell celdaSubTabla = new PdfPCell(tablaDatos)
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				VerticalAlignment = Element.ALIGN_MIDDLE
+			};
+
+			tabla.AddCell(celdaSubTabla);
+
+			pdf.Add(tabla);
+		 */
+
 		public static void GenerarListadoAgrupado<T>(
 					Document pdf,
 					List<T> lista,
@@ -2272,6 +2464,115 @@ namespace gc.infraestructura.Helpers
 			formatoPersonalizado.CurrencyDecimalDigits = 2;              // Cantidad de decimales
 			formatoPersonalizado.CurrencyNegativePattern = 1;            // Muestra negativos como "-ARS$ 1.234,56"
 			return formatoPersonalizado;
+		}
+
+		private static List<LibroBancoResumenDto> ObtenerGrillaCuentaFinanciera(List<FinancieroBcoLibroResumenDto> lista, TipoGrillaCuentaFinanciera tipoGrilla)
+		{
+			var listaCuentaFin = new List<LibroBancoResumenDto>();
+			if (lista == null || lista.Count == 0)
+				return listaCuentaFin;
+
+			var itemFinan = lista.First();
+			var item = new LibroBancoResumenDto();
+
+			if (tipoGrilla == TipoGrillaCuentaFinanciera.CuentaFinanciera)
+			{
+				item = new LibroBancoResumenDto
+				{
+					descripcion = "Saldo Estado de Cuenta Financiera al Cierre",
+					saldo = $"({(itemFinan.saldo_sis).ToString("C", ForzarObtenerFormatoMonetario()).Trim()})",
+					es_fuente_negrita = true,
+					background = "#D3D047",
+					es_header_1 = true
+				};
+				listaCuentaFin.Add(item);
+			}
+			else
+			{
+				item = new LibroBancoResumenDto
+				{
+					descripcion = "Saldo Estado de Cuenta Banco al Cierre",
+					saldo = $"{(itemFinan.saldo_ext).ToString("C", ForzarObtenerFormatoMonetario()).Trim()}",
+					es_fuente_negrita = true,
+					background = "#D3D047",
+					es_header_1 = true
+				};
+				listaCuentaFin.Add(item);
+			}
+			var mas = itemFinan.cheques_sis + itemFinan.transferencias_h_sis + itemFinan.creditos_ext;
+			item = new LibroBancoResumenDto { descripcion = (tipoGrilla == TipoGrillaCuentaFinanciera.CuentaFinanciera ? "Mas" : "Menos"), saldo = (tipoGrilla == TipoGrillaCuentaFinanciera.CuentaFinanciera ? $"{mas.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}" : $"({mas.ToString("C", ForzarObtenerFormatoMonetario()).Trim()})"), es_fuente_negrita = true, background = "#60A5F3", es_header_2 = true };
+			listaCuentaFin.Add(item);
+			item = new LibroBancoResumenDto { descripcion = "Cheques emitidos no conciliados en el Sistema", saldo = $"{itemFinan.cheques_sis.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}", es_fuente_negrita = false, background = "" };
+			listaCuentaFin.Add(item);
+			item = new LibroBancoResumenDto { descripcion = "Transferencias hacia bancos (extracciones, retiros) no conciliados en el Sistema", saldo = $"{itemFinan.transferencias_h_sis.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}", es_fuente_negrita = false, background = "" };
+			listaCuentaFin.Add(item);
+			item = new LibroBancoResumenDto { descripcion = "Créditos realizadios por el banco (Perc., Imp., Ret., Com., etc.) no conciliados en Extracto", saldo = $"{itemFinan.creditos_ext.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}", es_fuente_negrita = false, background = "" };
+			listaCuentaFin.Add(item);
+			var menos = itemFinan.depositos_sis + itemFinan.transferencias_d_sis + itemFinan.debitos_ext;
+			item = new LibroBancoResumenDto { descripcion = tipoGrilla == TipoGrillaCuentaFinanciera.CuentaFinanciera ? "Menos" : "Mas", saldo = (tipoGrilla == TipoGrillaCuentaFinanciera.CuentaFinanciera ? $"({menos.ToString("C", ForzarObtenerFormatoMonetario()).Trim()})" : $"{menos.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}"), es_fuente_negrita = true, background = "#60A5F3", es_header_2 = true };
+			listaCuentaFin.Add(item);
+			item = new LibroBancoResumenDto { descripcion = "Cheques de terceros depositados no conciliados en Sistema", saldo = $"{itemFinan.depositos_sis.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}", es_fuente_negrita = false, background = "" };
+			listaCuentaFin.Add(item);
+			item = new LibroBancoResumenDto { descripcion = "Transferencias desde otros bancos (depósitos) pendientes no conciliados en el Sistema", saldo = $"{itemFinan.transferencias_d_sis.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}", es_fuente_negrita = false, background = "" };
+			listaCuentaFin.Add(item);
+			item = new LibroBancoResumenDto { descripcion = "Débitos realizadios por el banco (Int., Dev. de Perc., Dev. de Int., Dev. de Ret., Dev. de Com.) no conciliados en Extracto", saldo = $"{itemFinan.debitos_ext.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}", es_fuente_negrita = false, background = "" };
+			listaCuentaFin.Add(item);
+			var subTotal = mas - menos;
+			if (tipoGrilla == TipoGrillaCuentaFinanciera.CuentaFinanciera)
+			{
+				item = new LibroBancoResumenDto
+				{
+					descripcion = "SubTotal",
+					saldo = subTotal < 0 ? $"{(-1 * subTotal).ToString("C", ForzarObtenerFormatoMonetario()).Trim()}" : $"{subTotal.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}",
+					es_fuente_negrita = true,
+					background = "#60A5F3",
+					es_header_2 = true
+				};
+				listaCuentaFin.Add(item);
+
+				var saldo = itemFinan.saldo_sis + subTotal;
+				if (saldo < 0) saldo *= -1;
+				item = new LibroBancoResumenDto
+				{
+					descripcion = "Saldo Cuenta Banco al Cierre",
+					saldo = $"{saldo.ToString("C", ForzarObtenerFormatoMonetario()).Trim()}",
+					es_fuente_negrita = true,
+					background = "#D3D047",
+					es_header_1 = true
+				};
+				listaCuentaFin.Add(item);
+			}
+			else
+			{
+				item = new LibroBancoResumenDto
+				{
+					descripcion = "SubTotal",
+					saldo = subTotal < 0 ? $"({(-1 * subTotal).ToString("C", ForzarObtenerFormatoMonetario()).Trim()})" : $"({subTotal.ToString("C", ForzarObtenerFormatoMonetario()).Trim()})",
+					es_fuente_negrita = true,
+					background = "#60A5F3",
+					es_header_2 = true
+				};
+				listaCuentaFin.Add(item);
+
+				var saldo = subTotal - itemFinan.saldo_ext;
+				if (saldo < 0) saldo *= -1;
+				item = new LibroBancoResumenDto
+				{
+					descripcion = "Saldo Estado de Cuenta Financiera al Cierre",
+					saldo = $"({saldo.ToString("C", ForzarObtenerFormatoMonetario()).Trim()})",
+					es_fuente_negrita = true,
+					background = "#D3D047",
+					es_header_1 = true
+				};
+				listaCuentaFin.Add(item);
+			}
+			return listaCuentaFin;
+		}
+
+		enum TipoGrillaCuentaFinanciera
+		{
+			CuentaFinanciera = 1,
+			CuentaBanco = 2
 		}
 	}
 

@@ -230,5 +230,20 @@ namespace gc.api.Controllers.Financieros
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FinancieroBcoLibroDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFinancieroBcoLibro(FinancieroBcoLibroRequest request)
+		{
+			ApiResponse<List<FinancieroBcoLibroDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetFinancieroBcoLibro(request);
+
+			response = new ApiResponse<List<FinancieroBcoLibroDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }

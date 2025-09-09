@@ -67,10 +67,44 @@
 		</div>
 		<div class="tab-content">
 			<div class="tab-pane fade show active" id="navs-top-home" role="tabpanel">
+				<div class="row">
+					<div class="col-md-3 col-sm-6">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text">Desde:</span>
+							<input type="date" class="form-control" id="fechaDesdeVencChequeEmitido" />
+						</div>
+					</div>
+					<div class="col-md-3 col-sm-6">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text">Hasta:</span>
+							<input type="date" class="form-control" id="fechaHastaVencChequeEmitido" />
+						</div>
+					</div>
+					<div class="col-md-3 col-sm-6">
+						<div class="input-group input-group-sm">
+							<button type="button" class="btn btn-success" id="btnBuscarVencChequeEmitido"><i class="bx bx-play"></i></button>
+							<button type="button" class="btn btn-warning" id="btnImprimirVencChequeEmitido"><i class="bx bx-printer"></i></button>
+						</div>
+					</div>
+				</div>
 				<div id="divVencimientoChequeEmitido">
 				</div>
 			</div>
 			<div class="tab-pane fade" id="navs-top-profile" role="tabpanel">
+				<div class="row">
+					<div class="col-md-3 col-sm-6">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text">Hasta:</span>
+							<input type="date" class="form-control" id="fechaHastaLibroBancoDetalle" />
+						</div>
+					</div>
+					<div class="col-md-3 col-sm-6">
+						<div class="input-group input-group-sm">
+							<button type="button" class="btn btn-success" id="btnBuscarLibroBancoDetalle"><i class="bx bx-play"></i></button>
+							<button type="button" class="btn btn-warning" id="btnImprimirLibroBancoDetalle"><i class="bx bx-printer"></i></button>
+						</div>
+					</div>
+				</div>
 				<div id="divLibroBancoDetalle">
 				</div>
 			</div>
@@ -89,7 +123,7 @@
 						</div>
 					</div>
 				</div>
-				<div id="divLibroBancoResumen">
+				<div class="row mt-2" id="divLibroBancoResumen">
 				</div>
 			</div>
 			<div class="tab-pane fade" id="navs-top-dog" role="tabpanel">
@@ -129,7 +163,7 @@
 						</div>
 					</div>
 				</div>
-				<div id="divHistoricoLibro">
+				<div class="row mt-2" id="divHistoricoLibro">
 				</div>
 			</div>
 			<div class="tab-pane fade" id="navs-top-tiger" role="tabpanel">
