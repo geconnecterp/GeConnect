@@ -14,12 +14,9 @@
 	$(document).on("click", "#btnImprimirHistoricoLibro", ControlaImpimirHistoricoLibroClick);
 	$(document).on("click", "#btnBuscarLibroBancoResumen", ControlaBuscarLibroBancoResumenClick);
 	$(document).on("click", "#btnImprimirLibroBancoResumen", ControlaImprimirLibroBancoResumenClick);
-	//$(document).on("click", "#btnBuscarVencChequeEmitido", ControlaBuscarVencChequeEmitidoClick);
-	//$(document).on("click", "#btnImprimirVencChequeEmitido", ControlaImprimirVencChequeEmitidoClick);
 	$(document).on("click", "#btnBuscarLibroBancoDetalle", ControlaBuscarLibroBancoDetalleClick);
 	$(document).on("click", "#btnImprimirLibroBancoDetalle", ControlaImprimirLibroBancoDetalleClick);
 	$(document).on("click", "#btnCancel", btnCancelarClick);
-	//btnCancel
 
 	$("#CuentaBancoList").on("dblclick", 'option', function () { $(this).remove(); })
 
@@ -173,6 +170,16 @@ function ControlaBuscarLibroBancoDetalleClick() {
 
 function ControlaImprimirVencChequeEmitidoClick() {
 	ControlaMensajeInfo("Método no implementado.");
+	//var filas = $("#tbGridCheques tbody tr").length;
+	//if (filas == 0) {
+	//	AbrirMensaje("ATENCIÓN", "No hay datos para imprimir.", function () {
+	//		$("#msjModal").modal("hide");
+	//		return true;
+	//	}, false, ["Aceptar"], "error!", null);
+	//}
+	//else {
+
+	//}
 }
 
 function ControlaImprimirLibroBancoResumenClick() {
