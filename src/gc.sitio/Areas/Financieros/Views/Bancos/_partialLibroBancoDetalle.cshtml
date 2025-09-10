@@ -1,0 +1,76 @@
+﻿@model LibroBancoDetalleModel
+<style>
+    .linea {
+        margin-bottom: 8px;
+        font-weight: bold;
+    }
+
+    .azul {
+        color: #007BFF;
+    }
+
+    .rojo {
+        color: #B22222;
+    }
+
+    .linea-con-puntos {
+        display: flex;
+        align-items: center;
+    }
+
+    .descripcion {
+        white-space: nowrap;
+    }
+
+    .puntos {
+        flex-grow: 1;
+        border-bottom: 1px dotted #999;
+        margin: 0 8px;
+        height: 0;
+    }
+
+    .monto {
+        white-space: nowrap;
+    }
+</style>
+
+<div class="card">
+    <div class="card-body">
+        <div class="row">
+            <!-- Líneas en azul -->
+            <div class="col-12 linea azul linea-con-puntos">
+                <span class="descripcion">@Model.saldo_bco_descripcion</span>
+                <span class="puntos"></span>
+                <span class="monto">@Model.saldo_bco</span>
+            </div>
+            <div class="col-12 linea azul linea-con-puntos">
+                <span class="descripcion">@Model.saldo_bco_che_descripcion</span>
+                <span class="puntos"></span>
+                <span class="monto">@Model.saldo_bco_che</span>
+            </div>
+            <div class="col-12 linea azul linea-con-puntos">
+                <span class="descripcion">@Model.saldo_pendiente_descripcion</span>
+                <span class="puntos"></span>
+                <span class="monto">@Model.saldo_pendiente</span>
+            </div>
+
+            <!-- Líneas en rojo -->
+            <div class="col-12 linea rojo linea-con-puntos">
+                <span class="descripcion">@Model.conciliado_m_ant_descripcion</span>
+                <span class="puntos"></span>
+                <span class="monto">@Model.conciliado_m_ant</span>
+            </div>
+            <div class="col-12 linea rojo linea-con-puntos">
+                <span class="descripcion">@Model.conciliado_m_sig_descripcion</span>
+                <span class="puntos"></span>
+                <span class="monto">@Model.conciliado_m_sig</span>
+            </div>
+            <div class="col-12 linea rojo linea-con-puntos">
+                <span class="descripcion">@Model.conciliado_m_pos_descripcion</span>
+                <span class="puntos"></span>
+                <span class="monto">@Model.conciliado_m_pos</span>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -426,5 +426,39 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<FinancieroBcoLibroDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<FinancieroBcoVencChequeEmitidoDto> GetFinancieroBcoVencChequeEmitido(FinancieroBcoVencChequeEmitidoRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_BCO_CH_VTO_PROY;
+			var ps = new List<SqlParameter>()
+			{
+				new("@ctaf_id",request.ctaf_id),
+				new("@desde",request.desde),
+				new("@hasta",request.hasta),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<FinancieroBcoVencChequeEmitidoDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<FinancieroBcoVencChequeEmitidoListaDto> GetFinancieroBcoVencChequeEmitidoLista(FinancieroBcoVencChequeEmitidoListaRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_BCO_CH_EMITIDOS_LISTA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@id_f",request.id_f),
+				new("@ctaf_id",request.ctaf_id),
+				new("@id_c",request.id_c),
+				new("@cta_id",request.cta_id),
+				new("@id_u",request.id_u),
+				new("@usu_id",request.usu_id),
+				new("@tipo_fecha",request.tipo_fecha),
+				new("@desde",request.desde),
+				new("@hasta",request.hasta),
+				new("@estado",request.estado),
+				new("@impreso",request.impreso),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<FinancieroBcoVencChequeEmitidoListaDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

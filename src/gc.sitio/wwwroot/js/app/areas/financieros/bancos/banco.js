@@ -6,14 +6,16 @@
 
 	$(document).on("change", "#btnCancelar", btnCancelarClick);
 	$(document).on("change", "#listaCuentaBanco", ControlalistaCuentaBancoSelected);
+	$(document).on("click", "#btnBuscarVencChequeEmitido", ControlaBuscarVencChequeEmitidoClick);
+	$(document).on("click", "#btnImprimirVencChequeEmitido", ControlaImprimirVencChequeEmitidoClick);
 	$(document).on("click", "#btnBuscarExtractoBancario", ControlaBuscarExtractoBancarioClick);
 	$(document).on("click", "#btnImprimirExtractoBancario", ControlaImpimirExtractoBancarioClick);
 	$(document).on("click", "#btnBuscarHistoricoLibro", ControlaBuscarHistoricoLibroClick);
 	$(document).on("click", "#btnImprimirHistoricoLibro", ControlaImpimirHistoricoLibroClick);
 	$(document).on("click", "#btnBuscarLibroBancoResumen", ControlaBuscarLibroBancoResumenClick);
 	$(document).on("click", "#btnImprimirLibroBancoResumen", ControlaImprimirLibroBancoResumenClick);
-	$(document).on("click", "#btnBuscarVencChequeEmitido", ControlaBuscarVencChequeEmitidoClick);
-	$(document).on("click", "#btnImprimirVencChequeEmitido", ControlaImprimirVencChequeEmitidoClick);
+	//$(document).on("click", "#btnBuscarVencChequeEmitido", ControlaBuscarVencChequeEmitidoClick);
+	//$(document).on("click", "#btnImprimirVencChequeEmitido", ControlaImprimirVencChequeEmitidoClick);
 	$(document).on("click", "#btnBuscarLibroBancoDetalle", ControlaBuscarLibroBancoDetalleClick);
 	$(document).on("click", "#btnImprimirLibroBancoDetalle", ControlaImprimirLibroBancoDetalleClick);
 	$(document).on("click", "#btnCancel", btnCancelarClick);
@@ -106,13 +108,68 @@ function ControlaImprimirLibroBancoDetalleClick() {
 	ControlaMensajeInfo("Método no implementado.");
 }
 
-function ControlaBuscarLibroBancoDetalleClick() {
-	ControlaMensajeInfo("Método no implementado.");
+function selectReg(x, gridId) {
+	$("#" + gridId + " tbody tr").each(function (index) {
+		$(this).removeClass("selected-row");
+		$(this).removeClass("selectedEdit-row");
+	});
+	$(x).addClass("selected-row");
+	if (gridId == "tbGridCheques") {
+		console.log(x.childNodes);
+		var ctaf_id = ctafIdSelected;
+		var desde = x.childNodes[0].innerText;
+		var hasta = x.childNodes[0].innerText;
+		var data = { ctaf_id, desde, hasta };
+		PostGenHtml(data, buscarVencimientoChequeEmitidoListaURL, function (obj) {
+			$("#divListaCheques").html(obj);
+			return true
+		}, function (obj) {
+			ControlaMensajeError(obj.message);
+		});
+	}
 }
 
 function ControlaBuscarVencChequeEmitidoClick() {
-	ControlaMensajeInfo("Método no implementado.");
+	AbrirWaiting();
+	var ctaf_id = ctafIdSelected;
+	var desde = $("#fechaDesdeVencChequeEmitido").val();
+	var hasta = $("#fechaHastaVencChequeEmitido").val();
+	var data = { ctaf_id, desde, hasta };
+	PostGenHtml(data, buscarVencimientoChequeEmitidoURL, function (obj) {
+		CerrarWaiting();
+		$("#divVencimientoChequeEmitido").html(obj);
+		var filas = $("#tbGridCheques tbody tr").length;
+		if (filas == 0) {
+			AbrirMensaje("ATENCIÓN", "No hay datos de Vencimiento de Cheques Emitidos.", function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		return true
+	}, function (obj) {
+		ControlaMensajeError(obj.message);
+		CerrarWaiting();
+	});
 }
+
+function ControlaBuscarLibroBancoDetalleClick() {
+	AbrirWaiting();
+	var ctaf_id = ctafIdSelected;
+	var hasta = $("#fechaHastaLibroBancoDetalle").val();
+	var data = { ctaf_id, hasta };
+	PostGenHtml(data, obtenerLibroDetalleURL, function (obj) {
+		CerrarWaiting();
+		$("#divLibroBancoDetalle").html(obj);
+		return true
+	}, function (obj) {
+		ControlaMensajeError(obj.message);
+		CerrarWaiting();
+	});
+}
+
+//function ControlaBuscarVencChequeEmitidoClick() {
+//	ControlaMensajeInfo("Método no implementado.");
+//}
 
 function ControlaImprimirVencChequeEmitidoClick() {
 	ControlaMensajeInfo("Método no implementado.");
@@ -369,7 +426,7 @@ function PosicionarseEnTabVencimientoChequeEmitido() {
 	var data = {};
 	PostGenHtml(data, posicionarseEnTabVencimientoChequeEmitidoURL, function (obj) {
 		CerrarWaiting();
-		$("#divVencimientoChequeEmitido").html(obj);
+		//$("#divVencimientoChequeEmitido").html(obj);
 		$("#CtafId").val(ctafIdSelected);
 		$("#CtafDesc").val(ctafDenominacionSelected);
 		$("#divFiltros").removeClass("show").addClass("collapse");

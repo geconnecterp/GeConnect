@@ -1,0 +1,46 @@
+﻿@model VencimientoChequeEmitidoModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	var alt = true;
+	string clase = string.Empty;
+	//string sortDirInv = Model.GrillaHistorico.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+<div class="table-responsive table-wrapper-400">
+	<table class="table table-bordered table-sm mb-0 table-golden" id="tbGridChequesDetalle">
+		<thead>
+			<tr class="header">
+				<th class="align-center">Fec. Vto.</th>
+				<th class="align-center">Emitidos</th>
+				<th class="align-center">No Entregados</th>
+				<th class="align-center">Depositados</th>
+				<th class="align-center">Saldo Proy.</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.GrillaChequesDetalle != null && Model.GrillaChequesDetalle.ListaDatos != null && Model.GrillaChequesDetalle.ListaDatos.Count > 0)
+			{
+				@foreach (var item in Model.GrillaChequesDetalle.ListaDatos)
+				{
+					<tr class="@clase" onclick="selectReg(this, 'tbGridCheques')">
+						<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_fecha) align-center cell-fit-content">@Model.GrillaChequesDetalle.FormatearDato(item.che_fecha, FormatDato.Fecha)</td>
+						<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_fecha_emi) align-center cell-fit-content">@Model.GrillaChequesDetalle.FormatearDato(item.che_fecha_emi, FormatDato.Fecha)</td>
+						<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_nro) align-center cell-fit-content">@Model.GrillaChequesDetalle.FormatearDato(item.che_nro, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_anombre) align-center cell-fit-content">@Model.GrillaChequesDetalle.FormatearDato(item.che_anombre, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_estado_desc) align-center cell-fit-content">@Model.GrillaChequesDetalle.FormatearDato(item.che_estado_desc, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_importe) align-center cell-fit-content">@Model.GrillaChequesDetalle.FormatearDato(item.che_importe, FormatDato.Monto)</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>
+<div class="row col-12 mb-1">
+	<div class="col-7"></div>
+	<div class="col-2"></div>
+	<div class="col-3 justify-content-sm-end">
+		<div class="input-group input-group-sm">
+			<span class="input-group-text">Totales: </span>
+			<input type="text" asp-for="Total" class="form-control inputEditable" disabled style="text-align:end;" />
+		</div>
+	</div>
+</div>

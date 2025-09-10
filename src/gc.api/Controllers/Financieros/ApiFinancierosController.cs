@@ -245,5 +245,35 @@ namespace gc.api.Controllers.Financieros
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FinancieroBcoVencChequeEmitidoDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFinancieroBcoVencChequeEmitido(FinancieroBcoVencChequeEmitidoRequest request)
+		{
+			ApiResponse<List<FinancieroBcoVencChequeEmitidoDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetFinancieroBcoVencChequeEmitido(request);
+
+			response = new ApiResponse<List<FinancieroBcoVencChequeEmitidoDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FinancieroBcoVencChequeEmitidoListaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFinancieroBcoVencChequeEmitidoLista(FinancieroBcoVencChequeEmitidoListaRequest request)
+		{
+			ApiResponse<List<FinancieroBcoVencChequeEmitidoListaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetFinancieroBcoVencChequeEmitidoLista(request);
+
+			response = new ApiResponse<List<FinancieroBcoVencChequeEmitidoListaDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }

@@ -2,6 +2,7 @@
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Financieros;
+using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
@@ -81,7 +82,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
-		public IActionResult PosicionarseEnTabVencimientoChequeEmitido()
+		public IActionResult PosicionarseEnTabVencimientoChequeEmitido(FinancieroBcoVencChequeEmitidoRequest request)
 		{
 			var model = new VencimientoChequeEmitidoModel();
 			try
@@ -92,19 +93,66 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 				model.FechaDesde = DateTime.Today;
 				model.FechaHasta = DateTime.Today;
-
-				if (ListaChequesAgrupados == null || ListaChequesAgrupados.Count == 0)
-					model.GrillaCheques = new GridCoreSmart<FinancieroChequeDepositadoDto>();
-				else
-					model.GrillaCheques = ObtenerGridCoreSmart<FinancieroChequeDepositadoDto>(ListaChequesAgrupados);
-
-				if (ListaChequesDetalles == null || ListaChequesDetalles.Count == 0)
-					model.GrillaChequesDetalle = new GridCoreSmart<FinancieroChequeDepositadoDto>();
-				else
-					model.GrillaChequesDetalle = ObtenerGridCoreSmart<FinancieroChequeDepositadoDto>(ListaChequesDetalles);
-
+				model.GrillaCheques = new GridCoreSmart<FinancieroBcoVencChequeEmitidoDto>();
+				model.GrillaChequesDetalle = new GridCoreSmart<FinancieroBcoVencChequeEmitidoListaDto>();
 				model.Total = 0;
 				return PartialView("_tabVencimientoChequeEmitido", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult BuscarVencimientoChequeEmitido(FinancieroBcoVencChequeEmitidoRequest request)
+		{
+			var model = new VencimientoChequeEmitidoModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var res = _financieroServicio.GetFinancieroBcoVencChequeEmitido(request, TokenCookie);
+				model.GrillaCheques = ObtenerGridCoreSmart<FinancieroBcoVencChequeEmitidoDto>(res);
+				return PartialView("_tabVencimientoChequeEmitido", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult BuscarVencimientoChequeEmitidoLista(FinancieroBcoVencChequeEmitidoListaRequest request)
+		{
+			var model = new VencimientoChequeEmitidoModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var res = _financieroServicio.GetFinancieroBcoVencChequeEmitidoLista(request, TokenCookie);
+				if (res == null || res.Count < 0)
+					return PartialView("_partialVencimientoChequeEmitidoLista", model);
+
+				model.GrillaChequesDetalle = ObtenerGridCoreSmart<FinancieroBcoVencChequeEmitidoListaDto>(res);
+				model.Total = res.Sum(x => x.che_importe);
+				return PartialView("_partialVencimientoChequeEmitidoLista", model);
 			}
 			catch (Exception ex)
 			{
@@ -339,6 +387,111 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				return PartialView("_gridMensaje", response);
 			}
 		}
+
+		public IActionResult PosicionarseEnTabLibroDetalle(FinancieroBcoLibroRequest request)
+		{
+			var model = new LibroBancoDetalleModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				if (request == null)
+				{
+					RespuestaGenerica<EntidadBase> response = new()
+					{
+						Ok = false,
+						EsError = true,
+						EsWarn = false,
+						Mensaje = "Request vacío"
+					};
+					return PartialView("_gridMensaje", response);
+				}
+
+				return PartialView("_tabLibroBancoDetalle", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult ObtenerLibroDetalle(FinancieroBcoLibroRequest request)
+		{
+			var model = new LibroBancoDetalleModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				if (request == null)
+				{
+					RespuestaGenerica<EntidadBase> response = new()
+					{
+						Ok = false,
+						EsError = true,
+						EsWarn = false,
+						Mensaje = "Request vacío"
+					};
+					return PartialView("_gridMensaje", response);
+				}
+
+				var lista = _financieroServicio.GetFinancieroBcoLibro(request, TokenCookie);
+				if (lista == null || lista.Count == 0)
+				{
+					RespuestaGenerica<EntidadBase> response = new()
+					{
+						Ok = false,
+						EsError = false,
+						EsWarn = true,
+						Mensaje = "No se encontraron datos para los parámetros seleccionados."
+					};
+					return PartialView("_gridMensaje", response);
+				}
+				var item = lista.First();
+				model.saldo_bco = item.saldo_bco > 0 ? item.saldo_bco.ToString("C", ForzarObtenerFormatoMonetario()).Trim() : $"({(-1 * item.saldo_bco).ToString("C", ForzarObtenerFormatoMonetario()).Trim()})";
+				model.saldo_bco_descripcion = $"Saldo Libro Banco al {request.hasta:dd/MM/yyyy}";
+				model.saldo_bco_che = item.saldo_bco_che > 0 ? item.saldo_bco_che.ToString("C", ForzarObtenerFormatoMonetario()).Trim() : $"({(-1 * item.saldo_bco_che).ToString("C", ForzarObtenerFormatoMonetario()).Trim()})";
+				model.saldo_bco_che_descripcion = $"Saldo Libro Banco al {request.hasta:dd/MM/yyyy}";
+				model.saldo_pendiente = item.saldo_pendiente > 0 ? item.saldo_pendiente.ToString("C", ForzarObtenerFormatoMonetario()).Trim() : $"({(-1 * item.saldo_pendiente).ToString("C", ForzarObtenerFormatoMonetario()).Trim()})";
+				model.saldo_pendiente_descripcion = $"Cheques Pendientes de Entrega al {request.hasta:dd/MM/yyyy}";
+				model.conciliado_m_ant = item.conciliado_m_ant > 0 ? item.conciliado_m_ant.ToString("C", ForzarObtenerFormatoMonetario()).Trim() : $"({(-1 * item.conciliado_m_ant).ToString("C", ForzarObtenerFormatoMonetario()).Trim()})";
+				model.conciliado_m_ant_descripcion = $"Saldo Conciliado en Lib. Bco. Mes Anterior al {request.hasta:MMyyyy}";
+				model.conciliado_m_sig = item.conciliado_m_sig > 0 ? item.conciliado_m_sig.ToString("C", ForzarObtenerFormatoMonetario()).Trim() : $"({(-1 * item.conciliado_m_sig).ToString("C", ForzarObtenerFormatoMonetario()).Trim()})";
+				model.conciliado_m_sig_descripcion = $"Saldo Conciliado en Lib. Bco. Mes Siguiente al {request.hasta:MMyyyy}";
+				model.conciliado_m_pos = item.conciliado_m_pos != null ? item.conciliado_m_pos.Value > 0 ? item.conciliado_m_pos.Value.ToString("C", ForzarObtenerFormatoMonetario()).Trim() : "0" : $"({(-1 * item.conciliado_m_pos).Value.ToString("C", ForzarObtenerFormatoMonetario()).Trim()})";
+				model.conciliado_m_pos_descripcion = $"Saldo Conciliado en Lib. Bco. Mes Siguiente Posterior al {request.hasta:MMyyyy}";
+				model.GrillaBcoLibro_Cero = ObtenerGridCoreSmart<FinancieroBcoLibroDto>([.. lista.Where(x => x.tipo == '0')]);
+				model.Descripcion_Grid_Cero = string.Empty;
+				model.GrillaBcoLibro_Uno = ObtenerGridCoreSmart<FinancieroBcoLibroDto>([.. lista.Where(x => x.tipo == '1')]);
+				model.Descripcion_Grid_Uno = "Movimientos Extracto - no Conciliados";
+				model.GrillaBcoLibro_Dos = ObtenerGridCoreSmart<FinancieroBcoLibroDto>([.. lista.Where(x => x.tipo == '2')]);
+				model.Descripcion_Grid_Dos = $"Movimientos Libro Banco con vto al {request.hasta:dd/MM/yyyy} - no Conciliados";
+
+				return PartialView("_tabLibroBancoDetalle", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		
 
 		/// <summary>
 		/// Establece el tipo de reporte seleccionado por el usuario para la consulta de órdenes de pago.

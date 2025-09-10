@@ -1,3 +1,47 @@
 ﻿@model VencimientoChequeEmitidoModel
+@using static gc.infraestructura.Helpers.GridHelper
 @{
+	var alt = true;
+	string clase = string.Empty;
+	//string sortDirInv = Model.GrillaHistorico.SortDir.Equals("ASC") ? "DESC" : "ASC";
 }
+<style>
+</style>
+<div class="card">
+	<div class="card-body">
+		<div class="row">
+			<div class="col-6">
+				<div class="table-responsive table-wrapper-400">
+					<table class="table table-bordered table-sm mb-0 table-golden" id="tbGridCheques">
+						<thead>
+							<tr class="header">
+								<th class="align-center">Fec. Vto.</th>
+								<th class="align-center">Emitidos</th>
+								<th class="align-center">No Entregados</th>
+								<th class="align-center">Depositados</th>
+								<th class="align-center">Saldo Proy.</th>
+							</tr>
+						</thead>
+						<tbody>
+							@if (Model != null && Model.GrillaCheques != null && Model.GrillaCheques.ListaDatos != null && Model.GrillaCheques.ListaDatos.Count > 0)
+							{
+								@foreach (var item in Model.GrillaCheques.ListaDatos)
+								{
+									<tr class="@clase" onclick="selectReg(this, 'tbGridCheques')">
+										<td class="@Model.GrillaCheques.ObtenerClase(item.hasta) align-center cell-fit-content">@Model.GrillaCheques.FormatearDato(item.hasta, FormatDato.Fecha)</td>
+										<td class="@Model.GrillaCheques.ObtenerClase(item.che_emi_ent) align-center cell-fit-content">@Model.GrillaCheques.FormatearDato(item.che_emi_ent, FormatDato.Monto)</td>
+										<td class="@Model.GrillaCheques.ObtenerClase(item.che_emi_nent) align-center cell-fit-content">@Model.GrillaCheques.FormatearDato(item.che_emi_nent, FormatDato.Monto)</td>
+										<td class="@Model.GrillaCheques.ObtenerClase(item.che_depo) align-center cell-fit-content">@Model.GrillaCheques.FormatearDato(item.che_depo, FormatDato.Monto)</td>
+										<td class="@Model.GrillaCheques.ObtenerClase(item.saldo_bco) align-center cell-fit-content">@Model.GrillaCheques.FormatearDato(item.saldo_bco, FormatDato.Monto)</td>
+									</tr>
+								}
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div class="col-6" id="divListaCheques">
+			</div>
+		</div>
+	</div>
+</div>
