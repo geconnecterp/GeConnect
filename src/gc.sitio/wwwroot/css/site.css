@@ -2153,3 +2153,12 @@ input, select, textarea, button, checkbox, radio {
     padding-left: 0.1rem !important;
     padding-right: 0.1rem !important;
 }
+
+/* Validación visual para campos inválidos en ofertas */
+.input-precio-oferta.is-invalid,
+.input-tope-venta.is-invalid,
+.input-fecha-desde.is-invalid,
+.input-fecha-hasta.is-invalid {
+    border-color: var(--bs-golden-danger, #dc3545) !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
