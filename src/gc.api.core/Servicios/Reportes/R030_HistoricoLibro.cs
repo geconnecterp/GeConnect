@@ -3,20 +3,14 @@ using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
-using gc.infraestructura.Dtos;
-using gc.infraestructura.Dtos.Almacen;
-using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Financieros;
-using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
-using iTextSharp.text.pdf.draw;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Drawing;
 
 namespace gc.api.core.Servicios.Reportes
 {
@@ -60,8 +54,6 @@ namespace gc.api.core.Servicios.Reportes
 				string fHasta;
 				List<FinancieroBcoCtaCteDto> registros = ObtenerDatos(solicitud, out tit, out fDesde, out fHasta);
 
-				//COMPLETAMOS EL TITULO DEL REPORTE AGREGANDO LA DENOMINACIÓN DE LA CUENTA
-				//tit += cliente.Cta_Denominacion;
 				solicitud.Titulo = tit;
 				solicitud.SubTitulo = $"Fecha desde {fDesde} hasta {fHasta}";
 
@@ -98,8 +90,7 @@ namespace gc.api.core.Servicios.Reportes
 				PdfPTable tabla = GeneraCabeceraPDF2_NoFecha(solicitud, chico, titulo, logo, _empresaGeco);
 
 				// Convertir la tabla en un Phrase
-				Phrase phrase = new Phrase();
-				phrase.Add(tabla);
+				Phrase phrase = [tabla];
 
 				// Crear el HeaderFooter con el Phrase que contiene la tabla
 				HeaderFooter header = new(phrase, false)
@@ -117,9 +108,6 @@ namespace gc.api.core.Servicios.Reportes
 				HelperPdf.CargarTablaCtaCteFinancieros(pdf, registros, chico, normalBold);
 				#endregion
 
-				//Chunk linebreak = new Chunk(new LineSeparator(1f, 100f, BaseColor.Black, Element.ALIGN_CENTER, 5));
-				//pdf.Add(linebreak);
-
 				pdf.Close();
 				#endregion
 
@@ -132,9 +120,8 @@ namespace gc.api.core.Servicios.Reportes
 			}
 			catch (Exception ex)
 			{
-				//_logger.Log(typeof(R001_InformeCuentaCorriente), Level.Error, $"Error al generar el informe de cuenta corriente: {ex.Message}", ex);
-				_logger.LogError(ex, "Error en R023");
-				throw new NegocioException("Se produjo un error al intentar generar el Reporte de Orden de Pago Directa. Para mayores datos ver el log.");
+				_logger.LogError(ex, "Error en R030");
+				throw new NegocioException("Se produjo un error al intentar generar el Reporte de Historico Libro. Para mayores datos ver el log.");
 			}
 		}
 

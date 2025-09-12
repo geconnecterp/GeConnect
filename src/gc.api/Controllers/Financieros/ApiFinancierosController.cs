@@ -1,16 +1,12 @@
 ﻿using AutoMapper;
-using Azure;
-using DocumentFormat.OpenXml.Spreadsheet;
 using gc.api.core.Contratos.Servicios;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
-using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

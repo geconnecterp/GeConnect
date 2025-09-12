@@ -3,7 +3,7 @@ namespace gc.infraestructura.Dtos.Financieros
 {
 	public class FinancieroBcoVencChequeEmitidoListaDto : Dto
 	{
-		public string ctaf_id { get; set; }
+		public string ctaf_id { get; set; } = string.Empty;
 		public string ctaf_denominacion { get; set; } = string.Empty;
 		public int che_emision { get; set; }
 		public string che_nro { get; set; } = string.Empty;
@@ -15,7 +15,7 @@ namespace gc.infraestructura.Dtos.Financieros
 		public string usu_id { get; set; } = string.Empty;
 		public DateTime che_fecha_emi { get; set; }
 		public char che_impreso { get; set; }
-		public char? che_op_tra { get; set; }
+		public string che_op_tra { get; set; } = string.Empty;
 		public string op_compte { get; set; } = string.Empty;
 		public string cta_id { get; set; } = string.Empty;
 		public string cta_denominacion { get; set; } = string.Empty;

@@ -3,9 +3,6 @@ using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
-using gc.infraestructura.Dtos;
-using gc.infraestructura.Dtos.Almacen;
-using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
@@ -13,10 +10,8 @@ using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
-using iTextSharp.text.pdf.draw;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Drawing;
 
 namespace gc.api.core.Servicios.Reportes
 {
@@ -56,16 +51,13 @@ namespace gc.api.core.Servicios.Reportes
 				var ms = new MemoryStream();
 				#region Obteniendo registros desde la base de datos
 				string tit;
+				string subTit;
 				string fDesde;
 				string fHasta;
-				List<MovimientoFinancieroListaDto> registros = ObtenerDatos(solicitud, out tit, out fDesde, out fHasta);
+				List<FinancieroBcoVencChequeEmitidoListaDto> registros = ObtenerDatos(solicitud, out tit, out subTit, out fDesde, out fHasta);
 
-				var importe = registros.Sum(x => x.tra_importe);
-
-				//COMPLETAMOS EL TITULO DEL REPORTE AGREGANDO LA DENOMINACIÓN DE LA CUENTA
-				//tit += cliente.Cta_Denominacion;
 				solicitud.Titulo = tit;
-				solicitud.SubTitulo = $"Fecha desde {fDesde} hasta {fHasta}";
+				solicitud.SubTitulo = $"{subTit}";
 
 				//hago el modelo de dato aca ya que necesito los datos de la cuenta
 				var regs = registros.Select(x => new
@@ -100,8 +92,7 @@ namespace gc.api.core.Servicios.Reportes
 				PdfPTable tabla = GeneraCabeceraPDF2_NoFecha(solicitud, chico, titulo, logo, _empresaGeco);
 
 				// Convertir la tabla en un Phrase
-				Phrase phrase = new Phrase();
-				phrase.Add(tabla);
+				Phrase phrase = [tabla];
 
 				// Crear el HeaderFooter con el Phrase que contiene la tabla
 				HeaderFooter header = new(phrase, false)
@@ -116,11 +107,8 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Open();
 
 				#region Lista de Movimientos Financieros
-				HelperPdf.CargarTablaMovimientosFinancieros(pdf, registros, chico, normalBold);
+				HelperPdf.CargarTablaVencimientoDeChequesEmitidos(pdf, registros, chico, normalBold);
 				#endregion
-
-				//Chunk linebreak = new Chunk(new LineSeparator(1f, 100f, BaseColor.Black, Element.ALIGN_CENTER, 5));
-				//pdf.Add(linebreak);
 
 				pdf.Close();
 				#endregion
@@ -134,9 +122,8 @@ namespace gc.api.core.Servicios.Reportes
 			}
 			catch (Exception ex)
 			{
-				//_logger.Log(typeof(R001_InformeCuentaCorriente), Level.Error, $"Error al generar el informe de cuenta corriente: {ex.Message}", ex);
-				_logger.LogError(ex, "Error en R023");
-				throw new NegocioException("Se produjo un error al intentar generar el Reporte de Orden de Pago Directa. Para mayores datos ver el log.");
+				_logger.LogError(ex, "Error en R027");
+				throw new NegocioException("Se produjo un error al intentar generar el Reporte de Vencimiento de Cheques Emitidos. Para mayores datos ver el log.");
 			}
 		}
 
@@ -149,34 +136,21 @@ namespace gc.api.core.Servicios.Reportes
 		}
 
 
-
-		private List<MovimientoFinancieroListaDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo, out string fDesdePrint, out string fHastaPrint)
+		private List<FinancieroBcoVencChequeEmitidoListaDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo, out string subTitulo, out string fDesdePrint, out string fHastaPrint)
 		{
 			fDesdePrint = solicitud.Parametros.GetValueOrDefault("Date1Print", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
 			fHastaPrint = solicitud.Parametros.GetValueOrDefault("Date2Print", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
 			var fDesde = solicitud.Parametros.GetValueOrDefault("desde", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
 			var fHasta = solicitud.Parametros.GetValueOrDefault("hasta", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
-			var ctaf_ori = GetBoolParam(solicitud.Parametros, "ctaf_ori");
-			var ctaf_des = GetBoolParam(solicitud.Parametros, "ctaf_des");
-			var tipo = GetBoolParam(solicitud.Parametros, "tipo");
-			var usu = GetBoolParam(solicitud.Parametros, "usu");
-			var ctaf_ori_list = solicitud.Parametros.GetValueOrDefault("ctaf_ori_list", "") == null ? [] : solicitud.Parametros.GetValueOrDefault("ctaf_ori_list", "").ToString().Split(",").ToList();
-			var ctaf_des_list = solicitud.Parametros.GetValueOrDefault("ctaf_des_list", "") == null ? [] : solicitud.Parametros.GetValueOrDefault("ctaf_des_list", "").ToString().Split(",").ToList();
-			var tipo_list = solicitud.Parametros.GetValueOrDefault("tipo_list", "") == null ? [] : solicitud.Parametros.GetValueOrDefault("tipo_list", "").ToString().Split(",").ToList();
-			var usu_list = solicitud.Parametros.GetValueOrDefault("usu_list", "") == null ? [] : solicitud.Parametros.GetValueOrDefault("usu_list", "").ToString().Split(",").ToList();
-			titulo = $"Consulta de Movimiento Financiero";
-			return _financieroServicio.BuscarMovimientoFinancieroReporte(new ConsultaMovFinancierosRequest() 
+			var ctaf_id = solicitud.Parametros.GetValueOrDefault("ctaf_id", "").ToString();
+			var ctaf_desc = solicitud.Parametros.GetValueOrDefault("ctaf_desc", "").ToString();
+			titulo = $"Cheques Emitidos con Vto. desde el {fDesdePrint} al {fHastaPrint}";
+			subTitulo = $"Cuenta: {ctaf_id} - {ctaf_desc}";
+			return _financieroServicio.GetFinancieroBcoVencChequeEmitidoLista(new FinancieroBcoVencChequeEmitidoListaRequest() 
 			{ 
 				desde = DateTime.Parse(fDesde),
 				hasta = DateTime.Parse(fHasta),
-				ctaf_ori = ctaf_ori,
-				ctaf_ori_list = ctaf_ori_list,
-				ctaf_des = ctaf_des,
-				ctaf_des_list = ctaf_des_list,
-				tipo = tipo,
-				tipo_list = tipo_list,
-				usu = usu,
-				usu_list = usu_list,
+				ctaf_id = ctaf_id,
 			});
 		}
 
@@ -184,9 +158,10 @@ namespace gc.api.core.Servicios.Reportes
 		{
 			#region Obteniendo registros desde la base de datos
 			string tit;
+			string subTit;
 			string fDesde;
 			string fHasta;
-			List<MovimientoFinancieroListaDto> registros = ObtenerDatos(solicitud, out tit, out fDesde, out fHasta);
+			List<FinancieroBcoVencChequeEmitidoListaDto> registros = ObtenerDatos(solicitud, out tit, out subTit, out fDesde, out fHasta);
 
 			if (registros == null || registros.Count == 0)
 			{
@@ -209,9 +184,10 @@ namespace gc.api.core.Servicios.Reportes
 		{
 			#region Obteniendo registros desde la base de datos
 			string tit;
+			string subTit;
 			string fDesde;
 			string fHasta;
-			List<MovimientoFinancieroListaDto> registros = ObtenerDatos(solicitud, out tit, out fDesde, out fHasta);
+			List<FinancieroBcoVencChequeEmitidoListaDto> registros = ObtenerDatos(solicitud, out tit, out subTit, out fDesde, out fHasta);
 
 			if (registros == null || registros.Count == 0)
 			{

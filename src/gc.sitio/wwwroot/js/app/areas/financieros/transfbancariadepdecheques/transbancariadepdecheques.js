@@ -26,13 +26,10 @@
 });
 
 function imprimirTRA() {
-	// Invocar gestor documental
 	invocacionGestorDoc({});
 }
 
 function selectRegDblGrillaValores(x, grilla) {
-	console.log(grilla);
-	console.log(x);
 	var orden = x.childNodes[7].innerText;
 	var sourceSeleccionado = grilla;
 	var data = { orden, sourceSeleccionado };
@@ -55,7 +52,6 @@ const TypeIntervalo = {
 }
 
 function ReseteoDeReportes() {
-	console.log("Reseto de reportes");
 	ReporteResetArre();
 }
 
@@ -111,7 +107,6 @@ function btnAbmAceptarControlar() {
 								else {
 									AbrirMensaje("ATENCIÓN", mensajeOk, function () {
 										$("#msjModal").modal("hide");
-										console.log(obj.id); //Tomar este valor para imprimir.
 										ImprimirTRA_Generada(obj.id);
 										btnAbmCancelarControlar();
 										return true;

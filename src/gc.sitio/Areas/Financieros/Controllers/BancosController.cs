@@ -1,6 +1,5 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
-using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
@@ -53,6 +52,10 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			_docMSv = docManager; //instancio el servicio de impresión
 		}
 
+		/// <summary>
+		/// Muestra la vista principal de Bancos, inicializando los datos y validando autenticación.
+		/// </summary>
+		/// <returns>Vista principal de Bancos o mensaje de error.</returns>
 		public IActionResult Index()
 		{
 			var model = new FiltroModel();
@@ -82,6 +85,11 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
+		/// <summary>
+		/// Inicializa el modelo y la vista parcial para la pestaña de Vencimiento de Cheques Emitidos.
+		/// </summary>
+		/// <param name="request">Parámetros de filtro para la consulta.</param>
+		/// <returns>Vista parcial de la pestaña o mensaje de error.</returns>
 		public IActionResult PosicionarseEnTabVencimientoChequeEmitido(FinancieroBcoVencChequeEmitidoRequest request)
 		{
 			var model = new VencimientoChequeEmitidoModel();
@@ -111,6 +119,11 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
+		/// <summary>
+		/// Busca los cheques emitidos próximos a vencer según los filtros recibidos.
+		/// </summary>
+		/// <param name="request">Parámetros de búsqueda.</param>
+		/// <returns>Vista parcial con los resultados o mensaje de error.</returns>
 		public IActionResult BuscarVencimientoChequeEmitido(FinancieroBcoVencChequeEmitidoRequest request)
 		{
 			var model = new VencimientoChequeEmitidoModel();
@@ -137,6 +150,11 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
+		/// <summary>
+		/// Busca el detalle de los cheques emitidos próximos a vencer.
+		/// </summary>
+		/// <param name="request">Parámetros de búsqueda detallada.</param>
+		/// <returns>Vista parcial con el detalle o mensaje de error.</returns>
 		public IActionResult BuscarVencimientoChequeEmitidoLista(FinancieroBcoVencChequeEmitidoListaRequest request)
 		{
 			var model = new VencimientoChequeEmitidoModel();
@@ -152,6 +170,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 				model.GrillaChequesDetalle = ObtenerGridCoreSmart<FinancieroBcoVencChequeEmitidoListaDto>(res);
 				model.Total = res.Sum(x => x.che_importe);
+				model.TotalStr = res.Sum(x=>x.che_importe).ToString("C", ForzarObtenerFormatoMonetario()).Trim();
 				return PartialView("_partialVencimientoChequeEmitidoLista", model);
 			}
 			catch (Exception ex)
@@ -167,6 +186,11 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
+		/// <summary>
+		/// Inicializa el modelo y la vista parcial para la pestaña de Extracto Bancario.
+		/// </summary>
+		/// <param name="request">Parámetros de filtro para la consulta.</param>
+		/// <returns>Vista parcial de la pestaña o mensaje de error.</returns>
 		public IActionResult PosicionarseEnTabExtractoBancario(FinancieroBcoExtractoRequest request)
 		{
 			var model = new ExtractoBancarioModel();
@@ -204,6 +228,11 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
+		/// <summary>
+		/// Obtiene el extracto bancario según los filtros recibidos.
+		/// </summary>
+		/// <param name="request">Parámetros de búsqueda.</param>
+		/// <returns>Vista parcial con el extracto o mensaje de error.</returns>
 		public IActionResult ObtenerExtractoBancario(FinancieroBcoExtractoRequest request)
 		{
 			var model = new ExtractoBancarioModel();
@@ -240,6 +269,11 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
+		/// <summary>
+		/// Inicializa el modelo y la vista parcial para la pestaña de Histórico de Libro.
+		/// </summary>
+		/// <param name="request">Parámetros de filtro para la consulta.</param>
+		/// <returns>Vista parcial de la pestaña o mensaje de error.</returns>
 		public IActionResult PosicionarseEnTabHistoricoLibro(FinancieroBcoCtaCteRequest request)
 		{
 			var model = new HistoricoLibroModel();
@@ -277,6 +311,11 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
+		/// <summary>
+		/// Obtiene el histórico del libro bancario según los filtros recibidos.
+		/// </summary>
+		/// <param name="request">Parámetros de búsqueda.</param>
+		/// <returns>Vista parcial con el histórico o mensaje de error.</returns>
 		public IActionResult ObtenerHistoricoLibro(FinancieroBcoCtaCteRequest request)
 		{
 			var model = new HistoricoLibroModel();
@@ -314,6 +353,11 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
+		/// <summary>
+		/// Inicializa el modelo y la vista parcial para la pestaña de Libro Banco Resumen.
+		/// </summary>
+		/// <param name="request">Parámetros de filtro para la consulta.</param>
+		/// <returns>Vista parcial de la pestaña o mensaje de error.</returns>
 		public IActionResult PosicionarseEnTabLibroResumen(FinancieroBcoLibroResumenRequest request)
 		{
 			var model = new LibroBancoResumenModel();
@@ -350,6 +394,11 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
+		/// <summary>
+		/// Obtiene el resumen del libro bancario según los filtros recibidos.
+		/// </summary>
+		/// <param name="request">Parámetros de búsqueda.</param>
+		/// <returns>Vista parcial con el resumen o mensaje de error.</returns>
 		public IActionResult ObtenerLibroResumen(FinancieroBcoLibroResumenRequest request)
 		{
 			var model = new LibroBancoResumenModel();
@@ -388,6 +437,11 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
+		/// <summary>
+		/// Inicializa el modelo y la vista parcial para la pestaña de Libro Banco Detalle.
+		/// </summary>
+		/// <param name="request">Parámetros de filtro para la consulta.</param>
+		/// <returns>Vista parcial de la pestaña o mensaje de error.</returns>
 		public IActionResult PosicionarseEnTabLibroDetalle(FinancieroBcoLibroRequest request)
 		{
 			var model = new LibroBancoDetalleModel();
@@ -424,6 +478,11 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
+		/// <summary>
+		/// Obtiene el detalle del libro bancario según los filtros recibidos.
+		/// </summary>
+		/// <param name="request">Parámetros de búsqueda.</param>
+		/// <returns>Vista parcial con el detalle o mensaje de error.</returns>
 		public IActionResult ObtenerLibroDetalle(FinancieroBcoLibroRequest request)
 		{
 			var model = new LibroBancoDetalleModel();
@@ -460,7 +519,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				model.saldo_bco = item.saldo_bco > 0 ? item.saldo_bco.ToString("C", ForzarObtenerFormatoMonetario()).Trim() : $"({(-1 * item.saldo_bco).ToString("C", ForzarObtenerFormatoMonetario()).Trim()})";
 				model.saldo_bco_descripcion = $"Saldo Libro Banco al {request.hasta:dd/MM/yyyy}";
 				model.saldo_bco_che = item.saldo_bco_che > 0 ? item.saldo_bco_che.ToString("C", ForzarObtenerFormatoMonetario()).Trim() : $"({(-1 * item.saldo_bco_che).ToString("C", ForzarObtenerFormatoMonetario()).Trim()})";
-				model.saldo_bco_che_descripcion = $"Saldo Libro Banco al {request.hasta:dd/MM/yyyy}";
+				model.saldo_bco_che_descripcion = $"Saldo Libro Banco al {request.hasta:dd/MM/yyyy} (Con Cheques Entregados)";
 				model.saldo_pendiente = item.saldo_pendiente > 0 ? item.saldo_pendiente.ToString("C", ForzarObtenerFormatoMonetario()).Trim() : $"({(-1 * item.saldo_pendiente).ToString("C", ForzarObtenerFormatoMonetario()).Trim()})";
 				model.saldo_pendiente_descripcion = $"Cheques Pendientes de Entrega al {request.hasta:dd/MM/yyyy}";
 				model.conciliado_m_ant = item.conciliado_m_ant > 0 ? item.conciliado_m_ant.ToString("C", ForzarObtenerFormatoMonetario()).Trim() : $"({(-1 * item.conciliado_m_ant).ToString("C", ForzarObtenerFormatoMonetario()).Trim()})";
@@ -491,12 +550,12 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
-		
-
 		/// <summary>
-		/// Establece el tipo de reporte seleccionado por el usuario para la consulta de órdenes de pago.
+		/// Establece el tipo de reporte seleccionado por el usuario para la consulta bancos.
 		/// Inicializa el gestor de impresión y carga los documentos disponibles según el tipo de reporte.
 		/// </summary>
+		/// <param name="tipoReporte">Tipo de reporte seleccionado.</param>
+		/// <returns>Resultado en formato JSON indicando éxito o error.</returns>
 		public JsonResult SetearTipoDeReporte(int tipoReporte)
 		{
 			try
@@ -508,8 +567,18 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				switch ((TipoDeReporte)tipoReporte)
 				{
 					case TipoDeReporte.VencimientoChequeEmitido:
+						#region Gestor Impresion - Inicializacion de variables
+						titulo = "VENCIMIENTO DE CHEQUES EMITIDOS";
+						DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_1);
+						ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_1);
+						#endregion
 						break;
 					case TipoDeReporte.LibroBancoDetalle:
+						#region Gestor Impresion - Inicializacion de variables
+						titulo = "LIBRO BANCO DETALLE";
+						DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_2);
+						ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_2);
+						#endregion
 						break;
 					case TipoDeReporte.LibroBancoResumen:
 						#region Gestor Impresion - Inicializacion de variables

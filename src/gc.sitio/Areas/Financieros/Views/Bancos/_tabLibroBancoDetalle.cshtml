@@ -43,15 +43,6 @@
 		font-weight: bold;
 	}
 
-	/*
-					.table-wrapper-fixed-head th,
-					.table-wrapper-fixed-head td {
-						box-sizing: border-box;
-					}
-
-					.table-wrapper {
-						overflow-x: hidden;
-					} */
 </style>
 <div class="card">
 	<div class="card-body">
@@ -94,7 +85,7 @@
 			@if (Model != null && Model.GrillaBcoLibro_Cero != null && Model.GrillaBcoLibro_Cero.ListaDatos != null && Model.GrillaBcoLibro_Cero.ListaDatos.Count > 0)
 			{
 				<div class="table-responsive mt-3">
-					<table class="table table-bordered mb-0 table-golden">
+					<table class="table table-bordered mb-0 table-golden" id="tabGrillaCero">
 						<tbody>
 							@foreach (var item in Model.GrillaBcoLibro_Cero.ListaDatos)
 							{
@@ -115,13 +106,14 @@
 			{
 				<h5 class="mt-4 mb-2 azul texto-uniforme">@Model.Descripcion_Grid_Uno</h5>
 				<div class="table-responsive table-wrapper-300">
-					<table class="table table-bordered table-sm mb-0 table-golden">
+					<table class="table table-bordered table-sm mb-0 table-golden" id="tabGrillaUno">
 						<thead>
 							<tr class="texto-uniforme">
 								<th class="align-center">Concepto</th>
 								<th class="align-center">Fecha Reg.</th>
 								<th class="align-center">Fecha Vto.</th>
 								<th class="align-center">Importe</th>
+								<th style="width: 5%;" class="text-sm-center" scope="col">Estado</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -135,6 +127,12 @@
 									<td class="text-center">@fecha</td>
 									<td class="text-center">@fecha_vto</td>
 									<td class="text-end">@importeFormateado</td>
+									<td class="align-center">
+										@if (item.strEstado)
+										{
+											<i class='bx bx-check text-danger'></i>
+										}
+									</td>
 								</tr>
 							}
 						</tbody>
@@ -147,13 +145,14 @@
 			{
 				<h5 class="mt-4 mb-2 azul texto-uniforme">@Model.Descripcion_Grid_Dos</h5>
 				<div class="table-responsive table-wrapper-300">
-					<table class="table table-bordered table-sm mb-0 table-golden">
+					<table class="table table-bordered table-sm mb-0 table-golden" id="tabGrillaDos">
 						<thead>
 							<tr class="texto-uniforme">
 								<th class="align-center">Concepto</th>
 								<th class="align-center">Fecha Reg.</th>
 								<th class="align-center">Fecha Vto.</th>
 								<th class="align-center">Importe</th>
+								<th style="width: 5%;" class="text-sm-center" scope="col">Estado</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -167,6 +166,12 @@
 									<td class="text-center">@fecha</td>
 									<td class="text-center">@fecha_vto</td>
 									<td class="text-end">@importeFormateado</td>
+									<td class="align-center">
+										@if (item.strEstado)
+										{
+											<i class='bx bx-check text-danger'></i>
+										}
+									</td>
 								</tr>
 							}
 						</tbody>

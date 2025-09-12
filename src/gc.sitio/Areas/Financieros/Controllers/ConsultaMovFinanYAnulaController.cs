@@ -9,14 +9,12 @@ using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
-using gc.sitio.Areas.Compras.Models;
 using gc.sitio.Areas.Financieros.Models;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
-using static gc.sitio.Areas.Compras.Controllers.OrdenDePagoAProveedorController;
 
 namespace gc.sitio.Areas.Financieros.Controllers
 {

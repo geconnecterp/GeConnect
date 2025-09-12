@@ -102,8 +102,36 @@ function LimpiarDivs() {
 }
 
 function ControlaImprimirLibroBancoDetalleClick() {
-	ControlaMensajeInfo("Método no implementado.");
+	var filasGrillaCero = $("#tabGrillaCero tbody tr").length;
+	var filasGrillaUno = $("#tabGrillaUno tbody tr").length;
+	var filasGrillaDos = $("#tabGrillaDos tbody tr").length;
+	if (filasGrillaCero == 0 && filasGrillaUno == 0 && filasGrillaDos == 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos para imprimir.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Imprimiendo listado...");
+		var tipoReporte = 2;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				CerrarWaiting();
+				ImpimirLibroBancoDetalleClick();
+			}
+		});
+	}
 }
+
 
 function selectReg(x, gridId) {
 	$("#" + gridId + " tbody tr").each(function (index) {
@@ -114,8 +142,8 @@ function selectReg(x, gridId) {
 	if (gridId == "tbGridCheques") {
 		console.log(x.childNodes);
 		var ctaf_id = ctafIdSelected;
-		var desde = x.childNodes[0].innerText;
-		var hasta = x.childNodes[0].innerText;
+		var desde = x.childNodes[1].innerText;
+		var hasta = x.childNodes[1].innerText;
 		var data = { ctaf_id, desde, hasta };
 		PostGenHtml(data, buscarVencimientoChequeEmitidoListaURL, function (obj) {
 			$("#divListaCheques").html(obj);
@@ -164,22 +192,33 @@ function ControlaBuscarLibroBancoDetalleClick() {
 	});
 }
 
-//function ControlaBuscarVencChequeEmitidoClick() {
-//	ControlaMensajeInfo("Método no implementado.");
-//}
-
 function ControlaImprimirVencChequeEmitidoClick() {
-	ControlaMensajeInfo("Método no implementado.");
-	//var filas = $("#tbGridCheques tbody tr").length;
-	//if (filas == 0) {
-	//	AbrirMensaje("ATENCIÓN", "No hay datos para imprimir.", function () {
-	//		$("#msjModal").modal("hide");
-	//		return true;
-	//	}, false, ["Aceptar"], "error!", null);
-	//}
-	//else {
-
-	//}
+	var filas = $("#tbGridCheques tbody tr").length;
+	if (filas == 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos para imprimir.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Imprimiendo listado...");
+		var tipoReporte = 1;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				CerrarWaiting();
+				ImpimirVencChequeEmitidoClick();
+			}
+		});
+	}
 }
 
 function ControlaImprimirLibroBancoResumenClick() {
@@ -209,6 +248,34 @@ function ControlaImprimirLibroBancoResumenClick() {
 			}
 		});
 	}
+}
+
+function ImpimirLibroBancoDetalleClick() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var hasta = $("#fechaHastaLibroBancoDetalle").val();
+		var ctaf_id = ctafIdSelected;
+		var ctaf_desc = ctafDenominacionSelected;
+		var Date1Print = moment($("#fechaHastaLibroBancoDetalle").val()).format('DD/MM/yyyy')
+		var data = { hasta, ctaf_id, ctaf_desc, Date1Print };
+		cargarReporteEnArre(28, data, "LIBRO BANCO DETALLE", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function ImpimirVencChequeEmitidoClick() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var desde = $("#fechaDesdeVencChequeEmitido").val();
+		var hasta = $("#fechaHastaVencChequeEmitido").val();
+		var ctaf_id = ctafIdSelected;
+		var ctaf_desc = ctafDenominacionSelected;
+		var Date1Print = moment($("#fechaDesdeVencChequeEmitido").val()).format('DD/MM/yyyy')
+		var Date2Print = moment($("#fechaHastaVencChequeEmitido").val()).format('DD/MM/yyyy')
+		var data = { desde, hasta, ctaf_id, ctaf_desc, Date1Print, Date2Print };
+		cargarReporteEnArre(27, data, "VENCIMIENTO DE CHEQUES EMITIDOS", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function ImpimirLibroBancoResumen() {

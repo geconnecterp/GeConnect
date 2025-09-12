@@ -2,14 +2,11 @@
 using gc.api.core.Contratos.Servicios;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
-using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
-using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.OrdenDePago.Request;
 using gc.infraestructura.Dtos.Users;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
@@ -24,6 +21,10 @@ namespace gc.api.core.Servicios
 
 		}
 
+		/// <summary>
+		/// Obtiene la lista de cuentas del plan contable.
+		/// </summary>
+		/// <returns>Lista de cuentas contables.</returns>
 		public List<PlanContableDto> GetPlanContableCuentaLista()
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_CCB_CUENTA_LISTA;
@@ -32,6 +33,10 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
+		/// <summary>
+		/// Obtiene la lista de estados financieros disponibles.
+		/// </summary>
+		/// <returns>Lista de estados financieros.</returns>
 		public List<FinancieroEstadoDto> GetFinancieroEstados()
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_FINANCIERO_ESTADOS;
@@ -40,6 +45,11 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
+		/// <summary>
+		/// Obtiene la lista de cuentas financieras por tipo.
+		/// </summary>
+		/// <param name="tcf_id">Identificador del tipo de cuenta financiera.</param>
+		/// <returns>Lista de cuentas financieras.</returns>
 		public List<FinancieroDto> GetFinancierosPorTipoCfLista(string tcf_id)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_FINANCIEROS_LISTA;
@@ -62,6 +72,11 @@ namespace gc.api.core.Servicios
 				}).ToList();
 		}
 
+		/// <summary>
+		/// Obtiene la lista de cuentas financieras relacionadas por tipo.
+		/// </summary>
+		/// <param name="tcf_id">Identificador del tipo de cuenta financiera.</param>
+		/// <returns>Lista de cuentas financieras relacionadas.</returns>
 		public List<FinancieroDto> GetFinancierosRelaPorTipoCfLista(string tcf_id)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_FINANCIEROS_RELA_LISTA;
@@ -84,6 +99,12 @@ namespace gc.api.core.Servicios
 				}).ToList();
 		}
 
+		/// <summary>
+		/// Obtiene cuentas financieras para selección de valores según tipo y administración.
+		/// </summary>
+		/// <param name="tcf_id">Tipo de cuenta financiera.</param>
+		/// <param name="adm_id">Identificador de administración.</param>
+		/// <returns>Lista de cuentas financieras para selección.</returns>
 		public List<FinancieroDesdeSeleccionDeTipoDto> GetFinancieroDesdeTipoParaSeleccionDeValores(string tcf_id, string adm_id)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OP_SV_CTAF;
@@ -96,6 +117,12 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
+		/// <summary>
+		/// Obtiene la cartera financiera para selección de valores.
+		/// </summary>
+		/// <param name="ctaf_id">Identificador de cuenta financiera.</param>
+		/// <param name="cta_id">Identificador de cuenta (opcional).</param>
+		/// <returns>Lista de cartera financiera.</returns>
 		public List<FinancieroCarteraDto> GetFinancieroCarteraParaSeleccionDeValores(string ctaf_id, string cta_id = "%")
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OP_SV_CARTERA;
@@ -108,6 +135,11 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
+		/// <summary>
+		/// Confirma una transferencia financiera.
+		/// </summary>
+		/// <param name="request">Datos de la transferencia a confirmar.</param>
+		/// <returns>Lista de respuestas de la operación.</returns>
 		public List<RespuestaDto> FinancieroConfirmarTransferencia(ConfirmarTransferenciaRequest request)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_TR_CONFIRMA;
@@ -128,6 +160,11 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
+		/// <summary>
+		/// Obtiene los datos de reporte de cuentas de transferencia (CTAG) por comprobante.
+		/// </summary>
+		/// <param name="tra_compte">Identificador de comprobante de transferencia.</param>
+		/// <returns>Lista de datos de reporte CTAG.</returns>
 		public List<FinancieroTraRepoCtagDto> GetFinancieroTraRepoCtag(string tra_compte)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_TRA_REPO_CTAG;
@@ -139,6 +176,11 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
+		/// <summary>
+		/// Obtiene los datos de reporte de detalle de transferencia por comprobante.
+		/// </summary>
+		/// <param name="tra_compte">Identificador de comprobante de transferencia.</param>
+		/// <returns>Lista de datos de detalle de reporte.</returns>
 		public List<FinancieroTraRepoDDto> GetFinancieroTraRepoDDto(string tra_compte)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_TRA_REPO_D;
@@ -150,6 +192,11 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
+		/// <summary>
+		/// Obtiene las cuentas al cobro relacionadas a una cuenta financiera.
+		/// </summary>
+		/// <param name="ctaf_id">Identificador de cuenta financiera.</param>
+		/// <returns>Lista de cuentas al cobro relacionadas.</returns>
 		public List<FinancieroCuentaAlCobroRelaDto> GetCuentaAlCobroRela(string ctaf_id)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_CUENTA_AL_COBRO_RELA;
@@ -161,6 +208,11 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
+		/// <summary>
+		/// Obtiene los cheques depositados según los filtros recibidos.
+		/// </summary>
+		/// <param name="r">Parámetros de búsqueda de cheques depositados.</param>
+		/// <returns>Lista de cheques depositados.</returns>
 		public List<FinancieroChequeDepositadoDto> GetFinancieroChequeDepositado(FinancieroChequeDepositadoRequest r)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_CHEQUES_DEPOSITADOS;
@@ -174,6 +226,11 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
+		/// <summary>
+		/// Obtiene los usuarios relacionados a transferencias financieras en un rango de fechas.
+		/// </summary>
+		/// <param name="request">Parámetros de búsqueda de usuarios.</param>
+		/// <returns>Lista de usuarios relacionados.</returns>
 		public List<PerfilUserDto> GetFinancieroTraUsu(FinancieroTraUsuRequest request)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_TR_USUARIOS;
@@ -186,6 +243,11 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
+		/// <summary>
+		/// Busca movimientos financieros según los filtros recibidos, con paginación.
+		/// </summary>
+		/// <param name="filtros">Filtros de búsqueda y paginación.</param>
+		/// <returns>Lista de movimientos financieros.</returns>
 		public List<MovimientoFinancieroListaDto> BuscarMovimientoFinanciero(ConsultaMovFinancierosRequest filtros)
 		{
 			filtros.Pagina = filtros.Pagina == null || filtros.Pagina <= 0 ? _pagSet.DefaultPageNumber : filtros.Pagina;
@@ -278,6 +340,11 @@ namespace gc.api.core.Servicios
 			return movFinan;
 		}
 
+		/// <summary>
+		/// Anula un movimiento financiero.
+		/// </summary>
+		/// <param name="request">Datos del movimiento a anular.</param>
+		/// <returns>Lista de respuestas de la operación.</returns>
 		public List<RespuestaDto> MovimientoFinancieroAnular(MovimientoFinancieroAnularRequest request)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_TR_ANULAR;
@@ -291,6 +358,11 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
+		/// <summary>
+		/// Busca movimientos financieros para reportes, según los filtros recibidos.
+		/// </summary>
+		/// <param name="filtros">Filtros de búsqueda.</param>
+		/// <returns>Lista de movimientos financieros para reporte.</returns>
 		public List<MovimientoFinancieroListaDto> BuscarMovimientoFinancieroReporte(ConsultaMovFinancierosRequest filtros)
 		{
 			string sp = ConstantesGC.StoredProcedures.SP_F_TR_LISTA_REPORTE;
@@ -375,6 +447,11 @@ namespace gc.api.core.Servicios
 			return movFinan;
 		}
 
+		/// <summary>
+		/// Obtiene el extracto bancario según los filtros recibidos.
+		/// </summary>
+		/// <param name="request">Parámetros de búsqueda de extracto bancario.</param>
+		/// <returns>Lista de extractos bancarios.</returns>
 		public List<FinancieroBcoExtractoDto> GetFinancieroBcoExtracto(FinancieroBcoExtractoRequest request)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_BCO_EXTRACTO;
@@ -388,6 +465,11 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
+		/// <summary>
+		/// Obtiene los movimientos de cuenta corriente bancaria según los filtros recibidos.
+		/// </summary>
+		/// <param name="request">Parámetros de búsqueda de cuenta corriente.</param>
+		/// <returns>Lista de movimientos de cuenta corriente bancaria.</returns>
 		public List<FinancieroBcoCtaCteDto> GetFinancieroBcoCtaCte(FinancieroBcoCtaCteRequest request)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_BCO_CTA_CTE;
@@ -403,6 +485,11 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
+		/// <summary>
+		/// Obtiene el resumen del libro bancario según los filtros recibidos.
+		/// </summary>
+		/// <param name="request">Parámetros de búsqueda de libro resumen.</param>
+		/// <returns>Lista de resúmenes de libro bancario.</returns>
 		public List<FinancieroBcoLibroResumenDto> GetFinancieroBcoLibroResumen(FinancieroBcoLibroResumenRequest request)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_BCO_LIBRO_RESUMEN;
@@ -415,6 +502,11 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
+		/// <summary>
+		/// Obtiene el detalle del libro bancario según los filtros recibidos.
+		/// </summary>
+		/// <param name="request">Parámetros de búsqueda de libro bancario.</param>
+		/// <returns>Lista de detalles de libro bancario.</returns>
 		public List<FinancieroBcoLibroDto> GetFinancieroBcoLibro(FinancieroBcoLibroRequest request)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_BCO_LIBRO;
@@ -427,6 +519,11 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
+		/// <summary>
+		/// Obtiene los cheques emitidos próximos a vencer según los filtros recibidos.
+		/// </summary>
+		/// <param name="request">Parámetros de búsqueda de cheques emitidos.</param>
+		/// <returns>Lista de cheques emitidos próximos a vencer.</returns>
 		public List<FinancieroBcoVencChequeEmitidoDto> GetFinancieroBcoVencChequeEmitido(FinancieroBcoVencChequeEmitidoRequest request)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_BCO_CH_VTO_PROY;
@@ -440,6 +537,11 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
+		/// <summary>
+		/// Obtiene el detalle de los cheques emitidos próximos a vencer según los filtros recibidos.
+		/// </summary>
+		/// <param name="request">Parámetros de búsqueda detallada de cheques emitidos.</param>
+		/// <returns>Lista de detalles de cheques emitidos próximos a vencer.</returns>
 		public List<FinancieroBcoVencChequeEmitidoListaDto> GetFinancieroBcoVencChequeEmitidoLista(FinancieroBcoVencChequeEmitidoListaRequest request)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_BCO_CH_EMITIDOS_LISTA;

@@ -11,5 +11,6 @@ namespace gc.sitio.Areas.Financieros.Models
 		public GridCoreSmart<FinancieroBcoVencChequeEmitidoDto> GrillaCheques { get; set; }
 		public GridCoreSmart<FinancieroBcoVencChequeEmitidoListaDto> GrillaChequesDetalle { get; set; }
 		public decimal Total { get; set; }
+		public string TotalStr { get; set; } = string.Empty;
 	}
 }

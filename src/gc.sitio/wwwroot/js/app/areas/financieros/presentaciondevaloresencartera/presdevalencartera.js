@@ -15,7 +15,6 @@
 });
 
 function ReseteoDeReportes() {
-	console.log("Reseto de reportes");
 	ReporteResetArre();
 }
 
@@ -98,13 +97,6 @@ function InicializarDatosEnSesion() {
 		}
 	});
 }
-
-//function InicializaPantalla() {
-//	var data = {};
-//	PostGenHtml(data, paso1Url, function (obj) {
-//		$("#divPrincipal").html(obj);
-//	});
-//}
 
 function InicializaPantalla() {
 	var data = {};
@@ -225,7 +217,6 @@ function ActualizarTotalSeleccionado() {
 				count++;
 			}
 		});
-		console.log(count);
 	}
 	var listaProd = "";
 	total_seleccionado_en_cartera = 0;

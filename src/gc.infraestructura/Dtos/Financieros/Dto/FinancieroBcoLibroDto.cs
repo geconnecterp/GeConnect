@@ -20,5 +20,12 @@ namespace gc.infraestructura.Dtos.Financieros
 		public decimal conciliado_m_ant { get; set; } = 0.00M;
 		public decimal conciliado_m_sig { get; set; } = 0.00M;
 		public decimal? conciliado_m_pos { get; set; } = 0.00M;
+		private bool _strEstado;
+
+		public bool strEstado
+		{
+			get { return che_estado != null && che_estado == 'C'; }
+			set { _strEstado = value; }
+		}
 	}
 }

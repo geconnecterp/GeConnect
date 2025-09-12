@@ -10,10 +10,11 @@
 		<thead>
 			<tr class="header">
 				<th class="align-center">Fec. Vto.</th>
-				<th class="align-center">Emitidos</th>
-				<th class="align-center">No Entregados</th>
-				<th class="align-center">Depositados</th>
-				<th class="align-center">Saldo Proy.</th>
+				<th class="align-center">Fec. Emi.</th>
+				<th class="align-center">N° Cheque</th>
+				<th class="align-center">A Nombre de</th>
+				<th class="align-center">Estado</th>
+				<th class="align-center">Importe</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -21,13 +22,13 @@
 			{
 				@foreach (var item in Model.GrillaChequesDetalle.ListaDatos)
 				{
-					<tr class="@clase" onclick="selectReg(this, 'tbGridCheques')">
+					<tr class="@clase" onclick="selectReg(this, 'tbGridChequesDetalle')">
 						<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_fecha) align-center cell-fit-content">@Model.GrillaChequesDetalle.FormatearDato(item.che_fecha, FormatDato.Fecha)</td>
 						<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_fecha_emi) align-center cell-fit-content">@Model.GrillaChequesDetalle.FormatearDato(item.che_fecha_emi, FormatDato.Fecha)</td>
 						<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_nro) align-center cell-fit-content">@Model.GrillaChequesDetalle.FormatearDato(item.che_nro, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_anombre) align-center cell-fit-content">@Model.GrillaChequesDetalle.FormatearDato(item.che_anombre, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_anombre) align-left cell-fit-content">@Model.GrillaChequesDetalle.FormatearDato(item.che_anombre, FormatDato.Ninguno)</td>
 						<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_estado_desc) align-center cell-fit-content">@Model.GrillaChequesDetalle.FormatearDato(item.che_estado_desc, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_importe) align-center cell-fit-content">@Model.GrillaChequesDetalle.FormatearDato(item.che_importe, FormatDato.Monto)</td>
+						<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_importe) align-right cell-fit-content">@Model.GrillaChequesDetalle.FormatearDato(item.che_importe, FormatDato.Monto)</td>
 					</tr>
 				}
 			}
@@ -35,12 +36,12 @@
 	</table>
 </div>
 <div class="row col-12 mb-1">
-	<div class="col-7"></div>
+	<div class="col-6"></div>
 	<div class="col-2"></div>
-	<div class="col-3 justify-content-sm-end">
+	<div class="col-4 justify-content-sm-end" style="padding-right: 0px;">
 		<div class="input-group input-group-sm">
 			<span class="input-group-text">Totales: </span>
-			<input type="text" asp-for="Total" class="form-control inputEditable" disabled style="text-align:end;" />
+			<input type="text" asp-for="TotalStr" class="form-control inputEditable" disabled style="text-align:end;"/>
 		</div>
 	</div>
 </div>

@@ -29,9 +29,6 @@ namespace gc.infraestructura.Dtos.Financieros
 			get { return ext_conciliado != null && ext_conciliado == 'S'; }
 			set { _strConciliado = value; }
 		}
-		//public bool strConciliado => ext_conciliado == 'S';
-
-		//public bool strCierre => ctl_cierre == 'S';
 
 		private bool _strCierre;
 
