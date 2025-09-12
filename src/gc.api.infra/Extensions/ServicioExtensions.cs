@@ -4,6 +4,7 @@ using gc.api.core.Contratos.Servicios.Asientos;
 using gc.api.core.Contratos.Servicios.Contable;
 using gc.api.core.Contratos.Servicios.Importacion;
 using gc.api.core.Contratos.Servicios.Libros;
+using gc.api.core.Contratos.Servicios.Ofertas;
 using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Contratos.Servicios.Tipos;
 using gc.api.core.Interfaces.Datos;
@@ -14,6 +15,7 @@ using gc.api.core.Servicios.Asientos;
 using gc.api.core.Servicios.Contable;
 using gc.api.core.Servicios.Importacion;
 using gc.api.core.Servicios.Libros;
+using gc.api.core.Servicios.Ofertas;
 using gc.api.core.Servicios.Reportes;
 using gc.api.core.Servicios.Tipos;
 using gc.api.infra.Datos.Contratos;
@@ -115,6 +117,8 @@ namespace gc.api.infra.Extensions
             //SERVICIO POR IMPORTACION DE LISTA DE PRECIOS
             services.AddScoped<IApiImportarServicio, ApiImportarServicio>();
 
+            //SERVICIO PARA OFERTAS
+            services.AddScoped<IApiOfertaServicio, ApiOfertaServicio>();
 
             //De Reportes
 

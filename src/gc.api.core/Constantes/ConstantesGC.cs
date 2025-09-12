@@ -433,7 +433,9 @@
 			public const string FX_PROD_PVTA_LISTA_LINK = "dbo.SF_PVta_Lista_Link";
 			public const string FX_PROD_PVTA_MARGEN = "dbo.SF_PVta_x_Mg";
 
-		}
+			public const string FX_PROD_OFERTA = "dbo.SF_P_Oferta_PC";
+
+        }
 	}
 
 }

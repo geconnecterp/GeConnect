@@ -2162,3 +2162,52 @@ input, select, textarea, button, checkbox, radio {
     border-color: var(--bs-golden-danger, #dc3545) !important;
     box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
 }
+
+/* Estilos para la sección de información de canales */
+#infoSeleccionCanales {
+    border-left: 3px solid var(--bs-golden-primary, #d4af37);
+    animation: fadeIn 0.3s ease-in;
+}
+
+#infoSeleccionCanales .card-body {
+    background: linear-gradient(135deg, 
+        rgba(212, 175, 55, 0.05) 0%, 
+        rgba(184, 134, 11, 0.02) 100%);
+}
+
+/* Responsive para información de canales */
+@media (max-width: 768px) {
+    #infoSeleccionCanales .d-flex {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    #infoSeleccionCanales .text-end {
+        text-align: center !important;
+    }
+}
+
+/* ✅ NUEVO: Estilos para grid de búsqueda sin selección visual de filas */
+.fila-producto {
+    transition: none !important;
+}
+
+.fila-producto:hover {
+    background-color: rgba(184, 134, 11, 0.08) !important;
+}
+
+/* Remover estilos de fila seleccionada en búsqueda */
+#tbGridBusquedaProductos .selected-row {
+    background-color: inherit !important;
+}
+
+#tbGridBusquedaProductos .fila-producto.selected-row > td {
+    background-color: inherit !important;
+    color: inherit !important;
+}
+
+/* Estilo para checkbox seleccionado */
+.check-producto-busqueda:checked {
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+}

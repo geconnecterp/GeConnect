@@ -42,12 +42,12 @@ namespace gc.sitio.core.Servicios.Implementacion.Importacion
         private const string ACTUALIZA_PRODUCTOS = "/productos-actualizar";
         private const string ACTUALIZA_CONFIRMAR = "/confirmar-actualizacion-precio";
 
-        private readonly AppSettings _appSettings;
+        //private readonly AppSettings _appSettings;
         private readonly IHttpContextAccessor _contexto;
         public ImportarServicio(IOptions<AppSettings> options, ILogger<ImportarServicio> logger,
             IHttpContextAccessor contexto) : base(options, logger)
         {
-            _appSettings = options.Value;
+            //_appSettings = options.Value;
             _contexto = contexto;
         }
 

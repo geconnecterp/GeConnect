@@ -16,7 +16,7 @@ namespace gc.infraestructura.Dtos.Productos.Ofertas
         //se cargará al consultar un sp de precios
         public decimal p_minorista { get; set; }
         //se cargar al consultar una fx de estados.
-        public char p_estado { get; set; }
+        public string p_estado { get; set; }=string.Empty;
 
     }
 }
