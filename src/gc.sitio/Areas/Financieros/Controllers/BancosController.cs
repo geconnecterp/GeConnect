@@ -164,6 +164,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
+				request.tipo_fecha = 'V'; //Por defecto siempre es Vencimiento
 				var res = _financieroServicio.GetFinancieroBcoVencChequeEmitidoLista(request, TokenCookie);
 				if (res == null || res.Count < 0)
 					return PartialView("_partialVencimientoChequeEmitidoLista", model);

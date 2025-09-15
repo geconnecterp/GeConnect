@@ -2,9 +2,9 @@
 @{
 }
 <div class="table-responsive text-nowrap table-wrapper-200-full">
-	<table class="table table-bordered table-hover" id="tbInfoProdStkD">
-		<thead class="table-dark">
-			<tr>
+	<table class="table table-sm mb-0 table-hover table-golden" id="tbInfoProdStkD">
+		<thead>
+			<tr class="header">
 				<th style="width:10%;" class="col-header-x-small align-center">ID</th>
 				<th style="width:40%;" class="col-header-x-small align-center">Depósito</th>
 				<th style="width:10%;" class="col-header-x-small align-center">Stk</th>
@@ -12,14 +12,17 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.ListaDatos)
+			@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
 			{
-				<tr onclick="selectListaInfoProdStkD(this)">
-					<td class="align-center tiny-row">@item.Depo_id</td>
-					<td class="align-left tiny-row">@item.Depo_nombre</td>
-					<td class="align-center tiny-row">@item.Ps_stk</td>
-					<td class="align-center tiny-row">@item.Vto?.ToString("dd/MM/yyyy")</td>
-				</tr>
+				@foreach (var item in Model.ListaDatos)
+				{
+					<tr onclick="selectListaInfoProdStkD(this)">
+						<td class="align-center tiny-row">@item.Depo_id</td>
+						<td class="align-left tiny-row">@item.Depo_nombre</td>
+						<td class="align-center tiny-row">@item.Ps_stk</td>
+						<td class="align-center tiny-row">@item.Vto?.ToString("dd/MM/yyyy")</td>
+					</tr>
+				}
 			}
 		</tbody>
 	</table>

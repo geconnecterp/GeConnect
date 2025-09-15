@@ -2,9 +2,9 @@
 @{
 }
 <div class="table-responsive text-nowrap table-wrapper-200-full">
-	<table class="table table-bordered table-hover" id="tbInfoProdIExSemana">
-		<thead class="table-dark">
-			<tr>
+	<table class="table table-sm mb-0 table-hover table-golden" id="tbInfoProdIExSemana">
+		<thead>
+			<tr class="header">
 				<th rowspan="2" class="col-header-x-small align-center">Semana</th>
 				<th colspan="3" class="col-header-x-small align-center">Ingresos</th>
 				<th colspan="3" class="col-header-x-small align-center">Egresos</th>
@@ -19,17 +19,20 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.ListaDatos)
+			@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
 			{
-				<tr onclick="selectListaInfoProdIExSemanaRow(this)">
-					<td class="align-center tiny-row">@item.desde.ToString("dd/MM/yy")-@item.hasta.ToString("dd/MM/yy")</td>
-					<td class="align-center tiny-row">@item.e_compra</td>
-					<td class="align-center tiny-row">@item.e_ri</td>
-					<td class="align-center tiny-row">@item.e_otros</td>
-					<td class="align-center tiny-row">@item.s_ventas</td>
-					<td class="align-center tiny-row">@item.s_ri</td>
-					<td class="align-center tiny-row">@item.s_otros</td>
-				</tr>
+				@foreach (var item in Model.ListaDatos)
+				{
+					<tr onclick="selectListaInfoProdIExSemanaRow(this)">
+						<td class="align-center tiny-row">@item.desde.ToString("dd/MM/yy")-@item.hasta.ToString("dd/MM/yy")</td>
+						<td class="align-center tiny-row">@item.e_compra</td>
+						<td class="align-center tiny-row">@item.e_ri</td>
+						<td class="align-center tiny-row">@item.e_otros</td>
+						<td class="align-center tiny-row">@item.s_ventas</td>
+						<td class="align-center tiny-row">@item.s_ri</td>
+						<td class="align-center tiny-row">@item.s_otros</td>
+					</tr>
+				}
 			}
 		</tbody>
 	</table>

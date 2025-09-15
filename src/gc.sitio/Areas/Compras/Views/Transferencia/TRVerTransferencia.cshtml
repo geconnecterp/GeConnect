@@ -2,11 +2,25 @@
 @{
 	Layout = "~/views/shared/_Layout.cshtml";
 }
-<div class="card">
+<div class="grid-golden">
 	<row>
 		@Html.Hidden("ti", Model.ti)
 		@Html.Hidden("tipo", Model.Tipo)
-		<div style="float:left">
+		<div class="grid-golden-header">
+			<h5>Autorizaciones TR</h5>
+			<div class="input-group">
+				<span class="input-group-text">@Model.Autorizacion</span>
+				<span class="input-group-text">             </span>
+				<span class="input-group-text">@Model.TipoTR</span>
+				<span class="input-group-text">             </span>
+				<span class="input-group-text">@Model.Destino</span>
+				<div style="padding-left:50px;">
+					<a href="#" class="btn btn-success btn-sm mt-1 me-1" id="btnConfirmar" onclick="validarAutorizacion();"><span class="bx bx-badge-check"> Confirmar</span></a>
+					<a href="#" id="btnRegresar" class="btn btn-secondary btn-sm mt-1 me-1" onclick="regresarATRLista();" style="padding-left:5px;"><span class="bx bx-chevron-left"> Regresar</span></a>
+				</div>
+			</div>
+		</div>
+		@* <div style="float:left">
 			<div class="card-header">
 				<h5>Autorizaciones TR</h5>
 				<div class="input-group">
@@ -21,7 +35,7 @@
 					</div>
 				</div>
 			</div>
-		</div>
+		</div> *@
 	</row>
 	<fieldset>
 		<legend>
@@ -29,9 +43,9 @@
 		</legend>
 		<div id="divListaConteos">
 			<div class="table-responsive text-nowrap table-wrapper">
-				<table class="table table-bordered table-hover" id="tbListaConteos">
-					<thead class="table-dark">
-						<tr>
+				<table class="table table-sm mb-0 table-hover table-golden" id="tbListaConteos">
+					<thead>
+						<tr class="header">
 							<th style="width:8%;" class="align-center">ID</th>
 							<th style="width:40%;text-align: center;">Descripcion</th>
 							<th style="width:10%;" class="align-center">ID Prov</th>

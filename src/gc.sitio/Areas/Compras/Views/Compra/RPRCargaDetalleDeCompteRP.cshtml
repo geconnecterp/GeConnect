@@ -19,7 +19,7 @@
 
 <div class="card">
 	<row>
-		<div style="float:left;width:100%;padding-top: 20px;padding-left: 40px;">
+		<div style="float:left;width:100%;padding-top: 20px;padding-left: 12px;">
 			<div class="input-group">
 				@Html.Hidden("cta_id", Model.cta_id)
 				@Html.Hidden("tco_id", Model.CompteSeleccionado.Tipo)
@@ -33,18 +33,18 @@
 					<span>@Model.Leyenda</span>
 				</div>
 				<div class="col-4" style="text-align: right;padding-right: 30px;">
-					<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnAceptarComprobanteRP" title="Aceptar">
-						<span class="bx bx-check-circle"></span>
+					<button type="button" class="btn btn-success btn-sm mt-1 me-1" style="margin-left:5px;" id="btnAceptarComprobanteRP" title="Aceptar">
+						<span class="bx bx-badge-check"></span>
 					</button>
-					<button type="button" class="btn btn-primary" style="margin-left:5px;" id="btnRegresarDesdeComprobanteRP" title="Regresar">
-						<span class="bx bx-skip-previous"></span>
+					<button type="button" class="btn btn-secondary btn-sm mt-1 me-1" style="margin-left:5px;" id="btnRegresarDesdeComprobanteRP" title="Regresar">
+						<span class="bx bx-chevron-left"></span>
 					</button>
 				</div>
 				
 			</div>
 		</div>
 	</row>
-	<row style="padding-left:35px;">
+	<row style="padding-left:8px;">
 		<div class="col-8" style="float:left">
 			<div class="input-group">
 				<span class="input-group-text">Tipo: </span>
@@ -59,7 +59,7 @@
 		</div>
 	</row>
 	<row>
-		<div class="container">
+		<div class="grid-golden">
 			<div class="row">
 				<div class="col-7">
 					<fieldset>
@@ -85,15 +85,15 @@
 							</div>
 							<div class="row" style="padding-top: 10px;">
 								@* <div class="input-group"> *@
-								<div class="col-4" style="text-align: left;padding-right: 30px;padding-left:9px;">
-									<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnAddProdEnComprobanteRP" title="Agregar producto manual">
-										<span class="bx bx-plus-circle"></span>
+								<div class="col-8" style="text-align: left;padding-right: 30px;padding-left:9px;">
+									<button type="button" class="btn btn-primary btn-sm mt-1 me-1" style="margin-left:5px;" id="btnAddProdEnComprobanteRP" title="Agregar Producto manual">
+										<span class="bx bx-plus-circle"> Agregar producto</span>
 									</button>
 @* 									<button type="button" class="btn btn-icon btn-danger fixed-width" style="margin-left:5px;" id="btnDelProdEnComprobanteRP">
 										<span class="bx bx-trash"></span>
 									</button> *@
-									<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnAddOCProdEnComprobanteRP" title="Agregar productos desde OC">
-										<span class="bx bx-plus-circle"></span>
+									<button type="button" class="btn btn-primary btn-sm mt-1 me-1" style="margin-left:5px;" id="btnAddOCProdEnComprobanteRP" title="Agregar Productos desde Orden de Compra">
+										<span class="bx bx-plus-circle"> Agregar producto desde OC</span>
 									</button>
 								</div>
 

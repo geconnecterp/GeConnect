@@ -2,8 +2,26 @@
 @{
 	Layout = "~/views/shared/_Layout.cshtml";
 }
-<div class="card">
-	<row>
+<div class="grid-golden">
+	<div class="grid-golden-header">
+		<h5>Autorizaciones TR</h5>
+		<div class="d-flex align-items-center justify-content-between flex-wrap mt-2">
+			<div class="btn-group me-2" role="group" aria-label="Basic radio toggle button group">
+				<input type="radio" class="btn-check" name="btnradio" id="btnradioSucursales" checked="">
+				<label class="btn btn-outline-primary" for="btnradioSucursales">TR Sucursales</label>
+				<input type="radio" class="btn-check" name="btnradio" id="btnradioDepositos">
+				<label class="btn btn-outline-primary" for="btnradioDepositos">TR Depósitos</label>
+			</div>
+			<div>
+				<a asp-action="NuevaTR" asp-controller="Transferencia" asp-area="Compras" class="btn btn-primary btn-sm mt-1 me-1" id="btnNuevaAut" title="Agregar Autorización de Transferencia">
+					<span class="bx bx-plus-circle"> Nueva</span>
+				</a>
+				<a href="#" id="btnModificarAut" class="btn btn-info btn-sm mt-1 me-1" title="Modificar Autorización de Transferencia"><span class="bx bx-edit"> Modificar</span></a>
+				<a href="#" id="btnVer" class="btn btn-info btn-sm mt-1 me-1" title="Visualizar datos de Autorización" onclick="verTransferencia();return false;"><span class="bx bx-show"> Ver</span></a>
+			</div>
+		</div>
+	</div>
+	@* <row>
 		<input type="text" id="rp_id" style="visibility:hidden" />
 		<div style="float:left">
 			<div class="card-header">
@@ -17,19 +35,19 @@
 			</div>
 		</div>
 		<div class="demo-inline-spacing" style="float:right;margin-top: 60px;margin-right: 55px;">
-			<a asp-action="NuevaTR" asp-controller="Transferencia" asp-area="Compras" class="btn btn-primary fixed-width-130" id="btnNuevaAut" title="Agregar Autorización de Transferencia">
-				<span class="tf-icons bx bx-plus-circle me-1"></span>Nueva
+			<a asp-action="NuevaTR" asp-controller="Transferencia" asp-area="Compras" class="btn btn-primary btn-sm mt-1 me-1" id="btnNuevaAut" title="Agregar Autorización de Transferencia">
+				<span class="bx bx-plus-circle"> Nueva</span>
 			</a>
-			<a href="#" id="btnModificarAut" class="btn btn-secondary fixed-width-130" title="Modificar Autorización de Transferencia"><span class="tf-icons bx bx-edit me-1">Modificar</span></a>
-			<a href="#" id="btnVer" class="btn btn-success fixed-width-130" title="Visualizar datos de Autorización" onclick="verTransferencia();return false;"><span class="tf-icons bx bxs-binoculars me-1">Ver</span></a>
+			<a href="#" id="btnModificarAut" class="btn btn-info btn-sm mt-1 me-1" title="Modificar Autorización de Transferencia"><span class="bx bx-edit"> Modificar</span></a>
+			<a href="#" id="btnVer" class="btn btn-info btn-sm mt-1 me-1" title="Visualizar datos de Autorización" onclick="verTransferencia();return false;"><span class="bx bx-show"> Ver</span></a>
 		</div>
-	</row>
-	<div class="card-body">
+	</row> *@
+	<div class="grid-golden-body">
 		<div id="divListaAutorizaciones">
 			<div class="table-responsive text-nowrap table-wrapper">
-				<table class="table table-bordered table-hover" id="tbListaAutorizaciones">
-					<thead class="table-dark">
-						<tr>
+				<table class="table table-sm mb-0 table-hover table-golden" id="tbListaAutorizaciones">
+					<thead>
+						<tr class="header">
 							<th style="width:10%;" class="align-center">N° Auto</th>
 							<th style="width:10%;" class="align-center">Sucursal</th>
 							<th style="width:10%;" class="align-center">Fecha</th>

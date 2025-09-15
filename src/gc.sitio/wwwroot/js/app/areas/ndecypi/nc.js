@@ -42,14 +42,3 @@ function presentaPaginacionNC(div) {
 //}
 
 
-function selectListaInfoProdIExMesRow(x) {
-}
-
-function selectListaInfoProdIExSemanaRow(x) {
-}
-
-function selectListaProductoSustitutoRow(x) {
-}
-
-function selectListaInfoProductoRow() {
-}
