@@ -90,12 +90,12 @@
             {
                 if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                <tr class="@clase" onclick="selectReg(this)" ondblclick="selectRegDbl(this)">
-                    <td class="text-sm-center">@item.P_id</td>
-                    <td class="text-sm-start">@item.P_desc</td>
-                    <td class="text-sm-center">@item.P_id_barrado</td>
-                    <td class="text-sm-center">@item.P_id_prov</td>
-                    <td class="text-sm-center">@item.P_activo </td>
+                <tr class="@clase" onclick="selectReg(this)" ondblclick="selectRegDbl(this)" data-producto-id="@item.P_id">
+                    <td class="@Model.ObtenerClase(item.P_id)">@item.P_id</td>
+                    <td class="@Model.ObtenerClase(item.P_desc)">@item.P_desc</td>
+                    <td class="@Model.ObtenerClase(item.P_id_barrado)">@item.P_id_barrado</td>
+                    <td class="@Model.ObtenerClase(item.P_id_prov)">@item.P_id_prov</td>
+                    <td class="@Model.ObtenerClase(item.P_activo)">@item.P_activo </td>
                     @*                     <td class="text-sm-end">@item.P_pcosto</td>
                 <td class="text-sm-end">@item.Ps_stk</td> *@
                 </tr>

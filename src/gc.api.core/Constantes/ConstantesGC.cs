@@ -1,9 +1,4 @@
-﻿using DocumentFormat.OpenXml.Drawing.Diagrams;
-using gc.infraestructura.Core.EntidadesComunes;
-using gc.infraestructura.Dtos.Almacen.Request;
-using System.Diagnostics;
-
-namespace gc.api.core.Constantes
+﻿namespace gc.api.core.Constantes
 {
 	public static class ConstantesGC
 	{
@@ -70,6 +65,11 @@ namespace gc.api.core.Constantes
 			public const string SP_PROD_ACTUALIZA_PRECIO_PROV = "SPGECO_P_PR_Actu_Proveedores";
 			public const string SP_PROD_ACTUALIZA_PRECIO_PROV_D = "SPGECO_P_PR_Actu_Proveedores_d";
             public const string SP_PROD_ACTUALIZA_CONFIRMAR = "SPGECO_P_PR_ACTU_Confirma";
+
+            //SP PARA OFERTAS
+			public const string SP_PROD_INFO_LP = "SPGECO_P_INFO_LP";
+			public const string SP_PROD_CANALES_LIST = "SPGECO_ADMINISTRACIONES_LISTAS";
+			public const string SP_PROD_OFERTA_CARGA = "SPGECO_p_ofe_carga";
             #endregion
 
 
@@ -443,7 +443,9 @@ namespace gc.api.core.Constantes
 			public const string FX_PROD_PVTA_LISTA_LINK = "dbo.SF_PVta_Lista_Link";
 			public const string FX_PROD_PVTA_MARGEN = "dbo.SF_PVta_x_Mg";
 
-		}
+			public const string FX_PROD_OFERTA = "dbo.SF_P_Oferta_PC";
+
+        }
 	}
 
 }

@@ -440,8 +440,25 @@ namespace gc.sitio.Controllers
 				_context.HttpContext?.Session.SetString("ProductoBase", json);
 			}
 		}
+        public List<ProductoListaDto> ProductosSeleccionadosV02
+		{
+            get
+            {
+                var json = _context.HttpContext?.Session.GetString("ProductosSeleccionadosV02") ?? string.Empty;
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<ProductoListaDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("ProductosSeleccionadosV02", json);
+            }
+        }
 
-		public List<ProductoBusquedaDto> ProductosSeleccionados
+        public List<ProductoBusquedaDto> ProductosSeleccionados
 		{
 			get
 			{

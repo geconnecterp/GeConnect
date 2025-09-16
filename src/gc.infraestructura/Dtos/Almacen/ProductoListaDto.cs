@@ -27,6 +27,10 @@ namespace gc.infraestructura.Dtos.Almacen
         public decimal P_pcosto { get; set; }
         public decimal P_pcosto_repo { get; set; }
         public decimal Ps_stk { get; set; } 
+        public decimal p_pvta_001 { get; set; }
+        public decimal p_pvta_002 { get; set; }
+        public decimal p_pvta_003 { get; set; }
+        public decimal p_pvta_004 { get; set; }
 
     }
 }

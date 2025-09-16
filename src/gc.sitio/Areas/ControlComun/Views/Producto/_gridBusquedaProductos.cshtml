@@ -1,0 +1,104 @@
+@model GridCoreSmart<ProductoListaDto>
+
+@{
+    var alt = true;
+    string clase = string.Empty;
+}
+
+<div class="table-responsive text-nowrap table-wrapper-400">
+    <table class="table table-sm mb-0 table-hover table-golden" id="tbGridBusquedaProductos">
+        <thead class="table-golden-header">
+            <tr class="header">
+                <th class="text-center" scope="col">
+                    <input type="checkbox" class="form-check-input" id="checkAllBusqueda" title="Seleccionar todos">
+                </th>
+                <th class="text-center" scope="col">ID</th>
+                <th class="text-left" scope="col">DESCRIPCIÓN</th>
+                <th class="text-center" scope="col">CÓDIGO EAN</th>
+                <th class="text-right" scope="col">P.COSTO</th>
+                <th class="text-right" scope="col">P.MAYORISTA</th>
+                <th class="text-right" scope="col">P.MINORISTA</th>
+                <th class="text-center" scope="col">ESTADO</th>
+                <th class="text-center" scope="col">ACCIÓN</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.ListaDatos != null && Model.ListaDatos.Any())
+            {
+                @foreach (var item in Model.ListaDatos)
+                {
+                    if (alt) { clase = "table-row-alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                    <tr class="@clase fila-producto" data-producto-id="@item.P_id">
+                        <td class="text-center">
+                            <input type="checkbox" 
+                                   class="form-check-input check-producto-busqueda"
+                                   data-p-id="@item.P_id"
+                                   data-producto='@Html.Raw(Json.Serialize(item))'
+                                   checked
+                                   title="Producto seleccionado automáticamente">
+                        </td>
+                        <td class="text-center">
+                            @Model.FormatearDato(item.P_id, FormatDato.Ninguno)
+                        </td>
+                        <td class="text-left" title="@item.P_desc">
+                            @Model.FormatearDato(item.P_desc, FormatDato.Ninguno)
+                        </td>
+                        <td class="text-center">
+                            @Model.FormatearDato(item.P_id_barrado, FormatDato.Ninguno)
+                        </td>
+                        <td class="text-right">
+                            @Model.FormatearDato(item.P_pcosto, FormatDato.Monto)
+                        </td>
+                        <td class="text-right">
+                            @Model.FormatearDato(item.p_pvta_001, FormatDato.Monto)
+                        </td>
+                        <td class="text-right">
+                            @Model.FormatearDato(item.p_pvta_002, FormatDato.Monto)
+                        </td>
+                        <td class="text-center">
+                            <span class="badge @(item.P_activo == "S" ? "bg-success" : "bg-warning")">
+                                @(item.P_activo == "S" ? "Activo" : "Inactivo")
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <button type="button"
+                                    class="btn btn-outline-primary btn-sm btn-seleccionar-individual"
+                                    onclick="selectRegDbl(this.closest('tr'))"
+                                    title="Usar solo este producto">
+                                <i class="bx bx-check-circle"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-4">
+                        <i class="bx bx-info-circle me-2"></i>
+                        No se encontraron productos con los criterios especificados
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (Model.ListaDatos != null && Model.ListaDatos.Any())
+{
+    <div class="d-flex justify-content-between align-items-center mt-3 px-2">
+        <div class="text-muted small">
+            <i class="bx bx-package me-1"></i>
+            Total: @Model.CantidadReg productos encontrados
+        </div>
+        <div class="text-muted small text-center">
+            <span class="badge bg-golden-light" id="badgeSeleccionados">
+                @Model.CantidadReg seleccionados automáticamente
+            </span>
+        </div>
+        <div class="text-muted small">
+            @Model.DatoAux01
+        </div>
+    </div>
+}

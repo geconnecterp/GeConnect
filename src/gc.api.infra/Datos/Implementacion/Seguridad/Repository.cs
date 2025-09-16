@@ -98,7 +98,7 @@ namespace gc.api.infra.Datos.Implementacion
             return sb;
         }
 
-        public SqlParameter[] InferirParametrosExt<S>(S entidad,IEnumerable<string>? excluir =null) where S:class
+        public SqlParameter[] InferirParametrosExt<S>(S entidad, IEnumerable<string>? excluir = null) where S : class
         {
             List<SqlParameter> parametros = InferirParametrosGen(entidad, excluir);
 
@@ -111,7 +111,7 @@ namespace gc.api.infra.Datos.Implementacion
             return parametros.ToArray();
         }
 
-        private static List<SqlParameter> InferirParametrosGen<S>(S entidad, IEnumerable<string>? excluir) where S:class
+        private static List<SqlParameter> InferirParametrosGen<S>(S entidad, IEnumerable<string>? excluir) where S : class
         {
             List<SqlParameter> parametros = new List<SqlParameter>();
             if (excluir == null)
@@ -137,14 +137,14 @@ namespace gc.api.infra.Datos.Implementacion
         public List<S> EjecutarLstSpExt<S>(string sp, List<SqlParameter> parametros, bool ignoreCase = false) where S : class
         {
             int contador = 0;
-            List<S> resultado ;
+            List<S> resultado;
 
             using (var cnn = _dbContext.ObtenerConexionSql())
             {
                 var cmd = _dbContext.ObtenerCommandSql(cnn, CommandType.StoredProcedure);
                 cmd.CommandText = sp;
-				cmd.CommandTimeout = 600;
-				foreach (var p in parametros)
+                cmd.CommandTimeout = 600;
+                foreach (var p in parametros)
                 {
                     cmd.Parameters.Add(p);
                 }
@@ -166,14 +166,14 @@ namespace gc.api.infra.Datos.Implementacion
         public List<T> InvokarSp2Lst(string sp, List<SqlParameter> parametros, bool ignoreCase = false)
         {
             int contador = 0;
-            List<T> resultado ;
+            List<T> resultado;
 
             using (var cnn = _dbContext.ObtenerConexionSql())
             {
                 var cmd = _dbContext.ObtenerCommandSql(cnn, CommandType.StoredProcedure);
                 cmd.CommandText = sp;
-				cmd.CommandTimeout = 600;
-				foreach (var p in parametros)
+                cmd.CommandTimeout = 600;
+                foreach (var p in parametros)
                 {
                     cmd.Parameters.Add(p);
                 }
@@ -190,6 +190,37 @@ namespace gc.api.infra.Datos.Implementacion
                 }
             }
             return resultado;
+        }
+
+        /// <summary>
+        /// Ejecuta una función escalar con un solo parámetro
+        /// </summary>
+        /// <typeparam name="TResult">Tipo de resultado esperado</typeparam>
+        /// <param name="sqlFunction">Consulta SQL</param>
+        /// <param name="parametro">Parámetro único</param>
+        /// <param name="esTransaccion">Indica si se ejecuta dentro de una transacción</param>
+        /// <returns>Valor único del tipo especificado</returns>
+        public TResult EjecutarFunctionScalar<TResult>(string sqlFunction,
+            SqlParameter parametro, bool esTransaccion = false)
+        {
+            return EjecutarFunctionScalar<TResult>(sqlFunction, new List<SqlParameter> { parametro }, esTransaccion);
+        }
+
+        /// <summary>
+        /// Ejecuta una función escalar sin parámetros
+        /// </summary>
+        /// <typeparam name="TResult">Tipo de resultado esperado</typeparam>
+        /// <param name="sqlFunction">Consulta SQL</param>
+        /// <param name="esTransaccion">Indica si se ejecuta dentro de una transacción</param>
+        /// <returns>Valor único del tipo especificado</returns>
+        public TResult EjecutarFunctionScalar<TResult>(string sqlFunction, bool esTransaccion = false)
+        {
+            return EjecutarFunctionScalar<TResult>(sqlFunction, (List<SqlParameter>?)null, esTransaccion);
+        }
+
+        public TResult EjecutarFunctionScalar<TResult>(string sqlFunction)
+        {
+            return EjecutarFunctionScalar<TResult>(sqlFunction, (List<SqlParameter>?)null, false);
         }
 
         public List<TResult> EjecutarLstFunction<TResult>(string sqlFunction, List<SqlParameter> parameters = null, bool esTransaccion = false) where TResult : class, new()
@@ -210,7 +241,7 @@ namespace gc.api.infra.Datos.Implementacion
                         command.Parameters.Add(param);
                     }
                 }
-                
+
                 List<TResult> resultado = new();
 
                 // Ejecutar la consulta y mapear los resultados
@@ -247,9 +278,101 @@ namespace gc.api.infra.Datos.Implementacion
 
                 return resultado;
             }
-            catch (Exception )
+            catch (Exception)
             {
-                throw ;
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Ejecuta una función escalar de base de datos que retorna un valor único de tipo genérico
+        /// </summary>
+        /// <typeparam name="TResult">Tipo de resultado esperado</typeparam>
+        /// <param name="sqlFunction">Consulta SQL con formato "SELECT dbo.FuncionX(@param1, @param2)"</param>
+        /// <param name="parameters">Lista de parámetros SqlParameter (opcional)</param>
+        /// <param name="esTransaccion">Indica si se ejecuta dentro de una transacción</param>
+        /// <returns>Valor único del tipo especificado o valor por defecto si es null</returns>
+        public TResult EjecutarFunctionScalar<TResult>(string sqlFunction, List<SqlParameter>? parameters = null, bool esTransaccion = false)
+        {
+            try
+            {
+                using var connection = _dbContext.ObtenerConexionSql(esTransaccion);
+
+                // Solo abrir conexión si no es transaccional
+                if (!esTransaccion && connection.State != ConnectionState.Open)
+                {
+                    connection.Open();
+                }
+
+                using var command = new SqlCommand(sqlFunction, connection)
+                {
+                    CommandType = CommandType.Text,
+                    CommandTimeout = 600
+                };
+
+                // Agregar parámetros si existen
+                if (parameters?.Count > 0)
+                {
+                    command.Parameters.AddRange(parameters.ToArray());
+                }
+
+                // Ejecutar y obtener resultado
+                var resultado = command.ExecuteScalar();
+
+                // Convertir resultado al tipo solicitado
+                return ConvertirResultadoEscalar<TResult>(resultado);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error al ejecutar función escalar: {sqlFunction}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Convierte el resultado de ExecuteScalar al tipo genérico solicitado
+        /// </summary>
+        /// <typeparam name="TResult">Tipo de destino</typeparam>
+        /// <param name="valor">Valor a convertir</param>
+        /// <returns>Valor convertido al tipo especificado</returns>
+        private static TResult ConvertirResultadoEscalar<TResult>(object? valor)
+        {
+            // Si el valor es null o DBNull
+            if (valor == null || valor == DBNull.Value)
+            {
+                return default(TResult)!;
+            }
+
+            var tipoDestino = typeof(TResult);
+            var tipoDestinoReal = Nullable.GetUnderlyingType(tipoDestino) ?? tipoDestino;
+
+            try
+            {
+                // Si el tipo ya es el correcto
+                if (tipoDestinoReal.IsAssignableFrom(valor.GetType()))
+                {
+                    return (TResult)valor;
+                }
+
+                // Conversiones específicas comunes
+                if (tipoDestinoReal == typeof(bool) && valor is string strBool)
+                {
+                    return (TResult)(object)(strBool.Equals("S", StringComparison.OrdinalIgnoreCase) ||
+                                           strBool.Equals("1") ||
+                                           strBool.Equals("true", StringComparison.OrdinalIgnoreCase));
+                }
+
+                if (tipoDestinoReal == typeof(string))
+                {
+                    return (TResult)(object)valor.ToString()!;
+                }
+
+                // Conversión genérica usando Convert.ChangeType
+                var valorConvertido = Convert.ChangeType(valor, tipoDestinoReal);
+                return (TResult)valorConvertido;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidCastException($"No se pudo convertir el valor '{valor}' de tipo '{valor.GetType().Name}' a '{tipoDestino.Name}'", ex);
             }
         }
 
@@ -348,6 +471,6 @@ namespace gc.api.infra.Datos.Implementacion
             return InvokarSpScalar(sp, new List<SqlParameter> { parametro }, esTransacciona, elUltimo);
         }
 
-      
+
     }
 }

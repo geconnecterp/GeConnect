@@ -2,12 +2,30 @@
 @{
     List<ProductoListaDto> listaVacia = new();
 }
-<div class="card col-sm-12">
-    <div class="input-group input-group-sm">
-        <span class="input-group-text">ID:</span>
-        <input type="text" class="form-control" asp-for="Busqueda" placeholder="Ingresar ID de Producto, EAN o Id de Proveedor." style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
-        <button type="button" class="btn btn-sm" id="btnBusquedaBase"><i class="bx bx-search btn-xs text-success"></i> Buscar</button>
-        @Html.Hidden("estadoFuncion", false)
+<div class="filter-golden">
+    @* <div class="grid-golden-header"><h5><i class="bx bx-package"></i> Busqueda de Productos</h5></div> *@
+    <div class="filter-golden-body">
+        <div class="d-flex justify-content-sm-start">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-12 col-sm-12">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">ID:</span>
+                        <input type="text"
+                               class="form-control inputEditable"
+                               asp-for="Busqueda"
+                               placeholder="Ingresar ID de Producto, EAN o Id de Proveedor."
+                               style="background-color:rgb(251,255,195);font-weight:900;width:200px;"
+                               autofocus />
+                        <button type="button"
+                                class="btn btn-primary btn-sm"
+                                id="btnBusquedaBase">
+                            <i class="bx bx-search"></i> Buscar
+                        </button>
+                        @Html.Hidden("estadoFuncion", false)
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 <partial name="~/areas/controlcomun/views/producto/busquedaadvance.cshtml" model="@listaVacia" />

@@ -25,5 +25,24 @@
         object InvokarSpScalar(string sp, List<SqlParameter>? parametros, bool esTransacciona = false, bool elUltimo = true,bool esSP=true);
         List<S> EjecutarLstSpExt<S>(string sp, List<SqlParameter> ps, bool ignoreCase = false) where S : class;
         List<TResult> EjecutarLstFunction<TResult>(string sqlFunction, List<SqlParameter> parameters = null, bool esTransaccion = false) where TResult : class, new();
+        /// <summary>
+        /// Ejecuta una función escalar que retorna un valor único
+        /// </summary>
+        TResult EjecutarFunctionScalar<TResult>(string sqlFunction, List<SqlParameter>? parameters = null, bool esTransaccion = false);
+
+        /// <summary>
+        /// Ejecuta una función escalar con un solo parámetro
+        /// </summary>
+        TResult EjecutarFunctionScalar<TResult>(string sqlFunction, SqlParameter parametro, bool esTransaccion = false);
+
+        /// <summary>
+        /// Ejecuta una función escalar sin parámetros
+        /// </summary>
+        TResult EjecutarFunctionScalar<TResult>(string sqlFunction, bool esTransaccion = false);
+
+        /// <summary>
+        /// Ejecuta una función escalar sin parámetros
+        /// </summary>
+        TResult EjecutarFunctionScalar<TResult>(string sqlFunction);
     }
 }
