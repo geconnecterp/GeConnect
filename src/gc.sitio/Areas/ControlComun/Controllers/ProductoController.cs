@@ -161,5 +161,42 @@ namespace gc.sitio.Areas.ControlComun.Controllers
             return await BusquedaAvanzada(ri01, ri02, act, dis, ina, cstk, sstk, buscar, buscaNew, _productoServicio, sort, sortDir, pag);
         }
 
+        /// <summary>
+        /// Búsqueda avanzada V02 que devuelve JSON con ProductoListaDto para ofertas
+        /// </summary>
+        [HttpPost]
+        public async Task<JsonResult> BusquedaAvanzadaV02(string ri01, string ri02, bool act, bool dis, bool ina, bool cstk, bool sstk, string buscar, bool buscaNew = true, string sort = "p_desc", string sortDir = "asc", int pag = 1)
+        {
+            try
+            {
+                // ✅ VALIDACIÓN: Verificar autenticación
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || (auth.Item1 && !auth.Item2.HasValue) || (auth.Item1 && auth.Item2.HasValue && auth.Item2.Value < DateTime.Now))
+                {
+                    return new JsonResult(new
+                    {
+                        error = true,
+                        msg = "Sesión expirada. Debe autenticarse nuevamente.",
+                        productos = new List<ProductoListaDto>(),
+                        redirect = true,
+                        redirectUrl = Url.Action("Login", "Token", new { area = "Seguridad" })
+                    });
+                }
+
+                // ✅ DELEGACIÓN: Llamar al método base optimizado
+                return await BusquedaAvanzadaV02(ri01, ri02, act, dis, ina, cstk, sstk, buscar, buscaNew, _productoServicio, sort, sortDir, pag);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en búsqueda avanzada V02");
+                return new JsonResult(new
+                {
+                    error = true,
+                    msg = "Error interno en la búsqueda de productos",
+                    productos = new List<ProductoListaDto>(),
+                    metadata = new { totalCount = 0, totalPages = 0, pageSize = 0, currentPage = pag }
+                });
+            }
+        }
     }
 }

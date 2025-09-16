@@ -16,16 +16,16 @@ namespace gc.sitio.Areas.ABMs.Controllers
     [Area("ABMs")]
     public class ProductoControladorBase : ControladorBase
     {
-		private readonly AppSettings _setting;
-		//private readonly ILogger _logger;
-		public ProductoControladorBase(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger logger) :base(options,accessor, logger)
+        private readonly AppSettings _setting;
+        //private readonly ILogger _logger;
+        public ProductoControladorBase(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger logger) : base(options, accessor, logger)
         {
-			_setting = options.Value;			
-		}
+            _setting = options.Value;
+        }
 
 
         #region ABM
-       
+
 
         public string DirSortProd
         {
@@ -72,7 +72,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 {
                     return new MetadataGrid();
                 }
-                return JsonConvert.DeserializeObject<MetadataGrid>(txt) ?? new MetadataGrid() ;
+                return JsonConvert.DeserializeObject<MetadataGrid>(txt) ?? new MetadataGrid();
             }
             set
             {
@@ -86,12 +86,12 @@ namespace gc.sitio.Areas.ABMs.Controllers
         {
             get
             {
-                string json = _context.HttpContext?.Session?.GetString("BarradoSeleccionado")?? string.Empty; 
+                string json = _context.HttpContext?.Session?.GetString("BarradoSeleccionado") ?? string.Empty;
                 if (string.IsNullOrEmpty(json))
                 {
                     return new();
                 }
-                return JsonConvert.DeserializeObject<ProductoBarradoDto>(json)?? new ProductoBarradoDto();
+                return JsonConvert.DeserializeObject<ProductoBarradoDto>(json) ?? new ProductoBarradoDto();
             }
             set
             {
@@ -140,7 +140,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         {
             get
             {
-                string json = _context.HttpContext?.Session?.GetString("LimiteStkSeleccionado")??string.Empty;
+                string json = _context.HttpContext?.Session?.GetString("LimiteStkSeleccionado") ?? string.Empty;
                 if (string.IsNullOrEmpty(json))
                 {
                     return new();
@@ -156,66 +156,153 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
         #endregion
 
-        protected async Task<IActionResult> BusquedaAvanzada(string ri01, string ri02, bool act, bool dis, bool ina,bool cstk, bool sstk, string search, bool buscaNew, IProductoServicio _productoServicio, string sort = "p_id", string sortDir = "asc", int pag = 1)
-		{
-			List<ProductoListaDto> lista;
-			MetadataGrid metadata;
-			GridCoreSmart<ProductoListaDto> grillaDatos;
-			RespuestaGenerica<EntidadBase> response = new();
-			try
-			{
-				if (!buscaNew && PaginaGrid == pag)
-				{
-					//es la misma pagina y hay registros, se realiza el reordenamiento de los datos.
-					lista = ProductosBuscados.ToList();
-					lista = OrdenarEntidad(lista, sortDir, sort);
-					ProductosBuscados = lista;
-				}
-				else
-				{
-					PaginaGrid = pag;
-					//traemos datos desde la base
-					var busc = new BusquedaProducto
-					{
-						Busqueda = search,
-						ConStock = cstk,
-						SinStock = sstk,
-						CtaProveedorId = ri01,
-						RubroId = ri02,
-						EstadoActivo = act,
-						EstadoDiscont = dis,
-						EstadoInactivo = ina,
-						Registros = _setting.NroRegistrosPagina,
-						Pagina = pag,
-						Sort = sort,
-						SortDir = sortDir,
-						Administracion = AdministracionId
-					};
+        protected async Task<IActionResult> BusquedaAvanzada(string ri01, string ri02, bool act, bool dis, bool ina, bool cstk, bool sstk, string search, bool buscaNew, IProductoServicio _productoServicio, string sort = "p_id", string sortDir = "asc", int pag = 1)
+        {
+            List<ProductoListaDto> lista;
+            MetadataGrid metadata;
+            GridCoreSmart<ProductoListaDto> grillaDatos;
+            RespuestaGenerica<EntidadBase> response = new();
+            try
+            {
+                if (!buscaNew && PaginaGrid == pag)
+                {
+                    //es la misma pagina y hay registros, se realiza el reordenamiento de los datos.
+                    lista = ProductosBuscados.ToList();
+                    lista = OrdenarEntidad(lista, sortDir, sort);
+                    ProductosBuscados = lista;
+                }
+                else
+                {
+                    PaginaGrid = pag;
+                    //traemos datos desde la base
+                    var busc = new BusquedaProducto
+                    {
+                        Busqueda = search,
+                        ConStock = cstk,
+                        SinStock = sstk,
+                        CtaProveedorId = ri01,
+                        RubroId = ri02,
+                        EstadoActivo = act,
+                        EstadoDiscont = dis,
+                        EstadoInactivo = ina,
+                        Registros = _setting.NroRegistrosPagina,
+                        Pagina = pag,
+                        Sort = sort,
+                        SortDir = sortDir,
+                        Administracion = AdministracionId
+                    };
 
-					var res = await _productoServicio.BusquedaListaProductos(busc, TokenCookie);
-					lista = res.Item1 ?? [];
-					MetadataProd = res.Item2 ?? new();
-					//metadata = MetadataProd;
-					ProductosBuscados = lista;
-				}
+                    var res = await _productoServicio.BusquedaListaProductos(busc, TokenCookie);
+                    lista = res.Item1 ?? [];
+                    MetadataProd = res.Item2 ?? new();
+                    //metadata = MetadataProd;
+                    ProductosBuscados = lista;
+                }
                 metadata = MetadataProd;
 
                 //grillaDatos = GenerarGrilla<ProductoListaDto>(ProductosBuscados, "p_desc");
                 grillaDatos = GenerarGrillaSmart<ProductoListaDto>(ProductosBuscados, sort, _setting.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, sortDir);
                 return PartialView("_gridProdsAdv", grillaDatos);
-			}
-			catch (Exception ex)
-			{
-				string msg = "Error en la invocación de la API - Busqueda Avanzada";
-				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda Avanzada");
-				response.Mensaje = msg;
-				response.Ok = false;
-				response.EsWarn = false;
-				response.EsError = true;
-				return PartialView("_gridMensaje", response);
-			}
-		}
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error en la invocación de la API - Busqueda Avanzada";
+                _logger?.LogError(ex, "Error en la invocación de la API - Busqueda Avanzada");
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+        }
 
 
-	}
+        /// <summary>
+        /// Búsqueda avanzada V02 que devuelve JsonResult con ProductoListaDto completo
+        /// </summary>
+        protected async Task<JsonResult> BusquedaAvanzadaV02(string ri01, string ri02, bool act, bool dis, bool ina, bool cstk, bool sstk, string search, bool buscaNew, IProductoServicio _productoServicio, string sort = "p_id", string sortDir = "asc", int pag = 1)
+        {
+            try
+            {
+                List<ProductoListaDto> lista;
+                MetadataGrid metadata;
+
+                if (!buscaNew && PaginaGrid == pag)
+                {
+                    // Es la misma página y hay registros, realizar reordenamiento
+                    lista = ProductosBuscados.ToList();
+                    lista = OrdenarEntidad(lista, sortDir, sort);
+                    ProductosBuscados = lista;
+                    metadata = MetadataProd;
+                }
+                else
+                {
+                    PaginaGrid = pag;
+
+                    // ✅ BÚSQUEDA: Obtener datos desde la base
+                    var busc = new BusquedaProducto
+                    {
+                        Busqueda = search,
+                        ConStock = cstk,
+                        SinStock = sstk,
+                        CtaProveedorId = ri01,
+                        RubroId = ri02,
+                        EstadoActivo = act,
+                        EstadoDiscont = dis,
+                        EstadoInactivo = ina,
+                        Registros = _setting.NroRegistrosPagina,
+                        Pagina = pag,
+                        Sort = sort,
+                        SortDir = sortDir,
+                        Administracion = AdministracionId
+                    };
+
+                    var res = await _productoServicio.BusquedaListaProductos(busc, TokenCookie);
+                    lista = res.Item1 ?? [];
+                    metadata = res.Item2 ?? new();
+
+                    // Guardar en sesión para paginación
+                    ProductosBuscados = lista;
+                    MetadataProd = metadata;
+                }
+
+                // ✅ RETORNAR JSON: Lista completa de ProductoListaDto con metadata
+                return new JsonResult(new
+                {
+                    error = false,
+                    productos = lista,
+                    metadata = new
+                    {
+                        totalCount = metadata.TotalCount,
+                        totalPages = metadata.TotalPages,
+                        pageSize = metadata.PageSize,
+                        currentPage = pag,
+                        sort = sort,
+                        sortDir = sortDir
+                    },
+                    paginacion = new
+                    {
+                        paginaActual = pag,
+                        totalRegistros = metadata.TotalCount,
+                        registrosPorPagina = _setting.NroRegistrosPagina,
+                        primerRegistro = ((pag - 1) * _setting.NroRegistrosPagina) + 1,
+                        ultimoRegistro = Math.Min(pag * _setting.NroRegistrosPagina, metadata.TotalCount)
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error en la invocación de la API - Búsqueda Avanzada V02";
+                _logger?.LogError(ex, "Error en la invocación de la API - Búsqueda Avanzada V02: {Error}", ex.Message);
+
+                return new JsonResult(new
+                {
+                    error = true,
+                    msg,
+                    productos = new List<ProductoListaDto>(),
+                    metadata = new { totalCount = 0, totalPages = 0, pageSize = 0, currentPage = pag }
+                });
+            }
+        }
+    }
 }

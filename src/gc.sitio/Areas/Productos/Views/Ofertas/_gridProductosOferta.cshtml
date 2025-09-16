@@ -1,0 +1,99 @@
+﻿@model GridCoreSmart<ProductoOfertaDto>
+
+@{
+    var alt = true;
+    string clase = string.Empty;
+}
+
+<div class="card card-golden">
+    <div class="card-body p-2">
+        <div class="table-responsive text-nowrap table-wrapper-400">
+            <table class="table table-sm mb-0 table-hover table-golden" id="tbGridProductosOferta">
+                <thead class="table-golden-header">
+                    <tr class="header">
+                        <th class="text-center" scope="col">ID PRODUCTO</th>
+                        <th class="text-left" scope="col">DESCRIPCIÓN</th>
+                        <th class="text-right" scope="col">P.COSTO</th>
+                        <th class="text-right" scope="col">P.MAYORISTA</th>
+                        <th class="text-right" scope="col">P.MINORISTA</th>
+                        @* <th class="text-center" scope="col">ESTADO</th> *@
+                        <th class="text-center" scope="col">ACCIÓN</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ListaDatos != null && Model.ListaDatos.Any())
+                    {
+                        @foreach (var item in Model.ListaDatos)
+                        {
+                            if (alt) { clase = "table-row-alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                            <tr class="@clase" data-producto-id="@item.p_id">
+                                <td class="@Model.ObtenerClase(item.p_id)">
+                                    @Model.FormatearDato(item.p_id, FormatDato.Ninguno)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.p_desc)" title="@item.p_desc">
+                                    @Model.FormatearDato(item.p_desc, FormatDato.Ninguno)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.p_pcosto)">
+                                    @Model.FormatearDato(item.p_pcosto, FormatDato.Monto)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.p_mayorista)">
+                                    @Model.FormatearDato(item.p_mayorista, FormatDato.Monto)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.p_minorista)">
+                                    @Model.FormatearDato(item.p_minorista, FormatDato.Monto)
+                                </td>                            
+                               @*  <td class="text-center">
+                                    <span class="badge bg-success">Activo</span>
+                                </td> *@
+                                <td class="@Model.ObtenerClase('C')">
+                                    <button type="button"
+                                            class="btn btn-outline-danger btn-sm btn-remover-oferta"
+                                            data-p-id="@item.p_id"
+                                            title="Eliminar de ofertas">
+                                        <i class="bx bx-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="bx bx-info-circle me-2"></i>
+                                No hay productos seleccionados para ofertas
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (Model.ListaDatos != null && Model.ListaDatos.Any())
+        {
+            <div class="d-flex justify-content-between align-items-center mt-3 px-2">
+                <div class="text-muted small">
+                    <i class="bx bx-package me-1"></i>
+                    Total: @Model.CantidadReg productos en ofertas
+                </div>
+                <div class="text-muted small">
+                    <button type="button" class="btn btn-primary btn-sm" id="btnGuardarOfertas">
+                        <i class="bx bx-save"></i> Guardar Todas las Ofertas
+                    </button>
+                </div>
+                <div class="text-muted small">
+                    <button type="button" class="btn btn-danger btn-sm mt-1 me-1"
+                            id="btnCancelaOferta" title="Cancelar oferta">
+                        <i class="bx bx-x-circle"></i>
+                        Cancelar Oferta
+                    </button>
+                </div>
+               
+                <div class="text-muted small">
+                    @Model.DatoAux01
+                </div>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,28 @@
+﻿@model BusquedaProducto
+@{
+    List<ProductoListaDto> listaVacia = new();
+}
+<div class="filter-golden">
+    <div class="filter-golden-body">
+        <div class="row w-100">
+            <div class="col-12">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">ID:</span>
+                    <input type="text"
+                           class="form-control inputEditable"
+                           asp-for="Busqueda"
+                           placeholder="Ingresar ID de Producto, EAN o Id de Proveedor."
+                           style="background-color:rgb(251,255,195);font-weight:900;"
+                           autofocus />
+                    <button type="button"
+                            class="btn btn-primary btn-sm"
+                            id="btnBusquedaBase">
+                        <i class="bx bx-search"></i> Buscar
+                    </button>
+                    @Html.Hidden("estadoFuncion", false)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<partial name="~/areas/controlcomun/views/producto/busquedaadvanceV02.cshtml" model="@listaVacia" />

@@ -16,20 +16,20 @@ namespace gc.sitio.core.Servicios.Implementacion
 {
     public class Servicio<T> : IServicio<T> where T : Dto
     {
-        private readonly AppSettings appSettings;
+        public readonly AppSettings _appSettings;
         protected readonly ILogger _logger;
         private string _rutaEntidad;
 
         public Servicio(IOptions<AppSettings> options, ILogger logger, string rutaEntidad)
         {
-            appSettings = options.Value;
+            _appSettings = options.Value;
             _logger = logger;
             _rutaEntidad = rutaEntidad;
         }
 
         public Servicio(IOptions<AppSettings> options, ILogger logger)
         {
-            appSettings = options.Value;
+            _appSettings = options.Value;
             _logger = logger;
             _rutaEntidad = string.Empty;
         }
@@ -49,7 +49,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             {
                 throw new NegocioException("Hay un problema al intentar generar la conexión. JWT.");
             }
-            HttpResponseMessage response = client.GetAsync($"{appSettings.RutaBase}{_rutaEntidad}").Result;
+            HttpResponseMessage response = client.GetAsync($"{_appSettings.RutaBase}{_rutaEntidad}").Result;
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 string stringData = await response.Content.ReadAsStringAsync();
@@ -93,12 +93,12 @@ namespace gc.sitio.core.Servicios.Implementacion
                 HttpResponseMessage response;
                 if (filters.Todo)
                 {
-                    response = await client.GetAsync($"{appSettings.RutaBase}{_rutaEntidad}");
+                    response = await client.GetAsync($"{_appSettings.RutaBase}{_rutaEntidad}");
                     //_logger.LogInformation($"Response: {JsonConvert.SerializeObject(response)}");
                 }
                 else
                 {
-                    var link = $"{appSettings.RutaBase}{_rutaEntidad}?{EvaluarQueryFilter(filters)}";
+                    var link = $"{_appSettings.RutaBase}{_rutaEntidad}?{EvaluarQueryFilter(filters)}";
 
                     response = await client.GetAsync(link);
                     //_logger.LogInformation($"Response: {JsonConvert.SerializeObject(response)}");
@@ -146,7 +146,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 
                 HttpResponseMessage response;
                 //string link = $"{appSettings.RutaBase}{_rutaEntidad}?id={id}";
-                string link = $"{appSettings.RutaBase}{_rutaEntidad}/{id}";
+                string link = $"{_appSettings.RutaBase}{_rutaEntidad}/{id}";
 
                 response = await client.GetAsync(link);
 
@@ -189,7 +189,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 HttpClient client = helperAPI.InicializaCliente(token); ;
 
                 HttpResponseMessage response;
-                string link = $"{appSettings.RutaBase}{_rutaEntidad}";
+                string link = $"{_appSettings.RutaBase}{_rutaEntidad}";
 
                 response = await client.GetAsync(link);
 
@@ -449,7 +449,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 _logger.LogInformation("Agregando los datos de la entidad.");
 
                 HttpClient client = helperAPI.InicializaCliente(entidad, token, out StringContent content);
-                client.BaseAddress = new Uri(appSettings.RutaBase??"");
+                client.BaseAddress = new Uri(_appSettings.RutaBase??"");
                 HttpResponseMessage response;
                 string link = $"{_rutaEntidad}";
                 response = await client.PostAsync(link, content);
@@ -517,7 +517,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 HelperAPI helperAPI = new HelperAPI();
                 _logger.LogInformation("Actualizando los datos de la entidad");
                 HttpClient client = helperAPI.InicializaCliente(entidad, token, out StringContent content);
-                client.BaseAddress = new Uri(appSettings.RutaBase ?? "");
+                client.BaseAddress = new Uri(_appSettings.RutaBase ?? "");
 
                 var link = $"{_rutaEntidad}/{id}";
 
@@ -611,7 +611,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 HelperAPI helperAPI = new HelperAPI();
                 _logger.LogInformation($"Eliminando datos. Id:{id}");
                 HttpClient client = helperAPI.InicializaCliente(token);
-                client.BaseAddress = new Uri(appSettings.RutaBase ?? "");
+                client.BaseAddress = new Uri(_appSettings.RutaBase ?? "");
                 HttpResponseMessage response;
                 var link = $"{_rutaEntidad}/{id}";
 
