@@ -117,11 +117,11 @@
 								<input type="text" id="txtIdProd" class="form-control" style="width:10%;display: none;" readonly />
 								<input type="text" id="txtProDescripcion" class="form-control" style="width: 33%;" readonly />
 								<span class="input-group-text" style="width:5%;">UP: </span>
-								<input type="text" id="txtUP" class="form-control align-right" style="width:10%;"/>
+								<input type="text" id="txtUP" class="form-control align-right" style="width:10%;" />
 								<span class="input-group-text" style="width:5%;">Bto: </span>
 								<input type="number" id="txtBto" class="form-control align-right" min="0" style="width:10%;" />
 								<span class="input-group-text" style="width:5%;">Unid: </span>
-								<input type="text" id="txtUnid" class="form-control align-right" style="width:25%;" value="0"/>
+								<input type="text" id="txtUnid" class="form-control align-right" style="width:25%;" value="0" />
 								<input type="text" id="txtUP_ID" style="display:none;" />
 								<input type="text" id="txtBARRADO_ID" style="display:none;" />
 								<input type="text" id="txtID_PROV" style="display:none;" />
@@ -148,17 +148,20 @@
 										</tr>
 									</thead>
 									<tbody>
-										@foreach (var item in Model.ProductosAAjustar.ListaDatos)
+										@if (Model != null && Model.ProductosAAjustar != null && Model.ProductosAAjustar.ListaDatos != null && Model.ProductosAAjustar.ListaDatos.Count > 0)
 										{
-											<tr onclick="selectListaProductoRow(this)">
-												<td class="align-center">@item.p_id</td>
-												<td class="align-left">@item.p_desc</td>
-												<td class="align-center">@item.p_id_prov</td>
-												<td class="align-center">@item.box_desc</td>
-												<td class="align-center">@item.as_stock</td>
-												<td class="align-right">@item.as_ajuste</td>
-												<td class="align-right">@item.as_resultado</td>
-											</tr>
+											@foreach (var item in Model.ProductosAAjustar.ListaDatos)
+											{
+												<tr onclick="selectListaProductoRow(this)">
+													<td class="align-center">@item.p_id</td>
+													<td class="align-left">@item.p_desc</td>
+													<td class="align-center">@item.p_id_prov</td>
+													<td class="align-center">@item.box_desc</td>
+													<td class="align-center">@item.as_stock</td>
+													<td class="align-right">@item.as_ajuste</td>
+													<td class="align-right">@item.as_resultado</td>
+												</tr>
+											}
 										}
 									</tbody>
 								</table>
@@ -211,7 +214,6 @@
 	</script>
 	<script src="~/js/app/areas/ajustedestock/ajdestk.js"></script>
 	<script src="~/js/app/busquedas.js" type="text/javascript"></script>
-	@* <script src="~/js/app/controlcomun/rpr.js" type="text/javascript"></script> *@
 	<script src="~/js/app/controlcomun/infoRpr.js" type="text/javascript"></script>
 	<script src="~/js/plugins/jquery.simplePagination.js"></script>
 }

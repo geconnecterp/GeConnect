@@ -7,8 +7,8 @@
 			<div class="card">
 				<div class="card-body mt-1">
 					<div class="table-responsive text-nowrap table-wrapper-200-full">
-						<table class="table table-sm mb-0 table-hover" id="tbProveedorFliaProv">
-							<thead class="table-dark">
+						<table class="table table-sm mb-0 table-hover table-golden" id="tbProveedorFliaProv">
+							<thead>
 								<tr class="header">
 									<th class="col-header-small align-center">ID</th>
 									<th class="col-header-small align-center">Familia</th>
@@ -16,13 +16,16 @@
 								</tr>
 							</thead>
 							<tbody>
-								@foreach (var item in Model.ListaProveedorGrupo.ListaDatos)
+								@if (Model != null && Model.ListaProveedorGrupo != null && Model.ListaProveedorGrupo.ListaDatos != null && Model.ListaProveedorGrupo.ListaDatos.Count > 0)
 								{
-									<tr onclick="selectRegCli(this, 'tbProveedorFliaProv')" ondblclick="selectRegDbl(this, 'tbProveedorFliaProv')">
-										<td class="align-left">@item.pg_id</td>
-										<td class="align-left">@item.pg_desc</td>
-										<td style="display:none;">@item.cta_id</td>
-									</tr>
+									@foreach (var item in Model.ListaProveedorGrupo.ListaDatos)
+									{
+										<tr onclick="selectRegCli(this, 'tbProveedorFliaProv')" ondblclick="selectRegDbl(this, 'tbProveedorFliaProv')">
+											<td class="align-left">@item.pg_id</td>
+											<td class="align-left">@item.pg_desc</td>
+											<td style="display:none;">@item.cta_id</td>
+										</tr>
+									}
 								}
 							</tbody>
 						</table>

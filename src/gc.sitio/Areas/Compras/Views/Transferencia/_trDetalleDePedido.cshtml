@@ -19,17 +19,20 @@
 				</tr>
 			</thead>
 			<tbody>
-				@foreach (var item in Model.Detalle.ListaDatos)
+				@if (Model != null && Model.Detalle != null && Model.Detalle.ListaDatos != null && Model.Detalle.ListaDatos.Count > 0)
 				{
-					<tr onclick="selectTRDetalleDePedido(this)">
-						<td class="align-center">@item.pi_compte</td>
-						<td class="align-center">@item.pid_item</td>
-						<td class="align-center">@item.p_id</td>
-						<td class="align-left">@item.p_desc</td>
-						<td class="align-right">@item.pid_cantidad</td>
-						<td class="align-right">@item.pid_enviado</td>
-						<td class="align-right">@item.pid_stk</td>
-					</tr>
+					@foreach (var item in Model.Detalle.ListaDatos)
+					{
+						<tr onclick="selectTRDetalleDePedido(this)">
+							<td class="align-center">@item.pi_compte</td>
+							<td class="align-center">@item.pid_item</td>
+							<td class="align-center">@item.p_id</td>
+							<td class="align-left">@item.p_desc</td>
+							<td class="align-right">@item.pid_cantidad</td>
+							<td class="align-right">@item.pid_enviado</td>
+							<td class="align-right">@item.pid_stk</td>
+						</tr>
+					}
 				}
 			</tbody>
 		</table>

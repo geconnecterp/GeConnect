@@ -37,9 +37,9 @@
 	@Html.Hidden("tco_id", Model.DescFinanc.tco_id)
 	<div id="divListaValorizacion">
 		<div class="table-responsive table-wrapper-400-full-width" id="containerListaValorizacion">
-			<table class="table table-bordered table-hover" id="tbListaValorizacion">
-				<thead class="table-dark">
-					<tr>
+			<table class="table table-bordered table-hover table-golden" id="tbListaValorizacion">
+				<thead>
+					<tr class="header">
 						<th style="width:20%;" class="col-header-small align-center tiny-row">Comprobante</th>
 						<th style="width:5%;" class="col-header-small align-center tiny-row">No Gravado</th>
 						<th style="width:5%;" class="col-header-small align-center tiny-row">Exento</th>
@@ -94,9 +94,9 @@
 						</div>
 						<div id="divDescFinanc">
 							<div class="table-responsive table-wrapper-400-full-width" id="containerListaDescFinanc">
-								<table class="drageable-table table table-bordered table-hover" id="tbListaDescFinanc">
-									<thead class="table-dark">
-										<tr>
+								<table class="drageable-table table table-bordered table-hover table-golden" id="tbListaDescFinanc">
+									<thead>
+										<tr class="header">
 											<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">Item</th>
 											<th style="width:15%;" class="col-header-small align-center tiny-row">Neto Fijo</th>
 											<th style="width:15%;" class="col-header-small align-center tiny-row">Dto/Tot</th>
@@ -210,13 +210,13 @@
 			<div class="row mt-1">
 				<div class="d-flex justify-content-sm-center">
 					<button id="btnGuardarValorizacion" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Guardar Valorización">
-						<i class="bx bxs-save bx-xs"></i>
+						<i class="bx bx-badge-check"></i>
 					</button>
-					<button id="btnConfirmarValorizacion" class="btn btn-info btn-sm mt-1 me-1" type="button" title="Confirmar Valorización">
-						<i class="bx bx-check-circle"></i>
+					<button id="btnConfirmarValorizacion" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Confirmar Valorización">
+						<i class="bx bx-check-double"></i>
 					</button>
 					<button id="btnCancelarValorizacion" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar carga de Valorización">
-						<i class="bx bx-x-circle bx-xs"></i>
+						<i class="bx bx-x-circle"></i>
 					</button>
 					<button id="btnAgregarProducto" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Agregar Producto" style="width: 150px;max-width: 150px;font-weight: bold;">
 						<i class="">AGREGAR PROD</i>
@@ -227,7 +227,7 @@
 	</div>
 </div>
 @*Modal para cargar IVA discriminado o NO discriminado*@
-<div class="modal fade in" id="modalAgregarProducto" tabindex="-1" style="display: none;" aria-hidden="true" data-backdrop="static">
+<div class="modal fade modal-golden in" id="modalAgregarProducto" tabindex="-1" style="display: none;" aria-hidden="true" data-backdrop="static">
 	<div class="modal-dialog modal-x" role="document">
 		<div class="modal-content">
 			<div id="divAgregarProducto">

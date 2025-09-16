@@ -11,28 +11,31 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.ListaDatos)
+			@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
 			{
-				<tr onclick="selectTRSucursalesRow(this)">
-					<td class="align-left">@item.adm_nombre</td>
-					@if (item.tiene_ordenes)
-					{
-						<td><input type="checkbox" name="tieneOrdenes" value="@item.tiene_ordenes" checked disabled="disabled" /></td>
-					}
-					else
-					{
-						<td><input type="checkbox" name="tieneOrdenes" value="@item.tiene_ordenes" disabled="disabled" /></td>
-					}
-					@if (item.tiene_pi)
-					{
-						<td><input type="checkbox" name="tienePI" value="@item.tiene_pi" checked disabled="disabled" /></td>
-					}
-					else
-					{
-						<td><input type="checkbox" name="tienePI" value="@item.tiene_pi" disabled="disabled" /></td>
-					}
-					<td style="display:none;">@item.adm_id</td>
-				</tr>
+				@foreach (var item in Model.ListaDatos)
+				{
+					<tr onclick="selectTRSucursalesRow(this)">
+						<td class="align-left">@item.adm_nombre</td>
+						@if (item.tiene_ordenes)
+						{
+							<td><input type="checkbox" name="tieneOrdenes" value="@item.tiene_ordenes" checked disabled="disabled" /></td>
+						}
+						else
+						{
+							<td><input type="checkbox" name="tieneOrdenes" value="@item.tiene_ordenes" disabled="disabled" /></td>
+						}
+						@if (item.tiene_pi)
+						{
+							<td><input type="checkbox" name="tienePI" value="@item.tiene_pi" checked disabled="disabled" /></td>
+						}
+						else
+						{
+							<td><input type="checkbox" name="tienePI" value="@item.tiene_pi" disabled="disabled" /></td>
+						}
+						<td style="display:none;">@item.adm_id</td>
+					</tr>
+				}
 			}
 		</tbody>
 	</table>

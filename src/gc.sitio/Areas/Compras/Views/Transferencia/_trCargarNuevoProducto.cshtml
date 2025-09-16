@@ -14,17 +14,20 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.Productos.ListaDatos)
+			@if (Model != null && Model.Productos != null && Model.Productos.ListaDatos != null && Model.Productos.ListaDatos.Count > 0)
 			{
-				<tr onclick="selectProductosParaAgregarRow(this)">
-					<td class="align-center">@item.p_id</td>
-					<td class="align-left">@item.p_desc</td>
-					<td class="align-center">@item.adm_id</td>
-					<td class="align-center">@item.adm_id</td>
-					<td class="align-right">@item.stk_adm</td>
-					<td class="align-center">@item.box_id</td>
-					<td class="align-right">@item.stk</td>
-				</tr>
+				@foreach (var item in Model.Productos.ListaDatos)
+				{
+					<tr onclick="selectProductosParaAgregarRow(this)">
+						<td class="align-center">@item.p_id</td>
+						<td class="align-left">@item.p_desc</td>
+						<td class="align-center">@item.adm_id</td>
+						<td class="align-center">@item.adm_id</td>
+						<td class="align-right">@item.stk_adm</td>
+						<td class="align-center">@item.box_id</td>
+						<td class="align-right">@item.stk</td>
+					</tr>
+				}
 			}
 		</tbody>
 	</table>

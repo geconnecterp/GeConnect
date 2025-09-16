@@ -7,21 +7,7 @@
 
 <div class="grid-golden">
 	<input type="text" id="idRPSelected" style="display:none;" />
-	@* <row>
-		<input type="text" id="rp_id" style="visibility:hidden" />
-		<div style="float:left">
-			<h5 class="card-header">RPR Autorizaciones</h5>
-		</div>
-		<div class="demo-inline-spacing" style="float:right;margin-top: 20px;margin-right: 55px;">
-			<a asp-action="NuevaAut" asp-controller="Compra" asp-area="Compras" class="btn btn-primary" id="btnNuevaAut" title="Nueva Autorización">
-				<span class="bx bx-plus-circle me-1"></span>
-			</a>
-			<a href="#" id="btnModificarAut" class="btn btn-secondary" title="Modificar Autorización"><span class="bx bx-edit me-1"></span></a>
-			<a href="#" id="btnVer" class="btn btn-success" title="Ver Autorización"><span class="bx bx-binocular me-1"></span></a>
-		</div>
-	</row> *@
 	<div class="grid-golden-header">
-		@* <h5 class="card-header">RPR Autorizaciones</h5> *@
 		<div>
 			<a asp-action="NuevaAut" asp-controller="Compra" asp-area="Compras" class="btn btn-primary btn-sm mt-1 me-1" id="btnNuevaAut" title="Nueva Autorización">
 				<span class="bx bx-plus-circle"> Nueva Autorización</span>
@@ -48,20 +34,23 @@
 					</tr>
 				</thead>
 				<tbody>
-					@foreach (var item in Model.ListaDatos)
+					@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
 					{
-						<tr onclick="selectRPRow(this)">
-							<td class="align-center">@item.Rp</td>
-							<td class="align-center">@item.Cta_id</td>
-							<td class="align-left">@item.Cta_denominacion</td>
-							<td class="align-center">@item.Fecha?.ToString("dd/MM/yyyy hh:mm")</td>
-							<td class="align-left">@item.Nota</td>
-							<td class="align-center">@item.Cm_compte</td>
-							<td class="align-center">@item.Cm_fecha.ToString("dd/MM/yyyy")</td>
-							<td class="align-right">@item.Cm_importe</td>
-							<td class="align-center">@item.Rpe_desc</td>
-							<td style="display:none;">@item.Rp_hidden</td>
-						</tr>
+						@foreach (var item in Model.ListaDatos)
+						{
+							<tr onclick="selectRPRow(this)">
+								<td class="align-center">@item.Rp</td>
+								<td class="align-center">@item.Cta_id</td>
+								<td class="align-left">@item.Cta_denominacion</td>
+								<td class="align-center">@item.Fecha?.ToString("dd/MM/yyyy hh:mm")</td>
+								<td class="align-left">@item.Nota</td>
+								<td class="align-center">@item.Cm_compte</td>
+								<td class="align-center">@item.Cm_fecha.ToString("dd/MM/yyyy")</td>
+								<td class="align-right">@item.Cm_importe</td>
+								<td class="align-center">@item.Rpe_desc</td>
+								<td style="display:none;">@item.Rp_hidden</td>
+							</tr>
+						}
 					}
 				</tbody>
 			</table>

@@ -12,16 +12,19 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.ListaDatos)
+			@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
 			{
-				var nombre = "chk" + item.p_id;
-				<tr onclick="selectListaProductoRow(this)">
-					<td><input type="checkbox" name=@nombre /></td>
-					<td class="align-center">@item.p_id</td>
-					<td class="align-left">@item.p_desc</td>
-					<td class="align-center">@item.cta_id</td>
-					<td class="align-right">@item.cantidad</td>
-				</tr>
+				@foreach (var item in Model.ListaDatos)
+				{
+					var nombre = "chk" + item.p_id;
+					<tr onclick="selectListaProductoRow(this)">
+						<td><input type="checkbox" name=@nombre /></td>
+						<td class="align-center">@item.p_id</td>
+						<td class="align-left">@item.p_desc</td>
+						<td class="align-center">@item.cta_id</td>
+						<td class="align-right">@item.cantidad</td>
+					</tr>
+				}
 			}
 		</tbody>
 	</table>

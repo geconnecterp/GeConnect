@@ -100,7 +100,7 @@
 							<i class="bx bx-x-circle"></i>
 						</button>
 						<button id="btnSiguiente1" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Siguiente">
-							<i class="bx bx-arrow-to-right"></i>
+							<i class="bx bx-chevron-right"></i>
 						</button>
 					</div>
 				</div>
@@ -111,8 +111,8 @@
 			<div class="row">
 				<div class="col-6" id="divTotales">
 					<div class="table-responsive text-nowrap table-wrapper-300-full-width">
-						<table class="table table-sm mb-0 table-hover" id="tbGridTotales" style="height: 175px;">
-							<thead class="table-dark">
+						<table class="table table-sm mb-0 table-hover table-golden" id="tbGridTotales" style="height: 175px;">
+							<thead>
 								<tr class="header">
 									<th class="col-header-small align-left">Concepto</th>
 									<th class="col-header-small align-right">Importe</th>
@@ -138,14 +138,14 @@
 						<button id="btnAbmAgregarItem" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Agregar nueva Obligación">
 							<i class="bx bx-plus-circle"></i>
 						</button>
-						<button id="btnAbmEditarItem" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Editar Obligación">
-							<i class="bx bx-edit-alt"></i>
+						<button id="btnAbmEditarItem" class="btn btn-info btn-sm mt-1 me-1" type="button" title="Editar Obligación">
+							<i class="bx bx-edit"></i>
 						</button>
 						<button id="btnAbmEliminarItem" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Eliminar Obligación">
 							<i class="bx bx-trash"></i>
 						</button>
 						<button id="btnAbmAceptarItem" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Guardar cambios">
-							<i class="bx bx-check-circle"></i>
+							<i class="bx bx-badge-check"></i>
 						</button>
 						<button id="btnAbmCancelarItem" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar cambios">
 							<i class="bx bx-x-circle bx-xs"></i>
@@ -213,8 +213,8 @@
 						</div>
 					</div>
 					<div class="table-responsive text-nowrap table-wrapper-200" style="height: 120px;">
-						<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridConceptoFacturado" style="height: 120px;">
-							<thead class="table-dark">
+						<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbGridConceptoFacturado" style="height: 120px;">
+							<thead>
 								<tr class="header">
 									<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">Id</th>
 									<th style="width:5%;" class="col-header-small align-center tiny-row">Concepto</th>
@@ -255,14 +255,14 @@
 							<h6>Otros Tributos</h6>
 						</div>
 						<div class="col-md-6">
-							<button id="btnAgregarOtroTributo" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Agregar Otros Tributos">
-								<i class="bx bx-plus bx-xs"></i>
+							<button id="btnAgregarOtroTributo" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Agregar Otros Tributos">
+								<i class="bx bx-plus-circle"></i>
 							</button>
 						</div>
 					</div>
 					<div class="table-responsive text-nowrap  table-wrapper-200" style="height: 140px;">
-						<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridOtroTributo">
-							<thead class="table-dark">
+						<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbGridOtroTributo">
+							<thead>
 								<tr class="header">
 									<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">Id</th>
 									<th style="width:5%;" class="col-header-small align-center tiny-row">Concepto</th>
@@ -301,7 +301,7 @@
 	</div>
 </div>
 @*Modal para cargar IVA discriminado o NO discriminado*@
-<div class="modal fade in" id="modalCargaIVA" tabindex="-1" style="display: none;" aria-hidden="true" data-backdrop="static">
+<div class="modal fade modal-golden in" id="modalCargaIVA" tabindex="-1" style="display: none;" aria-hidden="true" data-backdrop="static">
 	<div class="modal-dialog modal-xl" role="document">
 		<div class="modal-content">
 			<div id="divModalCargaIVA">
@@ -310,7 +310,7 @@
 	</div>
 </div>
 @*Modal para cargar OT (Otros Tributos)*@
-<div class="modal fade in" id="modalCargaOT" tabindex="-1" style="display: none;" aria-hidden="true" data-backdrop="static">
+<div class="modal fade modal-golden in" id="modalCargaOT" tabindex="-1" style="display: none;" aria-hidden="true" data-backdrop="static">
 	<div class="modal-dialog modal-xl" role="document">
 		<div class="modal-content">
 			<div id="divModalCargaOT">
