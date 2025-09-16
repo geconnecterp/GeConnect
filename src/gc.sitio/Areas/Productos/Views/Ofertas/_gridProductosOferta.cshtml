@@ -11,19 +11,12 @@
             <table class="table table-sm mb-0 table-hover table-golden" id="tbGridProductosOferta">
                 <thead class="table-golden-header">
                     <tr class="header">
-                        <th class="text-center" scope="col">
-                            <input type="checkbox" class="form-check-input" id="checkAllOfertas" title="Seleccionar todos">
-                        </th>
                         <th class="text-center" scope="col">ID PRODUCTO</th>
                         <th class="text-left" scope="col">DESCRIPCIÓN</th>
                         <th class="text-right" scope="col">P.COSTO</th>
                         <th class="text-right" scope="col">P.MAYORISTA</th>
                         <th class="text-right" scope="col">P.MINORISTA</th>
-                      @*   <th class="text-right" scope="col">PRECIO OFERTA</th>
-                        <th class="text-center" scope="col">DESDE</th>
-                        <th class="text-center" scope="col">HASTA</th>
-                        <th class="text-right" scope="col">TOPE VENTA</th> *@
-                        <th class="text-center" scope="col">ESTADO</th>
+                        @* <th class="text-center" scope="col">ESTADO</th> *@
                         <th class="text-center" scope="col">ACCIÓN</th>
                     </tr>
                 </thead>
@@ -35,59 +28,25 @@
                             if (alt) { clase = "table-row-alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
                             <tr class="@clase" data-producto-id="@item.p_id">
-                                <td class="text-center">
-                                    <input type="checkbox" class="form-check-input check-oferta"
-                                           data-p-id="@item.p_id" title="Seleccionar producto">
-                                </td>
-                                <td class="text-center">
+                                <td class="@Model.ObtenerClase(item.p_id)">
                                     @Model.FormatearDato(item.p_id, FormatDato.Ninguno)
                                 </td>
-                                <td class="text-left" title="@item.p_desc">
+                                <td class="@Model.ObtenerClase(item.p_desc)" title="@item.p_desc">
                                     @Model.FormatearDato(item.p_desc, FormatDato.Ninguno)
                                 </td>
-                                <td class="text-right">
+                                <td class="@Model.ObtenerClase(item.p_pcosto)">
                                     @Model.FormatearDato(item.p_pcosto, FormatDato.Monto)
                                 </td>
-                                <td class="text-right">
+                                <td class="@Model.ObtenerClase(item.p_mayorista)">
                                     @Model.FormatearDato(item.p_mayorista, FormatDato.Monto)
                                 </td>
-                                <td class="text-right">
+                                <td class="@Model.ObtenerClase(item.p_minorista)">
                                     @Model.FormatearDato(item.p_minorista, FormatDato.Monto)
-                                </td>
-                               @*  <td class="text-right">
-                                    <input type="number"
-                                           class="form-control form-control-sm input-numeric input-precio-oferta"
-                                           value="@item.p_minorista.ToString("F2")"
-                                           data-p-id="@item.p_id"
-                                           step="0.01"
-                                           min="0"
-                                           style="width:90px;" />
-                                </td>
-                                <td class="text-center">
-                                    <input type="date"
-                                           class="form-control form-control-sm input-fecha-desde"
-                                           data-p-id="@item.p_id"
-                                           style="width:130px;" />
-                                </td>
-                                <td class="text-center">
-                                    <input type="date"
-                                           class="form-control form-control-sm input-fecha-hasta"
-                                           data-p-id="@item.p_id"
-                                           style="width:130px;" />
-                                </td>
-                                <td class="text-right">
-                                    <input type="number"
-                                           class="form-control form-control-sm input-numeric input-tope-venta"
-                                           data-p-id="@item.p_id"
-                                           step="1"
-                                           min="0"
-                                           placeholder="0"
-                                           style="width:80px;" />
-                                </td> *@
-                                <td class="text-center">
+                                </td>                            
+                               @*  <td class="text-center">
                                     <span class="badge bg-success">Activo</span>
-                                </td>
-                                <td class="text-center">
+                                </td> *@
+                                <td class="@Model.ObtenerClase('C')">
                                     <button type="button"
                                             class="btn btn-outline-danger btn-sm btn-remover-oferta"
                                             data-p-id="@item.p_id"
@@ -101,7 +60,7 @@
                     else
                     {
                         <tr>
-                            <td colspan="12" class="text-center text-muted py-4">
+                            <td colspan="7" class="text-center text-muted py-4">
                                 <i class="bx bx-info-circle me-2"></i>
                                 No hay productos seleccionados para ofertas
                             </td>
@@ -120,9 +79,17 @@
                 </div>
                 <div class="text-muted small">
                     <button type="button" class="btn btn-primary btn-sm" id="btnGuardarOfertas">
-                        <i class="bx bx-save"></i> Guardar Ofertas
+                        <i class="bx bx-save"></i> Guardar Todas las Ofertas
                     </button>
                 </div>
+                <div class="text-muted small">
+                    <button type="button" class="btn btn-danger btn-sm mt-1 me-1"
+                            id="btnCancelaOferta" title="Cancelar oferta">
+                        <i class="bx bx-x-circle"></i>
+                        Cancelar Oferta
+                    </button>
+                </div>
+               
                 <div class="text-muted small">
                     @Model.DatoAux01
                 </div>

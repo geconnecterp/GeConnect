@@ -14,7 +14,9 @@
     <div class="grid-golden-header">
         <div class="row align-items-md-center">
             <div class="col-md-5 col-sm-6">
-                <partial name="~/areas/ControlComun/views/producto/_ctrBuscarProductoV02.cshtml" model="@busquedaProducto" />             
+                <div class="w-100">
+                    <partial name="~/areas/ControlComun/views/producto/_ctrBuscarProductoV02.cshtml" model="@busquedaProducto" />
+                </div>
             </div>
             <div class="col-md-7 col-sm-6">
                <partial name="_elementosOferta" />         
@@ -23,7 +25,7 @@
 
     </div>
     <div class="grid-golden-body">
-        <div class="row align-items-md-center">
+        <div class="row align-items-md-start">
             <div class="col-md-8 col-sm-6">
                 <div id="gridProductoOferta">
                     <p class="text-center text-muted py-4">
@@ -46,7 +48,7 @@
         let p_id_selected = "";
         let funcionBusquedaAvanzada = true;
         let busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
-        let busquedaAvanzadaUrl = "@Url.Action("BusquedaAvanzada", "producto", new { area = "ControlComun" })";
+        let busquedaAvanzadaUrl = "@Url.Action("BusquedaAvanzadaV02", "producto", new { area = "ControlComun" })";
 
         //parapaginacion
         let totalRegs = 0;
@@ -56,12 +58,18 @@
         let funcCallBack = null;
         var dataBak = {};
 
+        let confirmarAltaOfertaUrl = "@Url.Action("ConfirmacionAltaOferta", "Ofertas", new { area = "Productos" })";
         let presentarProductoOfertaUrl = "@Url.Action("PresentarProductoOferta", "Ofertas", new { area = "Productos" })";
         let buscarCanalesUrl = "@Url.Action("BuscarCanales", "Ofertas", new { area = "Productos" })";
                 // Agregar al inicio del archivo con las otras URLs
         let presentarProductosOfertaMultipleUrl = "@Url.Action("PresentarProductosOfertaMultiple", "Ofertas", new { area = "Productos" })";
         let buscarMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "ActualizarPP", new { area = "Productos" })';
+        let homeOfertaUrl = "@Url.Action("index", "Ofertas", new { area = "Productos" })";
 
+        var buscarFamiliaUrl = "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "cargaprecios", new { area = "productos" })";/**/
+        var autoComRel01Url = "@Url.Action("BuscarProvs", "cargaprecios", new { area = "productos" })";/**/
+        var autoComRel02Url = "@Url.Action("BuscarRubros", "cargaprecios", new { area = "productos" })";/**/
+        var autoComRel03Url = "@Url.Action("BuscarFlias", "cargaprecios", new { area = "productos" })";/**/
     </script>
     <script src="~/js/plugins/jquery.simplePagination.js"></script>
     <script src="~/js/app/busquedasV02.js" type="text/javascript"></script>

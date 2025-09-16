@@ -1,12 +1,14 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using X.PagedList;
 
 namespace gc.sitio.Areas.Productos.Controllers
@@ -51,6 +53,87 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
         }
 
+
+        /// <summary>
+        /// Confirma el alta de ofertas con los productos seleccionados en sesión
+        /// </summary>
+        [HttpPost]
+        public async Task<JsonResult> ConfirmacionAltaOferta([FromBody] ConfirmacionOfertaRequestDto request)
+        {
+            try
+            {
+                // ✅ VALIDACIÓN: Autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { error = true, msg = "Sesión expirada" });
+
+                // ✅ VALIDACIÓN: Datos de entrada
+                var validacionRequest = ValidarRequestConfirmacion(request);
+                if (!validacionRequest.EsValido)
+                {
+                    _logger?.LogWarning("Validación fallida en ConfirmacionAltaOferta: {Error}", validacionRequest.MensajeError);
+                    return Json(new { error = true, msg = validacionRequest.MensajeError });
+                }
+
+                // ✅ VALIDACIÓN: Productos en sesión
+                if (ProductosSeleccionadosV02 == null || !ProductosSeleccionadosV02.Any())
+                {
+                    _logger?.LogWarning("ConfirmacionAltaOferta llamada sin productos en sesión");
+                    return Json(new { error = true, msg = "No hay productos seleccionados para la oferta" });
+                }
+
+                // ✅ LOG: Información del proceso
+                var totalProductos = ProductosSeleccionadosV02.Count;
+                var totalCanales = ObtenerCanalesParaProcesamiento(request).Count;
+                _logger?.LogInformation("Iniciando confirmación de oferta: {TotalProductos} productos, {TotalCanales} canales",
+                    totalProductos, totalCanales);
+
+                // ✅ CONSTRUCCIÓN: AbmPlusGenDto optimizado
+                var abmRequest = ConstruirAbmPlusGenDto(request);
+
+                // ✅ LLAMADA: Al servicio de ofertas
+                var respuesta = await _ofertaServicio.ConfirmacionAltaOferta(abmRequest, TokenCookie);
+
+                // ✅ PROCESAMIENTO: Respuesta del servicio
+                if (respuesta.Ok && (!respuesta.EsError || !respuesta.EsWarn) )
+                {
+                    _logger?.LogInformation("Oferta confirmada exitosamente para {CantidadProductos} productos", totalProductos);
+
+                    // ✅ LIMPIAR: Sesión después del éxito
+                    ProductosSeleccionadosV02.Clear();
+
+                    return Json(new
+                    {
+                        error = false,
+                        msg = respuesta.Mensaje ?? "Ofertas guardadas correctamente",
+                        totalOfertas = CalcularTotalOfertas(request),
+                        totalProductos = totalProductos,
+                        totalCanales = totalCanales
+                    });
+                }
+                else
+                {
+                    _logger?.LogWarning("Error en servicio de ofertas: {Mensaje}", respuesta.Mensaje);
+                    return Json(new
+                    {
+                        error = respuesta.EsError,
+                        warn = respuesta.EsWarn,
+                        msg = respuesta.Mensaje ?? "Error al procesar la oferta"
+                    });
+                }
+            }
+            catch (JsonException jsonEx)
+            {
+                _logger?.LogError(jsonEx, "Error de serialización JSON en ConfirmacionAltaOferta");
+                return Json(new { error = true, msg = "Error al procesar los datos de la oferta" });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error inesperado al confirmar alta de oferta");
+                return Json(new { error = true, msg = "Error interno del servidor" });
+            }
+        }
+
+
         /// <summary>
         /// Recibe un producto y lo agrega a la lista de productos seleccionados para ofertas
         /// </summary>
@@ -79,7 +162,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 // Actualizar la lista resguardada
                 ProductosSeleccionadosV02 = lista;
 
-                // MAPEAR la lista ProductoBusquedaDto a ProductoOfertaDto
+                // MAPEAR la lista ProductoBusquedaDto a Producto Oferta Dto
                 var listaOfertas = MapearProductosAOfertas(lista);
 
                 // Generar grid con productos mapeados
@@ -191,8 +274,8 @@ namespace gc.sitio.Areas.Productos.Controllers
         private GridCoreSmart<CanalDto> GenerarGridCanales(List<CanalDto> canales, int pag = 1)
         {
             var canalesOrdenados = canales
-                .OrderBy(c => c.adm_nombre)
-                .ThenBy(c => c.lp_desc)
+                .OrderBy(c => c.adm_id)
+                .ThenBy(c => c.lp_id)
                 .ToList();
 
             const int registrosPorPagina = 10;
@@ -295,5 +378,137 @@ namespace gc.sitio.Areas.Productos.Controllers
             }).ToList();
         }
         #endregion
+
+        /// <summary>
+        /// Valida el request de confirmación de oferta con parsing mejorado
+        /// </summary>
+        private (bool EsValido, string MensajeError) ValidarRequestConfirmacion(ConfirmacionOfertaRequestDto request)
+        {
+            // ✅ VALIDACIÓN: Precio
+            if (request.Precio <= 0)
+                return (false, "El precio debe ser mayor a cero");
+
+            // ✅ VALIDACIÓN: Tope de venta
+            if (request.TopeVenta < 0)
+                return (false, "El tope de venta debe ser mayor o igual a cero");
+
+            // ✅ VALIDACIÓN: Fechas (ya son DateTime, no necesitamos TryParse)
+            if (request.FechaDesde == default || request.FechaHasta == default)
+                return (false, "Las fechas de inicio y fin son requeridas");
+
+            if (request.FechaDesde > request.FechaHasta)
+                return (false, "La fecha de inicio debe ser menor o igual a la fecha de fin");
+
+            if (request.FechaDesde.Date < DateTime.Today)
+                return (false, "La fecha de inicio no puede ser anterior a la fecha actual");
+
+            // ✅ CORRECCIÓN: Validación de período máximo
+            if (request.FechaHasta > request.FechaDesde.AddDays(30))
+                return (false, "El período de la oferta no puede exceder 30 días");
+
+            // ✅ VALIDACIÓN: Canales
+            var canalesValidos = ObtenerCanalesParaProcesamiento(request);
+            if (!canalesValidos.Any())
+                return (false, "Debe seleccionar al menos un canal");
+
+            return (true, string.Empty);
+        }
+
+        /// <summary>
+        /// Construye el AbmPlusGenDto con logging detallado para debugging
+        /// </summary>
+        private AbmPlusGenDto ConstruirAbmPlusGenDto(ConfirmacionOfertaRequestDto request)
+        {
+            try
+            {
+                // ✅ JSON: Solo p_id de productos (desde sesión)
+                var productosIds = ProductosSeleccionadosV02.Select(p => new { p_id = p.P_id }).ToList();
+                var jsonProductos = JsonConvert.SerializeObject(productosIds);
+                
+                _logger?.LogDebug("JSON Productos: {JsonProductos}", jsonProductos);
+
+                // ✅ JSON2: Canales con solo adm_id y lp_id
+                var canalesParaSerializar = ObtenerCanalesParaProcesamiento(request)
+                    .Select(c => new { adm_id = c.AdmId, lp_id = c.LpId })
+                    .ToList();
+                var jsonCanales = JsonConvert.SerializeObject(canalesParaSerializar);
+                
+                _logger?.LogDebug("JSON Canales: {JsonCanales}", jsonCanales);
+
+                // ✅ JSON3: Datos de la oferta usando ParamOferta
+                var parametrosOferta = new ParamOferta
+                {
+                    Precio = request.Precio,
+                    Desde = request.FechaDesde,
+                    Hasta = request.FechaHasta,
+                    TopeVta = request.TopeVenta
+                };
+                var jsonOferta = JsonConvert.SerializeObject(parametrosOferta);
+                
+                _logger?.LogDebug("JSON Oferta: {JsonOferta}", jsonOferta);
+
+                // ✅ CONSTRUCCIÓN: AbmPlusGenDto optimizado
+                var abmDto = new AbmPlusGenDto
+                {
+                    // ✅ DATOS BASE: Heredados de AbmGenDto
+                    Abm = 'A', // Alta de oferta
+                    Objeto = "OFERTA",
+                    Json = jsonProductos,
+                    Administracion = AdministracionId,
+                    Usuario = UserName,
+                    
+                    // ✅ DATOS PLUS: Específicos de AbmPlusGenDto
+                    Json2 = jsonCanales,
+                    Json3 = jsonOferta,
+                    Json4 = string.Empty,
+                    Json5 = string.Empty,
+                    
+                    // ✅ CONFIGURACIÓN: Campos adicionales
+                    IdFile = Guid.NewGuid(),
+                    SoloPLista = 'N',
+                    Nuevos = true,
+                    DatosLogisticos = false,
+                    Inactivos = false,
+                    vaciarTemporal = false
+                };
+
+                _logger?.LogInformation("AbmPlusGenDto construido exitosamente para {CantidadProductos} productos y {CantidadCanales} canales", 
+                    productosIds.Count, canalesParaSerializar.Count);
+
+                return abmDto;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al construir AbmPlusGenDto");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Obtiene la lista de canales para procesamiento según el modo de selección
+        /// </summary>
+        private List<CanalSeleccionadoDto> ObtenerCanalesParaProcesamiento(ConfirmacionOfertaRequestDto request)
+        {
+            return request.ModoSeleccion?.ToLower() switch
+            {
+                "individual" when request.CanalIndividual != null => 
+                    new List<CanalSeleccionadoDto> { request.CanalIndividual },
+                
+                "multiple" when request.Canales?.Any() == true => 
+                    request.Canales,
+                
+                _ => new List<CanalSeleccionadoDto>()
+            };
+        }
+
+        /// <summary>
+        /// Calcula el total de ofertas que se crearán
+        /// </summary>
+        private int CalcularTotalOfertas(ConfirmacionOfertaRequestDto request)
+        {
+            var totalProductos = ProductosSeleccionadosV02?.Count ?? 0;
+            var totalCanales = ObtenerCanalesParaProcesamiento(request).Count;
+            return totalProductos * totalCanales;
+        }
     }
 }

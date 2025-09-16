@@ -1,18 +1,18 @@
 ﻿<div class="filter-golden">
     <div class="filter-golden-body">
         <div class="d-flex justify-content-sm-end">
-            <div class="row g-2 align-items-end">
+            <div class="row g-2 align-items-center">
                 <!-- Campo Precio -->
                 <div class="col-auto">
                     <div class="input-group input-group-sm">
-                        <span class="input-group-text">Precio:</span>
+                        <span class="input-group-text" style="height:31px">Precio:</span>
                         <input type="number"
-                               class="form-control inputEditable"
+                               class="form-control input-numeric-golden"
                                id="txtPrecioOferta"
                                placeholder="0,00"
                                step="0.01"
                                min="0"
-                               style="background-color:rgb(251,255,195);font-weight:900;width:90px;"
+                               style="width:90px;height:31px"
                                autofocus />
                     </div>
                 </div>
@@ -20,60 +20,39 @@
                 <!-- Periodo Desde -->
                 <div class="col-auto">
                     <div class="input-group input-group-sm">
-                        <span class="input-group-text">Desde:</span>
+                        <span class="input-group-text" style="height:31px">Desde:</span>
                         <input type="date"
-                               class="form-control inputEditable"
+                               class="form-control input-numeric-golden"
                                id="txtFechaDesde"
-                               style="background-color:rgb(251,255,195);font-weight:900;width:140px;"
-                               autofocus />
+                               style="width:140px;height:31px" />
                     </div>
                 </div>
 
                 <!-- Periodo Hasta -->
                 <div class="col-auto">
                     <div class="input-group input-group-sm">
-                        <span class="input-group-text">Hasta:</span>
+                        <span class="input-group-text" style="height:31px">Hasta:</span>
                         <input type="date"
-                               class="form-control inputEditable"
+                               class="form-control input-numeric-golden"
                                id="txtFechaHasta"
-                               style="background-color:rgb(251,255,195);font-weight:900;width:140px;"
-                               autofocus />
+                               style="width:140px;height:31px" />
                     </div>
                 </div>
 
                 <!-- Tope de Venta -->
                 <div class="col-auto">
                     <div class="input-group input-group-sm">
-                        <span class="input-group-text">Tope Vta:</span>
+                        <span class="input-group-text" style="height:31px">Tope Vta:</span>
                         <input type="number"
-                               class="form-control inputEditable"
+                               class="form-control input-numeric-golden"
                                id="txtTopeVenta"
                                placeholder="0"
                                min="0"
                                step="1"
-                               style="background-color:rgb(251,255,195);font-weight:900;width:80px;"
-                               autofocus />
+                               style="width:80px;height:31px" />
                     </div>
-                </div>
-
-                <!-- Botón Aplicar -->
-                <div class="col-auto">
-                    <button type="button"
-                            class="btn btn-primary btn-sm mt-1 me-1"
-                            id="btnAplicarOferta"
-                            title="Aplicar oferta">
-                        <i class="bx bx-check"></i>
-                        Aplicar
-                    </button>
-                    <button type="button"
-                            class="btn btn-danger btn-sm mt-1 me-1"
-                            id="btnCancelaOferta"
-                            title="Cancelar oferta">
-                        <i class="bx bx-x-circle"></i>
-                        Cancelar
-                    </button>
                 </div>
             </div>
         </div>
     </div>
-</div>      
+</div>
