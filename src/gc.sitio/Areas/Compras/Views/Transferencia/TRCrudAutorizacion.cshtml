@@ -2,231 +2,229 @@
 @{
 	Layout = "~/views/shared/_Layout.cshtml";
 }
-<div class="card">
-	<div class="container">
-		<div class="row">
-			<div class="col-4">
-				<fieldset>
-					<legend>
-						<h5>Sucursales</h5>
-					</legend>
-					<div id="divListaSucursales">
-						<div class="table-responsive text-nowrap table-wrapper">
-							<table class="table table-bordered table-hover" id="tbListaSucursales">
-								<thead class="table-dark">
-									<tr>
-										<th style="width:80%;" class="align-center">Sucursal Destino</th>
-										<th style="width:20%;" class="align-center">PS</th>
-										<th style="width:20%;" class="align-center">PI</th>
-										<th style="width:0%; display:none;">adm_id</th>
+<div class="grid-golden">
+	<div class="row">
+		<div class="col-4">
+			<fieldset>
+				<legend>
+					<h5>Sucursales</h5>
+				</legend>
+				<div id="divListaSucursales">
+					<div class="table-responsive text-nowrap table-wrapper">
+						<table class="table table-sm mb-0 table-hover table-golden" id="tbListaSucursales">
+							<thead>
+								<tr class="header">
+									<th style="width:80%;" class="align-center">Sucursal Destino</th>
+									<th style="width:20%;" class="align-center">PS</th>
+									<th style="width:20%;" class="align-center">PI</th>
+									<th style="width:0%; display:none;">adm_id</th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var item in Model.ListaAutSucursales.ListaDatos)
+								{
+									<tr onclick="selectTRSucursalesRow(this)">
+										<td>@item.adm_nombre</td>
+										@if (item.tiene_ordenes)
+										{
+											<td><input type="checkbox" name="tieneOrdenes" value="@item.tiene_ordenes" checked disabled="disabled" /></td>
+										}
+										else
+										{
+											<td><input type="checkbox" name="tieneOrdenes" value="@item.tiene_ordenes" disabled="disabled" /></td>
+										}
+										@if (item.tiene_pi)
+										{
+											<td><input type="checkbox" name="tienePI" value="@item.tiene_pi" checked disabled="disabled" /></td>
+										}
+										else
+										{
+											<td><input type="checkbox" name="tienePI" value="@item.tiene_pi" disabled="disabled" /></td>
+										}
+										<td style="display:none;">@item.adm_id</td>
 									</tr>
-								</thead>
-								<tbody>
-									@foreach (var item in Model.ListaAutSucursales.ListaDatos)
-									{
-										<tr onclick="selectTRSucursalesRow(this)">
-											<td>@item.adm_nombre</td>
-											@if (item.tiene_ordenes)
-											{
-												<td><input type="checkbox" name="tieneOrdenes" value="@item.tiene_ordenes" checked disabled="disabled" /></td>
-											}
-											else
-											{
-												<td><input type="checkbox" name="tieneOrdenes" value="@item.tiene_ordenes" disabled="disabled" /></td>
-											}
-											@if (item.tiene_pi)
-											{
-												<td><input type="checkbox" name="tienePI" value="@item.tiene_pi" checked disabled="disabled" /></td>
-											}
-											else
-											{
-												<td><input type="checkbox" name="tienePI" value="@item.tiene_pi" disabled="disabled" /></td>
-											}
-											<td style="display:none;">@item.adm_id</td>
-										</tr>
-									}
-								</tbody>
-							</table>
-						</div>
+								}
+							</tbody>
+						</table>
 					</div>
-				</fieldset>
-			</div>
-			<div class="col-8">
-				<fieldset>
-					<legend>
-						<h5>Pedido de Sucursal</h5>
-					</legend>
-					<div id="divListaPedidosSucursal">
-						<div class="table-responsive text-nowrap table-wrapper-xs">
-							<table class="table table-bordered table-hover" id="tbListaPedidosSucursal">
-								<thead class="table-dark">
-									<tr>
-										<th style="width:15%;" class="align-center">N° PI</th>
-										<th style="width:10%;" class="align-center">Fecha</th>
-										<th style="width:10%;" class="align-center">Estado</th>
-										<th style="width:30%;" class="align-center">Nota</th>
-										<th style="width:15%;" class="align-center">Tipo</th>
-										<th style="width:10%;" class="align-center">Det</th>
-										<th style="width:10%;" class="align-center">Carga</th>
-										<th style="width:0%; display:none;">adm_id</th>
-										<th style="width:0%; display:none;">adm_desc</th>
+				</div>
+			</fieldset>
+		</div>
+		<div class="col-8">
+			<fieldset>
+				<legend>
+					<h5>Pedido de Sucursal</h5>
+				</legend>
+				<div id="divListaPedidosSucursal">
+					<div class="table-responsive text-nowrap table-wrapper-xs">
+						<table class="table table-sm mb-0 table-hover table-golden" id="tbListaPedidosSucursal">
+							<thead>
+								<tr class="header">
+									<th style="width:15%;" class="align-center">N° PI</th>
+									<th style="width:10%;" class="align-center">Fecha</th>
+									<th style="width:10%;" class="align-center">Estado</th>
+									<th style="width:30%;" class="align-center">Nota</th>
+									<th style="width:15%;" class="align-center">Tipo</th>
+									<th style="width:10%;" class="align-center">Det</th>
+									<th style="width:10%;" class="align-center">Carga</th>
+									<th style="width:0%; display:none;">adm_id</th>
+									<th style="width:0%; display:none;">adm_desc</th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var item in Model.ListaPedidosSucursal.ListaDatos)
+								{
+									<tr onclick="selectTRPedidoSucursalRow(this)">
+										<td class="align-center">@item.pi_compte</td>
+										<td class="align-center">@item.pi_fecha.ToString("dd/MM/yyyy")</td>
+										<td class="align-center">@item.pie_desc</td>
+										<td class="align-left">@item.pi_nota</td>
+										<td class="align-center">@item.pit_desc</td>
+										<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.pi_compte" onclick="verDetalleDePedido(this);"> <i class="bx bx-detail"></i></a></td>
+										<td><a class="btn btn-xs btn-outline-primary" data-interaction="@item.pi_compte" onclick="agregarAPedidosIncl(this);"> <i class="bx bx-plus-circle"></i></a></td>
+										<td style="display:none;">@item.adm_id</td>
+										<td style="display:none;">@item.adm_desc</td>
 									</tr>
-								</thead>
-								<tbody>
-									@foreach (var item in Model.ListaPedidosSucursal.ListaDatos)
-									{
-										<tr onclick="selectTRPedidoSucursalRow(this)">
-											<td class="align-center">@item.pi_compte</td>
-											<td class="align-center">@item.pi_fecha.ToString("dd/MM/yyyy")</td>
-											<td class="align-center">@item.pie_desc</td>
-											<td class="align-left">@item.pi_nota</td>
-											<td class="align-center">@item.pit_desc</td>
-											<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.pi_compte" onclick="verDetalleDePedido(this);"> <i class="bx bx-detail"></i></a></td>
-											<td><a class="btn btn-xs btn-outline-primary" data-interaction="@item.pi_compte" onclick="agregarAPedidosIncl(this);"> <i class="bx bx-plus-circle"></i></a></td>
-											<td style="display:none;">@item.adm_id</td>
-											<td style="display:none;">@item.adm_desc</td>
-										</tr>
-									}
-								</tbody>
-							</table>
-						</div>
+								}
+							</tbody>
+						</table>
 					</div>
-				</fieldset>
-				<fieldset>
-					<legend>
-						<h5>Pedidos Incluidos para Autorizar TR</h5>
-					</legend>
-					<div id="divListaPedidosIncluidos">
-						<div class="table-responsive text-nowrap table-wrapper-xs">
-							<table class="table table-bordered table-hover" id="tbListaPedidosIncluidos">
-								<thead class="table-dark">
-									<tr>
-										<th style="width:15%;" class="align-center">Sucursal</th>
-										<th style="width:10%;" class="align-center">N° PI</th>
-										<th style="width:10%;" class="align-center">Fecha</th>
-										<th style="width:10%;" class="align-center">Estado</th>
-										<th style="width:20%;" class="align-center">Nota</th>
-										<th style="width:15%;" class="align-center">Tipo</th>
-										<th style="width:10%;" class="align-center">Det</th>
-										<th style="width:10%;" class="align-center">Carga</th>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>
+					<h5>Pedidos Incluidos para Autorizar TR</h5>
+				</legend>
+				<div id="divListaPedidosIncluidos">
+					<div class="table-responsive text-nowrap table-wrapper-xs">
+						<table class="table table-sm mb-0 table-hover table-golden" id="tbListaPedidosIncluidos">
+							<thead>
+								<tr class="header">
+									<th style="width:15%;" class="align-center">Sucursal</th>
+									<th style="width:10%;" class="align-center">N° PI</th>
+									<th style="width:10%;" class="align-center">Fecha</th>
+									<th style="width:10%;" class="align-center">Estado</th>
+									<th style="width:20%;" class="align-center">Nota</th>
+									<th style="width:15%;" class="align-center">Tipo</th>
+									<th style="width:10%;" class="align-center">Det</th>
+									<th style="width:10%;" class="align-center">Carga</th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var item in Model.ListaPedidosIncluidos.ListaDatos)
+								{
+									<tr onclick="selectTRPedidoIncluidoRow(this)">
+										<td class="align-left">@item.adm_desc</td>
+										<td class="align-center">@item.pi_compte</td>
+										<td class="align-center">@item.pi_fecha.ToString("dd/MM/yyyy")</td>
+										<td class="align-left">@item.pie_desc</td>
+										<td class="align-center">@item.pi_nota</td>
+										<td class="align-center">@item.pit_desc</td>
+										<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.pi_compte" onclick="verDetalleDePedido(this);"> <i class="bx bx-detail"></i></a></td>
+										<td><a class="btn btn-xs btn-outline-danger" data-interaction="@item.pi_compte" onclick="quitarDePedidosIncl(this);"> <i class="bx bx-minus-circle"></i></a></td>
 									</tr>
-								</thead>
-								<tbody>
-									@foreach (var item in Model.ListaPedidosIncluidos.ListaDatos)
-									{
-										<tr onclick="selectTRPedidoIncluidoRow(this)">
-											<td class="align-left">@item.adm_desc</td>
-											<td class="align-center">@item.pi_compte</td>
-											<td class="align-center">@item.pi_fecha.ToString("dd/MM/yyyy")</td>
-											<td class="align-left">@item.pie_desc</td>
-											<td class="align-center">@item.pi_nota</td>
-											<td class="align-center">@item.pit_desc</td>
-											<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.pi_compte" onclick="verDetalleDePedido(this);"> <i class="bx bx-detail"></i></a></td>
-											<td><a class="btn btn-xs btn-outline-danger" data-interaction="@item.pi_compte" onclick="quitarDePedidosIncl(this);"> <i class="bx bx-minus-circle"></i></a></td>
-										</tr>
-									}
-								</tbody>
-							</table>
-						</div>
+								}
+							</tbody>
+						</table>
 					</div>
-				</fieldset>
-				<div>
-					<div class="row">
-						<div class="col-4">
-							<fieldset>
-								<legend>
-									<h5>Depósitos de Envío</h5>
-								</legend>
-								<div id="divDepositosDeEnvio">
-									<div class="table-responsive text-nowrap table-wrapper">
-										<table class="table table-bordered table-hover" id="tbDepositosDeEnvio">
-											<thead class="table-dark">
-												<tr>
-													<th style="width:80%;" class="align-center">Depósito</th>
-													<th style="width:20%;" class="align-center">Sele</th>
-													<th style="width:0%; display:none;">depo_id</th>
+				</div>
+			</fieldset>
+			<div>
+				<div class="row">
+					<div class="col-4">
+						<fieldset>
+							<legend>
+								<h5>Depósitos de Envío</h5>
+							</legend>
+							<div id="divDepositosDeEnvio">
+								<div class="table-responsive text-nowrap table-wrapper">
+									<table class="table table-sm mb-0 table-hover table-golden" id="tbDepositosDeEnvio">
+										<thead>
+											<tr class="header">
+												<th style="width:80%;" class="align-center">Depósito</th>
+												<th style="width:20%;" class="align-center">Sele</th>
+												<th style="width:0%; display:none;">depo_id</th>
+											</tr>
+										</thead>
+										<tbody>
+											@foreach (var item in Model.ListaDepositosDeEnvio.ListaDatos)
+											{
+												<tr onclick="selectTRDepositosDeEnvioRow(this)">
+													<td>@item.depo_nombre</td>
+													<td class="align-center"><input type="checkbox" name="tienePI" id="chkTienePI" value="@item.seleccionado" @((item.seleccionado == false ? "" : "checked")) /></td>
+													<td style="width:0%; display:none;">@item.depo_id</td>
 												</tr>
-											</thead>
-											<tbody>
-												@foreach (var item in Model.ListaDepositosDeEnvio.ListaDatos)
-												{
-													<tr onclick="selectTRDepositosDeEnvioRow(this)">
-														<td>@item.depo_nombre</td>
-														<td class="align-center"><input type="checkbox" name="tienePI" id="chkTienePI" value="@item.seleccionado" @((item.seleccionado == false ? "" : "checked")) /></td>
-														<td style="width:0%; display:none;">@item.depo_id</td>
-													</tr>
-												}
-											</tbody>
-										</table>
-									</div>
+											}
+										</tbody>
+									</table>
 								</div>
-							</fieldset>
-						</div>
-						<div class="col-8">
-							<fieldset>
-								<legend>
-									<h5>Opciones</h5>
-								</legend>
-								<div id="divOpciones">
-									<div class="row">
-										<div>
-											<div class="col-sm">
-												<div class="form-check">
-													@if (Model.ConsiderarStockExistente == false)
-													{
-														<input class="form-check-input" type="checkbox" id="chkConsiderarStock" asp-for="@Model.ConsiderarStockExistente">
-													}
-													else
-													{
-														<input class="form-check-input" type="checkbox" id="chkConsiderarStock" checked asp-for="@Model.ConsiderarStockExistente">
-													}
-													<label class="form-check-label" for="chkConsiderarStock"> Considerar STK Existente de Sucursales</label>
-												</div>
+							</div>
+						</fieldset>
+					</div>
+					<div class="col-8">
+						<fieldset>
+							<legend>
+								<h5>Opciones</h5>
+							</legend>
+							<div id="divOpciones">
+								<div class="row">
+									<div>
+										<div class="col-sm">
+											<div class="form-check">
+												@if (Model.ConsiderarStockExistente == false)
+												{
+													<input class="form-check-input" type="checkbox" id="chkConsiderarStock" asp-for="@Model.ConsiderarStockExistente">
+												}
+												else
+												{
+													<input class="form-check-input" type="checkbox" id="chkConsiderarStock" checked asp-for="@Model.ConsiderarStockExistente">
+												}
+												<label class="form-check-label" for="chkConsiderarStock"> Considerar STK Existente de Sucursales</label>
 											</div>
-											<div class="col-sm">
-												<div class="form-check">
-													@if (Model.ModificarYSustituto == false)
-													{
-														<input class="form-check-input" type="checkbox" id="chkModificarYSustituto" asp-for="@Model.ModificarYSustituto">
-													}
-													else
-													{
-														<input class="form-check-input" type="checkbox" id="chkModificarYSustituto" checked asp-for="@Model.ModificarYSustituto">
-													}
-													<label class="form-check-label" for="chkModificarYSustituto"> Modificar y Sustituto</label>
-												</div>
+										</div>
+										<div class="col-sm">
+											<div class="form-check">
+												@if (Model.ModificarYSustituto == false)
+												{
+													<input class="form-check-input" type="checkbox" id="chkModificarYSustituto" asp-for="@Model.ModificarYSustituto">
+												}
+												else
+												{
+													<input class="form-check-input" type="checkbox" id="chkModificarYSustituto" checked asp-for="@Model.ModificarYSustituto">
+												}
+												<label class="form-check-label" for="chkModificarYSustituto"> Modificar y Sustituto</label>
 											</div>
-											<div class="col-sm">
-												<div>
-													<div class="row">
-														<div class="form-check col-7" style="padding-left: 6.8%;">
-															@if (Model.MaximoPalletXAuto == false)
-															{
-																<input class="form-check-input" onchange="changeMaxPalletChk(this);" type="checkbox" id="chkMaxPallet" asp-for="@Model.MaximoPalletXAuto">
-															}
-															else
-															{
-																<input class="form-check-input" onchange="changeMaxPalletChk(this);" type="checkbox" id="chkMaxPallet" checked asp-for="@Model.MaximoPalletXAuto">
-															}
-															<label class="form-check-label" for="chkMaxPallet"> Máximo Pallet x Autorización de TR</label>
-														</div>
-														<div class="col-5">
-															<input type="number" id="txtMaxPallet" class="form-control" min="10" max="100" style="width: 45%;" value="@Model.MaximoPalletXAutoValor">
-														</div>
+										</div>
+										<div class="col-sm">
+											<div>
+												<div class="row">
+													<div class="form-check col-7" style="padding-left: 5.8%;">
+														@if (Model.MaximoPalletXAuto == false)
+														{
+															<input class="form-check-input" onchange="changeMaxPalletChk(this);" type="checkbox" id="chkMaxPallet" asp-for="@Model.MaximoPalletXAuto">
+														}
+														else
+														{
+															<input class="form-check-input" onchange="changeMaxPalletChk(this);" type="checkbox" id="chkMaxPallet" checked asp-for="@Model.MaximoPalletXAuto">
+														}
+														<label class="form-check-label" for="chkMaxPallet"> Máximo Pallet x Autorización de TR</label>
+													</div>
+													<div class="col-5">
+														<input type="number" id="txtMaxPallet" class="form-control" min="10" max="100" style="width: 45%;" value="@Model.MaximoPalletXAutoValor">
 													</div>
 												</div>
 											</div>
-											<div class="col-sm">
-												<a asp-action="TRAutorizacionesLista" asp-controller="Transferencia" asp-area="Compras" class="btn btn-primary" id="btnNuevaAut">
-													<span class="tf-icons bx bx-left-arrow-circle"></span>Regresar
-												</a>
-												<a href="#" id="btnAnalizar" class="btn btn-success"><span class="tf-icons bx bx-check-circle me-1">Analizar</span></a>
-											</div>
+										</div>
+										<div class="col-sm">
+											<a asp-action="TRAutorizacionesLista" asp-controller="Transferencia" asp-area="Compras" class="btn btn-secondary btn-sm mt-1 me-1" id="btnNuevaAut">
+												<span class="bx bx-chevron-left"></span>Regresar
+											</a>
+											<a href="#" id="btnAnalizar" class="btn btn-success btn-sm mt-1 me-1"><span class="bx bx-badge-check">Analizar</span></a>
 										</div>
 									</div>
 								</div>
-							</fieldset>
-						</div>
+							</div>
+						</fieldset>
 					</div>
 				</div>
 			</div>
@@ -234,7 +232,7 @@
 	</div>
 </div>
 
-<div class="modal fade" id="modalCenter" tabindex="-1" style="display: none;" aria-hidden="true">
+<div class="modal fade modal-golden" id="modalCenter" tabindex="-1" style="display: none;" aria-hidden="true">
 	<div class="modal-dialog modal-xl" role="document">
 		<div class="modal-content">
 			<div id="divDetalleDePedido">

@@ -1,6 +1,9 @@
-﻿using gc.infraestructura.Dtos;
+﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Users;
 
 namespace gc.sitio.core.Servicios.Contratos
 {
@@ -15,5 +18,17 @@ namespace gc.sitio.core.Servicios.Contratos
 		RespuestaGenerica<RespuestaDto> FinancieroConfirmarTransferencia(ConfirmarTransferenciaRequest request, string token);
 		List<FinancieroCuentaAlCobroRelaDto> GetCuentaAlCobroRela(string ctaf_id, string token);
 		List<FinancieroChequeDepositadoDto> GetFinancieroChequeDepositado(string ctaf_id, DateTime fechaDesde, DateTime fechaHasta, string token);
+		List<PerfilUserDto> GetFinancieroTraUsu(DateTime fechaDesde, DateTime fechaHasta, string token);
+		Task<(List<MovimientoFinancieroListaDto>, MetadataGrid)> BuscarMovimientoFinanciero(ConsultaMovFinancierosRequest filters, string token);
+		RespuestaGenerica<RespuestaDto> MovimientoFinancieroAnular(MovimientoFinancieroAnularRequest request, string token);
+		List<FinancieroTraRepoCtagDto> GetFinancieroTraRepoCtag(string tra_compte, string token);
+		List<FinancieroTraRepoDDto> GetFinancieroTraRepoDDto(string tra_compte, string token);
+		List<MovimientoFinancieroListaDto> BuscarMovimientoFinancieroReporte(ConsultaMovFinancierosRequest filtros, string token);
+		List<FinancieroBcoExtractoDto> GetFinancieroBcoExtracto(FinancieroBcoExtractoRequest request, string token);
+		List<FinancieroBcoCtaCteDto> GetFinancieroBcoCtaCte(FinancieroBcoCtaCteRequest request, string token);
+		List<FinancieroBcoLibroResumenDto> GetFinancieroBcoLibroResumen(FinancieroBcoLibroResumenRequest request, string token);
+		List<FinancieroBcoLibroDto> GetFinancieroBcoLibro(FinancieroBcoLibroRequest request, string token);
+		List<FinancieroBcoVencChequeEmitidoDto> GetFinancieroBcoVencChequeEmitido(FinancieroBcoVencChequeEmitidoRequest request, string token);
+		List<FinancieroBcoVencChequeEmitidoListaDto> GetFinancieroBcoVencChequeEmitidoLista(FinancieroBcoVencChequeEmitidoListaRequest request, string token);
 	}
 }

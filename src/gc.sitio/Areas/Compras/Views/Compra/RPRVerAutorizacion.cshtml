@@ -11,7 +11,7 @@
 			<fieldset>
 				<h5>RPR Autorización</h5>
 				<row>
-					<div class="container">
+					<div class="grid-golden">
 						<div class="row">
 							<div class="col-9">
 								<div class="input-group">
@@ -28,12 +28,12 @@
 					</div>
 				</row>
 				<row>
-					<div class="container">
+					<div class="grid-golden-body">
 						<div class="row">
 							<div id="divVerComptesDeRP" class="col-8">
 								<div class="table-responsive table-wrapper">
-									<table class="table table-bordered table-hover" id="tbVerComptesDeRP">
-										<thead class="table-dark">
+									<table class="table table-sm mb-0 table-hover table-golden" id="tbVerComptesDeRP">
+										<thead>
 											<tr class="header">
 												<th style="width:0%; display:none;">TipoId</th>
 												<th style="width:0%; display:none;">NroCompte</th>
@@ -58,14 +58,14 @@
 								</div>
 							</div>
 							<div class="col-4" style="text-align: right;align-content: center;">
-								<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnConfirmarRP" title="Confirmar">
-									<span class="bx bx-check-circle bx-xs"></span>
+								<button type="button" class="btn btn-success btn-sm mt-1 me-1" style="margin-left:5px;" id="btnConfirmarRP" title="Confirmar RPR">
+									<span class="bx bx-badge-check"> Confirmar</span>
 								</button>
-								<button type="button" class="btn btn-primary" style="margin-left:5px;" id="btnActualizar" title="Actualizar">
-									<span class="bx bx-refresh-cw bx-xs"></span>
+								<button type="button" class="btn btn-info btn-sm mt-1 me-1" style="margin-left:5px;" id="btnActualizar" title="Actualizar RPR">
+									<span class="bx bx-refresh-cw"> Actualizar</span>
 								</button>
-								<button type="button" class="btn btn-danger" style="margin-left:5px;" id="btnRegresarAAutorizacionesRP" title="Regresar">
-									<span class="bx bx-skip-previous bx-xs"></span>
+								<button type="button" class="btn btn-secondary btn-sm mt-1 me-1" style="margin-left:5px;" id="btnRegresarAAutorizacionesRP" title="Regresar">
+									<span class="bx bx-chevron-left"></span>
 								</button>
 							</div>
 						</div>
@@ -102,8 +102,8 @@
 						<div class="row">
 							<div class="col-6" id="divULxRPR">
 								<div class="table-responsive table-wrapper">
-									<table class="table table-bordered table-hover" id="tbULxRPR">
-										<thead class="table-dark">
+									<table class="table table-sm mb-0 table-hover table-golden" id="tbULxRPR">
+										<thead>
 											<tr class="header">
 												<th style="width:0%; display:none;">tipo</th>
 												<th style="width:0%; display:none;">id</th>

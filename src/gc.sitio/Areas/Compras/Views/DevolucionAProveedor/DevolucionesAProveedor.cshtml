@@ -9,10 +9,10 @@
 	<link rel="stylesheet" href="~/css/simplePagination.css"   />
 }
 
-<div class="card">
-	<div class="container">
+<div class="grid-golden">
+	<div>
 		<div class="row">
-			<div class="col-4" style="padding-top: 5px;">
+			<div class="col-4" style="padding-top: 7px;padding-left: 30px;">
 				<div class="row">
 					<fieldset style="margin: 2px;padding: 2px;">
 						<div class="col-5" style="float:left;">
@@ -36,21 +36,21 @@
 								<div class="input-group" id="divRevertirDevolucion">
 									<span class="input-group-text fixed-width-75" style="height:35px;">N°: </span>
 									<input type="text" id="txtNroDevolucion" class="align-left" style="width: 50%;" value="" />
-									<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px;" id="btnRevertirDevolucion">
-										<span class="tf-icons bx bx-left-arrow-circle"></span>
+									<button type="button" class="btn btn-sm btn-primary btn-sm me-1" style="margin-left:5px;" id="btnRevertirDevolucion">
+										<span class="bx bx-left-arrow-circle"></span>
 									</button>
 								</div>
 							</div>
 							<div class="row" style="padding-top:4px;padding-left:7px;" id="divCargaPrevia">
-								<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px; width:88%;" id="btnCargaPreviaDP">
-									<span class="tf-icons bx bx-cloud-download">Carga Previa</span>
+								<button type="button" class="btn btn-sm btn-primary btn-sm mt-1 me-1" style="margin-left:5px; width:88%;" id="btnCargaPreviaDP">
+									<span class="bx bx-upload"> Carga Previa</span>
 								</button>
 							</div>
 						</div>
 					</fieldset>
 				</div>
 			</div>
-			<div class="col-8" style="padding-top: 8px;">
+			<div class="col-8" style="padding-top: 8px;padding-right: 20px;">
 				<div class="row">
 					<div class="col-4">
 						<div class="col-sm" id="divDepositos">
@@ -74,63 +74,65 @@
 						</div>
 						<div class="input-group" style="padding-top: 5px;">
 							<span class="input-group-text fixed-width-75">Nota: </span>
-							<input type="text" id="txtNota" class="align-left" style="width: 80%;" value="" />
+							<input type="text" id="txtNota" class="align-left" style="width: 87%;" value="" />
 						</div>
 					</div>
 				</div>
-				<div class="row" style="padding-top: 5px;">
+				<div class="row" style="padding-top: 2px;">
 					@* botones *@
-					<div style="text-align: right;align-content: center;">
-						<button type="button" class="btn btn-primary fixed-width-130" style="margin-left:5px;" id="btnRegresar">
-							<span class="tf-icons bx bx-left-arrow-circle">Regresar</span>
+					<div style="text-align: right;align-content: center;padding-right: 20px;">
+						<button type="button" class="btn btn-secondary btn-sm mt-1 me-1" style="margin-left:5px;" id="btnRegresar">
+							<span class="bx bx-chevron-left"> Regresar</span>
 						</button>
-						<button type="button" class="btn btn-danger fixed-width-130" style="margin-left:5px;" id="btnCancelar">
-							<span class="tf-icons bx bx-block">Cancelar</span>
+						<button type="button" class="btn btn-danger btn-sm mt-1 me-1" style="margin-left:5px;" id="btnCancelar">
+							<span class="bx bx-x-circle"> Cancelar</span>
 						</button>
-						<button type="button" class="btn btn-success fixed-width-130" style="margin-left:5px;" id="btnConfirmar">
-							<span class="tf-icons bx bx-check-circle">Confirmar</span>
+						<button type="button" class="btn btn-success btn-sm mt-1 me-1" style="margin-left:5px;" id="btnConfirmar">
+							<span class="bx bx-badge-check"> Confirmar</span>
 						</button>
 					</div>
 				</div>
 			</div>
 		</div>
-		<div class="row">
-			<fieldset style="margin: 2px;padding: 2px;">
+		<div style="width: 100%;">
+			<fieldset style="margin: 6px;padding: 2px;">
 				<legend>
 					<h5>Detalle de Productos a Ajustar</h5>
 				</legend>
-				<div class="row">
-					<div class="row col-12">
-						<div class="col-4">
+				<div class="container-fluid" style="padding-left: 5px;padding-right: 5px;">
+					<div class="row mb-2">
+						<div class="col-md-4">
 							<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
 						</div>
-						<div class="col-8">
+						<div class="col-md-8">
 							<div class="input-group input-group-sm">
 								<span style="display: none;" class="input-group-text">ID: </span>
 								<input type="text" id="txtIdProd" class="form-control" style="width:10%;display: none;" readonly />
-								<input type="text" id="txtProDescripcion" class="form-control" style="width: 33%;" readonly />
+								<input type="text" id="txtProDescripcion" class="form-control" style="width: 30%;" readonly />
 								<span class="input-group-text" style="width:5%;">UP: </span>
-								<input type="text" id="txtUP" class="form-control align-right" style="width:10%;" />
+								<input type="text" id="txtUP" class="form-control align-right" style="width:5%;" />
 								<span class="input-group-text" style="width:5%;">Bto: </span>
-								<input type="number" id="txtBto" class="form-control align-right" min="0" style="width:10%;" />
+								<input type="number" id="txtBto" class="form-control align-right" min="0" style="width:5%;" />
 								<span class="input-group-text" style="width:5%;">Unid: </span>
-								<input type="text" id="txtUnid" class="form-control align-right" value="0" style="width:25%;" />
+								<input type="text" id="txtUnid" class="form-control align-right" value="0" style="width:5%;" />
 								<input type="text" id="txtUP_ID" style="display:none;" />
 								<input type="text" id="txtBARRADO_ID" style="display:none;" />
 								<input type="text" id="txtID_PROV" style="display:none;" />
-								<button type="button" class="btn btn-sm btn-icon btn-success fixed-width" style="margin-left:5px;" id="btnAddProd">
-									<span class="tf-icons bx bx-plus-circle"></span>
+								<button type="button" class="btn btn-primary btn-sm me-1" style="margin-left:5px;" id="btnAddProd">
+									<span class="bx bx-plus-circle"> Agregar</span>
 								</button>
-								<button type="button" class="btn btn-sm btn-icon btn-danger fixed-width" style="margin-left:5px;" id="btnDelProd">
-									<span class="tf-icons bx bx-trash"></span>
+								<button type="button" class="btn btn-danger btn-sm me-1" style="margin-left:5px;" id="btnDelProd">
+									<span class="bx bx-trash"> Quitar</span>
 								</button>
 							</div>
 						</div>
-						<div class="row" id="divDetalleDeProductosADevolver" style="padding-top:5px;">
+					</div>
+					<div class="row">
+						<div class="col-12" id="divDetalleDeProductosADevolver" style="padding-left: 13px;padding-right: 17px;padding-bottom: 20px;">
 							<div class="table-responsive table-wrapper-full-width">
-								<table class="table table-bordered table-hover" id="tbDetalleDeProductosADevolver">
-									<thead class="table-dark">
-										<tr>
+								<table class="table table-sm mb-0 table-hover table-golden" id="tbDetalleDeProductosADevolver">
+									<thead>
+										<tr class="header">
 											<th style="width:5%;" class="col-header-small align-center">ID</th>
 											<th style="width:20%;" class="col-header-small align-center">Descripción</th>
 											<th style="width:5%;" class="col-header-small align-center">Cta</th>
@@ -163,7 +165,7 @@
 		</div>
 	</div>
 </div>
-<div class="modal fade" id="modalCargaPreviaDP" tabindex="-1" style="display: none;" aria-hidden="true">
+<div class="modal fade modal-golden" id="modalCargaPreviaDP" tabindex="-1" style="display: none;" aria-hidden="true">
 	<div class="modal-dialog modal-xl" role="document">
 		<div class="modal-content">
 			<div id="divModalCargaPreviaDP">
@@ -181,6 +183,7 @@
 		var buscarTiposComptesUrl = "";
 		var VerDetalleDeCompteDeRPUrl = "";
 		var pIdSeleccionado = "";
+		var funcionBusquedaAvanzada = true;
 		//parapaginacion
 		var totalRegs = 0;
 		var pagRegs = 0;

@@ -5,9 +5,9 @@
 	Layout = "~/views/shared/_Layout.cshtml";
 }
 
-<div class="card">
+<div class="grid-golden">
 	<input type="text" id="idRPSelected" style="display:none;" />
-	<row>
+	@* <row>
 		<input type="text" id="rp_id" style="visibility:hidden" />
 		<div style="float:left">
 			<h5 class="card-header">RPR Autorizaciones</h5>
@@ -19,12 +19,22 @@
 			<a href="#" id="btnModificarAut" class="btn btn-secondary" title="Modificar Autorización"><span class="bx bx-edit me-1"></span></a>
 			<a href="#" id="btnVer" class="btn btn-success" title="Ver Autorización"><span class="bx bx-binocular me-1"></span></a>
 		</div>
-	</row>
-	<div class="card-body">
+	</row> *@
+	<div class="grid-golden-header">
+		@* <h5 class="card-header">RPR Autorizaciones</h5> *@
+		<div>
+			<a asp-action="NuevaAut" asp-controller="Compra" asp-area="Compras" class="btn btn-primary btn-sm mt-1 me-1" id="btnNuevaAut" title="Nueva Autorización">
+				<span class="bx bx-plus-circle"> Nueva Autorización</span>
+			</a>
+			<a href="#" id="btnModificarAut" class="btn btn-info btn-sm mt-1 me-1" title="Modificar Autorización"><span class="bx bx-edit"> Modificar Autorización</span></a>
+			<a href="#" id="btnVer" class="btn btn-info btn-sm mt-1 me-1" title="Ver Autorización"><span class="bx bx-show"> Ver Autorización</span></a>
+		</div>
+	</div>
+	<div class="grid-golden-body">
 		<div class="table-responsive text-nowrap table-wrapper">
-			<table class="table table-bordered table-hover" id="tbListaAutorizaciones">
-				<thead class="table-dark">
-					<tr>
+			<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbListaAutorizaciones">
+				<thead>
+					<tr class="header">
 						<th class="align-center">N° Auto</th>
 						<th class="align-center">ID</th>
 						<th class="align-center">Cuenta</th>

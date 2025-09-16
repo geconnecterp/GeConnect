@@ -1,13 +1,16 @@
 ﻿using AutoMapper;
 using gc.api.core.Contratos.Servicios;
+using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.OrdenDePago.Dtos;
+using gc.infraestructura.Dtos.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System.Net;
 using System.Reflection;
 
@@ -20,11 +23,13 @@ namespace gc.api.Controllers.Financieros
 	public class ApiFinancierosController : ControllerBase
 	{
 		private readonly ILogger<ApiFinancierosController> _logger;
+		private readonly IUriService _uriService;
 		private readonly IFinancieroServicio _financieroServicio;
 		public ApiFinancierosController(IMapper mapper, IUriService uriService, ILogger<ApiFinancierosController> logger, IFinancieroServicio financieroServicio)
 		{
 			_logger = logger;
 			_financieroServicio = financieroServicio;
+			_uriService = uriService;
 		}
 
 		[HttpPost]
@@ -65,6 +70,205 @@ namespace gc.api.Controllers.Financieros
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _financieroServicio.GetFinancieroChequeDepositado(r);
 			response = new ApiResponse<List<FinancieroChequeDepositadoDto>>(res);
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<PerfilUserDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFinancieroTraUsu(FinancieroTraUsuRequest request)
+		{
+			ApiResponse<List<PerfilUserDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetFinancieroTraUsu(request);
+
+			response = new ApiResponse<List<PerfilUserDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<MovimientoFinancieroListaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult BuscarMovimientoFinanciero(ConsultaMovFinancierosRequest request)
+		{
+			MovimientoFinancieroListaDto reg = new() { total_paginas = 0, total_registros = 0 };
+
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.BuscarMovimientoFinanciero(request);
+
+			if (res.Count > 0)
+				reg = res.First();
+
+			var metadata = new MetadataGrid
+			{
+				TotalCount = reg.total_registros,
+				PageSize = request.Registros ?? 0,
+				CurrentPage = request.Pagina ?? 0,
+				TotalPages = reg.total_paginas,
+				HasNextPage = (request.Pagina ?? 0) < reg.total_paginas,
+				HasPreviousPage = (request.Pagina ?? 0) > 1,
+				NextPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(BuscarMovimientoFinanciero)) ?? "").ToString(),
+				PreviousPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(BuscarMovimientoFinanciero)) ?? "").ToString(),
+
+			};
+
+			var response = new ApiResponse<IEnumerable<MovimientoFinancieroListaDto>>(res)
+			{
+				Meta = metadata
+			};
+			Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult MovimientoFinancieroAnular([FromBody] MovimientoFinancieroAnularRequest r)
+		{
+			ApiResponse<List<RespuestaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.MovimientoFinancieroAnular(r);
+			response = new ApiResponse<List<RespuestaDto>>(res);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FinancieroTraRepoDDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFinancieroTraRepoDDto(string tra_compte)
+		{
+			ApiResponse<List<FinancieroTraRepoDDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetFinancieroTraRepoDDto(tra_compte);
+
+			response = new ApiResponse<List<FinancieroTraRepoDDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FinancieroTraRepoCtagDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFinancieroTraRepoCtag(string tra_compte)
+		{
+			ApiResponse<List<FinancieroTraRepoCtagDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetFinancieroTraRepoCtag(tra_compte);
+
+			response = new ApiResponse<List<FinancieroTraRepoCtagDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<MovimientoFinancieroListaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult BuscarMovimientoFinancieroReporte(ConsultaMovFinancierosRequest request)
+		{
+			ApiResponse<List<MovimientoFinancieroListaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.BuscarMovimientoFinancieroReporte(request);
+
+			response = new ApiResponse<List<MovimientoFinancieroListaDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FinancieroBcoExtractoDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFinancieroBcoExtracto(FinancieroBcoExtractoRequest request)
+		{
+			ApiResponse<List<FinancieroBcoExtractoDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetFinancieroBcoExtracto(request);
+
+			response = new ApiResponse<List<FinancieroBcoExtractoDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FinancieroBcoCtaCteDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFinancieroBcoCtaCte(FinancieroBcoCtaCteRequest request)
+		{
+			ApiResponse<List<FinancieroBcoCtaCteDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetFinancieroBcoCtaCte(request);
+
+			response = new ApiResponse<List<FinancieroBcoCtaCteDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FinancieroBcoLibroResumenDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFinancieroBcoLibroResumen(FinancieroBcoLibroResumenRequest request)
+		{
+			ApiResponse<List<FinancieroBcoLibroResumenDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetFinancieroBcoLibroResumen(request);
+
+			response = new ApiResponse<List<FinancieroBcoLibroResumenDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FinancieroBcoLibroDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFinancieroBcoLibro(FinancieroBcoLibroRequest request)
+		{
+			ApiResponse<List<FinancieroBcoLibroDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetFinancieroBcoLibro(request);
+
+			response = new ApiResponse<List<FinancieroBcoLibroDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FinancieroBcoVencChequeEmitidoDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFinancieroBcoVencChequeEmitido(FinancieroBcoVencChequeEmitidoRequest request)
+		{
+			ApiResponse<List<FinancieroBcoVencChequeEmitidoDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetFinancieroBcoVencChequeEmitido(request);
+
+			response = new ApiResponse<List<FinancieroBcoVencChequeEmitidoDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FinancieroBcoVencChequeEmitidoListaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFinancieroBcoVencChequeEmitidoLista(FinancieroBcoVencChequeEmitidoListaRequest request)
+		{
+			ApiResponse<List<FinancieroBcoVencChequeEmitidoListaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetFinancieroBcoVencChequeEmitidoLista(request);
+
+			response = new ApiResponse<List<FinancieroBcoVencChequeEmitidoListaDto>>(res);
+
 			return Ok(response);
 		}
 	}

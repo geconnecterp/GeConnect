@@ -57,7 +57,13 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R021_OrdenDeCompra, new R021_OrdenDeCompra(uow,consSv, apiProdSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R023_OrdenDePagoDirecta, new R023_OrdenDePagoDirecta(uow,consSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R024_ConsultaDeOrdenesDePago, new R024_ConsultaDeOrdenesDePago(uow,consSv, _opSv,empresa,ctaSv, logger) },
-				{ InfoReporte.R025_TransferenciaEntreCuentas, new R025_TransferenciaEntreCuentas(uow,consSv, finServ,empresa,ctaSv, logger) }
+				{ InfoReporte.R025_TransferenciaEntreCuentas, new R025_TransferenciaEntreCuentas(uow,consSv, finServ,empresa,ctaSv, logger) },
+				{ InfoReporte.R026_ConsultaDeMovimientoFinanciero, new R026_ConsultaDeMovimientoFinanciero(uow,consSv, finServ,empresa,ctaSv, logger) },
+				{ InfoReporte.R027_VencimientoChequesEmitidos, new R027_VencimientoChequesEmitidos(uow,consSv, finServ,empresa,ctaSv, logger) },
+				{ InfoReporte.R028_LibroBancosDetalle, new R028_LibroBancosDetalle(uow,consSv, finServ,empresa,ctaSv, logger) },
+				{ InfoReporte.R029_LibroBancosResumen, new R029_LibroBancosResumen(uow,consSv, finServ,empresa,ctaSv, logger) },
+                { InfoReporte.R030_HistoricoLibro, new R030_HistoricoLibro(uow,consSv, finServ,empresa,ctaSv, logger) },
+				{ InfoReporte.R031_ExtractoBancario, new R031_ExtractoBancario(uow,consSv, finServ,empresa,ctaSv, logger) }
 			}; 
             _logger = logger;
         }

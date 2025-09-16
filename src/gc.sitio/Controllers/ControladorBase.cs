@@ -947,27 +947,27 @@ namespace gc.sitio.Controllers
 			}
 		}
 
-        public ProveedorListaDto ProveedorSeleccionado
-        {
-            get
-            {
-                var json = _context.HttpContext?.Session.GetString("ProveedorSeleccionado") ?? string.Empty;
-                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
-                {
-                    return new();
-                }
-                return JsonConvert.DeserializeObject<ProveedorListaDto>(json) ?? new();
-            }
-            set
-            {
-                var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext?.Session.SetString("ProveedorSeleccionado", json);
-            }
-        }
-        #endregion
+		public ProveedorListaDto ProveedorSeleccionado
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("ProveedorSeleccionado") ?? string.Empty;
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new();
+				}
+				return JsonConvert.DeserializeObject<ProveedorListaDto>(json) ?? new();
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ProveedorSeleccionado", json);
+			}
+		}
+		#endregion
 
-        #region RUBRO
-        public List<RubroListaDto> RubroLista
+		#region RUBRO
+		public List<RubroListaDto> RubroLista
 		{
 			get
 			{
@@ -2892,6 +2892,18 @@ namespace gc.sitio.Controllers
 				}
 			}
 			return retValue;
+		}
+
+		public static NumberFormatInfo ForzarObtenerFormatoMonetario(bool incluyeSimbolo = false)
+		{
+			CultureInfo culturaArgentina = CultureInfo.CreateSpecificCulture("es-AR");
+			NumberFormatInfo formatoPersonalizado = culturaArgentina.NumberFormat.Clone() as NumberFormatInfo;
+			formatoPersonalizado.CurrencySymbol = incluyeSimbolo ? "$" : "";                // Cambia el símbolo
+			formatoPersonalizado.CurrencyDecimalSeparator = ",";         // Separador decimal
+			formatoPersonalizado.CurrencyGroupSeparator = ".";           // Separador de miles
+			formatoPersonalizado.CurrencyDecimalDigits = 2;              // Cantidad de decimales
+			formatoPersonalizado.CurrencyNegativePattern = 1;            // Muestra negativos como "-ARS$ 1.234,56"
+			return formatoPersonalizado;
 		}
 
 		protected enum TipoDeRespuestaMock

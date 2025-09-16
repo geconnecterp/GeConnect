@@ -3,24 +3,29 @@
 	Layout = "~/views/shared/_Layout.cshtml";
 }
 
-<div class="card">
-	<row>
+<div class="grid-golden">
+	<div class="grid-golden-header">
 		<input type="text" id="rp_id" style="visibility:hidden" />
-		<div style="float:left">
+		@* <div style="float:left">
 			<div class="card-header">
 				<h5>Remitos Transferidos Pendientes</h5>
 			</div>
+		</div> *@
+		<h5>Remitos Transferidos Pendientes</h5>
+		<div>
+			<button id="btnAutorizar" class="btn btn-success btn-sm mt-1 me-1" onclick="autorizarRemito();" disabled><span class="bx bx-badge-check"> Autorizar</span></button>
+			<a href="#" id="btnVer" class="btn btn-info btn-sm mt-1 me-1" onclick="verRemito();return false;"><span class="bx bx-show"> Ver</span></a>
 		</div>
-		<div class="demo-inline-spacing" style="float:right;margin-top: 60px;margin-right: 55px;">
+		@* <div class="demo-inline-spacing" style="float:right;margin-top: 60px;margin-right: 55px;">
 			<button id="btnAutorizar" class="btn btn-primary fixed-width-130" onclick="autorizarRemito();" disabled><span class="tf-icons bx bxs-edit me-1">Autorizar</span></button>
-			<a href="#" id="btnVer" class="btn btn-success fixed-width-130" onclick="verRemito();return false;"><span class="tf-icons bx bxs-binoculars me-1">Ver</span></a>
-		</div>
-	</row>
-	<div class="card-body">
+			<a href="#" id="btnVer" class="btn btn-info btn-sm mt-1 me-1" onclick="verRemito();return false;"><span class="bx bx-show"> Ver</span></a>
+		</div> *@
+	</div>
+	<div class="grid-golden-body">
 		<div class="table-responsive text-nowrap table-wrapper">
-			<table class="table table-bordered table-hover" id="tbListaRemitosTransferidos">
-				<thead class="table-dark">
-					<tr>
+			<table class="table table-sm mb-0 table-hover table-golden" id="tbListaRemitosTransferidos">
+				<thead>
+					<tr class="header">
 						<th style="width:15%;" class="align-center">N° Remito</th>
 						<th style="width:15%;" class="align-center">TR N°</th>
 						<th style="width:40%;" class="align-center">Sucursal que Envía</th>

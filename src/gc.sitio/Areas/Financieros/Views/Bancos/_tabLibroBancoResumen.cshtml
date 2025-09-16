@@ -1,0 +1,111 @@
+﻿@model LibroBancoResumenModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+    .destacado-header-1 {
+        background-color: #D3D047;
+        font-weight: bold;
+    }
+
+    .destacado-header-2 {
+        background-color: #60A5F3;
+        font-weight: bold;
+    }
+
+    .no-destacado {
+        background-color: transparent !important;
+    }
+
+    .table-wrapper-fixed-head th,
+    .table-wrapper-fixed-head td {
+        box-sizing: border-box;
+    }
+
+    .table-wrapper {
+        overflow-x: hidden;
+    }
+
+</style>
+<div class="card">
+	<div class="card-body">
+		<div class="row">
+			<div class="col-6">
+                <div class="table-responsive text-nowrap  table-wrapper-500">
+                    <table class="table table-sm" id="tbGridCuentaFin" style="word-break: break-word;white-space: break-spaces;width: 100%;max-width: 100%;">
+                        <tbody>
+                            @if (Model != null && Model.GrillaCuentaFin != null && Model.GrillaCuentaFin.ListaDatos != null && Model.GrillaCuentaFin.ListaDatos.Count > 0)
+                            {
+                                @foreach (var item in Model.GrillaCuentaFin.ListaDatos)
+                                {
+                                    if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                                    if (item.es_header_1)
+                                    {
+                                        <tr class="destacado-header-1" onclick="selectReg(this,'tbGridCuentaFin')">
+                                            <td class="@Model.GrillaCuentaFin.ObtenerClase(item.descripcion) align-left" style="width: 80%; max-width: 80%;color: black;">@Model.GrillaCuentaFin.FormatearDato(item.descripcion, FormatDato.Ninguno)</td>
+                                            <td class="@Model.GrillaCuentaFin.ObtenerClase(item.saldo) align-right" style="color: black;">@Model.GrillaCuentaFin.FormatearDato(item.saldo, FormatDato.Ninguno)</td>
+                                        </tr>
+                                    }
+                                    else if (item.es_header_2)
+                                    {
+                                        <tr class="destacado-header-2" onclick="selectReg(this,'tbGridCuentaFin')">
+                                            <td class="@Model.GrillaCuentaFin.ObtenerClase(item.descripcion) align-left" style="width: 80%; max-width: 80%;color: white;">@Model.GrillaCuentaFin.FormatearDato(item.descripcion, FormatDato.Ninguno)</td>
+                                            <td class="@Model.GrillaCuentaFin.ObtenerClase(item.saldo) align-right" style="color: white;">@Model.GrillaCuentaFin.FormatearDato(item.saldo, FormatDato.Ninguno)</td>
+                                        </tr>
+                                    }
+                                    else
+                                    {
+                                        <tr class="no-destacado" onclick="selectReg(this,'tbGridCuentaFin')">
+                                            <td class="@Model.GrillaCuentaFin.ObtenerClase(item.descripcion) align-left" style="width: 80%; max-width: 80%;">@Model.GrillaCuentaFin.FormatearDato(item.descripcion, FormatDato.Ninguno)</td>
+                                            <td class="@Model.GrillaCuentaFin.ObtenerClase(item.saldo) align-right">@Model.GrillaCuentaFin.FormatearDato(item.saldo, FormatDato.Ninguno)</td>
+                                        </tr>
+                                    }
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+			</div>
+			<div class="col-6">
+                <div class="table-responsive text-nowrap  table-wrapper-500">
+                    <table class="table table-sm" id="tbGridCuentaBan" style="word-break: break-word;white-space: break-spaces;width: 100%;max-width: 100%;">
+                        <tbody>
+                            @if (Model != null && Model.GrillaCuentaBan != null && Model.GrillaCuentaBan.ListaDatos != null && Model.GrillaCuentaBan.ListaDatos.Count > 0)
+                            {
+                                @foreach (var item in Model.GrillaCuentaBan.ListaDatos)
+                                {
+                                    if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                                    if (item.es_header_1)
+                                    {
+                                        <tr class="destacado-header-1" onclick="selectReg(this,'tbGridCuentaBan')">
+                                            <td class="@Model.GrillaCuentaBan.ObtenerClase(item.descripcion) align-left" style="width: 80%; max-width: 80%;color: black;">@Model.GrillaCuentaBan.FormatearDato(item.descripcion, FormatDato.Ninguno)</td>
+                                            <td class="@Model.GrillaCuentaBan.ObtenerClase(item.saldo) align-right" style="color: black;">@Model.GrillaCuentaBan.FormatearDato(item.saldo, FormatDato.Ninguno)</td>
+                                        </tr>
+                                    }
+                                    else if (item.es_header_2)
+                                    {
+                                        <tr class="destacado-header-2" onclick="selectReg(this,'tbGridCuentaBan')">
+                                            <td class="@Model.GrillaCuentaBan.ObtenerClase(item.descripcion) align-left" style="width: 80%; max-width: 80%;color: white;">@Model.GrillaCuentaBan.FormatearDato(item.descripcion, FormatDato.Ninguno)</td>
+                                            <td class="@Model.GrillaCuentaBan.ObtenerClase(item.saldo) align-right" style="color: white;">@Model.GrillaCuentaBan.FormatearDato(item.saldo, FormatDato.Ninguno)</td>
+                                        </tr>
+                                    }
+                                    else
+                                    {
+                                        <tr class="no-destacado" onclick="selectReg(this,'tbGridCuentaBan')">
+                                            <td class="@Model.GrillaCuentaBan.ObtenerClase(item.descripcion) align-left" style="width: 80%; max-width: 80%;">@Model.GrillaCuentaBan.FormatearDato(item.descripcion, FormatDato.Ninguno)</td>
+                                            <td class="@Model.GrillaCuentaBan.ObtenerClase(item.saldo) align-right">@Model.GrillaCuentaBan.FormatearDato(item.saldo, FormatDato.Ninguno)</td>
+                                        </tr>
+                                    }
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+			</div>
+		</div>
+	</div>
+</div>

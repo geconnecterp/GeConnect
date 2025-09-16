@@ -96,6 +96,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 					}
 					TRSucursalesLista = itemsAutSucursales;
 				}
+				var titulo = "NUEVA TRANSFERENCIA";
+				ViewData["Titulo"] = titulo;
 				model.ListaPedidosSucursal = ObtenerGridCoreSmart<TRAutPIDto>([]);
 				if (TRAutPedidosIncluidosILista != null)
 					model.ListaPedidosIncluidos = ObtenerGridCoreSmart<TRAutPIDto>(TRAutPedidosIncluidosILista);

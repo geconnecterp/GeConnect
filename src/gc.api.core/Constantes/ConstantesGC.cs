@@ -139,7 +139,16 @@ namespace gc.api.core.Constantes
 			public const string SP_F_TRA_REPO_D = "SPGECO_F_Tra_Repo_D";
 			public const string SP_F_CUENTA_AL_COBRO_RELA = "SPGECO_F_Cuenta_al_Cobro_rela";
 			public const string SP_F_CHEQUES_DEPOSITADOS = "SPGECO_F_Cheques_Depositados";
-			//
+			public const string SP_F_TR_USUARIOS = "SPGECO_F_TR_Usu";
+			public const string SP_F_TR_LISTA = "SPGECO_F_TR_Lista";
+			public const string SP_F_TR_ANULAR = "SPGECO_F_TR_Anula_Confirma";
+			public const string SP_F_TR_LISTA_REPORTE = "SPGECO_F_TR_Lista_Reporte";
+			public const string SP_F_BCO_EXTRACTO = "SPGECO_F_BCO_Extracto";
+			public const string SP_F_BCO_CTA_CTE = "SPGECO_F_BCO_CtaCte";
+			public const string SP_F_BCO_LIBRO_RESUMEN = "SPGECO_F_BCO_Libro_Resumen";
+			public const string SP_F_BCO_LIBRO = "SPGECO_F_BCO_Libro";
+			public const string SP_F_BCO_CH_VTO_PROY = "SPGECO_F_BCO_CH_Vto_Proy";
+			public const string SP_F_BCO_CH_EMITIDOS_LISTA = "SPGECO_F_BCO_CH_Emitidos_lista";
 			#endregion
 
 			#region SP Depositos
@@ -372,6 +381,7 @@ namespace gc.api.core.Constantes
 			public const string SP_TIPO_TRIBUTO = "SPGECO_Tipos_Tributos";
 			public const string SP_TIPO_DTOS_VALORIZA_RPR_LISTA = "SPGECO_Tipos_Dtos_Valoriza_RPR_Lista";
 			public const string SP_TIPO_ORDEN_PAGO = "SPGECO_Tipos_Orden_Pagos";
+			public const string SP_TIPO_TRANSFERENCIA = "SPGECO_Tipos_Transferencias";
 			//
 			#endregion
 

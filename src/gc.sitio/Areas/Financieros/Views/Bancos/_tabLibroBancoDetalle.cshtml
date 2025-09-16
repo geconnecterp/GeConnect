@@ -1,0 +1,183 @@
+﻿@model LibroBancoDetalleModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	.linea {
+		margin-bottom: 2px;
+		line-height: 1.2;
+	}
+
+	.azul {
+		color: #007BFF;
+	}
+
+	.rojo {
+		color: #B22222;
+	}
+
+	.linea-con-puntos {
+		display: flex;
+		align-items: center;
+	}
+
+	.descripcion {
+		white-space: nowrap;
+	}
+
+	.puntos {
+		flex-grow: 1;
+		border-bottom: 1px dotted #999;
+		margin: 0 6px;
+		height: 0;
+	}
+
+	.monto {
+		white-space: nowrap;
+	}
+
+	.texto-uniforme {
+		font-size: 0.95rem;
+		font-weight: bold;
+	}
+
+</style>
+<div class="card">
+	<div class="card-body">
+		<div class="row">
+			<!-- Líneas en azul -->
+			<div class="col-12 linea azul linea-con-puntos texto-uniforme">
+				<span class="descripcion">@Model.saldo_bco_descripcion</span>
+				<span class="puntos"></span>
+				<span class="monto">@Model.saldo_bco</span>
+			</div>
+			<div class="col-12 linea azul linea-con-puntos texto-uniforme">
+				<span class="descripcion">@Model.saldo_bco_che_descripcion</span>
+				<span class="puntos"></span>
+				<span class="monto">@Model.saldo_bco_che</span>
+			</div>
+			<div class="col-12 linea azul linea-con-puntos texto-uniforme">
+				<span class="descripcion">@Model.saldo_pendiente_descripcion</span>
+				<span class="puntos"></span>
+				<span class="monto">@Model.saldo_pendiente</span>
+			</div>
+
+			<!-- Líneas en rojo -->
+			<div class="col-12 linea rojo linea-con-puntos texto-uniforme">
+				<span class="descripcion">@Model.conciliado_m_ant_descripcion</span>
+				<span class="puntos"></span>
+				<span class="monto">@Model.conciliado_m_ant</span>
+			</div>
+			<div class="col-12 linea rojo linea-con-puntos texto-uniforme">
+				<span class="descripcion">@Model.conciliado_m_sig_descripcion</span>
+				<span class="puntos"></span>
+				<span class="monto">@Model.conciliado_m_sig</span>
+			</div>
+			<div class="col-12 linea rojo linea-con-puntos texto-uniforme">
+				<span class="descripcion">@Model.conciliado_m_pos_descripcion</span>
+				<span class="puntos"></span>
+				<span class="monto">@Model.conciliado_m_pos</span>
+			</div>
+		</div>
+		<div class="row">
+			@if (Model != null && Model.GrillaBcoLibro_Cero != null && Model.GrillaBcoLibro_Cero.ListaDatos != null && Model.GrillaBcoLibro_Cero.ListaDatos.Count > 0)
+			{
+				<div class="table-responsive mt-3">
+					<table class="table table-bordered mb-0 table-golden" id="tabGrillaCero">
+						<tbody>
+							@foreach (var item in Model.GrillaBcoLibro_Cero.ListaDatos)
+							{
+								var importeFormateado = item.importe < 0 ? $"({Math.Abs(item.importe):N2})" : $"{item.importe:N2}";
+								<tr>
+									<td class="texto-uniforme">@item.concepto</td>
+									<td class="text-end texto-uniforme">@importeFormateado</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+
+			}
+		</div>
+		<div class="row">
+			@if (Model != null && Model.GrillaBcoLibro_Uno != null && Model.GrillaBcoLibro_Uno.ListaDatos != null && Model.GrillaBcoLibro_Uno.ListaDatos.Count > 0)
+			{
+				<h5 class="mt-4 mb-2 azul texto-uniforme">@Model.Descripcion_Grid_Uno</h5>
+				<div class="table-responsive table-wrapper-300">
+					<table class="table table-bordered table-sm mb-0 table-golden" id="tabGrillaUno">
+						<thead>
+							<tr class="texto-uniforme">
+								<th class="align-center">Concepto</th>
+								<th class="align-center">Fecha Reg.</th>
+								<th class="align-center">Fecha Vto.</th>
+								<th class="align-center">Importe</th>
+								<th style="width: 5%;" class="text-sm-center" scope="col">Estado</th>
+							</tr>
+						</thead>
+						<tbody>
+							@foreach (var item in Model.GrillaBcoLibro_Uno.ListaDatos)
+							{
+								var importeFormateado = item.importe < 0 ? $"({Math.Abs(item.importe):N2})" : $"{item.importe:N2}";
+								var fecha = item.fecha != null ? item.fecha.Value.ToString("dd/MM/yyyy") : "";
+								var fecha_vto = item.fecha_vto != null ? item.fecha_vto.Value.ToString("dd/MM/yyyy") : "";
+								<tr class="texto-uniforme">
+									<td>@item.concepto</td>
+									<td class="text-center">@fecha</td>
+									<td class="text-center">@fecha_vto</td>
+									<td class="text-end">@importeFormateado</td>
+									<td class="align-center">
+										@if (item.strEstado)
+										{
+											<i class='bx bx-check text-danger'></i>
+										}
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			}
+		</div>
+		<div class="row">
+			@if (Model != null && Model.GrillaBcoLibro_Dos != null && Model.GrillaBcoLibro_Dos.ListaDatos != null && Model.GrillaBcoLibro_Dos.ListaDatos.Count > 0)
+			{
+				<h5 class="mt-4 mb-2 azul texto-uniforme">@Model.Descripcion_Grid_Dos</h5>
+				<div class="table-responsive table-wrapper-300">
+					<table class="table table-bordered table-sm mb-0 table-golden" id="tabGrillaDos">
+						<thead>
+							<tr class="texto-uniforme">
+								<th class="align-center">Concepto</th>
+								<th class="align-center">Fecha Reg.</th>
+								<th class="align-center">Fecha Vto.</th>
+								<th class="align-center">Importe</th>
+								<th style="width: 5%;" class="text-sm-center" scope="col">Estado</th>
+							</tr>
+						</thead>
+						<tbody>
+							@foreach (var item in Model.GrillaBcoLibro_Dos.ListaDatos)
+							{
+								var importeFormateado = item.importe < 0 ? $"({Math.Abs(item.importe):N2})" : $"{item.importe:N2}";
+								var fecha = item.fecha != null ? item.fecha.Value.ToString("dd/MM/yyyy") : "";
+								var fecha_vto = item.fecha_vto != null ? item.fecha_vto.Value.ToString("dd/MM/yyyy") : "";
+								<tr class="texto-uniforme">
+									<td>@item.concepto</td>
+									<td class="text-center">@fecha</td>
+									<td class="text-center">@fecha_vto</td>
+									<td class="text-end">@importeFormateado</td>
+									<td class="align-center">
+										@if (item.strEstado)
+										{
+											<i class='bx bx-check text-danger'></i>
+										}
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			}
+		</div>
+	</div>
+</div>

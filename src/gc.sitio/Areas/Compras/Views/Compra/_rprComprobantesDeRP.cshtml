@@ -1,27 +1,29 @@
 ﻿@model GridCoreSmart<RPRComptesDeRPDto>
 
-<div class="table-responsive table-wrapper" style="max-width: 100%;">
-	<table class="table table-bordered table-hover" id="tbComptesDeRP">
-		<thead class="table-dark">
-			<tr class="header">
-				<th style="width:0%; display:none;">TipoId</th>
-				<th scope="col" style="width:25%" class="align-center">Tipo</th>
-				<th scope="col" style="width:25%" class="align-center">N° Comprobante</th>
-				<th scope="col" style="width:25%" class="align-center">Fecha</th>
-				<th scope="col" style="width:25%" class="align-center">Importe</th>
-			</tr>
-		</thead>
-		<tbody>
-			@foreach (var item in Model.ListaDatos)
-			{
-				<tr onclick="selectCompteDeRPRow(this)">
-					<td style="display:none;">@item.Tipo</td>
-					<td class="align-left">@item.TipoDescripcion</td>
-					<td class="align-center">@item.NroComprobante</td>
-					<td class="align-center">@item.Fecha</td>
-					<td class="align-right">@item.Importe2</td>
+<div class="grid-golden-body">
+	<div class="table-responsive table-wrapper" style="max-width: 100%;">
+		<table class="table table-bordered table-hover table-golden" id="tbComptesDeRP">
+			<thead>
+				<tr class="header">
+					<th style="width:0%; display:none;">TipoId</th>
+					<th scope="col" style="width:25%" class="align-center">Tipo</th>
+					<th scope="col" style="width:25%" class="align-center">N° Comprobante</th>
+					<th scope="col" style="width:25%" class="align-center">Fecha</th>
+					<th scope="col" style="width:25%" class="align-center">Importe</th>
 				</tr>
-			}
-		</tbody>
-	</table>
+			</thead>
+			<tbody>
+				@foreach (var item in Model.ListaDatos)
+				{
+					<tr onclick="selectCompteDeRPRow(this)">
+						<td style="display:none;">@item.Tipo</td>
+						<td class="align-left">@item.TipoDescripcion</td>
+						<td class="align-center">@item.NroComprobante</td>
+						<td class="align-center">@item.Fecha</td>
+						<td class="align-right">@item.Importe2</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
 </div>
