@@ -63,10 +63,10 @@
 					@Html.TextBoxFor(m => m.acreditacion, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeAcreditacion(this);", @id="fechaAcreditacion" })
 					@Html.DropDownList("id", list, "Seleccionar...", new { @id = "listaIntervalo", @class = "form-control" })
 					<button id="btnAbmAceptar" class="btn btn-success btn-sm me-1" type="button" title="Aceptar" style="margin-left: 10px;">
-						<i class="bx bx-check-circle"></i>
+						<i class="bx bx-badge-check"></i>
 					</button>
 					<button id="btnAbmCancelar" class="btn btn-danger btn-sm me-1" type="button" title="Cancelar">
-						<i class="bx bx-x-circle bx-xs"></i>
+						<i class="bx bx-x-circle"></i>
 					</button>
 				</div>
 			</div>
@@ -83,9 +83,9 @@
 						</div>
 						<div class="col-11" id="divOrigen" style="height: 450px;">
 							<div class="table-responsive table-wrapper-440-full" id="containerOrigen">
-								<table class="table table-bordered table-hover" id="tbListaOrigen">
-									<thead class="table-dark">
-										<tr>
+								<table class="table table-bordered table-hover table-golden" id="tbListaOrigen">
+									<thead>
+										<tr class="header">
 											<th style="width:35%;" class="col-header-small align-center tiny-row">Cuenta Financiera</th>
 											<th style="width:55%;" class="col-header-small align-center tiny-row">Valor</th>
 											<th style="width:10%;" class="col-header-small align-center tiny-row">Importe</th>
@@ -138,9 +138,9 @@
 						</div>
 						<div class="col-11" id="divDestino" style="height: 450px;">
 							<div class="table-responsive table-wrapper-440-full" id="containerDestino">
-								<table class="table table-bordered table-hover" id="tbListaDestino">
-									<thead class="table-dark">
-										<tr>
+								<table class="table table-bordered table-hover table-golden" id="tbListaDestino">
+									<thead>
+										<tr class="header">
 											<th style="width:35%;" class="col-header-small align-center tiny-row">Cuenta Financiera</th>
 											<th style="width:55%;" class="col-header-small align-center tiny-row">Valor</th>
 											<th style="width:10%;" class="col-header-small align-center tiny-row">Importe</th>

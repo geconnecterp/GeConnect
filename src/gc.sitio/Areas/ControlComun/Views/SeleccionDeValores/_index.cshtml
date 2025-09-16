@@ -8,7 +8,7 @@
 		top: 0px;
 	}
 </style>
-<div class="modal fade" id="seleccionDeValoresModal" style="display: block;height: 530px;padding-left: 0px;" tabindex="-1" aria-labelledby="seleccionDeValoresModalLabel" aria-hidden="true" data-bs-backdrop="static">
+<div class="modal fade modal-golden" id="seleccionDeValoresModal" style="display: block;height: 530px;padding-left: 0px;" tabindex="-1" aria-labelledby="seleccionDeValoresModalLabel" aria-hidden="true" data-bs-backdrop="static">
 	<div class="modal-dialog modal-lg" style="height: 500px;max-height: 500px;">
 		<div class="modal-content" style="height: 500px;max-height: 500px;">
 			<div class="modal-header padding-5">
@@ -19,9 +19,9 @@
 				<div class="row" style="max-height: 150px;height: 150px;">
 					<div class="col-4" style="padding-right: 0px;">
 						<div class="col-11 table-responsive table-wrapper-200-full" id="containerTipoCuentaFin" style="padding-right: 0px;">
-							<table class="table table-bordered table-hover" id="tbTipoCuentaFin">
-								<thead class="table-dark">
-									<tr>
+							<table class="table table-bordered table-hover table-golden" id="tbTipoCuentaFin">
+								<thead>
+									<tr class="header">
 										<th style="width:50%;" class="col-header-small align-center tiny-row">Tipo de Cuenta</th>
 										<th style="width:0%; display:none;">tcf_id</th>
 									</tr>
@@ -43,9 +43,9 @@
 					</div>
 					<div class="col-8" id="divFinancieros" style="padding: 0px;">
 						<div class="col-11 table-responsive table-wrapper-200-full" id="containerFinanciero" style="padding-right: 0px;height: 200px;max-height: 200px;">
-							<table class="table table-bordered table-hover" id="tbFinanciero">
-								<thead class="table-dark">
-									<tr>
+							<table class="table table-bordered table-hover table-golden" id="tbFinanciero">
+								<thead>
+									<tr class="header">
 										<th style="width:80%;" class="col-header-small align-center tiny-row">Cuenta Financiera</th>
 										<th style="width:20%;" class="col-header-small align-center tiny-row">Saldo</th>
 										<th style="width:0%; display:none;">ctaf_id</th>
