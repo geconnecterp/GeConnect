@@ -651,8 +651,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 							P_unidad_pres = up,
 							Bulto = Convert.ToInt32(bulto),
 							oc_compte = "",
-							Unidad = Convert.ToInt32(unidad),
-							Cantidad = CalcularCantidadDeProductoParaAgregar(up_id, bulto, up, unidad),
+							Unidad = Convert.ToDecimal(unidad.Replace(".", "").Replace(",", ".")),
+							Cantidad = CalcularCantidadDeProductoParaAgregar(up_id, bulto, up, unidad.Replace(".", "").Replace(",", ".")),
 							Item = RPRDetalleDeProductosEnRP.Count > 0 ? RPRDetalleDeProductosEnRP.Max(x => x.Item) + 1 : 1
 						});
 					}
@@ -672,8 +672,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 								P_unidad_pres = up,
 								Bulto = Convert.ToInt32(bulto),
 								oc_compte = "",
-								Unidad = Convert.ToInt32(unidad),
-								Cantidad = CalcularCantidadDeProductoParaAgregar(up_id, bulto, up, unidad),
+								Unidad = Convert.ToDecimal(unidad.Replace(".", "").Replace(",", ".")),
+								Cantidad = CalcularCantidadDeProductoParaAgregar(up_id, bulto, up, unidad.Replace(".", "").Replace(",", ".")),
 								Item = ubicacionActual
 							});
 						}
@@ -683,8 +683,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 							lista.Remove(itemAQuitar);
 							existeProd.Bulto = existeProd.Bulto + Convert.ToInt32(bulto);
 							existeProd.P_unidad_pres = (Convert.ToInt32(existeProd.P_unidad_pres) + Convert.ToInt32(up)).ToString();
-							existeProd.Unidad = existeProd.Unidad + Convert.ToInt32(unidad);
-							existeProd.Cantidad = existeProd.Cantidad + CalcularCantidadDeProductoParaAgregar(up_id, bulto, up, unidad);
+							existeProd.Unidad = existeProd.Unidad + Convert.ToDecimal(unidad.Replace(".", "").Replace(",", "."));
+							existeProd.Cantidad = existeProd.Cantidad + CalcularCantidadDeProductoParaAgregar(up_id, bulto, up, unidad.Replace(".", "").Replace(",", "."));
 							lista.Add(existeProd);
 						}
 					}
@@ -1430,6 +1430,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				NroComprobante = nroComprobante,
 				Fecha = Convert.ToDateTime(fecha).ToString("dd/MM/yyyy"),
 				Importe = importe,
+				Importe2 = Convert.ToDecimal(importe.Replace(".", "").Replace(",", ".")),
 				Rp = rp
 			};
 			lista.Add(nuevo);

@@ -69,16 +69,16 @@
 						<div class="container" style="padding:0px;">
 							<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
 							<div class="row">
-								<div class="input-group">
+								<div class="input-group input-group-sm">
 									<span class="input-group-text">ID: </span>
 									<input type="text" id="txtIdProdEnComprobanteRP" class="form-control" style="width:10%;" readonly />
 									<input type="text" id="txtProDescripcion" class="form-control" style="width: 40%;" readonly/>
 									<span class="input-group-text">UP: </span>
-									<input type="text" id="txtUPEnComprobanteRP" class="form-control" />
+									<input type="text" id="txtUPEnComprobanteRP" class="form-control activable inputEditable" />
 									<span class="input-group-text">Bto: </span>
-									<input type="number" id="txtBtoEnComprobanteRP" class="form-control" min="0"/>
+									<input type="number" id="txtBtoEnComprobanteRP" class="form-control activable inputEditable" min="0" />
 									<span class="input-group-text">Unid: </span>
-									<input type="text" id="txtUnidEnComprobanteRP" class="form-control" />
+									<input type="text" id="txtUnidEnComprobanteRP" class="form-control activable inputEditable" />
 									<input type="text" id="txtUP_ID" style="display:none;" />
 									<input type="text" id="txtBARRADO_ID" style="display:none;" />
 								</div>
