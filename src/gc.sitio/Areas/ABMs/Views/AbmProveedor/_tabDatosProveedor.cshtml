@@ -244,20 +244,23 @@
 				<div class="card">
 					<div class="card-body mt-1-ctm">
 						<div class="table-responsive text-nowrap table-wrapper-200-full">
-							<table class="table table-sm mb-0 table-hover" id="tbFormaPagoEnTabDeProv">
-								<thead class="table-dark">
+							<table class="table table-sm mb-0 table-hover table-golden" id="tbFormaPagoEnTabDeProv">
+								<thead>
 									<tr class="header">
 										<th class="col-header-small align-center">Forma de Pago</th>
 										<th class="col-header-small align-center">Plazo</th>
 									</tr>
 								</thead>
 								<tbody>
-									@foreach (var item in Model.CuentaFormasDePago.ListaDatos)
+									@if (Model != null && Model.CuentaFormasDePago != null && Model.CuentaFormasDePago.ListaDatos != null && Model.CuentaFormasDePago.ListaDatos.Count > 0)
 									{
-										<tr>
-											<td class="align-left">@item.fp_desc</td>
-											<td class="align-center">@item.fp_dias</td>
-										</tr>
+										@foreach (var item in Model.CuentaFormasDePago.ListaDatos)
+										{
+											<tr>
+												<td class="align-left">@item.fp_desc</td>
+												<td class="align-center">@item.fp_dias</td>
+											</tr>
+										}
 									}
 								</tbody>
 							</table>
@@ -269,8 +272,8 @@
 				<div class="card">
 					<div class="card-body mt-1-ctm">
 						<div class="table-responsive text-nowrap table-wrapper-200-full">
-							<table class="table table-sm mb-0 table-hover" id="tbOtroContactoEnTabDeProv">
-								<thead class="table-dark">
+							<table class="table table-sm mb-0 table-hover table-golden" id="tbOtroContactoEnTabDeProv">
+								<thead>
 									<tr class="header">
 										<th class="col-header-small align-center">Contacto</th>
 										<th class="col-header-small align-center">Tipo</th>
@@ -280,15 +283,18 @@
 									</tr>
 								</thead>
 								<tbody>
-									@foreach (var item in Model.CuentaContactos.ListaDatos)
+									@if (Model != null && Model.CuentaContactos != null && Model.CuentaContactos.ListaDatos != null && Model.CuentaContactos.ListaDatos.Count > 0)
 									{
-										<tr>
-											<td class="align-left">@item.cta_nombre</td>
-											<td class="align-left">@item.tc_desc</td>
-											<td class="align-left">@item.cta_email</td>
-											<td class="align-left">@item.cta_celu</td>
-											<td class="align-left">@item.cta_te</td>
-										</tr>
+										@foreach (var item in Model.CuentaContactos.ListaDatos)
+										{
+											<tr>
+												<td class="align-left">@item.cta_nombre</td>
+												<td class="align-left">@item.tc_desc</td>
+												<td class="align-left">@item.cta_email</td>
+												<td class="align-left">@item.cta_celu</td>
+												<td class="align-left">@item.cta_te</td>
+											</tr>
+										}
 									}
 								</tbody>
 							</table>
@@ -300,20 +306,23 @@
 				<div class="card">
 					<div class="card-body mt-1-ctm">
 						<div class="table-responsive text-nowrap table-wrapper-200-full">
-							<table class="table table-sm mb-0 table-hover" id="tbObservacionesEnTabDeProv">
-								<thead class="table-dark">
+							<table class="table table-sm mb-0 table-hover table-golden" id="tbObservacionesEnTabDeProv">
+								<thead>
 									<tr class="header">
 										<th class="col-header-small align-center">Observacion</th>
 										<th class="col-header-small align-center">Tipo</th>
 									</tr>
 								</thead>
 								<tbody>
-									@foreach (var item in Model.CuentaObs.ListaDatos)
+									@if (Model != null && Model.CuentaObs != null && Model.CuentaObs.ListaDatos != null && Model.CuentaObs.ListaDatos.Count > 0)
 									{
-										<tr>
-											<td class="align-left">@item.cta_obs</td>
-											<td class="align-left">@item.to_desc</td>
-										</tr>
+										@foreach (var item in Model.CuentaObs.ListaDatos)
+										{
+											<tr>
+												<td class="align-left">@item.cta_obs</td>
+												<td class="align-left">@item.to_desc</td>
+											</tr>
+										}
 									}
 								</tbody>
 							</table>
@@ -325,8 +334,8 @@
 				<div class="card">
 					<div class="card-body mt-1-ctm">
 						<div class="table-responsive text-nowrap table-wrapper-200-full">
-							<table class="table table-sm mb-0 table-hover" id="tbNotasEnTabDeProv">
-								<thead class="table-dark">
+							<table class="table table-sm mb-0 table-hover table-golden" id="tbNotasEnTabDeProv">
+								<thead>
 									<tr class="header">
 										<th class="col-header-small align-center">Nota</th>
 										<th class="col-header-small align-center">Usuario</th>
@@ -334,13 +343,16 @@
 									</tr>
 								</thead>
 								<tbody>
-									@foreach (var item in Model.CuentaNota.ListaDatos)
+									@if (Model != null && Model.CuentaNota != null && Model.CuentaNota.ListaDatos != null && Model.CuentaNota.ListaDatos.Count > 0)
 									{
-										<tr>
-											<td class="align-left">@item.nota</td>
-											<td class="align-left">@item.usu_apellidoynombre</td>
-											<td class="align-left">@item.fecha.ToString("dd/MM/yyyy")</td>
-										</tr>
+										@foreach (var item in Model.CuentaNota.ListaDatos)
+										{
+											<tr>
+												<td class="align-left">@item.nota</td>
+												<td class="align-left">@item.usu_apellidoynombre</td>
+												<td class="align-left">@item.fecha.ToString("dd/MM/yyyy")</td>
+											</tr>
+										}
 									}
 								</tbody>
 							</table>

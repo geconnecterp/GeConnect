@@ -15,8 +15,8 @@
 <div class="card">
     <div class="card-body">
         <div class="table-responsive text-nowrap  table-wrapper">
-            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridCliente">
-                <thead class="table-dark">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbGridCliente">
+                <thead>
                     <tr class="header">
                         <th scope="col" class="align-center">ID</th>
                         <th scope="col" class="align-center">Denominación</th>
@@ -26,21 +26,23 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model.ListaDatos)
+                    @if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
                     {
-                        if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+                        @foreach (var item in Model.ListaDatos)
+                        {
+                            if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                        <tr class="@clase" onclick="selectReg(this, 'tbGridCliente')" 
-                        @* ondblclick="selectRegDbl(this, 'tbGridCliente')" *@
-                        >
-                            <td class="text-sm-center">@item.cta_id</td>
-                            <td class="text-sm-start">@item.cta_denominacion</td>
-                            <td class="text-sm-center">@item.tdoc_desc</td>
-                            <td class="text-sm-center">@item.cta_documento</td>
-                            <td class="text-sm-start">@item.cta_domicilio</td>
-                        </tr>
+                            <tr class="@clase" onclick="selectReg(this, 'tbGridCliente')"
+                                @* ondblclick="selectRegDbl(this, 'tbGridCliente')" *@
+                                >
+                                <td class="text-sm-center">@item.cta_id</td>
+                                <td class="text-sm-start">@item.cta_denominacion</td>
+                                <td class="text-sm-center">@item.tdoc_desc</td>
+                                <td class="text-sm-center">@item.cta_documento</td>
+                                <td class="text-sm-start">@item.cta_domicilio</td>
+                            </tr>
+                        }
                     }
-                    
                 </tbody>
             </table>           
         </div>

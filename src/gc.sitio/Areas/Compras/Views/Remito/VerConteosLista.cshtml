@@ -60,24 +60,27 @@
 								</tr>
 							</thead>
 							<tbody>
-								@foreach (var item in Model.Productos.ListaDatos)
+								@if (Model != null && Model.Productos != null && Model.Productos.ListaDatos != null && Model.Productos.ListaDatos.Count > 0)
 								{
-									<tr onclick="selectVerConteosRow(this)">
-										<td class="table-fontsize align-center">@item.item</td>
-										<td class="table-fontsize align-center">@item.p_id</td>
-										<td class="table-fontsize align-left">@item.p_desc</td>
-										<td class="table-fontsize align-center">@item.p_id_barrado</td>
-										<td style="text-align: right;" class="table-fontsize align-right">@item.enviado</td>
-										<td style="text-align: right;" class="table-fontsize align-right">@item.recibido</td>
-										@if (item.diferencia != 0)
-										{
-											<td class="table-fontsize" style="border-right: 5px solid @item.Row_color; text-align: right;">@item.diferencia</td>
-										}
-										else
-										{
-											<td style="text-align: right;" class="table-fontsize">@item.diferencia</td>
-										}
-									</tr>
+									@foreach (var item in Model.Productos.ListaDatos)
+									{
+										<tr onclick="selectVerConteosRow(this)">
+											<td class="table-fontsize align-center">@item.item</td>
+											<td class="table-fontsize align-center">@item.p_id</td>
+											<td class="table-fontsize align-left">@item.p_desc</td>
+											<td class="table-fontsize align-center">@item.p_id_barrado</td>
+											<td style="text-align: right;" class="table-fontsize align-right">@item.enviado</td>
+											<td style="text-align: right;" class="table-fontsize align-right">@item.recibido</td>
+											@if (item.diferencia != 0)
+											{
+												<td class="table-fontsize" style="border-right: 5px solid @item.Row_color; text-align: right;">@item.diferencia</td>
+											}
+											else
+											{
+												<td style="text-align: right;" class="table-fontsize">@item.diferencia</td>
+											}
+										</tr>
+									}
 								}
 							</tbody>
 						</table>
@@ -98,15 +101,18 @@
 										</tr>
 									</thead>
 									<tbody>
-										@foreach (var item in Model.ConteosxUL.ListaDatos)
+										@if (Model != null && Model.ConteosxUL != null && Model.ConteosxUL.ListaDatos != null && Model.ConteosxUL.ListaDatos.Count > 0)
 										{
-											<tr onclick="selectULxRTRRow(this)">
-												<td style="display:none;">@item.tipo</td>
-												<td style="display:none;">@item.id</td>
-												<td class="align-center">@item.ul_id</td>
-												<td class="align-center">@item.usu_apellidoynombre</td>
-												<td class="align-center">@item.ule_desc</td>
-											</tr>
+											@foreach (var item in Model.ConteosxUL.ListaDatos)
+											{
+												<tr onclick="selectULxRTRRow(this)">
+													<td style="display:none;">@item.tipo</td>
+													<td style="display:none;">@item.id</td>
+													<td class="align-center">@item.ul_id</td>
+													<td class="align-center">@item.usu_apellidoynombre</td>
+													<td class="align-center">@item.ule_desc</td>
+												</tr>
+											}
 										}
 									</tbody>
 								</table>

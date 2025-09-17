@@ -10,13 +10,16 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.ListaDatos)
+			@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
 			{
-				<tr onclick="selectTRDepositosDeEnvioRow(this)">
-					<td class="align-left">@item.depo_nombre</td>
-					<td><input type="checkbox" name="tienePI" id="chkTienePI" value="@item.seleccionado" @((item.seleccionado == false ? "" : "checked")) /></td>
-					<td style="width:0%; display:none;">@item.depo_id</td>
-				</tr>
+				@foreach (var item in Model.ListaDatos)
+				{
+					<tr onclick="selectTRDepositosDeEnvioRow(this)">
+						<td class="align-left">@item.depo_nombre</td>
+						<td><input type="checkbox" name="tienePI" id="chkTienePI" value="@item.seleccionado" @((item.seleccionado == false ? "" : "checked")) /></td>
+						<td style="width:0%; display:none;">@item.depo_id</td>
+					</tr>
+				}
 			}
 		</tbody>
 	</table>

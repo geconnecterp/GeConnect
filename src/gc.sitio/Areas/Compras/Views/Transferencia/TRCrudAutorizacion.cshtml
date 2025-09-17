@@ -21,28 +21,31 @@
 								</tr>
 							</thead>
 							<tbody>
-								@foreach (var item in Model.ListaAutSucursales.ListaDatos)
+								@if (Model != null && Model.ListaAutSucursales != null && Model.ListaAutSucursales.ListaDatos != null && Model.ListaAutSucursales.ListaDatos.Count > 0)
 								{
-									<tr onclick="selectTRSucursalesRow(this)">
-										<td>@item.adm_nombre</td>
-										@if (item.tiene_ordenes)
-										{
-											<td><input type="checkbox" name="tieneOrdenes" value="@item.tiene_ordenes" checked disabled="disabled" /></td>
-										}
-										else
-										{
-											<td><input type="checkbox" name="tieneOrdenes" value="@item.tiene_ordenes" disabled="disabled" /></td>
-										}
-										@if (item.tiene_pi)
-										{
-											<td><input type="checkbox" name="tienePI" value="@item.tiene_pi" checked disabled="disabled" /></td>
-										}
-										else
-										{
-											<td><input type="checkbox" name="tienePI" value="@item.tiene_pi" disabled="disabled" /></td>
-										}
-										<td style="display:none;">@item.adm_id</td>
-									</tr>
+									@foreach (var item in Model.ListaAutSucursales.ListaDatos)
+									{
+										<tr onclick="selectTRSucursalesRow(this)">
+											<td>@item.adm_nombre</td>
+											@if (item.tiene_ordenes)
+											{
+												<td><input type="checkbox" name="tieneOrdenes" value="@item.tiene_ordenes" checked disabled="disabled" /></td>
+											}
+											else
+											{
+												<td><input type="checkbox" name="tieneOrdenes" value="@item.tiene_ordenes" disabled="disabled" /></td>
+											}
+											@if (item.tiene_pi)
+											{
+												<td><input type="checkbox" name="tienePI" value="@item.tiene_pi" checked disabled="disabled" /></td>
+											}
+											else
+											{
+												<td><input type="checkbox" name="tienePI" value="@item.tiene_pi" disabled="disabled" /></td>
+											}
+											<td style="display:none;">@item.adm_id</td>
+										</tr>
+									}
 								}
 							</tbody>
 						</table>
@@ -72,19 +75,22 @@
 								</tr>
 							</thead>
 							<tbody>
-								@foreach (var item in Model.ListaPedidosSucursal.ListaDatos)
+								@if (Model != null && Model.ListaPedidosSucursal != null && Model.ListaPedidosSucursal.ListaDatos != null && Model.ListaPedidosSucursal.ListaDatos.Count > 0)
 								{
-									<tr onclick="selectTRPedidoSucursalRow(this)">
-										<td class="align-center">@item.pi_compte</td>
-										<td class="align-center">@item.pi_fecha.ToString("dd/MM/yyyy")</td>
-										<td class="align-center">@item.pie_desc</td>
-										<td class="align-left">@item.pi_nota</td>
-										<td class="align-center">@item.pit_desc</td>
-										<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.pi_compte" onclick="verDetalleDePedido(this);"> <i class="bx bx-detail"></i></a></td>
-										<td><a class="btn btn-xs btn-outline-primary" data-interaction="@item.pi_compte" onclick="agregarAPedidosIncl(this);"> <i class="bx bx-plus-circle"></i></a></td>
-										<td style="display:none;">@item.adm_id</td>
-										<td style="display:none;">@item.adm_desc</td>
-									</tr>
+									@foreach (var item in Model.ListaPedidosSucursal.ListaDatos)
+									{
+										<tr onclick="selectTRPedidoSucursalRow(this)">
+											<td class="align-center">@item.pi_compte</td>
+											<td class="align-center">@item.pi_fecha.ToString("dd/MM/yyyy")</td>
+											<td class="align-center">@item.pie_desc</td>
+											<td class="align-left">@item.pi_nota</td>
+											<td class="align-center">@item.pit_desc</td>
+											<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.pi_compte" onclick="verDetalleDePedido(this);"> <i class="bx bx-detail"></i></a></td>
+											<td><a class="btn btn-xs btn-outline-primary" data-interaction="@item.pi_compte" onclick="agregarAPedidosIncl(this);"> <i class="bx bx-plus-circle"></i></a></td>
+											<td style="display:none;">@item.adm_id</td>
+											<td style="display:none;">@item.adm_desc</td>
+										</tr>
+									}
 								}
 							</tbody>
 						</table>
@@ -111,18 +117,21 @@
 								</tr>
 							</thead>
 							<tbody>
-								@foreach (var item in Model.ListaPedidosIncluidos.ListaDatos)
+								@if (Model != null && Model.ListaPedidosIncluidos != null && Model.ListaPedidosIncluidos.ListaDatos != null && Model.ListaPedidosIncluidos.ListaDatos.Count > 0)
 								{
-									<tr onclick="selectTRPedidoIncluidoRow(this)">
-										<td class="align-left">@item.adm_desc</td>
-										<td class="align-center">@item.pi_compte</td>
-										<td class="align-center">@item.pi_fecha.ToString("dd/MM/yyyy")</td>
-										<td class="align-left">@item.pie_desc</td>
-										<td class="align-center">@item.pi_nota</td>
-										<td class="align-center">@item.pit_desc</td>
-										<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.pi_compte" onclick="verDetalleDePedido(this);"> <i class="bx bx-detail"></i></a></td>
-										<td><a class="btn btn-xs btn-outline-danger" data-interaction="@item.pi_compte" onclick="quitarDePedidosIncl(this);"> <i class="bx bx-minus-circle"></i></a></td>
-									</tr>
+									@foreach (var item in Model.ListaPedidosIncluidos.ListaDatos)
+									{
+										<tr onclick="selectTRPedidoIncluidoRow(this)">
+											<td class="align-left">@item.adm_desc</td>
+											<td class="align-center">@item.pi_compte</td>
+											<td class="align-center">@item.pi_fecha.ToString("dd/MM/yyyy")</td>
+											<td class="align-left">@item.pie_desc</td>
+											<td class="align-center">@item.pi_nota</td>
+											<td class="align-center">@item.pit_desc</td>
+											<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.pi_compte" onclick="verDetalleDePedido(this);"> <i class="bx bx-detail"></i></a></td>
+											<td><a class="btn btn-xs btn-outline-danger" data-interaction="@item.pi_compte" onclick="quitarDePedidosIncl(this);"> <i class="bx bx-minus-circle"></i></a></td>
+										</tr>
+									}
 								}
 							</tbody>
 						</table>
@@ -147,13 +156,16 @@
 											</tr>
 										</thead>
 										<tbody>
-											@foreach (var item in Model.ListaDepositosDeEnvio.ListaDatos)
+											@if (Model != null && Model.ListaDepositosDeEnvio != null && Model.ListaDepositosDeEnvio.ListaDatos != null && Model.ListaDepositosDeEnvio.ListaDatos.Count > 0)
 											{
-												<tr onclick="selectTRDepositosDeEnvioRow(this)">
-													<td>@item.depo_nombre</td>
-													<td class="align-center"><input type="checkbox" name="tienePI" id="chkTienePI" value="@item.seleccionado" @((item.seleccionado == false ? "" : "checked")) /></td>
-													<td style="width:0%; display:none;">@item.depo_id</td>
-												</tr>
+												@foreach (var item in Model.ListaDepositosDeEnvio.ListaDatos)
+												{
+													<tr onclick="selectTRDepositosDeEnvioRow(this)">
+														<td>@item.depo_nombre</td>
+														<td class="align-center"><input type="checkbox" name="tienePI" id="chkTienePI" value="@item.seleccionado" @((item.seleccionado == false ? "" : "checked")) /></td>
+														<td style="width:0%; display:none;">@item.depo_id</td>
+													</tr>
+												}
 											}
 										</tbody>
 									</table>
@@ -171,7 +183,7 @@
 									<div>
 										<div class="col-sm">
 											<div class="form-check">
-												@if (Model.ConsiderarStockExistente == false)
+												@if (Model != null && Model.ConsiderarStockExistente == false)
 												{
 													<input class="form-check-input" type="checkbox" id="chkConsiderarStock" asp-for="@Model.ConsiderarStockExistente">
 												}
@@ -184,7 +196,7 @@
 										</div>
 										<div class="col-sm">
 											<div class="form-check">
-												@if (Model.ModificarYSustituto == false)
+												@if (Model != null && Model.ModificarYSustituto == false)
 												{
 													<input class="form-check-input" type="checkbox" id="chkModificarYSustituto" asp-for="@Model.ModificarYSustituto">
 												}
@@ -199,7 +211,7 @@
 											<div>
 												<div class="row">
 													<div class="form-check col-7" style="padding-left: 5.8%;">
-														@if (Model.MaximoPalletXAuto == false)
+														@if (Model != null && Model.MaximoPalletXAuto == false)
 														{
 															<input class="form-check-input" onchange="changeMaxPalletChk(this);" type="checkbox" id="chkMaxPallet" asp-for="@Model.MaximoPalletXAuto">
 														}

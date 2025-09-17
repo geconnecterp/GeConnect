@@ -21,27 +21,6 @@
 			</div>
 		</div>
 	</div>
-	@* <row>
-		<input type="text" id="rp_id" style="visibility:hidden" />
-		<div style="float:left">
-			<div class="card-header">
-				<h5>Autorizaciones TR</h5>
-				<div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-					<input type="radio" class="btn-check" name="btnradio" id="btnradioSucursales" checked="">
-					<label class="btn btn-outline-primary" for="btnradioSucursales">TR Sucursales</label>
-					<input type="radio" class="btn-check" name="btnradio" id="btnradioDepositos">
-					<label class="btn btn-outline-primary" for="btnradioDepositos">TR Depósitos</label>
-				</div>
-			</div>
-		</div>
-		<div class="demo-inline-spacing" style="float:right;margin-top: 60px;margin-right: 55px;">
-			<a asp-action="NuevaTR" asp-controller="Transferencia" asp-area="Compras" class="btn btn-primary btn-sm mt-1 me-1" id="btnNuevaAut" title="Agregar Autorización de Transferencia">
-				<span class="bx bx-plus-circle"> Nueva</span>
-			</a>
-			<a href="#" id="btnModificarAut" class="btn btn-info btn-sm mt-1 me-1" title="Modificar Autorización de Transferencia"><span class="bx bx-edit"> Modificar</span></a>
-			<a href="#" id="btnVer" class="btn btn-info btn-sm mt-1 me-1" title="Visualizar datos de Autorización" onclick="verTransferencia();return false;"><span class="bx bx-show"> Ver</span></a>
-		</div>
-	</row> *@
 	<div class="grid-golden-body">
 		<div id="divListaAutorizaciones">
 			<div class="table-responsive text-nowrap table-wrapper">
@@ -60,19 +39,22 @@
 						</tr>
 					</thead>
 					<tbody>
-						@foreach (var item in Model.ListaDatos)
+						@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
 						{
-							<tr onclick="selectTRRow(this)">
-								<td class="align-center">@item.ti</td>
-								<td>@item.adm_nombre</td>
-								<td class="align-center">@item.fecha.ToString("dd/MM/yyyy")</td>
-								<td>@item.nota</td>
-								<td class="align-center">@item.pi_compte</td>
-								<td class="align-center">@item.tie_desc</td>
-								<td style="display:none;">@item.adm_id_des</td>
-								<td style="display:none;">@item.usu_id</td>
-								<td style="display:none;">@item.tie_id</td>
-							</tr>
+							@foreach (var item in Model.ListaDatos)
+							{
+								<tr onclick="selectTRRow(this)">
+									<td class="align-center">@item.ti</td>
+									<td>@item.adm_nombre</td>
+									<td class="align-center">@item.fecha.ToString("dd/MM/yyyy")</td>
+									<td>@item.nota</td>
+									<td class="align-center">@item.pi_compte</td>
+									<td class="align-center">@item.tie_desc</td>
+									<td style="display:none;">@item.adm_id_des</td>
+									<td style="display:none;">@item.usu_id</td>
+									<td style="display:none;">@item.tie_id</td>
+								</tr>
+							}
 						}
 					</tbody>
 				</table>

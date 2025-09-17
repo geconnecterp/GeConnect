@@ -16,19 +16,22 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.ListaDatos)
+			@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
 			{
-				<tr onclick="selectTRRow(this)">
-					<td class="align-center">@item.ti</td>
-					<td class="align-right">@item.adm_nombre</td>
-					<td class="align-center">@item.fecha.ToString("dd/MM/yyyy")</td>
-					<td class="align-center">@item.nota</td>
-					<td class="align-center">@item.pi_compte</td>
-					<td class="align-center">@item.tie_desc</td>
-					<td style="display:none;">@item.adm_id_des</td>
-					<td style="display:none;">@item.usu_id</td>
-					<td style="display:none;">@item.tie_id</td>
-				</tr>
+				@foreach (var item in Model.ListaDatos)
+				{
+					<tr onclick="selectTRRow(this)">
+						<td class="align-center">@item.ti</td>
+						<td class="align-right">@item.adm_nombre</td>
+						<td class="align-center">@item.fecha.ToString("dd/MM/yyyy")</td>
+						<td class="align-center">@item.nota</td>
+						<td class="align-center">@item.pi_compte</td>
+						<td class="align-center">@item.tie_desc</td>
+						<td style="display:none;">@item.adm_id_des</td>
+						<td style="display:none;">@item.usu_id</td>
+						<td style="display:none;">@item.tie_id</td>
+					</tr>
+				}
 			}
 		</tbody>
 	</table>

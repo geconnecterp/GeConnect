@@ -143,17 +143,20 @@
 										</tr>
 									</thead>
 									<tbody>
-										@foreach (var item in Model.ProductosADevolver.ListaDatos)
+										@if (Model != null && Model.ProductosADevolver != null && Model.ProductosADevolver.ListaDatos != null && Model.ProductosADevolver.ListaDatos.Count > 0)
 										{
-											<tr onclick="selectListaProductoRow(this)">
-												<td class="align-center">@item.p_id</td>
-												<td class="align-left">@item.p_desc</td>
-												<td class="align-center">@item.cta_id</td>
-												<td class="align-center">@item.box_desc</td>
-												<td class="align-center">@item.as_stock</td>
-												<td class="align-right">@item.as_ajuste</td>
-												<td class="align-right">@item.as_resultado</td>
-											</tr>
+											@foreach (var item in Model.ProductosADevolver.ListaDatos)
+											{
+												<tr onclick="selectListaProductoRow(this)">
+													<td class="align-center">@item.p_id</td>
+													<td class="align-left">@item.p_desc</td>
+													<td class="align-center">@item.cta_id</td>
+													<td class="align-center">@item.box_desc</td>
+													<td class="align-center">@item.as_stock</td>
+													<td class="align-right">@item.as_ajuste</td>
+													<td class="align-right">@item.as_resultado</td>
+												</tr>
+											}
 										}
 									</tbody>
 								</table>

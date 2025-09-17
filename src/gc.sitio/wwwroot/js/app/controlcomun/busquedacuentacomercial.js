@@ -26,7 +26,7 @@
 	$("#btnEliminarAutoRP").on("click", EliminarAutoRP); //Eliminar RPR cargado
 
 	$("#txtNroCompte").mask("0000-00000000", { reverse: true });
-	$("#txtMonto").mask("000.000.000.000,00", { reverse: true });
+	//$("#txtMonto").mask("000.000.000.000,00", { reverse: true });
 
 	$("#Cuenta").on("keyup", analizaInput);
 	$("#txtNota").on("keyup", analizaInputTxtNota);
@@ -679,7 +679,8 @@ function CargarComboTiposComptes(cuenta) {
 
 function selectCompteDeRPRow(x) {
 	$("#txtNroCompte").val(x.cells[2].innerText.trim());
-	$("#txtMonto").val(x.cells[4].innerText.trim().replace(".",","));
+	//$("#txtMonto").val(x.cells[4].innerText.trim().replace(".", ","));
+	$("#txtMonto").val(x.cells[4].innerText.trim());
 	$("#tco_id").val(x.cells[0].innerText.trim());
 	$("#tco_id").trigger("change");
 	$("#idTipoCompteDeRPSelected").val(x.cells[0].innerText.trim());

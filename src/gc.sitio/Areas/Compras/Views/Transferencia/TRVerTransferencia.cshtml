@@ -20,22 +20,6 @@
 				</div>
 			</div>
 		</div>
-		@* <div style="float:left">
-			<div class="card-header">
-				<h5>Autorizaciones TR</h5>
-				<div class="input-group">
-					<span class="input-group-text">@Model.Autorizacion</span>
-					<span class="input-group-text">             </span>
-					<span class="input-group-text">@Model.TipoTR</span>
-					<span class="input-group-text">             </span>
-					<span class="input-group-text">@Model.Destino</span>
-					<div style="padding-left:50px;">
-						<a href="#" class="btn btn-primary float-right" id="btnConfirmar" onclick="validarAutorizacion();"><span class="tf-icons bx bx-check-circle me-1">Confirmar</span></a>
-						<a href="#" id="btnRegresar" class="btn btn-success float-right" onclick="regresarATRLista();" style="padding-left:5px;"><span class="tf-icons bx bx-left-arrow-circle me-1">Regresar</span></a>
-					</div>
-				</div>
-			</div>
-		</div> *@
 	</row>
 	<fieldset>
 		<legend>
@@ -57,25 +41,28 @@
 						</tr>
 					</thead>
 					<tbody>
-						@foreach (var item in Model.ListaTransferencias.ListaDatos)
+						@if (Model != null && Model.ListaTransferencias != null && Model.ListaTransferencias.ListaDatos != null && Model.ListaTransferencias.ListaDatos.Count > 0)
 						{
-							<tr onclick="selectTRRow(this)">
-								<td class="align-center">@item.p_id</td>
-								<td>@item.p_desc</td>
-								<td class="align-center">@item.p_id_prov</td>
-								<td style="text-align: right;">@item.unidad_pres</td>
-								<td style="text-align: right;">@item.cantidad_pi</td>
-								<td style="text-align: right;">@item.cantidad</td>
-								<td style="text-align: right;">@item.cantidad_c</td>
-								@if (item.Row_color != "")
-								{
-									<td class="table-fontsize" style="border-right: 5px solid @item.Row_color;text-align: right;">@item.Diferencia</td>
-								}
-								else
-								{
-									<td style="text-align: right;" class="table-fontsize">@item.Diferencia</td>
-								}
-							</tr>
+							@foreach (var item in Model.ListaTransferencias.ListaDatos)
+							{
+								<tr onclick="selectTRRow(this)">
+									<td class="align-center">@item.p_id</td>
+									<td>@item.p_desc</td>
+									<td class="align-center">@item.p_id_prov</td>
+									<td style="text-align: right;">@item.unidad_pres</td>
+									<td style="text-align: right;">@item.cantidad_pi</td>
+									<td style="text-align: right;">@item.cantidad</td>
+									<td style="text-align: right;">@item.cantidad_c</td>
+									@if (item.Row_color != "")
+									{
+										<td class="table-fontsize" style="border-right: 5px solid @item.Row_color;text-align: right;">@item.Diferencia</td>
+									}
+									else
+									{
+										<td style="text-align: right;" class="table-fontsize">@item.Diferencia</td>
+									}
+								</tr>
+							}
 						}
 					</tbody>
 				</table>

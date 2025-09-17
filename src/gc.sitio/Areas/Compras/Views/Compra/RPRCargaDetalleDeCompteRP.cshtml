@@ -69,42 +69,29 @@
 						<div class="container" style="padding:0px;">
 							<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
 							<div class="row">
-								<div class="input-group">
+								<div class="input-group input-group-sm">
 									<span class="input-group-text">ID: </span>
 									<input type="text" id="txtIdProdEnComprobanteRP" class="form-control" style="width:10%;" readonly />
 									<input type="text" id="txtProDescripcion" class="form-control" style="width: 40%;" readonly/>
 									<span class="input-group-text">UP: </span>
-									<input type="text" id="txtUPEnComprobanteRP" class="form-control" />
+									<input type="text" id="txtUPEnComprobanteRP" class="form-control activable inputEditable" />
 									<span class="input-group-text">Bto: </span>
-									<input type="number" id="txtBtoEnComprobanteRP" class="form-control" min="0"/>
+									<input type="number" id="txtBtoEnComprobanteRP" class="form-control activable inputEditable" min="0" />
 									<span class="input-group-text">Unid: </span>
-									<input type="text" id="txtUnidEnComprobanteRP" class="form-control" />
+									<input type="text" id="txtUnidEnComprobanteRP" class="form-control activable inputEditable" />
 									<input type="text" id="txtUP_ID" style="display:none;" />
 									<input type="text" id="txtBARRADO_ID" style="display:none;" />
 								</div>
 							</div>
 							<div class="row" style="padding-top: 10px;">
-								@* <div class="input-group"> *@
 								<div class="col-8" style="text-align: left;padding-right: 30px;padding-left:9px;">
 									<button type="button" class="btn btn-primary btn-sm mt-1 me-1" style="margin-left:5px;" id="btnAddProdEnComprobanteRP" title="Agregar Producto manual">
 										<span class="bx bx-plus-circle"> Agregar producto</span>
 									</button>
-@* 									<button type="button" class="btn btn-icon btn-danger fixed-width" style="margin-left:5px;" id="btnDelProdEnComprobanteRP">
-										<span class="bx bx-trash"></span>
-									</button> *@
 									<button type="button" class="btn btn-primary btn-sm mt-1 me-1" style="margin-left:5px;" id="btnAddOCProdEnComprobanteRP" title="Agregar Productos desde Orden de Compra">
 										<span class="bx bx-plus-circle"> Agregar producto desde OC</span>
 									</button>
 								</div>
-
-@* 								<div class="col-4" style="text-align: right;padding-right: 30px;">
-									<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnAceptarComprobanteRP" title="Aceptar">
-										<span class="bx bx-check-circle"></span>
-									</button>
-									<button type="button" class="btn btn-primary" style="margin-left:5px;" id="btnRegresarDesdeComprobanteRP" title="Regresar">
-										<span class="bx bx-skip-previous"></span>
-									</button>
-								</div> *@
 							</div>
 						</div>
 						<div id="divDetalleDeProductos" style="padding-top:10px;">
@@ -122,25 +109,11 @@
 						<h5 style="margin-bottom:0;">Ordenes de Compra</h5>
 						<div id="divOrdenDeCompraXCuenta">
 						</div>
-						@* <fieldset>
-							<legend>
-								<h5>Ordenes de Compra</h5>
-							</legend>
-							<div id="divOrdenDeCompraXCuenta">
-							</div>
-						</fieldset> *@
 					</div>
 					<div>
 						<h5 id="leyendDetalleOC" style="margin-bottom:0; margin-top: 10px;">Detalle de OC</h5>
 						<div id="divDetalleDeOrdenDeCompra">
 						</div>
-						@* <fieldset>
-							<legend>
-								<h5 id="leyendDetalleOC">Detalle de OC</h5>
-							</legend>
-							<div id="divDetalleDeOrdenDeCompra">
-							</div>
-						</fieldset> *@
 					</div>
 				</div>
 			</div>

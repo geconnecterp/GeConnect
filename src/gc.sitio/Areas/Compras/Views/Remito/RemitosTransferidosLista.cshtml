@@ -6,20 +6,11 @@
 <div class="grid-golden">
 	<div class="grid-golden-header">
 		<input type="text" id="rp_id" style="visibility:hidden" />
-		@* <div style="float:left">
-			<div class="card-header">
-				<h5>Remitos Transferidos Pendientes</h5>
-			</div>
-		</div> *@
 		<h5>Remitos Transferidos Pendientes</h5>
 		<div>
 			<button id="btnAutorizar" class="btn btn-success btn-sm mt-1 me-1" onclick="autorizarRemito();" disabled><span class="bx bx-badge-check"> Autorizar</span></button>
 			<a href="#" id="btnVer" class="btn btn-info btn-sm mt-1 me-1" onclick="verRemito();return false;"><span class="bx bx-show"> Ver</span></a>
 		</div>
-		@* <div class="demo-inline-spacing" style="float:right;margin-top: 60px;margin-right: 55px;">
-			<button id="btnAutorizar" class="btn btn-primary fixed-width-130" onclick="autorizarRemito();" disabled><span class="tf-icons bx bxs-edit me-1">Autorizar</span></button>
-			<a href="#" id="btnVer" class="btn btn-info btn-sm mt-1 me-1" onclick="verRemito();return false;"><span class="bx bx-show"> Ver</span></a>
-		</div> *@
 	</div>
 	<div class="grid-golden-body">
 		<div class="table-responsive text-nowrap table-wrapper">
@@ -35,16 +26,19 @@
 					</tr>
 				</thead>
 				<tbody>
-					@foreach (var item in Model.ListaDatos)
+					@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
 					{
-						<tr onclick="selectRemitoRow(this)">
-							<td class="align-center">@item.re_compte</td>
-							<td class="align-center">@item.ti</td>
-							<td class="align-left">@item.adm_nombre</td>
-							<td class="align-center">@item.re_fecha.ToString("dd/MM/yyyy")</td>
-							<td class="align-center">@item.ree_desc</td>
-							<td style="display:none;">@item.ree_id</td>
-						</tr>
+						@foreach (var item in Model.ListaDatos)
+						{
+							<tr onclick="selectRemitoRow(this)">
+								<td class="align-center">@item.re_compte</td>
+								<td class="align-center">@item.ti</td>
+								<td class="align-left">@item.adm_nombre</td>
+								<td class="align-center">@item.re_fecha.ToString("dd/MM/yyyy")</td>
+								<td class="align-center">@item.ree_desc</td>
+								<td style="display:none;">@item.ree_id</td>
+							</tr>
+						}
 					}
 				</tbody>
 			</table>

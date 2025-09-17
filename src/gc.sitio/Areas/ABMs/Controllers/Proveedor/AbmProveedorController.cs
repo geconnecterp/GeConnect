@@ -625,7 +625,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				else
 					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
 			}
@@ -706,7 +706,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				else
 					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
 			}

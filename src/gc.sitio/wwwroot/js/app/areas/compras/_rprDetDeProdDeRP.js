@@ -33,7 +33,7 @@
 		items: "> tr.sortme"
 	});
 
-	AplicarFormato();
+	//AplicarFormato();
 });
 
 const formatter = new Intl.NumberFormat('de-DE', {
