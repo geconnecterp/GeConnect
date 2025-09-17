@@ -2243,11 +2243,12 @@ input, select, textarea, button, checkbox, radio {
 
 /* Específico para precio de oferta */
 #txtPrecioOferta {
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 700;
-    color: #2d5a27;
+    color: #7a4a0e;
     text-align: right;
     padding-right: 0.75rem;
+    background-color: #fefcf7;
 }
 
 #txtPrecioOferta:focus {
@@ -2262,6 +2263,7 @@ input, select, textarea, button, checkbox, radio {
     color: #7a4a0e;
     text-align: right;
     padding-right: 0.75rem;
+    background-color: #fefcf7;
 }
 
 #txtTopeVenta:focus {
@@ -2276,6 +2278,7 @@ input, select, textarea, button, checkbox, radio {
     color: #8b4513;
     border: 1px solid #daa520;
     background-color: #fefcf7;
+    font-size: 0.95rem;
 }
 
 #txtFechaDesde:focus,
@@ -2413,3 +2416,63 @@ input, select, textarea, button, checkbox, radio {
     font-style: italic;
     margin-top: 0.25rem;
 }
+
+/* ====== CAMPOS DE EDICIÓN Y ESTILOS PARA CARGA DE PRECIOS ====== */
+/* Estilos específicos para los campos de precio lista y otros inputs numéricos */
+.input-precio-lista,
+.input-PListaValor {
+    width: 100px !important;
+}
+
+.input-descuento {
+    width: 60px !important;
+}
+
+.input-bonificacion {
+    width: 70px !important;
+}
+
+/* Máscaras de entrada y formateo de números */
+.input-mask-3-decimals {
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    letter-spacing: -0.5px;
+}
+.input-mask-2-decimal {
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    letter-spacing: -0.5px;
+}
+.input-mask-1-decimal {
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    letter-spacing: -0.5px;
+}
+.input-mask-0-decimal {
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    letter-spacing: -0.5px;
+}
+
+.input-mask-boni {
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0;
+}
+
+/* Utilitarios para organización de campos */
+.campos-grupo {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+}
+
+/* Helpers para etiquetas cortas */
+.etiqueta-plista::after { content: "PL"; }
+.etiqueta-dto1::after { content: "D1"; }
+.etiqueta-dto2::after { content: "D2"; }
+.etiqueta-dto3::after { content: "D3"; }
+.etiqueta-dto4::after { content: "D4"; }
+.etiqueta-dtopa::after { content: "DPa"; }
+.etiqueta-bon::after { content: "Bon"; }
+.etiqueta-fl::after { content: "Fl"; }

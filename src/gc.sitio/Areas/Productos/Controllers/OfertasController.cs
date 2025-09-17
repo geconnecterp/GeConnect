@@ -5,6 +5,7 @@ using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Ofertas;
+using gc.infraestructura.Helpers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -18,12 +19,18 @@ namespace gc.sitio.Areas.Productos.Controllers
     {
         private readonly AppSettings _configuracion;
         private readonly IOfertaServicio _ofertaServicio;
+        private readonly ICuentaServicio _cuentaServicio;
+        private readonly IRubroServicio _rubroServicio;
+
         public OfertasController(IOptions<AppSettings> options, IHttpContextAccessor contexo, 
-            ILogger<OfertasController> logger, IOfertaServicio ofertaServicio)
+            ILogger<OfertasController> logger, IOfertaServicio ofertaServicio, 
+            ICuentaServicio cuenta, IRubroServicio rubro)
             : base(options, contexo, logger)
         {
             _configuracion = options.Value;
             _ofertaServicio = ofertaServicio;
+            _cuentaServicio = cuenta;
+            _rubroServicio = rubro;
         }
         public IActionResult Index()
         {
@@ -37,6 +44,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 ProductosSeleccionadosV02 = [];
 
                 ViewData["Titulo"] = "Alta de Oferta (sin activar)";
+                CargarDatosIniciales(true);
                 return View();
             }
             catch (NegocioException ex)
@@ -509,6 +517,22 @@ namespace gc.sitio.Areas.Productos.Controllers
             var totalProductos = ProductosSeleccionadosV02?.Count ?? 0;
             var totalCanales = ObtenerCanalesParaProcesamiento(request).Count;
             return totalProductos * totalCanales;
+        }
+
+        private void CargarDatosIniciales(bool actualizar)
+        {
+            if (ProveedoresLista.Count == 0 || actualizar)
+            {
+                ObtenerProveedores(_cuentaServicio, "BI");
+            }
+
+            if (RubroLista.Count == 0 || actualizar)
+            {
+                ObtenerRubros(_rubroServicio);
+            }
+
+            var listR03 = new List<ComboGenDto>();
+            ViewBag.Rel03 = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
         }
     }
 }
