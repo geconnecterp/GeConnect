@@ -679,8 +679,13 @@ function CargarComboTiposComptes(cuenta) {
 
 function selectCompteDeRPRow(x) {
 	$("#txtNroCompte").val(x.cells[2].innerText.trim());
-	//$("#txtMonto").val(x.cells[4].innerText.trim().replace(".", ","));
-	$("#txtMonto").val(x.cells[4].innerText.trim());
+	var monto = x.cells[4].innerText.trim();
+	if (monto.includes(",")) {
+		$("#txtMonto").val(x.cells[4].innerText.trim().replace(".", ""));
+	} else {
+		$("#txtMonto").val(x.cells[4].innerText.trim().replace(".", ","));
+	}
+
 	$("#tco_id").val(x.cells[0].innerText.trim());
 	$("#tco_id").trigger("change");
 	$("#idTipoCompteDeRPSelected").val(x.cells[0].innerText.trim());
