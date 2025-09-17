@@ -19,6 +19,7 @@
         public bool CtaProveedorIdUnico { get; set; }
         public string RubroId { get; set; } = string.Empty;
         public bool RubroIdUnico { get; set; }
+        public string FamiliaId { get; set; }
         public bool OpcionEstado { get; set; }
         public bool EstadoActivo { get; set; }
         public bool EstadoDiscont { get; set; }

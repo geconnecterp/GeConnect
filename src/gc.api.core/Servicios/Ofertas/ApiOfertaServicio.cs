@@ -59,5 +59,16 @@ namespace gc.api.core.Servicios.Ofertas
             return new() { resultado=-1,resultado_msj="No se logro obtener el resultado del proceso. "};
 
         }
+
+        public List<OfertaEstadoDto>  ObtenerEstadoOfertaProducto(string p_id)
+        {
+                       var sp = ConstantesGC.StoredProcedures.SP_PROD_OFERTA_ESTADO;
+            var ps = new List<SqlParameter>
+            {
+                new SqlParameter("@p_id", p_id)
+            };
+            List<OfertaEstadoDto> estados = _repository.EjecutarLstSpExt<OfertaEstadoDto>(sp, ps);
+            return estados;
+        }
     }
 }

@@ -534,5 +534,76 @@ namespace gc.sitio.Areas.Productos.Controllers
             var listR03 = new List<ComboGenDto>();
             ViewBag.Rel03 = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
         }
+
+        /// <summary>
+        /// Obtiene el estado de las ofertas para un producto específico en todos los canales
+        /// </summary>
+        [HttpPost]
+        public async Task<JsonResult> ObtenerEstadoOfertaProducto(string p_id)
+        {
+            try
+            {
+                // ✅ VALIDACIÓN: Autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { error = true, msg = "Sesión expirada" });
+
+                // ✅ VALIDACIÓN: ID de producto
+                if (string.IsNullOrEmpty(p_id))
+                {
+                    _logger?.LogWarning("ObtenerEstadoOfertaProducto llamado sin ID de producto");
+                    return Json(new { error = true, msg = "ID de producto requerido" });
+                }
+
+                _logger?.LogInformation("Obteniendo estado de oferta para producto {ProductoId}", p_id);
+
+                // ✅ LLAMADA: Al servicio de ofertas
+                var respuesta = await _ofertaServicio.ObtenerEstadoOfertaProducto(p_id, TokenCookie);
+
+                // ✅ PROCESAMIENTO: Respuesta del servicio
+                if (!respuesta.Ok || respuesta.EsError)
+                {
+                    _logger?.LogWarning("Error en servicio de ofertas: {Mensaje}", respuesta.Mensaje);
+                    return Json(new { 
+                        error = true, 
+                        msg = respuesta.Mensaje ?? "Error al obtener estado de oferta para el producto" 
+                    });
+                }
+
+                // ✅ VALIDACIÓN: Datos obtenidos
+                var estados = respuesta.ListaEntidad ?? new List<OfertaEstadoDto>();
+                
+                if (!estados.Any())
+                {
+                    _logger?.LogInformation("No hay información de ofertas para producto {ProductoId}", p_id);
+                    return Json(new { 
+                        error = false, 
+                        warn = true,
+                        msg = "No hay información de ofertas disponible para este producto",
+                        estados = estados,
+                        totalEstados = 0
+                    });
+                }
+
+                _logger?.LogInformation("Estados de oferta obtenidos para producto {ProductoId}: {CantidadEstados}", 
+                    p_id, estados.Count);
+
+                // ✅ RESPUESTA: Con datos completos
+                return Json(new {
+                    error = false,
+                    warn = false,
+                    msg = "Estados de oferta obtenidos correctamente",
+                    estados = estados,
+                    totalEstados = estados.Count
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al obtener estado de oferta para producto: {ProductoId}", p_id);
+                return Json(new { 
+                    error = true, 
+                    msg = "Error interno al obtener estado de oferta" 
+                });
+            }
+        }
     }
 }

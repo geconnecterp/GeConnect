@@ -46,8 +46,9 @@ $(function () {
 
 // ✅ CORREGIDA: Función con validación de metadata
 function busquedaAvanzadaProductosV02(pag) {
-    var ri01 = $("#Rel01Item").val();
-    var ri02 = $("#Rel02Item").val();
+    let ri01 = $("#Rel01Item").val();
+    let ri02 = $("#Rel02Item").val();
+    let ri03 = $("#Rel03 option:selected").val();
     var act = $("#chkActivos").is(":checked");
     var dis = $("#chkDisc").is(":checked");
     var ina = $("#chkInact").is(":checked");
@@ -65,7 +66,7 @@ function busquedaAvanzadaProductosV02(pag) {
     }
 
     var buscar = $("#Search").val();
-    var data1 = { ri01, ri02, act, dis, ina, cstk, sstk, buscar };
+    var data1 = { ri01, ri02, ri03, act, dis, ina, cstk, sstk, buscar };
 
     var buscaNew = JSON.stringify(dataBakV02) != JSON.stringify(data1);
     if (buscaNew === false) {

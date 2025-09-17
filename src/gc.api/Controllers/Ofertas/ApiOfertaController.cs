@@ -71,5 +71,16 @@ namespace gc.api.Controllers.Ofertas
             var resultado = _ofertaSv.ConfirmacionAltaOferta(req, param);
             return Ok(new ApiResponse<RespuestaDto>(resultado));
         }
+
+        [HttpGet("obtener-estado-oferta-producto")]
+        public ActionResult<List<OfertaEstadoDto>> ObtenerEstadoOfertaProducto(string p_id)
+        {
+            if (string.IsNullOrEmpty(p_id))
+            {
+                return BadRequest("El parametro p_id es obligatorio.");
+            }
+            var resultado = _ofertaSv.ObtenerEstadoOfertaProducto(p_id);
+            return Ok(new ApiResponse<List<OfertaEstadoDto>>(resultado));
+        }
     }
 }

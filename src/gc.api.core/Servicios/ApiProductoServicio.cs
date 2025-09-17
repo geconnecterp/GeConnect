@@ -445,6 +445,9 @@ namespace gc.api.core.Servicios
                 new("@adm_id",search.Administracion),
                 new("@cta_id",search.CtaProveedorId),
                 new("@cta_id_unico",search.CtaProveedorIdUnico),
+                
+                new("@pg_id",search.FamiliaId),
+
                 new("@rub_id",search.RubroId),
                 new("@rub_id_unico",search.RubroIdUnico),
                 new("@activo",search.EstadoActivo),

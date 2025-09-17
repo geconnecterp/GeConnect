@@ -23,6 +23,7 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string CONOCER_ESTADO_OFERTA = "/conocer-estado-oferta";
         private const string BUSCAR_CANALES = "/buscar-canales";
         private const string ALTA_OFERTA = "/confirmacion-alta-oferta";
+        private const string OBTENER_ESTADO_OFERTA_PRODUCTO = "/obtener-estado-oferta-producto";
 
         public OfertaServicio(IOptions<AppSettings> options, ILogger<OfertaServicio> logger) : base(options, logger)
         {
@@ -206,6 +207,49 @@ namespace gc.sitio.core.Servicios.Implementacion
                 _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 return new RespuestaGenerica<string> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener el estado de la oferta" };
+            }
+        }
+
+        public async Task<RespuestaGenerica<OfertaEstadoDto>> ObtenerEstadoOfertaProducto(string p_id, string token)
+        {
+            try
+            {
+                ApiResponse<List<OfertaEstadoDto>> apiResponse;
+
+                HelperAPI helper = new();
+
+                HttpClient client = helper.InicializaCliente(token);
+                HttpResponseMessage response;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{OBTENER_ESTADO_OFERTA_PRODUCTO}?p_id={p_id}";
+
+                response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+
+                        return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                    }
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<OfertaEstadoDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+
+                    return new RespuestaGenerica<OfertaEstadoDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
+
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    return new() { Ok = false, Mensaje = "Algo no fue bien y el proceso no se completó. Intente de nuevo más tarde. Si el problema persiste informe al Administrador del sistema." };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+
+                return new RespuestaGenerica<OfertaEstadoDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener Ofertas, Promo o Combos del producto" };
             }
         }
     }

@@ -262,6 +262,13 @@ $(function () {
         }
     });
 
+    // Usar delegación de eventos para manejar autocompleteselect en el modal
+    $(document).on("autocompleteselect", "#busquedaModal #Rel01", function (event, ui) {
+        setTimeout(function () {
+            cargarFamiliasParaBusquedaAvanzada(ui.item.id);
+        }, 100);
+    });
+
     // ✅ LIMPIEZA INICIAL
     $("#Busqueda").val("");
     $("#estadoFuncion").val(false);
@@ -352,52 +359,913 @@ function presentarProductoEnOferta(producto) {
     });
 }
 
-function configurarEventosGridOferta() {
-    // Corregir manejo de botones de eliminar
-    $(".btn-remover-oferta").off("click").on("click", function () {
-        var productId = $(this).data("p-id");
-        var row = $(this).closest("tr");
-        var productDesc = row.find("td:nth-child(2)").text().trim();
+// ✅ IMPLEMENTADA: Función para mostrar el estado de ofertas de un producto
+function mostrarEstadoOferta(productoId, productoDesc) {
+    // Verificar parámetros requeridos
+    if (!productoId) {
+        console.error("Error: ID de producto requerido");
+        return;
+    }
+    
+    // Actualizar título del modal con el ID y descripción del producto
+    $('#tituloModalEstado').html(`
+        <i class="bx bx-info-circle text-info me-2"></i>
+        Estado de Ofertas - ${productoDesc || productoId}
+    `);
+    
+    // Mostrar spinner de carga
+    $('#contenidoEstadoOferta').html(`
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border text-warning" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    `);
+    
+    // Mostrar el modal
+    $('#modalEstadoOferta').modal('show');
+    
+    // Obtener URL desde el campo oculto
+    const url = typeof obtenerEstadoOfertaProductoUrl !== 'undefined' ? 
+                obtenerEstadoOfertaProductoUrl : 
+                $('#obtenerEstadoOfertaProductoUrl').val();
+    
+    // Realizar la llamada AJAX
+    $.ajax({
+        url: url,
+        type: 'POST',
+        data: { p_id: productoId },
+        success: function(response) {
+            let contenido = '';
+            
+            if (response.error) {
+                // Caso de error
+                contenido = `
+                    <div class="alert alert-danger">
+                        <i class="bx bx-error-circle me-2"></i>
+                        ${response.msg || "Error al obtener el estado de la oferta"}
+                    </div>
+                `;
+            } else if (response.warn || !response.estados || response.estados.length === 0) {
+                // Caso sin datos
+                contenido = `
+                    <div class="alert alert-warning">
+                        <i class="bx bx-info-circle me-2"></i>
+                        <strong>Sin ofertas activas</strong>
+                        <hr>
+                        <p class="mb-0">Aún no se le ha definido ninguna Oferta, Promo o Combo para ninguna Administración y Lista de Precios.</p>
+                    </div>
+                `;
+            } else {
+                // Caso con datos
+                contenido = `
+                    <div class="alert alert-success mb-3">
+                        <i class="bx bx-check-circle me-2"></i>
+                        <strong>Información disponible</strong>
+                        <p class="mb-0">Se encontraron ${response.totalEstados} registros de ofertas para este producto.</p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped table-bordered">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                // Generar filas de la tabla
+                response.estados.forEach((estado, index) => {
+                    contenido += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${estado.Estado || ''}</td>
+                        </tr>
+                    `;
+                });
+                
+                contenido += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+            
+            // Actualizar el contenido del modal
+            $('#contenidoEstadoOferta').html(contenido);
+        },
+        error: function(xhr, status, error) {
+            // Manejar errores de comunicación
+            $('#contenidoEstadoOferta').html(`
+                <div class="alert alert-danger">
+                    <i class="bx bx-error-circle me-2"></i>
+                    <strong>Error de comunicación</strong>
+                    <p>No se pudo obtener el estado de la oferta. Por favor, inténtelo nuevamente.</p>
+                    <p class="small text-muted">${error || status}</p>
+                </div>
+            `);
+        }
+    });
+}
 
-        AbrirMensaje(
-            "CONFIRMAR ELIMINACIÓN",
-            `¿Está seguro de eliminar "${productDesc}" de las ofertas?`,
-            function (resp) {
-                if (resp === "SI") {
-                    eliminarProductoDelGrid(row, productDesc);
-                }
-                $("#msjModal").modal("hide");
-                return true;
-            },
-            true,
-            ["Eliminar", "Cancelar"],
-            "warn!",
-            null
-        );
+// ✅ OPTIMIZADA: Función para validación en tiempo real sin validar al inicio
+function configurarValidacionTiempoReal() {
+    // Validación para precio solo en cambios, no al cargar
+    $("#txtPrecioOferta").on("change", function() {
+        var precio = parseFloat($(this).val().replace(/\./g, '').replace(/,/g, '.') || "0");
+        if (precio <= 0) {
+            $(this).addClass("is-invalid");
+            mostrarTooltipError($(this), "El precio debe ser mayor a cero");
+        } else {
+            $(this).removeClass("is-invalid");
+            ocultarTooltipError($(this));
+        }
     });
 
-    // Botón guardar ofertas (simplificado)
-    $("#btnGuardarOfertas").off("click").on("click", function () {
-        guardarTodasLasOfertas();
+    // Validación para tope de venta solo en cambios, no al cargar
+    $("#txtTopeVenta").on("change", function() {
+        var tope = parseInt($(this).val() || "0");
+        if (isNaN(tope) || tope < 0) {
+            $(this).addClass("is-invalid");
+            mostrarTooltipError($(this), "El tope de venta debe ser mayor o igual a cero");
+        } else {
+            $(this).removeClass("is-invalid");
+            ocultarTooltipError($(this));
+        }
     });
 
-    // Botón cancelar oferta
-    $("#btnCancelaOferta").on("click", function () {
-        AbrirMensaje(
-            "CONFIRMAR CANCELACIÓN DE LA OFERTA",
-            `¿Está seguro de desea CANCELAR la(s) oferta(s)?`,
-            function (resp) {
-                if (resp === "SI") {
-                    window.location.href = homeOfertaUrl;
-                }
-                $("#msjModal").modal("hide");
-                return true;
-            },
-            true,
-            ["Continuar", "Cancelar"],
-            "warn!",
-            null
-        );
+    // Validación para fechas
+    $("#txtFechaDesde, #txtFechaHasta").on("change", function() {
+        validarRangoFechas();
+    });
+}
+
+// ✅ MEJORADA: Inicialización de campos de fecha, precio y tope de venta
+function inicializarCamposFecha() {
+    // Obtener fecha actual (hoy)
+    var fechaActual = obtenerFechaActualNormalizada();
+    
+    // Calcular fecha 30 días después para fecha hasta a partir del mismo día
+    var fechaHasta = new Date(fechaActual);
+    fechaHasta.setDate(fechaHasta.getDate() + 30 - 1);
+    
+    // Formatear fechas para inputs HTML (YYYY-MM-DD)
+    var fechaDesdeFormatted = formatearFechaParaInput(fechaActual);
+    var fechaHastaFormatted = formatearFechaParaInput(fechaHasta);
+    
+    // Establecer valores en los campos de fecha
+    $("#txtFechaDesde").val(fechaDesdeFormatted);
+    $("#txtFechaHasta").val(fechaHastaFormatted);
+    
+    // ✅ CORREGIDO: Configurar InputMask y establecer valores sin validación inicial
+    try {
+        // 1. Desactivar temporalmente los eventos de change para evitar validación
+        $("#txtPrecioOferta, #txtTopeVenta").off("change");
+        
+        // 2. Configurar InputMask
+        configurarInputMaskPrecios();
+        
+        // 3. Asignar valores iniciales sin disparar validación
+        $("#txtPrecioOferta").val("0");
+        $("#txtTopeVenta").val("0");
+        
+        // 4. Asegurar que no hay clases de error
+        $("#txtPrecioOferta, #txtTopeVenta").removeClass("is-invalid");
+        
+        // 5. Configurar los eventos de validación después de inicializar
+        setTimeout(function() {
+            configurarValidacionTiempoReal();
+        }, 200);
+    } catch (e) {
+        console.warn("Error al inicializar valores:", e.message);
+    }
+    
+    // Validar solo rango de fechas para mostrar información del período
+    setTimeout(validarRangoFechas, 300);
+}
+
+// Variables de estado para gestión de selección
+var modoSeleccionCanal = "ninguno"; // "individual", "multiple", "ninguno"
+var canalIndividualSeleccionado = null;
+
+// ✅ ACTUALIZADA: Función de inicialización única y simplificada
+$(function () {
+    console.log("🚀 Iniciando ofertas.js v2.0");
+    
+    // ✅ EVENTOS CORE
+    $("#btnBusquedaBase").on("click", function () {
+        buscarProducto();
+        return true;
+    });
+
+    $("#estadoFuncion").on("change", verificaEstado);
+
+    // ✅ ORDEN OPTIMIZADO: Primero inicializar sistema y campos, luego validación
+    try { 
+        inicializarSistemaBasico();
+        inicializarCamposFecha(); // Ahora incluye la configuración de InputMask y maneja la validación
+        // No llamamos a configurarValidacionTiempoReal() aquí, lo llamamos desde inicializarCamposFecha()
+    } catch (e) { 
+        console.warn("Inicialización:", e.message); 
+    }
+    
+    try { cargarCanales(); } catch (e) { console.error("Canales:", e); }
+
+    // ✅ SHORTCUTS
+    $(document).on("keydown", function(e) {
+        if (e.ctrlKey && e.key === "s") {
+            e.preventDefault();
+            guardarTodasLasOfertas();
+        }
+        if (e.key === "Escape") {
+            limpiarFormularioOfertas();
+        }
+    });
+
+    // Usar delegación de eventos para manejar autocompleteselect en el modal
+    $(document).on("autocompleteselect", "#busquedaModal #Rel01", function (event, ui) {
+        setTimeout(function () {
+            cargarFamiliasParaBusquedaAvanzada(ui.item.id);
+        }, 100);
+    });
+
+    // ✅ LIMPIEZA INICIAL
+    $("#Busqueda").val("");
+    $("#estadoFuncion").val(false);
+    
+    console.log("✅ Ofertas.js listo");
+});
+
+// ✅ MANEJO DE ERRORES MÍNIMO
+window.addEventListener('error', function(e) {
+    console.error("Error:", e.message);
+    return false;
+});
+
+// ✅ SIMPLIFICADA: Función de inicialización sin dependencias externas
+function inicializarSistemaBasico() {
+    try {
+        // Solo inicializar lo esencial
+        inicializarShortcutsBasicos();
+        console.log("✅ Sistema básico inicializado correctamente");
+    } catch (error) {
+        console.error("❌ Error en inicialización básica:", error);
+    }
+}
+
+// ✅ NUEVA: Shortcuts básicos sin dependencias
+function inicializarShortcutsBasicos() {
+    $(document).on("keydown", function (e) {
+        // Ctrl + S para guardar ofertas
+        if (e.ctrlKey && e.key === "s") {
+            e.preventDefault();
+            if (typeof guardarTodasLasOfertas === 'function') {
+                guardarTodasLasOfertas();
+            }
+        }
+
+        // Escape para limpiar formulario
+        if (e.key === "Escape") {
+            if (typeof limpiarFormularioOfertas === 'function') {
+                limpiarFormularioOfertas();
+            }
+        }
+    });
+}
+
+function verificaEstado(e) {
+    FunctionCallback = null;
+    var res = $("#estadoFuncion").val();
+    CerrarWaiting();
+
+    if (res === "true") {
+        var prod = productoBase;
+
+        if (prod && prod.p_id) {
+            presentarProductoEnOferta(prod);
+        }
+
+        // Limpiar para siguiente búsqueda
+        $("#Busqueda").val("");
+        $("#estadoFuncion").val(false);
+    }
+    return true;
+}
+
+function presentarProductoEnOferta(producto) {
+    AbrirWaiting("Agregando producto a ofertas...");
+
+    var datos = {
+        P_id: producto.p_id,
+        P_desc: producto.p_desc,
+        P_pcosto: producto.p_pcosto || "0",
+        P_pvta: producto.p_vta || "0",
+        P_pvta_oferta: producto.p_vta_oferta || "0",
+        P_id_barrado: producto.p_id_barrado || "",
+        P_id_prov: producto.p_id_prov || "",
+        Pg_id: producto.pg_id || "",
+        Pg_desc: producto.pg_desc || "",
+        P_activo: producto.p_activo || "N"
+    };
+
+    PostGenHtml(datos, presentarProductoOfertaUrl, function (obj) {
+        CerrarWaiting();
+        $("#gridProductoOferta").html(obj);
+        configurarEventosGridOferta();
+        ControlaMensajeSuccess(`Producto "${producto.p_desc}" agregado a ofertas correctamente`);
+    }, function (error) {
+        CerrarWaiting();
+        ControlaMensajeError("Error al agregar producto a ofertas: " + (error.message || "Error desconocido"));
+    });
+}
+
+// ✅ OPTIMIZADA: Configuración InputMask para precio y tope de venta
+function configurarInputMaskPrecios() {
+    // ✅ VERIFICACIÓN: Disponibilidad de InputMask
+    if (typeof Inputmask === 'undefined') {
+        console.warn("InputMask no está disponible");
+        return;
+    }
+
+    // ✅ OPTIMIZADA: Máscara decimal para precio (formato argentino)
+    const maskConfigPrecio = {
+        alias: "numeric",
+        groupSeparator: ".",
+        radixPoint: ",",
+        autoGroup: true,
+        digits: 2,
+        digitsOptional: false,
+        rightAlign: true,
+        prefix: '',
+        placeholder: "0",
+        clearMaskOnLostFocus: false,
+        showMaskOnHover: false,
+        showMaskOnFocus: true,
+        min: 0,
+        allowMinus: false,
+        onBeforeMask: function (value) {
+            if (value === null || value === undefined || value === '') {
+                return '0';
+            }
+            try {
+                let numValue = parseFloat(value.toString().replace(/\./g, '').replace(/,/g, '.'));
+                return isNaN(numValue) ? '0' : numValue.toString();
+            } catch (e) {
+                console.error('Error al formatear precio:', e);
+                return '0';
+            }
+        }
+    };
+
+    // ✅ SIMPLIFICADA: Máscara para tope de venta (entero)
+    const maskConfigTope = {
+        alias: "integer",
+        min: 0,
+        rightAlign: true,
+        placeholder: "0",
+        clearMaskOnLostFocus: false
+    };
+
+    // ✅ APLICAR: Máscaras a los campos
+    try {
+        Inputmask(maskConfigPrecio).mask('#txtPrecioOferta');
+        Inputmask(maskConfigTope).mask('#txtTopeVenta');
+        console.log("InputMask configurado para campos de oferta");
+    } catch (error) {
+        console.error("Error al aplicar InputMask:", error);
+    }
+}
+
+// ✅ OPTIMIZADA: Función para validación en tiempo real sin validar al inicio
+function configurarValidacionTiempoReal() {
+    // Validación para precio solo en cambios, no al cargar
+    $("#txtPrecioOferta").on("change", function() {
+        var precio = parseFloat($(this).val().replace(/\./g, '').replace(/,/g, '.') || "0");
+        if (precio <= 0) {
+            $(this).addClass("is-invalid");
+            mostrarTooltipError($(this), "El precio debe ser mayor a cero");
+        } else {
+            $(this).removeClass("is-invalid");
+            ocultarTooltipError($(this));
+        }
+    });
+
+    // Validación para tope de venta solo en cambios, no al cargar
+    $("#txtTopeVenta").on("change", function() {
+        var tope = parseInt($(this).val() || "0");
+        if (isNaN(tope) || tope < 0) {
+            $(this).addClass("is-invalid");
+            mostrarTooltipError($(this), "El tope de venta debe ser mayor o igual a cero");
+        } else {
+            $(this).removeClass("is-invalid");
+            ocultarTooltipError($(this));
+        }
+    });
+
+    // Validación para fechas
+    $("#txtFechaDesde, #txtFechaHasta").on("change", function() {
+        validarRangoFechas();
+    });
+}
+
+// ✅ MEJORADA: Inicialización de campos de fecha, precio y tope de venta
+function inicializarCamposFecha() {
+    // Obtener fecha actual (hoy)
+    var fechaActual = obtenerFechaActualNormalizada();
+    
+    // Calcular fecha 30 días después para fecha hasta a partir del mismo día
+    var fechaHasta = new Date(fechaActual);
+    fechaHasta.setDate(fechaHasta.getDate() + 30 - 1);
+    
+    // Formatear fechas para inputs HTML (YYYY-MM-DD)
+    var fechaDesdeFormatted = formatearFechaParaInput(fechaActual);
+    var fechaHastaFormatted = formatearFechaParaInput(fechaHasta);
+    
+    // Establecer valores en los campos de fecha
+    $("#txtFechaDesde").val(fechaDesdeFormatted);
+    $("#txtFechaHasta").val(fechaHastaFormatted);
+    
+    // ✅ CORREGIDO: Configurar InputMask y establecer valores sin validación inicial
+    try {
+        // 1. Desactivar temporalmente los eventos de change para evitar validación
+        $("#txtPrecioOferta, #txtTopeVenta").off("change");
+        
+        // 2. Configurar InputMask
+        configurarInputMaskPrecios();
+        
+        // 3. Asignar valores iniciales sin disparar validación
+        $("#txtPrecioOferta").val("0");
+        $("#txtTopeVenta").val("0");
+        
+        // 4. Asegurar que no hay clases de error
+        $("#txtPrecioOferta, #txtTopeVenta").removeClass("is-invalid");
+        
+        // 5. Configurar los eventos de validación después de inicializar
+        setTimeout(function() {
+            configurarValidacionTiempoReal();
+        }, 200);
+    } catch (e) {
+        console.warn("Error al inicializar valores:", e.message);
+    }
+    
+    // Validar solo rango de fechas para mostrar información del período
+    setTimeout(validarRangoFechas, 300);
+}
+
+// Variables de estado para gestión de selección
+var modoSeleccionCanal = "ninguno"; // "individual", "multiple", "ninguno"
+var canalIndividualSeleccionado = null;
+
+// ✅ ACTUALIZADA: Función de inicialización única y simplificada
+$(function () {
+    console.log("🚀 Iniciando ofertas.js v2.0");
+    
+    // ✅ EVENTOS CORE
+    $("#btnBusquedaBase").on("click", function () {
+        buscarProducto();
+        return true;
+    });
+
+    $("#estadoFuncion").on("change", verificaEstado);
+
+    // ✅ ORDEN OPTIMIZADO: Primero inicializar sistema y campos, luego validación
+    try { 
+        inicializarSistemaBasico();
+        inicializarCamposFecha(); // Ahora incluye la configuración de InputMask y maneja la validación
+        // No llamamos a configurarValidacionTiempoReal() aquí, lo llamamos desde inicializarCamposFecha()
+    } catch (e) { 
+        console.warn("Inicialización:", e.message); 
+    }
+    
+    try { cargarCanales(); } catch (e) { console.error("Canales:", e); }
+
+    // ✅ SHORTCUTS
+    $(document).on("keydown", function(e) {
+        if (e.ctrlKey && e.key === "s") {
+            e.preventDefault();
+            guardarTodasLasOfertas();
+        }
+        if (e.key === "Escape") {
+            limpiarFormularioOfertas();
+        }
+    });
+
+    // Usar delegación de eventos para manejar autocompleteselect en el modal
+    $(document).on("autocompleteselect", "#busquedaModal #Rel01", function (event, ui) {
+        setTimeout(function () {
+            cargarFamiliasParaBusquedaAvanzada(ui.item.id);
+        }, 100);
+    });
+
+    // ✅ LIMPIEZA INICIAL
+    $("#Busqueda").val("");
+    $("#estadoFuncion").val(false);
+    
+    console.log("✅ Ofertas.js listo");
+});
+
+// ✅ MANEJO DE ERRORES MÍNIMO
+window.addEventListener('error', function(e) {
+    console.error("Error:", e.message);
+    return false;
+});
+
+// ✅ SIMPLIFICADA: Función de inicialización sin dependencias externas
+function inicializarSistemaBasico() {
+    try {
+        // Solo inicializar lo esencial
+        inicializarShortcutsBasicos();
+        console.log("✅ Sistema básico inicializado correctamente");
+    } catch (error) {
+        console.error("❌ Error en inicialización básica:", error);
+    }
+}
+
+// ✅ NUEVA: Shortcuts básicos sin dependencias
+function inicializarShortcutsBasicos() {
+    $(document).on("keydown", function (e) {
+        // Ctrl + S para guardar ofertas
+        if (e.ctrlKey && e.key === "s") {
+            e.preventDefault();
+            if (typeof guardarTodasLasOfertas === 'function') {
+                guardarTodasLasOfertas();
+            }
+        }
+
+        // Escape para limpiar formulario
+        if (e.key === "Escape") {
+            if (typeof limpiarFormularioOfertas === 'function') {
+                limpiarFormularioOfertas();
+            }
+        }
+    });
+}
+
+function verificaEstado(e) {
+    FunctionCallback = null;
+    var res = $("#estadoFuncion").val();
+    CerrarWaiting();
+
+    if (res === "true") {
+        var prod = productoBase;
+
+        if (prod && prod.p_id) {
+            presentarProductoEnOferta(prod);
+        }
+
+        // Limpiar para siguiente búsqueda
+        $("#Busqueda").val("");
+        $("#estadoFuncion").val(false);
+    }
+    return true;
+}
+
+function presentarProductoEnOferta(producto) {
+    AbrirWaiting("Agregando producto a ofertas...");
+
+    var datos = {
+        P_id: producto.p_id,
+        P_desc: producto.p_desc,
+        P_pcosto: producto.p_pcosto || "0",
+        P_pvta: producto.p_vta || "0",
+        P_pvta_oferta: producto.p_vta_oferta || "0",
+        P_id_barrado: producto.p_id_barrado || "",
+        P_id_prov: producto.p_id_prov || "",
+        Pg_id: producto.pg_id || "",
+        Pg_desc: producto.pg_desc || "",
+        P_activo: producto.p_activo || "N"
+    };
+
+    PostGenHtml(datos, presentarProductoOfertaUrl, function (obj) {
+        CerrarWaiting();
+        $("#gridProductoOferta").html(obj);
+        configurarEventosGridOferta();
+        ControlaMensajeSuccess(`Producto "${producto.p_desc}" agregado a ofertas correctamente`);
+    }, function (error) {
+        CerrarWaiting();
+        ControlaMensajeError("Error al agregar producto a ofertas: " + (error.message || "Error desconocido"));
+    });
+}
+
+// ✅ IMPLEMENTADA: Función para mostrar el estado de ofertas de un producto
+function mostrarEstadoOferta(productoId, productoDesc) {
+    // Verificar parámetros requeridos
+    if (!productoId) {
+        console.error("Error: ID de producto requerido");
+        return;
+    }
+    
+    // Actualizar título del modal con el ID y descripción del producto
+    $('#tituloModalEstado').html(`
+        <i class="bx bx-info-circle text-info me-2"></i>
+        Estado de Ofertas - ${productoDesc || productoId}
+    `);
+    
+    // Mostrar spinner de carga
+    $('#contenidoEstadoOferta').html(`
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border text-warning" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    `);
+    
+    // Mostrar el modal
+    $('#modalEstadoOferta').modal('show');
+    
+    // Obtener URL desde el campo oculto
+    const url = typeof obtenerEstadoOfertaProductoUrl !== 'undefined' ? 
+                obtenerEstadoOfertaProductoUrl : 
+                $('#obtenerEstadoOfertaProductoUrl').val();
+    
+    // Realizar la llamada AJAX
+    $.ajax({
+        url: url,
+        type: 'POST',
+        data: { p_id: productoId },
+        success: function(response) {
+            let contenido = '';
+            
+            if (response.error) {
+                // Caso de error
+                contenido = `
+                    <div class="alert alert-danger">
+                        <i class="bx bx-error-circle me-2"></i>
+                        ${response.msg || "Error al obtener el estado de la oferta"}
+                    </div>
+                `;
+            } else if (response.warn || !response.estados || response.estados.length === 0) {
+                // Caso sin datos
+                contenido = `
+                    <div class="alert alert-warning">
+                        <i class="bx bx-info-circle me-2"></i>
+                        <strong>Sin ofertas activas</strong>
+                        <hr>
+                        <p class="mb-0">Aún no se le ha definido ninguna Oferta, Promo o Combo para ninguna Administración y Lista de Precios.</p>
+                    </div>
+                `;
+            } else {
+                // Caso con datos
+                contenido = `
+                    <div class="alert alert-success mb-3">
+                        <i class="bx bx-check-circle me-2"></i>
+                        <strong>Información disponible</strong>
+                        <p class="mb-0">Se encontraron ${response.totalEstados} registros de ofertas para este producto.</p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped table-bordered">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                // Generar filas de la tabla
+                response.estados.forEach((estado, index) => {
+                    contenido += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${estado.Estado || ''}</td>
+                        </tr>
+                    `;
+                });
+                
+                contenido += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+            
+            // Actualizar el contenido del modal
+            $('#contenidoEstadoOferta').html(contenido);
+        },
+        error: function(xhr, status, error) {
+            // Manejar errores de comunicación
+            $('#contenidoEstadoOferta').html(`
+                <div class="alert alert-danger">
+                    <i class="bx bx-error-circle me-2"></i>
+                    <strong>Error de comunicación</strong>
+                    <p>No se pudo obtener el estado de la oferta. Por favor, inténtelo nuevamente.</p>
+                    <p class="small text-muted">${error || status}</p>
+                </div>
+            `);
+        }
+    });
+}
+
+// ✅ OPTIMIZADA: Función para validación en tiempo real sin validar al inicio
+function configurarValidacionTiempoReal() {
+    // Validación para precio solo en cambios, no al cargar
+    $("#txtPrecioOferta").on("change", function() {
+        var precio = parseFloat($(this).val().replace(/\./g, '').replace(/,/g, '.') || "0");
+        if (precio <= 0) {
+            $(this).addClass("is-invalid");
+            mostrarTooltipError($(this), "El precio debe ser mayor a cero");
+        } else {
+            $(this).removeClass("is-invalid");
+            ocultarTooltipError($(this));
+        }
+    });
+
+    // Validación para tope de venta solo en cambios, no al cargar
+    $("#txtTopeVenta").on("change", function() {
+        var tope = parseInt($(this).val() || "0");
+        if (isNaN(tope) || tope < 0) {
+            $(this).addClass("is-invalid");
+            mostrarTooltipError($(this), "El tope de venta debe ser mayor o igual a cero");
+        } else {
+            $(this).removeClass("is-invalid");
+            ocultarTooltipError($(this));
+        }
+    });
+
+    // Validación para fechas
+    $("#txtFechaDesde, #txtFechaHasta").on("change", function() {
+        validarRangoFechas();
+    });
+}
+
+// ✅ MEJORADA: Inicialización de campos de fecha, precio y tope de venta
+function inicializarCamposFecha() {
+    // Obtener fecha actual (hoy)
+    var fechaActual = obtenerFechaActualNormalizada();
+    
+    // Calcular fecha 30 días después para fecha hasta a partir del mismo día
+    var fechaHasta = new Date(fechaActual);
+    fechaHasta.setDate(fechaHasta.getDate() + 30 - 1);
+    
+    // Formatear fechas para inputs HTML (YYYY-MM-DD)
+    var fechaDesdeFormatted = formatearFechaParaInput(fechaActual);
+    var fechaHastaFormatted = formatearFechaParaInput(fechaHasta);
+    
+    // Establecer valores en los campos de fecha
+    $("#txtFechaDesde").val(fechaDesdeFormatted);
+    $("#txtFechaHasta").val(fechaHastaFormatted);
+    
+    // ✅ CORREGIDO: Configurar InputMask y establecer valores sin validación inicial
+    try {
+        // 1. Desactivar temporalmente los eventos de change para evitar validación
+        $("#txtPrecioOferta, #txtTopeVenta").off("change");
+        
+        // 2. Configurar InputMask
+        configurarInputMaskPrecios();
+        
+        // 3. Asignar valores iniciales sin disparar validación
+        $("#txtPrecioOferta").val("0");
+        $("#txtTopeVenta").val("0");
+        
+        // 4. Asegurar que no hay clases de error
+        $("#txtPrecioOferta, #txtTopeVenta").removeClass("is-invalid");
+        
+        // 5. Configurar los eventos de validación después de inicializar
+        setTimeout(function() {
+            configurarValidacionTiempoReal();
+        }, 200);
+    } catch (e) {
+        console.warn("Error al inicializar valores:", e.message);
+    }
+    
+    // Validar solo rango de fechas para mostrar información del período
+    setTimeout(validarRangoFechas, 300);
+}
+
+// Variables de estado para gestión de selección
+var modoSeleccionCanal = "ninguno"; // "individual", "multiple", "ninguno"
+var canalIndividualSeleccionado = null;
+
+// ✅ ACTUALIZADA: Función de inicialización única y simplificada
+$(function () {
+    console.log("🚀 Iniciando ofertas.js v2.0");
+    
+    // ✅ EVENTOS CORE
+    $("#btnBusquedaBase").on("click", function () {
+        buscarProducto();
+        return true;
+    });
+
+    $("#estadoFuncion").on("change", verificaEstado);
+
+    // ✅ ORDEN OPTIMIZADO: Primero inicializar sistema y campos, luego validación
+    try { 
+        inicializarSistemaBasico();
+        inicializarCamposFecha(); // Ahora incluye la configuración de InputMask y maneja la validación
+        // No llamamos a configurarValidacionTiempoReal() aquí, lo llamamos desde inicializarCamposFecha()
+    } catch (e) { 
+        console.warn("Inicialización:", e.message); 
+    }
+    
+    try { cargarCanales(); } catch (e) { console.error("Canales:", e); }
+
+    // ✅ SHORTCUTS
+    $(document).on("keydown", function(e) {
+        if (e.ctrlKey && e.key === "s") {
+            e.preventDefault();
+            guardarTodasLasOfertas();
+        }
+        if (e.key === "Escape") {
+            limpiarFormularioOfertas();
+        }
+    });
+
+    // Usar delegación de eventos para manejar autocompleteselect en el modal
+    $(document).on("autocompleteselect", "#busquedaModal #Rel01", function (event, ui) {
+        setTimeout(function () {
+            cargarFamiliasParaBusquedaAvanzada(ui.item.id);
+        }, 100);
+    });
+
+    // ✅ LIMPIEZA INICIAL
+    $("#Busqueda").val("");
+    $("#estadoFuncion").val(false);
+    
+    console.log("✅ Ofertas.js listo");
+});
+
+// ✅ MANEJO DE ERRORES MÍNIMO
+window.addEventListener('error', function(e) {
+    console.error("Error:", e.message);
+    return false;
+});
+
+// ✅ SIMPLIFICADA: Función de inicialización sin dependencias externas
+function inicializarSistemaBasico() {
+    try {
+        // Solo inicializar lo esencial
+        inicializarShortcutsBasicos();
+        console.log("✅ Sistema básico inicializado correctamente");
+    } catch (error) {
+        console.error("❌ Error en inicialización básica:", error);
+    }
+}
+
+// ✅ NUEVA: Shortcuts básicos sin dependencias
+function inicializarShortcutsBasicos() {
+    $(document).on("keydown", function (e) {
+        // Ctrl + S para guardar ofertas
+        if (e.ctrlKey && e.key === "s") {
+            e.preventDefault();
+            if (typeof guardarTodasLasOfertas === 'function') {
+                guardarTodasLasOfertas();
+            }
+        }
+
+        // Escape para limpiar formulario
+        if (e.key === "Escape") {
+            if (typeof limpiarFormularioOfertas === 'function') {
+                limpiarFormularioOfertas();
+            }
+        }
+    });
+}
+
+function verificaEstado(e) {
+    FunctionCallback = null;
+    var res = $("#estadoFuncion").val();
+    CerrarWaiting();
+
+    if (res === "true") {
+        var prod = productoBase;
+
+        if (prod && prod.p_id) {
+            presentarProductoEnOferta(prod);
+        }
+
+        // Limpiar para siguiente búsqueda
+        $("#Busqueda").val("");
+        $("#estadoFuncion").val(false);
+    }
+    return true;
+}
+
+function presentarProductoEnOferta(producto) {
+    AbrirWaiting("Agregando producto a ofertas...");
+
+    var datos = {
+        P_id: producto.p_id,
+        P_desc: producto.p_desc,
+        P_pcosto: producto.p_pcosto || "0",
+        P_pvta: producto.p_vta || "0",
+        P_pvta_oferta: producto.p_vta_oferta || "0",
+        P_id_barrado: producto.p_id_barrado || "",
+        P_id_prov: producto.p_id_prov || "",
+        Pg_id: producto.pg_id || "",
+        Pg_desc: producto.pg_desc || "",
+        P_activo: producto.p_activo || "N"
+    };
+
+    PostGenHtml(datos, presentarProductoOfertaUrl, function (obj) {
+        CerrarWaiting();
+        $("#gridProductoOferta").html(obj);
+        configurarEventosGridOferta();
+        ControlaMensajeSuccess(`Producto "${producto.p_desc}" agregado a ofertas correctamente`);
+    }, function (error) {
+        CerrarWaiting();
+        ControlaMensajeError("Error al agregar producto a ofertas: " + (error.message || "Error desconocido"));
     });
 }
 
@@ -1020,3 +1888,90 @@ function generarMensajeExitoGuardado(totalProductos, canalesInfo, ofertaInfo) {
     return mensaje;
 }
 
+// Función para cargar familias en dropdown de búsqueda avanzada
+function cargarFamiliasParaBusquedaAvanzada(proveedorId) {
+    if (!proveedorId) return;
+
+    // Habilitar dropdown y mostrar indicador de carga
+    var combo = $("#busquedaModal #Rel03");
+    combo.prop("disabled", false).html('<option>Cargando...</option>');
+
+    $.ajax({
+        url: autoComRel03Url,
+        type: "POST",
+        data: { ctaId: proveedorId },
+        dataType: "json",
+        success: function (obj) {
+            combo.empty().append("<option value=''>Seleccionar...</option>");
+
+            if (!obj.error && !obj.warn && obj.lista && obj.lista.length) {
+                $.each(obj.lista, function (i, item) {
+                    combo.append("<option value='" + item.id + "'>" + item.descripcion + "</option>");
+                });
+            } else if (obj.error || obj.warn) {
+                console.warn("Advertencia al cargar familias:", obj.msg);
+                combo.append("<option value=''>No hay familias disponibles</option>");
+            }
+        },
+        error: function () {
+            combo.html('<option>Error al cargar familias</option>');
+        }
+    });
+}
+
+// ✅ MEJORADO: Configuración de eventos para el grid de ofertas
+function configurarEventosGridOferta() {
+    // Botones para eliminar productos
+    $(".btn-remover-oferta").off("click").on("click", function() {
+        var productId = $(this).data("p-id");
+        var row = $(this).closest("tr");
+        var productDesc = row.find("td:nth-child(2)").text().trim();
+
+        AbrirMensaje(
+            "CONFIRMAR ELIMINACIÓN",
+            `¿Está seguro de eliminar "${productDesc}" de las ofertas?`,
+            function(resp) {
+                if (resp === "SI") {
+                    eliminarProductoDelGrid(row, productDesc);
+                }
+                $("#msjModal").modal("hide");
+                return true;
+            },
+            true,
+            ["Eliminar", "Cancelar"],
+            "warn!",
+            null
+        );
+    });
+
+    // ✅ IMPLEMENTADO: Botones para ver estado de ofertas
+    $(".btn-estado-oferta").off("click").on("click", function() {
+        var productId = $(this).data("p-id");
+        var productDesc = $(this).closest("tr").find("td:nth-child(2)").text().trim();
+        mostrarEstadoOferta(productId, productDesc);
+    });
+
+    // Botón guardar ofertas
+    $("#btnGuardarOfertas").off("click").on("click", function() {
+        guardarTodasLasOfertas();
+    });
+
+    // Botón cancelar oferta
+    $("#btnCancelaOferta").off("click").on("click", function() {
+        AbrirMensaje(
+            "CONFIRMAR CANCELACIÓN DE LA OFERTA",
+            `¿Está seguro de desea CANCELAR la(s) oferta(s)?`,
+            function(resp) {
+                if (resp === "SI") {
+                    window.location.href = homeOfertaUrl;
+                }
+                $("#msjModal").modal("hide");
+                return true;
+            },
+            true,
+            ["Continuar", "Cancelar"],
+            "warn!",
+            null
+        );
+    });
+}

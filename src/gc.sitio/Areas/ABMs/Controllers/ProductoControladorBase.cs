@@ -220,7 +220,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         /// <summary>
         /// Búsqueda avanzada V02 que devuelve JsonResult con ProductoListaDto completo
         /// </summary>
-        protected async Task<JsonResult> BusquedaAvanzadaV02(string ri01, string ri02, bool act, bool dis, bool ina, bool cstk, bool sstk, string search, bool buscaNew, IProductoServicio _productoServicio, string sort = "p_id", string sortDir = "asc", int pag = 1)
+        protected async Task<JsonResult> BusquedaAvanzadaV02(string ri01, string ri02, string ri03, bool act, bool dis, bool ina, bool cstk, bool sstk, string search, bool buscaNew, IProductoServicio _productoServicio, string sort = "p_id", string sortDir = "asc", int pag = 1)
         {
             try
             {
@@ -247,6 +247,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                         SinStock = sstk,
                         CtaProveedorId = ri01,
                         RubroId = ri02,
+                        FamiliaId = ri03,
                         EstadoActivo = act,
                         EstadoDiscont = dis,
                         EstadoInactivo = ina,

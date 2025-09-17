@@ -16,7 +16,7 @@
                         <th class="text-right" scope="col">P.COSTO</th>
                         <th class="text-right" scope="col">P.MAYORISTA</th>
                         <th class="text-right" scope="col">P.MINORISTA</th>
-                        @* <th class="text-center" scope="col">ESTADO</th> *@
+                        <th class="text-center" scope="col">ESTADO</th>
                         <th class="text-center" scope="col">ACCIÓN</th>
                     </tr>
                 </thead>
@@ -43,9 +43,14 @@
                                 <td class="@Model.ObtenerClase(item.p_minorista)">
                                     @Model.FormatearDato(item.p_minorista, FormatDato.Monto)
                                 </td>                            
-                               @*  <td class="text-center">
-                                    <span class="badge bg-success">Activo</span>
-                                </td> *@
+                                <td class="text-center">
+                                    <button type="button"
+                                            class="btn btn-outline-info btn-sm btn-estado-oferta"
+                                            data-p-id="@item.p_id"
+                                            title="Ver estado de ofertas">
+                                        <i class="bx bx-info-circle"></i>
+                                    </button>
+                                </td>
                                 <td class="@Model.ObtenerClase('C')">
                                     <button type="button"
                                             class="btn btn-outline-danger btn-sm btn-remover-oferta"
@@ -95,5 +100,27 @@
                 </div>
             </div>
         }
+    </div>
+</div>
+
+<!-- Modal para mostrar estado de oferta -->
+<div class="modal fade" id="modalEstadoOferta" tabindex="-1" aria-labelledby="tituloModalEstado" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tituloModalEstado">Estado de Ofertas</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="contenidoEstadoOferta">
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border text-warning" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
     </div>
 </div>
