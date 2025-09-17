@@ -9,8 +9,8 @@
                         <input type="text"
                                class="form-control input-mask-2-decimals input-numeric-golden"
                                id="txtPrecioOferta"
-                               placeholder="0,00"
-                               data-inputmask="'alias': 'numeric', 'groupSeparator': '.', 'radixPoint': ',', 'autoGroup': true, 'digits': 2" 
+                               placeholder="0.00"
+                               data-inputmask="'alias': 'numeric', 'groupSeparator': ',', 'radixPoint': '.', 'autoGroup': true, 'digits': 2" 
                                style="width:150px;" />
                     </div>
                 </div>
@@ -45,7 +45,7 @@
                                class="form-control input-mask-0-decimals input-numeric-golden"
                                id="txtTopeVenta"
                                placeholder="0"
-                               data-inputmask="'alias': 'numeric', 'groupSeparator': '.', 'digits': 0" 
+                               data-inputmask="'alias': 'numeric', 'groupSeparator': ',', 'digits': 0" 
                                style="width:90px;" />
                     </div>
                 </div>
@@ -61,8 +61,8 @@ $(document).ready(function() {
         // Configuración para precio (2 decimales)
         Inputmask({
             alias: "numeric",
-            groupSeparator: ".",
-            radixPoint: ",",
+            groupSeparator: ",",  // Cambiado: Usa coma como separador de miles
+            radixPoint: ".",      // Cambiado: Usa punto como separador decimal
             autoGroup: true,
             digits: 2,
             digitsOptional: false,
@@ -78,7 +78,8 @@ $(document).ready(function() {
                     return '0';
                 }
                 try {
-                    let numValue = parseFloat(value.toString().replace(/\./g, '').replace(/,/g, '.'));
+                    // Adaptado para el formato con punto decimal
+                    let numValue = parseFloat(value.toString().replace(/,/g, ''));
                     return isNaN(numValue) ? '0' : numValue.toString();
                 } catch (e) {
                     return '0';
@@ -89,7 +90,7 @@ $(document).ready(function() {
         // Configuración para tope venta (entero)
         Inputmask({
             alias: "numeric",
-            groupSeparator: ".",
+            groupSeparator: ",",  // Cambiado: Usa coma como separador de miles
             digits: 0,
             rightAlign: true,
             min: 0,

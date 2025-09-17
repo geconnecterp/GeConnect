@@ -48,7 +48,7 @@ $(function () {
 function busquedaAvanzadaProductosV02(pag) {
     let ri01 = $("#Rel01Item").val();
     let ri02 = $("#Rel02Item").val();
-    let ri03 = $("#Rel03 option:selected").val();
+    let ri03 = $("#Rel03 option:selected").val() || "%";
     var act = $("#chkActivos").is(":checked");
     var dis = $("#chkDisc").is(":checked");
     var ina = $("#chkInact").is(":checked");

@@ -592,7 +592,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                     error = false,
                     warn = false,
                     msg = "Estados de oferta obtenidos correctamente",
-                    estados = estados,
+                    estados,
                     totalEstados = estados.Count
                 });
             }
