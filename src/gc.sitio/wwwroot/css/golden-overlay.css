@@ -392,3 +392,89 @@
     display: none !important;
     content: none !important;
 }
+
+/* ====== COMPONENTES PARA CARGA DE PRECIOS Y DATOS GOLDEN ====== */
+/* Ya existen clases base para grid-golden en el archivo, solo agregar variantes específicas */
+
+/* Estilos específicos para campos de edición con tema golden */
+.campo-edicion {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--bs-golden-light);
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    padding: 0;
+    overflow: hidden;
+    margin-right: 0.25rem;
+}
+
+.campo-etiqueta {
+    display: inline-block;
+    margin: 0;
+    padding: 0.25rem 0.5rem;
+    background-color: #faf5e6;
+    border-right: 1px solid var(--bs-golden-light);
+    font-size: 0.875rem;
+    width: 45px;
+    text-align: center;
+    color: var(--bs-golden-secondary);
+    font-weight: 500;
+}
+
+.campo-valor {
+    border: none;
+    border-radius: 0;
+    width: 60px;
+    text-align: right;
+    font-size: 0.6rem;
+    padding: 0.25rem 0.5rem;
+    background-color: #ffffff;
+}
+
+.campo-valor:focus {
+    box-shadow: inset 0 0 0 1px var(--bs-golden-primary);
+    outline: none;
+    background-color: #fffdf5;
+}
+
+.campo-valor:disabled {
+    background-color: #f8f9fa;
+    opacity: 0.75;
+    cursor: not-allowed;
+}
+
+/* Estilos para campos con diferentes anchos */
+.campo-valor-lg {
+    width: 100px;
+}
+
+.campo-valor-md {
+    width: 80px;
+}
+
+.campo-valor-sm {
+    width: 60px;
+}
+
+/* Optimización responsive para campos de edición */
+@media (max-width: 992px) {
+    .campos-grupo {
+        flex-wrap: wrap;
+    }
+    
+    .campo-edicion {
+        margin-bottom: 0.25rem;
+        flex-grow: 1;
+    }
+    
+    .campo-etiqueta {
+        width: 40px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .campo-edicion {
+        flex-basis: 48%;
+    }
+}

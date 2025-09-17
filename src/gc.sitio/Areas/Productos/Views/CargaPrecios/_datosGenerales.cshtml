@@ -7,51 +7,51 @@
         <div class="row align-items-center">
             <div class="col-9">
                 <!-- Fila única de campos en formato horizontal -->
-                <div class="d-flex flex-row align-items-center">
+                <div class="campos-grupo">
                     <!-- PLista -->
-                    <div class="campo-edicion me-1">
+                    <div class="campo-edicion">
                         <input class="form-check-input" type="checkbox" id="chkPLista" aria-label="Seleccionar PLista">
                         <label class="campo-etiqueta" for="chkPLista">PL</label>
-                        <input type="text" class="form-control form-control-sm campo-valor input-mask-3-decimals" id="txtPLista" disabled>
+                        <input type="text" class="form-control form-control-sm campo-valor campo-valor-lg input-mask-3-decimals" id="txtPLista" disabled>
                     </div>
 
                     <!-- Dto1 -->
-                    <div class="campo-edicion me-1">
+                    <div class="campo-edicion">
                         <input class="form-check-input" type="checkbox" id="chkDto1" aria-label="Seleccionar Dto1">
                         <label class="campo-etiqueta" for="chkDto1">D1</label>
                         <input type="text" class="form-control form-control-sm campo-valor input-mask-1-decimal" id="txtDto1" disabled>
                     </div>
 
                     <!-- Dto2 -->
-                    <div class="campo-edicion me-1">
+                    <div class="campo-edicion">
                         <input class="form-check-input" type="checkbox" id="chkDto2" aria-label="Seleccionar Dto2">
                         <label class="campo-etiqueta" for="chkDto2">D2</label>
                         <input type="text" class="form-control form-control-sm campo-valor input-mask-1-decimal" id="txtDto2" disabled>
                     </div>
 
                     <!-- Dto3 -->
-                    <div class="campo-edicion me-1">
+                    <div class="campo-edicion">
                         <input class="form-check-input" type="checkbox" id="chkDto3" aria-label="Seleccionar Dto3">
                         <label class="campo-etiqueta" for="chkDto3">D3</label>
                         <input type="text" class="form-control form-control-sm campo-valor input-mask-1-decimal" id="txtDto3" disabled>
                     </div>
 
                     <!-- Dto4 -->
-                    <div class="campo-edicion me-1">
+                    <div class="campo-edicion">
                         <input class="form-check-input" type="checkbox" id="chkDto4" aria-label="Seleccionar Dto4">
                         <label class="campo-etiqueta" for="chkDto4">D4</label>
                         <input type="text" class="form-control form-control-sm campo-valor input-mask-1-decimal" id="txtDto4" disabled>
                     </div>
 
                     <!-- Dpo -->
-                    <div class="campo-edicion me-1">
+                    <div class="campo-edicion">
                         <input class="form-check-input" type="checkbox" id="chkDpo" aria-label="Seleccionar Dpo">
                         <label class="campo-etiqueta" for="chkDpo">DPa</label>
                         <input type="text" class="form-control form-control-sm campo-valor input-mask-1-decimal" id="txtDpo" disabled>
                     </div>
 
                     <!-- Bon -->
-                    <div class="campo-edicion me-1">
+                    <div class="campo-edicion">
                         <input class="form-check-input" type="checkbox" id="chkBon" aria-label="Seleccionar Bon">
                         <label class="campo-etiqueta" for="chkBon">Bon</label>
                         <input type="text" class="form-control form-control-sm campo-valor input-mask-boni" id="txtBon" disabled>
@@ -85,39 +85,39 @@
         <div class="row align-items-center">
             <div class="col-9">
                 <!-- Fila solo lectura: datos actuales -->
-                <div class="d-flex flex-row align-items-center">
+                <div class="campos-grupo">
                     <!-- PLista actual -->
-                    <div class="campo-edicion me-1">
+                    <div class="campo-edicion">
                         <label class="campo-etiqueta">PL</label>
-                        <input type="text" class="form-control form-control-sm campo-valor input-PListaValor" disabled>
+                        <input type="text" class="form-control form-control-sm campo-valor campo-valor-lg input-PListaValor" disabled>
                     </div>
                     <!-- Dto1 actual -->
-                    <div class="campo-edicion me-1">
+                    <div class="campo-edicion">
                         <label class="campo-etiqueta">D1</label>
                         <input type="text" class="form-control form-control-sm campo-valor input-Dto1Valor" disabled>
                     </div>
                     <!-- Dto2 actual -->
-                    <div class="campo-edicion me-1">
+                    <div class="campo-edicion">
                         <label class="campo-etiqueta">D2</label>
                         <input type="text" class="form-control form-control-sm campo-valor input-Dto2Valor" disabled>
                     </div>
                     <!-- Dto3 actual -->
-                    <div class="campo-edicion me-1">
+                    <div class="campo-edicion">
                         <label class="campo-etiqueta">D3</label>
                         <input type="text" class="form-control form-control-sm campo-valor input-Dto3Valor" disabled>
                     </div>
                     <!-- Dto4 actual -->
-                    <div class="campo-edicion me-1">
+                    <div class="campo-edicion">
                         <label class="campo-etiqueta">D4</label>
                         <input type="text" class="form-control form-control-sm campo-valor input-Dto4Valor" disabled>
                     </div>
                     <!-- Dpo actual -->
-                    <div class="campo-edicion me-1">
+                    <div class="campo-edicion">
                         <label class="campo-etiqueta">Dpo</label>
                         <input type="text" class="form-control form-control-sm campo-valor input-DpoValor" disabled>
                     </div>
                     <!-- Bon actual -->
-                    <div class="campo-edicion me-1">
+                    <div class="campo-edicion">
                         <label class="campo-etiqueta">Bon</label>
                         <input type="text" class="form-control form-control-sm campo-valor input-BonValor" disabled>
                     </div>
@@ -128,104 +128,11 @@
                     </div>
                 </div>
             </div>
-            @*  <div class="col-3">
-        <div class="d-flex justify-content-md-start">
-            <button type="button" class="btn btn-sm btn-success me-1" id="btnConfirmar">
-                <i class="bx bx-check me-1"></i>Confirmar
-            </button>
-            <button type="button" class="btn btn-sm btn-danger" id="btnCancelar">
-                <i class="bx bx-x me-1"></i>Cancelar
-            </button>
-        </div>
-    </div> *@
         </div>
     </div>
 </div>
 
-<!-- Estilos CSS para formato adecuado -->
-<style>
-    /* Estilos golden grid para compresión eficiente */
-    .grid-golden {
-        border: 1px solid #f0ad4e;
-        border-radius: 0.25rem;
-        overflow: hidden;
-    }
-
-    .grid-golden-header {
-        background-color: #f0ad4e;
-        color: white;
-        padding: 0.4rem 0.75rem;
-        border-bottom: 1px solid #eea236;
-        font-weight: 600;
-    }
-
-    .grid-golden-body {
-        background-color: #fff;
-        padding: 0.5rem 0.75rem;
-    }
-
-    .btn-golden {
-        background-color: #f0ad4e;
-        border-color: #eea236;
-        color: white;
-    }
-
-        .btn-golden:hover, .btn-golden:focus {
-            background-color: #ec971f;
-            border-color: #d58512;
-            color: white;
-        }
-
-    .campo-edicion {
-        display: flex;
-        align-items: center;
-        border: 1px solid #ced4da;
-        border-radius: 4px;
-        background-color: #f8f9fa;
-        padding: 0;
-        overflow: hidden;
-    }
-
-    .campo-etiqueta {
-        display: inline-block;
-        margin: 0;
-        padding: 0.25rem 0.5rem;
-        background-color: #e9ecef;
-        border-right: 1px solid #ced4da;
-        font-size: 0.875rem;
-        width: 45px;
-        text-align: center;
-    }
-
-    .campo-valor {
-        border: none;
-        border-radius: 0;
-        width: 60px;
-        text-align: right;
-        font-size: 0.6rem;
-    }
-
-    /* Estilos específicos para los campos de precio lista */
-    #txtPLista, .input-PListaValor {
-        width: 100px;
-    }
-
-    /* Ajuste responsive */
-    @@media (max-width: 992px) {
-        .d-flex.flex-row
-
-    {
-        flex-wrap: wrap;
-    }
-
-    .campo-edicion {
-        margin-bottom: 0.25rem;
-    }
-
-    }
-</style>
-
-<!-- Agregar el script para inicializar las máscaras de entrada -->
+<!-- Script para inicializar las máscaras de entrada -->
 <script>
     $(document).ready(function() {
         // Configuración para campos con 3 decimales (PLista)

@@ -925,18 +925,26 @@ function procesarGuardadoTodasLasOfertas(totalProductos, canalesInfo, ofertaInfo
         canales: canalesInfo.canales,
         canalIndividual: canalesInfo.individual,
         modoSeleccion: canalesInfo.modo,
-        precio: ofertaInfo.precio,
+        precio: parseFloat(ofertaInfo.precio.toString().replace(/\./g, '').replace(',', '.')), // ✅ CORREGIDO: Parse correcto
         fechaDesde: ofertaInfo.fechaDesde,
         fechaHasta: ofertaInfo.fechaHasta,
         topeVenta: ofertaInfo.topeVenta
     };
 
-    // ✅ CORREGIDO: Usar PostGen en lugar de PostGen2 y asegurar que se envía como application/json
+    // ✅ CORREGIDO: Usar JSON.stringify con precisión decimal correcta
+    var jsonData = JSON.stringify(datosOferta, function(key, value) {
+        // Asegurar que los números decimales se serializan con punto decimal
+        if (key === 'precio' && typeof value === 'number') {
+            return parseFloat(value.toFixed(2));
+        }
+        return value;
+    });
+
     $.ajax({
         url: confirmarAltaOfertaUrl,
         type: "POST",
         contentType: "application/json",
-        data: JSON.stringify(datosOferta),
+        data: jsonData,
         success: function(response) {
             CerrarWaiting();
 

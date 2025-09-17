@@ -23,20 +23,28 @@
                     </div>
                     <div class="filter-golden-body">
                         <div class="row g-2">
-                            <div class="col-md-6">
+                            <div class="col-md-4 col-sm-12">
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">Proveedor</span>
                                     <input type="text" class="form-control inputEditable" name="Rel01" id="Rel01" />
                                     @Html.Hidden("Rel01Item")
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4 col-sm-12">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text" id="lbNombreRel03">Familia</span>
+                                    @Html.DropDownList("Rel03", null, new { @class = "form-control", @disabled = "disabled" })
+                                    @Html.Hidden("Rel03Item")
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-sm-12">
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">Rubro</span>
                                     <input type="text" class="form-control inputEditable" name="Rel02" id="Rel02" />
                                     @Html.Hidden("Rel02Item")
                                 </div>
                             </div>
+                           
                         </div>
                         
                         <div class="row g-2 mt-2">

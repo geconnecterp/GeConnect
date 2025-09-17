@@ -4,55 +4,98 @@
             <div class="row g-2 align-items-center">
                 <!-- Campo Precio -->
                 <div class="col-auto">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text" style="height:31px">Precio:</span>
-                        <input type="number"
-                               class="form-control input-numeric-golden"
+                    <div class="input-group input-group-sm h-100">
+                        <span class="input-group-text">Precio:</span>
+                        <input type="text"
+                               class="form-control input-mask-2-decimals input-numeric-golden"
                                id="txtPrecioOferta"
                                placeholder="0,00"
-                               step="0.01"
-                               min="0"
-                               style="width:90px;height:31px"
-                               autofocus />
+                               data-inputmask="'alias': 'numeric', 'groupSeparator': '.', 'radixPoint': ',', 'autoGroup': true, 'digits': 2" 
+                               style="width:150px;" />
                     </div>
                 </div>
 
                 <!-- Periodo Desde -->
                 <div class="col-auto">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text" style="height:31px">Desde:</span>
+                    <div class="input-group input-group-sm h-100">
+                        <span class="input-group-text">Desde:</span>
                         <input type="date"
                                class="form-control input-numeric-golden"
                                id="txtFechaDesde"
-                               style="width:140px;height:31px" />
+                               style="width:140px;" />
                     </div>
                 </div>
 
                 <!-- Periodo Hasta -->
                 <div class="col-auto">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text" style="height:31px">Hasta:</span>
+                    <div class="input-group input-group-sm h-100">
+                        <span class="input-group-text">Hasta:</span>
                         <input type="date"
                                class="form-control input-numeric-golden"
                                id="txtFechaHasta"
-                               style="width:140px;height:31px" />
+                               style="width:140px;" />
                     </div>
                 </div>
 
                 <!-- Tope de Venta -->
                 <div class="col-auto">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text" style="height:31px">Tope Vta:</span>
-                        <input type="number"
-                               class="form-control input-numeric-golden"
+                    <div class="input-group input-group-sm h-100">
+                        <span class="input-group-text">Tope Vta:</span>
+                        <input type="text"
+                               class="form-control input-mask-0-decimals input-numeric-golden"
                                id="txtTopeVenta"
                                placeholder="0"
-                               min="0"
-                               step="1"
-                               style="width:80px;height:31px" />
+                               data-inputmask="'alias': 'numeric', 'groupSeparator': '.', 'digits': 0" 
+                               style="width:90px;" />
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+$(document).ready(function() {
+    // Inicializar máscaras para campos numéricos
+    if (typeof Inputmask !== 'undefined') {
+        // Configuración para precio (2 decimales)
+        Inputmask({
+            alias: "numeric",
+            groupSeparator: ".",
+            radixPoint: ",",
+            autoGroup: true,
+            digits: 2,
+            digitsOptional: false,
+            rightAlign: true,
+            prefix: '',
+            placeholder: "0",
+            clearMaskOnLostFocus: false,
+            showMaskOnHover: false,
+            showMaskOnFocus: true,
+            min: 0,
+            onBeforeMask: function (value) {
+                if (value === null || value === undefined || value === '') {
+                    return '0';
+                }
+                try {
+                    let numValue = parseFloat(value.toString().replace(/\./g, '').replace(/,/g, '.'));
+                    return isNaN(numValue) ? '0' : numValue.toString();
+                } catch (e) {
+                    return '0';
+                }
+            }
+        }).mask('#txtPrecioOferta');
+        
+        // Configuración para tope venta (entero)
+        Inputmask({
+            alias: "numeric",
+            groupSeparator: ".",
+            digits: 0,
+            rightAlign: true,
+            min: 0,
+            placeholder: "0",
+            clearMaskOnLostFocus: false
+        }).mask('#txtTopeVenta');
+    }
+});
+</script>
