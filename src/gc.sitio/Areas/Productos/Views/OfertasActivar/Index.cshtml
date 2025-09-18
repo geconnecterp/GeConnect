@@ -1,0 +1,31 @@
+﻿@{
+    Layout = "~/views/shared/_Layout.cshtml";
+}
+
+<div class="grid-golden">
+    <div class="grid-golden-body">
+        <div class="row align-items-md-start">
+            <div class="col-md-8 col-sm-6">
+                <div id="gridOfertaNoActivas">
+                    <p class="text-center text-muted py-4">
+                        <i class="bx bx-info-circle me-2"></i>
+                        No hay productos seleccionados para ofertas
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div id="gridCanales"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script type="text/javascript">
+        let buscarCanalesUrl = "@Url.Action("BuscarCanales", "Ofertas", new { area = "Productos" })";
+        let presentarOfertasSinActivarUrl = "@Url.Action("PresentarOfertasSinActivar", "OfertasActivar", new { area = "Productos" })";
+        let homeOfertaUrl = "@Url.Action("index", "OfertasActivar", new { area = "Productos" })";
+    </script>
+    <script src="~/js/app/areas/precios/ofertaActivar.js" type="text/javascript"></script>
+
+}

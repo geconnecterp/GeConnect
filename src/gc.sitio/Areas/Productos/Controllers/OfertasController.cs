@@ -44,18 +44,19 @@ namespace gc.sitio.Areas.Productos.Controllers
                 ProductosSeleccionadosV02 = [];
 
                 ViewData["Titulo"] = "Alta de Oferta (sin activar)";
-                CargarDatosIniciales(true);
+
+                CargarDatosIniciales(true,_cuentaServicio,_rubroServicio);
                 return View();
             }
             catch (NegocioException ex)
             {
-                _logger?.LogError(ex, "Error de negocio al cargar la vista de BSS");
+                _logger?.LogError(ex, "Error al cargar de los datos iniciales del módulo.");
                 TempData["error"] = ex.Message;
                 return View();
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Error al cargar la vista de BSS");
+                _logger?.LogError(ex, "Error al cargar de los datos iniciales del módulo.");
                 TempData["error"] = "Hubo un problema al cargar la vista del BSS. Si el problema persiste, contacte al administrador.";
                 return View();
             }
@@ -231,6 +232,11 @@ namespace gc.sitio.Areas.Productos.Controllers
 
                 return PartialView("_gridProductosOferta", grid);
             }
+            catch(NegocioException ex)
+            {
+                _logger?.LogError(ex, "Error al presentar productos múltiples para oferta");
+                return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+            }
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "Error al presentar productos múltiples para oferta");
@@ -273,6 +279,81 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
         }
 
+        /// <summary>
+        /// Obtiene el estado de las ofertas para un producto específico en todos los canales
+        /// </summary>
+        [HttpPost]
+        public async Task<JsonResult> ObtenerEstadoOfertaProducto(string p_id)
+        {
+            try
+            {
+                // ✅ VALIDACIÓN: Autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { error = true, msg = "Sesión expirada" });
+
+                // ✅ VALIDACIÓN: ID de producto
+                if (string.IsNullOrEmpty(p_id))
+                {
+                    _logger?.LogWarning("ObtenerEstadoOfertaProducto llamado sin ID de producto");
+                    return Json(new { error = true, msg = "ID de producto requerido" });
+                }
+
+                _logger?.LogInformation("Obteniendo estado de oferta para producto {ProductoId}", p_id);
+
+                // ✅ LLAMADA: Al servicio de ofertas
+                var respuesta = await _ofertaServicio.ObtenerEstadoOfertaProducto(p_id, TokenCookie);
+
+                // ✅ PROCESAMIENTO: Respuesta del servicio
+                if (!respuesta.Ok || respuesta.EsError)
+                {
+                    _logger?.LogWarning("Error en servicio de ofertas: {Mensaje}", respuesta.Mensaje);
+                    return Json(new
+                    {
+                        error = true,
+                        msg = respuesta.Mensaje ?? "Error al obtener estado de oferta para el producto"
+                    });
+                }
+
+                // ✅ VALIDACIÓN: Datos obtenidos
+                var estados = respuesta.ListaEntidad ?? new List<OfertaEstadoDto>();
+
+                if (!estados.Any())
+                {
+                    _logger?.LogInformation("No hay información de ofertas para producto {ProductoId}", p_id);
+                    return Json(new
+                    {
+                        error = false,
+                        warn = true,
+                        msg = "No hay información de ofertas disponible para este producto",
+                        estados = estados,
+                        totalEstados = 0
+                    });
+                }
+
+                _logger?.LogInformation("Estados de oferta obtenidos para producto {ProductoId}: {CantidadEstados}",
+                    p_id, estados.Count);
+
+                // ✅ RESPUESTA: Con datos completos
+                return Json(new
+                {
+                    error = false,
+                    warn = false,
+                    msg = "Estados de oferta obtenidos correctamente",
+                    estados,
+                    totalEstados = estados.Count
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al obtener estado de oferta para producto: {ProductoId}", p_id);
+                return Json(new
+                {
+                    error = true,
+                    msg = "Error interno al obtener estado de oferta"
+                });
+            }
+        }       
+
 
         #region Métodos Privados
 
@@ -309,20 +390,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             };
         }
 
-        /// <summary>
-        /// Crea una respuesta de Warning estandarizada
-        /// </summary>
-        private RespuestaGenerica<EntidadBase> CrearRespuestaWarning(string mensaje)
-        {
-            return new RespuestaGenerica<EntidadBase>
-            {
-                Mensaje = mensaje,
-                Ok = false,
-                EsWarn = true,
-                EsError = false
-            };
-        }
-
+       
         /// <summary>
         /// Genera el grid optimizado para productos en ofertas usando GridCoreSmart
         /// </summary>
@@ -355,19 +423,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             };
         }
 
-        /// <summary>
-        /// Crea una respuesta de error estandarizada
-        /// </summary>
-        private RespuestaGenerica<EntidadBase> CrearRespuestaError(string mensaje)
-        {
-            return new RespuestaGenerica<EntidadBase>
-            {
-                Mensaje = mensaje,
-                Ok = false,
-                EsWarn = false,
-                EsError = true
-            };
-        }
+        
 
 
         /// <summary>
@@ -519,91 +575,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             return totalProductos * totalCanales;
         }
 
-        private void CargarDatosIniciales(bool actualizar)
-        {
-            if (ProveedoresLista.Count == 0 || actualizar)
-            {
-                ObtenerProveedores(_cuentaServicio, "BI");
-            }
-
-            if (RubroLista.Count == 0 || actualizar)
-            {
-                ObtenerRubros(_rubroServicio);
-            }
-
-            var listR03 = new List<ComboGenDto>();
-            ViewBag.Rel03 = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
-        }
-
-        /// <summary>
-        /// Obtiene el estado de las ofertas para un producto específico en todos los canales
-        /// </summary>
-        [HttpPost]
-        public async Task<JsonResult> ObtenerEstadoOfertaProducto(string p_id)
-        {
-            try
-            {
-                // ✅ VALIDACIÓN: Autenticación
-                if (!VerificarAutenticacion(out IActionResult redirectResult))
-                    return Json(new { error = true, msg = "Sesión expirada" });
-
-                // ✅ VALIDACIÓN: ID de producto
-                if (string.IsNullOrEmpty(p_id))
-                {
-                    _logger?.LogWarning("ObtenerEstadoOfertaProducto llamado sin ID de producto");
-                    return Json(new { error = true, msg = "ID de producto requerido" });
-                }
-
-                _logger?.LogInformation("Obteniendo estado de oferta para producto {ProductoId}", p_id);
-
-                // ✅ LLAMADA: Al servicio de ofertas
-                var respuesta = await _ofertaServicio.ObtenerEstadoOfertaProducto(p_id, TokenCookie);
-
-                // ✅ PROCESAMIENTO: Respuesta del servicio
-                if (!respuesta.Ok || respuesta.EsError)
-                {
-                    _logger?.LogWarning("Error en servicio de ofertas: {Mensaje}", respuesta.Mensaje);
-                    return Json(new { 
-                        error = true, 
-                        msg = respuesta.Mensaje ?? "Error al obtener estado de oferta para el producto" 
-                    });
-                }
-
-                // ✅ VALIDACIÓN: Datos obtenidos
-                var estados = respuesta.ListaEntidad ?? new List<OfertaEstadoDto>();
-                
-                if (!estados.Any())
-                {
-                    _logger?.LogInformation("No hay información de ofertas para producto {ProductoId}", p_id);
-                    return Json(new { 
-                        error = false, 
-                        warn = true,
-                        msg = "No hay información de ofertas disponible para este producto",
-                        estados = estados,
-                        totalEstados = 0
-                    });
-                }
-
-                _logger?.LogInformation("Estados de oferta obtenidos para producto {ProductoId}: {CantidadEstados}", 
-                    p_id, estados.Count);
-
-                // ✅ RESPUESTA: Con datos completos
-                return Json(new {
-                    error = false,
-                    warn = false,
-                    msg = "Estados de oferta obtenidos correctamente",
-                    estados,
-                    totalEstados = estados.Count
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex, "Error al obtener estado de oferta para producto: {ProductoId}", p_id);
-                return Json(new { 
-                    error = true, 
-                    msg = "Error interno al obtener estado de oferta" 
-                });
-            }
-        }
+        
+        
     }
 }
