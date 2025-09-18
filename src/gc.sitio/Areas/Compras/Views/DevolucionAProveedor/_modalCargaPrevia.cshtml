@@ -2,6 +2,8 @@
 @{
 	var depositos = Model.ComboDepositos;
 	var boxes = Model.ComboBoxes;
+	var alt = true;
+	string clase = string.Empty;
 }
 
 <div class="modal-header">
@@ -14,16 +16,16 @@
 			<h5 id="leyendaNuevoProducto">Productos de Depósito/Box</h5>
 		</legend>
 		<div class="col-sm" id="divDepositosEnCargaPrevia">
-			<div class="input-group fixed-padding-top">
+			<div class="input-group input-group-sm fixed-padding-top">
 				<span class="input-group-text fixed-width">Depósito: </span>
-				@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDepositoEnCargaPrevia", @class = "form-control" })
+				@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDepositoEnCargaPrevia", @class = "form-control activable inputEditable" })
 			</div>
 		</div>
 		<div id="divComboBoxesEnCargaPrevia">
 			<div class="col-sm" id="divComboBoxEnCargaPrevia" aria-disabled="true">
-				<div class="input-group fixed-padding-top">
+				<div class="input-group input-group-sm fixed-padding-top">
 					<span class="input-group-text fixed-width">Box: </span>
-					@Html.DropDownList("id", boxes, "Seleccionar...", new { @id = "listaBoxEnCargaPrevia", @class = "form-control" })
+					@Html.DropDownList("id", boxes, "Seleccionar...", new { @id = "listaBoxEnCargaPrevia", @class = "form-control activable inputEditable" })
 				</div>
 			</div>
 		</div>
@@ -44,8 +46,9 @@
 						{
 							@foreach (var item in Model.ListaProductos.ListaDatos)
 							{
+								if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 								var nombre = "chk" + item.p_id;
-								<tr onclick="selectListaProductoRow(this)">
+								<tr class="@clase" onclick="selectListaProductoRow(this)">
 									<td><input type="checkbox" name=@nombre /></td>
 									<td class="align-center">@item.p_id</td>
 									<td class="align-left">@item.p_desc</td>

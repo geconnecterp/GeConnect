@@ -19,17 +19,21 @@
 	$("#btnBuscarCC").on("click", buscarCuentasComercial);
 	InicializaPantallaCC("");
 	$("#VerDetalle").on("click", VerDetalleClick);
-	document.getElementById("VerDetalle").addEventListener("click", function () {
-		if (!linkVerDetalle || linkVerDetalle == "") {
-			AbrirMensaje("Atención", "Debe seleccionar un comprobante.", function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
-			return;
-		}
 
-		window.location.href = linkVerDetalle;
-	});
+	const verDetalle = document.getElementById("VerDetalle");
+	if (verDetalle !== undefined && verDetalle !== null) {
+		document.getElementById("VerDetalle").addEventListener("click", function () {
+			if (!linkVerDetalle || linkVerDetalle == "") {
+				AbrirMensaje("Atención", "Debe seleccionar un comprobante.", function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+				return;
+			}
+
+			window.location.href = linkVerDetalle;
+		});
+	}
 	$("#btnNuevoCompteDeRP").on("click", NuevoCompteDeRP);
 	$("#btnEliminarCompteDeRP").on("click", EliminarCompteDeRP);
 	$("#btnRegresarASelAuto").on("click", RegresarASelAuto); //Regregar a la pantalla de seleccion de autorizaciones.

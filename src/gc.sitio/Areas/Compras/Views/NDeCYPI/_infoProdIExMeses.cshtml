@@ -1,5 +1,7 @@
 ﻿@model GridCoreSmart<InfoProdIExMesDto>
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 <div class="table-responsive text-nowrap table-wrapper-200-full">
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbInfoProdIExMes">
@@ -23,7 +25,8 @@
 			{
 				@foreach (var item in Model.ListaDatos)
 				{
-					<tr onclick="selectListaInfoProdIExMesRow(this)">
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class ="@clase" onclick="selectListaInfoProdIExMesRow(this)">
 						<td class="align-center tiny-row">@item.periodo-@item.mes</td>
 						<td class="align-center tiny-row">@item.e_compra</td>
 						<td class="align-center tiny-row">@item.e_ri</td>

@@ -5,6 +5,8 @@
 	var boxes = Model.ComboBoxes;
 	var motivos = Model.ComboMotivos;
 	BusquedaProducto busquedaProducto = new();
+	var alt = true;
+	string clase = string.Empty;
 }
 @section styles {
 	<link rel="stylesheet" href="~/css/simplePagination.css"   />
@@ -16,8 +18,6 @@
 			<div class="col-4" style="padding-top: 8px;">
 				<div class="row">
 					<fieldset style="margin: 2px;padding: 2px;">
-						@* <legend> *@
-						@* empty title *@
 						<div class="col-5" style="float:left;">
 							<div class="btn-group" role="group" aria-label="Basic radio toggle button group" style="width: 95%;">
 								<row style="padding:4px; width: 100% !important">
@@ -39,18 +39,17 @@
 								<div class="input-group" id="divRevertirAjuste">
 									<span class="input-group-text fixed-width-75" style="height:35px;">N°: </span>
 									<input type="text" id="txtNroAjuste" class="align-left" style="width: 50%;" value="" />
-									<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px;" id="btnRevertirAjuste">
-										<span class="tf-icons bx bx-left-arrow-circle"></span>
+									<button type="button" class="btn btn-sm btn-primary btn-sm me-1" style="margin-left:5px;" id="btnRevertirAjuste">
+										<i class="bx bx-chevron-left"></i>
 									</button>
 								</div>
 							</div>
 							<div class="row" style="padding-top:4px;padding-left:7px;" id="divCargaPrevia">
-								<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px; width:88%;" id="btnCargaPrevia">
-									<span class="tf-icons bx bx-cloud-download">Carga Previa</span>
+								<button type="button" class="btn btn-info btn-sm mt-1 me-1" style="margin-left:5px; width:88%;" id="btnCargaPrevia">
+									<i class="bx bx-upload"></i> Carga Previa
 								</button>
 							</div>
 						</div>
-						@* </legend> *@
 					</fieldset>
 				</div>
 			</div>
@@ -58,44 +57,44 @@
 				<div class="row">
 					<div class="col-6">
 						<div class="col-sm" id="divDepositos">
-							<div class="input-group fixed-padding-top">
+							<div class="input-group input-group-sm fixed-padding-top">
 								<span class="input-group-text fixed-width">Depósito: </span>
-								@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control" })
+								@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control activable inputEditable" })
 							</div>
 						</div>
 						<div id="divComboBoxes">
 							<div class="col-sm" id="divComboBox" aria-disabled="true">
-								<div class="input-group fixed-padding-top">
+								<div class="input-group input-group-sm fixed-padding-top">
 									<span class="input-group-text fixed-width">Box: </span>
-									@Html.DropDownList("id", boxes, "Seleccionar...", new { @id = "listaBox", @class = "form-control" })
+									@Html.DropDownList("id", boxes, "Seleccionar...", new { @id = "listaBox", @class = "form-control activable inputEditable" })
 								</div>
 							</div>
 						</div>
 					</div>
 					<div class="col-6">
 						<div class="col-sm" id="divComboMotivos">
-							<div class="input-group fixed-padding-top">
+							<div class="input-group input-group-sm fixed-padding-top">
 								<span class="input-group-text fixed-width">Tipo: </span>
-								@Html.DropDownList("id", motivos, "Seleccionar...", new { @id = "listaMotivo", @class = "form-control" })
+								@Html.DropDownList("id", motivos, "Seleccionar...", new { @id = "listaMotivo", @class = "form-control activable inputEditable" })
 							</div>
 						</div>
-						<div class="input-group" style="padding-top: 5px;">
+						<div class="input-group input-group-sm" style="padding-top: 5px;">
 							<span class="input-group-text fixed-width-75">Nota: </span>
-							<input type="text" id="txtNota" class="align-left" style="width: 80%;" value="" />
+							<input type="text" id="txtNota" class="form-control activable inputEditable" style="width: 80%;" value="" />
 						</div>
 					</div>
 				</div>
 				<div class="row" style="padding-top: 5px;">
 					@* botones *@
 					<div style="text-align: right;align-content: center;">
-						<button type="button" class="btn btn-primary fixed-width-130" style="margin-left:5px;" id="btnRegresar">
-							<span class="tf-icons bx bx-left-arrow-circle">Regresar</span>
+						<button type="button" class="btn btn-secondary btn-sm mt-1 me-1" id="btnRegresar">
+							<i class="bx bx-chevron-left"></i> Regresar
 						</button>
-						<button type="button" class="btn btn-danger fixed-width-130" style="margin-left:5px;" id="btnCancelar">
-							<span class="tf-icons bx bx-block">Cancelar</span>
+						<button type="button" class="btn btn-danger btn-sm mt-1 me-1" id="btnCancelar">
+							<i class="bx bx-x-circle"></i> Cancelar
 						</button>
-						<button type="button" class="btn btn-success fixed-width-130" style="margin-left:5px;" id="btnConfirmar">
-							<span class="tf-icons bx bx-check-circle">Confirmar</span>
+						<button type="button" class="btn btn-success btn-sm mt-1 me-1" id="btnConfirmar">
+							<i class="bx bx-badge-check"></i> Confirmar
 						</button>
 					</div>
 				</div>
@@ -125,19 +124,21 @@
 								<input type="text" id="txtUP_ID" style="display:none;" />
 								<input type="text" id="txtBARRADO_ID" style="display:none;" />
 								<input type="text" id="txtID_PROV" style="display:none;" />
-								<button type="button" class="btn btn-sm btn-icon btn-success fixed-width" style="margin-left:5px;" id="btnAddProd">
-									<span class="tf-icons bx bx-plus-circle"></span>
+							</div>
+							<div class="mt-2 d-flex gap-2">
+								<button type="button" class="btn btn-primary btn-sm" id="btnAddProd">
+									<i class="bx bx-plus-circle"></i> Agregar Producto
 								</button>
-								<button type="button" class="btn btn-sm btn-icon btn-danger fixed-width" style="margin-left:5px;" id="btnDelProd">
-									<span class="tf-icons bx bx-trash"></span>
+								<button type="button" class="btn btn-danger btn-sm" id="btnDelProd">
+									<i class="bx bx-trash"></i> Quitar Producto
 								</button>
 							</div>
 						</div>
-						<div class="row" id="divDetalleDeProductosAAjustar" style="padding-top:5px;">
+						<div id="divDetalleDeProductosAAjustar" style="padding-top:5px;">
 							<div class="table-responsive table-wrapper-full-width">
-								<table class="table table-bordered table-hover" id="tbDetalleDeProductosAAjustar">
-									<thead class="table-dark">
-										<tr>
+								<table class="table table-bordered table-hover table-golden" id="tbDetalleDeProductosAAjustar">
+									<thead>
+										<tr class="header">
 											<th style="width:5%;" class="col-header-small align-center">ID</th>
 											<th style="width:20%;" class="col-header-small align-center">Descripción</th>
 											<th style="width:5%;" class="col-header-small align-center">Cod. Prov</th>
@@ -152,7 +153,8 @@
 										{
 											@foreach (var item in Model.ProductosAAjustar.ListaDatos)
 											{
-												<tr onclick="selectListaProductoRow(this)">
+												if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+												<tr class="@clase" onclick="selectListaProductoRow(this)">
 													<td class="align-center">@item.p_id</td>
 													<td class="align-left">@item.p_desc</td>
 													<td class="align-center">@item.p_id_prov</td>
@@ -173,7 +175,7 @@
 		</div>
 	</div>
 </div>
-<div class="modal fade" id="modalCargaPrevia" tabindex="-1" style="display: none;" aria-hidden="true">
+<div class="modal fade modal-golden" id="modalCargaPrevia" tabindex="-1" style="display: none;" aria-hidden="true">
 	<div class="modal-dialog modal-xl" role="document">
 		<div class="modal-content">
 			<div id="divModalCargaPrevia">

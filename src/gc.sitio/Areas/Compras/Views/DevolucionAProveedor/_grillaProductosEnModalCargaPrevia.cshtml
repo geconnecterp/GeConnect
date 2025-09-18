@@ -1,4 +1,8 @@
 ﻿@model GridCoreSmart<DevolucionPrevioCargadoDto>;
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
 
 <div class="table-responsive table-wrapper-full-width">
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbListaProductosParaAgregar">
@@ -16,8 +20,9 @@
 			{
 				@foreach (var item in Model.ListaDatos)
 				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					var nombre = "chk" + item.p_id;
-					<tr onclick="selectListaProductoRow(this)">
+					<tr class="@clase" onclick="selectListaProductoRow(this)">
 						<td><input type="checkbox" name=@nombre /></td>
 						<td class="align-center">@item.p_id</td>
 						<td class="align-left">@item.p_desc</td>

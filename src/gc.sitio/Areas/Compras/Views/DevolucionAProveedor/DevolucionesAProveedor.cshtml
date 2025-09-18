@@ -4,15 +4,17 @@
 	var depositos = Model.ComboDepositos;
 	var boxes = Model.ComboBoxes;
 	BusquedaProducto busquedaProducto = new();
+	var alt = true;
+	string clase = string.Empty;
 }
 @section styles {
 	<link rel="stylesheet" href="~/css/simplePagination.css"   />
 }
 
-<div class="grid-golden">
-	<div>
+<div class="card">
+	<div class="container">
 		<div class="row">
-			<div class="col-4" style="padding-top: 7px;padding-left: 30px;">
+			<div class="col-4" style="padding-top: 8px;">
 				<div class="row">
 					<fieldset style="margin: 2px;padding: 2px;">
 						<div class="col-5" style="float:left;">
@@ -37,33 +39,33 @@
 									<span class="input-group-text fixed-width-75" style="height:35px;">N°: </span>
 									<input type="text" id="txtNroDevolucion" class="align-left" style="width: 50%;" value="" />
 									<button type="button" class="btn btn-sm btn-primary btn-sm me-1" style="margin-left:5px;" id="btnRevertirDevolucion">
-										<span class="bx bx-left-arrow-circle"></span>
+										<i class="bx bx-chevron-left"></i>
 									</button>
 								</div>
 							</div>
 							<div class="row" style="padding-top:4px;padding-left:7px;" id="divCargaPrevia">
-								<button type="button" class="btn btn-sm btn-primary btn-sm mt-1 me-1" style="margin-left:5px; width:88%;" id="btnCargaPreviaDP">
-									<span class="bx bx-upload"> Carga Previa</span>
+								<button type="button" class="btn btn-info btn-sm mt-1 me-1" style="margin-left:5px; width:88%;" id="btnCargaPreviaDP">
+									<i class="bx bx-upload"></i> Carga Previa
 								</button>
 							</div>
 						</div>
 					</fieldset>
 				</div>
 			</div>
-			<div class="col-8" style="padding-top: 8px;padding-right: 20px;">
+			<div class="col-8" style="padding-top: 8px;">
 				<div class="row">
 					<div class="col-4">
 						<div class="col-sm" id="divDepositos">
 							<div class="input-group">
 								<span class="input-group-text" style="padding-left: 5px;">Depósito: </span>
-								@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control" })
+								@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control activable inputEditable" })
 							</div>
 						</div>
 						<div id="divComboBoxes">
 							<div class="col-sm" id="divComboBox" aria-disabled="true">
 								<div class="input-group fixed-padding-top">
 									<span class="input-group-text" style="padding-left: 5px;padding-left: 40px;">Box: </span>
-									@Html.DropDownList("id", boxes, "Seleccionar...", new { @id = "listaBox", @class = "form-control" })
+									@Html.DropDownList("id", boxes, "Seleccionar...", new { @id = "listaBox", @class = "form-control activable inputEditable" })
 								</div>
 							</div>
 						</div>
@@ -74,37 +76,36 @@
 						</div>
 						<div class="input-group" style="padding-top: 5px;">
 							<span class="input-group-text fixed-width-75">Nota: </span>
-							<input type="text" id="txtNota" class="align-left" style="width: 87%;" value="" />
+							<input type="text" id="txtNota" class="form-control activable inputEditable" style="width: 87%;" value="" />
 						</div>
 					</div>
 				</div>
-				<div class="row" style="padding-top: 2px;">
-					@* botones *@
-					<div style="text-align: right;align-content: center;padding-right: 20px;">
-						<button type="button" class="btn btn-secondary btn-sm mt-1 me-1" style="margin-left:5px;" id="btnRegresar">
-							<span class="bx bx-chevron-left"> Regresar</span>
+				<div class="row" style="padding-top: 5px;">
+					<div style="text-align: right;align-content: center;">
+						<button type="button" class="btn btn-secondary btn-sm mt-1 me-1" id="btnRegresar">
+							<i class="bx bx-chevron-left"></i> Regresar
 						</button>
-						<button type="button" class="btn btn-danger btn-sm mt-1 me-1" style="margin-left:5px;" id="btnCancelar">
-							<span class="bx bx-x-circle"> Cancelar</span>
+						<button type="button" class="btn btn-danger btn-sm mt-1 me-1" id="btnCancelar">
+							<i class="bx bx-x-circle"></i> Cancelar
 						</button>
-						<button type="button" class="btn btn-success btn-sm mt-1 me-1" style="margin-left:5px;" id="btnConfirmar">
-							<span class="bx bx-badge-check"> Confirmar</span>
+						<button type="button" class="btn btn-success btn-sm mt-1 me-1" id="btnConfirmar">
+							<i class="bx bx-badge-check"></i> Confirmar
 						</button>
 					</div>
 				</div>
 			</div>
 		</div>
-		<div style="width: 100%;">
-			<fieldset style="margin: 6px;padding: 2px;">
+		<div class="row">
+			<fieldset style="margin: 2px;padding: 2px;">
 				<legend>
 					<h5>Detalle de Productos a Ajustar</h5>
 				</legend>
-				<div class="container-fluid" style="padding-left: 5px;padding-right: 5px;">
-					<div class="row mb-2">
-						<div class="col-md-4">
+				<div class="row">
+					<div class="row col-12">
+						<div class="col-4">
 							<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
 						</div>
-						<div class="col-md-8">
+						<div class="col-8">
 							<div class="input-group input-group-sm">
 								<span style="display: none;" class="input-group-text">ID: </span>
 								<input type="text" id="txtIdProd" class="form-control" style="width:10%;display: none;" readonly />
@@ -118,49 +119,51 @@
 								<input type="text" id="txtUP_ID" style="display:none;" />
 								<input type="text" id="txtBARRADO_ID" style="display:none;" />
 								<input type="text" id="txtID_PROV" style="display:none;" />
-								<button type="button" class="btn btn-primary btn-sm me-1" style="margin-left:5px;" id="btnAddProd">
-									<span class="bx bx-plus-circle"> Agregar</span>
+							</div>
+							<div class="mt-2 d-flex gap-2">
+								<button type="button" class="btn btn-primary btn-sm" id="btnAddProd">
+									<i class="bx bx-plus-circle"></i> Agregar Producto
 								</button>
-								<button type="button" class="btn btn-danger btn-sm me-1" style="margin-left:5px;" id="btnDelProd">
-									<span class="bx bx-trash"> Quitar</span>
+								<button type="button" class="btn btn-danger btn-sm" id="btnDelProd">
+									<i class="bx bx-trash"></i> Quitar Producto
 								</button>
 							</div>
 						</div>
 					</div>
-					<div class="row">
-						<div class="col-12" id="divDetalleDeProductosADevolver" style="padding-left: 13px;padding-right: 17px;padding-bottom: 20px;">
-							<div class="table-responsive table-wrapper-full-width">
-								<table class="table table-sm mb-0 table-hover table-golden" id="tbDetalleDeProductosADevolver">
-									<thead>
-										<tr class="header">
-											<th style="width:5%;" class="col-header-small align-center">ID</th>
-											<th style="width:20%;" class="col-header-small align-center">Descripción</th>
-											<th style="width:5%;" class="col-header-small align-center">Cta</th>
-											<th style="width:5%;" class="col-header-small align-center">Box</th>
-											<th style="width:5%;" class="col-header-small align-center">Stk Actual</th>
-											<th style="width:5%;" class="col-header-small align-center">A Devolver</th>
-											<th style="width:5%;" class="col-header-small align-center">Costo</th>
-										</tr>
-									</thead>
-									<tbody>
-										@if (Model != null && Model.ProductosADevolver != null && Model.ProductosADevolver.ListaDatos != null && Model.ProductosADevolver.ListaDatos.Count > 0)
+
+					<div id="divDetalleDeProductosADevolver" style="padding-top:5px;">
+						<div class="table-responsive table-wrapper-full-width">
+							<table class="table table-sm mb-0 table-hover table-golden" id="tbDetalleDeProductosADevolver">
+								<thead>
+									<tr class="header">
+										<th style="width:5%;" class="col-header-small align-center">ID</th>
+										<th style="width:20%;" class="col-header-small align-center">Descripción</th>
+										<th style="width:5%;" class="col-header-small align-center">Cta</th>
+										<th style="width:5%;" class="col-header-small align-center">Box</th>
+										<th style="width:5%;" class="col-header-small align-center">Stk Actual</th>
+										<th style="width:5%;" class="col-header-small align-center">A Devolver</th>
+										<th style="width:5%;" class="col-header-small align-center">Costo</th>
+									</tr>
+								</thead>
+								<tbody>
+									@if (Model != null && Model.ProductosADevolver != null && Model.ProductosADevolver.ListaDatos != null && Model.ProductosADevolver.ListaDatos.Count > 0)
+									{
+										@foreach (var item in Model.ProductosADevolver.ListaDatos)
 										{
-											@foreach (var item in Model.ProductosADevolver.ListaDatos)
-											{
-												<tr onclick="selectListaProductoRow(this)">
-													<td class="align-center">@item.p_id</td>
-													<td class="align-left">@item.p_desc</td>
-													<td class="align-center">@item.cta_id</td>
-													<td class="align-center">@item.box_desc</td>
-													<td class="align-center">@item.as_stock</td>
-													<td class="align-right">@item.as_ajuste</td>
-													<td class="align-right">@item.as_resultado</td>
-												</tr>
-											}
+											if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+											<tr class="@clase" onclick="selectListaProductoRow(this)">
+												<td class="align-center">@item.p_id</td>
+												<td class="align-left">@item.p_desc</td>
+												<td class="align-center">@item.cta_id</td>
+												<td class="align-center">@item.box_desc</td>
+												<td class="align-center">@item.as_stock</td>
+												<td class="align-right">@item.as_ajuste</td>
+												<td class="align-right">@item.as_resultado</td>
+											</tr>
 										}
-									</tbody>
-								</table>
-							</div>
+									}
+								</tbody>
+							</table>
 						</div>
 					</div>
 				</div>

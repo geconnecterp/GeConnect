@@ -38,13 +38,13 @@
 		<div class="row">
 			<div class="col-sm-12" style="text-align: right;align-content: center;padding-bottom:5px;">
 				<button type="button" class="btn btn-sm btn-primary btn-sm mt-1 me-1" style="margin-left:5px;" id="btnPasarAOC" title="Pasar a Orden de Compra">
-					<span class="bx bx-check-circle"> Pasar a OC</span>
+					<i class="bx bx-check-circle"></i> Pasar a OC
 				</button>
 				<button type="button" class="btn btn-sm btn-primary btn-sm mt-1 me-1" style="margin-left:5px;" id="btnOCAuto" title="Orden de Compra Automática">
-					<span class="bx bx-check-circle"> OC Auto</span>
+					<i class="bx bx-check-circle"></i> OC Auto
 				</button>
 				<button type="button" class="btn btn-secondary btn-sm mt-1 me-1" style="margin-left:5px;" id="btnImprimirCtlStk" title="Imprimir Control de Stock">
-					<span class="bx bx-printer"> Imprimir Ctl Stk</span>
+					<i class="bx bx-printer"></i> Imprimir Ctl Stk
 				</button>
 			</div>
 			<div class="col-12">
@@ -88,7 +88,7 @@
 		<div class="collapse" id="divFiltro" style="">
 			@Html.Hidden("pagEstado", false);
 		</div>
-		<div class="row" style="padding-top:10px;">
+		<div class="row">
 			<div class="row">
 				<div class="col-2">
 					<a class="btn btn-sm btn-primary me-1 collapsed" id="btnCollapseSection" data-bs-toggle="collapse" href="#collapseSection" role="button" aria-expanded="false" aria-controls="collapseSection">
@@ -98,9 +98,9 @@
 				<div class="col-5"></div>
 			</div>
 			<div class="collapse" id="collapseSection" style="">
-				<div class="d-grid p-3 border">
-					<div class="row" style="padding-top:10px;">
-						<div class="nav-align-top mb-4">
+				<div class="d-grid p-1 border">
+					<div class="row">
+						<div class="nav-align-top mb-2">
 							<ul class="nav nav-tabs nav-tabs-golden" role="tablist">
 								<li class="nav-item" role="presentation">
 									<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-home" aria-controls="navs-top-home" aria-selected="true">
