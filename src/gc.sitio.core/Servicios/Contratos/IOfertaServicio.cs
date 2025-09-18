@@ -10,5 +10,6 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaGenerica<CanalDto>> BuscarCanales(string token);
         Task<RespuestaGenerica<RespuestaDto>> ConfirmacionAltaOferta(AbmPlusGenDto req, string token);
         Task<RespuestaGenerica<OfertaEstadoDto>> ObtenerEstadoOfertaProducto(string p_id, string token);
+        Task<RespuestaGenerica<OfertaSinActivarDto>> ObtenerOfertasSinActivar(string admId, string lp_id, string tokenCookie);
     }
 }

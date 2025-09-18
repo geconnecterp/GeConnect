@@ -71,7 +71,9 @@
 			public const string SP_PROD_CANALES_LIST = "SPGECO_ADMINISTRACIONES_LISTAS";
 			public const string SP_PROD_OFERTA_CARGA = "SPGECO_p_ofe_carga";
 			public const string SP_PROD_OFERTA_ESTADO = "SPGECO_P_OFE_Obtener_Estados_Promocion_Producto";
-            
+
+			public const string SP_PROD_OFERTA_SIN_ACTIVAR = "SPGECO_P_Ofe_sin_Activar_Lista";
+
             #endregion
 
 

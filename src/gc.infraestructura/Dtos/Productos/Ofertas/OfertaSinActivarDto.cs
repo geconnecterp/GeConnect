@@ -1,0 +1,33 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace gc.infraestructura.Dtos.Productos.Ofertas
+{
+    public class OfertaSinActivarDto
+    {
+        public string p_id { get; set; } = string.Empty;//+
+        public string p_desc { get; set; } = string.Empty;//+
+        public string adm_id { get; set; } = string.Empty;//+
+        public string adm_nombre { get; set; } = string.Empty;//+
+        public string pl_id { get; set; } = string.Empty;//+
+        public string pl_desc { get; set; } = string.Empty;//+
+
+        public decimal p_pcosto { get; set; }
+        public decimal in_alicuota { get; set; }
+        public char iva_situacion { get; set; }
+        public decimal iva_alicuota { get; set; }
+        public decimal p_margen { get; set; }
+        public decimal p_pvta { get; set; }
+        public decimal p_pneto_vta { get; set; }
+        public decimal p_iva { get; set; }
+        public decimal p_in { get; set; }
+        public decimal p_pneto { get; set; }
+        public decimal p_margen_oferta { get; set; }
+        public decimal p_pvta_oferta { get; set; }
+        public DateTime po_fecha_desde { get; set; }
+        public DateTime po_fecha_hasta { get; set; }
+        public int po_limite { get; set; }
+        public int dias { get; set; }
+        public DateTime hoy { get; set; }
+
+    }
+}
