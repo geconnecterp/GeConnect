@@ -131,6 +131,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 				remito.rem_compte = remCompte;
 				var conteosxul = await _remitoServicio.RTRCargarConteosXUL(remCompte, TokenCookie);
 				remito.ConteosxUL = ObtenerGridCoreSmart<RTRxULDto>(conteosxul);
+
+				var titulo = "VER REMITO";
+				ViewData["Titulo"] = titulo;
 			}
 			catch (Exception ex)
 			{

@@ -1,5 +1,7 @@
 ﻿@model RemitoDetalle
 @{
+	var alt = true;
+	string clase = string.Empty;
 	Layout = "~/views/shared/_Layout.cshtml";
 }
 <style>
@@ -9,122 +11,131 @@
 	}
 </style>
 <div class="card">
-	<row>
-		@Html.Hidden("remCompte", Model.rem_compte)
-		<div style="float:left">
-			<div class="card-header">
+	<div class="card-body">
+		<div class="row">
+			@Html.Hidden("remCompte", Model.rem_compte)
+			<div>
 				<h5>Recepción TR</h5>
+				@* <div class="card-header">
+					<h5>Recepción TR</h5>
+				</div> *@
 			</div>
 		</div>
-	</row>
-	<div class="container">
-		<row>
-			<div class="input-group">
+		<div class="row">
+			<div class="input-group input-group-sm">
 				<span class="input-group-text">@Model.Remito</span>
 				<span class="input-group-text">             </span>
 				<span class="input-group-text">@Model.QuienEnvia</span>
 				<div style="padding-left:50px;">
-					<a href="#" class="btn btn-primary float-right fixed-width-130" id="btnAutorizar" onclick="confirmarRemito();"><span class="tf-icons bx bx-check-circle me-1">Confirmar</span></a>
-					<a href="#" id="btnRegresar" class="btn btn-success fixed-width-130 float-right" onclick="regresarARemitosTransferidosLista();" style="padding-left:5px;"><span class="tf-icons bx bx-left-arrow-circle me-1">Regresar</span></a>
-				</div>
-			</div>
-		</row>
-	</div>
-	<div class="card-body">
-		<div class="nav-align-top mb-4">
-			<ul class="nav nav-tabs nav-tabs-golden" role="tablist">
-				<li class="nav-item" role="presentation">
-					<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-home" aria-controls="navs-top-home" aria-selected="true">
-						<span id="tabOne">Conteos</span>
+					<button id="btnAutorizar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Confirmar Remito" onclick="confirmarRemito();">
+						<i class="bx bx-badge-check"></i> Confirmar Remito
 					</button>
-				</li>
-				<li class="nav-item" role="presentation">
-					<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-profile" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
-						<span id="tabTwo">Conteos x UL</span>
+					@* <a href="#" class="btn btn-primary float-right fixed-width-130" id="btnAutorizar" onclick="confirmarRemito();"><span class="tf-icons bx bx-check-circle me-1">Confirmar</span></a> *@
+					<button id="btnRegresar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Volver" onclick="regresarARemitosTransferidosLista();">
+						<i class="bx bx-chevron-left"></i> Volver
 					</button>
-				</li>
-			</ul>
-			<div class="tab-content tab-content-compact">
-				<div class="tab-pane fade tab-content-golden active show" id="navs-top-home" role="tabpanel">
-					<div class="table-responsive text-nowrap table-wrapper">
-						<table class="table table-sm mb-0 table-hover table-golden" id="tbListaVerConteos">
-							<thead>
-								<tr class="header">
-									<th scope="col" class="table-fontsize align-center" style="width:10%;">Item</th>
-									<th scope="col" class="table-fontsize align-center" style="width:10%;">ID</th>
-									<th scope="col" class="table-fontsize align-center" style="width:40%;">Descripción</th>
-									<th scope="col" class="table-fontsize align-center" style="width:10%;">EAN</th>
-									<th scope="col" class="table-fontsize align-center" style="width:10%;">Enviado</th>
-									<th scope="col" class="table-fontsize align-center" style="width:10%;">Conteos</th>
-									<th scope="col" class="table-fontsize align-center" style="width:10%;">Diferencia</th>
-								</tr>
-							</thead>
-							<tbody>
-								@if (Model != null && Model.Productos != null && Model.Productos.ListaDatos != null && Model.Productos.ListaDatos.Count > 0)
-								{
-									@foreach (var item in Model.Productos.ListaDatos)
-									{
-										<tr onclick="selectVerConteosRow(this)">
-											<td class="table-fontsize align-center">@item.item</td>
-											<td class="table-fontsize align-center">@item.p_id</td>
-											<td class="table-fontsize align-left">@item.p_desc</td>
-											<td class="table-fontsize align-center">@item.p_id_barrado</td>
-											<td style="text-align: right;" class="table-fontsize align-right">@item.enviado</td>
-											<td style="text-align: right;" class="table-fontsize align-right">@item.recibido</td>
-											@if (item.diferencia != 0)
-											{
-												<td class="table-fontsize" style="border-right: 5px solid @item.Row_color; text-align: right;">@item.diferencia</td>
-											}
-											else
-											{
-												<td style="text-align: right;" class="table-fontsize">@item.diferencia</td>
-											}
-										</tr>
-									}
-								}
-							</tbody>
-						</table>
-					</div>
-				</div>
-				<div class="tab-pane fade tab-content-golden" id="navs-top-profile" role="tabpanel">
-					<div class="row">
-						<div class="col-6" id="divULxRTR">
-							<div class="table-responsive table-wrapper">
-								<table class="table table-sm mb-0 table-hover table-golden" id="tbULxRTR">
-									<thead>
-										<tr class="header">
-											<th style="width:0%; display:none;">tipo</th>
-											<th style="width:0%; display:none;">id</th>
-											<th scope="col" style="width:33%" class="align-center">UL</th>
-											<th scope="col" style="width:33%" class="align-center">Usuario</th>
-											<th scope="col" style="width:33%" class="align-center">Estado</th>
-										</tr>
-									</thead>
-									<tbody>
-										@if (Model != null && Model.ConteosxUL != null && Model.ConteosxUL.ListaDatos != null && Model.ConteosxUL.ListaDatos.Count > 0)
-										{
-											@foreach (var item in Model.ConteosxUL.ListaDatos)
-											{
-												<tr onclick="selectULxRTRRow(this)">
-													<td style="display:none;">@item.tipo</td>
-													<td style="display:none;">@item.id</td>
-													<td class="align-center">@item.ul_id</td>
-													<td class="align-center">@item.usu_apellidoynombre</td>
-													<td class="align-center">@item.ule_desc</td>
-												</tr>
-											}
-										}
-									</tbody>
-								</table>
-							</div>
-						</div>
-						<div class="col-6" id="divULxRTRDetalle">
-						</div>
-					</div>
+					@* <a href="#" id="btnRegresar" class="btn btn-success fixed-width-130 float-right" onclick="regresarARemitosTransferidosLista();" style="padding-left:5px;"><span class="tf-icons bx bx-left-arrow-circle me-1">Regresar</span></a> *@
 				</div>
 			</div>
 		</div>
+		<div class="mt-3">
+			<div class="nav-align-top mb-4">
+				<ul class="nav nav-tabs nav-tabs-golden" role="tablist">
+					<li class="nav-item" role="presentation">
+						<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-home" aria-controls="navs-top-home" aria-selected="true">
+							<span id="tabOne">Conteos</span>
+						</button>
+					</li>
+					<li class="nav-item" role="presentation">
+						<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-profile" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
+							<span id="tabTwo">Conteos x UL</span>
+						</button>
+					</li>
+				</ul>
+				<div class="tab-content tab-content-compact">
+					<div class="tab-pane fade tab-content-golden active show" id="navs-top-home" role="tabpanel">
+						<div class="table-responsive text-nowrap table-wrapper-400">
+							<table class="table table-sm mb-0 table-hover table-golden" id="tbListaVerConteos">
+								<thead>
+									<tr class="header">
+										<th scope="col" class="table-fontsize align-center" style="width:10%;">Item</th>
+										<th scope="col" class="table-fontsize align-center" style="width:10%;">ID</th>
+										<th scope="col" class="table-fontsize align-center" style="width:40%;">Descripción</th>
+										<th scope="col" class="table-fontsize align-center" style="width:10%;">EAN</th>
+										<th scope="col" class="table-fontsize align-center" style="width:10%;">Enviado</th>
+										<th scope="col" class="table-fontsize align-center" style="width:10%;">Conteos</th>
+										<th scope="col" class="table-fontsize align-center" style="width:10%;">Diferencia</th>
+									</tr>
+								</thead>
+								<tbody>
+									@if (Model != null && Model.Productos != null && Model.Productos.ListaDatos != null && Model.Productos.ListaDatos.Count > 0)
+									{
+										@foreach (var item in Model.Productos.ListaDatos)
+										{
+											if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+											<tr class="@clase" onclick="selectVerConteosRow(this)">
+												<td class="table-fontsize align-center">@item.item</td>
+												<td class="table-fontsize align-center">@item.p_id</td>
+												<td class="table-fontsize align-left">@item.p_desc</td>
+												<td class="table-fontsize align-center">@item.p_id_barrado</td>
+												<td style="text-align: right;" class="table-fontsize align-right">@item.enviado</td>
+												<td style="text-align: right;" class="table-fontsize align-right">@item.recibido</td>
+												@if (item.diferencia != 0)
+												{
+													<td class="table-fontsize" style="border-right: 5px solid @item.Row_color; text-align: right;">@item.diferencia</td>
+												}
+												else
+												{
+													<td style="text-align: right;" class="table-fontsize">@item.diferencia</td>
+												}
+											</tr>
+										}
+									}
+								</tbody>
+							</table>
+						</div>
+					</div>
+					<div class="tab-pane fade tab-content-golden" id="navs-top-profile" role="tabpanel">
+						<div class="row">
+							<div class="col-6" id="divULxRTR">
+								<div class="table-responsive table-wrapper">
+									<table class="table table-sm mb-0 table-hover table-golden" id="tbULxRTR">
+										<thead>
+											<tr class="header">
+												<th style="width:0%; display:none;">tipo</th>
+												<th style="width:0%; display:none;">id</th>
+												<th scope="col" style="width:33%" class="align-center">UL</th>
+												<th scope="col" style="width:33%" class="align-center">Usuario</th>
+												<th scope="col" style="width:33%" class="align-center">Estado</th>
+											</tr>
+										</thead>
+										<tbody>
+											@if (Model != null && Model.ConteosxUL != null && Model.ConteosxUL.ListaDatos != null && Model.ConteosxUL.ListaDatos.Count > 0)
+											{
+												@foreach (var item in Model.ConteosxUL.ListaDatos)
+												{
+													if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+													<tr class="@clase" onclick="selectULxRTRRow(this)">
+														<td style="display:none;">@item.tipo</td>
+														<td style="display:none;">@item.id</td>
+														<td class="align-center">@item.ul_id</td>
+														<td class="align-center">@item.usu_apellidoynombre</td>
+														<td class="align-center">@item.ule_desc</td>
+													</tr>
+												}
+											}
+										</tbody>
+									</table>
+								</div>
+							</div>
+							<div class="col-6" id="divULxRTRDetalle">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 
+		</div>
 	</div>
 </div>
 

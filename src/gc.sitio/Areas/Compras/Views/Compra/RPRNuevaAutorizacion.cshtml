@@ -5,8 +5,8 @@
 
 }
 
-<div class="card-golden">
-	<row>
+<div class="card">
+	<div class="card-body">
 		<input type="text" id="idTipoCompteDeRPSelected" style="display:none;" />
 		<input type="text" id="nroCompteDeRPSelected" style="display:none;" />
 		<input type="text" id="fechaCompteDeRPSelected" style="display:none;" />
@@ -23,18 +23,18 @@
 					<h5 id="txtTituloVista">@Model.TituloVista</h5>
 				</legend>
 				<div class="input-group col-12">
-					<div class="col-8">
+					<div class="col-md-6 col-sm-6">
 						<partial name="~/areas/controlcomun/views/cuentacomercial/_ctrBuscarCC.cshtml" />
 					</div>
-					<div class="col-4" style="text-align: right;">
-						<button type="button" class="btn btn-success" id="btnAceptarAutoRP" title="Aceptar">
-							<span class="bx bx-check-circle"></span>
+					<div class="col-md-6 col-sm-6" style="text-align: right;">
+						<button type="button" class="btn btn-success btn-sm mt-1 me-1" id="btnAceptarAutoRP" title="Guardar Autorización RP">
+							<i class="bx bx-check-circle"></i> Guardar Autorización RP
 						</button>
-						<button type="button" class="btn btn-danger" id="btnEliminarAutoRP" title="Eliminar">
-							<span class="bx bx-trash"></span>
+						<button type="button" class="btn btn-danger btn-sm mt-1 me-1" id="btnEliminarAutoRP" title="Eliminar Autorización RP">
+							<i class="bx bx-trash"></i> Eliminar Autorización RP
 						</button>
-						<button type="button" class="btn btn-primary" id="btnRegresarASelAuto" title="Regresar">
-							<span class="bx bx-skip-previous"></span>
+						<button type="button" class="btn btn-secondary btn-sm mt-1 me-1" id="btnRegresarASelAuto" title="Regresar">
+							<i class="bx bx-chevron-left"></i> Volver
 						</button>
 					</div>
 				</div>
@@ -43,11 +43,11 @@
 						<legend>
 							<h5>Comprobantes de RP</h5>
 						</legend>
-						<row>
-							<div class="col-12">
+						<div class="row d-flex align-items-start">
+							<div class="col-md-8 col-sm-8">
 								<div class="input-group input-group-sm">
 									<span class="input-group-text">Tipo: </span>
-									<div id="divTiposComptes">
+									<div id="divTiposComptes" class="input-group input-group-sm" style="width: 35%;">
 									</div>
 									<span class="input-group-text">N°: </span>
 									<input type="text" id="txtNroCompte" class="form-control activable inputEditable" />
@@ -55,70 +55,72 @@
 									<input type="date" id="dtpFechCompte" class="form-control activable inputEditable" />
 									<span class="input-group-text">Monto: </span>
 									<input type="text" id="txtMonto" class="form-control activable inputEditable" @* style="text-align:end;" *@ />
-									<button type="button" class="btn btn-primary btn-sm mt-1 me-1" style="margin-left:5px;" id="btnNuevoCompteDeRP" title="Agregar comprobante">
-										<span class="bx bx-plus-circle"> Agregar</span>
-									</button>
-									<button type="button" class="btn btn-danger btn-sm mt-1 me-1" style="margin-left:5px;" id="btnEliminarCompteDeRP" title="Eliminar comprobante">
-										<span class="bx bx-trash"> Eliminar</span>
-									</button>
-									<a href="#" id="VerDetalle" class="btn btn-info btn-sm mt-1 me-1" style="margin-left: 5px;" title="Ver detalle de comprobante"><span class="bx bx-show"> Detalle</span></a>
+
+									@* <a href="#" id="VerDetalle" class="btn btn-info btn-sm mt-1 me-1" style="margin-left: 5px;" title="Ver detalle de comprobante"><span class="bx bx-show"> Detalle</span></a> *@
 								</div>
 							</div>
-						</row>
-						<div id="divComptesDeRPGrid" style="padding-top: 10px;">
+							<div class="col-md-4 col-sm-4 d-flex justify-content-center align-items-start flex-wrap">
+								<button type="button" class="btn btn-primary btn-sm me-1" id="btnNuevoCompteDeRP" title="Agregar comprobante">
+									<i class="bx bx-plus-circle"></i> Agregar comprobante
+								</button>
+								<button type="button" class="btn btn-danger btn-sm me-1" id="btnEliminarCompteDeRP" title="Eliminar comprobante">
+									<i class="bx bx-trash"></i> Eliminar comprobante
+								</button>
+								<button type="button" class="btn btn-info btn-sm me-1" id="VerDetalle" title="Ver detalle de comprobante">
+									<i class="bx bx-show"></i> Ver Detalle
+								</button>
+							</div>
 						</div>
-					</fieldset>
-					<fieldset style="margin-left: 0px;margin-right: 0px;">
-						<legend>
-							<h5>Autorización</h5>
-						</legend>
-						<row>
-							<div class="container">
-								<div class="row">
-									<div class="col-sm">
-										<div class="input-group mb-3">
-											<span class="input-group-text">Nota Autorización: </span>
-											<input type="text" id="txtNota" class="form-control" asp-for="@Model.Nota" />
-										</div>
-									</div>
-									<div class="col-sm">
-										<div class="form-check">
-											<input class="form-check-input" type="checkbox" value="" id="chkPonerEnCurso" checked="">
-											<label class="form-check-label" for="defaultCheck3"> Poner en Curso</label>
-										</div>
-									</div>
-								</div>
+						<div class="row d-flex align-items-start">
+							<div id="divComptesDeRPGrid" style="padding-top: 10px;" class="col-md-4 col-sm-4">
 							</div>
-						</row>
-						<row>
-							<div class="container">
-								<div class="row">
-									<div class="col-sm">
-										<div class="input-group">
-											<span class="input-group-text">Depósito: </span>
-											@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control" })
+							<div class="col-md-8 col-sm-8 d-flex justify-content-center align-items-start flex-wrap">
+								<fieldset class="w-100" style="margin-left: 0px;margin-right: 0px;">
+									<legend>
+										<h5>Autorización</h5>
+									</legend>
+									<div class="row mb-2">
+										<div class="col-sm-8">
+											<div class="input-group input-group-sm mb-3">
+												<span class="input-group-text">Nota Autorización: </span>
+												<input type="text" id="txtNota" class="form-control activable inputEditable" asp-for="@Model.Nota" />
+											</div>
+										</div>
+										<div class="col-sm-4">
+											<div class="form-check">
+												<input class="form-check-input" type="checkbox" value="" id="chkPonerEnCurso" checked="">
+												<label class="form-check-label" for="defaultCheck3"> Poner en Curso</label>
+											</div>
 										</div>
 									</div>
-									<div class="col-sm">
-										<div class="input-group">
-											<span class="input-group-text">Turno: </span>
-											<input type="date" id="dtpFechaTurno" class="form-control" />
+									<div class="row">
+										<div class="col-sm">
+											<div class="input-group input-group-sm">
+												<span class="input-group-text">Depósito: </span>
+												@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control activable inputEditable" })
+											</div>
+										</div>
+										<div class="col-sm">
+											<div class="input-group input-group-sm">
+												<span class="input-group-text">Turno: </span>
+												<input type="date" id="dtpFechaTurno" class="form-control activable inputEditable" />
+											</div>
+										</div>
+										<div class="col-sm">
+											<div class="input-group input-group-sm mb-3">
+												<span class="input-group-text">Cantidad de UL (pallet): </span>
+												<input type="number" id="txtCantidadUL" class="form-control activable inputEditable" asp-for="@Model.CantidadUL" min="1" max="999" />
+											</div>
 										</div>
 									</div>
-									<div class="col-sm">
-										<div class="input-group mb-3">
-											<span class="input-group-text">Cantidad de UL (pallet): </span>
-											<input type="number" id="txtCantidadUL" class="form-control" asp-for="@Model.CantidadUL" min="1" max="999" />
-										</div>
-									</div>
-								</div>
+								</fieldset>
 							</div>
-						</row>
+						</div>
 					</fieldset>
 				</div>
 			</fieldset>
 		</div>
-	</row>
+	</div>
 </div>
 
 <div class="modal fade" id="modalCC" tabindex="-1" style="display: none;" aria-hidden="true">
@@ -170,6 +172,7 @@
 
 @section scripts {
 	<script type="text/javascript">
+		var linkVerDetalle = "";
 		var modelObj = @Html.Raw(Json.Serialize(Model));
 		var tipoCuenta = "B";
 		var seccionEnVista = "#sectionNuevaAutorizacionRP";

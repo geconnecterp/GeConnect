@@ -1,18 +1,27 @@
 ﻿@model GridCoreSmart<RemitoGenDto>
 @{
+	var alt = true;
+	string clase = string.Empty;
 	Layout = "~/views/shared/_Layout.cshtml";
 }
 
-<div class="grid-golden">
-	<div class="grid-golden-header">
-		<input type="text" id="rp_id" style="visibility:hidden" />
-		<h5>Remitos Transferidos Pendientes</h5>
-		<div>
-			<button id="btnAutorizar" class="btn btn-success btn-sm mt-1 me-1" onclick="autorizarRemito();" disabled><span class="bx bx-badge-check"> Autorizar</span></button>
-			<a href="#" id="btnVer" class="btn btn-info btn-sm mt-1 me-1" onclick="verRemito();return false;"><span class="bx bx-show"> Ver</span></a>
+<div class="card">
+	<div class="card-body">
+		<div class="row mb-2 align-items-center">
+			<input type="text" id="rp_id" style="visibility:hidden" />
+			<div class="d-flex align-items-center justify-content-between">
+				<h5 class="mb-0 me-3">Remitos Transferidos Pendientes</h5>
+				<div>
+					<button id="btnAutorizar" class="btn btn-success btn-sm me-1" onclick="autorizarRemito();" disabled>
+						<i class="bx bx-badge-check"></i> Autorizar Remito
+					</button>
+					<button id="btnVer" class="btn btn-info btn-sm" onclick="verRemito();return false;">
+						<i class="bx bx-show"></i> Ver Remito
+					</button>
+				</div>
+			</div>
 		</div>
-	</div>
-	<div class="grid-golden-body">
+		@* <a href="#" id="btnVer" class="btn btn-info btn-sm mt-1 me-1" onclick="verRemito();return false;"><span class="bx bx-show"> Ver</span></a> *@
 		<div class="table-responsive text-nowrap table-wrapper">
 			<table class="table table-sm mb-0 table-hover table-golden" id="tbListaRemitosTransferidos">
 				<thead>
@@ -30,7 +39,8 @@
 					{
 						@foreach (var item in Model.ListaDatos)
 						{
-							<tr onclick="selectRemitoRow(this)">
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							<tr class="@clase" onclick="selectRemitoRow(this)">
 								<td class="align-center">@item.re_compte</td>
 								<td class="align-center">@item.ti</td>
 								<td class="align-left">@item.adm_nombre</td>

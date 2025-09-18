@@ -1,9 +1,11 @@
 ﻿@model GridCoreSmart<RPRxULDetalleDto>
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 
-<div class="table-responsive table-wrapper">
-	<table class="table table-sm mb-0 table-hover table-golden" id="tbULxRPRDetalle">
+<div class="table-responsive text-nowrap table-wrapper">
+	<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbULxRPRDetalle">
 		<thead>
 			<tr>
 				<th style="width:5%;" class="col-header-small align-center tiny-row">Id</th>
@@ -13,14 +15,18 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.ListaDatos)
+			@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
 			{
-				<tr onclick="selectListaULxRPRDetalleRow(this)">
-					<td class="align-center tiny-row">@item.p_id</td>
-					<td class="align-left tiny-row">@item.p_desc</td>
-					<td class="align-center tiny-row">@item.p_id_prov</td>
-					<td class="align-right tiny-row">@item.cantidad</td>
-				</tr>
+				@foreach (var item in Model.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class ="@clase" onclick="selectListaULxRPRDetalleRow(this)">
+						<td class="align-center tiny-row">@item.p_id</td>
+						<td class="align-left tiny-row">@item.p_desc</td>
+						<td class="align-center tiny-row">@item.p_id_prov</td>
+						<td class="align-right tiny-row">@item.cantidad</td>
+					</tr>
+				}
 			}
 		</tbody>
 	</table>

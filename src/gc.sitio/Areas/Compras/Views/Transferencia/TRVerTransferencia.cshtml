@@ -1,74 +1,85 @@
 ﻿@model TRVerTransferenciaDto
 @{
+	var alt = true;
+	string clase = string.Empty;
 	Layout = "~/views/shared/_Layout.cshtml";
 }
-<div class="grid-golden">
-	<row>
-		@Html.Hidden("ti", Model.ti)
-		@Html.Hidden("tipo", Model.Tipo)
-		<div class="grid-golden-header">
-			<h5>Autorizaciones TR</h5>
-			<div class="input-group">
-				<span class="input-group-text">@Model.Autorizacion</span>
-				<span class="input-group-text">             </span>
-				<span class="input-group-text">@Model.TipoTR</span>
-				<span class="input-group-text">             </span>
-				<span class="input-group-text">@Model.Destino</span>
-				<div style="padding-left:50px;">
-					<a href="#" class="btn btn-success btn-sm mt-1 me-1" id="btnConfirmar" onclick="validarAutorizacion();"><span class="bx bx-badge-check"> Confirmar</span></a>
-					<a href="#" id="btnRegresar" class="btn btn-secondary btn-sm mt-1 me-1" onclick="regresarATRLista();" style="padding-left:5px;"><span class="bx bx-chevron-left"> Regresar</span></a>
+<div class="card">
+	<div class="card-body">
+		<div class="row">
+			@Html.Hidden("ti", Model.ti)
+			@Html.Hidden("tipo", Model.Tipo)
+			<div>
+				<h5>Autorizaciones TR</h5>
+				<div class="input-group input-group-sm">
+					<span class="input-group-text">@Model.Autorizacion</span>
+					<span class="input-group-text">             </span>
+					<span class="input-group-text">@Model.TipoTR</span>
+					<span class="input-group-text">             </span>
+					<span class="input-group-text">@Model.Destino</span>
+					<div style="padding-left:50px;">
+						<button id="btnConfirmar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Confirmar Transferencia" onclick="validarAutorizacion();">
+							<i class="bx bx-badge-check"></i> Confirmar Transferencia
+						</button>
+						@* <a href="#" class="btn btn-success btn-sm mt-1 me-1" id="btnConfirmar" onclick="validarAutorizacion();"><span class="bx bx-badge-check"> Confirmar</span></a> *@
+						<button id="btnRegresar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Volver" onclick="regresarATRLista();">
+							<i class="bx bx-chevron-left"></i> Volver
+						</button>
+						@* <a href="#" id="btnRegresar" class="btn btn-secondary btn-sm mt-1 me-1" onclick="regresarATRLista();" style="padding-left:5px;"><span class="bx bx-chevron-left"> Regresar</span></a> *@
+					</div>
 				</div>
 			</div>
 		</div>
-	</row>
-	<fieldset>
-		<legend>
-			<h5>Conteos</h5>
-		</legend>
-		<div id="divListaConteos">
-			<div class="table-responsive text-nowrap table-wrapper">
-				<table class="table table-sm mb-0 table-hover table-golden" id="tbListaConteos">
-					<thead>
-						<tr class="header">
-							<th style="width:8%;" class="align-center">ID</th>
-							<th style="width:40%;text-align: center;">Descripcion</th>
-							<th style="width:10%;" class="align-center">ID Prov</th>
-							<th style="width:10%;" class="align-center">UxB</th>
-							<th style="width:8%;" class="align-center">Pedido</th>
-							<th style="width:8%;" class="align-center">CONTEOS</th>
-							<th style="width:8%;" class="align-center">CTL Salida</th>
-							<th style="width:8%;" class="align-center">Diferencia</th>
-						</tr>
-					</thead>
-					<tbody>
-						@if (Model != null && Model.ListaTransferencias != null && Model.ListaTransferencias.ListaDatos != null && Model.ListaTransferencias.ListaDatos.Count > 0)
-						{
-							@foreach (var item in Model.ListaTransferencias.ListaDatos)
+		<fieldset>
+			<legend>
+				<h5>Conteos</h5>
+			</legend>
+			<div id="divListaConteos">
+				<div class="table-responsive text-nowrap table-wrapper">
+					<table class="table table-sm mb-0 table-hover table-golden" id="tbListaConteos">
+						<thead>
+							<tr class="header">
+								<th style="width:8%;" class="align-center">ID</th>
+								<th style="width:40%;text-align: center;">Descripcion</th>
+								<th style="width:10%;" class="align-center">ID Prov</th>
+								<th style="width:10%;" class="align-center">UxB</th>
+								<th style="width:8%;" class="align-center">Pedido</th>
+								<th style="width:8%;" class="align-center">CONTEOS</th>
+								<th style="width:8%;" class="align-center">CTL Salida</th>
+								<th style="width:8%;" class="align-center">Diferencia</th>
+							</tr>
+						</thead>
+						<tbody>
+							@if (Model != null && Model.ListaTransferencias != null && Model.ListaTransferencias.ListaDatos != null && Model.ListaTransferencias.ListaDatos.Count > 0)
 							{
-								<tr onclick="selectTRRow(this)">
-									<td class="align-center">@item.p_id</td>
-									<td>@item.p_desc</td>
-									<td class="align-center">@item.p_id_prov</td>
-									<td style="text-align: right;">@item.unidad_pres</td>
-									<td style="text-align: right;">@item.cantidad_pi</td>
-									<td style="text-align: right;">@item.cantidad</td>
-									<td style="text-align: right;">@item.cantidad_c</td>
-									@if (item.Row_color != "")
-									{
-										<td class="table-fontsize" style="border-right: 5px solid @item.Row_color;text-align: right;">@item.Diferencia</td>
-									}
-									else
-									{
-										<td style="text-align: right;" class="table-fontsize">@item.Diferencia</td>
-									}
-								</tr>
+								@foreach (var item in Model.ListaTransferencias.ListaDatos)
+								{
+									if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+									<tr class="@clase" onclick="selectTRRow(this)">
+										<td class="align-center">@item.p_id</td>
+										<td>@item.p_desc</td>
+										<td class="align-center">@item.p_id_prov</td>
+										<td style="text-align: right;">@item.unidad_pres</td>
+										<td style="text-align: right;">@item.cantidad_pi</td>
+										<td style="text-align: right;">@item.cantidad</td>
+										<td style="text-align: right;">@item.cantidad_c</td>
+										@if (item.Row_color != "")
+										{
+											<td class="table-fontsize" style="border-right: 5px solid @item.Row_color;text-align: right;">@item.Diferencia</td>
+										}
+										else
+										{
+											<td style="text-align: right;" class="table-fontsize">@item.Diferencia</td>
+										}
+									</tr>
+								}
 							}
-						}
-					</tbody>
-				</table>
+						</tbody>
+					</table>
+				</div>
 			</div>
-		</div>
-	</fieldset>
+		</fieldset>
+	</div>
 </div>
 
 @section scripts {
@@ -77,6 +88,6 @@
 		var TRValidarTransferenciaUrl = "@Url.Action("ValidarTransferencia", "transferencia", new { area = "Compras" })";
 		var TRConfirmarAutorizacionUrl = "@Url.Action("ConfirmarAutorizacion", "transferencia", new { area = "Compras" })";
 	</script>
-	<script src="~/js/app/areas/transferencias/trAutorizacionesLista.js"></script>
+	@* <script src="~/js/app/areas/transferencias/trAutorizacionesLista.js"></script> *@
 	<script src="~/js/app/areas/transferencias/trVerTransferencia.js"></script>
 }

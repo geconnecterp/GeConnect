@@ -1,9 +1,11 @@
 ﻿@model GridCoreSmart<ProductoBusquedaDto>
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 
-<div class="table-responsive table-wrapper-700">
-	<table class="drageable-table table table-sm mb-0 table-hover table-golden" id="tbDetalleDeProd">
+<div class="table-responsive text-nowrap table-wrapper-400-full-width">
+	<table class="drageable-table table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbDetalleDeProd">
 		<thead>
 			<tr class="header">
 				<th scope="col" class="table-fontsize align-center col-header-x-small" style="width:5%;">ID</th>
@@ -19,22 +21,26 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.ListaDatos)
+			@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
 			{
-				var resCantidad = string.Format(CultureInfo.InvariantCulture, "{0:#,0.000}", @item.Cantidad);
-				var resUnidad = string.Format(CultureInfo.InvariantCulture, "{0:#,0.000}", @item.Unidad);
-				<tr onclick="selectDetalleDeProdRow(this)" class="sortme" id="productRow">
-					<td class ="table-fontsize align-center tiny-row">@item.P_id</td>
-					<td class="table-fontsize align-left tiny-row">@item.P_desc</td>
-					<td class="table-fontsize align-center tiny-row">@item.P_id_prov</td>
-					<td class="table-fontsize align-center tiny-row">@item.oc_compte</td>
-					<td class="table-fontsize align-right tiny-row">@item.P_unidad_pres</td>
-					<td class="table-fontsize align-right tiny-row">@item.Bulto</td>
-					<td class="table-fontsize align-right tiny-row">@resUnidad</td>
-					<td class="table-fontsize align-right tiny-row">@resCantidad</td>
-					<td style="display:none;">@item.Item</td>
-					<td style="padding-left:2px;padding-right:2px;"><a class="btn btn-xs btn-outline-dark" data-interaction="@item.P_id" onclick="quitarProductoDelDetalle(this);" title="Eliminar producto (@item.P_id)"> <i class="bx bxs-trash"></i></a></td>
-				</tr>
+				@foreach (var item in Model.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					var resCantidad = string.Format(CultureInfo.InvariantCulture, "{0:#,0.000}", @item.Cantidad);
+					var resUnidad = string.Format(CultureInfo.InvariantCulture, "{0:#,0.000}", @item.Unidad);
+					<tr class="@clase" onclick="selectDetalleDeProdRow(this)" class="sortme" id="productRow">
+						<td class="table-fontsize align-center tiny-row">@item.P_id</td>
+						<td class="table-fontsize align-left tiny-row">@item.P_desc</td>
+						<td class="table-fontsize align-center tiny-row">@item.P_id_prov</td>
+						<td class="table-fontsize align-center tiny-row">@item.oc_compte</td>
+						<td class="table-fontsize align-right tiny-row">@item.P_unidad_pres</td>
+						<td class="table-fontsize align-right tiny-row">@item.Bulto</td>
+						<td class="table-fontsize align-right tiny-row">@resUnidad</td>
+						<td class="table-fontsize align-right tiny-row">@resCantidad</td>
+						<td style="display:none;">@item.Item</td>
+						<td style="padding-left:2px;padding-right:2px;"><a class="btn btn-xs btn-outline-danger" data-interaction="@item.P_id" onclick="quitarProductoDelDetalle(this);" title="Eliminar producto (@item.P_id)"> <i class="bx bxs-trash"></i></a></td>
+					</tr>
+				}
 			}
 		</tbody>
 	</table>

@@ -1,5 +1,8 @@
 ﻿@model GridCoreSmart<TRPendienteDto>
-
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
 <div class="table-responsive text-nowrap table-wrapper">
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbListaAutorizaciones">
 		<thead>
@@ -20,7 +23,8 @@
 			{
 				@foreach (var item in Model.ListaDatos)
 				{
-					<tr onclick="selectTRRow(this)">
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" onclick="selectTRRow(this)">
 						<td class="align-center">@item.ti</td>
 						<td class="align-right">@item.adm_nombre</td>
 						<td class="align-center">@item.fecha.ToString("dd/MM/yyyy")</td>

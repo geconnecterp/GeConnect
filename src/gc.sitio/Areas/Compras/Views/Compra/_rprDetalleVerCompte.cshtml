@@ -1,9 +1,11 @@
 ﻿@model GridCoreSmart<RPRItemVerCompteDto>
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 
-<div class="table-responsive table-wrapper">
-	<table class="table table-sm mb-0 table-hover table-golden" id="tbDetalleVerCompte">
+<div class="table-responsive text-nowrap table-wrapper">
+	<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbDetalleVerCompte">
 		<thead>
 			<tr class="header">
 				<th scope="col" class="table-fontsize align-center" style="width:6%;">Item</th>
@@ -20,21 +22,25 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.ListaDatos)
+			@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
 			{
-				<tr onclick="selectDetalleDeVerCompte(this)">
-					<td class="table-fontsize align-center">@item.Item</td>
-					<td class="table-fontsize align-center">@item.P_id</td>
-					<td class="table-fontsize align-left">@item.P_desc</td>
-					<td class="table-fontsize align-center">@item.P_id_prov</td>
-					<td class="table-fontsize align-center">@item.Oc_compte</td>
-					<td class="table-fontsize align-right">@item.Oc_cantidad</td>
-					<td class="table-fontsize align-right">@item.Bulto_c</td>
-					<td class="table-fontsize align-right">@item.Us_c</td>
-					<td class="table-fontsize align-right">@item.Cantidad_c</td>
-					<td class="table-fontsize align-right">@item.Cantidad</td>
-					<td class="table-fontsize" style="border-right: 5px solid @item.Row_color;">@item.No_recibido</td>
-				</tr>
+				@foreach (var item in Model.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" onclick="selectDetalleDeVerCompte(this)">
+						<td class="table-fontsize align-center">@item.Item</td>
+						<td class="table-fontsize align-center">@item.P_id</td>
+						<td class="table-fontsize align-left">@item.P_desc</td>
+						<td class="table-fontsize align-center">@item.P_id_prov</td>
+						<td class="table-fontsize align-center">@item.Oc_compte</td>
+						<td class="table-fontsize align-right">@item.Oc_cantidad</td>
+						<td class="table-fontsize align-right">@item.Bulto_c</td>
+						<td class="table-fontsize align-right">@item.Us_c</td>
+						<td class="table-fontsize align-right">@item.Cantidad_c</td>
+						<td class="table-fontsize align-right">@item.Cantidad</td>
+						<td class="table-fontsize align-right" style="border-right: 5px solid @item.Row_color;">@item.No_recibido</td>
+					</tr>
+				}
 			}
 		</tbody>
 	</table>

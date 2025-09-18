@@ -1,5 +1,7 @@
 ﻿@model GridCoreSmart<RPROrdenDeCompraDto>
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 <style>
 	thead th {
@@ -8,8 +10,8 @@
 	}
 </style>
 <input type="text" id="ocCompteSelected" style="display:none;" />
-<div class="table-responsive table-wrapper-200">
-	<table class="table table-sm mb-0 table-hover table-golden" id="tbOCxCuenta">
+<div class="table-responsive text-nowrap table-wrapper-150">
+	<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbOCxCuenta">
 		<thead>
 			<tr class="header">
 				<th scope="col" class="table-fontsize col-header-x-small align-center" style="width:20%;">N° OC</th>
@@ -20,16 +22,20 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.ListaDatos)
+			@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
 			{
-				<tr onclick="selectOCRow(this)">
-					<td class="table-fontsize align-center tiny-row">@item.oc_compte</td>
-					<td class="table-fontsize align-center tiny-row">@item.oc_fecha</td>
-					<td class="table-fontsize tiny-row">@item.adm_nombre</td>
-					<td class="table-fontsize align-center tiny-row">@item.oc_fecha</td>
-					<td class="table-fontsize tiny-row">@item.oce_desc</td>
-					
-				</tr>
+				@foreach (var item in Model.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" onclick="selectOCRow(this)">
+						<td class="table-fontsize align-center tiny-row">@item.oc_compte</td>
+						<td class="table-fontsize align-center tiny-row">@item.oc_fecha</td>
+						<td class="table-fontsize tiny-row">@item.adm_nombre</td>
+						<td class="table-fontsize align-center tiny-row">@item.oc_fecha</td>
+						<td class="table-fontsize tiny-row">@item.oce_desc</td>
+
+					</tr>
+				}
 			}
 		</tbody>
 	</table>

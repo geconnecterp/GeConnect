@@ -1,94 +1,74 @@
 ﻿@model GridCoreSmart<AutoComptesPendientesDto>
 @{
+	var alt = true;
+	string clase = string.Empty;
+	Layout = "~/views/shared/_Layout.cshtml";
 }
-@{
-    Layout = "~/views/shared/_Layout.cshtml";
-}
 
-<div class="container-fluid">
-    <div class="grid-golden">
-        <input type="text" id="idRPSelected" style="display:none;" />
-        @* <row>
-		<input type="text" id="rp_id" style="visibility:hidden" />
-		<div style="float:left">
-			<h5 class="card-header">RPR Autorizaciones</h5>
+<div class="card">
+	<div class="card-body">
+		<input type="text" id="idRPSelected" style="display:none;" />
+		<div class="row align-items-md-center mb-2 ms-1">
+			<div class="col-md-6 col-sm-6">
+				<button id="btnNuevaAut" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Agregar Nueva Autorización" asp-action="NuevaAut" asp-controller="Compra" asp-area="Compras">
+					<i class="bx bx-plus-circle"></i> Nueva Autorización
+				</button>
+				<button id="btnModificarAut" class="btn btn-info btn-sm mt-1 me-1" type="button" title="Modificar Autorizacion seleccionada">
+					<i class="bx bx-edit-alt"></i> Modificar Autorización
+				</button>
+				<button id="btnVer" class="btn btn-info btn-sm mt-1 me-1" type="button" title="Ver Autorización seleccionada">
+					<i class="bx bx-show"></i> Ver Autorización
+				</button>
+			</div>
 		</div>
-		<div class="demo-inline-spacing" style="float:right;margin-top: 20px;margin-right: 55px;">
-			<a asp-action="NuevaAut" asp-controller="Compra" asp-area="Compras" class="btn btn-primary" id="btnNuevaAut" title="Nueva Autorización">
-				<span class="bx bx-plus-circle me-1"></span>
-			</a>
-			<a href="#" id="btnModificarAut" class="btn btn-secondary" title="Modificar Autorización"><i class="bx bx-edit me-1"></i></a>
-			<a href="#" id="btnVer" class="btn btn-success" title="Ver Autorización"><i class="bx bx-binocular me-1"></i></a>
+		<div class="table-responsive text-nowrap table-wrapper">
+			<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbListaAutorizaciones">
+				<thead>
+					<tr class="header">
+						<th class="align-center">N° Auto</th>
+						<th class="align-center">ID</th>
+						<th class="align-center">Cuenta</th>
+						<th class="align-center">Turno</th>
+						<th class="align-center">Nota</th>
+						<th class="align-center">Factura</th>
+						<th class="align-center">Fecha</th>
+						<th class="align-center">Monto</th>
+						<th class="align-center">Estado</th>
+						<th style="width:0%; display:none;">rp_id</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
+					{
+						@foreach (var item in Model.ListaDatos)
+						{
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							<tr class="@clase" onclick="selectRPRow(this)">
+								<td class="align-center">@item.Rp</td>
+								<td class="align-center">@item.Cta_id</td>
+								<td class="align-left">@item.Cta_denominacion</td>
+								<td class="align-center">@item.Fecha?.ToString("dd/MM/yyyy hh:mm")</td>
+								<td class="align-left">@item.Nota</td>
+								<td class="align-center">@item.Cm_compte</td>
+								<td class="align-center">@item.Cm_fecha.ToString("dd/MM/yyyy")</td>
+								<td class="align-right">@item.Cm_importe</td>
+								<td class="align-center">@item.Rpe_desc</td>
+								<td style="display:none;">@item.Rp_hidden</td>
+							</tr>
+						}
+					}
+				</tbody>
+			</table>
 		</div>
-	</row> *@
-        @* <div class="grid-golden-header">
-		<h5 class="mb-0">
-			<i class="bx bx-package me-2"></i>
-			<strong>RPR Autorizaciones</strong>
-		</h5>
-
-	</div> *@
-        <div class="grid-golden-body">
-            <div class="row align-items-md-center mb-2 ms-1">
-                <div class="col-md-6 col-sm-6">
-                    <a asp-action="NuevaAut" asp-controller="Compra" asp-area="Compras" class="btn btn-primary btn-sm mt-1 me-1" id="btnNuevaAut" title="Nueva Autorización">
-                        <span class="bx bx-plus-circle"> Nueva Autorización</span>
-                    </a>
-                    <a href="#" id="btnModificarAut" class="btn btn-info btn-sm mt-1 me-1" title="Modificar Autorización"><i class="bx bx-edit"> Modificar Autorización</i></a>
-                </div>
-                <div class="col-md-6 col-sm-6">
-                    <div class="d-flex justify-content-sm-end">
-                        <a href="#" id="btnVer" class="btn btn-info btn-sm mt-1 me-1" title="Ver Autorización"><i class="bx bx-show"> Ver Autorización</i></a>
-                    </div>
-
-                </div>
-            </div>
-
-
-            <div class="table-responsive text-nowrap table-wrapper">
-                <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbListaAutorizaciones">
-                    <thead>
-                        <tr class="header">
-                            <th class="align-center">N° Auto</th>
-                            <th class="align-center">ID</th>
-                            <th class="align-center">Cuenta</th>
-                            <th class="align-center">Turno</th>
-                            <th class="align-center">Nota</th>
-                            <th class="align-center">Factura</th>
-                            <th class="align-center">Fecha</th>
-                            <th class="align-center">Monto</th>
-                            <th class="align-center">Estado</th>
-                            <th style="width:0%; display:none;">rp_id</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model.ListaDatos)
-                        {
-                            <tr onclick="selectRPRow(this)">
-                                <td class="align-center">@item.Rp</td>
-                                <td class="align-center">@item.Cta_id</td>
-                                <td class="align-left">@item.Cta_denominacion</td>
-                                <td class="align-center">@item.Fecha?.ToString("dd/MM/yyyy hh:mm")</td>
-                                <td class="align-left">@item.Nota</td>
-                                <td class="align-center">@item.Cm_compte</td>
-                                <td class="align-center">@item.Cm_fecha.ToString("dd/MM/yyyy")</td>
-                                <td class="align-right">@item.Cm_importe</td>
-                                <td class="align-center">@item.Rpe_desc</td>
-                                <td style="display:none;">@item.Rp_hidden</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+	</div>
 </div>
 
 @section scripts {
-    <script type="text/javascript">
-        var ModificarAutorizacionRPUrl = "@Url.Action("NuevaAut", "compra", new { area = "Compras" })";
-        var VerAutorizacionRPUrl = "@Url.Action("VerAut", "compra", new { area = "Compras" })";
-        var ObtenerRPRAutorizacionPendienteSeleccionadoEnListaURL = "@Url.Action("ObtenerRPRAutorizacionPendienteSeleccionadoEnLista", "compra", new { area = "Compras" })";
-    </script>
-    <script src="~/js/app/areas/compras/rprAutorizacionesLista.js"></script>
+	<script type="text/javascript">
+		var rpIdSelected="";
+		var ModificarAutorizacionRPUrl = "@Url.Action("NuevaAut", "compra", new { area = "Compras" })";
+		var VerAutorizacionRPUrl = "@Url.Action("VerAut", "compra", new { area = "Compras" })";
+		var ObtenerRPRAutorizacionPendienteSeleccionadoEnListaURL = "@Url.Action("ObtenerRPRAutorizacionPendienteSeleccionadoEnLista", "compra", new { area = "Compras" })";
+	</script>
+	<script src="~/js/app/areas/compras/rprAutorizacionesLista.js"></script>
 }

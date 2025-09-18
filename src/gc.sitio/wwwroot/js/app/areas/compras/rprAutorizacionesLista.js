@@ -11,7 +11,36 @@
 		});
 	}
 
-	$("#btnModificarAut").on("click", ModificarAutorizacion);
+	document.getElementById("btnNuevaAut").addEventListener("click", function () {
+		window.location.href = "/Compras/Compra/NuevaAut";
+	});
+
+	document.getElementById("btnModificarAut").addEventListener("click", function () {
+		const selectedRow = $("#idRPSelected").val();
+		if (!selectedRow || selectedRow == "") {
+			alert("Por favor, seleccioná una autorización.");
+			return;
+		}
+
+		//const id = selectedRow.getAttribute("data-id"); // o data-auto
+		const url = `/Compras/compra/NuevaAut?rp=${$("#idRPSelected").val()}`;
+		window.location.href = url;
+	});
+
+	document.getElementById("btnVer").addEventListener("click", function () {
+		const selectedRow = $("#idRPSelected").val();
+		if (!selectedRow || selectedRow == "") {
+			alert("Por favor, seleccioná una autorización.");
+			return;
+		}
+
+		//const id = selectedRow.getAttribute("data-id"); // o data-auto
+		const url = `/Compras/compra/VerAut?rp=${$("#idRPSelected").val()}`;
+		window.location.href = url;
+	});
+
+
+	//$("#btnModificarAut").on("click", ModificarAutorizacion);
 	SelecccionarPrimerRegistro("tbListaAutorizaciones");
 });
 
@@ -80,7 +109,7 @@ function ObtenerRPRAutorizacionPendienteSeleccionadoEnLista() {
 							}
 						}
 					}
-					
+
 				});
 			}
 			return o.codigo;

@@ -1,9 +1,11 @@
 ﻿@model GridCoreSmart<RPRItemVerCompteDto>
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 
-<div class="table-responsive table-wrapper">
-	<table class="table table-sm mb-0 table-hover table-golden" id="tbDetalleVerConteoSeleccionado">
+<div class="table-responsive text-nowrap table-wrapper">
+	<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbDetalleVerConteoSeleccionado">
 		<thead>
 			<tr class="header">
 				<th scope="col" class="table-fontsize align-center" style="width:25%;">Comprobante</th>
@@ -13,14 +15,18 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.ListaDatos)
+			@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
 			{
-				<tr onclick="selectDetalleVerConteoSeleccionado(this)">
-					<td class="table-fontsize align-center">@item.Cm_compte</td>
-					<td class="table-fontsize align-right">@item.Cantidad_c</td>
-					<td class="table-fontsize align-right">@item.Cantidad</td>
-					<td class="table-fontsize align-right">@item.No_recibido</td>
-				</tr>
+				@foreach (var item in Model.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" onclick="selectDetalleVerConteoSeleccionado(this)">
+						<td class="table-fontsize align-center">@item.Cm_compte</td>
+						<td class="table-fontsize align-right">@item.Cantidad_c</td>
+						<td class="table-fontsize align-right">@item.Cantidad</td>
+						<td class="table-fontsize align-right">@item.No_recibido</td>
+					</tr>
+				}
 			}
 		</tbody>
 	</table>

@@ -14,6 +14,9 @@ function ValidarTipoTR() {
 	}
 }
 
+function selectTRRow(x) {
+}
+
 function validarAutorizacion() {
 	var ti = $("#ti").val();
 	if (ti === "") {

@@ -1,8 +1,10 @@
 ﻿@model List<RPRComptesDeRPDto>
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
-<div class="table-responsive table-wrapper">
-	<table class="table table-sm mb-0 table-hover table-golden" id="tbVerComptesDeRP">
+<div class="table-responsive text-nowrap table-wrapper">
+	<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbVerComptesDeRP">
 		<thead>
 			<tr class="header">
 				<th style="width:0%; display:none;">TipoId</th>
@@ -13,15 +15,19 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model)
+			@if (Model != null && Model.Count > 0)
 			{
-				<tr onclick="selectVerComptesDeRPRow(this)">
-					<td style="display:none;">@item.Tipo</td>
-					<td style="display:none;">@item.NroComprobante</td>
-					<td>@item.TipoDescripcion @item.NroComprobante</td>
-					<td class="align-center">@item.Fecha</td>
-					<td class="align-right">@item.Importe</td>
-				</tr>
+				@foreach (var item in Model)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" onclick="selectVerComptesDeRPRow(this)">
+						<td style="display:none;">@item.Tipo</td>
+						<td style="display:none;">@item.NroComprobante</td>
+						<td>@item.TipoDescripcion @item.NroComprobante</td>
+						<td class="align-center">@item.Fecha</td>
+						<td class="align-right">@item.Importe</td>
+					</tr>
+				}
 			}
 		</tbody>
 	</table>

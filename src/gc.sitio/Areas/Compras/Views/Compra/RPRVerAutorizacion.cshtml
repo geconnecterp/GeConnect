@@ -2,139 +2,158 @@
 @{
 	Layout = "~/views/shared/_Layout.cshtml";
 	var depositos = Model.ComboDeposito;
+	var alt = true;
+	string clase = string.Empty;
 }
 <div class="card">
-	<row>
-		@Html.Hidden("Rp", Model.Rp)
-		@Html.Hidden("DepoId", Model.Depo_id)
-		<div style="float:left; width: 100%;">
-			<fieldset>
-				<h5>RPR Autorización</h5>
-				<row>
-					<div class="grid-golden">
-						<div class="row">
-							<div class="col-9">
-								<div class="input-group">
-									<span>@Model.Leyenda</span>
+	<div class="card-body">
+		<row>
+			@Html.Hidden("Rp", Model.Rp)
+			@Html.Hidden("DepoId", Model.Depo_id)
+			<div style="float:left; width: 100%;">
+				<fieldset>
+					<h5>RPR Autorización</h5>
+					<row>
+						<div class="grid-golden">
+							<div class="row">
+								<div class="col-9">
+									<div class="input-group">
+										<span>@Model.Leyenda</span>
+									</div>
 								</div>
-							</div>
-							<div class="col-3">
-								<div class="input-group">
-									<span class="input-group-text">Depósito: </span>
-									@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control" })
+								<div class="col-3">
+									@* <div class="input-group">
+										<span class="input-group-text">Depósito: </span>
+										@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control" })
+									</div> *@
 								</div>
 							</div>
 						</div>
-					</div>
-				</row>
-				<row>
-					<div class="grid-golden-body">
-						<div class="row">
-							<div id="divVerComptesDeRP" class="col-8">
-								<div class="table-responsive table-wrapper">
-									<table class="table table-sm mb-0 table-hover table-golden" id="tbVerComptesDeRP">
-										<thead>
-											<tr class="header">
-												<th style="width:0%; display:none;">TipoId</th>
-												<th style="width:0%; display:none;">NroCompte</th>
-												<th scope="col" style="width:50%" class="align-center">Tipo</th>
-												<th scope="col" style="width:25%" class="align-center">Fecha</th>
-												<th scope="col" style="width:25%" class="align-center">Importe</th>
-											</tr>
-										</thead>
-										<tbody>
-											@foreach (var item in Model.Comprobantes)
-											{
-												<tr onclick="selectVerComptesDeRPRow(this)">
-													<td style="display:none;">@item.Tipo</td>
-													<td style="display:none;">@item.NroComprobante</td>
-													<td>@item.TipoDescripcion @item.NroComprobante</td>
-													<td class="align-center">@item.Fecha</td>
-													<td class="align-right">@item.Importe</td>
+					</row>
+					<row>
+						<div class="grid-golden-body">
+							<div class="row">
+								<div id="divVerComptesDeRP" class="col-4">
+									<div class="table-responsive text-nowrap table-wrapper">
+										<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbVerComptesDeRP">
+											<thead>
+												<tr class="header">
+													<th style="width:0%; display:none;">TipoId</th>
+													<th style="width:0%; display:none;">NroCompte</th>
+													<th scope="col" style="width:50%" class="align-center">Tipo</th>
+													<th scope="col" style="width:25%" class="align-center">Fecha</th>
+													<th scope="col" style="width:25%" class="align-center">Importe</th>
 												</tr>
-											}
-										</tbody>
-									</table>
+											</thead>
+											<tbody>
+												@if (Model != null && Model.Comprobantes != null)
+												{
+													@foreach (var item in Model.Comprobantes)
+													{
+														if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+														<tr class="@clase" onclick="selectVerComptesDeRPRow(this)">
+															<td style="display:none;">@item.Tipo</td>
+															<td style="display:none;">@item.NroComprobante</td>
+															<td>@item.TipoDescripcion @item.NroComprobante</td>
+															<td class="align-center">@item.Fecha</td>
+															<td class="align-right">@item.Importe</td>
+														</tr>
+													}
+												}
+											</tbody>
+										</table>
+									</div>
 								</div>
-							</div>
-							<div class="col-4" style="text-align: right;align-content: center;">
-								<button type="button" class="btn btn-success btn-sm mt-1 me-1" style="margin-left:5px;" id="btnConfirmarRP" title="Confirmar RPR">
-									<span class="bx bx-badge-check"> Confirmar</span>
-								</button>
-								<button type="button" class="btn btn-info btn-sm mt-1 me-1" style="margin-left:5px;" id="btnActualizar" title="Actualizar RPR">
-									<span class="bx bx-refresh-cw"> Actualizar</span>
-								</button>
-								<button type="button" class="btn btn-secondary btn-sm mt-1 me-1" style="margin-left:5px;" id="btnRegresarAAutorizacionesRP" title="Regresar">
-									<span class="bx bx-chevron-left"></span>
-								</button>
+								<div class="col-3">
+									<div class="input-group input-group-sm">
+										<span class="input-group-text">Depósito: </span>
+										@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control activable inputEditable" })
+									</div>
+								</div>
+								<div class="col-5">
+									<button type="button" class="btn btn-success btn-sm me-1" id="btnConfirmarRP" title="Confirmar RP">
+										<i class="bx bx-badge-check"></i> Confirmar RP
+									</button>
+									<button type="button" class="btn btn-success btn-sm me-1" id="btnActualizar" title="Actualizar RP">
+										<i class="bx bx-check-double"></i> Actualizar RP
+									</button>
+									<button type="button" class="btn btn-secondary btn-sm me-1" id="btnRegresarAAutorizacionesRP" title="Volver">
+										<i class="bx bx-chevron-left"></i> Volver
+									</button>
+								</div>
 							</div>
 						</div>
-					</div>
-				</row>
-			</fieldset>
-			<div class="nav-align-top mb-4">
-				<ul class="nav nav-tabs" role="tablist">
-					<li class="nav-item" role="presentation">
-						<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-home" aria-controls="navs-top-home" aria-selected="true">
-							<span id="tabOne">Detalle de comprobante</span>
-						</button>
-					</li>
-					<li class="nav-item" role="presentation">
-						<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-profile" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
-							<span id="tabTwo">Conteos</span>
-						</button>
-					</li>
-					<li class="nav-item" role="presentation">
-						<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-panda" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
-							<span id="tabTwo">Conteos x UL</span>
-						</button>
-					</li>
-				</ul>
-				<div class="tab-content">
-					<div class="tab-pane fade active show" id="navs-top-home" role="tabpanel">
-						<div id="divDetalleVerCompte"></div>
-					</div>
-					<div class="tab-pane fade" id="navs-top-profile" role="tabpanel">
-						<div id="divDetalleVerConteos"></div>
-						<div style="padding-top: 15px;" id="divDetalleVerConteosSeleccionado"></div>
-					</div>
-					<div class="tab-pane fade" id="navs-top-panda" role="tabpanel">
-						<div class="row">
-							<div class="col-6" id="divULxRPR">
-								<div class="table-responsive table-wrapper">
-									<table class="table table-sm mb-0 table-hover table-golden" id="tbULxRPR">
-										<thead>
-											<tr class="header">
-												<th style="width:0%; display:none;">tipo</th>
-												<th style="width:0%; display:none;">id</th>
-												<th scope="col" style="width:33%" class="align-center">UL</th>
-												<th scope="col" style="width:33%" class="align-center">Usuario</th>
-												<th scope="col" style="width:33%" class="align-center">Estado</th>
-											</tr>
-										</thead>
-										<tbody>
-											@foreach (var item in Model.ConteosxUL)
-											{
-												<tr onclick="selectULxRPRRow(this)">
-													<td style="display:none;">@item.tipo</td>
-													<td style="display:none;">@item.id</td>
-													<td class="align-center">@item.ul_id</td>
-													<td class="align-center">@item.usu_apellidoynombre</td>
-													<td class="align-center">@item.ule_desc</td>
+					</row>
+				</fieldset>
+				<div class="nav-align-top mb-4">
+					<ul class="nav nav-tabs nav-tabs-golden" role="tablist">
+						<li class="nav-item" role="presentation">
+							<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-home" aria-controls="navs-top-home" aria-selected="true">
+								<span id="tabOne">Detalle de comprobante</span>
+							</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-profile" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
+								<span id="tabTwo">Conteos</span>
+							</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-panda" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
+								<span id="tabTwo">Conteos x UL</span>
+							</button>
+						</li>
+					</ul>
+					<div class="tab-content tab-content-compact">
+						<div class="tab-pane fade tab-content-golden active show" id="navs-top-home" role="tabpanel">
+							<div id="divDetalleVerCompte"></div>
+						</div>
+						<div class="tab-pane fade tab-content-golden" id="navs-top-profile" role="tabpanel">
+							<div id="divDetalleVerConteos"></div>
+							<div class="col-6 mt-3" id="divDetalleVerConteosSeleccionado"></div>
+						</div>
+						<div class="tab-pane fade tab-content-golden" id="navs-top-panda" role="tabpanel">
+							<div class="row">
+								<div class="col-6" id="divULxRPR">
+									<div class="table-responsive text-nowrap table-wrapper">
+										<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbULxRPR">
+											<thead>
+												<tr class="header">
+													<th style="width:0%; display:none;">tipo</th>
+													<th style="width:0%; display:none;">id</th>
+													<th scope="col" style="width:33%" class="align-center">UL</th>
+													<th scope="col" style="width:33%" class="align-center">Usuario</th>
+													<th scope="col" style="width:33%" class="align-center">Estado</th>
 												</tr>
-											}
-										</tbody>
-									</table>
+											</thead>
+											<tbody>
+												@if (Model != null && Model.ConteosxUL != null)
+												{
+													@foreach (var item in Model.ConteosxUL)
+													{
+														if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+														<tr class="@clase" onclick="selectULxRPRRow(this)">
+															<td style="display:none;">@item.tipo</td>
+															<td style="display:none;">@item.id</td>
+															<td class="align-center">@item.ul_id</td>
+															<td class="align-center">@item.usu_apellidoynombre</td>
+															<td class="align-center">@item.ule_desc</td>
+														</tr>
+													}
+												}
+											</tbody>
+										</table>
+									</div>
 								</div>
-							</div>
-							<div class="col-6" id="divULxRPRDetalle">
+								<div class="col-6" id="divULxRPRDetalle">
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
-		</div>
-	</row>
+		</row>
+	</div>
+
 </div>
 
 @section scripts {

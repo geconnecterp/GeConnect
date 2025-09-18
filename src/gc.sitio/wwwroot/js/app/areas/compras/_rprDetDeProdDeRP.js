@@ -469,28 +469,19 @@ function RecalcularItemValue() {
 	CerrarWaiting();
 }
 
-//let items = document.querySelectorAll('.drageable-table > tbody > tr');
-//items.forEach(function (item) {
-//	item.addEventListener('dragstart', handleDragStart);
-//	item.addEventListener('dragend', handleDragEnd);
-//});
-
-//function handleDragEnd(e) {
-//	console.log("handleDragEnd");
-//}
-
-///Reacomodar los valores de la columna Item, luego de arrastra y soltar elementos de la grilla.
-
 function selectOCRow(x) {
+	AbrirWaiting("Cargando detalle de OC...");
 	$("#ocCompteSelected").val(x.cells[0].innerText.trim());
 	var oc_compte = x.cells[0].innerText.trim();
 	var data = { oc_compte };
 	PostGenHtml(data, VerDetalleDeOCRPUrl, function (obj) {
+		CerrarWaiting();
 		$("#divDetalleDeOrdenDeCompra").html(obj);
 		document.getElementById("leyendDetalleOC").outerHTML = "<h5 id=\"leyendDetalleOC\" style=\"margin-bottom: 0; margin-top: 10px;\"> Detalle de OC " + oc_compte + "</h5>";
 		AgregarHandlerAGrillaDetalleDeOC();
 		return true;
 	}, function (obj) {
+		CerrarWaiting();
 		ControlaMensajeError(obj.message);
 		return true;
 	});

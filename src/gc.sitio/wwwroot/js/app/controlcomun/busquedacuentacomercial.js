@@ -19,6 +19,17 @@
 	$("#btnBuscarCC").on("click", buscarCuentasComercial);
 	InicializaPantallaCC("");
 	$("#VerDetalle").on("click", VerDetalleClick);
+	document.getElementById("VerDetalle").addEventListener("click", function () {
+		if (!linkVerDetalle || linkVerDetalle == "") {
+			AbrirMensaje("Atención", "Debe seleccionar un comprobante.", function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+			return;
+		}
+
+		window.location.href = linkVerDetalle;
+	});
 	$("#btnNuevoCompteDeRP").on("click", NuevoCompteDeRP);
 	$("#btnEliminarCompteDeRP").on("click", EliminarCompteDeRP);
 	$("#btnRegresarASelAuto").on("click", RegresarASelAuto); //Regregar a la pantalla de seleccion de autorizaciones.
@@ -99,6 +110,7 @@ function AddEventListenerToComptesGrid() {
 				}
 				e.target.closest('tr').classList.add('selected-row');
 			}
+			ActualizarLinkBotonVerDetalle();
 		});
 	}
 }
@@ -173,6 +185,7 @@ function ActualizarLinkBotonVerDetalle() {
 	var descTipoCompte = $("#descTipoCompteDeRPSelected").val();
 	var cta = $("#Cuenta").val();
 	var link = VerDetalleDeCompteDeRPUrl + "?idTipoCompte=" + tipoCompte + "&nroCompte=" + nroCompte + "&depoSelec=" + depoSelec + "&notaAuto=" + notaAuto + "&turno=" + turno + "&ponerEnCurso=" + ponerEnCurso + "&ulCantidad=" + ul + "&rp=" + rp + "&ctaId=" + cta + "&tipoCuenta=" + tipoCuenta + "&fechaCompte=" + fechaCompte + "&monto=" + monto + "&descTipoCompte=" + descTipoCompte;
+	linkVerDetalle = link;
 	$("#VerDetalle").prop("href", link);
 }
 

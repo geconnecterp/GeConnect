@@ -1,5 +1,7 @@
 ﻿@model GridCoreSmart<RPROrdenDeCompraDetalleDto>
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 <style>
 	thead th {
@@ -7,8 +9,8 @@
 		top: 0px;
 	}
 </style>
-<div class="table-responsive table-wrapper">
-	<table class="table table-sm mb-0 table-hover table-golden" id="tbDetalleDeOC">
+<div class="table-responsive text-nowrap table-wrapper-300">
+	<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbDetalleDeOC">
 		<thead>
 			<tr class="header">
 				<th><input name="select_all" value="1" type="checkbox"></th>
@@ -22,19 +24,23 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.ListaDatos)
+			@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
 			{
-				var nombre = "chk" + item.p_id;
-				<tr onclick="selectOCDetalleRow(this)">
-					<td><input type="checkbox" name=@nombre /></td>
-					<td class="table-fontsize align-center tiny-row">@item.p_id</td>
-					<td class="table-fontsize align-left tiny-row">@item.p_desc</td>
-					<td class="table-fontsize align-center tiny-row">@item.p_id_prov</td>
-					<td class="table-fontsize align-right tiny-row">@item.ocd_unidad_x_bulto</td>
-					<td class="table-fontsize align-right tiny-row">@item.ocd_bultos</td>
-					<td class="table-fontsize align-right tiny-row">@item.ocd_unidad_pres</td>
-					<td class="table-fontsize align-right tiny-row">@item.ocd_cantidad</td>
-				</tr>
+				@foreach (var item in Model.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					var nombre = "chk" + item.p_id;
+					<tr class="@clase" onclick="selectOCDetalleRow(this)">
+						<td><input type="checkbox" name=@nombre /></td>
+						<td class="table-fontsize align-center tiny-row">@item.p_id</td>
+						<td class="table-fontsize align-left tiny-row">@item.p_desc</td>
+						<td class="table-fontsize align-center tiny-row">@item.p_id_prov</td>
+						<td class="table-fontsize align-right tiny-row">@item.ocd_unidad_x_bulto</td>
+						<td class="table-fontsize align-right tiny-row">@item.ocd_bultos</td>
+						<td class="table-fontsize align-right tiny-row">@item.ocd_unidad_pres</td>
+						<td class="table-fontsize align-right tiny-row">@item.ocd_cantidad</td>
+					</tr>
+				}
 			}
 		</tbody>
 	</table>

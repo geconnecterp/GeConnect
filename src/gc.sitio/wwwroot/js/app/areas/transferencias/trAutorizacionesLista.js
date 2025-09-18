@@ -3,6 +3,9 @@
 	AddEventListenerToGrid("tbListaAutorizaciones");
 	$("#btnradioSucursales").on("click", buscarPorSucursal);
 	$("#btnradioDepositos").on("click", buscarPorDeposito);
+	document.getElementById("btnNuevaAut").addEventListener("click", function () {
+		window.location.href = "/Compras/Transferencia/NuevaTR";
+	});
 });
 
 function selectTRRow(x) {

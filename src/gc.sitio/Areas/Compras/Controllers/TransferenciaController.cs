@@ -857,6 +857,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 				model.ti = ti;
 				var lista = await _productoServicio.TRVerConteos(ti, TokenCookie);
 				model.ListaTransferencias = ObtenerGridCoreSmart<TRVerConteosDto>(lista);
+
+				var titulo = "VER TRANSFERENCIA";
+				ViewData["Titulo"] = titulo;
 			}
 			catch (Exception ex)
 			{
