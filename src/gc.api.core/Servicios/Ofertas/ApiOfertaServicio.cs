@@ -36,7 +36,7 @@ namespace gc.api.core.Servicios.Ofertas
 
         public RespuestaDto ConfirmacionAltaOferta(AbmPlusGenDto req, ParamOferta param)
         {
-            string sp = ConstantesGC.StoredProcedures.SP_PROD_OFERTA_CARGA;            
+            string sp = ConstantesGC.StoredProcedures.SP_PROD_OFERTA_CARGA;
 
             var ps = new List<SqlParameter>
             {
@@ -50,25 +50,37 @@ namespace gc.api.core.Servicios.Ofertas
                 new SqlParameter("@adm_id", req.Administracion),
             };
 
-            
+
             List<RespuestaDto> resultado = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
-            if(resultado!=null && resultado.Count>0)
+            if (resultado != null && resultado.Count > 0)
             {
                 return resultado[0];
             }
-            return new() { resultado=-1,resultado_msj="No se logro obtener el resultado del proceso. "};
+            return new() { resultado = -1, resultado_msj = "No se logro obtener el resultado del proceso. " };
 
         }
 
-        public List<OfertaEstadoDto>  ObtenerEstadoOfertaProducto(string p_id)
+        public List<OfertaEstadoDto> ObtenerEstadoOfertaProducto(string p_id)
         {
-                       var sp = ConstantesGC.StoredProcedures.SP_PROD_OFERTA_ESTADO;
+            var sp = ConstantesGC.StoredProcedures.SP_PROD_OFERTA_ESTADO;
             var ps = new List<SqlParameter>
             {
                 new SqlParameter("@p_id", p_id)
             };
-            List<OfertaEstadoDto> estados = _repository.EjecutarLstSpExt<OfertaEstadoDto>(sp, ps);
+            List<OfertaEstadoDto> estados = _repository.EjecutarLstSpExt<OfertaEstadoDto>(sp, ps, true);
             return estados;
+        }
+
+        public List<OfertaSinActivarDto> ObtenerOfertasSinActivar(string admId, string lp_id)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_PROD_OFERTA_SIN_ACTIVAR;
+            var ps = new List<SqlParameter>
+            {
+                new SqlParameter("@adm_id_ofe", admId),
+                new SqlParameter("@lp_id_ofe", lp_id)
+            };
+            List<OfertaSinActivarDto> ofertas = _repository.EjecutarLstSpExt<OfertaSinActivarDto>(sp, ps, true);
+            return ofertas;
         }
     }
 }

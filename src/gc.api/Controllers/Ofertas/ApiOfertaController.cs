@@ -4,13 +4,14 @@ using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Productos.Ofertas;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net;
 
 namespace gc.api.Controllers.Ofertas
 {
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
@@ -81,6 +82,17 @@ namespace gc.api.Controllers.Ofertas
             }
             var resultado = _ofertaSv.ObtenerEstadoOfertaProducto(p_id);
             return Ok(new ApiResponse<List<OfertaEstadoDto>>(resultado));
+        }
+
+        [HttpGet("obtener-ofertas-sin-activar")]
+        public ActionResult<List<OfertaSinActivarDto>> ObtenerOfertasSinActivar(string admId, string lp_id)
+        {
+            if (string.IsNullOrEmpty(admId) || string.IsNullOrEmpty(lp_id))
+            {
+                return BadRequest("Alguno de los parametros para obtener las ofertas sin activar ha faltado. Verifique");
+            }
+            var resultado = _ofertaSv.ObtenerOfertasSinActivar(admId, lp_id);
+            return Ok(new ApiResponse<List<OfertaSinActivarDto>>(resultado));
         }
     }
 }
