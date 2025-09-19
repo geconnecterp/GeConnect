@@ -115,6 +115,46 @@ namespace gc.sitio.Areas.Productos.Controllers
         }
 
         [HttpPost]
+        public async Task<JsonResult> ActualizarOfertaVencidaSinActivar(string admId, string lp_id)
+        {
+            try
+            {
+                // ✅ VALIDACIÓN: Autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { error = true, msg = "Sesión expirada" });
+                AbmGenDto req = new AbmGenDto
+                {
+                    Objeto = $"{admId}#{lp_id}",
+                    Usuario = UserName,
+                    Administracion = AdministracionId
+                };
+                RespuestaGenerica<RespuestaDto> respuesta = await _ofertaServicio.ActualizarOfertaVencidaSinActivar(req, TokenCookie);
+                if (!respuesta.Ok || respuesta.EsError)
+                {
+                    throw new NegocioException(respuesta.Mensaje ?? "Error al actualizar las ofertas vencidas sin activar");
+                }
+                return Json(new
+                {
+                    error = false,
+                    warn = false,
+                    msg = string.IsNullOrEmpty(respuesta.Mensaje) ? "Ofertas actualizadas correctamente." : respuesta.Mensaje,
+                    adm_Id = admId,
+                    lp_id
+                });
+            }
+            catch (NegocioException ex)
+            {
+                _logger?.LogError(ex, "Error interno al actualizar ofertas vencidas sin activar");
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error interno al actualizar ofertas vencidas sin activar");
+                return Json(new { error = false, warn = true, msg = "Error interno al actualizar ofertas vencidas sin activar" });
+            }
+        }
+
+        [HttpPost]
         public async Task<JsonResult> ActivarOferta(List<string> ids, string admId, string lp_id)
         {
             try

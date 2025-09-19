@@ -12,5 +12,6 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaGenerica<OfertaEstadoDto>> ObtenerEstadoOfertaProducto(string p_id, string token);
         Task<RespuestaGenerica<OfertaSinActivarDto>> ObtenerOfertasSinActivar(string admId, string lp_id, string tokenCookie);
         Task<RespuestaGenerica<RespuestaDto>> ActivacionDeOferta(AbmPlusGenDto req, string token);
+        Task<RespuestaGenerica<RespuestaDto>> ActualizarOfertaVencidaSinActivar(AbmGenDto req, string token);
     }
 }

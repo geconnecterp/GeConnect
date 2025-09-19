@@ -7,7 +7,7 @@
 var modoSeleccionCanal = "ninguno"; // "individual", "multiple", "ninguno"
 var canalIndividualSeleccionado = null;
 
-// ✅ Inicialización del módulo
+// ✅ Inicialización del módulo (modificada)
 $(function () {
     console.log("🚀 Iniciando ofertaActivar.js");
     
@@ -34,6 +34,11 @@ $(function () {
         activarOfertas();
     });
     
+    // NUEVO: Configurar botón de activar vencimiento
+    $(document).on("click", "#btnActivarVencimiento", function() {
+        activarOfertasVencidas();
+    });
+    
     $("#btnCancelaActivacion").on("click", function() {
         confirmarCancelacion();
     });
@@ -41,7 +46,7 @@ $(function () {
     console.log("✅ ofertaActivar.js listo");
 });
 
-// ✅ NUEVA: Función para cargar ofertas sin activar
+// ✅ MODIFICADA: Función para cargar ofertas sin activar
 function cargarOfertasSinActivar(admId = "0000", lpId = "001", pagina = 1) {
     AbrirWaiting("Cargando ofertas sin activar...");
 
@@ -55,14 +60,17 @@ function cargarOfertasSinActivar(admId = "0000", lpId = "001", pagina = 1) {
     // Realizar la llamada AJAX usando POST como especifica el controlador
     $.ajax({
         url: presentarOfertasSinActivarUrl,
-        type: "POST", // Cambiado de GET a POST para coincidir con [HttpPost]
-        data: datosPost, // Enviar datos como form-data
+        type: "POST",
+        data: datosPost,
         success: function(response) {
             CerrarWaiting();
             $("#gridOfertaNoActivas").html(response);
             
             // Configurar eventos para la grilla de ofertas
             configurarEventosGridOfertasSinActivar();
+            
+            // NUEVO: Verificar ofertas vencidas para activar/desactivar botón
+            verificarOfertasVencidas();
         },
         error: function(xhr, status, error) {
             CerrarWaiting();
@@ -659,6 +667,160 @@ function procesarActivacionOfertas(ofertasSeleccionadas) {
                 function() {
                     // Recargar el grid
                     cargarOfertasSinActivar(admId, lp_id);
+                    $("#msjModal").modal("hide");
+                    return true;
+                },
+                false,
+                ["Aceptar"],
+                "success!",
+                null
+            );
+        },
+        error: function(xhr, status, error) {
+            CerrarWaiting();
+            console.error("Error en solicitud:", error);
+            
+            AbrirMensaje(
+                "ERROR DE COMUNICACIÓN",
+                "Error de comunicación: " + (xhr.responseText || error || "Error desconocido"),
+                function() {
+                    $("#msjModal").modal("hide");
+                    return true;
+                },
+                false,
+                ["Aceptar"],
+                "error!",
+                null
+            );
+        }
+    });
+}
+
+// ✅ NUEVA: Función para verificar y manejar ofertas vencidas
+function verificarOfertasVencidas() {
+    // Buscar spans con badge de vigencia que tengan title="Oferta vencida"
+    var ofertasVencidas = $("span.badge[title='Oferta vencida']");
+    var hayOfertasVencidas = ofertasVencidas.length > 0;
+    
+    // Activar o desactivar el botón de activar vencimiento
+    $("#btnActivarVencimiento").prop("disabled", !hayOfertasVencidas);
+    
+    // Si hay ofertas vencidas, añadir un contador al botón
+    if (hayOfertasVencidas) {
+        // Verificar si ya existe un badge en el botón
+        if ($("#btnActivarVencimiento .badge-counter").length === 0) {
+            // Añadir badge con contador
+            $("#btnActivarVencimiento").append(
+                `<span class="badge badge-counter bg-danger rounded-pill ms-2">${ofertasVencidas.length}</span>`
+            );
+        } else {
+            // Actualizar contador existente
+            $("#btnActivarVencimiento .badge-counter").text(ofertasVencidas.length);
+        }
+    } else {
+        // Quitar badge si no hay ofertas vencidas
+        $("#btnActivarVencimiento .badge-counter").remove();
+    }
+}
+
+// ✅ NUEVA: Función para activar ofertas vencidas
+function activarOfertasVencidas() {
+    // Buscar todas las ofertas con badge de vencimiento
+    var ofertasVencidas = $("span.badge[title='Oferta vencida']");
+    
+    if (ofertasVencidas.length === 0) {
+        ControlaMensajeInfo("No hay ofertas vencidas para activar");
+        return;
+    }
+    
+    // Obtener el canal actualmente seleccionado (fila con clase selected-row)
+    var filaSeleccionada = $("#tbGridCanales tr.selected-row");
+    var admId = "0000";
+    var lpId = "001";
+    
+    // Si hay un canal seleccionado, usar sus datos
+    if (filaSeleccionada.length) {
+        var boton = filaSeleccionada.find(".btn-seleccionar-canal");
+        if (boton.length) {
+            admId = boton.data("adm-id");
+            lpId = boton.data("lp-id");
+        }
+    }
+    
+    // Mostrar mensaje de confirmación
+    AbrirMensaje(
+        "CONFIRMAR ACTUALIZACIÓN DE OFERTAS VENCIDAS",
+        `¿Está seguro que desea actualizar ${ofertasVencidas.length} oferta(s) vencida(s)?<br><br>
+         <div class="alert alert-warning">
+            Esta acción actualizará las fechas de las ofertas vencidas para que puedan ser activadas.
+         </div>`,
+        function(resp) {
+            if (resp === "SI") {
+                procesarActualizacionOfertasVencidas(admId, lpId);
+            }
+            $("#msjModal").modal("hide");
+            return true;
+        },
+        true,
+        ["Actualizar", "Cancelar"],
+        "warn!",
+        null
+    );
+}
+
+// ✅ NUEVA: Función para procesar actualización de ofertas vencidas
+function procesarActualizacionOfertasVencidas(admId, lpId) {
+    AbrirWaiting("Actualizando ofertas vencidas...");
+    
+    $.ajax({
+        url: actualizarOfertaVencidaSinActivarUrl,
+        type: "POST",
+        data: {
+            admId: admId,
+            lp_id: lpId
+        },
+        success: function(response) {
+            CerrarWaiting();
+            
+            if (response.error) {
+                AbrirMensaje(
+                    "ERROR",
+                    response.msg || "Error al actualizar ofertas vencidas",
+                    function() {
+                        $("#msjModal").modal("hide");
+                        return true;
+                    },
+                    false,
+                    ["Aceptar"],
+                    "error!",
+                    null
+                );
+                return;
+            }
+            
+            if (response.warn) {
+                AbrirMensaje(
+                    "ADVERTENCIA",
+                    response.msg || "Advertencia al actualizar ofertas vencidas",
+                    function() {
+                        $("#msjModal").modal("hide");
+                        return true;
+                    },
+                    false,
+                    ["Aceptar"],
+                    "warn!",
+                    null
+                );
+                return;
+            }
+            
+            // Mensaje de éxito y recarga de la grilla
+            AbrirMensaje(
+                "OPERACIÓN EXITOSA",
+                response.msg || "Ofertas vencidas actualizadas correctamente",
+                function() {
+                    // Recargar el grid con los mismos parámetros
+                    cargarOfertasSinActivar(admId, lpId);
                     $("#msjModal").modal("hide");
                     return true;
                 },

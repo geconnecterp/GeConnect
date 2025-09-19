@@ -111,6 +111,32 @@ namespace gc.api.core.Servicios.Ofertas
                 resultado_msj = "No se logro obtener el resultado del proceso. "
             };
         }
+
+        public RespuestaDto ActualizarOfertaVencidaSinActivar(AbmGenDto req)
+        {    
+            string sp = ConstantesGC.StoredProcedures.SP_PROD_OFERTA_ACTU_VTO_SINACT;
+            var obj = req.Objeto.Split('#', StringSplitOptions.RemoveEmptyEntries);
+
+            var ps = new List<SqlParameter>
+            {
+                new SqlParameter("@adm_id_ofe", obj[0]),
+                new SqlParameter("@lp_id_ofe", obj[1]),
+                new SqlParameter("@usu_id", req.Usuario),
+                new SqlParameter("@adm_id", req.Administracion),
+            };
+
+            List<RespuestaDto> resultado = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+            if (resultado != null && resultado.Count > 0)
+            {
+                return resultado[0];
+            }
+            return new()
+            {
+                resultado = -1,
+                resultado_msj = "No se logro obtener el resultado del proceso. "
+            };
+        }
+
     }
 }
 

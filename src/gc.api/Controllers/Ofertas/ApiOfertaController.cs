@@ -106,5 +106,17 @@ namespace gc.api.Controllers.Ofertas
             var resultado = _ofertaSv.ActivacionDeOferta(req);
             return Ok(new ApiResponse<RespuestaDto>(resultado));
         }
+
+        [HttpPost("actualizar-oferta-vencida-sin-activar")]
+        public ActionResult<RespuestaDto> ActualizarOfertaVencidaSinActivar(AbmGenDto req)
+        {
+            if (req == null || string.IsNullOrEmpty(req.Json) || string.IsNullOrEmpty(req.Objeto)
+                || string.IsNullOrEmpty(req.Usuario) || string.IsNullOrEmpty(req.Administracion))
+            {
+                return BadRequest("Alguno de los parametros para la actualizacion de la oferta ha faltado. Verifique");
+            }
+            var resultado = _ofertaSv.ActualizarOfertaVencidaSinActivar(req);
+            return Ok(new ApiResponse<RespuestaDto>(resultado));
+        }
     }
 }
