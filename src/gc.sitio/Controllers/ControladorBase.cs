@@ -15,6 +15,7 @@ using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.Productos;
+using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.Dtos.Tipos;
 using gc.infraestructura.Dtos.Users;
 using gc.infraestructura.EntidadesComunes;
@@ -457,6 +458,8 @@ namespace gc.sitio.Controllers
                 _context.HttpContext?.Session.SetString("ProductosSeleccionadosV02", json);
             }
         }
+
+       
 
         public List<ProductoBusquedaDto> ProductosSeleccionados
 		{

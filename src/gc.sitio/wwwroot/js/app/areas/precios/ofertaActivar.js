@@ -30,7 +30,7 @@ $(function () {
     }
 
     // Configurar botones principales
-    $("#btnActivarOfertas").on("click", function() {
+    $(document).on("click", "#btnActivarOfertas", function() {
         activarOfertas();
     });
     
@@ -107,9 +107,9 @@ function configurarEventosGridOfertasSinActivar() {
     $(".btn-activar-oferta").off("click").on("click", function() {
         var pId = $(this).data("p-id");
         var admId = $(this).data("adm-id");
-        var plId = $(this).data("pl-id");
+        var lpId = $(this).data("lp-id");
         
-        activarOfertaIndividual(pId, admId, plId);
+        activarOfertaIndividual(pId, admId, lpId);
     });
     
     // Permitir seleccionar al hacer clic en la fila
@@ -139,31 +139,129 @@ function actualizarContadorOfertasSeleccionadas() {
     $("#ofertasSeleccionadas").text(checkedCount);
 }
 
-// ✅ NUEVA: Función para activar oferta individual
+// ✅ OPTIMIZADA: Función para activar oferta individual
 function activarOfertaIndividual(pId, admId, plId) {
-    if (!pId || !admId || !plId) {
-        ControlaMensajeWarning("Faltan datos para activar la oferta");
+    if (!pId) {
+        AbrirMensaje(
+            "ADVERTENCIA",
+            "Falta el ID del producto para activar la oferta",
+            function() {
+                $("#msjModal").modal("hide");
+                return true;
+            },
+            false,
+            ["Aceptar"],
+            "warn!",
+            null
+        );
         return;
     }
     
-    // Verificar si hay canales seleccionados
-    var canalesInfo = obtenerCanalesSeleccionados();
-    if (canalesInfo.canales.length === 0) {
-        ControlaMensajeWarning("Debe seleccionar al menos un canal antes de activar la oferta");
-        return;
+    // Obtener descripción del producto de la fila actual de la grilla
+    var descripcion = "";
+    try {
+        var fila = $(`tr[data-producto-id="${pId}"]`);
+        descripcion = fila.find('td:eq(2)').text().trim();
+    } catch (e) {
+        console.warn("No se pudo obtener la descripción del producto:", e);
     }
+    
+    // Componer mensaje con código y descripción
+    var mensaje = `¿Está seguro que desea activar la oferta del producto <strong>${pId}</strong>`;
+    if (descripcion) {
+        mensaje += ` - <strong>${descripcion}</strong>`;
+    }
+    mensaje += '?';
     
     // Mostrar mensaje de confirmación
-    var mensaje = `¿Desea activar la oferta del producto <strong>${pId}</strong> en los canales seleccionados?`;
-    
     AbrirMensaje(
         "CONFIRMAR ACTIVACIÓN DE OFERTA",
         mensaje,
         function(resp) {
             if (resp === "SI") {
-                // Aquí iría el código para activar la oferta individual
-                // Esto dependerá de cómo esté implementado en el backend
-                ControlaMensajeInfo("Funcionalidad en desarrollo");
+                // Guardar los parámetros actuales de grilla
+                var currentAdmId = admId || "0000";
+                var currentLpId = plId || "001";
+                
+                AbrirWaiting("Activando oferta...");
+                
+                $.ajax({
+                    url: activarOfertaUrl,
+                    type: "POST",
+                    data: {
+                        'ids[0]': pId,
+                        'admId': currentAdmId,
+                        'lp_id': currentLpId
+                    },
+                    success: function(response) {
+                        CerrarWaiting();
+                        
+                        if (response.error) {
+                            AbrirMensaje(
+                                "ERROR",
+                                response.msg || "Error al activar oferta",
+                                function() {
+                                    $("#msjModal").modal("hide");
+                                    return true;
+                                },
+                                false,
+                                ["Aceptar"],
+                                "error!",
+                                null
+                            );
+                            return;
+                        }
+                        
+                        if (response.warn) {
+                            AbrirMensaje(
+                                "ADVERTENCIA",
+                                response.msg || "Advertencia al activar oferta",
+                                function() {
+                                    $("#msjModal").modal("hide");
+                                    return true;
+                                },
+                                false,
+                                ["Aceptar"],
+                                "warn!",
+                                null
+                            );
+                            return;
+                        }
+                        
+                        // Mensaje de éxito y recarga del grid
+                        AbrirMensaje(
+                            "OPERACIÓN EXITOSA",
+                            response.msg || "Oferta activada correctamente",
+                            function() {
+                                // Recargar el grid con los mismos parámetros
+                                cargarOfertasSinActivar(currentAdmId, currentLpId);
+                                $("#msjModal").modal("hide");
+                                return true;
+                            },
+                            false,
+                            ["Aceptar"],
+                            "success!",
+                            null
+                        );
+                    },
+                    error: function(xhr, status, error) {
+                        CerrarWaiting();
+                        console.error("Error en solicitud:", error);
+                        
+                        AbrirMensaje(
+                            "ERROR DE COMUNICACIÓN",
+                            "Error de comunicación: " + (xhr.responseText || error || "Error desconocido"),
+                            function() {
+                                $("#msjModal").modal("hide");
+                                return true;
+                            },
+                            false,
+                            ["Aceptar"],
+                            "error!",
+                            null
+                        );
+                    }
+                });
             }
             $("#msjModal").modal("hide");
             return true;
@@ -191,13 +289,32 @@ function inicializarShortcutsBasicos() {
     });
 }
 
-// ✅ Función para cargar canales al inicializar
+// ✅ Función para cargar canales al inicializar (optimizada)
 function cargarCanales() {
     AbrirWaiting("Cargando canales...");
+
+    // Añadir estilo para filas seleccionadas si no existe
+    if ($("style#canal-row-style").length === 0) {
+        $("<style>")
+            .attr("id", "canal-row-style")
+            .prop("type", "text/css")
+            .html(`
+                .selected-row {
+                    background-color: #e9f5ff !important;
+                    border-left: 3px solid #0d6efd;
+                }
+            `)
+            .appendTo("head");
+    }
 
     PostGenHtml({}, buscarCanalesUrl, function (obj) {
         CerrarWaiting();
         $("#gridCanales").html(obj);
+        
+        // Ocultar checkboxes en canales
+        ocultarElementosSeleccionCanales();
+        
+        // Configurar eventos de selección
         configurarEventosGridCanales();
     }, function (error) {
         CerrarWaiting();
@@ -205,198 +322,44 @@ function cargarCanales() {
     });
 }
 
-// ✅ Configuración de eventos para el grid de canales
+// ✅ OPTIMIZADA: Función para ocultar elementos de selección múltiple de canales
+function ocultarElementosSeleccionCanales() {
+    // Ocultar checkbox principal "Seleccionar todos"
+    $("#checkAllCanales").parent().css("display", "none");
+    
+    // Ocultar checkboxes individuales
+    $(".check-canal").parent().css("display", "none");
+    
+    // Ocultar botón de limpiar selección si existe
+    $("#btnLimpiarSeleccion").css("display", "none");
+    
+    // Ocultar información de selección múltiple
+    $("#canalesSeleccionados").parent().css("display", "none");
+    
+    // Ocultar panel informativo de selección de canales si existe
+    $("#infoSeleccionCanales").css("display", "none");
+}
+
+// ✅ Configuración de eventos para el grid de canales (optimizada)
 function configurarEventosGridCanales() {
-    // Checkbox "Seleccionar todos" para canales
-    $("#checkAllCanales").off("change").on("change", function () {
-        var isChecked = $(this).is(":checked");
-        $(".check-canal").prop("checked", isChecked);
-
-        if (isChecked) {
-            cambiarModoSeleccion("multiple");
-        } else {
-            // Si se deselecciona "todos", verificar si hay alguno seleccionado
-            var checkedCount = $(".check-canal:checked").length;
-            if (checkedCount === 0) {
-                cambiarModoSeleccion("ninguno");
-            }
-        }
-
-        actualizarContadorCanales();
-    });
-
-    // Checkboxes individuales para canales
-    $(".check-canal").off("change").on("change", function () {
-        var totalChecks = $(".check-canal").length;
-        var checkedCount = $(".check-canal:checked").length;
-
-        $("#checkAllCanales").prop("checked", totalChecks === checkedCount);
-
-        // Determinar modo de selección
-        if (checkedCount === 0) {
-            cambiarModoSeleccion("ninguno");
-        } else if (checkedCount === 1 && modoSeleccionCanal !== "individual") {
-            cambiarModoSeleccion("multiple");
-        } else if (checkedCount > 1) {
-            cambiarModoSeleccion("multiple");
-        }
-
-        actualizarContadorCanales();
-    });
-
-    // Botones de seleccionar canal individual
+    // Solo configurar los botones de selección de canal individual
     $(".btn-seleccionar-canal").off("click").on("click", function () {
-        var admId = $(this).data("adm-id");
-        var lpId = $(this).data("lp-id");
-        var canal = $(this).data("canal");
-        var admNombre = $(this).data("adm-nombre");
-        var lpDesc = $(this).data("lp-desc");
-
-        seleccionarCanalIndividual(admId, lpId, canal, admNombre, lpDesc);
+        var button = $(this);
+        var fila = button.closest("tr");
+        var admId = button.data("adm-id");
+        var lpId = button.data("lp-id");
+        var canal = button.data("canal");
+        
+        // Deseleccionar todas las filas y seleccionar solo la actual
+        $("#tbGridCanales tr").removeClass("selected-row");
+        fila.addClass("selected-row");
+        
+        // Recargar ofertas sin activar con estos parámetros
+        cargarOfertasSinActivar(admId, lpId, 1);
+        
+        // Mostrar mensaje de selección de canal
+        ControlaMensajeInfo(`Mostrando ofertas del canal: ${canal}`);
     });
-
-    // Botón limpiar selección
-    $("#btnLimpiarSeleccion").off("click").on("click", function () {
-        limpiarSeleccionCanales();
-    });
-}
-
-// ✅ Función optimizada para actualizar contador
-function actualizarContadorCanales() {
-    var checkedCount = $(".check-canal:checked").length;
-    $("#canalesSeleccionados").text(checkedCount);
-
-    // Mostrar/ocultar el panel según la selección
-    if (checkedCount === 0 && modoSeleccionCanal !== "ninguno") {
-        cambiarModoSeleccion("ninguno");
-    }
-}
-
-// ✅ Función para seleccionar canal individual
-function seleccionarCanalIndividual(admId, lpId, canal, admNombre, lpDesc) {
-    var mensaje = `Canal: ${canal}<br>Administración: ${admNombre}<br>Lista: ${lpDesc}`;
-
-    AbrirMensaje(
-        "CONFIRMAR SELECCIÓN DE CANAL",
-        `¿Desea seleccionar este canal para las ofertas?<br><br>${mensaje}`,
-        function (resp) {
-            if (resp === "SI") {
-                // Limpiar selecciones previas para modo individual
-                $(".check-canal").prop("checked", false);
-                $("#checkAllCanales").prop("checked", false);
-
-                // Seleccionar solo este canal
-                $(`.check-canal[data-adm-id="${admId}"][data-lp-id="${lpId}"]`).prop("checked", true);
-
-                // Cambiar a modo individual y guardar datos
-                canalIndividualSeleccionado = {
-                    admId: admId,
-                    lpId: lpId,
-                    canal: canal,
-                    admNombre: admNombre,
-                    lpDesc: lpDesc
-                };
-
-                cambiarModoSeleccion("individual");
-                actualizarContadorCanales();
-
-                ControlaMensajeSuccess(`Canal "${canal}" seleccionado correctamente`);
-            }
-            $("#msjModal").modal("hide");
-            return true;
-        },
-        true,
-        ["Seleccionar", "Cancelar"],
-        "info!",
-        null
-    );
-}
-
-// ✅ Función para cambiar modo de selección
-function cambiarModoSeleccion(nuevoModo) {
-    modoSeleccionCanal = nuevoModo;
-
-    var infoPanel = $("#infoSeleccionCanales");
-    var modoTexto = $("#modoSeleccion");
-    var datosCanal = $("#datosCanal");
-
-    switch (nuevoModo) {
-        case "individual":
-            infoPanel.show();
-            modoTexto.text("Individual").removeClass().addClass("badge bg-info");
-
-            if (canalIndividualSeleccionado) {
-                $("#canalSeleccionado").text(canalIndividualSeleccionado.canal);
-                $("#admSeleccionada").text(canalIndividualSeleccionado.admNombre);
-                $("#lpSeleccionada").text(canalIndividualSeleccionado.lpDesc);
-                datosCanal.show();
-            }
-            break;
-
-        case "multiple":
-            infoPanel.show();
-            modoTexto.text("Múltiple").removeClass().addClass("badge bg-warning");
-            datosCanal.hide();
-            canalIndividualSeleccionado = null;
-            break;
-
-        case "ninguno":
-        default:
-            infoPanel.hide();
-            datosCanal.hide();
-            canalIndividualSeleccionado = null;
-            break;
-    }
-}
-
-// ✅ Función para limpiar selección de canales
-function limpiarSeleccionCanales() {
-    AbrirMensaje(
-        "CONFIRMAR LIMPIEZA",
-        "¿Está seguro de limpiar toda la selección de canales?",
-        function (resp) {
-            if (resp === "SI") {
-                // Limpiar todos los checkboxes
-                $(".check-canal").prop("checked", false);
-                $("#checkAllCanales").prop("checked", false);
-
-                // Resetear modo y datos
-                canalIndividualSeleccionado = null;
-                cambiarModoSeleccion("ninguno");
-                actualizarContadorCanales();
-
-                ControlaMensajeInfo("Selección de canales limpiada correctamente");
-            }
-            $("#msjModal").modal("hide");
-            return true;
-        },
-        true,
-        ["Limpiar", "Cancelar"],
-        "warn!",
-        null
-    );
-}
-
-// ✅ Función para obtener canales seleccionados
-function obtenerCanalesSeleccionados() {
-    var canales = [];
-
-    $(".check-canal:checked").each(function () {
-        var canal = {
-            admId: $(this).data("adm-id"),
-            lpId: $(this).data("lp-id"),
-            canal: $(this).data("canal"),
-            admNombre: $(this).data("adm-nombre"),
-            lpDesc: $(this).data("lp-desc")
-        };
-        canales.push(canal);
-    });
-
-    return {
-        modo: modoSeleccionCanal,
-        canales: canales,
-        individual: canalIndividualSeleccionado
-    };
 }
 
 // ✅ Función para inicializar campos de fecha
@@ -519,39 +482,35 @@ function parsearFechaSegura(fechaString) {
     }
 }
 
-// ✅ Función para activar ofertas
-function activarOfertas() {
-    // Verificar canales seleccionados
-    var canalesInfo = obtenerCanalesSeleccionados();
-    if (canalesInfo.canales.length === 0) {
-        ControlaMensajeWarning("Debe seleccionar al menos un canal antes de activar las ofertas");
-        return;
-    }
-    
+// ✅ Función para activar ofertas (optimizada - sin verificar canales)
+function activarOfertas() {       
     // Verificar ofertas seleccionadas
     var ofertasSeleccionadas = obtenerOfertasSeleccionadas();
     if (ofertasSeleccionadas.length === 0) {
-        ControlaMensajeWarning("Debe seleccionar al menos una oferta para activar");
+        AbrirMensaje(
+            "ADVERTENCIA",
+            "Debe seleccionar al menos una oferta para activar",
+            function() {
+                $("#msjModal").modal("hide");
+                return true;
+            },
+            false,
+            ["Aceptar"],
+            "warn!",
+            null
+        );
         return;
     }
     
-    // Verificar fechas válidas si existen los campos
-    if ($("#txtFechaDesde").length && $("#txtFechaHasta").length) {
-        if (!validarRangoFechas()) {
-            ControlaMensajeWarning("Las fechas seleccionadas no son válidas");
-            return;
-        }
-    }
-    
     // Mostrar mensaje de confirmación
-    var mensaje = generarMensajeConfirmacionActivacion(canalesInfo, ofertasSeleccionadas);
+    var mensaje = generarMensajeConfirmacionActivacion(ofertasSeleccionadas);
     
     AbrirMensaje(
         "CONFIRMAR ACTIVACIÓN DE OFERTAS",
         mensaje,
         function (resp) {
             if (resp === "SI") {
-                procesarActivacionOfertasMultiples(canalesInfo, ofertasSeleccionadas);
+                procesarActivacionOfertas(ofertasSeleccionadas);
             }
             $("#msjModal").modal("hide");
             return true;
@@ -563,25 +522,39 @@ function activarOfertas() {
     );
 }
 
-// ✅ NUEVA: Función para obtener ofertas seleccionadas
+// ✅ OPTIMIZADA: Función para obtener ofertas seleccionadas con descripción
 function obtenerOfertasSeleccionadas() {
     var ofertas = [];
     
     $(".check-oferta:checked").each(function() {
+        var checkbox = $(this);
+        var pId = checkbox.data("p-id");
+        
+        // Obtener descripción del producto desde la fila correspondiente
+        var descripcion = "";
+        try {
+            var fila = checkbox.closest("tr");
+            descripcion = fila.find('td:eq(2)').text().trim();
+        } catch (e) {
+            console.warn("No se pudo obtener la descripción del producto:", e);
+        }
+        
         var oferta = {
-            pId: $(this).data("p-id"),
-            admId: $(this).data("adm-id"),
-            plId: $(this).data("pl-id")
+            pId: pId,
+            admId: checkbox.data("adm-id"),
+            plId: checkbox.data("pl-id"),
+            descripcion: descripcion
         };
+        
         ofertas.push(oferta);
     });
     
     return ofertas;
 }
 
-// ✅ MODIFICADA: Función para generar mensaje de confirmación (incluye ofertas)
-function generarMensajeConfirmacionActivacion(canalesInfo, ofertasSeleccionadas) {
-    var mensaje = `¿Desea activar ${ofertasSeleccionadas.length} oferta(s) para los canales seleccionados?<br><br>`;
+// ✅ OPTIMIZADA: Función para generar mensaje de confirmación con descripción
+function generarMensajeConfirmacionActivacion(ofertasSeleccionadas) {
+    var mensaje = `¿Desea activar ${ofertasSeleccionadas.length} oferta(s) seleccionada(s)?<br><br>`;
     
     // Sección de ofertas
     mensaje += '<div class="text-start"><strong>📋 Ofertas Seleccionadas:</strong><br><small>';
@@ -592,17 +565,23 @@ function generarMensajeConfirmacionActivacion(canalesInfo, ofertasSeleccionadas)
         mensaje += '<br>Ejemplos:';
         var maxOfertas = Math.min(3, ofertasSeleccionadas.length);
         for (var i = 0; i < maxOfertas; i++) {
-            mensaje += `<br>- Producto ID: ${ofertasSeleccionadas[i].pId}`;
+            mensaje += `<br>- <strong>${ofertasSeleccionadas[i].pId}</strong>`;
+            if (ofertasSeleccionadas[i].descripcion) {
+                mensaje += ` - ${ofertasSeleccionadas[i].descripcion}`;
+            }
         }
         
         if (ofertasSeleccionadas.length > maxOfertas) {
             mensaje += `<br>... y ${ofertasSeleccionadas.length - maxOfertas} más`;
         }
+    } else if (ofertasSeleccionadas.length === 1) {
+        // Si solo hay una oferta, mostrarla con más detalle
+        mensaje += `<br>Producto: <strong>${ofertasSeleccionadas[0].pId}</strong>`;
+        if (ofertasSeleccionadas[0].descripcion) {
+            mensaje += ` - ${ofertasSeleccionadas[0].descripcion}`;
+        }
     }
     mensaje += '</small></div><br>';
-    
-    // Sección de canales
-    mensaje += generarSeccionCanales(canalesInfo);
     
     // Fechas si existen
     if ($("#txtFechaDesde").length && $("#txtFechaHasta").length) {
@@ -614,75 +593,97 @@ function generarMensajeConfirmacionActivacion(canalesInfo, ofertasSeleccionadas)
         mensaje += '</small></div><br>';
     }
     
-    mensaje += '<div class="alert alert-info">Esta acción activará las ofertas seleccionadas en los canales especificados.</div>';
+    mensaje += '<div class="alert alert-info">Esta acción activará las ofertas seleccionadas.</div>';
     
     return mensaje;
 }
 
-// ✅ NUEVA: Función para procesar activación de ofertas múltiples
-function procesarActivacionOfertasMultiples(canalesInfo, ofertasSeleccionadas) {
+// ✅ NUEVA: Función simplificada para procesar activación de ofertas
+function procesarActivacionOfertas(ofertasSeleccionadas) {
     AbrirWaiting("Activando ofertas...");
     
-    var datosActivacion = {
-        canales: canalesInfo.canales,
-        canalIndividual: canalesInfo.individual,
-        modoSeleccion: canalesInfo.modo,
-        ofertas: ofertasSeleccionadas,
-        fechaDesde: $("#txtFechaDesde").val() || null,
-        fechaHasta: $("#txtFechaHasta").val() || null
-    };
+    // Obtener IDs para el formato que espera el servidor
+    var ids = ofertasSeleccionadas.map(o => o.pId);
     
-    var jsonData = JSON.stringify(datosActivacion);
+    // Usar el primer elemento para determinar admId y lp_id
+    var admId = ofertasSeleccionadas[0].admId || "0000";
+    var lp_id = ofertasSeleccionadas[0].plId || "001";
     
     $.ajax({
-        url: activarOfertasUrl,
+        url: activarOfertaUrl,
         type: "POST",
-        contentType: "application/json",
-        data: jsonData,
+        data: {
+            ids: ids,
+            admId: admId,
+            lp_id: lp_id
+        },
         success: function(response) {
             CerrarWaiting();
             
             if (response.error) {
-                ControlaMensajeError(response.msg || "Error al activar ofertas");
+                AbrirMensaje(
+                    "ERROR",
+                    response.msg || "Error al activar ofertas",
+                    function() {
+                        $("#msjModal").modal("hide");
+                        return true;
+                    },
+                    false,
+                    ["Aceptar"],
+                    "error!",
+                    null
+                );
                 return;
             }
             
             if (response.warn) {
-                ControlaMensajeWarning(response.msg || "Advertencia en la activación");
+                AbrirMensaje(
+                    "ADVERTENCIA",
+                    response.msg || "Advertencia al activar ofertas",
+                    function() {
+                        $("#msjModal").modal("hide");
+                        return true;
+                    },
+                    false,
+                    ["Aceptar"],
+                    "warn!",
+                    null
+                );
                 return;
             }
             
-            // Mensaje de éxito con redirección
-            ControlaMensajeSuccess(response.msg || `${ofertasSeleccionadas.length} ofertas activadas correctamente`);
-            
-            // Redireccionar después de 2 segundos
-            setTimeout(function() {
-                window.location.href = homeOfertaUrl || "/Precios/Ofertas";
-            }, 2000);
+            // Mensaje de éxito y recarga de la grilla
+            AbrirMensaje(
+                "OPERACIÓN EXITOSA",
+                response.msg || `${ids.length} oferta(s) activada(s) correctamente`,
+                function() {
+                    // Recargar el grid
+                    cargarOfertasSinActivar(admId, lp_id);
+                    $("#msjModal").modal("hide");
+                    return true;
+                },
+                false,
+                ["Aceptar"],
+                "success!",
+                null
+            );
         },
         error: function(xhr, status, error) {
             CerrarWaiting();
-            console.error("Error en solicitud: ", xhr.responseText);
-            ControlaMensajeError("Error de comunicación: " + (xhr.responseText || error || "Error desconocido"));
+            console.error("Error en solicitud:", error);
+            
+            AbrirMensaje(
+                "ERROR DE COMUNICACIÓN",
+                "Error de comunicación: " + (xhr.responseText || error || "Error desconocido"),
+                function() {
+                    $("#msjModal").modal("hide");
+                    return true;
+                },
+                false,
+                ["Aceptar"],
+                "error!",
+                null
+            );
         }
     });
-}
-
-// ✅ Función para confirmar cancelación
-function confirmarCancelacion() {
-    AbrirMensaje(
-        "CONFIRMAR CANCELACIÓN",
-        "¿Está seguro de cancelar la activación de ofertas?",
-        function(resp) {
-            if (resp === "SI") {
-                window.location.href = homeOfertaUrl || "/Precios/Ofertas";
-            }
-            $("#msjModal").modal("hide");
-            return true;
-        },
-        true,
-        ["Cancelar Activación", "Continuar Editando"],
-        "warn!",
-        null
-    );
 }
