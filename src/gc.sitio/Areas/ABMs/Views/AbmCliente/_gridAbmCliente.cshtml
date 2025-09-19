@@ -1,5 +1,4 @@
 ﻿@model GridCoreSmart<ABMClienteSearchDto>
-
 @{
     var dataMod = new ABMClienteSearchDto();
     var alt = true;
@@ -31,10 +30,7 @@
                         @foreach (var item in Model.ListaDatos)
                         {
                             if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-
-                            <tr class="@clase" onclick="selectReg(this, 'tbGridCliente')"
-                                @* ondblclick="selectRegDbl(this, 'tbGridCliente')" *@
-                                >
+                            <tr class="@clase" onclick="selectReg(this, 'tbGridCliente')">
                                 <td class="text-sm-center">@item.cta_id</td>
                                 <td class="text-sm-start">@item.cta_denominacion</td>
                                 <td class="text-sm-center">@item.tdoc_desc</td>

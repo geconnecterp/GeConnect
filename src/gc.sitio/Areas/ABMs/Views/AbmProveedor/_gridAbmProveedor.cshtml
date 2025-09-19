@@ -29,8 +29,7 @@
 					{
 						@foreach (var item in Model.ListaDatos)
 						{
-							if (alt) { clase = "sel"; alt = false; } else { clase = string.Empty; alt = true; }
-
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 							<tr class="@clase" onclick="selectReg(this, 'tbGridProveedor')">
 								<td class="text-sm-center">@item.cta_id</td>
 								<td class="text-sm-start">@item.cta_denominacion</td>

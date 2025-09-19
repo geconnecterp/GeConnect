@@ -1,6 +1,8 @@
 ﻿@model ChequesDepositadosModel
 @using static gc.infraestructura.Helpers.GridHelper
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 <fieldset style="height: 460px;">
 	<legend></legend>
@@ -12,8 +14,12 @@
 			</div>
 		</div>
 		<div class="col-4">
-			<button type="button" id="btnAceptar" class="btn btn-sm btn-success"><i class="bx bx-check-circle"></i></button>
-			<button type="button" id="btnCancel" class="btn btn-sm btn-danger"><i class="bx bx-sm bx-x-circle"></i></button>
+			<button type="button" id="btnAceptar" class="btn btn-sm btn-success">
+				<i class="bx bx-badge-check"></i>Confirmar
+			</button>
+			<button type="button" id="btnCancel" class="btn btn-sm btn-danger">
+				<i class="bx bx-x-circle"></i>Cancelar
+			</button>
 		</div>
 		<div class="col-4"></div>
 	</div>
@@ -42,7 +48,8 @@
 				{
 					@foreach (var item in Model.GrillaChequesDepositados.ListaDatos)
 					{
-						<tr onclick="selectReg(this, 'tbListaChequesDepositados')">
+						if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+						<tr class="@clase" onclick="selectReg(this, 'tbListaChequesDepositados')">
 							<td class="@Model.GrillaChequesDepositados.ObtenerClase(item.tra_compte) align-center cell-fit-content">@Model.GrillaChequesDepositados.FormatearDato(item.tra_compte, FormatDato.Ninguno)</td>
 							<td class="@Model.GrillaChequesDepositados.ObtenerClase(item.tra_fecha_movi) cell-fit-content">@Model.GrillaChequesDepositados.FormatearDato(item.tra_fecha_movi, FormatDato.Fecha)</td>
 							<td class="@Model.GrillaChequesDepositados.ObtenerClase(item.Cliente) cell-fit-content">@Model.GrillaChequesDepositados.FormatearDato(item.Cliente, FormatDato.Ninguno)</td>

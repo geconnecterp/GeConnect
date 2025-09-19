@@ -2,6 +2,7 @@
 @using static gc.infraestructura.Helpers.GridHelper
 @{
 	string clase = string.Empty;
+	var alt = true;
 }
 @Html.Hidden("MostrarSeccionGrillaOrigen", Model.MostrarSeccionGrillaOrigen)
 @Html.Hidden("MostrarSeccionGrillaDestino", Model.MostrarSeccionGrillaDestino)
@@ -26,6 +27,7 @@
 							{
 								@foreach (var item in Model.GrillaOrigen.ListaDatos)
 								{
+									if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 									<tr class="@clase" onclick="selectReg(this, 'tbGridOrigen')">
 										<td class="@Model.GrillaOrigen.ObtenerClase(item.ctaf_id) align-center cell-fit-content">@Model.GrillaOrigen.FormatearDato(item.ctaf_id, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaOrigen.ObtenerClase(item.ctaf_denominacion) align-left cell-fit-content">@Model.GrillaOrigen.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
@@ -67,6 +69,7 @@
 							{
 								@foreach (var item in Model.GrillaDestino.ListaDatos)
 								{
+									if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 									<tr class="@clase" onclick="selectReg(this, 'tbGridDestino')">
 										<td class="@Model.GrillaDestino.ObtenerClase(item.ctaf_id) align-center cell-fit-content">@Model.GrillaDestino.FormatearDato(item.ctaf_id, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaDestino.ObtenerClase(item.ctaf_denominacion) align-left cell-fit-content">@Model.GrillaDestino.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
@@ -110,6 +113,7 @@
 							{
 								@foreach (var item in Model.GrillaCtag.ListaDatos)
 								{
+									if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 									<tr class="@clase" onclick="selectReg(this, 'tbGridCtag')">
 										<td class="@Model.GrillaCtag.ObtenerClase(item.ctag_id) align-center cell-fit-content">@Model.GrillaCtag.FormatearDato(item.ctag_id, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaCtag.ObtenerClase(item.ctag_denominacion) align-left cell-fit-content">@Model.GrillaCtag.FormatearDato(item.ctag_denominacion, FormatDato.Ninguno)</td>

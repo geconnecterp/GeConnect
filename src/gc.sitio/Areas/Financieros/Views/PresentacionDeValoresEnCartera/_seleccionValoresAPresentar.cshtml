@@ -4,21 +4,23 @@
 	var col1 = Model.titulo_col_1;
 	var col2 = Model.titulo_col_2;
 	var col3 = Model.titulo_col_3;
+	var alt = true;
+	string clase = string.Empty;
 }
 <div class="row justify-content-sm-center mb-1 mt-1">
 	<div class="col-md-2">
 		<div class="d-flex justify-content-sm-center">
-			<button id="btnAnterior3" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Anterior">
-				<i class="bx bx-chevron-left"></i>
+			<button id="btnAnterior3" class="btn btn-secondary btn-sm mt-1 me-1" type="button" title="Anterior">
+				<i class="bx bx-chevron-left"></i>Anterior
 			</button>
 			<button id="btnSiguiente3" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Siguiente">
-				<i class="bx bx-chevron-right"></i>
+				<i class="bx bx-chevron-right"></i>Siguiente
 			</button>
 			<button id="btnConfirmar1" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Confirmar" disabled>
-				<i class="bx bx-badge-check"></i>
+				<i class="bx bx-badge-check"></i>Confirmar
 			</button>
 			<button id="btnAbmCancelar1" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar" >
-				<i class="bx bx-x-circle"></i>
+				<i class="bx bx-x-circle"></i>Cancelar
 			</button>
 		</div>
 	</div>
@@ -57,9 +59,10 @@
 					{
 						@foreach (var item in Model.GrillaValoresAPresentar.ListaDatos)
 						{
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 							var nombre = item.fc_compte + "_" + item.fc_item;
 							var nombre_check = nombre + "_checkbox";
-							<tr onclick="selectReg(this, 'tbValores')" title="@item.concepto_valor">
+							<tr class="@clase" onclick="selectReg(this, 'tbValores')" title="@item.concepto_valor">
 								<td class="@Model.GrillaValoresAPresentar.ObtenerClase(item.fc_fecha_valor) align-center cell-fit-content">@Model.GrillaValoresAPresentar.FormatearDato(item.fc_fecha_valor, FormatDato.Fecha)</td>
 								<td class="@Model.GrillaValoresAPresentar.ObtenerClase(item.fc_fecha) align-center cell-fit-content">@Model.GrillaValoresAPresentar.FormatearDato(item.fc_fecha, FormatDato.Fecha)</td>
 								<td class="@Model.GrillaValoresAPresentar.ObtenerClase(item.fc_dato1_valor) cell-fit-content">@Model.GrillaValoresAPresentar.FormatearDato(item.fc_dato1_valor, FormatDato.Ninguno)</td>

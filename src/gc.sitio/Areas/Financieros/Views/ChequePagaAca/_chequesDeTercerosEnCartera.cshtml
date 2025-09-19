@@ -4,6 +4,8 @@
 	var col1 = Model.titulo_col_1;
 	var col2 = Model.titulo_col_2;
 	var col3 = Model.titulo_col_3;
+	var alt = true;
+	string clase = string.Empty;
 }
 <fieldset style="height: 460px;">
 	<legend></legend>
@@ -18,8 +20,12 @@
 			}
 		</div>
 		<div class="col-4">
-			<button type="button" id="btnAceptar" class="btn btn-sm btn-success"><i class="bx bx-check-double"></i></button>
-			<button type="button" id="btnCancel" class="btn btn-sm btn-danger"><i class="bx bx-x-circle"></i></button>
+			<button type="button" id="btnAceptar" class="btn btn-sm btn-success">
+				<i class="bx bx-badge-check"></i>Confirmar
+			</button>
+			<button type="button" id="btnCancel" class="btn btn-sm btn-danger">
+				<i class="bx bx-x-circle"></i>Cancelar
+			</button>
 		</div>
 		<div class="col-4"></div>
 	</div>
@@ -43,7 +49,8 @@
 				{
 					@foreach (var item in Model.GrillaChequesEnCartera.ListaDatos)
 					{
-						<tr onclick="selectReg(this, 'tbListaChequesDeTercerosEnCartera')" title="@item.concepto_valor">
+						if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+						<tr class="@clase" onclick="selectReg(this, 'tbListaChequesDeTercerosEnCartera')" title="@item.concepto_valor">
 							<td class="@Model.GrillaChequesEnCartera.ObtenerClase(item.fc_fecha_valor) cell-fit-content">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_fecha_valor, FormatDato.Fecha)</td>
 							<td class="@Model.GrillaChequesEnCartera.ObtenerClase(item.fc_fecha) cell-fit-content">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_fecha, FormatDato.Fecha)</td>
 							<td class="@Model.GrillaChequesEnCartera.ObtenerClase(item.fc_dato1_valor) cell-fit-content">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_dato1_valor, FormatDato.Ninguno)</td>

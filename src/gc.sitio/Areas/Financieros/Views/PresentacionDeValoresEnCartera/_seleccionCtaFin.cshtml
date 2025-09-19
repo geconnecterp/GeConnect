@@ -1,21 +1,23 @@
 ﻿@model SeleccionCtaFinModel
 @using static gc.infraestructura.Helpers.GridHelper
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 <div class="row justify-content-sm-center mb-1 mt-1">
 	<div class="col-md-2">
 		<div class="d-flex justify-content-sm-center">
 			<button id="btnAnterior2" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Anterior">
-				<i class="bx bx-chevron-left"></i>
+				<i class="bx bx-chevron-left"></i>Anterior
 			</button>
 			<button id="btnSiguiente2" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Siguiente">
-				<i class="bx bx-chevron-right"></i>
+				<i class="bx bx-chevron-right"></i>Siguiente
 			</button>
 			<button id="btnConfirmar1" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Confirmar" disabled>
-				<i class="bx bx-badge-check"></i>
+				<i class="bx bx-badge-check"></i>Confirmar
 			</button>
 			<button id="btnAbmCancelar1" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar">
-				<i class="bx bx-x-circle"></i>
+				<i class="bx bx-x-circle"></i>Cancelar
 			</button>
 		</div>
 	</div>
@@ -37,7 +39,8 @@
 					{
 						@foreach (var item in Model.GrillaCtaFin.ListaDatos)
 						{
-							<tr onclick="selectReg(this, 'tbCtaFin')">
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							<tr class="@clase" onclick="selectReg(this, 'tbCtaFin')">
 								<td class="@Model.GrillaCtaFin.ObtenerClase(item.ctaf_id) align-center cell-fit-content">@Model.GrillaCtaFin.FormatearDato(item.ctaf_id, FormatDato.Ninguno)</td>
 								<td class="@Model.GrillaCtaFin.ObtenerClase(item.ctaf_denominacion) cell-fit-content">@Model.GrillaCtaFin.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
 								<td class="@Model.GrillaCtaFin.ObtenerClase(item.ctaf_saldo) cell-fit-content">@Model.GrillaCtaFin.FormatearDato(item.ctaf_saldo, FormatDato.Monto)</td>

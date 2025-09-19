@@ -1,6 +1,8 @@
 ﻿@model ValoresModel
 @using static gc.infraestructura.Helpers.GridHelper
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 @Html.Hidden("YaExiste", Model.YaExiste)
 @Html.Hidden("MensajeExiste", Model.MensajeExiste)
@@ -22,7 +24,8 @@
 			{
 				@foreach (var item in Model.Grilla.ListaDatos)
 				{
-					<tr onclick="selectReg(this, 'tbListaOrigen')" ondblclick="selectRegDblGrillaValores(this, 'tbListaOrigen');">
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" onclick="selectReg(this, 'tbListaOrigen')" ondblclick="selectRegDblGrillaValores(this, 'tbListaOrigen');">
 						<td class="@Model.Grilla.ObtenerClase(item.ctaf_denominacion) cell-fit-content">@Model.Grilla.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
 						<td class="@Model.Grilla.ObtenerClase(item.concepto_valor) cell-fit-content">@Model.Grilla.FormatearDato(item.concepto_valor, FormatDato.Monto)</td>
 						<td class="@Model.Grilla.ObtenerClase(item.op_importe) cell-fit-content">@Model.Grilla.FormatearDato(item.op_importe, FormatDato.Monto)</td>
