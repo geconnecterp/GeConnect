@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OfficeOpenXml.FormulaParsing.LexicalAnalysis;
+using Org.BouncyCastle.Crypto.Operators;
 using System.Net;
 using System.Reflection;
 
@@ -26,9 +27,201 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string ALTA_OFERTA = "/confirmacion-alta-oferta";
         private const string OBTENER_ESTADO_OFERTA_PRODUCTO = "/obtener-estado-oferta-producto";
         private const string OBTENER_OFERTAS_SIN_ACTIVAR = "/obtener-ofertas-sin-activar";
+        private const string ACTIVAR_OFERTA = "/activacion-de-oferta";
+        private const string ACTUALIZAR_OFERTA_VENCIDA_SIN_ACTIVAR = "/actualizar-oferta-vencida-sin-activar";
 
         public OfertaServicio(IOptions<AppSettings> options, ILogger<OfertaServicio> logger) : base(options, logger)
         {
+        }
+
+        public async Task<RespuestaGenerica<RespuestaDto>> ActivacionDeOferta(AbmPlusGenDto req, string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(req, token, out StringContent contentData);
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{ACTIVAR_OFERTA}";
+
+                using var response = await client.PostAsync(link, contentData);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = false,
+                            Mensaje = "No se recibió respuesta válida de la API"
+                        };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+
+                    if (apiResponse == null || apiResponse.Data == null)
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = false,
+                            Mensaje = "Error deserializando la respuesta de la API"
+                        };
+                    }
+
+                    if (apiResponse.Data.resultado != 0)
+                    {
+                        if (apiResponse.Data.resultado > 0)
+                        {
+                            return new RespuestaGenerica<RespuestaDto>
+                            {
+                                Ok = false,
+                                Entidad = apiResponse.Data,
+                                EsWarn = true,
+                                Mensaje = apiResponse.Data.resultado_msj ?? "Error procesando la activacion de la oferta."
+                            };
+                        }
+                        else
+                        {
+                            return new RespuestaGenerica<RespuestaDto>
+                            {
+                                Ok = false,
+                                Entidad = apiResponse.Data,
+                                EsError = true,
+                                Mensaje = apiResponse.Data.resultado_msj ?? "Error procesando la activacion de la oferta."
+                            };
+                        }
+                    }
+                    else
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = true,
+                            Entidad = apiResponse?.Data ?? new RespuestaDto(),
+                            Mensaje = "Importación procesada exitosamente"
+                        };
+                    }
+                }
+                else
+                {
+                    var errorData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {errorData}");
+
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(errorData);
+                    var mensaje = error?.Detail ?? "Error desconocido en la API";
+
+                    return new RespuestaGenerica<RespuestaDto>
+                    {
+                        Ok = false,
+                        Mensaje = mensaje
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en ConfirmacionAltaOferta");
+
+                return new RespuestaGenerica<RespuestaDto>
+                {
+                    Ok = false,
+                    Mensaje = "Error interno procesando el Alta de la Oferta"
+                };
+            }
+        }
+
+        public async Task<RespuestaGenerica<RespuestaDto>> ActualizarOfertaVencidaSinActivar(AbmGenDto req, string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(req, token, out StringContent contentData);
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{ACTUALIZAR_OFERTA_VENCIDA_SIN_ACTIVAR}";
+
+                using var response = await client.PostAsync(link, contentData);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = false,
+                            Mensaje = "No se recibió respuesta válida de la API"
+                        };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+
+                    if (apiResponse == null || apiResponse.Data == null)
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = false,
+                            Mensaje = "Error deserializando la respuesta de la API"
+                        };
+                    }
+
+                    if (apiResponse.Data.resultado != 0)
+                    {
+                        if (apiResponse.Data.resultado > 0)
+                        {
+                            return new RespuestaGenerica<RespuestaDto>
+                            {
+                                Ok = false,
+                                Entidad = apiResponse.Data,
+                                EsWarn = true,
+                                Mensaje = apiResponse.Data.resultado_msj ?? "Error procesando la actualización de la oferta vencida sin activar."
+                            };
+                        }
+                        else
+                        {
+                            return new RespuestaGenerica<RespuestaDto>
+                            {
+                                Ok = false,
+                                Entidad = apiResponse.Data,
+                                EsError = true,
+                                Mensaje = apiResponse.Data.resultado_msj ?? "Error procesando la activacion de la oferta."
+                            };
+                        }
+                    }
+                    else
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = true,
+                            Entidad = apiResponse?.Data ?? new RespuestaDto(),
+                            Mensaje = "Importación procesada exitosamente"
+                        };
+                    }
+                }
+                else
+                {
+                    var errorData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {errorData}");
+
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(errorData);
+                    var mensaje = error?.Detail ?? "Error desconocido en la API";
+
+                    return new RespuestaGenerica<RespuestaDto>
+                    {
+                        Ok = false,
+                        Mensaje = mensaje
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en ConfirmacionAltaOferta");
+
+                return new RespuestaGenerica<RespuestaDto>
+                {
+                    Ok = false,
+                    Mensaje = "Error interno procesando el Alta de la Oferta"
+                };
+            }
         }
 
         public async Task<RespuestaGenerica<CanalDto>> BuscarCanales(string token)

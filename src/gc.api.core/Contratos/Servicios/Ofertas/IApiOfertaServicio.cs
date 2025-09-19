@@ -11,5 +11,7 @@ namespace gc.api.core.Contratos.Servicios.Ofertas
         RespuestaDto ConfirmacionAltaOferta(AbmPlusGenDto req, ParamOferta param);
         List<OfertaEstadoDto> ObtenerEstadoOfertaProducto(string p_id);
         List<OfertaSinActivarDto> ObtenerOfertasSinActivar(string admId, string lp_id);
+        RespuestaDto ActivacionDeOferta(AbmPlusGenDto req);
+        RespuestaDto ActualizarOfertaVencidaSinActivar(AbmGenDto req);
     }
 }

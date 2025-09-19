@@ -8,8 +8,8 @@ namespace gc.infraestructura.Dtos.Productos.Ofertas
         public string p_desc { get; set; } = string.Empty;//+
         public string adm_id { get; set; } = string.Empty;//+
         public string adm_nombre { get; set; } = string.Empty;//+
-        public string pl_id { get; set; } = string.Empty;//+
-        public string pl_desc { get; set; } = string.Empty;//+
+        public string lp_id { get; set; } = string.Empty;//+
+        public string lp_desc { get; set; } = string.Empty;//+
 
         public decimal p_pcosto { get; set; }
         public decimal in_alicuota { get; set; }

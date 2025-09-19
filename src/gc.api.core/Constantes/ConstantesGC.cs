@@ -73,6 +73,9 @@
 			public const string SP_PROD_OFERTA_ESTADO = "SPGECO_P_OFE_Obtener_Estados_Promocion_Producto";
 
 			public const string SP_PROD_OFERTA_SIN_ACTIVAR = "SPGECO_P_Ofe_sin_Activar_Lista";
+			public const string SP_PROD_OFERTA_ACTIVAR = "SPGECO_P_Ofe_Activar";
+			public const string SP_PROD_OFERTA_ACTU_VTO_SINACT = "SPGECO_P_Ofe_Actu_Vto_SinActivar";
+
 
             #endregion
 
