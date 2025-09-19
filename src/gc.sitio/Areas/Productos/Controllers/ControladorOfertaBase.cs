@@ -1,10 +1,12 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.Helpers;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace gc.sitio.Areas.Productos.Controllers
 {
@@ -14,6 +16,24 @@ namespace gc.sitio.Areas.Productos.Controllers
             :base(options,contexto,logger)
         {
             
+        }
+
+        public List<OfertaSinActivarDto> OfertasSinActivar
+        {
+            get
+            {
+                var json = _context.HttpContext?.Session.GetString("OfertasSinActivar") ?? string.Empty;
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<OfertaSinActivarDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("OfertasSinActivar", json);
+            }
         }
 
         /// <summary>

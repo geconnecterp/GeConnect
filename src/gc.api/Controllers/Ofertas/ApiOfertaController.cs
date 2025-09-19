@@ -94,5 +94,17 @@ namespace gc.api.Controllers.Ofertas
             var resultado = _ofertaSv.ObtenerOfertasSinActivar(admId, lp_id);
             return Ok(new ApiResponse<List<OfertaSinActivarDto>>(resultado));
         }
+
+        [HttpPost("activacion-de-oferta")]
+        public ActionResult<RespuestaDto> ActivacionDeOferta(AbmPlusGenDto req)
+        {
+            if (req == null || string.IsNullOrEmpty(req.Json) || string.IsNullOrEmpty(req.Objeto)
+                || string.IsNullOrEmpty(req.Usuario) || string.IsNullOrEmpty(req.Administracion))
+            {
+                return BadRequest("Alguno de los parametros para la activacion de la oferta ha faltado. Verifique");
+            }
+            var resultado = _ofertaSv.ActivacionDeOferta(req);
+            return Ok(new ApiResponse<RespuestaDto>(resultado));
+        }
     }
 }

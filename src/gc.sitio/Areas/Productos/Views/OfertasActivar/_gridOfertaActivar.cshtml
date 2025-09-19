@@ -3,6 +3,34 @@
 @{
     var alt = true;
     string clase = string.Empty;
+    var fechaHoy = DateTime.Today;
+
+    // Función auxiliar para determinar si se debe mostrar alerta
+    bool MostrarAlertaVigencia(DateTime? fechaDesde, DateTime? fechaHasta)
+    {
+        if (!fechaDesde.HasValue || !fechaHasta.HasValue) return false;
+
+        // Calcular días totales del periodo
+        int diasTotales = (fechaHasta.Value - fechaDesde.Value).Days + 1;
+        if (diasTotales <= 0) return false;
+
+        // Calcular días transcurridos
+        int diasTranscurridos = (fechaHoy - fechaDesde.Value).Days;
+        if (diasTranscurridos < 0) return false; // Si la oferta aún no ha comenzado
+
+        // Mostrar alerta si ha transcurrido más de la mitad del período
+        return diasTranscurridos > diasTotales / 2;
+    }
+
+    // Función para obtener texto de alerta
+    string TextoAlertaVigencia(DateTime? fechaDesde, DateTime? fechaHasta)
+    {
+        if (!fechaDesde.HasValue || !fechaHasta.HasValue) return string.Empty;
+
+        int diasRestantes = (fechaHasta.Value - fechaHoy).Days;
+        if (diasRestantes < 0) return "Oferta vencida";
+        return $"Quedan {diasRestantes} día(s)";
+    }
 }
 
 <div class="card card-golden">
@@ -21,6 +49,7 @@
                         <th class="text-right" scope="col">COSTO</th>
                         <th class="text-right" scope="col">P. VENTA</th>
                         <th class="text-right" scope="col">OFERTA</th>
+                        <th class="text-center" scope="col">VIGENCIA</th>
                         <th class="text-center" scope="col">ACCIÓN</th>
                     </tr>
                 </thead>
@@ -30,14 +59,18 @@
                         @foreach (var item in Model.ListaDatos)
                         {
                             if (alt) { clase = "table-row-alt"; alt = false; } else { clase = string.Empty; alt = true; }
+                            bool mostrarAlerta = MostrarAlertaVigencia(item.po_fecha_desde, item.po_fecha_hasta);
+                            string textoAlerta = TextoAlertaVigencia(item.po_fecha_desde, item.po_fecha_hasta);
 
                             <tr class="@clase" data-producto-id="@item.p_id">
                                 <td class="text-center">
                                     <div class="form-check">
-                                        <input class="form-check-input check-oferta" type="checkbox" 
+                                        <input class="form-check-input check-oferta" type="checkbox"
                                                data-p-id="@item.p_id"
                                                data-adm-id="@item.adm_id"
-                                               data-pl-id="@item.pl_id">
+                                               data-lp-id="@item.lp_id"
+                                               data-fecha-desde="@(item.po_fecha_desde.ToString("yyyy-MM-dd") ?? "")"
+                                               data-fecha-hasta="@(item.po_fecha_hasta.ToString("yyyy-MM-dd") ?? "")">
                                     </div>
                                 </td>
                                 <td class="@Model.ObtenerClase(item.p_id)">
@@ -51,16 +84,32 @@
                                 </td>
                                 <td class="@Model.ObtenerClase(item.p_pvta)">
                                     @Model.FormatearDato(item.p_pvta, FormatDato.Monto)
-                                </td>                            
+                                </td>
                                 <td class="@Model.ObtenerClase(item.p_pvta_oferta)">
                                     @Model.FormatearDato(item.p_pvta_oferta, FormatDato.Monto)
+                                </td>
+                                <td class="text-center">
+                                    @if (mostrarAlerta)
+                                    {
+                                        <span class="badge bg-warning text-dark" title="@textoAlerta">
+                                            <i class="bx bx-time-five"></i>
+                                        </span>
+                                    }
+                                    else if (item.po_fecha_desde != default && item.po_fecha_hasta != default)
+                                    {
+                                        <span class="badge bg-success" title="@textoAlerta">
+                                            <i class="bx bx-calendar-check"></i>
+                                        </span>
+                                    }
                                 </td>
                                 <td class="text-center">
                                     <button type="button"
                                             class="btn btn-outline-primary btn-sm btn-activar-oferta"
                                             data-p-id="@item.p_id"
                                             data-adm-id="@item.adm_id"
-                                            data-pl-id="@item.pl_id"
+                                            data-lp-id="@item.lp_id"
+                                            data-fecha-desde="@(item.po_fecha_desde.ToString("yyyy-MM-dd") ?? "")"
+                                            data-fecha-hasta="@(item.po_fecha_hasta.ToString("yyyy-MM-dd") ?? "")"
                                             title="Activar oferta">
                                         <i class="bx bx-check-circle"></i>
                                     </button>
@@ -71,7 +120,7 @@
                     else
                     {
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-4">
+                            <td colspan="8" class="text-center text-muted py-4">
                                 <i class="bx bx-info-circle me-2"></i>
                                 No hay ofertas pendientes de activación
                             </td>
