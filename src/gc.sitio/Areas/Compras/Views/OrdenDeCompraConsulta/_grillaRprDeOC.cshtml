@@ -1,5 +1,7 @@
 ﻿@model GridCoreSmart<OrdenDeCompraRprAsociadasDto>
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 <div class="row">
 	<div class="table-responsive table-wrapper-full-width" id="containerListaOC">
@@ -30,7 +32,8 @@
 				{
 					@foreach (var item in Model.ListaDatos)
 					{
-						<tr onclick="selectListaOCDetalleRow(this)">
+						if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+						<tr class="@clase" onclick="selectListaOCDetalleRow(this)">
 							<td class="align-center tiny-row">@item.p_id</td>
 							<td class="align-left tiny-row">@item.p_desc</td>
 							<td class="align-center tiny-row">@item.p_id_prov</td>
@@ -55,20 +58,13 @@
 		</table>
 	</div>
 </div>
-<div class="row" style="margin-top: 10px;margin-bottom: 10px;">
-	<div class="col-md-10">
+<div class="row mb-1">
+	<div class="col-md-11">
 	</div>
-	<div class="col-md-2">
-		<div class="row">
-			<button type="button" class="btn btn-sm btn-secondary" style="margin-left:100px; width:50%;" id="btnImprimirDesdeRpr">
-				<div class="row" style="display: contents">
-					<div class="col-2">
-						<span class="bx bx-printer"></span>
-					</div>
-					<div class="col-10" style="font-size: medium;">
-						Imprimir
-					</div>
-				</div>
+	<div class="col-md-1">
+		<div>
+			<button type="button" class="btn btn-sm btn-secondary btn-sm mt-1 me-1" id="btnImprimirDesdeRpr" title="Imprimir desde detalle RP">
+				<i class="bx bx-printer"></i> Imprimir
 			</button>
 		</div>
 	</div>

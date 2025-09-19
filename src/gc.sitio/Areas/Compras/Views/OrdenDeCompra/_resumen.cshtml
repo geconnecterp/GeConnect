@@ -1,6 +1,8 @@
 ﻿@model ResumenOCModel
 @{
 	var suc_entrega = Model.SucursalEntrega;
+	var alt = true;
+	string clase = string.Empty;
 }
 <div class="row" style="margin-bottom:10px;">
 	<div class="col-md-4" style="margin-left: 10px;">
@@ -53,7 +55,8 @@
 								{
 									@foreach (var item in Model.ResumenGrilla.ListaDatos)
 									{
-										<tr>
+										if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+										<tr class="@clase">
 											<td class="align-left">@item.Concepto</td>
 											<td class="align-right font-bold">@item.Importe</td>
 										</tr>

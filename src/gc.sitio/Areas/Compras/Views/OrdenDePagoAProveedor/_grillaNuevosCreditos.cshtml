@@ -1,6 +1,8 @@
 ﻿@model CargarNuevosCreditosModel
 @using static gc.infraestructura.Helpers.GridHelper
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 <style>
 	thead th {
@@ -29,7 +31,8 @@
 			{
 				@foreach (var item in Model.GrillaCreditosNueva.ListaDatos)
 				{
-					<tr onclick="selectReg(this, 'tbListaCreditosParaAgregar')" ondblclick="selectRegDbl(this, 'tbListaCreditosParaAgregar')">
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" onclick="selectReg(this, 'tbListaCreditosParaAgregar')" ondblclick="selectRegDbl(this, 'tbListaCreditosParaAgregar')">
 						<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.concepto) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
 						<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cm_compte_cuota) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
 						<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_fecha_vto) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>

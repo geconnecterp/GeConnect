@@ -1,6 +1,8 @@
 ﻿@model NotasACuentaModel
 @using static gc.infraestructura.Helpers.GridHelper
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 @Html.HiddenFor(x => x.MostrarGrilla)
 <div class="row">
@@ -33,7 +35,8 @@
 				{
 					@foreach (var item in Model.GrillaNotasACuenta.ListaDatos)
 					{
-						<tr onclick="selectReg(this, 'tbGrillaNotaACuenta')" ondblclick="selectRegDbl(this, 'tbGrillaNotaACuenta')">
+						if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+						<tr class="@clase" onclick="selectReg(this, 'tbGrillaNotaACuenta')" ondblclick="selectRegDbl(this, 'tbGrillaNotaACuenta')">
 							<td class="@Model.GrillaNotasACuenta.ObtenerClase(item.cv_fecha_carga) cell-fit-content">@Model.GrillaNotasACuenta.FormatearDato(item.cv_fecha_carga, FormatDato.Fecha)</td>
 							<td class="align-center cell-fit-content">@Model.GrillaNotasACuenta.FormatearDato(item.dia_movi, FormatDato.Fecha)</td>
 							<td class="@Model.GrillaNotasACuenta.ObtenerClase(item.tco_desc_ori) cell-fit-content">@Model.GrillaNotasACuenta.FormatearDato(item.tco_desc_ori, FormatDato.Ninguno)</td>

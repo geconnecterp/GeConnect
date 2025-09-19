@@ -1,5 +1,7 @@
 ﻿@model GridCoreSmart<OrdenDeCompraConceptoDto>
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 <div class="table-responsive text-nowrap table-wrapper-300-full-width">
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbGridTotales">
@@ -14,7 +16,8 @@
 			{
 				@foreach (var item in Model.ListaDatos)
 				{
-					<tr>
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase">
 						<td class="align-left">@item.Concepto</td>
 						<td class="align-right font-bold">@item.Importe</td>
 					</tr>

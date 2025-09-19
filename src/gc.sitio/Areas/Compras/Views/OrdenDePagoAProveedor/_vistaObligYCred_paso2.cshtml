@@ -41,6 +41,8 @@
 			estilocontainerListaObligacionesParaAgregar = "max-height: 340px;";
 		}
 	}
+	var alt = true;
+	string clase = string.Empty;
 }
 <style>
 	fieldset {
@@ -109,7 +111,8 @@
 							{
 								@foreach (var item in Model.GrillaObligacionesNuevas.ListaDatos)
 								{
-									<tr onclick="selectReg(this, 'tbListaObligacionesParaAgregar_Paso2')" ondblclick="selectRegDbl(this, 'tbListaObligacionesParaAgregar_Paso2')">
+									if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+									<tr class="@clase" onclick="selectReg(this, 'tbListaObligacionesParaAgregar_Paso2')" ondblclick="selectRegDbl(this, 'tbListaObligacionesParaAgregar_Paso2')">
 										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.concepto) cell-fit-content">@Model.GrillaObligacionesNuevas.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cm_compte_cuota) cell-fit-content">@Model.GrillaObligacionesNuevas.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cv_fecha_vto) cell-fit-content">@Model.GrillaObligacionesNuevas.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
@@ -130,13 +133,13 @@
 				<div class="col-md-2">
 					<div class="d-flex justify-content-sm-center">
 						<button id="btnAnterior2" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Anterior">
-							<i class="bx bx-arrow-to-left bx-xs"></i>
+							<i class="bx bx-arrow-to-left bx-xs"></i>Anterior
 						</button>
 						<button id="btnConfirmar2" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Confirmar">
-							<i class="bx bx-check-circle"></i>
+							<i class="bx bx-check-circle"></i>Confirmar
 						</button>
 						<button id="btnAbmCancelar" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar" onclick="btnAbmCancelar_click();">
-							<i class="bx bx-x-circle bx-xs"></i>
+							<i class="bx bx-x-circle bx-xs"></i>Cancelar
 						</button>
 					</div>
 				</div>
@@ -175,7 +178,8 @@
 												{
 													@foreach (var item in Model.GrillaMedioDePago.ListaDatos)
 													{
-														<tr onclick="selectReg(this, 'tbListaMedioDePago_Paso2')" ondblclick="selectRegDbl(this, 'tbListaMedioDePago_Paso2')">
+														if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+														<tr class="@clase" onclick="selectReg(this, 'tbListaMedioDePago_Paso2')" ondblclick="selectRegDbl(this, 'tbListaMedioDePago_Paso2')">
 															<td class="@Model.GrillaMedioDePago.ObtenerClase(item.fp_lista) cell-fit-content">@Model.GrillaMedioDePago.FormatearDato(item.fp_lista, FormatDato.Ninguno)</td>
 															<td style="display:none;">@item.fp_id</td>
 														</tr>
@@ -214,7 +218,8 @@
 												{
 													@foreach (var item in Model.GrillaMedioDePago.ListaDatos)
 													{
-														<tr onclick="selectReg(this, 'tbListaMedioDePago_Paso2')" ondblclick="selectRegDbl(this, 'tbListaMedioDePago_Paso2')">
+														if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+														<tr class="@clase" onclick="selectReg(this, 'tbListaMedioDePago_Paso2')" ondblclick="selectRegDbl(this, 'tbListaMedioDePago_Paso2')">
 															<td class="@Model.GrillaMedioDePago.ObtenerClase(item.fp_lista) cell-fit-content">@Model.GrillaMedioDePago.FormatearDato(item.fp_lista, FormatDato.Ninguno)</td>
 															<td style="display:none;">@item.fp_id</td>
 														</tr>
@@ -255,7 +260,8 @@
 							{
 								@foreach (var item in Model.GrillaCreditosNueva.ListaDatos)
 								{
-									<tr onclick="selectReg(this, 'tbListaCreditosParaAgregar_Paso2')" ondblclick="selectRegDbl(this, 'tbListaCreditosParaAgregar_Paso2')">
+									if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+									<tr class="@clase" onclick="selectReg(this, 'tbListaCreditosParaAgregar_Paso2')" ondblclick="selectRegDbl(this, 'tbListaCreditosParaAgregar_Paso2')">
 										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.concepto) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cm_compte_cuota) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_fecha_vto) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
@@ -286,7 +292,8 @@
 							{
 								@foreach (var item in Model.GrillaRetenciones.ListaDatos)
 								{
-									<tr onclick="selectReg(this, 'tbListaRetenciones_Paso2')" ondblclick="selectRegDbl(this, 'tbListaRetenciones_Paso2')">
+									if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+									<tr class="@clase" onclick="selectReg(this, 'tbListaRetenciones_Paso2')" ondblclick="selectRegDbl(this, 'tbListaRetenciones_Paso2')">
 										<td class="@Model.GrillaRetenciones.ObtenerClase(item.concepto_retencion) cell-fit-content">@Model.GrillaRetenciones.FormatearDato(item.concepto_retencion, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaRetenciones.ObtenerClase(item.retencion) cell-fit-content">@Model.GrillaRetenciones.FormatearDato(item.retencion, FormatDato.Monto)</td>
 									</tr>
@@ -315,7 +322,8 @@
 							{
 								@foreach (var item in Model.GrillaValores.ListaDatos)
 								{
-									<tr onclick="selectReg(this, 'tbListaValores_Paso2')" ondblclick="selectRegDbl(this, 'tbListaValores_Paso2')">
+									if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+									<tr class="@clase" onclick="selectReg(this, 'tbListaValores_Paso2')" ondblclick="selectRegDbl(this, 'tbListaValores_Paso2')">
 										<td class="@Model.GrillaValores.ObtenerClase(item.ctaf_denominacion) cell-fit-content">@Model.GrillaValores.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaValores.ObtenerClase(item.concepto_valor) cell-fit-content">@Model.GrillaValores.FormatearDato(item.concepto_valor, FormatDato.Monto)</td>
 										<td class="@Model.GrillaValores.ObtenerClase(item.op_importe) cell-fit-content">@Model.GrillaValores.FormatearDato(item.op_importe, FormatDato.Monto)</td>

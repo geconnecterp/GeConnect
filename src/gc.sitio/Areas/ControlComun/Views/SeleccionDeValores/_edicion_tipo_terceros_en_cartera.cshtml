@@ -1,6 +1,8 @@
 ﻿@model EdicionTipoValoresDeTercerosEnCarteraModel
 @using static gc.infraestructura.Helpers.GridHelper
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 <div class="row col-md-12">
 	@Html.HiddenFor(x => x.ctaf_id)
@@ -33,8 +35,9 @@
 				{
 					@foreach (var item in Model.GrillaValoresEnCartera.ListaDatos)
 					{
+						if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 						var nombre = "chk" + item.fc_dato2_valor;
-						<tr onclick="seleccionarValoresEnCartera(this)" title="@item.concepto_valor">
+						<tr class="@clase" onclick="seleccionarValoresEnCartera(this)" title="@item.concepto_valor">
 							<td class="@Model.GrillaValoresEnCartera.ObtenerClase(item.fc_fecha_valor) tiny-row">@Model.GrillaValoresEnCartera.FormatearDato(item.fc_fecha_valor, FormatDato.Fecha)</td>
 							<td class="@Model.GrillaValoresEnCartera.ObtenerClase(item.fc_fecha) tiny-row">@Model.GrillaValoresEnCartera.FormatearDato(item.fc_fecha, FormatDato.Fecha)</td>
 							<td class="@Model.GrillaValoresEnCartera.ObtenerClase(item.fc_dato1_valor) tiny-row">@Model.GrillaValoresEnCartera.FormatearDato(item.fc_dato1_valor, FormatDato.Ninguno)</td>

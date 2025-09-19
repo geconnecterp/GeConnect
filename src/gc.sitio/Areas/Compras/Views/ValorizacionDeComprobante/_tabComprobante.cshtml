@@ -2,6 +2,8 @@
 @using static gc.infraestructura.Helpers.GridHelper
 @{
 	var lst = Model.ConceptoDtoFinanc;
+	var alt = true;
+	string clase = string.Empty;
 }
 <style>
 	thead th {
@@ -58,8 +60,9 @@
 					{
 						@foreach (var item in Model.GrillaValoracion.ListaDatos)
 						{
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 							var nombre = "chk" + item.cm_compte;
-							<tr onclick="selectListaValorizacion(this)">
+							<tr class="@clase" onclick="selectListaValorizacion(this)">
 								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_compte_obs)">@Model.GrillaValoracion.FormatearDato(item.cm_compte_obs, FormatDato.Ninguno)</td>
 								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_no_gravado)">@Model.GrillaValoracion.FormatearDato(item.cm_no_gravado, FormatDato.Monto)</td>
 								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_exento)">@Model.GrillaValoracion.FormatearDato(item.cm_exento, FormatDato.Monto)</td>
@@ -79,14 +82,12 @@
 		</div>
 	</div>
 </div>
-<div class="row">
-	<div class="col-9" style="padding-left: 25px;">
+<div class="row mt-2">
+	<div class="col-10" style="padding-left: 25px;">
 		<div class="row">
 			<fieldset style="height: 250px;">
-				<legend></legend>
 				<div class="row">
 					<div class="col-md-8">
-						@*Grilla Descuentos Financieros*@
 						<div class="row">
 							<div class="col-md-8" style="display: flex; align-items: center; text-align: justify; margin-top: 5px; margin-bottom: -15px;">
 								<h6>Descuentos Financieros</h6>
@@ -111,9 +112,10 @@
 										{
 											@foreach (var item in Model.GrillaDescuentosFin.ListaDatos)
 											{
+												if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 												var nombre1 = "chkNetoFijo" + item.cm_compte;
 												var nombre2 = "chkDtoTot" + item.cm_compte;
-												<tr onclick="selectListaDescFinanc(this)" class="sortme">
+												<tr class="@clase" onclick="selectListaDescFinanc(this)" class="sortme">
 													<td style="display:none;">@item.item</td>
 													@if (item.dto_fijo_bool)
 													{
@@ -144,7 +146,6 @@
 						</div>
 					</div>
 					<div class="col-md-4 mt-3">
-						@*Campos*@
 						<div class="row mt-1">
 							<div class="input-group input-group-sm">
 								<div class="form-check form-check-inline form-switch mb-2">
@@ -161,7 +162,7 @@
 								</div>
 								<div class="d-flex justify-content-sm-end">
 									<button id="btnAceptarDescFinanc" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Agregar Descuento Financiero">
-										<i class="bx bx-plus-circle"></i>
+										<i class="bx bx-plus-circle"></i> Agregar
 									</button>
 								</div>
 							</div>
@@ -203,23 +204,21 @@
 			</fieldset>
 		</div>
 	</div>
-	<div class="col-3">
+	<div class="col-2">
 		<fieldset style="height: 250px;margin-top: 0px;">
-			<legend></legend>
-			@*botones*@
 			<div class="row mt-1">
-				<div class="d-flex justify-content-sm-center">
+				<div class="d-grid gap-2">
 					<button id="btnGuardarValorizacion" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Guardar Valorización">
-						<i class="bx bx-badge-check"></i>
+						<i class="bx bx-badge-check"></i> Guardar Valorización
 					</button>
 					<button id="btnConfirmarValorizacion" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Confirmar Valorización">
-						<i class="bx bx-check-double"></i>
+						<i class="bx bx-badge-check"></i> Confirmar Valorización
 					</button>
 					<button id="btnCancelarValorizacion" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar carga de Valorización">
-						<i class="bx bx-x-circle"></i>
+						<i class="bx bx-x-circle"></i>Cancelar Carga
 					</button>
-					<button id="btnAgregarProducto" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Agregar Producto" style="width: 150px;max-width: 150px;font-weight: bold;">
-						<i class="">AGREGAR PROD</i>
+					<button id="btnAgregarProducto" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Agregar Producto">
+						<i class="bx bx-plus-circle"></i> AGREGAR PROD
 					</button>
 				</div>
 			</div>

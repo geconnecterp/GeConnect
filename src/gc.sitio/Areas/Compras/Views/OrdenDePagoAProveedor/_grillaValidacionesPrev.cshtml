@@ -1,6 +1,8 @@
 ﻿@model GridCoreSmart<OPValidacionPrevDto>
 @using static gc.infraestructura.Helpers.GridHelper
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 
 <div class="table-responsive table-wrapper-400-full-width" id="containerValidacionesPrev">
@@ -13,13 +15,17 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.ListaDatos)
+			@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
 			{
-				<tr onclick="selectListaValidacionesPrev(this)">
-					<td class="@Model.ObtenerClase(item.msj) cell-fit-content">@Model.FormatearDato(item.msj, FormatDato.Ninguno)</td>
-					<td class="@Model.ObtenerClase(item.tipo) cell-fit-content">@Model.FormatearDato(item.tipo, FormatDato.Monto)</td>
-					<td style="display:none;">@item.cancelar</td>
-				</tr>
+				@foreach (var item in Model.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" onclick="selectListaValidacionesPrev(this)">
+						<td class="@Model.ObtenerClase(item.msj) cell-fit-content">@Model.FormatearDato(item.msj, FormatDato.Ninguno)</td>
+						<td class="@Model.ObtenerClase(item.tipo) cell-fit-content">@Model.FormatearDato(item.tipo, FormatDato.Monto)</td>
+						<td style="display:none;">@item.cancelar</td>
+					</tr>
+				}
 			}
 		</tbody>
 	</table>

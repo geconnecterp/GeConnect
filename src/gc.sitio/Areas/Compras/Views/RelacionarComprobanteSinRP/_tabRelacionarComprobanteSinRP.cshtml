@@ -1,6 +1,8 @@
 ﻿@model RelacionarComprobanteSinRPModel
 @using static gc.infraestructura.Helpers.GridHelper
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 <style>
 	thead th {
@@ -30,8 +32,9 @@
 					{
 						@foreach (var item in Model.GrillaComprobantes.ListaDatos)
 						{
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 							var nombre = "chk" + item.cm_compte;
-							<tr onclick="selectReg(this, 'tbListaComprobantes')">
+							<tr class="@clase" onclick="selectReg(this, 'tbListaComprobantes')">
 								<td class="@Model.GrillaComprobantes.ObtenerClase(item.concepto)">@Model.GrillaComprobantes.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
 								<td class="@Model.GrillaComprobantes.ObtenerClase(item.cm_fecha)">@Model.GrillaComprobantes.FormatearDato(item.cm_fecha, FormatDato.Fecha)</td>
 								<td class="@Model.GrillaComprobantes.ObtenerClase(item.cm_fecha_carga)">@Model.GrillaComprobantes.FormatearDato(item.cm_fecha_carga, FormatDato.Fecha)</td>
@@ -75,8 +78,9 @@
 					{
 						@foreach (var item in Model.GrillaRP.ListaDatos)
 						{
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 							var nombre = "chk" + item.rp_compte;
-							<tr onclick="selectReg(this, 'tbListaRP')">
+							<tr class="@clase" onclick="selectReg(this, 'tbListaRP')">
 								<td class="@Model.GrillaRP.ObtenerClase(item.concepto)">@Model.GrillaRP.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
 								<td class="@Model.GrillaRP.ObtenerClase(item.rp_compte)">@Model.GrillaRP.FormatearDato(item.rp_compte, FormatDato.Fecha)</td>
 								<td class="@Model.GrillaRP.ObtenerClase(item.rp_fecha)">@Model.GrillaRP.FormatearDato(item.rp_fecha, FormatDato.Fecha)</td>

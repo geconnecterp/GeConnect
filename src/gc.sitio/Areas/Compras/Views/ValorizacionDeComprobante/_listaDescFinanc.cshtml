@@ -1,6 +1,8 @@
 ﻿@model GridCoreSmart<CompteValorizaDtosListaDto>
 @using static gc.infraestructura.Helpers.GridHelper
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 
 <div class="table-responsive table-wrapper-400-full-width" id="containerListaDescFinanc">
@@ -26,9 +28,10 @@
 			{
 				@foreach (var item in Model.ListaDatos)
 				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					var nombre1 = "chkNetoFijo" + item.cm_compte;
 					var nombre2 = "chkDtoTot" + item.cm_compte;
-					<tr onclick="selectListaDescFinanc(this)" class="sortme">
+					<tr class="@clase" onclick="selectListaDescFinanc(this)" class="sortme">
 						<td style="display:none;">@item.item</td>
 						@if (item.dto_fijo_bool)
 						{

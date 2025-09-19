@@ -1,6 +1,8 @@
 ﻿@model ConsultaOCModel
 @{
 	var adm = Model.ListaAdministraciones;
+	var alt = true;
+	string clase = string.Empty;
 }
 <style>
 	thead th {
@@ -8,7 +10,7 @@
 	top: 0px;
 	}
 </style>
-<div class="row">
+<div class="row mb-1 pe-1">
 	<div class="col-md-10">
 		<div class="table-responsive table-wrapper-full-width" id="containerListaOC">
 			<table class="table table-bordered table-hover table-golden" id="tbListaOC">
@@ -30,7 +32,8 @@
 					{
 						@foreach (var item in Model.GrillaOC.ListaDatos)
 						{
-							<tr onclick="selectListaOCRow(this)">
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							<tr class="@clase" onclick="selectListaOCRow(this)">
 								<td class="align-center tiny-row">@item.oc_compte</td>
 								<td class="align-left tiny-row">@item.cta_denominacion</td>
 								<td class="align-center tiny-row">@item.oc_fecha</td>
@@ -45,7 +48,7 @@
 					}
 				</tbody>
 			</table>
-			<div class="row">
+			<div class="row mt-1">
 				<div class="offset-md-3 col-md-6">
 					<div id="divPaginacion" class="">
 					</div>
@@ -64,92 +67,43 @@
 		</div>
 	</div>
 	<div class="col-md-2">
-		<div class="row">
-			<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px; width:88%;" id="btnActivarOC">
-				<div class="row" style="display: contents">
-					<div class="col-2">
-						<span class="tf-icons bx bx-check-circle"></span>
-					</div>
-					<div class="col-10" style="font-size: medium;">
-						Activar OC
-					</div>
-				</div>
+		<div>
+			<button type="button" class="btn btn-sm btn-primary w-100 btn-sm mt-1 me-1" id="btnActivarOC" title="Activar OC">
+				<i class="bx bx-check-circle"></i> Activar OC
+			</button>
+		</div>
+		<div>
+			<button type="button" class="btn btn-sm btn-primary w-100 btn-sm mt-1 me-1" id="btnCerrarOC" title="Cerrar OC">
+				<i class="bx bx-check-circle"></i> Cerrar OC
+			</button>
+		</div>
+		<div>
+			<button type="button" class="btn btn-sm btn-danger w-100 btn-sm mt-1 me-1" id="btnAnularOC" title="Anular OC">
+				<i class="bx bx-trash"></i> Anular OC
+			</button>
+		</div>
+		<div>
+			<button type="button" class="btn btn-sm btn-primary w-100 btn-sm mt-1 me-1" id="btnLevantarOC" title="Levantar OC">
+				<i class="bx bx-check-circle"></i> Levantar OC
+			</button>
+		</div>
+		<div>
+			<button type="button" class="btn btn-sm btn-info w-100 btn-sm mt-1 me-1" id="btnModiAdm" title="Modificar Administración">
+				<i class="bx bx-edit"></i> Modi. Adm.
+			</button>
+		</div>
+		<div>
+			<button type="button" class="btn btn-sm btn-secondary w-100 btn-sm mt-1 me-1" id="btnImprimir" title="Imprimir">
+				<i class="bx bx-printer"></i> Imprimir
+			</button>
+		</div>
+		<div>
+			<button type="button" class="btn btn-sm btn-primary w-100 btn-sm mt-1 me-1" id="btnServicioExt" title="Servicio Ext">
+				<i class="bx bx-check-circle"></i> Servicio Ext
 			</button>
 		</div>
 		<div class="row mt-1">
-			<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px; width:88%;" id="btnCerrarOC">
-				<div class="row" style="display: contents">
-					<div class="col-2">
-						<span class="tf-icons bx bx-x-circle"></span>
-					</div>
-					<div class="col-10" style="font-size: medium;">
-						Cerrar OC
-					</div>
-				</div>
-			</button>
-		</div>
-		<div class="row mt-1">
-			<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px; width:88%;" id="btnAnularOC">
-				<div class="row" style="display: contents">
-					<div class="col-2">
-						<span class="tf-icons bx bx-eraser"></span>
-					</div>
-					<div class="col-10" style="font-size: medium;">
-						Anular OC
-					</div>
-				</div>
-			</button>
-		</div>
-		<div class="row mt-1">
-			<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px; width:88%;" id="btnLevantarOC">
-				<div class="row" style="display: contents">
-					<div class="col-2">
-						<span class="tf-icons bx bx-eraser"></span>
-					</div>
-					<div class="col-10" style="font-size: medium;">
-						Levantar OC
-					</div>
-				</div>
-			</button>
-		</div>
-		<div class="row mt-1">
-			<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px; width:88%;" id="btnModiAdm">
-				<div class="row" style="display: contents">
-					<div class="col-2">
-						<span class="tf-icons bx bxs-edit"></span>
-					</div>
-					<div class="col-10" style="font-size: medium;">
-						Modi. Adm.
-					</div>
-				</div>
-			</button>
-		</div>
-		<div class="row mt-1">
-			<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px; width:88%;" id="btnImprimir">
-				<div class="row" style="display: contents">
-					<div class="col-2">
-						<span class="tf-icons bx bx-printer"></span>
-					</div>
-					<div class="col-10" style="font-size: medium;">
-						Imprimir
-					</div>
-				</div>
-			</button>
-		</div>
-		<div class="row mt-1">
-			<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px; width:88%;" id="btnServicioExt">
-				<div class="row" style="display: contents">
-					<div class="col-2">
-						<span class="tf-icons bx bxl-chrome"></span>
-					</div>
-					<div class="col-10" style="font-size: medium;">
-						Servicio Ext
-					</div>
-				</div>
-			</button>
-		</div>
-		<div class="row mt-1">
-			<div class="input-group input-group-sm" style="margin-left: -8px;">
+			<div class="input-group input-group-sm">
 				<span class="input-group-text fixed-lbl-for-abm-70">Nueva Suc.: </span>
 				@Html.DropDownListFor(m => m.ListaAdministraciones.First().Value, adm, "Seleccionar...", new { @id = "listaAdm", disabled = "disabled", @class = "form-control activable" })
 			</div>

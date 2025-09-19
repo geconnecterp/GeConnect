@@ -1,6 +1,8 @@
 ﻿@model AnulacionDeComprobanteModel
 @using static gc.infraestructura.Helpers.GridHelper
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 <style>
 	thead th {
@@ -31,7 +33,8 @@
 				{
 					@foreach (var item in Model.GrillaComprobantes.ListaDatos)
 					{
-						<tr onclick="selectReg(this, 'tbGrillaComprobantes')" ondblclick="selectRegDbl(this, 'tbGrillaComprobantes')">
+						if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+						<tr class="@clase" onclick="selectReg(this, 'tbGrillaComprobantes')" ondblclick="selectRegDbl(this, 'tbGrillaComprobantes')">
 							<td class="@Model.GrillaComprobantes.ObtenerClase(item.cv_fecha_carga) cell-fit-content">@Model.GrillaComprobantes.FormatearDato(item.cv_fecha_carga, FormatDato.Fecha)</td>
 							<td class="align-center cell-fit-content">@Model.GrillaComprobantes.FormatearDato(item.dia_movi, FormatDato.Fecha)</td>
 							<td class="@Model.GrillaComprobantes.ObtenerClase(item.tco_desc) cell-fit-content">@Model.GrillaComprobantes.FormatearDato(item.tco_desc, FormatDato.Ninguno)</td>

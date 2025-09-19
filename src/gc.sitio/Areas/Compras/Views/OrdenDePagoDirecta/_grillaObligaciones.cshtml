@@ -1,6 +1,8 @@
 ﻿@model GridCoreSmart<OPDirectaObligacionesDto>
 @using static gc.infraestructura.Helpers.GridHelper
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 <div class="table-responsive table-wrapper-400" id="containerListaObligaciones_Paso1">
 	<table class="table table-bordered table-hover" id="tbListaObligaciones_Paso1">
@@ -23,7 +25,8 @@
 			{
 				@foreach (var item in Model.ListaDatos)
 				{
-					<tr onclick="selectReg(this, 'tbListaObligaciones_Paso1')">
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" onclick="selectReg(this, 'tbListaObligaciones_Paso1')">
 						<td class="@Model.ObtenerClase(item.concepto) cell-fit-content">@Model.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
 						<td class="@Model.ObtenerClase(item.fecha_vencimiento) cell-fit-content">@Model.FormatearDato(item.fecha_vencimiento, FormatDato.Fecha)</td>
 						<td class="@Model.ObtenerClase(item.gasto) cell-fit-content">@Model.FormatearDato(item.gasto, FormatDato.Ninguno)</td>

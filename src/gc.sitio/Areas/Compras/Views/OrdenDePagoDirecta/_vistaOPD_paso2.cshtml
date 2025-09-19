@@ -1,6 +1,8 @@
 ﻿@model OPDPaso2Model
 @using static gc.infraestructura.Helpers.GridHelper
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 <style>
 	fieldset {
@@ -69,7 +71,8 @@
 							{
 								@foreach (var item in Model.GrillaObligaciones.ListaDatos)
 								{
-									<tr onclick="selectReg(this, 'tbListaObligaciones_Paso1')" ondblclick="selectRegDbl(this, 'tbListaObligaciones_Paso1')">
+									if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+									<tr class="@clase" onclick="selectReg(this, 'tbListaObligaciones_Paso1')" ondblclick="selectRegDbl(this, 'tbListaObligaciones_Paso1')">
 										<td class="@Model.GrillaObligaciones.ObtenerClase(item.concepto) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaObligaciones.ObtenerClase(item.fecha_vencimiento) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.fecha_vencimiento, FormatDato.Fecha)</td>
 										<td class="@Model.GrillaObligaciones.ObtenerClase(item.gasto) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.gasto, FormatDato.Ninguno)</td>
@@ -91,13 +94,13 @@
 				<div class="col-md-2">
 					<div class="d-flex justify-content-sm-center">
 						<button id="btnAnterior2" class="btn btn-secondary btn-sm mt-1 me-1" type="button" title="Anterior">
-							<i class="bx bx-chevron-left"></i>
+							<i class="bx bx-chevron-left"></i>Anterior
 						</button>
 						<button id="btnCancelar2" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar">
-							<i class="bx bx-x-circle"></i>
+							<i class="bx bx-x-circle"></i>Cancelar
 						</button>
 						<button id="btnConfirmar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Confirmar">
-							<i class="bx bx-badge-check"></i>
+							<i class="bx bx-badge-check"></i>Confirmar
 						</button>
 					</div>
 				</div>
@@ -132,7 +135,8 @@
 								{
 									@foreach (var item in Model.GrillaValores.ListaDatos)
 									{
-										<tr onclick="selectReg(this, 'tbListaValores_Paso2')" ondblclick="selectRegDblGrillaValores(this);">
+										if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+										<tr class="@clase" onclick="selectReg(this, 'tbListaValores_Paso2')" ondblclick="selectRegDblGrillaValores(this);">
 											<td class="@Model.GrillaValores.ObtenerClase(item.ctaf_denominacion) cell-fit-content">@Model.GrillaValores.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
 											<td class="@Model.GrillaValores.ObtenerClase(item.concepto_valor) cell-fit-content">@Model.GrillaValores.FormatearDato(item.concepto_valor, FormatDato.Monto)</td>
 											<td class="@Model.GrillaValores.ObtenerClase(item.op_importe) cell-fit-content">@Model.GrillaValores.FormatearDato(item.op_importe, FormatDato.Monto)</td>

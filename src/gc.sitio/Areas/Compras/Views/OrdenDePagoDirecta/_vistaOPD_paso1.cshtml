@@ -75,7 +75,8 @@
 							{
 								@foreach (var item in Model.GrillaObligaciones.ListaDatos)
 								{
-									<tr onclick="selectReg(this, 'tbListaObligaciones_Paso1')" ondblclick="selectRegDbl(this, 'tbListaObligaciones_Paso1')">
+									if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+									<tr class="@clase" onclick="selectReg(this, 'tbListaObligaciones_Paso1')" ondblclick="selectRegDbl(this, 'tbListaObligaciones_Paso1')">
 										<td class="@Model.GrillaObligaciones.ObtenerClase(item.concepto) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaObligaciones.ObtenerClase(item.fecha_vencimiento) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.fecha_vencimiento, FormatDato.Fecha)</td>
 										<td class="@Model.GrillaObligaciones.ObtenerClase(item.gasto) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.gasto, FormatDato.Ninguno)</td>
@@ -97,10 +98,10 @@
 				<div class="col-md-2">
 					<div class="d-flex justify-content-sm-center">
 						<button id="btnCancelar1" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar">
-							<i class="bx bx-x-circle"></i>
+							<i class="bx bx-x-circle"></i>Cancelar
 						</button>
 						<button id="btnSiguiente1" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Siguiente">
-							<i class="bx bx-chevron-right"></i>
+							<i class="bx bx-chevron-right"></i>Siguiente
 						</button>
 					</div>
 				</div>
@@ -123,7 +124,8 @@
 								{
 									@foreach (var item in Model.GrillaConcpetos.ListaDatos)
 									{
-										<tr>
+										if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+										<tr class="@clase">
 											<td class="align-left">@item.Concepto</td>
 											<td class="align-right font-bold">@item.Importe</td>
 										</tr>
@@ -133,22 +135,22 @@
 						</table>
 					</div>
 				</div>
-				<div class="col-6">
-					<div class="d-flex justify-content-sm-center">
-						<button id="btnAbmAgregarItem" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Agregar nueva Obligación">
-							<i class="bx bx-plus-circle"></i>
+				<div class="col-6  d-flex justify-content-center">
+					<div class="d-grid gap-1" style="width: 75%;">
+						<button id="btnAbmAgregarItem" class="btn btn-primary btn-sm" type="button" title="Agregar nueva Obligación">
+							<i class="bx bx-plus-circle"></i>Agregar
 						</button>
-						<button id="btnAbmEditarItem" class="btn btn-info btn-sm mt-1 me-1" type="button" title="Editar Obligación">
-							<i class="bx bx-edit"></i>
+						<button id="btnAbmEditarItem" class="btn btn-info btn-sm" type="button" title="Editar Obligación">
+							<i class="bx bx-edit"></i>Editar
 						</button>
-						<button id="btnAbmEliminarItem" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Eliminar Obligación">
-							<i class="bx bx-trash"></i>
+						<button id="btnAbmEliminarItem" class="btn btn-danger btn-sm" type="button" title="Eliminar Obligación">
+							<i class="bx bx-trash"></i>Eliminar
 						</button>
-						<button id="btnAbmAceptarItem" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Guardar cambios">
-							<i class="bx bx-badge-check"></i>
+						<button id="btnAbmAceptarItem" class="btn btn-success btn-sm" type="button" title="Guardar cambios">
+							<i class="bx bx-badge-check"></i>Guardar
 						</button>
-						<button id="btnAbmCancelarItem" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar cambios">
-							<i class="bx bx-x-circle bx-xs"></i>
+						<button id="btnAbmCancelarItem" class="btn btn-danger btn-sm" type="button" title="Cancelar cambios">
+							<i class="bx bx-x-circle bx-xs"></i>Cancelar
 						</button>
 					</div>
 				</div>
@@ -207,8 +209,8 @@
 							<h6>Conceptos Facturados</h6>
 						</div>
 						<div class="col-md-6">
-							<button id="btnAgregarConceptoFacturado" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Agregar Concepto Facturado">
-								<i class="bx bx-plus bx-xs"></i>
+							<button id="btnAgregarConceptoFacturado" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Agregar Concepto Facturado">
+								<i class="bx bx-plus-circle"></i>
 							</button>
 						</div>
 					</div>
@@ -232,7 +234,6 @@
 									@foreach (var item in Model.GrillaConceptosFacturados.ListaDatos)
 									{
 										if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-
 										<tr class="@clase" onclick="selectReg(this, 'tbGridConceptoFacturado')">
 											<td style="display:none;">@item.id</td>
 											<td class="text-sm-left">@item.concepto.ToUpper()</td>

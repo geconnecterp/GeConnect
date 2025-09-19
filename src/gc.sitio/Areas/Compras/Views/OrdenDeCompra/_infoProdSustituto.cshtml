@@ -1,5 +1,7 @@
 ﻿@model GridCoreSmart<ProductoNCPISustitutoDto>
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 <div class="table-responsive table-wrapper-200-full" id="containerListaProductoSust">
 	<table class="table table-bordered table-hover table-golden" id="tbListaProductoSust">
@@ -29,7 +31,8 @@
 			{
 				@foreach (var item in Model.ListaDatos)
 				{
-					<tr onclick="selectListaProductoSustitutoRow(this)">
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" onclick="selectListaProductoSustitutoRow(this)">
 						<td class="align-center tiny-row">@item.p_id</td>
 						<td class="align-left tiny-row">@item.p_desc</td>
 						<td class="align-center tiny-row">@item.p_id_prov</td>

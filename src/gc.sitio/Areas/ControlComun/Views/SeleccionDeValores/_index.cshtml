@@ -1,6 +1,8 @@
 ﻿@model gc.infraestructura.ViewModels.SeleccionDeValoresViewModel
 @using static gc.infraestructura.Helpers.GridHelper
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 <style>
 	thead th {
@@ -31,7 +33,8 @@
 									{
 										@foreach (var item in Model.GrillaTipoCuentaFin.ListaDatos)
 										{
-											<tr onclick="seleccionarTipoFin(this)">
+											if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+											<tr class="@clase" onclick="seleccionarTipoFin(this)">
 												<td class="@Model.GrillaTipoCuentaFin.ObtenerClase(item.tcf_desc) tiny-row">@Model.GrillaTipoCuentaFin.FormatearDato(item.tcf_desc, FormatDato.Ninguno)</td>
 												<td style="display:none;">@item.tcf_id</td>
 											</tr>
@@ -57,7 +60,8 @@
 									{
 										@foreach (var item in Model.GrillaFin.ListaDatos)
 										{
-											<tr onclick="seleccionarFinanciero(this)">
+											if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+											<tr class="@clase" onclick="seleccionarFinanciero(this)">
 												<td class="@Model.GrillaFin.ObtenerClase(item.ctaf_denominacion)">@Model.GrillaFin.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
 												<td class="@Model.GrillaFin.ObtenerClase(item.ctaf_saldo)">@Model.GrillaFin.FormatearDato(item.ctaf_saldo, FormatDato.Monto)</td>
 												<td style="display:none;">@item.ctaf_id</td>

@@ -2,6 +2,8 @@
 @model ConsultaOPModel
 @{
 	var lista = Model.ListaTipoCertificado;
+	var alt = true;
+	string clase = string.Empty;
 }
 <style>
 	thead th {
@@ -39,8 +41,9 @@
 						{
 							@foreach (var item in Model.GrillaOP.ListaDatos)
 							{
+								if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 								var nombre = "chkImpreso" + item.op_compte;
-								<tr onclick="selectListaOPRow(this)">
+								<tr class="@clase" onclick="selectListaOPRow(this)">
 									<td class="tiny-row align-center">@item.op_compte</td>
 									<td class="tiny-row @Model.GrillaOP.ObtenerClase(item.opt_desc)">@Model.GrillaOP.FormatearDato(item.opt_desc, FormatDato.Ninguno)</td>
 									<td class="tiny-row @Model.GrillaOP.ObtenerClase(item.op_fecha)">@Model.GrillaOP.FormatearDato(item.op_fecha, FormatDato.Fecha)</td>
@@ -84,52 +87,24 @@
 		</div>
 	</div>
 	<div class="col-md-2">
-		<div class="row">
-			<button type="button" class="btn btn-secondary btn-sm mt-1 me-1" style="margin-left:5px; width:88%;" id="btnImprimirLista">
-				<div class="row" style="display: contents">
-					<div class="col-2">
-						<span class="bx bx-printer"></span>
-					</div>
-					<div class="col-10" style="font-size: medium;">
-						Imprimir Lista
-					</div>
-				</div>
+		<div>
+			<button id="btnImprimirLista" class="btn btn-secondary btn-sm mt-1 me-1 w-75" type="button" title="Imprimir Lista">
+				<i class="bx bx-printer"></i>Imprimir Lista
 			</button>
 		</div>
-		<div class="row mt-1">
-			<button type="button" class="btn btn-secondary btn-sm mt-1 me-1" style="margin-left:5px; width:88%;" id="btnImprimirOP">
-				<div class="row" style="display: contents">
-					<div class="col-2">
-						<span class="bx bx-printer"></span>
-					</div>
-					<div class="col-10" style="font-size: medium;">
-						Imprimir OP Sele
-					</div>
-				</div>
+		<div>
+			<button id="btnImprimirOP" class="btn btn-secondary btn-sm mt-1 me-1 w-75" type="button" title="Imprimir Orden de Pago Seleccionada">
+				<i class="bx bx-printer"></i>Imprimir OP Sele
 			</button>
 		</div>
-		<div class="row mt-1">
-			<button type="button" class="btn btn-danger btn-sm mt-1 me-1" style="margin-left:5px; width:88%;" id="btnAnularOP">
-				<div class="row" style="display: contents">
-					<div class="col-2">
-						<span class="bx bx-x-circle"></span>
-					</div>
-					<div class="col-10" style="font-size: medium;">
-						Anular OP
-					</div>
-				</div>
+		<div>
+			<button id="btnAnularOP" class="btn btn-danger btn-sm mt-1 me-1 w-75" type="button" title="Anular Orden de Pago Seleccionada">
+				<i class="bx bx-trash"></i>Anular OP
 			</button>
 		</div>
-		<div class="row mt-1">
-			<button type="button" class="btn btn-danger btn-sm mt-1 me-1" style="margin-left:5px; width:88%;" id="btnAnularCertRet">
-				<div class="row" style="display: contents">
-					<div class="col-2">
-						<span class="bx bx-trash"></span>
-					</div>
-					<div class="col-10" style="font-size: medium;">
-						Anular Cert. Ret.
-					</div>
-				</div>
+		<div>
+			<button id="btnAnularCertRet" class="btn btn-danger btn-sm mt-1 me-1 w-75" type="button" title="Anular Certificado de Retención">
+				<i class="bx bx-trash"></i>Anular Cert. Ret.
 			</button>
 		</div>
 		<input type="hidden" asp-for="MostrarListaTipoCertificado" class="form-control activable inputEditable" />

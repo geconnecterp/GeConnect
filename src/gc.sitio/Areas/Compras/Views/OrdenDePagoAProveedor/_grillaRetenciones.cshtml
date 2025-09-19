@@ -1,6 +1,8 @@
 ﻿@model GridCoreSmart<RetencionesDesdeObligYCredDto>
 @using static gc.infraestructura.Helpers.GridHelper
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 <div class="table-responsive table-wrapper-100" id="containerRetenciones_Paso2" style="padding-right:0px;">
 	<table class="table table-bordered table-hover" id="tbListaRetenciones_Paso2">
@@ -15,7 +17,8 @@
 			{
 				@foreach (var item in Model.ListaDatos)
 				{
-					<tr onclick="selectReg(this, 'tbListaRetenciones_Paso2')" ondblclick="selectRegDbl(this, 'tbListaRetenciones_Paso2')">
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" onclick="selectReg(this, 'tbListaRetenciones_Paso2')" ondblclick="selectRegDbl(this, 'tbListaRetenciones_Paso2')">
 						<td class="@Model.ObtenerClase(item.concepto_retencion) cell-fit-content">@Model.FormatearDato(item.concepto_retencion, FormatDato.Ninguno)</td>
 						<td class="@Model.ObtenerClase(item.retencion) cell-fit-content">@Model.FormatearDato(item.retencion, FormatDato.Monto)</td>
 					</tr>

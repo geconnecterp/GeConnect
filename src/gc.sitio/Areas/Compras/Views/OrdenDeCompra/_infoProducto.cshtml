@@ -3,6 +3,8 @@
 	var obj = Model?.ListaDatos?.First();
 	var fecha1 = obj?.p_actu_fecha == null ? "" : obj.p_actu_fecha.Value.ToString("dd/MM/yy");
 	var fecha2 = obj?.rp_fecha == null ? "" : obj.rp_fecha.Value.ToString("dd/MM/yy");
+	var alt = true;
+	string clase = string.Empty;
 }
 
 <div class="table-responsive table-wrapper-full-width">
@@ -27,7 +29,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			<tr>
+			<tr class="alt">
 				<td class="align-center tiny-row font-bold">@obj?.p_id</td>
 				<td class="align-left tiny-row">EAN: @obj?.p_id_barrado_ean</td>
 				<td class="align-center tiny-row" title="Unidad de Presentación">U.Pres.: @obj?.unidad_presentacion</td>
