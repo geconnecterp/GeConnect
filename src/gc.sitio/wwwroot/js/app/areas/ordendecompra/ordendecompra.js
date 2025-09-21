@@ -1,4 +1,6 @@
-﻿$(function () {
+﻿let productoActualEnLista = null;
+
+$(function () {
 	$("#tituloLegend").text("Productos a cargar");
 	$("#chkRel01").prop('checked', true);
 	$("#chkRel01").trigger("change");
@@ -357,13 +359,14 @@ function AplicarSeteoMasivo() {
 			else {
 				$("#divListaProductoNuevaOC").html(obj);
 				$("#Total_Costo").val(formatter.format($("#Total_Costo").val()));
+				finalizarInicializacion();
 				//$("#Total_Pallet").val(formatter.format($("#Total_Pallet").val()));
-				AgregarHandlerAGrillaProdOC();
-				addInCellLostFocusHandler();
-				addInCellGotFocusHandler();
-				addInCellKeyDownHandler();
-				addInCellEditHandler();
-				AddEventListenerToGrid("tbListaProductoOC");
+				//AgregarHandlerAGrillaProdOC();
+				//addInCellLostFocusHandler();
+				//addInCellGotFocusHandler();
+				//addInCellKeyDownHandler();
+				//addInCellEditHandler();
+				//AddEventListenerToGrid("tbListaProductoOC");
 			}
 		});
 	}
@@ -595,6 +598,64 @@ function ActualizarProductoEnOc(field, val) {
 	});
 }
 
+function ActualizarProductoEnOc(row, campoActual) {
+	console.log(row);
+	if (campoActual == undefined) return false;
+	else {
+		//var pId = pIdEnOcSeleccionado;
+		var pId = row.data('p-id');
+		var field = $(campoActual).data('field');
+		var val = $(campoActual).val();
+		var data = { pId, field, val };
+		PostGen(data, ActualizarProductoEnOcURL, function (obj) {
+			if (obj.error === true) {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				//Actualizar valores en la grilla
+				$("#tbListaProductoOC").find('tr').each(function (i, el) {
+					var td = $(this).find('td');
+					if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
+						//GRILLA
+						td[8].innerText = obj.data.pedidoCantidad.toFixed(3);//
+						td[16].innerText = obj.data.pedido_Mas_Boni.toFixed(1);//PEDIDO +BONI -> obj.data.pedido_Mas_Boni
+						td[17].innerText = formatearValorConFormatoNumerico(obj.data.p_Pcosto.toFixed(2),2);//PRECIO COSTO -> obj.data.p_Pcosto
+						td[18].innerText = formatearValorConFormatoNumerico(obj.data.p_Pcosto_Total.toFixed(2),2);//TOTAL COSTO -> obj.data.p_Pcosto_Total
+						td[19].innerText = obj.data.paletizado;//TOTAL PALLET -> obj.data.paletizado
+
+						//TOTALES
+						$("#Total_Costo").val(formatter.format(obj.data.total_Costo));//TOTAL_COSTO -> obj.data.total_Costo
+						//$("#Total_Pallet").val(formatter.format(obj.data.total_Pallet));//TOTAL_PALLET -> obj.data.total_Pallet
+					}
+				});
+			}
+
+		});
+	}
+}
+
+function formatearValorConFormatoNumerico(valor, decimales) {
+	var retValue = "";
+	// Validar si es string y convertirlo a número
+	let numero = typeof valor === 'string'
+		? parseFloat(valor.replace(/,/g, '').trim())
+		: valor;
+
+	// Validar que sea un número válido
+	if (isNaN(numero)) return '';
+
+	// Formatear con separador de miles y dos decimales
+	retValue = numero.toLocaleString('en-US', {
+		minimumFractionDigits: decimales,
+		maximumFractionDigits: decimales
+	});
+
+	return retValue;
+}
+
 function CargarResumenDeOc() {
 	if (ExitensItemsEnOC()) {
 		var data = { ocIdSelected };
@@ -777,23 +838,23 @@ function ActualizarInfoDeProductosEnGrilla() {
 	}
 }
 
-function AgregarHandlerAGrillaProdOC() {
-	var dataTable = document.getElementById('tbListaProductoOC');
-	var checkItAll = dataTable.querySelector('input[name="select_all"]');
-	var inputs = dataTable.querySelectorAll('tbody>tr>td>input');
-	checkItAll.addEventListener('change', function () {
-		if (checkItAll.checked) {
-			inputs.forEach(function (input) {
-				input.checked = true;
-			});
-		}
-		else {
-			inputs.forEach(function (input) {
-				input.checked = false;
-			});
-		}
-	});
-}
+//function AgregarHandlerAGrillaProdOC() {
+//	var dataTable = document.getElementById('tbListaProductoOC');
+//	var checkItAll = dataTable.querySelector('input[name="select_all"]');
+//	var inputs = dataTable.querySelectorAll('tbody>tr>td>input');
+//	checkItAll.addEventListener('change', function () {
+//		if (checkItAll.checked) {
+//			inputs.forEach(function (input) {
+//				input.checked = true;
+//			});
+//		}
+//		else {
+//			inputs.forEach(function (input) {
+//				input.checked = false;
+//			});
+//		}
+//	});
+//}
 
 function AddEventListenerToGrid(tabla) {
 	var grilla = document.getElementById(tabla);
@@ -822,13 +883,14 @@ function quitarProductoEnOC(e) {
 		}
 		else {
 			$("#divListaProductoNuevaOC").html(obj);
-			AgregarHandlerAGrillaProdOC();
-			AddEventListenerToGrid("tbListaProductoOC");
-			ActualizarInfoDeProductoEnGrilla(pId);
-			addInCellLostFocusHandler();
-			addInCellGotFocusHandler();
-			addInCellKeyDownHandler();
-			addInCellEditHandler();
+			finalizarInicializacion();
+			//AgregarHandlerAGrillaProdOC();
+			//AddEventListenerToGrid("tbListaProductoOC");
+			//ActualizarInfoDeProductoEnGrilla(pId);
+			//addInCellLostFocusHandler();
+			//addInCellGotFocusHandler();
+			//addInCellKeyDownHandler();
+			//addInCellEditHandler();
 		}
 	});
 }
@@ -849,13 +911,14 @@ function actualizarProducto(e) {
 			}
 			else {
 				$("#divListaProductoNuevaOC").html(obj);
-				AgregarHandlerAGrillaProdOC();
-				AddEventListenerToGrid("tbListaProductoOC");
-				ActualizarInfoDeProductosEnGrilla();
-				addInCellLostFocusHandler();
-				addInCellGotFocusHandler();
-				addInCellKeyDownHandler();
-				addInCellEditHandler();
+				finalizarInicializacion();
+				//AgregarHandlerAGrillaProdOC();
+				//AddEventListenerToGrid("tbListaProductoOC");
+				//ActualizarInfoDeProductosEnGrilla();
+				//addInCellLostFocusHandler();
+				//addInCellGotFocusHandler();
+				//addInCellKeyDownHandler();
+				//addInCellEditHandler();
 				CerrarWaiting();
 			}
 		});
@@ -1053,18 +1116,19 @@ function BuscarProductosTabOC() {
 		else {
 			$("#divListaProductoNuevaOC").html(obj);
 			$("#Total_Costo").val(formatter.format($("#Total_Costo").val()));
+			finalizarInicializacion();
 			//$("#Total_Pallet").val(formatter.format($("#Total_Pallet").val()));
-			AgregarHandlerAGrillaProdOC();
-			ActualizarInfoDeProductosEnGrilla();
-			addInCellLostFocusHandler();
-			addInCellGotFocusHandler();
-			addInCellKeyDownHandler();
-			addInCellEditHandler();
-			AddEventListenerToGrid("tbListaProductoOC");
-			addMaskInEditableCells();
+			//AgregarHandlerAGrillaProdOC();
+			//ActualizarInfoDeProductosEnGrilla();
+			//addInCellLostFocusHandler();
+			//addInCellGotFocusHandler();
+			//addInCellKeyDownHandler();
+			//addInCellEditHandler();
+			//AddEventListenerToGrid("tbListaProductoOC");
+			//addMaskInEditableCells();
 			//$(".inputEditable").on("keypress", analizaEnterInput)
 			activarBotones(true);
-			tableUpDownArrow();
+			//tableUpDownArrow();
 			CargarResumenDeOc();
 		}
 	});
@@ -1404,5 +1468,506 @@ function btnCollapseSectionClicked() {
 	} else {
 		$("#containerListaProducto").removeClass('table-wrapper-300-full-width');
 		$("#containerListaProducto").addClass('table-wrapper-400-full-width');
+	}
+}
+
+
+
+/*
+ADD-ON
+*/
+
+// Función de utilidad para destacar la fila seleccionada
+// ✅ MEJORADA: Función destacar fila con verificación adicional
+function destacarFilaSeleccionada(productoId) {
+	console.log(`🎯 Destacando fila para producto ID: ${productoId}`);
+
+	// Remover el destacado de todas las filas
+	$("#tbListaProductoOC tbody tr").removeClass("selected");
+
+	// Verificar que existe una fila con ese ID
+	const $fila = $("#tbListaProductoOC tbody tr[data-p-id='" + productoId + "']");
+
+	if ($fila.length === 0) {
+		console.warn(`⚠️ No se encontró ninguna fila con data-p-id="${productoId}"`);
+		return false;
+	}
+
+	// Añadir el destacado solo a la fila del producto seleccionado
+	$fila.addClass("selected");
+	console.log(`✅ Fila destacada correctamente para producto ${productoId}`);
+
+	// Hacer scroll a la fila si está fuera de vista
+	scrollAFilaSeleccionada($fila);
+
+	return true;
+}
+
+// ✅ NUEVA: Función separada para scroll optimizado
+function scrollAFilaSeleccionada($fila) {
+	const $tableContainer = $("#tbListaProductoOC").closest('.table-responsive');
+
+	if ($tableContainer.length > 0) {
+		const containerTop = $tableContainer.offset().top;
+		const containerHeight = $tableContainer.height();
+		const rowTop = $fila.offset().top;
+
+		// Solo hacer scroll si la fila está fuera del área visible
+		if (rowTop < containerTop || rowTop > containerTop + containerHeight) {
+			$tableContainer.animate({
+				scrollTop: $tableContainer.scrollTop() + (rowTop - containerTop - containerHeight / 2)
+			}, 300);
+			console.log(`📜 Realizando scroll a la fila seleccionada`);
+		}
+	}
+}
+
+function finalizarInicializacion() {
+	setTimeout(function () {
+		configuracionInputMaskOptimizada();
+		optimizarVisualizacionTabla();
+	}, 10);
+}
+
+function optimizarVisualizacionTabla() {
+	// Asegurarnos de que la tabla existe
+	if ($("#tbListaProductoOC").length === 0) {
+		return;
+	}
+
+	// Ajustar columnas con texto para que no sean demasiado anchas
+	$("#tbListaProductoOC th:nth-child(2)").css('max-width', '180px'); // Descripción
+	$("#tbListaProductoOC td:nth-child(2)").css({
+		'max-width': '180px',
+		'white-space': 'nowrap',
+		'overflow': 'hidden',
+		'text-overflow': 'ellipsis'
+	});
+
+	// Asegurarnos que la tabla tenga scroll horizontal si es necesario
+	$("#tbListaProductoOC").closest('.table-responsive').css('overflow-x', 'auto');
+
+	console.log("Tabla optimizada para mejor visualización");
+}
+
+function configuracionInputMaskOptimizada() {
+	console.log("Aplicando configuración InputMask optimizada...");
+
+	// Establecer todos los campos como readonly de una sola vez
+	$('.input-bultos, .input-p_plista, .input-p_dto1, .input-p_dto2, .input-p_dto3, .input-p_dto4, .input-p_dto_pa, .input-p_boni')
+		.prop('readonly', true)
+		.addClass('campo-readonly');
+
+	// Definir configuraciones de máscara fuera de los bucles
+	const maskConfig3Decimales = {
+		alias: "numeric",
+		groupSeparator: ",",
+		radixPoint: ".",
+		autoGroup: true,
+		digits: 3,
+		digitsOptional: false,
+		rightAlign: true,
+		prefix: '',
+		placeholder: "0",
+		clearMaskOnLostFocus: false,
+		showMaskOnHover: false,
+		showMaskOnFocus: false,
+		min: 0, // Explícitamente permitir 0 como valor mínimo
+		allowMinus: false, // No permitir valores negativos
+		onBeforeMask: function (value) {
+			// Si es null, undefined o cadena vacía, retornar '0'
+			if (value === null || value === undefined || value === '') {
+				return '0';
+			}
+
+			// Para otros valores, formatear correctamente
+			try {
+				let numValue = parseFloat(value.toString().replace(/,/g, ''));
+				return isNaN(numValue) ? '0' : numValue.toFixed(3);
+			} catch (e) {
+				console.error('Error al formatear valor:', e);
+				return '0';
+			}
+		}
+	};
+
+	const maskConfig1Decimal = {
+		alias: "numeric",
+		groupSeparator: ",",
+		radixPoint: ".",
+		autoGroup: true,
+		digits: 1,
+		digitsOptional: false,
+		rightAlign: true,
+		integerDigits: 2,
+		min: 0,
+		max: 99.9,
+		prefix: '',
+		placeholder: "0",
+		clearMaskOnLostFocus: false,
+		showMaskOnHover: false,
+		showMaskOnFocus: false,
+		onBeforeMask: function (value) {
+			if (value) {
+				let numValue = parseFloat(value.toString().replace(/,/g, ''));
+				if (numValue > 99.9) numValue = 99.9;
+				return isNaN(numValue) ? value : numValue.toFixed(1);
+			}
+			return value;
+		}
+	};
+
+	const maskConfigEntero = {
+		alias: "numeric",
+		groupSeparator: ",",
+		radixPoint: ".", // no se usa en enteros, pero puede quedar por consistencia
+		autoGroup: true,
+		digits: 0,
+		digitsOptional: false,
+		rightAlign: true,
+		integerDigits: 2,
+		min: 0,
+		max: 99999,
+		prefix: '',
+		placeholder: "0",
+		clearMaskOnLostFocus: false,
+		showMaskOnHover: false,
+		showMaskOnFocus: false,
+		onBeforeMask: function (value) {
+			if (value) {
+				let numValue = parseInt(value.toString().replace(/,/g, ''));
+				if (numValue > 99999) numValue = 99999;
+				return isNaN(numValue) ? value : numValue.toString();
+			}
+			return value;
+		}
+	};
+
+
+	const maskConfig2Decimales = {
+		alias: "numeric",
+		groupSeparator: ",",
+		radixPoint: ".",
+		autoGroup: true,
+		digits: 2,
+		digitsOptional: false,
+		rightAlign: true,
+		prefix: '',
+		placeholder: "0",
+		clearMaskOnLostFocus: false,
+		showMaskOnHover: false,
+		showMaskOnFocus: false,
+		onBeforeMask: function (value) {
+			if (value) {
+				let numValue = parseFloat(value.toString().replace(/,/g, ''));
+				return isNaN(numValue) ? value : numValue.toFixed(2);
+			}
+			return value;
+		}
+	};
+
+	const maskConfigBoni = {
+		mask: "999/999",
+		placeholder: "",
+		showMaskOnHover: false,
+		showMaskOnFocus: false
+	};
+
+	// Aplicar máscaras de forma eficiente con selección optimizada
+	Inputmask(maskConfig3Decimales).mask('.input-p_plista');
+	Inputmask(maskConfig1Decimal).mask('.input-p_dto1, .input-p_dto2, .input-p_dto3, .input-p_dto4, .input-p_dto_pa');
+	Inputmask(maskConfigBoni).mask('.input-p_boni');
+	Inputmask(maskConfigEntero).mask('.input-bultos');
+
+	// Configurar eventos de edición
+	configurarEventosEdicionOptimizado();
+
+	console.log("Configuración InputMask aplicada");
+}
+
+function configurarEventosEdicionOptimizado() {
+	const camposEditables = '.input-bultos, .input-p_plista, .input-p_dto1, .input-p_dto2, .input-p_dto3, .input-p_dto4, .input-p_dto_pa, .input-p_boni';
+	const camposSecuencia01 = '.input-bultos, .input-p_plista, .input-p_dto1, .input-p_dto2, .input-p_dto3, .input-p_dto4, .input-p_dto_pa, .input-p_boni';
+
+	// Limpiar eventos previos
+	$(document).off('click.camposEditables keydown.camposEditables blur.camposSecuencia01');
+
+	// Evento click unificado
+	$(document).on('click.camposEditables', camposEditables, function (e) {
+		e.stopPropagation();
+
+		const $this = $(this);
+		const pIdDetalle = $this.closest('tr').data('p-id');
+
+		// Cambio de producto si es necesario
+		if (pIdDetalle !== productoActualEnLista) {
+			productoActualEnLista = pIdDetalle;
+			//$("#divProdLista").attr('data-producto-actual', pIdDetalle);
+			destacarFilaSeleccionada(pIdDetalle);
+			//buscarProductoListaOptimizado(pIdDetalle);
+		}
+
+		// Habilitar campo
+		$this.prop('readonly', false).removeClass('campo-readonly');
+		setTimeout(() => { $this[0].focus(); $this[0].select(); }, 0);
+	});
+
+	// Evento keydown unificado
+	$(document).on('keydown.camposEditables', camposEditables, function (e) {
+		if (e.key === 'Enter' || e.key === 'Tab') {
+			e.preventDefault();
+
+			const row = $(this).closest('tr');
+			const esSecuencia01 = $(this).is(camposSecuencia01);
+			//const esMargen = $(this).hasClass('input-tp_margen');
+			//const esPrecioVenta = $(this).hasClass('input-tp_pvta');
+
+			var fueModificado = marcarCampoModificado(this);
+			//actualizarEstadoCarga(row);
+			activarSiguienteCampo(this);
+			
+			// Aplicar cálculos según tipo
+			if (esSecuencia01 && fueModificado) ActualizarProductoEnOcDebounced(row, this);
+			//else if (esMargen) calcularPrecioVentaAPIDebounced(row);
+			//else if (esPrecioVenta) calcularPrecioVentaMargenAPIDebounced(row);
+
+			///TODO MARCE: Aca estimo deebería llamar al metodo para recalcular que utilizaba anteriormente
+		}
+	});
+
+	// Eventos blur simplificados con delegación
+	const eventosBlur = {
+		[camposSecuencia01]: () => ActualizarProductoEnOcDebounced
+	};
+
+	Object.entries(eventosBlur).forEach(([selector, getCallback]) => {
+		$(document).on(`blur.${selector.replace(/[^a-zA-Z]/g, '')}`, selector, function () {
+			if ($(this).prop('readonly')) return;
+
+			const row = $(this).closest('tr');
+			const value = $(this).val().replace(/,/g, '');
+			const numValue = parseFloat(value);
+
+			if (!isNaN(numValue)) {
+				const decimals = $(this).hasClass('input-tp_plista') || $(this).hasClass('input-tp_pcosto') || $(this).hasClass('input-tp_pneto') ? 3 :
+					$(this).hasClass('input-tp_dto1') || $(this).hasClass('input-tp_dto2') || $(this).hasClass('input-tp_dto3') || $(this).hasClass('input-tp_dto4') || $(this).hasClass('input-tp_dto_pa') || $(this).hasClass('input-tp_porc_flete') ? 1 : 2;
+				$(this).val(numValue.toFixed(decimals));
+			}
+
+			$(this).prop('readonly', true).addClass('campo-readonly');
+			getCallback()(row);
+		});
+	});
+}
+
+// Función de debounce para evitar llamadas repetidas
+function debounce(func, wait) {
+	let timeout;
+	return function () {
+		const context = this, args = arguments;
+		clearTimeout(timeout);
+		timeout = setTimeout(function () {
+			func.apply(context, args);
+		}, wait);
+	};
+}
+
+// Aplicar debounce a funciones de cálculo intensivas
+const ActualizarProductoEnOcDebounced = debounce(function (row, campoActual) {
+	ActualizarProductoEnOc(row, campoActual);
+}, 300);
+
+function marcarCampoModificado(input) {
+	// Usar el parámetro input en lugar de this
+	const $input = $(input);
+
+	// Validar que el input existe
+	if (!$input.length) {
+		console.warn('marcarCampoModificado: Input no válido', input);
+		return false;
+	}
+
+	const valorOriginal = $input.data('original-value');
+
+	// Obtener valor actual con manejo de errores
+	let valorActual = '';
+	try {
+		valorActual = $input.val() ? $input.val().replace(/,/g, '') : '';
+	} catch (e) {
+		console.error('Error al obtener valor del campo:', e);
+		return false;
+	}
+
+	// Si no hay valor original definido, no podemos comparar
+	if (valorOriginal === undefined) {
+		return false;
+	}
+
+	// Determinar si el campo está modificado
+	let esModificado = false;
+
+	// Para el campo de bonificación (caso especial)
+	if ($input.hasClass('input-p_boni')) {
+		const originalTrim = (valorOriginal || '').toString().trim();
+		const actualTrim = (valorActual || '').toString().trim();
+
+		// Casos especiales: "0" y "" se consideran iguales
+		if ((originalTrim === "0" && actualTrim === "") ||
+			(originalTrim === "" && actualTrim === "0")) {
+			esModificado = false;
+		} else {
+			esModificado = originalTrim !== actualTrim;
+		}
+	} else {
+		// Para campos numéricos - manejar correctamente el caso del valor 0
+		try {
+			// Convertir valores a números, manejando cadenas vacías como 0
+			let numOriginal = valorOriginal === '' || valorOriginal === null ? 0 : parseFloat(valorOriginal);
+			let numActual = valorActual === '' ? 0 : parseFloat(valorActual);
+
+			// Si ambos valores son realmente cero (o equivalentes a cero), no están modificados
+			if ((numOriginal === 0 || isNaN(numOriginal)) &&
+				(numActual === 0 || isNaN(numActual))) {
+				esModificado = false;
+			} else if (!isNaN(numOriginal) && !isNaN(numActual)) {
+				// Ambos son números válidos, usar tolerancias específicas según el campo
+				let tolerancia = 0.009; // Base para campos con 2 decimales
+
+				if ($input.hasClass('input-p_dto1') ||
+					$input.hasClass('input-p_dto2') ||
+					$input.hasClass('input-p_dto3') ||
+					$input.hasClass('input-p_dto4') ||
+					$input.hasClass('input-p_dto_pa')) {
+					tolerancia = 0.09; // Para campos con 1 decimal
+				} else if ($input.hasClass('input-p_plista')) {
+					tolerancia = 0.0009; // Para campos con 3 decimales
+				}
+
+				// Si la diferencia supera la tolerancia, está modificado
+				esModificado = Math.abs(numOriginal - numActual) > tolerancia;
+			} else if (isNaN(numOriginal) !== isNaN(numActual)) {
+				// Si uno es NaN y el otro no, están diferentes
+				esModificado = true;
+			}
+		} catch (e) {
+			console.error("Error al comparar valores:", e);
+			esModificado = false; // En caso de error, no marcar como modificado
+		}
+	}
+
+	// Aplicar o quitar la clase según corresponda
+	if (esModificado) {
+		$input.addClass('campo-modificado');
+	} else {
+		$input.removeClass('campo-modificado');
+	}
+
+	// Manejar el indicador visual
+	const container = $input.closest('.input-container');
+	if (esModificado) {
+		if (container.find('.indicador-cambio').length === 0) {
+			container.append('<div class="indicador-cambio"></div>');
+		}
+	} else {
+		container.find('.indicador-cambio').remove();
+	}
+
+	return esModificado;
+}
+
+/**
+* Actualiza el atributo data-carga de una fila según las reglas:
+* - Si hay cambios y carga=0, establecer carga=1
+* - Si no hay cambios y carga=1, establecer carga=0
+* - En otros casos, mantener valor actual
+* @param {jQuery} row - La fila (tr) a verificar
+* @returns {boolean} - Indica si la fila tiene algún campo modificado
+*/
+function actualizarEstadoCarga(row) {
+	// Obtener el estado actual de carga
+	const estadoCargaActual = row.data('carga') === 1;
+
+	// Verificación rápida: si ya hay campos con la clase 'campo-modificado', hay cambios
+	const camposModificados = row.find('.campo-modificado').length;
+
+	if (camposModificados > 0) {
+		// Hay campos modificados, asegurar que carga=1
+		if (!estadoCargaActual) {
+			row.data('carga', 1);
+			row.attr('data-carga', '1');
+			console.log(`Fila ${row.data('p-id')}: Cambiando data-carga a 1 (detectados ${camposModificados} campos modificados)`);
+		}
+		return true; // Hay campos modificados
+	} else {
+		// No hay campos con la clase, verificar si realmente hay diferencias
+		// (esta es una verificación más profunda y costosa)
+		let hayAlgunCampoModificado = false;
+
+		row.find('input[data-original-value]').each(function () {
+			const $input = $(this);
+			const valorOriginal = $input.data('original-value');
+			const valorActual = $input.val().replace(/,/g, '');
+
+			// Verificar si está modificado según el tipo de campo
+			if ($input.hasClass('input-tp_boni')) {
+				// Lógica para bonificación
+				const originalTrim = (valorOriginal || '').toString().trim();
+				const actualTrim = (valorActual || '').toString().trim();
+
+				if (!((originalTrim === actualTrim) ||
+					(originalTrim === "0" && actualTrim === "") ||
+					(originalTrim === "" && actualTrim === "0"))) {
+					hayAlgunCampoModificado = true;
+					return false; // Salir del bucle
+				}
+			} else {
+				// Lógica para campos numéricos (simplificada para rendimiento)
+				try {
+					const numOriginal = parseFloat(valorOriginal);
+					const numActual = parseFloat(valorActual);
+
+					if (!isNaN(numOriginal) && !isNaN(numActual) &&
+						Math.abs(numOriginal - numActual) > 0.0001) {
+						hayAlgunCampoModificado = true;
+						return false; // Salir del bucle
+					}
+				} catch (e) { }
+			}
+		});
+
+		// Actualizar según resultado
+		if (hayAlgunCampoModificado && !estadoCargaActual) {
+			row.data('carga', 1);
+			row.attr('data-carga', '1');
+			console.log(`Fila ${row.data('p-id')}: Cambiando data-carga a 1 (hay campos modificados no marcados)`);
+		} else if (!hayAlgunCampoModificado && estadoCargaActual) {
+			row.data('carga', 0);
+			row.attr('data-carga', '0');
+			console.log(`Fila ${row.data('p-id')}: Cambiando data-carga a 0 (no hay campos modificados)`);
+		}
+
+		return hayAlgunCampoModificado;
+	}
+}
+
+function activarSiguienteCampo(campoActual) {
+	const $campoActual = $(campoActual);
+	const $fila = $campoActual.closest('tr');
+	const camposEditables = '.input-bultos, .input-p_plista, .input-p_dto1, .input-p_dto2, .input-p_dto3, .input-p_dto4, .input-p_dto_pa, .input-p_boni';
+	const $camposEnFila = $fila.find(camposEditables);
+	const indiceActual = $camposEnFila.index($campoActual);
+
+	let $siguienteCampo = null;
+	if (indiceActual < $camposEnFila.length - 1) {
+		$siguienteCampo = $camposEnFila.eq(indiceActual + 1);
+	} else if ($fila.next('tr').length) {
+		$siguienteCampo = $fila.next('tr').find(camposEditables).first();
+	}
+
+	$campoActual.prop('readonly', true).addClass('campo-readonly');
+
+	if ($siguienteCampo && $siguienteCampo.length) {
+		$siguienteCampo.prop('readonly', false).removeClass('campo-readonly');
+		setTimeout(() => { $siguienteCampo[0].focus(); $siguienteCampo[0].select(); }, 0);
 	}
 }

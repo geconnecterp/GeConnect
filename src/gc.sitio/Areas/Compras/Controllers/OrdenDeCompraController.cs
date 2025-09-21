@@ -316,7 +316,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						}
 						else if (field.Contains("p_plista"))
 						{
-							val = val.Replace(",", ".");
+							val = val.Replace(",", "");
 							producto.P_Plista = Convert.ToDecimal(val);
 						}
 						else if (field.Contains("p_boni"))

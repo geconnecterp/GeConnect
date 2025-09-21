@@ -1,4 +1,5 @@
-﻿@model ProductoParaOcModel
+﻿@using static gc.infraestructura.Helpers.GridHelper
+@model ProductoParaOcModel
 @{
 	var alt = true;
 	string clase = string.Empty;
@@ -9,31 +10,36 @@
 	top: 0px;
 	}
 </style>
-<div class="table-responsive table-wrapper-full-width" id="containerListaProductoOC">
-	<table class="table table-bordered table-hover table-golden" id="tbListaProductoOC">
+<div class="table-responsive text-nowrap table-wrapper" id="containerListaProductoOC">
+	<table class="table table-sm mb-0 table-hover table-golden" id="tbListaProductoOC">
 		<thead>
 			<tr class="header">
-				<th><input name="select_all" value="1" type="checkbox"></th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Código</th>
-				<th style="width:20%;" class="col-header-small align-center tiny-row">Descripción</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Cod. Prov</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Stock Suc</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Stock Tot</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Unidad Pres.</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Pedido Bultos</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Pedido Cantidad</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Precio Lista</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">D1</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">D2</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">D3</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">D4</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">DPA</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Boni</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Pedido +Boni</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Precio Costo</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Total Costo</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Total Pallet</th>
-				<th style="width:0.1%;" class="col-header-small align-center tiny-row">Carro</th>
+				@* <th><input name="select_all" value="1" type="checkbox"></th> *@
+				<th scope="col" class="check-column">
+					<div class="check-producto-container">
+						<input class="form-check-input" type="checkbox" id="checkAllProd" title="Seleccionar todos">
+					</div>
+				</th>
+				<th scope="col">Código</th>
+				<th scope="col">Descripción</th>
+				<th scope="col">Cod. Prov</th>
+				<th scope="col">Stock Suc</th>
+				<th scope="col">Stock Tot</th>
+				<th scope="col" title="Unidad de Presentación">Unidad Pres.</th>
+				<th scope="col" title="Pedido Bultos">Pedido Bultos</th>
+				<th scope="col" title="Pedido Cantidad">Pedido Cantidad</th>
+				<th scope="col" class="text-end">Precio Lista</th>
+				<th scope="col">D1</th>
+				<th scope="col">D2</th>
+				<th scope="col">D3</th>
+				<th scope="col">D4</th>
+				<th scope="col">DPA</th>
+				<th scope="col">Boni</th>
+				<th scope="col" title="Pedido +Bonificaciones">Pedido +Boni</th>
+				<th scope="col" title="Precio de Costo" class="text-end">Precio Costo</th>
+				<th scope="col" title="Total Costo" class="text-end">Total Costo</th>
+				<th scope="col" title="Total en Pallet">Total Pallet</th>
+				<th scope="col">Carro</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -51,34 +57,124 @@
 					var nombre_P_Dto4 = "p_dto4_" + item.P_Id;
 					var nombre_P_Dto_Pa = "p_dto_pa_" + item.P_Id;
 					var nombre_P_Boni = "p_boni_" + item.P_Id;
-					<tr class="@clase" onclick="selectListaProductoRowOC(this)">
-						<td><input type="checkbox" name=@nombre id="@nombre" /></td> @*00*@
-						<td class="align-center tiny-row">@item.P_Id</td> @*01*@
-						<td class="align-left tiny-row" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;" title="@item.P_Desc">@item.P_Desc</td> @*02*@
-						<td class="align-center tiny-row">@item.P_Id_Prov</td> @*03*@
-						<td class="align-center tiny-row">@item.Stk_Suc</td> @*04*@
-						<td class="align-center tiny-row">@item.Stk</td> @*05*@
-						<td class="align-center tiny-row">@item.P_Unidad_Pres</td> @*06*@
-						<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_Bultos>@item.Bultos</td> @*07*@
-						<td class="align-center tiny-row">@item.Cantidad.ToString("0.##")</td> @*08*@
-						<td class="align-right tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Plista>@item.P_Plista.ToString("0.##")</td> @*09*@
-						<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto1>@item.P_Dto1.ToString("0.#")</td> @*10*@
-						<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto2>@item.P_Dto2.ToString("0.#")</td> @*11*@
-						<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto3>@item.P_Dto3.ToString("0.#")</td> @*12*@
-						<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto4>@item.P_Dto4.ToString("0.#")</td> @*13*@
-						<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto_Pa>@item.P_Dto_Pa.ToString("0.#")</td> @*14*@
-						<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Boni>@item.P_Boni</td> @*15*@
-						<td class="align-center tiny-row">@item.Pedido_Mas_Boni</td> @*16*@
-						<td class="align-right tiny-row">@item.P_Pcosto.ToString("0.##")</td> @*17*@
-						<td class="align-right tiny-row">@item.P_Pcosto_Total.ToString("0.##")</td> @*18*@
-						<td class="align-center tiny-row">@item.Paletizado.ToString("0.##")</td> @*19*@
-						<td>
-							<a class="btn btn-xs btn-outline-dark" data-interaction="@item.P_Id" onclick="quitarProductoEnOC(this);">
+					<tr class="@clase" data-p-id="@item.P_Id" onclick="selectListaProductoRowOC(this)">
+						@* <td><input type="checkbox" name=@nombre id="@nombre" /></td> *@ @*00*@
+						<td class="check-column">
+							<div class="check-producto-container">
+								<input type="checkbox" class="form-check-input check-producto" data-p-id="@item.P_Id">
+							</div>
+						</td>
+						<td class="@Model.ListaOC.ObtenerClase(item.P_Id)">@Model.ListaOC.FormatearDato(item.P_Id, FormatDato.Ninguno)</td> @*01*@
+						<td class="@Model.ListaOC.ObtenerClase(item.P_Desc)" title="@Model.ListaOC.FormatearDato(item.P_Desc, FormatDato.Ninguno)">@*02*@
+							@Model.ListaOC.FormatearDato(item.P_Desc, FormatDato.Ninguno)
+						</td> 
+						<td class="@Model.ListaOC.ObtenerClase(item.P_Id_Prov)">@Model.ListaOC.FormatearDato(item.P_Id_Prov, FormatDato.Ninguno)</td> @*03*@
+						<td class="@Model.ListaOC.ObtenerClase(item.Stk_Suc)">@Model.ListaOC.FormatearDato(item.Stk_Suc, FormatDato.Ninguno)</td> @*04*@
+						<td class="@Model.ListaOC.ObtenerClase(item.Stk)">@Model.ListaOC.FormatearDato(item.Stk, FormatDato.Ninguno)</td> @*05*@
+						<td class="@Model.ListaOC.ObtenerClase(item.P_Unidad_Pres)">@Model.ListaOC.FormatearDato(item.P_Unidad_Pres, FormatDato.Ninguno)</td> @*06*@
+						@* <td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_Bultos>@item.Bultos</td> *@ 
+						<td class="@Model.ListaOC.ObtenerClase(item.Bultos)">@*07*@
+							<div class="input-container">
+								<input type="text" class="form-control form-control-sm input-bultos input-numeric"
+									   value="@(item.Bultos.ToString())"
+									   data-p-id="@item.P_Id"
+									   data-field="bultos"
+									   data-original-value="@(item.Bultos)" />
+							</div>
+						</td>
+						<td class="@Model.ListaOC.ObtenerClase(item.Cantidad)">@Model.ListaOC.FormatearDato(item.Cantidad, FormatDato.Ninguno)</td> @*08*@
+						@* <td class="align-right tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Plista>@item.P_Plista.ToString("0.##")</td> *@ 
+						<td class="@Model.ListaOC.ObtenerClase(item.P_Plista)">@*09*@
+							<div class="input-container">
+								<input type="text" class="form-control form-control-sm input-p_plista input-numeric"
+									   value="@(item.P_Plista.ToString("F3"))"
+									   data-p-id="@item.P_Id"
+									   data-field="p_plista"
+									   data-original-value="@(item.P_Plista)" />
+							</div>
+						</td>
+						@* <td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto1>@item.P_Dto1.ToString("0.#")</td> *@ 
+						<td class="@Model.ListaOC.ObtenerClase(item.P_Dto1)">@*10*@
+							<div class="input-container">
+								<input type="text" class="form-control form-control-sm input-p_dto1 input-numeric"
+									   value="@(item.P_Dto1.ToString("F1"))"
+									   data-p-id="@item.P_Id"
+									   data-field="p_dto1"
+									   data-original-value="@item.P_Dto1" />
+							</div>
+						</td>
+						@* <td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto2>@item.P_Dto2.ToString("0.#")</td> *@ 
+						<td class="@Model.ListaOC.ObtenerClase(item.P_Dto2)">@*11*@
+							<div class="input-container">
+								<input type="text" class="form-control form-control-sm input-p_dto2 input-numeric"
+									   value="@(item.P_Dto2.ToString("F1"))"
+									   data-p-id="@item.P_Id"
+									   data-field="p_dto2"
+									   data-original-value="@item.P_Dto2" />
+							</div>
+						</td>
+						@* <td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto3>@item.P_Dto3.ToString("0.#")</td> *@ 
+						<td class="@Model.ListaOC.ObtenerClase(item.P_Dto3)">@*12*@
+							<div class="input-container">
+								<input type="text" class="form-control form-control-sm input-p_dto3 input-numeric"
+									   value="@(item.P_Dto3.ToString("F1"))"
+									   data-p-id="@item.P_Id"
+									   data-field="p_dto3"
+									   data-original-value="@item.P_Dto3" />
+							</div>
+						</td>
+						@* <td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto4>@item.P_Dto4.ToString("0.#")</td> *@ 
+						<td class="@Model.ListaOC.ObtenerClase(item.P_Dto4)">@*13*@
+							<div class="input-container">
+								<input type="text" class="form-control form-control-sm input-p_dto4 input-numeric"
+									   value="@(item.P_Dto4.ToString("F1"))"
+									   data-p-id="@item.P_Id"
+									   data-field="p_dto4"
+									   data-original-value="@item.P_Dto4" />
+							</div>
+						</td>
+						@* <d class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto_Pa>@item.P_Dto_Pa.ToString("0.#")</td> *@ 
+						<td class="@Model.ListaOC.ObtenerClase(item.P_Dto_Pa)">@*14*@
+							<div class="input-container">
+								<input type="text" class="form-control form-control-sm input-p_dto_pa input-numeric"
+									   value="@(item.P_Dto_Pa.ToString("F1"))"
+									   data-p-id="@item.P_Id"
+									   data-field="p_dto_pa"
+									   data-original-value="@item.P_Dto_Pa" />
+							</div>
+						</td>
+						@* <td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Boni>@item.P_Boni</td> *@ 
+						@{
+							bool resBoni = item.P_Boni?.Trim().Equals("0") ?? false;
+							string bonificacionMostrada = resBoni ? "" : Model.ListaOC.FormatearDato(item.P_Boni, FormatDato.Ninguno);
+						}
+						<td class="@Model.ListaOC.ObtenerClase('c')">@*15*@
+							<div class="input-container">
+								<input type="text" class="form-control form-control-sm input-p_boni"
+									   value="@bonificacionMostrada"
+									   data-p-id="@item.P_Id"
+									   data-field="p_boni"
+									   data-original-value="@bonificacionMostrada"
+									   placeholder="000/000" />
+							</div>
+						</td>
+						<td class="@Model.ListaOC.ObtenerClase(item.Pedido_Mas_Boni)">@Model.ListaOC.FormatearDato(item.Pedido_Mas_Boni, FormatDato.Ninguno)</td> @*16*@
+						<td class="@Model.ListaOC.ObtenerClase(item.P_Pcosto)">@Model.ListaOC.FormatearDato(item.P_Pcosto, FormatDato.Monto)</td> @*17*@
+						<td class="@Model.ListaOC.ObtenerClase(item.P_Pcosto_Total)">@Model.ListaOC.FormatearDato(item.P_Pcosto_Total, FormatDato.Monto)</td> @*18*@
+						<td class="@Model.ListaOC.ObtenerClase(item.Paletizado)">@item.Paletizado.ToString("0.##")</td> @*19*@
+						<td class="text-center">
+							<a class="btn btn-xs btn-danger" data-interaction="@item.P_Id" onclick="quitarProductoEnOC(this);">
 								<i class="bx bxs-trash" style="line-height: 1.0;font-size: 1rem;"></i>
 							</a>
 						</td> @*20*@
 					</tr>
 				}
+			}
+			else
+			{
+				<tr>
+					<td colspan="20" class="text-center">No se han encontrado productos para los criterios especificados.</td>
+				</tr>
 			}
 		</tbody>
 	</table>
@@ -121,8 +217,141 @@
 	</div>
 </div>
 
-@section scripts {
+<script>
+	$(function() {
+			// Esta función aplica los indicadores visuales a los campos modificados en la carga inicial
+			$('.campo-modificado').each(function() {
+				// Solo si no tiene ya un indicador
+				if ($(this).parent('.input-container').find('.indicador-cambio').length === 0) {
+					$(this).parent('.input-container').append('<div class="indicador-cambio"></div>');
+				}
+			});
+
+			// NUEVO: Forzar el ancho de la columna de descripción
+			const setDescriptionColumnWidth = function() {
+				// Seleccionar todas las celdas de descripción y sus encabezados
+				$("#tbListaProductoOC th:nth-child(3), #tbListaProductoOC td:nth-child(3)").each(function() {
+					$(this).css({
+						'max-width': '150px',
+						'width': '150px',
+						'white-space': 'nowrap',
+						'overflow': 'hidden',
+						'text-overflow': 'ellipsis'
+					});
+				});
+			};
+
+			// Ejecutar inmediatamente
+			setDescriptionColumnWidth();
+
+			// Volver a aplicar después de cualquier redibujado de la tabla
+			$(window).on('resize', setDescriptionColumnWidth);
+
+			// CORREGIDO: Funcionalidad para checkbox de seleccionar todos
+			$("#checkAllProd").on("change", function() {
+				const isChecked = $(this).prop("checked");
+				$(".check-producto").prop("checked", isChecked);
+
+				// Aplicar la clase 'selected' a las filas
+				$("#tbListaProductoOC tbody tr:not(.table-secondary)").each(function() {
+					$(this).toggleClass("selected", isChecked);
+				});
+
+				// Si hay productos seleccionados, cargar el primero en la lista
+				if (isChecked) {
+					const primerProductoId = $("#tbListaProductoOC tbody tr:not(.table-secondary):first").data("p-id");
+					if (primerProductoId && typeof destacarFilaSeleccionada === 'function') {
+						destacarFilaSeleccionada(primerProductoId);
+						//if (typeof buscarProductoListaOptimizado === 'function') {
+						//	buscarProductoListaOptimizado(primerProductoId);
+						//}
+					}
+				}
+			});
+
+			// CORREGIDO: Evento para checkboxes individuales sin usar 'event' global
+			$(document).on("change", ".check-producto", function(e) {
+				// Evitar propagación del evento
+				e.stopPropagation();
+
+				const $checkbox = $(this);
+				const isChecked = $checkbox.prop("checked");
+				const $row = $checkbox.closest("tr");
+
+				// Marcar/desmarcar la fila
+				$row.toggleClass("selected", isChecked);
+
+				// Si se desmarca uno, desmarcar el "seleccionar todos"
+				if (!isChecked) {
+					$("#checkAllProd").prop("checked", false);
+				} else {
+					// Verificar si todos están marcados para actualizar el checkbox principal
+					const totalCheckboxes = $(".check-producto").length;
+					const totalChecked = $(".check-producto:checked").length;
+					$("#checkAllProd").prop("checked", totalCheckboxes === totalChecked);
+
+					// Si seleccionamos un producto, cargar sus listas
+					const productoId = $row.data("p-id");
+					if (productoId && typeof destacarFilaSeleccionada === 'function') {
+						destacarFilaSeleccionada(productoId);
+						//if (typeof buscarProductoListaOptimizado === 'function') {
+						//	buscarProductoListaOptimizado(productoId);
+						//}
+					}
+				}
+			});
+
+			// CORREGIDO: Manejo de clic en la fila para selección
+			$(document).on("click", "#tbListaProductoOC tbody tr:not(.table-secondary)", function(e) {
+				// No activar si el clic fue en un checkbox o input
+				if (!$(e.target).is('input, .check-producto, .check-producto-container')) {
+					const $row = $(this);
+					const $checkbox = $row.find(".check-producto");
+					const productoId = $row.data("p-id");
+
+					// Invertir el estado del checkbox
+					const newState = !$checkbox.prop("checked");
+					$checkbox.prop("checked", newState);
+
+					// Actualizar selección visual
+					$row.toggleClass("selected", newState);
+
+					// Actualizar el checkbox principal
+					if (!newState) {
+						$("#checkAllProd").prop("checked", false);
+					} else {
+						const totalCheckboxes = $(".check-producto").length;
+						const totalChecked = $(".check-producto:checked").length;
+						$("#checkAllProd").prop("checked", totalCheckboxes === totalChecked);
+
+						// Si seleccionamos un producto, cargar sus listas
+						if (productoId && typeof destacarFilaSeleccionada === 'function') {
+							destacarFilaSeleccionada(productoId);
+							//if (typeof buscarProductoListaOptimizado === 'function') {
+							//	buscarProductoListaOptimizado(productoId);
+							//}
+						}
+					}
+				}
+			});
+
+			// AÑADIDO: Función de ayuda para obtener los IDs de productos seleccionados
+			window.obtenerProductosSeleccionados = function() {
+				const productosSeleccionados = [];
+				$(".check-producto:checked").each(function() {
+					const productoId = $(this).data("p-id");
+					if (productoId) {
+						productosSeleccionados.push(productoId);
+					}
+				});
+				return productosSeleccionados;
+			};
+		});
+</script>
+
+@* @section scripts {
 	<script type="text/javascript">
+			
 	</script>
 	<script src="~/js/app/areas/ordendecompra/initocgrid.js"></script>
-}
+} *@
