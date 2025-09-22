@@ -5,31 +5,27 @@
     string clase = string.Empty;
     var fechaHoy = DateTime.Today;
 
-    // Función auxiliar para determinar si se debe mostrar alerta
-    bool MostrarAlertaVigencia(DateTime? fechaDesde, DateTime? fechaHasta)
+    // Función que retorna el estado de vigencia
+    (string cssClass, string icon, string message) GetVigenciaInfo(DateTime? fechaDesde, DateTime? fechaHasta)
     {
-        if (!fechaDesde.HasValue || !fechaHasta.HasValue) return false;
-
-        // Calcular días totales del periodo
-        int diasTotales = (fechaHasta.Value - fechaDesde.Value).Days + 1;
-        if (diasTotales <= 0) return false;
-
-        // Calcular días transcurridos
-        int diasTranscurridos = (fechaHoy - fechaDesde.Value).Days;
-        if (diasTranscurridos < 0) return false; // Si la oferta aún no ha comenzado
-
-        // Mostrar alerta si ha transcurrido más de la mitad del período
-        return diasTranscurridos > diasTotales / 2;
-    }
-
-    // Función para obtener texto de alerta
-    string TextoAlertaVigencia(DateTime? fechaDesde, DateTime? fechaHasta)
-    {
-        if (!fechaDesde.HasValue || !fechaHasta.HasValue) return string.Empty;
+        if (!fechaDesde.HasValue || !fechaHasta.HasValue)
+            return (string.Empty, string.Empty, string.Empty);
 
         int diasRestantes = (fechaHasta.Value - fechaHoy).Days;
-        if (diasRestantes < 0) return "Oferta vencida";
-        return $"Quedan {diasRestantes} día(s)";
+        
+        // Oferta vencida
+        if (diasRestantes < 0)
+            return ("bg-danger", "bx-time-five", "Oferta vencida");
+        
+        // Oferta próxima a vencer
+        int diasTotales = (fechaHasta.Value - fechaDesde.Value).Days + 1;
+        int diasTranscurridos = Math.Max(0, (fechaHoy - fechaDesde.Value).Days);
+        
+        if (diasTotales > 0 && diasTranscurridos > diasTotales / 2)
+            return ("bg-warning text-dark", "bx-time-five", $"Quedan {diasRestantes} día(s)");
+        
+        // Oferta vigente normal
+        return ("bg-success", "bx-calendar-check", $"Quedan {diasRestantes} día(s)");
     }
 }
 
@@ -54,13 +50,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if (Model.ListaDatos != null && Model.ListaDatos.Any())
+                    @if (Model.ListaDatos?.Any() == true)
                     {
                         @foreach (var item in Model.ListaDatos)
                         {
-                            if (alt) { clase = "table-row-alt"; alt = false; } else { clase = string.Empty; alt = true; }
-                            bool mostrarAlerta = MostrarAlertaVigencia(item.po_fecha_desde, item.po_fecha_hasta);
-                            string textoAlerta = TextoAlertaVigencia(item.po_fecha_desde, item.po_fecha_hasta);
+                            alt = !alt;
+                            clase = alt ? string.Empty : "table-row-alt";
+                            
+                            var (vigenciaCss, vigenciaIcon, vigenciaMsg) = GetVigenciaInfo(item.po_fecha_desde, item.po_fecha_hasta);
 
                             <tr class="@clase" data-producto-id="@item.p_id">
                                 <td class="text-center">
@@ -89,16 +86,10 @@
                                     @Model.FormatearDato(item.p_pvta_oferta, FormatDato.Monto)
                                 </td>
                                 <td class="text-center">
-                                    @if (mostrarAlerta)
+                                    @if (!string.IsNullOrEmpty(vigenciaCss))
                                     {
-                                        <span class="badge bg-warning text-dark" title="@textoAlerta">
-                                            <i class="bx bx-time-five"></i>
-                                        </span>
-                                    }
-                                    else if (item.po_fecha_desde != default && item.po_fecha_hasta != default)
-                                    {
-                                        <span class="badge bg-success" title="@textoAlerta">
-                                            <i class="bx bx-calendar-check"></i>
+                                        <span class="badge @vigenciaCss" title="@vigenciaMsg">
+                                            <i class="bx @vigenciaIcon"></i>
                                         </span>
                                     }
                                 </td>
@@ -130,7 +121,7 @@
             </table>
         </div>
 
-        @if (Model.ListaDatos != null && Model.ListaDatos.Any())
+        @if (Model.ListaDatos?.Any() == true)
         {
             <div class="d-flex justify-content-between align-items-center mt-3 px-2">
                 <div class="text-muted small d-flex align-items-center">

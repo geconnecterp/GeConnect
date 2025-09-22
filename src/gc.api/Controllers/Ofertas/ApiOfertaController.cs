@@ -11,7 +11,7 @@ using System.Net;
 
 namespace gc.api.Controllers.Ofertas
 {
-    [Authorize]
+    //[Authorize]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
@@ -65,7 +65,7 @@ namespace gc.api.Controllers.Ofertas
             if (param == null || param.Precio <= 0 ||
                 param.Desde == default || param.Hasta == default ||
                 param.TopeVta < 0 || param.Hasta < param.Desde ||
-                param.Desde < hoy || param.Hasta > param.Desde.AddDays(30-1))
+                param.Desde < hoy || param.Hasta > param.Desde.AddDays(30 - 1))
             {
                 return BadRequest("Alguno de los parametros para la confirmacion del alta de la oferta ha faltado o es incorrecto. Verifique");
             }
@@ -110,12 +110,36 @@ namespace gc.api.Controllers.Ofertas
         [HttpPost("actualizar-oferta-vencida-sin-activar")]
         public ActionResult<RespuestaDto> ActualizarOfertaVencidaSinActivar(AbmGenDto req)
         {
-            if (req == null || string.IsNullOrEmpty(req.Json) || string.IsNullOrEmpty(req.Objeto)
+            if (req == null || string.IsNullOrEmpty(req.Objeto)
                 || string.IsNullOrEmpty(req.Usuario) || string.IsNullOrEmpty(req.Administracion))
             {
                 return BadRequest("Alguno de los parametros para la actualizacion de la oferta ha faltado. Verifique");
             }
             var resultado = _ofertaSv.ActualizarOfertaVencidaSinActivar(req);
+            return Ok(new ApiResponse<RespuestaDto>(resultado));
+        }
+
+        [HttpPost("cargar-activas-a-sin-activar")]
+        public ActionResult<RespuestaDto> CargarActivasASinActivar(AbmGenDto req)
+        {
+            if (req == null || string.IsNullOrEmpty(req.Objeto)
+                || string.IsNullOrEmpty(req.Usuario) || string.IsNullOrEmpty(req.Administracion))
+            {
+                return BadRequest("Alguno de los parametros para la carga de ofertas activas a sin activar ha faltado. Verifique");
+            }
+            var resultado = _ofertaSv.CargarActivasASinActivar(req);
+            return Ok(new ApiResponse<RespuestaDto>(resultado));
+        }
+
+        [HttpPost("eliminar-ofertas")]
+        public ActionResult<RespuestaDto> EliminarOfertas(AbmPlusGenDto req)
+        {
+            if (req == null || string.IsNullOrEmpty(req.Json) || string.IsNullOrEmpty(req.Objeto)
+                || string.IsNullOrEmpty(req.Usuario) || string.IsNullOrEmpty(req.Administracion))
+            {
+                return BadRequest("Alguno de los parametros para la activacion de la eliminacion de la oferta ha faltado. Verifique");
+            }
+            var resultado = _ofertaSv.EliminarOfertas(req);
             return Ok(new ApiResponse<RespuestaDto>(resultado));
         }
     }

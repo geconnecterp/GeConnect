@@ -75,6 +75,8 @@
 			public const string SP_PROD_OFERTA_SIN_ACTIVAR = "SPGECO_P_Ofe_sin_Activar_Lista";
 			public const string SP_PROD_OFERTA_ACTIVAR = "SPGECO_P_Ofe_Activar";
 			public const string SP_PROD_OFERTA_ACTU_VTO_SINACT = "SPGECO_P_Ofe_Actu_Vto_SinActivar";
+			public const string SP_PROD_OFERTA_ACTIVAS_A_SINACT = "SPGECO_P_Ofe_Activas_a_SinActivar";
+			public const string SP_PROD_OFERTA_ELIMINA_A_SINACT = "SPGECO_P_Ofe_Elimina_SinActivar";
 
 
             #endregion
