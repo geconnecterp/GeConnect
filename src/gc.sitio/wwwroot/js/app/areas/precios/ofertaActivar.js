@@ -14,14 +14,19 @@ $(function () {
     // Inicializaciones básicas
     inicializarShortcutsBasicos();
     
-    // Cargar ofertas sin activar
-    cargarOfertasSinActivar();
-    
-    // Cargar canales (misma funcionalidad que en ofertas.js)
+    // Cargar canales primero (misma funcionalidad que en ofertas.js)
     try { 
         cargarCanales(); 
+        
+        // ✅ NUEVO: Seleccionar canal por defecto después de cargar los canales
+        setTimeout(function() {
+            seleccionarCanalPredeterminado();
+        }, 500); // Pequeño delay para asegurar que los canales estén cargados
+        
     } catch (e) { 
         console.error("Error al cargar canales:", e); 
+        // Si falla la carga de canales, cargar las ofertas directamente
+        cargarOfertasSinActivar();
     }
     
     // Inicializar fecha desde/hasta si existen los elementos
@@ -34,19 +39,72 @@ $(function () {
         activarOfertas();
     });
     
-    // NUEVO: Configurar botón de activar vencimiento
     $(document).on("click", "#btnActivarVencimiento", function() {
         activarOfertasVencidas();
+    });
+    
+    $(document).on("click", "#btnCargarActivos", function() {
+        cargarActivosASinActivar();
     });
     
     $("#btnCancelaActivacion").on("click", function() {
         confirmarCancelacion();
     });
 
+    // Selección de ofertas para activación o eliminación
+    $(document).on("click", "#btnEliminarSelec", function() {
+        eliminarOfertasSeleccionadas();
+    });
+
     console.log("✅ ofertaActivar.js listo");
 });
 
-// ✅ MODIFICADA: Función para cargar ofertas sin activar
+// ✅ NUEVA FUNCIÓN: Seleccionar canal predeterminado
+function seleccionarCanalPredeterminado() {
+    // Buscar el botón del canal con admId = "0000" y lp_id = "001"
+    var canalPredeterminado = $(".btn-seleccionar-canal").filter(function() {
+        return $(this).data("adm-id") === "0000" && $(this).data("lp-id") === "001";
+    }).first();
+    
+    if (canalPredeterminado.length) {
+        // Simular clic en el canal predeterminado
+        canalPredeterminado.trigger("click");
+        console.log("Canal predeterminado seleccionado");
+    } else {
+        console.warn("No se encontró el canal predeterminado, cargando ofertas con valores por defecto");
+        cargarOfertasSinActivar(); // Cargar con valores por defecto
+    }
+}
+
+// ✅ MODIFICADA: Función para mostrar información del canal seleccionado
+function mostrarInformacionCanal(admId, lpId, adminDesc, lpDesc) {
+    // Si no tenemos descripciones, usar solo los códigos
+    if (!adminDesc) adminDesc = admId;
+    if (!lpDesc) lpDesc = lpId;
+    
+    // Crear elemento informativo del canal seleccionado
+    var infoCanal = `
+        <div class="alert alert-info mb-3 d-flex align-items-center" id="infoCanal">
+            <i class="bx bx-info-circle me-2 fs-5"></i>
+            <div>
+                <strong>Canal seleccionado:</strong> 
+                Administración: <span class="badge bg-secondary">${admId}</span> - ${adminDesc} | 
+                Lista de precios: <span class="badge bg-secondary">${lpId}</span> - ${lpDesc}
+            </div>
+        </div>
+    `;
+    
+    // Verificar si existe el contenedor de información (si no, crearlo)
+    if ($("#infoSeleccionContainer").length === 0) {
+        // Insertar un nuevo div antes de la fila principal que contiene los grids
+        $(".grid-golden-body .row").first().before('<div id="infoSeleccionContainer" class="mb-3"></div>');
+    }
+    
+    // Actualizar la información del canal
+    $("#infoSeleccionContainer").html(infoCanal);
+}
+
+// ✅ MODIFICADA: Función para cargar ofertas sin activar con información de canal
 function cargarOfertasSinActivar(admId = "0000", lpId = "001", pagina = 1) {
     AbrirWaiting("Cargando ofertas sin activar...");
 
@@ -57,6 +115,25 @@ function cargarOfertasSinActivar(admId = "0000", lpId = "001", pagina = 1) {
         pag: pagina
     };
 
+    // Obtener información del canal seleccionado
+    var canalSeleccionado = $("#tbGridCanales tr.selected-row");
+    var adminDesc = "";
+    var lpDesc = "";
+    
+    if (canalSeleccionado.length) {
+        // Intentar obtener las descripciones desde las celdas de la tabla
+        try {
+            // Asumir que la estructura de la tabla tiene las descripciones en celdas específicas
+            adminDesc = canalSeleccionado.find("td:eq(1)").text().trim();
+            lpDesc = canalSeleccionado.find("td:eq(2)").text().trim();
+        } catch (e) {
+            console.warn("No se pudo obtener descripción del canal desde la fila");
+        }
+    }
+
+    // ✅ Mostrar la información del canal antes de la solicitud AJAX
+    mostrarInformacionCanal(admId, lpId, adminDesc, lpDesc);
+
     // Realizar la llamada AJAX usando POST como especifica el controlador
     $.ajax({
         url: presentarOfertasSinActivarUrl,
@@ -64,12 +141,14 @@ function cargarOfertasSinActivar(admId = "0000", lpId = "001", pagina = 1) {
         data: datosPost,
         success: function(response) {
             CerrarWaiting();
+            
+            // Mostrar el grid de ofertas (sin limpiar el contenedor primero)
             $("#gridOfertaNoActivas").html(response);
             
             // Configurar eventos para la grilla de ofertas
             configurarEventosGridOfertasSinActivar();
             
-            // NUEVO: Verificar ofertas vencidas para activar/desactivar botón
+            // Verificar ofertas vencidas para activar/desactivar botón
             verificarOfertasVencidas();
         },
         error: function(xhr, status, error) {
@@ -91,63 +170,7 @@ function cargarOfertasSinActivar(admId = "0000", lpId = "001", pagina = 1) {
     });
 }
 
-// ✅ NUEVA: Función para configurar eventos en la grilla de ofertas sin activar
-function configurarEventosGridOfertasSinActivar() {
-    // Checkbox "Seleccionar todos" para ofertas
-    $("#checkAllOfertas").off("change").on("change", function() {
-        var isChecked = $(this).is(":checked");
-        $(".check-oferta").prop("checked", isChecked);
-        actualizarContadorOfertasSeleccionadas();
-    });
-    
-    // Checkboxes individuales para ofertas
-    $(".check-oferta").off("change").on("change", function() {
-        var totalChecks = $(".check-oferta").length;
-        var checkedCount = $(".check-oferta:checked").length;
-        
-        // Actualizar el checkbox "Seleccionar todos"
-        $("#checkAllOfertas").prop("checked", totalChecks === checkedCount);
-        
-        actualizarContadorOfertasSeleccionadas();
-    });
-    
-    // Botones para activar ofertas individuales
-    $(".btn-activar-oferta").off("click").on("click", function() {
-        var pId = $(this).data("p-id");
-        var admId = $(this).data("adm-id");
-        var lpId = $(this).data("lp-id");
-        
-        activarOfertaIndividual(pId, admId, lpId);
-    });
-    
-    // Permitir seleccionar al hacer clic en la fila
-    $("#tbGridOfertasSinActivar tbody tr").off("click").on("click", function(e) {
-        // Solo si no se hizo clic en el botón o en el checkbox directamente
-        if (!$(e.target).is('button, input, i')) {
-            var checkbox = $(this).find('.check-oferta');
-            checkbox.prop('checked', !checkbox.prop('checked'));
-            checkbox.trigger('change');
-        }
-    });
-    
-    // Botones de paginación si existen
-    $(".pagination .page-link").off("click").on("click", function(e) {
-        e.preventDefault();
-        var pagina = $(this).data("page") || 1;
-        cargarOfertasSinActivar(undefined, undefined, pagina);
-    });
-    
-    // Inicializar contador
-    actualizarContadorOfertasSeleccionadas();
-}
-
-// ✅ NUEVA: Función para actualizar contador de ofertas seleccionadas
-function actualizarContadorOfertasSeleccionadas() {
-    var checkedCount = $(".check-oferta:checked").length;
-    $("#ofertasSeleccionadas").text(checkedCount);
-}
-
-// ✅ OPTIMIZADA: Función para activar oferta individual
+// ✅ NUEVA FUNCIÓN: Activar oferta individual (mejorada)
 function activarOfertaIndividual(pId, admId, plId) {
     if (!pId) {
         AbrirMensaje(
@@ -756,7 +779,7 @@ function activarOfertasVencidas() {
          </div>`,
         function(resp) {
             if (resp === "SI") {
-                procesarActualizacionOfertasVencidas(admId, lpId);
+                procesarActualizacionDeOfertasVencidas(admId, lpId);
             }
             $("#msjModal").modal("hide");
             return true;
@@ -769,7 +792,7 @@ function activarOfertasVencidas() {
 }
 
 // ✅ NUEVA: Función para procesar actualización de ofertas vencidas
-function procesarActualizacionOfertasVencidas(admId, lpId) {
+function procesarActualizacionDeOfertasVencidas(admId, lpId) {
     AbrirWaiting("Actualizando ofertas vencidas...");
     
     $.ajax({
@@ -848,4 +871,251 @@ function procesarActualizacionOfertasVencidas(admId, lpId) {
             );
         }
     });
+}
+
+// ✅ NUEVA: Función para eliminar ofertas seleccionadas
+function eliminarOfertasSeleccionadas() {
+    // Verificar ofertas seleccionadas
+    var ofertasSeleccionadas = obtenerOfertasSeleccionadas();
+    if (ofertasSeleccionadas.length === 0) {
+        AbrirMensaje(
+            "ADVERTENCIA",
+            "Debe seleccionar al menos una oferta para eliminar",
+            function() {
+                $("#msjModal").modal("hide");
+                return true;
+            },
+            false,
+            ["Aceptar"],
+            "warn!",
+            null
+        );
+        return;
+    }
+    
+    // Obtener IDs para el formato que espera el servidor
+    var ids = ofertasSeleccionadas.map(o => o.pId);
+    
+    // Usar el primer elemento para determinar admId y lp_id
+    var admId = ofertasSeleccionadas[0].admId || "0000";
+    var lpId = ofertasSeleccionadas[0].plId || "001";
+    
+    // Mostrar mensaje de confirmación
+    AbrirMensaje(
+        "CONFIRMAR ELIMINACIÓN DE OFERTAS",
+        `¿Está seguro que desea eliminar ${ofertasSeleccionadas.length} oferta(s) seleccionada(s)?<br><br>
+         <div class="alert alert-danger">
+            <i class="bx bx-error-circle me-2"></i>
+            Esta acción eliminará permanentemente las ofertas seleccionadas y no se puede deshacer.
+         </div>`,
+        function(resp) {
+            if (resp === "SI") {
+                procesarEliminacionOfertas(ids, admId, lpId);
+            }
+            $("#msjModal").modal("hide");
+            return true;
+        },
+        true,
+        ["Eliminar", "Cancelar"],
+        "warn!",
+        null
+    );
+}
+
+// ✅ NUEVA: Función para procesar la eliminación de ofertas
+function procesarEliminacionOfertas(ids, admId, lpId) {
+    AbrirWaiting("Eliminando ofertas...");
+    
+    $.ajax({
+        url: eliminarOfertasSinActivarUrl,
+        type: "POST",
+        data: {
+            ids: ids,
+            admId: admId,
+            lp_id: lpId
+        },
+        success: function(response) {
+            CerrarWaiting();
+            
+            if (response.error) {
+                AbrirMensaje(
+                    "ERROR",
+                    response.msg || "Error al eliminar ofertas",
+                    function() {
+                        $("#msjModal").modal("hide");
+                        return true;
+                    },
+                    false,
+                    ["Aceptar"],
+                    "error!",
+                    null
+                );
+                return;
+            }
+            
+            if (response.warn) {
+                AbrirMensaje(
+                    "ADVERTENCIA",
+                    response.msg || "Advertencia al eliminar ofertas",
+                    function() {
+                        $("#msjModal").modal("hide");
+                        return true;
+                    },
+                    false,
+                    ["Aceptar"],
+                    "warn!",
+                    null
+                );
+                return;
+            }
+            
+            // Mensaje de éxito y recarga de la grilla
+            AbrirMensaje(
+                "OPERACIÓN EXITOSA",
+                response.msg || `${ids.length} oferta(s) eliminada(s) correctamente`,
+                function() {
+                    // Recargar el grid con los mismos parámetros
+                    cargarOfertasSinActivar(admId, lpId);
+                    $("#msjModal").modal("hide");
+                    return true;
+                },
+                false,
+                ["Aceptar"],
+                "success!",
+                null
+            );
+        },
+        error: function(xhr, status, error) {
+            CerrarWaiting();
+            console.error("Error en solicitud:", error);
+            
+            AbrirMensaje(
+                "ERROR DE COMUNICACIÓN",
+                "Error de comunicación: " + (xhr.responseText || error || "Error desconocido"),
+                function() {
+                    $("#msjModal").modal("hide");
+                    return true;
+                },
+                false,
+                ["Aceptar"],
+                "error!",
+                null
+            );
+        }
+    });
+}
+
+// ✅ NUEVA FUNCIÓN: Configurar eventos en la grilla de ofertas sin activar
+function configurarEventosGridOfertasSinActivar() {
+    // Checkbox "Seleccionar todos" para ofertas
+    $("#checkAllOfertas").off("change").on("change", function() {
+        var isChecked = $(this).is(":checked");
+        $(".check-oferta").prop("checked", isChecked);
+        actualizarContadorOfertasSeleccionadas();
+    });
+    
+    // Checkboxes individuales para ofertas
+    $(".check-oferta").off("change").on("change", function() {
+        var totalChecks = $(".check-oferta").length;
+        var checkedCount = $(".check-oferta:checked").length;
+        
+        // Actualizar el checkbox "Seleccionar todos"
+        $("#checkAllOfertas").prop("checked", totalChecks === checkedCount);
+        
+        actualizarContadorOfertasSeleccionadas();
+    });
+    
+    // Botones para activar ofertas individuales
+    $(".btn-activar-oferta").off("click").on("click", function() {
+        var pId = $(this).data("p-id");
+        var admId = $(this).data("adm-id");
+        var lpId = $(this).data("lp-id");
+        
+        activarOfertaIndividual(pId, admId, lpId);
+    });
+    
+    // Permitir seleccionar al hacer clic en la fila
+    $("#tbGridOfertasSinActivar tbody tr").off("click").on("click", function(e) {
+        // Solo si no se hizo clic en el botón o en el checkbox directamente
+        if (!$(e.target).is('button, input, i')) {
+            var checkbox = $(this).find('.check-oferta');
+            checkbox.prop('checked', !checkbox.prop('checked'));
+            checkbox.trigger('change');
+        }
+    });
+    
+    // Botones de paginación si existen
+    $(".pagination .page-link").off("click").on("click", function(e) {
+        e.preventDefault();
+        var pagina = $(this).data("page") || 1;
+        
+        // Obtener el canal seleccionado actual
+        var filaSeleccionada = $("#tbGridCanales tr.selected-row");
+        var admId = "0000";
+        var lpId = "001";
+        
+        if (filaSeleccionada.length) {
+            var boton = filaSeleccionada.find(".btn-seleccionar-canal");
+            if (boton.length) {
+                admId = boton.data("adm-id");
+                lpId = boton.data("lp-id");
+            }
+        }
+        
+        cargarOfertasSinActivar(admId, lpId, pagina);
+    });
+    
+    // Inicializar contador
+    actualizarContadorOfertasSeleccionadas();
+}
+
+// ✅ NUEVA FUNCIÓN: Actualizar contador de ofertas seleccionadas
+function actualizarContadorOfertasSeleccionadas() {
+    var checkedCount = $(".check-oferta:checked").length;
+    $("#ofertasSeleccionadas").text(checkedCount);
+    
+    // Opcional: Habilitar/deshabilitar botones según si hay selección
+    if (checkedCount > 0) {
+        $("#btnActivarOfertas, #btnEliminarSelec").prop("disabled", false);
+    } else {
+        $("#btnActivarOfertas, #btnEliminarSelec").prop("disabled", true);
+    }
+}
+
+// ✅ NUEVA FUNCIÓN: Confirmar cancelación
+function confirmarCancelacion() {
+    AbrirMensaje(
+        "CONFIRMAR CANCELACIÓN",
+        "¿Está seguro que desea cancelar la operación actual?",
+        function(resp) {
+            if (resp === "SI") {
+                window.location.href = homeOfertaUrl;
+            }
+            $("#msjModal").modal("hide");
+            return true;
+        },
+        true,
+        ["Confirmar", "Volver"],
+        "warn!",
+        null
+    );
+}
+
+// ✅ NUEVA FUNCIÓN: Formatear fecha visual
+function formatearFechaVisual(fechaStr) {
+    if (!fechaStr) return "";
+    
+    try {
+        var fecha = parsearFechaSegura(fechaStr);
+        if (!fecha) return fechaStr;
+        
+        return fecha.toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    } catch (e) {
+        console.error("Error al formatear fecha visual:", e);
+        return fechaStr;
+    }
 }
