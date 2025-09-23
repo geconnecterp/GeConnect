@@ -83,22 +83,39 @@ namespace gc.api.core.Servicios.Ofertas
             return ofertas;
         }
 
-        public RespuestaDto ActivacionDeOferta(AbmPlusGenDto req)
+        public RespuestaDto EliminarOfertas(AbmPlusGenDto req)
         {
-            string sp = ConstantesGC.StoredProcedures.SP_PROD_OFERTA_ACTIVAR;
+            //la logica es identica se reutiliza el metodo para que funcione como eliminar oferta
+            return ActivacionDeOferta(req, true);
+        }
+
+        public RespuestaDto ActivacionDeOferta(AbmPlusGenDto req, bool eliminar = false)
+        {
+            string sp;
+            if (!eliminar)
+            {
+                sp = ConstantesGC.StoredProcedures.SP_PROD_OFERTA_ACTIVAR;
+            }
+            else
+            {
+                sp = ConstantesGC.StoredProcedures.SP_PROD_OFERTA_ELIMINA_A_SINACT;
+            }
+            
             //trae separado por #, el id de la administracion y el id de la lista de precios "0000#001"
             var obj = req.Objeto.Split('#', StringSplitOptions.RemoveEmptyEntries);
-
 
             var ps = new List<SqlParameter>
             {
                 new SqlParameter("@adm_id_ofe", obj[0]),
                 new SqlParameter("@lp_id_ofe", obj[1]),
-                new SqlParameter("@elimina", false),
                 new SqlParameter("@json_p", req.Json),
                 new SqlParameter("@usu_id", req.Usuario),
                 new SqlParameter("@adm_id", req.Administracion),
             };
+            if (!eliminar)
+            {
+                ps.Add(new SqlParameter("@elimina", eliminar));
+            }
 
             List<RespuestaDto> resultado = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
             if (resultado != null && resultado.Count > 0)
@@ -113,7 +130,7 @@ namespace gc.api.core.Servicios.Ofertas
         }
 
         public RespuestaDto ActualizarOfertaVencidaSinActivar(AbmGenDto req)
-        {    
+        {
             string sp = ConstantesGC.StoredProcedures.SP_PROD_OFERTA_ACTU_VTO_SINACT;
             var obj = req.Objeto.Split('#', StringSplitOptions.RemoveEmptyEntries);
 
@@ -136,6 +153,32 @@ namespace gc.api.core.Servicios.Ofertas
                 resultado_msj = "No se logro obtener el resultado del proceso. "
             };
         }
+
+        public RespuestaDto CargarActivasASinActivar(AbmGenDto req)
+        {
+            string sp = ConstantesGC.StoredProcedures.SP_PROD_OFERTA_ACTIVAS_A_SINACT;
+            var obj = req.Objeto.Split('#', StringSplitOptions.RemoveEmptyEntries);
+
+            var ps = new List<SqlParameter>
+            {
+                new SqlParameter("@adm_id_ofe", obj[0]),
+                new SqlParameter("@lp_id_ofe", obj[1]),
+                new SqlParameter("@usu_id", req.Usuario),
+                new SqlParameter("@adm_id", req.Administracion),
+            };
+
+            List<RespuestaDto> resultado = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+            if (resultado != null && resultado.Count > 0)
+            {
+                return resultado[0];
+            }
+            return new()
+            {
+                resultado = -1,
+                resultado_msj = "No se logro obtener el resultado del proceso. "
+            };
+        }
+
 
     }
 }

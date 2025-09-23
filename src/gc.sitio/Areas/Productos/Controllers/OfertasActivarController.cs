@@ -155,6 +155,48 @@ namespace gc.sitio.Areas.Productos.Controllers
         }
 
         [HttpPost]
+        public async Task<JsonResult> CargarActivosASinActivar(string admId, string lp_id)
+        {
+            string msg = "Error interno al Cargar los Activos a sin activar";
+            try
+            {
+                // ✅ VALIDACIÓN: Autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { error = true, msg = "Sesión expirada" });
+                AbmGenDto req = new AbmGenDto
+                {
+                    Objeto = $"{admId}#{lp_id}",
+                    Usuario = UserName,
+                    Administracion = AdministracionId
+                };
+                RespuestaGenerica<RespuestaDto> respuesta = await _ofertaServicio.CargarActivasASinActivar(req, TokenCookie);
+                if (!respuesta.Ok || respuesta.EsError)
+                {
+                    throw new NegocioException(respuesta.Mensaje ?? "Error al Cargar los Activos a sin activar");
+                }
+                return Json(new
+                {
+                    error = false,
+                    warn = false,
+                    msg = string.IsNullOrEmpty(respuesta.Mensaje) ? "Carga realizada correctamente." : respuesta.Mensaje,
+                    adm_Id = admId,
+                    lp_id
+                });
+            }
+            catch (NegocioException ex)
+            {
+                _logger?.LogError(ex, msg);
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                
+                _logger?.LogError(ex, msg);
+                return Json(new { error = false, warn = true, msg});
+            }
+        }
+
+        [HttpPost]
         public async Task<JsonResult> ActivarOferta(List<string> ids, string admId, string lp_id)
         {
             try
@@ -205,6 +247,61 @@ namespace gc.sitio.Areas.Productos.Controllers
             {
                 _logger?.LogError(ex, "Error interno al activar oferta");
                 return Json(new { error = false, warn = true, msg = "Error interno al activar oferta" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> EliminarOfertasSinActivar(List<string> ids, string admId, string lp_id)
+        {
+            string msg = "Error interno al eliminar ofertas";
+            try
+            {
+                // ✅ VALIDACIÓN: Autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { error = true, msg = "Sesión expirada" });
+
+
+                if (ids == null)
+                {
+                    return Json(new { error = true, msg = "Debe al menos seleccionar una oferta para eliminar." });
+                }
+                //var productosIds = OfertasSinActivar.Where(x=>ids.Contains(x.p_id)).Select(p => new { p_id = p.p_id }).ToList();
+                var lista = OfertasSinActivar;
+                var ofertas = lista.Where(o => ids.Contains(o.p_id)).Select(p => new { p_id = p.p_id }).ToList();
+
+                AbmPlusGenDto req = new AbmPlusGenDto
+                {
+                    Objeto = $"{admId}#{lp_id}",
+                    Json = JsonConvert.SerializeObject(ofertas),
+                    Usuario = UserName,
+                    Administracion = AdministracionId
+                };
+                RespuestaGenerica<RespuestaDto> respuesta = await _ofertaServicio.EliminarOfertas(req, TokenCookie);
+                if (!respuesta.Ok || respuesta.EsError)
+                {
+                    throw new NegocioException(respuesta.Mensaje ?? "Error al Eliminar la(s) oferta(s)");
+                }
+                return Json(new
+                {
+                    error = false,
+                    warn = false,
+                    msg = ids.Count == 1 ?
+                            string.IsNullOrEmpty(respuesta.Mensaje) ? "Oferta Eliminada correctamente." : respuesta.Mensaje :
+                            string.IsNullOrEmpty(respuesta.Mensaje) ? "Ofertas Eliminadas correctamente." : respuesta.Mensaje,
+                    adm_Id = admId,
+                    lp_id
+                });
+
+            }
+            catch (NegocioException ex)
+            {
+                _logger?.LogError(ex, msg);
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, msg);
+                return Json(new { error = false, warn = true, msg });
             }
         }
     }

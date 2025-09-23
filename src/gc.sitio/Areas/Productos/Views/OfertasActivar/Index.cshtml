@@ -23,7 +23,7 @@
                         <button type="button" class="btn btn-outline-primary w-100 mb-2" id="btnActivarVencimiento">
                             <i class="bx bx-calendar-alt me-1"></i> Activar Vencimiento
                         </button>
-                        <button type="button" class="btn btn-outline-primary w-100 mb-2" id="btnCargarActivos" disabled>
+                        <button type="button" class="btn btn-outline-primary w-100 mb-2" id="btnCargarActivos" >
                             <i class="bx bxs-cart me-1"></i> Cargar Activos
                         </button>
                         <button type="button" class="btn btn-outline-secondary w-100 mb-2" id="btnImprimir">
@@ -45,6 +45,8 @@
         let presentarOfertasSinActivarUrl = "@Url.Action("PresentarOfertasSinActivar", "OfertasActivar", new { area = "Productos" })";
         let activarOfertaUrl =  "@Url.Action("ActivarOferta", "OfertasActivar", new { area = "Productos" })";
         let actualizarOfertaVencidaSinActivarUrl = "@Url.Action("ActualizarOfertaVencidaSinActivar", "OfertasActivar", new { area = "Productos" })";
+        let cargarActivosASinActivarUrl = "@Url.Action("CargarActivosASinActivar", "OfertasActivar", new { area = "Productos" })";
+        let eliminarOfertasSinActivarUrl = "@Url.Action("EliminarOfertasSinActivar", "OfertasActivar" , new {area = "Productos"})";
 
         let homeOfertaUrl = "@Url.Action("index", "OfertasActivar", new { area = "Productos" })";
     </script>

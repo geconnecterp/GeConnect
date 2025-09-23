@@ -13,5 +13,7 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaGenerica<OfertaSinActivarDto>> ObtenerOfertasSinActivar(string admId, string lp_id, string tokenCookie);
         Task<RespuestaGenerica<RespuestaDto>> ActivacionDeOferta(AbmPlusGenDto req, string token);
         Task<RespuestaGenerica<RespuestaDto>> ActualizarOfertaVencidaSinActivar(AbmGenDto req, string token);
+        Task<RespuestaGenerica<RespuestaDto>> CargarActivasASinActivar(AbmGenDto req, string token);
+        Task<RespuestaGenerica<RespuestaDto>> EliminarOfertas(AbmPlusGenDto req, string token);
     }
 }
