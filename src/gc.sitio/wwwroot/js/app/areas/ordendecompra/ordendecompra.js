@@ -323,15 +323,25 @@ function onChangeListaSucEntrega(e) {
 
 function AplicarSeteoMasivo() {
 	var alMenosUno = false;
-	var dataTable = document.getElementById('tbListaProductoOC');
-	var inputs = dataTable.querySelectorAll('tbody>tr>td>input');
+	//var dataTable = document.getElementById('tbListaProductoOC');
+	//var inputs = dataTable.querySelectorAll('tbody>tr>td>input');
 	var pIds = [];
-	inputs.forEach(function (input) {
-		if (input.checked) {
+	//inputs.forEach(function (input) {
+	//	if (input.checked) {
+	//		alMenosUno = true;
+	//		pIds.push(input.id.substr(3, 6));
+	//	}
+	//});
+	$('#tbListaProductoOC tbody tr').each(function () {
+		const $checkbox = $(this).find('.check-producto');
+		if ($checkbox.length && $checkbox.is(':checked')) {
 			alMenosUno = true;
-			pIds.push(input.id.substr(3, 6));
+			// Esta fila tiene el checkbox marcado
+			const pId = $checkbox.data('p-id'); 
+			pIds.push(pId);
 		}
 	});
+
 	if (alMenosUno) {
 		//Recorrer los items seleccionados y enviarlos al backend, junto con los valores de los campos de seteo masivo.
 
@@ -341,13 +351,13 @@ function AplicarSeteoMasivo() {
 		//		pIds.push(td[1].innerText);
 		//	}
 		//});
-		var dto1 = $("#Dto1").val();
-		var dto2 = $("#Dto2").val();
-		var dto3 = $("#Dto3").val();
-		var dto4 = $("#Dto4").val();
-		var dpa = $("#Dpa").val();
+		var dto1 = $("#Dto1").inputmask('unmaskedvalue');
+		var dto2 = $("#Dto2").inputmask('unmaskedvalue');
+		var dto3 = $("#Dto3").inputmask('unmaskedvalue');
+		var dto4 = $("#Dto4").inputmask('unmaskedvalue');
+		var dpa = $("#Dpa").inputmask('unmaskedvalue');
 		var boolFlete = $("#chkFleteAPagar")[0].checked
-		var flete = $("#Flete").val();
+		var flete = $("#Flete").inputmask('unmaskedvalue');
 		var data = { pIds, dto1, dto2, dto3, dto4, dpa, boolFlete, flete };
 		PostGenHtml(data, UpdateMasivoEnOcURL, function (obj) {
 			if (obj.error === true) {
@@ -358,8 +368,9 @@ function AplicarSeteoMasivo() {
 			}
 			else {
 				$("#divListaProductoNuevaOC").html(obj);
-				$("#Total_Costo").val(formatter.format($("#Total_Costo").val()));
+				//$("#Total_Costo").val(formatter.format($("#Total_Costo").val()));
 				finalizarInicializacion();
+				formatearTotalesEnTabDetalleOC();
 				//$("#Total_Pallet").val(formatter.format($("#Total_Pallet").val()));
 				//AgregarHandlerAGrillaProdOC();
 				//addInCellLostFocusHandler();
@@ -376,6 +387,23 @@ function AplicarSeteoMasivo() {
 			return true;
 		}, false, ["Aceptar"], "error!", null);
 	}
+}
+
+function formatearTotalesEnTabDetalleOC() {
+	$("#Total_Costo").val(formatearValorConFormatoNumerico($("#Total_Costo").val(), 2));
+	$("#Total_Pallet").val(formatearValorConFormatoNumerico($("#Total_Pallet").val(), 1));
+	$("#Dto1").val("0");
+	$("#Dto2").val("0");
+	$("#Dto3").val("0");
+	$("#Dto4").val("0");
+	$("#Dpa").val("0");
+	$("#Flete").val("0");
+	getMaskForDiscountType("#Dto1");
+	getMaskForDiscountType("#Dto2");
+	getMaskForDiscountType("#Dto3");
+	getMaskForDiscountType("#Dto4");
+	getMaskForDiscountType("#Dpa");
+	getMaskForDiscountType("#Flete");
 }
 
 function addInCellEditHandler() {
@@ -566,8 +594,12 @@ function tableUpDownArrow() {
 }
 
 ///Actualizar datos de producto, luego de la edicion de algunos de sus parámetros editables
-function ActualizarProductoEnOc(field, val) {
-	var pId = pIdEnOcSeleccionado;
+function ActualizarProductoEnOcAuto(field, val, pid) {
+	var pId = "";
+	if (pid != "")
+		pId = pid;
+	else
+		pId = pIdEnOcSeleccionado;
 	var data = { pId, field, val };
 	PostGen(data, ActualizarProductoEnOcURL, function (obj) {
 		if (obj.error === true) {
@@ -582,10 +614,10 @@ function ActualizarProductoEnOc(field, val) {
 				var td = $(this).find('td');
 				if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
 					//GRILLA
-					td[8].innerText = obj.data.pedidoCantidad;//
-					td[16].innerText = obj.data.pedido_Mas_Boni;//PEDIDO +BONI -> obj.data.pedido_Mas_Boni
-					td[17].innerText = obj.data.p_Pcosto;//PRECIO COSTO -> obj.data.p_Pcosto
-					td[18].innerText = obj.data.p_Pcosto_Total;//TOTAL COSTO -> obj.data.p_Pcosto_Total
+					td[8].innerText = obj.data.pedidoCantidad.toFixed(3);//
+					td[16].innerText = obj.data.pedido_Mas_Boni.toFixed(1);//PEDIDO +BONI -> obj.data.pedido_Mas_Boni
+					td[17].innerText = formatearValorConFormatoNumerico(obj.data.p_Pcosto.toFixed(2), 2);//PRECIO COSTO -> obj.data.p_Pcosto
+					td[18].innerText = formatearValorConFormatoNumerico(obj.data.p_Pcosto_Total.toFixed(2), 2);//TOTAL COSTO -> obj.data.p_Pcosto_Total
 					td[19].innerText = obj.data.paletizado;//TOTAL PALLET -> obj.data.paletizado
 
 					//TOTALES
@@ -884,6 +916,7 @@ function quitarProductoEnOC(e) {
 		else {
 			$("#divListaProductoNuevaOC").html(obj);
 			finalizarInicializacion();
+			formatearTotalesEnTabDetalleOC();
 			//AgregarHandlerAGrillaProdOC();
 			//AddEventListenerToGrid("tbListaProductoOC");
 			//ActualizarInfoDeProductoEnGrilla(pId);
@@ -912,6 +945,7 @@ function actualizarProducto(e) {
 			else {
 				$("#divListaProductoNuevaOC").html(obj);
 				finalizarInicializacion();
+				formatearTotalesEnTabDetalleOC();
 				//AgregarHandlerAGrillaProdOC();
 				//AddEventListenerToGrid("tbListaProductoOC");
 				//ActualizarInfoDeProductosEnGrilla();
@@ -1015,7 +1049,9 @@ function addTxtSemanasKeyUpHandler() {
 function selectListaProductoRow(x) {
 	if (x) {
 		pIdSeleccionado = x.cells[0].innerText.trim();
-		BuscarInfoAdicional();
+		setTimeout(function () {
+			BuscarInfoAdicional();
+		}, 1000);
 	}
 	else {
 		pIdSeleccionado = "";
@@ -1115,8 +1151,9 @@ function BuscarProductosTabOC() {
 		}
 		else {
 			$("#divListaProductoNuevaOC").html(obj);
-			$("#Total_Costo").val(formatter.format($("#Total_Costo").val()));
+			//$("#Total_Costo").val(formatter.format($("#Total_Costo").val()));
 			finalizarInicializacion();
+			formatearTotalesEnTabDetalleOC();
 			//$("#Total_Pallet").val(formatter.format($("#Total_Pallet").val()));
 			//AgregarHandlerAGrillaProdOC();
 			//ActualizarInfoDeProductosEnGrilla();
@@ -1130,8 +1167,20 @@ function BuscarProductosTabOC() {
 			activarBotones(true);
 			//tableUpDownArrow();
 			CargarResumenDeOc();
+			setTimeout(function () {
+				pingARegistro();
+			}, 100);
 		}
 	});
+}
+
+function pingARegistro() {
+	if ($('#tbListaProductoOC tbody tr').length > 0) {
+		const primeraFila = $('#tbListaProductoOC tbody tr').first();
+		const pId = primeraFila.data('p-id');
+		const valorBultos = $('#tbListaProductoOC tbody tr').first().find('.input-bultos').val();
+		ActualizarProductoEnOcAuto("bultos", valorBultos, pId);
+	}
 }
 
 //function analizaEnterInput(e) {
@@ -1473,9 +1522,9 @@ function btnCollapseSectionClicked() {
 
 
 
-/*
-ADD-ON
-*/
+/****************************************************************************************
+################################ ADD-ON --  tbListaProductoOC  ##########################
+*****************************************************************************************/
 
 // Función de utilidad para destacar la fila seleccionada
 // ✅ MEJORADA: Función destacar fila con verificación adicional

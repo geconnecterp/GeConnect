@@ -1,4 +1,6 @@
-﻿$(function () {
+﻿let productoActualEnLista = null;
+
+$(function () {
 	$("input#Rel01").on("click", function () {
 		$("input#Rel01").val("");
 		$("#Rel01Item").val("");
@@ -689,15 +691,16 @@ function ObtenerListaDetalleRpr() {
 	PostGenHtml(data, cargarListaDetalleRprURL, function (obj) {
 		CerrarWaiting();
 		$("#divDetalles").html(obj);
-		AddEventListenerToGrid("tbListaDetalleRpr");
-		addInCellKeyDownHandler();
-		addInCellGotFocusHandler();
-		addInCellInputGotFocusHandler();
-		addInCellLostFocusHandler();
-		addMaskInEditableCells();
-		tableUpDownArrow();
-		AgregarHandlerAGrillaDetalleRprCheckAll();
-		inCellInputEditable();
+		finalizarInicializacion();
+		//AddEventListenerToGrid("tbListaDetalleRpr");
+		//addInCellKeyDownHandler();
+		//addInCellGotFocusHandler();
+		//addInCellInputGotFocusHandler();
+		//addInCellLostFocusHandler();
+		//addMaskInEditableCells();
+		//tableUpDownArrow();
+		//AgregarHandlerAGrillaDetalleRprCheckAll();
+		//inCellInputEditable();
 		$('#radioSection input').on('change', function () {
 			optSelected = $('input[name=opcion]:checked', '#radioSection').val();
 			if (optSelected == "opcion1") {
@@ -1805,3 +1808,576 @@ function addMaskInEditableCells() {
 	getMaskForDiscountType("#txtDpa");//_dto1
 	$("#txtBoni").mask("000/000", { reverse: false });//p_boni
 }
+
+
+
+/****************************************************************************************
+################################ ADD-ON --  tbListaDetalleRpr  ##########################
+*****************************************************************************************/
+
+// Función de utilidad para destacar la fila seleccionada
+// ✅ MEJORADA: Función destacar fila con verificación adicional
+function destacarFilaSeleccionada(productoId) {
+	console.log(`🎯 Destacando fila para producto ID: ${productoId}`);
+
+	// Remover el destacado de todas las filas
+	$("#tbListaDetalleRpr tbody tr").removeClass("selected");
+
+	// Verificar que existe una fila con ese ID
+	const $fila = $("#tbListaDetalleRpr tbody tr[data-p-id='" + productoId + "']");
+
+	if ($fila.length === 0) {
+		console.warn(`⚠️ No se encontró ninguna fila con data-p-id="${productoId}"`);
+		return false;
+	}
+
+	// Añadir el destacado solo a la fila del producto seleccionado
+	$fila.addClass("selected");
+	console.log(`✅ Fila destacada correctamente para producto ${productoId}`);
+
+	// Hacer scroll a la fila si está fuera de vista
+	scrollAFilaSeleccionada($fila);
+
+	return true;
+}
+
+// ✅ NUEVA: Función separada para scroll optimizado
+function scrollAFilaSeleccionada($fila) {
+	const $tableContainer = $("#tbListaDetalleRpr").closest('.table-responsive');
+
+	if ($tableContainer.length > 0) {
+		const containerTop = $tableContainer.offset().top;
+		const containerHeight = $tableContainer.height();
+		const rowTop = $fila.offset().top;
+
+		// Solo hacer scroll si la fila está fuera del área visible
+		if (rowTop < containerTop || rowTop > containerTop + containerHeight) {
+			$tableContainer.animate({
+				scrollTop: $tableContainer.scrollTop() + (rowTop - containerTop - containerHeight / 2)
+			}, 300);
+			console.log(`📜 Realizando scroll a la fila seleccionada`);
+		}
+	}
+}
+
+function finalizarInicializacion() {
+	setTimeout(function () {
+		configuracionInputMaskOptimizada();
+		optimizarVisualizacionTabla();
+	}, 10);
+}
+
+function optimizarVisualizacionTabla() {
+	// Asegurarnos de que la tabla existe
+	if ($("#tbListaDetalleRpr").length === 0) {
+		return;
+	}
+
+	// Ajustar columnas con texto para que no sean demasiado anchas
+	$("#tbListaDetalleRpr th:nth-child(2)").css('max-width', '180px'); // Descripción
+	$("#tbListaDetalleRpr td:nth-child(2)").css({
+		'max-width': '180px',
+		'white-space': 'nowrap',
+		'overflow': 'hidden',
+		'text-overflow': 'ellipsis'
+	});
+
+	// Asegurarnos que la tabla tenga scroll horizontal si es necesario
+	$("#tbListaDetalleRpr").closest('.table-responsive').css('overflow-x', 'auto');
+
+	console.log("Tabla optimizada para mejor visualización");
+}
+
+function configuracionInputMaskOptimizada() {
+	console.log("Aplicando configuración InputMask optimizada...");
+
+	// Establecer todos los campos como readonly de una sola vez
+	$('.input-ocd_plista, .input-ocd_dto1, .input-ocd_dto2, .input-ocd_dto3, .input-ocd_dto4, .input-ocd_dto_pa, .input-ocd_boni, .input-rpd_plista, .input-rpd_dto1, .input-rpd_dto2, .input-rpd_dto3, .input-rpd_dto4, .input-rpd_dto_pa, .input-rpd_boni, .input-rpd_cantidad_compte')
+		.prop('readonly', true)
+		.addClass('campo-readonly');
+
+	// Definir configuraciones de máscara fuera de los bucles
+	const maskConfig3Decimales = {
+		alias: "numeric",
+		groupSeparator: ",",
+		radixPoint: ".",
+		autoGroup: true,
+		digits: 3,
+		digitsOptional: false,
+		rightAlign: true,
+		prefix: '',
+		placeholder: "0",
+		clearMaskOnLostFocus: false,
+		showMaskOnHover: false,
+		showMaskOnFocus: false,
+		min: 0, // Explícitamente permitir 0 como valor mínimo
+		allowMinus: false, // No permitir valores negativos
+		onBeforeMask: function (value) {
+			// Si es null, undefined o cadena vacía, retornar '0'
+			if (value === null || value === undefined || value === '') {
+				return '0';
+			}
+
+			// Para otros valores, formatear correctamente
+			try {
+				let numValue = parseFloat(value.toString().replace(/,/g, ''));
+				return isNaN(numValue) ? '0' : numValue.toFixed(3);
+			} catch (e) {
+				console.error('Error al formatear valor:', e);
+				return '0';
+			}
+		}
+	};
+
+	const maskConfig1Decimal = {
+		alias: "numeric",
+		groupSeparator: ",",
+		radixPoint: ".",
+		autoGroup: true,
+		digits: 1,
+		digitsOptional: false,
+		rightAlign: true,
+		integerDigits: 2,
+		min: 0,
+		max: 99.9,
+		prefix: '',
+		placeholder: "0",
+		clearMaskOnLostFocus: false,
+		showMaskOnHover: false,
+		showMaskOnFocus: false,
+		onBeforeMask: function (value) {
+			if (value) {
+				let numValue = parseFloat(value.toString().replace(/,/g, ''));
+				if (numValue > 99.9) numValue = 99.9;
+				return isNaN(numValue) ? value : numValue.toFixed(1);
+			}
+			return value;
+		}
+	};
+
+	const maskConfigEntero = {
+		alias: "numeric",
+		groupSeparator: ",",
+		radixPoint: ".", // no se usa en enteros, pero puede quedar por consistencia
+		autoGroup: true,
+		digits: 0,
+		digitsOptional: false,
+		rightAlign: true,
+		integerDigits: 2,
+		min: 0,
+		max: 99999,
+		prefix: '',
+		placeholder: "0",
+		clearMaskOnLostFocus: false,
+		showMaskOnHover: false,
+		showMaskOnFocus: false,
+		onBeforeMask: function (value) {
+			if (value) {
+				let numValue = parseInt(value.toString().replace(/,/g, ''));
+				if (numValue > 99999) numValue = 99999;
+				return isNaN(numValue) ? value : numValue.toString();
+			}
+			return value;
+		}
+	};
+
+
+	const maskConfig2Decimales = {
+		alias: "numeric",
+		groupSeparator: ",",
+		radixPoint: ".",
+		autoGroup: true,
+		digits: 2,
+		digitsOptional: false,
+		rightAlign: true,
+		prefix: '',
+		placeholder: "0",
+		clearMaskOnLostFocus: false,
+		showMaskOnHover: false,
+		showMaskOnFocus: false,
+		onBeforeMask: function (value) {
+			if (value) {
+				let numValue = parseFloat(value.toString().replace(/,/g, ''));
+				return isNaN(numValue) ? value : numValue.toFixed(2);
+			}
+			return value;
+		}
+	};
+
+	const maskConfigBoni = {
+		mask: "999/999",
+		placeholder: "",
+		showMaskOnHover: false,
+		showMaskOnFocus: false
+	};
+
+	// Aplicar máscaras de forma eficiente con selección optimizada
+	Inputmask(maskConfig3Decimales).mask('.input-ocd_plista, .input-rpd_plista');
+	Inputmask(maskConfig1Decimal).mask('.input-ocd_dto1, .input-ocd_dto2, .input-ocd_dto3, .input-ocd_dto4, .input-ocd_dto_pa');
+	Inputmask(maskConfig1Decimal).mask('.input-rpd_dto1, .input-rpd_dto2, .input-rpd_dto3, .input-rpd_dto4, .input-rpd_dto_pa');
+	Inputmask(maskConfigBoni).mask('.input-ocd_boni, .input-rpd_boni');
+	Inputmask(maskConfigEntero).mask('.input-rpd_cantidad_compte');
+
+	// Configurar eventos de edición
+	configurarEventosEdicionOptimizado();
+
+	console.log("Configuración InputMask aplicada");
+}
+
+function configurarEventosEdicionOptimizado() {
+	const camposEditables = '.input-ocd_plista, .input-ocd_dto1, .input-ocd_dto2, .input-ocd_dto3, .input-ocd_dto4, .input-ocd_dto_pa, .input-ocd_boni, .input-rpd_plista, .input-rpd_dto1, .input-rpd_dto2, .input-rpd_dto3, .input-rpd_dto4, .input-rpd_dto_pa, .input-rpd_boni, .input-rpd_cantidad_compte';
+	const camposSecuencia01 = '.input-ocd_plista, .input-ocd_dto1, .input-ocd_dto2, .input-ocd_dto3, .input-ocd_dto4, .input-ocd_dto_pa, .input-ocd_boni';
+	const camposSecuencia02 = '.input-rpd_plista, .input-rpd_dto1, .input-rpd_dto2, .input-rpd_dto3, .input-rpd_dto4, .input-rpd_dto_pa, .input-rpd_boni, .input-rpd_cantidad_compte';
+
+	// Limpiar eventos previos
+	$(document).off('click.camposEditables keydown.camposEditables blur.camposSecuencia01');
+
+	// Evento click unificado
+	$(document).on('click.camposEditables', camposEditables, function (e) {
+		e.stopPropagation();
+
+		const $this = $(this);
+		const pIdDetalle = $this.closest('tr').data('p-id');
+
+		// Cambio de producto si es necesario
+		if (pIdDetalle !== productoActualEnLista) {
+			productoActualEnLista = pIdDetalle;
+			//$("#divProdLista").attr('data-producto-actual', pIdDetalle);
+			destacarFilaSeleccionada(pIdDetalle);
+			//buscarProductoListaOptimizado(pIdDetalle);
+		}
+
+		// Habilitar campo
+		$this.prop('readonly', false).removeClass('campo-readonly');
+		setTimeout(() => { $this[0].focus(); $this[0].select(); }, 0);
+	});
+
+	// Evento keydown unificado
+	$(document).on('keydown.camposEditables', camposEditables, function (e) {
+		if (e.key === 'Enter' || e.key === 'Tab') {
+			e.preventDefault();
+
+			const row = $(this).closest('tr');
+			const esSecuencia01 = $(this).is(camposSecuencia01);
+			const esSecuencia02 = $(this).is(camposSecuencia02);
+			//const esPrecioVenta = $(this).hasClass('input-tp_pvta');
+
+			var fueModificado = marcarCampoModificado(this);
+			//actualizarEstadoCarga(row);
+			activarSiguienteCampo(this);
+
+			// Aplicar cálculos según tipo
+			if (esSecuencia01 && fueModificado) ActualizarProductoEnDetalleRprSeccionPrecioDebounced(row, this);
+			else if (esSecuencia02 && fueModificado) ActualizarProductoEnDetalleRprSeccionFacturaDebounced(row, this);
+			//else if (esPrecioVenta) calcularPrecioVentaMargenAPIDebounced(row);
+
+			///TODO MARCE: Aca estimo deebería llamar al metodo para recalcular que utilizaba anteriormente
+		}
+	});
+
+	// Eventos blur simplificados con delegación
+	const eventosBlur = {
+		[camposSecuencia01]: () => ActualizarProductoEnDetalleRprSeccionPrecioDebounced,
+		[camposSecuencia02]: () => ActualizarProductoEnDetalleRprSeccionFacturaDebounced
+	};
+
+	Object.entries(eventosBlur).forEach(([selector, getCallback]) => {
+		$(document).on(`blur.${selector.replace(/[^a-zA-Z]/g, '')}`, selector, function () {
+			if ($(this).prop('readonly')) return;
+
+			const row = $(this).closest('tr');
+			const value = $(this).val().replace(/,/g, '');
+			const numValue = parseFloat(value);
+
+			if (!isNaN(numValue)) {
+				const decimals = $(this).hasClass('input-tp_plista') || $(this).hasClass('input-tp_pcosto') || $(this).hasClass('input-tp_pneto') ? 3 :
+					$(this).hasClass('input-tp_dto1') || $(this).hasClass('input-tp_dto2') || $(this).hasClass('input-tp_dto3') || $(this).hasClass('input-tp_dto4') || $(this).hasClass('input-tp_dto_pa') || $(this).hasClass('input-tp_porc_flete') ? 1 : 2;
+				$(this).val(numValue.toFixed(decimals));
+			}
+
+			$(this).prop('readonly', true).addClass('campo-readonly');
+			getCallback()(row);
+		});
+	});
+}
+
+// Función de utilidad para destacar la fila seleccionada
+// ✅ MEJORADA: Función destacar fila con verificación adicional
+function destacarFilaSeleccionada(productoId) {
+	console.log(`🎯 Destacando fila para producto ID: ${productoId}`);
+
+	// Remover el destacado de todas las filas
+	$("#tbListaDetalleRpr tbody tr").removeClass("selected");
+
+	// Verificar que existe una fila con ese ID
+	const $fila = $("#tbListaDetalleRpr tbody tr[data-p-id='" + productoId + "']");
+
+	if ($fila.length === 0) {
+		console.warn(`⚠️ No se encontró ninguna fila con data-p-id="${productoId}"`);
+		return false;
+	}
+
+	// Añadir el destacado solo a la fila del producto seleccionado
+	$fila.addClass("selected");
+	console.log(`✅ Fila destacada correctamente para producto ${productoId}`);
+
+	// Hacer scroll a la fila si está fuera de vista
+	scrollAFilaSeleccionada($fila);
+
+	return true;
+}
+
+// ✅ NUEVA: Función separada para scroll optimizado
+function scrollAFilaSeleccionada($fila) {
+	const $tableContainer = $("#tbListaDetalleRpr").closest('.table-responsive');
+
+	if ($tableContainer.length > 0) {
+		const containerTop = $tableContainer.offset().top;
+		const containerHeight = $tableContainer.height();
+		const rowTop = $fila.offset().top;
+
+		// Solo hacer scroll si la fila está fuera del área visible
+		if (rowTop < containerTop || rowTop > containerTop + containerHeight) {
+			$tableContainer.animate({
+				scrollTop: $tableContainer.scrollTop() + (rowTop - containerTop - containerHeight / 2)
+			}, 300);
+			console.log(`📜 Realizando scroll a la fila seleccionada`);
+		}
+	}
+}
+
+function marcarCampoModificado(input) {
+	// Usar el parámetro input en lugar de this
+	const $input = $(input);
+
+	// Validar que el input existe
+	if (!$input.length) {
+		console.warn('marcarCampoModificado: Input no válido', input);
+		return false;
+	}
+
+	const valorOriginal = $input.data('original-value');
+
+	// Obtener valor actual con manejo de errores
+	let valorActual = '';
+	try {
+		valorActual = $input.val() ? $input.val().replace(/,/g, '') : '';
+	} catch (e) {
+		console.error('Error al obtener valor del campo:', e);
+		return false;
+	}
+
+	// Si no hay valor original definido, no podemos comparar
+	if (valorOriginal === undefined) {
+		return false;
+	}
+
+	// Determinar si el campo está modificado
+	let esModificado = false;
+
+	
+	// Para el campo de bonificación (caso especial)
+	if ($input.hasClass('input-ocd_boni') || $input.hasClass('input-rpd_boni')) {
+		const originalTrim = (valorOriginal || '').toString().trim();
+		const actualTrim = (valorActual || '').toString().trim();
+
+		// Casos especiales: "0" y "" se consideran iguales
+		if ((originalTrim === "0" && actualTrim === "") ||
+			(originalTrim === "" && actualTrim === "0")) {
+			esModificado = false;
+		} else {
+			esModificado = originalTrim !== actualTrim;
+		}
+	} else {
+		// Para campos numéricos - manejar correctamente el caso del valor 0
+		try {
+			// Convertir valores a números, manejando cadenas vacías como 0
+			let numOriginal = valorOriginal === '' || valorOriginal === null ? 0 : parseFloat(valorOriginal);
+			let numActual = valorActual === '' ? 0 : parseFloat(valorActual);
+
+			// Si ambos valores son realmente cero (o equivalentes a cero), no están modificados
+			if ((numOriginal === 0 || isNaN(numOriginal)) &&
+				(numActual === 0 || isNaN(numActual))) {
+				esModificado = false;
+			} else if (!isNaN(numOriginal) && !isNaN(numActual)) {
+				// Ambos son números válidos, usar tolerancias específicas según el campo
+				let tolerancia = 0.009; // Base para campos con 2 decimales
+
+				if ($input.hasClass('input-ocd_dto1') || $input.hasClass('input-rpd_dto1') || 
+					$input.hasClass('input-ocd_dto2') || $input.hasClass('input-rpd_dto2') ||
+					$input.hasClass('input-ocd_dto3') || $input.hasClass('input-rpd_dto3') ||
+					$input.hasClass('input-ocd_dto4') || $input.hasClass('input-rpd_dto4') ||
+					$input.hasClass('input-ocd_dto_pa') || $input.hasClass('input-rpd_dto_pa')) {
+					tolerancia = 0.09; // Para campos con 1 decimal
+				} else if ($input.hasClass('input-ocd_plista') || $input.hasClass('input-rpd_plista')) {
+					tolerancia = 0.0009; // Para campos con 3 decimales
+				}
+
+				// Si la diferencia supera la tolerancia, está modificado
+				esModificado = Math.abs(numOriginal - numActual) > tolerancia;
+			} else if (isNaN(numOriginal) !== isNaN(numActual)) {
+				// Si uno es NaN y el otro no, están diferentes
+				esModificado = true;
+			}
+		} catch (e) {
+			console.error("Error al comparar valores:", e);
+			esModificado = false; // En caso de error, no marcar como modificado
+		}
+	}
+	
+	// Aplicar o quitar la clase según corresponda
+	if (esModificado) {
+		$input.addClass('campo-modificado');
+	} else {
+		$input.removeClass('campo-modificado');
+	}
+
+	// Manejar el indicador visual
+	const container = $input.closest('.input-container');
+	if (esModificado) {
+		if (container.find('.indicador-cambio').length === 0) {
+			container.append('<div class="indicador-cambio"></div>');
+		}
+	} else {
+		container.find('.indicador-cambio').remove();
+	}
+
+	return esModificado;
+}
+//'.input-ocd_plista, .input-ocd_dto1, .input-ocd_dto2, .input-ocd_dto3, .input-ocd_dto4, .input-ocd_dto_pa, .input-ocd_boni,
+// .input-rpd_plista, .input-rpd_dto1, .input-rpd_dto2, .input-rpd_dto3, .input-rpd_dto4, .input-rpd_dto_pa, .input-rpd_boni, .input-rpd_cantidad_compte';
+
+function activarSiguienteCampo(campoActual) {
+	const $campoActual = $(campoActual);
+	const $fila = $campoActual.closest('tr');
+	const camposEditables = '.input-ocd_plista, .input-ocd_dto1, .input-ocd_dto2, .input-ocd_dto3, .input-ocd_dto4, .input-p_dto4, .input-ocd_dto_pa, .input-ocd_boni, .input-rpd_plista, .input-rpd_dto1, .input-rpd_dto2, .input-rpd_dto3, .input-rpd_dto4, .input-rpd_dto_pa, .input-rpd_boni, .input-rpd_cantidad_compte';
+	const $camposEnFila = $fila.find(camposEditables);
+	const indiceActual = $camposEnFila.index($campoActual);
+
+	let $siguienteCampo = null;
+	if (indiceActual < $camposEnFila.length - 1) {
+		$siguienteCampo = $camposEnFila.eq(indiceActual + 1);
+	} else if ($fila.next('tr').length) {
+		$siguienteCampo = $fila.next('tr').find(camposEditables).first();
+	}
+
+	$campoActual.prop('readonly', true).addClass('campo-readonly');
+
+	if ($siguienteCampo && $siguienteCampo.length) {
+		$siguienteCampo.prop('readonly', false).removeClass('campo-readonly');
+		setTimeout(() => { $siguienteCampo[0].focus(); $siguienteCampo[0].select(); }, 0);
+	}
+}
+
+// Función de debounce para evitar llamadas repetidas
+function debounce(func, wait) {
+	let timeout;
+	return function () {
+		const context = this, args = arguments;
+		clearTimeout(timeout);
+		timeout = setTimeout(function () {
+			func.apply(context, args);
+		}, wait);
+	};
+}
+
+// Aplicar debounce a funciones de cálculo intensivas
+const ActualizarProductoEnRprDebounced = debounce(function (row, campoActual) {
+	ActualizarProductoEnOc(row, campoActual);
+}, 300);
+
+
+function ActualizarProductoEnDetalleRprSeccionPrecio(row, campoActual) {
+	var pId = row.data('p-id');
+	//var pId = pIdEnOcSeleccionado; ///TODO MARCE: Seguir aca, completando los metodos de actualizacion de los registros, luegos de editar algun campo
+	var field = $(campoActual).data('field');
+	var val = $(campoActual).val();
+	var data = { pId, field, val };
+	PostGen(data, actualizarProdEnRprSeccionPrecioURL, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			//Actualizar valores en la grilla
+			$("#tbListaDetalleRpr").find('tr').each(function (i, el) {
+				var td = $(this).find('td');
+				if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
+					td[10].innerText = obj.costo;
+					//DC
+					if (obj.valorizacion_mostrar_dc) {
+						td[22].innerHTML = obj.td_dc;
+						td[22].style.padding = "0";
+						td[22].style.textAlignLast = "center";
+						td[22].style.width = "10px";
+					}
+					else {
+						td[22].innerHTML = "";
+					}
+
+					//DP
+					if (obj.valorizacion_mostrar_dp) {
+						td[23].innerHTML = obj.td_dp;
+						td[23].style.padding = "0";
+						td[23].style.textAlignLast = "center";
+						td[23].style.width = "10px";
+					}
+					else {
+						td[23].innerHTML = "";
+					}
+				}
+			});
+			$(".nav-link").prop("disabled", true);
+		}
+	});
+}
+
+function ActualizarProductoEnDetalleRprSeccionFactura(field, val) {
+	var pId = pIdEnOcSeleccionado;
+	var data = { pId, field, val };
+	PostGen(data, actualizarProdEnRprSeccionFacturaURL, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			//Actualizar valores en la grilla
+			$("#tbListaDetalleRpr").find('tr').each(function (i, el) {
+				var td = $(this).find('td');
+				if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
+					td[19].innerText = obj.costo;
+					//DC
+					if (obj.valorizacion_mostrar_dc) {
+						td[22].innerHTML = obj.td_dc;
+						td[22].style.padding = "0";
+						td[22].style.textAlignLast = "center";
+						td[22].style.width = "10px";
+					}
+					else {
+						td[22].innerHTML = "";
+					}
+
+					//DP
+					if (obj.valorizacion_mostrar_dp) {
+						td[23].innerHTML = obj.td_dp;
+						td[23].style.padding = "0";
+						td[23].style.textAlignLast = "center";
+						td[23].style.width = "10px";
+					}
+					else {
+						td[23].innerHTML = "";
+					}
+				}
+			});
+			$(".nav-link").prop("disabled", true);
+		}
+	});
+}
+
+/****************************************************************************************
+################################ ADD-ON -FIN-  tbListaDetalleRpr  ##########################
+*****************************************************************************************/

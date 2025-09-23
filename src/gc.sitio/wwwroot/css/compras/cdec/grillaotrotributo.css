@@ -1,0 +1,189 @@
+﻿/* Estilos para campos readonly */
+.campo-readonly {
+    background-color: #f8f9fa;
+    cursor: pointer;
+    border-color: #ced4da;
+}
+
+    .campo-readonly:hover {
+        background-color: #e9ecef;
+        border-color: #adb5bd;
+    }
+
+input[readonly]:not(.campo-readonly) {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+}
+
+/* OPTIMIZACIÓN: Reducción de espaciado general en tablas */
+#tbGridOtroTributo th, #tbGridOtroTributo td {
+    padding: 0.15rem !important; /* Reducido para optimizar espacio */
+    box-sizing: border-box;
+}
+
+/* MEJORADO: Campos descuentos y flete reducidos pero mejor proporcionados */
+.input-base_imp, .input-alicuota, .input-importe {
+    width: 100%; /* Usar todo el ancho disponible */
+    min-width: 40px; /* Mantenemos este valor mínimo */
+    max-width: 50px; /* REDUCIDO para dar más espacio a otros campos */
+    font-size: 0.85rem;
+    padding: 0.1rem 0.15rem !important;
+}
+
+/* REDISEÑADO: Campos con 3 decimales - AMPLIADOS significativamente */
+.input-importe, .input-base_imp {
+    width: 100%;
+    min-width: 85px; /* AUMENTADO para mejores proporciones */
+    max-width: 110px; /* AUMENTADO significativamente */
+    font-size: 0.85rem;
+    font-family: monospace; /* Añadido para mejor alineación de decimales */
+    letter-spacing: -0.2px; /* Ajustado específicamente */
+    padding-right: 0.3rem !important; /* Más espacio a la derecha */
+}
+
+/* OPTIMIZADO: Ajustes generales para campos numéricos */
+.input-numeric {
+    height: 1.8rem !important; /* AUMENTADO ligeramente para mejor legibilidad */
+    text-align: right;
+    letter-spacing: -0.2px; /* Ajustado para mejor legibilidad */
+    padding: 0.1rem 0.25rem !important; /* Más padding horizontal */
+    margin: 0 !important;
+    border-radius: 0.2rem;
+}
+
+/* OPTIMIZADO: Contenedor de inputs con mejor control de espacio */
+.input-container {
+    position: relative;
+    width: 100%;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* NUEVO: Celdas específicas que contienen campos de 3 decimales */
+#tbGridOtroTributo td:nth-child(5) { /* P_Plista */
+    width: 110px !important; /* Ancho fijo más amplio */
+    min-width: 110px !important;
+    max-width: 110px !important;
+    padding: 0.1rem 0.15rem !important;
+}
+
+/* Optimización específica para células de tabla */
+#tbGridOtroTributo td {
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+    /* OPTIMIZADO: Ajuste específico para células con campos numéricos */
+    #tbGridOtroTributo td:has(.input-numeric) {
+        padding: 0.1rem 0.05rem !important; /* Padding horizontal reducido */
+    }
+
+/* Estilos para pantallas pequeñas */
+@media (max-width: 1200px) {
+    .input-p_plista {
+        font-size: 0.8rem; /* Ajustado para mantener legibilidad */
+        min-width: 80px; /* Mantenemos un tamaño razonable en pantallas pequeñas */
+    }
+}
+
+/* Estilo para la fila seleccionada */
+#tbGridOtroTributo tbody tr.selected {
+    background-color: #e6f2ff !important;
+    box-shadow: inset 0 0 0 1px #4c8dff;
+}
+
+#tbGridOtroTributo tbody tr:hover:not(.selected) {
+    background-color: rgba(230, 242, 255, 0.5);
+}
+
+/* Estilo para campos modificados */
+.campo-modificado {
+    background-color: #d4f1f9 !important;
+    border-color: #a8e1f5 !important;
+}
+
+/* Indicador visual de cambio - Optimizado para ocupar menos espacio */
+.indicador-cambio {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 6px 6px 0;
+    border-color: transparent #4bacc6 transparent transparent;
+}
+
+/* NUEVO: Optimización para encabezados de tabla que contienen campos de 3 decimales */
+#tbGridOtroTributo th:nth-child(5) { /* P_Plista */
+    width: 110px !important;
+    min-width: 110px !important;
+    max-width: 110px !important;
+    text-align: center;
+    font-size: 0.75rem;
+    padding: 0.15rem !important;
+}
+
+/* NUEVO: Optimización para encabezados de columnas compactos */
+#tbGridOtroTributo th {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    text-align: center;
+    padding: 0.2rem 0.1rem !important;
+    vertical-align: middle;
+}
+
+    /* NUEVO: Ajuste específico para primera columna (checkbox) */
+    #tbGridOtroTributo th:first-child,
+    #tbGridOtroTributo td:first-child {
+        width: 30px !important;
+        max-width: 30px !important;
+        min-width: 30px !important;
+        padding: 0 !important;
+        text-align: center;
+    }
+
+/* NUEVO: Optimización de columnas código y descripción */
+#tbGridOtroTributo td:nth-child(2) { /* Código */
+    max-width: 80px !important;
+    width: 80px !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* NUEVO: Input container con mejor control de espacio y alineación */
+.input-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+    /* NUEVO: Prevenir que los inputs crezcan demasiado y mejorar legibilidad */
+    .input-container input {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        transition: background-color 0.2s ease; /* Transición suave para hover/focus */
+    }
+
+        .input-container input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(76, 141, 255, 0.5);
+            background-color: #ffffff;
+        }
+
+/* NUEVO: Asegurar que la tabla se renderiza con anchos fijos */
+#tbGridOtroTributo {
+    table-layout: fixed !important;
+    width: 100%;
+}
+
+    /* NUEVO: Ajustes de alto de filas para compactarlas */
+    #tbGridOtroTributo tr {
+        height: 2rem !important; /* Altura fija para todas las filas */
+    }

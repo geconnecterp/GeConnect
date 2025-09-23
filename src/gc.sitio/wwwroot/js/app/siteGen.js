@@ -342,6 +342,9 @@ function PostGen(data, path, retorno, fxError, datatype) {
         "url": path,
         "type": "POST",
         "data": data,
+        xhrFields: {
+            withCredentials: true
+        },
         /*contentType: "application/json",*/
         "success": retorno,
         //beforeSend: function () { Bloquear();},

@@ -4,6 +4,10 @@
     string clase = string.Empty;
 }
 
+@* @section styles {
+    <link rel="stylesheet" href="~/css/compras/cdec/grillaotrotributo.css" />
+} *@
+
 <div class="row">
     <div class="col-md-6" style="display: flex; align-items: center; text-align: justify; margin-top: 5px; margin-bottom: -15px;">
         <h6>Otros Tributos</h6>
@@ -19,11 +23,11 @@
         <thead>
             <tr class="header">
                 <th style="width:0%;display:none;" class="col-header-small align-center tiny-row">Id</th>
-                <th style="width:5%;" class="col-header-small align-center tiny-row">Concepto</th>
-                <th style="width:5%;" class="col-header-small align-center tiny-row">Base</th>
-                <th style="width:5%;" class="col-header-small align-center tiny-row">Ali</th>
-                <th style="width:5%;" class="col-header-small align-center tiny-row">Importe</th>
-                <th style="width:0.1%;" class="col-header-small align-center tiny-row">Carro</th>
+                <th scope="col">Concepto</th>
+                <th scope="col" class="text-end">Base</th>
+                <th scope="col" class="text-end">Ali</th>
+                <th scope="col" class="text-end">Importe</th>
+                <th scope="col">Carro</th>
             </tr>
         </thead>
         <tbody>
@@ -35,13 +39,47 @@
                     var nombre_base_imp = "base_imp_" + item.ins_id;
                     var nombre_alicuota = "alicuota_" + item.ins_id;
                     var nombre_importe = "importe_" + item.ins_id;
-                    <tr class="@clase" onclick="selectReg(this, 'tbGridOtroTributo')">
+                    <tr class="@clase" data-ins-id="@item.ins_id" onclick="selectReg(this, 'tbGridOtroTributo')">
                         <td style="display:none;">@item.ins_id</td>
                         <td class="text-sm-start">@item.imp</td>
-                        <td class="text-sm-end content-editable-td inputEditable" data-interaction="@item.ins_id" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_base_imp>@item.base_imp.ToString("0.##")</td>
-                        <td class="text-sm-end content-editable-td inputEditable" data-interaction="@item.ins_id" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_alicuota>@item.alicuota.ToString("0.##")</td>
-                        <td class="text-sm-end content-editable-td inputEditable" data-interaction="@item.ins_id" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_importe>@item.importe.ToString("0.##")</td>
-                        <td><a class="btn btn-xs btn-outline-dark" data-interaction="@item.ins_id" onclick="quitarOtroTributo(this);"> <i class="bx bxs-trash"></i></a></td> @*20*@
+                        @* <td class="text-sm-end content-editable-td inputEditable" data-interaction="@item.ins_id" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_base_imp>@item.base_imp.ToString("0.##")</td> *@
+                        <td class="@Model.ObtenerClase(item.base_imp)">
+                            @*07*@
+                            <div class="input-container">
+                                <input type="text" class="form-control form-control-sm input-base_imp input-numeric"
+                                       value="@(item.base_imp.ToString("F2"))"
+                                       data-ins-id="@item.ins_id"
+                                       data-field="base_imp"
+                                       data-original-value="@(item.base_imp)" />
+                            </div>
+                        </td>
+                        @* <td class="text-sm-end content-editable-td inputEditable" data-interaction="@item.ins_id" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_alicuota>@item.alicuota.ToString("0.##")</td> *@
+                        <td class="@Model.ObtenerClase(item.alicuota)">
+                            @*07*@
+                            <div class="input-container">
+                                <input type="text" class="form-control form-control-sm input-alicuota input-numeric"
+                                       value="@(item.alicuota.ToString("F1"))"
+                                       data-ins-id="@item.ins_id"
+                                       data-field="alicuota"
+                                       data-original-value="@(item.alicuota)" />
+                            </div>
+                        </td>
+                        @* <td class="text-sm-end content-editable-td inputEditable" data-interaction="@item.ins_id" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_importe>@item.importe.ToString("0.##")</td> *@
+                        <td class="@Model.ObtenerClase(item.importe)">
+                            @*07*@
+                            <div class="input-container">
+                                <input type="text" class="form-control form-control-sm input-importe input-numeric"
+                                       value="@(item.importe.ToString("F3"))"
+                                       data-ins-id="@item.ins_id"
+                                       data-field="importe"
+                                       data-original-value="@(item.importe)" />
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <a class="btn btn-xs btn-danger" data-interaction="@item.ins_id" onclick="quitarOtroTributo(this);"> 
+                                <i class="bx bxs-trash"></i>
+                            </a>
+                        </td> @*20*@
                     </tr>
                 }
             }

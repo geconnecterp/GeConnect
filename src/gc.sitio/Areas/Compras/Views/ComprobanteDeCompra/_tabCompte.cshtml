@@ -148,3 +148,34 @@
 		</div>
 	</div>
 </div>
+<script>
+	$(function() {
+		// Esta función aplica los indicadores visuales a los campos modificados en la carga inicial
+			$('.campo-modificado').each(function() {
+				// Solo si no tiene ya un indicador
+				if ($(this).parent('.input-container').find('.indicador-cambio').length === 0) {
+					$(this).parent('.input-container').append('<div class="indicador-cambio"></div>');
+				}
+			});
+
+			// NUEVO: Forzar el ancho de la columna de descripción
+			const setDescriptionColumnWidth = function() {
+				// Seleccionar todas las celdas de descripción y sus encabezados
+				$("#tbGridOtroTributo th:nth-child(2), #tbGridOtroTributo td:nth-child(2)").each(function() {
+					$(this).css({
+						'max-width': '150px',
+						'width': '150px',
+						'white-space': 'nowrap',
+						'overflow': 'hidden',
+						'text-overflow': 'ellipsis'
+					});
+				});
+			};
+
+			// Ejecutar inmediatamente
+			setDescriptionColumnWidth();
+
+			// Volver a aplicar después de cualquier redibujado de la tabla
+			$(window).on('resize', setDescriptionColumnWidth);
+	}
+</script>

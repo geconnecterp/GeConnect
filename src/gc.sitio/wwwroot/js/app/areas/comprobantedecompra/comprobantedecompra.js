@@ -1,4 +1,6 @@
-﻿$(function () {
+﻿let otroTributoActualEnLista = null;
+
+$(function () {
 	InicializaPantalla();
 });
 
@@ -320,6 +322,17 @@ function InicializarComprobante(id) {
 		return true
 	});
 }
+
+function CargarGrillasAdicionales(reinicia = false) {
+	//Grilla de Conceptos Facturados
+	CargarGrillaConceptosFacturados(reinicia);
+	//Grilla de Otros Tributos
+	CargarGrillaOtrosTributos();
+	//Grilla Totales
+	CargarGrillaTotales();
+}
+
+
 
 function CalcularIva(e) {
 	var sit_id = $("#listaIvaSit option:selected").val()
@@ -735,3 +748,436 @@ function tableUpDownArrow() {
 			event.preventDefault();
 	}
 }
+
+
+/****************************************************************************************
+ ################################ ADD-ON --  tbGridOtroTributo  #########################
+*****************************************************************************************/
+// Función de debounce para evitar llamadas repetidas
+function debounce(func, wait) {
+	let timeout;
+	return function () {
+		const context = this, args = arguments;
+		clearTimeout(timeout);
+		timeout = setTimeout(function () {
+			func.apply(context, args);
+		}, wait);
+	};
+}
+
+// Aplicar debounce a funciones de cálculo intensivas
+const ActualizarOtroTributoDebounced = debounce(function (row, campoActual) {
+	if (campoActual != undefined) {
+		ActualizarOtroTributo(row, campoActual);
+	}
+}, 300);
+
+function CargarGrillaOtrosTributos() {
+	var tco_id = $("#listaTCompte").val();
+	tcoIdSelected = tco_id;
+	var data = { tco_id };
+	PostGenHtml(data, cargarOtrosTributosUrl, function (obj) {
+		$("#divOtrosTributos").html(obj);
+		finalizarInicializacionGridOtroTributo();
+		//addInCellKeyDownHandler();
+		//tableUpDownArrow();
+		//addInCellGotFocusHandler();
+		//addInCellEditHandler();
+		//addInCellLostFocusHandler();
+		//FormatearValores("#tbGridOtroTributo", [2, 3, 4]);
+		//addMaskInEditableCells();
+		return true
+	});
+}
+
+function quitarOtroTributo(e) {
+	var id = $(e).attr("data-interaction");
+	var data = { id };
+	PostGenHtml(data, quitarItemEnOtrosTributosUrl, function (obj) {
+		$("#divOtrosTributos").html(obj);
+		finalizarInicializacionGridOtroTributo();
+		//addInCellKeyDownHandler();
+		//tableUpDownArrow();
+		//addInCellGotFocusHandler();
+		//addInCellEditHandler();
+		//addInCellLostFocusHandler();
+		//FormatearValores("#tbGridOtroTributo", [2, 3, 4]);
+		//addMaskInEditableCells();
+		CargarGrillaTotales();
+	});
+}
+
+function ActualizarOtroTributo(row, campoActual) {
+	var tco_id = tcoIdSelected;
+	var idOtroTributoSeleccionado = row.data('ins-id');
+	var id = $(campoActual).data('field');
+	var val = $(campoActual).val();
+	var data = { id, val, idOtroTributoSeleccionado, tco_id };
+	PostGen(data, editarItemEnOtrosConceptosUrl, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			CargarGrillaTotales(); //Actualizo grilla de totales con info del BE
+			//Actualizar valores en la grilla
+			$(`.input-importe[data-ins-id="${idOtroTributoSeleccionado}"]`)[0].inputmask.setValue(obj.data.importe); // ✅ mantiene la máscara
+		}
+	});
+}
+
+function finalizarInicializacionGridOtroTributo() {
+	setTimeout(function () {
+		configuracionInputMaskOptimizadaGridOtroTributo();
+		optimizarVisualizacionTablaGridOtroTributo();
+	}, 10);
+}
+
+function configuracionInputMaskOptimizadaGridOtroTributo() {
+	console.log("Aplicando configuración InputMask optimizada...");
+
+	// Establecer todos los campos como readonly de una sola vez
+	$('.input-base_imp, .input-alicuota, .input-importe')
+		.prop('readonly', true)
+		.addClass('campo-readonly');
+
+	// Definir configuraciones de máscara fuera de los bucles
+	const maskConfig3Decimales = {
+		alias: "numeric",
+		groupSeparator: ",",
+		radixPoint: ".",
+		autoGroup: true,
+		digits: 3,
+		digitsOptional: false,
+		rightAlign: true,
+		prefix: '',
+		placeholder: "0",
+		clearMaskOnLostFocus: false,
+		showMaskOnHover: false,
+		showMaskOnFocus: false,
+		min: 0, // Explícitamente permitir 0 como valor mínimo
+		allowMinus: false, // No permitir valores negativos
+		onBeforeMask: function (value) {
+			// Si es null, undefined o cadena vacía, retornar '0'
+			if (value === null || value === undefined || value === '') {
+				return '0';
+			}
+
+			// Para otros valores, formatear correctamente
+			try {
+				let numValue = parseFloat(value.toString().replace(/,/g, ''));
+				return isNaN(numValue) ? '0' : numValue.toFixed(3);
+			} catch (e) {
+				console.error('Error al formatear valor:', e);
+				return '0';
+			}
+		}
+	};
+
+	const maskConfig1Decimal = {
+		alias: "numeric",
+		groupSeparator: ",",
+		radixPoint: ".",
+		autoGroup: true,
+		digits: 1,
+		digitsOptional: false,
+		rightAlign: true,
+		integerDigits: 2,
+		min: 0,
+		max: 99.9,
+		prefix: '',
+		placeholder: "0",
+		clearMaskOnLostFocus: false,
+		showMaskOnHover: false,
+		showMaskOnFocus: false,
+		onBeforeMask: function (value) {
+			if (value) {
+				let numValue = parseFloat(value.toString().replace(/,/g, ''));
+				if (numValue > 99.9) numValue = 99.9;
+				return isNaN(numValue) ? value : numValue.toFixed(1);
+			}
+			return value;
+		}
+	};
+
+	const maskConfig2Decimales = {
+		alias: "numeric",
+		groupSeparator: ",",
+		radixPoint: ".",
+		autoGroup: true,
+		digits: 2,
+		digitsOptional: false,
+		rightAlign: true,
+		prefix: '',
+		placeholder: "0",
+		clearMaskOnLostFocus: false,
+		showMaskOnHover: false,
+		showMaskOnFocus: false,
+		onBeforeMask: function (value) {
+			if (value) {
+				let numValue = parseFloat(value.toString().replace(/,/g, ''));
+				return isNaN(numValue) ? value : numValue.toFixed(2);
+			}
+			return value;
+		}
+	};
+
+	// Aplicar máscaras de forma eficiente con selección optimizada
+	Inputmask(maskConfig3Decimales).mask('.input-importe');
+	Inputmask(maskConfig2Decimales).mask('.input-base_imp');
+	Inputmask(maskConfig1Decimal).mask('.input-alicuota');
+
+	// Configurar eventos de edición
+	configurarEventosEdicionOptimizadoGridOtroTributo();
+
+	console.log("Configuración InputMask aplicada");
+}
+
+function destacarFilaSeleccionadaGridOtroTributo(insId) {
+	console.log(`🎯 Destacando fila para ins ID: ${insId}`);
+
+	// Remover el destacado de todas las filas
+	$("#tbGridOtroTributo tbody tr").removeClass("selected");
+
+	// Verificar que existe una fila con ese ID
+	const $fila = $("#tbGridOtroTributo tbody tr[data-ins-id='" + insId + "']");
+
+	if ($fila.length === 0) {
+		console.warn(`⚠️ No se encontró ninguna fila con data-p-id="${insId}"`);
+		return false;
+	}
+
+	// Añadir el destacado solo a la fila del producto seleccionado
+	$fila.addClass("selected");
+	console.log(`✅ Fila destacada correctamente para producto ${insId}`);
+
+	// Hacer scroll a la fila si está fuera de vista
+	scrollAFilaSeleccionadaGridOtroTributo($fila);
+
+	return true;
+}
+
+function scrollAFilaSeleccionadaGridOtroTributo($fila) {
+	const $tableContainer = $("#tbGridOtroTributo").closest('.table-responsive');
+
+	if ($tableContainer.length > 0) {
+		const containerTop = $tableContainer.offset().top;
+		const containerHeight = $tableContainer.height();
+		const rowTop = $fila.offset().top;
+
+		// Solo hacer scroll si la fila está fuera del área visible
+		if (rowTop < containerTop || rowTop > containerTop + containerHeight) {
+			$tableContainer.animate({
+				scrollTop: $tableContainer.scrollTop() + (rowTop - containerTop - containerHeight / 2)
+			}, 300);
+			console.log(`📜 Realizando scroll a la fila seleccionada`);
+		}
+	}
+}
+
+function configurarEventosEdicionOptimizadoGridOtroTributo() {
+	const camposEditables = '.input-base_imp, .input-alicuota, .input-importe';
+	const camposSecuencia01 = '.input-base_imp, .input-alicuota, .input-importe';
+
+	// Limpiar eventos previos
+	$(document).off('click.camposEditables keydown.camposEditables blur.camposSecuencia01');
+
+	// Evento click unificado
+	$(document).on('click.camposEditables', camposEditables, function (e) {
+		e.stopPropagation();
+
+		const $this = $(this);
+		const insIdDetalle = $this.closest('tr').data('ins-id');
+
+		// Cambio de producto si es necesario
+		if (insIdDetalle !== otroTributoActualEnLista) {
+			otroTributoActualEnLista = insIdDetalle;
+			destacarFilaSeleccionadaGridOtroTributo(insIdDetalle);
+		}
+
+		// Habilitar campo
+		$this.prop('readonly', false).removeClass('campo-readonly');
+		setTimeout(() => { $this[0].focus(); $this[0].select(); }, 0);
+	});
+
+	// Evento keydown unificado
+	$(document).on('keydown.camposEditables', camposEditables, function (e) {
+		if (e.key === 'Enter' || e.key === 'Tab') {
+			e.preventDefault();
+
+			const row = $(this).closest('tr');
+			const esSecuencia01 = $(this).is(camposSecuencia01);
+
+			var fueModificado = marcarCampoModificadoGridOtroTributo(this);
+			activarSiguienteCampoGridOtroTributo(this);
+
+			// Aplicar cálculos según tipo
+			if (esSecuencia01 && fueModificado) ActualizarOtroTributoDebounced(row, this);
+			//else if (esMargen) calcularPrecioVentaAPIDebounced(row);
+			//else if (esPrecioVenta) calcularPrecioVentaMargenAPIDebounced(row);
+
+			///TODO MARCE: Aca estimo deebería llamar al metodo para recalcular que utilizaba anteriormente
+		}
+	});
+
+	// Eventos blur simplificados con delegación
+	const eventosBlur = {
+		[camposSecuencia01]: () => ActualizarOtroTributoDebounced
+	};
+
+	Object.entries(eventosBlur).forEach(([selector, getCallback]) => {
+		$(document).on(`blur.${selector.replace(/[^a-zA-Z]/g, '')}`, selector, function () {
+			if ($(this).prop('readonly')) return;
+
+			const row = $(this).closest('tr');
+			const value = $(this).val().replace(/,/g, '');
+			const numValue = parseFloat(value);
+
+			if (!isNaN(numValue)) {
+				const decimals = $(this).hasClass('input-importe') ? 3 :
+					$(this).hasClass('input-alicuota') ? 1 : 2;
+				$(this).val(numValue.toFixed(decimals));
+			}
+
+			$(this).prop('readonly', true).addClass('campo-readonly');
+			getCallback()(row);
+		});
+	});
+}
+
+function activarSiguienteCampoGridOtroTributo(campoActual) {
+	const $campoActual = $(campoActual);
+	const $fila = $campoActual.closest('tr');
+	const camposEditables = '.input-base_imp, .input-alicuota, .input-importe';
+	const $camposEnFila = $fila.find(camposEditables);
+	const indiceActual = $camposEnFila.index($campoActual);
+
+	let $siguienteCampo = null;
+	if (indiceActual < $camposEnFila.length - 1) {
+		$siguienteCampo = $camposEnFila.eq(indiceActual + 1);
+	} else if ($fila.next('tr').length) {
+		$siguienteCampo = $fila.next('tr').find(camposEditables).first();
+	}
+
+	$campoActual.prop('readonly', true).addClass('campo-readonly');
+
+	if ($siguienteCampo && $siguienteCampo.length) {
+		$siguienteCampo.prop('readonly', false).removeClass('campo-readonly');
+		setTimeout(() => { $siguienteCampo[0].focus(); $siguienteCampo[0].select(); }, 0);
+	}
+}
+
+function marcarCampoModificadoGridOtroTributo(input) {
+	// Usar el parámetro input en lugar de this
+	const $input = $(input);
+
+	// Validar que el input existe
+	if (!$input.length) {
+		console.warn('marcarCampoModificado: Input no válido', input);
+		return false;
+	}
+
+	const valorOriginal = $input.data('original-value');
+
+	// Obtener valor actual con manejo de errores
+	let valorActual = '';
+	try {
+		valorActual = $input.val() ? $input.val().replace(/,/g, '') : '';
+	} catch (e) {
+		console.error('Error al obtener valor del campo:', e);
+		return false;
+	}
+
+	// Si no hay valor original definido, no podemos comparar
+	if (valorOriginal === undefined) {
+		return false;
+	}
+
+	// Determinar si el campo está modificado
+	let esModificado = false;
+
+
+	// Para campos numéricos - manejar correctamente el caso del valor 0
+	try {
+		// Convertir valores a números, manejando cadenas vacías como 0
+		let numOriginal = valorOriginal === '' || valorOriginal === null ? 0 : parseFloat(valorOriginal);
+		let numActual = valorActual === '' ? 0 : parseFloat(valorActual);
+
+		// Si ambos valores son realmente cero (o equivalentes a cero), no están modificados
+		if ((numOriginal === 0 || isNaN(numOriginal)) &&
+			(numActual === 0 || isNaN(numActual))) {
+			esModificado = false;
+		} else if (!isNaN(numOriginal) && !isNaN(numActual)) {
+			// Ambos son números válidos, usar tolerancias específicas según el campo
+			let tolerancia = 0.009; // Base para campos con 2 decimales
+
+			if ($input.hasClass('input-alicuota')) {
+				tolerancia = 0.09; // Para campos con 1 decimal
+			} else if ($input.hasClass('input-importe')) {
+				tolerancia = 0.0009; // Para campos con 3 decimales
+			}
+
+			// Si la diferencia supera la tolerancia, está modificado
+			esModificado = Math.abs(numOriginal - numActual) > tolerancia;
+		} else if (isNaN(numOriginal) !== isNaN(numActual)) {
+			// Si uno es NaN y el otro no, están diferentes
+			esModificado = true;
+		}
+	} catch (e) {
+		console.error("Error al comparar valores:", e);
+		esModificado = false; // En caso de error, no marcar como modificado
+	}
+
+	// Aplicar o quitar la clase según corresponda
+	if (esModificado) {
+		$input.addClass('campo-modificado');
+	} else {
+		$input.removeClass('campo-modificado');
+	}
+
+	// Manejar el indicador visual
+	const container = $input.closest('.input-container');
+	if (esModificado) {
+		if (container.find('.indicador-cambio').length === 0) {
+			container.append('<div class="indicador-cambio"></div>');
+		}
+	} else {
+		container.find('.indicador-cambio').remove();
+	}
+
+	return esModificado;
+}
+
+function optimizarVisualizacionTablaGridOtroTributo() {
+	// Asegurarnos de que la tabla existe
+	if ($("#tbGridOtroTributo").length === 0) {
+		return;
+	}
+
+	// Ajustar columnas con texto para que no sean demasiado anchas
+	$("#tbGridOtroTributo th:nth-child(1)").css('max-width', '180px'); // Descripción
+	$("#tbGridOtroTributo td:nth-child(1)").css({
+		'max-width': '180px',
+		'white-space': 'nowrap',
+		'overflow': 'hidden',
+		'text-overflow': 'ellipsis'
+	});
+
+	// Asegurarnos que la tabla tenga scroll horizontal si es necesario
+	$("#tbGridOtroTributo").closest('.table-responsive').css('overflow-x', 'auto');
+
+	console.log("Tabla optimizada para mejor visualización");
+}
+
+
+/****************************************************************************************
+ ################################ FIN ADD-ON --  tbGridOtroTributo  #####################
+*****************************************************************************************/
+
+
+
+/****************************************************************************************
+################################ ADD-ON ################################################
+*****************************************************************************************/
