@@ -433,23 +433,23 @@ function AgregarHandlerDragAndDrop() {
 	});
 }
 
-function AgregarHandlerAGrillaDetalleRprCheckAll() {
-	var dataTable = document.getElementById('tbListaDetalleRpr');
-	var checkItAll = dataTable.querySelector('input[name="select_all"]');
-	var inputs = dataTable.querySelectorAll('tbody>tr>td>input');
-	checkItAll.addEventListener('change', function () {
-		if (checkItAll.checked) {
-			inputs.forEach(function (input) {
-				input.checked = true;
-			});
-		}
-		else {
-			inputs.forEach(function (input) {
-				input.checked = false;
-			});
-		}
-	});
-}
+//function AgregarHandlerAGrillaDetalleRprCheckAll() {
+//	var dataTable = document.getElementById('tbListaDetalleRpr');
+//	var checkItAll = dataTable.querySelector('input[name="select_all"]');
+//	var inputs = dataTable.querySelectorAll('tbody>tr>td>input');
+//	checkItAll.addEventListener('change', function () {
+//		if (checkItAll.checked) {
+//			inputs.forEach(function (input) {
+//				input.checked = true;
+//			});
+//		}
+//		else {
+//			inputs.forEach(function (input) {
+//				input.checked = false;
+//			});
+//		}
+//	});
+//}
 
 function RecalcularItemValue() {
 	AbrirWaiting();
@@ -579,45 +579,45 @@ function AddEventListenerToGrid(tabla) {
 	}
 }
 
-function inCellInputEditable() {
-	$("#tbListaDetalleRpr").on('focusout', 'input', function (e) {
-		if (this.id) {
-			var actualiza = true;
-			if (cellValueTemp == $("#" + this.id).val())
-				actualiza = false;
-			else {
-				if (this.id.includes("_plista") || this.id.includes("_rpd_cantidad_compte") || this.id.includes("_dto1") || this.id.includes("_dto2") || this.id.includes("_dto3") || this.id.includes("_dto4") || this.id.includes("_dto_pa")) {
-					var valor = $("#" + this.id).inputmask('unmaskedvalue');
-					if (valor == "") { //Backspace + Enter
-						valor = "0";
-						$("#" + this.id).val("0");
-					}
-				}
-				else if (this.id.includes("_boni")) {
-					var spl = $(this).val().split("/");
-					if (spl.length === 2) {
-						var num1 = Number(spl[0]);
-						var num2 = Number(spl[1]);
-						if (num1 > num2) {
-							$("#" + this.id).val("");
-							$("#" + this.id).text("");
-							actualiza = false;
-						}
-						var valor = $(this).val();
-					}
-					else
-						actualiza = false;
-				}
-			}
-			if (actualiza) {
-				if (this.id.includes("_ocd_"))
-					ActualizarProductoEnDetalleRprSeccionPrecio(this.id, valor);
-				else
-					ActualizarProductoEnDetalleRprSeccionFactura(this.id, valor);
-			}
-		}
-	});
-}
+//function inCellInputEditable() {
+//	$("#tbListaDetalleRpr").on('focusout', 'input', function (e) {
+//		if (this.id) {
+//			var actualiza = true;
+//			if (cellValueTemp == $("#" + this.id).val())
+//				actualiza = false;
+//			else {
+//				if (this.id.includes("_plista") || this.id.includes("_rpd_cantidad_compte") || this.id.includes("_dto1") || this.id.includes("_dto2") || this.id.includes("_dto3") || this.id.includes("_dto4") || this.id.includes("_dto_pa")) {
+//					var valor = $("#" + this.id).inputmask('unmaskedvalue');
+//					if (valor == "") { //Backspace + Enter
+//						valor = "0";
+//						$("#" + this.id).val("0");
+//					}
+//				}
+//				else if (this.id.includes("_boni")) {
+//					var spl = $(this).val().split("/");
+//					if (spl.length === 2) {
+//						var num1 = Number(spl[0]);
+//						var num2 = Number(spl[1]);
+//						if (num1 > num2) {
+//							$("#" + this.id).val("");
+//							$("#" + this.id).text("");
+//							actualiza = false;
+//						}
+//						var valor = $(this).val();
+//					}
+//					else
+//						actualiza = false;
+//				}
+//			}
+//			if (actualiza) {
+//				if (this.id.includes("_ocd_"))
+//					ActualizarProductoEnDetalleRprSeccionPrecio(this.id, valor);
+//				else
+//					ActualizarProductoEnDetalleRprSeccionFactura(this.id, valor);
+//			}
+//		}
+//	});
+//}
 
 function CargarDatosParaValorizar(cmCompteSelected) {
 	AbrirWaiting("Obteniendo datos de Valorización...");
@@ -692,15 +692,7 @@ function ObtenerListaDetalleRpr() {
 		CerrarWaiting();
 		$("#divDetalles").html(obj);
 		finalizarInicializacion();
-		//AddEventListenerToGrid("tbListaDetalleRpr");
-		//addInCellKeyDownHandler();
-		//addInCellGotFocusHandler();
-		//addInCellInputGotFocusHandler();
-		//addInCellLostFocusHandler();
-		//addMaskInEditableCells();
-		//tableUpDownArrow();
-		//AgregarHandlerAGrillaDetalleRprCheckAll();
-		//inCellInputEditable();
+		SetMaskSeteoMasivoComponentes();
 		$('#radioSection input').on('change', function () {
 			optSelected = $('input[name=opcion]:checked', '#radioSection').val();
 			if (optSelected == "opcion1") {
@@ -903,178 +895,178 @@ function getMaskForBonificationType(selector) {
 	});
 }
 
-function focusOnInput(x) {
-	if (x) {
-		$('#' + x.id.substring(0, 6)).trigger('click');
-		$("#" + x.id).select().one('mouseup', function (e) {
-			$(this).off('keyup');
-			e.preventDefault();
-		}).one('keyup', function () {
-			$(this).select().off('mouseup');
-		});
-	}
-}
+//function focusOnInput(x) {
+//	if (x) {
+//		$('#' + x.id.substring(0, 6)).trigger('click');
+//		$("#" + x.id).select().one('mouseup', function (e) {
+//			$(this).off('keyup');
+//			e.preventDefault();
+//		}).one('keyup', function () {
+//			$(this).select().off('mouseup');
+//		});
+//	}
+//}
 
-function focusOnTd(x) {
-	var cell = x;
-	var range, selection;
-	if (document.body.createTextRange) {
-		range = document.body.createTextRange();
-		range.moveToElementText(cell);
-		range.select();
-	} else if (window.getSelection) {
-		selection = window.getSelection();
-		range = document.createRange();
-		range.selectNodeContents(cell);
-		selection.removeAllRanges();
-		selection.addRange(range);
-	}
-}
+//function focusOnTd(x) {
+//	var cell = x;
+//	var range, selection;
+//	if (document.body.createTextRange) {
+//		range = document.body.createTextRange();
+//		range.moveToElementText(cell);
+//		range.select();
+//	} else if (window.getSelection) {
+//		selection = window.getSelection();
+//		range = document.createRange();
+//		range.selectNodeContents(cell);
+//		selection.removeAllRanges();
+//		selection.addRange(range);
+//	}
+//}
 
-function keyUpFromEditableCell(x) {
-	if (event.key == "Enter") {
-		var id = $(x).prop("id");
-		if (id.includes("ocd_plista")) {
-			var arr_p_id = id.split("_");
-			var p_id = arr_p_id[0];
-			var next = p_id + "_ocd_dto1";
-			document.getElementById(next).focus();
-			return true;
-		}
-		if (id.includes("ocd_dto1")) {
-			var arr_p_id = id.split("_");
-			var p_id = arr_p_id[0];
-			var next = p_id + "_ocd_dto2";
-			document.getElementById(next).focus();
-			return true;
-		}
-		if (id.includes("ocd_dto2")) {
-			var arr_p_id = id.split("_");
-			var p_id = arr_p_id[0];
-			var next = p_id + "_ocd_dto3";
-			document.getElementById(next).focus();
-			return true;
-		}
-		if (id.includes("ocd_dto3")) {
-			var arr_p_id = id.split("_");
-			var p_id = arr_p_id[0];
-			var next = p_id + "_ocd_dto4";
-			document.getElementById(next).focus();
-			return true;
-		}
-		if (id.includes("ocd_dto4")) {
-			var arr_p_id = id.split("_");
-			var p_id = arr_p_id[0];
-			var next = p_id + "_ocd_dto_pa";
-			document.getElementById(next).focus();
-			return true;
-		}
-		if (id.includes("ocd_dto_pa")) {
-			var arr_p_id = id.split("_");
-			var p_id = arr_p_id[0];
-			var next = p_id + "_ocd_boni";
-			document.getElementById(next).focus();
-			return true;
-		}
-		if (id.includes("ocd_boni")) {
-			var arr_p_id = id.split("_");
-			var p_id = arr_p_id[0];
-			var next = p_id + "_rpd_plista";
-			document.getElementById(next).focus();
-			return true;
-		}
-		if (id.includes("rpd_plista")) {
-			var arr_p_id = id.split("_");
-			var p_id = arr_p_id[0];
-			var next = p_id + "_rpd_dto1";
-			document.getElementById(next).focus();
-			return true;
-		}
-		if (id.includes("rpd_dto1")) {
-			var arr_p_id = id.split("_");
-			var p_id = arr_p_id[0];
-			var next = p_id + "_rpd_dto2";
-			document.getElementById(next).focus();
-			return true;
-		}
-		if (id.includes("rpd_dto2")) {
-			var arr_p_id = id.split("_");
-			var p_id = arr_p_id[0];
-			var next = p_id + "_rpd_dto3";
-			document.getElementById(next).focus();
-			return true;
-		}
-		if (id.includes("rpd_dto3")) {
-			var arr_p_id = id.split("_");
-			var p_id = arr_p_id[0];
-			var next = p_id + "_rpd_dto4";
-			document.getElementById(next).focus();
-			return true;
-		}
-		if (id.includes("rpd_dto4")) {
-			var arr_p_id = id.split("_");
-			var p_id = arr_p_id[0];
-			var next = p_id + "_rpd_dto_pa";
-			document.getElementById(next).focus();
-			return true;
-		}
-		if (id.includes("rpd_dto_pa")) {
-			var arr_p_id = id.split("_");
-			var p_id = arr_p_id[0];
-			var next = p_id + "_rpd_boni";
-			document.getElementById(next).focus();
-			return true;
-		}
-		if (id.includes("rpd_boni")) {
-			var arr_p_id = id.split("_");
-			var p_id = arr_p_id[0];
-			var next = p_id + "_rpd_cantidad_compte";
-			document.getElementById(next).focus();
-			return true;
-		}
-		if (id.includes("_rpd_cantidad_compte")) {
-			var arr_p_id = id.split("_");
-			var p_id = arr_p_id[0];
-			var next = p_id + "_ocd_plista";
-			document.getElementById(next).focus();
-			return true;
-		}
-	}
-}
+//function keyUpFromEditableCell(x) {
+//	if (event.key == "Enter") {
+//		var id = $(x).prop("id");
+//		if (id.includes("ocd_plista")) {
+//			var arr_p_id = id.split("_");
+//			var p_id = arr_p_id[0];
+//			var next = p_id + "_ocd_dto1";
+//			document.getElementById(next).focus();
+//			return true;
+//		}
+//		if (id.includes("ocd_dto1")) {
+//			var arr_p_id = id.split("_");
+//			var p_id = arr_p_id[0];
+//			var next = p_id + "_ocd_dto2";
+//			document.getElementById(next).focus();
+//			return true;
+//		}
+//		if (id.includes("ocd_dto2")) {
+//			var arr_p_id = id.split("_");
+//			var p_id = arr_p_id[0];
+//			var next = p_id + "_ocd_dto3";
+//			document.getElementById(next).focus();
+//			return true;
+//		}
+//		if (id.includes("ocd_dto3")) {
+//			var arr_p_id = id.split("_");
+//			var p_id = arr_p_id[0];
+//			var next = p_id + "_ocd_dto4";
+//			document.getElementById(next).focus();
+//			return true;
+//		}
+//		if (id.includes("ocd_dto4")) {
+//			var arr_p_id = id.split("_");
+//			var p_id = arr_p_id[0];
+//			var next = p_id + "_ocd_dto_pa";
+//			document.getElementById(next).focus();
+//			return true;
+//		}
+//		if (id.includes("ocd_dto_pa")) {
+//			var arr_p_id = id.split("_");
+//			var p_id = arr_p_id[0];
+//			var next = p_id + "_ocd_boni";
+//			document.getElementById(next).focus();
+//			return true;
+//		}
+//		if (id.includes("ocd_boni")) {
+//			var arr_p_id = id.split("_");
+//			var p_id = arr_p_id[0];
+//			var next = p_id + "_rpd_plista";
+//			document.getElementById(next).focus();
+//			return true;
+//		}
+//		if (id.includes("rpd_plista")) {
+//			var arr_p_id = id.split("_");
+//			var p_id = arr_p_id[0];
+//			var next = p_id + "_rpd_dto1";
+//			document.getElementById(next).focus();
+//			return true;
+//		}
+//		if (id.includes("rpd_dto1")) {
+//			var arr_p_id = id.split("_");
+//			var p_id = arr_p_id[0];
+//			var next = p_id + "_rpd_dto2";
+//			document.getElementById(next).focus();
+//			return true;
+//		}
+//		if (id.includes("rpd_dto2")) {
+//			var arr_p_id = id.split("_");
+//			var p_id = arr_p_id[0];
+//			var next = p_id + "_rpd_dto3";
+//			document.getElementById(next).focus();
+//			return true;
+//		}
+//		if (id.includes("rpd_dto3")) {
+//			var arr_p_id = id.split("_");
+//			var p_id = arr_p_id[0];
+//			var next = p_id + "_rpd_dto4";
+//			document.getElementById(next).focus();
+//			return true;
+//		}
+//		if (id.includes("rpd_dto4")) {
+//			var arr_p_id = id.split("_");
+//			var p_id = arr_p_id[0];
+//			var next = p_id + "_rpd_dto_pa";
+//			document.getElementById(next).focus();
+//			return true;
+//		}
+//		if (id.includes("rpd_dto_pa")) {
+//			var arr_p_id = id.split("_");
+//			var p_id = arr_p_id[0];
+//			var next = p_id + "_rpd_boni";
+//			document.getElementById(next).focus();
+//			return true;
+//		}
+//		if (id.includes("rpd_boni")) {
+//			var arr_p_id = id.split("_");
+//			var p_id = arr_p_id[0];
+//			var next = p_id + "_rpd_cantidad_compte";
+//			document.getElementById(next).focus();
+//			return true;
+//		}
+//		if (id.includes("_rpd_cantidad_compte")) {
+//			var arr_p_id = id.split("_");
+//			var p_id = arr_p_id[0];
+//			var next = p_id + "_ocd_plista";
+//			document.getElementById(next).focus();
+//			return true;
+//		}
+//	}
+//}
 
-var keysAceptadas = [8, 37, 39, 46, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 110, 190];
-function addInCellKeyDownHandler() {
-	$("#tbListaDetalleRpr").on('keydown', 'td[contenteditable]', function (e) {
-		if (e) {
-			if (isNaN(String.fromCharCode(e.which)) && !(keysAceptadas.indexOf(e.which) != -1) && !(e.shiftKey && (e.which == 37 || e.which == 39))) { e.preventDefault(); }
-		}
-	});
-}
+//var keysAceptadas = [8, 37, 39, 46, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 110, 190];
+//function addInCellKeyDownHandler() {
+//	$("#tbListaDetalleRpr").on('keydown', 'td[contenteditable]', function (e) {
+//		if (e) {
+//			if (isNaN(String.fromCharCode(e.which)) && !(keysAceptadas.indexOf(e.which) != -1) && !(e.shiftKey && (e.which == 37 || e.which == 39))) { e.preventDefault(); }
+//		}
+//	});
+//}
 
-function addInCellGotFocusHandler() {
-	$("#tbListaDetalleRpr").on('focusin', 'td[contenteditable]', function (e) {
-		if (e) {
-			cellValueTemp = $("#" + this.id).text();
-			if (e.target) {
-				pIdEnOcSeleccionado = e.target.parentNode.cells[1].innerText;
-				cellIndexTemp = e.target.cellIndex;
-			}
-		}
-	});
-}
+//function addInCellGotFocusHandler() {
+//	$("#tbListaDetalleRpr").on('focusin', 'td[contenteditable]', function (e) {
+//		if (e) {
+//			cellValueTemp = $("#" + this.id).text();
+//			if (e.target) {
+//				pIdEnOcSeleccionado = e.target.parentNode.cells[1].innerText;
+//				cellIndexTemp = e.target.cellIndex;
+//			}
+//		}
+//	});
+//}
 
-function addInCellInputGotFocusHandler() {
-	$("#tbListaDetalleRpr").on('focusin', 'input', function (e) {
-		if (e) {
-			cellValueTemp = $("#" + this.id).val();
-			$(this).select();
-			if (e.target) {
-				pIdEnOcSeleccionado = e.target.parentNode.parentNode.cells[1].innerText;
-				cellIndexTemp = e.target.parentNode.cellIndex;
-			}
-		}
-	});
-}
+//function addInCellInputGotFocusHandler() {
+//	$("#tbListaDetalleRpr").on('focusin', 'input', function (e) {
+//		if (e) {
+//			cellValueTemp = $("#" + this.id).val();
+//			$(this).select();
+//			if (e.target) {
+//				pIdEnOcSeleccionado = e.target.parentNode.parentNode.cells[1].innerText;
+//				cellIndexTemp = e.target.parentNode.cellIndex;
+//			}
+//		}
+//	});
+//}
 
 function onChangeChkNcGenera(x) {
 	if (x) {
@@ -1084,132 +1076,132 @@ function onChangeChkNcGenera(x) {
 		event.preventDefault;
 }
 
-function addInCellLostFocusHandler() {
-	$("#tbListaDetalleRpr").on('focusout', 'td[contenteditable]', function (e) {
-		if (this.id) {
-			var actualiza = true;
-			if (cellValueTemp == $("#" + this.id).text())
-				actualiza = false;
-			else {
-				if (this.id.includes("_dto1") || this.id.includes("_dto2") || this.id.includes("_dto3") || this.id.includes("_dto4") || this.id.includes("_dto_pa")) {
-					var valor = this.innerText;
-				}
-				else if (this.id.includes("_plista") || this.id.includes("_rpd_cantidad_compte")) {
-					var valor = $("#" + this.id).inputmask('unmaskedvalue');
-				}
-				else if (this.id.includes("_boni")) {
-					var spl = this.innerText.split("/");
-					if (spl.length === 2) {
-						var num1 = Number(spl[0]);
-						var num2 = Number(spl[1]);
-						if (num1 > num2) {
-							$("#" + this.id).val("");
-							$("#" + this.id).text("");
-							actualiza = false;
-						}
-						var valor = this.innerText;
-					}
-					else
-						actualiza = false;
-				}
-			}
-			if (actualiza) {
-				if (this.id.includes("_ocd_"))
-					ActualizarProductoEnDetalleRprSeccionPrecio(this.id, valor);
-				else
-					ActualizarProductoEnDetalleRprSeccionFactura(this.id, valor);
-			}
-		}
-	});
-}
+//function addInCellLostFocusHandler() {
+//	$("#tbListaDetalleRpr").on('focusout', 'td[contenteditable]', function (e) {
+//		if (this.id) {
+//			var actualiza = true;
+//			if (cellValueTemp == $("#" + this.id).text())
+//				actualiza = false;
+//			else {
+//				if (this.id.includes("_dto1") || this.id.includes("_dto2") || this.id.includes("_dto3") || this.id.includes("_dto4") || this.id.includes("_dto_pa")) {
+//					var valor = this.innerText;
+//				}
+//				else if (this.id.includes("_plista") || this.id.includes("_rpd_cantidad_compte")) {
+//					var valor = $("#" + this.id).inputmask('unmaskedvalue');
+//				}
+//				else if (this.id.includes("_boni")) {
+//					var spl = this.innerText.split("/");
+//					if (spl.length === 2) {
+//						var num1 = Number(spl[0]);
+//						var num2 = Number(spl[1]);
+//						if (num1 > num2) {
+//							$("#" + this.id).val("");
+//							$("#" + this.id).text("");
+//							actualiza = false;
+//						}
+//						var valor = this.innerText;
+//					}
+//					else
+//						actualiza = false;
+//				}
+//			}
+//			if (actualiza) {
+//				if (this.id.includes("_ocd_"))
+//					ActualizarProductoEnDetalleRprSeccionPrecio(this.id, valor);
+//				else
+//					ActualizarProductoEnDetalleRprSeccionFactura(this.id, valor);
+//			}
+//		}
+//	});
+//}
 
-function ActualizarProductoEnDetalleRprSeccionPrecio(field, val) {
-	var pId = pIdEnOcSeleccionado;
-	var data = { pId, field, val };
-	PostGen(data, actualizarProdEnRprSeccionPrecioURL, function (obj) {
-		if (obj.error === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
-		}
-		else {
-			//Actualizar valores en la grilla
-			$("#tbListaDetalleRpr").find('tr').each(function (i, el) {
-				var td = $(this).find('td');
-				if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
-					td[10].innerText = obj.costo;
-					//DC
-					if (obj.valorizacion_mostrar_dc) {
-						td[22].innerHTML = obj.td_dc;
-						td[22].style.padding = "0";
-						td[22].style.textAlignLast = "center";
-						td[22].style.width = "10px";
-					}
-					else {
-						td[22].innerHTML = "";
-					}
+//function ActualizarProductoEnDetalleRprSeccionPrecio(field, val) {
+//	var pId = pIdEnOcSeleccionado;
+//	var data = { pId, field, val };
+//	PostGen(data, actualizarProdEnRprSeccionPrecioURL, function (obj) {
+//		if (obj.error === true) {
+//			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+//				$("#msjModal").modal("hide");
+//				return true;
+//			}, false, ["Aceptar"], "error!", null);
+//		}
+//		else {
+//			//Actualizar valores en la grilla
+//			$("#tbListaDetalleRpr").find('tr').each(function (i, el) {
+//				var td = $(this).find('td');
+//				if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
+//					td[10].innerText = obj.costo;
+//					//DC
+//					if (obj.valorizacion_mostrar_dc) {
+//						td[22].innerHTML = obj.td_dc;
+//						td[22].style.padding = "0";
+//						td[22].style.textAlignLast = "center";
+//						td[22].style.width = "10px";
+//					}
+//					else {
+//						td[22].innerHTML = "";
+//					}
 
-					//DP
-					if (obj.valorizacion_mostrar_dp) {
-						td[23].innerHTML = obj.td_dp;
-						td[23].style.padding = "0";
-						td[23].style.textAlignLast = "center";
-						td[23].style.width = "10px";
-					}
-					else {
-						td[23].innerHTML = "";
-					}
-				}
-			});
-			$(".nav-link").prop("disabled", true);
-		}
-	});
-}
+//					//DP
+//					if (obj.valorizacion_mostrar_dp) {
+//						td[23].innerHTML = obj.td_dp;
+//						td[23].style.padding = "0";
+//						td[23].style.textAlignLast = "center";
+//						td[23].style.width = "10px";
+//					}
+//					else {
+//						td[23].innerHTML = "";
+//					}
+//				}
+//			});
+//			$(".nav-link").prop("disabled", true);
+//		}
+//	});
+//}
 
-function ActualizarProductoEnDetalleRprSeccionFactura(field, val) {
-	var pId = pIdEnOcSeleccionado;
-	var data = { pId, field, val };
-	PostGen(data, actualizarProdEnRprSeccionFacturaURL, function (obj) {
-		if (obj.error === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
-		}
-		else {
-			//Actualizar valores en la grilla
-			$("#tbListaDetalleRpr").find('tr').each(function (i, el) {
-				var td = $(this).find('td');
-				if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
-					td[19].innerText = obj.costo;
-					//DC
-					if (obj.valorizacion_mostrar_dc) {
-						td[22].innerHTML = obj.td_dc;
-						td[22].style.padding = "0";
-						td[22].style.textAlignLast = "center";
-						td[22].style.width = "10px";
-					}
-					else {
-						td[22].innerHTML = "";
-					}
+//function ActualizarProductoEnDetalleRprSeccionFactura(field, val) {
+//	var pId = pIdEnOcSeleccionado;
+//	var data = { pId, field, val };
+//	PostGen(data, actualizarProdEnRprSeccionFacturaURL, function (obj) {
+//		if (obj.error === true) {
+//			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+//				$("#msjModal").modal("hide");
+//				return true;
+//			}, false, ["Aceptar"], "error!", null);
+//		}
+//		else {
+//			//Actualizar valores en la grilla
+//			$("#tbListaDetalleRpr").find('tr').each(function (i, el) {
+//				var td = $(this).find('td');
+//				if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
+//					td[19].innerText = obj.costo;
+//					//DC
+//					if (obj.valorizacion_mostrar_dc) {
+//						td[22].innerHTML = obj.td_dc;
+//						td[22].style.padding = "0";
+//						td[22].style.textAlignLast = "center";
+//						td[22].style.width = "10px";
+//					}
+//					else {
+//						td[22].innerHTML = "";
+//					}
 
-					//DP
-					if (obj.valorizacion_mostrar_dp) {
-						td[23].innerHTML = obj.td_dp;
-						td[23].style.padding = "0";
-						td[23].style.textAlignLast = "center";
-						td[23].style.width = "10px";
-					}
-					else {
-						td[23].innerHTML = "";
-					}
-				}
-			});
-			$(".nav-link").prop("disabled", true);
-		}
-	});
-}
+//					//DP
+//					if (obj.valorizacion_mostrar_dp) {
+//						td[23].innerHTML = obj.td_dp;
+//						td[23].style.padding = "0";
+//						td[23].style.textAlignLast = "center";
+//						td[23].style.width = "10px";
+//					}
+//					else {
+//						td[23].innerHTML = "";
+//					}
+//				}
+//			});
+//			$(".nav-link").prop("disabled", true);
+//		}
+//	});
+//}
 
 function SetearCostoDesdeOc() {
 	var idsProductos = ObtenerIdsProdSeleccionadosEnDetalleRpr();
@@ -1246,15 +1238,8 @@ function ActualizarProductosSeleccionadosDesdeOcOriginal(oc_compte, idsProds) {
 	PostGenHtml(data, actualizarProductosSeleccionadosDesdeOcOriginalUrl, function (obj) {
 		$("#divListaDetalleRpr").html(obj);
 		$(".nav-link").prop("disabled", true);
-		AddEventListenerToGrid("tbListaDetalleRpr");
-		limpiarValoresDeSeteoMasivo();
-		addInCellKeyDownHandler();
-		addInCellGotFocusHandler();
-		addInCellInputGotFocusHandler();
-		addInCellLostFocusHandler();
-		addMaskInEditableCells();
-		tableUpDownArrow();
-		AgregarHandlerAGrillaDetalleRprCheckAll();
+		finalizarInicializacion();
+		SetMaskSeteoMasivoComponentes();
 	});
 }
 
@@ -1359,16 +1344,8 @@ function SetearCostosEspecificos(idsProductos) {
 	PostGenHtml(data, cargarActualizacionPorSeteoMasivoUrl, function (obj) {
 		$("#divListaDetalleRpr").html(obj);
 		$(".nav-link").prop("disabled", true);
-		AddEventListenerToGrid("tbListaDetalleRpr");
-		limpiarValoresDeSeteoMasivo();
-		addInCellKeyDownHandler();
-		addInCellGotFocusHandler();
-		addInCellInputGotFocusHandler();
-		addInCellLostFocusHandler();
-		tableUpDownArrow();
-		AgregarHandlerAGrillaDetalleRprCheckAll();
-		addMaskInEditableCells();
-		inCellInputEditable();
+		finalizarInicializacion();
+		SetMaskSeteoMasivoComponentes();
 		limpiarValoresDeSeteoMasivo();
 		CerrarWaiting();
 	});
@@ -1412,16 +1389,9 @@ function CargarDetalleRprDesdeOcValidada(ocCompte, idsProds, aplica_oc, aplica_f
 	PostGenHtml(data, cargarDetalleRprDesdeOcValidadaUrl, function (obj) {
 		$("#divListaDetalleRpr").html(obj);
 		$(".nav-link").prop("disabled", true);
-		AddEventListenerToGrid("tbListaDetalleRpr");
-		addInCellKeyDownHandler();
-		addInCellGotFocusHandler();
-		addInCellInputGotFocusHandler();
-		addInCellLostFocusHandler();
-		tableUpDownArrow();
-		AgregarHandlerAGrillaDetalleRprCheckAll();
-		addMaskInEditableCells();
+		finalizarInicializacion();
+		SetMaskSeteoMasivoComponentes();
 		limpiarValoresDeSeteoMasivo();
-		inCellInputEditable();
 		CerrarWaiting();
 	});
 }
@@ -1436,15 +1406,8 @@ function SetearCostoActual() {
 	PostGenHtml(data, cargarDetalleRprDesdeOcValidadaUrl, function (obj) {
 		$("#divListaDetalleRpr").html(obj);
 		$(".nav-link").prop("disabled", true);
-		AddEventListenerToGrid("tbListaDetalleRpr");
-		addInCellKeyDownHandler();
-		addInCellGotFocusHandler();
-		addInCellInputGotFocusHandler();
-		addInCellLostFocusHandler();
-		tableUpDownArrow();
-		AgregarHandlerAGrillaDetalleRprCheckAll();
-		addMaskInEditableCells();
-		inCellInputEditable();
+		finalizarInicializacion();
+		SetMaskSeteoMasivoComponentes();
 		limpiarValoresDeSeteoMasivo();
 		CerrarWaiting();
 	});
@@ -1628,177 +1591,178 @@ function CargarDesdeCopiaDeRespaldoListaRpr() {
 	var data = {};
 	PostGenHtml(data, cargarDesdeCopiaDeRespaldoListaRprUrl, function (obj) {
 		$("#divListaDetalleRpr").html(obj);
-		AddEventListenerToGrid("tbListaDetalleRpr");
-		addInCellKeyDownHandler();
-		addInCellGotFocusHandler();
-		addInCellInputGotFocusHandler();
-		addInCellLostFocusHandler();
-		tableUpDownArrow();
-		AgregarHandlerAGrillaDetalleRprCheckAll();
-		addMaskInEditableCells();
-		inCellInputEditable();
+		finalizarInicializacion();
+		SetMaskSeteoMasivoComponentes();
 		CerrarWaiting();
 	});
 }
 
 function ObtenerIdsProdSeleccionadosEnDetalleRpr() {
 	//RPR
-	var dataTable = document.getElementById('tbListaDetalleRpr');
-	var inputs = dataTable.querySelectorAll('tbody>tr>td>input');
 	var pIds = [];
-	inputs.forEach(function (input) {
-		if (input.checked) {
-			alMenosUno = true;
-			pIds.push(input.id.substring(0, 6));
+	
+	$('#tbListaDetalleRpr tbody tr').each(function () {
+		const $checkbox = $(this).find('.check-producto');
+		if ($checkbox.length && $checkbox.is(':checked')) {
+			//alMenosUno = true;
+			// Esta fila tiene el checkbox marcado
+			const pId = $checkbox.data('p-id');
+			pIds.push(pId);
 		}
 	});
+
 	return pIds;
 }
 
-function tableUpDownArrow() {
-	var table = document.querySelector('#tbListaDetalleRpr tbody');
-	if (table == undefined)
-		return;
-	if (table.rows[0] == undefined)
-		return;
-	const myTable = table
-		, nbRows = myTable.rows.length
-		, nbCells = myTable.rows[0].cells.length
-		, movKey = {
-			ArrowUp: p => { p.r = (--p.r + nbRows) % nbRows }
-			, ArrowLeft: p => { p.c = (--p.c + nbCells) % nbCells }
-			, ArrowDown: p => {
-				p.r = ++p.r % nbRows
-			}
-			, ArrowRight: p => { p.c = ++p.c % nbCells }
-			, Tab: p => {
-				p.r = ++p.r % nbRows
-			}
-		}
+//function tableUpDownArrow() {
+//	var table = document.querySelector('#tbListaDetalleRpr tbody');
+//	if (table == undefined)
+//		return;
+//	if (table.rows[0] == undefined)
+//		return;
+//	const myTable = table
+//		, nbRows = myTable.rows.length
+//		, nbCells = myTable.rows[0].cells.length
+//		, movKey = {
+//			ArrowUp: p => { p.r = (--p.r + nbRows) % nbRows }
+//			, ArrowLeft: p => { p.c = (--p.c + nbCells) % nbCells }
+//			, ArrowDown: p => {
+//				p.r = ++p.r % nbRows
+//			}
+//			, ArrowRight: p => { p.c = ++p.c % nbCells }
+//			, Tab: p => {
+//				p.r = ++p.r % nbRows
+//			}
+//		}
 
-	myTable
-		.querySelectorAll('[contenteditable=true]')
-		.forEach(elm => {
-			elm.onfocus = e => {
-				let sPos = myTable.querySelector('.selected-row')
-					, tdPos = elm.parentNode
+//	myTable
+//		.querySelectorAll('[contenteditable=true]')
+//		.forEach(elm => {
+//			elm.onfocus = e => {
+//				let sPos = myTable.querySelector('.selected-row')
+//					, tdPos = elm.parentNode
 
-				if (sPos) {
-					sPos.classList.remove('selected-row');
-				}
+//				if (sPos) {
+//					sPos.classList.remove('selected-row');
+//				}
 
-				tdPos.classList.add('selected-row')
-			}
-		})
+//				tdPos.classList.add('selected-row')
+//			}
+//		})
 
 
-	document.onkeydown = e => {
-		let sPos = myTable.querySelector('.selected-row')
-			, evt = (e == null ? event : e)
-			, pos = {
-				r: sPos ? sPos.rowIndex - 1 : -1 //sPos.rowIndex -1 => porque tiene doble fila en la cabecera
-				, c: sPos ? (sPos.cellIndex ? sPos.cellIndex : cellIndexTemp) : -1
-			}
+//	document.onkeydown = e => {
+//		let sPos = myTable.querySelector('.selected-row')
+//			, evt = (e == null ? event : e)
+//			, pos = {
+//				r: sPos ? sPos.rowIndex - 1 : -1 //sPos.rowIndex -1 => porque tiene doble fila en la cabecera
+//				, c: sPos ? (sPos.cellIndex ? sPos.cellIndex : cellIndexTemp) : -1
+//			}
 
-		if (sPos &&
-			//(evt.altKey && evt.shiftKey && movKey[evt.code])
-			(evt.shiftKey && movKey[evt.code])
-			//||
-			//(evt.ctrlKey && movKey[evt.code])
-		) {
-			let loop = true
-				, nxFocus = null
-				, cell = null
+//		if (sPos &&
+//			//(evt.altKey && evt.shiftKey && movKey[evt.code])
+//			(evt.shiftKey && movKey[evt.code])
+//			//||
+//			//(evt.ctrlKey && movKey[evt.code])
+//		) {
+//			let loop = true
+//				, nxFocus = null
+//				, cell = null
 
-			do {
-				if (evt.code === 'ArrowDown' && pos.r == nbRows)
-					pos.r = 0;
-				if (evt.code === 'Tab' && evt.shiftKey && pos.r == 0)
-					pos.r = nbRows - 1;
-				if (evt.code === 'Tab' && evt.shiftKey) {
-					movKey['ArrowUp'](pos)
-				}
-				else
-					movKey[evt.code](pos);
+//			do {
+//				if (evt.code === 'ArrowDown' && pos.r == nbRows)
+//					pos.r = 0;
+//				if (evt.code === 'Tab' && evt.shiftKey && pos.r == 0)
+//					pos.r = nbRows - 1;
+//				if (evt.code === 'Tab' && evt.shiftKey) {
+//					movKey['ArrowUp'](pos)
+//				}
+//				else
+//					movKey[evt.code](pos);
 
-				if (pos.r == nbRows)
-					cell = myTable.rows[pos.r - 1].cells[pos.c];
-				else
-					cell = myTable.rows[pos.r].cells[pos.c];
-				if (pos.r == 0)
-					pos.r = nbRows;
-				else if (pos.r == nbRows)
-					pos.r = nbRows;
+//				if (pos.r == nbRows)
+//					cell = myTable.rows[pos.r - 1].cells[pos.c];
+//				else
+//					cell = myTable.rows[pos.r].cells[pos.c];
+//				if (pos.r == 0)
+//					pos.r = nbRows;
+//				else if (pos.r == nbRows)
+//					pos.r = nbRows;
 
-				if (pos.c == 10 && cellIndexTemp < pos.c) //moviendome desde la columna 'ocd_boni' hacia la derecha, la cual no es editable, debo saltar a la siguiente editable 'rpd_plista'
-					pos.c = 12;
-				if (pos.c == 19 && cellIndexTemp < pos.c) //moviendome desde la columna 'rpd_boni' hacia la derecha, la cual no es editable, debo saltar a la siguiente editable 'rpd_cantidad_compte'
-					pos.c = 20;
+//				if (pos.c == 10 && cellIndexTemp < pos.c) //moviendome desde la columna 'ocd_boni' hacia la derecha, la cual no es editable, debo saltar a la siguiente editable 'rpd_plista'
+//					pos.c = 12;
+//				if (pos.c == 19 && cellIndexTemp < pos.c) //moviendome desde la columna 'rpd_boni' hacia la derecha, la cual no es editable, debo saltar a la siguiente editable 'rpd_cantidad_compte'
+//					pos.c = 20;
 
-				if (pos.c == 19 && cellIndexTemp > pos.c) //moviendome desde la columna 'rpd_cantidad_compte' hacia la izquierda, la cual no es editable, debo saltar a la siguiente editable 'rpd_boni'
-					pos.c = 18;
-				if (pos.c == 11 && cellIndexTemp > pos.c) //moviendome desde la columna 'rpd_plista' hacia la izquierda, la cual no es editable, debo saltar a la siguiente editable 'ocd_boni'
-					pos.c = 9;
+//				if (pos.c == 19 && cellIndexTemp > pos.c) //moviendome desde la columna 'rpd_cantidad_compte' hacia la izquierda, la cual no es editable, debo saltar a la siguiente editable 'rpd_boni'
+//					pos.c = 18;
+//				if (pos.c == 11 && cellIndexTemp > pos.c) //moviendome desde la columna 'rpd_plista' hacia la izquierda, la cual no es editable, debo saltar a la siguiente editable 'ocd_boni'
+//					pos.c = 9;
 
-				nxFocus = myTable.rows[pos.r - 1].cells[pos.c]
+//				nxFocus = myTable.rows[pos.r - 1].cells[pos.c]
 
-				if (nxFocus
-					&& cell.style.display !== 'none'
-					&& cell.parentNode.style.display !== 'none') {
-					nxFocus.focus();
+//				if (nxFocus
+//					&& cell.style.display !== 'none'
+//					&& cell.parentNode.style.display !== 'none') {
+//					nxFocus.focus();
 
-					var tabla = document.getElementById("tbListaDetalleRpr");
-					var selectedRow = tabla.querySelector('.selected-row');
-					if (selectedRow) {
-						selectedRow.classList.remove('selected-row');
-					}
-					nxFocus.closest('tr').classList.add('selected-row');
-					nxFocus.focus();
-					var obj = nxFocus.childNodes[0];
+//					var tabla = document.getElementById("tbListaDetalleRpr");
+//					var selectedRow = tabla.querySelector('.selected-row');
+//					if (selectedRow) {
+//						selectedRow.classList.remove('selected-row');
+//					}
+//					nxFocus.closest('tr').classList.add('selected-row');
+//					nxFocus.focus();
+//					var obj = nxFocus.childNodes[0];
 
-					obj.select();
-					loop = false
-				}
-			}
-			while (loop)
-			if (evt.code === 'Tab') {
-				event.preventDefault();
-			}
-		}
-		else if (evt.code === 'Enter')
-			event.preventDefault();
-		else if (evt.code === 'NumpadEnter')
-			event.preventDefault();
-		else if (evt.ctrlKey && movKey[evt.code])
-			event.preventDefault();
-	}
-}
+//					obj.select();
+//					loop = false
+//				}
+//			}
+//			while (loop)
+//			if (evt.code === 'Tab') {
+//				event.preventDefault();
+//			}
+//		}
+//		else if (evt.code === 'Enter')
+//			event.preventDefault();
+//		else if (evt.code === 'NumpadEnter')
+//			event.preventDefault();
+//		else if (evt.ctrlKey && movKey[evt.code])
+//			event.preventDefault();
+//	}
+//}
 
-function addMaskInEditableCells() {
-	if ($("#tbListaDetalleRpr tbody tr").length != 0) {
-		$("#tbListaDetalleRpr").find('tr').each(function (i, el) {
-			var td = $(this).find('td');
-			if (td.length == 24) {
-				getMaskForMoneyType("#" + td[3].childNodes[0].id, 2); //_plista
-				getMaskForDiscountType("#" + td[4].childNodes[0].id);//_dto1
-				getMaskForDiscountType("#" + td[5].childNodes[0].id);//_dto2
-				getMaskForDiscountType("#" + td[6].childNodes[0].id);//p_dto3
-				getMaskForDiscountType("#" + td[7].childNodes[0].id);//p_dto4
-				getMaskForDiscountType("#" + td[8].childNodes[0].id);//p_dto_pa
-				$("#" + td[9].childNodes[0].id).mask("000/000", { reverse: false });//p_boni
+//function addMaskInEditableCells() {
+//	if ($("#tbListaDetalleRpr tbody tr").length != 0) {
+//		$("#tbListaDetalleRpr").find('tr').each(function (i, el) {
+//			var td = $(this).find('td');
+//			if (td.length == 24) {
+//				getMaskForMoneyType("#" + td[3].childNodes[0].id, 2); //_plista
+//				getMaskForDiscountType("#" + td[4].childNodes[0].id);//_dto1
+//				getMaskForDiscountType("#" + td[5].childNodes[0].id);//_dto2
+//				getMaskForDiscountType("#" + td[6].childNodes[0].id);//p_dto3
+//				getMaskForDiscountType("#" + td[7].childNodes[0].id);//p_dto4
+//				getMaskForDiscountType("#" + td[8].childNodes[0].id);//p_dto_pa
+//				$("#" + td[9].childNodes[0].id).mask("000/000", { reverse: false });//p_boni
 
-				getMaskForMoneyType("#" + td[12].childNodes[0].id, 2); //_plista
-				getMaskForDiscountType("#" + td[13].childNodes[0].id);//_dto1
-				getMaskForDiscountType("#" + td[14].childNodes[0].id);//_dto2
-				getMaskForDiscountType("#" + td[15].childNodes[0].id);//p_dto3
-				getMaskForDiscountType("#" + td[16].childNodes[0].id);//p_dto4
-				getMaskForDiscountType("#" + td[17].childNodes[0].id);//p_dto_pa
-				$("#" + td[18].childNodes[0].id).mask("000/000", { reverse: false });//p_boni
-				getMaskForMoneyType("#" + td[21].childNodes[0].id, 2);//p_dto_pa
-			}
-		});
-	}
+//				getMaskForMoneyType("#" + td[12].childNodes[0].id, 2); //_plista
+//				getMaskForDiscountType("#" + td[13].childNodes[0].id);//_dto1
+//				getMaskForDiscountType("#" + td[14].childNodes[0].id);//_dto2
+//				getMaskForDiscountType("#" + td[15].childNodes[0].id);//p_dto3
+//				getMaskForDiscountType("#" + td[16].childNodes[0].id);//p_dto4
+//				getMaskForDiscountType("#" + td[17].childNodes[0].id);//p_dto_pa
+//				$("#" + td[18].childNodes[0].id).mask("000/000", { reverse: false });//p_boni
+//				getMaskForMoneyType("#" + td[21].childNodes[0].id, 2);//p_dto_pa
+//			}
+//		});
+//	}
 
+//	//Seccion cambios masivos
+//	SetMaskSeteoMasivoComponentes();
+//}
+
+function SetMaskSeteoMasivoComponentes() {
 	//Seccion cambios masivos
 	getMaskForMoneyType("#txtPLista", 2); //_plista
 	getMaskForDiscountType("#txtDto1");//_dto1
@@ -1808,8 +1772,6 @@ function addMaskInEditableCells() {
 	getMaskForDiscountType("#txtDpa");//_dto1
 	$("#txtBoni").mask("000/000", { reverse: false });//p_boni
 }
-
-
 
 /****************************************************************************************
 ################################ ADD-ON --  tbListaDetalleRpr  ##########################
@@ -2030,7 +1992,7 @@ function configurarEventosEdicionOptimizado() {
 	const camposSecuencia02 = '.input-rpd_plista, .input-rpd_dto1, .input-rpd_dto2, .input-rpd_dto3, .input-rpd_dto4, .input-rpd_dto_pa, .input-rpd_boni, .input-rpd_cantidad_compte';
 
 	// Limpiar eventos previos
-	$(document).off('click.camposEditables keydown.camposEditables blur.camposSecuencia01');
+	$(document).off('click.camposEditables keydown.camposEditables blur.camposSecuencia01 blur.camposSecuencia02');
 
 	// Evento click unificado
 	$(document).on('click.camposEditables', camposEditables, function (e) {
@@ -2282,100 +2244,116 @@ function debounce(func, wait) {
 }
 
 // Aplicar debounce a funciones de cálculo intensivas
-const ActualizarProductoEnRprDebounced = debounce(function (row, campoActual) {
-	ActualizarProductoEnOc(row, campoActual);
+const ActualizarProductoEnDetalleRprSeccionPrecioDebounced = debounce(function (row, campoActual) {
+	ActualizarProductoEnDetalleRprSeccionPrecio(row, campoActual);
 }, 300);
 
+// Aplicar debounce a funciones de cálculo intensivas
+const ActualizarProductoEnDetalleRprSeccionFacturaDebounced = debounce(function (row, campoActual) {
+	ActualizarProductoEnDetalleRprSeccionFactura(row, campoActual);
+}, 300);
 
 function ActualizarProductoEnDetalleRprSeccionPrecio(row, campoActual) {
-	var pId = row.data('p-id');
-	//var pId = pIdEnOcSeleccionado; ///TODO MARCE: Seguir aca, completando los metodos de actualizacion de los registros, luegos de editar algun campo
-	var field = $(campoActual).data('field');
-	var val = $(campoActual).val();
-	var data = { pId, field, val };
-	PostGen(data, actualizarProdEnRprSeccionPrecioURL, function (obj) {
-		if (obj.error === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
-		}
-		else {
-			//Actualizar valores en la grilla
-			$("#tbListaDetalleRpr").find('tr').each(function (i, el) {
-				var td = $(this).find('td');
-				if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
-					td[10].innerText = obj.costo;
-					//DC
-					if (obj.valorizacion_mostrar_dc) {
-						td[22].innerHTML = obj.td_dc;
-						td[22].style.padding = "0";
-						td[22].style.textAlignLast = "center";
-						td[22].style.width = "10px";
-					}
-					else {
-						td[22].innerHTML = "";
-					}
+	if (campoActual == undefined) {
+		return false;
+	}
+	else {
+		var pId = row.data('p-id');
+		//var pId = pIdEnOcSeleccionado; ///TODO MARCE: Seguir aca, completando los metodos de actualizacion de los registros, luegos de editar algun campo
+		var field = $(campoActual).data('field');
+		var val = $(campoActual).val();
+		var data = { pId, field, val };
+		PostGen(data, actualizarProdEnRprSeccionPrecioURL, function (obj) {
+			if (obj.error === true) {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				//Actualizar valores en la grilla
+				$("#tbListaDetalleRpr").find('tr').each(function (i, el) {
+					var td = $(this).find('td');
+					if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
+						td[10].innerText = obj.costo;
+						//DC
+						if (obj.valorizacion_mostrar_dc) {
+							td[22].innerHTML = obj.td_dc;
+							td[22].style.padding = "0";
+							td[22].style.textAlignLast = "center";
+							//td[22].style.width = "10px";
+						}
+						else {
+							td[22].innerHTML = "";
+						}
 
-					//DP
-					if (obj.valorizacion_mostrar_dp) {
-						td[23].innerHTML = obj.td_dp;
-						td[23].style.padding = "0";
-						td[23].style.textAlignLast = "center";
-						td[23].style.width = "10px";
+						//DP
+						if (obj.valorizacion_mostrar_dp) {
+							td[23].innerHTML = obj.td_dp;
+							td[23].style.padding = "0";
+							td[23].style.textAlignLast = "center";
+							//td[23].style.width = "10px";
+						}
+						else {
+							td[23].innerHTML = "";
+						}
 					}
-					else {
-						td[23].innerHTML = "";
-					}
-				}
-			});
-			$(".nav-link").prop("disabled", true);
-		}
-	});
+				});
+				$(".nav-link").prop("disabled", true);
+			}
+		});
+	}
 }
 
 function ActualizarProductoEnDetalleRprSeccionFactura(field, val) {
-	var pId = pIdEnOcSeleccionado;
-	var data = { pId, field, val };
-	PostGen(data, actualizarProdEnRprSeccionFacturaURL, function (obj) {
-		if (obj.error === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
-		}
-		else {
-			//Actualizar valores en la grilla
-			$("#tbListaDetalleRpr").find('tr').each(function (i, el) {
-				var td = $(this).find('td');
-				if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
-					td[19].innerText = obj.costo;
-					//DC
-					if (obj.valorizacion_mostrar_dc) {
-						td[22].innerHTML = obj.td_dc;
-						td[22].style.padding = "0";
-						td[22].style.textAlignLast = "center";
-						td[22].style.width = "10px";
-					}
-					else {
-						td[22].innerHTML = "";
-					}
+	if (campoActual == undefined) {
+		return false;
+	}
+	else {
+		var pId = row.data('p-id');
+		var field = $(campoActual).data('field');
+		var val = $(campoActual).val();
+		var data = { pId, field, val };
+		PostGen(data, actualizarProdEnRprSeccionFacturaURL, function (obj) {
+			if (obj.error === true) {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				//Actualizar valores en la grilla
+				$("#tbListaDetalleRpr").find('tr').each(function (i, el) {
+					var td = $(this).find('td');
+					if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
+						td[19].innerText = obj.costo;
+						//DC
+						if (obj.valorizacion_mostrar_dc) {
+							td[22].innerHTML = obj.td_dc;
+							td[22].style.padding = "0";
+							td[22].style.textAlignLast = "center";
+							//td[22].style.width = "10px";
+						}
+						else {
+							td[22].innerHTML = "";
+						}
 
-					//DP
-					if (obj.valorizacion_mostrar_dp) {
-						td[23].innerHTML = obj.td_dp;
-						td[23].style.padding = "0";
-						td[23].style.textAlignLast = "center";
-						td[23].style.width = "10px";
+						//DP
+						if (obj.valorizacion_mostrar_dp) {
+							td[23].innerHTML = obj.td_dp;
+							td[23].style.padding = "0";
+							td[23].style.textAlignLast = "center";
+							//td[23].style.width = "10px";
+						}
+						else {
+							td[23].innerHTML = "";
+						}
 					}
-					else {
-						td[23].innerHTML = "";
-					}
-				}
-			});
-			$(".nav-link").prop("disabled", true);
-		}
-	});
+				});
+				$(".nav-link").prop("disabled", true);
+			}
+		});
+	}
 }
 
 /****************************************************************************************

@@ -43,7 +43,7 @@
 						<td class="text-sm-end">@item.getStringFormat(item.subtotal)</td>
 						<td class="text-sm-end">@item.iva.ToString("0.00")</td>
 						<td class="text-sm-end">@item.total.ToString("0.00")</td>
-						<td><a class="btn btn-xs btn-outline-dark" data-interaction="@item.id" onclick="quitarConceptoFacturado(this);"> <i class="bx bxs-trash"></i></a></td> @*20*@
+						<td><a class="btn btn-xs btn-danger" data-interaction="@item.id" onclick="quitarConceptoFacturado(this);"> <i class="bx bxs-trash"></i></a></td> @*20*@
 					</tr>
 				}
 			}

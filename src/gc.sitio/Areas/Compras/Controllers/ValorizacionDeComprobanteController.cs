@@ -1058,6 +1058,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 				return boni;
 			}
 			var arr = val.Split('/');
+			if (arr.Length < 2)
+			{
+				return boni;
+			}
 			if (!int.TryParse(arr[0], out int num))
 			{
 				return boni;
@@ -1088,6 +1092,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 				return boni;
 			}
 			var arr = val.Split('/');
+			if (arr.Length < 2)
+			{
+				return boni;
+			}
 			if (!int.TryParse(arr[0], out int num))
 			{
 				return boni;

@@ -236,11 +236,30 @@ input[readonly]:not(.campo-readonly) {
 
 /* NUEVO: Asegurar que la tabla se renderiza con anchos fijos */
 #tbListaDetalleRpr {
-    table-layout: fixed !important;
+    table-layout: auto !important;
     width: 100%;
 }
 
     /* NUEVO: Ajustes de alto de filas para compactarlas */
     #tbListaDetalleRpr tr {
         height: 2rem !important; /* Altura fija para todas las filas */
+    }
+
+    /* Igualar ancho mínimo entre columnas DC y DP */
+    #tbListaDetalleRpr th:nth-child(22), /* DC */
+    #tbListaDetalleRpr th:nth-child(23), /* DP */
+    #tbListaDetalleRpr td:nth-child(22),
+    #tbListaDetalleRpr td:nth-child(23) {
+        width: 50px !important;
+        min-width: 50px !important;
+        max-width: 50px !important;
+        text-align: center;
+        padding: 0.1rem 0.05rem !important;
+    }
+
+
+    /* Encabezado agrupado "Valoriz." */
+    #tbListaDetalleRpr th[colspan="2"][title="Valorización"] {
+        min-width: 100px !important;
+        text-align: center;
     }
