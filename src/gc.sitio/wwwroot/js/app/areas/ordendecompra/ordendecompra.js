@@ -1179,36 +1179,36 @@ function BuscarProductosTabOC() {
 //	return true;
 //}
 
-function addMaskInEditableCells() {
-	if ($("#tbListaProductoOC").length != 0) {
-		$("#tbListaProductoOC").find('tr').each(function (i, el) {
-			var td = $(this).find('td');
-			if (td.length > 0) {
-				if (td[9].id.includes("p_plista")) {
-					getMaskForMoneyType("#" + td[9].id);
-				}
-				if (td[10].id.includes("p_dto1")) {
-					getMaskForDiscountType("#" + td[10].id);
-				}
-				if (td[11].id.includes("p_dto2")) {
-					getMaskForDiscountType("#" + td[11].id);
-				}
-				if (td[12].id.includes("p_dto3")) {
-					getMaskForDiscountType("#" + td[12].id);
-				}
-				if (td[13].id.includes("p_dto4")) {
-					getMaskForDiscountType("#" + td[13].id);
-				}
-				if (td[14].id.includes("p_dto_pa")) {
-					getMaskForDiscountType("#" + td[14].id);
-				}
-				if (td[15].id.includes("p_boni")) {
-					$("#" + td[15].id).mask("000/000", { reverse: false });
-				}
-			}
-		});
-	}
-}
+//function addMaskInEditableCells() {
+//	if ($("#tbListaProductoOC").length != 0) {
+//		$("#tbListaProductoOC").find('tr').each(function (i, el) {
+//			var td = $(this).find('td');
+//			if (td.length > 0) {
+//				if (td[9].id.includes("p_plista")) {
+//					getMaskForMoneyType("#" + td[9].id);
+//				}
+//				if (td[10].id.includes("p_dto1")) {
+//					getMaskForDiscountType("#" + td[10].id);
+//				}
+//				if (td[11].id.includes("p_dto2")) {
+//					getMaskForDiscountType("#" + td[11].id);
+//				}
+//				if (td[12].id.includes("p_dto3")) {
+//					getMaskForDiscountType("#" + td[12].id);
+//				}
+//				if (td[13].id.includes("p_dto4")) {
+//					getMaskForDiscountType("#" + td[13].id);
+//				}
+//				if (td[14].id.includes("p_dto_pa")) {
+//					getMaskForDiscountType("#" + td[14].id);
+//				}
+//				if (td[15].id.includes("p_boni")) {
+//					$("#" + td[15].id).mask("000/000", { reverse: false });
+//				}
+//			}
+//		});
+//	}
+//}
 
 function getMaskForDiscountType(selector) {
 	$(selector).inputmask({
