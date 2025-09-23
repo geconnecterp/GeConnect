@@ -187,101 +187,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		//public static class SessionHelper
-		//{
-		//	private const string KeyListaProductosOC = "ListaProductosOC";
-
-		//	public static List<ProductoParaOcDto> GetListaProductosOC(ISession session)
-		//	{
-		//		var json = session.GetString(KeyListaProductosOC);
-		//		if (string.IsNullOrWhiteSpace(json))
-		//			return new List<ProductoParaOcDto>();
-
-		//		return JsonConvert.DeserializeObject<List<ProductoParaOcDto>>(json) ?? new List<ProductoParaOcDto>();
-		//	}
-
-		//	public static void SetListaProductosOC(ISession session, List<ProductoParaOcDto> lista)
-		//	{
-		//		var json = JsonConvert.SerializeObject(lista);
-		//		session.SetString(KeyListaProductosOC, json);
-		//	}
-
-		//	public static void AgregarProducto(ISession session, ProductoParaOcDto nuevo)
-		//	{
-		//		var lista = GetListaProductosOC(session);
-		//		if (!lista.Any(x => x.P_Id == nuevo.P_Id))
-		//		{
-		//			lista.Add(nuevo);
-		//			SetListaProductosOC(session, lista);
-		//		}
-		//	}
-
-		//	public static void ReemplazarProducto(ISession session, ProductoParaOcDto actualizado)
-		//	{
-		//		var lista = GetListaProductosOC(session);
-		//		var index = lista.FindIndex(x => x.P_Id == actualizado.P_Id);
-		//		if (index >= 0)
-		//		{
-		//			lista[index] = actualizado;
-		//			SetListaProductosOC(session, lista);
-		//		}
-		//	}
-
-		//	public static void EliminarProducto(ISession session, string pId)
-		//	{
-		//		var lista = GetListaProductosOC(session);
-		//		lista = lista.Where(x => x.P_Id != pId).ToList();
-		//		SetListaProductosOC(session, lista);
-		//	}
-		//}
-
-		//[HttpPost]
-		//public IActionResult AgregarProductoEnOC(string pId)
-		//{
-		//	try
-		//	{
-		//		Console.WriteLine("************************************************************************");
-		//		Console.WriteLine("ANTES DE ACTUALIZAR");
-		//		Console.WriteLine("Session ID: " + HttpContext.Session.Id);
-		//		Console.WriteLine("Productos en sesión: " + ListaProductosOC?.Count);
-		//		Console.WriteLine("************************************************************************");
-
-		//		var producto = ListaProductos.FirstOrDefault(x => x.p_id == pId);
-		//		if (producto != null)
-		//		{
-		//			SessionHelper.AgregarProducto(HttpContext.Session, new ProductoParaOcDto(producto));
-
-		//			var productos = SessionHelper.GetListaProductosOC(HttpContext.Session);
-		//			var model = new ProductoParaOcModel
-		//			{
-		//				ListaOC = ObtenerGridCoreSmart<ProductoParaOcDto>(productos)
-		//			};
-
-		//			CalcularTotalesParaOC(model, productos);
-
-		//			Console.WriteLine("************************************************************************");
-		//			Console.WriteLine("DESPUES DE ACTUALIZAR");
-		//			Console.WriteLine("Session ID: " + HttpContext.Session.Id);
-		//			Console.WriteLine("Productos en sesión: " + ListaProductosOC?.Count);
-		//			Console.WriteLine("************************************************************************");
-
-		//			return PartialView("_grillaProductosOC", model);
-		//		}
-
-		//		return PartialView("_grillaProductosOC", new ProductoParaOcModel());
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		return PartialView("_gridMensaje", new RespuestaGenerica<EntidadBase>
-		//		{
-		//			Ok = false,
-		//			EsError = true,
-		//			Mensaje = ex.Message
-		//		});
-		//	}
-		//}
-
-
 		[HttpPost]
 		public IActionResult AgregarProductoEnOC(string pId)
 		{
@@ -289,12 +194,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				ProductoParaOcModel model = new();
 				GridCoreSmart<ProductoParaOcDto> grillaDatos;
-
-				Console.WriteLine("************************************************************************");
-				Console.WriteLine("ANTES DE ACTUALIZAR");
-				Console.WriteLine("Session ID: " + HttpContext.Session.Id);
-				Console.WriteLine("Productos en sesión: " + ListaProductosOC?.Count);
-				Console.WriteLine("************************************************************************");
 
 				if (ListaProductos != null && ListaProductos.Count > 0)
 				{
@@ -318,12 +217,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 						ListaProductosOC = productos;
 						model.ListaOC = grillaDatos;
 						CalcularTotalesParaOC(model, productos);
-
-						Console.WriteLine("************************************************************************");
-						Console.WriteLine("DESPUES DE ACTUALIZAR");
-						Console.WriteLine("Session ID: " + HttpContext.Session.Id);
-						Console.WriteLine("Productos en sesión: " + ListaProductosOC?.Count);
-						Console.WriteLine("************************************************************************");
 
 						return PartialView("_grillaProductosOC", model);
 					}

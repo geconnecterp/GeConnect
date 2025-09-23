@@ -82,7 +82,7 @@
 									   data-original-value="@(item.Bultos)" />
 							</div>
 						</td>
-						<td class="@Model.ListaOC.ObtenerClase(item.Cantidad)">@Model.ListaOC.FormatearDato(item.Cantidad, FormatDato.Ninguno)</td> @*08*@
+						<td class="@Model.ListaOC.ObtenerClase(item.Cantidad)">@Model.ListaOC.FormatearDato(item.Cantidad.ToString("F3"), FormatDato.Ninguno)</td> @*08*@
 						@* <td class="align-right tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Plista>@item.P_Plista.ToString("0.##")</td> *@ 
 						<td class="@Model.ListaOC.ObtenerClase(item.P_Plista)">@*09*@
 							<div class="input-container">
