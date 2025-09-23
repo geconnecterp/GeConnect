@@ -595,23 +595,23 @@ $("#Rel01").autocomplete({
 	}
 });
 
-function focusOnTd(x) {
-	var cell = x;
-	var range, selection;
-	if (document.body.createTextRange) {
-		range = document.body.createTextRange();
-		range.moveToElementText(cell);
-		range.select();
-	} else if (window.getSelection) {
-		selection = window.getSelection();
-		range = document.createRange();
-		range.selectNodeContents(cell);
-		selection.removeAllRanges();
-		selection.addRange(range);
-	}
-}
+//function focusOnTd(x) {
+//	var cell = x;
+//	var range, selection;
+//	if (document.body.createTextRange) {
+//		range = document.body.createTextRange();
+//		range.moveToElementText(cell);
+//		range.select();
+//	} else if (window.getSelection) {
+//		selection = window.getSelection();
+//		range = document.createRange();
+//		range.selectNodeContents(cell);
+//		selection.removeAllRanges();
+//		selection.addRange(range);
+//	}
+//}
 
-var keysAceptadas = [8, 37, 39, 46, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 110, 190];
+//var keysAceptadas = [8, 37, 39, 46, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 110, 190];
 
 //function getMaskForDiscountType(selector) {
 //	$(selector).inputmask({
@@ -644,110 +644,110 @@ var keysAceptadas = [8, 37, 39, 46, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105
 //	});
 //}
 
-function tableUpDownArrow() {
-	var table = document.querySelector('#tbGridOtroTributo tbody');
-	if (table == undefined)
-		return;
-	if (table.rows[0] == undefined)
-		return;
-	const myTable = table
-		, nbRows = myTable.rows.length
-		, nbCells = myTable.rows[0].cells.length
-		, movKey = {
-			ArrowUp: p => { p.r = (--p.r + nbRows) % nbRows }
-			, ArrowLeft: p => { p.c = (--p.c + nbCells) % nbCells }
-			, ArrowDown: p => {
-				p.r = ++p.r % nbRows
-			}
-			, ArrowRight: p => { p.c = ++p.c % nbCells }
-			, Tab: p => {
-				p.r = ++p.r % nbRows
-			}
-		}
+//function tableUpDownArrow() {
+//	var table = document.querySelector('#tbGridOtroTributo tbody');
+//	if (table == undefined)
+//		return;
+//	if (table.rows[0] == undefined)
+//		return;
+//	const myTable = table
+//		, nbRows = myTable.rows.length
+//		, nbCells = myTable.rows[0].cells.length
+//		, movKey = {
+//			ArrowUp: p => { p.r = (--p.r + nbRows) % nbRows }
+//			, ArrowLeft: p => { p.c = (--p.c + nbCells) % nbCells }
+//			, ArrowDown: p => {
+//				p.r = ++p.r % nbRows
+//			}
+//			, ArrowRight: p => { p.c = ++p.c % nbCells }
+//			, Tab: p => {
+//				p.r = ++p.r % nbRows
+//			}
+//		}
 
-	myTable
-		.querySelectorAll('input, [contenteditable=true]')
-		.forEach(elm => {
-			elm.onfocus = e => {
-				let sPos = myTable.querySelector('.selected-row')
-					, tdPos = elm.parentNode
+//	myTable
+//		.querySelectorAll('input, [contenteditable=true]')
+//		.forEach(elm => {
+//			elm.onfocus = e => {
+//				let sPos = myTable.querySelector('.selected-row')
+//					, tdPos = elm.parentNode
 
-				if (sPos) sPos.classList.remove('selected-row')
+//				if (sPos) sPos.classList.remove('selected-row')
 
-				tdPos.classList.add('selected-row')
-			}
-		})
+//				tdPos.classList.add('selected-row')
+//			}
+//		})
 
 
-	document.onkeydown = e => {
-		let sPos = myTable.querySelector('.selected-row')
-			, evt = (e == null ? event : e)
-			, pos = {
-				r: sPos ? sPos.rowIndex : -1
-				, c: sPos ? (sPos.cellIndex ? sPos.cellIndex : cellIndexTemp) : -1
-			}
+//	document.onkeydown = e => {
+//		let sPos = myTable.querySelector('.selected-row')
+//			, evt = (e == null ? event : e)
+//			, pos = {
+//				r: sPos ? sPos.rowIndex : -1
+//				, c: sPos ? (sPos.cellIndex ? sPos.cellIndex : cellIndexTemp) : -1
+//			}
 
-		if (sPos &&
-			(evt.altKey && evt.shiftKey && movKey[evt.code])
-			||
-			(evt.ctrlKey && movKey[evt.code])
-			//||
-			//evt.code === 'Tab'
-		) {
-			let loop = true
-				, nxFocus = null
-				, cell = null
+//		if (sPos &&
+//			(evt.altKey && evt.shiftKey && movKey[evt.code])
+//			||
+//			(evt.ctrlKey && movKey[evt.code])
+//			//||
+//			//evt.code === 'Tab'
+//		) {
+//			let loop = true
+//				, nxFocus = null
+//				, cell = null
 
-			do {
-				if (evt.code === 'ArrowDown' && pos.r == nbRows)
-					pos.r = 0;
-				if (evt.code === 'Tab' && evt.shiftKey && pos.r == 0)
-					pos.r = nbRows - 1;
-				if (evt.code === 'Tab' && evt.shiftKey) {
-					movKey['ArrowUp'](pos)
-				}
-				else
-					movKey[evt.code](pos);
+//			do {
+//				if (evt.code === 'ArrowDown' && pos.r == nbRows)
+//					pos.r = 0;
+//				if (evt.code === 'Tab' && evt.shiftKey && pos.r == 0)
+//					pos.r = nbRows - 1;
+//				if (evt.code === 'Tab' && evt.shiftKey) {
+//					movKey['ArrowUp'](pos)
+//				}
+//				else
+//					movKey[evt.code](pos);
 
-				if (pos.r == nbRows)
-					cell = myTable.rows[pos.r - 1].cells[pos.c];
-				else
-					cell = myTable.rows[pos.r].cells[pos.c];
-				if (pos.r == 0)
-					pos.r = nbRows;
-				else if (pos.r == nbRows)
-					pos.r = nbRows;
+//				if (pos.r == nbRows)
+//					cell = myTable.rows[pos.r - 1].cells[pos.c];
+//				else
+//					cell = myTable.rows[pos.r].cells[pos.c];
+//				if (pos.r == 0)
+//					pos.r = nbRows;
+//				else if (pos.r == nbRows)
+//					pos.r = nbRows;
 
-				//if (pos.c == 8 && cellIndexTemp < pos.c) //moviendome desde la columna 'pedido bultos' hacia la derecha, la cual no es editable, debo saltar a la siguiente
-				//	pos.c = 9;
-				//if (pos.c == 6 && cellIndexTemp > pos.c) //moviendome desde la columna 'pedido bultos' hacia la izquierda, la cual no es editable, debo saltar a la siguiente
-				//	pos.c = 15;
-				//if (pos.c == 8 && cellIndexTemp > pos.c) //moviendome desde la columna 'precio lista' hacia la izquierda, la cual no es editable, debo saltar a la siguiente
-				//	pos.c = 7;
-				//if (pos.c == 16 && cellIndexTemp < pos.c) //moviendome desde la columna 'boni' hacia la derecha, la cual no es editable, debo saltar a la siguiente
-				//	pos.c = 7;
-				nxFocus = myTable.rows[pos.r - 1].cells[pos.c]
+//				//if (pos.c == 8 && cellIndexTemp < pos.c) //moviendome desde la columna 'pedido bultos' hacia la derecha, la cual no es editable, debo saltar a la siguiente
+//				//	pos.c = 9;
+//				//if (pos.c == 6 && cellIndexTemp > pos.c) //moviendome desde la columna 'pedido bultos' hacia la izquierda, la cual no es editable, debo saltar a la siguiente
+//				//	pos.c = 15;
+//				//if (pos.c == 8 && cellIndexTemp > pos.c) //moviendome desde la columna 'precio lista' hacia la izquierda, la cual no es editable, debo saltar a la siguiente
+//				//	pos.c = 7;
+//				//if (pos.c == 16 && cellIndexTemp < pos.c) //moviendome desde la columna 'boni' hacia la derecha, la cual no es editable, debo saltar a la siguiente
+//				//	pos.c = 7;
+//				nxFocus = myTable.rows[pos.r - 1].cells[pos.c]
 
-				if (nxFocus
-					&& cell.style.display !== 'none'
-					&& cell.parentNode.style.display !== 'none') {
-					nxFocus.focus();
-					nxFocus.closest('tr').classList.add('selected-row');
-					nxFocus.focus();
-					loop = false
-				}
-			}
-			while (loop)
-			if (evt.code === 'Tab') {
-				event.preventDefault();
-			}
-		}
-		else if (evt.code === 'Enter')
-			event.preventDefault();
-		else if (evt.code === 'NumpadEnter')
-			event.preventDefault();
-	}
-}
+//				if (nxFocus
+//					&& cell.style.display !== 'none'
+//					&& cell.parentNode.style.display !== 'none') {
+//					nxFocus.focus();
+//					nxFocus.closest('tr').classList.add('selected-row');
+//					nxFocus.focus();
+//					loop = false
+//				}
+//			}
+//			while (loop)
+//			if (evt.code === 'Tab') {
+//				event.preventDefault();
+//			}
+//		}
+//		else if (evt.code === 'Enter')
+//			event.preventDefault();
+//		else if (evt.code === 'NumpadEnter')
+//			event.preventDefault();
+//	}
+//}
 
 
 /****************************************************************************************
@@ -779,13 +779,6 @@ function CargarGrillaOtrosTributos() {
 	PostGenHtml(data, cargarOtrosTributosUrl, function (obj) {
 		$("#divOtrosTributos").html(obj);
 		finalizarInicializacionGridOtroTributo();
-		//addInCellKeyDownHandler();
-		//tableUpDownArrow();
-		//addInCellGotFocusHandler();
-		//addInCellEditHandler();
-		//addInCellLostFocusHandler();
-		//FormatearValores("#tbGridOtroTributo", [2, 3, 4]);
-		//addMaskInEditableCells();
 		return true
 	});
 }
@@ -796,13 +789,6 @@ function quitarOtroTributo(e) {
 	PostGenHtml(data, quitarItemEnOtrosTributosUrl, function (obj) {
 		$("#divOtrosTributos").html(obj);
 		finalizarInicializacionGridOtroTributo();
-		//addInCellKeyDownHandler();
-		//tableUpDownArrow();
-		//addInCellGotFocusHandler();
-		//addInCellEditHandler();
-		//addInCellLostFocusHandler();
-		//FormatearValores("#tbGridOtroTributo", [2, 3, 4]);
-		//addMaskInEditableCells();
 		CargarGrillaTotales();
 	});
 }

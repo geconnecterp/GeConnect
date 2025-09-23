@@ -372,12 +372,6 @@ function AplicarSeteoMasivo() {
 				finalizarInicializacion();
 				formatearTotalesEnTabDetalleOC();
 				//$("#Total_Pallet").val(formatter.format($("#Total_Pallet").val()));
-				//AgregarHandlerAGrillaProdOC();
-				//addInCellLostFocusHandler();
-				//addInCellGotFocusHandler();
-				//addInCellKeyDownHandler();
-				//addInCellEditHandler();
-				//AddEventListenerToGrid("tbListaProductoOC");
 			}
 		});
 	}
@@ -406,229 +400,229 @@ function formatearTotalesEnTabDetalleOC() {
 	getMaskForDiscountType("#Flete");
 }
 
-function addInCellEditHandler() {
-	$("#tbListaProductoOC").on('input', 'td[contenteditable]', function (e) {
-		var val = $("#" + this.id).text();
-		if (this.id.includes("p_dto1") || this.id.includes("p_dto2") || this.id.includes("p_dto3") || this.id.includes("p_dto4") || this.id.includes("p_dto_pa")) {
-			//var num = Number(val);
-			//if (num > 50) val = "50";
-			////$("#" + this.id).mask("00,0", { reverse: true });
-			//$("#" + this.id).val(val);
-			//$("#" + this.id).text(val);
-		}
-		else if (this.id.includes("p_plista")) {
-			/*$("#" + this.id).mask("000.000.000.000,00", { reverse: true });*/
-			//$("#" + this.id).inputmask({
-			//	alias: 'numeric',
-			//	groupSeparator: '.',
-			//	radixPoint: ',',
-			//	digits: 2,
-			//	digitsOptional: false,
-			//	allowMinus: false,
-			//	prefix: '',
-			//	suffix: '',
-			//	rightAlign: true,
-			//	unmaskAsNumber: true // Devuelve un número al obtener el valor
-			//});
-			//$("#" + this.id).val(val);
-		}
-		else if (this.id.includes("p_boni")) {
-			//$("#" + this.id).mask("000/000", { reverse: true });
-			//$("#" + this.id).val(val);
-		}
-	});
-}
+//function addInCellEditHandler() {
+//	$("#tbListaProductoOC").on('input', 'td[contenteditable]', function (e) {
+//		var val = $("#" + this.id).text();
+//		if (this.id.includes("p_dto1") || this.id.includes("p_dto2") || this.id.includes("p_dto3") || this.id.includes("p_dto4") || this.id.includes("p_dto_pa")) {
+//			//var num = Number(val);
+//			//if (num > 50) val = "50";
+//			////$("#" + this.id).mask("00,0", { reverse: true });
+//			//$("#" + this.id).val(val);
+//			//$("#" + this.id).text(val);
+//		}
+//		else if (this.id.includes("p_plista")) {
+//			/*$("#" + this.id).mask("000.000.000.000,00", { reverse: true });*/
+//			//$("#" + this.id).inputmask({
+//			//	alias: 'numeric',
+//			//	groupSeparator: '.',
+//			//	radixPoint: ',',
+//			//	digits: 2,
+//			//	digitsOptional: false,
+//			//	allowMinus: false,
+//			//	prefix: '',
+//			//	suffix: '',
+//			//	rightAlign: true,
+//			//	unmaskAsNumber: true // Devuelve un número al obtener el valor
+//			//});
+//			//$("#" + this.id).val(val);
+//		}
+//		else if (this.id.includes("p_boni")) {
+//			//$("#" + this.id).mask("000/000", { reverse: true });
+//			//$("#" + this.id).val(val);
+//		}
+//	});
+//}
 
-var keysAceptadas = [8, 37, 39, 46, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 110, 190];
-function addInCellKeyDownHandler() {
-	$("#tbListaProductoOC").on('keydown', 'td[contenteditable]', function (e) {
-		if (isNaN(String.fromCharCode(e.which)) && !(keysAceptadas.indexOf(e.which) != -1) && !(e.shiftKey && (e.which == 37 || e.which == 39))) e.preventDefault();
-	});
-}
+//var keysAceptadas = [8, 37, 39, 46, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 110, 190];
+//function addInCellKeyDownHandler() {
+//	$("#tbListaProductoOC").on('keydown', 'td[contenteditable]', function (e) {
+//		if (isNaN(String.fromCharCode(e.which)) && !(keysAceptadas.indexOf(e.which) != -1) && !(e.shiftKey && (e.which == 37 || e.which == 39))) e.preventDefault();
+//	});
+//}
 
-function addInCellGotFocusHandler() {
-	$("#tbListaProductoOC").on('focusin', 'td[contenteditable]', function (e) {
-		cellValueTemp = $("#" + this.id).text();
-		if (e.target) {
-			cellIndexTemp = e.target.cellIndex;
-		}
-	});
-}
+//function addInCellGotFocusHandler() {
+//	$("#tbListaProductoOC").on('focusin', 'td[contenteditable]', function (e) {
+//		cellValueTemp = $("#" + this.id).text();
+//		if (e.target) {
+//			cellIndexTemp = e.target.cellIndex;
+//		}
+//	});
+//}
 
-function addInCellLostFocusHandler() {
-	$("#tbListaProductoOC").on('focusout', 'td[contenteditable]', function (e) {
-		var actualiza = true;
-		if (cellValueTemp == $("#" + this.id).text())
-			actualiza = false;
-		else {
-			if (this.id.includes("p_dto1") || this.id.includes("p_dto2") || this.id.includes("p_dto3") || this.id.includes("p_dto4") || this.id.includes("p_dto_pa") || this.id.includes("bulto")) {
-				var valor = this.innerText;
-			}
-			else if (this.id.includes("p_plista")) {
-				var valor = $("#" + this.id).inputmask('unmaskedvalue');
-			}
-			else if (this.id.includes("p_boni")) {
-				var spl = this.innerText.split("/");
-				if (spl.length === 2) {
-					var num1 = Number(spl[0]);
-					var num2 = Number(spl[1]);
-					if (num1 > num2) {
-						$("#" + this.id).val("");
-						$("#" + this.id).text("");
-						actualiza = false;
-					}
-					var valor = this.innerText;
-				}
-				else
-					actualiza = false;
-			}
-		}
-		if (actualiza) {
-			ActualizarProductoEnOc(this.id, valor);
-		}
-	});
-}
+//function addInCellLostFocusHandler() {
+//	$("#tbListaProductoOC").on('focusout', 'td[contenteditable]', function (e) {
+//		var actualiza = true;
+//		if (cellValueTemp == $("#" + this.id).text())
+//			actualiza = false;
+//		else {
+//			if (this.id.includes("p_dto1") || this.id.includes("p_dto2") || this.id.includes("p_dto3") || this.id.includes("p_dto4") || this.id.includes("p_dto_pa") || this.id.includes("bulto")) {
+//				var valor = this.innerText;
+//			}
+//			else if (this.id.includes("p_plista")) {
+//				var valor = $("#" + this.id).inputmask('unmaskedvalue');
+//			}
+//			else if (this.id.includes("p_boni")) {
+//				var spl = this.innerText.split("/");
+//				if (spl.length === 2) {
+//					var num1 = Number(spl[0]);
+//					var num2 = Number(spl[1]);
+//					if (num1 > num2) {
+//						$("#" + this.id).val("");
+//						$("#" + this.id).text("");
+//						actualiza = false;
+//					}
+//					var valor = this.innerText;
+//				}
+//				else
+//					actualiza = false;
+//			}
+//		}
+//		if (actualiza) {
+//			ActualizarProductoEnOc(this.id, valor);
+//		}
+//	});
+//}
 
-function tableUpDownArrow() {
-	var table = document.querySelector('#tbListaProductoOC tbody');
-	if (table == undefined)
-		return;
-	if (table.rows[0] == undefined)
-		return;
-	const myTable = table
-		, nbRows = myTable.rows.length
-		, nbCells = myTable.rows[0].cells.length
-		, movKey = {
-			ArrowUp: p => { p.r = (--p.r + nbRows) % nbRows }
-			, ArrowLeft: p => { p.c = (--p.c + nbCells) % nbCells }
-			, ArrowDown: p => {
-				p.r = ++p.r % nbRows
-			}
-			, ArrowRight: p => { p.c = ++p.c % nbCells }
-			, Tab: p => {
-				p.r = ++p.r % nbRows
-			}
-		}
+//function tableUpDownArrow() {
+//	var table = document.querySelector('#tbListaProductoOC tbody');
+//	if (table == undefined)
+//		return;
+//	if (table.rows[0] == undefined)
+//		return;
+//	const myTable = table
+//		, nbRows = myTable.rows.length
+//		, nbCells = myTable.rows[0].cells.length
+//		, movKey = {
+//			ArrowUp: p => { p.r = (--p.r + nbRows) % nbRows }
+//			, ArrowLeft: p => { p.c = (--p.c + nbCells) % nbCells }
+//			, ArrowDown: p => {
+//				p.r = ++p.r % nbRows
+//			}
+//			, ArrowRight: p => { p.c = ++p.c % nbCells }
+//			, Tab: p => {
+//				p.r = ++p.r % nbRows
+//			}
+//		}
 
-	myTable
-		.querySelectorAll('input, [contenteditable=true]')
-		.forEach(elm => {
-			elm.onfocus = e => {
-				let sPos = myTable.querySelector('.selected-row')
-					, tdPos = elm.parentNode
+//	myTable
+//		.querySelectorAll('input, [contenteditable=true]')
+//		.forEach(elm => {
+//			elm.onfocus = e => {
+//				let sPos = myTable.querySelector('.selected-row')
+//					, tdPos = elm.parentNode
 
-				if (sPos) sPos.classList.remove('selected-row')
+//				if (sPos) sPos.classList.remove('selected-row')
 
-				tdPos.classList.add('selected-row')
-			}
-		})
+//				tdPos.classList.add('selected-row')
+//			}
+//		})
 
 
-	document.onkeydown = e => {
-		let sPos = myTable.querySelector('.selected-row')
-			, evt = (e == null ? event : e)
-			, pos = {
-				r: sPos ? sPos.rowIndex : -1
-				, c: sPos ? (sPos.cellIndex ? sPos.cellIndex : cellIndexTemp) : -1
-			}
+//	document.onkeydown = e => {
+//		let sPos = myTable.querySelector('.selected-row')
+//			, evt = (e == null ? event : e)
+//			, pos = {
+//				r: sPos ? sPos.rowIndex : -1
+//				, c: sPos ? (sPos.cellIndex ? sPos.cellIndex : cellIndexTemp) : -1
+//			}
 
-		if (sPos &&
-			//(evt.altKey && evt.shiftKey && movKey[evt.code])
-			(evt.shiftKey && movKey[evt.code])
-			||
-			(evt.ctrlKey && movKey[evt.code])
-		) {
-			let loop = true
-				, nxFocus = null
-				, cell = null
+//		if (sPos &&
+//			//(evt.altKey && evt.shiftKey && movKey[evt.code])
+//			(evt.shiftKey && movKey[evt.code])
+//			||
+//			(evt.ctrlKey && movKey[evt.code])
+//		) {
+//			let loop = true
+//				, nxFocus = null
+//				, cell = null
 
-			do {
-				if (evt.code === 'ArrowDown' && pos.r == nbRows)
-					pos.r = 0;
-				if (evt.code === 'Tab' && evt.shiftKey && pos.r == 0)
-					pos.r = nbRows - 1;
-				if (evt.code === 'Tab' && evt.shiftKey) {
-					movKey['ArrowUp'](pos)
-				}
-				else
-					movKey[evt.code](pos);
+//			do {
+//				if (evt.code === 'ArrowDown' && pos.r == nbRows)
+//					pos.r = 0;
+//				if (evt.code === 'Tab' && evt.shiftKey && pos.r == 0)
+//					pos.r = nbRows - 1;
+//				if (evt.code === 'Tab' && evt.shiftKey) {
+//					movKey['ArrowUp'](pos)
+//				}
+//				else
+//					movKey[evt.code](pos);
 
-				if (pos.r == nbRows)
-					cell = myTable.rows[pos.r - 1].cells[pos.c];
-				else
-					cell = myTable.rows[pos.r].cells[pos.c];
-				if (pos.r == 0)
-					pos.r = nbRows;
-				else if (pos.r == nbRows)
-					pos.r = nbRows;
+//				if (pos.r == nbRows)
+//					cell = myTable.rows[pos.r - 1].cells[pos.c];
+//				else
+//					cell = myTable.rows[pos.r].cells[pos.c];
+//				if (pos.r == 0)
+//					pos.r = nbRows;
+//				else if (pos.r == nbRows)
+//					pos.r = nbRows;
 
-				if (pos.c == 8 && cellIndexTemp < pos.c) //moviendome desde la columna 'pedido bultos' hacia la derecha, la cual no es editable, debo saltar a la siguiente
-					pos.c = 9;
-				if (pos.c == 6 && cellIndexTemp > pos.c) //moviendome desde la columna 'pedido bultos' hacia la izquierda, la cual no es editable, debo saltar a la siguiente
-					pos.c = 15;
-				if (pos.c == 8 && cellIndexTemp > pos.c) //moviendome desde la columna 'precio lista' hacia la izquierda, la cual no es editable, debo saltar a la siguiente
-					pos.c = 7;
-				if (pos.c == 16 && cellIndexTemp < pos.c) //moviendome desde la columna 'boni' hacia la derecha, la cual no es editable, debo saltar a la siguiente
-					pos.c = 7;
-				nxFocus = myTable.rows[pos.r - 1].cells[pos.c]
+//				if (pos.c == 8 && cellIndexTemp < pos.c) //moviendome desde la columna 'pedido bultos' hacia la derecha, la cual no es editable, debo saltar a la siguiente
+//					pos.c = 9;
+//				if (pos.c == 6 && cellIndexTemp > pos.c) //moviendome desde la columna 'pedido bultos' hacia la izquierda, la cual no es editable, debo saltar a la siguiente
+//					pos.c = 15;
+//				if (pos.c == 8 && cellIndexTemp > pos.c) //moviendome desde la columna 'precio lista' hacia la izquierda, la cual no es editable, debo saltar a la siguiente
+//					pos.c = 7;
+//				if (pos.c == 16 && cellIndexTemp < pos.c) //moviendome desde la columna 'boni' hacia la derecha, la cual no es editable, debo saltar a la siguiente
+//					pos.c = 7;
+//				nxFocus = myTable.rows[pos.r - 1].cells[pos.c]
 
-				if (nxFocus
-					&& cell.style.display !== 'none'
-					&& cell.parentNode.style.display !== 'none') {
-					nxFocus.focus();
-					nxFocus.closest('tr').classList.add('selected-row');
-					nxFocus.focus();
-					loop = false
-				}
-			}
-			while (loop)
-			if (evt.code === 'Tab') {
-				event.preventDefault();
-			}
-		}
-		else if (evt.code === 'Enter')
-			event.preventDefault();
-		else if (evt.code === 'NumpadEnter')
-			event.preventDefault();
-	}
-}
+//				if (nxFocus
+//					&& cell.style.display !== 'none'
+//					&& cell.parentNode.style.display !== 'none') {
+//					nxFocus.focus();
+//					nxFocus.closest('tr').classList.add('selected-row');
+//					nxFocus.focus();
+//					loop = false
+//				}
+//			}
+//			while (loop)
+//			if (evt.code === 'Tab') {
+//				event.preventDefault();
+//			}
+//		}
+//		else if (evt.code === 'Enter')
+//			event.preventDefault();
+//		else if (evt.code === 'NumpadEnter')
+//			event.preventDefault();
+//	}
+//}
 
 ///Actualizar datos de producto, luego de la edicion de algunos de sus parámetros editables
-function ActualizarProductoEnOcAuto(field, val, pid) {
-	var pId = "";
-	if (pid != "")
-		pId = pid;
-	else
-		pId = pIdEnOcSeleccionado;
-	var data = { pId, field, val };
-	PostGen(data, ActualizarProductoEnOcURL, function (obj) {
-		if (obj.error === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
-		}
-		else {
-			//Actualizar valores en la grilla
-			$("#tbListaProductoOC").find('tr').each(function (i, el) {
-				var td = $(this).find('td');
-				if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
-					//GRILLA
-					td[8].innerText = obj.data.pedidoCantidad.toFixed(3);//
-					td[16].innerText = obj.data.pedido_Mas_Boni.toFixed(1);//PEDIDO +BONI -> obj.data.pedido_Mas_Boni
-					td[17].innerText = formatearValorConFormatoNumerico(obj.data.p_Pcosto.toFixed(2), 2);//PRECIO COSTO -> obj.data.p_Pcosto
-					td[18].innerText = formatearValorConFormatoNumerico(obj.data.p_Pcosto_Total.toFixed(2), 2);//TOTAL COSTO -> obj.data.p_Pcosto_Total
-					td[19].innerText = obj.data.paletizado;//TOTAL PALLET -> obj.data.paletizado
+//function ActualizarProductoEnOcAuto(field, val, pid) {
+//	var pId = "";
+//	if (pid != "")
+//		pId = pid;
+//	else
+//		pId = pIdEnOcSeleccionado;
+//	var data = { pId, field, val };
+//	PostGen(data, ActualizarProductoEnOcURL, function (obj) {
+//		if (obj.error === true) {
+//			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+//				$("#msjModal").modal("hide");
+//				return true;
+//			}, false, ["Aceptar"], "error!", null);
+//		}
+//		else {
+//			//Actualizar valores en la grilla
+//			$("#tbListaProductoOC").find('tr').each(function (i, el) {
+//				var td = $(this).find('td');
+//				if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
+//					//GRILLA
+//					td[8].innerText = obj.data.pedidoCantidad.toFixed(3);//
+//					td[16].innerText = obj.data.pedido_Mas_Boni.toFixed(1);//PEDIDO +BONI -> obj.data.pedido_Mas_Boni
+//					td[17].innerText = formatearValorConFormatoNumerico(obj.data.p_Pcosto.toFixed(2), 2);//PRECIO COSTO -> obj.data.p_Pcosto
+//					td[18].innerText = formatearValorConFormatoNumerico(obj.data.p_Pcosto_Total.toFixed(2), 2);//TOTAL COSTO -> obj.data.p_Pcosto_Total
+//					td[19].innerText = obj.data.paletizado;//TOTAL PALLET -> obj.data.paletizado
 
-					//TOTALES
-					$("#Total_Costo").val(formatter.format(obj.data.total_Costo));//TOTAL_COSTO -> obj.data.total_Costo
-					//$("#Total_Pallet").val(formatter.format(obj.data.total_Pallet));//TOTAL_PALLET -> obj.data.total_Pallet
-				}
-			});
-		}
+//					//TOTALES
+//					$("#Total_Costo").val(formatter.format(obj.data.total_Costo));//TOTAL_COSTO -> obj.data.total_Costo
+//					//$("#Total_Pallet").val(formatter.format(obj.data.total_Pallet));//TOTAL_PALLET -> obj.data.total_Pallet
+//				}
+//			});
+//		}
 
-	});
-}
+//	});
+//}
 
 function ActualizarProductoEnOc(row, campoActual) {
 	console.log(row);
@@ -735,83 +729,83 @@ function FormatearValores(grilla, idx) {
 	});
 }
 
-function focusOnTd(x) {
-	var cell = x;
-	var range, selection;
-	if (document.body.createTextRange) {
-		range = document.body.createTextRange();
-		range.moveToElementText(cell);
-		range.select();
-	} else if (window.getSelection) {
-		selection = window.getSelection();
-		range = document.createRange();
-		range.selectNodeContents(cell);
-		selection.removeAllRanges();
-		selection.addRange(range);
-	}
-}
+//function focusOnTd(x) {
+//	var cell = x;
+//	var range, selection;
+//	if (document.body.createTextRange) {
+//		range = document.body.createTextRange();
+//		range.moveToElementText(cell);
+//		range.select();
+//	} else if (window.getSelection) {
+//		selection = window.getSelection();
+//		range = document.createRange();
+//		range.selectNodeContents(cell);
+//		selection.removeAllRanges();
+//		selection.addRange(range);
+//	}
+//}
 
-function keyUpFromEditableCell(x) {
-	if (event.key == "Enter") {
-		var id = $(x).prop("id");
-		if (id.includes("bultos_")) {
-			var arr_p_id = id.split("_");
-			var p_id = arr_p_id[arr_p_id.length - 1];
-			var next = "p_plista_" + p_id;
-			$("#" + next).focus();
-			return true;
-		}
-		if (id.includes("p_plista")) {
-			var arr_p_id = id.split("_");
-			var p_id = arr_p_id[arr_p_id.length - 1];
-			var next = "p_dto1_" + p_id;
-			$("#" + next).focus();
-			return true;
-		}
-		if (id.includes("p_dto1")) {
-			var arr_p_id = id.split("_");
-			var p_id = arr_p_id[arr_p_id.length - 1];
-			var next = "p_dto2_" + p_id;
-			$("#" + next).focus();
-			return true;
-		}
-		if (id.includes("p_dto2")) {
-			var arr_p_id = id.split("_");
-			var p_id = arr_p_id[arr_p_id.length - 1];
-			var next = "p_dto3_" + p_id;
-			$("#" + next).focus();
-			return true;
-		}
-		if (id.includes("p_dto3")) {
-			var arr_p_id = id.split("_");
-			var p_id = arr_p_id[arr_p_id.length - 1];
-			var next = "p_dto4_" + p_id;
-			$("#" + next).focus();
-			return true;
-		}
-		if (id.includes("p_dto4")) {
-			var arr_p_id = id.split("_");
-			var p_id = arr_p_id[arr_p_id.length - 1];
-			var next = "p_dto_pa_" + p_id;
-			$("#" + next).focus();
-			return true;
-		}
-		if (id.includes("p_dto_pa")) {
-			var arr_p_id = id.split("_");
-			var p_id = arr_p_id[arr_p_id.length - 1];
-			var next = "p_boni_" + p_id;
-			$("#" + next).focus();
-			return true;
-		}
-		if (id.includes("p_boni")) {
-			var arr_p_id = id.split("_");
-			var p_id = arr_p_id[arr_p_id.length - 1];
-			var next = "bultos_" + p_id;
-			$("#" + next).focus();
-			return true;
-		}
-	}
-}
+//function keyUpFromEditableCell(x) {
+//	if (event.key == "Enter") {
+//		var id = $(x).prop("id");
+//		if (id.includes("bultos_")) {
+//			var arr_p_id = id.split("_");
+//			var p_id = arr_p_id[arr_p_id.length - 1];
+//			var next = "p_plista_" + p_id;
+//			$("#" + next).focus();
+//			return true;
+//		}
+//		if (id.includes("p_plista")) {
+//			var arr_p_id = id.split("_");
+//			var p_id = arr_p_id[arr_p_id.length - 1];
+//			var next = "p_dto1_" + p_id;
+//			$("#" + next).focus();
+//			return true;
+//		}
+//		if (id.includes("p_dto1")) {
+//			var arr_p_id = id.split("_");
+//			var p_id = arr_p_id[arr_p_id.length - 1];
+//			var next = "p_dto2_" + p_id;
+//			$("#" + next).focus();
+//			return true;
+//		}
+//		if (id.includes("p_dto2")) {
+//			var arr_p_id = id.split("_");
+//			var p_id = arr_p_id[arr_p_id.length - 1];
+//			var next = "p_dto3_" + p_id;
+//			$("#" + next).focus();
+//			return true;
+//		}
+//		if (id.includes("p_dto3")) {
+//			var arr_p_id = id.split("_");
+//			var p_id = arr_p_id[arr_p_id.length - 1];
+//			var next = "p_dto4_" + p_id;
+//			$("#" + next).focus();
+//			return true;
+//		}
+//		if (id.includes("p_dto4")) {
+//			var arr_p_id = id.split("_");
+//			var p_id = arr_p_id[arr_p_id.length - 1];
+//			var next = "p_dto_pa_" + p_id;
+//			$("#" + next).focus();
+//			return true;
+//		}
+//		if (id.includes("p_dto_pa")) {
+//			var arr_p_id = id.split("_");
+//			var p_id = arr_p_id[arr_p_id.length - 1];
+//			var next = "p_boni_" + p_id;
+//			$("#" + next).focus();
+//			return true;
+//		}
+//		if (id.includes("p_boni")) {
+//			var arr_p_id = id.split("_");
+//			var p_id = arr_p_id[arr_p_id.length - 1];
+//			var next = "bultos_" + p_id;
+//			$("#" + next).focus();
+//			return true;
+//		}
+//	}
+//}
 
 function presentaPaginacionOC(div) {
 	div.pagination({
@@ -917,13 +911,6 @@ function quitarProductoEnOC(e) {
 			$("#divListaProductoNuevaOC").html(obj);
 			finalizarInicializacion();
 			formatearTotalesEnTabDetalleOC();
-			//AgregarHandlerAGrillaProdOC();
-			//AddEventListenerToGrid("tbListaProductoOC");
-			//ActualizarInfoDeProductoEnGrilla(pId);
-			//addInCellLostFocusHandler();
-			//addInCellGotFocusHandler();
-			//addInCellKeyDownHandler();
-			//addInCellEditHandler();
 		}
 	});
 }
@@ -946,13 +933,7 @@ function actualizarProducto(e) {
 				$("#divListaProductoNuevaOC").html(obj);
 				finalizarInicializacion();
 				formatearTotalesEnTabDetalleOC();
-				//AgregarHandlerAGrillaProdOC();
-				//AddEventListenerToGrid("tbListaProductoOC");
-				//ActualizarInfoDeProductosEnGrilla();
-				//addInCellLostFocusHandler();
-				//addInCellGotFocusHandler();
-				//addInCellKeyDownHandler();
-				//addInCellEditHandler();
+				ActualizarInfoDeProductosEnGrilla();
 				CerrarWaiting();
 			}
 		});
@@ -1156,32 +1137,24 @@ function BuscarProductosTabOC() {
 			formatearTotalesEnTabDetalleOC();
 			//$("#Total_Pallet").val(formatter.format($("#Total_Pallet").val()));
 			//AgregarHandlerAGrillaProdOC();
-			//ActualizarInfoDeProductosEnGrilla();
-			//addInCellLostFocusHandler();
-			//addInCellGotFocusHandler();
-			//addInCellKeyDownHandler();
-			//addInCellEditHandler();
-			//AddEventListenerToGrid("tbListaProductoOC");
-			//addMaskInEditableCells();
-			//$(".inputEditable").on("keypress", analizaEnterInput)
+			ActualizarInfoDeProductosEnGrilla();
 			activarBotones(true);
-			//tableUpDownArrow();
 			CargarResumenDeOc();
-			setTimeout(function () {
-				pingARegistro();
-			}, 100);
+			//setTimeout(function () {
+			//	pingARegistro();
+			//}, 100);
 		}
 	});
 }
 
-function pingARegistro() {
-	if ($('#tbListaProductoOC tbody tr').length > 0) {
-		const primeraFila = $('#tbListaProductoOC tbody tr').first();
-		const pId = primeraFila.data('p-id');
-		const valorBultos = $('#tbListaProductoOC tbody tr').first().find('.input-bultos').val();
-		ActualizarProductoEnOcAuto("bultos", valorBultos, pId);
-	}
-}
+//function pingARegistro() {
+//	if ($('#tbListaProductoOC tbody tr').length > 0) {
+//		const primeraFila = $('#tbListaProductoOC tbody tr').first();
+//		const pId = primeraFila.data('p-id');
+//		const valorBultos = $('#tbListaProductoOC tbody tr').first().find('.input-bultos').val();
+//		ActualizarProductoEnOcAuto("bultos", valorBultos, pId);
+//	}
+//}
 
 //function analizaEnterInput(e) {
 //	if (e.which == "13") {
