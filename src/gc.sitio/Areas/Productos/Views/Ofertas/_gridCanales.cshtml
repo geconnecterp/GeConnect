@@ -12,19 +12,13 @@
     <div class="card-body p-2">
         <div class="table-responsive text-nowrap table-wrapper-300">
             <table class="table table-sm mb-0 table-hover table-golden" id="tbGridCanales">
-                <!-- Resto del contenido idéntico al actual -->
                 <thead class="table-golden-header">
                     <tr class="header">
                         <th class="text-center" scope="col">
                             <input type="checkbox" class="form-check-input" id="checkAllCanales" title="Seleccionar todos">
                         </th>
                         <th class="text-center" scope="col">ADM ID</th>
-                        @* <th class="text-left" scope="col">ADMINISTRACIÓN</th>
-                         <th class="text-center" scope="col">LP ID</th> 
-                        <th class="text-left" scope="col">LISTA DE PRECIOS</th>*@
                         <th class="text-center" scope="col">CANAL</th>
-                        <th class="text-center" scope="col">ESTADO</th>
-                        <th class="text-center" scope="col">ACCIÓN</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -34,7 +28,12 @@
                         {
                             if (alt) { clase = "table-row-alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                            <tr class="@clase" data-canal-id="@item.adm_id-@item.lp_id">
+                            <tr class="@clase canal-seleccionable" style="min-height: 50px; cursor: pointer;"
+                                data-adm-id="@item.adm_id"
+                                data-lp-id="@item.lp_id"
+                                data-canal="@item.canal"
+                                data-adm-nombre="@item.adm_nombre" 
+                                data-lp-desc="@item.lp_desc">
                                 <td class="text-center">
                                     <input type="checkbox" class="form-check-input check-canal"
                                            data-adm-id="@item.adm_id"
@@ -42,37 +41,14 @@
                                            data-canal="@item.canal"
                                            data-adm-nombre="@item.adm_nombre"
                                            data-lp-desc="@item.lp_desc"
-                                           title="Seleccionar canal">
+                                           title="Seleccionar canal"
+                                           onclick="event.stopPropagation()">
                                 </td>
                                 <td class="text-center">
                                     @Model.FormatearDato(item.adm_id, FormatDato.Ninguno)
                                 </td>
-                                @* <td class="text-left" title="@item.adm_nombre">
-                                    @Model.FormatearDato(item.adm_nombre, FormatDato.Ninguno)
-                                </td>
-                                <td class="text-center">
-                                    @Model.FormatearDato(item.lp_id, FormatDato.Ninguno)
-                                </td>
-                                <td class="text-left" title="@item.lp_desc">
-                                    @Model.FormatearDato(item.lp_desc, FormatDato.Ninguno)
-                                </td> *@
                                 <td class="text-center">
                                     <span class="badge bg-golden-light">@Model.FormatearDato(item.canal, FormatDato.Ninguno)</span>
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge bg-success">Activo</span>
-                                </td>
-                                <td class="text-center">
-                                    <button type="button"
-                                            class="btn btn-outline-primary btn-sm btn-seleccionar-canal"
-                                            data-adm-id="@item.adm_id"
-                                            data-lp-id="@item.lp_id"
-                                            data-canal="@item.canal"
-                                            data-adm-nombre="@item.adm_nombre"
-                                            data-lp-desc="@item.lp_desc"
-                                            title="Seleccionar canal para ofertas">
-                                        <i class="bx bx-check-circle"></i>
-                                    </button>
                                 </td>
                             </tr>
                         }
@@ -80,7 +56,7 @@
                     else
                     {
                         <tr>
-                            <td colspan="8" class="text-center text-muted py-4">
+                            <td colspan="3" class="text-center text-muted py-4">
                                 <i class="bx bx-info-circle me-2"></i>
                                 No hay canales disponibles
                             </td>

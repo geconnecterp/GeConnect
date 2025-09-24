@@ -18,7 +18,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             
         }
 
-        public List<OfertaSinActivarDto> OfertasSinActivar
+        public List<OfertaDto> OfertasSinActivar
         {
             get
             {
@@ -27,12 +27,30 @@ namespace gc.sitio.Areas.Productos.Controllers
                 {
                     return [];
                 }
-                return JsonConvert.DeserializeObject<List<OfertaSinActivarDto>>(json) ?? [];
+                return JsonConvert.DeserializeObject<List<OfertaDto>>(json) ?? [];
             }
             set
             {
                 var json = JsonConvert.SerializeObject(value);
                 _context.HttpContext?.Session.SetString("OfertasSinActivar", json);
+            }
+        }
+
+        public List<OfertaDto> OfertasActivas
+        {
+            get
+            {
+                var json = _context.HttpContext?.Session.GetString("OfertasActivas") ?? string.Empty;
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<OfertaDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("OfertasActivas", json);
             }
         }
 

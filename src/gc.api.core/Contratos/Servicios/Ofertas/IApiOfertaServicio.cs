@@ -10,10 +10,12 @@ namespace gc.api.core.Contratos.Servicios.Ofertas
         List<CanalDto> BuscarCanales();
         RespuestaDto ConfirmacionAltaOferta(AbmPlusGenDto req, ParamOferta param);
         List<OfertaEstadoDto> ObtenerEstadoOfertaProducto(string p_id);
-        List<OfertaSinActivarDto> ObtenerOfertasSinActivar(string admId, string lp_id);
+        List<OfertaDto> ObtenerOfertas(string admId, string lp_id, bool sinActivar = true);
         RespuestaDto ActivacionDeOferta(AbmPlusGenDto req, bool eliminar = false);
         RespuestaDto ActualizarOfertaVencidaSinActivar(AbmGenDto req);
         RespuestaDto CargarActivasASinActivar(AbmGenDto req);
         RespuestaDto EliminarOfertas(AbmPlusGenDto req);
+        RespuestaDto EliminaOfertasActivas(AbmGenDto req);
+        RespuestaDto CopiarACanal(AbmGenDto req);
     }
 }

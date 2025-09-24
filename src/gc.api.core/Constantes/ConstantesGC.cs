@@ -78,6 +78,11 @@
 			public const string SP_PROD_OFERTA_ACTIVAS_A_SINACT = "SPGECO_P_Ofe_Activas_a_SinActivar";
 			public const string SP_PROD_OFERTA_ELIMINA_A_SINACT = "SPGECO_P_Ofe_Elimina_SinActivar";
 
+            public const string SP_PROD_OFERTA_ACTIVA = "SPGECO_P_Ofe_Activas_Lista";
+            public const string SP_PROD_OFERTA_ELIMINA_ACTIVA = "SPGECO_P_Ofe_Elimina_Activas";
+            public const string SP_PROD_OFERTA_COPIAR_A = "SPGECO_P_Ofe_Activas_Copy";
+            
+
 
             #endregion
 

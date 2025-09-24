@@ -85,14 +85,14 @@ namespace gc.api.Controllers.Ofertas
         }
 
         [HttpGet("obtener-ofertas-sin-activar")]
-        public ActionResult<List<OfertaSinActivarDto>> ObtenerOfertasSinActivar(string admId, string lp_id)
+        public ActionResult<List<OfertaDto>> ObtenerOfertasSinActivar(string admId, string lp_id)
         {
             if (string.IsNullOrEmpty(admId) || string.IsNullOrEmpty(lp_id))
             {
                 return BadRequest("Alguno de los parametros para obtener las ofertas sin activar ha faltado. Verifique");
             }
-            var resultado = _ofertaSv.ObtenerOfertasSinActivar(admId, lp_id);
-            return Ok(new ApiResponse<List<OfertaSinActivarDto>>(resultado));
+            var resultado = _ofertaSv.ObtenerOfertas(admId, lp_id);
+            return Ok(new ApiResponse<List<OfertaDto>>(resultado));
         }
 
         [HttpPost("activacion-de-oferta")]
@@ -137,9 +137,46 @@ namespace gc.api.Controllers.Ofertas
             if (req == null || string.IsNullOrEmpty(req.Json) || string.IsNullOrEmpty(req.Objeto)
                 || string.IsNullOrEmpty(req.Usuario) || string.IsNullOrEmpty(req.Administracion))
             {
-                return BadRequest("Alguno de los parametros para la activacion de la eliminacion de la oferta ha faltado. Verifique");
+                return BadRequest("Alguno de los parametros para la eliminacion de la oferta ha faltado. Verifique");
             }
             var resultado = _ofertaSv.EliminarOfertas(req);
+            return Ok(new ApiResponse<RespuestaDto>(resultado));
+        }
+
+        //metodos de Ofertas Activas
+        [HttpGet("obtener-ofertas-activas")]
+        public ActionResult<List<OfertaDto>> ObtenerOfertasActivas(string admId, string lp_id)
+        {
+            if (string.IsNullOrEmpty(admId) || string.IsNullOrEmpty(lp_id))
+            {
+                return BadRequest("Alguno de los parametros para obtener las ofertas sin activar ha faltado. Verifique");
+            }
+            //el flag en false indica que traiga las ofertas activas
+            var resultado = _ofertaSv.ObtenerOfertas(admId, lp_id,false);
+            return Ok(new ApiResponse<List<OfertaDto>>(resultado));
+        }
+
+        [HttpPost("elimina-ofertas-activas")]
+        public ActionResult<RespuestaDto> EliminaOfertasActivas(AbmPlusGenDto req)
+        {
+            if (req == null || string.IsNullOrEmpty(req.Json) || string.IsNullOrEmpty(req.Objeto)
+                || string.IsNullOrEmpty(req.Usuario) || string.IsNullOrEmpty(req.Administracion))
+            {
+                return BadRequest("Alguno de los parametros para la eliminacion de la oferta ha faltado. Verifique");
+            }
+            var resultado = _ofertaSv.EliminaOfertasActivas(req);
+            return Ok(new ApiResponse<RespuestaDto>(resultado));
+        }
+
+        [HttpPost("copiar-a-canal")]
+        public ActionResult<RespuestaDto> CopiarACanal(AbmPlusGenDto req)
+        {
+            if (req == null || string.IsNullOrEmpty(req.Json) || string.IsNullOrEmpty(req.Objeto)
+                || string.IsNullOrEmpty(req.Usuario) || string.IsNullOrEmpty(req.Administracion))
+            {
+                return BadRequest("Alguno de los parametros para la eliminacion de la oferta ha faltado. Verifique");
+            }
+            var resultado = _ofertaSv.CopiarACanal(req);
             return Ok(new ApiResponse<RespuestaDto>(resultado));
         }
     }

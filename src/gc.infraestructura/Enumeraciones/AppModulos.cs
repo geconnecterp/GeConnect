@@ -24,7 +24,8 @@
         LBR, //LIBRO DE BANCOS RESUMEN
         HLI, //HISTORICO LIBRO
         EBA, //EXTRACTO BANCARIO
-	}
+        OF_SINACT, //OFERTAS SIN ACTIVAR
+    }
 
     public enum AppReportes
     {

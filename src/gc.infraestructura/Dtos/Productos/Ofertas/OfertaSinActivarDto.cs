@@ -2,7 +2,7 @@
 
 namespace gc.infraestructura.Dtos.Productos.Ofertas
 {
-    public class OfertaSinActivarDto
+    public class OfertaDto
     {
         public string p_id { get; set; } = string.Empty;//+
         public string p_desc { get; set; } = string.Empty;//+

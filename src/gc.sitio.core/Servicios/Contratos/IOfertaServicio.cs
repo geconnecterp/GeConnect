@@ -10,10 +10,13 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaGenerica<CanalDto>> BuscarCanales(string token);
         Task<RespuestaGenerica<RespuestaDto>> ConfirmacionAltaOferta(AbmPlusGenDto req, string token);
         Task<RespuestaGenerica<OfertaEstadoDto>> ObtenerEstadoOfertaProducto(string p_id, string token);
-        Task<RespuestaGenerica<OfertaSinActivarDto>> ObtenerOfertasSinActivar(string admId, string lp_id, string tokenCookie);
+        Task<RespuestaGenerica<OfertaDto>> ObtenerOfertasSinActivar(string admId, string lp_id, string tokenCookie);
         Task<RespuestaGenerica<RespuestaDto>> ActivacionDeOferta(AbmPlusGenDto req, string token);
         Task<RespuestaGenerica<RespuestaDto>> ActualizarOfertaVencidaSinActivar(AbmGenDto req, string token);
         Task<RespuestaGenerica<RespuestaDto>> CargarActivasASinActivar(AbmGenDto req, string token);
         Task<RespuestaGenerica<RespuestaDto>> EliminarOfertas(AbmPlusGenDto req, string token);
+        Task<RespuestaGenerica<OfertaDto>> ObtenerOfertasActivas(string admId, string lp_id, string token);
+        Task<RespuestaGenerica<RespuestaDto>> EliminaOfertasActivas(AbmGenDto req, string token);
+        Task<RespuestaGenerica<RespuestaDto>> CopiarACanal(AbmGenDto req, string token);
     }
 }
