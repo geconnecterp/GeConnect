@@ -20,18 +20,23 @@
                         <h5 class="mb-0">Opciones</h5>
                     </div>
                     <div class="filter-golden-body">
+
+                        <button type="button" class="btn btn-primary w-100 mb-2" id="btnActivarOfertas">
+                            <i class="bx bx-check-double"></i> Activar Ofertas Seleccionadas
+                        </button>
+                        <button type="button" class="btn btn-outline-danger w-100 mb-2" id="btnEliminarSelec">
+                            <i class="bx bx-trash me-1"></i> Eliminar Seleccionados
+                        </button>
                         <button type="button" class="btn btn-outline-primary w-100 mb-2" id="btnActivarVencimiento">
                             <i class="bx bx-calendar-alt me-1"></i> Activar Vencimiento
                         </button>
-                        <button type="button" class="btn btn-outline-primary w-100 mb-2" id="btnCargarActivos" >
+                        <button type="button" class="btn btn-outline-primary w-100 mb-2" id="btnCargarActivos">
                             <i class="bx bxs-cart me-1"></i> Cargar Activos
                         </button>
                         <button type="button" class="btn btn-outline-secondary w-100 mb-2" id="btnImprimir">
                             <i class="bx bx-printer me-1"></i> Imprimir
                         </button>
-                        <button type="button" class="btn btn-outline-danger w-100 mb-2" id="btnEliminarSelec">
-                            <i class="bx bx-trash me-1"></i> Eliminar Seleccionados
-                        </button>
+                        
                     </div>
                 </div>
             </div>
@@ -46,7 +51,7 @@
         let activarOfertaUrl =  "@Url.Action("ActivarOferta", "OfertasActivar", new { area = "Productos" })";
         let actualizarOfertaVencidaSinActivarUrl = "@Url.Action("ActualizarOfertaVencidaSinActivar", "OfertasActivar", new { area = "Productos" })";
         let cargarActivosASinActivarUrl = "@Url.Action("CargarActivosASinActivar", "OfertasActivar", new { area = "Productos" })";
-        let eliminarOfertasSinActivarUrl = "@Url.Action("EliminarOfertasSinActivar", "OfertasActivar" , new {area = "Productos"})";
+        let eliminarOfertasSinActivarUrl = "@Url.Action("EliminarOfertasSinActivar", "OfertasActivar", new { area = "Productos" })";
 
         let homeOfertaUrl = "@Url.Action("index", "OfertasActivar", new { area = "Productos" })";
     </script>

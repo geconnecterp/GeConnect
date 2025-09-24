@@ -71,15 +71,21 @@ namespace gc.api.core.Servicios.Ofertas
             return estados;
         }
 
-        public List<OfertaSinActivarDto> ObtenerOfertasSinActivar(string admId, string lp_id)
+        public List<OfertaDto> ObtenerOfertas(string admId, string lp_id, bool sinActivar = true)
         {
-            var sp = ConstantesGC.StoredProcedures.SP_PROD_OFERTA_SIN_ACTIVAR;
+            string sp;
+            //depeniendo del flag trae las ofertas activas o las sin activar
+            if (sinActivar)
+                sp = ConstantesGC.StoredProcedures.SP_PROD_OFERTA_SIN_ACTIVAR;
+            else
+                sp = ConstantesGC.StoredProcedures.SP_PROD_OFERTA_ACTIVA;
+
             var ps = new List<SqlParameter>
             {
                 new SqlParameter("@adm_id_ofe", admId),
                 new SqlParameter("@lp_id_ofe", lp_id)
             };
-            List<OfertaSinActivarDto> ofertas = _repository.EjecutarLstSpExt<OfertaSinActivarDto>(sp, ps, true);
+            List<OfertaDto> ofertas = _repository.EjecutarLstSpExt<OfertaDto>(sp, ps, true);
             return ofertas;
         }
 
@@ -87,6 +93,58 @@ namespace gc.api.core.Servicios.Ofertas
         {
             //la logica es identica se reutiliza el metodo para que funcione como eliminar oferta
             return ActivacionDeOferta(req, true);
+        }
+
+        public RespuestaDto EliminaOfertasActivas(AbmGenDto req)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_PROD_OFERTA_ELIMINA_ACTIVA;
+            var obj = req.Objeto.Split('#', StringSplitOptions.RemoveEmptyEntries);
+
+            var ps = new List<SqlParameter>
+            {
+                new SqlParameter("@adm_id_ofe", obj[0]),
+                new SqlParameter("@lp_id_ofe", obj[1]),
+                new SqlParameter("@json_p", req.Json),
+                new SqlParameter("@usu_id", req.Usuario),
+                new SqlParameter("@adm_id", req.Administracion),
+            };
+
+            List<RespuestaDto> resultado = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+            if (resultado != null && resultado.Count > 0)
+            {
+                return resultado[0];
+            }
+            return new()
+            {
+                resultado = -1,
+                resultado_msj = "No se logro obtener el resultado del proceso. "
+            };
+        }
+
+        public RespuestaDto CopiarACanal(AbmGenDto req)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_PROD_OFERTA_COPIAR_A;
+            var obj = req.Objeto.Split('#', StringSplitOptions.RemoveEmptyEntries);
+
+            var ps = new List<SqlParameter>
+            {
+                new SqlParameter("@adm_id_ofe", obj[0]),
+                new SqlParameter("@lp_id_ofe", obj[1]),
+                new SqlParameter("@json_p", req.Json),
+                new SqlParameter("@usu_id", req.Usuario),
+                new SqlParameter("@adm_id", req.Administracion),
+            };
+
+            List<RespuestaDto> resultado = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+            if (resultado != null && resultado.Count > 0)
+            {
+                return resultado[0];
+            }
+            return new()
+            {
+                resultado = -1,
+                resultado_msj = "No se logro obtener el resultado del proceso. "
+            };
         }
 
         public RespuestaDto ActivacionDeOferta(AbmPlusGenDto req, bool eliminar = false)
@@ -100,7 +158,7 @@ namespace gc.api.core.Servicios.Ofertas
             {
                 sp = ConstantesGC.StoredProcedures.SP_PROD_OFERTA_ELIMINA_A_SINACT;
             }
-            
+
             //trae separado por #, el id de la administracion y el id de la lista de precios "0000#001"
             var obj = req.Objeto.Split('#', StringSplitOptions.RemoveEmptyEntries);
 
