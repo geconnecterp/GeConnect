@@ -4,10 +4,6 @@
     string clase = string.Empty;
 }
 
-@* @section styles {
-    <link rel="stylesheet" href="~/css/compras/cdec/grillaotrotributo.css" />
-} *@
-
 <div class="row">
     <div class="col-md-6" style="display: flex; align-items: center; text-align: justify; margin-top: 5px; margin-bottom: -15px;">
         <h6>Otros Tributos</h6>
@@ -42,7 +38,6 @@
                     <tr class="@clase" data-ins-id="@item.ins_id" onclick="selectReg(this, 'tbGridOtroTributo')">
                         <td style="display:none;">@item.ins_id</td>
                         <td class="text-sm-start">@item.imp</td>
-                        @* <td class="text-sm-end content-editable-td inputEditable" data-interaction="@item.ins_id" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_base_imp>@item.base_imp.ToString("0.##")</td> *@
                         <td class="@Model.ObtenerClase(item.base_imp)">
                             @*07*@
                             <div class="input-container">
@@ -53,7 +48,6 @@
                                        data-original-value="@(item.base_imp)" />
                             </div>
                         </td>
-                        @* <td class="text-sm-end content-editable-td inputEditable" data-interaction="@item.ins_id" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_alicuota>@item.alicuota.ToString("0.##")</td> *@
                         <td class="@Model.ObtenerClase(item.alicuota)">
                             @*07*@
                             <div class="input-container">
@@ -64,7 +58,6 @@
                                        data-original-value="@(item.alicuota)" />
                             </div>
                         </td>
-                        @* <td class="text-sm-end content-editable-td inputEditable" data-interaction="@item.ins_id" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_importe>@item.importe.ToString("0.##")</td> *@
                         <td class="@Model.ObtenerClase(item.importe)">
                             @*07*@
                             <div class="input-container">
