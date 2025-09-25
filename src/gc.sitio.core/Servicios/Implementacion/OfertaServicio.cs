@@ -825,7 +825,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public async Task<RespuestaGenerica<RespuestaDto>> CopiarACanal(AbmGenDto req, string token)
+        public async Task<RespuestaGenerica<RespuestaDto>> CopiarACanal(AbmPlusGenDto req, string token)
         {
             try
             {
