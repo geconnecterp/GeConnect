@@ -576,5 +576,34 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<ChequeEmitidoEstadoDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<ChequeModificadosListaDto> GetChequeModificadosLista(GetChequeModificadosListaRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_BCO_CH_MODIFICADOS;
+			var ps = new List<SqlParameter>()
+			{
+				new("@ctaf_id",request.ctaf_id),
+				new("@che_emision",request.che_emision),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<ChequeModificadosListaDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<RespuestaDto> SetChequeModificar(GetChequeModificarListaRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_BCO_CH_MODIFICAR;
+			var ps = new List<SqlParameter>()
+			{
+				new("@ctaf_id",request.ctaf_id),
+				new("@che_emision",request.che_emision),
+				new("@che_nro",request.che_nro),
+				new("@che_fecha",request.che_fecha),
+				new("@che_anombre",request.che_anombre),
+				new("@usu_id",request.usu_id),
+				new("@adm_id",request.adm_id),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

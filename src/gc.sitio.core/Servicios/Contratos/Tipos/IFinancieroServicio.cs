@@ -32,5 +32,7 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<FinancieroBcoVencChequeEmitidoDto> GetFinancieroBcoVencChequeEmitido(FinancieroBcoVencChequeEmitidoRequest request, string token);
 		List<FinancieroBcoVencChequeEmitidoListaDto> GetFinancieroBcoVencChequeEmitidoLista(FinancieroBcoVencChequeEmitidoListaRequest request, string token);
 		List<ChequeEmitidoEstadoDto> GetChequesEmitidosEstadosLista(string token);
+		List<ChequeModificadosListaDto> GetChequeModificadosLista(GetChequeModificadosListaRequest request, string token);
+		RespuestaGenerica<RespuestaDto> SetChequeModificar(GetChequeModificarListaRequest request, string token);
 	}
 }

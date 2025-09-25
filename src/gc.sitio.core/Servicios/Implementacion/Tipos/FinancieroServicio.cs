@@ -44,6 +44,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string ObtenerFinancieroBcoVencChequeEmitido = "/GetFinancieroBcoVencChequeEmitido";
 		private const string ObtenerFinancieroBcoVencChequeEmitidoLista = "/GetFinancieroBcoVencChequeEmitidoLista";
 		private const string ObtenerChequesEmitidosEstadosLista = "/GetChequesEmitidosEstadosLista";
+		private const string ObtenerChequeModificadosLista = "/GetChequeModificadosLista";
+		private const string SetFChequeModificar = "/SetChequeModificar";
 
 		private readonly AppSettings _appSettings;
 		public FinancieroServicio(IOptions<AppSettings> options, ILogger<AdministracionServicio> logger) : base(options, logger)
@@ -812,6 +814,68 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				_logger.LogWarning($"Algo no fue bien. Error interno {ex.Message}");
 				return [];
+			}
+		}
+
+		public List<ChequeModificadosListaDto> GetChequeModificadosLista(GetChequeModificadosListaRequest request, string token)
+		{
+			ApiResponse<List<ChequeModificadosListaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerChequeModificadosLista}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return [];
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ChequeModificadosListaDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public RespuestaGenerica<RespuestaDto> SetChequeModificar(GetChequeModificarListaRequest request, string token)
+		{
+			ApiResponse<List<RespuestaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{SetFChequeModificar}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros che_nro:{request.che_nro} che_emision: {request.che_emision}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data.First() };
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
 			}
 		}
 	}

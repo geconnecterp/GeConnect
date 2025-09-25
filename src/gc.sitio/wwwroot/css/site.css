@@ -1351,6 +1351,12 @@ fieldset {
     overflow: auto;
 }
 
+.table-wrapper-500-full-width {
+    max-height: 500px;
+    max-width: 100%;
+    overflow: auto;
+}
+
 .table-wrapper-200-full-width {
     max-height: 200px;
     max-width: 100%;

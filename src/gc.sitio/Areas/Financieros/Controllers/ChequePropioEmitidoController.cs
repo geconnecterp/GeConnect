@@ -108,6 +108,91 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
+		public IActionResult MostrarChequeModificado(GetChequeModificadosListaRequest request)
+		{ 
+			var model = new ChequeModificadoModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var res = _financieroServicio.GetChequeModificadosLista(request, TokenCookie);
+				if (res == null || res.Count < 0)
+					return PartialView("_modal_ch_modificado", model);
+
+				var item = res.First();
+				model.NroCheque = item.che_nro;
+				model.ModificadoPor = item.mod_usu_id;
+				model.ANombreDe = item.che_anombre;
+				model.Fecha = item.che_fecha;
+				return PartialView("_modal_ch_modificado", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public JsonResult GuardarChequeModificar(GetChequeModificarListaRequest request)
+		{
+			try
+			{
+				if (request==null)
+					return Json(new { error = true, warn = false, msg = $"Request vacío." });
+
+				request.adm_id = AdministracionId;
+				request.usu_id = UserName;
+				var respuesta = _financieroServicio.SetChequeModificar(request, TokenCookie);
+				if (respuesta == null || respuesta.Entidad == null)
+					return Json(new { error = true, warn = false, msg = $"Se ha producido un error al intentar modificar los datos del cheque." });
+				if (respuesta.Entidad.resultado > 0)
+					return Json(new { error = true, warn = false, msg = $"{respuesta.Entidad.resultado_msj}" });
+				return Json(new { error = false, warn = false, msg = $"El cheque se ha modificado con éxito." });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se ha producido un error al intentar modificar los datos del cheque." });
+			}
+		}
+
+		public IActionResult VerModalDetalleChequeModificar(GetChequeModificarListaRequest request)
+		{
+			var model = new ChequeModificarModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				model.che_nro = request.che_nro;
+				model.che_fecha = request.che_fecha;
+				model.che_anombre = request.che_anombre;
+				model.che_emision = request.che_emision;
+				model.ctaf_id = request.ctaf_id;
+				return PartialView("_modal_ch_modificar", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+		//
+
 		public static List<FinancieroChequePropioEmitidoListaDto> MapListaToChequePropio(List<FinancieroBcoVencChequeEmitidoListaDto> sourceList)
 		{
 			return sourceList.Select(item => new FinancieroChequePropioEmitidoListaDto

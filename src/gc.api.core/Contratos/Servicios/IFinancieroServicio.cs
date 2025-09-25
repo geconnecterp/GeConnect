@@ -32,5 +32,7 @@ namespace gc.api.core.Contratos.Servicios
         List<FinancieroBcoVencChequeEmitidoDto> GetFinancieroBcoVencChequeEmitido(FinancieroBcoVencChequeEmitidoRequest request);
         List<FinancieroBcoVencChequeEmitidoListaDto> GetFinancieroBcoVencChequeEmitidoLista(FinancieroBcoVencChequeEmitidoListaRequest request);
         List<ChequeEmitidoEstadoDto> GetChequeEmitidoEstadoLista();
+        List<ChequeModificadosListaDto> GetChequeModificadosLista(GetChequeModificadosListaRequest request);
+        List<RespuestaDto> SetChequeModificar(GetChequeModificarListaRequest request);
 	}
 }

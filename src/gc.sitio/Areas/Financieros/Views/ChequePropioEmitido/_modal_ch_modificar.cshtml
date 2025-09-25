@@ -1,0 +1,35 @@
+﻿@model ChequeModificarModel
+@{
+}
+@Html.Hidden("ctaf_id", Model.ctaf_id)
+@Html.Hidden("che_emision", Model.che_emision)
+<div class="modal-header">
+	<h5 class="modal-title" id="modalCenterTitle">Registro de Modificación</h5>
+	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="input-group input-group-sm">
+				<div class="input-group input-group-sm mt-2">
+					<span class="input-group-text">N° Cheque: </span>
+					<input type="text" asp-for="che_nro" class="form-control activable inputEditable" />
+				</div>
+				<div class="input-group input-group-sm mt-2">
+					<span class="input-group-text">Fecha: </span>
+					<input type="date" class="form-control inputEditable" asp-for="che_fecha" style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
+				</div>
+				<div class="input-group input-group-sm mt-2">
+					<span class="input-group-text">A Nombre de: </span>
+					<input type="text" asp-for="che_anombre" class="form-control activable inputEditable" />
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-primary" id="btnChequeModificar">Modificar</button>
+	<button type="button" class="btn btn-outline-secondary btn-sm mt-1 me-1" data-bs-dismiss="modal">
+		<i class="bx bx-log-out-circle"></i> Cerrar
+	</button>
+</div>

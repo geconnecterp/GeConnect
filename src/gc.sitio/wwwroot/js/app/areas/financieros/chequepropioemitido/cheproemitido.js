@@ -27,6 +27,7 @@
 	$(document).on("change", "#listaCB", ControlalistaCuentaBancoSelected);
 	$(document).on("change", "#listaUsu", ControlalistaUsuarioSelected);
 	$(document).on("change", "#listaEst", ControlalistaEstadoSelected);
+	$(document).on("click", "#btnChequeModificar", GuardarChequeModificar);
 
 	$("#CBList").on("dblclick", 'option', function () { $(this).remove(); })
 	$("#UsuList").on("dblclick", 'option', function () { $(this).remove(); })
@@ -171,7 +172,7 @@ function ValidarFechasClick() {
 			$("#Date1").val($("#Date2").val());
 			return true;
 		}, false, ["Aceptar"], "error!", null);
-	} 
+	}
 }
 
 $("#Rel01").autocomplete({
@@ -203,3 +204,121 @@ $("#Rel01").autocomplete({
 		return true;
 	}
 });
+
+function verDetalleModificado(ctaf_id, che_emision) {
+	console.log("Ver detalle de cheque modificado:", ctaf_id, che_emision);
+	AbrirWaiting();
+	var datos = { ctaf_id, che_emision };
+	PostGenHtml(datos, mostrarChequeModificadoUrl, function (obj) {
+		$("#divChequeModificado").html(obj);
+		$('#modalChequeModificado').modal({
+			backdrop: 'static',
+		});
+		$('#modalChequeModificado').modal('show');
+
+		CerrarWaiting();
+		return true
+	});
+}
+
+function verModalDetalleChequeModificar(ctaf_id, che_emision, che_nro, che_fecha, che_anombre) {
+	console.log("Ver detalle de cheque modificar:", ctaf_id, che_emision, che_nro, che_fecha, che_anombre);
+	// Lógica para mostrar modal o cargar datos
+	AbrirWaiting();
+	var datos = { ctaf_id, che_emision, che_nro, che_fecha, che_anombre };
+	PostGenHtml(datos, verModalDetalleChequeModificarUrl, function (obj) {
+		$("#divChequeModificar").html(obj);
+		$('#modalChequeModificar').modal({
+			backdrop: 'static',
+		});
+
+		const fechaFormateada = moment(che_fecha, 'DD/MM/YYYY HH:mm:ss').format('YYYY-MM-DD');
+		$("#che_fecha").val(fechaFormateada);
+		$('#modalChequeModificar').modal('show');
+
+		CerrarWaiting();
+		return true
+	});
+}
+
+function GuardarChequeModificar() {
+	var esValido = true;
+	var ctaf_id = $("#ctaf_id").val();
+	var che_emision = $("#che_emision").val();
+	var che_nro = $("#che_nro").val();
+	if (che_nro == "") {
+		esValido = false;
+		AbrirMensaje("ATENCIÓN", "Debe indicar un número de cheque válido.", function () {
+			$("#msjModal").modal("hide");
+			$("#che_nro").trigger("focus");
+			return false;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	var che_fecha = $("#che_fecha").val();
+	if (che_fecha == "") {
+		esValido = false;
+		AbrirMensaje("ATENCIÓN", "Debe indicar una fecha válida.", function () {
+			$("#msjModal").modal("hide");
+			$("#che_fecha").trigger("focus");
+			return false;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	var che_anombre = $("#che_anombre").val();
+	if (che_anombre == "") {
+		esValido = false;
+		AbrirMensaje("ATENCIÓN", "Debe indicar un valor válido para A Nombre de.", function () {
+			$("#msjModal").modal("hide");
+			$("#che_anombre").trigger("focus");
+			return false;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	if (esValido) {
+		AbrirWaiting();
+		var data = { ctaf_id, che_emision, che_nro, che_fecha, che_anombre };
+		PostGen(data, guardarChequeModificarUrl, function (obj) {
+			$("#modalAgregarProducto").modal("hide");
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				ActualizarListaCheques();
+				CerrarWaiting();
+			}
+		});
+	}
+	
+}
+
+function ActualizarListaCheques() {
+	AbrirWaiting();
+	var id_f = $("#chkCB").is(":checked");
+	var id_c = $("#chkRel01").is(":checked");
+	var id_u = $("#chkUsu").is(":checked");
+	var id_e = $("#chkEst").is(":checked");
+	var ctaf_id = $("#listaCB").val();
+	var cta_id = $("#Rel01Item").val();
+	var usu_id = $("#listaUsu").val();
+	var desde = $("#Date1").val();
+	var hasta = $("#Date2").val();
+	var estado = $("#listaEst").val();
+	var data = { id_f, ctaf_id, id_c, cta_id, id_u, usu_id, tipo_fecha, desde, hasta, estado };
+	PostGenHtml(data, buscarChequesPropiosEmitidosUrl, function (obj) {
+		$("#divChequesPropiosEmitidos").html(obj);
+		CerrarWaiting();
+		return true
+	});
+}
+
+function verDetalleEntrega(ctaf_id, che_emision) {
+	console.log("Ver detalle de cheque:", ctaf_id);
+	// Lógica para mostrar modal o cargar datos
+}
+
+function verDetalleRechazar(ctaf_id, che_emision) {
+	console.log("Ver detalle de cheque:", ctaf_id);
+	// Lógica para mostrar modal o cargar datos
+}

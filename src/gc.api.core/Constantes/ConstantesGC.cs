@@ -164,6 +164,8 @@
 			public const string SP_F_BCO_CH_VTO_PROY = "SPGECO_F_BCO_CH_Vto_Proy";
 			public const string SP_F_BCO_CH_EMITIDOS_LISTA = "SPGECO_F_BCO_CH_Emitidos_lista";
 			public const string SP_F_BCO_CH_ESTADOS = "SPGECO_F_BCO_CH_Estados";
+			public const string SP_F_BCO_CH_MODIFICADOS = "SPGECO_F_BCO_CH_Modificados";
+			public const string SP_F_BCO_CH_MODIFICAR = "SPGECO_F_BCO_CH_Modificar";
 			#endregion
 
 			#region SP Depositos

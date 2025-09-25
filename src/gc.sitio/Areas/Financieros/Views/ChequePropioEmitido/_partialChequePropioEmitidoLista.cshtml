@@ -13,17 +13,81 @@
 		letter-spacing: 0.5px;
 	}
 
+	.btn-outline-primary {
+		padding: 0.2rem 0.4rem;
+		font-size: 0.75rem;
+	}
+
+	.btn-icon-compact {
+		padding: 0.15rem 0.3rem;
+		font-size: 0.7rem;
+		line-height: 1;
+	}
+
+		.btn-icon-compact i {
+			font-size: 0.9rem;
+		}
+
+	#tbListaDetalleCheques th {
+		padding: 0.4rem 0.5rem;
+		font-size: 0.8rem;
+	}
+
+	#tbListaDetalleCheques td {
+		padding: 0.2rem 0.3rem;
+		font-size: 0.75rem;
+		line-height: 1.1;
+		vertical-align: middle;
+	}
+
+	.check-column {
+		text-align: center;
+		vertical-align: middle;
+	}
+
+	.check-producto-container {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 100%;
+	}
+
+	#tbListaDetalleCheques td:empty {
+		min-height: 32px; /* ajustable según tu diseño */
+	}
+
+	.td-placeholder::before {
+		content: "•";
+		visibility: hidden;
+		display: inline-block;
+	}
+
+	.btn.invisible {
+		visibility: hidden;
+		pointer-events: none;
+	}
+
+
 </style>
-<div class="row">
-	<div class="col-12">
-		<h5 class="fw-bold text-golden mb-2">
+<div class="row align-items-center mb-2">
+	<div class="col-12 d-flex justify-content-between">
+		<h5 class="fw-bold text-golden mb-0">
 			<i class="bx bx-spreadsheet me-1"></i> Detalle de Cheques
 		</h5>
+		<div>
+			<button type="button" class="btn btn-secondary btn-sm mt-1 me-1" id="btnArchivoECheq">
+				<i class="bx bx-file"></i> Archivo E-Cheq
+			</button>
+			<button type="button" class="btn btn-secondary btn-sm mt-1 me-1" id="btnImprimir">
+				<i class="bx bx-printer"></i> Imprimir
+			</button>
+		</div>
 	</div>
 </div>
+
 <div class="row mt-2">
-	<div class="table-responsive table-wrapper-400-full-width" id="containerChequeEmitidoPropioLista">
-		<table class="table table-bordered table-hover table-golden" id="tbListaDetalleRpr">
+	<div class="table-responsive table-wrapper-500-full-width" id="containerChequeEmitidoPropioLista">
+		<table class="table table-bordered table-hover table-golden" id="tbListaDetalleCheques">
 			<thead>
 				<tr class="header">
 					<th scope="col">Comprobante</th>
@@ -38,7 +102,12 @@
 					<th scope="col">Modificar</th>
 					<th scope="col">Entrega</th>
 					<th scope="col">Rechazar</th>
-					<th scope="col">E-CH</th>
+					<th scope="col" class="check-column">
+						E-CH
+						<div class="check-cheque-container">
+							<input class="form-check-input" type="checkbox" id="checkAllCheque" title="Seleccionar todos">
+						</div>
+					</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -67,7 +136,7 @@
 							alt = true; // Reiniciar alternancia de colores después de cada familia
 						}
 						if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
-						<tr class="@clase" data-che-emision="@item.che_emision" data-che-nro="@item.che_nro">
+						<tr class="@clase" data-che-emision="@item.che_emision" data-che-nro="@item.che_nro" data-ctaf-id="@item.ctaf_id" onclick="selectReg(this, 'tbListaDetalleCheques')">
 							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.op_compte)">@Model.GrillaChequesDetalle.FormatearDato(item.op_compte, FormatDato.Ninguno)</td>
 							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_fecha_emi)">@Model.GrillaChequesDetalle.FormatearDato(item.che_fecha_emi, FormatDato.Fecha)</td>
 							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_fecha)">@Model.GrillaChequesDetalle.FormatearDato(item.che_fecha, FormatDato.Fecha)</td>
@@ -76,11 +145,93 @@
 							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_estado_desc)">@Model.GrillaChequesDetalle.FormatearDato(item.che_estado_desc, FormatDato.Ninguno)</td>
 							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.usu_id)">@Model.GrillaChequesDetalle.FormatearDato(item.usu_id, FormatDato.Ninguno)</td>
 							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_importe)">@Model.GrillaChequesDetalle.FormatearDato(item.che_importe, FormatDato.Monto)</td>
-							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.modificado)">@Model.GrillaChequesDetalle.FormatearDato(item.modificado, FormatDato.Ninguno)</td>
-							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_estado)">@Model.GrillaChequesDetalle.FormatearDato(item.che_estado, FormatDato.Ninguno)</td>
-							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.ent_fecha)">@Model.GrillaChequesDetalle.FormatearDato(item.ent_fecha, FormatDato.Fecha)</td>
-							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_estado)">@Model.GrillaChequesDetalle.FormatearDato(item.che_estado, FormatDato.Ninguno)</td>
-							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_estado)">@Model.GrillaChequesDetalle.FormatearDato(item.che_estado, FormatDato.Ninguno)</td>
+							@if (item.modificado_bool)
+							{
+								<td class="text-center align-middle">
+									<button type="button" class="btn btn-outline-primary btn-icon-compact" title="Modificado" onclick="verDetalleModificado('@item.ctaf_id','@item.che_emision')">
+										<i class="bx bx-search"></i>
+									</button>
+								</td>
+							}
+							else
+							{
+								<td class="text-center align-middle">
+									<button type="button" class="btn btn-icon-compact invisible" tabindex="-1">
+										<i class="bx bx-dots-horizontal-rounded"></i>
+									</button>
+								</td>
+							}
+							@if (item.modificar_bool)
+							{
+								<td class="text-center align-middle">
+									<button type="button" class="btn btn-info btn-icon-compact" title="Modificar" onclick="verModalDetalleChequeModificar('@item.ctaf_id','@item.che_emision','@item.che_nro','@item.che_fecha','@item.che_anombre')">
+										<i class="bx bx-edit"></i>
+									</button>
+								</td>
+							}
+							else
+							{
+								<td class="text-center align-middle">
+									<button type="button" class="btn btn-icon-compact invisible" tabindex="-1">
+										<i class="bx bx-dots-horizontal-rounded"></i>
+									</button>
+								</td>
+							}
+							@if (item.entrega_bool)
+							{
+								<td class="text-center align-middle">
+									<button type="button" class="btn btn-primary btn-icon-compact" title="Entrega" onclick="verDetalleEntrega('@item.ctaf_id','@item.che_emision')">
+										<i class="bx bx-chevron-right"></i>
+									</button>
+								</td>
+							}
+							else
+							{
+								if (item.ent_fecha == null)
+								{
+									<td class="text-center align-middle">
+										<button type="button" class="btn btn-icon-compact invisible" tabindex="-1">
+											<i class="bx bx-dots-horizontal-rounded"></i>
+										</button>
+									</td>
+								}
+								else
+								{
+									<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.ent_fecha)">@Model.GrillaChequesDetalle.FormatearDato(item.ent_fecha, FormatDato.Fecha)</td>
+								}
+							}
+							@if (item.rechazar_bool)
+							{
+								<td class="text-center align-middle">
+									<button type="button" class="btn btn-danger btn-icon-compact" title="Rechazar" onclick="verDetalleRechazar('@item.ctaf_id','@item.che_emision')">
+										<i class="bx bx-trash"></i>
+									</button>
+								</td>
+							}
+							else
+							{
+								<td class="text-center align-middle">
+									<button type="button" class="btn btn-icon-compact invisible" tabindex="-1">
+										<i class="bx bx-dots-horizontal-rounded"></i>
+									</button>
+								</td>
+							}
+							@if (item.e_cheq_bool)
+							{
+								<td class="check-column">
+									<div class="check-cheque-container">
+										<input type="checkbox" class="form-check-input check-cheque" data-ctaf-id="@item.ctaf_id" data-che-emision="@item.che_emision">
+									</div>
+								</td>
+							}
+							else
+							{
+								<td class="text-center align-middle">
+									<button type="button" class="btn btn-icon-compact invisible" tabindex="-1">
+										<i class="bx bx-dots-horizontal-rounded"></i>
+									</button>
+								</td>
+							}
 						</tr>
 					}
 				}
@@ -88,3 +239,81 @@
 		</table>
 	</div>
 </div>
+<div class="row mt-2">
+	<div class="col-7 text-end fw-bold text-golden">
+		Totales:
+	</div>
+	<div class="col-5 text-start fw-bold text-golden" id="tdTotalImporte">
+		@Model.GrillaChequesDetalle.ListaDatos?.Sum(c => c.che_importe).ToString("N2")
+	</div>
+</div>
+<div class="modal fade modal-golden in" id="modalChequeModificado" tabindex="-1" style="display: none;" aria-hidden="true" data-backdrop="static">
+	<div class="modal-dialog modal-x" role="document">
+		<div class="modal-content">
+			<div id="divChequeModificado">
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade modal-golden in" id="modalChequeModificar" tabindex="-1" style="display: none;" aria-hidden="true" data-backdrop="static">
+	<div class="modal-dialog modal-x" role="document">
+		<div class="modal-content">
+			<div id="divChequeModificar">
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	$(function() {
+			// Funcionalidad para checkbox de seleccionar todos
+			$("#checkAllCheque").on("change", function() {
+				const isChecked = $(this).prop("checked");
+				$(".check-cheque").prop("checked", isChecked);
+
+				// Aplicar la clase 'selected' a las filas
+				$("#tbListaDetalleCheques tbody tr:not(.table-secondary)").each(function() {
+					$(this).toggleClass("selected", isChecked);
+				});
+			});
+
+			// Evento para checkboxes individuales sin usar 'event' global
+			$(document).on("change", ".check-cheque", function(e) {
+				// Evitar propagación del evento
+				e.stopPropagation();
+
+				const $checkbox = $(this);
+				const isChecked = $checkbox.prop("checked");
+				const $row = $checkbox.closest("tr");
+
+				// Marcar/desmarcar la fila
+				$row.toggleClass("selected", isChecked);
+
+				// Si se desmarca uno, desmarcar el "seleccionar todos"
+				if (!isChecked) {
+					$("#checkAllCheque").prop("checked", false);
+				} else {
+					// Verificar si todos están marcados para actualizar el checkbox principal
+					const totalCheckboxes = $(".check-cheque").length;
+					const totalChecked = $(".check-cheque:checked").length;
+					$("#checkAllCheque").prop("checked", totalCheckboxes === totalChecked);
+				}
+			});
+
+			// Función de ayuda para obtener los IDs de productos seleccionados
+			window.obtenerChequesSeleccionados = function() {
+				const chequesSeleccionados = [];
+				$(".check-cheque:checked").each(function() {
+					const cheEmision = $(this).data("che-emision");
+					const ctafId = $(this).data("ctaf-id");
+					if (cheEmision && ctafId) {
+						if (typeof cheEmision === "string" && typeof ctafId === "string"){
+							chequesSeleccionados.push(`${ctafId}|${cheEmision}`);
+						}
+					}
+				});
+				return chequesSeleccionados;
+			};
+		});
+</script>
