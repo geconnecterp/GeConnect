@@ -1,0 +1,205 @@
+﻿$(function () {
+	$("#chkDesdeHasta").prop('checked', true);
+	$("#chkDesdeHasta").trigger("change");
+	$("#chkDesdeHasta").prop("disabled", true);
+
+	InicializarCamposEnFiltros();
+
+	$("#btnFiltro").on("click", function () {
+		if ($("#divFiltros").hasClass("show")) {
+			$("#divFiltros").collapse("hide");
+			$("#divDetalle").collapse("show");
+		}
+		else {
+			$("#divFiltros").collapse("show");
+			$("#divDetalle").collapse("hide");
+		}
+	});
+	$("input#Rel01").on("click", function () {
+		$("input#Rel01").val("");
+		$("#Rel01Item").val("");
+	});
+
+	$("#btnBuscar").on("click", function () {
+		BuscarChequesPropiosEmitidos();
+	});
+
+	$(document).on("change", "#listaCB", ControlalistaCuentaBancoSelected);
+	$(document).on("change", "#listaUsu", ControlalistaUsuarioSelected);
+	$(document).on("change", "#listaEst", ControlalistaEstadoSelected);
+
+	$("#CBList").on("dblclick", 'option', function () { $(this).remove(); })
+	$("#UsuList").on("dblclick", 'option', function () { $(this).remove(); })
+	$("#EstList").on("dblclick", 'option', function () { $(this).remove(); })
+});
+
+function ControlalistaCuentaBancoSelected() {
+	var item = $("#listaCB").val();
+	var desc = $("#listaCB option:selected").text();
+	if ($("#CBList").has('option:contains("' + item + '")').length === 0) {
+		//$("#Rel03Item").val(item);
+		var opc = "<option value=" + item + ">" + desc + "</option>"
+		$("#CBList").append(opc);
+	}
+}
+
+function ControlalistaUsuarioSelected() {
+	var item = $("#listaUsu").val();
+	var desc = $("#listaUsu option:selected").text();
+	if ($("#UsuList").has('option:contains("' + item + '")').length === 0) {
+		//$("#Rel03Item").val(item);
+		var opc = "<option value=" + item + ">" + desc + "</option>"
+		$("#UsuList").append(opc);
+	}
+}
+
+function ControlalistaEstadoSelected() {
+	var item = $("#listaEst").val();
+	var desc = $("#listaEst option:selected").text();
+	if ($("#EstList").has('option:contains("' + item + '")').length === 0) {
+		//$("#Rel03Item").val(item);
+		var opc = "<option value=" + item + ">" + desc + "</option>"
+		$("#EstList").append(opc);
+	}
+}
+
+function BuscarChequesPropiosEmitidos() {
+	var tipo_fecha = $("#radioSection input[name='opcion']:checked").val();
+	if (tipo_fecha == undefined) {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un Tipo de Fecha.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting();
+		var id_f = $("#chkCB").is(":checked");
+		var id_c = $("#chkRel01").is(":checked");
+		var id_u = $("#chkUsu").is(":checked");
+		var id_e = $("#chkEst").is(":checked");
+		var ctaf_id = $("#listaCB").val();
+		var cta_id = $("#Rel01Item").val();
+		var usu_id = $("#listaUsu").val();
+		var desde = $("#Date1").val();
+		var hasta = $("#Date2").val();
+		var estado = $("#listaEst").val();
+		var data = { id_f, ctaf_id, id_c, cta_id, id_u, usu_id, tipo_fecha, desde, hasta, estado };
+		PostGenHtml(data, buscarChequesPropiosEmitidosUrl, function (obj) {
+			$("#divChequesPropiosEmitidos").html(obj);
+			$("#divFiltros").collapse("hide");
+			$("#divDetalle").collapse("show");
+			CerrarWaiting();
+			return true
+		});
+	}
+}
+
+function InicializarCamposEnFiltros() {
+	$("#Date1, #Date2").on("blur", ValidarFechasClick);
+	$("#chkCB").on("click", function () {
+		if ($("#chkCB").is(":checked")) {
+			$("#listaCB").prop("disabled", false);
+			$("#CBList").prop("disabled", false);
+			$("#listaCB").trigger("focus");
+		}
+		else {
+			$("#listaCB").prop("disabled", true);
+			$("#CBList").prop("disabled", true);
+			$("#listaCB").val("");
+			$("#CBList").empty();
+		}
+	});
+	$("#chkUsu").on("click", function () {
+		if ($("#chkUsu").is(":checked")) {
+			$("#listaUsu").prop("disabled", false);
+			$("#UsuList").prop("disabled", false);
+			$("#listaUsu").trigger("focus");
+		}
+		else {
+			$("#listaUsu").prop("disabled", true);
+			$("#UsuList").prop("disabled", true);
+			$("#listaUsu").val("");
+			$("#UsuList").empty();
+		}
+	});
+	$("#chkEst").on("click", function () {
+		if ($("#chkEst").is(":checked")) {
+			$("#listaEst").prop("disabled", false);
+			$("#EstList").prop("disabled", false);
+			$("#listaEst").trigger("focus");
+		}
+		else {
+			$("#listaEst").prop("disabled", true);
+			$("#EstList").prop("disabled", true);
+			$("#listaEst").val("");
+			$("#EstList").empty();
+		}
+	});
+	$("#chkRel01").on("click", function () {
+		if ($("#chkRel01").is(":checked")) {
+			$("#Rel01").prop("disabled", false);
+			$("#Rel01List").prop("disabled", false);
+			$("#Rel01").trigger("focus");
+		}
+		else {
+			$("#Rel01").prop("disabled", true);
+			$("#Rel01List").prop("disabled", true);
+			$("#Rel01").val("");
+			$("#Rel01List").empty();
+		}
+	});
+
+	$("#lbChkDesdeHasta").text("Desde / Hasta");
+	$("#lbCB").text("Cuenta Banco");
+	$("#lbRel01").text("Proveedor");
+	$("#lbUsu").text("Usuario");
+	$("#lbEst").text("Estado");
+
+	$("#Date1").prop("disabled", false);
+	$("#Date2").prop("disabled", false);
+	$("#divFiltros").collapse("show");
+	$("#divDetalle").collapse("hide");
+}
+
+function ValidarFechasClick() {
+	const desde = $("#Date1").val();
+	const hasta = $("#Date2").val();
+
+	if (desde && hasta && desde > hasta) {
+		AbrirMensaje("ATENCIÓN", "El valor de Fecha Desde no puede ser mayor a Fecha Hasta, revise.", function () {
+			$("#msjModal").modal("hide");
+			$("#Date1").val($("#Date2").val());
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	} 
+}
+
+$("#Rel01").autocomplete({
+	source: function (request, response) {
+
+		data = { prefix: request.term }; /*Rel01*/
+
+		$.ajax({
+			url: autoComRel01Url,
+			type: "POST",
+			dataType: "json",
+			data: data,
+			success: function (obj) {
+				response($.map(obj, function (item) {
+					var texto = item.descripcion;
+					return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
+				}));
+			}
+		})
+	},
+	minLength: 3,
+	select: function (event, ui) {
+		ctaIdSelected = ui.item.id;
+		ctaDescSelected = ui.item.value;
+		$("#Rel01List").empty();
+		$("#Rel01Item").val(ui.item.id);
+		var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
+		$("#Rel01List").append(opc);
+		return true;
+	}
+});

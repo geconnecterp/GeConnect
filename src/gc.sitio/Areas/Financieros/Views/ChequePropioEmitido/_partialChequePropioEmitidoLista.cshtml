@@ -1,0 +1,90 @@
+﻿@using static gc.infraestructura.Helpers.GridHelper
+@model ChequePropioEmitidoModel
+@{
+	string ctafIdActual = string.Empty;
+	string ctafIdAnterior = string.Empty;
+
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	.table-secondary.fw-bold td {
+		font-size: 1rem;
+		letter-spacing: 0.5px;
+	}
+
+</style>
+<div class="row">
+	<div class="col-12">
+		<h5 class="fw-bold text-golden mb-2">
+			<i class="bx bx-spreadsheet me-1"></i> Detalle de Cheques
+		</h5>
+	</div>
+</div>
+<div class="row mt-2">
+	<div class="table-responsive table-wrapper-400-full-width" id="containerChequeEmitidoPropioLista">
+		<table class="table table-bordered table-hover table-golden" id="tbListaDetalleRpr">
+			<thead>
+				<tr class="header">
+					<th scope="col">Comprobante</th>
+					<th scope="col">Fec. Emi.</th>
+					<th scope="col">Fec. Vto.</th>
+					<th scope="col">Nro. Cheque</th>
+					<th scope="col">a Nombre de</th>
+					<th scope="col">Estado</th>
+					<th scope="col">Usuario</th>
+					<th scope="col">Importe</th>
+					<th scope="col">Modificado</th>
+					<th scope="col">Modificar</th>
+					<th scope="col">Entrega</th>
+					<th scope="col">Rechazar</th>
+					<th scope="col">E-CH</th>
+				</tr>
+			</thead>
+			<tbody>
+				@if (Model.GrillaChequesDetalle.ListaDatos == null || Model.GrillaChequesDetalle.ListaDatos.Count == 0)
+				{
+					<tr>
+						<td colspan="18" class="text-center">No se han encontrado productos para los criterios especificados.</td>
+					</tr>
+				}
+				else
+				{
+					var cheques = Model.GrillaChequesDetalle.ListaDatos.OrderBy(p => p.ctaf_id).ThenBy(p => p.ctaf_denominacion).ToList();
+					@foreach (var item in cheques)
+					{
+						ctafIdActual = item.ctaf_id;
+						// Si cambia la familia, insertamos una fila de encabezado para la familia
+						if (ctafIdActual != ctafIdAnterior)
+						{
+							<tr class="table-secondary fw-bold">
+								<td colspan="13" class="text-center">
+									<i class="bx bx-folder me-1"></i>
+									Cuenta Banco: @item.ctaf_id - @item.ctaf_denominacion
+								</td>
+							</tr>
+							ctafIdAnterior = ctafIdActual;
+							alt = true; // Reiniciar alternancia de colores después de cada familia
+						}
+						if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+						<tr class="@clase" data-che-emision="@item.che_emision" data-che-nro="@item.che_nro">
+							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.op_compte)">@Model.GrillaChequesDetalle.FormatearDato(item.op_compte, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_fecha_emi)">@Model.GrillaChequesDetalle.FormatearDato(item.che_fecha_emi, FormatDato.Fecha)</td>
+							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_fecha)">@Model.GrillaChequesDetalle.FormatearDato(item.che_fecha, FormatDato.Fecha)</td>
+							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_nro)">@Model.GrillaChequesDetalle.FormatearDato(item.che_nro, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_anombre)">@Model.GrillaChequesDetalle.FormatearDato(item.che_anombre, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_estado_desc)">@Model.GrillaChequesDetalle.FormatearDato(item.che_estado_desc, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.usu_id)">@Model.GrillaChequesDetalle.FormatearDato(item.usu_id, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_importe)">@Model.GrillaChequesDetalle.FormatearDato(item.che_importe, FormatDato.Monto)</td>
+							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.modificado)">@Model.GrillaChequesDetalle.FormatearDato(item.modificado, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_estado)">@Model.GrillaChequesDetalle.FormatearDato(item.che_estado, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.ent_fecha)">@Model.GrillaChequesDetalle.FormatearDato(item.ent_fecha, FormatDato.Fecha)</td>
+							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_estado)">@Model.GrillaChequesDetalle.FormatearDato(item.che_estado, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_estado)">@Model.GrillaChequesDetalle.FormatearDato(item.che_estado, FormatDato.Ninguno)</td>
+						</tr>
+					}
+				}
+			</tbody>
+		</table>
+	</div>
+</div>

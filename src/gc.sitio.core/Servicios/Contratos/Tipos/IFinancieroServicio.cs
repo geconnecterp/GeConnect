@@ -3,6 +3,7 @@ using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Tipos;
 using gc.infraestructura.Dtos.Users;
 
 namespace gc.sitio.core.Servicios.Contratos
@@ -30,5 +31,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<FinancieroBcoLibroDto> GetFinancieroBcoLibro(FinancieroBcoLibroRequest request, string token);
 		List<FinancieroBcoVencChequeEmitidoDto> GetFinancieroBcoVencChequeEmitido(FinancieroBcoVencChequeEmitidoRequest request, string token);
 		List<FinancieroBcoVencChequeEmitidoListaDto> GetFinancieroBcoVencChequeEmitidoLista(FinancieroBcoVencChequeEmitidoListaRequest request, string token);
+		List<ChequeEmitidoEstadoDto> GetChequesEmitidosEstadosLista(string token);
 	}
 }

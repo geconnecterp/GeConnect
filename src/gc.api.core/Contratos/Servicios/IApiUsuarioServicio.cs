@@ -2,6 +2,7 @@ using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Users;
+using gc.infraestructura.Dtos.Users.Request;
 namespace gc.api.core.Contratos.Servicios
 {
     public interface IApiUsuarioServicio : IServicio<Usuario>
@@ -20,6 +21,7 @@ namespace gc.api.core.Contratos.Servicios
         List<PerfilUserDto> ObtenerPerfilesDelUsuario(string usuId);
         List<AdmUserDto> ObtenerAdministracionesDelUsuario(string usuId);
         List<DerUserDto> ObtenerDerechosDelUsuario(string usuId);
+        List<UserDto> BuscarUsuarios(BuscarUsuarioRequest filtro);
 
-    }
+	}
 }

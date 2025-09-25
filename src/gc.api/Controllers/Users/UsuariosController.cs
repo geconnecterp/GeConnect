@@ -3,6 +3,7 @@ using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Users;
+using gc.infraestructura.Dtos.Users.Request;
 using log4net.Filter;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -119,5 +120,18 @@ namespace gc.api.Controllers.Users
             var user = _usuSv.ObtenerDerechosDelUsuario(userId);
             return Ok(new ApiResponse<List<DerUserDto>>(user));
         }
-    }
+
+		[HttpPost]
+		[Route("[action]")]
+		public IActionResult BuscarUsuariosParaLista(BuscarUsuarioRequest filtro)
+		{
+			if (filtro == null)
+			{
+				return BadRequest("No se recepcionaron datos para realizar la busqueda.");
+			}
+
+            var user = _usuSv.BuscarUsuarios(filtro);
+			return Ok(new ApiResponse<List<UserDto>>(user));
+		}
+	}
 }

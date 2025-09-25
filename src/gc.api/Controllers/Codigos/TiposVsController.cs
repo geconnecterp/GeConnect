@@ -500,6 +500,17 @@ namespace gc.api.Controllers.Codigos
 			var response = new ApiResponse<List<TipoTransferenciaDto>>(lista);
 			return Ok(response);
 		}
-		//
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetChequesEmitidosEstadosLista()
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			List<ChequeEmitidoEstadoDto> financiero = _financieroServicio.GetChequeEmitidoEstadoLista();
+			var lista = _mapper.Map<List<ChequeEmitidoEstadoDto>>(financiero);
+
+			var response = new ApiResponse<List<ChequeEmitidoEstadoDto>>(lista);
+			return Ok(response);
+		}
 	}
 }

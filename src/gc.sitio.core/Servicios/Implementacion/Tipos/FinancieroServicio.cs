@@ -7,6 +7,7 @@ using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Tipos;
 using gc.infraestructura.Dtos.Users;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
@@ -42,6 +43,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string ObtenerFinancieroBcoLibro = "/GetFinancieroBcoLibro";
 		private const string ObtenerFinancieroBcoVencChequeEmitido = "/GetFinancieroBcoVencChequeEmitido";
 		private const string ObtenerFinancieroBcoVencChequeEmitidoLista = "/GetFinancieroBcoVencChequeEmitidoLista";
+		private const string ObtenerChequesEmitidosEstadosLista = "/GetChequesEmitidosEstadosLista";
 
 		private readonly AppSettings _appSettings;
 		public FinancieroServicio(IOptions<AppSettings> options, ILogger<AdministracionServicio> logger) : base(options, logger)
@@ -773,6 +775,43 @@ namespace gc.sitio.core.Servicios.Implementacion
 				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
 				return new();
+			}
+		}
+
+		public List<ChequeEmitidoEstadoDto> GetChequesEmitidosEstadosLista(string token)
+		{
+			try
+			{
+				ApiResponse<List<ChequeEmitidoEstadoDto>> apiResponse;
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaTiposAPI}{ObtenerChequesEmitidosEstadosLista}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						_logger.LogWarning($"La API no devolvió dato alguno. Sin parámetros de busqueda");
+						return [];
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ChequeEmitidoEstadoDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+					return apiResponse.Data;
+				}
+				else
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+					return [];
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogWarning($"Algo no fue bien. Error interno {ex.Message}");
+				return [];
 			}
 		}
 	}

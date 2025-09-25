@@ -6,6 +6,7 @@ using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Users;
+using gc.infraestructura.Dtos.Users.Request;
 using log4net.Filter;
 using Microsoft.Data.SqlClient;
 using System.Runtime.Intrinsics.Arm;
@@ -204,7 +205,25 @@ namespace gc.api.core.Servicios
             return resp;
         }
 
-        public UserDto BuscarUsuarioDatos(string usuId)
+		public List<UserDto> BuscarUsuarios(BuscarUsuarioRequest filtro)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_USU_FILTRO;
+			var ps = new List<SqlParameter>
+			{
+				new SqlParameter("@id", filtro.id),
+				new SqlParameter("@id_d", filtro.id_d),
+				new SqlParameter("@id_h", filtro.id_h),
+				new SqlParameter("@deno", filtro.deno),
+				new SqlParameter("@deno_like", filtro.deno_like),
+				new SqlParameter("@registros", filtro.registros),
+				new SqlParameter("@pagina", filtro.pagina),
+				new SqlParameter("@ordenar", string.IsNullOrEmpty(filtro.ordenar) ? "usu_apellidoynombre" : filtro.ordenar)
+			};
+			List<UserDto> resp = _repository.EjecutarLstSpExt<UserDto>(sp, ps, true);
+			return resp;
+		}
+
+		public UserDto BuscarUsuarioDatos(string usuId)
         {
             var sp = ConstantesGC.StoredProcedures.SP_USU_DATO;
             var ps = new List<SqlParameter>() { new SqlParameter("@usu_id", usuId) };

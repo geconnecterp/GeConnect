@@ -1,0 +1,63 @@
+﻿@model FiltrosChequePropioEmitidoModel
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+}
+@section styles {
+	<link rel="stylesheet" href="~/css/simplePagination.css" />
+	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+}
+<div class="container mt-2">
+	<div class="row mb-2">
+		<div class="col-md-6">
+			<div class="d-flex justify-content-sm-around">
+				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
+					<i class="bx bx-filter bx-xs"></i>
+				</button>
+
+				<button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle" hidden>
+					<i class="bx bx-caret-down"></i>
+				</button>
+			</div>
+		</div>
+		<div class="collapse col-md-2">
+			<div class="d-flex justify-content-sm-end">
+				<!-- Botón Imprimir -->
+				<button type="button" class="btn btn-golden btn-sm mt-1 me-1 btnImprimir" title="Imprimir">
+					<i class="bx bx-printer"></i>
+				</button>
+				<button type="button" class="btn btn-golden btn-sm mt-1 me-1 btnImprimir" id="btnImprimirTemp" title="Imprimir Temporal">
+					<i class="bx bx-printer"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+	<div class="collapse" id="divFiltros" style="">
+		<partial name="_filtros" model="Model" />
+		@Html.Hidden("pagEstado", false);
+	</div>
+	<div class="collapse" id="divDetalle" style="">
+		<div class="d-flex align-items-center w-100">
+			<div id="divChequesPropiosEmitidos">
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- para el modal del geston de impresion -->
+<div id="modalGestorDocumental"></div>
+
+@section scripts {
+	<script type="text/javascript">
+		var ctaIdSelected = "";
+		var ctaDescSelected = "";
+
+		var autoComRel01Url = "@Url.Action("BuscarProvs", "chequepropioemitido", new { area = "Financieros" })";
+		var buscarChequesPropiosEmitidosUrl = "@Url.Action("BuscarChequesEmitidosPropios", "chequepropioemitido", new { area = "Financieros" })";
+	</script>
+	<script src="~/lib/jstree/jstree.min.js"></script>
+	<script src="~/js/app/areas/docmngr/docmanager.js"></script>
+
+	<script src="~/js/plugins/jquery.simplePagination.js"></script>
+
+	<script src="~/js/app/areas/financieros/chequepropioemitido/cheproemitido.js" type="text/javascript"></script>
+}

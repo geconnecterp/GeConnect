@@ -3,8 +3,11 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos.Almacen.Tr.Remito;
+using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Users;
+using gc.infraestructura.Dtos.Users.Request;
 using gc.sitio.core.Servicios.Contratos.Users;
 using log4net.Filter;
 using Microsoft.Extensions.Logging;
@@ -23,8 +26,9 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
         private const string OBTENER_PERFILES_USUARIO = "/ObtenerPerfilesDelUsuario";
         private const string OBTENER_ADM_USUARIO = "/ObtenerAdministracionesDelUsuario";
         private const string OBTENER_DER_USUARIO = "/ObtenerDerechosDelUsuario";
+		private const string BUSCAR_USUARIOS_LISTA = "/BuscarUsuariosParaLista";
 
-        private readonly AppSettings _appSettings;
+		private readonly AppSettings _appSettings;
 
         public UserServicio(IOptions<AppSettings> options, ILogger<UserServicio> logger) : base(options, logger)
         {
@@ -327,5 +331,36 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
                 return new RespuestaGenerica<PerfilUserDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener los perfiles del Usuario." };
             }
         }
-    }
+
+		public List<UserDto> ObtenerUsuarioParaLista(BuscarUsuarioRequest request, string token)
+		{
+			ApiResponse<List<UserDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{BUSCAR_USUARIOS_LISTA}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return [];
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<UserDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+	}
 }

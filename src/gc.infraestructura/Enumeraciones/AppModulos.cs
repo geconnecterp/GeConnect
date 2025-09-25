@@ -25,7 +25,8 @@
         HLI, //HISTORICO LIBRO
         EBA, //EXTRACTO BANCARIO
         OF_SINACT, //OFERTAS SIN ACTIVAR
-    }
+        CPE, // CHEQUES PROPIOS EMITIDOS
+	}
 
     public enum AppReportes
     {
