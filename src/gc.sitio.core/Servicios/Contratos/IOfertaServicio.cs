@@ -17,6 +17,6 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaGenerica<RespuestaDto>> EliminarOfertas(AbmPlusGenDto req, string token);
         Task<RespuestaGenerica<OfertaDto>> ObtenerOfertasActivas(string admId, string lp_id, string token);
         Task<RespuestaGenerica<RespuestaDto>> EliminaOfertasActivas(AbmGenDto req, string token);
-        Task<RespuestaGenerica<RespuestaDto>> CopiarACanal(AbmGenDto req, string token);
+        Task<RespuestaGenerica<RespuestaDto>> CopiarACanal(AbmPlusGenDto req, string token);
     }
 }

@@ -121,7 +121,7 @@ namespace gc.api.core.Servicios.Ofertas
             };
         }
 
-        public RespuestaDto CopiarACanal(AbmGenDto req)
+        public RespuestaDto CopiarACanal(AbmPlusGenDto req)
         {
             var sp = ConstantesGC.StoredProcedures.SP_PROD_OFERTA_COPIAR_A;
             var obj = req.Objeto.Split('#', StringSplitOptions.RemoveEmptyEntries);
@@ -131,6 +131,7 @@ namespace gc.api.core.Servicios.Ofertas
                 new SqlParameter("@adm_id_ofe", obj[0]),
                 new SqlParameter("@lp_id_ofe", obj[1]),
                 new SqlParameter("@json_p", req.Json),
+                new SqlParameter("@json_destino", req.Json2),
                 new SqlParameter("@usu_id", req.Usuario),
                 new SqlParameter("@adm_id", req.Administracion),
             };

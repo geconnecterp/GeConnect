@@ -171,7 +171,7 @@ namespace gc.api.Controllers.Ofertas
         [HttpPost("copiar-a-canal")]
         public ActionResult<RespuestaDto> CopiarACanal(AbmPlusGenDto req)
         {
-            if (req == null || string.IsNullOrEmpty(req.Json) || string.IsNullOrEmpty(req.Objeto)
+            if (req == null || string.IsNullOrEmpty(req.Json) || string.IsNullOrEmpty(req.Json2) || string.IsNullOrEmpty(req.Objeto)
                 || string.IsNullOrEmpty(req.Usuario) || string.IsNullOrEmpty(req.Administracion))
             {
                 return BadRequest("Alguno de los parametros para la eliminacion de la oferta ha faltado. Verifique");
