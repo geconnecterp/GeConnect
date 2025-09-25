@@ -195,58 +195,121 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
         }
 
+        /// <summary>
+        /// Copia ofertas seleccionadas desde un canal origen a múltiples canales destino
+        /// </summary>
+        /// <param name="ids">Lista de IDs de los productos</param>
+        /// <param name="admIdOrigen">ID de administración del canal origen</param>
+        /// <param name="lpIdOrigen">ID de lista de precios del canal origen</param>
+        /// <param name="canalesDestinoStr">Lista de canales destino en formato "admId#lpId"</param>
+        /// <returns>Resultado de la operación de copia</returns>
         [HttpPost]
-        public async Task<JsonResult> CopiarACanal(List<string> ids, string admId, string lp_id)
+        public async Task<JsonResult> CopiarACanal(List<string> ids, string admIdOrigen, string lpIdOrigen, 
+            List<string> canalesDestinoStr)
         {
-            string msg = "Error interno al eliminar ofertas activas";
+            const string msgErrorBase = "Error interno al copiar ofertas a canales";
             try
             {
                 // ✅ VALIDACIÓN: Autenticación
                 if (!VerificarAutenticacion(out IActionResult redirectResult))
                     return Json(new { error = true, msg = "Sesión expirada" });
 
+                // ✅ VALIDACIÓN: Parámetros requeridos
+                if (ids == null || !ids.Any())
+                    return Json(new { error = true, msg = "Debe seleccionar al menos una oferta para copiar" });
 
-                if (ids == null)
-                {
-                    return Json(new { error = true, msg = "Debe al menos seleccionar una oferta para eliminar." });
-                }
-                //var productosIds = OfertasSinActivar.Where(x=>ids.Contains(x.p_id)).Select(p => new { p_id = p.p_id }).ToList();
-                var lista = OfertasSinActivar;
-                var ofertas = lista.Where(o => ids.Contains(o.p_id)).Select(p => new { p_id = p.p_id }).ToList();
+                if (string.IsNullOrEmpty(admIdOrigen) || string.IsNullOrEmpty(lpIdOrigen))
+                    return Json(new { error = true, msg = "Debe especificar un canal origen válido" });
 
-                AbmPlusGenDto req = new AbmPlusGenDto
+                if (canalesDestinoStr == null || !canalesDestinoStr.Any())
+                    return Json(new { error = true, msg = "Debe seleccionar al menos un canal destino" });
+
+                // Convertir los strings a tuplas (admId, lpId)
+                var canalesDestino = canalesDestinoStr
+                    .Select(canalStr => canalStr.Split('#'))
+                    .Where(partes => partes.Length == 2)
+                    .Select(partes => new { adm_id= partes[0], lp_id= partes[1]})
+                    .ToList();
+                //var canalesDestino = new List<(string admId, string lpId)>();
+                //foreach (var canalStr in canalesDestinoStr)
+                //{
+                //    var partes = canalStr.Split('#');
+                //    if (partes.Length == 2)
+                //    {
+                //        canalesDestino.Add((partes[0], partes[1]));
+                //    }
+                //    else
+                //    {
+                //        _logger?.LogWarning($"Formato incorrecto de canal destino: {canalStr}");
+                //    }
+                //}
+
+                if (!canalesDestino.Any())
+                    return Json(new { error = true, msg = "No se pudo procesar ningún canal destino válido" });
+
+                // Obtener ofertas seleccionadas de la lista en memoria
+                var ofertasSeleccionadas = OfertasActivas
+                    .Where(o => ids.Contains(o.p_id))
+                    .Select(p => new { p_id = p.p_id })
+                    .ToList();
+
+                if (!ofertasSeleccionadas.Any())
+                    return Json(new { error = true, msg = "No se encontraron las ofertas seleccionadas" });
+
+                // Crear el objeto de petición para el servicio
+                var req = new AbmPlusGenDto
                 {
-                    Objeto = $"{admId}#{lp_id}",
-                    Json = JsonConvert.SerializeObject(ofertas),
+                    // Canal origen
+                    Objeto = $"{admIdOrigen}#{lpIdOrigen}",
+                    
+                    // Lista de productos/ofertas
+                    Json = JsonConvert.SerializeObject(ofertasSeleccionadas),
+                    
+                    // Lista de canales destino
+                    Json2 = JsonConvert.SerializeObject(canalesDestino),
+                    
+                    // Información del usuario
                     Usuario = UserName,
                     Administracion = AdministracionId
                 };
-                RespuestaGenerica<RespuestaDto> respuesta = await _ofertaServicio.CopiarACanal(req, TokenCookie);
-                if (!respuesta.Ok || respuesta.EsError)
-                {
-                    throw new NegocioException(respuesta.Mensaje ?? "Error al Eliminar la(s) oferta(s)");
-                }
-                return Json(new
-                {
-                    error = false,
-                    warn = false,
-                    msg = ids.Count == 1 ?
-                            string.IsNullOrEmpty(respuesta.Mensaje) ? "Oferta Eliminada correctamente." : respuesta.Mensaje :
-                            string.IsNullOrEmpty(respuesta.Mensaje) ? "Ofertas Eliminadas correctamente." : respuesta.Mensaje,
-                    adm_Id = admId,
-                    lp_id
-                });
+                    
+                // Llamar al servicio para copiar las ofertas
+                var respuesta = await _ofertaServicio.CopiarACanal(req, TokenCookie);
+                    
+                if (!respuesta.Ok)
+                    return Json(new { 
+                        error = true, 
+                        msg = respuesta.Mensaje ?? "Error al copiar ofertas a los canales destino"
+                    });
+                    
+                // Construir mensaje según cantidad de ofertas y canales
+                string mensajeExito = $"{ids.Count} oferta{(ids.Count == 1 ? "" : "s")} " +
+                                      $"copiada{(ids.Count == 1 ? "" : "s")} a " +
+                                      $"{canalesDestino.Count} canal{(canalesDestino.Count == 1 ? "" : "es")}";
 
+                if (!string.IsNullOrEmpty(respuesta.Mensaje))
+                    mensajeExito = respuesta.Mensaje;
+                    
+                // Devolver respuesta exitosa con información
+                return Json(new {
+                    error = false,
+                    warn = respuesta.Entidad?.resultado > 0,
+                    msg = mensajeExito,
+                    admIdOrigen,
+                    lpIdOrigen,
+                    cantidadOfertas = ids.Count,
+                    cantidadCanales = canalesDestino.Count
+                });
             }
             catch (NegocioException ex)
             {
-                _logger?.LogError(ex, msg);
-                return Json(new { error = false, warn = true, msg = ex.Message });
+                _logger?.LogError(ex, $"{msgErrorBase}: {ex.Message}");
+                return Json(new { error = true, warn = false, msg = ex.Message });
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, msg);
-                return Json(new { error = false, warn = true, msg });
+                _logger?.LogError(ex, msgErrorBase);
+                return Json(new { error = true, warn = false, msg = msgErrorBase });
             }
         }
     }

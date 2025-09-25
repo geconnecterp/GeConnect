@@ -16,6 +16,6 @@ namespace gc.api.core.Contratos.Servicios.Ofertas
         RespuestaDto CargarActivasASinActivar(AbmGenDto req);
         RespuestaDto EliminarOfertas(AbmPlusGenDto req);
         RespuestaDto EliminaOfertasActivas(AbmGenDto req);
-        RespuestaDto CopiarACanal(AbmGenDto req);
+        RespuestaDto CopiarACanal(AbmPlusGenDto req);
     }
 }
