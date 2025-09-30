@@ -345,6 +345,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				modificado = item.modificado,
 				dif_print = item.dif_print,
 				cf_conciliado = item.cf_conciliado,
+				usu_apellidoynombre = item.usu_apellidoynombre,
 				diferido = item.diferido
 			}).ToList();
 		}

@@ -67,7 +67,12 @@
 		pointer-events: none;
 	}
 
-
+	#tbListaDetalleCheques thead th {
+		position: sticky;
+		top: 0;
+		background-color: #d4af37; /* o el color de fondo que uses */
+		z-index: 2;
+	}
 </style>
 <div class="row align-items-center mb-2">
 	<div class="col-12 d-flex justify-content-between">
@@ -143,7 +148,7 @@
 							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_nro)">@Model.GrillaChequesDetalle.FormatearDato(item.che_nro, FormatDato.Ninguno)</td>
 							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_anombre)">@Model.GrillaChequesDetalle.FormatearDato(item.che_anombre, FormatDato.Ninguno)</td>
 							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_estado_desc)">@Model.GrillaChequesDetalle.FormatearDato(item.che_estado_desc, FormatDato.Ninguno)</td>
-							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.usu_id)">@Model.GrillaChequesDetalle.FormatearDato(item.usu_id, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.usu_apellidoynombre)">@Model.GrillaChequesDetalle.FormatearDato(item.usu_apellidoynombre, FormatDato.Ninguno)</td>
 							<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_importe)">@Model.GrillaChequesDetalle.FormatearDato(item.che_importe, FormatDato.Monto)</td>
 							@if (item.modificado_bool)
 							{

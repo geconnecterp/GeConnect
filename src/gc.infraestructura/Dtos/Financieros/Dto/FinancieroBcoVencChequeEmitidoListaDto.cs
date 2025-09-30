@@ -19,6 +19,7 @@ namespace gc.infraestructura.Dtos.Financieros
 		public string op_compte { get; set; } = string.Empty;
 		public string cta_id { get; set; } = string.Empty;
 		public string cta_denominacion { get; set; } = string.Empty;
+		public string usu_apellidoynombre { get; set; } = string.Empty;
 		public DateTime? ent_fecha { get; set; }
 		public string ent_usu_id { get; set; } = string.Empty;
 		public char che_auto { get; set; }
@@ -48,6 +49,7 @@ namespace gc.infraestructura.Dtos.Financieros
 		public string cta_denominacion { get; set; } = string.Empty;
 		public DateTime? ent_fecha { get; set; }
 		public string ent_usu_id { get; set; } = string.Empty;
+		public string usu_apellidoynombre { get; set; } = string.Empty;
 		public char che_auto { get; set; }
 		public char? modificado { get; set; }
 		public char dif_print { get; set; }

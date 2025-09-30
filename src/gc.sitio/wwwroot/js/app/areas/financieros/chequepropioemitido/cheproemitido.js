@@ -547,9 +547,15 @@ function GuardarChequeModificar() {
 				}, false, ["Aceptar"], "error!", null);
 			}
 			else {
-				guardarSeleccionados();
-				ActualizarListaCheques();
+				$("#modalChequeModificar").modal("hide");
 				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					guardarSeleccionados();
+					ActualizarListaCheques();
+					return true;
+				}, false, ["Aceptar"], "succ!", null);
+				
 			}
 		});
 	}
@@ -581,7 +587,7 @@ function ActualizarListaCheques() {
 function verDetalleEntrega(ctaf_id, che_nro, che_emision) {
 	console.log("Ver detalle de cheque:", ctaf_id);
 	// Lógica para mostrar modal o cargar datos
-	AbrirMensaje("ATENCIÓN", `¿Esta seguro que desea registrar la entrega el cheque seleccionado? N°: ${che_emision}-${che_nro}`, function (e) {
+	AbrirMensaje("ATENCIÓN", `¿Esta seguro que desea registrar la entrega el cheque seleccionado? N°: ${che_nro}`, function (e) {
 		$("#msjModal").modal("hide");
 		switch (e) {
 			case "SI": //Confirmar la entrega
@@ -600,7 +606,7 @@ function verDetalleEntrega(ctaf_id, che_nro, che_emision) {
 function verDetalleRechazar(ctaf_id, che_nro, che_emision) {
 	console.log("Ver detalle de cheque:", ctaf_id, che_nro, che_emision);
 	// Lógica para mostrar modal o cargar datos
-	AbrirMensaje("ATENCIÓN", `¿Esta seguro que desea rechazar el cheque seleccionado? N°: ${che_emision}-${che_nro}`, function (e) {
+	AbrirMensaje("ATENCIÓN", `¿Esta seguro que desea rechazar el cheque seleccionado? N°: ${che_nro}`, function (e) {
 		$("#msjModal").modal("hide");
 		switch (e) {
 			case "SI": //Confirmar la entrega
@@ -629,8 +635,12 @@ function SetRechazarCheque(ctaf_id, che_emision) {
 			}, false, ["Aceptar"], "error!", null);
 		}
 		else {
-			guardarSeleccionados();
-			ActualizarListaCheques();
+			AbrirMensaje("ATENCIÓN", "El rechazo se confirmó exitósamente.", function () {
+				$("#msjModal").modal("hide");
+				guardarSeleccionados();
+				ActualizarListaCheques();
+				return true;
+			}, false, ["Aceptar"], "succ!", null);
 		}
 	});
 }
@@ -643,13 +653,18 @@ function SetFechaDeEntrega(ctaf_id, che_emision) {
 		if (obj.error === true) {
 
 			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
+				$("#msjModal").modal("hide");	
 				return true;
 			}, false, ["Aceptar"], "error!", null);
 		}
 		else {
-			guardarSeleccionados();
-			ActualizarListaCheques();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				guardarSeleccionados();
+				ActualizarListaCheques();
+				return true;
+			}, false, ["Aceptar"], "succ!", null);
+			
 		}
 	});
 }
