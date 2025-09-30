@@ -9,24 +9,23 @@
 		<div class="row mb-2">
 			<h5>Autorizaciones TR</h5>
 			<div class="d-flex align-items-center justify-content-between flex-wrap mt-2">
-				<div class="btn-group me-2" role="group" aria-label="Basic radio toggle button group">
-					<input type="radio" class="btn-check" name="btnradio" id="btnradioSucursales" checked="">
-					<label class="btn btn-outline-primary" for="btnradioSucursales">TR Sucursales</label>
-					<input type="radio" class="btn-check" name="btnradio" id="btnradioDepositos">
-					<label class="btn btn-outline-primary" for="btnradioDepositos">TR Depósitos</label>
+				<div class="d-flex flex-wrap">
+					<div class="form-check form-check-inline mb-2 me-2">
+						<input class="form-check-input" name="btnradio" type="radio" value="true" id="btnradioSucursales" checked>
+						<label class="form-check-label" for="btnradioSucursales">TR Sucursales</label>
+					</div>
+					<div class="form-check form-check-inline mb-2">
+						<input class="form-check-input" name="btnradio" type="radio" value="false" id="btnradioDepositos">
+						<label class="form-check-label" for="btnradioDepositos">TR Depósitos</label>
+					</div>
 				</div>
 				<div>
 					<button id="btnNuevaAut" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Agregar Nueva Transferencia" asp-action="NuevaTR" asp-controller="Transferencia" asp-area="Compras">
 						<i class="bx bx-plus-circle"></i> Nueva Transferencia
 					</button>
-@* 					<a asp-action="NuevaTR" asp-controller="Transferencia" asp-area="Compras" class="btn btn-primary btn-sm mt-1 me-1" id="btnNuevaAut" title="Agregar Autorización de Transferencia">
-						<span class="bx bx-plus-circle"> Nueva</span>
-					</a> *@
 					<button id="btnModificarAut" class="btn btn-info btn-sm mt-1 me-1" type="button" title="Modificar Transferencia seleccionada">
 						<i class="bx bx-edit-alt"></i> Modificar Transferencia
 					</button>
-					@* <a href="#" id="btnModificarAut" class="btn btn-info btn-sm mt-1 me-1" title="Modificar Autorización de Transferencia"><span class="bx bx-edit"> Modificar</span></a> *@
-					@* <a href="#" id="btnVer" class="btn btn-info btn-sm mt-1 me-1" title="Visualizar datos de Autorización" onclick="verTransferencia();return false;"><span class="bx bx-show"> Ver</span></a> *@
 					<button id="btnVer" class="btn btn-info btn-sm mt-1 me-1" type="button" title="Ver Autorización seleccionada" onclick="verTransferencia();return false;">
 						<i class="bx bx-show"></i> Ver Transferencia
 					</button>

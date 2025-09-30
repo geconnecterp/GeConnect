@@ -1661,5 +1661,16 @@ namespace gc.api.core.Servicios
             List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
             return resp.First();
         }
-    }
+
+		public List<PIDetalleDto> PIDetalle(string pi_compte)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PI_DETALLE;
+			var ps = new List<SqlParameter>()
+			{
+				new("@pi_compte",pi_compte),
+			};
+			List<PIDetalleDto> resp = _repository.EjecutarLstSpExt<PIDetalleDto>(sp, ps, true);
+			return resp;
+		}
+	}
 }

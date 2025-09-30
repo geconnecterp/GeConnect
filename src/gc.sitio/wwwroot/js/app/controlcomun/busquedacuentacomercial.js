@@ -269,7 +269,20 @@ function EliminarComprobanteRPR(rp) {
 }
 
 function AceptarAutoRP() {
-	GuardarDetalleDeProductos(true);
+	AbrirMensaje("ATENCIÓN", "¿Esta seguro que desea guardar la autorización?", function (e) {
+		$("#msjModal").modal("hide");
+		switch (e) {
+			case "SI": //Confirmar la entrega
+				GuardarDetalleDeProductos(true);
+				break;
+			case "NO":
+				break;
+			default: //NO
+				break;
+		}
+		return true;
+
+	}, true, ["Aceptar", "Cancelar"], "question!", null);
 }
 
 function RegresarASelAuto() {
@@ -328,7 +341,10 @@ function GuardarDetalleDeProductos(guardado) {
 				return true;
 			}, false, ["Aceptar"], "warn!", null);
 		} else {
-			window.location.href = volverAListaDeAutorizacionesUrl;
+			AbrirMensaje("Atención", "La Autorización se guardó crrectamente.", function () {
+				$("#msjModal").modal("hide");
+				window.location.href = volverAListaDeAutorizacionesUrl;
+			}, false, ["Aceptar"], "warn!", null);
 		}
 	});
 }

@@ -1,5 +1,7 @@
 ﻿@model ProdPorRubroModel
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 <style>
 	thead th {
@@ -9,9 +11,9 @@
 </style>
 <div class="card">
 	<div class="card-body" style="padding:5px;">
-		<div class="table-responsive text-nowrap table-wrapper-200-full">
-			<table class="table table-sm mb-0 table-hover" id="tbProductosPorRubro">
-				<thead class="table-dark">
+		<div class="table-responsive text-nowrap table-wrapper-300-full">
+			<table class="table table-sm mb-0 table-hover table-golden" id="tbProductosPorRubro">
+				<thead>
 					<tr class="header">
 						<th><input name="select_all" value="1" type="checkbox"></th>
 						<th class="col-header-small align-center">ID</th>
@@ -23,8 +25,9 @@
 					{
 						@foreach (var item in Model.ProductosPorRubro.ListaDatos)
 						{
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 							var nombre = "chk" + item.P_id;
-							<tr>
+							<tr class="@clase">
 								<td><input type="checkbox" name=@nombre /></td>
 								<td class="align-center">@item.P_id</td>
 								<td class="align-left">@item.P_desc</td>

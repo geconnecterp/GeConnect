@@ -1526,5 +1526,13 @@ namespace gc.api.Controllers.Almacen
 
             return Ok(new ApiResponse<RespuestaDto>(resultado));
         }
-    }
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult PIDetalle(string pi_compte)
+		{
+			var res = _productosSv.PIDetalle(pi_compte);
+			return Ok(new ApiResponse<List<PIDetalleDto>>(res));
+		}
+	}
 }

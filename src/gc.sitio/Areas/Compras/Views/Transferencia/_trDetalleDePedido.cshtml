@@ -1,5 +1,13 @@
 ﻿@model TRDetallePedidoDto
-
+@{
+	var alt = true;
+	string clase = string.Empty;
+	var pi_compte = string.Empty;
+	if (Model != null && Model.Detalle != null && Model.Detalle.ListaDatos != null && Model.Detalle.ListaDatos.Count > 0)
+	{
+		pi_compte = Model.Detalle.ListaDatos.First().pi_compte;
+	}
+}
 <div class="modal-header">
 	<h5 class="modal-title" id="modalCenterTitle">@Model.Titulo</h5>
 	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -23,7 +31,8 @@
 				{
 					@foreach (var item in Model.Detalle.ListaDatos)
 					{
-						<tr onclick="selectTRDetalleDePedido(this)">
+						if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+						<tr class ="@clase" onclick="selectTRDetalleDePedido(this)">
 							<td class="align-center">@item.pi_compte</td>
 							<td class="align-center">@item.pid_item</td>
 							<td class="align-center">@item.p_id</td>
@@ -39,7 +48,10 @@
 	</div>
 </div>
 <div class="modal-footer">
-	<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-		Cerrar
+	<button class="btn btn-secondary btn-sm mt-1 me-1" type="button" title="Imprimir" id="btnImprimirDetallePI" @* onclick="imprimirPIDetalle(@pi_compte);" *@>
+		<i class="bx bx-printer"></i> Imprimir
+	</button>
+	<button class="btn btn-outline-secondary btn-sm mt-1 me-1" data-bs-dismiss="modal">
+		<i class="bx bx-log-out-circle"></i> Cerrar
 	</button>
 </div>

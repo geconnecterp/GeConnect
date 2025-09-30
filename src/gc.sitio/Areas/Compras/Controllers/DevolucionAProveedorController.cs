@@ -154,7 +154,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 						var bultoDecimalAux = Convert.ToDecimal(bto);
 						if (producto.Up_id == "07") //Entero
 						{
-							stkEnteroAux = Int32.Parse(productoStk.First().Ps_stk.ToString(), NumberStyles.AllowThousands, CultureInfo.CurrentCulture);
+							//stkEnteroAux = Int32.Parse(productoStk.First().Ps_stk.ToString(), NumberStyles.AllowThousands, CultureInfo.CurrentCulture);
+							if (Decimal.TryParse(productoStk.First().Ps_stk.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal stkDecimal))
+							{
+								stkEnteroAux = (int)Math.Floor(stkDecimal);
+							}
 							var upxbto = unidadPres * bto;
 							cantidadAux = stkEnteroAux - ((upxbto < 0 ? upxbto * -1 : upxbto) + us);
 						}

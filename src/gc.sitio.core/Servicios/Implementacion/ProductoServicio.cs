@@ -107,7 +107,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string TR_AUT_Confirma_Auto = "/TRConfirmaAutorizaciones";
 		private const string TR_Ver_Conteos = "/TRVerConteos";
 		private const string TR_Validar_Transferencia = "/TRValidarTransferencia";
-
+		private const string PI_Detalle = "/PIDetalle";
 
 
 		//NCYPI
@@ -1340,6 +1340,37 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TRAutPIDetalleDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<PIDetalleDto>> PIDetalle(string piCompte, string token)
+		{
+			ApiResponse<List<PIDetalleDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{PI_Detalle}?pi_compte={piCompte}";
+
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros pi_compte:{piCompte}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<PIDetalleDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 				return apiResponse.Data;
 			}
 			else

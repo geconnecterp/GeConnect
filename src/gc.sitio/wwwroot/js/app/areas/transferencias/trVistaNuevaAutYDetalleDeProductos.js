@@ -258,19 +258,44 @@ function guardarNotaDeSucursal() {
 			} else {
 				CerrarWaiting();
 				$("#modalNotaEnSucursal").modal("hide");
-				$("#tbNuevaAutListaSucursales tbody tr").each(function (index) {
-					var row = $(this);
-					if (row[0].cells[0]) {
-						if (row[0].cells[0].innerText == autorizacion && row[0].cells[4].innerText == admId && nota !== "") {
-							row[0].cells[3].childNodes[0].classList.remove("btn-outline-success")
-							row[0].cells[3].childNodes[0].classList.add("btn-outline-danger")
-						}
-						else if (row[0].cells[0].innerText == autorizacion && row[0].cells[4].innerText == admId && nota == "") {
-							row[0].cells[3].childNodes[0].classList.remove("btn-outline-danger")
-							row[0].cells[3].childNodes[0].classList.add("btn-outline-success")
+				$("#tbNuevaAutListaSucursales tbody tr").each(function () {
+					const row = this;
+					const celdaAut = row.cells[0];
+					const celdaAdmId = row.cells[4];
+					const celdaBoton = row.cells[3];
+					const boton = celdaBoton?.querySelector("button");
+
+					if (celdaAut && celdaAdmId && boton) {
+						const valorAut = celdaAut.innerText.trim();
+						const valorAdmId = celdaAdmId.innerText.trim();
+
+						if (valorAut === autorizacion && valorAdmId === admId) {
+							if (nota !== "") {
+								boton.classList.remove("btn-info");
+								boton.classList.add("btn-danger");
+							} else {
+								boton.classList.remove("btn-danger");
+								boton.classList.add("btn-info");
+							}
 						}
 					}
 				});
+
+				//$("#tbNuevaAutListaSucursales tbody tr").each(function (index) {
+				//	var row = $(this);
+				//	const btn = row[0].querySelector('td:last-child button');
+
+				//	if (row[0].cells[0]) {
+				//		if (row[0].cells[0].innerText == autorizacion && row[0].cells[4].innerText == admId && nota !== "") {
+				//			row[0].cells[3].childNodes[0].classList.remove("btn-info")
+				//			row[0].cells[3].childNodes[0].classList.add("btn-danger")
+				//		}
+				//		else if (row[0].cells[0].innerText == autorizacion && row[0].cells[4].innerText == admId && nota == "") {
+				//			row[0].cells[3].childNodes[0].classList.remove("btn-danger")
+				//			row[0].cells[3].childNodes[0].classList.add("btn-info")
+				//		}
+				//	}
+				//});
 			}
 		});
 	}
@@ -282,6 +307,7 @@ function guardarNotaDeSucursal() {
 		}, false, ["Aceptar"], "error!", null);
 	}
 }
+
 
 function guardarNotaDeProducto() {
 	AbrirWaiting();

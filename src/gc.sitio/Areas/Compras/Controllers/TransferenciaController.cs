@@ -319,6 +319,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 					#endregion
 				}).OrderBy(y => y.p_id).ToList();
 				model.Detalle = ObtenerGridCoreSmart<TRNuevaAutDetalleDto>(TRNuevaAutDetallelLista);
+
+				var titulo = "NUEVA AUTORIZACIÓN DE TRANSFERENCIA";
+				ViewData["Titulo"] = titulo;
+
 				return View("TRVistaNuevaAutYDetalleDeProductos", model);
 			}
 			catch (Exception ex)

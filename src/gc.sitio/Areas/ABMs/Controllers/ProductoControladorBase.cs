@@ -156,7 +156,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
         #endregion
 
-        protected async Task<IActionResult> BusquedaAvanzada(string ri01, string ri02, bool act, bool dis, bool ina, bool cstk, bool sstk, string search, bool buscaNew, IProductoServicio _productoServicio, string sort = "p_id", string sortDir = "asc", int pag = 1)
+        protected async Task<IActionResult> BusquedaAvanzada(string ri01, string ri02, bool act, bool dis, bool ina, bool cstk, bool sstk, string search, bool buscaNew, IProductoServicio _productoServicio, string sort = "p_id", string sortDir = "asc", int pag = 1, string ri03 = "%")
         {
             List<ProductoListaDto> lista;
             MetadataGrid metadata;
@@ -182,7 +182,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
                         SinStock = sstk,
                         CtaProveedorId = ri01,
                         RubroId = ri02,
-                        EstadoActivo = act,
+						FamiliaId = ri03,
+						EstadoActivo = act,
                         EstadoDiscont = dis,
                         EstadoInactivo = ina,
                         Registros = _setting.NroRegistrosPagina,

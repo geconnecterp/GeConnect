@@ -75,7 +75,7 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<List<TRAutSucursalesDto>> TRObtenerAutSucursales(string admId, string token);
 		Task<List<TRAutPIDto>> TRObtenerAutPI(string admId, string admIdLista, string token);
 		Task<List<TRAutPIDetalleDto>> TRObtenerAutPIDetalle(string piCompte, string token);
-
+		Task<List<PIDetalleDto>> PIDetalle(string piCompte, string token);
 		Task<List<TRAutDepoDto>> TRObtenerAutDepositos(string admId, string token);
 
 		Task<RespuestaGenerica<RespuestaDto>> ControlSalidaTI(string ti, string adm, string usu, string token);

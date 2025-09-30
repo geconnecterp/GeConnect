@@ -1,5 +1,8 @@
 ﻿@model GridCoreSmart<TRNuevaAutDetalleDto>
-
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
 <div class="table-responsive text-nowrap table-wrapper">
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbNuevaAutListaProductos">
 		<thead>
@@ -29,7 +32,8 @@
 			{
 				@foreach (var item in Model.ListaDatos)
 				{
-					<tr onclick="selectNuevaAutListaProductosRow(this)">
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" onclick="selectNuevaAutListaProductosRow(this)">
 						<td class="align-center">@item.p_id</td>
 						<td class="align-left">@item.p_desc</td>
 						<td class="align-center">@item.p_id_prov</td>
@@ -40,10 +44,15 @@
 						<td class="align-right">@item.a_transferir</td>
 						<td class="align-center">@item.box_id</td>
 						<td class="align-right">@item.a_transferir_box</td>
-						<td>
+						<td class="text-center align-middle">
 							@if (item.nota != "")
 							{
-								<a class="btn btn-xs btn-outline-success" data-interaction="@item.p_id" onclick="verNotaEnProducto(this);"> <i class="bx bx-detail"></i></a>
+								<button type="button" class="btn btn-info btn-sm btn-icon-compact" data-interaction="@item.p_id" onclick="verNotaEnProducto(this);">
+									<i class="bx bx-detail"></i>
+								</button>
+								@* <a class="btn btn-xs btn-outline-success" data-interaction="@item.p_id" onclick="verNotaEnProducto(this);"> 
+									<i class="bx bx-detail"></i>
+								</a> *@
 							}
 						</td>
 						@if (item.p_sustituto)

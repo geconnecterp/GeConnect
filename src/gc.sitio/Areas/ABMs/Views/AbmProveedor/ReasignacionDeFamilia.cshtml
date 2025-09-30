@@ -1,7 +1,12 @@
-﻿@model QueryFilters
+﻿@using static gc.infraestructura.Constantes.Constantes
+@model QueryFilters
 @{
 	Layout = "~/views/shared/_Layout.cshtml";
-	var filtro = new QueryFilters() { Rel01 = new List<string>() };
+	var filtro = new QueryFilters() 
+	{ 
+		Rel01 = new List<string>(), 
+		Modelo = ModeloFilter.REASIGNACION_DE_FAMILIA
+	};
 }
 
 @section styles {
@@ -77,6 +82,7 @@
 		var buscarFamiliaUrl = "@Url.Action("BuscarFamilia", "abmproveedor", new { area = "abms" })";
 		var buscarProductosPorFamiliaUrl = "@Url.Action("BuscarProductosPorFamilia", "abmproveedor", new { area = "abms" })";
 		var reasignarProductosURL = "@Url.Action("ReasignarProductos", "abmproveedor", new { area = "abms" })";
+		var cargarListaTipoOpeUrl = "@Url.Action("CargarListaTipoOpe", "abmproveedor", new { area = "abms" })";
 	</script>
 	<script src="~/js/plugins/jquery.simplePagination.js"></script>
 	<script src="~/js/app/busquedas.js"></script>

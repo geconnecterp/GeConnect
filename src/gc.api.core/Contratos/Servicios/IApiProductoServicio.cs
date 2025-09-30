@@ -109,7 +109,7 @@ namespace gc.api.core.Contratos.Servicios
 		LimiteStkDto ObtenerLimiteStkDato(string p_id, string admId);
         ProductoBarradoDto BuscarBarrado(string p_id, string barradoId);
 		RespuestaDto OCValidar(string oc_compte, string cta_id);
-
+		List<PIDetalleDto> PIDetalle(string pi_compte);
 
 		#region CargaPrecios
 		List<ProductoDetalleDto> Obtener_ProductoDetalleBase(QueryFilters filtro);

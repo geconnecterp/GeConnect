@@ -742,6 +742,30 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		#endregion
 
 		#region Reasignación de familia
+		public IActionResult CargarListaTipoOpe()
+		{
+			var model = new Ls02Model();
+			try
+			{
+				if (TipoOpeIvaLista == null || TipoOpeIvaLista.Count <= 0) {
+					ObtenerTiposOpeIva(_tipoOpeServicio);
+				}
+				model.LstTipoOpe = ComboTipoOpe();
+				return PartialView("_listaLs02", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
 		public async Task<IActionResult> ReasignacionDeFamilia()
 		{
 			MetadataGrid metadata;

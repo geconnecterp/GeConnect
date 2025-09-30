@@ -151,7 +151,7 @@
             </div>
         }
         @*---------------------------BUSQUEDA DE PROVEEDORES---------------------------*@
-        @if (Model.Rel01 != null && !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA) && !Model.Modelo.Equals(ModeloFilter.VALORIZACION_COMPROBANTE) && !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_DIRECTA))
+        @if (Model.Rel01 != null && !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA) && !Model.Modelo.Equals(ModeloFilter.VALORIZACION_COMPROBANTE) && !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_DIRECTA) && !Model.Modelo.Equals(ModeloFilter.REASIGNACION_DE_FAMILIA))
         {
             <div class="row">
                 <div class="col-sm-6">
@@ -193,6 +193,32 @@
                     </div>
                 </div>
                 <div class=" col-sm-6" id="divLstComptesPendiente">
+                </div>
+            </div>
+        }
+        @if (Model.Modelo.Equals(ModeloFilter.REASIGNACION_DE_FAMILIA))
+        {
+            var list = new List<ComboGenDto>();
+            var ls02 = new SelectList(list, "Id", "Descripcion");
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="input-group input-group-sm">
+                        <div class="form-check form-check-inline form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRel01" />
+                            <label class="form-check-label" for="chkRel01" id="lbRel01"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6" id="divLs02">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">Nombre</span>
+                        @Html.DropDownListFor(m => m.Tipo, ls02, "Seleccionar", new { @id = "listaLs02", disabled = "disabled", @class = "form-control inputEditable activable" })
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    @Html.ListBox("Rel01List", null, new { @class = "form-control", @disabled = "disabled" })
                 </div>
             </div>
         }

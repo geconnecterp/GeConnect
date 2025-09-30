@@ -182,6 +182,12 @@ function agregarAPedidosIncl(x) {
 	CerrarWaiting();
 }
 
+
+function imprimirDetallePI(pi_compte) {
+	console.log(pi_compte);
+	///TODO MARCE: Meter reporte aca cuando lo pase CR
+}
+
 function verDetalleDePedido(x) {
 	AbrirWaiting();
 	var picompte = x.dataset.interaction;
@@ -190,6 +196,10 @@ function verDetalleDePedido(x) {
 		PostGenHtml(datos, TRVerDetallePedidoDeSucursalUrl, function (obj) {
 			$("#divDetalleDePedido").html(obj);
 			AddEventListenerToGrid("tbDetalleDePedido");
+			document.getElementById("btnImprimirDetallePI").addEventListener("click", function () {
+				imprimirDetallePI(picompte);
+			});
+
 			$('#modalCenter').modal('show')
 			CerrarWaiting();
 			return true

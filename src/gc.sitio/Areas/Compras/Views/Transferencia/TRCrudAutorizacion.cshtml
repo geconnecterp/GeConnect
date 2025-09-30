@@ -1,7 +1,20 @@
 ﻿@model TRCRUDDto
 @{
 	Layout = "~/views/shared/_Layout.cshtml";
+	var alt = true;
+	string clase = string.Empty;
 }
+<style>
+	.btn-icon-compact {
+		padding: 0.15rem 0.3rem;
+		font-size: 0.7rem;
+		line-height: 1;
+	}
+
+		.btn-icon-compact i {
+			font-size: 0.9rem;
+		}
+</style>
 <div class="grid-golden">
 	<div class="row">
 		<div class="col-4">
@@ -25,7 +38,8 @@
 								{
 									@foreach (var item in Model.ListaAutSucursales.ListaDatos)
 									{
-										<tr onclick="selectTRSucursalesRow(this)">
+										if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+										<tr class="@clase" onclick="selectTRSucursalesRow(this)">
 											<td>@item.adm_nombre</td>
 											@if (item.tiene_ordenes)
 											{
@@ -79,14 +93,23 @@
 								{
 									@foreach (var item in Model.ListaPedidosSucursal.ListaDatos)
 									{
-										<tr onclick="selectTRPedidoSucursalRow(this)">
+										if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+										<tr class="@clase" onclick="selectTRPedidoSucursalRow(this)">
 											<td class="align-center">@item.pi_compte</td>
 											<td class="align-center">@item.pi_fecha.ToString("dd/MM/yyyy")</td>
 											<td class="align-center">@item.pie_desc</td>
 											<td class="align-left">@item.pi_nota</td>
 											<td class="align-center">@item.pit_desc</td>
-											<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.pi_compte" onclick="verDetalleDePedido(this);"> <i class="bx bx-detail"></i></a></td>
-											<td><a class="btn btn-xs btn-outline-primary" data-interaction="@item.pi_compte" onclick="agregarAPedidosIncl(this);"> <i class="bx bx-plus-circle"></i></a></td>
+											<td class="text-center align-middle">
+												<button type="button" class="btn btn-info btn-sm btn-icon-compact" data-interaction="@item.pi_compte" onclick="verDetalleDePedido(this);" tabindex="-1">
+													<i class="bx bx-show"></i>
+												</button>
+											</td>
+											<td class="text-center align-middle">
+												<button type="button" class="btn btn-primary btn-sm btn-icon-compact" data-interaction="@item.pi_compte" onclick="agregarAPedidosIncl(this);" tabindex="-1">
+													<i class="bx bx-plus-circle"></i>
+												</button>
+											</td>
 											<td style="display:none;">@item.adm_id</td>
 											<td style="display:none;">@item.adm_desc</td>
 										</tr>
@@ -121,15 +144,30 @@
 								{
 									@foreach (var item in Model.ListaPedidosIncluidos.ListaDatos)
 									{
-										<tr onclick="selectTRPedidoIncluidoRow(this)">
+										if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+										<tr class="@clase" onclick="selectTRPedidoIncluidoRow(this)">
 											<td class="align-left">@item.adm_desc</td>
 											<td class="align-center">@item.pi_compte</td>
 											<td class="align-center">@item.pi_fecha.ToString("dd/MM/yyyy")</td>
 											<td class="align-left">@item.pie_desc</td>
 											<td class="align-center">@item.pi_nota</td>
 											<td class="align-center">@item.pit_desc</td>
-											<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.pi_compte" onclick="verDetalleDePedido(this);"> <i class="bx bx-detail"></i></a></td>
-											<td><a class="btn btn-xs btn-outline-danger" data-interaction="@item.pi_compte" onclick="quitarDePedidosIncl(this);"> <i class="bx bx-minus-circle"></i></a></td>
+											<td>
+												<button type="button" class="btn btn-info btn-sm btn-icon-compact" data-interaction="@item.pi_compte" onclick="verDetalleDePedido(this);" tabindex="-1">
+													<i class="bx bx-show"></i>
+												</button>
+@* 												<a class="btn btn-xs btn-outline-success" data-interaction="@item.pi_compte" onclick="verDetalleDePedido(this);"> 
+													<i class="bx bx-detail"></i>
+												</a> *@
+											</td>
+											<td>
+												<button type="button" class="btn btn-danger btn-sm btn-icon-compact" data-interaction="@item.pi_compte" onclick="quitarDePedidosIncl(this);" tabindex="-1">
+													<i class="bx bx-trash"></i>
+												</button>
+@* 												<a class="btn btn-xs btn-outline-danger" data-interaction="@item.pi_compte" onclick="quitarDePedidosIncl(this);"> 
+													<i class="bx bx-minus-circle"></i>
+												</a> *@
+											</td>
 										</tr>
 									}
 								}
@@ -160,7 +198,8 @@
 											{
 												@foreach (var item in Model.ListaDepositosDeEnvio.ListaDatos)
 												{
-													<tr onclick="selectTRDepositosDeEnvioRow(this)">
+													if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+													<tr class="@clase" onclick="selectTRDepositosDeEnvioRow(this)">
 														<td>@item.depo_nombre</td>
 														<td class="align-center"><input type="checkbox" name="tienePI" id="chkTienePI" value="@item.seleccionado" @((item.seleccionado == false ? "" : "checked")) /></td>
 														<td style="width:0%; display:none;">@item.depo_id</td>

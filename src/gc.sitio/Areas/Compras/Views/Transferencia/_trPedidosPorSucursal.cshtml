@@ -1,5 +1,8 @@
 ﻿@model GridCoreSmart<TRAutPIDto>
-
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
 <div class="table-responsive text-nowrap table-wrapper-xs">
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbListaPedidosSucursal">
 		<thead>
@@ -20,14 +23,23 @@
 			{
 				@foreach (var item in Model.ListaDatos)
 				{
-					<tr onclick="selectTRPedidoSucursalRow(this)">
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" onclick="selectTRPedidoSucursalRow(this)">
 						<td class="align-center">@item.pi_compte</td>
 						<td class="align-center">@item.pi_fecha.ToString("dd/MM/yyyy")</td>
 						<td class="align-left">@item.pie_desc</td>
 						<td>@item.pi_nota</td>
 						<td>@item.pit_desc</td>
-						<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.pi_compte" onclick="verDetalleDePedido(this);"> <i class="bx bx-detail"></i></a></td>
-						<td><a class="btn btn-xs btn-outline-primary" data-interaction="@item.pi_compte" onclick="agregarAPedidosIncl(this);"> <i class="bx bx-plus-circle"></i></a></td>
+						<td class="text-center align-middle">
+							<button type="button" class="btn btn-info btn-sm btn-icon-compact" data-interaction="@item.pi_compte" onclick="verDetalleDePedido(this);" tabindex="-1">
+								<i class="bx bx-show"></i>
+							</button>
+						</td>
+						<td class="text-center align-middle">
+							<button type="button" class="btn btn-primary btn-sm btn-icon-compact" data-interaction="@item.pi_compte" onclick="agregarAPedidosIncl(this);" tabindex="-1">
+								<i class="bx bx-plus-circle"></i>
+							</button>
+						</td>
 						<td style="display:none;">@item.adm_id</td>
 						<td style="display:none;">@item.adm_desc</td>
 					</tr>

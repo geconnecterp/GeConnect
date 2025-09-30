@@ -2,135 +2,167 @@
 @{
 	Layout = "~/views/shared/_Layout.cshtml";
 	BusquedaProducto busquedaProducto = new();
+	var alt = true;
+	string clase = string.Empty;
 }
+<style>
+	.btn-icon-compact {
+		padding: 0.15rem 0.3rem;
+		font-size: 0.7rem;
+		line-height: 1;
+	}
 
+		.btn-icon-compact i {
+			font-size: 0.9rem;
+		}
+</style>
 <div class="card">
-	<div class="container">
-		<div class="row">
-			<div class="col-4">
-				<fieldset>
-					<legend>
-						<h5>Nuevas Aut. TR</h5>
-					</legend>
-					<div id="divNuevaAutListaSucursales">
-						<div class="table-responsive text-nowrap table-wrapper">
-							<table class="table table-bordered table-hover" id="tbNuevaAutListaSucursales">
-								<thead class="table-dark">
-									<tr>
-										<th style="width:20%;" class="align-center">Aut. a Gen.</th>
-										<th style="width:45%;" class="align-center">Sucursal</th>
-										<th style="width:20%;" class="align-center">Pal. Aprox</th>
-										<th style="width:15%;" class="align-center">Nota</th>
-										<th style="width:0%; display:none;">adm_id</th>
-									</tr>
-								</thead>
-								<tbody>
-									@if (Model.Sucursales == null && Model.Sucursales != null && Model.Sucursales.ListaDatos != null && Model.Sucursales.ListaDatos.Count > 0)
+	<div class="row">
+		<div class="col-4" style="padding-right:0px;">
+			<fieldset>
+				<legend>
+					<h5>Nuevas Aut. TR</h5>
+				</legend>
+				<div id="divNuevaAutListaSucursales">
+					<div class="table-responsive text-nowrap table-wrapper">
+						<table class="table table-sm mb-0 table-hover table-golden" id="tbNuevaAutListaSucursales">
+							<thead>
+								<tr class="header">
+									<th style="width:20%;" class="align-center">Aut. a Gen.</th>
+									<th style="width:45%;" class="align-center">Sucursal</th>
+									<th style="width:20%;" class="align-center">Pal. Aprox</th>
+									<th style="width:15%;" class="align-center">Nota</th>
+									<th style="width:0%; display:none;">adm_id</th>
+								</tr>
+							</thead>
+							<tbody>
+								@if (Model != null && Model.Sucursales != null && Model.Sucursales.ListaDatos != null && Model.Sucursales.ListaDatos.Count > 0)
+								{
+									@foreach (var item in Model.Sucursales.ListaDatos)
 									{
-										@foreach (var item in Model.Sucursales.ListaDatos)
-										{
-											<tr onclick="selectNuevaAutListaSucursalesRow(this)">
-												<td style="text-align: right;">@item.aut_a_generar</td>
-												<td>@item.adm_nombre</td>
-												<td style="text-align: right;">@item.pallet_aprox</td>
-												<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.adm_id" data-interaction2="@item.aut_a_generar" onclick="verNotaEnSucursal(this);"> <i class="bx bx-detail"></i></a></td>
-												<td style="display:none;">@item.adm_id</td>
-											</tr>
-										}
-
+										if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+										<tr class="@clase" onclick="selectNuevaAutListaSucursalesRow(this)">
+											<td style="text-align: right;">@item.aut_a_generar</td>
+											<td>@item.adm_nombre</td>
+											<td style="text-align: right;">@item.pallet_aprox</td>
+											<td class="text-center align-middle">
+												<button type="button" class="btn btn-info btn-sm btn-icon-compact" data-interaction="@item.adm_id" data-interaction2="@item.aut_a_generar" onclick="verNotaEnSucursal(this);">
+													<i class="bx bx-detail"></i>
+												</button>
+											</td>
+											<td style="display:none;">@item.adm_id</td>
+										</tr>
 									}
-								</tbody>
-							</table>
-						</div>
+								}
+							</tbody>
+						</table>
 					</div>
-					<div class="container col-sm" style="padding-top: 15px;">
-						<a href="#" id="btnRegresarANuevaAut" class="btn btn-primary fixed-width-130" title="Volver a pantalla anterior"><span class="tf-icons bx bx-left-arrow-circle me-1">Regresar</span></a>
-						<a href="#" id="btnConfirmarAuto" class="btn btn-success fixed-width-130" title="Confirmar autorizaciones"><span class="tf-icons bx bx-check-circle me-1">Confirmar</span></a>
-					</div>
-				</fieldset>
-			</div>
-			<div class="col-8">
-				<fieldset>
-					<legend>
-						<h5>Detalle de Productos de TR</h5>
-					</legend>
-					<div id="divNuevaAutListaProductos">
-						<div class="table-responsive text-nowrap table-wrapper">
-							<table class="table table-bordered table-hover" id="tbNuevaAutListaProductos">
-								<thead class="table-dark">
-									<tr>
-										<th style="width:5%;" class="align-center">ID</th>
-										<th style="width:25%;" class="align-center">Descripción</th>
-										<th style="width:8%;" class="align-center">Id Prov</th>
-										<th style="width:8%;" class="align-center">PI</th>
-										<th style="width:8%;" class="align-center">Stk Suc</th>
-										<th style="width:8%;" class="align-center">Pedido</th>
-										<th style="width:8%;" class="align-center">A transf.</th>
-										<th style="width:10%;" class="align-center">Dif</th>
-										<th style="width:10%;" class="align-center">Box</th>
-										<th style="width:10%;" class="align-center">A transf. Box</th>
-										<th style="width:5%;" class="align-center">Nota</th>
-										<th style="width:0%; display:none;">sustituto</th>
-										<th style="width:0%; display:none;">adm_id</th>
-										<th style="width:0%; display:none;">depo_id</th>
-										<th style="width:0%; display:none;">depo_nombre</th>
-										<th style="width:0%; display:none;">rub_id</th>
-										<th style="width:0%; display:none;">rub_nombre</th>
-										<th style="width:0%; display:none;">box_id</th>
-									</tr>
-								</thead>
-								<tbody>
-									@if (Model != null && Model.Detalle != null && Model.Detalle.ListaDatos != null && Model.Detalle.ListaDatos.Count > 0)
+				</div>
+				<div class="d-flex justify-content-center gap-2 pt-3">
+					<button type="button" class="btn btn-secondary btn-sm mt-1 me-1" id="btnRegresarANuevaAut" title="Volver a pantalla anterior">
+						<i class="bx bx-chevron-left"></i> Regresar
+					</button>
+					@* <a href="#" id="btnRegresarANuevaAut" class="btn btn-primary fixed-width-130" title="Volver a pantalla anterior">
+						<span class="tf-icons bx bx-left-arrow-circle me-1">Regresar</span>
+					</a> *@
+					<button type="button" class="btn btn-success btn-sm mt-1 me-1" id="btnConfirmarAuto" title="Confirmar autorizaciones">
+						<i class="bx bx-badge-check"></i> Confirmar
+					</button>
+					@* <a href="#" id="btnConfirmarAuto" class="btn btn-success fixed-width-130" title="Confirmar autorizaciones">
+						<span class="tf-icons bx bx-check-circle me-1">Confirmar</span>
+					</a> *@
+				</div>
+			</fieldset>
+		</div>
+		<div class="col-8" style="padding-left: 0px;">
+			<fieldset>
+				<legend>
+					<h5>Detalle de Productos de TR</h5>
+				</legend>
+				<div id="divNuevaAutListaProductos">
+					<div class="table-responsive text-nowrap table-wrapper">
+						<table class="table table-sm mb-0 table-hover table-golden" id="tbNuevaAutListaProductos">
+							<thead>
+								<tr class="header">
+									<th style="width:5%;" class="align-center">ID</th>
+									<th style="width:25%;" class="align-center">Descripción</th>
+									<th style="width:8%;" class="align-center">Id Prov</th>
+									<th style="width:8%;" class="align-center">PI</th>
+									<th style="width:8%;" class="align-center">Stk Suc</th>
+									<th style="width:8%;" class="align-center">Pedido</th>
+									<th style="width:8%;" class="align-center">A transf.</th>
+									<th style="width:10%;" class="align-center">Dif</th>
+									<th style="width:10%;" class="align-center">Box</th>
+									<th style="width:10%;" class="align-center">A transf. Box</th>
+									<th style="width:5%;" class="align-center">Nota</th>
+									<th style="width:0%; display:none;">sustituto</th>
+									<th style="width:0%; display:none;">adm_id</th>
+									<th style="width:0%; display:none;">depo_id</th>
+									<th style="width:0%; display:none;">depo_nombre</th>
+									<th style="width:0%; display:none;">rub_id</th>
+									<th style="width:0%; display:none;">rub_nombre</th>
+									<th style="width:0%; display:none;">box_id</th>
+								</tr>
+							</thead>
+							<tbody>
+								@if (Model != null && Model.Detalle != null && Model.Detalle.ListaDatos != null && Model.Detalle.ListaDatos.Count > 0)
+								{
+									@foreach (var item in Model.Detalle.ListaDatos)
 									{
-										@foreach (var item in Model.Detalle.ListaDatos)
-										{
-											<tr onclick="selectNuevaAutListaProductosRow(this)">
-												<td class="align-center">@item.p_id</td>
-												<td class="align-left">@item.p_desc</td>
-												<td class="align-center">@item.p_id_prov</td>
-												<td class="align-center">@item.pi_compte</td>
-												<td style="text-align: right;">@item.stk</td>
-												<td style="text-align: right;">@item.stk_adm</td>
-												<td style="text-align: right;">@item.a_transferir</td>
-												<td style="text-align: right;">@item.a_transferir</td>
-												<td>@item.box_id</td>
-												<td style="text-align: right;">@item.a_transferir_box</td>
-												<td>
-													@if (item.nota != "")
-													{
-														<a class="btn btn-xs btn-outline-success" data-interaction="@item.p_id" onclick="verNotaEnProducto(this);"> <i class="bx bx-detail"></i></a>
-													}
-												</td>
-												@if (item.p_sustituto)
+										if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+										<tr class="@clase" onclick="selectNuevaAutListaProductosRow(this)">
+											<td class="align-center">@item.p_id</td>
+											<td class="align-left">@item.p_desc</td>
+											<td class="align-center">@item.p_id_prov</td>
+											<td class="align-center">@item.pi_compte</td>
+											<td style="text-align: right;">@item.stk</td>
+											<td style="text-align: right;">@item.stk_adm</td>
+											<td style="text-align: right;">@item.a_transferir</td>
+											<td style="text-align: right;">@item.a_transferir</td>
+											<td>@item.box_id</td>
+											<td style="text-align: right;">@item.a_transferir_box</td>
+											<td>
+												@if (item.nota != "")
 												{
-													<td style="display:none;"><input type="checkbox" name="p_sustituto" value="@item.p_sustituto" checked disabled="disabled" /></td>
+													<a class="btn btn-xs btn-outline-success" data-interaction="@item.p_id" onclick="verNotaEnProducto(this);"> <i class="bx bx-detail"></i></a>
 												}
-												else
-												{
-													<td style="display:none;"><input type="checkbox" name="p_sustituto" value="@item.p_sustituto" disabled="disabled" /></td>
-												}
-												<td style="display:none;">@item.adm_id</td>
-												<td style="display:none;">@item.depo_id</td>
-												<td style="display:none;">@item.depo_nombre</td>
-											</tr>
-										}
+											</td>
+											@if (item.p_sustituto)
+											{
+												<td style="display:none;"><input type="checkbox" name="p_sustituto" value="@item.p_sustituto" checked disabled="disabled" /></td>
+											}
+											else
+											{
+												<td style="display:none;"><input type="checkbox" name="p_sustituto" value="@item.p_sustituto" disabled="disabled" /></td>
+											}
+											<td style="display:none;">@item.adm_id</td>
+											<td style="display:none;">@item.depo_id</td>
+											<td style="display:none;">@item.depo_nombre</td>
+										</tr>
 									}
-								</tbody>
-							</table>
-						</div>
+								}
+							</tbody>
+						</table>
 					</div>
-					<div class="container col-sm" style="padding-top: 15px;">
-						<a href="#" id="btnAgregar" class="btn btn-success fixed-width-130" title="Agregar un nuevo producto a la transferencia seleccionada" onclick="abrirlModalAgregaProductoATR();"><span class="tf-icons bx bx-plus-circle me-1">Agregar</span></a>
-						<button type="button" id="btnSustituto" class="btn btn-primary fixed-width-130"
-								onclick="abrirlModalSustitutoDeProductoATR();" disabled
-								title="Buscar sustituto para producto seleccionado.">
-							<span class="tf-icons bx bx-exclude me-1">Sustituto</span>
-						</button>
-						<button id="btnEliminar" class="btn btn-danger fixed-width-130" title="Eliminar Transferencia" onclick="eliminarProductoATR();" disabled><span class="tf-icons bx bx-minus-circle me-1">Eliminar</span></button>
-						<button id="btnModCantidad" class="btn btn-primary fixed-width-130" title="Modificar Transferencia" onclick="abrirlModalModCantDeProductoATR();" disabled><span class="tf-icons bx bx-edit-alt me-1">Modificar</span></button>
-					</div>
-				</fieldset>
-			</div>
+				</div>
+				<div class="container col-sm" style="padding-top: 15px;">
+					<button id="btnAgregar" class="btn btn-primary btn-sm mt-1 me-1" title="Agregar un nuevo producto a la transferencia seleccionada" onclick="abrirlModalAgregaProductoATR();">
+						<i class="bx bx-plus-circle"></i> Agregar
+					</button>
+					@* <a href="#" id="btnAgregar" class="btn btn-success fixed-width-130" title="Agregar un nuevo producto a la transferencia seleccionada" onclick="abrirlModalAgregaProductoATR();">
+						<span class="tf-icons bx bx-plus-circle me-1">Agregar</span>
+					</a> *@
+					<button id="btnSustituto" class="btn btn-primary btn-sm mt-1 me-1" onclick="abrirlModalSustitutoDeProductoATR();" disabled title="Buscar sustituto para producto seleccionado.">
+						<i class="bx bx-plus-circle"></i> Sustituto
+					</button>
+					<button id="btnEliminar" class="btn btn-danger btn-sm mt-1 me-1" title="Eliminar Transferencia" onclick="eliminarProductoATR();" disabled>
+						<i class="bx bx-trash"></i> Eliminar
+					</button>
+					<button id="btnModCantidad" class="btn btn-info btn-sm mt-1 me-1" title="Modificar Transferencia" onclick="abrirlModalModCantDeProductoATR();" disabled>
+						<i class="bx bx-edit"></i> Modificar
+					</button>
+				</div>
+			</fieldset>
 		</div>
 	</div>
 </div>

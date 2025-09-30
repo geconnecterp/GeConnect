@@ -10,7 +10,13 @@
 @section styles {
 	<link rel="stylesheet" href="~/css/simplePagination.css"   />
 }
+<style>
 
+	.filter-golden-body {
+		padding: 0 !important;
+	}
+
+</style>
 <div class="card">
 	<div class="container">
 		<div class="row">
@@ -18,7 +24,21 @@
 				<div class="row">
 					<fieldset style="margin: 2px;padding: 2px;">
 						<div class="col-5" style="float:left;">
-							<div class="btn-group" role="group" aria-label="Basic radio toggle button group" style="width: 95%;">
+							<div class="d-flex flex-column gap-3">
+								<div class="form-check">
+									<input class="form-check-input" type="radio" name="btnradio" id="btnradioManual" checked>
+									<label class="form-check-label" for="btnradioManual">Manual</label>
+								</div>
+								<div class="form-check">
+									<input class="form-check-input" type="radio" name="btnradio" id="btnradioRevertirDevolucion">
+									<label class="form-check-label" for="btnradioRevertirDevolucion">Revertir Devolucion</label>
+								</div>
+								<div class="form-check">
+									<input class="form-check-input" type="radio" name="btnradio" id="btnradioCargaPrevia">
+									<label class="form-check-label" for="btnradioCargaPrevia">Carga Previa</label>
+								</div>
+							</div>
+							@* <div class="btn-group" role="group" aria-label="Basic radio toggle button group" style="width: 95%;">
 								<row style="padding:4px; width: 100% !important">
 									<input type="radio" class="btn-check" name="btnradio" id="btnradioManual" checked="">
 									<label class="btn btn btn-outline-primary fixed-font-size-xmall" for="btnradioManual">Manual</label>
@@ -29,7 +49,7 @@
 									<input type="radio" class="btn-check" name="btnradio" id="btnradioCargaPrevia">
 									<label class="btn btn btn-outline-primary fixed-font-size-xmall" for="btnradioCargaPrevia">Carga Previa</label>
 								</row>
-							</div>
+							</div> *@
 						</div>
 						<div class="col-7" style="float:left;">
 							<div class="row" style="min-height: 37px;">
@@ -82,14 +102,14 @@
 				</div>
 				<div class="row" style="padding-top: 5px;">
 					<div style="text-align: right;align-content: center;">
-						<button type="button" class="btn btn-secondary btn-sm mt-1 me-1" id="btnRegresar">
+@* 						<button type="button" class="btn btn-secondary btn-sm mt-1 me-1" id="btnRegresar">
 							<i class="bx bx-chevron-left"></i> Regresar
+						</button> *@
+						<button type="button" class="btn btn-success btn-sm mt-1 me-1" id="btnConfirmar">
+							<i class="bx bx-badge-check"></i> Confirmar
 						</button>
 						<button type="button" class="btn btn-danger btn-sm mt-1 me-1" id="btnCancelar">
 							<i class="bx bx-x-circle"></i> Cancelar
-						</button>
-						<button type="button" class="btn btn-success btn-sm mt-1 me-1" id="btnConfirmar">
-							<i class="bx bx-badge-check"></i> Confirmar
 						</button>
 					</div>
 				</div>
@@ -102,11 +122,25 @@
 				</legend>
 				<div class="row">
 					<div class="row col-12">
-						<div class="col-4">
+						<div class="col-2" style="padding-right: 0px;">
 							<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
 						</div>
-						<div class="col-8">
+						<div class="col-8" style="padding-right: 0px;padding-left: 0px;width: 66%;">
 							<div class="input-group input-group-sm">
+								<span class="input-group-text">ID: </span>
+								<input type="text" id="txtIdProd" class="form-control" style="width:10%;display: none;" readonly />
+								<input type="text" id="txtProDescripcion" class="form-control" style="width: 30%;" readonly />
+								<span class="input-group-text">UP: </span>
+								<input type="text" id="txtUP" class="form-control activable inputEditable" />
+								<span class="input-group-text">Bto: </span>
+								<input type="number" id="txtBto" class="form-control activable inputEditable" min="0" />
+								<span class="input-group-text">Unid: </span>
+								<input type="text" id="txtUnid" class="form-control activable inputEditable" />
+								<input type="text" id="txtUP_ID" style="display:none;" />
+								<input type="text" id="txtBARRADO_ID" style="display:none;" />
+								<input type="text" id="txtID_PROV" style="display:none;" />
+							</div>
+							@* <div class="input-group input-group-sm">
 								<span style="display: none;" class="input-group-text">ID: </span>
 								<input type="text" id="txtIdProd" class="form-control" style="width:10%;display: none;" readonly />
 								<input type="text" id="txtProDescripcion" class="form-control" style="width: 30%;" readonly />
@@ -119,15 +153,23 @@
 								<input type="text" id="txtUP_ID" style="display:none;" />
 								<input type="text" id="txtBARRADO_ID" style="display:none;" />
 								<input type="text" id="txtID_PROV" style="display:none;" />
-							</div>
-							<div class="mt-2 d-flex gap-2">
+							</div> *@
+@* 							<div class="mt-2 d-flex gap-2">
 								<button type="button" class="btn btn-primary btn-sm" id="btnAddProd">
 									<i class="bx bx-plus-circle"></i> Agregar Producto
 								</button>
 								<button type="button" class="btn btn-danger btn-sm" id="btnDelProd">
 									<i class="bx bx-trash"></i> Quitar Producto
 								</button>
-							</div>
+							</div> *@
+						</div>
+						<div class="col-2" style="padding-left: 55px;">
+							<button type="button" class="btn btn-primary btn-sm" id="btnAddProd" title="Agregar Producto">
+								<i class="bx bx-plus-circle"></i> Agregar
+							</button>
+							<button type="button" class="btn btn-danger btn-sm" id="btnDelProd" title="Quitar Producto">
+								<i class="bx bx-trash"></i> Quitar
+							</button>
 						</div>
 					</div>
 
@@ -216,6 +258,10 @@
 		var autoComRel02Url = "@Url.Action("BuscarRubros", "abmproducto", new { area = "abms" })";
 		var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "abmproducto", new { area = "abms" })";
 		var busquedaAvanzadaUrl = "@Url.Action("BusquedaAvanzada", "producto", new { area = "ControlComun" })";
+
+		window.addEventListener("DOMContentLoaded", function() {
+		  document.getElementById("Busqueda").style.width = "100px";
+		});
 	</script>
 	<script src="~/js/app/areas/devolucionaproveedor/devaprov.js"></script>
 	<script src="~/js/app/controlcomun/busquedacuentacomercial.js"></script>
