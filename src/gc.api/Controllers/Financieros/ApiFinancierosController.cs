@@ -299,5 +299,46 @@ namespace gc.api.Controllers.Financieros
 			response = new ApiResponse<List<RespuestaDto>>(res);
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult SetFechaDeEntrega([FromBody] RegistrarFechaDeEntregaRequest r)
+		{
+			ApiResponse<List<RespuestaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.SetFechaDeEntrega(r);
+			response = new ApiResponse<List<RespuestaDto>>(res);
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult SetRechazoDeCheque([FromBody] RegistrarRechazoDeChequeRequest r)
+		{
+			ApiResponse<List<RespuestaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.SetRechazoDeCheque(r);
+			response = new ApiResponse<List<RespuestaDto>>(res);
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ECheqDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetECheqLista(PasoPrevioECheqRequest request)
+		{
+			ApiResponse<List<ECheqDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetECheqLista(request);
+
+			response = new ApiResponse<List<ECheqDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }

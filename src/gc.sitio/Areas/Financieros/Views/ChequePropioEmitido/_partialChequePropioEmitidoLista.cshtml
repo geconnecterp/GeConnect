@@ -180,7 +180,7 @@
 							@if (item.entrega_bool)
 							{
 								<td class="text-center align-middle">
-									<button type="button" class="btn btn-primary btn-icon-compact" title="Entrega" onclick="verDetalleEntrega('@item.ctaf_id','@item.che_emision')">
+									<button type="button" class="btn btn-primary btn-icon-compact" title="Entrega" onclick="verDetalleEntrega('@item.ctaf_id', '@item.che_nro','@item.che_emision')">
 										<i class="bx bx-chevron-right"></i>
 									</button>
 								</td>
@@ -203,7 +203,7 @@
 							@if (item.rechazar_bool)
 							{
 								<td class="text-center align-middle">
-									<button type="button" class="btn btn-danger btn-icon-compact" title="Rechazar" onclick="verDetalleRechazar('@item.ctaf_id','@item.che_emision')">
+									<button type="button" class="btn btn-danger btn-icon-compact" title="Rechazar" onclick="verDetalleRechazar('@item.ctaf_id', '@item.che_nro','@item.che_emision')">
 										<i class="bx bx-trash"></i>
 									</button>
 								</td>
@@ -303,17 +303,17 @@
 
 			// Función de ayuda para obtener los IDs de productos seleccionados
 			window.obtenerChequesSeleccionados = function() {
-				const chequesSeleccionados = [];
-				$(".check-cheque:checked").each(function() {
+				const chequesMarcados = [];
+				$(".check-cheque:checked").each(function () {
 					const cheEmision = $(this).data("che-emision");
 					const ctafId = $(this).data("ctaf-id");
 					if (cheEmision && ctafId) {
-						if (typeof cheEmision === "string" && typeof ctafId === "string"){
-							chequesSeleccionados.push(`${ctafId}|${cheEmision}`);
+						if (typeof cheEmision === "number" && typeof ctafId === "string") {
+							chequesMarcados.push(`${ctafId}|${cheEmision}`);
 						}
 					}
 				});
-				return chequesSeleccionados;
+				return chequesMarcados;
 			};
 		});
 </script>

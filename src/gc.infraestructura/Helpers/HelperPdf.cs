@@ -1939,20 +1939,6 @@ namespace gc.infraestructura.Helpers
 				strCierre = x.strCierre
 			}).ToList();
 			HelperPdf.GenerarListadoDesdeLista(pdf, regsAux, _campos, _anchosTitulosTabla, fuenteEtiqueta, false, false, null, true, BooleanDisplayFormat.SiNo, false, false);
-
-			//// FILA 3
-			//PdfPTable tablaTotal = GeneraTabla(1, [100f], 100, 0, 10);
-			//PdfPCell celdaTotal = new(new Phrase($"Total Ordenes de Pago: {regs.Sum(y => y.tra_importe).ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
-			//{
-			//	Border = Rectangle.NO_BORDER,
-			//	HorizontalAlignment = Element.ALIGN_RIGHT,
-			//	VerticalAlignment = Element.ALIGN_MIDDLE,
-			//	PaddingTop = 0f,
-			//	BackgroundColor = BaseColor.LightGray
-			//};
-
-			//tablaTotal.AddCell(celdaTotal);
-			//pdf.Add(tablaTotal);
 		}
 
 		public static void CargarTablaCtaCteFinancieros(Document pdf, List<FinancieroBcoCtaCteDto> regs, Font fuenteEtiqueta, Font fuenteValor)
@@ -1978,20 +1964,6 @@ namespace gc.infraestructura.Helpers
 				strConciliado = x.strConciliado,
 			}).ToList();
 			HelperPdf.GenerarListadoDesdeLista(pdf, regsAux, _campos, _anchosTitulosTabla, fuenteEtiqueta, false, false, null, true, BooleanDisplayFormat.SiNo, false, false);
-
-			//// FILA 3
-			//PdfPTable tablaTotal = GeneraTabla(1, [100f], 100, 0, 10);
-			//PdfPCell celdaTotal = new(new Phrase($"Total Ordenes de Pago: {regs.Sum(y => y.tra_importe).ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
-			//{
-			//	Border = Rectangle.NO_BORDER,
-			//	HorizontalAlignment = Element.ALIGN_RIGHT,
-			//	VerticalAlignment = Element.ALIGN_MIDDLE,
-			//	PaddingTop = 0f,
-			//	BackgroundColor = BaseColor.LightGray
-			//};
-
-			//tablaTotal.AddCell(celdaTotal);
-			//pdf.Add(tablaTotal);
 		}
 
 		public static void CargarTablaLibroBancoResumenFinancieros(Document pdf, List<FinancieroBcoLibroResumenDto> regs, Font fuenteEtiqueta, Font fuenteValor)
@@ -2126,6 +2098,57 @@ namespace gc.infraestructura.Helpers
 			}
 		}
 
+		public static void CargarTablaChequesEmitidosPropios(Document pdf, List<FinancieroBcoVencChequeEmitidoListaDto> regs, Font fuenteEtiqueta, Font fuenteValor)
+		{
+			List<string> _campos = ["che_op_tra", "op_compte", "che_fecha_emi", "che_fecha", "che_nro", "che_anombre", "che_estado_desc", "che_importe",];
+			List<string> _titulosTabla = ["Tipo", "Comprobante", "Fec. Emi.", "Fec. Vto.", "N° Cheque", "Cheque a Nombre de", "Estado", "Importe",];
+			float[] _anchosTitulosTabla = [5, 12, 10, 10, 10, 35, 8, 10];
+
+			var reportePorCtaf = regs
+									.GroupBy(x => new { x.ctaf_id, x.ctaf_denominacion })
+									.Select(g => new
+									{
+										g.Key.ctaf_id,
+										g.Key.ctaf_denominacion,
+										Cheques = g.ToList()
+									})
+									.ToList();
+
+			foreach (var grupo in reportePorCtaf)
+			{
+				// FILA 0 TITULO
+				PdfPTable tablaSubTitulo = GeneraTabla(1, [100f], 100, 0, 10);
+				PdfPCell celdaSubTitulo = new(new Phrase($"{grupo.ctaf_denominacion} ({grupo.ctaf_id})", HelperPdf.FontNormalPredeterminado(true)))
+				{
+					Border = Rectangle.NO_BORDER,
+					HorizontalAlignment = Element.ALIGN_LEFT,
+					VerticalAlignment = Element.ALIGN_MIDDLE,
+					PaddingTop = 4f,
+					PaddingBottom = 4f,
+					MinimumHeight = 18f,
+					BackgroundColor = BaseColor.LightGray
+				};
+				tablaSubTitulo.AddCell(celdaSubTitulo);
+				pdf.Add(tablaSubTitulo);
+
+				// FILA 1 CABEZERA
+				HelperPdf.GeneraCabeceraLista(pdf, _titulosTabla, _anchosTitulosTabla, HelperPdf.FontNormalPredeterminado(true), 0, 0);
+				
+				// CUERPO
+				HelperPdf.GenerarListadoDesdeLista(pdf, grupo.Cheques, _campos, _anchosTitulosTabla, fuenteEtiqueta);
+				// Espaciador entre grupos
+				PdfPTable espaciador = new PdfPTable(1)
+				{
+					TotalWidth = 100f
+				};
+				espaciador.DefaultCell.Border = Rectangle.NO_BORDER;
+				espaciador.DefaultCell.FixedHeight = 10f; // Altura del espacio
+				espaciador.DefaultCell.HorizontalAlignment = Element.ALIGN_CENTER;
+				espaciador.AddCell("");
+				pdf.Add(espaciador);
+			}
+		}
+
 		public static void CargarTablaLibroBancoDetalle(Document pdf, List<FinancieroBcoLibroDto> regs, string fHasta, DateTime fHastaDate, Font fuenteEtiqueta, Font fuenteNormal, Font fuenteValor)
 		{
 			BaseColor azul = new(0x00, 0x7B, 0xFF);   // #007BFF
@@ -2197,13 +2220,13 @@ namespace gc.infraestructura.Helpers
 			tablaSubTitulo.AddCell(celdaSubTitulo);
 			pdf.Add(tablaSubTitulo);
 
-			
-			_titulosTabla = ["Concepto", "Fecha Reg.", "Fecha Vto.", "Importe", "Estado", ];
+
+			_titulosTabla = ["Concepto", "Fecha Reg.", "Fecha Vto.", "Importe", "Estado",];
 			_campos = ["concepto", "fecha", "fecha_vto", "importe", "strEstado",];
 			_anchosTitulosTabla = [55, 15, 15, 10, 5];
 			HelperPdf.GeneraCabeceraLista(pdf, _titulosTabla, _anchosTitulosTabla, HelperPdf.FontNormalPredeterminado(true), 0, 0);
 
-			
+
 			var regsAuxUno = regs.Where(x => x.tipo == '1').Select(x => new
 			{
 				x.concepto,
@@ -2236,7 +2259,7 @@ namespace gc.infraestructura.Helpers
 			_anchosTitulosTabla = [55, 15, 15, 10, 5];
 			HelperPdf.GeneraCabeceraLista(pdf, _titulosTabla, _anchosTitulosTabla, HelperPdf.FontNormalPredeterminado(true), 0, 0);
 
-			
+
 			var regsAuxDos = regs.Where(x => x.tipo == '2').Select(x => new
 			{
 				x.concepto,

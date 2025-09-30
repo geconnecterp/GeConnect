@@ -548,17 +548,19 @@ namespace gc.api.core.Servicios
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_BCO_CH_EMITIDOS_LISTA;
 			var ps = new List<SqlParameter>()
 			{
-				new("@id_f",request.id_f),
-				new("@ctaf_id",request.ctaf_id),
-				new("@id_c",request.id_c),
-				new("@cta_id",request.cta_id),
-				new("@id_u",request.id_u),
-				new("@usu_id",request.usu_id),
-				new("@tipo_fecha",request.tipo_fecha),
-				new("@desde",request.desde),
-				new("@hasta",request.hasta),
-				new("@estado",request.estado),
-				new("@impreso",request.impreso),
+				new("@id_f", request.id_f),
+				new("@ctaf_id", request.ctaf_id),
+				new("@id_c", request.id_c),
+				new("@cta_id", request.cta_id),
+				new("@id_u", request.id_u),
+				new("@usu_id", request.usu_id),
+				new("@tipo_fecha", request.tipo_fecha),
+				new("@desde", request.desde),
+				new("@hasta", request.hasta),
+				new("@estado", request.estado),
+				new("@impreso", request.impreso),
+				new("@registros", 999999),
+				new("@pagina", 1),
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<FinancieroBcoVencChequeEmitidoListaDto>(sp, ps, true);
 			return listaTemp;
@@ -603,6 +605,46 @@ namespace gc.api.core.Servicios
 				new("@adm_id",request.adm_id),
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<RespuestaDto> SetFechaDeEntrega(RegistrarFechaDeEntregaRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_BCO_CH_ENTREGA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@ctaf_id",request.ctaf_id),
+				new("@che_emision",request.che_emision),
+				new("@usu_id",request.usu_id),
+				new("@adm_id",request.adm_id),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<RespuestaDto> SetRechazoDeCheque(RegistrarRechazoDeChequeRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_BCO_CH_RECHAZAR;
+			var ps = new List<SqlParameter>()
+			{
+				new("@ctaf_id",request.ctaf_id),
+				new("@che_emision",request.che_emision),
+				new("@fecha_rechazo",request.fecha_rechazo),
+				new("@usu_id",request.usu_id),
+				new("@adm_id",request.adm_id),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<ECheqDto> GetECheqLista(PasoPrevioECheqRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_BCO_CH_E_CHEQ;
+			var ps = new List<SqlParameter>()
+			{
+				new("@json_che",request.json_che),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<ECheqDto>(sp, ps, true);
 			return listaTemp;
 		}
 	}

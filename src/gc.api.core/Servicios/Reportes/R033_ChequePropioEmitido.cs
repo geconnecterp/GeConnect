@@ -4,6 +4,7 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Financieros;
+using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
@@ -50,12 +51,9 @@ namespace gc.api.core.Servicios.Reportes
 				var ms = new MemoryStream();
 				#region Obteniendo registros desde la base de datos
 				string tit;
-				string fDesde;
-				string fHasta;
-				List<FinancieroBcoExtractoDto> registros = ObtenerDatos(solicitud, out tit, out fDesde, out fHasta);
+				List<FinancieroBcoVencChequeEmitidoListaDto> registros = ObtenerDatos(solicitud, out tit);
 
 				solicitud.Titulo = tit;
-				solicitud.SubTitulo = $"Fecha desde {fDesde} hasta {fHasta}";
 
 				//hago el modelo de dato aca ya que necesito los datos de la cuenta
 				var regs = registros.Select(x => new
@@ -104,8 +102,8 @@ namespace gc.api.core.Servicios.Reportes
 
 				pdf.Open();
 
-				#region Lista de Movimientos Financieros
-				HelperPdf.CargarTablaExtractoBancarioFinancieros(pdf, registros, chico, normalBold);
+				#region Lista de Cheques Emitidos Propios
+				HelperPdf.CargarTablaChequesEmitidosPropios(pdf, registros, chico, normalBold);
 				#endregion
 
 				pdf.Close();
@@ -133,20 +131,66 @@ namespace gc.api.core.Servicios.Reportes
 			return bool.TryParse(valor, out var resultado) ? resultado : valorPorDefecto;
 		}
 
-
-		private List<FinancieroBcoExtractoDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo, out string fDesdePrint, out string fHastaPrint)
+		private static string GetTipoTexto(string tipo)
 		{
-			fDesdePrint = solicitud.Parametros.GetValueOrDefault("Date1Print", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
-			fHastaPrint = solicitud.Parametros.GetValueOrDefault("Date2Print", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
-			var fDesde = solicitud.Parametros.GetValueOrDefault("desde", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
-			var fHasta = solicitud.Parametros.GetValueOrDefault("hasta", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
-			string ctaf_id = solicitud.Parametros.GetValueOrDefault("ctaf_id", "").ToString();
-			titulo = $"Consulta de Extracto Bancario";
-			return _financieroServicio.GetFinancieroBcoExtracto(new FinancieroBcoExtractoRequest() 
+			return tipo switch
+			{
+				"V" => "Vencidos",
+				"E" => "Emitidos",
+				_ => "Desconocido"
+			};
+		}
+
+		private static string GetCadenaDeEstadosSeleccionados(ReporteSolicitudDto solicitud)
+		{
+			var aux = string.Empty;
+			var listaTempo = new List<string>();
+			var usu = GetBoolParam(solicitud.Parametros, "id_u_bool");
+			var prov = GetBoolParam(solicitud.Parametros, "id_c_bool");
+			var est = GetBoolParam(solicitud.Parametros, "id_e_bool");
+			var fin = GetBoolParam(solicitud.Parametros, "id_f_bool");
+			if (usu) listaTempo.Add("Usuarios");
+			if (est) listaTempo.Add("Estados");
+			if (fin) listaTempo.Add("Cuenta Banco");
+			if (prov) listaTempo.Add("Proveedores");
+			aux = string.Join(",", listaTempo);
+			if (aux.Length > 0) aux = "Filtrado por " + aux;
+			return aux;
+		}
+
+		private List<FinancieroBcoVencChequeEmitidoListaDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo)
+		{
+			var fDesdePrint = solicitud.Parametros.GetValueOrDefault("desde1Print", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
+			var fHastaPrint = solicitud.Parametros.GetValueOrDefault("hasta2Print", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
+			
+			var id_f = GetBoolParam(solicitud.Parametros, "id_f_bool");
+			var ctaf_id = solicitud.Parametros.GetValueOrDefault("id_f", "")?.ToString() ?? null;
+			var id_c = GetBoolParam(solicitud.Parametros, "id_c_bool");
+			var cta_id = solicitud.Parametros.GetValueOrDefault("id_c", "")?.ToString() ?? null;
+			var id_u = GetBoolParam(solicitud.Parametros, "id_u_bool");
+			var usu_id = solicitud.Parametros.GetValueOrDefault("id_u", "")?.ToString() ?? null;
+			var tipo_fecha = solicitud.Parametros.GetValueOrDefault("tipo_fecha", "").ToString();
+			var desde = solicitud.Parametros.GetValueOrDefault("desde", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
+			var hasta = solicitud.Parametros.GetValueOrDefault("hasta", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
+			var estado = solicitud.Parametros.GetValueOrDefault("id_e", "")?.ToString() ?? null;
+
+
+			var t_fecha_texto = GetTipoTexto(tipo_fecha);
+			var filtros = GetCadenaDeEstadosSeleccionados(solicitud);
+			titulo = $"Listado de Cheques {t_fecha_texto} desde el {fDesdePrint} hasta el {fHastaPrint} {filtros}";
+
+			return _financieroServicio.GetFinancieroBcoVencChequeEmitidoLista(new FinancieroBcoVencChequeEmitidoListaRequest() 
 			{ 
-				FechaDesde = DateTime.Parse(fDesde),
-				FechaHasta = DateTime.Parse(fHasta),
-				ctaf_id = ctaf_id
+				id_f = id_f,
+				ctaf_id = ctaf_id,
+				id_c = id_c,
+				cta_id = cta_id,
+				id_u = id_u,
+				usu_id = usu_id,
+				tipo_fecha = Convert.ToChar(tipo_fecha),
+				desde = Convert.ToDateTime(desde),
+				hasta = Convert.ToDateTime(hasta),
+				estado = estado,
 			});
 		}
 
@@ -154,9 +198,7 @@ namespace gc.api.core.Servicios.Reportes
 		{
 			#region Obteniendo registros desde la base de datos
 			string tit;
-			string fDesde;
-			string fHasta;
-			List<FinancieroBcoExtractoDto> registros = ObtenerDatos(solicitud, out tit, out fDesde, out fHasta);
+			List<FinancieroBcoVencChequeEmitidoListaDto> registros = ObtenerDatos(solicitud, out tit);
 
 			if (registros == null || registros.Count == 0)
 			{
@@ -179,9 +221,7 @@ namespace gc.api.core.Servicios.Reportes
 		{
 			#region Obteniendo registros desde la base de datos
 			string tit;
-			string fDesde;
-			string fHasta;
-			List<FinancieroBcoExtractoDto> registros = ObtenerDatos(solicitud, out tit, out fDesde, out fHasta);
+			List<FinancieroBcoVencChequeEmitidoListaDto> registros = ObtenerDatos(solicitud, out tit);
 
 			if (registros == null || registros.Count == 0)
 			{

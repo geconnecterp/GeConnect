@@ -50,13 +50,28 @@
 	<script type="text/javascript">
 		var ctaIdSelected = "";
 		var ctaDescSelected = "";
+		var chequesSeleccionados = "";
 
 		var autoComRel01Url = "@Url.Action("BuscarProvs", "chequepropioemitido", new { area = "Financieros" })";
 		var buscarChequesPropiosEmitidosUrl = "@Url.Action("BuscarChequesEmitidosPropios", "chequepropioemitido", new { area = "Financieros" })";
 		var mostrarChequeModificadoUrl = "@Url.Action("MostrarChequeModificado", "chequepropioemitido", new { area = "Financieros" })";
 		var verModalDetalleChequeModificarUrl = "@Url.Action("VerModalDetalleChequeModificar", "chequepropioemitido", new { area = "Financieros" })";
 		var guardarChequeModificarUrl = "@Url.Action("GuardarChequeModificar", "chequepropioemitido", new { area = "Financieros" })";
+		var registrarFechaDeEntregaUrl = "@Url.Action("RegistrarFechaDeEntrega", "chequepropioemitido", new { area = "Financieros" })";
+		var registrarFechaDeEntrega2Url = "@Url.Action("RegistrarFechaDeEntrega", "chequepropioemitido", new { area = "Financieros" })";
+		var registrarRechazoDeChequeUrl = "@Url.Action("RegistrarRechazoDeCheque", "chequepropioemitido", new { area = "Financieros" })";
+		var pasoPrevioECheqUrl = "@Url.Action("PasoPrevioECheq", "chequepropioemitido", new { area = "Financieros" })";
+
+		// Gestor de impresión
+		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+		var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+		var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+		var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "GestorImpresion", new { area = "ControlComun" })";
+
 	</script>
+	<script src="~/lib/xlsx/xlsx.full.min.js"></script>
 	<script src="~/lib/jstree/jstree.min.js"></script>
 	<script src="~/js/app/areas/docmngr/docmanager.js"></script>
 

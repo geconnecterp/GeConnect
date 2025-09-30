@@ -166,6 +166,9 @@
 			public const string SP_F_BCO_CH_ESTADOS = "SPGECO_F_BCO_CH_Estados";
 			public const string SP_F_BCO_CH_MODIFICADOS = "SPGECO_F_BCO_CH_Modificados";
 			public const string SP_F_BCO_CH_MODIFICAR = "SPGECO_F_BCO_CH_Modificar";
+			public const string SP_F_BCO_CH_ENTREGA = "SPGECO_F_BCO_CH_Entrega";
+			public const string SP_F_BCO_CH_RECHAZAR = "SPGECO_F_BCO_CH_Rechazar";
+			public const string SP_F_BCO_CH_E_CHEQ = "SPGECO_F_BCO_CHE_E_Cheq";
 			#endregion
 
 			#region SP Depositos

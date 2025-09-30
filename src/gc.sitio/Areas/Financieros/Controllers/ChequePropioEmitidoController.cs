@@ -62,6 +62,15 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				var titulo = "CHEQUES PROPIOS EMITIDOS";
 				ViewData["Titulo"] = titulo;
 
+				#region Gestor Impresion - Inicializacion de variables
+				//Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
+				DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+				// en este mismo acto se cargan los posibles documentos
+				//que se pueden imprimir, exportar, enviar por email o whatsapp
+				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+
+				#endregion
+
 				CargarDatosIniciales(model);
 
 				return View(model);
@@ -191,36 +200,69 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				return PartialView("_gridMensaje", response);
 			}
 		}
-		//
 
-		public static List<FinancieroChequePropioEmitidoListaDto> MapListaToChequePropio(List<FinancieroBcoVencChequeEmitidoListaDto> sourceList)
+		public JsonResult RegistrarFechaDeEntrega(RegistrarFechaDeEntregaRequest request)
 		{
-			return sourceList.Select(item => new FinancieroChequePropioEmitidoListaDto
+			try
 			{
-				ctaf_id = item.ctaf_id,
-				ctaf_denominacion = item.ctaf_denominacion,
-				che_emision = item.che_emision,
-				che_nro = item.che_nro,
-				che_fecha = item.che_fecha,
-				che_anombre = item.che_anombre,
-				che_importe = item.che_importe,
-				che_estado = item.che_estado,
-				che_estado_desc = item.che_estado_desc,
-				usu_id = item.usu_id,
-				che_fecha_emi = item.che_fecha_emi,
-				che_impreso = item.che_impreso,
-				che_op_tra = item.che_op_tra,
-				op_compte = item.op_compte,
-				cta_id = item.cta_id,
-				cta_denominacion = item.cta_denominacion,
-				ent_fecha = item.ent_fecha,
-				ent_usu_id = item.ent_usu_id,
-				che_auto = item.che_auto,
-				modificado = item.modificado,
-				dif_print = item.dif_print,
-				cf_conciliado = item.cf_conciliado,
-				diferido = item.diferido
-			}).ToList();
+				if (request == null)
+					return Json(new { error = true, warn = false, msg = $"Request vacío." });
+
+				request.adm_id = AdministracionId;
+				request.usu_id = UserName;
+				var respuesta = _financieroServicio.SetFechaDeEntrega(request, TokenCookie);
+				if (respuesta == null || respuesta.Entidad == null)
+					return Json(new { error = true, warn = false, msg = $"Se ha producido un error al intentar registrar la fecha de entrega del cheque." });
+				if (respuesta.Entidad.resultado > 0)
+					return Json(new { error = true, warn = false, msg = $"{respuesta.Entidad.resultado_msj}" });
+				return Json(new { error = false, warn = false, msg = $"La fecha de entrega se ha registrado con éxito." });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se ha producido un error al intentar registrar la fecha de entrega del cheque." });
+			}
+		}
+
+		public JsonResult RegistrarRechazoDeCheque(RegistrarRechazoDeChequeRequest request)
+		{
+			try
+			{
+				if (request == null)
+					return Json(new { error = true, warn = false, msg = $"Request vacío." });
+
+				request.adm_id = AdministracionId;
+				request.usu_id = UserName;
+				request.fecha_rechazo = DateTime.Today;
+				var respuesta = _financieroServicio.SetRechazoDeCheque(request, TokenCookie);
+				if (respuesta == null || respuesta.Entidad == null)
+					return Json(new { error = true, warn = false, msg = $"Se ha producido un error al intentar registrar el rechazo del cheque." });
+				if (respuesta.Entidad.resultado > 0)
+					return Json(new { error = true, warn = false, msg = $"{respuesta.Entidad.resultado_msj}" });
+				return Json(new { error = false, warn = false, msg = $"El rechazo del cheque se ha registrado con éxito." });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se ha producido un error al intentar registrar el rechazo del cheque." });
+			}
+		}
+
+		public JsonResult PasoPrevioECheq(PasoPrevioECheqRequest request)
+		{
+			try
+			{
+				if (request == null)
+					return Json(new { error = true, warn = false, msg = $"Request vacío." });
+
+				var respuesta = _financieroServicio.GetECheqLista(request, TokenCookie);
+				if (respuesta == null || respuesta.Count <=0)
+					return Json(new { error = true, warn = false, msg = $"Se ha producido un error al intentar registrar el rechazo del cheque." });
+				
+				return Json(new { error = false, warn = false, msg = "", respuesta.First().json, formato = respuesta.First().formato_salida, respuesta.First().encabezado });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se ha producido un error al intentar registrar el rechazo del cheque." });
+			}
 		}
 
 
@@ -275,6 +317,36 @@ namespace gc.sitio.Areas.Financieros.Controllers
 		{
 			var lista = listaTemp.Select(x => new ComboGenDto { Id = x.che_estado, Descripcion = $"{x.che_estado_desc} ({x.che_estado})" });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+
+		private static List<FinancieroChequePropioEmitidoListaDto> MapListaToChequePropio(List<FinancieroBcoVencChequeEmitidoListaDto> sourceList)
+		{
+			return sourceList.Select(item => new FinancieroChequePropioEmitidoListaDto
+			{
+				ctaf_id = item.ctaf_id,
+				ctaf_denominacion = item.ctaf_denominacion,
+				che_emision = item.che_emision,
+				che_nro = item.che_nro,
+				che_fecha = item.che_fecha,
+				che_anombre = item.che_anombre,
+				che_importe = item.che_importe,
+				che_estado = item.che_estado,
+				che_estado_desc = item.che_estado_desc,
+				usu_id = item.usu_id,
+				che_fecha_emi = item.che_fecha_emi,
+				che_impreso = item.che_impreso,
+				che_op_tra = item.che_op_tra,
+				op_compte = item.op_compte,
+				cta_id = item.cta_id,
+				cta_denominacion = item.cta_denominacion,
+				ent_fecha = item.ent_fecha,
+				ent_usu_id = item.ent_usu_id,
+				che_auto = item.che_auto,
+				modificado = item.modificado,
+				dif_print = item.dif_print,
+				cf_conciliado = item.cf_conciliado,
+				diferido = item.diferido
+			}).ToList();
 		}
 		#endregion
 	}

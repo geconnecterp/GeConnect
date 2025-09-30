@@ -34,5 +34,8 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<ChequeEmitidoEstadoDto> GetChequesEmitidosEstadosLista(string token);
 		List<ChequeModificadosListaDto> GetChequeModificadosLista(GetChequeModificadosListaRequest request, string token);
 		RespuestaGenerica<RespuestaDto> SetChequeModificar(GetChequeModificarListaRequest request, string token);
+		RespuestaGenerica<RespuestaDto> SetFechaDeEntrega(RegistrarFechaDeEntregaRequest request, string token);
+		RespuestaGenerica<RespuestaDto> SetRechazoDeCheque(RegistrarRechazoDeChequeRequest request, string token);
+		List<ECheqDto> GetECheqLista(PasoPrevioECheqRequest request, string token);
 	}
 }
