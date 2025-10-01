@@ -515,6 +515,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				model.CompteSeleccionado.TipoDescripcion = descTipoCompte;
 			}
 			model.cta_id = CuentaComercialSeleccionada?.Cta_Id ?? string.Empty;
+			model.cta_denominacion = CuentaComercialSeleccionada?.Cta_Denominacion ?? string.Empty;
 			model.ponerEnCurso = bool.Parse(ponerEnCurso);
 			model.Nota = notaAuto;
 			model.Depo_id = depoSelec;

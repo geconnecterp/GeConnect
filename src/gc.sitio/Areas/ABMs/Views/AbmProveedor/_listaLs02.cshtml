@@ -1,8 +1,8 @@
 ﻿@model Ls02Model
 @{
-	var lLstTipoOpe = Model.LstTipoOpe;
+	var LstTipoOpe = Model.LstTipoOpe;
 }
 <div class="input-group input-group-sm">
     <span class="input-group-text">Nombre</span>
-    @Html.DropDownListFor(m => m.Tipo, lLstTipoOpe, "Seleccionar", new { @id = "listaLs02", disabled = "disabled", @class = "form-control inputEditable activable" })
+    @Html.DropDownListFor(m => m.Tipo, LstTipoOpe, "Seleccionar", new { @id = "listaLs02", disabled = "disabled", @class = "form-control inputEditable activable" })
 </div>

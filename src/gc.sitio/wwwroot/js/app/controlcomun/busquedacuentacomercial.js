@@ -43,7 +43,21 @@
 	$("#txtNroCompte").mask("0000-00000000", { reverse: true });
 	//$("#txtMonto").mask("000.000.000.000,00", { reverse: true });
 
-	$("#Cuenta").on("keyup", analizaInput);
+	$("#Cuenta").on("keyup", analizaInputEnCuenta);
+	$("#Cuenta").on("change", analizaChangeEnCuenta);
+	$('#Cuenta').on('input', function () {
+		const valor = $(this).val();
+		if (valor === '') {
+			$("#razonsocial").val("");
+			document.dispatchEvent(new CustomEvent('cc:cuentaChanged', {
+				detail: {
+					cta_denominacion: undefined,
+					cta_id: undefined
+				}
+			}));
+		}
+	});
+
 	$("#txtNota").on("keyup", analizaInputTxtNota);
 	$("#listaDeposito").on("change", analizaInputlistaDeposito);
 	$("#dtpFechaTurno").on("change", analizaInputTurno);
@@ -147,8 +161,20 @@ function VerDetalleClick() {
 	}
 }
 
-function analizaInput(e) {
-	$("#CtaId").val("");
+function analizaChangeEnCuenta(e) {
+	console.log(e);
+	//document.dispatchEvent(new CustomEvent('cc:cuentaChanged', {
+	//	detail: {
+	//		cta_denominacion: obj.cuenta.cta_Denominacion,
+	//		cta_id: obj.cuenta.cta_Id
+	//	}
+	//}));
+}
+
+function analizaInputEnCuenta(e) {
+	if (e.key == "Enter") {
+		buscarCuentasComercial();
+	}
 }
 
 function analizaInputTurno(e) {
@@ -561,6 +587,13 @@ function buscarCuentasComercial() {
 		} else if (obj.unico === true) {
 			$("#razonsocial").val(obj.cuenta.cta_Denominacion);
 			$("#Cuenta").val(obj.cuenta.cta_Id)
+			console.log('Evento disparado desde Busqueda de Cuenta Comercial');
+			document.dispatchEvent(new CustomEvent('cc:cuentaChanged', {
+				detail: {
+					cta_denominacion: obj.cuenta.cta_Denominacion,
+					cta_id: obj.cuenta.cta_Id
+				}
+			 }));
 			CargarComboTiposComptes(obj.cuenta.cta_Id);
 			return true;
 		} else {

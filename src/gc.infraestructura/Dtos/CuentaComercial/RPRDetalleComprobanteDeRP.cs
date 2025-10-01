@@ -5,6 +5,7 @@ namespace gc.infraestructura.Dtos.CuentaComercial
 	{
 		public string Leyenda { get; set; } = string.Empty;
 		public string cta_id { get; set; } = string.Empty;
+		public string cta_denominacion { get; set; } = string.Empty;
 		public RPRComptesDeRPDto CompteSeleccionado { get; set; } = new RPRComptesDeRPDto();
         public string Nota { get; set; } = string.Empty;
 		public string FechaTurno { get; set; } = string.Empty;

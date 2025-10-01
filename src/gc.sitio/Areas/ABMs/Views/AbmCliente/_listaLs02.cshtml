@@ -1,0 +1,8 @@
+﻿@model gc.sitio.Areas.ABMs.Models.Cliente.Ls02Model
+@{
+	var lLstTipo = Model.LstTipo;
+}
+<div class="input-group input-group-sm">
+    <span class="input-group-text">Nombre</span>
+    @Html.DropDownListFor(m => m.Tipo, lLstTipo, "Seleccionar", new { @id = "listaLs02", disabled = "disabled", @class = "form-control inputEditable activable" })
+</div>

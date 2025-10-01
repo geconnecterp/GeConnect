@@ -27,6 +27,7 @@
 		<div style="float:left;width:100%;padding-top: 20px;padding-left: 12px;">
 			<div class="input-group">
 				@Html.Hidden("cta_id", Model.cta_id)
+				@Html.Hidden("cta_denominacion", Model.cta_denominacion)
 				@Html.Hidden("tco_id", Model.CompteSeleccionado.Tipo)
 				@Html.Hidden("cm_compte", Model.CompteSeleccionado.NroComprobante)
 				@Html.Hidden("nota", Model.Nota)
@@ -84,14 +85,14 @@
 							<div class="col-8" style="padding-right: 0px;padding-left: 0px;width: 64%;">
 								<div class="input-group input-group-sm">
 									<span class="input-group-text">ID: </span>
-									<input type="text" id="txtIdProdEnComprobanteRP" class="form-control" style="width:10%;" readonly />
-									<input type="text" id="txtProDescripcion" class="form-control" style="width: 35%;" readonly />
+									<input type="text" id="txtIdProdEnComprobanteRP" class="form-control form-control-sm" style="width:10%;" readonly />
+									<input type="text" id="txtProDescripcion" class="form-control form-control-sm" style="width: 35%;height: 32px;" readonly />
 									<span class="input-group-text">UP: </span>
-									<input type="text" id="txtUPEnComprobanteRP" class="form-control activable inputEditable" />
+									<input type="text" id="txtUPEnComprobanteRP" class="form-control form-control-sm activable inputEditable" />
 									<span class="input-group-text">Bto: </span>
-									<input type="number" id="txtBtoEnComprobanteRP" class="form-control activable inputEditable" min="0" />
+									<input type="number" id="txtBtoEnComprobanteRP" class="form-control form-control-sm activable inputEditable" min="0" />
 									<span class="input-group-text">Unid: </span>
-									<input type="text" id="txtUnidEnComprobanteRP" class="form-control activable inputEditable" />
+									<input type="text" id="txtUnidEnComprobanteRP" class="form-control form-control-sm activable inputEditable" />
 									<input type="text" id="txtUP_ID" style="display:none;" />
 									<input type="text" id="txtBARRADO_ID" style="display:none;" />
 								</div>
@@ -145,6 +146,13 @@
 		var pagina = 1;
 		var funcCallBack = null;
 		var dataBak = {};
+
+		//Prov
+		var provUnico = false;
+		var provId = "";
+		var provDesc = "";
+		//
+
 		var buscarProveedorUrl = "@Url.Action("Buscar", "proveedor", new { area = "ControlComun" })";
 		var CargarDetalleDeProductosEnRPUrl = "@Url.Action("CargarDetalleDeProductosEnRP", "compra", new { area = "Compras" })";
 		var CargarOCxCuentaEnRPUrl = "@Url.Action("CargarOCxCuentaEnRP", "compra", new { area = "Compras" })";

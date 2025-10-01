@@ -213,7 +213,7 @@ function InicializaPantalla() {
 	$("#lbRel02").hide();
 	$("#lbNombreRel02").hide();
 	$("#Rel02").hide();
-	$("#Rel02List").hide();
+	$("#Rel02List").empty();
 
 	$("#lbChkDescr").text("Denominación");
 	$("#lbDescr").html("Desc");
@@ -235,7 +235,7 @@ function InicializaPantalla() {
 	$("#chkRel01").trigger("change");
 	$("#Rel01").val("");
 	$("#Rel01").prop("disabled", true);
-	//
+	$("#Rel02List").prop("disabled", true);
 	$(".activable").prop("disabled", true);
 	$("#btnDetalle").prop("disabled", true);
 	cargarListaTipoOpe();
@@ -247,14 +247,14 @@ function InicializaPantalla() {
 $("#chkRel01").on("click", function () {
 	if ($("#chkRel01").is(":checked")) {
 		$("#listaLs02").prop("disabled", false);
-		$("#Rel01List").prop("disabled", false);
+		$("#Rel02List").prop("disabled", false);
 		$("#listaLs02").trigger("focus");
 	}
 	else {
 
 
 		$("#listaLs02").prop("disabled", true).val("");
-		$("#Rel01List").prop("disabled", true).empty();
+		$("#Rel02List").prop("disabled", true).empty();
 
 	}
 });
@@ -273,9 +273,9 @@ function cargarListaTipoOpe() {
 function controlalistaLs02Selected() {
 	var item = $("#listaLs02").val();
 	var desc = $("#listaLs02 option:selected").text();
-	if ($("#Rel01List").has('option:contains("' + item + '")').length === 0 && $("#Rel01List").has('option:contains("' + desc + '")').length === 0) {
+	if ($("#Rel02List").has('option:contains("' + item + '")').length === 0 && $("#Rel02List").has('option:contains("' + desc + '")').length === 0) {
 		var opc = "<option value=" + item + ">" + desc + "</option>"
-		$("#Rel01List").append(opc);
+		$("#Rel02List").append(opc);
 	}
 }
 

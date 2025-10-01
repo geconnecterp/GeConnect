@@ -12,7 +12,11 @@
 	$(document).on("change", "#listaFP", controlaValorFP);
 	$(document).on("keyup", "#FormaDePago_Fp_Dias", controlaKeyUpFP);
 	$(document).on("focusout", "#FormaDePago_Fp_Dias", controlaFocusOutFP);
-	//focusout
+
+	$("#Rel02List").on("dblclick", 'option', function () { $(this).remove(); })
+	$("#Rel03List").on("dblclick", 'option', function () { $(this).remove(); })
+	$(document).on("change", "#listaLs02", controlalistaLs02Selected);
+	$(document).on("change", "#listaLs03", controlalistaLs03Selected);
 
 	$(document).on("dblclick", "#" + Grids.GridCliente + " tbody tr", function () {
 		x = $(this);
@@ -174,7 +178,7 @@ function InicializaPantallaAbmCliente() {
 	$("#divPaginacion").addClass("collapse");
 
 	$("#lbRel01").text("TIPO");
-	$("#lbRel02").text("ZONA");
+	$("#lbRel03").text("ZONA");
 
 	$("#lbChkDescr").text("Denominación");
 	$("#lbDescr").html("Desc");
@@ -194,22 +198,87 @@ function InicializaPantallaAbmCliente() {
 
 	$("#chkRel01").prop('checked', false);
 	$("#chkRel01").trigger("change");
-	$("#Rel01").val("");
-	$("#Rel01").prop("disabled", true);
-	$("#chkRel02").prop('checked', false);
-	$("#chkRel02").trigger("change");
-	$("#Rel02").val("");
-	$("#Rel02").prop("disabled", true);
+	$("#listaLs02").val("");
+	$("#listaLs02").prop("disabled", true);
+	$("#chkRel03").prop('checked', false);
+	$("#chkRel03").trigger("change");
+	$("#listaLs03").val("");
+	$("#listaLs03").prop("disabled", true);
 
-	$("#Rel01List").empty();
 	$("#Rel02List").empty();
+	$("#Rel03List").empty();
 
 	$("#IdSelected").val("");
 	$(".activable").prop("disabled", true);
 	$("#btnDetalle").prop("disabled", true);
+	cargarListaTipo();
+	cargarListaZona();
 	activarBotones(false);
 	CerrarWaiting();
 	return true;
+}
+
+$("#chkRel01").on("click", function () {
+	if ($("#chkRel01").is(":checked")) {
+		$("#listaLs02").prop("disabled", false);
+		$("#Rel02List").prop("disabled", false);
+		$("#listaLs02").trigger("focus");
+	}
+	else {
+		$("#listaLs02").prop("disabled", true).val("");
+		$("#Rel02List").prop("disabled", true).empty();
+	}
+});
+
+$("#chkRel03").on("click", function () {
+	if ($("#chkRel03").is(":checked")) {
+		$("#listaLs03").prop("disabled", false);
+		$("#Rel03List").prop("disabled", false);
+		$("#listaLs03").trigger("focus");
+	}
+	else {
+		$("#listaLs03").prop("disabled", true).val("");
+		$("#Rel03List").prop("disabled", true).empty();
+	}
+});
+
+function controlalistaLs02Selected() {
+	var item = $("#listaLs02").val();
+	var desc = $("#listaLs02 option:selected").text();
+	if ($("#Rel02List").has('option:contains("' + item + '")').length === 0 && $("#Rel02List").has('option:contains("' + desc + '")').length === 0) {
+		var opc = "<option value=" + item + ">" + desc + "</option>"
+		$("#Rel02List").append(opc);
+	}
+}
+function controlalistaLs03Selected() {
+	var item = $("#listaLs03").val();
+	var desc = $("#listaLs03 option:selected").text();
+	if ($("#Rel03List").has('option:contains("' + item + '")').length === 0 && $("#Rel03List").has('option:contains("' + desc + '")').length === 0) {
+		var opc = "<option value=" + item + ">" + desc + "</option>"
+		$("#Rel03List").append(opc);
+	}
+}
+
+function cargarListaTipo() {
+	PostGenHtml({}, cargarListaTipoUrl, function (obj) {
+		$("#divLs02").html(obj);
+		CerrarWaiting();
+	}, function (obj) {
+		CerrarWaiting();
+		ControlaMensajeError(obj.message);
+		return true;
+	});
+}
+
+function cargarListaZona() {
+	PostGenHtml({}, cargarListaZonaUrl, function (obj) {
+		$("#divLs03").html(obj);
+		CerrarWaiting();
+	}, function (obj) {
+		CerrarWaiting();
+		ControlaMensajeError(obj.message);
+		return true;
+	});
 }
 
 function cargaPaginacion() {
@@ -243,10 +312,10 @@ function buscarClientes(pag, esBaja = false) {
 		id2 = $("#Id2").val();
 	}
 	if ($("#chkRel01").is(":checked")) {
-		$("#Rel01List").children().each(function (i, item) { r01.push($(item).val()) });
+		$("#Rel02List").children().each(function (i, item) { r01.push($(item).val()) });
 	}
-	if ($("#chkRel02").is(":checked")) {
-		$("#Rel02List").children().each(function (i, item) { r02.push($(item).val()) });
+	if ($("#chkRel03").is(":checked")) {
+		$("#Rel03List").children().each(function (i, item) { r02.push($(item).val()) });
 	}
 
 	var data1 = {

@@ -1,0 +1,8 @@
+﻿@model Ls03Model
+@{
+	var lstZona = Model.LstZona;
+}
+<div class="input-group input-group-sm">
+    <span class="input-group-text">Nombre</span>
+    @Html.DropDownListFor(m => m.Tipo, lstZona, "Seleccionar", new { @id = "listaLs03", disabled = "disabled", @class = "form-control inputEditable activable" })
+</div>

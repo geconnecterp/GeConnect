@@ -15,6 +15,7 @@
 				<th style="width:5%;" class="col-header-small align-center">Stk Actual</th>
 				<th style="width:5%;" class="col-header-small align-center">Ajuste</th>
 				<th style="width:5%;" class="col-header-small align-center">Stock Ajustado</th>
+				<th style="width:1%;"></th>
 				<th style="width:0%; display:none;">as_motivo</th>
 			</tr>
 		</thead>
@@ -35,6 +36,11 @@
 						<td class="align-center">@stk_actual</td>
 						<td class="align-right">@ajuste</td>
 						<td class="align-right">@res</td>
+						<td class="text-center align-middle">
+							<button type="button" class="btn btn-danger btn-icon-compact" title="Rechazar" onclick="quitarProducto('@item.p_id')">
+								<i class="bx bx-trash"></i>
+							</button>
+						</td>
 						<td style="display:none;">@item.as_motivo</td>
 					</tr>
 				}

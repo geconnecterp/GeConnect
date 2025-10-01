@@ -12,6 +12,15 @@
 	<link rel="stylesheet" href="~/css/simplePagination.css"   />
 }
 <style>
+	.btn-icon-compact {
+		padding: 0.15rem 0.3rem;
+		font-size: 0.7rem;
+		line-height: 1;
+	}
+
+		.btn-icon-compact i {
+			font-size: 0.9rem;
+		}
 
 	.filter-golden-body {
 		padding: 0 !important;
@@ -39,18 +48,6 @@
 									<label class="form-check-label" for="btnradioCargaPrevia">Carga Previa</label>
 								</div>
 							</div>
-							@* <div class="btn-group" role="group" aria-label="Basic radio toggle button group" style="width: 95%;">
-								<row style="padding:4px; width: 100% !important">
-									<input type="radio" class="btn-check" name="btnradio" id="btnradioManual" checked="">
-									<label class="btn btn btn-outline-primary fixed-font-size-xmall" for="btnradioManual">Manual</label>
-									<div style="height: 5px;"></div>
-									<input type="radio" class="btn-check" name="btnradio" id="btnradioRevertirAjuste">
-									<label class="btn btn btn-outline-primary fixed-font-size-xmall" for="btnradioRevertirAjuste">Revertir Ajuste</label>
-									<div style="height: 5px;"></div>
-									<input type="radio" class="btn-check" name="btnradio" id="btnradioCargaPrevia">
-									<label class="btn btn btn-outline-primary fixed-font-size-xmall" for="btnradioCargaPrevia">Carga Previa</label>
-								</row>
-							</div> *@
 						</div>
 						<div class="col-7" style="float:left;">
 							<div class="row" style="min-height: 37px;">
@@ -107,9 +104,6 @@
 				<div class="row" style="padding-top: 5px;">
 					@* botones *@
 					<div style="text-align: right;align-content: center;">
-@* 						<button type="button" class="btn btn-secondary btn-sm mt-1 me-1" id="btnRegresar">
-							<i class="bx bx-chevron-left"></i> Regresar
-						</button> *@
 						<button type="button" class="btn btn-success btn-sm mt-1 me-1" id="btnConfirmar">
 							<i class="bx bx-badge-check"></i> Confirmar
 						</button>
@@ -130,51 +124,29 @@
 						<div class="col-2" style="padding-right: 0px;">
 							<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
 						</div>
-						<div class="col-8" style="padding-right: 0px;padding-left: 0px;width: 66%;">
+						<div class="col-9" style="padding-right: 0px;padding-left: 0px;width: 75%;">
 							<div class="input-group input-group-sm">
 								<span class="input-group-text">ID: </span>
-								<input type="text" id="txtIdProd" class="form-control" style="width:10%;display: none;" readonly />
-								<input type="text" id="txtProDescripcion" class="form-control" style="width: 30%;" readonly />
+								<input type="text" id="txtIdProd" class="form-control form-control-sm" style="width:10%;display: none;" readonly />
+								<input type="text" id="txtProDescripcion" class="form-control form-control-sm" style="width: 30%;height: 32px;" readonly />
 								<span class="input-group-text">UP: </span>
-								<input type="text" id="txtUP" class="form-control activable inputEditable" />
+								<input type="text" id="txtUP" class="form-control form-control-sm activable inputEditable" />
 								<span class="input-group-text">Bto: </span>
-								<input type="number" id="txtBto" class="form-control activable inputEditable" min="0" />
+								<input type="number" id="txtBto" class="form-control form-control-sm activable inputEditable" min="0" />
 								<span class="input-group-text">Unid: </span>
-								<input type="text" id="txtUnid" class="form-control activable inputEditable" />
+								<input type="text" id="txtUnid" class="form-control form-control-sm activable inputEditable" />
 								<input type="text" id="txtUP_ID" style="display:none;" />
 								<input type="text" id="txtBARRADO_ID" style="display:none;" />
 								<input type="text" id="txtID_PROV" style="display:none;" />
 							</div>
-							@* <div class="input-group input-group-sm">
-								<span style="display: none;" class="input-group-text">ID: </span>
-								<input type="text" id="txtIdProd" class="form-control" style="width:10%;display: none;" readonly />
-								<input type="text" id="txtProDescripcion" class="form-control" style="width: 33%;" readonly />
-								<span class="input-group-text" style="width:5%;">UP: </span>
-								<input type="text" id="txtUP" class="form-control align-right" style="width:10%;" />
-								<span class="input-group-text" style="width:5%;">Bto: </span>
-								<input type="number" id="txtBto" class="form-control align-right" min="0" style="width:10%;" />
-								<span class="input-group-text" style="width:5%;">Unid: </span>
-								<input type="text" id="txtUnid" class="form-control align-right" style="width:25%;" value="0" />
-								<input type="text" id="txtUP_ID" style="display:none;" />
-								<input type="text" id="txtBARRADO_ID" style="display:none;" />
-								<input type="text" id="txtID_PROV" style="display:none;" />
-							</div> *@
-							@* <div class="mt-2 d-flex gap-2">
-								<button type="button" class="btn btn-primary btn-sm" id="btnAddProd">
-									<i class="bx bx-plus-circle"></i> Agregar Producto
-								</button>
-								<button type="button" class="btn btn-danger btn-sm" id="btnDelProd">
-									<i class="bx bx-trash"></i> Quitar Producto
-								</button>
-							</div> *@
 						</div>
-						<div class="col-2" style="padding-left: 55px;">
+						<div class="col-1 text-center align-middle">
 							<button type="button" class="btn btn-primary btn-sm" id="btnAddProd" title="Agregar Producto">
 								<i class="bx bx-plus-circle"></i> Agregar
 							</button>
-							<button type="button" class="btn btn-danger btn-sm" id="btnDelProd" title="Quitar Producto">
+							@* <button type="button" class="btn btn-danger btn-sm" id="btnDelProd" title="Quitar Producto">
 								<i class="bx bx-trash"></i> Quitar
-							</button>
+							</button> *@
 						</div>
 					</div>
 					<div id="divDetalleDeProductosAAjustar" style="padding-top:5px;">
@@ -189,6 +161,7 @@
 										<th style="width:5%;" class="col-header-small align-center">Stk Actual</th>
 										<th style="width:5%;" class="col-header-small align-center">Ajuste</th>
 										<th style="width:5%;" class="col-header-small align-center">Stock Ajustado</th>
+										<th style="width:1%;"></th>
 									</tr>
 								</thead>
 								<tbody>
@@ -205,6 +178,11 @@
 												<td class="align-center">@item.as_stock</td>
 												<td class="align-right">@item.as_ajuste</td>
 												<td class="align-right">@item.as_resultado</td>
+												<td class="text-center align-middle">
+													<button type="button" class="btn btn-danger btn-icon-compact" title="Rechazar" onclick="quitarProducto('@item.p_id')">
+														<i class="bx bx-trash"></i>
+													</button>
+												</td>
 											</tr>
 										}
 									}
@@ -237,6 +215,7 @@
 		var pagina = 1;
 		var funcCallBack = null;
 		var dataBak = {};
+
 		var buscarProveedorUrl = "@Url.Action("Buscar", "proveedor", new { area = "ControlComun" })";
 		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun", validarPertenenciaDeProveedor = false })";
 		var BuscarBoxesDesdeDepositoURL = "@Url.Action("ObtenerBoxesDesdeDeposito", "ajustedestock", new { area = "Compras" })";

@@ -100,6 +100,31 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			return View();
 		}
 
+		//public IActionResult CargarListaTipoOpe()
+		//{
+		//	var model = new Ls02Model();
+		//	try
+		//	{
+		//		if (TipoOpeIvaLista == null || TipoOpeIvaLista.Count <= 0)
+		//		{
+		//			ObtenerTiposOpeIva(_tipoOpeServicio);
+		//		}
+		//		model.LstTipoOpe = ComboTipoOpe();
+		//		return PartialView("_listaLs02", model);
+		//	}
+		//	catch (Exception ex)
+		//	{
+		//		RespuestaGenerica<EntidadBase> response = new()
+		//		{
+		//			Ok = false,
+		//			EsError = true,
+		//			EsWarn = false,
+		//			Mensaje = ex.Message
+		//		};
+		//		return PartialView("_gridMensaje", response);
+		//	}
+		//}
+
 		/// <summary>
 		/// Método que llena el Tab "Proveedor" en el ABM
 		/// </summary>

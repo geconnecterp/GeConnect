@@ -24,6 +24,19 @@
 	$("#divCargaPrevia").find('button').each(function () {
 		$(this).attr('disabled', 'disabled');
 	});
+	document.addEventListener('cc:cuentaChanged', function (e) {
+		console.log('Razón social detectada desde evento externo:', e.detail.cta_denominacion, e.detail.cta_id);
+		if (e.detail.cta_id != undefined) {
+			provUnico = true;
+			provId = e.detail.cta_id;
+			provDesc = e.detail.cta_denominacion;
+		}
+		else {
+			provUnico = false;
+			provId = "";
+			provDesc = "";
+		}
+	});
 });
 
 function DelProd() {
@@ -42,6 +55,35 @@ function DelProd() {
 		CerrarWaiting();
 		return true
 	});
+}
+
+function LimpiarCamposDeProducto() {
+	$("#txtIdProd").val("");
+	$("#txtProDescripcion").val("");
+	$("#txtUP").val("");
+	$("#txtBto").val("");
+	$("#txtUnid").val("");
+}
+
+function quitarProducto(p_id) {
+	console.log(p_id);
+	if (p_id === "") {
+		AbrirMensaje("Atención", "Debe seleccionar un producto.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "warn!", null);
+	}
+	else {
+		var pId = p_id;
+		var datos = { pId };
+		PostGenHtml(datos, QuitarProductoDeListaURL, function (obj) {
+			$('#modalCargaPrevia').modal('hide')
+			$("#divDetalleDeProductosADevolver").html(obj);
+			AddEventListenerToGrid("tbDetalleDeProductosAAjustar");
+			CerrarWaiting();
+			return true
+		});
+	}
 }
 
 function ConfirmarDevolucion() {
@@ -439,6 +481,7 @@ function ValidarPertenenciaDeProductoAProveedor(pId, ctaId) {
 			var datos = { pId, boxId, ctaId, depoId, us, bto, unidadPres, upId }
 			PostGenHtml(datos, AgregarProductoAListaURL, function (obj) {
 				$("#divDetalleDeProductosADevolver").html(obj);
+				LimpiarCamposDeProducto();
 				AddEventListenerToGrid("tbDetalleDeProductosADevolver");
 				CerrarWaiting();
 				return true
@@ -447,20 +490,6 @@ function ValidarPertenenciaDeProductoAProveedor(pId, ctaId) {
 		}
 	});
 }
-
-//function AbrirCargaPrevia() {
-//	AbrirWaiting();
-//	var datos = {};
-//	PostGenHtml(datos, ObtenerDatosModalCargaPreviaUrl, function (obj) {
-//		$("#divModalCargaPrevia").html(obj);
-//		AddEventListenerToGrid("tbListaProductosParaAgregar");
-//		$("#listaDepositoEnCargaPrevia").on("change", listaDepositoEnCargaPreviaChange);
-//		$('#modalCargaPrevia').modal('show')
-//		CerrarWaiting();
-//		return true
-//	});
-//	CerrarWaiting();
-//}
 
 function AgregarHandlerAGrillaDetalleDeProductosEnModal() {
 	var dataTable = document.getElementById('tbListaProductosParaAgregar');

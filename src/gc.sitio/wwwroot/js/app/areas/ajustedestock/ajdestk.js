@@ -24,6 +24,19 @@
 	$("#divCargaPrevia").find('button').each(function () {
 		$(this).attr('disabled', 'disabled');
 	});
+	document.addEventListener('cc:cuentaChanged', function (e) {
+		console.log('Razón social detectada desde evento externo:', e.detail.cta_denominacion, e.detail.cta_id);
+		if (e.detail.cta_id != undefined) {
+			provUnico = true;
+			provId = e.detail.cta_id;
+			provDesc = e.detail.cta_denominacion;
+		}
+		else {
+			provUnico = false;
+			provId = "";
+			provDesc = "";
+		}
+	});
 });
 
 function VerificarAntesDeCancelarAjuste() {
@@ -44,6 +57,14 @@ function VerificarAntesDeCancelarAjuste() {
 			CancelarAjuste();
 		}
 	});
+}
+
+function LimpiarCamposDeProducto() {
+	$("#txtIdProd").val("");
+	$("#txtProDescripcion").val("");
+	$("#txtUP").val("");
+	$("#txtBto").val("");
+	$("#txtUnid").val("");
 }
 
 function CancelarAjuste() {
@@ -160,6 +181,28 @@ function DelProd() {
 		CerrarWaiting();
 		return true
 	});
+}
+
+function quitarProducto(p_id) {
+	console.log(p_id);
+	if (p_id === "") {
+		AbrirMensaje("Atención", "Debe seleccionar un producto.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "warn!", null);
+	}
+	else {
+		var pId = p_id;
+		var datos = { pId };
+		PostGenHtml(datos, QuitarProductoDeListaURL, function (obj) {
+			$('#modalCargaPrevia').modal('hide')
+			$("#divDetalleDeProductosAAjustar").html(obj);
+			AddEventListenerToGrid("tbDetalleDeProductosAAjustar");
+			LimpiarCamposDeProducto();
+			CerrarWaiting();
+			return true
+		});
+	}
 }
 
 function BtnRadioManual() {
@@ -442,6 +485,7 @@ function AgregarProdManual() {
 			PostGenHtml(datos, AgregarProductoAListaURL, function (obj) {
 				$("#divDetalleDeProductosAAjustar").html(obj);
 				AddEventListenerToGrid("tbDetalleDeProductosAAjustar");
+				LimpiarCamposDeProducto();
 				CerrarWaiting();
 				return true
 			});

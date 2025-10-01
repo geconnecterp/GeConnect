@@ -91,17 +91,70 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
             CargarDatosIniciales(true);
 
-            var listR02 = new List<ComboGenDto>();
+			//var listR01 = new List<ComboGenDto>();
+			//ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
+
+			var listR02 = new List<ComboGenDto>();
             ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
 
-            var listR01 = new List<ComboGenDto>();
-            ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
+            var listR03 = new List<ComboGenDto>();
+            ViewBag.Rel03List = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
 
             ViewData["Titulo"] = "ABM CLIENTES";
             return View();
         }
 
-        [HttpPost]
+		public IActionResult CargarListaTipo()
+		{
+			var model = new Models.Cliente.Ls02Model();
+			try
+			{
+				if (TipoNegocioLista == null || TipoNegocioLista.Count <= 0)
+				{
+					ObtenerTiposNegocio(_tipoNegocioServicio);
+				}
+				model.LstTipo = ComboTipo();
+				return PartialView("_listaLs02", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult CargarListaZona()
+		{
+			var model = new Ls03Model();
+			try
+			{
+				if (ZonasLista == null || ZonasLista.Count <= 0)
+				{
+					ObtenerZonas(_zonaServicio);
+				}
+				model.LstZona = ComboZona();
+				return PartialView("_listaLs03", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
         public async Task<IActionResult> Buscar(QueryFilters query, bool buscaNew, string sort = "cta_id", string sortDir = "asc", int pag = 1, bool actualizar = false)
         {
             List<ABMClienteSearchDto> lista;
@@ -1141,7 +1194,19 @@ namespace gc.sitio.Areas.ABMs.Controllers
             var lista = nuevaListaDpto.Select(x => new ComboGenDto { Id = x.dep_id, Descripcion = x.dep_nombre });
             return HelperMvc<ComboGenDto>.ListaGenerica(lista);
         }
-        private SelectList ComboFinanciero(string tcf_id, string cta_emp)
+		protected SelectList ComboTipo()
+		{
+			var nuevaListaTipo = new List<TipoNegocioDto>();
+			var lista = TipoNegocioLista.Select(x => new ComboGenDto { Id = x.ctn_id, Descripcion = x.ctn_lista });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboZona()
+		{
+			var nuevaListaZona = new List<ZonaDto>();
+			var lista = ZonasLista.Select(x => new ComboGenDto { Id = x.zn_id, Descripcion = x.zn_lista });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		private SelectList ComboFinanciero(string tcf_id, string cta_emp)
         {
             if (cta_emp == "S")
             {

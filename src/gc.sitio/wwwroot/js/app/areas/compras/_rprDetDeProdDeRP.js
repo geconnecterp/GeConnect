@@ -33,7 +33,9 @@
 		items: "> tr.sortme"
 	});
 
-	//AplicarFormato();
+	provUnico = true;
+	provId = $("#cta_id").val();
+	provDesc = $("#cta_denominacion").val();
 });
 
 const formatter = new Intl.NumberFormat('de-DE', {

@@ -9,7 +9,7 @@
 	$(document).on("change", "#listaFP", controlaValorFP);
 	$(document).on("keyup", "#FormaDePago_Fp_Dias", controlaKeyUpFP);
 	$(document).on("focusout", "#FormaDePago_Fp_Dias", controlaFocusOutFP);
-
+	$(document).on("change", "#listaLs02", controlalistaLs02Selected);
 	$(document).on("dblclick", "#" + Grids.GridProveedor + " tbody tr", function () {
 		x = $(this);
 		ejecutaDblClickGrid(x, Grids.GridProveedor);
@@ -178,7 +178,7 @@ function InicializaPantallaAbmProveedor() {
 	$("#lbRel02").hide();
 	$("#lbNombreRel02").hide();
 	$("#Rel02").hide();
-	$("#Rel02List").hide();
+	//$("#Rel02List").hide();
 
 	$("#lbChkDescr").text("Denominación");
 	$("#lbDescr").html("Desc");
@@ -196,19 +196,56 @@ function InicializaPantallaAbmProveedor() {
 
 	$("#chkRel01").prop('checked', false);
 	$("#chkRel01").trigger("change");
-	$("#Rel01").val("");
-	$("#Rel01").prop("disabled", true);
+	$("#listaLs02").val("");
+	$("#listaLs02").prop("disabled", true);
 
-	$("#Rel01List").empty();
+	$("#Rel02List").empty();
+	$("#Rel02List").show();
 
 	$("#lbChkDesdeHasta").text("ID Cuenta");
 
 	$("#IdSelected").val("");
 	$(".activable").prop("disabled", true);
 	$("#btnDetalle").prop("disabled", true);
+	cargarListaTipoOpe();
 	activarBotones(false);
 	CerrarWaiting();
 	return true;
+}
+
+$("#chkRel01").on("click", function () {
+	if ($("#chkRel01").is(":checked")) {
+		$("#listaLs02").prop("disabled", false);
+		$("#Rel02List").prop("disabled", false);
+		$("#listaLs02").trigger("focus");
+	}
+	else {
+
+
+		$("#listaLs02").prop("disabled", true).val("");
+		$("#Rel02List").prop("disabled", true).empty();
+
+	}
+});
+
+function cargarListaTipoOpe() {
+	PostGenHtml({}, cargarListaTipoOpeUrl, function (obj) {
+		$("#divLs02").html(obj);
+		CerrarWaiting();
+	}, function (obj) {
+		CerrarWaiting();
+		ControlaMensajeError(obj.message);
+		return true;
+	});
+}
+
+function controlalistaLs02Selected() {
+	var item = $("#listaLs02").val();
+	var desc = $("#listaLs02 option:selected").text();
+	if ($("#Rel02List").has('option:contains("' + item + '")').length === 0 && $("#Rel02List").has('option:contains("' + desc + '")').length === 0) {
+		var opc = "<option value=" + item + ">" + desc + "</option>"
+		$("#Rel02List").append(opc);
+	}
 }
 
 function cargaPaginacion() {
