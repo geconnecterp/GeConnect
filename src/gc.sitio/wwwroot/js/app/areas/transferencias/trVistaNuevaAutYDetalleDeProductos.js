@@ -217,8 +217,10 @@ function verNotaEnSucursal(x) {
 function verNotaEnProducto(x) {
 	AbrirWaiting();
 	var pId = x.dataset.interaction;
+	var admId = x.dataset.adm_id;
+	var autorizacion = x.dataset.autorizacion;
 	if (pId) {
-		var datos = { pId };
+		var datos = { pId, admId, autorizacion };
 		PostGenHtml(datos, TREditarNotaEnProductoUrl, function (obj) {
 			$("#divNotaEnProducto").html(obj);
 			$('#modalNotaEnProducto').modal('show')
@@ -313,7 +315,9 @@ function guardarNotaDeProducto() {
 	AbrirWaiting();
 	var nota = $("#txtNotaEnProducto").val();
 	var pId = $("#p_id_en_modal_producto").val();
-	var datos = { nota, pId };
+	var admId = $("#adm_id_en_modal_producto").val();
+	var autorizacion = $("#autorizacion_en_modal_producto").val();
+	var datos = { nota, pId, admId, autorizacion };
 	if (pId && nota) {
 		PostGen(datos, TRAgregarNotaAProductoNuevaAutTRUrl, function (o) {
 			if (o.error === true) {

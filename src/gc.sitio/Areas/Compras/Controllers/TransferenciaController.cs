@@ -795,7 +795,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public async Task<IActionResult> EditarNotaEnProducto(string pId)
+		public async Task<IActionResult> EditarNotaEnProducto(string pId, string admId, int autorizacion)
 		{
 			var model = new TRNotaEnProductoDto();
 			try
@@ -805,11 +805,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				model.Titulo = $"Nota de Producto {pId} - {TRNuevaAutDetallelLista.Where(x => x.p_id == pId).Select(y => y.p_desc).First()}";
 				var listaTemp = TRNuevaAutDetallelLista;
-				var itemTemp = listaTemp.Where(x => x.p_id == pId).First();
+				var itemTemp = listaTemp.Where(x => x.p_id == pId && x.adm_id == admId && x.autorizacion == autorizacion).First();
 				if (itemTemp == null)
 					return ObtenerMensajeDeError("No se ha encontrado el producto seleccionado. Si el problema persiste informe al Administrador.");
 
 				model.Nota = itemTemp.nota;
+				model.adm_id = itemTemp.adm_id;
+				model.autorizacion = itemTemp.autorizacion;
 				model.p_id = pId;
 			}
 			catch (Exception ex)
@@ -821,7 +823,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return PartialView("_trNotaEnProducto", model);
 		}
 
-		public async Task<JsonResult> AgregarNotaAProductoNuevaAutTR(string nota, string pId)
+		public async Task<JsonResult> AgregarNotaAProductoNuevaAutTR(string nota, string pId, string admId, int autorizacion)
 		{
 			try
 			{
@@ -833,8 +835,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var itemTemp = listaProductoTemp.Where(x => x.p_id == pId).First();
 				if (itemTemp != null)
 				{
-					itemTemp.nota = nota;
+					//itemTemp.nota = nota;
+					//TRNuevaAutDetallelLista = listaProductoTemp;
+					listaProductoTemp.Where(x => x.adm_id == admId && x.autorizacion == autorizacion).ToList().ForEach(y => y.nota = nota);
 					TRNuevaAutDetallelLista = listaProductoTemp;
+					var listaSucursalTemp = TRNuevaAutSucursalLista;
+					listaSucursalTemp.Where(x => x.adm_id == admId && x.aut_a_generar == autorizacion).ToList().ForEach(y => y.nota = nota);
+					TRNuevaAutSucursalLista = listaSucursalTemp;
 				}
 				else
 					return Json(new { error = false, warn = true, vacio = "No se ha encontrado el producto seleccionada, solicite soporte.", msg = "" });

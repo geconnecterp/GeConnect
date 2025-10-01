@@ -1,6 +1,8 @@
 ﻿@model TRNotaEnProductoDto
 
 @Html.Hidden("p_id_en_modal_producto", Model.p_id)
+@Html.Hidden("adm_id_en_modal_producto", Model.adm_id)
+@Html.Hidden("autorizacion_en_modal_producto", Model.autorizacion)
 <div class="modal-header">
 	<h5 class="modal-title" id="modalCenterTitle">@Model.Titulo</h5>
 	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>

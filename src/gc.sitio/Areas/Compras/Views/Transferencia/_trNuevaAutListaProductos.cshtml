@@ -25,6 +25,7 @@
 				<th style="width:0%; display:none;">rub_id</th>
 				<th style="width:0%; display:none;">rub_nombre</th>
 				<th style="width:0%; display:none;">box_id</th>
+				<th style="width:0%; display:none;">autorizacion</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -47,7 +48,7 @@
 						<td class="text-center align-middle">
 							@if (item.nota != "")
 							{
-								<button type="button" class="btn btn-info btn-sm btn-icon-compact" data-interaction="@item.p_id" onclick="verNotaEnProducto(this);">
+								<button type="button" class="btn btn-info btn-sm btn-icon-compact" data-interaction="@item.p_id" data-adm_id="@item.adm_id" data-autorizacion="@item.autorizacion" onclick="verNotaEnProducto(this);">
 									<i class="bx bx-detail"></i>
 								</button>
 								@* <a class="btn btn-xs btn-outline-success" data-interaction="@item.p_id" onclick="verNotaEnProducto(this);"> 
@@ -66,6 +67,7 @@
 						<td style="display:none;">@item.adm_id</td>
 						<td style="display:none;">@item.depo_id</td>
 						<td style="display:none;">@item.depo_nombre</td>
+						<td style="display:none;">@item.autorizacion</td>
 					</tr>
 				}
 			}
