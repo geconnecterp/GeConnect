@@ -1,0 +1,60 @@
+﻿@using static gc.infraestructura.Helpers.GridHelper
+@model CrudExtractoBancarioModel
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	.btn-icon-compact {
+		padding: 0.15rem 0.3rem;
+		font-size: 0.7rem;
+		line-height: 1;
+	}
+
+		.btn-icon-compact i {
+			font-size: 0.9rem;
+		}
+</style>
+<div class="table-responsive table-wrapper-500-full-width" id="containerCrudExtracto">
+	<table class="table table-bordered table-hover table-golden" id="tbListaCrudExtracto">
+		<thead>
+			<tr class="header">
+				<th scope="col">Fecha</th>
+				<th scope="col">Código Mov.</th>
+				<th scope="col">Origen Mov.</th>
+				<th scope="col">N° Comprobante</th>
+				<th scope="col">Debe</th>
+				<th scope="col">Haber</th>
+				<th scope="col">Saldo</th>
+				<th scope="col">Conciliado</th>
+				<th scope="col">Ctrl. Cierre</th>
+				<th style="width:5%;"></th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.GrillaExtracto != null && Model.GrillaExtracto.ListaDatos != null && Model.GrillaExtracto.ListaDatos.Count > 0)
+			{
+				@foreach (var item in Model.GrillaExtracto.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" data-ext-concepto="@item.ext_concepto" data-extr-id="@item.extr_id" data-ctaf-id="@item.ctaf_id" onclick="selectReg(this, 'tbListaCrudExtracto')">
+						<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_fecha)">@Model.GrillaExtracto.FormatearDato(item.ext_fecha, FormatDato.Fecha)</td>
+						<td class="@Model.GrillaExtracto.ObtenerClase(item.extr_id)">@Model.GrillaExtracto.FormatearDato(item.extr_id, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaExtracto.ObtenerClase(item.extr_desc)">@Model.GrillaExtracto.FormatearDato(item.extr_desc, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_concepto)">@Model.GrillaExtracto.FormatearDato(item.ext_concepto, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_debe)">@Model.GrillaExtracto.FormatearDato(item.ext_debe, FormatDato.Monto)</td>
+						<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_haber)">@Model.GrillaExtracto.FormatearDato(item.ext_haber, FormatDato.Monto)</td>
+						<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_saldo)">@Model.GrillaExtracto.FormatearDato(item.ext_saldo, FormatDato.Monto)</td>
+						<td></td>
+						<td></td>
+						<td class="text-center align-middle">
+							<button type="button" class="btn btn-danger btn-icon-compact" title="Eliminar" onclick="eliminarItem('@item.ctaf_id', '@item.extr_id','@item.ext_concepto')">
+								<i class="bx bx-trash"></i>
+							</button>
+						</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

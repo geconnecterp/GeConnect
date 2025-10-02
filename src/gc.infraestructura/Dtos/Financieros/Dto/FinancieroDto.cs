@@ -39,6 +39,8 @@ namespace gc.infraestructura.Dtos
 		public int? ban_che_nro { get; set; }
 		public string mon_codigo { get; set; } = string.Empty;
 		public string tcb_id { get; set; } = string.Empty;
+		public DateTime? ext_fecha { get; set; }
+		public decimal ext_saldo { get; set; } = 0.00M;
 	}
 
 	public class FinancieroCarteraDto : Dto

@@ -1,0 +1,73 @@
+﻿@model CrudExtractoBancarioModel
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+
+</style>
+<div class="row align-items-center mb-2">
+	<div class="col-12 d-flex justify-content-start">
+		<h5 class="fw-bold text-golden mb-0">
+			<i class="bx bx-spreadsheet me-1"></i> @Model.CuentaBanco
+		</h5>
+	</div>
+</div>
+<div class="row mt-2">
+	<div class="col-md-10" id="divGridCrudExtracto">
+		<div class="table-responsive table-wrapper-500-full-width" id="containerCrudExtracto">
+			<table class="table table-bordered table-hover table-golden" id="tbListaCrudExtracto">
+				<thead>
+					<tr class="header">
+						<th scope="col">Fecha</th>
+						<th scope="col">Código Mov.</th>
+						<th scope="col">Origen Mov.</th>
+						<th scope="col">N° Comprobante</th>
+						<th scope="col">Debe</th>
+						<th scope="col">Haber</th>
+						<th scope="col">Saldo</th>
+						<th scope="col">Conciliado</th>
+						<th scope="col">Ctrl. Cierre</th>
+						<th style="width:5%;"></th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model != null && Model.GrillaExtracto != null && Model.GrillaExtracto.ListaDatos != null && Model.GrillaExtracto.ListaDatos.Count > 0)
+					{
+						@foreach (var item in Model.GrillaExtracto.ListaDatos)
+						{
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+						}
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<div class="col-md-2">
+		<div>
+			<button id="btnAgregarItem" class="btn btn-primary btn-sm mt-1 me-1 w-75" type="button" title="Agregar">
+				<i class="bx bx-plus-circle"></i> Agregar
+			</button>
+		</div>
+		<div>
+			<button id="btnModificarItem" class="btn btn-secondary btn-sm mt-1 me-1 w-75" type="button" title="Modificar">
+				<i class="bx bx-edit"></i> Modificar
+			</button>
+		</div>
+		<div>
+			<button id="btnImportar" class="btn btn-info btn-sm mt-1 me-1 w-75" type="button" title="Importar Extracto">
+				<i class="bx bx-import"></i> Importar
+			</button>
+		</div>
+		<div>
+			<button id="btnConfirmar" class="btn btn-success btn-sm mt-1 me-1 w-75" type="button" title="Confirmar">
+				<i class="bx bx-badge-check"></i> Confirmar
+			</button>
+		</div>
+		<div>
+			<button id="btnCancelar" class="btn btn-danger btn-sm mt-1 me-1 w-75" type="button" title="Cancelar">
+				<i class="bx bx-x-circle"></i> Cancelar
+			</button>
+		</div>
+	</div>
+</div>
