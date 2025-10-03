@@ -1,5 +1,6 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Financieros;
 using gc.sitio.Controllers;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -29,6 +30,24 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			{
 				var json = JsonConvert.SerializeObject(value);
 				_context.HttpContext?.Session.SetString("ListaCuentaBancos", json);
+			}
+		}
+
+		public List<CrudExtractoBancarioDto> ListaCrudExtractoBancario
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("ListaCrudExtractoBancario");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<CrudExtractoBancarioDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ListaCrudExtractoBancario", json);
 			}
 		}
 	}

@@ -12,16 +12,6 @@
 	}
 </style>
 <div class="container mt-2">
-@* 	<div class="row">
-		<div class="col-md-6">
-			<div class="d-flex justify-content-start">
-				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
-					<i class="bx bx-filter bx-xs"></i>
-				</button>
-			</div>
-		</div>
-	</div> *@
-	<!-- Botón centrado arriba del filtro -->
 	<div class="row mb-2">
 		<div class="d-flex justify-content-center">
 			<button id="btnFiltro" class="btn btn-primary btn-sm filtro-btn" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltros" aria-expanded="true" aria-controls="divFiltros">
@@ -40,12 +30,26 @@
 		</div>
 	</div>
 </div>
+<div class="modal fade modal-golden in" id="modalAgregarItemExtracto" tabindex="-1" style="display: none;" aria-hidden="true" data-backdrop="static">
+	<div class="modal-dialog modal-x" role="document">
+		<div class="modal-content">
+			<div id="divAgregarItemExtracto">
+			</div>
+		</div>
+	</div>
+</div>
 @section scripts {
 	<script type="text/javascript">
 		var ctafIdSelected = "";
 		var ctafDenominacionSelected = "";
 		var obtenerCuentaBancoUrl = "@Url.Action("ObtenerCuentaBanco", "CargarExtractoBancario", new { area = "Financieros" })";
 		var cargarExtractoBancarioURL = "@Url.Action("CargarExtractoBancarioCrud", "CargarExtractoBancario", new { area = "Financieros" })";
+		var abrirModalAgregarItemExtractoUrl = "@Url.Action("AbrirModalAgregarItemExtracto", "CargarExtractoBancario", new { area = "Financieros" })";
+		var agregarItemExtractoUrl = "@Url.Action("AgregarItemExtracto", "CargarExtractoBancario", new { area = "Financieros" })";
+		var obtenerListaExtractoBancarioUrl = "@Url.Action("ObtenerListaExtractoBancario", "CargarExtractoBancario", new { area = "Financieros" })";
+		var inicializarDatosEnSesionUrl =  "@Url.Action("InicializarDatosEnSesion", "CargarExtractoBancario", new { area = "Financieros" })";
+		var modificarItemExtractoUrl = "@Url.Action("ModificarItemExtracto", "CargarExtractoBancario", new { area = "Financieros" })";
+		var quitarItemExtractoUrl = "@Url.Action("QuitarItemExtracto", "CargarExtractoBancario", new { area = "Financieros" })";
 	</script>
 	<script src="~/js/plugins/jquery.simplePagination.js"></script>
 	<script src="~/js/app/areas/financieros/extractobancario/extrbancario.js" type="text/javascript"></script>

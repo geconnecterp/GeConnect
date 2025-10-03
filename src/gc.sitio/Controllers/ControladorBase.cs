@@ -2065,6 +2065,26 @@ namespace gc.sitio.Controllers
 		}
 		#endregion
 
+		#region TIPO CONCILIADOS
+		public List<TipoConciliadoDto> TipoConciliadoLista
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("TipoConciliadoLista") ?? string.Empty;
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<TipoConciliadoDto>();
+				}
+				return JsonConvert.DeserializeObject<List<TipoConciliadoDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("TipoConciliadoLista", json);
+			}
+		}
+		#endregion
+
 		#region Metodos generales
 		public PartialViewResult ObtenerMensajeDeError(string mensaje)
 		{
@@ -2368,6 +2388,10 @@ namespace gc.sitio.Controllers
 		{
 			TipoDescValorizaRprLista = _tipoDtoValorizaRpr.ObtenerTipoDtoValorizaRpr(TokenCookie);
 		}
+		protected void ObtenerTiposConciliado(ITipoConciliadoServicio _tipoConciliadoSrv)
+		{
+			TipoConciliadoLista = _tipoConciliadoSrv.GetTipoConciliadoLista(TokenCookie);
+		}
 		#endregion
 		protected void ObtenerDiasDeLaSemana()
 		{
@@ -2556,6 +2580,11 @@ namespace gc.sitio.Controllers
 				var lista = TipoOrdenDePagoLista.Select(x => new ComboGenDto { Id = x.opt_id, Descripcion = x.opt_lista });
 				return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 			}
+		}
+		protected SelectList ComboTiposConciliado()
+		{
+			var lista = TipoConciliadoLista.Select(x => new ComboGenDto { Id = x.extr_id, Descripcion = x.extr_desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
 		#endregion
 

@@ -286,7 +286,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 		private void CargarDatosIniciales(bool actualizar)
 		{
-			if (CuentasLista.Count == 0 || actualizar)
+			if (TipoConciliadoLista.Count == 0 || actualizar)
 				ObtenerCuentas(_cuentaServicio, 'C', "%");
 
 		}

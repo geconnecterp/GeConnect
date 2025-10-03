@@ -14,6 +14,13 @@
 		.btn-icon-compact i {
 			font-size: 0.9rem;
 		}
+
+	#tbListaCrudExtracto td,
+	#tbListaCrudExtracto th {
+		padding-top: 0.25rem;
+		padding-bottom: 0.25rem;
+		font-size: 0.75rem;
+	}
 </style>
 <div class="table-responsive table-wrapper-500-full-width" id="containerCrudExtracto">
 	<table class="table table-bordered table-hover table-golden" id="tbListaCrudExtracto">
@@ -37,7 +44,7 @@
 				@foreach (var item in Model.GrillaExtracto.ListaDatos)
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					<tr class="@clase" data-ext-concepto="@item.ext_concepto" data-extr-id="@item.extr_id" data-ctaf-id="@item.ctaf_id" onclick="selectReg(this, 'tbListaCrudExtracto')">
+					<tr class="@clase" data-orden="@item.orden" data-extr-id="@item.extr_id" data-ctaf-id="@item.ctaf_id" onclick="selectItemExtracto(this);">
 						<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_fecha)">@Model.GrillaExtracto.FormatearDato(item.ext_fecha, FormatDato.Fecha)</td>
 						<td class="@Model.GrillaExtracto.ObtenerClase(item.extr_id)">@Model.GrillaExtracto.FormatearDato(item.extr_id, FormatDato.Ninguno)</td>
 						<td class="@Model.GrillaExtracto.ObtenerClase(item.extr_desc)">@Model.GrillaExtracto.FormatearDato(item.extr_desc, FormatDato.Ninguno)</td>
@@ -48,7 +55,7 @@
 						<td></td>
 						<td></td>
 						<td class="text-center align-middle">
-							<button type="button" class="btn btn-danger btn-icon-compact" title="Eliminar" onclick="eliminarItem('@item.ctaf_id', '@item.extr_id','@item.ext_concepto')">
+							<button type="button" class="btn btn-danger btn-icon-compact" title="Eliminar" onclick="eliminarItem('@item.ctaf_id', '@item.extr_id','@item.orden')">
 								<i class="bx bx-trash"></i>
 							</button>
 						</td>

@@ -13,6 +13,7 @@ using gc.sitio.core.Servicios.Implementacion.Asientos;
 using gc.sitio.core.Servicios.Implementacion.DocManager;
 using gc.sitio.core.Servicios.Implementacion.Importacion;
 using gc.sitio.core.Servicios.Implementacion.Libros;
+using gc.sitio.core.Servicios.Implementacion.Tipos;
 using gc.sitio.core.Servicios.Implementacion.Users;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -72,6 +73,7 @@ namespace gc.sitio.core.Extensions
 			services.AddScoped<IABMBancoServicio, ABMBancoServicio>();
 			services.AddScoped<IBancoServicio, BancoServicio>();
 			services.AddScoped<ITipoCuentaGastoServicio, TipoCuentaGastoServicio>();
+			services.AddScoped<ITipoConciliadoServicio, TipoConciliadoServicio>();
 			services.AddScoped<IABMCuentaDirectaServicio, ABMCuentaDirectaServicio>();
 			services.AddScoped<ICuentaGastoServicio, CuentaGastoServicio>();
 			services.AddScoped<IDocManagerServicio, DocManagerServicio>();

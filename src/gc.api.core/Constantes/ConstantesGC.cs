@@ -403,6 +403,7 @@
 			public const string SP_TIPO_DTOS_VALORIZA_RPR_LISTA = "SPGECO_Tipos_Dtos_Valoriza_RPR_Lista";
 			public const string SP_TIPO_ORDEN_PAGO = "SPGECO_Tipos_Orden_Pagos";
 			public const string SP_TIPO_TRANSFERENCIA = "SPGECO_Tipos_Transferencias";
+			public const string SP_TIPO_CONCILIADO = "SPGECO_Tipos_Conciliados";
 			//
 			#endregion
 

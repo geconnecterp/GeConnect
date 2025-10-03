@@ -1,0 +1,82 @@
+﻿@model AgregarItemExtractoModel
+@{
+	var movi = Model.Movimiento;
+}
+@Html.Hidden("orden", Model.orden)
+@Html.Hidden("abm", Model.abm)
+<div class="modal-header">
+	<h5 class="modal-title" id="modalCenterTitle">Registro de Extracto</h5>
+	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="input-group input-group-sm">
+				<div class="row col-12">
+					<div class="col-6">
+						<div class="input-group input-group-sm mt-2">
+							<span class="input-group-text" id="lbIdDesde">Fecha:</span>
+							@if (Model.abm != "A")
+							{
+								<input type="date" class="form-control inputEditable" asp-for="Fecha" style="background-color:rgb(251,255,195);font-weight:900;" disabled/>
+							}
+							else
+							{
+								<input type="date" class="form-control inputEditable" asp-for="Fecha" style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
+							}
+						</div>
+					</div>
+					<div class="col-6">
+						<div class="input-group input-group-sm mt-2">
+							<div class="form-check form-switch">
+								@if (Model.abm != "A")
+								{
+									<input class="form-check-input" type="checkbox" name="Insertar" id="chkInsertar" asp-for="Insertar" disabled/>
+								}
+								else
+								{
+									<input class="form-check-input" type="checkbox" name="Insertar" id="chkInsertar" asp-for="Insertar" />
+								}
+								<label class="form-check-label" for="chkInsertar" id="lbInsertar">Insertar</label>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="input-group input-group-sm mt-2">
+					<span class="input-group-text fixed-lbl-for-abm-100">Movimiento: </span>
+					@Html.DropDownListFor(m => m.selected, movi, "Seleccionar...", new { @id = "listaMovimientos", @class = "form-control activable" })
+				</div>
+				<div class="input-group input-group-sm mt-2">
+					<span class="input-group-text">Comprobante: </span>
+					<input type="text" asp-for="Comprobante" class="form-control activable inputEditable" />
+				</div>
+				<div class="row col-12">
+					<div class="col-6" style="padding-left: 0px;">
+						<div class="input-group input-group-sm mt-2">
+							<span class="input-group-text">Debe: </span>
+							<input type="text" asp-for="Debe" class="form-control activable inputEditable" />
+						</div>
+					</div>
+					<div class="col-6"></div>
+				</div>
+				<div class="row col-12">
+					<div class="col-6" style="padding-left: 0px;">
+						<div class="input-group input-group-sm mt-2">
+							<span class="input-group-text">Haber: </span>
+							<input type="text" asp-for="Haber" class="form-control activable inputEditable" />
+						</div>
+					</div>
+					<div class="col-6"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-success btn-sm mt-1 me-1" id="btnConfirmarAgregarExtracto">
+		<i class="bx bx-badge-check"></i> Confirmar
+	</button>
+	<button type="button" class="btn btn-outline-secondary btn-sm mt-1 me-1" data-bs-dismiss="modal">
+		<i class="bx bx-log-out-circle"></i> Cerrar
+	</button>
+</div>

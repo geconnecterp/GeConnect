@@ -48,6 +48,7 @@ namespace gc.api.Controllers.Codigos
 		private readonly ITipoDtoValorizaRprServicio _tipoDtoValorizaRprServicio;
 		private readonly ITipoOrdenDePagoServicio _tipoOrdenDePagoServicio;
 		private readonly ITipoTransferenciaServicio _tipoTramsferenciaServicio;
+		private readonly ITipoConciliadoServicio _tipoConciliadoServicio;
 
 		public TiposVsController( IMapper mapper, IUriService uriService, ILogger<TiposVsController> logger, ICondicionAfipServicio condicionAfipServicio,
 								ICondicionIBServicio condicionIBServicio, IDepartamentoServicio departamentoServicio, IFormaDePagoServicio formaDePagoServicio,
@@ -58,7 +59,8 @@ namespace gc.api.Controllers.Codigos
 								ITipoProveedorServicio tipoProveedorServicio, ITipoGastoServicio tipoGastoServicio, ITipoRetGanServicio tipoRetGanServicio,
 								ITipoRetIbServicio tipoRetIbServicio, ITipoCuentaFinServicio tipoCuentaFinServicio, ITipoMonedaServicio tipoMonedaServicio,
 								ITipoCuentaGastoServicio tipoCuentaGastoServicio, IOrdenDeCompraEstadoServicio ordenDeCompraEstadoServicio, ITipoTributoServicio tipoTributoServicio,
-								ITipoDtoValorizaRprServicio tipoDtoValorizaRprServicio, ITipoOrdenDePagoServicio tipoOrdenDePagoServicio, ITipoTransferenciaServicio tipoTransferenciaServicio)
+								ITipoDtoValorizaRprServicio tipoDtoValorizaRprServicio, ITipoOrdenDePagoServicio tipoOrdenDePagoServicio, ITipoTransferenciaServicio tipoTransferenciaServicio,
+								ITipoConciliadoServicio tipoConciliadoServicio)
         {
             _mapper = mapper;
             _uriService = uriService;
@@ -91,6 +93,7 @@ namespace gc.api.Controllers.Codigos
 			_tipoDtoValorizaRprServicio = tipoDtoValorizaRprServicio;
 			_tipoOrdenDePagoServicio = tipoOrdenDePagoServicio;
 			_tipoTramsferenciaServicio = tipoTransferenciaServicio;
+			_tipoConciliadoServicio = tipoConciliadoServicio;
 		}
 
 		[HttpGet]
@@ -510,6 +513,18 @@ namespace gc.api.Controllers.Codigos
 			var lista = _mapper.Map<List<ChequeEmitidoEstadoDto>>(financiero);
 
 			var response = new ApiResponse<List<ChequeEmitidoEstadoDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetTipoConciliadoLista()
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			List<TipoConciliadoDto> financiero = _tipoConciliadoServicio.GetTipoConciliadoLista();
+			var lista = _mapper.Map<List<TipoConciliadoDto>>(financiero);
+
+			var response = new ApiResponse<List<TipoConciliadoDto>>(lista);
 			return Ok(response);
 		}
 	}

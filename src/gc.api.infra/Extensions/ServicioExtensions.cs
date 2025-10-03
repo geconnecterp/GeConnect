@@ -94,7 +94,8 @@ namespace gc.api.infra.Extensions
             services.AddScoped<IABMBancoServicio, ABMBancoServicio>();
             services.AddScoped<IBancoServicio, BancoServicio>();
             services.AddScoped<ITipoCuentaGastoServicio, TipoCuentaGastoServicio>();
-            services.AddScoped<IABMCuentaDirectaServicio, ABMCuentaDirectaServicio>();
+			services.AddScoped<ITipoConciliadoServicio, TipoConciliadoServicio>();
+			services.AddScoped<IABMCuentaDirectaServicio, ABMCuentaDirectaServicio>();
             services.AddScoped<ICuentaGastoServicio, CuentaGastoServicio>();
             services.AddScoped<IOrdenDeCompraEstadoServicio, OrdenDeCompraEstadoServicio>();
             services.AddScoped<IABMVendedorServicio, ABMVendedorServicio>();
