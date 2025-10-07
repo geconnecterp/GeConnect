@@ -25,6 +25,7 @@
         HLI, //HISTORICO LIBRO
         EBA, //EXTRACTO BANCARIO
         OF_SINACT, //OFERTAS SIN ACTIVAR
+        PROMO_COMBO, //PROMOCIONES Y COMBO
     }
 
     public enum AppReportes

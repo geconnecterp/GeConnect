@@ -82,8 +82,12 @@
             public const string SP_PROD_OFERTA_ELIMINA_ACTIVA = "SPGECO_P_Ofe_Elimina_Activas";
             public const string SP_PROD_OFERTA_COPIAR_A = "SPGECO_P_Ofe_Activas_Copy";
             
-
-
+			//PROMOS Y COMBOS
+			public const string SP_COMBO_TIPO =   "spgeco_combos_tipos ";
+			public const string SP_COMBO_ESTADO = "spgeco_combos_estados ";
+			public const string SP_COMBO_LISTA =  "spgeco_combos_lista ";
+			public const string SP_COMBO_DATOS = "SPGECO_Combos_Datos ";
+			public const string SP_COMBO_CANALES = "SPGECO_Combos_Canales ";
             #endregion
 
 

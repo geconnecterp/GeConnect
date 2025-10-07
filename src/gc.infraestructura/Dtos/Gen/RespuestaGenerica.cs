@@ -1,4 +1,6 @@
-﻿namespace gc.infraestructura.Dtos.Gen
+﻿using gc.infraestructura.Core.EntidadesComunes;
+
+namespace gc.infraestructura.Dtos.Gen
 {
     public class RespuestaGenerica<T>
     {
@@ -9,5 +11,6 @@
         public bool EsError { get; set; }=false;
         public bool EsWarn { get; set; } = false;
         public string? Mensaje { get; set; }
+        public MetadataGrid Meta { get; set; } = new();
     }
 }

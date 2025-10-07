@@ -34,6 +34,47 @@
             <div class=" col-sm-6" id="divLstTipoOrdenDePago">
             </div>
         }
+        else if (Model.Modelo.Equals(ModeloFilter.PROMO_COMBO))
+        {
+            <div class="row mb-3">
+                <div class="col-sm-2">
+                    <div class="input-group input-group-sm">
+                        <div class="form-check form-check-inline form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="chkTipo" checked />
+                            <label class="form-check-label" for="chkTipo" id="lbTipo"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class=" col-sm-4">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">Tipo</span>
+                        @Html.DropDownListFor(x => x.Tipo, null, "Seleccionar...", new { @class = "form-control", style = "width:50px;" })
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-sm-2">
+                    <div class="input-group input-group-sm">
+                        <div class="form-check form-check-inline form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="chkEstado" checked />
+                            <label class="form-check-label" for="chkTipo" id="lbTipo"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class=" col-sm-4">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">Estado</span>
+                        @Html.DropDownListFor(x => x.Estado, null, "Seleccionar...", new { @class = "form-control", style = "width:50px;" })
+                    </div>
+                </div>
+            </div>
+        }
+
+
 
         @*AGREGAR SECCION FECHA*@
         @if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA) || Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA))
@@ -63,14 +104,15 @@
         }
 
         @if (!Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_DIRECTA) &&
-        !Model.Modelo.Equals(ModeloFilter.CONSULTAS) &&
-        !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA) &&
-        !Model.Modelo.Equals(ModeloFilter.COMPROBANTE_DE_COMPRA) &&
-        !Model.Modelo.Equals(ModeloFilter.VALORIZACION_COMPROBANTE) &&
-        !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_A_PROVEEDORES) &&
-        !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA) &&
-        !Model.Modelo.Equals(ModeloFilter.ANULACION_DE_COMPROBANTE_Y_VALORIZACION) &&
-        !Model.Modelo.Equals(ModeloFilter.RELACIONAR_COMPROBANTE_SIN_RP))
+                !Model.Modelo.Equals(ModeloFilter.CONSULTAS) &&
+                !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA) &&
+                !Model.Modelo.Equals(ModeloFilter.COMPROBANTE_DE_COMPRA) &&
+                !Model.Modelo.Equals(ModeloFilter.VALORIZACION_COMPROBANTE) &&
+                !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_A_PROVEEDORES) &&
+                !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA) &&
+                !Model.Modelo.Equals(ModeloFilter.ANULACION_DE_COMPROBANTE_Y_VALORIZACION) &&
+                !Model.Modelo.Equals(ModeloFilter.PROMO_COMBO) &&
+                !Model.Modelo.Equals(ModeloFilter.RELACIONAR_COMPROBANTE_SIN_RP))
         {
             <div class="row  mb-3 mt-1">
                 <div class=" col-md-4 col-sm-12">
@@ -123,13 +165,13 @@
         @if (Model.Modelo.Equals(ModeloFilter.PLAN_CUENTA))
         {
             var list = new List<ComboGenDto> {
-        new ComboGenDto { Id = "%", Descripcion = "TODOS" },
-        new ComboGenDto { Id = "1", Descripcion = "ACTIVO" },
-        new ComboGenDto { Id = "2", Descripcion = "PASIVO" },
-        new ComboGenDto { Id = "3", Descripcion = "PATRIMONIO" },
-        new ComboGenDto { Id = "4", Descripcion = "INGRESOS" },
-        new ComboGenDto { Id = "5", Descripcion = "EGRESOS" },
-        };
+                new ComboGenDto { Id = "%", Descripcion = "TODOS" },
+                new ComboGenDto { Id = "1", Descripcion = "ACTIVO" },
+                new ComboGenDto { Id = "2", Descripcion = "PASIVO" },
+                new ComboGenDto { Id = "3", Descripcion = "PATRIMONIO" },
+                new ComboGenDto { Id = "4", Descripcion = "INGRESOS" },
+                new ComboGenDto { Id = "5", Descripcion = "EGRESOS" },
+                };
             var tipo = new SelectList(list, "Id", "Descripcion");
             <div class="row mb-3">
                 <div class="col-sm-2">
@@ -150,8 +192,16 @@
                 </div>
             </div>
         }
+
+
         @*---------------------------BUSQUEDA DE PROVEEDORES---------------------------*@
-        @if (Model.Rel01 != null && !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA) && !Model.Modelo.Equals(ModeloFilter.VALORIZACION_COMPROBANTE) && !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_DIRECTA))
+
+
+        @if (Model.Rel01 != null &&
+                !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA) &&
+                !Model.Modelo.Equals(ModeloFilter.VALORIZACION_COMPROBANTE) &&
+                !Model.Modelo.Equals(ModeloFilter.PLAN_CUENTA) &&
+                !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_DIRECTA))
         {
             <div class="row">
                 <div class="col-sm-6">
@@ -198,7 +248,8 @@
         }
         @*---------------------------FIN BUSQUEDA DE PROVEEDORES---------------------------*@
         @*---------------------------BUSQUEDA DE FAMILIAS---------------------------*@
-        @if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA) || Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA))
+        @if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA) ||
+                Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA))
         {
             var list = new List<ComboGenDto>();
             var ls03 = new SelectList(list, "Id", "Descripcion");
@@ -265,10 +316,11 @@
                 </div>
             }
         }
-        
+
         @*---------------------------FIN BUSQUEDA DE FAMILIAS---------------------------*@
         @*---------------------------BUSQUEDA DE RUBROS---------------------------*@
-        @if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA) || Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA))
+        @if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA) ||
+                Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA))
         {
             var list = new List<ComboGenDto>();
             var ls02 = new SelectList(list, "Id", "Descripcion");
@@ -322,9 +374,10 @@
                 </div>
             }
         }
-        
+
         @*---------------------------FIN BUSQUEDA DE RUBROS---------------------------*@
-        @if (Model.Modelo.Equals(ModeloFilter.NECESIDADES_COMPRA) || Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA))
+        @if (Model.Modelo.Equals(ModeloFilter.NECESIDADES_COMPRA) ||
+                Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA))
         {
             <div class=" col-sm-12">
                 <div class="row">

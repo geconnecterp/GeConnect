@@ -120,6 +120,8 @@ namespace gc.api.infra.Extensions
 
             //SERVICIO PARA OFERTAS
             services.AddScoped<IApiOfertaServicio, ApiOfertaServicio>();
+            //SERVICIO PARA PROMOS Y COMBOS
+            services.AddScoped<IApiPromoComboServicio, ApiPromoComboServicio>();
 
             //De Reportes
 

@@ -11,7 +11,7 @@ using System.Net;
 
 namespace gc.api.Controllers.Ofertas
 {
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
