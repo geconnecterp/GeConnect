@@ -7,7 +7,14 @@ $(function () {
 	$(document).on("click", "#btnModificarItem", abrirModalModificarItemExtracto);
 	$(document).on("click", "#btnCancelarCarga", cancelarCargaDeExtracto);
 	$(document).on("click", "#btnConfirmarAgregarExtracto", confirmarAgregarExtracto);
-	$("#FechaDesde, #FechaHasta").on("change", validarFechas);
+	$(document).on("click", "#btnImportar", abrirModalImportarExtracto);
+	$(document).on("click", "#btnImportarArchivo", importarArchivoExtracto);
+	$("#btnReiniciarImportacion").on("click", function () {
+		reiniciarImportacionDeExtracto("default"); // o el valor dinámico de uploadId
+	});
+
+	//btnReiniciarImportacion
+	$("#FechaDesde, #FechaHasta").on("blur", validarFechas);
 
 	$("#btnBuscar").on("click", function () {
 		ctafIdSelected = $("#listaCuentaBanco").val();
@@ -34,7 +41,320 @@ $(function () {
 	$("#btnCancel").on("click", function () {
 		btnCancelarClick();
 	});
+	$("#archivoImportar").on("change", function () {
+		const archivo = this.files[0];
+		const extensionesValidas = [".xlsx", ".txt"];
+
+		if (archivo && extensionesValidas.some(ext => archivo.name.toLowerCase().endsWith(ext))) {
+			$("#btnImportarArchivo").prop("disabled", false);
+		} else {
+			$("#btnImportarArchivo").prop("disabled", true);
+			alert("Formato de archivo no válido. Solo se permite .xlsx o .txt tabulado.");
+			$(this).val(""); // limpiar input
+		}
+	});
+
+	initializeUploadControls();
 });
+
+function initializeUploadControls() {
+	$('[id^="uploadContainer"]').each(function () {
+		const uploadId = $(this).attr('id').replace('uploadContainer', '');
+		setupUploadControl(uploadId);
+	});
+}
+
+// Configurar un control de upload específico
+function setupUploadControl(uploadId) {
+	const $dropZone = $(`#dropZone${uploadId}`);
+	const $fileInput = $(`#fileInput${uploadId}`);
+	const $uploadInfo = $(`#uploadInfo${uploadId}`);
+	const $fileName = $(`#fileName${uploadId}`);
+	const $fileSize = $(`#fileSize${uploadId}`);
+	const $removeBtn = $(`#removeFile${uploadId}`);
+
+	// Eventos de drag and drop
+	$dropZone.on('dragover dragenter', function (e) {
+		e.preventDefault();
+		e.stopPropagation();
+		$(this).addClass('dragover');
+	});
+
+	$dropZone.on('dragleave dragend', function (e) {
+		e.preventDefault();
+		e.stopPropagation();
+		$(this).removeClass('dragover');
+	});
+
+	$dropZone.on('drop', function (e) {
+		e.preventDefault();
+		e.stopPropagation();
+		$(this).removeClass('dragover');
+
+		const files = e.originalEvent.dataTransfer.files;
+		if (files.length > 0) {
+			handleFileSelection(files[0], uploadId);
+		}
+	});
+
+	// ✅ CORREGIDO: Click en zona de drop - Usar trigger() en lugar de click()
+	$dropZone.on('click', function () {
+		$fileInput.trigger('click');
+	});
+
+	// Selección de archivo
+	$fileInput.on('change', function () {
+		if (this.files.length > 0) {
+			//importarArchivoExtracto();
+			handleFileSelection(this.files[0], uploadId);
+		}
+	});
+
+	// Botón remover archivo
+	$removeBtn.on('click', function () {
+		//removeFile(uploadId);
+		reiniciarImportacionDeExtracto(uploadId)
+	});
+}
+
+function removeFile(uploadId) {
+	const $dropZone = $(`#dropZone${uploadId}`);
+	const $uploadInfo = $(`#uploadInfo${uploadId}`);
+	const $fileInput = $(`#fileInput${uploadId}`);
+	const $progressContainer = $(`#uploadProgress${uploadId}`);
+
+	// Limpiar input
+	$fileInput.val('');
+
+	// Limpiar referencia
+	delete window[`selectedFile${uploadId}`];
+
+	// Mostrar drop zone y ocultar info
+	$uploadInfo.hide();
+	if ($progressContainer.length) {
+		$progressContainer.hide();
+	}
+	$dropZone.show();
+
+	// Disparar evento personalizado
+	$(document).trigger('fileRemoved', [uploadId]);
+
+	console.log(`🗑️ Archivo removido (${uploadId})`);
+}
+
+function reiniciarImportacionDeExtracto(uploadId) {
+	// Limpiar input file
+	$("#fileInput" + uploadId).val("");
+
+	// Limpiar nombre y tamaño del archivo
+	$("#fileName" + uploadId).text("");
+	$("#fileSize" + uploadId).text("");
+
+	// Ocultar solo la barra de progreso visual custom
+	$("#uploadProgress" + uploadId).hide();
+	$("#progressFill" + uploadId).css("width", "0%");
+	$("#progressText" + uploadId).text("0%");
+
+	// Ocultar errores
+	$("#erroresImportacion").hide();
+	$("#listaErroresImportacion").empty();
+
+	// Resetear barra de progreso tradicional
+	$("#barraProgresoContainer").hide();
+	$("#barraProgreso")
+		.removeClass("bg-success bg-danger")
+		.addClass("progress-bar-animated")
+		.css("width", "0%")
+		.text("0%");
+
+	// Desactivar botones
+	$("#btnImportarArchivo").prop("disabled", true);
+	$("#btnReiniciarImportacion").prop("disabled", true);
+
+	// Mostrar nuevamente la sección de selección si estaba oculta
+	$("#uploadInfo" + uploadId).hide(); // opcional si querés mantener visible
+
+	// Volver a mostrar el área de selección
+	$("#dropZone" + uploadId).show();
+}
+
+/*
+function abrirModalAgregarItemExtracto() {
+	AbrirWaiting();
+	var datos = {};
+	PostGenHtml(datos, abrirModalImportarExtractoUrl, function (obj) {
+		$("#divAgregarItemExtracto").html(obj);
+		const $modal = $("#modalAgregarItemExtracto");
+
+		$modal.modal({
+			backdrop: 'static',
+		});
+		//$modal.modal('show');
+
+		inicializarCamposEnModal();
+		$("#Fecha").trigger("focus");
+
+		$modal.modal('show');
+		CerrarWaiting();
+		return true
+	});
+}
+*/
+
+function abrirModalImportarExtracto() {
+	AbrirWaiting();
+	var datos = {};
+	PostGenHtml(datos, abrirModalImportarExtractoUrl, function (obj) {
+		$("#divModalImportarExtracto").html(obj);
+		const $modal = $("#modalImportarArchivo");
+
+		$modal.modal({
+			backdrop: 'static',
+		});
+
+		// Reiniciar estado visual del modal
+		$("#archivoImportar").val("");
+		$("#erroresImportacion").hide();
+		$("#listaErroresImportacion").empty();
+		$("#barraProgresoContainer").hide();
+		$("#barraProgreso")
+			.removeClass("bg-success bg-danger")
+			.addClass("progress-bar-animated")
+			.css("width", "0%")
+			.text("0%");
+
+		$modal.modal('show');
+		CerrarWaiting();
+		return true
+	});
+}
+
+function handleFileSelection(file, uploadId) {
+	if (!validateFile(file)) {
+		return;
+	}
+
+	const $dropZone = $(`#dropZone${uploadId}`);
+	const $uploadInfo = $(`#uploadInfo${uploadId}`);
+	const $fileName = $(`#fileName${uploadId}`);
+	const $fileSize = $(`#fileSize${uploadId}`);
+
+	// Mostrar información del archivo
+	$fileName.text(file.name);
+	$fileSize.text(formatFileSize(file.size));
+
+	// Ocultar drop zone y mostrar info
+	$dropZone.hide();
+	$uploadInfo.show();
+
+	// Guardar referencia del archivo
+	window[`selectedFile${uploadId}`] = file;
+
+	// Disparar evento personalizado
+	$(document).trigger('fileSelected', [file, uploadId]);
+
+	console.log(`✅ Archivo seleccionado (${uploadId}):`, file.name, formatFileSize(file.size));
+}
+
+// Formatear tamaño de archivo
+function formatFileSize(bytes) {
+	if (bytes === 0) return '0 Bytes';
+
+	const k = 1024;
+	const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+	const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+	return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function validateFile(file) {
+	const allowedTypes = [
+		'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+		'application/vnd.ms-excel', // .xls
+		'text/csv' // .csv (opcional)
+	];
+
+	const maxSize = 10 * 1024 * 1024; // 10MB
+
+	if (!allowedTypes.includes(file.type)) {
+		showUploadError('Tipo de archivo no permitido. Solo se aceptan archivos Excel (.xlsx, .xls).');
+		return false;
+	}
+
+	if (file.size > maxSize) {
+		showUploadError('El archivo es demasiado grande. El tamaño máximo permitido es 10MB.');
+		return false;
+	}
+
+	return true;
+}
+
+// ✅ MEJORADO: Eventos personalizados para el upload
+$(document).on('fileSelected', function (event, file, uploadId) {
+	console.log('✅ Archivo seleccionado:', file.name);
+	importarArchivoExtracto(file);
+});
+
+function importarArchivoExtracto(file) {
+	const formData = new FormData();
+	formData.append("archivoImportar", file); // nombre debe coincidir con el parámetro del backend
+
+	//const archivo = $("#archivoImportar")[0].files[0];
+	const archivo = file;
+
+	if (!archivo) {
+		alert("Debe seleccionar un archivo.");
+		return;
+	}
+
+	// 🔒 Desactivar botones durante la importación
+	$("#btnImportarArchivo").prop("disabled", true);
+	$("#btnReiniciarImportacion").prop("disabled", true);
+
+	$("#barraProgresoContainer").show();
+	$("#barraProgreso").css("width", "0%").text("0%");
+	$("#erroresImportacion").hide();
+	$("#listaErroresImportacion").empty();
+
+	$.ajax({
+		url: procesarArchivoUrl, // adaptá esta URL
+		type: "POST",
+		data: formData,
+		contentType: false,
+		processData: false,
+		xhr: function () {
+			let xhr = new window.XMLHttpRequest();
+			xhr.upload.addEventListener("progress", function (evt) {
+				if (evt.lengthComputable) {
+					let porcentaje = Math.round((evt.loaded / evt.total) * 100);
+					$("#barraProgreso").css("width", porcentaje + "%").text(porcentaje + "%");
+				}
+			}, false);
+			return xhr;
+		},
+		success: function (data) {
+			$("#barraProgreso").removeClass("progress-bar-animated").addClass("bg-success").text("Importación completa");
+			// ✅ Rehabilitar botón si querés permitir nueva carga
+			$("#btnImportarArchivo").prop("disabled", false);
+		},
+		error: function (xhr) {
+			$("#barraProgreso").removeClass("progress-bar-animated").addClass("bg-danger").text("Error en la importación");
+
+			const response = xhr.responseJSON;
+			if (response && response.errores) {
+				response.errores.forEach(error => {
+					$("#listaErroresImportacion").append(`<li>${error}</li>`);
+				});
+				$("#erroresImportacion").show();
+				$("#btnReiniciarImportacion").prop("disabled", false); // ✅ Activar botón
+			} else {
+				$("#listaErroresImportacion").append(`<li>Error inesperado al procesar el archivo.</li>`);
+				$("#erroresImportacion").show();
+				$("#btnReiniciarImportacion").prop("disabled", false); // ✅ Activar botón
+			}
+		}
+	});
+}
 
 function cancelarCargaDeExtracto() {
 	AbrirMensaje("ATENCIÓN", "¿Esta seguro que desea cancelar la carga del extracto?", function (e) {
@@ -230,6 +550,36 @@ function btnCancelarClick() {
 	InicializarDatosEnSesion();
 }
 
+//function abrirModalModificarItemExtracto() {
+//	if (abrirModalModificarItemExtracto != 0) {
+//		AbrirWaiting();
+//		var orden = itemSeleccionadoOrden;
+//		var abm = "M";
+//		var datos = { abm, orden };
+//		PostGenHtml(datos, abrirModalAgregarItemExtractoUrl, function (obj) {
+//			$("#divAgregarItemExtracto").html(obj);
+//			const $modal = $("#modalAgregarItemExtracto");
+
+//			$modal.modal({
+//				backdrop: 'static',
+//			});
+
+//			inicializarCamposEnModal();
+//			$("#Fecha").trigger("focus");
+
+//			$modal.modal('show');
+//			CerrarWaiting();
+//			return true
+//		});
+//	}
+//	else {
+//		AbrirMensaje("ATENCIÓN", "Debe seleccionar un ítem extracto para modificar.", function () {
+//			$("#msjModal").modal("hide");
+//			return true;
+//		}, false, ["Aceptar"], "error!", null);
+//	}
+//}
+
 function abrirModalModificarItemExtracto() {
 	if (abrirModalModificarItemExtracto != 0) {
 		AbrirWaiting();
@@ -244,38 +594,8 @@ function abrirModalModificarItemExtracto() {
 				backdrop: 'static',
 			});
 
+			inicializarCamposEnModal();
 			$("#Fecha").trigger("focus");
-
-			// ✅ Corrección: usar el modal correcto y evitar document.ready redundante
-			$modal.find("input, select, checkbox").on("keydown", function (e) {
-				if (e.key === "Enter") {
-					e.preventDefault();
-
-					const $campos = $modal.find("input, select, checkbox")
-						.filter(":visible:enabled");
-
-					const index = $campos.index(this);
-
-					if (index !== -1 && index < $campos.length - 1) {
-						$campos.eq(index + 1).focus();
-					}
-				}
-			});
-
-			["#Debe", "#Haber"].forEach(selector => {
-				const $campo = $modal.find(selector);
-				let valor = $campo.val();
-
-				// Si el valor tiene punto decimal, lo transformamos
-				if (valor && valor.includes(".")) {
-					valor = valor.replace(".", ",");
-					$campo.val(valor);
-				}
-			});
-
-			getMaskForMoneyType("#Debe");
-			getMaskForMoneyType("#Haber");
-			$("#listaMovimientos").trigger("focus");
 
 			$modal.modal('show');
 			CerrarWaiting();
@@ -290,6 +610,75 @@ function abrirModalModificarItemExtracto() {
 	}
 }
 
+function inicializarCamposEnModal() {
+	const $modal = $("#modalAgregarItemExtracto");
+
+	// ✅ Corrección: usar el modal correcto y evitar document.ready redundante
+	$modal.find("input, select, checkbox").on("keydown", function (e) {
+		if (e.key === "Enter") {
+			e.preventDefault();
+
+			const $campos = $modal.find("input, select, checkbox")
+				.filter(":visible:enabled");
+
+			const index = $campos.index(this);
+
+			if (index !== -1) {
+				if (index < $campos.length - 1) {
+					$campos.eq(index + 1).focus();
+				} else {
+					// Último campo → foco al botón Confirmar
+					$modal.find("#btnConfirmarAgregarExtracto").focus();
+				}
+			}
+		}
+	});
+
+	["#Debe", "#Haber"].forEach(selector => {
+		const $campo = $modal.find(selector);
+		let valor = $campo.val();
+
+		// Si el valor tiene punto decimal, lo transformamos
+		if (valor && valor.includes(".")) {
+			valor = valor.replace(".", ",");
+			$campo.val(valor);
+		}
+	});
+
+	getMaskForMoneyType("#Debe");
+	getMaskForMoneyType("#Haber");
+
+	// Sincronizar Debe/Haber al tipear
+	const $debe = $modal.find('input[name="Debe"]');
+	const $haber = $modal.find('input[name="Haber"]');
+
+	let bloqueado = false;
+
+	$debe.off('input').on('input', function () {
+		if (bloqueado) return;
+		bloqueado = true;
+
+		const valor = $(this).val().replace(",", ".").trim();
+		if (valor !== '' && parseFloat(valor) !== 0) {
+			$haber.val('0');
+		}
+
+		bloqueado = false;
+	});
+
+	$haber.off('input').on('input', function () {
+		if (bloqueado) return;
+		bloqueado = true;
+
+		const valor = $(this).val().replace(",", ".").trim();
+		if (valor !== '' && parseFloat(valor) !== 0) {
+			$debe.val('0');
+		}
+
+		bloqueado = false;
+	});
+}
+
 function abrirModalAgregarItemExtracto() {
 	AbrirWaiting();
 	var datos = { abm: "A", orden: itemSeleccionadoOrden };
@@ -301,38 +690,8 @@ function abrirModalAgregarItemExtracto() {
 			backdrop: 'static',
 		});
 		//$modal.modal('show');
-		$("#Fecha").trigger("focus");
 
-		// ✅ Corrección: usar el modal correcto y evitar document.ready redundante
-		$modal.find("input, select, checkbox").on("keydown", function (e) {
-			if (e.key === "Enter") {
-				e.preventDefault();
-
-				const $campos = $modal.find("input, select, checkbox")
-					.filter(":visible:enabled");
-
-				const index = $campos.index(this);
-
-				if (index !== -1 && index < $campos.length - 1) {
-					$campos.eq(index + 1).focus();
-				}
-			}
-		});
-
-		// Interceptar y transformar valores numéricos antes de aplicar Inputmask
-		["#Debe", "#Haber"].forEach(selector => {
-			const $campo = $modal.find(selector);
-			let valor = $campo.val();
-
-			// Si el valor tiene punto decimal, lo transformamos
-			if (valor && valor.includes(".")) {
-				valor = valor.replace(".", ",");
-				$campo.val(valor);
-			}
-		});
-
-		getMaskForMoneyType("#Debe");
-		getMaskForMoneyType("#Haber");
+		inicializarCamposEnModal();
 		$("#Fecha").trigger("focus");
 
 		$modal.modal('show');

@@ -647,5 +647,20 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<ECheqDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<RespuestaDto> SetExtractoBancarioConfirma(SetExtractoBancarioConfirmaRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_BCO_EXTRACTO_CONFIRMA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@ctaf_id",request.ctaf_id),
+				new("@json_extracto",request.json_extracto),
+				new("@json_eliminados",request.json_eliminados),
+				new("@usu_id",request.usu_id),
+				new("@adm_id",request.adm_id),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

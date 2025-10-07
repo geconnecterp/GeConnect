@@ -1,6 +1,7 @@
 ﻿@model FiltroExtractoModel
 @{
 	Layout = "~/views/shared/_Layout.cshtml";
+	
 }
 @section styles {
 	<link rel="stylesheet" href="~/css/simplePagination.css" />
@@ -38,6 +39,16 @@
 		</div>
 	</div>
 </div>
+<div class="modal fade modal-golden" id="modalImportarArchivo" tabindex="-1" aria-labelledby="tituloImportarArchivo" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div id="divModalImportarExtracto">
+			</div>
+			
+		</div>
+	</div>
+</div>
+
 @section scripts {
 	<script type="text/javascript">
 		var ctafIdSelected = "";
@@ -50,6 +61,8 @@
 		var inicializarDatosEnSesionUrl =  "@Url.Action("InicializarDatosEnSesion", "CargarExtractoBancario", new { area = "Financieros" })";
 		var modificarItemExtractoUrl = "@Url.Action("ModificarItemExtracto", "CargarExtractoBancario", new { area = "Financieros" })";
 		var quitarItemExtractoUrl = "@Url.Action("QuitarItemExtracto", "CargarExtractoBancario", new { area = "Financieros" })";
+		var procesarArchivoUrl = "@Url.Action("ProcesarArchivo", "CargarExtractoBancario", new { area = "Financieros" })";
+		var abrirModalImportarExtractoUrl = "@Url.Action("AbrirModalImportarExtracto", "CargarExtractoBancario", new { area = "Financieros" })";
 	</script>
 	<script src="~/js/plugins/jquery.simplePagination.js"></script>
 	<script src="~/js/app/areas/financieros/extractobancario/extrbancario.js" type="text/javascript"></script>

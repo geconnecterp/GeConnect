@@ -37,5 +37,6 @@ namespace gc.api.core.Contratos.Servicios
         List<RespuestaDto> SetFechaDeEntrega(RegistrarFechaDeEntregaRequest request);
         List<RespuestaDto> SetRechazoDeCheque(RegistrarRechazoDeChequeRequest request);
         List<ECheqDto> GetECheqLista(PasoPrevioECheqRequest request);
+        List<RespuestaDto> SetExtractoBancarioConfirma(SetExtractoBancarioConfirmaRequest request);
 	}
 }

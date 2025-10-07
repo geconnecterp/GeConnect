@@ -1,10 +1,26 @@
-﻿@model CrudExtractoBancarioModel
+﻿@using static gc.infraestructura.Helpers.GridHelper
+@model CrudExtractoBancarioModel
 @{
 	var alt = true;
 	string clase = string.Empty;
 }
 <style>
+	.btn-icon-compact {
+		padding: 0.15rem 0.3rem;
+		font-size: 0.7rem;
+		line-height: 1;
+	}
 
+		.btn-icon-compact i {
+			font-size: 0.9rem;
+		}
+
+	#tbListaCrudExtracto td,
+	#tbListaCrudExtracto th {
+		padding-top: 0.25rem;
+		padding-bottom: 0.25rem;
+		font-size: 0.75rem;
+	}
 </style>
 <div class="row align-items-center mb-2">
 	<div class="col-12 d-flex justify-content-start">
@@ -37,6 +53,33 @@
 						@foreach (var item in Model.GrillaExtracto.ListaDatos)
 						{
 							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							<tr class="@clase" data-orden="@item.orden" data-extr-id="@item.extr_id" data-ctaf-id="@item.ctaf_id" onclick="selectItemExtracto(this);">
+								<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_fecha)">@Model.GrillaExtracto.FormatearDato(item.ext_fecha, FormatDato.Fecha)</td>
+								<td class="@Model.GrillaExtracto.ObtenerClase(item.extr_id)">@Model.GrillaExtracto.FormatearDato(item.extr_id, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaExtracto.ObtenerClase(item.extr_desc)">@Model.GrillaExtracto.FormatearDato(item.extr_desc, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_concepto)">@Model.GrillaExtracto.FormatearDato(item.ext_concepto, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_debe)">@Model.GrillaExtracto.FormatearDato(item.ext_debe, FormatDato.Monto)</td>
+								<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_haber)">@Model.GrillaExtracto.FormatearDato(item.ext_haber, FormatDato.Monto)</td>
+								<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_saldo)">@Model.GrillaExtracto.FormatearDato(item.ext_saldo, FormatDato.Monto)</td>
+								<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_conciliado) text-center">@Model.GrillaExtracto.FormatearDato(item.ext_conciliado, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaExtracto.ObtenerClase(item.ctl_cierre) text-center">@Model.GrillaExtracto.FormatearDato(item.ctl_cierre, FormatDato.Ninguno)</td>
+								@if (!item.ext_conciliado_bool && !item.ctl_cierre_bool)
+								{
+									<td class="text-center align-middle">
+										<button type="button" class="btn btn-danger btn-icon-compact" title="Eliminar" onclick="eliminarItem('@item.ctaf_id', '@item.extr_id','@item.orden')">
+											<i class="bx bx-trash"></i>
+										</button>
+									</td>
+								}
+								else
+								{
+									<td class="text-center align-middle">
+										<button type="button" class="btn btn-icon-compact invisible" tabindex="-1">
+											<i class="bx bx-dots-horizontal-rounded"></i>
+										</button>
+									</td>
+								}
+							</tr>
 						}
 					}
 				</tbody>

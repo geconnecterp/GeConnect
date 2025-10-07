@@ -1,4 +1,5 @@
-﻿using gc.api.core.Entidades;
+﻿using ClosedXML.Excel;
+using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Financieros;
@@ -10,7 +11,11 @@ using gc.sitio.Areas.Financieros.Models;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using System.Globalization;
+using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace gc.sitio.Areas.Financieros.Controllers
 {
@@ -18,14 +23,16 @@ namespace gc.sitio.Areas.Financieros.Controllers
 	public class CargarExtractoBancarioController : CargarExtractoBancarioControladorBase
 	{
 		private readonly AppSettings _setting;
+		private readonly AppSettings2 _setting2;
 		private readonly IFinancieroServicio _financieroServicio;
 		private readonly ITipoConciliadoServicio _tipoConciliadoServicio;
 		private readonly string tipoCTAF = "BA";
 		public CargarExtractoBancarioController(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<CargarExtractoBancarioController> logger,
 												  IDocManagerServicio docManager, IOptions<DocsManager> docsManager, ITipoConciliadoServicio tipoConciliadoServicio,
-												  IFinancieroServicio financieroServicio) : base(options, accessor, logger)
+												  IFinancieroServicio financieroServicio, IOptions<AppSettings2> options2) : base(options, accessor, logger)
 		{
 			_setting = options.Value;
+			_setting2 = options2.Value;
 			_financieroServicio = financieroServicio;
 			_tipoConciliadoServicio = tipoConciliadoServicio;
 		}
@@ -96,10 +103,61 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					};
 					return PartialView("_gridMensaje", response);
 				}
-				var lista = ListaCuentaBancos.Where(x => x.ctaf_id == request.ctaf_id);
-				model.CuentaBanco = $"{lista.First().ctaf_denominacion} ({lista.First().ctaf_id})";
-				model.GrillaExtracto = ObtenerGridCoreSmart<CrudExtractoBancarioDto>(new List<CrudExtractoBancarioDto>());
+				var extractoLista = _financieroServicio.GetFinancieroBcoExtracto(request, TokenCookie);
+				ListaExtractoBancario = extractoLista;
+				if (extractoLista != null && extractoLista.Any())
+				{
+					ListaCrudExtractoBancario = [.. extractoLista.Select((x, index) => new CrudExtractoBancarioDto
+					{
+						orden = index + 1,
+						ctaf_id = x.ctaf_id,
+						ext_fecha = x.ext_fecha,
+						ext_debe = x.ext_debe,
+						ext_haber = x.ext_haber,
+						extr_id = x.extr_id,
+						extr_desc = x.extr_desc,
+						ext_concepto = x.ext_concepto,
+						abm = "",
+						ext_conciliado = x.ext_conciliado??'N',
+						ctl_cierre = x.ctl_cierre??'N',
+						ext_saldo = x.ext_saldo
+					})];
+					model.CuentaBanco = $"{extractoLista.First().ctaf_denominacion} ({extractoLista.First().ctaf_id})";
+				}
+				else
+				{
+					ListaCrudExtractoBancario = [];
+					model.CuentaBanco = string.Empty;
+				}
+				model.GrillaExtracto = ObtenerGridCoreSmart<CrudExtractoBancarioDto>(ListaCrudExtractoBancario.OrderBy(x => x.ext_fecha).ToList());
 				return PartialView("_crudExtractoBancario", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult AbrirModalImportarExtracto()
+		{
+			var model = new ModalImportarExtractoModel();
+			try
+			{
+				var lista = new List<ComboGenDto>
+				{
+					new() { Id = "1", Descripcion = "Banco San Juan" },
+					new() { Id = "2", Descripcion = "Banco Standard" },
+					new() { Id = "3", Descripcion = "Mercado Pago" },
+				};
+				model.OrigenDeDatos = HelperMvc<ComboGenDto>.ListaGenerica(lista);
+				return PartialView("_modal_importar_extracto", model);
 			}
 			catch (Exception ex)
 			{
@@ -125,7 +183,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 				if (abm == "A")
 				{
-					model.Fecha = DateTime.Now;
+					model.Fecha = CalcularYProponerFecha("A");
 					model.Comprobante = string.Empty;
 					model.Insertar = false;
 					model.Debe = 0;
@@ -134,7 +192,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					model.abm = abm;
 					model.orden = orden;
 				}
-				else 
+				else
 				{
 					var item = ListaCrudExtractoBancario.Where(x => x.orden == orden).FirstOrDefault();
 					if (item == null)
@@ -177,15 +235,15 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
-		public JsonResult QuitarItemExtracto(int orden) 
+		public JsonResult QuitarItemExtracto(int orden)
 		{
 			try
 			{
 				if (orden <= 0)
 					return Json(new { error = true, warn = false, msg = $"Debe especificar un ítem extracto a quitar." });
 
-				var item = ListaCrudExtractoBancario.Where(x=>x.orden==orden).FirstOrDefault();
-				if (item ==null)
+				var item = ListaCrudExtractoBancario.Where(x => x.orden == orden).FirstOrDefault();
+				if (item == null)
 					return Json(new { error = true, warn = false, msg = $"No se ha encontrado el elemento a quitar." });
 
 				var listaTemp = ListaCrudExtractoBancario;
@@ -207,27 +265,40 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			{
 				if (request == null)
 					return Json(new { error = true, warn = false, msg = $"Request vacío." });
+				if (request.ext_debe > 0 && request.ext_haber > 0)
+					return Json(new { error = true, warn = false, msg = $"Ambos valores (Debe y Haber) no pueden ser mayores a 0." });
 
 				var maxOrden = 0;
 
 				var listaTemp = ListaCrudExtractoBancario;
 				maxOrden = listaTemp.Any() ? listaTemp.Max(x => x.orden) : 0;
-				
+
 				var newCrudItem = new CrudExtractoBancarioDto
 				{
 					ctaf_id = request.ctaf_id,
 					ext_fecha = request.ext_fecha,
 					ext_haber = request.ext_haber,
 					ext_debe = request.ext_debe,
+					ext_saldo = CalcularSaldo(ListaCrudExtractoBancario, request.ext_debe, request.ext_haber),
 					extr_id = request.extr_id,
 					extr_desc = request.extr_desc,
 					ext_concepto = request.ext_concepto,
 					abm = request.abm,
+					ext_conciliado = 'N',
+					ctl_cierre = 'N',
 					orden = 0
 				};
 
 				if (!request.insertar)
 				{
+
+					//Si la fecha del item de extracto que estoy intentando ingresar, como ultimo registro, es menor a la fecha del ultimo registro, devuelvo
+					//error informando
+					var ultima_fecha = listaTemp.OrderByDescending(x => x.ext_fecha).First().ext_fecha;
+					if (listaTemp.Any() && ultima_fecha > newCrudItem.ext_fecha)
+						newCrudItem.ext_fecha = SugerirFechaPosterior(ultima_fecha, 1, "segundos");
+					//return Json(new { error = true, warn = false, msg = $"La fecha del item de extracto que esta intentando ingresar no puede eser menor a la fecha del ultimo registro. Valor sugerido {ultima_fecha}" });
+
 					newCrudItem.orden = maxOrden + 1;
 					listaTemp.Add(newCrudItem);
 				}
@@ -235,7 +306,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				{
 					InsertarYReordenar(listaTemp, newCrudItem, request.orden);
 				}
-				
+
 				ListaCrudExtractoBancario = listaTemp;
 
 				return Json(new { error = false, warn = false, msg = "" });
@@ -246,7 +317,9 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
-		public JsonResult ModificarItemExtracto(ExtractoCrudItemRequest request) 
+
+
+		public JsonResult ModificarItemExtracto(ExtractoCrudItemRequest request)
 		{
 			try
 			{
@@ -316,7 +389,513 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
+		[HttpPost]
+		public IActionResult ImportarArchivo(IFormFile archivo, string origenId)
+		{
+			var formatos = _setting2.ImportacionExtracto.Formatos;
+			var formato = formatos.FirstOrDefault(f => f.Id == origenId);
+			if (formato == null) return BadRequest("Origen no configurado.");
+
+			if (formato.Tipo == "XLSX")
+			{
+				var salida = ProcesadorExtracto.ParsearXlsx(archivo, formato);
+				return Ok(salida);
+			}
+
+			var lineas = LeerLineasTxt(archivo); // método que lee el txt
+			if (!ProcesadorExtracto.EsValido(lineas, formato, out var error))
+				return BadRequest(new { mensaje = error });
+
+			var salidaJson = ProcesadorExtracto.ParsearTxt(lineas, formato);
+			return Ok(salidaJson);
+		}
+
+
+		[HttpPost]
+		public async Task<IActionResult> ProcesarArchivo(IFormFile archivoImportar)
+		{
+			if (archivoImportar == null || archivoImportar.Length == 0)
+				return BadRequest("Archivo no válido.");
+
+			var lista = new List<CrudExtractoBancarioDto>();
+			var errores = new List<string>();
+			int filaActual = 0;
+
+			string[] encabezadosEsperados = new[]
+			{
+				"ctaf_id", "ext_fecha", "extr_id", "extr_desc", "ext_concepto",
+				"ext_debe", "ext_haber", "ext_saldo", "ct_tipo", "ct_modo", "abm"
+			};
+
+			if (archivoImportar.FileName.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
+			{
+				using var stream = archivoImportar.OpenReadStream();
+				using var reader = new StreamReader(stream, Encoding.UTF8);
+
+				while (!reader.EndOfStream)
+				{
+					var linea = await reader.ReadLineAsync();
+					filaActual++;
+
+					if (string.IsNullOrWhiteSpace(linea)) continue;
+
+					var campos = linea.Split('\t');
+
+					if (filaActual == 1)
+					{
+						if (campos.Length != encabezadosEsperados.Length ||
+							!campos.SequenceEqual(encabezadosEsperados, StringComparer.OrdinalIgnoreCase))
+						{
+							return BadRequest("Encabezados inválidos o en orden incorrecto.");
+						}
+						continue;
+					}
+
+					if (campos.Length < encabezadosEsperados.Length)
+					{
+						errores.Add($"Fila {filaActual}: columnas insuficientes ({campos.Length}).");
+						continue;
+					}
+
+					try
+					{
+						lista.Add(new CrudExtractoBancarioDto
+						{
+							ctaf_id = campos[0],
+							ext_fecha = DateTime.Parse(campos[1]),
+							extr_id = campos[2],
+							extr_desc = campos[3],
+							ext_concepto = campos[4],
+							ext_debe = decimal.Parse(campos[5], CultureInfo.InvariantCulture),
+							ext_haber = decimal.Parse(campos[6], CultureInfo.InvariantCulture),
+							ext_saldo = decimal.Parse(campos[7], CultureInfo.InvariantCulture),
+							ct_tipo = campos[8],
+							ct_modo = campos[9],
+							abm = campos[10]
+						});
+					}
+					catch (Exception ex)
+					{
+						errores.Add($"Fila {filaActual}: error de conversión → {ex.Message}");
+					}
+				}
+			}
+			else if (archivoImportar.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+			{
+				using var ms = new MemoryStream();
+				await archivoImportar.CopyToAsync(ms);
+				using var workbook = new XLWorkbook(ms);
+				var hoja = workbook.Worksheets.First();
+				var encabezado = hoja.Row(1).Cells(1, encabezadosEsperados.Length).Select(c => c.GetString().Trim()).ToArray();
+
+				if (!encabezado.SequenceEqual(encabezadosEsperados, StringComparer.OrdinalIgnoreCase))
+				{
+					return BadRequest("Encabezados inválidos o en orden incorrecto.");
+				}
+
+				foreach (var fila in hoja.RowsUsed().Skip(1))
+				{
+					filaActual = fila.RowNumber();
+					try
+					{
+						var item = new CrudExtractoBancarioDto
+						{
+							ctaf_id = fila.Cell(1).GetString(),
+							ext_fecha = fila.Cell(2).GetDateTime(),
+							extr_id = fila.Cell(3).GetString(),
+							extr_desc = fila.Cell(4).GetString(),
+							ext_concepto = fila.Cell(5).GetString(),
+							ext_debe = Convert.ToDecimal(fila.Cell(6).Value, CultureInfo.InvariantCulture),
+							ext_haber = Convert.ToDecimal(fila.Cell(7).Value, CultureInfo.InvariantCulture),
+							ext_saldo = Convert.ToDecimal(fila.Cell(8).Value, CultureInfo.InvariantCulture),
+							ct_tipo = fila.Cell(9).GetString(),
+							ct_modo = fila.Cell(10).GetString(),
+							abm = fila.Cell(11).GetString()
+						};
+
+						lista.Add(item);
+					}
+					catch (Exception ex)
+					{
+						errores.Add($"Fila {filaActual}: error de conversión → {ex.Message}");
+					}
+				}
+			}
+			else
+			{
+				return BadRequest("Formato de archivo no soportado.");
+			}
+
+			if (errores.Any())
+			{
+				return BadRequest(new { errores });
+			}
+
+			return Ok(lista);
+		}
+
+
+
+		#region Clases Complementarias Importar Extracto
+		public class CampoFormato
+		{
+			public string Nombre { get; set; } = "";
+			public int? Inicio { get; set; }
+			public int? Longitud { get; set; }
+			public int? Posicion { get; set; }
+			public string? Formato { get; set; }
+		}
+
+		public class FormatoExtractoConfig
+		{
+			public string Id { get; set; } = "";
+			public string Nombre { get; set; } = "";
+			public string Tipo { get; set; } = ""; // "Fijo", "Delimitado", "XLSX"
+			public string? Separador { get; set; }
+			public int? LongitudEsperada { get; set; }
+			public string? Hoja { get; set; }
+			public List<CampoFormato> Campos { get; set; } = new();
+			public List<string> Columnas { get; set; } = new(); // solo para XLSX
+		}
+
+		public class AppSettings2
+		{
+			public ImportacionExtractoConfig ImportacionExtracto { get; set; } = new();
+		}
+
+		public class ImportacionExtractoConfig
+		{
+			public List<FormatoExtractoConfig> Formatos { get; set; } = new();
+		}
+
+
+		public static string[] LeerLineasTxt(IFormFile archivo)
+		{
+			if (archivo == null || archivo.Length == 0)
+				throw new ArgumentException("El archivo está vacío o no fue proporcionado.");
+
+			using var reader = new StreamReader(archivo.OpenReadStream(), Encoding.UTF8);
+			var lineas = new List<string>();
+
+			while (!reader.EndOfStream)
+			{
+				var linea = reader.ReadLine();
+				if (!string.IsNullOrWhiteSpace(linea))
+					lineas.Add(linea.Trim());
+			}
+
+			return lineas.ToArray();
+		}
+
+
+		public static class ProcesadorExtracto
+		{
+			public static bool EsValido(string[] lineas, FormatoExtractoConfig config, out string error)
+			{
+				error = "";
+				if (config.Tipo == "Fijo" && config.LongitudEsperada.HasValue)
+				{
+					if (lineas.Any(l => l.Length < config.LongitudEsperada.Value))
+					{
+						error = "Líneas con longitud insuficiente.";
+						return false;
+					}
+				}
+				else if (config.Tipo == "Delimitado")
+				{
+					foreach (var linea in lineas)
+					{
+						var partes = linea.Split(config.Separador);
+						if (partes.Length < config.Campos.Count)
+						{
+							error = "Cantidad de columnas insuficiente.";
+							return false;
+						}
+					}
+				}
+				return true;
+			}
+
+			public static List<Dictionary<string, object>> ParsearTxt(string[] lineas, FormatoExtractoConfig config)
+			{
+				var resultado = new List<Dictionary<string, object>>();
+
+				foreach (var linea in lineas)
+				{
+					var fila = new Dictionary<string, object>();
+
+					if (config.Tipo == "Fijo")
+					{
+						foreach (var campo in config.Campos)
+						{
+							var valor = linea.Substring(campo.Inicio!.Value, campo.Longitud!.Value).Trim();
+							fila[campo.Nombre] = valor;
+						}
+					}
+					else if (config.Tipo == "Delimitado")
+					{
+						var partes = linea.Split(config.Separador);
+						foreach (var campo in config.Campos)
+						{
+							var valor = partes[campo.Posicion!.Value].Trim();
+							fila[campo.Nombre] = valor;
+						}
+					}
+
+					resultado.Add(fila);
+				}
+
+				return resultado;
+			}
+
+			public static List<Dictionary<string, object>> ParsearXlsx(IFormFile archivo, FormatoExtractoConfig config)
+			{
+				using var stream = archivo.OpenReadStream();
+				using var workbook = new XLWorkbook(stream);
+				var hoja = workbook.Worksheets.First();
+				var rows = hoja.RangeUsed().RowsUsed().Skip(1);
+
+				var resultado = new List<Dictionary<string, object>>();
+				foreach (var row in rows)
+				{
+					var fila = new Dictionary<string, object>();
+					for (int i = 0; i < config.Columnas.Count; i++)
+					{
+						var nombre = config.Columnas[i];
+						var valor = row.Cell(i + 1).Value;
+						fila[nombre] = valor;
+					}
+					resultado.Add(fila);
+				}
+				return resultado;
+			}
+		}
+
+		//public interface IFormatoExtractoValidator
+		//{
+		//	bool EsValido(string[] lineas, out string mensajeError);
+		//	List<CrudExtractoBancarioDto> Parsear(string[] lineas);
+		//}
+		//public class FormatoExtractoFactory
+		//{
+		//	public static IFormatoExtractoValidator Resolver(string origenId)
+		//	{
+		//		return origenId switch
+		//		{
+		//			"1" => new FormatoBancoSanJuan(),
+		//			"2" => new FormatoBancoStandard(),
+		//			// etc.
+		//			_ => throw new NotSupportedException("Origen no soportado.")
+		//		};
+		//	}
+		//}
+
+
+		//public class FormatoBancoSanJuan : IFormatoExtractoValidator
+		//{
+		//	public bool EsValido(string[] lineas, out string mensajeError)
+		//	{
+		//		mensajeError = "";
+		//		foreach (var linea in lineas)
+		//		{
+		//			if (linea.Length < 80) // ejemplo mínimo
+		//			{
+		//				mensajeError = "Línea demasiado corta. Formato inválido.";
+		//				return false;
+		//			}
+		//			// Podés validar que ciertos campos tengan números, fechas, etc.
+		//		}
+		//		return true;
+		//	}
+
+		//	public List<CrudExtractoBancarioDto> Parsear(string[] lineas)
+		//	{
+		//		var lista = new List<CrudExtractoBancarioDto>();
+		//		foreach (var linea in lineas)
+		//		{
+		//			var dto = new CrudExtractoBancarioDto
+		//			{
+		//				ext_fecha = ParseFecha(linea.Substring(1, 6)), // DDMMYY
+		//				extr_desc = linea.Substring(13, 40).Trim(),
+		//				ext_debe = ParseImporte(linea.Substring(53, 12), linea.Substring(52, 1)),
+		//				ext_saldo = ParseImporte(linea.Substring(66, 12), linea.Substring(65, 1)),
+		//				// etc.
+		//			};
+		//			lista.Add(dto);
+		//		}
+		//		return lista;
+		//	}
+
+		//	private DateTime ParseFecha(string ddmmyy)
+		//	{
+		//		return DateTime.ParseExact(ddmmyy, "ddMMyy", CultureInfo.InvariantCulture);
+		//	}
+
+		//	private decimal ParseImporte(string valor, string signo)
+		//	{
+		//		var importe = decimal.Parse(valor) / 100;
+		//		return signo == "1" ? -importe : importe;
+		//	}
+		//}
+
+		//public class FormatoBancoStandard : IFormatoExtractoValidator
+		//{
+		//	public bool EsValido(string[] lineas, out string mensajeError)
+		//	{
+		//		mensajeError = "";
+		//		foreach (var linea in lineas)
+		//		{
+		//			var partes = linea.Split('\t');
+		//			if (partes.Length != 6)
+		//			{
+		//				mensajeError = "Cantidad de columnas incorrecta.";
+		//				return false;
+		//			}
+		//			// Validaciones adicionales
+		//		}
+		//		return true;
+		//	}
+
+		//	public List<CrudExtractoBancarioDto> Parsear(string[] lineas)
+		//	{
+		//		var lista = new List<CrudExtractoBancarioDto>();
+		//		foreach (var linea in lineas)
+		//		{
+		//			var partes = linea.Split('\t');
+		//			var dto = new CrudExtractoBancarioDto
+		//			{
+		//				ext_fecha = DateTime.ParseExact(partes[0], "ddMMyyyy", CultureInfo.InvariantCulture),
+		//				extr_desc = partes[1].Trim(),
+		//				ext_debe = decimal.Parse(partes[2]),
+		//				ext_haber = decimal.Parse(partes[3]),
+		//				ext_saldo = decimal.Parse(partes[4]),
+		//				// etc.
+		//			};
+		//			lista.Add(dto);
+		//		}
+		//		return lista;
+		//	}
+		//}
+
+		//public class ValidadorGenerico
+		//{
+		//	public static bool EsValido(string[] lineas, FormatoExtractoConfig config, out string error)
+		//	{
+		//		error = "";
+		//		if (config.Tipo == "Fijo" && config.LongitudEsperada.HasValue)
+		//		{
+		//			if (lineas.Any(l => l.Length < config.LongitudEsperada.Value))
+		//			{
+		//				error = "Líneas con longitud insuficiente.";
+		//				return false;
+		//			}
+		//		}
+		//		else if (config.Tipo == "Delimitado")
+		//		{
+		//			foreach (var linea in lineas)
+		//			{
+		//				var partes = linea.Split(config.Separador);
+		//				if (partes.Length < config.Campos.Count)
+		//				{
+		//					error = "Cantidad de columnas insuficiente.";
+		//					return false;
+		//				}
+		//			}
+		//		}
+		//		return true;
+		//	}
+
+		//	public static List<Dictionary<string, object>> ParsearComoJson(string[] lineas, FormatoExtractoConfig config)
+		//	{
+		//		var resultado = new List<Dictionary<string, object>>();
+
+		//		foreach (var linea in lineas)
+		//		{
+		//			var fila = new Dictionary<string, object>();
+
+		//			if (config.Tipo == "Fijo")
+		//			{
+		//				foreach (var campo in config.Campos)
+		//				{
+		//					var valor = linea.Substring(campo.Inicio!.Value, campo.Longitud!.Value).Trim();
+		//					fila[campo.Nombre] = ParsearValor(valor, campo.Formato);
+		//				}
+		//			}
+		//			else if (config.Tipo == "Delimitado")
+		//			{
+		//				var partes = linea.Split(config.Separador);
+		//				foreach (var campo in config.Campos)
+		//				{
+		//					var valor = partes[campo.Posicion!.Value].Trim();
+		//					fila[campo.Nombre] = ParsearValor(valor, campo.Formato);
+		//				}
+		//			}
+
+		//			resultado.Add(fila);
+		//		}
+
+		//		return resultado;
+		//	}
+
+		//	private static object ParsearValor(string valor, string? formato)
+		//	{
+		//		if (string.IsNullOrWhiteSpace(formato)) return valor;
+
+		//		if (DateTime.TryParseExact(valor, formato, CultureInfo.InvariantCulture, DateTimeStyles.None, out var fecha))
+		//			return fecha;
+
+		//		if (decimal.TryParse(valor, out var dec))
+		//			return dec;
+
+		//		return valor;
+		//	}
+		//}
+
+		#endregion
+
 		#region Metodos Privados
+		private static DateTime SugerirFechaPosterior(DateTime fechaBase, double cantidad, string unidad)
+		{
+			return unidad.ToLower() switch
+			{
+				"dias" or "día" => fechaBase.AddDays(cantidad),
+				"horas" => fechaBase.AddHours(cantidad),
+				"minutos" => fechaBase.AddMinutes(cantidad),
+				"segundos" => fechaBase.AddSeconds(cantidad),
+				"milisegundos" => fechaBase.AddMilliseconds(cantidad),
+				"meses" => fechaBase.AddMonths((int)cantidad),
+				"años" => fechaBase.AddYears((int)cantidad),
+				_ => throw new ArgumentException("Unidad de tiempo no reconocida.")
+			};
+		}
+
+
+		private DateTime CalcularYProponerFecha(string tipoOp)
+		{
+			if (ListaCrudExtractoBancario == null || ListaCrudExtractoBancario.Count <= 0)
+				return DateTime.Now;
+			if (tipoOp == "A")
+			{
+				var item = ListaCrudExtractoBancario.OrderByDescending(x => x.orden).First();
+				return SugerirFechaPosterior(item.ext_fecha, 1, "minutos");
+			}
+			else
+			{
+				return DateTime.Now;
+			}
+		}
+
+		private decimal CalcularSaldo(List<CrudExtractoBancarioDto> lista, decimal debe, decimal haber)
+		{
+			if (lista == null || lista.Count <= 0)
+				return 0.00M;
+			var item = lista.OrderByDescending(x => x.orden).First();
+			if (debe > 0)
+				return item.ext_saldo - debe;
+			else
+				return item.ext_saldo + haber;
+		}
+
 		public void InsertarYReordenar(List<CrudExtractoBancarioDto> lista, CrudExtractoBancarioDto nuevoItem, int posicion)
 		{
 			// Validar límites
@@ -326,11 +905,22 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			// Insertar en la posición deseada
 			lista.Insert(posicion, nuevoItem);
 
-			// Reordenar todos los elementos
+			// Reordenar campo 'orden'
 			for (int i = 0; i < lista.Count; i++)
 			{
-				lista[i].orden = i + 1; // o i si querés que empiece en 0
+				lista[i].orden = i + 1;
 			}
+
+			// Base: fecha sin hora del primer ítem
+			DateTime fechaBase = lista[0].ext_fecha.Date;
+			TimeSpan incremento = TimeSpan.FromSeconds(1); // Podés usar segundos si necesitás más granularidad
+
+			for (int i = 0; i < lista.Count; i++)
+			{
+				var fecha = lista[i].ext_fecha.Date;
+				lista[i].ext_fecha = fecha.Add(incremento * i);
+			}
+
 		}
 
 		public void Reordenar(List<CrudExtractoBancarioDto> lista)

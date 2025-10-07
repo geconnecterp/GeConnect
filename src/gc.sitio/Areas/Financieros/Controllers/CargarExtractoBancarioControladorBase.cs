@@ -33,6 +33,24 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
+		public List<FinancieroBcoExtractoDto> ListaExtractoBancario
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("ListaExtractoBancario");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<FinancieroBcoExtractoDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ListaExtractoBancario", json);
+			}
+		}
+
 		public List<CrudExtractoBancarioDto> ListaCrudExtractoBancario
 		{
 			get

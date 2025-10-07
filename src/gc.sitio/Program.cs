@@ -12,6 +12,7 @@ builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSet
 //extraigo del appsettings.js las configuraciones de cada modulo para el Gestor Documental
 builder.Services.Configure<DocsManager>(builder.Configuration.GetSection("DocsManager"));
 builder.Services.Configure<EmpresaGeco>(builder.Configuration.GetSection("EmpresaGeco"));
+builder.Services.Configure<EmpresaGeco>(builder.Configuration.GetSection("ImportacionExtracto:Formatos"));
 
 var cultureInfo = (CultureInfo)CultureInfo.CurrentCulture.Clone();
 cultureInfo.NumberFormat.NumberDecimalSeparator = ".";

@@ -4,6 +4,7 @@ namespace gc.infraestructura.Dtos.Financieros
 	public class FinancieroBcoExtractoDto : Dto
 	{
 		public string ctaf_id { get; set; } = string.Empty;
+		public string ctaf_denominacion { get; set; } = string.Empty;
 		public DateTime ext_fecha { get; set; }
 		public string extr_id { get; set; } = string.Empty;
 		public string extr_desc { get; set; } = string.Empty;
