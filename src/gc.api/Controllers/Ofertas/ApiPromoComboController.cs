@@ -1,0 +1,203 @@
+﻿using gc.api.core.Contratos.Servicios.Ofertas;
+using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos.PromoCombo;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
+
+namespace gc.api.Controllers.Ofertas
+{
+    [Authorize]
+    [Produces("application/json")]
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ApiPromoComboController : ControllerBase
+    {
+        private readonly IApiPromoComboServicio _promoComboServicio;
+        private readonly ILogger<ApiPromoComboController> _logger;
+
+
+        public ApiPromoComboController(IApiPromoComboServicio promoComboServicio, ILogger<ApiPromoComboController> logger)
+        {
+            _promoComboServicio = promoComboServicio ?? throw new ArgumentNullException(nameof(promoComboServicio));
+            _logger = logger;
+        }
+
+        /// <summary>
+        /// Obtiene los tipos disponibles para el combo
+        /// </summary>
+        /// <returns>Lista de tipos de combo</returns>
+        /// <response code="200">Devuelve la lista de tipos</response>
+        /// <response code="500">Si ocurre un error durante el proceso</response>
+        [HttpGet("combos-tipos")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public IActionResult ObtenerTipos()
+        {
+            try
+            {
+                var tipos = _promoComboServicio.ObtenerComboTipo();
+
+                return Ok(new ApiResponse<List<ComboTipoDto>>(tipos));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { ok = false, mensaje = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene los estados disponibles para el combo
+        /// </summary>
+        /// <returns>Lista de estados de combo</returns>
+        /// <response code="200">Devuelve la lista de estados</response>
+        /// <response code="500">Si ocurre un error durante el proceso</response>
+        [HttpGet("combos-estados")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public IActionResult ObtenerEstados()
+        {
+            try
+            {
+                var estados = _promoComboServicio.ObtenerComboEstado();
+                return Ok(new ApiResponse<List<ComboEstadoDto>>(estados));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { ok = false, mensaje = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene el detalle de combos según los filtros especificados
+        /// </summary>
+        /// <param name="filtros">Filtros para la búsqueda de combos</param>
+        /// <returns>Lista de combos que cumplen con los filtros</returns>
+        /// <response code="200">Devuelve la lista de combos filtrados</response>
+        /// <response code="400">Si los filtros son inválidos</response>
+        /// <response code="500">Si ocurre un error durante el proceso</response>
+        [HttpPost("combos-buscar")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public IActionResult BuscarCombos([FromBody] QueryFilters filtros)
+        {
+            // Validar que el modelo sea válido
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { ok = false, mensaje = "Los filtros proporcionados no son válidos" });
+            }
+
+            ComboListaDto reg = new ComboListaDto { Total_Paginas = 0, Total_Registros = 0 };
+
+            // Asegurar valores por defecto para paginación
+            filtros.Pagina = filtros.Pagina <= 0 ? 1 : filtros.Pagina;
+            filtros.Registros = filtros.Registros <= 0 ? 10 : filtros.Registros;
+
+            var combos = _promoComboServicio.ObtenerDetalleDeCombos(filtros);
+
+            if (combos.Count > 0)
+            {
+                reg = combos[0];
+                // Incluir información de paginación en los headers de la respuesta
+                var metadata = new MetadataGrid
+                {
+                    TotalCount = reg.Total_Registros,
+                    PageSize = filtros.Registros.Value,
+                    CurrentPage = filtros.Pagina.Value,
+                    TotalPages = reg.Total_Paginas,
+                    HasNextPage = filtros.Pagina < reg.Total_Paginas,
+                    HasPreviousPage = filtros.Pagina > 1
+                };
+                //Response.Headers.Add("X-Pagination", System.Text.Json.JsonSerializer.Serialize(metadata));
+                return Ok(new ApiResponse<List<ComboListaDto>>(combos) { Meta = metadata });
+            }
+            else
+            {
+                return Ok(new ApiResponse<List<ComboListaDto>>(combos));
+            }
+        }
+
+        /// <summary>
+        /// Obtiene los datos de un combo por su identificador
+        /// </summary>
+        /// <param name="id">Identificador único del combo</param>
+        /// <returns>Datos detallados del combo solicitado</returns>
+        /// <response code="200">Devuelve los datos del combo</response>
+        /// <response code="404">Si el combo no existe</response>
+        /// <response code="500">Si ocurre un error durante el proceso</response>
+        [HttpGet("combo/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public IActionResult ObtenerComboPorId(string id)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(id))
+                {
+                    return BadRequest(new { ok = false, mensaje = "El identificador del combo es requerido" });
+                }
+
+                var combo = _promoComboServicio.ObtenerComboPorId(id);
+                
+                if (combo == null)
+                {
+                    return NotFound(new { ok = false, mensaje = $"No se encontró el combo con id {id}" });
+                }
+                
+                return Ok(new ApiResponse<ComboDatosDto>(combo));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener combo por ID {ComboId}", id);
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { ok = false, mensaje = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene los canales asociados a un combo específico
+        /// </summary>
+        /// <param name="id">Identificador único del combo</param>
+        /// <returns>Lista de canales del combo</returns>
+        /// <response code="200">Devuelve la lista de canales</response>
+        /// <response code="404">Si el combo no existe o no tiene canales asociados</response>
+        /// <response code="500">Si ocurre un error durante el proceso</response>
+        [HttpGet("combo/{id}/canales")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public IActionResult ObtenerCanalesDeCombo(string id)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(id))
+                {
+                    return BadRequest(new { ok = false, mensaje = "El identificador del combo es requerido" });
+                }
+
+                var canales = _promoComboServicio.ObtenerCanalesDeCombo(id);
+                
+                if (canales == null || canales.Count == 0)
+                {
+                    return NotFound(new { ok = false, mensaje = $"No se encontraron canales para el combo con id {id}" });
+                }
+                
+                return Ok(new ApiResponse<List<ComboCanalDto>>(canales));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener canales para el combo {ComboId}", id);
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { ok = false, mensaje = ex.Message });
+            }
+        }
+    }
+}

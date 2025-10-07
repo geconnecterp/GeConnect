@@ -6,18 +6,24 @@
     <div class="col-md-2 col-sm-6">
         <div class="d-flex justify-content-sm-around">
             <button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button"
-            data-bs-toggle="collapse" data-bs-target="#divFiltro"
-            aria-expanded="true" aria-controls="divFiltro">
+                    data-bs-toggle="collapse" data-bs-target="#divFiltro"
+                    aria-expanded="true" aria-controls="divFiltro">
                 <i class="bx bx-filter"></i>
             </button>
             <button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle"
-            data-bs-toggle="collapse" data-bs-target="#divDetalle"
-            aria-expanded="true" aria-controls="divDetalle">
+                    data-bs-toggle="collapse" data-bs-target="#divDetalle"
+                    aria-expanded="true" aria-controls="divDetalle">
                 <i class="bx bx-caret-down"></i>
             </button>
         </div>
     </div>
-    @if (Model.Modelo != ModeloFilter.ASIENTO_RESULTADO && Model.Modelo != ModeloFilter.ASIENTO_AJUSTE && Model.Modelo != ModeloFilter.EJERCICIO_CONTABLE && Model.Modelo != ModeloFilter.BGR && Model.Modelo != ModeloFilter.LIBRO_MAYOR && Model.Modelo != ModeloFilter.BSS && Model.Modelo != ModeloFilter.LDIARIO)
+    @if (Model.Modelo != ModeloFilter.ASIENTO_RESULTADO && 
+    Model.Modelo != ModeloFilter.ASIENTO_AJUSTE && 
+    Model.Modelo != ModeloFilter.EJERCICIO_CONTABLE && 
+    Model.Modelo != ModeloFilter.BGR && 
+    Model.Modelo != ModeloFilter.LIBRO_MAYOR && 
+    Model.Modelo != ModeloFilter.BSS && 
+    Model.Modelo != ModeloFilter.LDIARIO)
     {
         <div class="col-md-2 col-sm-6">
             <div class="d-flex justify-content-sm-center">
@@ -30,7 +36,7 @@
                 </button>
             </div>
         </div>
-        @if (Model.Modelo != ModeloFilter.PRODUCTO_CARGA_PRECIO)
+        @if (Model.Modelo != ModeloFilter.PRODUCTO_CARGA_PRECIO )
         {
             @if (Model.Modelo == ModeloFilter.ASIENTO_TEMPORAL || Model.Modelo == ModeloFilter.ASIENTO_DEFINITIVO)
             {
@@ -72,8 +78,8 @@
                         </div>
                     }
 
+                </div>
             </div>
-        </div>
         }
     }
 </div>

@@ -217,7 +217,8 @@ namespace gc.infraestructura.Helpers
         {
             if (HasColumn(dr, column, ignoreCase))
             {
-                return Convert.ToChar(dr[column]);
+                var res = dr[column];
+                return Convert.ToChar(res);
             }
             return char.MinValue;
         }

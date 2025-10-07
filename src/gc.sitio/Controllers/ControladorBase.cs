@@ -16,6 +16,7 @@ using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Productos.Ofertas;
+using gc.infraestructura.Dtos.Productos.PromoCombo;
 using gc.infraestructura.Dtos.Tipos;
 using gc.infraestructura.Dtos.Users;
 using gc.infraestructura.EntidadesComunes;
@@ -1246,8 +1247,45 @@ namespace gc.sitio.Controllers
 		}
 		#endregion
 
-		#region TIPOS COMPROBANTES
-		public List<TipoComprobanteDto> TiposComprobante
+		#region PROMO Y COMBOS
+		public List<ComboTipoDto> ComboTipoLista
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("ComboTipoLista") ?? string.Empty;
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<ComboTipoDto>();
+				}
+				return JsonConvert.DeserializeObject<List<ComboTipoDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ComboTipoLista", json);
+			}
+        }
+
+		public List<ComboEstadoDto> ComboEstadoLista {
+            get
+            {
+                var json = _context.HttpContext?.Session.GetString("ComboEstadoLista") ?? string.Empty;
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return new List<ComboEstadoDto>();
+                }
+                return JsonConvert.DeserializeObject<List<ComboEstadoDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("ComboEstadoLista", json);
+            }
+        }
+        #endregion
+
+        #region TIPOS COMPROBANTES
+        public List<TipoComprobanteDto> TiposComprobante
 		{
 			get
 			{
@@ -2586,9 +2624,21 @@ namespace gc.sitio.Controllers
 			var lista = TipoConciliadoLista.Select(x => new ComboGenDto { Id = x.extr_id, Descripcion = x.extr_desc });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
-		#endregion
 
-		[HttpPost]
+		protected SelectList ComboTipoCombo()
+		{
+			var lista =ComboTipoLista.Select(x => new ComboGenDto { Id = x.Cmb_Tipo.ToString(), Descripcion = x.Cmb_Tipo_Desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+        }
+
+		protected SelectList ComboEstadoCombo()
+		{
+			var lista = ComboEstadoLista.Select(x => new ComboGenDto { Id = x.Cmb_Estado.ToString(), Descripcion = x.Cmb_Estado_Desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+        }
+        #endregion
+
+        [HttpPost]
 		public JsonResult BuscarProvs(string prefix)
 		{
 			//var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);

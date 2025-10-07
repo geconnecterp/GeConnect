@@ -7,7 +7,6 @@ using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
-using gc.sitio.core.Servicios.Implementacion;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
