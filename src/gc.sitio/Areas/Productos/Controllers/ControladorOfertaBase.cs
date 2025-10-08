@@ -1,11 +1,13 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.Helpers;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Options;
+using Microsoft.Identity.Client;
 using Newtonsoft.Json;
 
 namespace gc.sitio.Areas.Productos.Controllers
@@ -83,7 +85,7 @@ namespace gc.sitio.Areas.Productos.Controllers
         }
 
 
-        internal void CargarDatosIniciales(bool actualizar, ICuentaServicio _cuentaServicio,IRubroServicio _rubroServicio)
+        internal void CargarDatosIniciales(bool actualizar, ICuentaServicio _cuentaServicio,IRubroServicio _rubroServicio,IComboServicio _comboServicio = null)
         {
             if (ProveedoresLista.Count == 0 || actualizar)
             {
@@ -93,6 +95,26 @@ namespace gc.sitio.Areas.Productos.Controllers
             if (RubroLista.Count == 0 || actualizar)
             {
                 ObtenerRubros(_rubroServicio);
+            }
+
+            if (_comboServicio != null)
+            {
+                if (ComboTipoLista.Count == 0 || actualizar)
+                {
+
+                    var resTipo = _comboServicio.ObtenerComboTipos(TokenCookie).GetAwaiter().GetResult();
+                    if (!resTipo.Ok)
+                        throw new NegocioException(resTipo.Mensaje ?? "Hubo un problema para obtener los tipos");
+                    ComboTipoLista = resTipo.ListaEntidad ?? [];
+                }
+
+                if(ComboEstadoLista.Count==0 || actualizar)
+                {
+                    var resEstado = _comboServicio.ObtenerComboEstados(TokenCookie).GetAwaiter().GetResult();
+                    if (!resEstado.Ok)
+                        throw new NegocioException(resEstado.Mensaje ?? "Hubo un problema para obtener los estados");
+                    ComboEstadoLista = resEstado.ListaEntidad ?? [];
+                }                
             }
 
             var listR03 = new List<ComboGenDto>();

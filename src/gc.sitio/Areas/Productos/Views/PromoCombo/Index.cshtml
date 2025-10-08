@@ -1,7 +1,7 @@
 ﻿@using static gc.infraestructura.Constantes.Constantes
 @{
     Layout = "~/views/shared/_Layout.cshtml";
-    var filtro = new QueryFilters() { Modelo = ModeloFilter.PROMO_COMBO };
+    var filtro = new QueryFilters() { Modelo = ModeloFilter.PROMO_COMBO, Rel03 = null };
 }
 
 @section styles {
@@ -23,7 +23,7 @@
         </div>
         <div class="col-sm-6 mb-2" id="divCanales">
             <!-- Aquí se cargará la vista parcial _gridComboCanales -->
-        </div> 
+        </div>
     </div>
     <div class="row">
         <!-- Productos (38%) -->
@@ -51,7 +51,15 @@
 
         let homeCombo = "@Url.Action("index", "promocombo", new { area = "productos" })";
         let buscarMetadataURL= "@Url.Action("ObtenerDatosPaginacion", "promocombo", new { area = "productos" })";
+
+        //funcionalidad busqueda avanzada controlador común
+        let productoBase = null; //se hidrata en busquedas.
+        let p_id_selected = "";
+        let funcionBusquedaAvanzada = true;
+        let busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
+        let busquedaAvanzadaUrl = "@Url.Action("BusquedaAvanzadaV02", "producto", new { area = "ControlComun" })";
     </script>
     <script src="~/js/plugins/jquery.simplePagination.js"></script>
+    <script src="~/js/app/busquedasV02.js" type="text/javascript"></script>
     <script src="~/js/app/areas/precios/combo.js"></script>
 }

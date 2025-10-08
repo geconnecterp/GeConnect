@@ -41,7 +41,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             _docMSv = docManagerServicio;
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
             string msg = "Error de negocio al cargar la vista de PROMOS Y COMBOS";
             try
@@ -49,6 +49,9 @@ namespace gc.sitio.Areas.Productos.Controllers
                 // Versión optimizada del código de autenticación
                 if (!VerificarAutenticacion(out IActionResult redirectResult))
                     return redirectResult;
+
+                // Inicializar lista al ingresar el modulo
+                ProductosSeleccionadosV02 = [];
 
                 #region Gestor Impresion - Inicializacion de variables
 
@@ -63,15 +66,7 @@ namespace gc.sitio.Areas.Productos.Controllers
 
                 #endregion
 
-                var resTipo = await _comboServicio.ObtenerComboTipos(TokenCookie);
-                if (!resTipo.Ok)
-                    throw new NegocioException(resTipo.Mensaje ?? "Hubo un problema para obtener los tipos");
-                ComboTipoLista = resTipo.ListaEntidad ?? [];
-
-                var resEstado = await _comboServicio.ObtenerComboEstados(TokenCookie);
-                if (!resEstado.Ok)
-                    throw new NegocioException(resEstado.Mensaje ?? "Hubo un problema para obtener los estados");
-                ComboEstadoLista = resEstado.ListaEntidad ?? [];
+                CargarDatosIniciales(true, _cuentaServicio, _rubroServicio,_comboServicio);
 
                 ViewBag.Tipo = ComboTipoCombo();
                 ViewBag.cmb_tipo = ComboTipoCombo();
