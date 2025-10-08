@@ -1,7 +1,7 @@
 ﻿@model FiltroExtractoModel
 @{
 	Layout = "~/views/shared/_Layout.cshtml";
-	
+	string uploadId = ViewBag.UploadId ?? "default";
 }
 @section styles {
 	<link rel="stylesheet" href="~/css/simplePagination.css" />
@@ -62,7 +62,10 @@
 		var modificarItemExtractoUrl = "@Url.Action("ModificarItemExtracto", "CargarExtractoBancario", new { area = "Financieros" })";
 		var quitarItemExtractoUrl = "@Url.Action("QuitarItemExtracto", "CargarExtractoBancario", new { area = "Financieros" })";
 		var procesarArchivoUrl = "@Url.Action("ProcesarArchivo", "CargarExtractoBancario", new { area = "Financieros" })";
+		var importarArchivoUrl = "@Url.Action("ImportarArchivo", "CargarExtractoBancario", new { area = "Financieros" })";
 		var abrirModalImportarExtractoUrl = "@Url.Action("AbrirModalImportarExtracto", "CargarExtractoBancario", new { area = "Financieros" })";
+		var validarSiExistenRegistrosDeArchivoParaImportarUrl = "@Url.Action("ValidarSiExistenRegistrosDeArchivoParaImportar", "CargarExtractoBancario", new { area = "Financieros" })";
+		var procesarArchivoImportadoUrl = "@Url.Action("ProcesarArchivoImportado", "CargarExtractoBancario", new { area = "Financieros" })";
 	</script>
 	<script src="~/js/plugins/jquery.simplePagination.js"></script>
 	<script src="~/js/app/areas/financieros/extractobancario/extrbancario.js" type="text/javascript"></script>

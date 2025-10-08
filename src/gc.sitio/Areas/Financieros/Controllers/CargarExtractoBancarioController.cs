@@ -13,6 +13,8 @@ using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -23,16 +25,16 @@ namespace gc.sitio.Areas.Financieros.Controllers
 	public class CargarExtractoBancarioController : CargarExtractoBancarioControladorBase
 	{
 		private readonly AppSettings _setting;
-		private readonly AppSettings2 _setting2;
+		private readonly ImportacionExtracto _importacionExtracto;
 		private readonly IFinancieroServicio _financieroServicio;
 		private readonly ITipoConciliadoServicio _tipoConciliadoServicio;
 		private readonly string tipoCTAF = "BA";
 		public CargarExtractoBancarioController(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<CargarExtractoBancarioController> logger,
 												  IDocManagerServicio docManager, IOptions<DocsManager> docsManager, ITipoConciliadoServicio tipoConciliadoServicio,
-												  IFinancieroServicio financieroServicio, IOptions<AppSettings2> options2) : base(options, accessor, logger)
+												  IFinancieroServicio financieroServicio, IOptions<ImportacionExtracto> options2) : base(options, accessor, logger)
 		{
 			_setting = options.Value;
-			_setting2 = options2.Value;
+			_importacionExtracto = options2.Value;
 			_financieroServicio = financieroServicio;
 			_tipoConciliadoServicio = tipoConciliadoServicio;
 		}
@@ -152,9 +154,9 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			{
 				var lista = new List<ComboGenDto>
 				{
-					new() { Id = "1", Descripcion = "Banco San Juan" },
-					new() { Id = "2", Descripcion = "Banco Standard" },
-					new() { Id = "3", Descripcion = "Mercado Pago" },
+					new() { Id = "1", Descripcion = "Texto Plano" },
+					new() { Id = "2", Descripcion = "Standard" },
+					new() { Id = "3", Descripcion = "XLSX" },
 				};
 				model.OrigenDeDatos = HelperMvc<ComboGenDto>.ListaGenerica(lista);
 				return PartialView("_modal_importar_extracto", model);
@@ -377,6 +379,69 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			try
 			{
 				ListaCrudExtractoBancario = [];
+				ListaTempArchivoParaImportar = [];
+				return Json(new { error = false, warn = false, msg = "" });
+			}
+			catch (NegocioException ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+		}
+
+		public JsonResult ValidarSiExistenRegistrosDeArchivoParaImportar()
+		{
+			try
+			{
+				return Json(new { error = false, warn = false, existenRegistros = ListaTempArchivoParaImportar.Any() });
+			}
+			catch (NegocioException ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+		}
+
+		private char ObtenerTipoFile(int origenId)
+		{
+			if ((int)TipoEstructuraFileImportExtracto.Fijo == origenId)
+				return 'J';
+			else if ((int)TipoEstructuraFileImportExtracto.Delimitado == origenId)
+				return 'D';
+			else
+				return 'M';
+		}
+
+		public JsonResult ProcesarArchivoImportado(string ctafId, int origenId)
+		{
+			try
+			{
+				var tipo_file = ObtenerTipoFile(origenId);
+				var json_file = JsonConvert.SerializeObject(ListaTempArchivoParaImportar, new JsonSerializerSettings());
+				var request = new ExtractoBcoFileRequest()
+				{
+					ctaf_id = ctafId,
+					json_file = json_file,
+					tipo_file = tipo_file,
+					usu_id = AdministracionId
+				};
+				var lista = _financieroServicio.GetBcoExtractoDesdeFile(request, TokenCookie);
+				if (lista == null || lista.Count <= 0)
+					return Json(new { error = true, warn = false, msg = "Ha ocurrido un error al intentar procesar los registros del archivo importado." });
+				var item = lista[0];
+				if (item.resultado > 0)
+					return Json(new { error = true, warn = false, msg = item.resultado_msj });
+
+				var listaTemp = ListaCrudExtractoBancario;
+				listaTemp.AddRange(lista);
+				Reordenar(listaTemp);
+				ListaCrudExtractoBancario = listaTemp;
 				return Json(new { error = false, warn = false, msg = "" });
 			}
 			catch (NegocioException ex)
@@ -390,23 +455,25 @@ namespace gc.sitio.Areas.Financieros.Controllers
 		}
 
 		[HttpPost]
-		public IActionResult ImportarArchivo(IFormFile archivo, string origenId)
+		public IActionResult ImportarArchivo(IFormFile archivoImportar, int origenId)
 		{
-			var formatos = _setting2.ImportacionExtracto.Formatos;
-			var formato = formatos.FirstOrDefault(f => f.Id == origenId);
+			ListaTempArchivoParaImportar = [];
+			var formatos = _importacionExtracto.Formatos;
+			var formato = formatos.FirstOrDefault(f => f.Id == origenId.ToString());
 			if (formato == null) return BadRequest("Origen no configurado.");
 
 			if (formato.Tipo == "XLSX")
 			{
-				var salida = ProcesadorExtracto.ParsearXlsx(archivo, formato);
+				var salida = ProcesadorExtracto.ParsearXlsx(archivoImportar, formato);
 				return Ok(salida);
 			}
 
-			var lineas = LeerLineasTxt(archivo); // método que lee el txt
+			var lineas = LeerLineasTxt(archivoImportar, origenId); // método que lee el txt
 			if (!ProcesadorExtracto.EsValido(lineas, formato, out var error))
-				return BadRequest(new { mensaje = error });
+				return BadRequest(new { mensaje = error, errores = new[] { error } });
 
 			var salidaJson = ProcesadorExtracto.ParsearTxt(lineas, formato);
+			ListaTempArchivoParaImportar = salidaJson;
 			return Ok(salidaJson);
 		}
 
@@ -537,39 +604,14 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 
 		#region Clases Complementarias Importar Extracto
-		public class CampoFormato
+		enum TipoEstructuraFileImportExtracto
 		{
-			public string Nombre { get; set; } = "";
-			public int? Inicio { get; set; }
-			public int? Longitud { get; set; }
-			public int? Posicion { get; set; }
-			public string? Formato { get; set; }
+			Fijo = 1,
+			Delimitado,
+			XLSX
 		}
 
-		public class FormatoExtractoConfig
-		{
-			public string Id { get; set; } = "";
-			public string Nombre { get; set; } = "";
-			public string Tipo { get; set; } = ""; // "Fijo", "Delimitado", "XLSX"
-			public string? Separador { get; set; }
-			public int? LongitudEsperada { get; set; }
-			public string? Hoja { get; set; }
-			public List<CampoFormato> Campos { get; set; } = new();
-			public List<string> Columnas { get; set; } = new(); // solo para XLSX
-		}
-
-		public class AppSettings2
-		{
-			public ImportacionExtractoConfig ImportacionExtracto { get; set; } = new();
-		}
-
-		public class ImportacionExtractoConfig
-		{
-			public List<FormatoExtractoConfig> Formatos { get; set; } = new();
-		}
-
-
-		public static string[] LeerLineasTxt(IFormFile archivo)
+		public static string[] LeerLineasTxt(IFormFile archivo, int origenId)
 		{
 			if (archivo == null || archivo.Length == 0)
 				throw new ArgumentException("El archivo está vacío o no fue proporcionado.");
@@ -580,7 +622,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			while (!reader.EndOfStream)
 			{
 				var linea = reader.ReadLine();
-				if (!string.IsNullOrWhiteSpace(linea))
+				if (!string.IsNullOrWhiteSpace(linea) && (linea.StartsWith('2') && (int)TipoEstructuraFileImportExtracto.Fijo == origenId))
 					lineas.Add(linea.Trim());
 			}
 

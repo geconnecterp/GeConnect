@@ -353,5 +353,20 @@ namespace gc.api.Controllers.Financieros
 			response = new ApiResponse<List<RespuestaDto>>(res);
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CrudExtractoBancarioDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetBcoExtractoDesdeFile(ExtractoBcoFileRequest request)
+		{
+			ApiResponse<List<CrudExtractoBancarioDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetBcoExtractoDesdeFile(request);
+
+			response = new ApiResponse<List<CrudExtractoBancarioDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }

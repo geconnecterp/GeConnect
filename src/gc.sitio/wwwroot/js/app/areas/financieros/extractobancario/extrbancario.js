@@ -8,7 +8,7 @@ $(function () {
 	$(document).on("click", "#btnCancelarCarga", cancelarCargaDeExtracto);
 	$(document).on("click", "#btnConfirmarAgregarExtracto", confirmarAgregarExtracto);
 	$(document).on("click", "#btnImportar", abrirModalImportarExtracto);
-	$(document).on("click", "#btnImportarArchivo", importarArchivoExtracto);
+	$(document).on("click", "#btnProcesarArchivo", handleProcesarArchivoExtracto);
 	$("#btnReiniciarImportacion").on("click", function () {
 		reiniciarImportacionDeExtracto("default"); // o el valor dinámico de uploadId
 	});
@@ -46,9 +46,9 @@ $(function () {
 		const extensionesValidas = [".xlsx", ".txt"];
 
 		if (archivo && extensionesValidas.some(ext => archivo.name.toLowerCase().endsWith(ext))) {
-			$("#btnImportarArchivo").prop("disabled", false);
+			$("#btnProcesarArchivo").prop("disabled", false);
 		} else {
-			$("#btnImportarArchivo").prop("disabled", true);
+			$("#btnProcesarArchivo").prop("disabled", true);
 			alert("Formato de archivo no válido. Solo se permite .xlsx o .txt tabulado.");
 			$(this).val(""); // limpiar input
 		}
@@ -72,6 +72,10 @@ function setupUploadControl(uploadId) {
 	const $fileName = $(`#fileName${uploadId}`);
 	const $fileSize = $(`#fileSize${uploadId}`);
 	const $removeBtn = $(`#removeFile${uploadId}`);
+
+	//$(`#btnExplorar${uploadId}`).on('click', function () {
+	//	$fileInput[0].click();
+	//});
 
 	// Eventos de drag and drop
 	$dropZone.on('dragover dragenter', function (e) {
@@ -98,9 +102,10 @@ function setupUploadControl(uploadId) {
 	});
 
 	// ✅ CORREGIDO: Click en zona de drop - Usar trigger() en lugar de click()
-	$dropZone.on('click', function () {
-		$fileInput.trigger('click');
-	});
+	//$dropZone.on('click', function () {
+	//	//$fileInput.trigger('click');
+	//	$fileInput[0].click(); // ← esto evita el stack overflow
+	//});
 
 	// Selección de archivo
 	$fileInput.on('change', function () {
@@ -168,7 +173,7 @@ function reiniciarImportacionDeExtracto(uploadId) {
 		.text("0%");
 
 	// Desactivar botones
-	$("#btnImportarArchivo").prop("disabled", true);
+	$("#btnProcesarArchivo").prop("disabled", true);
 	$("#btnReiniciarImportacion").prop("disabled", true);
 
 	// Mostrar nuevamente la sección de selección si estaba oculta
@@ -223,6 +228,7 @@ function abrirModalImportarExtracto() {
 			.css("width", "0%")
 			.text("0%");
 
+		initializeUploadControls();
 		$modal.modal('show');
 		CerrarWaiting();
 		return true
@@ -230,6 +236,18 @@ function abrirModalImportarExtracto() {
 }
 
 function handleFileSelection(file, uploadId) {
+	const origenSeleccionado = $("#listaOrigenDeDatos").val();
+
+	if (!origenSeleccionado || origenSeleccionado === "Seleccionar") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un origen de datos antes de subir un archivo.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "warn!", null);
+		//$fileInput.val(""); // ← limpia el input para permitir nueva selección
+
+		return;
+	}
+
 	if (!validateFile(file)) {
 		return;
 	}
@@ -267,16 +285,30 @@ function formatFileSize(bytes) {
 	return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
+function showUploadError(message) {
+	// ✅ MEJORAR: Usar sistema de notificaciones más robusto
+	if (typeof AbrirMensaje === 'function') {
+		AbrirMensaje("ERROR", message, () => $("#msjModal").modal("hide"), false, ["Aceptar"], "error!", null);
+	} else if (typeof showNotification === 'function') {
+		showNotification('error', message);
+	} else {
+		console.error('Upload Error:', message);
+		alert(message);
+	}
+}
+
 function validateFile(file) {
 	const allowedTypes = [
 		'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
 		'application/vnd.ms-excel', // .xls
-		'text/csv' // .csv (opcional)
+		'text/csv', // .csv (opcional)
+		'text/plain' // .txt
 	];
-
+	const allowedExtensions = ['.xlsx', '.xls', '.csv', '.txt'];
 	const maxSize = 10 * 1024 * 1024; // 10MB
+	const fileExtension = file.name.toLowerCase().split('.').pop();
 
-	if (!allowedTypes.includes(file.type)) {
+	if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(`.${fileExtension}`)) {
 		showUploadError('Tipo de archivo no permitido. Solo se aceptan archivos Excel (.xlsx, .xls).');
 		return false;
 	}
@@ -298,7 +330,7 @@ $(document).on('fileSelected', function (event, file, uploadId) {
 function importarArchivoExtracto(file) {
 	const formData = new FormData();
 	formData.append("archivoImportar", file); // nombre debe coincidir con el parámetro del backend
-
+	formData.append("origenId", $("#listaOrigenDeDatos").val());
 	//const archivo = $("#archivoImportar")[0].files[0];
 	const archivo = file;
 
@@ -308,7 +340,7 @@ function importarArchivoExtracto(file) {
 	}
 
 	// 🔒 Desactivar botones durante la importación
-	$("#btnImportarArchivo").prop("disabled", true);
+	$("#btnProcesarArchivo").prop("disabled", true);
 	$("#btnReiniciarImportacion").prop("disabled", true);
 
 	$("#barraProgresoContainer").show();
@@ -317,7 +349,7 @@ function importarArchivoExtracto(file) {
 	$("#listaErroresImportacion").empty();
 
 	$.ajax({
-		url: procesarArchivoUrl, // adaptá esta URL
+		url: importarArchivoUrl, // adaptá esta URL
 		type: "POST",
 		data: formData,
 		contentType: false,
@@ -335,7 +367,7 @@ function importarArchivoExtracto(file) {
 		success: function (data) {
 			$("#barraProgreso").removeClass("progress-bar-animated").addClass("bg-success").text("Importación completa");
 			// ✅ Rehabilitar botón si querés permitir nueva carga
-			$("#btnImportarArchivo").prop("disabled", false);
+			$("#btnProcesarArchivo").prop("disabled", false);
 		},
 		error: function (xhr) {
 			$("#barraProgreso").removeClass("progress-bar-animated").addClass("bg-danger").text("Error en la importación");
@@ -352,6 +384,61 @@ function importarArchivoExtracto(file) {
 				$("#erroresImportacion").show();
 				$("#btnReiniciarImportacion").prop("disabled", false); // ✅ Activar botón
 			}
+		}
+	});
+}
+
+function handleProcesarArchivoExtracto() {
+	AbrirWaiting();
+	var data = {};
+	PostGen(data, validarSiExistenRegistrosDeArchivoParaImportarUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			if (obj.existenRegistros) {
+				AbrirMensaje("ATENCIÓN", "¿Esta seguro que desea procesar el archivo importado?", function (e) {
+					$("#msjModal").modal("hide");
+					switch (e) {
+						case "SI":
+							ProcesarArchivoExtracto();
+							break;
+						case "NO":
+							break;
+						default: //NO
+							break;
+					}
+					return true;
+
+				}, true, ["Aceptar", "Cancelar"], "question!", null);
+			}
+		}
+	});
+}
+
+function ProcesarArchivoExtracto() {
+	AbrirWaiting();
+	var ctafId = ctafIdSelected;
+	var origenId = $("#listaOrigenDeDatos").val();
+	var data = { ctafId, origenId };
+	PostGen(data, procesarArchivoImportadoUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			//Cerrar Modal y Actualizar la lista
+			$("#modalImportarArchivo").modal("hide");
+			obtenerListaExtractoBancario()
 		}
 	});
 }
@@ -780,7 +867,7 @@ function confirmarAgregarExtracto() {
 }
 
 function obtenerListaExtractoBancario() {
-	CerrarWaiting();
+	AbrirWaiting();
 	var data = {};
 	PostGenHtml(data, obtenerListaExtractoBancarioUrl, function (obj) {
 		$("#divGridCrudExtracto").html(obj);

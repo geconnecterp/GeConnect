@@ -68,5 +68,23 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				_context.HttpContext?.Session.SetString("ListaCrudExtractoBancario", json);
 			}
 		}
+
+		public List<Dictionary<string, object>> ListaTempArchivoParaImportar
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("ListaTempArchivoParaImportar");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ListaTempArchivoParaImportar", json);
+			}
+		}
 	}
 }

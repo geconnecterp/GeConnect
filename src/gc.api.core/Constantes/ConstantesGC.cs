@@ -170,7 +170,8 @@
 			public const string SP_F_BCO_CH_ENTREGA = "SPGECO_F_BCO_CH_Entrega";
 			public const string SP_F_BCO_CH_RECHAZAR = "SPGECO_F_BCO_CH_Rechazar";
 			public const string SP_F_BCO_CH_E_CHEQ = "SPGECO_F_BCO_CHE_E_Cheq";
-			public const string SP_F_BCO_EXTRACTO_CONFIRMA = "SPGECO_F_BCO_EXTRACTO_CONFIRMA";
+			public const string SP_F_BCO_EXTRACTO_CONFIRMA = "SPGECO_F_BCO_Extracto_Confirma";
+			public const string SP_F_BCO_EXTRACTO_FILE = "SPGECO_F_BCO_Extracto_File";
 			#endregion
 
 			#region SP Depositos

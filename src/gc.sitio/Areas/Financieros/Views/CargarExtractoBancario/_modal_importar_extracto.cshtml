@@ -11,7 +11,7 @@
 		<div>
 			<div class="input-group input-group-sm">
 				<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Cuenta Banco: </span>
-				@Html.DropDownListFor(m => m.selectedValue, Model.OrigenDeDatos, "Seleccionar", new { @id = "listaOridenDeDatos", @class = "form-control inputEditable activable" })
+				@Html.DropDownListFor(m => m.selectedValue, Model.OrigenDeDatos, "Seleccionar", new { @id = "listaOrigenDeDatos", @class = "form-control inputEditable activable" })
 			</div>
 		</div>
 		<div id="uploadArea">
@@ -29,7 +29,7 @@
 						<label for="fileInput@(uploadId)" class="btn-upload-golden">
 							Explorar Archivos
 						</label>
-						<input type="file" id="fileInput@(uploadId)" class="file-input-hidden" accept=".xlsx,.xls,.csv" />
+						<input type="file" id="fileInput@(uploadId)" class="file-input-hidden" accept=".xlsx,.xls,.csv, .txt" />
 					</div>
 				</div>
 
@@ -68,8 +68,8 @@
 	</div>
 </div>
 <div class="modal-footer">
-	<button type="button" class="btn btn-success btn-sm" id="btnImportarArchivo" disabled>
-		<i class="bx bx-play-circle me-1"></i> Importar
+	<button type="button" class="btn btn-success btn-sm" id="btnProcesarArchivo" disabled>
+		<i class="bx bx-play-circle me-1"></i> Procesar
 	</button>
 	<button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
 		<i class="bx bx-log-out-circle me-1"></i> Cancelar

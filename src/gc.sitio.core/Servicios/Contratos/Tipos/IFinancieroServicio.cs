@@ -38,5 +38,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		RespuestaGenerica<RespuestaDto> SetRechazoDeCheque(RegistrarRechazoDeChequeRequest request, string token);
 		List<ECheqDto> GetECheqLista(PasoPrevioECheqRequest request, string token);
 		RespuestaGenerica<RespuestaDto> SetExtractoBancarioConfirma(SetExtractoBancarioConfirmaRequest request, string token);
+		List<CrudExtractoBancarioDto> GetBcoExtractoDesdeFile(ExtractoBcoFileRequest request, string token);
 	}
 }
