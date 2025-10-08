@@ -216,6 +216,9 @@ function configurarEventosSeleccion() {
                     // Cargar datos del combo y sus canales
                     cargarDatosCombo(comboId);
                     cargarCanalesCombo(comboId);
+                    
+                    // Cargar productos del combo
+                    cargarProductosCombo(comboId);
                 } else {
                     console.error("No se encontró el ID del combo en la fila seleccionada");
                 }
@@ -519,4 +522,52 @@ function restaurarCamposFormulario() {
     
     // Restaurar badge de estado
     $("#divComboDatos .badge").removeClass("bg-success bg-danger");
+}
+
+/**
+ * Carga los productos asociados a un combo
+ */
+function cargarProductosCombo(comboId) {
+    if (typeof obtenerProductosDeComboUrl === 'undefined') {
+        console.error("URL para obtener productos no definida");
+        return;
+    }
+    
+    AbrirWaiting("Cargando productos...");
+    
+    $.ajax({
+        url: obtenerProductosDeComboUrl,
+        type: "POST",
+        data: { id: comboId },
+        success: function(html) {
+            CerrarWaiting();
+            
+            // Actualizar el contenido del grid de productos
+            $(".col-sm-6:has(#tbGridProductos)").html(html);
+            
+            // Configurar eventos de selección en la tabla de productos
+            configurarSeleccionProductos();
+            
+            // Después de cargar productos, cargar los sustitutos del primer producto (si existe)
+            setTimeout(function() {
+                // Buscar el primer producto en la tabla
+                var primerProducto = $("#tbGridProductos tbody tr:first");
+                if (primerProducto.length > 0) {
+                    var productoId = primerProducto.find("td:first").text().trim();
+                    if (productoId) {
+                        // Marcar el primer producto como seleccionado
+                        primerProducto.addClass("selected-row");
+                        
+                        // Cargar los sustitutos del primer producto
+                        cargarProductosSustitutos(comboId, productoId);
+                    }
+                }
+            }, 100); // Pequeño retraso para asegurar que el DOM se actualice
+        },
+        error: function(xhr, status, error) {
+            CerrarWaiting();
+            console.error("Error al cargar productos:", error);
+            ControlaMensajeError("Error al cargar productos: " + error);
+        }
+    });
 }

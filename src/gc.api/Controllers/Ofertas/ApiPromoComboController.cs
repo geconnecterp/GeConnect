@@ -2,6 +2,7 @@
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.Dtos.Productos.PromoCombo;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -195,6 +196,88 @@ namespace gc.api.Controllers.Ofertas
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener canales para el combo {ComboId}", id);
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { ok = false, mensaje = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene los productos asociados a un combo específico
+        /// </summary>
+        /// <param name="id">Identificador único del combo</param>
+        /// <returns>Lista de productos del combo</returns>
+        /// <response code="200">Devuelve la lista de productos</response>
+        /// <response code="404">Si el combo no existe o no tiene productos asociados</response>
+        /// <response code="500">Si ocurre un error durante el proceso</response>
+        [HttpGet("combo/{id}/productos")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public IActionResult ObtenerProductosDeCombo(string id)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(id))
+                {
+                    return BadRequest(new { ok = false, mensaje = "El identificador del combo es requerido" });
+                }
+
+                var productos = _promoComboServicio.ObtenerProductosDeCombo(id);
+                
+                if (productos == null || productos.Count == 0)
+                {
+                    return NotFound(new { ok = false, mensaje = $"No se encontraron productos para el combo con id {id}" });
+                }
+                
+                return Ok(new ApiResponse<List<ComboProductoDto>>(productos));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener productos para el combo {ComboId}", id);
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { ok = false, mensaje = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene los productos sustitutos asociados a un producto dentro de un combo específico
+        /// </summary>
+        /// <param name="id">Identificador único del combo</param>
+        /// <param name="productoId">Identificador único del producto</param>
+        /// <returns>Lista de productos sustitutos</returns>
+        /// <response code="200">Devuelve la lista de productos sustitutos</response>
+        /// <response code="400">Si los parámetros son inválidos</response>
+        /// <response code="404">Si no se encuentran sustitutos</response>
+        /// <response code="500">Si ocurre un error durante el proceso</response>
+        [HttpGet("combo/{id}/producto/{productoId}/sustitutos")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public IActionResult ObtenerProductosSustitutosDeCombo(string id, string productoId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(id))
+                {
+                    return BadRequest(new { ok = false, mensaje = "El identificador del combo es requerido" });
+                }
+
+                if (string.IsNullOrEmpty(productoId))
+                {
+                    return BadRequest(new { ok = false, mensaje = "El identificador del producto es requerido" });
+                }
+
+                var sustitutos = _promoComboServicio.ObtenerProductosSustitutosDeCombo(id, productoId);
+                
+                // Aquí no devolvemos 404 si la lista está vacía, ya que es válido que un producto no tenga sustitutos
+                // Simplemente devolvemos una lista vacía
+                
+                return Ok(new ApiResponse<List<ComboSustitutoDto>>(sustitutos));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener sustitutos para el producto {ProductoId} del combo {ComboId}", productoId, id);
                 return StatusCode(StatusCodes.Status500InternalServerError,
                     new { ok = false, mensaje = ex.Message });
             }

@@ -4,6 +4,7 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.api.core.Servicios.Reportes;
 using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.Dtos.Productos.PromoCombo;
 using Microsoft.Data.SqlClient;
 
@@ -114,6 +115,34 @@ namespace gc.api.core.Servicios.Ofertas
             ps.Add(new SqlParameter("@pagina", req.Pagina));
 
             var lista = _repository.EjecutarLstSpExt<ComboListaDto>(sp, ps, true);
+            return lista;
+        }
+
+        public List<ComboProductoDto> ObtenerProductosDeCombo(string id)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_COMBO_PRODUCTOS;
+            var ps = new List<SqlParameter>
+            {
+                new SqlParameter("@cmb_id", id)
+            };
+            var lista = _repository.EjecutarLstSpExt<ComboProductoDto>(sp, ps, true);
+            if (lista.Count == 0)
+            {
+                throw new Exception("No se encontraron productos para el combo solicitado");
+            }
+            return lista;
+        }
+
+        public List<ComboSustitutoDto> ObtenerProductosSustitutosDeCombo(string id,string p_id)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_COMBO_SUSTITUTOS;
+            var ps = new List<SqlParameter>
+            {
+                new SqlParameter("@cmb_id", id),
+                new SqlParameter("p_id", id)
+            };
+            var lista = _repository.EjecutarLstSpExt<ComboSustitutoDto>(sp, ps, true);
+            
             return lista;
         }
     }

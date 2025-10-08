@@ -2,6 +2,7 @@
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.Dtos.Productos.PromoCombo;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
@@ -255,6 +256,119 @@ namespace gc.sitio.Areas.Productos.Controllers
             {
                 _logger?.LogError(ex, "Error al obtener datos del combo");
                 return Json(new { ok = false, mensaje = "Error interno al obtener datos del combo" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ObtenerProductosDeCombo(string id)
+        {
+            try
+            {
+                // Verificar autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
+                // Validar ID
+                if (string.IsNullOrEmpty(id))
+                    return PartialView("_gridMensaje", CrearRespuestaWarning("El identificador del combo no es válido"));
+
+                // Llamar al servicio para obtener productos del combo
+                var respuesta = await _comboServicio.ObtenerProductosDeCombo(id, TokenCookie);
+                
+                // Validar respuesta
+                if (!respuesta.Ok || respuesta.EsError)
+                {
+                    return PartialView("_gridMensaje", CrearRespuestaError(respuesta.Mensaje ?? "Error al obtener productos"));
+                }
+                
+                // Verificar si hay productos
+                if (respuesta.ListaEntidad == null || !respuesta.ListaEntidad.Any())
+                {
+                    return PartialView("_gridProductos", new GridCoreSmart<ComboProductoDto>());
+                }
+                
+                // Crear grid con los productos
+                var grid = new GridCoreSmart<ComboProductoDto>
+                {
+                    ListaDatos = new StaticPagedList<ComboProductoDto>(respuesta.ListaEntidad, 1, respuesta.ListaEntidad.Count, respuesta.ListaEntidad.Count),
+                    CantidadReg = respuesta.ListaEntidad.Count,
+                    PrimerRegistro = 1,
+                    UltimoRegistro = respuesta.ListaEntidad.Count,
+                    RegistroFinal = respuesta.ListaEntidad.Count,
+                    CantidadPaginas = 1,
+                    PaginaActual = 1,
+                    DatoAux01 = $"Productos del combo {id} | {DateTime.Now:HH:mm:ss}"
+                };
+                
+                return PartialView("_gridProductos", grid);
+            }
+            catch (NegocioException ex)
+            {
+                _logger?.LogError(ex, "Error al obtener productos del combo");
+                return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error interno al obtener productos del combo");
+                return PartialView("_gridMensaje", CrearRespuestaError("Error interno al obtener productos del combo"));
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ObtenerProductosSustitutos(string comboId, string productoId)
+        {
+            try
+            {
+                // Verificar autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
+                // Validar parámetros
+                if (string.IsNullOrEmpty(comboId))
+                    return PartialView("_gridMensaje", CrearRespuestaWarning("El identificador del combo no es válido"));
+                    
+                if (string.IsNullOrEmpty(productoId))
+                    return PartialView("_gridMensaje", CrearRespuestaWarning("El identificador del producto no es válido"));
+
+                // Llamar al servicio para obtener sustitutos
+                var respuesta = await _comboServicio.ObtenerProductosSustitutosDeCombo(comboId, productoId, TokenCookie);
+                
+                // Validar respuesta
+                if (!respuesta.Ok || respuesta.EsError)
+                {
+                    return PartialView("_gridMensaje", CrearRespuestaError(respuesta.Mensaje ?? "Error al obtener productos sustitutos"));
+                }
+                
+                // Verificar si hay sustitutos - No es error si no hay, simplemente mostramos grid vacío
+                if (respuesta.ListaEntidad == null || !respuesta.ListaEntidad.Any())
+                {
+                    return PartialView("_gridSustitutos", new GridCoreSmart<ComboSustitutoDto>());
+                }
+                
+                // Crear grid con los sustitutos
+                var grid = new GridCoreSmart<ComboSustitutoDto>
+                {
+                    ListaDatos = new StaticPagedList<ComboSustitutoDto>(respuesta.ListaEntidad, 1, respuesta.ListaEntidad.Count, respuesta.ListaEntidad.Count),
+                    CantidadReg = respuesta.ListaEntidad.Count,
+                    PrimerRegistro = 1,
+                    UltimoRegistro = respuesta.ListaEntidad.Count,
+                    RegistroFinal = respuesta.ListaEntidad.Count,
+                    CantidadPaginas = 1,
+                    PaginaActual = 1,
+                    DatoAux01 = $"Sustitutos del producto {productoId} en combo {comboId} | {DateTime.Now:HH:mm:ss}"
+                };
+                
+                return PartialView("_gridSustitutos", grid);
+            }
+            catch (NegocioException ex)
+            {
+                _logger?.LogError(ex, "Error al obtener productos sustitutos");
+                return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error interno al obtener productos sustitutos");
+                return PartialView("_gridMensaje", CrearRespuestaError("Error interno al obtener productos sustitutos"));
             }
         }
     }

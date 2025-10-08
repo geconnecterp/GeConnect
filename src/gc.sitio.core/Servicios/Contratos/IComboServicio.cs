@@ -42,5 +42,22 @@ namespace gc.sitio.core.Servicios.Contratos
         /// <param name="token"></param>
         /// <returns></returns>
         Task<RespuestaGenerica<ComboDatosDto>> ObtenerComboPorId(string id, string token);
+        
+        /// <summary>
+        /// Obtiene los productos asociados a un combo específico
+        /// </summary>
+        /// <param name="id">Identificador del combo</param>
+        /// <param name="token">Token de autenticación</param>
+        /// <returns>Lista de productos asociados al combo</returns>
+        Task<RespuestaGenerica<ComboProductoDto>> ObtenerProductosDeCombo(string id, string token);
+        
+        /// <summary>
+        /// Obtiene los productos sustitutos asociados a un producto dentro de un combo específico
+        /// </summary>
+        /// <param name="comboId">Identificador del combo</param>
+        /// <param name="productoId">Identificador del producto</param>
+        /// <param name="token">Token de autenticación</param>
+        /// <returns>Lista de productos sustitutos</returns>
+        Task<RespuestaGenerica<ComboSustitutoDto>> ObtenerProductosSustitutosDeCombo(string comboId, string productoId, string token);
     }
 }

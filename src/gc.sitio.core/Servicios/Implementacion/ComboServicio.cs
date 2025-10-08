@@ -5,6 +5,7 @@ using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.Dtos.Productos.PromoCombo;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
@@ -25,6 +26,9 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string COMBO_BUSCAR = "/combos-buscar";
         private const string COMBO_CANALES = "/combo/{id}/canales";
         private const string COMBO_DATOS = "/combo/{id}/";
+        private const string COMBO_PRODUCTOS = "/combo/{id}/productos";
+        private const string COMBO_SUSTITUTOS = "/combo/{id}/producto/{productoId}/sustitutos";
+        
         public ComboServicio(IOptions<AppSettings> options, ILogger<ComboServicio> logger)
             : base(options, logger)
         {
@@ -309,6 +313,133 @@ namespace gc.sitio.core.Servicios.Implementacion
                 {
                     Ok = false,
                     Mensaje = "Error interno al obtener los DATOS del \"combo\""
+                };
+            }
+        }
+
+        /// <summary>
+        /// Obtiene los productos asociados a un combo específico
+        /// </summary>
+        public async Task<RespuestaGenerica<ComboProductoDto>> ObtenerProductosDeCombo(string id, string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(token);
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}/combo/{id}/productos";
+                using var response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ComboProductoDto>>>(stringData)
+                        ?? throw new NegocioException("Error al deserializar los datos");
+
+                    return new RespuestaGenerica<ComboProductoDto>
+                    {
+                        Ok = true,
+                        ListaEntidad = apiResponse.Data,
+                        Mensaje = "OK"
+                    };
+                }
+                else if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    return new RespuestaGenerica<ComboProductoDto>
+                    {
+                        Ok = true,
+                        ListaEntidad = new List<ComboProductoDto>(),
+                        Mensaje = "No se encontraron productos asociados al combo"
+                    };
+                }
+                else
+                {
+                    var errorData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {errorData}");
+
+                    return new()
+                    {
+                        Ok = false,
+                        Mensaje = "Error al obtener los productos del combo. Si el problema persiste contacte al administrador."
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name}");
+                return new RespuestaGenerica<ComboProductoDto>
+                {
+                    Ok = false,
+                    Mensaje = "Error interno al obtener los productos del combo"
+                };
+            }
+        }
+
+        /// <summary>
+        /// Obtiene los productos sustitutos asociados a un producto dentro de un combo específico
+        /// </summary>
+        public async Task<RespuestaGenerica<ComboSustitutoDto>> ObtenerProductosSustitutosDeCombo(string comboId, string productoId, string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(token);
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}/combo/{comboId}/producto/{productoId}/sustitutos";
+                using var response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ComboSustitutoDto>>>(stringData)
+                        ?? throw new NegocioException("Error al deserializar los datos");
+
+                    return new RespuestaGenerica<ComboSustitutoDto>
+                    {
+                        Ok = true,
+                        ListaEntidad = apiResponse.Data,
+                        Mensaje = "OK"
+                    };
+                }
+                else if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    // En este caso, es válido que un producto no tenga sustitutos
+                    return new RespuestaGenerica<ComboSustitutoDto>
+                    {
+                        Ok = true,
+                        ListaEntidad = new List<ComboSustitutoDto>(),
+                        Mensaje = "No se encontraron sustitutos para el producto"
+                    };
+                }
+                else
+                {
+                    var errorData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {errorData}");
+
+                    return new()
+                    {
+                        Ok = false,
+                        Mensaje = "Error al obtener los sustitutos del producto. Si el problema persiste contacte al administrador."
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name}");
+                return new RespuestaGenerica<ComboSustitutoDto>
+                {
+                    Ok = false,
+                    Mensaje = "Error interno al obtener los sustitutos del producto"
                 };
             }
         }
