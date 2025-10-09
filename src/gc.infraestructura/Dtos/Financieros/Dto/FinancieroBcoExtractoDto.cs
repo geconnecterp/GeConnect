@@ -6,6 +6,7 @@ namespace gc.infraestructura.Dtos.Financieros
 		public string ctaf_id { get; set; } = string.Empty;
 		public string ctaf_denominacion { get; set; } = string.Empty;
 		public DateTime ext_fecha { get; set; }
+		public DateTime ext_fecha_movi { get; set; }
 		public string extr_id { get; set; } = string.Empty;
 		public string extr_desc { get; set; } = string.Empty;
 		public string ext_concepto { get; set; } = string.Empty;
@@ -13,7 +14,7 @@ namespace gc.infraestructura.Dtos.Financieros
 		public decimal ext_haber { get; set; } = 0.00M;
 		public decimal ext_saldo { get; set; } = 0.00M;
 		public char? ext_conciliado { get; set; }
-		public string ext_conciliado_nro { get; set; } = string.Empty;
+		public int? ext_conciliado_nro { get; set; }
 		public string ext_conciliado_tipo { get; set; } = string.Empty;
 		public string usu_id_carga { get; set; } = string.Empty;
 		public string usu_id_concilia { get; set; } = string.Empty;

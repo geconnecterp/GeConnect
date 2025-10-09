@@ -26,6 +26,7 @@
 	<table class="table table-bordered table-hover table-golden" id="tbListaCrudExtracto">
 		<thead>
 			<tr class="header">
+				<th class="text-center" scope="col">Fecha Mov.</th>
 				<th class="text-center" scope="col">Fecha</th>
 				<th class="text-center" scope="col">Código Mov.</th>
 				<th class="text-center" scope="col">Origen Mov.</th>
@@ -45,6 +46,7 @@
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase" data-orden="@item.orden" data-extr-id="@item.extr_id" data-ctaf-id="@item.ctaf_id" onclick="selectItemExtracto(this);">
+						<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_fecha_movi)">@Model.GrillaExtracto.FormatearDato(item.ext_fecha_movi, FormatDato.Fecha)</td>
 						<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_fecha)">@Model.GrillaExtracto.FormatearDato(item.ext_fecha, FormatDato.Fecha)</td>
 						<td class="@Model.GrillaExtracto.ObtenerClase(item.extr_id)">@Model.GrillaExtracto.FormatearDato(item.extr_id, FormatDato.Ninguno)</td>
 						<td class="@Model.GrillaExtracto.ObtenerClase(item.extr_desc)">@Model.GrillaExtracto.FormatearDato(item.extr_desc, FormatDato.Ninguno)</td>

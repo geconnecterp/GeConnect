@@ -15,21 +15,21 @@
 				<div class="row col-12">
 					<div class="col-6">
 						<div class="input-group input-group-sm mt-2">
-							<span class="input-group-text" id="lbIdDesde">Fecha:</span>
+							<span class="input-group-text" id="lbIdDesde">Fecha Mov.:</span>
 							@if (Model.abm != "A")
 							{
-								<input type="date" class="form-control inputEditable" asp-for="Fecha" style="background-color:rgb(251,255,195);font-weight:900;" disabled/>
+								<input type="date" class="form-control inputEditable" asp-for="Fecha_Movi" style="background-color:rgb(251,255,195);font-weight:900;" disabled/>
 							}
 							else
 							{
-								<input type="date" class="form-control inputEditable" asp-for="Fecha" style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
+								<input type="date" class="form-control inputEditable" asp-for="Fecha_Movi" style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
 							}
 						</div>
 					</div>
 					<div class="col-6">
 						<div class="input-group input-group-sm mt-2">
 							<div class="form-check form-switch">
-								@if (Model.abm != "A")
+								@if (Model.abm != "A" || Model.esPrimerRegistro)
 								{
 									<input class="form-check-input" type="checkbox" name="Insertar" id="chkInsertar" asp-for="Insertar" disabled/>
 								}
@@ -39,6 +39,21 @@
 								}
 								<label class="form-check-label" for="chkInsertar" id="lbInsertar">Insertar</label>
 							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row col-12">
+					<div class="col-6">
+						<div class="input-group input-group-sm mt-2">
+							<span class="input-group-text" id="lbIdDesde">Fecha Ext.:</span>
+							@if (Model.abm != "A")
+							{
+								<input type="date" class="form-control inputEditable" asp-for="Fecha" style="background-color:rgb(251,255,195);font-weight:900;" disabled />
+							}
+							else
+							{
+								<input type="date" class="form-control inputEditable" asp-for="Fecha" style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
+							}
 						</div>
 					</div>
 				</div>

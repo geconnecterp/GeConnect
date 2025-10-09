@@ -52,7 +52,7 @@ $(function () {
 		} else {
 			$("#btnProcesarArchivo").prop("disabled", true);
 			alert("Formato de archivo no válido. Solo se permite .xlsx o .txt tabulado.");
-			$(this).val(""); // limpiar input
+			$(this).val("");
 		}
 	});
 
@@ -68,7 +68,6 @@ $(function () {
 			if (next.length > 0) {
 				next.focus();
 			} else {
-				// Si no hay siguiente, disparar acción si es botón
 				if ($(this).is('#btnBuscar')) {
 					$(this).trigger('click');
 				}
@@ -144,7 +143,6 @@ function initializeUploadControls() {
 	});
 }
 
-// Configurar un control de upload específico
 function setupUploadControl(uploadId) {
 	const $dropZone = $(`#dropZone${uploadId}`);
 	const $fileInput = $(`#fileInput${uploadId}`);
@@ -153,11 +151,6 @@ function setupUploadControl(uploadId) {
 	const $fileSize = $(`#fileSize${uploadId}`);
 	const $removeBtn = $(`#removeFile${uploadId}`);
 
-	//$(`#btnExplorar${uploadId}`).on('click', function () {
-	//	$fileInput[0].click();
-	//});
-
-	// Eventos de drag and drop
 	$dropZone.on('dragover dragenter', function (e) {
 		e.preventDefault();
 		e.stopPropagation();
@@ -181,23 +174,13 @@ function setupUploadControl(uploadId) {
 		}
 	});
 
-	// ✅ CORREGIDO: Click en zona de drop - Usar trigger() en lugar de click()
-	//$dropZone.on('click', function () {
-	//	//$fileInput.trigger('click');
-	//	$fileInput[0].click(); // ← esto evita el stack overflow
-	//});
-
-	// Selección de archivo
 	$fileInput.on('change', function () {
 		if (this.files.length > 0) {
-			//importarArchivoExtracto();
 			handleFileSelection(this.files[0], uploadId);
 		}
 	});
 
-	// Botón remover archivo
 	$removeBtn.on('click', function () {
-		//removeFile(uploadId);
 		reiniciarImportacionDeExtracto(uploadId)
 	});
 }
@@ -208,43 +191,32 @@ function removeFile(uploadId) {
 	const $fileInput = $(`#fileInput${uploadId}`);
 	const $progressContainer = $(`#uploadProgress${uploadId}`);
 
-	// Limpiar input
 	$fileInput.val('');
-
-	// Limpiar referencia
 	delete window[`selectedFile${uploadId}`];
 
-	// Mostrar drop zone y ocultar info
 	$uploadInfo.hide();
 	if ($progressContainer.length) {
 		$progressContainer.hide();
 	}
 	$dropZone.show();
 
-	// Disparar evento personalizado
 	$(document).trigger('fileRemoved', [uploadId]);
-
 	console.log(`🗑️ Archivo removido (${uploadId})`);
 }
 
 function reiniciarImportacionDeExtracto(uploadId) {
-	// Limpiar input file
 	$("#fileInput" + uploadId).val("");
 
-	// Limpiar nombre y tamaño del archivo
 	$("#fileName" + uploadId).text("");
 	$("#fileSize" + uploadId).text("");
 
-	// Ocultar solo la barra de progreso visual custom
 	$("#uploadProgress" + uploadId).hide();
 	$("#progressFill" + uploadId).css("width", "0%");
 	$("#progressText" + uploadId).text("0%");
 
-	// Ocultar errores
 	$("#erroresImportacion").hide();
 	$("#listaErroresImportacion").empty();
 
-	// Resetear barra de progreso tradicional
 	$("#barraProgresoContainer").hide();
 	$("#barraProgreso")
 		.removeClass("bg-success bg-danger")
@@ -252,39 +224,12 @@ function reiniciarImportacionDeExtracto(uploadId) {
 		.css("width", "0%")
 		.text("0%");
 
-	// Desactivar botones
 	$("#btnProcesarArchivo").prop("disabled", true);
 	$("#btnReiniciarImportacion").prop("disabled", true);
 
-	// Mostrar nuevamente la sección de selección si estaba oculta
-	$("#uploadInfo" + uploadId).hide(); // opcional si querés mantener visible
-
-	// Volver a mostrar el área de selección
+	$("#uploadInfo" + uploadId).hide();
 	$("#dropZone" + uploadId).show();
 }
-
-/*
-function abrirModalAgregarItemExtracto() {
-	AbrirWaiting();
-	var datos = {};
-	PostGenHtml(datos, abrirModalImportarExtractoUrl, function (obj) {
-		$("#divAgregarItemExtracto").html(obj);
-		const $modal = $("#modalAgregarItemExtracto");
-
-		$modal.modal({
-			backdrop: 'static',
-		});
-		//$modal.modal('show');
-
-		inicializarCamposEnModal();
-		$("#Fecha").trigger("focus");
-
-		$modal.modal('show');
-		CerrarWaiting();
-		return true
-	});
-}
-*/
 
 function abrirModalImportarExtracto() {
 	AbrirWaiting();
@@ -323,7 +268,6 @@ function handleFileSelection(file, uploadId) {
 			$("#msjModal").modal("hide");
 			return true;
 		}, false, ["Aceptar"], "warn!", null);
-		//$fileInput.val(""); // ← limpia el input para permitir nueva selección
 
 		return;
 	}
@@ -337,18 +281,14 @@ function handleFileSelection(file, uploadId) {
 	const $fileName = $(`#fileName${uploadId}`);
 	const $fileSize = $(`#fileSize${uploadId}`);
 
-	// Mostrar información del archivo
 	$fileName.text(file.name);
 	$fileSize.text(formatFileSize(file.size));
 
-	// Ocultar drop zone y mostrar info
 	$dropZone.hide();
 	$uploadInfo.show();
 
-	// Guardar referencia del archivo
 	window[`selectedFile${uploadId}`] = file;
 
-	// Disparar evento personalizado
 	$(document).trigger('fileSelected', [file, uploadId]);
 
 	console.log(`✅ Archivo seleccionado (${uploadId}):`, file.name, formatFileSize(file.size));
@@ -366,7 +306,6 @@ function formatFileSize(bytes) {
 }
 
 function showUploadError(message) {
-	// ✅ MEJORAR: Usar sistema de notificaciones más robusto
 	if (typeof AbrirMensaje === 'function') {
 		AbrirMensaje("ERROR", message, () => $("#msjModal").modal("hide"), false, ["Aceptar"], "error!", null);
 	} else if (typeof showNotification === 'function') {
@@ -401,7 +340,6 @@ function validateFile(file) {
 	return true;
 }
 
-// ✅ MEJORADO: Eventos personalizados para el upload
 $(document).on('fileSelected', function (event, file, uploadId) {
 	console.log('✅ Archivo seleccionado:', file.name);
 	importarArchivoExtracto(file);
@@ -409,9 +347,8 @@ $(document).on('fileSelected', function (event, file, uploadId) {
 
 function importarArchivoExtracto(file) {
 	const formData = new FormData();
-	formData.append("archivoImportar", file); // nombre debe coincidir con el parámetro del backend
+	formData.append("archivoImportar", file);
 	formData.append("origenId", $("#listaOrigenDeDatos").val());
-	//const archivo = $("#archivoImportar")[0].files[0];
 	const archivo = file;
 
 	if (!archivo) {
@@ -419,7 +356,6 @@ function importarArchivoExtracto(file) {
 		return;
 	}
 
-	// 🔒 Desactivar botones durante la importación
 	$("#btnProcesarArchivo").prop("disabled", true);
 	$("#btnReiniciarImportacion").prop("disabled", true);
 
@@ -429,7 +365,7 @@ function importarArchivoExtracto(file) {
 	$("#listaErroresImportacion").empty();
 
 	$.ajax({
-		url: importarArchivoUrl, // adaptá esta URL
+		url: importarArchivoUrl,
 		type: "POST",
 		data: formData,
 		contentType: false,
@@ -446,7 +382,6 @@ function importarArchivoExtracto(file) {
 		},
 		success: function (data) {
 			$("#barraProgreso").removeClass("progress-bar-animated").addClass("bg-success").text("Importación completa");
-			// ✅ Rehabilitar botón si querés permitir nueva carga
 			$("#btnProcesarArchivo").prop("disabled", false);
 		},
 		error: function (xhr) {
@@ -458,11 +393,11 @@ function importarArchivoExtracto(file) {
 					$("#listaErroresImportacion").append(`<li>${error}</li>`);
 				});
 				$("#erroresImportacion").show();
-				$("#btnReiniciarImportacion").prop("disabled", false); // ✅ Activar botón
+				$("#btnReiniciarImportacion").prop("disabled", false);
 			} else {
 				$("#listaErroresImportacion").append(`<li>Error inesperado al procesar el archivo.</li>`);
 				$("#erroresImportacion").show();
-				$("#btnReiniciarImportacion").prop("disabled", false); // ✅ Activar botón
+				$("#btnReiniciarImportacion").prop("disabled", false);
 			}
 		}
 	});
@@ -595,7 +530,6 @@ function ControlaCargarExtractoBancarioClick() {
 }
 
 function EstableceValoresDeFechas(fecha) {
-	console.log(fecha);
 	fecha_extracto = fecha;
 	if (fecha && typeof fecha === "string" && moment(fecha, moment.ISO_8601, true).isValid()) {
 		const fechaMoment = moment(fecha);
@@ -624,7 +558,6 @@ function validarFechas() {
 	const mMinima = moment(fecha_extracto, "YYYY-MM-DD");
 	var now = moment().format('yyyy-MM-DD');
 
-	// Si alguna fecha es menor a la mínima → setear ambas
 	if (mDesde.isBefore(mMinima) || mHasta.isBefore(mMinima)) {
 		$desde.val(now);
 		$hasta.val(now);
@@ -659,7 +592,6 @@ function eliminarItem(ctaf_id, extr_id, orden) {
 		}
 	});
 }
-
 
 function InicializarCamposEnFiltros() {
 	var now = moment().format('yyyy-MM-DD');
@@ -704,9 +636,6 @@ function InicializarCamposEnFiltros() {
 	$("#chkFecha").prop('checked', true);
 	$("#chkFecha").trigger("change");
 	$("#chkFecha").prop("disabled", true);
-	//$("#btnCancel").on("click", function () {
-	//	btnCancelarClick();
-	//});
 }
 
 function btnCancelarClick() {
@@ -716,36 +645,6 @@ function btnCancelarClick() {
 	EstableceValoresDeFechas(fecha_extracto);
 	InicializarDatosEnSesion();
 }
-
-//function abrirModalModificarItemExtracto() {
-//	if (abrirModalModificarItemExtracto != 0) {
-//		AbrirWaiting();
-//		var orden = itemSeleccionadoOrden;
-//		var abm = "M";
-//		var datos = { abm, orden };
-//		PostGenHtml(datos, abrirModalAgregarItemExtractoUrl, function (obj) {
-//			$("#divAgregarItemExtracto").html(obj);
-//			const $modal = $("#modalAgregarItemExtracto");
-
-//			$modal.modal({
-//				backdrop: 'static',
-//			});
-
-//			inicializarCamposEnModal();
-//			$("#Fecha").trigger("focus");
-
-//			$modal.modal('show');
-//			CerrarWaiting();
-//			return true
-//		});
-//	}
-//	else {
-//		AbrirMensaje("ATENCIÓN", "Debe seleccionar un ítem extracto para modificar.", function () {
-//			$("#msjModal").modal("hide");
-//			return true;
-//		}, false, ["Aceptar"], "error!", null);
-//	}
-//}
 
 function abrirModalModificarItemExtracto() {
 	if (abrirModalModificarItemExtracto != 0) {
@@ -780,7 +679,6 @@ function abrirModalModificarItemExtracto() {
 function inicializarCamposEnModal() {
 	const $modal = $("#modalAgregarItemExtracto");
 
-	// ✅ Corrección: usar el modal correcto y evitar document.ready redundante
 	$modal.find("input, select, checkbox").on("keydown", function (e) {
 		if (e.key === "Enter") {
 			e.preventDefault();
@@ -794,7 +692,6 @@ function inicializarCamposEnModal() {
 				if (index < $campos.length - 1) {
 					$campos.eq(index + 1).focus();
 				} else {
-					// Último campo → foco al botón Confirmar
 					$modal.find("#btnConfirmarAgregarExtracto").focus();
 				}
 			}
@@ -805,7 +702,6 @@ function inicializarCamposEnModal() {
 		const $campo = $modal.find(selector);
 		let valor = $campo.val();
 
-		// Si el valor tiene punto decimal, lo transformamos
 		if (valor && valor.includes(".")) {
 			valor = valor.replace(".", ",");
 			$campo.val(valor);
@@ -815,7 +711,6 @@ function inicializarCamposEnModal() {
 	getMaskForMoneyType("#Debe");
 	getMaskForMoneyType("#Haber");
 
-	// Sincronizar Debe/Haber al tipear
 	const $debe = $modal.find('input[name="Debe"]');
 	const $haber = $modal.find('input[name="Haber"]');
 
@@ -856,7 +751,6 @@ function abrirModalAgregarItemExtracto() {
 		$modal.modal({
 			backdrop: 'static',
 		});
-		//$modal.modal('show');
 
 		inicializarCamposEnModal();
 		$("#Fecha").trigger("focus");
@@ -871,6 +765,7 @@ function confirmarAgregarExtracto() {
 	var abm = $("#abm").val();
 	if (abm == "A") {
 		var fecha = $("#Fecha").val();
+		var fecha_movi = $("#Fecha_Movi").val();
 		var insertar = $("#chkInsertar")[0].checked;
 		var movimiento = $("#listaMovimientos").val();
 		var movimiento_desc = $("#listaMovimientos option:selected").text();
@@ -882,6 +777,7 @@ function confirmarAgregarExtracto() {
 		var data = {
 			ctaf_id: ctafIdSelected,
 			ext_fecha: fecha,
+			ext_fecha_movi: fecha_movi,
 			extr_id: movimiento,
 			extr_desc: movimiento_desc,
 			ext_concepto: comprobante,
@@ -951,6 +847,7 @@ function obtenerListaExtractoBancario() {
 	var data = {};
 	PostGenHtml(data, obtenerListaExtractoBancarioUrl, function (obj) {
 		$("#divGridCrudExtracto").html(obj);
+		$("#btnModificarItem").prop("disabled", true);
 		itemSeleccionadoOrden = 0;
 		CerrarWaiting();
 		return true
@@ -965,6 +862,7 @@ function selectItemExtracto(x) {
 		$(this).removeClass("selectedEdit-row");
 	});
 	$(x).addClass("selected-row");
+	$("#btnModificarItem").prop("disabled", false);
 }
 
 function getMaskForMoneyType(selector) {

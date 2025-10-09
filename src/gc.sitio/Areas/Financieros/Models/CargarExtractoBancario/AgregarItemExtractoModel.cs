@@ -5,6 +5,7 @@ namespace gc.sitio.Areas.Financieros.Models
 	public class AgregarItemExtractoModel
 	{
 		public DateTime Fecha { get; set; }
+		public DateTime Fecha_Movi { get; set; }
 		public bool Insertar { get; set; } = false;
 		public string Comprobante { get; set; } = string.Empty;
 		public decimal Debe { get; set; } = 0.00M;
@@ -13,5 +14,6 @@ namespace gc.sitio.Areas.Financieros.Models
 		public string selected { get; set; } = string.Empty;
 		public string abm { get; set; } = "A";
 		public int orden { get; set; }
+		public bool esPrimerRegistro { get; set; } = false;
 	}
 }

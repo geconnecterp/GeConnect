@@ -43,5 +43,6 @@ namespace gc.infraestructura.Dtos.Financieros
 		public int? resultado { get; set; }
 		public string? resultado_msj { get; set; }
 		public bool cargado_desde_filtros { get; set; } = false;
+		public DateTime? ext_fecha_ori { get; set; }
 	}
 }
