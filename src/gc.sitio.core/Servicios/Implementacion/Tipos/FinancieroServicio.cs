@@ -49,7 +49,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string RegistrarFechaDeEntrega = "/SetFechaDeEntrega";
 		private const string RegistrarRechazoDeCheque = "/SetRechazoDeCheque";
 		private const string ObtenerECheqLista = "/GetECheqLista";
-		private const string ExtractoBancarioConfirma = "/SetExtractoBancarioConfirma";
+		private const string ExtractoBancarioConfirmar = "/SetExtractoBancarioConfirmar";
 		private const string ObtenerBcoExtractoDesdeFile = "/GetBcoExtractoDesdeFile";
 
 		private readonly AppSettings _appSettings;
@@ -977,7 +977,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
-		public RespuestaGenerica<RespuestaDto> SetExtractoBancarioConfirma(SetExtractoBancarioConfirmaRequest request, string token)
+		public RespuestaGenerica<RespuestaDto> SetExtractoBancarioConfirmar(SetExtractoBancarioConfirmaRequest request, string token)
 		{
 			ApiResponse<List<RespuestaDto>> apiResponse;
 
@@ -985,7 +985,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
 			HttpResponseMessage response;
 
-			var link = $"{_appSettings.RutaBase}{RutaAPI}{ExtractoBancarioConfirma}";
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{ExtractoBancarioConfirmar}";
 
 			response = client.PostAsync(link, contentData).Result;
 

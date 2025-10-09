@@ -34,7 +34,12 @@
 			<div class="col-md-12">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Cuenta Banco: </span>
-					@Html.DropDownListFor(m => m.selectedValue, Model.CuentaBanco, "Seleccionar", new { @id = "listaCuentaBanco", @class = "form-control inputEditable activable" })
+					@Html.DropDownListFor(m => m.selectedValue, Model.CuentaBanco, "Seleccionar",
+					new Dictionary<string, object> {
+										{ "id", "listaCuentaBanco" },
+										{ "class", "form-control inputEditable activable" },
+										{ "data-tabindex", "1" }
+										})
 				</div>
 			</div>
 		</div>
@@ -52,13 +57,13 @@
 			<div class="col-md-4">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text" id="lbIdDesde">Desde:</span>
-					<input type="date" class="form-control inputEditable" asp-for="FechaDesde" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
+					<input type="date" class="form-control inputEditable" asp-for="FechaDesde" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus data-tabindex="2" />
 				</div>
 			</div>
 			<div class=" col-sm-4">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text" id="lbIdHasta">Hasta:</span>
-					<input type="date" class="form-control inputEditable" asp-for="FechaHasta" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
+					<input type="date" class="form-control inputEditable" asp-for="FechaHasta" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus data-tabindex="3" />
 				</div>
 			</div>
 		</div>
@@ -67,6 +72,6 @@
 <div class="row m-3">
 	<div class="d-flex justify-content-around">
 		<button type="button" id="btnCancel" class="btn btn-sm btn-danger"><i class="bx bx-sm bx-x-circle"></i></button>
-		<button type="button" id="btnBuscar" class="btn btn-sm btn-success"><i class="bx bx-sm bx-search"></i></button>
+		<button type="button" id="btnBuscar" class="btn btn-sm btn-success" data-tabindex="4"><i class="bx bx-sm bx-search"></i></button>
 	</div>
 </div>

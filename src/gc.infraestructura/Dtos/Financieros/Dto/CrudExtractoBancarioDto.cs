@@ -42,5 +42,6 @@ namespace gc.infraestructura.Dtos.Financieros
 		public string? ctaf_denominacion { get; set; }
 		public int? resultado { get; set; }
 		public string? resultado_msj { get; set; }
+		public bool cargado_desde_filtros { get; set; } = false;
 	}
 }

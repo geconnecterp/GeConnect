@@ -9,6 +9,8 @@ $(function () {
 	$(document).on("click", "#btnConfirmarAgregarExtracto", confirmarAgregarExtracto);
 	$(document).on("click", "#btnImportar", abrirModalImportarExtracto);
 	$(document).on("click", "#btnProcesarArchivo", handleProcesarArchivoExtracto);
+	$(document).on("click", "#btnConfirmar", handleValidarAntesDeConfirmar);
+
 	$("#btnReiniciarImportacion").on("click", function () {
 		reiniciarImportacionDeExtracto("default"); // o el valor dinámico de uploadId
 	});
@@ -54,8 +56,86 @@ $(function () {
 		}
 	});
 
+	$('[data-tabindex]').on('keydown', function (e) {
+		if (e.key === 'Enter') {
+			e.preventDefault();
+
+			const currentTab = parseInt($(this).attr('data-tabindex'));
+			const next = $('[data-tabindex]').filter(function () {
+				return parseInt($(this).attr('data-tabindex')) === currentTab + 1;
+			});
+
+			if (next.length > 0) {
+				next.focus();
+			} else {
+				// Si no hay siguiente, disparar acción si es botón
+				if ($(this).is('#btnBuscar')) {
+					$(this).trigger('click');
+				}
+			}
+
+		}
+	});
+
 	initializeUploadControls();
 });
+
+function handleValidarAntesDeConfirmar() {
+	AbrirWaiting();
+	var data = {};
+	PostGen(data, validarAntesDeConfirmarUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			if (obj.existenRegistros) {
+				AbrirMensaje("ATENCIÓN", "¿Esta seguro que confirmar el extracto?", function (e) {
+					$("#msjModal").modal("hide");
+					switch (e) {
+						case "SI":
+							handleConfirmar();
+							break;
+						case "NO":
+							break;
+						default: //NO
+							break;
+					}
+					return true;
+
+				}, true, ["Aceptar", "Cancelar"], "question!", null);
+			}
+		}
+	});
+}
+
+function handleConfirmar() {
+	AbrirWaiting();
+	var ctaf_id = ctafIdSelected;
+	var data = { ctaf_id };
+	PostGen(data, confirmarExtractoUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			AbrirMensaje("ATENCIÓN", "Se ha confirmado el extracto con éxito.", function () {
+				$("#msjModal").modal("hide");
+				btnCancelarClick();
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+			
+		}
+	});
+}
 
 function initializeUploadControls() {
 	$('[id^="uploadContainer"]').each(function () {

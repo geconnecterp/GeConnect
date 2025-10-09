@@ -648,14 +648,14 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
-		public List<RespuestaDto> SetExtractoBancarioConfirma(SetExtractoBancarioConfirmaRequest request)
+		public List<RespuestaDto> SetExtractoBancarioConfirmar(SetExtractoBancarioConfirmaRequest request)
 		{
-			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_BCO_EXTRACTO_CONFIRMA;
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_BCO_EXTRACTO_CONFIRMAR;
 			var ps = new List<SqlParameter>()
 			{
 				new("@ctaf_id",request.ctaf_id),
 				new("@json_extracto",request.json_extracto),
-				new("@json_eliminados",request.json_eliminados),
+				new("@json_eliminado",request.json_eliminado),
 				new("@usu_id",request.usu_id),
 				new("@adm_id",request.adm_id),
 			};

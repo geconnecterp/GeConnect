@@ -8,8 +8,10 @@ using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Financieros.Models;
+using gc.sitio.Areas.Financieros.Models.CargarExtractoBancario;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
+using gc.sitio.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
@@ -17,7 +19,6 @@ using Newtonsoft.Json;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace gc.sitio.Areas.Financieros.Controllers
 {
@@ -122,7 +123,10 @@ namespace gc.sitio.Areas.Financieros.Controllers
 						abm = "",
 						ext_conciliado = x.ext_conciliado??'N',
 						ctl_cierre = x.ctl_cierre??'N',
-						ext_saldo = x.ext_saldo
+						ext_saldo = x.ext_saldo,
+						ct_tipo = x.ct_tipo,
+						ct_modo= x.ct_modo,
+						cargado_desde_filtros = true
 					})];
 					model.CuentaBanco = $"{extractoLista.First().ctaf_denominacion} ({extractoLista.First().ctaf_id})";
 				}
@@ -248,10 +252,20 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				if (item == null)
 					return Json(new { error = true, warn = false, msg = $"No se ha encontrado el elemento a quitar." });
 
+				//Actualizar lista de grilla
 				var listaTemp = ListaCrudExtractoBancario;
-				listaTemp.Remove(item);
-				Reordenar(listaTemp);
+				listaTemp = [.. listaTemp.Where(x => x.orden != item.orden)];
+				//Reordenar(listaTemp);
+				RecalcularExtracto(listaTemp);
 				ListaCrudExtractoBancario = listaTemp;
+
+				//Actualizar lista de elementos eliminiados, para informar luego al guardar
+				if (item.cargado_desde_filtros)
+				{
+					var listaTempEliminados = ListaCrudExtractoBancarioEliminados;
+					listaTempEliminados.Add(item);
+					ListaCrudExtractoBancarioEliminados = listaTempEliminados;
+				}
 
 				return Json(new { error = false, warn = false, msg = "" });
 			}
@@ -380,6 +394,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			{
 				ListaCrudExtractoBancario = [];
 				ListaTempArchivoParaImportar = [];
+				ListaCrudExtractoBancarioEliminados = [];
 				return Json(new { error = false, warn = false, msg = "" });
 			}
 			catch (NegocioException ex)
@@ -397,6 +412,73 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			try
 			{
 				return Json(new { error = false, warn = false, existenRegistros = ListaTempArchivoParaImportar.Any() });
+			}
+			catch (NegocioException ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+		}
+
+		public JsonResult ValidarAntesDeConfirmar()
+		{
+			try
+			{
+				return Json(new { error = false, warn = false, existenRegistros = ListaCrudExtractoBancario.Any() });
+			}
+			catch (NegocioException ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+		}
+
+		public JsonResult ConfirmarExtracto(string ctaf_id)
+		{
+			try
+			{
+				if (string.IsNullOrEmpty(ctaf_id))
+					return Json(new { error = true, warn = false, msg = "Request vacío." });
+				var jsonExtracto = ListaCrudExtractoBancario.Select((x, index) => new JsonExtractoModel
+				{
+					ctaf_id = x.ctaf_id,
+					ext_fecha = x.ext_fecha,
+					extr_id = x.extr_id,
+					extr_desc = x.extr_desc,
+					ext_debe = x.ext_debe,
+					ext_haber = x.ext_haber,
+					ext_saldo = x.ext_saldo,
+					abm = x.abm,
+					ct_tipo = x.ct_tipo,
+					ct_modo = x.ct_modo
+				});
+				var jsonExtractoEliminado = ListaCrudExtractoBancarioEliminados.Select((x, index) => new JsonExtractoEliminadoModel
+				{
+					ctaf_id = x.ctaf_id,
+					ext_fecha = x.ext_fecha,
+					ext_debe = x.ext_debe,
+					ext_haber = x.ext_haber,
+				});
+				var request = new SetExtractoBancarioConfirmaRequest
+				{
+					ctaf_id = ctaf_id,
+					adm_id = AdministracionId,
+					usu_id = UserName,
+					json_extracto = JsonConvert.SerializeObject(jsonExtracto, new JsonSerializerSettings()),
+					json_eliminado = JsonConvert.SerializeObject(jsonExtractoEliminado, new JsonSerializerSettings())
+				};
+				Console.WriteLine($"json_extracto: {request.json_extracto}");
+				Console.WriteLine($"json_eliminado: {request.json_eliminado}");
+				Console.WriteLine($"ctaf_id: {request.ctaf_id}");
+				Console.WriteLine($"usu_id: {request.usu_id}");
+				var respuesta = _financieroServicio.SetExtractoBancarioConfirmar(request, TokenCookie);
+				return AnalizarRespuesta(respuesta, "El Extracto se confirmó con éxito.");
 			}
 			catch (NegocioException ex)
 			{
@@ -438,10 +520,11 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				if (item.resultado > 0)
 					return Json(new { error = true, warn = false, msg = item.resultado_msj });
 
-				var listaTemp = ListaCrudExtractoBancario;
-				listaTemp.AddRange(lista);
-				Reordenar(listaTemp);
-				ListaCrudExtractoBancario = listaTemp;
+				//var listaTemp = ListaCrudExtractoBancario;
+				//listaTemp.AddRange(lista);
+				//Reordenar(listaTemp);
+				//ListaCrudExtractoBancario = listaTemp;
+				ActualizarSaldosPostImportacionYReordenar(lista);
 				return Json(new { error = false, warn = false, msg = "" });
 			}
 			catch (NegocioException ex)
@@ -451,6 +534,24 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			catch (Exception ex)
 			{
 				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+		}
+
+		private void ActualizarSaldosPostImportacionYReordenar(List<CrudExtractoBancarioDto> listaItemsParaAgregar)
+		{
+			var temp = ListaCrudExtractoBancario;
+			var orden = temp.Any() ? temp.Max(x => x.orden) : 0;
+			if (listaItemsParaAgregar != null && listaItemsParaAgregar.Any())
+			{
+				foreach (var item in listaItemsParaAgregar)
+				{
+					orden++;
+					item.ext_saldo = CalcularSaldo(temp, item.ext_debe, item.ext_haber);
+					item.orden = orden;
+					temp.Add(item);
+				}
+				//Reordenar(temp);
+				ListaCrudExtractoBancario = temp;
 			}
 		}
 
@@ -465,6 +566,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			if (formato.Tipo == "XLSX")
 			{
 				var salida = ProcesadorExtracto.ParsearXlsx(archivoImportar, formato);
+				ListaTempArchivoParaImportar = salida;
 				return Ok(salida);
 			}
 
@@ -704,7 +806,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					for (int i = 0; i < config.Columnas.Count; i++)
 					{
 						var nombre = config.Columnas[i];
-						var valor = row.Cell(i + 1).Value;
+						var valor = row.Cell(i + 1).GetValue<string>() ?? "";
 						fila[nombre] = valor;
 					}
 					resultado.Add(fila);
@@ -973,6 +1075,51 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				lista[i].orden = i + 1; // o i si querés que empiece en 0
 			}
 		}
+
+		public static void RecalcularExtracto(List<CrudExtractoBancarioDto> lista)
+		{
+			if (lista == null || lista.Count == 0) return;
+
+			// Ordenar por fecha original y orden original si aplica
+			lista = [.. lista.OrderBy(x => x.ext_fecha).ThenBy(x => x.orden)];
+
+			// Reasignar orden incremental
+			for (int i = 0; i < lista.Count; i++)
+			{
+				lista[i].orden = i + 1;
+			}
+
+			// Recalcular saldo
+			for (int i = 1; i < lista.Count; i++)
+			{
+				var anterior = lista[i - 1];
+				var actual = lista[i];
+
+				actual.ext_saldo = actual.ext_saldo - anterior.ext_debe + anterior.ext_haber;
+			}
+
+			// Recalcular fechas con segundos incrementales si hay fechas iguales
+			var fechaBase = lista[0].ext_fecha.Date;
+			var segundos = 0;
+
+			for (int i = 0; i < lista.Count; i++)
+			{
+				var actual = lista[i];
+
+				if (actual.ext_fecha.Date == fechaBase)
+				{
+					actual.ext_fecha = actual.ext_fecha.Date.AddSeconds(segundos);
+					segundos++;
+				}
+				else
+				{
+					fechaBase = actual.ext_fecha.Date;
+					segundos = 0;
+					actual.ext_fecha = actual.ext_fecha.Date;
+				}
+			}
+		}
+
 
 		private void CargarDatosIniciales(FiltroExtractoModel model)
 		{

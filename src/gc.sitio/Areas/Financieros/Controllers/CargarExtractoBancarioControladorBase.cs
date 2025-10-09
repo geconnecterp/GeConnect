@@ -86,5 +86,27 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				_context.HttpContext?.Session.SetString("ListaTempArchivoParaImportar", json);
 			}
 		}
+
+		/// <summary>
+		/// Lista de extractos bancarios eliminados en la sesión actual, que han sido cargados desde la sección de filtros.
+		/// El resto de los items, cargados manual o importados, no se guardan en esta lista.
+		/// </summary>
+		public List<CrudExtractoBancarioDto> ListaCrudExtractoBancarioEliminados
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("ListaCrudExtractoBancarioEliminados");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<CrudExtractoBancarioDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ListaCrudExtractoBancarioEliminados", json);
+			}
+		}
 	}
 }
