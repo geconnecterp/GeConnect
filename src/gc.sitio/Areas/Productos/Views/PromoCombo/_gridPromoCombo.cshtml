@@ -1,0 +1,146 @@
+@using gc.infraestructura.Dtos.Productos.PromoCombo
+@model GridCoreSmart<ComboListaDto>
+
+@{
+    var alt = true;
+    string clase = string.Empty;
+}
+
+<div class="card card-golden">
+    <div class="card-body p-2">
+        <div class="table-responsive text-nowrap table-wrapper-200">
+            <table class="table table-sm mb-0 table-hover table-golden" id="tbGridPromoCombo">
+                <thead class="table-golden-header">
+                    <tr class="header">
+                        <th class="text-center" scope="col">ID</th>
+                        <th class="text-left" scope="col">DESCRIPCIÓN</th>
+                        <th class="text-center" scope="col">TIPO</th>
+                        <th class="text-center" scope="col">ESTADO</th>
+                        <th class="text-center" scope="col">DESDE</th>
+                        <th class="text-center" scope="col">HASTA</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ListaDatos?.Any() == true)
+                    {
+                        @foreach (var item in Model.ListaDatos)
+                        {
+                            alt = !alt;
+                            clase = alt ? string.Empty : "table-row-alt";
+
+                            var estadoClass = item.cmb_estado == 'A' ? "bg-success" :
+                            (item.cmb_estado == 'H' ? "bg-danger" : "bg-warning");
+
+                            <tr class="@clase" 
+                                data-combo-id="@item.cmb_id" 
+                                data-descripcion="@item.cmb_desc">
+                                <td class="@Model.ObtenerClase(item.cmb_id)">
+                                    @Model.FormatearDato(item.cmb_id, FormatDato.Ninguno)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.cmb_desc)" title="@item.cmb_desc">
+                                    @Model.FormatearDato(item.cmb_desc, FormatDato.Ninguno)
+                                </td>
+                                <td class="text-center" data-tipo-id="@item.cmb_tipo">
+                                    <span class="badge bg-info">
+                                        @Model.FormatearDato(item.cmb_tipo_desc, FormatDato.Ninguno)
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge @estadoClass" data-estado-id="@item.cmb_estado">
+                                        @Model.FormatearDato(item.cmb_estados_desc, FormatDato.Ninguno)
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    @Model.FormatearDato(item.cmb_desde, FormatDato.FechaHora)
+                                </td>
+                                <td class="text-center">
+                                    @Model.FormatearDato(item.cmb_hasta, FormatDato.FechaHora)
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                <i class="bx bx-info-circle me-2"></i>
+                                No hay promociones o combos disponibles con los filtros seleccionados
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (Model.ListaDatos?.Any() == true)
+        {
+            <div class="d-flex justify-content-between align-items-center mt-3 px-2">
+                <div class="text-muted small d-flex align-items-center">
+                    <i class="bx bx-package me-1"></i>
+                    Total: @Model.CantidadReg elementos
+                    <span class="ms-3 badge bg-primary" id="combosSeleccionados">0</span> seleccionados
+                </div>
+                <div class="text-muted small">
+                    @Model.DatoAux01
+                </div>
+            </div>
+            
+            <!-- Paginación -->
+            @if (Model.CantidadPaginas > 1)
+            {
+                <div class="d-flex justify-content-center mt-3">
+                    <nav aria-label="Navegación de páginas">
+                        <ul class="pagination pagination-sm">
+                            @if (Model.PaginaActual > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="#" data-page="1" aria-label="Primera">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#" data-page="@(Model.PaginaActual - 1)" aria-label="Anterior">
+                                        <span aria-hidden="true">‹</span>
+                                    </a>
+                                </li>
+                            }
+                            
+                            @{
+                                int inicio = Math.Max(1, Model.PaginaActual - 2);
+                                int fin = Math.Min(Model.CantidadPaginas, Model.PaginaActual + 2);
+                            }
+                            
+                            @for (int i = inicio; i <= fin; i++)
+                            {
+                                <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                                    <a class="page-link" href="#" data-page="@i">@i</a>
+                                </li>
+                            }
+                            
+                            @if (Model.PaginaActual < Model.CantidadPaginas)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="#" data-page="@(Model.PaginaActual + 1)" aria-label="Siguiente">
+                                        <span aria-hidden="true">›</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#" data-page="@Model.CantidadPaginas" aria-label="Última">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<div class="row">
+    <div class="offset-md-3 col-md-6">
+        <div id="divPaginacion">
+        </div>
+    </div>
+</div>

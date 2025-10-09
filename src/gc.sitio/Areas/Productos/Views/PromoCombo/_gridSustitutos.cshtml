@@ -1,0 +1,61 @@
+@using gc.infraestructura.Dtos.Productos.PromoCombo
+@model gc.infraestructura.Dtos.Gen.GridCoreSmart<ComboListaDto>
+@{
+    BusquedaProducto busquedaProducto2 = new();
+}
+
+<div class="card h-100">
+    <div class="card-header py-1 d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">Sustitutos</h6>
+       @*  <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarSustituto" title="Agregar Sustituto">
+            <i class="bx bx-plus"></i>
+        </button> *@
+        <partial name="~/areas/ControlComun/views/producto/_ctrBuscarProductoV02.cshtml" model="@busquedaProducto2" />
+    </div>
+    <div class="card-body p-1">
+        <div class="table-responsive" style="max-height: 250px;">
+            <table class="table table-sm table-hover mb-0 table-golden" id="tbGridSustitutos">
+                <thead class="table-golden-header">
+                    <tr class="header">
+                        <th class="text-center">ID</th>
+                        <th class="text-left">Descripción</th>
+                        <th class="text-center">Tipo</th>
+                        <th class="text-center">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model?.ListaDatos?.Any() == true)
+                    {
+                        foreach (var item in Model.ListaDatos)
+                        {
+                            <tr data-combo-id="@item.cmb_id">
+                                <td class="@Model.ObtenerClase(item.cmb_id)">
+                                    @Model.FormatearDato(item.cmb_id, FormatDato.Ninguno)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.cmb_desc)">
+                                    @Model.FormatearDato(item.cmb_desc, FormatDato.Ninguno)
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-info">@item.cmb_tipo_desc</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge @(item.cmb_estado == 'A' ? "bg-success" : "bg-danger")">
+                                        @item.cmb_estados_desc
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-2">
+                                <i class="bx bx-info-circle me-1"></i>No hay sustitutos disponibles
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

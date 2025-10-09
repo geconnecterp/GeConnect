@@ -51,6 +51,7 @@ namespace gc.infraestructura.Core.EntidadesComunes
         public int? Pagina { get; set; }
 
         public string Tipo { get; set; } = string.Empty;
+        public string Estado { get; set; } = string.Empty;
 
         /*
         

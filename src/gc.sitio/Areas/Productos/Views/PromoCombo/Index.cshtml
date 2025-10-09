@@ -1,0 +1,67 @@
+﻿@using static gc.infraestructura.Constantes.Constantes
+@{
+    Layout = "~/views/shared/_Layout.cshtml";
+    var filtro = new QueryFilters() { Modelo = ModeloFilter.PROMO_COMBO, Rel03 = null };
+}
+
+@section styles {
+    <link rel="stylesheet" href="~/css/simplePagination.css" />
+}
+
+<partial name="_botonera" model="filtro" />
+<div class="collapse" id="divFiltro">
+    <partial name="_filtroBase" model="filtro" />
+    @Html.Hidden("pagEstado", false)
+</div>
+<div class="collapse" id="divDetalle"></div>
+
+<div id="divTools">
+    <div class="row">
+        <!-- ComboDatos (20%) -->
+        <div class="col-sm-6 mb-2">
+            <partial name="_ComboDatos" />
+        </div>
+        <div class="col-sm-6 mb-2" id="divCanales">
+            <!-- Aquí se cargará la vista parcial _gridComboCanales -->
+        </div>
+    </div>
+    <div class="row">
+        <!-- Productos (38%) -->
+        <div class="col-sm-6">
+            <partial name="_gridProductos" model="new gc.infraestructura.Dtos.Gen.GridCoreSmart<gc.infraestructura.Dtos.Productos.PromoCombo.ComboListaDto>()" />
+        </div>
+        <!-- Sustitutos (38%) -->
+        <div class="col-sm-6">
+            <partial name="_gridSustitutos" model="new gc.infraestructura.Dtos.Gen.GridCoreSmart<gc.infraestructura.Dtos.Productos.PromoCombo.ComboListaDto>()" />
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        let totalRegs = 0;
+        let pagRegs = 0;
+        let pags = 0;
+        let pagina = 1;
+        let search = "";
+
+        let presentarPromosYCombosUrl = "@Url.Action("presentarPromosYCombos", "promocombo", new { area = "productos" })";
+        let obtenerCanalesComboUrl= "@Url.Action("obtenerCanalesCombo", "promocombo", new { area = "productos" })";
+        let obtenerComboPorIdUrl = "@Url.Action("obtenerComboPorId", "promocombo", new { area = "productos" })";
+        let obtenerProductosDeComboUrl =  "@Url.Action("ObtenerProductosDeCombo", "promocombo", new { area = "productos" })";
+        let obtenerProductosSustitutosUrl =  "@Url.Action("ObtenerProductosSustitutos", "promocombo", new { area = "productos" })";
+
+        let homeCombo = "@Url.Action("index", "promocombo", new { area = "productos" })";
+        let buscarMetadataURL= "@Url.Action("ObtenerDatosPaginacion", "promocombo", new { area = "productos" })";
+
+        //funcionalidad busqueda avanzada controlador común
+        let productoBase = null; //se hidrata en busquedas.
+        let p_id_selected = "";
+        let funcionBusquedaAvanzada = true;
+        let busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
+        let busquedaAvanzadaUrl = "@Url.Action("BusquedaAvanzadaV02", "producto", new { area = "ControlComun" })";
+    </script>
+    <script src="~/js/plugins/jquery.simplePagination.js"></script>
+    <script src="~/js/app/busquedasV02.js" type="text/javascript"></script>
+    <script src="~/js/app/areas/precios/combo.js"></script>
+}
