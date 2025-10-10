@@ -28,11 +28,15 @@
     <div class="row">
         <!-- Productos (38%) -->
         <div class="col-sm-6">
-            <partial name="_gridProductos" model="new gc.infraestructura.Dtos.Gen.GridCoreSmart<gc.infraestructura.Dtos.Productos.PromoCombo.ComboListaDto>()" />
+            <div id="divComboProducto" style="display:none;">
+                <partial name="_gridProductos" model="new GridCoreSmart<ComboProductoDto>()" />
+            </div>
         </div>
         <!-- Sustitutos (38%) -->
         <div class="col-sm-6">
-            <partial name="_gridSustitutos" model="new gc.infraestructura.Dtos.Gen.GridCoreSmart<gc.infraestructura.Dtos.Productos.PromoCombo.ComboListaDto>()" />
+            <div id="divComboSustituto" style="display:none;">
+                <partial name="_gridSustitutos" model="new GridCoreSmart<ComboSustitutoDto>()" />
+            </div>
         </div>
     </div>
 </div>
