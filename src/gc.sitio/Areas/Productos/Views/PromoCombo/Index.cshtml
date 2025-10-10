@@ -2,6 +2,7 @@
 @{
     Layout = "~/views/shared/_Layout.cshtml";
     var filtro = new QueryFilters() { Modelo = ModeloFilter.PROMO_COMBO, Rel03 = null };
+    List<ProductoListaDto> listaVacia = new();
 }
 
 @section styles {
@@ -40,6 +41,7 @@
         </div>
     </div>
 </div>
+<partial name="~/areas/controlcomun/views/producto/busquedaadvanceV02.cshtml" model="@listaVacia" />
 
 @section Scripts {
     <script type="text/javascript">
