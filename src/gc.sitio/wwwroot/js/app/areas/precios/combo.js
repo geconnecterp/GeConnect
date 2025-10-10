@@ -34,15 +34,16 @@ $(function () {
  */
 function inicializarEventos() {
     // Configurar el evento click para el botón Cancelar/Inicializar
-    $("#btnCancel, #btnAbmCancelar").on("click", function() {
-        cancelarOperacion();
+    $("#btnCancel, #btnAbmCancelar").on("click", function(e) {
+        cancelarOperacion(e);
     });
     
     // Configurar el evento click para el botón Buscar/Filtrar
     $("#btnBuscar").on("click", function() {
         buscarCombos();
     });
-    
+    funcCallBack = buscarCombos;
+
     // Eventos para los checkboxes del filtro
     $("#chkTipo").on("change", function() {
         $("#Tipo").prop("disabled", !$(this).prop("checked"));
@@ -120,7 +121,10 @@ function buscarCombos(pag = 1) {
         Estado: $("#chkEstado").prop("checked") ? $("#Estado").val() : null,
         Pagina: pag
     };
-    
+
+    //pagina es la variable que define en el plugin que pagina se esta mostrando
+    pagina = pag;
+
     // Realizar la búsqueda
     $.ajax({
         url: presentarPromosYCombosUrl,
@@ -569,7 +573,7 @@ function adaptarGrillaCanales() {
 /**
  * Cancela la operación actual y restaura el estado inicial
  */
-function cancelarOperacion() {
+function cancelarOperacion(e) {
     // Ocultar formulario
     $("#divComboDatos").hide();
     
@@ -578,13 +582,19 @@ function cancelarOperacion() {
     
     // Limpiar grid de canales
     $("#divCanales").empty();
+
+    // Limpiar los grids de productos y sustitutos
+    limpiarGridsProductos();
     
+    // Deshabilitar explícitamente los botones de agregar después de limpiar grids
+    $("#btnAgregarCProducto, #btnAgregarSustituto").prop("disabled", true);
+
     // Restaurar estado de los botones
     $("#btnAbmNuevo").prop("disabled", false);
     $("#btnAbmAceptar").prop("disabled", true);
     
     // Si existe un homeCombo y necesitamos redirigir
-    if ($("#btnCancel").is(e.target) && typeof homeCombo !== 'undefined') {
+    if (e && $("#btnCancel").is(e.target) && typeof homeCombo !== 'undefined') {
         window.location.href = homeCombo;
     }
 }

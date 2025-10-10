@@ -94,7 +94,7 @@ namespace gc.sitio.Areas.Productos.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> PresentarPromosYCombos(QueryFilters filtros,int pag=1)
+        public async Task<IActionResult> PresentarPromosYCombos(QueryFilters filtros)
         {
             try
             {
@@ -129,24 +129,26 @@ namespace gc.sitio.Areas.Productos.Controllers
                     cantTotalReg = combos[0].Total_Registros;
                 }
                 int registrosPorPagina = _configuracion.NroRegistrosPagina;
+
+                int page = filtros.Pagina ?? 1;
                 // Crear lista paginada
                 var pagedList = new StaticPagedList<ComboListaDto>(
                     combos,
-                    pag,
+                    page,
                     registrosPorPagina,
                     cantTotalReg
                 );
-
+          
                 // Configurar el GridCoreSmart
                 var grid = new GridCoreSmart<ComboListaDto>
                 {
                     ListaDatos = pagedList, //lista de combos
                     CantidadReg = combos.Count, //cantidad actual de registros
-                    PrimerRegistro = ((pag - 1) * registrosPorPagina) + 1, //especifica cual es le # inicial de registros
-                    UltimoRegistro = Math.Min(pag * registrosPorPagina, combos.Count), //define cual es el ultimo registro
+                    PrimerRegistro = ((page - 1) * registrosPorPagina) + 1, //especifica cual es le # inicial de registros
+                    UltimoRegistro = Math.Min(page * registrosPorPagina, combos.Count), //define cual es el ultimo registro
                     RegistroFinal = combos.Count, //indica cual es el ultimo registro
                     CantidadPaginas = (int)Math.Ceiling((double)combos.Count / registrosPorPagina),//calcula la cantidad de paginas
-                    PaginaActual = pag,//especifica que pagina es la actual
+                    PaginaActual = page,//especifica que pagina es la actual
                     Sort = filtros.Sort ?? "descripcion", 
                     SortDir = filtros.SortDir ?? "ASC",
                     DatoAux01 = $"Promociones y combos cargados: {DateTime.Now:HH:mm:ss}"
