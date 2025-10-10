@@ -60,6 +60,11 @@
         let homeCombo = "@Url.Action("index", "promocombo", new { area = "productos" })";
         let buscarMetadataURL= "@Url.Action("ObtenerDatosPaginacion", "promocombo", new { area = "productos" })";
 
+        //var buscarFamiliaUrl = "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "cargaprecios", new { area = "productos" })";/**/
+        var autoComRel01Url = "@Url.Action("BuscarProvs", "cargaprecios", new { area = "productos" })";/**/
+        var autoComRel02Url = "@Url.Action("BuscarRubros", "cargaprecios", new { area = "productos" })";/**/
+        var autoComRel03Url =  "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "cargaprecios", new { area = "productos" })";/**/
+
         //funcionalidad busqueda avanzada controlador común
         let productoBase = null; //se hidrata en busquedas.
         let p_id_selected = "";
