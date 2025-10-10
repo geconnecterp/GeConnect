@@ -2,6 +2,7 @@
 @{
     Layout = "~/views/shared/_Layout.cshtml";
     var filtro = new QueryFilters() { Modelo = ModeloFilter.PROMO_COMBO, Rel03 = null };
+    List<ProductoListaDto> listaVacia = new();
 }
 
 @section styles {
@@ -28,14 +29,19 @@
     <div class="row">
         <!-- Productos (38%) -->
         <div class="col-sm-6">
-            <partial name="_gridProductos" model="new gc.infraestructura.Dtos.Gen.GridCoreSmart<gc.infraestructura.Dtos.Productos.PromoCombo.ComboListaDto>()" />
+            <div id="divComboProducto" style="display:none;">
+                <partial name="_gridProductos" model="new GridCoreSmart<ComboProductoDto>()" />
+            </div>
         </div>
         <!-- Sustitutos (38%) -->
         <div class="col-sm-6">
-            <partial name="_gridSustitutos" model="new gc.infraestructura.Dtos.Gen.GridCoreSmart<gc.infraestructura.Dtos.Productos.PromoCombo.ComboListaDto>()" />
+            <div id="divComboSustituto" style="display:none;">
+                <partial name="_gridSustitutos" model="new GridCoreSmart<ComboSustitutoDto>()" />
+            </div>
         </div>
     </div>
 </div>
+<partial name="~/areas/controlcomun/views/producto/busquedaadvanceV02.cshtml" model="@listaVacia" />
 
 @section Scripts {
     <script type="text/javascript">
@@ -53,6 +59,11 @@
 
         let homeCombo = "@Url.Action("index", "promocombo", new { area = "productos" })";
         let buscarMetadataURL= "@Url.Action("ObtenerDatosPaginacion", "promocombo", new { area = "productos" })";
+
+        //var buscarFamiliaUrl = "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "cargaprecios", new { area = "productos" })";/**/
+        var autoComRel01Url = "@Url.Action("BuscarProvs", "cargaprecios", new { area = "productos" })";/**/
+        var autoComRel02Url = "@Url.Action("BuscarRubros", "cargaprecios", new { area = "productos" })";/**/
+        var autoComRel03Url =  "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "cargaprecios", new { area = "productos" })";/**/
 
         //funcionalidad busqueda avanzada controlador común
         let productoBase = null; //se hidrata en busquedas.

@@ -34,15 +34,16 @@ $(function () {
  */
 function inicializarEventos() {
     // Configurar el evento click para el botón Cancelar/Inicializar
-    $("#btnCancel, #btnAbmCancelar").on("click", function() {
-        cancelarOperacion();
+    $("#btnCancel, #btnAbmCancelar").on("click", function(e) {
+        cancelarOperacion(e);
     });
     
     // Configurar el evento click para el botón Buscar/Filtrar
     $("#btnBuscar").on("click", function() {
         buscarCombos();
     });
-    
+    funcCallBack = buscarCombos;
+
     // Eventos para los checkboxes del filtro
     $("#chkTipo").on("change", function() {
         $("#Tipo").prop("disabled", !$(this).prop("checked"));
@@ -69,6 +70,9 @@ function inicializarEventos() {
         // Activar/desactivar botones
         $("#btnAbmAceptar").prop("disabled", false);
         $("#btnAbmNuevo").prop("disabled", true);
+
+        // Cargar el modal de búsqueda avanzada
+        cargarModalBusquedaAvanzada();
     });
     
     // Evento para el botón confirmar
@@ -76,6 +80,26 @@ function inicializarEventos() {
         // Aquí iría el código para guardar el nuevo combo
         // Por ahora solo logueamos la acción
         console.log("Confirmar nuevo combo/promo");
+    });
+
+    // Evento delegado para el botón de agregar producto
+    $(document).on("click", "#btnAgregarCProducto", function () {
+        // Cargar el modal si no existe y luego mostrarlo
+        if ($("#busquedaModal").length === 0) {
+            cargarModalBusquedaAvanzada(function () {
+                // Configurar el destino como "combos" y definir el callback
+                if (typeof configurarDestinoBusquedaProductos === 'function') {
+                    configurarDestinoBusquedaProductos("combos", agregarProductosAlGrid);
+                }
+                $("#busquedaModal").modal("show");
+            });
+        } else {
+            // Si ya existe, configurar destino y mostrar
+            if (typeof configurarDestinoBusquedaProductos === 'function') {
+                configurarDestinoBusquedaProductos("combos", agregarProductosAlGrid);
+            }
+            $("#busquedaModal").modal("show");
+        }
     });
 }
 
@@ -98,6 +122,269 @@ function accionesIniciales() {
     });
     //callback para que funcione la paginación
     var funcCallBack = buscarCombos;
+
+    // Delegación de eventos para autocomplete en el modal
+    $(document).on("autocompleteselect", "#busquedaModal #Rel01", function (event, ui) {
+        setTimeout(function () {
+            cargarFamiliasParaBusquedaAvanzadaCombos(ui.item.id);
+        }, 100);
+    });
+}
+
+function cargarFamiliasParaBusquedaAvanzadaCombos(proveedorId) {
+    if (!proveedorId) return;
+
+    // Habilitar dropdown y mostrar indicador de carga
+    var combo = $("#busquedaModal #Rel03");
+    combo.prop("disabled", false).html('<option>Cargando...</option>');
+
+    $.ajax({
+        url: autoComRel03Url,
+        type: "POST",
+        data: { ctaId: proveedorId },
+        dataType: "json",
+        success: function (obj) {
+            combo.empty().append("<option value=''>Seleccionar...</option>");
+
+            if (!obj.error && !obj.warn && obj.lista && obj.lista.length) {
+                $.each(obj.lista, function (i, item) {
+                    combo.append("<option value='" + item.id + "'>" + item.descripcion + "</option>");
+                });
+            } else if (obj.error || obj.warn) {
+                console.warn("Advertencia al cargar familias:", obj.msg);
+                combo.append("<option value=''>No hay familias disponibles</option>");
+            }
+        },
+        error: function () {
+            combo.html('<option>Error al cargar familias</option>');
+        }
+    });
+}
+
+/**
+ * Carga el modal de búsqueda avanzada si no existe en el DOM
+ */
+function cargarModalBusquedaAvanzada(callback) {
+    // Verificar si el modal ya existe
+    if ($("#busquedaModal").length === 0) {
+        // Si no existe, cargarlo mediante AJAX
+        $.ajax({
+            url: busquedaAvanzadaUrl,
+            type: "GET",
+            success: function (html) {
+                // Agregar el HTML al final del body
+                $("body").append(html);
+
+                // Configurar eventos del modal de búsqueda avanzada
+                configurarEventosBusquedaAvanzada();
+
+                // Ejecutar callback si existe
+                if (typeof callback === "function") {
+                    callback();
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Error al cargar el modal de búsqueda avanzada:", error);
+                ControlaMensajeError("Error al cargar la búsqueda avanzada: " + error);
+            }
+        });
+    } else if (typeof callback === "function") {
+        // Si ya existe el modal, ejecutar callback directamente
+        callback();
+    }
+}
+
+/**
+ * Configura los eventos para el modal de búsqueda avanzada
+ */
+function configurarEventosBusquedaAvanzada() {
+    // Cerrar modal al hacer clic en el botón de cierre
+    $(".buscAdv").on("click", function () {
+        $("#busquedaModal").modal("hide");
+    });
+
+    // Evento para el botón de búsqueda
+    $("#btnBuscarProd").on("click", function () {
+        buscarProductos();
+    });
+
+    // Evento para agregar productos seleccionados
+    $("#btnAgregarSeleccionados").on("click", function () {
+        agregarProductosSeleccionados();
+    });
+
+    // Evento para limpiar selección
+    $("#btnLimpiarSeleccionBusqueda").on("click", function () {
+        limpiarSeleccionBusqueda();
+    });
+
+    // Configurar el comportamiento del Enter en el campo de búsqueda
+    $("#Search").on("keypress", function (e) {
+        if (e.which === 13) {
+            e.preventDefault();
+            buscarProductos();
+        }
+    });
+}
+
+/**
+ * Busca productos según los filtros del modal
+ */
+function buscarProductos() {
+    var filtros = {
+        Rel01: $("#Rel01").val(),
+        Rel01Item: $("#Rel01Item").val(),
+        Rel02: $("#Rel02").val(),
+        Rel02Item: $("#Rel02Item").val(),
+        Rel03: $("#Rel03").val(),
+        EstadoActivo: $("#chkActivos").prop("checked"),
+        EstadoDiscont: $("#chkDisc").prop("checked"),
+        EstadoInactivo: $("#chkInact").prop("checked"),
+        ConStock: $("input[name=ConStock]:checked").val(),
+        Search: $("#Search").val()
+    };
+
+    AbrirWaiting("Buscando productos...");
+
+    $.ajax({
+        url: busquedaProdBaseUrl,
+        type: "POST",
+        data: filtros,
+        success: function (html) {
+            CerrarWaiting();
+            $("#divBusquedaAvanzada").html(html);
+
+            // Mostrar sección de selección múltiple
+            $("#seccionSeleccionMultiple").show();
+
+            // Configurar eventos para seleccionar productos
+            configurarSeleccionProductosBusqueda();
+        },
+        error: function (xhr, status, error) {
+            CerrarWaiting();
+            console.error("Error en la búsqueda de productos:", error);
+            ControlaMensajeError("Error al buscar productos: " + error);
+        }
+    });
+}
+
+/**
+ * Configura eventos para seleccionar productos en la búsqueda
+ */
+function configurarSeleccionProductosBusqueda() {
+    // Agregar clase 'selectable' a todas las filas
+    $("#divBusquedaAvanzada table tbody tr").addClass("selectable");
+
+    // Remover eventos previos
+    $("#divBusquedaAvanzada table tbody tr.selectable").off("click");
+
+    // Configurar evento de clic para seleccionar/deseleccionar filas
+    $("#divBusquedaAvanzada table tbody tr.selectable").on("click", function () {
+        $(this).toggleClass("selected-row");
+
+        // Actualizar contador
+        actualizarContadorProductosSeleccionados();
+    });
+}
+
+/**
+ * Actualiza el contador de productos seleccionados
+ */
+function actualizarContadorProductosSeleccionados() {
+    var count = $("#divBusquedaAvanzada table tbody tr.selected-row").length;
+    $("#contadorSeleccionados").text(count);
+}
+
+/**
+ * Limpia la selección de productos en la búsqueda
+ */
+function limpiarSeleccionBusqueda() {
+    $("#divBusquedaAvanzada table tbody tr").removeClass("selected-row");
+    actualizarContadorProductosSeleccionados();
+}
+
+/**
+ * Agrega los productos seleccionados al grid de productos
+ */
+function agregarProductosSeleccionados() {
+    var productosSeleccionados = [];
+
+    // Obtener información de productos seleccionados
+    $("#divBusquedaAvanzada table tbody tr.selected-row").each(function () {
+        var $row = $(this);
+        var producto = {
+            p_id: $row.find("td:eq(0)").text().trim(),
+            p_desc: $row.find("td:eq(1)").text().trim(),
+            p_pcosto: parseFloat($row.find("td:eq(2)").text().replace(/[^\d.-]/g, '')) || 0,
+            cantidad: 1, // Valor por defecto
+            dto_porc: 0, // Valor por defecto
+            activo: 'A' // Activo por defecto
+        };
+        productosSeleccionados.push(producto);
+    });
+
+    // Agregar productos al grid
+    agregarProductosAlGrid(productosSeleccionados);
+
+    // Ocultar el modal
+    $("#busquedaModal").modal("hide");
+
+    // Limpiar selección
+    limpiarSeleccionBusqueda();
+}
+
+/**
+ * Agrega productos al grid
+ */
+function agregarProductosAlGrid(productos) {
+    if (productos.length === 0) return;
+
+    // Obtener el tbody de la tabla
+    var $tbody = $("#tbGridProductos tbody");
+
+    // Limpiar mensaje "No hay productos" si existe
+    if ($tbody.find("tr td[colspan]").length > 0) {
+        $tbody.empty();
+    }
+
+    // Obtener ID del combo actual
+    var comboId = $("#cmb_id").val();
+
+    // Agregar cada producto como una nueva fila
+    $.each(productos, function (i, producto) {
+        var fila = `
+        <tr data-producto-id="${producto.p_id}" data-combo-id="${comboId}">
+            <td class="text-center">
+                ${producto.p_id}
+            </td>
+            <td>
+                ${producto.p_desc}
+            </td>
+            <td class="text-end">
+                ${producto.p_pcosto.toFixed(3)}
+            </td>
+            <td class="text-end">
+                ${producto.cantidad.toFixed(2)}
+            </td>
+            <td class="text-end">
+                ${producto.dto_porc.toFixed(2)}
+            </td>
+            <td class="text-center">
+                <span class="badge ${producto.activo == 'A' ? "bg-success" : "bg-danger"}">
+                    ${producto.activo == 'A' ? "Activo" : "Pendiente"}
+                </span>
+            </td>
+        </tr>`;
+
+        $tbody.append(fila);
+    });
+
+    // Configurar eventos de selección para los nuevos productos
+    configurarSeleccionProductos();
+
+    // Seleccionar el primer producto agregado
+    var $primerProducto = $("#tbGridProductos tbody tr:first");
+    $primerProducto.trigger("click");
 }
 
 /**
@@ -120,7 +407,10 @@ function buscarCombos(pag = 1) {
         Estado: $("#chkEstado").prop("checked") ? $("#Estado").val() : null,
         Pagina: pag
     };
-    
+
+    //pagina es la variable que define en el plugin que pagina se esta mostrando
+    pagina = pag;
+
     // Realizar la búsqueda
     $.ajax({
         url: presentarPromosYCombosUrl,
@@ -403,8 +693,89 @@ function inicializarNuevoCombo() {
               .addClass("bg-danger")
               .text("SIN ACTIVAR");
     
+    // Limpiar grids de productos y sustitutos
+    limpiarGridsProductos();
+    
     // Cargar canales disponibles
     cargarCanalesParaNuevoCombo();
+}
+
+/**
+ * Limpia los grids de productos y sustitutos
+ */
+function limpiarGridsProductos() {
+    // Crear HTML para un grid vacío de productos
+    var htmlProductosVacio = `
+    <div class="card h-100">
+        <div class="card-header py-1 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">Productos</h6>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarCProducto" title="Agregar Producto">
+                <i class="bx bx-plus"></i>
+            </button>
+        </div>
+        <div class="card-body p-1">
+            <div class="table-responsive" style="max-height: 250px;">
+                <table class="table table-sm table-hover mb-0 table-golden" id="tbGridProductos">
+                    <thead class="table-golden-header">
+                        <tr class="header">
+                            <th class="text-center">ID</th>
+                            <th class="text-left">Descripción</th>
+                            <th class="text-center">Costo</th>
+                            <th class="text-center">Cantidad</th>
+                            <th class="text-center">Descuento %</th>
+                            <th class="text-center">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-2">
+                                <i class="bx bx-info-circle me-1"></i>No hay productos disponibles
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>`;
+    
+    // Crear HTML para un grid vacío de sustitutos
+    var htmlSustitutosVacio = `
+    <div class="card h-100">
+        <div class="card-header py-1 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">Sustitutos</h6>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarSustituto" title="Agregar Sustituto">
+                <i class="bx bx-plus"></i>
+            </button>
+        </div>
+        <div class="card-body p-1">
+            <div class="table-responsive" style="max-height: 250px;">
+                <table class="table table-sm table-hover mb-0 table-golden" id="tbGridSustitutos">
+                    <thead class="table-golden-header">
+                        <tr class="header">
+                            <th class="text-center">ID</th>
+                            <th class="text-left">Descripción</th>
+                            <th class="text-center">Costo</th>
+                            <th class="text-center">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-2">
+                                <i class="bx bx-info-circle me-1"></i>No hay sustitutos disponibles
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>`;
+    
+    // Actualizar los contenedores con los grids vacíos
+    $(".col-sm-6:has(#tbGridProductos)").html(htmlProductosVacio);
+    $(".col-sm-6:has(#tbGridSustitutos)").html(htmlSustitutosVacio);
+    
+    // Habilitar los botones de agregar
+    $("#btnAgregarCProducto, #btnAgregarSustituto").prop("disabled", false);
 }
 
 /**
@@ -488,7 +859,7 @@ function adaptarGrillaCanales() {
 /**
  * Cancela la operación actual y restaura el estado inicial
  */
-function cancelarOperacion() {
+function cancelarOperacion(e) {
     // Ocultar formulario
     $("#divComboDatos").hide();
     
@@ -497,13 +868,19 @@ function cancelarOperacion() {
     
     // Limpiar grid de canales
     $("#divCanales").empty();
+
+    // Limpiar los grids de productos y sustitutos
+    limpiarGridsProductos();
     
+    // Deshabilitar explícitamente los botones de agregar después de limpiar grids
+    $("#btnAgregarCProducto, #btnAgregarSustituto").prop("disabled", true);
+
     // Restaurar estado de los botones
     $("#btnAbmNuevo").prop("disabled", false);
     $("#btnAbmAceptar").prop("disabled", true);
     
     // Si existe un homeCombo y necesitamos redirigir
-    if ($("#btnCancel").is(e.target) && typeof homeCombo !== 'undefined') {
+    if (e && $("#btnCancel").is(e.target) && typeof homeCombo !== 'undefined') {
         window.location.href = homeCombo;
     }
 }
@@ -568,6 +945,87 @@ function cargarProductosCombo(comboId) {
             CerrarWaiting();
             console.error("Error al cargar productos:", error);
             ControlaMensajeError("Error al cargar productos: " + error);
+        }
+    });
+}
+
+/**
+ * Configura los eventos para la selección de filas en la tabla de productos
+ */
+function configurarSeleccionProductos() {
+    // Aplicar estilo de cursor a todas las filas de la tabla de productos
+    $("#tbGridProductos tbody tr").css("cursor", "pointer");
+    
+    // Remover eventos previos para evitar duplicación
+    $(document).off("click", "#tbGridProductos tbody tr");
+    
+    // Configurar evento de click para seleccionar filas (comportamiento de selección única)
+    $(document).on("click", "#tbGridProductos tbody tr", function(e) {
+        if (!$(e.target).is("button, a, .btn, i")) {
+            var $this = $(this);
+            
+            // Eliminar la selección de todas las filas
+            $("#tbGridProductos tbody tr").removeClass("selected-row");
+            
+            // Seleccionar esta fila
+            $this.addClass("selected-row");
+            
+            // Obtener el ID del producto seleccionado
+            var productoId = $this.find("td:first").text().trim();
+            
+            // Obtener el ID del combo actual
+            var comboId = $("#cmb_id").val();
+            
+            if (productoId && comboId) {
+                // Cargar los sustitutos del producto seleccionado
+                cargarProductosSustitutos(comboId, productoId);
+                
+                // Guardar el ID del producto seleccionado para uso futuro
+                p_id_selected = productoId;
+            }
+        }
+    });
+}
+
+/**
+ * Carga los productos sustitutos asociados a un producto dentro de un combo
+ */
+function cargarProductosSustitutos(comboId, productoId) {
+    if (typeof obtenerProductosSustitutosUrl === 'undefined') {
+        console.error("URL para obtener productos sustitutos no definida");
+        return;
+    }
+    
+    AbrirWaiting("Cargando productos sustitutos...");
+    
+    // Obtener descripción del producto seleccionado para el mensaje
+    var productoDesc = $("#tbGridProductos tbody tr.selected-row td:nth-child(2)").text().trim();
+    
+    $.ajax({
+        url: obtenerProductosSustitutosUrl,
+        type: "POST",
+        data: { comboId: comboId, productoId: productoId },
+        success: function(html) {
+            CerrarWaiting();
+            
+            // Actualizar el contenido del grid de sustitutos
+            $(".col-sm-6:has(#tbGridSustitutos)").html(html);
+            
+            // Verificar si hay sustitutos después de cargar el HTML
+            setTimeout(function() {
+                var tieneFilasConDatos = $("#tbGridSustitutos tbody tr").length > 0 && 
+                                         !$("#tbGridSustitutos tbody tr td").text().includes("No hay sustitutos disponibles");
+                
+                if (!tieneFilasConDatos) {
+                    // Usar ControlaMensajeWarning en lugar de AbrirMensaje
+                    ControlaMensajeWarning("El producto \"" + productoDesc + "\" (ID: " + productoId + ") no tiene sustitutos asociados.");
+                }
+            }, 100); // Pequeño retraso para asegurar que el DOM se actualice
+        },
+        error: function(xhr, status, error) {
+            CerrarWaiting();
+            console.error("Error al cargar productos sustitutos:", error);
+            ControlaMensajeError("Error al cargar productos sustitutos: " + error);
         }
     });
 }

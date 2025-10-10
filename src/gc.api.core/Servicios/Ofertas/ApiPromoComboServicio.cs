@@ -139,7 +139,7 @@ namespace gc.api.core.Servicios.Ofertas
             var ps = new List<SqlParameter>
             {
                 new SqlParameter("@cmb_id", id),
-                new SqlParameter("p_id", id)
+                new SqlParameter("@p_id",p_id)
             };
             var lista = _repository.EjecutarLstSpExt<ComboSustitutoDto>(sp, ps, true);
             

@@ -2,6 +2,20 @@
 var productosSeleccionadosBusqueda = [];
 var dataBakV02 = {};
 
+// Variables globales para definir el contexto de destino
+var busquedaDestinoTipo = "ofertas"; // valores: "ofertas", "combos"
+var busquedaDestinoCallback = null;
+
+/**
+ * Configura el destino de los productos seleccionados en la búsqueda avanzada
+ * @param {string} tipo - Tipo de destino: "ofertas" o "combos"
+ * @param {Function} callback - Función callback para procesar los productos cuando el tipo es "combos"
+ */
+function configurarDestinoBusquedaProductos(tipo, callback) {
+    busquedaDestinoTipo = tipo || "ofertas";
+    busquedaDestinoCallback = callback;
+}
+
 $(function () {
     // Eventos base del modal de búsqueda
     $("button[type='button'].close.buscAdv").on("click", function () {
@@ -620,19 +634,35 @@ function agregarProductosSeleccionadosAOfertas() {
         return;
     }
 
-    var mensaje = `¿Desea agregar ${productosSeleccionadosBusqueda.length} productos a las ofertas?`;
-    if (productosSeleccionadosBusqueda.length === 1) {
-        // ✅ SOLO p_desc
-        var descripcion = productosSeleccionadosBusqueda[0].p_desc;
-        mensaje = `¿Desea agregar el producto "${descripcion}" a las ofertas?`;
+    var mensaje;
+    var titulo;
+    
+    if (busquedaDestinoTipo === "combos") {
+        titulo = "CONFIRMAR AGREGADO A COMBO";
+        mensaje = `¿Desea agregar ${productosSeleccionadosBusqueda.length} productos al combo?`;
+        if (productosSeleccionadosBusqueda.length === 1) {
+            var descripcion = productosSeleccionadosBusqueda[0].p_desc;
+            mensaje = `¿Desea agregar el producto "${descripcion}" al combo?`;
+        }
+    } else {
+        titulo = "CONFIRMAR AGREGADO";
+        mensaje = `¿Desea agregar ${productosSeleccionadosBusqueda.length} productos a las ofertas?`;
+        if (productosSeleccionadosBusqueda.length === 1) {
+            var descripcion = productosSeleccionadosBusqueda[0].p_desc;
+            mensaje = `¿Desea agregar el producto "${descripcion}" a las ofertas?`;
+        }
     }
 
     AbrirMensaje(
-        "CONFIRMAR AGREGADO",
+        titulo,
         mensaje,
         function (resp) {
             if (resp === "SI") {
-                procesarAgregarProductosMultiples();
+                if (busquedaDestinoTipo === "combos" && typeof busquedaDestinoCallback === 'function') {
+                    procesarAgregarProductosACombo();
+                } else {
+                    procesarAgregarProductosMultiples();
+                }
             }
             $("#msjModal").modal("hide");
             return true;
@@ -644,120 +674,45 @@ function agregarProductosSeleccionadosAOfertas() {
     );
 }
 
-// ✅ ACTUALIZADA: Procesar agregado usando ProductoListaDto
-function procesarAgregarProductosMultiples() {
-    AbrirWaiting("Agregando productos a ofertas...");
+/**
+ * Procesa el agregado de productos al combo
+ */
+function procesarAgregarProductosACombo() {
+    AbrirWaiting("Agregando productos al combo...");
     
-    // ✅ ENVÍO DIRECTO: Lista de ProductoListaDto sin conversión
-    PostGen2(
-        productosSeleccionadosBusqueda, 
-        presentarProductosOfertaMultipleUrl, 
-        function (response) {
-            CerrarWaiting();
-            
-            // ✅ ACTUALIZAR: Grid desde respuesta del controlador
-            $("#gridProductoOferta").html(response);
-            
-            if (typeof configurarEventosGridOferta === 'function') {
-                configurarEventosGridOferta();
-            }
-            
-            // Cerrar modal de búsqueda
-            $("#busquedaModal").modal("hide");
-            
-            // Guardar cantidad antes de limpiar
-            var cantidadAgregada = productosSeleccionadosBusqueda.length;
-            limpiarSeleccionBusqueda();
-            
-            // Mensaje de éxito
-            ControlaMensajeSuccess(`${cantidadAgregada} producto${cantidadAgregada > 1 ? 's' : ''} agregado${cantidadAgregada > 1 ? 's' : ''} a ofertas correctamente`);
-        }, 
-        function (error) {
-            CerrarWaiting();
-            ControlaMensajeError("Error al agregar productos: " + (error.message || "Error desconocido"));
-        }
-    );
-}
-
-// ✅ NUEVA: Procesar respuesta JSON de búsqueda individual
-function procesarRespuestaBusquedaJSON(response, valorBuscado) {
-    if (response.error) {
-        ControlaMensajeError(response.msg || "Error en la búsqueda");
-        return;
-    }
-    
-    var productos = response.productos || [];
-    
-    if (productos.length === 0) {
-        AbrirMensaje("ATENCIÓN", "NO SE ENCONTRÓ EL PRODUCTO QUE INTENTA BUSCAR.", function () {
-            if (funcionBusquedaAvanzada === true) {
-                inicializaBusquedaAvanzadaV02();
-                $("#busquedaModal").modal("show");
-            }
-            $("#msjModal").modal("hide");
-            enfocarElementoSeguro("#Busqueda");
-            return true;
-        }, false, ["Aceptar"], "warn!", null);
+    try {
+        // Preparar productos para combo
+        var productosParaCombo = productosSeleccionadosBusqueda.map(function(producto) {
+            return {
+                p_id: producto.p_id,
+                p_desc: producto.p_desc,
+                p_pcosto: parseFloat(producto.p_pcosto || 0),
+                cantidad: 1,
+                dto_porc: 0,
+                activo: 'A'
+            };
+        });
         
-        return;
-    }
-    
-    if (productos.length === 1) {
-        // ✅ ENVÍO DIRECTO: Sin conversión, directo al controlador
-        var producto = productos[0];
-        agregarProductoIndividualAOfertas(producto);
-    } else {
-        // Múltiples productos - mostrar búsqueda avanzada
-        AbrirMensaje("ATENCIÓN", 
-            `Se encontraron ${productos.length} productos. Se abrirá la búsqueda avanzada para seleccionar.`, 
-            function () {
-                $("#msjModal").modal("hide");
-                $("#Search").val(valorBuscado);
-                inicializaBusquedaAvanzadaV02();
-                $("#busquedaModal").modal("show");
-                setTimeout(function() {
-                    busquedaAvanzadaProductosV02(1);
-                }, 300);
-                return true;
-            }, false, ["Aceptar"], "info!", null);
-    }
-}
-
-// ✅ OPTIMIZADA: Envío directo a PresentarProductoOferta del controlador
-function agregarProductoIndividualAOfertas(productoListaDto) {
-    AbrirWaiting("Agregando producto a ofertas...");
-    
-    // ✅ VALIDACIÓN: Verificar datos mínimos
-    if (!productoListaDto.p_id) {
-        CerrarWaiting();
-        ControlaMensajeError("Producto sin ID válido");
-        return;
-    }
-    
-    // ✅ ENVÍO DIRECTO: Al controlador sin conversión previa
-    PostGenHtml(productoListaDto, presentarProductoOfertaUrl, function (htmlResponse) {
-        CerrarWaiting();
-        
-        // ✅ ACTUALIZAR: Grid desde respuesta del controlador
-        $("#gridProductoOferta").html(htmlResponse);
-        
-        // Configurar eventos del grid si existe la función
-        if (typeof configurarEventosGridOferta === 'function') {
-            configurarEventosGridOferta();
+        // Llamar al callback con los productos
+        if (typeof busquedaDestinoCallback === 'function') {
+            busquedaDestinoCallback(productosParaCombo);
         }
         
-        // ✅ LIMPIAR: Campo de búsqueda
-        $("#Busqueda").val("");
-        $("#estadoFuncion").val(false);
+        // Cerrar modal y limpiar
+        $("#busquedaModal").modal("hide");
+        
+        // Guardar cantidad antes de limpiar
+        var cantidadAgregada = productosSeleccionadosBusqueda.length;
+        limpiarSeleccionBusqueda();
         
         // Mensaje de éxito
-        var descripcion = productoListaDto.p_desc || "Producto";
-        ControlaMensajeSuccess(`Producto "${descripcion}" agregado a ofertas correctamente`);
-        
-    }, function (error) {
         CerrarWaiting();
-        ControlaMensajeError("Error al agregar producto a ofertas: " + (error.message || "Error desconocido"));
-    });
+        ControlaMensajeSuccess(`${cantidadAgregada} producto${cantidadAgregada > 1 ? 's' : ''} agregado${cantidadAgregada > 1 ? 's' : ''} al combo correctamente`);
+    } catch (error) {
+        CerrarWaiting();
+        console.error("Error al procesar productos para combo:", error);
+        ControlaMensajeError("Error al agregar productos al combo: " + error.message);
+    }
 }
 
 // Variables y funciones que ya no son necesarias
