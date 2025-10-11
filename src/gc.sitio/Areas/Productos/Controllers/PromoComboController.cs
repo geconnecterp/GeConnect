@@ -373,5 +373,85 @@ namespace gc.sitio.Areas.Productos.Controllers
                 return PartialView("_gridMensaje", CrearRespuestaError("Error interno al obtener productos sustitutos"));
             }
         }
+
+        /// <summary>
+        /// Guarda en sesión las relaciones entre un producto y sus sustitutos
+        /// </summary>
+        /// <param name="p_id">ID del producto principal</param>
+        /// <param name="p_id_sus">Lista de IDs de productos sustitutos</param>
+        /// <returns>Resultado de la operación</returns>
+        [HttpPost]
+        public JsonResult ResguardarRelacionProductoSustituto(string p_id, List<string> p_id_sus)
+        {
+            try
+            {
+                // Validar parámetros de entrada
+                if (string.IsNullOrEmpty(p_id))
+                {
+                    return Json(new { ok = false, mensaje = "El ID del producto es obligatorio" });
+                }
+
+                if (p_id_sus == null || !p_id_sus.Any())
+                {
+                    return Json(new { ok = false, mensaje = "Debe especificar al menos un sustituto" });
+                }
+
+                // Filtrar IDs inválidos y eliminar duplicados
+                var sustitutosValidos = p_id_sus
+                    .Where(s => !string.IsNullOrEmpty(s) && s != p_id)
+                    .Distinct()
+                    .ToList();
+
+                if (!sustitutosValidos.Any())
+                {
+                    return Json(new { ok = false, mensaje = "No hay sustitutos válidos para agregar" });
+                }
+
+                // Obtener la lista actual de relaciones producto-sustituto de la sesión
+                var relaciones = HttpContext.Session.GetString("ProductosSustitutos");
+                var listaRelaciones = string.IsNullOrEmpty(relaciones)
+                    ? new List<ProductoSustituto>()
+                    : System.Text.Json.JsonSerializer.Deserialize<List<ProductoSustituto>>(relaciones);
+
+                // Eliminar relaciones existentes para este producto
+                listaRelaciones.RemoveAll(r => r.ProductoId == p_id);
+
+                // Agregar las nuevas relaciones
+                foreach (var sustitutoId in sustitutosValidos)
+                {
+                    listaRelaciones.Add(new ProductoSustituto
+                    {
+                        ProductoId = p_id,
+                        SustitutoId = sustitutoId
+                    });
+                }
+
+                // Guardar la lista actualizada en sesión
+                HttpContext.Session.SetString("ProductosSustitutos", 
+                    System.Text.Json.JsonSerializer.Serialize(listaRelaciones));
+
+                // Devolver respuesta exitosa
+                return Json(new
+                {
+                    ok = true,
+                    mensaje = $"Se guardaron {sustitutosValidos.Count} sustitutos para el producto {p_id}",
+                    cantidadSustitutos = sustitutosValidos.Count
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al guardar relaciones de productos sustitutos");
+                return Json(new { ok = false, mensaje = "Error al procesar la solicitud" });
+            }
+        }
+
+        /// <summary>
+        /// Clase para representar la relación entre un producto y su sustituto
+        /// </summary>
+        public class ProductoSustituto
+        {
+            public string ProductoId { get; set; }
+            public string SustitutoId { get; set; }
+        }
     }
 }

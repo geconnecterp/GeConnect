@@ -3,17 +3,26 @@ var productosSeleccionadosBusqueda = [];
 var dataBakV02 = {};
 
 // Variables globales para definir el contexto de destino
-var busquedaDestinoTipo = "ofertas"; // valores: "ofertas", "combos"
+var busquedaDestinoTipo = "ofertas"; // valores: "ofertas", "combos", "sustitutos"
 var busquedaDestinoCallback = null;
 
 /**
  * Configura el destino de los productos seleccionados en la búsqueda avanzada
- * @param {string} tipo - Tipo de destino: "ofertas" o "combos"
- * @param {Function} callback - Función callback para procesar los productos cuando el tipo es "combos"
+ * @param {string} tipo - Tipo de destino: "ofertas", "combos" o "sustitutos"
+ * @param {Function} callback - Función callback para procesar los productos
+ * @param {Function} [validadorCallback] - Función opcional que devuelve IDs de productos existentes en el grid destino
  */
-function configurarDestinoBusquedaProductos(tipo, callback) {
+function configurarDestinoBusquedaProductos(tipo, callback, validadorCallback) {
     busquedaDestinoTipo = tipo || "ofertas";
     busquedaDestinoCallback = callback;
+    busquedaValidadorCallback = validadorCallback || function() { return []; };
+    
+    // Actualizar el título del modal según el tipo
+    var titulo = "Búsqueda Avanzada de Productos";
+    if (tipo === "sustitutos") {
+        titulo = "Selección de Productos Sustitutos";
+    }
+    $("#buscTitulo").text(titulo);
 }
 
 $(function () {
@@ -637,20 +646,30 @@ function agregarProductosSeleccionadosAOfertas() {
     var mensaje;
     var titulo;
     
-    if (busquedaDestinoTipo === "combos") {
-        titulo = "CONFIRMAR AGREGADO A COMBO";
-        mensaje = `¿Desea agregar ${productosSeleccionadosBusqueda.length} productos al combo?`;
-        if (productosSeleccionadosBusqueda.length === 1) {
-            var descripcion = productosSeleccionadosBusqueda[0].p_desc;
-            mensaje = `¿Desea agregar el producto "${descripcion}" al combo?`;
-        }
-    } else {
-        titulo = "CONFIRMAR AGREGADO";
-        mensaje = `¿Desea agregar ${productosSeleccionadosBusqueda.length} productos a las ofertas?`;
-        if (productosSeleccionadosBusqueda.length === 1) {
-            var descripcion = productosSeleccionadosBusqueda[0].p_desc;
-            mensaje = `¿Desea agregar el producto "${descripcion}" a las ofertas?`;
-        }
+    switch (busquedaDestinoTipo) {
+        case "sustitutos":
+            titulo = "CONFIRMAR SUSTITUTOS";
+            mensaje = `¿Desea agregar ${productosSeleccionadosBusqueda.length} productos como sustitutos?`;
+            if (productosSeleccionadosBusqueda.length === 1) {
+                var descripcion = productosSeleccionadosBusqueda[0].p_desc;
+                mensaje = `¿Desea agregar el producto "${descripcion}" como sustituto?`;
+            }
+            break;
+        case "combos":
+            titulo = "CONFIRMAR AGREGADO A COMBO";
+            mensaje = `¿Desea agregar ${productosSeleccionadosBusqueda.length} productos al combo?`;
+            if (productosSeleccionadosBusqueda.length === 1) {
+                var descripcion = productosSeleccionadosBusqueda[0].p_desc;
+                mensaje = `¿Desea agregar el producto "${descripcion}" al combo?`;
+            }
+            break;
+        default:
+            titulo = "CONFIRMAR AGREGADO";
+            mensaje = `¿Desea agregar ${productosSeleccionadosBusqueda.length} productos a las ofertas?`;
+            if (productosSeleccionadosBusqueda.length === 1) {
+                var descripcion = productosSeleccionadosBusqueda[0].p_desc;
+                mensaje = `¿Desea agregar el producto "${descripcion}" a las ofertas?`;
+            }
     }
 
     AbrirMensaje(
@@ -658,14 +677,15 @@ function agregarProductosSeleccionadosAOfertas() {
         mensaje,
         function (resp) {
             if (resp === "SI") {
-                if (busquedaDestinoTipo === "combos" && typeof busquedaDestinoCallback === 'function') {
-                    procesarAgregarProductosACombo();
+                if ((busquedaDestinoTipo === "combos" || busquedaDestinoTipo === "sustitutos") && 
+                    typeof busquedaDestinoCallback === 'function') {
+                    procesarAgregarProductosCustom();
                 } else {
                     procesarAgregarProductosMultiples();
                 }
             }
             $("#msjModal").modal("hide");
-            return true;
+            //return true;
         },
         true,
         ["Agregar", "Cancelar"],
@@ -675,43 +695,80 @@ function agregarProductosSeleccionadosAOfertas() {
 }
 
 /**
- * Procesa el agregado de productos al combo
+ * Procesa el agregado de productos mediante callback personalizado
  */
-function procesarAgregarProductosACombo() {
-    AbrirWaiting("Agregando productos al combo...");
+function procesarAgregarProductosCustom() {
+    AbrirWaiting("Agregando productos...");
     
     try {
-        // Preparar productos para combo
-        var productosParaCombo = productosSeleccionadosBusqueda.map(function(producto) {
+        // Obtener IDs de productos existentes en el grid destino
+        const productosExistentesIds = typeof busquedaValidadorCallback === 'function' 
+            ? busquedaValidadorCallback() 
+            : [];
+        
+        // Determinar estado según el destino
+        let estadoProducto = busquedaDestinoTipo === "combos" || busquedaDestinoTipo === "sustitutos" ? 'P' : 'A';
+        
+        // Filtrar productos ya existentes
+        const productosSeleccionadosOriginales = [...productosSeleccionadosBusqueda];
+        const productosFiltrados = productosSeleccionadosBusqueda.filter(producto => 
+            !productosExistentesIds.includes(producto.p_id));
+        
+        // Contar duplicados
+        const cantidadDuplicados = productosSeleccionadosOriginales.length - productosFiltrados.length;
+        
+        // Preparar productos (solo los no duplicados)
+        var productos = productosFiltrados.map(function(producto) {
             return {
                 p_id: producto.p_id,
                 p_desc: producto.p_desc,
                 p_pcosto: parseFloat(producto.p_pcosto || 0),
                 cantidad: 1,
                 dto_porc: 0,
-                activo: 'A'
+                activo: estadoProducto
             };
         });
         
-        // Llamar al callback con los productos
+        // Si no hay productos para agregar después del filtrado
+        if (productos.length === 0) {
+            CerrarWaiting();
+            if (cantidadDuplicados > 0) {
+                ControlaMensajeWarning(`Los ${cantidadDuplicados} producto(s) seleccionado(s) ya existen en el destino.`);
+            } else {
+                ControlaMensajeWarning("No hay productos para agregar.");
+            }
+            return;
+        }
+        
+        // Llamar al callback con los productos filtrados
         if (typeof busquedaDestinoCallback === 'function') {
-            busquedaDestinoCallback(productosParaCombo);
+            busquedaDestinoCallback(productos);
         }
         
         // Cerrar modal y limpiar
         $("#busquedaModal").modal("hide");
         
         // Guardar cantidad antes de limpiar
-        var cantidadAgregada = productosSeleccionadosBusqueda.length;
+        var cantidadAgregada = productos.length;
         limpiarSeleccionBusqueda();
         
         // Mensaje de éxito
         CerrarWaiting();
-        ControlaMensajeSuccess(`${cantidadAgregada} producto${cantidadAgregada > 1 ? 's' : ''} agregado${cantidadAgregada > 1 ? 's' : ''} al combo correctamente`);
+        var mensaje = '';
+        
+        if (cantidadDuplicados > 0) {
+            mensaje = `Se agregaron ${cantidadAgregada} producto(s). Se omitieron ${cantidadDuplicados} producto(s) duplicado(s).`;
+        } else {
+            mensaje = busquedaDestinoTipo === "sustitutos" 
+                ? `${cantidadAgregada} producto${cantidadAgregada > 1 ? 's' : ''} agregado${cantidadAgregada > 1 ? 's' : ''} como sustituto${cantidadAgregada > 1 ? 's' : ''} correctamente` 
+                : `${cantidadAgregada} producto${cantidadAgregada > 1 ? 's' : ''} agregado${cantidadAgregada > 1 ? 's' : ''} correctamente`;
+        }
+        
+        ControlaMensajeSuccess(mensaje);
     } catch (error) {
         CerrarWaiting();
-        console.error("Error al procesar productos para combo:", error);
-        ControlaMensajeError("Error al agregar productos al combo: " + error.message);
+        console.error("Error al procesar productos:", error);
+        ControlaMensajeError("Error al agregar productos: " + error.message);
     }
 }
 

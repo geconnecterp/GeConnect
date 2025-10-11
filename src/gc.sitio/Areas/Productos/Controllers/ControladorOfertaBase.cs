@@ -56,6 +56,24 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
         }
 
+        public List<ComboSustitutoDto> ProductosSustitutos
+        {
+            get
+            {
+                var json = _context.HttpContext?.Session.GetString("ProductosSustitutos") ?? string.Empty;
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<ComboSustitutoDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("ProductosSustitutos", json);
+            }
+        }
+
         /// <summary>
         /// Crea una respuesta de error estandarizada
         /// </summary>
