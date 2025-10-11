@@ -187,10 +187,10 @@ function buscarProducto() {
 // ✅ OPTIMIZADA: Configurar eventos con auto-selección mejorada
 // ✅ SIMPLIFICADA: Solo usar p_id en eventos
 function configurarEventosGridBusquedaV02() {
-    autoSeleccionarProductosVisibles();
+    //autoSeleccionarProductosVisibles();
     
     $("#checkAllBusqueda").off("change").on("change", function () {
-        var isChecked = $(this).is(":checked");
+        var isChecked = $(this).is(":not(:checked)");
         $(".check-producto-busqueda").prop("checked", isChecked);
 
         $(".check-producto-busqueda").each(function () {
@@ -835,8 +835,7 @@ function generarGridDesdeProductoListaDto(productos, metadata) {
                     <input type="checkbox" 
                            class="form-check-input check-producto-busqueda"
                            data-p-id="${item.p_id}"
-                           data-producto='${JSON.stringify(item).replace(/'/g, "&apos;")}'
-                           checked
+                           data-producto='${JSON.stringify(item).replace(/'/g, "&apos;")}'                           
                            title="Producto seleccionado automáticamente">
                 </td>
                 <td class="text-center">${item.p_id}</td>

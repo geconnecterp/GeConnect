@@ -146,6 +146,115 @@ function inicializarEventos() {
 }
 
 /**
+ * Agrega sustitutos al grid y actualiza el mapa de relaciones
+ * @param {Array} sustitutos - Productos que serán agregados como sustitutos
+ * @param {string} productoId - ID del producto principal al que se asignarán los sustitutos
+ */
+function agregarSustitutosAlGrid(sustitutos, productoId) {
+    // Validar que estemos en modo nuevo combo y que haya sustitutos para agregar
+    if (!modoNuevoCombo || !sustitutos || sustitutos.length === 0) {
+        return;
+    }
+
+    // Inicializar el mapa para este producto si no existe
+    if (!productosSustitutosMap[productoId]) {
+        productosSustitutosMap[productoId] = [];
+    }
+
+    // Añadir los nuevos sustitutos al mapa, evitando duplicados
+    sustitutos.forEach(function (sustituto) {
+        // Verificar si ya existe para evitar duplicados
+        if (!productosSustitutosMap[productoId].some(s => s.p_id === sustituto.p_id)) {
+            productosSustitutosMap[productoId].push(sustituto);
+        }
+    });
+
+    // Guardar en sesión
+    guardarSustitutosEnSesion();
+
+    // Guardar en el servidor si la URL está definida
+    if (typeof resguardarRelacionProductoSustitutoUrl !== 'undefined') {
+        guardarRelacionProductoSustitutoEnServidor(productoId);
+    }
+
+    // Actualizar el grid de sustitutos
+    actualizarGridSustitutos(productoId);
+}
+
+/**
+ * Configura eventos para los botones de eliminación de sustitutos
+ */
+function configurarEventosEliminacionSustitutos() {
+    // Remover eventos previos para evitar duplicación
+    $(document).off("click", ".btn-eliminar-sustituto");
+
+    // Configurar evento de click para eliminar sustitutos
+    $(document).on("click", ".btn-eliminar-sustituto", function (e) {
+        e.stopPropagation(); // Evitar que se active la selección de fila
+
+        var $fila = $(this).closest("tr");
+        var sustitutoId = $(this).data("producto-id");
+        var sustitutoDesc = $fila.find("td:nth-child(2)").text().trim();
+
+        // Obtener el ID del producto seleccionado actualmente
+        var productoId = $("#tbGridProductos tbody tr.selected-row").data("producto-id") ||
+            $("#tbGridProductos tbody tr.selected-row td:first").text().trim();
+
+        // Confirmar eliminación
+        AbrirMensaje(
+            "ELIMINAR SUSTITUTO",
+            `¿Está seguro que desea eliminar el producto sustituto "${sustitutoDesc}"?`,
+            function (resp) {
+                if (resp === "SI") {
+                    eliminarSustitutoDeGrid($fila, sustitutoId, productoId);
+                }
+                $("#msjModal").modal("hide");
+                return true;
+            },
+            true,
+            ["Eliminar", "Cancelar"],
+            "warn!",
+            null
+        );
+    });
+}
+
+/**
+ * Elimina un sustituto del grid y del mapa de sustitutos
+ */
+function eliminarSustitutoDeGrid($fila, sustitutoId, productoId) {
+    // Eliminar del mapa de sustitutos
+    if (productoId && productosSustitutosMap[productoId]) {
+        productosSustitutosMap[productoId] = productosSustitutosMap[productoId].filter(s => s.p_id !== sustitutoId);
+
+        // Guardar cambios en sesión
+        guardarSustitutosEnSesion();
+
+        // Actualizar en el servidor si la URL está definida
+        if (typeof resguardarRelacionProductoSustitutoUrl !== 'undefined') {
+            guardarRelacionProductoSustitutoEnServidor(productoId);
+        }
+    }
+
+    // Si es la única fila, mostrar mensaje "No hay sustitutos"
+    if ($("#tbGridSustitutos tbody tr").length === 1) {
+        $("#tbGridSustitutos tbody").html(`
+            <tr>
+                <td colspan="${modoNuevoCombo ? 5 : 4}" class="text-center text-muted py-2">
+                    <i class="bx bx-info-circle me-1"></i>No hay sustitutos disponibles
+                </td>
+            </tr>
+        `);
+    } else {
+        // Eliminar la fila
+        $fila.remove();
+    }
+
+    // Mostrar mensaje de éxito
+    ControlaMensajeSuccess("Sustituto eliminado correctamente");
+}
+
+/**
  * Realiza la búsqueda de combos según los filtros
  */
 function buscarCombos(pag = 1) {
@@ -693,6 +802,43 @@ function agregarProductosAlGrid(productos) {
 }
 
 /**
+ * Elimina un producto del grid y actualiza los datos relacionados
+ */
+function eliminarProductoDeGrid($fila, productoId) {
+    // Si es la única fila, mostrar mensaje "No hay productos"
+    if ($("#tbGridProductos tbody tr").length === 1) {
+        $("#tbGridProductos tbody").html(`
+            <tr>
+                <td colspan="${modoNuevoCombo ? 7 : 6}" class="text-center text-muted py-2">
+                    <i class="bx bx-info-circle me-1"></i>No hay productos disponibles
+                </td>
+            </tr>
+        `);
+    } else {
+        // Si es la fila seleccionada, seleccionar otra
+        if ($fila.hasClass("selected-row")) {
+            var $siguienteFila = $fila.next("tr");
+            if (!$siguienteFila.length) {
+                $siguienteFila = $fila.prev("tr");
+            }
+
+            $fila.remove();
+
+            // Seleccionar la siguiente fila si existe
+            if ($siguienteFila.length) {
+                $siguienteFila.trigger("click");
+            }
+        } else {
+            // Si no es la seleccionada, simplemente eliminarla
+            $fila.remove();
+        }
+    }
+
+    // Mostrar mensaje de éxito
+    ControlaMensajeSuccess("Producto eliminado correctamente");
+}
+
+/**
  * Configura los eventos para la selecci贸n de filas en la tabla de productos
  */
 function configurarSeleccionProductos() {
@@ -1218,6 +1364,37 @@ function agregarProductosAlGrid(productos) {
     // Seleccionar el primer producto agregado
     var $primerProducto = $("#tbGridProductos tbody tr:first");
     $primerProducto.trigger("click");
+}
+
+function configurarEventosEliminacionProductos() {
+    // Remover eventos previos para evitar duplicación
+    $(document).off("click", ".btn-eliminar-producto");
+
+    // Configurar evento de click para eliminar productos
+    $(document).on("click", ".btn-eliminar-producto", function (e) {
+        e.stopPropagation(); // Evitar que se active la selección de fila
+
+        var $fila = $(this).closest("tr");
+        var productoId = $(this).data("producto-id");
+        var productoDesc = $fila.find("td:nth-child(2)").text().trim();
+
+        // Confirmar eliminación
+        AbrirMensaje(
+            "ELIMINAR PRODUCTO",
+            `¿Está seguro que desea eliminar el producto "${productoDesc}" de este combo?`,
+            function (resp) {
+                if (resp === "SI") {
+                    eliminarProductoDeGrid($fila, productoId);
+                }
+                $("#msjModal").modal("hide");
+                return true;
+            },
+            true,
+            ["Eliminar", "Cancelar"],
+            "warn!",
+            null
+        );
+    });
 }
 
 /**
@@ -2386,7 +2563,10 @@ function guardarSustitutosEnSesion() {
 function cancelarOperacion(e) {
     // Ocultar formulario
     $("#divComboDatos").hide();
-    
+
+    //Desactivamos el modo edición de la alta
+    modoNuevoCombo = false;
+
     // Restaurar estado de los campos
     restaurarCamposFormulario();
     
@@ -2402,7 +2582,9 @@ function cancelarOperacion(e) {
     // Restaurar estado de los botones
     $("#btnAbmNuevo").prop("disabled", false);
     $("#btnAbmAceptar").prop("disabled", true);
+
     
+
     // Si existe un homeCombo y necesitamos redirigir
     if (e && $("#btnCancel").is(e.target) && typeof homeCombo !== 'undefined') {
         window.location.href = homeCombo;
