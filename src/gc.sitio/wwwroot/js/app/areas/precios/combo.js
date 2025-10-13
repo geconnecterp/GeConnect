@@ -76,6 +76,11 @@ function inicializarEventos() {
         $("#btnAbmAceptar").prop("disabled", false);
         $("#btnAbmNuevo").prop("disabled", true);
 
+        // Verifico si el divFiltro esta SHOW. Si eso es así lo oculto.
+        if ($("#divFiltro").is(":visible")) {
+            $("#divFiltro").collapse("hide");
+        }
+
         // Cargar el modal de búsqueda avanzada
         cargarModalBusquedaAvanzada();
         
@@ -239,6 +244,7 @@ function eliminarSustitutoDeGrid($fila, sustitutoId, productoId) {
     // Si es la única fila, mostrar mensaje "No hay sustitutos"
     if ($("#tbGridSustitutos tbody tr").length === 1) {
         $("#tbGridSustitutos tbody").html(`
+
             <tr>
                 <td colspan="${modoNuevoCombo ? 5 : 4}" class="text-center text-muted py-2">
                     <i class="bx bx-info-circle me-1"></i>No hay sustitutos disponibles
@@ -734,72 +740,6 @@ function limpiarGridsProductos(modoEdicion = modoNuevoCombo) {
     }
 }
 
-/**
- * Agrega productos al grid
- */
-function agregarProductosAlGrid(productos) {
-    if (productos.length === 0) return;
-
-    // Obtener el tbody de la tabla
-    var $tbody = $("#tbGridProductos tbody");
-
-    // Limpiar mensaje "No hay productos" si existe
-    if ($tbody.find("tr td[colspan]").length > 0) {
-        $tbody.empty();
-    }
-
-    // Obtener ID del combo actual
-    var comboId = $("#cmb_id").val();
-
-    // Agregar cada producto como una nueva fila
-    $.each(productos, function (i, producto) {
-        var fila = `
-        <tr data-producto-id="${producto.p_id}" data-combo-id="${comboId}">
-            <td class="text-center">
-                ${producto.p_id}
-            </td>
-            <td>
-                ${producto.p_desc}
-            </td>
-            <td class="text-end">
-                ${producto.p_pcosto.toFixed(3)}
-            </td>
-            <td class="text-end">
-                ${producto.cantidad.toFixed(2)}
-            </td>
-            <td class="text-end">
-                ${producto.dto_porc.toFixed(2)}
-            </td>
-            <td class="text-center">
-                <span class="badge ${producto.activo == 'A' ? "bg-success" : "bg-danger"}">
-                    ${producto.activo == 'A' ? "Activo" : "Pendiente"}
-                </span>
-            </td>
-            ${modoNuevoCombo ? `
-            <td class="text-center">
-                <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-producto" 
-                        title="Eliminar producto" data-producto-id="${producto.p_id}">
-                    <i class="bx bx-trash"></i>
-                </button>
-            </td>
-            ` : ''}
-        </tr>`;
-
-        $tbody.append(fila);
-    });
-
-    // Configurar eventos de selección para los nuevos productos
-    configurarSeleccionProductos();
-    
-    // Configurar eventos para los botones de eliminar si estamos en modo de edición
-    if (modoNuevoCombo) {
-        configurarEventosEliminacionProductos();
-    }
-
-    // Seleccionar el primer producto agregado
-    var $primerProducto = $("#tbGridProductos tbody tr:first");
-    $primerProducto.trigger("click");
-}
 
 /**
  * Elimina un producto del grid y actualiza los datos relacionados
@@ -865,16 +805,18 @@ function configurarSeleccionProductos() {
             // Obtener el ID del combo actual
             var comboId = $("#cmb_id").val();
 
-            if (productoId && comboId) {
+            //vamos a buscar los productos sustitutos
+            if ((productoId && comboId) ||(productoId && modoNuevoCombo) ) {
                 // Cargar los sustitutos del producto seleccionado
                 cargarProductosSustitutos(comboId, productoId);
 
                 // Guardar el ID del producto seleccionado para uso futuro
                 p_id_selected = productoId;
-            }
+            }            
         }
     });
 }
+
 
 /**
  * Actualiza el grid de sustitutos con los datos del producto seleccionado
@@ -996,43 +938,71 @@ function cargarProductosCombo(comboId) {
  * Carga los productos sustitutos asociados a un producto dentro de un combo
  */
 function cargarProductosSustitutos(comboId, productoId) {
-    if (typeof obtenerProductosSustitutosUrl === 'undefined') {
+    // Determinar qué URL usar según el modo
+    var url = modoNuevoCombo && typeof retornarProductosSustitutosUrl !== 'undefined'
+        ? retornarProductosSustitutosUrl
+        : obtenerProductosSustitutosUrl;
+
+    if (typeof url === 'undefined') {
         console.error("URL para obtener productos sustitutos no definida");
         return;
     }
-    
+
     AbrirWaiting("Cargando productos sustitutos...");
-    
+
     // Obtener descripción del producto seleccionado para el mensaje
     var productoDesc = $("#tbGridProductos tbody tr.selected-row td:nth-child(2)").text().trim();
-    
+
+    // Configurar datos según la URL que estamos usando
+    var datos = modoNuevoCombo ? { p_id: productoId } : { comboId: comboId, productoId: productoId };
+
     $.ajax({
-        url: obtenerProductosSustitutosUrl,
+        url: url,
         type: "POST",
-        data: { comboId: comboId, productoId: productoId },
-        success: function(html) {
+        data: datos,
+        success: function (response) {
             CerrarWaiting();
-            
-            // Actualizar el contenido del grid de sustitutos
-            $(".col-sm-6:has(#tbGridSustitutos)").html(html);
-            
-            // Si estamos viendo un combo existente, ocultar la columna de acción
-            if (!modoNuevoCombo) {
-                $("#tbGridSustitutos th:last-child, #tbGridSustitutos td:last-child").hide();
-            }
-            
-            // Verificar si hay sustitutos después de cargar el HTML
-            setTimeout(function() {
-                var tieneFilasConDatos = $("#tbGridSustitutos tbody tr").length > 0 && 
-                                         !$("#tbGridSustitutos tbody tr td").text().includes("No hay sustitutos disponibles");
-                
-                if (!tieneFilasConDatos) {
-                    // Usar ControlaMensajeWarning en lugar de AbrirMensaje
-                    ControlaMensajeWarning("El producto \"" + productoDesc + "\" (ID: " + productoId + ") no tiene sustitutos asociados.");
+
+            if (modoNuevoCombo) {
+                // Para modo nuevo combo, procesamos respuesta JSON de RetornarProductosSustitutos
+                if (response && response.ok) {
+                    // Actualizar el mapa de sustitutos con los datos recibidos
+                    if (!productosSustitutosMap[productoId] && response.sustitutos && response.sustitutos.length > 0) {
+                        productosSustitutosMap[productoId] = response.sustitutos;
+                    }
+
+                    // Actualizar grid de sustitutos con los datos recibidos
+                    actualizarGridSustitutos(productoId);
+
+                    // Mostrar mensaje si no hay sustitutos
+                    if (!response.sustitutos || response.sustitutos.length === 0) {
+                        ControlaMensajeWarning("El producto \"" + productoDesc + "\" (ID: " + productoId + ") no tiene sustitutos asociados.");
+                    }
+                } else {
+                    ControlaMensajeWarning(response.mensaje || "No se encontraron sustitutos para este producto");
                 }
-            }, 100); // Pequeño retraso para asegurar que el DOM se actualice
+            } else {
+                // Para modo visualización, procesamos respuesta HTML de ObtenerProductosSustitutos
+                // Actualizar el contenido del grid de sustitutos
+                $(".col-sm-6:has(#tbGridSustitutos)").html(response);
+
+                // Ocultar columna de acción si no estamos en modo nuevo combo
+                if (!modoNuevoCombo) {
+                    $("#tbGridSustitutos th:last-child, #tbGridSustitutos td:last-child").hide();
+                }
+
+                // Verificar si hay sustitutos después de cargar el HTML
+                setTimeout(function () {
+                    var tieneFilasConDatos = $("#tbGridSustitutos tbody tr").length > 0 &&
+                        !$("#tbGridSustitutos tbody tr td").text().includes("No hay sustitutos disponibles");
+
+                    if (!tieneFilasConDatos) {
+                        ControlaMensajeWarning("El producto \"" + productoDesc + "\" (ID: " + productoId + ") no tiene sustitutos asociados.");
+                    }
+                }, 100);
+            }
         },
-        error: function(xhr, status, error) {
+        error: function (xhr, status, error) {
             CerrarWaiting();
             console.error("Error al cargar productos sustitutos:", error);
             ControlaMensajeError("Error al cargar productos sustitutos: " + error);
@@ -1299,72 +1269,6 @@ function limpiarGridsProductos(modoEdicion = modoNuevoCombo) {
     }
 }
 
-/**
- * Agrega productos al grid
- */
-function agregarProductosAlGrid(productos) {
-    if (productos.length === 0) return;
-
-    // Obtener el tbody de la tabla
-    var $tbody = $("#tbGridProductos tbody");
-
-    // Limpiar mensaje "No hay productos" si existe
-    if ($tbody.find("tr td[colspan]").length > 0) {
-        $tbody.empty();
-    }
-
-    // Obtener ID del combo actual
-    var comboId = $("#cmb_id").val();
-
-    // Agregar cada producto como una nueva fila
-    $.each(productos, function (i, producto) {
-        var fila = `
-        <tr data-producto-id="${producto.p_id}" data-combo-id="${comboId}">
-            <td class="text-center">
-                ${producto.p_id}
-            </td>
-            <td>
-                ${producto.p_desc}
-            </td>
-            <td class="text-end">
-                ${producto.p_pcosto.toFixed(3)}
-            </td>
-            <td class="text-end">
-                ${producto.cantidad.toFixed(2)}
-            </td>
-            <td class="text-end">
-                ${producto.dto_porc.toFixed(2)}
-            </td>
-            <td class="text-center">
-                <span class="badge ${producto.activo == 'A' ? "bg-success" : "bg-danger"}">
-                    ${producto.activo == 'A' ? "Activo" : "Pendiente"}
-                </span>
-            </td>
-            ${modoNuevoCombo ? `
-            <td class="text-center">
-                <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-producto" 
-                        title="Eliminar producto" data-producto-id="${producto.p_id}">
-                    <i class="bx bx-trash"></i>
-                </button>
-            </td>
-            ` : ''}
-        </tr>`;
-
-        $tbody.append(fila);
-    });
-
-    // Configurar eventos de selección para los nuevos productos
-    configurarSeleccionProductos();
-    
-    // Configurar eventos para los botones de eliminar si estamos en modo de edición
-    if (modoNuevoCombo) {
-        configurarEventosEliminacionProductos();
-    }
-
-    // Seleccionar el primer producto agregado
-    var $primerProducto = $("#tbGridProductos tbody tr:first");
-    $primerProducto.trigger("click");
-}
 
 function configurarEventosEliminacionProductos() {
     // Remover eventos previos para evitar duplicación
@@ -1514,49 +1418,344 @@ function cargarProductosCombo(comboId) {
 }
 
 /**
- * Carga los productos sustitutos asociados a un producto dentro de un combo
+ * Configura los eventos para el modal de búsqueda avanzada
  */
-function cargarProductosSustitutos(comboId, productoId) {
-    if (typeof obtenerProductosSustitutosUrl === 'undefined') {
-        console.error("URL para obtener productos sustitutos no definida");
+function configurarEventosBusquedaAvanzada() {
+    // Cerrar modal al hacer clic en el botón de cierre
+    $(".buscAdv").on("click", function () {
+        $("#busquedaModal").modal("hide");
+    });
+
+    // Evento para el botón de búsqueda
+    $("#btnBuscarProd").on("click", function () {
+        buscarProductos();
+    });
+
+    // Evento para agregar productos seleccionados
+    $("#btnAgregarSeleccionados").on("click", function () {
+        agregarProductosSeleccionados();
+    });
+
+    // Evento para limpiar selección
+    $("#btnLimpiarSeleccionBusqueda").on("click", function () {
+        limpiarSeleccionBusqueda();
+    });
+
+    // Configurar el comportamiento del Enter en el campo de búsqueda
+    $("#Search").on("keypress", function (e) {
+        if (e.which === 13) {
+            e.preventDefault();
+            buscarProductos();
+        }
+    });
+}
+
+/**
+ * Busca productos según los filtros del modal
+ */
+function buscarProductos() {
+    var filtros = {
+        Rel01: $("#Rel01").val(),
+        Rel01Item: $("#Rel01Item").val(),
+        Rel02: $("#Rel02").val(),
+        Rel02Item: $("#Rel02Item").val(),
+        Rel03: $("#Rel03").val(),
+        EstadoActivo: $("#chkActivos").prop("checked"),
+        EstadoDiscont: $("#chkDisc").prop("checked"),
+        EstadoInactivo: $("#chkInact").prop("checked"),
+        ConStock: $("input[name=ConStock]:checked").val(),
+        Search: $("#Search").val()
+    };
+
+    AbrirWaiting("Buscando productos...");
+
+    $.ajax({
+        url: busquedaProdBaseUrl,
+        type: "POST",
+        data: filtros,
+        success: function (html) {
+            CerrarWaiting();
+            $("#divBusquedaAvanzada").html(html);
+
+            // Mostrar sección de selección múltiple
+            $("#seccionSeleccionMultiple").show();
+
+            // Configurar eventos para seleccionar productos
+            configurarSeleccionProductosBusqueda();
+        },
+        error: function (xhr, status, error) {
+            CerrarWaiting();
+            console.error("Error en la búsqueda de productos:", error);
+            ControlaMensajeError("Error al buscar productos: " + error);
+        }
+    });
+}
+
+/**
+ * Configura eventos para seleccionar productos en la búsqueda
+ */
+function configurarSeleccionProductosBusqueda() {
+    // Agregar clase 'selectable' a todas las filas
+    $("#divBusquedaAvanzada table tbody tr").addClass("selectable");
+
+    // Remover eventos previos
+    $("#divBusquedaAvanzada table tbody tr.selectable").off("click");
+
+    // Configurar evento de clic para seleccionar/deseleccionar filas
+    $("#divBusquedaAvanzada table tbody tr.selectable").on("click", function () {
+        $(this).toggleClass("selected-row");
+
+        // Actualizar contador
+        actualizarContadorProductosSeleccionados();
+    });
+}
+
+/**
+ * Actualiza el contador de productos seleccionados
+ */
+function actualizarContadorProductosSeleccionados() {
+    var count = $("#divBusquedaAvanzada table tbody tr.selected-row").length;
+    $("#contadorSeleccionados").text(count);
+}
+
+/**
+ * Limpia la selección de productos en la búsqueda
+ */
+function limpiarSeleccionBusqueda() {
+    $("#divBusquedaAvanzada table tbody tr").removeClass("selected-row");
+    actualizarContadorProductosSeleccionados();
+}
+
+/**
+ * Agrega los productos seleccionados al grid de productos
+ */
+function agregarProductosSeleccionados() {
+    var productosSeleccionados = [];
+
+    // Obtener información de productos seleccionados
+    $("#divBusquedaAvanzada table tbody tr.selected-row").each(function () {
+        var $row = $(this);
+        var producto = {
+            p_id: $row.find("td:eq(0)").text().trim(),
+            p_desc: $row.find("td:eq(1)").text().trim(),
+            p_pcosto: parseFloat($row.find("td:eq(2)").text().replace(/[^\d.-]/g, '')) || 0,
+            cantidad: 1, // Valor por defecto
+            dto_porc: 0, // Valor por defecto
+            activo: 'A' // Activo por defecto
+        };
+        productosSeleccionados.push(producto);
+    });
+
+    // Agregar productos al grid
+    agregarProductosAlGrid(productosSeleccionados);
+
+    // Ocultar el modal
+    $("#busquedaModal").modal("hide");
+
+    // Limpiar selección
+    limpiarSeleccionBusqueda();
+}
+
+/**
+ * Limpia los grids de productos y sustitutos
+ * @param {boolean} modoEdicion - Indica si estamos en modo edición (para mostrar columnas de acción)
+ */
+function limpiarGridsProductos(modoEdicion = modoNuevoCombo) {
+    // Crear HTML para un grid vacío de productos
+    var htmlProductosVacio = `
+    <div class="card h-100">
+        <div class="card-header py-1 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">Productos</h6>
+            ${modoEdicion ? `
+            <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarCProducto" title="Agregar Producto">
+                <i class="bx bx-plus"></i>
+            </button>
+            ` : ''}
+        </div>
+        <div class="card-body p-1">
+            <div class="table-responsive" style="max-height: 250px;">
+                <table class="table table-sm table-hover mb-0 table-golden" id="tbGridProductos">
+                    <thead class="table-golden-header">
+                        <tr class="header">
+                            <th class="text-center">ID</th>
+                            <th class="text-left">Descripción</th>
+                            <th class="text-center">Costo</th>
+                            <th class="text-center">Cantidad</th>
+                            <th class="text-center">Descuento %</th>
+                            <th class="text-center">Estado</th>
+                            ${modoEdicion ? '<th class="text-center">Acción</th>' : ''}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="${modoEdicion ? 7 : 6}" class="text-center text-muted py-2">
+                                <i class="bx bx-info-circle me-1"></i>No hay productos disponibles
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>`;
+    
+    // Crear HTML para un grid vacío de sustitutos
+    var htmlSustitutosVacio = `
+    <div class="card h-100">
+        <div class="card-header py-1 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">Sustitutos</h6>
+            ${modoEdicion ? `
+            <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarSustituto" title="Agregar Sustituto">
+                <i class="bx bx-plus"></i>
+            </button>
+            ` : ''}
+        </div>
+        <div class="card-body p-1">
+            <div class="table-responsive" style="max-height: 250px;">
+                <table class="table table-sm table-hover mb-0 table-golden" id="tbGridSustitutos">
+                    <thead class="table-golden-header">
+                        <tr class="header">
+                            <th class="text-center">ID</th>
+                            <th class="text-left">Descripción</th>
+                            <th class="text-center">Costo</th>
+                            <th class="text-center">Estado</th>
+                            ${modoEdicion ? '<th class="text-center">Acción</th>' : ''}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="${modoEdicion ? 5 : 4}" class="text-center text-muted py-2">
+                                <i class="bx bx-info-circle me-1"></i>No hay sustitutos disponibles
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>`;
+    
+    // Actualizar los contenedores con los grids vacíos
+    $(".col-sm-6:has(#tbGridProductos)").html(htmlProductosVacio);
+    $(".col-sm-6:has(#tbGridSustitutos)").html(htmlSustitutosVacio);
+    
+    // Habilitar los botones de agregar solo en modo edición
+    if (modoEdicion) {
+        $("#btnAgregarCProducto, #btnAgregarSustituto").prop("disabled", false);
+    }
+}
+
+
+/**
+ * Actualiza el grid de sustitutos con los datos del producto seleccionado
+ * @param {string} productoId - ID del producto para el que se mostrarán los sustitutos
+ */
+function actualizarGridSustitutos(productoId) {
+    // Obtener sustitutos para el producto desde el mapa
+    var sustitutos = productosSustitutosMap[productoId] || [];
+    
+    // Obtener el tbody de la tabla
+    var $tbody = $("#tbGridSustitutos tbody");
+    
+    // Limpiar tabla actual
+    $tbody.empty();
+    
+    if (sustitutos.length === 0) {
+        // Mostrar mensaje de "No hay sustitutos"
+        $tbody.html(`
+            <tr>
+                <td colspan="${modoNuevoCombo ? 5 : 4}" class="text-center text-muted py-2">
+                    <i class="bx bx-info-circle me-1"></i>No hay sustitutos disponibles
+                </td>
+            </tr>
+        `);
         return;
     }
     
-    AbrirWaiting("Cargando productos sustitutos...");
+    // Agregar cada sustituto como una nueva fila
+    $.each(sustitutos, function(i, sustituto) {
+        var fila = `
+        <tr data-producto-id="${sustituto.p_id}" data-combo-id="">
+            <td class="text-center">
+                ${sustituto.p_id}
+            </td>
+            <td>
+                ${sustituto.p_desc}
+            </td>
+            <td class="text-end">
+                ${typeof sustituto.p_pcosto === 'number' ? sustituto.p_pcosto.toFixed(2) : '0.00'}
+            </td>
+            <td class="text-center">
+                <span class="badge bg-success">
+                    Activo
+                </span>
+            </td>
+            ${modoNuevoCombo ? `
+            <td class="text-center">
+                <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-sustituto" 
+                        title="Eliminar sustituto" data-producto-id="${sustituto.p_id}">
+                    <i class="bx bx-trash"></i>
+                </button>
+            </td>
+            ` : ''}
+        </tr>`;
+        
+        $tbody.append(fila);
+    });
     
-    // Obtener descripción del producto seleccionado para el mensaje
-    var productoDesc = $("#tbGridProductos tbody tr.selected-row td:nth-child(2)").text().trim();
+    // Configurar eventos para los botones de eliminar si estamos en modo de edición
+    if (modoNuevoCombo) {
+        configurarEventosEliminacionSustitutos();
+    }
+}
+
+/**
+ * Carga los productos asociados a un combo
+ */
+function cargarProductosCombo(comboId) {
+    if (typeof obtenerProductosDeComboUrl === 'undefined') {
+        console.error("URL para obtener productos no definida");
+        return;
+    }
+    
+    AbrirWaiting("Cargando productos...");
     
     $.ajax({
-        url: obtenerProductosSustitutosUrl,
+        url: obtenerProductosDeComboUrl,
         type: "POST",
-        data: { comboId: comboId, productoId: productoId },
+        data: { id: comboId },
         success: function(html) {
             CerrarWaiting();
             
-            // Actualizar el contenido del grid de sustitutos
-            $(".col-sm-6:has(#tbGridSustitutos)").html(html);
+            // Actualizar el contenido del grid de productos
+            $(".col-sm-6:has(#tbGridProductos)").html(html);
             
             // Si estamos viendo un combo existente, ocultar la columna de acción
             if (!modoNuevoCombo) {
-                $("#tbGridSustitutos th:last-child, #tbGridSustitutos td:last-child").hide();
+                $("#tbGridProductos th:last-child, #tbGridProductos td:last-child").hide();
             }
             
-            // Verificar si hay sustitutos después de cargar el HTML
+            // Configurar eventos de selección en la tabla de productos
+            configurarSeleccionProductos();
+            
+            // Después de cargar productos, cargar los sustitutos del primer producto (si existe)
             setTimeout(function() {
-                var tieneFilasConDatos = $("#tbGridSustitutos tbody tr").length > 0 && 
-                                         !$("#tbGridSustitutos tbody tr td").text().includes("No hay sustitutos disponibles");
-                
-                if (!tieneFilasConDatos) {
-                    // Usar ControlaMensajeWarning en lugar de AbrirMensaje
-                    ControlaMensajeWarning("El producto \"" + productoDesc + "\" (ID: " + productoId + ") no tiene sustitutos asociados.");
+                // Buscar el primer producto en la tabla
+                var primerProducto = $("#tbGridProductos tbody tr:first");
+                if (primerProducto.length > 0) {
+                    var productoId = primerProducto.find("td:first").text().trim();
+                    if (productoId) {
+                        // Marcar el primer producto como seleccionado
+                        primerProducto.addClass("selected-row");
+                        
+                        // Cargar los sustitutos del primer producto
+                        cargarProductosSustitutos(comboId, productoId);
+                    }
                 }
             }, 100); // Pequeño retraso para asegurar que el DOM se actualice
         },
         error: function(xhr, status, error) {
             CerrarWaiting();
-            console.error("Error al cargar productos sustitutos:", error);
-            ControlaMensajeError("Error al cargar productos sustitutos: " + error);
+            console.error("Error al cargar productos:", error);
+            ControlaMensajeError("Error al cargar productos: " + error);
         }
     });
 }
@@ -1966,511 +2165,6 @@ function cargarProductosCombo(comboId) {
             CerrarWaiting();
             console.error("Error al cargar productos:", error);
             ControlaMensajeError("Error al cargar productos: " + error);
-        }
-    });
-}
-
-/**
- * Carga los productos sustitutos asociados a un producto dentro de un combo
- */
-function cargarProductosSustitutos(comboId, productoId) {
-    if (typeof obtenerProductosSustitutosUrl === 'undefined') {
-        console.error("URL para obtener productos sustitutos no definida");
-        return;
-    }
-    
-    AbrirWaiting("Cargando productos sustitutos...");
-    
-    // Obtener descripción del producto seleccionado para el mensaje
-    var productoDesc = $("#tbGridProductos tbody tr.selected-row td:nth-child(2)").text().trim();
-    
-    $.ajax({
-        url: obtenerProductosSustitutosUrl,
-        type: "POST",
-        data: { comboId: comboId, productoId: productoId },
-        success: function(html) {
-            CerrarWaiting();
-            
-            // Actualizar el contenido del grid de sustitutos
-            $(".col-sm-6:has(#tbGridSustitutos)").html(html);
-            
-            // Si estamos viendo un combo existente, ocultar la columna de acción
-            if (!modoNuevoCombo) {
-                $("#tbGridSustitutos th:last-child, #tbGridSustitutos td:last-child").hide();
-            }
-            
-            // Verificar si hay sustitutos después de cargar el HTML
-            setTimeout(function() {
-                var tieneFilasConDatos = $("#tbGridSustitutos tbody tr").length > 0 && 
-                                         !$("#tbGridSustitutos tbody tr td").text().includes("No hay sustitutos disponibles");
-                
-                if (!tieneFilasConDatos) {
-                    // Usar ControlaMensajeWarning en lugar de AbrirMensaje
-                    ControlaMensajeWarning("El producto \"" + productoDesc + "\" (ID: " + productoId + ") no tiene sustitutos asociados.");
-                }
-            }, 100); // Pequeño retraso para asegurar que el DOM se actualice
-        },
-        error: function(xhr, status, error) {
-            CerrarWaiting();
-            console.error("Error al cargar productos sustitutos:", error);
-            ControlaMensajeError("Error al cargar productos sustitutos: " + error);
-        }
-    });
-}
-
-/**
- * Configura los eventos para el modal de búsqueda avanzada
- */
-function configurarEventosBusquedaAvanzada() {
-    // Cerrar modal al hacer clic en el botón de cierre
-    $(".buscAdv").on("click", function () {
-        $("#busquedaModal").modal("hide");
-    });
-
-    // Evento para el botón de búsqueda
-    $("#btnBuscarProd").on("click", function () {
-        buscarProductos();
-    });
-
-    // Evento para agregar productos seleccionados
-    $("#btnAgregarSeleccionados").on("click", function () {
-        agregarProductosSeleccionados();
-    });
-
-    // Evento para limpiar selección
-    $("#btnLimpiarSeleccionBusqueda").on("click", function () {
-        limpiarSeleccionBusqueda();
-    });
-
-    // Configurar el comportamiento del Enter en el campo de búsqueda
-    $("#Search").on("keypress", function (e) {
-        if (e.which === 13) {
-            e.preventDefault();
-            buscarProductos();
-        }
-    });
-}
-
-/**
- * Busca productos según los filtros del modal
- */
-function buscarProductos() {
-    var filtros = {
-        Rel01: $("#Rel01").val(),
-        Rel01Item: $("#Rel01Item").val(),
-        Rel02: $("#Rel02").val(),
-        Rel02Item: $("#Rel02Item").val(),
-        Rel03: $("#Rel03").val(),
-        EstadoActivo: $("#chkActivos").prop("checked"),
-        EstadoDiscont: $("#chkDisc").prop("checked"),
-        EstadoInactivo: $("#chkInact").prop("checked"),
-        ConStock: $("input[name=ConStock]:checked").val(),
-        Search: $("#Search").val()
-    };
-
-    AbrirWaiting("Buscando productos...");
-
-    $.ajax({
-        url: busquedaProdBaseUrl,
-        type: "POST",
-        data: filtros,
-        success: function (html) {
-            CerrarWaiting();
-            $("#divBusquedaAvanzada").html(html);
-
-            // Mostrar sección de selección múltiple
-            $("#seccionSeleccionMultiple").show();
-
-            // Configurar eventos para seleccionar productos
-            configurarSeleccionProductosBusqueda();
-        },
-        error: function (xhr, status, error) {
-            CerrarWaiting();
-            console.error("Error en la búsqueda de productos:", error);
-            ControlaMensajeError("Error al buscar productos: " + error);
-        }
-    });
-}
-
-/**
- * Configura eventos para seleccionar productos en la búsqueda
- */
-function configurarSeleccionProductosBusqueda() {
-    // Agregar clase 'selectable' a todas las filas
-    $("#divBusquedaAvanzada table tbody tr").addClass("selectable");
-
-    // Remover eventos previos
-    $("#divBusquedaAvanzada table tbody tr.selectable").off("click");
-
-    // Configurar evento de clic para seleccionar/deseleccionar filas
-    $("#divBusquedaAvanzada table tbody tr.selectable").on("click", function () {
-        $(this).toggleClass("selected-row");
-
-        // Actualizar contador
-        actualizarContadorProductosSeleccionados();
-    });
-}
-
-/**
- * Actualiza el contador de productos seleccionados
- */
-function actualizarContadorProductosSeleccionados() {
-    var count = $("#divBusquedaAvanzada table tbody tr.selected-row").length;
-    $("#contadorSeleccionados").text(count);
-}
-
-/**
- * Limpia la selección de productos en la búsqueda
- */
-function limpiarSeleccionBusqueda() {
-    $("#divBusquedaAvanzada table tbody tr").removeClass("selected-row");
-    actualizarContadorProductosSeleccionados();
-}
-
-/**
- * Agrega los productos seleccionados al grid de productos
- */
-function agregarProductosSeleccionados() {
-    var productosSeleccionados = [];
-
-    // Obtener información de productos seleccionados
-    $("#divBusquedaAvanzada table tbody tr.selected-row").each(function () {
-        var $row = $(this);
-        var producto = {
-            p_id: $row.find("td:eq(0)").text().trim(),
-            p_desc: $row.find("td:eq(1)").text().trim(),
-            p_pcosto: parseFloat($row.find("td:eq(2)").text().replace(/[^\d.-]/g, '')) || 0,
-            cantidad: 1, // Valor por defecto
-            dto_porc: 0, // Valor por defecto
-            activo: 'A' // Activo por defecto
-        };
-        productosSeleccionados.push(producto);
-    });
-
-    // Agregar productos al grid
-    agregarProductosAlGrid(productosSeleccionados);
-
-    // Ocultar el modal
-    $("#busquedaModal").modal("hide");
-
-    // Limpiar selección
-    limpiarSeleccionBusqueda();
-}
-
-/**
- * Limpia los grids de productos y sustitutos
- * @param {boolean} modoEdicion - Indica si estamos en modo edición (para mostrar columnas de acción)
- */
-function limpiarGridsProductos(modoEdicion = modoNuevoCombo) {
-    // Crear HTML para un grid vacío de productos
-    var htmlProductosVacio = `
-    <div class="card h-100">
-        <div class="card-header py-1 d-flex justify-content-between align-items-center">
-            <h6 class="mb-0">Productos</h6>
-            ${modoEdicion ? `
-            <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarCProducto" title="Agregar Producto">
-                <i class="bx bx-plus"></i>
-            </button>
-            ` : ''}
-        </div>
-        <div class="card-body p-1">
-            <div class="table-responsive" style="max-height: 250px;">
-                <table class="table table-sm table-hover mb-0 table-golden" id="tbGridProductos">
-                    <thead class="table-golden-header">
-                        <tr class="header">
-                            <th class="text-center">ID</th>
-                            <th class="text-left">Descripción</th>
-                            <th class="text-center">Costo</th>
-                            <th class="text-center">Cantidad</th>
-                            <th class="text-center">Descuento %</th>
-                            <th class="text-center">Estado</th>
-                            ${modoEdicion ? '<th class="text-center">Acción</th>' : ''}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td colspan="${modoEdicion ? 7 : 6}" class="text-center text-muted py-2">
-                                <i class="bx bx-info-circle me-1"></i>No hay productos disponibles
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>`;
-    
-    // Crear HTML para un grid vacío de sustitutos
-    var htmlSustitutosVacio = `
-    <div class="card h-100">
-        <div class="card-header py-1 d-flex justify-content-between align-items-center">
-            <h6 class="mb-0">Sustitutos</h6>
-            ${modoEdicion ? `
-            <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarSustituto" title="Agregar Sustituto">
-                <i class="bx bx-plus"></i>
-            </button>
-            ` : ''}
-        </div>
-        <div class="card-body p-1">
-            <div class="table-responsive" style="max-height: 250px;">
-                <table class="table table-sm table-hover mb-0 table-golden" id="tbGridSustitutos">
-                    <thead class="table-golden-header">
-                        <tr class="header">
-                            <th class="text-center">ID</th>
-                            <th class="text-left">Descripción</th>
-                            <th class="text-center">Costo</th>
-                            <th class="text-center">Estado</th>
-                            ${modoEdicion ? '<th class="text-center">Acción</th>' : ''}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td colspan="${modoEdicion ? 5 : 4}" class="text-center text-muted py-2">
-                                <i class="bx bx-info-circle me-1"></i>No hay sustitutos disponibles
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>`;
-    
-    // Actualizar los contenedores con los grids vacíos
-    $(".col-sm-6:has(#tbGridProductos)").html(htmlProductosVacio);
-    $(".col-sm-6:has(#tbGridSustitutos)").html(htmlSustitutosVacio);
-    
-    // Habilitar los botones de agregar solo en modo edición
-    if (modoEdicion) {
-        $("#btnAgregarCProducto, #btnAgregarSustituto").prop("disabled", false);
-    }
-}
-
-/**
- * Agrega productos al grid
- */
-function agregarProductosAlGrid(productos) {
-    if (productos.length === 0) return;
-
-    // Obtener el tbody de la tabla
-    var $tbody = $("#tbGridProductos tbody");
-
-    // Limpiar mensaje "No hay productos" si existe
-    if ($tbody.find("tr td[colspan]").length > 0) {
-        $tbody.empty();
-    }
-
-    // Obtener ID del combo actual
-    var comboId = $("#cmb_id").val();
-
-    // Agregar cada producto como una nueva fila
-    $.each(productos, function (i, producto) {
-        var fila = `
-        <tr data-producto-id="${producto.p_id}" data-combo-id="${comboId}">
-            <td class="text-center">
-                ${producto.p_id}
-            </td>
-            <td>
-                ${producto.p_desc}
-            </td>
-            <td class="text-end">
-                ${producto.p_pcosto.toFixed(3)}
-            </td>
-            <td class="text-end">
-                ${producto.cantidad.toFixed(2)}
-            </td>
-            <td class="text-end">
-                ${producto.dto_porc.toFixed(2)}
-            </td>
-            <td class="text-center">
-                <span class="badge ${producto.activo == 'A' ? "bg-success" : "bg-danger"}">
-                    ${producto.activo == 'A' ? "Activo" : "Pendiente"}
-                </span>
-            </td>
-            ${modoNuevoCombo ? `
-            <td class="text-center">
-                <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-producto" 
-                        title="Eliminar producto" data-producto-id="${producto.p_id}">
-                    <i class="bx bx-trash"></i>
-                </button>
-            </td>
-            ` : ''}
-        </tr>`;
-
-        $tbody.append(fila);
-    });
-
-    // Configurar eventos de selección para los nuevos productos
-    configurarSeleccionProductos();
-    
-    // Configurar eventos para los botones de eliminar si estamos en modo de edición
-    if (modoNuevoCombo) {
-        configurarEventosEliminacionProductos();
-    }
-
-    // Seleccionar el primer producto agregado
-    var $primerProducto = $("#tbGridProductos tbody tr:first");
-    $primerProducto.trigger("click");
-}
-
-/**
- * Actualiza el grid de sustitutos con los datos del producto seleccionado
- * @param {string} productoId - ID del producto para el que se mostrarán los sustitutos
- */
-function actualizarGridSustitutos(productoId) {
-    // Obtener sustitutos para el producto desde el mapa
-    var sustitutos = productosSustitutosMap[productoId] || [];
-    
-    // Obtener el tbody de la tabla
-    var $tbody = $("#tbGridSustitutos tbody");
-    
-    // Limpiar tabla actual
-    $tbody.empty();
-    
-    if (sustitutos.length === 0) {
-        // Mostrar mensaje de "No hay sustitutos"
-        $tbody.html(`
-            <tr>
-                <td colspan="${modoNuevoCombo ? 5 : 4}" class="text-center text-muted py-2">
-                    <i class="bx bx-info-circle me-1"></i>No hay sustitutos disponibles
-                </td>
-            </tr>
-        `);
-        return;
-    }
-    
-    // Agregar cada sustituto como una nueva fila
-    $.each(sustitutos, function(i, sustituto) {
-        var fila = `
-        <tr data-producto-id="${sustituto.p_id}" data-combo-id="">
-            <td class="text-center">
-                ${sustituto.p_id}
-            </td>
-            <td>
-                ${sustituto.p_desc}
-            </td>
-            <td class="text-end">
-                ${typeof sustituto.p_pcosto === 'number' ? sustituto.p_pcosto.toFixed(2) : '0.00'}
-            </td>
-            <td class="text-center">
-                <span class="badge bg-success">
-                    Activo
-                </span>
-            </td>
-            ${modoNuevoCombo ? `
-            <td class="text-center">
-                <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-sustituto" 
-                        title="Eliminar sustituto" data-producto-id="${sustituto.p_id}">
-                    <i class="bx bx-trash"></i>
-                </button>
-            </td>
-            ` : ''}
-        </tr>`;
-        
-        $tbody.append(fila);
-    });
-    
-    // Configurar eventos para los botones de eliminar si estamos en modo de edición
-    if (modoNuevoCombo) {
-        configurarEventosEliminacionSustitutos();
-    }
-}
-
-/**
- * Carga los productos asociados a un combo
- */
-function cargarProductosCombo(comboId) {
-    if (typeof obtenerProductosDeComboUrl === 'undefined') {
-        console.error("URL para obtener productos no definida");
-        return;
-    }
-    
-    AbrirWaiting("Cargando productos...");
-    
-    $.ajax({
-        url: obtenerProductosDeComboUrl,
-        type: "POST",
-        data: { id: comboId },
-        success: function(html) {
-            CerrarWaiting();
-            
-            // Actualizar el contenido del grid de productos
-            $(".col-sm-6:has(#tbGridProductos)").html(html);
-            
-            // Si estamos viendo un combo existente, ocultar la columna de acción
-            if (!modoNuevoCombo) {
-                $("#tbGridProductos th:last-child, #tbGridProductos td:last-child").hide();
-            }
-            
-            // Configurar eventos de selección en la tabla de productos
-            configurarSeleccionProductos();
-            
-            // Después de cargar productos, cargar los sustitutos del primer producto (si existe)
-            setTimeout(function() {
-                // Buscar el primer producto en la tabla
-                var primerProducto = $("#tbGridProductos tbody tr:first");
-                if (primerProducto.length > 0) {
-                    var productoId = primerProducto.find("td:first").text().trim();
-                    if (productoId) {
-                        // Marcar el primer producto como seleccionado
-                        primerProducto.addClass("selected-row");
-                        
-                        // Cargar los sustitutos del primer producto
-                        cargarProductosSustitutos(comboId, productoId);
-                    }
-                }
-            }, 100); // Pequeño retraso para asegurar que el DOM se actualice
-        },
-        error: function(xhr, status, error) {
-            CerrarWaiting();
-            console.error("Error al cargar productos:", error);
-            ControlaMensajeError("Error al cargar productos: " + error);
-        }
-    });
-}
-
-/**
- * Carga los productos sustitutos asociados a un producto dentro de un combo
- */
-function cargarProductosSustitutos(comboId, productoId) {
-    if (typeof obtenerProductosSustitutosUrl === 'undefined') {
-        console.error("URL para obtener productos sustitutos no definida");
-        return;
-    }
-    
-    AbrirWaiting("Cargando productos sustitutos...");
-    
-    // Obtener descripción del producto seleccionado para el mensaje
-    var productoDesc = $("#tbGridProductos tbody tr.selected-row td:nth-child(2)").text().trim();
-    
-    $.ajax({
-        url: obtenerProductosSustitutosUrl,
-        type: "POST",
-        data: { comboId: comboId, productoId: productoId },
-        success: function(html) {
-            CerrarWaiting();
-            
-            // Actualizar el contenido del grid de sustitutos
-            $(".col-sm-6:has(#tbGridSustitutos)").html(html);
-            
-            // Si estamos viendo un combo existente, ocultar la columna de acción
-            if (!modoNuevoCombo) {
-                $("#tbGridSustitutos th:last-child, #tbGridSustitutos td:last-child").hide();
-            }
-            
-            // Verificar si hay sustitutos después de cargar el HTML
-            setTimeout(function() {
-                var tieneFilasConDatos = $("#tbGridSustitutos tbody tr").length > 0 && 
-                                         !$("#tbGridSustitutos tbody tr td").text().includes("No hay sustitutos disponibles");
-                
-                if (!tieneFilasConDatos) {
-                    // Usar ControlaMensajeWarning en lugar de AbrirMensaje
-                    ControlaMensajeWarning("El producto \"" + productoDesc + "\" (ID: " + productoId + ") no tiene sustitutos asociados.");
-                }
-            }, 100); // Pequeño retraso para asegurar que el DOM se actualice
-        },
-        error: function(xhr, status, error) {
-            CerrarWaiting();
-            console.error("Error al cargar productos sustitutos:", error);
-            ControlaMensajeError("Error al cargar productos sustitutos: " + error);
         }
     });
 }

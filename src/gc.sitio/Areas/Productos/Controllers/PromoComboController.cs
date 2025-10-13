@@ -381,7 +381,7 @@ namespace gc.sitio.Areas.Productos.Controllers
         /// <param name="p_id_sus">Lista de IDs de productos sustitutos</param>
         /// <returns>Resultado de la operación</returns>
         [HttpPost]
-        public JsonResult ResguardarRelacionProductoSustituto(string p_id, List<string> p_id_sus)
+        public JsonResult ResguardarRelacionProductoSustituto(string p_id, List<ComboSustitutoDto> sus)
         {
             try
             {
@@ -391,15 +391,16 @@ namespace gc.sitio.Areas.Productos.Controllers
                     return Json(new { ok = false, mensaje = "El ID del producto es obligatorio" });
                 }
 
-                if (p_id_sus == null || !p_id_sus.Any())
+                if(sus==null || sus.Count == 0)
                 {
                     return Json(new { ok = false, mensaje = "Debe especificar al menos un sustituto" });
                 }
 
                 // Filtrar IDs inválidos y eliminar duplicados
-                var sustitutosValidos = p_id_sus
-                    .Where(s => !string.IsNullOrEmpty(s) && s != p_id)
-                    .Distinct()
+                var sustitutosValidos = sus
+                    .Where(s => !string.IsNullOrEmpty(s.p_id)) // Filtrar p_id no válidos
+                    .GroupBy(s => s.p_id) // Agrupar por p_id para eliminar duplicados
+                    .Select(g => g.First()) // Tomar el primer elemento de cada grupo
                     .ToList();
 
                 if (!sustitutosValidos.Any())
@@ -407,28 +408,26 @@ namespace gc.sitio.Areas.Productos.Controllers
                     return Json(new { ok = false, mensaje = "No hay sustitutos válidos para agregar" });
                 }
 
-                // Obtener la lista actual de relaciones producto-sustituto de la sesión
-                var relaciones = HttpContext.Session.GetString("ProductosSustitutos");
-                var listaRelaciones = string.IsNullOrEmpty(relaciones)
-                    ? new List<ProductoSustituto>()
-                    : System.Text.Json.JsonSerializer.Deserialize<List<ProductoSustituto>>(relaciones);
+                // Obtener la lista actual de relaciones producto-sustituto de la sesión               
+                var listaRelaciones = ProductosSustitutos;
 
                 // Eliminar relaciones existentes para este producto
-                listaRelaciones.RemoveAll(r => r.ProductoId == p_id);
+                listaRelaciones.RemoveAll(r => r.p_id == p_id);
 
                 // Agregar las nuevas relaciones
-                foreach (var sustitutoId in sustitutosValidos)
+                foreach (var s in sustitutosValidos)
                 {
-                    listaRelaciones.Add(new ProductoSustituto
+                    listaRelaciones.Add(new ComboSustitutoDto
                     {
-                        ProductoId = p_id,
-                        SustitutoId = sustitutoId
+                       p_id = p_id,
+                       p_id_sustituto = s.p_id,
+                       p_desc = s.p_desc,
+                       p_pcosto = s.p_pcosto
                     });
                 }
 
-                // Guardar la lista actualizada en sesión
-                HttpContext.Session.SetString("ProductosSustitutos", 
-                    System.Text.Json.JsonSerializer.Serialize(listaRelaciones));
+                //// Guardar la lista actualizada en sesión
+                ProductosSustitutos = listaRelaciones;               
 
                 // Devolver respuesta exitosa
                 return Json(new
@@ -446,12 +445,43 @@ namespace gc.sitio.Areas.Productos.Controllers
         }
 
         /// <summary>
-        /// Clase para representar la relación entre un producto y su sustituto
+        /// Tiene como misión devolver los productos sustitulos resguardados temporalmente
+        /// en la variable "ProductosSustitutos", de un producto solamente durante el proceso 
+        /// de ALTA de un nuevo "combo".
         /// </summary>
-        public class ProductoSustituto
+        /// <param name="p_id"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public JsonResult RetornarProductosSustitutos(string p_id)
         {
-            public string ProductoId { get; set; }
-            public string SustitutoId { get; set; }
+            try
+            {
+                // Validar que el ID del producto no sea nulo o vacío
+                if (string.IsNullOrEmpty(p_id))
+                {
+                    return Json(new { ok = false, mensaje = "El ID del producto es requerido" });
+                }
+
+                // Obtener los productos sustitutos para el producto específico
+                var sustitutos = ProductosSustitutos?
+                    .Where(s => s.p_id == p_id)
+                    .ToList() ?? new List<ComboSustitutoDto>();
+
+                // Devolver el resultado como JSON
+                return Json(new { 
+                    ok = true, 
+                    sustitutos = sustitutos,
+                    cantidad = sustitutos.Count,
+                    mensaje = sustitutos.Any() 
+                        ? $"Se encontraron {sustitutos.Count} sustitutos para el producto {p_id}" 
+                        : $"No se encontraron sustitutos para el producto {p_id}"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al recuperar los productos sustitutos");
+                return Json(new { ok = false, mensaje = "Error al procesar la solicitud de productos sustitutos" });
+            }
         }
     }
 }
