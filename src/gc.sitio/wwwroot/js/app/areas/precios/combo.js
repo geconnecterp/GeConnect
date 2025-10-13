@@ -1,4 +1,7 @@
-﻿/**
+﻿// Variable global para detectar cuando un campo va a ser editado
+var campoEnPreparacionEdicion = null;
+
+/**
  * Script para gestión de combos y promociones
  */
 $(function () {
@@ -24,7 +27,18 @@ $(function () {
     if (typeof obtenerComboPorIdUrl === 'undefined') {
         console.error("La variable obtenerComboPorIdUrl no está definida");
     }
-    
+
+    // Añadir al inicio del documento, después de $(function() {...})
+    // Limpiar la bandera de edición en eventos globales para prevenir estados inconsistentes
+    $(document).on('mouseup', function () {
+        // Limpiar si el mouseup ocurre pero no se llegó a hacer clic en el campo
+        setTimeout(function () {
+            if (campoEnPreparacionEdicion !== null) {
+                campoEnPreparacionEdicion = null;
+            }
+        }, 100);
+    });
+
     // Inicializar estados
     accionesIniciales();
 });
@@ -83,7 +97,8 @@ function inicializarEventos() {
 
         // Cargar el modal de búsqueda avanzada
         cargarModalBusquedaAvanzada();
-        
+        // Inicializar los campos editables para cantidad y descuento en la grilla de productos
+        inicializarCamposEditablesProductos();
         // Inicializar el mapa de sustitutos
         productosSustitutosMap = {};
     });
@@ -779,44 +794,40 @@ function eliminarProductoDeGrid($fila, productoId) {
 }
 
 /**
- * Configura los eventos para la selecci贸n de filas en la tabla de productos
+ * Configura los eventos para la selección de filas en la tabla de productos
  */
 function configurarSeleccionProductos() {
-    // Aplicar estilo de cursor a todas las filas de la tabla de productos
+    // Aplicar estilo de cursor a todas las filas de la tabla
     $("#tbGridProductos tbody tr").css("cursor", "pointer");
 
-    // Remover eventos previos para evitar duplicaci贸n
+    // Remover eventos previos
     $(document).off("click", "#tbGridProductos tbody tr");
 
-    // Configurar evento de click para seleccionar filas (comportamiento de selecci贸n 煤nica)
+    // Configurar evento de click para seleccionar filas
     $(document).on("click", "#tbGridProductos tbody tr", function (e) {
+        // NUEVO: Verificación directa y verificación de campo en preparación
+        if ($(e.target).is('.input-cantidad, .input-descuento') ||
+            $(e.target).closest('.input-container').length > 0 ||
+            campoEnPreparacionEdicion !== null) {
+            return false; // Evitar selección si el clic fue en un campo editable
+        }
+
+        // Resto del código original
         if (!$(e.target).is("button, a, .btn, i")) {
             var $this = $(this);
 
-            // Eliminar la selecci贸n de todas las filas
             $("#tbGridProductos tbody tr").removeClass("selected-row");
-
-            // Seleccionar esta fila
             $this.addClass("selected-row");
 
-            // Obtener el ID del producto seleccionado
             var productoId = $this.find("td:first").text().trim();
-
-            // Obtener el ID del combo actual
             var comboId = $("#cmb_id").val();
 
-            //vamos a buscar los productos sustitutos
-            if ((productoId && comboId) ||(productoId && modoNuevoCombo) ) {
-                // Cargar los sustitutos del producto seleccionado
+            if ((productoId && comboId) || (productoId && modoNuevoCombo)) {
                 cargarProductosSustitutos(comboId, productoId);
-
-                // Guardar el ID del producto seleccionado para uso futuro
-                p_id_selected = productoId;
-            }            
+            }
         }
     });
 }
-
 
 /**
  * Actualiza el grid de sustitutos con los datos del producto seleccionado
@@ -938,6 +949,12 @@ function cargarProductosCombo(comboId) {
  * Carga los productos sustitutos asociados a un producto dentro de un combo
  */
 function cargarProductosSustitutos(comboId, productoId) {
+    // Verificación inmediata y estricta de edición activa
+    if (hayEdicionActiva()) {
+        console.log("⚠️ Edición activa detectada, no se cargarán sustitutos");
+        return false;
+    }
+
     // Determinar qué URL usar según el modo
     var url = modoNuevoCombo && typeof retornarProductosSustitutosUrl !== 'undefined'
         ? retornarProductosSustitutosUrl
@@ -2744,4 +2761,225 @@ function adaptarGrillaCanales() {
         // Se podría implementar lógica adicional aquí
         console.log("Canal " + $(this).val() + " " + (checked ? "seleccionado" : "deseleccionado"));
     });
+}
+
+
+/**
+ * Inicializa los campos editables para cantidad y descuento en la grilla de productos
+ */
+function inicializarCamposEditablesProductos() {
+    console.log("🔄 Inicializando campos editables en grid de productos");
+
+    // NUEVO: Capturar el evento mousedown que ocurre ANTES del click
+    $(document).off('mousedown', '.input-cantidad, .input-descuento').on('mousedown', '.input-cantidad, .input-descuento', function (e) {
+        // Marcar este elemento como "en preparación para edición"
+        campoEnPreparacionEdicion = this;
+        // Permitir que el evento continúe naturalmente
+    });
+
+    // 1. Configurar campos editables al hacer clic
+    $(document).off('click', '.input-cantidad, .input-descuento')
+        .on('click', '.input-cantidad, .input-descuento', function (e) {
+        // Detener propagación
+        e.stopPropagation();
+        e.preventDefault();
+
+        // Seleccionar la fila manualmente para mantener el contexto visual
+        var $fila = $(this).closest('tr');
+        $("#tbGridProductos tbody tr").removeClass("selected-row");
+        $fila.addClass("selected-row");
+
+        // Hacer editable el campo
+        $(this)
+            .prop('readonly', false)
+            .data('editando', true)
+            .removeClass('campo-readonly')
+            .trigger("focus")
+            .trigger("select");
+
+        // Limpiar bandera de preparación
+        campoEnPreparacionEdicion = null;
+
+        return false;
+    });
+
+    // Resto del código original para inicializar campos editables...
+    // (mantener el código existente desde la línea 3357 hasta 3432)
+
+    // 2. Aplicar InputMask a los campos numéricos
+    if (typeof Inputmask !== 'undefined') {
+        // Configuración para cantidad (2 decimales)
+        Inputmask({
+            alias: "numeric",
+            groupSeparator: ",",
+            radixPoint: ".",
+            autoGroup: true,
+            digits: 2,
+            digitsOptional: false,
+            rightAlign: true,
+            allowMinus: false,
+            min: 0
+        }).mask('.input-cantidad');
+
+        // Configuración para descuento (2 decimales, máx 100%)
+        Inputmask({
+            alias: "numeric",
+            groupSeparator: ",",
+            radixPoint: ".",
+            autoGroup: true,
+            digits: 2,
+            digitsOptional: false,
+            rightAlign: true,
+            allowMinus: false,
+            min: 0,
+            max: 100
+        }).mask('.input-descuento');
+    }
+
+    // 3. Manejar evento Enter y Tab
+    $(document).off('keydown', '.input-cantidad, .input-descuento').on('keydown', '.input-cantidad, .input-descuento', function (e) {
+        if (e.key === 'Enter' || e.key === 'Tab') {
+            e.preventDefault();
+
+            // Guardar cambios
+            guardarCambiosCampoProducto(this);
+
+            // Activar el siguiente campo editable
+            activarSiguienteCampoProducto(this);
+        }
+    });
+
+    // 4. Manejar evento blur (perder foco)
+    $(document).off('blur', '.input-cantidad, .input-descuento').on('blur', '.input-cantidad, .input-descuento', function () {
+        // No hacer nada si ya está en modo readonly
+        if ($(this).prop('readonly')) {
+            return;
+        }
+
+        // Guardar cambios y marcar como no editando
+        guardarCambiosCampoProducto(this);
+        $(this).data('editando', false);
+    });
+
+    // 5. Manejar click fuera de campos para cancelar edición
+    $(document).off('click.editablesProductos').on('click.editablesProductos', function (e) {
+        if (!$(e.target).is('.input-cantidad, .input-descuento')) {
+            $('.input-cantidad:not([readonly]), .input-descuento:not([readonly])').each(function () {
+                guardarCambiosCampoProducto(this);
+                $(this).data('editando', false);
+            });
+        }
+    });
+
+    console.log("✅ Campos editables inicializados");
+}
+
+/**
+ * Verifica si hay campos en edición activa o a punto de editarse
+ */
+function hayEdicionActiva() {
+    // NUEVO: Verificar si hay un campo en preparación para edición
+    if (campoEnPreparacionEdicion !== null) {
+        return true;
+    }
+
+    // Verificar campos en edición activa (existentes)
+    var camposEditando = $('.input-cantidad[data-editando=true], .input-descuento[data-editando=true]').length > 0;
+    var camposNoReadonly = $('.input-cantidad:not([readonly]), .input-descuento:not([readonly])').length > 0;
+    var camposEnFoco = $('.input-cantidad:focus, .input-descuento:focus').length > 0;
+
+    return camposEditando || camposNoReadonly || camposEnFoco;
+}
+
+/**
+ * Guarda los cambios en un campo editable de producto (cantidad o descuento)
+ * @param {HTMLElement} campo - El campo que se está editando
+ */
+function guardarCambiosCampoProducto(campo) {
+    const $campo = $(campo);
+    const valorOriginal = parseFloat($campo.data('original-value')) || 0;
+    const valorActual = parseFloat($campo.val().replace(/,/g, '')) || 0;
+
+    // Formatear el valor según el tipo de campo
+    const decimales = $campo.hasClass('input-cantidad') ? 2 : 2;
+    $campo.val(valorActual.toFixed(decimales));
+
+    // Volver a readonly
+    $campo.prop('readonly', true);
+
+    // Verificar si cambió el valor
+    if (Math.abs(valorOriginal - valorActual) > 0.001) {
+        marcarCampoModificadoProducto($campo);
+        actualizarDatosProductoCombo($campo);
+    }
+}
+
+/**
+ * Marca un campo como modificado con indicador visual
+ * @param {jQuery} $campo - El campo jQuery que se marcará
+ */
+function marcarCampoModificadoProducto($campo) {
+    $campo.addClass('campo-modificado');
+
+    // Agregar indicador visual si no existe
+    const $container = $campo.closest('.input-container');
+    if ($container.find('.indicador-cambio').length === 0) {
+        $container.append('<div class="indicador-cambio"></div>');
+    }
+}
+
+/**
+ * Actualiza los datos internos del producto cuando se modifica cantidad o descuento
+ * @param {jQuery} $campo - El campo jQuery modificado
+ */
+function actualizarDatosProductoCombo($campo) {
+    const productoId = $campo.data('producto-id');
+    const esCantidad = $campo.hasClass('input-cantidad');
+    const nuevoValor = parseFloat($campo.val().replace(/,/g, '')) || 0;
+
+    // Actualizar data-original-value para futuras comparaciones
+    $campo.data('original-value', nuevoValor);
+
+    // Actualizar datos internos o en el servidor según sea necesario
+    console.log(`Producto ${productoId}: ${esCantidad ? 'cantidad' : 'descuento'} actualizado a ${nuevoValor}`);
+}
+
+/**
+ * Activa el siguiente campo editable para continuar la edición
+ * @param {HTMLElement} campoActual - El campo actual que pierde el foco
+ */
+function activarSiguienteCampoProducto(campoActual) {
+    const $campoActual = $(campoActual);
+    const $fila = $campoActual.closest('tr');
+    const esCantidad = $campoActual.hasClass('input-cantidad');
+
+    // Si es cantidad, activar descuento en la misma fila
+    if (esCantidad) {
+        const $siguiente = $fila.find('.input-descuento');
+        if ($siguiente.length) {
+            $siguiente
+                .prop('readonly', false)
+                .removeClass('campo-readonly')
+                .focus()
+                .select();
+            return;
+        }
+    }
+
+    // Si es descuento o no hay siguiente en esta fila, ir a la siguiente fila
+    const $siguienteFila = $fila.next('tr');
+    if ($siguienteFila.length) {
+        const $siguienteCampo = $siguienteFila.find('.input-cantidad');
+        if ($siguienteCampo.length) {
+            $siguienteCampo
+                .prop('readonly', false)
+                .removeClass('campo-readonly')
+                .focus()
+                .select();
+            return;
+        }
+    }
+
+    // Si no hay siguiente campo, solo cerrar la edición actual
+    $campoActual.prop('readonly', true).addClass('campo-readonly');
 }

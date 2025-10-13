@@ -41,10 +41,22 @@
                                     @item.p_pcosto.ToString("N3")
                                 </td>
                                 <td class="text-end">
-                                    @item.cantidad.ToString("N2")
+                                    <div class="input-container">
+                                        <input type="text" class="form-control form-control-sm input-cantidad input-numeric"
+                                               value="@(item.cantidad.ToString("N2"))"
+                                               data-producto-id="@item.p_id"
+                                               data-original-value="@item.cantidad"
+                                               readonly />
+                                    </div>
                                 </td>
                                 <td class="text-end">
-                                    @item.dto_porc.ToString("N2")
+                                    <div class="input-container">
+                                        <input type="text" class="form-control form-control-sm input-descuento input-numeric"
+                                               value="@(item.dto_porc.ToString("N2"))"
+                                               data-producto-id="@item.p_id"
+                                               data-original-value="@item.dto_porc"
+                                               readonly />
+                                    </div>
                                 </td>
                                 <td class="text-center">
                                     <span class="badge @(item.activo == 'A' ? "bg-success" : "bg-danger")">
@@ -73,3 +85,15 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Inicialización de campos editables ahora se hace automáticamente desde combo.js
+    // Este script solo verifica y asegura que la inicialización se ejecute
+    $(function() {
+        if (typeof inicializarCamposEditablesProductos === 'function') {
+            inicializarCamposEditablesProductos();
+        } else {
+            console.error("La función inicializarCamposEditablesProductos no está definida");
+        }
+    });
+</script>

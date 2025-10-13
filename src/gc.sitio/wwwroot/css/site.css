@@ -2488,3 +2488,9 @@ input, select, textarea, button, checkbox, radio {
 .etiqueta-dtopa::after { content: "DPa"; }
 .etiqueta-bon::after { content: "Bon"; }
 .etiqueta-fl::after { content: "Fl"; }
+
+/* Estilo para campos editables en modo activo - se agrega al final del archivo */
+.input-container .form-control:not([readonly]) {
+    background-color: #fff8e1;
+    border-color: #ffc107;
+}
