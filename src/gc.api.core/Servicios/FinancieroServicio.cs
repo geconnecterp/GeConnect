@@ -693,5 +693,29 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<FinancieroConciliaDatosDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<FinancieroConciliaNroDto> GetFinancieroConciliaNro(FinancieroConciliaNrosRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_CONCILIA_NRO;
+			var ps = new List<SqlParameter>()
+			{
+				new("@ctaf_id", request.ctaf_id),
+				new("@conciliado_nro", request.conciliado_nro),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<FinancieroConciliaNroDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<RespuestaDto> FinancieroExtractoDesconcilia(FinancieroExtractoDesconciliaRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_CONCILIA_DESCONCILIA_NRO;
+			var ps = new List<SqlParameter>()
+			{
+				new("@ctaf_id",request.ctaf_id),
+				new("@conciliado_nro",request.conciliado_nro),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

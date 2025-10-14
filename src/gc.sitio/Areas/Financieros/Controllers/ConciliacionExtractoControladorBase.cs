@@ -1,5 +1,6 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Financieros;
 using gc.sitio.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -29,6 +30,41 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			{
 				var json = JsonConvert.SerializeObject(value);
 				_context.HttpContext?.Session.SetString("ListaCuentaBancos", json);
+			}
+		}
+		public List<RegistroExtractoDto> ListaItemsExtracto
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("ListaItemsExtracto");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<RegistroExtractoDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ListaItemsExtracto", json);
+			}
+		}
+
+		public List<RegistroSistemaDto> ListaItemsSistema
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("ListaItemsSistema");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<RegistroSistemaDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ListaItemsSistema", json);
 			}
 		}
 	}

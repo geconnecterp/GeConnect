@@ -180,6 +180,8 @@
 			public const string SP_F_BCO_EXTRACTO_FILE = "SPGECO_F_BCO_Extracto_File";
 			public const string SP_F_BCO_EXTRACTO_CONFIRMAR = "SPGECO_F_BCO_Extracto_Confirmar";
 			public const string SP_F_CONCILIA_DATOS = "SPGECO_F_Concilia_Datos";
+			public const string SP_F_CONCILIA_NRO = "SPGECO_F_Concilia_Nro";
+			public const string SP_F_CONCILIA_DESCONCILIA_NRO = "SPGECO_F_Concilia_Desconcilia_Nro";
 			#endregion
 
 			#region SP Depositos

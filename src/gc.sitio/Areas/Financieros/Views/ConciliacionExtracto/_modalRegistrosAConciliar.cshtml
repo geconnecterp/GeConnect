@@ -1,0 +1,148 @@
+﻿@using static gc.infraestructura.Helpers.GridHelper
+@model ModalRegistrosConciliadosModel
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+
+	.btn-icon-compact {
+		padding: 0.15rem 0.3rem;
+		font-size: 0.7rem;
+		line-height: 1;
+	}
+
+		.btn-icon-compact i {
+			font-size: 0.9rem;
+		}
+
+	.btn.invisible {
+		visibility: hidden;
+		pointer-events: none;
+	}
+
+	#tbGrillaExtractoRegConci th {
+		padding: 0.4rem 0.5rem;
+		font-size: 0.8rem;
+	}
+
+	#tbGrillaExtractoRegConci td {
+		padding: 0.2rem 0.3rem;
+		font-size: 0.75rem;
+		line-height: 1.1;
+		vertical-align: middle;
+	}
+
+	#tbGrillaSistemaRegConci th {
+		padding: 0.4rem 0.5rem;
+		font-size: 0.8rem;
+	}
+
+	#tbGrillaSistemaRegConci td {
+		padding: 0.2rem 0.3rem;
+		font-size: 0.75rem;
+		line-height: 1.1;
+		vertical-align: middle;
+	}
+
+	#tbGrillaExtractoRegConci td:empty {
+		min-height: 32px; /* ajustable según tu diseño */
+	}
+
+	#tbGrillaSistemaRegConci td:empty {
+		min-height: 32px; /* ajustable según tu diseño */
+	}
+
+	.td-placeholder::before {
+		content: "•";
+		visibility: hidden;
+		display: inline-block;
+	}
+
+	#tbGrillaExtractoRegConci thead th {
+		position: sticky;
+		top: 0;
+		background-color: #d4af37; /* o el color de fondo que uses */
+		z-index: 2;
+	}
+
+	#tbGrillaSistemaRegConci thead th {
+		position: sticky;
+		top: 0;
+		background-color: #d4af37; /* o el color de fondo que uses */
+		z-index: 2;
+	}
+
+</style>
+<div class="modal-header">
+	<h5 class="modal-title" id="modalCenterTitle">@Model.RegistroConciliado</h5>
+	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+	<div class="row">
+		<div id="divGrillaExtracto" class="col-md-6">
+			<div class="table-responsive table-wrapper-500-full-width" id="containerGrillaExtractoRegConci">
+				<table class="table table-bordered table-hover table-golden" id="tbGrillaExtractoRegConci">
+					<thead>
+						<tr class="header">
+							<th class="text-center" scope="col">Fecha</th>
+							<th class="text-center" scope="col">Concepto</th>
+							<th class="text-center" scope="col">Importe</th>
+						</tr>
+					</thead>
+					<tbody>
+						@if (Model != null && Model.GrillaExtracto != null && Model.GrillaExtracto.ListaDatos != null && Model.GrillaExtracto.ListaDatos.Count > 0)
+						{
+							@foreach (var item in Model.GrillaExtracto.ListaDatos)
+							{
+								if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+								<tr class="@clase" data-ctaf-id="@item.ctaf_id" data-extr-id="@item.extr_id" data-ext-fecha="@item.ext_fecha" onclick="selectGrillaExtractoModalRegConci(this);">
+									<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_fecha)">@Model.GrillaExtracto.FormatearDato(item.ext_fecha, FormatDato.Fecha)</td>
+									<td class="@Model.GrillaExtracto.ObtenerClase(item.concepto)">@Model.GrillaExtracto.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
+									<td class="@Model.GrillaExtracto.ObtenerClase(item.importe)">@Model.GrillaExtracto.FormatearDato(item.importe, FormatDato.Monto)</td>
+								</tr>
+							}
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div id="divGrillaSistema" class="col-md-6">
+			<div class="table-responsive table-wrapper-500-full-width" id="containerGrillaSistemaRegConci">
+				<table class="table table-bordered table-hover table-golden" id="tbGrillaSistemaRegConci">
+					<thead>
+						<tr class="header">
+							<th class="text-center" scope="col">Fecha</th>
+							<th class="text-center" scope="col">Concepto</th>
+							<th class="text-center" scope="col">Importe</th>
+						</tr>
+					</thead>
+					<tbody>
+						@if (Model != null && Model.GrillaSistema != null && Model.GrillaSistema.ListaDatos != null && Model.GrillaSistema.ListaDatos.Count > 0)
+						{
+							@foreach (var item in Model.GrillaSistema.ListaDatos)
+							{
+								if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+								<tr class="@clase" data-ctaf-id="@item.ctaf_id" data-dia-movi="@item.dia_movi" data-cf-compte="@item.cf_compte" data-cf-item="@item.cf_item" onclick="selectGrillaSistema(this);">
+									<td class="@Model.GrillaSistema.ObtenerClase(item.cf_fecha_concilia)">@Model.GrillaSistema.FormatearDato(item.cf_fecha_concilia, FormatDato.Fecha)</td>
+									<td class="@Model.GrillaSistema.ObtenerClase(item.concepto)">@Model.GrillaSistema.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
+									<td class="@Model.GrillaSistema.ObtenerClase(item.importe)">@Model.GrillaSistema.FormatearDato(item.importe, FormatDato.Monto)</td>
+								</tr>
+							}
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<div class="input-group input-group-sm">
+		<button type="button" class="btn btn-success btn-sm ms-1" id="btnDesunir">
+			<i class="bx bx-unlink"></i> Des Unir
+		</button>
+		<button type="button" class="btn btn-outline-secondary btn-sm ms-1" id="btnSalir" data-bs-dismiss="modal">
+			<i class="bx bx-log-out-circle"></i> Salir
+		</button>
+	</div>
+</div>

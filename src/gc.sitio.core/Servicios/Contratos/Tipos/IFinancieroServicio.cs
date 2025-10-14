@@ -40,5 +40,7 @@ namespace gc.sitio.core.Servicios.Contratos
 		RespuestaGenerica<RespuestaDto> SetExtractoBancarioConfirmar(SetExtractoBancarioConfirmaRequest request, string token);
 		List<CrudExtractoBancarioDto> GetBcoExtractoDesdeFile(ExtractoBcoFileRequest request, string token);
 		List<FinancieroConciliaDatosDto> GetFinancieroConciliaDatos(FinancieroConciliaDatosRequest request, string token);
+		List<FinancieroConciliaNroDto> GetFinancieroConciliaNro(FinancieroConciliaNrosRequest request, string token);
+		RespuestaGenerica<RespuestaDto> FinancieroExtractoDesconcilia(FinancieroExtractoDesconciliaRequest request, string token);
 	}
 }

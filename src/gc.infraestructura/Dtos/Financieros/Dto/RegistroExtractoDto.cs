@@ -12,7 +12,7 @@ namespace gc.infraestructura.Dtos.Financieros
 		public decimal importe { get; set; }
 		public string ct_tipo { get; set; }
 		public string conciliado { get; set; }
-		public int conciliado_nro { get; set; }
+		public int? conciliado_nro { get; set; }
 		public string a_cociliar { get; set; }
 		public int a_cociliar_nro { get; set; }
 		public string a_cociliar_tipo { get; set; }

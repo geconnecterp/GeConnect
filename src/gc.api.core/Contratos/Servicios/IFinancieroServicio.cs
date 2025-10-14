@@ -40,5 +40,7 @@ namespace gc.api.core.Contratos.Servicios
         List<RespuestaDto> SetExtractoBancarioConfirmar(SetExtractoBancarioConfirmaRequest request);
         List<CrudExtractoBancarioDto> GetBcoExtractoDesdeFile(ExtractoBcoFileRequest request);
         List<FinancieroConciliaDatosDto> GetFinancieroConciliaDatos(FinancieroConciliaDatosRequest request);
+        List<FinancieroConciliaNroDto> GetFinancieroConciliaNro(FinancieroConciliaNrosRequest request);
+		List<RespuestaDto> FinancieroExtractoDesconcilia(FinancieroExtractoDesconciliaRequest request);
 	}
 }

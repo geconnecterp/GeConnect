@@ -168,6 +168,8 @@
 				$("#tbGrillaExtracto tbody tr:not(.table-secondary)").each(function() {
 					$(this).toggleClass("selected", isChecked);
 				});
+
+				actualizarTotalExtracto(); // ← nuevo
 			});
 
 			// Evento para checkboxes individuales sin usar 'event' global
@@ -191,6 +193,8 @@
 					const totalChecked = $(".check-extracto:checked").length;
 					$("#checkAllItemExtracto").prop("checked", totalCheckboxes === totalChecked);
 				}
+
+				actualizarTotalExtracto(); // ← nuevo
 			});
 
 			// Función de ayuda para obtener los IDs de productos seleccionados
@@ -208,5 +212,36 @@
 				});
 				return itemMarcados;
 			};
+
+			function actualizarTotalExtracto() {
+				const totalExtracto  = $(".check-extracto:checked").toArray().reduce((acc, checkbox) => {
+					const $row = $(checkbox).closest("tr");
+					const importeTexto = $row.find("td").eq(4).text().trim(); // Columna de importe
+					const importe = parseFloat(importeTexto.replace(/,/g, '')) || 0;
+					return acc + importe;
+				}, 0);
+
+				const totalSistema = $(".check-sistema:checked").toArray().reduce((acc, checkbox) => {
+					const $row = $(checkbox).closest("tr");
+					const importeTexto = $row.find("td").eq(4).text().trim(); // Columna de importe
+					const importe = parseFloat(importeTexto.replace(/,/g, '')) || 0;
+					return acc + importe;
+				}, 0);
+
+				//const totalSistema = actualizarTotalSistema(); // ← llama a la otra función
+
+				const diferencia = totalExtracto - totalSistema;
+
+				// Formatear el total con separador de miles y punto decimal
+				$("#Extracto").val(totalExtracto.toLocaleString('en-US', {
+					minimumFractionDigits: 2,
+					maximumFractionDigits: 2
+				}));
+
+				$("#Diferencia").val(diferencia.toLocaleString('en-US', {
+					minimumFractionDigits: 2,
+					maximumFractionDigits: 2
+				}));
+			}
 		});
 </script>

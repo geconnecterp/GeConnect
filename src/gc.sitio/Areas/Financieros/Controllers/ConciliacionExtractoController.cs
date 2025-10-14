@@ -2,15 +2,13 @@
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Financieros;
+using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Financieros.Models;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.Extensions.Options;
-using Microsoft.Win32;
 using Newtonsoft.Json;
 
 namespace gc.sitio.Areas.Financieros.Controllers
@@ -66,18 +64,23 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
 				var regs = _financieroServicio.GetFinancieroConciliaDatos(request, TokenCookie);
-				if (regs==null || regs.Count<=0)
+				if (regs == null || regs.Count <= 0)
 					return PartialView("_grillaExtractoBancario", model);
 
 				var resultado1 = ValidadorJson.ValidarExtracto(regs[0].json_e);
 				var resultado2 = ValidadorJson.ValidarSistema(regs[0].json_s);
 				var cuenta = ListaCuentaBancos.Where(x => x.ctaf_id == request.ctaf_id).ToList();
-				
-				if (!resultado1.EsValido || !resultado2.EsValido)
+
+				if (resultado1.JsonVacio && resultado2.JsonVacio)
+					return BadRequest("No se han obtenido resultados con los filtros seleccionados.");
+
+				if (!resultado1.EsValido && !resultado2.EsValido)
 				{
-					return BadRequest("Se ha producido un error interno al intentar obtener los datos.");
+					var errores = string.Join(", ", resultado1.Errores.Distinct());
+					errores += string.Join(", ", resultado2.Errores.Distinct());
+					return BadRequest($"Se ha producido un error interno al intentar obtener los datos. Errores: {errores}");
 				}
-				
+
 				if (cuenta != null && cuenta.Count() > 0)
 					model.CuentaBanco = $"{cuenta[0].ctaf_denominacion} ({cuenta[0].ctaf_id})";
 
@@ -85,9 +88,142 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				model.Diferencia = 0;
 				model.Sistema = 0;
 				model.GrillaSistema = ObtenerGridCoreSmart<RegistroSistemaDto>(resultado2.GrillaSistema ?? []);
-				Console.WriteLine($"json_extracto: {regs[0].json_e}");
+				ListaItemsSistema = resultado2.GrillaSistema ?? [];
 				model.GrillaExtracto = ObtenerGridCoreSmart<RegistroExtractoDto>(resultado1.GrillaExtracto ?? []);
-				Console.WriteLine($"json_sistema: {regs[0].json_s}");
+				ListaItemsExtracto = resultado1.GrillaExtracto ?? [];
+				return PartialView("_datosExtractoYSistema", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult ObtenerModalRegistrosConciliados(FinancieroConciliaNrosRequest request)
+		{
+			var model = new ModalRegistrosConciliadosModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var resultado = _financieroServicio.GetFinancieroConciliaNro(request, TokenCookie);
+				if (resultado == null || resultado.Count <= 0)
+					return PartialView("_grillaExtractoBancario", model);
+
+				var resultado1 = ValidadorJson.ValidarExtracto(resultado[0].json_e, false);
+				var resultado2 = ValidadorJson.ValidarSistema(resultado[0].json_s, false);
+
+				model.RegistroConciliado = $"Registro Conciliado N° {request.conciliado_nro}";
+				model.ConciliadoNro = request.conciliado_nro;
+				model.GrillaExtracto = ObtenerGridCoreSmart<RegistroExtractoDto>(resultado1.GrillaExtracto ?? []);
+				model.GrillaSistema = ObtenerGridCoreSmart<RegistroSistemaDto>(resultado2.GrillaSistema ?? []);
+				return PartialView("_modalRegistrosConciliados", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult ObtenerModalRegistrosAConciliar()
+		{
+			var model = new ModalRegistrosConciliadosModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				model.RegistroConciliado = $"Registros A Conciliar";
+				var listaTempExtracto = ListaItemsExtracto.Where(x => x.a_cociliar == "S").ToList();
+				model.GrillaExtracto = ObtenerGridCoreSmart<RegistroExtractoDto>(listaTempExtracto ?? []);
+				var listaTempSistema = ListaItemsSistema.Where(x => x.a_cociliar == "S").ToList();
+				model.GrillaSistema = ObtenerGridCoreSmart<RegistroSistemaDto>(listaTempSistema ?? []);
+				return PartialView("_modalRegistrosAConciliar", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public JsonResult DesconciliarRegistrosConciliados(FinancieroExtractoDesconciliaRequest request)
+		{
+			try
+			{
+				if (request == null)
+					return Json(new { error = true, warn = false, msg = "Request vacío" });
+
+				//var respuesta = _financieroServicio.FinancieroExtractoDesconcilia(request, TokenCookie);
+				//if (respuesta == null || respuesta.Entidad == null)
+				//	return Json(new { error = true, warn = false, msg = "Se ha producido un error al intentar desconciliar los registros. Intente mas tarde." });
+				//if (respuesta.Entidad.resultado != 0)
+				//	return Json(new { error = true, warn = false, msg = $"{respuesta.Entidad.resultado_msj} ({respuesta.Entidad.resultado})" });
+				return Json(new { error = false, warn = false, msg = "" });
+			}
+			catch (NegocioException ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+		}
+
+		public IActionResult ActualizarRegistrosLuegoDeDesconciliar(string ctaf_id, int conciliado_nro)
+		{ 
+			var model = new CargarDatosExtractoYSistemaModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var listaTempExtracto = ListaItemsExtracto;
+				foreach (var item in listaTempExtracto.Where(x => x.conciliado_nro == conciliado_nro))
+				{
+					item.conciliado = "N";
+					item.conciliado_nro = null;
+				}
+				ListaItemsExtracto = listaTempExtracto;
+
+				var listaTempSistema = ListaItemsSistema;
+				foreach (var item in listaTempSistema.Where(x => x.conciliado_nro == conciliado_nro))
+				{
+					item.conciliado = "N";
+					item.conciliado_nro = null;
+				}
+				ListaItemsSistema = listaTempSistema;
+				model.CuentaBanco = ListaCuentaBancos.Where(x => x.ctaf_id == ctaf_id).Select(x => $"{x.ctaf_denominacion} ({x.ctaf_id})").FirstOrDefault() ?? string.Empty;
+				model.Extracto = 0;
+				model.Diferencia = 0;
+				model.Sistema = 0;
+				model.GrillaSistema = ObtenerGridCoreSmart<RegistroSistemaDto>(ListaItemsSistema);
+				model.GrillaExtracto = ObtenerGridCoreSmart<RegistroExtractoDto>(ListaItemsExtracto);
 				return PartialView("_datosExtractoYSistema", model);
 			}
 			catch (Exception ex)
@@ -107,6 +243,8 @@ namespace gc.sitio.Areas.Financieros.Controllers
 		{
 			try
 			{
+				ListaItemsExtracto = [];
+				ListaItemsSistema = [];
 				return Json(new { error = false, warn = false, msg = "" });
 			}
 			catch (NegocioException ex)
@@ -123,6 +261,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 		public class ResultadoValidacionJson
 		{
 			public bool EsValido => !Errores.Any();
+			public bool JsonVacio { get; set; }
 			public List<string> Errores { get; set; } = new();
 			public List<RegistroExtractoDto>? GrillaExtracto { get; set; }
 			public List<RegistroSistemaDto>? GrillaSistema { get; set; }
@@ -130,13 +269,26 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 		public static class ValidadorJson
 		{
-			public static ResultadoValidacionJson ValidarExtracto(string json)
+			public static ResultadoValidacionJson ValidarExtracto(string json, bool validarEstructura = true)
 			{
 				var resultado = new ResultadoValidacionJson();
 
 				try
 				{
+					if (string.IsNullOrEmpty(json))
+					{
+						resultado.Errores.Add("JSON vacío.");
+						resultado.JsonVacio = true;
+						return resultado;
+					}
+
 					var registros = JsonConvert.DeserializeObject<List<RegistroExtractoDto>>(json);
+					if (!validarEstructura)
+					{
+						resultado.GrillaExtracto = registros;
+						return resultado;
+					}
+
 					if (registros == null || registros.Count == 0)
 					{
 						resultado.Errores.Add("JSON vacío o inválido.");
@@ -164,17 +316,30 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				{
 					resultado.Errores.Add($"Error al deserializar: {ex.Message}");
 				}
-				
+
 				return resultado;
 			}
 
-			public static ResultadoValidacionJson ValidarSistema(string json)
+			public static ResultadoValidacionJson ValidarSistema(string json, bool validarEstructura = true)
 			{
 				var resultado = new ResultadoValidacionJson();
 
 				try
 				{
+					if (string.IsNullOrEmpty(json))
+					{
+						resultado.Errores.Add("JSON vacío.");
+						resultado.JsonVacio = true;
+						return resultado;
+					}
+
 					var registros = JsonConvert.DeserializeObject<List<RegistroSistemaDto>>(json);
+					if (!validarEstructura)
+					{
+						resultado.GrillaSistema = registros;
+						return resultado;
+					}
+
 					if (registros == null || registros.Count == 0)
 					{
 						resultado.Errores.Add("JSON vacío o inválido.");
