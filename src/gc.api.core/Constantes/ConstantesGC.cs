@@ -179,6 +179,7 @@
 			public const string SP_F_BCO_CH_E_CHEQ = "SPGECO_F_BCO_CHE_E_Cheq";
 			public const string SP_F_BCO_EXTRACTO_FILE = "SPGECO_F_BCO_Extracto_File";
 			public const string SP_F_BCO_EXTRACTO_CONFIRMAR = "SPGECO_F_BCO_Extracto_Confirmar";
+			public const string SP_F_CONCILIA_DATOS = "SPGECO_F_Concilia_Datos";
 			#endregion
 
 			#region SP Depositos

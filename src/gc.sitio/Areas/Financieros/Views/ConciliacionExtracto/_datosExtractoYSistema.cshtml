@@ -1,0 +1,64 @@
+﻿@using static gc.infraestructura.Helpers.GridHelper
+@model CargarDatosExtractoYSistemaModel
+@{
+}
+<style>
+	.input-rojo-suave,
+	.input-rojo-suave:focus,
+	.input-rojo-suave:read-only {
+		background-color: #f28b82 !important;
+		color: #ffffff !important;
+		font-weight: bold;
+	}
+
+	.input-azul-suave,
+	.input-azul-suave:focus,
+	.input-azul-suave:read-only {
+		background-color: #a7c7f2 !important;
+		color: #ffffff !important;
+		font-weight: bold;
+	}
+
+	.input-verde-suave,
+	.input-verde-suave:focus,
+	.input-verde-suave:read-only {
+		background-color: #a8d5ba !important;
+		color: #ffffff !important;
+		font-weight: bold;
+	}
+</style>
+<div class="row align-items-center mb-2">
+	<div class="col-12 d-flex justify-content-start">
+		<h5 class="col-4 fw-bold text-golden mb-0">
+			<i class="bx bx-spreadsheet me-1"></i> @Model.CuentaBanco
+		</h5>
+		<div class="input-group input-group-sm">
+			<span class="input-group-text">Extracto: </span>
+			<input type="text" asp-for="Extracto" class="form-control activable text-end input-rojo-suave" readonly />
+			<span class="input-group-text">Sistema: </span>
+			<input type="text" asp-for="Sistema" class="form-control activable text-end input-azul-suave" readonly />
+			<span class="input-group-text">Diferencia: </span>
+			<input type="text" asp-for="Diferencia" class="form-control activable text-end input-verde-suave" readonly />
+			<button type="button" class="btn btn-success btn-sm" id="btnUnir">
+				<i class="bx bx-link"></i> Unir
+			</button>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div id="divGrillaExtracto" class="col-md-5">
+		<partial name="_grillaExtracto" model="Model" />
+	</div>
+	<div id="divGrillaSistema" class="col-md-5">
+		<partial name="_grillaSistema" model="Model" />
+	</div>
+	<div class="col-md-2 d-flex flex-column align-items-center">
+		<button id="btnConfirmar" class="btn btn-success btn-sm mt-1 w-75" type="button" title="Confirmar">
+			<i class="bx bx-badge-check"></i> Confirmar
+		</button>
+		<button id="btnCancelar" class="btn btn-danger btn-sm mt-2 w-75" type="button" title="Cancelar">
+			<i class="bx bx-x-circle"></i> Cancelar
+		</button>
+	</div>
+
+</div>

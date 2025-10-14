@@ -368,5 +368,20 @@ namespace gc.api.Controllers.Financieros
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FinancieroConciliaDatosDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFinancieroConciliaDatos(FinancieroConciliaDatosRequest request)
+		{
+			ApiResponse<List<FinancieroConciliaDatosDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetFinancieroConciliaDatos(request);
+
+			response = new ApiResponse<List<FinancieroConciliaDatosDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }

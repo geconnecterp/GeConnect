@@ -39,5 +39,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<ECheqDto> GetECheqLista(PasoPrevioECheqRequest request, string token);
 		RespuestaGenerica<RespuestaDto> SetExtractoBancarioConfirmar(SetExtractoBancarioConfirmaRequest request, string token);
 		List<CrudExtractoBancarioDto> GetBcoExtractoDesdeFile(ExtractoBcoFileRequest request, string token);
+		List<FinancieroConciliaDatosDto> GetFinancieroConciliaDatos(FinancieroConciliaDatosRequest request, string token);
 	}
 }

@@ -1,0 +1,31 @@
+﻿@model RespuestaGenerica<string>
+@{
+}
+<div class="modal fade modal-golden in" id="modalErroresJson" tabindex="-1" style="display: none;" aria-hidden="true" data-backdrop="static">
+	<div class="modal-dialog modal-x" role="document">
+		<div class="modal-content">
+			<div id="divModalErroresJson">
+				<div class="modal-header bg-danger text-white">
+					<h5 class="modal-title" id="modalErroresLabel">@Model.Mensaje</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					@if (Model.ListaEntidad != null && Model.ListaEntidad.Any())
+					{
+						<ul class="list-group">
+							@foreach (var error in Model.ListaEntidad)
+							{
+								<li class="list-group-item list-group-item-danger">@error</li>
+							}
+						</ul>
+					}
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

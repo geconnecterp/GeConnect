@@ -1,0 +1,39 @@
+﻿@model FiltroConciliacionExtractoModel
+@{
+    Layout = "~/views/shared/_Layout.cshtml";
+}
+<style>
+	.filtro-btn {
+		margin-right: 555px;
+	}
+</style>
+<div class="container mt-2">
+	<div class="row mb-2">
+		<div class="d-flex justify-content-center">
+			<button id="btnFiltro" class="btn btn-primary btn-sm filtro-btn" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltros" aria-expanded="true" aria-controls="divFiltros">
+				<i class="bx bx-filter bx-xs"></i>
+			</button>
+		</div>
+	</div>
+
+	<div class="d-flex justify-content-center">
+		<div id="divFiltros" class="w-100" style="max-width: 600px;">
+			<partial name="_filtros" model="Model" />
+		</div>
+	</div>
+	<div class="collapse" id="divDetalle" style="">
+		<div class="row" id="divConciliacionExtracto">
+		</div>
+	</div>
+</div>
+
+@section scripts {
+	<script type="text/javascript">
+		var ctafIdSelected = "";
+		var ctafDenominacionSelected = "";
+		var inicializarDatosEnSesionUrl =  "@Url.Action("InicializarDatosEnSesion", "ConciliacionExtracto", new { area = "Financieros" })";
+		var cargarDatosExtractoYSistemaUrl = "@Url.Action("CargarDatosExtractoYSistema", "ConciliacionExtracto", new { area = "Financieros" })";
+		var cargarDatosExtractoYSistema2Url = "@Url.Action("CargarDatosExtractoYSistema", "ConciliacionExtracto", new { area = "Financieros" })";
+	</script>
+	<script src="~/js/app/areas/financieros/conciliacionextracto/conciextracto.js" type="text/javascript"></script>
+}

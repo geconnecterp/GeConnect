@@ -38,6 +38,7 @@ namespace gc.api.core.Contratos.Servicios
         List<RespuestaDto> SetRechazoDeCheque(RegistrarRechazoDeChequeRequest request);
         List<ECheqDto> GetECheqLista(PasoPrevioECheqRequest request);
         List<RespuestaDto> SetExtractoBancarioConfirmar(SetExtractoBancarioConfirmaRequest request);
-        public List<CrudExtractoBancarioDto> GetBcoExtractoDesdeFile(ExtractoBcoFileRequest request);
+        List<CrudExtractoBancarioDto> GetBcoExtractoDesdeFile(ExtractoBcoFileRequest request);
+        List<FinancieroConciliaDatosDto> GetFinancieroConciliaDatos(FinancieroConciliaDatosRequest request);
 	}
 }
