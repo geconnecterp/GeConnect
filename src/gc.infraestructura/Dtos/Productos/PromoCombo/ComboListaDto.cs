@@ -1,12 +1,11 @@
-﻿namespace gc.infraestructura.Dtos.Productos.PromoCombo
+﻿using gc.infraestructura.Dtos.Productos.Ofertas;
+
+namespace gc.infraestructura.Dtos.Productos.PromoCombo
 {
-    public class ComboListaDto: ComboDatosDto
+    public class ComboListaDto : ComboDatosDto
     {
         public int Total_Registros { get; set; }
         public int Total_Paginas { get; set; }
-        
-
-
     }
 
     public class ComboDatosDto
@@ -21,5 +20,12 @@
         public DateTime cmb_hasta { get; set; }
         public bool pasa_activar { get; set; }
         public bool pasa_historico { get; set; }
+    }
+
+    public class ConfirmacionRequestDto
+    {
+        public ComboDatosDto Datos { get; set; } = new();
+        public List<ComboCanalDto> Canales { get; set; } = [];
+        public List<ComboProductoDto> Productos { get; set; } = [];
     }
 }

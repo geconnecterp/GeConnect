@@ -17,24 +17,23 @@
 <div class="collapse" id="divDetalle"></div>
 
 <div id="divTools">
-    <div class="row">
-        <!-- ComboDatos (20%) -->
-        <div class="col-sm-6 mb-2">
+    <div class="row mb-3">
+        <div class="col-12">
             <partial name="_ComboDatos" />
         </div>
-        <div class="col-sm-6 mb-2" id="divCanales">
+    </div>
+    <div class="row mb-3">
+        <div class="col-sm-4" id="divCanales">
             <!-- Aquí se cargará la vista parcial _gridComboCanales -->
         </div>
-    </div>
-    <div class="row">
-        <!-- Productos (38%) -->
-        <div class="col-sm-6">
+        <!-- Productos (33%) -->
+        <div class="col-sm-4">
             <div id="divComboProducto" style="display:none;">
                 <partial name="_gridProductos" model="new GridCoreSmart<ComboProductoDto>()" />
             </div>
         </div>
-        <!-- Sustitutos (38%) -->
-        <div class="col-sm-6">
+        <!-- Sustitutos (33%) -->
+        <div class="col-sm-4">
             <div id="divComboSustituto" style="display:none;">
                 <partial name="_gridSustitutos" model="new GridCoreSmart<ComboSustitutoDto>()" />
             </div>
@@ -58,8 +57,7 @@
         let obtenerProductosSustitutosUrl =  "@Url.Action("ObtenerProductosSustitutos", "promocombo", new { area = "productos" })";
         let resguardarRelacionProductoSustitutoUrl =  "@Url.Action("ResguardarRelacionProductoSustituto", "promocombo", new { area = "productos" })";
         let retornarProductosSustitutosUrl =  "@Url.Action("RetornarProductosSustitutos", "promocombo", new { area = "productos" })";
-        
-
+        let confirmacionComboUrl =  "@Url.Action("ConfirmacionCombo", "promocombo", new { area = "productos" })";       
 
         let homeCombo = "@Url.Action("index", "promocombo", new { area = "productos" })";
         let buscarMetadataURL= "@Url.Action("ObtenerDatosPaginacion", "promocombo", new { area = "productos" })";
