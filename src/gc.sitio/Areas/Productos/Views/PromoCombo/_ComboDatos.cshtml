@@ -1,4 +1,4 @@
-@model gc.infraestructura.Dtos.Productos.PromoCombo.ComboDatosDto
+@model ComboDatosDto
 
 <div id="divComboDatos" class="card card-sm mb-2" style="display: none;">
     <div class="card-header py-1 d-flex justify-content-between align-items-center">
@@ -10,28 +10,28 @@
     </div>
     <div class="card-body p-2">
         <div class="row g-2">
-            <div class="col-md-6">
+            <div class="col-md-2">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text">ID</span>
                     <input type="text" class="form-control form-control-sm" id="cmb_id" name="cmb_id" value="@Model?.cmb_id" readonly />
                 </div>
             </div>
             
-            <div class="col-md-6">
+            <div class="col-md-2">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text">Desc.</span>
                     <input type="text" class="form-control form-control-sm" id="cmb_desc" name="cmb_desc" value="@Model?.cmb_desc" readonly />
                 </div>
             </div>
             
-            <div class="col-md-6">
+            <div class="col-md-2">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text">Tipo</span>
                     @Html.DropDownList("cmb_tipo", null, "Seleccionar...", new { @class = "form-select form-select-sm", disabled = "disabled" })
                 </div>
             </div>
             
-            <div class="col-md-6">
+            <div class="col-md-2">
                 <div class="input-group input-group-sm align-items-center">
                     <span class="input-group-text">Estado</span>
                     <div class="form-check form-switch ms-2">
@@ -42,7 +42,7 @@
                 </div>
             </div>
             
-            <div class="col-md-6">
+            <div class="col-md-2">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text">Período</span>
                     <input type="date" class="form-control form-control-sm" id="cmb_desde" name="cmb_desde" value="@(Model?.cmb_desde.ToString("yyyy-MM-dd"))" readonly/>

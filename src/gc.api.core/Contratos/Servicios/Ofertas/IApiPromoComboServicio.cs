@@ -1,4 +1,6 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Dtos.ABM;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.Dtos.Productos.PromoCombo;
 
@@ -13,5 +15,11 @@ namespace gc.api.core.Contratos.Servicios.Ofertas
         List<ComboCanalDto> ObtenerCanalesDeCombo(string id);
         List<ComboProductoDto> ObtenerProductosDeCombo(string id);
         List<ComboSustitutoDto> ObtenerProductosSustitutosDeCombo(string id, string p_id);
+        /// <summary>
+        /// Confirmación del proceso de carga 
+        /// </summary>
+        /// <param name="req"></param>
+        /// <returns></returns>
+        RespuestaDto ConfirmarCombo(AbmPlusGenDto req);
     }
 }

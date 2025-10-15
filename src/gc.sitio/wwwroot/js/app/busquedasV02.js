@@ -190,7 +190,7 @@ function configurarEventosGridBusquedaV02() {
     //autoSeleccionarProductosVisibles();
     
     $("#checkAllBusqueda").off("change").on("change", function () {
-        var isChecked = $(this).is(":not(:checked)");
+        var isChecked = $(this).is(":checked");
         $(".check-producto-busqueda").prop("checked", isChecked);
 
         $(".check-producto-busqueda").each(function () {

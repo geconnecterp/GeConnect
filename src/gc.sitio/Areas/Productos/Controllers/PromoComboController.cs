@@ -1,6 +1,7 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.Dtos.Productos.PromoCombo;
@@ -10,6 +11,7 @@ using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using X.PagedList;
 
 namespace gc.sitio.Areas.Productos.Controllers
@@ -377,30 +379,29 @@ namespace gc.sitio.Areas.Productos.Controllers
         /// <summary>
         /// Guarda en sesión las relaciones entre un producto y sus sustitutos
         /// </summary>
-        /// <param name="p_id">ID del producto principal</param>
-        /// <param name="p_id_sus">Lista de IDs de productos sustitutos</param>
+        /// <param name="request">Objeto que contiene el ID del producto y sus sustitutos</param>
         /// <returns>Resultado de la operación</returns>
         [HttpPost]
-        public JsonResult ResguardarRelacionProductoSustituto(string p_id, List<ComboSustitutoDto> sus)
+        public JsonResult ResguardarRelacionProductoSustituto([FromBody] SustitutosRelacionDto request)
         {
             try
             {
                 // Validar parámetros de entrada
-                if (string.IsNullOrEmpty(p_id))
+                if (request == null || string.IsNullOrEmpty(request.p_id))
                 {
                     return Json(new { ok = false, mensaje = "El ID del producto es obligatorio" });
                 }
 
-                if(sus==null || sus.Count == 0)
+                if (request.sus == null || request.sus.Count == 0)
                 {
                     return Json(new { ok = false, mensaje = "Debe especificar al menos un sustituto" });
                 }
 
                 // Filtrar IDs inválidos y eliminar duplicados
-                var sustitutosValidos = sus
-                    .Where(s => !string.IsNullOrEmpty(s.p_id)) // Filtrar p_id no válidos
-                    .GroupBy(s => s.p_id) // Agrupar por p_id para eliminar duplicados
-                    .Select(g => g.First()) // Tomar el primer elemento de cada grupo
+                var sustitutosValidos = request.sus
+                    .Where(s => !string.IsNullOrEmpty(s.p_id_sustituto)) // Validamos el campo correcto
+                    .GroupBy(s => s.p_id_sustituto)
+                    .Select(g => g.First())
                     .ToList();
 
                 if (!sustitutosValidos.Any())
@@ -409,31 +410,32 @@ namespace gc.sitio.Areas.Productos.Controllers
                 }
 
                 // Obtener la lista actual de relaciones producto-sustituto de la sesión               
-                var listaRelaciones = ProductosSustitutos;
+                var listaRelaciones = ProductosSustitutos ?? new List<ComboSustitutoDto>();
 
                 // Eliminar relaciones existentes para este producto
-                listaRelaciones.RemoveAll(r => r.p_id == p_id);
+                listaRelaciones.RemoveAll(r => r.p_id == request.p_id);
 
                 // Agregar las nuevas relaciones
                 foreach (var s in sustitutosValidos)
                 {
                     listaRelaciones.Add(new ComboSustitutoDto
                     {
-                       p_id = p_id,
-                       p_id_sustituto = s.p_id,
-                       p_desc = s.p_desc,
-                       p_pcosto = s.p_pcosto
+                        p_id = request.p_id,
+                        p_id_sustituto = s.p_id_sustituto,
+                        p_desc = s.p_desc,
+                        p_pcosto = s.p_pcosto,
+                        activo = s.activo  // Usar valor proporcionado o "A" por defecto
                     });
                 }
 
-                //// Guardar la lista actualizada en sesión
-                ProductosSustitutos = listaRelaciones;               
+                // Guardar la lista actualizada en sesión
+                ProductosSustitutos = listaRelaciones;
 
                 // Devolver respuesta exitosa
                 return Json(new
                 {
                     ok = true,
-                    mensaje = $"Se guardaron {sustitutosValidos.Count} sustitutos para el producto {p_id}",
+                    mensaje = $"Se guardaron {sustitutosValidos.Count} sustitutos para el producto {request.p_id}",
                     cantidadSustitutos = sustitutosValidos.Count
                 });
             }
@@ -481,6 +483,107 @@ namespace gc.sitio.Areas.Productos.Controllers
             {
                 _logger?.LogError(ex, "Error al recuperar los productos sustitutos");
                 return Json(new { ok = false, mensaje = "Error al procesar la solicitud de productos sustitutos" });
+            }
+        }
+
+        /// <summary>
+        /// Confirma la creación o modificación de una promoción o combo
+        /// </summary>
+        /// <param name="datos">Datos principales del combo/promoción</param>
+        /// <param name="canales">Lista de canales donde aplicará el combo/promoción</param>
+        /// <param name="productos">Lista de productos incluidos en el combo/promoción</param>
+        /// <returns>Resultado de la operación en formato JSON</returns>
+        [HttpPost]
+        public async Task<JsonResult> ConfirmacionCombo([FromBody]ConfirmacionRequestDto request)
+        {
+            try
+            {
+                // Verificar autenticación - consistente con otros métodos
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, mensaje = "No autorizado" });
+
+                if (request == null)
+                {
+                    return Json(new { ok = false, mensaje = "Los datos de confirmación no fueron recepcionados. Verifique." });
+                }
+
+                // Validaciones de entrada
+                if (request.Datos == null)
+                {
+                    return Json(new { ok = false, mensaje = "Los datos del combo/promoción son requeridos" });
+                }
+
+                if (request.Canales == null || !request.Canales.Any())
+                {
+                    return Json(new { ok = false, mensaje = "Al menos un canal es necesario informar" });
+                }
+
+                if (request.Productos == null || !request.Productos.Any())
+                {
+                    return Json(new { ok = false, mensaje = "Al menos un producto es necesario informar" });
+                }
+
+                // Validación adicional de datos principales
+                if (string.IsNullOrEmpty(request.Datos.cmb_desc))
+                {
+                    return Json(new { ok = false, mensaje = "La descripción del combo/promoción es requerida" });
+                }
+
+                // Preparar datos para envío
+                var sustitutos = ProductosSustitutos ?? new List<ComboSustitutoDto>();
+                var req = new AbmPlusGenDto
+                {
+                    Json = JsonConvert.SerializeObject(request.Productos),
+                    Json2 = JsonConvert.SerializeObject(request.Canales),
+                    Json3 = JsonConvert.SerializeObject(sustitutos),
+                    Json4 = JsonConvert.SerializeObject(request.Datos),
+                    Usuario = UserName,
+                    Administracion = AdministracionId
+                };
+
+                // Llamada al servicio
+                var respuesta = await _comboServicio.ConfirmarCombo(req, TokenCookie);
+
+                // Procesamiento de respuesta
+                if (respuesta.Ok && !respuesta.EsError && !respuesta.EsWarn)
+                {
+                    // Log y limpieza de datos temporales
+                    _logger?.LogInformation("Combo/Promoción guardado exitosamente: {ComboDesc}", request.Datos.cmb_desc);
+                    ProductosSustitutos.Clear();
+
+                    // Respuesta de éxito
+                    return Json(new
+                    {
+                        ok = true,
+                        error = false,
+                        msg = respuesta.Mensaje ?? (request.Datos.cmb_tipo == 'C' ? 
+                               "Combo guardado correctamente" : 
+                               "Promoción guardada correctamente")
+                    });
+                }
+                else
+                {
+                    // Log y respuesta de error/advertencia
+                    _logger?.LogWarning("Error en servicio de combo/promoción: {Mensaje}", respuesta.Mensaje);
+                    return Json(new
+                    {
+                        ok = false,
+                        error = respuesta.EsError,
+                        warn = respuesta.EsWarn,
+                        msg = respuesta.Mensaje ?? "Error al procesar el combo/promoción"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejo de excepciones no esperadas
+                _logger?.LogError(ex, "Error inesperado al confirmar combo/promoción");
+                return Json(new 
+                { 
+                    ok = false, 
+                    error = true,
+                    msg = "Error interno al procesar la solicitud" 
+                });
             }
         }
     }

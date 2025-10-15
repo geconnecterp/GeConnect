@@ -90,6 +90,7 @@
 			public const string SP_COMBO_CANALES = "SPGECO_Combos_Canales ";
 			public const string SP_COMBO_PRODUCTOS = "SPGECO_Combos_Prod";
 			public const string SP_COMBO_SUSTITUTOS = "SPGECO_Combos_Prod_Sus";
+			public const string SP_COMBO_CONFIRMAR = "SPGECO_Combos_Confirmar";
 
             #endregion
 
