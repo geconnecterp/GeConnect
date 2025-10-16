@@ -125,6 +125,8 @@ function inicializarEventos() {
         // Activar/desactivar botones
         $("#btnAbmAceptar").prop("disabled", false);
         $("#btnAbmNuevo").prop("disabled", true);
+        $("#btnAbmModif").prop("disabled", true);
+
 
         // Verifico si el divFiltro esta SHOW. Si eso es así lo oculto.
         if ($("#divFiltro").is(":visible")) {
@@ -137,6 +139,10 @@ function inicializarEventos() {
         inicializarCamposEditablesProductos();
         // Inicializar el mapa de sustitutos
         productosSustitutosMap = {};
+
+        // Actualizar los contenedores con los grids vacíos
+        $(".col-sm-4:has(#tbGridProductos)").show();
+        $(".col-sm-4:has(#tbGridSustitutos)").show();
     });
 
     // Evento para el botón confirmar
@@ -1957,10 +1963,11 @@ function recopilarCanalesSeleccionados() {
     $(".canal-checkbox:checked").each(function () {
         var $fila = $(this).closest("tr");
         var canal = {
-            adm_id: $fila.find("td:eq(1)").text().trim(),
-            adm_nombre: $fila.find("td:eq(2)").text().trim(),
-            lp_id: $fila.find("td:eq(3)").text().trim(),
-            lp_desc: $fila.find("td:eq(4)").text().trim(),
+            adm_id: $fila.data("adm-id"),
+            //adm_id: $fila.find("td:eq(1)").text().trim(),
+            //adm_nombre: $fila.find("td:eq(2)").text().trim(),
+            lp_id: $fila.data("lp-id"),
+            //lp_desc: $fila.find("td:eq(4)").text().trim(),
             canal: $(this).val(),
             incluida: 'S'
         };

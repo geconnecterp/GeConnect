@@ -530,7 +530,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                     return new()
                     {
                         Ok = false,
-                        Mensaje = "Error al buscar combos. Si el problema persiste contacte al administrador."
+                        Mensaje = "Error al CONFIRMAR. Si el problema persiste contacte al administrador."
                     };
                 }
             }
@@ -540,7 +540,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 return new RespuestaGenerica<RespuestaDto>
                 {
                     Ok = false,
-                    Mensaje = "Error interno al buscar combos"
+                    Mensaje = "Error interno al CONFIRMAR"
                 };
             }
         }
