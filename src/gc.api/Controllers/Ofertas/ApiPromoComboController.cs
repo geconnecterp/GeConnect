@@ -1,14 +1,12 @@
 ﻿using gc.api.core.Contratos.Servicios.Ofertas;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.Dtos.Productos.PromoCombo;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Threading.Tasks;
 
 namespace gc.api.Controllers.Ofertas
 {
@@ -282,5 +280,49 @@ namespace gc.api.Controllers.Ofertas
                     new { ok = false, mensaje = ex.Message });
             }
         }
+
+        /// <summary>
+        /// Confirma la creación o actualización de un combo
+        /// </summary>
+        /// <param name="request">Datos del combo a confirmar</param>
+        /// <returns>Resultado de la operación de confirmación</returns>
+        /// <response code="200">Operación completada con éxito</response>
+        /// <response code="400">Si los datos proporcionados no son válidos</response>
+        /// <response code="500">Si ocurre un error durante el proceso</response>
+        [HttpPost("combo-confirmar")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public IActionResult ConfirmarCombo([FromBody] AbmPlusGenDto request)
+        {
+            try
+            {
+                // Validar que el modelo sea válido
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new { ok = false, mensaje = "Los datos proporcionados no son válidos", errores = ModelState });
+                }
+
+                // Llamar al servicio para confirmar el combo
+                var resultado = _promoComboServicio.ConfirmarCombo(request);
+
+                // Verificar si la operación fue exitosa según el código de resultado
+                if (resultado.resultado != 0)
+                {
+                    return Ok(new ApiResponse<RespuestaDto>(resultado));
+                }
+                else
+                {
+                    return BadRequest(new { ok = false, mensaje = resultado.resultado_msj });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al confirmar combo {@ComboData}", request);
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { ok = false, mensaje = ex.Message });
+            }
+        }
+
     }
 }

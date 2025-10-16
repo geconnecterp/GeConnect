@@ -1,12 +1,13 @@
-﻿using System;
+﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Dtos.ABM;
+using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos.Ofertas;
+using gc.infraestructura.Dtos.Productos.PromoCombo;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using gc.infraestructura.Core.EntidadesComunes;
-using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Productos.Ofertas;
-using gc.infraestructura.Dtos.Productos.PromoCombo;
 
 namespace gc.sitio.core.Servicios.Contratos
 {
@@ -59,5 +60,13 @@ namespace gc.sitio.core.Servicios.Contratos
         /// <param name="token">Token de autenticación</param>
         /// <returns>Lista de productos sustitutos</returns>
         Task<RespuestaGenerica<ComboSustitutoDto>> ObtenerProductosSustitutosDeCombo(string comboId, string productoId, string token);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        Task<RespuestaGenerica<RespuestaDto>> ConfirmarCombo(AbmPlusGenDto req, string token);
     }
 }

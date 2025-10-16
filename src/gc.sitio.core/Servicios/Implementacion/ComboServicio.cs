@@ -4,6 +4,7 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.Dtos.Productos.PromoCombo;
@@ -28,7 +29,8 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string COMBO_DATOS = "/combo/{id}/";
         private const string COMBO_PRODUCTOS = "/combo/{id}/productos";
         private const string COMBO_SUSTITUTOS = "/combo/{id}/producto/{productoId}/sustitutos";
-        
+        private const string COMBO_CONFIRMAR = "/combo-confirmar";
+
         public ComboServicio(IOptions<AppSettings> options, ILogger<ComboServicio> logger)
             : base(options, logger)
         {
@@ -443,5 +445,105 @@ namespace gc.sitio.core.Servicios.Implementacion
                 };
             }
         }
+
+        /// <summary>
+        /// Busca combos y promociones según los filtros especificados
+        /// </summary>
+        public async Task<RespuestaGenerica<RespuestaDto>> ConfirmarCombo(AbmPlusGenDto req, string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var jsonContent = JsonConvert.SerializeObject(req);
+                var contentData = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                var client = helper.InicializaCliente(token);
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{COMBO_CONFIRMAR}";
+
+                using var response = await client.PostAsync(link, contentData);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData)
+                        ?? throw new NegocioException("Error al deserializar los datos");
+
+                    // Obtener información de paginación si existe
+                    var entidad = apiResponse.Data;
+                    if (entidad.resultado == 0)
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = true,
+                            Entidad = apiResponse.Data,
+                            Meta = apiResponse.Meta ?? new(),
+                            Mensaje = "OK"
+                        };
+                    }
+                    else if (entidad.resultado > 0)
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = true,
+                            Entidad = apiResponse.Data,
+                            EsError = false,
+                            EsWarn = true,
+                            Mensaje = entidad.resultado_msj
+                        };
+                    }
+                    else
+                    {
+                        _logger.LogError($"{entidad.resultado_msj} - CodError: {entidad.resultado}");
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = true,
+                            Entidad = apiResponse.Data,
+                            EsError = true,
+                            EsWarn = false,
+                            Mensaje = ""
+                        };
+                    }
+                }
+                else if (response.StatusCode == HttpStatusCode.BadRequest)
+                {
+                    var errorData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Error API (400): {errorData}");
+
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(errorData);
+
+                    return new()
+                    {
+                        Ok = false,
+                        Mensaje = error?.Detail ?? "Los filtros proporcionados no son válidos"
+                    };
+                }
+                else
+                {
+                    var errorData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {errorData}");
+
+                    return new()
+                    {
+                        Ok = false,
+                        Mensaje = "Error al buscar combos. Si el problema persiste contacte al administrador."
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name}");
+                return new RespuestaGenerica<RespuestaDto>
+                {
+                    Ok = false,
+                    Mensaje = "Error interno al buscar combos"
+                };
+            }
+        }
+
     }
 }
