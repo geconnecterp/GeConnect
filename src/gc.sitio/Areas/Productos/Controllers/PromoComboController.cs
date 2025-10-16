@@ -531,11 +531,14 @@ namespace gc.sitio.Areas.Productos.Controllers
 
                 // Preparar datos para envío
                 var sustitutos = ProductosSustitutos ?? new List<ComboSustitutoDto>();
+                var sus = sustitutos.Select(x => new { x.p_id,x.p_id_sustituto,x.activo,costo = x.p_pcosto });
+                var canales = request.Canales.Select(x => new { x.adm_id, x.lp_id }).ToList();
+                var prods = request.Productos.Select(x => new { x.p_id, x.cantidad, dto = x.dto_porc, x.activo, costo = x.p_pcosto });
                 var req = new AbmPlusGenDto
                 {
-                    Json = JsonConvert.SerializeObject(request.Productos),
-                    Json2 = JsonConvert.SerializeObject(request.Canales),
-                    Json3 = JsonConvert.SerializeObject(sustitutos),
+                    Json = JsonConvert.SerializeObject(prods),
+                    Json2 = JsonConvert.SerializeObject(canales),
+                    Json3 = JsonConvert.SerializeObject(sus),
                     Json4 = JsonConvert.SerializeObject(request.Datos),
                     Usuario = UserName,
                     Administracion = AdministracionId

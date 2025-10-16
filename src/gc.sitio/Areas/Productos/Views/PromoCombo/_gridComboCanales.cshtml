@@ -21,10 +21,10 @@
                     {
                         foreach (var item in Model.ListaDatos)
                         {
-                            <tr>
+                            <tr data-adm-id="@item.adm_id" data-lp-id="@item.lp_id">
 @*                                 <td class="text-left">
                                     @item.adm_nombre
-                                    <small class="text-muted d-block">@item.adm_id</small>
+                                    <small class="text-muted d-block"></small>
                                 </td>
                                 <td class="text-left">
                                     @item.lp_desc
