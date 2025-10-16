@@ -151,9 +151,9 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
 				model.RegistroConciliado = $"Registros A Conciliar";
-				var listaTempExtracto = ListaItemsExtracto.Where(x => x.a_cociliar == "S").ToList();
+				var listaTempExtracto = ListaItemsExtracto.Where(x => x.a_conciliar == "S").ToList();
 				model.GrillaExtracto = ObtenerGridCoreSmart<RegistroExtractoDto>(listaTempExtracto ?? []);
-				var listaTempSistema = ListaItemsSistema.Where(x => x.a_cociliar == "S").ToList();
+				var listaTempSistema = ListaItemsSistema.Where(x => x.a_conciliar == "S").ToList();
 				model.GrillaSistema = ObtenerGridCoreSmart<RegistroSistemaDto>(listaTempSistema ?? []);
 				return PartialView("_modalRegistrosAConciliar", model);
 			}
@@ -195,7 +195,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 		}
 
 		public IActionResult ActualizarRegistrosLuegoDeDesconciliar(string ctaf_id, int conciliado_nro)
-		{ 
+		{
 			var model = new CargarDatosExtractoYSistemaModel();
 			try
 			{
@@ -222,6 +222,113 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				model.Extracto = 0;
 				model.Diferencia = 0;
 				model.Sistema = 0;
+				model.GrillaSistema = ObtenerGridCoreSmart<RegistroSistemaDto>(ListaItemsSistema);
+				model.GrillaExtracto = ObtenerGridCoreSmart<RegistroExtractoDto>(ListaItemsExtracto);
+				return PartialView("_datosExtractoYSistema", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult ActuRegsPorConciliacionPreviaManual(FinancieroActuRegsPorConciPrevManualRequest request)
+		{
+			var model = new CargarDatosExtractoYSistemaModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				if (request == null)
+					return BadRequest("Request vacío");
+				if ((request.itemsExtractoMarcados == null || request.itemsExtractoMarcados.Count <= 0) || (request.itemsSistemaMarcados == null || request.itemsSistemaMarcados.Count <= 0))
+					return BadRequest("No se han seleccionado registros del extracto y sistema para conciliar.");
+
+				var maxExtracto = ListaItemsExtracto.Max(x => x.conciliado_nro) + 1;
+				var listaTempExtracto = ListaItemsExtracto;
+				var extracto = 0.00M;
+				foreach (var item in listaTempExtracto.Where(x => request.itemsExtractoMarcados.Contains(x.orden)))
+				{
+					item.a_conciliar = "S";
+					item.a_conciliar_tipo = "M";
+					item.conciliado_nro = maxExtracto;
+					extracto += item.importe;
+				}
+				ListaItemsExtracto = listaTempExtracto;
+
+				var maxSistema = ListaItemsSistema.Max(x => x.conciliado_nro) + 1;
+				var listaTempSistema = ListaItemsSistema;
+				var sistema = 0.00M;
+				foreach (var item in listaTempSistema.Where(x => request.itemsSistemaMarcados.Contains(x.orden)))
+				{
+					item.a_conciliar = "S";
+					item.a_conciliar_tipo = "M";
+					item.conciliado_nro = maxSistema;
+					sistema += item.importe;
+				}
+				ListaItemsSistema = listaTempSistema;
+
+				model.CuentaBanco = ListaCuentaBancos.Where(x => x.ctaf_id == request.ctaf_id).Select(x => $"{x.ctaf_denominacion} ({x.ctaf_id})").FirstOrDefault() ?? string.Empty;
+				model.Extracto = extracto;
+				model.Sistema = sistema;
+				model.Diferencia = extracto - sistema;
+				model.GrillaSistema = ObtenerGridCoreSmart<RegistroSistemaDto>(ListaItemsSistema);
+				model.GrillaExtracto = ObtenerGridCoreSmart<RegistroExtractoDto>(ListaItemsExtracto);
+				return PartialView("_datosExtractoYSistema", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult DesunirConciliacionPreviaManual(string ctaf_id)
+		{
+			var model = new CargarDatosExtractoYSistemaModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var listaTempExtracto = ListaItemsExtracto;
+				foreach (var item in listaTempExtracto.Where(x => x.a_conciliar == "S"))
+				{
+					item.a_conciliar = "N";
+					item.a_conciliar_tipo = "";
+					item.conciliado_nro = null;
+				}
+				ListaItemsExtracto = listaTempExtracto;
+
+				var listaTempSistema = ListaItemsSistema;
+				foreach (var item in listaTempSistema.Where(x => x.a_conciliar == "S"))
+				{
+					item.a_conciliar = "N";
+					item.a_conciliar_tipo = "";
+					item.conciliado_nro = null;
+				}
+				ListaItemsSistema = listaTempSistema;
+
+				model.CuentaBanco = ListaCuentaBancos.Where(x => x.ctaf_id == ctaf_id).Select(x => $"{x.ctaf_denominacion} ({x.ctaf_id})").FirstOrDefault() ?? string.Empty;
+				model.Extracto = 0;
+				model.Sistema = 0;
+				model.Diferencia = 0;
 				model.GrillaSistema = ObtenerGridCoreSmart<RegistroSistemaDto>(ListaItemsSistema);
 				model.GrillaExtracto = ObtenerGridCoreSmart<RegistroExtractoDto>(ListaItemsExtracto);
 				return PartialView("_datosExtractoYSistema", model);
@@ -294,7 +401,8 @@ namespace gc.sitio.Areas.Financieros.Controllers
 						resultado.Errores.Add("JSON vacío o inválido.");
 						return resultado;
 					}
-
+					var orden = 0;
+					registros.ForEach(x => x.orden = ++orden);
 					for (int i = 0; i < registros.Count; i++)
 					{
 						var r = registros[i];
@@ -306,8 +414,8 @@ namespace gc.sitio.Areas.Financieros.Controllers
 						if (r.concepto == null) resultado.Errores.Add($"[{i}] concepto nulo.");
 						if (string.IsNullOrWhiteSpace(r.ct_tipo)) resultado.Errores.Add($"[{i}] ct_tipo vacío.");
 						if (string.IsNullOrWhiteSpace(r.conciliado)) resultado.Errores.Add($"[{i}] conciliado vacío.");
-						if (r.a_cociliar == null) resultado.Errores.Add($"[{i}] a_cociliar nulo.");
-						if (r.a_cociliar_tipo == null) resultado.Errores.Add($"[{i}] a_cociliar_tipo nulo.");
+						if (r.a_conciliar == null) resultado.Errores.Add($"[{i}] a_cociliar nulo.");
+						if (r.a_conciliar_tipo == null) resultado.Errores.Add($"[{i}] a_cociliar_tipo nulo.");
 					}
 
 					resultado.GrillaExtracto = registros;
@@ -345,7 +453,8 @@ namespace gc.sitio.Areas.Financieros.Controllers
 						resultado.Errores.Add("JSON vacío o inválido.");
 						return resultado;
 					}
-
+					var orden = 0;
+					registros.ForEach(x => x.orden = ++orden);
 					for (int i = 0; i < registros.Count; i++)
 					{
 						var r = registros[i];
@@ -358,8 +467,8 @@ namespace gc.sitio.Areas.Financieros.Controllers
 						if (r.concepto == null) resultado.Errores.Add($"[{i}] concepto nulo.");
 						if (string.IsNullOrWhiteSpace(r.ct_tipo)) resultado.Errores.Add($"[{i}] ct_tipo vacío.");
 						if (string.IsNullOrWhiteSpace(r.conciliado)) resultado.Errores.Add($"[{i}] conciliado vacío.");
-						if (r.a_cociliar == null) resultado.Errores.Add($"[{i}] a_cociliar nulo.");
-						if (r.a_cociliar_tipo == null) resultado.Errores.Add($"[{i}] a_cociliar_tipo nulo.");
+						if (r.a_conciliar == null) resultado.Errores.Add($"[{i}] a_cociliar nulo.");
+						if (r.a_conciliar_tipo == null) resultado.Errores.Add($"[{i}] a_cociliar_tipo nulo.");
 					}
 
 					resultado.GrillaSistema = registros;

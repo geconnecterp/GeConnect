@@ -98,12 +98,12 @@
 				@foreach (var item in Model.GrillaSistema.ListaDatos)
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					<tr class="@clase" data-ctaf-id="@item.ctaf_id" data-dia-movi="@item.dia_movi" data-cf-compte="@item.cf_compte" data-cf-item="@item.cf_item" onclick="selectGrillaSistema(this);">
+					<tr class="@clase" data-orden="@item.orden" data-ctaf-id="@item.ctaf_id" data-dia-movi="@item.dia_movi" data-cf-compte="@item.cf_compte" data-cf-item="@item.cf_item" onclick="selectGrillaSistema(this);">
 						@if (item.puedo_seleccionar)
 						{
 							<td class="check-column">
 								<div class="check-sele-container">
-									<input type="checkbox" class="form-check-input check-sistema" data-ctaf-id="@item.ctaf_id" data-dia-movi="@item.dia_movi" data-cf-compte="@item.cf_compte" data-cf-item="@item.cf_item">
+									<input type="checkbox" class="form-check-input check-sistema" data-orden="@item.orden" data-ctaf-id="@item.ctaf_id" data-dia-movi="@item.dia_movi" data-cf-compte="@item.cf_compte" data-cf-item="@item.cf_item">
 								</div>
 							</td>
 						}
@@ -198,13 +198,10 @@
 			window.obtenerItemSistemaSeleccionados = function() {
 				const itemMarcados = [];
 				$(".check-sistema:checked").each(function () {
-					const ctafId = $(this).data("ctaf-id");
-					const diaMovi = $(this).data("dia-movi");
-					const cfCompte = $(this).data("cf-compte");
-					const cfItem = $(this).data("cf-item");
-					if (ctafId && diaMovi && cfCompte) {
-						if (typeof ctafId === "string" && typeof diaMovi === "string" && typeof cfCompte === "string") {
-							itemMarcados.push(`${ctafId}|${extrId}|${extFecha}|${cfItem}`);
+					const orden = $(this).data("orden");
+					if (orden) {
+						if (typeof orden === "number") {
+							itemMarcados.push(`${orden}`);
 						}
 					}
 				});
@@ -241,6 +238,18 @@
 					maximumFractionDigits: 2
 				}));
 
+			}
+
+			function marcarSeleccionadosSistema(lista) {
+				$(".check-sistema").each(function () {
+					const orden = $(this).data("orden");
+
+					const clave = `${orden}`;
+					if (lista.includes(clave)) {
+						$(this).prop("checked", true);
+						$(this).closest("tr").addClass("selected");
+					}
+				});
 			}
 		});
 </script>

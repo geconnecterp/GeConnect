@@ -411,5 +411,18 @@ namespace gc.api.Controllers.Financieros
 			response = new ApiResponse<List<RespuestaDto>>(res);
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult FinancieroConciliacionExtractoConfirmar([FromBody] FinancieroConciliacionExtractoConfirmarRequest r)
+		{
+			ApiResponse<List<RespuestaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.FinancieroConciliacionExtractoConfirmar(r);
+			response = new ApiResponse<List<RespuestaDto>>(res);
+			return Ok(response);
+		}
 	}
 }

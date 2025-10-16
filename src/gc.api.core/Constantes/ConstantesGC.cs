@@ -182,6 +182,7 @@
 			public const string SP_F_CONCILIA_DATOS = "SPGECO_F_Concilia_Datos";
 			public const string SP_F_CONCILIA_NRO = "SPGECO_F_Concilia_Nro";
 			public const string SP_F_CONCILIA_DESCONCILIA_NRO = "SPGECO_F_Concilia_Desconcilia_Nro";
+			public const string SP_F_CONCILIA_CONFIRMAR = "SPGECO_F_Concilia_Confirmar";
 			#endregion
 
 			#region SP Depositos

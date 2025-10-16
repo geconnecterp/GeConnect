@@ -3,6 +3,8 @@
 	$(document).on("click", "#btnConfirmar", ConfirmarConciliacionExtracto);
 	$(document).on("click", "#btnCancelar", CancelarConciliacionExtracto);
 	$(document).on("click", "#btnDesconciliar", DesconciliarRegistrosConciliados);
+	$(document).on("click", "#btnUnir", ConciliacionPreviaManual);
+	$(document).on("click", "#btnDesunir", DesunirConciliacionPreviaManual);
 	//
 
 	$("#FechaDesde, #FechaHasta").on("blur", validarFechas);
@@ -55,6 +57,71 @@
 });
 
 function ConfirmarConciliacionExtracto() { }
+
+function DesunirConciliacionPreviaManual() {
+	AbrirWaiting();
+	var ctaf_id = ctafIdSelected;
+	var data = { ctaf_id };
+	PostGenHtml(data, desunirConciliacionPreviaManualUrl, function (obj) {
+		CerrarWaiting();
+		$("#divConciliacionExtracto").html(obj);
+		$("#modalRegistrosAConciliar").modal("hide");
+		return true
+	}, function (obj) {
+		console.log(obj);
+		ControlaMensajeError(obj.responseText);
+		CerrarWaiting();
+	});
+}
+
+function ConciliacionPreviaManual() {
+	var itemsExtractoMarcados = obtenerItemExtractoSeleccionados();
+	var itemsSistemaMarcados = obtenerItemSistemaSeleccionados();
+	if (!validarDiferencia()) {
+		AbrirMensaje("ATENCIÓN", `La diferencia entre Extracto y Sistema no puede ser mayor al .05% (absoluto) entre ellos.`, function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+		return;
+	}
+	else if (itemsExtractoMarcados.length == 0 && itemsSistemaMarcados.length == 0) {
+		AbrirMensaje("ATENCIÓN", `Debe seleccionar al menos un item.`, function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+		return;
+	}
+	else {
+		AbrirWaiting();
+		var ctaf_id = ctafIdSelected;
+		var data = { ctaf_id, itemsExtractoMarcados, itemsSistemaMarcados };
+		PostGenHtml(data, actuRegsPorConciliacionPreviaManualUrl, function (obj) {
+			CerrarWaiting();
+			$("#divConciliacionExtracto").html(obj);
+			return true
+		}, function (obj) {
+			console.log(obj);
+			ControlaMensajeError(obj.responseText);
+			CerrarWaiting();
+		});
+	}
+}
+
+function validarDiferencia() {
+	const extracto = parseFloat($("#Extracto").val().replace(/,/g, '')) || 0;
+	const sistema = parseFloat($("#Sistema").val().replace(/,/g, '')) || 0;
+	const diferencia = parseFloat($("#Diferencia").val().replace(/,/g, '')) || 0;
+
+	const base = Math.max(extracto, sistema); // base para calcular el 0.05%
+	const tolerancia = base * 0.0005; // 0.05% = 0.0005
+
+	const diferenciaAbsoluta = Math.abs(diferencia);
+
+	//TODO MARCE. Descomentar esta linea
+	//return diferenciaAbsoluta <= tolerancia;
+	return true;
+}
+
 
 function DesconciliarRegistrosConciliados() {
 	var nroConci = $("#ConciliadoNro").val();
@@ -149,12 +216,15 @@ function verDetalleConciliado(conciliado_nro) {
 		return true
 	}, function (obj) {
 		console.log(obj);
+		ControlaMensajeError(obj.responseText);
 		CerrarWaiting();
 		return true
 	});
 }
 
 function VerDetalleAConciliar(ctaf_id) {
+	AbrirWaiting();
+	var data = {};
 	PostGenHtml(data, obtenerModalRegistrosAConciliarUrl, function (obj) {
 		$("#divModalRegistrosAConciliar").html(obj);
 		const $modal = $("#modalRegistrosAConciliar");
@@ -168,6 +238,7 @@ function VerDetalleAConciliar(ctaf_id) {
 		return true
 	}, function (obj) {
 		console.log(obj);
+		ControlaMensajeError(obj.responseText);
 		CerrarWaiting();
 		return true
 	});

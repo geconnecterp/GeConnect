@@ -3,6 +3,7 @@ namespace gc.infraestructura.Dtos.Financieros
 {
 	public class RegistroExtractoDto : Dto
 	{
+		public int orden { get; set; }
 		public string ctaf_id { get; set; }
 		public DateTime ext_fecha { get; set; }
 		public DateTime ext_fecha_movi { get; set; }
@@ -13,9 +14,9 @@ namespace gc.infraestructura.Dtos.Financieros
 		public string ct_tipo { get; set; }
 		public string conciliado { get; set; }
 		public int? conciliado_nro { get; set; }
-		public string a_cociliar { get; set; }
-		public int a_cociliar_nro { get; set; }
-		public string a_cociliar_tipo { get; set; }
+		public string a_conciliar { get; set; }
+		public int a_conciliar_nro { get; set; }
+		public string a_conciliar_tipo { get; set; }
 		private bool _bool_conciliado;
 
 		public bool bool_conciliado
@@ -27,14 +28,14 @@ namespace gc.infraestructura.Dtos.Financieros
 
 		public bool bool_a_conciliar
 		{
-			get { return a_cociliar == "S"; }
+			get { return a_conciliar == "S"; }
 			set { _bool_a_conciliar = value; }
 		}
 		private bool _puedo_seleccionar;
 
 		public bool puedo_seleccionar
 		{
-			get { return conciliado == "N" && (string.IsNullOrWhiteSpace(a_cociliar) || a_cociliar == "N"); }
+			get { return conciliado == "N" && (string.IsNullOrWhiteSpace(a_conciliar) || a_conciliar == "N"); }
 			set { _puedo_seleccionar = value; }
 		}
 	}

@@ -99,12 +99,12 @@
 				@foreach (var item in Model.GrillaExtracto.ListaDatos)
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					<tr class="@clase" data-ctaf-id="@item.ctaf_id" data-extr-id="@item.extr_id" data-ext-fecha="@item.ext_fecha" onclick="selectGrillaExtracto(this);">
+					<tr class="@clase" data-orden="@item.orden" data-ctaf-id="@item.ctaf_id" data-extr-id="@item.extr_id" data-ext-fecha="@item.ext_fecha" onclick="selectGrillaExtracto(this);">
 						@if (item.puedo_seleccionar)
 						{
 							<td class="check-column">
 								<div class="check-sele-container">
-									<input type="checkbox" class="form-check-input check-extracto" data-ctaf-id="@item.ctaf_id" data-extr-id="@item.extr_id" data-ext-fecha="@item.ext_fecha">
+									<input type="checkbox" class="form-check-input check-extracto" data-orden="@item.orden" data-ctaf-id="@item.ctaf_id" data-extr-id="@item.extr_id" data-ext-fecha="@item.ext_fecha">
 								</div>
 							</td>
 						}
@@ -201,12 +201,10 @@
 			window.obtenerItemExtractoSeleccionados = function() {
 				const itemMarcados = [];
 				$(".check-extracto:checked").each(function () {
-					const ctafId = $(this).data("ctaf-id");
-					const extrId = $(this).data("extr-id");
-					const extFecha = $(this).data("ext-fecha");
-					if (ctafId && extrId && extFecha) {
-						if (typeof ctafId === "string" && typeof extrId === "string" && typeof extFecha === "string") {
-							itemMarcados.push(`${ctafId}|${extrId}|${extFecha}`);
+					const orden = $(this).data("orden");
+					if (orden) {
+						if (typeof orden === "number") {
+							itemMarcados.push(`${orden}`);
 						}
 					}
 				});
@@ -242,6 +240,18 @@
 					minimumFractionDigits: 2,
 					maximumFractionDigits: 2
 				}));
+			}
+
+			function marcarSeleccionadosExtracto(lista) {
+				$(".check-extracto").each(function () {
+					const orden = $(this).data("orden");
+
+					const clave = `${orden}`;
+					if (lista.includes(clave)) {
+						$(this).prop("checked", true);
+						$(this).closest("tr").addClass("selected");
+					}
+				});
 			}
 		});
 </script>
