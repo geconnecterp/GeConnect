@@ -56,7 +56,56 @@
 	});
 });
 
-function ConfirmarConciliacionExtracto() { }
+function ConfirmarConciliacionExtracto() {
+	AbrirWaiting();
+	var data = {};
+	PostGen(data, validarAntesDeConfirmarUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			AbrirMensaje("ATENCIÓN", '¿Esta seguro de confirmar la conciliación?', function (e) {
+				$("#msjModal").modal("hide");
+				switch (e) {
+					case "SI":
+						handleConfirmarConciliacionExtracto();
+						break;
+					case "NO":
+						break;
+					default: //NO
+						break;
+				}
+				return true;
+
+			}, true, ["Aceptar", "Cancelar"], "question!", null);
+		}
+	});
+}
+
+function handleConfirmarConciliacionExtracto() {
+	var ctaf_id = ctafIdSelected;
+	var data = { ctaf_id };
+	PostGen(data, financieroConciliacionExtractoConfirmarUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			AbrirMensaje("ÉXITO", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				btnCancelarClick();
+				return true;
+			}, false, ["Aceptar"], "success!", null);
+		}
+	});
+}
 
 function DesunirConciliacionPreviaManual() {
 	AbrirWaiting();
@@ -77,7 +126,9 @@ function DesunirConciliacionPreviaManual() {
 function ConciliacionPreviaManual() {
 	var itemsExtractoMarcados = obtenerItemExtractoSeleccionados();
 	var itemsSistemaMarcados = obtenerItemSistemaSeleccionados();
-	if (!validarDiferencia()) {
+	var hayRegsMarcadosEnExtracto = itemsExtractoMarcados.length > 0;
+	var hayRegsMarcadosEnSistema = itemsSistemaMarcados.length > 0;
+	if (!validarDiferencia(hayRegsMarcadosEnExtracto, hayRegsMarcadosEnSistema)) {
 		AbrirMensaje("ATENCIÓN", `La diferencia entre Extracto y Sistema no puede ser mayor al .05% (absoluto) entre ellos.`, function () {
 			$("#msjModal").modal("hide");
 			return true;
@@ -107,21 +158,25 @@ function ConciliacionPreviaManual() {
 	}
 }
 
-function validarDiferencia() {
+function validarDiferencia(hayRegsMarcadosEnExtracto, hayRegsMarcadosEnSistema) {
 	const extracto = parseFloat($("#Extracto").val().replace(/,/g, '')) || 0;
 	const sistema = parseFloat($("#Sistema").val().replace(/,/g, '')) || 0;
 	const diferencia = parseFloat($("#Diferencia").val().replace(/,/g, '')) || 0;
 
-	const base = Math.max(extracto, sistema); // base para calcular el 0.05%
-	const tolerancia = base * 0.0005; // 0.05% = 0.0005
+	if (hayRegsMarcadosEnExtracto && hayRegsMarcadosEnSistema) {
+		const base = Math.max(extracto, sistema); // base para calcular el 0.05%
+		const tolerancia = base * 0.0005; // 0.05% = 0.0005
+		const diferenciaAbsoluta = Math.abs(diferencia);
 
-	const diferenciaAbsoluta = Math.abs(diferencia);
-
-	//TODO MARCE. Descomentar esta linea
-	//return diferenciaAbsoluta <= tolerancia;
-	return true;
+		return diferenciaAbsoluta <= tolerancia;
+	}
+	else if ((hayRegsMarcadosEnExtracto || hayRegsMarcadosEnSistema) && diferencia === 0) {
+		return true;
+	}
+	else {
+		return false;
+	}
 }
-
 
 function DesconciliarRegistrosConciliados() {
 	var nroConci = $("#ConciliadoNro").val();
@@ -273,6 +328,7 @@ function btnCancelarClick() {
 	$("#divDetalle").collapse("hide");
 	$("#listaCuentaBanco").val("");
 	InicializarDatosEnSesion();
+	ResetDeFiltros();
 }
 
 function InicializarDatosEnSesion() {
@@ -335,6 +391,17 @@ function CargarDatosExtractoYSistema() {
 		ControlaMensajeError(obj.responseText);
 		CerrarWaiting();
 	});
+}
+
+function ResetDeFiltros() {
+	var now = moment().format('yyyy-MM-DD');
+	$("#FechaDesde").val(now);
+	$("#FechaHasta").val(now);
+	$("#listaCuentaBanco").val("");
+	$("#chkRegNoConci").prop('checked', false);
+	$("#chkRegNoConci").trigger("change");
+	$("#chkConciAuto").prop('checked', false);
+	$("#chkConciAuto").trigger("change");
 }
 
 function InicializarCamposEnFiltros() {

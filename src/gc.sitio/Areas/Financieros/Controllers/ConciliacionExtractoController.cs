@@ -177,11 +177,11 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				if (request == null)
 					return Json(new { error = true, warn = false, msg = "Request vacío" });
 
-				//var respuesta = _financieroServicio.FinancieroExtractoDesconcilia(request, TokenCookie);
-				//if (respuesta == null || respuesta.Entidad == null)
-				//	return Json(new { error = true, warn = false, msg = "Se ha producido un error al intentar desconciliar los registros. Intente mas tarde." });
-				//if (respuesta.Entidad.resultado != 0)
-				//	return Json(new { error = true, warn = false, msg = $"{respuesta.Entidad.resultado_msj} ({respuesta.Entidad.resultado})" });
+				var respuesta = _financieroServicio.FinancieroExtractoDesconcilia(request, TokenCookie);
+				if (respuesta == null || respuesta.Entidad == null)
+					return Json(new { error = true, warn = false, msg = "Se ha producido un error al intentar desconciliar los registros. Intente mas tarde." });
+				if (respuesta.Entidad.resultado != 0)
+					return Json(new { error = true, warn = false, msg = $"{respuesta.Entidad.resultado_msj} ({respuesta.Entidad.resultado})" });
 				return Json(new { error = false, warn = false, msg = "" });
 			}
 			catch (NegocioException ex)
@@ -250,7 +250,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 				if (request == null)
 					return BadRequest("Request vacío");
-				if ((request.itemsExtractoMarcados == null || request.itemsExtractoMarcados.Count <= 0) || (request.itemsSistemaMarcados == null || request.itemsSistemaMarcados.Count <= 0))
+				if ((request.itemsExtractoMarcados == null || request.itemsExtractoMarcados.Count <= 0) && (request.itemsSistemaMarcados == null || request.itemsSistemaMarcados.Count <= 0))
 					return BadRequest("No se han seleccionado registros del extracto y sistema para conciliar.");
 
 				var maxExtracto = ListaItemsExtracto.Max(x => x.conciliado_nro) + 1;
@@ -278,9 +278,9 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				ListaItemsSistema = listaTempSistema;
 
 				model.CuentaBanco = ListaCuentaBancos.Where(x => x.ctaf_id == request.ctaf_id).Select(x => $"{x.ctaf_denominacion} ({x.ctaf_id})").FirstOrDefault() ?? string.Empty;
-				model.Extracto = extracto;
-				model.Sistema = sistema;
-				model.Diferencia = extracto - sistema;
+				model.Extracto = 0.00M;
+				model.Sistema = 0.00M;
+				model.Diferencia = 0.00M;
 				model.GrillaSistema = ObtenerGridCoreSmart<RegistroSistemaDto>(ListaItemsSistema);
 				model.GrillaExtracto = ObtenerGridCoreSmart<RegistroExtractoDto>(ListaItemsExtracto);
 				return PartialView("_datosExtractoYSistema", model);
@@ -343,6 +343,60 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					Mensaje = ex.Message
 				};
 				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public JsonResult ValidarAntesDeConfirmar()
+		{
+			try
+			{
+				if ((ListaItemsExtracto == null || ListaItemsExtracto.Count <= 0) && (ListaItemsSistema == null || ListaItemsSistema.Count <= 0))
+					return Json(new { error = true, warn = false, msg = "No existen datos para realizar la conciliación del extracto." });
+				if (ListaItemsExtracto.Count(x => x.a_conciliar == "S") <= 0 && ListaItemsSistema.Count(x => x.a_conciliar == "S") <= 0)
+					return Json(new { error = true, warn = false, msg = "No existen datos para realizar la conciliación del extracto." });
+				return Json(new { error = false, warn = false, msg = "" });
+			}
+			catch (NegocioException ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+		}
+
+		public JsonResult FinancieroConciliacionExtractoConfirmar(string ctaf_id)
+		{
+			try
+			{
+				if (ctaf_id == null)
+					return Json(new { error = true, warn = false, msg = "Request vacío" });
+
+				var request = new FinancieroConciliacionExtractoConfirmarRequest
+				{
+					ctaf_id = ctaf_id,
+					usu_id = UserName,
+					adm_id = AdministracionId,
+					json_e = JsonConvert.SerializeObject(ListaItemsExtracto.Where(x => x.a_conciliar == "S").ToList()),
+					json_s = JsonConvert.SerializeObject(ListaItemsSistema.Where(x => x.a_conciliar == "S").ToList())
+				};
+				Console.WriteLine($"json_e: {request.json_e}");
+				Console.WriteLine($"json_s: {request.json_s}");
+				Console.WriteLine($"usu_id: {request.usu_id}");
+				Console.WriteLine($"adm_id: {request.adm_id}");
+				Console.WriteLine($"ctaf_id: {request.ctaf_id}");
+				var respuesta = _financieroServicio.FinancieroConciliacionExtractoConfirmar(request, TokenCookie);
+				return AnalizarRespuesta(respuesta, "La conciliación del extracto se realizó con éxito.");
+				//return Json(new { error = false, warn = false, msg = "" });
+			}
+			catch (NegocioException ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
 			}
 		}
 
