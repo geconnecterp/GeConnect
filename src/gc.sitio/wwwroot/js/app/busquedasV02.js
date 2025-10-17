@@ -53,7 +53,10 @@ $(function () {
     });
 
     // Botón de búsqueda
-    $("#btnBuscarProd").on("click", function () { busquedaAvanzadaProductosV02(pagina); });
+    $("#btnBuscarProd").off("click").on("click", function () {
+        buscarAvUIStart();
+        busquedaAvanzadaProductosV02(pagina);
+    });
 
     // Paginación
     $("#pagEstado").on("change", function () {
@@ -109,6 +112,9 @@ function busquedaAvanzadaProductosV02(pag) {
     var urlBusqueda = busquedaAvanzadaUrl;
     
     PostGen(data, urlBusqueda, function (response) {
+        // detener spinner siempre al completar
+        try { buscarAvUIStop(); } catch (e) { }
+
         if (response.error) {
             ControlaMensajeError(response.msg || "Error en búsqueda");
             return;
@@ -783,6 +789,9 @@ function inicializarControlesBusquedaAvanzada() {
     // Restablecer paginación
     $("#pagEstado").val(false).trigger("change");
 
+    // Reset spinner/botón
+    try { buscarAvUIStop(); } catch (e) { }
+
     console.log("✅ Controles inicializados correctamente.");
 }
 
@@ -810,3 +819,13 @@ function configurarAperturaModalBusquedaAvanzada() {
 $(function () {
     configurarAperturaModalBusquedaAvanzada();
 });
+
+// Helpers UI de búsqueda avanzada (spinner y botón)
+function buscarAvUIStart() {
+    $("#btnBuscarProd").prop("disabled", true);
+    $("#spnBuscarProd").removeClass("d-none");
+}
+function buscarAvUIStop() {
+    $("#spnBuscarProd").addClass("d-none");
+    $("#btnBuscarProd").prop("disabled", false);
+}
