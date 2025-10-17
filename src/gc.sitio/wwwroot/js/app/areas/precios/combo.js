@@ -1,5 +1,7 @@
 ﻿// Variable global para detectar cuando un campo va a ser editado
 var campoEnPreparacionEdicion = null;
+// Agregar variable global para controlar el modo de modificación
+var modoModificacionCombo = false;
 
 /**
  * Script para gestión de combos y promociones
@@ -143,6 +145,37 @@ function inicializarEventos() {
         // Actualizar los contenedores con los grids vacíos
         $(".col-sm-4:has(#tbGridProductos)").show();
         $(".col-sm-4:has(#tbGridSustitutos)").show();
+    });
+
+    // Evento para el botón de modificación
+    $("#btnAbmModif").on("click", function () {
+        // Verificar si hay algún combo seleccionado
+        var comboId = $("#tbGridPromoCombo tbody tr.selected-row").data("combo-id");
+        if (!comboId) {
+            ControlaMensajeWarning("Debe seleccionar un combo/promoción para modificar");
+            return;
+        }
+
+        // Verificar si el combo está activo y no permitir modificación
+        var estadoActivo = $("#chkEstadoCombo").prop("checked");
+        if (estadoActivo) {
+            ControlaMensajeWarning("No se pueden modificar combos/promociones activos");
+            return;
+        }
+
+        // Activar modo modificación
+        modoModificacionCombo = true;
+
+        // Activar/desactivar botones apropiados
+        $("#btnAbmAceptar").prop("disabled", false);
+        $("#btnAbmNuevo").prop("disabled", true);
+        $("#btnAbmModif").prop("disabled", true);
+
+        // Inicializar los campos editables para cantidad y descuento
+        inicializarCamposEditablesProductos();
+
+        // Mostrar mensaje informativo
+        ControlaMensajeInfo("Ahora puede modificar cantidades y descuentos. Al terminar haga clic en 'Confirmar'.");
     });
 
     // Evento para el botón confirmar
@@ -530,6 +563,14 @@ function configurarEventosSeleccion() {
 
                     // Cargar productos del combo
                     cargarProductosCombo(comboId);
+                    //se procede a activar el boton modificacion.
+                    let est = $this.find("td:nth-child(4) span").data("estado-id");               
+                    if (est === "H") {
+                        $("#btnAbmModif").prop("disabled", true);
+                    }
+                    else {
+                        $("#btnAbmModif").prop("disabled", false);
+                    }
                 } else {
                     console.error("No se encontr贸 el ID del combo en la fila seleccionada");
                 }
@@ -554,6 +595,13 @@ function actualizarContadorSeleccionados() {
     $("#combosSeleccionados").text(selectedCount);
 }
 
+// Helper: refresca el grid de combos usando los filtros y página actuales
+function refrescarGridPromoCombo() {
+    var pagActual = parseInt(window.pagina, 10);
+    if (!Number.isFinite(pagActual) || pagActual < 1) pagActual = 1;
+    buscarCombos(pagActual);
+}
+
 
 function accionesIniciales() {
     if ($("#divDetalle").is(":visible")) {
@@ -567,8 +615,7 @@ function accionesIniciales() {
 
     // Activar el botón de nuevo combo
     $("#btnAbmNuevo").prop("disabled", false);
-    // Activar el botón de modifica combo
-    $("#btnAbmModif").prop("disabled", false);
+    
     //ocultamos el boton de eliminar
     $("#btnAbmElimi").hide();
 
@@ -936,8 +983,9 @@ function cancelarOperacion(e) {
     // Ocultar formulario
     $("#divComboDatos").hide();
 
-    //Desactivamos el modo edición de la alta
+    // Desactivar modos de edición
     modoNuevoCombo = false;
+    modoModificacionCombo = false;
 
     // Restaurar estado de los campos
     restaurarCamposFormulario();
@@ -954,8 +1002,7 @@ function cancelarOperacion(e) {
     // Restaurar estado de los botones
     $("#btnAbmNuevo").prop("disabled", false);
     $("#btnAbmAceptar").prop("disabled", true);
-
-
+    $("#btnAbmModif").prop("disabled", true); // Deshabilitar botón modificar también
 
     // Si existe un homeCombo y necesitamos redirigir
     if (e && $("#btnCancel").is(e.target) && typeof homeCombo !== 'undefined') {
@@ -1217,8 +1264,22 @@ function agregarProductosAlGrid(productos) {
 
     // Agregar cada producto como una nueva fila
     $.each(productos, function (i, producto) {
+        // MODIFICADO: Manejo de estado histórico
+        var estadoTexto, estadoClase;
+        
+        if (producto.activo === 'A') {
+            estadoTexto = "Activo";
+            estadoClase = "bg-success";
+        } else if (producto.activo === 'H') {
+            estadoTexto = "Histórico";
+            estadoClase = "bg-secondary"; // Usar color gris para histórico
+        } else {
+            estadoTexto = "Pendiente";
+            estadoClase = "bg-danger";
+        }
+        
         var fila = `
-        <tr data-producto-id="${producto.p_id}" data-combo-id="${comboId}">
+        <tr data-producto-id="${producto.p_id}" data-combo-id="${comboId}" data-producto-estado="${producto.activo}">
             <td class="text-center">
                 ${producto.p_id}
             </td>
@@ -1247,8 +1308,8 @@ function agregarProductosAlGrid(productos) {
                 </div>
             </td>
             <td class="text-center">
-                <span class="badge ${producto.activo == 'A' ? "bg-success" : "bg-danger"}">
-                    ${producto.activo == 'A' ? "Activo" : "Pendiente"}
+                <span class="badge ${estadoClase}">
+                    ${estadoTexto}
                 </span>
             </td>
             ${modoNuevoCombo ? `
@@ -1278,13 +1339,34 @@ function agregarProductosAlGrid(productos) {
 }
 
 /**
+ * Verifica si un producto tiene estado histórico
+ * @param {string|jQuery} producto - ID del producto o elemento jQuery de la fila
+ * @returns {boolean} true si es histórico, false en caso contrario
+ */
+function esProductoHistorico(producto) {
+    // Si recibimos un ID, encontrar la fila
+    var $fila = typeof producto === 'string' ? 
+        $(`#tbGridProductos tbody tr[data-producto-id="${producto}"], #tbGridProductos tbody tr td:first-child:contains("${producto}")`)
+            .filter(function() { 
+                return $(this).text().trim() === producto || $(this).closest('tr').data('producto-id') === producto;
+            }).closest('tr') : 
+        $(producto).closest('tr');
+    
+    if ($fila.length === 0) return false;
+    
+    // Verificar texto del badge en la columna de estado (6ta columna)
+    var estadoTexto = $fila.find("td:nth-child(6) .badge").text().trim();
+    return estadoTexto === "Histórico";
+}
+
+/**
  * Inicializa los campos editables para cantidad y descuento en la grilla de productos
  */
 function inicializarCamposEditablesProductos() {
     console.log("🔄 Inicializando campos editables en grid de productos");
 
-    // Si no es modo nuevo combo, mantener los campos readonly y salir
-    if (!modoNuevoCombo) {
+    // Si no estamos en modo edición, mantener los campos readonly y salir
+    if (!modoNuevoCombo && !modoModificacionCombo) {
         $('.input-cantidad, .input-descuento').prop('readonly', true);
         console.log("✅ Campos configurados como readonly (modo visualización)");
         return;
@@ -1292,9 +1374,19 @@ function inicializarCamposEditablesProductos() {
 
     // NUEVO: Capturar el evento mousedown que ocurre ANTES del click
     $(document).off('mousedown', '.input-cantidad, .input-descuento').on('mousedown', '.input-cantidad, .input-descuento', function (e) {
-        // Si no es modo nuevo combo, no permitir la edición
-        if (!modoNuevoCombo) {
+        // Si no estamos en modo edición, no permitir la edición
+        if (!modoNuevoCombo && !modoModificacionCombo) {
             e.preventDefault();
+            return false;
+        }
+        
+        // NUEVA VERIFICACIÓN: Comprobar si el producto es histórico
+        var productoId = $(this).data('producto-id');
+        if (esProductoHistorico(productoId)) {
+            e.preventDefault();
+            e.stopPropagation();
+            // No establecemos campoEnPreparacionEdicion para prevenir edición
+            // Mostraremos el mensaje de advertencia en el click
             return false;
         }
         
@@ -1305,9 +1397,18 @@ function inicializarCamposEditablesProductos() {
     // 1. Configurar campos editables al hacer clic
     $(document).off('click', '.input-cantidad, .input-descuento')
         .on('click', '.input-cantidad, .input-descuento', function (e) {
-            // Si no es modo nuevo combo, no permitir la edición
-            if (!modoNuevoCombo) {
+            // Si no estamos en modo edición, no permitir la edición
+            if (!modoNuevoCombo && !modoModificacionCombo) {
                 e.preventDefault();
+                return false;
+            }
+
+            // NUEVA VERIFICACIÓN: Comprobar si el producto es histórico
+            var productoId = $(this).data('producto-id');
+            if (esProductoHistorico(productoId)) {
+                e.preventDefault();
+                e.stopPropagation();
+                ControlaMensajeWarning("No se puede modificar un producto con estado histórico");
                 return false;
             }
 
@@ -1426,6 +1527,18 @@ function hayEdicionActiva() {
  */
 function guardarCambiosCampoProducto(campo) {
     const $campo = $(campo);
+    const productoId = $campo.data('producto-id');
+    
+    // NUEVA VERIFICACIÓN: Doble comprobación de seguridad
+    if (esProductoHistorico(productoId)) {
+        // Restaurar valor original sin guardar cambios
+        const valorOriginal = parseFloat($campo.data('original-value')) || 0;
+        $campo.val(valorOriginal.toFixed($campo.hasClass('input-cantidad') ? 2 : 2));
+        $campo.prop('readonly', true);
+        ControlaMensajeWarning("No se puede modificar un producto con estado histórico");
+        return;
+    }
+    
     const valorOriginal = parseFloat($campo.data('original-value')) || 0;
     const valorActual = parseFloat($campo.val().replace(/,/g, '')) || 0;
 
@@ -1489,6 +1602,13 @@ function activarSiguienteCampoProducto(campoActual) {
     if (esCantidad) {
         const $siguiente = $fila.find('.input-descuento');
         if ($siguiente.length) {
+            // NUEVA VERIFICACIÓN: No activar si es producto histórico
+            const productoId = $siguiente.data('producto-id');
+            if (esProductoHistorico(productoId)) {
+                $campoActual.prop('readonly', true).addClass('campo-readonly');
+                return;
+            }
+            
             $siguiente
                 .prop('readonly', false)
                 .removeClass('campo-readonly')
@@ -1503,6 +1623,13 @@ function activarSiguienteCampoProducto(campoActual) {
     if ($siguienteFila.length) {
         const $siguienteCampo = $siguienteFila.find('.input-cantidad');
         if ($siguienteCampo.length) {
+            // NUEVA VERIFICACIÓN: No activar si es producto histórico
+            const productoId = $siguienteCampo.data('producto-id');
+            if (esProductoHistorico(productoId)) {
+                $campoActual.prop('readonly', true).addClass('campo-readonly');
+                return;
+            }
+            
             $siguienteCampo
                 .prop('readonly', false)
                 .removeClass('campo-readonly')
@@ -1684,9 +1811,20 @@ function cargarProductosSustitutos(comboId, productoId) {
                 // Actualizar el contenido del grid de sustitutos
                 $(".col-sm-4:has(#tbGridSustitutos)").html(response).show();
 
-                // Ocultar columna de acción si no estamos en modo nuevo combo
-                if (!modoNuevoCombo) {
-                    $("#tbGridSustitutos th:last-child, #tbGridSustitutos td:last-child").hide();
+                if ($("#tbGridSustitutos tbody tr").length === 0) {
+                    // Si no hay filas después de cargar, mostrar mensaje "No hay sustitutos"
+                    $("#tbGridSustitutos tbody").html(`
+                        <tr>
+                            <td colspan="${modoNuevoCombo ? 5 : 4}" class="text-center text-muted py-2">
+                                <i class="bx bx-info-circle me-1"></i>No hay sustitutos disponibles
+                            </td>
+                        </tr>
+                    `);
+                } else {
+                    // Ocultar columna de acción si no estamos en modo nuevo combo
+                    if (!modoNuevoCombo) {
+                        $("#tbGridSustitutos th:last-child, #tbGridSustitutos td:last-child").hide();
+                    }
                 }
 
                 // Verificar si hay sustitutos después de cargar el HTML
@@ -1798,18 +1936,29 @@ function cargarProductosCombo(comboId) {
             // Actualizar el contenido del grid de productos
             $(".col-sm-4:has(#tbGridProductos)").html(html).show();
 
-            // Si estamos viendo un combo existente (no en modo nuevo combo)
-            if (!modoNuevoCombo) {
-                // Asegurar que los campos estén en modo readonly
-                $("#tbGridProductos .input-cantidad, #tbGridProductos .input-descuento").prop("readonly", true);
-                
-                // Si la columna de acción existe, ocultarla
-                if ($("#tbGridProductos th").length > 6) {
-                    $("#tbGridProductos th:last-child, #tbGridProductos td:last-child").hide();
-                }
+            if ($("#tbGridProductos tbody tr").length === 0) {
+                // Si no hay filas después de cargar, mostrar mensaje "No hay productos"
+                $("#tbGridProductos tbody").html(`
+                    <tr>
+                        <td colspan="${modoNuevoCombo ? 7 : 6}" class="text-center text-muted py-2">
+                            <i class="bx bx-info-circle me-1"></i>No hay productos disponibles
+                        </td>
+                    </tr>
+                `);
             } else {
-                // En modo edición, inicializar los campos editables
-                inicializarCamposEditablesProductos();
+                // Si estamos viendo un combo existente (no en modo nuevo combo)
+                if (!modoNuevoCombo) {
+                    // Asegurar que los campos estén en modo readonly
+                    $("#tbGridProductos .input-cantidad, #tbGridProductos .input-descuento").prop("readonly", true);
+                    
+                    // Si la columna de acción existe, ocultarla
+                    if ($("#tbGridProductos th").length > 6) {
+                        $("#tbGridProductos th:last-child, #tbGridProductos td:last-child").hide();
+                    }
+                } else {
+                    // En modo edición, inicializar los campos editables
+                    inicializarCamposEditablesProductos();
+                }
             }
 
             // Configurar eventos de selección para los productos
@@ -1830,28 +1979,11 @@ function cargarProductosCombo(comboId) {
 }
 
 /**
- * Carga una página específica de resultados según los filtros
- * @param {Object} filtros - Filtros para la búsqueda
- * @param {number} pagina - Número de página a cargar
- */
-function cargarPagina(filtros, pagina) {
-    // Validar la página
-    pagina = parseInt(pagina) || 1;
-    if (pagina < 1) pagina = 1;
-    
-    // Actualizar la variable global de página actual
-    window.pagina = pagina;
-    
-    // Llamar a la función de búsqueda con la página especificada
-    buscarCombos(pagina);
-}
-
-/**
  * Confirma la creación o modificación de un combo/promoción
  */
 function confirmarCombo() {
-    // Verificar que estamos en modo nuevo combo
-    if (!modoNuevoCombo) {
+    // Verificar que estamos en modo edición (nuevo o modificación)
+    if (!modoNuevoCombo && !modoModificacionCombo) {
         ControlaMensajeWarning("No hay operación activa para confirmar");
         return;
     }
@@ -1867,11 +1999,25 @@ function confirmarCombo() {
     var datos = recopilarDatosCombo();
     if (!datos) return;
 
-    // 2. Recopilar canales seleccionados
-    var canales = recopilarCanalesSeleccionados();
-    if (!canales || canales.length === 0) {
-        ControlaMensajeWarning("Debe seleccionar al menos un canal para el combo/promoción");
-        return;
+    // 2. Recopilar canales seleccionados (solo para nuevo combo)
+    var canales = [];
+    if (modoNuevoCombo) {
+        canales = recopilarCanalesSeleccionados();
+        if (!canales || canales.length === 0) {
+            ControlaMensajeWarning("Debe seleccionar al menos un canal para el combo/promoción");
+            return;
+        }
+    } else {
+        // Para modificación, obtener los canales existentes
+        $("#tbGridCanales tbody tr").each(function () {
+            var $fila = $(this);
+            canales.push({
+                adm_id: $fila.data("adm-id"),
+                lp_id: $fila.data("lp-id"),
+                canal: $fila.find("td:eq(0)").text().trim(),
+                incluida: 'S'
+            });
+        });
     }
 
     // 3. Recopilar productos del grid
@@ -1881,7 +2027,7 @@ function confirmarCombo() {
         return;
     }
 
-    // 4. Preparar request usando ConfirmacionRequestDto (estructura esperada por el controlador)
+    // 4. Preparar request usando ConfirmacionRequestDto
     var request = {
         Datos: datos,
         Canales: canales,
@@ -1890,9 +2036,11 @@ function confirmarCombo() {
 
     // 5. Confirmar con el usuario
     var tipoDesc = datos.cmb_tipo === 'C' ? 'combo' : 'promoción';
+    var accionDesc = modoNuevoCombo ? "guardar" : "modificar";
+
     AbrirMensaje(
-        "CONFIRMAR " + tipoDesc.toUpperCase(),
-        `¿Está seguro que desea guardar este ${tipoDesc}?<br><br>` +
+        (modoNuevoCombo ? "CONFIRMAR " : "MODIFICAR ") + tipoDesc.toUpperCase(),
+        `¿Está seguro que desea ${accionDesc} este ${tipoDesc}?<br><br>` +
         `<strong>Descripción:</strong> ${datos.cmb_desc}<br>` +
         `<strong>Productos:</strong> ${productos.length}<br>` +
         `<strong>Canales:</strong> ${canales.length}`,
@@ -2017,7 +2165,8 @@ function recopilarProductosCombo() {
  * @param {string} tipoDesc - Descripción del tipo (combo o promoción)
  */
 function enviarConfirmacionCombo(request, tipoDesc) {
-    AbrirWaiting(`Guardando ${tipoDesc}...`);
+    var accionDesc = modoNuevoCombo ? "Guardando" : "Modificando";
+    AbrirWaiting(`${accionDesc} ${tipoDesc}...`);
 
     $.ajax({
         url: confirmacionComboUrl,
@@ -2029,9 +2178,11 @@ function enviarConfirmacionCombo(request, tipoDesc) {
 
             if (response && response.ok && !response.error) {
                 // Éxito
-                ControlaMensajeSuccess(
-                    response.msg || `${tipoDesc.charAt(0).toUpperCase() + tipoDesc.slice(1)} guardado correctamente`
-                );
+                var mensajeExito = modoNuevoCombo
+                    ? `${tipoDesc.charAt(0).toUpperCase() + tipoDesc.slice(1)} guardado correctamente`
+                    : `${tipoDesc.charAt(0).toUpperCase() + tipoDesc.slice(1)} modificado correctamente`;
+
+                ControlaMensajeSuccess(response.msg || mensajeExito);
 
                 // Limpiar datos temporales
                 productosSustitutosMap = {};
@@ -2040,10 +2191,11 @@ function enviarConfirmacionCombo(request, tipoDesc) {
                 // Cancelar operación y volver al estado inicial
                 setTimeout(function () {
                     cancelarOperacion();
+                    refrescarGridPromoCombo();
                 }, 1500);
             } else {
                 // Error o advertencia
-                var mensaje = response.msg || `Error al guardar ${tipoDesc}`;
+                var mensaje = response.msg || `Error al ${modoNuevoCombo ? 'guardar' : 'modificar'} ${tipoDesc}`;
                 if (response.warn) {
                     ControlaMensajeWarning(mensaje);
                 } else {
@@ -2053,10 +2205,10 @@ function enviarConfirmacionCombo(request, tipoDesc) {
         },
         error: function (xhr, status, error) {
             CerrarWaiting();
-            console.error(`Error al guardar ${tipoDesc}:`, error);
-            
+            console.error(`Error al ${modoNuevoCombo ? 'guardar' : 'modificar'} ${tipoDesc}:`, error);
+
             // Intentar extraer mensaje detallado del error
-            var mensajeError = "Error al guardar el " + tipoDesc;
+            var mensajeError = `Error al ${modoNuevoCombo ? 'guardar' : 'modificar'} el ${tipoDesc}`;
             if (xhr.responseJSON && xhr.responseJSON.mensaje) {
                 mensajeError = xhr.responseJSON.mensaje;
             } else if (xhr.responseText) {
@@ -2067,57 +2219,13 @@ function enviarConfirmacionCombo(request, tipoDesc) {
                     // Si no se puede parsear, usar mensaje por defecto
                 }
             }
-            
+
             ControlaMensajeError(mensajeError);
         }
     });
 }
 
-// Evento para el checkbox de estado del combo
-$(document).on("change", "#chkEstadoCombo", function () {
-    var isChecked = $(this).prop("checked");
-    var nuevoEstado = isChecked ? 'A' : 'N';
-    var estadoAnterior = $("#cmb_estado").val();
-    
-    // Actualizar el valor oculto del estado
-    $("#cmb_estado").val(nuevoEstado);
-    
-    // Actualizar el texto de la etiqueta
-    $("#lblEstadoCombo").text(isChecked ? "Activo" : "No activo");
-    
-    // Si no estamos en modo nuevo/edición, y se está activando un combo inactivo
-    if (!modoNuevoCombo && isChecked && estadoAnterior === 'N') {
-        // Revertir temporalmente el cambio para que se reactive solo tras confirmación
-        $(this).prop("checked", false);
-        $("#cmb_estado").val(estadoAnterior);
-        $("#lblEstadoCombo").text("No activo");
-        
-        // Obtener el tipo de promoción o combo
-        var tipo = $("#cmb_tipo").val() === 'C' ? 'combo' : 'promoción';
-        var descripcion = $("#cmb_desc").val().trim();
-        
-        // Mostrar mensaje de confirmación
-        AbrirMensaje(
-            "ACTIVAR " + tipo.toUpperCase(),
-            `¿Está seguro que desea activar ${tipo} "${descripcion}"?`,
-            function (resp) {
-                if (resp === "SI") {
-                    // Aplicar el cambio de estado y activar
-                    $("#chkEstadoCombo").prop("checked", true);
-                    $("#cmb_estado").val('A');
-                    $("#lblEstadoCombo").text("Activo");
-                    activarComboExistente(tipo);
-                }
-                $("#msjModal").modal("hide");
-                return true;
-            },
-            true,
-            ["Activar", "Cancelar"],
-            "info!",
-            null
-        );
-    }
-});
+
 
 /**
  * Activa un combo o promoción existente
@@ -2153,9 +2261,10 @@ function activarComboExistente(tipoDesc) {
         var fila = $(this);
         var canal = {
             adm_id: fila.find("td:eq(1)").text().trim(),
-            adm_nombre: fila.find("td:eq(2)").text().trim(),
+            //adm_id: $fila.find("td:eq(1)").text().trim(),
+            //adm_nombre: $fila.find("td:eq(2)").text().trim(),
             lp_id: fila.find("td:eq(3)").text().trim(),
-            lp_desc: fila.find("td:eq(4)").text().trim(),
+            //lp_desc: $fila.find("td:eq(4)").text().trim(),
             canal: fila.find("td:eq(0)").text().trim(),
             incluida: 'S'
         };
@@ -2210,6 +2319,9 @@ function activarComboExistente(tipoDesc) {
                 
                 // Deshabilitar el checkbox para prevenir cambios (cumple con la lógica existente)
                 $("#chkEstadoCombo").prop("disabled", true);
+
+                // Refrescar el grid con los filtros vigentes
+                refrescarGridPromoCombo();
             } else {
                 // Error o advertencia
                 var mensaje = response.msg || `Error al activar ${tipoDesc}`;
