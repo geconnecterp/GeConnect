@@ -72,70 +72,8 @@
             </table>
         </div>
 
-      @*   @if (Model.ListaDatos?.Any() == true)
-        {
-            <div class="d-flex justify-content-between align-items-center mt-3 px-2">
-                <div class="text-muted small d-flex align-items-center">
-                    <i class="bx bx-package me-1"></i>
-                    Total: @Model.CantidadReg elementos
-                    <span class="ms-3 badge bg-primary" id="combosSeleccionados">0</span> seleccionados
-                </div>
-                <div class="text-muted small">
-                    @Model.DatoAux01
-                </div>
-            </div>
-            
-            <!-- Paginación -->
-            @if (Model.CantidadPaginas > 1)
-            {
-                <div class="d-flex justify-content-center mt-3">
-                    <nav aria-label="Navegación de páginas">
-                        <ul class="pagination pagination-sm">
-                            @if (Model.PaginaActual > 1)
-                            {
-                                <li class="page-item">
-                                    <a class="page-link" href="#" data-page="1" aria-label="Primera">
-                                        <span aria-hidden="true">&laquo;</span>
-                                    </a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" href="#" data-page="@(Model.PaginaActual - 1)" aria-label="Anterior">
-                                        <span aria-hidden="true">‹</span>
-                                    </a>
-                                </li>
-                            }
-                            
-                            @{
-                                int inicio = Math.Max(1, Model.PaginaActual - 2);
-                                int fin = Math.Min(Model.CantidadPaginas, Model.PaginaActual + 2);
-                            }
-                            
-                            @for (int i = inicio; i <= fin; i++)
-                            {
-                                <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
-                                    <a class="page-link" href="#" data-page="@i">@i</a>
-                                </li>
-                            }
-                            
-                            @if (Model.PaginaActual < Model.CantidadPaginas)
-                            {
-                                <li class="page-item">
-                                    <a class="page-link" href="#" data-page="@(Model.PaginaActual + 1)" aria-label="Siguiente">
-                                        <span aria-hidden="true">›</span>
-                                    </a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" href="#" data-page="@Model.CantidadPaginas" aria-label="Última">
-                                        <span aria-hidden="true">&raquo;</span>
-                                    </a>
-                                </li>
-                            }
-                        </ul>
-                    </nav>
-                </div>
-            }
-        }
-     *@
+     
+    
     </div>
 </div>
 

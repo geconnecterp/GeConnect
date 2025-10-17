@@ -307,14 +307,9 @@ namespace gc.api.Controllers.Ofertas
                 var resultado = _promoComboServicio.ConfirmarCombo(request);
 
                 // Verificar si la operación fue exitosa según el código de resultado
-                if (resultado.resultado != 0)
-                {
+                
                     return Ok(new ApiResponse<RespuestaDto>(resultado));
-                }
-                else
-                {
-                    return BadRequest(new { ok = false, mensaje = resultado.resultado_msj });
-                }
+              
             }
             catch (Exception ex)
             {
