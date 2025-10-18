@@ -484,18 +484,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                             Meta = apiResponse.Meta ?? new(),
                             Mensaje = "OK"
                         };
-                    }
-                    else if (entidad.resultado > 0)
-                    {
-                        return new RespuestaGenerica<RespuestaDto>
-                        {
-                            Ok = true,
-                            Entidad = apiResponse.Data,
-                            EsError = false,
-                            EsWarn = true,
-                            Mensaje = entidad.resultado_msj
-                        };
-                    }
+                    }                    
                     else
                     {
                         _logger.LogError($"{entidad.resultado_msj} - CodError: {entidad.resultado}");
@@ -503,9 +492,9 @@ namespace gc.sitio.core.Servicios.Implementacion
                         {
                             Ok = true,
                             Entidad = apiResponse.Data,
-                            EsError = true,
-                            EsWarn = false,
-                            Mensaje = ""
+                            EsError = false,
+                            EsWarn = true,
+                            Mensaje = entidad.resultado_msj
                         };
                     }
                 }

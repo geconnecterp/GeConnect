@@ -53,7 +53,10 @@ $(function () {
     });
 
     // Botón de búsqueda
-    $("#btnBuscarProd").on("click", function () { busquedaAvanzadaProductosV02(pagina); });
+    $("#btnBuscarProd").off("click").on("click", function () {
+        buscarAvUIStart();
+        busquedaAvanzadaProductosV02(pagina);
+    });
 
     // Paginación
     $("#pagEstado").on("change", function () {
@@ -109,6 +112,9 @@ function busquedaAvanzadaProductosV02(pag) {
     var urlBusqueda = busquedaAvanzadaUrl;
     
     PostGen(data, urlBusqueda, function (response) {
+        // detener spinner siempre al completar
+        try { buscarAvUIStop(); } catch (e) { }
+
         if (response.error) {
             ControlaMensajeError(response.msg || "Error en búsqueda");
             return;
@@ -184,52 +190,50 @@ function buscarProducto() {
     return true;
 }
 
-// ✅ OPTIMIZADA: Configurar eventos con auto-selección mejorada
-// ✅ SIMPLIFICADA: Solo usar p_id en eventos
+// OPTIMIZADO: Eventos con delegación sobre el contenedor para evitar re-bind por recarga del grid
 function configurarEventosGridBusquedaV02() {
-    //autoSeleccionarProductosVisibles();
-    
-    $("#checkAllBusqueda").off("change").on("change", function () {
-        var isChecked = $(this).is(":checked");
-        $(".check-producto-busqueda").prop("checked", isChecked);
+    const $contenedor = $("#divBusquedaAvanzada");
 
-        $(".check-producto-busqueda").each(function () {
-            var productoData = $(this).data("producto");
-            if (productoData) {
-                if (isChecked) {
-                    agregarProductoASeleccion(productoData);
-                } else {
-                    // ✅ SOLO p_id
-                    removerProductoDeSeleccion(productoData.p_id);
-                }
+    // Seleccionar/Deseleccionar todos
+    $contenedor.off("change", "#checkAllBusqueda").on("change", "#checkAllBusqueda", function () {
+        const isChecked = this.checked;
+        const $checks = $contenedor.find(".check-producto-busqueda").prop("checked", isChecked);
+
+        $checks.each(function () {
+            const productoData = $(this).data("producto");
+            if (!productoData) return;
+            if (isChecked) {
+                agregarProductoASeleccion(productoData);
+            } else {
+                removerProductoDeSeleccion(productoData.p_id);
             }
         });
 
         actualizarContadorSeleccion();
     });
 
-    $(".check-producto-busqueda").off("change").on("change", function () {
-        var productoData = $(this).data("producto");
+    // Selección individual
+    $contenedor.off("change", ".check-producto-busqueda").on("change", ".check-producto-busqueda", function () {
+        const productoData = $(this).data("producto");
         if (!productoData) return;
 
-        if ($(this).is(":checked")) {
+        if (this.checked) {
             agregarProductoASeleccion(productoData);
         } else {
-            // ✅ SOLO p_id
             removerProductoDeSeleccion(productoData.p_id);
         }
 
-        var totalVisible = $(".check-producto-busqueda").length;
-        var checkedVisible = $(".check-producto-busqueda:checked").length;
-        $("#checkAllBusqueda").prop("checked", totalVisible === checkedVisible);
+        const totalVisible = $contenedor.find(".check-producto-busqueda").length;
+        const checkedVisible = $contenedor.find(".check-producto-busqueda:checked").length;
+        $("#checkAllBusqueda").prop("checked", totalVisible > 0 && totalVisible === checkedVisible);
 
         actualizarContadorSeleccion();
     });
 
+    // Botones del panel múltiple (están fuera del contenedor, se mantienen binds directos)
     $("#btnAgregarSeleccionados").off("click").on("click", function () {
         agregarProductosSeleccionadosAOfertas();
     });
-
     $("#btnLimpiarSeleccionBusqueda").off("click").on("click", function () {
         confirmarLimpiezaSeleccion();
     });
@@ -479,136 +483,87 @@ function validarProductosAntesDeEnvio(productos) {
     return productosValidos;
 }
 
-// ✅ NUEVA: Función para auto-seleccionar productos al cargar grid
-function autoSeleccionarProductosVisibles() {
-    // Seleccionar todos los productos que aparecen en el grid
-    $(".check-producto-busqueda").each(function () {
-        var checkbox = $(this);
-        var productoData = checkbox.data("producto");
-        
-        if (productoData) {
-            // Marcar checkbox como seleccionado (ya viene checked del HTML)
-            checkbox.prop("checked", true);
-            
-            // Agregar al array de seleccionados si no existe
-            agregarProductoASeleccion(productoData);
-        }
-    });
-    
-    // Marcar "Seleccionar todos" si hay productos
-    var totalVisible = $(".check-producto-busqueda").length;
-    if (totalVisible > 0) {
-        $("#checkAllBusqueda").prop("checked", true);
-    }
-    
-    // Actualizar contador
-    actualizarContadorSeleccion();
-}
+// REINTRODUCIDO + OPTIMIZADO: Genera el grid HTML desde un array de ProductoListaDto
+function generarGridDesdeProductoListaDto(productos, metadata) {
+    // Fallbacks seguros
+    const lista = Array.isArray(productos) ? productos : [];
+    const meta = metadata || { totalCount: lista.length, totalPages: 1, currentPage: 1, pageSize: lista.length };
 
-// ✅ OPTIMIZADA: Función para selección individual sin color
-function selectRegDbl(x) {
-    var id = x.cells[1].innerText.trim();
-    var descripcion = x.cells[2].innerText.trim();
-    
-    AbrirMensaje(
-        "USAR PRODUCTO INDIVIDUAL",
-        `¿Desea usar únicamente el producto "${descripcion}"?<br><small>Se limpiará la selección múltiple actual.</small>`,
-        function (resp) {
-            if (resp === "SI") {
-                // ✅ EXTRAER Y ENVIAR: Producto desde la fila actual
-                var productoData = extraerProductoListaDtoDeFilaHTML($(x));
-                if (productoData) {
-                    $("#busquedaModal").modal("hide");
-                    agregarProductoIndividualAOfertas(productoData);
-                } else {
-                    // Fallback al método original si no se puede extraer
-                    $("#busquedaModal").modal("toggle");
-                    $("input#Busqueda").val(id);
-                    $("#btnBusquedaBase").trigger("click");
-                }
-            }
-            $("#msjModal").modal("hide");
-            return true;
-        },
-        true,
-        ["Usar Individual", "Cancelar"],
-        "info!",
-        null
-    );
-}
+    if (lista.length === 0) {
+        return `
+            <div class="text-center text-muted py-4">
+                <i class="bx bx-info-circle me-2"></i>
+                No se encontraron productos con los criterios especificados
+            </div>
+        `;
+    }
 
-// ✅ NUEVA: Función para procesar resultado de búsqueda individual usando ProductoListaDto
-function procesarRespuestaBusquedaIndividual(htmlResponse, valorBuscado) {
-    var $tempContainer = $('<div>').html(htmlResponse);
-    var $filas = $tempContainer.find('#tbGridProd tbody tr[data-producto-id]');
-    
-    if ($filas.length === 0) {
-        AbrirMensaje("ATENCIÓN", "NO SE ENCONTRÓ EL PRODUCTO QUE INTENTA BUSCAR.", function () {
-            if (funcionBusquedaAvanzada === true) {
-                inicializaBusquedaAvanzadaV02();
-                $("#busquedaModal").modal("show");
-            }
-            $("#msjModal").modal("hide");
-            enfocarElementoSeguro("#Busqueda");
-            return true;
-        }, false, ["Aceptar"], "warn!", null);
-        
-        return;
-    }
-    
-    if ($filas.length === 1) {
-        var $fila = $filas.first();
-        var productoData = extraerProductoListaDtoDeFilaHTML($fila);
-        
-        if (productoData) {
-            // ✅ ENVÍO DIRECTO: Sin conversión, usar ProductoListaDto tal como viene
-            agregarProductoIndividualAOfertas(productoData);
-        }
-    } else {
-        AbrirMensaje("ATENCIÓN", 
-            `Se encontraron ${$filas.length} productos. Se abrirá la búsqueda avanzada para seleccionar.`, 
-            function () {
-                $("#msjModal").modal("hide");
-                $("#Search").val(valorBuscado);
-                inicializaBusquedaAvanzadaV02();
-                $("#busquedaModal").modal("show");
-                setTimeout(function() {
-                    busquedaAvanzadaProductosV02(1);
-                }, 300);
-                return true;
-            }, false, ["Aceptar"], "info!", null);
-    }
-}
+    // Construcción de filas performante
+    const filas = lista.map((item, index) => {
+        const claseAlternada = index % 2 === 0 ? "table-row-alt" : "";
+        const estadoActivo = item.p_activo === "S";
+        const estadoBadge = estadoActivo ? "bg-success" : "bg-warning";
+        const estadoTexto = estadoActivo ? "Activo" : "Inactivo";
 
-// ✅ NUEVA: Extraer ProductoListaDto desde fila HTML del grid
-function extraerProductoListaDtoDeFilaHTML($fila) {
-    try {
-        var $checkbox = $fila.find('.check-producto-busqueda');
-        var productoData = $checkbox.data('producto');
-        
-        if (productoData) {
-            return productoData;
-        }
-        
-        // Fallback: extraer desde celdas usando solo notación p_
-        var celdas = $fila.find('td');
-        if (celdas.length >= 7) {
-            return {
-                p_id: $(celdas[1]).text().trim(),
-                p_desc: $(celdas[2]).text().trim(),
-                p_id_barrado: $(celdas[3]).text().trim(),
-                p_pcosto: parsearNumeroConCultura($(celdas[4]).text()),
-                p_pvta_001: parsearNumeroConCultura($(celdas[5]).text()),
-                p_pvta_002: parsearNumeroConCultura($(celdas[6]).text()),
-                p_activo: $(celdas[8]).find('.badge').hasClass('bg-success') ? "S" : "N"
-            };
-        }
-        
-        return null;
-    } catch (error) {
-        console.error("Error al extraer ProductoListaDto desde fila HTML:", error);
-        return null;
-    }
+        const pcostoFormateado = formatearNumeroConCultura(item.p_pcosto || 0, 3);
+        const pmayoristaFormateado = formatearNumeroConCultura(item.p_pvta_001 || 0, 2);
+        const pminoristaFormateado = formatearNumeroConCultura(item.p_pvta_002 || 0, 2);
+
+        // Guardamos el DTO en data-producto como JSON (escapando comillas simples)
+        const dataProductoJson = JSON.stringify(item).replace(/'/g, "&apos;");
+
+        return `
+            <tr class="${claseAlternada} fila-producto" data-producto-id="${item.p_id}">
+                <td class="text-center">
+                    <input type="checkbox" 
+                           class="form-check-input check-producto-busqueda"
+                           data-p-id="${item.p_id}"
+                           data-producto='${dataProductoJson}'
+                           title="Producto seleccionable">
+                </td>
+                <td class="text-center">${item.p_id}</td>
+                <td class="text-left" title="${item.p_desc || ''}">${item.p_desc || ''}</td>
+                <td class="text-center">${item.p_id_barrado || ''}</td>
+                <td class="text-right">$${pcostoFormateado}</td>
+                <td class="text-right">$${pmayoristaFormateado}</td>
+                <td class="text-right">$${pminoristaFormateado}</td>
+                <td class="text-center" title="${item.cta_denominacion || ''}">${item.cta_id || ''}</td>
+                <td class="text-center">
+                    <span class="badge ${estadoBadge}">${estadoTexto}</span>
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-outline-primary btn-sm btn-seleccionar-individual"
+                            onclick="selectRegDbl(this.closest('tr'))" title="Usar solo este producto">
+                        <i class="bx bx-check-circle"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join("");
+
+    // Tabla + sección de metadata/controles (reusa helper ya existente)
+    return `
+        <div class="table-responsive text-nowrap table-wrapper-400">
+            <table class="table table-sm mb-0 table-hover table-golden" id="tbGridBusquedaProductos">
+                <thead class="table-golden-header">
+                    <tr class="header">
+                        <th class="text-center"><input type="checkbox" class="form-check-input" id="checkAllBusqueda"></th>
+                        <th class="text-center">ID</th>
+                        <th class="text-left">DESCRIPCIÓN</th>
+                        <th class="text-center">CÓDIGO EAN</th>
+                        <th class="text-right">P.COSTO</th>
+                        <th class="text-right">P.MAYORISTA</th>
+                        <th class="text-right">P.MINORISTA</th>
+                        <th class="text-center">PROVEEDOR</th>
+                        <th class="text-center">ESTADO</th>
+                        <th class="text-center">ACCIÓN</th>
+                    </tr>
+                </thead>
+                <tbody>${filas}</tbody>
+            </table>
+        </div>
+        ${generarSeccionMetadataYControles(lista.length, meta)}
+    `;
 }
 
 // ✅ MANTENER: Solo las funciones de formateo que se usan en generarGridDesdeProductoListaDto
@@ -772,104 +727,6 @@ function procesarAgregarProductosCustom() {
     }
 }
 
-// Variables y funciones que ya no son necesarias
-
-// ELIMINAR: Variable productoBase (no se usa más)
-// var productoBase; // ELIMINADA
-
-// ELIMINAR: Función formatearParaCompatibilidad (incluida en convertirProductoListaABusqueda eliminada)
-// function formatearParaCompatibilidad() { ... } // ELIMINADA
-
-// CONSERVAR: Solo funciones esenciales
-function obtenerProductosSeleccionados() {
-    return {
-        productos: productosSeleccionadosBusqueda,
-        cantidad: productosSeleccionadosBusqueda.length,
-        haySeleccion: productosSeleccionadosBusqueda.length > 0
-    };
-}
-
-// ✅ NUEVA: Función faltante para generar grid desde ProductoListaDto
-function generarGridDesdeProductoListaDto(productos, metadata) {
-    if (!productos || productos.length === 0) {
-        return `
-            <div class="text-center text-muted py-4">
-                <i class="bx bx-info-circle me-2"></i>
-                No se encontraron productos con los criterios especificados
-            </div>
-        `;
-    }
-
-    var html = `
-        <div class="table-responsive text-nowrap table-wrapper-400">
-            <table class="table table-sm mb-0 table-hover table-golden" id="tbGridBusquedaProductos">
-                <thead class="table-golden-header">
-                    <tr class="header">
-                        <th class="text-center"><input type="checkbox" class="form-check-input" id="checkAllBusqueda"></th>
-                        <th class="text-center">ID</th>
-                        <th class="text-left">DESCRIPCIÓN</th>
-                        <th class="text-center">CÓDIGO EAN</th>
-                        <th class="text-right">P.COSTO</th>
-                        <th class="text-right">P.MAYORISTA</th>
-                        <th class="text-right">P.MINORISTA</th>
-                        <th class="text-center">PROVEEDOR</th>
-                        <th class="text-center">ESTADO</th>
-                        <th class="text-center">ACCIÓN</th>
-                    </tr>
-                </thead>
-                <tbody>
-    `;
-
-    productos.forEach(function(item, index) {
-        var claseAlternada = index % 2 === 0 ? "table-row-alt" : "";
-        var estadoBadge = item.p_activo === "S" ? "bg-success" : "bg-warning";
-        var estadoTexto = item.p_activo === "S" ? "Activo" : "Inactivo";
-        
-        var pcostoFormateado = formatearNumeroConCultura(item.p_pcosto || 0, 3);
-        var pmayoristaFormateado = formatearNumeroConCultura(item.p_pvta_001 || 0, 2);
-        var pminoristaFormateado = formatearNumeroConCultura(item.p_pvta_002 || 0, 2);
-        
-        html += `
-            <tr class="${claseAlternada} fila-producto" data-producto-id="${item.p_id}">
-                <td class="text-center">
-                    <input type="checkbox" 
-                           class="form-check-input check-producto-busqueda"
-                           data-p-id="${item.p_id}"
-                           data-producto='${JSON.stringify(item).replace(/'/g, "&apos;")}'                           
-                           title="Producto seleccionado automáticamente">
-                </td>
-                <td class="text-center">${item.p_id}</td>
-                <td class="text-left" title="${item.p_desc}">${item.p_desc}</td>
-                <td class="text-center">${item.p_id_barrado || ''}</td>
-                <td class="text-right">$${pcostoFormateado}</td>
-                <td class="text-right">$${pmayoristaFormateado}</td>
-                <td class="text-right">$${pminoristaFormateado}</td>
-                <td class="text-center" title="${item.cta_denominacion || ''}">${item.cta_id || ''}</td>
-                <td class="text-center">
-                    <span class="badge ${estadoBadge}">${estadoTexto}</span>
-                </td>
-                <td class="text-center">
-                    <button type="button" class="btn btn-outline-primary btn-sm btn-seleccionar-individual"
-                            onclick="selectRegDbl(this.closest('tr'))" title="Usar solo este producto">
-                        <i class="bx bx-check-circle"></i>
-                    </button>
-                </td>
-            </tr>
-        `;
-    });
-
-    html += `
-                </tbody>
-            </table>
-        </div>
-    `;
-
-    // ✅ AGREGAR: Sección de metadata y controles de selección
-    html += generarSeccionMetadataYControles(productos.length, metadata);
-
-    return html;
-}
-
 // NUEVA: Función para confirmar limpieza de selección
 function confirmarLimpiezaSeleccion() {
     if (productosSeleccionadosBusqueda.length === 0) {
@@ -893,4 +750,82 @@ function confirmarLimpiezaSeleccion() {
         "warn!",
         null
     );
+}
+
+/**
+ * Inicializa todos los controles del modal de búsqueda avanzada
+ * para garantizar que estén listos para una nueva búsqueda.
+ */
+function inicializarControlesBusquedaAvanzada() {
+    console.log("🔄 Inicializando controles del modal de búsqueda avanzada...");
+
+    // Limpiar selección previa
+    limpiarSeleccionBusqueda();
+
+    // Restablecer valores de los campos de entrada
+    $("#Rel01, #Rel02, #Search").val("").prop("disabled", false);
+    $("#Rel01Item, #Rel02Item").val("");
+    $("#Rel03").val("").prop("disabled", true); // Dropdown Familia deshabilitado por defecto
+
+    // Restablecer estados de los checkboxes
+    $("#chkActivos").prop("checked", true).prop("disabled", false);
+    $("#chkDisc, #chkInact").prop("checked", false).prop("disabled", false);
+
+    // Restablecer estados de los radios
+    $("#rdConStk").prop("checked", true);
+    $("#rdSinStk").prop("checked", false);
+
+    // Limpiar el grid de resultados
+    $("#divBusquedaAvanzada").html(`
+        <div class="text-center text-muted py-4">
+            <i class="bx bx-info-circle me-2"></i>
+            No se encontraron productos con los criterios especificados
+        </div>
+    `);
+
+    // Ocultar la sección de selección múltiple
+    $("#seccionSeleccionMultiple").hide();
+
+    // Restablecer paginación
+    $("#pagEstado").val(false).trigger("change");
+
+    // Reset spinner/botón
+    try { buscarAvUIStop(); } catch (e) { }
+
+    console.log("✅ Controles inicializados correctamente.");
+}
+
+/**
+ * Configura el evento para abrir el modal de búsqueda avanzada
+ * y asegura que los controles estén inicializados.
+ */
+function configurarAperturaModalBusquedaAvanzada() {
+    console.log("🔧 Configurando apertura del modal de búsqueda avanzada...");
+
+    // Evento para abrir el modal
+    $("#busquedaModal").on("show.bs.modal", function () {
+        inicializarControlesBusquedaAvanzada();
+    });
+
+    // Evento para cerrar el modal
+    $("#busquedaModal").on("hidden.bs.modal", function () {
+        limpiarSeleccionBusqueda(); // Limpiar selección al cerrar
+    });
+
+    console.log("✅ Apertura del modal configurada correctamente.");
+}
+
+// Configurar la apertura del modal al cargar el script
+$(function () {
+    configurarAperturaModalBusquedaAvanzada();
+});
+
+// Helpers UI de búsqueda avanzada (spinner y botón)
+function buscarAvUIStart() {
+    $("#btnBuscarProd").prop("disabled", true);
+    $("#spnBuscarProd").removeClass("d-none");
+}
+function buscarAvUIStop() {
+    $("#spnBuscarProd").addClass("d-none");
+    $("#btnBuscarProd").prop("disabled", false);
 }

@@ -530,10 +530,16 @@ namespace gc.sitio.Areas.Productos.Controllers
                 }
 
                 // Preparar datos para envío
-                var sustitutos = ProductosSustitutos ?? new List<ComboSustitutoDto>();
-                var sus = sustitutos.Select(x => new { x.p_id,x.p_id_sustituto,x.activo,costo = x.p_pcosto });
-                var canales = request.Canales.Select(x => new { x.adm_id, x.lp_id }).ToList();
                 var prods = request.Productos.Select(x => new { x.p_id, x.cantidad, dto = x.dto_porc, x.activo, costo = x.p_pcosto });
+                var sustitutos = ProductosSustitutos ?? new List<ComboSustitutoDto>();
+                // Crear un HashSet con los IDs de productos para búsquedas más eficientes (O(1))
+                var productosIds = request.Productos.Select(p => p.p_id).ToHashSet();
+
+                // Filtrar sustitutos que solo pertenecen a los productos en la solicitud
+                var sus = sustitutos
+                    .Where(s => productosIds.Contains(s.p_id))
+                    .Select(x => new { x.p_id, x.p_id_sustituto, x.activo, costo = x.p_pcosto });
+                var canales = request.Canales.Select(x => new { x.adm_id, x.lp_id }).ToList();
                 var req = new AbmPlusGenDto
                 {
                     Json = JsonConvert.SerializeObject(prods),
