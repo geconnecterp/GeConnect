@@ -43,5 +43,6 @@ namespace gc.api.core.Contratos.Servicios
         List<FinancieroConciliaNroDto> GetFinancieroConciliaNro(FinancieroConciliaNrosRequest request);
 		List<RespuestaDto> FinancieroExtractoDesconcilia(FinancieroExtractoDesconciliaRequest request);
         List<RespuestaDto> FinancieroConciliacionExtractoConfirmar(FinancieroConciliacionExtractoConfirmarRequest request);
+        List<GastoProyListaDto> GetGastosProyLista();
 	}
 }

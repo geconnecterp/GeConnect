@@ -1,0 +1,57 @@
+﻿@using static gc.infraestructura.Helpers.GridHelper
+@model ProyeccionDeGastosModel
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	.btn-icon-compact {
+		padding: 0.15rem 0.3rem;
+		font-size: 0.7rem;
+		line-height: 1;
+	}
+
+		.btn-icon-compact i {
+			font-size: 0.9rem;
+		}
+
+	#tbListaProyeccionDeGastos td,
+	#tbListaProyeccionDeGastos th {
+		padding-top: 0.25rem;
+		padding-bottom: 0.25rem;
+		font-size: 0.75rem;
+	}
+</style>
+<div class="table-responsive table-wrapper-500-full-width" id="containerGrillaProyeccionDeGastos">
+	<table class="table table-bordered table-hover table-golden" id="tbListaProyeccionDeGastos">
+		<thead>
+			<tr class="header">
+				<th class="text-center" scope="col">Fecha</th>
+				<th class="text-center" scope="col">Concepto</th>
+				<th class="text-center" scope="col">Importe</th>
+				<th class="text-center" scope="col">Acumulado</th>
+				<th style="width:5%;"></th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.GrillaProyeccion != null && Model.GrillaProyeccion.ListaDatos != null && Model.GrillaProyeccion.ListaDatos.Count > 0)
+			{
+				@foreach (var item in Model.GrillaProyeccion.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" data-orden="@item.orden" onclick="selectItemGrillaProyeccion(this);">
+						<td class="@Model.GrillaProyeccion.ObtenerClase(item.fecha)">@Model.GrillaProyeccion.FormatearDato(item.fecha, FormatDato.Fecha)</td>
+						<td class="@Model.GrillaProyeccion.ObtenerClase(item.concepto)">@Model.GrillaProyeccion.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaProyeccion.ObtenerClase(item.importe)">@Model.GrillaProyeccion.FormatearDato(item.importe, FormatDato.Monto)</td>
+						<td class="@Model.GrillaProyeccion.ObtenerClase(item.acumulado)">@Model.GrillaProyeccion.FormatearDato(item.acumulado, FormatDato.Monto)</td>
+						<td class="text-center align-middle">
+							<button type="button" class="btn btn-danger btn-icon-compact" title="Eliminar" onclick="eliminarItem('@item.orden')">
+								<i class="bx bx-trash"></i>
+							</button>
+						</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

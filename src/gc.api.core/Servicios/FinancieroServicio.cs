@@ -732,5 +732,13 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<GastoProyListaDto> GetGastosProyLista()
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_ABM_GASTOS_PROY_LISTA;
+			var ps = new List<SqlParameter>();
+			var listaTemp = _repository.EjecutarLstSpExt<GastoProyListaDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

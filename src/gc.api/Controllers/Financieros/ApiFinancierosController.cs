@@ -424,5 +424,20 @@ namespace gc.api.Controllers.Financieros
 			response = new ApiResponse<List<RespuestaDto>>(res);
 			return Ok(response);
 		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<GastoProyListaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetGastosProyLista()
+		{
+			ApiResponse<List<GastoProyListaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetGastosProyLista();
+
+			response = new ApiResponse<List<GastoProyListaDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }
