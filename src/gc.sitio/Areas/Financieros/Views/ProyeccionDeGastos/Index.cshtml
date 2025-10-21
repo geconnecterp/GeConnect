@@ -2,7 +2,7 @@
 @{
 	Layout = "~/views/shared/_Layout.cshtml";
 }
-<div class="container mt-2">
+<div class="container mt-2" id="divProyGastos">
 	<div class="mx-auto" style="max-width: 1100px;">
 		<div class="row align-items-center mb-2">
 			<div class="col-8">
@@ -36,8 +36,23 @@
 		</div>
 	</div>
 </div>
+<div class="modal fade modal-golden in" id="modalProyeccionDeGastoSeleccionada" tabindex="-1" style="display: none;" aria-hidden="true" data-backdrop="static">
+	<div class="modal-dialog modal-x" role="document">
+		<div class="modal-content">
+			<div id="divModalProyeccionDeGastoSeleccionada">
+			</div>
+		</div>
+	</div>
+</div>
 @section scripts {
 	<script type="text/javascript">
+		var cargarProyeccionSeleccionadaUrl = "@Url.Action("CargarProyeccionSeleccionada", "ProyeccionDeGastos", new { area = "Financieros" })";
+		var agregarRegistroUrl = "@Url.Action("AgregarRegistro", "ProyeccionDeGastos", new { area = "Financieros" })";
+		var actualizarListaDeProyeccionDeGastosUrl = "@Url.Action("ActualizarListaDeProyeccionDeGastos", "ProyeccionDeGastos", new { area = "Financieros" })";
+		var inicializarDatosEnSesionUrl =  "@Url.Action("InicializarDatosEnSesion", "ProyeccionDeGastos", new { area = "Financieros" })";
+		var modificarItemProyeccionDeGastoUrl =  "@Url.Action("ModificarItemProyeccionDeGasto", "ProyeccionDeGastos", new { area = "Financieros" })";
+		var confirmarProyeccionDeGastoUrl =  "@Url.Action("ConfirmarProyeccionDeGasto", "ProyeccionDeGastos", new { area = "Financieros" })";
+		var eliminarItemProyeccionDeGastosUrl = "@Url.Action("EliminarItemProyeccionDeGastos", "ProyeccionDeGastos", new { area = "Financieros" })";
 	</script>
 	<script src="~/js/app/areas/financieros/proyecciondegastos/proydegastos.js" type="text/javascript"></script>
 }

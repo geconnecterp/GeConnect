@@ -1,0 +1,49 @@
+﻿@model ProyeccionDeGastoSeleccionadaModel
+@{
+}
+<div class="modal-header">
+	<h5 class="modal-title" id="modalCenterTitle"></h5>
+	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+	<div class="row">
+		<div class="row col-12">
+			<div class="col-6">
+				<div class="input-group input-group-sm mt-2">
+					<span class="input-group-text">Item: </span>
+					<input type="text" asp-for="itemsProyeccion" class="form-control activable inputEditable text-align-right" readonly />
+				</div>
+			</div>
+		</div>
+		<div class="row col-12">
+			<div class="col-6">
+				<div class="input-group input-group-sm mt-2">
+					<span class="input-group-text" id="lbIdDesde">Fecha:</span>
+					<input type="date" class="form-control inputEditable" asp-for="FechaProyeccion" style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
+				</div>
+			</div>
+		</div>
+		<div class="input-group input-group-sm mt-2">
+			<span class="input-group-text">Concepto: </span>
+			<input type="text" asp-for="ConceptoProyeccion" class="form-control activable inputEditable" />
+		</div>
+		<div class="row col-12">
+			<div class="col-6">
+				<div class="input-group input-group-sm mt-2">
+					<span class="input-group-text">Importe: </span>
+					<input type="text" asp-for="ImporteProyeccion" class="form-control activable inputEditable" />
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<div class="input-group input-group-sm">
+		<button type="button" class="btn btn-info btn-sm ms-1" id="btnModificar">
+			<i class="bx bx-edit"></i> Modificar
+		</button>
+		<button type="button" class="btn btn-outline-secondary btn-sm ms-1" id="btnSalir" data-bs-dismiss="modal">
+			<i class="bx bx-log-out-circle"></i> Salir
+		</button>
+	</div>
+</div>

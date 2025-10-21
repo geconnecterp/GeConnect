@@ -45,9 +45,14 @@
 						<td class="@Model.GrillaProyeccion.ObtenerClase(item.importe)">@Model.GrillaProyeccion.FormatearDato(item.importe, FormatDato.Monto)</td>
 						<td class="@Model.GrillaProyeccion.ObtenerClase(item.acumulado)">@Model.GrillaProyeccion.FormatearDato(item.acumulado, FormatDato.Monto)</td>
 						<td class="text-center align-middle">
-							<button type="button" class="btn btn-danger btn-icon-compact" title="Eliminar" onclick="eliminarItem('@item.orden')">
-								<i class="bx bx-trash"></i>
-							</button>
+							<div class="d-flex justify-content-center gap-1">
+								<button type="button" class="btn btn-info btn-icon-compact" title="Modificar" onclick="modificarItem('@item.orden', '@item.items')">
+									<i class="bx bx-edit"></i>
+								</button>
+								<button type="button" class="btn btn-danger btn-icon-compact" title="Eliminar" onclick="eliminarItem('@item.orden', '@item.items', '@item.concepto')">
+									<i class="bx bx-trash"></i>
+								</button>
+							</div>
 						</td>
 					</tr>
 				}

@@ -56,6 +56,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string SetFinancieroExtractoDesconcilia = "/FinancieroExtractoDesconcilia";
 		private const string SetFinancieroConciliacionExtractoConfirmar = "/FinancieroConciliacionExtractoConfirmar";
 		private const string ObtenerGastosProyLista = "/GetGastosProyLista";
+		private const string ObtenerGastosProyDatos = "/GetGastosProyDatos";
 
 		private readonly AppSettings _appSettings;
 		public FinancieroServicio(IOptions<AppSettings> options, ILogger<AdministracionServicio> logger) : base(options, logger)
@@ -1178,6 +1179,43 @@ namespace gc.sitio.core.Servicios.Implementacion
 				HttpResponseMessage response;
 
 				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerGastosProyLista}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						_logger.LogWarning($"La API no devolvió dato alguno. Sin parámetros de busqueda");
+						return [];
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<GastoProyListaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+					return apiResponse.Data;
+				}
+				else
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+					return [];
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogWarning($"Algo no fue bien. Error interno {ex.Message}");
+				return [];
+			}
+		}
+
+		public List<GastoProyListaDto> GetGastosProyDatos(int items, string token)
+		{
+			try
+			{
+				ApiResponse<List<GastoProyListaDto>> apiResponse;
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerGastosProyDatos}?items={items}";
 				response = client.GetAsync(link).GetAwaiter().GetResult();
 
 				if (response.StatusCode == HttpStatusCode.OK)

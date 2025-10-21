@@ -44,5 +44,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		RespuestaGenerica<RespuestaDto> FinancieroExtractoDesconcilia(FinancieroExtractoDesconciliaRequest request, string token);
 		RespuestaGenerica<RespuestaDto> FinancieroConciliacionExtractoConfirmar(FinancieroConciliacionExtractoConfirmarRequest request, string token);
 		List<GastoProyListaDto> GetGastosProyLista(string token);
+		List<GastoProyListaDto> GetGastosProyDatos(int items, string token);
 	}
 }
