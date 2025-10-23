@@ -1,5 +1,7 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Consultas.ReporteFinanciero;
+using gc.infraestructura.Dtos.Consultas.ReporteFinanciero.Request;
 using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
@@ -45,5 +47,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		RespuestaGenerica<RespuestaDto> FinancieroConciliacionExtractoConfirmar(FinancieroConciliacionExtractoConfirmarRequest request, string token);
 		List<GastoProyListaDto> GetGastosProyLista(string token);
 		List<GastoProyListaDto> GetGastosProyDatos(int items, string token);
+		List<ProyFinanDto> GetProyeccionFinanciera(BuscarProyFinanRequest request, string token);
 	}
 }

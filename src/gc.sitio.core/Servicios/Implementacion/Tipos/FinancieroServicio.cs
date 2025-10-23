@@ -4,6 +4,8 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Consultas.ReporteFinanciero;
+using gc.infraestructura.Dtos.Consultas.ReporteFinanciero.Request;
 using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
@@ -57,6 +59,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string SetFinancieroConciliacionExtractoConfirmar = "/FinancieroConciliacionExtractoConfirmar";
 		private const string ObtenerGastosProyLista = "/GetGastosProyLista";
 		private const string ObtenerGastosProyDatos = "/GetGastosProyDatos";
+		private const string ObtenerProyeccionFinanciera = "/GetProyeccionFinanciera";
 
 		private readonly AppSettings _appSettings;
 		public FinancieroServicio(IOptions<AppSettings> options, ILogger<AdministracionServicio> logger) : base(options, logger)
@@ -1240,6 +1243,37 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				_logger.LogWarning($"Algo no fue bien. Error interno {ex.Message}");
 				return [];
+			}
+		}
+
+		public List<ProyFinanDto> GetProyeccionFinanciera(BuscarProyFinanRequest request, string token)
+		{
+			ApiResponse<List<ProyFinanDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerProyeccionFinanciera}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return [];
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProyFinanDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
 			}
 		}
 	}

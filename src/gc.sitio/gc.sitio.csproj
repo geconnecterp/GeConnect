@@ -36,8 +36,8 @@
     <Folder Include="Areas\Asientos\Data\" />
     <Folder Include="Areas\Asientos\Models\" />
     <Folder Include="Areas\Consultas\Data\" />
-    <Folder Include="Areas\Consultas\Models\" />
     <Folder Include="Areas\ControlComun\Data\" />
+    <Folder Include="Areas\Financieros\Models\ReporteFinanciero\" />
     <Folder Include="Areas\Libros\Data\" />
     <Folder Include="Areas\Libros\Models\" />
     <Folder Include="Areas\Productos\Data\" />

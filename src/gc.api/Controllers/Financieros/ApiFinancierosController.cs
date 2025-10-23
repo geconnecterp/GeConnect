@@ -4,6 +4,8 @@ using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Consultas.ReporteFinanciero;
+using gc.infraestructura.Dtos.Consultas.ReporteFinanciero.Request;
 using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
@@ -451,6 +453,21 @@ namespace gc.api.Controllers.Financieros
 			var res = _financieroServicio.GetGastosProyDatos(items);
 
 			response = new ApiResponse<List<GastoProyListaDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProyFinanDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetProyeccionFinanciera(BuscarProyFinanRequest request)
+		{
+			ApiResponse<List<ProyFinanDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetProyeccionFinanciera(request);
+
+			response = new ApiResponse<List<ProyFinanDto>>(res);
 
 			return Ok(response);
 		}

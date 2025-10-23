@@ -4,6 +4,8 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Consultas.ReporteFinanciero;
+using gc.infraestructura.Dtos.Consultas.ReporteFinanciero.Request;
 using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
@@ -749,6 +751,18 @@ namespace gc.api.core.Servicios
 				new("@items",items),
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<GastoProyListaDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<ProyFinanDto> GetProyeccionFinanciera(BuscarProyFinanRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_REPO_FINAN_PROY;
+			var ps = new List<SqlParameter>()
+			{
+				new("@desde", request.Desde),
+				new("@hasta", request.Hasta),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<ProyFinanDto>(sp, ps, true);
 			return listaTemp;
 		}
 	}
