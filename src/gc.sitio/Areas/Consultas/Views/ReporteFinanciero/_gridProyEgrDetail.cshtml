@@ -1,5 +1,55 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model ProyEgrDetailModel;
+@using static gc.infraestructura.Helpers.GridHelper
 @{
+	var alt = true;
+	string clase = string.Empty;
+
+	decimal total = 0;
 }
+<div class="card">
+	<div class="card-body" style="padding: 5px;">
+		<h6 class="fw-bold mb-2" id="lblDetalleProyeccionDeEgreso">Detalle de Proyección de Egresos al @Model.fecha</h6>
+		<div class="row">
+			<div class="col-12">
+				<div class="table-responsive table-wrapper-400-full-width">
+					<table class="table table-bordered table-sm mb-0 table-golden" id="tbGridProyEgrDetail">
+						<thead>
+							<tr class="header">
+								<th class="align-center">Fecha</th>
+								<th class="align-center">Previsión Egresos</th>
+								<th class="align-center">Previsión Acumulada</th>
+							</tr>
+						</thead>
+						<tbody>
+							@if (Model != null && Model.GrillaProyEgrDetail != null && Model.GrillaProyEgrDetail.ListaDatos != null && Model.GrillaProyEgrDetail.ListaDatos.Count > 0)
+							{
+								@foreach (var item in Model.GrillaProyEgrDetail.ListaDatos)
+								{
+									if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+									<tr class="@clase" onclick="selectReg(this, 'tbGridProyEgrDetail')">
+										<td class="@Model.GrillaProyEgrDetail.ObtenerClase(item.fecha) cell-fit-content">@Model.GrillaProyEgrDetail.FormatearDato(item.fecha, FormatDato.Fecha)</td>
+										<td class="@Model.GrillaProyEgrDetail.ObtenerClase(item.concepto) cell-fit-content">@Model.GrillaProyEgrDetail.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
+										<td class="@Model.GrillaProyEgrDetail.ObtenerClase(item.importe) cell-fit-content">@Model.GrillaProyEgrDetail.FormatearDato(item.importe, FormatDato.Monto)</td>
+									</tr>
+									total += item.importe;
+								}
+								// Total del último grupo
+								<tr class="table-warning fw-bold">
+									<td colspan="2" class="text-end">Total Egresos:</td>
+									<td class="text-end">@Model.GrillaProyEgrDetail.FormatearDato(total, FormatDato.Monto)</td>
+								</tr>
+							}
+							else
+							{
+								<tr>
+									<td colspan="18" class="text-center">No se han encontrado datos para los criterios especificados.</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+

@@ -1,5 +1,57 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model FlujoDeIngresoModel
+@using static gc.infraestructura.Helpers.GridHelper
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
+<div class="card">
+	<div class="card-body" style="padding: 5px;">
+		<div class="row">
+			<div class="col-12">
+				<div class="table-responsive table-wrapper-400-full-width">
+					<table class="table table-bordered table-sm mb-0 table-golden" id="tbGridFlujoDeIngreso">
+						<thead>
+							<tr>
+								<th colspan="3"></th> <!-- columnas previas: Medio de Pago, Ingresos, columna en blanco -->
+								<th colspan="4" class="text-center">Estado de Ingresos</th>
+							</tr>
+							<tr class="header">
+								<th class="align-center">Medio de Pago</th>
+								<th class="align-center">Ingresos</th>
+								<th style="width:1%;"></th> <!-- columna en blanco -->
+								<th class="align-center">Revisión</th>
+								<th class="align-center">Cartera</th>
+								<th class="align-center">Al Cobro</th>
+								<th class="align-center">Acreditado</th>
+							</tr>
+						</thead>
+						<tbody>
+							@if (Model != null && Model.GrillaProyFinan != null && Model.GrillaProyFinan.ListaDatos != null && Model.GrillaProyFinan.ListaDatos.Count > 0)
+							{
+								@foreach (var item in Model.GrillaProyFinan.ListaDatos)
+								{
+									if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+									<tr class="@clase" onclick="selectReg(this, 'tbGridFlujoDeIngreso')">
+										<td class="@Model.GrillaProyFinan.ObtenerClase(item.medio_de_pago) cell-fit-content">@Model.GrillaProyFinan.FormatearDato(item.medio_de_pago, FormatDato.Ninguno)</td>
+										<td class="@Model.GrillaProyFinan.ObtenerClase(item.ingreso) cell-fit-content">@Model.GrillaProyFinan.FormatearDato(item.ingreso, FormatDato.Monto)</td>
+										<td></td> <!-- celda en blanco -->
+										<td class="@Model.GrillaProyFinan.ObtenerClase(item.revision) cell-fit-content">@Model.GrillaProyFinan.FormatearDato(item.revision, FormatDato.Monto)</td>
+										<td class="@Model.GrillaProyFinan.ObtenerClase(item.cartera) cell-fit-content">@Model.GrillaProyFinan.FormatearDato(item.cartera, FormatDato.Monto)</td>
+										<td class="@Model.GrillaProyFinan.ObtenerClase(item.alcobro) cell-fit-content">@Model.GrillaProyFinan.FormatearDato(item.alcobro, FormatDato.Monto)</td>
+										<td class="@Model.GrillaProyFinan.ObtenerClase(item.acreditado) cell-fit-content">@Model.GrillaProyFinan.FormatearDato(item.acreditado, FormatDato.Monto)</td>
+									</tr>
+								}
+							}
+							else
+							{
+								<tr>
+									<td colspan="18" class="text-center">No se han encontrado datos para los criterios especificados.</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

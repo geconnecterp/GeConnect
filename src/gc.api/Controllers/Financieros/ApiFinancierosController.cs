@@ -471,5 +471,35 @@ namespace gc.api.Controllers.Financieros
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<SaldoDeCuentaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetSaldoDeCuentas(BuscarSaldoDeCuentasRequest request)
+		{
+			ApiResponse<List<SaldoDeCuentaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetSaldoDeCuentas(request);
+
+			response = new ApiResponse<List<SaldoDeCuentaDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FlujoDeIngresoDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFlujoDeIngreso(BuscarFlujoDeIngresoRequest request)
+		{
+			ApiResponse<List<FlujoDeIngresoDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetFlujoDeIngreso(request);
+
+			response = new ApiResponse<List<FlujoDeIngresoDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }

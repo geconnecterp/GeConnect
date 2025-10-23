@@ -48,5 +48,7 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<GastoProyListaDto> GetGastosProyLista(string token);
 		List<GastoProyListaDto> GetGastosProyDatos(int items, string token);
 		List<ProyFinanDto> GetProyeccionFinanciera(BuscarProyFinanRequest request, string token);
+		List<SaldoDeCuentaDto> GetSaldoDeCuentas(BuscarSaldoDeCuentasRequest request, string token);
+		List<FlujoDeIngresoDto> GetFlujoDeIngreso(BuscarFlujoDeIngresoRequest request, string token);
 	}
 }

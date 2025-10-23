@@ -1,5 +1,12 @@
 ﻿$(function () {
 	$(document).on("click", "#btnBuscarProyeccionFinanciera", ControlaBuscarProyeccionFinanciera);
+	$(document).on("click", "#btnBuscarSaldoDeCuenta", ControlaBuscarSaldoDeCuenta);
+	$(document).on("click", "#btnBuscarFlujoDeIngreso", ControlaBuscarFlujoDeIngreso);
+	$(document).on("click", "#btnBuscarProyeccionDeEgreso", ControlaBuscarProyeccionDeEgreso);
+
+	$("#fechaHastaFlujoDeIngreso").on("change", function () {
+		SetearLimitesFechaDesdeFlujoDeIngreso();
+	});
 
 	$('#tabsReporteFinanciero button[data-bs-toggle="tab"]').on('shown.bs.tab', function (event) {
 		const tabId = $(event.target).attr('id'); // ID del botón clickeado
@@ -54,46 +61,11 @@ function ControlaBuscarProyeccionFinanciera() {
 		CerrarWaiting();
 	});
 }
-///----------------------FIN Proyeccion Financiera----------------///
-
-function ReseteoDeReportes() {
-	console.log("Reseto de reportes");
-	ReporteResetArre();
-}
-
-function LimpiarDivs() {
-	$("#divProyeccionFinanciera").empty();
-	$("#divSaldoDeCuenta").empty();
-	$("#divFlujoDeIngreso").empty();
-	$("#divProyeccionDeEgresoGroup").empty();
-	$("#divProyeccionDeEgresoDetail").empty();
-}
-
-function selectReg(x, gridId) {
-	$("#" + gridId + " tbody tr").each(function (index) {
-		$(this).removeClass("selected-row");
-		$(this).removeClass("selectedEdit-row");
-	});
-	$(x).addClass("selected-row");
-}
-
-function ActivarTabPorId(idBotonTab) {
-	if (!idBotonTab) return;
-
-	const botonTab = document.getElementById(idBotonTab);
-	if (!botonTab) {
-		console.warn(`No se encontró el botón con ID: ${idBotonTab}`);
-		return;
-	}
-
-	const instanciaTab = bootstrap.Tab.getOrCreateInstance(botonTab);
-	instanciaTab.show();
-}
 
 function SetearCamposProyeccionFinanciera() {
-	var now = moment().format('yyyy-MM-DD');
+	var now = moment().format('YYYY-MM-DD');
 	var now2 = moment().subtract(30, 'days');
-	$("#fechaDesdeProyeccionFinanciera").val(now2.format('yyyy-MM-DD'));
+	$("#fechaDesdeProyeccionFinanciera").val(now2.format('YYYY-MM-DD'));
 	$("#fechaHastaProyeccionFinanciera").val(now);
 
 	const $div = $("#navs-top-home");
@@ -117,17 +89,160 @@ function SetearCamposProyeccionFinanciera() {
 		}
 	});
 }
+///----------------------FIN Proyeccion Financiera----------------///
+
+///----------------------Saldo de Cuentas-------------------------///
+function ControlaBuscarSaldoDeCuenta() {
+	AbrirWaiting();
+	var hasta = $("#fechaHastaSaldoDeCuenta").val();
+	var data = { hasta };
+	PostGenHtml(data, buscarSaldoDeCuentasURL, function (obj) {
+		CerrarWaiting();
+		$("#divSaldoDeCuenta").html(obj);
+		var filas = $("#tbGridSaldoEnCuenta tbody tr").length;
+		if (filas == 0) {
+			AbrirMensaje("ATENCIÓN", "No hay datos de Proyección para el criterio de búsqueda.", function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		return true
+	}, function (obj) {
+		ControlaMensajeError(obj.message);
+		CerrarWaiting();
+	});
+}
 
 function SetearCamposSaldoDeCuenta() {
-	var now = moment().format('yyyy-MM-DD');
-	$("#fechaHastaSaldoDeCuenta").val(now);
+	var now = moment().format('YYYY-MM-DD');
+	$("#fechaHastaSaldoDeCuenta").val(now).attr("max", now);
+}
+///----------------------FIN Saldo de Cuentas---------------------///
+
+///----------------------Flujo de Ingreso-------------------------///
+function ControlaBuscarFlujoDeIngreso() {
+	AbrirWaiting();
+	var desde = $("#fechaDesdeFlujoDeIngreso").val();
+	var hasta = $("#fechaHastaFlujoDeIngreso").val();
+	var data = { desde, hasta };
+	PostGenHtml(data, buscarFlujoDeIngresoURL, function (obj) {
+		CerrarWaiting();
+		$("#divFlujoDeIngreso").html(obj);
+		var filas = $("#tbGridFlujoDeIngreso tbody tr").length;
+		if (filas == 0) {
+			AbrirMensaje("ATENCIÓN", "No hay datos de Proyección para el criterio de búsqueda.", function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		return true
+	}, function (obj) {
+		ControlaMensajeError(obj.message);
+		CerrarWaiting();
+	});
 }
 
 function SetearCamposFlujoDeIngreso() {
-	var now = moment().format('yyyy-MM-DD');
-	var now2 = moment().subtract(30, 'days');
-	$("#fechaDesdeFlujoDeIngreso").val(now2.format('yyyy-MM-DD'));
-	$("#fechaHastaFlujoDeIngreso").val(now);
+	var now = moment().format('YYYY-MM-DD');
+	var now2 = moment().subtract(30, 'days').format('YYYY-MM-DD');
+	$("#fechaDesdeFlujoDeIngreso").val(now2);
+	$("#fechaHastaFlujoDeIngreso").val(now).attr("max", now);
+
+	SetearLimitesFechaDesdeFlujoDeIngreso();
 }
+
+function SetearLimitesFechaDesdeFlujoDeIngreso() {
+	var fechaHastaStr = $("#fechaHastaFlujoDeIngreso").val();
+	if (!fechaHastaStr) return;
+
+	var fechaHasta = moment(fechaHastaStr, 'YYYY-MM-DD');
+	var fechaMinima = moment(fechaHasta).subtract(30, 'days');
+
+	$("#fechaDesdeFlujoDeIngreso")
+		.attr("min", fechaMinima.format('YYYY-MM-DD'))
+		.attr("max", fechaHasta.format('YYYY-MM-DD'));
+}
+///----------------------FIN Flujo de Ingreso---------------------///
+
+///----------------------Proyección de Egresos--------------------///
+function ControlaBuscarProyeccionDeEgreso() {
+	AbrirWaiting();
+	var data = {};
+	PostGenHtml(data, buscarPoyeccionEgresoGroupURL, function (obj) {
+		CerrarWaiting();
+		$("#divProyeccionDeEgresoGroup").html(obj);
+		var filas = $("#tbGridProyEgrGroup tbody tr").length;
+		if (filas == 0) {
+			AbrirMensaje("ATENCIÓN", "No hay datos de Proyección para el criterio de búsqueda.", function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		return true
+	}, function (obj) {
+		ControlaMensajeError(obj.message);
+		CerrarWaiting();
+	});
+}
+
+function CargarDetalleProyeccionDeEgreso(fecha) {
+	AbrirWaiting();
+	var data = { fecha };
+	PostGenHtml(data, buscarPoyeccionEgresoDetailURL, function (obj) {
+		CerrarWaiting();
+		$("#divProyeccionDeEgresoDetail").html(obj);
+		var filas = $("#tbGridProyEgrDetail tbody tr").length;
+		if (filas == 0) {
+			AbrirMensaje("ATENCIÓN", "No hay datos de Proyección para el criterio de búsqueda.", function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		return true
+	}, function (obj) {
+		ControlaMensajeError(obj.message);
+		CerrarWaiting();
+	});
+}
+///----------------------FIN Proyección de Egresos----------------///
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
+function LimpiarDivs() {
+	$("#divProyeccionFinanciera").empty();
+	$("#divSaldoDeCuenta").empty();
+	$("#divFlujoDeIngreso").empty();
+	$("#divProyeccionDeEgresoGroup").empty();
+	$("#divProyeccionDeEgresoDetail").empty();
+}
+
+function selectReg(x, gridId) {
+	$("#" + gridId + " tbody tr").each(function (index) {
+		$(this).removeClass("selected-row");
+		$(this).removeClass("selectedEdit-row");
+	});
+	$(x).addClass("selected-row");
+	if (gridId == "tbGridProyEgrGroup") {
+		fecha = $(x).data("fecha");
+		CargarDetalleProyeccionDeEgreso(fecha);
+	}
+}
+
+function ActivarTabPorId(idBotonTab) {
+	if (!idBotonTab) return;
+
+	const botonTab = document.getElementById(idBotonTab);
+	if (!botonTab) {
+		console.warn(`No se encontró el botón con ID: ${idBotonTab}`);
+		return;
+	}
+
+	const instanciaTab = bootstrap.Tab.getOrCreateInstance(botonTab);
+	instanciaTab.show();
+}
+
 
 function SetearCamposProyeccionDeEgreso() { }

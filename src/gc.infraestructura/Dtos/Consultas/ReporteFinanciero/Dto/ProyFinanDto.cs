@@ -23,7 +23,32 @@ namespace gc.infraestructura.Dtos.Consultas.ReporteFinanciero
 		public decimal saldo_bco { get; set; } = 0.00M;
 		public decimal saldo_bco_rojo { get; set; } = 0.00M;
 		public decimal trans { get; set; } = 0.00M;
+		public decimal acobrar_mes_ant { get; set; } = 0.00M;
 		public string? leyendaSemana { get; set; }
+
+		private decimal _cheque_emit_mas_trans_bco;
+
+		public decimal cheque_emit_mas_trans_bco
+		{
+			get { return che_emi_ent + che_emi_nent + trans; }
+			set { _cheque_emit_mas_trans_bco = value; }
+		}
+
+		private decimal _total_proy_egresos;
+
+		public decimal total_proy_egresos
+		{
+			get { return che_emi_nent + che_emi_ent + apagar + proy_gastos + proy_imp; }
+			set { _total_proy_egresos = value; }
+		}
+
+		private decimal _total_proy_ingresos;
+
+		public decimal total_proy_ingresos
+		{
+			get { return che_cartera + che_depo + valores_alcobro + acobrar; }
+			set { _total_proy_ingresos = value; }
+		}
 
 	}
 }

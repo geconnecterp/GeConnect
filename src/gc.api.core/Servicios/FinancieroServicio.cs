@@ -765,5 +765,29 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<ProyFinanDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<SaldoDeCuentaDto> GetSaldoDeCuentas(BuscarSaldoDeCuentasRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_REPO_FINAN_SALDOS;
+			var ps = new List<SqlParameter>()
+			{
+				new("@fecha", request.Hasta),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<SaldoDeCuentaDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<FlujoDeIngresoDto> GetFlujoDeIngreso(BuscarFlujoDeIngresoRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_REPO_FINAN_FLUJO;
+			var ps = new List<SqlParameter>()
+			{
+				new("@desde", request.Desde),
+				new("@hasta", request.Hasta),
+				new("@adm_id", request.adm_id),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<FlujoDeIngresoDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

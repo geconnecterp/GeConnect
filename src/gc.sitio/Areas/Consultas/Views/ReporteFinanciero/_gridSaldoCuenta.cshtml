@@ -1,5 +1,88 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model SaldoDeCuentaModel
+@using static gc.infraestructura.Helpers.GridHelper
 @{
+	string cuentaActual = string.Empty;
+	string cuentaAnterior = string.Empty;
+	string cuentaActualDescr = string.Empty;
+	string cuentaAnteriorDescr = string.Empty;
+
+	var alt = true;
+	string clase = string.Empty;
+
+	decimal totalGrupo = 0;
 }
+<div class="card">
+	<div class="card-body" style="padding: 5px;">
+		<div class="row">
+			<div class="col-12">
+				<div class="table-responsive table-wrapper-400-full-width">
+					<table class="table table-bordered table-sm mb-0 table-golden" id="tbGridSaldoEnCuenta">
+						<thead>
+							<tr class="header">
+								<th class="align-center">Cuenta</th>
+								<th class="align-center">Denominación</th>
+								<th class="align-center">CtaCbl</th>
+								<th class="align-center">Saldo</th>
+							</tr>
+						</thead>
+						<tbody>
+							@if (Model != null && Model.GrillaSaldoDeCuenta != null && Model.GrillaSaldoDeCuenta.ListaDatos != null && Model.GrillaSaldoDeCuenta.ListaDatos.Count > 0)
+							{
+								@foreach (var item in Model.GrillaSaldoDeCuenta.ListaDatos)
+								{
+									cuentaActual = item.tcf_id;
+									cuentaActualDescr = item.tcf_desc;
+
+									// Si cambia el grupo, mostrar total anterior
+									if (cuentaActual != cuentaAnterior && cuentaAnterior != string.Empty)
+									{
+										<tr class="table-warning fw-bold">
+											<td colspan="3" class="text-end">Total (@cuentaAnterior) @cuentaAnteriorDescr</td>
+											<td class="text-end">@Model.GrillaSaldoDeCuenta.FormatearDato(totalGrupo, FormatDato.Monto)</td>
+										</tr>
+										totalGrupo = 0; // Reiniciar acumulador
+									}
+
+									if (cuentaActual != cuentaAnterior)
+									{
+										<tr class="table-secondary fw-bold">
+											<td colspan="13" class="text-center">
+												<i class="bx bx-folder me-1"></i>
+												@item.tcf_desc
+											</td>
+										</tr>
+										cuentaAnterior = cuentaActual;
+										cuentaAnteriorDescr = cuentaActualDescr;
+										alt = true;
+									}
+									
+									// Acumular saldo
+									totalGrupo += item.cf_saldo;
+
+									if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+									<tr class="@clase" onclick="selectReg(this, 'tbGridSaldoEnCuenta')">
+										<td class="@Model.GrillaSaldoDeCuenta.ObtenerClase(item.ctaf_id) align-center cell-fit-content">@Model.GrillaSaldoDeCuenta.FormatearDato(item.ctaf_id, FormatDato.Ninguno)</td>
+										<td class="@Model.GrillaSaldoDeCuenta.ObtenerClase(item.ctaf_denominacion) cell-fit-content">@Model.GrillaSaldoDeCuenta.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
+										<td class="@Model.GrillaSaldoDeCuenta.ObtenerClase(item.ccb_id) align-center cell-fit-content">@Model.GrillaSaldoDeCuenta.FormatearDato(item.ccb_id, FormatDato.Ninguno)</td>
+										<td class="@Model.GrillaSaldoDeCuenta.ObtenerClase(item.cf_saldo) align-right cell-fit-content">@Model.GrillaSaldoDeCuenta.FormatearDato(item.cf_saldo, FormatDato.Monto)</td>
+									</tr>
+								}
+								// Total del último grupo
+								<tr class="table-warning fw-bold">
+									<td colspan="3" class="text-end">Total (@cuentaActual) @cuentaActualDescr</td>
+									<td class="text-end">@Model.GrillaSaldoDeCuenta.FormatearDato(totalGrupo, FormatDato.Monto)</td>
+								</tr>
+							}
+							else
+							{
+								<tr>
+									<td colspan="18" class="text-center">No se han encontrado datos para los criterios especificados.</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

@@ -60,6 +60,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string ObtenerGastosProyLista = "/GetGastosProyLista";
 		private const string ObtenerGastosProyDatos = "/GetGastosProyDatos";
 		private const string ObtenerProyeccionFinanciera = "/GetProyeccionFinanciera";
+		private const string ObtenerSaldoDeCuentas = "/GetSaldoDeCuentas";
+		private const string ObtenerFlujoDeIngreso = "/GetFlujoDeIngreso";
 
 		private readonly AppSettings _appSettings;
 		public FinancieroServicio(IOptions<AppSettings> options, ILogger<AdministracionServicio> logger) : base(options, logger)
@@ -1267,6 +1269,68 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return [];
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProyFinanDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public List<SaldoDeCuentaDto> GetSaldoDeCuentas(BuscarSaldoDeCuentasRequest request, string token)
+		{
+			ApiResponse<List<SaldoDeCuentaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerSaldoDeCuentas}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return [];
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<SaldoDeCuentaDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public List<FlujoDeIngresoDto> GetFlujoDeIngreso(BuscarFlujoDeIngresoRequest request, string token)
+		{
+			ApiResponse<List<FlujoDeIngresoDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerFlujoDeIngreso}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return [];
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<FlujoDeIngresoDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
 				return apiResponse.Data;
 			}
 			else

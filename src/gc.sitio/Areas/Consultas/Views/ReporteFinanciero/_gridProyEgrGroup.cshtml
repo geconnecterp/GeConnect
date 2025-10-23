@@ -1,5 +1,46 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model ProyEgrGroupModel
+@using static gc.infraestructura.Helpers.GridHelper
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
+<div class="card">
+	<div class="card-body" style="padding: 5px;">
+		<h6 class="fw-bold mb-2">Proyección de Egresos</h6>
+		<div class="row">
+			<div class="col-12">
+				<div class="table-responsive table-wrapper-400-full-width">
+					<table class="table table-bordered table-sm mb-0 table-golden" id="tbGridProyEgrGroup">
+						<thead>
+							<tr class="header">
+								<th class="align-center">Fecha</th>
+								<th class="align-center">Previsión Egresos</th>
+								<th class="align-center">Previsión Acumulada</th>
+							</tr>
+						</thead>
+						<tbody>
+							@if (Model != null && Model.GrillaProyEgrGroup != null && Model.GrillaProyEgrGroup.ListaDatos != null && Model.GrillaProyEgrGroup.ListaDatos.Count > 0)
+							{
+								@foreach (var item in Model.GrillaProyEgrGroup.ListaDatos)
+								{
+									if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+									<tr class="@clase" data-fecha="@item.fecha" onclick="selectReg(this, 'tbGridProyEgrGroup')">
+										<td class="@Model.GrillaProyEgrGroup.ObtenerClase(item.fecha) cell-fit-content">@Model.GrillaProyEgrGroup.FormatearDato(item.fecha, FormatDato.Fecha)</td>
+										<td class="@Model.GrillaProyEgrGroup.ObtenerClase(item.prevision_egresos) cell-fit-content">@Model.GrillaProyEgrGroup.FormatearDato(item.prevision_egresos, FormatDato.Monto)</td>
+										<td class="@Model.GrillaProyEgrGroup.ObtenerClase(item.prevision_acumulada) cell-fit-content">@Model.GrillaProyEgrGroup.FormatearDato(item.prevision_acumulada, FormatDato.Monto)</td>
+									</tr>
+								}
+							}
+							else
+							{
+								<tr>
+									<td colspan="18" class="text-center">No se han encontrado datos para los criterios especificados.</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

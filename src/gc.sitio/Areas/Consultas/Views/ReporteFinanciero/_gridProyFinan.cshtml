@@ -104,16 +104,16 @@
 									if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 									<tr class="@clase" onclick="selectReg(this, 'tbGridProyFinan')">
 										<td class="@Model.GrillaProyFinan.ObtenerClase(item.desde) align-center cell-fit-content">@Model.GrillaProyFinan.FormatearDato(item.desde, FormatDato.Fecha)</td>
-										<td class="@Model.GrillaProyFinan.ObtenerClase(item.che_emi_ent) align-right cell-fit-content">@Model.GrillaProyFinan.FormatearDato(item.che_emi_ent, FormatDato.Monto)</td>
+										<td class="@Model.GrillaProyFinan.ObtenerClase(item.cheque_emit_mas_trans_bco) align-right cell-fit-content">@Model.GrillaProyFinan.FormatearDato(item.cheque_emit_mas_trans_bco, FormatDato.Monto)</td>
 										<td class="@Model.GrillaProyFinan.ObtenerClase(item.che_emi_nent) align-right cell-fit-content">@Model.GrillaProyFinan.FormatearDato(item.che_emi_nent, FormatDato.Monto)</td>
 										<td class="@Model.GrillaProyFinan.ObtenerClase(item.apagar) align-right cell-fit-content">@Model.GrillaProyFinan.FormatearDato(item.apagar, FormatDato.Monto)</td>
 										<td class="@Model.GrillaProyFinan.ObtenerClase(item.proy_gastos) align-right cell-fit-content">@Model.GrillaProyFinan.FormatearDato(item.proy_gastos, FormatDato.Monto)</td>
-										<td class="@Model.GrillaProyFinan.ObtenerClase(item.proy_imp) align-right cell-fit-content">@Model.GrillaProyFinan.FormatearDato(item.proy_imp, FormatDato.Monto)</td>
+										<td class="@Model.GrillaProyFinan.ObtenerClase(item.total_proy_egresos) align-right cell-fit-content">@Model.GrillaProyFinan.FormatearDato(item.total_proy_egresos, FormatDato.Monto)</td>
 										<td style="background-color:#f8f9fa;"></td> <!-- celda en blanco -->
 										<td class="@Model.GrillaProyFinan.ObtenerClase(item.che_cartera) align-right cell-fit-content">@Model.GrillaProyFinan.FormatearDato(item.che_cartera, FormatDato.Monto)</td>
+										<td class="@Model.GrillaProyFinan.ObtenerClase(item.che_depo) align-right cell-fit-content">@Model.GrillaProyFinan.FormatearDato(item.che_depo, FormatDato.Monto)</td>
 										<td class="@Model.GrillaProyFinan.ObtenerClase(item.valores_alcobro) align-right cell-fit-content">@Model.GrillaProyFinan.FormatearDato(item.valores_alcobro, FormatDato.Monto)</td>
-										<td class="@Model.GrillaProyFinan.ObtenerClase(item.acobrar) align-right cell-fit-content">@Model.GrillaProyFinan.FormatearDato(item.acobrar, FormatDato.Monto)</td>
-										<td class="@Model.GrillaProyFinan.ObtenerClase(item.acobrar) align-right cell-fit-content">@Model.GrillaProyFinan.FormatearDato(item.acobrar, FormatDato.Monto)</td>
+										<td class="@Model.GrillaProyFinan.ObtenerClase(item.total_proy_ingresos) align-right cell-fit-content">@Model.GrillaProyFinan.FormatearDato(item.total_proy_ingresos, FormatDato.Monto)</td>
 									</tr>
 								}
 							}

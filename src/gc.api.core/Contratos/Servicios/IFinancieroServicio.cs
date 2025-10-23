@@ -48,5 +48,7 @@ namespace gc.api.core.Contratos.Servicios
         List<GastoProyListaDto> GetGastosProyLista();
 		List<GastoProyListaDto> GetGastosProyDatos(int items);
         List<ProyFinanDto> GetProyeccionFinanciera(BuscarProyFinanRequest request);
+		List<SaldoDeCuentaDto> GetSaldoDeCuentas(BuscarSaldoDeCuentasRequest request);
+        List<FlujoDeIngresoDto> GetFlujoDeIngreso(BuscarFlujoDeIngresoRequest request);
 	}
 }
