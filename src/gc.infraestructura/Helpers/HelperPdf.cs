@@ -126,6 +126,7 @@
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Consultas;
+using gc.infraestructura.Dtos.Consultas.ReporteFinanciero;
 using gc.infraestructura.Dtos.DocManager;
 using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.EntidadesComunes.Options;
@@ -2146,6 +2147,256 @@ namespace gc.infraestructura.Helpers
 				espaciador.DefaultCell.HorizontalAlignment = Element.ALIGN_CENTER;
 				espaciador.AddCell("");
 				pdf.Add(espaciador);
+			}
+		}
+
+		public static void CargarTablaProyeccionFinanciera(Document pdf, List<ProyFinanDto> regs, Font fuenteEtiqueta, Font fuenteValor)
+		{
+			var semanas = regs
+							.GroupBy(x => new { x.semana })
+							.OrderBy(g => g.Key.semana);
+			//var semanas = regs
+			//				.GroupBy(x => new { x.semana, x.desde, x.hasta, x.leyendaSemana })
+			//				.OrderBy(g => g.Key.desde);
+
+			foreach (var semana in semanas)
+			{
+				// Título de la semana
+				var fecDesde = regs.Where(x => x.semana == semana.Key.semana).Min(y => y.desde);
+				var fecHasta = regs.Where(x => x.semana == semana.Key.semana).Max(y => y.desde);
+				var tituloSemana = new Paragraph($"Semana del {fecDesde:dd/MM/yyyy} al {fecHasta:dd/MM/yyyy}", fuenteEtiqueta);
+				tituloSemana.SpacingBefore = 10f;
+				tituloSemana.SpacingAfter = 5f;
+				pdf.Add(tituloSemana);
+
+				// Tabla con columnas
+				var table = new PdfPTable(10);
+				table.WidthPercentage = 100;
+				table.SetWidths(new float[] { 12f, 12f, 12f, 12f, 12f, 12f, 12f, 12f, 12f, 12f });
+
+				// Encabezados
+				string[] headers = {
+					"",
+					"Cheq. Emitidos + Transf. Bco.",
+					"Cheq. Emitidos No Entregados",
+					"Obligaciones a Pagar",
+					"Proy. Otros Gastos",
+					"Total Proy. Egresos",
+					"Cheq. en Cartera",
+					"Valores al Cobro",
+					"Documentos a Cobrar",
+					"Total Proy. Ingresos"
+				};
+
+				foreach (var h in headers)
+				{
+					if (h != "")
+					{
+						var cell = new PdfPCell(new Phrase(h, fuenteEtiqueta))
+						{
+							BackgroundColor = BaseColor.LightGray,
+							HorizontalAlignment = Element.ALIGN_CENTER,
+							Padding = 4
+						};
+						table.AddCell(cell);
+					}
+					else
+					{
+						var cell = new PdfPCell(new Phrase(h, fuenteEtiqueta))
+						{
+							BackgroundColor = BaseColor.White,
+							HorizontalAlignment = Element.ALIGN_CENTER,
+							Padding = 4
+						};
+						table.AddCell(cell);
+					}
+				}
+
+				var total_cheque_emit_mas_trans_bco = 0.00M;
+				var total_che_emi_nent = 0.00M;
+				var total_apagar = 0.00M;
+				var total_proy_gastos = 0.00M;
+				var total_total_proy_egresos = 0.00M;
+				var total_che_cartera = 0.00M;
+				var total_che_depo = 0.00M;
+				var total_valores_alcobro = 0.00M;
+				var total_total_proy_ingresos = 0.00M;
+				// Filas por día
+				foreach (var item in regs.Where(x=>x.semana == semana.Key.semana).ToList())
+				{
+					table.AddCell(new PdfPCell(new Phrase($"{item.desde:dd/MM/yyyy}", fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					table.AddCell(new PdfPCell(new Phrase(item.cheque_emit_mas_trans_bco.ToString("N2"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					total_cheque_emit_mas_trans_bco += item.cheque_emit_mas_trans_bco;
+					table.AddCell(new PdfPCell(new Phrase(item.che_emi_nent.ToString("N2"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					total_che_emi_nent += item.che_emi_nent;
+					table.AddCell(new PdfPCell(new Phrase(item.apagar.ToString("N2"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					total_apagar += item.apagar;
+					table.AddCell(new PdfPCell(new Phrase(item.proy_gastos.ToString("N2"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					total_proy_gastos += item.proy_gastos;
+					table.AddCell(new PdfPCell(new Phrase(item.total_proy_egresos.ToString("N2"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+					total_total_proy_egresos += item.total_proy_egresos;
+					table.AddCell(new PdfPCell(new Phrase(item.che_cartera.ToString("N2"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					total_che_cartera += item.che_cartera;
+					table.AddCell(new PdfPCell(new Phrase(item.che_depo.ToString("N2"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					total_che_depo += item.che_depo;
+					table.AddCell(new PdfPCell(new Phrase(item.valores_alcobro.ToString("N2"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					total_valores_alcobro += item.valores_alcobro;
+					table.AddCell(new PdfPCell(new Phrase(item.total_proy_ingresos.ToString("N2"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+					total_total_proy_ingresos += item.total_proy_ingresos;
+				}
+
+				//Totales
+				table.AddCell(new PdfPCell(new Phrase(string.Empty, fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+				table.AddCell(new PdfPCell(new Phrase(total_cheque_emit_mas_trans_bco.ToString("N2"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+				table.AddCell(new PdfPCell(new Phrase(total_che_emi_nent.ToString("N2"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+				table.AddCell(new PdfPCell(new Phrase(total_apagar.ToString("N2"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+				table.AddCell(new PdfPCell(new Phrase(total_proy_gastos.ToString("N2"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+				table.AddCell(new PdfPCell(new Phrase(total_total_proy_egresos.ToString("N2"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+				table.AddCell(new PdfPCell(new Phrase(total_che_cartera.ToString("N2"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+				table.AddCell(new PdfPCell(new Phrase(total_che_depo.ToString("N2"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+				table.AddCell(new PdfPCell(new Phrase(total_valores_alcobro.ToString("N2"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+				table.AddCell(new PdfPCell(new Phrase(total_total_proy_ingresos.ToString("N2"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+
+				pdf.Add(table);
+			}
+		}
+
+		public static void AgregarEncabezadoFinanciero(Document doc, ProyFinanDto datos, Font fontTitulo, Font fontTexto)
+		{
+			var fontTit = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12);
+			var fontEtiqueta = FontFactory.GetFont(FontFactory.HELVETICA, 8, Font.NORMAL);
+			var fontValor = FontFactory.GetFont(FontFactory.HELVETICA, 8, Font.BOLD, BaseColor.DarkGray);
+			var linea = new LineSeparator(0.5f, 100f, BaseColor.Black, Element.ALIGN_CENTER, -2);
+
+			// Línea superior
+			doc.Add(new Chunk(linea));
+			doc.Add(new Paragraph(" "));
+
+			var tabla = new PdfPTable(2)
+			{
+				WidthPercentage = 100
+			};
+			tabla.SetWidths(new float[] { 50f, 50f });
+
+			// Columna izquierda
+			var columnaIzquierda = new PdfPTable(1)
+			{
+				WidthPercentage = 100
+			};
+
+			columnaIzquierda.AddCell(CeldaEtiquetaValor("Saldos Bancarios Disponibles (Según Extractos):", datos.saldo_bco, fontEtiqueta, fontValor));
+			columnaIzquierda.AddCell(CeldaEtiquetaValor("Saldos Bancarios en Descubierto (Según Extractos):", datos.saldo_bco_rojo, fontEtiqueta, fontValor));
+
+			// Columna derecha
+			var columnaDerecha = new PdfPTable(1)
+			{
+				WidthPercentage = 100
+			};
+
+			columnaDerecha.AddCell(CeldaEtiquetaValor("Valores al Cobros no Acreditados:", datos.valores_alcobro_v, fontEtiqueta, fontValor));
+			columnaDerecha.AddCell(CeldaEtiquetaValor("Documentos a Cobrar Vencidos hace 30 días:", datos.acobrar_mes_ant, fontEtiqueta, fontValor));
+			columnaDerecha.AddCell(CeldaEtiquetaValor("Proyección de Ventas Diarias:", datos.proy_vtas, fontEtiqueta, fontValor));
+
+			// Insertar las dos columnas en la tabla principal
+			tabla.AddCell(new PdfPCell(columnaIzquierda) { Border = Rectangle.NO_BORDER });
+			tabla.AddCell(new PdfPCell(columnaDerecha) { Border = Rectangle.NO_BORDER });
+
+			doc.Add(tabla);
+
+			// Línea inferior
+			doc.Add(new Chunk(linea));
+			doc.Add(new Paragraph(" "));
+		}
+
+		// Helper para construir celda con etiqueta y valor
+		private static PdfPCell CeldaEtiquetaValor(string etiqueta, decimal valor, Font fontEtiqueta, Font fontValor)
+		{
+			var frase = new Phrase
+			{
+				new Chunk(etiqueta + " ", fontEtiqueta),
+				new Chunk(valor.ToString("N2"), fontValor)
+			};
+
+			return new PdfPCell(frase)
+			{
+				Border = Rectangle.NO_BORDER,
+				PaddingBottom = 6f, // separación vertical entre campos
+				HorizontalAlignment = Element.ALIGN_RIGHT // Alinea todo el contenido a la derecha
+			};
+		}
+
+		public static void CargarTablaSaldosEnCuenta(Document pdf, List<SaldoDeCuentaDto> regs, Font fuenteEtiqueta, Font fuenteValor)
+		{
+			var fontEtiqueta = FontFactory.GetFont(FontFactory.HELVETICA, 10, Font.BOLD);
+
+			var tiposDeCuenta = regs
+							  .GroupBy(x => new { x.tcf_id, x.tcf_desc })
+							  .OrderBy(g => g.Key.tcf_id);
+
+			foreach (var tipo in tiposDeCuenta)
+			{
+				// Título del grupo
+				var titulo = new Paragraph(tipo.Key.tcf_desc, fontEtiqueta)
+				{
+					SpacingBefore = 10f,
+					SpacingAfter = 5f
+				};
+				pdf.Add(titulo);
+
+				// Tabla
+				var tabla = new PdfPTable(4)
+				{
+					WidthPercentage = 100
+				};
+				tabla.SetWidths(new float[] { 15f, 45f, 20f, 20f });
+
+				// Encabezados
+				string[] headers = { "Código", "Medio de Pago / Cuenta Financiera", "Cuenta Cble", "Saldo" };
+				foreach (var h in headers)
+				{
+					var celda = new PdfPCell(new Phrase(h, fuenteEtiqueta))
+					{
+						BackgroundColor = BaseColor.LightGray,
+						HorizontalAlignment = Element.ALIGN_CENTER,
+						Padding = 4
+					};
+					tabla.AddCell(celda);
+				}
+
+				decimal totalGrupo = 0;
+
+				foreach (var item in tipo)
+				{
+					tabla.AddCell(new PdfPCell(new Phrase(item.ctaf_id, fuenteValor)) { HorizontalAlignment = Element.ALIGN_LEFT });
+					tabla.AddCell(new PdfPCell(new Phrase(item.ctaf_denominacion, fuenteValor)) { HorizontalAlignment = Element.ALIGN_LEFT });
+					tabla.AddCell(new PdfPCell(new Phrase(item.ccb_id, fuenteValor)) { HorizontalAlignment = Element.ALIGN_LEFT });
+					tabla.AddCell(new PdfPCell(new Phrase(item.cf_saldo.ToString("N2"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+
+					totalGrupo += item.cf_saldo;
+				}
+
+				// Fila de total
+				var celdaTotalLabel = new PdfPCell(new Phrase("Total " + tipo.Key.tcf_desc + ":", fontEtiqueta))
+				{
+					Colspan = 3,
+					HorizontalAlignment = Element.ALIGN_RIGHT,
+					PaddingTop = 6f,
+					PaddingBottom = 6f,
+					BackgroundColor = new BaseColor(240, 240, 240)
+				};
+				var celdaTotalValor = new PdfPCell(new Phrase(totalGrupo.ToString("N2"), fuenteValor))
+				{
+					HorizontalAlignment = Element.ALIGN_RIGHT,
+					PaddingTop = 6f,
+					PaddingBottom = 6f,
+					BackgroundColor = new BaseColor(240, 240, 240)
+				};
+
+				tabla.AddCell(celdaTotalLabel);
+				tabla.AddCell(celdaTotalValor);
+
+				pdf.Add(tabla);
+
 			}
 		}
 

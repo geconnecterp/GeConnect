@@ -43,6 +43,10 @@ namespace gc.infraestructura.Enumeraciones
 		R029_LibroBancosResumen = 29,
 		R030_HistoricoLibro = 30,
 		R031_ExtractoBancario = 31,
-		R033_ChequePropioEmitido = 33
+		R033_ChequePropioEmitido = 33,
+		R034_ProyeccionDeIngreso = 34,
+		R035_SaldoDeCuentas = 35,
+		R036_FlujoDeIngresos = 36,
+		R037_ProyeccionDeEgresos = 37
 	}
 }

@@ -64,7 +64,11 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R029_LibroBancosResumen, new R029_LibroBancosResumen(uow,consSv, finServ,empresa,ctaSv, logger) },
                 { InfoReporte.R030_HistoricoLibro, new R030_HistoricoLibro(uow,consSv, finServ,empresa,ctaSv, logger) },
 				{ InfoReporte.R031_ExtractoBancario, new R031_ExtractoBancario(uow,consSv, finServ,empresa,ctaSv, logger) },
-				{ InfoReporte.R033_ChequePropioEmitido, new R033_ChequePropioEmitido(uow,consSv, finServ,empresa,ctaSv, logger) }
+				{ InfoReporte.R033_ChequePropioEmitido, new R033_ChequePropioEmitido(uow,consSv, finServ,empresa,ctaSv, logger) },
+				{ InfoReporte.R034_ProyeccionDeIngreso, new R034_ProyeccionDeIngreso(uow,consSv, finServ,empresa,ctaSv, logger) },
+				{ InfoReporte.R035_SaldoDeCuentas, new R035_SaldoDeCuentas(uow,consSv, finServ,empresa,ctaSv, logger) },
+				{ InfoReporte.R036_FlujoDeIngresos, new R036_FlujoDeIngresos(uow,consSv, finServ,empresa,ctaSv, logger) },
+				{ InfoReporte.R037_ProyeccionDeEgresos, new R037_ProyeccionDeEgresos(uow,consSv, finServ,empresa,ctaSv, logger) }
 			}; 
             _logger = logger;
         }

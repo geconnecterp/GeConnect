@@ -4,6 +4,9 @@
 	$(document).on("click", "#btnBuscarFlujoDeIngreso", ControlaBuscarFlujoDeIngreso);
 	$(document).on("click", "#btnBuscarProyeccionDeEgreso", ControlaBuscarProyeccionDeEgreso);
 
+	$(document).on("click", "#btnImprimirProyeccionFinanciera", ControlaImprimirProyeccionFinanciera);
+	$(document).on("click", "#btnImprimirSaldoDeCuenta", ControlaImprimirSaldoDeCuenta);
+
 	$("#fechaHastaFlujoDeIngreso").on("change", function () {
 		SetearLimitesFechaDesdeFlujoDeIngreso();
 	});
@@ -89,6 +92,50 @@ function SetearCamposProyeccionFinanciera() {
 		}
 	});
 }
+
+function ControlaImprimirProyeccionFinanciera() {
+	if ($("#tbGridProyFinan > tbody > tr").length === 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos generar el reporte.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting();
+		var tipoReporte = 1;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				HandlerImprimirListaProyeccionFinanciera();
+			}
+		});
+	}
+}
+
+function HandlerImprimirListaProyeccionFinanciera() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var desde = $("#fechaDesdeProyeccionFinanciera").val();
+		var hasta = $("#fechaHastaProyeccionFinanciera").val();
+		var desde1Print = moment($("#fechaDesdeProyeccionFinanciera").val()).format('DD/MM/yyyy')
+		var hasta2Print = moment($("#fechaHastaProyeccionFinanciera").val()).format('DD/MM/yyyy')
+
+		let data = {
+			desde, desde1Print,
+			hasta, hasta2Print
+		};
+		cargarReporteEnArre(34, data, "PROYECCIÓN DE INGRESO", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
 ///----------------------FIN Proyeccion Financiera----------------///
 
 ///----------------------Saldo de Cuentas-------------------------///
@@ -116,6 +163,47 @@ function ControlaBuscarSaldoDeCuenta() {
 function SetearCamposSaldoDeCuenta() {
 	var now = moment().format('YYYY-MM-DD');
 	$("#fechaHastaSaldoDeCuenta").val(now).attr("max", now);
+}
+
+function ControlaImprimirSaldoDeCuenta() {
+	if ($("#tbGridSaldoEnCuenta > tbody > tr").length === 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos generar el reporte.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting();
+		var tipoReporte = 2;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				HandlerImprimirListaSaldoDeCuenta();
+			}
+		});
+	}
+}
+
+function HandlerImprimirListaSaldoDeCuenta() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var hasta = $("#fechaHastaSaldoDeCuenta").val();
+		var hasta1Print = moment($("#fechaDesdeProyeccionFinanciera").val()).format('DD/MM/yyyy')
+
+		let data = {
+			hasta, hasta1Print
+		};
+		cargarReporteEnArre(35, data, "SALDO DE CUENTAS", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 ///----------------------FIN Saldo de Cuentas---------------------///
 
