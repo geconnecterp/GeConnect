@@ -2400,6 +2400,111 @@ namespace gc.infraestructura.Helpers
 			}
 		}
 
+		public static void CargarTablaFlujoDeIngreso(Document pdf, List<FlujoDeIngresoDto> lista, Font fuenteEtiqueta, Font fuenteValor)
+		{
+			var fontTitulo = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12);
+			var fontHeaderRevision = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 8, BaseColor.Red);
+			var fontHeaderCartera = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 8, BaseColor.Black);
+			var fontHeaderAlCobro = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 8, BaseColor.Green);
+			var fontHeaderAcreditado = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 8, BaseColor.Blue);
+
+			var fontValorRevision = FontFactory.GetFont(FontFactory.HELVETICA, 8, BaseColor.Red);
+			var fontValorCartera = FontFactory.GetFont(FontFactory.HELVETICA, 8, BaseColor.Black);
+			var fontValorAlCobro = FontFactory.GetFont(FontFactory.HELVETICA, 8, BaseColor.Green);
+			var fontValorAcreditado = FontFactory.GetFont(FontFactory.HELVETICA, 8, BaseColor.Blue);
+
+			var fontTotal = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 8);
+
+			pdf.Add(new Paragraph(" "));
+
+			var tabla = new PdfPTable(6) { WidthPercentage = 100 };
+			tabla.SetWidths([30f, 15f, 15f, 15f, 15f, 15f]);
+
+			// Fila 1: encabezado agrupado
+			tabla.AddCell(new PdfPCell(new Phrase("Concepto", fuenteEtiqueta)) { Rowspan = 2, BackgroundColor = BaseColor.LightGray, HorizontalAlignment = Element.ALIGN_CENTER });
+			tabla.AddCell(new PdfPCell(new Phrase("Ingresos", fuenteEtiqueta)) { Rowspan = 2, BackgroundColor = BaseColor.LightGray, HorizontalAlignment = Element.ALIGN_CENTER });
+			tabla.AddCell(new PdfPCell(new Phrase("Estado de Valores", fuenteEtiqueta)) { Colspan = 4, BackgroundColor = BaseColor.LightGray, HorizontalAlignment = Element.ALIGN_CENTER });
+
+			// Fila 2: subencabezados
+			tabla.AddCell(new PdfPCell(new Phrase("En Revisión", fontHeaderRevision)) { BackgroundColor = BaseColor.LightGray, HorizontalAlignment = Element.ALIGN_CENTER });
+			tabla.AddCell(new PdfPCell(new Phrase("Cartera", fontHeaderCartera)) { BackgroundColor = BaseColor.LightGray, HorizontalAlignment = Element.ALIGN_CENTER });
+			tabla.AddCell(new PdfPCell(new Phrase("Al Cobro", fontHeaderAlCobro)) { BackgroundColor = BaseColor.LightGray, HorizontalAlignment = Element.ALIGN_CENTER });
+			tabla.AddCell(new PdfPCell(new Phrase("Acreditado", fontHeaderAcreditado)) { BackgroundColor = BaseColor.LightGray, HorizontalAlignment = Element.ALIGN_CENTER });
+
+
+			// Totales
+			decimal totalIngreso = 0, totalRevision = 0, totalCartera = 0, totalAlCobro = 0, totalAcreditado = 0;
+
+			foreach (var item in lista)
+			{
+				tabla.AddCell(new PdfPCell(new Phrase(item.medio_de_pago, fuenteValor)) { HorizontalAlignment = Element.ALIGN_LEFT });
+				tabla.AddCell(new PdfPCell(new Phrase(item.ingreso.ToString("N2"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+				tabla.AddCell(new PdfPCell(new Phrase(item.revision.ToString("N2"), fontValorRevision)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+				tabla.AddCell(new PdfPCell(new Phrase(item.cartera.ToString("N2"), fontValorCartera)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+				tabla.AddCell(new PdfPCell(new Phrase(item.alcobro.ToString("N2"), fontValorAlCobro)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+				tabla.AddCell(new PdfPCell(new Phrase(item.acreditado.ToString("N2"), fontValorAcreditado)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				totalIngreso += item.ingreso;
+				totalRevision += item.revision;
+				totalCartera += item.cartera;
+				totalAlCobro += item.alcobro;
+				totalAcreditado += item.acreditado;
+			}
+
+			// Fila de totales
+			var fondoTotal = new BaseColor(230, 230, 230);
+			tabla.AddCell(new PdfPCell(new Phrase("Total", fontTotal)) { BackgroundColor = fondoTotal, HorizontalAlignment = Element.ALIGN_RIGHT });
+			tabla.AddCell(new PdfPCell(new Phrase(totalIngreso.ToString("N2"), fontTotal)) { BackgroundColor = fondoTotal, HorizontalAlignment = Element.ALIGN_RIGHT });
+			tabla.AddCell(new PdfPCell(new Phrase(totalRevision.ToString("N2"), fontTotal)) { BackgroundColor = fondoTotal, HorizontalAlignment = Element.ALIGN_RIGHT });
+			tabla.AddCell(new PdfPCell(new Phrase(totalCartera.ToString("N2"), fontTotal)) { BackgroundColor = fondoTotal, HorizontalAlignment = Element.ALIGN_RIGHT });
+			tabla.AddCell(new PdfPCell(new Phrase(totalAlCobro.ToString("N2"), fontTotal)) { BackgroundColor = fondoTotal, HorizontalAlignment = Element.ALIGN_RIGHT });
+			tabla.AddCell(new PdfPCell(new Phrase(totalAcreditado.ToString("N2"), fontTotal)) { BackgroundColor = fondoTotal, HorizontalAlignment = Element.ALIGN_RIGHT });
+
+			pdf.Add(tabla);
+		}
+
+		public static void CargarTablaFlujoDeEgresos(Document pdf, List<ProyeccionDeGastoDto> lista, Font fuenteEtiqueta, Font fuenteValor)
+		{
+			// Ordenar y calcular acumulado incremental
+			decimal acumulado = 0.00M;
+			var listaOrdenada = lista.OrderBy(x => x.fecha).ThenBy(x => x.orden).ToList();
+			foreach (var item in listaOrdenada)
+			{
+				acumulado += item.importe;
+				item.acumulado = acumulado;
+			}
+
+			// Crear tabla con 4 columnas
+			var tabla = new PdfPTable(4) { WidthPercentage = 100 };
+			tabla.SetWidths(new float[] { 15f, 45f, 20f, 20f });
+
+			// Encabezados
+			string[] headers = { "FECHA", "CONCEPTO", "IMPORTE", "ACUMULADO" };
+			foreach (var h in headers)
+			{
+				var celda = new PdfPCell(new Phrase(h, fuenteEtiqueta))
+				{
+					BackgroundColor = BaseColor.LightGray,
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					Padding = 5
+				};
+				tabla.AddCell(celda);
+			}
+
+			// Filas de datos
+			foreach (var item in listaOrdenada)
+			{
+				tabla.AddCell(new PdfPCell(new Phrase(item.fecha.ToString("dd/MM/yyyy"), fuenteValor)) { Padding = 4, HorizontalAlignment = Element.ALIGN_CENTER });
+				tabla.AddCell(new PdfPCell(new Phrase(item.concepto, fuenteValor)) { Padding = 4 });
+				tabla.AddCell(new PdfPCell(new Phrase(item.importe.ToString("N2"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT, Padding = 4 });
+				tabla.AddCell(new PdfPCell(new Phrase(item.acumulado.ToString("N2"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT, Padding = 4 });
+			}
+
+			// Agregar tabla al documento
+			pdf.Add(tabla);
+		}
+
+
 		public static void CargarTablaLibroBancoDetalle(Document pdf, List<FinancieroBcoLibroDto> regs, string fHasta, DateTime fHastaDate, Font fuenteEtiqueta, Font fuenteNormal, Font fuenteValor)
 		{
 			BaseColor azul = new(0x00, 0x7B, 0xFF);   // #007BFF

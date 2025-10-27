@@ -6,6 +6,9 @@
 
 	$(document).on("click", "#btnImprimirProyeccionFinanciera", ControlaImprimirProyeccionFinanciera);
 	$(document).on("click", "#btnImprimirSaldoDeCuenta", ControlaImprimirSaldoDeCuenta);
+	$(document).on("click", "#btnImprimirFlujoDeIngreso", ControlaImprimirFlujoDeIngreso);
+	$(document).on("click", "#btnImprimirProyeccionDeEgreso", ControlaImprimirProyeccionDeEgreso);
+	//
 
 	$("#fechaHastaFlujoDeIngreso").on("change", function () {
 		SetearLimitesFechaDesdeFlujoDeIngreso();
@@ -250,6 +253,50 @@ function SetearLimitesFechaDesdeFlujoDeIngreso() {
 		.attr("min", fechaMinima.format('YYYY-MM-DD'))
 		.attr("max", fechaHasta.format('YYYY-MM-DD'));
 }
+
+function ControlaImprimirFlujoDeIngreso() {
+	if ($("#tbGridFlujoDeIngreso > tbody > tr").length === 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos generar el reporte.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting();
+		var tipoReporte = 3;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				HandlerImprimirListaFlujoDeIngreso();
+			}
+		});
+	}
+}
+
+function HandlerImprimirListaFlujoDeIngreso() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var desde = $("#fechaDesdeFlujoDeIngreso").val();
+		var hasta = $("#fechaHastaFlujoDeIngreso").val();
+		var desde1Print = moment($("#fechaDesdeFlujoDeIngreso").val()).format('DD/MM/yyyy')
+		var hasta2Print = moment($("#fechaHastaFlujoDeIngreso").val()).format('DD/MM/yyyy')
+
+		let data = {
+			desde, desde1Print,
+			hasta, hasta2Print
+		};
+		cargarReporteEnArre(36, data, "FLUJO DE INGRESOS", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
 ///----------------------FIN Flujo de Ingreso---------------------///
 
 ///----------------------Proyección de Egresos--------------------///
@@ -291,6 +338,43 @@ function CargarDetalleProyeccionDeEgreso(fecha) {
 		ControlaMensajeError(obj.message);
 		CerrarWaiting();
 	});
+}
+
+function ControlaImprimirProyeccionDeEgreso() {
+	if ($("#tbGridProyEgrGroup > tbody > tr").length === 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos generar el reporte.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting();
+		var tipoReporte = 4;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				HandlerImprimirListaProyeccionDeEgreso();
+			}
+		});
+	}
+}
+
+function HandlerImprimirListaProyeccionDeEgreso() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var now = moment().format('YYYY-MM-DD');
+		let data = { now };
+		cargarReporteEnArre(37, data, "PROYECCIÓN DE EGRESOS", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 ///----------------------FIN Proyección de Egresos----------------///
 
