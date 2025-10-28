@@ -61,6 +61,12 @@ namespace gc.infraestructura.Helpers
 
             foreach (var p in properties)
             {
+                if (p.PropertyType == typeof(string))
+                {
+                    p.SetValue(result, this.MapString(dr, p.Name, ignoreCase));
+                    continue;
+                }
+
                 if (p.PropertyType == typeof(int))
                 {
                     p.SetValue(result, this.MapInt(dr, p.Name, ignoreCase));
@@ -88,11 +94,7 @@ namespace gc.infraestructura.Helpers
 
                 }
 
-                if (p.PropertyType == typeof(string))
-                {
-                    p.SetValue(result, this.MapString(dr, p.Name,ignoreCase));
-                    continue;
-                }
+               
 
                 if (p.PropertyType == typeof(bool))
                 {

@@ -1,0 +1,144 @@
+﻿@model GridCoreSmart<PresupuestoProductoDto>
+
+@{
+    var alt = true;
+    string clase = string.Empty;
+}
+
+<div class="card h-100">
+    <div class="card-header py-1 d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">Productos del Presupuesto</h6>
+    </div>
+    <div class="card-body p-1">
+        <div class="table-responsive" style="max-height: 400px;">
+            <table class="table table-sm table-hover mb-0 table-golden" id="tbGridPresupuestoProds">
+                <thead class="table-golden-header">
+                    <tr class="header">
+                        <th class="text-center">Código</th>
+                        <th class="text-left">Descripción</th>
+                        <th class="text-end">Costo</th>
+                        <th class="text-end">Cantidad</th>
+                        <th class="text-end">Mg %</th>
+                        <th class="text-end">Venta</th>
+                        <th class="text-end">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model?.ListaDatos?.Any() == true)
+                    {
+                        foreach (var item in Model.ListaDatos)
+                        {
+                            if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+                            var totalCalc = (item.pre_cantidad * item.pre_pvta);
+                            <tr class="@clase"
+                                data-p-id="@item.p_id"
+                                data-pre-costo="@item.pre_costo"
+                                data-pre-pneto="@item.pre_pneto"
+                                data-iva-situacion="@item.iva_situacion"
+                                data-iva-alicuota="@item.iva_alicuota"
+                                data-in-alicuota="@item.in_alicuota">
+                                <td class="text-center">@item.p_id</td>
+                                <td>@item.p_des</td>
+                                <td class="text-end">@item.pre_costo.ToString("N3")</td>
+                                <td class="text-end">
+                                    <div class="input-container">
+                                        <input type="text" 
+                                               class="form-control form-control-sm input-pre_cantidad input-numeric campo-readonly"
+                                               value="@item.pre_cantidad.ToString("N2")"
+                                               data-original-value="@item.pre_cantidad"
+                                               readonly 
+                                               title="Doble click para editar" />
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <div class="input-container">
+                                        <input type="text" 
+                                               class="form-control form-control-sm input-pre_margen input-numeric campo-readonly"
+                                               value="@item.pre_margen.ToString("N2")"
+                                               data-original-value="@item.pre_margen"
+                                               readonly 
+                                               title="Doble click para editar" />
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <div class="input-container">
+                                        <input type="text" 
+                                               class="form-control form-control-sm input-pre_pvta input-numeric campo-readonly"
+                                               value="@item.pre_pvta.ToString("N3")"
+                                               data-original-value="@item.pre_pvta"
+                                               readonly 
+                                               title="Doble click para editar" />
+                                    </div>
+                                </td>
+                                <td class="text-end td-total">@totalCalc.ToString("N2")</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-2">
+                                <i class="bx bx-info-circle me-1"></i>No hay productos en este presupuesto
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                @if (Model?.ListaDatos?.Any() == true)
+                {
+                    <tfoot class="table-golden-footer">
+                        <tr>
+                            <td colspan="6" class="text-end fw-bold">Total General:</td>
+                            <td class="text-end fw-bold">@Model.ListaDatos.Sum(x => (x.pre_cantidad * x.pre_pvta)).ToString("N2")</td>
+                        </tr>
+                    </tfoot>
+                }
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+$(function() {
+    // ✅ APLICAR INPUTMASK a campos numéricos
+    if (typeof Inputmask !== 'undefined') {
+        // ✅ CANTIDAD: 2 decimales
+        Inputmask({
+            alias: "numeric",
+            groupSeparator: ",",
+            radixPoint: ".",
+            autoGroup: true,
+            digits: 2,
+            digitsOptional: false,
+            rightAlign: true,
+            allowMinus: false,
+            min: 0
+        }).mask('.input-pre_cantidad');
+        
+        // ✅ MARGEN: 2 decimales
+        Inputmask({
+            alias: "numeric",
+            groupSeparator: ",",
+            radixPoint: ".",
+            autoGroup: true,
+            digits: 2,
+            digitsOptional: false,
+            rightAlign: true,
+            allowMinus: false,
+            min: 0
+        }).mask('.input-pre_margen');
+
+        // ✅ PRECIO VENTA: 3 decimales
+        Inputmask({
+            alias: "numeric",
+            groupSeparator: ",",
+            radixPoint: ".",
+            autoGroup: true,
+            digits: 3,
+            digitsOptional: false,
+            rightAlign: true,
+            allowMinus: false,
+            min: 0
+        }).mask('.input-pre_pvta');
+    }
+});
+</script>
