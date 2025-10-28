@@ -204,9 +204,16 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 response.EsError = true;
                 return PartialView("_gridMensaje", response);
             }
-
-
         }
+
+        [HttpPost]
+        public async Task<JsonResult> BuscarClienteAuto(string prefix)
+        {
+            var clis = await _abmCliServ.BuscarClientes(new QueryFilters { Buscar = prefix }, TokenCookie);
+            var clientes = clis.Item1.Select(x => new ComboGenDto { Id = x.cta_id, Descripcion =  x.cta_lista  });
+            return Json(clientes);
+        }
+
 
         //[HttpPost]
         //public JsonResult ObtenerDatosPaginacion()

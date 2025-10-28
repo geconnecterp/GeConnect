@@ -92,6 +92,14 @@
 			public const string SP_COMBO_SUSTITUTOS = "SPGECO_Combos_Prod_Sus";
 			public const string SP_COMBO_CONFIRMAR = "SPGECO_Combos_Confirmar";
 
+            //PRESUPUESTOS
+            public const string SP_PRESUP_DATOS = "SPGECO_PRE_Datos";
+            public const string SP_PRESUP_ESTADOS = "SPGECO_PRE_ESTADOS";
+            public const string SP_PRESUP_LISTA = "SPGECO_PRE_LISTA";
+            public const string SP_PRESUP_P = "SPGECO_PRE_P";
+			public const string SP_PRESUP_TIPOS = "SPGECO_PRE_Tipos";
+
+
             #endregion
 
 

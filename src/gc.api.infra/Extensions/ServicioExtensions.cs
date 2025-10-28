@@ -26,7 +26,6 @@ using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Services;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.WebSockets;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace gc.api.infra.Extensions
@@ -123,7 +122,8 @@ namespace gc.api.infra.Extensions
             services.AddScoped<IApiOfertaServicio, ApiOfertaServicio>();
             //SERVICIO PARA PROMOS Y COMBOS
             services.AddScoped<IApiPromoComboServicio, ApiPromoComboServicio>();
-
+            //presupuestos
+            services.AddScoped<IApiPresupuetoServicio, ApiPresupuestoServicio>();
             //De Reportes
 
             services.AddScoped<IReportService, ReportService>();

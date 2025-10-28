@@ -33,7 +33,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             ICuentaServicio ctaSv, IAbmServicio abmServicio) : base(options, accessor, logger)
         {
             _settings = options.Value;
-          //  _logger = logger;
+            //  _logger = logger;
             _tDocSv = tipoDocumento;
             _userServicio = userServicio;
             _tipoNegocioServicio = tipoNegocioServicio;
@@ -41,7 +41,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             _abmSv = abmServicio;
         }
 
-        public  IActionResult Index(bool actualizar)
+        public IActionResult Index(bool actualizar)
         {
             //se definen variables iniciales
 
@@ -333,6 +333,15 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 _logger?.LogError(ex, "Error en la invocación de la API - Busqueda de los Perfiles del Usuario.");
                 return Json(new { error = true, warn = false, msg });
             }
+        }
+
+
+        [HttpPost]
+        public JsonResult ObtenerUsuarioParaLista(string prefix)
+        {
+            var users = ObtenerUsuarioParaListaBase(prefix, _userServicio);
+            var clientes = users.Select(x => new ComboGenDto { Id = x.usu_id, Descripcion = $"{x.usu_apellidoynombre} ({x.usu_id})" });
+            return Json(clientes);
         }
 
 
@@ -629,7 +638,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 //Se procede a generar estructura esperada en Base de Datos a partir del menu 
                 List<AdmUserDto> perfiles = ConvierteDatosAdmsUsuario(json, usuId);
                 var jsonp = JsonConvert.SerializeObject(perfiles);
-              
+
                 //armando request del confirmar
                 AbmGenDto abm = new AbmGenDto()
                 {
@@ -775,7 +784,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             AdmUserDto pf = new AdmUserDto()
             {
                 asignado = item.state.selected,
-                adm_id =  dataA[0], 
+                adm_id = dataA[0],
                 adm_nombre = dataA[1],
                 usu_id = item.id.Split('-')[1],
             };
@@ -804,9 +813,9 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             {
                 asignado = item.state.selected,
                 usu_id = item.id.Split('-')[1],
-                der_codigo= dataDer[0],
+                der_codigo = dataDer[0],
                 der_descripcion = dataDer[1],
-                
+
             };
             return dr;
         }
@@ -814,6 +823,6 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         #endregion
 
         #endregion
-       
+
     }
 }

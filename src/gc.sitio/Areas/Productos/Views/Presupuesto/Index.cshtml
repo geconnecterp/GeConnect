@@ -1,0 +1,48 @@
+﻿@{
+    Layout = "~/views/shared/_Layout.cshtml";
+    var filtro = new QueryFilters() { Modelo = ModeloFilter.PRESUPUESTO, Rel01 = [], Rel02 = [], Rel03 = [] ,Rel04=[]};
+}
+
+@section styles {
+    <link rel="stylesheet" href="~/css/simplePagination.css" />
+}
+
+<partial name="_botonera" model="filtro" />
+<div class="collapse" id="divFiltro">
+    <partial name="_filtroBase" model="filtro" />
+    @Html.Hidden("pagEstado", false)
+</div>
+<div class="collapse" id="divDetalle"></div>
+
+<div class="row mt-2 py-1">
+    <div class="col-6" id="divPresDatos" style="display:none">
+
+    </div>
+    <div class="col-6" id="divPresProds" style="display:none">
+
+    </div>
+</div>
+
+
+@section scripts{
+    <script type="text/javascript">
+        let totalRegs = 0;
+        let pagRegs = 0;
+        let pags = 0;
+        let pagina = 1;
+        let search = "";
+
+        var autoComRel01Url = "@Url.Action("BuscarClienteAuto", "AbmCliente", new { area = "ABMs" })";
+        var autoComRel02Url = "@Url.Action("ObtenerUsuarioParaLista", "cgusuarios", new { area = "Usuarios" })";
+        let buscarMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "ActualizarPP", new { area = "Productos" })';
+
+        var buscarPresupuestosUrl = "@Url.Action("buscarPresupuestos", "presupuesto", new { area = "productos" })";
+        var obtenerPresupuestoDatoUrl = "@Url.Action("obtenerPresupuestoDato", "presupuesto", new { area = "productos" })";
+        var obtenerPresupuestoProductoUrl = "@Url.Action("ObtenerPresupuestoProducto", "Presupuesto", new { area = "Productos" })";
+        var nuevoPresupuestoUrl =  "@Url.Action("NuevoPresupuesto", "Presupuesto", new { area = "Productos" })";
+    </script>
+
+    <script src="~/js/app/areas/precios/presup.js"></script>
+    <script src="~/js/plugins/jquery.simplePagination.js"></script>
+
+}
