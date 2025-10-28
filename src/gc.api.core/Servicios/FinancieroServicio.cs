@@ -789,5 +789,20 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<FlujoDeIngresoDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<RespuestaDto> FinancieroAnticipoEmpleadoConfirma(CargaAnticipoEmpleadoRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_AN_CONFIRMA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@ant_id",request.ant_id),
+				new("@an_concepto",request.an_concepto),
+				new("@interes",request.interes),
+				new("@cta_id",request.cta_id),
+				new("@json_anticipos",request.json_anticipos),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

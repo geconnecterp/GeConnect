@@ -501,5 +501,18 @@ namespace gc.api.Controllers.Financieros
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult FinancieroAnticipoEmpleadoConfirma([FromBody] CargaAnticipoEmpleadoRequest r)
+		{
+			ApiResponse<List<RespuestaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.FinancieroAnticipoEmpleadoConfirma(r);
+			response = new ApiResponse<List<RespuestaDto>>(res);
+			return Ok(response);
+		}
 	}
 }

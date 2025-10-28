@@ -1,0 +1,49 @@
+﻿@model CargaAnticipoModel
+@{
+}
+@Html.Hidden("cta_id", Model.cta_id)
+@Html.Hidden("cta_desc", Model.cta_desc)
+@Html.Hidden("intereses", Model.intereses)
+<div class="modal-header">
+	<h5 class="modal-title" id="modalCenterTitle"></h5>
+	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+	<div class="row">
+		<div class="row col-12">
+			<div class="col-6">
+				<div class="input-group input-group-sm mt-2">
+					<span class="input-group-text fixed-lbl-for-abm-100" title="Cliente">Cliente: </span>
+					<input type="text" class="form-control inputEditable" name="Rel02" id="Rel02" />
+					@Html.Hidden("Rel02Item")
+				</div>
+			</div>
+		</div>
+		<div class="row col-12">
+			<div class="col-6">
+				<div class="input-group input-group-sm mt-2">
+					<span class="input-group-text" id="lbIdDesde">Cuotas:</span>
+					<input type="text" class="form-control activable inputEditable" asp-for="cuotas" />
+				</div>
+			</div>
+		</div>
+		<div class="row col-12">
+			<div class="col-6">
+				<div class="input-group input-group-sm mt-2">
+					<span class="input-group-text">Importe: </span>
+					<input type="text" asp-for="importe" class="form-control activable inputEditable" />
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<div class="input-group input-group-sm">
+		<button type="button" class="btn btn-success btn-sm ms-1" id="btnConfirmar">
+			<i class="bx bx-badge-check"></i> Confirmar
+		</button>
+		<button type="button" class="btn btn-outline-secondary btn-sm ms-1" id="btnSalir" data-bs-dismiss="modal">
+			<i class="bx bx-log-out-circle"></i> Salir
+		</button>
+	</div>
+</div>

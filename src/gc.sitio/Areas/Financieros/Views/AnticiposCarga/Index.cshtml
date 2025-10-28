@@ -16,7 +16,7 @@
 					<span class="input-group-text fixed-lbl-for-abm-100" title="Cuenta Proveedor">Contrapartida: </span>
 					<input type="text" class="form-control inputEditable" name="Rel01" id="Rel01" />
 					@Html.Hidden("Rel01Item")
-					<button type="button" class="btn btn-primary btn-icon-compact ms-1" title="Agregar" onclick="agregarItem()">
+					<button type="button" class="btn btn-primary btn-icon-compact ms-1" id="btnAgregar">
 						<i class="bx bx-plus-circle"></i>
 					</button>
 					<button type="button" class="btn btn-success btn-sm ms-4" id="btnConfirmar">
@@ -33,6 +33,14 @@
 		</div>
 	</div>
 </div>
+<div class="modal fade modal-golden in" id="modalCargaDeAnticipo" tabindex="-1" style="display: none;" aria-hidden="true" data-backdrop="static">
+	<div class="modal-dialog modal-x" role="document">
+		<div class="modal-content">
+			<div id="divCargaDeAnticipo">
+			</div>
+		</div>
+	</div>
+</div>
 
 <!-- para el modal del geston de impresion -->
 <div id="modalGestorDocumental"></div>
@@ -41,7 +49,13 @@
 	<script type="text/javascript">
 		var ctaIdSelected = "";
 		var ctaDescSelected = "";
+		var clienteIdSelected = "";
+		var clienteDescSelected = "";
 		var autoComRel01Url = "@Url.Action("BuscarContrapartidas", "anticiposcarga", new { area = "Financieros" })";
+		var autoComRel02Url = "@Url.Action("BuscarClientes", "anticiposcarga", new { area = "Financieros" })";
+		var abrirModalAgregarAnticipoUrl = "@Url.Action("AbrirModalAgregarAnticipo", "anticiposcarga", new { area = "Financieros" })";
+		var actualizarListaDeAnticiposUrl = "@Url.Action("ActualizarListaDeAnticipos", "anticiposcarga", new { area = "Financieros" })";
+		var agregarAnticipoUrl = "@Url.Action("AgregarAnticipo", "anticiposcarga", new { area = "Financieros" })";
 
 		/* Gestor de impresión*/
 		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';

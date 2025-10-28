@@ -1,7 +1,10 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Financieros;
 using gc.sitio.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace gc.sitio.Areas.Financieros.Controllers
 {
@@ -12,5 +15,42 @@ namespace gc.sitio.Areas.Financieros.Controllers
 		{
 			_setting = options.Value;
 		}
+
+		public List<ProveedorListaDto> ClientesLista
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("ClientesLista") ?? string.Empty;
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<ProveedorListaDto>();
+				}
+				return JsonConvert.DeserializeObject<List<ProveedorListaDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ClientesLista", json);
+			}
+		}
+
+		public List<AnticipoDto> AnticiposLista
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("AnticiposLista") ?? string.Empty;
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<AnticipoDto>();
+				}
+				return JsonConvert.DeserializeObject<List<AnticipoDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("AnticiposLista", json);
+			}
+		}
+		//
 	}
 }

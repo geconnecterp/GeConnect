@@ -50,5 +50,6 @@ namespace gc.api.core.Contratos.Servicios
         List<ProyFinanDto> GetProyeccionFinanciera(BuscarProyFinanRequest request);
 		List<SaldoDeCuentaDto> GetSaldoDeCuentas(BuscarSaldoDeCuentasRequest request);
         List<FlujoDeIngresoDto> GetFlujoDeIngreso(BuscarFlujoDeIngresoRequest request);
+        List<RespuestaDto> FinancieroAnticipoEmpleadoConfirma(CargaAnticipoEmpleadoRequest request);
 	}
 }
