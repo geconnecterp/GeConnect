@@ -49,6 +49,7 @@ namespace gc.api.Controllers.Codigos
 		private readonly ITipoOrdenDePagoServicio _tipoOrdenDePagoServicio;
 		private readonly ITipoTransferenciaServicio _tipoTramsferenciaServicio;
 		private readonly ITipoConciliadoServicio _tipoConciliadoServicio;
+		private readonly ITipoAnticipoEmpleadoServicio _tipoAnticipoEmpleadoServicio;
 
 		public TiposVsController( IMapper mapper, IUriService uriService, ILogger<TiposVsController> logger, ICondicionAfipServicio condicionAfipServicio,
 								ICondicionIBServicio condicionIBServicio, IDepartamentoServicio departamentoServicio, IFormaDePagoServicio formaDePagoServicio,
@@ -60,7 +61,7 @@ namespace gc.api.Controllers.Codigos
 								ITipoRetIbServicio tipoRetIbServicio, ITipoCuentaFinServicio tipoCuentaFinServicio, ITipoMonedaServicio tipoMonedaServicio,
 								ITipoCuentaGastoServicio tipoCuentaGastoServicio, IOrdenDeCompraEstadoServicio ordenDeCompraEstadoServicio, ITipoTributoServicio tipoTributoServicio,
 								ITipoDtoValorizaRprServicio tipoDtoValorizaRprServicio, ITipoOrdenDePagoServicio tipoOrdenDePagoServicio, ITipoTransferenciaServicio tipoTransferenciaServicio,
-								ITipoConciliadoServicio tipoConciliadoServicio)
+								ITipoConciliadoServicio tipoConciliadoServicio, ITipoAnticipoEmpleadoServicio tipoAnticipoEmpleadoServicio)
         {
             _mapper = mapper;
             _uriService = uriService;
@@ -94,6 +95,7 @@ namespace gc.api.Controllers.Codigos
 			_tipoOrdenDePagoServicio = tipoOrdenDePagoServicio;
 			_tipoTramsferenciaServicio = tipoTransferenciaServicio;
 			_tipoConciliadoServicio = tipoConciliadoServicio;
+			_tipoAnticipoEmpleadoServicio = tipoAnticipoEmpleadoServicio;
 		}
 
 		[HttpGet]
@@ -525,6 +527,18 @@ namespace gc.api.Controllers.Codigos
 			var lista = _mapper.Map<List<TipoConciliadoDto>>(financiero);
 
 			var response = new ApiResponse<List<TipoConciliadoDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetTiposAnticipoEmpleado()
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			List<TipoAnticipoEmpleadoDto> condAfip = _tipoAnticipoEmpleadoServicio.GetTiposAnticipoEmpleado();
+			var lista = _mapper.Map<List<TipoAnticipoEmpleadoDto>>(condAfip);
+
+			var response = new ApiResponse<List<TipoAnticipoEmpleadoDto>>(lista);
 			return Ok(response);
 		}
 	}

@@ -423,7 +423,7 @@
 			public const string SP_TIPO_ORDEN_PAGO = "SPGECO_Tipos_Orden_Pagos";
 			public const string SP_TIPO_TRANSFERENCIA = "SPGECO_Tipos_Transferencias";
 			public const string SP_TIPO_CONCILIADO = "SPGECO_Tipos_Conciliados";
-			//
+			public const string SP_TIPO_ANTICIPOS = "SPGECO_Tipos_Anticipos";
 			#endregion
 
 			public const string SP_ADMINISTRACIONES = "SPGECO_Administraciones";

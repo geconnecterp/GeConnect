@@ -1,0 +1,60 @@
+﻿@model CargaDeAnticiposModel
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+}
+<div class="container mt-2" id="divAnticiposDeGastos">
+	<div class="mx-auto" style="max-width: 1300px;">
+		<div class="row align-items-center mb-2">
+			<div class="col-12">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Cuenta Banco: </span>
+					@Html.DropDownListFor(m => m.selectedValue, Model.ListaTipo, "Seleccionar", new { @id = "listaTipoAnticipo", @class = "form-control inputEditable activable", @style = "max-width: 13%;" })
+					<span class="input-group-text">Concepto: </span>
+					<input type="text" asp-for="Concepto" class="form-control activable inputEditable" />
+					<span class="input-group-text">% Interes: </span>
+					<input type="text" asp-for="porc_interes" class="form-control activable inputEditable" style="max-width: 8%;" />
+					<span class="input-group-text fixed-lbl-for-abm-100" title="Cuenta Proveedor">Contrapartida: </span>
+					<input type="text" class="form-control inputEditable" name="Rel01" id="Rel01" />
+					@Html.Hidden("Rel01Item")
+					<button type="button" class="btn btn-primary btn-icon-compact ms-1" title="Agregar" onclick="agregarItem()">
+						<i class="bx bx-plus-circle"></i>
+					</button>
+					<button type="button" class="btn btn-success btn-sm ms-4" id="btnConfirmar">
+						<i class="bx bx-badge-check"></i> Confirmar
+					</button>
+					<button type="button" class="btn btn-danger btn-sm ms-1" id="btnCancelar">
+						<i class="bx bx-x-circle"></i> Cancelar
+					</button>
+				</div>
+			</div>
+		</div>
+		<div class="row mt-2" id="divGrillaAnticipos">
+			<partial name="_grillaAnticipos" model="Model" />
+		</div>
+	</div>
+</div>
+
+<!-- para el modal del geston de impresion -->
+<div id="modalGestorDocumental"></div>
+
+@section scripts {
+	<script type="text/javascript">
+		var ctaIdSelected = "";
+		var ctaDescSelected = "";
+		var autoComRel01Url = "@Url.Action("BuscarContrapartidas", "anticiposcarga", new { area = "Financieros" })";
+
+		/* Gestor de impresión*/
+		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+		var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+		var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+		var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "GestorImpresion", new { area = "ControlComun" })";
+		/**/
+	</script>
+
+	<script src="~/lib/jstree/jstree.min.js"></script>
+	<script src="~/js/app/areas/docmngr/docmanager.js"></script>
+
+	<script src="~/js/app/areas/financieros/anticiposcarga/anticipocarga.js"></script>
+}

@@ -2123,6 +2123,26 @@ namespace gc.sitio.Controllers
 		}
 		#endregion
 
+		#region TIPO DE ANTICIPO DE EMPLEADO
+		public List<TipoAnticipoEmpleadoDto> TipoAnticipoEmpleadoLista
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("TipoAnticipoEmpleadoLista") ?? string.Empty;
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<TipoAnticipoEmpleadoDto>();
+				}
+				return JsonConvert.DeserializeObject<List<TipoAnticipoEmpleadoDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("TipoAnticipoEmpleadoLista", json);
+			}
+		}
+		#endregion
+
 		#region Metodos generales
 		public PartialViewResult ObtenerMensajeDeError(string mensaje)
 		{
@@ -2430,6 +2450,10 @@ namespace gc.sitio.Controllers
 		{
 			TipoConciliadoLista = _tipoConciliadoSrv.GetTipoConciliadoLista(TokenCookie);
 		}
+		protected void ObtenerTiposAnticipoEmpleado(ITipoAnticipoEmpleadoServicio _tipoAntEmpleadoSrv)
+		{
+			TipoAnticipoEmpleadoLista = _tipoAntEmpleadoSrv.GetTipoAnticipoEmpleado(TokenCookie);
+		}
 		#endregion
 		protected void ObtenerDiasDeLaSemana()
 		{
@@ -2636,9 +2660,15 @@ namespace gc.sitio.Controllers
 			var lista = ComboEstadoLista.Select(x => new ComboGenDto { Id = x.Cmb_Estado.ToString(), Descripcion = x.Cmb_Estado_Desc });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
         }
-        #endregion
 
-        [HttpPost]
+		protected SelectList ComboTipoAnticipoEmpleados()
+		{
+			var lista = TipoAnticipoEmpleadoLista.Select(x => new ComboGenDto { Id = x.ant_id, Descripcion = x.ant_desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		#endregion
+
+		[HttpPost]
 		public JsonResult BuscarProvs(string prefix)
 		{
 			//var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
