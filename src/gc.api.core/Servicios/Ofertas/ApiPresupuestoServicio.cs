@@ -41,10 +41,17 @@ namespace gc.api.core.Servicios.Ofertas
             return estados;
         }
 
-        //public List<PresupuestoListDto> ObtenerListaPresupuestos(PresupuestoRequest req)
-        //{
-        //    throw new NotImplementedException();
-        //}
+        public List<PresupT> ObtenerTiposPresupuesto()
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_PRESUP_TIPOS;
+
+            var ps = new List<SqlParameter>();
+
+
+            var estados = _repository.EjecutarLstSpExt<PresupT>(sp, ps, true);
+
+            return estados;
+        }
 
         public List<PresupuestoDto> ObtenerPresupuesto(string pre_id)
         {

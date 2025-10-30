@@ -8,5 +8,6 @@ namespace gc.api.core.Contratos.Servicios.Ofertas
         List<PresupuestoDto> ObtenerPresupuesto(string pre_id);
         List<PresupuestoProductoDto> ObtenerDetallePresupuesto(string pre_id);
         List<PresupE> ObtenerEstadosPresupuesto();
+        List<PresupT> ObtenerTiposPresupuesto();
     }
 }

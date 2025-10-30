@@ -22,6 +22,8 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string OBTENER_PRESUPUESTO = "/presupuesto/";
         private const string OBTENER_DETALLE = "/presupuesto/detalle/";
         private const string OBTENER_ESTADOS = "/estados";
+        private const string OBTENER_TIPOS = "/tipos";
+
 
 
 
@@ -125,7 +127,20 @@ namespace gc.sitio.core.Servicios.Implementacion
                 _logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
                 return new() { Ok = false, Mensaje = "Error al obtener los Estados de Presupuesto" };
             }
-        }       
+        }
+        public async Task<RespuestaGenerica<PresupT>> ObtenerTiposPresupuesto(string token)
+        {
+            try
+            {
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{OBTENER_TIPOS}";
+                return await GetListaAsync<PresupT>(link, token, "Error al obtener los Tipos de Presupuesto");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+                return new() { Ok = false, Mensaje = "Error al obtener los Tipos de Presupuesto" };
+            }
+        }
 
         // Helpers genéricos para minimizar código y asignaciones
         private async Task<RespuestaGenerica<TDto>> GetListaAsync<TDto>(string url, string token, string mensajeError)
@@ -174,5 +189,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 return string.IsNullOrWhiteSpace(raw) ? "Error desconocido en la API" : raw;
             }
         }
+
+        
     }
 }

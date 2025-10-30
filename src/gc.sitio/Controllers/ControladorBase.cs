@@ -1765,6 +1765,24 @@ namespace gc.sitio.Controllers
                 _context.HttpContext?.Session.SetString("EstadosPresupuesto", json);
             }
         }
+
+        public List<PresupT> TiposPresupuesto
+        {
+            get
+            {
+                var json = _context.HttpContext?.Session.GetString("TiposPresupuesto") ?? string.Empty;
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return new List<PresupT>();
+                }
+                return JsonConvert.DeserializeObject<List<PresupT>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("TiposPresupuesto", json);
+            }
+        }
         #endregion
 
         #region PLAN CONTABLE LISTA
@@ -2447,6 +2465,12 @@ namespace gc.sitio.Controllers
         {
             var res = preSv.ObtenerEstadosPresupuesto(TokenCookie).GetAwaiter().GetResult();
             EstadosPresupuesto = res?.ListaEntidad ?? [];
+        }
+
+        protected void ObtenerTipoPresupuesto(IPresupuestoServicio preSv)
+        {
+            var res = preSv.ObtenerTiposPresupuesto(TokenCookie).GetAwaiter().GetResult();
+            TiposPresupuesto = res?.ListaEntidad ?? [];
         }
         protected List<UserDto> ObtenerUsuarioParaListaBase(string strfix, IUserServicio servicio)
         {

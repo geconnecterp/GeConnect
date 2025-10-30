@@ -1635,7 +1635,7 @@ tr[title]:hover {
         color: #6c757d;
     }
 
-/* Distinción para Asientos Definitivos */
+    /* Distinción para Asientos Definitivos */
 .modulo-definitivo {
     --modulo-color: #2c3e50;
     --modulo-accent: #3498db;
@@ -2488,9 +2488,103 @@ input, select, textarea, button, checkbox, radio {
 .etiqueta-dtopa::after { content: "DPa"; }
 .etiqueta-bon::after { content: "Bon"; }
 .etiqueta-fl::after { content: "Fl"; }
-
 /* Estilo para campos editables en modo activo - se agrega al final del archivo */
 .input-container .form-control:not([readonly]) {
     background-color: #fff8e1;
     border-color: #ffc107;
 }
+
+/* ====== ESTILOS PARA PRESUPUESTO - EDICIÓN DE CAMPOS ====== */
+/* Estilo para campos readonly en presupuesto */
+.campo-readonly {
+    background-color: #f8f9fa !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+    border-color: #dee2e6 !important;
+}
+
+/* Estilo para campos modificados con feedback visual */
+.campo-modificado {
+    animation: flashModificado 1.5s ease-in-out;
+    border-color: #28a745 !important;
+}
+
+@keyframes flashModificado {
+    0% {
+        background-color: #d4edda;
+        border-color: #28a745;
+    }
+    50% {
+        background-color: #c3e6cb;
+        border-color: #1e7e34;
+    }
+    100% {
+        background-color: #ffffff;
+        border-color: #28a745;
+    }
+}
+
+/* Estilos para inputs editables en presupuesto (no readonly) */
+.input-pre_margen:not([readonly]),
+.input-pre_pvta:not([readonly]),
+.input-pre_cantidad:not([readonly]) {
+    background-color: #fff8dc !important;
+    border: 2px solid #daa520 !important;
+    font-weight: 700;
+    box-shadow: 0 0 0 0.2rem rgba(218, 165, 32, 0.15);
+}
+
+/* Indicador visual para doble click */
+.input-pre_margen,
+.input-pre_pvta,
+.input-pre_cantidad {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.input-pre_margen[readonly]:hover,
+.input-pre_pvta[readonly]:hover,
+.input-pre_cantidad[readonly]:hover {
+    background-color: #e8f4fc !important;
+    border-color: #b8daff !important;
+}
+
+/* Tooltip de ayuda para campos editables */
+.input-pre_margen[title],
+.input-pre_pvta[title],
+.input-pre_cantidad[title] {
+    position: relative;
+}
+
+/* Estilos para campos del formulario de presupuesto en modo edición */
+#divPresupuestoDatos .form-control:not([readonly]):not(.campo-readonly),
+#divPresupuestoDatos select:not([disabled]):not(.campo-readonly) {
+    background-color: #fff8dc;
+    border-color: #daa520;
+    font-weight: 600;
+}
+
+#divPresupuestoDatos .form-control:not([readonly]):not(.campo-readonly):focus,
+#divPresupuestoDatos select:not([disabled]):not(.campo-readonly):focus {
+    background-color: #ffebcd;
+    border-color: #b8860b;
+    box-shadow: 0 0 0 0.25rem rgba(184, 134, 11, 0.25);
+}
+
+/* Campos que NUNCA se editan - estilo especial */
+#pre_id,
+#pret_id,
+#pree_id,
+#usu_id,
+#usu_apellidoynombre,
+#adm_id,
+#adm_nombre,
+#tco_id,
+#cm_compte {
+    background-color: #e9ecef !important;
+    color: #495057 !important;
+    font-weight: 600 !important;
+    cursor: not-allowed !important;
+}
+
+/* FIN ESTILOS PARA PRESUPUESTO */

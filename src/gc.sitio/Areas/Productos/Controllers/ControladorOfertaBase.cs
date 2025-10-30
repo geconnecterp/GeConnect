@@ -6,6 +6,7 @@ using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.Helpers;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
 using Newtonsoft.Json;
@@ -137,6 +138,29 @@ namespace gc.sitio.Areas.Productos.Controllers
 
             var listR03 = new List<ComboGenDto>();
             ViewBag.Rel03 = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
+        }
+
+
+        internal SelectList ComboPresupuestoEstado(string sel = "")
+        {
+            var est = EstadosPresupuesto;
+            var estCbo = est.Select(x => new ComboGenDto { Id = x.pree_id.ToString(), Descripcion = x.pree_desc }).ToList();
+            if (string.IsNullOrEmpty(sel))
+            {
+                return HelperMvc<ComboGenDto>.ListaGenerica(estCbo);
+            }
+            return HelperMvc<ComboGenDto>.ListaGenerica(estCbo, sel);
+        }
+
+        internal SelectList ComboPresupuestoTipo(string sel = "")
+        {
+            var tipo = TiposPresupuesto;
+            var tipoCbo = tipo.Select(x => new ComboGenDto { Id = x.pret_id.ToString(), Descripcion = x.pret_desc }).ToList();
+            if (string.IsNullOrEmpty(sel))
+            {
+                return HelperMvc<ComboGenDto>.ListaGenerica(tipoCbo);
+            }
+            return HelperMvc<ComboGenDto>.ListaGenerica(tipoCbo, sel);
         }
 
     }
