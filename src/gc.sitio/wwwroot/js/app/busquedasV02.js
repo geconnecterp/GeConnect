@@ -3,7 +3,7 @@ var productosSeleccionadosBusqueda = [];
 var dataBakV02 = {};
 
 // Variables globales para definir el contexto de destino
-var busquedaDestinoTipo = "ofertas"; // valores: "ofertas", "combos", "sustitutos"
+var busquedaDestinoTipo = "ofertas"; // valores: "ofertas", "combos", "sustitutos", "Presupuestos"
 var busquedaDestinoCallback = null;
 
 /**

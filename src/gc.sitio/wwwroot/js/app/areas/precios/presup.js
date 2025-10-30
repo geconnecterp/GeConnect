@@ -161,6 +161,26 @@ function InicializaEventosPresupuesto() {
         }
     });
 
+    // Evento delegado para el botón de agregar producto
+    $(document).on("click", "#btnAgregarCProducto", function () {
+        // Cargar el modal si no existe y luego mostrarlo
+        if ($("#busquedaModal").length === 0) {
+            cargarModalBusquedaAvanzada(function () {
+                // Configurar el destino como "combos" y definir el callback
+                if (typeof configurarDestinoBusquedaProductos === 'function') {
+                    configurarDestinoBusquedaProductos("presupuestos", agregarProductosAlGrid, obtenerProductosExistentesIds);
+                }
+                $("#busquedaModal").modal("show");
+            });
+        } else {
+            // Si ya existe, configurar destino y mostrar
+            if (typeof configurarDestinoBusquedaProductos === 'function') {
+                configurarDestinoBusquedaProductos("presupuestos", agregarProductosAlGrid, obtenerProductosExistentesIds);
+            }
+            $("#busquedaModal").modal("show");
+        }
+    });
+
     // Inicializar eventos de edición de productos presupuesto
     $(document).on('dblclick', '.input-pre_margen, .input-pre_pvta', function(e) {
         e.stopPropagation();
@@ -995,6 +1015,9 @@ function crearGridPresupVacioHtml() {
     <div class="card h-100">
         <div class="card-header py-1 d-flex justify-content-between align-items-center">
             <h6 class="mb-0">Productos del Presupuesto</h6>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarCProducto" title="Agregar Producto" disabled>
+                    <i class="bx bx-plus"></i>
+            </button>
         </div>
         <div class="card-body p-1">
             <div class="table-responsive" style="max-height: 400px;">
