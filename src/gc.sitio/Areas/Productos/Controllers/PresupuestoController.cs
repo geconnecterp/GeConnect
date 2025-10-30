@@ -11,6 +11,7 @@ using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
 using gc.sitio.core.Servicios.Contratos.Users;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using X.PagedList;
 
@@ -34,7 +35,7 @@ namespace gc.sitio.Areas.Productos.Controllers
         public PresupuestoController(IOptions<AppSettings> options, IHttpContextAccessor contexo,
            ILogger<OfertasController> logger, IOptions<DocsManager> docsManager,
            IDocManagerServicio docManagerServicio, IAdministracionServicio admSv,
-           IUserServicio userServicio, IPresupuestoServicio presupuestoServicio) :base(options,contexo,logger)
+           IUserServicio userServicio, IPresupuestoServicio presupuestoServicio) : base(options, contexo, logger)
         {
             _configuracion = options.Value;
 
@@ -96,15 +97,15 @@ namespace gc.sitio.Areas.Productos.Controllers
                 if (!VerificarAutenticacion(out IActionResult redirectResult))
                     return redirectResult;
 
-                if (filters == null )
+                if (filters == null)
                 {
                     return PartialView("_gridMensaje", CrearRespuestaError("El filtro de busqueda no fue recepcionado."));
                 }
 
-                if((filters.Rel01 == null || !filters.Rel01.Any())&& 
+                if ((filters.Rel01 == null || !filters.Rel01.Any()) &&
                     (filters.Rel04 == null || !filters.Rel04.Any()) &&
-                    (filters.Rel02==null || !filters.Rel02.Any()) &&
-                    (filters.Rel03== null || !filters.Rel03.Any()))
+                    (filters.Rel02 == null || !filters.Rel02.Any()) &&
+                    (filters.Rel03 == null || !filters.Rel03.Any()))
                 {
                     return PartialView("_gridMensaje", CrearRespuestaError("Debe seleccionar algún filtro para buscar los Presupuestos"));
                 }
@@ -112,7 +113,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 filters.Registros = _configuracion.NroRegistrosPagina;
 
                 filters.Rel01 = filters.Rel01?.Where(x => !string.IsNullOrEmpty(x)).ToList();
-                filters.Rel02=filters.Rel02?.Where(x => !string.IsNullOrEmpty(x)).ToList();
+                filters.Rel02 = filters.Rel02?.Where(x => !string.IsNullOrEmpty(x)).ToList();
                 filters.Rel03 = filters.Rel03?.Where(x => !string.IsNullOrEmpty(x.Id)).ToList();
                 filters.Rel04 = filters.Rel04?.Where(x => !string.IsNullOrEmpty(x.Id)).ToList();
                 //debo realizar la busqueda de los presupuestos
@@ -120,15 +121,15 @@ namespace gc.sitio.Areas.Productos.Controllers
 
                 if (!presup.Ok)
                 {
-                    throw new NegocioException(presup.Mensaje??"Hubo algun problema en la busqueda de Presupuestos.");
+                    throw new NegocioException(presup.Mensaje ?? "Hubo algun problema en la busqueda de Presupuestos.");
                 }
 
                 // Para operar con la lista de Productos Seleccionados
-                var lista = presup.ListaEntidad??new List<PresupuestoListDto>();
+                var lista = presup.ListaEntidad ?? new List<PresupuestoListDto>();
                 MetadataGeneral = presup.Meta;
-               
+
                 // Generar grid con productos mapeados
-                GridCoreSmart<PresupuestoListDto> grid = GenerarGridPresupuestos(lista, filters.Pagina??1,filters);
+                GridCoreSmart<PresupuestoListDto> grid = GenerarGridPresupuestos(lista, filters.Pagina ?? 1, filters);
 
                 return PartialView("_gridPresupuesto", grid);
             }
@@ -149,7 +150,10 @@ namespace gc.sitio.Areas.Productos.Controllers
         {
             if (!VerificarAutenticacion(out IActionResult redirectResult))
                 return redirectResult;
-
+            #region Carga de Combo Estado y Tipo
+            ViewBag.Pret_Id = ComboPresupuestoTipo();
+            ViewBag.Pree_Id = ComboPresupuestoEstado();
+            #endregion
             PresupuestoDto presup = new();
 
             return PartialView("_presupuestoDatos", presup);
@@ -174,11 +178,17 @@ namespace gc.sitio.Areas.Productos.Controllers
                     throw new NegocioException(pres.Mensaje ?? "No se ha podido identificar el presupuesto.");
                 }
                 PresupuestoDto presup = new();
-                
-                if(pres.ListaEntidad==null || pres.ListaEntidad.Count()==0)
+
+                if (pres.ListaEntidad == null || pres.ListaEntidad.Count() == 0)
                 {
                     throw new NegocioException("No se encontraron los datos del Presupuesto");
                 }
+
+                #region Carga de Combo Estado y Tipo
+                ViewBag.Pret_Id = ComboPresupuestoTipo(pres.ListaEntidad[0].pret_id.ToString());
+                ViewBag.Pree_Id = ComboPresupuestoEstado(pres.ListaEntidad[0].pree_id.ToString());
+                #endregion
+
                 return PartialView("_presupuestoDatos", pres.ListaEntidad[0]);
             }
             catch (NegocioException ex)
@@ -230,7 +240,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
         }
 
-        private GridCoreSmart<PresupuestoListDto> GenerarGridPresupuestos(List<PresupuestoListDto> lista, int page,QueryFilters filtro)
+        private GridCoreSmart<PresupuestoListDto> GenerarGridPresupuestos(List<PresupuestoListDto> lista, int page, QueryFilters filtro)
         {
             var presup = lista
                 .OrderBy(c => c.pre_id)
@@ -293,6 +303,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             //ADMINISTRACIONES que se cargarán en el filtro solamente las activas.
             ObtenerAdministracionesLista(_admSv, "S");
             ObtenerEstadoPresupuesto(_presuSv);
+            ObtenerTipoPresupuesto(_presuSv);
 
             //CLIENTE
             var listR01 = new List<ComboGenDto>();
@@ -302,9 +313,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
             //ESTADO
             var listR03 = new List<ComboGenDto>();
-            var est = EstadosPresupuesto;
-            var estCbo = est.Select(x => new ComboGenDto { Id = x.pree_id.ToString(), Descripcion = x.pree_desc }).ToList();
-            ViewBag.Rel03 = HelperMvc<ComboGenDto>.ListaGenerica(estCbo);
+            ViewBag.Rel03 = ComboPresupuestoEstado();
             ViewBag.Rel03List = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
             //ADMINISTRACION
             var adm = AdministracionesLista;
@@ -312,5 +321,6 @@ namespace gc.sitio.Areas.Productos.Controllers
             ViewBag.Rel04 = HelperMvc<ComboGenDto>.ListaGenerica(admins);
 
         }
+
     }
 }
