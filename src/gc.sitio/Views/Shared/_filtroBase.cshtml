@@ -77,8 +77,9 @@
 
 
         @*AGREGAR SECCION FECHA*@
-        @if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA) || 
-            Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA))
+        @if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA) ||
+                Model.Modelo.Equals(ModeloFilter.PRESUPUESTO) ||
+                Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA))
         {
             <div class=" col-sm-5">
                 <div class="row">
@@ -113,6 +114,7 @@
                 !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA) &&
                 !Model.Modelo.Equals(ModeloFilter.ANULACION_DE_COMPROBANTE_Y_VALORIZACION) &&
                 !Model.Modelo.Equals(ModeloFilter.PROMO_COMBO) &&
+                !Model.Modelo.Equals(ModeloFilter.PRESUPUESTO) &&
                 !Model.Modelo.Equals(ModeloFilter.RELACIONAR_COMPROBANTE_SIN_RP))
         {
             <div class="row  mb-3 mt-1">
@@ -215,7 +217,7 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-sm-6">
+                <div class="col-sm-6" id="divLs01">
                     <div class="input-group  input-group-sm">
                         <span class="input-group-text">Nombre</span>
                         <input type="text" class="form-control inputEditable" name="Rel01" id="Rel01" disabled />
@@ -247,9 +249,11 @@
                 </div>
             </div>
         }
-        @if (Model.Modelo.Equals(ModeloFilter.REASIGNACION_DE_FAMILIA) || 
-             Model.Modelo.Equals(ModeloFilter.ABM_CLIENTES) || 
-             Model.Modelo.Equals(ModeloFilter.ABM_PROVEEDORES))
+
+
+        @if (Model.Modelo.Equals(ModeloFilter.REASIGNACION_DE_FAMILIA) ||
+                Model.Modelo.Equals(ModeloFilter.ABM_CLIENTES) ||
+                Model.Modelo.Equals(ModeloFilter.ABM_PROVEEDORES))
         {
             var list = new List<ComboGenDto>();
             var ls02 = new SelectList(list, "Id", "Descripcion");
@@ -275,10 +279,38 @@
                 </div>
             </div>
         }
+
+        @if (Model.Rel02 != null && (Model.Modelo.Equals(ModeloFilter.PRESUPUESTO)))
+        {
+            <div class="row">
+                <div class="col-sm-6">
+
+                    <div class="input-group input-group-sm">
+                        <div class="form-check form-check-inline form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRel02" />
+                            <label class="form-check-label" for="chkRel02" id="lbRel02"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row  mb-1 mt-1">
+                <div class=" col-md-6 col-sm-12" id="divLs02">
+                    <div class="input-group  input-group-sm">
+                        <span class="input-group-text">Nombre</span>
+                        <input type="text" class="form-control inputEditable" name="Rel02" id="Rel02" disabled />
+                        @Html.Hidden("Rel02Item")
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    @Html.ListBox("Rel02List", null, new { @class = "form-control", @disabled = "disabled" })
+                </div>
+            </div>
+        }
+
         @*---------------------------FIN BUSQUEDA DE PROVEEDORES---------------------------*@
         @*---------------------------BUSQUEDA DE FAMILIAS---------------------------*@
-        @if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA) || 
-             Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA))
+        @if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA) ||
+                Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA))
         {
             var list = new List<ComboGenDto>();
             var ls03 = new SelectList(list, "Id", "Descripcion");
@@ -319,7 +351,8 @@
                     </div>
                 </div>
                 <div class="row">
-                    @if (!Model.Modelo.Equals(ModeloFilter.PRODUCTO_CARGA_PRECIO))
+                    @if (!Model.Modelo.Equals(ModeloFilter.PRODUCTO_CARGA_PRECIO) &&
+                                !Model.Modelo.Equals(ModeloFilter.PRESUPUESTO))
                     {
                         <div class="col-md-6">
                             <div class="input-group input-group-sm">
@@ -331,10 +364,10 @@
                     }
                     else
                     {
-                        <div class="col-md-6">
+                        <div class="col-md-6" id="divLs03">
                             <div class="input-group input-group-sm">
                                 <span class="input-group-text" id="lbNombreRel03">Familia</span>
-                                @Html.DropDownList("Rel03", null, new { @class = "form-control", @disabled = "disabled" })
+                                @Html.DropDownList("Rel03", null,"Seleccionar...",  new { @class = "form-control", @disabled = "disabled" })
                                 @Html.Hidden("Rel03Item")
                             </div>
                         </div>
@@ -377,7 +410,7 @@
         }
         else
         {
-            @if (Model.Rel02 != null)
+            @if (Model.Rel02 != null && !Model.Modelo.Equals(ModeloFilter.PRESUPUESTO))
             {
                 <div class="row">
                     <div class="col-sm-6">
@@ -465,6 +498,29 @@
                             </div>
                         </div>
                     }
+                </div>
+            </div>
+        }
+        @*INICIAMOS UN COMBO PARA OBTENER ADMINISTRACIONES *@
+        @if (Model.Rel04 != null)
+        {
+            <div class="row mt-3">
+                <div class="col-sm-6">
+                    <div class="input-group input-group-sm">
+                        <div class="form-check form-check-inline form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRel04" />
+                            <label class="form-check-label" for="chkRel04" id="lbRel04"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6" id="divLs04">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text" id="lbNombreRel03">Suc.</span>
+                        @Html.DropDownList("Rel04", null, "Seleccionar...", new { @class = "form-control", @disabled = "disabled" })
+                        @Html.Hidden("Rel04Item")
+                    </div>
                 </div>
             </div>
         }

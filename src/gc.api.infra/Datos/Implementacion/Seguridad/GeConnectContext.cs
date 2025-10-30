@@ -1,11 +1,9 @@
 ﻿namespace gc.api.infra.Datos
 {
-    using System;
-    using System.Linq;
-    using System.Reflection;
     using gc.api.core.Entidades;
     using Microsoft.EntityFrameworkCore;
-    using Microsoft.EntityFrameworkCore.Metadata;
+    using System.Linq;
+    using System.Reflection;
 
 
     public partial class GeConnectContext : DbContext

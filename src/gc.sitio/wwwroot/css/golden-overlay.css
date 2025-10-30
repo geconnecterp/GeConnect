@@ -478,3 +478,36 @@
         flex-basis: 48%;
     }
 }
+
+/* Estilos trasladados desde la vista parcial _presupuestoProds.cshtml */
+/* Solo se añaden si no existen previamente en otras hojas de estilo */
+.campo-modificado {
+    background-color: #d4f1f9 !important;
+    border-color: #a8e1f5 !important;
+}
+.indicador-cambio {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 8px 8px 0;
+    border-color: transparent #4bacc6 transparent transparent;
+}
+.input-container {
+    position: relative;
+}
+.campo-readonly {
+    cursor: pointer;
+    background-color: #f8f9fa;
+}
+.campo-readonly:hover {
+    background-color: #e9ecef;
+}
+
+/* Compatibilidad: mantener selector para inputs editables visualmente cuando no readonly */
+.input-container .form-control:not([readonly]) {
+    background-color: #fff8e1;
+    border-color: #ffc107;
+}

@@ -187,27 +187,7 @@ namespace gc.api.Controllers.Security
         private string GenerateToken(Usuario usuario, string admId,string admName, List<PerfilUserDto> perfiles)/**/
         {
             _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
-            //bool first = true;
-            /******************************************************************************************************************************
-             * SE DEBE REALIZAR LA CONSULTA A LA BASE PARA OBTENER EL ARREGLO CON EL MENU A GENERAR, PADRE CON HIJOS Y RUTAS DE CADA HIJO *
-             ******************************************************************************************************************************/
-            //string sRoles = string.Empty;
-            ////debemos obtener los datos de un usuario y de sus roles            
-            //var roles = _roleServicio.GetRolesForUser(usuario.UserName);
-            //foreach (var rol in roles)
-            //{
-            //    if (first)
-            //    {
-            //        first = false;
-            //    }
-            //    else
-            //    {
-            //        sRoles += ',';
-            //    }
-            //    sRoles += rol;
-            //}
-
-
+            
             //token tiene 3 partes. Comenzamos por el Header
             var symetricSecurityKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Authentication:SecretKey"] ?? ""));
 

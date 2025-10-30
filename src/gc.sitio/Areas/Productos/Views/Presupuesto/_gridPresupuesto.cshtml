@@ -1,0 +1,94 @@
+@model GridCoreSmart<PresupuestoListDto>
+
+    @{
+    var alt = true;
+    string clase = string.Empty;
+    }
+<div class="card h-100">
+    <div class="card-header py-1 d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">Presupuestos</h6>
+    </div>
+    <div class="card-body p-1">
+        <div class="table-responsive" style="max-height: 300px;">
+            <table class="table table-sm table-hover mb-0 table-golden" id="tbGridPresupuesto">
+                <thead class="table-golden-header">
+                    <tr class="header">
+                        <th class="text-center">ID</th>
+                        <th class="text-left">Descripción</th>
+                        <th class="text-left">Cliente</th>
+                        <th class="text-center">Tipo</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center">Generado</th>
+                        <th class="text-left">Usuario</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model?.ListaDatos?.Any() == true)
+                    {
+                        foreach (var item in Model.ListaDatos)
+                        {
+                            if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+                            <tr class="@clase"
+                                data-cta-id="@item.cta_id"
+                                data-pret-id="@item.pret_id"
+                                data-pree-id="@item.pree_id"
+                                data-usu-id="@item.usu_id"
+                                data-pre-id="@item.pre_id">
+                                <td class="text-center">
+                                    @item.pre_id
+                                </td>
+                                <td>
+                                    @item.pre_descripcion
+                                </td>
+                                <td>
+                                    @item.cta_denominacion
+                                </td>
+                                <td class="text-center">
+                                    @item.pret_desc
+                                </td>
+                                <td class="text-center">
+                                    @item.pree_desc
+                                </td>
+                                <td class="text-center">
+                                    @item.pre_fecha.ToString("dd/MM/yyyy")
+                                </td>
+                                <td>
+                                    @item.usu_apellidoynombre
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-2">
+                                <i class="bx bx-info-circle me-1"></i>No hay presupuestos disponibles
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        @if (Model.ListaDatos != null && Model.ListaDatos.Any())
+        {
+            <div class="d-flex justify-content-between align-items-center mt-3 px-2">
+                <div class="text-muted small">
+                    <i class="bx bx-store me-1"></i>
+                    Total: @Model.CantidadReg Presupuestos disponibles
+                </div>
+                <div class="text-muted small">
+                   @*  <span id="canalesSeleccionados">0</span> canales seleccionados *@
+                </div>
+                <div class="text-muted small">
+                    @Model.DatoAux01
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<div class="row">
+    <div class="offset-md-3 col-md-6">
+        <div id="divPaginacion">
+        </div>
+    </div>
+</div>
