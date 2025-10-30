@@ -210,7 +210,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         public async Task<JsonResult> BuscarClienteAuto(string prefix)
         {
             var clis = await _abmCliServ.BuscarClientes(new QueryFilters { Buscar = prefix }, TokenCookie);
-            var clientes = clis.Item1.Select(x => new ComboGenDto { Id = x.cta_id, Descripcion =  x.cta_lista  });
+            var clientes = clis.Item1.Select(x => new { Id = x.cta_id, Descripcion =  x.cta_lista, Nombre = x.cta_denominacion, Domicilio = x.cta_domicilio  });
             return Json(clientes);
         }
 

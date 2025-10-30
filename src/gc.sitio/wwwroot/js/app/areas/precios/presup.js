@@ -4,6 +4,9 @@ var modoModificacionPresup = false;
 // ✅ AGREGAR: Variable global para controlar edición
 var campoEnEdicionPresup = null;
 
+// ✅ NUEVA: Variable para guardar estado original del presupuesto
+let _presupOriginal = null;
+
 $(function () {
     InicializaPantallaPresupuesto();
     InicializaEventosPresupuesto();
@@ -63,15 +66,15 @@ function cancelarOperacion(e) {
     //modoNuevoPresup = false;
     //modoModificacionCombo = false;
 
-   
+
     //// Restaurar estado de los botones
     //$("#btnAbmNuevo").prop("disabled", false);
     //$("#btnAbmAceptar").prop("disabled", true);
     //$("#btnAbmModif").prop("disabled", true); // Deshabilitar botón modificar también
 
-    // Si existe un homeCombo y necesitamos redirigir
-    if (e && $("#btnAbmCancelar").is(e.target) && typeof homeCombo !== 'undefined') {
-        window.location.href = homeCombo;
+    // Si existe un homePresup y necesitamos redirigir
+    if (e && $("#btnAbmCancelar").is(e.target) && typeof homePresup !== 'undefined') {
+        window.location.href = homePresup;
     }
 }
 
@@ -164,6 +167,13 @@ function InicializaEventosPresupuesto() {
         activarEdicionCampoPresup($(this));
     });
 
+    $(document).off("dblclick").on("dblclick", "input#cta_denominacion", function () {
+        $("input#cta_denominacion").val("");
+        $("input#cta_id").val("");
+        $("input#pre_nombre").val("");
+        $("input#pre_domicilio").val("");
+    });
+
     // Evento para Enter/Tab
     $(document).on('keydown', '.input-pre_margen, .input-pre_pvta', function(e) {
         if (e.key === 'Enter' || e.key === 'Tab') {
@@ -199,6 +209,10 @@ function InicializaEventosPresupuesto() {
     // Handler para Nuevo Presupuesto
     $(document).on('click', '#btnAbmNuevo', function (e) {
         e.preventDefault();
+
+        if ($("#divFiltro").is(":visible")) {
+            $("#divFiltro").collapse("hide");
+        }
 
         // Establecer modo nuevo
         modoNuevoPresup = true;
@@ -251,6 +265,38 @@ function InicializaEventosPresupuesto() {
         });
     });
 
+    // ✅ NUEVO: Handler para Modificar Presupuesto
+    $(document).on('click', '#btnAbmModif', function (e) {
+        e.preventDefault();
+
+        if ($(this).prop('disabled')) return;
+
+        // Establecer modo modificación
+        modoNuevoPresup = false;
+        modoModificacionPresup = true;
+
+        // Guardar estado original para restaurar en caso de cancelar
+        _presupOriginal = capturarEstadoFormularioPresup();
+
+        // Habilitar campos editables del formulario (excepto los especificados)
+        habilitarCamposFormularioPresup(true);
+
+        // Actualizar estado de botones ABM
+        $('#btnAbmNuevo, #btnAbmModif, #btnAbmElimi').prop('disabled', true);
+        $('#btnAbmAceptar, #btnAbmCancelar').prop('disabled', false).show();
+
+        // Los campos del grid se mantienen en readonly hasta doble click
+        aplicarReadonlyCamposPresup();
+
+        // Poner foco en el primer campo editable
+        const $primer = $('#divPresupuestoDatos').find('input:not([type=hidden]):not([readonly]), textarea:not([readonly]), select:not([disabled])').filter(':visible').first();
+        if ($primer.length) {
+            setTimeout(() => $primer.trigger("focus"), 50);
+        }
+
+        console.log('✅ Modo Modificación Presupuesto activado');
+    });
+
     //busqueda no gen de proveedores
     $(document).off("keydown.autocomplete").on("keydown.autocomplete", "input#cta_denominacion", function () {
         $(this).autocomplete({
@@ -264,43 +310,93 @@ function InicializaEventosPresupuesto() {
                     success: function (obj) {
                         response($.map(obj, function (item) {
                             var texto = item.descripcion;
-                            return { label: texto, value: item.descripcion, id: item.id };
+                            return { label: texto, value: item.descripcion, id: item.id, nombre: item.nombre, domicilio: item.domicilio };
                         }));
                     }
                 })
             },
             minLength: 3,
             select: function (event, ui) {
-                AbrirWaiting("Armando combo Familia. Espere...");
+                
                 $("input#cta_id").val(ui.item.id);
+                $("input#pre_nombre").val(ui.item.nombre);
+                $("input#pre_domicilio").val(ui.item.domicilio);
                 var data = { cta_id: ui.item.id };
-                //PostGen(data, comboFamiliaUrl, function (obj) {
-                //    if (obj.error === true) {
-                //        CerrarWaiting();
-                //        AbrirMensaje("ATENCIÓN", obj.msg, function () {
-                //            $("#msjModal").modal("hide");
-                //        }, false, ["Entendido"], "error!", null);
-                //    }
-                //    else {
-                //        //armado del ddl de Familia
-                //        var combo = $("#pg_id");
-                //        combo.empty();
-                //        var opc = "<option value=''>Seleccionar...</option>";
-                //        combo.append(opc);
-                //        $.each(obj.lista, function (i, item) {
-                //            opc = "<option value='" + item.value + "'>" + item.text + "</option>";
-                //            combo.append(opc);
-                //        });
-                //        CerrarWaiting();
-                //    }
-                //});
-
-                //var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
-                //$("#Rel01List").append(opc);
                 return true;
             }
         });
     });
+}
+
+// ✅ NUEVA: Capturar estado del formulario para poder restaurarlo
+function capturarEstadoFormularioPresup() {
+    const estado = {};
+    $('#divPresupuestoDatos').find('input, textarea, select').each(function() {
+        const $campo = $(this);
+        const nombre = $campo.attr('name') || $campo.attr('id');
+        if (nombre) {
+            estado[nombre] = $campo.val();
+        }
+    });
+    return estado;
+}
+
+// ✅ NUEVA: Restaurar estado del formulario
+function restaurarEstadoFormularioPresup(estado) {
+    if (!estado) return;
+    $.each(estado, function(nombre, valor) {
+        const $campo = $(`[name="${nombre}"], #${nombre}`);
+        if ($campo.length) {
+            $campo.val(valor);
+        }
+    });
+}
+
+// ✅ NUEVA: Habilitar/Deshabilitar campos del formulario según modo edición
+function habilitarCamposFormularioPresup(habilitar) {
+    // Campos que NUNCA se editan
+    const camposNoEditables = [
+        'pre_id',           // ID del presupuesto
+        'pret_id',          // Tipo (combo)
+        'pree_id',          // Estado (combo)
+        'usu_id',           // Usuario ID
+        'usu_apellidoynombre', // Usuario nombre
+        'adm_id',           // Administración ID
+        'adm_nombre',       // Administración nombre
+        'tco_id',           // Tipo de comprobante
+        'cm_compte'         // Número de comprobante
+    ];
+
+    $('#divPresupuestoDatos').find('input:not([type=hidden]), textarea, select').each(function() {
+        const $campo = $(this);
+        const nombre = $campo.attr('name') || $campo.attr('id');
+        
+        // Verificar si el campo está en la lista de no editables
+        const esNoEditable = camposNoEditables.some(campo => 
+            nombre === campo || nombre?.includes(campo)
+        );
+
+        if (esNoEditable) {
+            // Estos campos siempre readonly/disabled
+            $campo.prop('readonly', true).prop('disabled', true).addClass('campo-readonly');
+        } else if (habilitar) {
+            // Habilitar campo para edición
+            if ($campo.is('select')) {
+                $campo.prop('disabled', false).removeClass('campo-readonly');
+            } else {
+                $campo.prop('readonly', false).removeClass('campo-readonly');
+            }
+        } else {
+            // Deshabilitar campo
+            if ($campo.is('select')) {
+                $campo.prop('disabled', true).addClass('campo-readonly');
+            } else {
+                $campo.prop('readonly', true).addClass('campo-readonly');
+            }
+        }
+    });
+
+    console.log(`✅ Campos del formulario ${habilitar ? 'habilitados' : 'deshabilitados'} para edición`);
 }
 
 // ✅ NUEVA: Activar edición de campo
@@ -368,6 +464,56 @@ function guardarCampoPresup($campo) {
         }
         marcarCampoModificadoPresup($campo);
     }
+}
+
+// ✅ NUEVA: Recalcular total desde cambio de cantidad
+function recalcularTotalDesdeCantidad($campo) {
+    if ($campo.prop('readonly')) return;
+
+    const $fila = $campo.closest('tr');
+    const cantidadOriginal = parseFloat($campo.data('original-value')) || 0;
+    const cantidadNueva = parseFloat($campo.val().replace(/,/g, '')) || 0;
+
+    // Validar cantidad positiva
+    if (cantidadNueva <= 0) {
+        $campo.val(cantidadOriginal.toFixed(2));
+        AbrirMensaje("Advertencia",
+            "La cantidad debe ser mayor a 0",
+            () => $("#msjModal").modal("hide"),
+            false, ["Aceptar"], "warn!", null);
+        return;
+    }
+
+    // Formatear y guardar
+    $campo.val(cantidadNueva.toFixed(2));
+    $campo.data('original-value', cantidadNueva);
+    $campo.prop('readonly', true).addClass('campo-readonly');
+    campoEnEdicionPresup = null;
+
+    // Recalcular total si cambió la cantidad
+    if (Math.abs(cantidadOriginal - cantidadNueva) > 0.01) {
+        const precioVenta = parseFloat($fila.find('.input-pre_pvta').val().replace(/,/g, '')) || 0;
+        const nuevoTotal = precioVenta * cantidadNueva;
+        
+        actualizarTotalFila($fila, nuevoTotal);
+        actualizarTotalGeneralPresup();
+        marcarCampoModificadoPresup($campo);
+        
+        console.log(`✅ Cantidad ${cantidadNueva} → Total ${nuevoTotal.toFixed(2)}`);
+    }
+}
+
+// ✅ NUEVA: Marcar campo como modificado visualmente
+function marcarCampoModificadoPresup($campo) {
+    if (!$campo || !$campo.length) return;
+    
+    // Añadir clase temporal para feedback visual
+    $campo.addClass('campo-modificado');
+    
+    // Remover clase después de animación
+    setTimeout(() => {
+        $campo.removeClass('campo-modificado');
+    }, 1500);
 }
 
 // ✅ NUEVA: Recalcular precio desde margen
@@ -810,8 +956,6 @@ function setBtnLoading($btn, loading, originalHtml) {
 }
 
 // En presup.js - Manejo de edición desde botonera principal
-
-let _presupOriginal = null;
 
 // Helper: determina si estamos en modo edición de presupuesto
 function estaEnModoEdicionPresup() {

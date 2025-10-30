@@ -154,7 +154,8 @@ namespace gc.sitio.Areas.Productos.Controllers
             ViewBag.Pret_Id = ComboPresupuestoTipo();
             ViewBag.Pree_Id = ComboPresupuestoEstado();
             #endregion
-            PresupuestoDto presup = new();
+            var hoy = DateTime.Now;
+            PresupuestoDto presup = new() { pre_vigencia_desde= hoy,pre_vigencia_hasta=hoy.AddDays(30)};
 
             return PartialView("_presupuestoDatos", presup);
         }
