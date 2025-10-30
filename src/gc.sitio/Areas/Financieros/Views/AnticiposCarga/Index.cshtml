@@ -6,7 +6,7 @@
 	<div class="mx-auto" style="max-width: 1300px;">
 		<div class="row align-items-center mb-2">
 			<div class="col-12">
-				<div class="input-group input-group-sm">
+				<div class="input-group input-group-sm" id="divInputs">
 					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Cuenta Banco: </span>
 					@Html.DropDownListFor(m => m.selectedValue, Model.ListaTipo, "Seleccionar", new { @id = "listaTipoAnticipo", @class = "form-control inputEditable activable", @style = "max-width: 13%;" })
 					<span class="input-group-text">Concepto: </span>
@@ -56,6 +56,7 @@
 		var abrirModalAgregarAnticipoUrl = "@Url.Action("AbrirModalAgregarAnticipo", "anticiposcarga", new { area = "Financieros" })";
 		var actualizarListaDeAnticiposUrl = "@Url.Action("ActualizarListaDeAnticipos", "anticiposcarga", new { area = "Financieros" })";
 		var agregarAnticipoUrl = "@Url.Action("AgregarAnticipo", "anticiposcarga", new { area = "Financieros" })";
+		var eliminarItemAnticipoUrl = "@Url.Action("EliminarItemAnticipo", "anticiposcarga", new { area = "Financieros" })";
 
 		/* Gestor de impresión*/
 		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';

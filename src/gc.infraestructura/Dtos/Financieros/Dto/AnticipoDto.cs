@@ -3,6 +3,7 @@ namespace gc.infraestructura.Dtos.Financieros
 {
 	public class AnticipoDto : Dto
 	{
+		public string id { get; set; } = string.Empty;
 		public string cta_id { get; set; } = string.Empty;
 		public string cta_denominacion { get; set; } = string.Empty;
 		public int cuotas { get; set; } = 0;

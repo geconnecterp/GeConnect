@@ -804,5 +804,16 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<FinancieroTopeCtaDto> GetFinancieroTopePorCuenta(string cta_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_OBTENER_TOPE_CTA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id", cta_id),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<FinancieroTopeCtaDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

@@ -16,16 +16,34 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			_setting = options.Value;
 		}
 
-		public List<ProveedorListaDto> ClientesLista
+		public List<CuentaDto> ProveedoresLista
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("ProveedoresLista") ?? string.Empty;
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<CuentaDto>();
+				}
+				return JsonConvert.DeserializeObject<List<CuentaDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ProveedoresLista", json);
+			}
+		}
+
+		public List<CuentaDto> ClientesLista
 		{
 			get
 			{
 				var json = _context.HttpContext?.Session.GetString("ClientesLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
-					return new List<ProveedorListaDto>();
+					return new List<CuentaDto>();
 				}
-				return JsonConvert.DeserializeObject<List<ProveedorListaDto>>(json) ?? [];
+				return JsonConvert.DeserializeObject<List<CuentaDto>>(json) ?? [];
 			}
 			set
 			{

@@ -514,5 +514,20 @@ namespace gc.api.Controllers.Financieros
 			response = new ApiResponse<List<RespuestaDto>>(res);
 			return Ok(response);
 		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FinancieroTopeCtaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFinancieroTopePorCuenta(string cta_id)
+		{
+			ApiResponse<List<FinancieroTopeCtaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetFinancieroTopePorCuenta(cta_id);
+
+			response = new ApiResponse<List<FinancieroTopeCtaDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }

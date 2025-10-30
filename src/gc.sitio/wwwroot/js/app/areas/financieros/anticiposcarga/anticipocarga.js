@@ -3,6 +3,7 @@
 	InicializarControles();
 	$(document).on("click", "#btnAgregar", AbrirModalAgregarAnticipo);
 	$(document).on("click", "#btnConfirmar", AgregarAnticipo);
+	$(document).on("click", "#btnSalir", CerrarModal);
 	//
 
 	$(document).on("keydown.autocomplete", "input#Rel01", function () {
@@ -43,7 +44,7 @@ function AgregarAnticipo() {
 	var cuotas = $("#cuotas").inputmask('unmaskedvalue');
 	var importe = $("#importe").inputmask('unmaskedvalue');
 	var intereses = $("#porc_interes").val();
-	var data = { cta_id, cta_desc, cuotas, importe, intereses };	
+	var data = { cta_id, cta_desc, cuotas, importe, intereses };
 	PostGen(data, agregarAnticipoUrl, function (obj) {
 		CerrarWaiting();
 		if (obj.error === true) {
@@ -61,6 +62,10 @@ function AgregarAnticipo() {
 			}, 500);
 		}
 	});
+}
+
+function CerrarModal() {
+	$('#modalCargaDeAnticipo').modal('hide');
 }
 
 function ActualizarListaDeAnticipos() {
@@ -89,12 +94,17 @@ function AbrirModalAgregarAnticipo() {
 
 		$modal.modal('show');
 		CerrarWaiting();
+
+		setTimeout(() => {
+			$("#Rel02").trigger('focus');
+		}, 100);
+
 		return true
 	});
 }
 
 function inicializarCamposEnModal() {
-	$("#modalCenterTitle").text("Carga de Anticipo de Empleado"); 
+	$("#modalCenterTitle").text("Carga de Anticipo de Empleado");
 	getMaskForIntegerMax24("#cuotas");
 	getMaskForMoneyType("#importe");
 	$(document).on("keydown.autocomplete", "input#Rel02", function () {
@@ -125,9 +135,90 @@ function inicializarCamposEnModal() {
 			}
 		});
 	});
+
+	// 🧠 Lista ordenada manualmente
+	const $ordenFoco = [
+		$("#Rel02"),
+		$("#cuotas"),
+		$("#importe"),
+		$("#btnConfirmar")
+	];
+
+	//$ordenFoco.forEach((el, index) => {
+	//	el.off("keydown.enterNav").on("keydown.enterNav", function (e) {
+	//		if (e.key === "Enter") {
+	//			e.preventDefault();
+	//			e.stopImmediatePropagation();
+
+	//			const siguiente = $ordenFoco[index + 1];
+
+	//			if (siguiente && siguiente.length && siguiente.is(":visible") && !siguiente.is(":disabled")) {
+	//				setTimeout(() => {
+	//					siguiente.focus();
+	//				}, 10); // ⏱️ Pequeño delay para asegurar render
+	//			} else {
+	//				// Foco forzado al botón si no se detecta siguiente
+	//				setTimeout(() => {
+	//					$("#btnConfirmar").focus();
+	//				}, 10);
+	//			}
+	//		}
+	//	});
+	//});
+
+	$("#importe").off("keydown.enterDirect").on("keydown.enterDirect", function (e) {
+		if (e.key === "Enter") {
+			e.preventDefault();
+			e.stopImmediatePropagation(); // 🔒 Evita salto al btn-close
+
+			// Foco directo al botón Confirmar
+			$("#btnConfirmar").trigger('focus');
+		}
+	});
+
+
+
+	// 🔘 Enter en botón dispara acción
+	$("#btnConfirmar").off("keydown.enterClick").on("keydown.enterClick", function (e) {
+		if (e.key === "Enter") {
+			e.preventDefault();
+			$(this).click();
+		}
+	});
+
 }
 
-function eliminarItem(cta_id, cuotas) {
+function eliminarItem(id) {
+	AbrirMensaje("ATENCIÓN", `¿Esta seguro de eliminar el item Anticipo?`, function (e) {
+		$("#msjModal").modal("hide");
+		switch (e) {
+			case "SI":
+				handlerEliminarItemAnticipo(id);
+				break;
+			case "NO":
+				break;
+			default: //NO
+				break;
+		}
+		return true;
+
+	}, true, ["Aceptar", "Cancelar"], "question!", null);
+}
+
+function handlerEliminarItemAnticipo(id) {
+	var data = { id };
+	PostGen(data, eliminarItemAnticipoUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			ActualizarListaDeAnticipos();
+		}
+	});
 }
 
 function selectItemGrillaAnticipo(x) {
@@ -140,6 +231,27 @@ function selectItemGrillaAnticipo(x) {
 
 function InicializarControles() {
 	getMaskForIntegerMax1000("#porc_interes");
+	$("#listaTipoAnticipo").trigger('focus');
+
+	const $div = $("#divInputs");
+	$div.find("input").on("keydown", function (e) {
+		if (e.key === "Enter") {
+			e.preventDefault();
+
+			const $campos = $div.find("select, input")
+				.filter(":visible:enabled");
+
+			const index = $campos.index(this);
+
+			if (index !== -1) {
+				if (index < $campos.length - 1) {
+					$campos.eq(index + 1).focus();
+				} else {
+					$div.find("#btnAgregar").focus();
+				}
+			}
+		}
+	});
 }
 
 function getMaskForMoneyType(selector) {
