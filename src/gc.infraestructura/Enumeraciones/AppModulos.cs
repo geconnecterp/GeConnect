@@ -32,6 +32,7 @@
 		SDC, // SALDO DE CUENTAS
 		FDI, // FLUJO DE INGRESOS
 		PDE, // PROYECCIÓN DE EGRESOS
+        ADE, // ANTICIPO DE EMPLEADOS
 	}
 
     public enum AppReportes

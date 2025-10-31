@@ -52,5 +52,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<FlujoDeIngresoDto> GetFlujoDeIngreso(BuscarFlujoDeIngresoRequest request, string token);
 		RespuestaGenerica<RespuestaDto> FinancieroAnticipoEmpleadoConfirma(CargaAnticipoEmpleadoRequest request, string token);
 		List<FinancieroTopeCtaDto> GetFinancieroTopePorCuenta(string cta_id, string token);
+		List<AnticipoDetalleDto> GetAnticipoDetalle(string an_compte, string token);
 	}
 }

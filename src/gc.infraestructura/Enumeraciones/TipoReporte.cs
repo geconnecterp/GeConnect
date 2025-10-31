@@ -47,6 +47,7 @@ namespace gc.infraestructura.Enumeraciones
 		R034_ProyeccionDeIngreso = 34,
 		R035_SaldoDeCuentas = 35,
 		R036_FlujoDeIngresos = 36,
-		R037_ProyeccionDeEgresos = 37
+		R037_ProyeccionDeEgresos = 37,
+		R039_AnticipoDeEmpleados = 39
 	}
 }

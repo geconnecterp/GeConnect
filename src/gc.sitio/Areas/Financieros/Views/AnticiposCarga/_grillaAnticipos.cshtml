@@ -21,6 +21,12 @@
 		padding-bottom: 0.25rem;
 		font-size: 0.75rem;
 	}
+
+	.alerta-importe {
+		color: #b30000 !important; /* rojo fuerte */
+		font-weight: bold !important;
+	}
+
 </style>
 <div class="table-responsive table-wrapper-500-full-width" id="containerGrillaAnticipos">
 	<table class="table table-bordered table-hover table-golden" id="tbListaAnticipos">
@@ -42,13 +48,17 @@
 				@foreach (var item in Model.GrillaAnticipos.ListaDatos)
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					<tr class="@clase" onclick="selectItemGrillaAnticipo(this);">
+					<tr class="@clase @(item.mostrar_alerta ? "alerta-fila" : "")"
+						title="El valor total supera el tope permitido"
+						onclick="selectItemGrillaAnticipo(this);">
 						<td class="@Model.GrillaAnticipos.ObtenerClase(item.cta_denominacion)">@Model.GrillaAnticipos.FormatearDato(item.cta_denominacion, FormatDato.Ninguno)</td>
 						<td class="@Model.GrillaAnticipos.ObtenerClase(item.cuotas)">@Model.GrillaAnticipos.FormatearDato(item.cuotas, FormatDato.Ninguno)</td>
 						<td class="@Model.GrillaAnticipos.ObtenerClase(item.importe)">@Model.GrillaAnticipos.FormatearDato(item.importe, FormatDato.Monto)</td>
 						<td class="@Model.GrillaAnticipos.ObtenerClase(item.intereses)">@Model.GrillaAnticipos.FormatearDato(item.intereses, FormatDato.Monto)</td>
 						<td class="@Model.GrillaAnticipos.ObtenerClase(item.valor_cuota)">@Model.GrillaAnticipos.FormatearDato(item.valor_cuota, FormatDato.Monto)</td>
-						<td class="@Model.GrillaAnticipos.ObtenerClase(item.valor_total)">@Model.GrillaAnticipos.FormatearDato(item.valor_total, FormatDato.Monto)</td>
+						<td class="@Model.GrillaAnticipos.ObtenerClase(item.valor_total) @(item.mostrar_alerta ? "alerta-importe" : "")">
+							@Model.GrillaAnticipos.FormatearDato(item.valor_total, FormatDato.Monto)
+						</td>
 						<td class="@Model.GrillaAnticipos.ObtenerClase(item.tope)">@Model.GrillaAnticipos.FormatearDato(item.tope, FormatDato.Monto)</td>
 						<td class="text-center align-middle">
 							<div class="d-flex justify-content-center gap-1">

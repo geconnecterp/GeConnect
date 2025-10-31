@@ -797,9 +797,11 @@ namespace gc.api.core.Servicios
 			{
 				new("@ant_id",request.ant_id),
 				new("@an_concepto",request.an_concepto),
-				new("@interes",request.interes),
-				new("@cta_id",request.cta_id),
-				new("@json_anticipos",request.json_anticipos),
+				new("@an_porc_interes",request.an_porc_interes),
+				new("@cta_id_prov",request.cta_id),
+				new("@json_an",request.json_anticipos),
+				new("@adm_id",request.adm_id),
+				new("@usu_id",request.usu_id),
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return listaTemp;
@@ -813,6 +815,17 @@ namespace gc.api.core.Servicios
 				new("@cta_id", cta_id),
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<FinancieroTopeCtaDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<AnticipoDetalleDto> GetAnticipoDetalle(string an_compte)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_AN_DETALLE;
+			var ps = new List<SqlParameter>()
+			{
+				new("@an_compte", an_compte),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<AnticipoDetalleDto>(sp, ps, true);
 			return listaTemp;
 		}
 	}

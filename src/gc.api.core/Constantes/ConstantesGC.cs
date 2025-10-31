@@ -195,8 +195,9 @@
 			public const string SP_F_REPO_FINAN_PROY = "SPGECO_F_Repo_Finan_Proy";
 			public const string SP_F_REPO_FINAN_SALDOS = "SPGECO_F_Repo_Finan_Saldos";
 			public const string SP_F_REPO_FINAN_FLUJO = "SPGECO_F_Repo_Finan_Flujo";
-			public const string SP_F_AN_CONFIRMA = "SPGECO_F_AN_Confirma";
+			public const string SP_F_AN_CONFIRMA = "SPGECO_F_AN_Confirmar";
 			public const string SP_F_OBTENER_TOPE_CTA = "SPGECO_F_Obtener_Topes_Cta";
+			public const string SP_F_AN_DETALLE = "SPGECO_F_AN_Detalle";
 			#endregion
 
 			#region SP Depositos

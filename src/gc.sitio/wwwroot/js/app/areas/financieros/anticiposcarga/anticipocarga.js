@@ -4,7 +4,8 @@
 	$(document).on("click", "#btnAgregar", AbrirModalAgregarAnticipo);
 	$(document).on("click", "#btnConfirmar", AgregarAnticipo);
 	$(document).on("click", "#btnSalir", CerrarModal);
-	//
+	$(document).on("click", "#btnConfirmarCargaDeAnticipo", ConfirmarAnticipos);
+	$(document).on("click", "#btnCancelar", CancelarAnticipos);
 
 	$(document).on("keydown.autocomplete", "input#Rel01", function () {
 		$(this).autocomplete({
@@ -35,7 +36,171 @@
 			}
 		});
 	});
+
+	let valorOriginal = null;
+	$("#porc_interes").on("focus", function () {
+		valorOriginal = $(this).val();
+	});
+	$("#porc_interes").on("blur", function () {
+		const valorActual = $(this).val();
+		const filas = $("#tbListaAnticipos tbody tr").length;
+		if (valorActual !== valorOriginal && filas > 0) {
+			console.log("El valor de % Interés ha cambiado:", valorOriginal, "→", valorActual);
+			$(this).trigger("valorInteresModificado", [valorOriginal, valorActual]);
+		}
+	});
+	$("#porc_interes").on("valorInteresModificado", function (e, anterior, nuevo) {
+		console.log("Cambio detectado:", anterior, "→", nuevo);
+		valorInteresModificado(nuevo);
+	});
+
 });
+
+function valorInteresModificado(nuevo_interes) {
+	AbrirWaiting();
+	var data = { nuevo_interes };
+	PostGen(data, actualizarInteresDeAnticiposUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			setTimeout(() => {
+				ActualizarListaDeAnticipos();
+			}, 500);
+		}
+	});
+}
+
+function CancelarAnticipos() {
+	var filas = $("#tbListaAnticipos tbody tr").length;
+	if (filas > 0) {
+		AbrirMensaje("ATENCIÓN", "¿Esta seguro que desea cancelar la carga de anticipos? Se eliminarán todos los anticipos cargados.", function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI":
+					handlerCancelarAnticipos();
+					break;
+				case "NO":
+					break;
+				default: //NO
+					break;
+			}
+			return true;
+
+		}, true, ["Aceptar", "Cancelar"], "question!", null);
+
+	}
+}
+
+function handlerCancelarAnticipos() {
+	AbrirWaiting();
+	PostGen({}, cancelarAnticiposUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			setTimeout(() => {
+				$('#modalCargaDeAnticipo').modal('hide');
+				$("#listaTipoAnticipo").val("");
+				$("#Concepto").val("");
+				$("#porc_interes").val("0");
+				$("#Rel01").val("");
+				ActualizarListaDeAnticipos();
+			}, 500);
+		}
+	});
+}
+
+function ConfirmarAnticipos() {
+	var filas = $("#tbListaAnticipos tbody tr").length;
+	if (filas > 0) {
+		AbrirMensaje("ATENCIÓN", "¿Esta seguro que desea confirmar la carga de anticipos?", function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI":
+					handlerConfirmarCargaDeAnticipos();
+					break;
+				case "NO":
+					break;
+				default: //NO
+					break;
+			}
+			return true;
+
+		}, true, ["Aceptar", "Cancelar"], "question!", null);
+
+	}
+	else {
+		AbrirMensaje("ATENCIÓN", "No se han cargado registros de anticipos de empleados.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+}
+
+function handlerConfirmarCargaDeAnticipos() {
+	var ant_id = $("#listaTipoAnticipo").val(); 
+	var an_concepto = $("#Concepto").val();
+	var an_porc_interes = $("#porc_interes").inputmask('unmaskedvalue');
+	var cta_id = ctaIdSelected;
+	var data = { ant_id, an_concepto, an_porc_interes, cta_id };
+	PostGen(data, confirmarCargaDeAnticipoUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			console.log(obj.id);
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				console.log(obj.id); //Tomar este valor para imprimir.
+				ImprimirAnticipo_Generado(obj.id, ctaIdSelected);
+				handlerCancelarAnticipos();
+				return true;
+			}, false, ["Aceptar"], "succ!", null);
+		}
+	});
+}
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
+function ImprimirAnticipo_Generado(id, cta_id) {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		let data = { id, ctaId: cta_id };
+		cargarReporteEnArre(39, data, "ANTICIPO DE EMPLEADOS", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+//############ COMENTAR AL FINALIZAR ############
+// Botón de imprimir
+$(document).on("click", ".btnImprimir", function () {
+	imprimirOPP();
+});
+
+$("#btnImprimirTemp").on("click", function () {
+	ImprimirAnticipo_Generado("00-00006214", "C0030000");
+});
+
+function imprimirOPP() {
+	// Invocar gestor documental
+	invocacionGestorDoc({});
+}
+//############ COMENTAR AL FINALIZAR ############
 
 function AgregarAnticipo() {
 	AbrirWaiting();
@@ -77,30 +242,40 @@ function ActualizarListaDeAnticipos() {
 }
 
 function AbrirModalAgregarAnticipo() {
-	AbrirWaiting();
+	
 	var intereses = $("#porc_interes").inputmask('unmaskedvalue');
-	var cta_id = ctaIdSelected;
-	var cta_desc = ctaDescSelected;
-	var data = { intereses, cta_id, cta_desc };
-	PostGenHtml(data, abrirModalAgregarAnticipoUrl, function (obj) {
-		$("#divCargaDeAnticipo").html(obj);
-		const $modal = $("#modalCargaDeAnticipo");
+	if (intereses <= 0) {
+		AbrirMensaje("ATENCIÓN", "Debe establecer un valor para Intereses.", function () {
+			$("#msjModal").modal("hide");
+			$("#porc_interes").trigger('focus');
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting();
+		var cta_id = ctaIdSelected;
+		var cta_desc = ctaDescSelected;
+		var data = { intereses, cta_id, cta_desc };
+		PostGenHtml(data, abrirModalAgregarAnticipoUrl, function (obj) {
+			$("#divCargaDeAnticipo").html(obj);
+			const $modal = $("#modalCargaDeAnticipo");
 
-		$modal.modal({
-			backdrop: 'static',
+			$modal.modal({
+				backdrop: 'static',
+			});
+
+			inicializarCamposEnModal();
+
+			$modal.modal('show');
+			CerrarWaiting();
+
+			setTimeout(() => {
+				$("#Rel02").trigger('focus');
+			}, 100);
+
+			return true
 		});
-
-		inicializarCamposEnModal();
-
-		$modal.modal('show');
-		CerrarWaiting();
-
-		setTimeout(() => {
-			$("#Rel02").trigger('focus');
-		}, 100);
-
-		return true
-	});
+	}
 }
 
 function inicializarCamposEnModal() {
@@ -144,28 +319,6 @@ function inicializarCamposEnModal() {
 		$("#btnConfirmar")
 	];
 
-	//$ordenFoco.forEach((el, index) => {
-	//	el.off("keydown.enterNav").on("keydown.enterNav", function (e) {
-	//		if (e.key === "Enter") {
-	//			e.preventDefault();
-	//			e.stopImmediatePropagation();
-
-	//			const siguiente = $ordenFoco[index + 1];
-
-	//			if (siguiente && siguiente.length && siguiente.is(":visible") && !siguiente.is(":disabled")) {
-	//				setTimeout(() => {
-	//					siguiente.focus();
-	//				}, 10); // ⏱️ Pequeño delay para asegurar render
-	//			} else {
-	//				// Foco forzado al botón si no se detecta siguiente
-	//				setTimeout(() => {
-	//					$("#btnConfirmar").focus();
-	//				}, 10);
-	//			}
-	//		}
-	//	});
-	//});
-
 	$("#importe").off("keydown.enterDirect").on("keydown.enterDirect", function (e) {
 		if (e.key === "Enter") {
 			e.preventDefault();
@@ -175,8 +328,6 @@ function inicializarCamposEnModal() {
 			$("#btnConfirmar").trigger('focus');
 		}
 	});
-
-
 
 	// 🔘 Enter en botón dispara acción
 	$("#btnConfirmar").off("keydown.enterClick").on("keydown.enterClick", function (e) {

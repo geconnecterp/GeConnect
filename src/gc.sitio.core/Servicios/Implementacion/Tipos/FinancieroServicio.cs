@@ -64,6 +64,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string ObtenerFlujoDeIngreso = "/GetFlujoDeIngreso";
 		private const string SetFinancieroAnticipoEmpleadoConfirma = "/FinancieroAnticipoEmpleadoConfirma";
 		private const string ObtenerFinancieroTopePorCuenta = "/GetFinancieroTopePorCuenta";
+		private const string ObtenerAnticipoDetalle = "/GetAnticipoDetalle";
 
 		private readonly AppSettings _appSettings;
 		public FinancieroServicio(IOptions<AppSettings> options, ILogger<AdministracionServicio> logger) : base(options, logger)
@@ -1395,6 +1396,43 @@ namespace gc.sitio.core.Servicios.Implementacion
 						return [];
 					}
 					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<FinancieroTopeCtaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+					return apiResponse.Data;
+				}
+				else
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+					return [];
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogWarning($"Algo no fue bien. Error interno {ex.Message}");
+				return [];
+			}
+		}
+
+		public List<AnticipoDetalleDto> GetAnticipoDetalle(string an_compte, string token)
+		{
+			try
+			{
+				ApiResponse<List<AnticipoDetalleDto>> apiResponse;
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerAnticipoDetalle}?an_compte={an_compte}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						_logger.LogWarning($"La API no devolvió dato alguno. Sin parámetros de busqueda");
+						return [];
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AnticipoDetalleDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 					return apiResponse.Data;
 				}
 				else

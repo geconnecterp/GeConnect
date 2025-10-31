@@ -2,8 +2,33 @@
 @{
 	Layout = "~/views/shared/_Layout.cshtml";
 }
+@section styles {
+	<link rel="stylesheet" href="~/css/simplePagination.css" />
+	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+}
+@* <style>
+
+	.alerta-fila {
+		background-color: #ffe6e6 !important; /* rojo claro */
+	}
+
+		.alerta-fila:hover {
+			background-color: #ffcccc !important; /* más intenso al pasar el mouse */
+		}
+</style> *@
 <div class="container mt-2" id="divAnticiposDeGastos">
 	<div class="mx-auto" style="max-width: 1300px;">
+		<div class="collapse col-md-2">
+			<div class="d-flex justify-content-sm-end">
+				<!-- Botón Imprimir -->
+				<button type="button" class="btn btn-golden btn-sm mt-1 me-1 btnImprimir" title="Imprimir">
+					<i class="bx bx-printer"></i>
+				</button>
+				<button type="button" class="btn btn-golden btn-sm mt-1 me-1 btnImprimir" id="btnImprimirTemp" title="Imprimir Temporal">
+					<i class="bx bx-printer"></i>
+				</button>
+			</div>
+		</div>
 		<div class="row align-items-center mb-2">
 			<div class="col-12">
 				<div class="input-group input-group-sm" id="divInputs">
@@ -19,7 +44,7 @@
 					<button type="button" class="btn btn-primary btn-icon-compact ms-1" id="btnAgregar">
 						<i class="bx bx-plus-circle"></i>
 					</button>
-					<button type="button" class="btn btn-success btn-sm ms-4" id="btnConfirmar">
+					<button type="button" class="btn btn-success btn-sm ms-4" id="btnConfirmarCargaDeAnticipo">
 						<i class="bx bx-badge-check"></i> Confirmar
 					</button>
 					<button type="button" class="btn btn-danger btn-sm ms-1" id="btnCancelar">
@@ -57,6 +82,9 @@
 		var actualizarListaDeAnticiposUrl = "@Url.Action("ActualizarListaDeAnticipos", "anticiposcarga", new { area = "Financieros" })";
 		var agregarAnticipoUrl = "@Url.Action("AgregarAnticipo", "anticiposcarga", new { area = "Financieros" })";
 		var eliminarItemAnticipoUrl = "@Url.Action("EliminarItemAnticipo", "anticiposcarga", new { area = "Financieros" })";
+		var cancelarAnticiposUrl = "@Url.Action("CancelarAnticipos", "anticiposcarga", new { area = "Financieros" })";
+		var confirmarCargaDeAnticipoUrl = "@Url.Action("ConfirmarCargaDeAnticipo", "anticiposcarga", new { area = "Financieros" })";
+		var actualizarInteresDeAnticiposUrl = "@Url.Action("ActualizarInteresDeAnticipos", "anticiposcarga", new { area = "Financieros" })";
 
 		/* Gestor de impresión*/
 		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';

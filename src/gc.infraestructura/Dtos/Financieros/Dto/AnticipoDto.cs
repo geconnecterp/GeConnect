@@ -12,5 +12,7 @@ namespace gc.infraestructura.Dtos.Financieros
 		public decimal valor_cuota { get; set; } = 0.00M;
 		public decimal valor_total { get; set; } = 0.00M;
 		public decimal tope { get; set; } = 0.00M;
+		public decimal tope_original { get; set; } = 0.00M;
+		public bool mostrar_alerta { get; set; } = false; //true si sobre pasa el tope establecido
 	}
 }

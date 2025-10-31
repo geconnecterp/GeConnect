@@ -129,6 +129,7 @@ using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Consultas.ReporteFinanciero;
 using gc.infraestructura.Dtos.DocManager;
 using gc.infraestructura.Dtos.Financieros;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
@@ -136,6 +137,7 @@ using iTextSharp.text.pdf.draw;
 using Microsoft.Win32;
 using System.ComponentModel;
 using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 
 
@@ -578,7 +580,7 @@ namespace gc.infraestructura.Helpers
 			{
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_LEFT,
-				VerticalAlignment = Element.ALIGN_BOTTOM
+				VerticalAlignment = Element.ALIGN_MIDDLE
 			};
 			return celdaLogo;
 		}
@@ -2660,6 +2662,276 @@ namespace gc.infraestructura.Helpers
 			pdf.AddCell(celdaSeparador);
 			pdf.AddCell(celdaValor);
 		}
+
+		public static void CargarAnticiposDeEmpleados(Document pdf, List<AnticipoDetalleDto> lista, Font fuenteEtiqueta, Font fuenteValor, EmpresaGeco _empresaGeco, ReporteSolicitudDto solicitud)
+		{
+			var logo = HelperPdf.CargaLogo(solicitud.LogoPath, 20, pdf.PageSize.Height - 10, 20);
+			var linea = new LineSeparator(0.5f, 100f, BaseColor.Black, Element.ALIGN_CENTER, -2);
+			for (int i = 0; i < lista.Count; i += 2)
+			{
+				if (i > 0) pdf.NewPage();
+
+				solicitud.Titulo = $"Vale anticipo N° : {lista[i].an_compte}";
+				solicitud.SubTitulo = $"Fecha : {lista[i].an_fecha.ToString("dd/MM/yyyy")}";
+				
+				pdf.Add(GeneraCabeceraPDF2(solicitud, HelperPdf.FontChicoPredeterminado(), HelperPdf.FontTituloPredeterminado(), logo, _empresaGeco));
+				
+				AgregarAnticipo(pdf, lista[i], fuenteEtiqueta, fuenteValor);
+
+				pdf.Add(new Paragraph(" ", fuenteValor));
+
+				if (i + 1 < lista.Count)
+				{
+					pdf.Add(new Paragraph(" "));
+					pdf.Add(new Paragraph(" "));
+					pdf.Add(new Paragraph(" "));
+					pdf.Add(new Paragraph(" "));
+
+					solicitud.Titulo = $"Vale anticipo N° : {lista[i + 1].an_compte}";
+					solicitud.SubTitulo = $"Fecha : {lista[i + 1].an_fecha.ToString("dd/MM/yyyy")}";
+					
+					pdf.Add(GeneraCabeceraPDF2(solicitud, HelperPdf.FontChicoPredeterminado(), HelperPdf.FontTituloPredeterminado(), logo, _empresaGeco));
+					
+					AgregarAnticipo(pdf, lista[i + 1], fuenteEtiqueta, fuenteValor);
+				}
+			}
+
+		}
+
+		private static PdfPTable GeneraCabeceraPDF2(ReporteSolicitudDto solicitud, Font chico, Font titulo, Image? logo, EmpresaGeco _empresaGeco)
+		{
+			PdfPTable contenedor = new PdfPTable(1)
+			{
+				WidthPercentage = 100
+			};
+
+			PdfPTable tabla = HelperPdf.GeneraTabla(3, [10f, 30f, 50f], 100, 10, 20);
+
+			// Columna 1: Logo
+			PdfPCell celdaLogo;
+			if (logo == null)
+			{
+				celdaLogo = new PdfPCell(new Paragraph("CA", titulo));
+			}
+			else
+			{
+				celdaLogo = HelperPdf.GeneraCelda(logo, false);
+			}
+			tabla.AddCell(celdaLogo);
+
+			// Columna 2: Datos apilados y título
+			PdfPTable subTabla = new(1)
+			{
+				WidthPercentage = 100
+			};
+
+			// Datos apilados
+			subTabla.AddCell(HelperPdf.CrearCeldaTexto(_empresaGeco.Nombre, chico));
+			subTabla.AddCell(HelperPdf.CrearCeldaTexto($"{_empresaGeco.Responsabilidad} Ini.Act:{_empresaGeco.InicioActividades.ToShortDateString()}", chico));
+			subTabla.AddCell(HelperPdf.CrearCeldaTexto($"CUIT: {_empresaGeco.CUIT} IB:{_empresaGeco.IngresosBrutos}", chico));
+			subTabla.AddCell(HelperPdf.CrearCeldaTexto($"{_empresaGeco.Direccion}, {_empresaGeco.Localidad}", chico));
+
+			PdfPCell celdaSubTabla = new(subTabla)
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				VerticalAlignment = Element.ALIGN_MIDDLE
+			};
+			tabla.AddCell(celdaSubTabla);
+
+			// Columna 3: Título del informe
+			PdfPCell celdaTitulo = new PdfPCell(new Phrase(solicitud.Titulo, titulo))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				PaddingTop = 2f
+			};
+			PdfPCell celdaSubTitulo = new();
+			if (!string.IsNullOrEmpty(solicitud.SubTitulo))
+			{
+				// Título del informe
+				celdaSubTitulo = new PdfPCell(new Phrase(solicitud.SubTitulo, titulo))
+				{
+					Border = Rectangle.NO_BORDER,
+					HorizontalAlignment = Element.ALIGN_RIGHT,
+					VerticalAlignment = Element.ALIGN_MIDDLE,
+					PaddingTop = 10f
+				};
+			}
+			PdfPTable subTablaC3 = new(1);
+			subTablaC3.WidthPercentage = 100;
+			//subTablaC3.AddCell(HelperPdf.CrearCeldaTexto(string.Empty, chico));
+			subTablaC3.SpacingBefore = 0f;
+			subTablaC3.SpacingAfter = 0f;
+			subTablaC3.AddCell(celdaTitulo);
+			if (!string.IsNullOrEmpty(solicitud.SubTitulo))
+			{
+				subTablaC3.AddCell(HelperPdf.CrearCeldaTexto(string.Empty, chico));
+				subTablaC3.AddCell(celdaSubTitulo);
+			}
+
+			PdfPCell celdaSubTablaC3 = new PdfPCell(subTablaC3)
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				VerticalAlignment = Element.ALIGN_MIDDLE
+			};
+			tabla.AddCell(celdaSubTablaC3);
+
+			PdfPCell celdaContenedora = new PdfPCell(tabla)
+			{
+				Border = Rectangle.TOP_BORDER | Rectangle.BOTTOM_BORDER,
+				BorderWidthTop = 0.8f,
+				BorderWidthBottom = 0.8f,
+				BorderColorTop = BaseColor.Black,
+				BorderColorBottom = BaseColor.Black,
+				PaddingTop = 1f,
+				PaddingBottom = 1f
+			};
+			contenedor.AddCell(celdaContenedora);
+
+			return contenedor;
+		}
+
+		private static void AgregarAnticipo(Document doc, AnticipoDetalleDto dto, Font fuenteEtiqueta, Font fuenteValor)
+		{
+			var tabla = new PdfPTable(1) { WidthPercentage = 100 };
+			var fuenteSubtitulo = HelperPdf.FontSubtituloPredeterminado();
+			var fuenteTitulo = HelperPdf.FontTituloPredeterminado();
+
+			tabla.AddCell(Celda("Vale Anticipo / Descuento Personal", fuenteTitulo, Element.ALIGN_CENTER));
+			tabla.AddCell(Celda(" ", fuenteValor));
+			tabla.AddCell(Celda($"          Concepto: {dto.ant_desc.ToUpper()}         {dto.an_concepto.ToUpper()}", fuenteTitulo));
+			tabla.AddCell(Celda($"          Beneficiario: {dto.cta_denominacion.ToUpper()}                Legajo N°: {dto.cta_emp_legajo}", fuenteTitulo));
+			tabla.AddCell(Celda($"          Vale por la cantidad de $ {dto.cv_importe:N2}.- (Pesos — {ConvertirImporteEnTexto(dto.cv_importe)})", fuenteTitulo));
+			tabla.AddCell(Celda(" ", fuenteValor));
+			tabla.AddCell(Celda(" ", fuenteValor));
+			tabla.AddCell(Celda($"          {dto.cv_concepto}", fuenteTitulo));
+			tabla.AddCell(Celda(" ", fuenteValor));
+			tabla.AddCell(Celda(" ", fuenteValor));
+			tabla.AddCell(Celda(" ", fuenteValor));
+			// 🖊️ Bloque de firma con línea y texto centrado
+			float anchoFirma = 120f; // mm
+			PdfPTable tablaFirma = new PdfPTable(1)
+			{
+				TotalWidth = anchoFirma,
+				LockedWidth = true,
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				SpacingBefore = 10f,
+				SpacingAfter = 5f
+			};
+
+			// Línea para firma
+			var celdaLinea = new PdfPCell(new Phrase(" ", fuenteValor))
+			{
+				Border = Rectangle.BOTTOM_BORDER,
+				BorderWidthBottom = 0.8f,
+				FixedHeight = 18f,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				PaddingBottom = 2f
+			};
+			tablaFirma.AddCell(celdaLinea);
+
+			// Texto debajo de la línea
+			var celdaTexto = new PdfPCell(new Phrase("Recibí Conforme", fuenteValor))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				PaddingTop = 2f
+			};
+			tablaFirma.AddCell(celdaTexto);
+
+			// Agregar tabla de firma como celda dentro de tabla principal
+			var celdaContenedoraFirma = new PdfPCell(tablaFirma)
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_RIGHT
+			};
+			tabla.AddCell(celdaContenedoraFirma);
+
+			// Pie de impresión
+			tabla.AddCell(Celda($"Fecha de impresión: {DateTime.Now:dd/MM/yyyy HH:mm}", fuenteValor, Element.ALIGN_LEFT));
+
+			doc.Add(tabla);
+		}
+
+		private static PdfPCell Celda(string texto, Font fuente, int alineacion = Element.ALIGN_LEFT)
+		{
+			return new PdfPCell(new Phrase(texto, fuente))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = alineacion,
+				PaddingBottom = 4f
+			};
+		}
+
+		private static string ConvertirImporteEnTexto(decimal importe)
+		{
+			int parteEntera = (int)Math.Floor(importe);
+			int parteDecimal = (int)((importe - parteEntera) * 100);
+			return $"{NumeroEnLetras(parteEntera)} con {parteDecimal:00}/100";
+		}
+
+		public static string NumeroEnLetras(int numero)
+		{
+			if (numero == 0) return "cero";
+
+			string[] unidades = { "", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve" };
+			string[] especiales = { "diez", "once", "doce", "trece", "catorce", "quince", "dieciséis", "diecisiete", "dieciocho", "diecinueve" };
+			string[] decenas = { "", "", "veinte", "treinta", "cuarenta", "cincuenta", "sesenta", "setenta", "ochenta", "noventa" };
+			string[] centenas = { "", "ciento", "doscientos", "trescientos", "cuatrocientos", "quinientos", "seiscientos", "setecientos", "ochocientos", "novecientos" };
+
+			StringBuilder resultado = new StringBuilder();
+
+			if (numero == 100) return "cien";
+
+			int millones = numero / 1000000;
+			int miles = (numero % 1000000) / 1000;
+			int resto = numero % 1000;
+
+			if (millones > 0)
+			{
+				if (millones == 1)
+					resultado.Append("un millón ");
+				else
+					resultado.Append($"{NumeroEnLetras(millones)} millones ");
+			}
+
+			if (miles > 0)
+			{
+				if (miles == 1)
+					resultado.Append("mil ");
+				else
+					resultado.Append($"{NumeroEnLetras(miles)} mil ");
+			}
+
+			if (resto > 0)
+			{
+				int centena = resto / 100;
+				int decena = (resto % 100) / 10;
+				int unidad = resto % 10;
+
+				if (centena > 0)
+					resultado.Append($"{centenas[centena]} ");
+
+				int dosDigitos = resto % 100;
+
+				if (dosDigitos < 10)
+					resultado.Append(unidades[unidad]);
+				else if (dosDigitos < 20)
+					resultado.Append(especiales[dosDigitos - 10]);
+				else
+				{
+					resultado.Append(decenas[decena]);
+					if (unidad > 0)
+						resultado.Append($" y {unidades[unidad]}");
+				}
+			}
+
+			return resultado.ToString().Trim();
+		}
+
 
 		private static string GenerarSeparadorPunteado(string etiqueta, string valor, int totalLongitud = 90)
 		{
