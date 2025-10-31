@@ -640,7 +640,9 @@ function agregarProductosSeleccionadosAOfertas() {
         mensaje,
         function (resp) {
             if (resp === "SI") {
-                if ((busquedaDestinoTipo === "combos" || busquedaDestinoTipo === "sustitutos") && 
+                if ((busquedaDestinoTipo === "combos" ||
+                    busquedaDestinoTipo === "sustitutos" ||
+                    busquedaDestinoTipo === "presupuestos") &&
                     typeof busquedaDestinoCallback === 'function') {
                     procesarAgregarProductosCustom();
                 } else {

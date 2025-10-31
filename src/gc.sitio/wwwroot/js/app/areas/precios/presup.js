@@ -30,6 +30,7 @@ function InicializaPantallaPresupuesto() {
 
     // Etiquetas de filtros
     $("#lbChkDesdeHasta").text("Periodo");
+    $("#lbRel011").text("Cliente"); // Rel011
     $("#divLs01 div.input-group.input-group-sm span").text("Cliente"); // Rel01
     $("#divLs02 div.input-group.input-group-sm span").text("Usuario"); // Rel02 (opcional)
     $("#divLs03 div.input-group.input-group-sm span").text("Estado");  // Rel03
@@ -58,22 +59,37 @@ function initPeriodoFechas() {
 }
 
 function cancelarOperacion(e) {
-    //// Ocultar formulario
-    //$("#divPresDatos").hide();
-    //$("#divPresProds").hide();
+    console.log('🔄 Cancelando operación de presupuesto...');
 
-    //// Desactivar modos de edición
-    //modoNuevoPresup = false;
-    //modoModificacionCombo = false;
+    // ✅ PASO 1: Resetear modos de edición
+    modoNuevoPresup = false;
+    modoModificacionPresup = false;
+    campoEnEdicionPresup = null;
+    _presupOriginal = null;
 
+    // ✅ PASO 2: Ocultar divs de datos y productos
+    $("#divPresDatos, #divPresProds").hide().empty();
+    $("#divDetalle").collapse("hide");
 
-    //// Restaurar estado de los botones
-    //$("#btnAbmNuevo").prop("disabled", false);
-    //$("#btnAbmAceptar").prop("disabled", true);
-    //$("#btnAbmModif").prop("disabled", true); // Deshabilitar botón modificar también
+    // ✅ PASO 3: Mostrar panel de filtros
+    $("#divFiltro").collapse("show");
 
-    // Si existe un homePresup y necesitamos redirigir
-    if (e && $("#btnAbmCancelar").is(e.target) && typeof homePresup !== 'undefined') {
+    // ✅ PASO 4: Restaurar botones ABM a estado inicial
+    $("#btnAbmNuevo").prop("disabled", false);
+    $("#btnAbmModif, #btnAbmElimi").prop("disabled", true);
+    $("#btnAbmAceptar, #btnAbmCancelar").prop("disabled", true).hide();
+
+    // ✅ PASO 5: Deshabilitar botón de agregar productos
+    $("#btnAgregarCProducto").prop("disabled", true);
+
+    // ✅ PASO 6: Limpiar selección de filas en el grid de búsqueda
+    $("#tbGridPresupuesto tbody tr").removeClass("selected-row selectedEdit-row");
+
+    console.log('✅ Operación cancelada - Vista reinicializada');
+
+    // ✅ PASO 7: Redirección si es necesario
+    if (e && $(e.target).is("#btnAbmCancelar") && typeof homePresup !== 'undefined') {
+        console.log('🔀 Redirigiendo a:', homePresup);
         window.location.href = homePresup;
     }
 }
@@ -86,7 +102,7 @@ function InicializaEventosPresupuesto() {
     });
 
     //check generico REL01 activando componentes disables
-    $("#chkRel011").on("change", function () { // ✅ Usar 'change' en lugar de 'click'
+    $("#chkRel011").on("change", function () {
         const isChecked = $(this).is(":checked");
         
         if (isChecked) {
@@ -98,14 +114,12 @@ function InicializaEventosPresupuesto() {
                 inicializarAutocompleteRel011();
             }
             
-            // Poner foco después de un pequeño delay
             setTimeout(() => $("#Rel011").trigger("focus"), 50);
         } else {
             $("#Rel011").prop("disabled", true).val("");
             $("#Rel011List").prop("disabled", true).empty();
             $("#Rel011Item").val("");
             
-            // ✅ DESTRUIR INSTANCIA DE AUTOCOMPLETE si existe
             if ($("#Rel011").hasClass("ui-autocomplete-input")) {
                 $("#Rel011").autocomplete("destroy");
             }
@@ -118,7 +132,7 @@ function InicializaEventosPresupuesto() {
 
         if (isChecked) {
             $("#Rel022").prop("disabled", false);
-            $("#Rel02List").prop("disabled", false);
+            $("#Rel022List").prop("disabled", false);
 
             // ✅ INICIALIZAR AUTOCOMPLETE SOLO UNA VEZ
             if (!$("#Rel022").hasClass("ui-autocomplete-input")) {
@@ -150,7 +164,7 @@ function InicializaEventosPresupuesto() {
     });
 
     // Limpieza rápida
-    $("#Rel011, #Rel02").on("click", function () { $(this).val(""); });
+    $("#Rel011, #Rel022").on("click", function () { $(this).val(""); });
 
     // Buscar
     $("#btnBuscar").on("click", function () {
@@ -162,25 +176,23 @@ function InicializaEventosPresupuesto() {
     $("#Rel011List").off("dblclick.removeOption").on("dblclick.removeOption", "option", function(e) {
         e.stopPropagation();
         $(this).remove();
-        // Actualizar plugin si existe
         const $list = $("#Rel011List");
         if ($.fn.selectpicker && $list.hasClass("selectpicker")) {
             $list.selectpicker("refresh");
         }
     });
 
-    // ✅ NUEVO: Eliminar opción de Rel02List con doble click (si es necesario)
+    // ✅ NUEVO: Eliminar opción de Rel02List con doble click
     $("#Rel022List").off("dblclick.removeOption").on("dblclick.removeOption", "option", function(e) {
         e.stopPropagation();
         $(this).remove();
-        // Actualizar plugin si existe
         const $list = $("#Rel022List");
         if ($.fn.selectpicker && $list.hasClass("selectpicker")) {
             $list.selectpicker("refresh");
         }
     });
 
-    // Rel03: mover selección a Rel03List y reinicializar combo (SIN recursión)
+    // Rel03: mover selección a Rel03List y reinicializar combo
     const $rel03 = $("#Rel03");
     const $rel03List = $("#Rel03List");
     
@@ -191,7 +203,6 @@ function InicializaEventosPresupuesto() {
         if (vals == null) return;
         if (!Array.isArray(vals)) vals = [vals];
 
-        // Añadir cada valor seleccionado al listado (evitar duplicados)
         for (let i = 0; i < vals.length; i++) {
             const v = String(vals[i] ?? "").trim();
             if (!v) continue;
@@ -200,7 +211,6 @@ function InicializaEventosPresupuesto() {
             appendIfMissingOption($rel03List, v, txt);
         }
 
-        // Reinicializar combo SIN disparar change (evita recursión)
         resetComboSilent($rel03);
     });
 
@@ -208,7 +218,6 @@ function InicializaEventosPresupuesto() {
     $("#Rel03List").off("dblclick.removeOption").on("dblclick.removeOption", "option", function(e) {
         e.stopPropagation();
         $(this).remove();
-        // Actualizar plugin si existe
         const $list = $("#Rel03List");
         if ($.fn.selectpicker && $list.hasClass("selectpicker")) {
             $list.selectpicker("refresh");
@@ -217,17 +226,14 @@ function InicializaEventosPresupuesto() {
 
     // Evento delegado para el botón de agregar producto
     $(document).on("click", "#btnAgregarCProducto", function () {
-        // Cargar el modal si no existe y luego mostrarlo
         if ($("#busquedaModal").length === 0) {
             cargarModalBusquedaAvanzada(function () {
-                // Configurar el destino como "combos" y definir el callback
                 if (typeof configurarDestinoBusquedaProductos === 'function') {
                     configurarDestinoBusquedaProductos("presupuestos", agregarProductosAlGrid, obtenerProductosExistentesIds);
                 }
                 $("#busquedaModal").modal("show");
             });
         } else {
-            // Si ya existe, configurar destino y mostrar
             if (typeof configurarDestinoBusquedaProductos === 'function') {
                 configurarDestinoBusquedaProductos("presupuestos", agregarProductosAlGrid, obtenerProductosExistentesIds);
             }
@@ -288,81 +294,59 @@ function InicializaEventosPresupuesto() {
             $("#divFiltro").collapse("hide");
         }
 
-        // Establecer modo nuevo
         modoNuevoPresup = true;
         modoModificacionPresup = false;
 
-        // Limpiar/Inicializar datos del formulario y productos
-        // 1) Cargar partial de datos mediante action NuevoPresupuesto
-        // Se asume que existe la variable nuevoPresupuestoUrl definida en la vista
         if (typeof nuevoPresupuestoUrl === 'undefined') {
             console.error('nuevoPresupuestoUrl no está definido.');
             return;
         }
 
         PostGenHtml({}, nuevoPresupuestoUrl, function (html) {
-            // Insertar partial de datos
             $('#divPresDatos').html(html).show();
 
-            // Hacer que los campos del formulario sean editables (nuevo)
             $('#divPresupuestoDatos').find('input:not([type=hidden]), textarea, select').each(function () {
                 const $el = $(this);
                 $el.prop('readonly', false).prop('disabled', false).removeClass('campo-readonly');
             });
 
-            // Poner foco en el primer campo editable (si existe)
             const $first = $('#divPresupuestoDatos').find('input:not([type=hidden]), textarea, select').filter(':visible').first();
             if ($first && $first.length) {
                 setTimeout(() => $first.trigger("focus"), 50);
             }
 
-            // 2) Inicializar grid de productos vacío
             $('#divPresProds').html(crearGridPresupVacioHtml()).show();
-
-            // Habilitar botones para agregar productos
-            $('#btnAgregarCProducto, #btnAgregarSustituto').prop('disabled', false);
-
-            // Habilitar Aceptar / Cancelar y deshabilitar Nuevo / Modif / Elimi
+            $('#btnAgregarCProducto').prop('disabled', false);
             $('#btnAbmAceptar').prop('disabled', false).show();
             $('#btnAbmCancelar').prop('disabled', false).show();
             $('#btnAbmModif, #btnAbmNuevo, #btnAbmElimi').prop('disabled', true);
 
-            // Aplicar estado readonly en campos del grid (no debe poderse editar hasta doble click en modo edición)
             aplicarReadonlyCamposPresup();
-
-            // Guardar estado original nulo para nuevo
             _presupOriginal = null;
 
-            console.log('Modo Nuevo Presupuesto activado. Partial de datos cargado y grid inicializado vacío.');
+            console.log('Modo Nuevo Presupuesto activado.');
         }, function (err) {
             console.error('Error al cargar NuevoPresupuesto:', err);
         });
     });
 
-    // ✅ NUEVO: Handler para Modificar Presupuesto
+    // Handler para Modificar Presupuesto
     $(document).on('click', '#btnAbmModif', function (e) {
         e.preventDefault();
 
         if ($(this).prop('disabled')) return;
 
-        // Establecer modo modificación
         modoNuevoPresup = false;
         modoModificacionPresup = true;
 
-        // Guardar estado original para restaurar en caso de cancelar
         _presupOriginal = capturarEstadoFormularioPresup();
-
-        // Habilitar campos editables del formulario (excepto los especificados)
         habilitarCamposFormularioPresup(true);
-
-        // Actualizar estado de botones ABM
+        $('#btnAgregarCProducto').prop('disabled', false);
         $('#btnAbmNuevo, #btnAbmModif, #btnAbmElimi').prop('disabled', true);
         $('#btnAbmAceptar, #btnAbmCancelar').prop('disabled', false).show();
 
-        // Los campos del grid se mantienen en readonly hasta doble click
         aplicarReadonlyCamposPresup();
 
-        // Poner foco en el primer campo editable
         const $primer = $('#divPresupuestoDatos').find('input:not([type=hidden]):not([readonly]), textarea:not([readonly]), select:not([disabled])').filter(':visible').first();
         if ($primer.length) {
             setTimeout(() => $primer.trigger("focus"), 50);
@@ -371,44 +355,53 @@ function InicializaEventosPresupuesto() {
         console.log('✅ Modo Modificación Presupuesto activado');
     });
 
-
-//especializo el codigo del autocompletar para que funcione con las variables actuales.
+    // Autocomplete especializado para Rel011
     $(document).on("keydown.autocomplete", "input#Rel011", function () {
         $(this).autocomplete({
             source: function (request, response) {
-
-                data = { prefix: request.term }; 
-
                 $.ajax({
                     url: autoComRel04Url,
                     type: "POST",
                     dataType: "json",
-                    data: data,
+                    data: { prefix: request.term },
                     success: function (obj) {
                         response($.map(obj, function (item) {
-                            var texto = item.descripcion;
-                            return { label: texto, value: item.descripcion, id: item.id, prov: item.provId, tipo: "P" };
+                            return {
+                                label: item.descripcion,
+                                value: item.descripcion,
+                                id: item.id,
+                                nombre: item.nombre || item.descripcion,
+                                domicilio: item.domicilio || ""
+                            };
                         }));
+                    },
+                    error: function() {
+                        response([]);
                     }
-                })
+                });
             },
             minLength: 3,
             select: function (event, ui) {
-                if ($("#Rel011List").has('option:contains("' + ui.item.id + '")').length === 0) {
+                const yaExiste = $("#Rel011List option[value='" + ui.item.id + "']").length > 0;
+                
+                if (!yaExiste) {
                     $("#Rel011Item").val(ui.item.id);
-                    var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
-                    $("#Rel011List").append(opc);
-
-                    consCta = ui.item.id;
-                    consRrss = ui.item.label;
-                    consTipo = ui.item.tipo;
+                    const opcion = $("<option></option>")
+                        .attr("value", ui.item.id)
+                        .text(ui.item.label);
+                    $("#Rel011List").append(opcion);
                 }
-                return true;
+                
+                setTimeout(() => $("#Rel011").val(""), 10);
+                return false;
+            },
+            focus: function() {
+                return false;
             }
         });
     });
 
-    //busqueda no gen de proveedores
+    // Autocomplete para cta_denominacion
     $(document).off("keydown.autocomplete").on("keydown.autocomplete", "input#cta_denominacion", function () {
         $(this).autocomplete({
             source: function (request, response) {
@@ -428,7 +421,6 @@ function InicializaEventosPresupuesto() {
             },
             minLength: 3,
             select: function (event, ui) {
-                
                 $("input#cta_id").val(ui.item.id);
                 $("input#pre_nombre").val(ui.item.nombre);
                 $("input#pre_domicilio").val(ui.item.domicilio);
@@ -437,9 +429,12 @@ function InicializaEventosPresupuesto() {
             }
         });
     });
-}
+} // ✅ CIERRE DE InicializaEventosPresupuesto
 
-// ✅ NUEVA: Capturar estado del formulario para poder restaurarlo
+// ============================================================================
+// FUNCIONES AUXILIARES PARA FORMULARIO
+// ============================================================================
+
 function capturarEstadoFormularioPresup() {
     const estado = {};
     $('#divPresupuestoDatos').find('input, textarea, select').each(function() {
@@ -452,7 +447,6 @@ function capturarEstadoFormularioPresup() {
     return estado;
 }
 
-// ✅ NUEVA: Restaurar estado del formulario
 function restaurarEstadoFormularioPresup(estado) {
     if (!estado) return;
     $.each(estado, function(nombre, valor) {
@@ -463,42 +457,29 @@ function restaurarEstadoFormularioPresup(estado) {
     });
 }
 
-// ✅ NUEVA: Habilitar/Deshabilitar campos del formulario según modo edición
 function habilitarCamposFormularioPresup(habilitar) {
-    // Campos que NUNCA se editan
     const camposNoEditables = [
-        'pre_id',           // ID del presupuesto
-        'pret_id',          // Tipo (combo)
-        'pree_id',          // Estado (combo)
-        'usu_id',           // Usuario ID
-        'usu_apellidoynombre', // Usuario nombre
-        'adm_id',           // Administración ID
-        'adm_nombre',       // Administración nombre
-        'tco_id',           // Tipo de comprobante
-        'cm_compte'         // Número de comprobante
+        'pre_id', 'pret_id', 'pree_id', 'usu_id', 'usu_apellidoynombre',
+        'adm_id', 'adm_nombre', 'tco_id', 'cm_compte'
     ];
 
     $('#divPresupuestoDatos').find('input:not([type=hidden]), textarea, select').each(function() {
         const $campo = $(this);
         const nombre = $campo.attr('name') || $campo.attr('id');
         
-        // Verificar si el campo está en la lista de no editables
         const esNoEditable = camposNoEditables.some(campo => 
             nombre === campo || nombre?.includes(campo)
         );
 
         if (esNoEditable) {
-            // Estos campos siempre readonly/disabled
             $campo.prop('readonly', true).prop('disabled', true).addClass('campo-readonly');
         } else if (habilitar) {
-            // Habilitar campo para edición
             if ($campo.is('select')) {
                 $campo.prop('disabled', false).removeClass('campo-readonly');
             } else {
                 $campo.prop('readonly', false).removeClass('campo-readonly');
             }
         } else {
-            // Deshabilitar campo
             if ($campo.is('select')) {
                 $campo.prop('disabled', true).addClass('campo-readonly');
             } else {
@@ -506,15 +487,15 @@ function habilitarCamposFormularioPresup(habilitar) {
             }
         }
     });
-
-    console.log(`✅ Campos del formulario ${habilitar ? 'habilitados' : 'deshabilitados'} para edición`);
 }
 
-// ✅ NUEVA: Activar edición de campo
+// ============================================================================
+// FUNCIONES DE EDICIÓN DE CAMPOS
+// ============================================================================
+
 function activarEdicionCampoPresup($campo) {
-    // Solo permitir edición si estamos en modo edición (nuevo o modificación)
     if (!estaEnModoEdicionPresup()) return;
-    if (campoEnEdicionPresup !== null) return; // Ya hay edición activa
+    if (campoEnEdicionPresup !== null) return;
 
     campoEnEdicionPresup = $campo[0];
     $campo.prop('readonly', false)
@@ -523,14 +504,12 @@ function activarEdicionCampoPresup($campo) {
           .select();
 }
 
-// ✅ NUEVA: Guardar campo y avanzar al siguiente
 function guardarYAvanzarCampoPresup($campo) {
     guardarCampoPresup($campo);
     
     const $fila = $campo.closest('tr');
     const esMargen = $campo.hasClass('input-pre_margen');
     
-    // Si es margen, ir a precio venta en misma fila
     if (esMargen) {
         const $siguiente = $fila.find('.input-pre_pvta');
         if ($siguiente.length) {
@@ -539,7 +518,6 @@ function guardarYAvanzarCampoPresup($campo) {
         }
     }
     
-    // Si es precio venta, ir a margen de siguiente fila
     const $siguienteFila = $fila.next('tr');
     if ($siguienteFila.length) {
         const $siguiente = $siguienteFila.find('.input-pre_margen');
@@ -549,24 +527,20 @@ function guardarYAvanzarCampoPresup($campo) {
     }
 }
 
-// ✅ NUEVA: Guardar cambios en campo
 function guardarCampoPresup($campo) {
     if ($campo.prop('readonly')) return;
 
     const $fila = $campo.closest('tr');
-    const pId = $fila.data('p-id');
     const esMargen = $campo.hasClass('input-pre_margen');
     
     const valorOriginal = parseFloat($campo.data('original-value')) || 0;
     const valorNuevo = parseFloat($campo.val().replace(/,/g, '')) || 0;
     
-    // Formatear valor
     $campo.val(valorNuevo.toFixed(2));
     $campo.prop('readonly', true).addClass('campo-readonly');
     
     campoEnEdicionPresup = null;
     
-    // Si cambió el valor, recalcular
     if (Math.abs(valorOriginal - valorNuevo) > 0.01) {
         if (esMargen) {
             recalcularPrecioDesdeMargen($fila, valorNuevo);
@@ -577,7 +551,6 @@ function guardarCampoPresup($campo) {
     }
 }
 
-// ✅ NUEVA: Recalcular total desde cambio de cantidad
 function recalcularTotalDesdeCantidad($campo) {
     if ($campo.prop('readonly')) return;
 
@@ -585,7 +558,6 @@ function recalcularTotalDesdeCantidad($campo) {
     const cantidadOriginal = parseFloat($campo.data('original-value')) || 0;
     const cantidadNueva = parseFloat($campo.val().replace(/,/g, '')) || 0;
 
-    // Validar cantidad positiva
     if (cantidadNueva <= 0) {
         $campo.val(cantidadOriginal.toFixed(2));
         AbrirMensaje("Advertencia",
@@ -595,13 +567,11 @@ function recalcularTotalDesdeCantidad($campo) {
         return;
     }
 
-    // Formatear y guardar
     $campo.val(cantidadNueva.toFixed(2));
     $campo.data('original-value', cantidadNueva);
     $campo.prop('readonly', true).addClass('campo-readonly');
     campoEnEdicionPresup = null;
 
-    // Recalcular total si cambió la cantidad
     if (Math.abs(cantidadOriginal - cantidadNueva) > 0.01) {
         const precioVenta = parseFloat($fila.find('.input-pre_pvta').val().replace(/,/g, '')) || 0;
         const nuevoTotal = precioVenta * cantidadNueva;
@@ -609,40 +579,26 @@ function recalcularTotalDesdeCantidad($campo) {
         actualizarTotalFila($fila, nuevoTotal);
         actualizarTotalGeneralPresup();
         marcarCampoModificadoPresup($campo);
-        
-        console.log(`✅ Cantidad ${cantidadNueva} → Total ${nuevoTotal.toFixed(2)}`);
     }
 }
 
-// ✅ NUEVA: Marcar campo como modificado visualmente
 function marcarCampoModificadoPresup($campo) {
     if (!$campo || !$campo.length) return;
-    
-    // Añadir clase temporal para feedback visual
     $campo.addClass('campo-modificado');
-    
-    // Remover clase después de animación
-    setTimeout(() => {
-        $campo.removeClass('campo-modificado');
-    }, 1500);
+    setTimeout(() => $campo.removeClass('campo-modificado'), 1500);
 }
 
-// ✅ NUEVA: Recalcular precio desde margen
 function recalcularPrecioDesdeMargen($fila, nuevoMargen) {
     const preCosto = parseFloat($fila.data('pre-costo')) || 0;
     const preCantidad = parseFloat($fila.find('.input-pre_cantidad').val().replace(/,/g, '')) || 1;
     
-    // Calcular precio neto: costo * (1 + margen/100)
     const preNeto = preCosto * (1 + nuevoMargen / 100);
     
-    // Obtener impuestos
     const ivaSituacion = $fila.data('iva-situacion') || 'E';
     const ivaAlicuota = parseFloat($fila.data('iva-alicuota')) || 0;
     const inAlicuota = parseFloat($fila.data('in-alicuota')) || 0;
     
-    // Calcular precio venta final
     let precioVenta = preNeto;
-    
     if (ivaSituacion === 'G') {
         precioVenta = preNeto * (1 + ivaAlicuota / 100);
     }
@@ -650,25 +606,17 @@ function recalcularPrecioDesdeMargen($fila, nuevoMargen) {
         precioVenta = precioVenta * (1 + inAlicuota / 100);
     }
     
-    // ✅ OPTIMIZADO: Calcular total en un solo paso
     const total = precioVenta * preCantidad;
     
-    // Actualizar campos
     const $campoPVta = $fila.find('.input-pre_pvta');
     $campoPVta.val(precioVenta.toFixed(3));
     $campoPVta.data('original-value', precioVenta);
     marcarCampoModificadoPresup($campoPVta);
     
-    // ✅ OPTIMIZADO: Actualizar total en una sola operación
     actualizarTotalFila($fila, total);
-    
-    // Actualizar total general
     actualizarTotalGeneralPresup();
-    
-    console.log(`✅ Margen ${nuevoMargen}% → Precio venta ${precioVenta.toFixed(3)} → Total ${total.toFixed(2)}`);
 }
 
-// ✅ NUEVA: Recalcular margen desde precio
 function recalcularMargenDesdePrecio($fila, nuevoPrecio) {
     const preCosto = parseFloat($fila.data('pre-costo')) || 0;
     const preCantidad = parseFloat($fila.find('.input-pre_cantidad').val().replace(/,/g, '')) || 1;
@@ -681,12 +629,10 @@ function recalcularMargenDesdePrecio($fila, nuevoPrecio) {
         return;
     }
     
-    // Obtener impuestos para calcular precio neto
     const ivaSituacion = $fila.data('iva-situacion') || 'E';
     const ivaAlicuota = parseFloat($fila.data('iva-alicuota')) || 0;
     const inAlicuota = parseFloat($fila.data('in-alicuota')) || 0;
     
-    // Calcular precio neto desde precio venta
     let preNeto = nuevoPrecio;
     if (inAlicuota > 0) {
         preNeto = preNeto / (1 + inAlicuota / 100);
@@ -695,71 +641,55 @@ function recalcularMargenDesdePrecio($fila, nuevoPrecio) {
         preNeto = preNeto / (1 + ivaAlicuota / 100);
     }
     
-    // Calcular margen: ((preNeto - costo) / costo) * 100
     const nuevoMargen = ((preNeto - preCosto) / preCosto) * 100;
     
-    // ✅ VALIDACIÓN: Margen no puede ser negativo
     if (nuevoMargen < 0) {
         const $campoPVta = $fila.find('.input-pre_pvta');
         const valorOriginal = parseFloat($campoPVta.data('original-value')) || 0;
         $campoPVta.val(valorOriginal.toFixed(3));
         
         AbrirMensaje("Advertencia", 
-            `El precio de venta ingresado (${nuevoPrecio.toFixed(3)}) genera un margen negativo (${nuevoMargen.toFixed(2)}%).<br><br>` +
-            `<strong>Costo:</strong> ${preCosto.toFixed(3)}<br>` +
-            `El margen debe ser mayor o igual a 0%.`,
+            `El precio de venta genera un margen negativo (${nuevoMargen.toFixed(2)}%).`,
             () => $("#msjModal").modal("hide"),
             false, ["Aceptar"], "warn!", null);
         return;
     }
     
-    // Actualizar margen
     const $campoMargen = $fila.find('.input-pre_margen');
     $campoMargen.val(nuevoMargen.toFixed(2));
     $campoMargen.data('original-value', nuevoMargen);
     marcarCampoModificadoPresup($campoMargen);
     
-    // ✅ OPTIMIZADO: Calcular y actualizar total
     const total = nuevoPrecio * preCantidad;
     actualizarTotalFila($fila, total);
-    
-    // Actualizar total general
     actualizarTotalGeneralPresup();
-    
-    console.log(`✅ Precio ${nuevoPrecio.toFixed(3)} → Margen ${nuevoMargen.toFixed(2)}% → Total ${total.toFixed(2)}`);
 }
 
-// ✅ NUEVA: Función unificada para actualizar total de fila
 function actualizarTotalFila($fila, total) {
     $fila.find('.td-total').text(total.toFixed(2));
 }
 
-// ✅ MEJORADA: Actualizar total general con performance optimizado
 function actualizarTotalGeneralPresup() {
     let totalGeneral = 0;
     
-    // ✅ OPTIMIZADO: Usar selector específico y evitar bucles innecesarios
     $('#tbGridPresupuestoProds tbody tr').each(function() {
         const $fila = $(this);
-        // Saltar filas de separador o sin datos
         if ($fila.find('td[colspan]').length > 0) return;
         
         const total = parseFloat($fila.find('.td-total').text().replace(/,/g, '')) || 0;
         totalGeneral += total;
     });
     
-    // ✅ OPTIMIZADO: Actualizar en una sola operación
     $('#tbGridPresupuestoProds tfoot .fw-bold:last').text(totalGeneral.toFixed(2));
-    
-    console.log(`📊 Total general actualizado: ${totalGeneral.toFixed(2)}`);
 }
 
-// -------------------------
-// Búsqueda y render de Grid
-// -------------------------
+// ============================================================================
+// BÚSQUEDA Y RENDER DE GRID
+// ============================================================================
+
 let _presuLoading = false;
 
-async function buscarPresupuestos(btn,pag=1) {
+async function buscarPresupuestos(btn, pag = 1) {
     if (_presuLoading) return;
     _presuLoading = true;
 
@@ -777,28 +707,23 @@ async function buscarPresupuestos(btn,pag=1) {
 
             configurarEventosSeleccionPres();
 
-            //armado de la paginacion
             PostGen({}, buscarMetadataURL, function (obj) {
                 if (obj.error === true) {
                     AbrirMensaje("ATENCIÓN", obj.msg, function () {
                         $("#msjModal").modal("hide");
                         return true;
                     }, false, ["Aceptar"], "error!", null);
-                }
-                else {
+                } else {
                     totalRegs = obj.metadata.totalCount;
                     pags = obj.metadata.totalPages;
                     pagRegs = obj.metadata.pageSize;
-
                     $("#pagEstado").val(true).trigger("change");
                 }
             });
         });
     } catch (e) {
         console.error("Error al buscar presupuestos:", e);
-        $("#divDetalle")
-            .html('<div class="alert alert-danger py-2 mb-0">No se pudo obtener la información. Intente nuevamente.</div>')
-            .collapse("show");
+        $("#divDetalle").html('<div class="alert alert-danger py-2 mb-0">No se pudo obtener la información.</div>').collapse("show");
     } finally {
         setBtnLoading($btn, false, originalHtml);
         _presuLoading = false;
@@ -808,21 +733,16 @@ async function buscarPresupuestos(btn,pag=1) {
 function configurarEventosSeleccionPres() {
     $(document).off("click", "#tbGridPresupuesto tbody tr");
     $(document).on("click", "#tbGridPresupuesto tbody tr", function (e) {
-        //al hacer click sobre elementos que sean distintos a los enumerados
-        //se marcará el registro
         if (!$(e.target).is("button, a, .btn, i")) {
             var $this = $(this);
             var fueSeleccionado = $this.hasClass("selected-row");
 
-            //se quita la clase de seleccion
             $("#tbGridPresupuesto tbody tr").removeClass("selected-row");
 
-            //seleccionadmos el registro
             if (!fueSeleccionado) {
                 $this.addClass("selected-row");
                 let preId = $this.data("pre-id");
                 if (preId) {
-                    //se cargará el detalle del presupuesto en el _presupuestoDatos
                     cargarPresupuestoDatos(preId);
                     cargarProductosPresupuesto(preId);
                 }
@@ -879,21 +799,19 @@ function cargarProductosPresupuesto(preId) {
     });
 }
 
-// -------------------------
-// Helpers
-// -------------------------
+// ============================================================================
+// HELPERS
+// ============================================================================
+
 function buildQueryFilters(pag) {
-    // Periodo
     const usaPeriodo = $("#chkDesdeHasta").is(":checked");
     const fechaD = usaPeriodo ? $("#Date1").val() : null;
     const fechaH = usaPeriodo ? $("#Date2").val() : null;
 
-    // Filtros relacionales con tipos correctos según QueryFilters
-    const rel01 = getValues("#Rel011List", false);         // List<string> - Clientes
-    const rel02 = getValues("#Rel02List", false);         // List<string> - Usuarios (opcional)
-    const rel03 = getValues("#Rel03List", true);          // List<ComboGenDto> - Estados
+    const rel01 = getValues("#Rel011List", false);
+    const rel02 = getValues("#Rel022List", false);
+    const rel03 = getValues("#Rel03List", true);
     
-    // Rel04: Administraciones (List<ComboGenDto>)
     let rel04Val = $("#Rel04").val();
     let rel04 = [];
     if (rel04Val) {
@@ -903,79 +821,47 @@ function buildQueryFilters(pag) {
         });        
     }
 
-    const filters = {
+    return {
         Registros: 200,
         Pagina: pag,
         FechaD: fechaD || null,
         FechaH: fechaH || null,
-        Rel01: rel01.length ? rel01 : null,               // List<string>
-        Rel02: rel02.length ? rel02 : null,               // List<string>
-        Rel03: rel03.length ? rel03 : null,               // List<ComboGenDto>
-        Rel04: rel04                                      // List<ComboGenDto>
+        Rel01: rel01.length ? rel01 : null,
+        Rel02: rel02.length ? rel02 : null,
+        Rel03: rel03.length ? rel03 : null,
+        Rel04: rel04
     };
-
-    // Debug: verificar qué está llegando
-    console.log("QueryFilters construido:", filters);
-    console.log("Rel011 (Clientes):", rel01);
-    console.log("Rel02 (Usuarios):", rel02);
-    console.log("Rel03 (Estados):", rel03);
-    console.log("Rel04 (Admins):", rel04);
-
-    return filters;
 }
 
-/**
- * Devuelve valores del control según el tipo esperado por QueryFilters:
- * - Para Rel01/Rel02: string[] simple
- * - Para Rel03/Rel04: { Id, Descripcion }[] (ComboGenDto)
- * @param {string|jQuery} src - Selector o elemento jQuery
- * @param {boolean} asComboDto - Si true, devuelve objetos ComboGenDto; si false, devuelve string[]
- * @returns {Array} string[] o ComboGenDto[]
- */
 function getValues(src, asComboDto = false) {
     const $el = typeof src === "string" ? $(src) : src;
-    if (!$el || !$el.length) {
-        console.warn(`getValues: No se encontró el elemento "${src}"`);
-        return [];
-    }
+    if (!$el || !$el.length) return [];
 
     let items = [];
 
-    // 1) Si es un select, extraer TODOS los option
     if ($el.is("select")) {
         items = $el.find("option").map((_, o) => ({
             value: o.value,
             text: o.text || o.value
         })).get();
-        
-        console.log(`getValues(${src}): Encontrados ${items.length} options en select`);
     } else {
-        // 2) Fallbacks para controles no-select
         const dataVals = $el.attr("data-values") ?? $el.data("values");
         if (Array.isArray(dataVals)) {
             items = dataVals.map(v => ({ value: String(v), text: String(v) }));
-            console.log(`getValues(${src}): Usando data-values array, ${items.length} items`);
         } else if (typeof dataVals === "string" && dataVals.trim()) {
             items = dataVals.split(",").map(v => ({ value: v.trim(), text: v.trim() }));
-            console.log(`getValues(${src}): Usando data-values CSV, ${items.length} items`);
         } else {
-            // 3) Hijos con data-id/value
             items = $el.find("[data-id],[value]").map((_, n) => {
                 const $n = $(n);
                 const id = $n.attr("data-id") ?? $n.attr("value");
                 const txt = $n.attr("data-text") ?? $n.text() ?? id;
                 return { value: id, text: txt };
             }).get();
-            console.log(`getValues(${src}): Usando hijos con data-id/value, ${items.length} items`);
         }
     }
 
-    if (!items || items.length === 0) {
-        console.warn(`getValues(${src}): No se encontraron valores`);
-        return [];
-    }
+    if (!items || items.length === 0) return [];
 
-    // Normalizar: trim, filtrar vacíos, deduplicar por value
     const seen = new Set();
     const out = [];
     for (let i = 0; i < items.length; i++) {
@@ -993,11 +879,9 @@ function getValues(src, asComboDto = false) {
         }
     }
     
-    console.log(`getValues(${src}, asComboDto=${asComboDto}): Devolviendo ${out.length} valores`, out);
     return out;
 }
 
-// Añade un option al select si no existe (sin disparar change para evitar recursión)
 function appendIfMissingOption($select, value, text) {
     if (!$select || !$select.length) return;
     const exists = $select.find("option").filter(function () { return this.value === value; }).length > 0;
@@ -1008,18 +892,14 @@ function appendIfMissingOption($select, value, text) {
         $select.find("option").filter(function () { return this.value === value; }).prop("selected", true);
     }
 
-    // Refrescar plugins sin disparar change
     if ($.fn.selectpicker && $select.hasClass("selectpicker")) {
         $select.selectpicker("refresh");
     }
-    // No llamar a .trigger("change") aquí para evitar recursión
 }
 
-// Vacía el valor del combo SIN disparar eventos (evita recursión infinita)
 function resetComboSilent($el) {
     if (!$el || !$el.length) return;
     
-    // Desactivar eventos temporalmente
     const handlers = $._data($el[0], "events");
     $el.off("change");
     
@@ -1031,13 +911,11 @@ function resetComboSilent($el) {
         $el.val("");
     }
     
-    // Restaurar eventos
     if (handlers && handlers.change) {
         handlers.change.forEach(h => $el.on("change", h.handler));
     }
 }
 
-// Vacía el valor visual del combo origen (soporta selectpicker/select2/plain) - CON eventos
 function resetCombo($el) {
     if (!$el || !$el.length) return;
     if ($.fn.selectpicker && $el.hasClass("selectpicker")) {
@@ -1049,7 +927,6 @@ function resetCombo($el) {
     }
 }
 
-// Escapa valores para selectores CSS cuando sea necesario
 function CSSSafe(v) {
     if (window.CSS && typeof window.CSS.escape === "function") {
         return CSS.escape(v);
@@ -1060,54 +937,44 @@ function CSSSafe(v) {
 function setBtnLoading($btn, loading, originalHtml) {
     if (!$btn || !$btn.length) return;
     if (loading) {
-        $btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Buscando...');
+        $btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm me-1"></span>Buscando...');
     } else {
         $btn.prop("disabled", false).html(originalHtml ?? "Buscar");
     }
 }
 
-// En presup.js - Manejo de edición desde botonera principal
-
-// Helper: determina si estamos en modo edición de presupuesto
 function estaEnModoEdicionPresup() {
     return !!(modoNuevoPresup || modoModificacionPresup);
 }
 
-// Aplica o remueve readonly a los campos editables del grid según el modo de edición
 function aplicarReadonlyCamposPresup() {
     const campos = $('.input-pre_margen, .input-pre_pvta, .input-pre_cantidad');
     const tooltipMsg = 'Active el modo edición (Editar) para modificar este campo';
 
-    // Ejecutar en batch para minimizar reflows
     requestAnimationFrame(() => {
         if (!estaEnModoEdicionPresup()) {
             campos.each(function () {
                 const $c = $(this);
                 $c.prop('readonly', true).addClass('campo-readonly');
-                // Añadir tooltip informativo sólo si no existe
                 if (!$c.attr('title')) $c.attr('title', tooltipMsg);
             });
         } else {
-            // En modo edición dejamos los campos en readonly por defecto;
-            // la edición se activará mediante doble click que quita readonly.
             campos.each(function () {
                 const $c = $(this);
                 $c.prop('readonly', true).addClass('campo-readonly');
-                // Indicar que ahora pueden editarse con doble click
-                $c.attr('title', 'Doble click para editar (modo edición activo)');
+                $c.attr('title', 'Doble click para editar');
             });
         }
     });
 }
 
-// Helper: crea HTML de grid de productos vacío (mismo formato que partial)
 function crearGridPresupVacioHtml() {
     return `
     <div class="card h-100">
         <div class="card-header py-1 d-flex justify-content-between align-items-center">
             <h6 class="mb-0">Productos del Presupuesto</h6>
             <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarCProducto" title="Agregar Producto" disabled>
-                    <i class="bx bx-plus"></i>
+                <i class="bx bx-plus"></i>
             </button>
         </div>
         <div class="card-body p-1">
@@ -1138,23 +1005,15 @@ function crearGridPresupVacioHtml() {
 }
 
 // ============================================================================
-// MÓDULO DE PRESUPUESTOS - INTEGRACIÓN CON BÚSQUEDA AVANZADA V02
+// INTEGRACIÓN CON BÚSQUEDA AVANZADA V02
 // ============================================================================
 
-/**
- * ✅ NUEVA: Función para cargar el modal de búsqueda avanzada dinámicamente
- * Solo se carga una vez para evitar duplicados
- */
 function cargarModalBusquedaAvanzada(callback) {
-    // Verificar si ya existe
     if ($("#busquedaModal").length > 0) {
         if (typeof callback === 'function') callback();
         return;
     }
 
-    console.log("🔄 Cargando modal de búsqueda avanzada...");
-    
-    // URL del partial view (debe estar definida en la vista principal)
     const urlModal = typeof busquedaAvanzadaModalUrl !== 'undefined' 
         ? busquedaAvanzadaModalUrl 
         : '/ControlComun/Producto/BusquedaAdvanceV02';
@@ -1163,34 +1022,25 @@ function cargarModalBusquedaAvanzada(callback) {
         url: urlModal,
         type: 'GET',
         success: function(html) {
-            // Agregar modal al body si no existe
             if ($("#busquedaModal").length === 0) {
                 $('body').append(html);
-                console.log("✅ Modal de búsqueda cargado correctamente");
             }
-            
-            // Ejecutar callback después de cargar
             if (typeof callback === 'function') {
                 callback();
             }
         },
         error: function(xhr, status, error) {
-            console.error("❌ Error al cargar modal de búsqueda:", error);
+            console.error("Error al cargar modal de búsqueda:", error);
             ControlaMensajeError("No se pudo cargar el módulo de búsqueda de productos");
         }
     });
 }
 
-/**
- * ✅ NUEVA: Obtener IDs de productos que ya están en el grid de presupuesto
- * Implementa la interfaz requerida por busquedasV02.js
- */
 function obtenerProductosExistentesIds() {
     const productosIds = [];
     
     $('#tbGridPresupuestoProds tbody tr').each(function() {
         const $fila = $(this);
-        // Saltar filas vacías o de mensaje
         if ($fila.find('td[colspan]').length > 0) return;
         
         const pId = $fila.data('p-id');
@@ -1199,32 +1049,19 @@ function obtenerProductosExistentesIds() {
         }
     });
     
-    console.log(`📦 Productos existentes en grid: ${productosIds.length}`, productosIds);
     return productosIds;
 }
 
-/**
- * ✅ NUEVA: Agregar productos seleccionados al grid de presupuesto
- * Callback que será invocado por busquedasV02.js
- * @param {Array} productos - Array de objetos con estructura ProductoListaDto
- */
 function agregarProductosAlGrid(productos) {
-    console.log(`🎯 Agregando ${productos.length} productos al grid de presupuesto...`);
-    
-    if (!Array.isArray(productos) || productos.length === 0) {
-        console.warn("⚠️ No hay productos para agregar");
-        return;
-    }
+    if (!Array.isArray(productos) || productos.length === 0) return;
 
     const $tbody = $('#tbGridPresupuestoProds tbody');
     
-    // Verificar si hay mensaje de "No hay productos"
     const $filaVacia = $tbody.find('tr td[colspan]');
     if ($filaVacia.length > 0) {
         $filaVacia.closest('tr').remove();
     }
 
-    // Verificar si existe tfoot, si no, crearlo
     let $tfoot = $('#tbGridPresupuestoProds tfoot');
     if ($tfoot.length === 0) {
         $('#tbGridPresupuestoProds').append(`
@@ -1238,51 +1075,32 @@ function agregarProductosAlGrid(productos) {
         $tfoot = $('#tbGridPresupuestoProds tfoot');
     }
 
-    // Determinar clase alternada para nuevas filas
     let esAlternado = $tbody.find('tr').length % 2 !== 0;
 
-    // Agregar cada producto como nueva fila
     productos.forEach(function(producto) {
         const fila = crearFilaProductoPresupuesto(producto, esAlternado);
         $tbody.append(fila);
         esAlternado = !esAlternado;
     });
 
-    // ✅ Aplicar InputMask a los nuevos campos
     aplicarInputMaskPresupuesto();
-
-    // ✅ Aplicar estado readonly según modo actual
     aplicarReadonlyCamposPresup();
-
-    // ✅ Actualizar total general
     actualizarTotalGeneralPresup();
-
-    console.log(`✅ ${productos.length} productos agregados correctamente`);
 }
 
-/**
- * ✅ NUEVA: Crear HTML de una fila de producto para el grid de presupuesto
- * @param {Object} producto - Objeto ProductoListaDto desde búsqueda avanzada
- * @param {Boolean} esAlternado - Si debe aplicar clase 'alt'
- * @returns {String} HTML de la fila
- */
 function crearFilaProductoPresupuesto(producto, esAlternado) {
-    // Valores por defecto y cálculos
     const pId = producto.p_id || '';
     const pDesc = producto.p_desc || '';
     const pCosto = parseFloat(producto.p_pcosto || 0);
-    const cantidad = 1; // Cantidad inicial
-    const margen = 30; // Margen por defecto 30%
+    const cantidad = 1;
+    const margen = 30;
     
-    // Calcular precio neto desde margen
     const precioNeto = pCosto * (1 + margen / 100);
     
-    // Obtener impuestos (valores por defecto si no vienen en el producto)
-    const ivaSituacion = producto.iva_situacion || 'E'; // E=Exento, G=Gravado
+    const ivaSituacion = producto.iva_situacion || 'E';
     const ivaAlicuota = parseFloat(producto.iva_alicuota || 21);
     const inAlicuota = parseFloat(producto.in_alicuota || 0);
     
-    // Calcular precio de venta con impuestos
     let precioVenta = precioNeto;
     if (ivaSituacion === 'G') {
         precioVenta = precioVenta * (1 + ivaAlicuota / 100);
@@ -1291,10 +1109,7 @@ function crearFilaProductoPresupuesto(producto, esAlternado) {
         precioVenta = precioVenta * (1 + inAlicuota / 100);
     }
     
-    // Calcular total
     const total = cantidad * precioVenta;
-    
-    // Clase alternada
     const claseAlt = esAlternado ? 'alt' : '';
     
     return `
@@ -1343,17 +1158,9 @@ function crearFilaProductoPresupuesto(producto, esAlternado) {
     `;
 }
 
-/**
- * ✅ NUEVA: Aplicar InputMask a campos numéricos del presupuesto
- * Se ejecuta después de agregar nuevas filas
- */
 function aplicarInputMaskPresupuesto() {
-    if (typeof Inputmask === 'undefined') {
-        console.warn("⚠️ Inputmask no está disponible");
-        return;
-    }
+    if (typeof Inputmask === 'undefined') return;
 
-    // ✅ CANTIDAD: 2 decimales
     Inputmask({
         alias: "numeric",
         groupSeparator: ",",
@@ -1366,7 +1173,6 @@ function aplicarInputMaskPresupuesto() {
         min: 0
     }).mask('.input-pre_cantidad:not(.inputmask-applied)');
     
-    // ✅ MARGEN: 2 decimales
     Inputmask({
         alias: "numeric",
         groupSeparator: ",",
@@ -1379,7 +1185,6 @@ function aplicarInputMaskPresupuesto() {
         min: 0
     }).mask('.input-pre_margen:not(.inputmask-applied)');
 
-    // ✅ PRECIO VENTA: 3 decimales
     Inputmask({
         alias: "numeric",
         groupSeparator: ",",
@@ -1392,42 +1197,27 @@ function aplicarInputMaskPresupuesto() {
         min: 0
     }).mask('.input-pre_pvta:not(.inputmask-applied)');
 
-    // Marcar como aplicado para evitar re-aplicación
     $('.input-pre_cantidad, .input-pre_margen, .input-pre_pvta').addClass('inputmask-applied');
 }
 
 // ============================================================================
-// CORRECCIÓN: AUTOCOMPLETE PARA Rel011 (CLIENTES EN PRESUPUESTOS)
+// AUTOCOMPLETE
 // ============================================================================
 
-/**
- * ✅ NUEVA: Inicializar autocomplete para el campo Rel011 (Clientes)
- * Se ejecuta solo una vez cuando se habilita el checkbox
- */
 function inicializarAutocompleteRel011() {
-    console.log("🔧 Inicializando autocomplete para Rel011 (Clientes)");
-    
-    // Verificar que la URL esté definida
     if (typeof autoComRel04Url === 'undefined') {
-        console.error("❌ ERROR: autoComRel04Url no está definida");
-        console.warn("💡 Definir en Index.cshtml: var autoComRel04Url = '@Url.Action(\"BuscarClientes\", \"Presupuesto\", new { area = \"Productos\" })';");
+        console.error("autoComRel04Url no está definida");
         return;
     }
 
     $("#Rel011").autocomplete({
         source: function (request, response) {
-            const data = { prefix: request.term };
-            
-            console.log(`🔎 Buscando clientes con: "${request.term}"`);
-            
             $.ajax({
                 url: autoComRel04Url,
                 type: "POST",
                 dataType: "json",
-                data: data,
+                data: { prefix: request.term },
                 success: function (obj) {
-                    console.log(`✅ Se encontraron ${obj.length} clientes`);
-                    
                     response($.map(obj, function (item) {
                         return {
                             label: item.descripcion,
@@ -1438,136 +1228,131 @@ function inicializarAutocompleteRel011() {
                         };
                     }));
                 },
-                error: function(xhr, status, error) {
-                    console.error("❌ Error en autocomplete:", error);
+                error: function() {
                     response([]);
                 }
             });
         },
         minLength: 3,
         select: function (event, ui) {
-            console.log(`📌 Cliente seleccionado: ${ui.item.label} (ID: ${ui.item.id})`);
-            
-            // Verificar si ya existe en la lista
             const yaExiste = $("#Rel011List option[value='" + ui.item.id + "']").length > 0;
             
             if (!yaExiste) {
-                // Guardar el ID en el campo oculto
                 $("#Rel011Item").val(ui.item.id);
-                
-                // Agregar a la lista
                 const opcion = $("<option></option>")
                     .attr("value", ui.item.id)
                     .text(ui.item.label);
-                
                 $("#Rel011List").append(opcion);
-                
-                console.log(`✅ Cliente agregado a la lista: ${ui.item.label}`);
-            } else {
-                console.warn(`⚠️ El cliente ya está en la lista: ${ui.item.label}`);
             }
             
-            // Limpiar el campo después de seleccionar
-            setTimeout(() => {
-                $("#Rel011").val("");
-            }, 10);
-            
-            return false; // Prevenir que se escriba en el input
+            setTimeout(() => $("#Rel011").val(""), 10);
+            return false;
         },
-        focus: function(event, ui) {
-            // Mostrar el label al navegar con flechas
+        focus: function() {
             return false;
         }
     });
-    
-    console.log("✅ Autocomplete inicializado correctamente para Rel011");
 }
 
 function inicializarAutocompleteRel022() {
-    console.log("🔧 Inicializando autocomplete para Rel022 (USUARIOS)");
-
-    // Verificar que la URL esté definida
     if (typeof autoComRel05Url === 'undefined') {
-        console.error("❌ ERROR: autoComRel05Url no está definida");
-        console.warn("💡 Definir en Index.cshtml: var autoComRel05Url = '@Url.Action(\"ObtenerUsuarioParaLista\", \"cgusuarios\", new { area = \"Usuarios\" }) '");
+        console.error("autoComRel05Url no está definida");
         return;
     }
 
     $("#Rel022").autocomplete({
         source: function (request, response) {
-            const data = { prefix: request.term };
-
-            console.log(`🔎 Buscando clientes con: "${request.term}"`);
-
             $.ajax({
                 url: autoComRel05Url,
                 type: "POST",
                 dataType: "json",
-                data: data,
+                data: { prefix: request.term },
                 success: function (obj) {
-                    console.log(`✅ Se encontraron ${obj.length} clientes`);
-
                     response($.map(obj, function (item) {
                         return {
                             label: item.descripcion,
                             value: item.descripcion,
                             id: item.id,
-                            nombre: item.nombre || item.descripcion,
-                            domicilio: item.domicilio || ""
+                            nombre: item.nombre || item.descripcion
                         };
                     }));
                 },
-                error: function (xhr, status, error) {
-                    console.error("❌ Error en autocomplete:", error);
+                error: function() {
                     response([]);
                 }
             });
         },
         minLength: 3,
         select: function (event, ui) {
-            console.log(`📌 Cliente seleccionado: ${ui.item.label} (ID: ${ui.item.id})`);
-
-            // Verificar si ya existe en la lista
             const yaExiste = $("#Rel022List option[value='" + ui.item.id + "']").length > 0;
-
+            
             if (!yaExiste) {
-                // Guardar el ID en el campo oculto
                 $("#Rel022Item").val(ui.item.id);
-
-                // Agregar a la lista
                 const opcion = $("<option></option>")
                     .attr("value", ui.item.id)
                     .text(ui.item.label);
-
                 $("#Rel022List").append(opcion);
-
-                console.log(`✅ Cliente agregado a la lista: ${ui.item.label}`);
-            } else {
-                console.warn(`⚠️ El cliente ya está en la lista: ${ui.item.label}`);
             }
-
-            // Limpiar el campo después de seleccionar
-            setTimeout(() => {
-                $("#Rel022").val("");
-            }, 10);
-
-            return false; // Prevenir que se escriba en el input
+            
+            setTimeout(() => $("#Rel022").val(""), 10);
+            return false;
         },
-        focus: function (event, ui) {
-            // Mostrar el label al navegar con flechas
+        focus: function() {
             return false;
         }
     });
-
-    console.log("✅ Autocomplete inicializado correctamente para Rel011");
 }
-/**
- * ✅ OPCIONAL: Función para destruir autocomplete (útil para limpieza)
- */
+
 function destruirAutocompleteRel011() {
     if ($("#Rel011").hasClass("ui-autocomplete-input")) {
         $("#Rel011").autocomplete("destroy");
-        console.log("🗑️ Autocomplete destruido para Rel011");
+    }
+}
+
+// ============================================================================
+// PROCESAMIENTO DE PRODUCTOS MÚLTIPLES (PARA BUSQUEDASV02.JS)
+// ============================================================================
+
+function procesarAgregarProductosMultiples() {
+    AbrirWaiting("Agregando productos al presupuesto...");
+    
+    try {
+        const productosExistentesIds = obtenerProductosExistentesIds();
+        const productosFiltrados = productosSeleccionadosBusqueda.filter(producto => 
+            !productosExistentesIds.includes(producto.p_id));
+        
+        const cantidadDuplicados = productosSeleccionadosBusqueda.length - productosFiltrados.length;
+        
+        if (productosFiltrados.length === 0) {
+            CerrarWaiting();
+            if (cantidadDuplicados > 0) {
+                ControlaMensajeWarning(`Los ${cantidadDuplicados} producto(s) seleccionado(s) ya existen en el presupuesto.`);
+            } else {
+                ControlaMensajeWarning("No hay productos para agregar.");
+            }
+            return;
+        }
+        
+        agregarProductosAlGrid(productosFiltrados);
+        $("#busquedaModal").modal("hide");
+        
+        const cantidadAgregada = productosFiltrados.length;
+        limpiarSeleccionBusqueda();
+        
+        CerrarWaiting();                            
+        let mensaje = '';
+        
+        if (cantidadDuplicados > 0) {
+            mensaje = `Se agregaron ${cantidadAgregada} producto(s). Se omitieron ${cantidadDuplicados} producto(s) duplicado(s).`;
+        } else {
+            mensaje = `${cantidadAgregada} producto${cantidadAgregada > 1 ? 's' : ''} agregado${cantidadAgregada > 1 ? 's' : ''} correctamente al presupuesto`;
+        }
+        
+        ControlaMensajeSuccess(mensaje);
+    } catch (error) {
+        CerrarWaiting();
+        console.error("Error al procesar productos:", error);
+        ControlaMensajeError("Error al agregar productos: " + error.message);
     }
 }
 
