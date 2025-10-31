@@ -602,6 +602,14 @@ function agregarProductosSeleccionadosAOfertas() {
     var titulo;
     
     switch (busquedaDestinoTipo) {
+        case "presupuestos": // ✅ NUEVO CASO
+            titulo = "CONFIRMAR AGREGADO A PRESUPUESTO";
+            mensaje = `¿Desea agregar ${productosSeleccionadosBusqueda.length} productos al presupuesto?`;
+            if (productosSeleccionadosBusqueda.length === 1) {
+                var descripcion = productosSeleccionadosBusqueda[0].p_desc;
+                mensaje = `¿Desea agregar el producto "${descripcion}" al presupuesto?`;
+            }
+            break;
         case "sustitutos":
             titulo = "CONFIRMAR SUSTITUTOS";
             mensaje = `¿Desea agregar ${productosSeleccionadosBusqueda.length} productos como sustitutos?`;

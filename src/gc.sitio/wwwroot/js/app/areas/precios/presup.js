@@ -85,6 +85,60 @@ function InicializaEventosPresupuesto() {
         $("#Date1, #Date2").prop("disabled", !on);
     });
 
+    //check generico REL01 activando componentes disables
+    $("#chkRel011").on("change", function () { // ✅ Usar 'change' en lugar de 'click'
+        const isChecked = $(this).is(":checked");
+        
+        if (isChecked) {
+            $("#Rel011").prop("disabled", false);
+            $("#Rel011List").prop("disabled", false);
+            
+            // ✅ INICIALIZAR AUTOCOMPLETE SOLO UNA VEZ
+            if (!$("#Rel011").hasClass("ui-autocomplete-input")) {
+                inicializarAutocompleteRel011();
+            }
+            
+            // Poner foco después de un pequeño delay
+            setTimeout(() => $("#Rel011").trigger("focus"), 50);
+        } else {
+            $("#Rel011").prop("disabled", true).val("");
+            $("#Rel011List").prop("disabled", true).empty();
+            $("#Rel011Item").val("");
+            
+            // ✅ DESTRUIR INSTANCIA DE AUTOCOMPLETE si existe
+            if ($("#Rel011").hasClass("ui-autocomplete-input")) {
+                $("#Rel011").autocomplete("destroy");
+            }
+        }
+    });
+
+    //check generico REL02 activando componentes disables
+    $("#chkRel022").on("click", function () {
+        const isChecked = $(this).is(":checked");
+
+        if (isChecked) {
+            $("#Rel022").prop("disabled", false);
+            $("#Rel02List").prop("disabled", false);
+
+            // ✅ INICIALIZAR AUTOCOMPLETE SOLO UNA VEZ
+            if (!$("#Rel022").hasClass("ui-autocomplete-input")) {
+                inicializarAutocompleteRel022();
+            }
+
+            // Poner foco después de un pequeño delay
+            setTimeout(() => $("#Rel022").trigger("focus"), 50);
+        } else {
+            $("#Rel022").prop("disabled", true).val("");
+            $("#Rel022List").prop("disabled", true).empty();
+            $("#Rel022Item").val("");
+
+            // ✅ DESTRUIR INSTANCIA DE AUTOCOMPLETE si existe
+            if ($("#Rel022").hasClass("ui-autocomplete-input")) {
+                $("#Rel022").autocomplete("destroy");
+            }
+        }
+    });
+
     // Habilita/Deshabilita Administraciones
     $("#chkRel04").on("change", function () {
         $("#Rel04").prop("disabled", !$(this).is(":checked"));
@@ -96,7 +150,7 @@ function InicializaEventosPresupuesto() {
     });
 
     // Limpieza rápida
-    $("#Rel01, #Rel02").on("click", function () { $(this).val(""); });
+    $("#Rel011, #Rel02").on("click", function () { $(this).val(""); });
 
     // Buscar
     $("#btnBuscar").on("click", function () {
@@ -105,22 +159,22 @@ function InicializaEventosPresupuesto() {
     funcCallBack = buscarPresupuestos;
 
     // ✅ NUEVO: Eliminar opción de Rel01List con doble click
-    $("#Rel01List").off("dblclick.removeOption").on("dblclick.removeOption", "option", function(e) {
+    $("#Rel011List").off("dblclick.removeOption").on("dblclick.removeOption", "option", function(e) {
         e.stopPropagation();
         $(this).remove();
         // Actualizar plugin si existe
-        const $list = $("#Rel01List");
+        const $list = $("#Rel011List");
         if ($.fn.selectpicker && $list.hasClass("selectpicker")) {
             $list.selectpicker("refresh");
         }
     });
 
     // ✅ NUEVO: Eliminar opción de Rel02List con doble click (si es necesario)
-    $("#Rel02List").off("dblclick.removeOption").on("dblclick.removeOption", "option", function(e) {
+    $("#Rel022List").off("dblclick.removeOption").on("dblclick.removeOption", "option", function(e) {
         e.stopPropagation();
         $(this).remove();
         // Actualizar plugin si existe
-        const $list = $("#Rel02List");
+        const $list = $("#Rel022List");
         if ($.fn.selectpicker && $list.hasClass("selectpicker")) {
             $list.selectpicker("refresh");
         }
@@ -317,13 +371,50 @@ function InicializaEventosPresupuesto() {
         console.log('✅ Modo Modificación Presupuesto activado');
     });
 
+
+//especializo el codigo del autocompletar para que funcione con las variables actuales.
+    $(document).on("keydown.autocomplete", "input#Rel011", function () {
+        $(this).autocomplete({
+            source: function (request, response) {
+
+                data = { prefix: request.term }; 
+
+                $.ajax({
+                    url: autoComRel04Url,
+                    type: "POST",
+                    dataType: "json",
+                    data: data,
+                    success: function (obj) {
+                        response($.map(obj, function (item) {
+                            var texto = item.descripcion;
+                            return { label: texto, value: item.descripcion, id: item.id, prov: item.provId, tipo: "P" };
+                        }));
+                    }
+                })
+            },
+            minLength: 3,
+            select: function (event, ui) {
+                if ($("#Rel011List").has('option:contains("' + ui.item.id + '")').length === 0) {
+                    $("#Rel011Item").val(ui.item.id);
+                    var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
+                    $("#Rel011List").append(opc);
+
+                    consCta = ui.item.id;
+                    consRrss = ui.item.label;
+                    consTipo = ui.item.tipo;
+                }
+                return true;
+            }
+        });
+    });
+
     //busqueda no gen de proveedores
     $(document).off("keydown.autocomplete").on("keydown.autocomplete", "input#cta_denominacion", function () {
         $(this).autocomplete({
             source: function (request, response) {
                 data = { prefix: request.term }
                 $.ajax({
-                    url: autoComRel01Url,
+                    url: autoComRel04Url,
                     type: "POST",
                     dataType: "json",
                     data: data,
@@ -798,7 +889,7 @@ function buildQueryFilters(pag) {
     const fechaH = usaPeriodo ? $("#Date2").val() : null;
 
     // Filtros relacionales con tipos correctos según QueryFilters
-    const rel01 = getValues("#Rel01List", false);         // List<string> - Clientes
+    const rel01 = getValues("#Rel011List", false);         // List<string> - Clientes
     const rel02 = getValues("#Rel02List", false);         // List<string> - Usuarios (opcional)
     const rel03 = getValues("#Rel03List", true);          // List<ComboGenDto> - Estados
     
@@ -825,7 +916,7 @@ function buildQueryFilters(pag) {
 
     // Debug: verificar qué está llegando
     console.log("QueryFilters construido:", filters);
-    console.log("Rel01 (Clientes):", rel01);
+    console.log("Rel011 (Clientes):", rel01);
     console.log("Rel02 (Usuarios):", rel02);
     console.log("Rel03 (Estados):", rel03);
     console.log("Rel04 (Admins):", rel04);
@@ -1044,5 +1135,439 @@ function crearGridPresupVacioHtml() {
             </div>
         </div>
     </div>`;
+}
+
+// ============================================================================
+// MÓDULO DE PRESUPUESTOS - INTEGRACIÓN CON BÚSQUEDA AVANZADA V02
+// ============================================================================
+
+/**
+ * ✅ NUEVA: Función para cargar el modal de búsqueda avanzada dinámicamente
+ * Solo se carga una vez para evitar duplicados
+ */
+function cargarModalBusquedaAvanzada(callback) {
+    // Verificar si ya existe
+    if ($("#busquedaModal").length > 0) {
+        if (typeof callback === 'function') callback();
+        return;
+    }
+
+    console.log("🔄 Cargando modal de búsqueda avanzada...");
+    
+    // URL del partial view (debe estar definida en la vista principal)
+    const urlModal = typeof busquedaAvanzadaModalUrl !== 'undefined' 
+        ? busquedaAvanzadaModalUrl 
+        : '/ControlComun/Producto/BusquedaAdvanceV02';
+
+    $.ajax({
+        url: urlModal,
+        type: 'GET',
+        success: function(html) {
+            // Agregar modal al body si no existe
+            if ($("#busquedaModal").length === 0) {
+                $('body').append(html);
+                console.log("✅ Modal de búsqueda cargado correctamente");
+            }
+            
+            // Ejecutar callback después de cargar
+            if (typeof callback === 'function') {
+                callback();
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("❌ Error al cargar modal de búsqueda:", error);
+            ControlaMensajeError("No se pudo cargar el módulo de búsqueda de productos");
+        }
+    });
+}
+
+/**
+ * ✅ NUEVA: Obtener IDs de productos que ya están en el grid de presupuesto
+ * Implementa la interfaz requerida por busquedasV02.js
+ */
+function obtenerProductosExistentesIds() {
+    const productosIds = [];
+    
+    $('#tbGridPresupuestoProds tbody tr').each(function() {
+        const $fila = $(this);
+        // Saltar filas vacías o de mensaje
+        if ($fila.find('td[colspan]').length > 0) return;
+        
+        const pId = $fila.data('p-id');
+        if (pId) {
+            productosIds.push(pId);
+        }
+    });
+    
+    console.log(`📦 Productos existentes en grid: ${productosIds.length}`, productosIds);
+    return productosIds;
+}
+
+/**
+ * ✅ NUEVA: Agregar productos seleccionados al grid de presupuesto
+ * Callback que será invocado por busquedasV02.js
+ * @param {Array} productos - Array de objetos con estructura ProductoListaDto
+ */
+function agregarProductosAlGrid(productos) {
+    console.log(`🎯 Agregando ${productos.length} productos al grid de presupuesto...`);
+    
+    if (!Array.isArray(productos) || productos.length === 0) {
+        console.warn("⚠️ No hay productos para agregar");
+        return;
+    }
+
+    const $tbody = $('#tbGridPresupuestoProds tbody');
+    
+    // Verificar si hay mensaje de "No hay productos"
+    const $filaVacia = $tbody.find('tr td[colspan]');
+    if ($filaVacia.length > 0) {
+        $filaVacia.closest('tr').remove();
+    }
+
+    // Verificar si existe tfoot, si no, crearlo
+    let $tfoot = $('#tbGridPresupuestoProds tfoot');
+    if ($tfoot.length === 0) {
+        $('#tbGridPresupuestoProds').append(`
+            <tfoot class="table-golden-footer">
+                <tr>
+                    <td colspan="6" class="text-end fw-bold">Total General:</td>
+                    <td class="text-end fw-bold">0.00</td>
+                </tr>
+            </tfoot>
+        `);
+        $tfoot = $('#tbGridPresupuestoProds tfoot');
+    }
+
+    // Determinar clase alternada para nuevas filas
+    let esAlternado = $tbody.find('tr').length % 2 !== 0;
+
+    // Agregar cada producto como nueva fila
+    productos.forEach(function(producto) {
+        const fila = crearFilaProductoPresupuesto(producto, esAlternado);
+        $tbody.append(fila);
+        esAlternado = !esAlternado;
+    });
+
+    // ✅ Aplicar InputMask a los nuevos campos
+    aplicarInputMaskPresupuesto();
+
+    // ✅ Aplicar estado readonly según modo actual
+    aplicarReadonlyCamposPresup();
+
+    // ✅ Actualizar total general
+    actualizarTotalGeneralPresup();
+
+    console.log(`✅ ${productos.length} productos agregados correctamente`);
+}
+
+/**
+ * ✅ NUEVA: Crear HTML de una fila de producto para el grid de presupuesto
+ * @param {Object} producto - Objeto ProductoListaDto desde búsqueda avanzada
+ * @param {Boolean} esAlternado - Si debe aplicar clase 'alt'
+ * @returns {String} HTML de la fila
+ */
+function crearFilaProductoPresupuesto(producto, esAlternado) {
+    // Valores por defecto y cálculos
+    const pId = producto.p_id || '';
+    const pDesc = producto.p_desc || '';
+    const pCosto = parseFloat(producto.p_pcosto || 0);
+    const cantidad = 1; // Cantidad inicial
+    const margen = 30; // Margen por defecto 30%
+    
+    // Calcular precio neto desde margen
+    const precioNeto = pCosto * (1 + margen / 100);
+    
+    // Obtener impuestos (valores por defecto si no vienen en el producto)
+    const ivaSituacion = producto.iva_situacion || 'E'; // E=Exento, G=Gravado
+    const ivaAlicuota = parseFloat(producto.iva_alicuota || 21);
+    const inAlicuota = parseFloat(producto.in_alicuota || 0);
+    
+    // Calcular precio de venta con impuestos
+    let precioVenta = precioNeto;
+    if (ivaSituacion === 'G') {
+        precioVenta = precioVenta * (1 + ivaAlicuota / 100);
+    }
+    if (inAlicuota > 0) {
+        precioVenta = precioVenta * (1 + inAlicuota / 100);
+    }
+    
+    // Calcular total
+    const total = cantidad * precioVenta;
+    
+    // Clase alternada
+    const claseAlt = esAlternado ? 'alt' : '';
+    
+    return `
+        <tr class="${claseAlt}"
+            data-p-id="${pId}"
+            data-pre-costo="${pCosto.toFixed(3)}"
+            data-pre-pneto="${precioNeto.toFixed(3)}"
+            data-iva-situacion="${ivaSituacion}"
+            data-iva-alicuota="${ivaAlicuota}"
+            data-in-alicuota="${inAlicuota}">
+            <td class="text-center">${pId}</td>
+            <td>${pDesc}</td>
+            <td class="text-end">${pCosto.toFixed(3)}</td>
+            <td class="text-end">
+                <div class="input-container">
+                    <input type="text" 
+                           class="form-control form-control-sm input-pre_cantidad input-numeric campo-readonly"
+                           value="${cantidad.toFixed(2)}"
+                           data-original-value="${cantidad}"
+                           readonly 
+                           title="Doble click para editar" />
+                </div>
+            </td>
+            <td class="text-end">
+                <div class="input-container">
+                    <input type="text" 
+                           class="form-control form-control-sm input-pre_margen input-numeric campo-readonly"
+                           value="${margen.toFixed(2)}"
+                           data-original-value="${margen}"
+                           readonly 
+                           title="Doble click para editar" />
+                </div>
+            </td>
+            <td class="text-end">
+                <div class="input-container">
+                    <input type="text" 
+                           class="form-control form-control-sm input-pre_pvta input-numeric campo-readonly"
+                           value="${precioVenta.toFixed(3)}"
+                           data-original-value="${precioVenta}"
+                           readonly 
+                           title="Doble click para editar" />
+                </div>
+            </td>
+            <td class="text-end td-total">${total.toFixed(2)}</td>
+        </tr>
+    `;
+}
+
+/**
+ * ✅ NUEVA: Aplicar InputMask a campos numéricos del presupuesto
+ * Se ejecuta después de agregar nuevas filas
+ */
+function aplicarInputMaskPresupuesto() {
+    if (typeof Inputmask === 'undefined') {
+        console.warn("⚠️ Inputmask no está disponible");
+        return;
+    }
+
+    // ✅ CANTIDAD: 2 decimales
+    Inputmask({
+        alias: "numeric",
+        groupSeparator: ",",
+        radixPoint: ".",
+        autoGroup: true,
+        digits: 2,
+        digitsOptional: false,
+        rightAlign: true,
+        allowMinus: false,
+        min: 0
+    }).mask('.input-pre_cantidad:not(.inputmask-applied)');
+    
+    // ✅ MARGEN: 2 decimales
+    Inputmask({
+        alias: "numeric",
+        groupSeparator: ",",
+        radixPoint: ".",
+        autoGroup: true,
+        digits: 2,
+        digitsOptional: false,
+        rightAlign: true,
+        allowMinus: false,
+        min: 0
+    }).mask('.input-pre_margen:not(.inputmask-applied)');
+
+    // ✅ PRECIO VENTA: 3 decimales
+    Inputmask({
+        alias: "numeric",
+        groupSeparator: ",",
+        radixPoint: ".",
+        autoGroup: true,
+        digits: 3,
+        digitsOptional: false,
+        rightAlign: true,
+        allowMinus: false,
+        min: 0
+    }).mask('.input-pre_pvta:not(.inputmask-applied)');
+
+    // Marcar como aplicado para evitar re-aplicación
+    $('.input-pre_cantidad, .input-pre_margen, .input-pre_pvta').addClass('inputmask-applied');
+}
+
+// ============================================================================
+// CORRECCIÓN: AUTOCOMPLETE PARA Rel011 (CLIENTES EN PRESUPUESTOS)
+// ============================================================================
+
+/**
+ * ✅ NUEVA: Inicializar autocomplete para el campo Rel011 (Clientes)
+ * Se ejecuta solo una vez cuando se habilita el checkbox
+ */
+function inicializarAutocompleteRel011() {
+    console.log("🔧 Inicializando autocomplete para Rel011 (Clientes)");
+    
+    // Verificar que la URL esté definida
+    if (typeof autoComRel04Url === 'undefined') {
+        console.error("❌ ERROR: autoComRel04Url no está definida");
+        console.warn("💡 Definir en Index.cshtml: var autoComRel04Url = '@Url.Action(\"BuscarClientes\", \"Presupuesto\", new { area = \"Productos\" })';");
+        return;
+    }
+
+    $("#Rel011").autocomplete({
+        source: function (request, response) {
+            const data = { prefix: request.term };
+            
+            console.log(`🔎 Buscando clientes con: "${request.term}"`);
+            
+            $.ajax({
+                url: autoComRel04Url,
+                type: "POST",
+                dataType: "json",
+                data: data,
+                success: function (obj) {
+                    console.log(`✅ Se encontraron ${obj.length} clientes`);
+                    
+                    response($.map(obj, function (item) {
+                        return {
+                            label: item.descripcion,
+                            value: item.descripcion,
+                            id: item.id,
+                            nombre: item.nombre || item.descripcion,
+                            domicilio: item.domicilio || ""
+                        };
+                    }));
+                },
+                error: function(xhr, status, error) {
+                    console.error("❌ Error en autocomplete:", error);
+                    response([]);
+                }
+            });
+        },
+        minLength: 3,
+        select: function (event, ui) {
+            console.log(`📌 Cliente seleccionado: ${ui.item.label} (ID: ${ui.item.id})`);
+            
+            // Verificar si ya existe en la lista
+            const yaExiste = $("#Rel011List option[value='" + ui.item.id + "']").length > 0;
+            
+            if (!yaExiste) {
+                // Guardar el ID en el campo oculto
+                $("#Rel011Item").val(ui.item.id);
+                
+                // Agregar a la lista
+                const opcion = $("<option></option>")
+                    .attr("value", ui.item.id)
+                    .text(ui.item.label);
+                
+                $("#Rel011List").append(opcion);
+                
+                console.log(`✅ Cliente agregado a la lista: ${ui.item.label}`);
+            } else {
+                console.warn(`⚠️ El cliente ya está en la lista: ${ui.item.label}`);
+            }
+            
+            // Limpiar el campo después de seleccionar
+            setTimeout(() => {
+                $("#Rel011").val("");
+            }, 10);
+            
+            return false; // Prevenir que se escriba en el input
+        },
+        focus: function(event, ui) {
+            // Mostrar el label al navegar con flechas
+            return false;
+        }
+    });
+    
+    console.log("✅ Autocomplete inicializado correctamente para Rel011");
+}
+
+function inicializarAutocompleteRel022() {
+    console.log("🔧 Inicializando autocomplete para Rel022 (USUARIOS)");
+
+    // Verificar que la URL esté definida
+    if (typeof autoComRel05Url === 'undefined') {
+        console.error("❌ ERROR: autoComRel05Url no está definida");
+        console.warn("💡 Definir en Index.cshtml: var autoComRel05Url = '@Url.Action(\"ObtenerUsuarioParaLista\", \"cgusuarios\", new { area = \"Usuarios\" }) '");
+        return;
+    }
+
+    $("#Rel022").autocomplete({
+        source: function (request, response) {
+            const data = { prefix: request.term };
+
+            console.log(`🔎 Buscando clientes con: "${request.term}"`);
+
+            $.ajax({
+                url: autoComRel05Url,
+                type: "POST",
+                dataType: "json",
+                data: data,
+                success: function (obj) {
+                    console.log(`✅ Se encontraron ${obj.length} clientes`);
+
+                    response($.map(obj, function (item) {
+                        return {
+                            label: item.descripcion,
+                            value: item.descripcion,
+                            id: item.id,
+                            nombre: item.nombre || item.descripcion,
+                            domicilio: item.domicilio || ""
+                        };
+                    }));
+                },
+                error: function (xhr, status, error) {
+                    console.error("❌ Error en autocomplete:", error);
+                    response([]);
+                }
+            });
+        },
+        minLength: 3,
+        select: function (event, ui) {
+            console.log(`📌 Cliente seleccionado: ${ui.item.label} (ID: ${ui.item.id})`);
+
+            // Verificar si ya existe en la lista
+            const yaExiste = $("#Rel022List option[value='" + ui.item.id + "']").length > 0;
+
+            if (!yaExiste) {
+                // Guardar el ID en el campo oculto
+                $("#Rel022Item").val(ui.item.id);
+
+                // Agregar a la lista
+                const opcion = $("<option></option>")
+                    .attr("value", ui.item.id)
+                    .text(ui.item.label);
+
+                $("#Rel022List").append(opcion);
+
+                console.log(`✅ Cliente agregado a la lista: ${ui.item.label}`);
+            } else {
+                console.warn(`⚠️ El cliente ya está en la lista: ${ui.item.label}`);
+            }
+
+            // Limpiar el campo después de seleccionar
+            setTimeout(() => {
+                $("#Rel022").val("");
+            }, 10);
+
+            return false; // Prevenir que se escriba en el input
+        },
+        focus: function (event, ui) {
+            // Mostrar el label al navegar con flechas
+            return false;
+        }
+    });
+
+    console.log("✅ Autocomplete inicializado correctamente para Rel011");
+}
+/**
+ * ✅ OPCIONAL: Función para destruir autocomplete (útil para limpieza)
+ */
+function destruirAutocompleteRel011() {
+    if ($("#Rel011").hasClass("ui-autocomplete-input")) {
+        $("#Rel011").autocomplete("destroy");
+        console.log("🗑️ Autocomplete destruido para Rel011");
+    }
 }
 

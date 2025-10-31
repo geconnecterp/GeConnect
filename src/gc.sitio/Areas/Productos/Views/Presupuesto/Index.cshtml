@@ -34,8 +34,13 @@
         let pagina = 1;
         let search = "";
 
-        var autoComRel01Url = "@Url.Action("BuscarClienteAuto", "AbmCliente", new { area = "ABMs" })";
-        var autoComRel02Url = "@Url.Action("ObtenerUsuarioParaLista", "cgusuarios", new { area = "Usuarios" })";
+        var autoComRel01Url = "@Url.Action("BuscarProvs", "cargaprecios", new { area = "productos" })";/**/
+        var autoComRel02Url = "@Url.Action("BuscarRubros", "cargaprecios", new { area = "productos" })";/**/
+        var autoComRel03Url =  "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "cargaprecios", new { area = "productos" })";/**/
+
+
+        var autoComRel04Url = "@Url.Action("BuscarClienteAuto", "AbmCliente", new { area = "ABMs" })";
+        var autoComRel05Url = "@Url.Action("ObtenerUsuarioParaLista", "cgusuarios", new { area = "Usuarios" })";
         let buscarMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "ActualizarPP", new { area = "Productos" })';
         let homePresup = '@Url.Action("index", "ActualizarPP", new { area = "Productos" })';
 
@@ -50,9 +55,11 @@
         let funcionBusquedaAvanzada = true;
         let busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
         let busquedaAvanzadaUrl = "@Url.Action("BusquedaAvanzadaV02", "producto", new { area = "ControlComun" })";
+        let busquedaAvanzadaModalUrl = "@Url.Action("BusquedaAvanzadaV02", "producto", new { area = "ControlComun" })";
     </script>
-
-    <script src="~/js/app/areas/precios/presup.js"></script>
     <script src="~/js/plugins/jquery.simplePagination.js"></script>
+
+    <script src="~/js/app/busquedasV02.js"></script>
+    <script src="~/js/app/areas/precios/presup.js"></script>
 
 }
