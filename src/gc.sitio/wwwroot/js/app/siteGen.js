@@ -203,7 +203,7 @@ $(function () {
 
     // Mover el foco al botón "Aceptar" cuando el modal se abre
     modal.on("shown.bs.modal", function () {
-        btnAceptar.focus();
+        btnAceptar.trigger("focus");
     });
 
     // Restaurar aria-hidden y el foco al cerrar el modal
@@ -217,7 +217,7 @@ $(function () {
     // Restaurar el foco al elemento que activó el modal cuando se cierra
     modal.on("hidden.bs.modal", function () {
         const triggerElement = $(document.activeElement);
-        triggerElement.focus();
+        triggerElement.trigger("focus");
     });
 
     //check generico REL01 activando componentes disables
