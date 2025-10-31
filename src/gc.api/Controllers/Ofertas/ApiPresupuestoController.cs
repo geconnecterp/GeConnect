@@ -113,6 +113,23 @@ namespace gc.api.Controllers.Ofertas
             }
         }
 
+        // Obtiene los estados de presupuesto
+        [HttpGet("tipos")]
+        public IActionResult ObtenerTiposPresupuesto()
+        {
+            const string msgError = "Error en la invocación de la API - Obtener Tipos de Presupuesto";
+            try
+            {
+                var tipos = _presuSv.ObtenerTiposPresupuesto();
+                return Ok(new ApiResponse<List<PresupT>>(tipos));
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, msgError);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
+            }
+        }
+
         // Mapea filtros a request del SP (minimizando asignaciones innecesarias)
         private static PresupuestoRequest MapToRequest(QueryFilters filtro)
         {

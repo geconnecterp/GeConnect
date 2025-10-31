@@ -15,5 +15,6 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaGenerica<PresupuestoProductoDto>> ObtenerDetallePresupuesto(string id, string token);
         Task<RespuestaGenerica<PresupE>> ObtenerEstadosPresupuesto(string token);
         Task<RespuestaGenerica<PresupuestoDto>> ObtenerPresupuesto(string id, string token);
+        Task<RespuestaGenerica<PresupT>> ObtenerTiposPresupuesto(string token);
     }
 }

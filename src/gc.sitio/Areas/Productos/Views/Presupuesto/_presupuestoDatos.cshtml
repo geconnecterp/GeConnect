@@ -7,18 +7,34 @@
     <div class="card-body p-2">
         <div class="row g-2">
             <!-- ID -->
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label for="pre_id" class="form-label form-label-sm mb-1">ID</label>
                 <input type="text" class="form-control form-control-sm" id="pre_id" name="pre_id" 
                        value="@Model?.pre_id" readonly />
             </div>
+            <!-- Tipo (oculto pret_id) -->
+            @* <input type="hidden" id="pret_id" name="pret_id" value="@Model?.pret_id" /> *@
+            <div class="col-md-2">
+                <label for="pret_desc" class="form-label form-label-sm mb-1">Tipo</label>
+                @Html.DropDownList("pret_id", null, "Sel..", new { @class = "form-control form-control-sm", disabled = "disabled" })
+               @*  <input type="text" class="form-control form-control-sm" id="pret_desc" name="pret_desc"
+                       value="@Model?.pret_desc" readonly /> *@
+            </div>
 
-            <!-- Descripción -->
+            <!-- Estado (oculto pree_id) -->
+            @* <input type="hidden" id="pree_id" name="pree_id" value="@Model?.pree_id" /> *@
+            <div class="col-md-2">
+                <label for="pree_desc" class="form-label form-label-sm mb-1">Estado</label>
+                @Html.DropDownList("pree_id", null, "Sel..", new { @class = "form-control form-control-sm", disabled = "disabled" })
+               @*  <input type="text" class="form-control form-control-sm" id="pree_desc" name="pree_desc"
+                       value="@Model?.pree_desc" readonly /> *@
+            </div>
+            @* <!-- Descripción -->
             <div class="col-md-3">
                 <label for="pre_descripcion" class="form-label form-label-sm mb-1">Descripción</label>
                 <input type="text" class="form-control form-control-sm" id="pre_descripcion" name="pre_descripcion" 
                        value="@Model?.pre_descripcion" readonly />
-            </div>
+            </div> *@
 
            @*  <!-- Fecha -->
             <div class="col-md-3">
@@ -63,21 +79,7 @@
                        value="@Model?.pre_vigencia_hasta.ToString("yyyy-MM-dd")" readonly />
             </div>
 
-            <!-- Tipo (oculto pret_id) -->
-            <input type="hidden" id="pret_id" name="pret_id" value="@Model?.pret_id" />
-            <div class="col-md-3">
-                <label for="pret_desc" class="form-label form-label-sm mb-1">Tipo</label>
-                <input type="text" class="form-control form-control-sm" id="pret_desc" name="pret_desc" 
-                       value="@Model?.pret_desc" readonly />
-            </div>
-
-            <!-- Estado (oculto pree_id) -->
-            <input type="hidden" id="pree_id" name="pree_id" value="@Model?.pree_id" />
-            <div class="col-md-3">
-                <label for="pree_desc" class="form-label form-label-sm mb-1">Estado</label>
-                <input type="text" class="form-control form-control-sm" id="pree_desc" name="pree_desc" 
-                       value="@Model?.pree_desc" readonly />
-            </div>
+            
 
             <!-- Usuario (oculto usu_id) -->
             <input type="hidden" id="usu_id" name="usu_id" value="@Model?.usu_id" />

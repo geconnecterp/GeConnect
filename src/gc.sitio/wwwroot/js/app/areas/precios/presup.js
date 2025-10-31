@@ -4,6 +4,9 @@ var modoModificacionPresup = false;
 // ✅ AGREGAR: Variable global para controlar edición
 var campoEnEdicionPresup = null;
 
+// ✅ NUEVA: Variable para guardar estado original del presupuesto
+let _presupOriginal = null;
+
 $(function () {
     InicializaPantallaPresupuesto();
     InicializaEventosPresupuesto();
@@ -55,34 +58,23 @@ function initPeriodoFechas() {
 }
 
 function cancelarOperacion(e) {
-    // Ocultar formulario
-    $("#divPresDatos").hide();
-    $("#divPresProds").hide();
+    //// Ocultar formulario
+    //$("#divPresDatos").hide();
+    //$("#divPresProds").hide();
 
-    // Desactivar modos de edición
-    modoNuevoPresup = false;
-    modoModificacionCombo = false;
+    //// Desactivar modos de edición
+    //modoNuevoPresup = false;
+    //modoModificacionCombo = false;
 
-    // Restaurar estado de los campos
-    restaurarCamposFormulario();
 
-    // Limpiar grid de canales
-    $("#divCanales").empty();
+    //// Restaurar estado de los botones
+    //$("#btnAbmNuevo").prop("disabled", false);
+    //$("#btnAbmAceptar").prop("disabled", true);
+    //$("#btnAbmModif").prop("disabled", true); // Deshabilitar botón modificar también
 
-    // Limpiar los grids de productos y sustitutos
-    limpiarGridsProductos();
-
-    // Deshabilitar explícitamente los botones de agregar después de limpiar grids
-    $("#btnAgregarCProducto, #btnAgregarSustituto").prop("disabled", true);
-
-    // Restaurar estado de los botones
-    $("#btnAbmNuevo").prop("disabled", false);
-    $("#btnAbmAceptar").prop("disabled", true);
-    $("#btnAbmModif").prop("disabled", true); // Deshabilitar botón modificar también
-
-    // Si existe un homeCombo y necesitamos redirigir
-    if (e && $("#btnCancel").is(e.target) && typeof homeCombo !== 'undefined') {
-        window.location.href = homeCombo;
+    // Si existe un homePresup y necesitamos redirigir
+    if (e && $("#btnAbmCancelar").is(e.target) && typeof homePresup !== 'undefined') {
+        window.location.href = homePresup;
     }
 }
 
@@ -112,6 +104,28 @@ function InicializaEventosPresupuesto() {
     });
     funcCallBack = buscarPresupuestos;
 
+    // ✅ NUEVO: Eliminar opción de Rel01List con doble click
+    $("#Rel01List").off("dblclick.removeOption").on("dblclick.removeOption", "option", function(e) {
+        e.stopPropagation();
+        $(this).remove();
+        // Actualizar plugin si existe
+        const $list = $("#Rel01List");
+        if ($.fn.selectpicker && $list.hasClass("selectpicker")) {
+            $list.selectpicker("refresh");
+        }
+    });
+
+    // ✅ NUEVO: Eliminar opción de Rel02List con doble click (si es necesario)
+    $("#Rel02List").off("dblclick.removeOption").on("dblclick.removeOption", "option", function(e) {
+        e.stopPropagation();
+        $(this).remove();
+        // Actualizar plugin si existe
+        const $list = $("#Rel02List");
+        if ($.fn.selectpicker && $list.hasClass("selectpicker")) {
+            $list.selectpicker("refresh");
+        }
+    });
+
     // Rel03: mover selección a Rel03List y reinicializar combo (SIN recursión)
     const $rel03 = $("#Rel03");
     const $rel03List = $("#Rel03List");
@@ -136,10 +150,28 @@ function InicializaEventosPresupuesto() {
         resetComboSilent($rel03);
     });
 
+    // ✅ NUEVO: Eliminar opción de Rel03List con doble click
+    $("#Rel03List").off("dblclick.removeOption").on("dblclick.removeOption", "option", function(e) {
+        e.stopPropagation();
+        $(this).remove();
+        // Actualizar plugin si existe
+        const $list = $("#Rel03List");
+        if ($.fn.selectpicker && $list.hasClass("selectpicker")) {
+            $list.selectpicker("refresh");
+        }
+    });
+
     // Inicializar eventos de edición de productos presupuesto
     $(document).on('dblclick', '.input-pre_margen, .input-pre_pvta', function(e) {
         e.stopPropagation();
         activarEdicionCampoPresup($(this));
+    });
+
+    $(document).off("dblclick").on("dblclick", "input#cta_denominacion", function () {
+        $("input#cta_denominacion").val("");
+        $("input#cta_id").val("");
+        $("input#pre_nombre").val("");
+        $("input#pre_domicilio").val("");
     });
 
     // Evento para Enter/Tab
@@ -173,6 +205,198 @@ function InicializaEventosPresupuesto() {
     $(document).on('blur', '.input-pre_cantidad', function() {
         recalcularTotalDesdeCantidad($(this));
     });
+
+    // Handler para Nuevo Presupuesto
+    $(document).on('click', '#btnAbmNuevo', function (e) {
+        e.preventDefault();
+
+        if ($("#divFiltro").is(":visible")) {
+            $("#divFiltro").collapse("hide");
+        }
+
+        // Establecer modo nuevo
+        modoNuevoPresup = true;
+        modoModificacionPresup = false;
+
+        // Limpiar/Inicializar datos del formulario y productos
+        // 1) Cargar partial de datos mediante action NuevoPresupuesto
+        // Se asume que existe la variable nuevoPresupuestoUrl definida en la vista
+        if (typeof nuevoPresupuestoUrl === 'undefined') {
+            console.error('nuevoPresupuestoUrl no está definido.');
+            return;
+        }
+
+        PostGenHtml({}, nuevoPresupuestoUrl, function (html) {
+            // Insertar partial de datos
+            $('#divPresDatos').html(html).show();
+
+            // Hacer que los campos del formulario sean editables (nuevo)
+            $('#divPresupuestoDatos').find('input:not([type=hidden]), textarea, select').each(function () {
+                const $el = $(this);
+                $el.prop('readonly', false).prop('disabled', false).removeClass('campo-readonly');
+            });
+
+            // Poner foco en el primer campo editable (si existe)
+            const $first = $('#divPresupuestoDatos').find('input:not([type=hidden]), textarea, select').filter(':visible').first();
+            if ($first && $first.length) {
+                setTimeout(() => $first.trigger("focus"), 50);
+            }
+
+            // 2) Inicializar grid de productos vacío
+            $('#divPresProds').html(crearGridPresupVacioHtml()).show();
+
+            // Habilitar botones para agregar productos
+            $('#btnAgregarCProducto, #btnAgregarSustituto').prop('disabled', false);
+
+            // Habilitar Aceptar / Cancelar y deshabilitar Nuevo / Modif / Elimi
+            $('#btnAbmAceptar').prop('disabled', false).show();
+            $('#btnAbmCancelar').prop('disabled', false).show();
+            $('#btnAbmModif, #btnAbmNuevo, #btnAbmElimi').prop('disabled', true);
+
+            // Aplicar estado readonly en campos del grid (no debe poderse editar hasta doble click en modo edición)
+            aplicarReadonlyCamposPresup();
+
+            // Guardar estado original nulo para nuevo
+            _presupOriginal = null;
+
+            console.log('Modo Nuevo Presupuesto activado. Partial de datos cargado y grid inicializado vacío.');
+        }, function (err) {
+            console.error('Error al cargar NuevoPresupuesto:', err);
+        });
+    });
+
+    // ✅ NUEVO: Handler para Modificar Presupuesto
+    $(document).on('click', '#btnAbmModif', function (e) {
+        e.preventDefault();
+
+        if ($(this).prop('disabled')) return;
+
+        // Establecer modo modificación
+        modoNuevoPresup = false;
+        modoModificacionPresup = true;
+
+        // Guardar estado original para restaurar en caso de cancelar
+        _presupOriginal = capturarEstadoFormularioPresup();
+
+        // Habilitar campos editables del formulario (excepto los especificados)
+        habilitarCamposFormularioPresup(true);
+
+        // Actualizar estado de botones ABM
+        $('#btnAbmNuevo, #btnAbmModif, #btnAbmElimi').prop('disabled', true);
+        $('#btnAbmAceptar, #btnAbmCancelar').prop('disabled', false).show();
+
+        // Los campos del grid se mantienen en readonly hasta doble click
+        aplicarReadonlyCamposPresup();
+
+        // Poner foco en el primer campo editable
+        const $primer = $('#divPresupuestoDatos').find('input:not([type=hidden]):not([readonly]), textarea:not([readonly]), select:not([disabled])').filter(':visible').first();
+        if ($primer.length) {
+            setTimeout(() => $primer.trigger("focus"), 50);
+        }
+
+        console.log('✅ Modo Modificación Presupuesto activado');
+    });
+
+    //busqueda no gen de proveedores
+    $(document).off("keydown.autocomplete").on("keydown.autocomplete", "input#cta_denominacion", function () {
+        $(this).autocomplete({
+            source: function (request, response) {
+                data = { prefix: request.term }
+                $.ajax({
+                    url: autoComRel01Url,
+                    type: "POST",
+                    dataType: "json",
+                    data: data,
+                    success: function (obj) {
+                        response($.map(obj, function (item) {
+                            var texto = item.descripcion;
+                            return { label: texto, value: item.descripcion, id: item.id, nombre: item.nombre, domicilio: item.domicilio };
+                        }));
+                    }
+                })
+            },
+            minLength: 3,
+            select: function (event, ui) {
+                
+                $("input#cta_id").val(ui.item.id);
+                $("input#pre_nombre").val(ui.item.nombre);
+                $("input#pre_domicilio").val(ui.item.domicilio);
+                var data = { cta_id: ui.item.id };
+                return true;
+            }
+        });
+    });
+}
+
+// ✅ NUEVA: Capturar estado del formulario para poder restaurarlo
+function capturarEstadoFormularioPresup() {
+    const estado = {};
+    $('#divPresupuestoDatos').find('input, textarea, select').each(function() {
+        const $campo = $(this);
+        const nombre = $campo.attr('name') || $campo.attr('id');
+        if (nombre) {
+            estado[nombre] = $campo.val();
+        }
+    });
+    return estado;
+}
+
+// ✅ NUEVA: Restaurar estado del formulario
+function restaurarEstadoFormularioPresup(estado) {
+    if (!estado) return;
+    $.each(estado, function(nombre, valor) {
+        const $campo = $(`[name="${nombre}"], #${nombre}`);
+        if ($campo.length) {
+            $campo.val(valor);
+        }
+    });
+}
+
+// ✅ NUEVA: Habilitar/Deshabilitar campos del formulario según modo edición
+function habilitarCamposFormularioPresup(habilitar) {
+    // Campos que NUNCA se editan
+    const camposNoEditables = [
+        'pre_id',           // ID del presupuesto
+        'pret_id',          // Tipo (combo)
+        'pree_id',          // Estado (combo)
+        'usu_id',           // Usuario ID
+        'usu_apellidoynombre', // Usuario nombre
+        'adm_id',           // Administración ID
+        'adm_nombre',       // Administración nombre
+        'tco_id',           // Tipo de comprobante
+        'cm_compte'         // Número de comprobante
+    ];
+
+    $('#divPresupuestoDatos').find('input:not([type=hidden]), textarea, select').each(function() {
+        const $campo = $(this);
+        const nombre = $campo.attr('name') || $campo.attr('id');
+        
+        // Verificar si el campo está en la lista de no editables
+        const esNoEditable = camposNoEditables.some(campo => 
+            nombre === campo || nombre?.includes(campo)
+        );
+
+        if (esNoEditable) {
+            // Estos campos siempre readonly/disabled
+            $campo.prop('readonly', true).prop('disabled', true).addClass('campo-readonly');
+        } else if (habilitar) {
+            // Habilitar campo para edición
+            if ($campo.is('select')) {
+                $campo.prop('disabled', false).removeClass('campo-readonly');
+            } else {
+                $campo.prop('readonly', false).removeClass('campo-readonly');
+            }
+        } else {
+            // Deshabilitar campo
+            if ($campo.is('select')) {
+                $campo.prop('disabled', true).addClass('campo-readonly');
+            } else {
+                $campo.prop('readonly', true).addClass('campo-readonly');
+            }
+        }
+    });
+
+    console.log(`✅ Campos del formulario ${habilitar ? 'habilitados' : 'deshabilitados'} para edición`);
 }
 
 // ✅ NUEVA: Activar edición de campo
@@ -240,6 +464,56 @@ function guardarCampoPresup($campo) {
         }
         marcarCampoModificadoPresup($campo);
     }
+}
+
+// ✅ NUEVA: Recalcular total desde cambio de cantidad
+function recalcularTotalDesdeCantidad($campo) {
+    if ($campo.prop('readonly')) return;
+
+    const $fila = $campo.closest('tr');
+    const cantidadOriginal = parseFloat($campo.data('original-value')) || 0;
+    const cantidadNueva = parseFloat($campo.val().replace(/,/g, '')) || 0;
+
+    // Validar cantidad positiva
+    if (cantidadNueva <= 0) {
+        $campo.val(cantidadOriginal.toFixed(2));
+        AbrirMensaje("Advertencia",
+            "La cantidad debe ser mayor a 0",
+            () => $("#msjModal").modal("hide"),
+            false, ["Aceptar"], "warn!", null);
+        return;
+    }
+
+    // Formatear y guardar
+    $campo.val(cantidadNueva.toFixed(2));
+    $campo.data('original-value', cantidadNueva);
+    $campo.prop('readonly', true).addClass('campo-readonly');
+    campoEnEdicionPresup = null;
+
+    // Recalcular total si cambió la cantidad
+    if (Math.abs(cantidadOriginal - cantidadNueva) > 0.01) {
+        const precioVenta = parseFloat($fila.find('.input-pre_pvta').val().replace(/,/g, '')) || 0;
+        const nuevoTotal = precioVenta * cantidadNueva;
+        
+        actualizarTotalFila($fila, nuevoTotal);
+        actualizarTotalGeneralPresup();
+        marcarCampoModificadoPresup($campo);
+        
+        console.log(`✅ Cantidad ${cantidadNueva} → Total ${nuevoTotal.toFixed(2)}`);
+    }
+}
+
+// ✅ NUEVA: Marcar campo como modificado visualmente
+function marcarCampoModificadoPresup($campo) {
+    if (!$campo || !$campo.length) return;
+    
+    // Añadir clase temporal para feedback visual
+    $campo.addClass('campo-modificado');
+    
+    // Remover clase después de animación
+    setTimeout(() => {
+        $campo.removeClass('campo-modificado');
+    }, 1500);
 }
 
 // ✅ NUEVA: Recalcular precio desde margen
@@ -451,12 +725,37 @@ function cargarPresupuestoDatos(preId) {
     PostGenHtml({ pre_id: preId }, url, function (html) {
         $("#divPresDatos").html(html).show();
         
-        // Habilitar btnAbmModif solo si cumple condiciones de edición
-        const permite = puedeEditarPresupuesto($("#divPresDatos"));
+        // ✅ DETERMINAR PERMISOS DE EDICIÓN BASÁNDOSE EN EL ESTADO DEL PRESUPUESTO
+        // ════════════════════════════════════════════════════════════════════
+        // La función removida puedeEditarPresupuesto() ha sido reempFazada por Facturado lógica.
+        // 
+        // sistemas de presupuestos:
+        // 'P' = Pendiente (editable)
+        // 'F' = Facturado (no editable)
+        // 'R' = Remitido (no editable)
+        // 'A' = Anulado (no editable)
+        //
+        // ⚠️ IMPORTANTE: Ajustar el array 'estadosEditables' según los estados
+        //    reales definidos en la base de datos (tabla PresupE o similar)
+        // ═══════════════════════════════════════════════════════════════════════
+        
+        const preeId = $("#pree_id").val(); // Estado del presupuesto desde el formulario cargado
+        
+        //✅ Solo permitir edición si está en estado Pendiente ('P') o Borrador ('B')
+        const estadosEditables = ['P']; // ⚠️ Ajustar estos valores según sea necesario
+
+        //hay que tener en cuenta también que los presupuestos facturados no se pueden editar
+        //por lo que si el estado es 'F' tampoco se podrá editar
+        //Tampoco se podrá editar si la fecha actual esta fuera del periodo desde/hasta. 
+        //esta ultima validación la dejaremos pendiente.
+
+        const permite = estadosEditables.includes(preeId);
+        
         $("#btnAbmModif").prop("disabled", !permite);
 
-        // Debug opcional
-        console.log("cargarPresupuestoDatos: permisos de edición =>", permite);
+        // Debug - ayuda a identificar estados del sistema
+        console.log("cargarPresupuestoDatos: Estado del presupuesto:", preeId, 
+                    "Permite edición:", permite);
     });
 }
 
@@ -658,8 +957,6 @@ function setBtnLoading($btn, loading, originalHtml) {
 
 // En presup.js - Manejo de edición desde botonera principal
 
-let _presupOriginal = null;
-
 // Helper: determina si estamos en modo edición de presupuesto
 function estaEnModoEdicionPresup() {
     return !!(modoNuevoPresup || modoModificacionPresup);
@@ -726,57 +1023,3 @@ function crearGridPresupVacioHtml() {
     </div>`;
 }
 
-// Handler para Nuevo Presupuesto
-$(document).on('click', '#btnAbmNuevo', function (e) {
-    e.preventDefault();
-
-    // Establecer modo nuevo
-    modoNuevoPresup = true;
-    modoModificacionPresup = false;
-
-    // Limpiar/Inicializar datos del formulario y productos
-    // 1) Cargar partial de datos mediante action NuevoPresupuesto
-    // Se asume que existe la variable nuevoPresupuestoUrl definida en la vista
-    if (typeof nuevoPresupuestoUrl === 'undefined') {
-        console.error('nuevoPresupuestoUrl no está definido.');
-        return;
-    }
-
-    PostGenHtml({}, nuevoPresupuestoUrl, function (html) {
-        // Insertar partial de datos
-        $('#divPresDatos').html(html).show();
-
-        // Hacer que los campos del formulario sean editables (nuevo)
-        $('#divPresupuestoDatos').find('input:not([type=hidden]), textarea, select').each(function () {
-            const $el = $(this);
-            $el.prop('readonly', false).prop('disabled', false).removeClass('campo-readonly');
-        });
-
-        // Poner foco en el primer campo editable (si existe)
-        const $first = $('#divPresupuestoDatos').find('input:not([type=hidden]), textarea, select').filter(':visible').first();
-        if ($first && $first.length) {
-            setTimeout(() => $first.focus(), 50);
-        }
-
-        // 2) Inicializar grid de productos vacío
-        $('#divPresProds').html(crearGridPresupVacioHtml()).show();
-
-        // Habilitar botones para agregar productos
-        $('#btnAgregarCProducto, #btnAgregarSustituto').prop('disabled', false);
-
-        // Habilitar Aceptar / Cancelar y deshabilitar Nuevo / Modif / Elimi
-        $('#btnAbmAceptar').prop('disabled', false).show();
-        $('#btnAbmCancelar').prop('disabled', false).show();
-        $('#btnAbmModif, #btnAbmNuevo, #btnAbmElimi').prop('disabled', true);
-
-        // Aplicar estado readonly en campos del grid (no debe poderse editar hasta doble click en modo edición)
-        aplicarReadonlyCamposPresup();
-
-        // Guardar estado original nulo para nuevo
-        _presupOriginal = null;
-
-        console.log('Modo Nuevo Presupuesto activado. Partial de datos cargado y grid inicializado vacío.');
-    }, function (err) {
-        console.error('Error al cargar NuevoPresupuesto:', err);
-    });
-});
