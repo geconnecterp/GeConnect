@@ -828,5 +828,93 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<AnticipoDetalleDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<FinancieroUsuarioDto> GetFinancieroUsuarios(GetFinancieroUsuariosRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_AN_USU;
+			var ps = new List<SqlParameter>()
+			{
+				new("@desde", request.desde),
+				new("@hasta", request.hasta),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<FinancieroUsuarioDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		/// <summary>
+		/// Busca los anticipos financieros de empleados en base a los filtros recibidos
+		/// </summary>
+		/// <param name="filtros">Filtros de búsqueda y paginación.</param>
+		/// <returns>Lista de anticipos financieros.</returns>
+		public List<AnticipoFinanEmpListaDto> BuscarAnticipoFinancierosDeEmpleados(ConsultaAnticipoFinanEmpRequest filtros)
+		{
+			filtros.Pagina = filtros.Pagina == null || filtros.Pagina <= 0 ? _pagSet.DefaultPageNumber : filtros.Pagina;
+			filtros.Registros = filtros.Registros == null || filtros.Registros <= 0 ? _pagSet.DefaultPageSize : filtros.Registros;
+
+			string sp = ConstantesGC.StoredProcedures.SP_F_AN_LISTA;
+
+			var ps = new List<SqlParameter>
+			{
+				new("@fecha_d", filtros.desde),
+				new("@fecha_h", filtros.hasta),
+			};
+
+			if (filtros.cta)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.cta_list)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+
+				ps.Add(new SqlParameter("@cta_list", sb.ToString() + ','));
+			}
+			if (filtros.tipo)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.tipo_list)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+
+				ps.Add(new SqlParameter("@tipo_list", sb.ToString() + ','));
+			}
+			if (filtros.usu)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.usu_list)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+
+				ps.Add(new SqlParameter("@usu_list", sb.ToString() + ','));
+			}
+
+			ps.Add(new SqlParameter("@registros", filtros.Registros));
+			ps.Add(new SqlParameter("@pagina", filtros.Pagina));
+			ps.Add(new SqlParameter("@ordenar", filtros.Sort ?? ""));
+
+			List<AnticipoFinanEmpListaDto> movFinan = _repository.EjecutarLstSpExt<AnticipoFinanEmpListaDto>(sp, ps, true);
+
+			return movFinan;
+		}
 	}
 }

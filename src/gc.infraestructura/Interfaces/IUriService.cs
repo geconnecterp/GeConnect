@@ -9,6 +9,6 @@ namespace gc.infraestructura.Core.Interfaces
         Uri GetPostPaginationUri(QueryFilters filter, string actionUrl);
         Uri GetPostPaginationUri(BusquedaProducto filter, string actionUrl);
         Uri GetPostPaginationUri(ConsultaMovFinancierosRequest filter, string actionUrl);
-
+		Uri GetPostPaginationUri(ConsultaAnticipoFinanEmpRequest filter, string actionUrl);
 	}
 }

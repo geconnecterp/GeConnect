@@ -198,6 +198,8 @@
 			public const string SP_F_AN_CONFIRMA = "SPGECO_F_AN_Confirmar";
 			public const string SP_F_OBTENER_TOPE_CTA = "SPGECO_F_Obtener_Topes_Cta";
 			public const string SP_F_AN_DETALLE = "SPGECO_F_AN_Detalle";
+			public const string SP_F_AN_USU = "SPGECO_F_AN_Usu";
+			public const string SP_F_AN_LISTA = "SPGECO_F_AN_Lista";
 			#endregion
 
 			#region SP Depositos

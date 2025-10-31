@@ -1,0 +1,62 @@
+﻿@model AnticipoFinanEmpDetalleModel;
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	thead th {
+		position: sticky;
+		top: 0px;
+	}
+
+	.table-wrapper-fixed-head th,
+	.table-wrapper-fixed-head td {
+		box-sizing: border-box;
+	}
+
+	.table-wrapper {
+		overflow-x: hidden;
+	}
+
+	.leyenda-titulo {
+		font-size: 1rem;
+		font-weight: 600;
+		color: #2c3e50;
+	}
+
+</style>
+@if (!string.IsNullOrWhiteSpace(Model.Leyenda))
+{
+	<div class="leyenda-titulo mb-2 text-start">@Model.Leyenda</div>
+}
+<div class="table-responsive table-wrapper">
+	<table class="table table-sm table-golden" id="tbGridAnticipoFinEmpDetalle">
+		<thead>
+			<tr class="header">
+				<th class="text-center" scope="col">Código</th>
+				<th class="text-center" scope="col">Denominación</th>
+				<th class="text-center" scope="col">Legajo</th>
+				<th class="text-center" scope="col">Anticipo</th>
+				<th class="text-center" scope="col">Cuotas</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.GrillaAnticipoFinanEmpDetalle != null && Model.GrillaAnticipoFinanEmpDetalle.ListaDatos != null && Model.GrillaAnticipoFinanEmpDetalle.ListaDatos.Count > 0)
+			{
+				@foreach (var item in Model.GrillaAnticipoFinanEmpDetalle.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+					<tr class="@clase" onclick="selectReg(this, 'tbGridAnticipoFinEmpDetalle')" data-an-compte="@item.an_compte">
+						<td class="@Model.GrillaAnticipoFinanEmpDetalle.ObtenerClase(item.cta_id) align-center cell-fit-content">@Model.GrillaAnticipoFinanEmpDetalle.FormatearDato(item.cta_id, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaAnticipoFinanEmpDetalle.ObtenerClase(item.cta_denominacion) align-left cell-fit-content">@Model.GrillaAnticipoFinanEmpDetalle.FormatearDato(item.cta_denominacion, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaAnticipoFinanEmpDetalle.ObtenerClase(item.cta_emp_legajo) align-center cell-fit-content">@Model.GrillaAnticipoFinanEmpDetalle.FormatearDato(item.cta_emp_legajo, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaAnticipoFinanEmpDetalle.ObtenerClase(item.cv_importe) cell-fit-content">@Model.GrillaAnticipoFinanEmpDetalle.FormatearDato(item.cv_importe, FormatDato.Monto)</td>
+						<td class="@Model.GrillaAnticipoFinanEmpDetalle.ObtenerClase(item.cm_compte_cuota) align-center cell-fit-content">@Model.GrillaAnticipoFinanEmpDetalle.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

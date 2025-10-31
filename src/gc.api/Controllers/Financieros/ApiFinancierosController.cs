@@ -544,5 +544,71 @@ namespace gc.api.Controllers.Financieros
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FinancieroUsuarioDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFinancieroUsuarios(GetFinancieroUsuariosRequest request)
+		{
+			ApiResponse<List<FinancieroUsuarioDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetFinancieroUsuarios(request);
+
+			response = new ApiResponse<List<FinancieroUsuarioDto>>(res);
+
+			return Ok(response);
+		}
+
+		//[HttpPost]
+		//[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<AnticipoFinanEmpListaDto>))]
+		//[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		//[Route("[action]")]
+		//public IActionResult BuscarAnticipoFinancierosDeEmpleados(ConsultaAnticipoFinanEmpRequest request)
+		//{
+		//	ApiResponse<List<AnticipoFinanEmpListaDto>> response;
+		//	_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+		//	var res = _financieroServicio.BuscarAnticipoFinancierosDeEmpleados(request);
+
+		//	response = new ApiResponse<List<AnticipoFinanEmpListaDto>>(res);
+
+		//	return Ok(response);
+		//}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<AnticipoFinanEmpListaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult BuscarAnticipoFinancierosDeEmpleados(ConsultaAnticipoFinanEmpRequest request)
+		{
+			AnticipoFinanEmpListaDto reg = new() { total_paginas = 0, total_registros = 0 };
+
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.BuscarAnticipoFinancierosDeEmpleados(request);
+
+			if (res.Count > 0)
+				reg = res.First();
+
+			var metadata = new MetadataGrid
+			{
+				TotalCount = reg.total_registros,
+				PageSize = request.Registros ?? 0,
+				CurrentPage = request.Pagina ?? 0,
+				TotalPages = reg.total_paginas,
+				HasNextPage = (request.Pagina ?? 0) < reg.total_paginas,
+				HasPreviousPage = (request.Pagina ?? 0) > 1,
+				NextPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(BuscarAnticipoFinancierosDeEmpleados)) ?? "").ToString(),
+				PreviousPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(BuscarAnticipoFinancierosDeEmpleados)) ?? "").ToString(),
+
+			};
+
+			var response = new ApiResponse<IEnumerable<AnticipoFinanEmpListaDto>>(res)
+			{
+				Meta = metadata
+			};
+			Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
+
+			return Ok(response);
+		}
 	}
 }
