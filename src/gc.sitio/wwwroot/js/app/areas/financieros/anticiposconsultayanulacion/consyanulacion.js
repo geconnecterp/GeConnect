@@ -1,4 +1,9 @@
 ﻿$(function () {
+	$(document).on("click", "#btnImprimirDetalle", ImprimirDetalle);
+	$(document).on("click", "#btnImprimirVales", ImprimirVales);
+	$(document).on("click", "#btnAnularAntic", AnularAnticipo);
+	$(document).on("click", "#btnCancelar", ControlaCancelar);
+
 	$("#pagEstado").on("change", function () {
 		var div = $("#divPaginacion");
 		cargaPaginacion();
@@ -36,6 +41,56 @@
 
 	funcCallBack = BuscarAnticiposDeEmpleados;
 });
+
+function ImprimirDetalle() {
+}
+
+function ImprimirVales() {
+}
+
+function AnularAnticipo() {
+}
+
+function ControlaCancelar() {
+	$("#divFiltros").removeClass("collapse").addClass("show");
+	$("#divDetalle").collapse("hide");
+	$("#tbGridAnticipoFinEmpDetalle tbody").empty();
+	$("#tbGridAnticipoFinEmp tbody").empty();
+	$(".leyenda-titulo").hide();
+	InicializarDatosEnSesion();
+	ResetDeFiltros();
+}
+
+function ResetDeFiltros() {
+	$("#Rel01List").empty();
+	$("#Rel01").val(""); 
+	$("#listaTipo").val("");
+	$("#listaUsuario").val("");
+	$("#UsuarioList").empty();
+	$("#chkUsuario").prop('checked', false);
+	$("#chkUsuario").trigger("change");
+	$("#chkTipo").prop('checked', false);
+	$("#chkTipo").trigger("change");
+	$("#chkRel01").prop('checked', false);
+	$("#chkRel01").trigger("change");
+}
+
+function InicializarDatosEnSesion() {
+	var data = {};
+	PostGen(data, inicializarDatosEnSesionUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			CerrarWaiting();
+		}
+	});
+}
 
 function cargaPaginacion() {
 	$("#divPaginacion").pagination({

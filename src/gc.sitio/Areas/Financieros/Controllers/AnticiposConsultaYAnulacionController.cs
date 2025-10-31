@@ -1,6 +1,7 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Financieros.Request;
@@ -138,6 +139,23 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					Mensaje = ex.Message
 				};
 				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public JsonResult InicializarDatosEnSesion()
+		{
+			try
+			{
+				ListaAnticipoFinanEmp = [];
+				return Json(new { error = false, warn = false, msg = "" });
+			}
+			catch (NegocioException ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
 			}
 		}
 
