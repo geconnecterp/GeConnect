@@ -307,11 +307,11 @@ namespace gc.sitio.Areas.Productos.Controllers
             ObtenerTipoPresupuesto(_presuSv);
 
             //CLIENTE
-            var listR01 = new List<ComboGenDto>();
-            ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
+            var listR011 = new List<ComboGenDto>();
+            ViewBag.Rel011List = HelperMvc<ComboGenDto>.ListaGenerica(listR011);
             //USUARIO
-            var listR02 = new List<ComboGenDto>();
-            ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
+            var listR022 = new List<ComboGenDto>();
+            ViewBag.Rel022List = HelperMvc<ComboGenDto>.ListaGenerica(listR022);
             //ESTADO
             var listR03 = new List<ComboGenDto>();
             ViewBag.Rel03 = ComboPresupuestoEstado();

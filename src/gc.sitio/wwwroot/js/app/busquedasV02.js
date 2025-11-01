@@ -3,7 +3,7 @@ var productosSeleccionadosBusqueda = [];
 var dataBakV02 = {};
 
 // Variables globales para definir el contexto de destino
-var busquedaDestinoTipo = "ofertas"; // valores: "ofertas", "combos", "sustitutos"
+var busquedaDestinoTipo = "ofertas"; // valores: "ofertas", "combos", "sustitutos", "Presupuestos"
 var busquedaDestinoCallback = null;
 
 /**
@@ -602,6 +602,14 @@ function agregarProductosSeleccionadosAOfertas() {
     var titulo;
     
     switch (busquedaDestinoTipo) {
+        case "presupuestos": // ✅ NUEVO CASO
+            titulo = "CONFIRMAR AGREGADO A PRESUPUESTO";
+            mensaje = `¿Desea agregar ${productosSeleccionadosBusqueda.length} productos al presupuesto?`;
+            if (productosSeleccionadosBusqueda.length === 1) {
+                var descripcion = productosSeleccionadosBusqueda[0].p_desc;
+                mensaje = `¿Desea agregar el producto "${descripcion}" al presupuesto?`;
+            }
+            break;
         case "sustitutos":
             titulo = "CONFIRMAR SUSTITUTOS";
             mensaje = `¿Desea agregar ${productosSeleccionadosBusqueda.length} productos como sustitutos?`;
@@ -632,7 +640,9 @@ function agregarProductosSeleccionadosAOfertas() {
         mensaje,
         function (resp) {
             if (resp === "SI") {
-                if ((busquedaDestinoTipo === "combos" || busquedaDestinoTipo === "sustitutos") && 
+                if ((busquedaDestinoTipo === "combos" ||
+                    busquedaDestinoTipo === "sustitutos" ||
+                    busquedaDestinoTipo === "presupuestos") &&
                     typeof busquedaDestinoCallback === 'function') {
                     procesarAgregarProductosCustom();
                 } else {
