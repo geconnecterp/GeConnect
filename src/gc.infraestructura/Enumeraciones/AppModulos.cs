@@ -33,6 +33,7 @@
 		FDI, // FLUJO DE INGRESOS
 		PDE, // PROYECCIÓN DE EGRESOS
         ADE, // ANTICIPO DE EMPLEADOS
+		DDA, // DETALLE DE ANTICIPO
 	}
 
     public enum AppReportes

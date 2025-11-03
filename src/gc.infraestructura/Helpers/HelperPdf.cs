@@ -2932,6 +2932,88 @@ namespace gc.infraestructura.Helpers
 			return resultado.ToString().Trim();
 		}
 
+		public static void CargarAnticiposDetalle(Document pdf, List<AnticipoDetalleDto> lista, Font fuenteEtiqueta, Font fuenteValor)
+		{
+			if (lista == null || !lista.Any()) return;
+
+			Font fuenteTotal = new Font(fuenteValor.BaseFont, fuenteValor.Size + 1, Font.BOLD);
+
+			PdfPTable tabla = new(7)
+			{
+				WidthPercentage = 100
+			};
+			tabla.SetWidths([5f, 15f, 10f, 30f, 10f, 15f, 15f]);
+
+			// Encabezados
+			string[] headers = { "Item", "Código", "Legajo", "Razón Social", "Cuota", "Fecha Vto.", "Anti./Dto." };
+			foreach (var header in headers)
+			{
+				PdfPCell celda = new(new Phrase(header, fuenteValor))
+				{
+					BackgroundColor = BaseColor.LightGray,
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					VerticalAlignment = Element.ALIGN_MIDDLE,
+					Padding = 5
+				};
+				tabla.AddCell(celda);
+			}
+
+			// Filas
+			int item = 1;
+			decimal total = 0;
+			foreach (var anticipo in lista)
+			{
+				tabla.AddCell(new PdfPCell(new Phrase(anticipo.an_item.ToString(), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
+				tabla.AddCell(new PdfPCell(new Phrase(anticipo.cta_id, fuenteEtiqueta)));
+				tabla.AddCell(new PdfPCell(new Phrase(anticipo.cta_emp_legajo.ToString(), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
+				tabla.AddCell(new PdfPCell(new Phrase(anticipo.cta_denominacion, fuenteEtiqueta)));
+				tabla.AddCell(new PdfPCell(new Phrase($"{anticipo.cm_compte_cuota}/{anticipo.cm_compte_cuota_tot}", fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
+				tabla.AddCell(new PdfPCell(new Phrase(anticipo.an_fecha.ToString("dd/MM/yyyy"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
+				tabla.AddCell(new PdfPCell(new Phrase(anticipo.cv_importe.ToString("N2"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				total += anticipo.cv_importe;
+				item++;
+			}
+
+			// Celdas vacías para centrar visualmente el totalizador
+			for (int i = 0; i <= 4; i++)
+			{
+				PdfPCell celdaVacia = new PdfPCell(new Phrase(""))
+				{
+					Border = Rectangle.NO_BORDER
+				};
+				tabla.AddCell(celdaVacia);
+			}
+
+			// Celda "Total:"
+			PdfPCell celdaTotalLabel = new PdfPCell(new Phrase("Total:", fuenteValor))
+			{
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				Border = Rectangle.TOP_BORDER,
+				PaddingTop = 6f,
+				PaddingBottom = 4f,
+				BackgroundColor = new BaseColor(230, 230, 230) // Gris suave
+			};
+			tabla.AddCell(celdaTotalLabel);
+
+			// Celda con el valor
+			PdfPCell celdaTotalValor = new PdfPCell(new Phrase(total.ToString("N2"), fuenteValor))
+			{
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				Border = Rectangle.BOX,
+				BorderWidth = 0.5f,
+				BorderColor = BaseColor.Black, // Color del borde
+				PaddingTop = 6f,
+				PaddingBottom = 4f,
+				BackgroundColor = new BaseColor(230, 230, 230)
+			};
+			tabla.AddCell(celdaTotalValor);
+
+			pdf.Add(tabla);
+
+		}
 
 		private static string GenerarSeparadorPunteado(string etiqueta, string valor, int totalLongitud = 90)
 		{

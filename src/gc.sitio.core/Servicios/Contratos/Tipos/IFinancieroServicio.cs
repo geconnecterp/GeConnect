@@ -55,5 +55,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<AnticipoDetalleDto> GetAnticipoDetalle(string an_compte, string token);
 		List<FinancieroUsuarioDto> GetFinancieroUsuarios(GetFinancieroUsuariosRequest request, string token);
 		Task<(List<AnticipoFinanEmpListaDto>, MetadataGrid)> BuscarAnticipoFinancierosDeEmpleados(ConsultaAnticipoFinanEmpRequest filters, string token);
+		RespuestaGenerica<RespuestaDto> FinancieroAnticipoAnular(FinancieroAnticipoAnularRequest request, string token);
 	}
 }

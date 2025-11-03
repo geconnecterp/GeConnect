@@ -1,8 +1,8 @@
 ﻿$(function () {
 	$(document).on("click", "#btnImprimirDetalle", ImprimirDetalle);
 	$(document).on("click", "#btnImprimirVales", ImprimirVales);
-	$(document).on("click", "#btnAnularAntic", AnularAnticipo);
 	$(document).on("click", "#btnCancelar", ControlaCancelar);
+	$(document).on("click", "#btnAnularAntic", ControlaAnularAnticipo);
 
 	$("#pagEstado").on("change", function () {
 		var div = $("#divPaginacion");
@@ -42,13 +42,136 @@
 	funcCallBack = BuscarAnticiposDeEmpleados;
 });
 
+function ControlaAnularAnticipo() {
+	if (an_compte_selected == "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un comprobante para imprimir.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirMensaje("ATENCIÓN", `¿Esta seguro que desea anular el anticipo seleccionado N° ${an_compte_selected}?`, function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI":
+					handlerAnularAnticipo(an_compte_selected);
+					break;
+				case "NO":
+					break;
+				default: //NO
+					break;
+			}
+			return true;
+
+		}, true, ["Aceptar", "Cancelar"], "question!", null);
+	}
+}
+
+function handlerAnularAnticipo(anCompte) {
+	var data = { anCompte };
+	PostGen(data, financieroAnticipoAnularUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			CerrarWaiting();
+			AbrirMensaje("ÉXITO", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				var pagina = 1;
+				BuscarAnticiposDeEmpleados(pagina);
+				return true;
+			}, false, ["Aceptar"], "success!", null);
+		}
+	});
+}
+
 function ImprimirDetalle() {
+	var filas = $("#tbGridAnticipoFinEmpDetalle tbody tr").length;
+	if (filas == 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos para imprimir.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Imprimiendo listado...");
+		var tipoReporte = 1;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				CerrarWaiting();
+				HandlerImprimirDetalle();
+			}
+		});
+	}
+}
+
+function HandlerImprimirDetalle() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var id = an_compte_selected;
+		let data = { id };
+		cargarReporteEnArre(40, data, "DETALLE DE ANTICIPO", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function ImprimirVales() {
+	var filas = $("#tbGridAnticipoFinEmp tbody tr").length;
+	if (filas == 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos para imprimir.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else if (an_compte_selected == "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un comprobante para imprimir.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Imprimiendo listado...");
+		var tipoReporte = 2;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				CerrarWaiting();
+				HandlerImprimirVales();
+			}
+		});
+	}
 }
 
-function AnularAnticipo() {
+function HandlerImprimirVales() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var id = an_compte_selected;
+		let data = { id };
+		cargarReporteEnArre(39, data, "ANTICIPO DE EMPLEADO", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function ControlaCancelar() {
@@ -63,7 +186,7 @@ function ControlaCancelar() {
 
 function ResetDeFiltros() {
 	$("#Rel01List").empty();
-	$("#Rel01").val(""); 
+	$("#Rel01").val("");
 	$("#listaTipo").val("");
 	$("#listaUsuario").val("");
 	$("#UsuarioList").empty();
@@ -73,6 +196,10 @@ function ResetDeFiltros() {
 	$("#chkTipo").trigger("change");
 	$("#chkRel01").prop('checked', false);
 	$("#chkRel01").trigger("change");
+	$("#listaTipo").prop("disabled", true);
+	$("#listaUsuario").prop("disabled", true);
+	$("#Rel01List").prop("disabled", true);
+	$("#UsuarioList").prop("disabled", true);
 }
 
 function InicializarDatosEnSesion() {
@@ -174,7 +301,7 @@ function selectReg(x, gridId) {
 	$(x).addClass("selected-row");
 	if (gridId === "tbGridAnticipoFinEmp") {
 		let anCompte = $(x).data("an-compte");
-
+		an_compte_selected = anCompte;
 		CargarDetalleDeAnticipo(anCompte);
 	}
 }

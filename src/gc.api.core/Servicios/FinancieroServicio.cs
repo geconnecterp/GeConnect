@@ -872,9 +872,11 @@ namespace gc.api.core.Servicios
 
 					sb.Append(item);
 				}
-
+				ps.Add(new SqlParameter("@cta", "1"));
 				ps.Add(new SqlParameter("@cta_list", sb.ToString() + ','));
 			}
+			else
+				ps.Add(new SqlParameter("@cta", "0"));
 			if (filtros.tipo)
 			{
 				StringBuilder sb = new();
@@ -888,9 +890,11 @@ namespace gc.api.core.Servicios
 
 					sb.Append(item);
 				}
-
+				ps.Add(new SqlParameter("@tipo", "1"));
 				ps.Add(new SqlParameter("@tipo_list", sb.ToString() + ','));
 			}
+			else
+				ps.Add(new SqlParameter("@tipo", "0"));
 			if (filtros.usu)
 			{
 				StringBuilder sb = new();
@@ -904,10 +908,11 @@ namespace gc.api.core.Servicios
 
 					sb.Append(item);
 				}
-
+				ps.Add(new SqlParameter("@usu", "1"));
 				ps.Add(new SqlParameter("@usu_list", sb.ToString() + ','));
 			}
-
+			else
+				ps.Add(new SqlParameter("@usu", "0"));
 			ps.Add(new SqlParameter("@registros", filtros.Registros));
 			ps.Add(new SqlParameter("@pagina", filtros.Pagina));
 			ps.Add(new SqlParameter("@ordenar", filtros.Sort ?? ""));
@@ -915,6 +920,19 @@ namespace gc.api.core.Servicios
 			List<AnticipoFinanEmpListaDto> movFinan = _repository.EjecutarLstSpExt<AnticipoFinanEmpListaDto>(sp, ps, true);
 
 			return movFinan;
+		}
+
+		public List<RespuestaDto> FinancieroAnticipoAnular(FinancieroAnticipoAnularRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_AN_ANULA_CONFIRMAR;
+			var ps = new List<SqlParameter>()
+			{
+				new("@an_compte",request.an_compte),
+				new("@adm_id",request.adm_id),
+				new("@usu_id",request.usu_id),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return listaTemp;
 		}
 	}
 }

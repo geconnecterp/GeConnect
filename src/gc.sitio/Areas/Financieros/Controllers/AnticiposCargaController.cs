@@ -319,7 +319,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				request.json_anticipos = request.json_anticipos.Replace("-03:00", "");
 
 				var respuesta = _financieroServicio.FinancieroAnticipoEmpleadoConfirma(request, TokenCookie);
-				return AnalizarRespuesta(respuesta, "El Anticipo de empleado se ha cargado con éxtio.");
+				return AnalizarRespuesta(respuesta, "El Anticipo de empleado se ha cargado con éxito.");
 			}
 			catch (Exception ex)
 			{

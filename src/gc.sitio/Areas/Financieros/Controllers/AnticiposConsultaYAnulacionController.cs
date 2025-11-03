@@ -7,6 +7,7 @@ using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Financieros.Models;
 using gc.sitio.core.Servicios.Contratos;
@@ -20,6 +21,15 @@ namespace gc.sitio.Areas.Financieros.Controllers
 	[Area("Financieros")]
 	public class AnticiposConsultaYAnulacionController : AnticiposConsultaYAnulacionControladorBase
 	{
+		//PARA MODULO DE IMPRESION
+		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
+		private AppModulo _modulo_1; //ADE
+		private AppModulo _modulo_2; //DDA
+		private string APP_MODULO_1 = AppModulos.ADE.ToString();
+		private string APP_MODULO_2 = AppModulos.DDA.ToString();
+		private readonly IDocManagerServicio _docMSv;
+
+		//************************
 		private readonly AppSettings _setting;
 		private readonly IFinancieroServicio _financieroServicio;
 		private readonly ICuentaServicio _cuentaServicio;
@@ -34,6 +44,12 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			_financieroServicio = financieroServicio;
 			_cuentaServicio = cuentaServicio;
 			_tipoAnticipoEmpleadoServicio = tipoAnticipoEmpleadoServicio;
+
+			//PARA MODULO DE IMPRESION
+			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
+			_modulo_1 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_1);
+			_modulo_2 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_2);
+			_docMSv = docManager; //instancio el servicio de impresión
 		}
 
 		public IActionResult Index()
@@ -142,6 +158,79 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
+		[HttpPost]
+		public JsonResult FinancieroAnticipoAnular(string anCompte)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return Json(new { error = true, warn = false, msg = "No autenticado." });
+
+				if (string.IsNullOrEmpty(anCompte))
+					return Json(new { error = true, warn = false, msg = "Debe seleccionar un Anticipo para anular." });
+
+				var request = new FinancieroAnticipoAnularRequest()
+				{
+					an_compte = anCompte,
+					adm_id = AdministracionId,
+					usu_id = UserName
+				};
+				var respuesta = _financieroServicio.FinancieroAnticipoAnular(request, TokenCookie);
+				return AnalizarRespuesta(respuesta, "El Anticipo de empleado ha sido anulado con éxito.");
+			}
+			catch (NegocioException ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+		}
+
+		/// <summary>
+		/// Establece el tipo de reporte seleccionado por el usuario para la consulta anticipos.
+		/// Inicializa el gestor de impresión y carga los documentos disponibles según el tipo de reporte.
+		/// </summary>
+		/// <param name="tipoReporte">Tipo de reporte seleccionado.</param>
+		/// <returns>Resultado en formato JSON indicando éxito o error.</returns>
+		public JsonResult SetearTipoDeReporte(int tipoReporte)
+		{
+			try
+			{
+				if (tipoReporte < 0)
+					return Json(new { error = true, warn = false, msg = "Debe seleccionar un tipo de reporte." });
+
+				string titulo = string.Empty;
+				switch ((TipoDeReporte)tipoReporte)
+				{
+					case TipoDeReporte.ImprimirVales:
+						#region Gestor Impresion - Inicializacion de variables
+						titulo = "DETALLE DE ANTICIPO";
+						DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_1);
+						ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_1);
+						#endregion
+						break;
+					case TipoDeReporte.ImprimirDetalle:
+						#region Gestor Impresion - Inicializacion de variables
+						titulo = "ANTICIPO DE EMPLEADO";
+						DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_2);
+						ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_2);
+						#endregion
+						break;
+					default:
+						break;
+				}
+
+				return Json(new { error = false, warn = false, msg = "Tipo de reporte actualizado correctamente." });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar setear el tipo de reporte: {ex.Message}" });
+			}
+		}
+
 		public JsonResult InicializarDatosEnSesion()
 		{
 			try
@@ -209,6 +298,12 @@ namespace gc.sitio.Areas.Financieros.Controllers
 		{
 			var lista = listaTemp.Select(x => new ComboGenDto { Id = x.usu_id, Descripcion = $"{x.usu_apellidoynombre}" });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+
+		enum TipoDeReporte
+		{
+			ImprimirDetalle = 1,
+			ImprimirVales = 2,
 		}
 		#endregion
 	}

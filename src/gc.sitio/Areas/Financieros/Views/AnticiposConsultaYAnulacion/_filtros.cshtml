@@ -20,13 +20,13 @@
 					</div>
 					<div class=" col-sm-6">
 						<div class="input-group input-group-sm">
-							<span class="input-group-text" id="lbIdDesde">Desde:</span>
+							<span class="input-group-text fixed-lbl-for-abm-70" id="lbIdDesde">Desde:</span>
 							<input type="date" class="form-control inputEditable" asp-for="Date1" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
 						</div>
 					</div>
 					<div class=" col-sm-6">
 						<div class="input-group input-group-sm">
-							<span class="input-group-text" id="lbIdHasta">Hasta:</span>
+							<span class="input-group-text fixed-lbl-for-abm-70" id="lbIdHasta">Hasta:</span>
 							<input type="date" class="form-control inputEditable" asp-for="Date2" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
 						</div>
 					</div>
@@ -46,7 +46,7 @@
 		<div class="row">
 			<div class="col-sm-6">
 				<div class="input-group  input-group-sm">
-					<span class="input-group-text">Nombre</span>
+					<span class="input-group-text fixed-lbl-for-abm-70">Nombre</span>
 					<input type="text" class="form-control inputEditable" name="Rel01" id="Rel01" disabled />
 					@Html.Hidden("Rel01Item")
 				</div>
@@ -68,7 +68,7 @@
 		<div class="row">
 			<div class="col-md-6" id="divCB">
 				<div class="input-group input-group-sm">
-					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Tipo</span>
+					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm fixed-lbl-for-abm-70">Tipo</span>
 					@Html.DropDownListFor(m => m.selectedValue, Model.ListaTipo, "Seleccionar", new { @id = "listaTipo", disabled = "disabled", @class = "form-control inputEditable activable" })
 				</div>
 			</div>
@@ -89,7 +89,7 @@
 		<div class="row">
 			<div class="col-md-6" id="divCB">
 				<div class="input-group input-group-sm">
-					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Usuario</span>
+					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm fixed-lbl-for-abm-70">Usuario</span>
 					@Html.DropDownListFor(m => m.selectedValue, Model.ListaUsuario, "Seleccionar", new { @id = "listaUsuario", disabled = "disabled", @class = "form-control inputEditable activable" })
 				</div>
 			</div>
