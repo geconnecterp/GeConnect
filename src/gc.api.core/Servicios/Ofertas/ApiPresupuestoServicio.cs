@@ -86,11 +86,11 @@ namespace gc.api.core.Servicios.Ofertas
                 new SqlParameter("@pre_adm_id", pres.adm_id),
 
                 new SqlParameter("cta_id", pres.cta_id),
-                new SqlParameter("@pre_nombre", pres.pre_nombre),
-                new SqlParameter("@pre_domicilio", pres.pre_domicilio),
+                new SqlParameter("@pre_nombre", pres.pre_nombre??""),
+                new SqlParameter("@pre_domicilio", pres.pre_domicilio ?? ""),
 
-                new SqlParameter("@pre_obs_entrega", pres.pre_obs_entrega),
-                new SqlParameter("@pre_obs_pago", pres.pre_obs_pago),
+                new SqlParameter("@pre_obs_entrega", pres.pre_obs_entrega??""),
+                new SqlParameter("@pre_obs_pago", pres.pre_obs_pago?? ""),
 
                 new SqlParameter("@json_prod", req.Json),
                 new SqlParameter("@usu_id", req.Usuario),

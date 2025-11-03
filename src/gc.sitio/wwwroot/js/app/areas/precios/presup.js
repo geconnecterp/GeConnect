@@ -18,7 +18,7 @@ function InicializaPantallaPresupuesto() {
         $("#divDetalle").collapse("hide");
     }
     $("#divFiltro").collapse("show");
-    // Activar el botón de nuevo combo
+    // ✅ Activar botón de nuevo presupuesto
     $("#btnAbmNuevo").prop("disabled", false);
 
     // Configurar el evento click para el botón Cancelar/Inicializar
@@ -355,6 +355,71 @@ function InicializaEventosPresupuesto() {
         }
 
         console.log('✅ Modo Modificación Presupuesto activado');
+    });
+
+    // ============================================================================
+    // ELIMINACIÓN DE PRESUPUESTO
+    // ============================================================================
+
+    $(document).on('click', '#btnAbmElimi', function (e) {
+        e.preventDefault();
+        if ($(this).prop('disabled')) return;
+
+        const preId = $('#pre_id').val();
+        if (!preId || preId.trim() === '') {
+            ControlaMensajeWarning('Debe seleccionar un presupuesto para eliminar');
+            return;
+        }
+
+        const preeId = $('#pree_id').val();
+        const estadosEliminables = ['P'];
+
+        if (!estadosEliminables.includes(preeId)) {
+            const nombreEstado = preeId === 'F' ? 'facturado'
+                : preeId === 'R' ? 'remitido'
+                    : preeId === 'A' ? 'anulado'
+                        : 'en este estado';
+
+            ControlaMensajeError(
+                `No se puede eliminar un presupuesto ${nombreEstado}. ` +
+                `Solo los presupuestos en estado Pendiente pueden ser eliminados.`
+            );
+            return;
+        }
+
+        const ctaDenominacion = $('#cta_denominacion').val() || 'Sin cliente';
+        const vigenciaDesde = $('#pre_vigencia_desde').val() || '';
+        const vigenciaHasta = $('#pre_vigencia_hasta').val() || '';
+
+        const mensajeConfirmacion = `
+            <div class="text-start">
+                <p class="mb-2"><strong>¿Está seguro que desea eliminar este presupuesto?</strong></p>
+                <hr class="my-2">
+                <p class="mb-1"><strong>ID:</strong> ${preId}</p>
+                <p class="mb-1"><strong>Cliente:</strong> ${ctaDenominacion}</p>
+                <p class="mb-1"><strong>Vigencia:</strong> ${vigenciaDesde} al ${vigenciaHasta}</p>
+                <hr class="my-2">
+                <p class="text-danger mb-0">
+                    <i class="bx bx-error-circle me-1"></i>
+                    <strong>Esta acción no se puede deshacer.</strong>
+                </p>
+            </div>
+        `;
+
+        AbrirMensaje(
+            'ELIMINAR PRESUPUESTO',
+            mensajeConfirmacion,
+            function (resp) {
+                if (resp === 'SI') {
+                    eliminarPresupuesto();
+                }
+                $('#msjModal').modal('hide');
+            },
+            true,
+            ['Eliminar', 'Cancelar'],
+            'warn!',
+            null
+        );
     });
 
     // Autocomplete especializado para Rel011
@@ -785,6 +850,7 @@ function cargarPresupuestoDatos(preId) {
         const permite = estadosEditables.includes(preeId);
         
         $("#btnAbmModif").prop("disabled", !permite);
+        $("#btnAbmElimi").prop("disabled", !permite);
 
         // Debug - ayuda a identificar estados del sistema
         console.log("cargarPresupuestoDatos: Estado del presupuesto:", preeId, 
@@ -1369,3 +1435,434 @@ function procesarAgregarProductosMultiples() {
     }
 }
 
+// Handler para Aceptar/Confirmar Presupuesto
+$(document).on('click', '#btnAbmAceptar', function (e) {
+    e.preventDefault();
+
+    if ($(this).prop('disabled')) return;
+
+    // Determinar modo ABM
+    let abm = '';
+    if (modoNuevoPresup) {
+        abm = 'A'; // Alta
+    } else if (modoModificacionPresup) {
+        abm = 'M'; // Modificación
+    } else {
+        console.error('⚠️ Modo de operación no determinado');
+        ControlaMensajeError('No se puede determinar la operación a realizar');
+        return;
+    }
+
+    // Validar antes de confirmar
+    const validacion = validarPresupuesto(abm);
+    if (!validacion.esValido) {
+        ControlaMensajeWarning(validacion.mensaje);
+        return;
+    }
+
+    // Mostrar confirmación
+    const mensajeConfirmacion = abm === 'A' 
+        ? '¿Desea confirmar la creación del presupuesto?' 
+        : '¿Desea confirmar las modificaciones del presupuesto?';
+
+    AbrirMensaje(
+        'CONFIRMAR PRESUPUESTO',
+        mensajeConfirmacion,
+        function (resp) {
+            if (resp === 'SI') {
+                confirmarPresupuesto(abm);
+            }
+            $('#msjModal').modal('hide');
+        },
+        true,
+        ['Confirmar', 'Cancelar'],
+        'info!',
+        null
+    );
+});
+
+// ============================================================================
+// FUNCIONES DE VALIDACIÓN Y CONFIRMACIÓN DE PRESUPUESTO
+// ============================================================================
+
+/**
+ * ✅ Valida los datos del presupuesto antes de confirmar
+ * @param {string} abm - Tipo de operación: 'A', 'M', 'B'
+ * @returns {object} { esValido: boolean, mensaje: string }
+ */
+function validarPresupuesto(abm) {
+    console.log(`🔍 Validando presupuesto (Modo: ${abm})...`);
+
+    // ✅ VALIDACIÓN 1: Cliente obligatorio
+    const ctaId = $('#cta_id').val();
+    if (!ctaId || ctaId.trim() === '') {
+        return {
+            esValido: false,
+            mensaje: 'Debe seleccionar un cliente para el presupuesto'
+        };
+    }
+
+    // ✅ VALIDACIÓN 2: Tipo obligatorio
+    const pretId = $('#pret_id').val();
+    if (!pretId || pretId.trim() === '') {
+        return {
+            esValido: false,
+            mensaje: 'Debe seleccionar el tipo de presupuesto'
+        };
+    }
+
+    // ✅ VALIDACIÓN 3: Vigencia desde obligatorio
+    const vigenciaDesde = $('#pre_vigencia_desde').val();
+    if (!vigenciaDesde || vigenciaDesde.trim() === '') {
+        return {
+            esValido: false,
+            mensaje: 'Debe ingresar la fecha de vigencia desde'
+        };
+    }
+
+    // ✅ VALIDACIÓN 4: Vigencia hasta obligatorio
+    const vigenciaHasta = $('#pre_vigencia_hasta').val();
+    if (!vigenciaHasta || vigenciaHasta.trim() === '') {
+        return {
+            esValido: false,
+            mensaje: 'Debe ingresar la fecha de vigencia hasta'
+        };
+    }
+
+    // ✅ VALIDACIÓN 5: Vigencia desde <= hasta
+    if (new Date(vigenciaDesde) > new Date(vigenciaHasta)) {
+        return {
+            esValido: false,
+            mensaje: 'La fecha "Vigencia Desde" no puede ser posterior a "Vigencia Hasta"'
+        };
+    }
+
+    // ✅ VALIDACIÓN 6: Debe haber al menos un producto
+    const productos = obtenerProductosDelGrid();
+    if (productos.length === 0) {
+        return {
+            esValido: false,
+            mensaje: 'Debe agregar al menos un producto al presupuesto'
+        };
+    }
+
+    // ✅ VALIDACIÓN 7: Todos los productos deben tener cantidad > 0
+    const productosConCantidadInvalida = productos.filter(p => p.pre_cantidad <= 0);
+    if (productosConCantidadInvalida.length > 0) {
+        return {
+            esValido: false,
+            mensaje: 'Todos los productos deben tener una cantidad mayor a 0'
+        };
+    }
+
+    console.log('✅ Validación exitosa');
+    return { esValido: true, mensaje: '' };
+}
+
+/**
+ * ✅ Confirma el presupuesto enviándolo al servidor
+ * @param {string} abm - Tipo de operación: 'A', 'M', 'B'
+ */
+function confirmarPresupuesto(abm) {
+    console.log(`📤 Confirmando presupuesto (Modo: ${abm})...`);
+
+    AbrirWaiting('Confirmando presupuesto...');
+
+    try {
+        // Construir objeto de confirmación
+        const confirmacionDto = construirPresupuestoConfirmaReqDto(abm);
+
+        // Debug: Ver estructura completa
+        console.log('📦 DTO de confirmación:', confirmacionDto);
+
+        // Enviar al servidor
+        PostGen(
+            confirmacionDto,
+            confirmarPresupuestoUrl,
+            function (response) {
+                CerrarWaiting();
+                procesarRespuestaConfirmacion(response, abm);
+            },
+            function (error) {
+                CerrarWaiting();
+                console.error('❌ Error al confirmar presupuesto:', error);
+                ControlaMensajeError(
+                    'Error al confirmar el presupuesto: ' +
+                    (error.responseJSON?.mensaje || error.statusText || 'Error desconocido')
+                );
+            }
+        );
+    } catch (error) {
+        CerrarWaiting();
+        console.error('❌ Error al construir DTO:', error);
+        ControlaMensajeError('Error al procesar los datos del presupuesto: ' + error.message);
+    }
+}
+
+/**
+ * ✅ Construye el DTO PresupuestoConfirmaReqDto
+ * @param {string} abm - Tipo de operación
+ * @returns {object} PresupuestoConfirmaReqDto
+ */
+function construirPresupuestoConfirmaReqDto(abm) {
+    return {
+        Abm: abm,
+        Datos: obtenerDatosFormularioPresupuesto(),
+        Productos: obtenerProductosDelGrid()
+    };
+}
+
+/**
+ * ✅ Obtiene los datos del formulario de presupuesto
+ * @returns {object} PresupuestoDto
+ */
+function obtenerDatosFormularioPresupuesto() {
+    const datos = {
+        pre_id: $('#pre_id').val() || '',
+        pret_id: $('#pret_id').val() || '',
+        pree_id: $('#pree_id').val() || 'P', // Pendiente por defecto
+        cta_id: $('#cta_id').val() || '',
+        cta_denominacion: $('#cta_denominacion').val() || '',
+        pre_nombre: $('#pre_nombre').val() || '',
+        pre_domicilio: $('#pre_domicilio').val() || '',
+        pre_vigencia_desde: $('#pre_vigencia_desde').val() || '',
+        pre_vigencia_hasta: $('#pre_vigencia_hasta').val() || '',
+        usu_id: $('#usu_id').val() || '',
+        usu_apellidoynombre: $('#usu_apellidoynombre').val() || '',
+        adm_id: $('#adm_id').val() || '',
+        adm_nombre: $('#adm_nombre').val() || '',
+        tco_id: $('#tco_id').val() || '',
+        cm_compte: $('#cm_compte').val() || '',
+        pre_obs_pago: $('#pre_obs_pago').val() || '',
+        pre_obs_entrega: $('#pre_obs_entrega').val() || ''
+    };
+
+    console.log('📋 Datos del formulario capturados:', datos);
+    return datos;
+}
+
+/**
+ * ✅ Obtiene los productos del grid
+ * @returns {Array} Lista de PresupuestoProductoDto
+ */
+function obtenerProductosDelGrid() {
+    const productos = [];
+    const $filas = $('#tbGridPresupuestoProds tbody tr');
+
+    $filas.each(function () {
+        const $fila = $(this);
+
+        // ✅ OPTIMIZACIÓN: Saltar filas vacías o de mensaje en una sola verificación
+        if ($fila.find('td[colspan]').length > 0) return;
+
+        // ✅ OPTIMIZACIÓN: Extraer datos del DOM usando data attributes (más eficiente)
+        const pId = $fila.data('p-id');
+        if (!pId) return; // Si no hay ID, saltar esta fila
+
+        // ✅ OPTIMIZACIÓN: Parsear valores numéricos una sola vez
+        const preCosto = parseFloat($fila.data('pre-pcosto')) || 0;
+        const preNeto = parseFloat($fila.data('pre-pneto')) || 0;
+        const ivaSituacion = $fila.data('iva-situacion') || 'E';
+        const ivaAlicuota = parseFloat($fila.data('iva-alicuota')) || 0;
+        const inAlicuota = parseFloat($fila.data('in-alicuota')) || 0;
+
+        // ✅ OPTIMIZACIÓN: Buscar inputs una sola vez y cachear resultados
+        const $inputCantidad = $fila.find('.input-pre_cantidad');
+        const $inputMargen = $fila.find('.input-pre_margen');
+        const $inputPVta = $fila.find('.input-pre_pvta');
+
+        // ✅ OPTIMIZACIÓN: Extraer y parsear valores en una sola línea
+        const cantidad = parseFloat($inputCantidad.val().replace(/,/g, '')) || 0;
+        const margen = parseFloat($inputMargen.val().replace(/,/g, '')) || 0;
+        const precioVenta = parseFloat($inputPVta.val().replace(/,/g, '')) || 0;
+        
+        // ✅ OPTIMIZACIÓN: Calcular total directamente
+        const total = cantidad * precioVenta;
+
+        // ✅ Construir objeto PresupuestoProductoDto (coincide exactamente con el DTO de C#)
+        productos.push({
+            // Propiedades de productos
+            p_id: pId,
+            p_des: $fila.find('td:nth-child(2)').text().trim(),
+            iva_situacion: ivaSituacion,
+            iva_alicuota: ivaAlicuota,
+            in_alicuota: inAlicuota,
+            pre_cantidad: cantidad,
+            pre_pcosto: preCosto,
+            pre_pneto: preNeto,
+            pre_margen: margen,
+            pre_pvta: precioVenta,
+            pre_cantidad_ent: 0, // ✅ Campo requerido por PresupuestoProductoDto
+            pre_total: total,
+            // ✅ Heredadas de PresupuestoDto (vacías para productos individuales)
+            pre_id: '',
+            pre_descripcion: '',
+            pre_fecha: new Date().toISOString(),
+            pre_nombre: '',
+            pre_domicilio: '',
+            pre_vigencia_desde: new Date().toISOString(),
+            pre_vigencia_hasta: new Date().toISOString(),
+            pre_obs_pago: '',
+            pre_obs_entrega: '',
+            pree_id: 'P',
+            pree_desc: '',
+            pret_id: 'P',
+            pret_desc: '',
+            cta_id: '',
+            cta_denominacion: '',
+            usu_id: '',
+            usu_apellidoynombre: '',
+            adm_id: '',
+            adm_nombre: '',
+            tco_id: '',
+            cm_compte: ''
+        });
+    });
+
+    console.log(`📦 ${productos.length} productos capturados del grid`);
+    return productos;
+}
+
+/**
+ * ✅ Procesa la respuesta del servidor después de confirmar
+ * @param {object} response - Respuesta del servidor
+ * @param {string} abm - Tipo de operación
+ */
+function procesarRespuestaConfirmacion(response, abm) {
+    console.log('📥 Respuesta del servidor:', response);
+
+    if (!response.ok) {
+        if (response.error) {
+            ControlaMensajeError(response.mensaje || 'Error al confirmar el presupuesto');
+            return;
+        }
+        else //warn
+        {
+            ControlaMensajeWarning(response.mensaje || 'Atención al confirmar el presupuesto');
+            return;
+        }
+    }
+
+    // Mensaje de éxito según el tipo de operación
+    let mensajeExito = '';
+    switch (abm) {
+        case 'A':
+            mensajeExito = 'Presupuesto creado exitosamente';
+            break;
+        case 'M':
+            mensajeExito = 'Presupuesto modificado exitosamente';
+            break;
+        case 'B':
+            mensajeExito = 'Presupuesto eliminado exitosamente';
+            break;
+        default:
+            mensajeExito = 'Operación completada exitosamente';
+    }
+
+    // Mostrar mensaje y redirigir
+    AbrirMensaje(
+        'CONFIRMACIÓN EXITOSA',
+        mensajeExito,
+        function () {
+            $('#msjModal').modal('hide');
+
+            // Resetear formulario y volver al inicio
+            cancelarOperacion();
+
+            // Si hay ID de presupuesto en la respuesta, refrescar el grid
+            if (response.pre_id) {
+                // Opcional: Recargar el presupuesto recién creado/modificado
+                console.log('✅ Presupuesto ID:', response.pre_id);
+            }
+        },
+        false,
+        ['Aceptar'],
+        'success!',
+        null
+    );
+}
+
+// ============================================================================
+// FUNCIONES DE ELIMINACIÓN DE PRESUPUESTO
+// ============================================================================
+
+function eliminarPresupuesto() {
+    console.log('🗑️ Eliminando presupuesto...');
+
+    const preId = $('#pre_id').val();
+    if (!preId || preId.trim() === '') {
+        ControlaMensajeError('Error: No se encontró el ID del presupuesto a eliminar');
+        return;
+    }
+
+    AbrirWaiting('Eliminando presupuesto...');
+
+    try {
+        const confirmacionDto = {
+            Abm: 'B',
+            Datos: obtenerDatosFormularioPresupuesto(),
+            Productos: obtenerProductosDelGrid()
+        };
+
+        console.log('📦 DTO de eliminación:', confirmacionDto);
+
+        PostGen(
+            confirmacionDto,
+            confirmarPresupuestoUrl,
+            function (response) {
+                CerrarWaiting();
+                procesarRespuestaEliminacion(response);
+            },
+            function (error) {
+                CerrarWaiting();
+                console.error('❌ Error al eliminar presupuesto:', error);
+                
+                const mensajeError = error.responseJSON?.mensaje 
+                                  || error.responseJSON?.msg
+                                  || error.statusText 
+                                  || 'Error desconocido';
+                
+                ControlaMensajeError(`Error al eliminar el presupuesto: ${mensajeError}`);
+            }
+        );
+    } catch (error) {
+        CerrarWaiting();
+        console.error('❌ Error al construir DTO:', error);
+        ControlaMensajeError('Error al procesar la eliminación: ' + error.message);
+    }
+}
+
+function procesarRespuestaEliminacion(response) {
+    console.log('📥 Respuesta de eliminación:', response);
+
+    if (!response.ok) {
+        if (response.error) {
+            ControlaMensajeError(response.mensaje || 'Error al eliminar el presupuesto');
+            return;
+        }
+        else //warn
+        {
+            ControlaMensajeWarning(response.mensaje || 'Atención al intentar eliminar el presupuesto');
+            return;
+        }
+        
+    }
+
+    AbrirMensaje(
+        'ELIMINACIÓN EXITOSA',
+        'El presupuesto ha sido eliminado correctamente',
+        function () {
+            $('#msjModal').modal('hide');
+            cancelarOperacion();
+            
+            if ($('#tbGridPresupuesto tbody tr').length > 0) {
+                console.log('🔄 Actualizando lista de presupuestos...');
+                buscarPresupuestos($('#btnBuscar'));
+            }
+        },
+        false,
+        ['Aceptar'],
+        'success!',
+        null
+    );
+}

@@ -57,14 +57,41 @@ namespace gc.sitio.core.Servicios.Implementacion
                     {
                         return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
                     }
-
-                    return new RespuestaGenerica<RespuestaDto>
+                    var resp = apiResponse.Data;
+                    if (resp.resultado == 0)
                     {
-                        Ok = true,
-                        Mensaje = "OK",
-                        Entidad = apiResponse.Data
-                        // Nota: si necesitas la metadata (apiResponse.Meta), amplía RespuestaGenerica para incluirla.
-                    };
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = true,
+                            Mensaje = "OK",
+                            Entidad = apiResponse.Data
+                            // Nota: si necesitas la metadata (apiResponse.Meta), amplía RespuestaGenerica para incluirla.
+                        };
+                    }
+                    else if (resp.resultado > 0)
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = false,
+                            EsWarn = true,
+                            EsError = false,
+                            Mensaje = resp.resultado_msj,
+                            Entidad = apiResponse.Data
+                            // Nota: si necesitas la metadata (apiResponse.Meta), amplía RespuestaGenerica para incluirla.
+                        };
+                    }
+                    else
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = false,
+                            EsWarn = false,
+                            EsError = true,
+                            Mensaje = resp.resultado_msj,
+                            Entidad = apiResponse.Data
+                            // Nota: si necesitas la metadata (apiResponse.Meta), amplía RespuestaGenerica para incluirla.
+                        };
+                    }
                 }
                 else
                 {
@@ -257,6 +284,6 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-       
+
     }
 }

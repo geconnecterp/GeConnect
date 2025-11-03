@@ -4,6 +4,6 @@
     {
         public char Abm { get;set; } // A: alta, B: baja, M: modificacion
         public PresupuestoDto Datos { get; set; } = new();
-        public List<PresupuestoListDto> Productos { get; set; } = [];
+        public List<PresupuestoProductoDto> Productos { get; set; } = [];
     }
 }

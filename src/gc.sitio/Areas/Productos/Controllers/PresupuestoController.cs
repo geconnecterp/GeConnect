@@ -342,13 +342,13 @@ namespace gc.sitio.Areas.Productos.Controllers
                 else
                 {
                     // Log y respuesta de error/advertencia
-                    _logger?.LogWarning("Error en servicio de combo/promoción: {Mensaje}", respuesta.Mensaje);
+                    _logger?.LogWarning("Error en la confirmación del presupuesto: {Mensaje}", respuesta.Mensaje);
                     return Json(new
                     {
                         ok = false,
                         error = respuesta.EsError,
                         warn = respuesta.EsWarn,
-                        msg = respuesta.Mensaje ?? "Error al procesar el combo/promoción"
+                        mensaje = respuesta.Mensaje ?? "Error al procesar el combo/promoción"
                     });
                 }
             }
