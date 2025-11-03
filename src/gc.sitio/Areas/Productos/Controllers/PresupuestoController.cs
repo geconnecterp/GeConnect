@@ -2,7 +2,9 @@
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.Dtos.Productos.Presupuestos;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
@@ -10,9 +12,11 @@ using gc.infraestructura.Helpers;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
 using gc.sitio.core.Servicios.Contratos.Users;
+using gc.sitio.core.Servicios.Implementacion;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using X.PagedList;
 
 namespace gc.sitio.Areas.Productos.Controllers
@@ -225,6 +229,7 @@ namespace gc.sitio.Areas.Productos.Controllers
 
                 // Generar grid con productos del presupuesto
                 var productos = pres.ListaEntidad ?? new List<PresupuestoProductoDto>();
+                ProductosActualesPresupuesto = productos;
                 var grid = GenerarGridPresupuestoProductos(productos);
 
                 return PartialView("_presupuestoProds", grid);
@@ -238,6 +243,125 @@ namespace gc.sitio.Areas.Productos.Controllers
             {
                 _logger?.LogError(ex, "Error al obtener productos del presupuesto");
                 return PartialView("_gridMensaje", CrearRespuestaError("Error al cargar productos del presupuesto"));
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ObtenerPresupuestoProductoActualizado(string pre_id)
+        {
+            try
+            {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
+                if (string.IsNullOrWhiteSpace(pre_id))
+                {
+                    return PartialView("_gridMensaje", CrearRespuestaError("El Identificador del presupuesto no fue recepcionado."));
+                }
+
+                var pres = await _presuSv.ObtenerDetallePresupuestoActualizado(pre_id, TokenCookie);
+                if (!pres.Ok)
+                {
+                    throw new NegocioException(pres.Mensaje ?? "No se ha podido obtener el detalle del presupuesto Actualizado.");
+                }
+
+                // Generar grid con productos del presupuesto
+                var productos = pres.ListaEntidad ?? new List<PresupuestoProductoDto>();
+                ProductosActualesPresupuesto = productos;
+                var grid = GenerarGridPresupuestoProductos(productos);
+
+                return PartialView("_presupuestoProds", grid);
+            }
+            catch (NegocioException ex)
+            {
+                _logger?.LogError(ex, "Error al obtener productos del presupuesto");
+                return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al obtener productos del presupuesto");
+                return PartialView("_gridMensaje", CrearRespuestaError("Error al cargar productos del presupuesto"));
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> ConfirmarPresupuesto(PresupuestoConfirmaReqDto request)
+        {
+            try
+            {
+                // Verificar autenticación - consistente con otros métodos
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, mensaje = "No autorizado" });
+
+                if (request == null)
+                {
+                    return Json(new { ok = false, mensaje = "Los datos de confirmación no fueron recepcionados. Verifique." });
+                }
+
+                // Validaciones de entrada
+                if (request.Datos == null)
+                {
+                    return Json(new { ok = false, mensaje = "Los datos del Presupuesto son requeridos" });
+                }
+                
+                if (request.Productos == null || !request.Productos.Any())
+                {
+                    return Json(new { ok = false, mensaje = "Al menos un producto es necesario informar en el presupuesto." });
+                }               
+
+                // Preparar datos para envío
+            
+                
+                var req = new AbmPlusGenDto
+                {
+                    Abm = request.Abm,
+                    Json = JsonConvert.SerializeObject(request.Productos),
+                    Json2 = JsonConvert.SerializeObject(request.Datos),
+                    Usuario = UserName,
+                    Administracion = AdministracionId
+                };
+
+                // Llamada al servicio
+                var respuesta = await _presuSv.ConfirmarPresupuesto(req, TokenCookie);
+
+                // Procesamiento de respuesta
+                if (respuesta.Ok && !respuesta.EsError && !respuesta.EsWarn)
+                {
+                    // Log y limpieza de datos temporales
+                    var msg = $"PRESUPUESTO de {request.Datos.cta_id}-{request.Datos.cta_denominacion} fue guardado exitosamente.";
+                    _logger?.LogInformation(msg);
+                   
+                    // Respuesta de éxito
+                    return Json(new
+                    {
+                        ok = true,
+                        error = false,
+                         msg//respuesta.Mensaje ?? "Presupuesto guardada correctamente"
+                    });
+                }
+                else
+                {
+                    // Log y respuesta de error/advertencia
+                    _logger?.LogWarning("Error en servicio de combo/promoción: {Mensaje}", respuesta.Mensaje);
+                    return Json(new
+                    {
+                        ok = false,
+                        error = respuesta.EsError,
+                        warn = respuesta.EsWarn,
+                        msg = respuesta.Mensaje ?? "Error al procesar el combo/promoción"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejo de excepciones no esperadas
+                _logger?.LogError(ex, "Error inesperado al confirmar combo/promoción");
+                return Json(new
+                {
+                    ok = false,
+                    error = true,
+                    msg = "Error interno al procesar la solicitud"
+                });
             }
         }
 

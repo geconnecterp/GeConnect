@@ -45,7 +45,7 @@
         public decimal iva_alicuota { get; set; }
         public decimal in_alicuota { get; set; }
         public decimal pre_cantidad { get; set; }
-        public decimal pre_costo { get; set; }
+        public decimal pre_pcosto { get; set; }
         public decimal pre_pneto { get; set; }
         public decimal pre_margen { get; set; }
         public decimal pre_pvta { get; set; }

@@ -35,14 +35,14 @@
                             var totalCalc = (item.pre_cantidad * item.pre_pvta);
                             <tr class="@clase"
                                 data-p-id="@item.p_id"
-                                data-pre-costo="@item.pre_costo"
+                                data-pre-pcosto="@item.pre_pcosto"
                                 data-pre-pneto="@item.pre_pneto"
                                 data-iva-situacion="@item.iva_situacion"
                                 data-iva-alicuota="@item.iva_alicuota"
                                 data-in-alicuota="@item.in_alicuota">
                                 <td class="text-center">@item.p_id</td>
                                 <td>@item.p_des</td>
-                                <td class="text-end">@item.pre_costo.ToString("N3")</td>
+                                <td class="text-end">@item.pre_pcosto.ToString("N3")</td>
                                 <td class="text-end">
                                     <div class="input-container">
                                         <input type="text" 

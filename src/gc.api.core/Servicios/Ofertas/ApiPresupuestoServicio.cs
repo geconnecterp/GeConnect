@@ -2,9 +2,11 @@
 using gc.api.core.Contratos.Servicios.Ofertas;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
+using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Presupuestos;
 using Microsoft.Data.SqlClient;
+using Newtonsoft.Json;
 using Org.BouncyCastle.Ocsp;
 
 namespace gc.api.core.Servicios.Ofertas
@@ -19,6 +21,19 @@ namespace gc.api.core.Servicios.Ofertas
         public List<PresupuestoProductoDto> ObtenerDetallePresupuesto(string pre_id)
         {
             var sp = Constantes.ConstantesGC.StoredProcedures.SP_PRESUP_P;
+
+            var ps = new List<SqlParameter>();
+
+            ps.Add(new SqlParameter("@pre_id", pre_id));
+
+            var detalle = _repository.EjecutarLstSpExt<PresupuestoProductoDto>(sp, ps, true);
+
+            return detalle;
+        }
+
+        public List<PresupuestoProductoDto> ObtenerDetallePresupuestoActualizado(string pre_id)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_PRESUP_P_ACTUALIZADO;
 
             var ps = new List<SqlParameter>();
 
@@ -51,6 +66,44 @@ namespace gc.api.core.Servicios.Ofertas
             var estados = _repository.EjecutarLstSpExt<PresupT>(sp, ps, true);
 
             return estados;
+        }
+
+        public RespuestaDto ConfirmarPresupuesto(AbmPlusGenDto req)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_PRESUP_CONFIRMAR;
+
+            var pres = JsonConvert.DeserializeObject<PresupuestoDto>(req.Json2);
+
+            var ps = new List<SqlParameter>() {
+                new SqlParameter("@abm", req.Abm),
+                new SqlParameter("@pre_id", pres.pre_id),
+                new SqlParameter("@pre_desc", pres.pre_descripcion),
+                new SqlParameter("@pret_id", pres.pret_id),
+                new SqlParameter("@pree_id", pres.pree_id),
+                
+                new SqlParameter("@pre_desde", pres.pre_vigencia_desde),
+                new SqlParameter("@pre_hasta", pres.pre_vigencia_hasta),
+                new SqlParameter("@pre_adm_id", pres.adm_id),
+
+                new SqlParameter("cta_id", pres.cta_id),
+                new SqlParameter("@pre_nombre", pres.pre_nombre),
+                new SqlParameter("@pre_domicilio", pres.pre_domicilio),
+
+                new SqlParameter("@pre_obs_entrega", pres.pre_obs_entrega),
+                new SqlParameter("@pre_obs_pago", pres.pre_obs_pago),
+
+                new SqlParameter("@json_prod", req.Json),
+                new SqlParameter("@usu_id", req.Usuario),
+                new SqlParameter("@adm_id", req.Administracion),
+                };
+
+          
+            var respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+            if (respuesta.Count == 0)
+            {
+                return new RespuestaDto() { resultado = -1, resultado_msj = "No se Recepcionó respuesta del proceso." };
+            }
+            return respuesta[0];
         }
 
         public List<PresupuestoDto> ObtenerPresupuesto(string pre_id)

@@ -22,9 +22,14 @@ function InicializaPantallaPresupuesto() {
     $("#btnAbmNuevo").prop("disabled", false);
 
     // Configurar el evento click para el botón Cancelar/Inicializar
-    $("#btnCancel, #btnAbmCancelar").on("click", function (e) {
+    $("#btnAbmCancelar").on("click", function (e) {
         cancelarOperacion(e);
     });
+
+    $("#btnCancel").on("click", function () {
+        window.location.href = homePresup;
+    });
+
     // Inicializa el período de fechas (hoy / hoy + 30 días)
     initPeriodoFechas();
 
@@ -241,50 +246,39 @@ function InicializaEventosPresupuesto() {
         }
     });
 
-    // Inicializar eventos de edición de productos presupuesto
-    $(document).on('dblclick', '.input-pre_margen, .input-pre_pvta', function(e) {
+    // Doble click para activar edición
+    $(document).on('dblclick', '.input-pre_cantidad, .input-pre_margen, .input-pre_pvta', function (e) {
         e.stopPropagation();
         activarEdicionCampoPresup($(this));
     });
 
-    $(document).off("dblclick").on("dblclick", "input#cta_denominacion", function () {
-        $("input#cta_denominacion").val("");
-        $("input#cta_id").val("");
-        $("input#pre_nombre").val("");
-        $("input#pre_domicilio").val("");
-    });
-
-    // Evento para Enter/Tab
-    $(document).on('keydown', '.input-pre_margen, .input-pre_pvta', function(e) {
+    // Enter/Tab para guardar y avanzar
+    $(document).on('keydown', '.input-pre_cantidad, .input-pre_margen, .input-pre_pvta', function (e) {
         if (e.key === 'Enter' || e.key === 'Tab') {
             e.preventDefault();
             guardarYAvanzarCampoPresup($(this));
         }
     });
 
-    // Evento blur
-    $(document).on('blur', '.input-pre_margen, .input-pre_pvta', function() {
-        guardarCampoPresup($(this));
-    });
-
-    // ✅ NUEVO: Eventos para edición de cantidad
-    $(document).on('dblclick', '.input-pre_cantidad', function(e) {
-        e.stopPropagation();
-        activarEdicionCampoPresup($(this));
-    });
-
-    // Evento para Enter/Tab en cantidad
-    $(document).on('keydown', '.input-pre_cantidad', function(e) {
-        if (e.key === 'Enter' || e.key === 'Tab') {
-            e.preventDefault();
-            recalcularTotalDesdeCantidad($(this));
+    // Blur para guardar cambios
+    $(document).on('blur', '.input-pre_cantidad, .input-pre_margen, .input-pre_pvta', function () {
+        const $campo = $(this);
+        if ($campo.hasClass('input-pre_cantidad')) {
+            recalcularTotalDesdeCantidad($campo);
+        } else {
+            guardarCampoPresup($campo);
         }
     });
 
-    // Evento blur en cantidad
-    $(document).on('blur', '.input-pre_cantidad', function() {
-        recalcularTotalDesdeCantidad($(this));
+    // Doble click en cta_denominacion (mantener sin cambios)
+    $(document).off("dblclick").on("dblclick", "input#cta_denominacion", function () {
+        $("input#cta_denominacion").val("");
+        $("input#cta_id").val("");
+        $("input#pre_nombre").val("");
+        $("input#pre_domicilio").val("");
     });
+   
+    
 
     // Handler para Nuevo Presupuesto
     $(document).on('click', '#btnAbmNuevo', function (e) {
@@ -346,6 +340,14 @@ function InicializaEventosPresupuesto() {
         $('#btnAbmAceptar, #btnAbmCancelar').prop('disabled', false).show();
 
         aplicarReadonlyCamposPresup();
+
+        ///se llama a la funcion que actualiza el valor de costo de los productos
+        ///que ya existen en el presupuesto.
+        let preId = $("input#pre_id").val();
+        if (preId) {            
+            cargarProductosPresupuesto(preId,true);
+        }
+
 
         const $primer = $('#divPresupuestoDatos').find('input:not([type=hidden]):not([readonly]), textarea:not([readonly]), select:not([disabled])').filter(':visible').first();
         if ($primer.length) {
@@ -790,10 +792,19 @@ function cargarPresupuestoDatos(preId) {
     });
 }
 
-function cargarProductosPresupuesto(preId) {
-    const url = obtenerPresupuestoProductoUrl;
+function cargarProductosPresupuesto(preId,isUpdate=false) {
+    let url = "";
+    if (isUpdate) {
+        //trae los productos con los costos actualizados
+        url = obtenerPresupuestoProductoActualizadoUrl;
+    }
+    else {
+        //trae los productos tal cual están en el presupuesto
+        url = obtenerPresupuestoProductoUrl;
+    }
+        
     PostGenHtml({ pre_id: preId }, url, function(html) {
-        $("#divPresProds").html(html).show();
+        $("#divPresProds").empty().html(html).show();
         // Forzar estado readonly acorde al modo
         aplicarReadonlyCamposPresup();
     });
@@ -1094,7 +1105,9 @@ function crearFilaProductoPresupuesto(producto, esAlternado) {
     const pCosto = parseFloat(producto.p_pcosto || 0);
     const cantidad = 1;
     const margen = 30;
-    
+
+
+
     const precioNeto = pCosto * (1 + margen / 100);
     
     const ivaSituacion = producto.iva_situacion || 'E';
@@ -1115,7 +1128,7 @@ function crearFilaProductoPresupuesto(producto, esAlternado) {
     return `
         <tr class="${claseAlt}"
             data-p-id="${pId}"
-            data-pre-costo="${pCosto.toFixed(3)}"
+            data-pre-pcosto="${pCosto.toFixed(3)}"
             data-pre-pneto="${precioNeto.toFixed(3)}"
             data-iva-situacion="${ivaSituacion}"
             data-iva-alicuota="${ivaAlicuota}"
