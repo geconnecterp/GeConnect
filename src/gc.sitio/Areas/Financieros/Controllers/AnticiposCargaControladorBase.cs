@@ -69,6 +69,23 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				_context.HttpContext?.Session.SetString("AnticiposLista", json);
 			}
 		}
-		//
+
+		public CuentaDto ProveedorDefault
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("ProveedorDefault") ?? string.Empty;
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new CuentaDto();
+				}
+				return JsonConvert.DeserializeObject<CuentaDto>(json) ?? new CuentaDto();
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ProveedorDefault", json);
+			}
+		}
 	}
 }

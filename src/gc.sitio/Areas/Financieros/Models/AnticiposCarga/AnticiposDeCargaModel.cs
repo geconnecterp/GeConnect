@@ -10,6 +10,8 @@ namespace gc.sitio.Areas.Financieros.Models
 		public string selectedValue { get; set; } = string.Empty;
 		public string Concepto { get; set; }
 		public decimal porc_interes { get; set; }
+		public string prov_id_selected { get; set; } = string.Empty;
+		public string prov_denominacion_selected { get; set; } = string.Empty;
 		public GridCoreSmart<AnticipoDto> GrillaAnticipos { get; set; }
 	}
 }

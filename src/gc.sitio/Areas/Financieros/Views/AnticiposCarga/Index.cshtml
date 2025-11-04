@@ -6,16 +6,8 @@
 	<link rel="stylesheet" href="~/css/simplePagination.css" />
 	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
-@* <style>
-
-	.alerta-fila {
-		background-color: #ffe6e6 !important; /* rojo claro */
-	}
-
-		.alerta-fila:hover {
-			background-color: #ffcccc !important; /* más intenso al pasar el mouse */
-		}
-</style> *@
+@Html.Hidden("prov_id_selected", Model.prov_id_selected)
+@Html.Hidden("prov_denominacion_selected", Model.prov_denominacion_selected)
 <div class="container mt-2" id="divAnticiposDeGastos">
 	<div class="mx-auto" style="max-width: 1300px;">
 		<div class="collapse col-md-2">
@@ -32,13 +24,13 @@
 		<div class="row align-items-center mb-2">
 			<div class="col-12">
 				<div class="input-group input-group-sm" id="divInputs">
-					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Cuenta Banco: </span>
+					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Tipo: </span>
 					@Html.DropDownListFor(m => m.selectedValue, Model.ListaTipo, "Seleccionar", new { @id = "listaTipoAnticipo", @class = "form-control inputEditable activable", @style = "max-width: 13%;" })
 					<span class="input-group-text">Concepto: </span>
 					<input type="text" asp-for="Concepto" class="form-control activable inputEditable" />
 					<span class="input-group-text">% Interes: </span>
-					<input type="text" asp-for="porc_interes" class="form-control activable inputEditable" style="max-width: 8%;" />
-					<span class="input-group-text fixed-lbl-for-abm-100" title="Cuenta Proveedor">Contrapartida: </span>
+					<input type="text" asp-for="porc_interes" class="form-control activable inputEditable" style="max-width: 8%;" value="0"/>
+					<span class="input-group-text fixed-lbl-for-abm-100" style="width: 160px;" title="Cuenta Proveedor">Contrapartida (cta. Prov.): </span>
 					<input type="text" class="form-control inputEditable" name="Rel01" id="Rel01" />
 					@Html.Hidden("Rel01Item")
 					<button type="button" class="btn btn-primary btn-icon-compact ms-1" id="btnAgregar">

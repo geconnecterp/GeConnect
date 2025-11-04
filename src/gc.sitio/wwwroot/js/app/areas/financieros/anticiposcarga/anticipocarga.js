@@ -54,6 +54,10 @@
 		valorInteresModificado(nuevo);
 	});
 
+
+	ctaIdSelected = $("#prov_id_selected").val();
+	ctaDescSelected = $("#prov_denominacion_selected").val();
+	$("#Rel01").val(`${ctaDescSelected} (${ctaIdSelected})`);
 });
 
 function valorInteresModificado(nuevo_interes) {
@@ -147,7 +151,8 @@ function ConfirmarAnticipos() {
 }
 
 function handlerConfirmarCargaDeAnticipos() {
-	var ant_id = $("#listaTipoAnticipo").val(); 
+	AbrirWaiting("Guardando Anticipo...");
+	var ant_id = $("#listaTipoAnticipo").val();
 	var an_concepto = $("#Concepto").val();
 	var an_porc_interes = $("#porc_interes").inputmask('unmaskedvalue');
 	var cta_id = ctaIdSelected;
@@ -211,7 +216,6 @@ function AgregarAnticipo() {
 	var intereses = $("#porc_interes").val();
 	var data = { cta_id, cta_desc, cuotas, importe, intereses };
 	PostGen(data, agregarAnticipoUrl, function (obj) {
-		CerrarWaiting();
 		if (obj.error === true) {
 			CerrarWaiting();
 			AbrirMensaje("ATENCIÓN", obj.msg, function () {
@@ -222,9 +226,11 @@ function AgregarAnticipo() {
 		}
 		else {
 			setTimeout(() => {
-				$('#modalCargaDeAnticipo').modal('hide');
+				//$('#modalCargaDeAnticipo').modal('hide');
+				CerrarWaiting();
 				ActualizarListaDeAnticipos();
-			}, 500);
+				limpiarCamposEnModal();
+			}, 300);
 		}
 	});
 }
@@ -242,10 +248,9 @@ function ActualizarListaDeAnticipos() {
 }
 
 function AbrirModalAgregarAnticipo() {
-	
 	var intereses = $("#porc_interes").inputmask('unmaskedvalue');
-	if (intereses <= 0) {
-		AbrirMensaje("ATENCIÓN", "Debe establecer un valor para Intereses.", function () {
+	if (intereses < 0) {
+		AbrirMensaje("ATENCIÓN", "Debe establecer un valor para Intereses, mayor o igual a 0.", function () {
 			$("#msjModal").modal("hide");
 			$("#porc_interes").trigger('focus');
 			return true;
@@ -257,6 +262,7 @@ function AbrirModalAgregarAnticipo() {
 		var cta_desc = ctaDescSelected;
 		var data = { intereses, cta_id, cta_desc };
 		PostGenHtml(data, abrirModalAgregarAnticipoUrl, function (obj) {
+			$("#divCargaDeAnticipo").empty();
 			$("#divCargaDeAnticipo").html(obj);
 			const $modal = $("#modalCargaDeAnticipo");
 
@@ -266,16 +272,39 @@ function AbrirModalAgregarAnticipo() {
 
 			inicializarCamposEnModal();
 
-			$modal.modal('show');
 			CerrarWaiting();
+			$modal.modal('show');
 
 			setTimeout(() => {
-				$("#Rel02").trigger('focus');
-			}, 100);
+				const $rel02 = $("#Rel02");
+				if ($rel02.length > 0) {
+					$rel02.trigger("focus");
+					console.log("Foco aplicado a #Rel02");
+				} else {
+					console.warn("No se encontró el input #Rel02");
+				}
+			}, 500);
+			//$modal.on('shown.bs.modal', function () {
+			//	const $rel02 = $("#Rel02");
+			//	if ($rel02.length > 0) {
+			//		$rel02.trigger("focus");
+			//		console.log("Foco aplicado a #Rel02");
+			//	} else {
+			//		console.warn("No se encontró #Rel02 al mostrar el modal");
+			//	}
+			//});
 
 			return true
 		});
 	}
+}
+
+function limpiarCamposEnModal() {
+	$("#Rel02").val("");
+	$("#Rel02Item").empty();
+	$("#cuotas").val("1");
+	$("#importe").val("0");
+	$("#Rel02").trigger("focus");
 }
 
 function inicializarCamposEnModal() {
@@ -336,7 +365,6 @@ function inicializarCamposEnModal() {
 			$(this).click();
 		}
 	});
-
 }
 
 function eliminarItem(id) {

@@ -75,7 +75,8 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				model.Concepto = string.Empty;
 				model.porc_interes = 0;
 				model.GrillaAnticipos = ObtenerGridCoreSmart<AnticipoDto>([]);
-
+				model.prov_id_selected = ProveedorDefault.Cta_Id;
+				model.prov_denominacion_selected = ProveedorDefault.Cta_Denominacion;
 				return View(model);
 			}
 			catch (Exception ex)
@@ -365,6 +366,10 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			{
 				var lista = _cuentaServicio.ObtenerListaCuentaComercial("%", 'S', TokenCookie).Result;
 				ProveedoresLista = lista;
+				if (lista != null && lista.Count > 0)
+				{
+					ProveedorDefault = lista.Where(x => x.Cta_Id == "C0030000").First();
+				}
 			}
 
 			if (TipoAnticipoEmpleadoLista.Count == 0)
