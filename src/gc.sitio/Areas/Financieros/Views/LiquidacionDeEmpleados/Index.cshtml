@@ -1,0 +1,85 @@
+﻿@model LiqDeEmpleadoModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	thead th {
+		position: sticky;
+		top: 0px;
+	}
+
+	.table-wrapper-fixed-head th,
+	.table-wrapper-fixed-head td {
+		box-sizing: border-box;
+	}
+
+	.table-wrapper {
+		overflow-x: hidden;
+	}
+
+</style>
+<div class="container mt-2" id="divLiquidacionDeEmpleado">
+	<div class="mx-auto" style="max-width: 1300px;">
+		<div class="row align-items-center mb-2">
+			<div class="col-12">
+				<div class="input-group input-group-sm" id="divInputs">
+					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Año: </span>
+					@Html.DropDownListFor(m => m.SelectedValueAnio, Model.Anio, "Seleccionar", new { @id = "listaAnio", @class = "form-control inputEditable activable", @style = "max-width: 5%;" })
+					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Mes: </span>
+					@Html.DropDownListFor(m => m.SelectedValueMes, Model.Mes, "Seleccionar", new { @id = "listaMes", @class = "form-control inputEditable activable", @style = "max-width: 5%;" })
+					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Porc. Tope: </span>
+					<input type="text" asp-for="PorcTope" class="form-control activable inputEditable" style="max-width: 50px;"/>
+					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Concepto: </span>
+					<input type="text" asp-for="Concepto" class="form-control activable inputEditable" />
+					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Actualiza Tope:</span>
+					<div class="input-group-text">
+						@Html.CheckBoxFor(m => m.ActualizaTope, new { @class = "form-check-input mt-0", @id = "chkActualizaTope" })
+					</div>
+					<button type="button" class="btn btn-info btn-sm ms-1" id="btnCargar">
+						<i class="bx bx-upload"></i> Cargar
+					</button>
+					<button type="button" class="btn btn-success btn-sm ms-4" id="btnConfirmar">
+						<i class="bx bx-badge-check"></i> Confirmar
+					</button>
+					<button type="button" class="btn btn-danger btn-sm ms-1" id="btnCancelar">
+						<i class="bx bx-x-circle"></i> Cancelar
+					</button>
+				</div>
+			</div>
+		</div>
+		<div class="row mt-2" id="divGrillas">
+			<div class="col-7" id="divGrillaEncabezado">
+				<partial name="_grillaEncabezado" model="Model" />
+			</div>
+			<div class="col-5" id="divGrillaDetalle">
+				<partial name="_grillaDetalle" model="Model" />
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade modal-golden" id="modalImportarArchivo" tabindex="-1" aria-labelledby="tituloImportarArchivo" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div id="divModalImportarArchivo">
+			</div>
+		</div>
+	</div>
+</div>
+
+@section scripts {
+	<script type="text/javascript">
+		var abrirModalImportarArchivoUrl = "@Url.Action("AbrirModalImportarArchivo", "LiquidacionDeEmpleados", new { area = "Financieros" })";
+		var importarArchivoUrl = "@Url.Action("ImportarArchivo", "LiquidacionDeEmpleados", new { area = "Financieros" })";
+		var validarSiExistenRegistrosDeArchivoParaImportarUrl = "@Url.Action("ValidarSiExistenRegistrosDeArchivoParaImportar", "LiquidacionDeEmpleados", new { area = "Financieros" })";
+		var procesarArchivoImportadoUrl = "@Url.Action("ProcesarArchivoImportado", "LiquidacionDeEmpleados", new { area = "Financieros" })";
+	</script>
+
+	<script src="~/lib/jstree/jstree.min.js"></script>
+	<script src="~/js/app/areas/docmngr/docmanager.js"></script>
+
+	<script src="~/js/app/areas/financieros/liquidaciondeempleados/liqdeemp.js"></script>
+}

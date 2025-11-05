@@ -1,0 +1,80 @@
+﻿@model ModalImportarArchivoModel
+@{
+	string uploadId = ViewBag.UploadId ?? "default";
+}
+<div class="modal-header">
+	<h5 class="modal-title" id="tituloImportarArchivo">Importar archivo</h5>
+	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+</div>
+<div class="modal-body">
+	<form id="formImportarArchivo" enctype="multipart/form-data">
+		<div>
+			<div class="input-group input-group-sm">
+				<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Tipo de Archivo: </span>
+				@Html.DropDownListFor(m => m.selectedValue, Model.OrigenDeDatos, "Seleccionar", new { @id = "listaOrigenDeDatos", @class = "form-control inputEditable activable" })
+			</div>
+		</div>
+		<div id="uploadArea">
+			<div class="upload-container-golden" id="uploadContainer@(uploadId)">
+				<div class="upload-header-golden">
+					<i class="bx bx-upload"></i>
+					<h6 class="upload-title-golden">Seleccionar Archivo</h6>
+				</div>
+
+				<div class="upload-drop-zone-golden" id="dropZone@(uploadId)">
+					<div class="upload-content-golden">
+						<i class="bx bx-cloud-upload upload-icon-golden"></i>
+						<p class="upload-text-golden">Arrastra y suelta tu archivo aquí</p>
+						<p class="upload-subtext-golden">o</p>
+						<label for="fileInput@(uploadId)" class="btn-upload-golden">
+							Explorar Archivos
+						</label>
+						<input type="file" id="fileInput@(uploadId)" class="file-input-hidden" accept=".xlsx,.xls,.csv, .txt" />
+					</div>
+				</div>
+
+				<div class="upload-info-golden" id="uploadInfo@(uploadId)" style="display: none;">
+					<div class="file-info-golden">
+						<i class="bx bx-file upload-file-icon-golden"></i>
+						<div class="file-details-golden">
+							<span class="file-name-golden" id="fileName@(uploadId)"></span>
+							<span class="file-size-golden" id="fileSize@(uploadId)"></span>
+						</div>
+						<button type="button" class="btn-remove-golden" id="removeFile@(uploadId)">
+							<i class="bx bx-x"></i>
+						</button>
+					</div>
+					<div class="upload-progress-golden" id="uploadProgress@(uploadId)" style="display: none;">
+						<div class="progress-bar-golden">
+							<div class="progress-fill-golden" id="progressFill@(uploadId)"></div>
+						</div>
+						<span class="progress-text-golden" id="progressText@(uploadId)">0%</span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="progress mt-3" style="height: 20px; display: none;" id="barraProgresoContainer">
+			<div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+				 style="width: 0%;" id="barraProgreso">
+				0%
+			</div>
+		</div>
+	</form>
+	<div id="erroresImportacion" class="mt-3" style="display:none;">
+		<div class="alert alert-danger p-2" role="alert">
+			<strong>Errores detectados:</strong>
+			<ul id="listaErroresImportacion" class="mb-0"></ul>
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-success btn-sm" id="btnProcesarArchivo" disabled>
+		<i class="bx bx-play-circle me-1"></i> Procesar
+	</button>
+	<button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
+		<i class="bx bx-log-out-circle me-1"></i> Cancelar
+	</button>
+	@* <button type="button" class="btn btn-warning btn-sm" id="btnReiniciarImportacion" disabled>
+		<i class="bx bx-refresh me-1"></i> Reiniciar
+	</button> *@
+</div>

@@ -2724,6 +2724,18 @@ namespace gc.sitio.Controllers
 			var lista = TipoAnticipoEmpleadoLista.Select(x => new ComboGenDto { Id = x.ant_id, Descripcion = x.ant_desc });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
+
+		protected SelectList ComboAnios(List<string> listaAnios)
+		{
+			var lista = listaAnios.Select(x => new ComboGenDto { Id = x, Descripcion = x });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+
+		protected SelectList ComboMeses(List<string> listaMeses)
+		{
+			var lista = listaMeses.Select(x => new ComboGenDto { Id = x, Descripcion = x });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
 		#endregion
 
 		[HttpPost]
@@ -3102,5 +3114,56 @@ namespace gc.sitio.Controllers
             EsWarn = 2,
             EsOk = 3
         }
-    }
+
+		/// <summary>
+		/// Obtiene una lista con los últimos años en formato de 4 dígitos (por ejemplo "2025").
+		/// </summary>
+		/// <param name="cantidad">
+		/// Número de años anteriores a incluir. Por defecto 10.
+		/// Atención: con la implementación actual se devuelven <c>cantidad + 1</c> años porque el bucle
+		/// es inclusivo (<c>i <= cantidad</c>) e incluye el año actual.
+		/// </param>
+		/// <returns>
+		/// Lista de cadenas con los años, ordenada de más reciente a más antiguo.
+		/// </returns>
+		/// <remarks>
+		/// - Para obtener exactamente <c>cantidad</c> años (incluyendo el actual como uno de ellos),
+		///   cambiar el bucle a <c>for (int i = 0; i &lt; cantidad; i++)</c>.
+		/// - El formato usado es de 4 dígitos mediante <c>ToString("D4")</c>.
+		/// </remarks>
+		public static List<string> ObtenerUltimosAnios(int cantidad = 10)
+		{
+			int anioActual = DateTime.Now.Year;
+			List<string> listaAnios = new();
+
+			for (int i = 0; i <= cantidad; i++)
+			{
+				listaAnios.Add((anioActual - i).ToString("D4"));
+			}
+
+			return listaAnios;
+		}
+
+		/// <summary>
+		/// Devuelve una lista con los doce meses del año en formato de dos dígitos.
+		/// </summary>
+		/// <remarks>
+		/// - Formato de salida: "01", "02", ..., "12".
+		/// - El método es determinista y no depende de la configuración regional.
+		/// - Se puede usar para llenar combos, filtros por mes o cualquier lógica que requiera meses en formato "MM".
+		/// </remarks>
+		/// <returns>Lista de <see cref="string"/> con los meses "01" a "12".</returns>
+		public static List<string> ObtenerMeses()
+		{
+			List<string> listaMeses = new List<string>();
+
+			for (int i = 1; i <= 12; i++)
+			{
+				listaMeses.Add(i.ToString("D2")); // Formato "01", "02", ..., "12"
+			}
+
+			return listaMeses;
+		}
+
+	}
 }

@@ -623,5 +623,33 @@ namespace gc.api.Controllers.Financieros
 			response = new ApiResponse<List<RespuestaDto>>(res);
 			return Ok(response);
 		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FinancieroLEProximaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFinancieroProximaLE()
+		{
+			ApiResponse<List<FinancieroLEProximaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetFinancieroProximaLE();
+
+			response = new ApiResponse<List<FinancieroLEProximaDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<LiqEmpCargaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetLiqEmpCarga([FromBody] FinancieroLiqEmpCargaRequest r)
+		{
+			ApiResponse<List<LiqEmpCargaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetLiqEmpCarga(r);
+			response = new ApiResponse<List<LiqEmpCargaDto>>(res);
+			return Ok(response);
+		}
 	}
 }

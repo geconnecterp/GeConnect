@@ -934,5 +934,27 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<FinancieroLEProximaDto> GetFinancieroProximaLE()
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_LE_PROXIMA;
+			var ps = new List<SqlParameter>();
+			var listaTemp = _repository.EjecutarLstSpExt<FinancieroLEProximaDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<LiqEmpCargaDto> GetLiqEmpCarga(FinancieroLiqEmpCargaRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_LE_CARGA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@periodo",request.periodo),
+				new("@mes",request.mes),
+				new("@json_topes",request.json_topes),
+				new("@porc_tope",request.porc_tope),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<LiqEmpCargaDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

@@ -13,6 +13,7 @@ builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSet
 builder.Services.Configure<DocsManager>(builder.Configuration.GetSection("DocsManager"));
 builder.Services.Configure<EmpresaGeco>(builder.Configuration.GetSection("EmpresaGeco"));
 builder.Services.Configure<ImportacionExtracto>(builder.Configuration.GetSection("ImportacionExtracto"));
+builder.Services.Configure<ImportacionLiquidacionDeEmpleado>(builder.Configuration.GetSection("ImportacionLiquidacionDeEmpleado"));
 
 var cultureInfo = (CultureInfo)CultureInfo.CurrentCulture.Clone();
 cultureInfo.NumberFormat.NumberDecimalSeparator = ".";

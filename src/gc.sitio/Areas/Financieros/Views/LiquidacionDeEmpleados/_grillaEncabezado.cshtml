@@ -1,0 +1,41 @@
+﻿@model LiqDeEmpleadoModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<div class="table-responsive table-wrapper-500-full-width" id="containerCrudExtracto">
+	<table class="table table-bordered table-hover table-golden" id="tbListaCrudExtracto">
+		<thead>
+			<tr class="header">
+				<th class="text-center" scope="col">Código</th>
+				<th class="text-center" scope="col">Legajo</th>
+				<th class="text-center" scope="col">Nombre</th>
+				<th class="text-center" scope="col">Tope</th>
+				<th class="text-center" scope="col">Obli. Emp.</th>
+				<th class="text-center" scope="col">Pendiente</th>
+				<th class="text-center" scope="col">St. Sueldo</th>
+				<th class="text-center" scope="col">% Est.</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.GrillaEncabezado != null && Model.GrillaEncabezado.ListaDatos != null && Model.GrillaEncabezado.ListaDatos.Count > 0)
+			{
+				@foreach (var item in Model.GrillaEncabezado.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" data-cta-id="@item.cta_id" onclick="selectItemEncabezado(this);">
+						<td class="@Model.GrillaEncabezado.ObtenerClase(item.cta_id)">@Model.GrillaEncabezado.FormatearDato(item.cta_id, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaEncabezado.ObtenerClase(item.cta_emp_legajo)">@Model.GrillaEncabezado.FormatearDato(item.cta_emp_legajo, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaEncabezado.ObtenerClase(item.cta_denominacion)">@Model.GrillaEncabezado.FormatearDato(item.cta_denominacion, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaEncabezado.ObtenerClase(item.tope)">@Model.GrillaEncabezado.FormatearDato(item.tope, FormatDato.Monto)</td>
+						<td class="@Model.GrillaEncabezado.ObtenerClase(item.cv_importe_tot)">@Model.GrillaEncabezado.FormatearDato(item.cv_importe_tot, FormatDato.Monto)</td>
+						<td class="@Model.GrillaEncabezado.ObtenerClase(item.cv_importe_tot_pend)">@Model.GrillaEncabezado.FormatearDato(item.cv_importe_tot_pend, FormatDato.Monto)</td>
+						<td class="@Model.GrillaEncabezado.ObtenerClase(item.cv_importe_tot_imputado)">@Model.GrillaEncabezado.FormatearDato(item.cv_importe_tot_imputado, FormatDato.Monto)</td>
+						<td class="@Model.GrillaEncabezado.ObtenerClase(item.porc_imputado_sobre_tope)">@Model.GrillaEncabezado.FormatearDato(item.porc_imputado_sobre_tope, FormatDato.Monto)</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

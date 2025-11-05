@@ -68,6 +68,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string ObtenerFinancieroUsuarios = "/GetFinancieroUsuarios";
 		private const string ObtenerAnticipoFinancierosDeEmpleados = "/BuscarAnticipoFinancierosDeEmpleados";
 		private const string SetFinancieroAnticipoAnular = "/FinancieroAnticipoAnular";
+		private const string ObtenerFinancieroProximaLE = "/GetFinancieroProximaLE";
+		private const string SetLiqEmpCarga = "/GetLiqEmpCarga";
 
 		private readonly AppSettings _appSettings;
 		public FinancieroServicio(IOptions<AppSettings> options, ILogger<AdministracionServicio> logger) : base(options, logger)
@@ -1546,6 +1548,74 @@ namespace gc.sitio.core.Servicios.Implementacion
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
 				return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data.First() };
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public List<FinancieroLEProximaDto> GetFinancieroProximaLE(string token)
+		{
+			try
+			{
+				ApiResponse<List<FinancieroLEProximaDto>> apiResponse;
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerFinancieroProximaLE}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						_logger.LogWarning($"La API no devolvió dato alguno. Sin parámetros de busqueda");
+						return [];
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<FinancieroLEProximaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+					return apiResponse.Data;
+				}
+				else
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+					return [];
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogWarning($"Algo no fue bien. Error interno {ex.Message}");
+				return [];
+			}
+		}
+
+		public List<LiqEmpCargaDto> GetLiqEmpCarga(FinancieroLiqEmpCargaRequest request, string token)
+		{
+			ApiResponse<List<LiqEmpCargaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{SetLiqEmpCarga}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return [];
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<LiqEmpCargaDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return apiResponse.Data;
 			}
 			else
 			{
