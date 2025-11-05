@@ -1,6 +1,7 @@
 ﻿@{
     var userId = User.Claims.First(c => c.Type.Contains("name")).Value;
     var adm = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
+    var LPID = User.Claims.FirstOrDefault(c => c.Type.Contains("lp_id"))?.Value;
 }
 
 <!DOCTYPE html>
@@ -79,6 +80,7 @@
         $(function(){
                 usuarioAuth = "@userId";
                 administracion = "@adm";
+                admLp_id = "@LPID";
         });
     </script>
     @await RenderSectionAsync("Scripts", required: false)

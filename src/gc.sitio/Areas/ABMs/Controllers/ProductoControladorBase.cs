@@ -221,7 +221,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         /// <summary>
         /// Búsqueda avanzada V02 que devuelve JsonResult con ProductoListaDto completo
         /// </summary>
-        protected async Task<JsonResult> BusquedaAvanzadaV02(string ri01, string ri02, string ri03, bool act, bool dis, bool ina, bool cstk, bool sstk, string search, bool buscaNew, IProductoServicio _productoServicio, string sort = "p_id", string sortDir = "asc", int pag = 1)
+        protected async Task<JsonResult> BusquedaAvanzadaV02(string ri01, string ri02, string ri03, bool act, bool dis, bool ina, bool cstk, bool sstk, string search,string lp_id, bool buscaNew, IProductoServicio _productoServicio, string sort = "p_id", string sortDir = "asc", int pag = 1)
         {
             try
             {
@@ -239,7 +239,10 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 else
                 {
                     PaginaGrid = pag;
-
+                    if(search.ToIntOrNull()!=null && search.Trim().Length < 6)
+                    {
+                        search = search.PadLeft(6, '0');
+                    }
                     // ✅ BÚSQUEDA: Obtener datos desde la base
                     var busc = new BusquedaProducto
                     {
@@ -256,7 +259,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
                         Pagina = pag,
                         Sort = sort,
                         SortDir = sortDir,
-                        Administracion = AdministracionId
+                        Administracion = AdministracionId,
+                        ListaPrecio = lp_id
                     };
 
                     var res = await _productoServicio.BusquedaListaProductos(busc, TokenCookie);

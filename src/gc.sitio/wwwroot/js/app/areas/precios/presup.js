@@ -72,31 +72,49 @@ function cancelarOperacion(e) {
     campoEnEdicionPresup = null;
     _presupOriginal = null;
 
-    // ✅ PASO 2: Ocultar divs de datos y productos
-    $("#divPresDatos, #divPresProds").hide().empty();
-    $("#divDetalle").collapse("hide");
+    if ($("#divDetalle").is(":not(:visible)") && $("#divFiltro").is(":not(:visible)")) {
+        $("#divFiltro").collapse("show");
+    }
 
-    // ✅ PASO 3: Mostrar panel de filtros
-    $("#divFiltro").collapse("show");
+    // ✅ PASO 2: Vaciar y ocultar divs de datos y productos
+    $("#divPresDatos, #divPresProds").empty().hide();
 
-    // ✅ PASO 4: Restaurar botones ABM a estado inicial
-    $("#btnAbmNuevo").prop("disabled", false);
-    $("#btnAbmModif, #btnAbmElimi").prop("disabled", true);
+    // ✅ PASO 3: Determinar si hay fila seleccionada en el grid de búsqueda
+    const $filaSeleccionada = $("#tbGridPresupuesto tbody tr.selected-row");
+    const hayPresupuestoSeleccionado = $filaSeleccionada.length > 0;
+
+    // ✅ PASO 4: Restaurar botones ABM según contexto
+    if (hayPresupuestoSeleccionado) {
+        // Si hay un presupuesto seleccionado, mantener habilitados Modificar y Eliminar
+        const preeId = $filaSeleccionada.data('pree-id') || 'P';
+        const estadosEditables = ['P'];
+        const permite = estadosEditables.includes(preeId);
+
+        $("#btnAbmModif").prop("disabled", !permite);
+        $("#btnAbmElimi").prop("disabled", !permite);
+        $("#btnAbmNuevo").prop("disabled", false);
+    } else {
+        // Si no hay selección, solo habilitar Nuevo
+        $("#btnAbmNuevo").prop("disabled", false);
+        $("#btnAbmModif, #btnAbmElimi").prop("disabled", true);
+    }
+
+    // ✅ PASO 5: Desactivar y ocultar botones de confirmación
     $("#btnAbmAceptar, #btnAbmCancelar").prop("disabled", true).hide();
 
-    // ✅ PASO 5: Deshabilitar botón de agregar productos
+    // ✅ PASO 6: Deshabilitar botón de agregar productos
     $("#btnAgregarCProducto").prop("disabled", true);
 
-    // ✅ PASO 6: Limpiar selección de filas en el grid de búsqueda
-    $("#tbGridPresupuesto tbody tr").removeClass("selected-row selectedEdit-row");
+    // ✅ PASO 7: Limpiar clases de edición en el grid (mantener selección)
+    $("#tbGridPresupuesto tbody tr").removeClass("selectedEdit-row");
 
     console.log('✅ Operación cancelada - Vista reinicializada');
 
-    // ✅ PASO 7: Redirección si es necesario
-    if (e && $(e.target).is("#btnAbmCancelar") && typeof homePresup !== 'undefined') {
-        console.log('🔀 Redirigiendo a:', homePresup);
-        window.location.href = homePresup;
-    }
+    //// ✅ PASO 8: Redirección si es necesario
+    //if (e && $(e.target).is("#btnAbmCancelar") && typeof homePresup !== 'undefined') {
+    //    console.log('🔀 Redirigiendo a:', homePresup);
+    //    window.location.href = homePresup;
+    //}
 }
 
 function InicializaEventosPresupuesto() {
@@ -109,22 +127,22 @@ function InicializaEventosPresupuesto() {
     //check generico REL01 activando componentes disables
     $("#chkRel011").on("change", function () {
         const isChecked = $(this).is(":checked");
-        
+
         if (isChecked) {
             $("#Rel011").prop("disabled", false);
             $("#Rel011List").prop("disabled", false);
-            
+
             // ✅ INICIALIZAR AUTOCOMPLETE SOLO UNA VEZ
             if (!$("#Rel011").hasClass("ui-autocomplete-input")) {
                 inicializarAutocompleteRel011();
             }
-            
+
             setTimeout(() => $("#Rel011").trigger("focus"), 50);
         } else {
             $("#Rel011").prop("disabled", true).val("");
             $("#Rel011List").prop("disabled", true).empty();
             $("#Rel011Item").val("");
-            
+
             if ($("#Rel011").hasClass("ui-autocomplete-input")) {
                 $("#Rel011").autocomplete("destroy");
             }
@@ -178,7 +196,7 @@ function InicializaEventosPresupuesto() {
     funcCallBack = buscarPresupuestos;
 
     // ✅ NUEVO: Eliminar opción de Rel01List con doble click
-    $("#Rel011List").off("dblclick.removeOption").on("dblclick.removeOption", "option", function(e) {
+    $("#Rel011List").off("dblclick.removeOption").on("dblclick.removeOption", "option", function (e) {
         e.stopPropagation();
         $(this).remove();
         const $list = $("#Rel011List");
@@ -188,7 +206,7 @@ function InicializaEventosPresupuesto() {
     });
 
     // ✅ NUEVO: Eliminar opción de Rel02List con doble click
-    $("#Rel022List").off("dblclick.removeOption").on("dblclick.removeOption", "option", function(e) {
+    $("#Rel022List").off("dblclick.removeOption").on("dblclick.removeOption", "option", function (e) {
         e.stopPropagation();
         $(this).remove();
         const $list = $("#Rel022List");
@@ -200,7 +218,7 @@ function InicializaEventosPresupuesto() {
     // Rel03: mover selección a Rel03List y reinicializar combo
     const $rel03 = $("#Rel03");
     const $rel03List = $("#Rel03List");
-    
+
     $rel03.off("change.rel03").on("change.rel03", function () {
         if (!$rel03List.length) return;
 
@@ -220,7 +238,7 @@ function InicializaEventosPresupuesto() {
     });
 
     // ✅ NUEVO: Eliminar opción de Rel03List con doble click
-    $("#Rel03List").off("dblclick.removeOption").on("dblclick.removeOption", "option", function(e) {
+    $("#Rel03List").off("dblclick.removeOption").on("dblclick.removeOption", "option", function (e) {
         e.stopPropagation();
         $(this).remove();
         const $list = $("#Rel03List");
@@ -256,7 +274,13 @@ function InicializaEventosPresupuesto() {
     $(document).on('keydown', '.input-pre_cantidad, .input-pre_margen, .input-pre_pvta', function (e) {
         if (e.key === 'Enter' || e.key === 'Tab') {
             e.preventDefault();
-            guardarYAvanzarCampoPresup($(this));
+            const $campo = $(this);
+            if ($campo.hasClass('input-pre_cantidad')) {
+                recalcularTotalDesdeCantidad($campo);
+            } else {
+                guardarYAvanzarCampoPresup($campo);
+                //guardarCampoPresup($campo);
+            }
         }
     });
 
@@ -266,7 +290,8 @@ function InicializaEventosPresupuesto() {
         if ($campo.hasClass('input-pre_cantidad')) {
             recalcularTotalDesdeCantidad($campo);
         } else {
-            guardarCampoPresup($campo);
+            guardarYAvanzarCampoPresup($campo);
+                //guardarCampoPresup($campo);
         }
     });
 
@@ -277,8 +302,8 @@ function InicializaEventosPresupuesto() {
         $("input#pre_nombre").val("");
         $("input#pre_domicilio").val("");
     });
-   
-    
+
+
 
     // Handler para Nuevo Presupuesto
     $(document).on('click', '#btnAbmNuevo', function (e) {
@@ -340,13 +365,6 @@ function InicializaEventosPresupuesto() {
         $('#btnAbmAceptar, #btnAbmCancelar').prop('disabled', false).show();
 
         aplicarReadonlyCamposPresup();
-
-        ///se llama a la funcion que actualiza el valor de costo de los productos
-        ///que ya existen en el presupuesto.
-        let preId = $("input#pre_id").val();
-        if (preId) {            
-            cargarProductosPresupuesto(preId,true);
-        }
 
 
         const $primer = $('#divPresupuestoDatos').find('input:not([type=hidden]):not([readonly]), textarea:not([readonly]), select:not([disabled])').filter(':visible').first();
@@ -442,7 +460,7 @@ function InicializaEventosPresupuesto() {
                             };
                         }));
                     },
-                    error: function() {
+                    error: function () {
                         response([]);
                     }
                 });
@@ -450,7 +468,7 @@ function InicializaEventosPresupuesto() {
             minLength: 3,
             select: function (event, ui) {
                 const yaExiste = $("#Rel011List option[value='" + ui.item.id + "']").length > 0;
-                
+
                 if (!yaExiste) {
                     $("#Rel011Item").val(ui.item.id);
                     const opcion = $("<option></option>")
@@ -458,11 +476,11 @@ function InicializaEventosPresupuesto() {
                         .text(ui.item.label);
                     $("#Rel011List").append(opcion);
                 }
-                
+
                 setTimeout(() => $("#Rel011").val(""), 10);
                 return false;
             },
-            focus: function() {
+            focus: function () {
                 return false;
             }
         });
@@ -504,7 +522,7 @@ function InicializaEventosPresupuesto() {
 
 function capturarEstadoFormularioPresup() {
     const estado = {};
-    $('#divPresupuestoDatos').find('input, textarea, select').each(function() {
+    $('#divPresupuestoDatos').find('input, textarea, select').each(function () {
         const $campo = $(this);
         const nombre = $campo.attr('name') || $campo.attr('id');
         if (nombre) {
@@ -516,7 +534,7 @@ function capturarEstadoFormularioPresup() {
 
 function restaurarEstadoFormularioPresup(estado) {
     if (!estado) return;
-    $.each(estado, function(nombre, valor) {
+    $.each(estado, function (nombre, valor) {
         const $campo = $(`[name="${nombre}"], #${nombre}`);
         if ($campo.length) {
             $campo.val(valor);
@@ -530,11 +548,11 @@ function habilitarCamposFormularioPresup(habilitar) {
         'adm_id', 'adm_nombre', 'tco_id', 'cm_compte'
     ];
 
-    $('#divPresupuestoDatos').find('input:not([type=hidden]), textarea, select').each(function() {
+    $('#divPresupuestoDatos').find('input:not([type=hidden]), textarea, select').each(function () {
         const $campo = $(this);
         const nombre = $campo.attr('name') || $campo.attr('id');
-        
-        const esNoEditable = camposNoEditables.some(campo => 
+
+        const esNoEditable = camposNoEditables.some(campo =>
             nombre === campo || nombre?.includes(campo)
         );
 
@@ -566,32 +584,169 @@ function activarEdicionCampoPresup($campo) {
 
     campoEnEdicionPresup = $campo[0];
     $campo.prop('readonly', false)
-          .removeClass('campo-readonly')
-          .focus()
-          .select();
+        .removeClass('campo-readonly')
+        .focus()
+        .select();
+}
+
+// Helpers
+function parseDecimal(str) {
+    if (typeof str !== 'string') return Number(str);
+    str = str.trim();
+    // Soporta "7604.84" y también "7.604,84"
+    str = str.replace(/\./g, '').replace(',', '.');
+    return parseFloat(str);
+}
+
+function calcularElTotaldelaFila(cantidad, precio,$fila) {
+    // Calcular y escribir en la celda
+    if (!isNaN(cantidad) && !isNaN(precio)) {
+        const total = cantidad * precio;
+        const $tdTotal = $fila.find('td.td-total');
+
+        // Guardás el valor crudo y mostrás 2 decimales con punto
+        $tdTotal.attr('data-value', total);
+        $tdTotal.text(total.toFixed(2));
+    }
+    else {
+        $tdTotal.text(parseFloat("0.00"));
+    }
 }
 
 function guardarYAvanzarCampoPresup($campo) {
     guardarCampoPresup($campo);
-    
+
     const $fila = $campo.closest('tr');
+    const esCantid = $campo.hasClass('input-pre_cantidad');
     const esMargen = $campo.hasClass('input-pre_margen');
+    const esPVta = $campo.hasClass('input-pre_pvta');
+
+    //obtengo los parametros comunes para invocar el recalculo de alguno de los
+    //valores ya sea Margen o PVenta
+
+    let val_pcosto = parseFloat($fila.data("pre-pcosto"));
+    let val_prev_tot = parseFloat($fila.data("lp-prevision-tot"));
+    let val_prev_pin = parseFloat($fila.data("lp-prevision-pin"));
+    let val_iva_sit = $fila.data("iva-situacion");
+    let val_iva_ali = parseFloat($fila.data("iva-alicuota"));
+    let val_in_alic = parseFloat($fila.data("in-alicuota"));
+
+
+    let cantidad = parseDecimal($fila.find('input.input-pre_cantidad').val());
+    let pvta = parseDecimal($fila.find('input.input-pre_pvta').val());
+    let margen = parseDecimal($fila.find('input.input-pre_margen').val());
+    //tenemos el control cantidad más global para luego de operar recalcule los totales.
+    const $inCant = $fila.find('input.input-pre_cantidad');
+
+    if (esCantid) {
+        //multiplicamos la cantidad por el precio de venta.        
+        calcularElTotaldelaFila(cantidad, pvta,$fila);
+
     
-    if (esMargen) {
-        const $siguiente = $fila.find('.input-pre_pvta');
-        if ($siguiente.length) {
-            setTimeout(() => activarEdicionCampoPresup($siguiente), 50);
+        if ($inCant.length) {
+            setTimeout(() => activarEdicionCampoPresup($inCant), 50);
             return;
         }
     }
-    
-    const $siguienteFila = $fila.next('tr');
-    if ($siguienteFila.length) {
-        const $siguiente = $siguienteFila.find('.input-pre_margen');
-        if ($siguiente.length) {
-            setTimeout(() => activarEdicionCampoPresup($siguiente), 50);
-        }
+    if (esMargen) {
+        //invocar a la función para que me calcule el precio de venta y
+        //lo tengo que resguardar en el input y en el data.
+        let dataMg = {
+            tp_pcosto: val_pcosto,
+            lp_prevision_tot: val_prev_tot,
+            lp_prevision_pin: val_prev_pin,
+            tp_margen: margen,
+            iva_situacion: val_iva_sit,
+            iva_alicuota: val_iva_ali,
+            in_alicuota: val_in_alic
+        };
+        AbrirWaiting('Espere el calculo...');
+        PostGen(dataMg, calcularPrecioVentaBaseUrl, function (resp) {
+            
+            if (resp.error === true) {
+                AbrirMensaje("Algo no fue bien", resp.msg, function () {
+                    $("#msjModal").modal("hide");
+                }, false, ["Aceptar"], "error!", null);
+                CerrarWaiting();
+            }
+            else if (resp.warn === true) {
+                AbrirMensaje("Algo no fue bien", resp.msg, function () {
+                    if (resp.auth === true) {
+                        window.location.href = login;
+                    } else {
+                        $("#msjModal").modal("hide");
+                        CerrarWaiting();
+                    }
+                }, false, ["Aceptar"], "error!", null);
+            } else {
+                CerrarWaiting();
+                //tenemos el valor calculado
+                let vta = resp.pvta.p_pvta;
+                //le asignamos el nuevo valor a PVTA
+                const $inPvta = $fila.find('input.input-pre_pvta');
+                $inPvta.val(vta);
+                //calculamos el total de la fila.
+                calcularElTotaldelaFila(cantidad, vta,$fila);
+
+                if ($inPvta.length) {
+                    setTimeout(() => activarEdicionCampoPresup($inPvta), 50);
+                    return;
+                }
+            }
+
+        });        
     }
+
+    if (esPVta) {
+        //debo armar el data para enviar via post
+        let dataVT = {
+            tp_pcosto: val_pcosto,
+            lp_prevision_tot: val_prev_tot,
+            lp_prevision_pin: val_prev_pin,
+            tp_pvta: pvta,
+            iva_situacion: val_iva_sit,
+            iva_alicuota: val_iva_ali,
+            in_alicuota: val_in_alic
+        }; 
+
+        AbrirWaiting('Espere el calculo...');
+        PostGen(dataVT, calcularPrecioVentaMargenUrl, function (resp) {
+
+            if (resp.error === true) {
+                AbrirMensaje("Algo no fue bien", resp.msg, function () {
+                    $("#msjModal").modal("hide");
+                }, false, ["Aceptar"], "error!", null);
+                CerrarWaiting();
+            }
+            else if (resp.warn === true) {
+                AbrirMensaje("Algo no fue bien", resp.msg, function () {
+                    if (resp.auth === true) {
+                        window.location.href = login;
+                    } else {
+                        $("#msjModal").modal("hide");
+                        CerrarWaiting();
+                    }
+                }, false, ["Aceptar"], "error!", null);
+            } else {
+                //tenemos el valor calculado
+                let mg = resp.pvta.p_margen;
+                //le asignamos el nuevo valor a PVTA
+                const $inMg = $fila.find('input.input-pre_margen');
+                $inMg.val(mg);
+                //NO calculamos el total de la fila ya que solo se modifico el margen
+                //calcularElTotaldelaFila(cantidad, vta);
+
+                if ($inMg.length) {
+                    setTimeout(() => activarEdicionCampoPresup($inMg), 50);
+                    return;
+                }
+            }
+
+        });        
+
+    }
+
+    recalcularTotalDesdeCantidad($inCant);
 }
 
 function guardarCampoPresup($campo) {
@@ -599,23 +754,23 @@ function guardarCampoPresup($campo) {
 
     const $fila = $campo.closest('tr');
     const esMargen = $campo.hasClass('input-pre_margen');
-    
+
     const valorOriginal = parseFloat($campo.data('original-value')) || 0;
     const valorNuevo = parseFloat($campo.val().replace(/,/g, '')) || 0;
-    
+
     $campo.val(valorNuevo.toFixed(2));
-    $campo.prop('readonly', true).addClass('campo-readonly');
-    
-    campoEnEdicionPresup = null;
-    
-    if (Math.abs(valorOriginal - valorNuevo) > 0.01) {
-        if (esMargen) {
-            recalcularPrecioDesdeMargen($fila, valorNuevo);
-        } else {
-            recalcularMargenDesdePrecio($fila, valorNuevo);
-        }
-        marcarCampoModificadoPresup($campo);
-    }
+    //$campo.prop('readonly', true).addClass('campo-readonly');
+
+    //campoEnEdicionPresup = null;
+
+    //if (Math.abs(valorOriginal - valorNuevo) > 0.01) {
+    //    if (esMargen) {
+    //        recalcularPrecioDesdeMargen($fila, valorNuevo);
+    //    } else {
+    //        recalcularMargenDesdePrecio($fila, valorNuevo);
+    //    }
+    //    marcarCampoModificadoPresup($campo);
+    //}
 }
 
 function recalcularTotalDesdeCantidad($campo) {
@@ -636,13 +791,13 @@ function recalcularTotalDesdeCantidad($campo) {
 
     $campo.val(cantidadNueva.toFixed(2));
     $campo.data('original-value', cantidadNueva);
-    $campo.prop('readonly', true).addClass('campo-readonly');
+    //$campo.prop('readonly', true).addClass('campo-readonly');
     campoEnEdicionPresup = null;
 
     if (Math.abs(cantidadOriginal - cantidadNueva) > 0.01) {
         const precioVenta = parseFloat($fila.find('.input-pre_pvta').val().replace(/,/g, '')) || 0;
         const nuevoTotal = precioVenta * cantidadNueva;
-        
+
         actualizarTotalFila($fila, nuevoTotal);
         actualizarTotalGeneralPresup();
         marcarCampoModificadoPresup($campo);
@@ -658,13 +813,13 @@ function marcarCampoModificadoPresup($campo) {
 function recalcularPrecioDesdeMargen($fila, nuevoMargen) {
     const preCosto = parseFloat($fila.data('pre-costo')) || 0;
     const preCantidad = parseFloat($fila.find('.input-pre_cantidad').val().replace(/,/g, '')) || 1;
-    
+
     const preNeto = preCosto * (1 + nuevoMargen / 100);
-    
+
     const ivaSituacion = $fila.data('iva-situacion') || 'E';
     const ivaAlicuota = parseFloat($fila.data('iva-alicuota')) || 0;
     const inAlicuota = parseFloat($fila.data('in-alicuota')) || 0;
-    
+
     let precioVenta = preNeto;
     if (ivaSituacion === 'G') {
         precioVenta = preNeto * (1 + ivaAlicuota / 100);
@@ -672,14 +827,14 @@ function recalcularPrecioDesdeMargen($fila, nuevoMargen) {
     if (inAlicuota > 0) {
         precioVenta = precioVenta * (1 + inAlicuota / 100);
     }
-    
+
     const total = precioVenta * preCantidad;
-    
+
     const $campoPVta = $fila.find('.input-pre_pvta');
     $campoPVta.val(precioVenta.toFixed(3));
     $campoPVta.data('original-value', precioVenta);
     marcarCampoModificadoPresup($campoPVta);
-    
+
     actualizarTotalFila($fila, total);
     actualizarTotalGeneralPresup();
 }
@@ -687,19 +842,19 @@ function recalcularPrecioDesdeMargen($fila, nuevoMargen) {
 function recalcularMargenDesdePrecio($fila, nuevoPrecio) {
     const preCosto = parseFloat($fila.data('pre-costo')) || 0;
     const preCantidad = parseFloat($fila.find('.input-pre_cantidad').val().replace(/,/g, '')) || 1;
-    
+
     if (preCosto === 0) {
-        AbrirMensaje("Error", 
+        AbrirMensaje("Error",
             "No se puede calcular el margen: el costo es cero",
             () => $("#msjModal").modal("hide"),
             false, ["Aceptar"], "error!", null);
         return;
     }
-    
+
     const ivaSituacion = $fila.data('iva-situacion') || 'E';
     const ivaAlicuota = parseFloat($fila.data('iva-alicuota')) || 0;
     const inAlicuota = parseFloat($fila.data('in-alicuota')) || 0;
-    
+
     let preNeto = nuevoPrecio;
     if (inAlicuota > 0) {
         preNeto = preNeto / (1 + inAlicuota / 100);
@@ -707,26 +862,26 @@ function recalcularMargenDesdePrecio($fila, nuevoPrecio) {
     if (ivaSituacion === 'G') {
         preNeto = preNeto / (1 + ivaAlicuota / 100);
     }
-    
+
     const nuevoMargen = ((preNeto - preCosto) / preCosto) * 100;
-    
+
     if (nuevoMargen < 0) {
         const $campoPVta = $fila.find('.input-pre_pvta');
         const valorOriginal = parseFloat($campoPVta.data('original-value')) || 0;
         $campoPVta.val(valorOriginal.toFixed(3));
-        
-        AbrirMensaje("Advertencia", 
+
+        AbrirMensaje("Advertencia",
             `El precio de venta genera un margen negativo (${nuevoMargen.toFixed(2)}%).`,
             () => $("#msjModal").modal("hide"),
             false, ["Aceptar"], "warn!", null);
         return;
     }
-    
+
     const $campoMargen = $fila.find('.input-pre_margen');
     $campoMargen.val(nuevoMargen.toFixed(2));
     $campoMargen.data('original-value', nuevoMargen);
     marcarCampoModificadoPresup($campoMargen);
-    
+
     const total = nuevoPrecio * preCantidad;
     actualizarTotalFila($fila, total);
     actualizarTotalGeneralPresup();
@@ -738,15 +893,15 @@ function actualizarTotalFila($fila, total) {
 
 function actualizarTotalGeneralPresup() {
     let totalGeneral = 0;
-    
-    $('#tbGridPresupuestoProds tbody tr').each(function() {
+
+    $('#tbGridPresupuestoProds tbody tr').each(function () {
         const $fila = $(this);
         if ($fila.find('td[colspan]').length > 0) return;
-        
+
         const total = parseFloat($fila.find('.td-total').text().replace(/,/g, '')) || 0;
         totalGeneral += total;
     });
-    
+
     $('#tbGridPresupuestoProds tfoot .fw-bold:last').text(totalGeneral.toFixed(2));
 }
 
@@ -819,10 +974,10 @@ function configurarEventosSeleccionPres() {
 }
 
 function cargarPresupuestoDatos(preId) {
-    const url = obtenerPresupuestoDatoUrl; 
+    const url = obtenerPresupuestoDatoUrl;
     PostGenHtml({ pre_id: preId }, url, function (html) {
         $("#divPresDatos").html(html).show();
-        
+
         // ✅ DETERMINAR PERMISOS DE EDICIÓN BASÁNDOSE EN EL ESTADO DEL PRESUPUESTO
         // ════════════════════════════════════════════════════════════════════
         // La función removida puedeEditarPresupuesto() ha sido reempFazada por Facturado lógica.
@@ -836,9 +991,9 @@ function cargarPresupuestoDatos(preId) {
         // ⚠️ IMPORTANTE: Ajustar el array 'estadosEditables' según los estados
         //    reales definidos en la base de datos (tabla PresupE o similar)
         // ═══════════════════════════════════════════════════════════════════════
-        
+
         const preeId = $("#pree_id").val(); // Estado del presupuesto desde el formulario cargado
-        
+
         //✅ Solo permitir edición si está en estado Pendiente ('P') o Borrador ('B')
         const estadosEditables = ['P']; // ⚠️ Ajustar estos valores según sea necesario
 
@@ -848,17 +1003,17 @@ function cargarPresupuestoDatos(preId) {
         //esta ultima validación la dejaremos pendiente.
 
         const permite = estadosEditables.includes(preeId);
-        
+
         $("#btnAbmModif").prop("disabled", !permite);
         $("#btnAbmElimi").prop("disabled", !permite);
 
         // Debug - ayuda a identificar estados del sistema
-        console.log("cargarPresupuestoDatos: Estado del presupuesto:", preeId, 
-                    "Permite edición:", permite);
+        console.log("cargarPresupuestoDatos: Estado del presupuesto:", preeId,
+            "Permite edición:", permite);
     });
 }
 
-function cargarProductosPresupuesto(preId,isUpdate=false) {
+function cargarProductosPresupuesto(preId, isUpdate = false) {
     let url = "";
     if (isUpdate) {
         //trae los productos con los costos actualizados
@@ -868,8 +1023,8 @@ function cargarProductosPresupuesto(preId,isUpdate=false) {
         //trae los productos tal cual están en el presupuesto
         url = obtenerPresupuestoProductoUrl;
     }
-        
-    PostGenHtml({ pre_id: preId }, url, function(html) {
+
+    PostGenHtml({ pre_id: preId }, url, function (html) {
         $("#divPresProds").empty().html(html).show();
         // Forzar estado readonly acorde al modo
         aplicarReadonlyCamposPresup();
@@ -888,14 +1043,14 @@ function buildQueryFilters(pag) {
     const rel01 = getValues("#Rel011List", false);
     const rel02 = getValues("#Rel022List", false);
     const rel03 = getValues("#Rel03List", true);
-    
+
     let rel04Val = $("#Rel04").val();
     let rel04 = [];
     if (rel04Val) {
         rel04.push({
             Id: $("#Rel04").val(),
             Descripcion: $("#Rel04 option:selected").text().trim()
-        });        
+        });
     }
 
     return {
@@ -945,7 +1100,7 @@ function getValues(src, asComboDto = false) {
         const v = String(items[i].value ?? "").trim();
         if (!v || seen.has(v)) continue;
         seen.add(v);
-        
+
         if (asComboDto) {
             out.push({
                 Id: v,
@@ -955,7 +1110,7 @@ function getValues(src, asComboDto = false) {
             out.push(v);
         }
     }
-    
+
     return out;
 }
 
@@ -976,10 +1131,10 @@ function appendIfMissingOption($select, value, text) {
 
 function resetComboSilent($el) {
     if (!$el || !$el.length) return;
-    
+
     const handlers = $._data($el[0], "events");
     $el.off("change");
-    
+
     if ($.fn.selectpicker && $el.hasClass("selectpicker")) {
         $el.selectpicker("val", []);
     } else if ($el.data("select2")) {
@@ -987,7 +1142,7 @@ function resetComboSilent($el) {
     } else {
         $el.val("");
     }
-    
+
     if (handlers && handlers.change) {
         handlers.change.forEach(h => $el.on("change", h.handler));
     }
@@ -1038,7 +1193,7 @@ function aplicarReadonlyCamposPresup() {
         } else {
             campos.each(function () {
                 const $c = $(this);
-                $c.prop('readonly', true).addClass('campo-readonly');
+                $c.prop('readonly', false).removeClass('campo-readonly');
                 $c.attr('title', 'Doble click para editar');
             });
         }
@@ -1091,14 +1246,14 @@ function cargarModalBusquedaAvanzada(callback) {
         return;
     }
 
-    const urlModal = typeof busquedaAvanzadaModalUrl !== 'undefined' 
-        ? busquedaAvanzadaModalUrl 
+    const urlModal = typeof busquedaAvanzadaModalUrl !== 'undefined'
+        ? busquedaAvanzadaModalUrl
         : '/ControlComun/Producto/BusquedaAdvanceV02';
 
     $.ajax({
         url: urlModal,
         type: 'GET',
-        success: function(html) {
+        success: function (html) {
             if ($("#busquedaModal").length === 0) {
                 $('body').append(html);
             }
@@ -1106,7 +1261,7 @@ function cargarModalBusquedaAvanzada(callback) {
                 callback();
             }
         },
-        error: function(xhr, status, error) {
+        error: function (xhr, status, error) {
             console.error("Error al cargar modal de búsqueda:", error);
             ControlaMensajeError("No se pudo cargar el módulo de búsqueda de productos");
         }
@@ -1115,17 +1270,17 @@ function cargarModalBusquedaAvanzada(callback) {
 
 function obtenerProductosExistentesIds() {
     const productosIds = [];
-    
-    $('#tbGridPresupuestoProds tbody tr').each(function() {
+
+    $('#tbGridPresupuestoProds tbody tr').each(function () {
         const $fila = $(this);
         if ($fila.find('td[colspan]').length > 0) return;
-        
+
         const pId = $fila.data('p-id');
         if (pId) {
             productosIds.push(pId);
         }
     });
-    
+
     return productosIds;
 }
 
@@ -1133,7 +1288,7 @@ function agregarProductosAlGrid(productos) {
     if (!Array.isArray(productos) || productos.length === 0) return;
 
     const $tbody = $('#tbGridPresupuestoProds tbody');
-    
+
     const $filaVacia = $tbody.find('tr td[colspan]');
     if ($filaVacia.length > 0) {
         $filaVacia.closest('tr').remove();
@@ -1154,87 +1309,139 @@ function agregarProductosAlGrid(productos) {
 
     let esAlternado = $tbody.find('tr').length % 2 !== 0;
 
-    productos.forEach(function(producto) {
+    productos.forEach(function (producto) {
         const fila = crearFilaProductoPresupuesto(producto, esAlternado);
         $tbody.append(fila);
         esAlternado = !esAlternado;
     });
 
-    aplicarInputMaskPresupuesto();
+    //aplicarInputMaskPresupuesto();
     aplicarReadonlyCamposPresup();
     actualizarTotalGeneralPresup();
+    finalizarInicializacion();
 }
 
+/**
+ * ✅ OPTIMIZADO: Crea HTML de fila de producto con TODOS los nuevos campos
+ * Unifica lógica de cálculo y evita duplicación de código
+ * @param {object} producto - ProductoListaDto
+ * @param {boolean} esAlternado - Alternar clase CSS
+ * @returns {string} HTML de la fila
+ */
 function crearFilaProductoPresupuesto(producto, esAlternado) {
-    const pId = producto.p_id || '';
-    const pDesc = producto.p_desc || '';
-    const pCosto = parseFloat(producto.p_pcosto || 0);
-    const cantidad = 1;
-    const margen = 30;
+    // ✅ VALIDACIÓN Y NORMALIZACIÓN DE DATOS
+    const datosProducto = normalizarDatosProducto(producto);
 
-
-
-    const precioNeto = pCosto * (1 + margen / 100);
-    
-    const ivaSituacion = producto.iva_situacion || 'E';
-    const ivaAlicuota = parseFloat(producto.iva_alicuota || 21);
-    const inAlicuota = parseFloat(producto.in_alicuota || 0);
-    
-    let precioVenta = precioNeto;
-    if (ivaSituacion === 'G') {
-        precioVenta = precioVenta * (1 + ivaAlicuota / 100);
-    }
-    if (inAlicuota > 0) {
-        precioVenta = precioVenta * (1 + inAlicuota / 100);
-    }
-    
-    const total = cantidad * precioVenta;
+    // ✅ FORMATEO
     const claseAlt = esAlternado ? 'alt' : '';
-    
+
+    // ✅ CONSTRUCCIÓN HTML CON TEMPLATE LITERALS (más legible y performante)
     return `
         <tr class="${claseAlt}"
-            data-p-id="${pId}"
-            data-pre-pcosto="${pCosto.toFixed(3)}"
-            data-pre-pneto="${precioNeto.toFixed(3)}"
-            data-iva-situacion="${ivaSituacion}"
-            data-iva-alicuota="${ivaAlicuota}"
-            data-in-alicuota="${inAlicuota}">
-            <td class="text-center">${pId}</td>
-            <td>${pDesc}</td>
-            <td class="text-end">${pCosto.toFixed(3)}</td>
+            data-p-id="${datosProducto.p_id}"
+            data-pre-pcosto="${datosProducto.p_pcosto.toFixed(3)}"
+            data-pre-pneto="${datosProducto.p_pneto.toFixed(2)}"
+            data-iva-situacion="${datosProducto.iva_situacion}"
+            data-iva-alicuota="${datosProducto.iva_alicuota}"
+            data-in-alicuota="${datosProducto.in_alicuota}"
+            data-lp-prevision-tot="${datosProducto.lp_prevision_tot.toFixed(3)}"
+            data-lp-prevision-pin="${datosProducto.lp_prevision_pin.toFixed(3)}">
+            <td class="text-center">${datosProducto.p_id}</td>
+            <td>${escaparHTML(datosProducto.p_desc)}</td>
+            <td class="text-end">${datosProducto.p_pcosto.toFixed(3)}</td>
             <td class="text-end">
                 <div class="input-container">
                     <input type="text" 
-                           class="form-control form-control-sm input-pre_cantidad input-numeric campo-readonly"
-                           value="${cantidad.toFixed(2)}"
-                           data-original-value="${cantidad}"
-                           readonly 
+                           class="form-control form-control-sm input-pre_cantidad input-numeric "
+                           value="${datosProducto.cantidad.toFixed(2)}"
+                           data-original-value="${datosProducto.cantidad}"
                            title="Doble click para editar" />
                 </div>
             </td>
             <td class="text-end">
                 <div class="input-container">
                     <input type="text" 
-                           class="form-control form-control-sm input-pre_margen input-numeric campo-readonly"
-                           value="${margen.toFixed(2)}"
-                           data-original-value="${margen}"
-                           readonly 
+                           class="form-control form-control-sm input-pre_margen input-numeric"
+                           value="${datosProducto.p_margen.toFixed(2)}"
+                           data-original-value="${datosProducto.p_margen}"
+                           data-margen-actual="${datosProducto.p_margen.toFixed(2)}"                            
                            title="Doble click para editar" />
                 </div>
             </td>
             <td class="text-end">
                 <div class="input-container">
                     <input type="text" 
-                           class="form-control form-control-sm input-pre_pvta input-numeric campo-readonly"
-                           value="${precioVenta.toFixed(3)}"
-                           data-original-value="${precioVenta}"
-                           readonly 
+                           class="form-control form-control-sm input-pre_pvta input-numeric"
+                           value="${datosProducto.p_pvta.toFixed(2)}"
+                           data-original-value="${datosProducto.p_pvta}"
+                           data-pvta-actual="${datosProducto.p_pvta.toFixed(2)}"                           
                            title="Doble click para editar" />
                 </div>
             </td>
-            <td class="text-end td-total">${total.toFixed(2)}</td>
+            <td class="text-end td-total">${datosProducto.p_pvta.toFixed(2)}</td>
+            <td class="text-center">
+                <button type="button" 
+                        class="btn btn-sm btn-danger btn-eliminar-producto" 
+                        data-p-id="${datosProducto.p_id}"
+                        title="Eliminar producto"
+                        style="${estaEnModoEdicionPresup() ? '' : 'display: none;'}">
+                    <i class="bx bx-trash"></i>
+                </button>
+            </td>
         </tr>
     `;
+}
+
+/**
+ * ✅ NUEVO: Normaliza y valida datos del ProductoListaDto
+ * Centraliza validación y conversión de tipos
+ * @param {object} producto - ProductoListaDto
+ * @returns {object} Datos normalizados y validados
+ */
+function normalizarDatosProducto(producto) {
+    // ✅ HELPER: Parsear decimal con fallback seguro
+    const parseDecimalSeguro = (valor, defecto = 0) => {
+        const num = parseFloat(valor);
+        return isNaN(num) ? defecto : num;
+    };
+
+    return {
+        // Identificadores
+        p_id: String(producto.p_id || producto.P_id || '').trim(),
+        p_desc: String(producto.p_desc || producto.P_desc || 'Sin descripción').trim(),
+        // Precios y costos
+        p_pcosto: parseDecimalSeguro(producto.p_pcosto || producto.P_pcosto, 0),
+        p_pvta: parseDecimalSeguro(producto.p_pvta || producto.P_pvta, 0),
+        p_pneto: parseDecimalSeguro(producto.p_pneto, 0), // ✅ NUEVO CAMPO
+
+        // Márgenes
+        p_margen: parseDecimalSeguro(producto.p_margen, 0), // ✅ USA p_margen DEL DTO
+        //margenActual: parseDecimalSeguro(producto.p_margen, 0), // ✅ NUEVO CAMPO
+
+        // Cantidad (siempre 1 para nuevos productos)
+        cantidad: 1,
+
+        // Impuestos
+        //ivaSituacion: String(producto.iva_situacion || 'E').trim(),
+        iva_situacion: producto.iva_situacion,
+        iva_alicuota: parseDecimalSeguro(producto.iva_alicuota, 21),
+        in_alicuota: parseDecimalSeguro(producto.in_alicuota, 0),
+
+        // ✅ NUEVOS CAMPOS: Previsiones
+        lp_prevision_tot: parseDecimalSeguro(producto.lp_prevision_tot, 0),
+        lp_prevision_pin: parseDecimalSeguro(producto.lp_prevision_pin, 0),
+    };
+}
+
+/**
+ * ✅ NUEVO: Escapa HTML para prevenir XSS
+ * @param {string} texto - Texto a escapar
+ * @returns {string} Texto escapado
+ */
+function escaparHTML(texto) {
+    const div = document.createElement('div');
+    div.textContent = texto;
+    return div.innerHTML;
 }
 
 function aplicarInputMaskPresupuesto() {
@@ -1251,7 +1458,7 @@ function aplicarInputMaskPresupuesto() {
         allowMinus: false,
         min: 0
     }).mask('.input-pre_cantidad:not(.inputmask-applied)');
-    
+
     Inputmask({
         alias: "numeric",
         groupSeparator: ",",
@@ -1307,7 +1514,7 @@ function inicializarAutocompleteRel011() {
                         };
                     }));
                 },
-                error: function() {
+                error: function () {
                     response([]);
                 }
             });
@@ -1315,7 +1522,7 @@ function inicializarAutocompleteRel011() {
         minLength: 3,
         select: function (event, ui) {
             const yaExiste = $("#Rel011List option[value='" + ui.item.id + "']").length > 0;
-            
+
             if (!yaExiste) {
                 $("#Rel011Item").val(ui.item.id);
                 const opcion = $("<option></option>")
@@ -1323,11 +1530,11 @@ function inicializarAutocompleteRel011() {
                     .text(ui.item.label);
                 $("#Rel011List").append(opcion);
             }
-            
+
             setTimeout(() => $("#Rel011").val(""), 10);
             return false;
         },
-        focus: function() {
+        focus: function () {
             return false;
         }
     });
@@ -1356,7 +1563,7 @@ function inicializarAutocompleteRel022() {
                         };
                     }));
                 },
-                error: function() {
+                error: function () {
                     response([]);
                 }
             });
@@ -1364,7 +1571,7 @@ function inicializarAutocompleteRel022() {
         minLength: 3,
         select: function (event, ui) {
             const yaExiste = $("#Rel022List option[value='" + ui.item.id + "']").length > 0;
-            
+
             if (!yaExiste) {
                 $("#Rel022Item").val(ui.item.id);
                 const opcion = $("<option></option>")
@@ -1372,11 +1579,11 @@ function inicializarAutocompleteRel022() {
                     .text(ui.item.label);
                 $("#Rel022List").append(opcion);
             }
-            
+
             setTimeout(() => $("#Rel022").val(""), 10);
             return false;
         },
-        focus: function() {
+        focus: function () {
             return false;
         }
     });
@@ -1394,14 +1601,14 @@ function destruirAutocompleteRel011() {
 
 function procesarAgregarProductosMultiples() {
     AbrirWaiting("Agregando productos al presupuesto...");
-    
+
     try {
         const productosExistentesIds = obtenerProductosExistentesIds();
-        const productosFiltrados = productosSeleccionadosBusqueda.filter(producto => 
+        const productosFiltrados = productosSeleccionadosBusqueda.filter(producto =>
             !productosExistentesIds.includes(producto.p_id));
-        
+
         const cantidadDuplicados = productosSeleccionadosBusqueda.length - productosFiltrados.length;
-        
+
         if (productosFiltrados.length === 0) {
             CerrarWaiting();
             if (cantidadDuplicados > 0) {
@@ -1411,22 +1618,22 @@ function procesarAgregarProductosMultiples() {
             }
             return;
         }
-        
+
         agregarProductosAlGrid(productosFiltrados);
         $("#busquedaModal").modal("hide");
-        
+
         const cantidadAgregada = productosFiltrados.length;
         limpiarSeleccionBusqueda();
-        
-        CerrarWaiting();                            
+
+        CerrarWaiting();
         let mensaje = '';
-        
+
         if (cantidadDuplicados > 0) {
             mensaje = `Se agregaron ${cantidadAgregada} producto(s). Se omitieron ${cantidadDuplicados} producto(s) duplicado(s).`;
         } else {
             mensaje = `${cantidadAgregada} producto${cantidadAgregada > 1 ? 's' : ''} agregado${cantidadAgregada > 1 ? 's' : ''} correctamente al presupuesto`;
         }
-        
+
         ControlaMensajeSuccess(mensaje);
     } catch (error) {
         CerrarWaiting();
@@ -1461,8 +1668,8 @@ $(document).on('click', '#btnAbmAceptar', function (e) {
     }
 
     // Mostrar confirmación
-    const mensajeConfirmacion = abm === 'A' 
-        ? '¿Desea confirmar la creación del presupuesto?' 
+    const mensajeConfirmacion = abm === 'A'
+        ? '¿Desea confirmar la creación del presupuesto?'
         : '¿Desea confirmar las modificaciones del presupuesto?';
 
     AbrirMensaje(
@@ -1492,24 +1699,36 @@ $(document).on('click', '#btnAbmAceptar', function (e) {
  */
 function validarPresupuesto(abm) {
     console.log(`🔍 Validando presupuesto (Modo: ${abm})...`);
-
+   
     // ✅ VALIDACIÓN 1: Cliente obligatorio
     const ctaId = $('#cta_id').val();
     if (!ctaId || ctaId.trim() === '') {
-        return {
-            esValido: false,
-            mensaje: 'Debe seleccionar un cliente para el presupuesto'
-        };
+        let nombre = $("#pre_nombre").val();
+        let domicilio = $("#pre_domicilio");
+
+        if (!nombre || nombre.trim() === '') {
+            return {
+                esValido: false,
+                mensaje: 'Debe seleccionar un cliente para el presupuesto o por lo menos carar el nombre y domicilio en el formulario.'
+            };
+        } else if (!domicilio || domicilio.trim() === '') {
+            return {
+                esValido: false,
+                mensaje: 'No se especificó cliente, se indicó un nombre pero falta especificar domicilio de la persona solicitante del presupuesto.'
+            }
+        }
+
+        
     }
 
-    // ✅ VALIDACIÓN 2: Tipo obligatorio
-    const pretId = $('#pret_id').val();
-    if (!pretId || pretId.trim() === '') {
-        return {
-            esValido: false,
-            mensaje: 'Debe seleccionar el tipo de presupuesto'
-        };
-    }
+    //// ✅ VALIDACIÓN 2: Tipo obligatorio
+    //const pretId = $('#pret_id').val();
+    //if (!pretId || pretId.trim() === '') {
+    //    return {
+    //        esValido: false,
+    //        mensaje: 'Debe seleccionar el tipo de presupuesto'
+    //    };
+    //}
 
     // ✅ VALIDACIÓN 3: Vigencia desde obligatorio
     const vigenciaDesde = $('#pre_vigencia_desde').val();
@@ -1675,7 +1894,7 @@ function obtenerProductosDelGrid() {
         const cantidad = parseFloat($inputCantidad.val().replace(/,/g, '')) || 0;
         const margen = parseFloat($inputMargen.val().replace(/,/g, '')) || 0;
         const precioVenta = parseFloat($inputPVta.val().replace(/,/g, '')) || 0;
-        
+
         // ✅ OPTIMIZACIÓN: Calcular total directamente
         const total = cantidad * precioVenta;
 
@@ -1816,12 +2035,12 @@ function eliminarPresupuesto() {
             function (error) {
                 CerrarWaiting();
                 console.error('❌ Error al eliminar presupuesto:', error);
-                
-                const mensajeError = error.responseJSON?.mensaje 
-                                  || error.responseJSON?.msg
-                                  || error.statusText 
-                                  || 'Error desconocido';
-                
+
+                const mensajeError = error.responseJSON?.mensaje
+                    || error.responseJSON?.msg
+                    || error.statusText
+                    || 'Error desconocido';
+
                 ControlaMensajeError(`Error al eliminar el presupuesto: ${mensajeError}`);
             }
         );
@@ -1845,7 +2064,7 @@ function procesarRespuestaEliminacion(response) {
             ControlaMensajeWarning(response.mensaje || 'Atención al intentar eliminar el presupuesto');
             return;
         }
-        
+
     }
 
     AbrirMensaje(
@@ -1854,7 +2073,7 @@ function procesarRespuestaEliminacion(response) {
         function () {
             $('#msjModal').modal('hide');
             cancelarOperacion();
-            
+
             if ($('#tbGridPresupuesto tbody tr').length > 0) {
                 console.log('🔄 Actualizando lista de presupuestos...');
                 buscarPresupuestos($('#btnBuscar'));
@@ -1865,4 +2084,217 @@ function procesarRespuestaEliminacion(response) {
         'success!',
         null
     );
+}
+
+function finalizarInicializacion() {
+    setTimeout(function () {
+        configuracionInputMaskOptimizadaPresup();
+        optimizarVisualizacionTablaPresup();
+    }, 10);
+}
+
+function optimizarVisualizacionTablaPresup() {
+    // Asegurarnos de que la tabla existe
+    if ($("#tbProdDet").length === 0) {
+        return;
+    }
+
+    // Ajustar columnas con texto para que no sean demasiado anchas
+    $("#tbProdDet th:nth-child(2)").css('max-width', '180px'); // Descripción
+    $("#tbProdDet td:nth-child(2)").css({
+        'max-width': '180px',
+        'white-space': 'nowrap',
+        'overflow': 'hidden',
+        'text-overflow': 'ellipsis'
+    });
+
+    // Asegurarnos que la tabla tenga scroll horizontal si es necesario
+    $("#tbProdDet").closest('.table-responsive').css('overflow-x', 'auto');
+
+    console.log("Tabla optimizada para mejor visualización");
+}
+
+function configuracionInputMaskOptimizadaPresup() {
+    console.log("Aplicando configuración InputMask optimizada...");
+
+    // Establecer todos los campos como readonly de una sola vez
+    $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_pcosto, .input-tp_margen, .input-tp_pneto, .input-tin_alicuota, .input-tp_pvta')
+        .prop('readonly', true)
+        .addClass('campo-readonly');
+
+    // Definir configuraciones de máscara fuera de los bucles
+    const maskConfig3Decimales = {
+        alias: "numeric",
+        groupSeparator: ",",
+        radixPoint: ".",
+        autoGroup: true,
+        digits: 3,
+        digitsOptional: false,
+        rightAlign: true,
+        prefix: '',
+        placeholder: "0",
+        clearMaskOnLostFocus: false,
+        showMaskOnHover: false,
+        showMaskOnFocus: false,
+        min: 0, // Explícitamente permitir 0 como valor mínimo
+        allowMinus: false, // No permitir valores negativos
+        onBeforeMask: function (value) {
+            // Si es null, undefined o cadena vacía, retornar '0'
+            if (value === null || value === undefined || value === '') {
+                return '0';
+            }
+
+            // Para otros valores, formatear correctamente
+            try {
+                let numValue = parseFloat(value.toString().replace(/,/g, ''));
+                return isNaN(numValue) ? '0' : numValue.toFixed(3);
+            } catch (e) {
+                console.error('Error al formatear valor:', e);
+                return '0';
+            }
+        }
+    };
+
+    //const maskConfig1Decimal = {
+    //    alias: "numeric",
+    //    groupSeparator: ",",
+    //    radixPoint: ".",
+    //    autoGroup: true,
+    //    digits: 1,
+    //    digitsOptional: false,
+    //    rightAlign: true,
+    //    integerDigits: 2,
+    //    min: 0,
+    //    max: 99.9,
+    //    prefix: '',
+    //    placeholder: "0",
+    //    clearMaskOnLostFocus: false,
+    //    showMaskOnHover: false,
+    //    showMaskOnFocus: false,
+    //    onBeforeMask: function (value) {
+    //        if (value) {
+    //            let numValue = parseFloat(value.toString().replace(/,/g, ''));
+    //            if (numValue > 99.9) numValue = 99.9;
+    //            return isNaN(numValue) ? value : numValue.toFixed(1);
+    //        }
+    //        return value;
+    //    }
+    //};
+
+    const maskConfig2Decimales = {
+        alias: "numeric",
+        groupSeparator: ",",
+        radixPoint: ".",
+        autoGroup: true,
+        digits: 2,
+        digitsOptional: false,
+        rightAlign: true,
+        prefix: '',
+        placeholder: "0",
+        clearMaskOnLostFocus: false,
+        showMaskOnHover: false,
+        showMaskOnFocus: false,
+        onBeforeMask: function (value) {
+            if (value) {
+                let numValue = parseFloat(value.toString().replace(/,/g, ''));
+                return isNaN(numValue) ? value : numValue.toFixed(2);
+            }
+            return value;
+        }
+    };
+
+    //const maskConfigBoni = {
+    //    mask: "999/999",
+    //    placeholder: "",
+    //    showMaskOnHover: false,
+    //    showMaskOnFocus: false
+    //};
+
+    // Aplicar máscaras de forma eficiente con selección optimizada
+    Inputmask(maskConfig3Decimales).mask('.input-tp_pcosto');
+    //Inputmask(maskConfig1Decimal).mask('.input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete');
+    Inputmask(maskConfig2Decimales).mask('.input-tp_margen, .input-tp_pvta');
+    //Inputmask(maskConfigBoni).mask('.input-tp_boni');
+
+    // Configurar eventos de edición
+    configurarEventosEdicionOptimizado();
+
+    console.log("Configuración InputMask aplicada");
+}
+
+// ✅ SIMPLIFICADO: Eventos de edición más eficientes
+function configurarEventosEdicionOptimizado() {
+    const camposEditables = '.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta';
+    const camposSecuencia01 = '.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni';
+
+    // Limpiar eventos previos
+    $(document).off('click.camposEditables keydown.camposEditables blur.camposSecuencia01 blur.campoMargen blur.campoPVta blur.campoImpuesto');
+
+    // Evento click unificado
+    $(document).on('click.camposEditables', camposEditables, function (e) {
+        e.stopPropagation();
+
+        const $this = $(this);
+        const pIdDetalle = $this.closest('tr').data('p-id');
+
+        //// Cambio de producto si es necesario
+        //if (pIdDetalle !== productoActualEnLista) {
+        //    productoActualEnLista = pIdDetalle;
+        //    $("#divProdLista").attr('data-producto-actual', pIdDetalle);
+        //    destacarFilaSeleccionada(pIdDetalle);
+        //    buscarProductoListaOptimizado(pIdDetalle);
+        //}
+
+        // Habilitar campo
+        $this.prop('readonly', false).removeClass('campo-readonly');
+        setTimeout(() => { $this[0].focus(); $this[0].select(); }, 0);
+    });
+
+    // Evento keydown unificado
+    $(document).on('keydown.camposEditables', camposEditables, function (e) {
+        if (e.key === 'Enter' || e.key === 'Tab') {
+            e.preventDefault();
+
+            const row = $(this).closest('tr');
+            const esSecuencia01 = $(this).is(camposSecuencia01);
+            const esMargen = $(this).hasClass('input-tp_margen');
+            const esPrecioVenta = $(this).hasClass('input-tp_pvta');
+
+            marcarCampoModificado(this);
+            actualizarEstadoCarga(row);
+            activarSiguienteCampo(this);
+
+            // Aplicar cálculos según tipo
+            if (esSecuencia01) calcularCostoAPIDebounced(row);
+            else if (esMargen) calcularPrecioVentaAPIDebounced(row);
+            else if (esPrecioVenta) calcularPrecioVentaMargenAPIDebounced(row);
+        }
+    });
+
+    // Eventos blur simplificados con delegación
+    const eventosBlur = {
+        [camposSecuencia01]: () => calcularCostoAPIDebounced,
+        '.input-tp_margen': () => calcularPrecioVentaAPIDebounced,
+        '.input-tp_pvta': () => calcularPrecioVentaMargenAPIDebounced,
+        '.input-tin_alicuota': () => recalcularRelacionPrecioVenta
+    };
+
+    Object.entries(eventosBlur).forEach(([selector, getCallback]) => {
+        $(document).on(`blur.${selector.replace(/[^a-zA-Z]/g, '')}`, selector, function () {
+            if ($(this).prop('readonly')) return;
+
+            const row = $(this).closest('tr');
+            const value = $(this).val().replace(/,/g, '');
+            const numValue = parseFloat(value);
+
+            if (!isNaN(numValue)) {
+                const decimals = $(this).hasClass('input-tp_plista') || $(this).hasClass('input-tp_pcosto') || $(this).hasClass('input-tp_pneto') ? 3 :
+                    $(this).hasClass('input-tp_dto1') || $(this).hasClass('input-tp_dto2') || $(this).hasClass('input-tp_dto3') || $(this).hasClass('input-tp_dto4') || $(this).hasClass('input-tp_dto_pa') || $(this).hasClass('input-tp_porc_flete') ? 1 : 2;
+                $(this).val(numValue.toFixed(decimals));
+            }
+
+            $(this).prop('readonly', true).addClass('campo-readonly');
+            getCallback()(row);
+        });
+    });
 }

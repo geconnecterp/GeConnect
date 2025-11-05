@@ -32,7 +32,7 @@
 
         public string adm_id { get; set; } = string.Empty;
         public string adm_nombre { get; set; } = string.Empty;
-        public string tco_id { get; set; }
+        public string tco_id { get; set; } = string.Empty;
         public string cm_compte { get; set; } = string.Empty;
 
     }
@@ -47,9 +47,14 @@
         public decimal pre_cantidad { get; set; }
         public decimal pre_pcosto { get; set; }
         public decimal pre_pneto { get; set; }
-        public decimal pre_margen { get; set; }
+        public decimal pre_pmargen { get; set; }
         public decimal pre_pvta { get; set; }
         public decimal pre_cantidad_ent { get; set; }
+        public decimal lp_prevision_tot { get; set; }
+        public decimal lp_prevision_pin { get; set; }
+        public decimal p_margen_actual { get; set; }
+        public decimal p_pvta_actual { get; set; }
+        public decimal p_pcosto_actual { get; set; }
         public decimal pre_total { get; set; }
     }
 }
