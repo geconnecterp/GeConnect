@@ -3,6 +3,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Ofertas;
+using gc.infraestructura.Dtos.Productos.Presupuestos;
 using gc.infraestructura.Helpers;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
@@ -72,6 +73,24 @@ namespace gc.sitio.Areas.Productos.Controllers
             {
                 var json = JsonConvert.SerializeObject(value);
                 _context.HttpContext?.Session.SetString("ProductosSustitutos", json);
+            }
+        }
+
+        public List<PresupuestoProductoDto> ProductosActualesPresupuesto
+        {
+            get
+            {
+                var json = _context.HttpContext?.Session.GetString("ProductosActualesPresupuesto") ?? string.Empty;
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<PresupuestoProductoDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("ProductosActualesPresupuesto", json);
             }
         }
 

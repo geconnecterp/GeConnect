@@ -54,7 +54,7 @@ $(function () {
 
     // Botón de búsqueda
     $("#btnBuscarProd").off("click").on("click", function () {
-        buscarAvUIStart();
+        buscarAvUIStart();//activa el spinner
         busquedaAvanzadaProductosV02(pagina);
     });
 
@@ -62,6 +62,18 @@ $(function () {
     $("#pagEstado").on("change", function () {
         var div = $("#divPaginacionAdv");
         presentaPaginacion(div);
+    });
+    
+    //generar evento para el campo #Search para que cuando se de Enter
+    //se haga click sobre el boton #btnBuscarProd
+    $("#Search").off("keydown").on("keydown", function (e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            const valor = $(this).val().trim();
+            if (valor) {
+                $("#btnBuscarProd").trigger("click");
+            }
+        }
     });
 
     // Callback para paginación
@@ -92,7 +104,9 @@ function busquedaAvanzadaProductosV02(pag) {
     }
 
     var buscar = $("#Search").val();
-    var data1 = { ri01, ri02, ri03, act, dis, ina, cstk, sstk, buscar };
+    //admLp_id viene de layout y es el id del listado de precios actual 
+    //obtenido en la autenticación
+    var data1 = { ri01, ri02, ri03, act, dis, ina, cstk, sstk, buscar, lp_id : admLp_id };
 
     var buscaNew = JSON.stringify(dataBakV02) != JSON.stringify(data1);
     if (buscaNew === false) {
@@ -688,6 +702,14 @@ function procesarAgregarProductosCustom() {
                 p_id: producto.p_id,
                 p_desc: producto.p_desc,
                 p_pcosto: parseFloat(producto.p_pcosto || 0),
+                lp_prevision_tot: parseFloat(producto.lp_prevision_tot),
+                lp_prevision_pin: parseFloat(producto.lp_prevision_pin),
+                p_margen: parseFloat(producto.p_margen),
+                p_pneto: parseFloat(producto.p_pneto),
+                p_pvta: parseFloat(producto.p_pvta),
+                in_alicuota: parseFloat(producto.in_alicuota),
+                iva_alicuota: parseFloat(producto.iva_alicuota),
+                iva_situacion: producto.iva_situacion,
                 cantidad: 1,
                 dto_porc: 0,
                 activo: estadoProducto

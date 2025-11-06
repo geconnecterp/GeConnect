@@ -41,13 +41,19 @@
 
         var autoComRel04Url = "@Url.Action("BuscarClienteAuto", "AbmCliente", new { area = "ABMs" })";
         var autoComRel05Url = "@Url.Action("ObtenerUsuarioParaLista", "cgusuarios", new { area = "Usuarios" })";
-        let buscarMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "ActualizarPP", new { area = "Productos" })';
-        let homePresup = '@Url.Action("index", "ActualizarPP", new { area = "Productos" })';
+        let buscarMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "Presupuesto", new { area = "Productos" })';
+        let homePresup = '@Url.Action("index", "Presupuesto", new { area = "Productos" })';
 
         var buscarPresupuestosUrl = "@Url.Action("buscarPresupuestos", "presupuesto", new { area = "productos" })";
         var obtenerPresupuestoDatoUrl = "@Url.Action("obtenerPresupuestoDato", "presupuesto", new { area = "productos" })";
         var obtenerPresupuestoProductoUrl = "@Url.Action("ObtenerPresupuestoProducto", "Presupuesto", new { area = "Productos" })";
+        var obtenerPresupuestoProductoActualizadoUrl = "@Url.Action("ObtenerPresupuestoProductoActualizado", "Presupuesto", new { area = "Productos" })";
         var nuevoPresupuestoUrl =  "@Url.Action("NuevoPresupuesto", "Presupuesto", new { area = "Productos" })";
+        var confirmarPresupuestoUrl = "@Url.Action("confirmarPresupuesto", "Presupuesto", new { area = "Productos" })";
+
+        //para calcular margen y precio de venta
+        var calcularPrecioVentaBaseUrl = "@Url.Action("CalcularPrecioVentaBase", "CargaPrecios", new { area = "Productos" })";
+        var calcularPrecioVentaMargenUrl = "@Url.Action("CalcularPrecioVentaMargen", "CargaPrecios", new { area = "Productos" })";
 
         //funcionalidad busqueda avanzada controlador común
         let productoBase = null; //se hidrata en busquedas.

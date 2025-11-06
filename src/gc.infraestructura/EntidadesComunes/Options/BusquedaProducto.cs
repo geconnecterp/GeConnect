@@ -32,5 +32,6 @@
         public int? Pagina { get; set; }
         public string Sort { get; set; } = string.Empty;
         public string SortDir { get; set; } = string.Empty; 
+
     }
 }

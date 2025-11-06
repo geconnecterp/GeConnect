@@ -98,6 +98,9 @@
             public const string SP_PRESUP_LISTA = "SPGECO_PRE_LISTA";
             public const string SP_PRESUP_P = "SPGECO_PRE_P";
 			public const string SP_PRESUP_TIPOS = "SPGECO_PRE_Tipos";
+			public const string SP_PRESUP_CONFIRMAR = "SPGECO_PRE_Confirmar";
+			public const string SP_PRESUP_P_ACTUALIZADO = "SPGECO_PRE_P_actualizado";
+
 
 
             #endregion

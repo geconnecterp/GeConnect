@@ -165,7 +165,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
         /// Búsqueda avanzada V02 que devuelve JSON con ProductoListaDto para ofertas
         /// </summary>
         [HttpPost]
-        public async Task<JsonResult> BusquedaAvanzadaV02(string ri01, string ri02, string ri03, bool act, bool dis, bool ina, bool cstk, bool sstk, string buscar, bool buscaNew = true, string sort = "p_desc", string sortDir = "asc", int pag = 1)
+        public async Task<JsonResult> BusquedaAvanzadaV02(string ri01, string ri02, string ri03, bool act, bool dis, bool ina, bool cstk, bool sstk, string buscar,string lp_id, bool buscaNew = true, string sort = "p_desc", string sortDir = "asc", int pag = 1)
         {
             try
             {
@@ -184,7 +184,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                 }
 
                 // ✅ DELEGACIÓN: Llamar al método base optimizado
-                return await BusquedaAvanzadaV02(ri01, ri02, ri03 ?? "%", act, dis, ina, cstk, sstk, buscar, buscaNew, _productoServicio, sort, sortDir, pag);
+                return await BusquedaAvanzadaV02(ri01, ri02, ri03 ?? "%", act, dis, ina, cstk, sstk, buscar,lp_id, buscaNew, _productoServicio, sort, sortDir, pag);
             }
             catch (Exception ex)
             {

@@ -2592,5 +2592,8 @@ input, select, textarea, button, checkbox, radio {
         font-weight: 600 !important;
         cursor: not-allowed !important;
     }
-
+    /*Permite alertar un campo cuando hay algun evento que tiene que ser tenido en cuenta.*/
+.input-alerta-costo {
+    border: 3px solid #e53935 !important; /* rojo fuerte, borde grueso medio */
+}
 /* FIN ESTILOS PARA PRESUPUESTO */

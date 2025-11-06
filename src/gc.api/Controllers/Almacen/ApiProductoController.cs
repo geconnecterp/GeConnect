@@ -72,6 +72,12 @@ namespace gc.api.Controllers.Almacen
 
             ApiResponse<List<ProductoListaDto>> response;
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+
+            if (string.IsNullOrEmpty(filters.ListaPrecio))
+            {
+                return BadRequest("La lista de precio es obligatoria.");
+            }
+
             List<ProductoListaDto> res = _productosSv.ProductoListaBuscar(filters);
 
             if (res.Count > 0)

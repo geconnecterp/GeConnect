@@ -4,6 +4,7 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Servicios;
 using gc.api.infra.Datos.Contratos.Security;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -50,21 +51,28 @@ namespace gc.api.Controllers.Security
             ////se generara un usuario y lo vamos a validar a modo de prueba. 
             ////Si el usuario fuera valido se deberia generar el token
             var validation = IsValidUser(login);
-            if(string.IsNullOrEmpty(login.Admid) )
+            if (string.IsNullOrEmpty(login.Admid))
             {
                 return BadRequest("La sucursal no es valida");
             }
             if (validation.Item1)
             {   //el usuario es valido. Verificamos si esta logueado o no.
-                var adm = _adminServicio.Find(login.Admid??"");
+                var administraciones = _adminServicio.ObtenerAdministraciones("S");
+
+                var adm = administraciones.FirstOrDefault(x => x.Adm_id.Equals(login.Admid));
+
+                if (adm == null)
+                {
+                    return NotFound();
+                }
 
                 //Obtener los perfiles de acceso del usuario.
                 List<PerfilUserDto> perfiles = _usuSv.GetUserPerfiles(login.UserName);
-                var token = GenerateToken(validation.Item2 ?? new(),login.Admid ?? "",adm.Adm_nombre,perfiles);
+                var token = GenerateToken(validation.Item2 ?? new(), adm, perfiles);
                 return Ok(new { token });
             }
             return NotFound();
-        }       
+        }
 
         [HttpGet]
         [Route("[action]")]
@@ -98,11 +106,11 @@ namespace gc.api.Controllers.Security
             ////obtenemos el usuario desde el token
             //var res = ObtenerTokenDesdeRequestAsync(false);
             //var validacion = await IsValidUser(new UserLogin { UserName = res.Item2, Password = cambio.PassAct });
-            var validacion = IsValidUser(new UserLogin { UserName = cambio.UserName, Password = cambio.PassAct },true);
+            var validacion = IsValidUser(new UserLogin { UserName = cambio.UserName, Password = cambio.PassAct }, true);
             if (validacion.Item1)
             {
                 //    //la clave fue valida.. ahora se modifica la clave.
-                var pass = _passwordService.CalculaClave(new RegistroUserDto { User=cambio.UserName, Password=cambio.PassNew });
+                var pass = _passwordService.CalculaClave(new RegistroUserDto { User = cambio.UserName, Password = cambio.PassNew });
                 var usu = validacion.Item2;
                 usu.Usu_password = pass;
                 usu.Usu_email = $"{usu.Usu_id.Trim()}@geco.com.ar";
@@ -137,7 +145,7 @@ namespace gc.api.Controllers.Security
         }
 
 
-        private (bool, Usuario?) IsValidUser(UserLogin login,bool esUp=false)
+        private (bool, Usuario?) IsValidUser(UserLogin login, bool esUp = false)
         {
             _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 
@@ -149,7 +157,7 @@ namespace gc.api.Controllers.Security
             if (esUp)
             {
                 if (string.IsNullOrEmpty(login.UserName) || string.IsNullOrWhiteSpace(login.UserName) ||
-                string.IsNullOrEmpty(login.Password) || string.IsNullOrWhiteSpace(login.Password) )
+                string.IsNullOrEmpty(login.Password) || string.IsNullOrWhiteSpace(login.Password))
                 {
                     return (false, null);
                     //throw new NegocioException("Las credenciales no son correctas.");
@@ -165,7 +173,7 @@ namespace gc.api.Controllers.Security
                     //throw new NegocioException("Las credenciales no son correctas.");
                 }
             }
-            var user = _securityServicio.GetLoginByCredential(login,esUp);
+            var user = _securityServicio.GetLoginByCredential(login, esUp);
             if (user == null)
             {
                 return (false, null);
@@ -184,10 +192,10 @@ namespace gc.api.Controllers.Security
             return (isValid, user);
         }
 
-        private string GenerateToken(Usuario usuario, string admId,string admName, List<PerfilUserDto> perfiles)/**/
+        private string GenerateToken(Usuario usuario, AdministracionDto adm, List<PerfilUserDto> perfiles)/**/
         {
             _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
-            
+
             //token tiene 3 partes. Comenzamos por el Header
             var symetricSecurityKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Authentication:SecretKey"] ?? ""));
 
@@ -205,7 +213,8 @@ namespace gc.api.Controllers.Security
                 new Claim(ClaimTypes.NameIdentifier, usuario.Usu_id),
                 new Claim("nya",usuario.Usu_apellidoynombre),
                 new Claim(ClaimTypes.Email,usuario.Usu_email??"sin@mail.com"),
-                new Claim("AdmId", $"{admId}#{admName}"),
+                new Claim("AdmId", $"{adm.Adm_id}#{adm.Adm_nombre}"),
+                new Claim("lp_id", $"{adm.lp_id}"),
                 new Claim("expires",DateTime.Now.AddHours(1).Ticks.ToString()),
                 new Claim("user",usuario.Usu_id),
                 new Claim("perfiles",jsonp)
@@ -232,8 +241,8 @@ namespace gc.api.Controllers.Security
              * ACÁ PUEDE IR EL CODIGO PARA IDENTIFICAR QUE SE LOGUEO EL USUARIO, EL PROBLEMA ES QUE POR LO GENERAL NO SE DESLOGUEAN.
              * *********************************************/
 
-       
-            return new JwtSecurityTokenHandler().WriteToken(token);            
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

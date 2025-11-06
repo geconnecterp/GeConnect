@@ -21,6 +21,7 @@ namespace gc.api.core.Entidades
             Adm_Mepa_Latitud = string.Empty;
             Adm_Mepa_Longitud = string.Empty;
             Adm_Mepa_Calle = string.Empty;
+            
         }
 
         public string Adm_id { get; set; }
