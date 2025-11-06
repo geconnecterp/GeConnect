@@ -384,6 +384,30 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
+		public JsonResult CancelarCargaLiqEmp()
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return Json(new { error = true, warn = false, msg = "No autenticado." });
+
+				ListaTempArchivoParaImportar = [];
+				LiqTopeLista = [];
+				LiqEmpleadoEncabezadoLista = [];
+				LiqEmpleadoDetalleLista = [];
+				return Json(new { error = false, warn = false, msg = "" });
+			}
+			catch (NegocioException ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+		}
+
 		#region Clases Complementarias Importar Extracto
 		enum TipoEstructuraFileImportExtracto
 		{

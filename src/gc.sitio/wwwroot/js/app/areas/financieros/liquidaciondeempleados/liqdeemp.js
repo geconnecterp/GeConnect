@@ -3,9 +3,56 @@ $(function () {
 
 	$(document).on("click", "#btnCargar", abrirModalImportarArchivo);
 	$(document).on("click", "#btnProcesarArchivo", handleProcesarArchivo);
+	$(document).on("click", "#btnCancelar", handleCancelar);
 
 	getMaskForIntegerMin50Max100($("#PorcTope"));
 });
+
+function handleCancelar() {
+	var filas = $("#tbListaLiqEmpEncabezado tbody tr").length;
+	if (filas > 0) {
+		AbrirMensaje("ATENCIÓN", "¿Esta seguro que desea cancelar la operación actual? Se perderán los datos no guardados.", function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI":
+					CancelarCargaLiqEmp();
+					break;
+				case "NO":
+					break;
+				default: //NO
+					break;
+			}
+			return true;
+
+		}, true, ["Aceptar", "Cancelar"], "question!", null);
+	}
+}
+
+function CancelarCargaLiqEmp() {
+	AbrirWaiting();
+	var data = {};
+	PostGen(data, cancelarCargaLiqEmpUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			LimpiarCampos();
+		}
+	}
+}
+
+function LimpiarCampos() {
+	$("#tbListaLiqEmpDetalle tbody").empty();
+	$("#tbListaLiqEmpEncabezado tbody").empty();
+	$("#listaAnio").val("");
+	$("#listaMes").val("");
+	$("#PorcTope").val("50");
+	$("#Concepto").val("");
+}
 
 function abrirModalImportarArchivo() {
 	AbrirWaiting();
@@ -410,6 +457,7 @@ function finalizarInicializacionGridLiqEmpDetalle() {
 }
 
 function ActualizarLiqEmpDetalle(row, campoActual) {
+	AbrirWaiting();
 	var idSeleccionado = row.data('id');
 	var cta_id = row.data('cta-id');
 	var dia_movi = row.data('dia-movi');
@@ -420,6 +468,7 @@ function ActualizarLiqEmpDetalle(row, campoActual) {
 	var val = $(campoActual).val();
 	var data = { cta_id, dia_movi, cm_compte, tco_id, cm_compte_cuota, id, val, idSeleccionado };
 	PostGen(data, editarItemEnLiqEmpDetalleUrl, function (obj) {
+		CerarWaiting();
 		if (obj.error === true) {
 			AbrirMensaje("ATENCIÓN", obj.msg, function () {
 				$("#msjModal").modal("hide");
