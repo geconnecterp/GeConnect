@@ -21,6 +21,9 @@
 	}
 
 </style>
+@section styles {
+	<link rel="stylesheet" href="~/css/financieros/liqdeemp/liqdeempleados.css" />
+}
 <div class="container mt-2" id="divLiquidacionDeEmpleado">
 	<div class="mx-auto" style="max-width: 1300px;">
 		<div class="row align-items-center mb-2">
@@ -76,6 +79,10 @@
 		var importarArchivoUrl = "@Url.Action("ImportarArchivo", "LiquidacionDeEmpleados", new { area = "Financieros" })";
 		var validarSiExistenRegistrosDeArchivoParaImportarUrl = "@Url.Action("ValidarSiExistenRegistrosDeArchivoParaImportar", "LiquidacionDeEmpleados", new { area = "Financieros" })";
 		var procesarArchivoImportadoUrl = "@Url.Action("ProcesarArchivoImportado", "LiquidacionDeEmpleados", new { area = "Financieros" })";
+		var obtenerGrillaEncabezadoUrl = "@Url.Action("ObtenerGrillaEncabezado", "LiquidacionDeEmpleados", new { area = "Financieros" })";
+		var obtenerGrillaDetalleUrl = "@Url.Action("ObtenerGrillaDetalle", "LiquidacionDeEmpleados", new { area = "Financieros" })";
+		var editarItemEnLiqEmpDetalleUrl = "@Url.Action("EditarItemEnLiqEmpDetalle", "LiquidacionDeEmpleados", new { area = "Financieros" })";
+		var financieroLiqEmpleadoConfirmarUrl = "@Url.Action("FinancieroLiqEmpleadoConfirmar", "LiquidacionDeEmpleados", new { area = "Financieros" })";
 	</script>
 
 	<script src="~/lib/jstree/jstree.min.js"></script>

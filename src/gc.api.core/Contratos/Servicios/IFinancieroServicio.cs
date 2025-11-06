@@ -58,5 +58,6 @@ namespace gc.api.core.Contratos.Servicios
         List<RespuestaDto> FinancieroAnticipoAnular(FinancieroAnticipoAnularRequest request);
         List<FinancieroLEProximaDto> GetFinancieroProximaLE();
         List<LiqEmpCargaDto> GetLiqEmpCarga(FinancieroLiqEmpCargaRequest request);
+        List<RespuestaDto> FinancieroLiqEmpleadoConfirmar(FinancieroLiqEmpleadoConfirmarRequest request);
 	}
 }

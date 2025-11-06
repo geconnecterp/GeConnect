@@ -4,18 +4,103 @@
 	var alt = true;
 	string clase = string.Empty;
 }
+<style>
+	/* Anchos por columna */+
+	#tbListaLiqEmpEncabezado th.columna-codigo,
+	#tbListaLiqEmpEncabezado td.columna-codigo {
+		width: 10% !important;
+		max-width: 10% !important;
+		overflow: hidden;
+		/* text-overflow: ellipsis; */
+		white-space: nowrap;
+	}
+
+	#tbListaLiqEmpEncabezado th.columna-legajo,
+	#tbListaLiqEmpEncabezado td.columna-legajo {
+		width: 10% !important;
+		max-width: 10% !important;
+		overflow: hidden;
+		/* text-overflow: ellipsis; */
+		white-space: nowrap;
+	}
+
+	#tbListaLiqEmpEncabezado th.columna-nombre,
+	#tbListaLiqEmpEncabezado td.columna-nombre {
+		width: 35% !important;
+		max-width: 30% !important;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	#tbListaLiqEmpEncabezado th.columna-tope,
+	#tbListaLiqEmpEncabezado td.columna-tope {
+		width: 10% !important;
+		max-width: 10% !important;
+		overflow: hidden;
+		/* text-overflow: ellipsis; */
+		white-space: nowrap;
+	}
+
+	#tbListaLiqEmpEncabezado th.columna-obli,
+	#tbListaLiqEmpEncabezado td.columna-obli {
+		width: 10% !important;
+		max-width: 10% !important;
+		overflow: hidden;
+		/* text-overflow: ellipsis; */
+		white-space: nowrap;
+	}
+
+	#tbListaLiqEmpEncabezado th.columna-pendiente,
+	#tbListaLiqEmpEncabezado td.columna-pendiente {
+		width: 10% !important;
+		max-width: 10% !important;
+		overflow: hidden;
+		/* text-overflow: ellipsis; */
+		white-space: nowrap;
+	}
+
+	#tbListaLiqEmpEncabezado th.columna-stsueldo,
+	#tbListaLiqEmpEncabezado td.columna-stsueldo {
+		width: 10% !important;
+		max-width: 10% !important;
+		overflow: hidden;
+		/* text-overflow: ellipsis; */
+		white-space: nowrap;
+	}
+
+	#tbListaLiqEmpEncabezado th.columna-porc,
+	#tbListaLiqEmpEncabezado td.columna-porc {
+		width: 10% !important;
+		max-width: 10% !important;
+		overflow: hidden;
+		/* text-overflow: ellipsis; */
+		white-space: nowrap;
+	}
+
+	#tbListaLiqEmpEncabezado th,
+	#tbListaLiqEmpEncabezado td {
+		padding: 0.15rem 0.25rem !important; /* o incluso 0 si querés máxima compresión */
+	}
+
+	/* Tooltip visual */
+	#tbListaLiqEmpEncabezado td.columna-nombre:hover {
+		cursor: help;
+	}
+
+</style>
 <div class="table-responsive table-wrapper-500-full-width" id="containerCrudExtracto">
-	<table class="table table-bordered table-hover table-golden" id="tbListaCrudExtracto">
+	<table class="table table-bordered table-hover table-golden" id="tbListaLiqEmpEncabezado" style="table-layout: fixed; width: 100%;">
 		<thead>
 			<tr class="header">
-				<th class="text-center" scope="col">Código</th>
-				<th class="text-center" scope="col">Legajo</th>
-				<th class="text-center" scope="col">Nombre</th>
-				<th class="text-center" scope="col">Tope</th>
-				<th class="text-center" scope="col">Obli. Emp.</th>
-				<th class="text-center" scope="col">Pendiente</th>
-				<th class="text-center" scope="col">St. Sueldo</th>
-				<th class="text-center" scope="col">% Est.</th>
+				<th class="text-center columna-codigo">Código</th>
+				<th class="text-center columna-legajo">Legajo</th>
+				<th class="text-center columna-nombre">Nombre</th>
+				<th class="text-center columna-tope">Tope</th>
+				<th class="text-center columna-obli">Obli. Emp.</th>
+				<th class="text-center columna-pendiente">Pendiente</th>
+				<th class="text-center columna-stsueldo">St. Sueldo</th>
+				<th class="text-center columna-porc">% Est.</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -25,14 +110,16 @@
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase" data-cta-id="@item.cta_id" onclick="selectItemEncabezado(this);">
-						<td class="@Model.GrillaEncabezado.ObtenerClase(item.cta_id)">@Model.GrillaEncabezado.FormatearDato(item.cta_id, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaEncabezado.ObtenerClase(item.cta_emp_legajo)">@Model.GrillaEncabezado.FormatearDato(item.cta_emp_legajo, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaEncabezado.ObtenerClase(item.cta_denominacion)">@Model.GrillaEncabezado.FormatearDato(item.cta_denominacion, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaEncabezado.ObtenerClase(item.tope)">@Model.GrillaEncabezado.FormatearDato(item.tope, FormatDato.Monto)</td>
-						<td class="@Model.GrillaEncabezado.ObtenerClase(item.cv_importe_tot)">@Model.GrillaEncabezado.FormatearDato(item.cv_importe_tot, FormatDato.Monto)</td>
-						<td class="@Model.GrillaEncabezado.ObtenerClase(item.cv_importe_tot_pend)">@Model.GrillaEncabezado.FormatearDato(item.cv_importe_tot_pend, FormatDato.Monto)</td>
-						<td class="@Model.GrillaEncabezado.ObtenerClase(item.cv_importe_tot_imputado)">@Model.GrillaEncabezado.FormatearDato(item.cv_importe_tot_imputado, FormatDato.Monto)</td>
-						<td class="@Model.GrillaEncabezado.ObtenerClase(item.porc_imputado_sobre_tope)">@Model.GrillaEncabezado.FormatearDato(item.porc_imputado_sobre_tope, FormatDato.Monto)</td>
+						<td class="columna-codigo text-sm-center">@Model.GrillaEncabezado.FormatearDato(item.cta_id, FormatDato.Ninguno)</td>
+						<td class="columna-legajo text-sm-center">@Model.GrillaEncabezado.FormatearDato(item.cta_emp_legajo, FormatDato.Ninguno)</td>
+						<td class="columna-nombre" title="@Model.GrillaEncabezado.FormatearDato(item.cta_denominacion, FormatDato.Ninguno)">
+							@Model.GrillaEncabezado.FormatearDato(item.cta_denominacion, FormatDato.Ninguno)
+						</td>
+						<td class="columna-tope @Model.GrillaEncabezado.ObtenerClase(item.tope)">@Model.GrillaEncabezado.FormatearDato(item.tope, FormatDato.Monto)</td>
+						<td class="columna-obli @Model.GrillaEncabezado.ObtenerClase(item.cv_importe_tot)">@Model.GrillaEncabezado.FormatearDato(item.cv_importe_tot, FormatDato.Monto)</td>
+						<td class="columna-pendiente @Model.GrillaEncabezado.ObtenerClase(item.cv_importe_tot_pend)">@Model.GrillaEncabezado.FormatearDato(item.cv_importe_tot_pend, FormatDato.Monto)</td>
+						<td class="columna-stsueldo @Model.GrillaEncabezado.ObtenerClase(item.cv_importe_tot_imputado)">@Model.GrillaEncabezado.FormatearDato(item.cv_importe_tot_imputado, FormatDato.Monto)</td>
+						<td class="columna-porc @Model.GrillaEncabezado.ObtenerClase(item.porc_imputado_sobre_tope)">@Model.GrillaEncabezado.FormatearDato(item.porc_imputado_sobre_tope, FormatDato.Monto)</td>
 					</tr>
 				}
 			}

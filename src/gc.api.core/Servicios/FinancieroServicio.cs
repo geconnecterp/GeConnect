@@ -956,5 +956,23 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<LiqEmpCargaDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<RespuestaDto> FinancieroLiqEmpleadoConfirmar(FinancieroLiqEmpleadoConfirmarRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_LE_CONFIRMAR;
+			var ps = new List<SqlParameter>()
+			{
+				new("@periodo",request.periodo),
+				new("@mes",request.mes),
+				new("@concepto",request.concepto),
+				new("@actualiza_tope",request.actualiza_tope),
+				new("@json_tope",request.json_tope),
+				new("@json_detalle",request.json_detalle),
+				new("@adm_id",request.adm_id),
+				new("@usu_id",request.usu_id),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

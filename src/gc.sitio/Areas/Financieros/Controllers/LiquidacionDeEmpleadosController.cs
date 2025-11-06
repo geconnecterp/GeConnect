@@ -1,4 +1,6 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Drawing.Charts;
+using DocumentFormat.OpenXml.Office2010.Excel;
 using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
@@ -261,8 +263,10 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					LiqEmpleadoEncabezadoLista = json_encabezado_aux;
 
 				if (json_detalle_aux != null && json_detalle_aux.Count > 0)
+				{
+					json_detalle_aux.ForEach(x => x.id = Guid.NewGuid().ToString());
 					LiqEmpleadoDetalleLista = json_detalle_aux;
-
+				}
 				return Json(new { error = false, warn = false, msg = "" });
 			}
 			catch (NegocioException ex)
@@ -277,7 +281,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 		public IActionResult ObtenerGrillaEncabezado()
 		{
-			var model = new GrillaEncabezadoModel();
+			var model = new LiqDeEmpleadoModel();
 			try
 			{
 				var auth = EstaAutenticado;
@@ -302,13 +306,15 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 		public IActionResult ObtenerGrillaDetalle(string cta_id)
 		{
+			var model = new LiqDeEmpleadoModel();
 			try
 			{
 				var auth = EstaAutenticado;
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
-				return PartialView("_grillaDetalle", LiqEmpleadoDetalleLista.Where(x => x.cta_id == cta_id).ToList());
+				model.GrillaDetalle = ObtenerGridCoreSmart<LiqEmpleadoDetalleDto>(LiqEmpleadoDetalleLista.Where(x => x.cta_id == cta_id).ToList());
+				return PartialView("_grillaDetalle", model);
 			}
 			catch (Exception ex)
 			{
@@ -320,6 +326,61 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					Mensaje = ex.Message
 				};
 				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public JsonResult EditarItemEnLiqEmpDetalle(string cta_id, string dia_movi, string cm_compte, string tco_id, int cm_compte_cuota, string id, decimal val, string idSeleccionado)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return Json(new { error = true, warn = false, msg = "No autenticado." });
+
+				var listaTemp = LiqEmpleadoDetalleLista;
+				var listaTempFiltrada = listaTemp.Where(x => x.cta_id == cta_id && x.dia_movi == dia_movi && x.cm_compte == cm_compte
+												&& x.tco_id == tco_id && x.cm_compte_cuota == cm_compte_cuota).ToList();
+				if (listaTempFiltrada == null || listaTempFiltrada.Count <= 0)
+				{
+					return Json(new { error = true, warn = false, msg = "No se ha encontrado el elemento para editar." });
+				}
+				listaTempFiltrada[0].cv_importe_imputado = val;
+				LiqEmpleadoDetalleLista = listaTemp;
+				return Json(new { error = false, warn = false, msg = "", data = new { id = listaTempFiltrada[0].id, importe = val } });
+			}
+			catch (NegocioException ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+		}
+
+		public JsonResult FinancieroLiqEmpleadoConfirmar(FinancieroLiqEmpleadoConfirmarRequest request)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return Json(new { error = true, warn = false, msg = "No autenticado." });
+
+				request.usu_id = UserName;
+				request.adm_id = AdministracionId;
+				request.json_tope = JsonConvert.SerializeObject(LiqTopeLista);
+				request.json_detalle = JsonConvert.SerializeObject(MapperDetalle(LiqEmpleadoDetalleLista));
+				var respuesta = _financieroServicio.FinancieroLiqEmpleadoConfirmar(request, TokenCookie);
+
+				return AnalizarRespuesta(respuesta, "La Liquidación de ha confirmado con éxito.");
+			}
+			catch (NegocioException ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
 			}
 		}
 
@@ -434,8 +495,57 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 		#endregion
 
-		#region Métodos Privados
-
+		#region Clases Complementarias
+		private class DetalleLiquidacion
+		{
+			public string cta_id { get; set; } = string.Empty;
+			public string cta_denominacion { get; set; } = string.Empty;
+			public string cta_emp { get; set; } = string.Empty;
+			public string cta_emp_legajo { get; set; } = string.Empty;
+			public string cta_emp_ctaf { get; set; } = string.Empty;
+			public decimal tope { get; set; } = 0.00M;
+			public string dia_movi { get; set; } = string.Empty;
+			public string tco_id { get; set; } = string.Empty;
+			public string cm_compte { get; set; } = string.Empty;
+			public int cm_compte_cuota { get; set; }
+			public DateTime cv_fecha_vto { get; set; }
+			public decimal cv_importe { get; set; } = 0.00M;
+			public decimal cv_importe_imputado { get; set; } = 0.00M;
+			public string concepto { get; set; } = string.Empty;
+			public string ccb_id { get; set; } = string.Empty;
+		}
 		#endregion
+
+		#region Métodos Privados
+		private List<DetalleLiquidacion> MapperDetalle(List<LiqEmpleadoDetalleDto> listaDto)
+		{
+			var lista = new List<DetalleLiquidacion>();
+			foreach (var dto in listaDto)
+			{
+				var item = new DetalleLiquidacion
+				{
+					cta_id = dto.cta_id,
+					cta_denominacion = dto.cta_denominacion,
+					cta_emp = dto.cta_emp,
+					cta_emp_legajo = dto.cta_emp_legajo,
+					cta_emp_ctaf = dto.cta_emp_ctaf,
+					tope = dto.tope,
+					dia_movi = dto.dia_movi,
+					tco_id = dto.tco_id,
+					cm_compte = dto.cm_compte,
+					cm_compte_cuota = dto.cm_compte_cuota,
+					cv_fecha_vto = dto.cv_fecha_vto,
+					cv_importe = dto.cv_importe,
+					cv_importe_imputado = dto.cv_importe_imputado,
+					concepto = dto.concepto,
+					ccb_id = dto.ccb_id
+				};
+				lista.Add(item);
+			}
+			return lista;
+		}
+		#endregion
+
+
 	}
 }

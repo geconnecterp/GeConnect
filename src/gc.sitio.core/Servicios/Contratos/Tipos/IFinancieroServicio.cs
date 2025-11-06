@@ -58,5 +58,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		RespuestaGenerica<RespuestaDto> FinancieroAnticipoAnular(FinancieroAnticipoAnularRequest request, string token);
 		List<FinancieroLEProximaDto> GetFinancieroProximaLE(string token);
 		List<LiqEmpCargaDto> GetLiqEmpCarga(FinancieroLiqEmpCargaRequest request, string token);
+		RespuestaGenerica<RespuestaDto> FinancieroLiqEmpleadoConfirmar(FinancieroLiqEmpleadoConfirmarRequest request, string token);
 	}
 }

@@ -651,5 +651,18 @@ namespace gc.api.Controllers.Financieros
 			response = new ApiResponse<List<LiqEmpCargaDto>>(res);
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult FinancieroLiqEmpleadoConfirmar([FromBody] FinancieroLiqEmpleadoConfirmarRequest r)
+		{
+			ApiResponse<List<RespuestaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.FinancieroLiqEmpleadoConfirmar(r);
+			response = new ApiResponse<List<RespuestaDto>>(res);
+			return Ok(response);
+		}
 	}
 }

@@ -13,21 +13,22 @@
 		}
 	}
 }
-<div class="table-responsive table-wrapper-500-full-width" id="containerCrudExtracto">
-	<table class="table table-bordered table-hover table-golden" id="tbListaCrudExtracto">
+@section styles {
+	<link rel="stylesheet" href="~/css/financieros/liqdeemp/liqdeempleados.css" />
+}
+<div class="table-responsive table-wrapper-500-full-width" id="containerLiqEmpDetalle">
+	<table class="table table-bordered table-hover table-golden" id="tbListaLiqEmpDetalle" style="table-layout: fixed; width: 100%;">
+		@if (!string.IsNullOrEmpty(leyenda))
+		{
+			<caption class="table-leyenda">@leyenda</caption>
+		}
 		<thead>
-			@if (!string.IsNullOrEmpty(leyenda))
-			{
-				<tr class="header">
-					<th colspan="5" class="text-center" scope="col">@leyenda</th>
-				</tr>
-			}
 			<tr class="header">
-				<th class="text-center" scope="col">Comprobante</th>
-				<th class="text-center" scope="col">Cuota</th>
-				<th class="text-center" scope="col">Fecha</th>
-				<th class="text-center" scope="col">Importe</th>
-				<th class="text-center" scope="col">Dto. Sueldo</th>
+				<th class="text-center columna-comprobante">Comprobante</th>   <!-- 50% -->
+				<th class="text-center columna-cuota">Cuota</th>               <!-- 15% -->
+				<th class="text-center columna-fecha">Fecha</th>               <!-- 15% -->
+				<th class="text-center columna-importe">Importe</th>           <!-- 15% -->
+				<th class="text-center columna-dto">Dto. Sueldo</th>           <!-- 20% -->
 			</tr>
 		</thead>
 		<tbody>
@@ -36,12 +37,24 @@
 				@foreach (var item in Model.GrillaDetalle.ListaDatos)
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					<tr class="@clase" data-cta-id="@item.cta_id" onclick="selectItemDetalle(this);">
-						<td class="@Model.GrillaEncabezado.ObtenerClase(item.concepto)">@Model.GrillaEncabezado.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaEncabezado.ObtenerClase(item.cm_compte_cuota)">@Model.GrillaEncabezado.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaEncabezado.ObtenerClase(item.cv_fecha_vto)">@Model.GrillaEncabezado.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
-						<td class="@Model.GrillaEncabezado.ObtenerClase(item.cv_importe)">@Model.GrillaEncabezado.FormatearDato(item.cv_importe, FormatDato.Monto)</td>
-						<td class="@Model.GrillaEncabezado.ObtenerClase(item.cv_importe_imputado)">@Model.GrillaEncabezado.FormatearDato(item.cv_importe_imputado, FormatDato.Monto)</td>
+					<tr class="@clase" data-id="@item.id" data-cta-id="@item.cta_id" data-dia-movi="@item.dia_movi" data-cm-compte="@item.cm_compte" data-tco-id="@item.tco_id" data-cm-compte-cuota="@item.cm_compte_cuota" onclick="selectItemDetalle(this);">
+						<td style="width:50%;" class="columna-comprobante" title="@Model.GrillaDetalle.FormatearDato(item.concepto, FormatDato.Ninguno)">
+							@Model.GrillaDetalle.FormatearDato(item.concepto, FormatDato.Ninguno)
+						</td>
+						<td style="width:10%;" class="columna-cuota text-sm-center">@Model.GrillaDetalle.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
+						<td style="width:10%;" class="columna-fecha @Model.GrillaDetalle.ObtenerClase(item.cv_fecha_vto)">@Model.GrillaDetalle.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
+						<td style="width:15%;" class="columna-importe @Model.GrillaDetalle.ObtenerClase(item.cv_importe)">@Model.GrillaDetalle.FormatearDato(item.cv_importe, FormatDato.Monto)</td>
+						@* <td class="@Model.GrillaEncabezado.ObtenerClase(item.cv_importe_imputado)">@Model.GrillaEncabezado.FormatearDato(item.cv_importe_imputado, FormatDato.Monto)</td> *@
+						<td style="width:15%;" class="columna-dto @Model.GrillaDetalle.ObtenerClase(item.cv_importe_imputado)">
+							@*07*@
+							<div class="input-container">
+								<input type="text" class="form-control form-control-sm input-importe input-numeric"
+									   value="@(item.cv_importe_imputado.ToString("F3"))"
+									   data-field="cv_importe_imputado"
+									   data-id="@item.id"
+									   data-original-value="@(item.cv_importe_imputado)" />
+							</div>
+						</td>
 					</tr>
 				}
 			}
