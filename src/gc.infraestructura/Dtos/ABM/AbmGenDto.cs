@@ -26,8 +26,7 @@ namespace gc.infraestructura.Dtos.ABM
         public bool Nuevos { get; set; }
         public bool DatosLogisticos { get; set; }
         public bool Inactivos { get; set; }
-        public bool vaciarTemporal { get; set; }
-
+        public bool vaciarTemporal { get; set; }       
 
     }
 }

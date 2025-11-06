@@ -441,7 +441,7 @@ namespace gc.api.core.Servicios
             var ps = new List<SqlParameter>()
             {
                 new("@busqueda",search.Busqueda),
-                new("@lp_id",search.ListaPrecio??""),
+                new("@lp_id",search.ListaPrecio),
                 new("@adm_id",search.Administracion),
                 new("@cta_id",search.CtaProveedorId),
                 new("@cta_id_unico",search.CtaProveedorIdUnico),

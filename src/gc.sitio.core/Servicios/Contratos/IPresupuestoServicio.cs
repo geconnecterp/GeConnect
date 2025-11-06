@@ -1,4 +1,5 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Presupuestos;
 using System;
@@ -13,8 +14,10 @@ namespace gc.sitio.core.Servicios.Contratos
     {
         Task<RespuestaGenerica<PresupuestoListDto>> BuscarPresupuestos(QueryFilters filtro, string token);
         Task<RespuestaGenerica<PresupuestoProductoDto>> ObtenerDetallePresupuesto(string id, string token);
+        Task<RespuestaGenerica<PresupuestoProductoDto>> ObtenerDetallePresupuestoActualizado(string id, string token);
         Task<RespuestaGenerica<PresupE>> ObtenerEstadosPresupuesto(string token);
         Task<RespuestaGenerica<PresupuestoDto>> ObtenerPresupuesto(string id, string token);
         Task<RespuestaGenerica<PresupT>> ObtenerTiposPresupuesto(string token);
+        Task<RespuestaGenerica<RespuestaDto>> ConfirmarPresupuesto(AbmPlusGenDto req,string token);
     }
 }

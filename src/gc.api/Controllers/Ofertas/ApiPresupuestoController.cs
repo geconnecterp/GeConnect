@@ -1,6 +1,8 @@
 ﻿using gc.api.core.Contratos.Servicios.Ofertas;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos.ABM;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Presupuestos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -96,6 +98,28 @@ namespace gc.api.Controllers.Ofertas
             }
         }
 
+        // Obtiene el detalle de un presupuesto por id
+        [HttpGet("presupuesto/detalle/actualizado/{id}")]
+        public IActionResult ObtenerDetallePresupuestoActualizado(string id)
+        {
+            const string msgError = "Error en la invocación de la API - Obtener Detalle de Presupuesto";
+            try
+            {
+                if (string.IsNullOrWhiteSpace(id))
+                {
+                    return BadRequest("Debe indicar el identificador del presupuesto.");
+                }
+
+                var detalle = _presuSv.ObtenerDetallePresupuestoActualizado(id);
+                return Ok(new ApiResponse<List<PresupuestoProductoDto>>(detalle));
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, msgError);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
+            }
+        }
+
         // Obtiene los estados de presupuesto
         [HttpGet("estados")]
         public IActionResult ObtenerEstadosPresupuesto()
@@ -128,6 +152,17 @@ namespace gc.api.Controllers.Ofertas
                 _logger?.LogError(ex, msgError);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
             }
+        }
+
+        [HttpPost("presupuesto/confirmar")]
+        public IActionResult ConfirmarPresupuesto(AbmPlusGenDto req)
+        {
+            if(req == null)
+            {
+                return BadRequest("No se recepcionó la información para confirmar el presupuesto.");
+            }
+            var respuesta = _presuSv.ConfirmarPresupuesto(req);
+            return Ok(new ApiResponse<RespuestaDto>(respuesta));
         }
 
         // Mapea filtros a request del SP (minimizando asignaciones innecesarias)

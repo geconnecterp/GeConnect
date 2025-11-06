@@ -31,6 +31,13 @@ namespace gc.infraestructura.Dtos.Almacen
         public decimal p_pvta_002 { get; set; }
         public decimal p_pvta_003 { get; set; }
         public decimal p_pvta_004 { get; set; }
+        public decimal lp_prevision_tot { get; set; }
+        public decimal lp_prevision_pin { get; set; }
+        public decimal p_margen { get; set; }
+        public decimal in_alicuota { get; set; }
+        public decimal iva_alicuota { get; set; }
+        public char iva_situacion { get; set; }
+        
 
     }
 }

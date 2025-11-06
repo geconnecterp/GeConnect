@@ -17,6 +17,7 @@
             <table class="table table-sm table-hover mb-0 table-golden" id="tbGridPresupuestoProds">
                 <thead class="table-golden-header">
                     <tr class="header">
+                        <th class="text-center">#</th>
                         <th class="text-center">Código</th>
                         <th class="text-left">Descripción</th>
                         <th class="text-end">Costo</th>
@@ -24,6 +25,7 @@
                         <th class="text-end">Mg %</th>
                         <th class="text-end">Venta</th>
                         <th class="text-end">Total</th>
+                        <th class="text-center" style="width: 50px;">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -34,15 +36,20 @@
                             if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
                             var totalCalc = (item.pre_cantidad * item.pre_pvta);
                             <tr class="@clase"
+                                data-pre-item="@item.pre_item"
                                 data-p-id="@item.p_id"
-                                data-pre-costo="@item.pre_costo"
+                                data-pre-pcosto="@item.pre_pcosto"
+                                data-p-pcosto-actual="@item.p_pcosto_actual"
                                 data-pre-pneto="@item.pre_pneto"
                                 data-iva-situacion="@item.iva_situacion"
                                 data-iva-alicuota="@item.iva_alicuota"
-                                data-in-alicuota="@item.in_alicuota">
+                                data-in-alicuota="@item.in_alicuota"
+                                data-lp-prevision-tot="@item.lp_prevision_tot"
+                                data-lp-prevision-pin="@item.lp_prevision_pin">
+                                <td class="text-center">@item.pre_item</td>
                                 <td class="text-center">@item.p_id</td>
                                 <td>@item.p_des</td>
-                                <td class="text-end">@item.pre_costo.ToString("N3")</td>
+                                <td class="text-end">@item.pre_pcosto.ToString("N3")</td>
                                 <td class="text-end">
                                     <div class="input-container">
                                         <input type="text" 
@@ -57,8 +64,9 @@
                                     <div class="input-container">
                                         <input type="text" 
                                                class="form-control form-control-sm input-pre_margen input-numeric campo-readonly"
-                                               value="@item.pre_margen.ToString("N2")"
-                                               data-original-value="@item.pre_margen"
+                                               value="@item.pre_pmargen.ToString("N2")"
+                                               data-original-value="@item.pre_pmargen"
+                                               data-margen-actual="@item.p_margen_actual"
                                                readonly 
                                                title="Doble click para editar" />
                                     </div>
@@ -69,18 +77,28 @@
                                                class="form-control form-control-sm input-pre_pvta input-numeric campo-readonly"
                                                value="@item.pre_pvta.ToString("N3")"
                                                data-original-value="@item.pre_pvta"
+                                               data-pvta-actual="@item.p_pvta_actual"
                                                readonly 
                                                title="Doble click para editar" />
                                     </div>
                                 </td>
                                 <td class="text-end td-total">@totalCalc.ToString("N2")</td>
+                                <td class="text-center">
+                                    <button type="button" 
+                                            class="btn btn-sm btn-danger btn-eliminar-producto" 
+                                            data-p-id="@item.p_id"
+                                            title="Eliminar producto"
+                                            style="display: none;">
+                                        <i class="bx bx-trash"></i>
+                                    </button>
+                                </td>
                             </tr>
                         }
                     }
                     else
                     {
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-2">
+                            <td colspan="9" class="text-center text-muted py-2">
                                 <i class="bx bx-info-circle me-1"></i>No hay productos en este presupuesto
                             </td>
                         </tr>
@@ -90,8 +108,9 @@
                 {
                     <tfoot class="table-golden-footer">
                         <tr>
-                            <td colspan="6" class="text-end fw-bold">Total General:</td>
+                            <td colspan="7" class="text-end fw-bold">Total General:</td>
                             <td class="text-end fw-bold">@Model.ListaDatos.Sum(x => (x.pre_cantidad * x.pre_pvta)).ToString("N2")</td>
+                            <td></td>
                         </tr>
                     </tfoot>
                 }
@@ -104,7 +123,6 @@
 $(function() {
     // ✅ APLICAR INPUTMASK a campos numéricos
     if (typeof Inputmask !== 'undefined') {
-        // ✅ CANTIDAD: 2 decimales
         Inputmask({
             alias: "numeric",
             groupSeparator: ",",
@@ -117,7 +135,6 @@ $(function() {
             min: 0
         }).mask('.input-pre_cantidad');
         
-        // ✅ MARGEN: 2 decimales
         Inputmask({
             alias: "numeric",
             groupSeparator: ",",
@@ -130,7 +147,6 @@ $(function() {
             min: 0
         }).mask('.input-pre_margen');
 
-        // ✅ PRECIO VENTA: 3 decimales
         Inputmask({
             alias: "numeric",
             groupSeparator: ",",
@@ -142,6 +158,11 @@ $(function() {
             allowMinus: false,
             min: 0
         }).mask('.input-pre_pvta');
+    }
+    
+    // ✅ CONTROLAR VISIBILIDAD DE BOTONES DE ELIMINACIÓN
+    if (typeof aplicarVisibilidadBotonesEliminar === 'function') {
+        aplicarVisibilidadBotonesEliminar();
     }
 });
 </script>

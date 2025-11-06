@@ -175,6 +175,34 @@ namespace gc.sitio.Controllers
         //    }
         //}
 
+        public string LP_Id
+        {
+            get
+            {
+
+                try
+                {
+                    // Solo intentar acceder a los claims si el usuario está autenticado
+                    if (!(User.Identity?.IsAuthenticated ?? false))
+                    {
+                        return string.Empty;
+                    }
+
+                    var lpidClaim = User.Claims.FirstOrDefault(c => c.Type.Contains("lp_id"));
+                    if (lpidClaim == null || string.IsNullOrEmpty(lpidClaim.Value))
+                    {
+                        return string.Empty;
+                    }
+                    return lpidClaim.Value;
+                }
+                catch (Exception)
+                {
+                    // Manejo de excepciones
+                    return string.Empty;
+                }
+            }
+        }
+
         public string AdministracionId
         {
             get
@@ -2164,67 +2192,67 @@ namespace gc.sitio.Controllers
         }
         #endregion
 
-		#region TIPO DE ANTICIPO DE EMPLEADO
-		public List<TipoAnticipoEmpleadoDto> TipoAnticipoEmpleadoLista
-		{
-			get
-			{
-				var json = _context.HttpContext?.Session.GetString("TipoAnticipoEmpleadoLista") ?? string.Empty;
-				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
-				{
-					return new List<TipoAnticipoEmpleadoDto>();
-				}
-				return JsonConvert.DeserializeObject<List<TipoAnticipoEmpleadoDto>>(json) ?? [];
-			}
-			set
-			{
-				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext?.Session.SetString("TipoAnticipoEmpleadoLista", json);
-			}
-		}
-		#endregion
+        #region TIPO DE ANTICIPO DE EMPLEADO
+        public List<TipoAnticipoEmpleadoDto> TipoAnticipoEmpleadoLista
+        {
+            get
+            {
+                var json = _context.HttpContext?.Session.GetString("TipoAnticipoEmpleadoLista") ?? string.Empty;
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return new List<TipoAnticipoEmpleadoDto>();
+                }
+                return JsonConvert.DeserializeObject<List<TipoAnticipoEmpleadoDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("TipoAnticipoEmpleadoLista", json);
+            }
+        }
+        #endregion
 
-		#region Metodos generales
-		public PartialViewResult ObtenerMensajeDeError(string mensaje)
-		{
-			RespuestaGenerica<EntidadBase> response = new()
-			{
-				Ok = false,
-				EsError = true,
-				EsWarn = false,
-				Mensaje = mensaje
-			};
-			return PartialView("_gridMensaje", response);
-		}
-		public static decimal ConvertToDecimal(string value, int precision)
-		{
-			if (value.Contains('.'))
-			{
-				var splited = value.Split('.');
-				value = splited[0];
-				value += ".";
-				value = value.PadRight(precision, '0');
-			}
-			else
-				value += ".000";
-			if (!decimal.TryParse(value, out decimal converted))
-			{
-				return 0.000M;
-			}
-			return converted;
-		}
-		public GridCoreSmart<T> ObtenerGridCore<T>(List<T> lista) where T : Dto
-		{
-			var listaDetalle = new StaticPagedList<T>(lista, 1, 999, lista.Count);
-			return new GridCoreSmart<T>() { ListaDatos = listaDetalle, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
-		}
-		public GridCoreSmart<T> ObtenerGridCoreSmart<T>(List<T> lista) where T : Dto
-		{
-			var listaDetalle = new StaticPagedList<T>(lista, 1, 999, lista.Count);
-			return new GridCoreSmart<T>() { ListaDatos = listaDetalle, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
-		}
-		#endregion
-       
+        #region Metodos generales
+        public PartialViewResult ObtenerMensajeDeError(string mensaje)
+        {
+            RespuestaGenerica<EntidadBase> response = new()
+            {
+                Ok = false,
+                EsError = true,
+                EsWarn = false,
+                Mensaje = mensaje
+            };
+            return PartialView("_gridMensaje", response);
+        }
+        public static decimal ConvertToDecimal(string value, int precision)
+        {
+            if (value.Contains('.'))
+            {
+                var splited = value.Split('.');
+                value = splited[0];
+                value += ".";
+                value = value.PadRight(precision, '0');
+            }
+            else
+                value += ".000";
+            if (!decimal.TryParse(value, out decimal converted))
+            {
+                return 0.000M;
+            }
+            return converted;
+        }
+        public GridCoreSmart<T> ObtenerGridCore<T>(List<T> lista) where T : Dto
+        {
+            var listaDetalle = new StaticPagedList<T>(lista, 1, 999, lista.Count);
+            return new GridCoreSmart<T>() { ListaDatos = listaDetalle, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
+        }
+        public GridCoreSmart<T> ObtenerGridCoreSmart<T>(List<T> lista) where T : Dto
+        {
+            var listaDetalle = new StaticPagedList<T>(lista, 1, 999, lista.Count);
+            return new GridCoreSmart<T>() { ListaDatos = listaDetalle, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
+        }
+        #endregion
+
 
         public JsonResult AnalizarRespuesta(RespuestaGenerica<RespuestaDto> res, string mensajeDeRespuesta = "")
         {
@@ -2474,7 +2502,7 @@ namespace gc.sitio.Controllers
         }
         protected List<UserDto> ObtenerUsuarioParaListaBase(string strfix, IUserServicio servicio)
         {
-            return servicio.ObtenerUsuarioParaLista(new BuscarUsuarioRequest {deno=true, deno_like = strfix }, TokenCookie);
+            return servicio.ObtenerUsuarioParaLista(new BuscarUsuarioRequest { deno = true, deno_like = strfix }, TokenCookie);
         }
         protected void ObtenerCuentaPlanContableLista(IFinancieroServicio _financieroServicio)
         {
@@ -2494,40 +2522,40 @@ namespace gc.sitio.Controllers
         {
             var result = _prod2servicio.ObtenerIVAAlicuotas(TokenCookie).GetAwaiter().GetResult();
 
-			IvaAlicuotasLista = result?.ListaEntidad ?? [];
-		}
-		protected void ObtenerTiposTributoLista(ITipoTributoServicio _tipoTributoServicio)
-		{
-			TiposTributoLista = _tipoTributoServicio.GetTiposTributoLista(TokenCookie);
-		}
-		protected void ObtenerTipoDescValorizaRpr(ITipoDtoValorizaRprServicio _tipoDtoValorizaRpr)
-		{
-			TipoDescValorizaRprLista = _tipoDtoValorizaRpr.ObtenerTipoDtoValorizaRpr(TokenCookie);
-		}
-		protected void ObtenerTiposConciliado(ITipoConciliadoServicio _tipoConciliadoSrv)
-		{
-			TipoConciliadoLista = _tipoConciliadoSrv.GetTipoConciliadoLista(TokenCookie);
-		}
-		protected void ObtenerTiposAnticipoEmpleado(ITipoAnticipoEmpleadoServicio _tipoAntEmpleadoSrv)
-		{
-			TipoAnticipoEmpleadoLista = _tipoAntEmpleadoSrv.GetTipoAnticipoEmpleado(TokenCookie);
-		}
-		#endregion
-		protected void ObtenerDiasDeLaSemana()
-		{
-			var listaTemp = new List<DiaDeLaSemanaDto>();
-			var lista = Enum.GetValues(typeof(DiasDeLaSemana)).Cast<DiasDeLaSemana>().ToList();
-			foreach (var item in lista)
-			{
-				var newItem = new DiaDeLaSemanaDto();
-				newItem.dia_id = (int)item;
-				newItem.dia_desc = item.ToString();
-				listaTemp.Add(newItem);
-			}
-			;
-			DiasDeLaSemanaLista = listaTemp;
-			lista.ForEach(x => DiasDeLaSemanaLista.Add(new DiaDeLaSemanaDto() { dia_id = (int)x, dia_desc = x.ToString() }));
-		}
+            IvaAlicuotasLista = result?.ListaEntidad ?? [];
+        }
+        protected void ObtenerTiposTributoLista(ITipoTributoServicio _tipoTributoServicio)
+        {
+            TiposTributoLista = _tipoTributoServicio.GetTiposTributoLista(TokenCookie);
+        }
+        protected void ObtenerTipoDescValorizaRpr(ITipoDtoValorizaRprServicio _tipoDtoValorizaRpr)
+        {
+            TipoDescValorizaRprLista = _tipoDtoValorizaRpr.ObtenerTipoDtoValorizaRpr(TokenCookie);
+        }
+        protected void ObtenerTiposConciliado(ITipoConciliadoServicio _tipoConciliadoSrv)
+        {
+            TipoConciliadoLista = _tipoConciliadoSrv.GetTipoConciliadoLista(TokenCookie);
+        }
+        protected void ObtenerTiposAnticipoEmpleado(ITipoAnticipoEmpleadoServicio _tipoAntEmpleadoSrv)
+        {
+            TipoAnticipoEmpleadoLista = _tipoAntEmpleadoSrv.GetTipoAnticipoEmpleado(TokenCookie);
+        }
+        #endregion
+        protected void ObtenerDiasDeLaSemana()
+        {
+            var listaTemp = new List<DiaDeLaSemanaDto>();
+            var lista = Enum.GetValues(typeof(DiasDeLaSemana)).Cast<DiasDeLaSemana>().ToList();
+            foreach (var item in lista)
+            {
+                var newItem = new DiaDeLaSemanaDto();
+                newItem.dia_id = (int)item;
+                newItem.dia_desc = item.ToString();
+                listaTemp.Add(newItem);
+            }
+            ;
+            DiasDeLaSemanaLista = listaTemp;
+            lista.ForEach(x => DiasDeLaSemanaLista.Add(new DiaDeLaSemanaDto() { dia_id = (int)x, dia_desc = x.ToString() }));
+        }
 
         #region COMBOS
         protected SelectList ComboAfip()
@@ -2724,29 +2752,17 @@ namespace gc.sitio.Controllers
 			var lista = TipoAnticipoEmpleadoLista.Select(x => new ComboGenDto { Id = x.ant_id, Descripcion = x.ant_desc });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
-
-		protected SelectList ComboAnios(List<string> listaAnios)
-		{
-			var lista = listaAnios.Select(x => new ComboGenDto { Id = x, Descripcion = x });
-			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
-		}
-
-		protected SelectList ComboMeses(List<string> listaMeses)
-		{
-			var lista = listaMeses.Select(x => new ComboGenDto { Id = x, Descripcion = x });
-			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
-		}
 		#endregion
 
-		[HttpPost]
-		public JsonResult BuscarProvs(string prefix)
-		{
-			//var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
-			//var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });
-			var prov = ProveedoresLista.Where(x => x.Cta_Lista.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
-			var proveedores = prov.Select(x => new ComboGenDto { Id = x.Cta_Id, Descripcion = x.Cta_Lista });
-			return Json(proveedores);
-		}
+        [HttpPost]
+        public JsonResult BuscarProvs(string prefix)
+        {
+            //var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
+            //var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });
+            var prov = ProveedoresLista.Where(x => x.Cta_Lista.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
+            var proveedores = prov.Select(x => new ComboGenDto { Id = x.Cta_Id, Descripcion = x.Cta_Lista });
+            return Json(proveedores);
+        }
 
         [HttpPost]
         public JsonResult BuscarRubros(string prefix)
