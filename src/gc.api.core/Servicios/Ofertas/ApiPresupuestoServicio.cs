@@ -76,7 +76,7 @@ namespace gc.api.core.Servicios.Ofertas
 
             var ps = new List<SqlParameter>() {
                 new SqlParameter("@abm", req.Abm),
-                new SqlParameter("@pre_id", pres.pre_id),
+                new SqlParameter("@pre_id", pres.pre_id??""),
                 new SqlParameter("@pre_desc", pres.pre_descripcion),
                 new SqlParameter("@pret_id", pres.pret_id),
                 new SqlParameter("@pree_id", pres.pree_id),
@@ -85,7 +85,7 @@ namespace gc.api.core.Servicios.Ofertas
                 new SqlParameter("@pre_hasta", pres.pre_vigencia_hasta),
                 new SqlParameter("@pre_adm_id", pres.adm_id),
 
-                new SqlParameter("cta_id", pres.cta_id),
+                new SqlParameter("cta_id", pres.cta_id??""),
                 new SqlParameter("@pre_nombre", pres.pre_nombre??""),
                 new SqlParameter("@pre_domicilio", pres.pre_domicilio ?? ""),
 

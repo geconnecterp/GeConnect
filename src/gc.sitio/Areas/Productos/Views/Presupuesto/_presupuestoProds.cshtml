@@ -17,6 +17,7 @@
             <table class="table table-sm table-hover mb-0 table-golden" id="tbGridPresupuestoProds">
                 <thead class="table-golden-header">
                     <tr class="header">
+                        <th class="text-center">#</th>
                         <th class="text-center">Código</th>
                         <th class="text-left">Descripción</th>
                         <th class="text-end">Costo</th>
@@ -35,14 +36,17 @@
                             if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
                             var totalCalc = (item.pre_cantidad * item.pre_pvta);
                             <tr class="@clase"
+                                data-pre-item="@item.pre_item"
                                 data-p-id="@item.p_id"
                                 data-pre-pcosto="@item.pre_pcosto"
+                                data-p-pcosto-actual="@item.p_pcosto_actual"
                                 data-pre-pneto="@item.pre_pneto"
                                 data-iva-situacion="@item.iva_situacion"
                                 data-iva-alicuota="@item.iva_alicuota"
                                 data-in-alicuota="@item.in_alicuota"
                                 data-lp-prevision-tot="@item.lp_prevision_tot"
                                 data-lp-prevision-pin="@item.lp_prevision_pin">
+                                <td class="text-center">@item.pre_item</td>
                                 <td class="text-center">@item.p_id</td>
                                 <td>@item.p_des</td>
                                 <td class="text-end">@item.pre_pcosto.ToString("N3")</td>
@@ -94,7 +98,7 @@
                     else
                     {
                         <tr>
-                            <td colspan="8" class="text-center text-muted py-2">
+                            <td colspan="9" class="text-center text-muted py-2">
                                 <i class="bx bx-info-circle me-1"></i>No hay productos en este presupuesto
                             </td>
                         </tr>

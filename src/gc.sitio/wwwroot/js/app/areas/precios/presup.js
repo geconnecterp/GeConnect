@@ -275,12 +275,26 @@ function InicializaEventosPresupuesto() {
         if (e.key === 'Enter' || e.key === 'Tab') {
             e.preventDefault();
             const $campo = $(this);
+            const $fila = $campo.closest('tr');
+            let $c = '';
             if ($campo.hasClass('input-pre_cantidad')) {
                 recalcularTotalDesdeCantidad($campo);
             } else {
                 guardarYAvanzarCampoPresup($campo);
                 //guardarCampoPresup($campo);
             }
+
+            if ($campo.hasClass('input-pre_cantidad')) {
+                $c = 'C';
+            }
+            else if ($campo.hasClass('input-pre_margen')) {
+                $c = 'M';
+            }
+            else if ($campo.hasClass('input-pre_pvta')) {
+                $c = 'V';
+            }  
+            setTimeout(() => { seleccionaProximoCampo($c, $fila) }, 100);
+            
         }
     });
 
@@ -340,6 +354,9 @@ function InicializaEventosPresupuesto() {
             $('#btnAbmCancelar').prop('disabled', false).show();
             $('#btnAbmModif, #btnAbmNuevo, #btnAbmElimi').prop('disabled', true);
 
+            $("#pret_id").prop("disabled", false);
+            $("#pree_id").prop("disabled", false);
+
             aplicarReadonlyCamposPresup();
             _presupOriginal = null;
 
@@ -366,6 +383,8 @@ function InicializaEventosPresupuesto() {
 
         aplicarReadonlyCamposPresup();
 
+        setTimeout(() => { actualizarTotalGeneralPresup(); }, 100);
+        
 
         const $primer = $('#divPresupuestoDatos').find('input:not([type=hidden]):not([readonly]), textarea:not([readonly]), select:not([disabled])').filter(':visible').first();
         if ($primer.length) {
@@ -633,8 +652,6 @@ function guardarYAvanzarCampoPresup($campo) {
 
 
     let cantidad = parseDecimal($fila.find('input.input-pre_cantidad').val());
-    let pvta = parseDecimal($fila.find('input.input-pre_pvta').val());
-    let margen = parseDecimal($fila.find('input.input-pre_margen').val());
     //tenemos el control cantidad más global para luego de operar recalcule los totales.
     const $inCant = $fila.find('input.input-pre_cantidad');
 
@@ -649,104 +666,177 @@ function guardarYAvanzarCampoPresup($campo) {
         }
     }
     if (esMargen) {
-        //invocar a la función para que me calcule el precio de venta y
-        //lo tengo que resguardar en el input y en el data.
-        let dataMg = {
-            tp_pcosto: val_pcosto,
-            lp_prevision_tot: val_prev_tot,
-            lp_prevision_pin: val_prev_pin,
-            tp_margen: margen,
-            iva_situacion: val_iva_sit,
-            iva_alicuota: val_iva_ali,
-            in_alicuota: val_in_alic
-        };
-        AbrirWaiting('Espere el calculo...');
-        PostGen(dataMg, calcularPrecioVentaBaseUrl, function (resp) {
-            
-            if (resp.error === true) {
-                AbrirMensaje("Algo no fue bien", resp.msg, function () {
-                    $("#msjModal").modal("hide");
-                }, false, ["Aceptar"], "error!", null);
-                CerrarWaiting();
+
+        //para calcular el precio de venta, primero debo verificar que el valor
+        //cargado y el valor original sean distintos.
+        const $c_mg = $fila.find('input.input-pre_margen');
+        let margen = parseFloat($c_mg.val());
+        let margen_or = parseFloat($c_mg.data("original-value"));
+        if (margen !== margen_or) {
+
+            //se modificó el precio de venta.
+            //analizo si el precio de venta es menor al costo. 
+            if (margen < 0) {
+                //de marcará el campo de venta
+                $c_mg.addClass('input-alerta-costo');
             }
-            else if (resp.warn === true) {
-                AbrirMensaje("Algo no fue bien", resp.msg, function () {
-                    if (resp.auth === true) {
-                        window.location.href = login;
-                    } else {
+            else {
+                $c_mg.removeClass('input-alerta-costo');
+            }
+
+            //invocar a la función para que me calcule el precio de venta y
+            //lo tengo que resguardar en el input y en el data.
+            let dataMg = {
+                tp_pcosto: val_pcosto,
+                lp_prevision_tot: val_prev_tot,
+                lp_prevision_pin: val_prev_pin,
+                tp_margen: margen,
+                iva_situacion: val_iva_sit,
+                iva_alicuota: val_iva_ali,
+                in_alicuota: val_in_alic
+            };
+            AbrirWaiting('Espere el calculo...');
+            PostGen(dataMg, calcularPrecioVentaBaseUrl, function (resp) {
+
+                if (resp.error === true) {
+                    AbrirMensaje("Algo no fue bien", resp.msg, function () {
                         $("#msjModal").modal("hide");
-                        CerrarWaiting();
-                    }
-                }, false, ["Aceptar"], "error!", null);
-            } else {
-                CerrarWaiting();
-                //tenemos el valor calculado
-                let vta = resp.pvta.p_pvta;
-                //le asignamos el nuevo valor a PVTA
-                const $inPvta = $fila.find('input.input-pre_pvta');
-                $inPvta.val(vta);
-                //calculamos el total de la fila.
-                calcularElTotaldelaFila(cantidad, vta,$fila);
-
-                if ($inPvta.length) {
-                    setTimeout(() => activarEdicionCampoPresup($inPvta), 50);
-                    return;
+                    }, false, ["Aceptar"], "error!", null);
+                    CerrarWaiting();
                 }
-            }
+                else if (resp.warn === true) {
+                    AbrirMensaje("Algo no fue bien", resp.msg, function () {
+                        if (resp.auth === true) {
+                            window.location.href = login;
+                        } else {
+                            $("#msjModal").modal("hide");
+                            CerrarWaiting();
+                        }
+                    }, false, ["Aceptar"], "error!", null);
+                } else {
+                    CerrarWaiting();
+                    //tenemos el valor calculado
+                    let vta = resp.pvta.p_pvta;
+                    //le asignamos el nuevo valor a PVTA
+                    const $inPvta = $fila.find('input.input-pre_pvta');
+                    $inPvta.val(vta);
+                    //calculamos el total de la fila.
+                    calcularElTotaldelaFila(cantidad, vta, $fila);
 
-        });        
+                    if ($inPvta.length) {
+                        setTimeout(() => activarEdicionCampoPresup($inPvta), 50);
+                        return;
+                    }
+                }
+
+            });
+        }
     }
 
     if (esPVta) {
-        //debo armar el data para enviar via post
-        let dataVT = {
-            tp_pcosto: val_pcosto,
-            lp_prevision_tot: val_prev_tot,
-            lp_prevision_pin: val_prev_pin,
-            tp_pvta: pvta,
-            iva_situacion: val_iva_sit,
-            iva_alicuota: val_iva_ali,
-            in_alicuota: val_in_alic
-        }; 
+        const $c_pvta = $fila.find('input.input-pre_pvta');
+        let pvta = parseFloat($c_pvta.val());
+        let pvta_or = parseFloat($c_pvta.data("original-value"));
 
-        AbrirWaiting('Espere el calculo...');
-        PostGen(dataVT, calcularPrecioVentaMargenUrl, function (resp) {
-
-            if (resp.error === true) {
-                AbrirMensaje("Algo no fue bien", resp.msg, function () {
-                    $("#msjModal").modal("hide");
-                }, false, ["Aceptar"], "error!", null);
-                CerrarWaiting();
+        if (pvta !== pvta_or) {
+            //se modificó el precio de venta.
+            //analizo si el precio de venta es menor al costo. 
+            if (pvta < val_pcosto) {
+                //de marcará el campo de venta
+                $c_pvta.addClass('input-alerta-costo');
             }
-            else if (resp.warn === true) {
-                AbrirMensaje("Algo no fue bien", resp.msg, function () {
-                    if (resp.auth === true) {
-                        window.location.href = login;
-                    } else {
+            else {
+                $c_pvta.removeClass('input-alerta-costo');
+            }
+
+            //debo armar el data para enviar via post
+            let dataVT = {
+                tp_pcosto: val_pcosto,
+                lp_prevision_tot: val_prev_tot,
+                lp_prevision_pin: val_prev_pin,
+                tp_pvta: pvta,
+                iva_situacion: val_iva_sit,
+                iva_alicuota: val_iva_ali,
+                in_alicuota: val_in_alic
+            };
+
+            AbrirWaiting('Espere el calculo...');
+            PostGen(dataVT, calcularPrecioVentaMargenUrl, function (resp) {
+
+                if (resp.error === true) {
+                    AbrirMensaje("Algo no fue bien", resp.msg, function () {
                         $("#msjModal").modal("hide");
-                        CerrarWaiting();
-                    }
-                }, false, ["Aceptar"], "error!", null);
-            } else {
-                //tenemos el valor calculado
-                let mg = resp.pvta.p_margen;
-                //le asignamos el nuevo valor a PVTA
-                const $inMg = $fila.find('input.input-pre_margen');
-                $inMg.val(mg);
-                //NO calculamos el total de la fila ya que solo se modifico el margen
-                //calcularElTotaldelaFila(cantidad, vta);
-
-                if ($inMg.length) {
-                    setTimeout(() => activarEdicionCampoPresup($inMg), 50);
-                    return;
+                    }, false, ["Aceptar"], "error!", null);
+                    CerrarWaiting();
                 }
-            }
+                else if (resp.warn === true) {
+                    AbrirMensaje("Algo no fue bien", resp.msg, function () {
+                        if (resp.auth === true) {
+                            window.location.href = login;
+                        } else {
+                            $("#msjModal").modal("hide");
+                            CerrarWaiting();
+                        }
+                    }, false, ["Aceptar"], "error!", null);
+                } else {
+                    //tenemos el valor calculado
+                    let mg = resp.pvta.p_margen;
+                    //le asignamos el nuevo valor a PVTA
+                    const $inMg = $fila.find('input.input-pre_margen');
+                    $inMg.val(mg);
 
-        });        
+                    if (mg < 0) {
+                        $inMg.addClass("input-alerta-costo");
+                    } else {
+                        $inMg.removeClass("input-alerta-costo");
+                    }
+                    //NO calculamos el total de la fila ya que solo se modifico el margen
+                    //calcularElTotaldelaFila(cantidad, vta);
 
+                    if ($inMg.length) {
+                        setTimeout(() => activarEdicionCampoPresup($inMg), 50);
+                        return;
+                    }
+                }
+
+            });
+        }
     }
 
-    recalcularTotalDesdeCantidad($inCant);
+    recalcularTotalDesdeCantidad($inCant); 
+}
+
+function seleccionaProximoCampo(campo, $fila) {
+    switch (campo) {
+        case 'C':
+            //el proximo es margen
+            const $c2 = $fila.find('.input-pre_margen');
+            $c2.trigger("focus");
+            //seleccionamos 
+            setTimeout(() => $c2.select(), 0);
+            break;
+        case 'M':
+            //el proximo es venta
+            const $c3 = $fila.find('.input-pre_pvta');
+            $c3.trigger("focus");
+            //seleccionamos 
+            setTimeout(() => $c3.select(), 0);
+            break;
+        case 'V':
+            //el proximo es cantidad en la fila siguiente
+            const $siguienteFila = $fila.next('tr');
+            if ($siguienteFila.length) {
+                const $c1 = $siguienteFila.find('.input-pre_cantidad');
+                if ($c1.length) {
+                    $c1.trigger("focus");
+                    //seleccionamos 
+                    setTimeout(() => $c1.select(), 0);
+                }
+            }
+            break;
+        default:
+            return false;
+    }
 }
 
 function guardarCampoPresup($campo) {
@@ -971,6 +1061,8 @@ function configurarEventosSeleccionPres() {
             }
         }
     });
+    //configurando los eventos para el boton que elimina el registro.
+    configurarEventosEliminacionProducto();
 }
 
 function cargarPresupuestoDatos(preId) {
@@ -1193,11 +1285,38 @@ function aplicarReadonlyCamposPresup() {
         } else {
             campos.each(function () {
                 const $c = $(this);
+                //rescatamos la fila
+                const $fila = $c.closest('tr');
                 $c.prop('readonly', false).removeClass('campo-readonly');
+                if ($c.hasClass('input-pre_margen')) {
+                    //rescato el valor actual
+                    const valor = parseFloat($c.data("margen-actual")).toFixed(2);
+                    $c.val(valor);
+                }
+                else if ($c.hasClass('input-pre_pvta')) {
+                    const valor = parseFloat($c.data("pvta-actual")); 
+                    $c.val(valor.toFixed(2));
+
+                    //rescato la cantidad para recalcular el total
+                    const cant = parseFloat($fila.find('input.input-pre_cantidad').val());
+                    const vCosto = parseFloat($fila.data('p-pcosto-actual'));
+                    // ✅ Asignar el costo actualizado a la cuarta celda (índice 3)
+                    $fila.find('td:eq(3)').text(vCosto.toFixed(3));
+
+                    //presentamos el boton de elimnación
+                    $fila.find('td:last-child button.btn-eliminar-producto')
+                        .show().prop('disabled', false)
+                        .removeClass('d-none')
+                        .removeAttr('style');
+                    //multiplicamos la cantidad por el precio de venta.        
+                    calcularElTotaldelaFila(cant, valor, $fila);
+                }
                 $c.attr('title', 'Doble click para editar');
+
+                
             });
         }
-    });
+    }); 
 }
 
 function crearGridPresupVacioHtml() {
@@ -1214,6 +1333,7 @@ function crearGridPresupVacioHtml() {
                 <table class="table table-sm table-hover mb-0 table-golden" id="tbGridPresupuestoProds">
                     <thead class="table-golden-header">
                         <tr class="header">
+                            <th class="text-center">#</th>
                             <th class="text-center">Código</th>
                             <th class="text-left">Descripción</th>
                             <th class="text-end">Costo</th>
@@ -1221,13 +1341,15 @@ function crearGridPresupVacioHtml() {
                             <th class="text-end">Mg %</th>
                             <th class="text-end">Venta</th>
                             <th class="text-end">Total</th>
+                            <th class="text-end">Accion</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-2">
+                            <td colspan="8" class="text-center text-muted py-2">
                                 <i class="bx bx-info-circle me-1"></i>No hay productos en este presupuesto
                             </td>
+                            <td></td>
                         </tr>
                     </tbody>
                 </table>
@@ -1299,7 +1421,7 @@ function agregarProductosAlGrid(productos) {
         $('#tbGridPresupuestoProds').append(`
             <tfoot class="table-golden-footer">
                 <tr>
-                    <td colspan="6" class="text-end fw-bold">Total General:</td>
+                    <td colspan="7" class="text-end fw-bold">Total General:</td>
                     <td class="text-end fw-bold">0.00</td>
                 </tr>
             </tfoot>
@@ -1309,8 +1431,8 @@ function agregarProductosAlGrid(productos) {
 
     let esAlternado = $tbody.find('tr').length % 2 !== 0;
 
-    productos.forEach(function (producto) {
-        const fila = crearFilaProductoPresupuesto(producto, esAlternado);
+    productos.forEach(function (producto,index) {
+        const fila = crearFilaProductoPresupuesto(producto, esAlternado,index+1);
         $tbody.append(fila);
         esAlternado = !esAlternado;
     });
@@ -1318,6 +1440,7 @@ function agregarProductosAlGrid(productos) {
     //aplicarInputMaskPresupuesto();
     aplicarReadonlyCamposPresup();
     actualizarTotalGeneralPresup();
+    configurarEventosEliminacionProducto();
     finalizarInicializacion();
 }
 
@@ -1328,7 +1451,7 @@ function agregarProductosAlGrid(productos) {
  * @param {boolean} esAlternado - Alternar clase CSS
  * @returns {string} HTML de la fila
  */
-function crearFilaProductoPresupuesto(producto, esAlternado) {
+function crearFilaProductoPresupuesto(producto, esAlternado, pre_item) {
     // ✅ VALIDACIÓN Y NORMALIZACIÓN DE DATOS
     const datosProducto = normalizarDatosProducto(producto);
 
@@ -1341,11 +1464,13 @@ function crearFilaProductoPresupuesto(producto, esAlternado) {
             data-p-id="${datosProducto.p_id}"
             data-pre-pcosto="${datosProducto.p_pcosto.toFixed(3)}"
             data-pre-pneto="${datosProducto.p_pneto.toFixed(2)}"
+            data-p-pcosto-actual="${datosProducto.p_pcosto.toFixed(3)}"
             data-iva-situacion="${datosProducto.iva_situacion}"
             data-iva-alicuota="${datosProducto.iva_alicuota}"
             data-in-alicuota="${datosProducto.in_alicuota}"
             data-lp-prevision-tot="${datosProducto.lp_prevision_tot.toFixed(3)}"
             data-lp-prevision-pin="${datosProducto.lp_prevision_pin.toFixed(3)}">
+            <td class="text-center" data-pre_item="${pre_item}">${pre_item}</td>
             <td class="text-center">${datosProducto.p_id}</td>
             <td>${escaparHTML(datosProducto.p_desc)}</td>
             <td class="text-end">${datosProducto.p_pcosto.toFixed(3)}</td>
@@ -1704,7 +1829,7 @@ function validarPresupuesto(abm) {
     const ctaId = $('#cta_id').val();
     if (!ctaId || ctaId.trim() === '') {
         let nombre = $("#pre_nombre").val();
-        let domicilio = $("#pre_domicilio");
+        let domicilio = $("#pre_domicilio").val();
 
         if (!nombre || nombre.trim() === '') {
             return {
@@ -1721,14 +1846,14 @@ function validarPresupuesto(abm) {
         
     }
 
-    //// ✅ VALIDACIÓN 2: Tipo obligatorio
-    //const pretId = $('#pret_id').val();
-    //if (!pretId || pretId.trim() === '') {
-    //    return {
-    //        esValido: false,
-    //        mensaje: 'Debe seleccionar el tipo de presupuesto'
-    //    };
-    //}
+    // ✅ VALIDACIÓN 2: Tipo obligatorio
+    const pretId = $('#pret_id').val();
+    if (!pretId || pretId.trim() === '') {
+        return {
+            esValido: false,
+            mensaje: 'Debe seleccionar el tipo de presupuesto'
+        };
+    }
 
     // ✅ VALIDACIÓN 3: Vigencia desde obligatorio
     const vigenciaDesde = $('#pre_vigencia_desde').val();
@@ -1873,7 +1998,7 @@ function obtenerProductosDelGrid() {
 
         // ✅ OPTIMIZACIÓN: Saltar filas vacías o de mensaje en una sola verificación
         if ($fila.find('td[colspan]').length > 0) return;
-
+        const preItem = parseInt($fila.data('pre-item')) || 0;
         // ✅ OPTIMIZACIÓN: Extraer datos del DOM usando data attributes (más eficiente)
         const pId = $fila.data('p-id');
         if (!pId) return; // Si no hay ID, saltar esta fila
@@ -1901,6 +2026,7 @@ function obtenerProductosDelGrid() {
         // ✅ Construir objeto PresupuestoProductoDto (coincide exactamente con el DTO de C#)
         productos.push({
             // Propiedades de productos
+            pre_item: preItem,
             p_id: pId,
             p_des: $fila.find('td:nth-child(2)').text().trim(),
             iva_situacion: ivaSituacion,
@@ -2296,5 +2422,114 @@ function configurarEventosEdicionOptimizado() {
             $(this).prop('readonly', true).addClass('campo-readonly');
             getCallback()(row);
         });
+    });
+}
+
+/**
+* ✅ NUEVO: Configura eventos de eliminación de productos
+* Usa delegación de eventos para botones dinámicos
+*/
+function configurarEventosEliminacionProducto() {
+    // ✅ REMOVER LISTENER PREVIO para evitar duplicados
+    $(document).off('click', '.btn-eliminar-producto');
+
+    // ✅ DELEGACIÓN DE EVENTOS (más performante para elementos dinámicos)
+    $(document).on('click', '.btn-eliminar-producto', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const $btn = $(this);
+        const pId = $btn.data('p-id');
+        const $fila = $btn.closest('tr');
+        const pDesc = $fila.find('td:nth-child(2)').text().trim();
+
+        confirmarEliminacionProducto(pId, pDesc, $fila);
+    });
+}
+
+/**
+* ✅ NUEVO: Confirma y ejecuta eliminación de producto del grid
+* @param {string} pId - ID del producto
+* @param {string} pDesc - Descripción del producto
+* @param {jQuery} $fila - Fila a eliminar
+*/
+function confirmarEliminacionProducto(pId, pDesc, $fila) {
+    AbrirMensaje(
+        'ELIMINAR PRODUCTO',
+        `¿Está seguro que desea eliminar el producto "${pDesc}" del presupuesto?`,
+        function (resp) {
+            if (resp === 'SI') {
+                eliminarProductoDelGrid($fila);
+            }
+            $('#msjModal').modal('hide');
+        },
+        true,
+        ['Eliminar', 'Cancelar'],
+        'warn!',
+        null
+    );
+}
+
+/**
+ * ✅ NUEVO: Elimina producto del grid y actualiza totales
+ * @param {jQuery} $fila - Fila a eliminar
+ */
+function eliminarProductoDelGrid($fila) {
+    const pDesc = $fila.find('td:nth-child(2)').text().trim();
+
+    // ✅ ANIMACIÓN SUAVE (mejor UX)
+    $fila.fadeOut(300, function () {
+        $(this).remove();
+
+        // ✅ VERIFICAR SI QUEDARON PRODUCTOS
+        const $tbody = $('#tbGridPresupuestoProds tbody');
+        if ($tbody.find('tr[data-p-id]').length === 0) {
+            $tbody.html(`
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-2">
+                        <i class="bx bx-info-circle me-1"></i>No hay productos en este presupuesto
+                    </td>
+                </tr>
+            `);
+
+            // ✅ REMOVER FOOTER si no hay productos
+            $('#tbGridPresupuestoProds tfoot').remove();
+        } else {
+            // ✅ REAJUSTAR CLASES ALTERNADAS
+            reajustarClasesAlternadas();
+        }
+
+        // ✅ ACTUALIZAR TOTAL
+        actualizarTotalGeneralPresup();
+
+        ControlaMensajeSuccess(`Producto "${pDesc}" eliminado correctamente`);
+    });
+}
+
+/**
+ * ✅ NUEVO: Reajusta clases 'alt' después de eliminar filas
+ * Mantiene consistencia visual
+ */
+function reajustarClasesAlternadas() {
+    $('#tbGridPresupuestoProds tbody tr[data-p-id]').each(function (index) {
+        const $fila = $(this);
+
+        if (index % 2 === 0) {
+            $fila.removeClass('alt');
+        } else {
+            $fila.addClass('alt');
+        }
+    });
+}
+
+/**
+ * ✅ OPTIMIZADO: Actualiza visibilidad de botones de eliminación
+ * Llamar al cambiar modo edición
+ */
+function aplicarVisibilidadBotonesEliminar() {
+    const enEdicion = estaEnModoEdicionPresup();
+
+    $('.btn-eliminar-producto').each(function () {
+        $(this).toggle(enEdicion);
     });
 }

@@ -159,7 +159,9 @@ namespace gc.sitio.Areas.Productos.Controllers
             ViewBag.Pree_Id = ComboPresupuestoEstado();
             #endregion
             var hoy = DateTime.Now;
-            PresupuestoDto presup = new() { pre_vigencia_desde= hoy,pre_vigencia_hasta=hoy.AddDays(30)};
+
+            PresupuestoDto presup = new() { pre_vigencia_desde= hoy,pre_vigencia_hasta=hoy.AddDays(30),
+            adm_id=AdministracionId,adm_nombre=AdministracionName};
 
             return PartialView("_presupuestoDatos", presup);
         }
@@ -303,7 +305,9 @@ namespace gc.sitio.Areas.Productos.Controllers
                 {
                     return Json(new { ok = false, mensaje = "Los datos del Presupuesto son requeridos" });
                 }
-                
+                request.Datos.adm_id = AdministracionId;
+                request.Datos.usu_id = UserName;
+
                 if (request.Productos == null || !request.Productos.Any())
                 {
                     return Json(new { ok = false, mensaje = "Al menos un producto es necesario informar en el presupuesto." });
@@ -443,7 +447,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             //ADMINISTRACION
             var adm = AdministracionesLista;
             var admins = adm.Select(x => new ComboGenDto { Id = x.Adm_id, Descripcion = x.Adm_nombre }).ToList();
-            ViewBag.Rel04 = HelperMvc<ComboGenDto>.ListaGenerica(admins);
+            ViewBag.Rel04 = HelperMvc<ComboGenDto>.ListaGenerica(admins,AdministracionId);
 
         }
 
