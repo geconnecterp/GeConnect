@@ -720,6 +720,7 @@ function guardarYAvanzarCampoPresup($campo) {
                     //le asignamos el nuevo valor a PVTA
                     const $inPvta = $fila.find('input.input-pre_pvta');
                     $inPvta.val(vta);
+                    $inPvta.data("originalValue", vta).attr("data-original-value", vta).trigger("change");
                     //calculamos el total de la fila.
                     calcularElTotaldelaFila(cantidad, vta, $fila);
 
@@ -784,7 +785,7 @@ function guardarYAvanzarCampoPresup($campo) {
                     //le asignamos el nuevo valor a PVTA
                     const $inMg = $fila.find('input.input-pre_margen');
                     $inMg.val(mg);
-
+                    $inMg.data("originalValue", mg).attr("data-original-value", mg).trigger("change");
                     if (mg < 0) {
                         $inMg.addClass("input-alerta-costo");
                     } else {

@@ -2224,6 +2224,19 @@ namespace gc.sitio.Controllers
             };
             return PartialView("_gridMensaje", response);
         }
+
+        protected SelectList ComboAnios(List<string> listaAnios)
+        {
+            var lista = listaAnios.Select(x => new ComboGenDto { Id = x, Descripcion = x });
+            return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+        }
+
+        protected SelectList ComboMeses(List<string> listaMeses)
+        {
+            var lista = listaMeses.Select(x => new ComboGenDto { Id = x, Descripcion = x });
+            return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+        }
+
         public static decimal ConvertToDecimal(string value, int precision)
         {
             if (value.Contains('.'))
