@@ -3,6 +3,7 @@ var modoModificacionPresup = false;
 
 // ✅ AGREGAR: Variable global para controlar edición
 var campoEnEdicionPresup = null;
+let procesandoCampo = false;
 
 // ✅ NUEVA: Variable para guardar estado original del presupuesto
 let _presupOriginal = null;
@@ -285,29 +286,33 @@ function InicializaEventosPresupuesto() {
     $(document).on('keydown', '.input-pre_cantidad, .input-pre_margen, .input-pre_pvta', function (e) {
         if (e.key === 'Enter' || e.key === 'Tab') {
             e.preventDefault();
+            e.stopPropagation(); // Importante: evitar propagación
+
+            if (procesandoCampo) {
+                console.log('⚠️ Procesando campo anterior, espere...');
+                return;
+            }
             const $campo = $(this);
             const $fila = $campo.closest('tr');
-            let $c = '';
+            let tipo = '';
             if ($campo.hasClass('input-pre_cantidad')) {
+                tipo = 'C';
                 recalcularTotalDesdeCantidad($campo);
             } else {
                 guardarYAvanzarCampoPresup($campo);
                 //guardarCampoPresup($campo);
             }
 
-            if ($campo.hasClass('input-pre_cantidad')) {
-                $c = 'C';
-            }
-            else if ($campo.hasClass('input-pre_margen')) {
-                $c = 'M';
+            if ($campo.hasClass('input-pre_margen')) {
+                tipo = 'M';
             }
             else if ($campo.hasClass('input-pre_pvta')) {
-                $c = 'V';
+                tipo = 'V';
             }
 
             setTimeout(() => {
                 calcularUtilidadMargen();
-                seleccionaProximoCampo($c, $fila)
+                seleccionaProximoCampo(tipo, $fila)
             }, 100);
 
         }
@@ -323,7 +328,7 @@ function InicializaEventosPresupuesto() {
         //    //guardarCampoPresup($campo);
         //}
         setTimeout(() => {
-            calcularUtilidadMargen();            
+            calcularUtilidadMargen();
         }, 100);
     });
 
@@ -649,182 +654,225 @@ function calcularElTotaldelaFila(cantidad, precio, $fila) {
         $tdTotal.text(parseFloat("0.00"));
     }
 }
-
+// Variable global para controlar el estado de procesamiento
 function guardarYAvanzarCampoPresup($campo) {
-    guardarCampoPresup($campo);
+    // Evitar procesamiento múltiple
+    if (procesandoCampo) {
+        console.log('⚠️ Ya hay un campo en proceso...');
+        return;
+    }
 
-    const $fila = $campo.closest('tr');
-    const esCantid = $campo.hasClass('input-pre_cantidad');
-    const esMargen = $campo.hasClass('input-pre_margen');
-    const esPVta = $campo.hasClass('input-pre_pvta');
+    procesandoCampo = true;
+    console.log('🔄 Inicio proceso campo:', $campo.attr('class'));
+    try {
+        guardarCampoPresup($campo);
 
-    //obtengo los parametros comunes para invocar el recalculo de alguno de los
-    //valores ya sea Margen o PVenta
+        const $fila = $campo.closest('tr');
+        const esCantid = $campo.hasClass('input-pre_cantidad');
+        const esMargen = $campo.hasClass('input-pre_margen');
+        const esPVta = $campo.hasClass('input-pre_pvta');
 
-    let val_pcosto = parseFloat($fila.data("pre-pcosto"));
-    let val_prev_tot = parseFloat($fila.data("lp-prevision-tot"));
-    let val_prev_pin = parseFloat($fila.data("lp-prevision-pin"));
-    let val_iva_sit = $fila.data("iva-situacion");
-    let val_iva_ali = parseFloat($fila.data("iva-alicuota"));
-    let val_in_alic = parseFloat($fila.data("in-alicuota"));
+        //obtengo los parametros comunes para invocar el recalculo de alguno de los
+        //valores ya sea Margen o PVenta
 
-
-    let cantidad = parseFloat($fila.find('input.input-pre_cantidad').val());
-    //tenemos el control cantidad más global para luego de operar recalcule los totales.
-    const $inCant = $fila.find('input.input-pre_cantidad');
-
-    if (esCantid) {
-        //multiplicamos la cantidad por el precio de venta.        
-        calcularElTotaldelaFila(cantidad, pvta, $fila);
+        let val_pcosto = parseFloat($fila.data("pre-pcosto"));
+        let val_prev_tot = parseFloat($fila.data("lp-prevision-tot"));
+        let val_prev_pin = parseFloat($fila.data("lp-prevision-pin"));
+        let val_iva_sit = $fila.data("iva-situacion");
+        let val_iva_ali = parseFloat($fila.data("iva-alicuota"));
+        let val_in_alic = parseFloat($fila.data("in-alicuota"));
 
 
-        if ($inCant.length) {
-            setTimeout(() => activarEdicionCampoPresup($inCant), 50);
+        let cantidad = parseFloat($fila.find('input.input-pre_cantidad').val());
+        //tenemos el control cantidad más global para luego de operar recalcule los totales.
+        const $inCant = $fila.find('input.input-pre_cantidad');
+
+        if (esCantid) {
+            calcularElTotaldelaFila(cantidad, pvta, $fila);
+            finalizarProceso($inCant);
             return;
         }
-    }
-    if (esMargen) {
+        if (esMargen) {
+            //para calcular el precio de venta, primero debo verificar que el valor
+            //cargado y el valor original sean distintos.
+            const $c_mg = $fila.find('input.input-pre_margen');
+            let margen = parseFloat($c_mg.val());
+            let margen_or = parseFloat($c_mg.data("original-value"));
+            if (margen !== margen_or) {
 
-        //para calcular el precio de venta, primero debo verificar que el valor
-        //cargado y el valor original sean distintos.
-        const $c_mg = $fila.find('input.input-pre_margen');
-        let margen = parseFloat($c_mg.val());
-        let margen_or = parseFloat($c_mg.data("original-value"));
-        if (margen !== margen_or) {
-
-            //se modificó el precio de venta.
-            //analizo si el precio de venta es menor al costo. 
-            if (margen < 0) {
-                //de marcará el campo de venta
-                $c_mg.addClass('input-alerta-costo');
-            }
-            else {
-                $c_mg.removeClass('input-alerta-costo');
-            }
-
-            //invocar a la función para que me calcule el precio de venta y
-            //lo tengo que resguardar en el input y en el data.
-            let dataMg = {
-                tp_pcosto: val_pcosto,
-                lp_prevision_tot: val_prev_tot,
-                lp_prevision_pin: val_prev_pin,
-                tp_margen: margen,
-                iva_situacion: val_iva_sit,
-                iva_alicuota: val_iva_ali,
-                in_alicuota: val_in_alic
-            };
-            AbrirWaiting('Espere el calculo...');
-            PostGen(dataMg, calcularPrecioVentaBaseUrl, function (resp) {
-
-                if (resp.error === true) {
-                    AbrirMensaje("Algo no fue bien", resp.msg, function () {
-                        $("#msjModal").modal("hide");
-                    }, false, ["Aceptar"], "error!", null);
-                    CerrarWaiting();
+                //se modificó el precio de venta.
+                //analizo si el precio de venta es menor al costo. 
+                if (margen < 0) {
+                    //de marcará el campo de venta
+                    $c_mg.addClass('input-alerta-costo');
                 }
-                else if (resp.warn === true) {
-                    AbrirMensaje("Algo no fue bien", resp.msg, function () {
-                        if (resp.auth === true) {
-                            window.location.href = login;
-                        } else {
+                else {
+                    $c_mg.removeClass('input-alerta-costo');
+                }
+
+                //invocar a la función para que me calcule el precio de venta y
+                //lo tengo que resguardar en el input y en el data.
+                let dataMg = {
+                    tp_pcosto: val_pcosto,
+                    lp_prevision_tot: val_prev_tot,
+                    lp_prevision_pin: val_prev_pin,
+                    tp_margen: margen,
+                    iva_situacion: val_iva_sit,
+                    iva_alicuota: val_iva_ali,
+                    in_alicuota: val_in_alic
+                };
+                AbrirWaiting('Espere el calculo...');
+                PostGen(dataMg, calcularPrecioVentaBaseUrl, function (resp) {
+
+                    if (resp.error === true) {
+                        AbrirMensaje("Algo no fue bien", resp.msg, function () {
                             $("#msjModal").modal("hide");
-                            CerrarWaiting();
-                        }
-                    }, false, ["Aceptar"], "error!", null);
-                } else {
+                        }, false, ["Aceptar"], "error!", null);
+                        CerrarWaiting();
+                        return;
+                    }
+                    else if (resp.warn === true) {
+                        AbrirMensaje("Algo no fue bien", resp.msg, function () {
+                            if (resp.auth === true) {
+                                window.location.href = login;
+                            } else {
+                                $("#msjModal").modal("hide");
+                            }
+                        }, false, ["Aceptar"], "error!", null);
+                        CerrarWaiting();
+
+                        return;
+                    }
                     CerrarWaiting();
                     //tenemos el valor calculado
                     let vta = resp.pvta.p_pvta;
                     //le asignamos el nuevo valor a PVTA
                     const $inPvta = $fila.find('input.input-pre_pvta');
                     $inPvta.val(vta.toFixed(2));
-                    $inPvta.data("originalValue", vta).attr("data-original-value", vta).trigger("change");
+                    $inPvta.data("originalValue", vta)
+                        .attr("data-original-value", vta)
+                        .trigger("change");
                     //calculamos el total de la fila.
                     calcularElTotaldelaFila(cantidad, vta, $fila);
+                    procesandoCampo = false;
 
-                    if ($inPvta.length) {
-                        setTimeout(() => activarEdicionCampoPresup($inPvta), 50);
-                        return;
-                    }
-                }
-
-            });
+                    finalizarProceso($inCant);
+                });
+            } else {
+                finalizarProceso($inCant);
+            }
+            return;
         }
-    }
 
-    if (esPVta) {
-        const $c_pvta = $fila.find('input.input-pre_pvta');
-        let pvta = parseFloat($c_pvta.val());
-        let pvta_or = parseFloat($c_pvta.data("original-value"));
+        if (esPVta) {
+            const $c_pvta = $fila.find('input.input-pre_pvta');
+            let pvta = parseFloat($c_pvta.val());
+            let pvta_or = parseFloat($c_pvta.data("original-value"));
 
-        if (pvta !== pvta_or) {
-            //se modificó el precio de venta.
-            //analizo si el precio de venta es menor al costo. 
-            if (pvta < val_pcosto) {
-                //de marcará el campo de venta
-                $c_pvta.addClass('input-alerta-costo');
-            }
-            else {
-                $c_pvta.removeClass('input-alerta-costo');
-            }
+            if (pvta !== pvta_or) {
+                //se modificó el precio de venta.
+                //analizo si el precio de venta es menor al costo. 
+                // 1. Primera validación: precio vs costo
+                const precioEsValido = pvta >= val_pcosto;
 
-            //debo armar el data para enviar via post
-            let dataVT = {
-                tp_pcosto: val_pcosto,
-                lp_prevision_tot: val_prev_tot,
-                lp_prevision_pin: val_prev_pin,
-                tp_pvta: pvta,
-                iva_situacion: val_iva_sit,
-                iva_alicuota: val_iva_ali,
-                in_alicuota: val_in_alic
-            };
-
-            AbrirWaiting('Espere el calculo...');
-            PostGen(dataVT, calcularPrecioVentaMargenUrl, function (resp) {
-
-                if (resp.error === true) {
-                    AbrirMensaje("Algo no fue bien", resp.msg, function () {
-                        $("#msjModal").modal("hide");
-                    }, false, ["Aceptar"], "error!", null);
-                    CerrarWaiting();
-                }
-                else if (resp.warn === true) {
-                    AbrirMensaje("Algo no fue bien", resp.msg, function () {
-                        if (resp.auth === true) {
-                            window.location.href = login;
-                        } else {
-                            $("#msjModal").modal("hide");
-                            CerrarWaiting();
-                        }
-                    }, false, ["Aceptar"], "error!", null);
+                // 2. Actualizar UI según validación
+                if (!precioEsValido) {
+                    $c_pvta.addClass('input-alerta-costo');
+                    //continua pues puede, por estrategias de negocio
+                    //vender a un precio de venta menor al costo.
                 } else {
-                    CerrarWaiting();
-
-                    //tenemos el valor calculado
-                    let mg = resp.pvta.p_margen;
-                    //le asignamos el nuevo valor a PVTA
-                    const $inMg = $fila.find('input.input-pre_margen');
-                    $inMg.val(mg);
-                    $inMg.data("originalValue", mg).attr("data-original-value", mg).trigger("change");
-                    if (mg < 0) {
-                        $inMg.addClass("input-alerta-costo");
-                    } else {
-                        $inMg.removeClass("input-alerta-costo");
-                    }
-                    //NO calculamos el total de la fila ya que solo se modifico el margen
-                    //calcularElTotaldelaFila(cantidad, vta);
-
-                    if ($inMg.length) {
-                        setTimeout(() => activarEdicionCampoPresup($inMg), 50);
-                        return;
-                    }
+                    $c_pvta.removeClass('input-alerta-costo');
                 }
 
-            });
-        }
-    }
+                //debo armar el data para enviar via post
+                let dataVT = {
+                    tp_pcosto: val_pcosto,
+                    lp_prevision_tot: val_prev_tot,
+                    lp_prevision_pin: val_prev_pin,
+                    tp_pvta: pvta,
+                    iva_situacion: val_iva_sit,
+                    iva_alicuota: val_iva_ali,
+                    in_alicuota: val_in_alic
+                };
 
+                AbrirWaiting('Espere el calculo...');
+                PostGen(dataVT, calcularPrecioVentaMargenUrl, function (resp) {
+                    if (resp.error === true) {
+                        AbrirMensaje("Algo no fue bien", resp.msg, function () {
+                            $("#msjModal").modal("hide");
+                        }, false, ["Aceptar"], "error!", null);
+                        CerrarWaiting();
+                        return; // Importante: salir si hay error
+                    }
+                    else if (resp.warn === true) {
+                        AbrirMensaje("Algo no fue bien", resp.msg, function () {
+                            if (resp.auth === true) {
+                                window.location.href = login;
+                            } else {
+                                $("#msjModal").modal("hide");
+                                CerrarWaiting();
+                            }
+                        }, false, ["Aceptar"], "error!", null);
+                        return; // Importante: salir si hay warning
+                    }
+                    CerrarWaiting();
+
+                    // 4. Actualizar margen solo si el cálculo fue exitoso
+                    if (resp.pvta && typeof resp.pvta.p_margen !== 'undefined') {
+                        const mg = resp.pvta.p_margen;
+                        const $inMg = $fila.find('input.input-pre_margen');
+
+                        // 5. Actualizar UI del margen
+                        $inMg.val(mg.toFixed(2));
+                        $inMg.data("original-value", mg.toFixed(2))
+                            .attr("data-original-value", mg.toFixed(2))
+                            .trigger("change");
+
+                        // 6. Actualizar estado visual del margen
+                        if (mg < 0) {
+                            $inMg.addClass("input-alerta-costo");
+                        } else {
+                            $inMg.removeClass("input-alerta-costo");
+                        }
+
+                        // 7. Actualizar precio original
+                        $c_pvta.data("original-value", pvta.toFixed(2))
+                            .attr("data-original-value", pvta.toFixed(2));
+
+                       
+                        finalizarProceso($inCant);
+                    }
+
+                });
+            } else {
+                finalizarProceso($inCant);
+            }
+            return;
+        }
+
+        finalizarProceso($inCant);
+
+    } catch (error) {
+        console.error('Error en guardarYAvanzarCampoPresup:', error);
+        procesandoCampo = false;
+        CerrarWaiting();
+    }
+}
+
+// Funciones auxiliares para mantener el código organizado
+function finalizarProceso($inCant) {
     recalcularTotalDesdeCantidad($inCant);
+    procesandoCampo = false;
+    CerrarWaiting();
+    console.log('✅ Fin proceso campo');
+}
+
+function actualizarUIValidacionPrecio($campo, esValido) {
+    if (!esValido) {
+        $campo.addClass('input-alerta-costo');
+    } else {
+        $campo.removeClass('input-alerta-costo');
+    }
 }
 
 function seleccionaProximoCampo(campo, $fila) {
@@ -1039,8 +1087,8 @@ async function buscarPresupuestos(btn, pag = 1) {
             $("#divFiltro").collapse("hide");
 
             configurarEventosSeleccionPres();
-            
-           
+
+
             PostGen({}, buscarMetadataURL, function (obj) {
                 if (obj.error === true) {
                     AbrirMensaje("ATENCIÓN", obj.msg, function () {
