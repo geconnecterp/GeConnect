@@ -3,11 +3,22 @@
 @{
     var alt = true;
     string clase = string.Empty;
+    int cont = 0;
 }
 
 <div class="card h-100">
-    <div class="card-header py-1 d-flex justify-content-between align-items-center">
+    <div class="card-header py-1 d-flex align-items-center">
         <h6 class="mb-0">Productos del Presupuesto</h6>
+
+        <!-- Centro (métricas globales) -->
+        <div class="flex-grow-1 text-center">
+            <span class="fw-bold me-2">Valor de Utilidad Total:</span>
+            <span id="spUtilidadTotal" class="text-danger me-4">-</span>
+
+            <span class="fw-bold me-2">Margen Total:</span>
+            <span id="spMargenTotal" class="text-danger">-</span>
+        </div>
+
         <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarCProducto" title="Agregar Producto" disabled>
             <i class="bx bx-plus"></i>
         </button>
@@ -33,10 +44,12 @@
                     {
                         foreach (var item in Model.ListaDatos)
                         {
+                            cont++;
+                            var pre_item = item.pre_item.Equals("0") ? cont : item.pre_item.ToInt();
                             if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
                             var totalCalc = (item.pre_cantidad * item.pre_pvta);
                             <tr class="@clase"
-                                data-pre-item="@item.pre_item"
+                                data-pre-item="@pre_item"
                                 data-p-id="@item.p_id"
                                 data-pre-pcosto="@item.pre_pcosto"
                                 data-p-pcosto-actual="@item.p_pcosto_actual"
