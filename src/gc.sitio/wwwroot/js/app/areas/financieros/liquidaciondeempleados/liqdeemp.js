@@ -8,6 +8,47 @@ $(function () {
 	getMaskForIntegerMin50Max100($("#PorcTope"));
 });
 
+function validarPeriodoDentroDeRango() {
+	const anioSeleccionado = parseInt($('#listaAnio').val(), 10);
+	const mesSeleccionado = parseInt($('#listaMes').val(), 10); // formato MM
+
+	if (isNaN(anioSeleccionado) || isNaN(mesSeleccionado)) {
+		console.warn('Periodo incompleto: año o mes no seleccionados.');
+		return false;
+	}
+
+	const fechaSeleccionada = new Date(anioSeleccionado, mesSeleccionado - 1, 1);
+	const hoy = new Date();
+	const fechaActual = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+
+	// Fecha mínima permitida: hace 6 meses
+	const fechaMinima = new Date(fechaActual);
+	fechaMinima.setMonth(fechaMinima.getMonth() - 6);
+
+	console.log('fechaSeleccionada:', fechaSeleccionada);
+	console.log('fechaMinima:', fechaMinima);
+	console.log('fechaActual:', fechaActual);
+
+	if (fechaSeleccionada > fechaActual) {
+		AbrirMensaje("ATENCIÓN", "La combinación de año y mes no puede superar el mes actual.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+		return false;
+	}
+
+	if (fechaSeleccionada < fechaMinima) {
+		AbrirMensaje("ATENCIÓN", "La combinación de año y mes no puede ser anterior a 6 meses respecto al mes actual.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+		return false;
+	}
+
+	return true;
+}
+
+
 function handleCancelar() {
 	var filas = $("#tbListaLiqEmpEncabezado tbody tr").length;
 	if (filas > 0) {
@@ -42,7 +83,7 @@ function CancelarCargaLiqEmp() {
 		else {
 			LimpiarCampos();
 		}
-	}
+	});
 }
 
 function LimpiarCampos() {
@@ -55,6 +96,9 @@ function LimpiarCampos() {
 }
 
 function abrirModalImportarArchivo() {
+	if (!validarPeriodoDentroDeRango()) {
+		return; // aborta si la validación falla
+	}
 	AbrirWaiting();
 	var datos = {};
 	PostGenHtml(datos, abrirModalImportarArchivoUrl, function (obj) {
