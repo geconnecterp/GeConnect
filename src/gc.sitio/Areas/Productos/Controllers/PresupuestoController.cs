@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Reflection;
 using X.PagedList;
 
 namespace gc.sitio.Areas.Productos.Controllers
@@ -65,7 +66,7 @@ namespace gc.sitio.Areas.Productos.Controllers
 
                 #region Gestor Impresion - Inicializacion de variables
 
-                //Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
+                ////Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
                 //DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
 
                 //_logger?.LogInformation($"Generando Arbol de Archivos del módulo. {MethodBase.GetCurrentMethod()?.Name}");
@@ -231,7 +232,8 @@ namespace gc.sitio.Areas.Productos.Controllers
 
                 // Generar grid con productos del presupuesto
                 var productos = pres.ListaEntidad ?? new List<PresupuestoProductoDto>();
-                ProductosActualesPresupuesto = productos;
+                ProductosActualesPresupuesto = productos;              
+
                 var grid = GenerarGridPresupuestoProductos(productos);
 
                 return PartialView("_presupuestoProds", grid);
@@ -301,7 +303,11 @@ namespace gc.sitio.Areas.Productos.Controllers
                 }
 
                 // Validaciones de entrada
-                if (request.Datos == null)
+                if (request.Datos == null || (
+                    string.IsNullOrEmpty(request.Datos.adm_id)&&
+                    string.IsNullOrEmpty(request.Datos.pret_id.ToString())&&
+                    request.Datos.pre_vigencia_desde==DateTime.MinValue &&
+                    request.Datos.pre_vigencia_hasta==DateTime.MinValue))
                 {
                     return Json(new { ok = false, mensaje = "Los datos del Presupuesto son requeridos" });
                 }

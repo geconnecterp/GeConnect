@@ -7,6 +7,17 @@ var campoEnEdicionPresup = null;
 // ✅ NUEVA: Variable para guardar estado original del presupuesto
 let _presupOriginal = null;
 
+// Helpers de formato (ajusta la moneda si no es ARS)
+const fmtCurrency = (v) =>
+    new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 2 }).format(v ?? 0);
+
+const fmtPercent = (v) => {
+    // v puede venir como 0.354 o 35.4 -> normalizamos a fracción
+    const frac = (Math.abs(v) > 1) ? (v / 100) : v;
+    return new Intl.NumberFormat('es-AR', { style: 'percent', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(frac ?? 0);
+};
+
+
 $(function () {
     InicializaPantallaPresupuesto();
     InicializaEventosPresupuesto();
@@ -292,21 +303,28 @@ function InicializaEventosPresupuesto() {
             }
             else if ($campo.hasClass('input-pre_pvta')) {
                 $c = 'V';
-            }  
-            setTimeout(() => { seleccionaProximoCampo($c, $fila) }, 100);
-            
+            }
+
+            setTimeout(() => {
+                calcularUtilidadMargen();
+                seleccionaProximoCampo($c, $fila)
+            }, 100);
+
         }
     });
 
     // Blur para guardar cambios
     $(document).on('blur', '.input-pre_cantidad, .input-pre_margen, .input-pre_pvta', function () {
-        const $campo = $(this);
-        if ($campo.hasClass('input-pre_cantidad')) {
-            recalcularTotalDesdeCantidad($campo);
-        } else {
-            guardarYAvanzarCampoPresup($campo);
-                //guardarCampoPresup($campo);
-        }
+        //const $campo = $(this);
+        //if ($campo.hasClass('input-pre_cantidad')) {
+        //    recalcularTotalDesdeCantidad($campo);
+        //} else {
+        //    guardarYAvanzarCampoPresup($campo);
+        //    //guardarCampoPresup($campo);
+        //}
+        setTimeout(() => {
+            calcularUtilidadMargen();            
+        }, 100);
     });
 
     // Doble click en cta_denominacion (mantener sin cambios)
@@ -384,7 +402,7 @@ function InicializaEventosPresupuesto() {
         aplicarReadonlyCamposPresup();
 
         setTimeout(() => { actualizarTotalGeneralPresup(); }, 100);
-        
+
 
         const $primer = $('#divPresupuestoDatos').find('input:not([type=hidden]):not([readonly]), textarea:not([readonly]), select:not([disabled])').filter(':visible').first();
         if ($primer.length) {
@@ -609,15 +627,15 @@ function activarEdicionCampoPresup($campo) {
 }
 
 // Helpers
-function parseDecimal(str) {
-    if (typeof str !== 'string') return Number(str);
-    str = str.trim();
-    // Soporta "7604.84" y también "7.604,84"
-    str = str.replace(/\./g, '').replace(',', '.');
-    return parseFloat(str);
-}
+//function parseDecimal(str) {
+//    if (typeof str !== 'string') return Number(str);
+//    str = str.trim();
+//    // Soporta "7604.84" y también "7.604,84"
+//    str = str.replace(/\./g, '').replace(',', '.');
+//    return parseFloat(str);
+//}
 
-function calcularElTotaldelaFila(cantidad, precio,$fila) {
+function calcularElTotaldelaFila(cantidad, precio, $fila) {
     // Calcular y escribir en la celda
     if (!isNaN(cantidad) && !isNaN(precio)) {
         const total = cantidad * precio;
@@ -651,15 +669,15 @@ function guardarYAvanzarCampoPresup($campo) {
     let val_in_alic = parseFloat($fila.data("in-alicuota"));
 
 
-    let cantidad = parseDecimal($fila.find('input.input-pre_cantidad').val());
+    let cantidad = parseFloat($fila.find('input.input-pre_cantidad').val());
     //tenemos el control cantidad más global para luego de operar recalcule los totales.
     const $inCant = $fila.find('input.input-pre_cantidad');
 
     if (esCantid) {
         //multiplicamos la cantidad por el precio de venta.        
-        calcularElTotaldelaFila(cantidad, pvta,$fila);
+        calcularElTotaldelaFila(cantidad, pvta, $fila);
 
-    
+
         if ($inCant.length) {
             setTimeout(() => activarEdicionCampoPresup($inCant), 50);
             return;
@@ -719,7 +737,7 @@ function guardarYAvanzarCampoPresup($campo) {
                     let vta = resp.pvta.p_pvta;
                     //le asignamos el nuevo valor a PVTA
                     const $inPvta = $fila.find('input.input-pre_pvta');
-                    $inPvta.val(vta);
+                    $inPvta.val(vta.toFixed(2));
                     $inPvta.data("originalValue", vta).attr("data-original-value", vta).trigger("change");
                     //calculamos el total de la fila.
                     calcularElTotaldelaFila(cantidad, vta, $fila);
@@ -780,6 +798,8 @@ function guardarYAvanzarCampoPresup($campo) {
                         }
                     }, false, ["Aceptar"], "error!", null);
                 } else {
+                    CerrarWaiting();
+
                     //tenemos el valor calculado
                     let mg = resp.pvta.p_margen;
                     //le asignamos el nuevo valor a PVTA
@@ -804,7 +824,7 @@ function guardarYAvanzarCampoPresup($campo) {
         }
     }
 
-    recalcularTotalDesdeCantidad($inCant); 
+    recalcularTotalDesdeCantidad($inCant);
 }
 
 function seleccionaProximoCampo(campo, $fila) {
@@ -1019,7 +1039,8 @@ async function buscarPresupuestos(btn, pag = 1) {
             $("#divFiltro").collapse("hide");
 
             configurarEventosSeleccionPres();
-
+            
+           
             PostGen({}, buscarMetadataURL, function (obj) {
                 if (obj.error === true) {
                     AbrirMensaje("ATENCIÓN", obj.msg, function () {
@@ -1121,6 +1142,11 @@ function cargarProductosPresupuesto(preId, isUpdate = false) {
         $("#divPresProds").empty().html(html).show();
         // Forzar estado readonly acorde al modo
         aplicarReadonlyCamposPresup();
+
+        setTimeout(() => {
+            finalizarInicializacion();
+            calcularUtilidadMargen();
+        }, 100);
     });
 }
 
@@ -1295,7 +1321,7 @@ function aplicarReadonlyCamposPresup() {
                     $c.val(valor);
                 }
                 else if ($c.hasClass('input-pre_pvta')) {
-                    const valor = parseFloat($c.data("pvta-actual")); 
+                    const valor = parseFloat($c.data("pvta-actual"));
                     $c.val(valor.toFixed(2));
 
                     //rescato la cantidad para recalcular el total
@@ -1314,10 +1340,10 @@ function aplicarReadonlyCamposPresup() {
                 }
                 $c.attr('title', 'Doble click para editar');
 
-                
+
             });
         }
-    }); 
+    });
 }
 
 function crearGridPresupVacioHtml() {
@@ -1325,6 +1351,15 @@ function crearGridPresupVacioHtml() {
     <div class="card h-100">
         <div class="card-header py-1 d-flex justify-content-between align-items-center">
             <h6 class="mb-0">Productos del Presupuesto</h6>
+             <!-- Centro (métricas globales) -->
+            <div class="flex-grow-1 text-center">
+                <span class="fw-bold me-2">Valor de Utilidad Total:</span>
+                <span id="spUtilidadTotal" class="text-danger me-4">-</span>
+
+                <span class="fw-bold me-2">Margen Total:</span>
+                <span id="spMargenTotal" class="text-danger">-</span>
+            </div>
+
             <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarCProducto" title="Agregar Producto" disabled>
                 <i class="bx bx-plus"></i>
             </button>
@@ -1432,8 +1467,8 @@ function agregarProductosAlGrid(productos) {
 
     let esAlternado = $tbody.find('tr').length % 2 !== 0;
 
-    productos.forEach(function (producto,index) {
-        const fila = crearFilaProductoPresupuesto(producto, esAlternado,index+1);
+    productos.forEach(function (producto, index) {
+        const fila = crearFilaProductoPresupuesto(producto, esAlternado, index + 1);
         $tbody.append(fila);
         esAlternado = !esAlternado;
     });
@@ -1442,7 +1477,10 @@ function agregarProductosAlGrid(productos) {
     aplicarReadonlyCamposPresup();
     actualizarTotalGeneralPresup();
     configurarEventosEliminacionProducto();
-    finalizarInicializacion();
+    setTimeout(() => {
+        finalizarInicializacion();
+        calcularUtilidadMargen();
+    }, 100);
 }
 
 /**
@@ -1825,7 +1863,7 @@ $(document).on('click', '#btnAbmAceptar', function (e) {
  */
 function validarPresupuesto(abm) {
     console.log(`🔍 Validando presupuesto (Modo: ${abm})...`);
-   
+
     // ✅ VALIDACIÓN 1: Cliente obligatorio
     const ctaId = $('#cta_id').val();
     if (!ctaId || ctaId.trim() === '') {
@@ -1844,7 +1882,7 @@ function validarPresupuesto(abm) {
             }
         }
 
-        
+
     }
 
     // ✅ VALIDACIÓN 2: Tipo obligatorio
@@ -1986,6 +2024,34 @@ function obtenerDatosFormularioPresupuesto() {
     return datos;
 }
 
+function calcularUtilidadMargen() {
+    //busco la tabla y presento la variable con las filas
+    const $filas = $('#tbGridPresupuestoProds tbody tr');
+    let costoTotal = 0;
+    let utilidadTotal = 0;
+    let margenTotal = 0;
+    $filas.each(function () {
+        const $fila = $(this);
+        if ($fila.find('td[colspan]').length > 0) return;
+
+        //costo total = (p_pcosto * pre_cantidad)
+        const preCosto = parseFloat($fila.data('pre-pcosto')) || 0;
+        const cantidad = parseFloat($fila.find('.input-pre_cantidad').val().replace(/,/g, '')) || 0;
+        costoTotal += preCosto * cantidad;
+        //utilidad total = p_pcosto * pre_cantidad * (pre_margen / 100)
+        const margen = parseFloat($fila.find('.input-pre_margen').val().replace(/,/g, '')) || 0;
+        utilidadTotal += preCosto * cantidad * (margen / 100);
+    });
+
+    //margen total = (utilidad total / costo total) * 100
+    if (costoTotal > 0) {
+        margenTotal = (utilidadTotal / costoTotal) * 100;
+    }
+
+    $("#spUtilidadTotal").text(fmtCurrency(utilidadTotal));
+    $("#spMargenTotal").text(fmtPercent(margenTotal));
+}
+
 /**
  * ✅ Obtiene los productos del grid
  * @returns {Array} Lista de PresupuestoProductoDto
@@ -1999,7 +2065,7 @@ function obtenerProductosDelGrid() {
 
         // ✅ OPTIMIZACIÓN: Saltar filas vacías o de mensaje en una sola verificación
         if ($fila.find('td[colspan]').length > 0) return;
-        const preItem = parseInt($fila.data('pre-item')) || 0;
+
         // ✅ OPTIMIZACIÓN: Extraer datos del DOM usando data attributes (más eficiente)
         const pId = $fila.data('p-id');
         if (!pId) return; // Si no hay ID, saltar esta fila
@@ -2027,16 +2093,16 @@ function obtenerProductosDelGrid() {
         // ✅ Construir objeto PresupuestoProductoDto (coincide exactamente con el DTO de C#)
         productos.push({
             // Propiedades de productos
-            pre_item: preItem,
+            pre_item: parseInt($fila.find('td:nth-child(1)').data("pre_item")),
             p_id: pId,
-            p_des: $fila.find('td:nth-child(2)').text().trim(),
+            p_des: $fila.find('td:nth-child(3)').text().trim(),
             iva_situacion: ivaSituacion,
             iva_alicuota: ivaAlicuota,
             in_alicuota: inAlicuota,
             pre_cantidad: cantidad,
             pre_pcosto: preCosto,
             pre_pneto: preNeto,
-            pre_margen: margen,
+            pre_pmargen: margen,
             pre_pvta: precioVenta,
             pre_cantidad_ent: 0, // ✅ Campo requerido por PresupuestoProductoDto
             pre_total: total,
