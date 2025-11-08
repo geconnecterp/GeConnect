@@ -49,6 +49,7 @@ namespace gc.infraestructura.Enumeraciones
 		R036_FlujoDeIngresos = 36,
 		R037_ProyeccionDeEgresos = 37,
 		R039_AnticipoDeEmpleados = 39,
-		R040_DetalleDeAnticipo = 40
+		R040_DetalleDeAnticipo = 40,
+		R041_DetalleDeLiquidacionDeHaberes = 41
 	}
 }

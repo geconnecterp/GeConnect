@@ -28,6 +28,17 @@
 @Html.Hidden("SelectedValueMes", Model.SelectedValueMes)
 <div class="container mt-2" id="divLiquidacionDeEmpleado">
 	<div class="mx-auto" style="max-width: 1300px;">
+		<div class="collapse col-md-2">
+			<div class="d-flex justify-content-sm-end">
+				<!-- Botón Imprimir -->
+				<button type="button" class="btn btn-golden btn-sm mt-1 me-1 btnImprimir" title="Imprimir">
+					<i class="bx bx-printer"></i>
+				</button>
+				<button type="button" class="btn btn-golden btn-sm mt-1 me-1 btnImprimir" id="btnImprimirTemp" title="Imprimir Temporal">
+					<i class="bx bx-printer"></i>
+				</button>
+			</div>
+		</div>
 		<div class="row align-items-center mb-2">
 			<div class="col-12">
 				<div class="input-group input-group-sm" id="divInputs">

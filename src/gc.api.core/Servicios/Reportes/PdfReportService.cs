@@ -70,7 +70,8 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R036_FlujoDeIngresos, new R036_FlujoDeIngresos(uow,consSv, finServ,empresa,ctaSv, logger) },
 				{ InfoReporte.R037_ProyeccionDeEgresos, new R037_ProyeccionDeEgresos(uow,consSv, finServ,empresa,ctaSv, logger) },
 				{ InfoReporte.R039_AnticipoDeEmpleados, new R039_AnticipoDeEmpleado(uow,consSv, finServ,empresa,ctaSv, logger) },
-				{ InfoReporte.R040_DetalleDeAnticipo, new R040_DetalleDeAnticipo(uow,consSv, finServ,empresa,ctaSv, logger) }
+				{ InfoReporte.R040_DetalleDeAnticipo, new R040_DetalleDeAnticipo(uow,consSv, finServ,empresa,ctaSv, logger) },
+				{ InfoReporte.R041_DetalleDeLiquidacionDeHaberes, new R041_DetalleLiquidacionDeHaberes(uow,consSv, finServ,empresa,ctaSv, logger) }
 			}; 
             _logger = logger;
         }

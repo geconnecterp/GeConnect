@@ -3082,6 +3082,70 @@ namespace gc.infraestructura.Helpers
 			return celda;
 		}
 
+		public static void CargarLiquidacionDeHaberesDeEmpleados(Document pdf, List<LiqEmpleadoDetalleDto> lista, Font fuenteEtiqueta, Font fuenteValor)
+		{
+			var agrupadoPorEmpleado = lista.GroupBy(x => x.cta_id);
+
+			foreach (var grupo in agrupadoPorEmpleado)
+			{
+				var primer = grupo.First();
+
+				// Nueva hoja por empleado
+				pdf.NewPage();
+
+				// Encabezado del empleado
+				var encabezado = new Paragraph($"Empleado: {primer.cta_denominacion} - Legajo: {primer.cta_emp_legajo}", fuenteEtiqueta);
+				encabezado.SpacingAfter = 10f;
+				pdf.Add(encabezado);
+
+				// Tabla de anticipos/documentos
+				var tabla = new PdfPTable(5) { WidthPercentage = 100 };
+				tabla.SetWidths(new float[] { 30, 10, 15, 20, 25 });
+
+				// Encabezados
+				AgregarCelda(tabla, "Concepto", fuenteEtiqueta);
+				AgregarCelda(tabla, "Cuota", fuenteEtiqueta);
+				AgregarCelda(tabla, "Vto.", fuenteEtiqueta);
+				AgregarCelda(tabla, "Débito", fuenteEtiqueta);
+				AgregarCelda(tabla, "Dto. Sueldo", fuenteEtiqueta);
+
+				decimal totalDto = 0;
+
+				foreach (var item in grupo)
+				{
+					AgregarCelda(tabla, item.concepto, fuenteValor);
+					AgregarCelda(tabla, item.cm_compte_cuota.ToString(), fuenteValor);
+					AgregarCelda(tabla, item.cv_fecha_vto.ToString("dd/MM/yyyy"), fuenteValor);
+					AgregarCelda(tabla, FormatearDecimal(item.cv_importe), fuenteValor);
+					AgregarCelda(tabla, FormatearDecimal(item.cv_importe_imputado), fuenteValor);
+
+					totalDto += item.cv_importe_imputado;
+				}
+
+				// Total
+				var celdaTotal = new PdfPCell(new Phrase("Total Descuento:", fuenteEtiqueta)) { Colspan = 4, HorizontalAlignment = Element.ALIGN_RIGHT };
+				tabla.AddCell(celdaTotal);
+				tabla.AddCell(new PdfPCell(new Phrase(FormatearDecimal(totalDto), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				pdf.Add(tabla);
+			}
+		}
+
+		private static void AgregarCelda(PdfPTable tabla, string texto, Font fuente)
+		{
+			var celda = new PdfPCell(new Phrase(texto, fuente))
+			{
+				HorizontalAlignment = Element.ALIGN_LEFT,
+				Padding = 4f
+			};
+			tabla.AddCell(celda);
+		}
+
+		private static string FormatearDecimal(decimal valor)
+		{
+			return valor.ToString("#,##0.00", CultureInfo.InvariantCulture); // coma miles, punto decimal
+		}
+
 
 		public static PdfPTable GenerarListadoDesdeLista<T>(
 			List<T> lista,
