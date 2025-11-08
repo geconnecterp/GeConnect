@@ -206,7 +206,7 @@
 			public const string SP_F_AN_ANULA_CONFIRMAR = "SPGECO_F_AN_Anula_Confirmar";
 			public const string SP_F_LE_PROXIMA = "SPGECO_F_LE_proxima";
 			public const string SP_F_LE_CARGA = "SPGECO_F_LE_Carga";
-			public const string SP_F_LE_CONFIRMAR = "SPGECO_LE_Confirmar";
+			public const string SP_F_LE_CONFIRMAR = "SPGECO_F_LE_Confirmar";
 			#endregion
 
 			#region SP Depositos

@@ -1,6 +1,7 @@
 ﻿using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using DocumentFormat.OpenXml.Office2010.Excel;
+using ExcelDataReader;
 using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
@@ -110,7 +111,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 			if (formato.Tipo == "XLSX")
 			{
-				var salida = ProcesadorArchivo.ParsearXlsx(archivoImportar, formato);
+				var salida = ProcesadorArchivo.ParsearExcelConDeteccionAutomatica(archivoImportar, formato);
 				ListaTempArchivoParaImportar = salida;
 				return Ok(salida);
 			}
@@ -252,6 +253,8 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					json_topes = json_file
 				};
 				Console.WriteLine($"json_file: {request.json_topes}");
+				if (!string.IsNullOrEmpty(json_file))
+					LiqTopeLista = JsonConvert.DeserializeObject<List<LiqTopeDto>>(json_file);
 				var lista = _financieroServicio.GetLiqEmpCarga(request, TokenCookie);
 				if (lista == null || lista.Count <= 0)
 					return Json(new { error = true, warn = false, msg = "Ha ocurrido un error al intentar obtener los datos desde la importación." });
@@ -337,6 +340,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return Json(new { error = true, warn = false, msg = "No autenticado." });
 
+				//Actualizamos el valor en la lista de detalle
 				var listaTemp = LiqEmpleadoDetalleLista;
 				var listaTempFiltrada = listaTemp.Where(x => x.cta_id == cta_id && x.dia_movi == dia_movi && x.cm_compte == cm_compte
 												&& x.tco_id == tco_id && x.cm_compte_cuota == cm_compte_cuota).ToList();
@@ -346,7 +350,25 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				}
 				listaTempFiltrada[0].cv_importe_imputado = val;
 				LiqEmpleadoDetalleLista = listaTemp;
-				return Json(new { error = false, warn = false, msg = "", data = new { id = listaTempFiltrada[0].id, importe = val } });
+				//Fin de actualizacion de item en detalle
+
+				//Actualizamos el valor en la lista de encabezado
+				var listaTempEnc = LiqEmpleadoEncabezadoLista;
+				var listaTempEncFiltrada = listaTempEnc.Where(x => x.cta_id == cta_id).ToList();
+				if (listaTempEncFiltrada == null || listaTempEncFiltrada.Count <= 0)
+				{
+					return Json(new { error = true, warn = false, msg = "No se ha encontrado el elemento de encabezado para actualizar." });
+				}
+				var dtoSueldo = LiqEmpleadoDetalleLista.Where(x => x.cta_id == cta_id).Sum(y => y.cv_importe_imputado);
+				var pendiente = listaTempEncFiltrada[0].cv_importe_tot_pend - dtoSueldo; //TODO MARCE: Pendiente de respueta de Carlos
+				var porc = 0.00M;
+				if (listaTempEncFiltrada[0].tope > 0)
+					porc = RedondearHaciaArriba((dtoSueldo / listaTempEncFiltrada[0].tope), 2);
+
+				listaTempEncFiltrada[0].cv_importe_tot_imputado = dtoSueldo;	// Dto Sueldo igual a la suma de Dto sueldo del detalle
+				listaTempEncFiltrada[0].porc_imputado_sobre_tope = porc;		// %:  es igual a Dto Sueldo / Tope
+				listaTempEncFiltrada[0].cv_importe_tot_pend = pendiente;		// Pendiente: igual a Obligaciones empleados – Dto Sueldo
+				return Json(new { error = false, warn = false, msg = "", data = new { listaTempFiltrada[0].id, importe = val, dtoSueldo, pendiente, porc } });
 			}
 			catch (NegocioException ex)
 			{
@@ -370,6 +392,18 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				request.adm_id = AdministracionId;
 				request.json_tope = JsonConvert.SerializeObject(LiqTopeLista);
 				request.json_detalle = JsonConvert.SerializeObject(MapperDetalle(LiqEmpleadoDetalleLista));
+
+				#region impresion de parametros
+				Console.WriteLine($"json_tope: {request.json_tope}");
+				Console.WriteLine($"json_detalle: {request.json_detalle}");
+				Console.WriteLine($"periodo: {request.periodo}");
+				Console.WriteLine($"mes: {request.mes}");
+				Console.WriteLine($"porc_tope: {request.porc_tope}");
+				Console.WriteLine($"actualiza_tope: {request.actualiza_tope}");
+				Console.WriteLine($"concepto: {request.concepto}");
+				Console.WriteLine($"usu_id: {request.usu_id}");
+				Console.WriteLine($"adm_id: {request.adm_id}");
+				#endregion
 				var respuesta = _financieroServicio.FinancieroLiqEmpleadoConfirmar(request, TokenCookie);
 
 				return AnalizarRespuesta(respuesta, "La Liquidación de ha confirmado con éxito.");
@@ -515,6 +549,63 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				}
 				return resultado;
 			}
+
+			public static List<Dictionary<string, object>> ParsearExcelConDeteccionAutomatica(IFormFile archivo, FormatoExtractoConfig config)
+			{
+				using var stream = archivo.OpenReadStream();
+
+				// Detectar si es XLS (binario) o XLSX (OpenXML)
+				byte[] cabecera = new byte[8];
+				stream.Read(cabecera, 0, 8);
+				stream.Position = 0; // resetear el stream
+
+				bool esXlsBinario = cabecera[0] == 0xD0 && cabecera[1] == 0xCF; // firma típica de .xls
+				var resultado = new List<Dictionary<string, object>>();
+
+				if (esXlsBinario)
+				{
+					// XLS binario → usar ExcelDataReader
+					System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+					using var reader = ExcelReaderFactory.CreateReader(stream);
+
+					int filaActual = 0;
+					while (reader.Read())
+					{
+						if (filaActual++ == 0) continue; // salta encabezado
+
+						var fila = new Dictionary<string, object>();
+						for (int i = 0; i < config.Columnas.Count; i++)
+						{
+							var nombre = config.Columnas[i];
+							var valor = reader.GetValue(i)?.ToString() ?? "";
+							fila[nombre] = valor;
+						}
+						resultado.Add(fila);
+					}
+				}
+				else
+				{
+					// XLSX → usar ClosedXML
+					using var workbook = new XLWorkbook(stream);
+					var hoja = workbook.Worksheets.First();
+					var rows = hoja.RangeUsed().RowsUsed().Skip(1);
+
+					foreach (var row in rows)
+					{
+						var fila = new Dictionary<string, object>();
+						for (int i = 0; i < config.Columnas.Count; i++)
+						{
+							var nombre = config.Columnas[i];
+							var valor = row.Cell(i + 1).GetValue<string>() ?? "";
+							fila[nombre] = valor;
+						}
+						resultado.Add(fila);
+					}
+				}
+
+				return resultado;
+			}
+
 		}
 
 		#endregion
@@ -541,6 +632,12 @@ namespace gc.sitio.Areas.Financieros.Controllers
 		#endregion
 
 		#region Métodos Privados
+		private static decimal RedondearHaciaArriba(decimal valor, int decimales)
+		{
+			decimal factor = (decimal)Math.Pow(10, decimales);
+			return Math.Ceiling(valor * factor) / factor;
+		}
+
 		private List<DetalleLiquidacion> MapperDetalle(List<LiqEmpleadoDetalleDto> listaDto)
 		{
 			var lista = new List<DetalleLiquidacion>();

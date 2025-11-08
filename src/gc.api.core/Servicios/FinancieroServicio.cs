@@ -966,10 +966,11 @@ namespace gc.api.core.Servicios
 				new("@mes",request.mes),
 				new("@concepto",request.concepto),
 				new("@actualiza_tope",request.actualiza_tope),
-				new("@json_tope",request.json_tope),
-				new("@json_detalle",request.json_detalle),
-				new("@adm_id",request.adm_id),
+				new("@json_topes",request.json_tope),
+				new("@porc_tope",request.porc_tope),
+				new("@json_dto",request.json_detalle),
 				new("@usu_id",request.usu_id),
+				new("@adm_id",request.adm_id),
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return listaTemp;

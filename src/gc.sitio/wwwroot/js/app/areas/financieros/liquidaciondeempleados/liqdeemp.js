@@ -1,19 +1,106 @@
-﻿let liqEmpDetalleActualEnLista = null;
+﻿const campos = [
+	'#listaAnio',
+	'#listaMes',
+	'#btnCargar'
+	//'input[name="PorcTope"]',
+	//'input[name="Concepto"]',
+	//'#chkActualizaTope'
+];
+
+let liqEmpDetalleActualEnLista = null;
 $(function () {
 
 	$(document).on("click", "#btnCargar", abrirModalImportarArchivo);
 	$(document).on("click", "#btnProcesarArchivo", handleProcesarArchivo);
 	$(document).on("click", "#btnCancelar", handleCancelar);
+	$(document).on("click", "#btnConfirmar", ValidarAntesDeConfirmarCargaDeLiquidacion);
 
 	getMaskForIntegerMin50Max100($("#PorcTope"));
 });
 
-function validarPeriodoDentroDeRango() {
+function DeshabilitarCampos(valor) {
+	campos.forEach(selector => {
+		$(selector).prop('disabled', valor);
+	});
+
+}
+
+function ValidarAntesDeConfirmarCargaDeLiquidacion() {
+	var concepto = $("#Concepto").val();
+	var porc = $("#PorcTope").inputmask('unmaskedvalue');
+	var resultadoDeValidarFechas = validarPeriodoDentroDeRango(true);
+	var filas = $("#tbListaLiqEmpEncabezado tbody tr").length;
+	if (!resultadoDeValidarFechas) {
+		return false;
+	}
+	else if (concepto == "") {
+		AbrirMensaje("ATENCIÓN", "Debe indicar un valor para 'Concepto'.", function () {
+			$("#msjModal").modal("hide");
+			$("#Concepto").trigger('focus');
+			//return true;
+		}, false, ["Aceptar"], "error!", null);
+		return false;
+	}
+	else if (porc < 50 || porc > 100) {
+		AbrirMensaje("ATENCIÓN", "Debe indicar un valor válido para 'Porc. Tope'.", function () {
+			$("#msjModal").modal("hide");
+			$("#PorcTope").trigger('focus');
+			//return true;
+		}, false, ["Aceptar"], "error!", null);
+		return false;
+	}
+	else if (filas <= 0) {
+		AbrirMensaje("ATENCIÓN", "No existen datos de liquidación para confirmar.", function () {
+			$("#msjModal").modal("hide");
+			$("#PorcTope").trigger('focus');
+			//return true;
+		}, false, ["Aceptar"], "error!", null);
+		return false;
+	}
+	else {
+		handleConfirmarCargaDeLiquidacion();
+	}
+}
+
+function handleConfirmarCargaDeLiquidacion() {
+	AbrirWaiting();
+	DeshabilitarCampos(false);
+	var periodo = $("#listaAnio").val();
+	var mes = $("#listaMes").val();
+	var concepto = $("#Concepto").val();
+	var actualiza_tope = $("#chkActualizaTope").is(":checked");
+	var porc_tope = $("#PorcTope").inputmask('unmaskedvalue');
+	var data = { periodo, mes, concepto, actualiza_tope, porc_tope };
+	PostGen(data, financieroLiqEmpleadoConfirmarUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "succ!", null);
+			LimpiarCampos();
+			DeshabilitarCampos(false);
+		}
+	});
+}
+
+function validarPeriodoDentroDeRango(mostrarMensaje) {
 	const anioSeleccionado = parseInt($('#listaAnio').val(), 10);
 	const mesSeleccionado = parseInt($('#listaMes').val(), 10); // formato MM
 
 	if (isNaN(anioSeleccionado) || isNaN(mesSeleccionado)) {
-		console.warn('Periodo incompleto: año o mes no seleccionados.');
+		if (mostrarMensaje) {
+			AbrirMensaje("ATENCIÓN", "Periodo incompleto: año o mes no seleccionados.", function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
 		return false;
 	}
 
@@ -30,18 +117,22 @@ function validarPeriodoDentroDeRango() {
 	console.log('fechaActual:', fechaActual);
 
 	if (fechaSeleccionada > fechaActual) {
-		AbrirMensaje("ATENCIÓN", "La combinación de año y mes no puede superar el mes actual.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "error!", null);
+		if (mostrarMensaje) {
+			AbrirMensaje("ATENCIÓN", "La combinación de año y mes no puede superar el mes actual.", function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
 		return false;
 	}
 
 	if (fechaSeleccionada < fechaMinima) {
-		AbrirMensaje("ATENCIÓN", "La combinación de año y mes no puede ser anterior a 6 meses respecto al mes actual.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "error!", null);
+		if (mostrarMensaje) {
+			AbrirMensaje("ATENCIÓN", "La combinación de año y mes no puede ser anterior a 6 meses respecto al mes actual.", function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
 		return false;
 	}
 
@@ -82,6 +173,7 @@ function CancelarCargaLiqEmp() {
 		}
 		else {
 			LimpiarCampos();
+			DeshabilitarCampos(false);
 		}
 	});
 }
@@ -89,14 +181,14 @@ function CancelarCargaLiqEmp() {
 function LimpiarCampos() {
 	$("#tbListaLiqEmpDetalle tbody").empty();
 	$("#tbListaLiqEmpEncabezado tbody").empty();
-	$("#listaAnio").val("");
-	$("#listaMes").val("");
+	$("#listaAnio").val($("#SelectedValueAnio").val());
+	$("#listaMes").val($("#SelectedValueMes").val());
 	$("#PorcTope").val("50");
 	$("#Concepto").val("");
 }
 
 function abrirModalImportarArchivo() {
-	if (!validarPeriodoDentroDeRango()) {
+	if (!validarPeriodoDentroDeRango(true)) {
 		return; // aborta si la validación falla
 	}
 	AbrirWaiting();
@@ -415,6 +507,7 @@ function ProcesarArchivoImportado() {
 			//Cerrar Modal y Actualizar la lista
 			$("#modalImportarArchivo").modal("hide");
 			ObtenerGrillaEncabezado();
+			DeshabilitarCampos(true);
 		}
 	});
 }
@@ -445,6 +538,16 @@ function getMaskForIntegerMin50Max100(selector) {
 	});
 }
 
+
+const formatearNumero = (valor, opciones = {}) => {
+	const formato = new Intl.NumberFormat('en-US', {
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2,
+		useGrouping: true,
+		...opciones
+	});
+	return formato.format(parseFloat(valor) || 0);
+};
 
 
 
@@ -512,7 +615,7 @@ function ActualizarLiqEmpDetalle(row, campoActual) {
 	var val = $(campoActual).val();
 	var data = { cta_id, dia_movi, cm_compte, tco_id, cm_compte_cuota, id, val, idSeleccionado };
 	PostGen(data, editarItemEnLiqEmpDetalleUrl, function (obj) {
-		CerarWaiting();
+		CerrarWaiting();
 		if (obj.error === true) {
 			AbrirMensaje("ATENCIÓN", obj.msg, function () {
 				$("#msjModal").modal("hide");
@@ -522,6 +625,17 @@ function ActualizarLiqEmpDetalle(row, campoActual) {
 		else {
 			//Actualizar valores en la grilla
 			$(`.input-importe[data-id="${idSeleccionado}"]`)[0].inputmask.setValue(obj.data.importe); // ✅ mantiene la máscara
+
+			// Buscar la fila en la tabla de encabezado con el mismo cta_id
+			const filaEncabezado = $(`#tbListaLiqEmpEncabezado tbody tr[data-cta-id="${cta_id}"]`);
+
+			if (filaEncabezado.length) {
+				// Actualizar columnas específicas
+				filaEncabezado.find('.columna-pendiente').text(formatearNumero(obj.data.pendiente));
+				filaEncabezado.find('.columna-stsueldo').text(formatearNumero(obj.data.dtoSueldo));
+				filaEncabezado.find('.columna-porc').text(formatearNumero(obj.data.porc, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+			}
+
 		}
 	});
 }
