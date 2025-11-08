@@ -41,7 +41,6 @@ namespace gc.api.core.Servicios.Reportes
 			_apiproductoServicio = apiProductoServicio;
 		}
 
-		//TODO MARCE: Completar el reporte una vez que tengas certezas sobre los origenes de datos
 		public string Generar(ReporteSolicitudDto solicitud)
 		{
 			float[] anchos;
@@ -221,7 +220,6 @@ namespace gc.api.core.Servicios.Reportes
 			//hago el modelo de dato aca ya que necesito los datos de la cuenta
 			var regs = registros.Select(x => new
 			{
-				//TODO MARCE: Agregar datos aca para generar el TXT
 			}).ToList();
 
 
@@ -246,7 +244,6 @@ namespace gc.api.core.Servicios.Reportes
 			//hago el modelo de dato aca ya que necesito los datos de la cuenta
 			var regs = registros.Select(x => new
 			{
-				//TODO MARCE: Agregar datos aca para generar el XLS
 			}).ToList();
 
 			#endregion

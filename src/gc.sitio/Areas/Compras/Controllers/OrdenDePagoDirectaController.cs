@@ -1385,8 +1385,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 					cm_gravado = ListaTotales.Where(x => x.id.Equals("NetoGravado")).Sum(y => y.Importe),
 					cm_iva = ListaTotales.Where(x => x.id.Contains("IVA")).Sum(y => y.Importe),
 					cm_otros_ng = ListaTotales.Where(x => x.id.Equals("OtrosTributos")).Sum(y => y.Importe),
-					cm_ii = ListaTotales.Where(x => x.id.Equals("II")).Sum(y => y.Importe), //TODO MARCE: VERIFICAR ESTE VALOR, SI EXISTE EN LOS TOTALES
-					cm_percepciones = ListaTotales.Where(x => x.id.Equals("PERCEP")).Sum(y => y.Importe) //TODO MARCE: VERIFICAR ESTE VALOR, SI EXISTE EN LOS TOTALES
+					cm_ii = ListaTotales.Where(x => x.id.Equals("II")).Sum(y => y.Importe), 
+					cm_percepciones = ListaTotales.Where(x => x.id.Equals("PERCEP")).Sum(y => y.Importe) 
 					#endregion
 				};
 				listaEncabezado.Add(encabezado);

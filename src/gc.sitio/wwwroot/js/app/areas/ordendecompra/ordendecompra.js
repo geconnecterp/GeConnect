@@ -1373,8 +1373,6 @@ function configurarEventosEdicionOptimizado() {
 			if (esSecuencia01 && fueModificado) ActualizarProductoEnOcDebounced(row, this);
 			//else if (esMargen) calcularPrecioVentaAPIDebounced(row);
 			//else if (esPrecioVenta) calcularPrecioVentaMargenAPIDebounced(row);
-
-			///TODO MARCE: Aca estimo deebería llamar al metodo para recalcular que utilizaba anteriormente
 		}
 	});
 

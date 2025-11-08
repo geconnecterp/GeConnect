@@ -790,8 +790,6 @@ function configurarEventosEdicionOptimizadoGridLiqEmpDetalle() {
 			if (esSecuencia01 && fueModificado) ActualizarLiqEmpDetalleDebounced(row, this);
 			//else if (esMargen) calcularPrecioVentaAPIDebounced(row);
 			//else if (esPrecioVenta) calcularPrecioVentaMargenAPIDebounced(row);
-
-			///TODO MARCE: Aca estimo deebería llamar al metodo para recalcular que utilizaba anteriormente
 		}
 	});
 

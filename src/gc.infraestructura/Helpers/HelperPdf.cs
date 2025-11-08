@@ -1555,9 +1555,9 @@ namespace gc.infraestructura.Helpers
 
 			// FILA 4 
 			tablaDatos.AddCell(CeldaSinBorde("Flete:", fuenteEtiqueta, Element.ALIGN_RIGHT));
-			tablaDatos.AddCell(CeldaSinBorde("No Pago", fuenteValor, Element.ALIGN_LEFT)); //TODO MARCE: Consultar que sorcho pongo aca, es decir, de donde saco este valor
+			tablaDatos.AddCell(CeldaSinBorde("No Pago", fuenteValor, Element.ALIGN_LEFT)); 
 			tablaDatos.AddCell(CeldaSinBorde("Dep. Entrega:", fuenteEtiqueta, Element.ALIGN_RIGHT));
-			tablaDatos.AddCell(CeldaSinBorde("Santa Lucia", fuenteValor, Element.ALIGN_LEFT)); //TODO MARCE: Consultar que sorcho pongo aca, es decir, de donde saco este valor
+			tablaDatos.AddCell(CeldaSinBorde("Santa Lucia", fuenteValor, Element.ALIGN_LEFT)); 
 
 			PdfPCell celdaSubTabla = new PdfPCell(tablaDatos)
 			{

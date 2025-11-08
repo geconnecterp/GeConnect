@@ -303,7 +303,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 				if (req.DataObject.Count <= 0)
 					return new Resultado() { Exito = false, Mensaje = "Objeto origen vacío." };
 
-				//TODO Marce: Controlar si es conveniente que esta validación siga estando, ya que lo que tengo que hacer es validar lo que quiero insertar (req.DataObject) contra lo que ya tengo (ListaValoresDesdeObligYCred)
+				//Controlar si es conveniente que esta validación siga estando, ya que lo que tengo que hacer es validar lo que quiero insertar (req.DataObject) contra lo que ya tengo (ListaValoresDesdeObligYCred)
 				//que es lo que hago en el if que sigue. De esta forma evito que se superpongan validaciones desde diferentes ambitos o contextos
 				//Lo voy a comentar, y probar
 				//if (!NoExisteElItem(req)) 
