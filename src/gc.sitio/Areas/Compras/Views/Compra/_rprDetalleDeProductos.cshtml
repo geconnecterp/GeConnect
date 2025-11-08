@@ -28,7 +28,7 @@
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					var resCantidad = string.Format(CultureInfo.InvariantCulture, "{0:#,0.000}", @item.Cantidad);
 					var resUnidad = string.Format(CultureInfo.InvariantCulture, "{0:#,0.000}", @item.Unidad);
-					<tr class="@clase" onclick="selectDetalleDeProdRow(this)" class="sortme" id="productRow">
+					<tr class="@clase sortme" onclick="selectDetalleDeProdRow(this)" id="productRow">
 						<td class="table-fontsize align-center tiny-row">@item.P_id</td>
 						<td class="table-fontsize align-left tiny-row">@item.P_desc</td>
 						<td class="table-fontsize align-center tiny-row">@item.P_id_prov</td>
