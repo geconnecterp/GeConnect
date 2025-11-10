@@ -81,7 +81,6 @@ function AgregarProducto() {
 				}, false, ["Aceptar"], "error!", null);
 			}
 			else {
-				//TODO Marce: Recargar la valorizacion luego de agregar el producto (cuando se recibe 0 en la respuesta de agregar producto)
 				$("#modalAgregarProducto").modal("hide");
 				CargarDatosParaValorizar($("#cm_compte").val());
 			}
@@ -1673,8 +1672,6 @@ function configurarEventosEdicionOptimizado() {
 			if (esSecuencia01 && fueModificado) ActualizarProductoEnDetalleRprSeccionPrecioDebounced(row, this);
 			else if (esSecuencia02 && fueModificado) ActualizarProductoEnDetalleRprSeccionFacturaDebounced(row, this);
 			//else if (esPrecioVenta) calcularPrecioVentaMargenAPIDebounced(row);
-
-			///TODO MARCE: Aca estimo deebería llamar al metodo para recalcular que utilizaba anteriormente
 		}
 	});
 
@@ -1900,7 +1897,7 @@ function ActualizarProductoEnDetalleRprSeccionPrecio(row, campoActual) {
 	}
 	else {
 		var pId = row.data('p-id');
-		//var pId = pIdEnOcSeleccionado; ///TODO MARCE: Seguir aca, completando los metodos de actualizacion de los registros, luegos de editar algun campo
+		//var pId = pIdEnOcSeleccionado; 
 		var field = $(campoActual).data('field');
 		var val = $(campoActual).val();
 		var data = { pId, field, val };

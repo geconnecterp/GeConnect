@@ -44,7 +44,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			//PARA MODULO DE IMPRESION
 			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
 			_modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO); //identifico los datos del modulo que necesito: TEC
-			_modulo_2 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_2); //identifico los datos del modulo que necesito: COP TODO MARCE: Reemplazar cuando tenga el reporte en la tarea
+			_modulo_2 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_2); //identifico los datos del modulo que necesito: COP 
 			_docMSv = docManager; //instancio el servicio de impresión
 		}
 

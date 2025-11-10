@@ -385,7 +385,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					return Json(new { error = true, warn = false, msg = "No se ha encontrado el elemento de encabezado para actualizar." });
 				}
 				var dtoSueldo = LiqEmpleadoDetalleLista.Where(x => x.cta_id == cta_id).Sum(y => y.cv_importe_imputado);
-				var pendiente = listaTempEncFiltrada[0].cv_importe_tot_pend - dtoSueldo; //TODO MARCE: Pendiente de respueta de Carlos
+				var pendiente = listaTempEncFiltrada[0].cv_importe_tot_pend - dtoSueldo; 
 				var porc = 0.00M;
 				if (listaTempEncFiltrada[0].tope > 0)
 					porc = RedondearHaciaArriba((dtoSueldo / listaTempEncFiltrada[0].tope), 2);

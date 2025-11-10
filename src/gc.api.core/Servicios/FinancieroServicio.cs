@@ -975,5 +975,36 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<LiqEmpleadoDetalleParaReporteDto> GetLiqEmpDetalleParaReporte(string le_compte)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_LE_DETALLE;
+			var ps = new List<SqlParameter>()
+			{
+				new("@le_compte",le_compte),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<LiqEmpleadoDetalleParaReporteDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<LiqDeEmpleadoListaDto> BuscarLiquidacionesDeEmpleados(ConsultaLiqDeEmpleadoRequest filtros)
+		{
+			filtros.Pagina = filtros.Pagina == null || filtros.Pagina <= 0 ? _pagSet.DefaultPageNumber : filtros.Pagina;
+			filtros.Registros = filtros.Registros == null || filtros.Registros <= 0 ? _pagSet.DefaultPageSize : filtros.Registros;
+
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_LE_LISTA;
+			var ps = new List<SqlParameter>
+			{
+				new("@fecha_d", filtros.desde),
+				new("@fecha_h", filtros.hasta),
+			};
+			ps.Add(new SqlParameter("@registros", filtros.Registros));
+			ps.Add(new SqlParameter("@pagina", filtros.Pagina));
+			ps.Add(new SqlParameter("@ordenar", filtros.Sort ?? ""));
+
+			List<LiqDeEmpleadoListaDto> movFinan = _repository.EjecutarLstSpExt<LiqDeEmpleadoListaDto>(sp, ps, true);
+
+			return movFinan;
+		}
 	}
 }
