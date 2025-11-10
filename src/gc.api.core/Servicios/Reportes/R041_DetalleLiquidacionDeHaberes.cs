@@ -53,7 +53,7 @@ namespace gc.api.core.Servicios.Reportes
 				#region Obteniendo registros desde la base de datos
 				string tit;
 				string subtit;
-				List<LiqEmpleadoDetalleDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
+				List<LiqEmpleadoDetalleParaReporteDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
 
 				solicitud.Titulo = tit;
 				solicitud.SubTitulo = subtit;
@@ -126,14 +126,39 @@ namespace gc.api.core.Servicios.Reportes
 			}
 		}
 
-		private List<LiqEmpleadoDetalleDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo, out string subtitulo)
+		private List<LiqEmpleadoDetalleParaReporteDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo, out string subtitulo)
 		{
-			titulo = "Liquidación para Haberes Nº 00-00000144 \t Mes: 08 Año: 2020";
-			subtitulo = "Aplicado el 26/08/2021 - Concepto: la chocha";
-			return new List<LiqEmpleadoDetalleDto>();
+			string le_compte = string.Empty;
+			try
+			{
+				le_compte = solicitud.Parametros.GetValueOrDefault("id", "").ToString();
+				var lista = _financieroServicio.GetLiqEmpDetalleParaReporte(le_compte);
+				if (lista==null || lista.Count==0)
+				{
+					titulo = $"Liquidación para Haberes Nº {le_compte} \t Mes: ";
+					subtitulo = "Error";
+					return [];
+				}
+				var unItem = lista.FirstOrDefault();
+				var periodo = unItem?.le_periodo;
+				var anio = periodo!=null && periodo.Length>=6 ? periodo.Substring(0,4) : "0000";
+				var mes = periodo != null && periodo.Length >= 6 ? periodo.Substring(4, 2) : "00";
+				titulo = $"Liquidación para Haberes Nº {le_compte} \nMes: {mes} Año: {anio}";
+				subtitulo = $"Aplicado el {unItem.le_fecha.ToString("dd/MM/yyyy")} - Concepto: {unItem.le_concepto}";
+				return lista;	
+			}
+			catch (Exception)
+			{
+				titulo = $"Liquidación para Haberes Nº {le_compte} \t Mes: 08 Año: 2020";
+				subtitulo = "Aplicado el 26/08/2021 - Concepto: la chocha";
+				return [];
+			}
+			//return new List<LiqEmpleadoDetalleParaReporteDto>();
 			///TODO MARCE: Completar una vez auw este el SP
-			//string an_compte = solicitud.Parametros.GetValueOrDefault("id", "").ToString();
-			//var lista = _financieroServicio.GetAnticipoDetalle(an_compte);
+			//string le_compte = solicitud.Parametros.GetValueOrDefault("id", "").ToString();
+			//titulo = $"Liquidación para Haberes Nº {le_compte} \t Mes: 08 Año: 2020";
+			//subtitulo = "Aplicado el 26/08/2021 - Concepto: la chocha";
+			//var lista = _financieroServicio.GetLiqEmpDetalleParaReporte(le_compte);
 			//var unItem = lista.FirstOrDefault();
 			//var fechaAplicacion = unItem?.an_fecha.ToString("dd/MM/yyyy") ?? "";
 			//var concepto = unItem?.an_concepto ?? "";
@@ -147,7 +172,7 @@ namespace gc.api.core.Servicios.Reportes
 			#region Obteniendo registros desde la base de datos
 			string tit;
 			string subTit;
-			List<LiqEmpleadoDetalleDto> registros = ObtenerDatos(solicitud, out tit, out subTit);
+			List<LiqEmpleadoDetalleParaReporteDto> registros = ObtenerDatos(solicitud, out tit, out subTit);
 
 			if (registros == null || registros.Count == 0)
 			{
@@ -171,7 +196,7 @@ namespace gc.api.core.Servicios.Reportes
 			#region Obteniendo registros desde la base de datos
 			string tit;
 			string subTit;
-			List<LiqEmpleadoDetalleDto> registros = ObtenerDatos(solicitud, out tit, out subTit);
+			List<LiqEmpleadoDetalleParaReporteDto> registros = ObtenerDatos(solicitud, out tit, out subTit);
 
 			if (registros == null || registros.Count == 0)
 			{

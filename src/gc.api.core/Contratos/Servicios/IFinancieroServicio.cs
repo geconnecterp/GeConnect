@@ -59,5 +59,7 @@ namespace gc.api.core.Contratos.Servicios
         List<FinancieroLEProximaDto> GetFinancieroProximaLE();
         List<LiqEmpCargaDto> GetLiqEmpCarga(FinancieroLiqEmpCargaRequest request);
         List<RespuestaDto> FinancieroLiqEmpleadoConfirmar(FinancieroLiqEmpleadoConfirmarRequest request);
+        List<LiqEmpleadoDetalleParaReporteDto> GetLiqEmpDetalleParaReporte(string le_compte);
+        List<LiqDeEmpleadoListaDto> BuscarLiquidacionesDeEmpleados(ConsultaLiqDeEmpleadoRequest filtros);
 	}
 }

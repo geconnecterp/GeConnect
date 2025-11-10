@@ -23,12 +23,14 @@
 </style>
 @section styles {
 	<link rel="stylesheet" href="~/css/financieros/liqdeemp/liqdeempleados.css" />
+	<link rel="stylesheet" href="~/css/simplePagination.css" />
+	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
 @Html.Hidden("SelectedValueAnio", Model.SelectedValueAnio)
 @Html.Hidden("SelectedValueMes", Model.SelectedValueMes)
 <div class="container mt-2" id="divLiquidacionDeEmpleado">
 	<div class="mx-auto" style="max-width: 1300px;">
-		<div class="collapse col-md-2">
+		<div class="col-md-2">
 			<div class="d-flex justify-content-sm-end">
 				<!-- Botón Imprimir -->
 				<button type="button" class="btn btn-golden btn-sm mt-1 me-1 btnImprimir" title="Imprimir">
@@ -77,6 +79,9 @@
 	</div>
 </div>
 
+<!-- para el modal del geston de impresion -->
+<div id="modalGestorDocumental"></div>
+
 <div class="modal fade modal-golden" id="modalImportarArchivo" tabindex="-1" aria-labelledby="tituloImportarArchivo" aria-hidden="true">
 	<div class="modal-dialog modal-dialog-centered">
 		<div class="modal-content">
@@ -97,6 +102,15 @@
 		var editarItemEnLiqEmpDetalleUrl = "@Url.Action("EditarItemEnLiqEmpDetalle", "LiquidacionDeEmpleados", new { area = "Financieros" })";
 		var financieroLiqEmpleadoConfirmarUrl = "@Url.Action("FinancieroLiqEmpleadoConfirmar", "LiquidacionDeEmpleados", new { area = "Financieros" })";
 		var cancelarCargaLiqEmpUrl = "@Url.Action("CancelarCargaLiqEmp", "LiquidacionDeEmpleados", new { area = "Financieros" })";
+
+		/* Gestor de impresión*/
+		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+		var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+		var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+		var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "GestorImpresion", new { area = "ControlComun" })";
+		/**/
 	</script>
 
 	<script src="~/lib/jstree/jstree.min.js"></script>

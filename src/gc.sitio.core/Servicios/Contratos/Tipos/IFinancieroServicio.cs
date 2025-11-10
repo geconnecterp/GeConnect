@@ -59,5 +59,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<FinancieroLEProximaDto> GetFinancieroProximaLE(string token);
 		List<LiqEmpCargaDto> GetLiqEmpCarga(FinancieroLiqEmpCargaRequest request, string token);
 		RespuestaGenerica<RespuestaDto> FinancieroLiqEmpleadoConfirmar(FinancieroLiqEmpleadoConfirmarRequest request, string token);
+		Task<(List<LiqDeEmpleadoListaDto>, MetadataGrid)> BuscarLiquidacionesDeEmpleados(ConsultaLiqDeEmpleadoRequest filters, string token);
 	}
 }

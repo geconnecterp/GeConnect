@@ -3082,62 +3082,84 @@ namespace gc.infraestructura.Helpers
 			return celda;
 		}
 
-		public static void CargarLiquidacionDeHaberesDeEmpleados(Document pdf, List<LiqEmpleadoDetalleDto> lista, Font fuenteEtiqueta, Font fuenteValor)
+		public static void CargarLiquidacionDeHaberesDeEmpleados(Document pdf, List<LiqEmpleadoDetalleParaReporteDto> lista, Font fuenteEtiqueta, Font fuenteValor)
 		{
 			var agrupadoPorEmpleado = lista.GroupBy(x => x.cta_id);
+			bool esPrimeraPagina = true;
+			BaseColor colorEncabezado = new BaseColor(230, 230, 230); // Gris claro
 
 			foreach (var grupo in agrupadoPorEmpleado)
 			{
 				var primer = grupo.First();
 
 				// Nueva hoja por empleado
-				pdf.NewPage();
-
-				// Encabezado del empleado
-				var encabezado = new Paragraph($"Empleado: {primer.cta_denominacion} - Legajo: {primer.cta_emp_legajo}", fuenteEtiqueta);
-				encabezado.SpacingAfter = 10f;
-				pdf.Add(encabezado);
+				if (!esPrimeraPagina)
+					pdf.NewPage();
+				else
+					esPrimeraPagina = false;
 
 				// Tabla de anticipos/documentos
 				var tabla = new PdfPTable(5) { WidthPercentage = 100 };
 				tabla.SetWidths(new float[] { 30, 10, 15, 20, 25 });
 
+				// Espacio visual entre encabezado y títulos
+				var celdaEspaciadora = new PdfPCell(new Phrase(" "))
+				{
+					Colspan = 5,
+					Border = Rectangle.NO_BORDER,
+					FixedHeight = 10f
+				};
+				tabla.AddCell(celdaEspaciadora);
+
+				// Encabezado del empleado
+				var celdaEncabezado = new PdfPCell(new Phrase($"Empleado: {primer.cta_denominacion} - Legajo: {primer.cta_emp_legajo}", fuenteValor))
+				{
+					Colspan = 5,
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					PaddingBottom = 10f,
+					BackgroundColor = colorEncabezado
+				};
+				tabla.AddCell(celdaEncabezado);
+
 				// Encabezados
-				AgregarCelda(tabla, "Concepto", fuenteEtiqueta);
-				AgregarCelda(tabla, "Cuota", fuenteEtiqueta);
-				AgregarCelda(tabla, "Vto.", fuenteEtiqueta);
-				AgregarCelda(tabla, "Débito", fuenteEtiqueta);
-				AgregarCelda(tabla, "Dto. Sueldo", fuenteEtiqueta);
+				AgregarCelda(tabla, "Concepto", fuenteValor, Element.ALIGN_CENTER, true, colorEncabezado);
+				AgregarCelda(tabla, "Cuota", fuenteValor, Element.ALIGN_CENTER, true, colorEncabezado);
+				AgregarCelda(tabla, "Fecha Vto.", fuenteValor, Element.ALIGN_CENTER, true, colorEncabezado);
+				AgregarCelda(tabla, "Débito Ori.", fuenteValor, Element.ALIGN_CENTER, true, colorEncabezado);
+				AgregarCelda(tabla, "Dto. Sueldo", fuenteValor, Element.ALIGN_CENTER, true, colorEncabezado);
 
 				decimal totalDto = 0;
 
 				foreach (var item in grupo)
 				{
-					AgregarCelda(tabla, item.concepto, fuenteValor);
-					AgregarCelda(tabla, item.cm_compte_cuota.ToString(), fuenteValor);
-					AgregarCelda(tabla, item.cv_fecha_vto.ToString("dd/MM/yyyy"), fuenteValor);
-					AgregarCelda(tabla, FormatearDecimal(item.cv_importe), fuenteValor);
-					AgregarCelda(tabla, FormatearDecimal(item.cv_importe_imputado), fuenteValor);
+					AgregarCelda(tabla, item.concepto, fuenteValor, Element.ALIGN_LEFT);
+					AgregarCelda(tabla, item.cm_compte_cuota.ToString(), fuenteValor, Element.ALIGN_CENTER);
+					AgregarCelda(tabla, item.cv_fecha_vto.ToString("dd/MM/yyyy"), fuenteValor, Element.ALIGN_CENTER);
+					AgregarCelda(tabla, FormatearDecimal(item.cv_importe_ori), fuenteValor, Element.ALIGN_RIGHT);
+					AgregarCelda(tabla, FormatearDecimal(item.dto), fuenteValor, Element.ALIGN_RIGHT);
 
-					totalDto += item.cv_importe_imputado;
+					totalDto += item.dto;
 				}
 
 				// Total
-				var celdaTotal = new PdfPCell(new Phrase("Total Descuento:", fuenteEtiqueta)) { Colspan = 4, HorizontalAlignment = Element.ALIGN_RIGHT };
+				var celdaTotal = new PdfPCell(new Phrase("Total Descuento:", HelperPdf.FontNormalPredeterminado())) { Colspan = 4, HorizontalAlignment = Element.ALIGN_RIGHT };
 				tabla.AddCell(celdaTotal);
-				tabla.AddCell(new PdfPCell(new Phrase(FormatearDecimal(totalDto), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+				tabla.AddCell(new PdfPCell(new Phrase(FormatearDecimal(totalDto), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = colorEncabezado });
 
 				pdf.Add(tabla);
 			}
 		}
 
-		private static void AgregarCelda(PdfPTable tabla, string texto, Font fuente)
+		private static void AgregarCelda(PdfPTable tabla, string texto, Font fuente, int Align = 0, bool esEncabezado = false, BaseColor? fondo = null)
 		{
 			var celda = new PdfPCell(new Phrase(texto, fuente))
 			{
-				HorizontalAlignment = Element.ALIGN_LEFT,
+				HorizontalAlignment = Align,
 				Padding = 4f
 			};
+			if (esEncabezado && fondo != null)
+				celda.BackgroundColor = fondo;
+
 			tabla.AddCell(celda);
 		}
 

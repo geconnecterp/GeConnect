@@ -34,18 +34,18 @@ function ImprimirLiquidacion_Generada(id) {
 
 //############ COMENTAR AL FINALIZAR ############
 // Botón de imprimir
-$(document).on("click", ".btnImprimir", function () {
-	imprimirOPP();
-});
+//$(document).on("click", ".btnImprimir", function () {
+//	imprimirOPP();
+//});
 
 $("#btnImprimirTemp").on("click", function () {
-	ImprimirLiquidacion_Generada("00-00006214");
+	ImprimirLiquidacion_Generada("00-00");
 });
 
-function imprimirOPP() {
-	// Invocar gestor documental
-	invocacionGestorDoc({});
-}
+//function imprimirOPP() {
+//	// Invocar gestor documental
+//	invocacionGestorDoc({});
+//}
 //############ COMENTAR AL FINALIZAR ############
 
 function DeshabilitarCampos(valor) {
@@ -114,7 +114,8 @@ function handleConfirmarCargaDeLiquidacion() {
 				$("#msjModal").modal("hide");
 				return true;
 			}, false, ["Aceptar"], "succ!", null);
-			//ImprimirLiquidacion_Generada(obj.id); // TODO MARCE: Descomentar cuando este el store_procedure que lo llena
+
+			ImprimirLiquidacion_Generada(obj.id); // TODO MARCE: Descomentar cuando este el store_procedure que lo llena
 			LimpiarCampos();
 			DeshabilitarCampos(false);
 		}
