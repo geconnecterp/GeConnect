@@ -1,0 +1,60 @@
+﻿@model LiquidacionDeEmpleadoModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	thead th {
+		position: sticky;
+		top: 0px;
+	}
+
+	.table-wrapper-fixed-head th,
+	.table-wrapper-fixed-head td {
+		box-sizing: border-box;
+	}
+
+	.table-wrapper {
+		overflow-x: hidden;
+	}
+
+</style>
+<div class="table-responsive table-wrapper">
+	<table class="table table-sm table-golden" id="tbGridLiqDeEmp">
+		<thead>
+			<tr class="header">
+				<th class="text-center" scope="col">Mes Liquidacion</th>
+				<th class="text-center" scope="col">Concepto</th>
+				<th class="text-center" scope="col">Fecha</th>
+				<th class="text-center" scope="col">Comprobante</th>
+				<th class="text-center" scope="col">Usuario</th>
+				<th class="text-center" scope="col">Anulada</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.GrillaLiqDeEmp != null && Model.GrillaLiqDeEmp.ListaDatos != null && Model.GrillaLiqDeEmp.ListaDatos.Count > 0)
+			{
+				@foreach (var item in Model.GrillaLiqDeEmp.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+					<tr class="@clase" onclick="selectReg(this, 'tbGridLiqDeEmp')" data-le-compte="@item.le_compte">
+						<td class="@Model.GrillaLiqDeEmp.ObtenerClase(item.le_periodo) align-center cell-fit-content">@Model.GrillaLiqDeEmp.FormatearDato(item.le_periodo, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaLiqDeEmp.ObtenerClase(item.le_concepto) cell-fit-content">@Model.GrillaLiqDeEmp.FormatearDato(item.le_concepto, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaLiqDeEmp.ObtenerClase(item.le_fecha) cell-fit-content">@Model.GrillaLiqDeEmp.FormatearDato(item.le_fecha, FormatDato.Fecha)</td>
+						<td class="@Model.GrillaLiqDeEmp.ObtenerClase(item.le_compte) align-center cell-fit-content">@Model.GrillaLiqDeEmp.FormatearDato(item.le_compte, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaLiqDeEmp.ObtenerClase(item.usu_apellidoynombre) cell-fit-content">@Model.GrillaLiqDeEmp.FormatearDato(item.usu_apellidoynombre, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaLiqDeEmp.ObtenerClase(item.str_le_anulada) align-center cell-fit-content">@Model.GrillaLiqDeEmp.FormatearDato(item.str_le_anulada, FormatDato.Ninguno)</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+	<div class="row mt-3">
+		<div class="offset-md-3 col-md-6">
+			<div id="divPaginacion" class="">
+			</div>
+		</div>
+	</div>
+</div>
