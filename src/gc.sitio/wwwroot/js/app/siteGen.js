@@ -796,10 +796,17 @@ function activarGrilla(gridId) {
 
 
 //mueve registro al top de la grilla
-function posicionarRegOnTop(x) {
+//se envia el registro seleccionado y la clase que realiza el scroll.
+//puesde ser table-wrapper-200,table-wrapper-300, etc.
+function posicionarRegOnTop(x,classWrapper="") {
+
+    if (classWrapper.trim() == "") {
+        classWrapper = ".table-wrapper";
+    }
 
     var $registro = $(x); // El registro seleccionado
-    var $contenedor = $(".table-wrapper"); // El contenedor desplazable
+    //var $contenedor = $(".table-wrapper"); // El contenedor desplazable
+    var $contenedor = $(classWrapper); // El contenedor desplazable
     var $header = $contenedor.find("thead"); // El header fijo de la tabla
 
     // Calcular la posición del registro relativo al contenedor

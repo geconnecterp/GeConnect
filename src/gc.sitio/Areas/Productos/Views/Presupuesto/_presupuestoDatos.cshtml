@@ -6,29 +6,31 @@
     </div>
     <div class="card-body p-2">
         <div class="row g-2">
-            <!-- ID -->
-            <div class="col-md-2">
-                <label for="pre_id" class="form-label form-label-sm mb-1">ID</label>
-                <input type="text" class="form-control form-control-sm" id="pre_id" name="pre_id" 
-                       value="@Model?.pre_id" readonly />
-            </div>
-            <!-- Tipo (oculto pret_id) -->
-            @* <input type="hidden" id="pret_id" name="pret_id" value="@Model?.pret_id" /> *@
-            <div class="col-md-2">
-                <label for="pret_desc" class="form-label form-label-sm mb-1">Tipo</label>
-                @Html.DropDownList("pret_id", null, "Sel..", new { @class = "form-control form-control-sm", disabled = "disabled" })
-               @*  <input type="text" class="form-control form-control-sm" id="pret_desc" name="pret_desc"
+            <div class="row">
+                <!-- ID -->
+                <div class="col-md-2">
+                    <label for="pre_id" class="form-label form-label-sm mb-1">ID</label>
+                    <input type="text" class="form-control form-control-sm" id="pre_id" name="pre_id"
+                           value="@Model?.pre_id" readonly />
+                </div>
+                <!-- Estado (oculto pree_id) -->
+                @* <input type="hidden" id="pree_id" name="pree_id" value="@Model?.pree_id" /> *@
+                <div class="col-md-2">
+                    <label for="pree_desc" class="form-label form-label-sm mb-1">Estado</label>
+                    @Html.DropDownList("pree_id", null, "Sel..", new { @class = "form-control form-control-sm", disabled = "disabled" })
+                    @*  <input type="text" class="form-control form-control-sm" id="pree_desc" name="pree_desc"
+                       value="@Model?.pree_desc" readonly /> *@
+                </div>
+                <!-- Tipo (oculto pret_id) -->
+                @* <input type="hidden" id="pret_id" name="pret_id" value="@Model?.pret_id" /> *@
+                <div class="col-md-2">
+                    <label for="pret_desc" class="form-label form-label-sm mb-1">Tipo</label>
+                    @Html.DropDownList("pret_id", null, "Sel..", new { @class = "form-control form-control-sm", disabled = "disabled" })
+                    @*  <input type="text" class="form-control form-control-sm" id="pret_desc" name="pret_desc"
                        value="@Model?.pret_desc" readonly /> *@
+                </div>
             </div>
 
-            <!-- Estado (oculto pree_id) -->
-            @* <input type="hidden" id="pree_id" name="pree_id" value="@Model?.pree_id" /> *@
-            <div class="col-md-2">
-                <label for="pree_desc" class="form-label form-label-sm mb-1">Estado</label>
-                @Html.DropDownList("pree_id", null, "Sel..", new { @class = "form-control form-control-sm", disabled = "disabled" })
-               @*  <input type="text" class="form-control form-control-sm" id="pree_desc" name="pree_desc"
-                       value="@Model?.pree_desc" readonly /> *@
-            </div>
             @* <!-- Descripción -->
             <div class="col-md-3">
                 <label for="pre_descripcion" class="form-label form-label-sm mb-1">Descripción</label>
@@ -36,94 +38,100 @@
                        value="@Model?.pre_descripcion" readonly />
             </div> *@
 
-           @*  <!-- Fecha -->
+            @*  <!-- Fecha -->
             <div class="col-md-3">
                 <label for="pre_fecha" class="form-label form-label-sm mb-1">Fecha</label>
                 <input type="date" class="form-control form-control-sm" id="pre_fecha" name="pre_fecha" 
                        value="@Model?.pre_fecha.ToString("yyyy-MM-dd")" readonly />
             </div> *@
+            <div class="row">
+                <!-- Cliente (oculto cta_id) -->
+                <input type="hidden" id="cta_id" name="cta_id" value="@Model?.cta_id" />
+                <div class="col-md-3">
+                    <label for="cta_denominacion" class="form-label form-label-sm mb-1">Cliente</label>
+                    <input type="text" class="form-control form-control-sm" id="cta_denominacion" name="cta_denominacion"
+                           value="@Model?.cta_denominacion" readonly />
+                </div>
 
-            <!-- Cliente (oculto cta_id) -->
-            <input type="hidden" id="cta_id" name="cta_id" value="@Model?.cta_id" />
-            <div class="col-md-3">
-                <label for="cta_denominacion" class="form-label form-label-sm mb-1">Cliente</label>
-                <input type="text" class="form-control form-control-sm" id="cta_denominacion" name="cta_denominacion" 
-                       value="@Model?.cta_denominacion" readonly />
+                <!-- Nombre -->
+                <div class="col-md-3">
+                    <label for="pre_nombre" class="form-label form-label-sm mb-1">Nombre</label>
+                    <input type="text" class="form-control form-control-sm" id="pre_nombre" name="pre_nombre"
+                           value="@Model?.pre_nombre" readonly />
+                </div>
+
+                <!-- Domicilio -->
+                <div class="col-md-3">
+                    <label for="pre_domicilio" class="form-label form-label-sm mb-1">Domicilio</label>
+                    <input type="text" class="form-control form-control-sm" id="pre_domicilio" name="pre_domicilio"
+                           value="@Model?.pre_domicilio" readonly />
+                </div>
             </div>
+            <div class="row">
 
-            <!-- Nombre -->
-            <div class="col-md-3">
-                <label for="pre_nombre" class="form-label form-label-sm mb-1">Nombre</label>
-                <input type="text" class="form-control form-control-sm" id="pre_nombre" name="pre_nombre" 
-                       value="@Model?.pre_nombre" readonly />
+                <!-- Vigencia Desde -->
+                <div class="col-md-3">
+                    <label for="pre_vigencia_desde" class="form-label form-label-sm mb-1">Vigencia Desde</label>
+                    <input type="date" class="form-control form-control-sm" id="pre_vigencia_desde" name="pre_vigencia_desde"
+                           value="@Model?.pre_vigencia_desde.ToString("yyyy-MM-dd")" readonly />
+                </div>
+
+                <!-- Vigencia Hasta -->
+                <div class="col-md-3">
+                    <label for="pre_vigencia_hasta" class="form-label form-label-sm mb-1">Vigencia Hasta</label>
+                    <input type="date" class="form-control form-control-sm" id="pre_vigencia_hasta" name="pre_vigencia_hasta"
+                           value="@Model?.pre_vigencia_hasta.ToString("yyyy-MM-dd")" readonly />
+                </div>
+
             </div>
+            <div class="row">
+                <!-- Observaciones Pago -->
+                <div class="col-md-6">
+                    <label for="pre_obs_pago" class="form-label form-label-sm mb-1">Observaciones Pago</label>
+                    <textarea class="form-control form-control-sm" id="pre_obs_pago" name="pre_obs_pago"
+                              rows="2" readonly>@Model?.pre_obs_pago</textarea>
+                </div>
 
-            <!-- Domicilio -->
-            <div class="col-md-3">
-                <label for="pre_domicilio" class="form-label form-label-sm mb-1">Domicilio</label>
-                <input type="text" class="form-control form-control-sm" id="pre_domicilio" name="pre_domicilio" 
-                       value="@Model?.pre_domicilio" readonly />
+                <!-- Observaciones Entrega -->
+                <div class="col-md-6">
+                    <label for="pre_obs_entrega" class="form-label form-label-sm mb-1">Observaciones Entrega</label>
+                    <textarea class="form-control form-control-sm" id="pre_obs_entrega" name="pre_obs_entrega"
+                              rows="2" readonly>@Model?.pre_obs_entrega</textarea>
+                </div>
             </div>
-
-            <!-- Vigencia Desde -->
-            <div class="col-md-3">
-                <label for="pre_vigencia_desde" class="form-label form-label-sm mb-1">Vigencia Desde</label>
-                <input type="date" class="form-control form-control-sm" id="pre_vigencia_desde" name="pre_vigencia_desde" 
-                       value="@Model?.pre_vigencia_desde.ToString("yyyy-MM-dd")" readonly />
-            </div>
-
-            <!-- Vigencia Hasta -->
-            <div class="col-md-3">
-                <label for="pre_vigencia_hasta" class="form-label form-label-sm mb-1">Vigencia Hasta</label>
-                <input type="date" class="form-control form-control-sm" id="pre_vigencia_hasta" name="pre_vigencia_hasta" 
-                       value="@Model?.pre_vigencia_hasta.ToString("yyyy-MM-dd")" readonly />
-            </div>
-
-            
-
+            <div class="row">
+                @* 
             <!-- Usuario (oculto usu_id) -->
             <input type="hidden" id="usu_id" name="usu_id" value="@Model?.usu_id" />
             <div class="col-md-3">
                 <label for="usu_apellidoynombre" class="form-label form-label-sm mb-1">Usuario</label>
-                <input type="text" class="form-control form-control-sm" id="usu_apellidoynombre" name="usu_apellidoynombre" 
+                <input type="text" class="form-control form-control-sm" id="usu_apellidoynombre" name="usu_apellidoynombre"
                        value="@Model?.usu_apellidoynombre" readonly />
+            </div> *@
+
+                <!-- Administración (oculto adm_id) -->
+                <input type="hidden" id="adm_id" name="adm_id" value="@Model?.adm_id" />
+                <div class="col-md-3">
+                    <label for="adm_nombre" class="form-label form-label-sm mb-1">Administración</label>
+                    <input type="text" class="form-control form-control-sm" id="adm_nombre" name="adm_nombre"
+                           value="@Model?.adm_nombre" readonly />
+                </div>
+
+                <!-- TCO ID -->
+                <div class="col-md-3">
+                    <label for="tco_id" class="form-label form-label-sm mb-1">TCO ID</label>
+                    <input type="text" class="form-control form-control-sm" id="tco_id" name="tco_id"
+                           value="@Model?.tco_id" readonly />
+                </div>
+
+                <!-- Compte -->
+                <div class="col-md-3">
+                    <label for="cm_compte" class="form-label form-label-sm mb-1">Compte</label>
+                    <input type="text" class="form-control form-control-sm" id="cm_compte" name="cm_compte"
+                           value="@Model?.cm_compte" readonly />
+                </div>
             </div>
 
-            <!-- Administración (oculto adm_id) -->
-            <input type="hidden" id="adm_id" name="adm_id" value="@Model?.adm_id" />
-            <div class="col-md-3">
-                <label for="adm_nombre" class="form-label form-label-sm mb-1">Administración</label>
-                <input type="text" class="form-control form-control-sm" id="adm_nombre" name="adm_nombre" 
-                       value="@Model?.adm_nombre" readonly />
-            </div>
-
-            <!-- TCO ID -->
-            <div class="col-md-3">
-                <label for="tco_id" class="form-label form-label-sm mb-1">TCO ID</label>
-                <input type="text" class="form-control form-control-sm" id="tco_id" name="tco_id" 
-                       value="@Model?.tco_id" readonly />
-            </div>
-
-            <!-- Compte -->
-            <div class="col-md-3">
-                <label for="cm_compte" class="form-label form-label-sm mb-1">Compte</label>
-                <input type="text" class="form-control form-control-sm" id="cm_compte" name="cm_compte" 
-                       value="@Model?.cm_compte" readonly />
-            </div>
-
-            <!-- Observaciones Pago -->
-            <div class="col-md-6">
-                <label for="pre_obs_pago" class="form-label form-label-sm mb-1">Observaciones Pago</label>
-                <textarea class="form-control form-control-sm" id="pre_obs_pago" name="pre_obs_pago" 
-                          rows="2" readonly>@Model?.pre_obs_pago</textarea>
-            </div>
-
-            <!-- Observaciones Entrega -->
-            <div class="col-md-6">
-                <label for="pre_obs_entrega" class="form-label form-label-sm mb-1">Observaciones Entrega</label>
-                <textarea class="form-control form-control-sm" id="pre_obs_entrega" name="pre_obs_entrega" 
-                          rows="2" readonly>@Model?.pre_obs_entrega</textarea>
-            </div>
         </div>
     </div>
 </div>
