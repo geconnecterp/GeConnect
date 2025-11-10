@@ -161,7 +161,7 @@ namespace gc.api.core.Servicios.Ofertas
             }
             else
             {
-                ps.Add(new SqlParameter("@u", false));
+                ps.Add(new SqlParameter("@u", true));
                 ps.Add(new SqlParameter("@usu_list", req.usu_list));
             }
 
