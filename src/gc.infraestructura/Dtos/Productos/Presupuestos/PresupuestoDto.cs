@@ -41,7 +41,7 @@
     {
         public string p_id { get; set; } = string.Empty;
         public string p_des { get; set; } = string.Empty;
-        public string pre_item { get; set; } = string.Empty;
+        public short pre_item { get; set; }
         public char iva_situacion { get; set; }
         public decimal iva_alicuota { get; set; }
         public decimal in_alicuota { get; set; }

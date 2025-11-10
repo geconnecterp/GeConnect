@@ -45,11 +45,11 @@
                         foreach (var item in Model.ListaDatos)
                         {
                             cont++;
-                            var pre_item = item.pre_item.Equals("0") ? cont : item.pre_item.ToInt();
+                            var pre_item = item.pre_item.Equals("0") ? cont : item.pre_item;
                             if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
                             var totalCalc = (item.pre_cantidad * item.pre_pvta);
                             <tr class="@clase"
-                                data-pre-item="@pre_item"
+                                data-pre-item="@cont"
                                 data-p-id="@item.p_id"
                                 data-pre-pcosto="@item.pre_pcosto"
                                 data-p-pcosto-actual="@item.p_pcosto_actual"
@@ -62,12 +62,12 @@
                                 <td class="text-center">@item.pre_item</td>
                                 <td class="text-center">@item.p_id</td>
                                 <td>@item.p_des</td>
-                                <td class="text-end">@item.pre_pcosto.ToString("N3")</td>
+                                <td class="text-end">@item.pre_pcosto</td>
                                 <td class="text-end">
                                     <div class="input-container">
                                         <input type="text" 
                                                class="form-control form-control-sm input-pre_cantidad input-numeric campo-readonly"
-                                               value="@item.pre_cantidad.ToString("N2")"
+                                               value="@item.pre_cantidad"
                                                data-original-value="@item.pre_cantidad"
                                                readonly 
                                                title="Doble click para editar" />
@@ -77,7 +77,7 @@
                                     <div class="input-container">
                                         <input type="text" 
                                                class="form-control form-control-sm input-pre_margen input-numeric campo-readonly"
-                                               value="@item.pre_pmargen.ToString("N2")"
+                                               value="@item.pre_pmargen"
                                                data-original-value="@item.pre_pmargen"
                                                data-margen-actual="@item.p_margen_actual"
                                                readonly 
@@ -88,7 +88,7 @@
                                     <div class="input-container">
                                         <input type="text" 
                                                class="form-control form-control-sm input-pre_pvta input-numeric campo-readonly"
-                                               value="@item.pre_pvta.ToString("N3")"
+                                               value="@item.pre_pvta"
                                                data-original-value="@item.pre_pvta"
                                                data-pvta-actual="@item.p_pvta_actual"
                                                readonly 

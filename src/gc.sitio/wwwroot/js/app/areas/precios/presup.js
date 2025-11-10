@@ -118,9 +118,11 @@ function cancelarOperacion(e) {
     $("#btnAgregarCProducto").prop("disabled", true);
 
     // ✅ PASO 7: Limpiar clases de edición en el grid (mantener selección)
-    $("#tbGridPresupuesto tbody tr").removeClass("selectedEdit-row");
+    $("#tbGridPresupuesto tbody tr").removeClass("selectedEdit-row").removeClass("selected-row");
 
     console.log('✅ Operación cancelada - Vista reinicializada');
+
+    $("#divPresupuesto").removeClass("table-wrapper-100").addClass("table-wrapper-300");
 
     //// ✅ PASO 8: Redirección si es necesario
     //if (e && $(e.target).is("#btnAbmCancelar") && typeof homePresup !== 'undefined') {
@@ -586,7 +588,7 @@ function restaurarEstadoFormularioPresup(estado) {
 
 function habilitarCamposFormularioPresup(habilitar) {
     const camposNoEditables = [
-        'pre_id', 'pret_id', 'pree_id', 'usu_id', 'usu_apellidoynombre',
+        'pre_id', 'pree_id', 'usu_id', 'usu_apellidoynombre',
         'adm_id', 'adm_nombre', 'tco_id', 'cm_compte'
     ];
 
@@ -1124,11 +1126,24 @@ function configurarEventosSeleccionPres() {
             if (!fueSeleccionado) {
                 $this.addClass("selected-row");
                 let preId = $this.data("pre-id");
+
                 if (preId) {
                     cargarPresupuestoDatos(preId);
                     cargarProductosPresupuesto(preId);
                 }
             }
+
+            //achico el tamaño del grid
+            const $grid = $("#divPresupuesto");
+            var gridAchicado = $grid.hasClass("table-wrapper-100");
+            if (!gridAchicado) {
+                $grid.removeClass("table-wrapper-300").addClass("table-wrapper-100")
+            }
+            setTimeout(() => {
+                ///posiciona el select en la parte visual del grid al achicarlo
+                posicionarRegOnTop($this, ".table-wrapper-100");
+            }, 200);
+            
         }
     });
     //configurando los eventos para el boton que elimina el registro.
@@ -1352,46 +1367,86 @@ function aplicarReadonlyCamposPresup() {
 
     requestAnimationFrame(() => {
         if (!estaEnModoEdicionPresup()) {
+            // Modo NO edición - Deshabilitar todos los campos
             campos.each(function () {
                 const $c = $(this);
-                $c.prop('readonly', true).addClass('campo-readonly');
-                if (!$c.attr('title')) $c.attr('title', tooltipMsg);
+                $c.prop('readonly', true)
+                    .addClass('campo-readonly');
+                if (!$c.attr('title')) {
+                    $c.attr('title', tooltipMsg);
+                }
             });
+
+            // Ocultar botones de eliminación
+            $('.btn-eliminar-producto').hide();
+
         } else {
-            campos.each(function () {
-                const $c = $(this);
-                //rescatamos la fila
-                const $fila = $c.closest('tr');
-                $c.prop('readonly', false).removeClass('campo-readonly');
-                if ($c.hasClass('input-pre_margen')) {
-                    //rescato el valor actual
-                    const valor = parseFloat($c.data("margen-actual")).toFixed(2);
-                    $c.val(valor);
-                }
-                else if ($c.hasClass('input-pre_pvta')) {
-                    const valor = parseFloat($c.data("pvta-actual"));
-                    $c.val(valor.toFixed(2));
+            const $filas = $('#tbGridPresupuestoProds tbody tr');
+            const mensajeConfirmacion = `
+                <div class="text-start">
+                    <p class="mb-2"><strong>Si concontinua con la modificación del Presupuesto</strong></p>
+                    <p class="mb-2"><strong>se procederá a la actualización del COSTO de cada producto.</strong></p>
+                    <hr class="my-2">
+                    <p class="mb-2 text-danger"><strong>¿Está seguro que desea MODIFICAR este presupuesto?</strong></p>
+                    <hr class="my-2">
+                    <p class="mb-1">Cantidad de Productos:<strong> ${$filas.length}</strong></p>
+                </div>
+            `;
 
-                    //rescato la cantidad para recalcular el total
-                    const cant = parseFloat($fila.find('input.input-pre_cantidad').val());
-                    const vCosto = parseFloat($fila.data('p-pcosto-actual'));
-                    // ✅ Asignar el costo actualizado a la cuarta celda (índice 3)
-                    $fila.find('td:eq(3)').text(vCosto.toFixed(3));
-
-                    //presentamos el boton de elimnación
-                    $fila.find('td:last-child button.btn-eliminar-producto')
-                        .show().prop('disabled', false)
-                        .removeClass('d-none')
-                        .removeAttr('style');
-                    //multiplicamos la cantidad por el precio de venta.        
-                    calcularElTotaldelaFila(cant, valor, $fila);
-                }
-                $c.attr('title', 'Doble click para editar');
-
-
-            });
+            AbrirMensaje("Aviso", mensajeConfirmacion,
+                function (resp) {
+                    if (resp === 'SI') {
+                        actualizaCostosProductos($filas);
+                        $('#msjModal').modal('hide');
+                    }
+                    else {
+                        $('#msjModal').modal('hide');
+                    }
+                }, true, ['Modificar', 'Cancelar'], 'warn!', null);
+            
         }
     });
+}
+
+function actualizaCostosProductos($filas) {
+    // Modo edición - Habilitar campos y actualizar datos
+    $filas.each(function () {
+        const $fila = $(this);
+
+        // Saltear filas de mensaje (las que tienen colspan)
+        if ($fila.find('td[colspan]').length > 0) return;
+
+        // Obtener valores actuales de la fila
+        const cant = parseFloat($fila.find('.input-pre_cantidad').val()) || 0;
+        const vCosto = parseFloat($fila.data('p-pcosto-actual')) || 0;
+        const margen = parseFloat($fila.find('.input-pre_margen').val()) || 0;
+        const pvta = parseFloat($fila.find('.input-pre_pvta').val()) || 0;
+
+        // 1. Actualizar costo
+        $fila.find('td:eq(3)').text(vCosto.toFixed(3));
+
+        // 2. Habilitar campos y actualizar tooltips
+        $fila.find('.input-pre_cantidad, .input-pre_margen, .input-pre_pvta')
+            .prop('readonly', false)
+            .removeClass('campo-readonly')
+            .attr('title', 'Doble click para editar');
+
+        // 3. Mostrar botón eliminar
+        $fila.find('.btn-eliminar-producto')
+            .show()
+            .prop('disabled', false)
+            .removeClass('d-none')
+            .removeAttr('style');
+
+        // 4. Recalcular total de la fila
+        calcularElTotaldelaFila(cant, pvta, $fila);
+    });
+
+    // 5. Recalcular totales generales
+    setTimeout(() => {
+        actualizarTotalGeneralPresup();
+        calcularUtilidadMargen();
+    }, 50);
 }
 
 function crearGridPresupVacioHtml() {
@@ -2107,10 +2162,10 @@ function calcularUtilidadMargen() {
 function obtenerProductosDelGrid() {
     const productos = [];
     const $filas = $('#tbGridPresupuestoProds tbody tr');
-
+    let cont = 0;
     $filas.each(function () {
         const $fila = $(this);
-
+        cont++;
         // ✅ OPTIMIZACIÓN: Saltar filas vacías o de mensaje en una sola verificación
         if ($fila.find('td[colspan]').length > 0) return;
 
@@ -2141,7 +2196,7 @@ function obtenerProductosDelGrid() {
         // ✅ Construir objeto PresupuestoProductoDto (coincide exactamente con el DTO de C#)
         productos.push({
             // Propiedades de productos
-            pre_item: parseInt($fila.find('td:nth-child(1)').data("pre_item")),
+            pre_item: cont,
             p_id: pId,
             p_des: $fila.find('td:nth-child(3)').text().trim(),
             iva_situacion: ivaSituacion,
