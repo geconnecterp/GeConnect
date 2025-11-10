@@ -4,6 +4,7 @@
     var alt = true;
     string clase = string.Empty;
     int cont = 0;
+    
 }
 
 <div class="card h-100">
@@ -42,7 +43,7 @@
                 <tbody>
                     @if (Model?.ListaDatos?.Any() == true)
                     {
-                        foreach (var item in Model.ListaDatos)
+                        foreach (var item in Model.ListaDatos.OrderBy(x=>x.pre_item).ToList())
                         {
                             cont++;
                             var pre_item = item.pre_item.Equals("0") ? cont : item.pre_item;
@@ -156,8 +157,9 @@ $(function() {
             digits: 2,
             digitsOptional: false,
             rightAlign: true,
-            allowMinus: false,
-            min: 0
+            allowMinus: true,  // ✅ Permitir valores negativos
+            min: -999.99,      // ✅ Establecer un mínimo razonable
+            max: 999.99,       // ✅ Establecer un máximo razonable
         }).mask('.input-pre_margen');
 
         Inputmask({

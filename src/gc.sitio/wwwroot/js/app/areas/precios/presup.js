@@ -382,7 +382,13 @@ function InicializaEventosPresupuesto() {
             $("#pret_id").prop("disabled", false);
             $("#pree_id").prop("disabled", false);
 
-            aplicarReadonlyCamposPresup();
+            
+            setTimeout(() => {
+                //aplicarReadonlyCamposPresup();
+                finalizarInicializacion()
+                // Agregar inicialización del drag & drop aquí
+                inicializarDragAndDropProductos();
+            }, 100);
             _presupOriginal = null;
 
             console.log('Modo Nuevo Presupuesto activado.');
@@ -408,7 +414,11 @@ function InicializaEventosPresupuesto() {
 
         aplicarReadonlyCamposPresup();
 
-        setTimeout(() => { actualizarTotalGeneralPresup(); }, 100);
+        setTimeout(() => {
+            actualizarTotalGeneralPresup();
+            // Agregar inicialización del drag & drop aquí
+            inicializarDragAndDropProductos();
+        }, 100);
 
 
         const $primer = $('#divPresupuestoDatos').find('input:not([type=hidden]):not([readonly]), textarea:not([readonly]), select:not([disabled])').filter(':visible').first();
@@ -647,6 +657,18 @@ function calcularElTotaldelaFila(cantidad, precio, $fila) {
     if (!isNaN(cantidad) && !isNaN(precio)) {
         const total = cantidad * precio;
         const $tdTotal = $fila.find('td.td-total');
+        const $costo = parseFloat($fila.data('p-pcosto-actual'));
+
+        const $c_pvta = $fila.find(".input-pre_pvta");
+        const precioEsValido = precio >= $costo;
+        // Actualizar UI según validación
+        if (!precioEsValido) {
+            $c_pvta.addClass('input-alerta-costo');
+            //continua pues puede, por estrategias de negocio
+            //vender a un precio de venta menor al costo.
+        } else {
+            $c_pvta.removeClass('input-alerta-costo');
+        }
 
         // Guardás el valor crudo y mostrás 2 decimales con punto
         $tdTotal.attr('data-value', total);
@@ -654,6 +676,38 @@ function calcularElTotaldelaFila(cantidad, precio, $fila) {
     }
     else {
         $tdTotal.text(parseFloat("0.00"));
+    }
+}
+
+// ============================================================================
+// UTILIDADES GLOBALES DE PARSEO NUMÉRICO
+// ============================================================================
+
+/**
+ * Parsea un valor numérico con formato de miles y decimales
+ * @param {string|number} value - Valor a parsear
+ * @param {number} [defaultValue=0] - Valor por defecto si el parseo falla
+ * @returns {number} Valor numérico parseado
+ */
+function parseNumericValue(value, defaultValue = 0) {
+    if (value === null || value === undefined || value === '') {
+        return defaultValue;
+    }
+
+    try {
+        // Maneja tanto números como strings
+        const strValue = value.toString();
+        // Manejar explícitamente el signo negativo
+        const isNegative = strValue.startsWith('-');
+        // Primero removemos los separadores de miles (,)
+        // Luego aseguramos que el separador decimal sea punto
+        const normalizedValue = strValue.replace(/,/g, '');
+
+        const result = parseFloat(normalizedValue);
+        return isNaN(result) ? defaultValue : result;
+    } catch (e) {
+        console.warn('Error parseando valor numérico:', value, e);
+        return defaultValue;
     }
 }
 // Variable global para controlar el estado de procesamiento
@@ -676,16 +730,18 @@ function guardarYAvanzarCampoPresup($campo) {
 
         //obtengo los parametros comunes para invocar el recalculo de alguno de los
         //valores ya sea Margen o PVenta
+        let val_pcosto = modoModificacionPresup
+            ? parseNumericValue($fila.data("p-pcosto-actual"))
+            : parseNumericValue($fila.data("pre-pcosto"));
 
-        let val_pcosto = parseFloat($fila.data("pre-pcosto"));
-        let val_prev_tot = parseFloat($fila.data("lp-prevision-tot"));
-        let val_prev_pin = parseFloat($fila.data("lp-prevision-pin"));
+        let val_prev_tot = parseNumericValue($fila.data("lp-prevision-tot"));
+        let val_prev_pin = parseNumericValue($fila.data("lp-prevision-pin"));
         let val_iva_sit = $fila.data("iva-situacion");
-        let val_iva_ali = parseFloat($fila.data("iva-alicuota"));
-        let val_in_alic = parseFloat($fila.data("in-alicuota"));
+        let val_iva_ali = parseNumericValue($fila.data("iva-alicuota"));
+        let val_in_alic = parseNumericValue($fila.data("in-alicuota"));
 
 
-        let cantidad = parseFloat($fila.find('input.input-pre_cantidad').val());
+        let cantidad = parseNumericValue($fila.find('input.input-pre_cantidad').val());
         //tenemos el control cantidad más global para luego de operar recalcule los totales.
         const $inCant = $fila.find('input.input-pre_cantidad');
 
@@ -698,8 +754,8 @@ function guardarYAvanzarCampoPresup($campo) {
             //para calcular el precio de venta, primero debo verificar que el valor
             //cargado y el valor original sean distintos.
             const $c_mg = $fila.find('input.input-pre_margen');
-            let margen = parseFloat($c_mg.val());
-            let margen_or = parseFloat($c_mg.data("original-value"));
+            let margen = parseNumericValue($c_mg.val());
+            let margen_or = parseNumericValue($c_mg.data("original-value"));
             if (margen !== margen_or) {
 
                 //se modificó el precio de venta.
@@ -768,8 +824,8 @@ function guardarYAvanzarCampoPresup($campo) {
 
         if (esPVta) {
             const $c_pvta = $fila.find('input.input-pre_pvta');
-            let pvta = parseFloat($c_pvta.val());
-            let pvta_or = parseFloat($c_pvta.data("original-value"));
+            let pvta = parseNumericValue($c_pvta.val());
+            let pvta_or = parseNumericValue($c_pvta.data("original-value"));
 
             if (pvta !== pvta_or) {
                 //se modificó el precio de venta.
@@ -841,7 +897,7 @@ function guardarYAvanzarCampoPresup($campo) {
                         $c_pvta.data("original-value", pvta.toFixed(2))
                             .attr("data-original-value", pvta.toFixed(2));
 
-                       
+
                         finalizarProceso($inCant);
                     }
 
@@ -1143,7 +1199,7 @@ function configurarEventosSeleccionPres() {
                 ///posiciona el select en la parte visual del grid al achicarlo
                 posicionarRegOnTop($this, ".table-wrapper-100");
             }, 200);
-            
+
         }
     });
     //configurando los eventos para el boton que elimina el registro.
@@ -1209,6 +1265,9 @@ function cargarProductosPresupuesto(preId, isUpdate = false) {
         setTimeout(() => {
             finalizarInicializacion();
             calcularUtilidadMargen();
+
+            // Inicializar drag & drop si corresponde
+            inicializarDragAndDropProductos();
         }, 100);
     });
 }
@@ -1382,6 +1441,10 @@ function aplicarReadonlyCamposPresup() {
 
         } else {
             const $filas = $('#tbGridPresupuestoProds tbody tr');
+            if (modoNuevoPresup) {
+                actualizaCostosProductos($filas);
+                return;
+            }
             const mensajeConfirmacion = `
                 <div class="text-start">
                     <p class="mb-2"><strong>Si concontinua con la modificación del Presupuesto</strong></p>
@@ -1403,7 +1466,7 @@ function aplicarReadonlyCamposPresup() {
                         $('#msjModal').modal('hide');
                     }
                 }, true, ['Modificar', 'Cancelar'], 'warn!', null);
-            
+
         }
     });
 }
@@ -1583,6 +1646,8 @@ function agregarProductosAlGrid(productos) {
     setTimeout(() => {
         finalizarInicializacion();
         calcularUtilidadMargen();
+        // Reinicializar drag & drop con las nuevas filas
+        inicializarDragAndDropProductos();
     }, 100);
 }
 
@@ -2061,23 +2126,44 @@ function confirmarPresupuesto(abm) {
         // Debug: Ver estructura completa
         console.log('📦 DTO de confirmación:', confirmacionDto);
 
-        // Enviar al servidor
-        PostGen(
-            confirmacionDto,
-            confirmarPresupuestoUrl,
-            function (response) {
+        $.ajax({
+            url: confirmarPresupuestoUrl,
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8', // ⚠️ CRUCIAL
+            data: JSON.stringify(confirmacionDto), // ⚠️ SERIALIZAR EXPLÍCITAMENTE
+            dataType: 'json',
+            success: function (response) {
                 CerrarWaiting();
                 procesarRespuestaConfirmacion(response, abm);
             },
-            function (error) {
+            error: function (xhr, status, error) {
                 CerrarWaiting();
                 console.error('❌ Error al confirmar presupuesto:', error);
+                console.error('❌ Response:', xhr.responseText);
                 ControlaMensajeError(
                     'Error al confirmar el presupuesto: ' +
-                    (error.responseJSON?.mensaje || error.statusText || 'Error desconocido')
+                    (xhr.responseJSON?.mensaje || xhr.statusText || 'Error desconocido')
                 );
             }
-        );
+        });
+
+        //// Enviar al servidor
+        //PostGen(
+        //    confirmacionDto,
+        //    confirmarPresupuestoUrl,
+        //    function (response) {
+        //        CerrarWaiting();
+        //        procesarRespuestaConfirmacion(response, abm);
+        //    },
+        //    function (error) {
+        //        CerrarWaiting();
+        //        console.error('❌ Error al confirmar presupuesto:', error);
+        //        ControlaMensajeError(
+        //            'Error al confirmar el presupuesto: ' +
+        //            (error.responseJSON?.mensaje || error.statusText || 'Error desconocido')
+        //        );
+        //    }
+        //);
     } catch (error) {
         CerrarWaiting();
         console.error('❌ Error al construir DTO:', error);
@@ -2702,4 +2788,94 @@ function aplicarVisibilidadBotonesEliminar() {
     $('.btn-eliminar-producto').each(function () {
         $(this).toggle(enEdicion);
     });
+}
+
+function inicializarDragAndDropProductos() {
+    // Solo inicializar si hay filas y estamos en modo edición
+    if (!estaEnModoEdicionPresup()) {
+        console.log('❌ Drag & Drop no inicializado - No está en modo edición');
+        return;
+    }
+
+    console.log('🔄 Inicializando Drag & Drop...');
+
+    const $tbody = $('#tbGridPresupuestoProds tbody');
+
+    // Destruir instancia previa si existe
+    if ($tbody.hasClass('ui-sortable')) {
+        $tbody.sortable('destroy');
+    }
+
+    // Usar Sortable de jQuery UI que ya está incluido en el proyecto
+    $tbody.sortable({
+        handle: 'td:first', // Usar primera columna como handle
+        helper: function (e, ui) {
+            // Mantener ancho de columnas durante el drag
+            ui.children().each(function () {
+                $(this).width($(this).width());
+            });
+            return ui;
+        },
+        axis: 'y',
+        cursor: 'move',
+        opacity: 0.7,
+        stop: function (event, ui) {
+            console.log('🔄 Reordenando filas...');
+            // Reordenar items y actualizar numeración
+            reordenarFilasPresupuesto();
+
+            // Recalcular totales por si acaso
+            setTimeout(() => {
+                actualizarTotalGeneralPresup();
+                calcularUtilidadMargen();
+            }, 50);
+        }
+    }).disableSelection();
+
+    // Agregar indicador visual mejorado
+    $tbody.find('tr').each(function () {
+        const $firstCell = $(this).find('td:first');
+        if ($firstCell.length && !$firstCell.hasClass('drag-handle')) {
+            $firstCell
+                .addClass('drag-handle')
+                .css({
+                    'cursor': 'move',
+                    'position': 'relative'
+                })
+                .append('<i class="bx bx-move-vertical position-absolute" style="right: 5px; top: 50%; transform: translateY(-50%);"></i>');
+        }
+    });
+
+    console.log('✅ Drag & Drop inicializado');
+}
+
+function reordenarFilasPresupuesto() {
+    console.log('🔄 Iniciando reordenamiento de filas');
+
+    const $tbody = $('#tbGridPresupuestoProds tbody');
+    let contador = 1;
+
+    $tbody.find('tr').each(function () {
+        const $fila = $(this);
+
+        // Ignorar filas de mensaje
+        if ($fila.find('td[colspan]').length > 0) {
+            console.log('⏭️ Saltando fila de mensaje');
+            return;
+        }
+
+        // Actualizar número de ítem
+        $fila.attr('data-pre-item', contador);
+        $fila.find('td:first').text(contador);
+
+        // Actualizar clases alternadas
+        $fila.removeClass('alt');
+        if (contador % 2 === 0) {
+            $fila.addClass('alt');
+        }
+
+        contador++;
+    });
+
+    console.log(`✅ Reordenamiento completado - ${contador - 1} filas procesadas`);
 }
