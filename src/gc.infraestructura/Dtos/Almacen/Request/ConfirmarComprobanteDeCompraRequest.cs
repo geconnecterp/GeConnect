@@ -1,4 +1,5 @@
 ﻿
+using gc.infraestructura.EntidadesComunes;
 using Newtonsoft.Json;
 
 namespace gc.infraestructura.Dtos.Almacen.Request
@@ -44,11 +45,9 @@ namespace gc.infraestructura.Dtos.Almacen.Request
 		public int orden { get; set; } = 0;
 	}
 
-	public class Encabezado
+	public class Encabezado : RequestBase
 	{
 		public string cta_id { get; set; } = string.Empty;
-		public string usu_id { get; set; } = string.Empty;
-		public string adm_id { get; set; } = string.Empty;
 		public string ope_iva { get; set; } = string.Empty;
 		public string afip_id { get; set; } = string.Empty;
 		public string cm_cuit { get; set; } = string.Empty;

@@ -616,8 +616,8 @@ namespace gc.api.core.Servicios
 			var ps = new List<SqlParameter>()
 			{
 				new("@cta_id",request.ctaId),
-				new("@usu_id",request.usuId),
-				new("@adm_id",request.admId),
+				new("@usu_id",request.usu_id),
+				new("@adm_id",request.adm_id),
 				new("@dia_movi",request.diaMovi),
 				new("@tco_id",request.tcoId),
 				new("@cm_compte",request.cmCompte),

@@ -72,6 +72,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string SetLiqEmpCarga = "/GetLiqEmpCarga";
 		private const string SetFinancieroLiqEmpleadoConfirmar = "/FinancieroLiqEmpleadoConfirmar";
 		private const string ObtenerLiquidacionesDeEmpleados = "/BuscarLiquidacionesDeEmpleados";
+		private const string ObtenerLiqEmpDetalle = "/GetLiqEmpDetalle";
+		private const string SetLiqudacionDeEmpleadoAnular = "/LiqudacionDeEmpleadoAnular";
 
 		private readonly AppSettings _appSettings;
 		public FinancieroServicio(IOptions<AppSettings> options, ILogger<AdministracionServicio> logger) : base(options, logger)
@@ -1696,6 +1698,74 @@ namespace gc.sitio.core.Servicios.Implementacion
 				_logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
 				throw new Exception("Algo no fue bien al intentar cargar los conteos previso de ajustes.");
+			}
+		}
+
+		public List<LiqEmpleadoDetalleParaReporteDto> GetLiqEmpDetalle(string le_compte, string token)
+		{
+			try
+			{
+				ApiResponse<List<LiqEmpleadoDetalleParaReporteDto>> apiResponse;
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerLiqEmpDetalle}?le_compte={le_compte}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						_logger.LogWarning($"La API no devolvió dato alguno. Sin parámetros de busqueda");
+						return [];
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<LiqEmpleadoDetalleParaReporteDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+					return apiResponse.Data;
+				}
+				else
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+					return [];
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogWarning($"Algo no fue bien. Error interno {ex.Message}");
+				return [];
+			}
+		}
+
+		public RespuestaGenerica<RespuestaDto> LiqudacionDeEmpleadoAnular(LiqudacionDeEmpleadoAnularReques request, string token)
+		{
+			ApiResponse<List<RespuestaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{SetLiqudacionDeEmpleadoAnular}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros le_compte: {request.le_compte}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data.First() };
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
 			}
 		}
 	}

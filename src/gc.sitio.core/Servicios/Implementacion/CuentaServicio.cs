@@ -1356,7 +1356,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 				if (string.IsNullOrEmpty(stringData))
 				{
-					_logger.LogWarning($"La API devolvió error. Parametros cta_id:{request.ctaId} usu_id: {request.usuId} adm_id: {request.admId} tco_id: {request.tcoId} dia_movi: {request.diaMovi} cm_compte: {request.cmCompte} opcion: {request.opcion}");
+					_logger.LogWarning($"La API devolvió error. Parametros cta_id:{request.ctaId} usu_id: {request.usu_id} adm_id: {request.adm_id} tco_id: {request.tcoId} dia_movi: {request.diaMovi} cm_compte: {request.cmCompte} opcion: {request.opcion}");
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");

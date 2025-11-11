@@ -373,7 +373,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			try
 			{
-				var request = new NCPICargaPedidoRequest() { admId = AdministracionId, usuId = UserName, tipo = tipo, pId = pId, tipoCarga = tipoCarga, bultos = bultos };
+				var request = new NCPICargaPedidoRequest() { adm_id = AdministracionId, usu_id = UserName, tipo = tipo, pId = pId, tipoCarga = tipoCarga, bultos = bultos };
 				var response = await _productoServicio.NCPICargaPedido(request, TokenCookie);
 				//var response = new List<NCPICargaPedidoResponse> //mocked response
 				//{

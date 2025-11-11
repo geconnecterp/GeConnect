@@ -1,11 +1,11 @@
 ﻿
+using gc.infraestructura.EntidadesComunes;
+
 namespace gc.infraestructura.Dtos.Almacen.RelacionarComprobanteSinRP
 {
-	public class ConfirmarJustificacionRequest
+	public class ConfirmarJustificacionRequest : RequestBase
 	{
 		public string cta_id { get; set; } = string.Empty;
-		public string usu_id { get; set; } = string.Empty;
-		public string adm_id { get; set; } = string.Empty;
 		public string json_comptes { get; set; } = string.Empty;
 		public string json_rp { get; set; } = string.Empty;
 	}

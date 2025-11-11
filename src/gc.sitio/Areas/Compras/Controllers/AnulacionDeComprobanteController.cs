@@ -162,14 +162,14 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (request == null)
 					return Json(new { error = true, warn = false, msg = "No se recibieron los datos necesarios para la anulación." });
 
-				request.admId = AdministracionId;
-				request.usuId = UserName;
+				request.adm_id = AdministracionId;
+				request.usu_id = UserName;
 				Console.WriteLine($"cta_id: {request.ctaId}");
 				Console.WriteLine($"dia_movi: {request.diaMovi}");
 				Console.WriteLine($"cm_compte: {request.cmCompte}");
 				Console.WriteLine($"tco_id: {request.tcoId}");
-				Console.WriteLine($"adm_id: {request.admId}");
-				Console.WriteLine($"usu_id: {request.usuId}");
+				Console.WriteLine($"adm_id: {request.adm_id}");
+				Console.WriteLine($"usu_id: {request.usu_id}");
 				Console.WriteLine($"opcion: {request.opcion}");
 				var res = _cuentaServicio.AnulacionDeComprobanteConfirma(request, TokenCookie);
 				if (res == null)

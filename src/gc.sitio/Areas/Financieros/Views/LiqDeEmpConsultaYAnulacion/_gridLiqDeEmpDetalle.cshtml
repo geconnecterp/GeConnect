@@ -1,0 +1,59 @@
+﻿@model LiquidacionDeEmpleadoDetalleModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	thead th {
+		position: sticky;
+		top: 0px;
+	}
+
+	.table-wrapper-fixed-head th,
+	.table-wrapper-fixed-head td {
+		box-sizing: border-box;
+	}
+
+	.table-wrapper {
+		overflow-x: hidden;
+	}
+
+	.leyenda-titulo {
+		font-size: 1rem;
+		font-weight: 600;
+		color: #2c3e50;
+	}
+</style>
+@if (!string.IsNullOrWhiteSpace(Model.Leyenda))
+{
+	<div class="leyenda-titulo mb-2 text-start">@Model.Leyenda</div>
+}
+<div class="table-responsive table-wrapper">
+	<table class="table table-sm table-golden" id="tbGridLiqDeEmpDetalle">
+		<thead>
+			<tr class="header">
+				<th class="text-center" scope="col">Comprobante</th>
+				<th class="text-center" scope="col">Cuota</th>
+				<th class="text-center" scope="col">Vencimiento</th>
+				<th class="text-center" scope="col">Dto. Sueldo</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.GrillaLiqDeEmpDetalle != null && Model.GrillaLiqDeEmpDetalle.ListaDatos != null && Model.GrillaLiqDeEmpDetalle.ListaDatos.Count > 0)
+			{
+				@foreach (var item in Model.GrillaLiqDeEmpDetalle.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+					<tr class="@clase" onclick="selectReg(this, 'tbGridLiqDeEmp')" data-le-compte="@item.le_compte">
+						<td class="@Model.GrillaLiqDeEmpDetalle.ObtenerClase(item.cm_compte) align-center cell-fit-content">@Model.GrillaLiqDeEmpDetalle.FormatearDato(item.cm_compte, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaLiqDeEmpDetalle.ObtenerClase(item.cm_compte_cuota) align-center cell-fit-content">@Model.GrillaLiqDeEmpDetalle.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaLiqDeEmpDetalle.ObtenerClase(item.cv_fecha_vto) cell-fit-content">@Model.GrillaLiqDeEmpDetalle.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
+						<td class="@Model.GrillaLiqDeEmpDetalle.ObtenerClase(item.dto) cell-fit-content">@Model.GrillaLiqDeEmpDetalle.FormatearDato(item.dto, FormatDato.Monto)</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

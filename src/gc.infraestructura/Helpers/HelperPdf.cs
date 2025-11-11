@@ -3112,7 +3112,7 @@ namespace gc.infraestructura.Helpers
 				tabla.AddCell(celdaEspaciadora);
 
 				// Encabezado del empleado
-				var celdaEncabezado = new PdfPCell(new Phrase($"Empleado: {primer.cta_denominacion} - Legajo: {primer.cta_emp_legajo}", fuenteValor))
+				var celdaEncabezado = new PdfPCell(new Phrase($"Empleado: {primer.cta_denominacion} (Legajo: {primer.cta_emp_legajo} Cód. Cuenta: {primer.cta_id})", fuenteValor))
 				{
 					Colspan = 5,
 					HorizontalAlignment = Element.ALIGN_CENTER,

@@ -1,6 +1,7 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
@@ -123,6 +124,84 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					Mensaje = ex.Message
 				};
 				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public IActionResult CargarDetalleDeLiquidacion(string leCompte)
+		{
+			var model = new LiquidacionDeEmpleadoDetalleModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var resultado = _financieroServicio.GetLiqEmpDetalle(leCompte, TokenCookie);
+				if (resultado == null || resultado.Count <= 0)
+					return PartialView("_gridLiqDeEmpDetalle", model);
+
+				model.Leyenda = $"Detalle de Liquidación N°: {leCompte}";
+				model.GrillaLiqDeEmpDetalle = ObtenerGridCoreSmart<LiqEmpleadoDetalleParaReporteDto>(resultado);
+				return PartialView("_gridLiqDeEmpDetalle", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public JsonResult AnularLiquidacionDeEmpleado(string id)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return Json(new { error = true, warn = false, msg = "No autenticado." });
+
+				if (string.IsNullOrEmpty(id))
+					return Json(new { error = true, warn = false, msg = "Debe seleccionar una Liquidación para anular." });
+
+				var request = new LiqudacionDeEmpleadoAnularReques()
+				{
+					le_compte = id,
+					adm_id = AdministracionId,
+					usu_id = UserName
+				};
+				var respuesta = _financieroServicio.LiqudacionDeEmpleadoAnular(request, TokenCookie);
+				return AnalizarRespuesta(respuesta, "La Liquidación de Empleados se ha sido anulado con éxito.");
+			}
+			catch (NegocioException ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+		}
+
+		public JsonResult InicializarDatosEnSesion()
+		{
+			try
+			{
+				ListaLiqDeEmp = [];
+				return Json(new { error = false, warn = false, msg = "" });
+			}
+			catch (NegocioException ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
 			}
 		}
 	}

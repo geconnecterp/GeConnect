@@ -39,7 +39,7 @@
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-					<tr class="@clase" onclick="selectReg(this, 'tbGridLiqDeEmp')" data-le-compte="@item.le_compte">
+					<tr class="@clase" onclick="selectReg(this, 'tbGridLiqDeEmp')" data-le-compte="@item.le_compte" data-le-anulada="@item.le_anulada">
 						<td class="@Model.GrillaLiqDeEmp.ObtenerClase(item.le_periodo) align-center cell-fit-content">@Model.GrillaLiqDeEmp.FormatearDato(item.le_periodo, FormatDato.Ninguno)</td>
 						<td class="@Model.GrillaLiqDeEmp.ObtenerClase(item.le_concepto) cell-fit-content">@Model.GrillaLiqDeEmp.FormatearDato(item.le_concepto, FormatDato.Ninguno)</td>
 						<td class="@Model.GrillaLiqDeEmp.ObtenerClase(item.le_fecha) cell-fit-content">@Model.GrillaLiqDeEmp.FormatearDato(item.le_fecha, FormatDato.Fecha)</td>

@@ -161,8 +161,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 				CtaIdSelected = ctaId;
 				CargarProductoParaOcRequest request = new()
 				{
-					Adm_Id = AdministracionId,
-					Usu_Id = UserName,
+					adm_id = AdministracionId,
+					usu_id = UserName,
 					Cta_Id = ctaId,
 					Nueva = string.IsNullOrEmpty(ocCompte),
 					Oc_Compte = ocCompte

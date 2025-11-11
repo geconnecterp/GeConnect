@@ -635,7 +635,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			ApiResponse<List<RespuestaDto>> apiResponse;
 
 			HelperAPI helper = new();
-			ConfirmarAjusteStkRequest request = new() { json = json, admId = admId, usuId = usuId, compteOri = compteOri };
+			ConfirmarAjusteStkRequest request = new() { json = json, adm_id = admId, usu_id = usuId, compteOri = compteOri };
 			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
 			HttpResponseMessage response;
 
@@ -731,7 +731,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			ApiResponse<List<RespuestaDto>> apiResponse;
 
 			HelperAPI helper = new();
-			ConfirmarDPRequest request = new() { json = json, admId = admId, usuId = usuId };
+			ConfirmarDPRequest request = new() { json = json, adm_id = admId, usu_id = usuId };
 			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
 			HttpResponseMessage response;
 
@@ -1230,7 +1230,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			ApiResponse<List<TRPendienteDto>> apiResponse;
 
 			HelperAPI helper = new();
-			ObtenerTRPendientesRequest request = new() { admId = admId, titId = titId, usuId = usuId };
+			ObtenerTRPendientesRequest request = new() { adm_id = admId, titId = titId, usu_id = usuId };
 			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
 			HttpResponseMessage response;
 
@@ -1479,7 +1479,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			ApiResponse<List<RespuestaDto>> apiResponse;
 
 			HelperAPI helper = new();
-			TRConfirmaRequest request = new() { json = json, admId = admId, usuId = usuId };
+			TRConfirmaRequest request = new() { json = json, adm_id = admId, usu_id = usuId };
 			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
 			HttpResponseMessage response;
 
@@ -1542,7 +1542,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			ApiResponse<List<RespuestaDto>> apiResponse;
 
 			HelperAPI helper = new();
-			TRValidarTransferenciaRequest request = new() { ti = ti, admId = admId, usuId = usuId };
+			TRValidarTransferenciaRequest request = new() { ti = ti, adm_id = admId, usu_id = usuId };
 			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
 			HttpResponseMessage response;
 
@@ -1619,7 +1619,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 				string stringData = await response.Content.ReadAsStringAsync();
 				if (string.IsNullOrEmpty(stringData))
 				{
-					_logger.LogWarning($"La API devolvió error. Parametros tipo:{req.tipo} admId:{req.admId} p_id:{req.pId} tipo_carga:{req.tipoCarga}");
+					_logger.LogWarning($"La API devolvió error. Parametros tipo:{req.tipo} adm_id:{req.adm_id} p_id:{req.pId} tipo_carga:{req.tipoCarga}");
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<NCPICargaPedidoResponse>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
@@ -2353,7 +2353,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 				string stringData = await response.Content.ReadAsStringAsync();
 				if (string.IsNullOrEmpty(stringData))
 				{
-					_logger.LogWarning($"La API devolvió error. Parametros Oc_Compte:{req.Oc_Compte} admId:{req.Adm_Id} usu_id:{req.Usu_Id}");
+					_logger.LogWarning($"La API devolvió error. Parametros Oc_Compte:{req.Oc_Compte} adm_id:{req.adm_id} usu_id:{req.usu_id}");
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoParaOcDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");

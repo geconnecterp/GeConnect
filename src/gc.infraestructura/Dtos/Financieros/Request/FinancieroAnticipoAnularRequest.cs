@@ -1,10 +1,10 @@
 ﻿
+using gc.infraestructura.EntidadesComunes;
+
 namespace gc.infraestructura.Dtos.Financieros
 {
-	public class FinancieroAnticipoAnularRequest
+	public class FinancieroAnticipoAnularRequest : RequestBase
 	{
 		public string an_compte { get; set; } = string.Empty;
-		public string usu_id { get; set; } = string.Empty;
-		public string adm_id { get; set; } = string.Empty;
 	}
 }

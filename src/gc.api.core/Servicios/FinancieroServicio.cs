@@ -1006,5 +1006,18 @@ namespace gc.api.core.Servicios
 
 			return movFinan;
 		}
+
+		public List<RespuestaDto> LiqudacionDeEmpleadoAnular(LiqudacionDeEmpleadoAnularReques request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_LE_ANULA_CONFIRMAR;
+			var ps = new List<SqlParameter>()
+			{
+				new("@le_compte",request.le_compte),
+				new("@adm_id",request.adm_id),
+				new("@usu_id",request.usu_id),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

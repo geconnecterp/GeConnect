@@ -336,8 +336,8 @@ namespace gc.api.core.Servicios
             var ps = new List<SqlParameter>()
             {
                     new SqlParameter("@json",request.json),
-                    new SqlParameter("@adm_id",request.admId),
-                    new SqlParameter("@usu_id",request.usuId),
+                    new SqlParameter("@adm_id",request.adm_id),
+                    new SqlParameter("@usu_id",request.usu_id),
                     new SqlParameter("@compte_ori",request.compteOri==string.Empty?null:request.compteOri),
             };
 
@@ -382,8 +382,8 @@ namespace gc.api.core.Servicios
             var ps = new List<SqlParameter>()
             {
                     new SqlParameter("@json",request.json),
-                    new SqlParameter("@adm_id",request.admId),
-                    new SqlParameter("@usu_id",request.usuId),
+                    new SqlParameter("@adm_id",request.adm_id),
+                    new SqlParameter("@usu_id",request.usu_id),
             };
 
             List<RespuestaDto> respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
@@ -672,8 +672,8 @@ namespace gc.api.core.Servicios
             var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Pendientes;
             var ps = new List<SqlParameter>()
             {
-                new("@adm_id",request.admId),
-                new("@usu_id",request.usuId),
+                new("@adm_id",request.adm_id),
+                new("@usu_id",request.usu_id),
                 new("@tit_id",request.titId),
             };
             List<TRPendienteDto> respuesta = _repository.EjecutarLstSpExt<TRPendienteDto>(sp, ps, true);
@@ -759,8 +759,8 @@ namespace gc.api.core.Servicios
             var ps = new List<SqlParameter>()
             {
                 new("@json",request.json),
-                new("@adm_id",request.admId),
-                new("@usu_id",request.usuId),
+                new("@adm_id",request.adm_id),
+                new("@usu_id",request.usu_id),
             };
             List<RespuestaDto> respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
             return respuesta;
@@ -782,8 +782,8 @@ namespace gc.api.core.Servicios
             var ps = new List<SqlParameter>()
             {
                 new("@ti",request.ti),
-                new("@adm_id",request.admId),
-                new("@usu_id",request.usuId),
+                new("@adm_id",request.adm_id),
+                new("@usu_id",request.usu_id),
             };
             List<RespuestaDto> respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
             return respuesta;
@@ -806,8 +806,8 @@ namespace gc.api.core.Servicios
             var ps = new List<SqlParameter>()
             {
                 new("@cta_id",request.Cta_Id),
-                new("@adm_id",request.Adm_Id),
-                new("@usu_id",request.Usu_Id),
+                new("@adm_id",request.adm_id),
+                new("@usu_id",request.usu_id),
                 new("@nueva",request.Nueva),
                 new("@oc_compte",request.Oc_Compte),
             };
@@ -1164,8 +1164,8 @@ namespace gc.api.core.Servicios
             var ps = new List<SqlParameter>()
             {
                 new("@tipo",request.tipo),
-                new("@adm_id",request.admId),
-                new("@usu_id",request.usuId),
+                new("@adm_id",request.adm_id),
+                new("@usu_id",request.usu_id),
                 new("@p_id",request.pId),
                 new("@tipo_carga",request.tipoCarga),
                 new("@bultos",request.bultos),
