@@ -20,6 +20,21 @@ $(function () {
         return true;
     });
 
+    // ✅ NUEVO: Evento Enter en input de búsqueda
+    $("#Busqueda").on("keydown", function (e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            const valor = $(this).val().trim();
+            if (valor) {
+                $("#btnBusquedaBase").trigger("click");
+            } else {
+                ControlaMensajeWarning("Ingrese un código o descripción de producto para buscar");
+                $("input#Busqueda").val("");
+                $(this).trigger("focus");
+            }
+        }
+    });
+
     $("#estadoFuncion").on("change", verificaEstado);
     
     // Inicializaciones
@@ -145,16 +160,16 @@ function agregarProductosAlGridOfertas(productos) {
     }
 }
 
-// ✅ NUEVA: Procesar agregado de productos múltiples (función requerida por busquedasV02.js)
+// ✅ CORREGIDO: Procesar agregado de productos múltiples
 function procesarAgregarProductosMultiples() {
     console.log("🔄 Procesando agregado múltiple de productos a ofertas");
-    
+
     AbrirWaiting("Agregando productos a ofertas...");
 
     try {
         // Obtener productos existentes para filtrar duplicados
         const productosExistentesIds = obtenerProductosExistentesIdsOfertas();
-        
+
         // Filtrar productos ya existentes
         const productosFiltrados = productosSeleccionadosBusqueda.filter(producto =>
             !productosExistentesIds.includes(producto.p_id));
@@ -171,38 +186,57 @@ function procesarAgregarProductosMultiples() {
             return;
         }
 
-        // Convertir a formato para el servidor
+        // ✅ CORRECCIÓN: Mapear correctamente a ProductoListaDto
         const productosParaEnvio = productosFiltrados.map(producto => ({
-            P_id: producto.p_id,
+            // ✅ Propiedades STRING (Mayúscula inicial)
+            P_id: producto.p_id || '',
             P_desc: producto.p_desc || '',
-            P_pcosto: parseFloat(producto.p_pcosto || 0),
-            P_mayorista: parseFloat(producto.p_pvta_001 || 0),
-            P_minorista: parseFloat(producto.p_pvta_002 || 0),
-            P_pvta: parseFloat(producto.p_pvta || 0),
             P_id_barrado: producto.p_id_barrado || '',
             P_id_prov: producto.cta_id || '',
-            P_activo: producto.p_activo || 'S'
+            P_activo: producto.p_activo || 'S',
+
+            // ✅ Propiedades DECIMAL (Mayúscula inicial)
+            P_pcosto: parseFloat(producto.p_pcosto || 0),
+            P_pvta: parseFloat(producto.p_pvta || 0),
+
+            // ✅ Propiedades DECIMAL (minúscula inicial - según DTO)
+            p_pvta_001: parseFloat(producto.p_pvta_001 || 0),
+            p_pvta_002: parseFloat(producto.p_pvta_002 || 0),
+
+            // ✅ Propiedades adicionales opcionales (según ProductoListaDto)
+            Rub_id: producto.Rub_id || '',
+            Rub_desc: producto.Rub_desc || '',
+            Cta_id: producto.cta_id || '',
+            Cta_denominacion: producto.Cta_denominacion || '',
+
+            // ✅ Propiedades de previsión y márgenes
+            lp_prevision_tot: parseFloat(producto.lp_prevision_tot || 0),
+            lp_prevision_pin: parseFloat(producto.lp_prevision_pin || 0),
+            p_margen: parseFloat(producto.p_margen || 0),
+
+            // ✅ Propiedades de impuestos
+            iva_alicuota: parseFloat(producto.iva_alicuota || 0),
+            in_alicuota: parseFloat(producto.in_alicuota || 0),
+            iva_situacion: producto.iva_situacion || 'E'
         }));
 
-        // Enviar al servidor
+        console.log(`📤 Enviando ${productosParaEnvio.length} productos al servidor`);
+        console.log('📦 Datos a enviar:', productosParaEnvio);
+
+        // ✅ CORRECCIÓN: Enviar array directamente (sin envolver en objeto)
         $.ajax({
-            url: presentarProductosOfertaMultipleUrl || presentarProductoOfertaUrl,
+            url: presentarProductosOfertaMultipleUrl,
             type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ productos: productosParaEnvio }),
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(productosParaEnvio), // ✅ Array directo
             success: function (response) {
                 CerrarWaiting();
-                
+
                 // Cerrar modal de búsqueda
                 $("#busquedaModal").modal("hide");
-                
-                if (response.error) {
-                    ControlaMensajeError(response.msg || "Error al agregar productos");
-                    return;
-                }
 
                 // Actualizar grid
-                $("#gridProductoOferta").html(response.html || response);
+                $("#gridProductoOferta").html(response);
                 configurarEventosGridOferta();
                 actualizarListaProductosEnGrid();
 
@@ -213,16 +247,17 @@ function procesarAgregarProductosMultiples() {
 
                 // Mensaje de éxito
                 let mensaje = `${productosFiltrados.length} producto(s) agregado(s) a ofertas correctamente`;
-                
+
                 if (cantidadDuplicados > 0) {
                     mensaje += `. Se omitieron ${cantidadDuplicados} duplicado(s).`;
                 }
-                
+
                 ControlaMensajeSuccess(mensaje);
             },
             error: function (xhr, status, error) {
                 CerrarWaiting();
                 console.error("❌ Error al agregar productos:", error);
+                console.error("❌ Respuesta del servidor:", xhr.responseText);
                 ControlaMensajeError("Error al agregar productos: " + (xhr.responseJSON?.msg || error));
             }
         });
@@ -1136,19 +1171,16 @@ function generarMensajeExitoGuardado(totalProductos, canalesInfo, ofertaInfo) {
 }
 
 function mostrarEstadoOferta(productoId, productoDesc) {
-    // Verificar parámetros requeridos
     if (!productoId) {
         console.error("Error: ID de producto requerido para mostrar estado");
         return;
     }
     
-    // Actualizar título del modal con la descripción del producto
     $('#tituloModalEstado').html(`
         <i class="bx bx-info-circle text-info me-2"></i>
         Estado de Ofertas - ${productoDesc || productoId}
     `);
     
-    // Mostrar spinner de carga
     $('#contenidoEstadoOferta').html(`
         <div class="d-flex justify-content-center">
             <div class="spinner-border text-warning" role="status">
@@ -1157,10 +1189,8 @@ function mostrarEstadoOferta(productoId, productoDesc) {
         </div>
     `);
     
-    // Mostrar el modal
     $('#modalEstadoOferta').modal('show');
     
-    // Realizar la llamada AJAX
     $.ajax({
         url: obtenerEstadoOfertaProductoUrl || $('#obtenerEstadoOfertaProductoUrl').val(),
         type: 'POST',
@@ -1169,7 +1199,6 @@ function mostrarEstadoOferta(productoId, productoDesc) {
             let contenido = '';
             
             if (response.error) {
-                // Caso de error
                 contenido = `
                     <div class="alert alert-danger">
                         <i class="bx bx-error-circle me-2"></i>
@@ -1177,7 +1206,6 @@ function mostrarEstadoOferta(productoId, productoDesc) {
                     </div>
                 `;
             } else if (response.warn || !response.estados || response.estados.length === 0) {
-                // Caso sin datos
                 contenido = `
                     <div class="alert alert-warning">
                         <i class="bx bx-info-circle me-2"></i>
@@ -1187,7 +1215,6 @@ function mostrarEstadoOferta(productoId, productoDesc) {
                     </div>
                 `;
             } else {
-                // Caso con datos
                 contenido = `
                     <div class="alert alert-success mb-3">
                         <i class="bx bx-check-circle me-2"></i>
@@ -1206,7 +1233,6 @@ function mostrarEstadoOferta(productoId, productoDesc) {
                             <tbody>
                 `;
                 
-                // Generar filas de la tabla
                 response.estados.forEach((estado, index) => {
                     contenido += `
                         <tr>
@@ -1224,11 +1250,9 @@ function mostrarEstadoOferta(productoId, productoDesc) {
                 `;
             }
             
-            // Actualizar el contenido del modal
             $('#contenidoEstadoOferta').html(contenido);
         },
         error: function(xhr, status, error) {
-            // Manejar errores de comunicación
             $('#contenidoEstadoOferta').html(`
                 <div class="alert alert-danger">
                     <i class="bx bx-error-circle me-2"></i>
@@ -1325,4 +1349,68 @@ function configurarEventosGridOferta() {
             null
         );
     });
+}
+
+// ✅ NUEVA: Agregar producto individual desde búsqueda (callback para busquedasV02.js)
+function agregarProductoIndividualAOfertas(producto) {
+    if (!producto || !producto.p_id) {
+        console.error("❌ Producto inválido para agregar a ofertas");
+        return;
+    }
+
+    console.log(`📦 Agregando producto individual: ${producto.p_id}`);
+
+    // Validar si el producto ya existe en el grid
+    const productosExistentes = obtenerProductosExistentesIdsOfertas();
+    if (productosExistentes.includes(producto.p_id)) {
+        ControlaMensajeWarning(`El producto "${producto.p_desc || producto.p_id}" ya está en ofertas`);
+        return;
+    }
+
+    AbrirWaiting("Agregando producto a ofertas...");
+
+    try {
+        // Convertir ProductoListaDto al formato esperado por el servidor
+        const productoParaEnvio = {
+            P_id: producto.p_id,
+            P_desc: producto.p_desc || '',
+            P_pcosto: parseFloat(producto.p_pcosto || 0),
+            P_mayorista: parseFloat(producto.p_pvta_001 || producto.p_mayorista || 0),
+            P_minorista: parseFloat(producto.p_pvta_002 || producto.p_minorista || 0),
+            P_pvta: parseFloat(producto.p_pvta || 0),
+            P_pvta_oferta: parseFloat(producto.p_pvta || 0),
+            P_id_barrado: producto.p_id_barrado || '',
+            P_id_prov: producto.cta_id || '',
+            Pg_id: producto.pg_id || '',
+            Pg_desc: producto.pg_desc || '',
+            P_activo: producto.p_activo || 'S'
+        };
+
+        $("#Busqueda").val("");
+
+        // Enviar al servidor (usar endpoint individual)
+        PostGenHtml(productoParaEnvio, presentarProductoOfertaUrl, function (htmlResponse) {
+            CerrarWaiting();
+
+            // Actualizar el grid con el HTML recibido
+            $("#gridProductoOferta").html(htmlResponse);
+
+            // Reconfigurar eventos del grid
+            configurarEventosGridOferta();
+
+            // Actualizar lista de productos en memoria
+            actualizarListaProductosEnGrid();
+
+            ControlaMensajeSuccess(`Producto "${producto.p_desc || producto.p_id}" agregado a ofertas correctamente`);
+        }, function (error) {
+            CerrarWaiting();
+            console.error("❌ Error al agregar producto:", error);
+            ControlaMensajeError("Error al agregar producto a ofertas: " + (error.message || "Error desconocido"));
+        });
+
+    } catch (error) {
+        CerrarWaiting();
+        console.error("❌ Error al procesar producto:", error);
+        ControlaMensajeError("Error al procesar producto: " + error.message);
+    }
 }
