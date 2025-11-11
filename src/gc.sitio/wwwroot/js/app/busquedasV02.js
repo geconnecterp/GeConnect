@@ -861,3 +861,47 @@ function buscarAvUIStop() {
     $("#spnBuscarProd").addClass("d-none");
     $("#btnBuscarProd").prop("disabled", false);
 }
+
+// ✅ NUEVA: Procesar respuesta JSON de búsqueda individual
+function procesarRespuestaBusquedaJSON(response, valorBuscado) {
+    if (response.error) {
+        ControlaMensajeError(response.msg || "Error en la búsqueda");
+        return;
+    }
+
+    var productos = response.productos || [];
+
+    if (productos.length === 0) {
+        AbrirMensaje("ATENCIÓN", "NO SE ENCONTRÓ EL PRODUCTO QUE INTENTA BUSCAR.", function () {
+            if (funcionBusquedaAvanzada === true) {
+                inicializaBusquedaAvanzadaV02();
+                $("#busquedaModal").modal("show");
+            }
+            $("#msjModal").modal("hide");
+            enfocarElementoSeguro("#Busqueda");
+            return true;
+        }, false, ["Aceptar"], "warn!", null);
+
+        return;
+    }
+
+    if (productos.length === 1) {
+        // ✅ ENVÍO DIRECTO: Sin conversión, directo al controlador
+        var producto = productos[0];
+        agregarProductoIndividualAOfertas(producto);
+    } else {
+        // Múltiples productos - mostrar búsqueda avanzada
+        AbrirMensaje("ATENCIÓN",
+            `Se encontraron ${productos.length} productos. Se abrirá la búsqueda avanzada para seleccionar.`,
+            function () {
+                $("#msjModal").modal("hide");
+                $("#Search").val(valorBuscado);
+                inicializaBusquedaAvanzadaV02();
+                $("#busquedaModal").modal("show");
+                setTimeout(function () {
+                    busquedaAvanzadaProductosV02(1);
+                }, 300);
+                return true;
+            }, false, ["Aceptar"], "info!", null);
+    }
+}

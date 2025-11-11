@@ -2846,7 +2846,7 @@ function procesarLote(filas, inicio, tamanoLote, totalFilas) {
 }
 
 function finalizarInicializacion() {
-    $("#progressInfo").text("Aplicando máscaras de entrada (75%)...");
+    $("#progressInfo").text("Aplicando máscaras de entrada...");
 
     setTimeout(function () {
         // Fase 4: Configuración final (InputMask y optimización visual)

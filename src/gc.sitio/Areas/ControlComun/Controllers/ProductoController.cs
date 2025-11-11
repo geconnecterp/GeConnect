@@ -182,7 +182,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                         redirectUrl = Url.Action("Login", "Token", new { area = "Seguridad" })
                     });
                 }
-
+                lp_id = LP_Id;
                 // ✅ DELEGACIÓN: Llamar al método base optimizado
                 return await BusquedaAvanzadaV02(ri01, ri02, ri03 ?? "%", act, dis, ina, cstk, sstk, buscar,lp_id, buscaNew, _productoServicio, sort, sortDir, pag);
             }

@@ -289,7 +289,7 @@ namespace gc.sitio.Areas.Productos.Controllers
         }
 
         [HttpPost]
-        public async Task<JsonResult> ConfirmarPresupuesto(PresupuestoConfirmaReqDto request)
+        public async Task<JsonResult> ConfirmarPresupuesto([FromBody] PresupuestoConfirmaReqDto request)
         {
             try
             {

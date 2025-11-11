@@ -2596,4 +2596,30 @@ input, select, textarea, button, checkbox, radio {
 .input-alerta-costo {
     border: 3px solid #e53935 !important; /* rojo fuerte, borde grueso medio */
 }
+
+
+/* estilos para el drag & drop de filas de presupuestos */
+.drag-handle {
+    cursor: move !important;
+    user-select: none;
+    background-color: #f8f9fa;
+    transition: background-color 0.2s;
+}
+
+    .drag-handle:hover {
+        background-color: #e9ecef;
+    }
+
+.ui-sortable-helper {
+    display: table;
+    background: #fff !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+    opacity: 0.9;
+}
+
+.ui-sortable-placeholder {
+    visibility: visible !important;
+    background-color: #f8f9fa !important;
+    border: 2px dashed #dee2e6 !important;
+}
 /* FIN ESTILOS PARA PRESUPUESTO */
