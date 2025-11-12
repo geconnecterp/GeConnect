@@ -97,13 +97,13 @@ namespace gc.sitio.Areas.Productos.Controllers
                 if (!respuesta.Ok || respuesta.EsError)
                 {
                     TempData["error"] = respuesta.Mensaje ?? "Error al obtener ofertas sin activar";
-                    return View();
+                    throw new NegocioException(respuesta.Mensaje ?? "Error al obtener ofertas sin activar");
                 }
-                if (respuesta.ListaEntidad == null || !respuesta.ListaEntidad.Any())
-                {
-                    TempData["warning"] = "No se encontraron ofertas sin activar";
-                    return View();
-                }
+                //if (respuesta.ListaEntidad == null || !respuesta.ListaEntidad.Any())
+                //{
+                //    TempData["warning"] = "No se encontraron ofertas sin activar";
+                //    throw new NegocioException(respuesta.Mensaje ?? "No se encontraron ofertas sin activar");
+                //}
 
                 OfertasSinActivar = respuesta.ListaEntidad;
 
