@@ -38,7 +38,9 @@
         </div>
         @if (Model.Modelo != ModeloFilter.PRODUCTO_CARGA_PRECIO )
         {
-            @if (Model.Modelo == ModeloFilter.ASIENTO_TEMPORAL || Model.Modelo == ModeloFilter.ASIENTO_DEFINITIVO)
+            @if (Model.Modelo == ModeloFilter.ASIENTO_TEMPORAL || 
+            Model.Modelo == ModeloFilter.ASIENTO_DEFINITIVO  || 
+            Model.Modelo == ModeloFilter.PRESUPUESTO)
             {
                 <div class="col-md-2 col-sm-6">
                     <div class="d-flex justify-content-sm-center">

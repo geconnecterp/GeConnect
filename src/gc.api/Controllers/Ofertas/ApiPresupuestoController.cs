@@ -96,29 +96,7 @@ namespace gc.api.Controllers.Ofertas
                 _logger?.LogError(ex, msgError);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
             }
-        }
-
-        // Obtiene el detalle de un presupuesto por id
-        [HttpGet("presupuesto/detalle/actualizado/{id}")]
-        public IActionResult ObtenerDetallePresupuestoActualizado(string id)
-        {
-            const string msgError = "Error en la invocación de la API - Obtener Detalle de Presupuesto";
-            try
-            {
-                if (string.IsNullOrWhiteSpace(id))
-                {
-                    return BadRequest("Debe indicar el identificador del presupuesto.");
-                }
-
-                var detalle = _presuSv.ObtenerDetallePresupuestoActualizado(id);
-                return Ok(new ApiResponse<List<PresupuestoProductoDto>>(detalle));
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex, msgError);
-                return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
-            }
-        }
+        }       
 
         // Obtiene los estados de presupuesto
         [HttpGet("estados")]
