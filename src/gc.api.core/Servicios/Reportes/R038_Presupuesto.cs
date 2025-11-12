@@ -4,6 +4,7 @@ using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Gen;
@@ -35,7 +36,7 @@ namespace gc.api.core.Servicios.Reportes
 
             _empresaGeco = empresa.Value;
             _titulos = new List<string> { "Nro", "Código", "Producto", "Cantidad", "P.Neto Un.", "P.Venta Un.", "Total" };
-            _campos = new List<string> { "pre_item", "p_id", "p_des", "pre_cantidad","pre_pneto", "pre_pvta", "pre_total" };
+            _campos = new List<string> { "pre_item", "p_id", "p_des", "pre_cantidad", "pre_pneto", "pre_pvta", "pre_total" };
             _cuentaSv = consultaSv;
             _logger = logger;
         }
@@ -51,7 +52,7 @@ namespace gc.api.core.Servicios.Reportes
             {
                 var ms = new MemoryStream();
                 #region Obteniendo registros desde la base de datos
-                
+
                 string tit;
                 List<PresupuestoProductoDto> registros = ObtenerDatos(solicitud, out tit);
 
@@ -60,7 +61,10 @@ namespace gc.api.core.Servicios.Reportes
                     throw new NegocioException($"No se encontraron productos del presupuestos.");
                 }
 
-                var importe = registros.Sum(x => x.pre_cantidad * x.pre_pvta);
+                registros.ForEach(x => x.pre_total = x.pre_cantidad * x.pre_pvta);
+
+                var importe = registros.Sum(x => x.pre_total);
+                var neto = registros.Sum(x => x.pre_pneto);
 
                 //verifico si se logro obtener los datos del presupuesto
                 if (_presupuesto == null || string.IsNullOrEmpty(_presupuesto.pre_id))
@@ -73,7 +77,7 @@ namespace gc.api.core.Servicios.Reportes
                 ///los datos Nombre y Domicilio. Datos obligatorios si no se carga una cuenta.
                 List<CuentaDto> c;
                 CuentaDto cliente = new CuentaDto();
-                if (string.IsNullOrEmpty(_presupuesto.cta_id))
+                if (!string.IsNullOrEmpty(_presupuesto.cta_id))
                 { //buscando datos del cliente
                     c = _cuentaSv.GetCuentaComercialLista(_presupuesto.cta_id, 'T');
                     if (c == null || c.Count == 0)
@@ -92,7 +96,7 @@ namespace gc.api.core.Servicios.Reportes
                 }
 
                 //COMPLETAMOS EL TITULO DEL REPORTE AGREGANDO LA DENOMINACIÓN DE LA CUENTA
-                tit += cliente.Cta_Denominacion;
+                //tit += $" {cliente.Cta_Denominacion}" ;
                 solicitud.Titulo = tit;
                 solicitud.Cuenta = cliente;
 
@@ -113,13 +117,13 @@ namespace gc.api.core.Servicios.Reportes
                 // Agregar el evento de pie de página
                 writer.PageEvent = new CustomPdfPageEventHelper(solicitud.Observacion);
 
-                var logo = HelperPdf.CargaLogo(solicitud.LogoPath??"", 20, pdf.PageSize.Height - 10, 20);
+                var logo = HelperPdf.CargaLogo(solicitud.LogoPath ?? "", 20, pdf.PageSize.Height - 10, 15);
 
                 #endregion
                 //****=============================****/
                 //****  CAMBIAR ANCHOS DE COLUMNAS ****
                 //****=============================****/
-                anchos = [70f, 30f];
+                anchos = [10f, 10f, 25f, 10f, 15f, 15f, 15f];
 
                 var chico = HelperPdf.FontChicoPredeterminado();
                 var normal = HelperPdf.FontNormalPredeterminado();
@@ -144,11 +148,12 @@ namespace gc.api.core.Servicios.Reportes
 
                 pdf.Open();
 
-                //#region Datos del Cliente o Proveedor
-                //tabla = HelperPdf.GeneraTabla(4, [20f, 70f, 5f, 5f], 100, 10, 10);
-                ////hay que ir a buscar los datos del cliente para presentarlos en pantalla.
-                //HelperPdf.CargarTablaClienteProveedor(pdf, c[0], normal, normalBold);
-                //#endregion
+                #region Datos del Cliente o Proveedor
+                tabla = HelperPdf.GeneraTabla(4, [20f, 70f, 5f, 5f], 100, 10, 10);
+                //hay que ir a buscar los datos del cliente para presentarlos en pantalla.
+                HelperPdf.CargaDatosPresupuesto(pdf, _presupuesto, normal, normalBold);
+                #endregion
+
 
                 #region Carga del Listado
 
@@ -162,12 +167,19 @@ namespace gc.api.core.Servicios.Reportes
                 //            { "Saldo", 5095.20m }
                 //        };
                 var totales = new Dictionary<string, decimal>{
-                    { "Importe", importe} };
+                    { "pre_total", importe},
+                    { "pre_pneto", neto }
+                };
 
 
                 //HelperPdf.GenerarListadoDesdeLista(pdf, regs, _campos, anchos, chico, false, true, totales);
-                var aTotalizar = new List<string> { "Importe" };
+                //var aTotalizar = new List<string> { "Importe" };
                 HelperPdf.GenerarListadoDesdeLista(pdf, registros, _campos, anchos, chico, false, true, totales);
+                string pesos = HelperGen.EnLetras(importe.ToString());
+                //linea con el detalle de el total en palabras
+                
+                pdf.Add(new Paragraph($"Son Pesos {pesos}", chico));
+
                 #endregion
 
                 pdf.Close();
@@ -202,9 +214,9 @@ namespace gc.api.core.Servicios.Reportes
             _presupuesto = presup[0];
 
             //Se obtienen los parámetros del reporte
-           
-           
-            titulo = solicitud.Titulo;
+
+
+            titulo = "Presupuesto/Cotización";// solicitud.Titulo;
             return _presupServicio.ObtenerDetallePresupuesto(pre_id);
 
         }

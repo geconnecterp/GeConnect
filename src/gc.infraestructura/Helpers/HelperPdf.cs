@@ -130,6 +130,7 @@ using gc.infraestructura.Dtos.Consultas.ReporteFinanciero;
 using gc.infraestructura.Dtos.DocManager;
 using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos.Presupuestos;
 using gc.infraestructura.EntidadesComunes.Options;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
@@ -537,6 +538,15 @@ namespace gc.infraestructura.Helpers
 			return new Chunk(texto, fuente);
 		}
 
+		/// <summary>
+		/// Genera una tabla
+		/// </summary>
+		/// <param name="numeroColumnas"></param>
+		/// <param name="anchosDeColumna"></param>
+		/// <param name="anchoTabla"></param>
+		/// <param name="espaciadoAnterior"></param>
+		/// <param name="espaciadoPosterior"></param>
+		/// <returns></returns>
 		public static PdfPTable GeneraTabla(int numeroColumnas, float[] anchosDeColumna, float anchoTabla, float espaciadoAnterior, float espaciadoPosterior)
 		{
 			PdfPTable tabla = new PdfPTable(numeroColumnas);
@@ -950,7 +960,52 @@ namespace gc.infraestructura.Helpers
 			return celda;
 		}
 
-		public static void CargarTablaClienteProveedor(Document pdf, CuentaDto cuenta, Font fuenteEtiqueta, Font fuenteValor)
+		public static void CargaDatosPresupuesto(Document pdf, PresupuestoDto presup, Font fuenteEtiqueta, Font fuenteValor)
+		{
+            PdfPTable tabla = GeneraTabla(2, [20f, 80f], 100, 10, 0);
+            //FILA 1
+            tabla.AddCell(CeldaSinBorde("Presupuesto N°: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(presup.pre_id, fuenteValor, Element.ALIGN_LEFT));
+            //fila 2 
+            tabla.AddCell(CeldaSinBorde("Cliente: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			var cli = !string.IsNullOrEmpty(presup.cta_id) ? 
+				$"{presup.cta_id}-{presup.cta_denominacion}":
+				$"{presup.pre_nombre}";
+            tabla.AddCell(CeldaSinBorde(cli, fuenteValor, Element.ALIGN_LEFT));
+            pdf.Add(tabla);
+
+			//generamos una nueva tabla sin espacio con la tabla anterior
+			tabla = GeneraTabla(4, [20f, 30f, 20f, 30f], 100, 0, 0);
+
+            //fila3
+            tabla.AddCell(CeldaSinBorde("Domicilio: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
+            tabla.AddCell(CeldaSinBorde(presup.pre_domicilio, fuenteValor, Element.ALIGN_LEFT));
+            tabla.AddCell(CeldaSinBorde("Registrado: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
+            tabla.AddCell(CeldaSinBorde(presup.usu_apellidoynombre, fuenteValor, Element.ALIGN_LEFT));
+
+            //fila4
+            tabla.AddCell(CeldaSinBorde("Vigencia Desde: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
+            tabla.AddCell(CeldaSinBorde(presup.pre_vigencia_desde.ToShortDateString(), fuenteValor, Element.ALIGN_LEFT));
+            tabla.AddCell(CeldaSinBorde("Vigencia Hasta: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
+            tabla.AddCell(CeldaSinBorde(presup.pre_vigencia_hasta.ToShortDateString(), fuenteValor, Element.ALIGN_LEFT));
+
+			pdf.Add(tabla);
+
+			tabla = GeneraTabla(6, [20f, 10f, 15f, 20f, 15f, 20f], 100, 0, 10);
+            //fila5
+            tabla.AddCell(CeldaSinBorde("Sucursal: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
+            tabla.AddCell(CeldaSinBorde(presup.adm_nombre, fuenteValor, Element.ALIGN_LEFT));
+            tabla.AddCell(CeldaSinBorde("Forma de Pago: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
+            tabla.AddCell(CeldaSinBorde(presup.pre_obs_pago, fuenteValor, Element.ALIGN_LEFT));
+            tabla.AddCell(CeldaSinBorde("Entrega: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
+            tabla.AddCell(CeldaSinBorde(presup.pre_obs_entrega, fuenteValor, Element.ALIGN_LEFT));
+
+			pdf.Add(tabla);
+        }
+
+
+
+        public static void CargarTablaClienteProveedor(Document pdf, CuentaDto cuenta, Font fuenteEtiqueta, Font fuenteValor)
 		{
 			PdfPTable tabla = GeneraTabla(4, [20f, 30f, 20f, 30f], 100, 10, 10);
 
