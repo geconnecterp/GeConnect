@@ -105,10 +105,14 @@ function cancelarOperacion(e) {
         $("#btnAbmModif").prop("disabled", !permite);
         $("#btnAbmElimi").prop("disabled", !permite);
         $("#btnAbmNuevo").prop("disabled", false);
+        $("#btnImprimir").prop("disabled", false);
+
     } else {
         // Si no hay selección, solo habilitar Nuevo
         $("#btnAbmNuevo").prop("disabled", false);
-        $("#btnAbmModif, #btnAbmElimi").prop("disabled", true);
+        $("#btnAbmModif, #btnAbmElimi, #btnImprimir").prop("disabled", true);
+        let data = {};
+        cargarReporteEnArre(indexPrint, data, "Presupuesto/Cotización");
     }
 
     // ✅ PASO 5: Desactivar y ocultar botones de confirmación
@@ -132,6 +136,13 @@ function cancelarOperacion(e) {
 }
 
 function InicializaEventosPresupuesto() {
+    //evento del boton imprimir
+    $(document).on("click", "#btnImprimir", imprimirPresupuesto);
+    cargarReporteEnArre(indexPrint, {}, "Presupuesto/Cotilación");
+    $("#btnImprimir").prop("disabled", true);
+
+
+
     // Activar/desactivar período
     $("#chkDesdeHasta").on("change", function () {
         const on = $(this).is(":checked");
@@ -570,6 +581,15 @@ function InicializaEventosPresupuesto() {
     });
 } // ✅ CIERRE DE InicializaEventosPresupuesto
 
+/**
+ * Maneja la impresión de asientos
+ */
+function imprimirPresupuesto() {
+    let data = { modulo: "", parametros: [] }
+    invocacionGestorDoc(data);
+}
+
+
 // ============================================================================
 // FUNCIONES AUXILIARES PARA FORMULARIO
 // ============================================================================
@@ -804,12 +824,19 @@ function guardarYAvanzarCampoPresup($campo) {
                     CerrarWaiting();
                     //tenemos el valor calculado
                     let vta = resp.pvta.p_pvta;
+                    let pneto = resp.pvta.p_pneto;
+                    let iva = resp.pvta.p_iva;
                     //le asignamos el nuevo valor a PVTA
                     const $inPvta = $fila.find('input.input-pre_pvta');
+                    // Actualizar UI del precio de venta
                     $inPvta.val(vta.toFixed(2));
                     $inPvta.data("originalValue", vta)
                         .attr("data-original-value", vta)
                         .trigger("change");
+                    // Actualizar el data del precio neto e IVA
+                    $fila.data("p-pneto", pneto.toFixed(2))
+                        .attr("data-p-pneto", pneto.toFixed(2));
+                    $
                     //calculamos el total de la fila.
                     calcularElTotaldelaFila(cantidad, vta, $fila);
                     procesandoCampo = false;
@@ -1182,8 +1209,11 @@ function configurarEventosSeleccionPres() {
             if (!fueSeleccionado) {
                 $this.addClass("selected-row");
                 let preId = $this.data("pre-id");
-
+               
                 if (preId) {
+                    $("#btnImprimir").prop("disabled", false);
+                    let data = { pre_id: preId };
+                    cargarReporteEnArre(indexPrint, data, "Presupuesto/Cotización");
                     cargarPresupuestoDatos(preId);
                     cargarProductosPresupuesto(preId);
                 }

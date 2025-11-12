@@ -1,6 +1,7 @@
 ﻿using gc.api.core.Contratos.Servicios;
 using gc.api.core.Contratos.Servicios.Asientos;
 using gc.api.core.Contratos.Servicios.Libros;
+using gc.api.core.Contratos.Servicios.Ofertas;
 using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
@@ -28,7 +29,8 @@ namespace gc.api.core.Servicios.Reportes
             IApiBalanceGeneralServicio apiBgr,
             IApiProductoServicio apiProdSv,
 			IFinancieroServicio finServ,
-			 IOptions<EmpresaGeco> empresa, ICuentaServicio ctaSv, IOrdenDePagoServicio _opSv, ILogger<ReportService> logger) : base(uow)
+            IApiPresupuetoServicio apiPresuSv,
+             IOptions<EmpresaGeco> empresa, ICuentaServicio ctaSv, IOrdenDePagoServicio _opSv, ILogger<ReportService> logger) : base(uow)
         {
 
             // Se inicializa el diccionario de generadores de reportes
@@ -69,6 +71,7 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R035_SaldoDeCuentas, new R035_SaldoDeCuentas(uow,consSv, finServ,empresa,ctaSv, logger) },
 				{ InfoReporte.R036_FlujoDeIngresos, new R036_FlujoDeIngresos(uow,consSv, finServ,empresa,ctaSv, logger) },
 				{ InfoReporte.R037_ProyeccionDeEgresos, new R037_ProyeccionDeEgresos(uow,consSv, finServ,empresa,ctaSv, logger) },
+				{ InfoReporte.R038_Presupuesto, new R038_Presupuesto(uow,apiPresuSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R039_AnticipoDeEmpleados, new R039_AnticipoDeEmpleado(uow,consSv, finServ,empresa,ctaSv, logger) },
 				{ InfoReporte.R040_DetalleDeAnticipo, new R040_DetalleDeAnticipo(uow,consSv, finServ,empresa,ctaSv, logger) },
 				{ InfoReporte.R041_DetalleDeLiquidacionDeHaberes, new R041_DetalleLiquidacionDeHaberes(uow,consSv, finServ,empresa,ctaSv, logger) }

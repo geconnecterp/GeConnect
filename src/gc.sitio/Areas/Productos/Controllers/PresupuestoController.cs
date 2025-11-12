@@ -1,10 +1,8 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
-using gc.infraestructura.Core.EntidadesComunes;
+﻿using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.Dtos.Productos.Presupuestos;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
@@ -12,9 +10,7 @@ using gc.infraestructura.Helpers;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
 using gc.sitio.core.Servicios.Contratos.Users;
-using gc.sitio.core.Servicios.Implementacion;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Reflection;
@@ -63,22 +59,22 @@ namespace gc.sitio.Areas.Productos.Controllers
                 if (!VerificarAutenticacion(out IActionResult redirectResult))
                     return redirectResult;
 
-
+                string titulo = "PRESUPUESTOS";
+                ViewData["Titulo"] = titulo;
                 #region Gestor Impresion - Inicializacion de variables
 
-                ////Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
-                //DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+                //Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
+                DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+                ViewBag.ImpresionId = _modulo.Reportes[0].Id; //siempre el primer reporte
 
-                //_logger?.LogInformation($"Generando Arbol de Archivos del módulo. {MethodBase.GetCurrentMethod()?.Name}");
+                _logger?.LogInformation($"Generando Arbol de Archivos del módulo. {MethodBase.GetCurrentMethod()?.Name}");
 
-                ////en este mismo acto se cargan los posibles documentos
-                ////que se pueden imprimir, exportar, enviar por email o whatsapp
-                //ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+                //en este mismo acto se cargan los posibles documentos
+                //que se pueden imprimir, exportar, enviar por email o whatsapp
+                ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
 
                 #endregion
                 InicializaPresupuesto();
-
-                ViewData["Titulo"] = "PRESUPUESTOS";
             }
             catch (NegocioException ex)
             {
