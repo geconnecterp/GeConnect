@@ -52,5 +52,23 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 
 		}
+
+		public List<LiqEmpleadoFileBcoDto> ListaLiqDeEmpFileBco
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("ListaLiqDeEmpFileBco");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<LiqEmpleadoFileBcoDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ListaLiqDeEmpFileBco", json);
+			}
+		}
 	}
 }

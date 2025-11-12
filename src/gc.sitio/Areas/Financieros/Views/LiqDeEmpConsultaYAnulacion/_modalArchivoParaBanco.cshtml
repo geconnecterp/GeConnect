@@ -1,0 +1,45 @@
+﻿@model ArchivoParaBancoModel
+@{
+}
+@Html.Hidden("le_compte", Model.le_compte)
+<div id="divInputsModal">
+	<div class="modal-header">
+		<h5 class="modal-title" id="modalCenterTitle">@Model.titulo</h5>
+	</div>
+	<div class="modal-body">
+		<div class="row">
+			<div class="row col-12">
+				<div class="col-6">
+					<div class="input-group input-group-sm mt-2">
+						<span class="input-group-text fixed-lbl-for-abm-100" id="lbIdDesde">Nro. Archivo:</span>
+						<input type="text" class="form-control activable inputEditable" asp-for="nro_archivo" />
+					</div>
+				</div>
+			</div>
+			<div class="row col-12">
+				<div class="col-6">
+					<div class="input-group input-group-sm mt-2">
+						<div class="form-check form-check-inline">
+							<input class="form-check-input" type="radio" name="tipoFiltro" id="radioSJ" value="F0000005" checked>
+							<label class="form-check-label" for="radioSJ">Banco San Juan</label>
+						</div>
+						<div class="form-check form-check-inline">
+							<input class="form-check-input" type="radio" name="tipoFiltro" id="radioR" value="F0000004">
+							<label class="form-check-label" for="radioR">Banco Rio</label>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal-footer">
+		<div class="input-group input-group-sm">
+			<button type="button" class="btn btn-success btn-sm ms-1" id="btnConfirmar">
+				<i class="bx bx-badge-check"></i> Confirmar
+			</button>
+			<button type="button" class="btn btn-outline-secondary btn-sm ms-1" id="btnSalir" data-bs-dismiss="modal">
+				<i class="bx bx-log-out-circle"></i> Salir
+			</button>
+		</div>
+	</div>
+</div>

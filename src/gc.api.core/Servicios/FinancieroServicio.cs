@@ -1007,7 +1007,7 @@ namespace gc.api.core.Servicios
 			return movFinan;
 		}
 
-		public List<RespuestaDto> LiqudacionDeEmpleadoAnular(LiqudacionDeEmpleadoAnularReques request)
+		public List<RespuestaDto> LiqudacionDeEmpleadoAnular(FinancieroLiqDeEmpleadoAnularRequest request)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_LE_ANULA_CONFIRMAR;
 			var ps = new List<SqlParameter>()
@@ -1017,6 +1017,19 @@ namespace gc.api.core.Servicios
 				new("@usu_id",request.usu_id),
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<LiqEmpleadoFileBcoDto> FinancieroLiqEmpleadoFileBco(FinancieroLiqEmpleadoFileBcoRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_LE_FILE_BCO;
+			var ps = new List<SqlParameter>()
+			{
+				new("@le_compte",request.le_compte),
+				new("@nro_file",request.nro_file),
+				new("@ctaf_id",request.ctaf_id),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<LiqEmpleadoFileBcoDto>(sp, ps, true);
 			return listaTemp;
 		}
 	}

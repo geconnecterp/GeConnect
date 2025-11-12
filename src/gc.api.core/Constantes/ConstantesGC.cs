@@ -210,6 +210,7 @@
 			public const string SP_F_LE_DETALLE = "SPGECO_F_LE_Detalle";
 			public const string SP_F_LE_ANULA_CONFIRMAR = "SPGECO_F_LE_Anula_Confirmar";
 			public const string SP_F_LE_LISTA = "SPGECO_F_LE_Lista";
+			public const string SP_F_LE_FILE_BCO = "SPGECO_F_LE_File_Bco";
 			#endregion
 
 			#region SP Depositos

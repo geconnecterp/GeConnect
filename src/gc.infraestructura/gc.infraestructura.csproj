@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Dtos\Financieros\Request\LiqudacionDeEmpleadoAnularReques.cs" />
     <Compile Remove="EntidadesComunes\ProductFilters.cs" />
     <Compile Remove="EntidadesComunes\SolicitudFilter.cs" />
   </ItemGroup>

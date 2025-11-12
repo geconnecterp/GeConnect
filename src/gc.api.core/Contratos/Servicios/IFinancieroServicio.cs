@@ -61,6 +61,7 @@ namespace gc.api.core.Contratos.Servicios
         List<RespuestaDto> FinancieroLiqEmpleadoConfirmar(FinancieroLiqEmpleadoConfirmarRequest request);
         List<LiqEmpleadoDetalleParaReporteDto> GetLiqEmpDetalleParaReporte(string le_compte);
         List<LiqDeEmpleadoListaDto> BuscarLiquidacionesDeEmpleados(ConsultaLiqDeEmpleadoRequest filtros);
-        List<RespuestaDto> LiqudacionDeEmpleadoAnular(LiqudacionDeEmpleadoAnularReques request);
+        List<RespuestaDto> LiqudacionDeEmpleadoAnular(FinancieroLiqDeEmpleadoAnularRequest request);
+        List<LiqEmpleadoFileBcoDto> FinancieroLiqEmpleadoFileBco(FinancieroLiqEmpleadoFileBcoRequest request);
 	}
 }

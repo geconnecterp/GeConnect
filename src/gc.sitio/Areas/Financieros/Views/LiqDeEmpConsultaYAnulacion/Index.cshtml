@@ -120,6 +120,15 @@
 	</div>
 </div>
 
+<div class="modal fade modal-golden in" id="modalArchivoParaBanco" tabindex="-1" style="display: none;" aria-hidden="true" data-backdrop="static">
+	<div class="modal-dialog modal-x" role="document">
+		<div class="modal-content">
+			<div id="divArchivoParaBanco">
+			</div>
+		</div>
+	</div>
+</div>
+
 <!-- para el modal del geston de impresion -->
 <div id="modalGestorDocumental"></div>
 
@@ -140,6 +149,8 @@
 		var cargarDetalleDeLiquidacionUrl = "@Url.Action("CargarDetalleDeLiquidacion", "liqdeempconsultayanulacion", new { area = "Financieros" })";
 		var anularLiquidacionDeEmpleadoURL = "@Url.Action("AnularLiquidacionDeEmpleado", "liqdeempconsultayanulacion", new { area = "Financieros" })";
 		var inicializarDatosEnSesionUrl =  "@Url.Action("InicializarDatosEnSesion", "liqdeempconsultayanulacion", new { area = "Financieros" })";
+		var abrirModalArchivoBancoUrl = "@Url.Action("AbrirModalArchivoBanco", "liqdeempconsultayanulacion", new { area = "Financieros" })";
+		var generarArchivoParaBancoUrl = "@Url.Action("GenerarArchivoParaBanco", "liqdeempconsultayanulacion", new { area = "Financieros" })";
 
 		// Gestor de impresión
 		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';

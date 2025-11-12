@@ -720,12 +720,25 @@ namespace gc.api.Controllers.Financieros
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]
-		public IActionResult LiqudacionDeEmpleadoAnular([FromBody] LiqudacionDeEmpleadoAnularReques r)
+		public IActionResult LiqudacionDeEmpleadoAnular([FromBody] FinancieroLiqDeEmpleadoAnularRequest r)
 		{
 			ApiResponse<List<RespuestaDto>> response;
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _financieroServicio.LiqudacionDeEmpleadoAnular(r);
 			response = new ApiResponse<List<RespuestaDto>>(res);
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<LiqEmpleadoFileBcoDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult FinancieroLiqEmpleadoFileBco([FromBody] FinancieroLiqEmpleadoFileBcoRequest r)
+		{
+			ApiResponse<List<LiqEmpleadoFileBcoDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.FinancieroLiqEmpleadoFileBco(r);
+			response = new ApiResponse<List<LiqEmpleadoFileBcoDto>>(res);
 			return Ok(response);
 		}
 	}

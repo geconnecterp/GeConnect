@@ -169,7 +169,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				if (string.IsNullOrEmpty(id))
 					return Json(new { error = true, warn = false, msg = "Debe seleccionar una Liquidación para anular." });
 
-				var request = new LiqudacionDeEmpleadoAnularReques()
+				var request = new FinancieroLiqDeEmpleadoAnularRequest()
 				{
 					le_compte = id,
 					adm_id = AdministracionId,
@@ -194,6 +194,64 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			{
 				ListaLiqDeEmp = [];
 				return Json(new { error = false, warn = false, msg = "" });
+			}
+			catch (NegocioException ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+		}
+
+		public IActionResult AbrirModalArchivoBanco(string le_compte)
+		{
+			var model = new ArchivoParaBancoModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				model.le_compte = le_compte;
+				model.titulo = "Archivo para Banco";
+				model.nro_archivo = string.Empty;
+
+				return PartialView("_modalArchivoParaBanco", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public JsonResult GenerarArchivoParaBanco(FinancieroLiqEmpleadoFileBcoRequest request)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return Json(new { error = true, warn = false, msg = "No autenticado." });
+				if (string.IsNullOrEmpty(request.le_compte))
+					return Json(new { error = true, warn = false, msg = "Debe seleccionar la Liquidación de Empleados." });
+				var resultado = _financieroServicio.FinancieroLiqEmpleadoFileBco(request, TokenCookie);
+
+				if (resultado== null || resultado.Count<=0)
+					return Json(new { error = true, warn = false, msg = "No se generó el archivo para banco." });
+
+				ListaLiqDeEmpFileBco = [];
+				ListaLiqDeEmpFileBco = resultado;
+
+				Console.WriteLine($"json: {resultado.First().json}");
+				return Json(new { error = false, warn = false, msg = "", resultado.First().json, formato = resultado.First().formato_salida, resultado.First().encabezado });
 			}
 			catch (NegocioException ex)
 			{

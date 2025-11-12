@@ -284,15 +284,6 @@ function AbrirModalAgregarAnticipo() {
 					console.warn("No se encontró el input #Rel02");
 				}
 			}, 500);
-			//$modal.on('shown.bs.modal', function () {
-			//	const $rel02 = $("#Rel02");
-			//	if ($rel02.length > 0) {
-			//		$rel02.trigger("focus");
-			//		console.log("Foco aplicado a #Rel02");
-			//	} else {
-			//		console.warn("No se encontró #Rel02 al mostrar el modal");
-			//	}
-			//});
 
 			return true
 		});

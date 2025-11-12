@@ -61,6 +61,7 @@ namespace gc.sitio.core.Servicios.Contratos
 		RespuestaGenerica<RespuestaDto> FinancieroLiqEmpleadoConfirmar(FinancieroLiqEmpleadoConfirmarRequest request, string token);
 		Task<(List<LiqDeEmpleadoListaDto>, MetadataGrid)> BuscarLiquidacionesDeEmpleados(ConsultaLiqDeEmpleadoRequest filters, string token);
 		List<LiqEmpleadoDetalleParaReporteDto> GetLiqEmpDetalle(string le_compte, string token);
-		RespuestaGenerica<RespuestaDto> LiqudacionDeEmpleadoAnular(LiqudacionDeEmpleadoAnularReques request, string token);
+		RespuestaGenerica<RespuestaDto> LiqudacionDeEmpleadoAnular(FinancieroLiqDeEmpleadoAnularRequest request, string token);
+		List<LiqEmpleadoFileBcoDto> FinancieroLiqEmpleadoFileBco(FinancieroLiqEmpleadoFileBcoRequest request, string token);
 	}
 }
