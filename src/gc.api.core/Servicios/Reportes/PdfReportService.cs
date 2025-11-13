@@ -30,6 +30,7 @@ namespace gc.api.core.Servicios.Reportes
             IApiProductoServicio apiProdSv,
 			IFinancieroServicio finServ,
             IApiPresupuetoServicio apiPresuSv,
+            IApiOfertaServicio ofeSv,
              IOptions<EmpresaGeco> empresa, ICuentaServicio ctaSv, IOrdenDePagoServicio _opSv, ILogger<ReportService> logger) : base(uow)
         {
 
@@ -66,6 +67,7 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R029_LibroBancosResumen, new R029_LibroBancosResumen(uow,consSv, finServ,empresa,ctaSv, logger) },
                 { InfoReporte.R030_HistoricoLibro, new R030_HistoricoLibro(uow,consSv, finServ,empresa,ctaSv, logger) },
 				{ InfoReporte.R031_ExtractoBancario, new R031_ExtractoBancario(uow,consSv, finServ,empresa,ctaSv, logger) },
+				{ InfoReporte.R032_OfertasSinActivar, new R032_OfertaSinActivar(uow,ofeSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R033_ChequePropioEmitido, new R033_ChequePropioEmitido(uow,consSv, finServ,empresa,ctaSv, logger) },
 				{ InfoReporte.R034_ProyeccionDeIngreso, new R034_ProyeccionDeIngreso(uow,consSv, finServ,empresa,ctaSv, logger) },
 				{ InfoReporte.R035_SaldoDeCuentas, new R035_SaldoDeCuentas(uow,consSv, finServ,empresa,ctaSv, logger) },
@@ -74,7 +76,10 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R038_Presupuesto, new R038_Presupuesto(uow,apiPresuSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R039_AnticipoDeEmpleados, new R039_AnticipoDeEmpleado(uow,consSv, finServ,empresa,ctaSv, logger) },
 				{ InfoReporte.R040_DetalleDeAnticipo, new R040_DetalleDeAnticipo(uow,consSv, finServ,empresa,ctaSv, logger) },
-				{ InfoReporte.R041_DetalleDeLiquidacionDeHaberes, new R041_DetalleLiquidacionDeHaberes(uow,consSv, finServ,empresa,ctaSv, logger) }
+				{ InfoReporte.R041_DetalleDeLiquidacionDeHaberes, new R041_DetalleLiquidacionDeHaberes(uow,consSv, finServ,empresa,ctaSv, logger) },
+				{ InfoReporte.R042_OfertasActivas, new R042_OfertasActivas(uow,ofeSv, empresa,ctaSv, logger) },
+                
+
 			}; 
             _logger = logger;
         }

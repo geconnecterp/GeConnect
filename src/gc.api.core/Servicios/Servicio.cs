@@ -369,6 +369,8 @@
 			tabla.AddCell(celdaSubTabla);
 
 			// Columna 3: Título del informe
+			subTabla = new PdfPTable(1);
+			
 			PdfPCell celdaTitulo = new PdfPCell(new Phrase(solicitud.Titulo, titulo))
 			{
 				Border = Rectangle.NO_BORDER,
@@ -376,7 +378,21 @@
 				VerticalAlignment = Element.ALIGN_MIDDLE,
 				PaddingTop = 10f
 			};
-			tabla.AddCell(celdaTitulo);
+			subTabla.AddCell(celdaTitulo);
+			if (!string.IsNullOrEmpty(solicitud.SubTitulo))
+			{
+                celdaTitulo = new PdfPCell(new Phrase(solicitud.SubTitulo, titulo))
+                {
+                    Border = Rectangle.NO_BORDER,
+                    HorizontalAlignment = Element.ALIGN_CENTER,
+                    VerticalAlignment = Element.ALIGN_MIDDLE,
+                    PaddingTop = 5f
+                };
+                subTabla.AddCell(celdaTitulo);
+            }
+
+
+			tabla.AddCell(subTabla);
 
 			// Columna 4: Fecha
 			string fechaHora = DateTime.Now.ToString("dd/MM/yyyy HH:mm");

@@ -27,7 +27,7 @@ namespace gc.api.core.Servicios.Reportes
         private readonly List<string> _campos;
         private readonly ICuentaServicio _cuentaSv;
         private readonly ILogger _logger;
-        private PresupuestoDto _presupuesto = null;
+        private PresupuestoDto? _presupuesto = null;
 
         public R038_Presupuesto(IUnitOfWork uow, IApiPresupuetoServicio presup,
            IOptions<EmpresaGeco> empresa, ICuentaServicio consultaSv, ILogger logger) : base(uow)
@@ -195,7 +195,7 @@ namespace gc.api.core.Servicios.Reportes
             catch (Exception ex)
             {
                 //_logger.Log(typeof(R001_InformeCuentaCorriente), Level.Error, $"Error al generar el informe de cuenta corriente: {ex.Message}", ex);
-                _logger.LogError(ex, "Error en R003");
+                _logger.LogError(ex, "Error en R038");
                 throw new NegocioException("Se produjo un error al intentar generar el Informe de Cuenta Corriente. Para mayores datos ver el log.");
             }
         }
@@ -216,7 +216,7 @@ namespace gc.api.core.Servicios.Reportes
             //Se obtienen los parámetros del reporte
 
 
-            titulo = "Presupuesto/Cotización";// solicitud.Titulo;
+            titulo = solicitud.Titulo;
             return _presupServicio.ObtenerDetallePresupuesto(pre_id);
 
         }

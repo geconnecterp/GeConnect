@@ -1,5 +1,10 @@
 ﻿@{
     Layout = "~/views/shared/_Layout.cshtml";
+    int indicePrint = ViewBag.ImpresionId != null ? (int)ViewBag.ImpresionId : 0;
+}
+
+@section styles {
+    <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
 
 <div class="grid-golden">
@@ -43,7 +48,7 @@
         </div>
     </div>
 </div>
-
+<div id="modalGestorDocumental"></div>
 @section scripts {
     <script type="text/javascript">
         let buscarCanalesUrl = "@Url.Action("BuscarCanales", "Ofertas", new { area = "Productos" })";
@@ -54,7 +59,17 @@
         let eliminarOfertasSinActivarUrl = "@Url.Action("EliminarOfertasSinActivar", "OfertasActivar", new { area = "Productos" })";
 
         let homeOfertaUrl = "@Url.Action("index", "OfertasActivar", new { area = "Productos" })";
+
+        let indexPrint = parseInt("@indicePrint");
+        var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+        var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+        var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+        var enviarEmailUrl =  "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+        var enviarWhatsAppUrl =  "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+
     </script>
+    <script src="~/lib/jstree/jstree.min.js"></script>
+    <script src="~/js/app/areas/docmngr/docmanager.js"></script>
     <script src="~/js/app/areas/precios/ofertaActivar.js" type="text/javascript"></script>
 
 }
