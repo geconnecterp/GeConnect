@@ -59,7 +59,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 if (!VerificarAutenticacion(out IActionResult redirectResult))
                     return redirectResult;
 
-                string titulo = "PRESUPUESTOS";
+                string titulo = "Presupuesto/Cotización";
                 ViewData["Titulo"] = titulo;
                 #region Gestor Impresion - Inicializacion de variables
 

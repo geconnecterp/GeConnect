@@ -43,6 +43,7 @@ namespace gc.infraestructura.Enumeraciones
 		R029_LibroBancosResumen = 29,
 		R030_HistoricoLibro = 30,
 		R031_ExtractoBancario = 31,
+		R032_OfertasSinActivar = 32,
 		R033_ChequePropioEmitido = 33,
 		R034_ProyeccionDeIngreso = 34,
 		R035_SaldoDeCuentas = 35,
@@ -51,6 +52,8 @@ namespace gc.infraestructura.Enumeraciones
 		R038_Presupuesto = 38,
 		R039_AnticipoDeEmpleados = 39,
 		R040_DetalleDeAnticipo = 40,
-		R041_DetalleDeLiquidacionDeHaberes = 41
-	}
+		R041_DetalleDeLiquidacionDeHaberes = 41,
+		R042_OfertasActivas = 42,
+        R043_PROMO_COMBO = 43
+    }
 }

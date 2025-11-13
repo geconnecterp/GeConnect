@@ -182,7 +182,7 @@ namespace gc.api.core.Servicios.Reportes
             catch (Exception ex)
             {
                 //_logger.Log(typeof(R001_InformeCuentaCorriente), Level.Error, $"Error al generar el informe de cuenta corriente: {ex.Message}", ex);
-                _logger.LogError(ex, "Error en R003");
+                _logger.LogError(ex, "Error en R004");
                 throw new NegocioException("Se produjo un error al intentar generar el Informe de Cuenta Corriente. Para mayores datos ver el log.");
             }
         }
