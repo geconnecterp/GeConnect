@@ -84,6 +84,7 @@ namespace gc.infraestructura.Constantes
             public const string PROMO_COMBO = "PROMO_COMBO";
             public const string PRESUPUESTO = "PRESUPUESTO";
             public const string REASIGNACION_DE_FAMILIA = "REASIGNACION_DE_FAMILIA";
-		}
+            public const string ETIQUETA = "ETIQUETA";
+        }
     }
 }

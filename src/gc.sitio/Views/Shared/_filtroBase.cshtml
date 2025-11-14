@@ -8,6 +8,33 @@
         <h5 class="mb-0" id="tituloLegend">Filtros </h5>
     </div>
     <div class="filter-golden-body">
+        @if (Model.Modelo.Equals(ModeloFilter.ETIQUETA))
+        {
+            <div class="row mb-1 mt-1">
+                <div class="col-12">
+                    <label class="text-danger">La selección de los criterios son independientes entre sí.</label>
+                </div>
+            </div>
+            <div class="row  mb-1 mt-1">
+                <div class=" col-md-6 col-sm-12">
+                    <div class="input-group input-group-sm">
+                        <div class="form-check form-check-inline form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="chkTipoEtiq" />
+                            <label class="form-check-label" for="chkTipoEtiq" id="lbTipoEtiq">Tipo de Etiqueta</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class=" col-sm-4">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">Tipo</span>
+                        @Html.DropDownList("TipoEtiqueta", null, "Seleccionar...", new { @class = "form-control", style = "width:50px;" })
+                    </div>
+                </div>
+            </div>
+        }
+
         @if (Model.Rel01 != null && Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA))
         {
             <div class="row  mb-1 mt-1">
@@ -115,7 +142,8 @@
                 !Model.Modelo.Equals(ModeloFilter.ANULACION_DE_COMPROBANTE_Y_VALORIZACION) &&
                 !Model.Modelo.Equals(ModeloFilter.PROMO_COMBO) &&
                 !Model.Modelo.Equals(ModeloFilter.PRESUPUESTO) &&
-                !Model.Modelo.Equals(ModeloFilter.RELACIONAR_COMPROBANTE_SIN_RP))
+                !Model.Modelo.Equals(ModeloFilter.RELACIONAR_COMPROBANTE_SIN_RP)&&
+                !Model.Modelo.Equals(ModeloFilter.ETIQUETA))
         {
             <div class="row  mb-3 mt-1">
                 <div class=" col-md-4 col-sm-12">
@@ -245,16 +273,16 @@
                 </div>
                 <div class="row">
                     <div class="col-sm-6" id="divLs01">
-                    <div class="input-group  input-group-sm">
-                        <span class="input-group-text">Nombre</span>
-                        <input type="text" class="form-control inputEditable" name="Rel01" id="Rel01" disabled />
-                        @Html.Hidden("Rel01Item")
+                        <div class="input-group  input-group-sm">
+                            <span class="input-group-text">Nombre</span>
+                            <input type="text" class="form-control inputEditable" name="Rel01" id="Rel01" disabled />
+                            @Html.Hidden("Rel01Item")
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        @Html.ListBox("Rel01List", null, new { @class = "form-control", @disabled = "disabled" })
                     </div>
                 </div>
-                <div class="col-sm-6">
-                    @Html.ListBox("Rel01List", null, new { @class = "form-control", @disabled = "disabled" })
-                </div>
-            </div>
             }
         }
         @if (Model.Rel01 != null && (Model.Modelo.Equals(ModeloFilter.VALORIZACION_COMPROBANTE)))
@@ -380,7 +408,8 @@
                 </div>
                 <div class="row">
                     @if (!Model.Modelo.Equals(ModeloFilter.PRODUCTO_CARGA_PRECIO) &&
-                                !Model.Modelo.Equals(ModeloFilter.PRESUPUESTO))
+                                !Model.Modelo.Equals(ModeloFilter.PRESUPUESTO)&&
+                    !Model.Modelo.Equals(ModeloFilter.ETIQUETA))
                     {
                         <div class="col-md-6">
                             <div class="input-group input-group-sm">
@@ -395,7 +424,7 @@
                         <div class="col-md-6" id="divLs03">
                             <div class="input-group input-group-sm">
                                 <span class="input-group-text" id="lbNombreRel03">Familia</span>
-                                @Html.DropDownList("Rel03", null,"Seleccionar...",  new { @class = "form-control", @disabled = "disabled" })
+                                @Html.DropDownList("Rel03", null, "Seleccionar...", new { @class = "form-control", @disabled = "disabled" })
                                 @Html.Hidden("Rel03Item")
                             </div>
                         </div>

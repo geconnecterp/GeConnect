@@ -1,0 +1,40 @@
+﻿
+@{
+    Layout = "~/views/shared/_Layout.cshtml";
+    var filtro = new QueryFilters() { Modelo = ModeloFilter.ETIQUETA, Rel01 = [], Rel02 = [], Rel03 = [] };
+    List<ProductoListaDto> listaVacia = new();
+}
+
+@section styles {
+    <link rel="stylesheet" href="~/css/simplePagination.css" />
+    <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+}
+
+<partial name="_botonera" model="filtro" />
+<div class="collapse" id="divFiltro">
+    <partial name="_filtroBase" model="filtro" />
+    @Html.Hidden("pagEstado", false)
+</div>
+<div class="collapse" id="divDetalle"></div>
+
+<div id="modalGestorDocumental"></div>
+<partial name="~/areas/controlcomun/views/producto/busquedaadvanceV02.cshtml" model="@listaVacia" />
+
+@section scripts{
+    <script type="text/javascript">
+        let totalRegs = 0;
+        let pagRegs = 0;
+        let pags = 0;
+        let pagina = 1;
+        let search = "";
+        // var autoComRel01Url = "@Url.Action("BuscarProvs", "cargaprecios", new { area = "productos" })";/**/
+        // var autoComRel02Url = "@Url.Action("BuscarRubros", "cargaprecios", new { area = "productos" })";/**/
+        // var autoComRel03Url =  "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "cargaprecios", new { area = "productos" })";/**/
+        // var autoComRel04Url = "@Url.Action("BuscarClienteAuto", "AbmCliente", new { area = "ABMs" })";
+        // var autoComRel05Url = "@Url.Action("ObtenerUsuarioParaLista", "cgusuarios", new { area = "Usuarios" })";
+       
+        let buscarMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "Presupuesto", new { area = "Productos" })';
+        let homeEtiqueta = '@Url.Action("index", "etiqueta", new { area = "Productos" })';
+      
+    </script>
+}

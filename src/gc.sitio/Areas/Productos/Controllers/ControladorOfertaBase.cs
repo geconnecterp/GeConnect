@@ -171,6 +171,17 @@ namespace gc.sitio.Areas.Productos.Controllers
             return HelperMvc<ComboGenDto>.ListaGenerica(estCbo, sel);
         }
 
+        internal SelectList ComboCargasPrevias(string sel = "")
+        {
+            var cp = CargasPrevias;
+            var cpCbo = cp.Select(x => new ComboGenDto { Id = x.usu_id, Descripcion = x.usu_apellidoynombre }).ToList();
+            if (string.IsNullOrEmpty(sel))
+            {
+                return HelperMvc<ComboGenDto>.ListaGenerica(cpCbo);
+            }
+            return HelperMvc<ComboGenDto>.ListaGenerica(cpCbo, sel);
+        }
+
         internal SelectList ComboPresupuestoTipo(string sel = "")
         {
             var tipo = TiposPresupuesto;

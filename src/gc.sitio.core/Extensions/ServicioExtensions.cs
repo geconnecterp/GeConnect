@@ -100,6 +100,7 @@ namespace gc.sitio.core.Extensions
 			services.AddScoped<ITipoAnticipoEmpleadoServicio, TipoAnticipoEmpleadoServicio>();
 
 			services.AddScoped<IOrdenDePagoServicio, OrdenDePagoServicio>();
+			services.AddScoped<IEtiquetaServicio, EtiquetaServicio>();
 
             return services;
         }

@@ -84,7 +84,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             catch (Exception ex)
             {
                 _logger?.LogError(ex, msg);
-                TempData["error"] = "Hubo un problema al cargar la vista de PROMOS y COMBOS. Si el problema persiste, contacte al administrador.";
+                TempData["error"] = "Hubo un problema al cargar la vista de PRESUPUESTOS. Si el problema persiste, contacte al administrador.";
             }
 
             return View();

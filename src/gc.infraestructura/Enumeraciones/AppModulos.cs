@@ -36,7 +36,8 @@
         ADE, // ANTICIPO DE EMPLEADOS
 		DDA, // DETALLE DE ANTICIPO
 		DDH, // DETALLE DE LIQUIDACION DE HABERES
-	}
+        ETIQUETAS // ETIQUETAS PRECIO DE PRODUCTOS
+    }
 
     public enum AppReportes
     {

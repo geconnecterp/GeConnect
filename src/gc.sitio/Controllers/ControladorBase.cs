@@ -15,6 +15,7 @@ using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.Productos;
+using gc.infraestructura.Dtos.Productos.Etiqueta;
 using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.Dtos.Productos.Presupuestos;
 using gc.infraestructura.Dtos.Productos.PromoCombo;
@@ -1811,6 +1812,24 @@ namespace gc.sitio.Controllers
                 _context.HttpContext?.Session.SetString("TiposPresupuesto", json);
             }
         }
+
+        public List<CargaPreviaDto> CargasPrevias
+        {
+            get
+            {
+                var json = _context.HttpContext?.Session.GetString("CargasPrevias") ?? string.Empty;
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return new List<CargaPreviaDto>();
+                }
+                return JsonConvert.DeserializeObject<List<CargaPreviaDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("CargasPrevias", json);
+            }
+        }
         #endregion
 
         #region PLAN CONTABLE LISTA
@@ -2513,6 +2532,14 @@ namespace gc.sitio.Controllers
             var res = preSv.ObtenerTiposPresupuesto(TokenCookie).GetAwaiter().GetResult();
             TiposPresupuesto = res?.ListaEntidad ?? [];
         }
+
+        protected void ObtenerCargaPrevia(string adm_id, IEtiquetaServicio etSv)
+        {
+            var res = etSv.ObtenerCargaPrevia(adm_id,TokenCookie).GetAwaiter().GetResult();
+            CargasPrevias = res?.ListaEntidad ?? [];
+        }
+
+
         protected List<UserDto> ObtenerUsuarioParaListaBase(string strfix, IUserServicio servicio)
         {
             return servicio.ObtenerUsuarioParaLista(new BuscarUsuarioRequest { deno = true, deno_like = strfix }, TokenCookie);
