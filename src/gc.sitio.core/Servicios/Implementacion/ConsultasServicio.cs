@@ -4,7 +4,9 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Consultas;
+using gc.infraestructura.Dtos.Consultas.ConsVencTipoCtaTipoCompte;
 using gc.infraestructura.Dtos.CuentaComercial;
+using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Gen;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
@@ -32,6 +34,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string CONS_CERT_RETEN_IB_FROM_LIST = "/ConsultaCertRetenIBFromList";
 		private const string CONS_CERT_RETEN_IVA_FROM_LIST = "/ConsultaCertRetenIVAFromList";
 		private const string CONS_CERT_RETEN_GAN_FROM_LIST = "/ConsultaCertRetenGANFromList";
+		private const string CONS_VTO_POR_TIPO = "/ConsultarVencimientosPorTipo";
 
 		private readonly AppSettings _appSettings;
         public ConsultasServicio(IOptions<AppSettings> options, ILogger<ConsultasServicio> logger) : base(options, logger)
@@ -851,6 +854,47 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				_logger.LogError(ex, "Error al intentar obtener los datos de la cuenta directa.");
 				throw;
+			}
+		}
+
+		public async Task<(List<VencimientoListaDto>, MetadataGrid)> ConsultarVencimientos(ConsultarVencimientosRequest filters, string token)
+		{
+			try
+			{
+				ApiResponse<List<VencimientoListaDto>>? apiResponse;
+				HelperAPI helper = new();
+
+				HttpClient client = helper.InicializaCliente(filters, token, out StringContent contentData);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{CONS_VTO_POR_TIPO}";
+
+				response = await client.PostAsync(link, contentData);
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<VencimientoListaDto>>>(stringData);
+
+					return (apiResponse.Data, apiResponse.Meta);
+				}
+				else
+				{
+					string stringData = await response.Content.ReadAsStringAsync();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+
+					throw new NegocioException("Algo no fue bien y el proceso no se completó. Intente de nuevo más tarde. Si el problema persiste informe al Administrador del sistema.");
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+
+				throw new Exception("Algo no fue bien al intentar cargar los conteos previso de ajustes.");
 			}
 		}
 	}

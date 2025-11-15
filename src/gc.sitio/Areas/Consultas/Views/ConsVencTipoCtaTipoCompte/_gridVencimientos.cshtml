@@ -1,0 +1,130 @@
+﻿@model VencimientoListaModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	string ctaIdActual = string.Empty;
+	string ctaIdAnterior = string.Empty;
+	decimal subTotal = 0;
+	decimal total = 0;
+	decimal total_pagina = 0;
+
+	var alt = true;
+	string clase = string.Empty;
+
+	@if (Model != null && Model.GrillaVencimientos != null && Model.GrillaVencimientos.ListaDatos != null && Model.GrillaVencimientos.ListaDatos.Count > 0)
+	{
+		total_pagina = Model.GrillaVencimientos.ListaDatos.Sum(c => c.cv_importe);
+		total = Model.GrillaVencimientos.ListaDatos.First().total_importe;
+	}
+}
+<style>
+	.table-wrapper {
+		max-height: 500px;
+		overflow-y: auto;
+		overflow-x: auto;
+		border: 1px solid #ccc;
+	}
+
+		/* La tabla ocupa el 100% del contenedor */
+		.table-wrapper table {
+			width: 100%;
+			border-collapse: collapse;
+			table-layout: fixed;
+		}
+
+		/* Sticky header */
+		.table-wrapper thead th {
+			position: sticky;
+			top: 0;
+			background-color: #d4af37;
+			z-index: 2;
+		}
+
+		/* Alineación y tamaño de celdas */
+		.table-wrapper th,
+		.table-wrapper td {
+			box-sizing: border-box;
+			padding: 0.4rem 0.5rem;
+			font-size: 0.75rem;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.table-wrapper table {
+			table-layout: fixed;
+		}
+
+	.table-summary-bar {
+		background-color: #f2f2f2;
+		border-top: 2px solid #999;
+		padding: 0.5rem 0.75rem;
+		font-weight: bold;
+		font-size: 0.8rem;
+		box-shadow: inset 0 1px 0 #ddd;
+		width: 100%;
+	}
+
+</style>
+<div class="table-wrapper">
+	<table class="table table-sm table-golden" id="tbGridVencimientos">
+		<thead>
+			<tr class="header">
+				<th class="text-center" style="width: 30%;">Comprobante</th>
+				<th class="text-center" style="width: 10%;">Cuota</th>
+				<th class="text-center" style="width: 10%;">Estado</th>
+				<th class="text-center" style="width: 10%;">Emitido</th>
+				<th class="text-center" style="width: 10%;">Días Atr.</th>
+				<th class="text-center" style="width: 10%;">Vencimiento</th>
+				<th class="text-center" style="width: 20%;">Importe</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.GrillaVencimientos != null && Model.GrillaVencimientos.ListaDatos != null && Model.GrillaVencimientos.ListaDatos.Count > 0)
+			{
+				var vencimientos = Model.GrillaVencimientos.ListaDatos.OrderBy(p => p.cta_id).ToList();
+				@foreach (var item in vencimientos)
+				{
+					ctaIdActual = item.cta_id;
+					// Si cambia la cuenta, insertamos una fila de encabezado para la cuenta
+					if (ctaIdActual != ctaIdAnterior)
+					{
+						subTotal = vencimientos.Where(X => X.cta_id == item.cta_id).Sum(X => X.cv_importe);
+						<tr class="table-secondary fw-bold">
+							<td colspan="7" class="text-center">
+								<i class="bx bx-folder me-1"></i>
+								Cuenta: @item.cta_denominacion (@item.cta_id) - Subtotal Importe: @subTotal
+							</td>
+						</tr>
+						ctaIdAnterior = ctaIdActual;
+						alt = true; // Reiniciar alternancia de colores después de cada familia
+					}
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" onclick="selectReg(this, 'tbGridVencimientos')">
+						<td class="@Model.GrillaVencimientos.ObtenerClase(item.comprobante) cell-fit-content">@Model.GrillaVencimientos.FormatearDato(item.comprobante, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaVencimientos.ObtenerClase(item.cm_compte_cuota) align-center cell-fit-content">@Model.GrillaVencimientos.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaVencimientos.ObtenerClase(item.cv_estado) align-center cell-fit-content">@Model.GrillaVencimientos.FormatearDato(item.cv_estado, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaVencimientos.ObtenerClase(item.cv_fecha_carga) cell-fit-content">@Model.GrillaVencimientos.FormatearDato(item.cv_fecha_carga, FormatDato.Fecha)</td>
+						<td class="@Model.GrillaVencimientos.ObtenerClase(item.atraso) align-right cell-fit-content">@Model.GrillaVencimientos.FormatearDato(item.atraso, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaVencimientos.ObtenerClase(item.cv_fecha_vto) cell-fit-content">@Model.GrillaVencimientos.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
+						<td class="@Model.GrillaVencimientos.ObtenerClase(item.cv_importe) cell-fit-content">@Model.GrillaVencimientos.FormatearDato(item.cv_importe, FormatDato.Monto)</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>
+<!-- Fila sumarizadora fuera del scroll -->
+<div class="table-summary-bar mt-2">
+	<div class="row gx-0">
+		<div class="col-6 text-end">Subtotal página:</div>
+		<div class="col-2 text-end">@total_pagina.ToString("N2")</div>
+		<div class="col-2 text-end">Total general:</div>
+		<div class="col-2 text-end">@total.ToString("N2")</div>
+	</div>
+</div>
+<div class="row mt-3">
+	<div class="offset-md-3 col-md-6">
+		<div id="divPaginacion" class="">
+		</div>
+	</div>
+</div>

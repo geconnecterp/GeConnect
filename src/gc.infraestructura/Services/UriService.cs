@@ -4,6 +4,7 @@ namespace gc.infraestructura.Core.Services
 {
     using gc.infraestructura.Core.EntidadesComunes;
     using gc.infraestructura.Core.Interfaces;
+	using gc.infraestructura.Dtos.Consultas.ConsVencTipoCtaTipoCompte;
 	using gc.infraestructura.Dtos.Financieros.Request;
 	using gc.infraestructura.EntidadesComunes.Options;
     using System;
@@ -40,6 +41,11 @@ namespace gc.infraestructura.Core.Services
 		}
 
 		public Uri GetPostPaginationUri(ConsultaLiqDeEmpleadoRequest filter, string actionUrl)
+		{
+			string baseUrl = $"{_baseUri}{actionUrl}";
+			return new Uri(baseUrl);
+		}
+		public Uri GetPostPaginationUri(ConsultarVencimientosRequest filter, string actionUrl)
 		{
 			string baseUrl = $"{_baseUri}{actionUrl}";
 			return new Uri(baseUrl);

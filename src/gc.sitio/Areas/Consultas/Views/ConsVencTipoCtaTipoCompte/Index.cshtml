@@ -1,0 +1,50 @@
+﻿@model ConsVencTipoCtaTipoCompteModel
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+}
+@section styles {
+	<link rel="stylesheet" href="~/css/simplePagination.css" />
+	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+}
+<div class="container mt-2">
+	<div class="row mb-2">
+		<div class="col-md-6">
+			<div class="d-flex justify-content-sm-around">
+				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
+					<i class="bx bx-filter bx-xs"></i>
+				</button>
+
+				<button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle" hidden>
+					<i class="bx bx-caret-down"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+	<div class="collapse" id="divFiltros" style="">
+		<partial name="_filtros" model="Model" />
+		@Html.Hidden("pagEstado", false);
+	</div>
+	<div class="collapse" id="divDetalle" style="">
+		<div id="divGrillaVencimientos">
+		</div>
+	</div>
+</div>
+
+@section scripts {
+	<script type="text/javascript">
+		var totalRegs = 0;
+		var pagRegs = 0;
+		var pags = 0;
+		var pagina = 1;
+		var search = "";
+		var funcCallBack = "BuscarVencimientos";
+		var dataBak = {};
+
+		var buscarVencimientosURL = "@Url.Action("BuscarVencimientos", "consvenctipoctatipocompte", new { area = "Consultas" })";
+		var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "consvenctipoctatipocompte", new { area = "Consultas" })";
+	</script>
+
+	<script src="~/js/plugins/jquery.simplePagination.js"></script>
+
+	<script src="~/js/app/areas/Consultas/venctipoctatipocompte/consvenctipoctatipo.js" type="text/javascript"></script>
+}

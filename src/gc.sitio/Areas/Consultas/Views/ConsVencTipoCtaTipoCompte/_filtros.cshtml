@@ -1,0 +1,132 @@
+﻿@model ConsVencTipoCtaTipoCompteModel
+@{
+}
+<div class="card card-golden">
+	<div class="card-header mb-2">
+		<h5 class="mb-0" id="tituloLegend">Filtros </h5>
+	</div>
+	<div class="card-body">
+		<div class="row">
+			<div class="col-sm-6">
+				<div class="row">
+					<div class="input-group input-group-sm">
+						<div class="form-check form-check-inline form-switch mb-2">
+							<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDesdeHastaVenc" />
+							<label class="form-check-label" for="chkDesdeHastaVenc" id="lbChkDesdeHastaVenc"></label>
+						</div>
+					</div>
+					<div class=" col-sm-6">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text fixed-lbl-for-abm-70" id="lbIdDesdeVenc">Desde:</span>
+							<input type="date" class="form-control inputEditable" asp-for="FechaVencDesde" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
+						</div>
+					</div>
+					<div class=" col-sm-6">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text fixed-lbl-for-abm-70" id="lbIdHastaVenc">Hasta:</span>
+							<input type="date" class="form-control inputEditable" asp-for="FechaVencHasta" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-sm-6">
+				<div class="row">
+					<div class="input-group input-group-sm">
+						<div class="form-check form-check-inline form-switch mb-2">
+							<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDesdeHastaGen" />
+							<label class="form-check-label" for="chkDesdeHastaGen" id="lbChkDesdeHastaGen"></label>
+						</div>
+					</div>
+					<div class=" col-sm-6">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text fixed-lbl-for-abm-70" id="lbIdDesdeGen">Desde:</span>
+							<input type="date" class="form-control inputEditable" asp-for="FechaGenDesde" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
+						</div>
+					</div>
+					<div class=" col-sm-6">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text fixed-lbl-for-abm-70" id="lbIdHastaGen">Hasta:</span>
+							<input type="date" class="form-control inputEditable" asp-for="FechaGenHasta" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		@* <div class="row">
+			
+		</div> *@
+		<div class="row mt-2">
+			<div class="col-sm-6">
+				<div class="input-group input-group-sm">
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkTipoClientes" />
+						<label class="form-check-label" for="chkTipoClientes" id="lbTipoClientes"></label>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-6" id="divCB">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm fixed-lbl-for-abm-130">Clientes</span>
+					@Html.DropDownListFor(m => m.selectedValue, Model.ListaTipoClientes, "Seleccionar", new { @id = "listaTipoClientes", disabled = "disabled", @class = "form-control inputEditable activable" })
+				</div>
+			</div>
+			<div class="col-sm-6">
+				@Html.ListBox("TipoClientesList", null, new { @class = "form-control listbox-sm", @disabled = "disabled" })
+			</div>
+		</div>
+		<div class="row mt-2">
+			<div class="col-sm-6">
+				<div class="input-group input-group-sm">
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkTipoProveedores" />
+						<label class="form-check-label" for="chkTipoProveedores" id="lbTipoProveedores"></label>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-6" id="divCB">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm fixed-lbl-for-abm-130">Proveedores</span>
+					@Html.DropDownListFor(m => m.selectedValue, Model.ListaTipoProveedores, "Seleccionar", new { @id = "listaTipoProveedores", disabled = "disabled", @class = "form-control inputEditable activable" })
+				</div>
+			</div>
+			<div class="col-sm-6">
+				@Html.ListBox("TipoProveedoresList", null, new { @class = "form-control listbox-sm", @disabled = "disabled" })
+			</div>
+		</div>
+		<div class="row mt-2">
+			<div class="col-sm-6">
+				<div class="input-group input-group-sm">
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkTipoComptes" />
+						<label class="form-check-label" for="chkTipoComptes" id="lbTipoComptes"></label>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-6" id="divCB">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm fixed-lbl-for-abm-130">Tipo Comprobantes</span>
+					@Html.DropDownListFor(m => m.selectedValue, Model.ListaTipoCompte, "Seleccionar", new { @id = "listaTipoComptes", disabled = "disabled", @class = "form-control inputEditable activable" })
+				</div>
+			</div>
+			<div class="col-sm-6">
+				@Html.ListBox("TipoComptesList", null, new { @class = "form-control listbox-sm", @disabled = "disabled" })
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row m-3">
+	<div class="d-flex justify-content-around">
+		<button type="button" id="btnCancel" class="btn btn-sm btn-danger">
+			<i class="bx bx-x-circle"></i>Cancelar
+		</button>
+		<button type="button" id="btnBuscar" class="btn btn-sm btn-primary">
+			<i class="bx bx-search"></i>Buscar
+		</button>
+	</div>
+</div>

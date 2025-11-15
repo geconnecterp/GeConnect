@@ -5,11 +5,15 @@ using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Consultas;
+using gc.infraestructura.Dtos.Consultas.ConsVencTipoCtaTipoCompte;
+using gc.infraestructura.Dtos.Financieros;
+using gc.infraestructura.Dtos.Financieros.Request;
 using log4net.Filter;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.Net;
 using System.Reflection;
 
 namespace gc.api.Controllers.Consultas
@@ -312,6 +316,42 @@ namespace gc.api.Controllers.Consultas
 
 			var res = _consSv.ConsultaCertRetenGAFromList(opCompte);
 			return Ok(new ApiResponse<List<CertRetenGananDto>>(res));
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<VencimientoListaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ConsultarVencimientosPorTipo(ConsultarVencimientosRequest request)
+		{
+			VencimientoListaDto reg = new() { total_paginas = 0, total_registros = 0 };
+
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _consSv.ConsultarVencimientosPorTipo(request);
+
+			if (res.Count > 0)
+				reg = res.First();
+
+			var metadata = new MetadataGrid
+			{
+				TotalCount = reg.total_registros,
+				PageSize = request.Registros ?? 0,
+				CurrentPage = request.Pagina ?? 0,
+				TotalPages = reg.total_paginas,
+				HasNextPage = (request.Pagina ?? 0) < reg.total_paginas,
+				HasPreviousPage = (request.Pagina ?? 0) > 1,
+				NextPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(ConsultarVencimientosPorTipo)) ?? "").ToString(),
+				PreviousPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(ConsultarVencimientosPorTipo)) ?? "").ToString(),
+
+			};
+
+			var response = new ApiResponse<IEnumerable<VencimientoListaDto>>(res)
+			{
+				Meta = metadata
+			};
+			Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
+
+			return Ok(response);
 		}
 	}
 }

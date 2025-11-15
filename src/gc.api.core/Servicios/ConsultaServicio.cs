@@ -3,10 +3,14 @@ using gc.api.core.Contratos.Servicios;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Dtos.Consultas;
+using gc.infraestructura.Dtos.Consultas.ConsVencTipoCtaTipoCompte;
+using gc.infraestructura.Dtos.Financieros;
+using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Users;
 using Microsoft.Data.SqlClient;
 using System.Diagnostics.Metrics;
 using System.Security.Claims;
+using System.Text;
 
 namespace gc.api.core.Servicios
 {
@@ -195,6 +199,104 @@ namespace gc.api.core.Servicios
 
 			List<CertRetenIVADto> res = _repository.EjecutarLstSpExt<CertRetenIVADto>(sp, ps, true);
 			return res;
+		}
+
+		/// <summary>
+		/// Busca los anticipos financieros de empleados en base a los filtros recibidos
+		/// </summary>
+		/// <param name="filtros">Filtros de búsqueda y paginación.</param>
+		/// <returns>Lista de anticipos financieros.</returns>
+		public List<VencimientoListaDto> ConsultarVencimientosPorTipo(ConsultarVencimientosRequest filtros)
+		{
+			filtros.Pagina = filtros.Pagina == null || filtros.Pagina <= 0 ? _pagSet.DefaultPageNumber : filtros.Pagina;
+			filtros.Registros = filtros.Registros == null || filtros.Registros <= 0 ? _pagSet.DefaultPageSize : filtros.Registros;
+
+			string sp = ConstantesGC.StoredProcedures.SP_CONS_VENCIMIENTOS_POR_TIPO;
+
+			var ps = new List<SqlParameter>();
+
+			if (filtros.fv) 
+			{ 
+				ps.Add(new SqlParameter("@fv", "1"));
+				ps.Add(new SqlParameter("@dv", filtros.fvDesde));
+				ps.Add(new SqlParameter("@hv", filtros.fvhasta));
+			}
+			else
+				ps.Add(new SqlParameter("@fv", "0"));
+			
+			if (filtros.fg)
+			{
+				ps.Add(new SqlParameter("@fc", "1"));
+				ps.Add(new SqlParameter("@dc", filtros.fgDesde));
+				ps.Add(new SqlParameter("@hc", filtros.fghasta));
+			}
+			else
+				ps.Add(new SqlParameter("@fc", "0"));
+
+			if (filtros.id_ctc)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.ctc_list)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@id_ctc", "1"));
+				ps.Add(new SqlParameter("@ctc_list", sb.ToString() + ','));
+			}
+			else
+				ps.Add(new SqlParameter("@id_ctc", "0"));
+
+			if (filtros.id_ope)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.ope_list)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@id_ope", "1"));
+				ps.Add(new SqlParameter("@ope_list", sb.ToString() + ','));
+			}
+			else
+				ps.Add(new SqlParameter("@id_ope", "0"));
+
+			if (filtros.id_tco)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.tco_list)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@id_tco", "1"));
+				ps.Add(new SqlParameter("@tco_list", sb.ToString() + ','));
+			}
+			else
+				ps.Add(new SqlParameter("@id_tco", "0"));
+
+			ps.Add(new SqlParameter("@registros", filtros.Registros));
+			ps.Add(new SqlParameter("@pagina", filtros.Pagina));
+			ps.Add(new SqlParameter("@ordenar", filtros.Sort ?? ""));
+
+			List<VencimientoListaDto> movFinan = _repository.EjecutarLstSpExt<VencimientoListaDto>(sp, ps, true);
+
+			return movFinan;
 		}
 	}
 }
