@@ -78,7 +78,7 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R040_DetalleDeAnticipo, new R040_DetalleDeAnticipo(uow,consSv, finServ,empresa,ctaSv, logger) },
 				{ InfoReporte.R041_DetalleDeLiquidacionDeHaberes, new R041_DetalleLiquidacionDeHaberes(uow,consSv, finServ,empresa,ctaSv, logger) },
 				{ InfoReporte.R042_OfertasActivas, new R042_OfertasActivas(uow,ofeSv, empresa,ctaSv, logger) },
-                
+				{ InfoReporte.R044_ConsultaVencPorTipoCtaTipoCompte, new R044_ConsultaVencPorTipoCtaTipoCompte(uow,consSv, finServ,empresa,ctaSv, logger) },
 
 			}; 
             _logger = logger;

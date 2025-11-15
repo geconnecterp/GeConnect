@@ -5,9 +5,11 @@
 	});
 
 	$(document).on("click", "#btnCancelar", ControlaCancelar);
+	$(document).on("click", "#btnImprimir", ControlaImprimirSelected);
 	$(document).on("change", "#listaTipoClientes", ControlalistaTipoClientesSelected);
 	$(document).on("change", "#listaTipoProveedores", ControlalistaTipoProveedoresSelected);
 	$(document).on("change", "#listaTipoComptes", ControlalistaTipoComptesSelected);
+	//btnImprimir
 
 	InicializarCamposEnFiltros();
 
@@ -35,6 +37,61 @@
 
 	funcCallBack = BuscarVencimientos;
 });
+
+function ControlaImprimirSelected() {
+	if ($("#tbGridVencimientos > tbody > tr").length === 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos generar el reporte.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		ImprimirListaVencimientos_Generada();
+	}
+}
+
+function ImprimirListaVencimientos_Generada() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		let fv = $("#chkDesdeHastaVenc")[0].checked;
+		let fvDesde = $("#FechaVencDesde").val();
+		let fvhasta = $("#FechaVencHasta").val();
+		var fvDesdePrint = moment($("#FechaVencDesde").val()).format('DD/MM/yyyy')
+		var fvHastaPrint = moment($("#FechaVencHasta").val()).format('DD/MM/yyyy')
+		let fg = $("#chkDesdeHastaGen")[0].checked;
+		let fgDesde = $("#FechaGenDesde").val();
+		let fghasta = $("#FechaGenHasta").val();
+		var fgDesdePrint = moment($("#FechaGenDesde").val()).format('DD/MM/yyyy')
+		var fgHastaPrint = moment($("#FechaGenHasta").val()).format('DD/MM/yyyy')
+		let id_ctc = $("#chkTipoClientes")[0].checked;
+		let ctc_list = [];
+		if ($("#chkTipoClientes").is(":checked")) {
+			$("#TipoClientesList").children().each(function (i, item) { ctc_list.push($(item).val()) });
+		}
+		let id_ope = $("#chkTipoProveedores")[0].checked;
+		let ope_list = [];
+		if ($("#chkTipoProveedores").is(":checked")) {
+			$("#TipoProveedoresList").children().each(function (i, item) { ope_list.push($(item).val()) });
+		}
+		let id_tco = $("#chkTipoComptes")[0].checked;
+		let tco_list = [];
+		if ($("#chkTipoComptes").is(":checked")) {
+			$("#TipoComptesList").children().each(function (i, item) { tco_list.push($(item).val()) });
+		}
+		let data = {
+			fv, fvDesde, fvDesdePrint, fvhasta, fvHastaPrint,
+			fg, fgDesde, fgDesdePrint, fghasta, fgHastaPrint,
+			id_ctc, ctc_list, id_ope, ope_list, id_tco, tco_list
+		};
+		cargarReporteEnArre(43, data, "CONSULTA VENCIMIENTOS POR TIPO DE CUENTA Y TIPO DE COMPROBANTE", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
 
 function ControlalistaTipoClientesSelected() {
 	var item = $("#listaTipoClientes").val();
@@ -131,6 +188,12 @@ function BuscarVencimientos(pag) {
 				}
 
 			});
+			if ($("#tbGridVencimientos > tbody > tr").length > 0) {
+				$("#btnImprimir").show();
+			}
+			else {
+				$("#btnImprimir").hide();
+			}
 			CerrarWaiting();
 			return true
 		}, function (obj) {
@@ -203,6 +266,7 @@ function ResetDeFiltros() {
 }
 
 function InicializarCamposEnFiltros() {
+	$("#btnImprimir").hide();
 	$("#FechaVencDesde, #FechaVencHasta").on("blur", function () {
 		ValidarFechasClick("#FechaVencDesde", "#FechaVencHasta", "Fecha de Vencimiento");
 	});

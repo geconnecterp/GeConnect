@@ -54,6 +54,7 @@ namespace gc.infraestructura.Enumeraciones
 		R040_DetalleDeAnticipo = 40,
 		R041_DetalleDeLiquidacionDeHaberes = 41,
 		R042_OfertasActivas = 42,
-        R043_PROMO_COMBO = 43
-    }
+        R043_PROMO_COMBO = 43,
+		R044_ConsultaVencPorTipoCtaTipoCompte = 44
+	}
 }
