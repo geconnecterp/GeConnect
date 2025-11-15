@@ -2,7 +2,9 @@
  * Script para gestión de ofertas activas
  * Implementa funcionalidad para selección y gestión de canales
  */
-
+var admId = "0000";
+var lpId = "001";
+var canal = "SANTA LUCIA - MAYORISTA";
 var OfertaOk = {
     // Estado de la aplicación
     estado: {
@@ -16,7 +18,7 @@ var OfertaOk = {
     // Inicialización del módulo
     init: function () {
         console.log("🚀 Iniciando ofertaok.js");
-
+    
         // Verificar URLs necesarias
         this.verificarConfiguracion();
 
@@ -26,6 +28,8 @@ var OfertaOk = {
         // Inicializar eventos básicos
         this.inicializarEventos();
 
+        $(".canal - seleccionable").trigger("click");
+        
         // Cargar canales
         this.cargarCanales();
 
@@ -110,6 +114,13 @@ var OfertaOk = {
     // Inicializar eventos principales usando jQuery
     inicializarEventos: function () {
         var self = this;
+        cargarReporteEnArre(indexPrint, {}, "Ofertas Activas");
+
+        //evento para el boton imprimir
+        $(document).on("click", "#btnImprimir", function () {
+            self.imprimirOfertasActivas();
+        });
+       
 
         // Eventos para canales
         $(document).on("click", ".canal-seleccionable", function (e) {
@@ -162,8 +173,8 @@ var OfertaOk = {
 
         // Botones de reintento en caso de error
         $(document).on("click", ".btn-reintentar", function () {
-            var admId = $(this).data("adm-id") || "0000";
-            var lpId = $(this).data("lp-id") || "001";
+            admId = $(this).data("adm-id") || "0000";
+            lpId = $(this).data("lp-id") || "001";
             var pagina = $(this).data("pagina") || 1;
             self.cargarOfertasActivas(admId, lpId, pagina);
         });
@@ -448,9 +459,9 @@ var OfertaOk = {
     // Seleccionar canal destino en el modal
     seleccionarCanalDestino: function ($fila) {
         // Recopilamos la información del canal
-        var admId = $fila.data("adm-id");
-        var lpId = $fila.data("lp-id");
-        var canal = $fila.data("canal") || "Canal seleccionado";
+        admId = $fila.data("adm-id");
+        lpId = $fila.data("lp-id");
+        canal = $fila.data("canal") || "Canal seleccionado";
         var admNombre = $fila.data("adm-nombre");
         var lpDesc = $fila.data("lp-desc");
 
@@ -751,11 +762,20 @@ var OfertaOk = {
         this.actualizarContadorSeleccionadas();
     },
 
+    imprimirOfertasActivas: function () {
+
+        let data = { adm_id: admId, lp_id:lpId, canal };
+        cargarReporteEnArre(indexPrint, data, "Ofertas Activas");
+
+        data = { modulo: "", parametros: [] }
+        invocacionGestorDoc(data);
+    },
+
     // Manejar selección de canal
     manejarSeleccionCanal: function (e, fila) {
-        var admId = fila.data("adm-id");
-        var lpId = fila.data("lp-id");
-        var canal = fila.data("canal");
+         admId = fila.data("adm-id");
+         lpId = fila.data("lp-id");
+         canal = fila.data("canal");
 
         // Deseleccionar todas las filas
         $("#tbGridCanales tr").removeClass("selected-row");
@@ -780,9 +800,9 @@ var OfertaOk = {
         var primerCanal = $("#tbGridCanales tbody tr.canal-seleccionable:first");
 
         if (primerCanal.length > 0) {
-            var admId = primerCanal.data("adm-id");
-            var lpId = primerCanal.data("lp-id");
-            var canal = primerCanal.data("canal");
+             admId = primerCanal.data("adm-id");
+             lpId = primerCanal.data("lp-id");
+             canal = primerCanal.data("canal");
 
             // Deseleccionar todas las filas y seleccionar la primera
             $("#tbGridCanales tr").removeClass("selected-row");
@@ -922,8 +942,8 @@ var OfertaOk = {
             // Obtener canal seleccionado
             var canalSeleccionado = $("#tbGridCanales tr.selected-row");
             if (canalSeleccionado.length > 0) {
-                var admId = canalSeleccionado.data("adm-id") || "0000";
-                var lpId = canalSeleccionado.data("lp-id") || "001";
+                 admId = canalSeleccionado.data("adm-id") || "0000";
+                 lpId = canalSeleccionado.data("lp-id") || "001";
                 self.cargarOfertasActivas(admId, lpId, pagina);
             } else {
                 self.cargarOfertasActivas("0000", "001", pagina);
@@ -959,8 +979,8 @@ var OfertaOk = {
             return;
         }
 
-        var admId = canalSeleccionado.data("adm-id") || "0000";
-        var lpId = canalSeleccionado.data("lp-id") || "001";
+         admId = canalSeleccionado.data("adm-id") || "0000";
+         lpId = canalSeleccionado.data("lp-id") || "001";
 
         // Extraer solo los IDs de las ofertas
         var ids = ofertasSeleccionadas.map(function (o) {

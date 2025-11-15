@@ -17,7 +17,12 @@ $(function () {
     // Cargar canales primero (misma funcionalidad que en ofertas.js)
     try { 
         cargarCanales(); 
-        
+
+        //evento para el boton imprimir
+        $(document).on("click", "#btnImprimir", imprimirOfertasSinActivar);
+        cargarReporteEnArre(indexPrint, {}, "Ofertas Sin Activar");
+
+
         // ✅ NUEVO: Seleccionar canal por defecto después de cargar los canales
         setTimeout(function() {
             seleccionarCanalPredeterminado();
@@ -58,6 +63,16 @@ $(function () {
 
     console.log("✅ ofertaActivar.js listo");
 });
+
+function imprimirOfertasSinActivar() {
+    //lo hacemos directamente aca ya que ahy que imprimir todos los productos
+    //de todas las sucursales de todas las listas de preciso activas.
+    let data = { adm_id:'001' };
+    cargarReporteEnArre(indexPrint, data, "Ofertas sin Activar");
+
+    data = { modulo: "", parametros: [] }
+    invocacionGestorDoc(data);
+}
 
 // ✅ MODIFICADA: Función para seleccionar canal predeterminado
 function seleccionarCanalPredeterminado() {

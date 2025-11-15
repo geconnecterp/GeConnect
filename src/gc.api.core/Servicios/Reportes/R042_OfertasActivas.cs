@@ -1,22 +1,24 @@
 ﻿using gc.api.core.Contratos.Servicios;
+using gc.api.core.Contratos.Servicios.Ofertas;
 using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
-using iTextSharp.text.pdf;
 using iTextSharp.text;
-using Microsoft.Extensions.Options;
+using iTextSharp.text.pdf;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace gc.api.core.Servicios.Reportes
 {
-    public class R006_InformeOPagoDetalle : Servicio<EntidadBase>, IGeneradorReporte
+    public class R042_OfertasActivas : Servicio<EntidadBase>, IGeneradorReporte
     {
-        private readonly IConsultaServicio _consultaServicio;
+        private readonly IApiOfertaServicio _ofSv;
 
         private readonly EmpresaGeco _empresaGeco;
         private readonly List<string> _titulos;
@@ -24,14 +26,14 @@ namespace gc.api.core.Servicios.Reportes
         private readonly ICuentaServicio _cuentaSv;
         private readonly ILogger _logger;
 
-        public R006_InformeOPagoDetalle(IUnitOfWork uow, IConsultaServicio consulta,
+        public R042_OfertasActivas(IUnitOfWork uow, IApiOfertaServicio ofertaServicio,
            IOptions<EmpresaGeco> empresa, ICuentaServicio consultaSv, ILogger logger) : base(uow)
         {
-            _consultaServicio = consulta;
+            _ofSv = ofertaServicio;
 
             _empresaGeco = empresa.Value;
-            _titulos = new List<string> { "Descripción", "Importe",  };
-            _campos = new List<string> { "Descripcion", "Importe", };
+            _titulos = new List<string> { "Código", "Descripción", "Stk","Mg.Vta","P.Vta","Mg Of.","P.Of","V.Desde","V.Hasta" };
+            _campos = new List<string> { "codigo", "descripcion", "stk","mgvta","pvta","mgof","pof","vd","vh" };
             _cuentaSv = consultaSv;
             _logger = logger;
         }
@@ -47,39 +49,21 @@ namespace gc.api.core.Servicios.Reportes
             {
                 var ms = new MemoryStream();
                 #region Obteniendo registros desde la base de datos
-                string ctaId;
                 string tit;
-                List<ConsOrdPagosDetDto> registros = ObtenerDatos(solicitud, out ctaId, out tit);
-
-                if (registros == null || registros.Count == 0)
-                {
-                    throw new NegocioException($"No se encontraron registros de la cuenta corriente {ctaId}.");
-                }
-                var importe = registros.Sum(x => x.Cc_importe);
-                
-                //buscando datos del cliente
-                var c = _cuentaSv.GetCuentaComercialLista(ctaId, 'T');
-
-                if (c == null || c.Count == 0)
-                {
-                    throw new NegocioException($"No se encontraron datos del cliente {ctaId}.");
-                }
-                var cliente = c[0];
-                cliente.Monto = 0m;
-                cliente.MontoEtiqueta = "";
-                //COMPLETAMOS EL TITULO DEL REPORTE AGREGANDO LA DENOMINACIÓN DE LA CUENTA
-                tit += cliente.Cta_Denominacion;
-                solicitud.Titulo = tit;
-                solicitud.Cuenta = cliente;
-
+                List<OfertaDto> registros = ObtenerDatos(solicitud, out tit);
 
                 //hago el modelo de dato aca ya que necesito los datos de la cuenta
                 var regs = registros.Select(x => new
                 {
-                    x.Grupo,
-                    GrDesc = x.Grupo_des,
-                    Descripcion = x.Concepto,
-                    Importe = x.Cc_importe,                    
+                    codigo = x.p_id,
+                    descripcion = x.p_desc,
+                    stk=0,
+                    mgvta=x.p_margen,
+                    pvta = x.p_pvta,
+                    mgof =x.p_margen_oferta,
+                    pof=x.p_pvta_oferta,
+                    vd=x.po_fecha_desde,
+                    vh=x.po_fecha_hasta
                 }).ToList();
 
                 #endregion
@@ -90,13 +74,13 @@ namespace gc.api.core.Servicios.Reportes
                 // Agregar el evento de pie de página
                 writer.PageEvent = new CustomPdfPageEventHelper(solicitud.Observacion);
 
-                var logo = HelperPdf.CargaLogo(solicitud.LogoPath, 20, pdf.PageSize.Height - 10, 20);
+                var logo = HelperPdf.CargaLogo(solicitud.LogoPath, 20, pdf.PageSize.Height - 10, 15);
 
                 #endregion
                 //****=============================****/
                 //****  CAMBIAR ANCHOS DE COLUMNAS ****
                 //****=============================****/
-                anchos = [70f, 30f];
+                anchos = [7f, 34f,5f, 7f, 10f, 7f, 10f, 10f, 10f];
 
                 var chico = HelperPdf.FontChicoPredeterminado();
                 var normal = HelperPdf.FontNormalPredeterminado();
@@ -104,7 +88,9 @@ namespace gc.api.core.Servicios.Reportes
                 var titulo = HelperPdf.FontTituloPredeterminado();
                 var subtitulo = HelperPdf.FontSubtituloPredeterminado();
 
-                #region Generación de Cabecera               
+                #region Generación de Cabecera    
+                //le agregamos al subtitulo el canal
+                solicitud.SubTitulo = tit;
                 PdfPTable tabla = GeneraCabeceraPdf(solicitud, logo, chico, titulo, _empresaGeco);
                 Phrase phrase = new Phrase();
                 phrase.Add(tabla);
@@ -130,21 +116,8 @@ namespace gc.api.core.Servicios.Reportes
                 #region Carga del Listado
 
                 HelperPdf.GeneraCabeceraLista(pdf, _titulos, anchos, normalBold);
-                //utilizo cliente.Monto para el total previamente cargado, pero ya dejo preparado el helper para definir
-                //multiples campos con totales. Ejemplo: Debe, Haber y Saldo.
-                //var totales = new Dictionary<string, decimal>
-                //        {
-                //            { "Debe", 15420.50m },
-                //            { "Haber", 10325.30m },
-                //            { "Saldo", 5095.20m }
-                //        };
-                var totales = new Dictionary<string, decimal>{
-                    { "Importe", importe} };
-                    
-
-                //HelperPdf.GenerarListadoDesdeLista(pdf, regs, _campos, anchos, chico, false, true, totales);
-                var aTotalizar = new List<string> { "Importe" };
-                HelperPdf.GenerarListadoAgrupado(pdf, regs, _campos, _titulos, anchos, "Grupo", "GrDesc", chico, HelperPdf.FontSubtituloPredeterminado(),null,false,null);
+                
+                HelperPdf.GenerarListadoDesdeLista(pdf, regs, _campos, anchos, chico);
                 #endregion
 
                 pdf.Close();
@@ -160,45 +133,49 @@ namespace gc.api.core.Servicios.Reportes
             catch (Exception ex)
             {
                 //_logger.Log(typeof(R001_InformeCuentaCorriente), Level.Error, $"Error al generar el informe de cuenta corriente: {ex.Message}", ex);
-                _logger.LogError(ex, "Error en R006");
+                _logger.LogError(ex, "Error en R042");
                 throw new NegocioException("Se produjo un error al intentar generar el Informe de Cuenta Corriente. Para mayores datos ver el log.");
             }
         }
 
 
 
-        private List<ConsOrdPagosDetDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string ctaId, out string titulo)
+        private List<OfertaDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo)
         {
-            //Se obtienen los parámetros del reporte
-            ctaId = solicitud.Parametros.GetValueOrDefault("ctaId", "").ToString() ?? "";
-            string cmptId = solicitud.Parametros.GetValueOrDefault("cmptId", "").ToString();          
-            titulo = $"Detalle de Orden de Pago {cmptId}";
-            return _consultaServicio.ConsultaOrdenesDePagoProveedorDetalle(cmptId);
+            //primero debemos buscar los canales para poder loopera y traer todas las
+            //ofertas que no estan activas
+            List<OfertaDto> ofertas = [];
+            var admId = solicitud.Parametros.GetValueOrDefault("adm_id", "").ToString() ?? "";
+            var lpId = solicitud.Parametros.GetValueOrDefault("lp_id", "").ToString() ?? "";
+            var canal = solicitud.Parametros.GetValueOrDefault("canal", "").ToString() ?? "";
 
+            var ofertasCanal = _ofSv.ObtenerOfertas(admId, lpId, false);
+            ofertas.AddRange(ofertasCanal);
+
+            titulo = canal;
+
+            return ofertas;
         }
 
         public string GenerarTxt(ReporteSolicitudDto solicitud)
         {
             #region Obteniendo registros desde la base de datos
-            string ctaId;
             string tit;
-            List<ConsOrdPagosDetDto> registros = ObtenerDatos(solicitud, out ctaId, out tit);
-
-            if (registros == null || registros.Count == 0)
-            {
-                throw new NegocioException($"No se encontraron registros de la cuenta corriente {ctaId}.");
-            }
+            List<OfertaDto> registros = ObtenerDatos(solicitud, out tit);
 
             //hago el modelo de dato aca ya que necesito los datos de la cuenta
             var regs = registros.Select(x => new
             {
-                x.Grupo,
-                GrDesc = x.Grupo_des,
-                Descripcion = x.Concepto,
-                Importe = x.Cc_importe,
+                codigo = x.p_id,
+                descripcion = x.p_desc,
+                stk = 0,
+                mgvta = x.p_margen,
+                pvta = x.p_pvta,
+                mgof = x.p_margen_oferta,
+                pof = x.p_pvta_oferta,
+                vd = x.po_fecha_desde,
+                vh = x.po_fecha_hasta
             }).ToList();
-
-
             #endregion
 
             return GeneraTXT(regs, _campos);
@@ -207,24 +184,22 @@ namespace gc.api.core.Servicios.Reportes
         public string GenerarXls(ReporteSolicitudDto solicitud)
         {
             #region Obteniendo registros desde la base de datos
-            string ctaId;
             string tit;
-            List<ConsOrdPagosDetDto> registros = ObtenerDatos(solicitud, out ctaId, out tit);
-
-            if (registros == null || registros.Count == 0)
-            {
-                throw new NegocioException($"No se encontraron registros de la cuenta corriente {ctaId}.");
-            }
+            List<OfertaDto> registros = ObtenerDatos(solicitud, out tit);
 
             //hago el modelo de dato aca ya que necesito los datos de la cuenta
             var regs = registros.Select(x => new
             {
-                x.Grupo,
-                GrDesc = x.Grupo_des,
-                Descripcion = x.Concepto,
-                Importe = x.Cc_importe,
+                codigo = x.p_id,
+                descripcion = x.p_desc,
+                stk = 0,
+                mgvta = x.p_margen,
+                pvta = x.p_pvta,
+                mgof = x.p_margen_oferta,
+                pof = x.p_pvta_oferta,
+                vd = x.po_fecha_desde,
+                vh = x.po_fecha_hasta
             }).ToList();
-
             #endregion
 
             return GeneraFileXLS(regs, _titulos, _campos);

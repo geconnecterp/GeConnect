@@ -10,6 +10,7 @@ using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Reflection;
 using X.PagedList;
 
 namespace gc.sitio.Areas.Productos.Controllers
@@ -20,7 +21,7 @@ namespace gc.sitio.Areas.Productos.Controllers
         // variables para manerjar modulo de impresión
         private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
         private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas
-        private string APP_MODULO = AppModulos.OF_SINACT.ToString();
+        private string APP_MODULO = AppModulos.OF_ACT.ToString();
         private readonly IDocManagerServicio _docMSv;
 
         private readonly AppSettings _configuracion;
@@ -50,22 +51,25 @@ namespace gc.sitio.Areas.Productos.Controllers
                 if (!VerificarAutenticacion(out IActionResult redirectResult))
                     return redirectResult;
 
+                string titulo = "Ofertas Activas";
+                ViewData["Titulo"] = titulo;
+
                 #region Gestor Impresion - Inicializacion de variables
 
                 //Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
-                //DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+                DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+                ViewBag.ImpresionId = _modulo.Reportes[0].Id; //siempre el primer 
 
-                //_logger?.LogInformation($"Generando Arbol de Archivos del módulo. {MethodBase.GetCurrentMethod()?.Name}");
+                _logger?.LogInformation($"Generando Arbol de Archivos del módulo. {MethodBase.GetCurrentMethod()?.Name}");
 
-                ////en este mismo acto se cargan los posibles documentos
-                ////que se pueden imprimir, exportar, enviar por email o whatsapp
-                //ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+                //en este mismo acto se cargan los posibles documentos
+                //que se pueden imprimir, exportar, enviar por email o whatsapp
+                ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
 
                 #endregion
 
                 OfertasActivas = [];
-
-                ViewData["Titulo"] = "Ofertas Activas";
+         
                 return View();
             }
             catch (NegocioException ex)
@@ -93,16 +97,13 @@ namespace gc.sitio.Areas.Productos.Controllers
                 RespuestaGenerica<OfertaDto> respuesta = await _ofertaServicio.ObtenerOfertasActivas(admId, lp_id, TokenCookie);
                 if (!respuesta.Ok || respuesta.EsError)
                 {
-                    TempData["error"] = respuesta.Mensaje ?? "Error al obtener ofertas sin activar";
-                    return View();
+                    var msg = respuesta.Mensaje ?? "Error al obtener ofertas sin activar";
+                    TempData["error"] = msg;
+                    throw new NegocioException(msg);
                 }
-                if (respuesta.ListaEntidad == null || !respuesta.ListaEntidad.Any())
-                {
-                    TempData["warning"] = "No se encontraron ofertas sin activar";
-                    return View();
-                }
+                
 
-                OfertasActivas = respuesta.ListaEntidad;
+                OfertasActivas = respuesta.ListaEntidad ?? [];
 
                 var ofertas = OfertasActivas;
                 int registrosPorPagina = _configuracion.NroRegistrosPagina;

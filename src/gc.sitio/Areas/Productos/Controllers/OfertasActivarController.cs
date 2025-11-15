@@ -39,6 +39,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             _ofertaServicio = ofertaServicio;
             _cuentaServicio = cuenta;
             _rubroServicio = rubro;
+            //para la impresion
             _docsManager = docsManager.Value;
             _modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO);
             _docMSv = docManagerServicio;
@@ -52,21 +53,21 @@ namespace gc.sitio.Areas.Productos.Controllers
                 if (!VerificarAutenticacion(out IActionResult redirectResult))
                     return redirectResult;
 
+                string titulo = "Ofertas sin Activar";
+                ViewData["Titulo"] = titulo;
                 #region Gestor Impresion - Inicializacion de variables
 
                 //Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
-                //DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+                DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+                ViewBag.ImpresionId = _modulo.Reportes[0].Id; //siempre el primer 
 
-                //_logger?.LogInformation($"Generando Arbol de Archivos del módulo. {MethodBase.GetCurrentMethod()?.Name}");
+                _logger?.LogInformation($"Generando Arbol de Archivos del módulo. {MethodBase.GetCurrentMethod()?.Name}");
 
-                ////en este mismo acto se cargan los posibles documentos
-                ////que se pueden imprimir, exportar, enviar por email o whatsapp
-                //ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+                //en este mismo acto se cargan los posibles documentos
+                //que se pueden imprimir, exportar, enviar por email o whatsapp
+                ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
 
                 #endregion
-
-
-                ViewData["Titulo"] = "Ofertas Sin Activar";
 
                 return View();
             }
@@ -99,13 +100,9 @@ namespace gc.sitio.Areas.Productos.Controllers
                     TempData["error"] = respuesta.Mensaje ?? "Error al obtener ofertas sin activar";
                     throw new NegocioException(respuesta.Mensaje ?? "Error al obtener ofertas sin activar");
                 }
-                //if (respuesta.ListaEntidad == null || !respuesta.ListaEntidad.Any())
-                //{
-                //    TempData["warning"] = "No se encontraron ofertas sin activar";
-                //    throw new NegocioException(respuesta.Mensaje ?? "No se encontraron ofertas sin activar");
-                //}
+             
 
-                OfertasSinActivar = respuesta.ListaEntidad;
+                OfertasSinActivar = respuesta.ListaEntidad ?? [];
 
                 var ofertas = OfertasSinActivar;
                 int registrosPorPagina = _configuracion.NroRegistrosPagina;
