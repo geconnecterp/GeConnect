@@ -35,7 +35,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
 		public ConsVencTipoCtaTipoCompteController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<ConsVencTipoCtaTipoCompteController> logger,
 														ITipoCanalServicio tipoCanalServicio, ITipoOpeIvaServicio tipoOpeIvaServicio,
 														ITipoComprobanteServicio tipoComprobanteServicio, IConsultasServicio consultasServicio,
-														IDocManagerServicio docManager, IOptions<DocsManager> docsManager,) : base(options, contexto, logger)
+														IDocManagerServicio docManager, IOptions<DocsManager> docsManager) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_tipoCanalServicio = tipoCanalServicio;
