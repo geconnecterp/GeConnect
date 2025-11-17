@@ -27,9 +27,10 @@
         let pags = 0;
         let pagina = 1;
         let search = "";
-        // var autoComRel01Url = "@Url.Action("BuscarProvs", "cargaprecios", new { area = "productos" })";/**/
-        // var autoComRel02Url = "@Url.Action("BuscarRubros", "cargaprecios", new { area = "productos" })";/**/
-        // var autoComRel03Url =  "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "cargaprecios", new { area = "productos" })";/**/
+        var autoComRel01Url = "@Url.Action("BuscarProvs", "cargaprecios", new { area = "productos" })";/**/
+        var autoComRel02Url = "@Url.Action("BuscarRubros", "cargaprecios", new { area = "productos" })";/**/
+        var autoComRel03Url =  "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "cargaprecios", new { area = "productos" })";/**/
+        var buscarFamiliaUrl = "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "cargaprecios", new { area = "productos" })";/**/
         // var autoComRel04Url = "@Url.Action("BuscarClienteAuto", "AbmCliente", new { area = "ABMs" })";
         // var autoComRel05Url = "@Url.Action("ObtenerUsuarioParaLista", "cgusuarios", new { area = "Usuarios" })";
        
@@ -37,4 +38,10 @@
         let homeEtiqueta = '@Url.Action("index", "etiqueta", new { area = "Productos" })';
       
     </script>
+
+    <script src="~/lib/jstree/jstree.min.js"></script>
+    <script src="~/js/plugins/jquery.simplePagination.js"></script>
+    <script src="~/js/app/areas/docmngr/docmanager.js"></script>
+
+    <script src="~/js/app/areas/precios/etiqueta.js"></script>
 }

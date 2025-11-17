@@ -96,7 +96,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
 
             var listR01 = new List<ComboGenDto>();
-            ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
+            ViewBag.Rel011List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
 
             var listR02 = new List<ComboGenDto>();
             ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
