@@ -105,7 +105,7 @@ namespace gc.api.core.Servicios.Reportes
 
 				#region Lista de Cheques Emitidos Propios
 				///TODO MARCE: Seguir aca, generar el reporte, verificar si los datos estan llegando bien en el metodo ObtenerDatos
-				//HelperPdf.CargarTablaChequesEmitidosPropios(pdf, registros, chico, normalBold);
+				HelperPdf.CargarVencimientoPorTipoDeComprobante(pdf, registros, chico, normalBold);
 				#endregion
 
 				pdf.Close();
@@ -164,13 +164,13 @@ namespace gc.api.core.Servicios.Reportes
 		{
 			var fv = GetBoolParam(solicitud.Parametros, "fv");
 			var fvDesde = solicitud.Parametros.GetValueOrDefault("fvDesde", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
-			var fvHasta = solicitud.Parametros.GetValueOrDefault("fvHasta", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
+			var fvHasta = solicitud.Parametros.GetValueOrDefault("fvhasta", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
 			var fvDesdePrint = solicitud.Parametros.GetValueOrDefault("fvDesdePrint", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
 			var fvHastaPrint = solicitud.Parametros.GetValueOrDefault("fvHastaPrint", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
 
 			var fg = GetBoolParam(solicitud.Parametros, "fg");
 			var fgDesde = solicitud.Parametros.GetValueOrDefault("fgDesde", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
-			var fgHasta = solicitud.Parametros.GetValueOrDefault("fgHasta", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
+			var fgHasta = solicitud.Parametros.GetValueOrDefault("fghasta", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
 			var fgDesdePrint = solicitud.Parametros.GetValueOrDefault("fgDesdePrint", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
 			var fgHastaPrint = solicitud.Parametros.GetValueOrDefault("fgHastaPrint", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
 
@@ -197,7 +197,8 @@ namespace gc.api.core.Servicios.Reportes
 				ctc_list = ctc_list.Split(',').ToList() ?? [],
 				ope_list = ope_list.Split(',').ToList() ?? [],
 				tco_list = tco_list.Split(',').ToList() ?? [],
-				Registros = 999999999
+				Registros = 999999999,
+				Pagina = 1
 			});
 		}
 

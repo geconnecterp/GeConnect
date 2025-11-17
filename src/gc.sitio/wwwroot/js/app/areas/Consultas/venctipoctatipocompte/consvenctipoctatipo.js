@@ -4,7 +4,7 @@
 		cargaPaginacion();
 	});
 
-	$(document).on("click", "#btnCancelar", ControlaCancelar);
+	$(document).on("click", "#btnCancel", ControlaCancelar);
 	$(document).on("click", "#btnImprimir", ControlaImprimirSelected);
 	$(document).on("change", "#listaTipoClientes", ControlalistaTipoClientesSelected);
 	$(document).on("change", "#listaTipoProveedores", ControlalistaTipoProveedoresSelected);
@@ -83,7 +83,7 @@ function ImprimirListaVencimientos_Generada() {
 			fg, fgDesde, fgDesdePrint, fghasta, fgHastaPrint,
 			id_ctc, ctc_list, id_ope, ope_list, id_tco, tco_list
 		};
-		cargarReporteEnArre(43, data, "CONSULTA VENCIMIENTOS POR TIPO DE CUENTA Y TIPO DE COMPROBANTE", "", "");
+		cargarReporteEnArre(44, data, "CONSULTA VENCIMIENTOS POR TIPO DE CUENTA Y TIPO DE COMPROBANTE", "", "");
 		invocacionGestorDoc({});
 	}, 500);
 }
@@ -226,7 +226,7 @@ function ValidarFiltrosSeleccionados() {
 function ControlaCancelar() {
 	$("#divFiltros").removeClass("collapse").addClass("show");
 	$("#divDetalle").collapse("hide");
-	//$("#tbGridAnticipoFinEmpDetalle tbody").empty();
+	$("#divGrillaVencimientos").empty();
 	//InicializarDatosEnSesion();
 	ResetDeFiltros();
 }

@@ -153,18 +153,6 @@ namespace gc.api.core.Servicios.Reportes
 				subtitulo = "Aplicado el 26/08/2021 - Concepto: la chocha";
 				return [];
 			}
-			//return new List<LiqEmpleadoDetalleParaReporteDto>();
-			///TODO MARCE: Completar una vez auw este el SP
-			//string le_compte = solicitud.Parametros.GetValueOrDefault("id", "").ToString();
-			//titulo = $"Liquidación para Haberes Nº {le_compte} \t Mes: 08 Año: 2020";
-			//subtitulo = "Aplicado el 26/08/2021 - Concepto: la chocha";
-			//var lista = _financieroServicio.GetLiqEmpDetalleParaReporte(le_compte);
-			//var unItem = lista.FirstOrDefault();
-			//var fechaAplicacion = unItem?.an_fecha.ToString("dd/MM/yyyy") ?? "";
-			//var concepto = unItem?.an_concepto ?? "";
-			//titulo = $"Empleados del Vale Anticipo N° {an_compte} \n Fecha de Aplicación: {fechaAplicacion}";
-			//subtitulo = $"Concepto: {concepto}";
-			//return lista;
 		}
 
 		public string GenerarTxt(ReporteSolicitudDto solicitud)

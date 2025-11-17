@@ -126,6 +126,7 @@
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Consultas;
+using gc.infraestructura.Dtos.Consultas.ConsVencTipoCtaTipoCompte;
 using gc.infraestructura.Dtos.Consultas.ReporteFinanciero;
 using gc.infraestructura.Dtos.DocManager;
 using gc.infraestructura.Dtos.Financieros;
@@ -3223,6 +3224,75 @@ namespace gc.infraestructura.Helpers
 			return valor.ToString("#,##0.00", CultureInfo.InvariantCulture); // coma miles, punto decimal
 		}
 
+		public static void CargarVencimientoPorTipoDeComprobante(Document pdf, List<VencimientoListaDto> lista, Font fuenteEtiqueta, Font fuenteValor)
+		{
+			var agrupadoPorEmpleado = lista.GroupBy(x => x.cta_id);
+			//bool esPrimeraPagina = true;
+			BaseColor colorEncabezado = new(230, 230, 230); // Gris claro
+
+			foreach (var grupo in agrupadoPorEmpleado)
+			{
+				var primer = grupo.First();
+
+				// Nueva hoja por empleado
+				//if (!esPrimeraPagina)
+				//	pdf.NewPage();
+				//else
+				//	esPrimeraPagina = false;
+
+				// Tabla de anticipos/documentos
+				var tabla = new PdfPTable(6) { WidthPercentage = 100 };
+				tabla.SetWidths(new float[] { 30, 10, 10, 10, 20, 20 });
+
+				// Espacio visual entre encabezado y títulos
+				var celdaEspaciadora = new PdfPCell(new Phrase(" "))
+				{
+					Colspan = 6,
+					Border = Rectangle.NO_BORDER,
+					FixedHeight = 10f
+				};
+				tabla.AddCell(celdaEspaciadora);
+
+				// Encabezado del empleado
+				var celdaEncabezado = new PdfPCell(new Phrase($"({primer.cta_id}) {primer.cta_denominacion}", fuenteValor))
+				{
+					Colspan = 6,
+					HorizontalAlignment = Element.ALIGN_LEFT,
+					PaddingBottom = 10f,
+					BackgroundColor = colorEncabezado
+				};
+				tabla.AddCell(celdaEncabezado);
+
+				// Encabezados
+				AgregarCelda(tabla, "Descripción", fuenteValor, Element.ALIGN_CENTER, true, colorEncabezado);
+				AgregarCelda(tabla, "Est", fuenteValor, Element.ALIGN_CENTER, true, colorEncabezado);
+				AgregarCelda(tabla, "Cuota", fuenteValor, Element.ALIGN_CENTER, true, colorEncabezado);
+				AgregarCelda(tabla, "Días Atr.", fuenteValor, Element.ALIGN_CENTER, true, colorEncabezado);
+				AgregarCelda(tabla, "Vencimiento", fuenteValor, Element.ALIGN_CENTER, true, colorEncabezado);
+				AgregarCelda(tabla, "Importe", fuenteValor, Element.ALIGN_CENTER, true, colorEncabezado);
+
+				decimal totalImporte = 0;
+
+				foreach (var item in grupo)
+				{
+					AgregarCelda(tabla, item.comprobante, fuenteValor, Element.ALIGN_LEFT);
+					AgregarCelda(tabla, item.cv_estado, fuenteValor, Element.ALIGN_CENTER);
+					AgregarCelda(tabla, item.cm_compte_cuota.ToString(), fuenteValor, Element.ALIGN_CENTER);
+					AgregarCelda(tabla, item.atraso.ToString(), fuenteValor, Element.ALIGN_CENTER);
+					AgregarCelda(tabla, item.cv_fecha_vto.ToString("dd/MM/yyyy"), fuenteValor, Element.ALIGN_CENTER);
+					AgregarCelda(tabla, FormatearDecimal(item.cv_importe), fuenteValor, Element.ALIGN_RIGHT);
+
+					totalImporte += item.cv_importe;
+				}
+
+				// Total
+				var celdaTotal = new PdfPCell(new Phrase($"Total de '{primer.cta_denominacion}':", fuenteValor)) { Colspan = 5, HorizontalAlignment = Element.ALIGN_CENTER, BackgroundColor = colorEncabezado };
+				tabla.AddCell(celdaTotal);
+				tabla.AddCell(new PdfPCell(new Phrase(FormatearDecimal(totalImporte), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = colorEncabezado });
+
+				pdf.Add(tabla);
+			}
+		}
 
 		public static PdfPTable GenerarListadoDesdeLista<T>(
 			List<T> lista,
