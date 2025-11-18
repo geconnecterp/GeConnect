@@ -33,7 +33,7 @@ namespace gc.api.core.Servicios.Ofertas
             //ps.Add(new SqlParameter("@adm_id", adm_id));
             ps.Add(p);
 
-            var datos = _repository.EjecutarLstFunction<CargaPreviaDto>(sp, ps, true);
+            var datos = _repository.EjecutarLstSpExt<CargaPreviaDto>(sp, ps, true);
 
             return datos;
         }
@@ -68,6 +68,7 @@ namespace gc.api.core.Servicios.Ofertas
             else
             {
                 ps.Add(new SqlParameter("@previa", false));
+                ps.Add(new SqlParameter("@previa_usu_id", ""));
             }
 
             //proveedores 
@@ -111,5 +112,7 @@ namespace gc.api.core.Servicios.Ofertas
             var datos = _repository.EjecutarLstSpExt<IEDetalleDto>(sp, ps, true);
             return datos;
         }
+
+        
     }
 }

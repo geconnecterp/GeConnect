@@ -83,43 +83,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
 
             return View();
-        }
-
-        private void InicializaVista(bool actualizar = false)
-        {
-            if (ProveedoresLista.Count == 0 || actualizar)
-            {
-                ObtenerProveedores(_cuentaServicio, "BI");
-            }
-
-            if (RubroLista.Count == 0 || actualizar)
-            {
-                ObtenerRubros(_rubroServicio);
-            }
-
-            var listR01 = new List<ComboGenDto>();
-            ViewBag.Rel011List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
-
-            var listR02 = new List<ComboGenDto>();
-            ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
-
-            var listR03 = new List<ComboGenDto>();
-            ViewBag.Rel03List = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
-            ViewBag.Rel03 = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
-
-            var listaEtiqueta = new List<ComboGenDto>()
-            {
-                new ComboGenDto{Id="1", Descripcion="Puntera de Góndola"},
-                new ComboGenDto{Id="2", Descripcion="Etiquetas 1 Precio, lista por defecto"},
-                new ComboGenDto{Id="3", Descripcion="Etiquetas 2 Precios, lista por defecto y diferencial o segunda lista"},
-            };
-            ViewBag.TipoEtiqueta = HelperMvc<ComboGenDto>.ListaGenerica(listaEtiqueta);
-
-            ObtenerCargaPrevia(AdministracionId, _etSv);
-
-            var listCargaPrevia = new List<ComboGenDto>();
-            ViewBag.CargaPrevia = ComboCargasPrevias();
-        }
+        }        
 
         // Acción para construir y devolver el grid parcial con el detalle de etiquetas
         [HttpPost]
@@ -154,6 +118,42 @@ namespace gc.sitio.Areas.Productos.Controllers
                 _logger?.LogError(ex, "Error al obtener detalle de etiquetas.");
                 return PartialView("_EtiquetaDetalle", GenerarGrillaSmart(new List<IEDetalleDto>(), nameof(IEDetalleDto.p_desc)));
             }
+        }
+
+        private void InicializaVista(bool actualizar = false)
+        {
+            if (ProveedoresLista.Count == 0 || actualizar)
+            {
+                ObtenerProveedores(_cuentaServicio, "BI");
+            }
+
+            if (RubroLista.Count == 0 || actualizar)
+            {
+                ObtenerRubros(_rubroServicio);
+            }
+
+            var listR01 = new List<ComboGenDto>();
+            ViewBag.Rel011List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
+
+            var listR02 = new List<ComboGenDto>();
+            ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
+
+            var listR03 = new List<ComboGenDto>();
+            ViewBag.Rel03List = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
+            ViewBag.Rel03 = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
+
+            var listaEtiqueta = new List<ComboGenDto>()
+            {
+                new ComboGenDto{Id="0", Descripcion="Puntera de Góndola"},
+                new ComboGenDto{Id="1", Descripcion="Etiquetas 1 Precio, lista por defecto"},
+                new ComboGenDto{Id="2", Descripcion="Etiquetas 2 Precios, lista por defecto y diferencial o segunda lista"},
+            };
+            ViewBag.TipoEtiqueta = HelperMvc<ComboGenDto>.ListaGenerica(listaEtiqueta);
+
+            ObtenerCargaPrevia(AdministracionId, _etSv);
+
+            var listCargaPrevia = new List<ComboGenDto>();
+            ViewBag.CargaPrevia = ComboCargasPrevias();
         }
     }
 }

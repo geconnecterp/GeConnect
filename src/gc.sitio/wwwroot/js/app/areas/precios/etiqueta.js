@@ -6,6 +6,9 @@ $(function () {
 });
 
 function cancelarEtiqueta() {
+    /*$("#btnAbmAceptar").prop("disabled", true).hide();*/
+    $("#btnAbmCancelar").hide();
+
     $("#chkTipoEtiq").prop("checked", false);
     $("#chkSinImprimir").prop("checked", false);
     $("#chkOferta").prop("checked", false);
@@ -29,12 +32,17 @@ function cancelarEtiqueta() {
     if ($("#chkRel02").is(":checked")) {
         $("#chkRel02").trigger("click");
     }
+
+    $("#divDetalle").collapse("hide");
+    $("#divFiltro").collapse("show");
+
 }
 
 function InicializaPantallaEtiqueta() {
-    $("#btnCancel").on("click", function () {
-        window.location.href = homeEtiqueta;
-    });
+
+    /*$("#btnAbmAceptar").hide();*/
+    $("#btnAbmCancelar").hide();
+    $("#btnImprimir").prop("disabled", true).hide();
 
     // INICIALIZAMOS PANELES
     if ($("#divDetalle").is(":visible")) {
@@ -62,8 +70,20 @@ function InicializaPantallaEtiqueta() {
 }
 
 function InicializaEnventosEtiqueta() {
+    $("#btnImprimir").on("click", function () {
+        imprimirEtiquetas();
+    });
+
+    $("#btnAbmCancelar").on("click", function () {
+        cancelarEtiqueta();
+    });
+
     $("#btnBuscar").on("click", function () {
         buscarEtiquetas(this);
+    });
+
+    $("#btnCancel").on("click", function () {
+        window.location.href = homeEtiqueta;
     });
 
     //Evento de cambio en check de CargaPrevia
@@ -203,6 +223,62 @@ function InicializaEnventosEtiqueta() {
 
     // ✅ Configurar eventos de eliminación de etiquetas
     configurarEventosEliminacionEtiqueta();
+    
+    // ✅ NUEVO: Configurar eventos de selección múltiple
+    configurarEventosSeleccionMultiple();
+}
+
+function imprimirEtiquetas() {
+    //aca debo implementar el objeto que sera usado y enviado para la impresion
+    const tipoEt = $("#TipoEtiqueta").val();
+    const tipoDesc = $("#TipoEtiqueta option:selected").text();
+    let indexImp = 0;
+    switch (tipoEt) {
+        case "0":
+            indexImp = 45;
+            break;
+        case "1":
+            indexImp = 46;
+            break;
+        case "2":
+            indexImp = 47;
+            break;
+        default:
+            return false;
+    }
+
+    const adm_id = administracion.split('#')[0] || '0000';
+
+    // Obtener todos los p_id que están chequeados en el grid _etiquetaDetalle
+    const productosSeleccionados = [];
+    $(".chk-etiqueta-item:checked").each(function () {
+        const pId = $(this).val();
+        if (pId) {
+            productosSeleccionados.push(pId);
+        }
+    });
+
+    // ✅ VALIDAR que haya al menos un producto seleccionado
+    if (productosSeleccionados.length === 0) {
+        AbrirMensaje("A tener en cuenta", "Debe seleccionar al menos un producto para imprimir etiquetas",
+            function () {
+                $("#msjModal").modal("hide");
+            }, false, ["Continuar"], "warn!", null);        
+        return;
+    }
+
+    // Asignar a la variable productos el json de todos los productos seleccionados (solo p_id)
+    const productos = JSON.stringify(productosSeleccionados);
+
+    const info = {
+        json_p: productos,
+        etiqueta: indexImp,
+        adm_id: adm_id,
+        usu_id: usuarioAuth
+    }
+    cargarReporteEnArre(indexImp, info, tipoDesc)
+    let data = { modulo: "", parametros: [] }
+    invocacionGestorDoc(data);
 }
 
 function buscarEtiquetas(btn) {
@@ -268,9 +344,16 @@ function buscarEtiquetas(btn) {
         success: function (html) {
             $("#divDetalle").html(html).collapse("show");
             $("#divFiltro").collapse("hide");
-            
+
+            //se presenta los botones aceptar y cancelar
+/*            $("#btnAbmAceptar").show();*/
+            $("#btnAbmCancelar").show();
+            $("#btnImprimir").prop("disabled",false).show();
+
+
             // ✅ Reconfigurar eventos después de cargar el HTML dinámico
             configurarEventosEliminacionEtiqueta();
+            configurarEventosSeleccionMultiple();
             actualizarContadorEtiquetas();
         },
         error: function (xhr, status, error) {
@@ -290,10 +373,6 @@ function buscarEtiquetas(btn) {
 
 /**
  * ✅ NUEVA FUNCIÓN: Extrae valores de un select de forma optimizada
- * @param {string} selectId - Selector del select principal
- * @param {string} fallbackId - Selector del input fallback (opcional)
- * @param {string} checkId - Selector del checkbox que habilita el control
- * @returns {Array<string>} Array de valores únicos
  */
 function extraerValoresDeSelect(selectId, fallbackId, checkId) {
     const valores = [];
@@ -329,7 +408,200 @@ function extraerValoresDeSelect(selectId, fallbackId, checkId) {
 }
 
 /**
- * ✅ NUEVA FUNCIÓN: Configura los eventos de eliminación de etiquetas del grid
+ * ✅ NUEVA FUNCIÓN: Configura los eventos de selección múltiple
+ */
+function configurarEventosSeleccionMultiple() {
+    // Eliminar eventos previos para evitar duplicados
+    $(document).off("change.seleccionarTodas", "#chkSeleccionarTodas");
+    $(document).off("change.itemSeleccionado", ".chk-etiqueta-item");
+    $(document).off("click.eliminarSeleccionadas", "#btnEliminarSeleccionadas");
+    $(document).off("click.limpiarSeleccion", "#btnLimpiarSeleccion");
+    
+    // Evento: Checkbox "Seleccionar Todas"
+    $(document).on("change.seleccionarTodas", "#chkSeleccionarTodas", function () {
+        const isChecked = $(this).is(":checked");
+        $(".chk-etiqueta-item").prop("checked", isChecked);
+        actualizarEstadoSeleccion();
+    });
+    
+    // Evento: Checkboxes individuales
+    $(document).on("change.itemSeleccionado", ".chk-etiqueta-item", function () {
+        actualizarCheckboxPrincipal();
+        actualizarEstadoSeleccion();
+    });
+    
+    // Evento: Botón "Eliminar Seleccionadas"
+    $(document).on("click.eliminarSeleccionadas", "#btnEliminarSeleccionadas", function () {
+        eliminarEtiquetasSeleccionadas();
+    });
+    
+    // Evento: Botón "Limpiar Selección"
+    $(document).on("click.limpiarSeleccion", "#btnLimpiarSeleccion", function () {
+        limpiarSeleccionEtiquetas();
+    });
+}
+
+/**
+ * ✅ NUEVA FUNCIÓN: Actualiza el estado del checkbox principal
+ */
+function actualizarCheckboxPrincipal() {
+    const $checkboxes = $(".chk-etiqueta-item");
+    const totalCheckboxes = $checkboxes.length;
+    const checkedCheckboxes = $checkboxes.filter(":checked").length;
+    
+    const $chkPrincipal = $("#chkSeleccionarTodas");
+    
+    if (checkedCheckboxes === 0) {
+        $chkPrincipal.prop("checked", false);
+        $chkPrincipal.prop("indeterminate", false);
+    } else if (checkedCheckboxes === totalCheckboxes) {
+        $chkPrincipal.prop("checked", true);
+        $chkPrincipal.prop("indeterminate", false);
+    } else {
+        $chkPrincipal.prop("checked", false);
+        $chkPrincipal.prop("indeterminate", true);
+    }
+}
+
+/**
+ * ✅ NUEVA FUNCIÓN: Actualiza el estado visual de la selección
+ */
+function actualizarEstadoSeleccion() {
+    const $seleccionadas = $(".chk-etiqueta-item:checked");
+    const cantidad = $seleccionadas.length;
+    
+    // Actualizar contador en botón
+    $("#cantidadSeleccionadas").text(cantidad);
+    
+    // Mostrar/ocultar botones de acciones múltiples
+    if (cantidad > 0) {
+        $("#divAccionesMultiples").fadeIn(200);
+        
+        // Actualizar texto informativo
+        const textoSeleccion = cantidad === 1 
+            ? "1 etiqueta seleccionada" 
+            : `${cantidad} etiquetas seleccionadas`;
+        $("#txtSeleccionadas").text(textoSeleccion);
+    } else {
+        $("#divAccionesMultiples").fadeOut(200);
+        $("#txtSeleccionadas").text("Ninguna seleccionada");
+    }
+}
+
+/**
+ * ✅ NUEVA FUNCIÓN: Obtiene las etiquetas seleccionadas
+ * @returns {Array<Object>} Array de objetos con id y descripción
+ */
+function obtenerEtiquetasSeleccionadas() {
+    const etiquetas = [];
+    
+    $(".chk-etiqueta-item:checked").each(function () {
+        const $checkbox = $(this);
+        etiquetas.push({
+            id: $checkbox.val(),
+            descripcion: $checkbox.data("p-desc")
+        });
+    });
+    
+    return etiquetas;
+}
+
+/**
+ * ✅ NUEVA FUNCIÓN: Elimina múltiples etiquetas seleccionadas
+ */
+function eliminarEtiquetasSeleccionadas() {
+    const etiquetasSeleccionadas = obtenerEtiquetasSeleccionadas();
+    
+    if (etiquetasSeleccionadas.length === 0) {
+        mostrarNotificacion("No hay etiquetas seleccionadas", "warning");
+        return;
+    }
+    
+    const cantidad = etiquetasSeleccionadas.length;
+    const listaEtiquetas = etiquetasSeleccionadas
+        .map(e => `<li>${e.id} - ${e.descripcion}</li>`)
+        .join("");
+    
+    const mensaje = `¿Está seguro de eliminar ${cantidad} etiqueta(s) de la vista?<br><br>
+        <div style="max-height: 200px; overflow-y: auto;">
+            <ul class="list-unstyled small text-start">${listaEtiquetas}</ul>
+        </div>
+        <small class="text-muted">Esta acción solo eliminará las etiquetas de la vista actual.</small>`;
+    
+    if (typeof AbrirMensaje === "function") {
+        AbrirMensaje(
+            "CONFIRMAR ELIMINACIÓN MÚLTIPLE",
+            mensaje,
+            function () {
+                ejecutarEliminacionMultiple(etiquetasSeleccionadas);
+                $("#msjModal").modal("hide");
+            },
+            true,
+            ["Eliminar Todas", "Cancelar"],
+            "warning!",
+            null
+        );
+    } else {
+        if (confirm(`¿Está seguro de eliminar ${cantidad} etiquetas?`)) {
+            ejecutarEliminacionMultiple(etiquetasSeleccionadas);
+        }
+    }
+}
+
+/**
+ * ✅ NUEVA FUNCIÓN: Ejecuta la eliminación de múltiples etiquetas
+ * @param {Array<Object>} etiquetas - Array de etiquetas a eliminar
+ */
+function ejecutarEliminacionMultiple(etiquetas) {
+    const $btnEliminar = $("#btnEliminarSeleccionadas");
+    const originalHtml = $btnEliminar.html();
+    
+    $btnEliminar.prop("disabled", true)
+        .html('<span class="spinner-border spinner-border-sm me-1"></span>Eliminando...');
+    
+    let eliminadas = 0;
+    
+    // Eliminar cada fila con animación escalonada
+    etiquetas.forEach((etiqueta, index) => {
+        const $fila = $(`tr[data-p-id="${etiqueta.id}"]`);
+        
+        setTimeout(() => {
+            $fila.fadeOut(300, function () {
+                $(this).remove();
+                eliminadas++;
+                
+                // Cuando se eliminaron todas, actualizar la vista
+                if (eliminadas === etiquetas.length) {
+                    actualizarContadorEtiquetas();
+                    renumerarFilasEtiquetas();
+                    verificarEtiquetasVacias();
+                    limpiarSeleccionEtiquetas();
+                    
+                    $btnEliminar.prop("disabled", false).html(originalHtml);
+                    
+                    const mensaje = eliminadas === 1 
+                        ? "1 etiqueta eliminada" 
+                        : `${eliminadas} etiquetas eliminadas`;
+                    mostrarNotificacion(mensaje, "success");
+                    
+                    console.log(`${eliminadas} etiquetas eliminadas del grid`);
+                }
+            });
+        }, index * 100); // Desfase de 100ms entre cada eliminación
+    });
+}
+
+/**
+ * ✅ NUEVA FUNCIÓN: Limpia la selección de etiquetas
+ */
+function limpiarSeleccionEtiquetas() {
+    $(".chk-etiqueta-item").prop("checked", false);
+    $("#chkSeleccionarTodas").prop("checked", false).prop("indeterminate", false);
+    actualizarEstadoSeleccion();
+}
+
+/**
+ * ✅ FUNCIÓN: Configura los eventos de eliminación de etiquetas del grid
  */
 function configurarEventosEliminacionEtiqueta() {
     $(document).off("click.eliminarEtiqueta", ".btn-eliminar-etiqueta");
@@ -341,7 +613,7 @@ function configurarEventosEliminacionEtiqueta() {
         const $btn = $(this);
         const $fila = $btn.closest("tr");
         const etiquetaId = $btn.data("p-id");
-        const descripcion = $fila.find("td").eq(1).text().trim();
+        const descripcion = $fila.find("td").eq(2).text().trim(); // ✅ Ajustado al índice correcto (columna 3)
         
         if (!etiquetaId) {
             console.error("No se pudo obtener el ID de la etiqueta");
@@ -354,7 +626,7 @@ function configurarEventosEliminacionEtiqueta() {
 }
 
 /**
- * ✅ NUEVA FUNCIÓN: Muestra diálogo de confirmación antes de eliminar
+ * ✅ FUNCIÓN: Muestra diálogo de confirmación antes de eliminar
  */
 function confirmarEliminacionEtiqueta(etiquetaId, descripcion, $fila, $btn) {
     const mensaje = `¿Está seguro de eliminar la etiqueta de la vista?<br><br>
@@ -383,7 +655,7 @@ function confirmarEliminacionEtiqueta(etiquetaId, descripcion, $fila, $btn) {
 }
 
 /**
- * ✅ NUEVA FUNCIÓN: Ejecuta la eliminación de la etiqueta del grid
+ * ✅ FUNCIÓN: Ejecuta la eliminación de la etiqueta del grid
  */
 function ejecutarEliminacionEtiqueta(etiquetaId, $fila, $btn) {
     $btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm"></span>');
@@ -393,27 +665,26 @@ function ejecutarEliminacionEtiqueta(etiquetaId, $fila, $btn) {
         actualizarContadorEtiquetas();
         renumerarFilasEtiquetas();
         verificarEtiquetasVacias();
+        actualizarCheckboxPrincipal();
+        actualizarEstadoSeleccion();
         mostrarNotificacion(`Etiqueta ${etiquetaId} eliminada de la vista`, "success");
         console.log(`Etiqueta ${etiquetaId} eliminada del grid`);
     });
 }
 
 /**
- * ✅ NUEVA FUNCIÓN: Actualiza el contador total de etiquetas en el footer
+ * ✅ FUNCIÓN: Actualiza el contador total de etiquetas en el footer
  */
 function actualizarContadorEtiquetas() {
     const $tbody = $("#tbGridEtiquetaDetalle tbody");
     const $filas = $tbody.find("tr:not(.empty-message)");
     const totalRegistros = $filas.length;
 
-    const $footer = $("#tbGridEtiquetaDetalle tfoot td .badge");
-    if ($footer.length > 0) {
-        $footer.text(totalRegistros); // ✅ Actualiza solo el badge
-    }
+    $("#totalEtiquetasMostradas").text(totalRegistros);
 }
 
 /**
- * ✅ NUEVA FUNCIÓN: Renumera las filas después de eliminar una etiqueta
+ * ✅ FUNCIÓN: Renumera las filas después de eliminar una etiqueta
  */
 function renumerarFilasEtiquetas() {
     const $tbody = $("#tbGridEtiquetaDetalle tbody");
@@ -432,29 +703,29 @@ function renumerarFilasEtiquetas() {
 }
 
 /**
- * ✅ NUEVA FUNCIÓN: Verifica si el grid quedó vacío y muestra mensaje
+ * ✅ FUNCIÓN: Verifica si el grid quedó vacío y muestra mensaje
  */
 function verificarEtiquetasVacias() {
     const $tbody = $("#tbGridEtiquetaDetalle tbody");
     const $filas = $tbody.find("tr:not(.empty-message)");
     
     if ($filas.length === 0) {
-        $("#tbGridEtiquetaDetalle tfoot").hide();
-        
         const mensajeVacio = `
             <tr class="empty-message">
-                <td colspan="4" class="text-center text-muted py-3">
+                <td colspan="5" class="text-center text-muted py-3">
                     <i class="bx bx-info-circle me-1"></i>
                     No hay etiquetas en la vista actual
                 </td>
             </tr>`;
         
         $tbody.html(mensajeVacio);
+        $("#divAccionesMultiples").hide();
+        $("#txtSeleccionadas").text("Ninguna seleccionada");
     }
 }
 
 /**
- * ✅ NUEVA FUNCIÓN: Muestra notificaciones toast al usuario
+ * ✅ FUNCIÓN: Muestra notificaciones toast al usuario
  */
 function mostrarNotificacion(mensaje, tipo = "info") {
     if (typeof toastr !== "undefined") {
