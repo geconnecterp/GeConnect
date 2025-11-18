@@ -57,7 +57,7 @@ namespace gc.api.core.Servicios.Reportes
                 {
                     codigo = x.p_id,
                     descripcion = x.p_desc,
-                    stk=0,
+                    stk= x.ps_stk,
                     mgvta=x.p_margen,
                     pvta = x.p_pvta,
                     mgof =x.p_margen_oferta,

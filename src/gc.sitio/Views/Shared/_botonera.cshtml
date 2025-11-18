@@ -17,30 +17,34 @@
             </button>
         </div>
     </div>
-    @if (Model.Modelo != ModeloFilter.ASIENTO_RESULTADO && 
-    Model.Modelo != ModeloFilter.ASIENTO_AJUSTE && 
-    Model.Modelo != ModeloFilter.EJERCICIO_CONTABLE && 
-    Model.Modelo != ModeloFilter.BGR && 
-    Model.Modelo != ModeloFilter.LIBRO_MAYOR && 
-    Model.Modelo != ModeloFilter.BSS && 
-    Model.Modelo != ModeloFilter.LDIARIO)
+    @if (Model.Modelo != ModeloFilter.ASIENTO_RESULTADO &&
+        Model.Modelo != ModeloFilter.ASIENTO_AJUSTE &&
+        Model.Modelo != ModeloFilter.EJERCICIO_CONTABLE &&
+        Model.Modelo != ModeloFilter.BGR &&
+        Model.Modelo != ModeloFilter.LIBRO_MAYOR &&
+        Model.Modelo != ModeloFilter.BSS &&
+        Model.Modelo != ModeloFilter.LDIARIO)
     {
-        <div class="col-md-2 col-sm-6">
-            <div class="d-flex justify-content-sm-center">
-                <button id="btnAbmAceptar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Aceptar" disabled>
-                    <i class="bx bx-check-circle"></i> Confirmar
-                </button>
-
-                <button id="btnAbmCancelar" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar">
-                    <i class="bx bx-x-circle"></i> Cancelar
-                </button>
-            </div>
-        </div>
-        @if (Model.Modelo != ModeloFilter.PRODUCTO_CARGA_PRECIO )
+        if (Model.Modelo != ModeloFilter.ETIQUETA)
         {
-            @if (Model.Modelo == ModeloFilter.ASIENTO_TEMPORAL || 
-            Model.Modelo == ModeloFilter.ASIENTO_DEFINITIVO  || 
-            Model.Modelo == ModeloFilter.PRESUPUESTO)
+            <div class="col-md-2 col-sm-6">
+                <div class="d-flex justify-content-sm-center">
+                    <button id="btnAbmAceptar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Aceptar" disabled>
+                        <i class="bx bx-check-circle"></i> Confirmar
+                    </button>
+
+                    <button id="btnAbmCancelar" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar">
+                        <i class="bx bx-x-circle"></i> Cancelar
+                    </button>
+                </div>
+            </div>
+        }
+        @if (Model.Modelo != ModeloFilter.PRODUCTO_CARGA_PRECIO)
+        {
+            @if (Model.Modelo == ModeloFilter.ASIENTO_TEMPORAL ||
+                Model.Modelo == ModeloFilter.ASIENTO_DEFINITIVO ||
+                Model.Modelo == ModeloFilter.ETIQUETA ||
+                Model.Modelo == ModeloFilter.PRESUPUESTO)
             {
                 <div class="col-md-2 col-sm-6">
                     <div class="d-flex justify-content-sm-center">
@@ -58,30 +62,34 @@
                     </div>
                 </div>
             }
-            <div class="col-md-4 col-sm-6">
-                <div class="d-flex justify-content-sm-center">
 
-                    <button id="btnAbmNuevo" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Alta Asiento" disabled>
-                        <i class="bx bx-plus-circle"></i> Agregar
-                    </button>
-                    <button id="btnAbmModif" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Editar Asiento" disabled>
-                        <i class="bx bx-edit-alt"></i> Modificar
-                    </button>
-                    <button id="btnAbmElimi" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Dar de baja el asiento" disabled>
-                        <i class="bx bx-trash"></i> Eliminar
-                    </button>
-                    @if (Model.Modelo == ModeloFilter.ASIENTO_DEFINITIVO)
-                    {
-                        <div class="text-center ms-2">
-                            <span class="badge bg-secondary rounded-pill px-3 py-2" id="usuarioSeleccionadoLabel">
-                                <i class="bx bx-user me-1"></i>
-                                <span id="nombreUsuarioSeleccionado">Usuario: Sin seleccionar</span>
-                            </span>
-                        </div>
-                    }
+            if (Model.Modelo != ModeloFilter.ETIQUETA)
+            {
+                <div class="col-md-4 col-sm-6">
+                    <div class="d-flex justify-content-sm-center">
 
+                        <button id="btnAbmNuevo" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Alta Asiento" disabled>
+                            <i class="bx bx-plus-circle"></i> Agregar
+                        </button>
+                        <button id="btnAbmModif" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Editar Asiento" disabled>
+                            <i class="bx bx-edit-alt"></i> Modificar
+                        </button>
+                        <button id="btnAbmElimi" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Dar de baja el asiento" disabled>
+                            <i class="bx bx-trash"></i> Eliminar
+                        </button>
+                        @if (Model.Modelo == ModeloFilter.ASIENTO_DEFINITIVO)
+                        {
+                            <div class="text-center ms-2">
+                                <span class="badge bg-secondary rounded-pill px-3 py-2" id="usuarioSeleccionadoLabel">
+                                    <i class="bx bx-user me-1"></i>
+                                    <span id="nombreUsuarioSeleccionado">Usuario: Sin seleccionar</span>
+                                </span>
+                            </div>
+                        }
+
+                    </div>
                 </div>
-            </div>
+            }
         }
     }
 </div>

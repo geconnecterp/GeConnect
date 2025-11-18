@@ -27,9 +27,6 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string OBTENER_TIPOS = "/tipos";
         private const string CONFIRMAR_PRESUPUESTO = "/presupuesto/confirmar";
 
-
-
-
         public PresupuestoServicio(IOptions<AppSettings> options, ILogger<PresupuestoServicio> logger) : base(options, logger)
         {
 
@@ -236,53 +233,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        // Helpers genéricos para minimizar código y asignaciones
-        private async Task<RespuestaGenerica<TDto>> GetListaAsync<TDto>(string url, string token, string mensajeError)
-        {
-            try
-            {
-                var helper = new HelperAPI();
-                var client = helper.InicializaCliente(token);
-
-                using var response = await client.GetAsync(url);
-                if (response.IsSuccessStatusCode)
-                {
-                    var stringData = await response.Content.ReadAsStringAsync();
-                    if (string.IsNullOrEmpty(stringData))
-                    {
-                        return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
-                    }
-
-                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
-                    return new RespuestaGenerica<TDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
-                }
-                else
-                {
-                    var msg = await ReadApiErrorAsync(response);
-                    _logger.LogWarning($"Algo no fue bien. Error de API {msg}");
-                    return new() { Ok = false, Mensaje = "Algo no fue bien y el proceso no se completó. Intente de nuevo más tarde. Si el problema persiste informe al Administrador del sistema." };
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
-                return new() { Ok = false, Mensaje = mensajeError };
-            }
-        }
-
-        private static async Task<string> ReadApiErrorAsync(HttpResponseMessage response)
-        {
-            var raw = await response.Content.ReadAsStringAsync();
-            try
-            {
-                var err = JsonConvert.DeserializeObject<ExceptionValidation>(raw);
-                return err?.Detail ?? raw;
-            }
-            catch
-            {
-                return string.IsNullOrWhiteSpace(raw) ? "Error desconocido en la API" : raw;
-            }
-        }
+        
 
 
     }

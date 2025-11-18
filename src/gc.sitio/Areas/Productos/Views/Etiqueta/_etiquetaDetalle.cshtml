@@ -1,0 +1,83 @@
+@model GridCoreSmart<IEDetalleDto>
+
+@{
+    var hasData = Model?.ListaDatos?.Any() == true;
+    var totalRegistros = hasData ? Model.ListaDatos.Count() : 0;
+}
+
+<div class="d-flex justify-content-center">
+    <div class="card h-100 w-100 w-md-75 w-lg-50">
+        <div class="card-header py-1 d-flex align-items-center">
+            <h6 class="mb-0">Detalle de Etiquetas</h6>
+        </div>
+        <div class="card-body p-1">
+            <div class="table-responsive table-wrapper-400">
+                <table class="table table-sm table-hover mb-0 table-golden" id="tbGridEtiquetaDetalle">
+                    <thead class="table-golden-header">
+                        <tr class="header">
+                            <th class="text-center">Código</th>
+                            <th class="text-left">Descripción</th>
+                            <th class="text-center">Impreso</th>
+                            <th class="text-center" style="width: 50px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @if (hasData)
+                    {
+                        var index = 0;
+                        foreach (var item in Model.ListaDatos)
+                        {
+                            index++;
+                            var estaImpreso = item.p_impreso_fecha.HasValue;
+                            var estadoClase = estaImpreso ? "text-danger fw-semibold" : "text-success fw-semibold";
+                            var estadoIcono = estaImpreso ? "bx bx-check-circle" : "bx bx-time-five";
+                            var estadoTexto = estaImpreso 
+                                ? item.p_impreso_fecha.Value.ToString("dd/MM/yyyy HH:mm") 
+                                : "Pendiente";
+                            var rowClass = (index % 2 == 0) ? "" : "alt";
+                            
+                            <tr class="@rowClass" data-p-id="@item.p_id">
+                                <td class="text-center">@item.p_id</td>
+                                <td>@item.p_desc</td>
+                                <td class="text-center @estadoClase">
+                                    <i class="@estadoIcono me-1"></i>@estadoTexto
+                                </td>
+                                <td class="text-center">
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger btn-eliminar-etiqueta"
+                                            data-p-id="@item.p_id"
+                                            title="Eliminar etiqueta">
+                                        <i class="bx bx-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr class="empty-message">
+                            <td colspan="4" class="text-center text-muted py-2">
+                                <i class="bx bx-info-circle me-1"></i>No hay resultados para los filtros seleccionados
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer py-2 bg-light">
+            <div class="d-flex justify-content-end align-items-center">
+                <span class="me-2 text-muted">
+                    <i class="bx bx-list-ul me-1"></i>Etiquetas mostradas:
+                </span>
+                <span class="badge bg-primary" id="totalEtiquetasMostradas">@totalRegistros</span>
+                @if (hasData && Model.ListaDatos.TotalItemCount > totalRegistros)
+                {
+                    <span class="ms-2 text-muted small">
+                        de <strong id="totalEtiquetasGeneral">@Model.ListaDatos.TotalItemCount</strong> totales
+                    </span>
+                }
+            </div>
+        </div>
+    </div>
+</div>

@@ -28,6 +28,7 @@ namespace gc.infraestructura.Dtos.Productos.Ofertas
         public int po_limite { get; set; }
         public int dias { get; set; }
         public DateTime hoy { get; set; }
+        public decimal ps_stk { get; set; }        
 
     }
 }
