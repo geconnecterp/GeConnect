@@ -1,4 +1,5 @@
 ﻿using gc.api.core.Contratos.Servicios.Ofertas;
+using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Productos.Etiqueta;
 using Microsoft.AspNetCore.Authorization;
@@ -37,6 +38,30 @@ namespace gc.api.Controllers.Ofertas
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error en {nameof(ObtenerCargaPreviaUsuario)}: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ocurrió un error al procesar la solicitud.");
+            }
+        }
+
+        // Nueva acción optimizada para ObtenerDetalleEtiquetas
+        [HttpPost("ObtenerDetalleEtiquetas")]
+        [ProducesResponseType(typeof(ApiResponse<List<IEDetalleDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public IActionResult ObtenerDetalleEtiquetas([FromBody] QueryFilters? filters)
+        {
+            try
+            {
+                if (filters is null)
+                {
+                    return BadRequest("El cuerpo de la solicitud es obligatorio.");
+                }
+
+                var resultado = _etiqSv.ObtenerDetalleEtiquetas(filters);
+                return Ok(new ApiResponse<List<IEDetalleDto>>(resultado));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en {Action}: {Message}", nameof(ObtenerDetalleEtiquetas), ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, "Ocurrió un error al procesar la solicitud.");
             }
         }

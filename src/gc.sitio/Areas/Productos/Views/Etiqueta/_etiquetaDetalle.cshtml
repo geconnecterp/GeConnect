@@ -1,0 +1,74 @@
+@model GridCoreSmart<gc.infraestructura.Dtos.Productos.Etiqueta.IEDetalleDto>
+
+@{
+    var alt = true;
+    string clase = string.Empty;
+    int cont = 0;
+}
+
+<div class="card h-100">
+    <div class="card-header py-1 d-flex align-items-center">
+        <h6 class="mb-0">Detalle de Etiquetas</h6>
+    </div>
+    <div class="card-body p-1">
+        <div class="table-responsive" style="max-height: 400px;">
+            <table class="table table-sm table-hover mb-0 table-golden" id="tbGridEtiquetaDetalle">
+                <thead class="table-golden-header">
+                    <tr class="header">
+                        <th class="text-center">#</th>
+                        <th class="text-center">Código</th>
+                        <th class="text-left">Descripción</th>
+                        <th class="text-center">Impreso</th>
+                        <th class="text-center" style="width: 50px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @if (Model?.ListaDatos?.Any() == true)
+                {
+                    foreach (var item in Model.ListaDatos)
+                    {
+                        cont++;
+                        if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+                        var impreso = item.p_impreso_fecha.HasValue
+                            ? item.p_impreso_fecha.Value.ToString("dd/MM/yyyy HH:mm")
+                            : "-";
+                        <tr class="@clase"
+                            data-p-id="@item.p_id">
+                            <td class="text-center">@cont</td>
+                            <td class="text-center">@item.p_id</td>
+                            <td>@item.p_desc</td>
+                            <td class="text-center">@impreso</td>
+                            <td class="text-center">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-primary btn-accion-etiqueta"
+                                        data-p-id="@item.p_id"
+                                        title="Acción">
+                                    <i class="bx bx-barcode"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-2">
+                            <i class="bx bx-info-circle me-1"></i>No hay resultados para los filtros seleccionados
+                        </td>
+                    </tr>
+                }
+                </tbody>
+                @if (Model?.ListaDatos?.Any() == true)
+                {
+                    <tfoot class="table-golden-footer">
+                        <tr>
+                            <td colspan="5" class="text-end fw-bold">
+                                Total de registros: @Model.ListaDatos.TotalItemCount
+                            </td>
+                        </tr>
+                    </tfoot>
+                }
+            </table>
+        </div>
+    </div>
+</div>

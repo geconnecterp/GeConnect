@@ -53,6 +53,7 @@ namespace gc.infraestructura.Core.EntidadesComunes
         public string Tipo { get; set; } = string.Empty;
         public string Estado { get; set; } = string.Empty;
         public string Adm_id { get; set; } = string.Empty;
+        public string Usu_id { get; set; } = string.Empty;
 
         /*
         
@@ -62,6 +63,12 @@ namespace gc.infraestructura.Core.EntidadesComunes
 		public bool? Opt3 { get; set; }
 		public bool? Opt4 { get; set; }
 		public bool? Opt5 { get; set; }
+
+        public string StrOpt01 { get; set; } = string.Empty;
+        public string StrOpt02 { get; set; } = string.Empty;
+        public string StrOpt03 { get; set; } = string.Empty;
+        public string StrOpt04 { get; set; } = string.Empty;
+        public string StrOpt05 { get; set; } = string.Empty;
 
         public List<string> ListNN { get; set; } = []; //para el nombre de archivos que pueden venir concatenados con ","
         public string? TituloLeyend { get; set; }=string.Empty;

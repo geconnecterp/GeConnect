@@ -1,4 +1,6 @@
-﻿$(function () {
+﻿let _presuLoading = false;
+
+$(function () {
     InicializaPantallaEtiqueta();
     InicializaEnventosEtiqueta();
 });
@@ -30,6 +32,10 @@ function cancelarEtiqueta() {
 }
 
 function InicializaPantallaEtiqueta() {
+    $("#btnCancel").on("click", function () {
+        window.location.href = homeEtiqueta;
+    });
+
     // INICIALIZAMOS PANELES
     if ($("#divDetalle").is(":visible")) {
         $("#divDetalle").collapse("hide");
@@ -56,6 +62,10 @@ function InicializaPantallaEtiqueta() {
 }
 
 function InicializaEnventosEtiqueta() {
+    $("#btnBuscar").on("click", function () {
+        buscarEtiquetas(this);
+    });
+
     //Evento de cambio en check de CargaPrevia
     $("#chkCargaPrevia").on("change", function () {
         if ($("#chkCargaPrevia").is(":checked")) {
@@ -111,8 +121,6 @@ function InicializaEnventosEtiqueta() {
             $list.selectpicker("refresh");
         }
     });
-
-   
 
     // Autocomplete especializado para Rel011
     $(document).on("keydown.autocomplete", "input#Rel011", function () {
@@ -216,6 +224,217 @@ function InicializaEnventosEtiqueta() {
     });
 }
 
+/* PSEUDOCODIGO (en comentarios):
+- Dentro de `buscarEtiquetas`, armar 'proveedores' usando solo jQuery:
+  - Tomar opciones con $("#Rel011List option")
+  - Si hay opciones:
+     - Recorrer con .each()
+     - Tomar value, hacer trim y validar no vacío
+     - Evitar duplicados con un diccionario 'visto'
+     - Acumular en arreglo 'ids' y luego join(",")
+  - Si no hay opciones:
+     - Tomar #Rel011Item como fallback si tiene valor
+*/
+function buscarEtiquetas(btn) {
+    if (_presuLoading) return;
+    _presuLoading = true;
+
+    const $btn = $(btn);
+    const originalHtml = $btn.html();
+    setBtnLoading($btn, true);
+
+    let tipoVal = "";
+    if ($("#chkTipoEtiq").is(":checked")) {
+        tipoVal = $("#TipoEtiqueta").val();//*
+    }
+
+    let sinImp = $("#chkSinImprimir").is(":checked");//*
+    let oferta = $("#chkOferta").is(":checked");//*
+
+
+    let cargaPrevBit = false;
+    let cargaPrevVal = "";
+    if ($("#chkCargaPrevia").is(":checked")) {
+        cargaPrevBit = true;
+        cargaPrevVal = $("#CargaPrevia").val();
+    }
+
+    let fecD = "";
+    let fecH = "";
+    if ($("#chkDesdeHasta").is(":checked")) {
+        fecD = $("#Date1").val();
+        fecH = $("#Date2").val();
+    }
+
+    // Proveedores -> Array<string>
+    let proveedores = [];
+    if ($("#chkRel011").is(":checked")) {
+        var $optsProv = $("#Rel011List").find("option");
+        if ($optsProv.length > 0) {
+            var vistoProv = {};
+            $optsProv.each(function () {
+                var v = $(this).val();
+                if (v != null) {
+                    v = String(v).trim();
+                    if (v.length > 0 && !vistoProv[v]) {
+                        vistoProv[v] = true;
+                        proveedores.push(v);
+                    }
+                }
+            });
+        } else {
+            var unicoProv = $("#Rel011Item").val();
+            if (unicoProv != null) {
+                unicoProv = String(unicoProv).trim();
+                if (unicoProv.length > 0) {
+                    proveedores.push(unicoProv);
+                }
+            }
+        }
+    }
+
+    // Familias -> Array<string>
+    let familias = [];
+    if ($("#chkRel03").is(":checked")) {
+        var $optsFam = $("#Rel03List").find("option");
+        if ($optsFam.length > 0) {
+            var vistoFam = {};
+            $optsFam.each(function () {
+                var v = $(this).val();
+                if (v != null) {
+                    v = String(v).trim();
+                    if (v.length > 0 && !vistoFam[v]) {
+                        vistoFam[v] = true;
+                        familias.push(v);
+                    }
+                }
+            });
+        } else {
+            var unicoFam = $("#Rel03List").val();
+            if (unicoFam != null) {
+                unicoFam = String(unicoFam).trim();
+                if (unicoFam.length > 0) {
+                    familias.push(unicoFam);
+                }
+            }
+        }
+    }
+
+    let rubros = [];
+    if ($("#chkRel02").is(":checked")) {
+        var $optsRub = $("#Rel02List").find("option");
+        if ($optsRub.length > 0) {
+            var vistoRub = {};
+            $optsRub.each(function () {
+                var v = $(this).val();
+                if (v != null) {
+                    v = String(v).trim();
+                    if (v.length > 0 && !vistoRub[v]) {
+                        vistoRub[v] = true;
+                        rubros.push(v);
+                    }
+                }
+            });
+        } else {
+            var unicoRub = $("#Rel02List").val();
+            if (unicoRub != null) {
+                unicoRub = String(unicoRub).trim();
+                if (unicoRub.length > 0) {
+                    rubros.push(unicoRub);
+                }
+            }
+        }
+    }
+
+    const data = {
+        Tipo: tipoVal || null,
+        Opt1: sinImp,
+        Opt2: oferta,
+        Opt3: cargaPrevBit,
+        StrOpt03: cargaPrevVal || null,
+        // ✅ FechaD y FechaH: null si vacío (compatible con DateTime?)
+        FechaD: fecD && fecD.trim() !== "" ? fecD : null,
+        FechaH: fecH && fecH.trim() !== "" ? fecH : null,
+        // ✅ Rel01 y Rel02: Arrays de strings (OK)
+        Rel01: proveedores.length > 0 ? proveedores : null,
+        Rel02: rubros.length > 0 ? rubros : null,
+        // ✅ Rel03: Convertir a List<ComboGenDto>
+        Rel03: familias.length > 0
+            ? familias.map(f => ({ Id: f, Descripcion: f }))
+            : null,
+        // ✅ Campos adicionales para compatibilidad completa
+        Id: null,
+        Id2: null,
+        Buscar: null,
+        Registros: null,
+        Pagina: null,
+        Estado: null,
+        Adm_id: null,
+        Usu_id: null
+    };
+   
+    try {       
+        const url = obtenerDetalleEtiquetasUrl;
+
+        $.ajax({
+            url: url,
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            dataType: "html",
+            data: JSON.stringify(data),
+            success: function (html) {
+                $("#divDetalle").html(html).collapse("show");
+                $("#divFiltro").collapse("hide");
+            },
+            error: function (xhr, status, error) {
+                console.error("Error al obtener detalle de etiquetas:", error);
+                $("#divDetalle").html('<div class="alert alert-danger py-2 mb-0"><i class="bx bx-error-circle me-1"></i>No se pudo obtener la información. Intente nuevamente.</div>').collapse("show");
+            }
+        });
+    } finally {
+        setBtnLoading($btn, false, originalHtml);
+        _presuLoading = false;
+    }
+}
+
+function configurarEventosSeleccionEtiqueta() {
+    $(document).off("click", "#tbGridEtiquetaDetalle tbody tr");
+    $(document).on("click", "#tbGridEtiquetaDetalle tbody tr", function (e) {
+        if (!$(e.target).is("button, a, .btn, i")) {
+            var $this = $(this);
+            var fueSeleccionado = $this.hasClass("selected-row");
+
+            $("#tbGridEtiquetaDetalle tbody tr").removeClass("selected-row");
+
+            if (!fueSeleccionado) {
+                $this.addClass("selected-row");
+                let preId = $this.data("pre-id");
+
+                if (preId) {
+                    $("#btnImprimir").prop("disabled", false);
+                    let data = { pre_id: preId };
+                    cargarReporteEnArre(indexPrint, data, "Presupuesto/Cotización");
+                }
+            }
+
+            //achico el tamaño del grid
+            const $grid = $("#divPresupuesto");
+            var gridAchicado = $grid.hasClass("table-wrapper-100");
+            if (!gridAchicado) {
+                $grid.removeClass("table-wrapper-300").addClass("table-wrapper-100")
+            }
+            setTimeout(() => {
+                ///posiciona el select en la parte visual del grid al achicarlo
+                posicionarRegOnTop($this, ".table-wrapper-100");
+            }, 200);
+
+        }
+    });
+    //configurando los eventos para el boton que elimina el registro.
+    configurarEventosEliminacionProducto();
+}
+
+
 function verificarYDesactivarControles(mostrarLog = true) {
 
     // Verificar si hay opciones en la lista
@@ -303,4 +522,13 @@ function cargarFliaDelProveedor(proveedorId) {
             console.error("Error al cargar las familias del proveedor:", error);
         }
     );
+}
+
+function setBtnLoading($btn, loading, originalHtml) {
+    if (!$btn || !$btn.length) return;
+    if (loading) {
+        $btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm me-1"></span>Buscando...');
+    } else {
+        $btn.prop("disabled", false).html(originalHtml ?? "Buscar");
+    }
 }

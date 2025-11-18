@@ -102,7 +102,7 @@
 			public const string SP_PRESUP_P_ACTUALIZADO = "SPGECO_PRE_P_actualizado";
 
             //ETIQUETAS
-			public const string SP_CARGA_PREVIA = "SPGECO_IE_PREVIOS_CARGADOS_USU_LISTA";
+			public const string SP_CARGA_PREVIA = "SPGECO_IE_Previos_Cargados_Usu_Lista";
 			public const string SP_IE_LISTA = "SPGECO_IE_Lista";
 			public const string SP_IE_DATOS = "SPGECO_IE_Datos";
 			public const string SP_IE_CONFIRMA = "SPGECO_IE_Confirmar";

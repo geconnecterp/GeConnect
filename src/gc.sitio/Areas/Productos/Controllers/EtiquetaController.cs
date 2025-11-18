@@ -1,6 +1,8 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos.Etiqueta;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
@@ -22,17 +24,16 @@ namespace gc.sitio.Areas.Productos.Controllers
         private readonly IDocManagerServicio _docMSv;
 
         private readonly AppSettings _configuracion;
-        
+
         private readonly IEtiquetaServicio _etSv;
         private readonly ICuentaServicio _cuentaServicio;
         private readonly IRubroServicio _rubroServicio;
-
 
         public EtiquetaController(IOptions<AppSettings> options, IHttpContextAccessor contexo,
            ILogger<OfertasController> logger, IOptions<DocsManager> docsManager,
            IDocManagerServicio docManagerServicio, IEtiquetaServicio etiquetaServicio,
            ICuentaServicio cuentaServicio,
-            IRubroServicio rubroServicio) :base(options, contexo, logger)
+            IRubroServicio rubroServicio) : base(options, contexo, logger)
         {
             _configuracion = options.Value;
 
@@ -44,6 +45,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             _cuentaServicio = cuentaServicio;
             _rubroServicio = rubroServicio;
         }
+
         public IActionResult Index()
         {
             string msg = "Error de negocios al cargar la vista de PRESUPUESTOS";
@@ -105,8 +107,6 @@ namespace gc.sitio.Areas.Productos.Controllers
             ViewBag.Rel03List = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
             ViewBag.Rel03 = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
 
-
-
             var listaEtiqueta = new List<ComboGenDto>()
             {
                 new ComboGenDto{Id="1", Descripcion="Puntera de Góndola"},
@@ -119,6 +119,41 @@ namespace gc.sitio.Areas.Productos.Controllers
 
             var listCargaPrevia = new List<ComboGenDto>();
             ViewBag.CargaPrevia = ComboCargasPrevias();
+        }
+
+        // Acción para construir y devolver el grid parcial con el detalle de etiquetas
+        [HttpPost]
+        public async Task<IActionResult> ObtenerDetalleEtiquetas([FromBody]  QueryFilters filters, int pag = 1)
+        {
+            try
+            {
+                if (filters is null)
+                    return BadRequest("Parámetros inválidos.");
+
+                filters.Adm_id = AdministracionId;
+                filters.Usu_id = UserName;
+
+                // Obtención optimizada (el servicio debe invocar el API). Ordenar en servidor si es posible.
+                var resp = await _etSv.ObtenerDetalleEtiquetas(filters,TokenCookie);
+                if (!resp.Ok)
+                {
+                    throw new NegocioException(resp.Mensaje ?? "Error al obtener detalle de etiquetas.");
+                }
+
+                // Ordenar por descripción para una UX consistente (evita ordenar en la vista)
+                var ordenada = resp.ListaEntidad?.OrderBy(x => x.p_desc, StringComparer.OrdinalIgnoreCase).ToList();
+
+                // GridCoreSmart centralizado desde la base
+                var grid = GenerarGrillaSmart(ordenada, nameof(IEDetalleDto.p_desc));
+                //grid.MetadataGeneral = MetadataGeneral; // mantener consistencia con el resto del sitio
+
+                return PartialView("_EtiquetaDetalle", grid);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al obtener detalle de etiquetas.");
+                return PartialView("_EtiquetaDetalle", GenerarGrillaSmart(new List<IEDetalleDto>(), nameof(IEDetalleDto.p_desc)));
+            }
         }
     }
 }
