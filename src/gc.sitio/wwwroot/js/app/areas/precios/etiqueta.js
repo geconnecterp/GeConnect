@@ -1,4 +1,4 @@
-﻿let _presuLoading = false;
+﻿let _etiquetaLoading = false;
 
 $(function () {
     InicializaPantallaEtiqueta();
@@ -68,22 +68,14 @@ function InicializaEnventosEtiqueta() {
 
     //Evento de cambio en check de CargaPrevia
     $("#chkCargaPrevia").on("change", function () {
-        if ($("#chkCargaPrevia").is(":checked")) {
-            $("#CargaPrevia").prop("disabled", false);
-        } else {
-            $("#CargaPrevia").prop("disabled", true);
-        }
+        const isChecked = $(this).is(":checked");
+        $("#CargaPrevia").prop("disabled", !isChecked);
     });
 
     //evento de cambio en check de Modificados
     $("#chkDesdeHasta").on("change", function () {
-        if ($("#chkDesdeHasta").is(":checked")) {
-            $("#Date1").prop("disabled", false);
-            $("#Date2").prop("disabled", false);
-        } else {
-            $("#Date1").prop("disabled", true);
-            $("#Date2").prop("disabled", true);
-        }
+        const isChecked = $(this).is(":checked");
+        $("#Date1, #Date2").prop("disabled", !isChecked);
     });
 
     //check generico REL01 activando componentes disables
@@ -91,23 +83,12 @@ function InicializaEnventosEtiqueta() {
         const isChecked = $(this).is(":checked");
 
         if (isChecked) {
-            $("#Rel011").prop("disabled", false);
-            $("#Rel011List").prop("disabled", false);
-
-            //// ✅ INICIALIZAR AUTOCOMPLETE SOLO UNA VEZ
-            //if (!$("#Rel011").hasClass("ui-autocomplete-input")) {
-            //    inicializarAutocompleteRel011();
-            //}
-
+            $("#Rel011, #Rel011List").prop("disabled", false);
             setTimeout(() => $("#Rel011").trigger("focus"), 50);
         } else {
             $("#Rel011").prop("disabled", true).val("");
             $("#Rel011List").prop("disabled", true).empty();
             $("#Rel011Item").val("");
-
-            if ($("#Rel011").hasClass("ui-autocomplete-input")) {
-                $("#Rel011").autocomplete("destroy");
-            }
         }
     });
 
@@ -185,13 +166,11 @@ function InicializaEnventosEtiqueta() {
         $seleccionadas.each(function () {
             const val = this.value;
             const txt = this.text;
-            if (!val) return; // ignora opción vacía "Seleccionar..."
+            if (!val) return;
 
-            // evita duplicados por value
             const existe = $destino.find("option[value='" + $.escapeSelector(val) + "']").length > 0;
             if (!existe) {
-                const $op = $("<option></option>").val(val).text(txt);
-                $destino.append($op);
+                $destino.append($("<option></option>").val(val).text(txt));
                 huboCambios = true;
             }
         });
@@ -203,7 +182,6 @@ function InicializaEnventosEtiqueta() {
             $destino.trigger("change");
         }
 
-        // limpia selección del origen
         $origen.val("");
         if ($.fn.selectpicker && $origen.hasClass("selectpicker")) {
             $origen.selectpicker("refresh");
@@ -222,35 +200,22 @@ function InicializaEnventosEtiqueta() {
         }
         $lista.trigger("change");
     });
+
+    // ✅ Configurar eventos de eliminación de etiquetas
+    configurarEventosEliminacionEtiqueta();
 }
 
-/* PSEUDOCODIGO (en comentarios):
-- Dentro de `buscarEtiquetas`, armar 'proveedores' usando solo jQuery:
-  - Tomar opciones con $("#Rel011List option")
-  - Si hay opciones:
-     - Recorrer con .each()
-     - Tomar value, hacer trim y validar no vacío
-     - Evitar duplicados con un diccionario 'visto'
-     - Acumular en arreglo 'ids' y luego join(",")
-  - Si no hay opciones:
-     - Tomar #Rel011Item como fallback si tiene valor
-*/
 function buscarEtiquetas(btn) {
-    if (_presuLoading) return;
-    _presuLoading = true;
+    if (_etiquetaLoading) return;
+    _etiquetaLoading = true;
 
     const $btn = $(btn);
     const originalHtml = $btn.html();
     setBtnLoading($btn, true);
 
-    let tipoVal = "";
-    if ($("#chkTipoEtiq").is(":checked")) {
-        tipoVal = $("#TipoEtiqueta").val();//*
-    }
-
-    let sinImp = $("#chkSinImprimir").is(":checked");//*
-    let oferta = $("#chkOferta").is(":checked");//*
-
+    const tipoVal = $("#chkTipoEtiq").is(":checked") ? $("#TipoEtiqueta").val() : "";
+    const sinImp = $("#chkSinImprimir").is(":checked");
+    const oferta = $("#chkOferta").is(":checked");
 
     let cargaPrevBit = false;
     let cargaPrevVal = "";
@@ -266,85 +231,10 @@ function buscarEtiquetas(btn) {
         fecH = $("#Date2").val();
     }
 
-    // Proveedores -> Array<string>
-    let proveedores = [];
-    if ($("#chkRel011").is(":checked")) {
-        var $optsProv = $("#Rel011List").find("option");
-        if ($optsProv.length > 0) {
-            var vistoProv = {};
-            $optsProv.each(function () {
-                var v = $(this).val();
-                if (v != null) {
-                    v = String(v).trim();
-                    if (v.length > 0 && !vistoProv[v]) {
-                        vistoProv[v] = true;
-                        proveedores.push(v);
-                    }
-                }
-            });
-        } else {
-            var unicoProv = $("#Rel011Item").val();
-            if (unicoProv != null) {
-                unicoProv = String(unicoProv).trim();
-                if (unicoProv.length > 0) {
-                    proveedores.push(unicoProv);
-                }
-            }
-        }
-    }
-
-    // Familias -> Array<string>
-    let familias = [];
-    if ($("#chkRel03").is(":checked")) {
-        var $optsFam = $("#Rel03List").find("option");
-        if ($optsFam.length > 0) {
-            var vistoFam = {};
-            $optsFam.each(function () {
-                var v = $(this).val();
-                if (v != null) {
-                    v = String(v).trim();
-                    if (v.length > 0 && !vistoFam[v]) {
-                        vistoFam[v] = true;
-                        familias.push(v);
-                    }
-                }
-            });
-        } else {
-            var unicoFam = $("#Rel03List").val();
-            if (unicoFam != null) {
-                unicoFam = String(unicoFam).trim();
-                if (unicoFam.length > 0) {
-                    familias.push(unicoFam);
-                }
-            }
-        }
-    }
-
-    let rubros = [];
-    if ($("#chkRel02").is(":checked")) {
-        var $optsRub = $("#Rel02List").find("option");
-        if ($optsRub.length > 0) {
-            var vistoRub = {};
-            $optsRub.each(function () {
-                var v = $(this).val();
-                if (v != null) {
-                    v = String(v).trim();
-                    if (v.length > 0 && !vistoRub[v]) {
-                        vistoRub[v] = true;
-                        rubros.push(v);
-                    }
-                }
-            });
-        } else {
-            var unicoRub = $("#Rel02List").val();
-            if (unicoRub != null) {
-                unicoRub = String(unicoRub).trim();
-                if (unicoRub.length > 0) {
-                    rubros.push(unicoRub);
-                }
-            }
-        }
-    }
+    // Extraer y validar arrays de proveedores, familias y rubros
+    const proveedores = extraerValoresDeSelect("#Rel011List", "#Rel011Item", "#chkRel011");
+    const familias = extraerValoresDeSelect("#Rel03List", null, "#chkRel03");
+    const rubros = extraerValoresDeSelect("#Rel02List", null, "#chkRel02");
 
     const data = {
         Tipo: tipoVal || null,
@@ -352,17 +242,13 @@ function buscarEtiquetas(btn) {
         Opt2: oferta,
         Opt3: cargaPrevBit,
         StrOpt03: cargaPrevVal || null,
-        // ✅ FechaD y FechaH: null si vacío (compatible con DateTime?)
         FechaD: fecD && fecD.trim() !== "" ? fecD : null,
         FechaH: fecH && fecH.trim() !== "" ? fecH : null,
-        // ✅ Rel01 y Rel02: Arrays de strings (OK)
         Rel01: proveedores.length > 0 ? proveedores : null,
         Rel02: rubros.length > 0 ? rubros : null,
-        // ✅ Rel03: Convertir a List<ComboGenDto>
-        Rel03: familias.length > 0
+        Rel03: familias.length > 0 
             ? familias.map(f => ({ Id: f, Descripcion: f }))
             : null,
-        // ✅ Campos adicionales para compatibilidad completa
         Id: null,
         Id2: null,
         Buscar: null,
@@ -373,125 +259,264 @@ function buscarEtiquetas(btn) {
         Usu_id: null
     };
    
-    try {       
-        const url = obtenerDetalleEtiquetasUrl;
+    $.ajax({
+        url: obtenerDetalleEtiquetasUrl,
+        type: "POST",
+        contentType: "application/json; charset=utf-8",
+        dataType: "html",
+        data: JSON.stringify(data),
+        success: function (html) {
+            $("#divDetalle").html(html).collapse("show");
+            $("#divFiltro").collapse("hide");
+            
+            // ✅ Reconfigurar eventos después de cargar el HTML dinámico
+            configurarEventosEliminacionEtiqueta();
+            actualizarContadorEtiquetas();
+        },
+        error: function (xhr, status, error) {
+            console.error("Error al obtener detalle de etiquetas:", error);
+            const mensajeError = '<div class="alert alert-danger py-2 mb-0">' +
+                '<i class="bx bx-error-circle me-1"></i>' +
+                'No se pudo obtener la información de etiquetas. Intente nuevamente.' +
+                '</div>';
+            $("#divDetalle").html(mensajeError).collapse("show");
+        },
+        complete: function () {
+            setBtnLoading($btn, false, originalHtml);
+            _etiquetaLoading = false;
+        }
+    });
+}
 
-        $.ajax({
-            url: url,
-            type: "POST",
-            contentType: "application/json; charset=utf-8",
-            dataType: "html",
-            data: JSON.stringify(data),
-            success: function (html) {
-                $("#divDetalle").html(html).collapse("show");
-                $("#divFiltro").collapse("hide");
-            },
-            error: function (xhr, status, error) {
-                console.error("Error al obtener detalle de etiquetas:", error);
-                $("#divDetalle").html('<div class="alert alert-danger py-2 mb-0"><i class="bx bx-error-circle me-1"></i>No se pudo obtener la información. Intente nuevamente.</div>').collapse("show");
+/**
+ * ✅ NUEVA FUNCIÓN: Extrae valores de un select de forma optimizada
+ * @param {string} selectId - Selector del select principal
+ * @param {string} fallbackId - Selector del input fallback (opcional)
+ * @param {string} checkId - Selector del checkbox que habilita el control
+ * @returns {Array<string>} Array de valores únicos
+ */
+function extraerValoresDeSelect(selectId, fallbackId, checkId) {
+    const valores = [];
+    
+    if (!$(checkId).is(":checked")) {
+        return valores;
+    }
+
+    const $opts = $(selectId).find("option");
+    if ($opts.length > 0) {
+        const visto = {};
+        $opts.each(function () {
+            let v = $(this).val();
+            if (v != null) {
+                v = String(v).trim();
+                if (v.length > 0 && !visto[v]) {
+                    visto[v] = true;
+                    valores.push(v);
+                }
             }
         });
-    } finally {
-        setBtnLoading($btn, false, originalHtml);
-        _presuLoading = false;
+    } else if (fallbackId) {
+        let unicoVal = $(fallbackId).val();
+        if (unicoVal != null) {
+            unicoVal = String(unicoVal).trim();
+            if (unicoVal.length > 0) {
+                valores.push(unicoVal);
+            }
+        }
+    }
+
+    return valores;
+}
+
+/**
+ * ✅ NUEVA FUNCIÓN: Configura los eventos de eliminación de etiquetas del grid
+ */
+function configurarEventosEliminacionEtiqueta() {
+    $(document).off("click.eliminarEtiqueta", ".btn-eliminar-etiqueta");
+    
+    $(document).on("click.eliminarEtiqueta", ".btn-eliminar-etiqueta", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const $btn = $(this);
+        const $fila = $btn.closest("tr");
+        const etiquetaId = $btn.data("p-id");
+        const descripcion = $fila.find("td").eq(1).text().trim();
+        
+        if (!etiquetaId) {
+            console.error("No se pudo obtener el ID de la etiqueta");
+            mostrarNotificacion("Error al identificar la etiqueta", "error");
+            return;
+        }
+        
+        confirmarEliminacionEtiqueta(etiquetaId, descripcion, $fila, $btn);
+    });
+}
+
+/**
+ * ✅ NUEVA FUNCIÓN: Muestra diálogo de confirmación antes de eliminar
+ */
+function confirmarEliminacionEtiqueta(etiquetaId, descripcion, $fila, $btn) {
+    const mensaje = `¿Está seguro de eliminar la etiqueta de la vista?<br><br>
+        <strong>Código:</strong> ${etiquetaId}<br>
+        <strong>Descripción:</strong> ${descripcion}<br><br>
+        <small class="text-muted">Esta acción solo eliminará la etiqueta de la vista actual.</small>`;
+    
+    if (typeof AbrirMensaje === "function") {
+        AbrirMensaje(
+            "CONFIRMAR ELIMINACIÓN DE ETIQUETA",
+            mensaje,
+            function () {
+                ejecutarEliminacionEtiqueta(etiquetaId, $fila, $btn);
+                $("#msjModal").modal("hide");
+            },
+            true,
+            ["Eliminar", "Cancelar"],
+            "warning!",
+            null
+        );
+    } else {
+        if (confirm(`¿Está seguro de eliminar la etiqueta ${etiquetaId} - ${descripcion}?`)) {
+            ejecutarEliminacionEtiqueta(etiquetaId, $fila, $btn);
+        }
     }
 }
 
-function configurarEventosSeleccionEtiqueta() {
-    $(document).off("click", "#tbGridEtiquetaDetalle tbody tr");
-    $(document).on("click", "#tbGridEtiquetaDetalle tbody tr", function (e) {
-        if (!$(e.target).is("button, a, .btn, i")) {
-            var $this = $(this);
-            var fueSeleccionado = $this.hasClass("selected-row");
-
-            $("#tbGridEtiquetaDetalle tbody tr").removeClass("selected-row");
-
-            if (!fueSeleccionado) {
-                $this.addClass("selected-row");
-                let preId = $this.data("pre-id");
-
-                if (preId) {
-                    $("#btnImprimir").prop("disabled", false);
-                    let data = { pre_id: preId };
-                    cargarReporteEnArre(indexPrint, data, "Presupuesto/Cotización");
-                }
-            }
-
-            //achico el tamaño del grid
-            const $grid = $("#divPresupuesto");
-            var gridAchicado = $grid.hasClass("table-wrapper-100");
-            if (!gridAchicado) {
-                $grid.removeClass("table-wrapper-300").addClass("table-wrapper-100")
-            }
-            setTimeout(() => {
-                ///posiciona el select en la parte visual del grid al achicarlo
-                posicionarRegOnTop($this, ".table-wrapper-100");
-            }, 200);
-
-        }
+/**
+ * ✅ NUEVA FUNCIÓN: Ejecuta la eliminación de la etiqueta del grid
+ */
+function ejecutarEliminacionEtiqueta(etiquetaId, $fila, $btn) {
+    $btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm"></span>');
+    
+    $fila.fadeOut(300, function () {
+        $fila.remove();
+        actualizarContadorEtiquetas();
+        renumerarFilasEtiquetas();
+        verificarEtiquetasVacias();
+        mostrarNotificacion(`Etiqueta ${etiquetaId} eliminada de la vista`, "success");
+        console.log(`Etiqueta ${etiquetaId} eliminada del grid`);
     });
-    //configurando los eventos para el boton que elimina el registro.
-    configurarEventosEliminacionProducto();
 }
 
+/**
+ * ✅ NUEVA FUNCIÓN: Actualiza el contador total de etiquetas en el footer
+ */
+function actualizarContadorEtiquetas() {
+    const $tbody = $("#tbGridEtiquetaDetalle tbody");
+    const $filas = $tbody.find("tr:not(.empty-message)");
+    const totalRegistros = $filas.length;
+
+    const $footer = $("#tbGridEtiquetaDetalle tfoot td .badge");
+    if ($footer.length > 0) {
+        $footer.text(totalRegistros); // ✅ Actualiza solo el badge
+    }
+}
+
+/**
+ * ✅ NUEVA FUNCIÓN: Renumera las filas después de eliminar una etiqueta
+ */
+function renumerarFilasEtiquetas() {
+    const $tbody = $("#tbGridEtiquetaDetalle tbody");
+    const $filas = $tbody.find("tr:not(.empty-message)");
+    
+    $filas.each(function (index) {
+        const $fila = $(this);
+        
+        // Actualizar clase alt para filas alternas
+        if ((index + 1) % 2 === 0) {
+            $fila.removeClass("alt");
+        } else {
+            $fila.addClass("alt");
+        }
+    });
+}
+
+/**
+ * ✅ NUEVA FUNCIÓN: Verifica si el grid quedó vacío y muestra mensaje
+ */
+function verificarEtiquetasVacias() {
+    const $tbody = $("#tbGridEtiquetaDetalle tbody");
+    const $filas = $tbody.find("tr:not(.empty-message)");
+    
+    if ($filas.length === 0) {
+        $("#tbGridEtiquetaDetalle tfoot").hide();
+        
+        const mensajeVacio = `
+            <tr class="empty-message">
+                <td colspan="4" class="text-center text-muted py-3">
+                    <i class="bx bx-info-circle me-1"></i>
+                    No hay etiquetas en la vista actual
+                </td>
+            </tr>`;
+        
+        $tbody.html(mensajeVacio);
+    }
+}
+
+/**
+ * ✅ NUEVA FUNCIÓN: Muestra notificaciones toast al usuario
+ */
+function mostrarNotificacion(mensaje, tipo = "info") {
+    if (typeof toastr !== "undefined") {
+        toastr.options = {
+            closeButton: true,
+            progressBar: true,
+            positionClass: "toast-top-right",
+            timeOut: 3000
+        };
+        toastr[tipo](mensaje);
+    } 
+    else if (typeof MostrarNotificacion === "function") {
+        MostrarNotificacion(mensaje, tipo);
+    }
+    else {
+        console.log(`[${tipo.toUpperCase()}] ${mensaje}`);
+    }
+}
 
 function verificarYDesactivarControles(mostrarLog = true) {
-
-    // Verificar si hay opciones en la lista
     if ($("#Rel011List").find("option").length > 0) {
         if (mostrarLog) {
-            console.log("Se encontraron opciones en Rel01List, desactivando controles...");
+            console.log("Se encontraron opciones en Rel011List, verificando controles...");
         }
 
-        // Asegurar que solo hay un elemento seleccionado
         const opciones = $("#Rel011List option");
-        // obtengo la cantidad
         const cantidad = opciones.length;
-        if (cantidad > 0) {
-            if (cantidad === 1) {
-                AbrirWaiting("Buscando familia...");
-                // Seleccionar solo el primer elemento
-                const primerValor = opciones.first().val();
-                $("#Rel011List").val([primerValor]);
-               
-                // Obtener el ID del proveedor seleccionado
-                const proveedorId = $("#Rel011Item").val() || primerValor;
+        
+        if (cantidad === 1) {
+            AbrirWaiting("Buscando familias de productos...");
+            
+            const primerValor = opciones.first().val();
+            $("#Rel011List").val([primerValor]);
+            
+            const proveedorId = $("#Rel011Item").val() || primerValor;
+            cargarFliaDelProveedor(proveedorId);
+            $("#chkRel03").prop("disabled", false);
 
-                cargarFliaDelProveedor(proveedorId);
-              
-                $("#chkRel03").prop("disabled", false);
-
-                if (mostrarLog) {
-                    console.log("Controles desactivados correctamente");
-                }
-                CerrarWaiting();
+            if (mostrarLog) {
+                console.log("Controles actualizados correctamente");
             }
-            else {
-                //hay más de 1 proveedor. Se desactiva la familia
-                $("#chkRel03").prop("disabled", true);
-
-                // Limpiar el dropdown actual
-                $("#Rel03").prop("disabled", true).empty();
-                $("Rel03List").prop("disabled", true).empty();                               
-            }                       
+            CerrarWaiting();
+        } else {
+            $("#chkRel03").prop("disabled", true);
+            $("#Rel03, #Rel03List").prop("disabled", true).empty();
         }
-    } else if (mostrarLog && $("#Rel01").val()) {
-        console.log("No hay opciones en Rel01List todavía, pero hay texto en Rel01");
+    } else if (mostrarLog && $("#Rel011").val()) {
+        console.log("No hay opciones en Rel011List todavía, pero hay texto en Rel011");
     }
 }
 
 function cargarFliaDelProveedor(proveedorId) {
-   
     if (!proveedorId) {
         console.error("No se pudo determinar el ID del proveedor");
         return;
     }
 
     console.log("Cargando familias para el proveedor con ID: " + proveedorId);
-    let datos = { ctaId: proveedorId };
-    // Usar PostGen para llamar al controlador
-    PostGen(datos, buscarFamiliaUrl, // URL del action 
-        function (obj) { // Función de éxito
+    const datos = { ctaId: proveedorId };
+    
+    PostGen(datos, buscarFamiliaUrl,
+        function (obj) {
             if (obj.error === true) {
                 CerrarWaiting();
                 AbrirMensaje("ATENCIÓN", obj.msg, function () {
@@ -505,20 +530,17 @@ function cargarFliaDelProveedor(proveedorId) {
                 }, false, ["Entendido"], "warn!", null);
             }
             else {
-                //armado del ddl de Familia
-                var combo = $("#Rel03");
-                // Limpiar el dropdown actual
+                const combo = $("#Rel03");
                 combo.empty();
-                var opc = "<option value=''>Seleccionar...</option>";
-                combo.append(opc);
+                combo.append("<option value=''>Seleccionar...</option>");
+                
                 $.each(obj.lista, function (i, item) {
-                    opc = "<option value='" + item.id + "'>" + item.descripcion + "</option>";
-                    combo.append(opc);
+                    combo.append(`<option value='${item.id}'>${item.descripcion}</option>`);
                 });
                 CerrarWaiting();
             }
         },
-        function (error) { // Función de error
+        function (error) {
             console.error("Error al cargar las familias del proveedor:", error);
         }
     );
@@ -526,9 +548,11 @@ function cargarFliaDelProveedor(proveedorId) {
 
 function setBtnLoading($btn, loading, originalHtml) {
     if (!$btn || !$btn.length) return;
+    
     if (loading) {
         $btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm me-1"></span>Buscando...');
     } else {
         $btn.prop("disabled", false).html(originalHtml ?? "Buscar");
     }
 }
+
