@@ -82,7 +82,7 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R044_ConsultaVencPorTipoCtaTipoCompte, new R044_ConsultaVencPorTipoCtaTipoCompte(uow,consSv, finServ,empresa,ctaSv, logger) },
                 { InfoReporte.R045_PunteraDeGondola, new R045_PunteraDeGondola(uow,etiqSv,empresa,ctaSv, logger) },
                 { InfoReporte.R046_Etiquetas01Precio, new R046_Etiquetas01Precio(uow,etiqSv,empresa,ctaSv, logger) },
-                //{ InfoReporte.R047_Etiquetas02Precio, new R047_Etiquetas02Precios(uow,etiqSv,empresa,ctaSv, logger) },
+                { InfoReporte.R047_Etiquetas02Precio, new R047_Etiquetas02Precios(uow,etiqSv,empresa,ctaSv, logger) },
 
             }; 
             _logger = logger;

@@ -15,7 +15,7 @@ using Microsoft.Extensions.Options;
 
 namespace gc.api.core.Servicios.Reportes
 {
-    public class R046_Etiquetas01Precio : Servicio<EntidadBase>, IGeneradorReporte
+    public class R047_Etiquetas02Precios : Servicio<EntidadBase>, IGeneradorReporte
     {
         private readonly IApiEtiquetaServicio _etSv;
 
@@ -25,7 +25,7 @@ namespace gc.api.core.Servicios.Reportes
         private readonly ICuentaServicio _cuentaSv;
         private readonly ILogger _logger;
 
-        public R046_Etiquetas01Precio(IUnitOfWork uow, IApiEtiquetaServicio servicio,
+        public R047_Etiquetas02Precios(IUnitOfWork uow, IApiEtiquetaServicio servicio,
            IOptions<EmpresaGeco> empresa, ICuentaServicio consultaSv, ILogger logger) : base(uow)
         {
             _etSv = servicio;
@@ -60,13 +60,14 @@ namespace gc.api.core.Servicios.Reportes
 
                 // Definir fuentes para diferentes secciones
                 var fuenteDescripcion = HelperPdf.DefineFontWithStyle("Arial", 11, Font.BOLD, 0, 0, 0);
-                var fuentePrecioDecimal = HelperPdf.DefineFontWithStyle("Arial Black", 32, Font.BOLD, 0, 0, 0);
+                var fuentePrecioDecimal = HelperPdf.DefineFontWithStyle("Arial Black", 26, Font.BOLD, 0, 0, 0);
+                var fuentePrecioDecimal2 = HelperPdf.DefineFontWithStyle("Arial Black", 20, Font.BOLD, 0, 0, 0);
                 var fuenteMini = HelperPdf.DefineFontWithStyle("Arial", 8, Font.NORMAL, 0, 0, 0);
-                var fuente3o9 = HelperPdf.DefineFontWithStyleFromFile(_empresaGeco.Font3o9Name, 16, Font.NORMAL, 0, 0, 0);
+                var fuente3o9 = HelperPdf.DefineFontWithStyleFromFile(_empresaGeco.Font3o9Name, 14, Font.NORMAL, 0, 0, 0);
                 pdf.Open();
 
-                #region Generar etiquetas en formato 2x7
-                int etiquetasPorPagina = 14;              
+                #region Generar etiquetas en formato 2x6
+                int etiquetasPorPagina = 12;              
 
                 for (int pagina = 0; pagina < Math.Ceiling((double)etiquetas.Count / etiquetasPorPagina); pagina++)
                 {
@@ -75,10 +76,6 @@ namespace gc.api.core.Servicios.Reportes
                         pdf.NewPage();
                     }
 
-                    // Tabla principal: 2 columnas (50% cada una)
-                    //PdfPTable tablaPrincipal = new PdfPTable(columnas);
-                    //tablaPrincipal.WidthPercentage = 100;
-                    //tablaPrincipal.SetWidths(new float[] { 50f, 50f });
                     PdfPTable tablaPrincipal = HelperPdf.GeneraTabla(2, [50f,50f], 100,0, 0);
 
 
@@ -95,9 +92,13 @@ namespace gc.api.core.Servicios.Reportes
                             logo,
                             fuenteDescripcion,
                             fuentePrecioDecimal,
+                            fuentePrecioDecimal2,
                             fuenteMini,
                             fuente3o9
                         );
+                        celdaEtiqueta.Border = Rectangle.BOX;
+                        celdaEtiqueta.BorderWidth = 0.5f;
+                        celdaEtiqueta.BorderColor = BaseColor.Black;
 
                         tablaPrincipal.AddCell(celdaEtiqueta);
                     }
@@ -146,25 +147,24 @@ namespace gc.api.core.Servicios.Reportes
             Image logo,
             Font fuenteDescripcion,
             Font fuentePrecioDecimal,
+            Font fuentePrecioDecimal2,
             Font fuenteMini,
-            Font fuente3o9)
+            Font fuente3o9
+            )
         {
             // Tabla interna para la etiqueta (1 columna)
             PdfPTable tablaEtiqueta = HelperPdf.GeneraTabla(1, [100f], 100, 0, 0);
-
-            // FILA 1: Logo y Fecha
-            tablaEtiqueta.AddCell(GenerarFilaLogoFecha(logo, fuenteMini));
-
+            
+            // FILA 1: Logo y Fecha, sin iva, leyenda y precio
+            tablaEtiqueta.AddCell(GenerarFilaPrecio1(etiqueta, fuentePrecioDecimal, fuenteMini, fuenteDescripcion,logo));
             // FILA 2: Precio
-            tablaEtiqueta.AddCell(GenerarFilaPrecio(etiqueta.p_pvta, fuentePrecioDecimal));
+            tablaEtiqueta.AddCell(GenerarFilaPrecio2(etiqueta, fuentePrecioDecimal2, fuenteMini, fuenteDescripcion));
 
-            // FILA 3: S/IVA
-            tablaEtiqueta.AddCell(GenerarFilaSinIva(etiqueta.p_pneto, fuenteMini));
-
-            // FILA 4: Descripción del producto
+            // FILA 3: Descripción del producto
             tablaEtiqueta.AddCell(GenerarFilaDescripcion(etiqueta.p_desc, fuenteDescripcion));
 
-            // FILA 5: Código, Código de barras y Código barrado
+
+            // FILA 4: Código, Código de barras y Código barrado
             tablaEtiqueta.AddCell(GenerarFilaCodigos(
                 etiqueta.p_id,
                 etiqueta.p_id_barrado,
@@ -174,7 +174,7 @@ namespace gc.api.core.Servicios.Reportes
 
             // Celda contenedora
             PdfPCell celdaContenedora = new PdfPCell(tablaEtiqueta);
-            celdaContenedora.Border = Rectangle.BOX;
+            celdaContenedora.Border = Rectangle.NO_BORDER;
             celdaContenedora.BorderWidth = 0.5f;
             celdaContenedora.BorderColor = BaseColor.LightGray;
             celdaContenedora.Padding = 3f;
@@ -183,9 +183,35 @@ namespace gc.api.core.Servicios.Reportes
             return celdaContenedora;
         }
 
-        /// <summary>
-        /// FILA 1: Logo y Fecha
-        /// </summary>
+        private PdfPTable GenerarFilaPrecio2(EtiquetaDto etiqueta, Font fuentePrecioDecimal, Font fuenteMini, Font fuenteDescripcion)
+        {
+            PdfPTable tablaEtiqueta = HelperPdf.GeneraTabla(2, [50f, 50f], 100, 0, 0);
+
+            PdfPTable subtabla = HelperPdf.GeneraTabla(1, [100f], 100, 0, 0);
+            subtabla.AddCell(GenerarFilaSinIva(etiqueta.p_pneto2, fuenteMini));
+            subtabla.AddCell(GenerarFilaDescripcion(etiqueta.p_pvta_leyenda2, fuenteDescripcion));
+            PdfPCell celdaSubtabla = new(subtabla);
+            celdaSubtabla.PaddingTop = 0f;
+            celdaSubtabla.PaddingBottom = 0f;
+            celdaSubtabla.PaddingRight = 5f;
+            celdaSubtabla.Border = Rectangle.NO_BORDER;
+
+            tablaEtiqueta.AddCell(celdaSubtabla);
+ 
+            string precioTexto = etiqueta.p_pvta2.ToString("$#,##0.00", new System.Globalization.CultureInfo("es-AR"));
+
+            PdfPCell celda = new PdfPCell(new Phrase(precioTexto, fuentePrecioDecimal));
+            celda.Border = Rectangle.NO_BORDER;
+            celda.HorizontalAlignment = Element.ALIGN_RIGHT;
+            celda.VerticalAlignment = Element.ALIGN_MIDDLE;
+            celda.PaddingTop = 0f;
+            celda.PaddingBottom = 0f;
+            celda.PaddingRight = 5f;
+
+            tablaEtiqueta.AddCell(celda);
+            return tablaEtiqueta;
+        }
+
         private PdfPCell GenerarFilaLogoFecha(Image logo, Font fuenteMini)
         {
             PdfPTable tabla = HelperPdf.GeneraTabla(2, [10f, 90f], 100, 0, 0);
@@ -204,13 +230,13 @@ namespace gc.api.core.Servicios.Reportes
             string fecha = DateTime.Now.ToString("dd/MM/yy");
             PdfPCell celdaFecha = new PdfPCell(new Phrase(fecha, fuenteMini));
             celdaFecha.Border = Rectangle.NO_BORDER;
-            celdaFecha.HorizontalAlignment = Element.ALIGN_LEFT;
+            celdaFecha.HorizontalAlignment = Element.ALIGN_CENTER;
             celdaFecha.VerticalAlignment = Element.ALIGN_MIDDLE;
             tabla.AddCell(celdaFecha);
 
             PdfPCell celda = new PdfPCell(tabla);
             celda.Border = Rectangle.NO_BORDER;
-            celda.PaddingBottom = 2f;
+            celda.PaddingBottom = 0f;
 
             return celda;
         }
@@ -218,9 +244,25 @@ namespace gc.api.core.Servicios.Reportes
         /// <summary>
         /// FILA 2: Precio
         /// </summary>
-        private PdfPCell GenerarFilaPrecio(decimal precio, Font fuentePrecio)
+        private PdfPTable GenerarFilaPrecio1(EtiquetaDto etiqueta, Font fuentePrecio, Font fuenteMini, Font fuenteDescripcion, Image logo)
         {
-            string precioTexto = precio.ToString("$#,##0.00", new System.Globalization.CultureInfo("es-AR"));
+            PdfPTable tablaEtiqueta = HelperPdf.GeneraTabla(2, [50f,50f], 100, 0, 0);
+            
+
+            PdfPTable subtabla = HelperPdf.GeneraTabla(1, [100f], 100, 0, 0);
+            // Logo y fecha
+            subtabla.AddCell(GenerarFilaLogoFecha(logo, fuenteMini));
+            subtabla.AddCell(GenerarFilaSinIva(etiqueta.p_pneto, fuenteMini));
+            subtabla.AddCell(GenerarFilaDescripcion(etiqueta.p_pvta_leyenda, fuenteDescripcion));
+            PdfPCell celdaSubtabla = new(subtabla);
+            celdaSubtabla.PaddingTop = 0f;
+            celdaSubtabla.PaddingBottom = 0f;
+            celdaSubtabla.PaddingRight = 5f;
+            celdaSubtabla.Border = Rectangle.NO_BORDER;
+
+            tablaEtiqueta.AddCell(celdaSubtabla);
+
+            string precioTexto = etiqueta.p_pvta.ToString("$#,##0.00", new System.Globalization.CultureInfo("es-AR"));
 
             PdfPCell celda = new PdfPCell(new Phrase(precioTexto, fuentePrecio));
             celda.Border = Rectangle.NO_BORDER;
@@ -230,7 +272,8 @@ namespace gc.api.core.Servicios.Reportes
             celda.PaddingBottom = 1f;
             celda.PaddingRight = 5f;
 
-            return celda;
+            tablaEtiqueta.AddCell(celda);
+            return tablaEtiqueta;
         }
 
         /// <summary>
@@ -241,7 +284,7 @@ namespace gc.api.core.Servicios.Reportes
             string texto = $"S/IVA: ${pNeto:0.00}";
 
             PdfPCell celda = new PdfPCell(new Phrase(texto, fuenteMini));
-            celda.Border = Rectangle.BOTTOM_BORDER;
+            celda.Border = Rectangle.NO_BORDER;
             celda.HorizontalAlignment = Element.ALIGN_LEFT;
             celda.VerticalAlignment = Element.ALIGN_MIDDLE;
             celda.PaddingBottom = 2f;
@@ -298,16 +341,16 @@ namespace gc.api.core.Servicios.Reportes
             if (!string.IsNullOrEmpty(pIdBarrado))
             {
                 // Código de barras en el centro (con asteriscos)
-                string codigoBarras = $"{pIdBarrado}";
+                string codigoBarras = $"*{pIdBarrado}*";
                 //armando la Phrase con chunks
                 Phrase phraseBarras =
                 [
                     // Asterisco inicial con fuente normal
-                    new Chunk("*", fuenteMiniPlus),
+                    //new Chunk("*", fuenteMiniPlus),
                     // Código en fuente 3of9 (esto genera las barras)
                     new Chunk(codigoBarras, fuente3o9),
                     // Asterisco final con fuente normal
-                    new Chunk("*", fuenteMiniPlus),
+                    //new Chunk("*", fuenteMiniPlus),
                 ];
 
                 PdfPCell celdaBarras = new(phraseBarras)
