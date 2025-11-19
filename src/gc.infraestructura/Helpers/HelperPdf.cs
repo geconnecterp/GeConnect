@@ -147,27 +147,45 @@ namespace gc.infraestructura.Helpers
 {
 	public static class HelperPdf
 	{
-		/// <summary>
-		/// Genera un documento A4
-		/// </summary>
-		/// <param name="writer"></param>
-		/// <param name="nombreArchivo"></param>
-		/// <returns></returns>
-		public static Document GenerarInstanciaAndInit(ref PdfWriter writer, out MemoryStream mStream, string nombreArchivo, HojaSize pagina = HojaSize.A4, bool esVertical = true)
+        /// <summary>
+        /// Genera un documento A4
+        /// </summary>
+        /// <param name="writer"></param>
+        /// <param name="nombreArchivo"></param>
+        /// <returns></returns>         
+        public static Document GenerarInstanciaAndInit(ref PdfWriter writer, out MemoryStream mStream, string nombreArchivo, HojaSize pagina = HojaSize.A4, bool esVertical = true,float mgLeft=20f,float mgRight=20f, float mgTop = 15f,float mgBot=50f)
+        {
+            Document doc = new Document(ObtenerHoja(pagina, esVertical), mgLeft, mgRight, mgTop, mgBot);
+            mStream = new MemoryStream();
+            writer = PdfWriter.GetInstance(doc, mStream);
+            return doc;
+        }
+
+        public static Document GenerarInstanciaAndInit(ref PdfWriter writer, out MemoryStream mStream, string nombreArchivo, HojaSize pagina = HojaSize.A4, bool esVertical = true)
 		{
-			Document doc = new Document(ObtenerHoja(pagina, esVertical), 20, 20, 15, 50);
-			mStream = new MemoryStream();
-			writer = PdfWriter.GetInstance(doc, mStream);
-			return doc;
+			return GenerarInstanciaAndInit(ref writer,out mStream, nombreArchivo, pagina, esVertical, 20f, 20f, 15f, 50f);
+			//Document doc = new Document(ObtenerHoja(pagina, esVertical), 20, 20, 15, 50);
+			//mStream = new MemoryStream();
+			//writer = PdfWriter.GetInstance(doc, mStream);
+			//return doc;
 		}
 
-		public static Document GenerarInstanciaAndInit(ref PdfWriter writer, out MemoryStream mStream, HojaSize pagina = HojaSize.A4, bool esVertical = true)
+        public static Document GenerarInstanciaAndInit(ref PdfWriter writer, out MemoryStream mStream,
+            HojaSize pagina = HojaSize.A4, bool esVertical = true, 
+			float mgLeft = 20f, float mgRight = 20f, float mgTop = 15f, float mgBot = 50f)
+        {
+            Document doc = new Document(ObtenerHoja(pagina, esVertical), mgLeft, mgRight, mgTop, mgBot);
+            mStream = new MemoryStream();
+            writer = PdfWriter.GetInstance(doc, mStream);
+            return doc;
+        }
+
+        public static Document GenerarInstanciaAndInit(ref PdfWriter writer, out MemoryStream mStream, 
+			HojaSize pagina = HojaSize.A4, bool esVertical = true)
 		{
-			Document doc = new Document(ObtenerHoja(pagina, esVertical), 20, 20, 15, 50);
-			mStream = new MemoryStream();
-			writer = PdfWriter.GetInstance(doc, mStream);
-			return doc;
-		}
+			return GenerarInstanciaAndInit(ref writer, out mStream, pagina, esVertical, 20, 20, 15, 50);
+
+        }
 
 		public static Document GenerarInstanciaAndInit(ref PdfWriter writer, HojaSize pagina = HojaSize.A4, bool esVertical = true)
 		{
@@ -294,16 +312,46 @@ namespace gc.infraestructura.Helpers
 			return font;
 		}
 
-		/// <summary>
-		/// Define una imagen como logo para ser ubicada en una posición absoluta (x,y) 
-		/// y con un tamaño definido por un porcentaje
-		/// </summary>
-		/// <param name="pathImagen">ruta para accedera a la imagen</param>
-		/// <param name="x">posición X</param>
-		/// <param name="y">posición Y</param>
-		/// <param name="sizePorcent">porcentaje del tamaño de la imagen a insertar en el documento</param>
-		/// <returns></returns>
-		public static Image CargaLogo(string pathImagen, float x, float y, float sizePorcent)
+        public static Font DefineFontWithStyleIncrustada(string nnFont, int size, int estilo, int r, int g, int b)
+        {
+            var color = new BaseColor(r, g, b);
+            var font = FontFactory.GetFont(
+                nnFont,
+                BaseFont.CP1252,
+                BaseFont.EMBEDDED, // fuerza que se incruste la font
+                size,
+                estilo,
+                color
+            );
+            return font;
+        }
+
+        // Sobrecarga: carga la fuente desde archivo en la carpeta Fonts
+        public static Font DefineFontWithStyleFromFile(string fileName, int size, int estilo, int r, int g, int b)
+        {
+            // Ruta absoluta al archivo de la fuente
+            var fontPath = Path.Combine(Directory.GetCurrentDirectory(), "Fonts", fileName);
+
+            // Alias para la fuente (sin extensión)
+            var alias = Path.GetFileNameWithoutExtension(fontPath);
+
+            // Registramos la fuente con un alias legible
+            FontFactory.Register(fontPath, alias);
+
+            // Reutilizamos el método original
+            return DefineFontWithStyle(alias, size, estilo, r, g, b);
+        }
+
+        /// <summary>
+        /// Define una imagen como logo para ser ubicada en una posición absoluta (x,y) 
+        /// y con un tamaño definido por un porcentaje
+        /// </summary>
+        /// <param name="pathImagen">ruta para accedera a la imagen</param>
+        /// <param name="x">posición X</param>
+        /// <param name="y">posición Y</param>
+        /// <param name="sizePorcent">porcentaje del tamaño de la imagen a insertar en el documento</param>
+        /// <returns></returns>
+        public static Image CargaLogo(string pathImagen, float x, float y, float sizePorcent)
 		{
 			Image logo = Image.GetInstance(pathImagen);
 			logo.SetAbsolutePosition(x, y);

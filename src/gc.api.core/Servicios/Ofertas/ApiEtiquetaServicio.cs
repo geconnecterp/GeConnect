@@ -38,6 +38,22 @@ namespace gc.api.core.Servicios.Ofertas
             return datos;
         }
 
+        public List<EtiquetaDto> ObtenerDatosParaEtiqueta(string json, int etiq, string adm, string usu)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_IE_DATOS;
+
+            List<SqlParameter> ps = new List<SqlParameter>
+            {
+                new SqlParameter("@json_p",json),
+                new SqlParameter("@etiqueta",etiq), 
+                new SqlParameter("@adm_id",adm),
+                new SqlParameter("@usu_id",usu)
+            };
+
+            var etiquetas = _repository.EjecutarLstSpExt<EtiquetaDto>(sp, ps, true);
+            return etiquetas;
+        }
+
         public List<IEDetalleDto> ObtenerDetalleEtiquetas(QueryFilters filters)
         {
 

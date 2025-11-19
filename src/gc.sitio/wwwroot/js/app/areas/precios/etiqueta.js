@@ -232,6 +232,9 @@ function imprimirEtiquetas() {
     //aca debo implementar el objeto que sera usado y enviado para la impresion
     const tipoEt = $("#TipoEtiqueta").val();
     const tipoDesc = $("#TipoEtiqueta option:selected").text();
+    cargarReporteEnArre(45, {} , "")
+    cargarReporteEnArre(46, {} , "")
+    cargarReporteEnArre(47, {}, "")
     let indexImp = 0;
     switch (tipoEt) {
         case "0":
@@ -247,14 +250,14 @@ function imprimirEtiquetas() {
             return false;
     }
 
-    const adm_id = administracion.split('#')[0] || '0000';
+    const adm_id = administracion;//.split('#')[0] || '0000';
 
     // Obtener todos los p_id que están chequeados en el grid _etiquetaDetalle
     const productosSeleccionados = [];
     $(".chk-etiqueta-item:checked").each(function () {
         const pId = $(this).val();
         if (pId) {
-            productosSeleccionados.push(pId);
+            productosSeleccionados.push({ p_id: pId });
         }
     });
 

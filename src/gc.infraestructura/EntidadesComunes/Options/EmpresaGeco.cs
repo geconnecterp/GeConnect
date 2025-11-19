@@ -18,6 +18,6 @@
         public string Localidad { get; set; } = string.Empty;
         public string Provincia { get; set; } = string.Empty;
         public string Pais { get; set; } = string.Empty;
-        
+        public string Font3o9Name { get; set; } = string.Empty;
     }
 }

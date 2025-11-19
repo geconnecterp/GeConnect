@@ -7,5 +7,7 @@ namespace gc.api.core.Contratos.Servicios.Ofertas
     {
         List<CargaPreviaDto> ObtenerCargaPreviaUsuario(string adm_id);
         List<IEDetalleDto> ObtenerDetalleEtiquetas(QueryFilters filters);
+        List<EtiquetaDto> ObtenerDatosParaEtiqueta(string json, int etiq, string adm, string usu);
+
     }
 }
