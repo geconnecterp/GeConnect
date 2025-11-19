@@ -4,6 +4,8 @@
 		cargaPaginacion();
 	});
 
+	$(document).on("click", "#btnImprimir", ControlaImprimirSelected);
+
 	InicializarCamposEnFiltros();
 
 	$("#btnFiltro").on("click", function () {
@@ -25,6 +27,32 @@
 
 	funcCallBack = BuscarCertificados;
 });
+
+function ControlaImprimirSelected() {
+	if ($("#tbGridCertificados > tbody > tr").length === 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos generar el reporte.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		ImprimirListaCertificados_Generada();
+	}
+}
+
+function ImprimirListaCertificados_Generada() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var imp_id = $("#listaTipoImpuestos").val();
+		var ret = $("#chkCertNoRet")[0].checked;
+		var per = $("#chkCertNoPercep")[0].checked;
+		var no_vencido = $("#chkNoVencidos")[0].checked;
+		var vencido = $("#chkVencidos")[0].checked;
+		var data = { imp_id, ret, per, no_vencido, vencido };
+		cargarReporteEnArre(44, data, "CONSULTA VENCIMIENTOS POR TIPO DE CUENTA Y TIPO DE COMPROBANTE", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
 
 function cargaPaginacion() {
 	$("#divPaginacion").pagination({
