@@ -1,5 +1,8 @@
 ﻿using gc.api.core.Entidades;
+using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
+using gc.infraestructura.Dtos.Consultas.ConsVencTipoCtaTipoCompte;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Consultas.Models;
@@ -14,11 +17,13 @@ namespace gc.sitio.Areas.Consultas.Controllers
 	{
 		private readonly AppSettings _setting;
 		private readonly ITipoImpuestoServicio _tipoImpuestoServicio;
+		private readonly IConsultasServicio _consultaServicio;
 		public ConsCertNoRetNoPercepController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<ConsCertNoRetNoPercepController> logger,
-											   ITipoImpuestoServicio tipoImpuestoServicio) : base(options, contexto, logger)
+											   ITipoImpuestoServicio tipoImpuestoServicio, IConsultasServicio consultaServicio) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_tipoImpuestoServicio = tipoImpuestoServicio;
+			_consultaServicio = consultaServicio;
 		}
 
 		public IActionResult Index()
@@ -36,6 +41,52 @@ namespace gc.sitio.Areas.Consultas.Controllers
 				CargarDatosIniciales(model);
 
 				return View(model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public async Task<IActionResult> BuscarCertificados(ConsultarCertificadosRequest request, bool buscaNew, string sort = "grupo", string sortDir = "asc", int pag = 1, bool actualizar = false)
+		{
+			var model = new CertificadoListaModel();
+			var lista = new List<CertificadoListaDto>();
+			MetadataGrid metadata;
+			GridCoreSmart<CertificadoListaDto> grillaDatos;
+
+			try
+			{
+				if (!buscaNew)
+				{
+					lista = ListaCertificados.ToList();
+					lista = OrdenarEntidad(lista, sortDir, sort);
+					ListaCertificados = lista;
+				}
+				else
+				{
+					request.Sort = sort;
+					request.SortDir = sortDir;
+					request.Registros = _setting.NroRegistrosPagina;
+					request.Pagina = pag;
+
+					var res = await _consultaServicio.ConsultarCertificados(request, TokenCookie);
+					lista = res.Item1 ?? [];
+					MetadataGeneral = res.Item2 ?? new MetadataGrid();
+					ListaCertificados = lista;
+
+				}
+				metadata = MetadataCertificados;
+				grillaDatos = GenerarGrillaSmart(ListaCertificados, sort, _setting.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+				model.GrillaCertificados = grillaDatos;
+				return PartialView("_gridCertificados", model);
 			}
 			catch (Exception ex)
 			{

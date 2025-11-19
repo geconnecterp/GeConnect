@@ -1,5 +1,6 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Dtos.Consultas;
+using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 using gc.infraestructura.Dtos.Consultas.ConsVencTipoCtaTipoCompte;
 using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Financieros.Request;
@@ -32,6 +33,7 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<CertRetenIVADto> ConsultaCertRetenIVA(string op_compte, string token);
         List<CertRetenIVADto> ConsultaCertRetenIVAFromList(string op_compte, string token);
 		Task<(List<VencimientoListaDto>, MetadataGrid)> ConsultarVencimientos(ConsultarVencimientosRequest filters, string token);
+		Task<(List<CertificadoListaDto>, MetadataGrid)> ConsultarCertificados(ConsultarCertificadosRequest filters, string token);
 	}
 }
 

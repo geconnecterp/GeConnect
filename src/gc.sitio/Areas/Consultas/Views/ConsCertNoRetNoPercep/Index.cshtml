@@ -24,9 +24,13 @@
 			</div>
 		</div>
 	</div>
-	<div class="collapse" id="divFiltros" style="">
-		<partial name="_filtros" model="Model" />
-		@Html.Hidden("pagEstado", false);
+	<div class="collapse" id="divFiltros">
+		<div class="row justify-content-center">
+			<div class="col-md-6">
+				<partial name="_filtros" model="Model" />
+				@Html.Hidden("pagEstado", false);
+			</div>
+		</div>
 	</div>
 	<div class="collapse" id="divDetalle" style="">
 		<div id="divGrillaCertificados">

@@ -61,8 +61,8 @@
 			<tr class="header">
 				<th class="text-center" style="width: 30%;">Cuenta</th>
 				<th class="text-center" style="width: 30%;">Domicilio</th>
-				<th class="text-center" style="width: 10%;">Teléfono</th>
-				<th class="text-center" style="width: 20%;">Email</th>
+				<th class="text-center" style="width: 15%;">Teléfono</th>
+				<th class="text-center" style="width: 15%;">Email</th>
 				<th class="text-center" style="width: 10%;">Vigencia</th>
 			</tr>
 		</thead>
@@ -95,18 +95,18 @@
 					</tr>
 				}
 			}
+			else
+			{
+				<tr>
+					<td colspan="9" class="text-center text-muted py-4">
+						<i class="bx bx-info-circle me-2"></i>
+						No se encontraron productos con los criterios especificados
+					</td>
+				</tr>
+			}
 		</tbody>
 	</table>
 </div>
-<!-- Fila sumarizadora fuera del scroll -->
-@* <div class="table-summary-bar mt-2">
-	<div class="row gx-0">
-		<div class="col-6 text-end">Subtotal página:</div>
-		<div class="col-2 text-end">@total_pagina.ToString("N2")</div>
-		<div class="col-2 text-end">Total general:</div>
-		<div class="col-2 text-end">@total.ToString("N2")</div>
-	</div>
-</div> *@
 <div class="row mt-3">
 	<div class="offset-md-3 col-md-6">
 		<div id="divPaginacion" class="">

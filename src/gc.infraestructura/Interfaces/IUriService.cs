@@ -1,4 +1,5 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 using gc.infraestructura.Dtos.Consultas.ConsVencTipoCtaTipoCompte;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.EntidadesComunes.Options;
@@ -13,5 +14,6 @@ namespace gc.infraestructura.Core.Interfaces
 		Uri GetPostPaginationUri(ConsultaAnticipoFinanEmpRequest filter, string actionUrl);
 		Uri GetPostPaginationUri(ConsultaLiqDeEmpleadoRequest filter, string actionUrl);
 		Uri GetPostPaginationUri(ConsultarVencimientosRequest filter, string actionUrl);
+		Uri GetPostPaginationUri(ConsultarCertificadosRequest filter, string actionUrl);
 	}
 }

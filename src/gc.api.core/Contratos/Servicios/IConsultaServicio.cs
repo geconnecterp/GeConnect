@@ -1,5 +1,6 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Dtos.Consultas;
+using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 using gc.infraestructura.Dtos.Consultas.ConsVencTipoCtaTipoCompte;
 
 namespace gc.api.core.Contratos.Servicios
@@ -30,5 +31,6 @@ namespace gc.api.core.Contratos.Servicios
         List<CertRetenIBDto> ConsultaCertRetenIBFromList(string op_compte);
         List<CertRetenIVADto> ConsultaCertRetenIVAFromList(string op_compte);
         List<VencimientoListaDto> ConsultarVencimientosPorTipo(ConsultarVencimientosRequest filtros);
+		List<CertificadoListaDto> ConsultarCertificadosNRNP(ConsultarCertificadosRequest filtros);
 	}
 }

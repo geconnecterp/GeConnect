@@ -42,12 +42,18 @@ function cargaPaginacion() {
 }
 
 function ValidarFiltrosSeleccionados() {
+	var ret = $("#chkCertNoRet")[0].checked;
+	var per = $("#chkCertNoPercep")[0].checked;
+	if (!ret && !per) {
+		return "Debe seleccionar al menos una de las dos opciones de No Retención o No Percepción";
+	}
 	var tImpuesto = $("#listaTipoImpuestos").val(); 
-	return tImpuesto && tImpuesto.length > 0 ? true : false;
+	return tImpuesto && tImpuesto.length > 0 ? "" : "Debe al menos seleccionar un tipo de impuesto.";
 }
 
 function BuscarCertificados(pag) {
-	if (ValidarFiltrosSeleccionados()) {
+	var retMsj = ValidarFiltrosSeleccionados();
+	if (retMsj == "") {
 		AbrirWaiting("Cargando certificados...");
 		var imp_id = $("#listaTipoImpuestos").val();
 		var ret = $("#chkCertNoRet")[0].checked;
@@ -97,7 +103,7 @@ function BuscarCertificados(pag) {
 		});
 	}
 	else {
-		AbrirMensaje("ATENCIÓN", "Debe al menos seleccioanr una opcion de filtro.", function () {
+		AbrirMensaje("ATENCIÓN", retMsj, function () {
 			$("#msjModal").modal("hide");
 			return true;
 		}, false, ["Aceptar"], "error!", null);
@@ -107,12 +113,20 @@ function BuscarCertificados(pag) {
 function InicializarCamposEnFiltros() {
 	$("#btnImprimir").hide();
 	$("#lbTipoImpuestos").text("Impuesto");
-	$("#chkCertNoRet").prop('checked', true);
-	$("#chkCertNoRet").trigger("change");
-	$("#chkCertNoRet").prop("disabled", true);
+	$("#lbCertNoRet").text("Certificados de No Retención (proveedores)");
+	$("#lbCertNoPercep").text("Certificados de No Percepción (Clientes)");
+	$("#lbNoVencidos").text("No Vencidos");
+	$("#lbVencidos").text("Vencidos");
+	$("#chkTipoImpuesto").prop('checked', true);
+	$("#chkTipoImpuesto").trigger("change");
+	$("#chkTipoImpuesto").prop("disabled", true);
+	$("#listaTipoImpuestos").prop("disabled", false);
 	$("#listaTipoImpuestos").val("");
 	$("#chkCertNoRet").prop('checked', false);
 	$("#chkCertNoPercep").prop('checked', false);
 	$("#chkNoVencidos").prop('checked', false);
 	$("#chkVencidos").prop('checked', false);
+	$("#divFiltros").collapse("show");
+	$("#divDetalle").collapse("hide");
+
 }
