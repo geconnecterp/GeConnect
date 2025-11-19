@@ -1,0 +1,115 @@
+﻿@model CertificadoListaModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	string grupoActual = string.Empty;
+	string grupoAnterior = string.Empty;
+
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	.table-wrapper {
+		max-height: 500px;
+		overflow-y: auto;
+		overflow-x: auto;
+		border: 1px solid #ccc;
+	}
+
+		/* La tabla ocupa el 100% del contenedor */
+		.table-wrapper table {
+			width: 100%;
+			border-collapse: collapse;
+			table-layout: fixed;
+		}
+
+		/* Sticky header */
+		.table-wrapper thead th {
+			position: sticky;
+			top: 0;
+			background-color: #d4af37;
+			z-index: 2;
+		}
+
+		/* Alineación y tamaño de celdas */
+		.table-wrapper th,
+		.table-wrapper td {
+			box-sizing: border-box;
+			padding: 0.4rem 0.5rem;
+			font-size: 0.75rem;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.table-wrapper table {
+			table-layout: fixed;
+		}
+
+	.table-summary-bar {
+		background-color: #f2f2f2;
+		border-top: 2px solid #999;
+		padding: 0.5rem 0.75rem;
+		font-weight: bold;
+		font-size: 0.8rem;
+		box-shadow: inset 0 1px 0 #ddd;
+		width: 100%;
+	}
+</style>
+<div class="table-wrapper">
+	<table class="table table-sm table-golden" id="tbGridCertificados">
+		<thead>
+			<tr class="header">
+				<th class="text-center" style="width: 30%;">Cuenta</th>
+				<th class="text-center" style="width: 30%;">Domicilio</th>
+				<th class="text-center" style="width: 10%;">Teléfono</th>
+				<th class="text-center" style="width: 20%;">Email</th>
+				<th class="text-center" style="width: 10%;">Vigencia</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.GrillaCertificados != null && Model.GrillaCertificados.ListaDatos != null && Model.GrillaCertificados.ListaDatos.Count > 0)
+			{
+				var certificados = Model.GrillaCertificados.ListaDatos.OrderBy(p => p.grupo).ToList();
+				@foreach (var item in certificados)
+				{
+					grupoActual = item.grupo;
+					// Si cambia la cuenta, insertamos una fila de encabezado para la cuenta
+					if (grupoActual != grupoAnterior)
+					{
+						<tr class="table-secondary fw-bold">
+							<td colspan="7" class="text-center">
+								<i class="bx bx-folder me-1"></i>
+								@item.grupo_des
+							</td>
+						</tr>
+						grupoAnterior = grupoActual;
+						alt = true; // Reiniciar alternancia de colores después de cada familia
+					}
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" onclick="selectReg(this, 'tbGridVencimientos')">
+						<td class="@Model.GrillaCertificados.ObtenerClase(item.cta_denominacion) cell-fit-content">@Model.GrillaCertificados.FormatearDato($"{item.cta_denominacion} ({item.cta_id})", FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaCertificados.ObtenerClase(item.cta_domicilio) cell-fit-content">@Model.GrillaCertificados.FormatearDato(item.cta_domicilio, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaCertificados.ObtenerClase(item.cta_te) cell-fit-content">@Model.GrillaCertificados.FormatearDato(item.cta_te, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaCertificados.ObtenerClase(item.cta_email) cell-fit-content">@Model.GrillaCertificados.FormatearDato(item.cta_email, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaCertificados.ObtenerClase(item.cert_vto) cell-fit-content">@Model.GrillaCertificados.FormatearDato(item.cert_vto, FormatDato.Fecha)</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>
+<!-- Fila sumarizadora fuera del scroll -->
+@* <div class="table-summary-bar mt-2">
+	<div class="row gx-0">
+		<div class="col-6 text-end">Subtotal página:</div>
+		<div class="col-2 text-end">@total_pagina.ToString("N2")</div>
+		<div class="col-2 text-end">Total general:</div>
+		<div class="col-2 text-end">@total.ToString("N2")</div>
+	</div>
+</div> *@
+<div class="row mt-3">
+	<div class="offset-md-3 col-md-6">
+		<div id="divPaginacion" class="">
+		</div>
+	</div>
+</div>

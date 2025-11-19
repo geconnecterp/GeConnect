@@ -1,0 +1,67 @@
+﻿@model ConsCertNoRetNoPercepModel
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+}
+@section styles {
+	<link rel="stylesheet" href="~/css/simplePagination.css" />
+	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+}
+<div class="container mt-2">
+	<div class="row mb-2">
+		<div class="col-md-6">
+			<div class="d-flex justify-content-sm-around">
+				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
+					<i class="bx bx-filter bx-xs"></i>
+				</button>
+
+				<button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle" hidden>
+					<i class="bx bx-caret-down"></i>
+				</button>
+
+				<button class="btn btn-secondary btn-sm mt-1 me-1" type="button" id="btnImprimir">
+					<i class="bx bx-printer"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+	<div class="collapse" id="divFiltros" style="">
+		<partial name="_filtros" model="Model" />
+		@Html.Hidden("pagEstado", false);
+	</div>
+	<div class="collapse" id="divDetalle" style="">
+		<div id="divGrillaCertificados">
+		</div>
+	</div>
+</div>
+
+<!-- para el modal del geston de impresion -->
+<div id="modalGestorDocumental"></div>
+
+@section scripts {
+	<script type="text/javascript">
+		var totalRegs = 0;
+		var pagRegs = 0;
+		var pags = 0;
+		var pagina = 1;
+		var search = "";
+		var funcCallBack = "BuscarCertificados";
+		var dataBak = {};
+
+		var buscarCertificadosURL = "@Url.Action("BuscarCertificados", "conscertnoretnopercep", new { area = "Consultas" })";
+		var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "conscertnoretnopercep", new { area = "Consultas" })";
+
+		// Gestor de impresión
+		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+		var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+		var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+		var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "GestorImpresion", new { area = "ControlComun" })";
+	</script>
+	<script src="~/lib/jstree/jstree.min.js"></script>
+	<script src="~/js/app/areas/docmngr/docmanager.js"></script>
+
+	<script src="~/js/plugins/jquery.simplePagination.js"></script>
+
+	<script src="~/js/app/areas/Consultas/conscertnoretnopercep/conscernoretnoper.js" type="text/javascript"></script>
+}

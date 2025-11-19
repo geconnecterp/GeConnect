@@ -1,0 +1,88 @@
+﻿@model ConsCertNoRetNoPercepModel
+@{
+
+}
+<style>
+	.hidden {
+		display: none !important;
+	}
+
+</style>
+<div class="card card-golden">
+	<div class="card-header mb-2">
+		<h5 class="mb-0" id="tituloLegend">Filtros </h5>
+	</div>
+	<div class="card-body">
+		<div class="row mt-1">
+			<div class="col-sm-6">
+				<div class="input-group input-group-sm">
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkTipoImpuesto" />
+						<label class="form-check-label" for="chkTipoImpuesto" id="lbTipoImpuestos"></label>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-6" id="divCB">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm fixed-lbl-for-abm-130">Clientes</span>
+					@Html.DropDownListFor(m => m.selectedValue, Model.ListaTipoImpuesto, "Seleccionar", new { @id = "listaTipoImpuestos", disabled = "disabled", @class = "form-control inputEditable activable" })
+				</div>
+			</div>
+			<div class="col-sm-6 hidden">
+				@Html.ListBox("TipoImpuestosList", null, new { @class = "form-control listbox-sm", @disabled = "disabled" })
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="col-sm-6">
+				<div class="input-group input-group-sm">
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input" type="checkbox" name="CertNoRet" id="chkCertNoRet"/>
+						<label class="form-check-label" for="chkCertNoRet" id="lbCertNoRet"></label>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="col-sm-6">
+				<div class="input-group input-group-sm">
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input" type="checkbox" name="CertNoPercep" id="chkCertNoPercep" />
+						<label class="form-check-label" for="chkCertNoPercep" id="lbCertNoPercep"></label>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="col-sm-6">
+				<div class="input-group input-group-sm">
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input" type="checkbox" name="NoVencidos" id="chkNoVencidos" />
+						<label class="form-check-label" for="chkNoVencidos" id="lbNoVencidos"></label>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="col-sm-6">
+				<div class="input-group input-group-sm">
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input" type="checkbox" name="Vencidos" id="chkVencidos" />
+						<label class="form-check-label" for="chkVencidos" id="lbVencidos"></label>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row m-3">
+	<div class="d-flex justify-content-around">
+		<button type="button" id="btnCancel" class="btn btn-sm btn-danger">
+			<i class="bx bx-x-circle"></i>Cancelar
+		</button>
+		<button type="button" id="btnBuscar" class="btn btn-sm btn-primary">
+			<i class="bx bx-search"></i>Buscar
+		</button>
+	</div>
+</div>

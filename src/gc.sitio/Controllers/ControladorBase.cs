@@ -2190,10 +2190,30 @@ namespace gc.sitio.Controllers
                 _context.HttpContext?.Session.SetString("TipoConciliadoLista", json);
             }
         }
-        #endregion
+		#endregion
 
-        #region TIPO DE ANTICIPO DE EMPLEADO
-        public List<TipoAnticipoEmpleadoDto> TipoAnticipoEmpleadoLista
+		#region TIPO IMPUESTOS
+		public List<TipoImpuestoDto> TipoImpuestoLista
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("TipoImpuestoLista") ?? string.Empty;
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<TipoImpuestoDto>();
+				}
+				return JsonConvert.DeserializeObject<List<TipoImpuestoDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("TipoImpuestoLista", json);
+			}
+		}
+		#endregion
+
+		#region TIPO DE ANTICIPO DE EMPLEADO
+		public List<TipoAnticipoEmpleadoDto> TipoAnticipoEmpleadoLista
         {
             get
             {
@@ -2553,8 +2573,13 @@ namespace gc.sitio.Controllers
         {
             TipoAnticipoEmpleadoLista = _tipoAntEmpleadoSrv.GetTipoAnticipoEmpleado(TokenCookie);
         }
-        #endregion
-        protected void ObtenerDiasDeLaSemana()
+
+		protected void ObtenerTiposDeImpuestos(ITipoImpuestoServicio _tipoImpuesto)
+		{
+			TipoImpuestoLista = _tipoImpuesto.GetTiposDeImpuestos(TokenCookie);
+		}
+		#endregion
+		protected void ObtenerDiasDeLaSemana()
         {
             var listaTemp = new List<DiaDeLaSemanaDto>();
             var lista = Enum.GetValues(typeof(DiasDeLaSemana)).Cast<DiasDeLaSemana>().ToList();
@@ -2765,9 +2790,15 @@ namespace gc.sitio.Controllers
 			var lista = TipoAnticipoEmpleadoLista.Select(x => new ComboGenDto { Id = x.ant_id, Descripcion = x.ant_desc });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
+
+		protected SelectList ComboTipoImpuestos()
+		{
+			var lista = TipoImpuestoLista.Select(x => new ComboGenDto { Id = x.imp_id, Descripcion = x.imp_descripcion });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
 		#endregion
 
-        [HttpPost]
+		[HttpPost]
         public JsonResult BuscarProvs(string prefix)
         {
             //var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);

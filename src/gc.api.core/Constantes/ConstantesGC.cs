@@ -448,6 +448,7 @@
 			public const string SP_TIPO_TRANSFERENCIA = "SPGECO_Tipos_Transferencias";
 			public const string SP_TIPO_CONCILIADO = "SPGECO_Tipos_Conciliados";
 			public const string SP_TIPO_ANTICIPOS = "SPGECO_Tipos_Anticipos";
+			public const string SP_TIPO_IMPUESTOS = "SPGECO_Tipos_Impuestos";
 			#endregion
 
 			public const string SP_ADMINISTRACIONES = "SPGECO_Administraciones";

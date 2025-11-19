@@ -24,4 +24,8 @@
     <PackageReference Include="X.PagedList" Version="8.4.7" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Dtos\Consultas\ConsCertNoRetNoPercep\Request\" />
+  </ItemGroup>
+
 </Project>
