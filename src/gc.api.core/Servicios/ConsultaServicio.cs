@@ -3,6 +3,7 @@ using gc.api.core.Contratos.Servicios;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Dtos.Consultas;
+using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 using gc.infraestructura.Dtos.Consultas.ConsVencTipoCtaTipoCompte;
 using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Financieros.Request;
@@ -297,6 +298,30 @@ namespace gc.api.core.Servicios
 			List<VencimientoListaDto> movFinan = _repository.EjecutarLstSpExt<VencimientoListaDto>(sp, ps, true);
 
 			return movFinan;
+		}
+
+		public List<CertificadoListaDto> ConsultarCertificadosNRNP(ConsultarCertificadosRequest filtros)
+		{
+			filtros.Pagina = filtros.Pagina == null || filtros.Pagina <= 0 ? _pagSet.DefaultPageNumber : filtros.Pagina;
+			filtros.Registros = filtros.Registros == null || filtros.Registros <= 0 ? _pagSet.DefaultPageSize : filtros.Registros;
+
+			string sp = ConstantesGC.StoredProcedures.SP_CONS_CERT_NRNP;
+
+			var ps = new List<SqlParameter>
+			{
+				new SqlParameter("@imp_id", filtros.imp_id),
+				new SqlParameter("@ret", filtros.ret),
+				new SqlParameter("@per", filtros.per),
+				new SqlParameter("@no_vencido", filtros.no_vencido),
+				new SqlParameter("@vencido", filtros.vencido),
+				new SqlParameter("@registros", filtros.Registros),
+				new SqlParameter("@pagina", filtros.Pagina),
+				new SqlParameter("@ordenar", filtros.Sort ?? "")
+			};
+
+			List<CertificadoListaDto> certNRNP = _repository.EjecutarLstSpExt<CertificadoListaDto>(sp, ps, true);
+
+			return certNRNP;
 		}
 	}
 }

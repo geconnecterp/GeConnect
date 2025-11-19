@@ -50,6 +50,7 @@ namespace gc.api.Controllers.Codigos
 		private readonly ITipoTransferenciaServicio _tipoTramsferenciaServicio;
 		private readonly ITipoConciliadoServicio _tipoConciliadoServicio;
 		private readonly ITipoAnticipoEmpleadoServicio _tipoAnticipoEmpleadoServicio;
+		private readonly ITipoImpuestoServicio _tipoImpuestoServicio;
 
 		public TiposVsController( IMapper mapper, IUriService uriService, ILogger<TiposVsController> logger, ICondicionAfipServicio condicionAfipServicio,
 								ICondicionIBServicio condicionIBServicio, IDepartamentoServicio departamentoServicio, IFormaDePagoServicio formaDePagoServicio,
@@ -61,7 +62,7 @@ namespace gc.api.Controllers.Codigos
 								ITipoRetIbServicio tipoRetIbServicio, ITipoCuentaFinServicio tipoCuentaFinServicio, ITipoMonedaServicio tipoMonedaServicio,
 								ITipoCuentaGastoServicio tipoCuentaGastoServicio, IOrdenDeCompraEstadoServicio ordenDeCompraEstadoServicio, ITipoTributoServicio tipoTributoServicio,
 								ITipoDtoValorizaRprServicio tipoDtoValorizaRprServicio, ITipoOrdenDePagoServicio tipoOrdenDePagoServicio, ITipoTransferenciaServicio tipoTransferenciaServicio,
-								ITipoConciliadoServicio tipoConciliadoServicio, ITipoAnticipoEmpleadoServicio tipoAnticipoEmpleadoServicio)
+								ITipoConciliadoServicio tipoConciliadoServicio, ITipoAnticipoEmpleadoServicio tipoAnticipoEmpleadoServicio, ITipoImpuestoServicio tipoImpuestoServicio)
         {
             _mapper = mapper;
             _uriService = uriService;
@@ -96,6 +97,7 @@ namespace gc.api.Controllers.Codigos
 			_tipoTramsferenciaServicio = tipoTransferenciaServicio;
 			_tipoConciliadoServicio = tipoConciliadoServicio;
 			_tipoAnticipoEmpleadoServicio = tipoAnticipoEmpleadoServicio;
+			_tipoImpuestoServicio = tipoImpuestoServicio;
 		}
 
 		[HttpGet]
@@ -539,6 +541,18 @@ namespace gc.api.Controllers.Codigos
 			var lista = _mapper.Map<List<TipoAnticipoEmpleadoDto>>(condAfip);
 
 			var response = new ApiResponse<List<TipoAnticipoEmpleadoDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetTiposImpuesto()
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			List<TipoImpuestoDto> condAfip = _tipoImpuestoServicio.GetTiposDeImpuestos();
+			var lista = _mapper.Map<List<TipoImpuestoDto>>(condAfip);
+
+			var response = new ApiResponse<List<TipoImpuestoDto>>(lista);
 			return Ok(response);
 		}
 	}

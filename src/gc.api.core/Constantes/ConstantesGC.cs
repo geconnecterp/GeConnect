@@ -348,6 +348,7 @@
 			public const string SP_CONS_RECEPCIONES_PROV = "SPGECO_C_RP";
 			public const string SP_CONS_RECEPCIONES_PROV_DET = "SPGECO_C_RP_d";
 			public const string SP_CONS_VENCIMIENTOS_POR_TIPO = "SPGECO_C_Vto_X_Tipos";
+			public const string SP_CONS_CERT_NRNP = "SPGECO_C_Cert_NRNP";
 			#endregion
 
 			#region Certificados
@@ -453,6 +454,7 @@
 			public const string SP_TIPO_TRANSFERENCIA = "SPGECO_Tipos_Transferencias";
 			public const string SP_TIPO_CONCILIADO = "SPGECO_Tipos_Conciliados";
 			public const string SP_TIPO_ANTICIPOS = "SPGECO_Tipos_Anticipos";
+			public const string SP_TIPO_IMPUESTOS = "SPGECO_Tipos_Impuestos";
 			#endregion
 
 			public const string SP_ADMINISTRACIONES = "SPGECO_Administraciones";

@@ -5,6 +5,7 @@ using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Consultas;
+using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 using gc.infraestructura.Dtos.Consultas.ConsVencTipoCtaTipoCompte;
 using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Financieros.Request;
@@ -346,6 +347,42 @@ namespace gc.api.Controllers.Consultas
 			};
 
 			var response = new ApiResponse<IEnumerable<VencimientoListaDto>>(res)
+			{
+				Meta = metadata
+			};
+			Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CertificadoListaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ConsultarCertificadosNRNP(ConsultarCertificadosRequest request)
+		{
+			CertificadoListaDto reg = new() { total_paginas = 0, total_registros = 0 };
+
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _consSv.ConsultarCertificadosNRNP(request);
+
+			if (res.Count > 0)
+				reg = res.First();
+
+			var metadata = new MetadataGrid
+			{
+				TotalCount = reg.total_registros,
+				PageSize = request.Registros ?? 0,
+				CurrentPage = request.Pagina ?? 0,
+				TotalPages = reg.total_paginas,
+				HasNextPage = (request.Pagina ?? 0) < reg.total_paginas,
+				HasPreviousPage = (request.Pagina ?? 0) > 1,
+				NextPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(ConsultarVencimientosPorTipo)) ?? "").ToString(),
+				PreviousPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(ConsultarVencimientosPorTipo)) ?? "").ToString(),
+
+			};
+
+			var response = new ApiResponse<IEnumerable<CertificadoListaDto>>(res)
 			{
 				Meta = metadata
 			};
