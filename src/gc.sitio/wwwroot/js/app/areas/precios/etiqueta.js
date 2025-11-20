@@ -6,7 +6,6 @@ $(function () {
 });
 
 function cancelarEtiqueta() {
-    /*$("#btnAbmAceptar").prop("disabled", true).hide();*/
     $("#btnAbmCancelar").hide();
 
     $("#chkTipoEtiq").prop("checked", false);
@@ -35,12 +34,9 @@ function cancelarEtiqueta() {
 
     $("#divDetalle").collapse("hide");
     $("#divFiltro").collapse("show");
-
 }
 
 function InicializaPantallaEtiqueta() {
-
-    /*$("#btnAbmAceptar").hide();*/
     $("#btnAbmCancelar").hide();
     $("#btnImprimir").prop("disabled", true).hide();
 
@@ -49,23 +45,16 @@ function InicializaPantallaEtiqueta() {
         $("#divDetalle").collapse("hide");
     }
     $("#divFiltro").collapse("show");
-
-    //tipo etiqueta (siempre checked disabled)
+    
     $("#chkTipoEtiq").prop("disabled", true);
-
-    //carga previa. Desactivado desde el inicio
     $("#chkCargaPrevia").prop("checked", false);
     $("#CargaPrevia").prop("disabled", true);
-    $("#lbCargaPrevia").text("Carga Previa")
-    //Nombre del check que controla las fechas
+    $("#lbCargaPrevia").text("Carga Previa");
     $("#lbChkDesdeHasta").text("Modificados");
-
-    //especificando nombre del label de proveedor
-    $("#divLs01 span").text("Proveedor")
-    $("#lbRel01").text("Proveedor")
-
-    $("#lbRel03").text("Familias")
-    $("#lbRel02").text("Rubros")
+    $("#divLs01 span").text("Proveedor");
+    $("#lbRel01").text("Proveedor");
+    $("#lbRel03").text("Familias");
+    $("#lbRel02").text("Rubros");
     $("#lbNombreRel02").text("Rubro");
 }
 
@@ -86,19 +75,16 @@ function InicializaEnventosEtiqueta() {
         window.location.href = homeEtiqueta;
     });
 
-    //Evento de cambio en check de CargaPrevia
     $("#chkCargaPrevia").on("change", function () {
         const isChecked = $(this).is(":checked");
         $("#CargaPrevia").prop("disabled", !isChecked);
     });
 
-    //evento de cambio en check de Modificados
     $("#chkDesdeHasta").on("change", function () {
         const isChecked = $(this).is(":checked");
         $("#Date1, #Date2").prop("disabled", !isChecked);
     });
 
-    //check generico REL01 activando componentes disables
     $("#chkRel011").on("change", function () {
         const isChecked = $(this).is(":checked");
 
@@ -123,7 +109,6 @@ function InicializaEnventosEtiqueta() {
         }
     });
 
-    // Autocomplete especializado para Rel011
     $(document).on("keydown.autocomplete", "input#Rel011", function () {
         $(this).autocomplete({
             source: function (request, response) {
@@ -174,7 +159,6 @@ function InicializaEnventosEtiqueta() {
         verificarYDesactivarControles();
     });
 
-    // Evento: al seleccionar una opción en #Rel03, copiarla a #Rel03List sin duplicados
     $(document).off("change.addRel03Item").on("change.addRel03Item", "select#Rel03", function () {
         const $origen = $(this);
         const $destino = $("#Rel03List");
@@ -208,7 +192,6 @@ function InicializaEnventosEtiqueta() {
         }
     });
 
-    // Evento: doble clic en #Rel03List elimina la opción
     $("#Rel03List").off("dblclick.removeRel03Option").on("dblclick.removeRel03Option", "option", function (e) {
         e.stopPropagation();
         const $opcion = $(this);
@@ -221,20 +204,227 @@ function InicializaEnventosEtiqueta() {
         $lista.trigger("change");
     });
 
-    // ✅ Configurar eventos de eliminación de etiquetas
-    configurarEventosEliminacionEtiqueta();
+    // ✅ NUEVO: Configurar eventos de búsqueda avanzada
+    configurarEventosBusquedaAvanzadaEtiquetas();
     
-    // ✅ NUEVO: Configurar eventos de selección múltiple
+    configurarEventosEliminacionEtiqueta();
     configurarEventosSeleccionMultiple();
 }
 
+// ============================================================================
+// ✅ NUEVAS FUNCIONES: INTEGRACIÓN CON BÚSQUEDA AVANZADA V02
+// ============================================================================
+
+/**
+ * ✅ NUEVA: Configura el evento del botón para abrir búsqueda avanzada
+ */
+function configurarEventosBusquedaAvanzadaEtiquetas() {
+    $(document).off("click.agregarEtiqueta", "#btnAgregarEIProducto");
+    
+    $(document).on("click.agregarEtiqueta", "#btnAgregarEIProducto", function (e) {
+        e.preventDefault();
+        
+        if ($(this).prop("disabled")) {
+            console.warn("⚠️ Botón de agregar etiquetas está deshabilitado");
+            return;
+        }
+        
+        console.log("🔍 Abriendo búsqueda avanzada para etiquetas...");
+        abrirBusquedaAvanzadaEtiquetas();
+    });
+}
+
+/**
+ * ✅ NUEVA: Abre el modal de búsqueda avanzada configurado para etiquetas
+ */
+function abrirBusquedaAvanzadaEtiquetas() {
+    // Verificar si el modal ya existe en el DOM
+    if ($("#busquedaModal").length === 0) {
+        console.log("📦 Cargando modal de búsqueda avanzada...");
+        cargarModalBusquedaAvanzadaEtiquetas(function () {
+            configurarYMostrarModalEtiquetas();
+        });
+    } else {
+        configurarYMostrarModalEtiquetas();
+    }
+}
+
+/**
+ * ✅ NUEVA: Carga el modal de búsqueda avanzada (similar a presup.js)
+ */
+function cargarModalBusquedaAvanzadaEtiquetas(callback) {
+    const urlModal = typeof busquedaAvanzadaModalUrl !== 'undefined'
+        ? busquedaAvanzadaModalUrl
+        : '/ControlComun/Producto/BusquedaAvanzadaV02';
+
+    $.ajax({
+        url: urlModal,
+        type: 'GET',
+        success: function (html) {
+            if ($("#busquedaModal").length === 0) {
+                $('body').append(html);
+                console.log("✅ Modal de búsqueda cargado correctamente");
+            }
+            
+            if (typeof callback === 'function') {
+                callback();
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error("❌ Error al cargar modal de búsqueda:", error);
+            ControlaMensajeError("No se pudo cargar el módulo de búsqueda de productos");
+        }
+    });
+}
+
+/**
+ * ✅ NUEVA: Configura y muestra el modal para etiquetas
+ */
+function configurarYMostrarModalEtiquetas() {
+    if (typeof configurarDestinoBusquedaProductos === 'function') {
+        console.log("⚙️ Configurando búsqueda para destino 'etiquetas'");
+        configurarDestinoBusquedaProductos(
+            "etiquetas",
+            agregarProductosAlGridEtiquetas,
+            obtenerProductosEtiquetasExistentes
+        );
+    } else {
+        console.error("❌ Función configurarDestinoBusquedaProductos no está disponible");
+        ControlaMensajeError("Error: Módulo de búsqueda no cargado correctamente");
+        return;
+    }
+    
+    $("#busquedaModal").modal("show");
+    console.log("✅ Modal de búsqueda mostrado");
+}
+
+/**
+ * ✅ NUEVA: Obtiene los IDs de productos que ya existen en el grid de etiquetas
+ * @returns {Array<string>} Array de IDs de productos
+ */
+function obtenerProductosEtiquetasExistentes() {
+    const productosIds = [];
+    
+    $("#tbGridEtiquetaDetalle tbody tr:not(.empty-message)").each(function () {
+        const $fila = $(this);
+        const pId = $fila.data("p-id");
+        
+        if (pId) {
+            productosIds.push(String(pId));
+        }
+    });
+    
+    console.log(`📋 ${productosIds.length} producto(s) ya existente(s) en el grid de etiquetas`);
+    return productosIds;
+}
+
+/**
+ * ✅ NUEVA: Agrega productos al grid de etiquetas (callback de búsqueda)
+ * @param {Array<Object>} productos - Array de productos seleccionados
+ */
+function agregarProductosAlGridEtiquetas(productos) {
+    if (!Array.isArray(productos) || productos.length === 0) {
+        console.warn("⚠️ No hay productos para agregar");
+        return;
+    }
+    
+    console.log(`➕ Agregando ${productos.length} producto(s) al grid de etiquetas`);
+    
+    const $tbody = $("#tbGridEtiquetaDetalle tbody");
+    
+    // Eliminar fila de mensaje vacío si existe
+    const $filaVacia = $tbody.find("tr.empty-message");
+    if ($filaVacia.length > 0) {
+        $filaVacia.remove();
+        console.log("🗑️ Fila de mensaje vacío eliminada");
+    }
+    
+    // Determinar si la próxima fila debe tener clase "alt"
+    let esAlternado = $tbody.find("tr:not(.empty-message)").length % 2 !== 0;
+    
+    // Agregar cada producto al grid
+    productos.forEach(function (producto, index) {
+        const fila = crearFilaEtiqueta(producto, esAlternado);
+        $tbody.append(fila);
+        esAlternado = !esAlternado;
+        console.log(`✅ Producto ${producto.p_id} agregado al grid`);
+    });
+    
+    // Actualizar contador
+    actualizarContadorEtiquetas();
+    
+    // Reconfigurar eventos (importante para las nuevas filas)
+    configurarEventosEliminacionEtiqueta();
+    configurarEventosSeleccionMultiple();
+    
+    console.log(`✅ ${productos.length} producto(s) agregado(s) exitosamente`);
+}
+
+/**
+ * ✅ NUEVA: Crea el HTML de una fila de etiqueta
+ * @param {Object} producto - Objeto producto con p_id y p_desc
+ * @param {boolean} esAlternado - Si debe aplicar clase "alt"
+ * @returns {string} HTML de la fila
+ */
+function crearFilaEtiqueta(producto, esAlternado) {
+    const claseAlt = esAlternado ? "alt" : "";
+    const pId = escaparHTML(producto.p_id || "");
+    const pDesc = escaparHTML(producto.p_desc || "Sin descripción");
+    
+    // Las etiquetas nuevas siempre están pendientes de impresión
+    const estadoClase = "text-success fw-semibold";
+    const estadoIcono = "bx bx-time-five";
+    const estadoTexto = "Pendiente";
+    
+    return `
+        <tr class="${claseAlt}" data-p-id="${pId}">
+            <td class="text-center">
+                <div class="form-check d-flex justify-content-center mb-0">
+                    <input class="form-check-input chk-etiqueta-item" 
+                           type="checkbox" 
+                           value="${pId}" 
+                           data-p-desc="${pDesc}"
+                           id="chk_${pId}">
+                </div>
+            </td>
+            <td class="text-center">${pId}</td>
+            <td>${pDesc}</td>
+            <td class="text-center ${estadoClase}">
+                <i class="${estadoIcono} me-1"></i>${estadoTexto}
+            </td>
+            <td class="text-center">
+                <button type="button"
+                        class="btn btn-sm btn-outline-danger btn-eliminar-etiqueta"
+                        data-p-id="${pId}"
+                        title="Eliminar etiqueta">
+                    <i class="bx bx-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `;
+}
+
+/**
+ * ✅ NUEVA: Escapa caracteres HTML para prevenir XSS
+ * @param {string} texto - Texto a escapar
+ * @returns {string} Texto escapado
+ */
+function escaparHTML(texto) {
+    const div = document.createElement('div');
+    div.textContent = String(texto);
+    return div.innerHTML;
+}
+
+// ============================================================================
+// FUNCIONES EXISTENTES (MANTENER)
+// ============================================================================
+
 function determinarIndiceImpresion(tipoEt) {
-    // Determinar índice de impresión
     const mapaIndices = { "0": 45, "1": 46, "2": 47 };
     return mapaIndices[tipoEt];
 }
+
 function imprimirEtiquetas() {
-    // Validar tipo de etiqueta
     const tipoEt = $("#TipoEtiqueta").val();
     const tipoDesc = $("#TipoEtiqueta option:selected").text();
     
@@ -243,15 +433,13 @@ function imprimirEtiquetas() {
         return;
     }
 
-    // Determinar índice de impresión
-    const indexImp = determinarIndiceImpresion(tipoEt)
+    const indexImp = determinarIndiceImpresion(tipoEt);
     
     if (!indexImp) {
         mostrarNotificacion("Tipo de etiqueta no válido", "error");
         return false;
     }
 
-    // Obtener productos seleccionados
     const productosSeleccionados = [];
     $(".chk-etiqueta-item:checked").each(function () {
         const pId = $(this).val();
@@ -260,7 +448,6 @@ function imprimirEtiquetas() {
         }
     });
 
-    // Validar selección
     if (productosSeleccionados.length === 0) {
         AbrirMensaje(
             "A tener en cuenta", 
@@ -276,7 +463,6 @@ function imprimirEtiquetas() {
         return;
     }
 
-    // Preparar datos para impresión
     const adm_id = administracion;
     const productos = JSON.stringify(productosSeleccionados);
     const info = {
@@ -286,47 +472,35 @@ function imprimirEtiquetas() {
         usu_id: usuarioAuth
     };
 
-    // Cargar reportes
     cargarReporteEnArre(45, {}, "");
     cargarReporteEnArre(46, {}, "");
     cargarReporteEnArre(47, {}, "");
     cargarReporteEnArre(indexImp, info, tipoDesc);
 
-    // Invocar gestor de documentos
     const data = { modulo: "", parametros: [] };
     invocacionGestorDoc(data);
 
-    // ✅ SOLUCIÓN: Configurar el evento DESPUÉS de invocar el gestor
-    // y usar un pequeño delay para asegurar que el modal esté completamente inicializado
     setTimeout(() => {
         configurarEventoCierreModal();
     }, 300);
 }
 
-/**
- * ✅ NUEVA FUNCIÓN: Configura el evento de cierre del modal de forma robusta
- */
 function configurarEventoCierreModal() {
     const $modal = $('#docmgrmodal');
     
-    // Verificar que el modal existe
     if ($modal.length === 0) {
         console.warn("⚠️ Modal #docmgrmodal no encontrado en el DOM");
         return;
     }
 
-    // Limpiar eventos previos para evitar duplicados
     $modal.off('hidden.bs.modal.confirmarImpresion');
     $modal.off('hide.bs.modal.confirmarImpresion');
 
-    // ✅ Usar namespace para eventos específicos de esta funcionalidad
     $modal.on('hidden.bs.modal.confirmarImpresion', function () {
         console.log("✅ Modal cerrado - Mostrando confirmación de impresión");
         
-        // Remover el evento después de ejecutarlo (one-time)
         $modal.off('hidden.bs.modal.confirmarImpresion');
         
-        // Mostrar confirmación con un pequeño delay
         setTimeout(() => {
             mostrarConfirmacionDeImpresion();
         }, 200);
@@ -335,9 +509,6 @@ function configurarEventoCierreModal() {
     console.log("✅ Evento de cierre configurado correctamente");
 }
 
-/**
- * ✅ NUEVA FUNCIÓN: Muestra el diálogo de confirmación de impresión
- */
 function mostrarConfirmacionDeImpresion() {
     AbrirMensaje(
         "Confirmación",
@@ -348,7 +519,6 @@ function mostrarConfirmacionDeImpresion() {
                 ConfirmarImpresionOK();
             } else {
                 console.log("✖ Usuario reportó problema en impresión");
-                // Opcional: Manejar el caso de impresión fallida
                 mostrarNotificacion(
                     "Por favor, verifique la impresora e intente nuevamente", 
                     "warning"
@@ -362,28 +532,20 @@ function mostrarConfirmacionDeImpresion() {
     );
 }
 
-/**
- * ✅ FUNCIÓN OPTIMIZADA: Confirma la impresión exitosa
- */
 function ConfirmarImpresionOK() {
-    // Recolectar productos seleccionados arrRepoParams
     const tipoEt = $("#TipoEtiqueta").val();
-    // Determinar índice de impresión
-    const indexImp = determinarIndiceImpresion(tipoEt)
+    const indexImp = determinarIndiceImpresion(tipoEt);
 
     const productosSeleccionados = arrRepoParams[indexImp - 1].parametros.json_p;
    
-    // Preparar request
     const request = {
         json: productosSeleccionados,
         adm: "",
-        usu : ""        
+        usu: ""        
     };
 
-    // Mostrar loading
     AbrirWaiting("Confirmando impresión de etiquetas...");
 
-    // Realizar llamada AJAX
     $.ajax({
         url: confirmarImpresionEtiquetaUrl,
         type: "POST",
@@ -399,10 +561,8 @@ function ConfirmarImpresionOK() {
                 
                 mostrarNotificacion(mensaje, "success");
 
-                // Limpiar selección
                 limpiarSeleccionEtiquetas();
 
-                // Volver al formulario de búsqueda
                 setTimeout(() => {
                     cancelarEtiqueta();
                 }, 1500);
@@ -456,7 +616,6 @@ function buscarEtiquetas(btn) {
         fecH = $("#Date2").val();
     }
 
-    // Extraer y validar arrays de proveedores, familias y rubros
     const proveedores = extraerValoresDeSelect("#Rel011List", "#Rel011Item", "#chkRel011");
     const familias = extraerValoresDeSelect("#Rel03List", null, "#chkRel03");
     const rubros = extraerValoresDeSelect("#Rel02List", null, "#chkRel02");
@@ -494,13 +653,10 @@ function buscarEtiquetas(btn) {
             $("#divDetalle").html(html).collapse("show");
             $("#divFiltro").collapse("hide");
 
-            //se presenta los botones aceptar y cancelar
-/*            $("#btnAbmAceptar").show();*/
             $("#btnAbmCancelar").show();
-            $("#btnImprimir").prop("disabled",false).show();
+            $("#btnImprimir").prop("disabled", false).show();
+            $("#btnAgregarEIProducto").prop("disabled", false);
 
-
-            // ✅ Reconfigurar eventos después de cargar el HTML dinámico
             configurarEventosEliminacionEtiqueta();
             configurarEventosSeleccionMultiple();
             actualizarContadorEtiquetas();
@@ -520,9 +676,6 @@ function buscarEtiquetas(btn) {
     });
 }
 
-/**
- * ✅ NUEVA FUNCIÓN: Extrae valores de un select de forma optimizada
- */
 function extraerValoresDeSelect(selectId, fallbackId, checkId) {
     const valores = [];
     
@@ -556,43 +709,32 @@ function extraerValoresDeSelect(selectId, fallbackId, checkId) {
     return valores;
 }
 
-/**
- * ✅ NUEVA FUNCIÓN: Configura los eventos de selección múltiple
- */
 function configurarEventosSeleccionMultiple() {
-    // Eliminar eventos previos para evitar duplicados
     $(document).off("change.seleccionarTodas", "#chkSeleccionarTodas");
     $(document).off("change.itemSeleccionado", ".chk-etiqueta-item");
     $(document).off("click.eliminarSeleccionadas", "#btnEliminarSeleccionadas");
     $(document).off("click.limpiarSeleccion", "#btnLimpiarSeleccion");
     
-    // Evento: Checkbox "Seleccionar Todas"
     $(document).on("change.seleccionarTodas", "#chkSeleccionarTodas", function () {
         const isChecked = $(this).is(":checked");
         $(".chk-etiqueta-item").prop("checked", isChecked);
         actualizarEstadoSeleccion();
     });
     
-    // Evento: Checkboxes individuales
     $(document).on("change.itemSeleccionado", ".chk-etiqueta-item", function () {
         actualizarCheckboxPrincipal();
         actualizarEstadoSeleccion();
     });
     
-    // Evento: Botón "Eliminar Seleccionadas"
     $(document).on("click.eliminarSeleccionadas", "#btnEliminarSeleccionadas", function () {
         eliminarEtiquetasSeleccionadas();
     });
     
-    // Evento: Botón "Limpiar Selección"
     $(document).on("click.limpiarSeleccion", "#btnLimpiarSeleccion", function () {
         limpiarSeleccionEtiquetas();
     });
 }
 
-/**
- * ✅ NUEVA FUNCIÓN: Actualiza el estado del checkbox principal
- */
 function actualizarCheckboxPrincipal() {
     const $checkboxes = $(".chk-etiqueta-item");
     const totalCheckboxes = $checkboxes.length;
@@ -612,9 +754,6 @@ function actualizarCheckboxPrincipal() {
     }
 }
 
-/**
- * ✅ NUEVA FUNCIÓN: Actualiza el estado visual de la selección
- */
 function actualizarEstadoSeleccion() {
     const $seleccionadas = $(".chk-etiqueta-item:checked");
     const cantidad = $seleccionadas.length;
@@ -637,10 +776,6 @@ function actualizarEstadoSeleccion() {
     }
 }
 
-/**
- * ✅ NUEVA FUNCIÓN: Obtiene las etiquetas seleccionadas
- * @returns {Array<Object>} Array de objetos con id y descripción
- */
 function obtenerEtiquetasSeleccionadas() {
     const etiquetas = [];
     
@@ -655,9 +790,6 @@ function obtenerEtiquetasSeleccionadas() {
     return etiquetas;
 }
 
-/**
- * ✅ NUEVA FUNCIÓN: Elimina múltiples etiquetas seleccionadas
- */
 function eliminarEtiquetasSeleccionadas() {
     const etiquetasSeleccionadas = obtenerEtiquetasSeleccionadas();
     
@@ -697,10 +829,6 @@ function eliminarEtiquetasSeleccionadas() {
     }
 }
 
-/**
- * ✅ NUEVA FUNCIÓN: Ejecuta la eliminación de múltiples etiquetas
- * @param {Array<Object>} etiquetas - Array de etiquetas a eliminar
- */
 function ejecutarEliminacionMultiple(etiquetas) {
     const $btnEliminar = $("#btnEliminarSeleccionadas");
     const originalHtml = $btnEliminar.html();
@@ -710,7 +838,6 @@ function ejecutarEliminacionMultiple(etiquetas) {
     
     let eliminadas = 0;
     
-    // Eliminar cada fila con animación escalonada
     etiquetas.forEach((etiqueta, index) => {
         const $fila = $(`tr[data-p-id="${etiqueta.id}"]`);
         
@@ -719,7 +846,6 @@ function ejecutarEliminacionMultiple(etiquetas) {
                 $(this).remove();
                 eliminadas++;
                 
-                // Cuando se eliminaron todas, actualizar la vista
                 if (eliminadas === etiquetas.length) {
                     actualizarContadorEtiquetas();
                     renumerarFilasEtiquetas();
@@ -736,22 +862,16 @@ function ejecutarEliminacionMultiple(etiquetas) {
                     console.log(`${eliminadas} etiquetas eliminadas del grid`);
                 }
             });
-        }, index * 100); // Desfase de 100ms entre cada eliminación
+        }, index * 100);
     });
 }
 
-/**
- * ✅ NUEVA FUNCIÓN: Limpia la selección de etiquetas
- */
 function limpiarSeleccionEtiquetas() {
     $(".chk-etiqueta-item").prop("checked", false);
     $("#chkSeleccionarTodas").prop("checked", false).prop("indeterminate", false);
     actualizarEstadoSeleccion();
 }
 
-/**
- * ✅ FUNCIÓN: Configura los eventos de eliminación de etiquetas del grid
- */
 function configurarEventosEliminacionEtiqueta() {
     $(document).off("click.eliminarEtiqueta", ".btn-eliminar-etiqueta");
     
@@ -762,7 +882,7 @@ function configurarEventosEliminacionEtiqueta() {
         const $btn = $(this);
         const $fila = $btn.closest("tr");
         const etiquetaId = $btn.data("p-id");
-        const descripcion = $fila.find("td").eq(2).text().trim(); // ✅ Ajustado al índice correcto (columna 3)
+        const descripcion = $fila.find("td").eq(2).text().trim();
         
         if (!etiquetaId) {
             console.error("No se pudo obtener el ID de la etiqueta");
@@ -774,9 +894,6 @@ function configurarEventosEliminacionEtiqueta() {
     });
 }
 
-/**
- * ✅ FUNCIÓN: Muestra diálogo de confirmación antes de eliminar
- */
 function confirmarEliminacionEtiqueta(etiquetaId, descripcion, $fila, $btn) {
     const mensaje = `¿Está seguro de eliminar la etiqueta de la vista?<br><br>
         <strong>Código:</strong> ${etiquetaId}<br>
@@ -803,9 +920,6 @@ function confirmarEliminacionEtiqueta(etiquetaId, descripcion, $fila, $btn) {
     }
 }
 
-/**
- * ✅ FUNCIÓN: Ejecuta la eliminación de la etiqueta del grid
- */
 function ejecutarEliminacionEtiqueta(etiquetaId, $fila, $btn) {
     $btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm"></span>');
     
@@ -821,9 +935,6 @@ function ejecutarEliminacionEtiqueta(etiquetaId, $fila, $btn) {
     });
 }
 
-/**
- * ✅ FUNCIÓN: Actualiza el contador total de etiquetas en el footer
- */
 function actualizarContadorEtiquetas() {
     const $tbody = $("#tbGridEtiquetaDetalle tbody");
     const $filas = $tbody.find("tr:not(.empty-message)");
@@ -832,9 +943,6 @@ function actualizarContadorEtiquetas() {
     $("#totalEtiquetasMostradas").text(totalRegistros);
 }
 
-/**
- * ✅ FUNCIÓN: Renumera las filas después de eliminar una etiqueta
- */
 function renumerarFilasEtiquetas() {
     const $tbody = $("#tbGridEtiquetaDetalle tbody");
     const $filas = $tbody.find("tr:not(.empty-message)");
@@ -842,7 +950,6 @@ function renumerarFilasEtiquetas() {
     $filas.each(function (index) {
         const $fila = $(this);
         
-        // Actualizar clase alt para filas alternas
         if ((index + 1) % 2 === 0) {
             $fila.removeClass("alt");
         } else {
@@ -851,9 +958,6 @@ function renumerarFilasEtiquetas() {
     });
 }
 
-/**
- * ✅ FUNCIÓN: Verifica si el grid quedó vacío y muestra mensaje
- */
 function verificarEtiquetasVacias() {
     const $tbody = $("#tbGridEtiquetaDetalle tbody");
     const $filas = $tbody.find("tr:not(.empty-message)");
@@ -873,9 +977,6 @@ function verificarEtiquetasVacias() {
     }
 }
 
-/**
- * ✅ FUNCIÓN: Muestra notificaciones toast al usuario
- */
 function mostrarNotificacion(mensaje, tipo = "info") {
     switch (tipo) {
         case "info":
