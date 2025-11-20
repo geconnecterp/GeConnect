@@ -14,6 +14,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Areas\ControlComun\Controllers\GestorDocumentosController.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="Areas\Asientos\Views\AsientoDefinitivo\_asiento.cshtml" />
     <Content Remove="Areas\Asientos\Views\AsientoDefinitivo\_filtroAsiento.cshtml" />
     <Content Remove="log4net.config" />

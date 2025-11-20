@@ -72,7 +72,7 @@ function InicializaPantallaEtiqueta() {
 function InicializaEnventosEtiqueta() {
     $("#btnImprimir").on("click", function () {
         imprimirEtiquetas();
-    });
+    });    
 
     $("#btnAbmCancelar").on("click", function () {
         cancelarEtiqueta();
@@ -228,31 +228,30 @@ function InicializaEnventosEtiqueta() {
     configurarEventosSeleccionMultiple();
 }
 
+function determinarIndiceImpresion(tipoEt) {
+    // Determinar índice de impresión
+    const mapaIndices = { "0": 45, "1": 46, "2": 47 };
+    return mapaIndices[tipoEt];
+}
 function imprimirEtiquetas() {
-    //aca debo implementar el objeto que sera usado y enviado para la impresion
+    // Validar tipo de etiqueta
     const tipoEt = $("#TipoEtiqueta").val();
     const tipoDesc = $("#TipoEtiqueta option:selected").text();
-    cargarReporteEnArre(45, {} , "")
-    cargarReporteEnArre(46, {} , "")
-    cargarReporteEnArre(47, {}, "")
-    let indexImp = 0;
-    switch (tipoEt) {
-        case "0":
-            indexImp = 45;
-            break;
-        case "1":
-            indexImp = 46;
-            break;
-        case "2":
-            indexImp = 47;
-            break;
-        default:
-            return false;
+    
+    if (!tipoEt) {
+        mostrarNotificacion("Debe seleccionar un tipo de etiqueta", "warning");
+        return;
     }
 
-    const adm_id = administracion;//.split('#')[0] || '0000';
+    // Determinar índice de impresión
+    const indexImp = determinarIndiceImpresion(tipoEt)
+    
+    if (!indexImp) {
+        mostrarNotificacion("Tipo de etiqueta no válido", "error");
+        return false;
+    }
 
-    // Obtener todos los p_id que están chequeados en el grid _etiquetaDetalle
+    // Obtener productos seleccionados
     const productosSeleccionados = [];
     $(".chk-etiqueta-item:checked").each(function () {
         const pId = $(this).val();
@@ -261,27 +260,174 @@ function imprimirEtiquetas() {
         }
     });
 
-    // ✅ VALIDAR que haya al menos un producto seleccionado
+    // Validar selección
     if (productosSeleccionados.length === 0) {
-        AbrirMensaje("A tener en cuenta", "Debe seleccionar al menos un producto para imprimir etiquetas",
+        AbrirMensaje(
+            "A tener en cuenta", 
+            "Debe seleccionar al menos un producto para imprimir etiquetas",
             function () {
                 $("#msjModal").modal("hide");
-            }, false, ["Continuar"], "warn!", null);        
+            }, 
+            false, 
+            ["Continuar"], 
+            "warn!", 
+            null
+        );        
         return;
     }
 
-    // Asignar a la variable productos el json de todos los productos seleccionados (solo p_id)
+    // Preparar datos para impresión
+    const adm_id = administracion;
     const productos = JSON.stringify(productosSeleccionados);
-
     const info = {
         json_p: productos,
         etiqueta: indexImp,
         adm_id: adm_id,
         usu_id: usuarioAuth
-    }
-    cargarReporteEnArre(indexImp, info, tipoDesc)
-    let data = { modulo: "", parametros: [] }
+    };
+
+    // Cargar reportes
+    cargarReporteEnArre(45, {}, "");
+    cargarReporteEnArre(46, {}, "");
+    cargarReporteEnArre(47, {}, "");
+    cargarReporteEnArre(indexImp, info, tipoDesc);
+
+    // Invocar gestor de documentos
+    const data = { modulo: "", parametros: [] };
     invocacionGestorDoc(data);
+
+    // ✅ SOLUCIÓN: Configurar el evento DESPUÉS de invocar el gestor
+    // y usar un pequeño delay para asegurar que el modal esté completamente inicializado
+    setTimeout(() => {
+        configurarEventoCierreModal();
+    }, 300);
+}
+
+/**
+ * ✅ NUEVA FUNCIÓN: Configura el evento de cierre del modal de forma robusta
+ */
+function configurarEventoCierreModal() {
+    const $modal = $('#docmgrmodal');
+    
+    // Verificar que el modal existe
+    if ($modal.length === 0) {
+        console.warn("⚠️ Modal #docmgrmodal no encontrado en el DOM");
+        return;
+    }
+
+    // Limpiar eventos previos para evitar duplicados
+    $modal.off('hidden.bs.modal.confirmarImpresion');
+    $modal.off('hide.bs.modal.confirmarImpresion');
+
+    // ✅ Usar namespace para eventos específicos de esta funcionalidad
+    $modal.on('hidden.bs.modal.confirmarImpresion', function () {
+        console.log("✅ Modal cerrado - Mostrando confirmación de impresión");
+        
+        // Remover el evento después de ejecutarlo (one-time)
+        $modal.off('hidden.bs.modal.confirmarImpresion');
+        
+        // Mostrar confirmación con un pequeño delay
+        setTimeout(() => {
+            mostrarConfirmacionDeImpresion();
+        }, 200);
+    });
+
+    console.log("✅ Evento de cierre configurado correctamente");
+}
+
+/**
+ * ✅ NUEVA FUNCIÓN: Muestra el diálogo de confirmación de impresión
+ */
+function mostrarConfirmacionDeImpresion() {
+    AbrirMensaje(
+        "Confirmación",
+        "¿Se imprimió correctamente el/las etiquetas?",
+        function (resp) {
+            if (resp === 'SI' || resp === 'Sí') {
+                console.log("✔ Usuario confirmó impresión exitosa");
+                ConfirmarImpresionOK();
+            } else {
+                console.log("✖ Usuario reportó problema en impresión");
+                // Opcional: Manejar el caso de impresión fallida
+                mostrarNotificacion(
+                    "Por favor, verifique la impresora e intente nuevamente", 
+                    "warning"
+                );
+            }
+            $("#msjModal").modal("hide");
+        },
+        true,
+        ["Sí", "No"],
+        "info!"
+    );
+}
+
+/**
+ * ✅ FUNCIÓN OPTIMIZADA: Confirma la impresión exitosa
+ */
+function ConfirmarImpresionOK() {
+    // Recolectar productos seleccionados arrRepoParams
+    const tipoEt = $("#TipoEtiqueta").val();
+    // Determinar índice de impresión
+    const indexImp = determinarIndiceImpresion(tipoEt)
+
+    const productosSeleccionados = arrRepoParams[indexImp - 1].parametros.json_p;
+   
+    // Preparar request
+    const request = {
+        json: productosSeleccionados,
+        adm: "",
+        usu : ""        
+    };
+
+    // Mostrar loading
+    AbrirWaiting("Confirmando impresión de etiquetas...");
+
+    // Realizar llamada AJAX
+    $.ajax({
+        url: confirmarImpresionEtiquetaUrl,
+        type: "POST",
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        data: JSON.stringify(request),
+        success: function (response) {
+            CerrarWaiting();
+
+            if (response && response.ok) {
+                const mensaje = response.mensaje || 
+                    `Impresión de ${productosSeleccionados.length} etiqueta(s) confirmada correctamente`;
+                
+                mostrarNotificacion(mensaje, "success");
+
+                // Limpiar selección
+                limpiarSeleccionEtiquetas();
+
+                // Volver al formulario de búsqueda
+                setTimeout(() => {
+                    cancelarEtiqueta();
+                }, 1500);
+            } else {
+                const mensajeError = response?.mensaje || "No se pudo confirmar la impresión";
+                mostrarNotificacion(mensajeError, "error");
+            }
+        },
+        error: function (xhr, status, error) {
+            CerrarWaiting();
+            console.error("❌ Error al confirmar impresión:", error);
+
+            let mensajeError = "Error al confirmar la impresión de etiquetas.";
+            
+            if (xhr.responseJSON?.mensaje) {
+                mensajeError = xhr.responseJSON.mensaje;
+            } else if (xhr.status === 401) {
+                mensajeError = "Sesión expirada. Por favor, inicie sesión nuevamente.";
+            } else if (xhr.status === 0) {
+                mensajeError = "No se pudo conectar con el servidor. Verifique su conexión.";
+            }
+
+            mostrarNotificacion(mensajeError, "error");
+        }
+    });
 }
 
 function buscarEtiquetas(btn) {
@@ -731,20 +877,21 @@ function verificarEtiquetasVacias() {
  * ✅ FUNCIÓN: Muestra notificaciones toast al usuario
  */
 function mostrarNotificacion(mensaje, tipo = "info") {
-    if (typeof toastr !== "undefined") {
-        toastr.options = {
-            closeButton: true,
-            progressBar: true,
-            positionClass: "toast-top-right",
-            timeOut: 3000
-        };
-        toastr[tipo](mensaje);
-    } 
-    else if (typeof MostrarNotificacion === "function") {
-        MostrarNotificacion(mensaje, tipo);
-    }
-    else {
-        console.log(`[${tipo.toUpperCase()}] ${mensaje}`);
+    switch (tipo) {
+        case "info":
+            ControlaMensajeInfo(mensaje);
+            break;
+        case "error":
+            ControlaMensajeError(mensaje);
+            break;
+        case "warning":
+            ControlaMensajeWarning(mensaje);
+            break;
+        case "success":
+            ControlaMensajeSuccess(mensaje);
+            break;
+        default:
+            return false;
     }
 }
 
