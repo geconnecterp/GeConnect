@@ -10,6 +10,7 @@ namespace gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep
 		public string cta_id { get; set; } = string.Empty;
 		public string cta_denominacion { get; set; } = string.Empty;
 		public string tdoc_id { get; set; } = string.Empty;
+		public string tdoc_desc { get; set; } = string.Empty;
 		public string cta_documento { get; set; } = string.Empty;
 		public string cta_domicilio { get; set; } = string.Empty;
 		public string cta_celu { get; set; } = string.Empty;
@@ -17,5 +18,6 @@ namespace gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep
 		public string cta_te { get; set; } = string.Empty;
 		public DateTime? cert_vto { get; set; }
 		public DateTime? hoy { get; set; }
+
 	}
 }
