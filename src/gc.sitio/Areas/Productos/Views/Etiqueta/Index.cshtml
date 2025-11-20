@@ -35,7 +35,7 @@
         // var autoComRel05Url = "@Url.Action("ObtenerUsuarioParaLista", "cgusuarios", new { area = "Usuarios" })";
 
         let obtenerDetalleEtiquetasUrl = "@Url.Action("obtenerDetalleEtiquetas", "etiqueta", new { area = "productos" })";/**/
-
+        let confirmarImpresionEtiquetaUrl = "@Url.Action("confirmarImpresionEtiqueta", "etiqueta", new { area = "productos" })";/**/
 
         let buscarMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "Presupuesto", new { area = "Productos" })';
         let homeEtiqueta = '@Url.Action("index", "etiqueta", new { area = "Productos" })';
@@ -46,6 +46,14 @@
         var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
         var enviarEmailUrl =  "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
         var enviarWhatsAppUrl =  "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+
+        //funcionalidad busqueda avanzada controlador común
+        let productoBase = null; //se hidrata en busquedas.
+        let p_id_selected = "";
+        let funcionBusquedaAvanzada = true;
+        let busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
+        let busquedaAvanzadaUrl = "@Url.Action("BusquedaAvanzadaV02", "producto", new { area = "ControlComun" })";
+        let busquedaAvanzadaModalUrl = "@Url.Action("BusquedaAvanzadaV02", "producto", new { area = "ControlComun" })";
 
     </script>
 

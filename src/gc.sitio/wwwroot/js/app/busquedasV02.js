@@ -3,7 +3,7 @@ var productosSeleccionadosBusqueda = [];
 var dataBakV02 = {};
 
 // Variables globales para definir el contexto de destino
-var busquedaDestinoTipo = "ofertas"; // valores: "ofertas", "combos", "sustitutos", "Presupuestos"
+var busquedaDestinoTipo = "ofertas"; // valores: "ofertas", "combos", "sustitutos", "presupuestos", "etiquetas"
 var busquedaDestinoCallback = null;
 
 /**
@@ -17,11 +17,16 @@ function configurarDestinoBusquedaProductos(tipo, callback, validadorCallback) {
     busquedaDestinoCallback = callback;
     busquedaValidadorCallback = validadorCallback || function() { return []; };
     
-    // Actualizar el título del modal según el tipo
-    var titulo = "Búsqueda Avanzada de Productos";
-    if (tipo === "sustitutos") {
-        titulo = "Selección de Productos Sustitutos";
-    }
+    // ✅ ACTUALIZADO: Mapeo de títulos según tipo de destino
+    const titulosModulos = {
+        "ofertas": "Búsqueda Avanzada de Productos",
+        "combos": "Selección de Productos para Combo",
+        "sustitutos": "Selección de Productos Sustitutos",
+        "presupuestos": "Selección de Productos para Presupuesto",
+        "etiquetas": "Selección de Productos para Etiquetas" // ✅ NUEVO
+    };
+    
+    const titulo = titulosModulos[tipo] || "Búsqueda Avanzada de Productos";
     $("#buscTitulo").text(titulo);
 }
 
@@ -32,29 +37,29 @@ $(function () {
         limpiarSeleccionBusqueda();
     });
 
-    // Eventos de inputs de relaciones
-    $("input#Rel01").on("click", function () {
+    // ✅ ACTUALIZADO: Eventos de inputs con IDs B2
+    $("input#Rel01B2").on("click", function () {
         $(this).val("");
-        $("#Rel01Item").val("");
+        $("#Rel01B2Item").val("");
     });
 
-    $("input#Rel02").on("click", function () {
+    $("input#Rel02B2").on("click", function () {
         $(this).val("");
-        $("#Rel02Item").val("");
+        $("#Rel02B2Item").val("");
     });
 
-    // Eliminar items de listas
-    $("#Rel01List").on("dblclick", 'option', function () { $(this).remove(); });
-    $("#Rel02List").on("dblclick", 'option', function () { $(this).remove(); });
+    // ✅ ACTUALIZADO: Eliminar items de listas con IDs B2
+    $("#Rel01B2List").on("dblclick", 'option', function () { $(this).remove(); });
+    $("#Rel02B2List").on("dblclick", 'option', function () { $(this).remove(); });
 
-    // ✅ CORREGIDO: Usar trigger en lugar del método deprecado
+    // Usar trigger en lugar del método deprecado
     $("input").on("focus", function () {
         $(this).trigger("select");
     });
 
     // Botón de búsqueda
     $("#btnBuscarProd").off("click").on("click", function () {
-        buscarAvUIStart();//activa el spinner
+        buscarAvUIStart();
         busquedaAvanzadaProductosV02(pagina);
     });
 
@@ -64,8 +69,7 @@ $(function () {
         presentaPaginacion(div);
     });
     
-    //generar evento para el campo #Search para que cuando se de Enter
-    //se haga click sobre el boton #btnBuscarProd
+    // Evento Enter en campo Search
     $("#Search").off("keydown").on("keydown", function (e) {
         if (e.key === "Enter") {
             e.preventDefault();
@@ -82,34 +86,29 @@ $(function () {
     return true;
 });
 
-// ✅ CORREGIDA: Función con validación de metadata
+// ✅ COMPLETAMENTE OPTIMIZADA: Función con todos los IDs B2
 function busquedaAvanzadaProductosV02(pag) {
-    let ri01 = $("#Rel01Item").val();
-    let ri02 = $("#Rel02Item").val();
-    let ri03 = $("#Rel03 option:selected").val() || "%";
-    var act = $("#chkActivos").is(":checked");
-    var dis = $("#chkDisc").is(":checked");
-    var ina = $("#chkInact").is(":checked");
-    var cstk = true;
-    var sstk = true;
+    const ri01 = $("#Rel01B2Item").val() || "";
+    const ri02 = $("#Rel02B2Item").val() || "";
+    const ri03 = $("#Rel03B2 option:selected").val() || "%";
+    const act = $("#chkActivos").is(":checked");
+    const dis = $("#chkDisc").is(":checked");
+    const ina = $("#chkInact").is(":checked");
+    
+    let cstk = true;
+    let sstk = true;
 
     if ($("#rdConStk").is(":checked") || $("#rdSinStk").is(":checked")) {
-        if ($("#rdSinStk").is(":checked")) {
-            sstk = true;
-            cstk = false;
-        } else {
-            sstk = false;
-            cstk = true;
-        }
+        sstk = $("#rdSinStk").is(":checked");
+        cstk = !sstk;
     }
 
-    var buscar = $("#Search").val();
-    //admLp_id viene de layout y es el id del listado de precios actual 
-    //obtenido en la autenticación
-    var data1 = { ri01, ri02, ri03, act, dis, ina, cstk, sstk, buscar, lp_id : admLp_id };
+    const buscar = $("#Search").val() || "";
+    const data1 = { ri01, ri02, ri03, act, dis, ina, cstk, sstk, buscar, lp_id: admLp_id };
 
-    var buscaNew = JSON.stringify(dataBakV02) != JSON.stringify(data1);
-    if (buscaNew === false) {
+    const buscaNew = JSON.stringify(dataBakV02) !== JSON.stringify(data1);
+    
+    if (!buscaNew) {
         pagina = pag;
     } else {
         dataBakV02 = data1;
@@ -118,15 +117,14 @@ function busquedaAvanzadaProductosV02(pag) {
         limpiarSeleccionBusqueda();
     }
 
-    var sort = "p_desc";
-    var sortDir = "asc";
-    var data2 = { sort, sortDir, pag, buscaNew };
-    var data = $.extend({}, data1, data2);
+    const sort = "p_desc";
+    const sortDir = "asc";
+    const data2 = { sort, sortDir, pag, buscaNew };
+    const data = $.extend({}, data1, data2);
 
-    var urlBusqueda = busquedaAvanzadaUrl;
+    const urlBusqueda = busquedaAvanzadaUrl;
     
     PostGen(data, urlBusqueda, function (response) {
-        // detener spinner siempre al completar
         try { buscarAvUIStop(); } catch (e) { }
 
         if (response.error) {
@@ -134,21 +132,19 @@ function busquedaAvanzadaProductosV02(pag) {
             return;
         }
 
-        // ✅ VALIDACIÓN: Metadata con valores por defecto
-        var metadata = response.metadata || {
+        // Validación de metadata con valores por defecto
+        const metadata = response.metadata || {
             totalCount: response.productos ? response.productos.length : 0,
             totalPages: 1,
             currentPage: pag,
             pageSize: response.productos ? response.productos.length : 0
         };
 
-        // ✅ GENERAR HTML: Con metadata validada
-        var htmlGrid = generarGridDesdeProductoListaDto(response.productos, metadata);
+        const htmlGrid = generarGridDesdeProductoListaDto(response.productos, metadata);
         $("#divBusquedaAvanzada").html(htmlGrid);
         
         configurarEventosGridBusquedaV02();
 
-        // ✅ METADATA: Actualizar variables globales
         if (response.metadata) {
             totalRegs = response.metadata.totalCount;
             pags = response.metadata.totalPages;
@@ -156,52 +152,20 @@ function busquedaAvanzadaProductosV02(pag) {
             $("#pagEstado").val(true).trigger("change");
         }
     }, function (error) {
+        try { buscarAvUIStop(); } catch (e) { }
         ControlaMensajeError("Error en búsqueda avanzada: " + (error.message || "Error desconocido"));
     });
 
     return true;
 }
 
-function buscarProducto() {
-    AbrirWaiting();
-    var valor = $("#Busqueda").val();
-
-    // ✅ VALIDACIÓN TEMPRANA: Sin abrir indicador de carga innecesariamente
-    // ✅ VALIDACIÓN TEMPRANA: Sin abrir indicador de carga innecesariamente
-    if (valor.trim() === "") {
-        CerrarWaiting(); // ✅ IMPORTANTE: Cerrar indicador de carga
-        inicializaBusquedaAvanzadaV02();
-        $("#busquedaModal").modal("show");
-        return; // ✅ CRÍTICO: Detener ejecución aquí
-    }
-
-    // ✅ CONTINÚA: Solo si hay valor para buscar
-    var urlBusqueda = busquedaAvanzadaUrl;
-    
-    var datos = {
-        ri01: "",
-        ri02: "",
-        act: true,
-        dis: false,
-        ina: false,
-        cstk: true,
-        sstk: false,
-        buscar: valor,
-        sort: "p_desc",
-        sortDir: "asc",
-        pag: 1,
-        buscaNew: true
+// Función para obtener productos seleccionados (API pública)
+function obtenerProductosSeleccionados() {
+    return {
+        productos: productosSeleccionadosBusqueda,
+        cantidad: productosSeleccionadosBusqueda.length,
+        haySeleccion: productosSeleccionadosBusqueda.length > 0
     };
-
-    PostGen(datos, urlBusqueda, function (response) {
-        CerrarWaiting();
-        procesarRespuestaBusquedaJSON(response, valor);
-    }, function (error) {
-        CerrarWaiting();
-        ControlaMensajeError("Error en la búsqueda: " + (error.message || "Error desconocido"));
-    });
-    
-    return true;
 }
 
 // OPTIMIZADO: Eventos con delegación sobre el contenedor para evitar re-bind por recarga del grid
@@ -279,7 +243,6 @@ function autoSeleccionarProductosVisibles() {
 
 // Gestión de productos seleccionados
 function agregarProductoASeleccion(producto) {
-    // ✅ USAR CAMPO p_id: Con fallback a P_id
     var productoId = producto.p_id || producto.P_id;
     
     if (!productosSeleccionadosBusqueda.some(p => (p.p_id || p.P_id) === productoId)) {
@@ -288,7 +251,6 @@ function agregarProductoASeleccion(producto) {
 }
 
 function removerProductoDeSeleccion(productoId) {
-    // ✅ SIMPLIFICADO: Comparar con ambos campos pero preferir p_id
     productosSeleccionadosBusqueda = productosSeleccionadosBusqueda.filter(p => 
         (p.p_id || p.P_id) !== productoId
     );
@@ -296,14 +258,12 @@ function removerProductoDeSeleccion(productoId) {
 
 // ✅ OPTIMIZADA: Contador que refleja selección automática
 function actualizarContadorSeleccion() {
-    var cantidad = productosSeleccionadosBusqueda.length;
+    const cantidad = productosSeleccionadosBusqueda.length;
     
-    // ✅ ACTUALIZAR: Todos los elementos de contador
     $("#contadorSeleccionados").text(cantidad);
     $("#badgeSeleccionados").text(cantidad + " seleccionados automáticamente");
     $("#badgeSeleccionadosHeader").text(cantidad + " seleccionados");
 
-    // Mostrar sección de selección múltiple siempre que haya productos
     if (cantidad > 0) {
         $("#seccionSeleccionMultiple").show();
     } else {
@@ -321,31 +281,28 @@ function limpiarSeleccionBusqueda() {
 // ✅ OPTIMIZADA: Restaurar estado sin color de filas
 function restaurarEstadoCheckboxes() {
     $(".check-producto-busqueda").each(function () {
-        var productoData = $(this).data("producto");
+        const productoData = $(this).data("producto");
         if (productoData) {
-            // ✅ SOLO p_id
-            var estaSeleccionado = productosSeleccionadosBusqueda.some(p => p.p_id === productoData.p_id);
+            const estaSeleccionado = productosSeleccionadosBusqueda.some(p => p.p_id === productoData.p_id);
             $(this).prop("checked", estaSeleccionado);
         }
     });
 
-    var totalVisible = $(".check-producto-busqueda").length;
-    var checkedVisible = $(".check-producto-busqueda:checked").length;
+    const totalVisible = $(".check-producto-busqueda").length;
+    const checkedVisible = $(".check-producto-busqueda:checked").length;
     $("#checkAllBusqueda").prop("checked", totalVisible > 0 && totalVisible === checkedVisible);
 }
 
 // Funciones compatibles con busquedas.js original
 function selectRegDbl(x) {
     // Limpiar selección previa
-    $("#tbGridBusquedaProductos tbody tr").each(function (index) {
-        $(this).removeClass("selected-row");
-    });
+    $("#tbGridBusquedaProductos tbody tr").removeClass("selected-row");
 
     // Seleccionar fila actual
     $(x).addClass("selected-row");
 
     // Obtener ID del producto (primera celda visible después del checkbox)
-    var id = x.cells[1].innerText.trim();
+    const id = x.cells[1].innerText.trim();
 
     // Cerrar modal y buscar producto
     $("#busquedaModal").modal("toggle");
@@ -356,7 +313,7 @@ function selectRegDbl(x) {
 // ✅ OPTIMIZADA: Función helper para focus que evita métodos deprecados
 function enfocarElementoSeguro(selector) {
     try {
-        var elemento = $(selector);
+        const elemento = $(selector);
         if (elemento.length > 0) {
             elemento.trigger("focus");
             return true;
@@ -367,27 +324,35 @@ function enfocarElementoSeguro(selector) {
     return false;
 }
 
-// ✅ ACTUALIZADA: Función de inicialización corregida
+// ✅ COMPLETAMENTE ACTUALIZADA: Inicialización con todos los IDs B2
 function inicializaBusquedaAvanzadaV02() {
-    // Limpiar selección al inicializar
     limpiarSeleccionBusqueda();
 
-    // Configurar proveedor
+    // Configurar proveedor (Rel01B2)
     if (typeof provUnico !== 'undefined' && provUnico === true) {
-        $("input#Rel01").val(provDesc).prop("disabled", true);
-        $("input#Rel01Item").val(provId);
+        $("#Rel01B2").val(provDesc).prop("disabled", true);
+        $("#Rel01B2Item").val(provId);
     } else {
-        $("input#Rel01").val("").prop("disabled", false);
-        $("input#Rel01Item").val("");
+        $("#Rel01B2").val("").prop("disabled", false);
+        $("#Rel01B2Item").val("");
     }
 
-    // Configurar rubros
+    // ✅ ACTUALIZADO: Configurar rubros (Rel02B2)
     if (typeof rubUnico !== 'undefined' && rubUnico === true) {
-        $("input#Rel02").val(rubDesc).prop("disabled", true);
-        $("input#Rel02Item").val(rubId);
+        $("#Rel02B2").val(rubDesc).prop("disabled", true);
+        $("#Rel02B2Item").val(rubId);
     } else {
-        $("input#Rel02").val("").prop("disabled", false);
-        $("input#Rel02Item").val("");
+        $("#Rel02B2").val("").prop("disabled", false);
+        $("#Rel02B2Item").val("");
+    }
+
+    // ✅ NUEVO: Configurar familia (Rel03B2)
+    if (typeof famUnico !== 'undefined' && famUnico === true) {
+        $("#Rel03B2").val(famId).prop("disabled", true);
+        $("#Rel03B2Item").val(famId);
+    } else {
+        $("#Rel03B2").val("").prop("disabled", false);
+        $("#Rel03B2Item").val("");
     }
 
     // Configurar estados
@@ -404,16 +369,7 @@ function inicializaBusquedaAvanzadaV02() {
     return true;
 }
 
-// Función para obtener productos seleccionados (API pública)
-function obtenerProductosSeleccionados() {
-    return {
-        productos: productosSeleccionadosBusqueda,
-        cantidad: productosSeleccionadosBusqueda.length,
-        haySeleccion: productosSeleccionadosBusqueda.length > 0
-    };
-}
-
-// ✅ NUEVA: Función auxiliar para generar metadata y controles
+// NUEVA: Función auxiliar para generar metadata y controles
 function generarSeccionMetadataYControles(cantidadProductos, metadata) {
     return `
         <div class="d-flex justify-content-between align-items-center mt-3 px-2">
@@ -465,24 +421,23 @@ function generarSeccionMetadataYControles(cantidadProductos, metadata) {
     `;
 }
 
-// ✅ NUEVA: Función para validar y normalizar datos antes de envío
+// NUEVA: Función para validar y normalizar datos antes de envío
 function validarYNormalizarProducto(producto) {
     if (!producto.p_id) {
         console.warn("Producto sin ID válido:", producto);
         return null;
     }
     
-    // ✅ RETORNO DIRECTO: Sin normalización de campos numéricos
     return producto;
 }
 
-// ✅ NUEVA: Aplicar validación en agregado de productos
+// NUEVA: Aplicar validación en agregado de productos
 function validarProductosAntesDeEnvio(productos) {
-    var productosValidos = [];
-    var productosInvalidos = 0;
+    const productosValidos = [];
+    let productosInvalidos = 0;
     
     productos.forEach(function(producto) {
-        var productoValidado = validarYNormalizarProducto(producto);
+        const productoValidado = validarYNormalizarProducto(producto);
         if (productoValidado) {
             productosValidos.push(productoValidado);
         } else {
@@ -491,7 +446,7 @@ function validarProductosAntesDeEnvio(productos) {
     });
     
     if (productosInvalidos > 0) {
-        console.warn(`${productosInvalidos} productos no pudieron ser validados y fueronomitidos`);
+        console.warn(`${productosInvalidos} productos no pudieron ser validados y fueron omitidos`);
     }
     
     return productosValidos;
@@ -499,7 +454,6 @@ function validarProductosAntesDeEnvio(productos) {
 
 // REINTRODUCIDO + OPTIMIZADO: Genera el grid HTML desde un array de ProductoListaDto
 function generarGridDesdeProductoListaDto(productos, metadata) {
-    // Fallbacks seguros
     const lista = Array.isArray(productos) ? productos : [];
     const meta = metadata || { totalCount: lista.length, totalPages: 1, currentPage: 1, pageSize: lista.length };
 
@@ -523,7 +477,6 @@ function generarGridDesdeProductoListaDto(productos, metadata) {
         const pmayoristaFormateado = formatearNumeroConCultura(item.p_pvta_001 || 0, 2);
         const pminoristaFormateado = formatearNumeroConCultura(item.p_pvta_002 || 0, 2);
 
-        // Guardamos el DTO en data-producto como JSON (escapando comillas simples)
         const dataProductoJson = JSON.stringify(item).replace(/'/g, "&apos;");
 
         return `
@@ -555,7 +508,6 @@ function generarGridDesdeProductoListaDto(productos, metadata) {
         `;
     }).join("");
 
-    // Tabla + sección de metadata/controles (reusa helper ya existente)
     return `
         <div class="table-responsive text-nowrap table-wrapper-400">
             <table class="table table-sm mb-0 table-hover table-golden" id="tbGridBusquedaProductos">
@@ -580,7 +532,7 @@ function generarGridDesdeProductoListaDto(productos, metadata) {
     `;
 }
 
-// ✅ MANTENER: Solo las funciones de formateo que se usan en generarGridDesdeProductoListaDto
+// MANTENER: Funciones de formateo
 function formatearNumeroConCultura(numero, decimales = 2) {
     if (numero === null || numero === undefined || isNaN(numero)) {
         return "0" + ",".repeat(decimales > 0 ? 1 : 0) + "0".repeat(decimales);
@@ -594,7 +546,6 @@ function formatearNumeroConCultura(numero, decimales = 2) {
     });
 }
 
-// ✅ MANTENER: Para extraer datos desde HTML cuando sea necesario
 function parsearNumeroConCultura(valorTexto) {
     if (!valorTexto || valorTexto.trim() === '') return 0;
     
@@ -605,22 +556,30 @@ function parsearNumeroConCultura(valorTexto) {
     return isNaN(numero) ? 0 : numero;
 }
 
-// ✅ ACTUALIZADA: Función para agregar productos con ProductoListaDto
+// ACTUALIZADA: Función para agregar productos con ProductoListaDto
 function agregarProductosSeleccionadosAOfertas() {
     if (productosSeleccionadosBusqueda.length === 0) {
         ControlaMensajeWarning("Debe seleccionar al menos un producto");
         return;
     }
 
-    var mensaje;
-    var titulo;
+    let mensaje;
+    let titulo;
     
     switch (busquedaDestinoTipo) {
-        case "presupuestos": // ✅ NUEVO CASO
+        case "etiquetas": // ✅ NUEVO CASO
+            titulo = "CONFIRMAR AGREGADO A ETIQUETAS";
+            mensaje = `¿Desea agregar ${productosSeleccionadosBusqueda.length} productos a las etiquetas?`;
+            if (productosSeleccionadosBusqueda.length === 1) {
+                const descripcion = productosSeleccionadosBusqueda[0].p_desc;
+                mensaje = `¿Desea agregar el producto "${descripcion}" a las etiquetas?`;
+            }
+            break;
+        case "presupuestos":
             titulo = "CONFIRMAR AGREGADO A PRESUPUESTO";
             mensaje = `¿Desea agregar ${productosSeleccionadosBusqueda.length} productos al presupuesto?`;
             if (productosSeleccionadosBusqueda.length === 1) {
-                var descripcion = productosSeleccionadosBusqueda[0].p_desc;
+                const descripcion = productosSeleccionadosBusqueda[0].p_desc;
                 mensaje = `¿Desea agregar el producto "${descripcion}" al presupuesto?`;
             }
             break;
@@ -628,7 +587,7 @@ function agregarProductosSeleccionadosAOfertas() {
             titulo = "CONFIRMAR SUSTITUTOS";
             mensaje = `¿Desea agregar ${productosSeleccionadosBusqueda.length} productos como sustitutos?`;
             if (productosSeleccionadosBusqueda.length === 1) {
-                var descripcion = productosSeleccionadosBusqueda[0].p_desc;
+                const descripcion = productosSeleccionadosBusqueda[0].p_desc;
                 mensaje = `¿Desea agregar el producto "${descripcion}" como sustituto?`;
             }
             break;
@@ -636,7 +595,7 @@ function agregarProductosSeleccionadosAOfertas() {
             titulo = "CONFIRMAR AGREGADO A COMBO";
             mensaje = `¿Desea agregar ${productosSeleccionadosBusqueda.length} productos al combo?`;
             if (productosSeleccionadosBusqueda.length === 1) {
-                var descripcion = productosSeleccionadosBusqueda[0].p_desc;
+                const descripcion = productosSeleccionadosBusqueda[0].p_desc;
                 mensaje = `¿Desea agregar el producto "${descripcion}" al combo?`;
             }
             break;
@@ -644,7 +603,7 @@ function agregarProductosSeleccionadosAOfertas() {
             titulo = "CONFIRMAR AGREGADO";
             mensaje = `¿Desea agregar ${productosSeleccionadosBusqueda.length} productos a las ofertas?`;
             if (productosSeleccionadosBusqueda.length === 1) {
-                var descripcion = productosSeleccionadosBusqueda[0].p_desc;
+                const descripcion = productosSeleccionadosBusqueda[0].p_desc;
                 mensaje = `¿Desea agregar el producto "${descripcion}" a las ofertas?`;
             }
     }
@@ -654,9 +613,11 @@ function agregarProductosSeleccionadosAOfertas() {
         mensaje,
         function (resp) {
             if (resp === "SI") {
+                // ✅ ACTUALIZADO: Incluir "etiquetas" en la condición
                 if ((busquedaDestinoTipo === "combos" ||
                     busquedaDestinoTipo === "sustitutos" ||
-                    busquedaDestinoTipo === "presupuestos") &&
+                    busquedaDestinoTipo === "presupuestos" ||
+                    busquedaDestinoTipo === "etiquetas") &&
                     typeof busquedaDestinoCallback === 'function') {
                     procesarAgregarProductosCustom();
                 } else {
@@ -664,7 +625,6 @@ function agregarProductosSeleccionadosAOfertas() {
                 }
             }
             $("#msjModal").modal("hide");
-            //return true;
         },
         true,
         ["Agregar", "Cancelar"],
@@ -674,49 +634,61 @@ function agregarProductosSeleccionadosAOfertas() {
 }
 
 /**
- * Procesa el agregado de productos mediante callback personalizado
+ * ✅ ACTUALIZADA: Procesa el agregado de productos mediante callback personalizado
  */
 function procesarAgregarProductosCustom() {
     AbrirWaiting("Agregando productos...");
     
     try {
-        // Obtener IDs de productos existentes en el grid destino
         const productosExistentesIds = typeof busquedaValidadorCallback === 'function' 
             ? busquedaValidadorCallback() 
             : [];
         
-        // Determinar estado según el destino
-        let estadoProducto = busquedaDestinoTipo === "combos" || busquedaDestinoTipo === "sustitutos" ? 'P' : 'A';
+        // ✅ ACTUALIZADO: Estado según destino (etiquetas usa 'A' = Activo)
+        let estadoProducto = 'A'; // Por defecto activo
+        if (busquedaDestinoTipo === "combos" || busquedaDestinoTipo === "sustitutos") {
+            estadoProducto = 'P'; // Pendiente
+        }
         
-        // Filtrar productos ya existentes
         const productosSeleccionadosOriginales = [...productosSeleccionadosBusqueda];
         const productosFiltrados = productosSeleccionadosBusqueda.filter(producto => 
             !productosExistentesIds.includes(producto.p_id));
         
-        // Contar duplicados
         const cantidadDuplicados = productosSeleccionadosOriginales.length - productosFiltrados.length;
         
-        // Preparar productos (solo los no duplicados)
-        var productos = productosFiltrados.map(function(producto) {
-            return {
-                p_id: producto.p_id,
-                p_desc: producto.p_desc,
-                p_pcosto: parseFloat(producto.p_pcosto || 0),
-                lp_prevision_tot: parseFloat(producto.lp_prevision_tot),
-                lp_prevision_pin: parseFloat(producto.lp_prevision_pin),
-                p_margen: parseFloat(producto.p_margen),
-                p_pneto: parseFloat(producto.p_pneto),
-                p_pvta: parseFloat(producto.p_pvta),
-                in_alicuota: parseFloat(producto.in_alicuota),
-                iva_alicuota: parseFloat(producto.iva_alicuota),
-                iva_situacion: producto.iva_situacion,
-                cantidad: 1,
-                dto_porc: 0,
-                activo: estadoProducto
-            };
-        });
+        // ✅ OPTIMIZADO: Estructura de datos simplificada para etiquetas
+        let productos;
+        if (busquedaDestinoTipo === "etiquetas") {
+            // Para etiquetas solo necesitamos p_id y p_desc
+            productos = productosFiltrados.map(function(producto) {
+                return {
+                    p_id: producto.p_id,
+                    p_desc: producto.p_desc,
+                    activo: estadoProducto
+                };
+            });
+        } else {
+            // Para presupuestos/combos/sustitutos (estructura completa existente)
+            productos = productosFiltrados.map(function(producto) {
+                return {
+                    p_id: producto.p_id,
+                    p_desc: producto.p_desc,
+                    p_pcosto: parseFloat(producto.p_pcosto || 0),
+                    lp_prevision_tot: parseFloat(producto.lp_prevision_tot),
+                    lp_prevision_pin: parseFloat(producto.lp_prevision_pin),
+                    p_margen: parseFloat(producto.p_margen),
+                    p_pneto: parseFloat(producto.p_pneto),
+                    p_pvta: parseFloat(producto.p_pvta),
+                    in_alicuota: parseFloat(producto.in_alicuota),
+                    iva_alicuota: parseFloat(producto.iva_alicuota),
+                    iva_situacion: producto.iva_situacion,
+                    cantidad: 1,
+                    dto_porc: 0,
+                    activo: estadoProducto
+                };
+            });
+        }
         
-        // Si no hay productos para agregar después del filtrado
         if (productos.length === 0) {
             CerrarWaiting();
             if (cantidadDuplicados > 0) {
@@ -727,28 +699,36 @@ function procesarAgregarProductosCustom() {
             return;
         }
         
-        // Llamar al callback con los productos filtrados
         if (typeof busquedaDestinoCallback === 'function') {
             busquedaDestinoCallback(productos);
         }
         
-        // Cerrar modal y limpiar
         $("#busquedaModal").modal("hide");
         
-        // Guardar cantidad antes de limpiar
-        var cantidadAgregada = productos.length;
+        const cantidadAgregada = productos.length;
         limpiarSeleccionBusqueda();
         
-        // Mensaje de éxito
         CerrarWaiting();
-        var mensaje = '';
         
+        // ✅ ACTUALIZADO: Mensajes según tipo de destino
+        let mensaje = '';
         if (cantidadDuplicados > 0) {
             mensaje = `Se agregaron ${cantidadAgregada} producto(s). Se omitieron ${cantidadDuplicados} producto(s) duplicado(s).`;
         } else {
-            mensaje = busquedaDestinoTipo === "sustitutos" 
-                ? `${cantidadAgregada} producto${cantidadAgregada > 1 ? 's' : ''} agregado${cantidadAgregada > 1 ? 's' : ''} como sustituto${cantidadAgregada > 1 ? 's' : ''} correctamente` 
-                : `${cantidadAgregada} producto${cantidadAgregada > 1 ? 's' : ''} agregado${cantidadAgregada > 1 ? 's' : ''} correctamente`;
+            const mensajesDestino = {
+                "etiquetas": "a las etiquetas",
+                "presupuestos": "al presupuesto",
+                "sustitutos": "como sustituto",
+                "combos": "al combo"
+            };
+            
+            const destinoTexto = mensajesDestino[busquedaDestinoTipo] || "";
+            
+            if (busquedaDestinoTipo === "sustitutos") {
+                mensaje = `${cantidadAgregada} producto${cantidadAgregada > 1 ? 's' : ''} agregado${cantidadAgregada > 1 ? 's' : ''} como sustituto${cantidadAgregada > 1 ? 's' : ''} correctamente`;
+            } else {
+                mensaje = `${cantidadAgregada} producto${cantidadAgregada > 1 ? 's' : ''} agregado${cantidadAgregada > 1 ? 's' : ''} ${destinoTexto} correctamente`;
+            }
         }
         
         ControlaMensajeSuccess(mensaje);
@@ -785,29 +765,24 @@ function confirmarLimpiezaSeleccion() {
 }
 
 /**
- * Inicializa todos los controles del modal de búsqueda avanzada
- * para garantizar que estén listos para una nueva búsqueda.
+ * ✅ COMPLETAMENTE ACTUALIZADA: Inicializa todos los controles con IDs B2
  */
 function inicializarControlesBusquedaAvanzada() {
     console.log("🔄 Inicializando controles del modal de búsqueda avanzada...");
 
-    // Limpiar selección previa
     limpiarSeleccionBusqueda();
 
-    // Restablecer valores de los campos de entrada
-    $("#Rel01, #Rel02, #Search").val("").prop("disabled", false);
-    $("#Rel01Item, #Rel02Item").val("");
-    $("#Rel03").val("").prop("disabled", true); // Dropdown Familia deshabilitado por defecto
+    // ✅ ACTUALIZADO: Todos los IDs con B2
+    $("#Rel01B2, #Rel02B2, #Search").val("").prop("disabled", false);
+    $("#Rel01B2Item, #Rel02B2Item, #Rel03B2Item").val("");
+    $("#Rel03B2").val("").prop("disabled", true);
 
-    // Restablecer estados de los checkboxes
     $("#chkActivos").prop("checked", true).prop("disabled", false);
     $("#chkDisc, #chkInact").prop("checked", false).prop("disabled", false);
 
-    // Restablecer estados de los radios
     $("#rdConStk").prop("checked", true);
     $("#rdSinStk").prop("checked", false);
 
-    // Limpiar el grid de resultados
     $("#divBusquedaAvanzada").html(`
         <div class="text-center text-muted py-4">
             <i class="bx bx-info-circle me-2"></i>
@@ -815,13 +790,9 @@ function inicializarControlesBusquedaAvanzada() {
         </div>
     `);
 
-    // Ocultar la sección de selección múltiple
     $("#seccionSeleccionMultiple").hide();
-
-    // Restablecer paginación
     $("#pagEstado").val(false).trigger("change");
 
-    // Reset spinner/botón
     try { buscarAvUIStop(); } catch (e) { }
 
     console.log("✅ Controles inicializados correctamente.");
@@ -829,19 +800,16 @@ function inicializarControlesBusquedaAvanzada() {
 
 /**
  * Configura el evento para abrir el modal de búsqueda avanzada
- * y asegura que los controles estén inicializados.
  */
 function configurarAperturaModalBusquedaAvanzada() {
     console.log("🔧 Configurando apertura del modal de búsqueda avanzada...");
 
-    // Evento para abrir el modal
     $("#busquedaModal").on("show.bs.modal", function () {
         inicializarControlesBusquedaAvanzada();
     });
 
-    // Evento para cerrar el modal
     $("#busquedaModal").on("hidden.bs.modal", function () {
-        limpiarSeleccionBusqueda(); // Limpiar selección al cerrar
+        limpiarSeleccionBusqueda();
     });
 
     console.log("✅ Apertura del modal configurada correctamente.");
@@ -857,19 +825,20 @@ function buscarAvUIStart() {
     $("#btnBuscarProd").prop("disabled", true);
     $("#spnBuscarProd").removeClass("d-none");
 }
+
 function buscarAvUIStop() {
     $("#spnBuscarProd").addClass("d-none");
     $("#btnBuscarProd").prop("disabled", false);
 }
 
-// ✅ NUEVA: Procesar respuesta JSON de búsqueda individual
+// NUEVA: Procesar respuesta JSON de búsqueda individual
 function procesarRespuestaBusquedaJSON(response, valorBuscado) {
     if (response.error) {
         ControlaMensajeError(response.msg || "Error en la búsqueda");
         return;
     }
 
-    var productos = response.productos || [];
+    const productos = response.productos || [];
 
     if (productos.length === 0) {
         AbrirMensaje("ATENCIÓN", "NO SE ENCONTRÓ EL PRODUCTO QUE INTENTA BUSCAR.", function () {
@@ -886,11 +855,9 @@ function procesarRespuestaBusquedaJSON(response, valorBuscado) {
     }
 
     if (productos.length === 1) {
-        // ✅ ENVÍO DIRECTO: Sin conversión, directo al controlador
-        var producto = productos[0];
+        const producto = productos[0];
         agregarProductoIndividualAOfertas(producto);
     } else {
-        // Múltiples productos - mostrar búsqueda avanzada
         AbrirMensaje("ATENCIÓN",
             `Se encontraron ${productos.length} productos. Se abrirá la búsqueda avanzada para seleccionar.`,
             function () {

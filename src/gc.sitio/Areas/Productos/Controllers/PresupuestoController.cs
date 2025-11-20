@@ -446,6 +446,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             var listR03 = new List<ComboGenDto>();
             ViewBag.Rel03 = ComboPresupuestoEstado();
             ViewBag.Rel03List = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
+            ViewBag.Rel03B2 = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
             //ADMINISTRACION
             var adm = AdministracionesLista;
             var admins = adm.Select(x => new ComboGenDto { Id = x.Adm_id, Descripcion = x.Adm_nombre }).ToList();

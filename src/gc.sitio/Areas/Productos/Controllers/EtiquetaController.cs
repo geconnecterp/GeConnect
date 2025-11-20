@@ -141,6 +141,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             var listR03 = new List<ComboGenDto>();
             ViewBag.Rel03List = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
             ViewBag.Rel03 = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
+            ViewBag.Rel03B2 = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
 
             var listaEtiqueta = new List<ComboGenDto>()
             {
@@ -154,6 +155,50 @@ namespace gc.sitio.Areas.Productos.Controllers
 
             var listCargaPrevia = new List<ComboGenDto>();
             ViewBag.CargaPrevia = ComboCargasPrevias();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ConfirmarImpresionEtiqueta([FromBody] ConfirmarEtiquetaRequestDto request)
+        {
+            try
+            {
+                if (request is null)
+                {
+                    return BadRequest(new { ok = false, mensaje = "Los parámetros son obligatorios." });
+                }
+
+                // Asignar datos de contexto
+                request.Adm = AdministracionId;
+                request.Usu = UserName;
+
+                // Invocar servicio
+                var respuesta = await _etSv.ConfirmarImpresionEtiqueta(request, TokenCookie);
+
+                if (!respuesta.Ok)
+                {
+                    return Ok(new { 
+                        ok = false, 
+                        mensaje = respuesta.Mensaje ?? "No se pudo confirmar la impresión de etiquetas." 
+                    });
+                }
+
+                return Ok(new { 
+                    ok = true, 
+                    mensaje = "Impresión confirmada correctamente.",
+                    data = respuesta.Entidad
+                });
+            }
+            catch (NegocioException ex)
+            {
+                _logger?.LogError(ex, "Error de negocio al confirmar impresión de etiquetas.");
+                return Ok(new { ok = false, mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error inesperado al confirmar impresión de etiquetas.");
+                return StatusCode(StatusCodes.Status500InternalServerError, 
+                    new { ok = false, mensaje = "Ocurrió un error al procesar la solicitud." });
+            }
         }
     }
 }
