@@ -1,6 +1,7 @@
 ﻿using gc.api.core.Contratos.Servicios.Ofertas;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Etiqueta;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -62,6 +63,29 @@ namespace gc.api.Controllers.Ofertas
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error en {Action}: {Message}", nameof(ObtenerDetalleEtiquetas), ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ocurrió un error al procesar la solicitud.");
+            }
+        }
+
+        [HttpPost("Confirmar-Impresion-Etiqueta")]
+        [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public IActionResult ConfirmarImpresionEtiqueta([FromBody] ConfirmarEtiquetaRequestDto request)
+        {
+            try
+            {
+                if (request is null)
+                {
+                    return BadRequest("El cuerpo de la solicitud es obligatorio.");
+                }
+
+                var resultado = _etiqSv.ConfirmarImpresionEtiqueta(request.Json, request.Adm, request.Usu);
+                return Ok(new ApiResponse<RespuestaDto>(resultado));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en {Action}: {Message}", nameof(ConfirmarImpresionEtiqueta), ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, "Ocurrió un error al procesar la solicitud.");
             }
         }

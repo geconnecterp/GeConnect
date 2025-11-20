@@ -3,6 +3,7 @@ using gc.api.core.Contratos.Servicios.Ofertas;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Etiqueta;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
@@ -19,6 +20,24 @@ namespace gc.api.core.Servicios.Ofertas
         {
             _logger = logger;
         }
+
+        public RespuestaDto ConfirmarImpresionEtiqueta(string json, string adm, string usu)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_IE_CONFIRMA;
+            var ps = new List<SqlParameter> { 
+                new SqlParameter("@json_p", json),
+                new SqlParameter("adm_id",adm),
+                new SqlParameter("usu_id",usu)
+            };
+
+            var result = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+            if(result==null || result.Count == 0)
+            {
+                return new() { resultado = -1, resultado_msj = "No se logró obtener confirmación de la operación." };
+            }
+            return result[0];
+        }
+
         public List<CargaPreviaDto> ObtenerCargaPreviaUsuario(string adm_id)
         {
             var sp = ConstantesGC.StoredProcedures.SP_CARGA_PREVIA;
