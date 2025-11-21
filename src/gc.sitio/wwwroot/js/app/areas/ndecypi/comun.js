@@ -1,4 +1,9 @@
-﻿$(function () {
+﻿class Origen {
+	static PedidoInterno = 'PI';
+	static NecesidadesDeCompra = 'NC';
+}
+
+$(function () {
 	$("#btnCollapseSection").on("click", btnCollapseSectionClicked);
 	$("#btnCancel").on("click", function () {
 		LimpiarDatosDelFiltroInicial();
@@ -17,10 +22,100 @@
 		BuscarProductos(pagina);
 	});
 	$(document).on("change", "#listaSucursales", ControlaSucursalSeleccionada);
+	$("#btnOCAuto").on("click", function () {
+		AbrirlModalAuto(Origen.NecesidadesDeCompra);
+	});
+	$(document).on("change", "#listaSucursalesModal", ControlalistaSucursalesModalSelected);
+	$(document).on("change", "#listaDepositosModal", ControlalistaDepositosModalSelected);
+
 	InicializaPantallaNC();
 	funcCallBack = BuscarProductos;
 	return true;
 });
+
+function AbrirlModalAuto(abrirComo) {
+	var data = { abrirComo };
+	PostGenHtml(data, abrirModalAutoUrl, function (obj) {
+		$("#divFiltroCompraAuto").empty();
+		$("#divFiltroCompraAuto").html(obj);
+		const $modal = $("#modalFiltroCompraAuto");
+
+		$modal.modal({
+			backdrop: 'static',
+		});
+
+		inicializarCamposEnModal();
+
+		CerrarWaiting();
+		$modal.modal('show');
+
+		setTimeout(() => {
+			const $rel02 = $("#Rel02");
+			if ($rel02.length > 0) {
+				$rel02.trigger("focus");
+				console.log("Foco aplicado a #Rel02");
+			} else {
+				console.warn("No se encontró el input #Rel02");
+			}
+		}, 500);
+
+		return true
+	});
+}
+
+function inicializarCamposEnModal() {
+	$("#lbSucursales").text("Sucursales");
+	$("#chkSucursales").prop('checked', true);
+	$("#chkSucursales").trigger("change");
+	$("#chkSucursales").prop("disabled", true);
+	$("#listaSucursalesModal").prop("disabled", false);
+	$("#SucursalesListModal").prop("disabled", false);
+
+	$("#lbDepositos").text("Sucursales");
+	$("#chkDepositos").prop('checked', true);
+	$("#chkDepositos").trigger("change");
+	$("#chkDepositos").prop("disabled", true);
+	$("#listaDepositosModal").prop("disabled", false);
+	$("#DepositosListModal").prop("disabled", false);
+
+	getMaskForIntegerMax1000("#DiasAprov");
+	$("#SucursalesListModal").on("dblclick", 'option', function () { $(this).remove(); })
+	$("#DepositosListModal").on("dblclick", 'option', function () { $(this).remove(); })
+}
+
+function ControlalistaSucursalesModalSelected() {
+	var item = $("#listaSucursalesModal").val();
+	var desc = $("#listaSucursalesModal option:selected").text();
+	if ($("#SucursalesListModal").has('option:contains("' + item + '")').length === 0 && $("#SucursalesListModal").has('option:contains("' + desc + '")').length === 0) {
+		var opc = "<option value=" + item + ">" + desc + "</option>"
+		$("#SucursalesListModal").append(opc);
+	}
+}
+
+function ControlalistaDepositosModalSelected() {
+	var item = $("#listaDepositosModal").val();
+	var desc = $("#listaDepositosModal option:selected").text();
+	if ($("#DepositosListModal").has('option:contains("' + item + '")').length === 0 && $("#DepositosListModal").has('option:contains("' + desc + '")').length === 0) {
+		var opc = "<option value=" + item + ">" + desc + "</option>"
+		$("#DepositosListModal").append(opc);
+	}
+}
+
+function getMaskForIntegerMax1000(selector) {
+	$(selector).inputmask({
+		alias: 'numeric',
+		groupSeparator: '.',       // separador de miles
+		digits: 0,                 // sin decimales
+		digitsOptional: false,
+		allowMinus: false,
+		prefix: '',
+		suffix: '',
+		rightAlign: true,
+		unmaskAsNumber: true,
+		min: 0,
+		max: 1000
+	});
+}
 
 function ControlaSucursalSeleccionada() {
 	BuscarInfoAdicional();

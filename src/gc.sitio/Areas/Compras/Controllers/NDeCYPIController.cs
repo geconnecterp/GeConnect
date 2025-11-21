@@ -5,9 +5,12 @@ using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
+using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.Helpers;
+using gc.sitio.Areas.Compras.Models;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
+using iTextSharp.text.pdf.codec.wmf;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
@@ -18,19 +21,24 @@ namespace gc.sitio.Areas.Compras.Controllers
 	[Area("Compras")]
 	public class NDeCYPIController : ControladorBase
 	{
+		private const string PedidoInterno = "PI";
+		private const string NecesidadesCompra = "NC";
 		private readonly AppSettings _appSettings;
 		private readonly ICuentaServicio _cuentaServicio;
 		private readonly IRubroServicio _rubroServicio;
 		private readonly IProductoServicio _productoServicio;
 		private readonly IAdministracionServicio _administracionServicio;
+		private readonly IOfertaServicio _ofertaServicio;
 		public NDeCYPIController(ICuentaServicio cuentaServicio, IRubroServicio rubroServicio, IProductoServicio productoServicio,
-								 IAdministracionServicio administracionServicio, ILogger<CompraController> logger, IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context)
+								 IAdministracionServicio administracionServicio, ILogger<CompraController> logger, IOptions<AppSettings> options, IHttpContextAccessor context, 
+								 IOfertaServicio ofertaServicio) : base(options, context)
 		{
 			_appSettings = options.Value;
 			_cuentaServicio = cuentaServicio;
 			_rubroServicio = rubroServicio;
 			_productoServicio = productoServicio;
 			_administracionServicio = administracionServicio;
+			_ofertaServicio = ofertaServicio;
 		}
 
 		public IActionResult Index()
@@ -442,6 +450,79 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var rubros = rub.Select(x => new ComboGenDto { Id = x.pg_id, Descripcion = x.pg_lista });
 			return Json(rubros);
 		}
+
+		#region Modal Pedido Auto
+		[HttpPost]
+		public IActionResult AbrirModalAuto(string abrirComo)
+		{
+			var model = new FiltroCompraAutoModel();
+			try
+			{
+				if (abrirComo == null)
+				{
+					RespuestaGenerica<EntidadBase> response = new()
+					{
+						Ok = false,
+						EsError = true,
+						EsWarn = false,
+						Mensaje = "No se han especificado datos obligatiorios."
+					};
+					return PartialView("_gridMensaje", response);
+				}
+				if (abrirComo == NecesidadesCompra)
+				{
+					model.Titulo = "Determinación Automática de Compra (NC)";
+					model.MostrarExcluirOCPendientes = true;
+				}
+				else
+				{
+					model.Titulo = "Determinación Automática de Compra (PI)";
+					model.MostrarExcluirOCPendientes = false;
+				}
+				model.DiasAprov = 30;
+				model.VentaDiariaDesde = DateTime.Now.AddDays(-30);
+				model.VentaDiariaHasta = DateTime.Now;
+				model.LimitarPedidoACompletar = false;
+				model.LimitarPedidoParaCumplir = false;
+				model.TomarUltimoPedido = false;
+
+				var canales = _ofertaServicio.BuscarCanales(TokenCookie).Result;
+				if (canales.ListaEntidad != null)
+				{
+					model.ListaDepositos = ObtenerLista(canales.ListaEntidad);
+					model.ListaSucursales = ObtenerLista(canales.ListaEntidad);
+				}
+				else
+				{
+					model.ListaDepositos = HelperMvc<ComboGenDto>.ListaGenerica([]);
+					model.ListaSucursales = HelperMvc<ComboGenDto>.ListaGenerica([]);
+				}
+				
+				var SucursalesList = new List<ComboGenDto>();
+				ViewBag.SucursalesListModal = HelperMvc<ComboGenDto>.ListaGenerica(SucursalesList);
+				var DepositosList = new List<ComboGenDto>();
+				ViewBag.DepositosListModal = HelperMvc<ComboGenDto>.ListaGenerica(DepositosList);
+				return PartialView("_modalFiltrosCompraAuto", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		private SelectList ObtenerLista(List<CanalDto> adms)
+		{
+			var lista = adms.Select(x => new ComboGenDto { Id = x.adm_id, Descripcion = x.adm_nombre});
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		#endregion
 
 		#region Métodos privados
 		protected void CargarProveedoresFamiliaLista(string ctaId, ICuentaServicio _cuentaServicio, string? fam = null)
