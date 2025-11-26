@@ -370,7 +370,22 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
-        [HttpGet]
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoNCPI_AutoDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult NecesidadesStockAuto(NCPIConfirmarCambiosPedidoAutoRequest request)
+		{
+			ApiResponse<List<ProductoNCPI_AutoDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _productosSv.NecesidadesStockAuto(request);
+
+			response = new ApiResponse<List<ProductoNCPI_AutoDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<TipoAjusteDeStockDto>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]

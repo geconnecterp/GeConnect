@@ -33,6 +33,7 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<List<NDeCYPI.InfoProdIExSemanaDto>> InfoProdIExSemana(string admId, string pId, int semanas, string token);
 		Task<List<ProductoNCPISustitutoDto>> InfoProdSustituto(string pId, string tipo, string admId, bool soloProv, string token);
 		Task<List<NDeCYPI.InfoProductoDto>> InfoProd(string pId, string token);
+		List<ProductoNCPI_AutoDto> NecesidadesStockAuto(NCPIConfirmarCambiosPedidoAutoRequest req, string token);
 		Task<List<TipoAjusteDeStockDto>> ObtenerTipoDeAjusteDeStock(string token);
 		Task<List<AjustePrevioCargadoDto>> ObtenerAJPreviosCargados(string admId, string token);
 		Task<List<AjusteRevertidoDto>> ObtenerAJREVERTIDO(string ajId, string token);

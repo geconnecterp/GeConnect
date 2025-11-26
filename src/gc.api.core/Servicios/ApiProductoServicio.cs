@@ -290,7 +290,31 @@ namespace gc.api.core.Servicios
             return producto;
         }
 
-        public List<TipoAjusteDeStockDto> ObtenerTipoDeAjusteDeStock()
+		public List<ProductoNCPI_AutoDto> NecesidadesStockAuto(NCPIConfirmarCambiosPedidoAutoRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_NECESIDADES_STK;
+
+			var ps = new List<SqlParameter>()
+			{
+					new SqlParameter("@tipo",request.tipo),
+					new SqlParameter("@json_p",request.json_p),
+					new SqlParameter("@adm_list",string.Join(",", request.adm_list) + ","),
+					new SqlParameter("@dias_prevision",request.dias_prevision),
+					new SqlParameter("@vta_ana_desde",request.vta_ana_desde),
+					new SqlParameter("@vta_ana_hasta",request.vta_ana_hasta),
+					new SqlParameter("@limite_max",request.limite_max),
+					new SqlParameter("@limite_min",request.limite_min),
+					new SqlParameter("@ultimo_ped",request.ultimo_ped),
+					new SqlParameter("@depo_list",string.Join(",", request.depo_list) + ","),
+					new SqlParameter("@excluir_pend",request.excluir_pend),
+			};
+
+			List<ProductoNCPI_AutoDto> producto = _repository.EjecutarLstSpExt<ProductoNCPI_AutoDto>(sp, ps, true);
+
+			return producto;
+		}
+
+		public List<TipoAjusteDeStockDto> ObtenerTipoDeAjusteDeStock()
         {
             var sp = Constantes.ConstantesGC.StoredProcedures.SP_AJ_TIPOS;
 

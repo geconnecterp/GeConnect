@@ -49,6 +49,7 @@
 			public const string SP_INFOPROD_IE_SEMANAS = "dbo.SPGECO_P_Info_IE_x_Semanas";
 			public const string SP_INFOPROD_SUSTITUTO = "dbo.SPGECO_P_Info_Sustituto";
 			public const string SP_INFOPROD = "dbo.SPGECO_P_Info";
+			public const string SP_NECESIDADES_STK = "dbo.SPGECO_P_Necesidades_Stk";
 
 			public const string SP_PROD_DETALLE_PROD = "SPGECO_P_PR_Carga";
 			public const string SP_PROD_CARGA_ALL = "SPGECO_P_PR_Carga_All";
