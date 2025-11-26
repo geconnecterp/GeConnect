@@ -15,6 +15,7 @@ using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
 using gc.infraestructura.Core.EntidadesComunes;
 using Microsoft.Win32;
+using gc.infraestructura.Dtos.ABM;
 
 namespace gc.sitio.core.Servicios.Contratos
 {
@@ -108,5 +109,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<List<OrdenDeCompraRprAsociadasDto>> CargarRprAsociadaDeOC(string oc_compte, string token);
 		Task<RespuestaGenerica<RespuestaDto>> ModificarOrdenDeCompra(ModificarOCRequest request, string token);
 		Task<RespuestaGenerica<RespuestaDto>> OCValidar(OCValidarRequest request, string token);
-	}
+        Task<RespuestaGenerica<RespuestaDto>> ConfirmarCargaPrevia(AbmGenDto req, string tokenCookie);
+    }
 }

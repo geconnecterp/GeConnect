@@ -3,11 +3,13 @@ using gc.api.core.Contratos.Servicios.Ofertas;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Etiqueta;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using System.Data;
+using System.Runtime.Intrinsics.Arm;
 using X.PagedList;
 
 namespace gc.api.core.Servicios.Ofertas
@@ -21,17 +23,34 @@ namespace gc.api.core.Servicios.Ofertas
             _logger = logger;
         }
 
+        public RespuestaDto ConfirmarCargaPrevia(AbmGenDto req)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_IE_CARGA_CONTEOS;
+            var ps = new List<SqlParameter> {
+                new SqlParameter("@json", req.Json),
+                new SqlParameter("adm_id", req.Administracion),
+                new SqlParameter("usu_id", req.Usuario)
+            };
+
+            var result = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+            if (result == null || result.Count == 0)
+            {
+                return new() { resultado = -1, resultado_msj = "No se logró obtener confirmación de la operación." };
+            }
+            return result[0];
+        }
+
         public RespuestaDto ConfirmarImpresionEtiqueta(string json, string adm, string usu)
         {
             var sp = ConstantesGC.StoredProcedures.SP_IE_CONFIRMA;
-            var ps = new List<SqlParameter> { 
+            var ps = new List<SqlParameter> {
                 new SqlParameter("@json_p", json),
                 new SqlParameter("adm_id",adm),
                 new SqlParameter("usu_id",usu)
             };
 
             var result = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
-            if(result==null || result.Count == 0)
+            if (result == null || result.Count == 0)
             {
                 return new() { resultado = -1, resultado_msj = "No se logró obtener confirmación de la operación." };
             }
@@ -64,7 +83,7 @@ namespace gc.api.core.Servicios.Ofertas
             List<SqlParameter> ps = new List<SqlParameter>
             {
                 new SqlParameter("@json_p",json),
-                new SqlParameter("@etiqueta",etiq), 
+                new SqlParameter("@etiqueta",etiq),
                 new SqlParameter("@adm_id",adm),
                 new SqlParameter("@usu_id",usu)
             };
@@ -148,6 +167,6 @@ namespace gc.api.core.Servicios.Ofertas
             return datos;
         }
 
-        
+
     }
 }

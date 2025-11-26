@@ -1,16 +1,20 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
+using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
+using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor.Request;
 using gc.infraestructura.Dtos.Almacen.Info;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Response;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
-using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
-using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.General;
@@ -20,26 +24,18 @@ using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using OfficeOpenXml.FormulaParsing.LexicalAnalysis;
 using System.Net;
 using System.Reflection;
-using System.Runtime.Intrinsics.Arm;
-using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
-using System.Security.Cryptography;
-using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
-using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
-using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor.Request;
-using System.Diagnostics;
-using gc.infraestructura.Core.Exceptions;
-using System.Security.Claims;
-using System;
+using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
-	public class ProductoServicio : Servicio<ProductoDto>, IProductoServicio
+    public class ProductoServicio : Servicio<ProductoDto>, IProductoServicio
 	{
 		private const string RutaAPI = "/api/apiproducto";
-		private const string BUSCAR_PROD = "/ProductoBuscar";
+		private const string RutaAPIEtiqueta = "/api/apietiqueta";
+        private const string BUSCAR_PROD = "/ProductoBuscar";
 		private const string BUSCAR_PROD_POR_IDS = "/ProductoBuscarPorIds";
 		private const string BUSCAR_LISTA = "/ProductoListaBuscar";
 		private const string INFOPROD_STKD = "/InfoProductoStkD";
@@ -129,7 +125,10 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string OC_Cargar_Lista = "/CargarOrdenesDeCompraList";
 		private const string OC_Validar = "/OCValidar";
 
-		private readonly AppSettings _appSettings;
+		private const string CONFIRMAR_CARGA_PREVIA = "/Confirmar-Carga-Previa";
+
+
+        private readonly AppSettings _appSettings;
 
 		public ProductoServicio(IOptions<AppSettings> options, ILogger<ProductoServicio> logger) : base(options, logger)
 		{
@@ -2679,5 +2678,77 @@ namespace gc.sitio.core.Servicios.Implementacion
 				return new();
 			}
 		}
-	}
+
+        public async Task<RespuestaGenerica<RespuestaDto>> ConfirmarCargaPrevia(AbmGenDto req, string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(req, token, out StringContent contentData);
+                var link = $"{_appSettings.RutaBase}{RutaAPIEtiqueta}{CONFIRMAR_CARGA_PREVIA}";
+
+                using var response = await client.PostAsync(link, contentData);
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+                    if (apiResponse == null || apiResponse.Data == null)
+                    {
+                        return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+                    }
+                    var resp = apiResponse.Data;
+                    if (resp.resultado == 0)
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = true,
+                            Mensaje = "OK",
+                            Entidad = apiResponse.Data
+                            // Nota: si necesitas la metadata (apiResponse.Meta), amplía RespuestaGenerica para incluirla.
+                        };
+                    }
+                    else if (resp.resultado > 0)
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = false,
+                            EsWarn = true,
+                            EsError = false,
+                            Mensaje = resp.resultado_msj,
+                            Entidad = apiResponse.Data
+                            // Nota: si necesitas la metadata (apiResponse.Meta), amplía RespuestaGenerica para incluirla.
+                        };
+                    }
+                    else
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = false,
+                            EsWarn = false,
+                            EsError = true,
+                            Mensaje = resp.resultado_msj,
+                            Entidad = apiResponse.Data
+                            // Nota: si necesitas la metadata (apiResponse.Meta), amplía RespuestaGenerica para incluirla.
+                        };
+                    }
+                }
+                else
+                {
+                    var msg = await ReadApiErrorAsync(response);
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+                    return new() { Ok = false, Mensaje = msg };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+                return new() { Ok = false, Mensaje = "Error al confirmar las etiquetas" };
+            }
+        }
+    }
 }

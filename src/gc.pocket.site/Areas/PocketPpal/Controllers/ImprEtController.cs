@@ -1,9 +1,14 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Dtos.ABM;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.pocket.site.Controllers;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Implementacion;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace gc.pocket.site.Areas.PocketPpal.Controllers
 {
@@ -38,13 +43,83 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             return View();
         }
 
-        [HttpGet]
-        public IActionResult LabMenu()
+        [HttpPost]
+        public async Task<JsonResult> ConfirmarCargaPrevia(string json)
         {
-            string volver = Url.Action("cprev", "almacen", new { area = "gestion" }) ?? "#";
-            ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
+            string msg = string.Empty;
+            try
+            {
+                if (string.IsNullOrEmpty(json))
+                {
+                    throw new NegocioException("Para confirmar la Carga Previa, se debe enviar al menos un producto.");
+                }
 
-            return View();
+                var req = new AbmGenDto
+                {
+                    Json = json,
+                    Usuario = UserName,
+                    Administracion = AdministracionId
+                };
+
+                // Llamada al servicio
+                RespuestaGenerica<RespuestaDto> respuesta = await _productoServicio.ConfirmarCargaPrevia(req, TokenCookie);
+
+                // Procesamiento de respuesta
+                if (respuesta.Ok && !respuesta.EsError && !respuesta.EsWarn)
+                {
+                    msg = "La Carga previa se realizó exitosamente";
+                    // Log y limpieza de datos temporales
+                    _logger?.LogInformation(msg);
+
+                    // Respuesta de éxito
+                    return Json(new
+                    {
+                        ok = true,
+                        error = false,
+                        msg 
+                    });
+                }
+                else
+                {
+                    if (respuesta.EsError)
+                    {
+                        msg = "Error al procesar la Carga Previa";
+                    }
+                    else if (respuesta.EsWarn)
+                    {
+                        msg = "Advertencia al procesar la Carga Previa";
+                    }
+
+                    _logger?.LogWarning(msg);
+                    return Json(new
+                    {
+                        ok = false,
+                        error = respuesta.EsError,
+                        warn = respuesta.EsWarn,
+                        msg = respuesta.Mensaje ?? msg
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejo de excepciones no esperadas
+                _logger?.LogError(ex, "Error inesperado al confirmar combo/promoción");
+                return Json(new
+                {
+                    ok = false,
+                    error = true,
+                    msg = "Error interno al procesar la solicitud"
+                });
+            }
         }
+
+        //[HttpGet]
+        //public IActionResult LabMenu()
+        //{
+        //    string volver = Url.Action("cprev", "almacen", new { area = "gestion" }) ?? "#";
+        //    ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
+
+        //    return View();
+        //}
     }
 }

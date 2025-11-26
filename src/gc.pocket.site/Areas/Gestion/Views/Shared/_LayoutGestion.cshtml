@@ -1,6 +1,8 @@
 ﻿@{
     var appItem = ViewBag.AppItem as AppItem;
     var nombre = User.Claims.First(c => c.Type.Contains("nya")).Value;
+    var userId = User.Claims.First(c => c.Type.Contains("name")).Value;
+    var adm = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
     (string, (string, (string,bool))) model;
     if (appItem == null)
     {
@@ -65,6 +67,12 @@
         var MensajeWarnTempData = '@TempData["warn"]';
         var MensajeSuccessTempData = '@TempData["succ"]';
         var MensajeBlock = "<h3><i class='bx bx-loader-circle bx-spin'></i> Por favor, espere...</h3>";
+    </script>
+    <script>
+        $(function(){
+              usuarioAuth = "@userId";
+              administracion = "@adm";
+        });
     </script>
 </body>
 </html>

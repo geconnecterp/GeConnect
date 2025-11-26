@@ -107,6 +107,7 @@
 			public const string SP_IE_LISTA = "SPGECO_IE_Lista";
 			public const string SP_IE_DATOS = "SPGECO_IE_Datos";
 			public const string SP_IE_CONFIRMA = "SPGECO_IE_Confirmar";
+			public const string SP_IE_CARGA_CONTEOS = "SPGECO_IE_Cargar_Conteos_Previa";
 
 
             #endregion

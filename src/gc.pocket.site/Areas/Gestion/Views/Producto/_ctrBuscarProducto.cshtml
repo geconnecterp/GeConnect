@@ -2,12 +2,46 @@
 @{
     List<ProductoListaDto> listaVacia = new();
 }
-<div class="card col-sm-12">
-    <div class="input-group input-group-sm">
-        <span class="input-group-text">ID:</span>
-        <input type="text" class="form-control" asp-for="Busqueda" placeholder="Ingresar ID de Producto, EAN o Id de Proveedor." style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
-        <button type="button" class="btn btn-sm" id="btnBusquedaBase"><i class="bx bx-search btn-xs text-success"></i> Buscar</button>
-        @Html.Hidden("estadoFuncion", false)
+
+<!-- ✅ OPTIMIZADO: Control de búsqueda con estilo golden -->
+<div class="card card-golden mb-3">
+    <div class="card-header card-golden-header py-2">
+        <h6 class="mb-0">
+            <i class="bx bx-search-alt me-2"></i>
+            Búsqueda de Producto
+        </h6>
+    </div>
+    <div class="card-body p-2">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text bg-golden-label">
+                <i class="bx bx-barcode me-1"></i>ID:
+            </span>
+            <input type="text" 
+                   class="form-control input-busqueda-golden" 
+                   asp-for="Busqueda" 
+                   placeholder="ID de Producto, EAN o Id de Proveedor..." 
+                   autofocus 
+                   autocomplete="off" />
+            <button type="button" 
+                    class="btn btn-sm btn-golden-search" 
+                    id="btnBusquedaBase"
+                    title="Buscar producto">
+                <i class="bx bx-search me-1"></i>
+                <span>Buscar</span>
+                <span id="spnBuscarProducto" 
+                      class="spinner-border spinner-border-sm ms-2 d-none" 
+                      role="status" 
+                      aria-hidden="true"></span>
+            </button>
+            @Html.Hidden("estadoFuncion", false)
+        </div>
+        
+        <!-- ✅ NUEVO: Información de ayuda -->
+        <div class="form-text text-muted small mt-1">
+            <i class="bx bx-info-circle me-1"></i>
+            Puede buscar por: ID interno, código EAN o código de proveedor
+        </div>
     </div>
 </div>
+
 <partial name="~/areas/gestion/views/producto/busquedaadvance.cshtml" model="@listaVacia" />
