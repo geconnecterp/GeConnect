@@ -17,7 +17,7 @@
     $("#Rel01List").on("dblclick", 'option', function () { $(this).remove(); })
     $("#Rel02List").on("dblclick", 'option', function () { $(this).remove(); })
 
-    $("input").on("focus", function () { $(this).select(); })
+    $("input").on("focus", function () { $(this).trigger("select"); })
 
     $("#btnBuscarProd").on("click", function () { busquedaAvanzadaProductos(pagina); })
 

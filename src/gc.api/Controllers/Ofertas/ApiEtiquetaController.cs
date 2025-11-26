@@ -1,6 +1,7 @@
 ﻿using gc.api.core.Contratos.Servicios.Ofertas;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Etiqueta;
 using Microsoft.AspNetCore.Authorization;
@@ -86,6 +87,32 @@ namespace gc.api.Controllers.Ofertas
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error en {Action}: {Message}", nameof(ConfirmarImpresionEtiqueta), ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ocurrió un error al procesar la solicitud.");
+            }
+        }
+
+        [HttpPost("Confirmar-Carga-Previa")]
+        [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public IActionResult ConfirmarCargaPrevia([FromBody] AbmGenDto req)
+        {
+            try
+            {
+                if (req is null)
+                {
+                    return BadRequest("El cuerpo de la solicitud es obligatorio.");
+                }
+                if(string.IsNullOrEmpty(req.Json))
+                {
+                    return BadRequest("Al menos debe haber un producto para confirmar la Carga Previa.");
+                }
+                var resultado = _etiqSv.ConfirmarCargaPrevia(req);
+                return Ok(new ApiResponse<RespuestaDto>(resultado));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en {Action}: {Message}", nameof(ConfirmarCargaPrevia), ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, "Ocurrió un error al procesar la solicitud.");
             }
         }

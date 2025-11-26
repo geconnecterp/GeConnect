@@ -1,4 +1,9 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var userId = User.Claims.First(c => c.Type.Contains("name")).Value;
+    var adm = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -47,6 +52,12 @@
         var MensajeSuccessTempData = '@TempData["succ"]';
         var MensajeBlock = "<h3><i class='bx bx-loader-circle bx-spin'></i> Por favor, espere...</h3>";
 
+    </script>
+    <script>
+        $(function(){
+              usuarioAuth = "@userId";
+              administracion = "@adm";
+        });
     </script>
 </body>
 </html>

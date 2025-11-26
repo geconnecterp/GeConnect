@@ -1,0 +1,56 @@
+﻿<div class="grid-golden">
+    <div class="grid-golden-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0" id="tituloGridProductos">
+            <i class="bx bx-package me-2"></i>
+            Productos para Etiquetas
+            <span class="badge bg-primary ms-2" id="contadorProductosEtiqueta">0</span>
+        </h6>
+        <button type="button" 
+                class="btn btn-sm btn-outline-danger" 
+                id="btnLimpiarProductos"
+                title="Limpiar todos los productos">
+            <i class="bx bx-trash me-1"></i>Limpiar Todo
+        </button>
+    </div>
+    <div class="grid-golden-body">
+        <div class="table-responsive text-nowrap table-wrapper-500">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbProductoEtiqueta">
+                <thead>
+                    <tr class="header">
+                        <th scope="col" class="text-center">ID</th>
+                        <th scope="col">Descripción</th>
+                        <th scope="col" class="text-center" style="width: 50px;">Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="fila-vacia">
+                        <td colspan="3" class="text-center text-muted py-3">
+                            <i class="bx bx-info-circle me-1"></i>
+                            No hay productos cargados.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@* ✅ ESTILOS CSS OPCIONALES *@
+<style>
+    .fila-recien-agregada {
+        animation: resaltar 1.5s ease-in-out;
+    }
+
+    @@keyframes resaltar {
+        0%, 100% {
+            background-color: transparent;
+        }
+        50% {
+            background-color: rgba(40, 167, 69, 0.2);
+        }
+    }
+
+    .fila-producto-etiqueta:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+</style>
