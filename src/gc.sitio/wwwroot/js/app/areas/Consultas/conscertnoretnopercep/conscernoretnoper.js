@@ -5,6 +5,7 @@
 	});
 
 	$(document).on("click", "#btnImprimir", ControlaImprimirSelected);
+	$(document).on("click", "#btnCancel", ControlaCancelar);
 
 	InicializarCamposEnFiltros();
 
@@ -28,6 +29,22 @@
 	funcCallBack = BuscarCertificados;
 });
 
+function ControlaCancelar() {
+	$("#divFiltros").removeClass("collapse").addClass("show");
+	$("#divDetalle").collapse("hide");
+	$("#divGrillaCertificados").empty();
+	ResetDeFiltros();
+}
+
+function ResetDeFiltros() {
+	$("#listaTipoImpuestos").val("");
+	$("#chkCertNoRet").prop('checked', false);
+	$("#chkCertNoPercep").prop('checked', false);
+	$("#chkNoVencidos").prop('checked', false);
+	$("#chkVencidos").prop('checked', false);
+	$("#btnImprimir").hide();
+}
+
 function ControlaImprimirSelected() {
 	if ($("#tbGridCertificados > tbody > tr").length === 0) {
 		AbrirMensaje("ATENCIÓN", "No hay datos generar el reporte.", function () {
@@ -40,6 +57,11 @@ function ControlaImprimirSelected() {
 	}
 }
 
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
 function ImprimirListaCertificados_Generada() {
 	ReseteoDeReportes();
 	setTimeout(() => {
@@ -49,7 +71,7 @@ function ImprimirListaCertificados_Generada() {
 		var no_vencido = $("#chkNoVencidos")[0].checked;
 		var vencido = $("#chkVencidos")[0].checked;
 		var data = { imp_id, ret, per, no_vencido, vencido };
-		cargarReporteEnArre(44, data, "CONSULTA VENCIMIENTOS POR TIPO DE CUENTA Y TIPO DE COMPROBANTE", "", "");
+		cargarReporteEnArre(48, data, "CONSULTA DE CERTIFICADO DE NO RETENCIÓN NO PERCEPCIÓN", "", "");
 		invocacionGestorDoc({});
 	}, 500);
 }

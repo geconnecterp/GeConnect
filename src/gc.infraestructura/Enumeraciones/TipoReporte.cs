@@ -59,5 +59,6 @@ namespace gc.infraestructura.Enumeraciones
         R045_PunteraDeGondola = 45,
         R046_Etiquetas01Precio = 46,
         R047_Etiquetas02Precio = 47,
-    }
+		R048_ConsultaCertNoRetNoPerc = 48, 
+	}
 }

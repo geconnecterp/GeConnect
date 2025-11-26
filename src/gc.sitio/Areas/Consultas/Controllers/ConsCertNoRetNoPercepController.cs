@@ -4,9 +4,12 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 using gc.infraestructura.Dtos.Consultas.ConsVencTipoCtaTipoCompte;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Consultas.Models;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -18,12 +21,27 @@ namespace gc.sitio.Areas.Consultas.Controllers
 		private readonly AppSettings _setting;
 		private readonly ITipoImpuestoServicio _tipoImpuestoServicio;
 		private readonly IConsultasServicio _consultaServicio;
+
+		//PARA MODULO DE IMPRESION
+		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
+		private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas
+		private string APP_MODULO = AppModulos.CC_NR_NP.ToString();
+		private readonly IDocManagerServicio _docMSv;
+
+		//************************
+
 		public ConsCertNoRetNoPercepController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<ConsCertNoRetNoPercepController> logger,
-											   ITipoImpuestoServicio tipoImpuestoServicio, IConsultasServicio consultaServicio) : base(options, contexto, logger)
+											   ITipoImpuestoServicio tipoImpuestoServicio, IConsultasServicio consultaServicio,
+											   IDocManagerServicio docManager, IOptions<DocsManager> docsManager) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_tipoImpuestoServicio = tipoImpuestoServicio;
 			_consultaServicio = consultaServicio;
+
+			//PARA MODULO DE IMPRESION
+			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
+			_modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO); //identifico los datos del modulo que necesito: CC_NR_NP
+			_docMSv = docManager; //instancio el servicio de impresión
 		}
 
 		public IActionResult Index()
@@ -37,6 +55,11 @@ namespace gc.sitio.Areas.Consultas.Controllers
 
 				var titulo = "CERTIFICADOS DE NO RETENCIÓN NO PERCEPCIÓN";
 				ViewData["Titulo"] = titulo;
+
+				#region Gestor Impresion - Inicializacion de variables
+				DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+				#endregion
 
 				CargarDatosIniciales(model);
 

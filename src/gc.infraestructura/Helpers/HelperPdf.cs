@@ -126,6 +126,7 @@
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Consultas;
+using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 using gc.infraestructura.Dtos.Consultas.ConsVencTipoCtaTipoCompte;
 using gc.infraestructura.Dtos.Consultas.ReporteFinanciero;
 using gc.infraestructura.Dtos.DocManager;
@@ -147,45 +148,45 @@ namespace gc.infraestructura.Helpers
 {
 	public static class HelperPdf
 	{
-        /// <summary>
-        /// Genera un documento A4
-        /// </summary>
-        /// <param name="writer"></param>
-        /// <param name="nombreArchivo"></param>
-        /// <returns></returns>         
-        public static Document GenerarInstanciaAndInit(ref PdfWriter writer, out MemoryStream mStream, string nombreArchivo, HojaSize pagina = HojaSize.A4, bool esVertical = true,float mgLeft=20f,float mgRight=20f, float mgTop = 15f,float mgBot=50f)
-        {
-            Document doc = new Document(ObtenerHoja(pagina, esVertical), mgLeft, mgRight, mgTop, mgBot);
-            mStream = new MemoryStream();
-            writer = PdfWriter.GetInstance(doc, mStream);
-            return doc;
-        }
-
-        public static Document GenerarInstanciaAndInit(ref PdfWriter writer, out MemoryStream mStream, string nombreArchivo, HojaSize pagina = HojaSize.A4, bool esVertical = true)
+		/// <summary>
+		/// Genera un documento A4
+		/// </summary>
+		/// <param name="writer"></param>
+		/// <param name="nombreArchivo"></param>
+		/// <returns></returns>         
+		public static Document GenerarInstanciaAndInit(ref PdfWriter writer, out MemoryStream mStream, string nombreArchivo, HojaSize pagina = HojaSize.A4, bool esVertical = true, float mgLeft = 20f, float mgRight = 20f, float mgTop = 15f, float mgBot = 50f)
 		{
-			return GenerarInstanciaAndInit(ref writer,out mStream, nombreArchivo, pagina, esVertical, 20f, 20f, 15f, 50f);
+			Document doc = new Document(ObtenerHoja(pagina, esVertical), mgLeft, mgRight, mgTop, mgBot);
+			mStream = new MemoryStream();
+			writer = PdfWriter.GetInstance(doc, mStream);
+			return doc;
+		}
+
+		public static Document GenerarInstanciaAndInit(ref PdfWriter writer, out MemoryStream mStream, string nombreArchivo, HojaSize pagina = HojaSize.A4, bool esVertical = true)
+		{
+			return GenerarInstanciaAndInit(ref writer, out mStream, nombreArchivo, pagina, esVertical, 20f, 20f, 15f, 50f);
 			//Document doc = new Document(ObtenerHoja(pagina, esVertical), 20, 20, 15, 50);
 			//mStream = new MemoryStream();
 			//writer = PdfWriter.GetInstance(doc, mStream);
 			//return doc;
 		}
 
-        public static Document GenerarInstanciaAndInit(ref PdfWriter writer, out MemoryStream mStream,
-            HojaSize pagina = HojaSize.A4, bool esVertical = true, 
+		public static Document GenerarInstanciaAndInit(ref PdfWriter writer, out MemoryStream mStream,
+			HojaSize pagina = HojaSize.A4, bool esVertical = true,
 			float mgLeft = 20f, float mgRight = 20f, float mgTop = 15f, float mgBot = 50f)
-        {
-            Document doc = new Document(ObtenerHoja(pagina, esVertical), mgLeft, mgRight, mgTop, mgBot);
-            mStream = new MemoryStream();
-            writer = PdfWriter.GetInstance(doc, mStream);
-            return doc;
-        }
+		{
+			Document doc = new Document(ObtenerHoja(pagina, esVertical), mgLeft, mgRight, mgTop, mgBot);
+			mStream = new MemoryStream();
+			writer = PdfWriter.GetInstance(doc, mStream);
+			return doc;
+		}
 
-        public static Document GenerarInstanciaAndInit(ref PdfWriter writer, out MemoryStream mStream, 
+		public static Document GenerarInstanciaAndInit(ref PdfWriter writer, out MemoryStream mStream,
 			HojaSize pagina = HojaSize.A4, bool esVertical = true)
 		{
 			return GenerarInstanciaAndInit(ref writer, out mStream, pagina, esVertical, 20, 20, 15, 50);
 
-        }
+		}
 
 		public static Document GenerarInstanciaAndInit(ref PdfWriter writer, HojaSize pagina = HojaSize.A4, bool esVertical = true)
 		{
@@ -312,46 +313,46 @@ namespace gc.infraestructura.Helpers
 			return font;
 		}
 
-        public static Font DefineFontWithStyleIncrustada(string nnFont, int size, int estilo, int r, int g, int b)
-        {
-            var color = new BaseColor(r, g, b);
-            var font = FontFactory.GetFont(
-                nnFont,
-                BaseFont.CP1252,
-                BaseFont.EMBEDDED, // fuerza que se incruste la font
-                size,
-                estilo,
-                color
-            );
-            return font;
-        }
+		public static Font DefineFontWithStyleIncrustada(string nnFont, int size, int estilo, int r, int g, int b)
+		{
+			var color = new BaseColor(r, g, b);
+			var font = FontFactory.GetFont(
+				nnFont,
+				BaseFont.CP1252,
+				BaseFont.EMBEDDED, // fuerza que se incruste la font
+				size,
+				estilo,
+				color
+			);
+			return font;
+		}
 
-        // Sobrecarga: carga la fuente desde archivo en la carpeta Fonts
-        public static Font DefineFontWithStyleFromFile(string fileName, int size, int estilo, int r, int g, int b)
-        {
-            // Ruta absoluta al archivo de la fuente
-            var fontPath = Path.Combine(Directory.GetCurrentDirectory(), "Fonts", fileName);
+		// Sobrecarga: carga la fuente desde archivo en la carpeta Fonts
+		public static Font DefineFontWithStyleFromFile(string fileName, int size, int estilo, int r, int g, int b)
+		{
+			// Ruta absoluta al archivo de la fuente
+			var fontPath = Path.Combine(Directory.GetCurrentDirectory(), "Fonts", fileName);
 
-            // Alias para la fuente (sin extensión)
-            var alias = Path.GetFileNameWithoutExtension(fontPath);
+			// Alias para la fuente (sin extensión)
+			var alias = Path.GetFileNameWithoutExtension(fontPath);
 
-            // Registramos la fuente con un alias legible
-            FontFactory.Register(fontPath, alias);
+			// Registramos la fuente con un alias legible
+			FontFactory.Register(fontPath, alias);
 
-            // Reutilizamos el método original
-            return DefineFontWithStyle(alias, size, estilo, r, g, b);
-        }
+			// Reutilizamos el método original
+			return DefineFontWithStyle(alias, size, estilo, r, g, b);
+		}
 
-        /// <summary>
-        /// Define una imagen como logo para ser ubicada en una posición absoluta (x,y) 
-        /// y con un tamaño definido por un porcentaje
-        /// </summary>
-        /// <param name="pathImagen">ruta para accedera a la imagen</param>
-        /// <param name="x">posición X</param>
-        /// <param name="y">posición Y</param>
-        /// <param name="sizePorcent">porcentaje del tamaño de la imagen a insertar en el documento</param>
-        /// <returns></returns>
-        public static Image CargaLogo(string pathImagen, float x, float y, float sizePorcent)
+		/// <summary>
+		/// Define una imagen como logo para ser ubicada en una posición absoluta (x,y) 
+		/// y con un tamaño definido por un porcentaje
+		/// </summary>
+		/// <param name="pathImagen">ruta para accedera a la imagen</param>
+		/// <param name="x">posición X</param>
+		/// <param name="y">posición Y</param>
+		/// <param name="sizePorcent">porcentaje del tamaño de la imagen a insertar en el documento</param>
+		/// <returns></returns>
+		public static Image CargaLogo(string pathImagen, float x, float y, float sizePorcent)
 		{
 			Image logo = Image.GetInstance(pathImagen);
 			logo.SetAbsolutePosition(x, y);
@@ -1011,50 +1012,50 @@ namespace gc.infraestructura.Helpers
 
 		public static void CargaDatosPresupuesto(Document pdf, PresupuestoDto presup, Font fuenteEtiqueta, Font fuenteValor)
 		{
-            PdfPTable tabla = GeneraTabla(2, [20f, 80f], 100, 10, 0);
-            //FILA 1
-            tabla.AddCell(CeldaSinBorde("Presupuesto N°: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			PdfPTable tabla = GeneraTabla(2, [20f, 80f], 100, 10, 0);
+			//FILA 1
+			tabla.AddCell(CeldaSinBorde("Presupuesto N°: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
 			tabla.AddCell(CeldaSinBorde(presup.pre_id, fuenteValor, Element.ALIGN_LEFT));
-            //fila 2 
-            tabla.AddCell(CeldaSinBorde("Cliente: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
-			var cli = !string.IsNullOrEmpty(presup.cta_id) ? 
-				$"{presup.cta_id}-{presup.cta_denominacion}":
+			//fila 2 
+			tabla.AddCell(CeldaSinBorde("Cliente: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			var cli = !string.IsNullOrEmpty(presup.cta_id) ?
+				$"{presup.cta_id}-{presup.cta_denominacion}" :
 				$"{presup.pre_nombre}";
-            tabla.AddCell(CeldaSinBorde(cli, fuenteValor, Element.ALIGN_LEFT));
-            pdf.Add(tabla);
+			tabla.AddCell(CeldaSinBorde(cli, fuenteValor, Element.ALIGN_LEFT));
+			pdf.Add(tabla);
 
 			//generamos una nueva tabla sin espacio con la tabla anterior
 			tabla = GeneraTabla(4, [20f, 30f, 20f, 30f], 100, 0, 0);
 
-            //fila3
-            tabla.AddCell(CeldaSinBorde("Domicilio: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
-            tabla.AddCell(CeldaSinBorde(presup.pre_domicilio, fuenteValor, Element.ALIGN_LEFT));
-            tabla.AddCell(CeldaSinBorde("Registrado: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
-            tabla.AddCell(CeldaSinBorde(presup.usu_apellidoynombre, fuenteValor, Element.ALIGN_LEFT));
+			//fila3
+			tabla.AddCell(CeldaSinBorde("Domicilio: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(presup.pre_domicilio, fuenteValor, Element.ALIGN_LEFT));
+			tabla.AddCell(CeldaSinBorde("Registrado: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(presup.usu_apellidoynombre, fuenteValor, Element.ALIGN_LEFT));
 
-            //fila4
-            tabla.AddCell(CeldaSinBorde("Vigencia Desde: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
-            tabla.AddCell(CeldaSinBorde(presup.pre_vigencia_desde.ToShortDateString(), fuenteValor, Element.ALIGN_LEFT));
-            tabla.AddCell(CeldaSinBorde("Vigencia Hasta: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
-            tabla.AddCell(CeldaSinBorde(presup.pre_vigencia_hasta.ToShortDateString(), fuenteValor, Element.ALIGN_LEFT));
+			//fila4
+			tabla.AddCell(CeldaSinBorde("Vigencia Desde: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(presup.pre_vigencia_desde.ToShortDateString(), fuenteValor, Element.ALIGN_LEFT));
+			tabla.AddCell(CeldaSinBorde("Vigencia Hasta: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(presup.pre_vigencia_hasta.ToShortDateString(), fuenteValor, Element.ALIGN_LEFT));
 
 			pdf.Add(tabla);
 
 			tabla = GeneraTabla(6, [20f, 10f, 15f, 20f, 15f, 20f], 100, 0, 10);
-            //fila5
-            tabla.AddCell(CeldaSinBorde("Sucursal: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
-            tabla.AddCell(CeldaSinBorde(presup.adm_nombre, fuenteValor, Element.ALIGN_LEFT));
-            tabla.AddCell(CeldaSinBorde("Forma de Pago: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
-            tabla.AddCell(CeldaSinBorde(presup.pre_obs_pago, fuenteValor, Element.ALIGN_LEFT));
-            tabla.AddCell(CeldaSinBorde("Entrega: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
-            tabla.AddCell(CeldaSinBorde(presup.pre_obs_entrega, fuenteValor, Element.ALIGN_LEFT));
+			//fila5
+			tabla.AddCell(CeldaSinBorde("Sucursal: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(presup.adm_nombre, fuenteValor, Element.ALIGN_LEFT));
+			tabla.AddCell(CeldaSinBorde("Forma de Pago: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(presup.pre_obs_pago, fuenteValor, Element.ALIGN_LEFT));
+			tabla.AddCell(CeldaSinBorde("Entrega: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(presup.pre_obs_entrega, fuenteValor, Element.ALIGN_LEFT));
 
 			pdf.Add(tabla);
-        }
+		}
 
 
 
-        public static void CargarTablaClienteProveedor(Document pdf, CuentaDto cuenta, Font fuenteEtiqueta, Font fuenteValor)
+		public static void CargarTablaClienteProveedor(Document pdf, CuentaDto cuenta, Font fuenteEtiqueta, Font fuenteValor)
 		{
 			PdfPTable tabla = GeneraTabla(4, [20f, 30f, 20f, 30f], 100, 10, 10);
 
@@ -1659,9 +1660,9 @@ namespace gc.infraestructura.Helpers
 
 			// FILA 4 
 			tablaDatos.AddCell(CeldaSinBorde("Flete:", fuenteEtiqueta, Element.ALIGN_RIGHT));
-			tablaDatos.AddCell(CeldaSinBorde("No Pago", fuenteValor, Element.ALIGN_LEFT)); 
+			tablaDatos.AddCell(CeldaSinBorde("No Pago", fuenteValor, Element.ALIGN_LEFT));
 			tablaDatos.AddCell(CeldaSinBorde("Dep. Entrega:", fuenteEtiqueta, Element.ALIGN_RIGHT));
-			tablaDatos.AddCell(CeldaSinBorde("Santa Lucia", fuenteValor, Element.ALIGN_LEFT)); 
+			tablaDatos.AddCell(CeldaSinBorde("Santa Lucia", fuenteValor, Element.ALIGN_LEFT));
 
 			PdfPCell celdaSubTabla = new PdfPCell(tablaDatos)
 			{
@@ -2240,7 +2241,7 @@ namespace gc.infraestructura.Helpers
 
 				// FILA 1 CABEZERA
 				HelperPdf.GeneraCabeceraLista(pdf, _titulosTabla, _anchosTitulosTabla, HelperPdf.FontNormalPredeterminado(true), 0, 0);
-				
+
 				// CUERPO
 				HelperPdf.GenerarListadoDesdeLista(pdf, grupo.Cheques, _campos, _anchosTitulosTabla, fuenteEtiqueta);
 				// Espaciador entre grupos
@@ -2328,7 +2329,7 @@ namespace gc.infraestructura.Helpers
 				var total_valores_alcobro = 0.00M;
 				var total_total_proy_ingresos = 0.00M;
 				// Filas por día
-				foreach (var item in regs.Where(x=>x.semana == semana.Key.semana).ToList())
+				foreach (var item in regs.Where(x => x.semana == semana.Key.semana).ToList())
 				{
 					table.AddCell(new PdfPCell(new Phrase($"{item.desde:dd/MM/yyyy}", fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
 					table.AddCell(new PdfPCell(new Phrase(item.cheque_emit_mas_trans_bco.ToString("N2"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
@@ -2777,9 +2778,9 @@ namespace gc.infraestructura.Helpers
 
 				solicitud.Titulo = $"Vale anticipo N° : {lista[i].an_compte}";
 				solicitud.SubTitulo = $"Fecha : {lista[i].an_fecha.ToString("dd/MM/yyyy")}";
-				
+
 				pdf.Add(GeneraCabeceraPDF2(solicitud, HelperPdf.FontChicoPredeterminado(), HelperPdf.FontTituloPredeterminado(), logo, _empresaGeco));
-				
+
 				AgregarAnticipo(pdf, lista[i], fuenteEtiqueta, fuenteValor);
 
 				pdf.Add(new Paragraph(" ", fuenteValor));
@@ -2793,9 +2794,9 @@ namespace gc.infraestructura.Helpers
 
 					solicitud.Titulo = $"Vale anticipo N° : {lista[i + 1].an_compte}";
 					solicitud.SubTitulo = $"Fecha : {lista[i + 1].an_fecha.ToString("dd/MM/yyyy")}";
-					
+
 					pdf.Add(GeneraCabeceraPDF2(solicitud, HelperPdf.FontChicoPredeterminado(), HelperPdf.FontTituloPredeterminado(), logo, _empresaGeco));
-					
+
 					AgregarAnticipo(pdf, lista[i + 1], fuenteEtiqueta, fuenteValor);
 				}
 			}
@@ -3338,6 +3339,63 @@ namespace gc.infraestructura.Helpers
 				tabla.AddCell(celdaTotal);
 				tabla.AddCell(new PdfPCell(new Phrase(FormatearDecimal(totalImporte), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = colorEncabezado });
 
+				pdf.Add(tabla);
+			}
+		}
+
+		public static void CargarCertificadosNoRetencionNoPercepcion(Document pdf, List<CertificadoListaDto> lista, Font fuenteEtiqueta, Font fuenteValor)
+		{
+			var agrupadoPorGrupo = lista.GroupBy(x => x.grupo);
+			BaseColor colorEncabezado = new(230, 230, 230); // Gris claro
+
+			foreach (var grupo in agrupadoPorGrupo)
+			{
+				var primer = grupo.First();
+
+				// Tabla de certificados
+				var tabla = new PdfPTable(8) { WidthPercentage = 100 };
+				tabla.SetWidths(new float[] { 10, 20, 5, 10, 25, 10, 10, 10 });
+
+				// Espacio visual entre encabezado y títulos
+				var celdaEspaciadora = new PdfPCell(new Phrase(" "))
+				{
+					Colspan = 8,
+					Border = Rectangle.NO_BORDER,
+					FixedHeight = 10f
+				};
+				tabla.AddCell(celdaEspaciadora);
+
+				// Encabezado del empleado
+				var celdaEncabezado = new PdfPCell(new Phrase($"{primer.grupo_des}", HelperPdf.FontSubtituloPredeterminado()))
+				{
+					Colspan = 8,
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					PaddingBottom = 10f,
+					BackgroundColor = colorEncabezado
+				};
+				tabla.AddCell(celdaEncabezado);
+
+				// Encabezados
+				AgregarCelda(tabla, "Cuenta", fuenteValor, Element.ALIGN_CENTER, true, colorEncabezado);
+				AgregarCelda(tabla, "Denominación", fuenteValor, Element.ALIGN_CENTER, true, colorEncabezado);
+				AgregarCelda(tabla, "T. Doc.", fuenteValor, Element.ALIGN_CENTER, true, colorEncabezado);
+				AgregarCelda(tabla, "Documento", fuenteValor, Element.ALIGN_CENTER, true, colorEncabezado);
+				AgregarCelda(tabla, "Domicilio", fuenteValor, Element.ALIGN_CENTER, true, colorEncabezado);
+				AgregarCelda(tabla, "Teléfono", fuenteValor, Element.ALIGN_CENTER, true, colorEncabezado);
+				AgregarCelda(tabla, "Celular", fuenteValor, Element.ALIGN_CENTER, true, colorEncabezado);
+				AgregarCelda(tabla, "Vigencia", fuenteValor, Element.ALIGN_CENTER, true, colorEncabezado);
+
+				foreach (var item in grupo)
+				{
+					AgregarCelda(tabla, item.cta_id, fuenteEtiqueta, Element.ALIGN_CENTER);
+					AgregarCelda(tabla, item.cta_denominacion, fuenteEtiqueta, Element.ALIGN_LEFT);
+					AgregarCelda(tabla, item.tdoc_desc, fuenteEtiqueta, Element.ALIGN_CENTER);
+					AgregarCelda(tabla, item.cta_documento, fuenteEtiqueta, Element.ALIGN_CENTER);
+					AgregarCelda(tabla, item.cta_domicilio, fuenteEtiqueta, Element.ALIGN_LEFT);
+					AgregarCelda(tabla, item.cta_te, fuenteEtiqueta, Element.ALIGN_LEFT);
+					AgregarCelda(tabla, item.cta_celu, fuenteEtiqueta, Element.ALIGN_LEFT);
+					AgregarCelda(tabla, item.cert_vto == null ? "" : item.cert_vto.Value.ToString("dd/MM/yyyy"), fuenteEtiqueta, Element.ALIGN_CENTER);
+				}
 				pdf.Add(tabla);
 			}
 		}
