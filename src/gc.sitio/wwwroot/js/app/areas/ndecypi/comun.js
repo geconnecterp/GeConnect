@@ -1,4 +1,9 @@
-﻿$(function () {
+﻿class Origen {
+	static PedidoInterno = 'PI';
+	static NecesidadesDeCompra = 'NC';
+}
+
+$(function () {
 	$("#btnCollapseSection").on("click", btnCollapseSectionClicked);
 	$("#btnCancel").on("click", function () {
 		LimpiarDatosDelFiltroInicial();
@@ -17,10 +22,233 @@
 		BuscarProductos(pagina);
 	});
 	$(document).on("change", "#listaSucursales", ControlaSucursalSeleccionada);
+	$("#btnOCAuto").on("click", function () {
+		AbrirlModalAuto(Origen.NecesidadesDeCompra);
+	});
+	$(document).on("change", "#listaSucursalesModal", ControlalistaSucursalesModalSelected);
+	$(document).on("change", "#listaDepositosModal", ControlalistaDepositosModalSelected);
+	$(document).on("click", "#btnCompraAutoBuscar", ControlaCompraAutoBuscar);
+
 	InicializaPantallaNC();
 	funcCallBack = BuscarProductos;
 	return true;
 });
+
+function ControlaCompraAutoBuscar() {
+	var resultado = ValidarDatosObligAnalizarCompraAuto(); //ValidarDatosObligatoriosAntesDeAnalizarCompraAuto
+	if (resultado.msj != "") {
+		AbrirMensaje("Atención", resultado.msj, function () {
+			$("#msjModal").modal("hide");
+			$(resultado.objeto).trigger("focus");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Actualizando datos...");
+		let tipo = "OC";
+		let dias_prevision = $("#DiasAprov").inputmask('unmaskedvalue');
+		let vta_ana_desde = $("#VentaDiariaDesde").val();
+		let vta_ana_hasta = $("#VentaDiariaHasta").val();
+		let limite_max = $("#LimitarPedidoACompletar")[0].checked;
+		let limite_min = $("#LimitarPedidoParaCumplir")[0].checked;
+		let ultimo_ped = $("#TomarUltimoPedido")[0].checked;
+		if ($("#ExcluirOCPendientes").length > 0) {
+			var excluir_pend = $("#ExcluirOCPendientes")[0].checked;
+			var es_pedido_interno = true;
+			console.log("El checkbox ExcluirOCPendientes está renderizado");
+		} else {
+			var es_pedido_interno = false;
+			var excluir_pend = null;
+			console.log("El checkbox ExcluirOCPendientes NO está en el DOM");
+		}
+		let adm_list = [];
+		$("#SucursalesListModal").children().each(function (i, item) { adm_list.push($(item).val()) });
+		let depo_list = [];
+		$("#DepositosListModal").children().each(function (i, item) { depo_list.push($(item).val()) });
+		var data = { tipo, adm_list, dias_prevision, vta_ana_desde, vta_ana_hasta, limite_max, limite_min, ultimo_ped, depo_list, excluir_pend, es_pedido_interno };
+		PostGen(data, confirmarCambiosPedidoAutoUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				HandlerActualizarTablaPostOCAuto();
+			}
+		});
+	}
+}
+
+function HandlerActualizarTablaPostOCAuto() {
+	AbrirWaiting("Actualizando vista de la tabla...")
+	var datos = {};
+	PostGenHtml(datos, recargarGrillaUrl, function (obj) {
+		$('#modalFiltroCompraAuto').modal('hide');
+		$("#divListaProducto").html(obj);
+		addInCellEditHandler();
+		addInCellLostFocusHandler();
+		addInCellKeyDownHandler();
+		AddEventListenerToGrid("tbListaProducto");
+		tableUpDownArrow();
+		const tabla = document.getElementById("tbListaProducto");
+		AplicarEstilosTabla(tabla);
+		CerrarWaiting();
+		return true
+	});
+}
+
+function AplicarEstilosTabla(tabla) {
+	if (!tabla || !tabla.rows) {
+		console.warn("Tabla no válida");
+		return;
+	}
+
+	// Recorremos todas las filas del tbody (empezamos en 1 para saltar el header)
+	for (let i = 1; i < tabla.rows.length; i++) {
+		const fila = tabla.rows[i];
+		const valorCantidad = parseFloat(fila.cells[colCantidad].innerText) || 0;
+
+		if (valorCantidad !== 0) {
+			fila.cells[colCantidad].style.backgroundColor = "lightgreen";
+			fila.cells[colCosto].style.backgroundColor = "lightgreen";
+			fila.cells[colCostoTotal].style.backgroundColor = "lightgreen";
+			fila.cells[colBulto].style.backgroundColor = "lightgreen";
+		} else {
+			fila.cells[colCantidad].style.backgroundColor = "";
+			fila.cells[colCosto].style.backgroundColor = "";
+			fila.cells[colCostoTotal].style.backgroundColor = "";
+			fila.cells[colBulto].style.backgroundColor = "";
+		}
+	}
+}
+
+
+function RefrescarColoresEnTabla() {
+	if (o.cantidad != 0) {
+		tabla.rows[rowIndex - 1].cells[colCantidad].style.backgroundColor = "lightgreen";
+		tabla.rows[rowIndex - 1].cells[colCosto].style.backgroundColor = "lightgreen";
+		tabla.rows[rowIndex - 1].cells[colCostoTotal].style.backgroundColor = "lightgreen";
+		tabla.rows[rowIndex - 1].cells[colBulto].style.backgroundColor = "lightgreen"; //col 10
+	}
+	else {
+		tabla.rows[rowIndex - 1].cells[colCantidad].style.backgroundColor = "";
+		tabla.rows[rowIndex - 1].cells[colCosto].style.backgroundColor = "";
+		tabla.rows[rowIndex - 1].cells[colCostoTotal].style.backgroundColor = "";
+		tabla.rows[rowIndex - 1].cells[colBulto].style.backgroundColor = "";
+	}
+}
+
+function ValidarDatosObligAnalizarCompraAuto() {
+	var ret = { msj: "", objeto: "" };
+	if ($("#DepositosListModal option").length <= 0) {
+		ret.msj = "Debe seleccionar al menos un Depósito.";
+		ret.objeto = "#listaDepositosModal";
+	}
+	else if ($("#SucursalesListModal option").length <= 0) {
+		ret.msj = "Debe seleccionar al menos una Sucursal.";
+		ret.objeto = "#listaSucursalesModal";
+	}
+	return ret;
+}
+
+function AbrirlModalAuto(abrirComo) {
+	var data = { abrirComo };
+	PostGenHtml(data, abrirModalAutoUrl, function (obj) {
+		$("#divFiltroCompraAuto").empty();
+		$("#divFiltroCompraAuto").html(obj);
+		const $modal = $("#modalFiltroCompraAuto");
+
+		$modal.modal({
+			backdrop: 'static',
+		});
+
+		inicializarCamposEnModal();
+
+		CerrarWaiting();
+		$modal.modal('show');
+
+		setTimeout(() => {
+			const $item = $("#listaSucursalesModal");
+			if ($item.length > 0) {
+				$item.trigger("focus");
+				console.log("Foco aplicado a #listaSucursalesModal");
+			} else {
+				console.warn("No se encontró el input #listaSucursalesModal");
+			}
+		}, 500);
+
+		return true
+	});
+}
+
+function inicializarCamposEnModal() {
+	$("#lbSucursales").text("Sucursales");
+	$("#chkSucursales").prop('checked', true);
+	$("#chkSucursales").trigger("change");
+	$("#chkSucursales").prop("disabled", true);
+	$("#listaSucursalesModal").prop("disabled", false);
+	$("#SucursalesListModal").prop("disabled", false);
+
+	$("#lbDepositos").text("Depósitos");
+	$("#chkDepositos").prop('checked', true);
+	$("#chkDepositos").trigger("change");
+	$("#chkDepositos").prop("disabled", true);
+	$("#listaDepositosModal").prop("disabled", false);
+	$("#DepositosListModal").prop("disabled", false);
+
+	getMaskForIntegerMax1000("#DiasAprov");
+	$("#SucursalesListModal").on("dblclick", 'option', function () { $(this).remove(); })
+	$("#DepositosListModal").on("dblclick", 'option', function () { $(this).remove(); })
+
+	const chkTomarUltimoPedido = document.getElementById("TomarUltimoPedido");
+	const chkLimitarCompletar = document.getElementById("LimitarPedidoACompletar");
+	const chkLimitarCumplir = document.getElementById("LimitarPedidoParaCumplir");
+
+	if (chkTomarUltimoPedido) {
+		chkTomarUltimoPedido.addEventListener("change", function () {
+			if (this.checked) {
+				chkLimitarCompletar.checked = false;
+				chkLimitarCumplir.checked = false;
+			}
+		});
+	}
+}
+
+function ControlalistaSucursalesModalSelected() {
+	var item = $("#listaSucursalesModal").val();
+	var desc = $("#listaSucursalesModal option:selected").text();
+	if ($("#SucursalesListModal").has('option:contains("' + item + '")').length === 0 && $("#SucursalesListModal").has('option:contains("' + desc + '")').length === 0) {
+		var opc = "<option value=" + item + ">" + desc + "</option>"
+		$("#SucursalesListModal").append(opc);
+	}
+}
+
+function ControlalistaDepositosModalSelected() {
+	var item = $("#listaDepositosModal").val();
+	var desc = $("#listaDepositosModal option:selected").text();
+	if ($("#DepositosListModal").has('option:contains("' + item + '")').length === 0 && $("#DepositosListModal").has('option:contains("' + desc + '")').length === 0) {
+		var opc = "<option value=" + item + ">" + desc + "</option>"
+		$("#DepositosListModal").append(opc);
+	}
+}
+
+function getMaskForIntegerMax1000(selector) {
+	$(selector).inputmask({
+		alias: 'numeric',
+		groupSeparator: '.',       // separador de miles
+		digits: 0,                 // sin decimales
+		digitsOptional: false,
+		allowMinus: false,
+		prefix: '',
+		suffix: '',
+		rightAlign: true,
+		unmaskAsNumber: true,
+		min: 0,
+		max: 1000
+	});
+}
 
 function ControlaSucursalSeleccionada() {
 	BuscarInfoAdicional();
@@ -591,14 +819,14 @@ function actualizarPedidoBulto() {
 			CerrarWaiting();
 			tabla = myTable = document.querySelector('#tbListaProducto tbody');
 			if (o.cantidad != 0) {
-				tabla.rows[rowIndex - 1].cells[colCantidad].innerText = o.cantidad;
+				tabla.rows[rowIndex - 1].cells[colCantidad].innerText = o.cantidad; //col 11
 				tabla.rows[rowIndex - 1].cells[colCantidad].style.backgroundColor = "lightgreen";
-				tabla.rows[rowIndex - 1].cells[colCosto].innerText = (Math.round(o.pCosto * 100) / 100).toFixed(3);
+				tabla.rows[rowIndex - 1].cells[colCosto].innerText = (Math.round(o.pCosto * 100) / 100).toFixed(3); //col 12
 				tabla.rows[rowIndex - 1].cells[colCosto].style.backgroundColor = "lightgreen";
-				tabla.rows[rowIndex - 1].cells[colCostoTotal].innerText = (Math.round(o.pCostoTotal * 100) / 100).toFixed(3);
+				tabla.rows[rowIndex - 1].cells[colCostoTotal].innerText = (Math.round(o.pCostoTotal * 100) / 100).toFixed(3); //col 13
 				tabla.rows[rowIndex - 1].cells[colCostoTotal].style.backgroundColor = "lightgreen";
-				tabla.rows[rowIndex - 1].cells[colPallet].innerText = (Math.round(o.pallet * 100) / 100).toFixed(2) ;
-				tabla.rows[rowIndex - 1].cells[colBulto].style.backgroundColor = "lightgreen";
+				tabla.rows[rowIndex - 1].cells[colPallet].innerText = (Math.round(o.pallet * 100) / 100).toFixed(2) ; //col 14
+				tabla.rows[rowIndex - 1].cells[colBulto].style.backgroundColor = "lightgreen"; //col 10
 			}
 			else {
 				tabla.rows[rowIndex - 1].cells[colCantidad].innerText = o.cantidad;

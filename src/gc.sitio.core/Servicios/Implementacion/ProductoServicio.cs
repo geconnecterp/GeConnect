@@ -48,6 +48,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string INFOPROD_IE_SEMANA = "/InfoProdIExSemana";
 		private const string INFOPROD_SUSTITUTO = "/InfoProdSustituto";
 		private const string INFOPROD = "/InfoProd";
+		private const string NEC_STOCK_AUTO = "/NecesidadesStockAuto";
 		private const string TIPO_DE_AJUSTE = "/ObtenerTipoDeAjusteDeStock";
 		private const string AJUSTE_PREVIO_CARGADO = "/ObtenerAJPreviosCargados";
 		private const string AJUSTE_REVERTIDO = "/ObtenerAJREVERTIDO";
@@ -528,6 +529,38 @@ namespace gc.sitio.core.Servicios.Implementacion
 			else
 			{
 				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public List<ProductoNCPI_AutoDto> NecesidadesStockAuto(NCPIConfirmarCambiosPedidoAutoRequest req, string token)
+		{
+			ApiResponse<List<ProductoNCPI_AutoDto>> apiResponse;
+
+			HelperAPI helper = new();
+			NCPIConfirmarCambiosPedidoAutoRequest request = req;
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{NEC_STOCK_AUTO}";
+
+			response =  client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoNCPI_AutoDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
 				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
 				return new();
 			}

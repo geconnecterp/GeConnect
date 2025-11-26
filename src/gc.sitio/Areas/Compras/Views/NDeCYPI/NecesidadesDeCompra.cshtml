@@ -199,6 +199,15 @@
 	</div>
 </div>
 
+<div class="modal fade modal-golden in" id="modalFiltroCompraAuto" tabindex="-1" style="display: none;" aria-hidden="true" data-backdrop="static">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div id="divFiltroCompraAuto">
+			</div>
+		</div>
+	</div>
+</div>
+
 @section scripts {
 	<script type="text/javascript">
 		var tipoDeOperacion = "OC";
@@ -229,6 +238,9 @@
 		var BuscarInfoProdStkSucursalURL = "@Url.Action("BuscarInfoProdStkSucursal", "ndecypi", new { area = "Compras" })";
 		var BuscarInfoProdSustitutoURL = "@Url.Action("BuscarInfoProdSustituto", "ndecypi", new { area = "Compras" })";
 		var BuscarInfoProdURL = "@Url.Action("BuscarInfoProd", "ndecypi", new { area = "Compras" })";
+		var abrirModalAutoUrl = "@Url.Action("AbrirModalAuto", "ndecypi", new { area = "Compras" })";
+		var confirmarCambiosPedidoAutoUrl = "@Url.Action("ConfirmarCambiosPedidoAuto", "ndecypi", new { area = "Compras" })";
+		var recargarGrillaUrl = "@Url.Action("RecargarGrilla", "ndecypi", new { area = "Compras" })";
 	</script>
 	<script src="~/js/plugins/jquery.simplePagination.js"></script>
 	<script src="~/js/app/siteGen.js"></script>@**@

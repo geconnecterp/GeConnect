@@ -3252,5 +3252,28 @@ namespace gc.sitio.Controllers
 			return listaMeses;
 		}
 
+        /// <summary>
+        /// Imprime las propiedades de la clase que recibe como parametro
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+		public static void PrintProperties<T>(T obj)
+		{
+			if (obj == null)
+			{
+				Console.WriteLine("El objeto es null");
+				return;
+			}
+
+			var type = typeof(T);
+			var properties = type.GetProperties();
+
+			foreach (var prop in properties)
+			{
+				var value = prop.GetValue(obj, null);
+				Console.WriteLine($"{prop.Name}: {value}");
+			}
+		}
+
 	}
 }

@@ -1,36 +1,49 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Request;
+using gc.infraestructura.Dtos.Almacen.Response;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
+using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.Helpers;
+using gc.sitio.Areas.Compras.Models;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
+using iTextSharp.text.pdf.codec.wmf;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
 	[Area("Compras")]
-	public class NDeCYPIController : ControladorBase
+	public class NDeCYPIController : NDeCYPIControladorBase
 	{
+		private const string PedidoInterno = "PI";
+		private const string NecesidadesCompra = "NC";
 		private readonly AppSettings _appSettings;
 		private readonly ICuentaServicio _cuentaServicio;
 		private readonly IRubroServicio _rubroServicio;
 		private readonly IProductoServicio _productoServicio;
 		private readonly IAdministracionServicio _administracionServicio;
+		private readonly IOfertaServicio _ofertaServicio;
+		private readonly IDepositoServicio _depositoServicio;
 		public NDeCYPIController(ICuentaServicio cuentaServicio, IRubroServicio rubroServicio, IProductoServicio productoServicio,
-								 IAdministracionServicio administracionServicio, ILogger<CompraController> logger, IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context)
+								 IAdministracionServicio administracionServicio, ILogger<CompraController> logger, IOptions<AppSettings> options, IHttpContextAccessor context,
+								 IOfertaServicio ofertaServicio, IHttpContextAccessor accessor, IDepositoServicio depositoServicio) : base(options, accessor, logger)
 		{
 			_appSettings = options.Value;
 			_cuentaServicio = cuentaServicio;
 			_rubroServicio = rubroServicio;
 			_productoServicio = productoServicio;
 			_administracionServicio = administracionServicio;
+			_ofertaServicio = ofertaServicio;
+			_depositoServicio = depositoServicio;
 		}
 
 		public IActionResult Index()
@@ -174,7 +187,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				//grillaDatos = GenerarGrillaSmart(ListaDeUsuarios, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 				grillaDatos = GenerarGrillaSmart(productos.Item1, sort, _appSettings.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, sortDir);
-				//model = ObtenerGridCoreSmart<ProductoNCPIDto>(productos);
+				ListaProductoNCPI = productos.Item1;
 				return PartialView("_grillaProductos", grillaDatos);
 			}
 			catch (Exception ex)
@@ -208,7 +221,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				//grillaDatos = GenerarGrillaSmart(ListaDeUsuarios, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 				var pag = request.Pagina == null ? 1 : request.Pagina.Value;
 				grillaDatos = GenerarGrillaSmart(productos.Item1, request.Sort ?? "p_desc", _appSettings.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, request.SortDir ?? "ASC");
-				//model = ObtenerGridCoreSmart<ProductoNCPIDto>(productos);
+				ListaProductoNCPI = productos.Item1;
 				return PartialView("_grillaProductos", grillaDatos);
 			}
 			catch (Exception ex)
@@ -224,14 +237,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		private static void ObtenerColor(ref List<ProductoNCPIDto> listaProd)
-		{
-			foreach (var item in listaProd)
-			{
-				if (item.p_activo == "D") //Discontinuo
-					item.Row_color = "#fc4641";
-			}
-		}
+		#region Buscar InfoProd
 
 		public async Task<IActionResult> BuscarInfoProdIExMeses(string pId, string admId, int meses)
 		{
@@ -369,12 +375,14 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public async Task<JsonResult> CargaPedidoOCPI(string tipo, string pId, string tipoCarga, int bultos)
+		#endregion
+
+		public JsonResult CargaPedidoOCPI(string tipo, string pId, string tipoCarga, int bultos)
 		{
 			try
 			{
 				var request = new NCPICargaPedidoRequest() { adm_id = AdministracionId, usu_id = UserName, tipo = tipo, pId = pId, tipoCarga = tipoCarga, bultos = bultos };
-				var response = await _productoServicio.NCPICargaPedido(request, TokenCookie);
+				var response = CargaPedidoOCPI(request);
 				//var response = new List<NCPICargaPedidoResponse> //mocked response
 				//{
 				//	new() { bultos = 10, cantidad = 15, pallet = 20, p_pcosto = 12, resultado = 0, resultado_msj = "", unidad_pres = 4 }
@@ -396,7 +404,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public  IActionResult ObtenerProveedoresFamilia(string ctaId)
+		public IActionResult ObtenerProveedoresFamilia(string ctaId)
 		{
 			var model = new NDeCYPI.ProveedoresFamiliaDto();
 			try
@@ -426,7 +434,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				CargarProveedoresFamiliaLista(ctaId, _cuentaServicio);
 				return Json(new { error = false, warn = false, msg = string.Empty });
 			}
-			catch (Exception )
+			catch (Exception)
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar obtener los datos de la familia de productos del proveedor: {ctaId}" });
 			}
@@ -443,7 +451,196 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return Json(rubros);
 		}
 
+		public IActionResult RecargarGrilla()
+		{
+			var model = new GridCoreSmart<ProductoNCPIDto>();
+			try
+			{
+				model = ObtenerGridCoreSmart<ProductoNCPIDto>(ListaProductoNCPI);
+				return PartialView("_grillaProductos", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		#region Modal Pedido Auto
+		[HttpPost]
+		public IActionResult AbrirModalAuto(string abrirComo)
+		{
+			var model = new FiltroCompraAutoModel();
+			try
+			{
+				if (abrirComo == null)
+				{
+					RespuestaGenerica<EntidadBase> response = new()
+					{
+						Ok = false,
+						EsError = true,
+						EsWarn = false,
+						Mensaje = "No se han especificado datos obligatiorios."
+					};
+					return PartialView("_gridMensaje", response);
+				}
+				if (abrirComo == NecesidadesCompra)
+				{
+					model.Titulo = "Determinación Automática de Compra (NC)";
+					model.MostrarExcluirOCPendientes = true;
+				}
+				else
+				{
+					model.Titulo = "Determinación Automática de Compra (PI)";
+					model.MostrarExcluirOCPendientes = false;
+				}
+				model.DiasAprov = 30;
+				model.VentaDiariaDesde = DateTime.Now.AddDays(-30);
+				model.VentaDiariaHasta = DateTime.Now;
+				model.LimitarPedidoACompletar = false;
+				model.LimitarPedidoParaCumplir = false;
+				model.TomarUltimoPedido = false;
+
+				var depositos = _depositoServicio.ObtenerDepositosDeAdministracion(AdministracionId, TokenCookie);
+				if (depositos != null && depositos.Count > 0)
+					model.ListaDepositos = ObtenerListaDepositos(depositos);
+				else
+					model.ListaDepositos = HelperMvc<ComboGenDto>.ListaGenerica([]);
+
+				var sucursales = _administracionServicio.ObtenerAdministraciones("S", TokenCookie);
+				if (sucursales != null && sucursales.Count > 0)
+				{
+					//model.ListaDepositos = ObtenerLista(canales.ListaEntidad);
+					model.ListaSucursales = ObtenerLista(sucursales);
+				}
+				else
+				{
+					//model.ListaDepositos = HelperMvc<ComboGenDto>.ListaGenerica([]);
+					model.ListaSucursales = HelperMvc<ComboGenDto>.ListaGenerica([]);
+				}
+
+				var SucursalesList = new List<ComboGenDto>();
+				ViewBag.SucursalesListModal = HelperMvc<ComboGenDto>.ListaGenerica(SucursalesList);
+				var DepositosList = new List<ComboGenDto>();
+				ViewBag.DepositosListModal = HelperMvc<ComboGenDto>.ListaGenerica(DepositosList);
+				return PartialView("_modalFiltrosCompraAuto", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public JsonResult ConfirmarCambiosPedidoAuto(NCPIConfirmarCambiosPedidoAutoRequest request)
+		{
+			try
+			{
+				if (request == null)
+					return Json(new { error = true, warn = false, msg = $"Request vacío." });
+
+				if (ListaProductoNCPI == null || ListaProductoNCPI.Count == 0)
+					return Json(new { error = true, warn = false, msg = $"No hay productos." });
+
+				var listaProdPedAuto = new List<ProductoNCPI_AutoDto_>();
+				ListaProductoNCPI.ForEach(x => listaProdPedAuto.Add(new ProductoNCPI_AutoDto_() { p_id = x.p_id }));
+
+				request.json_p = JsonConvert.SerializeObject(listaProdPedAuto, new JsonSerializerSettings());
+
+				PrintProperties(request);
+
+				var respuesta = _productoServicio.NecesidadesStockAuto(request, TokenCookie);
+
+				///TODO MARCE: Una vez que recibo la lista debo actualizar la lista ListaProductoNCPI que tenia previamente cargada, teniendo en cuenta las 
+				///mismas funciones que uso cuando se edita la cantidad de forma manual.
+				if (respuesta != null && respuesta.Count > 0)
+				{
+					var listaTemp = ListaProductoNCPI;
+					//var request = new NCPICargaPedidoRequest() { adm_id = AdministracionId, usu_id = UserName, tipo = tipo, pId = pId, tipoCarga = tipoCarga, bultos = bultos };
+					foreach (var item in respuesta)
+					{
+						ActualizarProductos(item, listaTemp);
+					}
+					ListaProductoNCPI = listaTemp;
+					return Json(new { error = false, warn = false, msg = "" });
+				}
+				else
+					return Json(new { error = true, warn = false, msg = "Se ha producido un error interno al realizar la determinación automática de compra." });
+			}
+			catch (Exception)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se ha producido un error al intentar obtener precios auto." });
+			}
+		}
+		#endregion
+
 		#region Métodos privados
+		private SelectList ObtenerLista(List<AdministracionDto> adms)
+		{
+			var lista = adms.Select(x => new ComboGenDto { Id = x.Adm_id, Descripcion = x.Adm_nombre });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+
+		private SelectList ObtenerListaDepositos(List<DepositoDto> depos)
+		{
+			var lista = depos.Select(x => new ComboGenDto { Id = x.Depo_Id, Descripcion = x.Depo_Nombre });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+
+		private void ActualizarProductos(ProductoNCPI_AutoDto prod, List<ProductoNCPIDto> listaT)
+		{
+			if (prod == null)
+				return;
+			var req = new NCPICargaPedidoRequest() { adm_id = AdministracionId, usu_id = UserName, tipo = "OC", pId = prod.p_id, tipoCarga = "A", bultos = prod.auto_bulto };
+			var respuesta = CargaPedidoOCPI(req);
+			if (respuesta == null)
+				return;
+			if (respuesta.Count == 0)
+				return;
+			if (respuesta.First().resultado != 0)
+				return;
+			var item = respuesta.First();
+			var ItemEnListaT = listaT.Where(x => x.p_id == prod.p_id).First();
+			ItemEnListaT.cantidad = item.cantidad;
+			ItemEnListaT.costo = item.p_pcosto;
+			ItemEnListaT.costo_total = item.p_pcosto * item.cantidad;
+			ItemEnListaT.pedido = prod.auto_bulto;
+			ItemEnListaT.paletizado = item.pallet;
+		}
+
+		private static void ObtenerColor(ref List<ProductoNCPIDto> listaProd)
+		{
+			foreach (var item in listaProd)
+			{
+				if (item.p_activo == "D") //Discontinuo
+					item.Row_color = "#fc4641";
+			}
+		}
+
+		private List<NCPICargaPedidoResponse> CargaPedidoOCPI(NCPICargaPedidoRequest request)
+		{
+			try
+			{
+				return _productoServicio.NCPICargaPedido(request, TokenCookie).Result;
+			}
+			catch (Exception)
+			{
+				return [];
+			}
+		}
+
 		protected void CargarProveedoresFamiliaLista(string ctaId, ICuentaServicio _cuentaServicio, string? fam = null)
 		{
 			var adms = _cuentaServicio.ObtenerListaProveedoresFamilia(ctaId, TokenCookie);
