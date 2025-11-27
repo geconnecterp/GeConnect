@@ -114,10 +114,10 @@ namespace gc.api.core.Servicios.Ofertas
             ps.Add(new SqlParameter("@oferta", filters.Opt2));
 
             //previa de usuario
-            if (!string.IsNullOrEmpty(filters.Tipo))
+            if (!string.IsNullOrEmpty(filters.StrOpt03))
             {
                 ps.Add(new SqlParameter("@previa", true));
-                ps.Add(new SqlParameter("@previa_usu_id", filters.Tipo));
+                ps.Add(new SqlParameter("@previa_usu_id", filters.StrOpt03));
             }
             else
             {
