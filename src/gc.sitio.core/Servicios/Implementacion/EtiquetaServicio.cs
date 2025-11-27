@@ -115,7 +115,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             catch (Exception ex)
             {
                 _logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
-                return new() { Ok = false, Mensaje = "Error al obtener el Presupuesto" };
+                return new() { Ok = false, Mensaje = "Error al obtener la Carga Previa" };
             }
         }
 

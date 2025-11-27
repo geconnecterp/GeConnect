@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace gc.sitio.core.Servicios.Contratos
+﻿namespace gc.sitio.core.Servicios.Contratos
 {
-    internal interface IPrecioListaServicio
+    public interface IPrecioListaServicio
     {
     }
 }
