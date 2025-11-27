@@ -59,6 +59,12 @@ namespace gc.infraestructura.Dtos.Almacen
 		public decimal P_Dto4 { get; set; } = 0.00M;
 		public decimal P_Dto_Pa { get; set; } = 0.00M;
 		public string P_Boni { get; set; } = string.Empty;
+		public string rp_compte { get; set; } = string.Empty;
+		public DateTime? rp_fecha { get; set; }
+		public int? rp_dias { get; set; }
+		public string re_compte { get; set; } = string.Empty;
+		public DateTime? re_fecha { get; set; }
+		public int? re_dias { get; set; }
 	}
 
 	public class ProductoNCPISustitutoDto : ProductoNCPIDto

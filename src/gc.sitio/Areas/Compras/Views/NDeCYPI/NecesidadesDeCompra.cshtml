@@ -4,28 +4,53 @@
 	Layout = "~/views/shared/_Layout.cshtml";
 	var sucursales = Model.ComboSucursales;
 	var filtro = new QueryFilters()
-			{
-				Rel01 = new List<string>(),
-				Rel02 = new List<string>(),
-				Rel03 = new List<ComboGenDto>(),
-				Modelo = ModeloFilter.NECESIDADES_COMPRA,
-				Opt1 = false,
-				Opt2 = false,
-				Opt3 = false,
-				Opt4 = false,
-				Opt5 = false,
-			};
+	{
+		Rel01 = new List<string>(),
+		Rel02 = new List<string>(),
+		Rel03 = new List<ComboGenDto>(),
+		Modelo = ModeloFilter.NECESIDADES_COMPRA,
+		Opt1 = false,
+		Opt2 = false,
+		Opt3 = false,
+		Opt4 = false,
+		Opt5 = false,
+	};
 }
 @section styles {
 	<link rel="stylesheet" href="~/css/simplePagination.css" />
 }
+<style>
+	.table-golden thead th {
+		position: sticky;
+		top: 0;
+		z-index: 2;
+		background-color: inherit; /* mantiene el estilo de la app */
+	}
 
+	#containerListaProducto {
+		max-height: 400px;
+		height: 400px;
+		max-width: 100%;
+		overflow: auto;
+	}
+
+</style>
 <div class="container">
 	<div class="row">
 		<div class="col-md-6">
 			<div class="d-flex justify-content-sm-around">
 				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
 					<i class="bx bx-filter bx-xs"></i>
+				</button>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="collapse" style="text-align: right;align-content: center;padding-bottom:5px;" id="divBtnOpciones">
+				<button type="button" class="btn btn-sm btn-primary btn-sm mt-1 me-1" style="margin-left:5px;" id="btnPasarAOC" title="Pasar a Orden de Compra">
+					<i class="bx bx-check-circle"></i> Pasar a OC
+				</button>
+				<button type="button" class="btn btn-sm btn-primary btn-sm mt-1 me-1" style="margin-left:5px;" id="btnOCAuto" title="Orden de Compra Automática">
+					<i class="bx bx-check-circle"></i> OC Auto
 				</button>
 			</div>
 		</div>
@@ -36,17 +61,6 @@
 	</div>
 	<div class="collapse" id="divDetalle" style="">
 		<div class="row">
-			<div class="col-sm-12" style="text-align: right;align-content: center;padding-bottom:5px;">
-				<button type="button" class="btn btn-sm btn-primary btn-sm mt-1 me-1" style="margin-left:5px;" id="btnPasarAOC" title="Pasar a Orden de Compra">
-					<i class="bx bx-check-circle"></i> Pasar a OC
-				</button>
-				<button type="button" class="btn btn-sm btn-primary btn-sm mt-1 me-1" style="margin-left:5px;" id="btnOCAuto" title="Orden de Compra Automática">
-					<i class="bx bx-check-circle"></i> OC Auto
-				</button>
-				<button type="button" class="btn btn-secondary btn-sm mt-1 me-1" style="margin-left:5px;" id="btnImprimirCtlStk" title="Imprimir Control de Stock">
-					<i class="bx bx-printer"></i> Imprimir Ctl Stk
-				</button>
-			</div>
 			<div class="col-12">
 				<div id="divListaProducto">
 					<div class="table-responsive table-wrapper-full-width" id="containerListaProducto">
@@ -55,8 +69,9 @@
 								<tr class="header">
 									<th style="width:5%;" class="col-header-small align-center">Código</th>
 									<th style="width:20%;" class="col-header-small align-center">Descripción</th>
+									<th style="width:5%;" class="col-header-small align-center">Id. Barrado</th>
 									<th style="width:5%;" class="col-header-small align-center">Cod. Prov</th>
-									<th style="width:5%;" class="col-header-small align-center">PI Pend</th>
+									<th style="width:5%;" class="col-header-small align-center">Días Ult. RP</th>
 									<th style="width:5%;" class="col-header-small align-center">OC Pend</th>
 									<th style="width:5%;" class="col-header-small align-center">Stock</th>
 									<th style="width:5%;" class="col-header-small align-center">Stock en Tránsito</th>
@@ -86,7 +101,7 @@
 			<div class="col-2"></div>
 		</div>
 		<div class="collapse" id="divFiltro" style="">
-			@Html.Hidden("pagEstado", false);
+			@Html.Hidden("pagEstado", false)
 		</div>
 		<div class="row">
 			<div class="row">
@@ -177,14 +192,6 @@
 
 								</div>
 								<div class="tab-pane tab-content-golden fade" id="navs-top-dog" role="tabpanel">
-									@* @if (Model.ProductosDelMismoProveedor == false)
-									{
-										<input class="form-check-input" type="checkbox" id="chkProductosDelMismoProveedor" onchange="changeProductosDelMismoProveedor(this);" asp-for="@Model.ProductosDelMismoProveedor">
-									}
-									else
-									{
-										<input class="form-check-input" type="checkbox" id="chkProductosDelMismoProveedor" onchange="changeProductosDelMismoProveedor(this);" checked asp-for="@Model.ProductosDelMismoProveedor">
-									} *@
 									<label class="form-check-label" for="chkProductosDelMismoProveedor"> Productos del mismo Proveedor</label>
 									<div class="row">
 										<div id="divInfoProdSustituto"></div>
@@ -231,7 +238,8 @@
 		var BuscarProductosOCPI2URL = "@Url.Action("BuscarProductosOCPI2", "ndecypi", new { area = "Compras" })"; /**/
 		var CargaPedidoOCPIURL = "@Url.Action("CargaPedidoOCPI", "ndecypi", new { area = "Compras" })";
 		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
-		//var BuscarProveedoresFamiliaURL = "@Url.Action("ObtenerProveedoresFamilia", "ndecypi", new { area = "Compras" })";
+		var BuscarProveedoresFamiliaURL = "@Url.Action("ObtenerProveedoresFamilia", "ndecypi", new { area = "Compras" })";
+		var BuscarRubrosURL = "@Url.Action("ObtenerRubros", "ndecypi", new { area = "Compras" })";
 		var BuscarInfoProdIExMesesURL = "@Url.Action("BuscarInfoProdIExMeses", "ndecypi", new { area = "Compras" })";
 		var BuscarInfoProdIExSemanasURL = "@Url.Action("BuscarInfoProdIExSemanas", "ndecypi", new { area = "Compras" })";
 		var BuscarInfoProdStkDepositoURL = "@Url.Action("BuscarInfoProdStkDeposito", "ndecypi", new { area = "Compras" })";

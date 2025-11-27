@@ -4,17 +4,17 @@
 	Layout = "~/views/shared/_Layout.cshtml";
 	var sucursales = Model.ComboSucursales;
 	var filtro = new QueryFilters()
-			{
-				Rel01 = new List<string>(),
-				Rel02 = new List<string>(),
-				Rel03 = new List<ComboGenDto>(),
-				Modelo = ModeloFilter.NECESIDADES_COMPRA,
-				Opt1 = false,
-				Opt2 = false,
-				Opt3 = false,
-				Opt4 = false,
-				Opt5 = false,
-			};
+	{
+		Rel01 = new List<string>(),
+		Rel02 = new List<string>(),
+		Rel03 = new List<ComboGenDto>(),
+		Modelo = ModeloFilter.NECESIDADES_COMPRA,
+		Opt1 = false,
+		Opt2 = false,
+		Opt3 = false,
+		Opt4 = false,
+		Opt5 = false,
+	};
 }
 @section styles {
 	<link rel="stylesheet" href="~/css/simplePagination.css" />
@@ -29,6 +29,16 @@
 				</button>
 			</div>
 		</div>
+		<div class="col-md-6">
+			<div class="collapse" style="text-align: right;align-content: center;padding-bottom:5px;" id="divBtnOpciones">
+				<button type="button" class="btn btn-sm btn-primary btn-sm mt-1 me-1" id="btnPasarAPI" title="Pedido Interno">
+					<i class="bx bx-check-circle"></i> Pasar a PI
+				</button>
+				<button type="button" class="btn btn-sm btn-primary btn-sm mt-1 me-1" id="btnPIAuto" title="Pedido Interno Automático">
+					<i class="bx bx-check-circle"></i> PI Auto
+				</button>
+			</div>
+		</div>
 	</div>
 	<div class="collapse" id="divFiltro" style="">
 		<partial name="_filtroBase" model="filtro" />
@@ -36,17 +46,6 @@
 	</div>
 	<div class="collapse" id="divDetalle" style="">
 		<div class="row">
-			<div class="col-sm-12" style="text-align: right;align-content: center;padding-bottom:5px;">
-				<button type="button" class="btn btn-sm btn-primary btn-sm mt-1 me-1" id="btnPasarAPI" title="Pedido Interno">
-					<i class="bx bx-check-circle"></i> Pasar a PI
-				</button>
-				<button type="button" class="btn btn-sm btn-primary btn-sm mt-1 me-1" id="btnPIAuto" title="Pedido Interno Automático">
-					<i class="bx bx-check-circle"></i> PI Auto
-				</button>
-				<button type="button" class="btn btn-secondary btn-sm mt-1 me-1" id="btnImprimirCtlStk" title="Imprimir Control de Stock">
-					<i class="bx bx-printer"></i> Imprimir Ctl Stk
-				</button>
-			</div>
 			<div class="col-12">
 				<div id="divListaProducto">
 					<div class="table-responsive text-nowrap table-wrapper">
@@ -221,6 +220,8 @@
 		//var BuscarProductosOCPIURL = "@Url.Action("BuscarProductosOCPI", "ndecypi", new { area = "Compras" })";
 		var BuscarProductosOCPI2URL = "@Url.Action("BuscarProductosOCPI2", "ndecypi", new { area = "Compras" })"; /**/
 		var CargaPedidoOCPIURL = "@Url.Action("CargaPedidoOCPI", "ndecypi", new { area = "Compras" })";
+		var BuscarRubrosURL = "@Url.Action("ObtenerRubros", "ndecypi", new { area = "Compras" })";
+		var BuscarProveedoresFamiliaURL = "@Url.Action("ObtenerProveedoresFamilia", "ndecypi", new { area = "Compras" })";
 		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
 		//var BuscarProveedoresFamiliaURL = "@Url.Action("ObtenerProveedoresFamilia", "ndecypi", new { area = "Compras" })";
 		var BuscarInfoProdIExMesesURL = "@Url.Action("BuscarInfoProdIExMeses", "ndecypi", new { area = "Compras" })";

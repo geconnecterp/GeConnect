@@ -176,6 +176,7 @@
                 !Model.Modelo.Equals(ModeloFilter.VALORIZACION_COMPROBANTE) &&
                 !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_A_PROVEEDORES) &&
                 !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA) &&
+                @* !Model.Modelo.Equals(ModeloFilter.NECESIDADES_COMPRA) && *@
                 !Model.Modelo.Equals(ModeloFilter.ANULACION_DE_COMPROBANTE_Y_VALORIZACION) &&
                 !Model.Modelo.Equals(ModeloFilter.PROMO_COMBO) &&
                 !Model.Modelo.Equals(ModeloFilter.PRESUPUESTO) &&
@@ -405,7 +406,8 @@
         @*---------------------------FIN BUSQUEDA DE PROVEEDORES---------------------------*@
         @*---------------------------BUSQUEDA DE FAMILIAS---------------------------*@
         @if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA) ||
-             Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA))
+                Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA) ||
+                Model.Modelo.Equals(ModeloFilter.NECESIDADES_COMPRA))
         {
             var list = new List<ComboGenDto>();
             var ls03 = new SelectList(list, "Id", "Descripcion");
@@ -478,7 +480,8 @@
         @*---------------------------FIN BUSQUEDA DE FAMILIAS---------------------------*@
         @*---------------------------BUSQUEDA DE RUBROS---------------------------*@
         @if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA) ||
-             Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA))
+             Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA) ||
+                Model.Modelo.Equals(ModeloFilter.NECESIDADES_COMPRA))
         {
             var list = new List<ComboGenDto>();
             var ls02 = new SelectList(list, "Id", "Descripcion");

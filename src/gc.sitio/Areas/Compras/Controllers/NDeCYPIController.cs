@@ -425,6 +425,27 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		public IActionResult ObtenerRubros()
+		{
+			var model = new ListaRubroModel();
+			try
+			{
+				model.ListaRubros = ComboRubros();
+				return PartialView("_listaRubros", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
 		//Invocar cuando se haya seleccionado solo un proveedor desde el filtro base.
 		[HttpPost]
 		public JsonResult BuscarFamiliaDesdeProveedorSeleccionado(string ctaId)

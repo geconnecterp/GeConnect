@@ -1,13 +1,57 @@
 ﻿@model GridCoreSmart<ProductoNCPIDto>
+@using static gc.infraestructura.Helpers.GridHelper
 @{
 	var alt = true;
 	string clase = string.Empty;
 }
+@section styles {
+	<link rel="stylesheet" href="~/css/compras/ndecypi/ndecypi.css" />
+}
 <style>
-	thead th {
-		position: sticky;
-		top: 0px;
+	/* El contenedor debe ser el scroll real y generar contexto */
+	#containerListaProducto {
+		position: relative;
+		height: 400px;
+		max-height: 400px;
+		overflow-y: auto; /* vertical */
+		overflow-x: auto; /* horizontal si hace falta */
+		z-index: auto; /* no fuerza stacking context */
 	}
+
+	/* Evitar collapse para que sticky funcione mejor en thead/th */
+	.table-golden {
+		border-collapse: separate;
+		border-spacing: 0;
+		table-layout: fixed; /* estabiliza anchos con tus width% */
+	}
+
+		/* Fijar el thead y darle fondo del tema */
+		.table-golden thead {
+			position: sticky;
+			top: 0;
+			z-index: 1; /* suficiente para estar sobre las filas */
+			background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+			color: #fff !important;
+		}
+
+			/* Redundancia intencional: asegurar cada th sticky y el mismo fondo */
+			.table-golden thead th {
+				position: sticky;
+				top: 0;
+				z-index: 4;
+				background: linear-gradient(to bottom, #b8860b, #daa520);
+				color: #fff;
+				box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+				background-clip: padding-box; /* evita “sangrados” con border-spacing */
+			}
+
+			/* Alinear colores: si tu app usa dorado para cabecera */
+			.table-golden thead,
+			.table-golden thead th {
+				/*background-color: #b8860b;  tu dorado */
+				/* color: #333; */
+			}
+
 </style>
 <div class="table-responsive table-wrapper-full-width" id="containerListaProducto">
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbListaProducto">
@@ -15,8 +59,9 @@
 			<tr class="header">
 				<th style="width:5%;" class="col-header-x-small align-center tiny-row">Código</th>
 				<th style="width:20%;" class="col-header-x-small align-center tiny-row">Descripción</th>
+				<th style="width:5%;" class="col-header-small align-center">Id. Barrado</th>
 				<th style="width:5%;" class="col-header-x-small align-center tiny-row">Cod. Prov</th>
-				<th style="width:5%;" class="col-header-x-small align-center tiny-row">PI Pend</th>
+				<th style="width:5%;" class="col-header-x-small align-center tiny-row">Días Ult. RP</th>
 				<th style="width:5%;" class="col-header-x-small align-center tiny-row">OC Pend</th>
 				<th style="width:5%;" class="col-header-x-small align-center tiny-row">Stock Suc</th>
 				<th style="width:5%;" class="col-header-x-small align-center tiny-row">Stock Tot</th>
@@ -38,7 +83,7 @@
 				@foreach (var item in Model.ListaDatos)
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					<tr class="@clase" onclick="selectListaProductoRow(this)">
+					<tr class="@clase" data-id="@item.p_id" onclick="selectListaProductoRow(this)">
 						<td class="align-center tiny-row">@item.p_id</td>
 						@if (item.p_activo == "D")
 						{
@@ -48,15 +93,9 @@
 						{
 							<td class="align-left tiny-row">@item.p_desc</td>
 						}
+						<td class="align-center tiny-row">@item.p_id_barrado</td>
 						<td class="align-center tiny-row">@item.p_id_prov</td>
-						@if (item.pi_pendiente == 0)
-						{
-							<td class="align-right tiny-row"></td>
-						}
-						else
-						{
-							<td class="align-right tiny-row" style="font-weight:bold;">@item.pi_pendiente</td>
-						}
+						<td class="align-right tiny-row">@item.rp_dias</td>
 						@if (item.oc_pendiente == 0)
 						{
 							<td class="align-right tiny-row"></td>
@@ -70,16 +109,26 @@
 						<td style="display:none;">@item.stk_suc_comprometido</td>
 						<td class="align-right tiny-row">@item.p_unidad_pres</td>
 						<td class="align-right tiny-row">@item.p_unidad_palet</td>
+						<td style="width:5%;" class="columna-bulto @Model.ObtenerClase(item.pedido)">
+							@*07*@
+							<div class="input-container">
+								<input type="text" class="form-control form-control-sm input-bulto input-numeric"
+									   value="@(item.pedido)"
+									   data-field="pedido"
+									   data-id="@item.p_id"
+									   data-original-value="@(item.pedido)" />
+							</div>
+						</td>
 						@if (item.pedido == 0)
 						{
-							<td id="tdPedido" contenteditable='true' style="text-align: right;padding: 0.325rem 0.30rem;border-style: inset;border-width: medium;" onfocusin="focusOnTdPedido(this);">@item.pedido</td>
+							@* <td id="tdPedido" contenteditable='true' style="text-align: right;padding: 0.325rem 0.30rem;border-style: inset;border-width: medium;" onfocusin="focusOnTdPedido(this);">@item.pedido</td> *@
 							<td class="align-right tiny-row">@item.cantidad</td>
 							<td class="align-right tiny-row">@item.costo</td>
 							<td class="align-right tiny-row">@item.costo_total</td>
 						}
 						else
 						{
-							<td id="tdPedido" contenteditable='true' style="text-align: right;padding: 0.325rem 0.30rem;border-style: inset;border-width: medium;background-color: lightgreen;" onfocusin="focusOnTdPedido(this);">@item.pedido</td>
+							@* <td id="tdPedido" contenteditable='true' style="text-align: right;padding: 0.325rem 0.30rem;border-style: inset;border-width: medium;background-color: lightgreen;" onfocusin="focusOnTdPedido(this);">@item.pedido</td> *@
 							<td class="align-right tiny-row" style="background-color: lightgreen;">@item.cantidad</td>
 							<td class="align-right tiny-row" style="background-color: lightgreen;">@item.costo</td>
 							<td class="align-right tiny-row" style="background-color: lightgreen;">@item.costo_total</td>
