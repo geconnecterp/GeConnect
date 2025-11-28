@@ -54,7 +54,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 		public IActionResult Index()
 		{
-			//MetadataGrid metadata;
+			var model = new OrdenDeCompraCargaDto();
 			try
 			{
 				var auth = EstaAutenticado;
@@ -85,7 +85,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				ViewBag.Rel03List = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
 
 				CargarDatosIniciales(true);
-				return View();
+				return View(model);
 			}
 			catch (Exception ex)
 			{
