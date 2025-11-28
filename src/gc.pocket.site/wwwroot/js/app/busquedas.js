@@ -135,6 +135,17 @@ function buscarProducto() {
     AbrirWaiting();
     var _post = busquedaProdBaseUrl;
     var valor = $("#Busqueda").val();
+
+    if (!valor || valor.trim() === "") {
+        CerrarWaiting();
+        AbrirMensaje("ATENCIÓN", "Debe ingresar un valor para buscar.", function () {
+            $("#msjModal").modal("hide");
+            $("#Busqueda").trigger("focus");
+            return true;
+        }, false, ["Aceptar"], "error!", null);
+        return false;
+    }
+
     var mod = "RPR";
     var valEst = false;
 

@@ -109,6 +109,8 @@
 			public const string SP_IE_CONFIRMA = "SPGECO_IE_Confirmar";
 			public const string SP_IE_CARGA_CONTEOS = "SPGECO_IE_Cargar_Conteos_Previa";
 
+			//LISTA DE PRECIOS
+			public const string SP_LP_LISTA = "SPGECO_LP_Lista";
 
             #endregion
 
