@@ -19,28 +19,23 @@ $(function () {
 	// Cuando se oculta el filtro → mostrar detalle
 	$('#divFiltro').on('hidden.bs.collapse', function () {
 		$('#divDetalle').collapse('show');
-		// 🔹 NO forzamos aquí las opciones, dejamos que dependan del detalle
 	});
 
-	// 🔹 Controlar directamente el estado de divDetalle
+	// Controlar directamente el estado de divDetalle
 	$('#divDetalle').on('shown.bs.collapse', function () {
-		//$('#divBtnOpciones').collapse('show');
 		$('#divBtnOpciones').show();
 	});
 
 	$('#divDetalle').on('hidden.bs.collapse', function () {
-		//$('#divBtnOpciones').collapse('hide');
 		$('#divBtnOpciones').hide();
 	});
-
 
 	$("input#Rel03").on("click", function () {
 		$("input#Rel03").val("");
 		$("#Rel03Item").val("");
 	});
 	AddEventListenerToGrid("tbListaProducto");
-	//$("#tbListaProducto").on('input', 'td[contenteditable]', function () {
-	//});
+	
 	$("#btnBuscar").on("click", function () {
 		dataBak = "";
 		pagina = 1;
@@ -49,6 +44,9 @@ $(function () {
 	$(document).on("change", "#listaSucursales", ControlaSucursalSeleccionada);
 	$("#btnOCAuto").on("click", function () {
 		AbrirlModalAuto(Origen.NecesidadesDeCompra);
+	});
+	$("#btnPasarAOC").on("click", function () {
+		AbrirOrdenDeCompra();
 	});
 	$(document).on("change", "#listaSucursalesModal", ControlalistaSucursalesModalSelected);
 	$(document).on("change", "#listaDepositosModal", ControlalistaDepositosModalSelected);
@@ -86,6 +84,90 @@ $(function () {
 	funcCallBack = BuscarProductos;
 	return true;
 });
+
+function AbrirOrdenDeCompra() {
+	if (pIdSeleccionado && ctaIdDeProdSeleccionado && pIdSeleccionado != undefined && ctaIdDeProdSeleccionado != undefined && pIdSeleccionado != "" && ctaIdDeProdSeleccionado != "") {
+		AbrirMensaje("ATENCIÓN", "Va a ser redirigido a la aplicación Carga de Orden de Compra. ¿Confirma?", function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI": //Confirmar
+					//window.location.href = '/Compras/OrdenDeCompra/IndexConParametros?pId=' + pIdSeleccionado + '&ctaId=' + ctaIdDeProdSeleccionado + '&ctaDeno=' + ctaDenoProdSeleccionado;
+					//$.ajax({
+					//	url: '/Compras/OrdenDeCompra/IndexConParametros',
+					//	type: 'POST',
+					//	data: { pId: pIdSeleccionado, ctaId: ctaIdDeProdSeleccionado, ctaDeno: ctaDenoProdSeleccionado },
+					//	success: function (html) {
+					//		// si devolvés una vista completa, podés hacer:
+					//		document.open();
+					//		document.write(html);
+					//		document.close();
+					//	}
+					//});
+					// Navegación POST segura en lugar de document.write()
+					(function submitPostNavigation() {
+						var form = document.createElement('form');
+						form.method = 'POST';
+						form.action = '/Compras/OrdenDeCompra/IndexConParametros';
+						form.style.display = 'none';
+
+						var addField = function (name, value) {
+							var input = document.createElement('input');
+							input.type = 'hidden';
+							input.name = name;
+							input.value = value !== undefined && value !== null ? value : '';
+							form.appendChild(input);
+						};
+
+						addField('pId', pIdSeleccionado);
+						addField('ctaId', ctaIdDeProdSeleccionado);
+						addField('ctaDeno', ctaDenoProdSeleccionado);
+
+						// Intentar agregar token antiforgery si está disponible en la página
+						var tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+						if (tokenInput && tokenInput.value) {
+							addField('__RequestVerificationToken', tokenInput.value);
+						} else {
+							var tokenMeta = document.querySelector('meta[name="__RequestVerificationToken"]');
+							if (tokenMeta && tokenMeta.content) {
+								addField('__RequestVerificationToken', tokenMeta.content);
+							} else {
+								// Intento adicional: leer cookies comunes de XSRF (si la app las usa)
+								function readCookie(name) {
+									var match = document.cookie.split('; ').find(function (c) { return c.indexOf(name + '=') === 0; });
+									return match ? decodeURIComponent(match.split('=')[1]) : null;
+								}
+								var cookieNames = ['XSRF-TOKEN', 'RequestVerificationToken', 'X-XSRF-TOKEN'];
+								for (var i = 0; i < cookieNames.length; i++) {
+									var cval = readCookie(cookieNames[i]);
+									if (cval) {
+										addField('__RequestVerificationToken', cval);
+										break;
+									}
+								}
+							}
+						}
+
+						document.body.appendChild(form);
+						form.submit();
+					})();
+					break;
+				case "NO":
+					break;
+				default: //NO
+					break;
+			}
+			return true;
+
+		}, true, ["Aceptar", "Cancelar"], "question!", null);
+		
+	}
+	else {
+		AbrirMensaje("Atención", "Debe seleccionar un producto.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+}
 
 function CargarRubros() {
 	data = { };
@@ -629,11 +711,11 @@ const FuncionSobreBusquedaDeProductos = {
 	CONOC: 'CONOC'
 }
 
-const colBulto = 10;
-const colCantidad = 11;
-const colCosto = 12;
-const colCostoTotal = 13;
-const colPallet = 14;
+const colBulto = 11;
+const colCantidad = 12;
+const colCosto = 13;
+const colCostoTotal = 14;
+const colPallet = 15;
 function BuscarProductos(pag = 1) {
 	viendeDesdeBusquedaDeProducto = true;
 	AbrirWaiting();
@@ -675,7 +757,7 @@ function BuscarProductos(pag = 1) {
 		//tableUpDownArrow();
 		finalizarInicializacionGridListaProductos();
 		$("#divBtnOpciones").show();
-		LimpiarDatosDelFiltroInicial();
+		//LimpiarDatosDelFiltroInicial();
 		PostGen({}, buscarMetadataURL, function (obj) {
 			if (obj.error === true) {
 				AbrirMensaje("ATENCIÓN", obj.msg, function () {
@@ -719,15 +801,31 @@ function selectListaProductoRow(x) {
 		$(this).removeClass("selectedEdit-row");
 	});
 	$(x).addClass("selected-row");
-	if (x) {
-		pIdSeleccionado = x.cells[0].innerText.trim();
-
+	const id = x.getAttribute("data-id");
+	const ctaId = x.getAttribute("data-cta-id");
+	const ctaDeno = x.getAttribute("data-cta-denominacion");
+	console.log("Producto ID:", id);
+	console.log("Cuenta ID:", ctaId);
+	if (id) {
+		pIdSeleccionado = id;
+		ctaIdDeProdSeleccionado = ctaId;
+		ctaDenoProdSeleccionado = ctaDeno;
 		//finalizarInicializacionGridListaProductos();
 		BuscarInfoAdicional();
 	}
 	else {
 		pIdSeleccionado = "";
 	}
+
+	//if (x) {
+	//	pIdSeleccionado = x.cells[0].innerText.trim();
+
+	//	//finalizarInicializacionGridListaProductos();
+	//	BuscarInfoAdicional();
+	//}
+	//else {
+	//	pIdSeleccionado = "";
+	//}
 }
 
 function SeleccionarDesdeFila(index, ctrol) {

@@ -100,6 +100,62 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		#region Laboratorio para abrir desde NCPI
+		[HttpPost]
+		[ActionName("IndexConParametros")]
+		public IActionResult Index(string pId, string ctaId, string ctaDeno)
+		{
+			var model = new OrdenDeCompraCargaDto();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+				{
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				}
+
+				string titulo = "ORDEN DE COMPRA";
+				ViewData["Titulo"] = titulo;
+
+				#region Gestor Impresion - Inicializacion de variables
+				//Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
+				DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+				// en este mismo acto se cargan los posibles documentos
+				//que se pueden imprimir, exportar, enviar por email o whatsapp
+				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+
+				#endregion
+
+				var listR01 = new List<ComboGenDto>();
+				ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
+
+				var listR02 = new List<ComboGenDto>();
+				ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
+
+				var listR03 = new List<ComboGenDto>();
+				ViewBag.Rel03List = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
+
+				CargarDatosIniciales(true);
+
+				model.p_id = pId;
+				model.cta_id = ctaId;
+				model.cta_denominacion = ctaDeno;
+				return View("Index", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+		#endregion
+
 		public IActionResult BuscarProductos(NCPICargarListaDeProductos2Request request)
 		{
 			MetadataGrid metadata;

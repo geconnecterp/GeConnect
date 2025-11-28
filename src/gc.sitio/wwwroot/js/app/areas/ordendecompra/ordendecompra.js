@@ -1,6 +1,24 @@
 ﻿let productoActualEnLista = null;
+if (!customElements.get('box-icon')) {
+	customElements.define('box-icon', window.BoxIconElement.default);
+}
 
 $(function () {
+	const pId = $("#hdnPid").val();
+	const ctaId = $("#hdnCtaId").val();
+	const ctaDenominacion = $("#hdnCtaDeno").val();
+
+	// Validación: que no sean null, undefined ni string vacío
+	if (pId && pId.trim() !== "" && ctaId && ctaId.trim() !== "") {
+		console.log("Vista abierta desde Index con:", pId, ctaId, ctaDenominacion);
+		// acá podés disparar lógica adicional
+		// cargarVistaParcial(pId, ctaId);
+		BuscarProductosDesdeNCPI(1, pId, ctaId, ctaDenominacion);
+	} else {
+		console.warn("pId o ctaId no son válidos:", pId, ctaId);
+	}
+
+
 	$("#tituloLegend").text("Productos a cargar");
 	$("#chkRel01").prop('checked', true);
 	$("#chkRel01").trigger("change");
@@ -914,6 +932,69 @@ function BuscarProductos(pag = 1) {
 
 		});
 
+		BuscarProductosTabOC();
+
+		$("#btnDetalle").prop("disabled", false);
+		$("#btnAbmCancelar").prop("disabled", false);
+		MostrarDatosDeCuenta(true);
+		CargarTopesDeOC();
+		CargarSucursalesParInfoAdicional();
+		LimpiarDatosDelFiltroInicial();
+		addTxtMesesKeyUpHandler();
+		addTxtSemanasKeyUpHandler()
+		CerrarWaiting();
+		viendeDesdeBusquedaDeProducto = false;
+		return true
+	});
+}
+
+function BuscarProductosDesdeNCPI(pag = 1, pId, ctaId, ctaDeno) {
+	viendeDesdeBusquedaDeProducto = true;
+	AbrirWaiting();
+	var Tipo = tipoDeOperacion;
+	var Buscar = ""
+	var Id = pId;
+	var Id2 = pId;
+	var Rel01 = [];
+	var Rel02 = [];
+	var Rel03 = [];
+	Rel01.push(ctaId);
+	var Opt1 = $("#chk01")[0].checked
+	var Opt2 = $("#chk02")[0].checked
+	var Opt3 = $("#chk03")[0].checked
+	var Opt4 = $("#chk04")[0].checked
+	var Opt5 = $("#chk05")[0].checked
+
+	var buscaNew = true;
+	pagina = pag;
+	Pagina = pag;
+	var sort = null;
+	var sortDir = null
+	var data2 = { sort, sortDir, Pagina, buscaNew }
+	var data1 = { Tipo, Buscar, Id, Id2, Rel01, Rel02, Rel03, Opt1, Opt2, Opt3, Opt4, Opt5 };
+	var data = $.extend({}, data1, data2);
+	PostGenHtml(data, BuscarProductosURL, function (obj) {
+		$("#divListaProducto").html(obj);
+		$("#divDetalle").collapse("show");
+		AddEventListenerToGrid("tbListaProducto");
+		PostGen({}, buscarMetadataURL, function (obj) {
+			if (obj.error === true) {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				totalRegs = obj.metadata.totalCount;
+				pags = obj.metadata.totalPages;
+				pagRegs = obj.metadata.pageSize;
+
+				$("#pagEstado").val(true).trigger("change");
+			}
+
+		});
+		ctaIdSelected = ctaId;
+		ctaDescSelected = ctaDeno;
 		BuscarProductosTabOC();
 
 		$("#btnDetalle").prop("disabled", false);

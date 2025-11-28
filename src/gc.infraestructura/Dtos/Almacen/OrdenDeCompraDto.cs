@@ -30,6 +30,11 @@ namespace gc.infraestructura.Dtos.Almacen
 		public string OC_Emitidas { get; set; } = string.Empty;
 		public string Tope_Emision { get; set; } = string.Empty;
 		public SelectList ComboSucursales { get; set; } = new SelectList(new List<SelectListItem>());
+		#region Laboratorio para abrir desde NCPI
+		public string p_id { get; set; } = string.Empty;
+		public string cta_id { get; set; } = string.Empty;
+		public string cta_denominacion { get; set; } = string.Empty;
+		#endregion
 	}
 
 	public class OrdenDeCompraDto : Dto

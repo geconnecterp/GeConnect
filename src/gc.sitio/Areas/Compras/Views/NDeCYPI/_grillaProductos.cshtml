@@ -83,7 +83,7 @@
 				@foreach (var item in Model.ListaDatos)
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					<tr class="@clase" data-id="@item.p_id" onclick="selectListaProductoRow(this)">
+					<tr class="@clase" data-id="@item.p_id" data-cta-id="@item.cta_id" data-cta-denominacion="@item.cta_denominacion" onclick="selectListaProductoRow(this)">
 						<td class="align-center tiny-row">@item.p_id</td>
 						@if (item.p_activo == "D")
 						{
@@ -121,14 +121,12 @@
 						</td>
 						@if (item.pedido == 0)
 						{
-							@* <td id="tdPedido" contenteditable='true' style="text-align: right;padding: 0.325rem 0.30rem;border-style: inset;border-width: medium;" onfocusin="focusOnTdPedido(this);">@item.pedido</td> *@
 							<td class="align-right tiny-row">@item.cantidad</td>
 							<td class="align-right tiny-row">@item.costo</td>
 							<td class="align-right tiny-row">@item.costo_total</td>
 						}
 						else
 						{
-							@* <td id="tdPedido" contenteditable='true' style="text-align: right;padding: 0.325rem 0.30rem;border-style: inset;border-width: medium;background-color: lightgreen;" onfocusin="focusOnTdPedido(this);">@item.pedido</td> *@
 							<td class="align-right tiny-row" style="background-color: lightgreen;">@item.cantidad</td>
 							<td class="align-right tiny-row" style="background-color: lightgreen;">@item.costo</td>
 							<td class="align-right tiny-row" style="background-color: lightgreen;">@item.costo_total</td>
