@@ -17,6 +17,7 @@ using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Productos.Etiqueta;
 using gc.infraestructura.Dtos.Productos.Ofertas;
+using gc.infraestructura.Dtos.Productos.Precio;
 using gc.infraestructura.Dtos.Productos.Presupuestos;
 using gc.infraestructura.Dtos.Productos.PromoCombo;
 using gc.infraestructura.Dtos.Tipos;
@@ -1830,6 +1831,24 @@ namespace gc.sitio.Controllers
                 _context.HttpContext?.Session.SetString("CargasPrevias", json);
             }
         }
+
+        public List<PrecioListaDto> ListaPrecios
+        {
+            get
+            {
+                var json = _context.HttpContext?.Session.GetString("ListaPrecios") ?? string.Empty;
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return new List<PrecioListaDto>();
+                }
+                return JsonConvert.DeserializeObject<List<PrecioListaDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("ListaPrecios", json);
+            }
+        }
         #endregion
 
         #region PLAN CONTABLE LISTA
@@ -2557,6 +2576,12 @@ namespace gc.sitio.Controllers
         {
             var res = etSv.ObtenerCargaPrevia(adm_id,TokenCookie).GetAwaiter().GetResult();
             CargasPrevias = res?.ListaEntidad ?? [];
+        }
+
+        protected void ObtenerListaPrecios(IPrecioListaServicio lpSv)
+        {
+            var res = lpSv.ObtenerListaPrecios( TokenCookie).GetAwaiter().GetResult();
+            ListaPrecios = res?.ListaEntidad ?? [];
         }
 
 

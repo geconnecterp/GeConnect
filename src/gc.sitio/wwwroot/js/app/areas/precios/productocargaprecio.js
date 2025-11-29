@@ -2382,7 +2382,11 @@ function configurarBotonesProdCP() {
 
     }).prop("disabled", true);
 
-    $("#lbRel01, #lbRel02, #lbRel03").text((i, txt) => ["PROVEEDOR", "RUBRO", "FAMILIA"][i]);
+    //$("#lbRel01, #lbRel02, #lbRel03").text((i, txt) => ["PROVEEDOR", "RUBRO", "FAMILIA"][i]);
+    $("#lbRel01").text("PROVEEDOR");
+    $("#lbRel02").text("RUBRO");
+    $("#lbRel03").text("FAMILIA");
+
     $("#chkRel03").prop("disabled", true);
 
     // Configurar eventos de familia

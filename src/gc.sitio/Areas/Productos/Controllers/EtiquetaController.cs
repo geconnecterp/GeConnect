@@ -30,7 +30,7 @@ namespace gc.sitio.Areas.Productos.Controllers
         private readonly IRubroServicio _rubroServicio;
 
         public EtiquetaController(IOptions<AppSettings> options, IHttpContextAccessor contexo,
-           ILogger<OfertasController> logger, IOptions<DocsManager> docsManager,
+           ILogger<EtiquetaController> logger, IOptions<DocsManager> docsManager,
            IDocManagerServicio docManagerServicio, IEtiquetaServicio etiquetaServicio,
            ICuentaServicio cuentaServicio,
             IRubroServicio rubroServicio) : base(options, contexo, logger)

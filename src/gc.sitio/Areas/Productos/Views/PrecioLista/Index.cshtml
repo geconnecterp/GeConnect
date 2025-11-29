@@ -1,0 +1,46 @@
+﻿@{
+    Layout = "~/views/shared/_Layout.cshtml";
+    var filtro = new QueryFilters() { Modelo = ModeloFilter.PRECIO_LISTA, Rel01 = [], Rel02 = [], Rel03 = [], Rel04 = [] };
+}
+@section styles {
+    <link rel="stylesheet" href="~/css/simplePagination.css" />
+    <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+}
+
+<partial name="_botonera" model="filtro" />
+<div class="collapse" id="divFiltro">
+    <partial name="_filtroBase" model="filtro" />
+    @Html.Hidden("pagEstado", false)
+</div>
+<div class="collapse" id="divDetalle"></div>
+
+<div id="modalGestorDocumental"></div>
+
+@section scripts {
+    <script type="text/javascript">
+
+        var autoComRel01Url = "@Url.Action("BuscarProvs", "cargaprecios", new { area = "productos" })";/**/
+        var autoComRel02Url = "@Url.Action("BuscarRubros", "cargaprecios", new { area = "productos" })";/**/
+        var autoComRel03Url =  "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "cargaprecios", new { area = "productos" })";/**/
+        var buscarFamiliaUrl = "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "cargaprecios", new { area = "productos" })";/**/
+ 
+     
+        let buscarMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "Presupuesto", new { area = "Productos" })';
+        let homePrecioLista = '@Url.Action("index", "preciolista", new { area = "Productos" })';
+        let obtenerDetallePreciosUrl = '@Url.Action("ObtenerDetallePrecios", "preciolista", new { area = "Productos" })';
+        
+        //para imprimir
+        var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+        var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+        var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+        var enviarEmailUrl =  "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+        var enviarWhatsAppUrl =  "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+       
+    </script>
+
+    <script src="~/lib/jstree/jstree.min.js"></script>
+    <script src="~/js/plugins/jquery.simplePagination.js"></script>
+    <script src="~/js/app/areas/docmngr/docmanager.js"></script>
+
+    <script src="~/js/app/areas/precios/plista.js"></script>
+}

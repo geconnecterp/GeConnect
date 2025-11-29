@@ -1,0 +1,339 @@
+@using gc.infraestructura.Dtos.Productos.Precio
+@model GridCoreSmart<PrecioListaDetalleDto>
+
+<div class="card h-100">
+    <div class="card-header py-2 d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+            <h6 class="mb-0">Detalle de Precios</h6>
+            @if (Model?.ListaDatos?.Any() == true)
+            {
+                <span class="badge bg-primary">@Model.ListaDatos.Count registro(s)</span>
+            }
+        </div>
+        <div class="btn-group btn-group-sm" role="group">
+            <button type="button" class="btn btn-outline-secondary" id="btnExpandirColumnas" title="Expandir/Contraer columnas">
+                <i class="bx bx-columns"></i>
+            </button>
+            <button type="button" class="btn btn-outline-primary" id="btnExportarExcel" title="Exportar a Excel">
+                <i class="bx bx-file"></i>
+            </button>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+            <table class="table table-sm table-hover mb-0 table-striped table-bordered" id="tbGridPrecios">
+                <thead class="table-dark sticky-top" style="position: sticky; top: 0; z-index: 10;">
+                    <tr>
+                        <!-- Columnas principales -->
+                        <th class="text-center align-middle" rowspan="2" style="min-width: 80px;">
+                            <div class="d-flex flex-column">
+                                <span>ID</span>
+                                <small class="text-muted">Producto</small>
+                            </div>
+                        </th>
+                        <th class="text-left align-middle" rowspan="2" style="min-width: 200px;">
+                            <div class="d-flex flex-column">
+                                <span>Descripción</span>
+                                <small class="text-muted">Producto</small>
+                            </div>
+                        </th>
+                        
+                        <!-- Grupo: Proveedor -->
+                        <th class="text-center bg-info bg-opacity-10" colspan="2">
+                            <i class="bx bx-store-alt me-1"></i>Proveedor
+                        </th>
+                        
+                        <!-- Grupo: Clasificación -->
+                        <th class="text-center bg-warning bg-opacity-10" colspan="6">
+                            <i class="bx bx-category me-1"></i>Clasificación
+                        </th>
+                        
+                        <!-- Grupo: Impuestos -->
+                        <th class="text-center bg-danger bg-opacity-10" colspan="3">
+                            <i class="bx bx-receipt me-1"></i>Impuestos
+                        </th>
+                        
+                        <!-- Grupo: Costo -->
+                        <th class="text-center bg-success bg-opacity-10" colspan="2">
+                            <i class="bx bx-dollar-circle me-1"></i>Costo
+                        </th>
+                        
+                        <!-- Grupo: Precios de Venta -->
+                        <th class="text-center bg-primary bg-opacity-10" colspan="8">
+                            <i class="bx bx-purchase-tag me-1"></i>Precios de Venta
+                        </th>
+                    </tr>
+                    <tr>
+                        <!-- Proveedor -->
+                        <th class="text-center bg-info bg-opacity-10" style="min-width: 80px;">ID</th>
+                        <th class="text-left bg-info bg-opacity-10" style="min-width: 150px;">Denominación</th>
+                        
+                        <!-- Clasificación -->
+                        <th class="text-center bg-warning bg-opacity-10" style="min-width: 80px;">Grupo</th>
+                        <th class="text-left bg-warning bg-opacity-10" style="min-width: 120px;">Desc. Grupo</th>
+                        <th class="text-center bg-warning bg-opacity-10" style="min-width: 80px;">Sección</th>
+                        <th class="text-left bg-warning bg-opacity-10" style="min-width: 120px;">Desc. Sección</th>
+                        <th class="text-center bg-warning bg-opacity-10" style="min-width: 80px;">Rubro G.</th>
+                        <th class="text-left bg-warning bg-opacity-10" style="min-width: 120px;">Desc. Rubro G.</th>
+                        
+                        <!-- Impuestos -->
+                        <th class="text-center bg-danger bg-opacity-10" style="min-width: 100px;">IVA Sit.</th>
+                        <th class="text-end bg-danger bg-opacity-10" style="min-width: 80px;">IVA %</th>
+                        <th class="text-end bg-danger bg-opacity-10" style="min-width: 80px;">IIBB %</th>
+                        
+                        <!-- Costo -->
+                        <th class="text-end bg-success bg-opacity-10" style="min-width: 100px;">Precio Costo</th>
+                        <th class="text-center bg-success bg-opacity-10" style="min-width: 100px;">Últ. Actual.</th>
+                        
+                        <!-- Precios de Venta -->
+                        <th class="text-left bg-primary bg-opacity-10" style="min-width: 120px;">Lista 1</th>
+                        <th class="text-end bg-primary bg-opacity-10" style="min-width: 100px;">Precio 1</th>
+                        <th class="text-left bg-primary bg-opacity-10" style="min-width: 120px;">Lista 2</th>
+                        <th class="text-end bg-primary bg-opacity-10" style="min-width: 100px;">Precio 2</th>
+                        <th class="text-left bg-primary bg-opacity-10" style="min-width: 120px;">Lista 3</th>
+                        <th class="text-end bg-primary bg-opacity-10" style="min-width: 100px;">Precio 3</th>
+                        <th class="text-left bg-primary bg-opacity-10" style="min-width: 120px;">Lista 4</th>
+                        <th class="text-end bg-primary bg-opacity-10" style="min-width: 100px;">Precio 4</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model?.ListaDatos?.Any() == true)
+                    {
+                        foreach (var item in Model.ListaDatos)
+                        {
+                            <tr data-producto-id="@item.p_id" class="row-precio-detalle">
+                                <!-- Datos principales del producto -->
+                                <td class="text-center align-middle fw-bold">
+                                    <span class="badge bg-secondary">@item.p_id</span>
+                                </td>
+                                <td class="align-middle" title="@item.p_desc">
+                                    <div class="text-truncate" style="max-width: 250px;">
+                                        @item.p_desc
+                                    </div>
+                                </td>
+                                
+                                <!-- Proveedor -->
+                                <td class="text-center align-middle">
+                                    <span class="badge bg-info bg-opacity-75">@item.cta_id</span>
+                                </td>
+                                <td class="align-middle" title="@item.cta_denominacion">
+                                    <div class="text-truncate" style="max-width: 180px;">
+                                        @item.cta_denominacion
+                                    </div>
+                                </td>
+                                
+                                <!-- Clasificación: Grupo -->
+                                <td class="text-center align-middle">@item.pg_id</td>
+                                <td class="align-middle" title="@item.pg_desc">
+                                    <div class="text-truncate" style="max-width: 150px;">
+                                        @item.pg_desc
+                                    </div>
+                                </td>
+                                
+                                <!-- Clasificación: Sección -->
+                                <td class="text-center align-middle">@item.sec_id</td>
+                                <td class="align-middle" title="@item.sec_desc">
+                                    <div class="text-truncate" style="max-width: 150px;">
+                                        @item.sec_desc
+                                    </div>
+                                </td>
+                                
+                                <!-- Clasificación: Rubro General -->
+                                <td class="text-center align-middle">@item.rubg_id</td>
+                                <td class="align-middle" title="@item.rubg_desc">
+                                    <div class="text-truncate" style="max-width: 150px;">
+                                        @item.rubg_desc
+                                    </div>
+                                </td>
+                                
+                                <!-- Impuestos -->
+                                <td class="text-center align-middle">
+                                    <span class="badge @(item.iva_situacion == "RI" ? "bg-success" : item.iva_situacion == "EX" ? "bg-warning" : "bg-secondary")">
+                                        @item.iva_situacion
+                                    </span>
+                                </td>
+                                <td class="text-end align-middle">
+                                    @item.iva_alicuota.ToString("N2")%
+                                </td>
+                                <td class="text-end align-middle">
+                                    @item.in_alicuota.ToString("N2")%
+                                </td>
+                                
+                                <!-- Costo -->
+                                <td class="text-end align-middle fw-bold text-success">
+                                    $@item.p_pcosto.ToString("N2")
+                                </td>
+                                <td class="text-center align-middle">
+                                    <small class="text-muted">
+                                        @item.p_actu_fecha.ToString("dd/MM/yyyy")
+                                    </small>
+                                </td>
+                                
+                                <!-- Precios de Venta -->
+                                <td class="align-middle" title="@item.lp_desc1">
+                                    <small class="text-muted text-truncate d-block" style="max-width: 140px;">
+                                        @item.lp_desc1
+                                    </small>
+                                </td>
+                                <td class="text-end align-middle fw-bold text-primary">
+                                    $@item.p_pvta1.ToString("N2")
+                                </td>
+                                
+                                <td class="align-middle" title="@item.lp_desc2">
+                                    <small class="text-muted text-truncate d-block" style="max-width: 140px;">
+                                        @item.lp_desc2
+                                    </small>
+                                </td>
+                                <td class="text-end align-middle fw-bold text-primary">
+                                    $@item.p_pvta2.ToString("N2")
+                                </td>
+                                
+                                <td class="align-middle" title="@item.lp_desc3">
+                                    <small class="text-muted text-truncate d-block" style="max-width: 140px;">
+                                        @item.lp_desc3
+                                    </small>
+                                </td>
+                                <td class="text-end align-middle fw-bold text-primary">
+                                    $@item.p_pvta3.ToString("N2")
+                                </td>
+                                
+                                <td class="align-middle" title="@item.lp_desc4">
+                                    <small class="text-muted text-truncate d-block" style="max-width: 140px;">
+                                        @item.lp_desc4
+                                    </small>
+                                </td>
+                                <td class="text-end align-middle fw-bold text-primary">
+                                    $@item.p_pvta4.ToString("N2")
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="23" class="text-center text-muted py-4">
+                                <i class="bx bx-info-circle me-2" style="font-size: 1.5rem;"></i>
+                                <div class="mt-2">
+                                    <strong>No hay datos disponibles</strong>
+                                    <p class="mb-0 small">Ajuste los filtros de búsqueda para obtener resultados</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                @if (Model?.ListaDatos?.Any() == true)
+                {
+                    <tfoot class="table-light border-top border-2">
+                        <tr>
+                            <td colspan="23" class="text-end py-2">
+                                <small class="text-muted">
+                                    <i class="bx bx-info-circle me-1"></i>
+                                    Total de registros: <strong>@Model.ListaDatos.Count</strong>
+                                </small>
+                            </td>
+                        </tr>
+                    </tfoot>
+                }
+            </table>
+        </div>
+    </div>
+    <div class="card-footer py-2 bg-light">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="btnVolverFiltros">
+                    <i class="bx bx-arrow-back me-1"></i>Volver a Filtros
+                </button>
+            </div>
+            <div class="text-muted small">
+                <i class="bx bx-time me-1"></i>
+                Última actualización: <span id="spanUltimaActualizacion">@DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos personalizados para el grid de precios */
+    #tbGridPrecios {
+        font-size: 0.85rem;
+    }
+    
+    #tbGridPrecios thead th {
+        font-weight: 600;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+    
+    #tbGridPrecios tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+        cursor: pointer;
+    }
+    
+    .row-precio-detalle {
+        transition: background-color 0.15s ease-in-out;
+    }
+    
+    /* Scroll horizontal suave */
+    .table-responsive::-webkit-scrollbar {
+        height: 8px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+    
+    /* Columnas con colores suaves */
+    .bg-opacity-10 {
+        opacity: 0.1;
+    }
+    
+    .bg-opacity-75 {
+        opacity: 0.75;
+    }
+</style>
+
+<script>
+    $(function() {
+        // Evento para volver a los filtros
+        $("#btnVolverFiltros").on("click", function() {
+            $("#divDetalle").collapse("hide");
+            $("#divFiltro").collapse("show");
+        });
+        
+        // Evento para expandir/contraer columnas (implementar según necesidad)
+        $("#btnExpandirColumnas").on("click", function() {
+            // Lógica para mostrar/ocultar columnas opcionales
+            console.log("Funcionalidad de expandir columnas pendiente de implementación");
+        });
+        
+        // Evento para exportar a Excel
+        $("#btnExportarExcel").on("click", function() {
+            if (typeof exportarGridAExcel === 'function') {
+                exportarGridAExcel('#tbGridPrecios', 'ListaPrecios');
+            } else {
+                console.warn("La función exportarGridAExcel no está disponible");
+            }
+        });
+        
+        // Tooltip para celdas truncadas
+        $('[title]').tooltip({
+            placement: 'top',
+            trigger: 'hover',
+            container: 'body'
+        });
+        
+        // Actualizar timestamp
+        setInterval(function() {
+            $("#spanUltimaActualizacion").text(new Date().toLocaleString('es-AR'));
+        }, 60000); // Cada minuto
+    });
+</script>
