@@ -1,6 +1,7 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Request;
@@ -211,8 +212,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				request.Registros = _appSettings.NroRegistrosPagina;
-				request.Adm_Id = AdministracionId;
-				request.Usu_Id = UserName;
+				request.Adm_id = AdministracionId;
+				request.Usu_id = UserName;
 				var productos = _productoServicio.NCPICargarListaDeProductosPag2(request, TokenCookie).Result;
 				ObtenerColor(ref productos.Item1);
 				MetadataGeneral = productos.Item2 ?? new MetadataGrid();
@@ -383,24 +384,61 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				var request = new NCPICargaPedidoRequest() { adm_id = AdministracionId, usu_id = UserName, tipo = tipo, pId = pId, tipoCarga = tipoCarga, bultos = bultos };
 				var response = CargaPedidoOCPI(request);
-				//var response = new List<NCPICargaPedidoResponse> //mocked response
-				//{
-				//	new() { bultos = 10, cantidad = 15, pallet = 20, p_pcosto = 12, resultado = 0, resultado_msj = "", unidad_pres = 4 }
-				//};
+
 				if (response == null)
 					return Json(new { error = true, warn = false, msg = "Error al intentar cargar el pedido." });
 				if (response.Count == 0)
 					return Json(new { error = true, warn = false, msg = "Error al intentar cargar el pedido." });
 				if (response.First().resultado != 0)
 					return Json(new { error = false, warn = true, msg = response.First().resultado_msj });
+
 				var item = response.First();
-				return Json(new { error = false, warn = false, msg = string.Empty, unidadPres = item.unidad_pres, pCosto = item.p_pcosto, bulto = item.bultos, cantidad = item.cantidad, pallet = item.pallet, pCostoTotal = item.p_pcosto * item.cantidad });
+
+				var listaTemp = ListaProductoNCPI;
+				var prod = listaTemp.Where(x => x.p_id == pId).First();
+				prod.cantidad = item.cantidad;
+				prod.costo = item.p_pcosto;
+				prod.costo_total = item.p_pcosto * item.cantidad;
+				prod.pedido = bultos;
+				prod.paletizado = item.pallet;
+				prod.pedido_tipo = "M"; //Manual
+				ListaProductoNCPI = listaTemp;
+
+				return Json(new { 
+					error = false, 
+					warn = false, 
+					msg = string.Empty, 
+					unidadPres = item.unidad_pres, 
+					pCosto = item.p_pcosto, 
+					bulto = item.bultos, 
+					cantidad = item.cantidad, 
+					pallet = item.pallet, 
+					pCostoTotal = item.p_pcosto * item.cantidad,
+					pedidoTipo = "M"
+				});
 			}
 			catch (Exception ex)
 			{
 				_logger?.LogError(ex, "Error al intentar setear el estado del remito.");
 				TempData["error"] = "Hubo algun problema al intentar setear el estado del remito. Si el problema persiste informe al Administrador";
 				return Json(new { error = true, warn = false, msg = "Error al intentar setear el estado del remito." });
+			}
+		}
+
+		public JsonResult InicializarDatosEnSesion()
+		{
+			try
+			{
+				ListaProductoNCPI = [];
+				return Json(new { error = false, warn = false, msg = "" });
+			}
+			catch (NegocioException ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
 			}
 		}
 
@@ -528,7 +566,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				model.LimitarPedidoParaCumplir = false;
 				model.TomarUltimoPedido = false;
 
-				var depositos = _depositoServicio.ObtenerDepositosDeAdministracion(AdministracionId, TokenCookie);
+				var depositos = _depositoServicio.ObtenerDepositosDeAdministracion("%", TokenCookie);
 				if (depositos != null && depositos.Count > 0)
 					model.ListaDepositos = ObtenerListaDepositos(depositos);
 				else
@@ -584,15 +622,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				var respuesta = _productoServicio.NecesidadesStockAuto(request, TokenCookie);
 
-				///TODO MARCE: Una vez que recibo la lista debo actualizar la lista ListaProductoNCPI que tenia previamente cargada, teniendo en cuenta las 
-				///mismas funciones que uso cuando se edita la cantidad de forma manual.
 				if (respuesta != null && respuesta.Count > 0)
 				{
 					var listaTemp = ListaProductoNCPI;
-					//var request = new NCPICargaPedidoRequest() { adm_id = AdministracionId, usu_id = UserName, tipo = tipo, pId = pId, tipoCarga = tipoCarga, bultos = bultos };
 					foreach (var item in respuesta)
 					{
-						ActualizarProductos(item, listaTemp);
+						ActualizarProductos(item, listaTemp, "A");
 					}
 					ListaProductoNCPI = listaTemp;
 					return Json(new { error = false, warn = false, msg = "" });
@@ -620,7 +655,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
 
-		private void ActualizarProductos(ProductoNCPI_AutoDto prod, List<ProductoNCPIDto> listaT)
+		/// <summary>
+		/// Actualizar el producto en la lista temporal con los datos obtenidos del pedido automático o manual
+		/// </summary>
+		/// <param name="prod">Producto a actualizar</param>
+		/// <param name="listaT">Lista de productos obtenidos en base a los filtros de busquedas, reservados en sesión</param>
+		/// <param name="pedidoTipo">Tipo de actualización: M -> Manual; A -> Automático</param>
+		private void ActualizarProductos(ProductoNCPI_AutoDto prod, List<ProductoNCPIDto> listaT, string pedidoTipo = "M")
 		{
 			if (prod == null)
 				return;
@@ -639,6 +680,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			ItemEnListaT.costo_total = item.p_pcosto * item.cantidad;
 			ItemEnListaT.pedido = prod.auto_bulto;
 			ItemEnListaT.paletizado = item.pallet;
+			ItemEnListaT.pedido_tipo = pedidoTipo;
 		}
 
 		private static void ObtenerColor(ref List<ProductoNCPIDto> listaProd)

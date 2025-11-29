@@ -1174,8 +1174,8 @@ namespace gc.api.core.Servicios
             ps.Add(new SqlParameter("@stk_avencer", request.Opt3));
             ps.Add(new SqlParameter("@pi", request.Opt4));
             ps.Add(new SqlParameter("@oc", request.Opt5));
-            ps.Add(new SqlParameter("@adm_id", request.Adm_Id));
-            ps.Add(new SqlParameter("@usu_id", request.Usu_Id));
+            ps.Add(new SqlParameter("@adm_id", request.Adm_id));
+            ps.Add(new SqlParameter("@usu_id", request.Usu_id));
             ps.Add(new SqlParameter("@registros", request.Registros));
             ps.Add(new SqlParameter("@pagina", request.Pagina));
             ps.Add(new SqlParameter("@ordenar", string.IsNullOrEmpty(request.Sort) ? "p_desc" : request.Sort));

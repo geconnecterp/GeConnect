@@ -6,8 +6,14 @@
 $(function () {
 	$("#btnCollapseSection").on("click", btnCollapseSectionClicked);
 	$("#btnCancel").on("click", function () {
+		AbrirWaiting();
 		LimpiarDatosDelFiltroInicial();
-		$("#btnFiltro").trigger("click");
+		InicializarDatosEnSesion();
+		CerrarWaiting();
+		setTimeout(() => {
+			HandlerActualizarTablaPostOCAuto();
+			$('#divDetalle').collapse('hide');	
+		}, 200);
 	});
 
 	// Cuando se muestra el filtro → ocultar detalle y opciones
@@ -18,16 +24,51 @@ $(function () {
 
 	// Cuando se oculta el filtro → mostrar detalle
 	$('#divFiltro').on('hidden.bs.collapse', function () {
-		$('#divDetalle').collapse('show');
+		console.log("Entro Filtro Oculto");
+		const $tabla = $('#tbListaProducto');
+		if ($tabla.length > 0) { // existe en el DOM
+			const filas = $tabla.find('tbody tr').length;
+
+			if (filas > 0) {
+				$('#divDetalle').collapse('show');
+				console.log("divDetalle > show");
+			} else {
+				$('#divDetalle').collapse('hide');
+				console.log("divDetalle > hide");
+			}
+		} else {
+			console.warn("La tabla #tbListaProducto no existe en el DOM");
+		}
+	});
+
+	$('#divFiltro').on('shown.bs.collapse', function () {
+		console.log("divFiltro > show");
+		$('#divBtnOpciones').hide();
+		console.log("divBtnOpciones > hide");
 	});
 
 	// Controlar directamente el estado de divDetalle
 	$('#divDetalle').on('shown.bs.collapse', function () {
-		$('#divBtnOpciones').show();
+		const $tabla = $('#tbListaProducto');
+		if ($tabla.length > 0) { // existe en el DOM
+			const filas = $tabla.find('tbody tr').length;
+			if (filas > 0) {
+				$('#divBtnOpciones').show();
+				console.log("divDetalle > show");
+			} else {
+				$('#divBtnOpciones').hide();
+				console.log("divDetalle > hide");
+			}
+		}
+		else {
+			$('#divBtnOpciones').hide();
+			console.log("divBtnOpciones > hide");
+		}
 	});
 
 	$('#divDetalle').on('hidden.bs.collapse', function () {
 		$('#divBtnOpciones').hide();
+		console.log("divBtnOpciones > hide");
 	});
 
 	$("input#Rel03").on("click", function () {
@@ -85,25 +126,26 @@ $(function () {
 	return true;
 });
 
+function InicializarDatosEnSesion() {
+	var data = {};
+	PostGen(data, inicializarDatosEnSesionUrl, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+		}
+	});
+}
+
 function AbrirOrdenDeCompra() {
 	if (pIdSeleccionado && ctaIdDeProdSeleccionado && pIdSeleccionado != undefined && ctaIdDeProdSeleccionado != undefined && pIdSeleccionado != "" && ctaIdDeProdSeleccionado != "") {
 		AbrirMensaje("ATENCIÓN", "Va a ser redirigido a la aplicación Carga de Orden de Compra. ¿Confirma?", function (e) {
 			$("#msjModal").modal("hide");
 			switch (e) {
 				case "SI": //Confirmar
-					//window.location.href = '/Compras/OrdenDeCompra/IndexConParametros?pId=' + pIdSeleccionado + '&ctaId=' + ctaIdDeProdSeleccionado + '&ctaDeno=' + ctaDenoProdSeleccionado;
-					//$.ajax({
-					//	url: '/Compras/OrdenDeCompra/IndexConParametros',
-					//	type: 'POST',
-					//	data: { pId: pIdSeleccionado, ctaId: ctaIdDeProdSeleccionado, ctaDeno: ctaDenoProdSeleccionado },
-					//	success: function (html) {
-					//		// si devolvés una vista completa, podés hacer:
-					//		document.open();
-					//		document.write(html);
-					//		document.close();
-					//	}
-					//});
-					// Navegación POST segura en lugar de document.write()
 					(function submitPostNavigation() {
 						var form = document.createElement('form');
 						form.method = 'POST';
@@ -251,11 +293,6 @@ function HandlerActualizarTablaPostOCAuto() {
 	PostGenHtml(datos, recargarGrillaUrl, function (obj) {
 		$('#modalFiltroCompraAuto').modal('hide');
 		$("#divListaProducto").html(obj);
-		//addInCellEditHandler();
-		//addInCellLostFocusHandler();
-		//addInCellKeyDownHandler();
-		//AddEventListenerToGrid("tbListaProducto");
-		//tableUpDownArrow();
 		finalizarInicializacionGridListaProductos();
 		const tabla = document.getElementById("tbListaProducto");
 		AplicarEstilosTabla(tabla);
@@ -275,11 +312,22 @@ function AplicarEstilosTabla(tabla) {
 		const fila = tabla.rows[i];
 		const valorCantidad = parseFloat(fila.cells[colCantidad].innerText) || 0;
 
+		// Leemos el atributo data-pedido-tipo de la fila
+		const pedidoTipo = fila.getAttribute("data-pedido-tipo") || "";
+		console.log(pedidoTipo);
+		// Determinamos el color según el tipo
+		let color = "";
+		if (pedidoTipo === "M") {
+			color = "lightgreen"; // Manual
+		} else if (pedidoTipo === "A") {
+			color = "#cceeff"; // Automático (celeste pastel)
+		}
+
 		if (valorCantidad !== 0) {
-			fila.cells[colCantidad].style.backgroundColor = "lightgreen";
-			fila.cells[colCosto].style.backgroundColor = "lightgreen";
-			fila.cells[colCostoTotal].style.backgroundColor = "lightgreen";
-			fila.cells[colBulto].style.backgroundColor = "lightgreen";
+			fila.cells[colCantidad].style.backgroundColor = color;
+			fila.cells[colCosto].style.backgroundColor = color;
+			fila.cells[colCostoTotal].style.backgroundColor = color;
+			fila.cells[colBulto].style.backgroundColor = color;
 		} else {
 			fila.cells[colCantidad].style.backgroundColor = "";
 			fila.cells[colCosto].style.backgroundColor = "";
@@ -288,22 +336,6 @@ function AplicarEstilosTabla(tabla) {
 		}
 	}
 }
-
-
-//function RefrescarColoresEnTabla() {
-//	if (o.cantidad != 0) {
-//		tabla.rows[rowIndex - 1].cells[colCantidad].style.backgroundColor = "lightgreen";
-//		tabla.rows[rowIndex - 1].cells[colCosto].style.backgroundColor = "lightgreen";
-//		tabla.rows[rowIndex - 1].cells[colCostoTotal].style.backgroundColor = "lightgreen";
-//		tabla.rows[rowIndex - 1].cells[colBulto].style.backgroundColor = "lightgreen"; //col 10
-//	}
-//	else {
-//		tabla.rows[rowIndex - 1].cells[colCantidad].style.backgroundColor = "";
-//		tabla.rows[rowIndex - 1].cells[colCosto].style.backgroundColor = "";
-//		tabla.rows[rowIndex - 1].cells[colCostoTotal].style.backgroundColor = "";
-//		tabla.rows[rowIndex - 1].cells[colBulto].style.backgroundColor = "";
-//	}
-//}
 
 function ValidarDatosObligAnalizarCompraAuto() {
 	var ret = { msj: "", objeto: "" };
@@ -428,20 +460,20 @@ function LimpiarDatosDelFiltroInicial() {
 	$("input#Rel01").prop('disabled', true);
 	$("#Rel01List").prop('disabled', true);
 
-	$("input#Rel03").val("");
-	$("#Rel03Item").val("");
+	limpiarListaLs03();
 	$("#Rel03List").empty();
 	$("#chkRel03").prop('checked', false);
 	$("#chkRel03").trigger("change");
-	$("input#Rel03").prop('disabled', true);
+	$("#listaLs03").prop('disabled', true);
 	$("#Rel03List").prop('disabled', true);
+	$("#chkRel03").prop('disabled', true);
 
-	$("input#Rel02").val("");
+	$("#listaLs02").val("");
 	$("#Rel02Item").val("");
 	$("#Rel02List").empty();
 	$("#chkRel02").prop('checked', false);
 	$("#chkRel02").trigger("change");
-	$("input#Rel02").prop('disabled', true);
+	$("#listaLs02").prop('disabled', true);
 	$("#Rel02List").prop('disabled', true);
 
 	$("#chk01").prop('checked', false);
@@ -466,6 +498,15 @@ function LimpiarDatosDelFiltroInicial() {
 	$("input#Id").prop('disabled', true);
 	$("input#Id2").val("");
 	$("input#Id2").prop('disabled', true);
+}
+
+function limpiarListaLs03() {
+	const $select = $("#listaLs03");
+	if ($select.length) {
+		$select.empty(); // vacía todo
+		$select.append($("<option>", { value: "", text: "Seleccionar" }));
+		$select.prop("selectedIndex", 0); // deja seleccionado "Seleccionar"
+	}
 }
 
 function NoHayProdSeleccionado() {
@@ -647,36 +688,6 @@ $("#Rel01").autocomplete({
 	}
 });
 
-//codigo generico para autocomplete 03
-//$("#Rel03").autocomplete({
-//	source: function (request, response) {
-
-//		data = { prefix: request.term }; Rel03
-
-//		$.ajax({
-//			url: autoComRel03Url,
-//			type: "POST",
-//			dataType: "json",
-//			data: data,
-//			success: function (obj) {
-//				response($.map(obj, function (item) {
-//					var texto = item.descripcion;
-//					return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
-//				}));
-//			}
-//		})
-//	},
-//	minLength: 3,
-//	select: function (event, ui) {
-//		if ($("#Rel03List").has('option:contains("' + ui.item.id + '")').length === 0) {
-//			$("#Rel03Item").val(ui.item.id);
-//			var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
-//			$("#Rel03List").append(opc);
-//		}
-//		return true;
-//	}
-//});
-
 function CargarFamiliaLista(id) {
 	var ctaId = id;
 	data = { ctaId };
@@ -685,17 +696,6 @@ function CargarFamiliaLista(id) {
 		CerrarWaiting();
 		return true
 	});
-	//PostGen(data, BuscarProveedoresFamiliaURL, function (obj) {
-	//	if (obj.error === true) {
-	//		AbrirMensaje("ATENCIÓN", obj.msg, function () {
-	//			$("#msjModal").modal("hide");
-	//			return true;
-	//		}, false, ["Aceptar"], "error!", null);
-	//	}
-	//	else {
-			
-	//	}
-	//});
 }
 
 var tipoBusqueda = "";
@@ -750,14 +750,8 @@ function BuscarProductos(pag = 1) {
 	PostGenHtml(data, BuscarProductosOCPI2URL, function (obj) {
 		$("#divListaProducto").html(obj);
 		$("#divDetalle").collapse("show");
-		//addInCellEditHandler();
-		//addInCellLostFocusHandler();
-		//addInCellKeyDownHandler();
-		//AddEventListenerToGrid("tbListaProducto");
-		//tableUpDownArrow();
 		finalizarInicializacionGridListaProductos();
 		$("#divBtnOpciones").show();
-		//LimpiarDatosDelFiltroInicial();
 		PostGen({}, buscarMetadataURL, function (obj) {
 			if (obj.error === true) {
 				AbrirMensaje("ATENCIÓN", obj.msg, function () {
@@ -810,22 +804,11 @@ function selectListaProductoRow(x) {
 		pIdSeleccionado = id;
 		ctaIdDeProdSeleccionado = ctaId;
 		ctaDenoProdSeleccionado = ctaDeno;
-		//finalizarInicializacionGridListaProductos();
 		BuscarInfoAdicional();
 	}
 	else {
 		pIdSeleccionado = "";
 	}
-
-	//if (x) {
-	//	pIdSeleccionado = x.cells[0].innerText.trim();
-
-	//	//finalizarInicializacionGridListaProductos();
-	//	BuscarInfoAdicional();
-	//}
-	//else {
-	//	pIdSeleccionado = "";
-	//}
 }
 
 function SeleccionarDesdeFila(index, ctrol) {
@@ -886,13 +869,6 @@ function selectListaInfoProductoRow() {
 /****************************************************************************************
 ################################ ADD-ON --  tbListaProducto  #########################
 *****************************************************************************************/
-//function selectItemDetalle(x) {
-//	$("#tbListaProducto tbody tr").each(function (index) {
-//		$(this).removeClass("selected-row");
-//		$(this).removeClass("selectedEdit-row");
-//	});
-//	$(x).addClass("selected-row");
-//}
 // Función de debounce para evitar llamadas repetidas
 function debounce(func, wait) {
 	let timeout;
@@ -911,22 +887,6 @@ const ActualizarListaProductosDebounced = debounce(function (row, campoActual) {
 		ActualizarListaProductos(row, campoActual);
 	}
 }, 300);
-
-//function selectItemEncabezado(x) {
-//	$("#tbListaLiqEmpEncabezado tbody tr").each(function (index) {
-//		$(this).removeClass("selected-row");
-//		$(this).removeClass("selectedEdit-row");
-//	});
-//	$(x).addClass("selected-row");
-//	let row = $(x).closest("tr");
-//	let cta_id = $(x).attr("data-cta-id");
-//	var data = { cta_id: cta_id };
-//	PostGenHtml(data, obtenerGrillaDetalleUrl, function (obj) {
-//		$("#divGrillaDetalle").html(obj);
-//		finalizarInicializacionGridLiqEmpDetalle();
-//		return true;
-//	});
-//}
 
 function finalizarInicializacionGridListaProductos() {
 	setTimeout(function () {
@@ -967,19 +927,30 @@ function ActualizarListaProductos(row, campoActual) {
 			let fila = tabla.querySelector(`tr[data-id='${pId}']`);
 
 			if (fila) {
+				// Actualizar
+				fila.setAttribute("data-pedido-tipo", "M"); // ahora la fila tiene data-pedido-tipo="M"
+
+				const pedidoTipo = fila.getAttribute("data-pedido-tipo"); // "A" o "M"
+				var color = "";
 				if (o.cantidad != 0) {
+					if (pedidoTipo === "M") {
+						color = "lightgreen"; // Manual
+					} else if (pedidoTipo === "A") {
+						color = "#cceeff"; // celeste pastel (Automático)
+					}
+
 					fila.cells[colCantidad].innerText = o.cantidad;
-					fila.cells[colCantidad].style.backgroundColor = "lightgreen";
+					fila.cells[colCantidad].style.backgroundColor = color;
 
 					fila.cells[colCosto].innerText = (Math.round(o.pCosto * 100) / 100).toFixed(3);
-					fila.cells[colCosto].style.backgroundColor = "lightgreen";
+					fila.cells[colCosto].style.backgroundColor = color;
 
 					fila.cells[colCostoTotal].innerText = (Math.round(o.pCostoTotal * 100) / 100).toFixed(3);
-					fila.cells[colCostoTotal].style.backgroundColor = "lightgreen";
+					fila.cells[colCostoTotal].style.backgroundColor = color;
 
 					fila.cells[colPallet].innerText = (Math.round(o.pallet * 100) / 100).toFixed(2);
 
-					fila.cells[colBulto].style.backgroundColor = "lightgreen";
+					fila.cells[colBulto].style.backgroundColor = color;
 				} else {
 					fila.cells[colCantidad].innerText = o.cantidad;
 					fila.cells[colCantidad].style.backgroundColor = "";

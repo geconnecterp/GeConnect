@@ -176,8 +176,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 				}
 
 				request.Registros = _settings.NroRegistrosPagina;
-				request.Adm_Id = AdministracionId;
-				request.Usu_Id = UserName;
+				request.Adm_id = AdministracionId;
+				request.Usu_id = UserName;
 				var productos = _productoServicio.NCPICargarListaDeProductosPag2(request, TokenCookie).Result;
 				ObtenerColor(ref productos.Item1);
 				MetadataGeneral = productos.Item2 ?? new MetadataGrid();
