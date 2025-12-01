@@ -1101,3 +1101,35 @@ function parseFechaES(fechaStr) {
     return isNaN(fecha.getTime()) ? null : fecha;
 }
 
+function extraerValoresDeSelect(selectId, fallbackId, checkId) {
+    const valores = [];
+
+    if (!$(checkId).is(":checked")) {
+        return valores;
+    }
+
+    const $opts = $(selectId).find("option");
+    if ($opts.length > 0) {
+        const visto = {};
+        $opts.each(function () {
+            let v = $(this).val();
+            if (v != null) {
+                v = String(v).trim();
+                if (v.length > 0 && !visto[v]) {
+                    visto[v] = true;
+                    valores.push(v);
+                }
+            }
+        });
+    } else if (fallbackId) {
+        let unicoVal = $(fallbackId).val();
+        if (unicoVal != null) {
+            unicoVal = String(unicoVal).trim();
+            if (unicoVal.length > 0) {
+                valores.push(unicoVal);
+            }
+        }
+    }
+
+    return valores;
+}
