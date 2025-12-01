@@ -320,7 +320,7 @@ function AplicarEstilosTabla(tabla) {
 		if (pedidoTipo === "M") {
 			color = "lightgreen"; // Manual
 		} else if (pedidoTipo === "A") {
-			color = "#cceeff"; // Automático (celeste pastel)
+			color = "#6cc6f3"; // Automático (celeste pastel)
 		}
 
 		if (valorCantidad !== 0) {
@@ -936,7 +936,7 @@ function ActualizarListaProductos(row, campoActual) {
 					if (pedidoTipo === "M") {
 						color = "lightgreen"; // Manual
 					} else if (pedidoTipo === "A") {
-						color = "#cceeff"; // celeste pastel (Automático)
+						color = "#6cc6f3"; // celeste pastel (Automático)
 					}
 
 					fila.cells[colCantidad].innerText = o.cantidad;
