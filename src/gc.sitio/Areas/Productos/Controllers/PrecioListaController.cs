@@ -1,10 +1,7 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
-using gc.infraestructura.Core.EntidadesComunes;
+﻿using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
-using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Productos.Etiqueta;
 using gc.infraestructura.Dtos.Productos.Precio;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
@@ -12,7 +9,6 @@ using gc.infraestructura.Helpers;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.Extensions.Options;
 using System.Reflection;
 
@@ -99,6 +95,9 @@ namespace gc.sitio.Areas.Productos.Controllers
             
             try
             {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
                 if (filters is null)
                 {
                     _logger?.LogWarning("⚠️ Filters es null");

@@ -4,6 +4,7 @@ using gc.api.core.Contratos.Servicios.Ofertas;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Precio;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
@@ -51,7 +52,9 @@ namespace gc.api.core.Servicios.Ofertas
             ps.Add(new SqlParameter("@costo", filters.Opt1));
 
             //en _filtro base manejarlo como familia
-            var lps = filters.Rel04.ToArray();
+            var lps = filters.Rel04 == null
+                ? [ new ComboGenDto { Id = "001", Descripcion = "001" }] 
+                : filters.Rel04.ToArray();
             var cont = 0;
             for (var i = 0; i < lps.Length; i++)
             {

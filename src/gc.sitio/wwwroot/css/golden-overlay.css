@@ -511,3 +511,148 @@
     background-color: #fff8e1;
     border-color: #ffc107;
 }
+
+/* ====== CORRECCIÓN CRÍTICA: ESTILOS PARA GRID DE PRECIOS ====== */
+
+/* Encabezado principal con gradiente dorado visible */
+.table-golden-header {
+    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%) !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+    border-bottom: 3px solid #8b6914 !important;
+}
+
+/* Asegurar que TODOS los elementos dentro del header tengan contraste */
+.table-golden-header th,
+.table-golden-header th span,
+.table-golden-header th small,
+.table-golden-header th i,
+.table-golden-header th div {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+
+/* Específico para textos pequeños en el header */
+.table-golden-header small.text-muted {
+    color: rgba(255, 255, 255, 0.85) !important;
+    font-weight: 500 !important;
+}
+
+/* CORRECCIÓN CRÍTICA: Sobreescribir bg-opacity-10 SOLO en headers de tabla */
+.table-golden-header .bg-opacity-10 {
+    opacity: 1 !important; /* ✅ FORZAR OPACIDAD COMPLETA */
+    background-color: rgba(218, 165, 32, 0.25) !important;
+}
+
+/* Colores específicos para cada grupo de columnas con mejor contraste */
+.table-golden-header .bg-info {
+    background-color: rgba(13, 110, 253, 0.25) !important;
+    border-left: 2px solid #0d6efd !important;
+}
+
+.table-golden-header .bg-warning {
+    background-color: rgba(255, 193, 7, 0.25) !important;
+    border-left: 2px solid #ffc107 !important;
+}
+
+.table-golden-header .bg-danger {
+    background-color: rgba(220, 53, 69, 0.25) !important;
+    border-left: 2px solid #dc3545 !important;
+}
+
+.table-golden-header .bg-success {
+    background-color: rgba(25, 135, 84, 0.25) !important;
+    border-left: 2px solid #198754 !important;
+}
+
+.table-golden-header .bg-primary {
+    background-color: rgba(13, 110, 253, 0.25) !important;
+    border-left: 2px solid #0d6efd !important;
+}
+
+/* Iconos del header con mejor visibilidad */
+.table-golden-header i {
+    font-size: 1.1em !important;
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+    margin-right: 0.25rem !important;
+}
+
+/* Sticky header mejorado */
+.table-golden-header.sticky-top {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+    z-index: 1020 !important;
+}
+
+/* Bordes entre columnas del header para mejor separación visual */
+.table-golden-header th {
+    border-right: 1px solid rgba(255, 255, 255, 0.2) !important;
+    padding: 0.75rem 0.5rem !important;
+}
+
+.table-golden-header th:last-child {
+    border-right: none !important;
+}
+
+/* Segunda fila del header (subheaders) */
+.table-golden-header tr:nth-child(2) th {
+    font-size: 0.85rem !important;
+    padding: 0.5rem 0.35rem !important;
+    background: linear-gradient(135deg, #8b6914 0%, #b8860b 100%) !important;
+}
+
+/* Hover en headers para ordenación */
+.table-golden-header th.sortable:hover {
+    background-color: rgba(139, 105, 20, 0.3) !important;
+    cursor: pointer;
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+}
+
+/* ====== CORRECCIÓN PARA BADGES DENTRO DEL GRID ====== */
+.table-golden tbody .badge.bg-info,
+.table-golden tbody .badge.bg-success,
+.table-golden tbody .badge.bg-warning,
+.table-golden tbody .badge.bg-danger,
+.table-golden tbody .badge.bg-secondary,
+.table-golden tbody .badge.bg-primary {
+    opacity: 1 !important; /* ✅ BADGES siempre 100% visibles */
+    font-weight: 600 !important;
+}
+
+/* Específico para badge con bg-opacity-75 */
+.table-golden tbody .bg-opacity-75 {
+    opacity: 1 !important;
+}
+
+/* Clases específicas para grupos de headers */
+.header-group-info,
+.header-subgroup-info {
+    background-color: rgba(13, 110, 253, 0.15) !important;
+    border-left: 3px solid #0d6efd !important;
+}
+
+.header-group-warning,
+.header-subgroup-warning {
+    background-color: rgba(255, 193, 7, 0.15) !important;
+    border-left: 3px solid #ffc107 !important;
+}
+
+.header-group-danger,
+.header-subgroup-danger {
+    background-color: rgba(220, 53, 69, 0.15) !important;
+    border-left: 3px solid #dc3545 !important;
+}
+
+.header-group-success,
+.header-subgroup-success {
+    background-color: rgba(25, 135, 84, 0.15) !important;
+    border-left: 3px solid #198754 !important;
+}
+
+.header-group-primary,
+.header-subgroup-primary {
+    background-color: rgba(13, 110, 253, 0.15) !important;
+    border-left: 3px solid #0d6efd !important;
+}

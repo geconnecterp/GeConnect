@@ -1,4 +1,4 @@
-@using gc.infraestructura.Dtos.Productos.Precio
+ï»¿@using gc.infraestructura.Dtos.Productos.Precio
 @model GridCoreSmart<PrecioListaDetalleDto>
 
 <div class="card h-100">
@@ -21,79 +21,79 @@
     </div>
     <div class="card-body p-0">
         <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
-            <table class="table table-sm table-hover mb-0 table-striped table-bordered" id="tbGridPrecios">
-                <thead class="table-dark sticky-top" style="position: sticky; top: 0; z-index: 10;">
-                    <tr>
-                        <!-- Columnas principales -->
+            <table class="table table-sm table-hover mb-0 table-golden table-bordered" id="tbGridPrecios">
+                <thead class="table-golden-header">
+                    <tr class="header-row-primary">
+                        <!-- Columnas principales SIN bg-opacity -->
                         <th class="text-center align-middle" rowspan="2" style="min-width: 80px;">
                             <div class="d-flex flex-column">
                                 <span>ID</span>
-                                <small class="text-muted">Producto</small>
+                                <small>Producto</small>
                             </div>
                         </th>
                         <th class="text-left align-middle" rowspan="2" style="min-width: 200px;">
                             <div class="d-flex flex-column">
-                                <span>Descripción</span>
-                                <small class="text-muted">Producto</small>
+                                <span>DescripciÃ³n</span>
+                                <small>Producto</small>
                             </div>
                         </th>
                         
-                        <!-- Grupo: Proveedor -->
-                        <th class="text-center bg-info bg-opacity-10" colspan="2">
+                        <!-- Grupo: Proveedor - QUITAR bg-opacity-10 -->
+                        <th class="text-center header-group-info" colspan="2">
                             <i class="bx bx-store-alt me-1"></i>Proveedor
                         </th>
                         
-                        <!-- Grupo: Clasificación -->
-                        <th class="text-center bg-warning bg-opacity-10" colspan="6">
-                            <i class="bx bx-category me-1"></i>Clasificación
+                        <!-- Grupo: ClasificaciÃ³n - QUITAR bg-opacity-10 -->
+                        <th class="text-center header-group-warning" colspan="6">
+                            <i class="bx bx-category me-1"></i>ClasificaciÃ³n
                         </th>
                         
-                        <!-- Grupo: Impuestos -->
-                        <th class="text-center bg-danger bg-opacity-10" colspan="3">
+                        <!-- Grupo: Impuestos - QUITAR bg-opacity-10 -->
+                        <th class="text-center header-group-danger" colspan="3">
                             <i class="bx bx-receipt me-1"></i>Impuestos
                         </th>
                         
-                        <!-- Grupo: Costo -->
-                        <th class="text-center bg-success bg-opacity-10" colspan="2">
+                        <!-- Grupo: Costo - QUITAR bg-opacity-10 -->
+                        <th class="text-center header-group-success" colspan="2">
                             <i class="bx bx-dollar-circle me-1"></i>Costo
                         </th>
                         
-                        <!-- Grupo: Precios de Venta -->
-                        <th class="text-center bg-primary bg-opacity-10" colspan="8">
+                        <!-- Grupo: Precios de Venta - QUITAR bg-opacity-10 -->
+                        <th class="text-center header-group-primary" colspan="8">
                             <i class="bx bx-purchase-tag me-1"></i>Precios de Venta
                         </th>
                     </tr>
-                    <tr>
-                        <!-- Proveedor -->
-                        <th class="text-center bg-info bg-opacity-10" style="min-width: 80px;">ID</th>
-                        <th class="text-left bg-info bg-opacity-10" style="min-width: 150px;">Denominación</th>
+                    <tr class="header-row-secondary">
+                        <!-- Subheaders CON clases especÃ­ficas -->
+                        <th class="text-center header-subgroup-info">ID</th>
+                        <th class="text-left header-subgroup-info">DenominaciÃ³n</th>
                         
-                        <!-- Clasificación -->
-                        <th class="text-center bg-warning bg-opacity-10" style="min-width: 80px;">Grupo</th>
-                        <th class="text-left bg-warning bg-opacity-10" style="min-width: 120px;">Desc. Grupo</th>
-                        <th class="text-center bg-warning bg-opacity-10" style="min-width: 80px;">Sección</th>
-                        <th class="text-left bg-warning bg-opacity-10" style="min-width: 120px;">Desc. Sección</th>
-                        <th class="text-center bg-warning bg-opacity-10" style="min-width: 80px;">Rubro G.</th>
-                        <th class="text-left bg-warning bg-opacity-10" style="min-width: 120px;">Desc. Rubro G.</th>
+                        <!-- ClasificaciÃ³n -->
+                        <th class="text-center header-subgroup-warning">Grupo</th>
+                        <th class="text-left header-subgroup-warning">Desc. Grupo</th>
+                        <th class="text-center header-subgroup-warning">SecciÃ³n</th>
+                        <th class="text-left header-subgroup-warning">Desc. SecciÃ³n</th>
+                        <th class="text-center header-subgroup-warning">Rubro G.</th>
+                        <th class="text-left header-subgroup-warning">Desc. Rubro G.</th>
                         
                         <!-- Impuestos -->
-                        <th class="text-center bg-danger bg-opacity-10" style="min-width: 100px;">IVA Sit.</th>
-                        <th class="text-end bg-danger bg-opacity-10" style="min-width: 80px;">IVA %</th>
-                        <th class="text-end bg-danger bg-opacity-10" style="min-width: 80px;">IIBB %</th>
+                        <th class="text-center header-subgroup-danger">IVA Sit.</th>
+                        <th class="text-end header-subgroup-danger">IVA %</th>
+                        <th class="text-end header-subgroup-danger">IIBB %</th>
                         
                         <!-- Costo -->
-                        <th class="text-end bg-success bg-opacity-10" style="min-width: 100px;">Precio Costo</th>
-                        <th class="text-center bg-success bg-opacity-10" style="min-width: 100px;">Últ. Actual.</th>
+                        <th class="text-end header-subgroup-success">Precio Costo</th>
+                        <th class="text-center header-subgroup-success">Ãšlt. Actual.</th>
                         
                         <!-- Precios de Venta -->
-                        <th class="text-left bg-primary bg-opacity-10" style="min-width: 120px;">Lista 1</th>
-                        <th class="text-end bg-primary bg-opacity-10" style="min-width: 100px;">Precio 1</th>
-                        <th class="text-left bg-primary bg-opacity-10" style="min-width: 120px;">Lista 2</th>
-                        <th class="text-end bg-primary bg-opacity-10" style="min-width: 100px;">Precio 2</th>
-                        <th class="text-left bg-primary bg-opacity-10" style="min-width: 120px;">Lista 3</th>
-                        <th class="text-end bg-primary bg-opacity-10" style="min-width: 100px;">Precio 3</th>
-                        <th class="text-left bg-primary bg-opacity-10" style="min-width: 120px;">Lista 4</th>
-                        <th class="text-end bg-primary bg-opacity-10" style="min-width: 100px;">Precio 4</th>
+                        <th class="text-left header-subgroup-primary">Lista 1</th>
+                        <th class="text-end header-subgroup-primary">Precio 1</th>
+                        <th class="text-left header-subgroup-primary">Lista 2</th>
+                        <th class="text-end header-subgroup-primary">Precio 2</th>
+                        <th class="text-left header-subgroup-primary">Lista 3</th>
+                        <th class="text-end header-subgroup-primary">Precio 3</th>
+                        <th class="text-left header-subgroup-primary">Lista 4</th>
+                        <th class="text-end header-subgroup-primary">Precio 4</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -122,7 +122,7 @@
                                     </div>
                                 </td>
                                 
-                                <!-- Clasificación: Grupo -->
+                                <!-- ClasificaciÃ³n: Grupo -->
                                 <td class="text-center align-middle">@item.pg_id</td>
                                 <td class="align-middle" title="@item.pg_desc">
                                     <div class="text-truncate" style="max-width: 150px;">
@@ -130,7 +130,7 @@
                                     </div>
                                 </td>
                                 
-                                <!-- Clasificación: Sección -->
+                                <!-- ClasificaciÃ³n: SecciÃ³n -->
                                 <td class="text-center align-middle">@item.sec_id</td>
                                 <td class="align-middle" title="@item.sec_desc">
                                     <div class="text-truncate" style="max-width: 150px;">
@@ -138,7 +138,7 @@
                                     </div>
                                 </td>
                                 
-                                <!-- Clasificación: Rubro General -->
+                                <!-- ClasificaciÃ³n: Rubro General -->
                                 <td class="text-center align-middle">@item.rubg_id</td>
                                 <td class="align-middle" title="@item.rubg_desc">
                                     <div class="text-truncate" style="max-width: 150px;">
@@ -215,7 +215,7 @@
                                 <i class="bx bx-info-circle me-2" style="font-size: 1.5rem;"></i>
                                 <div class="mt-2">
                                     <strong>No hay datos disponibles</strong>
-                                    <p class="mb-0 small">Ajuste los filtros de búsqueda para obtener resultados</p>
+                                    <p class="mb-0 small">Ajuste los filtros de bÃºsqueda para obtener resultados</p>
                                 </div>
                             </td>
                         </tr>
@@ -246,58 +246,116 @@
             </div>
             <div class="text-muted small">
                 <i class="bx bx-time me-1"></i>
-                Última actualización: <span id="spanUltimaActualizacion">@DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")</span>
+                Ãšltima actualizaciÃ³n: <span id="spanUltimaActualizacion">@DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")</span>
             </div>
         </div>
     </div>
 </div>
 
 <style>
-    /* Estilos personalizados para el grid de precios */
+    /* âœ… ESTILOS OPTIMIZADOS PARA EL GRID DE PRECIOS */
     #tbGridPrecios {
         font-size: 0.85rem;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    /* Header con contraste mejorado */
+    #tbGridPrecios thead.table-golden-header {
+        background: linear-gradient(135deg, #b8860b 0%, #daa520 100%) !important;
     }
     
     #tbGridPrecios thead th {
-        font-weight: 600;
+        font-weight: 700 !important;
         white-space: nowrap;
         vertical-align: middle;
+        color: #ffffff !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
     }
     
+    /* Sobreescribir colores de texto dentro del header */
+    #tbGridPrecios thead th *,
+    #tbGridPrecios thead th span,
+    #tbGridPrecios thead th small,
+    #tbGridPrecios thead th i,
+    #tbGridPrecios thead th div {
+        color: #ffffff !important;
+    }
+    
+    /* Small text en header con ligera transparencia */
+    #tbGridPrecios thead th small {
+        color: rgba(255, 255, 255, 0.9) !important;
+        font-weight: 500 !important;
+    }
+    
+    /* Hover mejorado en filas del body */
     #tbGridPrecios tbody tr:hover {
-        background-color: rgba(0, 123, 255, 0.05);
+        background-color: rgba(218, 165, 32, 0.08) !important;
         cursor: pointer;
+        transform: scale(1.001);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
     
     .row-precio-detalle {
-        transition: background-color 0.15s ease-in-out;
+        transition: all 0.15s ease-in-out;
     }
     
-    /* Scroll horizontal suave */
+    /* Scroll personalizado */
     .table-responsive::-webkit-scrollbar {
-        height: 8px;
+        height: 10px;
+        width: 10px;
     }
     
     .table-responsive::-webkit-scrollbar-track {
-        background: #f1f1f1;
-    }
-    
-    .table-responsive::-webkit-scrollbar-thumb {
-        background: #888;
+        background: #f8f9fa;
         border-radius: 4px;
     }
     
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #b8860b, #daa520);
+        border-radius: 4px;
+        border: 2px solid #f8f9fa;
+    }
+    
     .table-responsive::-webkit-scrollbar-thumb:hover {
-        background: #555;
+        background: linear-gradient(135deg, #8b6914, #b8860b);
     }
     
-    /* Columnas con colores suaves */
-    .bg-opacity-10 {
-        opacity: 0.1;
+    /* Grupos de columnas con fondos sutiles */
+    #tbGridPrecios thead .bg-info {
+        background-color: rgba(13, 110, 253, 0.2) !important;
     }
     
-    .bg-opacity-75 {
-        opacity: 0.75;
+    #tbGridPrecios thead .bg-warning {
+        background-color: rgba(255, 193, 7, 0.2) !important;
+    }
+    
+    #tbGridPrecios thead .bg-danger {
+        background-color: rgba(220, 53, 69, 0.2) !important;
+    }
+    
+    #tbGridPrecios thead .bg-success {
+        background-color: rgba(25, 135, 84, 0.2) !important;
+    }
+    
+    #tbGridPrecios thead .bg-primary {
+        background-color: rgba(13, 110, 253, 0.2) !important;
+    }
+    
+    /* Badges con mÃ¡xima visibilidad */
+    #tbGridPrecios tbody .badge {
+        opacity: 1 !important;
+        font-weight: 600 !important;
+        padding: 0.35em 0.65em !important;
+    }
+    
+    /* Sticky header con sombra */
+    #tbGridPrecios thead.table-golden-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 </style>
 
@@ -309,10 +367,10 @@
             $("#divFiltro").collapse("show");
         });
         
-        // Evento para expandir/contraer columnas (implementar según necesidad)
+        // Evento para expandir/contraer columnas (implementar segÃºn necesidad)
         $("#btnExpandirColumnas").on("click", function() {
-            // Lógica para mostrar/ocultar columnas opcionales
-            console.log("Funcionalidad de expandir columnas pendiente de implementación");
+            // LÃ³gica para mostrar/ocultar columnas opcionales
+            console.log("Funcionalidad de expandir columnas pendiente de implementaciÃ³n");
         });
         
         // Evento para exportar a Excel
@@ -320,7 +378,7 @@
             if (typeof exportarGridAExcel === 'function') {
                 exportarGridAExcel('#tbGridPrecios', 'ListaPrecios');
             } else {
-                console.warn("La función exportarGridAExcel no está disponible");
+                console.warn("La funciÃ³n exportarGridAExcel no estÃ¡ disponible");
             }
         });
         

@@ -21,7 +21,7 @@ function inicializaVista() {
     $("#lbRel02").text("Rubros");
 
 
-    $("#chkDesdeHasta").prop("checked", true);
+    $("#chkDesdeHasta").prop("checked", false);
     // Inicializar campos de fecha con un período de 3 meses
     // Date2 se establece con la fecha actual
     const hoy = new Date();
@@ -41,6 +41,10 @@ function inicializaVista() {
 }
 
 function inicializaEventosDeVista() {
+
+    $("#btnImprimir").on("click", function () {
+        imprimirReporteLP();
+    });  
 
     $("#Rel01").on("click", function () { $(this).val(""); });
     //a los campos fecha "date1" y "date2" asignarle un periodo de tiempo de 3 meses. 
@@ -205,21 +209,22 @@ function inicializaEventosDeVista() {
     });
 }
 
-function buscarPrecios(btn) {
-    if (_filterLoading) return;
-    _filterLoading = true;
+function imprimirReporteLP() {
+    const datos = obtenerParametrosInvocacion();
+    
+    cargarReporteEnArre(indexPrint, datos, "Reporte de Precios");
+    const data = { modulo: "", parametros: [] };
+    invocacionGestorDoc(data);
+}
 
-    const $btn = $(btn);
-    const originalHtml = $btn.html();
-    setBtnLoading($btn, true);
-
+function obtenerParametrosInvocacion() {
     // ✅ PASO 1.1: Extraer y validar fechas correctamente
     let fecD = null;
     let fecH = null;
     if ($("#chkDesdeHasta").is(":checked")) {
         const date1Val = $("#Date1").val();
         const date2Val = $("#Date2").val();
-        
+
         // Solo asignar si tienen valor, de lo contrario dejar null
         fecD = (date1Val && date1Val.trim() !== "") ? date1Val.trim() : null;
         fecH = (date2Val && date2Val.trim() !== "") ? date2Val.trim() : null;
@@ -234,72 +239,93 @@ function buscarPrecios(btn) {
 
     // ✅ PASO 1.3: Construir objeto con TODOS los campos de QueryFilters
     // CRÍTICO: La estructura debe coincidir EXACTAMENTE con QueryFilters.cs
-    const data = {
+    let data = {
         // Campos principales
         Id: null,
         Id2: null,
         Buscar: null,
-        
+
         // Relaciones - ENVIAR ARRAYS SIMPLES, no objetos ComboGenDto
         Rel01: proveedores && proveedores.length > 0 ? proveedores : null,
         Rel02: rubros && rubros.length > 0 ? rubros : null,
-        
+
         // ⚠️ CORRECCIÓN CRÍTICA: Rel03 y Rel04 deben ser arrays de objetos con propiedades en PascalCase
-        Rel03: familias && familias.length > 0 
+        Rel03: familias && familias.length > 0
             ? familias.map(f => ({
                 id: f,           // Minúscula para compatibilidad con deserializador
                 descripcion: f   // Minúscula para compatibilidad con deserializador
-              }))
+            }))
             : null,
-        
-        Rel04: listas && listas.length > 0 
+
+        Rel04: listas && listas.length > 0
             ? listas.map(l => ({
                 id: l,
                 descripcion: l
-              }))
+            }))
             : null,
-        
+
         Rel05: null,
-        
+
         // Fechas - CRÍTICO: Enviar como strings o null, NO como strings vacíos
         Date1: fecD,
         Date2: fecH,
         FechaD: fecD,  // Mantener por compatibilidad
         FechaH: fecH,  // Mantener por compatibilidad
-        
+
         // Paginación
         Registros: null,
         Pagina: null,
-        
+
         // Estados y tipos
         Tipo: "",      // String vacío según QueryFilters
         Estado: "",    // String vacío según QueryFilters
-        
+
         // Opciones booleanas
         Opt1: incluirCosto,
         Opt2: null,
         Opt3: null,
         Opt4: null,
         Opt5: null,
-        
+
         // Opciones string
-        StrOpt01: "",
-        StrOpt02: "",
-        StrOpt03: "",
-        StrOpt04: "",
+        StrOpt01: familias && familias.length > 0
+            ? familias.join(',')
+            : null,   // o '' según lo qu,
+        StrOpt02: listas && listas.length > 0
+            ? listas.join(',')
+            : null,   // o '' según lo qu,
+        StrOpt03: proveedores && proveedores.length > 0
+            ? proveedores.join(',')
+            : null, 
+        StrOpt04: rubros && rubros.length > 0
+            ? rubros.join(',')
+            : null, 
         StrOpt05: "",
-        
+
         // Lista adicional
         ListNN: [],
-        
+
         // Título
         TituloLeyend: "",
-        
+
         // Campos de administración (el servidor los asigna)
-        Adm_id: "",
-        Usu_id: ""
+        Adm_id: administracion.split('#')[0],
+        Usu_id: usuarioAuth
     };
 
+    return data;
+}
+
+function buscarPrecios(btn) {
+    if (_filterLoading) return;
+    _filterLoading = true;
+
+    const $btn = $(btn);
+    const originalHtml = $btn.html();
+    setBtnLoading($btn, true);
+
+    const data = obtenerParametrosInvocacion();
+ 
     // ✅ PASO 1.4: Log para debugging (eliminar en producción)
     console.log("📤 Datos enviados al servidor:", JSON.stringify(data, null, 2));
 
