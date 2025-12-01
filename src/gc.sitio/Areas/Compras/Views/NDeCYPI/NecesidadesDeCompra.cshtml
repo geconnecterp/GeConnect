@@ -34,6 +34,20 @@
 		overflow: auto;
 	}
 
+	#collapseSection {
+		position: fixed; /* lo saca del flujo normal */
+		top: 60px; /* ajustá según tu header */
+		right: 20px; /* o left:0 si querés que ocupe todo */
+		width: 80%; /* ancho del panel */
+		max-height: 80%; /* alto máximo */
+		overflow-y: auto; /* scroll interno si se excede */
+		background: #fff; /* fondo para diferenciarlo */
+		border: 1px solid #ccc;
+		box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+		z-index: 1050; /* por encima de otros elementos */
+		padding: 1rem;
+	}
+
 </style>
 <div class="container">
 	<div class="row">
@@ -94,21 +108,12 @@
 				</div>
 			</div>
 		</div>
-		@* <div class="row d-flex p-2 flex-fill">
-			<div class="col-2"></div>
-			<div id="divPaginacion" class="">
-			</div>
-			<div class="col-2"></div>
-		</div> *@
-		<div class="row d-flex p-2 flex-fill">
-			<!-- Columna izquierda: paginación -->
+		<div class="row d-flex p-1 flex-fill">
 			<div class="col-md-6 text-start">
 				<div id="divPaginacion"></div>
 			</div>
-
-			<!-- Columna derecha: tabla de estados -->
 			<div class="col-md-6 text-end">
-				<div class="row m-3">
+				<div class="row">
 					<table style="width:450px;text-align:center;margin-left:auto;">
 						<tr>
 							<td style="background-color:lightgreen;color:#000000;font-weight:600;width:150px;">
@@ -122,14 +127,13 @@
 				</div>
 			</div>
 		</div>
-
 		<div class="collapse" id="divFiltro" style="">
 			@Html.Hidden("pagEstado", false)
 		</div>
 		<div class="row">
 			<div class="row">
 				<div class="col-2">
-					<a class="btn btn-sm btn-primary me-1 collapsed" id="btnCollapseSection" data-bs-toggle="collapse" href="#collapseSection" role="button" aria-expanded="false" aria-controls="collapseSection">
+					<a class="btn btn-sm btn-primary me-1 collapsed" id="btnCollapseSection" data-bs-toggle="collapse" data-bs-target="#collapseSection" role="button" aria-expanded="false" aria-controls="collapseSection">
 						Info. Adicional
 					</a>
 				</div>

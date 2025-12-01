@@ -1,57 +1,42 @@
-﻿/* Estilos para campos readonly */
-.campo-readonly {
-    background-color: #f8f9fa;
-    cursor: pointer;
-    border-color: #ced4da;
+﻿.campo-readonly-ncpi {
+    background-color: #f8f9fa !important;
+    color: #6c757d !important;
+    cursor: none !important;
+    border-color: #dee2e6 !important;
 }
 
-    .campo-readonly:hover {
+    .campo-readonly-ncpi:hover {
         background-color: #e9ecef;
         border-color: #adb5bd;
     }
 
-input[readonly]:not(.campo-readonly) {
+input[readonly]:not(.campo-readonly-ncpi):not(.input-bulto) {
     background-color: #e9ecef;
-    cursor: not-allowed;
 }
 
-/* OPTIMIZACIÓN: Reducción de espaciado general en tablas */
 #tbListaProducto th, #tbListaProducto td {
     padding: 0.15rem 0.25rem !important;
     box-sizing: border-box;
 }
 
-/* MEJORADO: */
 .input-bulto {
-    width: 100%; /* Usar todo el ancho disponible */
-    min-width: 40px; /* Mantenemos este valor mínimo */
-    max-width: 50px; /* REDUCIDO para dar más espacio a otros campos */
-    font-size: 0.85rem;
-    padding: 0.1rem 0.15rem !important;
+    width: 100%; 
+    min-width: 40px;
+    max-width: 50px;
+    font-size: 0.8rem !important;
+    padding: 0.05rem 0.1rem !important;
+    height: 1.4rem !important;
 }
 
-/* REDISEÑADO: */
-.input-bulto {
-    width: 100%;
-    min-width: 85px; /* AUMENTADO para mejores proporciones */
-    max-width: 110px; /* AUMENTADO significativamente */
-    font-size: 0.85rem;
-    font-family: monospace; /* Añadido para mejor alineación de decimales */
-    letter-spacing: -0.2px; /* Ajustado específicamente */
-    padding-right: 0.3rem !important; /* Más espacio a la derecha */
-}
-
-/* OPTIMIZADO: */
 .input-numeric {
-    height: 1.8rem !important; /* AUMENTADO ligeramente para mejor legibilidad */
+    height: 1.8rem !important;
     text-align: right;
-    letter-spacing: -0.2px; /* Ajustado para mejor legibilidad */
-    padding: 0.1rem 0.25rem !important; /* Más padding horizontal */
+    letter-spacing: -0.2px;
+    padding: 0.1rem 0.25rem !important;
     margin: 0 !important;
     border-radius: 0.2rem;
 }
 
-/* OPTIMIZADO: */
 .input-container {
     position: relative;
     width: 100%;
@@ -61,26 +46,22 @@ input[readonly]:not(.campo-readonly) {
     justify-content: flex-end;
 }
 
-/* NUEVO: */
 #tbListaProducto td:nth-child(4) {
-    width: 110px !important; /* Ancho fijo más amplio */
+    width: 110px !important;
     min-width: 110px !important;
     max-width: 110px !important;
     padding: 0.1rem 0.15rem !important;
 }
 
-/* Optimización específica para células de tabla */
 #tbListaProducto td {
     white-space: nowrap;
     vertical-align: middle;
 }
 
-    /* OPTIMIZADO: */
     #tbListaProducto td:has(.input-numeric) {
-        padding: 0.1rem 0.05rem !important; /* Padding horizontal reducido */
+        padding: 0.1rem 0.05rem !important;
     }
 
-/* Estilo para la fila seleccionada */
 #tbListaProducto tbody tr.selected {
     background-color: #e6f2ff !important;
     box-shadow: inset 0 0 0 1px #4c8dff;
@@ -90,13 +71,11 @@ input[readonly]:not(.campo-readonly) {
     background-color: rgba(230, 242, 255, 0.5);
 }
 
-/* Estilo para campos modificados */
 .campo-modificado {
     background-color: #d4f1f9 !important;
     border-color: #a8e1f5 !important;
 }
 
-/* Indicador visual de cambio - Optimizado para ocupar menos espacio */
 .indicador-cambio {
     position: absolute;
     top: 0;
@@ -108,7 +87,6 @@ input[readonly]:not(.campo-readonly) {
     border-color: transparent #4bacc6 transparent transparent;
 }
 
-/* NUEVO: Optimización para encabezados de columnas compactos */
 #tbListaProducto th {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -119,15 +97,13 @@ input[readonly]:not(.campo-readonly) {
     vertical-align: middle;
 }
 
-/* NUEVO: Optimización de columnas código y descripción */
-#tbListaProducto td:nth-child(0) { /* Código */
+#tbListaProducto td:nth-child(0) {
     max-width: 80px !important;
     width: 80px !important;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-/* NUEVO: Input container con mejor control de espacio y alineación */
 .input-container {
     display: flex;
     justify-content: flex-end;
@@ -136,11 +112,10 @@ input[readonly]:not(.campo-readonly) {
     height: 100%;
 }
 
-    /* NUEVO: Prevenir que los inputs crezcan demasiado y mejorar legibilidad */
     .input-container input {
         width: 100% !important;
         box-sizing: border-box !important;
-        transition: background-color 0.2s ease; /* Transición suave para hover/focus */
+        transition: background-color 0.2s ease;
     }
 
         .input-container input:focus {
@@ -149,17 +124,14 @@ input[readonly]:not(.campo-readonly) {
             background-color: #ffffff;
         }
 
-/* NUEVO: Asegurar que la tabla se renderiza con anchos fijos */
 #tbListaProducto {
     table-layout: fixed !important;
     width: 100%;
 }
 
-    /* NUEVO: Ajustes de alto de filas para compactarlas */
     #tbListaProducto tr {
-        height: 2rem !important; /* Altura fija para todas las filas */
+        height: 2rem !important;
     }
-
 
     #tbListaProducto th.columna-bulto,
     #tbListaProducto td.columna-bulto {
@@ -183,8 +155,13 @@ input[readonly]:not(.campo-readonly) {
     font-size: 0.9rem;
 }
 
-
 #tbListaProducto th,
 #tbListaProducto td {
-    padding: 0.15rem 0.25rem !important; /* o incluso 0 si querés máxima compresión */
+    padding: 0.1rem 0.25rem !important;
+    line-height: 1.2 !important;
+    height: auto !important;
+}
+
+#tbListaProducto tr {
+    height: 1.6rem !important;
 }

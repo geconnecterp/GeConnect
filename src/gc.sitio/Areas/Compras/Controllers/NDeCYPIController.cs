@@ -222,6 +222,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				//grillaDatos = GenerarGrillaSmart(ListaDeUsuarios, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 				var pag = request.Pagina == null ? 1 : request.Pagina.Value;
 				grillaDatos = GenerarGrillaSmart(productos.Item1, request.Sort ?? "p_desc", _appSettings.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, request.SortDir ?? "ASC");
+				productos.Item1.Where(x => x.p_orden_pg == null).ToList().ForEach(x => x.p_orden_pg = 0);
 				ListaProductoNCPI = productos.Item1;
 				return PartialView("_grillaProductos", grillaDatos);
 			}

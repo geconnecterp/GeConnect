@@ -3,16 +3,27 @@
 @{
 	var alt = true;
 	string clase = string.Empty;
+
+	string grupoActual = string.Empty;
+	string grupoAnterior = string.Empty;
 }
 @section styles {
 	<link rel="stylesheet" href="~/css/compras/ndecypi/ndecypi.css" />
 }
 <style>
+	.bg-pedido-m {
+		background-color: lightgreen !important;
+	}
+
+	.bg-pedido-a {
+		background-color: #6cc6f3 !important;
+	}
+
 	/* El contenedor debe ser el scroll real y generar contexto */
 	#containerListaProducto {
 		position: relative;
-		height: 400px;
-		max-height: 400px;
+		height: 600px;
+		max-height: 600px;
 		overflow-y: auto; /* vertical */
 		overflow-x: auto; /* horizontal si hace falta */
 		z-index: auto; /* no fuerza stacking context */
@@ -52,6 +63,18 @@
 				/* color: #333; */
 			}
 
+	#tbListaProducto th,
+	#tbListaProducto td {
+		padding: 0.01rem 0.15rem !important; /* o incluso 0 si querés máxima compresión */
+		line-height: 1.2 !important; /* más compacto */
+		height: auto !important; /* evita altura fija */
+	}
+
+	/* Opcional: altura fija para todas las filas */
+	#tbListaProducto tr {
+		height: 1.6rem !important; /* ajustá según lo que quieras */
+	}
+
 </style>
 <div class="table-responsive table-wrapper-full-width" id="containerListaProducto">
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbListaProducto">
@@ -80,14 +103,31 @@
 		<tbody>
 			@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
 			{
-				@foreach (var item in Model.ListaDatos)
+				//var productos = Model.ListaDatos.OrderBy(x => x.p_id_prov).ThenBy(y => y.pg_id).ThenBy(z => z.p_orden_pg).ThenBy(u => u.p_desc).ToList();
+				var productos = Model.ListaDatos.OrderBy(x => x.cta_id).ThenBy(y => y.pg_id).ThenBy(z => z.p_orden_pg).ToList();
+				@foreach (var item in productos)
 				{
+					grupoActual = item.cta_id + item.pg_id;
+					// Si cambia la cuenta+grupo, insertamos una fila de encabezado
+					if (grupoActual != grupoAnterior)
+					{
+						var leyenda = $"Prov: {item.cta_id} {item.cta_denominacion} Familia: {item.pg_id} {item.pg_desc}";
+						<tr class="table-secondary fw-bold">
+							<td colspan="15" class="text-center">
+								<i class="bx bx-folder me-1"></i>
+								@leyenda
+							</td>
+						</tr>
+						grupoAnterior = grupoActual;
+						alt = true; // Reiniciar alternancia de colores después de cada familia
+					}
+
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					<tr class="@clase" 
-						data-id="@item.p_id" 
-						data-cta-id="@item.cta_id" 
-						data-cta-denominacion="@item.cta_denominacion" 
-						data-pedido-tipo="@item.pedido_tipo" 
+					<tr class="@clase"
+						data-id="@item.p_id"
+						data-cta-id="@item.cta_id"
+						data-cta-denominacion="@item.cta_denominacion"
+						data-pedido-tipo="@item.pedido_tipo"
 						onclick="selectListaProductoRow(this)">
 						<td class="align-center tiny-row">@item.p_id</td>
 						@if (item.p_activo == "D")
@@ -114,8 +154,10 @@
 						<td style="display:none;">@item.stk_suc_comprometido</td>
 						<td class="align-right tiny-row">@item.p_unidad_pres</td>
 						<td class="align-right tiny-row">@item.p_unidad_palet</td>
-						<td style="width:5%;" class="columna-bulto @Model.ObtenerClase(item.pedido)">
-							@*07*@
+						<td style="width:5%;" 
+							class="columna-bulto @Model.ObtenerClase(item.pedido)
+						   @(item.pedido > 0 && item.pedido_tipo == "M" ? "bg-pedido-m" : "")
+						   @(item.pedido > 0 && item.pedido_tipo == "A" ? "bg-pedido-a" : "")">
 							<div class="input-container">
 								<input type="text" class="form-control form-control-sm input-bulto input-numeric"
 									   value="@(item.pedido)"
@@ -124,6 +166,7 @@
 									   data-original-value="@(item.pedido)" />
 							</div>
 						</td>
+
 						@if (item.pedido == 0)
 						{
 							<td class="align-right tiny-row">@item.cantidad</td>

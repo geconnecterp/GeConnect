@@ -12,32 +12,35 @@ $(function () {
 		CerrarWaiting();
 		setTimeout(() => {
 			HandlerActualizarTablaPostOCAuto();
-			$('#divDetalle').collapse('hide');	
+			$('#divDetalle').collapse('hide');
 		}, 200);
 	});
 
 	// Cuando se muestra el filtro → ocultar detalle y opciones
-	$('#divFiltro').on('shown.bs.collapse', function () {
-		$('#divDetalle').collapse('hide');
-		$('#divBtnOpciones').collapse('hide');
+	$('#divFiltro').on('shown.bs.collapse', function (e) {
+		if (e.target.id === 'divFiltro') { // aseguramos que sea el filtro
+			$('#divDetalle').collapse('hide');
+			$('#divBtnOpciones').collapse('hide');
+		}
 	});
 
 	// Cuando se oculta el filtro → mostrar detalle
-	$('#divFiltro').on('hidden.bs.collapse', function () {
-		console.log("Entro Filtro Oculto");
-		const $tabla = $('#tbListaProducto');
-		if ($tabla.length > 0) { // existe en el DOM
-			const filas = $tabla.find('tbody tr').length;
+	$('#divFiltro').on('hidden.bs.collapse', function (e) {
+		if (e.target.id === 'divFiltro') {
+			const $tabla = $('#tbListaProducto');
+			if ($tabla.length > 0) { // existe en el DOM
+				const filas = $tabla.find('tbody tr').length;
 
-			if (filas > 0) {
-				$('#divDetalle').collapse('show');
-				console.log("divDetalle > show");
+				if (filas > 0) {
+					$('#divDetalle').collapse('show');
+					console.log("divDetalle > show");
+				} else {
+					$('#divDetalle').collapse('hide');
+					console.log("divDetalle > hide");
+				}
 			} else {
-				$('#divDetalle').collapse('hide');
-				console.log("divDetalle > hide");
+				console.warn("La tabla #tbListaProducto no existe en el DOM");
 			}
-		} else {
-			console.warn("La tabla #tbListaProducto no existe en el DOM");
 		}
 	});
 
@@ -48,27 +51,31 @@ $(function () {
 	});
 
 	// Controlar directamente el estado de divDetalle
-	$('#divDetalle').on('shown.bs.collapse', function () {
-		const $tabla = $('#tbListaProducto');
-		if ($tabla.length > 0) { // existe en el DOM
-			const filas = $tabla.find('tbody tr').length;
-			if (filas > 0) {
-				$('#divBtnOpciones').show();
-				console.log("divDetalle > show");
-			} else {
-				$('#divBtnOpciones').hide();
-				console.log("divDetalle > hide");
+	$('#divDetalle').on('shown.bs.collapse', function (e) {
+		if (e.target.id === 'divDetalle') {
+			const $tabla = $('#tbListaProducto');
+			if ($tabla.length > 0) { // existe en el DOM
+				const filas = $tabla.find('tbody tr').length;
+				if (filas > 0) {
+					$('#divBtnOpciones').show();
+					console.log("divDetalle > show");
+				} else {
+					$('#divBtnOpciones').hide();
+					console.log("divDetalle > hide");
+				}
 			}
-		}
-		else {
-			$('#divBtnOpciones').hide();
-			console.log("divBtnOpciones > hide");
+			else {
+				$('#divBtnOpciones').hide();
+				console.log("divBtnOpciones > hide");
+			}
 		}
 	});
 
-	$('#divDetalle').on('hidden.bs.collapse', function () {
-		$('#divBtnOpciones').hide();
-		console.log("divBtnOpciones > hide");
+	$('#divDetalle').on('hidden.bs.collapse', function (e) {
+		if (e.target.id === 'divDetalle') {
+			$('#divBtnOpciones').hide();
+			console.log("divBtnOpciones > hide");
+		}
 	});
 
 	$("input#Rel03").on("click", function () {
@@ -76,7 +83,7 @@ $(function () {
 		$("#Rel03Item").val("");
 	});
 	AddEventListenerToGrid("tbListaProducto");
-	
+
 	$("#btnBuscar").on("click", function () {
 		dataBak = "";
 		pagina = 1;
@@ -201,7 +208,7 @@ function AbrirOrdenDeCompra() {
 			return true;
 
 		}, true, ["Aceptar", "Cancelar"], "question!", null);
-		
+
 	}
 	else {
 		AbrirMensaje("Atención", "Debe seleccionar un producto.", function () {
@@ -212,7 +219,7 @@ function AbrirOrdenDeCompra() {
 }
 
 function CargarRubros() {
-	data = { };
+	data = {};
 	PostGenHtml(data, BuscarRubrosURL, function (obj) {
 		$("#divLs02").html(obj);
 		$("#divLs02").attr("class", "col-md-6 col-sm-6");
@@ -307,34 +314,42 @@ function AplicarEstilosTabla(tabla) {
 		return;
 	}
 
-	// Recorremos todas las filas del tbody (empezamos en 1 para saltar el header)
-	for (let i = 1; i < tabla.rows.length; i++) {
-		const fila = tabla.rows[i];
-		const valorCantidad = parseFloat(fila.cells[colCantidad].innerText) || 0;
+	const $tbody = $("#tbListaProducto tbody");
+	const $filas = $tbody.find("tr").not(".table-secondary"); // excluye agrupadoras
 
-		// Leemos el atributo data-pedido-tipo de la fila
+	if ($filas.length === 1) {
+		const textoFila = $filas.text().trim();
+		if (textoFila.includes("No se encontraron productos con los criterios especificados")) {
+			console.log("⚠️ La tabla está vacía y muestra el mensaje de 'No se encontraron productos'.");
+			return;
+		}
+	}
+
+	$filas.each(function () {
+		const fila = this;
+		const valorCantidad = parseFloat(fila.cells[colCantidad].innerText) || 0;
 		const pedidoTipo = fila.getAttribute("data-pedido-tipo") || "";
-		console.log(pedidoTipo);
-		// Determinamos el color según el tipo
+
 		let color = "";
 		if (pedidoTipo === "M") {
-			color = "lightgreen"; // Manual
+			color = "lightgreen";
 		} else if (pedidoTipo === "A") {
-			color = "#6cc6f3"; // Automático (celeste pastel)
+			color = "#6cc6f3";
 		}
 
 		if (valorCantidad !== 0) {
+			fila.cells[colBulto].style.backgroundColor = color;
 			fila.cells[colCantidad].style.backgroundColor = color;
 			fila.cells[colCosto].style.backgroundColor = color;
 			fila.cells[colCostoTotal].style.backgroundColor = color;
-			fila.cells[colBulto].style.backgroundColor = color;
 		} else {
+			fila.cells[colBulto].style.backgroundColor = "";
 			fila.cells[colCantidad].style.backgroundColor = "";
 			fila.cells[colCosto].style.backgroundColor = "";
 			fila.cells[colCostoTotal].style.backgroundColor = "";
-			fila.cells[colBulto].style.backgroundColor = "";
 		}
-	}
+	});
+
 }
 
 function ValidarDatosObligAnalizarCompraAuto() {
@@ -632,7 +647,7 @@ function InicializaPantallaNC() {
 	$(".activable").prop("disabled", true);
 	$("#chkRel03").prop("disabled", true);
 	$("#listaLs02").prop("disabled", true);
-	
+
 	CerrarWaiting();
 	return true;
 }
@@ -1017,7 +1032,7 @@ function configuracionInputMaskOptimizadaGridListaProductos() {
 	console.log("Aplicando configuración InputMask optimizada...");
 
 	// Establecer todos los campos como readonly de una sola vez
-	$('.input-bulto').prop('readonly', true).addClass('campo-readonly');
+	$('.input-bulto').prop('readonly', true).addClass('campo-readonly-ncpi');
 
 	const maskConfigInt = {
 		alias: "numeric",
@@ -1058,6 +1073,18 @@ function configurarEventosEdicionOptimizadoGridListaProductos() {
 	// Limpiar eventos previos
 	$(document).off('click.camposEditables keydown.camposEditables blur.camposSecuencia01');
 
+	$(document).on("mousedown.camposEditables", ".input-bulto", function (e) {
+		const $input = $(this);
+		if ($input.prop("readonly")) {
+			e.preventDefault(); // evita que el primer click sea "inútil"
+			$input.prop("readonly", false).removeClass("campo-readonly-ncpi");
+			setTimeout(() => {
+				$input.focus();
+				$input.select();
+			}, 0);
+		}
+	});
+
 	// Evento click unificado
 	$(document).on('click.camposEditables', camposEditables, function (e) {
 		e.stopPropagation();
@@ -1072,7 +1099,7 @@ function configurarEventosEdicionOptimizadoGridListaProductos() {
 		}
 
 		// Habilitar campo
-		$this.prop('readonly', false).removeClass('campo-readonly');
+		$this.prop('readonly', false).removeClass('campo-readonly-ncpi');
 		setTimeout(() => { $this[0].focus(); $this[0].select(); }, 0);
 	});
 
@@ -1128,10 +1155,10 @@ function configurarEventosEdicionOptimizadoGridListaProductos() {
 				const $campoDestino = $filaDestino.find(camposEditables).first();
 
 				// cerrar el campo actual
-				$this.prop('readonly', true).addClass('campo-readonly');
+				$this.prop('readonly', true).addClass('campo-readonly-ncpi');
 
 				// abrir el campo destino
-				$campoDestino.prop('readonly', false).removeClass('campo-readonly');
+				$campoDestino.prop('readonly', false).removeClass('campo-readonly-ncpi');
 				setTimeout(() => {
 					$campoDestino[0].focus();
 					$campoDestino[0].select();
@@ -1158,6 +1185,9 @@ function configurarEventosEdicionOptimizadoGridListaProductos() {
 			}, 0);
 		}
 
+		// Quitar readonly en el primer focus
+		$this.prop("readonly", false).removeClass("campo-readonly-ncpi");
+
 		// Llamar a tu función personalizada
 		BuscarInfoAdicional();
 
@@ -1182,7 +1212,7 @@ function configurarEventosEdicionOptimizadoGridListaProductos() {
 				$(this).val(numValue.toFixed(decimals));
 			}
 
-			$(this).prop('readonly', true).addClass('campo-readonly');
+			$(this).prop('readonly', true).addClass('campo-readonly-ncpi');
 			getCallback()(row);
 		});
 	});
@@ -1202,10 +1232,10 @@ function activarCampoAnteriorGridListaProductos(campoActual) {
 		$campoDestino = $fila.prev('tr').find(camposEditables).last();
 	}
 
-	$campoActual.prop('readonly', true).addClass('campo-readonly');
+	$campoActual.prop('readonly', true).addClass('campo-readonly-ncpi');
 
 	if ($campoDestino && $campoDestino.length) {
-		$campoDestino.prop('readonly', false).removeClass('campo-readonly');
+		$campoDestino.prop('readonly', false).removeClass('campo-readonly-ncpi');
 		setTimeout(() => { $campoDestino[0].focus(); $campoDestino[0].select(); }, 0);
 	}
 }
@@ -1224,10 +1254,10 @@ function activarSiguienteCampoGridListaProductos(campoActual) {
 		$siguienteCampo = $fila.next('tr').find(camposEditables).first();
 	}
 
-	$campoActual.prop('readonly', true).addClass('campo-readonly');
+	$campoActual.prop('readonly', true).addClass('campo-readonly-ncpi');
 
 	if ($siguienteCampo && $siguienteCampo.length) {
-		$siguienteCampo.prop('readonly', false).removeClass('campo-readonly');
+		$siguienteCampo.prop('readonly', false).removeClass('campo-readonly-ncpi');
 		setTimeout(() => { $siguienteCampo[0].focus(); $siguienteCampo[0].select(); }, 0);
 	}
 }
