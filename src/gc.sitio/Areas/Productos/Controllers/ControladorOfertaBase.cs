@@ -184,6 +184,17 @@ namespace gc.sitio.Areas.Productos.Controllers
             return HelperMvc<ComboGenDto>.ListaGenerica(cpCbo, sel);
         }
 
+        internal SelectList ComboListaPrecios(string sel = "")
+        {
+            var cp = ListaPrecios;
+            var cpCbo = cp.Select(x => new ComboGenDto { Id = x.lp_id, Descripcion = x.lp_lista }).ToList();
+            if (string.IsNullOrEmpty(sel))
+            {
+                return HelperMvc<ComboGenDto>.ListaGenerica(cpCbo);
+            }
+            return HelperMvc<ComboGenDto>.ListaGenerica(cpCbo, sel);
+        }
+
         internal SelectList ComboPresupuestoTipo(string sel = "")
         {
             var tipo = TiposPresupuesto;

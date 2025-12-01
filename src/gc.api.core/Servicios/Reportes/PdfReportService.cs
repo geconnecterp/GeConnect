@@ -32,6 +32,7 @@ namespace gc.api.core.Servicios.Reportes
             IApiPresupuetoServicio apiPresuSv,
             IApiOfertaServicio ofeSv,
             IApiEtiquetaServicio etiqSv,
+            IApiPrecioListaServicio plSv,
              IOptions<EmpresaGeco> empresa, ICuentaServicio ctaSv, IOrdenDePagoServicio _opSv, ILogger<ReportService> logger) : base(uow)
         {
 
@@ -84,6 +85,7 @@ namespace gc.api.core.Servicios.Reportes
                 { InfoReporte.R046_Etiquetas01Precio, new R046_Etiquetas01Precio(uow,etiqSv,empresa,ctaSv, logger) },
                 { InfoReporte.R047_Etiquetas02Precio, new R047_Etiquetas02Precios(uow,etiqSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R048_ConsultaCertNoRetNoPerc, new R048_ConsultaCertNoRetNoPerc(uow,consSv, finServ,empresa,ctaSv, logger) },
+				{ InfoReporte.R049_REPORTE_PRECIOS, new R049_ReportePrecios(uow,plSv,empresa,ctaSv, logger) },
 			}; 
             _logger = logger;
         }

@@ -111,6 +111,7 @@
 
 			//LISTA DE PRECIOS
 			public const string SP_LP_LISTA = "SPGECO_LP_Lista";
+			public const string SP_LP_DETALLE = "SPGECO_P_PR_lista";
 
             #endregion
 

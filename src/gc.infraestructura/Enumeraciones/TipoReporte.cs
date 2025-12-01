@@ -60,5 +60,6 @@ namespace gc.infraestructura.Enumeraciones
         R046_Etiquetas01Precio = 46,
         R047_Etiquetas02Precio = 47,
 		R048_ConsultaCertNoRetNoPerc = 48, 
+        R049_REPORTE_PRECIOS = 49,
 	}
 }

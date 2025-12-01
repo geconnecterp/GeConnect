@@ -1,4 +1,5 @@
 ﻿using gc.api.core.Contratos.Servicios.Ofertas;
+using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Productos.Precio;
 using Microsoft.AspNetCore.Http;
@@ -25,5 +26,12 @@ namespace gc.api.Controllers.Ofertas
             return Ok(new ApiResponse<List<PrecioListaDto>>(resultado));
         }
 
+        [HttpPost("ObtenerDetallePrecios")]
+        public IActionResult GetDetalle(QueryFilters filters)
+        {            
+            var resultado = _plSv.ObtenerDetallePrecios(filters);
+
+            return Ok(new ApiResponse<List<PrecioListaDetalleDto>>(resultado));
+        }
     }
 }
