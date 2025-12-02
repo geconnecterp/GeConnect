@@ -42,6 +42,8 @@ function inicializaVista() {
 
 function inicializaEventosDeVista() {
 
+    $("#btnDetalle").on("mousedown", VerEstadoBtnDetalle);
+
     $("#btnImprimir").on("click", function () {
         imprimirReporteLP();
     });  
@@ -207,6 +209,23 @@ function inicializaEventosDeVista() {
     $("#btnBuscar").on("click", function () {
         buscarPrecios(this);
     });
+}
+
+function VerEstadoBtnDetalle() {
+    // Verificar si hay un asiento abierto (panel de detalle visible)
+    if ($("#divDetalle").is(":visible") && $("#divpanel01").children().length > 0) {
+        // Hay un asiento abierto, limpiarlo y cerrar el panel
+        LimpiarGrid();
+    }
+
+    // Permitir que el evento siga propagándose (para que funcione el collapse)
+    return true;
+}
+
+function LimpiarGrid() {
+    $("#divDetalle").empty();
+
+    inicializaVista();
 }
 
 function imprimirReporteLP() {

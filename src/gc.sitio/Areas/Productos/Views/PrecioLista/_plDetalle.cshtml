@@ -3,6 +3,8 @@
 
 @{
     var reg = Model?.ListaDatos?.FirstOrDefault();
+    var alt = true;
+    string clase = string.Empty;
 }
 @functions {
     public int GetColspan(PrecioListaDetalleDto reg)
@@ -21,83 +23,66 @@
 }
 
 
-<div class="card h-100">
-    <div class="card-header py-2 d-flex justify-content-between align-items-center">
+<div class="grid-golden h-100">
+    <div class="grid-golden-header">
         <div class="d-flex align-items-center gap-2">
-            <h6 class="mb-0">Detalle de Precios</h6>
-            @if (Model?.ListaDatos?.Any() == true)
+            <h5 class="mb-0"><strong>Detalle de Precios</strong></h5>
+            @* @if (Model?.ListaDatos?.Any() == true)
             {
                 <span class="badge bg-primary">@Model.ListaDatos.Count registro(s)</span>
-            }
+            } *@
         </div>
-        <div class="btn-group btn-group-sm" role="group">
+      @*   <div class="btn-group btn-group-sm" role="group">
             <button type="button" class="btn btn-outline-secondary" id="btnExpandirColumnas" title="Expandir/Contraer columnas">
                 <i class="bx bx-columns"></i>
             </button>
             <button type="button" class="btn btn-outline-primary" id="btnExportarExcel" title="Exportar a Excel">
                 <i class="bx bx-file"></i>
             </button>
-        </div>
+        </div> *@
     </div>
-    <div class="card-body p-0">
-        <div class="table-responsive table-responsive-precios">
-            <table class="table table-sm table-hover mb-0 table-golden table-bordered table-grid-precios" id="tbGridPrecios">
-                <thead class="table-golden-header">
-                    <tr class="header-row-primary">
+    <div class="grid-golden-body">
+        <div class="table-responsive table-wrapper text-nowrap">
+            <table class="table table-sm mb-0 table-hover table-golden" id="tbGridPrecios">
+                <thead>
+                    <tr class="header">
                         <!-- Columnas principales -->
-                        <th class="text-center align-middle" rowspan="2">
+                        <th scope="col">
                             <div class="d-flex flex-column">
-                                <span>ID</span>
-                                <small>Producto</small>
+                                <span>ID</span>                              
                             </div>
                         </th>
-                        <th class="text-left align-middle" rowspan="2">
+                        <th scope="col">
                             <div class="d-flex flex-column">
-                                <span>Descripción</span>
-                                <small>Producto</small>
+                                <span>Descripción</span>                              
                             </div>
                         </th>
-
-                        <!-- Grupo: Impuestos -->
-                        <th class="text-center header-group-danger" colspan="3">
-                            <i class="bx bx-receipt me-1"></i>Impuestos
-                        </th>
-
-                        <!-- Grupo: Costo -->
-                        <th class="text-center header-group-success" colspan="2">
-                            <i class="bx bx-dollar-circle me-1"></i>Costo
+                        <th scope="col">
+                            <div class="d-flex flex-column">
+                                <span>C.Barra</span>
+                            </div>
                         </th>
                         @{
                             int colspan = @GetColspan(reg ?? new());
                         }
-                        <!-- Grupo: Precios de Venta -->
-                        <th class="text-center header-group-primary" colspan="@colspan">
-                            <i class="bx bx-purchase-tag me-1"></i>Precios de Venta
-                        </th>
-                    </tr>
-                    <tr class="header-row-secondary">
-                        <!-- Impuestos -->
-                        <th class="text-center header-subgroup-danger">IVA Sit.</th>
-                        <th class="text-end header-subgroup-danger">IVA %</th>
-                        <th class="text-end header-subgroup-danger">IIBB %</th>
+                      
 
                         <!-- Costo -->
-                        <th class="text-end header-subgroup-success">Precio Costo</th>
-                        <th class="text-center header-subgroup-success">Últ. Actual.</th>
+                        <th scope="col">Precio Costo</th>
 
                         <!-- Precios de Venta -->
-                        <th class="text-end header-subgroup-primary">@reg?.lp_desc1</th>
+                        <th scope="col">@reg?.lp_desc1</th>
                         @if (colspan >= 2)
                         {
-                            <th class="text-end header-subgroup-primary">@reg?.lp_desc2</th>
+                            <th scope="col">@reg?.lp_desc2</th>
                         }
                         @if (colspan >= 3)
                         {
-                            <th class="text-end header-subgroup-primary">@reg?.lp_desc3</th>
+                            <th scope="col">@reg?.lp_desc3</th>
                         }
                         @if (colspan >= 4)
                         {
-                            <th class="text-end header-subgroup-primary">@reg?.lp_desc4</th>
+                            <th scope="col">@reg?.lp_desc4</th>
                         }
                     </tr>
                 </thead>
@@ -106,63 +91,32 @@
                     {
                         foreach (var item in Model.ListaDatos)
                         {
-                            <tr data-producto-id="@item.p_id" class="row-precio-detalle">
+                            if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+                            <tr data-producto-id="@item.p_id" class="@clase">
                                 <!-- Datos principales del producto -->
-                                <td class="text-center align-middle fw-bold">
-                                    @* <span class="badge bg-secondary">@item.p_id</span> *@
-                                    @item.p_id
-                                </td>
-                                <td class="align-middle td-descripcion-producto" title="@item.p_desc">
-                                    <div class="text-truncate">
-                                        @item.p_desc
-                                    </div>
-                                </td>
-
-                                <!-- Impuestos -->
-                                <td class="text-center align-middle">
-                                    <span class="badge @(item.iva_situacion == "RI" ? "bg-success" : item.iva_situacion == "EX" ? "bg-warning" : "bg-secondary")">
-                                        @item.iva_situacion
-                                    </span>
-                                </td>
-                                <td class="text-end align-middle">
-                                    @item.iva_alicuota.ToString("N2")%
-                                </td>
-                                <td class="text-end align-middle">
-                                    @item.in_alicuota.ToString("N2")%
-                                </td>
-
+                                <td class="@Model.ObtenerClase(item.p_id)">@Model.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
+                                <td class="@Model.ObtenerClase(item.p_desc)" title="@Model.FormatearDato(item.p_desc, FormatDato.Ninguno)">
+                                <td class="@Model.ObtenerClase(item.p_id_barrado)">@Model.FormatearDato(item.p_id_barrado, FormatDato.Ninguno)</td>
                                 <!-- Costo -->
-                                <td class="text-end align-middle fw-bold text-success">
-                                    $@item.p_pcosto.ToString("N2")
-                                </td>
-                                <td class="text-center align-middle">
-                                    <small class="text-muted">
-                                        @item.p_actu_fecha.ToString("dd/MM/yyyy")
-                                    </small>
-                                </td>
-
+                                <td class="@Model.ObtenerClase(item.p_pcosto)">@Model.FormatearDato(item.p_pcosto, FormatDato.Monto)</td>
+                                                     
                                 <!-- Precios de Venta -->
-                                <td class="text-end align-middle fw-bold text-primary">
-                                    $@item.p_pvta1.ToString("N2")
-                                </td>
-
+                                <td class="@Model.ObtenerClase(item.p_pvta1)">@Model.FormatearDato(item.p_pvta1, FormatDato.Monto)</td>
+                                
                                 @if (colspan >= 2)
                                 {
-                                    <td class="text-end align-middle fw-bold text-primary">
-                                        $@item.p_pvta2.ToString("N2")
-                                    </td>
+                                    <td class="@Model.ObtenerClase(item.p_pvta2)">@Model.FormatearDato(item.p_pvta2, FormatDato.Monto)</td>
+                                    
                                 }
                                 @if (colspan >= 3)
                                 {
-                                    <td class="text-end align-middle fw-bold text-primary">
-                                        $@item.p_pvta3.ToString("N2")
-                                    </td>
+                                    <td class="@Model.ObtenerClase(item.p_pvta3)">@Model.FormatearDato(item.p_pvta3, FormatDato.Monto)</td>
+                                    
                                 }
                                 @if (colspan >= 4)
                                 {
-                                    <td class="text-end align-middle fw-bold text-primary">
-                                        $@item.p_pvta4.ToString("N2")
-                                    </td>
+                                    <td class="@Model.ObtenerClase(item.p_pvta4)">@Model.FormatearDato(item.p_pvta4, FormatDato.Monto)</td>
+                                    
                                 }
                             </tr>
                         }
@@ -196,19 +150,14 @@
             </table>
         </div>
     </div>
-    <div class="card-footer py-2 bg-light">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <button type="button" class="btn btn-sm btn-outline-secondary" id="btnVolverFiltros">
-                    <i class="bx bx-arrow-back me-1"></i>Volver a Filtros
-                </button>
-            </div>
+    @* <div class="grid-golden-footer py-2 ">
+        <div class="d-flex justify-content-between align-items-center">          
             <div class="text-muted small">
                 <i class="bx bx-time me-1"></i>
                 Última actualización: <span id="spanUltimaActualizacion">@DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")</span>
             </div>
         </div>
-    </div>
+    </div> *@
 </div>
 
 <script>
