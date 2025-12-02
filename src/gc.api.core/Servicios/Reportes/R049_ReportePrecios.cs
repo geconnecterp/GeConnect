@@ -35,8 +35,8 @@ namespace gc.api.core.Servicios.Reportes
             _plSv = servicio;
 
             _empresaGeco = empresa.Value;
-            _titulos = new List<string> { "Código", "Producto" };//agregar los nombres de las listas
-            _campos = new List<string> { "p_id", "p_desc" };
+            _titulos = new List<string> { "Código", "Producto","Barrado","Imp." };//agregar los nombres de las listas
+            _campos = new List<string> { "p_id", "p_desc", "p_id_barrado", "infoImp" };
             _cuentaSv = consultaSv;
             _logger = logger;
         }
@@ -92,21 +92,22 @@ namespace gc.api.core.Servicios.Reportes
 
                 switch (titulosLista.Count)
                 {
+                    //                      id, desc, ean, imp, costo, lp     id, desc, ean, imp , lp
                     case 1:
-                        anchos = verCosto ? [10f, 70f, 10f, 10f] : [10f, 80f, 10f];
+                        anchos = verCosto ? [10f, 46f, 10f, 10f, 12f, 12f] : [10f, 58f, 10f, 10f, 12f];
                         break;
                     case 2:
-                        anchos = verCosto ? [10f, 60f, 10f, 10f, 10f] : [10f, 70f, 10f, 10f];
+                        anchos = verCosto ? [10f, 34f, 10f, 10f, 12f, 12f, 12f] : [10f, 46f, 10f, 10f, 12f, 12f];
                         break;
                     case 3:
-                        anchos = verCosto ? [10f, 50f, 10f, 10f, 10f, 10f] : [10f, 60f, 10f, 10f, 10f];
+                        anchos = verCosto ? [10f, 22f, 10f, 10f, 12f, 12f, 12f, 12f] : [10f, 34f, 10f, 10f, 12f, 12f, 12f];
                         break;
                     case 4:
-                        anchos = verCosto ? [10f, 40f, 10f, 10f, 10f, 10f, 10f] : [10f, 50f, 10f, 10f, 10f, 10f];
+                        anchos = verCosto ? [10f, 10f, 10f, 10f, 12f, 12f, 12f, 12f, 12f] : [10f, 22f, 10f, 10f, 12f, 12f, 12f, 12f];
                         break;
                     default:
                         throw new NegocioException("No se pueden generar reportes con más de 4 listas de precios.");
-                        
+
                 }
 
                 //ordenando registros por rubro y proveedor
@@ -175,12 +176,12 @@ namespace gc.api.core.Servicios.Reportes
 
                 #region Carga del Listado
                 List<string> camposTotalizables = [];
-                HelperPdf.GenerarListadoAgrupado(pdf, 
-                    registros, 
-                    _campos, 
-                    _titulos, 
-                    anchos, 
-                    niveles,  chico, normal, null, false, null);
+                HelperPdf.GenerarListadoAgrupado(pdf,
+                    registros,
+                    _campos,
+                    _titulos,
+                    anchos,
+                    niveles, chico, normal, null, false, null);
                 #endregion
 
                 pdf.Close();
@@ -196,8 +197,8 @@ namespace gc.api.core.Servicios.Reportes
             catch (Exception ex)
             {
                 //_logger.Log(typeof(R001_InformeCuentaCorriente), Level.Error, $"Error al generar el informe de cuenta corriente: {ex.Message}", ex);
-                _logger.LogError(ex, "Error en R032");
-                throw new NegocioException("Se produjo un error al intentar generar el Informe de Cuenta Corriente. Para mayores datos ver el log.");
+                _logger.LogError(ex, "Error en R049");
+                throw new NegocioException("Se produjo un error al intentar generar el Reporte de Precios. Para mayores datos ver el log.");
             }
         }
 
@@ -222,23 +223,33 @@ namespace gc.api.core.Servicios.Reportes
             var usu = solicitud.Parametros.GetValueOrDefault("Usu_id", "")?.ToString() ?? "";
 
             titulo = solicitud.Titulo;
+            titulosLista = [];
 
             //busco las listas
             var lps = _plSv.ObtenerListaPrecios();
             var lpParam = rel04.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
-            titulosLista = [];
-            foreach (var lp in lpParam)
+            if (lpParam.Count > 0)
             {
-                string desc = lps.First(x => x.lp_id == lp).lp_desc;
+                foreach (var lp in lpParam)
+                {
+                    string desc = lps.First(x => x.lp_id == lp).lp_desc;
+                    titulosLista.Add(desc);
+                }
+            }
+            else
+            {
+                string desc = lps.First(x => x.lp_id == "001").lp_desc;
                 titulosLista.Add(desc);
-            }            
+            }
 
             precios = _plSv.ObtenerDetallePrecios(new QueryFilters
             {
                 Rel01 = rel01,
                 Rel02 = rel02,
-                Rel03 = rel03.Split(',').Select(x => new ComboGenDto { Id = x, Descripcion = x }).ToList(),
-                Rel04 = rel04.Split(',').Select(x => new ComboGenDto { Id = x, Descripcion = x }).ToList(),
+                //Rel03 = rel03.Split(',').Select(x => new ComboGenDto { Id = x, Descripcion = x }).ToList(),
+                Rel03 = string.IsNullOrEmpty(rel03) ? null : rel03.Split(',').Select(x => new ComboGenDto { Id = x, Descripcion = x }).ToList(),
+                //Rel04 = rel04.Split(',').Select(x => new ComboGenDto { Id = x, Descripcion = x }).ToList(),
+                Rel04 = string.IsNullOrEmpty(rel04) ? null : rel04.Split(',').Select(x => new ComboGenDto { Id = x, Descripcion = x }).ToList(),
                 Opt1 = verCosto,
                 Date1 = fd,
                 Date2 = fh,
