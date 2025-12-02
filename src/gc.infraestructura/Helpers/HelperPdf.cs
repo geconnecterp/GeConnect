@@ -4184,11 +4184,12 @@ namespace gc.infraestructura.Helpers
             int numColumnas,
             Font fuenteNegrita)
         {
+
             foreach (var titulo in titulos)
             {
                 PdfPCell celda = new PdfPCell(new Phrase(titulo, fuenteNegrita))
                 {
-                    BackgroundColor = BaseColor.DarkGray,
+                    BackgroundColor = BaseColor.White,
                     HorizontalAlignment = Element.ALIGN_CENTER,
                     Border = Rectangle.BOX,
                     Padding = 5

@@ -4,6 +4,7 @@
     {
         public string p_id { get; set; } = string.Empty;
         public string p_desc { get; set; } = string.Empty;
+        public string p_id_barrado { get; set; }=string.Empty;
         public string cta_id { get; set; } = string.Empty;
         public string cta_denominacion { get; set; } = string.Empty;
         public string pg_id { get; set; } = string.Empty;
@@ -27,6 +28,10 @@
         public string lp_desc3 { get; set; } = string.Empty;
         public decimal p_pvta4 { get; set; }
         public string lp_desc4 { get; set; } = string.Empty;
+        public string infoImp { get
+            {
+                return $"{iva_situacion}-{iva_alicuota}-{in_alicuota}";
+            } }
 
     }
 }

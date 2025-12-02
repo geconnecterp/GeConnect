@@ -104,6 +104,23 @@ namespace gc.sitio.Areas.Productos.Controllers
                     return BadRequest("Parámetros inválidos.");
                 }
 
+                //if (filters.Rel01 == null)
+                //{
+                //    filters.Rel01 = [];
+                //}
+                //if(filters.Rel02 == null)
+                //{
+                //    filters.Rel02 = [];
+                //}
+                //if(filters.Rel03 == null)
+                //{
+                //    filters.Rel03 = new List<ComboGenDto>() { new ComboGenDto { Id = "", Descripcion = "" } };
+                //}
+                //if(filters.Rel04 == null)
+                //{
+                //    filters.Rel04 = new List<ComboGenDto>() { new ComboGenDto { Id = "", Descripcion = "" } };
+                //}
+
                 // ✅ LOGGING DE CAMPOS IMPORTANTES
                 _logger?.LogInformation("Rel01 Count: {Count}", filters.Rel01?.Count ?? 0);
                 _logger?.LogInformation("Rel02 Count: {Count}", filters.Rel02?.Count ?? 0);

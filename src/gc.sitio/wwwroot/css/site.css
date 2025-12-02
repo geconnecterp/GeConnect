@@ -1,4 +1,6 @@
-﻿[class^="bx"] {
+﻿File: gc.sitio\wwwroot\css\site.css
+````````css
+[class^="bx"] {
     font-size: 1.2rem !important;
 }
 
@@ -2622,4 +2624,181 @@ input, select, textarea, button, checkbox, radio {
     background-color: #f8f9fa !important;
     border: 2px dashed #dee2e6 !important;
 }
-/* FIN ESTILOS PARA PRESUPUESTO */
+
+/* ====== ESTILOS PARA GRID DE PRECIOS - MÓDULO PRECIO LISTA ====== */
+/* Específico para tabla de precios con optimizaciones de rendimiento */
+
+/* Tabla principal de precios */
+.table-grid-precios {
+    font-size: 0.85rem;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+/* Contenedor responsive con scroll personalizado */
+.table-responsive-precios {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+/* Scroll personalizado para tabla de precios */
+.table-responsive-precios::-webkit-scrollbar {
+    height: 10px;
+    width: 10px;
+}
+
+.table-responsive-precios::-webkit-scrollbar-track {
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.table-responsive-precios::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #b8860b, #daa520);
+    border-radius: 4px;
+    border: 2px solid #f8f9fa;
+}
+
+.table-responsive-precios::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #8b6914, #b8860b);
+}
+
+/* Estilos de header para grid de precios */
+#tbGridPrecios thead.table-golden-header {
+    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%) !important;
+}
+
+#tbGridPrecios thead th {
+    font-weight: 700 !important;
+    white-space: nowrap;
+    vertical-align: middle;
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Sobreescribir colores de texto dentro del header */
+#tbGridPrecios thead th *,
+#tbGridPrecios thead th span,
+#tbGridPrecios thead th small,
+#tbGridPrecios thead th i,
+#tbGridPrecios thead th div {
+    color: #ffffff !important;
+}
+
+/* Small text en header con ligera transparencia */
+#tbGridPrecios thead th small {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 500 !important;
+}
+
+/* Filas de datos con transición suave */
+.row-precio-detalle {
+    transition: all 0.15s ease-in-out;
+}
+
+/* Hover mejorado en filas del body */
+#tbGridPrecios tbody tr:hover {
+    background-color: rgba(218, 165, 32, 0.08) !important;
+    cursor: pointer;
+    transform: scale(1.001);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Grupos de columnas con fondos sutiles - Info (Azul) */
+#tbGridPrecios thead .bg-info,
+#tbGridPrecios thead .header-group-info,
+#tbGridPrecios thead .header-subgroup-info {
+    background-color: rgba(13, 110, 253, 0.2) !important;
+}
+
+/* Grupos de columnas - Warning (Amarillo) */
+#tbGridPrecios thead .bg-warning,
+#tbGridPrecios thead .header-group-warning,
+#tbGridPrecios thead .header-subgroup-warning {
+    background-color: rgba(255, 193, 7, 0.2) !important;
+}
+
+/* Grupos de columnas - Danger (Rojo) */
+#tbGridPrecios thead .bg-danger,
+#tbGridPrecios thead .header-group-danger,
+#tbGridPrecios thead .header-subgroup-danger {
+    background-color: rgba(220, 53, 69, 0.2) !important;
+}
+
+/* Grupos de columnas - Success (Verde) */
+#tbGridPrecios thead .bg-success,
+#tbGridPrecios thead .header-group-success,
+#tbGridPrecios thead .header-subgroup-success {
+    background-color: rgba(25, 135, 84, 0.2) !important;
+}
+
+/* Grupos de columnas - Primary (Azul oscuro) */
+#tbGridPrecios thead .bg-primary,
+#tbGridPrecios thead .header-group-primary,
+#tbGridPrecios thead .header-subgroup-primary {
+    background-color: rgba(13, 110, 253, 0.2) !important;
+}
+
+/* Badges con máxima visibilidad */
+#tbGridPrecios tbody .badge {
+    opacity: 1 !important;
+    font-weight: 600 !important;
+    padding: 0.35em 0.65em !important;
+}
+
+/* Sticky header con sombra */
+#tbGridPrecios thead.table-golden-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Celda de descripción de producto con ancho máximo */
+.td-descripcion-producto .text-truncate {
+    max-width: 250px;
+}
+
+/* Celda cuando no hay datos */
+.td-no-datos i.bx-info-circle {
+    font-size: 1.5rem;
+}
+
+/* Optimización para impresión */
+@media print {
+    .table-responsive-precios {
+        max-height: none;
+        overflow: visible;
+    }
+    
+    #tbGridPrecios thead.table-golden-header {
+        position: relative;
+    }
+}
+
+/* Optimización para pantallas pequeñas */
+@media (max-width: 992px) {
+    .table-grid-precios {
+        font-size: 0.75rem;
+    }
+    
+    .td-descripcion-producto .text-truncate {
+        max-width: 150px;
+    }
+}
+
+@media (max-width: 768px) {
+    .table-grid-precios {
+        font-size: 0.7rem;
+    }
+    
+    #tbGridPrecios thead th {
+        padding: 0.5rem 0.25rem !important;
+    }
+    
+    .td-descripcion-producto .text-truncate {
+        max-width: 120px;
+    }
+}
+
+/* FIN ESTILOS PARA GRID DE PRECIOS */
