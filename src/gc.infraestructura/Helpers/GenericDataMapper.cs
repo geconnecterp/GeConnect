@@ -63,6 +63,13 @@ namespace gc.infraestructura.Helpers
             {
                 if (p.PropertyType == typeof(string))
                 {
+                    // 1) Que tenga setter (NO solo get)
+                    if (!p.CanWrite)
+                        continue;
+
+                    //// 2) Que no sea un indexer (propiedades con parámetros)
+                    //if (p.GetIndexParameters().Length > 0)
+                    //    continue;
                     p.SetValue(result, this.MapString(dr, p.Name, ignoreCase));
                     continue;
                 }
