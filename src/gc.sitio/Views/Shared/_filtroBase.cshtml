@@ -561,14 +561,29 @@
                         </div>
                     </div>
                 </div>
+               
                 <div class="row">
-                    <div class="col-md-6 col-sm-6">
-                        <div class="input-group input-group-sm">
-                            <span class="input-group-text" id="lbNombreRel02">Nombre</span>
-                            <input type="text" class="form-control inputEditable" name="Rel02" id="Rel02" disabled />
-                            @Html.Hidden("Rel02Item")
+                    @if (Model.Modelo.Equals(ModeloFilter.PRECIO_LISTA))
+                    {
+                        <div class="col-md-6 col-sm-6" id="divLs02">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text" id="lbNombreRel03">Familia</span>
+                                @Html.DropDownList("Rel02", null, "Seleccionar...", new { @class = "form-control", @disabled = "disabled" })
+                                @Html.Hidden("Rel02Item")
+                            </div>
                         </div>
-                    </div>
+                    }
+                    else
+                    {
+                        <div class="col-md-6 col-sm-6">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text" id="lbNombreRel02">Nombre</span>
+                                <input type="text" class="form-control inputEditable" name="Rel02" id="Rel02" disabled />
+                                @Html.Hidden("Rel02Item")
+                            </div>
+                        </div>
+                    }
+                    
                     <div class="col-md-6 col-sm-6">
                         @Html.ListBox("Rel02List", null, new { @class = "form-control", @disabled = "disabled" })
                     </div>

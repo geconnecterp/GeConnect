@@ -5,6 +5,10 @@
     var reg = Model?.ListaDatos?.FirstOrDefault();
     var alt = true;
     string clase = string.Empty;
+
+    // Variables para agrupar por familia
+    string familiaActual = string.Empty;
+    string familiaAnterior = string.Empty;
 }
 @functions {
     public int GetColspan(PrecioListaDetalleDto reg)
@@ -27,19 +31,8 @@
     <div class="grid-golden-header">
         <div class="d-flex align-items-center gap-2">
             <h5 class="mb-0"><strong>Detalle de Precios</strong></h5>
-            @* @if (Model?.ListaDatos?.Any() == true)
-            {
-                <span class="badge bg-primary">@Model.ListaDatos.Count registro(s)</span>
-            } *@
+
         </div>
-      @*   <div class="btn-group btn-group-sm" role="group">
-            <button type="button" class="btn btn-outline-secondary" id="btnExpandirColumnas" title="Expandir/Contraer columnas">
-                <i class="bx bx-columns"></i>
-            </button>
-            <button type="button" class="btn btn-outline-primary" id="btnExportarExcel" title="Exportar a Excel">
-                <i class="bx bx-file"></i>
-            </button>
-        </div> *@
     </div>
     <div class="grid-golden-body">
         <div class="table-responsive table-wrapper text-nowrap">
@@ -62,6 +55,16 @@
                                 <span>C.Barra</span>
                             </div>
                         </th>
+                            <th scope="col">
+                                <div class="d-flex flex-column">
+                                    <span>IVA</span>
+                                </div>
+                            </th>
+                            <th scope="col">
+                                <div class="d-flex flex-column">
+                                    <span>II</span>
+                                </div>
+                            </th>
                         @{
                             int colspan = @GetColspan(reg ?? new());
                         }
@@ -91,12 +94,29 @@
                     {
                         foreach (var item in Model.ListaDatos)
                         {
+                            familiaActual = $"{item.rub_id}{item.cta_id}";
+
+                            // Si cambia la familia, insertamos una fila de encabezado para la familia
+                            if (familiaActual != familiaAnterior)
+                            {
+                                <tr class="table-secondary fw-bold">
+                                    <td colspan="9" style="text-align:center;">
+                                        <i class="bx bx-folder me-1"></i>
+                                        @item.rub_desc - @item.cta_denominacion
+                                    </td>
+                                </tr>
+                                familiaAnterior = familiaActual;
+                                alt = true; // Reiniciar alternancia de colores después de cada familia
+                            }
+
                             if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
                             <tr data-producto-id="@item.p_id" class="@clase">
                                 <!-- Datos principales del producto -->
                                 <td class="@Model.ObtenerClase(item.p_id)">@Model.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
-                                <td class="@Model.ObtenerClase(item.p_desc)" title="@Model.FormatearDato(item.p_desc, FormatDato.Ninguno)">
-                                <td class="@Model.ObtenerClase(item.p_id_barrado)">@Model.FormatearDato(item.p_id_barrado, FormatDato.Ninguno)</td>
+                                    <td class="@Model.ObtenerClase(item.p_desc)" title="@item.p_desc">@Model.FormatearDato(item.p_desc, FormatDato.Ninguno)</td>
+                                    <td class="@Model.ObtenerClase('C')">@Model.FormatearDato(item.p_id_barrado, FormatDato.Ninguno)</td>
+                                    <td class="@Model.ObtenerClase(item.infoImp)">@Model.FormatearDato(item.infoImp, FormatDato.Ninguno)</td>
+                                    <td class="@Model.ObtenerClase(item.in_alicuota)">@Model.FormatearDato(item.in_alicuota, FormatDato.Monto)</td>
                                 <!-- Costo -->
                                 <td class="@Model.ObtenerClase(item.p_pcosto)">@Model.FormatearDato(item.p_pcosto, FormatDato.Monto)</td>
                                                      
@@ -134,30 +154,24 @@
                         </tr>
                     }
                 </tbody>
-                @if (Model?.ListaDatos?.Any() == true)
-                {
-                    <tfoot class="table-light border-top border-2">
-                        <tr>
-                            <td colspan="23" class="text-end py-2">
-                                <small class="text-muted">
-                                    <i class="bx bx-info-circle me-1"></i>
-                                    Total de registros: <strong>@Model.ListaDatos.Count</strong>
-                                </small>
-                            </td>
-                        </tr>
-                    </tfoot>
-                }
+               
             </table>
         </div>
     </div>
-    @* <div class="grid-golden-footer py-2 ">
-        <div class="d-flex justify-content-between align-items-center">          
-            <div class="text-muted small">
-                <i class="bx bx-time me-1"></i>
-                Última actualización: <span id="spanUltimaActualizacion">@DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")</span>
+    @if (Model?.ListaDatos?.Any() == true)
+    {
+        <div class="grid-golden-footer py-2 ">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="text-muted small">
+                    <small class="text-muted">
+                        <i class="bx bx-info-circle me-1"></i>
+                        Total de registros: <strong>@Model.ListaDatos.Count</strong>
+                    </small>
+                </div>
             </div>
-        </div>
-    </div> *@
+        </div>     
+    }
+    
 </div>
 
 <script>
