@@ -9,6 +9,8 @@ using gc.infraestructura.Dtos.Consultas.ConsVencTipoCtaTipoCompte;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Mstk;
+using gc.infraestructura.Dtos.Mstk.Request;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -37,6 +39,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string CONS_CERT_RETEN_GAN_FROM_LIST = "/ConsultaCertRetenGANFromList";
 		private const string CONS_VTO_POR_TIPO = "/ConsultarVencimientosPorTipo";
 		private const string CONS_CERT_NR_NP = "/ConsultarCertificadosNRNP";
+		private const string CONS_PRODUCTO_STK = "/ConsultarProductoStk";
 
 		private readonly AppSettings _appSettings;
         public ConsultasServicio(IOptions<AppSettings> options, ILogger<ConsultasServicio> logger) : base(options, logger)
@@ -922,6 +925,47 @@ namespace gc.sitio.core.Servicios.Implementacion
 						throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
 					}
 					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<CertificadoListaDto>>>(stringData);
+
+					return (apiResponse.Data, apiResponse.Meta);
+				}
+				else
+				{
+					string stringData = await response.Content.ReadAsStringAsync();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+
+					throw new NegocioException("Algo no fue bien y el proceso no se completó. Intente de nuevo más tarde. Si el problema persiste informe al Administrador del sistema.");
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+
+				throw new Exception("Algo no fue bien al intentar cargar los Certificados NRNP.");
+			}
+		}
+
+		public async Task<(List<ProductoStkDto>, MetadataGrid)> ConsultarProductoStk(ConsultarStockRequest filters, string token)
+		{
+			try
+			{
+				ApiResponse<List<ProductoStkDto>>? apiResponse;
+				HelperAPI helper = new();
+
+				HttpClient client = helper.InicializaCliente(filters, token, out StringContent contentData);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{CONS_PRODUCTO_STK}";
+
+				response = await client.PostAsync(link, contentData);
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoStkDto>>>(stringData);
 
 					return (apiResponse.Data, apiResponse.Meta);
 				}

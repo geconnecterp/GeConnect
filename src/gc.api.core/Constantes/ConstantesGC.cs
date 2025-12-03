@@ -354,6 +354,7 @@
 			public const string SP_CONS_RECEPCIONES_PROV_DET = "SPGECO_C_RP_d";
 			public const string SP_CONS_VENCIMIENTOS_POR_TIPO = "SPGECO_C_Vto_X_Tipos";
 			public const string SP_CONS_CERT_NRNP = "SPGECO_C_Cert_NRNP";
+			public const string SP_CONS_STOCK_LISTA = "SPGECO_STK_Lista";
 			#endregion
 
 			#region Certificados

@@ -663,6 +663,8 @@ $("#Rel01List").on("dblclick", 'option', function () {
 	}
 })
 
+$("#Rel01").on("click", function () { $(this).val(""); });
+
 $("#Rel01").autocomplete({
 	source: function (request, response) {
 

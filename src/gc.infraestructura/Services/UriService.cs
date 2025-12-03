@@ -7,6 +7,7 @@ namespace gc.infraestructura.Core.Services
 	using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 	using gc.infraestructura.Dtos.Consultas.ConsVencTipoCtaTipoCompte;
 	using gc.infraestructura.Dtos.Financieros.Request;
+	using gc.infraestructura.Dtos.Mstk.Request;
 	using gc.infraestructura.EntidadesComunes.Options;
     using System;
 
@@ -52,6 +53,11 @@ namespace gc.infraestructura.Core.Services
 			return new Uri(baseUrl);
 		}
 		public Uri GetPostPaginationUri(ConsultarCertificadosRequest filter, string actionUrl)
+		{
+			string baseUrl = $"{_baseUri}{actionUrl}";
+			return new Uri(baseUrl);
+		}
+		public Uri GetPostPaginationUri(ConsultarStockRequest filter, string actionUrl)
 		{
 			string baseUrl = $"{_baseUri}{actionUrl}";
 			return new Uri(baseUrl);
