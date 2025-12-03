@@ -2,6 +2,8 @@
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 using gc.infraestructura.Dtos.Consultas.ConsVencTipoCtaTipoCompte;
+using gc.infraestructura.Dtos.Mstk;
+using gc.infraestructura.Dtos.Mstk.Request;
 
 namespace gc.api.core.Contratos.Servicios
 {
@@ -32,5 +34,6 @@ namespace gc.api.core.Contratos.Servicios
         List<CertRetenIVADto> ConsultaCertRetenIVAFromList(string op_compte);
         List<VencimientoListaDto> ConsultarVencimientosPorTipo(ConsultarVencimientosRequest filtros);
 		List<CertificadoListaDto> ConsultarCertificadosNRNP(ConsultarCertificadosRequest filtros);
+		List<ProductoStkDto> ConsultarProductoStk(ConsultarStockRequest filtros);
 	}
 }

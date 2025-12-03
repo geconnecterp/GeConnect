@@ -1,0 +1,196 @@
+﻿@model ConsultaDeStockModel
+@{
+}
+<style>
+	.hidden {
+		display: none !important;
+	}
+
+</style>
+<div class="card card-golden" style="padding-left: 0px;padding-right: 0px;">
+	<div class="card-header mb-2">
+		<h5 class="mb-0" id="tituloLegend">Filtros </h5>
+	</div>
+	<div class="card-body">
+		<div class="row">
+			<div class="row">
+				<div class="col-6">
+					<div class="row">
+						<div class="col-sm-12">
+							<div class="input-group input-group-sm">
+								<div class="form-check form-check-inline form-switch mb-2">
+									<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkSucursales" />
+									<label class="form-check-label" for="chkSucursales" id="lbSucursales"></label>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-6">
+							<div class="input-group input-group-sm">
+								@Html.DropDownListFor(m => m.SucursalSeleccionada, Model.ListaSucursales, "Seleccionar", new { @id = "listaSucursales", disabled = "disabled", @class = "form-control inputEditable activable" })
+							</div>
+						</div>
+						<div class="col-sm-6">
+							@Html.ListBox("SucursalesList", null, new { @class = "form-control listbox-sm", @disabled = "disabled" })
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div class="row">
+						<div class="col-sm-12">
+							<div class="input-group input-group-sm">
+								<div class="form-check form-check-inline form-switch mb-2">
+									<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDepositos" />
+									<label class="form-check-label" for="chkDepositos" id="lbDepositos"></label>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-6">
+							<div class="input-group input-group-sm">
+								@Html.DropDownListFor(m => m.DepositoSeleccionado, Model.ListaDepositos, "Seleccionar", new { @id = "listaDepositos", disabled = "disabled", @class = "form-control inputEditable activable" })
+							</div>
+						</div>
+						<div class="col-sm-6">
+							@Html.ListBox("DepositosList", null, new { @class = "form-control listbox-sm", @disabled = "disabled" })
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-6">
+					<div class="row">
+						<div class="col-md-6 col-sm-6">
+							<div class="input-group input-group-sm">
+								<div class="form-check form-check-inline form-switch mb-2">
+									<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRel01" />
+									<label class="form-check-label" for="chkRel01" id="lbRel01"></label>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-6 col-sm-6" id="divLs01">
+							<div class="input-group  input-group-sm">
+								<input type="text" class="form-control inputEditable" name="Rel01" id="Rel01" disabled />
+								@Html.Hidden("Rel01Item")
+							</div>
+						</div>
+						<div class="col-md-6 col-sm-6">
+							@Html.ListBox("Rel01List", null, new { @class = "form-control", @disabled = "disabled" })
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div class="row">
+						<div class="col-sm-12">
+							<div class="input-group input-group-sm">
+								<div class="form-check form-check-inline form-switch mb-2">
+									<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkFamilias" />
+									<label class="form-check-label" for="chkFamilias" id="lbFamilias"></label>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-6" id="divListaFamilias">
+							<div class="input-group input-group-sm">
+								@Html.DropDownListFor(m => m.FamiliaSeleccionada, Model.ListaFamilias, "Seleccionar", new { @id = "listaFamilia", disabled = "disabled", @class = "form-control inputEditable activable" })
+							</div>
+						</div>
+						<div class="col-sm-6">
+							@Html.ListBox("FamiliaList", null, new { @class = "form-control listbox-sm", @disabled = "disabled" })
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-6">
+					<div class="row">
+						<div class="col-sm-12">
+							<div class="input-group input-group-sm">
+								<div class="form-check form-check-inline form-switch mb-2">
+									<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRubro" />
+									<label class="form-check-label" for="chkRubro" id="lbRubro"></label>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-6" id="divRubros">
+							<div class="input-group input-group-sm">
+								@Html.DropDownListFor(m => m.RubroSeleccionado, Model.ListaRubros, "Seleccionar", new { @id = "listaRubros", disabled = "disabled", @class = "form-control inputEditable activable" })
+							</div>
+						</div>
+						<div class="col-sm-6">
+							@Html.ListBox("RubrosList", null, new { @class = "form-control listbox-sm", @disabled = "disabled" })
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-6 mt-3" id="divStockEstado">
+					<div class="card card-golden">
+						<div class="card-body p-2">
+							<div class="row">
+								<!-- Grupo Stock -->
+								<div class="col-sm-6">
+									<label class="fw-bold mb-1">Stock</label>
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" id="chkStockPositivo" checked />
+										<label class="form-check-label" for="chkStockPositivo">Positivo</label>
+									</div>
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" id="chkStockCero" checked />
+										<label class="form-check-label" for="chkStockCero">En Cero</label>
+									</div>
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" id="chkStockNegativo" checked />
+										<label class="form-check-label" for="chkStockNegativo">Negativo</label>
+									</div>
+								</div>
+
+								<!-- Grupo Estado -->
+								<div class="col-sm-6">
+									<label class="fw-bold mb-1">Estado</label>
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" id="chkEstadoActivo" checked />
+										<label class="form-check-label" for="chkEstadoActivo">Activos</label>
+									</div>
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" id="chkEstadoDiscontinuo" checked />
+										<label class="form-check-label" for="chkEstadoDiscontinuo">Discontinuos</label>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-6">
+					<div class="row">
+						<div class="col-6" id="divAgrupadorPor">
+							<div class="input-group input-group-sm">
+								<span class="input-group-text">Agrupar por</span>
+								@Html.DropDownListFor(m => m.AgrupadorSeleccionado, Model.ListaAgrupadores, "Seleccionar", new {
+								@id = "listaAgrupador", @class = "form-control inputEditable activable" })
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row m-3">
+	<div class="d-flex justify-content-around">
+		<button type="button" id="btnCancel" class="btn btn-sm btn-danger">
+			<i class="bx bx-x-circle"></i>Cancelar
+		</button>
+		<button type="button" id="btnBuscar" class="btn btn-sm btn-primary">
+			<i class="bx bx-search"></i>Buscar
+		</button>
+	</div>
+</div>

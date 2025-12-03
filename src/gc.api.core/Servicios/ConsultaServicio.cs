@@ -7,6 +7,8 @@ using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 using gc.infraestructura.Dtos.Consultas.ConsVencTipoCtaTipoCompte;
 using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Financieros.Request;
+using gc.infraestructura.Dtos.Mstk;
+using gc.infraestructura.Dtos.Mstk.Request;
 using gc.infraestructura.Dtos.Users;
 using Microsoft.Data.SqlClient;
 using System.Diagnostics.Metrics;
@@ -15,123 +17,123 @@ using System.Text;
 
 namespace gc.api.core.Servicios
 {
-    public class ConsultaServicio : Servicio<Cuenta>, IConsultaServicio
-    {
-        public ConsultaServicio(IUnitOfWork uow):base(uow)
-        {
-            
-        }
-        public List<ConsCompDetDto> ConsultaComprobantesMesDetalle(string ctaId, string mes, bool relCuit, string userId)
-        {
-            var sp = ConstantesGC.StoredProcedures.SP_CONS_COMPROBANTES_DET;
-            var ps = new List<SqlParameter>() {
-                new SqlParameter("@cta_id",ctaId) ,
-                new SqlParameter("@periodo",mes),
-                new SqlParameter("@rela_cuit",relCuit),
-                new SqlParameter("@usu_id",userId),
-            };
+	public class ConsultaServicio : Servicio<Cuenta>, IConsultaServicio
+	{
+		public ConsultaServicio(IUnitOfWork uow) : base(uow)
+		{
 
-            List<ConsCompDetDto> res = _repository.EjecutarLstSpExt<ConsCompDetDto>(sp, ps, true);
-            return res;
-        }
+		}
+		public List<ConsCompDetDto> ConsultaComprobantesMesDetalle(string ctaId, string mes, bool relCuit, string userId)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_CONS_COMPROBANTES_DET;
+			var ps = new List<SqlParameter>() {
+				new SqlParameter("@cta_id",ctaId) ,
+				new SqlParameter("@periodo",mes),
+				new SqlParameter("@rela_cuit",relCuit),
+				new SqlParameter("@usu_id",userId),
+			};
 
-        public List<ConsCompTotDto> ConsultaComprobantesMeses(string ctaId, int meses, bool relCuit, string userId)
-        {
-            var sp = ConstantesGC.StoredProcedures.SP_CONS_COMPROBANTES_TOT;
-            var ps = new List<SqlParameter>() {
-                new SqlParameter("@cta_id",ctaId) ,
-                new SqlParameter("@meses",meses),
-                new SqlParameter("@rela_cuit",relCuit),
-                new SqlParameter("@usu_id",userId),
-            };
+			List<ConsCompDetDto> res = _repository.EjecutarLstSpExt<ConsCompDetDto>(sp, ps, true);
+			return res;
+		}
 
-            List<ConsCompTotDto> res = _repository.EjecutarLstSpExt<ConsCompTotDto>(sp, ps, true);
-            return res;
-        }
-      
-        public List<ConsCtaCteDto> ConsultarCuentaCorriente(string ctaId, DateTime fechaD, string userId, int pag, int regs)
-        {
-            var sp = ConstantesGC.StoredProcedures.SP_CONS_CTACTE;
-            var ps = new List<SqlParameter>() {
-                new SqlParameter("@cta_id",ctaId) ,
-                new SqlParameter("@desde",fechaD),
-                new SqlParameter("@usu_id",userId),
-                new SqlParameter("@registros",regs),
-                new SqlParameter("@pagina",pag),
-            };
+		public List<ConsCompTotDto> ConsultaComprobantesMeses(string ctaId, int meses, bool relCuit, string userId)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_CONS_COMPROBANTES_TOT;
+			var ps = new List<SqlParameter>() {
+				new SqlParameter("@cta_id",ctaId) ,
+				new SqlParameter("@meses",meses),
+				new SqlParameter("@rela_cuit",relCuit),
+				new SqlParameter("@usu_id",userId),
+			};
 
-            List<ConsCtaCteDto> res = _repository.EjecutarLstSpExt<ConsCtaCteDto>(sp, ps, true);
-            return res;
-        }
+			List<ConsCompTotDto> res = _repository.EjecutarLstSpExt<ConsCompTotDto>(sp, ps, true);
+			return res;
+		}
 
-        public List<ConsVtoDto> ConsultaVencimientoComprobantesNoImputados(string ctaId, DateTime fechaD, DateTime fechaH, string userId)
-        {
-            var sp = ConstantesGC.StoredProcedures.SP_CONS_VENCIMIENTOS_CMP_SINPUTAR;
-            var ps = new List<SqlParameter>() {
-                new SqlParameter("@cta_id",ctaId) ,
-                new SqlParameter("@desde",fechaD),
-                new SqlParameter("@hasta",fechaH),
-                new SqlParameter("@usu_id",userId),
-            };
+		public List<ConsCtaCteDto> ConsultarCuentaCorriente(string ctaId, DateTime fechaD, string userId, int pag, int regs)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_CONS_CTACTE;
+			var ps = new List<SqlParameter>() {
+				new SqlParameter("@cta_id",ctaId) ,
+				new SqlParameter("@desde",fechaD),
+				new SqlParameter("@usu_id",userId),
+				new SqlParameter("@registros",regs),
+				new SqlParameter("@pagina",pag),
+			};
 
-            List<ConsVtoDto> res = _repository.EjecutarLstSpExt<ConsVtoDto>(sp, ps, true);
-            return res;
-        }
+			List<ConsCtaCteDto> res = _repository.EjecutarLstSpExt<ConsCtaCteDto>(sp, ps, true);
+			return res;
+		}
 
-        public List<ConsOrdPagosDto> ConsultaOrdenesDePagoProveedor(string ctaId, DateTime fd, DateTime fh, string tipoOP, string userId)
-        {
-            var sp = ConstantesGC.StoredProcedures.SP_CONS_OPAGO_PROVEEDORES;
-            var ps = new List<SqlParameter>() {
-                new SqlParameter("@cta_id",ctaId) ,
-                new SqlParameter("@fecha_d",fd),
-                new SqlParameter("@fecha_h",fh),
-                new SqlParameter("@opt_id",tipoOP),
-                new SqlParameter("@usu_id",userId),
-            };
+		public List<ConsVtoDto> ConsultaVencimientoComprobantesNoImputados(string ctaId, DateTime fechaD, DateTime fechaH, string userId)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_CONS_VENCIMIENTOS_CMP_SINPUTAR;
+			var ps = new List<SqlParameter>() {
+				new SqlParameter("@cta_id",ctaId) ,
+				new SqlParameter("@desde",fechaD),
+				new SqlParameter("@hasta",fechaH),
+				new SqlParameter("@usu_id",userId),
+			};
 
-            List<ConsOrdPagosDto> res = _repository.EjecutarLstSpExt<ConsOrdPagosDto>(sp, ps, true);
-            return res;
-        }
+			List<ConsVtoDto> res = _repository.EjecutarLstSpExt<ConsVtoDto>(sp, ps, true);
+			return res;
+		}
 
-        public List<ConsOrdPagosDetDto> ConsultaOrdenesDePagoProveedorDetalle(string cmptId)
-        {
-            var sp = ConstantesGC.StoredProcedures.SP_CONS_OPAGO_PROVEEDORES_DET;
-            var ps = new List<SqlParameter>() {
-                new SqlParameter("@op_compte",cmptId) ,
-               
-            };
+		public List<ConsOrdPagosDto> ConsultaOrdenesDePagoProveedor(string ctaId, DateTime fd, DateTime fh, string tipoOP, string userId)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_CONS_OPAGO_PROVEEDORES;
+			var ps = new List<SqlParameter>() {
+				new SqlParameter("@cta_id",ctaId) ,
+				new SqlParameter("@fecha_d",fd),
+				new SqlParameter("@fecha_h",fh),
+				new SqlParameter("@opt_id",tipoOP),
+				new SqlParameter("@usu_id",userId),
+			};
 
-            List<ConsOrdPagosDetDto> res = _repository.EjecutarLstSpExt<ConsOrdPagosDetDto>(sp, ps, true);
-            return res;
-        }
+			List<ConsOrdPagosDto> res = _repository.EjecutarLstSpExt<ConsOrdPagosDto>(sp, ps, true);
+			return res;
+		}
 
-        public List<ConsRecepcionProveedorDto> ConsultaRecepcionProveedor(string ctaId, DateTime fd, DateTime fh, string admId)
-        {
-            var sp = ConstantesGC.StoredProcedures.SP_CONS_RECEPCIONES_PROV;
-            var ps = new List<SqlParameter>() {
-                new SqlParameter("@cta_id",ctaId) ,
-                new SqlParameter("@fecha_d",fd),
-                new SqlParameter("@fecha_h",fh),
-                new SqlParameter("@adm_id",admId),
-            };
+		public List<ConsOrdPagosDetDto> ConsultaOrdenesDePagoProveedorDetalle(string cmptId)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_CONS_OPAGO_PROVEEDORES_DET;
+			var ps = new List<SqlParameter>() {
+				new SqlParameter("@op_compte",cmptId) ,
 
-            List<ConsRecepcionProveedorDto> res = _repository.EjecutarLstSpExt<ConsRecepcionProveedorDto>(sp, ps, true);
-            return res;
-        }
+			};
 
-        public List<ConsRecepcionProveedorDetalleDto> ConsultaRecepcionProveedorDetalle(string cmptId)
-        {
-            var sp = ConstantesGC.StoredProcedures.SP_CONS_RECEPCIONES_PROV_DET;
-            var ps = new List<SqlParameter>() {
-                new SqlParameter("@rp_compte",cmptId) ,
-            };
+			List<ConsOrdPagosDetDto> res = _repository.EjecutarLstSpExt<ConsOrdPagosDetDto>(sp, ps, true);
+			return res;
+		}
 
-            List<ConsRecepcionProveedorDetalleDto> res = _repository.EjecutarLstSpExt<ConsRecepcionProveedorDetalleDto>(sp, ps, true);
-            return res;
-        }
+		public List<ConsRecepcionProveedorDto> ConsultaRecepcionProveedor(string ctaId, DateTime fd, DateTime fh, string admId)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_CONS_RECEPCIONES_PROV;
+			var ps = new List<SqlParameter>() {
+				new SqlParameter("@cta_id",ctaId) ,
+				new SqlParameter("@fecha_d",fd),
+				new SqlParameter("@fecha_h",fh),
+				new SqlParameter("@adm_id",admId),
+			};
 
-        public List<ConsOrdPagoDetExtendDto> ConsultaOrdenDePagoProveedor(string op_compte)
-        {
+			List<ConsRecepcionProveedorDto> res = _repository.EjecutarLstSpExt<ConsRecepcionProveedorDto>(sp, ps, true);
+			return res;
+		}
+
+		public List<ConsRecepcionProveedorDetalleDto> ConsultaRecepcionProveedorDetalle(string cmptId)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_CONS_RECEPCIONES_PROV_DET;
+			var ps = new List<SqlParameter>() {
+				new SqlParameter("@rp_compte",cmptId) ,
+			};
+
+			List<ConsRecepcionProveedorDetalleDto> res = _repository.EjecutarLstSpExt<ConsRecepcionProveedorDetalleDto>(sp, ps, true);
+			return res;
+		}
+
+		public List<ConsOrdPagoDetExtendDto> ConsultaOrdenDePagoProveedor(string op_compte)
+		{
 			var sp = ConstantesGC.StoredProcedures.SP_CONS_OPAGO_PROVEEDORES_DET;
 			var ps = new List<SqlParameter>() {
 				new("@op_compte",op_compte),
@@ -216,15 +218,15 @@ namespace gc.api.core.Servicios
 
 			var ps = new List<SqlParameter>();
 
-			if (filtros.fv) 
-			{ 
+			if (filtros.fv)
+			{
 				ps.Add(new SqlParameter("@fv", "1"));
 				ps.Add(new SqlParameter("@dv", filtros.fvDesde));
 				ps.Add(new SqlParameter("@hv", filtros.fvhasta));
 			}
 			else
 				ps.Add(new SqlParameter("@fv", "0"));
-			
+
 			if (filtros.fg)
 			{
 				ps.Add(new SqlParameter("@fc", "1"));
@@ -322,6 +324,125 @@ namespace gc.api.core.Servicios
 			List<CertificadoListaDto> certNRNP = _repository.EjecutarLstSpExt<CertificadoListaDto>(sp, ps, true);
 
 			return certNRNP;
+		}
+
+		public List<ProductoStkDto> ConsultarProductoStk(ConsultarStockRequest filtros)
+		{
+			filtros.Pagina = filtros.Pagina == null || filtros.Pagina <= 0 ? _pagSet.DefaultPageNumber : filtros.Pagina;
+			filtros.Registros = filtros.Registros == null || filtros.Registros <= 0 ? _pagSet.DefaultPageSize : filtros.Registros;
+
+			string sp = ConstantesGC.StoredProcedures.SP_CONS_STOCK_LISTA;
+
+			var ps = new List<SqlParameter>();
+
+			if (filtros.lSuc != null && filtros.lSuc.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.lSuc)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@adm", "1"));
+				ps.Add(new SqlParameter("@adm_list", sb.ToString() + ','));
+			}
+			else
+				ps.Add(new SqlParameter("@adm", "0"));
+
+			if (filtros.lDep != null && filtros.lDep.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.lDep)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@depo", "1"));
+				ps.Add(new SqlParameter("@depo_list", sb.ToString() + ','));
+			}
+			else
+				ps.Add(new SqlParameter("@depo", "0"));
+
+			if (filtros.lProv != null && filtros.lProv.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.lProv)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@prov", "1"));
+				ps.Add(new SqlParameter("@prov_list", sb.ToString() + ','));
+			}
+			else
+				ps.Add(new SqlParameter("@prov", "0"));
+
+			if (filtros.lFam != null && filtros.lFam.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.lFam)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@pg", "1"));
+				ps.Add(new SqlParameter("@pg_list", sb.ToString() + ','));
+			}
+			else
+				ps.Add(new SqlParameter("@pg", "0"));
+
+			if (filtros.lRub != null && filtros.lRub.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.lRub)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@rub", "1"));
+				ps.Add(new SqlParameter("@rub_list", sb.ToString() + ','));
+			}
+			else
+				ps.Add(new SqlParameter("@rub", "0"));
+
+			ps.Add(new SqlParameter("@stock_p", filtros.chkStkPos));
+			ps.Add(new SqlParameter("@stock_0", filtros.chkStkCero));
+			ps.Add(new SqlParameter("@stock_n", filtros.chkStkNeg));
+			ps.Add(new SqlParameter("@activo", filtros.chkEstAct));
+			ps.Add(new SqlParameter("@discontinuo", filtros.chkEstDisc));
+
+			ps.Add(new SqlParameter("@registros", filtros.Registros));
+			ps.Add(new SqlParameter("@pagina", filtros.Pagina));
+			ps.Add(new SqlParameter("@ordenar", filtros.Sort ?? ""));
+
+			List<ProductoStkDto> lstProductos = _repository.EjecutarLstSpExt<ProductoStkDto>(sp, ps, true);
+
+			return lstProductos;
 		}
 	}
 }

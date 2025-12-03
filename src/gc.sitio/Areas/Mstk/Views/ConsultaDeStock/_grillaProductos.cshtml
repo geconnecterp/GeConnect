@@ -1,0 +1,120 @@
+﻿@model ProductoStkListaModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	string grupoActual = string.Empty;
+	string grupoAnterior = string.Empty;
+
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	.table-wrapper {
+		max-height: 500px;
+		overflow-y: auto;
+		overflow-x: auto;
+		border: 1px solid #ccc;
+	}
+
+		/* La tabla ocupa el 100% del contenedor */
+		.table-wrapper table {
+			width: 100%;
+			border-collapse: collapse;
+			table-layout: fixed;
+		}
+
+		/* Sticky header */
+		.table-wrapper thead th {
+			position: sticky;
+			top: 0;
+			background-color: #d4af37;
+			z-index: 2;
+		}
+
+		/* Alineación y tamaño de celdas */
+		.table-wrapper th,
+		.table-wrapper td {
+			box-sizing: border-box;
+			padding: 0.4rem 0.5rem;
+			font-size: 0.75rem;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.table-wrapper table {
+			table-layout: fixed;
+		}
+
+</style>
+<div class="table-wrapper">
+	<table class="table table-sm table-golden" id="tbGridProductos">
+		<thead>
+			<tr class="header">
+				<th class="text-center" style="width: 10%;">Código</th>
+				<th class="text-center" style="width: 10%;">Barrado</th>
+				<th class="text-center" style="width: 30%;">Descripción</th>
+				<th class="text-center" style="width: 10%;">Cód. Prov.</th>
+				<th class="text-center" style="width: 10%;">Últ. Mov.</th>
+				<th class="text-center" style="width: 10%;">Últ. RP.</th>
+				<th class="text-center" style="width: 10%;">Unidad Pres.</th>
+				<th class="text-center" style="width: 10%;">Stock</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.GrillaProductoStk != null && Model.GrillaProductoStk.ListaDatos != null && Model.GrillaProductoStk.ListaDatos.Count > 0)
+			{
+				//TODO MARCE: Armar los grupos
+				var productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.rubg_id).ToList();
+				@foreach (var item in productos)
+				{
+					grupoActual = item.rubg_id;
+					// Si cambia la cuenta, insertamos una fila de encabezado para la cuenta
+					if (grupoActual != grupoAnterior)
+					{
+						<tr class="table-secondary fw-bold">
+							<td colspan="7" class="text-center">
+								<i class="bx bx-folder me-1"></i>
+								@item.rubg_id
+							</td>
+						</tr>
+						grupoAnterior = grupoActual;
+						alt = true; // Reiniciar alternancia de colores después de cada familia
+					}
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" onclick="selectReg(this, 'tbGridProductos')">
+						<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_id) text-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_id_barrado) text-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_id_barrado, FormatDato.Ninguno)</td>
+						@if (item.p_activo_bool)
+						{
+							<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_desc) cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_desc, FormatDato.Ninguno)</td>
+						}
+						else
+						{
+							<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_desc) cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_desc, FormatDato.Ninguno)<span style="float:right;" title="Producto discontínuo"><i class="bx bx-dislike"></i></span></td>
+						}
+						<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_id_prov) text-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_id_prov, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaProductoStk.ObtenerClase(item.stk_ult_mov) text-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.stk_ult_mov, FormatDato.Fecha)</td>
+						<td class="@Model.GrillaProductoStk.ObtenerClase(item.rp_fecha) text-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.rp_fecha, FormatDato.Fecha)</td>
+						<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_unidad_pres) text-right cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_unidad_pres, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaProductoStk.ObtenerClase(item.stk) text-right cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.stk, FormatDato.Ninguno)</td>
+					</tr>
+				}
+			}
+			else
+			{
+				<tr>
+					<td colspan="9" class="text-center text-muted py-4">
+						<i class="bx bx-info-circle me-2"></i>
+						No se encontraron productos con los criterios especificados
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>
+<div class="row mt-3">
+	<div class="offset-md-3 col-md-6">
+		<div id="divPaginacion" class="">
+		</div>
+	</div>
+</div>

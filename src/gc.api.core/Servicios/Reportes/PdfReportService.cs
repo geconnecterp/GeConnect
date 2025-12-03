@@ -86,6 +86,7 @@ namespace gc.api.core.Servicios.Reportes
                 { InfoReporte.R047_Etiquetas02Precio, new R047_Etiquetas02Precios(uow,etiqSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R048_ConsultaCertNoRetNoPerc, new R048_ConsultaCertNoRetNoPerc(uow,consSv, finServ,empresa,ctaSv, logger) },
 				{ InfoReporte.R049_REPORTE_PRECIOS, new R049_ReportePrecios(uow,plSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R050_REPORTE_STOCK, new R050_ReporteStock(uow,consSv, finServ,empresa,ctaSv, logger) },
 			}; 
             _logger = logger;
         }
