@@ -39,10 +39,59 @@
 });
 
 function ControlaImprimirSelected() {
+	if ($("#tbGridProductos > tbody > tr").length === 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos generar el reporte.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		ImprimirListaProductosStk_Generada();
+	}
+}
 
+function ImprimirListaProductosStk_Generada() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var lSucArr = [];
+		var lDepArr = [];
+		var lProvArr = [];
+		var lFamArr = [];
+		var lRubArr = [];
+
+		$("#SucursalesList").children().each(function (i, item) { lSucArr.push($(item).val()) });
+		$("#DepositosList").children().each(function (i, item) { lDepArr.push($(item).val()) });
+		$("#Rel01List").children().each(function (i, item) { lProvArr.push($(item).val()) });
+		$("#FamiliaList").children().each(function (i, item) { lFamArr.push($(item).val()) });
+		$("#RubrosList").children().each(function (i, item) { lRubArr.push($(item).val()) });
+
+		var lSuc = lSucArr.join(",");
+		var lDep = lDepArr.join(",");
+		var lProv = lProvArr.join(",");
+		var lFam = lFamArr.join(",");
+		var lRub = lRubArr.join(",");
+
+		var chkStkPos = $("#chkStockPositivo")[0].checked
+		var chkStkCero = $("#chkStockCero")[0].checked
+		var chkStkNeg = $("#chkStockNegativo")[0].checked
+		var chkEstAct = $("#chkEstadoActivo")[0].checked
+		var chkEstDisc = $("#chkEstadoDiscontinuo")[0].checked
+
+		var agrupador = $("#listaAgrupador").val();
+
+		var data = { lSuc, lDep, lProv, lFam, lRub, chkStkPos, chkStkCero, chkStkNeg, chkEstAct, chkEstDisc, agrupador };
+		cargarReporteEnArre(50, data, "REPORTE DE STOCK", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
 }
 
 function ControlaCancelar() {
+	
 
 }
 
@@ -55,10 +104,6 @@ function BuscarProductos(pag = 1) {
 	var lRub = [];
 	$("#SucursalesList").children().each(function (i, item) { lSuc.push($(item).val()) });
 	$("#DepositosList").children().each(function (i, item) { lDep.push($(item).val()) });
-	//$("#Rel01List").children().each(function (i, item) {
-	//	var aux = { Id: $(item).val(), Descripcion: $(item).text() };
-	//	lProv.push(aux);
-	//});
 	$("#Rel01List").children().each(function (i, item) { lProv.push($(item).val()) });
 	$("#FamiliaList").children().each(function (i, item) { lFam.push($(item).val()) });
 	$("#RubrosList").children().each(function (i, item) { lRub.push($(item).val()) });
@@ -82,6 +127,7 @@ function BuscarProductos(pag = 1) {
 
 	PostGenHtml(data, buscarStockProductosURL, function (obj) {
 		$("#divGrillaProductos").html(obj);
+		$("#divFiltros").collapse("hide");
 		$("#divDetalle").collapse("show");
 		$("#btnImprimir").show();
 		PostGen({}, buscarMetadataURL, function (obj) {

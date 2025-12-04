@@ -111,7 +111,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 					request.Sort = sort;
 					request.SortDir = sortDir;
 					request.Registros = _setting.NroRegistrosPagina;
-					request.Pagina = pag;
+					//request.Pagina = pag;
 
 					var res = await _consultaServicio.ConsultarProductoStk(request, TokenCookie);
 					lista = res.Item1 ?? [];
@@ -122,7 +122,8 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				metadata = MetadataStockProd;
 				grillaDatos = GenerarGrillaSmart(ListaProductoStk, sort, _setting.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 				model.GrillaProductoStk = grillaDatos;
-				return PartialView("_gridCertificados", model);
+				model.AgrupadoPor = request.agrupador;
+				return PartialView("_grillaProductos", model);
 			}
 			catch (Exception ex)
 			{

@@ -15,6 +15,7 @@ namespace gc.infraestructura.Dtos.Mstk
 		public string rub_id { get; set; } = string.Empty;
 		public string rub_desc { get; set; } = string.Empty;
 		public string rubg_id { get; set; }	= string.Empty;
+		public string rubg_desc { get; set; } = string.Empty;
 		public string sec_id { get; set; } = string.Empty;
 		public string sec_desc { get; set; } = string.Empty;
 		public string cta_id { get; set; } = string.Empty;

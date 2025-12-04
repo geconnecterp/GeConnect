@@ -6,5 +6,6 @@ namespace gc.sitio.Areas.Mstk.Models
 	public class ProductoStkListaModel
 	{
 		public GridCoreSmart<ProductoStkDto> GrillaProductoStk { get; set; }
+		public int AgrupadoPor { get; set; } = 0;
 	}
 }

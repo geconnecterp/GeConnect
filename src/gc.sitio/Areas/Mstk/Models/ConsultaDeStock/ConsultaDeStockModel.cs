@@ -15,6 +15,6 @@ namespace gc.sitio.Areas.Mstk.Models
 		public string DepositoSeleccionado { get; set; } = string.Empty;
 		public string FamiliaSeleccionada { get; set; } = string.Empty;
 		public string RubroSeleccionado { get; set; } = string.Empty;
-		public string AgrupadorSeleccionado { get; set; } = string.Empty;
+		public string AgrupadorSeleccionado { get; set; } = "0";
 	}
 }

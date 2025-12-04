@@ -5,6 +5,8 @@ using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Mstk;
+using gc.infraestructura.Dtos.Mstk.Request;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
 using iTextSharp.text;
@@ -46,9 +48,11 @@ namespace gc.api.core.Servicios.Reportes
 				var ms = new MemoryStream();
 				#region Obteniendo registros desde la base de datos
 				string tit;
-				List<CertificadoListaDto> registros = ObtenerDatos(solicitud, out tit);
+				int agrp;
+				List<ProductoStkDto> registros = ObtenerDatos(solicitud, out tit, out agrp);
 
 				solicitud.Titulo = tit;
+				solicitud.SubTitulo = ObtenerSubtitulo(registros);
 
 				//hago el modelo de dato aca ya que necesito los datos de la cuenta
 				var regs = registros.Select(x => new
@@ -98,7 +102,7 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Open();
 
 				#region Lista de Cheques Emitidos Propios
-				HelperPdf.CargarCertificadosNoRetencionNoPercepcion(pdf, registros, chico, normalBold);
+				HelperPdf.CargarProductosParaRptDeStk(pdf, registros, agrp, chico, normalBold);
 				#endregion
 
 				pdf.Close();
@@ -126,33 +130,83 @@ namespace gc.api.core.Servicios.Reportes
 			return bool.TryParse(valor, out var resultado) ? resultado : valorPorDefecto;
 		}
 
-		private List<CertificadoListaDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo)
+		private List<ProductoStkDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo, out int agrupador)
 		{
-			var imp_id = solicitud.Parametros.GetValueOrDefault("imp_id", "")?.ToString() ?? null;
-			var ret = GetBoolParam(solicitud.Parametros, "ret");
-			var per = GetBoolParam(solicitud.Parametros, "per");
-			var no_vencido = GetBoolParam(solicitud.Parametros, "no_vencido");
-			var vencido = GetBoolParam(solicitud.Parametros, "vencido");
+			var lSuc_str = solicitud.Parametros.GetValueOrDefault("lSuc", "")?.ToString() ?? "";
+			var lDep_str = solicitud.Parametros.GetValueOrDefault("lDep", "")?.ToString() ?? "";
+			var lProv_str = solicitud.Parametros.GetValueOrDefault("lProv", "")?.ToString() ?? "";
+			var lFam_str = solicitud.Parametros.GetValueOrDefault("lFam", "")?.ToString() ?? "";
+			var lRub_str = solicitud.Parametros.GetValueOrDefault("lRub", "")?.ToString() ?? "";
 
-			titulo = $"Reporte de Proveedores";
+			var lSuc_lst = lSuc_str.Trim().Length == 0 ? [] : lSuc_str.Split(',').ToList();
+			var lDep_lst = lDep_str.Trim().Length == 0 ? [] : lDep_str.Split(',').ToList();
+			var lProv_lst = lProv_str.Trim().Length == 0 ? [] : lProv_str.Split(',').ToList();
+			var lFam_lst = lFam_str.Trim().Length == 0 ? [] : lFam_str.Split(',').ToList();
+			var lRub_lst = lRub_str.Trim().Length == 0 ? [] : lRub_str.Split(',').ToList();
 
-			return _consultaServicio.ConsultarCertificadosNRNP(new ConsultarCertificadosRequest()
+			cant_Dep = lDep_lst.Count;
+			cant_Suc = lSuc_lst.Count;
+			cant_Fam = lFam_lst.Count;
+			cant_Rub = lRub_lst.Count;
+			cant_Prov = lProv_lst.Count;
+
+			var chkStkPos = GetBoolParam(solicitud.Parametros, "chkStkPos");
+			var chkStkCero = GetBoolParam(solicitud.Parametros, "chkStkCero");
+			var chkStkNeg = GetBoolParam(solicitud.Parametros, "chkStkNeg");
+			var chkEstAct = GetBoolParam(solicitud.Parametros, "chkEstAct");
+			var chkEstDisc = GetBoolParam(solicitud.Parametros, "chkEstDisc");
+
+			var agrp = solicitud.Parametros.GetValueOrDefault("agrupador", "")?.ToString() ?? null;
+
+			titulo = $"Listado de Stock de Productos";
+			agrupador = Convert.ToInt32(agrp);
+
+			return _consultaServicio.ConsultarProductoStk(new ConsultarStockRequest()
 			{
-				imp_id = imp_id,
-				ret = ret,
-				per = per,
-				no_vencido = no_vencido,
-				vencido = vencido,
+				lSuc = lSuc_lst,
+				lDep = lDep_lst,
+				lProv = lProv_lst,
+				lFam = lFam_lst,
+				lRub = lRub_lst,
+				chkStkPos = chkStkPos,
+				chkStkCero = chkStkCero,
+				chkStkNeg = chkStkNeg,
+				chkEstAct = chkEstAct,
+				chkEstDisc = chkEstDisc,
+				agrupador = Convert.ToInt32(agrp),
 				Registros = 999999999,
 				Pagina = 1
 			});
+		}
+
+		private static int cant_Suc = 0;
+		private static int cant_Dep = 0;
+		private static int cant_Prov = 0;
+		private static int cant_Fam = 0;
+		private static int cant_Rub = 0;
+
+		private static string ObtenerSubtitulo(List<ProductoStkDto> registros)
+		{
+			var subTit = string.Empty;
+			if (registros == null || registros.Count == 0)
+				return subTit;
+			var proveedores = cant_Prov > 0
+				? string.Join(",", registros.GroupBy(x => x.cta_id).Select(g => g.First().cta_denominacion).ToList())
+				: "Todos";
+			var rubros = cant_Rub > 0
+				? string.Join(",", registros.GroupBy(x => x.rub_id).Select(g => g.First().rub_desc).ToList())
+				: "Todos";
+			var depositos = registros.First().titulo_repo;
+			subTit = $"Depósitos: {depositos}\nProveedor: {proveedores}\nRubros: {rubros}";
+			return subTit;
 		}
 
 		public string GenerarTxt(ReporteSolicitudDto solicitud)
 		{
 			#region Obteniendo registros desde la base de datos
 			string tit;
-			List<CertificadoListaDto> registros = ObtenerDatos(solicitud, out tit);
+			int agrp;
+			List<ProductoStkDto> registros = ObtenerDatos(solicitud, out tit, out agrp);
 
 			if (registros == null || registros.Count == 0)
 			{
@@ -175,7 +229,8 @@ namespace gc.api.core.Servicios.Reportes
 		{
 			#region Obteniendo registros desde la base de datos
 			string tit;
-			List<CertificadoListaDto> registros = ObtenerDatos(solicitud, out tit);
+			int agrp;
+			List<ProductoStkDto> registros = ObtenerDatos(solicitud, out tit, out agrp);
 
 			if (registros == null || registros.Count == 0)
 			{

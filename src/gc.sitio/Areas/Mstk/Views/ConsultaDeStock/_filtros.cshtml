@@ -174,8 +174,12 @@
 						<div class="col-6" id="divAgrupadorPor">
 							<div class="input-group input-group-sm">
 								<span class="input-group-text">Agrupar por</span>
-								@Html.DropDownListFor(m => m.AgrupadorSeleccionado, Model.ListaAgrupadores, "Seleccionar", new {
-								@id = "listaAgrupador", @class = "form-control inputEditable activable" })
+								@Html.DropDownListFor(
+									m => m.AgrupadorSeleccionado, 
+									Model.ListaAgrupadores, 
+									new {
+										@id = "listaAgrupador", @class = "form-control inputEditable activable" 
+									})
 							</div>
 						</div>
 					</div>

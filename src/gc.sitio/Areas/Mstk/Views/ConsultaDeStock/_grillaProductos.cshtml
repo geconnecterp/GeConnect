@@ -1,11 +1,15 @@
-﻿@model ProductoStkListaModel
+﻿@using gc.infraestructura.Dtos.Mstk
+@model ProductoStkListaModel
 @using static gc.infraestructura.Helpers.GridHelper
 @{
 	string grupoActual = string.Empty;
 	string grupoAnterior = string.Empty;
+	string leyendaAgrupador = string.Empty;
 
 	var alt = true;
 	string clase = string.Empty;
+
+	var productos = new List<ProductoStkDto>();
 }
 <style>
 	.table-wrapper {
@@ -63,27 +67,77 @@
 		<tbody>
 			@if (Model != null && Model.GrillaProductoStk != null && Model.GrillaProductoStk.ListaDatos != null && Model.GrillaProductoStk.ListaDatos.Count > 0)
 			{
-				//TODO MARCE: Armar los grupos
-				var productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.rubg_id).ToList();
+				if (Model.AgrupadoPor == 0)
+				{
+					productos = Model.GrillaProductoStk.ListaDatos.ToList();
+				}
+				else
+				{
+					switch (Model.AgrupadoPor)
+					{
+						case 1:
+							productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.sec_id).ToList();
+							break;
+						case 2:
+							productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.rubg_id).ToList();
+							break;
+						case 3:
+							productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.rub_id).ToList();
+							break;
+						case 4:
+							productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.cta_id).ToList();
+							break;
+						default:
+							productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.p_id).ToList();
+							break;
+					}
+				}
+
 				@foreach (var item in productos)
 				{
-					grupoActual = item.rubg_id;
-					// Si cambia la cuenta, insertamos una fila de encabezado para la cuenta
-					if (grupoActual != grupoAnterior)
+					if (Model.AgrupadoPor != 0)
 					{
-						<tr class="table-secondary fw-bold">
-							<td colspan="7" class="text-center">
-								<i class="bx bx-folder me-1"></i>
-								@item.rubg_id
-							</td>
-						</tr>
-						grupoAnterior = grupoActual;
-						alt = true; // Reiniciar alternancia de colores después de cada familia
+						switch (Model.AgrupadoPor)
+						{
+							case 1:
+								grupoActual = item.sec_id;
+								leyendaAgrupador = $"({item.sec_id}) {item.sec_desc}";
+								break;
+							case 2:
+								grupoActual = item.rubg_id;
+								leyendaAgrupador = $"({item.rubg_id}) {item.rubg_desc}";
+								break;
+							case 3:
+								grupoActual = item.rub_id;
+								leyendaAgrupador = $"({item.rub_id}) {item.rub_desc}";
+								break;
+							case 4:
+								grupoActual = item.cta_id;
+								leyendaAgrupador = $"({item.cta_id}) {item.cta_denominacion}";
+								break;
+							default:
+								grupoActual = item.p_id;
+								leyendaAgrupador = "";
+								break;
+						}
+						// Si cambia la cuenta, insertamos una fila de encabezado para la cuenta
+						if (grupoActual != grupoAnterior)
+						{
+							<tr class="table-secondary fw-bold">
+								<td colspan="8" class="text-center">
+									<i class="bx bx-folder me-1"></i>
+									@leyendaAgrupador
+								</td>
+							</tr>
+							grupoAnterior = grupoActual;
+							alt = true; // Reiniciar alternancia de colores después de cada familia
+						}
 					}
+
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase" onclick="selectReg(this, 'tbGridProductos')">
-						<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_id) text-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_id_barrado) text-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_id_barrado, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_id) align-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_id_barrado) align-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_id_barrado, FormatDato.Ninguno)</td>
 						@if (item.p_activo_bool)
 						{
 							<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_desc) cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_desc, FormatDato.Ninguno)</td>
@@ -92,7 +146,7 @@
 						{
 							<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_desc) cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_desc, FormatDato.Ninguno)<span style="float:right;" title="Producto discontínuo"><i class="bx bx-dislike"></i></span></td>
 						}
-						<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_id_prov) text-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_id_prov, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_id_prov) align-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_id_prov, FormatDato.Ninguno)</td>
 						<td class="@Model.GrillaProductoStk.ObtenerClase(item.stk_ult_mov) text-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.stk_ult_mov, FormatDato.Fecha)</td>
 						<td class="@Model.GrillaProductoStk.ObtenerClase(item.rp_fecha) text-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.rp_fecha, FormatDato.Fecha)</td>
 						<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_unidad_pres) text-right cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_unidad_pres, FormatDato.Ninguno)</td>

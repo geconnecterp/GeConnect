@@ -132,6 +132,7 @@ using gc.infraestructura.Dtos.Consultas.ReporteFinanciero;
 using gc.infraestructura.Dtos.DocManager;
 using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Mstk;
 using gc.infraestructura.Dtos.Productos.Presupuestos;
 using gc.infraestructura.EntidadesComunes.Options;
 using iTextSharp.text;
@@ -760,97 +761,97 @@ namespace gc.infraestructura.Helpers
 			pdf.Add(tabla);
 		}
 
-        /// <summary>
-        /// Genera un listado PDF con agrupamiento jerárquico múltiple
-        /// </summary>
-        /// <typeparam name="T">Tipo de entidad a listar</typeparam>
-        /// <param name="pdf">Documento PDF destino</param>
-        /// <param name="lista">Lista de datos a procesar</param>
-        /// <param name="campos">Nombres de campos a mostrar en las columnas</param>
-        /// <param name="titulos">Títulos de las columnas</param>
-        /// <param name="anchos">Anchos relativos de cada columna</param>
-        /// <param name="nivelesAgrupamiento">Lista ordenada de niveles de agrupamiento (del más general al más específico)</param>
-        /// <param name="fuente">Fuente para datos normales</param>
-        /// <param name="fuenteNegrita">Fuente para headers y totales</param>
-        /// <param name="totalesPorCampo">Totales generales (opcional)</param>
-        /// <param name="autoCalcularTotales">Si debe calcular totales automáticamente</param>
-        /// <param name="camposTotalizables">Campos que deben sumarse (opcional)</param>
-        /// <param name="mostrarCabecera">Si debe mostrar el encabezado de columnas</param>
-        public static void GenerarListadoAgrupado<T>(
-            Document pdf,
-            List<T> lista,
-            List<string> campos,
-            List<string> titulos,
-            float[] anchos,
-            List<NivelAgrupamiento> nivelesAgrupamiento,
-            Font fuente,
-            Font fuenteNegrita,
-            Dictionary<string, decimal>? totalesPorCampo = null,
-            bool autoCalcularTotales = true,
-            List<string>? camposTotalizables = null,
-            bool mostrarCabecera = true)
-        {
-            if (lista == null || !lista.Any() || campos == null || campos.Count == 0)
-                return;
+		/// <summary>
+		/// Genera un listado PDF con agrupamiento jerárquico múltiple
+		/// </summary>
+		/// <typeparam name="T">Tipo de entidad a listar</typeparam>
+		/// <param name="pdf">Documento PDF destino</param>
+		/// <param name="lista">Lista de datos a procesar</param>
+		/// <param name="campos">Nombres de campos a mostrar en las columnas</param>
+		/// <param name="titulos">Títulos de las columnas</param>
+		/// <param name="anchos">Anchos relativos de cada columna</param>
+		/// <param name="nivelesAgrupamiento">Lista ordenada de niveles de agrupamiento (del más general al más específico)</param>
+		/// <param name="fuente">Fuente para datos normales</param>
+		/// <param name="fuenteNegrita">Fuente para headers y totales</param>
+		/// <param name="totalesPorCampo">Totales generales (opcional)</param>
+		/// <param name="autoCalcularTotales">Si debe calcular totales automáticamente</param>
+		/// <param name="camposTotalizables">Campos que deben sumarse (opcional)</param>
+		/// <param name="mostrarCabecera">Si debe mostrar el encabezado de columnas</param>
+		public static void GenerarListadoAgrupado<T>(
+			Document pdf,
+			List<T> lista,
+			List<string> campos,
+			List<string> titulos,
+			float[] anchos,
+			List<NivelAgrupamiento> nivelesAgrupamiento,
+			Font fuente,
+			Font fuenteNegrita,
+			Dictionary<string, decimal>? totalesPorCampo = null,
+			bool autoCalcularTotales = true,
+			List<string>? camposTotalizables = null,
+			bool mostrarCabecera = true)
+		{
+			if (lista == null || !lista.Any() || campos == null || campos.Count == 0)
+				return;
 
-            if (nivelesAgrupamiento == null || !nivelesAgrupamiento.Any())
-                throw new ArgumentException("Debe especificar al menos un nivel de agrupamiento", nameof(nivelesAgrupamiento));
+			if (nivelesAgrupamiento == null || !nivelesAgrupamiento.Any())
+				throw new ArgumentException("Debe especificar al menos un nivel de agrupamiento", nameof(nivelesAgrupamiento));
 
-            var cultura = new CultureInfo("es-ES");
-            var propsDict = TypeDescriptor.GetProperties(typeof(T))
-                                          .Cast<PropertyDescriptor>()
-                                          .ToDictionary(p => p.Name, p => p, StringComparer.OrdinalIgnoreCase);
+			var cultura = new CultureInfo("es-ES");
+			var propsDict = TypeDescriptor.GetProperties(typeof(T))
+										  .Cast<PropertyDescriptor>()
+										  .ToDictionary(p => p.Name, p => p, StringComparer.OrdinalIgnoreCase);
 
-            // Validar que todos los campos de agrupamiento existan
-            foreach (var nivel in nivelesAgrupamiento)
-            {
-                if (!propsDict.ContainsKey(nivel.CampoGrupo))
-                    throw new ArgumentException($"El campo de agrupamiento '{nivel.CampoGrupo}' no existe en el tipo {typeof(T).Name}");
+			// Validar que todos los campos de agrupamiento existan
+			foreach (var nivel in nivelesAgrupamiento)
+			{
+				if (!propsDict.ContainsKey(nivel.CampoGrupo))
+					throw new ArgumentException($"El campo de agrupamiento '{nivel.CampoGrupo}' no existe en el tipo {typeof(T).Name}");
 
-                if (!propsDict.ContainsKey(nivel.CampoDescripcion))
-                    throw new ArgumentException($"El campo de descripción '{nivel.CampoDescripcion}' no existe en el tipo {typeof(T).Name}");
-            }
+				if (!propsDict.ContainsKey(nivel.CampoDescripcion))
+					throw new ArgumentException($"El campo de descripción '{nivel.CampoDescripcion}' no existe en el tipo {typeof(T).Name}");
+			}
 
-            var tabla = GeneraTabla(campos.Count, anchos, 100, 0, 10);
+			var tabla = GeneraTabla(campos.Count, anchos, 100, 0, 10);
 
-            // Mostrar encabezado de columnas si corresponde
-            if (mostrarCabecera)
-            {
-                AgregarEncabezadoColumnas(tabla, titulos, campos.Count, fuenteNegrita);
-            }
+			// Mostrar encabezado de columnas si corresponde
+			if (mostrarCabecera)
+			{
+				AgregarEncabezadoColumnas(tabla, titulos, campos.Count, fuenteNegrita);
+			}
 
-            // Procesar agrupamiento jerárquico
-            ProcesarAgrupamientoJerarquico(
-                tabla,
-                lista,
-                campos,
-                nivelesAgrupamiento,
-                propsDict,
-                fuente,
-                fuenteNegrita,
-                cultura,
-                autoCalcularTotales,
-                camposTotalizables
-            );
+			// Procesar agrupamiento jerárquico
+			ProcesarAgrupamientoJerarquico(
+				tabla,
+				lista,
+				campos,
+				nivelesAgrupamiento,
+				propsDict,
+				fuente,
+				fuenteNegrita,
+				cultura,
+				autoCalcularTotales,
+				camposTotalizables
+			);
 
-            // Agregar totales generales si corresponde
-            if (totalesPorCampo != null && totalesPorCampo.Count > 0)
-            {
-                AgregarFilaTotalesGenerales(tabla, campos, totalesPorCampo, fuenteNegrita, cultura);
-            }
-            else if (autoCalcularTotales)
-            {
-                var totalesCalculados = CalcularTotales(lista, campos, camposTotalizables, propsDict);
-                if (totalesCalculados.Count > 0)
-                {
-                    AgregarFilaTotalesGenerales(tabla, campos, totalesCalculados, fuenteNegrita, cultura);
-                }
-            }
+			// Agregar totales generales si corresponde
+			if (totalesPorCampo != null && totalesPorCampo.Count > 0)
+			{
+				AgregarFilaTotalesGenerales(tabla, campos, totalesPorCampo, fuenteNegrita, cultura);
+			}
+			else if (autoCalcularTotales)
+			{
+				var totalesCalculados = CalcularTotales(lista, campos, camposTotalizables, propsDict);
+				if (totalesCalculados.Count > 0)
+				{
+					AgregarFilaTotalesGenerales(tabla, campos, totalesCalculados, fuenteNegrita, cultura);
+				}
+			}
 
-            pdf.Add(tabla);
-        }
+			pdf.Add(tabla);
+		}
 
-        public static void GenerarListadoDatos<T>(Document pdf, DatosCuerpoDto<T> cuerpo, float[] anchos, Font normal)
+		public static void GenerarListadoDatos<T>(Document pdf, DatosCuerpoDto<T> cuerpo, float[] anchos, Font normal)
 		{
 			int alig;
 			CultureInfo cultura = new CultureInfo("es-ES");
@@ -3490,6 +3491,147 @@ namespace gc.infraestructura.Helpers
 			}
 		}
 
+		/// <summary>
+		/// Genera e inserta en el <paramref name="pdf"/> un listado de productos con su stock,
+		/// agrupado según el valor de <paramref name="agrupador"/>. Si <paramref name="lista"/> es nulo o vacío
+		/// la función retorna sin modificar el documento.
+		/// </summary>
+		/// <param name="pdf">Documento destino donde se agregará la(s) tabla(s). No se cierra ni se abre el documento aquí.</param>
+		/// <param name="lista">Colección de <see cref="ProductoStkDto"/> que se representarán en el informe.</param>
+		/// <param name="agrupador">
+		/// Determina el criterio de agrupamiento:
+		/// 1 = Sector (usa <c>sec_id</c> / <c>sec_desc</c>),
+		/// 2 = Grupo de Rubros (usa <c>rubg_id</c> / <c>rubg_desc</c>),
+		/// 3 = Rubro (usa <c>rub_id</c> / <c>rub_desc</c>),
+		/// 4 = Proveedor (usa <c>cta_id</c> / <c>cta_denominacion</c>).
+		/// Si no coincide ninguno, se genera un único grupo (sin agrupamiento).
+		/// </param>
+		/// <param name="fuenteEtiqueta">Fuente usada para los encabezados y títulos de grupo.</param>
+		/// <param name="fuenteValor">Fuente usada para los valores/filas de detalle.</param>
+		/// <remarks>
+		/// - Formatea fechas con el patrón <c>dd/MM/yyyy</c>.
+		/// - Las tablas usan anchos fijos y están preparadas para A4; ajustar si se necesita otro tamaño de página.
+		/// - No realiza operaciones de I/O ni cierra el <paramref name="pdf"/>; quien llama debe encargarse de ello.
+		/// - Si necesita otros criterios de agrupamiento, extienda la lógica de selección con nuevos casos en <paramref name="agrupador"/>.
+		/// </remarks>
+		/// <example>
+		/// // Ejemplo de uso:
+		/// var lista = servicio.ObtenerProductosStock(...);
+		/// HelperPdf.CargarProductosParaRptDeStk(doc, lista, 4, HelperPdf.FontNormalPredeterminado(true), HelperPdf.FontNormalPredeterminado());
+		/// </example>
+		public static void CargarProductosParaRptDeStk(Document pdf, List<ProductoStkDto> lista, int agrupador, Font fuenteEtiqueta, Font fuenteValor)
+		{
+			if (lista == null || !lista.Any())
+				return;
+			Func<ProductoStkDto, string> agrupadorKeySelector = null;
+			Func<ProductoStkDto, string> agrupadorDescSelector = null;
+			string tituloAgrupador = null;
+
+			switch (agrupador)
+			{
+				case 1:
+					agrupadorKeySelector = x => x.sec_id;
+					agrupadorDescSelector = x => x.sec_desc;
+					tituloAgrupador = "Sector";
+					break;
+				case 2:
+					agrupadorKeySelector = x => x.rubg_id;
+					agrupadorDescSelector = x => x.rubg_desc;
+					tituloAgrupador = "Grupo de Rubros";
+					break;
+				case 3:
+					agrupadorKeySelector = x => x.rub_id;
+					agrupadorDescSelector = x => x.rub_desc;
+					tituloAgrupador = "Rubro";
+					break;
+				case 4:
+					agrupadorKeySelector = x => x.cta_id;
+					agrupadorDescSelector = x => x.cta_denominacion;
+					tituloAgrupador = "Proveedor";
+					break;
+			}
+
+			IEnumerable<IGrouping<string, ProductoStkDto>> grupos;
+
+			if (agrupadorKeySelector != null)
+			{
+				grupos = lista.GroupBy(agrupadorKeySelector);
+			}
+			else
+			{
+				// Sin agrupamiento: todo en un solo grupo ficticio
+				grupos = new List<IGrouping<string, ProductoStkDto>> { new AgrupacionSinGrupo(lista) };
+			}
+
+			foreach (var grupo in grupos)
+			{
+				PdfPTable tabla = new(11)
+				{
+					WidthPercentage = 100
+				};
+				tabla.SetWidths([6f, 10f, 30f, 5f, 7f, 7f, 7f, 7f, 6f, 7f, 8f]);
+
+				// 👇 Si hay agrupador, agregamos fila de título como parte de la tabla
+				if (agrupadorKeySelector != null)
+				{
+					string descripcionGrupo = agrupadorDescSelector(grupo.First());
+					PdfPCell celdaGrupo = new(new Phrase($"{tituloAgrupador}: {descripcionGrupo}", fuenteValor))
+					{
+						Colspan = 11, // ocupa todas las columnas
+						HorizontalAlignment = Element.ALIGN_CENTER,
+						BackgroundColor = BaseColor.Yellow, // opcional, para destacar
+						PaddingTop = 5f,
+						PaddingBottom = 5f
+					};
+
+					tabla.AddCell(celdaGrupo);
+				}
+
+				// Encabezados
+				string[] encabezados = { "Código", "Cód. Barra", "Descripción", "Cod. Prov.", "Ult. Mov.", "Ult. Recep.", "Ref. P.", "Unidad Pres.", "Conteo", "Stock", "Diferencia" };
+				foreach (var encabezado in encabezados)
+				{
+					PdfPCell celda = new(new Phrase(encabezado, fuenteValor))
+					{
+						BackgroundColor = BaseColor.LightGray,
+						HorizontalAlignment = Element.ALIGN_CENTER
+					};
+					tabla.AddCell(celda);
+				}
+				// 👇 ESTA LÍNEA ES LA CLAVE
+				tabla.HeaderRows = 2;
+
+				foreach (var producto in grupo)
+				{
+					tabla.AddCell(new PdfPCell(new Phrase(producto.p_id, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
+					tabla.AddCell(new PdfPCell(new Phrase(producto.p_id_barrado, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
+					tabla.AddCell(new PdfPCell(new Phrase(producto.p_desc, fuenteEtiqueta)));
+					tabla.AddCell(new PdfPCell(new Phrase(producto.p_id_prov, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					tabla.AddCell(new PdfPCell(new Phrase(producto.stk_ult_mov?.ToString("dd/MM/yyyy") ?? "", fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
+					tabla.AddCell(new PdfPCell(new Phrase(producto.rp_fecha?.ToString("dd/MM/yyyy") ?? "", fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
+					tabla.AddCell(new PdfPCell(new Phrase(producto.rp_dias.ToString(), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					tabla.AddCell(new PdfPCell(new Phrase(producto.p_unidad_pres.ToString(), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					tabla.AddCell(new PdfPCell(new Phrase(string.Empty, fuenteEtiqueta)));
+					tabla.AddCell(new PdfPCell(new Phrase(producto.stk.ToString("0.00"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					tabla.AddCell(new PdfPCell(new Phrase(string.Empty, fuenteEtiqueta)));
+				}
+
+				pdf.Add(tabla);
+			}
+
+		}
+
+		// Clase auxiliar para simular un grupo sin agrupamiento
+		private class AgrupacionSinGrupo : IGrouping<string, ProductoStkDto>
+		{
+			private readonly IEnumerable<ProductoStkDto> _items;
+			public AgrupacionSinGrupo(IEnumerable<ProductoStkDto> items) => _items = items;
+			public string Key => "Sin agrupamiento";
+			public IEnumerator<ProductoStkDto> GetEnumerator() => _items.GetEnumerator();
+			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => _items.GetEnumerator();
+		}
+
+
 		public static PdfPTable GenerarListadoDesdeLista<T>(
 			List<T> lista,
 			List<string> campos,
@@ -3853,464 +3995,464 @@ namespace gc.infraestructura.Helpers
 			return formatoPersonalizado;
 		}
 
-        private static void ProcesarAgrupamientoJerarquico<T>(
-    PdfPTable tabla,
-    List<T> lista,
-    List<string> campos,
-    List<NivelAgrupamiento> nivelesAgrupamiento,
-    Dictionary<string, PropertyDescriptor> propsDict,
-    Font fuente,
-    Font fuenteNegrita,
-    CultureInfo cultura,
-    bool autoCalcularTotales,
-    List<string>? camposTotalizables)
-        {
-            // Ordenar lista por todos los niveles de agrupamiento
-            var listaOrdenada = OrdenarPorNiveles(lista, nivelesAgrupamiento, propsDict);
-
-            // Diccionario para rastrear valores actuales de cada nivel
-            var valoresActuales = new Dictionary<int, string>();
-
-            // Diccionario para acumular subtotales por nivel
-            var subtotalesPorNivel = new Dictionary<int, Dictionary<string, decimal>>();
-
-            bool alternar = false;
-
-            foreach (var item in listaOrdenada)
-            {
-                // Verificar cambios en cada nivel de agrupamiento
-                bool cambioEnAlgunNivel = false;
-                int nivelCambio = -1;
-
-                for (int i = 0; i < nivelesAgrupamiento.Count; i++)
-                {
-                    var nivel = nivelesAgrupamiento[i];
-                    string valorActual = propsDict[nivel.CampoGrupo].GetValue(item)?.ToString() ?? "";
-
-                    if (!valoresActuales.ContainsKey(i) ||
-                        !valorActual.Equals(valoresActuales[i], StringComparison.OrdinalIgnoreCase))
-                    {
-                        // Hubo cambio en este nivel
-                        if (cambioEnAlgunNivel == false)
-                        {
-                            nivelCambio = i;
-                            cambioEnAlgunNivel = true;
-                        }
-
-                        // Si cambió un nivel superior, mostrar subtotales de niveles inferiores
-                        if (i < nivelesAgrupamiento.Count - 1 && valoresActuales.ContainsKey(i))
-                        {
-                            MostrarSubtotalesNivelesInferiores(
-                                tabla,
-                                campos,
-                                nivelesAgrupamiento,
-                                subtotalesPorNivel,
-                                i,
-                                fuenteNegrita,
-                                cultura
-                            );
-                        }
-
-                        // Actualizar valor actual de este nivel
-                        valoresActuales[i] = valorActual;
-
-                        // Limpiar valores de niveles inferiores
-                        for (int j = i + 1; j < nivelesAgrupamiento.Count; j++)
-                        {
-                            valoresActuales.Remove(j);
-                            subtotalesPorNivel.Remove(j);
-                        }
-
-                        // Mostrar header de grupo para este nivel
-                        MostrarHeaderGrupo(tabla, item, nivel, propsDict, campos.Count, fuenteNegrita);
-
-                        // Inicializar acumulador de subtotales para este nivel
-                        if (nivel.MostrarSubtotal)
-                        {
-                            subtotalesPorNivel[i] = new Dictionary<string, decimal>();
-                        }
-
-                        // Resetear alternancia de color
-                        alternar = false;
-                    }
-                }
-
-                // Agregar fila de datos
-                AgregarFilaDatos(tabla, item, campos, propsDict, fuente, cultura, alternar);
-                alternar = !alternar;
-
-                // Acumular en subtotales de cada nivel
-                if (autoCalcularTotales)
-                {
-                    AcumularSubtotales(item, campos, camposTotalizables, propsDict,
-                                     subtotalesPorNivel, nivelesAgrupamiento);
-                }
-            }
-
-            // Mostrar subtotales finales de todos los niveles
-            MostrarSubtotalesNivelesInferiores(
-                tabla,
-                campos,
-                nivelesAgrupamiento,
-                subtotalesPorNivel,
-                -1, // Mostrar todos los niveles
-                fuenteNegrita,
-                cultura
-            );
-        }
-
-        private static List<T> OrdenarPorNiveles<T>(
-    List<T> lista,
-    List<NivelAgrupamiento> niveles,
-    Dictionary<string, PropertyDescriptor> propsDict)
-        {
-            IOrderedEnumerable<T>? query = null;
-
-            for (int i = 0; i < niveles.Count; i++)
-            {
-                var campo = niveles[i].CampoGrupo;
-                var prop = propsDict[campo];
-
-                if (i == 0)
-                {
-                    query = lista.OrderBy(item => prop.GetValue(item)?.ToString() ?? "");
-                }
-                else
-                {
-                    query = query!.ThenBy(item => prop.GetValue(item)?.ToString() ?? "");
-                }
-            }
-
-            return query?.ToList() ?? lista;
-        }
-
-        private static void MostrarHeaderGrupo<T>(
-            PdfPTable tabla,
-            T item,
-            NivelAgrupamiento nivel,
-            Dictionary<string, PropertyDescriptor> propsDict,
-            int colspan,
-            Font fuenteNegrita)
-        {
-            string descripcion = propsDict[nivel.CampoDescripcion].GetValue(item)?.ToString() ?? "";
-
-            // Determinar color de fondo basado en nivel jerárquico
-            BaseColor colorFondo = nivel.ColorFondo ?? ObtenerColorPorNivel(nivel.Nivel);
-
-            // Calcular indentación visual según nivel
-            string indentacion = new string(' ', nivel.Nivel * 2);
-
-            PdfPCell celdaGrupo = new PdfPCell(new Phrase($"{indentacion}{descripcion}", fuenteNegrita))
-            {
-                Colspan = colspan,
-                Border = Rectangle.NO_BORDER,
-                BackgroundColor = colorFondo,
-                PaddingTop = 5 + (nivel.Nivel * 2),
-                PaddingBottom = 5 + (nivel.Nivel * 2),
-                PaddingLeft = 5 + (nivel.Nivel * 5)
-            };
-
-            tabla.AddCell(celdaGrupo);
-        }
-
-        private static BaseColor ObtenerColorPorNivel(int nivel)
-        {
-            // Degradado de grises según profundidad
-            return nivel switch
-            {
-                0 => new BaseColor(200, 200, 200), // Gris oscuro
-                1 => new BaseColor(220, 220, 220), // Gris medio
-                2 => new BaseColor(235, 235, 235), // Gris claro
-                _ => BaseColor.LightGray
-            };
-        }
-
-        private static void AgregarFilaDatos<T>(
-            PdfPTable tabla,
-            T item,
-            List<string> campos,
-            Dictionary<string, PropertyDescriptor> propsDict,
-            Font fuente,
-            CultureInfo cultura,
-            bool alternar)
-        {
-            foreach (var campo in campos)
-            {
-                var prop = propsDict[campo];
-                var valor = prop.GetValue(item);
-
-                string texto = FormatearValor(valor, cultura);
-                int alineacion = DeterminarAlineacion(valor);
-
-                var parrafo = HelperPdf.GeneraParrafo(texto, fuente, alineacion, 3, 3, true, BaseColor.Black);
-                var celda = new PdfPCell(parrafo)
-                {
-                    HorizontalAlignment = alineacion,
-                    Border = Rectangle.NO_BORDER,
-                    BackgroundColor = alternar ? BaseColor.White : new BaseColor(245, 245, 245)
-                };
-
-                tabla.AddCell(celda);
-            }
-        }
-
-        private static void AcumularSubtotales<T>(
-            T item,
-            List<string> campos,
-            List<string>? camposTotalizables,
-            Dictionary<string, PropertyDescriptor> propsDict,
-            Dictionary<int, Dictionary<string, decimal>> subtotalesPorNivel,
-            List<NivelAgrupamiento> niveles)
-        {
-            for (int nivelIdx = 0; nivelIdx < niveles.Count; nivelIdx++)
-            {
-                if (!niveles[nivelIdx].MostrarSubtotal)
-                    continue;
-
-                if (!subtotalesPorNivel.ContainsKey(nivelIdx))
-                    subtotalesPorNivel[nivelIdx] = new Dictionary<string, decimal>();
-
-                foreach (var campo in campos)
-                {
-                    if (!propsDict.ContainsKey(campo))
-                        continue;
-
-                    if (camposTotalizables != null && !camposTotalizables.Contains(campo))
-                        continue;
-
-                    var tipo = propsDict[campo].PropertyType;
-                    if (tipo == typeof(decimal) || tipo == typeof(double) || tipo == typeof(float))
-                    {
-                        var valor = propsDict[campo].GetValue(item);
-                        decimal valorDecimal = valor != null ? Convert.ToDecimal(valor) : 0;
-
-                        if (!subtotalesPorNivel[nivelIdx].ContainsKey(campo))
-                            subtotalesPorNivel[nivelIdx][campo] = 0;
-
-                        subtotalesPorNivel[nivelIdx][campo] += valorDecimal;
-                    }
-                }
-            }
-        }
-
-        private static void MostrarSubtotalesNivelesInferiores(
-            PdfPTable tabla,
-            List<string> campos,
-            List<NivelAgrupamiento> niveles,
-            Dictionary<int, Dictionary<string, decimal>> subtotalesPorNivel,
-            int nivelDesde,
-            Font fuenteNegrita,
-            CultureInfo cultura)
-        {
-            // Mostrar subtotales de niveles inferiores al que cambió
-            for (int i = niveles.Count - 1; i > nivelDesde; i--)
-            {
-                if (!niveles[i].MostrarSubtotal)
-                    continue;
-
-                if (!subtotalesPorNivel.ContainsKey(i))
-                    continue;
-
-                string etiqueta = niveles[i].EtiquetaSubtotal ?? $"Subtotal Nivel {i}:";
-                AgregarFilaSubtotal(tabla, campos, subtotalesPorNivel[i], etiqueta,
-                                  fuenteNegrita, cultura, niveles[i].Nivel);
-
-                // Limpiar acumuladores
-                subtotalesPorNivel.Remove(i);
-            }
-        }
-
-        private static void AgregarFilaSubtotal(
-            PdfPTable tabla,
-            List<string> campos,
-            Dictionary<string, decimal> subtotales,
-            string etiqueta,
-            Font fuenteNegrita,
-            CultureInfo cultura,
-            int nivel)
-        {
-            int idxPrimerTotal = campos.FindIndex(c => subtotales.ContainsKey(c));
-            BaseColor colorFondo = new BaseColor(240 - (nivel * 10), 240 - (nivel * 10), 240 - (nivel * 10));
-
-            for (int i = 0; i < campos.Count; i++)
-            {
-                PdfPCell celda;
-
-                if (subtotales.TryGetValue(campos[i], out var total))
-                {
-                    string valorFormateado = total.ToString("N2", cultura);
-                    var parrafo = HelperPdf.GeneraParrafo(valorFormateado, fuenteNegrita,
-                                                        Element.ALIGN_RIGHT, 5, 5, true, BaseColor.Black);
-                    celda = new PdfPCell(parrafo)
-                    {
-                        HorizontalAlignment = Element.ALIGN_RIGHT,
-                        BackgroundColor = colorFondo,
-                        Border = Rectangle.TOP_BORDER,
-                        BorderColorTop = BaseColor.Black,
-                        BorderWidthTop = 0.5f
-                    };
-                }
-                else if (i == idxPrimerTotal - 1)
-                {
-                    var parrafo = HelperPdf.GeneraParrafo(etiqueta, fuenteNegrita,
-                                                        Element.ALIGN_RIGHT, 5, 5, true, BaseColor.Black);
-                    celda = new PdfPCell(parrafo)
-                    {
-                        HorizontalAlignment = Element.ALIGN_RIGHT,
-                        BackgroundColor = colorFondo,
-                        Border = Rectangle.TOP_BORDER,
-                        BorderColorTop = BaseColor.Black,
-                        BorderWidthTop = 0.5f
-                    };
-                }
-                else
-                {
-                    celda = new PdfPCell(new Phrase(""))
-                    {
-                        BackgroundColor = colorFondo,
-                        Border = Rectangle.TOP_BORDER,
-                        BorderColorTop = BaseColor.Black,
-                        BorderWidthTop = 0.5f
-                    };
-                }
-
-                tabla.AddCell(celda);
-            }
-        }
-
-        private static void AgregarEncabezadoColumnas(
-            PdfPTable tabla,
-            List<string> titulos,
-            int numColumnas,
-            Font fuenteNegrita)
-        {
-
-            foreach (var titulo in titulos)
-            {
-                PdfPCell celda = new PdfPCell(new Phrase(titulo, fuenteNegrita))
-                {
-                    BackgroundColor = BaseColor.White,
-                    HorizontalAlignment = Element.ALIGN_CENTER,
-                    Border = Rectangle.BOX,
-                    Padding = 5
-                };
-                tabla.AddCell(celda);
-            }
-        }
-
-        private static void AgregarFilaTotalesGenerales(
-            PdfPTable tabla,
-            List<string> campos,
-            Dictionary<string, decimal> totales,
-            Font fuenteNegrita,
-            CultureInfo cultura)
-        {
-            int idxPrimerTotal = campos.FindIndex(c => totales.ContainsKey(c));
-
-            for (int i = 0; i < campos.Count; i++)
-            {
-                PdfPCell celda;
-
-                if (totales.TryGetValue(campos[i], out var total))
-                {
-                    string valorFormateado = total.ToString("N2", cultura);
-                    var parrafo = HelperPdf.GeneraParrafo(valorFormateado, fuenteNegrita,
-                                                        Element.ALIGN_RIGHT, 5, 5, true, BaseColor.Black);
-                    celda = new PdfPCell(parrafo)
-                    {
-                        HorizontalAlignment = Element.ALIGN_RIGHT,
-                        BackgroundColor = new BaseColor(200, 200, 200),
-                        Border = Rectangle.BOX,
-                        BorderWidth = 1f
-                    };
-                }
-                else if (i == idxPrimerTotal - 1)
-                {
-                    var parrafo = HelperPdf.GeneraParrafo("TOTAL GENERAL:", fuenteNegrita,
-                                                        Element.ALIGN_RIGHT, 5, 5, true, BaseColor.Black);
-                    celda = new PdfPCell(parrafo)
-                    {
-                        HorizontalAlignment = Element.ALIGN_RIGHT,
-                        BackgroundColor = new BaseColor(200, 200, 200),
-                        Border = Rectangle.BOX,
-                        BorderWidth = 1f
-                    };
-                }
-                else
-                {
-                    celda = new PdfPCell(new Phrase(""))
-                    {
-                        BackgroundColor = new BaseColor(200, 200, 200),
-                        Border = Rectangle.BOX,
-                        BorderWidth = 1f
-                    };
-                }
-
-                tabla.AddCell(celda);
-            }
-        }
-
-        private static Dictionary<string, decimal> CalcularTotales<T>(
-            List<T> lista,
-            List<string> campos,
-            List<string>? camposTotalizables,
-            Dictionary<string, PropertyDescriptor> propsDict)
-        {
-            var totales = new Dictionary<string, decimal>();
-
-            foreach (var campo in campos)
-            {
-                if (!propsDict.ContainsKey(campo))
-                    continue;
-
-                if (camposTotalizables != null && !camposTotalizables.Contains(campo))
-                    continue;
-
-                var tipo = propsDict[campo].PropertyType;
-                if (tipo == typeof(decimal) || tipo == typeof(double) || tipo == typeof(float))
-                {
-                    decimal suma = lista.Sum(item =>
-                    {
-                        var val = propsDict[campo].GetValue(item);
-                        return val != null ? Convert.ToDecimal(val) : 0;
-                    });
-                    totales[campo] = suma;
-                }
-            }
-
-            return totales;
-        }
-
-        private static string FormatearValor(object? valor, CultureInfo cultura)
-        {
-            if (valor == null)
-                return "-";
-
-            if (valor is DateTime dt)
-                return dt.ToString("dd/MM/yyyy");
-
-            if (valor is decimal or double or float)
-                return Convert.ToDecimal(valor).ToString("N2", cultura);
-
-            return valor.ToString() ?? string.Empty;
-        }
-
-        private static int DeterminarAlineacion(object? valor)
-        {
-            if (valor == null)
-                return Element.ALIGN_LEFT;
-
-            if (valor is DateTime)
-                return Element.ALIGN_CENTER;
-
-            if (valor is decimal or double or float)
-                return Element.ALIGN_RIGHT;
-
-            string texto = valor.ToString() ?? "";
-            return texto.Length == 1 ? Element.ALIGN_CENTER : Element.ALIGN_LEFT;
-        }
-
-        private static List<LibroBancoResumenDto> ObtenerGrillaCuentaFinanciera(List<FinancieroBcoLibroResumenDto> lista, TipoGrillaCuentaFinanciera tipoGrilla)
+		private static void ProcesarAgrupamientoJerarquico<T>(
+	PdfPTable tabla,
+	List<T> lista,
+	List<string> campos,
+	List<NivelAgrupamiento> nivelesAgrupamiento,
+	Dictionary<string, PropertyDescriptor> propsDict,
+	Font fuente,
+	Font fuenteNegrita,
+	CultureInfo cultura,
+	bool autoCalcularTotales,
+	List<string>? camposTotalizables)
+		{
+			// Ordenar lista por todos los niveles de agrupamiento
+			var listaOrdenada = OrdenarPorNiveles(lista, nivelesAgrupamiento, propsDict);
+
+			// Diccionario para rastrear valores actuales de cada nivel
+			var valoresActuales = new Dictionary<int, string>();
+
+			// Diccionario para acumular subtotales por nivel
+			var subtotalesPorNivel = new Dictionary<int, Dictionary<string, decimal>>();
+
+			bool alternar = false;
+
+			foreach (var item in listaOrdenada)
+			{
+				// Verificar cambios en cada nivel de agrupamiento
+				bool cambioEnAlgunNivel = false;
+				int nivelCambio = -1;
+
+				for (int i = 0; i < nivelesAgrupamiento.Count; i++)
+				{
+					var nivel = nivelesAgrupamiento[i];
+					string valorActual = propsDict[nivel.CampoGrupo].GetValue(item)?.ToString() ?? "";
+
+					if (!valoresActuales.ContainsKey(i) ||
+						!valorActual.Equals(valoresActuales[i], StringComparison.OrdinalIgnoreCase))
+					{
+						// Hubo cambio en este nivel
+						if (cambioEnAlgunNivel == false)
+						{
+							nivelCambio = i;
+							cambioEnAlgunNivel = true;
+						}
+
+						// Si cambió un nivel superior, mostrar subtotales de niveles inferiores
+						if (i < nivelesAgrupamiento.Count - 1 && valoresActuales.ContainsKey(i))
+						{
+							MostrarSubtotalesNivelesInferiores(
+								tabla,
+								campos,
+								nivelesAgrupamiento,
+								subtotalesPorNivel,
+								i,
+								fuenteNegrita,
+								cultura
+							);
+						}
+
+						// Actualizar valor actual de este nivel
+						valoresActuales[i] = valorActual;
+
+						// Limpiar valores de niveles inferiores
+						for (int j = i + 1; j < nivelesAgrupamiento.Count; j++)
+						{
+							valoresActuales.Remove(j);
+							subtotalesPorNivel.Remove(j);
+						}
+
+						// Mostrar header de grupo para este nivel
+						MostrarHeaderGrupo(tabla, item, nivel, propsDict, campos.Count, fuenteNegrita);
+
+						// Inicializar acumulador de subtotales para este nivel
+						if (nivel.MostrarSubtotal)
+						{
+							subtotalesPorNivel[i] = new Dictionary<string, decimal>();
+						}
+
+						// Resetear alternancia de color
+						alternar = false;
+					}
+				}
+
+				// Agregar fila de datos
+				AgregarFilaDatos(tabla, item, campos, propsDict, fuente, cultura, alternar);
+				alternar = !alternar;
+
+				// Acumular en subtotales de cada nivel
+				if (autoCalcularTotales)
+				{
+					AcumularSubtotales(item, campos, camposTotalizables, propsDict,
+									 subtotalesPorNivel, nivelesAgrupamiento);
+				}
+			}
+
+			// Mostrar subtotales finales de todos los niveles
+			MostrarSubtotalesNivelesInferiores(
+				tabla,
+				campos,
+				nivelesAgrupamiento,
+				subtotalesPorNivel,
+				-1, // Mostrar todos los niveles
+				fuenteNegrita,
+				cultura
+			);
+		}
+
+		private static List<T> OrdenarPorNiveles<T>(
+	List<T> lista,
+	List<NivelAgrupamiento> niveles,
+	Dictionary<string, PropertyDescriptor> propsDict)
+		{
+			IOrderedEnumerable<T>? query = null;
+
+			for (int i = 0; i < niveles.Count; i++)
+			{
+				var campo = niveles[i].CampoGrupo;
+				var prop = propsDict[campo];
+
+				if (i == 0)
+				{
+					query = lista.OrderBy(item => prop.GetValue(item)?.ToString() ?? "");
+				}
+				else
+				{
+					query = query!.ThenBy(item => prop.GetValue(item)?.ToString() ?? "");
+				}
+			}
+
+			return query?.ToList() ?? lista;
+		}
+
+		private static void MostrarHeaderGrupo<T>(
+			PdfPTable tabla,
+			T item,
+			NivelAgrupamiento nivel,
+			Dictionary<string, PropertyDescriptor> propsDict,
+			int colspan,
+			Font fuenteNegrita)
+		{
+			string descripcion = propsDict[nivel.CampoDescripcion].GetValue(item)?.ToString() ?? "";
+
+			// Determinar color de fondo basado en nivel jerárquico
+			BaseColor colorFondo = nivel.ColorFondo ?? ObtenerColorPorNivel(nivel.Nivel);
+
+			// Calcular indentación visual según nivel
+			string indentacion = new string(' ', nivel.Nivel * 2);
+
+			PdfPCell celdaGrupo = new PdfPCell(new Phrase($"{indentacion}{descripcion}", fuenteNegrita))
+			{
+				Colspan = colspan,
+				Border = Rectangle.NO_BORDER,
+				BackgroundColor = colorFondo,
+				PaddingTop = 5 + (nivel.Nivel * 2),
+				PaddingBottom = 5 + (nivel.Nivel * 2),
+				PaddingLeft = 5 + (nivel.Nivel * 5)
+			};
+
+			tabla.AddCell(celdaGrupo);
+		}
+
+		private static BaseColor ObtenerColorPorNivel(int nivel)
+		{
+			// Degradado de grises según profundidad
+			return nivel switch
+			{
+				0 => new BaseColor(200, 200, 200), // Gris oscuro
+				1 => new BaseColor(220, 220, 220), // Gris medio
+				2 => new BaseColor(235, 235, 235), // Gris claro
+				_ => BaseColor.LightGray
+			};
+		}
+
+		private static void AgregarFilaDatos<T>(
+			PdfPTable tabla,
+			T item,
+			List<string> campos,
+			Dictionary<string, PropertyDescriptor> propsDict,
+			Font fuente,
+			CultureInfo cultura,
+			bool alternar)
+		{
+			foreach (var campo in campos)
+			{
+				var prop = propsDict[campo];
+				var valor = prop.GetValue(item);
+
+				string texto = FormatearValor(valor, cultura);
+				int alineacion = DeterminarAlineacion(valor);
+
+				var parrafo = HelperPdf.GeneraParrafo(texto, fuente, alineacion, 3, 3, true, BaseColor.Black);
+				var celda = new PdfPCell(parrafo)
+				{
+					HorizontalAlignment = alineacion,
+					Border = Rectangle.NO_BORDER,
+					BackgroundColor = alternar ? BaseColor.White : new BaseColor(245, 245, 245)
+				};
+
+				tabla.AddCell(celda);
+			}
+		}
+
+		private static void AcumularSubtotales<T>(
+			T item,
+			List<string> campos,
+			List<string>? camposTotalizables,
+			Dictionary<string, PropertyDescriptor> propsDict,
+			Dictionary<int, Dictionary<string, decimal>> subtotalesPorNivel,
+			List<NivelAgrupamiento> niveles)
+		{
+			for (int nivelIdx = 0; nivelIdx < niveles.Count; nivelIdx++)
+			{
+				if (!niveles[nivelIdx].MostrarSubtotal)
+					continue;
+
+				if (!subtotalesPorNivel.ContainsKey(nivelIdx))
+					subtotalesPorNivel[nivelIdx] = new Dictionary<string, decimal>();
+
+				foreach (var campo in campos)
+				{
+					if (!propsDict.ContainsKey(campo))
+						continue;
+
+					if (camposTotalizables != null && !camposTotalizables.Contains(campo))
+						continue;
+
+					var tipo = propsDict[campo].PropertyType;
+					if (tipo == typeof(decimal) || tipo == typeof(double) || tipo == typeof(float))
+					{
+						var valor = propsDict[campo].GetValue(item);
+						decimal valorDecimal = valor != null ? Convert.ToDecimal(valor) : 0;
+
+						if (!subtotalesPorNivel[nivelIdx].ContainsKey(campo))
+							subtotalesPorNivel[nivelIdx][campo] = 0;
+
+						subtotalesPorNivel[nivelIdx][campo] += valorDecimal;
+					}
+				}
+			}
+		}
+
+		private static void MostrarSubtotalesNivelesInferiores(
+			PdfPTable tabla,
+			List<string> campos,
+			List<NivelAgrupamiento> niveles,
+			Dictionary<int, Dictionary<string, decimal>> subtotalesPorNivel,
+			int nivelDesde,
+			Font fuenteNegrita,
+			CultureInfo cultura)
+		{
+			// Mostrar subtotales de niveles inferiores al que cambió
+			for (int i = niveles.Count - 1; i > nivelDesde; i--)
+			{
+				if (!niveles[i].MostrarSubtotal)
+					continue;
+
+				if (!subtotalesPorNivel.ContainsKey(i))
+					continue;
+
+				string etiqueta = niveles[i].EtiquetaSubtotal ?? $"Subtotal Nivel {i}:";
+				AgregarFilaSubtotal(tabla, campos, subtotalesPorNivel[i], etiqueta,
+								  fuenteNegrita, cultura, niveles[i].Nivel);
+
+				// Limpiar acumuladores
+				subtotalesPorNivel.Remove(i);
+			}
+		}
+
+		private static void AgregarFilaSubtotal(
+			PdfPTable tabla,
+			List<string> campos,
+			Dictionary<string, decimal> subtotales,
+			string etiqueta,
+			Font fuenteNegrita,
+			CultureInfo cultura,
+			int nivel)
+		{
+			int idxPrimerTotal = campos.FindIndex(c => subtotales.ContainsKey(c));
+			BaseColor colorFondo = new BaseColor(240 - (nivel * 10), 240 - (nivel * 10), 240 - (nivel * 10));
+
+			for (int i = 0; i < campos.Count; i++)
+			{
+				PdfPCell celda;
+
+				if (subtotales.TryGetValue(campos[i], out var total))
+				{
+					string valorFormateado = total.ToString("N2", cultura);
+					var parrafo = HelperPdf.GeneraParrafo(valorFormateado, fuenteNegrita,
+														Element.ALIGN_RIGHT, 5, 5, true, BaseColor.Black);
+					celda = new PdfPCell(parrafo)
+					{
+						HorizontalAlignment = Element.ALIGN_RIGHT,
+						BackgroundColor = colorFondo,
+						Border = Rectangle.TOP_BORDER,
+						BorderColorTop = BaseColor.Black,
+						BorderWidthTop = 0.5f
+					};
+				}
+				else if (i == idxPrimerTotal - 1)
+				{
+					var parrafo = HelperPdf.GeneraParrafo(etiqueta, fuenteNegrita,
+														Element.ALIGN_RIGHT, 5, 5, true, BaseColor.Black);
+					celda = new PdfPCell(parrafo)
+					{
+						HorizontalAlignment = Element.ALIGN_RIGHT,
+						BackgroundColor = colorFondo,
+						Border = Rectangle.TOP_BORDER,
+						BorderColorTop = BaseColor.Black,
+						BorderWidthTop = 0.5f
+					};
+				}
+				else
+				{
+					celda = new PdfPCell(new Phrase(""))
+					{
+						BackgroundColor = colorFondo,
+						Border = Rectangle.TOP_BORDER,
+						BorderColorTop = BaseColor.Black,
+						BorderWidthTop = 0.5f
+					};
+				}
+
+				tabla.AddCell(celda);
+			}
+		}
+
+		private static void AgregarEncabezadoColumnas(
+			PdfPTable tabla,
+			List<string> titulos,
+			int numColumnas,
+			Font fuenteNegrita)
+		{
+
+			foreach (var titulo in titulos)
+			{
+				PdfPCell celda = new PdfPCell(new Phrase(titulo, fuenteNegrita))
+				{
+					BackgroundColor = BaseColor.White,
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					Border = Rectangle.BOX,
+					Padding = 5
+				};
+				tabla.AddCell(celda);
+			}
+		}
+
+		private static void AgregarFilaTotalesGenerales(
+			PdfPTable tabla,
+			List<string> campos,
+			Dictionary<string, decimal> totales,
+			Font fuenteNegrita,
+			CultureInfo cultura)
+		{
+			int idxPrimerTotal = campos.FindIndex(c => totales.ContainsKey(c));
+
+			for (int i = 0; i < campos.Count; i++)
+			{
+				PdfPCell celda;
+
+				if (totales.TryGetValue(campos[i], out var total))
+				{
+					string valorFormateado = total.ToString("N2", cultura);
+					var parrafo = HelperPdf.GeneraParrafo(valorFormateado, fuenteNegrita,
+														Element.ALIGN_RIGHT, 5, 5, true, BaseColor.Black);
+					celda = new PdfPCell(parrafo)
+					{
+						HorizontalAlignment = Element.ALIGN_RIGHT,
+						BackgroundColor = new BaseColor(200, 200, 200),
+						Border = Rectangle.BOX,
+						BorderWidth = 1f
+					};
+				}
+				else if (i == idxPrimerTotal - 1)
+				{
+					var parrafo = HelperPdf.GeneraParrafo("TOTAL GENERAL:", fuenteNegrita,
+														Element.ALIGN_RIGHT, 5, 5, true, BaseColor.Black);
+					celda = new PdfPCell(parrafo)
+					{
+						HorizontalAlignment = Element.ALIGN_RIGHT,
+						BackgroundColor = new BaseColor(200, 200, 200),
+						Border = Rectangle.BOX,
+						BorderWidth = 1f
+					};
+				}
+				else
+				{
+					celda = new PdfPCell(new Phrase(""))
+					{
+						BackgroundColor = new BaseColor(200, 200, 200),
+						Border = Rectangle.BOX,
+						BorderWidth = 1f
+					};
+				}
+
+				tabla.AddCell(celda);
+			}
+		}
+
+		private static Dictionary<string, decimal> CalcularTotales<T>(
+			List<T> lista,
+			List<string> campos,
+			List<string>? camposTotalizables,
+			Dictionary<string, PropertyDescriptor> propsDict)
+		{
+			var totales = new Dictionary<string, decimal>();
+
+			foreach (var campo in campos)
+			{
+				if (!propsDict.ContainsKey(campo))
+					continue;
+
+				if (camposTotalizables != null && !camposTotalizables.Contains(campo))
+					continue;
+
+				var tipo = propsDict[campo].PropertyType;
+				if (tipo == typeof(decimal) || tipo == typeof(double) || tipo == typeof(float))
+				{
+					decimal suma = lista.Sum(item =>
+					{
+						var val = propsDict[campo].GetValue(item);
+						return val != null ? Convert.ToDecimal(val) : 0;
+					});
+					totales[campo] = suma;
+				}
+			}
+
+			return totales;
+		}
+
+		private static string FormatearValor(object? valor, CultureInfo cultura)
+		{
+			if (valor == null)
+				return "-";
+
+			if (valor is DateTime dt)
+				return dt.ToString("dd/MM/yyyy");
+
+			if (valor is decimal or double or float)
+				return Convert.ToDecimal(valor).ToString("N2", cultura);
+
+			return valor.ToString() ?? string.Empty;
+		}
+
+		private static int DeterminarAlineacion(object? valor)
+		{
+			if (valor == null)
+				return Element.ALIGN_LEFT;
+
+			if (valor is DateTime)
+				return Element.ALIGN_CENTER;
+
+			if (valor is decimal or double or float)
+				return Element.ALIGN_RIGHT;
+
+			string texto = valor.ToString() ?? "";
+			return texto.Length == 1 ? Element.ALIGN_CENTER : Element.ALIGN_LEFT;
+		}
+
+		private static List<LibroBancoResumenDto> ObtenerGrillaCuentaFinanciera(List<FinancieroBcoLibroResumenDto> lista, TipoGrillaCuentaFinanciera tipoGrilla)
 		{
 			var listaCuentaFin = new List<LibroBancoResumenDto>();
 			if (lista == null || lista.Count == 0)
@@ -4545,39 +4687,39 @@ namespace gc.infraestructura.Helpers
 			_totalPages.EndText();
 		}
 	}
-    /// <summary>
-    /// Representa un nivel de agrupamiento en un reporte PDF
-    /// </summary>
-    public class NivelAgrupamiento
-    {
-        /// <summary>
-        /// Nombre del campo por el cual agrupar (debe existir en el tipo T)
-        /// </summary>
-        public string CampoGrupo { get; set; } = string.Empty;
+	/// <summary>
+	/// Representa un nivel de agrupamiento en un reporte PDF
+	/// </summary>
+	public class NivelAgrupamiento
+	{
+		/// <summary>
+		/// Nombre del campo por el cual agrupar (debe existir en el tipo T)
+		/// </summary>
+		public string CampoGrupo { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Campo que contiene la descripción a mostrar en el header del grupo
-        /// </summary>
-        public string CampoDescripcion { get; set; } = string.Empty;
+		/// <summary>
+		/// Campo que contiene la descripción a mostrar en el header del grupo
+		/// </summary>
+		public string CampoDescripcion { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Nivel de jerarquía (0 = raíz, 1 = subnivel, etc.)
-        /// </summary>
-        public int Nivel { get; set; }
+		/// <summary>
+		/// Nivel de jerarquía (0 = raíz, 1 = subnivel, etc.)
+		/// </summary>
+		public int Nivel { get; set; }
 
-        /// <summary>
-        /// Color de fondo para el header de este nivel (opcional)
-        /// </summary>
-        public BaseColor? ColorFondo { get; set; }
+		/// <summary>
+		/// Color de fondo para el header de este nivel (opcional)
+		/// </summary>
+		public BaseColor? ColorFondo { get; set; }
 
-        /// <summary>
-        /// Indica si debe mostrar subtotal para este nivel
-        /// </summary>
-        public bool MostrarSubtotal { get; set; }
+		/// <summary>
+		/// Indica si debe mostrar subtotal para este nivel
+		/// </summary>
+		public bool MostrarSubtotal { get; set; }
 
-        /// <summary>
-        /// Texto a mostrar antes del subtotal (ej: "Subtotal Proveedor:")
-        /// </summary>
-        public string? EtiquetaSubtotal { get; set; }
-    }
+		/// <summary>
+		/// Texto a mostrar antes del subtotal (ej: "Subtotal Proveedor:")
+		/// </summary>
+		public string? EtiquetaSubtotal { get; set; }
+	}
 }
