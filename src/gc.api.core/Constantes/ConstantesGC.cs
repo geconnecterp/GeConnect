@@ -358,6 +358,11 @@
 			public const string SP_CONS_VENCIMIENTOS_POR_TIPO = "SPGECO_C_Vto_X_Tipos";
 			public const string SP_CONS_CERT_NRNP = "SPGECO_C_Cert_NRNP";
 			public const string SP_CONS_STOCK_LISTA = "SPGECO_STK_Lista";
+			public const string SP_CONS_STOCK_VALOR_P = "SPGECO_STK_Valorizado_P";
+			public const string SP_CONS_STOCK_VALOR_SEC = "SPGECO_STK_Valorizado_SEC";
+			public const string SP_CONS_STOCK_VALOR_RUBG = "SPGECO_STK_Valorizado_RUBG";
+			public const string SP_CONS_STOCK_VALOR_RUB = "SPGECO_STK_Valorizado_RUB";
+			public const string SP_CONS_STOCK_VALOR_CTA = "SPGECO_STK_Valorizado_CTA";
 			#endregion
 
 			#region Certificados

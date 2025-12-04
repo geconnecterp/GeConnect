@@ -30,6 +30,7 @@ namespace gc.infraestructura.Dtos.Mstk
 		public DateTime? rp_fecha { get; set; }
 		public int? rp_dias { get; set; }
 		public decimal stk { get; set; } = 0.00M;
+		public decimal? stk_val { get; set; } = 0.00M;
 		public DateTime? stk_ult_mov { get; set; }
 		private bool _p_activo_bool;
 

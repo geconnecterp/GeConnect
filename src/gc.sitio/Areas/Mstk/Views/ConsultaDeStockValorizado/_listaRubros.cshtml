@@ -1,0 +1,7 @@
+﻿@model ListaRubroValorizadoModel
+@{
+	var lst = Model.ListaRubros;
+}
+<div class="input-group input-group-sm">
+	@Html.DropDownListFor(m => m.RubroSeleccionado, lst, "Seleccionar", new { @id = "listaRubros", @class = "form-control inputEditable activable" })
+</div>

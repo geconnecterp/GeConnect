@@ -16,7 +16,7 @@ using Microsoft.Extensions.Options;
 
 namespace gc.api.core.Servicios.Reportes
 {
-	public class R051_ReporteStockValorizado : Servicio<EntidadBase>, IGeneradorReporte
+	public class R052_ReporteStockValorizado : Servicio<EntidadBase>, IGeneradorReporte
 	{
 		private readonly IConsultaServicio _consultaServicio;
 
@@ -25,7 +25,7 @@ namespace gc.api.core.Servicios.Reportes
 		private readonly List<string> _campos;
 		private readonly ILogger _logger;
 
-		public R051_ReporteStockValorizado(IUnitOfWork uow, IConsultaServicio consulta, IFinancieroServicio financieroServicio,
+		public R052_ReporteStockValorizado(IUnitOfWork uow, IConsultaServicio consulta, IFinancieroServicio financieroServicio,
 											IOptions<EmpresaGeco> empresa, ICuentaServicio consultaSv, ILogger logger) : base(uow)
 		{
 			_consultaServicio = consulta;
