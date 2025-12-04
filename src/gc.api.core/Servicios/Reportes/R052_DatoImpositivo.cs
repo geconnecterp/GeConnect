@@ -78,7 +78,7 @@ namespace gc.api.core.Servicios.Reportes
                 //****=============================****/
                 //****  CAMBIAR ANCHOS DE COLUMNAS ****
                 //****=============================****/
-                //anchos = [20f, 60f, 20f];
+                anchos = [15f, 55f, 15f, 15f];
 
                 var chico = HelperPdf.FontChicoPredeterminado();
                 var chicoBold = HelperPdf.FontChicoPredeterminado(true);
