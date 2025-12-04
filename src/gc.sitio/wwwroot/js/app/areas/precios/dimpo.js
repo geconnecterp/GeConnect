@@ -80,7 +80,7 @@ function inicializaEventosDeVista() {
     });
 
     $("#btnImprimir").on("click", function () {
-        imprimirReporteLP();
+        imprimirReporteDI();
     });
 
     $("#Rel01").on("click", function () { $(this).val(""); });
@@ -199,6 +199,14 @@ function inicializaEventosDeVista() {
     $("#btnBuscar").on("click", function () {
         buscarDatosImp(this);
     });
+}
+
+function imprimirReporteDI() {
+    const datos = obtenerParamsDatosImpositivos();
+
+    cargarReporteEnArre(indexPrint, datos, "Reporte de Precios");
+    const data = { modulo: "", parametros: [] };
+    invocacionGestorDoc(data);
 }
 
 function buscarDatosImp(btn) {
