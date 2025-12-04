@@ -87,7 +87,7 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R048_ConsultaCertNoRetNoPerc, new R048_ConsultaCertNoRetNoPerc(uow,consSv, finServ,empresa,ctaSv, logger) },
 				{ InfoReporte.R049_REPORTE_PRECIOS, new R049_ReportePrecios(uow,plSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R050_REPORTE_STOCK, new R050_ReporteStock(uow,consSv, finServ,empresa,ctaSv, logger) },
-				{ InfoReporte.R051_REPORTE_STOCK_VALORIZADO, new R051_ReporteStockValorizado(uow,consSv, finServ,empresa,ctaSv, logger) },
+				{ InfoReporte.R052_REPORTE_STOCK_VALORIZADO, new R052_ReporteStockValorizado(uow,consSv, finServ,empresa,ctaSv, logger) },
 			}; 
             _logger = logger;
         }

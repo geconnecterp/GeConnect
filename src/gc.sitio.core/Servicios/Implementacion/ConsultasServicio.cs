@@ -984,5 +984,10 @@ namespace gc.sitio.core.Servicios.Implementacion
 				throw new Exception("Algo no fue bien al intentar cargar los Certificados NRNP.");
 			}
 		}
+
+		public Task<(List<ProductoStkDto>, MetadataGrid)> ConsultarProductoStkValor(ConsultarStockValorizadoRequest filters, string token)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

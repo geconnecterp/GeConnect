@@ -6,7 +6,6 @@
 
 	InicializarCamposEnFiltros(false);
 
-	$(document).on("click", "#btnImprimir", ControlaImprimirSelected);
 	$(document).on("click", "#btnCancel", ControlaCancelar);
 	$(document).on("change", "#listaSucursales", ControlalistaSucursalesSelected);
 	$(document).on("change", "#listaDepositos", ControlalistaDepositosSelected);
@@ -32,124 +31,66 @@
 	$("#btnBuscar").on("click", function () {
 		dataBak = "";
 		pagina = 1;
-		BuscarProductos(pagina);
+		BuscarProductosValorizados(pagina);
 	});
 
-	funcCallBack = BuscarProductos;
+	funcCallBack = BuscarProductosValorizados;
 });
 
-function ControlaImprimirSelected() {
-	if ($("#tbGridProductos > tbody > tr").length === 0) {
-		AbrirMensaje("ATENCIÓN", "No hay datos generar el reporte.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "error!", null);
-	}
-	else {
-		ImprimirListaProductosStk_Generada();
-	}
-}
-
-function ImprimirListaProductosStk_Generada() {
-	ReseteoDeReportes();
-	setTimeout(() => {
-		var lSucArr = [];
-		var lDepArr = [];
-		var lProvArr = [];
-		var lFamArr = [];
-		var lRubArr = [];
-
-		$("#SucursalesList").children().each(function (i, item) { lSucArr.push($(item).val()) });
-		$("#DepositosList").children().each(function (i, item) { lDepArr.push($(item).val()) });
-		$("#Rel01List").children().each(function (i, item) { lProvArr.push($(item).val()) });
-		$("#FamiliaList").children().each(function (i, item) { lFamArr.push($(item).val()) });
-		$("#RubrosList").children().each(function (i, item) { lRubArr.push($(item).val()) });
-
-		var lSuc = lSucArr.join(",");
-		var lDep = lDepArr.join(",");
-		var lProv = lProvArr.join(",");
-		var lFam = lFamArr.join(",");
-		var lRub = lRubArr.join(",");
-
-		var chkStkPos = $("#chkStockPositivo")[0].checked
-		var chkStkCero = $("#chkStockCero")[0].checked
-		var chkStkNeg = $("#chkStockNegativo")[0].checked
-		var chkEstAct = $("#chkEstadoActivo")[0].checked
-		var chkEstDisc = $("#chkEstadoDiscontinuo")[0].checked
-
-		var agrupador = $("#listaAgrupador").val();
-
-		var data = { lSuc, lDep, lProv, lFam, lRub, chkStkPos, chkStkCero, chkStkNeg, chkEstAct, chkEstDisc, agrupador };
-		cargarReporteEnArre(50, data, "REPORTE DE STOCK", "", "");
-		invocacionGestorDoc({});
-	}, 500);
-}
-
-function ReseteoDeReportes() {
-	console.log("Reseto de reportes");
-	ReporteResetArre();
-}
-
-function ControlaCancelar() {
-	InicializarCamposEnFiltros(true);
-}
-
-function BuscarProductos(pag = 1) {
-	AbrirWaiting();
-	var lSuc = [];
-	var lDep = [];
-	var lProv = [];
-	var lFam = [];
-	var lRub = [];
-	$("#SucursalesList").children().each(function (i, item) { lSuc.push($(item).val()) });
-	$("#DepositosList").children().each(function (i, item) { lDep.push($(item).val()) });
-	$("#Rel01List").children().each(function (i, item) { lProv.push($(item).val()) });
-	$("#FamiliaList").children().each(function (i, item) { lFam.push($(item).val()) });
-	$("#RubrosList").children().each(function (i, item) { lRub.push($(item).val()) });
-
-	var chkStkPos = $("#chkStockPositivo")[0].checked
-	var chkStkCero = $("#chkStockCero")[0].checked
-	var chkStkNeg = $("#chkStockNegativo")[0].checked
-	var chkEstAct = $("#chkEstadoActivo")[0].checked
-	var chkEstDisc = $("#chkEstadoDiscontinuo")[0].checked
-
-	var agrupador = $("#listaAgrupador").val();
-
-	var buscaNew = true;
-	pagina = pag;
-	Pagina = pag;
-	var sort = null;
-	var sortDir = null
-	var data2 = { sort, sortDir, Pagina, buscaNew }
-	var data1 = { lSuc, lDep, lProv, lFam, lRub, chkStkPos, chkStkCero, chkStkNeg, chkEstAct, chkEstDisc, agrupador };
-	var data = $.extend({}, data1, data2);
-
-	PostGenHtml(data, buscarStockProductosURL, function (obj) {
-		$("#divGrillaProductos").html(obj);
-		$("#divFiltros").collapse("hide");
-		$("#divDetalle").collapse("show");
-		$("#btnImprimir").show();
-		PostGen({}, buscarMetadataURL, function (obj) {
-			if (obj.error === true) {
-				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
-			}
-			else {
-				totalRegs = obj.metadata.totalCount;
-				pags = obj.metadata.totalPages;
-				pagRegs = obj.metadata.pageSize;
-
-				$("#pagEstado").val(true).trigger("change");
-			}
-
-		});
-		CerrarWaiting();
-		viendeDesdeBusquedaDeProducto = false;
-		return true
+function cargaPaginacion() {
+	$("#divPaginacion").pagination({
+		items: totalRegs,
+		itemsOnPage: pagRegs,
+		cssStyle: "dark-theme",
+		currentPage: pagina,
+		onPageClick: function (num) {
+			BuscarProductosValorizados(num);
+		}
 	});
+	$("#pagEstado").val(false);
+	$("#divFiltro").collapse("hide")
+	return true;
 }
+
+$("#Rel01").autocomplete({
+	source: function (request, response) {
+
+		data = { prefix: request.term }; Rel01
+
+		$.ajax({
+			url: autoComRel01Url,
+			type: "POST",
+			dataType: "json",
+			data: data,
+			success: function (obj) {
+				response($.map(obj, function (item) {
+					var texto = item.descripcion;
+					return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
+				}));
+			}
+		})
+	},
+	minLength: 3,
+	select: function (event, ui) {
+		if ($("#Rel01List").has('option:contains("' + ui.item.id + '")').length === 0) {
+			$("#Rel01Item").val(ui.item.id);
+			var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
+			$("#Rel01List").append(opc);
+		}
+		if ($("#Rel01List")[0].length === 1) {
+			$("#chkFamilias").prop("disabled", false);
+			CargarFamiliaLista(ui.item.id);
+		}
+		else {
+			$("#chkFamilias").prop("disabled", true);
+			$("#listaFamilia").prop("disabled", true).val("");
+			$("#FamiliaList").prop("disabled", true).empty();
+			$("#chkFamilias")[0].checked = false;
+		}
+
+		return true;
+	}
+});
 
 function InicializarCamposEnFiltros(vieneDeCancelar) {
 	if (!vieneDeCancelar) {
@@ -161,6 +102,7 @@ function InicializarCamposEnFiltros(vieneDeCancelar) {
 	$("#lbRel01").text("Proveedor");
 	$("#lbFamilias").text("Familia");
 	$("#lbRubro").text("Rubro");
+	$("#lbCostoRepo").text("Costo Reposición");
 
 	$("#chkSucursales").prop('checked', false);
 	$("#chkSucursales").trigger("change");
@@ -190,6 +132,65 @@ function InicializarCamposEnFiltros(vieneDeCancelar) {
 	if (!vieneDeCancelar) {
 		HandlerCheckBox();
 	}
+}
+
+function BuscarProductosValorizados(pag = 1) {
+	AbrirWaiting();
+	var lSuc = [];
+	var lDep = [];
+	var lProv = [];
+	var lFam = [];
+	var lRub = [];
+	$("#SucursalesList").children().each(function (i, item) { lSuc.push($(item).val()) });
+	$("#DepositosList").children().each(function (i, item) { lDep.push($(item).val()) });
+	$("#Rel01List").children().each(function (i, item) { lProv.push($(item).val()) });
+	$("#FamiliaList").children().each(function (i, item) { lFam.push($(item).val()) });
+	$("#RubrosList").children().each(function (i, item) { lRub.push($(item).val()) });
+
+	var chkStkPos = $("#chkStockPositivo")[0].checked
+	var chkStkCero = $("#chkStockCero")[0].checked
+	var chkStkNeg = $("#chkStockNegativo")[0].checked
+	var chkEstAct = $("#chkEstadoActivo")[0].checked
+	var chkEstDisc = $("#chkEstadoDiscontinuo")[0].checked
+
+	var chkCostoRepo = $("#chkCostoReposicion")[0].checked
+
+	var agrupador = $("#listaAgrupador").val();
+
+	var buscaNew = true;
+	pagina = pag;
+	Pagina = pag;
+	var sort = null;
+	var sortDir = null
+	var data2 = { sort, sortDir, Pagina, buscaNew }
+	var data1 = { lSuc, lDep, lProv, lFam, lRub, chkStkPos, chkStkCero, chkStkNeg, chkEstAct, chkEstDisc, chkCostoRepo, agrupador };
+	var data = $.extend({}, data1, data2);
+
+	PostGenHtml(data, buscarStockProductosValorizadosURL, function (obj) {
+		$("#divGrillaProductos").html(obj);
+		$("#divFiltros").collapse("hide");
+		$("#divDetalle").collapse("show");
+		$("#btnImprimir").show();
+		PostGen({}, buscarMetadataURL, function (obj) {
+			if (obj.error === true) {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				totalRegs = obj.metadata.totalCount;
+				pags = obj.metadata.totalPages;
+				pagRegs = obj.metadata.pageSize;
+
+				$("#pagEstado").val(true).trigger("change");
+			}
+
+		});
+		CerrarWaiting();
+		viendeDesdeBusquedaDeProducto = false;
+		return true
+	});
 }
 
 function HandlerCheckBox() {
@@ -261,61 +262,6 @@ function HandlerCheckBox() {
 	});
 }
 
-function cargaPaginacion() {
-	$("#divPaginacion").pagination({
-		items: totalRegs,
-		itemsOnPage: pagRegs,
-		cssStyle: "dark-theme",
-		currentPage: pagina,
-		onPageClick: function (num) {
-			BuscarProductos(num);
-		}
-	});
-	$("#pagEstado").val(false);
-	$("#divFiltro").collapse("hide")
-	return true;
-}
-
-$("#Rel01").autocomplete({
-	source: function (request, response) {
-
-		data = { prefix: request.term }; Rel01
-
-		$.ajax({
-			url: autoComRel01Url,
-			type: "POST",
-			dataType: "json",
-			data: data,
-			success: function (obj) {
-				response($.map(obj, function (item) {
-					var texto = item.descripcion;
-					return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
-				}));
-			}
-		})
-	},
-	minLength: 3,
-	select: function (event, ui) {
-		if ($("#Rel01List").has('option:contains("' + ui.item.id + '")').length === 0) {
-			$("#Rel01Item").val(ui.item.id);
-			var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
-			$("#Rel01List").append(opc);
-		}
-		if ($("#Rel01List")[0].length === 1) {
-			$("#chkFamilias").prop("disabled", false);
-			CargarFamiliaLista(ui.item.id);
-		}
-		else {
-			$("#chkFamilias").prop("disabled", true);
-			$("#listaFamilia").prop("disabled", true).val("");
-			$("#FamiliaList").prop("disabled", true).empty();
-			$("#chkFamilias")[0].checked = false;
-		}
-
-		return true;
-	}
-});
-
 function CargarFamiliaLista(id) {
 	var ctaId = id;
 	data = { ctaId };
@@ -336,17 +282,6 @@ function CargarRubros() {
 		return true
 	});
 }
-
-$("#Rel01List").on("dblclick", 'option', function () {
-	$(this).remove();
-	if ($("#Rel01List")[0].length === 1) {
-		$("#chkFamilias").prop("disabled", false);
-		CargarFamiliaLista($("#Rel01List")[0][0].value);
-	}
-	else {
-		$("#chkFamilias").prop("disabled", true);
-	}
-})
 
 function ControlalistaSucursalesSelected() {
 	var item = $("#listaSucursales").val();

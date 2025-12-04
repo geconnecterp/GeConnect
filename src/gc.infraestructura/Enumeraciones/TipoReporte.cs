@@ -62,6 +62,6 @@ namespace gc.infraestructura.Enumeraciones
 		R048_ConsultaCertNoRetNoPerc = 48, 
         R049_REPORTE_PRECIOS = 49,
 		R050_REPORTE_STOCK = 50,
-		R051_REPORTE_STOCK_VALORIZADO = 51,
+		R052_REPORTE_STOCK_VALORIZADO = 52,
 	}
 }

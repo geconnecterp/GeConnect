@@ -37,6 +37,7 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<(List<VencimientoListaDto>, MetadataGrid)> ConsultarVencimientos(ConsultarVencimientosRequest filters, string token);
 		Task<(List<CertificadoListaDto>, MetadataGrid)> ConsultarCertificados(ConsultarCertificadosRequest filters, string token);
 		Task<(List<ProductoStkDto>, MetadataGrid)> ConsultarProductoStk(ConsultarStockRequest filters, string token);
+		Task<(List<ProductoStkDto>, MetadataGrid)> ConsultarProductoStkValor(ConsultarStockValorizadoRequest filters, string token);
 	}
 }
 
