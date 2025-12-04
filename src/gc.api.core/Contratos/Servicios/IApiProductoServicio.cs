@@ -1,22 +1,23 @@
 using gc.api.core.Entidades;
+using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Dtos.Almacen;
-using gc.infraestructura.Dtos.Almacen.Request;
-using gc.infraestructura.Dtos.Almacen.Response;
-using gc.infraestructura.Dtos.Almacen.Rpr;
-using gc.infraestructura.Dtos.Almacen.Tr;
-using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
-using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
-using gc.infraestructura.Dtos.Box;
-using gc.infraestructura.Dtos.CuentaComercial;
-using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Productos;
-using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor.Request;
 using gc.infraestructura.Dtos.Almacen.Info;
-using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Dtos.Almacen.Request;
+using gc.infraestructura.Dtos.Almacen.Response;
+using gc.infraestructura.Dtos.Almacen.Rpr;
+using gc.infraestructura.Dtos.Almacen.Tr;
+using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
+using gc.infraestructura.Dtos.Box;
+using gc.infraestructura.Dtos.CuentaComercial;
+using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos;
+using gc.infraestructura.Dtos.Productos.Impositivo;
+using gc.infraestructura.EntidadesComunes.Options;
+using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 
 namespace gc.api.core.Contratos.Servicios
 {
@@ -105,7 +106,9 @@ namespace gc.api.core.Contratos.Servicios
 		List<MedidaDto> ObtenerMedidas();
         List<IVASituacionDto> ObtenerIVASituacion();
         List<IVAAlicuotaDto> ObtenerIVAAlicuotas();
-		List<ProductoBarradoDto> ObtenerBarradoDeProd(string p_id);
+		List<ImpositivoDatoDto> ObtenerDatosImpositivos(QueryFilters filters);
+
+        List<ProductoBarradoDto> ObtenerBarradoDeProd(string p_id);
 		List<LimiteStkDto> ObtenerLimitesStkLista(string p_id);
 		LimiteStkDto ObtenerLimiteStkDato(string p_id, string admId);
         ProductoBarradoDto BuscarBarrado(string p_id, string barradoId);

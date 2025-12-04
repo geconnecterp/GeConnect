@@ -1,0 +1,210 @@
+﻿@model GridCoreSmart<ImpositivoDatoDto>
+
+@{
+    var reg = Model?.ListaDatos?.FirstOrDefault();
+    var alt = true;
+    string clase = string.Empty;
+
+    // Variables para agrupar por familia
+    string familiaActual = string.Empty;
+    string familiaAnterior = string.Empty;
+}
+@* @functions {
+    public int GetColspan(PrecioListaDetalleDto reg)
+    {
+        if (reg == null) return 0;
+
+        var colspan = 0;
+
+        if (!string.IsNullOrEmpty(reg.lp_desc1)) colspan++;
+        if (!string.IsNullOrEmpty(reg.lp_desc2)) colspan++;
+        if (!string.IsNullOrEmpty(reg.lp_desc3)) colspan++;
+        if (!string.IsNullOrEmpty(reg.lp_desc4)) colspan++;
+
+        return colspan;
+    }
+} *@
+
+
+<div class="grid-golden h-100">
+    <div class="grid-golden-header">
+        <div class="d-flex align-items-center gap-2">
+            <h5 class="mb-0"><strong>Detalle de Precios</strong></h5>
+
+        </div>
+    </div>
+    <div class="grid-golden-body">
+        <div class="table-responsive table-wrapper text-nowrap">
+            <table class="table table-sm mb-0 table-hover table-golden" id="tbGridPrecios">
+                <thead>
+                    <tr class="header">
+                        <!-- Columnas principales -->
+                        <th scope="col">
+                            <div class="d-flex flex-column">
+                                <span>ID</span>
+                            </div>
+                        </th>
+                        <th scope="col">
+                            <div class="d-flex flex-column">
+                                <span>Descripción</span>
+                            </div>
+                        </th>
+                        @*  <th scope="col">
+                            <div class="d-flex flex-column">
+                                <span>C.Barra</span>
+                            </div>
+                        </th> *@
+                        <th scope="col">
+                            <div class="d-flex flex-column">
+                                <span>IVA</span>
+                            </div>
+                        </th>
+                        <th scope="col">
+                            <div class="d-flex flex-column">
+                                <span>II</span>
+                            </div>
+                        </th>
+                        @* @{
+                            int colspan = @GetColspan(reg ?? new());
+                        }
+                      
+
+                        <!-- Costo -->
+                        <th scope="col">Precio Costo</th>
+
+                        <!-- Precios de Venta -->
+                        <th scope="col">@reg?.lp_desc1</th>
+                        @if (colspan >= 2)
+                        {
+                            <th scope="col">@reg?.lp_desc2</th>
+                        }
+                        @if (colspan >= 3)
+                        {
+                            <th scope="col">@reg?.lp_desc3</th>
+                        }
+                        @if (colspan >= 4)
+                        {
+                            <th scope="col">@reg?.lp_desc4</th>
+                        } *@
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model?.ListaDatos?.Any() == true)
+                    {
+                        foreach (var item in Model.ListaDatos)
+                        {
+                            familiaActual = $"{item.sec_id}{item.rub_id}";
+
+                            // Si cambia la familia, insertamos una fila de encabezado para la familia
+                            if (familiaActual != familiaAnterior)
+                            {
+                                <tr class="table-secondary fw-bold">
+                                    <td colspan="9" style="text-align:center;">
+                                        <i class="bx bx-folder me-1"></i>
+                                        @item.sec_desc - @item.rub_desc
+                                    </td>
+                                </tr>
+                                familiaAnterior = familiaActual;
+                                alt = true; // Reiniciar alternancia de colores después de cada familia
+                            }
+
+                            if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+                            <tr data-producto-id="@item.p_id" class="@clase">
+                                <!-- Datos principales del producto -->
+                                <td class="@Model.ObtenerClase(item.p_id)">@Model.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
+                                <td class="@Model.ObtenerClase(item.p_desc)" title="@item.p_desc">@Model.FormatearDato(item.p_desc, FormatDato.Ninguno)</td>
+                                @* <td class="@Model.ObtenerClase('C')">@Model.FormatearDato(item.p_id_barrado, FormatDato.Ninguno)</td> *@
+                                <td class="@Model.ObtenerClase(item.infoImp)">@Model.FormatearDato(item.infoImp, FormatDato.Ninguno)</td>
+                                <td class="@Model.ObtenerClase(item.in_alicuota)">@Model.FormatearDato(item.in_alicuota, FormatDato.Monto)</td>
+                                <!-- Costo -->
+                               @*  <td class="@Model.ObtenerClase(item.p_pcosto)">@Model.FormatearDato(item.p_pcosto, FormatDato.Monto)</td>
+
+                                <!-- Precios de Venta -->
+                                <td class="@Model.ObtenerClase(item.p_pvta1)">@Model.FormatearDato(item.p_pvta1, FormatDato.Monto)</td>
+
+                                @if (colspan >= 2)
+                                {
+                                    <td class="@Model.ObtenerClase(item.p_pvta2)">@Model.FormatearDato(item.p_pvta2, FormatDato.Monto)</td>
+
+                                }
+                                @if (colspan >= 3)
+                                {
+                                    <td class="@Model.ObtenerClase(item.p_pvta3)">@Model.FormatearDato(item.p_pvta3, FormatDato.Monto)</td>
+
+                                }
+                                @if (colspan >= 4)
+                                {
+                                    <td class="@Model.ObtenerClase(item.p_pvta4)">@Model.FormatearDato(item.p_pvta4, FormatDato.Monto)</td>
+
+                                } *@
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="23" class="text-center text-muted py-4 td-no-datos">
+                                <i class="bx bx-info-circle me-2"></i>
+                                <div class="mt-2">
+                                    <strong>No hay datos disponibles</strong>
+                                    <p class="mb-0 small">Ajuste los filtros de búsqueda para obtener resultados</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+    @if (Model?.ListaDatos?.Any() == true)
+    {
+        <div class="grid-golden-footer py-2 ">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="text-muted small">
+                    <small class="text-muted">
+                        <i class="bx bx-info-circle me-1"></i>
+                        Total de registros: <strong>@Model.ListaDatos.Count</strong>
+                    </small>
+                </div>
+            </div>
+        </div>
+    }
+
+</div>
+
+<script>
+    $(function() {
+        // Evento para volver a los filtros
+        $("#btnVolverFiltros").on("click", function() {
+            $("#divDetalle").collapse("hide");
+            $("#divFiltro").collapse("show");
+        });
+
+        // Evento para expandir/contraer columnas
+        $("#btnExpandirColumnas").on("click", function() {
+            console.log("Funcionalidad de expandir columnas pendiente de implementación");
+        });
+
+        // Evento para exportar a Excel
+        $("#btnExportarExcel").on("click", function() {
+            if (typeof exportarGridAExcel === 'function') {
+                exportarGridAExcel('#tbGridPrecios', 'ListaPrecios');
+            } else {
+                console.warn("La función exportarGridAExcel no está disponible");
+            }
+        });
+
+        // Tooltip para celdas truncadas
+        $('[title]').tooltip({
+            placement: 'top',
+            trigger: 'hover',
+            container: 'body'
+        });
+
+        // Actualizar timestamp
+        setInterval(function() {
+            $("#spanUltimaActualizacion").text(new Date().toLocaleString('es-AR'));
+        }, 60000);
+    });
+</script>

@@ -36,10 +36,10 @@
                         </button>
                     }
                     <button id="btnAbmCancelar" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar">
-                    <i class="bx bx-x-circle"></i> Cancelar
-                </button>
+                        <i class="bx bx-x-circle"></i> Cancelar
+                    </button>
+                </div>
             </div>
-        </div>
         }
         @if (Model.Modelo != ModeloFilter.PRODUCTO_CARGA_PRECIO)
         {
@@ -47,6 +47,7 @@
                 Model.Modelo == ModeloFilter.ASIENTO_DEFINITIVO ||
                 Model.Modelo == ModeloFilter.ETIQUETA ||
                 Model.Modelo == ModeloFilter.PRECIO_LISTA ||
+                Model.Modelo == ModeloFilter.D_IMPOSITIVO ||
                 Model.Modelo == ModeloFilter.PRESUPUESTO)
             {
                 <div class="col-md-2 col-sm-6">
@@ -67,7 +68,9 @@
             }
 
             if (Model.Modelo != ModeloFilter.ETIQUETA &&
-            Model.Modelo != ModeloFilter.PRECIO_LISTA)
+                Model.Modelo != ModeloFilter.PRECIO_LISTA &&
+                Model.Modelo != ModeloFilter.D_IMPOSITIVO
+            )
             {
                 <div class="col-md-4 col-sm-6">
                     <div class="d-flex justify-content-sm-center">
