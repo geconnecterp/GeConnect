@@ -38,8 +38,10 @@
             //DATOS IMPOSITIVOS
             public const string SP_IVA_SITUACION_LISTA = "SPGECO_IVA_Situacion_Lista";
 			public const string SP_IVA_ALICUOTA_LISTA = "SPGECO_IVA_Alicuotas_Lista";
+			public const string SP_IVA_DATOS_IMP = "SPGECO_P_PR_Datos_Impositivos";
 
-			public const string SP_PRODUCTO_BUSQUEDA_MUCHOS = "dbo.spgeco_p_busqueda_muchos";
+
+            public const string SP_PRODUCTO_BUSQUEDA_MUCHOS = "dbo.spgeco_p_busqueda_muchos";
 
 			public const string SP_INFOPROD_STKD = "dbo.spgeco_p_info_stk_depo";
 			public const string SP_INFOPROD_STKBOX = "dbo.spgeco_p_info_stk_box";

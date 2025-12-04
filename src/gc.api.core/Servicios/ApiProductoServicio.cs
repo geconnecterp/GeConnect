@@ -21,6 +21,7 @@ using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
+using gc.infraestructura.Dtos.Productos.Impositivo;
 using gc.infraestructura.EntidadesComunes.Options;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
@@ -1411,6 +1412,84 @@ namespace gc.api.core.Servicios
             List<IVAAlicuotaDto> resp = _repository.EjecutarLstSpExt<IVAAlicuotaDto>(sp, ps, true);
             return resp;
         }
+
+        public List<ImpositivoDatoDto> ObtenerDatosImpositivos(QueryFilters filters)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_IVA_DATOS_IMP;
+            var ps = new List<SqlParameter>();
+
+            //CondicionIva
+            if (!string.IsNullOrEmpty(filters.Tipo))
+            {
+                ps.Add(new SqlParameter("@iva_sit", true));
+                ps.Add(new SqlParameter("@iva_sittuacion", filters.Tipo));
+            }
+            else
+            {
+                ps.Add(new SqlParameter("@iva_sit", false));
+                ps.Add(new SqlParameter("@iva_sittuacion", ""));
+
+            }
+            //AlicuotaIva
+            var ali = filters.Estado.ToDecimalOrNull();
+            if (ali!=null)
+            {
+                ps.Add(new SqlParameter("@iva_ali", true));
+                ps.Add(new SqlParameter("@iva_alicuota", ali));
+            }
+            else
+            {
+                ps.Add(new SqlParameter("@iva_ali", false));
+                ps.Add(new SqlParameter("@iva_alicuota", 0.00m));
+            }
+
+            ps.Add(new SqlParameter("@ii_ali",filters.Opt1));
+
+            if (filters.Rel01 != null && filters.Rel01.Count > 0)
+            {
+                var provs = string.Join(",", filters.Rel01);
+                ps.Add(new SqlParameter("@prov", true));
+                ps.Add(new SqlParameter("@prov_list", provs));
+            }
+            else
+            {
+                ps.Add(new SqlParameter("@prov", false));
+                ps.Add(new SqlParameter("@prov_list", ""));
+            }
+
+            if (filters.Rel03 != null && filters.Rel03.Count > 0)
+            {
+                var pgs = string.Join(",", filters.Rel03.Select(x => x.Id));
+                ps.Add(new SqlParameter("@pg", true));
+                ps.Add(new SqlParameter("@pg_list", pgs));
+            }
+            else
+            {
+                ps.Add(new SqlParameter("@pg", false));
+                ps.Add(new SqlParameter("@pg_list", ""));
+            }
+
+            if (filters.Rel02 != null && filters.Rel02.Count > 0)
+            {
+                var rubs = string.Join(",", filters.Rel02);
+                ps.Add(new SqlParameter("@rub", true));
+                ps.Add(new SqlParameter("@rub_list", rubs));
+            }
+            else
+            {
+                ps.Add(new SqlParameter("@rub", false));
+                ps.Add(new SqlParameter("@rub_list", ""));
+            }
+
+
+            ps.Add(new SqlParameter("@adm_id", filters.Adm_id));
+            ps.Add(new SqlParameter("@usu_id", filters.Usu_id));
+
+
+            List<ImpositivoDatoDto> resp = _repository.EjecutarLstSpExt<ImpositivoDatoDto>(sp, ps, true);
+            return resp;
+        }
+
 
         public List<ProductoBarradoDto> ObtenerBarradoDeProd(string p_id)
         {

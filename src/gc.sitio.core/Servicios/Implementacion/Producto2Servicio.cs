@@ -10,6 +10,8 @@ using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
+using gc.infraestructura.Dtos.Productos.Impositivo;
+using gc.infraestructura.Dtos.Productos.Precio;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -17,6 +19,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OfficeOpenXml.FormulaParsing.LexicalAnalysis;
 using Org.BouncyCastle.Ocsp;
+using System.Drawing.Printing;
 using System.Net;
 using System.Reflection;
 
@@ -50,7 +53,7 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string FX_PVTA_MARGEN = "/obtener-precio-pvta-margen";
         private const string FX_PVTA_LISTA = "/obtener-precio-pvta-lista";
         private const string PRODUCTO_CONF_PRECIO_TEMP = "/confirmar-precio-temporal";
-        
+        private const string PROD_DATO_IMPOSITIVO = "/ObtenerDatoImpositivo";
 
 
         private readonly AppSettings _appSettings;
@@ -1138,6 +1141,52 @@ namespace gc.sitio.core.Servicios.Implementacion
 
                 throw new Exception("Algo no fue bien al intentar confirmar los precios temporales.");
             }
+        }
+
+        public async Task<RespuestaGenerica<ImpositivoDatoDto>> ObtenerDatoImpositivo(QueryFilters filters, string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(filters, token, out StringContent contentData);
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{PROD_DATO_IMPOSITIVO}";
+
+                using var response = await client.PostAsync(link, contentData);
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ImpositivoDatoDto>>>(stringData);
+                    if (apiResponse == null || apiResponse.Data == null)
+                    {
+                        return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+                    }
+
+                    return new RespuestaGenerica<ImpositivoDatoDto>
+                    {
+                        Ok = true,
+                        Mensaje = "OK",
+                        ListaEntidad = apiResponse.Data
+                        // Nota: si necesitas la metadata (apiResponse.Meta), amplía RespuestaGenerica para incluirla.
+                    };
+                }
+                else
+                {
+                    var msg = await ReadApiErrorAsync(response);
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+                    return new() { Ok = false, Mensaje = msg };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+                return new() { Ok = false, Mensaje = "Error al buscar la lista de precios" };
+            }
+            ;
         }
     }
 }

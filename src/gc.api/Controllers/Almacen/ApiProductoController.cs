@@ -24,6 +24,7 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Dtos.Gen;
     using gc.infraestructura.Dtos.General;
     using gc.infraestructura.Dtos.Productos;
+    using gc.infraestructura.Dtos.Productos.Impositivo;
     using gc.infraestructura.EntidadesComunes.Options;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
@@ -1361,6 +1362,17 @@ namespace gc.api.Controllers.Almacen
         {
             var res = _productosSv.ObtenerIVAAlicuotas();
             return Ok(new ApiResponse<List<IVAAlicuotaDto>>(res));
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public IActionResult ObtenerDatoImpositivo(QueryFilters filtro) { 
+            if (filtro == null)
+            {
+                return BadRequest("No se encontraron los datos del filtrado para buscar el Dato Impositivo.");
+            }
+            var res = _productosSv.ObtenerDatosImpositivos(filtro);
+            return Ok(new ApiResponse<List<ImpositivoDatoDto>>(res));
         }
 
         [HttpGet]

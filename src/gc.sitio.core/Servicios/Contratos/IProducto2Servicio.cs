@@ -6,6 +6,7 @@ using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
+using gc.infraestructura.Dtos.Productos.Impositivo;
 
 namespace gc.sitio.core.Servicios.Contratos
 {
@@ -37,5 +38,6 @@ namespace gc.sitio.core.Servicios.Contratos
 
         Task<RespuestaGenerica<ProductoResponsePVta>> ObtenerPrecioVentaLista(ProductoRequestPvtaLista req, string token);
         Task<RespuestaGenerica<RespuestaDto>> ConfirmarPreciosTemporales(AbmGenDto request, string tokenCookie);
+        Task<RespuestaGenerica<ImpositivoDatoDto>> ObtenerDatoImpositivo(QueryFilters filters, string tokenCookie);
     }
 }
