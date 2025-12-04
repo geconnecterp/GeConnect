@@ -557,6 +557,8 @@ function configurarEventosSeleccion() {
                 var comboId = $this.data("combo-id");
 
                 if (comboId) {
+
+                    $("#divPromoCombo").removeClass("table-wrapper-500").addClass("table-wrapper-200");
                     // Cargar datos del combo y sus canales
                     cargarDatosCombo(comboId);
                     cargarCanalesCombo(comboId);
@@ -982,7 +984,7 @@ function guardarRelacionProductoSustitutoEnServidor(productoId) {
 function cancelarOperacion(e) {
     // Ocultar formulario
     $("#divComboDatos").hide();
-
+    $("#divPromoCombo").removeClass("table-wrapper-200").addClass("table-wrapper-500");
     // Desactivar modos de edición
     modoNuevoCombo = false;
     modoModificacionCombo = false;

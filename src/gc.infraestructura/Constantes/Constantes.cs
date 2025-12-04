@@ -86,6 +86,8 @@ namespace gc.infraestructura.Constantes
             public const string REASIGNACION_DE_FAMILIA = "REASIGNACION_DE_FAMILIA";
             public const string ETIQUETA = "ETIQUETA";
             public const string PRECIO_LISTA = "PRECIO_LISTA";
+            public const string D_IMPOSITIVO = "D_IMPOSITIVO";
+
         }
     }
 }

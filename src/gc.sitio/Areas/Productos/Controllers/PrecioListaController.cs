@@ -140,7 +140,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                     throw new NegocioException(resp.Mensaje ?? "Error al obtener detalle de precios.");
                 }
 
-                var ordenada = resp.ListaEntidad?.OrderBy(x => x.p_id, StringComparer.OrdinalIgnoreCase).ToList();
+                var ordenada = resp.ListaEntidad?.OrderBy(x => x.rubg_id).ThenBy(x => x.rub_id).ThenBy(x => x.cta_id).ToList();
                 
                 _logger?.LogInformation("✅ Registros obtenidos: {Count}", ordenada?.Count ?? 0);
 
@@ -168,6 +168,15 @@ namespace gc.sitio.Areas.Productos.Controllers
             {
                 ObtenerRubros(_rubroServicio);
             }
+
+            var rubs = RubroLista
+                .Select(r => new ComboGenDto
+                {
+                    Id = r.Rub_Id,
+                    Descripcion = r.Rub_Id + " - " + r.Rub_Desc
+                })
+                .ToList();
+            ViewBag.Rel02 = HelperMvc<ComboGenDto>.ListaGenerica(rubs);
 
             var listR01 = new List<ComboGenDto>();
             ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);

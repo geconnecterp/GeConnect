@@ -34,7 +34,9 @@
 			#region SPs de productos
 			public const string SP_PRODUCTO_BUSQUEDA = "dbo.spgeco_p_busqueda";
 			public const string SP_PRODUCTO_BUSQUEDA_LISTA = "SPGECO_P_Busqueda_Lista";
-			public const string SP_IVA_SITUACION_LISTA = "SPGECO_IVA_Situacion_Lista";
+
+            //DATOS IMPOSITIVOS
+            public const string SP_IVA_SITUACION_LISTA = "SPGECO_IVA_Situacion_Lista";
 			public const string SP_IVA_ALICUOTA_LISTA = "SPGECO_IVA_Alicuotas_Lista";
 
 			public const string SP_PRODUCTO_BUSQUEDA_MUCHOS = "dbo.spgeco_p_busqueda_muchos";
@@ -111,8 +113,7 @@
 
 			//LISTA DE PRECIOS
 			public const string SP_LP_LISTA = "SPGECO_LP_Lista";
-			public const string SP_LP_DETALLE = "SPGECO_P_PR_lista";
-
+			public const string SP_LP_DETALLE = "SPGECO_P_PR_lista";			
             #endregion
 
 
