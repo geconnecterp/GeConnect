@@ -28,7 +28,7 @@ namespace gc.infraestructura.Dtos.Mstk
 		public string p_activo { get; set; } = string.Empty;
 		public string p_activo_des { get; set; } = string.Empty;
 		public DateTime? rp_fecha { get; set; }
-		public int rp_dias { get; set; }
+		public int? rp_dias { get; set; }
 		public decimal stk { get; set; } = 0.00M;
 		public DateTime? stk_ult_mov { get; set; }
 		private bool _p_activo_bool;

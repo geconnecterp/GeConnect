@@ -4,7 +4,7 @@
 		cargaPaginacion();
 	});
 
-	InicializarCamposEnFiltros();
+	InicializarCamposEnFiltros(false);
 
 	$(document).on("click", "#btnImprimir", ControlaImprimirSelected);
 	$(document).on("click", "#btnCancel", ControlaCancelar);
@@ -91,8 +91,7 @@ function ReseteoDeReportes() {
 }
 
 function ControlaCancelar() {
-	
-
+	InicializarCamposEnFiltros(true);
 }
 
 function BuscarProductos(pag = 1) {
@@ -152,8 +151,10 @@ function BuscarProductos(pag = 1) {
 	});
 }
 
-function InicializarCamposEnFiltros() {
-	CargarRubros();
+function InicializarCamposEnFiltros(vieneDeCancelar) {
+	if (!vieneDeCancelar) {
+		CargarRubros();
+	}
 	$("#btnImprimir").hide();
 	$("#lbSucursales").text("Sucursal");
 	$("#lbDepositos").text("Depósitos");
@@ -186,8 +187,9 @@ function InicializarCamposEnFiltros() {
 
 	$("#divFiltros").collapse("show");
 	$("#divDetalle").collapse("hide");
-
-	HandlerCheckBox();
+	if (!vieneDeCancelar) {
+		HandlerCheckBox();
+	}
 }
 
 function HandlerCheckBox() {
