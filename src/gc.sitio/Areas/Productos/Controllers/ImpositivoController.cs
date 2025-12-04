@@ -1,6 +1,9 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos.Impositivo;
+using gc.infraestructura.Dtos.Productos.Precio;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
@@ -24,13 +27,12 @@ namespace gc.sitio.Areas.Productos.Controllers
         private readonly AppSettings _configuracion;
 
         private readonly IProducto2Servicio _prod2Sv;
-        private readonly IPrecioListaServicio _plSv;
         private readonly ICuentaServicio _cuentaServicio;
         private readonly IRubroServicio _rubroServicio;
 
         public ImpositivoController(IOptions<AppSettings> options, IHttpContextAccessor contexo,
          ILogger<PrecioListaController> logger, IOptions<DocsManager> docsManager,
-         IDocManagerServicio docManagerServicio, IPrecioListaServicio servicio,
+         IDocManagerServicio docManagerServicio, 
          ICuentaServicio cuentaServicio,
           IRubroServicio rubroServicio,
           IProducto2Servicio producto2) : base(options, contexo, logger)
@@ -41,7 +43,6 @@ namespace gc.sitio.Areas.Productos.Controllers
             _docsManager = docsManager.Value;
             _modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO);
             _docMSv = docManagerServicio;
-            _plSv = servicio;
             _prod2Sv = producto2;
             _cuentaServicio = cuentaServicio;
             _rubroServicio = rubroServicio;
@@ -86,6 +87,49 @@ namespace gc.sitio.Areas.Productos.Controllers
             return View();
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ObtenerDatoImpositivo([FromBody] QueryFilters filters)
+        {
+            // ✅ AGREGAR LOGGING PARA DEBUGGING
+            _logger?.LogInformation("📥 ObtenerDatoImpositivo - Inicio");
+            _logger?.LogInformation("Filters recibidos: {@Filters}", filters);
+
+            try
+            {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
+                if (filters is null)
+                {
+                    _logger?.LogWarning("⚠️ Filters es null");
+                    return BadRequest("Parámetros inválidos.");
+                }
+
+                filters.Adm_id = AdministracionId;
+                filters.Usu_id = UserName;
+
+                RespuestaGenerica<ImpositivoDatoDto> resp = await _prod2Sv.ObtenerDatoImpositivo(filters, TokenCookie);
+
+                if (!resp.Ok)
+                {
+                    _logger?.LogError("❌ Error en servicio: {Mensaje}", resp.Mensaje);
+                    throw new NegocioException(resp.Mensaje ?? "Error al obtener el Dato Impositivo.");
+                }
+
+                var ordenada = resp.ListaEntidad?.OrderBy(x => x.rubg_id).ThenBy(x => x.rub_id).ThenBy(x => x.cta_id).ToList();
+
+                _logger?.LogInformation("✅ Registros obtenidos: {Count}", ordenada?.Count ?? 0);
+
+                var grid = GenerarGrillaSmart(ordenada, nameof(ImpositivoDatoDto.p_desc));
+
+                return PartialView("_datosImpDetalle", grid);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "💥 Error al obtener el Dato Impositivo.");
+                return PartialView("_datosImpDetalle", GenerarGrillaSmart(new List<ImpositivoDatoDto>(), nameof(PrecioListaDetalleDto.p_desc)));
+            }
+        }
 
 
         private void InicializaVista(bool actualizar = true)
@@ -119,10 +163,11 @@ namespace gc.sitio.Areas.Productos.Controllers
             ViewBag.Rel03List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
             ViewBag.Rel03 = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
 
-
+            var condIva = ComboIVASituacion(_prod2Sv).GetAwaiter().GetResult();
+            var alicIva = ComboIVAAlicuota(_prod2Sv).GetAwaiter().GetResult();
             //datos impositivos
-            ViewBag.CondicionIva = ComboIVASituacion(_prod2Sv);
-            ViewBag.AlicuotaIva = ComboIVAAlicuota(_prod2Sv);
+            ViewBag.CondicionIva = condIva;
+            ViewBag.AlicuotaIva = alicIva;
         }
     }
 }
