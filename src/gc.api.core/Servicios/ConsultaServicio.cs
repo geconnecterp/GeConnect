@@ -444,5 +444,147 @@ namespace gc.api.core.Servicios
 
 			return lstProductos;
 		}
+
+		public List<ProductoStkDto> ConsultarProductoStkValor(ConsultarStockValorizadoRequest filtros)
+		{
+			filtros.Pagina = filtros.Pagina == null || filtros.Pagina <= 0 ? _pagSet.DefaultPageNumber : filtros.Pagina;
+			filtros.Registros = filtros.Registros == null || filtros.Registros <= 0 ? _pagSet.DefaultPageSize : filtros.Registros;
+
+			string sp = "";
+
+			switch (filtros.agrupador)
+			{
+				case 0:
+					sp = ConstantesGC.StoredProcedures.SP_CONS_STOCK_VALOR_P;
+					break;
+				case 1:
+					sp = ConstantesGC.StoredProcedures.SP_CONS_STOCK_VALOR_SEC;
+					break;
+				case 2:
+					sp = ConstantesGC.StoredProcedures.SP_CONS_STOCK_VALOR_RUBG;
+					break;
+				case 3:
+					sp = ConstantesGC.StoredProcedures.SP_CONS_STOCK_VALOR_RUB;
+					break;
+				case 4:
+					sp = ConstantesGC.StoredProcedures.SP_CONS_STOCK_VALOR_CTA;
+					break;
+				default:
+					sp = ConstantesGC.StoredProcedures.SP_CONS_STOCK_VALOR_P;
+					break;
+			}
+
+			var ps = new List<SqlParameter>();
+
+			if (filtros.lSuc != null && filtros.lSuc.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.lSuc)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@adm", "1"));
+				ps.Add(new SqlParameter("@adm_list", sb.ToString() + ','));
+			}
+			else
+				ps.Add(new SqlParameter("@adm", "0"));
+
+			if (filtros.lDep != null && filtros.lDep.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.lDep)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@depo", "1"));
+				ps.Add(new SqlParameter("@depo_list", sb.ToString() + ','));
+			}
+			else
+				ps.Add(new SqlParameter("@depo", "0"));
+
+			if (filtros.lProv != null && filtros.lProv.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.lProv)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@prov", "1"));
+				ps.Add(new SqlParameter("@prov_list", sb.ToString() + ','));
+			}
+			else
+				ps.Add(new SqlParameter("@prov", "0"));
+
+			if (filtros.lFam != null && filtros.lFam.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.lFam)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@pg", "1"));
+				ps.Add(new SqlParameter("@pg_list", sb.ToString() + ','));
+			}
+			else
+				ps.Add(new SqlParameter("@pg", "0"));
+
+			if (filtros.lRub != null && filtros.lRub.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.lRub)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@rub", "1"));
+				ps.Add(new SqlParameter("@rub_list", sb.ToString() + ','));
+			}
+			else
+				ps.Add(new SqlParameter("@rub", "0"));
+
+			ps.Add(new SqlParameter("@stock_p", filtros.chkStkPos));
+			ps.Add(new SqlParameter("@stock_0", filtros.chkStkCero));
+			ps.Add(new SqlParameter("@stock_n", filtros.chkStkNeg));
+			ps.Add(new SqlParameter("@activo", filtros.chkEstAct));
+			ps.Add(new SqlParameter("@discontinuo", filtros.chkEstDisc));
+			ps.Add(new SqlParameter("@costo_repo", filtros.chkCostoRepo));
+
+			ps.Add(new SqlParameter("@registros", filtros.Registros));
+			ps.Add(new SqlParameter("@pagina", filtros.Pagina));
+			ps.Add(new SqlParameter("@ordenar", filtros.Sort ?? ""));
+
+			List<ProductoStkDto> lstProductos = _repository.EjecutarLstSpExt<ProductoStkDto>(sp, ps, true);
+
+			return lstProductos;
+		}
 	}
 }

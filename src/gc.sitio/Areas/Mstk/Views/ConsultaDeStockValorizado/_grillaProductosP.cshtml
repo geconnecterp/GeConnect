@@ -1,0 +1,174 @@
+﻿@model ProductoStkListaModel
+@using gc.infraestructura.Dtos.Mstk
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	string grupoActual = string.Empty;
+	string grupoAnterior = string.Empty;
+	string leyendaAgrupador = string.Empty;
+
+	var alt = true;
+	string clase = string.Empty;
+
+	var productos = new List<ProductoStkDto>();
+}
+<style>
+	/* El contenedor debe ser el scroll real y generar contexto */
+	#containerListaProducto {
+		position: relative;
+		/* height: 600px;
+			max-height: 600px; */
+		max-height: 60vh; /* ocupa como máximo el 80% de la altura visible */
+		height: auto; /* deja que se ajuste dinámicamente */
+		overflow-y: auto; /* vertical */
+		overflow-x: auto; /* horizontal si hace falta */
+		z-index: auto; /* no fuerza stacking context */
+	}
+
+	/* Evitar collapse para que sticky funcione mejor en thead/th */
+	.table-golden {
+		border-collapse: separate;
+		border-spacing: 0;
+		table-layout: fixed; /* estabiliza anchos con tus width% */
+	}
+
+		/* Fijar el thead y darle fondo del tema */
+		.table-golden thead {
+			position: sticky;
+			top: 0;
+			z-index: 1; /* suficiente para estar sobre las filas */
+			background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+			color: #fff !important;
+		}
+
+			/* Redundancia intencional: asegurar cada th sticky y el mismo fondo */
+			.table-golden thead th {
+				position: sticky;
+				top: 0;
+				z-index: 4;
+				background: linear-gradient(to bottom, #b8860b, #daa520);
+				color: #fff;
+				box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+				background-clip: padding-box; /* evita “sangrados” con border-spacing */
+			}
+
+			/* Alinear colores: si tu app usa dorado para cabecera */
+			.table-golden thead,
+			.table-golden thead th {
+				/*background-color: #b8860b;  tu dorado */
+				/* color: #333; */
+			}
+
+	#tbGridProductos th,
+	#tbGridProductos td {
+		padding: 0.01rem 0.15rem !important; /* o incluso 0 si querés máxima compresión */
+		line-height: 1.2 !important; /* más compacto */
+		height: auto !important; /* evita altura fija */
+	}
+
+	/* Opcional: altura fija para todas las filas */
+	#tbGridProductos tr {
+		height: 1.6rem !important; /* ajustá según lo que quieras */
+	}
+
+	.grid-golden {
+		width: 80%; /* ocupa el 80% del ancho disponible */
+		margin: 0 auto; /* centra horizontalmente */
+	}
+
+	.grid-golden-body .table-wrapper table {
+		width: 100%; /* la tabla se ajusta al ancho del contenedor */
+	}
+
+</style>
+<div class="grid-golden">
+	<div class="grid-golden-header">
+		<div class="row align-items-md-center">
+			<div class="col-md-10 col-sm-6">
+				<h5 class="mb-0">
+					<i class="bx bx-package me-2"></i>
+					<strong>Productos no agrupados</strong>
+				</h5>
+			</div>
+			<div class="col-md-2 col-sm-6">
+				<div class="d-flex justify-content-sm-end">
+					<!-- Botón Imprimir
+					<button type="button" class="btn btn-golden btn-sm mt-1 me-1 btnImprimir" title="Imprimir">
+						<i class="bx bx-printer"></i>
+					</button>-->
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="grid-golden-body">
+		<div class="table-wrapper" id="containerListaProducto">
+			<table class="table table-sm table-golden" id="tbGridProductos">
+				<thead>
+					<tr class="header">
+						<th class="text-center" style="width: 10%;">ID</th>
+						<th class="text-center" style="width: 40%;">Concepto</th>
+						<th class="text-center" style="width: 10%;">Stock</th>
+						<th class="text-center" style="width: 10%;">Costo</th>
+						<th class="text-center" style="width: 15%;">Valoración</th>
+						<th class="text-center" style="width: 15%;">%/Total</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model != null && Model.GrillaProductoStk != null && Model.GrillaProductoStk.ListaDatos != null && Model.GrillaProductoStk.ListaDatos.Count > 0)
+					{
+						productos = Model.GrillaProductoStk.ListaDatos.ToList();
+
+						@foreach (var item in productos)
+						{
+							grupoActual = item.rub_id;
+							leyendaAgrupador = $"({item.rub_id}) {item.rub_desc}";
+							if (grupoActual != grupoAnterior)
+							{
+								<tr class="table-secondary fw-bold">
+									<td colspan="8" class="text-center">
+										<i class="bx bx-folder me-1"></i>
+										@leyendaAgrupador
+									</td>
+								</tr>
+								grupoAnterior = grupoActual;
+								alt = true; // Reiniciar alternancia de colores después de cada familia
+							}
+
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							<tr class="@clase" onclick="selectReg(this, 'tbGridProductos')">
+								<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_id) align-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
+								@if (item.p_activo_bool)
+								{
+									<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_desc) cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_desc, FormatDato.Ninguno)</td>
+								}
+								else
+								{
+									<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_desc) cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_desc, FormatDato.Ninguno)<span style="float:right;" title="Producto discontínuo"><i class="bx bx-dislike"></i></span></td>
+								}
+								<td class="@Model.GrillaProductoStk.ObtenerClase(item.stk) text-right cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.stk, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_pcosto) cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_pcosto, FormatDato.Monto)</td>
+								<td class="@Model.GrillaProductoStk.ObtenerClase(item.stk_val) text-right cell-fit-content">@(item.stk_val.HasValue? item.stk_val.Value.ToString("N3") : "")</td>
+								<td class="@Model.GrillaProductoStk.ObtenerClase(item.stk_val_calculado) text-right cell-fit-content">@(item.stk_val_calculado.HasValue? item.stk_val_calculado.Value.ToString("N3") : "")</td>
+
+							</tr>
+						}
+					}
+					else
+					{
+						<tr>
+							<td colspan="9" class="text-center text-muted py-4">
+								<i class="bx bx-info-circle me-2"></i>
+								No se encontraron productos con los criterios especificados
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+		<div class="row mt-3">
+			<div class="offset-md-3 col-md-6">
+				<div id="divPaginacion" class="">
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
