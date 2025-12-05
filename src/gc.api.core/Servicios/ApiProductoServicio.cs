@@ -1431,16 +1431,16 @@ namespace gc.api.core.Servicios
 
             }
             //AlicuotaIva
-            var ali = filters.Estado.ToDecimalOrNull();
-            if (ali!=null)
+            
+            if (filters.Valor01>0)
             {
                 ps.Add(new SqlParameter("@iva_ali", true));
-                ps.Add(new SqlParameter("@iva_alicuota", ali));
+                ps.Add(new SqlParameter("@iva_alicuota", filters.Valor01));
             }
             else
             {
                 ps.Add(new SqlParameter("@iva_ali", false));
-                ps.Add(new SqlParameter("@iva_alicuota", 0.00m));
+                ps.Add(new SqlParameter("@iva_alicuota", filters.Valor01));
             }
 
             ps.Add(new SqlParameter("@ii_ali",filters.Opt1));

@@ -67,13 +67,15 @@
                 </div>
             </div>
         }
+
+
         @if (Model.Modelo.Equals(ModeloFilter.D_IMPOSITIVO))
         {
             <div class="row  mb-1 mt-1">
                 <div class=" col-md-2 col-sm-6">
                     <div class="input-group input-group-sm">
                         <div class="form-check form-check-inline form-switch mb-2">
-                            <input class="form-check-input" type="checkbox" id="chkCondIva" checked readonly />
+                            <input class="form-check-input" type="checkbox" id="chkCondIva" checked  />
                             <label class="form-check-label" for="chkCondIva" id="lbCondIva">Condición IVA</label>
                         </div>
                     </div>
@@ -89,7 +91,7 @@
                 <div class=" col-md-2 col-sm-6">
                     <div class="input-group input-group-sm">
                         <div class="form-check form-check-inline form-switch mb-2">
-                            <input class="form-check-input" type="checkbox" id="chkAlicIva" checked readonly />
+                            <input class="form-check-input" type="checkbox" id="chkAlicIva" disabled />
                             <label class="form-check-label" for="chkAlicIva" id="lbAlicIva">Alicuota IVA</label>
                         </div>
                     </div>
@@ -109,7 +111,7 @@
                             <label class="form-check-label" for="chkConII" id="lbConII">Con Impuesto Interno</label>
                         </div>
                     </div>
-                </div>               
+                </div>
             </div>
         }
 
@@ -218,13 +220,13 @@
                 <div class="col-md-2 col-sm-6">
                     <div class="input-group input-group-sm">
                         <div class="form-check form-check-inline form-switch mb-2">
-                            <input class="form-check-input" type="checkbox"  id="chkInCosto" />
+                            <input class="form-check-input" type="checkbox" id="chkInCosto" />
                             <label class="form-check-label" for="chkInCosto" id="lbChkInCosto"></label>
                         </div>
                     </div>
                 </div>
             </div>
-            if (Model.Rel04 != null )
+            if (Model.Rel04 != null)
             {
                 <div class="row mt-3">
                     <div class="col-sm-6">
@@ -259,7 +261,7 @@
                 !Model.Modelo.Equals(ModeloFilter.VALORIZACION_COMPROBANTE) &&
                 !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_A_PROVEEDORES) &&
                 !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA) &&
-                @* !Model.Modelo.Equals(ModeloFilter.NECESIDADES_COMPRA) && *@
+        @* !Model.Modelo.Equals(ModeloFilter.NECESIDADES_COMPRA) && *@
                 !Model.Modelo.Equals(ModeloFilter.ANULACION_DE_COMPROBANTE_Y_VALORIZACION) &&
                 !Model.Modelo.Equals(ModeloFilter.PROMO_COMBO) &&
                 !Model.Modelo.Equals(ModeloFilter.PRESUPUESTO) &&
@@ -358,7 +360,7 @@
                 !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_DIRECTA))
         {
             if (Model.Modelo.Equals(ModeloFilter.PRESUPUESTO) ||
-                Model.Modelo.Equals(ModeloFilter.ETIQUETA))
+            Model.Modelo.Equals(ModeloFilter.ETIQUETA))
             {
                 <div class="row">
                     <div class="col-md-6 col-sm-6">
@@ -567,7 +569,7 @@
         @*---------------------------FIN BUSQUEDA DE FAMILIAS---------------------------*@
         @*---------------------------BUSQUEDA DE RUBROS---------------------------*@
         @if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA) ||
-             Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA) ||
+                Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA) ||
                 Model.Modelo.Equals(ModeloFilter.NECESIDADES_COMPRA))
         {
             var list = new List<ComboGenDto>();
@@ -608,10 +610,10 @@
                         </div>
                     </div>
                 </div>
-               
+
                 <div class="row">
                     @if (Model.Modelo.Equals(ModeloFilter.PRECIO_LISTA) ||
-                         Model.Modelo.Equals(ModeloFilter.D_IMPOSITIVO))
+                                Model.Modelo.Equals(ModeloFilter.D_IMPOSITIVO))
                     {
                         <div class="col-md-6 col-sm-6" id="divLs02">
                             <div class="input-group input-group-sm">
@@ -631,7 +633,7 @@
                             </div>
                         </div>
                     }
-                    
+
                     <div class="col-md-6 col-sm-6">
                         @Html.ListBox("Rel02List", null, new { @class = "form-control", @disabled = "disabled" })
                     </div>
