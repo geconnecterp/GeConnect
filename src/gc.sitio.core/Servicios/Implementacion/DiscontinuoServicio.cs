@@ -6,19 +6,12 @@ using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Discontinuo;
-using gc.infraestructura.Dtos.Productos.Etiqueta;
 using gc.sitio.core.Servicios.Contratos;
-using log4net.Filter;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
