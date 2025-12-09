@@ -52,7 +52,8 @@ namespace gc.api.core.Servicios.Reportes
 				List<ProductoStkDto> registros = ObtenerDatos(solicitud, out tit, out agrp);
 
 				solicitud.Titulo = tit;
-				solicitud.SubTitulo = ObtenerSubtitulo(registros);
+				//solicitud.SubTitulo = ObtenerSubtitulo(registros);
+				GenerarStockValorizado(registros);
 
 				//hago el modelo de dato aca ya que necesito los datos de la cuenta
 				var regs = registros.Select(x => new
@@ -102,7 +103,7 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Open();
 
 				#region Lista de Cheques Emitidos Propios
-				HelperPdf.CargarProductosParaRptDeStk(pdf, registros, agrp, chico, normalBold);
+				HelperPdf.CargarProductosParaRptDeStkValor(pdf, registros, agrp, chico, normalBold);
 				#endregion
 
 				pdf.Close();
@@ -155,13 +156,14 @@ namespace gc.api.core.Servicios.Reportes
 			var chkStkNeg = GetBoolParam(solicitud.Parametros, "chkStkNeg");
 			var chkEstAct = GetBoolParam(solicitud.Parametros, "chkEstAct");
 			var chkEstDisc = GetBoolParam(solicitud.Parametros, "chkEstDisc");
+			var chkCostoRepo = GetBoolParam(solicitud.Parametros, "chkCostoRepo");
 
 			var agrp = solicitud.Parametros.GetValueOrDefault("agrupador", "")?.ToString() ?? null;
 
-			titulo = $"Listado de Stock de Productos";
 			agrupador = Convert.ToInt32(agrp);
+			titulo = ObtenerTitulo(agrupador);
 
-			return _consultaServicio.ConsultarProductoStk(new ConsultarStockRequest()
+			return _consultaServicio.ConsultarProductoStkValor(new ConsultarStockValorizadoRequest()
 			{
 				lSuc = lSuc_lst,
 				lDep = lDep_lst,
@@ -173,6 +175,7 @@ namespace gc.api.core.Servicios.Reportes
 				chkStkNeg = chkStkNeg,
 				chkEstAct = chkEstAct,
 				chkEstDisc = chkEstDisc,
+				chkCostoRepo = chkCostoRepo,
 				agrupador = Convert.ToInt32(agrp),
 				Registros = 999999999,
 				Pagina = 1
@@ -184,6 +187,38 @@ namespace gc.api.core.Servicios.Reportes
 		private static int cant_Prov = 0;
 		private static int cant_Fam = 0;
 		private static int cant_Rub = 0;
+
+		private void GenerarStockValorizado(List<ProductoStkDto> lista)
+		{
+			if (lista == null || lista.Count == 0)
+				return;
+			var stkValorizado = lista.Sum(x => x.stk_val) ?? 0;
+			if (stkValorizado == 0)
+				return;
+			foreach (var item in lista)
+			{
+				item.stk_val_calculado = item.stk_val / stkValorizado;
+			}
+		}
+
+		private static string ObtenerTitulo(int agrpr)
+		{
+			switch (agrpr)
+			{
+				case 0:
+					return "Listado de Stock de Valorizado Sin Agrupar";
+				case 1:
+					return "Listado de Stock de Valorizado Por Sector";
+				case 2:
+					return "Listado de Stock de Valorizado Por Rubros x Grupo";
+				case 3:
+					return "Listado de Stock de Valorizado Por Rubro";
+				case 4:
+					return "Listado de Stock de Valorizado Por Proveedor";
+				default:
+					return "Listado de Stock de Valorizado Sin Agrupar";
+			}
+		}
 
 		private static string ObtenerSubtitulo(List<ProductoStkDto> registros)
 		{

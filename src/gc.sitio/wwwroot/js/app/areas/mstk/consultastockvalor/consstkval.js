@@ -6,6 +6,7 @@
 
 	InicializarCamposEnFiltros(false);
 
+	$(document).on("click", "#btnImprimir", ControlaImprimirSelected);
 	$(document).on("click", "#btnCancel", ControlaCancelar);
 	$(document).on("change", "#listaSucursales", ControlalistaSucursalesSelected);
 	$(document).on("change", "#listaDepositos", ControlalistaDepositosSelected);
@@ -36,6 +37,59 @@
 
 	funcCallBack = BuscarProductosValorizados;
 });
+
+function ControlaImprimirSelected() {
+	if ($("#tbGridProductos > tbody > tr").length === 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos generar el reporte.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		ImprimirListaProductosStk_Generada();
+	}
+}
+function ImprimirListaProductosStk_Generada() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var lSucArr = [];
+		var lDepArr = [];
+		var lProvArr = [];
+		var lFamArr = [];
+		var lRubArr = [];
+
+		$("#SucursalesList").children().each(function (i, item) { lSucArr.push($(item).val()) });
+		$("#DepositosList").children().each(function (i, item) { lDepArr.push($(item).val()) });
+		$("#Rel01List").children().each(function (i, item) { lProvArr.push($(item).val()) });
+		$("#FamiliaList").children().each(function (i, item) { lFamArr.push($(item).val()) });
+		$("#RubrosList").children().each(function (i, item) { lRubArr.push($(item).val()) });
+
+		var lSuc = lSucArr.join(",");
+		var lDep = lDepArr.join(",");
+		var lProv = lProvArr.join(",");
+		var lFam = lFamArr.join(",");
+		var lRub = lRubArr.join(",");
+
+		var chkStkPos = $("#chkStockPositivo")[0].checked
+		var chkStkCero = $("#chkStockCero")[0].checked
+		var chkStkNeg = $("#chkStockNegativo")[0].checked
+		var chkEstAct = $("#chkEstadoActivo")[0].checked
+		var chkEstDisc = $("#chkEstadoDiscontinuo")[0].checked
+
+		var chkCostoRepo = $("#chkCostoRepo")[0].checked
+
+		var agrupador = $("#listaAgrupador").val();
+
+		var data = { lSuc, lDep, lProv, lFam, lRub, chkStkPos, chkStkCero, chkStkNeg, chkEstAct, chkEstDisc, chkCostoRepo, agrupador };
+		cargarReporteEnArre(51, data, "REPORTE DE STOCK VALORIZADO", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
 
 function ControlaCancelar() {
 	InicializarCamposEnFiltros(true);

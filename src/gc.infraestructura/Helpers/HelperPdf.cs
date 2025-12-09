@@ -3621,6 +3621,310 @@ namespace gc.infraestructura.Helpers
 
 		}
 
+		public static void CargarProductosParaRptDeStkValor(Document pdf, List<ProductoStkDto> lista, int agrupador, Font fuenteEtiqueta, Font fuenteValor)
+		{
+			if (lista == null || !lista.Any())
+				return;
+			
+			decimal totalValorizado = 0;
+
+			switch (agrupador)
+			{
+				case 0:
+					PdfPTable tabla = new(6)
+					{
+						WidthPercentage = 100
+					};
+					tabla.SetWidths([10f, 50f, 10f, 10f, 10f, 10f]);
+
+					// Encabezados
+					string[] encabezados = { "Código", "Producto", "Stock", "Precio Costo", "Valorización", "%/Total" };
+					foreach (var encabezado in encabezados)
+					{
+						PdfPCell celda = new(new Phrase(encabezado, fuenteValor))
+						{
+							BackgroundColor = BaseColor.LightGray,
+							HorizontalAlignment = Element.ALIGN_CENTER
+						};
+						tabla.AddCell(celda);
+					}
+
+					foreach (var producto in lista)
+					{
+						var valStr = string.Empty;
+						var val = producto.stk_val ?? 0;
+						if (val<0)
+							valStr = $"({Math.Abs(val).ToString("0.000")})";
+						else
+							valStr = val.ToString("0.000");
+						tabla.AddCell(new PdfPCell(new Phrase(producto.p_id, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
+						tabla.AddCell(new PdfPCell(new Phrase(producto.p_desc, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_LEFT });
+						tabla.AddCell(new PdfPCell(new Phrase(producto.stk.ToString("0.000"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+						tabla.AddCell(new PdfPCell(new Phrase(producto.p_pcosto.ToString("0.000"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+						tabla.AddCell(new PdfPCell(new Phrase(valStr, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+						tabla.AddCell(new PdfPCell(new Phrase(producto.stk_val_calculado?.ToString("0.000"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					}
+					totalValorizado = lista.Sum(x => x.stk_val ?? 0);
+					// Fila de total
+					PdfPCell celdaTotalTitulo = new PdfPCell(new Phrase("Total Valorizado", fuenteEtiqueta))
+					{
+						Colspan = 4, // ocupa las primeras 5 columnas
+						HorizontalAlignment = Element.ALIGN_RIGHT,
+						BackgroundColor = BaseColor.LightGray
+					};
+					tabla.AddCell(celdaTotalTitulo);
+
+					// Celda con el total
+					PdfPCell celdaTotalValor = new PdfPCell(new Phrase(totalValorizado.ToString("0.000"), fuenteEtiqueta))
+					{
+						HorizontalAlignment = Element.ALIGN_RIGHT,
+						BackgroundColor = BaseColor.LightGray
+					};
+					tabla.AddCell(celdaTotalValor);
+
+					// celda vacía para la columna "Costo"
+					tabla.AddCell(new PdfPCell(new Phrase("", fuenteEtiqueta))
+					{
+						BackgroundColor = BaseColor.LightGray
+					});
+
+					pdf.Add(tabla);
+					break;
+				case 1:
+					PdfPTable tablaS = new(4)
+					{
+						WidthPercentage = 100
+					};
+					tablaS.SetWidths([10f, 60f, 20f, 10f]);
+
+					// Encabezados
+					string[] encabezadosS = { "Código", "Sector", "Costo", "%/Total" };
+					foreach (var encabezado in encabezadosS)
+					{
+						PdfPCell celda = new(new Phrase(encabezado, fuenteValor))
+						{
+							BackgroundColor = BaseColor.LightGray,
+							HorizontalAlignment = Element.ALIGN_CENTER
+						};
+						tablaS.AddCell(celda);
+					}
+
+					foreach (var producto in lista)
+					{
+						var valStr = string.Empty;
+						var val = producto.stk_val ?? 0;
+						if (val < 0)
+							valStr = $"({Math.Abs(val).ToString("0.000")})";
+						else
+							valStr = val.ToString("0.000");
+						tablaS.AddCell(new PdfPCell(new Phrase(producto.sec_id, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
+						tablaS.AddCell(new PdfPCell(new Phrase(producto.sec_desc, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_LEFT });
+						tablaS.AddCell(new PdfPCell(new Phrase(valStr, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+						tablaS.AddCell(new PdfPCell(new Phrase(producto.stk_val_calculado?.ToString("0.000"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					}
+					totalValorizado = lista.Sum(x => x.stk_val ?? 0);
+					PdfPCell celdaTotalTituloS = new PdfPCell(new Phrase("Total Valorizado", fuenteEtiqueta))
+					{
+						Colspan = 2,
+						HorizontalAlignment = Element.ALIGN_RIGHT,
+						BackgroundColor = BaseColor.LightGray
+					};
+					tablaS.AddCell(celdaTotalTituloS);
+
+					// celda con el total
+					PdfPCell celdaTotalValorS = new PdfPCell(new Phrase(totalValorizado.ToString("0.000"), fuenteEtiqueta))
+					{
+						HorizontalAlignment = Element.ALIGN_RIGHT,
+						BackgroundColor = BaseColor.LightGray
+					};
+					tablaS.AddCell(celdaTotalValorS);
+
+					// celda vacía para la columna "Costo"
+					tablaS.AddCell(new PdfPCell(new Phrase("", fuenteEtiqueta))
+					{
+						BackgroundColor = BaseColor.LightGray
+					});
+
+					pdf.Add(tablaS);
+					break;
+				case 2:
+					PdfPTable tablaRG = new(4)
+					{
+						WidthPercentage = 100
+					};
+					tablaRG.SetWidths([10f, 60f, 20f, 10f]);
+
+					// Encabezados
+					string[] encabezadosRG = { "Código", "Rubro Grupo", "Costo", "%/Total" };
+					foreach (var encabezado in encabezadosRG)
+					{
+						PdfPCell celda = new(new Phrase(encabezado, fuenteValor))
+						{
+							BackgroundColor = BaseColor.LightGray,
+							HorizontalAlignment = Element.ALIGN_CENTER
+						};
+						tablaRG.AddCell(celda);
+					}
+
+					foreach (var producto in lista)
+					{
+						var valStr = string.Empty;
+						var val = producto.stk_val ?? 0;
+						if (val < 0)
+							valStr = $"({Math.Abs(val).ToString("0.000")})";
+						else
+							valStr = val.ToString("0.000");
+						tablaRG.AddCell(new PdfPCell(new Phrase(producto.rubg_id, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
+						tablaRG.AddCell(new PdfPCell(new Phrase(producto.rubg_desc, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_LEFT });
+						tablaRG.AddCell(new PdfPCell(new Phrase(valStr, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+						tablaRG.AddCell(new PdfPCell(new Phrase(producto.stk_val_calculado?.ToString("0.000"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					}
+					totalValorizado = lista.Sum(x => x.stk_val ?? 0);
+					// Fila de total
+					PdfPCell celdaTotalTituloRG = new PdfPCell(new Phrase("Total Valorizado", fuenteEtiqueta))
+					{
+						Colspan = 2, // ocupa las primeras 5 columnas
+						HorizontalAlignment = Element.ALIGN_RIGHT,
+						BackgroundColor = BaseColor.LightGray
+					};
+					tablaRG.AddCell(celdaTotalTituloRG);
+
+					// Celda con el total
+					PdfPCell celdaTotalValorRG = new PdfPCell(new Phrase(totalValorizado.ToString("0.000"), fuenteEtiqueta))
+					{
+						HorizontalAlignment = Element.ALIGN_RIGHT,
+						BackgroundColor = BaseColor.LightGray
+					};
+					tablaRG.AddCell(celdaTotalValorRG);
+
+					// celda vacía para la columna "Costo"
+					tablaRG.AddCell(new PdfPCell(new Phrase("", fuenteEtiqueta))
+					{
+						BackgroundColor = BaseColor.LightGray
+					});
+
+					pdf.Add(tablaRG);
+					break;
+				case 3:
+					PdfPTable tablaR = new(4)
+					{
+						WidthPercentage = 100
+					};
+					tablaR.SetWidths([10f, 60f, 20f, 10f]);
+
+					// Encabezados
+					string[] encabezadosR = { "Código", "Rubro", "Costo", "%/Total" };
+					foreach (var encabezado in encabezadosR)
+					{
+						PdfPCell celda = new(new Phrase(encabezado, fuenteValor))
+						{
+							BackgroundColor = BaseColor.LightGray,
+							HorizontalAlignment = Element.ALIGN_CENTER
+						};
+						tablaR.AddCell(celda);
+					}
+
+					foreach (var producto in lista)
+					{
+						var valStr = string.Empty;
+						var val = producto.stk_val ?? 0;
+						if (val < 0)
+							valStr = $"({Math.Abs(val).ToString("0.000")})";
+						else
+							valStr = val.ToString("0.000");
+						tablaR.AddCell(new PdfPCell(new Phrase(producto.rub_id, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
+						tablaR.AddCell(new PdfPCell(new Phrase(producto.rub_desc, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_LEFT });
+						tablaR.AddCell(new PdfPCell(new Phrase(valStr, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+						tablaR.AddCell(new PdfPCell(new Phrase(producto.stk_val_calculado?.ToString("0.000"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					}
+					totalValorizado = lista.Sum(x => x.stk_val ?? 0);
+					// Fila de total
+					PdfPCell celdaTotalTituloR = new PdfPCell(new Phrase("Total Valorizado", fuenteEtiqueta))
+					{
+						Colspan = 2, // ocupa las primeras 5 columnas
+						HorizontalAlignment = Element.ALIGN_RIGHT,
+						BackgroundColor = BaseColor.LightGray
+					};
+					tablaR.AddCell(celdaTotalTituloR);
+
+					// Celda con el total
+					PdfPCell celdaTotalValorR = new PdfPCell(new Phrase(totalValorizado.ToString("0.000"), fuenteEtiqueta))
+					{
+						HorizontalAlignment = Element.ALIGN_RIGHT,
+						BackgroundColor = BaseColor.LightGray
+					};
+					tablaR.AddCell(celdaTotalValorR);
+
+					// celda vacía para la columna "Costo"
+					tablaR.AddCell(new PdfPCell(new Phrase("", fuenteEtiqueta))
+					{
+						BackgroundColor = BaseColor.LightGray
+					});
+
+					pdf.Add(tablaR);
+					break;
+				case 4:
+					PdfPTable tablaP = new(4)
+					{
+						WidthPercentage = 100
+					};
+					tablaP.SetWidths([10f, 60f, 20f, 10f]);
+
+					// Encabezados
+					string[] encabezadosP = { "Código", "Proveedor", "Costo", "%/Total" };
+					foreach (var encabezado in encabezadosP)
+					{
+						PdfPCell celda = new(new Phrase(encabezado, fuenteValor))
+						{
+							BackgroundColor = BaseColor.LightGray,
+							HorizontalAlignment = Element.ALIGN_CENTER
+						};
+						tablaP.AddCell(celda);
+					}
+
+					foreach (var producto in lista)
+					{
+						var valStr = string.Empty;
+						var val = producto.stk_val ?? 0;
+						if (val < 0)
+							valStr = $"({Math.Abs(val).ToString("0.000")})";
+						else
+							valStr = val.ToString("0.000");
+						tablaP.AddCell(new PdfPCell(new Phrase(producto.rub_id, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
+						tablaP.AddCell(new PdfPCell(new Phrase(producto.rub_desc, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_LEFT });
+						tablaP.AddCell(new PdfPCell(new Phrase(valStr, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+						tablaP.AddCell(new PdfPCell(new Phrase(producto.stk_val_calculado?.ToString("0.000"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					}
+					totalValorizado = lista.Sum(x => x.stk_val ?? 0);
+					// Fila de total
+					PdfPCell celdaTotalTituloP = new PdfPCell(new Phrase("Total Valorizado", fuenteEtiqueta))
+					{
+						Colspan = 2, // ocupa las primeras 5 columnas
+						HorizontalAlignment = Element.ALIGN_RIGHT,
+						BackgroundColor = BaseColor.LightGray
+					};
+					tablaP.AddCell(celdaTotalTituloP);
+
+					// Celda con el total
+					PdfPCell celdaTotalValorP = new PdfPCell(new Phrase(totalValorizado.ToString("0.000"), fuenteEtiqueta))
+					{
+						HorizontalAlignment = Element.ALIGN_RIGHT,
+						BackgroundColor = BaseColor.LightGray
+					};
+					tablaP.AddCell(celdaTotalValorP);
+
+					// celda vacía para la columna "Costo"
+					tablaP.AddCell(new PdfPCell(new Phrase("", fuenteEtiqueta))
+					{
+						BackgroundColor = BaseColor.LightGray
+					});
+
+					pdf.Add(tablaP);
+					break;
+			}
+
+		}
+
 		// Clase auxiliar para simular un grupo sin agrupamiento
 		private class AgrupacionSinGrupo : IGrouping<string, ProductoStkDto>
 		{
