@@ -1,0 +1,90 @@
+﻿@{
+    Layout = "~/views/shared/_Layout.cshtml";
+}
+
+<div class="d-flex align-items-center gap-3 mb-3">
+    <div class="btn-group" role="group" aria-label="Opciones de discontinuos">
+        <input type="radio" class="btn-check" name="opcionDiscontinuos" id="radioSinStock" value="1" autocomplete="off" checked>
+        <label class="btn btn-outline-primary" for="radioSinStock">Pasar a InActivo productos Discontinuos sin Stock</label>
+        
+        <input type="radio" class="btn-check" name="opcionDiscontinuos" id="radioInactivoArchivo" value="2" autocomplete="off">
+        <label class="btn btn-outline-primary" for="radioInactivoArchivo">Pasar a InActivo desde Archivo</label>
+        
+        <input type="radio" class="btn-check" name="opcionDiscontinuos" id="radioDiscontinuosArchivo" value="3" autocomplete="off">
+        <label class="btn btn-outline-primary" for="radioDiscontinuosArchivo">Pasar a Discontinuos desde Archivo</label>
+    </div>
+    
+    <button type="button" class="btn btn-success" id="btnCargar">
+        <i class="bi bi-search"></i> Cargar
+    </button>
+    
+    <button type="button" class="btn btn-primary" id="btnConfirmar" disabled>
+        <i class="bi bi-check-lg"></i> Confirmar
+    </button>
+    
+    <button type="button" class="btn btn-danger" id="btnCancelar">
+        <i class="bi bi-x-lg"></i> Cancelar
+    </button>
+</div>
+
+<!-- ✅ ÁREA DE UPLOAD (PARA OPCIONES 2 Y 3) -->
+<div id="uploadArea" style="display: none;">
+    <div class="card mb-3">
+        <div class="card-header bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="bx bx-upload me-2"></i>
+                    <strong>Cargar Archivo de Productos</strong>
+                </div>
+                <button type="button" id="btnCerrarUpload" class="btn btn-sm btn-outline-secondary">
+                    <i class="bx bx-x"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="mb-3">
+                        <label for="fileInputDiscon" class="form-label">Seleccionar archivo (.xls, .xlsx, .txt)</label>
+                        <input type="file" 
+                               class="form-control" 
+                               id="fileInputDiscon" 
+                               accept=".xls,.xlsx,.txt">
+                        <div class="form-text">
+                            El archivo debe contener una sola columna con códigos de productos (valores numéricos).
+                        </div>
+                    </div>
+                    
+                    <!-- ✅ INFORMACIÓN DEL ARCHIVO SELECCIONADO -->
+                    <div id="fileSelectedInfo" class="alert alert-info" style="display: none;">
+                        <i class="bx bx-file text-success me-2"></i>
+                        <strong id="selectedFileName"></strong>
+                        <span class="text-muted ms-2" id="selectedFileSize"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="alert alert-warning">
+                        <i class="bx bx-info-circle me-2"></i>
+                        <strong>Importante:</strong>
+                        <ul class="mb-0 mt-2 small">
+                            <li>Una columna por archivo</li>
+                            <li>Solo valores numéricos</li>
+                            <li>Sin encabezados</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<partial name="_gridDiscDetalle" />
+
+@section scripts{
+    <script type="text/javascript">
+        let obtenerDatosUrl = "@Url.Action("obtenerDatos", "discontinuos", new { area = "productos" })";
+        let confirmarDiscontinuosUrl = "@Url.Action("ConfirmarDiscontinuos", "discontinuos", new { area = "productos" })";
+        let homeDiscontinuo = '@Url.Action("index", "discontinuos", new { area = "Productos" })';
+    </script>
+    <script src="~/js/app/areas/precios/discon.js"></script>
+}

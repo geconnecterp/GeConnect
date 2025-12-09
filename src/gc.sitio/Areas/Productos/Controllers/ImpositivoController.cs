@@ -50,7 +50,7 @@ namespace gc.sitio.Areas.Productos.Controllers
 
         public IActionResult Index()
         {
-            string msg = "Error de negocios al cargar la vista de PRESUPUESTOS";
+            string msg = "Error de negocios al cargar la vista con Dato Impositivo";
             try
             {
                 if (!VerificarAutenticacion(out IActionResult redirectResult))

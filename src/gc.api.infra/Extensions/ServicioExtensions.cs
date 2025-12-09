@@ -130,6 +130,8 @@ namespace gc.api.infra.Extensions
             services.AddScoped<IApiEtiquetaServicio, ApiEtiquetaServicio>();
             services.AddScoped<IApiPrecioListaServicio, ApiPrecioListaServicio>();
 
+            services.AddScoped<IApiDiscontinuoServicio, ApiDiscontinuoServicio>();
+
             services.AddScoped<IReportService, ReportService>();
 			services.AddScoped<IOrdenDePagoServicio, OrdenDePagoServicio>();
 			//De Reportes
