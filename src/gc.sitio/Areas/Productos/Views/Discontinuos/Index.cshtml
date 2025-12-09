@@ -1,0 +1,40 @@
+﻿@{
+    Layout = "~/views/shared/_Layout.cshtml";
+}
+
+<div class="d-flex align-items-center gap-3 mb-3">
+    <div class="btn-group" role="group" aria-label="Opciones de discontinuos">
+        <input type="radio" class="btn-check" name="opcionDiscontinuos" id="radioSinStock" value="1" autocomplete="off" checked>
+        <label class="btn btn-outline-primary" for="radioSinStock">Pasar a InActivo productos Discontinuos sin Stock</label>
+        
+        <input type="radio" class="btn-check" name="opcionDiscontinuos" id="radioInactivoArchivo" value="2" autocomplete="off">
+        <label class="btn btn-outline-primary" for="radioInactivoArchivo">Pasar a InActivo desde Archivo</label>
+        
+        <input type="radio" class="btn-check" name="opcionDiscontinuos" id="radioDiscontinuosArchivo" value="3" autocomplete="off">
+        <label class="btn btn-outline-primary" for="radioDiscontinuosArchivo">Pasar a Discontinuos desde Archivo</label>
+    </div>
+    
+    <button type="button" class="btn btn-success" id="btnCargar">
+        <i class="bi bi-search"></i> Cargar
+    </button>
+    
+    <button type="button" class="btn btn-primary" id="btnConfirmar">
+        <i class="bi bi-check-lg"></i> Confirmar
+    </button>
+    
+    <button type="button" class="btn btn-danger" id="btnCancelar">
+        <i class="bi bi-x-lg"></i> Cancelar
+    </button>
+</div>
+
+<partial name="_gridDiscDetalle" />
+
+@section scripts{
+    <script type="text/javascript">
+        let obtenerDatosUrl = "@Url.Action("obtenerDatos", "discontinuos", new { area = "productos" })";/**/
+        let confirmarDiscontinuosUrl = "@Url.Action("ConfirmarDiscontinuos", "discontinuos", new { area = "productos" })";/**/
+        let homeDiscontinuo = '@Url.Action("index", "discontinuos", new { area = "Productos" })';
+        
+    </script>
+    <script src="~/js/app/areas/precios/discon.js"></script>
+}
