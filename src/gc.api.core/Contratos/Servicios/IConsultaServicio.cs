@@ -35,5 +35,6 @@ namespace gc.api.core.Contratos.Servicios
         List<VencimientoListaDto> ConsultarVencimientosPorTipo(ConsultarVencimientosRequest filtros);
 		List<CertificadoListaDto> ConsultarCertificadosNRNP(ConsultarCertificadosRequest filtros);
 		List<ProductoStkDto> ConsultarProductoStk(ConsultarStockRequest filtros);
+		List<ProductoStkDto> ConsultarProductoStkValor(ConsultarStockValorizadoRequest filtros);
 	}
 }

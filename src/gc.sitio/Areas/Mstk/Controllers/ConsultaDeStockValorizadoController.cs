@@ -1,4 +1,6 @@
-﻿using gc.api.core.Entidades;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using gc.api.core.Constantes;
+using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Administracion;
@@ -112,6 +114,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 
 					var res = await _consultaServicio.ConsultarProductoStkValor(request, TokenCookie);
 					lista = res.Item1 ?? [];
+					GenerarStockValorizado(lista);
 					MetadataGeneral = res.Item2 ?? new MetadataGrid();
 					ListaProductoStkValor = lista;
 
@@ -120,8 +123,22 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				grillaDatos = GenerarGrillaSmart(ListaProductoStkValor, sort, _setting.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 				model.GrillaProductoStk = grillaDatos;
 				model.AgrupadoPor = request.agrupador;
-				//TODO MARCE: Meter un switch para levantar el partial que corresponde al agrupador seleccionado
-				return PartialView("_grillaProductos", model);
+				
+				switch (request.agrupador)
+				{
+					case 0: //Sin Agrupar
+						return PartialView("_grillaProductosP", model);
+					case 1: //Por Sector
+						return PartialView("_grillaProductosSec", model);
+					case 2: //Por Grupo de Rubros
+						return PartialView("_grillaProductosRubG", model);
+					case 3: //Por Rubros
+						return PartialView("_grillaProductosRub", model);
+					case 4: //Por Proveedor
+						return PartialView("_grillaProductosCta", model);
+					default:
+						return PartialView("_grillaProductosP", model);
+				}
 			}
 			catch (Exception ex)
 			{
@@ -136,9 +153,22 @@ namespace gc.sitio.Areas.Mstk.Controllers
 			}
 		}
 
+		private void GenerarStockValorizado(List<ProductoStkDto> lista)
+		{
+			if (lista == null || lista.Count == 0)
+				return;
+			var stkValorizado = lista.Sum(x => x.stk_val) ?? 0;
+			if (stkValorizado == 0)
+				return;
+			foreach (var item in lista)
+			{
+				item.stk_val_calculado = item.stk_val / stkValorizado;
+			}
+		}
+
 		public IActionResult ObtenerProveedoresFamilia(string ctaId)
 		{
-			var model = new ProveedoresFamiliaModel();
+			var model = new ProveedoresFamiliaValorizadoModel();
 			try
 			{
 				model.ListaFamilias = ComboProveedoresFamilia(ctaId, _cuentaServicio);
@@ -159,7 +189,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 
 		public IActionResult ObtenerRubros()
 		{
-			var model = new Models.ListaRubroModel();
+			var model = new Models.ListaRubroValorizadoModel();
 			try
 			{
 				model.ListaRubros = ComboRubros();

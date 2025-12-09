@@ -37,6 +37,10 @@
 	funcCallBack = BuscarProductosValorizados;
 });
 
+function ControlaCancelar() {
+	InicializarCamposEnFiltros(true);
+}
+
 function cargaPaginacion() {
 	$("#divPaginacion").pagination({
 		items: totalRegs,
@@ -114,6 +118,8 @@ function InicializarCamposEnFiltros(vieneDeCancelar) {
 	$("#chkFamilias").trigger("change");
 	$("#chkRubro").prop('checked', false);
 	$("#chkRubro").trigger("change");
+	$("#chkCostoRepo").prop('checked', false);
+	$("#chkCostoRepo").trigger("change");
 
 	$("#SucursalesList").empty();
 	$("#DepositosList").empty();
@@ -153,7 +159,7 @@ function BuscarProductosValorizados(pag = 1) {
 	var chkEstAct = $("#chkEstadoActivo")[0].checked
 	var chkEstDisc = $("#chkEstadoDiscontinuo")[0].checked
 
-	var chkCostoRepo = $("#chkCostoReposicion")[0].checked
+	var chkCostoRepo = $("#chkCostoRepo")[0].checked
 
 	var agrupador = $("#listaAgrupador").val();
 
@@ -167,7 +173,7 @@ function BuscarProductosValorizados(pag = 1) {
 	var data = $.extend({}, data1, data2);
 
 	PostGenHtml(data, buscarStockProductosValorizadosURL, function (obj) {
-		$("#divGrillaProductos").html(obj);
+		$("#divGrillaProductosValorizados").html(obj);
 		$("#divFiltros").collapse("hide");
 		$("#divDetalle").collapse("show");
 		$("#btnImprimir").show();

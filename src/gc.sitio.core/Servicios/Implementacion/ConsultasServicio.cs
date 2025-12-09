@@ -40,6 +40,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string CONS_VTO_POR_TIPO = "/ConsultarVencimientosPorTipo";
 		private const string CONS_CERT_NR_NP = "/ConsultarCertificadosNRNP";
 		private const string CONS_PRODUCTO_STK = "/ConsultarProductoStk";
+		private const string CONS_PRODUCTO_STK_VALOR = "/ConsultarProductoStkValor";
 
 		private readonly AppSettings _appSettings;
         public ConsultasServicio(IOptions<AppSettings> options, ILogger<ConsultasServicio> logger) : base(options, logger)
@@ -985,9 +986,45 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
-		public Task<(List<ProductoStkDto>, MetadataGrid)> ConsultarProductoStkValor(ConsultarStockValorizadoRequest filters, string token)
+		public async Task<(List<ProductoStkDto>, MetadataGrid)> ConsultarProductoStkValor(ConsultarStockValorizadoRequest filters, string token)
 		{
-			throw new NotImplementedException();
+			try
+			{
+				ApiResponse<List<ProductoStkDto>>? apiResponse;
+				HelperAPI helper = new();
+
+				HttpClient client = helper.InicializaCliente(filters, token, out StringContent contentData);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{CONS_PRODUCTO_STK_VALOR}";
+
+				response = await client.PostAsync(link, contentData);
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoStkDto>>>(stringData);
+
+					return (apiResponse.Data, apiResponse.Meta);
+				}
+				else
+				{
+					string stringData = await response.Content.ReadAsStringAsync();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+
+					throw new NegocioException("Algo no fue bien y el proceso no se completó. Intente de nuevo más tarde. Si el problema persiste informe al Administrador del sistema.");
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+
+				throw new Exception("Algo no fue bien al intentar cargar los Certificados NRNP.");
+			}
 		}
 	}
 }
