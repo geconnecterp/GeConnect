@@ -12,32 +12,16 @@ function inicializaVista() {
         $("#divDetalle").collapse("hide");
     }
     $("#divFiltro").collapse("show");
+    $("#chkCondIva").prop("checked", true);
+    $("#CondicionIva").val("").prop("disabled", false);
+    $("#AlicuotaIva").val("").prop("disabled", true);
+
 
     $("#chkAlicIva").prop("checked",false).prop("disabled", true);
-    $("#AlicuotaIva").val("").prop("disabled", true);
 
     $("#lbRel01").text("Proveedor");
     $("#lbRel03").text("Familias");
-    $("#lbRel02").text("Rubros");
-
-
-    $("#chkDesdeHasta").prop("checked", false);
-    // Inicializar campos de fecha con un período de 3 meses
-    // Date2 se establece con la fecha actual
-    const hoy = new Date();
-    const tresMesesAtras = new Date();
-    tresMesesAtras.setMonth(hoy.getMonth() - 3);
-
-    // Formatear fechas a YYYY-MM-DD para input type="date"
-    const formatearFecha = (fecha) => {
-        const año = fecha.getFullYear();
-        const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-        const dia = String(fecha.getDate()).padStart(2, '0');
-        return `${año}-${mes}-${dia}`;
-    };
-
-    $("#Date2").val(formatearFecha(hoy));
-    $("#Date1").val(formatearFecha(tresMesesAtras));
+    $("#lbRel02").text("Rubros");   
 }
 
 function inicializaEventosDeVista() {
@@ -46,7 +30,7 @@ function inicializaEventosDeVista() {
             $("#CondicionIva").prop("disabled", false);
         }
         else {
-            $("#CondicionIva").prop("disabled", true);
+            $("#CondicionIva").val("").prop("disabled", true);
         }
     });
 
@@ -391,7 +375,7 @@ function obtenerParamsDatosImpositivos() {
 
         // Estados y tipos
         Tipo: $("#CondicionIva").val(),      // String vacío según QueryFilters
-        Estado: $("#AlicuotaIva").val(),    // String vacío según QueryFilters
+        Valor01: parseFloat($("#AlicuotaIva").val()),    // String vacío según QueryFilters
 
         // Opciones booleanas
         Opt1: conII,

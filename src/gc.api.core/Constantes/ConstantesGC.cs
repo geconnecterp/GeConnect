@@ -115,7 +115,11 @@
 
 			//LISTA DE PRECIOS
 			public const string SP_LP_LISTA = "SPGECO_LP_Lista";
-			public const string SP_LP_DETALLE = "SPGECO_P_PR_lista";			
+			public const string SP_LP_DETALLE = "SPGECO_P_PR_lista";
+
+            //DISCONTINUOS
+			public const string SP_DISCONTINUO_DETALLE = "SPGECO_P_Pasar_DI_IN_Carga";
+            public const string SP_DISCONTINUO_CONFIRMAR = "SPGECO_P_Pasar_DI_IN_Confirmar";
             #endregion
 
 

@@ -75,7 +75,12 @@ namespace gc.infraestructura.Core.EntidadesComunes
 
 		public string? Date1 { get; set; }
 		public string? Date2 { get; set; }
-	}
+        public decimal Valor01 { get; set; }
+        public decimal Valor02 { get; set; }
+        public decimal Valor03 { get; set; }
+        public decimal Valor04 { get; set; }
+        public decimal Valor05 { get; set; }
+    }
     public class BaseFilters
     {
         /// <summary>

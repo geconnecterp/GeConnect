@@ -168,7 +168,7 @@ namespace gc.api.core.Servicios.Reportes
 
             var conII = solicitud.Parametros.GetValueOrDefault("Opt1", "false").ToBoolean();
             var condIva = solicitud.Parametros.GetValueOrDefault("Tipo", "false")?.ToString() ?? "";
-            var aliIva = solicitud.Parametros.GetValueOrDefault("Estado", "false")?.ToString() ?? "";
+            var aliIva = solicitud.Parametros.GetValueOrDefault("Valor01", "").ToString().ToDecimal();
             var adm = solicitud.Parametros.GetValueOrDefault("Adm_id", "")?.ToString() ?? "";
             var usu = solicitud.Parametros.GetValueOrDefault("Usu_id", "")?.ToString() ?? "";
 
@@ -184,7 +184,7 @@ namespace gc.api.core.Servicios.Reportes
                 //Rel04 = string.IsNullOrEmpty(rel04) ? null : rel04.Split(',').Select(x => new ComboGenDto { Id = x, Descripcion = x }).ToList(),
                 Opt1 = conII,
                 Tipo = condIva,
-                Estado = aliIva,
+                Valor01 = aliIva,
                 Usu_id = usu,
                 Adm_id = adm
             });
