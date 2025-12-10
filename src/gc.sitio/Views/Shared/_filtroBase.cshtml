@@ -8,6 +8,7 @@
         <h5 class="mb-0" id="tituloLegend">Filtros </h5>
     </div>
     <div class="filter-golden-body">
+
         @if (Model.Modelo.Equals(ModeloFilter.ETIQUETA))
         {
             <div class="row mb-1 mt-1">
@@ -75,7 +76,7 @@
                 <div class=" col-md-2 col-sm-6">
                     <div class="input-group input-group-sm">
                         <div class="form-check form-check-inline form-switch mb-2">
-                            <input class="form-check-input" type="checkbox" id="chkCondIva" checked  />
+                            <input class="form-check-input" type="checkbox" id="chkCondIva" checked />
                             <label class="form-check-label" for="chkCondIva" id="lbCondIva">Condición IVA</label>
                         </div>
                     </div>
@@ -115,6 +116,7 @@
             </div>
         }
 
+
         @if (Model.Rel01 != null && Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA))
         {
             <div class="row  mb-1 mt-1">
@@ -136,12 +138,14 @@
             </div>
         }
 
+
         @if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_DIRECTA))
         {
             <div class=" col-sm-6" id="divLstTipoOrdenDePago">
             </div>
         }
-        else if (Model.Modelo.Equals(ModeloFilter.PROMO_COMBO))
+        else if (Model.Modelo.Equals(ModeloFilter.PROMO_COMBO) &&
+                    Model.Modelo.Equals(ModeloFilter.OF_REPORTE))
         {
             <div class="row mb-3">
                 <div class="col-sm-2">
@@ -161,24 +165,27 @@
                     </div>
                 </div>
             </div>
-            <div class="row mb-3">
-                <div class="col-md-2 col-sm-6 ">
-                    <div class="input-group input-group-sm">
-                        <div class="form-check form-check-inline form-switch mb-2">
-                            <input class="form-check-input" type="checkbox" id="chkEstado" checked />
-                            <label class="form-check-label" for="chkTipo" id="lbTipo"></label>
+            @if (!Model.Modelo.Equals(ModeloFilter.OF_REPORTE))
+            {
+                <div class="row mb-3">
+                    <div class="col-md-2 col-sm-6 ">
+                        <div class="input-group input-group-sm">
+                            <div class="form-check form-check-inline form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="chkEstado" checked />
+                                <label class="form-check-label" for="chkTipo" id="lbTipo"></label>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-md-6 col-sm-6">
+                <div class="row">
+                    <div class="col-md-6 col-sm-6">
                     <div class="input-group input-group-sm">
                         <span class="input-group-text">Estado</span>
                         @Html.DropDownListFor(x => x.Estado, null, "Seleccionar...", new { @class = "form-control", style = "width:50px;" })
                     </div>
                 </div>
             </div>
+            }
         }
 
         @*AGREGAR SECCION FECHA*@

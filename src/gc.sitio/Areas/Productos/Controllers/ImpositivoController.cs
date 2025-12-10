@@ -81,7 +81,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             catch (Exception ex)
             {
                 _logger?.LogError(ex, msg);
-                TempData["error"] = "Hubo un problema al cargar la vista de ETIQUETAS. Si el problema persiste, contacte al administrador.";
+                TempData["error"] = "Hubo un problema al cargar la vista de Datos Impositivos. Si el problema persiste, contacte al administrador.";
             }
 
             return View();
