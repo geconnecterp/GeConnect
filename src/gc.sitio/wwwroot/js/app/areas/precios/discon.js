@@ -2,7 +2,8 @@
     let productos = [];
     let archivoSeleccionado = null;
     let uploadAreaVisible = false;
-    let opcionAnterior = '1'; // ✅ NUEVA: Bandera para rastrear la opción anterior
+    let opcionAnterior = '1';
+    let cancelacionEnProceso = false; // ✅ NUEVA: Bandera para evitar recursión
 
     // Inicializar eventos
     inicializarEventos();
@@ -14,21 +15,26 @@
         $('#chkSelectAll').on('change', seleccionarTodos);
         $(document).on('change', '.chk-producto', actualizarCheckGeneral);
         $(document).on('click', '.btn-eliminar-producto', eliminarProducto);
-        
+
         // ✅ NUEVO: Eventos para radio buttons
         $('input[name="opcionDiscontinuos"]').on('click', manejarCambioOpcion);
-        
+
         // ✅ NUEVO: Eventos para upload
         $('#fileInputDiscon').on('change', manejarSeleccionArchivo);
         $('#btnCerrarUpload').on('click', ocultarUploadArea);
     }
 
-    // ✅ OPTIMIZADA: Función para manejar cambio de opción con bandera
+    // ✅ CORREGIDA: Función para manejar cambio de opción sin recursión
     function manejarCambioOpcion() {
         const $radio = $(this);
         const valorActual = $radio.val();
 
-        // Si se hace click en la distinta opción que la que estaba seleccionada
+        // ✅ EVITAR: Recursión si estamos en proceso de cancelación
+        if (cancelacionEnProceso) {
+            return;
+        }
+
+        // Si se hace click en distinta opción que la que estaba seleccionada
         if (valorActual !== opcionAnterior) {
             // Lanzar trigger del botón cancelar
             $('#btnCancelar').trigger('click');
@@ -65,7 +71,7 @@
     // ✅ NUEVA: Manejar selección de archivo
     function manejarSeleccionArchivo(event) {
         const file = event.target.files[0];
-        
+
         if (!file) {
             limpiarArchivoSeleccionado();
             return;
@@ -90,7 +96,7 @@
         }
 
         archivoSeleccionado = file;
-        
+
         // Mostrar información del archivo
         $('#selectedFileName').text(file.name);
         $('#selectedFileSize').text(`(${formatearTamanioArchivo(file.size)})`);
@@ -116,7 +122,7 @@
     // ✅ MODIFICADA: Función cargarProductos con validaciones adicionales
     function cargarProductos() {
         const opcion = $('input[name="opcionDiscontinuos"]:checked').val();
-        
+
         if (!opcion) {
             AbrirMensaje(
                 "ATENCIÓN",
@@ -148,11 +154,11 @@
                 );
                 return;
             }
-            
+
             // Mostrar spinner
             mostrarCargando('#tbodyDiscontinuos');
             AbrirWaiting();
-            
+
             // Procesar archivo
             procesarArchivoYCargar(opcion);
         } else {
@@ -166,8 +172,8 @@
     // ✅ NUEVA: Procesar archivo y cargar datos
     function procesarArchivoYCargar(opcion) {
         const reader = new FileReader();
-        
-        reader.onload = function(e) {
+
+        reader.onload = function (e) {
             try {
                 const contenido = e.target.result;
                 const extension = archivoSeleccionado.name.split('.').pop().toLowerCase();
@@ -219,7 +225,7 @@
             }
         };
 
-        reader.onerror = function() {
+        reader.onerror = function () {
             CerrarWaiting();
             mostrarTablaVacia();
             AbrirMensaje(
@@ -301,7 +307,7 @@
             data: JSON.stringify(filtros),
             success: function (response) {
                 CerrarWaiting();
-                
+
                 if (response.error === true) {
                     mostrarTablaVacia();
                     AbrirMensaje("ATENCIÓN", response.msg, function () {
@@ -364,7 +370,7 @@
             data: JSON.stringify(filtros),
             success: function (response) {
                 CerrarWaiting();
-                
+
                 if (response.error === true) {
                     mostrarTablaVacia();
                     AbrirMensaje("ATENCIÓN", response.msg, function () {
@@ -372,6 +378,11 @@
                     }, false, ["Entendido"], "error!", null);
                 }
                 else if (response.warn === true) {
+                    if (response.auth === true) {
+                        AbrirMensaje("ATENCIÓN", response.msg, function () {
+                            window.location.href = login;
+                        }, false, ["Entendido"], "warn!", null);
+                    }
                     mostrarTablaVacia();
                     AbrirMensaje("ATENCIÓN", response.msg, function () {
                         $("#msjModal").modal("hide");
@@ -391,6 +402,7 @@
                     }));
 
                     renderizarTabla();
+                    $("#btnConfirmar").prop("disabled", false);
                 }
             },
             error: function (xhr, status, error) {
@@ -444,7 +456,7 @@
             const iconoProcesado = p.procesado
                 ? '<i class="bx bx-check-circle bx-sm text-success ms-1" title="Procesado"></i>'
                 : '<i class="bx bx-x-circle bx-sm text-danger ms-1" title="No procesado"></i>';
-            
+
             tbody.append(`
                 <tr class="${rowClass}" data-index="${index}">
                     <td class="text-center">
@@ -480,7 +492,7 @@
                 renderizarTabla();
                 actualizarCheckGeneral();
                 $("#msjModal").modal("hide");
-                
+
                 AbrirMensaje(
                     "Eliminado",
                     "El producto ha sido eliminado del grid",
@@ -513,7 +525,7 @@
 
     function confirmarCambios() {
         const opcion = $('input[name="opcionDiscontinuos"]:checked').val();
-        const seleccionados = $('.chk-producto:checked').map(function() {
+        const seleccionados = $('.chk-producto:checked').map(function () {
             return $(this).data('p-id-ok');
         }).get();
 
@@ -538,7 +550,7 @@
             function () {
                 $("#msjModal").modal("hide");
                 AbrirWaiting();
-                
+
                 const request = {
                     opcion: opcion,
                     lista: seleccionados
@@ -551,7 +563,7 @@
                     data: JSON.stringify(request),
                     success: function (response) {
                         CerrarWaiting();
-                        
+
                         if (response.error === true) {
                             AbrirMensaje(
                                 "ERROR",
@@ -596,7 +608,7 @@
                     error: function (xhr, status, error) {
                         CerrarWaiting();
                         console.error('Error al confirmar:', error);
-                        
+
                         AbrirMensaje(
                             "ERROR",
                             "Hubo un problema al confirmar los cambios. Si el problema persiste informe al administrador del sistema",
@@ -618,17 +630,31 @@
         );
     }
 
-    // ✅ MODIFICADA: Resetear bandera al cancelar
+    // ✅ CORREGIDA: Función cancelar sin recursión infinita
     function cancelar() {
+        // ✅ ACTIVAR: Bandera para prevenir recursión
+        cancelacionEnProceso = true;
+
+        // Limpiar datos y UI
         productos = [];
         $('#tbodyDiscontinuos').empty();
         $('.chk-producto').prop('checked', false);
         $('#chkSelectAll').prop('checked', false);
         $("#btnConfirmar").prop("disabled", true);
-        ocultarUploadArea();
         
-        // Resetear la bandera a la opción por defecto
-        opcionAnterior = $('input[name="opcionDiscontinuos"]:checked').val() || '1';
+        // Ocultar área de upload
+        ocultarUploadArea();
+
+        // ✅ CAMBIO DIRECTO: Sin disparar eventos
+        //$('input[name="opcionDiscontinuos"][value="1"]').prop('checked', true);
+        
+        // Actualizar bandera de opción
+        opcionAnterior = $('input[name="opcionDiscontinuos"]').val();
+
+        // ✅ DESACTIVAR: Bandera después de completar
+        setTimeout(() => {
+            cancelacionEnProceso = false;
+        }, 100);
     }
 
     function formatearDecimal(valor) {

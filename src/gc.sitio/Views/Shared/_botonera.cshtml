@@ -22,11 +22,12 @@
         Model.Modelo != ModeloFilter.EJERCICIO_CONTABLE &&
         Model.Modelo != ModeloFilter.BGR &&
         Model.Modelo != ModeloFilter.LIBRO_MAYOR &&
-        Model.Modelo != ModeloFilter.BSS &&        
+        Model.Modelo != ModeloFilter.BSS &&
         Model.Modelo != ModeloFilter.LDIARIO)
     {
-        if (Model.Modelo != ModeloFilter.D_IMPOSITIVO && 
-            Model.Modelo != ModeloFilter.PRECIO_LISTA)
+        if (Model.Modelo != ModeloFilter.D_IMPOSITIVO &&
+        Model.Modelo != ModeloFilter.OF_REPORTE &&
+        Model.Modelo != ModeloFilter.PRECIO_LISTA)
         {
             <div class="col-md-2 col-sm-6">
                 <div class="d-flex justify-content-sm-center">
@@ -49,6 +50,7 @@
                 Model.Modelo == ModeloFilter.ETIQUETA ||
                 Model.Modelo == ModeloFilter.PRECIO_LISTA ||
                 Model.Modelo == ModeloFilter.D_IMPOSITIVO ||
+                Model.Modelo == ModeloFilter.OF_REPORTE ||
                 Model.Modelo == ModeloFilter.PRESUPUESTO)
             {
                 <div class="col-md-2 col-sm-6">
@@ -69,9 +71,9 @@
             }
 
             if (Model.Modelo != ModeloFilter.ETIQUETA &&
-                Model.Modelo != ModeloFilter.PRECIO_LISTA &&
-                Model.Modelo != ModeloFilter.D_IMPOSITIVO
-            )
+            Model.Modelo != ModeloFilter.PRECIO_LISTA &&
+            Model.Modelo != ModeloFilter.OF_REPORTE &&
+            Model.Modelo != ModeloFilter.D_IMPOSITIVO)
             {
                 <div class="col-md-4 col-sm-6">
                     <div class="d-flex justify-content-sm-center">

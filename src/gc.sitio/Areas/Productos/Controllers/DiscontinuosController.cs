@@ -48,7 +48,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             {
                 // ✅ VALIDACIÓN: Autenticación
                 if (!VerificarAutenticacion(out IActionResult redirectResult))
-                    return Json(new { error = true, msg = "Sesión expirada" });
+                    return Json(new { error = false,warn=true, auth=true, msg = "Sesión expirada" });
 
                 var opcion = request.opcion.ToIntOrNull();
                 if (opcion == null || (opcion > 3 || opcion < 1))
@@ -82,7 +82,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                     throw new NegocioException(resp.Mensaje ?? "Error al obtener los productos discontinuos.");
                 }
 
-                var ordenada = resp.ListaEntidad?.OrderBy(x => x.p_desc).ToList();
+                var ordenada = resp.ListaEntidad?.OrderByDescending(x => x.procesado).ThenBy(x=>x.p_desc).ToList();
 
                 _logger?.LogInformation("✅ Registros obtenidos: {Count}", ordenada?.Count ?? 0);
 
