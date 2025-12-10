@@ -582,7 +582,7 @@
 /* Sticky header mejorado */
 .table-golden-header.sticky-top {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
-    z-index: 1020 !important;
+    z-index: 0 !important;
 }
 
 /* Bordes entre columnas del header para mejor separación visual */
