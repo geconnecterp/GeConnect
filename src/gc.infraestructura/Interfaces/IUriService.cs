@@ -17,5 +17,6 @@ namespace gc.infraestructura.Core.Interfaces
 		Uri GetPostPaginationUri(ConsultarVencimientosRequest filter, string actionUrl);
 		Uri GetPostPaginationUri(ConsultarCertificadosRequest filter, string actionUrl);
 		Uri GetPostPaginationUri(ConsultarStockRequest filter, string actionUrl);
+		Uri GetPostPaginationUri(ConsultarStockCompensadoRequest filter, string actionUrl);
 	}
 }

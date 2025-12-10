@@ -586,5 +586,65 @@ namespace gc.api.core.Servicios
 
 			return lstProductos;
 		}
+
+		public List<ProductoStkCompensadoDto> ConsultarProductoStkCompensado(ConsultarStockCompensadoRequest filtros)
+		{
+			filtros.Pagina = filtros.Pagina == null || filtros.Pagina <= 0 ? _pagSet.DefaultPageNumber : filtros.Pagina;
+			filtros.Registros = filtros.Registros == null || filtros.Registros <= 0 ? _pagSet.DefaultPageSize : filtros.Registros;
+
+			string sp = ConstantesGC.StoredProcedures.SP_CONS_STOCK_COMP;
+
+			var ps = new List<SqlParameter>();
+
+			if (filtros.lProv != null && filtros.lProv.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.lProv)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@prov", "1"));
+				ps.Add(new SqlParameter("@prov_list", sb.ToString() + ','));
+			}
+			else
+				ps.Add(new SqlParameter("@prov", "0"));
+
+			if (filtros.lRub != null && filtros.lRub.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.lRub)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@rub", "1"));
+				ps.Add(new SqlParameter("@rub_list", sb.ToString() + ','));
+			}
+			else
+				ps.Add(new SqlParameter("@rub", "0"));
+
+			ps.Add(new SqlParameter("@activo", filtros.chkEstAct));
+			ps.Add(new SqlParameter("@discontinuo", filtros.chkEstDisc));
+			ps.Add(new SqlParameter("@stk_compensado", filtros.diferencia));
+
+			ps.Add(new SqlParameter("@registros", filtros.Registros));
+			ps.Add(new SqlParameter("@pagina", filtros.Pagina));
+			ps.Add(new SqlParameter("@ordenar", filtros.Sort ?? ""));
+
+			List<ProductoStkCompensadoDto> lstProductos = _repository.EjecutarLstSpExt<ProductoStkCompensadoDto>(sp, ps, true);
+
+			return lstProductos;
+		}
 	}
 }
