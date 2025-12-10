@@ -89,6 +89,7 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R050_REPORTE_STOCK, new R050_ReporteStock(uow,consSv, finServ,empresa,ctaSv, logger) },
 				{ InfoReporte.R051_REPORTE_STOCK_VALORIZADO, new R051_ReporteStockValorizado(uow,consSv, finServ,empresa,ctaSv, logger) },
 				{ InfoReporte.R052_REPORTE_DATO_IMPOSITIVO, new R052_DatoImpositivo(uow,apiProdSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R054_REPORTE_STOCK_COMPENSADO, new R054_ReporteStockCompensado(uow,consSv, finServ,empresa,ctaSv, logger) },
 			}; 
             _logger = logger;
         }

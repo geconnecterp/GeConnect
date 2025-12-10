@@ -64,5 +64,6 @@ namespace gc.infraestructura.Enumeraciones
 		R050_REPORTE_STOCK = 50,
 		R051_REPORTE_STOCK_VALORIZADO = 51,
 		R052_REPORTE_DATO_IMPOSITIVO = 52,
-    }
+		R054_REPORTE_STOCK_COMPENSADO = 54,
+	}
 }

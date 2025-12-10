@@ -24,6 +24,10 @@
 		}
 	});
 
+	$('#divDetalle').on('shown.bs.collapse', function () {
+		toggleBtnCollapseSection();
+	});
+
 	$("#btnBuscar").on("click", function () {
 		dataBak = "";
 		pagina = 1;
@@ -33,10 +37,81 @@
 	funcCallBack = BuscarProductos;
 });
 
+function toggleBtnCollapseSection() {
+	const contenido = $("#divGrillaProductos").html().trim();
+
+	if (contenido === "" || contenido.length === 0) {
+		// vacío → oculto el botón
+		$("#btnCollapseSection").hide();
+	} else {
+		// con contenido → muestro el botón
+		$("#btnCollapseSection").show();
+	}
+}
+
+
 function ControlaImprimirSelected() {
+	if (!validarTablaParaImpresion()) {
+		AbrirMensaje("ATENCIÓN", "No hay datos generar el reporte.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		ImprimirListaProductosStk_Generada();
+	}
+}
+
+function validarTablaParaImpresion() {
+	const tbody = document.querySelector("#tbGridProductos tbody");
+	if (!tbody) return false;
+
+	const filas = tbody.querySelectorAll("tr");
+	if (filas.length === 0) return false;
+
+	// Verifico si la única fila contiene el mensaje
+	if (filas.length === 1) {
+		const textoFila = filas[0].innerText.trim();
+		if (textoFila.includes("No se encontraron productos con los criterios especificados")) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
+function ImprimirListaProductosStk_Generada() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var lProvArr = [];
+		var lRubArr = [];
+
+		$("#Rel01List").children().each(function (i, item) { lProvArr.push($(item).val()) });
+		$("#RubrosList").children().each(function (i, item) { lRubArr.push($(item).val()) });
+
+		var lProv = lProvArr.join(",");
+		var lRub = lRubArr.join(",");
+
+		var chkEstAct = $("#chkEstadoActivo")[0].checked
+		var chkEstDisc = $("#chkEstadoDiscontinuo")[0].checked
+
+		var diferencia = $("#txtDiferencia").val();
+
+		var data = { lProv, lRub, chkEstAct, chkEstDisc, diferencia };
+		cargarReporteEnArre(54, data, "REPORTE DE STOCK COMPENSADO", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function ControlaCancelar() {
+	InicializarCamposEnFiltros(true);
 }
 
 function ControlalistaRubroSelected() {
@@ -108,6 +183,13 @@ function selectListaProductoRow(x) {
 	}
 }
 
+function NoHayProdSeleccionado() {
+	if (pIdSeleccionado == undefined || pIdSeleccionado == "") {
+		return true;
+	}
+	return false;
+}
+
 function BuscarInfoAdicional() {
 	if (NoHayProdSeleccionado()) {
 		AbrirMensaje("Atención", "Debe seleccionar un producto.", function () {
@@ -122,28 +204,6 @@ function BuscarInfoAdicional() {
 	PostGenHtml(datos, BuscarInfoProdStkDepositoURL, function (obj) {
 		$("#divInfoProductoStkD").html(obj);
 		AddEventListenerToGrid("tbInfoProdStkD");
-		CerrarWaiting();
-		return true
-	});
-	PostGenHtml(datos, BuscarInfoProdStkSucursalURL, function (obj) {
-		$("#divInfoProductoStkA").html(obj);
-		AddEventListenerToGrid("tbInfoProdStkA");
-		CerrarWaiting();
-		return true
-	});
-	var tipo = tipoDeOperacion;
-	var soloProv = true; //Valor por default
-	datos = { pId, tipo, soloProv }
-	PostGenHtml(datos, BuscarInfoProdSustitutoURL, function (obj) {
-		$("#divInfoProdSustituto").html(obj);
-		AddEventListenerToGrid("tbListaProductoSust");
-		CerrarWaiting();
-		return true
-	});
-	datos = { pId }
-	PostGenHtml(datos, BuscarInfoProdURL, function (obj) {
-		$("#divInfoProducto").html(obj);
-		AddEventListenerToGrid("tbInfoProducto");
 		CerrarWaiting();
 		return true
 	});
@@ -164,7 +224,12 @@ function InicializarCamposEnFiltros(vieneDeCancelar) {
 	$("#chkRubro").trigger("change");
 
 	$("#Rel01List").empty();
+	$("#Rel01List").prop("disabled", true);
+	$("#Rel01").prop("disabled", true);
+
 	$("#RubrosList").empty();
+	$("#RubrosList").prop("disabled", true);
+	$("#listaRubros").prop("disabled", true);
 
 	$("#Rel01Item").val("");
 	$("#listaRubros").val("");
@@ -175,6 +240,8 @@ function InicializarCamposEnFiltros(vieneDeCancelar) {
 		HandlerCheckBox();
 	}
 	getMaskForIntegerMax99999("#txtDiferencia");
+	$("#txtDiferencia").val("0");
+	$("#divGrillaProductos").empty();
 }
 
 function HandlerCheckBox() {

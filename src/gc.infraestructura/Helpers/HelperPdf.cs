@@ -3925,6 +3925,94 @@ namespace gc.infraestructura.Helpers
 
 		}
 
+		public static void CargarProductosParaRptDeStkCompensado(Document pdf, List<ProductoStkCompensadoDto> lista, Font fuenteEtiqueta, Font fuenteValor)
+		{
+			if (lista == null || !lista.Any())
+				return;
+			Func<ProductoStkCompensadoDto, string> agrupadorKeySelector = null;
+			Func<ProductoStkCompensadoDto, string> agrupadorDescSelector = null;
+			string tituloAgrupador = null;
+
+			agrupadorKeySelector = x => x.rub_id;
+			agrupadorDescSelector = x => x.rub_desc;
+			tituloAgrupador = "Rubro";
+
+			IEnumerable<IGrouping<string, ProductoStkCompensadoDto>> grupos;
+
+			if (agrupadorKeySelector != null)
+			{
+				grupos = lista.GroupBy(agrupadorKeySelector);
+			}
+			else
+			{
+				// Sin agrupamiento: todo en un solo grupo ficticio
+				grupos = new List<IGrouping<string, ProductoStkCompensadoDto>> { new AgrupacionSinGrupoComp(lista) };
+			}
+
+			foreach (var grupo in grupos)
+			{
+				PdfPTable tabla = new(11)
+				{
+					WidthPercentage = 100
+				};
+				tabla.SetWidths([10f, 10f, 40f, 10f, 10f, 10f, 10f]);
+
+				// 👇 Si hay agrupador, agregamos fila de título como parte de la tabla
+				if (agrupadorKeySelector != null)
+				{
+					string descripcionGrupo = agrupadorDescSelector(grupo.First());
+					PdfPCell celdaGrupo = new(new Phrase($"{tituloAgrupador}: {descripcionGrupo}", fuenteValor))
+					{
+						Colspan = 11, // ocupa todas las columnas
+						HorizontalAlignment = Element.ALIGN_CENTER,
+						BackgroundColor = BaseColor.Yellow, // opcional, para destacar
+						PaddingTop = 5f,
+						PaddingBottom = 5f
+					};
+
+					tabla.AddCell(celdaGrupo);
+				}
+
+				// Encabezados
+				string[] encabezados = { "Código", "Barrado", "Descripción", "Stock +", "Stock -", "Diferencia", "Compensa" };
+				foreach (var encabezado in encabezados)
+				{
+					PdfPCell celda = new(new Phrase(encabezado, fuenteValor))
+					{
+						BackgroundColor = BaseColor.LightGray,
+						HorizontalAlignment = Element.ALIGN_CENTER
+					};
+					tabla.AddCell(celda);
+				}
+				// 👇 ESTA LÍNEA ES LA CLAVE
+				tabla.HeaderRows = 2;
+
+				foreach (var producto in grupo)
+				{
+					tabla.AddCell(new PdfPCell(new Phrase(producto.p_id, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
+					tabla.AddCell(new PdfPCell(new Phrase(producto.p_id_barrado, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
+					tabla.AddCell(new PdfPCell(new Phrase(producto.p_desc, fuenteEtiqueta)));
+					tabla.AddCell(new PdfPCell(new Phrase(producto.stk_positivo.ToString("0.00"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					tabla.AddCell(new PdfPCell(new Phrase(producto.st_negativo.ToString("0.00"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					tabla.AddCell(new PdfPCell(new Phrase(producto.stk_diferencia.ToString("0.00"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					tabla.AddCell(new PdfPCell(new Phrase(producto.stk_diferencia.ToString("0.00"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+				}
+
+				pdf.Add(tabla);
+			}
+
+		}
+
+		// Clase auxiliar para simular un grupo sin agrupamiento
+		private class AgrupacionSinGrupoComp : IGrouping<string, ProductoStkCompensadoDto>
+		{
+			private readonly IEnumerable<ProductoStkCompensadoDto> _items;
+			public AgrupacionSinGrupoComp(IEnumerable<ProductoStkCompensadoDto> items) => _items = items;
+			public string Key => "Sin agrupamiento";
+			public IEnumerator<ProductoStkCompensadoDto> GetEnumerator() => _items.GetEnumerator();
+			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => _items.GetEnumerator();
+		}
+
 		// Clase auxiliar para simular un grupo sin agrupamiento
 		private class AgrupacionSinGrupo : IGrouping<string, ProductoStkDto>
 		{
