@@ -144,8 +144,8 @@
             <div class=" col-sm-6" id="divLstTipoOrdenDePago">
             </div>
         }
-        else if (Model.Modelo.Equals(ModeloFilter.PROMO_COMBO) &&
-                    Model.Modelo.Equals(ModeloFilter.OF_REPORTE))
+        else if (Model.Modelo.Equals(ModeloFilter.PROMO_COMBO) ||
+                 Model.Modelo.Equals(ModeloFilter.OF_REPORTE))
         {
             <div class="row mb-3">
                 <div class="col-sm-2">
@@ -274,6 +274,7 @@
                 !Model.Modelo.Equals(ModeloFilter.PRESUPUESTO) &&
                 !Model.Modelo.Equals(ModeloFilter.RELACIONAR_COMPROBANTE_SIN_RP) &&
                 !Model.Modelo.Equals(ModeloFilter.PRECIO_LISTA) &&
+                !Model.Modelo.Equals(ModeloFilter.OF_REPORTE) &&
                 !Model.Modelo.Equals(ModeloFilter.D_IMPOSITIVO) &&
                 !Model.Modelo.Equals(ModeloFilter.ETIQUETA))
         {
@@ -469,6 +470,7 @@
                 </div>
             </div>
         }
+
 
         @if (Model.Rel02 != null && (Model.Modelo.Equals(ModeloFilter.PRESUPUESTO)))
         {
