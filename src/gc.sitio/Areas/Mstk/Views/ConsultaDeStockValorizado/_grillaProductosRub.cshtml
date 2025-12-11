@@ -117,7 +117,7 @@
 							<tr class="@clase" onclick="selectReg(this, 'tbGridProductos')">
 								<td class="@Model.GrillaProductoStk.ObtenerClase(item.rub_id) align-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.rub_id, FormatDato.Ninguno)</td>
 								<td class="@Model.GrillaProductoStk.ObtenerClase(item.rub_desc) cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.rub_desc, FormatDato.Ninguno)</td>
-								<td class="@Model.GrillaProductoStk.ObtenerClase(item.stk_val) text-right cell-fit-content">@(item.stk_val.HasValue? item.stk_val.Value.ToString("N3") : "")</td>
+								<td class="@Model.GrillaProductoStk.ObtenerClase(item.stk_val) cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.stk_val, FormatDato.Monto)</td>
 								<td class="@Model.GrillaProductoStk.ObtenerClase(item.stk_val_calculado) text-right cell-fit-content">@(item.stk_val_calculado.HasValue? item.stk_val_calculado.Value.ToString("N3") : "")</td>
 
 							</tr>

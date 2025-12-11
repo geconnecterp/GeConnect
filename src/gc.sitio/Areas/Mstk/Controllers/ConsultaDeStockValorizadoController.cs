@@ -162,7 +162,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				return;
 			foreach (var item in lista)
 			{
-				item.stk_val_calculado = item.stk_val / stkValorizado;
+				item.stk_val_calculado = (item.stk_val / stkValorizado) * 100;
 			}
 		}
 
