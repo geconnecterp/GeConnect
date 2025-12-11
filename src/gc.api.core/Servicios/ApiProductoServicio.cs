@@ -204,11 +204,18 @@ namespace gc.api.core.Servicios
             {
                     new SqlParameter("@p_id",id),
                     new SqlParameter("@adm_id",adm),
-                    new SqlParameter("@depo_id",depo),
-                    new SqlParameter("@box_id",box),
+                    
             };
+            if (!string.IsNullOrWhiteSpace(depo))
+            {
+                ps.Add(new SqlParameter("@depo_id", depo));
+            }
+			if (!string.IsNullOrWhiteSpace(box))
+			{
+                ps.Add(new SqlParameter("@box_id", box));
+			}
 
-            List<InfoProdStkBox> producto = _repository.EjecutarLstSpExt<InfoProdStkBox>(sp, ps, true);
+			List<InfoProdStkBox> producto = _repository.EjecutarLstSpExt<InfoProdStkBox>(sp, ps, true);
 
             return producto;
         }

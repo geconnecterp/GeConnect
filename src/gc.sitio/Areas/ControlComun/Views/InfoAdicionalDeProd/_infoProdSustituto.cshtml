@@ -1,0 +1,34 @@
+﻿@model GridCoreSmart<ProductoNCPISustitutoDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<div class="table-responsive table-wrapper-200-full" id="containerListaProductoSust">
+	<table class="table table-sm mb-0 table-hover table-golden" id="tbListaProductoSust">
+		<thead>
+			<tr class="header">
+				<th style="width:5%;" class="col-header-x-small align-center tiny-row">Código</th>
+				<th style="width:5%;" class="col-header-x-small align-center tiny-row">Barrado</th>
+				<th style="width:20%;" class="col-header-x-small align-center tiny-row">Descripción</th>
+				<th style="width:5%;" class="col-header-x-small align-center tiny-row">Cod. Prov</th>
+				<th style="width:5%;" class="col-header-x-small align-center tiny-row">Stock</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
+			{
+				@foreach (var item in Model.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" onclick="selectListaInfoProdSustituto(this)">
+						<td class="align-center tiny-row">@item.p_id</td>
+						<td class="align-center tiny-row">@item.p_id_barrado</td>
+						<td class="align-left tiny-row">@item.p_desc</td>
+						<td class="align-center tiny-row">@item.p_id_prov</td>
+						<td class="align-right tiny-row">@item.stk</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

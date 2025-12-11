@@ -34,19 +34,21 @@
 		overflow: auto;
 	}
 
-	#collapseSection {
-		position: fixed; /* lo saca del flujo normal */
-		top: 60px; /* ajustá según tu header */
-		right: 20px; /* o left:0 si querés que ocupe todo */
-		width: 80%; /* ancho del panel */
-		max-height: 80%; /* alto máximo */
-		overflow-y: auto; /* scroll interno si se excede */
-		background: #fff; /* fondo para diferenciarlo */
+	/* #divInfoAdicionaDeProducto {
+		position: fixed; 
+		top: 60px; 
+		right: 20px; 
+		width: 80%; 
+		max-height: 80%; 
+		overflow-y: auto; 
+		background: #fff; 
 		border: 1px solid #ccc;
 		box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-		z-index: 1050; /* por encima de otros elementos */
-		padding: 1rem;
-	}
+		z-index: 1050; 
+		padding: 0.25rem;
+		box-sizing: border-box;
+		overflow-x: hidden; 
+	} */
 
 </style>
 <div class="container">
@@ -131,6 +133,21 @@
 			@Html.Hidden("pagEstado", false)
 		</div>
 		<div class="row">
+			@*Informacion adicional de producto*@
+			<div class="row">
+				<div class="col-2">
+					<a class="btn btn-sm btn-primary me-1 collapsed" id="btnCollapseSectionInfoProd" role="button" aria-expanded="false" aria-controls="divInfoAdicionaDeProducto">
+						Info. Adicional
+					</a>
+@* 					<a class="btn btn-sm btn-primary me-1 collapsed" id="btnCollapseSectionInfoProd" data-bs-toggle="collapse" data-bs-target="#divInfoAdicionaDeProducto" role="button" aria-expanded="false" aria-controls="divInfoAdicionaDeProducto">
+						Info. Adicional
+					</a> *@
+				</div>
+				<div class="col-5"></div>
+			</div>
+			<div id="divInfoAdicionaDeProducto" class="collapse"></div>
+			@*#################################*@
+			@*
 			<div class="row">
 				<div class="col-2">
 					<a class="btn btn-sm btn-primary me-1 collapsed" id="btnCollapseSection" data-bs-toggle="collapse" data-bs-target="#collapseSection" role="button" aria-expanded="false" aria-controls="collapseSection">
@@ -139,7 +156,7 @@
 				</div>
 				<div class="col-5"></div>
 			</div>
-			<div class="collapse" id="collapseSection" style="">
+			 <div class="collapse" id="collapseSection" style="">
 				<div class="d-grid p-1 border">
 					<div class="row">
 						<div class="nav-align-top mb-2">
@@ -228,7 +245,7 @@
 						</div>
 					</div>
 				</div>
-			</div>
+			</div> *@
 		</div>
 	</div>
 </div>
@@ -265,16 +282,22 @@
 		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
 		var BuscarProveedoresFamiliaURL = "@Url.Action("ObtenerProveedoresFamilia", "ndecypi", new { area = "Compras" })";
 		var BuscarRubrosURL = "@Url.Action("ObtenerRubros", "ndecypi", new { area = "Compras" })";
-		var BuscarInfoProdIExMesesURL = "@Url.Action("BuscarInfoProdIExMeses", "ndecypi", new { area = "Compras" })";
-		var BuscarInfoProdIExSemanasURL = "@Url.Action("BuscarInfoProdIExSemanas", "ndecypi", new { area = "Compras" })";
-		var BuscarInfoProdStkDepositoURL = "@Url.Action("BuscarInfoProdStkDeposito", "ndecypi", new { area = "Compras" })";
-		var BuscarInfoProdStkSucursalURL = "@Url.Action("BuscarInfoProdStkSucursal", "ndecypi", new { area = "Compras" })";
-		var BuscarInfoProdSustitutoURL = "@Url.Action("BuscarInfoProdSustituto", "ndecypi", new { area = "Compras" })";
-		var BuscarInfoProdURL = "@Url.Action("BuscarInfoProd", "ndecypi", new { area = "Compras" })";
 		var abrirModalAutoUrl = "@Url.Action("AbrirModalAuto", "ndecypi", new { area = "Compras" })";
 		var confirmarCambiosPedidoAutoUrl = "@Url.Action("ConfirmarCambiosPedidoAuto", "ndecypi", new { area = "Compras" })";
 		var recargarGrillaUrl = "@Url.Action("RecargarGrilla", "ndecypi", new { area = "Compras" })";
 		var inicializarDatosEnSesionUrl = "@Url.Action("InicializarDatosEnSesion", "ndecypi", new { area = "Compras" })";
+
+		/*URL para componente de Información Adicional de Productos*/
+		var abrirComponenteDeInfoAdicionalDeProdUrl = "@Url.Action("AbrirComponente", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdURL = "@Url.Action("BuscarInfoProd", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdStkAURL = "@Url.Action("BuscarInfoProdStkA", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdStkDURL = "@Url.Action("BuscarInfoProdStkD", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdStkBoxURL = "@Url.Action("BuscarInfoProdStkBox", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdMovMensURL = "@Url.Action("BuscarInfoProdMovMens", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdMovSemURL = "@Url.Action("BuscarInfoProdMovSem", "infoadicionaldeprod", new { area = "ControlComun" })";
+		
+		var BuscarInfoProdSustitutoURL = "@Url.Action("BuscarInfoProdSustituto", "infoadicionaldeprod", new { area = "ControlComun" })";
+		/**/
 	</script>
 	<script src="~/js/plugins/jquery.simplePagination.js"></script>
 	<script src="~/js/app/siteGen.js"></script>@**@
@@ -283,4 +306,5 @@
 	<script src="~/js/app/busquedas.js" type="text/javascript"></script>
 	<script src="~/js/app/controlcomun/rpr.js" type="text/javascript"></script>
 	<script src="~/js/app/controlcomun/infoRpr.js" type="text/javascript"></script>
+	<script src="~/js/app/controlcomun/infoAdicionalDeProd.js" type="text/javascript"></script>
 }

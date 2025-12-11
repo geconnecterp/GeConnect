@@ -33,6 +33,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 			_cuentaServicio = cuentaServicio;
 		}
 
+		#region Propiedades
 		public string CtaValoresANombre
 		{
 			get
@@ -70,6 +71,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 			}
 
 		}
+		
 
 		/// <summary>
 		/// Obtiene o establece la lista de valores desde obligaciones y créditos almacenada en la sesión actual.
@@ -94,6 +96,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 				_context.HttpContext?.Session.SetString("ListaValoresDesdeObligYCred", valor);
 			}
 		}
+		#endregion
 
 		public IActionResult Index()
 		{
@@ -127,7 +130,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 			catch (Exception ex)
 			{
 
-				string msg = "Error en la obtención de la configuración para el Gestor Documental.";
+				string msg = "Error en la obtención de la configuración para el componente.";
 				_logger?.LogError(ex, msg);
 				response.Mensaje = msg;
 				response.Ok = false;

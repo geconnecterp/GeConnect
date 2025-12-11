@@ -1,0 +1,50 @@
+﻿@model BuscarInfoProdMovMensModel
+@{
+	var alt = true;
+	string clase = string.Empty;
+	var sucursales = Model.ComboSucursales;
+}
+<div class="row">
+	<div class="input-group">
+		<span class="input-group-text fixed-width">Sucursal: </span>
+		@Html.DropDownListFor(m => m.selectedValue, sucursales, "Seleccionar", new { @id = "listaSucursalesM", @class = "form-control fixed-width" })
+		<span class="input-group-text fixed-width-75">Meses: </span>
+		@Html.TextBoxFor(m => m.Meses, new { @id = "txtMeses", @class = "fixed-width-50 align-right", type = "number" })
+		@* <input type="number" id="txtMeses" class="fixed-width-50 align-right" value="12" /> *@
+	</div>
+</div>
+<div class="table-responsive text-nowrap table-wrapper-200-full">
+	<table class="table table-sm mb-0 table-hover table-golden" id="tbInfoProdMovMes">
+		<thead>
+			<tr>
+				<th style="width:13%;" class="col-header-x-small align-center">Mes</th>
+				<th style="width:15%;" class="col-header-x-small align-center">Comp</th>
+				<th style="width:15%;" class="col-header-x-small align-center">Trans.</th>
+				<th style="width:15%;" class="col-header-x-small align-center">Otros</th>
+				<th style="width:2%;" class="col-header-x-small align-center"></th>
+				<th style="width:15%;" class="col-header-x-small align-center">Vtas</th>
+				<th style="width:15%;" class="col-header-x-small align-center">Trans.</th>
+				<th style="width:10%;" class="col-header-x-small align-center">Otros</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.GrillaInfoProdMovMens.ListaDatos != null && Model.GrillaInfoProdMovMens.ListaDatos.Count > 0)
+			{
+				@foreach (var item in Model.GrillaInfoProdMovMens.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class ="@clase" onclick="selectListaInfoProdMovMens(this)">
+						<td class="align-center tiny-row">@item.periodo-@item.mes</td>
+						<td class="align-center tiny-row">@item.e_compra</td>
+						<td class="align-center tiny-row">@item.e_ri</td>
+						<td class="align-center tiny-row">@item.e_otros</td>
+						<td class="align-center tiny-row"></td>
+						<td class="align-center tiny-row">@item.s_ventas</td>
+						<td class="align-center tiny-row">@item.s_ri</td>
+						<td class="align-center tiny-row">@item.s_otros</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

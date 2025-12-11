@@ -1,10 +1,40 @@
-﻿class Origen {
+﻿
+class Origen {
 	static PedidoInterno = 'PI';
 	static NecesidadesDeCompra = 'NC';
 }
 
 $(function () {
 	$("#btnCollapseSection").on("click", btnCollapseSectionClicked);
+	/*$(document).on("click", "#btnCollapseSectionInfoProd", btnCollapseSectionValidar);*/
+
+	$("#btnCollapseSectionInfoProd").on("click", function (e) {
+		e.preventDefault();
+
+		if (pIdSeleccionado && pIdSeleccionado !== "") {
+			// toggle manual
+			$("#divInfoAdicionaDeProducto").collapse("toggle");
+
+			// opcional: refrescar contenido si querés al abrir
+			invocarComponenteDeInfoAdicionalDeProd({
+				p_id: pIdSeleccionado,
+				mostrarInfoProd,
+				mostrarInfoProdStkA,
+				mostrarInfoProdStkD,
+				mostrarInfoProdStkBox,
+				mostrarInfoProdStkMovM,
+				mostrarInfoProdStkMovD,
+				mostrarInfoProdStkMovS,
+				mostrarInfoProdSustituto,
+			});
+		} else {
+			AbrirMensaje("ATENCIÓN", "Debe seleccionar un producto.", function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+	});
+
 	$("#btnCancel").on("click", function () {
 		AbrirWaiting();
 		LimpiarDatosDelFiltroInicial();
@@ -132,6 +162,43 @@ $(function () {
 	funcCallBack = BuscarProductos;
 	return true;
 });
+
+/* ######	INICIO Componente de info adicional de producto ###### */
+const mostrarInfoProd = true;
+const mostrarInfoProdStkA = true;
+const mostrarInfoProdStkD = true;
+const mostrarInfoProdStkBox = true;
+const mostrarInfoProdStkMovM = true;
+const mostrarInfoProdStkMovS = true;
+const mostrarInfoProdStkMovD = true;
+const mostrarInfoProdSustituto = true;
+
+function btnCollapseSectionValidar() {
+	if (pIdSeleccionado != "") {
+		var p_id = pIdSeleccionado;
+		var data = {
+			p_id,
+			mostrarInfoProd,
+			mostrarInfoProdStkA,
+			mostrarInfoProdStkD,
+			mostrarInfoProdStkBox,
+			mostrarInfoProdStkMovM,
+			mostrarInfoProdStkMovS,
+			mostrarInfoProdStkMovD,
+			mostrarInfoProdSustituto
+		};
+		invocarComponenteDeInfoAdicionalDeProd(data);
+	}
+	else {
+		$("#divInfoAdicionaDeProducto").html("").collapse("hide");
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un producto.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+}
+
+
 
 function InicializarDatosEnSesion() {
 	var data = {};
@@ -582,14 +649,14 @@ function BuscarInfoAdicional() {
 	var datos = { pId, admId, meses };
 	PostGenHtml(datos, BuscarInfoProdIExMesesURL, function (obj) {
 		$("#divInfoProdIExMeses").html(obj);
-		AddEventListenerToGrid("tbInfoProdIExMes");
+		AddEventListenerToGrid("tbInfoProdMovMes");
 		CerrarWaiting();
 		return true
 	});
 	datos = { pId, admId, semanas };
 	PostGenHtml(datos, BuscarInfoProdIExSemanasURL, function (obj) {
 		$("#divInfoProdIExSemanas").html(obj);
-		AddEventListenerToGrid("tbInfoProdIExSemana");
+		AddEventListenerToGrid("tbInfoProdMovSem");
 		CerrarWaiting();
 		return true
 	});
@@ -821,7 +888,16 @@ function selectListaProductoRow(x) {
 		pIdSeleccionado = id;
 		ctaIdDeProdSeleccionado = ctaId;
 		ctaDenoProdSeleccionado = ctaDeno;
-		BuscarInfoAdicional();
+
+		/* ######	INICIO Componente de info adicional de producto ###### */
+		//BuscarInfoAdicional();
+		// disparar evento custom con datos del producto
+		$(document).trigger("productoSeleccionadoParaInfoAdicional", {
+			p_id: id,
+			ctaId: ctaId,
+			ctaDeno: ctaDeno
+		});
+		/* ######	FIN Componente de info adicional de producto ###### */
 	}
 	else {
 		pIdSeleccionado = "";

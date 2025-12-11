@@ -1,0 +1,96 @@
+﻿@model GridCoreSmart<gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI.InfoProductoDto>
+@{
+	var obj = Model.ListaDatos.First();
+	var fecha1 = obj.p_actu_fecha == null ? "" : obj.p_actu_fecha.Value.ToString("dd/MM/yy");
+	var fecha2 = obj.rp_fecha == null ? "" : obj.rp_fecha.Value.ToString("dd/MM/yy");
+	var alt = true;
+	string clase = string.Empty;
+	var iva_sit = obj.iva_situacion + obj.iva_alicuota.ToString();
+	var barrado_ean = "EAN";
+	var barrado_dun = "DUN";
+}
+
+<div class="row">
+	<div class="table-responsive table-wrapper-full-width">
+		<table class="table table-sm mb-0 table-hover table-golden" id="tbInfoProducto1">
+			<thead>
+				<tr class="header">
+					<th style="width:10%;" class="col-header-x-small align-center tiny-row">Plista</th>
+					<th style="width:10%;" class="col-header-x-small align-center tiny-row">D1</th>
+					<th style="width:10%;" class="col-header-x-small align-center tiny-row">D2</th>
+					<th style="width:10%;" class="col-header-x-small align-center tiny-row">D3</th>
+					<th style="width:10%;" class="col-header-x-small align-center tiny-row">D4</th>
+					<th style="width:10%;" class="col-header-x-small align-center tiny-row">Dpa</th>
+					<th style="width:10%;" class="col-header-x-small align-center tiny-row">Fl.</th>
+					<th style="width:10%;" class="col-header-x-small align-center tiny-row">Boni</th>
+					<th style="width:10%;" class="col-header-x-small align-center tiny-row">Costo</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr class="alt">
+					<td class="@Model.ObtenerClase(obj.p_plista) cell-fit-content tiny-row">@Model.FormatearDato(obj.p_plista, FormatDato.Monto)</td>
+					<td class="@Model.ObtenerClase(obj.p_dto1) align-center cell-fit-content tiny-row">@Model.FormatearDato(obj.p_dto1, FormatDato.Ninguno)</td>
+					<td class="@Model.ObtenerClase(obj.p_dto2) align-center cell-fit-content tiny-row">@Model.FormatearDato(obj.p_dto2, FormatDato.Ninguno)</td>
+					<td class="@Model.ObtenerClase(obj.p_dto3) align-center cell-fit-content tiny-row">@Model.FormatearDato(obj.p_dto3, FormatDato.Ninguno)</td>
+					<td class="@Model.ObtenerClase(obj.p_dto4) align-center cell-fit-content tiny-row">@Model.FormatearDato(obj.p_dto4, FormatDato.Ninguno)</td>
+					<td class="@Model.ObtenerClase(obj.p_dto_pa) align-center cell-fit-content tiny-row">@Model.FormatearDato(obj.p_dto_pa, FormatDato.Ninguno)</td>
+					<td class="@Model.ObtenerClase(obj.p_porc_flete) cell-fit-content tiny-row">@Model.FormatearDato(obj.p_porc_flete, FormatDato.Ninguno)</td>
+					<td class="@Model.ObtenerClase(obj.p_boni) cell-fit-content tiny-row">@Model.FormatearDato(obj.p_boni, FormatDato.Ninguno)</td>
+					<td class="@Model.ObtenerClase(obj.p_pcosto) cell-fit-content tiny-row">@Model.FormatearDato(obj.p_pcosto, FormatDato.Monto)</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+<div class="row">
+	<div class="table-responsive table-wrapper-full-width">
+		<table class="table table-sm mb-0 table-hover table-golden" id="tbInfoProducto2">
+			<thead>
+				<tr class="header">
+					<th style="width:10%;" class="col-header-x-small align-center tiny-row">IVA</th>
+					<th style="width:10%;" class="col-header-x-small align-center tiny-row">II</th>
+					<th style="width:10%;" class="col-header-x-small align-center tiny-row">URP</th>
+					<th style="width:10%;" class="col-header-x-small align-center tiny-row">URPF</th>
+					<th style="width:60%;" class="col-header-x-small align-center tiny-row">Obs. Compra</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr class="alt">
+					<td class="@Model.ObtenerClase(obj.iva_situacion) align-center cell-fit-content tiny-row">@Model.FormatearDato(iva_sit, FormatDato.Ninguno)</td>
+					<td class="@Model.ObtenerClase(obj.in_alicuota) align-center cell-fit-content tiny-row">@Model.FormatearDato(obj.in_alicuota, FormatDato.Ninguno)</td>
+					<td class="@Model.ObtenerClase(obj.rp_compte) align-center cell-fit-content tiny-row">@Model.FormatearDato(obj.rp_compte, FormatDato.Ninguno)</td>
+					<td class="@Model.ObtenerClase(obj.rp_fecha) cell-fit-content tiny-row">@Model.FormatearDato(obj.rp_fecha, FormatDato.Fecha)</td>
+					<td class="@Model.ObtenerClase(obj.obs_compra) cell-fit-content tiny-row">@Model.FormatearDato(obj.obs_compra, FormatDato.Ninguno)</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+<div class="row">
+	<div class="table-responsive table-wrapper-full-width">
+		<table class="table table-sm mb-0 table-hover table-golden" id="tbInfoProducto3">
+			<thead>
+				<tr class="header">
+					<th style="width:30%;" class="col-header-x-small align-center tiny-row">Barrado</th>
+					<th style="width:20%;" class="col-header-x-small align-center tiny-row">Tipo</th>
+					<th style="width:25%;" class="col-header-x-small align-center tiny-row">Uni. Pres.</th>
+					<th style="width:25%;" class="col-header-x-small align-center tiny-row">Uni. Pallet</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr class="alt">
+					<td class="@Model.ObtenerClase(obj.p_id_barrado_ean) align-center cell-fit-content tiny-row">@Model.FormatearDato(obj.p_id_barrado_ean, FormatDato.Ninguno)</td>
+					<td class="@Model.ObtenerClase(barrado_ean) align-center cell-fit-content tiny-row">@Model.FormatearDato(barrado_ean, FormatDato.Ninguno)</td>
+					<td class="@Model.ObtenerClase(obj.unidad_presentacion) align-center cell-fit-content tiny-row">@Model.FormatearDato(obj.unidad_presentacion, FormatDato.Ninguno)</td>
+					<td class="@Model.ObtenerClase(obj.unidad_palet) align-center cell-fit-content tiny-row">@Model.FormatearDato(obj.unidad_palet, FormatDato.Ninguno)</td>
+				</tr>
+				<tr>
+					<td class="@Model.ObtenerClase(obj.p_id_barrado_dun) align-center cell-fit-content tiny-row">@Model.FormatearDato(obj.p_id_barrado_dun, FormatDato.Ninguno)</td>
+					<td class="@Model.ObtenerClase(barrado_dun) align-center cell-fit-content tiny-row">@Model.FormatearDato(barrado_dun, FormatDato.Ninguno)</td>
+					<td class="@Model.ObtenerClase(obj.unidad_presentacion) align-center cell-fit-content tiny-row">@Model.FormatearDato(obj.unidad_presentacion, FormatDato.Ninguno)</td>
+					<td class="@Model.ObtenerClase(obj.unidad_palet) align-center cell-fit-content tiny-row">@Model.FormatearDato(obj.unidad_palet, FormatDato.Ninguno)</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>

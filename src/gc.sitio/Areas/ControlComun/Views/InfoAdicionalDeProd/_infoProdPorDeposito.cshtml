@@ -1,0 +1,32 @@
+﻿@model GridCoreSmart<InfoProdStkD>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<div class="table-responsive text-nowrap table-wrapper-200-full">
+	<table class="table table-sm mb-0 table-hover table-golden" id="tbInfoProdStkD">
+		<thead>
+			<tr class="header">
+				<th style="width:10%;" class="col-header-x-small align-center">ID</th>
+				<th style="width:40%;" class="col-header-x-small align-center">Depósito</th>
+				<th style="width:10%;" class="col-header-x-small align-center">Stk</th>
+				<th style="width:20%;" class="col-header-x-small align-center">Vencimiento</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
+			{
+				@foreach (var item in Model.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" onclick="selectListaInfoProdStkD(this)">
+						<td class="align-center tiny-row">@item.Depo_id</td>
+						<td class="align-left tiny-row">@item.Depo_nombre</td>
+						<td class="align-center tiny-row">@item.Ps_stk</td>
+						<td class="align-center tiny-row">@item.Vto?.ToString("dd/MM/yyyy")</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>
