@@ -9,12 +9,28 @@
     <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
 
-<partial name="_botonera" model="filtro" />
-<div class="collapse" id="divFiltro">
-    <partial name="_filtroBase" model="filtro" />
-    @Html.Hidden("pagEstado", false)
+<div class="grid-golden mt-1">   
+   @*  <div class="grid-golden-header">
+        <div class="row align-items-md-center">
+            
+        </div>
+    </div> *@
+    <div class="grid-golden-body">
+        <div class="row align-items-md-start">
+            <div class="col-md-8 col-sm-6">
+                <div id="gridProductoReporte">
+                    <p class="text-center text-muted py-4">
+                        <i class="bx bx-info-circle me-2"></i>
+                        No hay productos seleccionados para ofertas
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div id="gridCanales"></div>
+            </div>
+        </div>
+    </div>
 </div>
-<div class="collapse" id="divDetalle"></div>
 
 <div id="modalGestorDocumental"></div>
 
@@ -25,12 +41,12 @@
         // var autoComRel02Url = "@Url.Action("BuscarRubros", "cargaprecios", new { area = "productos" })";/**/
         // var autoComRel03Url =  "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "cargaprecios", new { area = "productos" })";/**/
         // var buscarFamiliaUrl = "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "cargaprecios", new { area = "productos" })";/**/
+        let buscarCanalesUrl = "@Url.Action("BuscarCanales", "Ofertas", new { area = "Productos" })";
+        var presentarOfertasActivasUrl = "@Url.Action("PresentarOfertasActivas", "OfertaActiva", new { area = "Productos" })";
 
 
         let buscarMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "Presupuesto", new { area = "Productos" })';
-        let homeOfertaReport = '@Url.Action("index", "ofertaReport", new { area = "Productos" })';
-        let obtenerDatoImpositivoUrl = '@Url.Action("ObtenerDatoImpositivo", "impositivo", new { area = "Productos" })';
-
+       
         //para imprimir
         let indexPrint = parseInt("@indicePrint");
         var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
@@ -45,5 +61,5 @@
     <script src="~/js/plugins/jquery.simplePagination.js"></script>
     <script src="~/js/app/areas/docmngr/docmanager.js"></script>
 
-    <script src="~/js/app/areas/precios/dimpo.js"></script>
+    <script src="~/js/app/areas/precios/ofertaReport.js"></script>
 }
