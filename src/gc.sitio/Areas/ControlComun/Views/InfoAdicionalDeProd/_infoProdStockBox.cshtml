@@ -5,7 +5,7 @@
 	var sucursales = Model.ComboSucursales;
 }
 <div class="row">
-	<div class="input-group">
+	<div class="input-group input-group-sm">
 		<span class="input-group-text fixed-width">Sucursal: </span>
 		@* @Html.DropDownList("id", sucursales, "Seleccionar...", new { @id = "listaSucursales", @class = "form-control fixed-width" }) *@
 		@Html.DropDownListFor(m => m.selectedValue, sucursales, "Seleccionar", new { @id = "listaSucursalesX", @class = "form-control fixed-width" })
@@ -15,10 +15,10 @@
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbInfoProdStkD">
 		<thead>
 			<tr class="header">
-				<th style="width:30%;" class="col-header-x-small align-center">Depósito</th>
-				<th style="width:30%;" class="col-header-x-small align-center">Box</th>
-				<th style="width:10%;" class="col-header-x-small align-center">Stk</th>
-				<th style="width:20%;" class="col-header-x-small align-center">Vencimiento</th>
+				<th style="width:30%;" class="tiny-row align-center">Depósito</th>
+				<th style="width:30%;" class="tiny-row align-center">Box</th>
+				<th style="width:10%;" class="tiny-row align-center">Stk</th>
+				<th style="width:20%;" class="tiny-row align-center">Vencimiento</th>
 			</tr>
 		</thead>
 		<tbody>

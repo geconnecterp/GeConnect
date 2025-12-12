@@ -23,12 +23,17 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 		private readonly AppSettings _setting;
 		private readonly IAdministracionServicio _administracionServicio;
 		private readonly IProductoServicio _productoServicio;
+		private readonly ITipoMovStkServicio _tipoMovStkServicio;
+		private readonly IDepositoServicio _depositoServicio;
 		public InfoAdicionalDeProdController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<InfoAdicionalDeProdController> logger,
-											 IAdministracionServicio administracionServicio, IProductoServicio productoServicio) : base(options, contexto, logger)
+											 IAdministracionServicio administracionServicio, IProductoServicio productoServicio, ITipoMovStkServicio tipoMovStkServicio,
+											 IDepositoServicio depositoServicio) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_administracionServicio = administracionServicio;
 			_productoServicio = productoServicio;
+			_tipoMovStkServicio = tipoMovStkServicio;
+			_depositoServicio = depositoServicio;
 		}
 
 		public IActionResult Index()
@@ -180,7 +185,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 				model.GrillaInfoProdMovMens = ObtenerGridCoreSmart<NDeCYPI.InfoProdIExMesDto>(info);
 				model.ComboSucursales = ComboSucursales();
 				model.selectedValue = admId;
-				
+
 				return PartialView("_infoProdMovMens", model);
 			}
 			catch (Exception ex)
@@ -227,7 +232,62 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 			}
 		}
 
+		public async Task<IActionResult> BuscarInfoProdMovD(string pId, string admId, string depId, string tmId, DateTime desde, DateTime hasta)
+		{
+			var model = new BuscarInfoProdMovDModel();
+			try
+			{
+				if (string.IsNullOrWhiteSpace(admId))
+					admId = AdministracionId;
+				if (desde == DateTime.MinValue)
+					desde = DateTime.Now.AddDays(-30);
+				if (hasta == DateTime.MinValue)
+					hasta = DateTime.Now;
+				model.ComboTM = ComboTipoMovStk();
+				model.ComboDepositos = ComboDepoXAdm(admId);
+				if (string.IsNullOrWhiteSpace(depId) || depId == "%")
+				{
+					var primerDeposito = model.ComboDepositos?.Items?
+						.Cast<ComboGenDto>()
+						.FirstOrDefault();
 
+					if (primerDeposito != null && !string.IsNullOrWhiteSpace(primerDeposito.Id))
+					{
+						depId = primerDeposito.Id;
+					}
+				}
+				if (string.IsNullOrWhiteSpace(tmId))
+				{
+					var primertipo = model.ComboTM?.Items?
+						.Cast<ComboGenDto>()
+						.FirstOrDefault();
+
+					if (primertipo != null && !string.IsNullOrWhiteSpace(primertipo.Id))
+					{
+						tmId = primertipo.Id;
+					}
+				}
+
+				var info = await _productoServicio.InfoProductoMovStk(pId, admId, depId, tmId, desde, hasta, TokenCookie);
+				model.GrillaInfoProdMovD = ObtenerGridCoreSmart<InfoProdMovStk>(info);
+				model.selectedValueTM = tmId;
+				model.selectedValueDepos = depId;
+				model.Desde = desde;
+				model.Hasta = hasta;
+				return PartialView("_infoProdMovD", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
 
 		public async Task<IActionResult> BuscarInfoProdSustituto(string pId, string tipo, bool soloProv)
 		{
@@ -260,6 +320,18 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 		{
 			var adms = _administracionServicio.GetAdministracionLogin();
 			var lista = adms.Select(x => new ComboGenDto { Id = x.Id, Descripcion = x.Descripcion });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		private SelectList ComboTipoMovStk()
+		{
+			var tm = _tipoMovStkServicio.ObtenerTiposDeMovimientosDeStock(TokenCookie);
+			var lista = tm.Select(x => new ComboGenDto { Id = x.sm_tipo, Descripcion = x.sm_desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		private SelectList ComboDepoXAdm(string admId)
+		{
+			var dep = _depositoServicio.ObtenerDepositosDeAdministracion(admId, TokenCookie);
+			var lista = dep.Select(x => new ComboGenDto { Id = x.Depo_Id, Descripcion = x.Depo_Nombre });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
 		#endregion

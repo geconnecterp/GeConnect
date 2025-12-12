@@ -32,6 +32,8 @@ namespace gc.infraestructura.Dtos.Mstk
 		public decimal stk { get; set; } = 0.00M;
 		public decimal? stk_val { get; set; } = 0.00M;
 		public decimal? stk_val_calculado { get; set; } = 0.00M;
+		public decimal? porc_rub { get; set; } = 0.00M;
+		public decimal? porc_total { get; set; } = 0.00M;
 		public DateTime? stk_ult_mov { get; set; }
 		private bool _p_activo_bool;
 

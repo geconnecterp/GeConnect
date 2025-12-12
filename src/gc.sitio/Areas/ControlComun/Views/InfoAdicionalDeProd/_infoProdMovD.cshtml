@@ -1,0 +1,48 @@
+﻿@model BuscarInfoProdMovDModel
+@{
+	var alt = true;
+	string clase = string.Empty;
+	var tms = Model.ComboTM;
+	var depos = Model.ComboDepositos;
+}
+<div class="row">
+	<div class="input-group input-group-sm">
+		<span class="input-group-text fixed-width">Deposito: </span>
+		@Html.DropDownListFor(m => m.selectedValueDepos, depos, "Seleccionar", new { @id = "listaDeposMovD", @class = "form-control fixed-width" })
+		<span class="input-group-text fixed-width">TM: </span>
+		@Html.DropDownListFor(m => m.selectedValueTM, tms, "Seleccionar", new { @id = "listaTMMovD", @class = "form-control fixed-width" })
+		<span class="input-group-text">D: </span>
+		@Html.TextBoxFor(m => m.Desde, "{0:yyyy-MM-dd}", new { @id = "txtDesde", @class = "form-control", type = "date" })
+		<span class="input-group-text">H: </span>
+		@Html.TextBoxFor(m => m.Hasta, "{0:yyyy-MM-dd}", new { @id = "txtHasta", @class = "form-control", type = "date" })
+	</div>
+</div>
+<div class="table-responsive text-nowrap table-wrapper-200-full">
+	<table class="table table-sm mb-0 table-hover table-golden" id="tbInfoProdMovD">
+		<thead>
+			<tr>
+				<th style="width:13%;" class="tiny-row align-center">Box</th>
+				<th style="width:15%;" class="tiny-row align-center">Fecha</th>
+				<th style="width:15%;" class="tiny-row align-center">Mov.</th>
+				<th style="width:15%;" class="tiny-row align-center">E/S</th>
+				<th style="width:15%;" class="tiny-row align-center">Stk</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.GrillaInfoProdMovD.ListaDatos != null && Model.GrillaInfoProdMovD.ListaDatos.Count > 0)
+			{
+				@foreach (var item in Model.GrillaInfoProdMovD.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" onclick="selectListaInfoProdMovD(this)">
+						<td class="align-center tiny-row">@item.Box_id</td>
+						<td class="align-center tiny-row">@item.Sm_fecha</td>
+						<td class="align-center tiny-row">@item.Sm_tipo</td>
+						<td class="align-center tiny-row">@item.Sm_es</td>
+						<td class="align-center tiny-row">@item.Sm_stk</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

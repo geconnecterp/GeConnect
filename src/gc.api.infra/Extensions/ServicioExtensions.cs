@@ -106,6 +106,7 @@ namespace gc.api.infra.Extensions
 			services.AddScoped<ITipoTransferenciaServicio, TipoTransferenciaServicio>();
 			services.AddScoped<ITipoAnticipoEmpleadoServicio, TipoAnticipoEmpleadoServicio>();
 			services.AddScoped<ITipoImpuestoServicio, TipoImpuestoServicio>();
+			services.AddScoped<ITipoMovStkServicio, TipoMovStkServicio>();
 			/// Servicios de Asientos
 			services.AddScoped<IAsientoServicio, AsientoServicio>();
             services.AddScoped<IAsientoTemporalServicio, AsientoTemporalServicio>();

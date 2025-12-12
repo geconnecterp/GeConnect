@@ -118,7 +118,7 @@
 								<td class="@Model.GrillaProductoStk.ObtenerClase(item.rubg_id) align-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.rubg_id, FormatDato.Ninguno)</td>
 								<td class="@Model.GrillaProductoStk.ObtenerClase(item.rubg_desc) cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.rubg_desc, FormatDato.Ninguno)</td>
 								<td class="@Model.GrillaProductoStk.ObtenerClase(item.stk_val) cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.stk_val, FormatDato.Monto)</td>
-								<td class="@Model.GrillaProductoStk.ObtenerClase(item.stk_val_calculado) text-right cell-fit-content">@(item.stk_val_calculado.HasValue? item.stk_val_calculado.Value.ToString("N3") : "")</td>
+								<td class="@Model.GrillaProductoStk.ObtenerClase(item.porc_total) text-right cell-fit-content">@(item.porc_total.HasValue? item.porc_total.Value.ToString("N3") : "")</td>
 
 							</tr>
 						}

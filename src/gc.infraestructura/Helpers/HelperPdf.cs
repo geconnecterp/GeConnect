@@ -3662,7 +3662,7 @@ namespace gc.infraestructura.Helpers
 						tabla.AddCell(new PdfPCell(new Phrase(producto.stk.ToString("0.000"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
 						tabla.AddCell(new PdfPCell(new Phrase(producto.p_pcosto.ToString("0.000"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
 						tabla.AddCell(new PdfPCell(new Phrase(valStr, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
-						tabla.AddCell(new PdfPCell(new Phrase(producto.stk_val_calculado?.ToString("0.000"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+						tabla.AddCell(new PdfPCell(new Phrase(producto.porc_rub?.ToString("N6"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
 					}
 					totalValorizado = lista.Sum(x => x.stk_val ?? 0);
 					// Fila de total
@@ -3720,7 +3720,7 @@ namespace gc.infraestructura.Helpers
 						tablaS.AddCell(new PdfPCell(new Phrase(producto.sec_id, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
 						tablaS.AddCell(new PdfPCell(new Phrase(producto.sec_desc, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_LEFT });
 						tablaS.AddCell(new PdfPCell(new Phrase(valStr, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
-						tablaS.AddCell(new PdfPCell(new Phrase(producto.stk_val_calculado?.ToString("0.000"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+						tablaS.AddCell(new PdfPCell(new Phrase(producto.porc_total?.ToString("0.000"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
 					}
 					totalValorizado = lista.Sum(x => x.stk_val ?? 0);
 					PdfPCell celdaTotalTituloS = new PdfPCell(new Phrase("Total Valorizado", fuenteEtiqueta))
@@ -3777,7 +3777,7 @@ namespace gc.infraestructura.Helpers
 						tablaRG.AddCell(new PdfPCell(new Phrase(producto.rubg_id, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
 						tablaRG.AddCell(new PdfPCell(new Phrase(producto.rubg_desc, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_LEFT });
 						tablaRG.AddCell(new PdfPCell(new Phrase(valStr, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
-						tablaRG.AddCell(new PdfPCell(new Phrase(producto.stk_val_calculado?.ToString("0.000"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+						tablaRG.AddCell(new PdfPCell(new Phrase(producto.porc_total?.ToString("0.000"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
 					}
 					totalValorizado = lista.Sum(x => x.stk_val ?? 0);
 					// Fila de total
@@ -3835,7 +3835,7 @@ namespace gc.infraestructura.Helpers
 						tablaR.AddCell(new PdfPCell(new Phrase(producto.rub_id, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
 						tablaR.AddCell(new PdfPCell(new Phrase(producto.rub_desc, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_LEFT });
 						tablaR.AddCell(new PdfPCell(new Phrase(valStr, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
-						tablaR.AddCell(new PdfPCell(new Phrase(producto.stk_val_calculado?.ToString("0.000"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+						tablaR.AddCell(new PdfPCell(new Phrase(producto.porc_total?.ToString("0.000"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
 					}
 					totalValorizado = lista.Sum(x => x.stk_val ?? 0);
 					// Fila de total
@@ -3893,7 +3893,7 @@ namespace gc.infraestructura.Helpers
 						tablaP.AddCell(new PdfPCell(new Phrase(producto.rub_id, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
 						tablaP.AddCell(new PdfPCell(new Phrase(producto.rub_desc, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_LEFT });
 						tablaP.AddCell(new PdfPCell(new Phrase(valStr, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
-						tablaP.AddCell(new PdfPCell(new Phrase(producto.stk_val_calculado?.ToString("0.000"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+						tablaP.AddCell(new PdfPCell(new Phrase(producto.porc_total?.ToString("0.000"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
 					}
 					totalValorizado = lista.Sum(x => x.stk_val ?? 0);
 					// Fila de total

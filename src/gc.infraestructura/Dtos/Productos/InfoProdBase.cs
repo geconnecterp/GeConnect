@@ -38,7 +38,7 @@
         public int orden { get; set; }
     }
 
-    public class InfoProdMovStk
+    public class InfoProdMovStk : Dto
     {
         public string P_id { get; set; }= string.Empty;//
         public DateTime Sm_fecha { get; set; } //

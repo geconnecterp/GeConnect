@@ -5,7 +5,7 @@
 	var sucursales = Model.ComboSucursales;
 }
 <div class="row">
-	<div class="input-group">
+	<div class="input-group input-group-sm">
 		<span class="input-group-text fixed-width">Sucursal: </span>
 		@Html.DropDownListFor(m => m.selectedValue, sucursales, "Seleccionar", new { @id = "listaSucursalesM", @class = "form-control fixed-width" })
 		<span class="input-group-text fixed-width-75">Meses: </span>
@@ -17,14 +17,14 @@
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbInfoProdMovMes">
 		<thead>
 			<tr>
-				<th style="width:13%;" class="col-header-x-small align-center">Mes</th>
-				<th style="width:15%;" class="col-header-x-small align-center">Comp</th>
-				<th style="width:15%;" class="col-header-x-small align-center">Trans.</th>
-				<th style="width:15%;" class="col-header-x-small align-center">Otros</th>
-				<th style="width:2%;" class="col-header-x-small align-center"></th>
-				<th style="width:15%;" class="col-header-x-small align-center">Vtas</th>
-				<th style="width:15%;" class="col-header-x-small align-center">Trans.</th>
-				<th style="width:10%;" class="col-header-x-small align-center">Otros</th>
+				<th style="width:13%;" class="tiny-row align-center">Mes</th>
+				<th style="width:15%;" class="tiny-row align-center">Comp</th>
+				<th style="width:15%;" class="tiny-row align-center">Trans.</th>
+				<th style="width:15%;" class="tiny-row align-center">Otros</th>
+				<th style="width:2%;" class="tiny-row align-center"></th>
+				<th style="width:15%;" class="tiny-row align-center">Vtas</th>
+				<th style="width:15%;" class="tiny-row align-center">Trans.</th>
+				<th style="width:10%;" class="tiny-row align-center">Otros</th>
 			</tr>
 		</thead>
 		<tbody>

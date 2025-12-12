@@ -80,22 +80,22 @@
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbListaProducto">
 		<thead>
 			<tr class="header">
-				<th style="width:5%;" class="col-header-x-small align-center tiny-row">Código</th>
-				<th style="width:20%;" class="col-header-x-small align-center tiny-row">Descripción</th>
-				<th style="width:5%;" class="col-header-small align-center">Id. Barrado</th>
-				<th style="width:5%;" class="col-header-x-small align-center tiny-row">Cod. Prov</th>
-				<th style="width:5%;" class="col-header-x-small align-center tiny-row">Días Ult. RP</th>
-				<th style="width:5%;" class="col-header-x-small align-center tiny-row">OC Pend</th>
-				<th style="width:5%;" class="col-header-x-small align-center tiny-row">Stock Suc</th>
-				<th style="width:5%;" class="col-header-x-small align-center tiny-row">Stock Tot</th>
-				<th style="width:0%; display:none;" class="col-header-x-small align-center tiny-row">Stock a Facturar</th>
-				<th style="width:5%;" class="col-header-x-small align-center tiny-row">Unidad Pres.</th>
-				<th style="width:5%;" class="col-header-x-small align-center tiny-row">Unidad Pallet</th>
-				<th style="width:5%;" class="col-header-x-small align-center tiny-row">Pedido Bultos</th> @* 10 *@
-				<th style="width:5%;" class="col-header-x-small align-center tiny-row">Pedido Cantidad</th>
-				<th style="width:5%;" class="col-header-x-small align-center tiny-row">Precio Costo</th>
-				<th style="width:5%;" class="col-header-x-small align-center tiny-row">Total Costo</th>
-				<th style="width:5%;" class="col-header-x-small align-center tiny-row">Total Pallet</th>
+				<th style="width:5%;" class="align-center tiny-row">Código</th>
+				<th style="width:20%;" class="align-center tiny-row">Descripción</th>
+				<th style="width:5%;" class="align-center">Id. Barrado</th>
+				<th style="width:5%;" class="align-center tiny-row">Cod. Prov</th>
+				<th style="width:5%;" class="align-center tiny-row">Días Ult. RP</th>
+				<th style="width:5%;" class="align-center tiny-row">OC Pend</th>
+				<th style="width:5%;" class="align-center tiny-row">Stock Suc</th>
+				<th style="width:5%;" class="align-center tiny-row">Stock Tot</th>
+				<th style="width:0%; display:none;" class="align-center tiny-row">Stock a Facturar</th>
+				<th style="width:5%;" class="align-center tiny-row">Unidad Pres.</th>
+				<th style="width:5%;" class="align-center tiny-row">Unidad Pallet</th>
+				<th style="width:5%;" class="align-center tiny-row">Pedido Bultos</th> @* 10 *@
+				<th style="width:5%;" class="align-center tiny-row">Pedido Cantidad</th>
+				<th style="width:5%;" class="align-center tiny-row">Precio Costo</th>
+				<th style="width:5%;" class="align-center tiny-row">Total Costo</th>
+				<th style="width:5%;" class="align-center tiny-row">Total Pallet</th>
 				<th style="width:0%; display:none;">pg_id</th>
 				<th style="width:0%; display:none;">rub_id</th>
 			</tr>
@@ -103,7 +103,6 @@
 		<tbody>
 			@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
 			{
-				//var productos = Model.ListaDatos.OrderBy(x => x.p_id_prov).ThenBy(y => y.pg_id).ThenBy(z => z.p_orden_pg).ThenBy(u => u.p_desc).ToList();
 				var productos = Model.ListaDatos.OrderBy(x => x.cta_id).ThenBy(y => y.pg_id).ThenBy(z => z.p_orden_pg).ToList();
 				@foreach (var item in productos)
 				{

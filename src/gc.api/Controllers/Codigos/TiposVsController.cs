@@ -51,6 +51,7 @@ namespace gc.api.Controllers.Codigos
 		private readonly ITipoConciliadoServicio _tipoConciliadoServicio;
 		private readonly ITipoAnticipoEmpleadoServicio _tipoAnticipoEmpleadoServicio;
 		private readonly ITipoImpuestoServicio _tipoImpuestoServicio;
+		private readonly ITipoMovStkServicio _tipoMovStkServicio;
 
 		public TiposVsController( IMapper mapper, IUriService uriService, ILogger<TiposVsController> logger, ICondicionAfipServicio condicionAfipServicio,
 								ICondicionIBServicio condicionIBServicio, IDepartamentoServicio departamentoServicio, IFormaDePagoServicio formaDePagoServicio,
@@ -62,7 +63,8 @@ namespace gc.api.Controllers.Codigos
 								ITipoRetIbServicio tipoRetIbServicio, ITipoCuentaFinServicio tipoCuentaFinServicio, ITipoMonedaServicio tipoMonedaServicio,
 								ITipoCuentaGastoServicio tipoCuentaGastoServicio, IOrdenDeCompraEstadoServicio ordenDeCompraEstadoServicio, ITipoTributoServicio tipoTributoServicio,
 								ITipoDtoValorizaRprServicio tipoDtoValorizaRprServicio, ITipoOrdenDePagoServicio tipoOrdenDePagoServicio, ITipoTransferenciaServicio tipoTransferenciaServicio,
-								ITipoConciliadoServicio tipoConciliadoServicio, ITipoAnticipoEmpleadoServicio tipoAnticipoEmpleadoServicio, ITipoImpuestoServicio tipoImpuestoServicio)
+								ITipoConciliadoServicio tipoConciliadoServicio, ITipoAnticipoEmpleadoServicio tipoAnticipoEmpleadoServicio, ITipoImpuestoServicio tipoImpuestoServicio,
+								ITipoMovStkServicio tipoMovStkServicio)
         {
             _mapper = mapper;
             _uriService = uriService;
@@ -98,6 +100,7 @@ namespace gc.api.Controllers.Codigos
 			_tipoConciliadoServicio = tipoConciliadoServicio;
 			_tipoAnticipoEmpleadoServicio = tipoAnticipoEmpleadoServicio;
 			_tipoImpuestoServicio = tipoImpuestoServicio;
+			_tipoMovStkServicio = tipoMovStkServicio;
 		}
 
 		[HttpGet]
@@ -553,6 +556,18 @@ namespace gc.api.Controllers.Codigos
 			var lista = _mapper.Map<List<TipoImpuestoDto>>(condAfip);
 
 			var response = new ApiResponse<List<TipoImpuestoDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetTiposMovStk()
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			List<TipoMovStkDto> condAfip = _tipoMovStkServicio.ObtenerTiposDeMovimientosDeStock();
+			var lista = _mapper.Map<List<TipoMovStkDto>>(condAfip);
+
+			var response = new ApiResponse<List<TipoMovStkDto>>(lista);
 			return Ok(response);
 		}
 	}

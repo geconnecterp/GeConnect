@@ -36,6 +36,7 @@ $(function () {
 			let meses = $(this).val();
 			let admId = $("#listaSucursales").val();
 			var datos = { pId, admId, meses };
+			AbrirWaiting();
 			PostGenHtml(datos, BuscarInfoProdMovMensURL, function (obj) {
 				$("#divMovMen").html(obj);
 				AddEventListenerToTable("tbInfoProdMovMes");
@@ -52,6 +53,7 @@ $(function () {
 		let meses = $("#txtMeses").val();
 		let admId = sucursalSeleccionada;
 		var datos = { pId, admId, meses };
+		AbrirWaiting();
 		PostGenHtml(datos, BuscarInfoProdMovMensURL, function (obj) {
 			$("#divMovMen").html(obj);
 			AddEventListenerToTable("tbInfoProdMovMes");
@@ -66,6 +68,7 @@ $(function () {
 			let semanas = $(this).val();
 			let admId = $("#listaSucursales").val();
 			var datos = { pId, admId, semanas };
+			AbrirWaiting();
 			PostGenHtml(datos, BuscarInfoProdMovSemURL, function (obj) {
 				$("#divMovSem").html(obj);
 				AddEventListenerToTable("tbInfoProdMovSem");
@@ -82,6 +85,7 @@ $(function () {
 		let semanas = $("#txtSemanas").val();
 		let admId = sucursalSeleccionada;
 		var datos = { pId, admId, semanas };
+		AbrirWaiting();
 		PostGenHtml(datos, BuscarInfoProdMovSemURL, function (obj) {
 			$("#divMovSem").html(obj);
 			AddEventListenerToTable("tbInfoProdMovSem");
@@ -96,6 +100,7 @@ $(function () {
 		let pId = p_id;
 		let admId = sucursalSeleccionada;
 		var datos = { pId, admId };
+		AbrirWaiting();
 		PostGenHtml(datos, BuscarInfoProdStkBoxURL, function (obj) {
 			$("#divStkBox").html(obj);
 			AddEventListenerToTable("tbInfoProdStkBox");
@@ -110,9 +115,87 @@ $(function () {
 		let pId = p_id;
 		let admId = sucursalSeleccionada;
 		var datos = { pId, admId };
+		AbrirWaiting();
 		PostGenHtml(datos, BuscarInfoProdStkDURL, function (obj) {
 			$("#divStkD").html(obj);
 			AddEventListenerToTable("tbInfoProdStkD");
+			CerrarWaiting();
+			return true
+		});
+	});
+	///TODO MARCE: Agregar eventos a los controles del tab MOV D
+	$(document).on("change", "#listaDeposMovD", function () {
+		let depositoSeleccionado = $(this).val();
+		console.log("Deposito seleccionado:", depositoSeleccionado);
+
+		let pId = p_id;
+		let admId = "";
+		let depId = depositoSeleccionado;
+		let tmId = $("#listaTMMovD").val();
+		let desde = $("#txtDesde").val();
+		let hasta = $("#txtHasta").val();
+		AbrirWaiting();
+		var datos = { pId, admId, depId, tmId, desde, hasta };
+		PostGenHtml(datos, BuscarInfoProdMovDURL, function (obj) {
+			$("#divMovDet").html(obj);
+			AddEventListenerToTable("tbInfoProdMovD");
+			CerrarWaiting();
+			return true
+		});
+	});
+	$(document).on("change", "#listaTMMovD", function () {
+		let tipoMovSeleccionado = $(this).val();
+		console.log("Tipo movimiento seleccionado:", tipoMovSeleccionado);
+
+		let pId = p_id;
+		let admId = "";
+		let depId = $("#listaDeposMovD").val();
+		let tmId = tipoMovSeleccionado;
+		let desde = $("#txtDesde").val();
+		let hasta = $("#txtHasta").val();
+		var datos = { pId, admId, depId, tmId, desde, hasta };
+		AbrirWaiting();
+		PostGenHtml(datos, BuscarInfoProdMovDURL, function (obj) {
+			$("#divMovDet").html(obj);
+			AddEventListenerToTable("tbInfoProdMovD");
+			CerrarWaiting();
+			return true
+		});
+	});
+	$(document).on("change", "#txtDesde", function () {
+		let desdeSeleccionado = $(this).val();
+		console.log("Desde seleccionado:", desdeSeleccionado);
+
+		let pId = p_id;
+		let admId = "";
+		let depId = $("#listaDeposMovD").val();
+		let tmId = $("#listaTMMovD").val();
+		let desde = desdeSeleccionado;
+		let hasta = $("#txtHasta").val();
+		var datos = { pId, admId, depId, tmId, desde, hasta };
+		AbrirWaiting();
+		PostGenHtml(datos, BuscarInfoProdMovDURL, function (obj) {
+			$("#divMovDet").html(obj);
+			AddEventListenerToTable("tbInfoProdMovD");
+			CerrarWaiting();
+			return true
+		});
+	});
+	$(document).on("change", "#txtHasta", function () {
+		let hastaSeleccionado = $(this).val();
+		console.log("Hasta seleccionado:", hastaSeleccionado);
+
+		let pId = p_id;
+		let admId = "";
+		let depId = $("#listaDeposMovD").val();
+		let tmId = $("#listaTMMovD").val();
+		let desde = $("#txtDesde").val();
+		let hasta = hastaSeleccionado;
+		var datos = { pId, admId, depId, tmId, desde, hasta };
+		AbrirWaiting();
+		PostGenHtml(datos, BuscarInfoProdMovDURL, function (obj) {
+			$("#divMovDet").html(obj);
+			AddEventListenerToTable("tbInfoProdMovD");
 			CerrarWaiting();
 			return true
 		});
@@ -190,6 +273,35 @@ function invocarComponenteDeInfoAdicionalDeProd(p) {
 				return true
 			});
 		}
+		if (mostrarInfoProdStkMovD) {
+			var depId = "%";
+			var tmId = "%";
+			// fecha de hoy
+			var hoy = new Date();
+
+			// fecha 30 días atrás
+			var hace30dias = new Date();
+			hace30dias.setDate(hoy.getDate() - 30);
+
+			// formatear a string (ejemplo: yyyy-MM-dd)
+			function formatDate(d) {
+				let yyyy = d.getFullYear();
+				let mm = String(d.getMonth() + 1).padStart(2, '0');
+				let dd = String(d.getDate()).padStart(2, '0');
+				return `${yyyy}-${mm}-${dd}`;
+			}
+
+			var desde = formatDate(hace30dias);
+			var hasta = formatDate(hoy);
+
+			var datos = { pId, admId, depId, tmId, desde, hasta };
+			PostGenHtml(datos, BuscarInfoProdMovDURL, function (obj) {
+				$("#divMovDet").html(obj);
+				AddEventListenerToTable("tbInfoProdMovD");
+				CerrarWaiting();
+				return true
+			});
+		}
 		if (mostrarInfoProdSustituto) {
 			var tipo = tipoDeOperacion;
 			var soloProv = true; //Valor por default
@@ -232,4 +344,6 @@ function selectListaInfoProdStkD(x) {
 function selectListaInfoProdStkA(x) {
 }
 function selectListaInfoProdSustituto(x) {
+}
+function selectListaInfoProdMovD(x) {
 }

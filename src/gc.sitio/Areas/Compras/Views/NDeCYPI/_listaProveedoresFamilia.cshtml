@@ -6,12 +6,6 @@
 	<span class="input-group-text">Nombre</span>
 	@Html.DropDownListFor(m => m.selectedValue, familiaProveedores, "Seleccionar", new { @id = "listaLs03", disabled = "disabled", @class = "form-control inputEditable activable" })
 </div>
-@* <div class="col-sm" id="divComboProveedoresFamilia" aria-disabled="true">
-	<div class="input-group fixed-padding-top">
-		<span class="input-group-text fixed-width">Familia: </span>
-		@Html.DropDownList("id", familiaProveedores, "Seleccionar...", new { @id = "listaFamiliaProveedor", @class = "form-control" })
-	</div>
-</div> *@
 
 @section scripts {
 	<script type="text/javascript">
