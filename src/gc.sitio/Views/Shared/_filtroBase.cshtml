@@ -193,6 +193,7 @@
                 Model.Modelo.Equals(ModeloFilter.PRESUPUESTO) ||
                 Model.Modelo.Equals(ModeloFilter.ETIQUETA) ||
                 Model.Modelo.Equals(ModeloFilter.PRECIO_LISTA) ||
+                Model.Modelo.Equals(ModeloFilter.MODIF_PRECIO) ||
                 Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA))
         {
             <div class="row mb-3 mt-3">
@@ -274,6 +275,7 @@
                 !Model.Modelo.Equals(ModeloFilter.PRESUPUESTO) &&
                 !Model.Modelo.Equals(ModeloFilter.RELACIONAR_COMPROBANTE_SIN_RP) &&
                 !Model.Modelo.Equals(ModeloFilter.PRECIO_LISTA) &&
+                !Model.Modelo.Equals(ModeloFilter.MODIF_PRECIO) &&
                 !Model.Modelo.Equals(ModeloFilter.OF_REPORTE) &&
                 !Model.Modelo.Equals(ModeloFilter.D_IMPOSITIVO) &&
                 !Model.Modelo.Equals(ModeloFilter.ETIQUETA))

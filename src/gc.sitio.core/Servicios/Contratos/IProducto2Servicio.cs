@@ -39,5 +39,6 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaGenerica<ProductoResponsePVta>> ObtenerPrecioVentaLista(ProductoRequestPvtaLista req, string token);
         Task<RespuestaGenerica<RespuestaDto>> ConfirmarPreciosTemporales(AbmGenDto request, string tokenCookie);
         Task<RespuestaGenerica<ImpositivoDatoDto>> ObtenerDatoImpositivo(QueryFilters filters, string tokenCookie);
+        Task<RespuestaGenerica<ProductoTraceDto>> ObtenerProductoTrace(DateTime desde, DateTime hasta,string token);
     }
 }

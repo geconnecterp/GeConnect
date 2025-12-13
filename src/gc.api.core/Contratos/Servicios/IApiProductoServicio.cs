@@ -128,6 +128,8 @@ namespace gc.api.core.Contratos.Servicios
 			decimal lp_porc_mg, char iva_situacion, decimal iva_alicuota, decimal in_alicuota);
 
 		RespuestaDto ConfirmacionPreciosTemporales(string ctaId, string admId, string usuarioId,string json);
-        #endregion
+		#endregion
+
+		List<ProductoTraceDto> ObtenerProductoTrace(DateTime desde, DateTime hasta);
     }
 }

@@ -1772,7 +1772,20 @@ namespace gc.api.core.Servicios
             return resp.First();
         }
 
-		public List<PIDetalleDto> PIDetalle(string pi_compte)
+        public List<ProductoTraceDto> ObtenerProductoTrace(DateTime desde, DateTime hasta)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_PROD_TRACE;
+            var ps = new List<SqlParameter>()
+            {
+                new("@desde",desde),
+                new("@hasta",desde),
+            };
+            List<ProductoTraceDto> resp = _repository.EjecutarLstSpExt<ProductoTraceDto>(sp, ps, true);
+            return resp;
+        }
+
+
+        public List<PIDetalleDto> PIDetalle(string pi_compte)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PI_DETALLE;
 			var ps = new List<SqlParameter>()
