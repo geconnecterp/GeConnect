@@ -1560,7 +1560,35 @@ namespace gc.api.Controllers.Almacen
             return Ok(new ApiResponse<RespuestaDto>(resultado));
         }
 
-		[HttpGet]
+        [HttpGet("obtener-producto-trace")]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<ProductoTraceDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        public IActionResult ObtenerProductoTrace(string desde, string hasta)
+        {
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+
+            if (string.IsNullOrWhiteSpace(desde) || string.IsNullOrWhiteSpace(hasta))
+            {
+                return BadRequest("Las fechas desde y hasta son obligatorias.");
+            }
+
+
+            DateTime? fechaDesde = desde.ToDateTimeOrNull();
+            DateTime? fechaHasta = hasta.ToDateTimeOrNull();
+
+            if (!fechaDesde.HasValue|| !fechaHasta.HasValue)
+            {
+                return BadRequest("Las fechas deben ser valores numéricos válidos.");
+            }
+
+
+            var res = _productosSv.ObtenerProductoTrace(fechaDesde.Value, fechaHasta.Value);
+
+            var response = new ApiResponse<List<ProductoTraceDto>>(res);
+            return Ok(response);
+        }
+
+        [HttpGet]
 		[Route("[action]")]
 		public IActionResult PIDetalle(string pi_compte)
 		{

@@ -10,6 +10,7 @@ using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
+using gc.infraestructura.Dtos.Productos.Etiqueta;
 using gc.infraestructura.Dtos.Productos.Impositivo;
 using gc.infraestructura.Dtos.Productos.Precio;
 using gc.sitio.core.Servicios.Contratos;
@@ -54,6 +55,7 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string FX_PVTA_LISTA = "/obtener-precio-pvta-lista";
         private const string PRODUCTO_CONF_PRECIO_TEMP = "/confirmar-precio-temporal";
         private const string PROD_DATO_IMPOSITIVO = "/ObtenerDatoImpositivo";
+        private const string PROD_trace = "/obtener-producto-trace";
 
 
         private readonly AppSettings _appSettings;
@@ -1187,6 +1189,31 @@ namespace gc.sitio.core.Servicios.Implementacion
                 return new() { Ok = false, Mensaje = "Error al buscar la lista de precios" };
             }
             ;
+        }
+
+        public async Task<RespuestaGenerica<ProductoTraceDto>> ObtenerProductoTrace(DateTime desde, DateTime hasta, string token)
+        {
+            try
+            {
+                if (desde == default || hasta == default)
+                {
+                    return new() { Ok = false, Mensaje = "Debe indicar fechas válidas." };
+                }
+
+                if(desde > hasta)
+                {
+                    return new() { Ok = false, Mensaje = "La fecha 'desde' no puede ser mayor a la fecha 'hasta'." };
+                }
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{PROD_trace}?desde={desde}&hasta={hasta}";
+                return await GetListaAsync<ProductoTraceDto>(link, token, "Error " +
+                    "al indicar la administración");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+                return new() { Ok = false, Mensaje = "Error al obtener la Carga Previa" };
+            }
         }
     }
 }

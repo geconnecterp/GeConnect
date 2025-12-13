@@ -7,7 +7,8 @@ var estado = {
     cacheDom: {}, // Cache de elementos DOM frecuentes
     canalActual: null,
     canalDestino: null,
-    rbActivo: 1
+    rbActivo: 0,
+    report:[42,43]
 }
 
 $(function () {   
@@ -26,13 +27,34 @@ function inicializaEventos() {
     //evento para el boton imprimir
     $(document).on("click", "#btnImprimir", function () {
         //dependiendo del radiobutton activo es la impresion que se ejecutará
-        imprimirOfertasActivas();
+        imprimirReporteOf();
     });
 
     // Eventos para canales
     $(document).on("click", ".canal-seleccionable", function (e) {
         manejarSeleccionCanal(e, $(this));
     });
+}
+
+function imprimirReporteOf() {
+    let indice = 0;
+    let repo = "";
+    if (estado.rbActivo === 1) {
+        indice = estado.report[0];
+        repo = "Reporte de Oferta";
+    } else if (estado.rbActivo === 2) {
+        indice = estado.report[1];
+        repo = "Reporte de Combo";
+    } else {
+        indice = estado.report[0];
+        repo = "Reporte de Oferta";
+    }
+
+    let data = { adm_id: admId, lp_id: lpId, canal };
+    cargarReporteEnArre(indice, data, repo);
+
+    data = { modulo: "", parametros: [] }
+    invocacionGestorDoc(data);
 }
 
 function manejarSeleccionCanal(e, fila) {

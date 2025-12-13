@@ -1,0 +1,26 @@
+﻿@{
+    Layout = "~/views/shared/_Layout.cshtml";
+    var filtro = new QueryFilters() { Modelo = ModeloFilter.MODIF_PRECIO };
+    // int indicePrint = ViewBag.ImpresionId != null ? (int)ViewBag.ImpresionId : 0;
+}
+<partial name="_botonera" model="filtro" />
+<div class="collapse" id="divFiltro">
+    <partial name="_filtroBase" model="filtro" />
+    @Html.Hidden("pagEstado", false)
+</div>
+<div class="collapse" id="divDetalle"></div>
+
+
+@section Scripts {
+    <script type="text/javascript">
+        let totalRegs = 0;
+        let pagRegs = 0;
+        let pags = 0;
+        let pagina = 1;
+        let search = "";
+
+        let homeModifPrecioUrl = "@Url.Action("index", "ModifPrecio", new { area = "productos" })";
+        let obtenerProductoTraceUrl = "@Url.Action("ObtenerProductoTrace", "ModifPrecio", new { area = "productos" })";
+    </script>
+    <script src="~/js/app/areas/precios/modifPrecio.js"></script>
+}

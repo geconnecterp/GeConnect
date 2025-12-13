@@ -58,6 +58,7 @@
 			public const string SP_PROD_DETALLE_PROD = "SPGECO_P_PR_Carga";
 			public const string SP_PROD_CARGA_ALL = "SPGECO_P_PR_Carga_All";
 			public const string SP_PROD_CONFIRMA_TEMP = "SPGECO_P_PR_Confirma";
+			public const string SP_PROD_TRACE = "SPGECO_P_PR_Trace";
 
             //SP para la importacion de listas de precios y perfiles de proveedores
             public const string SP_PROD_PRECIO_FILE_DATOS = "SPGECO_P_PR_FILE_DATOS";
