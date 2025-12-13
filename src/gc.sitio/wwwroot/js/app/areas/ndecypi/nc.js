@@ -2,8 +2,8 @@
 	//$("#listaSucursales").on("change", listaSucursalesChange);
 	//$("#txtMeses").on("change", BuscarInfoAdicional);
 	//$("#txtSemanas").on("change", BuscarInfoAdicional);
-	addTxtMesesKeyUpHandler();
-	addTxtSemanasKeyUpHandler();
+	//addTxtMesesKeyUpHandler();
+	//addTxtSemanasKeyUpHandler();
 	$("#pagEstado").on("change", function () {
 		var div = $("#divPaginacion");
 		presentaPaginacionNC(div);

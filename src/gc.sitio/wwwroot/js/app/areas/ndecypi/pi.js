@@ -1,6 +1,6 @@
 ﻿$(function () {
-	addTxtMesesKeyUpHandler();
-	addTxtSemanasKeyUpHandler();
+	//addTxtMesesKeyUpHandler();
+	//addTxtSemanasKeyUpHandler();
 	$("#pagEstado").on("change", function () {
 		var div = $("#divPaginacion");
 		presentaPaginacionPI(div);

@@ -5,9 +5,10 @@ class Origen {
 }
 
 $(function () {
-	$("#btnCollapseSection").on("click", btnCollapseSectionClicked);
+	//$("#btnCollapseSection").on("click", btnCollapseSectionClicked);
 	/*$(document).on("click", "#btnCollapseSectionInfoProd", btnCollapseSectionValidar);*/
 
+	/* ######	INICIO Componente de info adicional de producto ###### */
 	$("#btnCollapseSectionInfoProd").on("click", function (e) {
 		e.preventDefault();
 
@@ -198,7 +199,7 @@ function btnCollapseSectionValidar() {
 	}
 }
 
-
+/* ######	FIN Componente de info adicional de producto ###### */
 
 function InicializarDatosEnSesion() {
 	var data = {};

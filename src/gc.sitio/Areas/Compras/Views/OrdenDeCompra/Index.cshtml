@@ -106,12 +106,6 @@
 			<div class="tab-pane fade tab-content-golden show active" id="navs-top-home" role="tabpanel">
 				<div id="divListaProducto">
 				</div>
-				@* <div class="row d-flex p-2 flex-fill">
-					<div class="col-2"></div>
-					<div id="divPaginacion" class="ms-3">
-					</div>
-					<div class="col-2"></div>
-				</div> *@
 			</div>
 			<div class="tab-pane fade tab-content-golden" id="navs-top-profile" role="tabpanel">
 				<div id="divListaProductoNuevaOC">
@@ -164,12 +158,24 @@
 		var ConfirmarOrdenDeCompraUrl = "@Url.Action("ConfirmarOrdenDeCompra", "ordendecompra", new { area = "Compras" })";
 		var inicializarDatosEnSesionURL = "@Url.Action("InicializarDatosEnSesion", "ordendecompra", new { area = "Compras" })";
 		var CargarSucursalesParInfoAdicionalURL = "@Url.Action("CargarSucursalesParInfoAdicional", "ordendecompra", new { area = "Compras" })";
-		var BuscarInfoProdIExMesesURL = "@Url.Action("BuscarInfoProdIExMeses", "ordendecompra", new { area = "Compras" })";
-		var BuscarInfoProdIExSemanasURL = "@Url.Action("BuscarInfoProdIExSemanas", "ordendecompra", new { area = "Compras" })";
-		var BuscarInfoProdStkDepositoURL = "@Url.Action("BuscarInfoProdStkDeposito", "ordendecompra", new { area = "Compras" })";
-		var BuscarInfoProdStkSucursalURL = "@Url.Action("BuscarInfoProdStkSucursal", "ordendecompra", new { area = "Compras" })";
-		var BuscarInfoProdSustitutoURL = "@Url.Action("BuscarInfoProdSustituto", "ordendecompra", new { area = "Compras" })";
-		var BuscarInfoProdURL = "@Url.Action("BuscarInfoProd", "ordendecompra", new { area = "Compras" })";
+		// var BuscarInfoProdIExMesesURL = "@Url.Action("BuscarInfoProdIExMeses", "ordendecompra", new { area = "Compras" })";
+		// var BuscarInfoProdIExSemanasURL = "@Url.Action("BuscarInfoProdIExSemanas", "ordendecompra", new { area = "Compras" })";
+		// var BuscarInfoProdStkDepositoURL = "@Url.Action("BuscarInfoProdStkDeposito", "ordendecompra", new { area = "Compras" })";
+		// var BuscarInfoProdStkSucursalURL = "@Url.Action("BuscarInfoProdStkSucursal", "ordendecompra", new { area = "Compras" })";
+		// var BuscarInfoProdSustitutoURL = "@Url.Action("BuscarInfoProdSustituto", "ordendecompra", new { area = "Compras" })";
+		// var BuscarInfoProdURL = "@Url.Action("BuscarInfoProd", "ordendecompra", new { area = "Compras" })";
+
+		/*URL para componente de Información Adicional de Productos*/
+		var abrirComponenteDeInfoAdicionalDeProdUrl = "@Url.Action("AbrirComponente", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdURL = "@Url.Action("BuscarInfoProd", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdStkAURL = "@Url.Action("BuscarInfoProdStkA", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdStkDURL = "@Url.Action("BuscarInfoProdStkD", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdStkBoxURL = "@Url.Action("BuscarInfoProdStkBox", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdMovMensURL = "@Url.Action("BuscarInfoProdMovMens", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdMovSemURL = "@Url.Action("BuscarInfoProdMovSem", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdMovDURL = "@Url.Action("BuscarInfoProdMovD", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdSustitutoURL = "@Url.Action("BuscarInfoProdSustituto", "infoadicionaldeprod", new { area = "ControlComun" })";
+		/**/
 
 		// Gestor de impresión
 		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
@@ -184,4 +190,5 @@
 
 	<script src="~/js/plugins/jquery.simplePagination.js"></script>
 	<script src="~/js/app/areas/ordendecompra/ordendecompra.js"></script>
+	<script src="~/js/app/controlcomun/infoAdicionalDeProd.js" type="text/javascript"></script>
 }
