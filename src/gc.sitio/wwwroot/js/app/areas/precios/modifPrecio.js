@@ -60,7 +60,7 @@ function inicializaEventosModif() {
         }
     });
 
-
+    $("#btnImprimir").on("click", imprimirReporteTrace);
 }
 
 function setBtnLoading($btn, loading, originalHtml) {
@@ -122,6 +122,7 @@ function buscarProductosModi(btn) {
             $("#divDetalle").html(response).collapse("show");
 
             $("#btnImprimir").prop("disabled", false);
+            cargarReporteEnArre(indexPrint, datos, "Presupuesto/Cotización");
         },
         error: function (xhr, status, error) {
             console.error("Error al obtener detalle de productos:", error);
@@ -167,4 +168,9 @@ function buscarProductosModi(btn) {
             _etiquetaLoading = false;
         }
     });
+}
+
+function imprimirReporteTrace() {
+    let data = { modulo: "", parametros: [] }
+    invocacionGestorDoc(data);
 }

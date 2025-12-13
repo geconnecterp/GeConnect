@@ -3,10 +3,14 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Productos.Ofertas;
+using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Enumeraciones;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.DocManager;
 using gc.sitio.core.Servicios.Implementacion;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using System.Reflection;
 using X.PagedList;
 
 namespace gc.sitio.Areas.Productos.Controllers
@@ -14,26 +18,69 @@ namespace gc.sitio.Areas.Productos.Controllers
     [Area("Productos")]
     public class ModifPrecioController : ControladorOfertaBase
     {
+        // variables para manerjar modulo de impresión
+        private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
+        private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas
+        private string APP_MODULO = AppModulos.REPORTE_TRACE.ToString();
+
+        private readonly IDocManagerServicio _docMSv;
         private readonly AppSettings _configuracion;
         private readonly IProducto2Servicio _prodSv;
 
-        public ModifPrecioController(IOptions<AppSettings> options, 
+        public ModifPrecioController(IOptions<AppSettings> options,
             IHttpContextAccessor contexo,
             ILogger<OfertasController> logger,
+            IOptions<DocsManager> docsManager,
+             IDocManagerServicio docManagerServicio,
             IProducto2Servicio prodSv) : base(options, contexo, logger)
         {
             _prodSv = prodSv;
             _configuracion = options.Value;
+
+            _docsManager = docsManager.Value;
+            _modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO);
+            _docMSv = docManagerServicio;
         }
         public IActionResult Index()
         {
-            // Versión optimizada del código de autenticación
-            if (!VerificarAutenticacion(out IActionResult redirectResult))
-                return redirectResult;
+            string msg = "Error al inicializar el Módulo de Modificaciones de Precios en Menos.";
 
-            string titulo = "Modificaciones de Precios en Menos";
-            ViewData["Titulo"] = titulo;
+            try
+            {
+                // Versión optimizada del código de autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+                string titulo = "Modificaciones de Precios en Menos";
+                ViewData["Titulo"] = titulo;
+
+                #region Gestor Impresion - Inicializacion de variables
+
+                //Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
+                DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+                ViewBag.ImpresionId = _modulo.Reportes[0].Id; //siempre el primer reporte
+
+                _logger?.LogInformation($"Generando Arbol de Archivos del módulo. {MethodBase.GetCurrentMethod()?.Name}");
+
+                //en este mismo acto se cargan los posibles documentos
+                //que se pueden imprimir, exportar, enviar por email o whatsapp
+                ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+
+                #endregion
+
+                
+            }
+            catch (NegocioException ex)
+            {
+                _logger?.LogError(ex, msg);
+                TempData["error"] = ex.Message;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, msg);
+                TempData["error"] = msg;
+            }
             return View();
+
         }
 
         [HttpPost]
@@ -44,7 +91,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 if (!VerificarAutenticacion(out IActionResult redirectResult))
                     return redirectResult;
 
-                RespuestaGenerica<ProductoTraceDto> respuesta = await _prodSv.ObtenerProductoTrace(req.Desde,req.Hasta, TokenCookie);
+                RespuestaGenerica<ProductoTraceDto> respuesta = await _prodSv.ObtenerProductoTrace(req.Desde, req.Hasta, TokenCookie);
                 if (!respuesta.Ok || respuesta.EsError)
                 {
                     var msg = respuesta.Mensaje ?? "Error al obtener los datos consultados";

@@ -22,11 +22,12 @@ namespace gc.sitio.Areas.Productos.Controllers
         private readonly AppSettings _configuracion;
         private readonly IOfertaServicio _ofertaServicio;
 
-        public OfertaReportController(IOptions<AppSettings> options, IHttpContextAccessor contexo,
+        public OfertaReportController(IOptions<AppSettings> options, 
+            IHttpContextAccessor contexo,
             ILogger<OfertasController> logger,
             IOfertaServicio ofertaServicio,
             IOptions<DocsManager> docsManager,
-             IDocManagerServicio docManagerServicio
+            IDocManagerServicio docManagerServicio
             )
             : base(options, contexo, logger)
         {
