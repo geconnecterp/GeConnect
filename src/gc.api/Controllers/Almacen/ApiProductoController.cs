@@ -1595,5 +1595,30 @@ namespace gc.api.Controllers.Almacen
 			var res = _productosSv.PIDetalle(pi_compte);
 			return Ok(new ApiResponse<List<PIDetalleDto>>(res));
 		}
-	}
+
+        [HttpGet("product")]
+        public IActionResult ProveedorSinModPrecio(string desde)
+        {
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+
+            if (string.IsNullOrWhiteSpace(desde) )
+            {
+                return BadRequest("Las fechas desde es obligatoria.");
+            }
+
+
+            DateTime? fechaDesde = desde.ToDateTimeOrNull();        
+            if(!fechaDesde.HasValue)
+            {
+                return BadRequest("La fecha debe ser un valor numérico válido.");
+            }
+
+
+            var res = _productosSv.ProvSinModPrecio(fechaDesde.Value);
+
+            var response = new ApiResponse<List<ProvSinModPrecioDto>>(res);
+            return Ok(response);
+        }
+
+    }
 }

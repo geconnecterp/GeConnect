@@ -1784,6 +1784,17 @@ namespace gc.api.core.Servicios
             return resp;
         }
 
+        public List<ProvSinModPrecioDto> ProvSinModPrecio(DateTime desde)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_PROV_MODIFICA_PRECIO;
+            var ps = new List<SqlParameter>()
+            {
+                new("@desde",desde),
+            };
+            List<ProvSinModPrecioDto> resp = _repository.EjecutarLstSpExt<ProvSinModPrecioDto>(sp, ps, true);
+            return resp;
+        }
+
 
         public List<PIDetalleDto> PIDetalle(string pi_compte)
 		{

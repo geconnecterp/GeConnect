@@ -1,0 +1,124 @@
+﻿@model GridCoreSmart<ProvSinModPrecioDto>
+
+@{
+    var reg = Model?.ListaDatos?.FirstOrDefault();
+    var alt = true;
+    string clase = string.Empty;
+
+    // Variables para agrupar por familia
+    string familiaActual = string.Empty;
+    string familiaAnterior = string.Empty;
+}
+
+<div class="grid-golden h-100">
+    <div class="grid-golden-header">
+        <div class="d-flex align-items-center gap-2">
+            <h5 class="mb-0"><strong>Detalle de Proveedores sin Modificación de Precios</strong></h5>
+
+        </div>
+    </div>
+    <div class="grid-golden-body">
+        <div class="table-responsive table-wrapper text-nowrap">
+            <table class="table table-sm mb-0 table-hover table-golden" id="tbGridPrecios">
+                <thead>
+                    <tr class="header">
+                        <!-- Columnas principales -->
+                        <th scope="col">
+                            <div class="d-flex flex-column">
+                                <span>Cuenta</span>
+                            </div>
+                        </th>
+                        <th scope="col">
+                            <div class="d-flex flex-column">
+                                <span>Descripción</span>
+                            </div>
+                        </th>
+                         <th scope="col">
+                            <div class="d-flex flex-column">
+                                <span>Fecha</span>
+                            </div>
+                        </th>
+                       
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model?.ListaDatos?.Any() == true)
+                    {
+                        foreach (var item in Model.ListaDatos)
+                        {                           
+                            if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+                            <tr data-producto-id="@item.cta_id" class="@clase">
+                                <td class="@Model.ObtenerClase(item.cta_id)">@Model.FormatearDato(item.cta_id, FormatDato.Ninguno)</td>
+                                <td class="@Model.ObtenerClase(item.cta_denominacion)" title="@item.cta_denominacion">@Model.FormatearDato(item.cta_denominacion, FormatDato.Ninguno)</td>
+                                <td class="@Model.ObtenerClase(item.pg_fecha_cambio_precios)">@Model.FormatearDato(item.pg_fecha_cambio_precios, FormatDato.FechaCompleta)</td>                                     
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4 td-no-datos">
+                                <i class="bx bx-info-circle me-2"></i>
+                                <div class="mt-2">
+                                    <strong>No hay datos disponibles</strong>
+                                    <p class="mb-0 small">Ajuste los filtros de búsqueda para obtener resultados</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+    @if (Model?.ListaDatos?.Any() == true)
+    {
+        <div class="grid-golden-footer py-2 ">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="text-muted small">
+                    <small class="text-muted">
+                        <i class="bx bx-info-circle me-1"></i>
+                        Total de registros: <strong>@Model.ListaDatos.Count</strong>
+                    </small>
+                </div>
+            </div>
+        </div>
+    }
+
+</div>
+
+<script>
+    $(function() {
+        // Evento para volver a los filtros
+        $("#btnVolverFiltros").on("click", function() {
+            $("#divDetalle").collapse("hide");
+            $("#divFiltro").collapse("show");
+        });
+
+        // Evento para expandir/contraer columnas
+        $("#btnExpandirColumnas").on("click", function() {
+            console.log("Funcionalidad de expandir columnas pendiente de implementación");
+        });
+
+        // Evento para exportar a Excel
+        $("#btnExportarExcel").on("click", function() {
+            if (typeof exportarGridAExcel === 'function') {
+                exportarGridAExcel('#tbGridPrecios', 'ListaPrecios');
+            } else {
+                console.warn("La función exportarGridAExcel no está disponible");
+            }
+        });
+
+        // Tooltip para celdas truncadas
+        $('[title]').tooltip({
+            placement: 'top',
+            trigger: 'hover',
+            container: 'body'
+        });
+
+        // Actualizar timestamp
+        setInterval(function() {
+            $("#spanUltimaActualizacion").text(new Date().toLocaleString('es-AR'));
+        }, 60000);
+    });
+</script>

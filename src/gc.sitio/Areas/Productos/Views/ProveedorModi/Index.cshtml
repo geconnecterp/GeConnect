@@ -1,0 +1,41 @@
+﻿@{
+    Layout = "~/views/shared/_Layout.cshtml";
+    var filtro = new QueryFilters() { Modelo = ModeloFilter.PROV_SIN_MOD };
+    int indicePrint = ViewBag.ImpresionId != null ? (int)ViewBag.ImpresionId : 0;
+}
+
+@section styles {
+    <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+}
+
+<partial name="_botonera" model="filtro" />
+<div class="collapse" id="divFiltro">
+    <partial name="_filtroBase" model="filtro" />
+    @Html.Hidden("pagEstado", false)
+</div>
+<div class="collapse" id="divDetalle"></div>
+<div id="modalGestorDocumental"></div>
+
+@section Scripts {
+    <script type="text/javascript">
+        let totalRegs = 0;
+        let pagRegs = 0;
+        let pags = 0;
+        let pagina = 1;
+        let search = "";
+        let indexPrint = parseInt("@indicePrint");
+
+        let homeProvSModiUrl = "@Url.Action("index", "ProveedorModi", new { area = "productos" })";
+        let obtenerProductoTraceUrl = "@Url.Action("ObtenerProductoTrace", "ProveedorModi", new { area = "productos" })";
+
+         var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+        var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+        var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+        var enviarEmailUrl =  "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+        var enviarWhatsAppUrl =  "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+
+    </script>
+    <script src="~/lib/jstree/jstree.min.js"></script>
+    <script src="~/js/app/areas/docmngr/docmanager.js"></script>
+    <script src="~/js/app/areas/precios/proveeSMod.js"></script>
+}

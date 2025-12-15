@@ -23,6 +23,7 @@ using Org.BouncyCastle.Ocsp;
 using System.Drawing.Printing;
 using System.Net;
 using System.Reflection;
+using System.Security.Policy;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
@@ -1207,6 +1208,27 @@ namespace gc.sitio.core.Servicios.Implementacion
 
                 var link = $"{_appSettings.RutaBase}{RutaAPI}{PROD_trace}?desde={desde}&hasta={hasta}";
                 return await GetListaAsync<ProductoTraceDto>(link, token, "Error " +
+                    "al indicar la administración");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+                return new() { Ok = false, Mensaje = "Error al obtener la Carga Previa" };
+            }
+        }
+
+        public async Task<RespuestaGenerica<ProvSinModPrecioDto>> ProvSinModPrecio(DateTime desde, string token)
+        {
+            try
+            {
+                if (desde == default )
+                {
+                    return new() { Ok = false, Mensaje = "Debe indicar una fecha válida." };
+                }
+
+               
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{PROD_trace}?desde={desde}";
+                return await GetListaAsync<ProvSinModPrecioDto>(link, token, "Error " +
                     "al indicar la administración");
             }
             catch (Exception ex)

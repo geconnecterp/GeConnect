@@ -89,6 +89,7 @@ namespace gc.infraestructura.Constantes
             public const string D_IMPOSITIVO = "D_IMPOSITIVO";
             public const string OF_REPORTE = "OF_REPORTE";
             public const string MODIF_PRECIO = "MODIF_PRECIO";
+            public const string PROV_SIN_MOD = "PROV_SIN_MOD";
 
         }
     }
