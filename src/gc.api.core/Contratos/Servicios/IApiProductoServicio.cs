@@ -131,5 +131,6 @@ namespace gc.api.core.Contratos.Servicios
 		#endregion
 
 		List<ProductoTraceDto> ObtenerProductoTrace(DateTime desde, DateTime hasta);
+		List<ProvSinModPrecioDto> ProvSinModPrecio(DateTime desde);
     }
 }

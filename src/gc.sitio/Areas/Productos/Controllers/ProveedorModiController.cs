@@ -14,18 +14,19 @@ using X.PagedList;
 namespace gc.sitio.Areas.Productos.Controllers
 {
     [Area("Productos")]
-    public class ModifPrecioController : ControladorOfertaBase
+    public class ProveedorModiController : ControladorOfertaBase
     {
+
         // variables para manerjar modulo de impresión
         private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
         private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas
-        private string APP_MODULO = AppModulos.REPORTE_TRACE.ToString();
+        private string APP_MODULO = AppModulos.PROVEEDOR_SIN_MODIFICACIONES.ToString();
 
         private readonly IDocManagerServicio _docMSv;
         private readonly AppSettings _configuracion;
         private readonly IProducto2Servicio _prodSv;
 
-        public ModifPrecioController(IOptions<AppSettings> options,
+        public ProveedorModiController(IOptions<AppSettings> options,
             IHttpContextAccessor contexo,
             ILogger<OfertasController> logger,
             IOptions<DocsManager> docsManager,
@@ -39,16 +40,17 @@ namespace gc.sitio.Areas.Productos.Controllers
             _modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO);
             _docMSv = docManagerServicio;
         }
+
         public IActionResult Index()
         {
-            string msg = "Error al inicializar el Módulo de Modificaciones de Precios en Menos.";
+            string msg = "Error al inicializar el Módulo de Proveedor sin Modificaciones de Precio.";
 
             try
             {
                 // Versión optimizada del código de autenticación
                 if (!VerificarAutenticacion(out IActionResult redirectResult))
                     return redirectResult;
-                string titulo = "Modificaciones de Precios en Menos";
+                string titulo = "Proveedor sin Modificación de Precios";
                 ViewData["Titulo"] = titulo;
 
                 #region Gestor Impresion - Inicializacion de variables
@@ -65,7 +67,7 @@ namespace gc.sitio.Areas.Productos.Controllers
 
                 #endregion
 
-                
+
             }
             catch (NegocioException ex)
             {
@@ -82,14 +84,14 @@ namespace gc.sitio.Areas.Productos.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ObtenerProductoTrace([FromBody] TraceReqDto req)
+        public async Task<IActionResult> ObtenerProveedoresSinModificacionPr([FromBody] DateTime desde)
         {
             try
             {
                 if (!VerificarAutenticacion(out IActionResult redirectResult))
                     return redirectResult;
 
-                RespuestaGenerica<ProductoTraceDto> respuesta = await _prodSv.ObtenerProductoTrace(req.Desde, req.Hasta, TokenCookie);
+                RespuestaGenerica<ProvSinModPrecioDto> respuesta = await _prodSv.ProvSinModPrecio(desde, TokenCookie);
                 if (!respuesta.Ok || respuesta.EsError)
                 {
                     var msg = respuesta.Mensaje ?? "Error al obtener los datos consultados";
@@ -99,13 +101,13 @@ namespace gc.sitio.Areas.Productos.Controllers
 
                 var lista = respuesta.ListaEntidad ?? [];
                 int registrosPorPagina = _configuracion.NroRegistrosPagina;
-                var pagedList = new StaticPagedList<ProductoTraceDto>(
-                    lista.OrderBy(o => o.p_desc).ToList(),
+                var pagedList = new StaticPagedList<ProvSinModPrecioDto>(
+                    lista.OrderBy(o => o.cta_denominacion).ToList(),
                     1,
                     registrosPorPagina,
                     lista.Count
                 );
-                var grid = new GridCoreSmart<ProductoTraceDto>
+                var grid = new GridCoreSmart<ProvSinModPrecioDto>
                 {
                     ListaDatos = pagedList,
                     CantidadReg = lista.Count,
@@ -114,11 +116,11 @@ namespace gc.sitio.Areas.Productos.Controllers
                     RegistroFinal = lista.Count,
                     CantidadPaginas = (int)Math.Ceiling((double)lista.Count / registrosPorPagina),
                     PaginaActual = 1,
-                    Sort = "p_desc",
+                    Sort = "cta_denominacion",
                     SortDir = "ASC",
                     DatoAux01 = $"Cargado: {DateTime.Now:HH:mm:ss}"
                 };
-                return View("_gridProdTrace", grid);
+                return View("_gridProvSinModi", grid);
             }
             catch (NegocioException ex)
             {
