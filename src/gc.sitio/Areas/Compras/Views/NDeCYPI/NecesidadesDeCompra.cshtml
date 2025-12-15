@@ -24,7 +24,7 @@
 		position: sticky;
 		top: 0;
 		z-index: 2;
-		background-color: inherit; /* mantiene el estilo de la app */
+		background-color: inherit;
 	}
 
 	#containerListaProducto {
@@ -34,21 +34,11 @@
 		overflow: auto;
 	}
 
-	/* #divInfoAdicionaDeProducto {
-		position: fixed; 
-		top: 60px; 
-		right: 20px; 
-		width: 80%; 
-		max-height: 80%; 
-		overflow-y: auto; 
-		background: #fff; 
-		border: 1px solid #ccc;
-		box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-		z-index: 1050; 
-		padding: 0.25rem;
-		box-sizing: border-box;
-		overflow-x: hidden; 
-	} */
+	#divInfoAdicionaDeProducto > div:first-child {
+		height: 400px; /* alto fijo */
+		max-height: 400px; /* opcional, para no crecer más */
+		overflow-y: auto; /* scroll interno si se excede */
+	}
 
 </style>
 <div class="container">
@@ -139,113 +129,11 @@
 					<a class="btn btn-sm btn-primary me-1 collapsed" id="btnCollapseSectionInfoProd" role="button" aria-expanded="false" aria-controls="divInfoAdicionaDeProducto">
 						Info. Adicional
 					</a>
-@* 					<a class="btn btn-sm btn-primary me-1 collapsed" id="btnCollapseSectionInfoProd" data-bs-toggle="collapse" data-bs-target="#divInfoAdicionaDeProducto" role="button" aria-expanded="false" aria-controls="divInfoAdicionaDeProducto">
-						Info. Adicional
-					</a> *@
 				</div>
 				<div class="col-5"></div>
 			</div>
 			<div id="divInfoAdicionaDeProducto" class="collapse"></div>
 			@*#################################*@
-			@*
-			<div class="row">
-				<div class="col-2">
-					<a class="btn btn-sm btn-primary me-1 collapsed" id="btnCollapseSection" data-bs-toggle="collapse" data-bs-target="#collapseSection" role="button" aria-expanded="false" aria-controls="collapseSection">
-						Info. Adicional
-					</a>
-				</div>
-				<div class="col-5"></div>
-			</div>
-			 <div class="collapse" id="collapseSection" style="">
-				<div class="d-grid p-1 border">
-					<div class="row">
-						<div class="nav-align-top mb-2">
-							<ul class="nav nav-tabs nav-tabs-golden" role="tablist">
-								<li class="nav-item" role="presentation">
-									<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-home" aria-controls="navs-top-home" aria-selected="true">
-										<span id="tabOne" class="custom-lbl">Info. Producto</span>
-									</button>
-								</li>
-								<li class="nav-item" role="presentation">
-									<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-profile" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
-										<span id="tabTwo" class="custom-lbl">Datos de Entrada/Salida</span>
-									</button>
-								</li>
-								<li class="nav-item" role="presentation">
-									<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-panda" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
-										<span id="tabThree" class="custom-lbl">Datos de Stock</span>
-									</button>
-								</li>
-								<li class="nav-item" role="presentation">
-									<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-dog" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
-										<span id="tabFour" class="custom-lbl">Prod. Sustituto</span>
-									</button>
-								</li>
-							</ul>
-							<div class="tab-content tab-content-compact" style="padding:0;">
-								<div class="tab-pane fade tab-content-golden active show" id="navs-top-home" role="tabpanel">
-									<div class="row">
-										<div class="col-12" id="divInfoProducto"></div>
-									</div>
-								</div>
-								<div class="tab-pane tab-content-golden fade" id="navs-top-profile" role="tabpanel">
-									<div id="divInfoES" class="row">
-										<div class="col-6">
-											<div class="row">
-												<div class="input-group">
-													<span class="input-group-text custom-lbl">Datos Entradas y Salidas del Mes</span>
-													<span class="input-group-text fixed-width">Sucursal: </span>
-													@Html.DropDownList("id", sucursales, "Seleccionar...", new { @id = "listaSucursales", @class = "form-control fixed-width" })
-													<span class="input-group-text fixed-width-75">Meses: </span>
-													<input type="number" id="txtMeses" class="fixed-width-50 align-right" value="12" />
-												</div>
-											</div>
-											<div class="row">
-												<div id="divInfoProdIExMeses"></div>
-											</div>
-										</div>
-										<div class="col-6">
-											<div class="row">
-												<div class="input-group">
-													<span class="input-group-text custom-lbl">Datos de Entrada y Salidas últimas semanas</span>
-													<span class="input-group-text fixed-width-75">Semanas: </span>
-													<input type="number" id="txtSemanas" class="fixed-width-50 align-right" value="4" />
-												</div>
-											</div>
-											<div class="row">
-												<div id="divInfoProdIExSemanas"></div>
-											</div>
-										</div>
-									</div>
-								</div>
-								<div class="tab-pane tab-content-golden fade" id="navs-top-panda" role="tabpanel">
-									<div id="divInfoStk" class="row">
-										<div class="col-6">
-											<div class="row">
-												<div id="divInfoProductoStkD">
-												</div>
-											</div>
-										</div>
-										<div class="col-6">
-											<div class="row">
-												<div id="divInfoProductoStkA">
-												</div>
-											</div>
-										</div>
-									</div>
-
-								</div>
-								<div class="tab-pane tab-content-golden fade" id="navs-top-dog" role="tabpanel">
-									<label class="form-check-label" for="chkProductosDelMismoProveedor"> Productos del mismo Proveedor</label>
-									<div class="row">
-										<div id="divInfoProdSustituto"></div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div> *@
 		</div>
 	</div>
 </div>

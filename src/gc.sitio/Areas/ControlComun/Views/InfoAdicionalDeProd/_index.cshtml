@@ -5,67 +5,101 @@
 }
 <style>
 	#divInfo {
-		position: fixed; /* lo saca del flujo normal */
-		top: 60px; /* ajustá según tu header */
-		right: 20px; /* o left:0 si querés que ocupe todo */
-		width: 55%; /* ancho del panel */
-		max-height: 80%; /* alto máximo */
-		overflow-y: auto; /* scroll interno si se excede */
-		background: #fff; /* fondo para diferenciarlo */
+		position: fixed;
+		top: 60px;
+		right: 20px;
+		width: 55%;
+		max-height: 80%;
+		overflow-y: auto;
+		background: #fff;
 		border: 1px solid #ccc;
 		box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-		z-index: 1050; /* por encima de otros elementos */
+		z-index: 1050;
 		padding: 0.25rem;
 		box-sizing: border-box;
-		overflow-x: hidden; /* oculta el scroll horizontal */
+		overflow-x: hidden;
+		height:40%;
 	}
+
+		#divInfo .tab-content {
+			height: 100%;
+			max-height: 100%;
+			overflow-y: auto;
+		}
+
+		#divInfo .tab-pane {
+			height: 100%;
+			max-height: 100%;
+			overflow-y: auto;
+			overflow-x: hidden;
+		}
+
+		#divInfo .table-responsive {
+			overflow-y: auto;
+			overflow-x: hidden;
+			white-space: normal;
+		}
+
+		#divInfo table {
+			width: 100%;
+			table-layout: auto;
+		}
+
 </style>
-<div id="divInfo" style="">
+<div id="divInfo">
 	<div class="d-grid border">
 		<div class="row">
 			<div class="nav-align-top">
-				<ul class="nav nav-tabs nav-tabs-golden" role="tablist">
-					<li class="nav-item" role="presentation">
-						<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-inf-prod" aria-controls="navs-top-inf-prod" aria-selected="true">
-							<span id="tabUno" class="custom-lbl">INFO</span>
-						</button>
-					</li>
-					<li class="nav-item" role="presentation">
-						<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-stka" aria-controls="navs-top-stka" aria-selected="false" tabindex="-1">
-							<span id="tabDos" class="custom-lbl">STK A</span>
-						</button>
-					</li>
-					<li class="nav-item" role="presentation">
-						<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-stkd" aria-controls="navs-top-stkd" aria-selected="false" tabindex="-1">
-							<span id="tabTres" class="custom-lbl">STK D</span>
-						</button>
-					</li>
-					<li class="nav-item" role="presentation">
-						<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-stkbox" aria-controls="navs-top-stkbox" aria-selected="false" tabindex="-1">
-							<span id="tabCuatro" class="custom-lbl">STK BOX</span>
-						</button>
-					</li>
-					<li class="nav-item" role="presentation">
-						<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-movm" aria-controls="navs-top-movm" aria-selected="false" tabindex="-1">
-							<span id="tabCinco" class="custom-lbl">MOV M</span>
-						</button>
-					</li>
-					<li class="nav-item" role="presentation">
-						<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-movs" aria-controls="navs-top-movs" aria-selected="false" tabindex="-1">
-							<span id="tabSeis" class="custom-lbl">MOV S</span>
-						</button>
-					</li>
-					<li class="nav-item" role="presentation">
-						<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-movd" aria-controls="navs-top-movd" aria-selected="false" tabindex="-1">
-							<span id="tabSiete" class="custom-lbl">MOV D</span>
-						</button>
-					</li>
-					<li class="nav-item" role="presentation">
-						<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-sus" aria-controls="navs-top-sus" aria-selected="false" tabindex="-1">
-							<span id="tabOcho" class="custom-lbl">Sust.</span>
-						</button>
-					</li>
-				</ul>
+				<div class="d-flex align-items-center justify-content-between mb-2">
+					<ul class="nav nav-tabs nav-tabs-golden" role="tablist">
+						<li class="nav-item" role="presentation">
+							<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-inf-prod" aria-controls="navs-top-inf-prod" aria-selected="true">
+								<span id="tabUno" class="custom-lbl">INFO</span>
+							</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-stka" aria-controls="navs-top-stka" aria-selected="false" tabindex="-1">
+								<span id="tabDos" class="custom-lbl">STK A</span>
+							</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-stkd" aria-controls="navs-top-stkd" aria-selected="false" tabindex="-1">
+								<span id="tabTres" class="custom-lbl">STK D</span>
+							</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-stkbox" aria-controls="navs-top-stkbox" aria-selected="false" tabindex="-1">
+								<span id="tabCuatro" class="custom-lbl">STK BOX</span>
+							</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-movm" aria-controls="navs-top-movm" aria-selected="false" tabindex="-1">
+								<span id="tabCinco" class="custom-lbl">MOV M</span>
+							</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-movs" aria-controls="navs-top-movs" aria-selected="false" tabindex="-1">
+								<span id="tabSeis" class="custom-lbl">MOV S</span>
+							</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-movd" aria-controls="navs-top-movd" aria-selected="false" tabindex="-1">
+								<span id="tabSiete" class="custom-lbl">MOV D</span>
+							</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-sus" aria-controls="navs-top-sus" aria-selected="false" tabindex="-1">
+								<span id="tabOcho" class="custom-lbl">Sust.</span>
+							</button>
+						</li>
+					</ul>
+					<select id="ajusteAltura" class="form-select form-select-sm" style="width:auto;">
+						<option value="-75">-75 (achica 25%)</option>
+						<option value="-100" selected>-100 (valor actual)</option>
+						<option value="+25">+25 (incrementa 25%)</option>
+					</select>
+				</div>
+				
 				<div class="tab-content tab-content-compact" style="padding:0;">
 					<div class="tab-pane fade tab-content-golden active show" id="navs-top-inf-prod" role="tabpanel">
 						<div class="row">

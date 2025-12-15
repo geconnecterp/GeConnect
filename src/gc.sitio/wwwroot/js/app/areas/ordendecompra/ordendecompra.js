@@ -377,34 +377,17 @@ function onChangeListaSucEntrega(e) {
 
 function AplicarSeteoMasivo() {
 	var alMenosUno = false;
-	//var dataTable = document.getElementById('tbListaProductoOC');
-	//var inputs = dataTable.querySelectorAll('tbody>tr>td>input');
 	var pIds = [];
-	//inputs.forEach(function (input) {
-	//	if (input.checked) {
-	//		alMenosUno = true;
-	//		pIds.push(input.id.substr(3, 6));
-	//	}
-	//});
 	$('#tbListaProductoOC tbody tr').each(function () {
 		const $checkbox = $(this).find('.check-producto');
 		if ($checkbox.length && $checkbox.is(':checked')) {
 			alMenosUno = true;
-			// Esta fila tiene el checkbox marcado
 			const pId = $checkbox.data('p-id'); 
 			pIds.push(pId);
 		}
 	});
 
 	if (alMenosUno) {
-		//Recorrer los items seleccionados y enviarlos al backend, junto con los valores de los campos de seteo masivo.
-
-		//$("#tbListaProductoOC").find('tr').each(function (i, el) {
-		//	var td = $(this).find('td');
-		//	if (td.length > 0 && td[1].innerText !== undefined) {
-		//		pIds.push(td[1].innerText);
-		//	}
-		//});
 		var dto1 = $("#Dto1").inputmask('unmaskedvalue');
 		var dto2 = $("#Dto2").inputmask('unmaskedvalue');
 		var dto3 = $("#Dto3").inputmask('unmaskedvalue');
@@ -422,10 +405,8 @@ function AplicarSeteoMasivo() {
 			}
 			else {
 				$("#divListaProductoNuevaOC").html(obj);
-				//$("#Total_Costo").val(formatter.format($("#Total_Costo").val()));
 				finalizarInicializacion();
 				formatearTotalesEnTabDetalleOC();
-				//$("#Total_Pallet").val(formatter.format($("#Total_Pallet").val()));
 			}
 		});
 	}
@@ -455,10 +436,8 @@ function formatearTotalesEnTabDetalleOC() {
 }
 
 function ActualizarProductoEnOc(row, campoActual) {
-	console.log(row);
 	if (campoActual == undefined) return false;
 	else {
-		//var pId = pIdEnOcSeleccionado;
 		var pId = row.data('p-id');
 		var field = $(campoActual).data('field');
 		var val = $(campoActual).val();
@@ -484,7 +463,6 @@ function ActualizarProductoEnOc(row, campoActual) {
 
 						//TOTALES
 						$("#Total_Costo").val(formatter.format(obj.data.total_Costo));//TOTAL_COSTO -> obj.data.total_Costo
-						//$("#Total_Pallet").val(formatter.format(obj.data.total_Pallet));//TOTAL_PALLET -> obj.data.total_Pallet
 					}
 				});
 			}
@@ -984,8 +962,6 @@ function BuscarProductos(pag = 1) {
 		CargarTopesDeOC();
 		CargarSucursalesParInfoAdicional();
 		LimpiarDatosDelFiltroInicial();
-		//addTxtMesesKeyUpHandler();
-		//addTxtSemanasKeyUpHandler()
 		$("#btnCollapseSectionInfoProd").on("click", function (e) {
 			e.preventDefault();
 
@@ -993,7 +969,6 @@ function BuscarProductos(pag = 1) {
 				// toggle manual
 				$("#divInfoAdicionaDeProducto").collapse("toggle");
 
-				// opcional: refrescar contenido si querés al abrir
 				invocarComponenteDeInfoAdicionalDeProd({
 					p_id: pIdSeleccionado,
 					mostrarInfoProd,
@@ -1073,8 +1048,6 @@ function BuscarProductosDesdeNCPI(pag = 1, pId, ctaId, ctaDeno) {
 		CargarTopesDeOC();
 		CargarSucursalesParInfoAdicional();
 		LimpiarDatosDelFiltroInicial();
-		//addTxtMesesKeyUpHandler();
-		//addTxtSemanasKeyUpHandler()
 		CerrarWaiting();
 		viendeDesdeBusquedaDeProducto = false;
 		return true

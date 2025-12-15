@@ -123,7 +123,6 @@ $(function () {
 			return true
 		});
 	});
-	///TODO MARCE: Agregar eventos a los controles del tab MOV D
 	$(document).on("change", "#listaDeposMovD", function () {
 		let depositoSeleccionado = $(this).val();
 		console.log("Deposito seleccionado:", depositoSeleccionado);
@@ -162,7 +161,7 @@ $(function () {
 			return true
 		});
 	});
-	$(document).on("change", "#txtDesde", function () {
+	$(document).on("blur", "#txtDesde", function () {
 		let desdeSeleccionado = $(this).val();
 		console.log("Desde seleccionado:", desdeSeleccionado);
 
@@ -181,7 +180,7 @@ $(function () {
 			return true
 		});
 	});
-	$(document).on("change", "#txtHasta", function () {
+	$(document).on("blur", "#txtHasta", function () {
 		let hastaSeleccionado = $(this).val();
 		console.log("Hasta seleccionado:", hastaSeleccionado);
 
@@ -200,9 +199,29 @@ $(function () {
 			return true
 		});
 	});
+
+	$(document).on("change", "#ajusteAltura", function () {
+		let valor = $(this).val();
+		let base = 40; // altura base en %
+
+		let nuevoAlto;
+		if (valor === "-75") {
+			nuevoAlto = base * 0.75;
+		} else if (valor === "-100") {
+			nuevoAlto = base;
+		} else if (valor === "+25") {
+			nuevoAlto = base * 1.25;
+		}
+
+		$("#divInfo").css("height", nuevoAlto + "%");
+	});
+
 });
 
 function invocarComponenteDeInfoAdicionalDeProd(p) {
+	// 1. Guardar el id del tab activo actual
+	var tabActivo = $("#divInfo .nav-link.active").data("bs-target");
+
 	pId = p.p_id;
 	p_id = p.p_id;
 	var mostrarInfoProd = p.mostrarInfoProd;
@@ -216,7 +235,15 @@ function invocarComponenteDeInfoAdicionalDeProd(p) {
 	var data = { pId };
 	PostGenHtml(data, abrirComponenteDeInfoAdicionalDeProdUrl, function (obj) {
 		$("#divInfoAdicionaDeProducto").html(obj);
-		//$("#divInfoAdicionaDeProducto").collapse("show");
+
+		if (tabActivo) {
+			let boton = document.querySelector(`#divInfo .nav-link[data-bs-target='${tabActivo}']`);
+			if (boton) {
+				let tab = new bootstrap.Tab(boton);
+				tab.show();
+			}
+		}
+
 		var meses = $("#txtMeses").val();
 		var semanas = $("#txtSemanas").val();
 		var admId = $("#listaSucursales").val();

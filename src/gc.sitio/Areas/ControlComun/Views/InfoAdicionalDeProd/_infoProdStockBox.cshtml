@@ -7,7 +7,6 @@
 <div class="row">
 	<div class="input-group input-group-sm">
 		<span class="input-group-text fixed-width">Sucursal: </span>
-		@* @Html.DropDownList("id", sucursales, "Seleccionar...", new { @id = "listaSucursales", @class = "form-control fixed-width" }) *@
 		@Html.DropDownListFor(m => m.selectedValue, sucursales, "Seleccionar", new { @id = "listaSucursalesX", @class = "form-control fixed-width" })
 	</div>
 </div>
