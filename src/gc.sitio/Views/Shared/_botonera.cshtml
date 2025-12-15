@@ -28,6 +28,7 @@
         if (Model.Modelo != ModeloFilter.D_IMPOSITIVO &&
         Model.Modelo != ModeloFilter.OF_REPORTE &&
         Model.Modelo != ModeloFilter.MODIF_PRECIO &&
+        Model.Modelo != ModeloFilter.PROV_SIN_MOD &&
         Model.Modelo != ModeloFilter.PRECIO_LISTA)
         {
             <div class="col-md-2 col-sm-6">
@@ -52,6 +53,7 @@
                 Model.Modelo == ModeloFilter.PRECIO_LISTA ||
                 Model.Modelo == ModeloFilter.D_IMPOSITIVO ||
                 Model.Modelo == ModeloFilter.MODIF_PRECIO ||
+                Model.Modelo == ModeloFilter.PROV_SIN_MOD ||
                 Model.Modelo == ModeloFilter.OF_REPORTE ||
                 Model.Modelo == ModeloFilter.PRESUPUESTO)
             {
@@ -76,6 +78,7 @@
             Model.Modelo != ModeloFilter.PRECIO_LISTA &&
             Model.Modelo != ModeloFilter.OF_REPORTE &&
             Model.Modelo != ModeloFilter.MODIF_PRECIO &&
+            Model.Modelo != ModeloFilter.PROV_SIN_MOD &&
             Model.Modelo != ModeloFilter.D_IMPOSITIVO)
             {
                 <div class="col-md-4 col-sm-6">

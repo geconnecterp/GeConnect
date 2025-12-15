@@ -36,14 +36,14 @@ function inicializaVista() {
 
 
     setTimeout(() => {
-        $("#chkDesdeHasta").prop("checked", true)
+        $("#chkDesdeHasta").trigger("click");
     }, 200);
     
 }
 function inicializaEventosModif() {
     // Configurar el evento click para el botón Buscar/Filtrar
     $("#btnBuscar").on("click", function () {
-        buscarProductosModi(this);
+        buscarProductosPSMP(this);
     });
 
     $("#btnCancel").on("click", function () {
@@ -60,7 +60,7 @@ function inicializaEventosModif() {
         }
     });
 
-    $("#btnImprimir").on("click", imprimirReporteTrace);
+    $("#btnImprimir").on("click", imprimirReportePSMP);
 }
 
 function setBtnLoading($btn, loading, originalHtml) {
@@ -73,7 +73,7 @@ function setBtnLoading($btn, loading, originalHtml) {
     }
 }
 
-function buscarProductosModi(btn) {
+function buscarProductosPSMP(btn) {
     const usarFechas = $("#chkDesdeHasta").is(":checked");
 
     if (!usarFechas) {
@@ -119,10 +119,10 @@ function buscarProductosModi(btn) {
         dataType: "html",
         data: JSON.stringify(datos),
         success: function (response) {
+            $("#divFiltro").collapse("hide");
             $("#divDetalle").html(response).collapse("show");
-
             $("#btnImprimir").prop("disabled", false);
-            cargarReporteEnArre(indexPrint, datos, "Presupuesto/Cotización");
+            cargarReporteEnArre(indexPrint, datos, "Reporte de Modificaciones de Precios en Menos");
         },
         error: function (xhr, status, error) {
             console.error("Error al obtener detalle de productos:", error);
@@ -170,7 +170,7 @@ function buscarProductosModi(btn) {
     });
 }
 
-function imprimirReporteTrace() {
+function imprimirReportePSMP() {
     let data = { modulo: "", parametros: [] }
     invocacionGestorDoc(data);
 }
