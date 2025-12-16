@@ -57,6 +57,7 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string PRODUCTO_CONF_PRECIO_TEMP = "/confirmar-precio-temporal";
         private const string PROD_DATO_IMPOSITIVO = "/ObtenerDatoImpositivo";
         private const string PROD_trace = "/obtener-producto-trace";
+        private const string PROV_SMP = "/proveedor-sin-mod-precio";
 
 
         private readonly AppSettings _appSettings;
@@ -1227,7 +1228,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 }
 
                
-                var link = $"{_appSettings.RutaBase}{RutaAPI}{PROD_trace}?desde={desde}";
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{PROV_SMP}?desde={desde}";
                 return await GetListaAsync<ProvSinModPrecioDto>(link, token, "Error " +
                     "al indicar la administración");
             }

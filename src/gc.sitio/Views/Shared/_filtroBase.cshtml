@@ -145,7 +145,7 @@
             </div>
         }
         else if (Model.Modelo.Equals(ModeloFilter.PROMO_COMBO) ||
-                 Model.Modelo.Equals(ModeloFilter.OF_REPORTE))
+        Model.Modelo.Equals(ModeloFilter.OF_REPORTE))
         {
             <div class="row mb-3">
                 <div class="col-sm-2">
@@ -179,12 +179,12 @@
                 </div>
                 <div class="row">
                     <div class="col-md-6 col-sm-6">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text">Estado</span>
-                        @Html.DropDownListFor(x => x.Estado, null, "Seleccionar...", new { @class = "form-control", style = "width:50px;" })
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">Estado</span>
+                            @Html.DropDownListFor(x => x.Estado, null, "Seleccionar...", new { @class = "form-control", style = "width:50px;" })
+                        </div>
                     </div>
                 </div>
-            </div>
             }
         }
 
@@ -194,6 +194,7 @@
                 Model.Modelo.Equals(ModeloFilter.ETIQUETA) ||
                 Model.Modelo.Equals(ModeloFilter.PRECIO_LISTA) ||
                 Model.Modelo.Equals(ModeloFilter.MODIF_PRECIO) ||
+                Model.Modelo.Equals(ModeloFilter.PROV_SIN_MOD) ||
                 Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA))
         {
             <div class="row mb-3 mt-3">
@@ -213,12 +214,15 @@
                         <input type="date" class="form-control inputEditable" asp-for="Date1" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
                     </div>
                 </div>
-                <div class="col-md-2 col-sm-6">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text" id="lbIdHasta">Hasta:</span>
-                        <input type="date" class="form-control inputEditable" asp-for="Date2" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
+                @if (!Model.Modelo.Equals(ModeloFilter.PROV_SIN_MOD))
+                {
+                    <div class="col-md-2 col-sm-6">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text" id="lbIdHasta">Hasta:</span>
+                            <input type="date" class="form-control inputEditable" asp-for="Date2" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
+                        </div>
                     </div>
-                </div>
+                }
             </div>
         }
 
@@ -276,6 +280,7 @@
                 !Model.Modelo.Equals(ModeloFilter.RELACIONAR_COMPROBANTE_SIN_RP) &&
                 !Model.Modelo.Equals(ModeloFilter.PRECIO_LISTA) &&
                 !Model.Modelo.Equals(ModeloFilter.MODIF_PRECIO) &&
+                !Model.Modelo.Equals(ModeloFilter.PROV_SIN_MOD) &&
                 !Model.Modelo.Equals(ModeloFilter.OF_REPORTE) &&
                 !Model.Modelo.Equals(ModeloFilter.D_IMPOSITIVO) &&
                 !Model.Modelo.Equals(ModeloFilter.ETIQUETA))
