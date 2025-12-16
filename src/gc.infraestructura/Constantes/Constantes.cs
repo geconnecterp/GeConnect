@@ -81,7 +81,9 @@ namespace gc.infraestructura.Constantes
 			public const string ANULACION_DE_COMPROBANTE_Y_VALORIZACION = "ANULACION_DE_COMPROBANTE_Y_VALORIZACION";
 			public const string RELACIONAR_COMPROBANTE_SIN_RP = "RELACIONAR_COMPROBANTE_SIN_RP";
 
-            public const string PROMO_COMBO = "PROMO_COMBO";
+            public const string CARGA_INVENTARIO = "CARGA_INVENTARIO";
+
+			public const string PROMO_COMBO = "PROMO_COMBO";
             public const string PRESUPUESTO = "PRESUPUESTO";
             public const string REASIGNACION_DE_FAMILIA = "REASIGNACION_DE_FAMILIA";
             public const string ETIQUETA = "ETIQUETA";

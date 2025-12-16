@@ -122,10 +122,13 @@
             //DISCONTINUOS
 			public const string SP_DISCONTINUO_DETALLE = "SPGECO_P_Pasar_DI_IN_Carga";
             public const string SP_DISCONTINUO_CONFIRMAR = "SPGECO_P_Pasar_DI_IN_Confirmar";
-            #endregion
+			#endregion
 
+			#region INVENTARIO
+			public const string SP_INV_LISTA = "SPGECO_INV_Lista";
+			#endregion
 
-            public const string SP_AJ_TIPOS = "dbo.SPGECO_AJ_Tipos";
+			public const string SP_AJ_TIPOS = "dbo.SPGECO_AJ_Tipos";
 			public const string SP_AJ_PREVIOS_CARGADOS = "dbo.SPGECO_AJ_Previos_Cargados";
 			public const string SP_AJ_AJUSTE_REVERTIDO = "dbo.SPGECO_AJ_Datos";
 			public const string SP_AJ_CONFIRMA = "dbo.SPGECO_AJ_Confirmar";
@@ -526,6 +529,8 @@
 			public const string SP_BALANCE_GR_LISTA = "SPGECO_Conta_BGRL";
 
 			#endregion
+
+
 		}
 
 		public static class StoredFunctions

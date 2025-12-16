@@ -45,6 +45,8 @@
     <Folder Include="Areas\Financieros\Models\ReporteFinanciero\" />
     <Folder Include="Areas\Libros\Data\" />
     <Folder Include="Areas\Libros\Models\" />
+    <Folder Include="Areas\Mstk\Models\InventarioCarga\" />
+    <Folder Include="Areas\Mstk\Views\InventarioCarga\" />
     <Folder Include="Areas\Productos\Data\" />
     <Folder Include="Areas\Seguridad\Data\" />
     <Folder Include="Areas\Seguridad\Models\" />

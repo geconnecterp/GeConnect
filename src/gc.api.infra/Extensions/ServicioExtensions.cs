@@ -140,9 +140,11 @@ namespace gc.api.infra.Extensions
 			services.AddScoped<IReportService, ReportService>();
             //services.AddScoped<IGeneradorReporte, R001_InformeCuentaCorriente>();
             services.AddLogging();
-            
 
-            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+			//Inventario
+            services.AddScoped<IInventarioServicio, InventarioServicio>();
+
+			services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
             services.AddScoped(typeof(IServicio<>), typeof(Servicio<>));
             services.AddScoped(typeof(IExceptionManager), typeof(ExceptionManager));

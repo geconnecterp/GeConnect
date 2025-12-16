@@ -195,7 +195,8 @@
                 Model.Modelo.Equals(ModeloFilter.PRECIO_LISTA) ||
                 Model.Modelo.Equals(ModeloFilter.MODIF_PRECIO) ||
                 Model.Modelo.Equals(ModeloFilter.PROV_SIN_MOD) ||
-                Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA))
+                Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA) ||
+                Model.Modelo.Equals(ModeloFilter.CARGA_INVENTARIO))
         {
             <div class="row mb-3 mt-3">
                 <div class="col-md-2 col-sm-6">
@@ -283,7 +284,8 @@
                 !Model.Modelo.Equals(ModeloFilter.PROV_SIN_MOD) &&
                 !Model.Modelo.Equals(ModeloFilter.OF_REPORTE) &&
                 !Model.Modelo.Equals(ModeloFilter.D_IMPOSITIVO) &&
-                !Model.Modelo.Equals(ModeloFilter.ETIQUETA))
+                !Model.Modelo.Equals(ModeloFilter.ETIQUETA) &&
+                !Model.Modelo.Equals(ModeloFilter.CARGA_INVENTARIO))
         {
             <div class="row  mb-3 mt-1">
                 <div class=" col-md-4 col-sm-12">
@@ -372,7 +374,8 @@
                 !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA) &&
                 !Model.Modelo.Equals(ModeloFilter.VALORIZACION_COMPROBANTE) &&
                 !Model.Modelo.Equals(ModeloFilter.PLAN_CUENTA) &&
-                !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_DIRECTA))
+                !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_DIRECTA) &&
+                !Model.Modelo.Equals(ModeloFilter.CARGA_INVENTARIO))
         {
             if (Model.Modelo.Equals(ModeloFilter.PRESUPUESTO) ||
             Model.Modelo.Equals(ModeloFilter.ETIQUETA))
