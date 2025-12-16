@@ -4,6 +4,26 @@
 	string clase = string.Empty;
 	var sucursales = Model.ComboSucursales;
 }
+<style>
+	/* Entradas: rojo pastel */
+	.col-entrada {
+		background-color: #f8d7da !important; /* rojo pastel */
+		color: #721c24 !important; /* texto oscuro para buena legibilidad */
+	}
+
+	/* Salidas: azul pastel */
+	.col-salida {
+		background-color: #d6eaf8 !important; /* azul pastel */
+		color: #154360 !important; /* texto oscuro para buena legibilidad */
+	}
+
+	/* Separador visual */
+	.col-separador {
+		background-color: #ccc !important; /* gris neutro */
+		width: 2px !important; /* estrecho */
+		padding: 0 !important; /* sin padding */
+	}
+</style>
 <div class="row">
 	<div class="input-group input-group-sm">
 		<span class="input-group-text fixed-width">Sucursal: </span>
@@ -34,13 +54,13 @@
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase" onclick="selectListaInfoProdMovSem(this)">
 						<td class="align-center tiny-row">@item.desde.ToString("dd/MM/yy")-@item.hasta.ToString("dd/MM/yy")</td>
-						<td class="align-center tiny-row">@item.e_compra</td>
-						<td class="align-center tiny-row">@item.e_ri</td>
-						<td class="align-center tiny-row">@item.e_otros</td>
-						<td class="align-center tiny-row"></td>
-						<td class="align-center tiny-row">@item.s_ventas</td>
-						<td class="align-center tiny-row">@item.s_ri</td>
-						<td class="align-center tiny-row">@item.s_otros</td>
+						<td class="align-center tiny-row col-entrada">@item.e_compra</td>
+						<td class="align-center tiny-row col-entrada">@item.e_ri</td>
+						<td class="align-center tiny-row col-entrada">@item.e_otros</td>
+						<td class="align-center tiny-row col-separador"></td>
+						<td class="align-center tiny-row col-salida">@item.s_ventas</td>
+						<td class="align-center tiny-row col-salida">@item.s_ri</td>
+						<td class="align-center tiny-row col-salida">@item.s_otros</td>
 					</tr>
 				}
 			}
