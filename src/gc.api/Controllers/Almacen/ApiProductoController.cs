@@ -1596,7 +1596,7 @@ namespace gc.api.Controllers.Almacen
 			return Ok(new ApiResponse<List<PIDetalleDto>>(res));
 		}
 
-        [HttpGet("product")]
+        [HttpGet("proveedor-sin-mod-precio")]
         public IActionResult ProveedorSinModPrecio(string desde)
         {
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");

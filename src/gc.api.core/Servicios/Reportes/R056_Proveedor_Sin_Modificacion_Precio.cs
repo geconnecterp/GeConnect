@@ -1,13 +1,10 @@
 ﻿using gc.api.core.Contratos.Servicios;
-using gc.api.core.Contratos.Servicios.Ofertas;
 using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
-using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
-using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
 using iTextSharp.text;
@@ -17,7 +14,7 @@ using Microsoft.Extensions.Options;
 
 namespace gc.api.core.Servicios.Reportes
 {
-    public class R055_Modificaciones_Precios_Menos : Servicio<EntidadBase>, IGeneradorReporte
+    public class R056_Proveedor_Sin_Modificacion_Precio : Servicio<EntidadBase>, IGeneradorReporte
     {
         private readonly IApiProductoServicio _prodSv;
 
@@ -27,14 +24,14 @@ namespace gc.api.core.Servicios.Reportes
         private readonly ICuentaServicio _cuentaSv;
         private readonly ILogger _logger;
 
-        public R055_Modificaciones_Precios_Menos(IUnitOfWork uow, IApiProductoServicio ofertaServicio,
+        public R056_Proveedor_Sin_Modificacion_Precio(IUnitOfWork uow, IApiProductoServicio ofertaServicio,
            IOptions<EmpresaGeco> empresa, ICuentaServicio consultaSv, ILogger logger) : base(uow)
         {
             _prodSv = ofertaServicio;
 
             _empresaGeco = empresa.Value;
-            _titulos = new List<string> { "Código", "Descripción", "Fecha","Usuario","Costo Ant","Neto Ant","Costo Nvo","Neto Nvo"};
-            _campos = new List<string> { "codigo", "descripcion", "fecha","usuario","costo_ant","neto_ant","costo_nvo","neto_nvo" };
+            _titulos = new List<string> { "Código", "Descripción", "Fecha"};
+            _campos = new List<string> { "codigo", "descripcion", "fecha" };
             _cuentaSv = consultaSv;
             _logger = logger;
         }
@@ -51,19 +48,14 @@ namespace gc.api.core.Servicios.Reportes
                 var ms = new MemoryStream();
                 #region Obteniendo registros desde la base de datos
                 string tit;
-                List<ProductoTraceDto> registros = ObtenerDatos(solicitud, out tit);
+                List<ProvSinModPrecioDto> registros = ObtenerDatos(solicitud, out tit);
 
                 //hago el modelo de dato aca ya que necesito los datos de la cuenta
                 var regs = registros.Select(x => new
                 {
-                    codigo = x.p_id,
-                    descripcion = x.p_desc,
-                    fecha= x.fecha,
-                    usuario=x.usu_id,
-                    costo_ant = x.p_costo_old,
-                    neto_ant =x.p_pneto_old,
-                    costo_nvo=x.p_costo,
-                    neto_nvo=x.p_pneto,
+                    codigo = x.cta_id,
+                    descripcion = x.cta_denominacion,
+                    fecha= x.pg_fecha_cambio_precios,                 
                 }).ToList();
 
                 #endregion
@@ -80,7 +72,7 @@ namespace gc.api.core.Servicios.Reportes
                 //****=============================****/
                 //****  CAMBIAR ANCHOS DE COLUMNAS ****
                 //****=============================****/
-                anchos = [7f, 38f,10f, 7f, 7f, 7f, 7f, 7f];
+                anchos = [20f, 60f,20f];
 
                 var chico = HelperPdf.FontChicoPredeterminado();
                 var normal = HelperPdf.FontNormalPredeterminado();
@@ -140,15 +132,14 @@ namespace gc.api.core.Servicios.Reportes
 
 
 
-        private List<ProductoTraceDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo)
+        private List<ProvSinModPrecioDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo)
         {
             //primero debemos buscar los canales para poder loopera y traer todas las
             //ofertas que no estan activas
-            List<ProductoTraceDto> trace = [];
-            var desde = solicitud.Parametros.GetValueOrDefault("Desde", "").ToDateTime();
-            var hasta = solicitud.Parametros.GetValueOrDefault("Hasta", "").ToDateTime();
+            List<ProvSinModPrecioDto> trace = [];
+            var desde = solicitud.Parametros.GetValueOrDefault("desde", "").ToDateTime();
             
-            var modifTrace = _prodSv.ObtenerProductoTrace(desde, hasta);
+            var modifTrace = _prodSv.ProvSinModPrecio(desde);
             trace.AddRange(modifTrace);
 
             titulo = solicitud.Titulo;
@@ -160,19 +151,14 @@ namespace gc.api.core.Servicios.Reportes
         {
             #region Obteniendo registros desde la base de datos
             string tit;
-            List<ProductoTraceDto> registros = ObtenerDatos(solicitud, out tit);
+            List<ProvSinModPrecioDto> registros = ObtenerDatos(solicitud, out tit);
 
             //hago el modelo de dato aca ya que necesito los datos de la cuenta
             var regs = registros.Select(x => new
             {
-                codigo = x.p_id,
-                descripcion = x.p_desc,
-                fecha = x.fecha,
-                usuario = x.usu_id,
-                costo_ant = x.p_costo_old,
-                neto_ant = x.p_pneto_old,
-                costo_nvo = x.p_costo,
-                neto_nvo = x.p_pneto,
+                codigo = x.cta_id,
+                descripcion = x.cta_denominacion,
+                fecha = x.pg_fecha_cambio_precios,
             }).ToList();
             #endregion
 
@@ -183,19 +169,14 @@ namespace gc.api.core.Servicios.Reportes
         {
             #region Obteniendo registros desde la base de datos
             string tit;
-            List<ProductoTraceDto> registros = ObtenerDatos(solicitud, out tit);
+            List<ProvSinModPrecioDto> registros = ObtenerDatos(solicitud, out tit);
 
             //hago el modelo de dato aca ya que necesito los datos de la cuenta
             var regs = registros.Select(x => new
             {
-                codigo = x.p_id,
-                descripcion = x.p_desc,
-                fecha = x.fecha,
-                usuario = x.usu_id,
-                costo_ant = x.p_costo_old,
-                neto_ant = x.p_pneto_old,
-                costo_nvo = x.p_costo,
-                neto_nvo = x.p_pneto,
+                codigo = x.cta_id,
+                descripcion = x.cta_denominacion,
+                fecha = x.pg_fecha_cambio_precios,
             }).ToList();
             #endregion
 

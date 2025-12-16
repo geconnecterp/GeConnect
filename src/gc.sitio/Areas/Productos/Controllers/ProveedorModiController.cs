@@ -84,7 +84,7 @@ namespace gc.sitio.Areas.Productos.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ObtenerProveedoresSinModificacionPr([FromBody] DateTime desde)
+        public async Task<IActionResult> ObtenerProveedoresSinModificacionPr([FromBody]DateTime desde)
         {
             try
             {
