@@ -10,5 +10,6 @@ namespace gc.api.core.Contratos.Servicios
 		List<SubSectorDto> GetSubSector(string rubg_id);
 		List<RubroListaABMDto> GetRubroParaABM(string sec_id);
 		List<RubroListaABMDto> GetRubro(string rub_id);
+		List<SectorDto> GetSectoresLista();
 	}
 }

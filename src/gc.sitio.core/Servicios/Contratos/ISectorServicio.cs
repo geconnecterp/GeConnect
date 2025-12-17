@@ -9,5 +9,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<SubSectorDto> GetSubSector(string rubgId, string token);
 		List<RubroListaABMDto> GetRubroParaABM(string secId, string token);
 		List<RubroListaABMDto> GetRubro(string rubId, string token);
+		List<SectorDto> GetSectoresLista(string token);
 	}
 }

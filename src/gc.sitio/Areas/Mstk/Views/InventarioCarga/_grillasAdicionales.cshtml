@@ -1,0 +1,38 @@
+﻿@{
+}
+<style>
+	#divGrillaRubros {
+		height: 100%; /* ocupa todo el alto de la columna */
+		min-height: 160px; /* altura mínima para que no quede chico */
+		display: flex;
+		flex-direction: column;
+	}
+
+</style>
+<fieldset class="border rounded p-2 mb-3">
+	<legend class="float-none w-auto px-2 fw-bold text-primary">Datos de Adicionales</legend>
+	<div class="row">
+		<div class="col-sm-12">
+			<div class="input-group input-group-sm">
+				<div class="form-check form-check-inline form-switch mb-2">
+					<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkCargarPorSector" />
+					<label class="form-check-label" for="chkCargarPorSector" id="lbCargarPorSector"></label>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-6">
+			<div class="row h-50" id="divGrillaRubros">
+			</div>
+			<div class="row" id="divListaSector">
+			</div>
+		</div>
+		<div class="col-6">
+			<div class="row" id="divGrillaUsuarios">
+			</div>
+			<div class="row" id="divListaUsuarios">
+			</div>
+		</div>
+	</div>
+</fieldset>

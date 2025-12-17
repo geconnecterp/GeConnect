@@ -37,6 +37,14 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
+		public List<SectorDto> GetSectoresLista()
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_SECTORES_LISTA;
+			var ps = new List<SqlParameter>();
+			var listaTemp = _repository.EjecutarLstSpExt<SectorDto>(sp, ps, true);
+			return listaTemp;
+		}
+
 		public List<SectorDto> GetSectorParaABM(string sec_id)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_ABM_SECTOR_DATOS;

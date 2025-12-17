@@ -126,6 +126,7 @@
 
 			#region INVENTARIO
 			public const string SP_INV_LISTA = "SPGECO_INV_Lista";
+			public const string SP_INV_RUBROS = "SPGECO_INV_Rub";
 			#endregion
 
 			public const string SP_AJ_TIPOS = "dbo.SPGECO_AJ_Tipos";
@@ -480,8 +481,10 @@
 			public const string SP_TIPO_ANTICIPOS = "SPGECO_Tipos_Anticipos";
 			public const string SP_TIPO_IMPUESTOS = "SPGECO_Tipos_Impuestos";
 			public const string SP_TIPO_MOV_STK = "SPGECO_Tipos_Mov_Stk";
-			//
+			public const string SP_INV_ESTADOS = "SPGECO_INV_Estados";
 			#endregion
+
+			public const string SP_SECTORES_LISTA = "SPGECO_Sectores_Lista";
 
 			public const string SP_ADMINISTRACIONES = "SPGECO_Administraciones";
 			public const string SP_COMPTE_DATOS_PROV = "SPGECO_Compte_DatosProv";

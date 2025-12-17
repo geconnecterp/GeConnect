@@ -2,6 +2,7 @@
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Inventario;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
@@ -15,15 +16,16 @@ namespace gc.sitio.core.Servicios.Implementacion
 	{
 		private const string RutaAPI = "/api/apiinventario";
 		private const string INV_LISTA = "/ObtenerInventarioLista";
+		private const string INV_RUBROS = "/GetRubroParaInventario";
 		private readonly AppSettings _appSettings;
-		public InventarioServicio(IOptions<AppSettings> options, ILogger logger) : base(options, logger, RutaAPI)
+		public InventarioServicio(IOptions<AppSettings> options, ILogger<InventarioServicio> logger) : base(options, logger, RutaAPI)
 		{
 			_appSettings = options.Value;
 		}
 
-		public List<InventarioDto> GetInventarioLista(GetInventarioListaRequest request, string token)
+		public List<InventarioListaDto> GetInventarioLista(GetInventarioListaRequest request, string token)
 		{
-			ApiResponse<List<InventarioDto>> apiResponse;
+			ApiResponse<List<InventarioListaDto>> apiResponse;
 
 			HelperAPI helper = new();
 			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
@@ -41,7 +43,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 					_logger.LogWarning($"La API devolvió error.");
 					return new();
 				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<InventarioDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<InventarioListaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 				return apiResponse.Data;
 			}
 			else
@@ -49,6 +51,49 @@ namespace gc.sitio.core.Servicios.Implementacion
 				string stringData = response.Content.ReadAsStringAsync().Result;
 				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
 				return new();
+			}
+		}
+
+		public List<RubroEnInventarioDto> GetRubrosEnInventario(string inv_nro, string token, string usu_id = "%")
+		{
+			ApiResponse<List<RubroEnInventarioDto>> respuesta;
+			string stringData;
+			try
+			{
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_RUBROS}?inv_nro={inv_nro}&usu_id={usu_id}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (!string.IsNullOrEmpty(stringData))
+					{
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<RubroEnInventarioDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+					}
+					else
+					{
+						throw new Exception("Hubo un problema al deserializar los datos. Verifique.");
+					}
+					return respuesta.Data;
+				}
+				else
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogError($"Hubo un problema al deserializar los datos: {stringData}");
+					throw new NegocioException("Hubo un problema al deserializar los datos");
+				}
+
+			}
+			catch (NegocioException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener los datos de la cuenta financiera lista.");
+				throw;
 			}
 		}
 	}

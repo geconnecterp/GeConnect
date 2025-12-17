@@ -52,6 +52,7 @@ namespace gc.api.Controllers.Codigos
 		private readonly ITipoAnticipoEmpleadoServicio _tipoAnticipoEmpleadoServicio;
 		private readonly ITipoImpuestoServicio _tipoImpuestoServicio;
 		private readonly ITipoMovStkServicio _tipoMovStkServicio;
+		private readonly IInventarioEstadoServicio _inventarioEstadoServicio;
 
 		public TiposVsController( IMapper mapper, IUriService uriService, ILogger<TiposVsController> logger, ICondicionAfipServicio condicionAfipServicio,
 								ICondicionIBServicio condicionIBServicio, IDepartamentoServicio departamentoServicio, IFormaDePagoServicio formaDePagoServicio,
@@ -64,7 +65,7 @@ namespace gc.api.Controllers.Codigos
 								ITipoCuentaGastoServicio tipoCuentaGastoServicio, IOrdenDeCompraEstadoServicio ordenDeCompraEstadoServicio, ITipoTributoServicio tipoTributoServicio,
 								ITipoDtoValorizaRprServicio tipoDtoValorizaRprServicio, ITipoOrdenDePagoServicio tipoOrdenDePagoServicio, ITipoTransferenciaServicio tipoTransferenciaServicio,
 								ITipoConciliadoServicio tipoConciliadoServicio, ITipoAnticipoEmpleadoServicio tipoAnticipoEmpleadoServicio, ITipoImpuestoServicio tipoImpuestoServicio,
-								ITipoMovStkServicio tipoMovStkServicio)
+								ITipoMovStkServicio tipoMovStkServicio, IInventarioEstadoServicio inventarioEstadoServicio)
         {
             _mapper = mapper;
             _uriService = uriService;
@@ -101,6 +102,7 @@ namespace gc.api.Controllers.Codigos
 			_tipoAnticipoEmpleadoServicio = tipoAnticipoEmpleadoServicio;
 			_tipoImpuestoServicio = tipoImpuestoServicio;
 			_tipoMovStkServicio = tipoMovStkServicio;
+			_inventarioEstadoServicio = inventarioEstadoServicio;
 		}
 
 		[HttpGet]
@@ -568,6 +570,18 @@ namespace gc.api.Controllers.Codigos
 			var lista = _mapper.Map<List<TipoMovStkDto>>(condAfip);
 
 			var response = new ApiResponse<List<TipoMovStkDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetInventarioEstados()
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			List<InventarioEstadoDto> condAfip = _inventarioEstadoServicio.GetInventarioEstadoLista();
+			var lista = _mapper.Map<List<InventarioEstadoDto>>(condAfip);
+
+			var response = new ApiResponse<List<InventarioEstadoDto>>(lista);
 			return Ok(response);
 		}
 	}

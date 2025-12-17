@@ -1,0 +1,52 @@
+﻿@{
+}
+<div class="d-flex align-items-center w-100 mt-2">
+	<ul class="nav nav-tabs nav-tabs-golden" role="tablist" id="tabsInventarioPrincipal">
+		<li class="nav-item" role="presentation" id="tabCargaInventario">
+			<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-inv" aria-controls="navs-top-inv" aria-selected="true" id="btnTabCargaInventario">
+				Carga de Inventario
+			</button>
+		</li>
+		<li class="nav-item" role="presentation" id="tabValorizacion">
+			<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-valor" aria-controls="navs-top-valor" aria-selected="false" tabindex="-1" id="btnTabValorizacion">
+				Valorización
+			</button>
+		</li>
+		<li class="nav-item" role="presentation" id="tabCerrarInv">
+			<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-cerrar" aria-controls="navs-top-cerrar" aria-selected="false" tabindex="-1" id="btnTabCerrarInv">
+				Cerrar
+			</button>
+		</li>
+	</ul>
+</div>
+<div class="tab-content tab-content-compact">
+	<div class="tab-pane fade tab-content-golden show active" id="navs-top-inv" role="tabpanel">
+		<div class="row">
+			<div class="col-8">
+				<div id="divCargaInventario">
+				</div>
+			</div>
+			<div class="col-4">
+				<partial name="_botones" />
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-6">
+				<div id="divDatosDeInventario">
+				</div>
+			</div>
+			<div class="col-6">
+				<div id="divGrillasAdicionales">
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tab-pane fade tab-content-golden" id="navs-top-valor" role="tabpanel">
+		<div id="divValorizacion">
+		</div>
+	</div>
+	<div class="tab-pane fade tab-content-golden" id="navs-top-Cerrar" role="tabpanel">
+		<div id="divCerrarInv">
+		</div>
+	</div>
+</div>

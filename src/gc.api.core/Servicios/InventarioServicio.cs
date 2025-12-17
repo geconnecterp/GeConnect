@@ -3,14 +3,8 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Inventario;
-using gc.infraestructura.Dtos.Users;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace gc.api.core.Servicios
 {
@@ -20,7 +14,7 @@ namespace gc.api.core.Servicios
 		{
 		}
 
-		public List<InventarioDto> GetInventarioLista(GetInventarioListaRequest request)
+		public List<InventarioListaDto> GetInventarioLista(GetInventarioListaRequest request)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INV_LISTA;
 			var ps = new List<SqlParameter>()
@@ -31,7 +25,19 @@ namespace gc.api.core.Servicios
 				new("@usu_id",request.usu_id),
 				new("@inve_id",request.inve_id),
 			};
-			var listaTemp = _repository.EjecutarLstSpExt<InventarioDto>(sp, ps, true);
+			var listaTemp = _repository.EjecutarLstSpExt<InventarioListaDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<RubroEnInventarioDto> GetRubrosEnInventario(string inv_nro, string usu_id = "%")
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INV_RUBROS;
+			var ps = new List<SqlParameter>()
+			{
+				new("@inv_nro",inv_nro),
+				new("@usu_id",usu_id),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RubroEnInventarioDto>(sp, ps, true);
 			return listaTemp;
 		}
 	}

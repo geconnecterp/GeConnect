@@ -24,6 +24,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string ObtenerSubSector = "/GetSubSector";
 		private const string ObtenerRubroParaABM = "/GetRubroParaABM";
 		private const string ObtenerRubro = "/GetRubro";
+		private const string ObtenerSectoresLista = "/GetSectoresLista";
 		private readonly AppSettings _appSettings;
 		public SectorServicio(IOptions<AppSettings> options, ILogger<SectorServicio> logger) : base(options, logger)
 		{
@@ -241,6 +242,49 @@ namespace gc.sitio.core.Servicios.Implementacion
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error al intentar obtener los datos del sub sector.");
+				throw;
+			}
+		}
+
+		public List<SectorDto> GetSectoresLista(string token)
+		{
+			ApiResponse<List<SectorDto>> respuesta;
+			string stringData;
+			try
+			{
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerSectoresLista}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (!string.IsNullOrEmpty(stringData))
+					{
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<SectorDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+					}
+					else
+					{
+						throw new Exception("No se logro obtener la respuesta de la API con los datos del sector. Verifique.");
+					}
+					return respuesta.Data;
+				}
+				else
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogError($"Error al intentar obtener los datos del sector: {stringData}");
+					throw new NegocioException("Hubo un error al intentar obtener los datos del sector");
+				}
+
+			}
+			catch (NegocioException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener los datos del sector.");
 				throw;
 			}
 		}

@@ -1,0 +1,30 @@
+﻿@using static gc.infraestructura.Constantes.Constantes
+@{
+    Layout = "~/views/shared/_Layout.cshtml";
+    var filtro = new QueryFilters() { Modelo = ModeloFilter.CARGA_INVENTARIO, Rel03 = null };
+}
+
+@section styles {
+    <link rel="stylesheet" href="~/css/simplePagination.css" />
+}
+
+<partial name="_botonera" model="filtro" />
+<div class="collapse" id="divFiltro">
+    <partial name="_filtroBase" model="filtro" />
+    @Html.Hidden("pagEstado", false)
+</div>
+<div class="collapse" id="divDetalle"></div>
+
+@section Scripts {
+    <script type="text/javascript">
+
+        let inicializarPantallPrincipalURL = "@Url.Action("InicializarPantallPrincipal", "inventariocarga", new { area = "mstk" })";
+        let buscarInventarioListaURL = "@Url.Action("BuscarInventarioLista", "inventariocarga", new { area = "mstk" })";
+        let cargarCamposDatosInventarioURL = "@Url.Action("CargarCamposDatosInventario", "inventariocarga", new { area = "mstk" })";
+        let cargarDatosAdicionalesInicialURL = "@Url.Action("CargarDatosAdicionalesInicial", "inventariocarga", new { area = "mstk" })";
+        let cargarGrillaRubrosEnSeccionDatosAdicionalesURL = "@Url.Action("CargarGrillaRubrosEnSeccionDatosAdicionales", "inventariocarga", new { area = "mstk" })";
+        let cargarListaSectoresEnSeccionDatosAdicionalesURL = "@Url.Action("CargarListaSectoresEnSeccionDatosAdicionales", "inventariocarga", new { area = "mstk" })";
+    </script>
+
+    <script src="~/js/app/areas/mstk/inventariocarga/invcarga.js"></script>
+}

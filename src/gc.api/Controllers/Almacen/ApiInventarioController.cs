@@ -2,11 +2,12 @@
 using gc.api.core.Contratos.Servicios;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Inventario;
-using gc.infraestructura.Dtos.Productos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
+using System.Reflection;
 
 namespace gc.api.Controllers.Almacen
 {
@@ -31,9 +32,9 @@ namespace gc.api.Controllers.Almacen
 		}
 
 		[HttpPost("ObtenerInventarioLista")]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<InventarioDto>))]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<InventarioListaDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-		public ActionResult<InventarioDto> ObtenerInventarioLista(GetInventarioListaRequest req)
+		public ActionResult<InventarioListaDto> ObtenerInventarioLista(GetInventarioListaRequest req)
 		{
 			if (req == null)
 			{
@@ -46,7 +47,22 @@ namespace gc.api.Controllers.Almacen
 				return BadRequest("No se obtubieron resultados.");
 			}
 
-			return Ok(new ApiResponse<List<InventarioDto>>(resultado));
+			return Ok(new ApiResponse<List<InventarioListaDto>>(resultado));
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RubroEnInventarioDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetRubroParaInventario(string inv_nro, string usu_id)
+		{
+			ApiResponse<List<RubroEnInventarioDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _inventarioServicio.GetRubrosEnInventario(inv_nro, usu_id);
+
+			response = new ApiResponse<List<RubroEnInventarioDto>>(res);
+
+			return Ok(response);
 		}
 	}
 }

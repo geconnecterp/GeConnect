@@ -19,7 +19,12 @@ namespace gc.infraestructura.Dtos.Inventario
 
 	public class  InventarioListaDto : InventarioDto
 	{
-		public int total_registros { get; set; }
-		public int total_paginas { get; set; }
+		public string inve_desc { get; set; } = string.Empty;
+		public string invt_desc { get; set; } = string.Empty;
+		public string usu_apellidoynombre { get; set; } = string.Empty;
+		public string adm_nombre { get; set; } = string.Empty;
+		public string depo_nombre { get; set; } = string.Empty;
+
 	}
+
 }

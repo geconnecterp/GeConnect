@@ -6,6 +6,7 @@ using gc.sitio.core.Servicios.Contratos.Asientos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
 using gc.sitio.core.Servicios.Contratos.Importacion;
 using gc.sitio.core.Servicios.Contratos.Libros;
+using gc.sitio.core.Servicios.Contratos.Tipos;
 using gc.sitio.core.Servicios.Contratos.Users;
 using gc.sitio.core.Servicios.Implementacion;
 using gc.sitio.core.Servicios.Implementacion.ABM;
@@ -101,6 +102,8 @@ namespace gc.sitio.core.Extensions
 			services.AddScoped<ITipoImpuestoServicio, TipoImpuestoServicio>();
 			services.AddScoped<ITipoMovStkServicio, TipoMovStkServicio>();
 			services.AddScoped<IDiscontinuoServicio, DiscontinuoServicio>();
+			services.AddScoped<IInventarioServicio, InventarioServicio>();
+			services.AddScoped<IInventarioEstadoServicio, InventarioEstadoServicio>();
 
 			services.AddScoped<IOrdenDePagoServicio, OrdenDePagoServicio>();
 			services.AddScoped<IEtiquetaServicio, EtiquetaServicio>();

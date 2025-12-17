@@ -102,5 +102,20 @@ namespace gc.api.Controllers.Almacen
 
 			return Ok(response);
 		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<SectorDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetSectoresLista()
+		{
+			ApiResponse<List<SectorDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _sectorServicio.GetSectoresLista();
+
+			response = new ApiResponse<List<SectorDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }
