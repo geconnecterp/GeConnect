@@ -21,5 +21,6 @@ namespace gc.api.core.Contratos.Servicios.Ofertas
         /// <param name="req"></param>
         /// <returns></returns>
         RespuestaDto ConfirmarCombo(AbmPlusGenDto req);
+        List<ComboRepoDto> ObtenerCombosRepo(ComboReqDto req);
     }
 }

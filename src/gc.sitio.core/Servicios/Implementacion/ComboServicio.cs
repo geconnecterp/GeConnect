@@ -6,6 +6,7 @@ using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos.Etiqueta;
 using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.Dtos.Productos.PromoCombo;
 using gc.sitio.core.Servicios.Contratos;
@@ -15,6 +16,7 @@ using Newtonsoft.Json;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using static Azure.Core.HttpHeader;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
@@ -30,6 +32,8 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string COMBO_PRODUCTOS = "/combo/{id}/productos";
         private const string COMBO_SUSTITUTOS = "/combo/{id}/producto/{productoId}/sustitutos";
         private const string COMBO_CONFIRMAR = "/combo-confirmar";
+        private const string COMBO_REPO = "/combo-repo";
+
 
         public ComboServicio(IOptions<AppSettings> options, ILogger<ComboServicio> logger)
             : base(options, logger)
@@ -446,6 +450,8 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
+
+
         /// <summary>
         /// Busca combos y promociones según los filtros especificados
         /// </summary>
@@ -534,5 +540,50 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
+        public async Task<RespuestaGenerica<ComboRepoDto>> ObtenerCombosRepo(ComboReqDto req, string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(req, token, out StringContent contentData);
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{COMBO_REPO}";
+
+                using var response = await client.PostAsync(link, contentData);
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ComboRepoDto>>>(stringData);
+                    if (apiResponse == null || apiResponse.Data == null)
+                    {
+                        return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+                    }
+
+                    return new RespuestaGenerica<ComboRepoDto>
+                    {
+                        Ok = true,
+                        Mensaje = "OK",
+                        ListaEntidad = apiResponse.Data
+                        // Nota: si necesitas la metadata (apiResponse.Meta), amplía RespuestaGenerica para incluirla.
+                    };
+                }
+                else
+                {
+                    var msg = await ReadApiErrorAsync(response);
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+                    return new() { Ok = false, Mensaje = msg };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+                return new() { Ok = false, Mensaje = "Error al buscar los datos del Combo!!!" };
+            }
+
+        }
     }
 }
