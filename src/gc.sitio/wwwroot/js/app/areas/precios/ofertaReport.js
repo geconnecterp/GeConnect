@@ -150,8 +150,8 @@ function imprimirReporteOf() {
         repo = "Reporte de Oferta";
     }
 
-    let data = { adm_id: admId, lp_id: lpId, canal };
-    cargarReporteEnArre(indice, data, repo);
+    //let data = { adm_id: admId, lp_id: lpId, canal };
+    //cargarReporteEnArre(indice, data, repo);
 
     data = { modulo: "", parametros: [] };
     invocacionGestorDoc(data);

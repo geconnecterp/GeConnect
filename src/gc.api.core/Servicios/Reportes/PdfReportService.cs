@@ -33,6 +33,7 @@ namespace gc.api.core.Servicios.Reportes
             IApiOfertaServicio ofeSv,
             IApiEtiquetaServicio etiqSv,
             IApiPrecioListaServicio plSv,
+            IApiPromoComboServicio cmbSv,
              IOptions<EmpresaGeco> empresa, ICuentaServicio ctaSv, IOrdenDePagoServicio _opSv, ILogger<ReportService> logger) : base(uow)
         {
 
@@ -80,6 +81,7 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R040_DetalleDeAnticipo, new R040_DetalleDeAnticipo(uow,consSv, finServ,empresa,ctaSv, logger) },
 				{ InfoReporte.R041_DetalleDeLiquidacionDeHaberes, new R041_DetalleLiquidacionDeHaberes(uow,consSv, finServ,empresa,ctaSv, logger) },
 				{ InfoReporte.R042_OfertasActivas, new R042_OfertasActivas(uow,ofeSv, empresa,ctaSv, logger) },
+				{ InfoReporte.R043_PROMO_COMBO, new R043_CombosActivos(uow,cmbSv, empresa,ctaSv, logger) },
 				{ InfoReporte.R044_ConsultaVencPorTipoCtaTipoCompte, new R044_ConsultaVencPorTipoCtaTipoCompte(uow,consSv, finServ,empresa,ctaSv, logger) },
                 { InfoReporte.R045_PunteraDeGondola, new R045_PunteraDeGondola(uow,etiqSv,empresa,ctaSv, logger) },
                 { InfoReporte.R046_Etiquetas01Precio, new R046_Etiquetas01Precio(uow,etiqSv,empresa,ctaSv, logger) },
