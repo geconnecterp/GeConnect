@@ -99,6 +99,8 @@
 			public const string SP_COMBO_SUSTITUTOS = "SPGECO_Combos_Prod_Sus";
 			public const string SP_COMBO_CONFIRMAR = "SPGECO_Combos_Confirmar";
 
+			public const string SP_COMBO_REPO = "SPGECO_Combos_Repo";
+
             //PRESUPUESTOS
             public const string SP_PRESUP_DATOS = "SPGECO_PRE_Datos";
             public const string SP_PRESUP_ESTADOS = "SPGECO_PRE_ESTADOS";

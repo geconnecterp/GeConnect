@@ -319,5 +319,25 @@ namespace gc.api.Controllers.Ofertas
             }
         }
 
+        [HttpPost("combo-repo")]
+        public IActionResult ObtenerCombosRepo(ComboReqDto req)
+        {
+            try
+            {
+                if(req== null)
+                {
+                    return BadRequest(new { ok = false, mensaje = "Los datos de la solicitud son requeridos" });
+                }   
+
+                List<ComboRepoDto> combos = _promoComboServicio.ObtenerCombosRepo(req);
+                return Ok(new ApiResponse<List<ComboRepoDto>>(combos));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener combos repo");
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { ok = false, mensaje = ex.Message });
+            }
+        }
     }
 }

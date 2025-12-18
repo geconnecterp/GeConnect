@@ -186,5 +186,22 @@ namespace gc.api.core.Servicios.Ofertas
             }
             return resp[0];
         }
+
+        public List<ComboRepoDto> ObtenerCombosRepo(ComboReqDto req)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_COMBO_REPO;
+            var fecha = req.cmb_carga;
+            var f = $"{fecha.Year}-{fecha.Month.ToString().PadLeft(2, '0')}-{fecha.Day.ToString().PadLeft(2, '0')}";
+            var ps = new List<SqlParameter>
+            {
+                new SqlParameter("@adm_id", req.adm_id),
+                new SqlParameter("@lp_id", req.lp_id),
+                new SqlParameter("@cmb_estado", req.cmb_estado),
+                new SqlParameter("@cmb_id", req.cmb_id),
+                new SqlParameter("@cmb_carga", f)
+            };
+            var lista = _repository.EjecutarLstSpExt<ComboRepoDto>(sp, ps, true);
+            return lista;
+        }
     }
 }
