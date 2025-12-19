@@ -4,28 +4,44 @@
     string a = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
     var adm = a.Split("#");
 }
-<div class="row">
-    <div class="d-flex d-inline-flex justify-content-md-between cabeceraBarra01">
-        <a asp-action="index" asp-controller="home" asp-area="" class="btn btn-secondary sinbordefondo m-2" style="background-color:transparent !important;border-bottom-style:hidden">GECOPocket</a>
-        <!-- ACA DEBERIA IR SUCURSAL ADMINISTRACION-->
-        <span class="m-3">Sucursal @adm[1]</span>
 
-        <span class="textoEncabezado m-3">@Model.Item2.Item1</span>
+<!-- Header Golden Minimalista -->
+<div class="card-golden mb-3">
+    <!-- Barra Superior -->
+    <div class="card-golden-header d-flex justify-content-between align-items-center py-2 px-3">
+        <a asp-action="index" asp-controller="home" asp-area="" 
+           class="btn btn-link text-white text-decoration-none p-0 fw-bold">
+            <i class="bx bx-home-alt me-1"></i>GECOPocket
+        </a>
+        
+        <span class="badge bg-golden-light text-golden-dark px-3 py-2">
+            <i class="bx bx-building me-1"></i>Sucursal @adm[1]
+        </span>
+
+        <span class="text-white fw-semibold">
+            <i class="bx bx-user me-1"></i>@Model.Item2.Item1
+        </span>
     </div>
-</div>
-<div class="row">
-    <div class="d-flex d-inline-flex justify-content-md-between cabeceraBarra02">
-        <span class="textoEncabezado m-3"> @Model.Item1.ToUpper()</span>
+    
+    <!-- Barra Inferior -->
+    <div class="d-flex justify-content-between align-items-center bg-golden-light py-2 px-3">
+        <h6 class="text-golden-dark mb-0 fw-bold">
+            <i class="bx bx-folder-open me-1"></i>@Model.Item1.ToUpper()
+        </h6>
 
         @if (!string.IsNullOrEmpty(Model.Item2.Item2.Item1) && !Model.Item2.Item2.Item1.Equals("#"))
         {
-            if(!Model.Item2.Item2.Item2)//boton especial
+            if (!Model.Item2.Item2.Item2)
             {
-                <a href="@Model.Item2.Item2.Item1" class="volverGen btn btn-danger btn-xs sinbordefondo m-2"><i class="bx bx-left-arrow-alt btn-xs me-1"></i><span>Volver</span></a>
+                <a href="@Model.Item2.Item2.Item1" class="btn btn-danger btn-sm">
+                    <i class="bx bx-left-arrow-alt me-1"></i>Volver
+                </a>
             }
             else
             {
-                <button type="button" id="btnVolverGen" class="volverGen btn btn-danger btn-xs sinbordefondo m-2"><i class="bx bx-left-arrow-alt btn-xs me-1"></i><span>Volver</span></button>
+                <button type="button" id="btnVolverGen" class="btn btn-danger btn-sm">
+                    <i class="bx bx-left-arrow-alt me-1"></i>Volver
+                </button>
             }
         }
     </div>

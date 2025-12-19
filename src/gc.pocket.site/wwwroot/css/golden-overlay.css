@@ -1,7 +1,8 @@
 ﻿/*!
- * Golden Theme Overlay v2.0
+ * Golden Theme Overlay v2.1
  * Sistema de botones optimizado con paleta golden completa
  * Rendimiento mejorado y código unificado
+ * Incluye componentes de autenticación y login
  */
 
 /* ===== VARIABLES GOLDEN SISTEMA COMPLETO ===== */
@@ -15,17 +16,24 @@
     --bs-golden-light: #f5e6a3;
     --bs-golden-dark: #8b7355;
     --bs-golden-accent: #daa520;
+    
+    /* Golden Background Colors */
+    --bs-golden-bg-light: #fff8e7;
+    --bs-golden-bg-secondary: #f4e4c1;
+    --bs-golden-bg-badge: #faf5e6;
+    
     /* Golden Extended Palette */
-    --bs-golden-success: #71dd37; /* Verde mantenido de Bootstrap */
+    --bs-golden-success: #71dd37;
     --bs-golden-success-rgb: 113, 221, 55;
-    --bs-golden-danger: #ff3e1d; /* Rojo mantenido de Bootstrap */
+    --bs-golden-danger: #ff3e1d;
     --bs-golden-danger-rgb: 255, 62, 29;
-    --bs-golden-warning: #ffab00; /* Amarillo mantenido de Bootstrap */
+    --bs-golden-warning: #ffab00;
     --bs-golden-warning-rgb: 255, 171, 0;
-    --bs-golden-info: #1070E3; /* #20c997; /* Azul que combina con golden */
+    --bs-golden-info: #1070E3;
     --bs-golden-info-rgb: 16, 112, 227;
-    --bs-golden-secondary-muted: #9d926e; /* Golden apagado para secondary */
+    --bs-golden-secondary-muted: #9d926e;
     --bs-golden-secondary-muted-rgb: 157, 146, 110;
+    
     /* Bootstrap Overrides */
     --bs-primary: var(--bs-golden-primary) !important;
     --bs-primary-rgb: var(--bs-golden-primary-rgb) !important;
@@ -39,6 +47,7 @@
     --bs-warning-rgb: var(--bs-golden-warning-rgb) !important;
     --bs-danger: var(--bs-golden-danger) !important;
     --bs-danger-rgb: var(--bs-golden-danger-rgb) !important;
+    
     /* System Overrides */
     --bs-focus-ring-color: rgba(var(--bs-golden-primary-rgb), 0.25) !important;
     --bs-link-color: var(--bs-golden-primary) !important;
@@ -361,13 +370,132 @@
     color: var(--bs-golden-dark) !important;
 }
 
+.bg-golden-gradient {
+    background: linear-gradient(135deg, var(--bs-golden-bg-light) 0%, var(--bs-golden-bg-secondary) 100%) !important;
+}
+
 .border-golden {
     border-color: var(--bs-golden-primary) !important;
 }
 
+/* ===== COMPONENTES DE AUTENTICACIÓN GOLDEN ===== */
+
+/* Body con fondo golden para páginas de autenticación */
+body.auth-golden {
+    background: linear-gradient(135deg, var(--bs-golden-bg-light) 0%, var(--bs-golden-bg-secondary) 100%);
+    min-height: 100vh;
+}
+
+/* Authentication Wrapper */
+.authentication-wrapper-golden {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+}
+
+/* Card de Login Golden */
+.card-golden-login {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(var(--bs-golden-primary-rgb), 0.2);
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.98);
+}
+
+    .card-golden-login .card-body {
+        padding: 2.5rem;
+    }
+
+/* App Brand Golden */
+.app-brand-golden {
+    margin-bottom: 2rem;
+}
+
+    .app-brand-golden .app-brand-text {
+        background: linear-gradient(135deg, var(--bs-golden-primary) 0%, var(--bs-golden-secondary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+    }
+
+/* Login Titles */
+.login-title {
+    color: var(--bs-golden-dark);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.login-subtitle {
+    color: #6c757d;
+    font-size: 0.95rem;
+}
+
+/* Fecha Badge */
+.fecha-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--bs-golden-light) 0%, var(--bs-golden-bg-secondary) 100%);
+    color: var(--bs-golden-dark);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--bs-golden-primary);
+}
+
+/* Form Labels Golden */
+.form-label-golden {
+    color: var(--bs-golden-dark);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* Input Group Text Golden */
+.input-group-text-golden {
+    background-color: var(--bs-golden-bg-badge);
+    border-color: var(--bs-golden-primary);
+    color: var(--bs-golden-dark);
+}
+
+/* Botón de Login Golden - Gradiente con Animación */
+.btn-login-golden {
+    background: linear-gradient(135deg, var(--bs-golden-primary) 0%, var(--bs-golden-secondary) 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(var(--bs-golden-primary-rgb), 0.3);
+}
+
+    .btn-login-golden:hover {
+        background: linear-gradient(135deg, var(--bs-golden-secondary) 0%, var(--bs-golden-primary) 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(var(--bs-golden-primary-rgb), 0.4);
+        color: white;
+    }
+
+    .btn-login-golden:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 8px rgba(var(--bs-golden-primary-rgb), 0.3);
+    }
+
+    .btn-login-golden:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        opacity: 0.6;
+        transform: none;
+        box-shadow: none;
+    }
+
 /* ===== PERFORMANCE OPTIMIZATIONS ===== */
 @media (prefers-reduced-motion: reduce) {
-    .btn, .nav-link, .form-control, .form-select {
+    .btn, .nav-link, .form-control, .form-select,
+    .btn-login-golden, .app-brand-golden .app-brand-text {
         transition: none !important;
         transform: none !important;
     }
@@ -375,9 +503,29 @@
 
 /* Print Optimizations */
 @media print {
-    .btn {
+    .btn, .btn-login-golden {
         box-shadow: none !important;
         transform: none !important;
+    }
+}
+
+/* Responsive Optimization for Auth Components */
+@media (max-width: 576px) {
+    .card-golden-login .card-body {
+        padding: 1.5rem;
+    }
+    
+    .app-brand-golden .app-brand-text {
+        font-size: 1.5rem;
+    }
+    
+    .login-title {
+        font-size: 1.25rem;
+    }
+    
+    .fecha-badge {
+        font-size: 0.875rem;
+        padding: 0.375rem 0.75rem;
     }
 }
 
@@ -394,7 +542,6 @@
 }
 
 /* ====== COMPONENTES PARA CARGA DE PRECIOS Y DATOS GOLDEN ====== */
-/* Ya existen clases base para grid-golden en el archivo, solo agregar variantes específicas */
 
 /* Estilos específicos para campos de edición con tema golden */
 .campo-edicion {
@@ -412,7 +559,7 @@
     display: inline-block;
     margin: 0;
     padding: 0.25rem 0.5rem;
-    background-color: #faf5e6;
+    background-color: var(--bs-golden-bg-badge);
     border-right: 1px solid var(--bs-golden-light);
     font-size: 0.875rem;
     width: 45px;
@@ -480,11 +627,11 @@
 }
 
 /* Estilos trasladados desde la vista parcial _presupuestoProds.cshtml */
-/* Solo se añaden si no existen previamente en otras hojas de estilo */
 .campo-modificado {
     background-color: #d4f1f9 !important;
     border-color: #a8e1f5 !important;
 }
+
 .indicador-cambio {
     position: absolute;
     top: 0;
@@ -495,18 +642,20 @@
     border-width: 0 8px 8px 0;
     border-color: transparent #4bacc6 transparent transparent;
 }
+
 .input-container {
     position: relative;
 }
+
 .campo-readonly {
     cursor: pointer;
     background-color: #f8f9fa;
 }
-.campo-readonly:hover {
-    background-color: #e9ecef;
-}
 
-/* Compatibilidad: mantener selector para inputs editables visualmente cuando no readonly */
+    .campo-readonly:hover {
+        background-color: #e9ecef;
+    }
+
 .input-container .form-control:not([readonly]) {
     background-color: #fff8e1;
     border-color: #ffc107;
