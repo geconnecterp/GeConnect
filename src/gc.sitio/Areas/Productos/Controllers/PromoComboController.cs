@@ -486,6 +486,68 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ObtenerCombosRepo([FromBody] ComboReqDto req)
+        {
+            try
+            {
+                // Verificar autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
+                if (req == null)
+                {
+                    throw new NegocioException("No se recepcionaron los parametros de la consulta.");
+                }
+
+                // Validar parámetros
+                if (string.IsNullOrEmpty(req.adm_id))
+                    return PartialView("_gridMensaje", CrearRespuestaWarning("No se reconoce la Administración de la solicitud."));
+
+                if (string.IsNullOrEmpty(req.lp_id))
+                    return PartialView("_gridMensaje", CrearRespuestaWarning("No se identifica la lista de precios"));
+
+                // Llamar al servicio para obtener sustitutos
+                var respuesta = await _comboServicio.ObtenerCombosRepo(req, TokenCookie);
+
+                // Validar respuesta
+                if (!respuesta.Ok || respuesta.EsError)
+                {
+                    return PartialView("_gridMensaje", CrearRespuestaError(respuesta.Mensaje ?? "Error al obtener productos sustitutos"));
+                }
+
+                // Verificar si hay sustitutos - No es error si no hay, simplemente mostramos grid vacío
+                if (respuesta.ListaEntidad == null || !respuesta.ListaEntidad.Any())
+                {
+                    return PartialView("_gridComboRepo", new GridCoreSmart<ComboRepoDto>());
+                }
+
+                // Crear grid con los sustitutos
+                var grid = new GridCoreSmart<ComboRepoDto>
+                {
+                    ListaDatos = new StaticPagedList<ComboRepoDto>(respuesta.ListaEntidad, 1, respuesta.ListaEntidad.Count, respuesta.ListaEntidad.Count),
+                    CantidadReg = respuesta.ListaEntidad.Count,
+                    PrimerRegistro = 1,
+                    UltimoRegistro = respuesta.ListaEntidad.Count,
+                    RegistroFinal = respuesta.ListaEntidad.Count,
+                    CantidadPaginas = 1,
+                    PaginaActual = 1,                    
+                };
+
+                return PartialView("_gridComboRepo", grid);
+            }
+            catch (NegocioException ex)
+            {
+                _logger?.LogError(ex, "Error al obtener productos sustitutos");
+                return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error interno al obtener productos sustitutos");
+                return PartialView("_gridMensaje", CrearRespuestaError("Error interno al obtener productos sustitutos"));
+            }
+        }
+
         /// <summary>
         /// Confirma la creación o modificación de una promoción o combo
         /// </summary>

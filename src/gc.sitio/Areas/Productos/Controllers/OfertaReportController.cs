@@ -1,7 +1,9 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
+using gc.infraestructura.Helpers;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
@@ -26,6 +28,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             IHttpContextAccessor contexo,
             ILogger<OfertasController> logger,
             IOfertaServicio ofertaServicio,
+            IComboServicio cmbSv,
             IOptions<DocsManager> docsManager,
             IDocManagerServicio docManagerServicio
             )
@@ -55,7 +58,7 @@ namespace gc.sitio.Areas.Productos.Controllers
 
                 //Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
                 DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
-                ViewBag.ImpresionId = _modulo.Reportes[0].Id; //siempre el primer reporte
+                ViewBag.ImpresionId = _modulo.Reportes.Select(x => x.Id).ToArray(); //siempre el primer reporte
 
                 _logger?.LogInformation($"Generando Arbol de Archivos del módulo. {MethodBase.GetCurrentMethod()?.Name}");
 
@@ -64,6 +67,8 @@ namespace gc.sitio.Areas.Productos.Controllers
                 ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
 
                 #endregion
+
+                InicializarVista();
 
             }
             catch (NegocioException ex)
@@ -78,6 +83,13 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
             return View();
 
+        }
+
+        private void InicializarVista()
+        {
+            var canales = _ofertaServicio.BuscarCanales(TokenCookie).GetAwaiter().GetResult();
+            var cmb = canales.ListaEntidad?.Select(x => new ComboGenDto { Id = x.lp_id, Descripcion = x.canal }).ToList();
+            ViewBag.Tipo = HelperMvc<ComboGenDto>.ListaGenerica(cmb ?? []);
         }
     }
 }

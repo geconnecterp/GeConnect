@@ -1,48 +1,148 @@
-﻿var admId = "0000";
-var lpId = "001";
-var canal = "SANTA LUCIA - MAYORISTA";
-var estado = {
-    modoSeleccionCanal: "ninguno",
-    canalSeleccionado: null,
-    cacheDom: {}, // Cache de elementos DOM frecuentes
-    canalActual: null,
-    canalDestino: null,
-    rbActivo: 0,
-    report:[42,43]
-}
-
-$(function () {   
+﻿$(function () {
     inicializaEventos();
-    cachearElementosDOM();
-    cargarCanales();
     inicializarVista();
 });
 
 function inicializarVista() {
-    // Ya no se selecciona aquí, se hace después de cargar los canales
-    // La selección se realiza en cargarCanales() después de recibir el HTML
+    // INICIALIZAMOS PANELES
+    if ($("#divDetalle").is(":visible")) {
+        $("#divDetalle").collapse("hide");
+    }
+    $("#divFiltro").collapse("show");
 }
 
 function inicializaEventos() {
     //evento para el boton imprimir
     $(document).on("click", "#btnImprimir", function () {
-        //dependiendo del radiobutton activo es la impresion que se ejecutará
         imprimirReporteOf();
     });
 
-    // Eventos para canales
-    $(document).on("click", ".canal-seleccionable", function (e) {
-        manejarSeleccionCanal(e, $(this));
+    $("#chkTipo").on("change", function () {
+        $("#Tipo").prop("disabled", !$(this).is(":checked"));
     });
+
+    // Configurar el evento click para el botón Buscar/Filtrar
+    $("#btnBuscar").on("click", function (e) {
+        SeleccionReporte(e, $(this));
+    });
+
+    $("#btnCancel").on("click", function () {
+        window.location.href = homeOfertaRepoUrl;
+    });
+
+    // Eventos del grid de combos
+    configurarEventosGridCombos();
 }
 
+// ====== FUNCIONES ESPECÍFICAS PARA GRID DE COMBOS ======
+function configurarEventosGridCombos() {
+    // Evento para volver a los filtros
+    $(document).on("click", "#btnVolverFiltros", function () {
+        $("#divDetalle").collapse("hide");
+        $("#divFiltro").collapse("show");
+    });
+
+    // Evento para expandir/contraer columnas
+    $(document).on("click", "#btnExpandirColumnas", function () {
+        toggleColumnasExtendidas();
+    });
+
+    // Evento para exportar a Excel
+    $(document).on("click", "#btnExportarExcel", function () {
+        exportarGridCombosAExcel();
+    });
+
+    // Inicializar tooltips para celdas truncadas
+    inicializarTooltipsCombo();
+
+    // Actualizar timestamp cada minuto
+    inicializarActualizacionTimestamp();
+}
+
+function toggleColumnasExtendidas() {
+    const $tabla = $("#tbGridPrecios");
+    const $columnas = $tabla.find("th, td").filter(":nth-child(n+6)"); // Columnas adicionales si las hubiera
+    
+    if ($columnas.length === 0) {
+        console.log("No hay columnas adicionales para expandir/contraer");
+        mostrarMensajeAlerta("No hay columnas adicionales para mostrar/ocultar", "info");
+        return;
+    }
+    
+    if ($columnas.is(":visible")) {
+        $columnas.hide();
+        $("#btnExpandirColumnas").html('<i class="bx bx-expand-alt"></i>');
+        console.log("Columnas adicionales ocultas");
+    } else {
+        $columnas.show();
+        $("#btnExpandirColumnas").html('<i class="bx bx-collapse-alt"></i>');
+        console.log("Columnas adicionales mostradas");
+    }
+}
+
+function exportarGridCombosAExcel() {
+    if (typeof exportarGridAExcel === 'function') {
+        exportarGridAExcel('#tbGridPrecios', 'DetalleCombos');
+    } else {
+        console.warn("La función exportarGridAExcel no está disponible");
+        mostrarMensajeAlerta("Función de exportación no disponible", "warning");
+    }
+}
+
+function inicializarTooltipsCombo() {
+    // Esperar a que el DOM esté listo
+    setTimeout(function() {
+        // Destruir tooltips existentes para evitar duplicados
+        $('[data-bs-toggle="tooltip"]').tooltip('dispose');
+        
+        // Inicializar nuevos tooltips
+        $('[title]').tooltip({
+            placement: 'top',
+            trigger: 'hover',
+            container: 'body',
+            boundary: 'window'
+        });
+        
+        console.log("Tooltips inicializados para grid de combos");
+    }, 100);
+}
+
+function inicializarActualizacionTimestamp() {
+    const $spanTimestamp = $("#spanUltimaActualizacion");
+    
+    if ($spanTimestamp.length > 0) {
+        // Actualizar inmediatamente
+        actualizarTimestamp($spanTimestamp);
+        
+        // Actualizar cada minuto
+        setInterval(function () {
+            actualizarTimestamp($spanTimestamp);
+        }, 60000);
+        
+        console.log("Actualización de timestamp iniciada");
+    }
+}
+
+function actualizarTimestamp($elemento) {
+    const ahora = new Date();
+    $elemento.text(ahora.toLocaleString('es-AR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    }));
+}
+
+// ====== FUNCIONES EXISTENTES MEJORADAS ======
 function imprimirReporteOf() {
     let indice = 0;
     let repo = "";
-    if (estado.rbActivo === 1) {
+    
+    if (estado.rbRepo === 1) {
         indice = estado.report[0];
         repo = "Reporte de Oferta";
-    } else if (estado.rbActivo === 2) {
+    } else if (estado.rbRepo === 2) {
         indice = estado.report[1];
         repo = "Reporte de Combo";
     } else {
@@ -50,230 +150,216 @@ function imprimirReporteOf() {
         repo = "Reporte de Oferta";
     }
 
-    let data = { adm_id: admId, lp_id: lpId, canal };
-    cargarReporteEnArre(indice, data, repo);
+    //let data = { adm_id: admId, lp_id: lpId, canal };
+    //cargarReporteEnArre(indice, data, repo);
 
-    data = { modulo: "", parametros: [] }
+    data = { modulo: "", parametros: [] };
     invocacionGestorDoc(data);
 }
 
-function manejarSeleccionCanal(e, fila) {
-    admId = fila.data("adm-id");
-    lpId = fila.data("lp-id");
-    canal = fila.data("canal");
-    if ($("#chkOferta").is(":checked")) {
-        estado.rbActivo = 1;
-    }
-    else if ($("#chkCombo").is(":checked")) {        
-        estado.rbActivo = 2;
-    }
-    else {
-        estado.rbActivo = 1;
-    }
-    // Deseleccionar todas las filas
-    $("#tbGridCanales tr").removeClass("selected-row");
+function SeleccionReporte(e, fila) {
+    let lp = $("#Tipo").val();
 
-    // Seleccionar solo la fila actual
-    fila.addClass("selected-row");
-
-    // Cargar ofertas activas para este canal
+    admId = administracion.split('#')[0];
+    lpId = lp.trim() === "" ? admLp_id : lp;
+    
+    if ($("#rbOferta").is(":checked")) {
+        estado.rbRepo = 1;
+    } else if ($("#rbCombo").is(":checked")) {
+        estado.rbRepo = 2;
+    } else {
+        estado.rbRepo = 1;
+    }
+    
     cargarDatosParaReporte(admId, lpId, 1);
-
-    // Mostrar información del canal seleccionado
-    var adminDesc = fila.find("td:eq(1)").text().trim();
-    var lpDesc = fila.find("td:eq(2)").text().trim();
-    mostrarInformacionCanal(admId, lpId, adminDesc, lpDesc);
-
-    // Mensaje informativo
-    ControlaMensajeInfo("Mostrando ofertas del canal: " + canal);
 }
 
 function mostrarError($contenedor, titulo, mensaje) {
-    $contenedor.html(`
-            <div class="alert alert-danger">
-                <h5 class="alert-heading"><i class="bx bx-error-circle me-2"></i>${titulo}</h5>
-                <p>${mensaje}</p>
-                <button class="btn btn-outline-danger btn-sm btn-reintentar">
-                    <i class="bx bx-refresh"></i> Reintentar
-                </button>
-            </div>
-        `);
+    const html = `
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <h5 class="alert-heading">
+                <i class="bx bx-error-circle me-2"></i>${titulo}
+            </h5>
+            <p class="mb-2">${mensaje}</p>
+            <button type="button" class="btn btn-outline-danger btn-sm btn-reintentar">
+                <i class="bx bx-refresh me-1"></i> Reintentar
+            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+    
+    $contenedor.html(html);
 }
 
-function cargarCanales(){
-    // Verificar que el contenedor de canales existe
-    if ($("#gridCanales").length === 0) {
-        console.warn("No se encontró el contenedor para los canales (#gridCanales)");
+function mostrarMensajeAlerta(mensaje, tipo = "info") {
+    const iconos = {
+        info: "bx-info-circle",
+        warning: "bx-error",
+        success: "bx-check-circle",
+        danger: "bx-x-circle"
+    };
+    
+    const html = `
+        <div class="alert alert-${tipo} alert-dismissible fade show" role="alert">
+            <i class="bx ${iconos[tipo]} me-2"></i>${mensaje}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+    
+    // Agregar al contenedor de mensajes si existe, sino crear uno temporal
+    let $contenedor = $("#mensajesContainer");
+    if ($contenedor.length === 0) {
+        $contenedor = $("<div>").attr("id", "mensajesContainer").prependTo(".grid-golden-body");
+    }
+    
+    $contenedor.html(html);
+    
+    // Auto-ocultar después de 5 segundos
+    setTimeout(function () {
+        $contenedor.find(".alert").fadeOut(300, function () {
+            $(this).remove();
+        });
+    }, 5000);
+}
+
+function cargarDatosParaReporte(admId, lpId, pagina) {
+    const queRb = estado.rbRepo;
+    
+    if (queRb === 1) {
+        cargarOfertasActivas(admId, lpId, pagina);
+    } else if (queRb === 2) {
+        cargarCombosActivos(admId, lpId);
+    } else {
+        cargarOfertasActivas(admId, lpId, pagina);
+    }
+}
+
+function cargarOfertasActivas(admId, lpId, pagina) {
+    if (typeof presentarOfertasActivasUrl === "undefined") {
+        console.error("URL para presentar ofertas activas no definida");
+        mostrarError($("#divDetalle"), "Error de configuración",
+            "URL para presentar ofertas activas no definida");
         return;
     }
 
-    // Verificar que la URL está definida
-    if (typeof buscarCanalesUrl === "undefined") {
-        console.error("URL de búsqueda de canales no definida");
-        mostrarError($("#gridCanales"), "Error de configuración",
-            "URL para búsqueda de canales no definida");
-        return;
-    }
+    admId = admId || "0000";
+    lpId = lpId || "001";
+    pagina = pagina || 1;
 
-    AbrirWaiting("Cargando canales...");
+    AbrirWaiting("Cargando ofertas activas...");
 
-    // Usar jQuery AJAX
+    var datosPost = {
+        adm_id: admId,
+        lp_id: lpId,
+        pag: pagina
+    };
+
     $.ajax({
-        url: buscarCanalesUrl,
+        url: presentarOfertasActivasUrl,
         type: "POST",
-        data: {},
+        data: datosPost,
         success: function (html) {
             CerrarWaiting();
-            $("#gridCanales").html(html);
-
-            // Configurar eventos y UI después de cargar canales
-            ocultarElementosSeleccionCanales();
-
-            // Seleccionar primer canal después de que el DOM se haya actualizado
-            setTimeout(function () {
-                var primerCanal = $("#tbGridCanales .canal-seleccionable").first();
-                if (primerCanal.length > 0) {
-                    primerCanal.trigger('click');
-                    console.log("Primer canal seleccionado automáticamente");
-                } else {
-                    console.warn("No se encontraron canales seleccionables");
-                }
-            }, 100);
+            $("#divFiltro").collapse("hide");
+            $("#divDetalle").html(html).collapse("show");
+            cargarReporteEnArre(estado.report[0], datosPost, "Reporte de Ofertas Activas");
+            configurarVistaDelGrid();
         },
         error: function (xhr, status, error) {
             CerrarWaiting();
-            console.error("Error al cargar canales:", error);
-            ControlaMensajeError("Error al cargar canales: " + error);
+            console.error("Error al cargar ofertas activas:", error);
+            
+            var errorMensaje = "No se pudieron cargar las ofertas activas.";
+            try {
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMensaje += " Error: " + xhr.responseJSON.message;
+                }
+            } catch (e) { }
 
-            mostrarError($("#gridCanales"), "Error al cargar canales",
-                "No se pudieron cargar los canales disponibles");
+            mostrarError($("#divDetalle"), "Error al cargar ofertas", errorMensaje);
+            ControlaMensajeError("Error al cargar ofertas activas: " + error);
         }
     });
 }
 
-function ocultarElementosSeleccionCanales() {
-    // Ocultar elementos relacionados con selección múltiple
-    $("#checkAllCanales, .check-canal").parent().css("display", "none");
-    $("#btnLimpiarSeleccion, #canalesSeleccionados, #infoSeleccionCanales").css("display", "none");
-}
-
-function seleccionarCanalPredeterminado() {
-    var primerCanal = $("#tbGridCanales tbody tr.canal-seleccionable:first");
-
-    if (primerCanal.length > 0) {
-        admId = primerCanal.data("adm-id");
-        lpId = primerCanal.data("lp-id");
-        canal = primerCanal.data("canal");
-
-        // Deseleccionar todas las filas y seleccionar la primera
-        $("#tbGridCanales tr").removeClass("selected-row");
-        primerCanal.addClass("selected-row");
-
-        // Cargar ofertas activas para el canal predeterminado
-        cargarDatosParaReporte(admId, lpId, 1);
-
-        console.log("Canal inicial seleccionado automáticamente:", canal);
-    } else {
-        console.warn("No se encontraron canales en la grilla");
-        cargarDatosParaReporte(); // Cargar con valores por defecto
+function cargarCombosActivos(admId, lpId) {
+    if (typeof presentarCombosActivosUrl === "undefined") {
+        console.error("URL para presentar combos activos no definida");
+        mostrarError($("#divDetalle"), "Error de configuración",
+            "URL para presentar combos activos no definida");
+        return;
     }
-}
 
-function cargarDatosParaReporte(admId, lpId, pagina) {
-    //verifico que rb esta checkeado
-    const queRb = estado.rbActivo;
-    if (queRb === 1) {
-        //se debe invocar las ofertas activas.
+    admId = admId || "0000";
+    lpId = lpId || "001";
 
-        // Verificar que la URL está definida
-        if (typeof presentarOfertasActivasUrl === "undefined") {
-            console.error("URL para presentar ofertas activas no definida");
-            this.mostrarError($("#gridOfertasActivas"), "Error de configuración",
-                "URL para presentar ofertas activas no definida");
-            return;
-        }
+    AbrirWaiting("Cargando combos activos...");
 
-        // Valores por defecto
-        admId = admId || "0000";
-        lpId = lpId || "001";
-        pagina = pagina || 1;
+    var datosPost = {
+        adm_id: admId,
+        lp_id: lpId,
+        cmb_estado: estado.cmbEstado,
+        cmb_id: estado.cmbId,
+        cmb_carga: estado.cmbFecha
+    };
 
-        AbrirWaiting("Cargando ofertas activas...");
+    $.ajax({
+        url: presentarCombosActivosUrl,
+        type: "POST",
+        contentType: "application/json; charset=utf-8",  // ✅ AGREGADO
+        dataType: "html",                                 // ✅ AGREGADO
+        data: JSON.stringify(datosPost),
+        success: function (html) {
+            CerrarWaiting();
+            $("#divFiltro").collapse("hide");            // ✅ AGREGADO para consistencia
+            $("#divDetalle").html(html).collapse("show"); // ✅ MODIFICADO
+            cargarReporteEnArre(estado.report[1], datosPost, "Reporte de Combos Activos");
+            configurarVistaDelGrid();
+            inicializarTooltipsCombo(); // Re-inicializar tooltips después de cargar el grid
+        },
+        error: function (xhr, status, error) {
+            CerrarWaiting();
+            console.error("Error al cargar combos activos:", error);
+            console.error("Status HTTP:", xhr.status);
+            console.error("Response Text:", xhr.responseText);
 
-        var datosPost = {
-            admId: admId,
-            lp_id: lpId,
-            pag: pagina
-        };
+            var errorMensaje = "No se pudieron cargar los combos activos.";
 
-        // Obtener información del canal para mostrar
-        var canalSeleccionado = $("#tbGridCanales tr.selected-row");
-        var adminDesc = "", lpDesc = "";
-
-        if (canalSeleccionado.length > 0) {
-            try {
-                adminDesc = canalSeleccionado.find("td:eq(1)").text().trim();
-                lpDesc = canalSeleccionado.find("td:eq(2)").text().trim();
-            } catch (e) {
-                console.warn("No se pudo obtener descripción del canal");
-            }
-        }
-
-        // Mostrar información del canal
-        mostrarInformacionCanal(admId, lpId, adminDesc, lpDesc);
-
-        // Cargar ofertas activas usando AJAX
-        $.ajax({
-            url: presentarOfertasActivasUrl,
-            type: "POST",
-            data: datosPost,
-            success: function (html) {
-                CerrarWaiting();
-
-                // Actualizar grid de ofertas activas
-                $("#gridProductoReporte").html(html);
-
-                configurarVistaDelGrid();
-                // Configurar eventos para el grid
-                //Momentaneamente estan desactivados los eventos del grid
-                //configurarEventosGrid();
-            },
-            error: function (xhr, status, error) {
-                CerrarWaiting();
-                console.error("Error al cargar ofertas activas:", error);
-
-                // Obtener mensaje de error detallado si está disponible
-                var errorMensaje = "No se pudieron cargar las ofertas activas.";
-                try {
+            // Manejo específico de errores comunes
+            switch (xhr.status) {
+                case 415:
+                    errorMensaje += " Error: Formato de contenido no soportado. Verifique la configuración del servidor.";
+                    break;
+                case 400:
+                    errorMensaje += " Error: Datos inválidos en la solicitud.";
+                    break;
+                case 401:
+                    errorMensaje += " Error: No autorizado. Por favor, inicie sesión nuevamente.";
+                    break;
+                case 500:
+                    errorMensaje += " Error: Error interno del servidor.";
+                    break;
+                default:
                     if (xhr.responseJSON && xhr.responseJSON.message) {
                         errorMensaje += " Error: " + xhr.responseJSON.message;
                     }
-                } catch (e) { }
-
-                self.mostrarError($("#gridOfertasActivas"), "Error al cargar ofertas", errorMensaje);
-                ControlaMensajeError("Error al cargar ofertas activas: " + error);
             }
-        });
-    }
-    else {
-        //se debe invocar los combos
-    }
-    
 
+            mostrarError($("#divDetalle"), "Error al cargar combos", errorMensaje);
+            ControlaMensajeError("Error al cargar combos activos: " + error);
+        }
+    });
 }
 
 function configurarVistaDelGrid() {
-    // Ocultar elementos relacionados con selección múltiple
-    $("#checkAllOfertas, .check-oferta").parent().css("display", "none");
+    $("#checkAllOfertas, .check-oferta, #checkAllCombos, .check-combo").parent().css("display", "none");
 }
 
 function configurarEventosGrid() {
-    // Configurar eventos de paginación
     $(".pagination .page-link").off("click").on("click", function (e) {
         e.preventDefault();
         var pagina = $(this).data("page") || 1;
 
-        // Obtener canal seleccionado
         var canalSeleccionado = $("#tbGridCanales tr.selected-row");
         if (canalSeleccionado.length > 0) {
             admId = canalSeleccionado.data("adm-id") || "0000";
@@ -284,31 +370,26 @@ function configurarEventosGrid() {
         }
     });
 
-    // Actualizar contador de seleccionadas
     actualizarContadorSeleccionadas();
-
 }
 
 function actualizarContadorSeleccionadas() {
-    var checkedCount = $(".check-oferta:checked").length;
-    var ofertasSeleccionadas = $("#ofertasSeleccionadas");
+    var checkedCount = $(".check-oferta:checked, .check-combo:checked").length;
+    var ofertasSeleccionadas = $("#ofertasSeleccionadas, #combosSeleccionados");
 
     if (ofertasSeleccionadas.length > 0) {
         ofertasSeleccionadas.text(checkedCount);
     }
 
-    // Actualizar checkbox principal
-    var checkAll = $("#checkAllOfertas");
-    var totalChecks = $(".check-oferta").length;
+    var checkAll = $("#checkAllOfertas, #checkAllCombos");
+    var totalChecks = $(".check-oferta, .check-combo").length;
 
     if (checkAll.length > 0 && totalChecks > 0) {
         checkAll.prop("checked", checkedCount === totalChecks);
         checkAll.prop("indeterminate", checkedCount > 0 && checkedCount < totalChecks);
     }
 
-    // Habilitar o deshabilitar botones según si hay ofertas seleccionadas
-    $("#btnCopiarACanal").prop("disabled", checkedCount === 0);
-    $("#btnEliminarSelec").prop("disabled", checkedCount === 0);
+    $("#btnCopiarACanal, #btnEliminarSelec").prop("disabled", checkedCount === 0);
 }
 
 function mostrarInformacionCanal(admId, lpId, adminDesc, lpDesc) {
@@ -316,61 +397,54 @@ function mostrarInformacionCanal(admId, lpId, adminDesc, lpDesc) {
     if (!lpId) lpId = "001";
     if (!adminDesc) adminDesc = admId;
     if (!lpDesc) lpDesc = lpId;
-    let queRb = estado.rbActivo;
+    let queRb = estado.rbRepo;
 
-    // Crear elemento HTML para información del canal
     var infoCanal = `
-            <div class="filter-golden mb-1 mt-1" id="infoCanal">
-                <div class="filter-golden-header">
-                    <div class="card-header-golden py-1">
-                        <div class="d-flex align-items-center">
-                            <!-- Izquierda: título -->
-                            <div class="flex-grow-1">
-                                <h5 class="mb-0">
-                                    <i class="bx bx-broadcast me-2"></i>Canal Seleccionado
-                                </h5>
-                            </div>
-
-                            <!-- Centro: botón imprimir -->
-                            <div class="flex-grow-1 text-center">
-                                <button type="button" class="btn btn-light btn-sm mt-1 me-1" id="btnImprimir" title="Imprimir">
-                                    <i class="bx bx-printer"></i> Imprimir
-                                </button>
-                            </div>
-
-                            <!-- Derecha: switches -->
-                            <div class="flex-grow-1 d-flex justify-content-end">
-                                <div class="input-group input-group-sm">
-                                    <div class="form-check form-check-inline form-switch mb-2">
-                                        <input class="form-check-input" type="radio" name="rbSelect" id="chkOferta" ${queRb == 1 ? `checked`:``} } />
-                                        <label class="form-check-label" for="chkOferta" id="lbOferta">Oferta</label>
-                                    </div>
-                                    <div class="form-check form-check-inline form-switch mb-2">
-                                        <input class="form-check-input" type="radio" name="rbSelect" id="chkCombo" ${queRb == 2 ? `checked` : ``}/>
-                                        <label class="form-check-label" for="chkCombo" id="lbCombo">Combos</label>
-                                    </div>
+        <div class="filter-golden mb-1 mt-1" id="infoCanal">
+            <div class="filter-golden-header">
+                <div class="card-header-golden py-1">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h5 class="mb-0">
+                                <i class="bx bx-broadcast me-2"></i>Canal Seleccionado
+                            </h5>
+                        </div>
+                        <div class="flex-grow-1 text-center">
+                            <button type="button" class="btn btn-golden btn-sm mt-1 me-1" id="btnImprimir" title="Imprimir">
+                                <i class="bx bx-printer me-1"></i> Imprimir
+                            </button>
+                        </div>
+                        <div class="flex-grow-1 d-flex justify-content-end">
+                            <div class="input-group input-group-sm">
+                                <div class="form-check form-check-inline form-switch mb-2">
+                                    <input class="form-check-input" type="radio" name="rbSelect" id="chkOferta" ${queRb == 1 ? 'checked' : ''} />
+                                    <label class="form-check-label" for="chkOferta">Oferta</label>
+                                </div>
+                                <div class="form-check form-check-inline form-switch mb-2">
+                                    <input class="form-check-input" type="radio" name="rbSelect" id="chkCombo" ${queRb == 2 ? 'checked' : ''} />
+                                    <label class="form-check-label" for="chkCombo">Combos</label>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="filter-golden-body py-2">
-                    <div class="d-flex align-items-center">
-                        <div class="me-3">
-                            <span class="text-golden-dark">Administración:</span>
-                            <span class="badge bg-golden ms-1">${admId}</span>
-                        </div>
-                        <div class="border-start ps-3">
-                            <span class="text-golden-dark">Lista de Precios:</span>
-                            <span class="badge bg-golden ms-1">${lpId}</span>
-                            <span class="ms-1"><strong>${lpDesc}</strong></span>
-                        </div>
+            </div>
+            <div class="filter-golden-body py-2">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <span class="text-golden-dark">Administración:</span>
+                        <span class="badge bg-golden ms-1">${admId}</span>
+                    </div>
+                    <div class="border-start ps-3">
+                        <span class="text-golden-dark">Lista de Precios:</span>
+                        <span class="badge bg-golden ms-1">${lpId}</span>
+                        <span class="ms-1"><strong>${lpDesc}</strong></span>
                     </div>
                 </div>
             </div>
-        `;
+        </div>
+    `;
 
-    // Actualizar la información del canal
     $("#infoSeleccionContainer").html(infoCanal);
 }
 
@@ -378,6 +452,7 @@ function cachearElementosDOM() {
     estado.cacheDom = {
         gridCanales: $("#gridCanales"),
         gridOfertas: $("#gridOfertasActivas"),
+        gridCombos: $("#gridCombosActivos"),
         infoSeleccionContainer: $("#infoSeleccionContainer"),
         btnCopiarACanal: $("#btnCopiarACanal"),
         btnEliminarSelec: $("#btnEliminarSelec"),
@@ -385,13 +460,12 @@ function cachearElementosDOM() {
         btnConfirmarCopia: $("#btnConfirmarCopiaACanal")
     };
 
-    // Si no existe el contenedor de información, crearlo cuando sea necesario
-    if (this.estado.cacheDom.infoSeleccionContainer.length === 0 && $(".grid-golden-body .row").length > 0) {
+    if (estado.cacheDom.infoSeleccionContainer.length === 0 && $(".grid-golden-body .row").length > 0) {
         var contenedor = $("<div>")
             .attr("id", "infoSeleccionContainer")
             .addClass("mb-3");
 
         $(".grid-golden-body .row").first().before(contenedor);
-        this.estado.cacheDom.infoSeleccionContainer = $("#infoSeleccionContainer");
+        estado.cacheDom.infoSeleccionContainer = $("#infoSeleccionContainer");
     }
 }

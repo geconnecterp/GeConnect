@@ -1,59 +1,52 @@
-﻿@{
+﻿@using Newtonsoft.Json
+@{
     Layout = "~/views/shared/_Layout.cshtml";
     var filtro = new QueryFilters() { Modelo = ModeloFilter.OF_REPORTE };
-    int indicePrint = ViewBag.ImpresionId != null ? (int)ViewBag.ImpresionId : 0;
+    var indicePrint = JsonConvert.SerializeObject(ViewBag.ImpresionId ?? Array.Empty<int>());
 }
 
 @section styles {
-    <link rel="stylesheet" href="~/css/simplePagination.css" />
     <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
-
-<div class="grid-golden mt-1">   
-   @*  <div class="grid-golden-header">
-        <div class="row align-items-md-center">
-            
-        </div>
-    </div> *@
-    <div class="grid-golden-body">
-        <div class="row align-items-md-start">
-            <div class="col-md-8 col-sm-6">
-                <div id="gridProductoReporte">
-                    <p class="text-center text-muted py-4">
-                        <i class="bx bx-info-circle me-2"></i>
-                        No hay productos seleccionados para ofertas
-                    </p>
-                </div>
-            </div>
-            <div class="col-md-4 col-sm-6">
-                <div id="gridCanales"></div>
-            </div>
-        </div>
-    </div>
+<partial name="_botonera" model="filtro" />
+<div class="collapse" id="divFiltro">
+    <partial name="_filtroBase" model="filtro" />
+    @Html.Hidden("pagEstado", false)
 </div>
-
+<div class="collapse" id="divDetalle"></div>
 <div id="modalGestorDocumental"></div>
 
 @section scripts {
     <script type="text/javascript">
+         //variables de inicialización
 
-        // var autoComRel01Url = "@Url.Action("BuscarProvs", "cargaprecios", new { area = "productos" })";/**/
-        // var autoComRel02Url = "@Url.Action("BuscarRubros", "cargaprecios", new { area = "productos" })";/**/
-        // var autoComRel03Url =  "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "cargaprecios", new { area = "productos" })";/**/
-        // var buscarFamiliaUrl = "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "cargaprecios", new { area = "productos" })";/**/
-        let buscarCanalesUrl = "@Url.Action("BuscarCanales", "Ofertas", new { area = "Productos" })";
-        var presentarOfertasActivasUrl = "@Url.Action("PresentarOfertasActivas", "OfertaActiva", new { area = "Productos" })";
+         var admId = "0000";
+         var lpId = "001";
+         var canal = "SANTA LUCIA - MAYORISTA";
 
+         var estado = {
+             canalSeleccionado: null,
+             cacheDom: {}, // Cache de elementos DOM frecuentes
+             rbRepo: 0,
+             report:@Html.Raw(indicePrint),
+             cmbEstado: 'A',
+             cmbId:'%',
+             cmbFecha:"2020-01-01"
+         }
 
-        let buscarMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "Presupuesto", new { area = "Productos" })';
-       
-        //para imprimir
-        let indexPrint = parseInt("@indicePrint");
-        var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
-        var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
-        var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
-        var enviarEmailUrl =  "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
-        var enviarWhatsAppUrl =  "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+         var homeOfertaRepoUrl ="@Url.Action("index", "Ofertareport", new { area = "Productos" })";    
+         var presentarOfertasActivasUrl = "@Url.Action("PresentarOfertasActivas", "OfertaActiva", new { area = "Productos" })";
+        var presentarCombosActivosUrl = "@Url.Action("ObtenerCombosRepo", "promocombo", new { area = "Productos" })";
+
+         let buscarMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "Presupuesto", new { area = "Productos" })';
+
+         //para imprimir
+         let indexPrint = parseInt("@indicePrint");
+         var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+         var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+         var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+         var enviarEmailUrl =  "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+         var enviarWhatsAppUrl =  "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
 
     </script>
 

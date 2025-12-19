@@ -1,0 +1,213 @@
+﻿@model GridCoreSmart<ComboRepoDto>
+
+@{
+    var listaDatos = Model?.ListaDatos;
+    var hayDatos = listaDatos?.Any() == true;
+    
+    // Variables de control de agrupación
+    var comboAnterior = string.Empty;
+    var prodAnterior = string.Empty;
+    var alt = true;
+}
+
+<div class="grid-golden h-100" id="gridComboRepoContainer">
+    <div class="grid-golden-header">
+        <div class="d-flex align-items-center justify-content-between gap-2">
+            <h5 class="mb-0"><strong>Detalle de Combos y Promociones</strong></h5>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-golden btn-sm" id="btnExpandirColumnas" title="Expandir/Contraer columnas">
+                    <i class="bx bx-expand-alt"></i>
+                </button>
+                <button type="button" class="btn btn-golden btn-sm" id="btnExportarExcel" title="Exportar a Excel">
+                    <i class="bx bx-download"></i> Excel
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" id="btnVolverFiltros" title="Volver a filtros">
+                    <i class="bx bx-arrow-back"></i> Filtros
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="grid-golden-body">
+        <div class="table-responsive table-wrapper text-nowrap">
+            <table class="table table-sm mb-0 table-hover table-golden" id="tbGridPrecios">
+                <thead class="table-golden-header sticky-top">
+                    <tr class="header">
+                        <th scope="col" class="text-center"><span>ID Producto</span></th>
+                        <th scope="col"><span>Descripción</span></th>
+                        <th scope="col" class="text-end"><span>Cantidad</span></th>
+                        <th scope="col" class="text-end"><span>Dto.%</span></th>
+                        <th scope="col" class="text-end"><span>Dto.Imp</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (hayDatos)
+                    {
+                        foreach (var item in listaDatos)
+                        {
+                            var comboActual = item.cmb_id?.ToString() ?? string.Empty;
+                            var prodActual = item.p_id?.ToString() ?? string.Empty;
+                            var tieneSustituto = !string.IsNullOrEmpty(item.p_id_sustituto);
+                            
+                            // ===== CABECERA DE COMBO (cuando cambia) =====
+                            if (comboActual != comboAnterior)
+                            {
+                                var tipoCombo = item.cmb_tipo.Equals('C') ? "Combo" : "Promo";
+                                var iconoTipo = item.cmb_tipo.Equals('C') ? "bx-package" : "bx-purchase-tag";
+                                
+                                <tr class="table-secondary fw-bold">
+                                    <td colspan="5" class="text-center py-2">
+                                        <i class="bx bx-folder me-2"></i>
+                                        <strong>@item.cmb_id - @item.cmb_desc</strong>
+                                        <span class="badge bg-info ms-2">@item.usu_id</span>
+                                        <span class="ms-2 small">
+                                            <i class="bx bx-calendar me-1"></i>
+                                            @Model.FormatearDato(item.cmb_desde, FormatDato.Fecha) al @Model.FormatearDato(item.cmb_hasta, FormatDato.Fecha)
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr class="table-info fw-semibold">
+                                    <td colspan="5" class="text-center py-2">
+                                        <i class="bx @iconoTipo me-2"></i>
+                                        <span class="badge bg-warning text-dark">@tipoCombo</span>
+                                        <span class="mx-2">|</span>
+                                        <span class="text-muted">Adm:</span> <strong>(@item.adm_id) @item.adm_nombre</strong>
+                                        <span class="mx-2">|</span>
+                                        <span class="text-muted">Lista:</span> <strong>(@item.lp_id) @item.lp_desc</strong>
+                                    </td>
+                                </tr>
+                                
+                                comboAnterior = comboActual;
+                                alt = true;
+                            }
+                            
+                            // ===== CABECERA DE PRODUCTO (si tiene sustitutos) =====
+                            if (prodActual != prodAnterior && tieneSustituto)
+                            {
+                                <tr class="table-warning bg-opacity-25 fw-semibold">
+                                    <td colspan="5" class="text-center py-2">
+                                        <i class="bx bx-box me-2"></i>
+                                        <strong>Producto Base:</strong> 
+                                        <span class="badge bg-primary">@item.p_id</span>
+                                        <span class="ms-1">@item.p_desc</span>
+                                        <span class="mx-2">|</span>
+                                        Cant: <strong>@Model.FormatearDato(item.cantidad, FormatDato.Entero)</strong>
+                                        <span class="mx-2">|</span>
+                                        Dto: <strong>@Model.FormatearDato(item.dto_porc, FormatDato.Monto)%</strong>
+                                        <span class="mx-1">-</span>
+                                        <strong>@Model.FormatearDato(item.dto_imp, FormatDato.Monto)</strong>
+                                    </td>
+                                </tr>
+                            }
+                            
+                            if (prodActual != prodAnterior)
+                            {
+                                prodAnterior = prodActual;
+                            }
+                            
+                            // ===== FILA DE DATOS =====
+                            var clase = alt ? "alt" : string.Empty;
+                            alt = !alt;
+                            
+                            <tr data-producto-id="@item.p_id" class="@clase">
+                                @if (tieneSustituto)
+                                {
+                                    <td class="@Model.ObtenerClase(item.p_id_sustituto)" colspan="2">
+                                        <i class="bx bx-transfer text-warning me-1" title="Producto sustituto"></i>
+                                        <span class="text-muted small">Sustituto de:</span>
+                                        <span class="badge bg-secondary">@item.p_id</span>
+                                        <i class="bx bx-right-arrow-alt mx-1"></i>
+                                        <strong class="text-primary">(@item.p_id_sustituto) @item.p_desc_sustituto</strong>
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td class="@Model.ObtenerClase(item.p_id) text-center">
+                                        <span class="badge bg-light text-dark">@Model.FormatearDato(item.p_id, FormatDato.Ninguno)</span>
+                                    </td>
+                                    <td class="@Model.ObtenerClase(item.p_desc)" title="@item.p_desc">
+                                        @Model.FormatearDato(item.p_desc, FormatDato.Ninguno)
+                                    </td>
+                                }
+                                
+                                <td class="@Model.ObtenerClase('C') text-end">
+                                    @Model.FormatearDato(item.cantidad, FormatDato.Entero)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.dto_porc) text-end">
+                                    @Model.FormatearDato(item.dto_porc, FormatDato.Monto)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.dto_imp) text-end">
+                                    @Model.FormatearDato(item.dto_imp, FormatDato.Monto)
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-5 td-no-datos">
+                                <i class="bx bx-info-circle bx-lg me-2 d-block mx-auto mb-3" style="font-size: 3rem;"></i>
+                                <div class="mt-2">
+                                    <strong class="d-block mb-2">No hay datos disponibles</strong>
+                                    <p class="mb-0 small text-muted">Ajuste los filtros de búsqueda para obtener resultados</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    @if (hayDatos)
+    {
+        <div class="grid-golden-footer py-2">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="text-muted small">
+                    <i class="bx bx-info-circle me-1"></i>
+                    Total de registros: <strong class="text-golden">@listaDatos.Count</strong>
+                </div>
+                <div class="text-muted small">
+                    <i class="bx bx-time me-1"></i>
+                    Última actualización: <span id="spanUltimaActualizacion">@DateTime.Now.ToString("dd/MM/yyyy HH:mm")</span>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@* <script>
+    $(function() {
+        // Evento para volver a los filtros
+        $("#btnVolverFiltros").on("click", function() {
+            $("#divDetalle").collapse("hide");
+            $("#divFiltro").collapse("show");
+        });
+
+        // Evento para expandir/contraer columnas
+        $("#btnExpandirColumnas").on("click", function() {
+            console.log("Funcionalidad de expandir columnas pendiente de implementación");
+        });
+
+        // Evento para exportar a Excel
+        $("#btnExportarExcel").on("click", function() {
+            if (typeof exportarGridAExcel === 'function') {
+                exportarGridAExcel('#tbGridPrecios', 'DetalleCombos');
+            } else {
+                console.warn("La función exportarGridAExcel no está disponible");
+            }
+        });
+
+        // Tooltip para celdas truncadas
+        $('[title]').tooltip({
+            placement: 'top',
+            trigger: 'hover',
+            container: 'body'
+        });
+
+        // Actualizar timestamp
+        setInterval(function() {
+            $("#spanUltimaActualizacion").text(new Date().toLocaleString('es-AR'));
+        }, 60000);
+    });
+</script> *@
