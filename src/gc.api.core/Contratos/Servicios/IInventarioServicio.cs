@@ -7,5 +7,6 @@ namespace gc.api.core.Contratos.Servicios
 	{
 		List<InventarioListaDto> GetInventarioLista(GetInventarioListaRequest request);
 		List<RubroEnInventarioDto> GetRubrosEnInventario(string inv_nro, string usu_id = "%");
+		List<UsuarioEnInventarioDto> GetUSuariosEnInventario(string inv_nro);
 	}
 }

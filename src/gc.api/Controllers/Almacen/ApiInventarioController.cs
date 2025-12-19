@@ -64,5 +64,20 @@ namespace gc.api.Controllers.Almacen
 
 			return Ok(response);
 		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<UsuarioEnInventarioDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetUsuariosParaInventario(string inv_nro)
+		{
+			ApiResponse<List<UsuarioEnInventarioDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _inventarioServicio.GetUSuariosEnInventario(inv_nro);
+
+			response = new ApiResponse<List<UsuarioEnInventarioDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }

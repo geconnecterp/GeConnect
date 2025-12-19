@@ -13,6 +13,7 @@ namespace gc.sitio.core.Servicios.Contratos.Users
         Task<RespuestaGenerica<AdmUserDto>> ObtenerAdministracionesDelUsuario(string usuId, string token);
         Task<RespuestaGenerica<DerUserDto>> ObtenerDerechosDelUsuario(string usuId, string token);
         List<UserDto> ObtenerUsuarioParaLista(BuscarUsuarioRequest request, string token);
+        Task<RespuestaGenerica<UserDto>> BuscarUsuarioLista(string admId, string token);
 
 	}
 }

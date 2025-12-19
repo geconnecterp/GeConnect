@@ -27,6 +27,7 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
         private const string OBTENER_ADM_USUARIO = "/ObtenerAdministracionesDelUsuario";
         private const string OBTENER_DER_USUARIO = "/ObtenerDerechosDelUsuario";
 		private const string BUSCAR_USUARIOS_LISTA = "/BuscarUsuariosParaLista";
+		private const string OBTENER_USUARIOS_LISTA = "/BuscarUsuarioLista";
 
 		private readonly AppSettings _appSettings;
 
@@ -360,6 +361,65 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
 				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
 				return new();
+			}
+		}
+
+		public async Task<RespuestaGenerica<UserDto>> BuscarUsuarioLista(string admId, string token)
+		{
+			try
+			{
+				ApiResponse<List<UserDto>> apiResponse;
+
+				HelperAPI helper = new();
+
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{OBTENER_USUARIOS_LISTA}?adm_id={admId}";
+
+				response = await client.GetAsync(link);
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+
+						return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<UserDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+
+					return new RespuestaGenerica<UserDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
+
+				}
+				else
+				{
+					string stringData = await response.Content.ReadAsStringAsync();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+					var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+					if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
+					{
+						throw new NegocioException(error.Detail ?? "Algo no fue bien con la API de Usuarios.");
+					}
+					else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
+					{
+						throw new NegocioException(error.Detail ?? "Algo no fue bien con la API de Usuarios");
+					}
+					else if (error != null)
+					{
+						throw new Exception(error.Detail);
+					}
+					else
+					{
+						throw new Exception("Algo no fue bien con la API de Usuarios");
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+
+				return new RespuestaGenerica<UserDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener los derechos del Usuario." };
 			}
 		}
 	}

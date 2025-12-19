@@ -1,21 +1,28 @@
 ﻿@{
 }
 <style>
-	#divGrillaRubros {
-		height: 100%; /* ocupa todo el alto de la columna */
-		min-height: 160px; /* altura mínima para que no quede chico */
+	/* #divGrillaRubros {
+		height: 90%;
+		min-height: 160px;
 		display: flex;
 		flex-direction: column;
 	}
 
+	#divGrillaUsuarios {
+		height: 90%;
+		min-height: 160px;
+		display: flex;
+		flex-direction: column;
+	} */
+
 </style>
 <fieldset class="border rounded p-2 mb-3">
-	<legend class="float-none w-auto px-2 fw-bold text-primary">Datos de Adicionales</legend>
+	<legend class="float-none w-auto px-2 fw-bold text-primary" style="margin:0 !important;">Datos de Adicionales</legend>
 	<div class="row">
 		<div class="col-sm-12">
 			<div class="input-group input-group-sm">
 				<div class="form-check form-check-inline form-switch mb-2">
-					<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkCargarPorSector" />
+					<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkCargarPorSector" checked />
 					<label class="form-check-label" for="chkCargarPorSector" id="lbCargarPorSector"></label>
 				</div>
 			</div>
@@ -23,9 +30,11 @@
 	</div>
 	<div class="row">
 		<div class="col-6">
-			<div class="row h-50" id="divGrillaRubros">
+			<div class="row" id="divGrillaRubros">
 			</div>
 			<div class="row" id="divListaSector">
+			</div>
+			<div class="row" id="divListaRubro">
 			</div>
 		</div>
 		<div class="col-6">

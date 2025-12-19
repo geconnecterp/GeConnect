@@ -40,5 +40,16 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<RubroEnInventarioDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<UsuarioEnInventarioDto> GetUSuariosEnInventario(string inv_nro)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INV_USUARIOS;
+			var ps = new List<SqlParameter>()
+			{
+				new("@inv_nro",inv_nro),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<UsuarioEnInventarioDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

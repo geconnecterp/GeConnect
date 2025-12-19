@@ -127,6 +127,7 @@
 			#region INVENTARIO
 			public const string SP_INV_LISTA = "SPGECO_INV_Lista";
 			public const string SP_INV_RUBROS = "SPGECO_INV_Rub";
+			public const string SP_INV_USUARIOS = "SPGECO_INV_Usu";
 			#endregion
 
 			public const string SP_AJ_TIPOS = "dbo.SPGECO_AJ_Tipos";
@@ -485,6 +486,7 @@
 			#endregion
 
 			public const string SP_SECTORES_LISTA = "SPGECO_Sectores_Lista";
+			public const string SP_USUARIOS_LISTA = "SPGECO_Usuarios_Lista";
 
 			public const string SP_ADMINISTRACIONES = "SPGECO_Administraciones";
 			public const string SP_COMPTE_DATOS_PROV = "SPGECO_Compte_DatosProv";

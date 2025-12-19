@@ -1,11 +1,11 @@
-﻿@model InventarioCargaGrillaRubrosModel
+﻿@model InventarioCargaGrillaUsuariosModel
 @using static gc.infraestructura.Helpers.GridHelper
 @{
 	var alt = true;
 	string clase = string.Empty;
 }
 <style>
-	#containerGrillaRubros {
+	#containerGrillaUsuarios {
 		flex: 1; /* se estira para ocupar todo el espacio */
 		overflow-y: auto; /* scroll si hay muchas filas */
 		max-height: 165px !important;
@@ -18,8 +18,8 @@
 	}
 
 	/* Compactar filas de la tabla */
-	#tbListaRubros td,
-	#tbListaRubros th {
+	#tbListaUsuarios td,
+	#tbListaUsuarios th {
 		padding: 0.25rem 0.5rem; /* menos espacio interno */
 		line-height: 1.2; /* altura de línea más baja */
 		vertical-align: middle; /* centrar contenido verticalmente */
@@ -38,26 +38,28 @@
 		}
 
 </style>
-<div class="table-responsive table-wrapper-200-full-width flex-grow-1" id="containerGrillaRubros">
-	<table class="table table-bordered table-hover table-golden h-50" id="tbListaRubros">
+<div class="table-responsive table-wrapper-200-full-width flex-grow-1" id="containerGrillaUsuarios">
+	<table class="table table-bordered table-hover table-golden h-50" id="tbListaUsuarios">
 		<thead>
 			<tr class="header">
-				<th class="text-center" scope="col">Rubros</th>
+				<th class="text-center" scope="col">Usuario</th>
+				<th class="text-center" scope="col">Grupo</th>
 				<th style="width:4%;"></th>
 			</tr>
 		</thead>
 		<tbody>
-			@if (Model != null && Model.GrillaRubros != null && Model.GrillaRubros.ListaDatos != null && Model.GrillaRubros.ListaDatos.Count > 0)
+			@if (Model != null && Model.GrillaUsuarios != null && Model.GrillaUsuarios.ListaDatos != null && Model.GrillaUsuarios.ListaDatos.Count > 0)
 			{
-				@foreach (var item in Model.GrillaRubros.ListaDatos)
+				@foreach (var item in Model.GrillaUsuarios.ListaDatos)
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase"
-						onclick="selectItemGrillaRubro(this);">
-						<td class="@Model.GrillaRubros.ObtenerClase(item.rub_desc)">@Model.GrillaRubros.FormatearDato(item.rub_desc, FormatDato.Ninguno)</td>
+						onclick="selectItemGrillaUsuarios(this);">
+						<td class="@Model.GrillaUsuarios.ObtenerClase(item.usu_apellidoynombre)">@Model.GrillaUsuarios.FormatearDato(item.usu_apellidoynombre, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaUsuarios.ObtenerClase(item.inv_grupo)">@Model.GrillaUsuarios.FormatearDato(item.inv_grupo, FormatDato.Ninguno)</td>
 						<td class="text-center align-middle">
 							<div class="d-flex justify-content-center gap-1">
-								<button type="button" class="btn btn-danger btn-icon-compact" title="Quitar rubro" onclick="eliminarItemRubro('@item.inv_nro','@item.rub_id')">
+								<button type="button" class="btn btn-danger btn-icon-compact" title="Quitar rubro" onclick="eliminarItemUsuario('@item.inv_nro','@item.usu_id')">
 									<i class="bx bx-trash"></i>
 								</button>
 							</div>

@@ -22,6 +22,7 @@ namespace gc.api.core.Contratos.Servicios
         List<AdmUserDto> ObtenerAdministracionesDelUsuario(string usuId);
         List<DerUserDto> ObtenerDerechosDelUsuario(string usuId);
         List<UserDto> BuscarUsuarios(BuscarUsuarioRequest filtro);
+        List<UserDto> BuscarUsuarioLista(string adm_id);
 
 	}
 }

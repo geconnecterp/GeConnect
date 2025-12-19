@@ -256,5 +256,13 @@ namespace gc.api.core.Servicios
 
             return resp;
         }
-    }
+
+		public List<UserDto> BuscarUsuarioLista(string adm_id)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_USUARIOS_LISTA;
+			var ps = new List<SqlParameter>() { new SqlParameter("@adm_id", adm_id) };
+			List<UserDto> resp = _repository.EjecutarLstSpExt<UserDto>(sp, ps, true);
+			return resp;
+		}
+	}
 }

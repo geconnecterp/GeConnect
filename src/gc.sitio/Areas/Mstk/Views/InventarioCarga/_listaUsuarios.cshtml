@@ -1,0 +1,11 @@
+﻿@model ListaUsuarioModel
+@{
+	var lst = Model.ListaUsuarios;
+}
+<div class="input-group input-group-sm">
+	<span class="input-group-text fw-bold text-primary">Usuario:</span>
+	@Html.DropDownListFor(m => m.UsuarioSeleccionado, lst, "Seleccionar", new { @id = "listaUsuarios", @class = "form-control inputEditable activable" })
+	<button type="button" class="btn btn-primary btn-sm" id="btnAgregarUsuario">
+		<i class="bx bx-plus-circle"></i>
+	</button>
+</div>

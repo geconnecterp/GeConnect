@@ -7,7 +7,9 @@
 @section styles {
     <link rel="stylesheet" href="~/css/simplePagination.css" />
 }
-
+<style>
+    
+</style>
 <partial name="_botonera" model="filtro" />
 <div class="collapse" id="divFiltro">
     <partial name="_filtroBase" model="filtro" />
@@ -24,6 +26,12 @@
         let cargarDatosAdicionalesInicialURL = "@Url.Action("CargarDatosAdicionalesInicial", "inventariocarga", new { area = "mstk" })";
         let cargarGrillaRubrosEnSeccionDatosAdicionalesURL = "@Url.Action("CargarGrillaRubrosEnSeccionDatosAdicionales", "inventariocarga", new { area = "mstk" })";
         let cargarListaSectoresEnSeccionDatosAdicionalesURL = "@Url.Action("CargarListaSectoresEnSeccionDatosAdicionales", "inventariocarga", new { area = "mstk" })";
+        let cargarGrillaUsuariosEnSeccionDatosAdicionalesURL = "@Url.Action("CargarGrillaUsuariosEnSeccionDatosAdicionales", "inventariocarga", new { area = "mstk" })";
+        let cargarListaUsuariosEnSeccionDatosAdicionalesURL = "@Url.Action("CargarListaUsuariosEnSeccionDatosAdicionales", "inventariocarga", new { area = "mstk" })";
+        let cargarListaRubrosEnSeccionDatosAdicionalesURL = "@Url.Action("CargarListaRubrosEnSeccionDatosAdicionales", "inventariocarga", new { area = "mstk" })";
+        let agregarRubrosPorSectorURL = "@Url.Action("AgregarRubrosPorSector", "inventariocarga", new { area = "mstk" })";
+        let agregarRubroIndividualURL = "@Url.Action("AgregarRubroIndividual", "inventariocarga", new { area = "mstk" })";
+        let agregarUsuarioIndividualURL = "@Url.Action("AgregarUsuarioIndividual", "inventariocarga", new { area = "mstk" })";
     </script>
 
     <script src="~/js/app/areas/mstk/inventariocarga/invcarga.js"></script>

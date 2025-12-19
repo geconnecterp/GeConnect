@@ -1,0 +1,11 @@
+﻿@model ListaRubroModel
+@{
+	var lst = Model.ListaRubros;
+}
+<div class="input-group input-group-sm">
+	<span class="input-group-text fw-bold text-primary">Rubro:</span>
+	@Html.DropDownListFor(m => m.RubroSeleccionado, lst, "Seleccionar", new { @id = "listaRubros", @class = "form-control inputEditable activable" })
+	<button type="button" class="btn btn-primary btn-sm" id="btnAgregarRubro" title="Agregar Rubro seleccionado.">
+		<i class="bx bx-plus-circle"></i>
+	</button>
+</div>

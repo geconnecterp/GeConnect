@@ -133,5 +133,16 @@ namespace gc.api.Controllers.Users
             var user = _usuSv.BuscarUsuarios(filtro);
 			return Ok(new ApiResponse<List<UserDto>>(user));
 		}
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult BuscarUsuarioLista(string adm_id)
+		{
+			if (string.IsNullOrEmpty(adm_id))
+			{
+				return BadRequest("No se proporcionó el usuario.");
+			}
+			var user = _usuSv.BuscarUsuarioLista(adm_id);
+			return Ok(new ApiResponse<List<UserDto>>(user));
+		}
 	}
 }

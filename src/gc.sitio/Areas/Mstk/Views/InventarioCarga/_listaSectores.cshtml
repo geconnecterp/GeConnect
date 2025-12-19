@@ -3,8 +3,9 @@
 	var lst = Model.ListaSectores;
 }
 <div class="input-group input-group-sm">
+	<span class="input-group-text fw-bold text-primary">Sector:</span>
 	@Html.DropDownListFor(m => m.SectorSeleccionado, lst, "Seleccionar", new { @id = "listaSectores", @class = "form-control inputEditable activable" })
-	<button type="button" class="btn btn-outline-primary" id="btnAgregarSector">
+	<button type="button" class="btn btn-primary btn-sm" id="btnAgregarSector" title="Agregar Rubros del Sector seleccionado">
 		<i class="bx bx-plus-circle"></i>
 	</button>
 </div>
