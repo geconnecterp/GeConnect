@@ -2,7 +2,6 @@
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
-using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Inventario;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;

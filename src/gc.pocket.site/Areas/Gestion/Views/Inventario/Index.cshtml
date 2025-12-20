@@ -7,3 +7,12 @@
         await Html.RenderPartialAsync("~/views/shared/_menuprint.cshtml", Model);
     }
 </div>
+
+<div id="invAuto"></div>
+
+@section scripts {
+    <script type="text/javascript">
+        let ObtenerInventarioListaUrl = '@Url.Action("ObtenerInventarioLista", "Inventario", new { area = "Gestion" })';
+    </script>
+    <script src="~/js/app/gestion/inv.js"></script>
+}
