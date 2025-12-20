@@ -855,6 +855,8 @@ namespace gc.pocket.site.Controllers
             }
         }
 
+
+
         public IQueryable<T> OrdenarEntidad<T>(IQueryable<T> lista, string sortdir, string sort) where T : Dto
         {
             IQueryable<T> query ;
@@ -917,7 +919,47 @@ namespace gc.pocket.site.Controllers
         }
 
 
-    
+
         #endregion
+
+        public bool VerificarAutenticacion(out IActionResult redirectResult)
+        {
+            redirectResult = null;
+
+            var (estaAutenticado, fechaExpiracion) = EstaAutenticado;
+
+            if (!estaAutenticado || fechaExpiracion < DateTime.Now)
+            {
+                redirectResult = RedirectToAction("Login", "Token", new { area = "seguridad" });
+                return false;
+            }
+
+            return true;
+        }
+
+        internal RespuestaGenerica<EntidadBase> CrearRespuestaWarning(string mensaje)
+        {
+            return new RespuestaGenerica<EntidadBase>
+            {
+                Mensaje = mensaje,
+                Ok = false,
+                EsWarn = true,
+                EsError = false
+            };
+        }
+
+        /// <summary>
+        /// Crea una respuesta de error estandarizada
+        /// </summary>
+        internal RespuestaGenerica<EntidadBase> CrearRespuestaError(string mensaje)
+        {
+            return new RespuestaGenerica<EntidadBase>
+            {
+                Mensaje = mensaje,
+                Ok = false,
+                EsWarn = false,
+                EsError = true
+            };
+        }
     }
 }

@@ -641,3 +641,17 @@ th, td {
 /* ====================================================================== */
 /* FIN ESTILOS GOLDEN PARA POCKET */
 /* ====================================================================== */
+
+#tbGridInventarios tbody tr[data-inv-nro] {
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out;
+}
+
+#tbGridInventarios tbody tr.row-selected {
+    background-color: #ffe69c !important;
+    border-left: 3px solid #ffc107;
+}
+
+#tbGridInventarios tbody tr[data-inv-nro]:hover:not(.row-selected) {
+    background-color: rgba(255, 193, 7, 0.1);
+}

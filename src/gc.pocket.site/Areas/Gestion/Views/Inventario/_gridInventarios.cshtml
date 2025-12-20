@@ -1,0 +1,90 @@
+@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<InventarioListaDto>
+
+@{
+    var alt = true;
+    string clase = string.Empty;
+    var fechaHoy = DateTime.Today;
+}
+
+<div class="card card-golden">
+    <div class="card card-golden-header">
+        <h5><i class="bx bx-package"></i> INVENTARIOS AUTORIZADOS</h5>
+    </div>
+    <div class="card-body p-2">
+        <div class="table-responsive text-nowrap table-wrapper-500">
+            <table class="table table-sm mb-0 table-hover table-golden" id="tbGridInventarios">
+                <thead class="table-golden-header">
+                    <tr class="header">                        
+                        <th class="text-center" scope="col">N° IN</th>
+                        <th class="text-left" scope="col">TIPO</th>
+                        <th class="text-right" scope="col">FECHA</th>
+                        <th class="text-right" scope="col">DEPO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ListaDatos?.Any() == true)
+                    {
+                        @foreach (var item in Model.ListaDatos)
+                        {
+                            alt = !alt;
+                            clase = alt ? string.Empty : "table-row-alt";
+                                                       
+
+                            <tr class="@clase" data-inv-nro="@item.inv_nro">
+                                
+                                <td class="@Model.ObtenerClase(item.inv_nro)">
+                                    @Model.FormatearDato(item.inv_nro, FormatDato.Ninguno)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.invt_desc)" title="@item.invt_desc">
+                                    @Model.FormatearDato($"({item.invt_id}){item.invt_desc}", FormatDato.Ninguno)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.inv_apertura)">
+                                    @Model.FormatearDato(item.inv_apertura, FormatDato.Fecha)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.depo_nombre)">
+                                    @Model.FormatearDato($"({item.depo_id}){item.depo_nombre}", FormatDato.Ninguno)
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">
+                                <i class="bx bx-info-circle me-2"></i>
+                                No hay inventarios aun
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (Model.ListaDatos?.Any() == true)
+        {
+            <div class="d-flex justify-content-between align-items-center mt-3 px-2">
+                <div class="text-muted small d-flex align-items-center">
+                    <i class="bx bx-package me-1"></i>
+                    Total: @Model.CantidadReg inventarios
+                    @* <span class="ms-3 badge bg-primary" id="ofertasSeleccionadas">0</span> seleccionadas *@
+                </div>
+               @*  <div class="text-muted small">
+                    <button type="button" class="btn btn-primary btn-sm" id="btnActivarOfertas">
+                        <i class="bx bx-check-double"></i> Activar Ofertas Seleccionadas
+                    </button>
+                </div> *@
+               @*  <div class="text-muted small">
+                    <button type="button" class="btn btn-danger btn-sm mt-1 me-1"
+                            id="btnCancelaActivacion" title="Cancelar activación">
+                        <i class="bx bx-x-circle"></i>
+                        Cancelar
+                    </button>
+                </div> *@
+                <div class="text-muted small">
+                    @Model.DatoAux01
+                </div>
+            </div>
+        }
+    </div>
+</div>
