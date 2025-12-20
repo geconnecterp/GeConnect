@@ -1,131 +1,120 @@
 ﻿<!DOCTYPE html>
-
-<html lang="en"
-      class="light-style layout-wide customizer-hide"
-      dir="ltr">
+<html lang="es" class="light-style layout-wide customizer-hide" dir="ltr">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-
-    <title>Autenticación</title>
-
-    <meta name="description" content="" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <title>Autenticación - GECONet POCKET</title>
+    <meta name="description" content="Sistema de gestión y control de almacenamientos GECONet" />
+    
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
-
+    
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
-          rel="stylesheet" />
-
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
+    
+    <!-- Icons -->
     <link rel="stylesheet" href="~/fonts/boxicons.css" />
-
+    
     <!-- Core CSS -->
     <link rel="stylesheet" href="~/css/extra.css" class="template-customizer-core-css" />
     <link rel="stylesheet" href="~/css/core.css" class="template-customizer-core-css" />
     <link rel="stylesheet" href="~/css/theme-default.css" class="template-customizer-theme-css" />
-    @* <link rel="stylesheet" href="../assets/css/demo.css" /> *@
-
+    <link rel="stylesheet" href="~/css/golden-overlay.css" asp-append-version="true" />
+    
     <!-- Vendors CSS -->
     <link rel="stylesheet" href="~/lib/perfect-scrollbar/perfect-scrollbar.css" />
     <link rel="stylesheet" href="~/lib/lobibox/css/lobibox.min.css" />
-
+    
     <!-- Page CSS -->
-    <!-- Page -->
     <link rel="stylesheet" href="~/css/pages/page-auth.css" />
-
+    
     <!-- Helpers -->
     <script src="~/js/helpers.js"></script>
-    <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
-    <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
     <script src="~/js/config.js"></script>
 </head>
 
-<body>
+<body class="auth-golden">
     <!-- Content -->
     <div class="container-xxl" id="formulario" style="display:none">
-        <div class="authentication-wrapper authentication-basic container-p-y">
+        <div class="authentication-wrapper-golden authentication-basic container-p-y">
             <div class="authentication-inner">
-                <!-- Register -->
-                <div class="card">
+                <!-- Login Card -->
+                <div class="card card-golden-login fade-in">
                     <div class="card-body">
                         <!-- Logo -->
-                        <div class="app-brand justify-content-center">
-                            <a asp-action="Index" asp-asp-controller="Home" class="app-brand-link gap-2">
-                                <span class="app-brand-text demo text-body fw-bold">GECONet</span>
+                        <div class="app-brand-golden justify-content-center text-center">
+                            <a asp-action="Index" asp-controller="Home" asp-area="" class="app-brand-link gap-2">
+                                <i class="bx bx-store-alt text-golden" style="font-size: 2.5rem;"></i>
+                                <span class="app-brand-text">GECONet</span>
                             </a>
                         </div>
                         <!-- /Logo -->
-                        <h4 class="mb-2">Bienvenido Geco-Pocket! 👋</h4>
-                        <p class="mb-4">Por favor, ingrese usuario y contraseña para ingresar.</p>
-                        @* <h5 class="mb-4">@fechaStr</h5> *@
-                        <h5 class="mb-4 align-content-center">Fecha: @Model.FechaNN</h5>
+                        
+                        <h4 class="login-title text-center">¡Bienvenido a Geco-Pocket! 👋</h4>
+                        <p class="login-subtitle text-center mb-3">Por favor, ingrese sus credenciales para continuar.</p>
+                        
+                        <div class="text-center">
+                            <span class="fecha-badge">
+                                <i class="bx bx-calendar"></i> @Model.FechaNN
+                            </span>
+                        </div>
                         
                         <form class="mb-3" asp-area="seguridad" asp-action="login" asp-controller="token" method="post">
-                            @* id="formAuthentication" *@
                             <div class="mb-3">
-                                <label for="Admid" class="form-label">Administración</label>
-                                @Html.DropDownList("Admid", null, "Seleccione...", new { @class = "form-select" })
-                                
+                                <label for="Admid" class="form-label form-label-golden">
+                                    <i class="bx bx-building"></i> Administración
+                                </label>
+                                @Html.DropDownList("Admid", null, "Seleccione una administración...", new { @class = "form-select" })
                             </div>
+                            
                             <div class="mb-3">
-                                <label for="UserName" class="form-label">Usuario</label>
+                                <label for="UserName" class="form-label form-label-golden">
+                                    <i class="bx bx-user"></i> Usuario
+                                </label>
                                 <input type="text"
                                        class="form-control"
                                        id="UserName"
                                        name="UserName"
                                        placeholder="Ingrese su usuario"
-                                       autofocus />
+                                       autofocus
+                                       required />
                             </div>
-                            <div class="mb-3 form-password-toggle">
-                                <div class="d-flex justify-content-between">
-                                    <label class="form-label" for="Password">Contraseña</label>
-                                    @* <a href="auth-forgot-password-basic.html">
-                                    <small>Forgot Password?</small>
-                                    </a> *@
-                                </div>
+                            
+                            <div class="mb-4 form-password-toggle">
+                                <label class="form-label form-label-golden" for="Password">
+                                    <i class="bx bx-lock-alt"></i> Contraseña
+                                </label>
                                 <div class="input-group input-group-merge">
                                     <input type="password"
                                            id="Password"
                                            class="form-control"
                                            name="Password"
                                            placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
-                                           aria-describedby="password" />
-                                    <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
+                                           aria-describedby="password"
+                                           required />
+                                    <span class="input-group-text input-group-text-golden cursor-pointer">
+                                        <i class="bx bx-hide"></i>
+                                    </span>
                                 </div>
                             </div>
 
-                            @*  <div class="mb-3">
-                            <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="remember-me" />
-                            <label class="form-check-label" for="remember-me"> Remember Me </label>
-                            </div>
-                            </div> *@
                             <div class="mb-3">
-                                <button class="btn btn-primary d-grid w-100" type="submit">Ingresar</button>
+                                <button class="btn btn-login-golden d-grid w-100" type="submit">
+                                    <i class="bx bx-log-in me-2"></i>Ingresar al Sistema
+                                </button>
                             </div>
                         </form>
-
-                        @* <p class="text-center">
-                        <span>New on our platform?</span>
-                        <a href="auth-register-basic.html">
-                        <span>Create an account</span>
-                        </a>
-                        </p> *@
                     </div>
                 </div>
-                <!-- /Register -->
+                <!-- /Login Card -->
             </div>
         </div>
     </div>
-
     <!-- / Content -->
+    
     <!-- Core JS -->
-    <!-- build:js assets/vendor/js/core.js -->
-
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/popper.js/umd/popper.min.js"></script>
     <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
@@ -133,22 +122,16 @@
     <script src="~/lib/lobibox/js/lobibox.min.js"></script>
     <script src="~/lib/lobibox/js/messageboxes.min.js"></script>
     <script src="~/lib/lobibox/js/notifications.min.js"></script>
-    <!-- endbuild -->
-    <!-- Vendors JS -->
+    
     <!-- Main JS -->
     <script src="~/js/site.js"></script>
-
-    <!-- Page JS -->
-    <!-- Place this tag in your head or just before your close body tag. -->
-    <script async defer src="https://buttons.github.io/buttons.js"></script>
-
-    <script type="text/javascript">
+    
+    <script>
         var MensajeErrorTempData = '@TempData["error"]';
         var MensajeInfoTempData = '@TempData["info"]';
         var MensajeWarnTempData = '@TempData["warn"]';
         var MensajeSuccessTempData = '@TempData["succ"]';
         var MensajeBlock = "<h3><i class='bx bx-loader-circle bx-spin'></i> Por favor, espere...</h3>";
-
     </script>
 </body>
 </html>

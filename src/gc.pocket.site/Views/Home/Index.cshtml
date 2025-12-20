@@ -3,21 +3,26 @@
     var botones = ViewBag.Botones as List<AppItem>;
     var subtitulo = "Opciones";
 }
-@if (User.Identity.IsAuthenticated)
+@if (User.Identity?.IsAuthenticated == true)
 {
     string nya = User.Claims.First(c => c.Type.Contains("nya")).Value;
     string a = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
     var adm = a.Split("#");
-    var modelHeader = (subtitulo, (nya, ("#",false)));
+    var modelHeader = (subtitulo, (nya, ("#", false)));
 
-    <div class="text-center">
-        <h1 class="display-4">Bienvenidos - Sucursal @adm[1]</h1>
-        <p>Menú Principal</p>
+    <div class="text-center mb-4 fade-in">
+        <h1 class="display-4 text-golden-dark">Bienvenidos - Sucursal @adm[1]</h1>
+        <p class="lead text-muted">Menú Principal</p>
     </div>
+    
     <partial name="_headerApp" model="@modelHeader"/>
+    
     <div class="row">
         <div class="col-12">
-            <div class="card">                
+            <div class="card-golden">
+                <div class="card-golden-header">
+                    <h5><i class="bx bx-grid-alt"></i> Panel de Control</h5>
+                </div>
                 <div class="card-body">
                     @await Component.InvokeAsync("MenuPpal")
                 </div>
@@ -27,8 +32,16 @@
 }
 else
 {
-    <div class="text-center">
-        <h1 class="display-4">Bienvenidos</h1>
-        <p>Sistema para la gestión y control de <strong>almacenamientos</strong>.</p>
-    </div>    
+    <div class="text-center py-5 fade-in">
+        <div class="mb-4">
+            <i class="bx bx-store-alt text-golden" style="font-size: 5rem;"></i>
+        </div>
+        <h1 class="display-4 text-golden-dark mb-3">Bienvenidos a GECONet POCKET</h1>
+        <p class="lead text-muted">Sistema para la gestión y control de <strong class="text-golden">almacenamientos</strong>.</p>
+        <div class="mt-4">
+            <a asp-area="seguridad" asp-controller="token" asp-action="login" class="btn btn-golden btn-lg">
+                <i class="bx bx-log-in"></i> Iniciar Sesión
+            </a>
+        </div>
+    </div>
 }

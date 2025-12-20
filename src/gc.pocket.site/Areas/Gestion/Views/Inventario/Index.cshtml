@@ -1,0 +1,9 @@
+﻿@model AppItem
+@{
+    Layout = "_LayoutGestion";
+}
+<div class="container">
+    @{
+        await Html.RenderPartialAsync("~/views/shared/_menuprint.cshtml", Model);
+    }
+</div>
