@@ -18,6 +18,24 @@ namespace gc.sitio.Areas.Mstk.Controllers
 			_setting = options.Value;
 		}
 
+		public List<InventarioListaDto> ListaInventario
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("ListaInventario");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<InventarioListaDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ListaInventario", json);
+			}
+		}
+
 		public List<RubroEnInventarioDto> ListaRubroEnInventario
 		{
 			get

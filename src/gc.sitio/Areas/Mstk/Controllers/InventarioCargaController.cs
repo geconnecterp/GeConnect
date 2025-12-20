@@ -14,6 +14,7 @@ using gc.sitio.core.Servicios.Contratos.Users;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace gc.sitio.Areas.Mstk.Controllers
 {
@@ -27,9 +28,10 @@ namespace gc.sitio.Areas.Mstk.Controllers
 		private readonly ISectorServicio _sectorServicio;
 		private readonly IUserServicio _userServicio;
 		private readonly IRubroServicio _rubroServicio;
+		private readonly ITipoInventarioServicio _tipoInventarioServicio;
 		public InventarioCargaController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<InventarioCargaController> logger,
 										 IInventarioServicio inventarioServicio, IDepositoServicio depositoServicio, IInventarioEstadoServicio inventarioEstadoServicio,
-										 ISectorServicio sectorServicio, IUserServicio userServicio, IRubroServicio rubroServicio) : base(options, contexto, logger)
+										 ISectorServicio sectorServicio, IUserServicio userServicio, IRubroServicio rubroServicio, ITipoInventarioServicio tipoInventarioServicio) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_inventarioServicio = inventarioServicio;
@@ -38,6 +40,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 			_sectorServicio = sectorServicio;
 			_userServicio = userServicio;
 			_rubroServicio = rubroServicio;
+			_tipoInventarioServicio = tipoInventarioServicio;
 		}
 
 		public IActionResult Index()
@@ -100,6 +103,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				request.inve_id = "%";
 				var lista = _inventarioServicio.GetInventarioLista(request, Token);
 				model.GrillaInventario = ObtenerGridCoreSmart<InventarioListaDto>(lista);
+				ListaInventario = lista;
 				return PartialView("_gridInventarioCarga", model);
 			}
 			catch (Exception ex)
@@ -115,7 +119,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 			}
 		}
 
-		public IActionResult CargarCamposDatosInventario()
+		public IActionResult CargarCamposDatosInventario(string inv_nro = "")
 		{
 			var model = new InventarioCargaDatosModel();
 			try
@@ -123,11 +127,22 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				var auth = EstaAutenticado;
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
-				var estados = _inventarioEstadoServicio.GetInventarioEstadoLista(TokenCookie);
-				if (estados != null && estados.Count > 0)
-					model.ListaEstado = ObtenerListaEstados(estados);
-				else
-					model.ListaEstado = HelperMvc<ComboGenDto>.ListaGenerica([]);
+				if (inv_nro != "")
+				{
+					var inventario = ListaInventario.FirstOrDefault(x => x.inv_nro == inv_nro);
+					if (inventario != null)
+					{
+						model.inv_nro = inventario.inv_nro;
+						model.Descripcion = inventario.inv_descripcion;
+						model.AS_N = inventario.as_nro;
+						model.Estado = inventario.inve_desc;
+						model.AperturaDesde = inventario.inv_apertura;
+						model.AperturaHasta = inventario.inv_cierre;
+						model.DepositoSeleccionado = inventario.depo_id;
+						model.ConteoSeleccionado = inventario.invt_id?.ToString();
+					}
+				}
+				//var estados = _inventarioEstadoServicio.GetInventarioEstadoLista(TokenCookie);
 				var depositos = _depositoServicio.ObtenerDepositosDeAdministracion("%", TokenCookie);
 				if (depositos != null && depositos.Count > 0)
 					model.ListaDepositos = ObtenerListaDepositos(depositos);
@@ -138,7 +153,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				model.AperturaDesde = DateTime.Now.AddDays(-1);
 				model.AperturaHasta = DateTime.Now;
 				model.Descripcion = string.Empty;
-
+				model.Estado = string.Empty;
 				return PartialView("_inventarioDatos", model);
 			}
 			catch (Exception ex)
@@ -201,6 +216,11 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				return PartialView("_gridMensaje", response);
 			}
 		}
+
+		//public IActionResult CargarDatosDeInvEnSeccionDatosAdicionales(string inv_nro)
+		//{ 
+
+		//}
 
 		public IActionResult CargarGrillaUsuariosEnSeccionDatosAdicionales(string inv_nro)
 		{
@@ -388,7 +408,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 			}
 		}
 
-		public IActionResult AgregarUsuarioIndividual(string usu_id)
+		public IActionResult AgregarUsuarioIndividual(string usu_id, string grupo)
 		{
 			var model = new InventarioCargaGrillaUsuariosModel();
 			try
@@ -398,7 +418,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
 				if (ListaUsuarios == null || ListaUsuarios.Count <= 0)
-					return PartialView("_grillasAdicionalesUsuarios", model);
+					RecargarUsuarios();
 
 				if (ListaUsuarioEnInventario.Where(x => x.usu_id == usu_id).Any())
 				{
@@ -415,7 +435,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 						usu_id = usu_id,
 						usu_apellidoynombre = item.usu_apellidoynombre,
 						inv_descripcion = string.Empty,
-						inv_grupo = string.Empty,
+						inv_grupo = grupo,
 						inv_nro = string.Empty
 					};
 					listaTemp.Add(newItem);
@@ -436,7 +456,73 @@ namespace gc.sitio.Areas.Mstk.Controllers
 			}
 		}
 
+		public JsonResult ConfirmarInventario(ConfirmarInventarioRequest request)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return Json(new { error = true, warn = false, ok=false, msg = "No autenticado" });
+
+				if (string.IsNullOrEmpty(request.inv_nro))
+					request.inv_nro = "";
+				request.adm_id = AdministracionId;
+				request.usu_id = UserName;
+				request.json_r = ObtenerJsonRubroParaConfirmacionDeInventario();
+				request.json_u = ObtenerJsonUsuarioParaConfirmacionDeInventario();
+				PrintProperties(request);
+				var respuesta = _inventarioServicio.ConfirmarInventario(request, TokenCookie);
+				return AnalizarRespuesta(respuesta, "La accióin se ejecutó correctamente.");
+				//return Json(respuesta);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					Mensaje = ex.Message
+				};
+				return Json(response);
+			}
+		}
+
 		#region Metodos privados
+		private string ObtenerJsonUsuarioParaConfirmacionDeInventario()
+		{
+			var listaParaConfirmacion = new List<UsuarioParaConfirmacion>();
+			foreach (var usuario in ListaUsuarioEnInventario)
+			{
+				var usuarioConf = new UsuarioParaConfirmacion
+				{
+					usu_id = usuario.usu_id,
+					inv_grupo = usuario.inv_grupo
+				};
+				listaParaConfirmacion.Add(usuarioConf);
+			}
+			var json = JsonConvert.SerializeObject(listaParaConfirmacion);
+			return json;
+		}
+		private string ObtenerJsonRubroParaConfirmacionDeInventario()
+		{
+			var listaParaConfirmacion = new List<RubroParaConfirmacion>();
+			foreach (var rubro in ListaRubroEnInventario)
+			{
+				var rubroConf = new RubroParaConfirmacion
+				{
+					rub_id = rubro.rub_id,
+					cta_id = rubro.cta_id
+				};
+				listaParaConfirmacion.Add(rubroConf);
+			}
+			var json = JsonConvert.SerializeObject(listaParaConfirmacion);
+			return json;
+		}
+		private void RecargarUsuarios()
+		{
+			var lista = _userServicio.BuscarUsuarioLista(AdministracionId, TokenCookie).Result;
+			ListaUsuarios = lista.ListaEntidad ?? [];
+		}
 		private void AgregarRubrosAListaRubroEnInventario(List<RubroEnInventarioDto> rubrosAAgregar)
 		{
 			var listaTemp = ListaRubroEnInventario;
@@ -489,13 +575,16 @@ namespace gc.sitio.Areas.Mstk.Controllers
 		}
 		private SelectList ObtenerListaConteos()
 		{
-			var lista = new List<ComboGenDto>
+			var tipoInventarioLista = _tipoInventarioServicio.GetTiposEnventario(TokenCookie);
+			if (tipoInventarioLista != null && tipoInventarioLista.Count > 0)
 			{
-				new ComboGenDto { Id = "1", Descripcion = "Conteo Simple" },
-				new ComboGenDto { Id = "2", Descripcion = "Conteo Doble" },
-				new ComboGenDto { Id = "3", Descripcion = "Conteo por Box" }
-			};
-			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+				var lista = tipoInventarioLista.Select(x => new ComboGenDto { Id = x.invt_id.ToString(), Descripcion = x.invt_desc });
+				return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+			}
+			else
+			{
+				return HelperMvc<ComboGenDto>.ListaGenerica([]);
+			}	
 		}
 		private SelectList ObtenerListaRubros(List<RubroListaDto> rub)
 		{
@@ -521,6 +610,19 @@ namespace gc.sitio.Areas.Mstk.Controllers
 		{
 			var lista = sectores.Select(x => new ComboGenDto { Id = x.Sec_Id, Descripcion = x.Sec_Desc });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		#endregion
+
+		#region Clases privadas auxiliares
+		private class  RubroParaConfirmacion
+		{
+			public string rub_id { get; set; } = string.Empty;
+			public string cta_id { get; set; } = "%";
+		}
+		private class UsuarioParaConfirmacion
+		{
+			public string usu_id { get; set; } = string.Empty;
+			public string inv_grupo { get; set; } = string.Empty;
 		}
 		#endregion
 	}

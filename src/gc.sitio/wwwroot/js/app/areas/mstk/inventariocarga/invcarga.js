@@ -8,7 +8,9 @@
 	VALORIZACION: Symbol("VALORIZACION"),
 	CERRAR_INVENTARIO: Symbol("CERRAR_INVENTARIO")
 };
-
+var accion = "";
+var invNroSeleccionado = "";
+var inveIdSeleccionado = "";
 $(function () {
 	InicializarVista();
 });
@@ -85,9 +87,173 @@ function ControlaAgregarInventario() {
 }
 
 function ControlaConfirmarInventario() {
+	var resultado = ValidarCamposDeInventarioEnABM();
+	if (resultado == "") { //TODO OK
 
-	ActualizarEstadoDeBotonesPorEventos(EstadoBtnEnDivPrincipal.CONFIRMAR)
+		AbrirMensaje("ATENCIÓN", `¿Esta seguro que desea ${accion.description} el inventario?`, function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI":
+					HandlerConfirmarCargaInventario();
+					break;
+				case "NO":
+					break;
+				default: //NO
+					break;
+			}
+			return true;
+
+		}, true, ["Aceptar", "Cancelar"], "question!", null);
+	}
+	else {
+		AbrirMensaje("ATENCIÓN", resultado, function () {
+			$("#msjModal").modal("hide");
+			$("#listaDepositos").trigger("focus");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+
+	
 }
+
+function HandlerConfirmarCargaInventario() {
+	// Aquí iría la lógica para guardar los datos del inventario
+	let abm = ObtenerTipoDeOperacionEnABM();
+	let inv_nro = $("#inv_nro").val();
+	let invt_id = $("#listaConteos").val();
+	let inv_descripcion = $("#txtDescripcion").val().trim();
+	let inv_apertura = $("#dtAperturaDesde").val();
+	let inv_cierre = $("#dtAperturaHasta").val();
+	let depo_id = $("#listaDepositos").val();
+	var data = {
+		abm,
+		inv_nro,
+		invt_id,
+		inv_descripcion,
+		inv_apertura,
+		inv_cierre,
+		depo_id
+	};
+	AbrirWaiting("Confirmando Inventario...");
+	PostGen(data, confirmarInventarioURL, function (obj) {
+		CerrarWaiting();
+		if (!obj.ok && obj.error && obj.msg === "No autenticado") {
+			window.location.href = login;
+			return false;
+		}
+
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			setTimeout(() => {
+				//Hacer algo luego de actualizar
+				//RecargarGrilla
+				CargarInventarioLista();
+				//Limpiar datos en controles
+				InicializarDatosDeInventario();
+				//Limpiar grillas adicionales
+				LimpiarGrillasEnDatosAdicionales();
+				//limpiar seleccion en selectLista de grillas adicionales
+				LimiparSelectListEnDatosAdicionales()
+				//Actualizar estado de botones
+				ActualizarEstadoDeBotonesPorEventos(EstadoBtnEnDivPrincipal.CONFIRMAR)
+			}, 500);
+		}
+	});
+
+}
+
+function LimpiarGrillasEnDatosAdicionales() {
+	CargarGrillaRubrosEnSeccionDatosAdicionales();
+	CargarGrillaUsuariosEnSeccionDatosAdicionales();
+}
+
+function LimiparSelectListEnDatosAdicionales() {
+	// Si está visible el de Sector
+	if ($("#divListaSector").is(":visible")) {
+		$("#listaSectores").val("");   // vuelve a "Seleccionar"
+	}
+
+	// Si está visible el de Rubro
+	if ($("#divListaRubro").is(":visible")) {
+		$("#listaRubros").val("");     // vuelve a "Seleccionar"
+	}
+	$("#listaUsuarios").val("");
+}
+
+function ObtenerTipoDeOperacionEnABM() {
+	let tipo = "";
+	switch (accion) {
+		case EstadoBtnEnDivPrincipal.AGREGAR:
+			tipo = "A";
+			break;
+		case EstadoBtnEnDivPrincipal.MODIFICAR:
+			tipo = "M";
+			break;
+		case EstadoBtnEnDivPrincipal.ELIMINAR:
+			tipo = "B";
+			break;
+		default:
+			tipo = "";
+			break;
+	}
+	return tipo;
+}
+
+function ValidarCamposDeInventarioEnABM() {
+	let resultado = "";
+	let depo = $("#listaDepositos").val();
+	if (depo === "" || depo === null || depo === undefined) {
+		resultado += "Debe seleccionar un Depósito.<br/>";
+	}
+	let conteo = $("#listaConteos").val();
+	if (conteo === "" || conteo === null || conteo === undefined) {
+		resultado += "Debe seleccionar un Tipo de Conteo.<br/>";
+	}
+	let desc = $("#txtDescripcion").val().trim();
+	if (desc === "") {
+		resultado += "Debe ingresar una Descripción para el Inventario.<br/>";
+	}
+	let fechas = validarFechasAperturaYCierre();
+	if (fechas !== "") {
+		resultado += fechas + "<br/>";
+	}
+	let grillas = validarTablasConDatos();
+	if (grillas !== "") {
+		resultado += grillas + "<br/>";
+	}
+	return resultado;
+}
+
+function validarTablasConDatos() {
+	var resultado = "";
+	// Obtener filas de cada tabla
+	var filasRubros = $("#tbListaRubros tbody tr");
+	var filasUsuarios = $("#tbListaUsuarios tbody tr");
+
+	// Validar Rubros: al menos una fila y que no sea la de "No hay rubros cargados"
+	var tieneRubros = filasRubros.length > 0 &&
+		!filasRubros.first().text().includes("No hay rubros cargados");
+
+	// Validar Usuarios: al menos una fila y que no sea la de "No hay rubros cargados"
+	var tieneUsuarios = filasUsuarios.length > 0 &&
+		!filasUsuarios.first().text().includes("No hay usuarios cargados");
+
+	if (!tieneRubros) {
+		resultado += "Debe agregar al menos un Rubro.<br/>";
+	}
+
+	if (!tieneUsuarios) {
+		resultado += "Debe agregar al menos un Usuario.<br/>";
+	}
+
+	return resultado;
+}
+
 
 function ControlaCancelarInventario() {
 	BlanquearControlesEnDatosDeInventario();
@@ -124,6 +290,11 @@ function CargarDatosAdicionalesInicial() {
 				CargarListaRubrosEnSeccionDatosAdicionales();
 			}
 		});
+		
+
+		// inicializar al cargar
+		$("#listaConteos").trigger("change");
+
 		$("#lbCargarPorSector").text("Cargar por Sector");
 		CargarGrillaRubrosEnSeccionDatosAdicionales();
 		CargarListaSectoresEnSeccionDatosAdicionales();
@@ -225,8 +396,9 @@ function CargarListaUsuariosEnSeccionDatosAdicionales() {
 
 function ControlaAgregarUsuarioIndividual() {
 	var usu_id = $("#listaUsuarios").val();
+	var grupo = $("#listaOpcionesConteo").val();
 	if (usu_id != "") {
-		var data = { usu_id };
+		var data = { usu_id, grupo };
 		PostGenHtml(data, agregarUsuarioIndividualURL, function (obj) {
 			$("#divGrillaUsuarios").html(obj);
 			return true
@@ -256,10 +428,46 @@ function CargarCamposDatosInventario() {
 	var data = {};
 	PostGenHtml(data, cargarCamposDatosInventarioURL, function (obj) {
 		$("#divDatosDeInventario").html(obj);
+		$("#listaConteos").on("change", function () {
+			let valor = $(this).find("option:selected").text(); // texto de la opción seleccionada
+			let id = $(this).find("option:selected").val(); // texto de la opción seleccionada
+			var $listaOpciones = $("#listaOpcionesConteo");
+
+			// limpiar opciones
+			$listaOpciones.empty();
+
+			if (id === "D") {
+				// agregar opciones 1 y 2
+				$listaOpciones.append(new Option("1", "1"));
+				$listaOpciones.append(new Option("2", "2"));
+			} else {
+				// agregar solo opción 1
+				$listaOpciones.append(new Option("1", "1"));
+			}
+		});
+		CargarOpcionesInicialesEnListaGrupos();
 		InicializarFechasEnDatos();
 		DeshabilitarDatosInventario();
 		return true
 	});
+}
+
+function CargarOpcionesInicialesEnListaGrupos() {
+	var valor = $("#listaConteos").find("option:selected").text(); // texto de la opción seleccionada
+	var id = $("#listaConteos").find("option:selected").val(); // texto de la opción seleccionada
+	var $listaOpciones = $("#listaOpcionesConteo");
+
+	// limpiar opciones
+	$listaOpciones.empty();
+
+	if (id === "D") {
+		// agregar opciones 1 y 2
+		$listaOpciones.append(new Option("1", "1"));
+		$listaOpciones.append(new Option("2", "2"));
+	} else {
+		// agregar solo opción 1
+		$listaOpciones.append(new Option("1", "1"));
+	}
 }
 
 //#### FIN Region Carga de datos en tab 'Carga de Inventario' ####//
@@ -295,6 +503,7 @@ function HabilitarDatosAdicionales() {
 }
 
 function ActualizarEstadoDeBotonesPorEventos(estado) {
+	accion = estado;
 	if (estado === EstadoBtnEnDivPrincipal.AGREGAR || estado === EstadoBtnEnDivPrincipal.MODIFICAR || estado === EstadoBtnEnDivPrincipal.ELIMINAR) {
 		$("#btnAgregar, #btnModificar, #btnEliminar, #btnRegStkCtrl, #btnValorizacion, #btnCerrarInv")
 			.prop("disabled", true);
@@ -335,21 +544,36 @@ function ActualizarEstadoDeBotones() {
 	}
 }
 
+function ActualizarEstadoDeBotonesEnSeleccion() {
+	if (inveIdSeleccionado === "" || inveIdSeleccionado === null || inveIdSeleccionado === undefined) {
+		$("#btnModificar, #btnEliminar").prop("disabled", true);
+	}
+	else {
+		if (inveIdSeleccionado === "P") {
+			$("#btnModificar, #btnEliminar").prop("disabled", false);
+		}
+		else if (inveIdSeleccionado === "S") {
+			$("#btnModificar").prop("disabled", false);
+		}
+		else {
+			$("#btnModificar, #btnEliminar").prop("disabled", true);
+		}
+	}
+}
+
 function selectReg(x, gridId) {
 	$("#" + gridId + " tbody tr").each(function (index) {
 		$(this).removeClass("selected-row");
 		$(this).removeClass("selectedEdit-row");
 	});
 	$(x).addClass("selected-row");
+	invNroSeleccionado = x.getAttribute("data-inv-nro");
+	inveIdSeleccionado = x.getAttribute("data-inve-id");
+	
+	ActualizarEstadoDeBotonesEnSeleccion();
 
-	// Re-evaluar botones después de seleccionar
-	ActualizarEstadoDeBotones();
-
-	//if (gridId === "tbGridAnticipoFinEmp") {
-	//	let anCompte = $(x).data("an-compte");
-	//	an_compte_selected = anCompte;
-	//	CargarDetalleDeAnticipo(anCompte);
-	//}
+	CargarGrillaRubrosEnSeccionDatosAdicionales(invNroSeleccionado);
+	CargarGrillaUsuariosEnSeccionDatosAdicionales(invNroSeleccionado);
 }
 
 function InicializarFechasEnFiltros() {
@@ -387,7 +611,13 @@ function InicializarFechasEnDatos() {
 }
 
 function InicializarDatosDeInventario() {
-
+	$("#inv_nro").val("");
+	$("#listaDepositos").val("");
+	$("#listaConteos").val("");
+	$("#txtDescripcion").val("");
+	$("#txtEstado").val("");
+	$("#txtAS_N").val("");
+	InicializarFechasEnDatos();
 }
 
 // Debounce genérico para input continuo (opcional)
@@ -428,6 +658,32 @@ function finalizarEdicionFechas() {
 
 	// Aquí dispará tu llamada Ajax/actualización
 	// ejemplo: ejecutarConsulta();
+}
+
+function validarFechasAperturaYCierre() {
+	var desdeVal = $("#dtAperturaDesde").val();
+	var hastaVal = $("#dtAperturaHasta").val();
+
+	// Validar que no estén vacíos
+	if (!desdeVal || !hastaVal) {
+		return "Debe seleccionar ambas fechas de apertura.";
+	}
+
+	// Convertir a objetos Date
+	var fechaDesde = new Date(desdeVal);
+	var fechaHasta = new Date(hastaVal);
+
+	// Validar que sean fechas válidas
+	if (isNaN(fechaDesde.getTime()) || isNaN(fechaHasta.getTime())) {
+		return "Las fechas seleccionadas no son válidas.";
+	}
+
+	// Validar que desde <= hasta
+	if (fechaDesde > fechaHasta) {
+		return "La fecha 'Desde' no puede ser mayor que la fecha 'Hasta'.";
+	}
+
+	return ""; // todo correcto
 }
 
 function validarFechas() {

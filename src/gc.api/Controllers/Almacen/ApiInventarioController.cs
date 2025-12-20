@@ -2,7 +2,7 @@
 using gc.api.core.Contratos.Servicios;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
-using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Inventario;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -77,6 +77,19 @@ namespace gc.api.Controllers.Almacen
 
 			response = new ApiResponse<List<UsuarioEnInventarioDto>>(res);
 
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ConfirmarInventario([FromBody] ConfirmarInventarioRequest r)
+		{
+			ApiResponse<List<RespuestaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _inventarioServicio.ConfirmarInventario(r);
+			response = new ApiResponse<List<RespuestaDto>>(res);
 			return Ok(response);
 		}
 	}

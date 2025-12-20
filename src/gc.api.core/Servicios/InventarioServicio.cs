@@ -2,6 +2,7 @@
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Inventario;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
@@ -49,6 +50,27 @@ namespace gc.api.core.Servicios
 				new("@inv_nro",inv_nro),
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<UsuarioEnInventarioDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<RespuestaDto> ConfirmarInventario(ConfirmarInventarioRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INV_CONFIRMAR;
+			var ps = new List<SqlParameter>()
+			{
+				new("@abm",request.abm),
+				new("@inv_nro",request.inv_nro),
+				new("@invt_id",request.invt_id),
+				new("@inv_descripcion",request.inv_descripcion),
+				new("@inv_apertura",request.inv_apertura),
+				new("@inv_cierre",request.inv_cierre),
+				new("@depo_id",request.depo_id),
+				new("@adm_id",request.adm_id),
+				new("@usu_id",request.usu_id),
+				new("@json_r",request.json_r),
+				new("@json_u",request.json_u),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return listaTemp;
 		}
 	}

@@ -104,6 +104,7 @@ namespace gc.sitio.core.Extensions
 			services.AddScoped<IDiscontinuoServicio, DiscontinuoServicio>();
 			services.AddScoped<IInventarioServicio, InventarioServicio>();
 			services.AddScoped<IInventarioEstadoServicio, InventarioEstadoServicio>();
+			services.AddScoped<ITipoInventarioServicio, TipoInventarioServicio>();
 
 			services.AddScoped<IOrdenDePagoServicio, OrdenDePagoServicio>();
 			services.AddScoped<IEtiquetaServicio, EtiquetaServicio>();

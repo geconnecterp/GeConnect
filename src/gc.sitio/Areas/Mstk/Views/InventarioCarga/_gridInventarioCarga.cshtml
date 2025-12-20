@@ -22,7 +22,7 @@
 				@foreach (var item in Model.GrillaInventario.ListaDatos)
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					<tr class="@clase" onclick="selectReg(this, 'tbGridInventario')">
+					<tr class="@clase" onclick="selectReg(this, 'tbGridInventario')" data-inv-nro="@item.inv_nro" data-inve-id="@item.inve_id">
 						<td class="@Model.GrillaInventario.ObtenerClase(item.inv_nro) align-center cell-fit-content">@Model.GrillaInventario.FormatearDato(item.inv_nro, FormatDato.Ninguno)</td>
 						<td class="@Model.GrillaInventario.ObtenerClase(item.inv_descripcion) cell-fit-content">@Model.GrillaInventario.FormatearDato(item.inv_descripcion, FormatDato.Ninguno)</td>
 						<td class="@Model.GrillaInventario.ObtenerClase(item.inv_apertura) cell-fit-content">@Model.GrillaInventario.FormatearDato(item.inv_apertura, FormatDato.Fecha)</td>

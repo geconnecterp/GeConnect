@@ -4,7 +4,11 @@
 }
 <div class="input-group input-group-sm">
 	<span class="input-group-text fw-bold text-primary">Usuario:</span>
-	@Html.DropDownListFor(m => m.UsuarioSeleccionado, lst, "Seleccionar", new { @id = "listaUsuarios", @class = "form-control inputEditable activable" })
+	@Html.DropDownListFor(m => m.UsuarioSeleccionado, lst, "Seleccionar", new { @id = "listaUsuarios", @class = "form-control inputEditable activable w-50" })
+	<!-- Nuevo SelectList -->
+	@Html.DropDownList("ListaOpcionesConteo", Enumerable.Empty<SelectListItem>(), "Seleccionar",
+	new { @id = "listaOpcionesConteo", @class = "form-select form-select-sm ms-2 w-15" })
+
 	<button type="button" class="btn btn-primary btn-sm" id="btnAgregarUsuario">
 		<i class="bx bx-plus-circle"></i>
 	</button>

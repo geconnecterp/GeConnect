@@ -1,4 +1,5 @@
-﻿using gc.infraestructura.Dtos.Inventario;
+﻿using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Inventario;
 
 namespace gc.sitio.core.Servicios.Contratos
 {
@@ -7,5 +8,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<InventarioListaDto> GetInventarioLista(GetInventarioListaRequest request, string token);
 		List<RubroEnInventarioDto> GetRubrosEnInventario(string inv_nro, string token, string usu_id = "%");
 		List<UsuarioEnInventarioDto> GetUsuariosEnInventario(string inv_nro, string token);
+		RespuestaGenerica<RespuestaDto> ConfirmarInventario(ConfirmarInventarioRequest request, string token);
 	}
 }
