@@ -29,10 +29,8 @@
                         {
                             alt = !alt;
                             clase = alt ? string.Empty : "table-row-alt";
-                                                       
 
-                            <tr class="@clase" data-inv-nro="@item.inv_nro">
-                                
+                            <tr class="@clase" data-inv-nro="@item.inv_nro" data-invt-id="@item.invt_id">
                                 <td class="@Model.ObtenerClase(item.inv_nro)">
                                     @Model.FormatearDato(item.inv_nro, FormatDato.Ninguno)
                                 </td>
@@ -67,20 +65,7 @@
                 <div class="text-muted small d-flex align-items-center">
                     <i class="bx bx-package me-1"></i>
                     Total: @Model.CantidadReg inventarios
-                    @* <span class="ms-3 badge bg-primary" id="ofertasSeleccionadas">0</span> seleccionadas *@
                 </div>
-               @*  <div class="text-muted small">
-                    <button type="button" class="btn btn-primary btn-sm" id="btnActivarOfertas">
-                        <i class="bx bx-check-double"></i> Activar Ofertas Seleccionadas
-                    </button>
-                </div> *@
-               @*  <div class="text-muted small">
-                    <button type="button" class="btn btn-danger btn-sm mt-1 me-1"
-                            id="btnCancelaActivacion" title="Cancelar activación">
-                        <i class="bx bx-x-circle"></i>
-                        Cancelar
-                    </button>
-                </div> *@
                 <div class="text-muted small">
                     @Model.DatoAux01
                 </div>

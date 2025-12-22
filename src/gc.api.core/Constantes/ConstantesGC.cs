@@ -131,9 +131,14 @@
 			public const string SP_INV_RUBROS = "SPGECO_INV_Rub";
 			public const string SP_INV_USUARIOS = "SPGECO_INV_Usu";
 			public const string SP_INV_CONFIRMAR = "SPGECO_INV_Confirmar";
-			#endregion
+			public const string SP_INV_BOX = "SPGECO_INV_Box";
+			public const string SP_INV_PLANILLA = "SPGECO_INV_Planilla";
+			public const string SP_INV_CONTEO_VALIDA = "SPGECO_INV_Conteo_Valida";
+			public const string SP_INV_CONTEOS = "SPGECO_INV_Conteos";
+			public const string SP_INV_CONTEO_CONFIRMA = "SPGECO_INV_Conteo_Confirma";
+            #endregion
 
-			public const string SP_AJ_TIPOS = "dbo.SPGECO_AJ_Tipos";
+            public const string SP_AJ_TIPOS = "dbo.SPGECO_AJ_Tipos";
 			public const string SP_AJ_PREVIOS_CARGADOS = "dbo.SPGECO_AJ_Previos_Cargados";
 			public const string SP_AJ_AJUSTE_REVERTIDO = "dbo.SPGECO_AJ_Datos";
 			public const string SP_AJ_CONFIRMA = "dbo.SPGECO_AJ_Confirmar";

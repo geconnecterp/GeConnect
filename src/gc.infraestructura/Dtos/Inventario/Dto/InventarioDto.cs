@@ -1,8 +1,7 @@
-﻿
-namespace gc.infraestructura.Dtos.Inventario
+﻿namespace gc.infraestructura.Dtos.Inventario
 {
-	public class InventarioDto : Dto
-	{
+	public class InventarioDto : Dtos.Dto
+    {
 		public string inv_nro { get; set; } = string.Empty;
 		public char? inve_id { get; set; }
 		public char? invt_id { get; set; }

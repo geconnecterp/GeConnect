@@ -8,11 +8,22 @@
     }
 </div>
 
-<div id="invAuto"></div>
+<div class="row">
+    <div class="col-md-6">
+        <div id="invAuto"></div>
+    </div>
+    <div class="col-md-6">
+        <div id="invDetalle"></div>
+    </div>
+</div>
 
 @section scripts {
     <script type="text/javascript">
-        let ObtenerInventarioListaUrl = '@Url.Action("ObtenerInventarioLista", "Inventario", new { area = "Gestion" })';
+        let estado = {
+            inv_lista: '@Url.Action("ObtenerInventarioLista", "Inventario", new { area = "Gestion" })',
+            inv_box: '@Url.Action("ObtenerInventarioBox", "Inventario", new { area = "Gestion" })',
+            inv_planilla: '@Url.Action("ObtenerInventarioPlanilla", "Inventario", new { area = "Gestion" })'
+        };
     </script>
     <script src="~/js/app/gestion/inv.js"></script>
 }

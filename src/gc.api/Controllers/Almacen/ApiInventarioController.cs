@@ -4,6 +4,8 @@ using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Inventario;
+using gc.infraestructura.Dtos.Inventario.Dto;
+using gc.infraestructura.Dtos.Inventario.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -92,5 +94,41 @@ namespace gc.api.Controllers.Almacen
 			response = new ApiResponse<List<RespuestaDto>>(res);
 			return Ok(response);
 		}
-	}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<InventarioBoxDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetInventarioBox([FromBody] InventarioRequestDto req)
+		{
+			//validamos los parametros
+			if(req== null || string.IsNullOrEmpty(req.inv_nro) || string.IsNullOrEmpty(req.usu_id))
+			{
+				return BadRequest("Parámetros inválidos.");
+            }
+			ApiResponse<List<InventarioBoxDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _inventarioServicio.GetInventarioBox(req.inv_nro, req.usu_id);
+			response = new ApiResponse<List<InventarioBoxDto>>(res);
+			return Ok(response);
+        }
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<InventarioPlanillaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetInventarioPlanilla([FromBody] InventarioRequestDto req)
+		{
+            //validamos los parametros
+			if (req == null || string.IsNullOrEmpty(req.inv_nro) || string.IsNullOrEmpty(req.usu_id))
+			{
+				return BadRequest("Parámetros inválidos.");
+            }
+			ApiResponse<List<InventarioPlanillaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _inventarioServicio.GetInventarioPlanilla(req.inv_nro, req.usu_id);
+			response = new ApiResponse<List<InventarioPlanillaDto>>(res);
+			return Ok(response);
+        }
+    }
 }

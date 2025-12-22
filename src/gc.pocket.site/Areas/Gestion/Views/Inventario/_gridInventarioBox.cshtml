@@ -1,0 +1,84 @@
+@model GridCoreSmart<InventarioBoxDto>
+
+@{
+    var alt = true;
+    string clase = string.Empty;
+    var fechaHoy = DateTime.Today;
+}
+
+<div class="card card-golden">
+    <div class="card card-golden-header">
+        <h5><i class="bx bx-package"></i> Boxes</h5>
+    </div>
+    <div class="card-body p-2">
+        <div class="mb-3">
+            <div class="input-group">
+                <span class="input-group-text bg-primary text-white">
+                    <i class="bx bx-search"></i>
+                </span>
+                <input type="text" 
+                       class="form-control" 
+                       id="txtBuscarBox" 
+                       placeholder="Buscar box por ID, estado o descripción..." 
+                       autocomplete="off">
+            </div>
+            <small class="text-muted ms-1">Escriba para filtrar los resultados</small>
+        </div>
+        
+        <div class="table-responsive text-nowrap table-wrapper-500">
+            <table class="table table-sm mb-0 table-hover table-golden" id="tbGridInventarioBox">
+                <thead class="table-golden-header">
+                    <tr class="header">                        
+                        <th class="text-center" scope="col">BOX</th>
+                        <th class="text-left" scope="col">ESTADO</th>
+                        <th class="text-right" scope="col">FECHA</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ListaDatos?.Any() == true)
+                    {
+                        @foreach (var item in Model.ListaDatos)
+                        {
+                            alt = !alt;
+                            clase = alt ? string.Empty : "table-row-alt";
+
+                            <tr class="@clase" data-inv-nro="@item.inv_nro">
+                                <td class="@Model.ObtenerClase(item.box_id)">
+                                    @Model.FormatearDato(item.box_id, FormatDato.Ninguno)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.box_desc)" title="@item.box_desc">
+                                    @Model.FormatearDato(item.box_desc, FormatDato.Ninguno)
+                                </td>
+                                <td class="@Model.ObtenerClase('c')">
+                                    @* @Model.FormatearDato(item.inv_apertura, FormatDato.Fecha) *@
+                                </td>                              
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="3" class="text-center text-muted py-4">
+                                <i class="bx bx-info-circle me-2"></i>
+                                No hay boxes disponibles
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (Model.ListaDatos?.Any() == true)
+        {
+            <div class="d-flex justify-content-between align-items-center mt-3 px-2">
+                <div class="text-muted small d-flex align-items-center">
+                    <i class="bx bx-package me-1"></i>
+                    Total: @Model.CantidadReg boxes
+                </div>
+                <div class="text-muted small">
+                    @Model.DatoAux01
+                </div>
+            </div>
+        }
+    </div>
+</div>

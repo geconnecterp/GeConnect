@@ -160,7 +160,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             catch (Exception ex)
             {
                 _logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
-                return new() { Ok = false, Mensaje = "Error al buscar Presupuestos" };
+                return new() { Ok = false, Mensaje = "Error al buscar las Etiquetas" };
             }
         }
     }

@@ -1,11 +1,17 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Wordprocessing;
+using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Inventario;
+using gc.infraestructura.Dtos.Inventario.Dto;
+using gc.infraestructura.Dtos.Inventario.Request;
 using gc.infraestructura.Dtos.Productos;
+using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.pocket.site.Controllers;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Implementacion;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using X.PagedList;
@@ -98,6 +104,122 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             {
                 _logger?.LogError(ex, "Error interno al cargar ofertas sin activar");
                 return PartialView("_gridMensaje", CrearRespuestaError("Error interno al cargar ofertas sin activar"));
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ObtenerInventarioBox([FromBody] string inv_nro)
+        {
+            int pag = 1;
+            try
+            {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+                var req = new InventarioRequestDto
+                {
+                    inv_nro = inv_nro,
+                    usu_id = UserName
+                };
+                RespuestaGenerica<InventarioBoxDto> respuesta = await _invSv.GetInventarioBox(req, TokenCookie);
+                if (!respuesta.Ok || respuesta.EsError)
+                {
+                    var msg = respuesta.Mensaje ?? "Error al obtener ofertas sin activar";
+                    TempData["error"] = msg;
+                    throw new NegocioException(msg);
+                }
+
+
+                var box = respuesta.ListaEntidad ?? []; ;
+                int registrosPorPagina = _configuracion.NroRegistrosPagina;
+                var pagedList = new StaticPagedList<InventarioBoxDto>(
+                    box.OrderBy(o => o.box_id).ToList(),
+                    pag,
+                    registrosPorPagina,
+                    box.Count
+                );
+                var grid = new GridCoreSmart<InventarioBoxDto>
+                {
+                    ListaDatos = pagedList,
+                    CantidadReg = box.Count,
+                    PrimerRegistro = ((pag - 1) * registrosPorPagina) + 1,
+                    UltimoRegistro = Math.Min(pag * registrosPorPagina, box.Count),
+                    RegistroFinal = box.Count,
+                    CantidadPaginas = (int)Math.Ceiling((double)box.Count / registrosPorPagina),
+                    PaginaActual = pag,
+                    Sort = "box_id",
+                    SortDir = "ASC",
+                    DatoAux01 = $"Box cargados: {DateTime.Now:HH:mm:ss}"
+                };
+                return View("_gridInventarioBox", grid);
+            }
+            catch (NegocioException ex)
+            {
+                _logger?.LogError(ex, "Error interno al cargar los Box");
+                return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error interno al cargar los Box");
+                return PartialView("_gridMensaje", CrearRespuestaError("Error interno al cargar los Box"));
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ObtenerInventarioPlanilla([FromBody] string inv_nro)
+        {
+            int pag = 1;
+            try
+            {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
+                var req = new InventarioRequestDto
+                {
+                    inv_nro = inv_nro,
+                    usu_id = UserName
+                };
+
+                RespuestaGenerica<InventarioPlanillaDto> respuesta = await _invSv.GetInventarioPlanilla(req, TokenCookie);
+                if (!respuesta.Ok || respuesta.EsError)
+                {
+                    var msg = respuesta.Mensaje ?? "Error al obtener ofertas sin activar";
+                    TempData["error"] = msg;
+                    throw new NegocioException(msg);
+                }
+
+
+                var box = respuesta.ListaEntidad ?? []; ;
+                int registrosPorPagina = _configuracion.NroRegistrosPagina;
+                var pagedList = new StaticPagedList<InventarioPlanillaDto>(
+                    box.OrderBy(o => o.inv_nro).ToList(),
+                    pag,
+                    registrosPorPagina,
+                    box.Count
+                );
+                var grid = new GridCoreSmart<InventarioPlanillaDto>
+                {
+                    ListaDatos = pagedList,
+                    CantidadReg = box.Count,
+                    PrimerRegistro = ((pag - 1) * registrosPorPagina) + 1,
+                    UltimoRegistro = Math.Min(pag * registrosPorPagina, box.Count),
+                    RegistroFinal = box.Count,
+                    CantidadPaginas = (int)Math.Ceiling((double)box.Count / registrosPorPagina),
+                    PaginaActual = pag,
+                    Sort = "inv_nro",
+                    SortDir = "ASC",
+                    DatoAux01 = $"Planillas cargadas: {DateTime.Now:HH:mm:ss}"
+                };
+                return View("_gridInventarioPlanilla", grid);
+            }
+            catch (NegocioException ex)
+            {
+                _logger?.LogError(ex, "Error interno al cargar las planillas");
+                return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error interno al cargar las planillas");
+                return PartialView("_gridMensaje", CrearRespuestaError("Error interno al cargar los Box"));
             }
         }
     }

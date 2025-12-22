@@ -2,29 +2,32 @@
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
-using gc.infraestructura.Dtos;
-using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Inventario;
+using gc.infraestructura.Dtos.Inventario.Dto;
+using gc.infraestructura.Dtos.Inventario.Request;
+using gc.infraestructura.Dtos.Productos.Etiqueta;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Net;
+using System.Reflection;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
-	public class InventarioServicio : Servicio<InventarioDto>, IInventarioServicio
+    public class InventarioServicio : Servicio<InventarioDto>, IInventarioServicio
 	{
 		private const string RutaAPI = "/api/apiinventario";
 		private const string INV_LISTA = "/ObtenerInventarioLista";
 		private const string INV_RUBROS = "/GetRubroParaInventario";
 		private const string INV_USUARIOS = "/GetUsuariosParaInventario";
 		private const string INV_CONFIRMAR = "/ConfirmarInventario";
-		private readonly AppSettings _appSettings;
-		public InventarioServicio(IOptions<AppSettings> options, ILogger<InventarioServicio> logger) : base(options, logger, RutaAPI)
+		private const string INV_BOX = "/GetInventarioBox";
+		private const string INV_PLANILLA = "/GetInventarioPlanilla";
+        public InventarioServicio(IOptions<AppSettings> options, ILogger<InventarioServicio> logger) : base(options, logger, RutaAPI)
 		{
-			_appSettings = options.Value;
+			
 		}
 
 		public List<InventarioListaDto> GetInventarioLista(GetInventarioListaRequest request, string token)
@@ -174,5 +177,95 @@ namespace gc.sitio.core.Servicios.Implementacion
 				return new();
 			}
 		}
-	}
+
+        public async Task<RespuestaGenerica<InventarioBoxDto>> GetInventarioBox(InventarioRequestDto req, string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(req, token, out StringContent contentData);
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_BOX}";
+
+                using var response = await client.PostAsync(link, contentData);
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<InventarioBoxDto>>>(stringData);
+                    if (apiResponse == null || apiResponse.Data == null)
+                    {
+                        return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+                    }
+
+                    return new RespuestaGenerica<InventarioBoxDto>
+                    {
+                        Ok = true,
+                        Mensaje = "OK",
+                        ListaEntidad = apiResponse.Data
+                        // Nota: si necesitas la metadata (apiResponse.Meta), amplía RespuestaGenerica para incluirla.
+                    };
+                }
+                else
+                {
+                    var msg = await ReadApiErrorAsync(response);
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+                    return new() { Ok = false, Mensaje = msg };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+                return new() { Ok = false, Mensaje = "Error al buscar los Boxs" };
+            }
+        }
+
+        public async Task<RespuestaGenerica<InventarioPlanillaDto>> GetInventarioPlanilla(InventarioRequestDto req, string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(req, token, out StringContent contentData);
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_PLANILLA}";
+
+                using var response = await client.PostAsync(link, contentData);
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<InventarioPlanillaDto>>>(stringData);
+                    if (apiResponse == null || apiResponse.Data == null)
+                    {
+                        return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+                    }
+
+                    return new RespuestaGenerica<InventarioPlanillaDto>
+                    {
+                        Ok = true,
+                        Mensaje = "OK",
+                        ListaEntidad = apiResponse.Data
+                        // Nota: si necesitas la metadata (apiResponse.Meta), amplía RespuestaGenerica para incluirla.
+                    };
+                }
+                else
+                {
+                    var msg = await ReadApiErrorAsync(response);
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+                    return new() { Ok = false, Mensaje = msg };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+                return new() { Ok = false, Mensaje = "Error al buscar las Planillas" };
+            }
+        }
+    }
 }
