@@ -1,8 +1,32 @@
 ﻿$(function () {
+    definirEventosIniInv();
     cargarInventarios();
 });
 
 let inventarioSeleccionado = null;
+
+function definirEventosIniInv() {
+    $("#btnContinua01").on("click", ejecutaPaso01);
+}
+
+//el paso 01 es determinar que se esta ejecutando.
+//determina también si es nuevo o algo ya existente
+function ejecutaPaso01() {
+    let datos = {};
+        //debemos verificar si tiene un box
+    if (estado.esBox) {
+        // selecciono el box del input
+    }
+    else {
+        //se verifica que es Planilla. 
+        //se tiene que verificar si sera una nueva plantilla 
+        //o se especifica una existente (seleccionada en el grupo de rb)
+        if ($("#rbNuevaPlanilla").is(":checked")) {
+            //es una planilla nueva
+
+        }
+    }
+}
 
 function cargarInventarios() {
     const $invAuto = $('#invAuto');
@@ -92,7 +116,11 @@ function cargarBoxesInventario(invNro) {
         success: function (html) {
             CerrarWaiting();
             $contenedorDetalle.html(html);
-            inicializarBusquedaBox();
+            //especificamos que es box
+            estado.esBox = true;
+            $("#btnContinua01").prop("disabled", true);
+
+            //inicializarBusquedaBox();
         },
         error: function (xhr) {
             CerrarWaiting();
@@ -121,7 +149,10 @@ function cargarPlanillasInventario(invNro) {
         success: function (html) {
             CerrarWaiting();
             $contenedorDetalle.html(html);
+            //especificamos que no es box
+            estado.esBox = false;
             inicializarOpcionesPlanilla();
+
         },
         error: function (xhr) {
             CerrarWaiting();
@@ -156,7 +187,7 @@ function inicializarBusquedaBox() {
     });
     
     // Focus automático en el campo de búsqueda
-    $inputBuscarBox.focus();
+    $inputBuscarBox.trigger("focus");
 }
 
 function filtrarBoxes(valorBusqueda) {
@@ -205,6 +236,8 @@ function inicializarOpcionesPlanilla() {
     if ($radioChecked.length > 0) {
         manejarOpcionPlanilla($radioChecked.val());
     }
+
+    $("#btnContinua01").prop("disabled", false);
 }
 
 function manejarOpcionPlanilla(opcion) {
@@ -215,11 +248,18 @@ function manejarOpcionPlanilla(opcion) {
             // Lógica para crear nueva planilla
             console.log('Preparando para crear nueva planilla');
             // TODO: Implementar lógica para nueva planilla
+            $("#btnContinua01").prop("disabled", false);
+
+
+
             break;
         case 'modificar':
             // Lógica para modificar planilla existente
             console.log('Preparando para modificar planilla');
             // TODO: Implementar lógica para modificar planilla
+            $("#btnContinua01").prop("disabled", true);
+
+
             break;
         default:
             console.warn('Opción no reconocida:', opcion);

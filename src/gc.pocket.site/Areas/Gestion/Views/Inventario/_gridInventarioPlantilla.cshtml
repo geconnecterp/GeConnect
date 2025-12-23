@@ -43,27 +43,34 @@
         <div class="table-responsive text-nowrap table-wrapper-500">
             <table class="table table-sm mb-0 table-hover table-golden" id="tbGridInventarioPlanilla">
                 <thead class="table-golden-header">
-                    <tr class="header">                        
+                    <tr class="header">
+                        <th class="text-center" scope="col" style="width: 60px;">Seleccionar</th>
                         <th class="text-center" scope="col">Planilla Conteo</th>
-                        <th class="text-right" scope="col">FECHA</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if (Model.ListaDatos?.Any() == true)
                     {
+                        var isFirst = true;
                         @foreach (var item in Model.ListaDatos)
                         {
                             alt = !alt;
                             clase = alt ? string.Empty : "table-row-alt";
 
                             <tr class="@clase" data-inv-nro="@item.inv_nro">
+                                <td class="text-center">
+                                    <input class="form-check-input" 
+                                           type="radio" 
+                                           name="planillaSeleccionada" 
+                                           id="rbPlanilla_@item.carga_nro" 
+                                           value="@item.carga_nro"
+                                           @(isFirst ? "checked" : string.Empty)>
+                                </td>
                                 <td class="@Model.ObtenerClase(item.carga_nro)">
                                     @Model.FormatearDato(item.carga_nro, FormatDato.Ninguno)
                                 </td>
-                                <td class="@Model.ObtenerClase('c')">
-                                   @*  @Model.FormatearDato(item.inv_apertura, FormatDato.Fecha) *@
-                                </td>
                             </tr>
+                            isFirst = false;
                         }
                     }
                     else
