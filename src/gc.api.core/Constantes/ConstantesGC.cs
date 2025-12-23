@@ -138,7 +138,7 @@
 			public const string SP_INV_CONTEO_CONFIRMA = "SPGECO_INV_Conteo_Confirma";
 			public const string SP_INV_DATOS = "SPGECO_INV_Datos";
 			public const string SP_INV_REGISTRA_CTRL_STK = "SPGECO_INV_Registra_STK";
-			//
+			public const string SP_INV_PRODUCTOS = "SPGECO_INV_Productos";
 			#endregion
 
 			public const string SP_AJ_TIPOS = "dbo.SPGECO_AJ_Tipos";

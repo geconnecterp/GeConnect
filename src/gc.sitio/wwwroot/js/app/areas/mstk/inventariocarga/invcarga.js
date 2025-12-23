@@ -697,6 +697,7 @@ function ActualizarEstadoDeBotonesEnSeleccion() {
 		}
 		else if (inveIdSeleccionado === "S") {
 			$("#btnValorizacion, #btnModificar").prop("disabled", false);
+			$("#btnRegStkCtrl").prop("disabled", true);
 		}
 		else {
 			$("#btnModificar, #btnEliminar").prop("disabled", true);
@@ -731,8 +732,46 @@ function selectReg(x, gridId) {
 			DeshabilitarDatosAdicionales();
 		}, 1000);
 	}
+	if (gridId == 'tbValorGridBox') {
+		TaskManager.start();
+		let inv_nro = x.getAttribute("data-inv-nro");
+		tipo = "B";
+		tipo_id = x.getAttribute("data-inve-id");
+		var data = { inv_nro, tipo, tipo_id };
+		PostGenHtml(data, obtenerProductosEnValorizacionURL, function (obj) {
+			$("#divProductosValorizacion").html(obj);
+			TaskManager.end();
+			return true
+		});
+	}
+	if (gridId == 'tbValorGridRubros') {
+		TaskManager.start();
+		let inv_nro = x.getAttribute("data-inv-nro");
+		tipo = "R";
+		tipo_id = x.getAttribute("data-inve-id");
+		var data = { inv_nro, tipo, tipo_id };
+		PostGenHtml(data, obtenerProductosEnValorizacionURL, function (obj) {
+			$("#divProductosValorizacion").html(obj);
+			TaskManager.end();
+			return true
+		});
+	}
+	if (gridId == 'tbValorGridProductos') {
+		TaskManager.start();
+		let inv_nro = $("#inv_nro").val();
+		let p_id = x.getAttribute("data-p-id");
+		var data = { inv_nro, tipo, tipo_id, p_id };
+		PostGenHtml(data, obtenerConteosEnValorizacionURL, function (obj) {
+			$("#divConteosValorizacion").html(obj);
+			TaskManager.end();
+			getMaskForIntegerMax1000("#conteo");
+			return true
+		});
+	}
 }
 
+let tipo = "";
+let tipo_id = "";
 let pendingTasks = 0;
 function startTask() {
 	if (pendingTasks === 0) {
@@ -895,5 +934,21 @@ function eliminarItemUsuario(inv_nro, usr_id) {
 		$("#divGrillaUsuarios").html(obj);
 		TaskManager.end();
 		return true
+	});
+}
+
+function getMaskForIntegerMax1000(selector) {
+	$(selector).inputmask({
+		alias: 'numeric',
+		groupSeparator: '.',       // separador de miles
+		digits: 0,                 // sin decimales
+		digitsOptional: false,
+		allowMinus: false,
+		prefix: '',
+		suffix: '',
+		rightAlign: true,
+		unmaskAsNumber: true,
+		min: 0,
+		max: 1000
 	});
 }

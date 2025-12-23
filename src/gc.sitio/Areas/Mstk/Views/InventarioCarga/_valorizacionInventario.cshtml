@@ -4,8 +4,127 @@
 	var alt = true;
 	string clase = string.Empty;
 }
+
+<style>
+	.fixed-width {
+		width: 75px !important; /* o el valor que uses actualmente */
+	}
+
+		.fixed-width.small {
+			width: calc(75px * 0.75) !important; /* 25% menos */
+		}
+
+</style>
+@Html.Hidden("invt_id", Model.invt_id)
+<div class="col-6">
+	<div id="divDatosInventario">
+		<div class="row mb-2">
+			<div class="input-group input-group-sm">
+
+				<span class="input-group-text fixed-width small">Inv. N°:</span>
+				<input id="inv_nro"
+					   type="text"
+					   class="form-control form-control-sm col-3"
+					   value="@Model.inv_nro"
+					   readonly />
+
+				<span class="input-group-text fixed-width ms-2">Descripción:</span>
+				<input id="inv_descripcion"
+					   type="text"
+					   class="form-control form-control-sm col-9"
+					   value="@Model.inv_descripcion"
+					   readonly />
+
+			</div>
+		</div>
+	</div>
+</div>
 <div class="row">
-	<div class="col-3"></div>
-	<div class="col-6"></div>
-	<div class="col-3"></div>
+	<div class="col-3">
+		@if (Model.EsTipoBox)
+		{
+			<div class="table-wrapper" id="containerValorListaBox">
+				<table class="table table-sm table-golden" id="tbValorGridBox">
+					<thead>
+						<tr class="header">
+							<th class="text-center" style="width: 45%;">Box</th>
+							<th class="text-center" style="width: 25%;">Cant. Prod.</th>
+							<th class="text-center" style="width: 30%;">Cant. con Dif.</th>
+						</tr>
+					</thead>
+					<tbody>
+						@if (Model != null && Model.GrillaInvBoxes != null && Model.GrillaInvBoxes.ListaDatos != null && Model.GrillaInvBoxes.ListaDatos.Count > 0)
+						{
+							@foreach (var item in Model.GrillaInvBoxes.ListaDatos)
+							{
+								if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+								<tr class="@clase" onclick="selectReg(this, 'tbValorGridBox')" data-inv-nro="@item.inv_nro" data-inve-id="@item.box_id">
+									<td class="@Model.GrillaInvBoxes.ObtenerClase(item.box_desc) cell-fit-content">@Model.GrillaInvBoxes.FormatearDato(item.box_desc, FormatDato.Ninguno)</td>
+									<td class="@Model.GrillaInvBoxes.ObtenerClase(item.cant_prod_stk) align-right cell-fit-content">@Model.GrillaInvBoxes.FormatearDato(item.cant_prod_stk, FormatDato.Ninguno)</td>
+									<td class="@Model.GrillaInvBoxes.ObtenerClase(item.cant_prod_stk_positivo) align-right cell-fit-content">@Model.GrillaInvBoxes.FormatearDato(item.cant_prod_stk_positivo, FormatDato.Fecha)</td>
+								</tr>
+							}
+						}
+						else
+						{
+							<tr>
+								<td colspan="6" class="text-center text-muted py-4">
+									<i class="bx bx-info-circle me-2"></i>
+									No se encontraron inventarios con los criterios especificados
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+		else
+		{
+			<div class="table-wrapper" id="containerValorListaRubros">
+				<table class="table table-sm table-golden" id="tbValorGridRubros">
+					<thead>
+						<tr class="header">
+							<th class="text-center" style="width: 50%;">Rubros</th>
+							<th class="text-center" style="width: 25%;">Cant. Prod.</th>
+							<th class="text-center" style="width: 25%;">Cant. con Dif.</th>
+						</tr>
+					</thead>
+					<tbody>
+						@if (Model != null && Model.GrillaInvRubros != null && Model.GrillaInvRubros.ListaDatos != null && Model.GrillaInvRubros.ListaDatos.Count > 0)
+						{
+							@foreach (var item in Model.GrillaInvRubros.ListaDatos)
+							{
+								if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+								<tr class="@clase" onclick="selectReg(this, 'tbValorGridRubros')" data-inv-nro="@item.inv_nro" data-inve-id="@item.rub_id">
+									<td class="@Model.GrillaInvRubros.ObtenerClase(item.rub_desc) cell-fit-content">@Model.GrillaInvRubros.FormatearDato(item.rub_desc, FormatDato.Ninguno)</td>
+									<td class="@Model.GrillaInvRubros.ObtenerClase(item.cant_prod_stk) align-right cell-fit-content">@Model.GrillaInvRubros.FormatearDato(item.cant_prod_stk, FormatDato.Ninguno)</td>
+									<td class="@Model.GrillaInvRubros.ObtenerClase(item.cant_prod_stk_positivo) align-right cell-fit-content">@Model.GrillaInvRubros.FormatearDato(item.cant_prod_stk_positivo, FormatDato.Fecha)</td>
+								</tr>
+							}
+						}
+						else
+						{
+							<tr>
+								<td colspan="6" class="text-center text-muted py-4">
+									<i class="bx bx-info-circle me-2"></i>
+									No se encontraron inventarios con los criterios especificados
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+		
+	</div>
+	<div class="col-6">
+		<div id="divProductosValorizacion">
+			<partial name="_valorizacionInventarioProductos" model="new ProductosEnValorizacionModel()" />
+		</div>
+	</div>
+	<div class="col-3">
+		<div id="divConteosValorizacion">
+			<partial name="_valorizacionInventarioConteos" model="new ConteosEnValorizacionModel()" />
+		</div>
+	</div>
 </div>

@@ -16,5 +16,7 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaGenerica<InventarioPlanillaDto>> GetInventarioPlanilla(InventarioRequestDto req, string token);
 		List<InventarioListaDto> GetInventarioDatos(GetInventarioDatosRequest request, string token);
 		RespuestaGenerica<RespuestaDto> RegistrarControlDeStock(RegistrarStockDeControlRequest request, string token);
+		List<ProductosEnValorizacionDto> GetProductosEnValorizacion(ProductosEnValorizacionRequest request, string token);
+		List<ConteoEnValorizacionDto> GetConteosEnValorizacion(ConteosEnValorizacionRequest request, string token);
 	}
 }

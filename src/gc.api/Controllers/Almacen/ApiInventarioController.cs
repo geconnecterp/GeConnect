@@ -163,5 +163,43 @@ namespace gc.api.Controllers.Almacen
 			response = new ApiResponse<List<RespuestaDto>>(res);
 			return Ok(response);
 		}
+
+		[HttpPost("ObtenerProductosEnValorizacion")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductosEnValorizacionDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public ActionResult<ProductosEnValorizacionDto> GetProductosEnValorizacion(ProductosEnValorizacionRequest req)
+		{
+			if (req == null)
+			{
+				return BadRequest("Request nulo.");
+			}
+			var resultado = _inventarioServicio.GetProductosEnValorizacion(req);
+
+			if (resultado == null)
+			{
+				return BadRequest("No se obtubieron resultados.");
+			}
+
+			return Ok(new ApiResponse<List<ProductosEnValorizacionDto>>(resultado));
+		}
+
+		[HttpPost("ObtenerConteosEnValorizacion")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ConteoEnValorizacionDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public ActionResult<ConteoEnValorizacionDto> GetConteosEnValorizacion(ConteosEnValorizacionRequest req)
+		{
+			if (req == null)
+			{
+				return BadRequest("Request nulo.");
+			}
+			var resultado = _inventarioServicio.GetConteoEnValorizacion(req);
+
+			if (resultado == null)
+			{
+				return BadRequest("No se obtubieron resultados.");
+			}
+
+			return Ok(new ApiResponse<List<ConteoEnValorizacionDto>>(resultado));
+		}
 	}
 }

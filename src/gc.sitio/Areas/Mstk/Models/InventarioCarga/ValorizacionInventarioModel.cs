@@ -10,5 +10,6 @@ namespace gc.sitio.Areas.Mstk.Models
 		public GridCoreSmart<InventarioBoxDto> GrillaInvBoxes { get; set; }
 		public string inv_nro { get; set; } = string.Empty;
 		public string inv_descripcion { get; set; } = string.Empty;
+		public string invt_id { get; set; } = string.Empty;
 	}
 }

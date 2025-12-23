@@ -17,6 +17,7 @@ namespace gc.api.core.Contratos.Servicios
 		List<InventarioPlanillaDto> GetInventarioPlanilla(string inv_nro, string usu_id);
 		List<InventarioListaDto> GetInventarioDatos(GetInventarioDatosRequest request);
 		List<RespuestaDto> RegistrarControlDeStock(RegistrarStockDeControlRequest request);
-
+		List<ProductosEnValorizacionDto> GetProductosEnValorizacion(ProductosEnValorizacionRequest request);
+		List<ConteoEnValorizacionDto> GetConteoEnValorizacion(ConteosEnValorizacionRequest request);
 	}
 }

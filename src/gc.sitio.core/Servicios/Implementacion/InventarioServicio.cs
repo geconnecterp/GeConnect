@@ -28,6 +28,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string INV_PLANILLA = "/GetInventarioPlanilla";
 		private const string INV_DATOS = "/ObtenerInventarioDatos";
 		private const string INV_REG_CTRL_STK = "/RegistrarControlDeStock";
+		private const string INV_PRODUCTOS = "/ObtenerProductosEnValorizacion";
+		private const string INV_CONTEOS = "/ObtenerConteosEnValorizacion";
 		public InventarioServicio(IOptions<AppSettings> options, ILogger<InventarioServicio> logger) : base(options, logger, RutaAPI)
 		{
 			
@@ -328,6 +330,68 @@ namespace gc.sitio.core.Servicios.Implementacion
 			else
 			{
 				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public List<ProductosEnValorizacionDto> GetProductosEnValorizacion(ProductosEnValorizacionRequest request, string token)
+		{
+			ApiResponse<List<ProductosEnValorizacionDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_PRODUCTOS}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductosEnValorizacionDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public List<ConteoEnValorizacionDto> GetConteosEnValorizacion(ConteosEnValorizacionRequest request, string token)
+		{
+			ApiResponse<List<ConteoEnValorizacionDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_CONTEOS}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConteoEnValorizacionDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
 				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
 				return new();
 			}

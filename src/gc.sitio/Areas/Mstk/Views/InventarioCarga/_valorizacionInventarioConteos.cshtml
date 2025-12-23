@@ -1,0 +1,128 @@
+﻿@model ConteosEnValorizacionModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	/* El containerValorGridConteos debe ser el scroll real y generar contexto */
+	#containerValorGridConteos {
+		position: relative;
+		height: 400px;
+		max-height: 400px;
+		overflow-y: auto; /* vertical */
+		overflow-x: auto; /* horizontal si hace falta */
+		z-index: auto; /* no fuerza stacking context */
+	}
+
+	/* Evitar collapse para que sticky funcione mejor en thead/th */
+	.table-golden {
+		border-collapse: separate;
+		border-spacing: 0;
+		table-layout: fixed; /* estabiliza anchos con tus width% */
+	}
+
+		/* Fijar el thead y darle fondo del tema */
+		.table-golden thead {
+			position: sticky;
+			top: 0;
+			z-index: 1; /* suficiente para estar sobre las filas */
+			background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+			color: #fff !important;
+		}
+
+			/* Redundancia intencional: asegurar cada th sticky y el mismo fondo */
+			.table-golden thead th {
+				position: sticky;
+				top: 0;
+				z-index: 4;
+				background: linear-gradient(to bottom, #b8860b, #daa520);
+				color: #fff;
+				box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+				background-clip: padding-box; /* evita “sangrados” con border-spacing */
+			}
+
+			/* Alinear colores: si tu app usa dorado para cabecera */
+			.table-golden thead,
+			.table-golden thead th {
+				/*background-color: #b8860b;  tu dorado */
+				/* color: #333; */
+			}
+
+	#tbValorGridConteos td {
+		padding: 0.01rem 0.15rem !important; /* o incluso 0 si querés máxima compresión */
+		line-height: 1.2 !important; /* más compacto */
+		height: auto !important; /* evita altura fija */
+	}
+
+	#tbValorGridConteos thead th {
+		/* padding: .5rem .5rem !important; */
+	}
+
+
+	/* Opcional: altura fija para todas las filas */
+	#tbValorGridConteos tr {
+		height: 1.6rem !important; /* ajustá según lo que quieras */
+	}
+
+	#conteo {
+		flex: 0 0 50%; /* ocupa la mitad del ancho */
+		max-width: 50%;
+	}
+
+</style>
+<div class="row">
+	<div class="table-wrapper" id="containerValorGridConteos">
+		<table class="table table-sm table-golden" id="tbValorGridConteos">
+			<thead>
+				<tr class="header">
+					<th class="text-center" style="width: 20%;">Usuario</th>
+					<th class="text-center" style="width: 20%;">Planilla</th>
+					<th class="text-center" style="width: 20%;">Conteo</th>
+					<th class="text-center" style="width: 20%;">Grp.</th>
+				</tr>
+			</thead>
+			<tbody>
+				@if (Model != null && Model.GrillaConteos != null && Model.GrillaConteos.ListaDatos != null && Model.GrillaConteos.ListaDatos.Count > 0)
+				{
+					@foreach (var item in Model.GrillaConteos.ListaDatos)
+					{
+						if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+						<tr class="@clase" onclick="selectReg(this, 'tbValorGridConteos')" data-p-id="@item.p_id" data-box-id="@item.box_id">
+							<td class="@Model.GrillaConteos.ObtenerClase(item.usu_apellidoynombre) cell-fit-content">@Model.GrillaConteos.FormatearDato(item.usu_apellidoynombre, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaConteos.ObtenerClase(item.carga_nro) cell-fit-content">@Model.GrillaConteos.FormatearDato(item.carga_nro, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaConteos.ObtenerClase(item.invd_cantidad) cell-fit-content">@Model.GrillaConteos.FormatearDato(item.invd_cantidad, FormatDato.Monto)</td>
+							<td class="@Model.GrillaConteos.ObtenerClase(item.inv_grupo) cell-fit-content">@Model.GrillaConteos.FormatearDato(item.inv_grupo, FormatDato.Monto)</td>
+						</tr>
+					}
+				}
+				else
+				{
+					<tr>
+						<td colspan="4" class="text-center text-muted py-4">
+							<i class="bx bx-info-circle me-2"></i>
+							No se encontraron inventarios con los criterios especificados
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+</div>
+<div class="row">
+	<div class="input-group input-group-sm">
+		<span class="input-group-text fixed-width small">Conteo:</span>
+		<input id="conteo"
+			   type="text"
+			   class="form-control form-control-sm col-3"
+			   value="@Model.Conteo"/>
+		<button type="button" class="btn btn-info btn-sm" id="btnModificarConteo" title="Modificar Conteo">
+			<i class="bx bx-edit"></i>
+		</button>
+	</div>
+	<div class="input-group input-group-sm">
+		<button type="button" class="btn btn-success btn-sm mt-1 me-1" id="btnConfirmarValoracion">
+			<i class="bx bx-badge-check"></i> Confirmar Valoración
+		</button>
+	</div>
+</div>

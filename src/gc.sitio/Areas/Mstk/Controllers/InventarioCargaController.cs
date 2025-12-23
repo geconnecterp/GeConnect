@@ -623,7 +623,82 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				var invSeleccionado = inv.First();
 				model.inv_nro = invSeleccionado.inv_nro;
 				model.inv_descripcion = invSeleccionado.inv_descripcion;
+				model.invt_id = invt_id;
 				return PartialView("_valorizacionInventario", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult ObtenerProductosEnValorizacion(ProductosEnValorizacionRequest request)
+		{
+			var model = new ProductosEnValorizacionModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				if (request == null || string.IsNullOrEmpty(request.inv_nro) || string.IsNullOrEmpty(request.tipo_id))
+				{
+					RespuestaGenerica<EntidadBase> response = new()
+					{
+						Ok = false,
+						EsError = true,
+						Mensaje = "Faltan datos para cargar los productos a valorizar."
+					};
+					return PartialView("_gridMensaje", response);
+				}
+				request.usu_id = "%";
+				var productos = _inventarioServicio.GetProductosEnValorizacion(request, TokenCookie);
+				model.GrillaProductos = ObtenerGridCoreSmart<ProductosEnValorizacionDto>(productos);
+				return PartialView("_valorizacionInventarioProductos", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult ObtenerConteosEnValorizacion(ConteosEnValorizacionRequest request)
+		{
+			var model = new ConteosEnValorizacionModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				if (request == null || string.IsNullOrEmpty(request.inv_nro) || string.IsNullOrEmpty(request.tipo_id))
+				{
+					RespuestaGenerica<EntidadBase> response = new()
+					{
+						Ok = false,
+						EsError = true,
+						Mensaje = "Faltan datos para cargar los productos a valorizar."
+					};
+					return PartialView("_gridMensaje", response);
+				}
+				request.usu_id = "%";
+				var conteos = _inventarioServicio.GetConteosEnValorizacion(request, TokenCookie);
+				model.GrillaConteos = ObtenerGridCoreSmart<ConteoEnValorizacionDto>(conteos);
+				return PartialView("_valorizacionInventarioConteos", model);
 			}
 			catch (Exception ex)
 			{
