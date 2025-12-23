@@ -28,31 +28,38 @@
         <div class="table-responsive text-nowrap table-wrapper-500">
             <table class="table table-sm mb-0 table-hover table-golden" id="tbGridInventarioBox">
                 <thead class="table-golden-header">
-                    <tr class="header">                        
+                    <tr class="header">
+                        <th class="text-center" scope="col" style="width: 60px;">Seleccionar</th>
                         <th class="text-center" scope="col">BOX</th>
                         <th class="text-left" scope="col">ESTADO</th>
-                        <th class="text-right" scope="col">FECHA</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if (Model.ListaDatos?.Any() == true)
                     {
+                        var isFirst = true;
                         @foreach (var item in Model.ListaDatos)
                         {
                             alt = !alt;
                             clase = alt ? string.Empty : "table-row-alt";
 
-                            <tr class="@clase" data-inv-nro="@item.inv_nro">
+                            <tr class="@clase" data-inv-nro="@item.inv_nro" data-box-id="@item.box_id">
+                                <td class="text-center">
+                                    <input class="form-check-input" 
+                                           type="radio" 
+                                           name="boxSeleccionado" 
+                                           id="rbBox_@item.box_id" 
+                                           value="@item.box_id"
+                                           @(isFirst ? "checked" : string.Empty)>
+                                </td>
                                 <td class="@Model.ObtenerClase(item.box_id)">
                                     @Model.FormatearDato(item.box_id, FormatDato.Ninguno)
                                 </td>
                                 <td class="@Model.ObtenerClase(item.box_desc)" title="@item.box_desc">
                                     @Model.FormatearDato(item.box_desc, FormatDato.Ninguno)
-                                </td>
-                                <td class="@Model.ObtenerClase('c')">
-                                    @* @Model.FormatearDato(item.inv_apertura, FormatDato.Fecha) *@
-                                </td>                              
+                                </td>                         
                             </tr>
+                            isFirst = false;
                         }
                     }
                     else

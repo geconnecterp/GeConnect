@@ -202,4 +202,23 @@ namespace gc.api.Controllers.Almacen
 			return Ok(new ApiResponse<List<ConteoEnValorizacionDto>>(resultado));
 		}
 	}
+
+		[HttpPost("ObtenerConteos")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<InventarioConteoDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public ActionResult<InventarioConteoDto> ObtenerConteos([FromBody] InventarioRequestDto req)
+		{
+			if (req == null)
+			{
+				return BadRequest("Parametros del Conteo erroneos.");
+            }
+			var resultado = _inventarioServicio.GetInventarioConteo(req);
+			if (resultado == null)
+			{
+				return BadRequest("No se obtubieron resultados.");
+            }
+			return Ok(new ApiResponse<List<InventarioConteoDto>>(resultado));
+
+        }
+    }
 }

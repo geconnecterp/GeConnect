@@ -39,6 +39,9 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         }
         public IActionResult Index()
         {
+            if (!VerificarAutenticacion(out IActionResult redirectResult))
+                return redirectResult;
+
             var sigla = "inv";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             if (modulo == null)
@@ -209,7 +212,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                     SortDir = "ASC",
                     DatoAux01 = $"Planillas cargadas: {DateTime.Now:HH:mm:ss}"
                 };
-                return View("_gridInventarioPlanilla", grid);
+                return View("_gridInventarioPlantilla", grid);
             }
             catch (NegocioException ex)
             {
@@ -220,6 +223,69 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             {
                 _logger?.LogError(ex, "Error interno al cargar las planillas");
                 return PartialView("_gridMensaje", CrearRespuestaError("Error interno al cargar los Box"));
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> ValidarConteo([FromBody]InventarioRequestDto req)
+        {
+            try
+            {
+                // Verificar autenticación
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+                if (req == null)
+                {
+                    throw new NegocioException("Los datos del conteo son incorrectos");
+                }
+
+                if (string.IsNullOrEmpty(req.tipo_id))
+                {
+                    if (req.tipo.Equals('B'))
+                    {
+                        throw new NegocioException("Es necesario que ingrese algun BOX para poder proceder");
+                    }
+                    else
+                    {
+                        throw new NegocioException("Es necesario que seleccione alguna Planilla antes de proceder.");
+                    }
+                }
+
+                req.usu_id = UserName;
+
+                RespuestaGenerica<RespuestaDto> resultado = await _invSv.ValidaConteo(req, TokenCookie);
+                if(resultado == null || resultado.EsWarn || resultado.EsError)
+                {
+                    if(resultado==null)
+                    {
+                        throw new NegocioException("Error al validar el conteo");
+                    }
+
+                    if (resultado.EsWarn)
+                    {
+                        throw new NegocioException(resultado.Mensaje ?? "Error al validar el conteo");  
+                    }
+                    if (resultado.EsError)
+                    {
+                        throw new Exception(resultado.Mensaje ?? "Error al validar el conteo");
+                    }
+                }
+                return Json(new { error = false, warn = false, msg = "Validación Exitosa." });
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = true, warn = false, msg = ex.Message });
             }
         }
     }
