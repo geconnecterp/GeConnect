@@ -68,16 +68,32 @@
 </style>
 <div class="table-wrapper" id="containerValorGridProductos">
 	<table class="table table-sm table-golden" id="tbValorGridProductos">
-		<thead>
-			<tr class="header">
-				<th class="text-center" style="width: 5%;">ID</th>
-				<th class="text-center" style="width: 41%;">Descripción</th>
-				<th class="text-center" style="width: 10%;">STK</th>
-				<th class="text-center" style="width: 17%;">Conteo Grupo 1</th>
-				<th class="text-center" style="width: 17%;">Conteo Grupo 2</th>
-				<th class="text-center" style="width: 10%;">Dif</th>
-			</tr>
-		</thead>
+		@if (Model.MostrarConteoGrupo2)
+		{
+			<thead>
+				<tr class="header">
+					<th class="text-center" style="width: 5%;">ID</th>
+					<th class="text-center" style="width: 41%;">Descripción</th>
+					<th class="text-center" style="width: 10%;">STK</th>
+					<th class="text-center" style="width: 17%;">Conteo Grupo 1</th>
+					<th class="text-center" style="width: 17%;">Conteo Grupo 2</th>
+					<th class="text-center" style="width: 10%;">Dif</th>
+				</tr>
+			</thead>
+		}
+		else
+		{
+			<thead>
+				<tr class="header">
+					<th class="text-center" style="width: 5%;">ID</th>
+					<th class="text-center" style="width: 45%;">Descripción</th>
+					<th class="text-center" style="width: 10%;">STK</th>
+					<th class="text-center" style="width: 20%;">Conteo Grupo 1</th>
+					<th class="text-center" style="width: 10%;">Dif</th>
+				</tr>
+			</thead>
+		}
+		
 		<tbody>
 			@if (Model != null && Model.GrillaProductos != null && Model.GrillaProductos.ListaDatos != null && Model.GrillaProductos.ListaDatos.Count > 0)
 			{
@@ -89,7 +105,11 @@
 						<td class="@Model.GrillaProductos.ObtenerClase(item.p_desc) cell-fit-content">@Model.GrillaProductos.FormatearDato(item.p_desc, FormatDato.Ninguno)</td>
 						<td class="@Model.GrillaProductos.ObtenerClase(item.ps_stk) cell-fit-content">@Model.GrillaProductos.FormatearDato(item.ps_stk, FormatDato.Monto)</td>
 						<td class="@Model.GrillaProductos.ObtenerClase(item.planillas_conteo1) cell-fit-content">@Model.GrillaProductos.FormatearDato(item.planillas_conteo1, FormatDato.Monto)</td>
-						<td class="@Model.GrillaProductos.ObtenerClase(item.planillas_conteo2) cell-fit-content">@Model.GrillaProductos.FormatearDato(item.planillas_conteo2, FormatDato.Monto)</td>
+						@if (Model.MostrarConteoGrupo2)
+						{
+							<td class="@Model.GrillaProductos.ObtenerClase(item.planillas_conteo2) cell-fit-content">@Model.GrillaProductos.FormatearDato(item.planillas_conteo2, FormatDato.Monto)</td>
+						}
+						@* <td class="@Model.GrillaProductos.ObtenerClase(item.planillas_conteo2) cell-fit-content">@Model.GrillaProductos.FormatearDato(item.planillas_conteo2, FormatDato.Monto)</td> *@
 						<td class="@Model.GrillaProductos.ObtenerClase(item.ps_conteo) cell-fit-content">@Model.GrillaProductos.FormatearDato(item.ps_conteo, FormatDato.Monto)</td>
 					</tr>
 				}
@@ -99,7 +119,7 @@
 				<tr>
 					<td colspan="6" class="text-center text-muted py-4">
 						<i class="bx bx-info-circle me-2"></i>
-						No se encontraron inventarios con los criterios especificados
+						No se encontraron productos con los criterios especificados
 					</td>
 				</tr>
 			}

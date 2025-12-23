@@ -658,9 +658,11 @@ namespace gc.sitio.Areas.Mstk.Controllers
 					};
 					return PartialView("_gridMensaje", response);
 				}
+				var invt = ListaInventario.Where(x => x.inv_nro == request.inv_nro).FirstOrDefault()?.invt_id;
 				request.usu_id = "%";
 				var productos = _inventarioServicio.GetProductosEnValorizacion(request, TokenCookie);
 				model.GrillaProductos = ObtenerGridCoreSmart<ProductosEnValorizacionDto>(productos);
+				model.MostrarConteoGrupo2 = invt == 'D';
 				return PartialView("_valorizacionInventarioProductos", model);
 			}
 			catch (Exception ex)

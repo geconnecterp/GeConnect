@@ -6,5 +6,6 @@ namespace gc.sitio.Areas.Mstk.Models
 	public class ProductosEnValorizacionModel
 	{
 		public GridCoreSmart<ProductosEnValorizacionDto> GrillaProductos { get; set; }
+		public bool MostrarConteoGrupo2 { get; set; } = false;
 	}
 }
