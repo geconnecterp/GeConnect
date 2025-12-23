@@ -13,9 +13,18 @@ function definirEventosIniInv() {
 //determina también si es nuevo o algo ya existente
 function ejecutaPaso01() {
     let datos = {};
+
         //debemos verificar si tiene un box
     if (estado.esBox) {
+
+        //obtenemos el box ingresado
+        boxId = $("#txtBuscarBox").val();
         // selecciono el box del input
+        datos = {
+            inv_nro: inventarioSeleccionado.inv_nro,
+            tipo: 'B',
+            tipo_id: boxId,
+        }
     }
     else {
         //se verifica que es Planilla. 

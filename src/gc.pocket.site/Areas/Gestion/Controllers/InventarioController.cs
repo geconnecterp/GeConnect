@@ -241,7 +241,21 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                 {
                     throw new NegocioException("Los datos del conteo son incorrectos");
                 }
-                
+
+                if (string.IsNullOrEmpty(req.tipo_id))
+                {
+                    if (req.tipo.Equals('B'))
+                    {
+                        throw new NegocioException("Es necesario que ingrese algun BOX para poder proceder");
+                    }
+                    else
+                    {
+                        throw new NegocioException("Es necesario que seleccione alguna Planilla antes de proceder.");
+                    }
+                }
+
+                req.usu_id = UserName;
+
                 RespuestaGenerica<RespuestaDto> resultado = await _invSv.ValidaConteo(req, TokenCookie);
                 if(resultado == null || resultado.EsWarn || resultado.EsError)
                 {
