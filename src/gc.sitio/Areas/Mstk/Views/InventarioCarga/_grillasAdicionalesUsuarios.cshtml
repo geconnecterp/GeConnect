@@ -54,7 +54,7 @@
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase"
-						onclick="selectItemGrillaUsuarios(this);">
+						onclick="selectItemGrillaUsuarios(this, 'tbListaUsuarios');">
 						<td class="@Model.GrillaUsuarios.ObtenerClase(item.usu_apellidoynombre)">@Model.GrillaUsuarios.FormatearDato(item.usu_apellidoynombre, FormatDato.Ninguno)</td>
 						<td class="@Model.GrillaUsuarios.ObtenerClase(item.inv_grupo)">@Model.GrillaUsuarios.FormatearDato(item.inv_grupo, FormatDato.Ninguno)</td>
 						<td class="text-center align-middle">

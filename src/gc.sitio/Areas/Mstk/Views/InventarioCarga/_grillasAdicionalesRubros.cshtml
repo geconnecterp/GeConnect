@@ -53,7 +53,7 @@
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase"
-						onclick="selectItemGrillaRubro(this);">
+						onclick="selectItemGrillaRubro(this, 'tbListaRubros');">
 						<td class="@Model.GrillaRubros.ObtenerClase(item.rub_desc)">@Model.GrillaRubros.FormatearDato(item.rub_desc, FormatDato.Ninguno)</td>
 						<td class="text-center align-middle">
 							<div class="d-flex justify-content-center gap-1">

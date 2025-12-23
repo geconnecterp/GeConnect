@@ -4,6 +4,8 @@ using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Inventario;
+using gc.infraestructura.Dtos.Inventario.Dto;
+using gc.infraestructura.Dtos.Inventario.Request;
 using gc.infraestructura.Dtos.Users;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Mstk.Models;
@@ -13,6 +15,7 @@ using gc.sitio.core.Servicios.Contratos.Tipos;
 using gc.sitio.core.Servicios.Contratos.Users;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
@@ -53,6 +56,8 @@ namespace gc.sitio.Areas.Mstk.Controllers
 
 				var titulo = "INVENTARIOS";
 				ViewData["Titulo"] = titulo;
+
+				InicializarDatosDeSession();
 
 				return View();
 			}
@@ -99,9 +104,9 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				request.adm_id = AdministracionId;
-				request.usu_id = UserName;
+				request.usu_id = "%";
 				request.inve_id = "%";
-				var lista = _inventarioServicio.GetInventarioLista(request, Token);
+				var lista = _inventarioServicio.GetInventarioLista(request, TokenCookie);
 				model.GrillaInventario = ObtenerGridCoreSmart<InventarioListaDto>(lista);
 				ListaInventario = lista;
 				return PartialView("_gridInventarioCarga", model);
@@ -129,9 +134,11 @@ namespace gc.sitio.Areas.Mstk.Controllers
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				if (inv_nro != "")
 				{
-					var inventario = ListaInventario.FirstOrDefault(x => x.inv_nro == inv_nro);
-					if (inventario != null)
+					//var inventario = ListaInventario.FirstOrDefault(x => x.inv_nro == inv_nro);
+					var inventarios = _inventarioServicio.GetInventarioDatos(new GetInventarioDatosRequest() { inv_nro = inv_nro }, TokenCookie);
+					if (inventarios != null && inventarios.Count>0)
 					{
+						var inventario = inventarios.First();
 						model.inv_nro = inventario.inv_nro;
 						model.Descripcion = inventario.inv_descripcion;
 						model.AS_N = inventario.as_nro;
@@ -142,6 +149,12 @@ namespace gc.sitio.Areas.Mstk.Controllers
 						model.ConteoSeleccionado = inventario.invt_id?.ToString();
 					}
 				}
+				else {
+					model.AperturaDesde = DateTime.Now.AddDays(-1);
+					model.AperturaHasta = DateTime.Now;
+					model.Descripcion = string.Empty;
+					model.Estado = string.Empty;
+				}
 				//var estados = _inventarioEstadoServicio.GetInventarioEstadoLista(TokenCookie);
 				var depositos = _depositoServicio.ObtenerDepositosDeAdministracion("%", TokenCookie);
 				if (depositos != null && depositos.Count > 0)
@@ -150,10 +163,6 @@ namespace gc.sitio.Areas.Mstk.Controllers
 					model.ListaDepositos = HelperMvc<ComboGenDto>.ListaGenerica([]);
 				var conteos = ObtenerListaConteos();
 				model.ListaConteos = conteos;
-				model.AperturaDesde = DateTime.Now.AddDays(-1);
-				model.AperturaHasta = DateTime.Now;
-				model.Descripcion = string.Empty;
-				model.Estado = string.Empty;
 				return PartialView("_inventarioDatos", model);
 			}
 			catch (Exception ex)
@@ -232,8 +241,8 @@ namespace gc.sitio.Areas.Mstk.Controllers
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
 				var lista = _inventarioServicio.GetUsuariosEnInventario(inv_nro, TokenCookie);
-				model.GrillaUsuarios = ObtenerGridCoreSmart<UsuarioEnInventarioDto>(lista);
 				ListaUsuarioEnInventario = lista;
+				model.GrillaUsuarios = ObtenerGridCoreSmart<UsuarioEnInventarioDto>(lista);
 				return PartialView("_grillasAdicionalesUsuarios", model);
 			}
 			catch (Exception ex)
@@ -420,6 +429,8 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				if (ListaUsuarios == null || ListaUsuarios.Count <= 0)
 					RecargarUsuarios();
 
+				//FixListaUsuariosEnInventarioEnControllerBase(request.inv_nro);
+
 				if (ListaUsuarioEnInventario.Where(x => x.usu_id == usu_id).Any())
 				{
 					model.GrillaUsuarios = ObtenerGridCoreSmart<UsuarioEnInventarioDto>(ListaUsuarioEnInventario);
@@ -464,6 +475,8 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return Json(new { error = true, warn = false, ok=false, msg = "No autenticado" });
 
+				FixListaUsuariosEnInventarioEnControllerBase(request.inv_nro);
+
 				if (string.IsNullOrEmpty(request.inv_nro))
 					request.inv_nro = "";
 				request.adm_id = AdministracionId;
@@ -472,7 +485,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				request.json_u = ObtenerJsonUsuarioParaConfirmacionDeInventario();
 				PrintProperties(request);
 				var respuesta = _inventarioServicio.ConfirmarInventario(request, TokenCookie);
-				return AnalizarRespuesta(respuesta, "La accióin se ejecutó correctamente.");
+				return AnalizarRespuesta(respuesta, "La acción se ejecutó correctamente.");
 				//return Json(respuesta);
 			}
 			catch (Exception ex)
@@ -487,7 +500,154 @@ namespace gc.sitio.Areas.Mstk.Controllers
 			}
 		}
 
+		public JsonResult RegistrarStockDeControl(RegistrarStockDeControlRequest request)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return Json(new { error = true, warn = false, ok = false, msg = "No autenticado" });
+
+				if (string.IsNullOrEmpty(request.inv_nro))
+					return Json(new { error = true, warn = false, ok = false, msg = "Request inválido" });
+
+				request.adm_id = AdministracionId;
+				request.usu_id = UserName;
+				request.inv_nro = request.inv_nro;
+				PrintProperties(request);
+				var respuesta = _inventarioServicio.RegistrarControlDeStock(request, TokenCookie);
+				return AnalizarRespuesta(respuesta, "La acción se ejecutó correctamente.");
+				//return Json(respuesta);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					Mensaje = ex.Message
+				};
+				return Json(response);
+			}
+		}
+
+		public IActionResult QuitarItemEnGrillaRubro(string inv_nro, string rub_id)
+		{
+			var model = new InventarioCargaGrillaRubrosModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var listaTemp = ListaRubroEnInventario;
+				listaTemp = [.. listaTemp.Where(x => x.rub_id != rub_id)];
+				ListaRubroEnInventario = listaTemp;
+				model.GrillaRubros = ObtenerGridCoreSmart<RubroEnInventarioDto>(listaTemp);
+				return PartialView("_grillasAdicionalesRubros", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult QuitarItemEnGrillaUsuarios(string inv_nro, string usr_id)
+		{
+			var model = new InventarioCargaGrillaUsuariosModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var listaTemp = ListaUsuarioEnInventario;
+				listaTemp = [.. listaTemp.Where(x => x.usu_id != usr_id)];
+				ListaUsuarioEnInventario = listaTemp;
+				model.GrillaUsuarios = ObtenerGridCoreSmart<UsuarioEnInventarioDto>(listaTemp);
+				return PartialView("_grillasAdicionalesUsuarios", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult InicializarTabValorizacion(string inv_nro, string invt_id)
+		{
+			var model = new ValorizacionInventarioModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var inv = ListaInventario.Where(x => x.inv_nro == inv_nro).ToList();
+				if (inv == null || inv.Count <= 0)
+				{
+					RespuestaGenerica<EntidadBase> response = new()
+					{
+						Ok = false,
+						EsError = true,
+						Mensaje = "No se han encontrado datos para realizar la valorización del inventario seleccionado."
+					};
+					return PartialView("_gridMensaje", response);
+				}
+
+				if (invt_id == "D" || invt_id == "S")
+				{
+					var listaRubro = _inventarioServicio.GetRubrosEnInventario(inv_nro, TokenCookie);
+					model.GrillaInvRubros = ObtenerGridCoreSmart<RubroEnInventarioDto>(listaRubro);
+					model.EsTipoBox = false;
+				}
+				else 
+				{
+					var listaBox = _inventarioServicio.GetInventarioBox(new InventarioRequestDto() { inv_nro = inv_nro, usu_id = "%" }, TokenCookie).Result;
+					model.GrillaInvBoxes = ObtenerGridCoreSmart<InventarioBoxDto>(listaBox.ListaEntidad ?? []);
+					model.EsTipoBox = true;
+				}
+				var invSeleccionado = inv.First();
+				model.inv_nro = invSeleccionado.inv_nro;
+				model.inv_descripcion = invSeleccionado.inv_descripcion;
+				return PartialView("_valorizacionInventario", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
 		#region Metodos privados
+		public void FixListaUsuariosEnInventarioEnControllerBase(string inv_nro)
+		{
+			//Fix: por que la bosta de las variables de sesion se tiran pedos por los ojos cuando las cosas se hace rapido:
+			if (ListaUsuarioEnInventario == null || ListaUsuarioEnInventario.Count <= 0)
+			{
+				var lista = _inventarioServicio.GetUsuariosEnInventario(inv_nro, TokenCookie);
+				ListaUsuarioEnInventario = lista;
+			}
+		}
 		private string ObtenerJsonUsuarioParaConfirmacionDeInventario()
 		{
 			var listaParaConfirmacion = new List<UsuarioParaConfirmacion>();
@@ -610,6 +770,21 @@ namespace gc.sitio.Areas.Mstk.Controllers
 		{
 			var lista = sectores.Select(x => new ComboGenDto { Id = x.Sec_Id, Descripcion = x.Sec_Desc });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+
+		private void InicializarDatosDeSession()
+		{
+			try
+			{
+				ListaInventario = [];
+				ListaRubroEnInventario = [];
+				ListaUsuarioEnInventario = [];
+				ListaRubros = [];
+				ListaUsuarios = [];
+			}
+			catch (Exception)
+			{
+			}
 		}
 		#endregion
 

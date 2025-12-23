@@ -1,5 +1,5 @@
 ﻿
-namespace gc.infraestructura.Dtos.Inventario
+namespace gc.infraestructura.Dtos
 {
 	public class RubroEnInventarioDto : Dto
 	{

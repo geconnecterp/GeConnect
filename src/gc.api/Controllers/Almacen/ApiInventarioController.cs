@@ -2,6 +2,7 @@
 using gc.api.core.Contratos.Servicios;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Inventario;
 using gc.infraestructura.Dtos.Inventario.Dto;
@@ -130,5 +131,37 @@ namespace gc.api.Controllers.Almacen
 			response = new ApiResponse<List<InventarioPlanillaDto>>(res);
 			return Ok(response);
         }
-    }
+
+		[HttpPost("ObtenerInventarioDatos")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<InventarioListaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public ActionResult<InventarioListaDto> ObtenerInventarioDatos(GetInventarioDatosRequest req)
+		{
+			if (req == null)
+			{
+				return BadRequest("Request nulo.");
+			}
+			var resultado = _inventarioServicio.GetInventarioDatos(req);
+
+			if (resultado == null)
+			{
+				return BadRequest("No se obtubieron resultados.");
+			}
+
+			return Ok(new ApiResponse<List<InventarioListaDto>>(resultado));
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult RegistrarControlDeStock([FromBody] RegistrarStockDeControlRequest r)
+		{
+			ApiResponse<List<RespuestaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _inventarioServicio.RegistrarControlDeStock(r);
+			response = new ApiResponse<List<RespuestaDto>>(res);
+			return Ok(response);
+		}
+	}
 }

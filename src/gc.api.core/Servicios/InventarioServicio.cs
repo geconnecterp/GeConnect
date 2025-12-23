@@ -3,9 +3,11 @@ using gc.api.core.Contratos.Servicios;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Inventario;
 using gc.infraestructura.Dtos.Inventario.Dto;
+using gc.infraestructura.Dtos.Inventario.Request;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 
@@ -100,5 +102,29 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<InventarioPlanillaDto>(sp, ps, true);
 			return listaTemp;
         }
-    }
+
+		public List<InventarioListaDto> GetInventarioDatos(GetInventarioDatosRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INV_DATOS;
+			var ps = new List<SqlParameter>()
+			{
+				new("@inv_nro",request.inv_nro),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<InventarioListaDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<RespuestaDto> RegistrarControlDeStock(RegistrarStockDeControlRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INV_REGISTRA_CTRL_STK;
+			var ps = new List<SqlParameter>()
+			{
+				new("@inv_nro",request.inv_nro),
+				new("@adm_id",request.adm_id),
+				new("@usu_id",request.usu_id),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return listaTemp;
+		}
+	}
 }

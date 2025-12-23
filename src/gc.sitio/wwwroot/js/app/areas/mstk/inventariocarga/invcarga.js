@@ -11,6 +11,7 @@
 var accion = "";
 var invNroSeleccionado = "";
 var inveIdSeleccionado = "";
+var invtIdSeleccionado = "";
 $(function () {
 	InicializarVista();
 });
@@ -22,17 +23,10 @@ function InicializarVista() {
 	$("#divFiltro").collapse("show");
 	$("#lbChkDesdeHasta").text("Fecha de Inventario")
 
-	$("#chkDesdeHasta").on("click", function () {
-		if ($("#chkDesdeHasta").is(":checked")) {
-			$("#Date1").prop("disabled", false);
-			$("#Date2").prop("disabled", false);
-			$("#Date1").trigger("focus");
-		}
-		else {
-			$("#Date1").prop("disabled", true);
-			$("#Date2").prop("disabled", true);
-		}
-	});
+	$("#chkDesdeHasta").on("change", actualizarDesdeHasta);
+
+	$("#chkDesdeHasta").prop("checked", true);
+	actualizarDesdeHasta();
 
 	$("#btnBuscar").on("click", function () {
 		if (validarFechas()) {
@@ -45,7 +39,6 @@ function InicializarVista() {
 		}
 	});
 
-	// Validación al terminar edición
 	$("#Date1, #Date2").on("blur keydown change", function (e) {
 		if (e.type === "keydown" && e.key !== "Enter") return;
 
@@ -58,6 +51,18 @@ function InicializarVista() {
 	InicializarFechasEnFiltros();
 }
 
+function actualizarDesdeHasta() {
+	const habilitado = $("#chkDesdeHasta").is(":checked");
+
+	$("#Date1").prop("disabled", !habilitado);
+	$("#Date2").prop("disabled", !habilitado);
+
+	if (habilitado) {
+		$("#Date1").trigger("focus");
+	}
+}
+
+
 function InicializarBusqueda() {
 	var data = {};
 	AbrirWaiting("Inicializando presentación de vista de inventario...");
@@ -65,17 +70,26 @@ function InicializarBusqueda() {
 		$("#divDetalle").html(obj);
 		$("#divFiltro").collapse("hide");
 		$("#divDetalle").collapse("show");
-		CargarInventarioLista();
-		CargarCamposDatosInventario();
-		CargarDatosAdicionalesInicial();
-		CargarEventosABotonesEnDivPrincipal();
+		$("#btnTabValorizacion").addClass("tab-disabled");
+		$("#btnTabCerrarInv").addClass("tab-disabled");
 		CerrarWaiting();
+		CargarInventarioLista();
+		setTimeout(() => {
+			CargarCamposDatosInventario();
+			CargarDatosAdicionalesInicial();
+			CargarEventosABotonesEnDivPrincipal();
+			CerrarWaiting();
+		}, 1000);
 		return true
 	});
 }
 
 function CargarEventosABotonesEnDivPrincipal() {
 	$(document).on("click", "#btnAgregar", ControlaAgregarInventario);
+	$(document).on("click", "#btnModificar", ControlaModificarInventario);
+	$(document).on("click", "#btnEliminar", ControlaEliminarInventario);
+	$(document).on("click", "#btnRegStkCtrl", ControlaRegStkCtrl);
+	$(document).on("click", "#btnValorizacion", ControlaValorizacion);
 	$(document).on("click", "#btnConfirmar", ControlaConfirmarInventario);
 	$(document).on("click", "#btnCancelar", ControlaCancelarInventario);
 }
@@ -83,7 +97,26 @@ function CargarEventosABotonesEnDivPrincipal() {
 function ControlaAgregarInventario() {
 	HabilitarDatosInventario();
 	HabilitarDatosAdicionales();
+	DeshabilitarGrillaInventarios();
+	
 	ActualizarEstadoDeBotonesPorEventos(EstadoBtnEnDivPrincipal.AGREGAR)
+}
+
+function ControlaModificarInventario() {
+	HabilitarDatosInventario();
+	HabilitarDatosAdicionales();
+	DeshabilitarGrillaInventarios();
+
+	ActualizarEstadoDeBotonesPorEventos(EstadoBtnEnDivPrincipal.MODIFICAR)
+	$("#listaDepositos").trigger("focus");
+}
+
+function ControlaEliminarInventario() {
+	DeshabilitarGrillaInventarios();
+	DeshabilitarDatosInventario();
+	DeshabilitarDatosAdicionales();
+	ActualizarEstadoDeBotonesPorEventos(EstadoBtnEnDivPrincipal.ELIMINAR)
+	$("#btnConfirmar").trigger("focus");
 }
 
 function ControlaConfirmarInventario() {
@@ -112,8 +145,6 @@ function ControlaConfirmarInventario() {
 			return true;
 		}, false, ["Aceptar"], "error!", null);
 	}
-
-	
 }
 
 function HandlerConfirmarCargaInventario() {
@@ -151,8 +182,6 @@ function HandlerConfirmarCargaInventario() {
 		else {
 			setTimeout(() => {
 				//Hacer algo luego de actualizar
-				//RecargarGrilla
-				CargarInventarioLista();
 				//Limpiar datos en controles
 				InicializarDatosDeInventario();
 				//Limpiar grillas adicionales
@@ -161,10 +190,93 @@ function HandlerConfirmarCargaInventario() {
 				LimiparSelectListEnDatosAdicionales()
 				//Actualizar estado de botones
 				ActualizarEstadoDeBotonesPorEventos(EstadoBtnEnDivPrincipal.CONFIRMAR)
+				//RecargarGrilla
+				CargarInventarioLista();
+				//Habilito lista principal
+				HabilitarGrillaInventarios();
+				//Deshabilitar Grillas adicionales y datos adicionales
+				DeshabilitarDatosAdicionales();
 			}, 500);
 		}
 	});
 
+}
+
+function ControlaCancelarInventario() {
+	BlanquearControlesEnDatosDeInventario();
+	DeshabilitarDatosInventario();
+	DeshabilitarDatosAdicionales();
+	InicializarFechasEnDatos();
+	HabilitarGrillaInventarios();
+	ActualizarEstadoDeBotonesPorEventos(EstadoBtnEnDivPrincipal.CANCELAR)
+}
+
+function ControlaRegStkCtrl() {
+	AbrirMensaje("ATENCIÓN", `¿Esta seguro que desea Registrar el Stock de Control?`, function (e) {
+		$("#msjModal").modal("hide");
+		switch (e) {
+			case "SI":
+				HandlerRegStkCtrl();
+				break;
+			case "NO":
+				break;
+			default: //NO
+				break;
+		}
+		return true;
+
+	}, true, ["Aceptar", "Cancelar"], "question!", null);
+}
+
+function HandlerRegStkCtrl() {
+	let inv_nro = $("#inv_nro").val();
+	var data = { inv_nro };
+	PostGen(data, registrarStockDeControlURL, function (obj) {
+		CerrarWaiting();
+		if (!obj.ok && obj.error && obj.msg === "No autenticado") {
+			window.location.href = login;
+			return false;
+		}
+
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			setTimeout(() => {
+				//Hacer algo luego de actualizar
+				//Limpiar datos en controles
+				InicializarDatosDeInventario();
+				//Limpiar grillas adicionales
+				LimpiarGrillasEnDatosAdicionales();
+				//limpiar seleccion en selectLista de grillas adicionales
+				LimiparSelectListEnDatosAdicionales()
+				//Actualizar estado de botones
+				ActualizarEstadoDeBotonesPorEventos(EstadoBtnEnDivPrincipal.REGISTRAR_STOCK_DE_CONTROL)
+				//RecargarGrilla
+				CargarInventarioLista();
+				//Habilito lista principal
+				HabilitarGrillaInventarios();
+				//Deshabilitar Grillas adicionales y datos adicionales
+				DeshabilitarDatosAdicionales();
+			}, 500);
+		}
+	});
+}
+
+function ControlaValorizacion() {
+	TaskManager.start();
+	let inv_nro = $("#inv_nro").val();
+	var data = { inv_nro };
+	PostGenHtml(data, inicializarTabValorizacionURL, function (obj) {
+		$("#divValorizacion").html(obj);
+		TaskManager.end();
+		let tab = new bootstrap.Tab(document.querySelector("#btnTabValorizacion"));
+		tab.show();
+		return true
+	});
 }
 
 function LimpiarGrillasEnDatosAdicionales() {
@@ -173,6 +285,7 @@ function LimpiarGrillasEnDatosAdicionales() {
 }
 
 function LimiparSelectListEnDatosAdicionales() {
+	TaskManager.start();
 	// Si está visible el de Sector
 	if ($("#divListaSector").is(":visible")) {
 		$("#listaSectores").val("");   // vuelve a "Seleccionar"
@@ -183,6 +296,7 @@ function LimiparSelectListEnDatosAdicionales() {
 		$("#listaRubros").val("");     // vuelve a "Seleccionar"
 	}
 	$("#listaUsuarios").val("");
+	TaskManager.end();
 }
 
 function ObtenerTipoDeOperacionEnABM() {
@@ -255,13 +369,7 @@ function validarTablasConDatos() {
 }
 
 
-function ControlaCancelarInventario() {
-	BlanquearControlesEnDatosDeInventario();
-	DeshabilitarDatosInventario();
-	DeshabilitarDatosAdicionales();
-	InicializarFechasEnDatos();
-	ActualizarEstadoDeBotonesPorEventos(EstadoBtnEnDivPrincipal.CANCELAR)
-}
+
 
 function BlanquearControlesEnDatosDeInventario() {
 	// Limpiar todos los inputs de texto y fecha
@@ -274,9 +382,11 @@ function BlanquearControlesEnDatosDeInventario() {
 }
 
 function CargarDatosAdicionalesInicial() {
+	TaskManager.start();
 	var data = {};
 	PostGenHtml(data, cargarDatosAdicionalesInicialURL, function (obj) {
 		$("#divGrillasAdicionales").html(obj);
+		TaskManager.end();
 		$("#chkCargarPorSector").on("change", function () {
 			if ($(this).is(":checked")) {
 				// 👉 Caso TRUE: el switch está activado
@@ -290,7 +400,6 @@ function CargarDatosAdicionalesInicial() {
 				CargarListaRubrosEnSeccionDatosAdicionales();
 			}
 		});
-		
 
 		// inicializar al cargar
 		$("#listaConteos").trigger("change");
@@ -368,19 +477,34 @@ function ControlaAgregarRubroIndividual() {
 }
 
 function CargarGrillaRubrosEnSeccionDatosAdicionales(invId = 0) {
+	TaskManager.start();
+
 	var inv_nro = invId;
 	var data = { inv_nro };
 	PostGenHtml(data, cargarGrillaRubrosEnSeccionDatosAdicionalesURL, function (obj) {
 		$("#divGrillaRubros").html(obj);
+		TaskManager.end();
 		return true
 	});
 }
 
 function CargarGrillaUsuariosEnSeccionDatosAdicionales(invId = 0) {
+	TaskManager.start();
+
 	var inv_nro = invId;
 	var data = { inv_nro };
 	PostGenHtml(data, cargarGrillaUsuariosEnSeccionDatosAdicionalesURL, function (obj) {
 		$("#divGrillaUsuarios").html(obj);
+		TaskManager.end();
+		return true
+	});
+}
+
+function CargarDatosDeInvEnSeccionDatosAdicionales(invId) {
+	var inv_nro = invId;
+	var data = { inv_nro };
+	PostGenHtml(data, cargarDatosDeInvEnSeccionDatosAdicionalesURL, function (obj) {
+		$("#divDatosDeInventario").html(obj);
 		return true
 	});
 }
@@ -414,20 +538,25 @@ function ControlaAgregarUsuarioIndividual() {
 }
 
 function CargarInventarioLista() {
+	TaskManager.start();
 	var desde = $("#Date1").val();
 	var hasta = $("#Date2").val();
 	var data = { desde, hasta };
 	PostGenHtml(data, buscarInventarioListaURL, function (obj) {
 		$("#divGrillaInventario").html(obj);
-		ActualizarEstadoDeBotones(); // evaluar estado inicial
+		TaskManager.end();
 		return true
 	});
 }
 
-function CargarCamposDatosInventario() {
-	var data = {};
+function CargarCamposDatosInventario(invId = 0) {
+	TaskManager.start();
+
+	var inv_nro = invId;
+	var data = { inv_nro };
 	PostGenHtml(data, cargarCamposDatosInventarioURL, function (obj) {
 		$("#divDatosDeInventario").html(obj);
+		TaskManager.end();
 		$("#listaConteos").on("change", function () {
 			let valor = $(this).find("option:selected").text(); // texto de la opción seleccionada
 			let id = $(this).find("option:selected").val(); // texto de la opción seleccionada
@@ -446,8 +575,10 @@ function CargarCamposDatosInventario() {
 			}
 		});
 		CargarOpcionesInicialesEnListaGrupos();
-		InicializarFechasEnDatos();
+		if (invId == 0)
+			InicializarFechasEnDatos();
 		DeshabilitarDatosInventario();
+		
 		return true
 	});
 }
@@ -490,16 +621,25 @@ function HabilitarDatosInventario() {
 	//$("#divDatosDeInventario, #divGrillasAdicionales").find("table tbody tr").removeClass("disabled-row");
 }
 
+function HabilitarGrillaInventarios() {
+	$("#divGrillaInventario").find("table tbody tr").removeClass("disabled-row");
+}
+
+function DeshabilitarGrillaInventarios() {
+	$("#divGrillaInventario").find("table tbody tr").addClass("disabled-row");
+}
+
 function DeshabilitarDatosAdicionales() {
 	$("#divGrillasAdicionales").find("input, select, textarea, button").prop("disabled", true);
 
-	$("#divGrillasAdicionales, #divGrillaRubros").find("table tbody tr").addClass("disabled-row");
+	$("#divGrillaUsuarios, #divGrillaRubros").find("table tbody tr").addClass("disabled-row");
+	$("#divGrillaRubros").find("table tbody tr").addClass("disabled-row");
 
 }
 function HabilitarDatosAdicionales() {
 	$("#divGrillasAdicionales").find("input, select, textarea, button").prop("disabled", false);
 
-	$("#divGrillasAdicionales, #divGrillaRubros").find("table tbody tr").removeClass("disabled-row");
+	$("#divGrillaUsuarios, #divGrillaRubros").find("table tbody tr").removeClass("disabled-row");
 }
 
 function ActualizarEstadoDeBotonesPorEventos(estado) {
@@ -510,7 +650,7 @@ function ActualizarEstadoDeBotonesPorEventos(estado) {
 		$("#btnConfirmar, #btnCancelar")
 			.prop("disabled", false);
 	}
-	else if (estado === EstadoBtnEnDivPrincipal.CONFIRMAR || estado === EstadoBtnEnDivPrincipal.CANCELAR) {
+	else if (estado === EstadoBtnEnDivPrincipal.CONFIRMAR || estado === EstadoBtnEnDivPrincipal.CANCELAR || estado === EstadoBtnEnDivPrincipal.REGISTRAR_STOCK_DE_CONTROL) {
 		$("#btnModificar, #btnEliminar, #btnRegStkCtrl, #btnValorizacion, #btnCerrarInv, #btnConfirmar, #btnCancelar")
 			.prop("disabled", true);
 		$("#btnAgregar")
@@ -546,14 +686,17 @@ function ActualizarEstadoDeBotones() {
 
 function ActualizarEstadoDeBotonesEnSeleccion() {
 	if (inveIdSeleccionado === "" || inveIdSeleccionado === null || inveIdSeleccionado === undefined) {
-		$("#btnModificar, #btnEliminar").prop("disabled", true);
+		$("#btnModificar, #btnEliminar, #btnRegStkCtrl, #btnValorizacion, #btnCerrarInv").prop("disabled", true);
 	}
 	else {
 		if (inveIdSeleccionado === "P") {
-			$("#btnModificar, #btnEliminar").prop("disabled", false);
+			$("#btnModificar, #btnEliminar, #btnRegStkCtrl").prop("disabled", false);
+		}
+		else if (inveIdSeleccionado === "R") {
+			$("#btnRegStkCtrl").prop("disabled", false);
 		}
 		else if (inveIdSeleccionado === "S") {
-			$("#btnModificar").prop("disabled", false);
+			$("#btnValorizacion, #btnModificar").prop("disabled", false);
 		}
 		else {
 			$("#btnModificar, #btnEliminar").prop("disabled", true);
@@ -567,14 +710,44 @@ function selectReg(x, gridId) {
 		$(this).removeClass("selectedEdit-row");
 	});
 	$(x).addClass("selected-row");
-	invNroSeleccionado = x.getAttribute("data-inv-nro");
-	inveIdSeleccionado = x.getAttribute("data-inve-id");
-	
-	ActualizarEstadoDeBotonesEnSeleccion();
+	if (gridId == 'tbGridInventario') {
+		invNroSeleccionado = x.getAttribute("data-inv-nro");
+		inveIdSeleccionado = x.getAttribute("data-inve-id");
+		invtIdSeleccionado = x.getAttribute("data-invt-id");
 
-	CargarGrillaRubrosEnSeccionDatosAdicionales(invNroSeleccionado);
-	CargarGrillaUsuariosEnSeccionDatosAdicionales(invNroSeleccionado);
+		setTimeout(() => {
+			ActualizarEstadoDeBotonesEnSeleccion();
+		}, 100);
+		setTimeout(() => {
+			CargarGrillaUsuariosEnSeccionDatosAdicionales(invNroSeleccionado);
+		}, 100);
+		setTimeout(() => {
+			CargarGrillaRubrosEnSeccionDatosAdicionales(invNroSeleccionado);
+		}, 300);
+		setTimeout(() => {
+			CargarCamposDatosInventario(invNroSeleccionado);
+		}, 300);
+		setTimeout(() => {
+			DeshabilitarDatosAdicionales();
+		}, 1000);
+	}
 }
+
+let pendingTasks = 0;
+function startTask() {
+	if (pendingTasks === 0) {
+		AbrirWaiting();
+	}
+	pendingTasks++;
+}
+function endTask() {
+	pendingTasks--;
+	if (pendingTasks <= 0) {
+		pendingTasks = 0;
+		CerrarWaiting();
+	}
+}
+
 
 function InicializarFechasEnFiltros() {
 	// Fecha actual
@@ -611,6 +784,7 @@ function InicializarFechasEnDatos() {
 }
 
 function InicializarDatosDeInventario() {
+	TaskManager.start();
 	$("#inv_nro").val("");
 	$("#listaDepositos").val("");
 	$("#listaConteos").val("");
@@ -618,6 +792,7 @@ function InicializarDatosDeInventario() {
 	$("#txtEstado").val("");
 	$("#txtAS_N").val("");
 	InicializarFechasEnDatos();
+	TaskManager.end();
 }
 
 // Debounce genérico para input continuo (opcional)
@@ -703,7 +878,22 @@ function selectItemGrillaRubro(x) { }
 function selectItemGrillaUsuarios(x) { }
 
 function eliminarItemRubro(inv_nro, rub_id) {
+	TaskManager.start();
+	var data = { inv_nro, rub_id };
+	PostGenHtml(data, quitarItemEnGrillaRubroURL, function (obj) {
+		$("#divGrillaRubros").html(obj);
+		TaskManager.end();
+		return true
+	});
 }
 
 function eliminarItemUsuario(inv_nro, usr_id) {
+	TaskManager.start();
+	console.log(inv_nro, usr_id);
+	data = { inv_nro, usr_id };
+	PostGenHtml(data, quitarItemEnGrillaUsuariosURL, function (obj) {
+		$("#divGrillaUsuarios").html(obj);
+		TaskManager.end();
+		return true
+	});
 }

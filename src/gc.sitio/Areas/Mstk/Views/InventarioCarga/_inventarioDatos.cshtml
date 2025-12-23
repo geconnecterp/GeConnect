@@ -41,9 +41,11 @@
 	<div class="row mb-2">
 		<div class="input-group input-group-sm">
 			<span class="input-group-text fixed-width">Apertura:</span>
-			@Html.TextBoxFor(m => m.AperturaDesde, new { @class = "form-control form-control-sm", @type = "date", @id = "dtAperturaDesde" })
+			@Html.TextBoxFor(m => m.AperturaDesde,"{0:yyyy-MM-dd}",
+						new { @class = "form-control form-control-sm", @type = "date", @id = "dtAperturaDesde" })
 			<span class="input-group-text">Cierre:</span>
-			@Html.TextBoxFor(m => m.AperturaHasta, new { @class = "form-control form-control-sm", @type = "date", @id = "dtAperturaHasta" })
+			@Html.TextBoxFor(m => m.AperturaHasta, "{0:yyyy-MM-dd}",
+						new { @class = "form-control form-control-sm", @type = "date", @id = "dtAperturaHasta" })
 		</div>
 	</div>
 

@@ -2,6 +2,7 @@
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Inventario;
 using gc.infraestructura.Dtos.Inventario.Dto;
@@ -25,7 +26,9 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string INV_CONFIRMAR = "/ConfirmarInventario";
 		private const string INV_BOX = "/GetInventarioBox";
 		private const string INV_PLANILLA = "/GetInventarioPlanilla";
-        public InventarioServicio(IOptions<AppSettings> options, ILogger<InventarioServicio> logger) : base(options, logger, RutaAPI)
+		private const string INV_DATOS = "/ObtenerInventarioDatos";
+		private const string INV_REG_CTRL_STK = "/RegistrarControlDeStock";
+		public InventarioServicio(IOptions<AppSettings> options, ILogger<InventarioServicio> logger) : base(options, logger, RutaAPI)
 		{
 			
 		}
@@ -267,5 +270,67 @@ namespace gc.sitio.core.Servicios.Implementacion
                 return new() { Ok = false, Mensaje = "Error al buscar las Planillas" };
             }
         }
-    }
+
+		public List<InventarioListaDto> GetInventarioDatos(GetInventarioDatosRequest request, string token)
+		{
+			ApiResponse<List<InventarioListaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_DATOS}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<InventarioListaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public RespuestaGenerica<RespuestaDto> RegistrarControlDeStock(RegistrarStockDeControlRequest request, string token)
+		{
+			ApiResponse<List<RespuestaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_REG_CTRL_STK}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data.First() };
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+	}
 }

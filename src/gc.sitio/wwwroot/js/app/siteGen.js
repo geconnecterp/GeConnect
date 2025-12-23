@@ -1133,3 +1133,39 @@ function extraerValoresDeSelect(selectId, fallbackId, checkId) {
 
     return valores;
 }
+
+
+// ===============================
+//  Task Manager Reutilizable
+// ===============================
+
+const TaskManager = (function () {
+
+    let pending = 0;
+
+    function start() {
+        if (pending === 0) {
+            AbrirWaiting(); // tu spinner
+        }
+        pending++;
+    }
+
+    function end() {
+        pending--;
+        if (pending <= 0) {
+            pending = 0;
+            CerrarWaiting(); // tu spinner
+        }
+    }
+
+    function getPending() {
+        return pending;
+    }
+
+    return {
+        start,
+        end,
+        getPending
+    };
+
+})();

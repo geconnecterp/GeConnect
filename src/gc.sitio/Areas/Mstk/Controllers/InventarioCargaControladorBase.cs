@@ -1,4 +1,5 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Inventario;
 using gc.infraestructura.Dtos.Mstk;
