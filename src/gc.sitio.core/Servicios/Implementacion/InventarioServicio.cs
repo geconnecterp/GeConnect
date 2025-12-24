@@ -31,7 +31,6 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string INV_REG_CTRL_STK = "/RegistrarControlDeStock";
 		private const string INV_PRODUCTOS = "/ObtenerProductosEnValorizacion";
 		private const string INV_CONTEOS = "/ObtenerConteosEnValorizacion";
-		public InventarioServicio(IOptions<AppSettings> options, ILogger<InventarioServicio> logger) : base(options, logger, RutaAPI)
 		private const string INV_VERIFICA_CONTEO = "/VerificaConteo";
         private const string INV_CONTEO = "/ObtenerConteos";
         public InventarioServicio(IOptions<AppSettings> options, ILogger<InventarioServicio> logger) : base(options, logger, RutaAPI)
@@ -400,7 +399,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 				return new();
 			}
 		}
-	}
+	
 
         public async Task<RespuestaGenerica<RespuestaDto>> ValidaConteo(InventarioRequestDto req, string token)
         {

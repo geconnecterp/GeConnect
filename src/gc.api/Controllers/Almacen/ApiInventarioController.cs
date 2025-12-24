@@ -201,9 +201,25 @@ namespace gc.api.Controllers.Almacen
 
 			return Ok(new ApiResponse<List<ConteoEnValorizacionDto>>(resultado));
 		}
-	}
 
-		[HttpPost("ObtenerConteos")]
+		[HttpPost("VerificaConteo")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public ActionResult<RespuestaDto> VerificaConteo([FromBody] InventarioRequestDto request)
+		{
+			if(request == null)
+			{
+				return BadRequest("Parametros del Conteo erroneos.");
+            }
+			var resultado = _inventarioServicio.ValidarConteo(request);
+			if (resultado == null)
+			{
+				return BadRequest("No se obtubieron resultados.");
+            }
+			return Ok(new ApiResponse<RespuestaDto>(resultado));
+        }
+
+        [HttpPost("ObtenerConteos")]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<InventarioConteoDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		public ActionResult<InventarioConteoDto> ObtenerConteos([FromBody] InventarioRequestDto req)
@@ -219,6 +235,23 @@ namespace gc.api.Controllers.Almacen
             }
 			return Ok(new ApiResponse<List<InventarioConteoDto>>(resultado));
 
+        }
+
+		[HttpPost("ConfirmarConteo")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public ActionResult<RespuestaDto> ConfirmarConteo([FromBody] InventarioRequestDto request)
+		{
+			if (request == null)
+			{
+				return BadRequest("Parametros del Conteo erroneos.");
+            }
+			var resultado = _inventarioServicio.InventarioConfirmarConteo(request);
+			if (resultado == null)
+			{
+				return BadRequest("No se obtubieron resultados.");
+            }
+			return Ok(new ApiResponse<RespuestaDto>(resultado));
         }
     }
 }

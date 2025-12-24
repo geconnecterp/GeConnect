@@ -2,6 +2,7 @@
 using DocumentFormat.OpenXml.Wordprocessing;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Inventario;
 using gc.infraestructura.Dtos.Inventario.Dto;
