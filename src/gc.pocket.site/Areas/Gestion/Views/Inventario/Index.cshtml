@@ -2,8 +2,8 @@
 @{
     Layout = "_LayoutGestion";
     var callback = Url.Action("index", "Inventario", new { area = "Gestion", titId = "Inventarios" });
-
 }
+
 <div class="container">
     @{
         await Html.RenderPartialAsync("~/views/shared/_menuprint.cshtml", Model);
@@ -21,24 +21,36 @@
 
 <div class="row mb-3">
     <div class="d-flex justify-content-center">
-        @* <button type="button" disabled id="btnVerCtrl" class="btn btn-danger btn-sm m-2" title="Observar Detalle de CONTROL"><i class="bx bx-sm bx-list-ol"></i></button> *@
-        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></a>
-        <button type="button" id="btnContinua01" disabled class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>
+        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-2">
+            <i class="bx bx-ms bx-info-circle"></i>
+        </a>
+        <button type="button" id="btnContinua01" disabled class="btn btn-success btn-sm m-2">
+            <i class="bx bx-ms bx-right-arrow-alt"></i>
+        </button>
     </div>
 </div>
 
 @section scripts {
     <script type="text/javascript">
-        let estado = {
-            inv_lista: '@Url.Action("ObtenerInventarioLista", "Inventario", new { area = "Gestion" })',
-            inv_box: '@Url.Action("ObtenerInventarioBox", "Inventario", new { area = "Gestion" })',
-            inv_planilla: '@Url.Action("ObtenerInventarioPlanilla", "Inventario", new { area = "Gestion" })',
-            inv_valida_conteo: '@Url.Action("ValidarConteo", "Inventario", new { area = "Gestion" })',
-            inv_conteo :'@Url.Action("CargaConteo", "Inventario", new { area = "Gestion" })',
-            esBox : 'false', //determina si va por Box o Planilla
-            invId : '', //determina cual es el ID seleccionado
-            boxId : '', //determina cual es el box seleccionado. Si es '' (vacio) significa que sera un box nuevo
-        };
+        // ✅ Inicialización de URLs (existente)
+        var inv_lista = '@Url.Action("ObtenerInventarioLista", "Inventario", new { area = "Gestion" })';
+        var inv_box = '@Url.Action("ObtenerInventarioBox", "Inventario", new { area = "Gestion" })';
+        var inv_planilla = '@Url.Action("ObtenerInventarioPlanilla", "Inventario", new { area = "Gestion" })';
+        var inv_valida_conteo = '@Url.Action("ValidarConteo", "Inventario", new { area = "Gestion" })';
+        var inv_conteo = '@Url.Action("CargaConteo", "Inventario", new { area = "Gestion" })';
+        var inv_obtener_conteo = '@Url.Action("ObtenerConteo", "Inventario", new { area = "Gestion" })';
+        var inv_confirmar = '@Url.Action("ConfirmarConteo", "Inventario", new { area = "Gestion" })';
+        
+        // ✅ Valores por defecto
+        estado.esBox = false;
+        estado.invId = '';
+        estado.boxId = '';
+        estado.inv_nro = '';
+        estado.invt_id = '';
+        estado.tipo = '';
+        estado.tipo_id = '';
+        
+        console.log('Estado inicializado en Index.cshtml:', estado);
     </script>
     <script src="~/js/app/gestion/inv.js"></script>
 }

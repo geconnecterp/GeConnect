@@ -32,6 +32,8 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string INV_CONTEOS = "/ObtenerConteosEnValorizacion";
         private const string INV_VERIFICA_CONTEO = "/VerificaConteo";
         private const string INV_CONTEO = "/ObtenerConteos";
+        private const string INV_CONFIRMAR_CONTEO = "/ConfirmarConteo";
+        public InventarioServicio(IOptions<AppSettings> options, ILogger<InventarioServicio> logger) : base(options, logger, RutaAPI)
 		private const string INV_REG_VALORIZACION = "/RegistrarValorizacion";
 
 		public InventarioServicio(IOptions<AppSettings> options, ILogger<InventarioServicio> logger) : base(options, logger, RutaAPI)
@@ -583,5 +585,110 @@ namespace gc.sitio.core.Servicios.Implementacion
 				return new();
 			}
 		}	
-	}
+	
+
+        public async Task<RespuestaGenerica<RespuestaDto>> ConfirmarConteo(InventarioRequestDto req, string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(req, token, out StringContent contentData);
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_CONFIRMAR_CONTEO}";
+
+                using var response = await client.PostAsync(link, contentData);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = false,
+                            Mensaje = "No se recibió respuesta válida de la API"
+                        };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+
+                    if (apiResponse == null || apiResponse.Data == null)
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = false,
+                            Mensaje = "Error deserializando la respuesta de la API"
+                        };
+                    }
+
+                    if (apiResponse.Data.resultado != 0)
+                    {
+                        if (apiResponse.Data.resultado > 0)
+                        {
+                            return new RespuestaGenerica<RespuestaDto>
+                            {
+                                Ok = false,
+                                Entidad = apiResponse.Data,
+                                EsWarn = true,
+                                Mensaje = apiResponse.Data.resultado_msj ?? "Error procesando la CONFIRMACIÓN del Conteo."
+                            };
+                        }
+                        else
+                        {
+                            return new RespuestaGenerica<RespuestaDto>
+                            {
+                                Ok = false,
+                                Entidad = apiResponse.Data,
+                                EsError = true,
+                                Mensaje = apiResponse.Data.resultado_msj ?? "Error procesando la CONFIRMACIÓN del Conteo."
+                            };
+                        }
+                    }
+                    else
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = true,
+                            Entidad = apiResponse?.Data ?? new RespuestaDto(),
+                            Mensaje = ""
+                        };
+                    }
+                }
+                else
+                {
+                    var errorData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {errorData}");
+
+                    var resp = JsonConvert.DeserializeObject<ErrorResponse>(errorData);
+
+                    var error = resp?.Error.FirstOrDefault();
+                    if (string.IsNullOrEmpty(error?.Detail))
+                    {
+                        //intentamos obtener los datos con otra entidad
+                    }
+
+                    var mensaje = error?.Detail ?? "Error desconocido en la API";
+
+                    return new RespuestaGenerica<RespuestaDto>
+                    {
+                        Ok = false,
+                        EsWarn = true,
+                        Mensaje = mensaje
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en la CONFIRMACIÓN del Conteo");
+
+                return new RespuestaGenerica<RespuestaDto>
+                {
+                    Ok = false,
+                    EsError = true,
+                    Mensaje = "Error procesando la CONFIRMACIÓN del Conteo.."
+                };
+            }
+        }
+    }
 }

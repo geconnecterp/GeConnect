@@ -1,7 +1,7 @@
 ﻿$(function () {
     //cargo el js para llamar desde esta funcion a la función de busqueda
     //verifico si se hace click en el boton buscar
-    $("#btnBusquedaBase").on("click", function () {
+    $("#btnBusquedaBase").off("click").on("click", function () {
         InicializaPantalla();
         buscarProducto();
         return true;

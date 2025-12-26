@@ -20,6 +20,7 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<ConteoEnValorizacionDto> GetConteosEnValorizacion(ConteosEnValorizacionRequest request, string token);	
         Task<RespuestaGenerica<RespuestaDto>> ValidaConteo(InventarioRequestDto request, string token);
         Task<RespuestaGenerica<InventarioConteoDto>> GetConteno(InventarioRequestDto req, string token);
+        Task<RespuestaGenerica<RespuestaDto>> ConfirmarConteo(InventarioRequestDto req, string token)
 		RespuestaGenerica<RespuestaDto> RegistrarValorizacion(RegistrarValorizacionRequest request, string token);
 	}
 }
