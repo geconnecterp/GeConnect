@@ -7,6 +7,13 @@
 
 function definirEventosIniInv() {
     $("#btnContinua01").on("click", ejecutaPaso01);
+
+    // Validación estricta: activar solo con 11 caracteres exactos
+    $(document).on("input", "#txtBuscarBox", function () {
+        const valor = this.value.trim();
+        const esValido = valor.length === 11;
+        $("#btnContinua01").prop("disabled", !esValido);
+    });
 }
 
 //el paso 01 es determinar que se esta ejecutando.

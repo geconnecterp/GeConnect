@@ -66,7 +66,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                     desde = new(2020, 1, 1),
                     hasta = DateTime.Now,
                     adm_id = AdministracionId,
-                    usu_id = "%",//UserName,
+                    usu_id = UserName,
                     inve_id = "S"
                 };
                 var respuesta = _invSv.GetInventarioLista(req, TokenCookie);
