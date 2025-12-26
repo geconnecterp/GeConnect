@@ -33,7 +33,6 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string INV_VERIFICA_CONTEO = "/VerificaConteo";
         private const string INV_CONTEO = "/ObtenerConteos";
         private const string INV_CONFIRMAR_CONTEO = "/ConfirmarConteo";
-        public InventarioServicio(IOptions<AppSettings> options, ILogger<InventarioServicio> logger) : base(options, logger, RutaAPI)
 		private const string INV_REG_VALORIZACION = "/RegistrarValorizacion";
 
 		public InventarioServicio(IOptions<AppSettings> options, ILogger<InventarioServicio> logger) : base(options, logger, RutaAPI)
