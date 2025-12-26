@@ -78,30 +78,7 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
-        public List<InventarioBoxDto> GetInventarioBox(string inv_nro, string usu_id)
-        {
-            var sp =ConstantesGC.StoredProcedures.SP_INV_BOX;
-			var ps = new List<SqlParameter>()
-			{
-				new("@inv_nro",inv_nro),
-				new("@usu_id",usu_id),
-			};
-
-			var res = _repository.EjecutarLstSpExt<InventarioBoxDto>(sp, ps, true);
-			return res;
-        }
-
-		public List<InventarioPlanillaDto> GetInventarioPlanilla(string inv_nro, string usu_id)
-		{
-			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INV_PLANILLA;
-			var ps = new List<SqlParameter>()
-			{
-				new("@inv_nro",inv_nro),
-				new("@usu_id",usu_id),
-			};
-			var listaTemp = _repository.EjecutarLstSpExt<InventarioPlanillaDto>(sp, ps, true);
-			return listaTemp;
-        }
+		
 
 		public List<InventarioListaDto> GetInventarioDatos(GetInventarioDatosRequest request)
 		{
@@ -155,6 +132,107 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<ConteoEnValorizacionDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+
+
+
+
+
+
+
+
+
+
+        public List<InventarioBoxDto> GetInventarioBox(string inv_nro, string usu_id)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_INV_BOX;
+            var ps = new List<SqlParameter>()
+            {
+                new("@inv_nro",inv_nro),
+                new("@usu_id",usu_id),
+            };
+
+            var res = _repository.EjecutarLstSpExt<InventarioBoxDto>(sp, ps, true);
+            return res;
+        }
+
+        public List<InventarioPlanillaDto> GetInventarioPlanilla(string inv_nro, string usu_id)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_INV_PLANILLA;
+            var ps = new List<SqlParameter>()
+            {
+                new("@inv_nro",inv_nro),
+                new("@usu_id",usu_id),
+            };
+            var listaTemp = _repository.EjecutarLstSpExt<InventarioPlanillaDto>(sp, ps, true);
+            return listaTemp;
+        }
+
+        public RespuestaDto ValidarConteo(InventarioRequestDto request)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_INV_CONTEO_VALIDA;
+            var ps = new List<SqlParameter>()
+            {
+                new("@inv_nro",request.inv_nro),
+                new("@usu_id",request.usu_id),
+                new("@tipo",request.tipo),
+                new("@tipo_id",request.tipo_id),
+            };
+            var resultado = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+            if (resultado != null && resultado.Count > 0)
+            {
+                return resultado[0];
+            }
+            else
+            {
+                return new RespuestaDto
+                {
+                    resultado = -1,
+                    resultado_msj = "No se obtuvo respuesta del procedimiento almacenado."
+                };
+            }
+        }
+
+        public List<InventarioConteoDto> GetInventarioConteo(InventarioRequestDto req)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_INV_CONTEOS;
+            var ps = new List<SqlParameter>()
+            {
+                new("@inv_nro",req.inv_nro),
+                new("@usu_id",req.usu_id),
+                new("@tipo",req.tipo),
+                new("@tipo_id",req.tipo_id),
+                new("@p_id",req.p_id),
+            };
+            var resultado = _repository.EjecutarLstSpExt<InventarioConteoDto>(sp, ps, true);
+            return resultado;
+        }
+
+        public RespuestaDto InventarioConfirmarConteo(InventarioRequestDto request)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_INV_CONTEO_CONFIRMA;
+            var ps = new List<SqlParameter>()
+            {
+                new("@inv_nro",request.inv_nro),
+                new("@usu_id",request.usu_id),
+                new("@tipo",request.tipo),
+                new("@tipo_id",request.tipo_id),
+                new("@json_p",request.json_p),
+            };
+            var resultado = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+            if (resultado != null && resultado.Count > 0)
+            {
+                return resultado[0];
+            }
+            else
+            {
+                return new RespuestaDto
+                {
+                    resultado = -1,
+                    resultado_msj = "No se obtuvo respuesta de la confirmación del conteo."
+                };
+            }
+        }
 
 		public List<RespuestaDto> RegistrarValorizacion(RegistrarValorizacionRequest request)
 		{

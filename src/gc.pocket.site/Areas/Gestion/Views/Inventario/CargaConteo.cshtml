@@ -1,0 +1,32 @@
+﻿@model AppItem
+@{
+    Layout = "_LayoutGestion";
+    var callback = Url.Action("index", "Inventario", new { area = "Gestion", titId = "Inventarios" });
+
+    string invNro = ViewBag.InvNro;
+    string tipo = ViewBag.Tipo;
+    string tipoId = ViewBag.TipoId;
+}
+<div class="container">
+    @{
+        await Html.RenderPartialAsync("~/views/shared/_menuprint.cshtml", Model);
+}
+</div>
+
+<div class="row">
+    N° IN: <span class="fw-bold">@invNro</span>
+</div>
+<div class="row">
+    @if (tipo.Equals("B"))
+    {
+        <div>
+            Box: <span class="fw-bold">@tipoId</span>
+        </div>
+    }
+    else
+    {
+        <div>
+            Planilla Conte N°: <span class="fw-bold">@tipoId</span>
+        </div>
+    }
+</div>

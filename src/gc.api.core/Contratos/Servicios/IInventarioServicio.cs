@@ -13,12 +13,15 @@ namespace gc.api.core.Contratos.Servicios
 		List<RubroEnInventarioDto> GetRubrosEnInventario(string inv_nro, string usu_id = "%");
 		List<UsuarioEnInventarioDto> GetUSuariosEnInventario(string inv_nro);
 		List<RespuestaDto> ConfirmarInventario(ConfirmarInventarioRequest request);
-		List<InventarioBoxDto> GetInventarioBox(string inv_nro, string usu_id);
-		List<InventarioPlanillaDto> GetInventarioPlanilla(string inv_nro, string usu_id);
 		List<InventarioListaDto> GetInventarioDatos(GetInventarioDatosRequest request);
 		List<RespuestaDto> RegistrarControlDeStock(RegistrarStockDeControlRequest request);
 		List<ProductosEnValorizacionDto> GetProductosEnValorizacion(ProductosEnValorizacionRequest request);
-		List<ConteoEnValorizacionDto> GetConteoEnValorizacion(ConteosEnValorizacionRequest request);
+		List<ConteoEnValorizacionDto> GetConteoEnValorizacion(ConteosEnValorizacionRequest request);	
+        List<InventarioBoxDto> GetInventarioBox(string inv_nro, string usu_id);
+        List<InventarioPlanillaDto> GetInventarioPlanilla(string inv_nro, string usu_id);
+		RespuestaDto ValidarConteo(InventarioRequestDto request);
+        List<InventarioConteoDto> GetInventarioConteo(InventarioRequestDto req);
+		RespuestaDto InventarioConfirmarConteo(InventarioRequestDto request);
 		List<RespuestaDto> RegistrarValorizacion(RegistrarValorizacionRequest request);
 	}
 }

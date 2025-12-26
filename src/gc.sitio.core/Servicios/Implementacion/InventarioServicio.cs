@@ -1,4 +1,5 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
@@ -7,7 +8,6 @@ using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Inventario;
 using gc.infraestructura.Dtos.Inventario.Dto;
 using gc.infraestructura.Dtos.Inventario.Request;
-using gc.infraestructura.Dtos.Productos.Etiqueta;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -18,171 +18,175 @@ using System.Reflection;
 namespace gc.sitio.core.Servicios.Implementacion
 {
     public class InventarioServicio : Servicio<InventarioDto>, IInventarioServicio
-	{
-		private const string RutaAPI = "/api/apiinventario";
-		private const string INV_LISTA = "/ObtenerInventarioLista";
-		private const string INV_RUBROS = "/GetRubroParaInventario";
-		private const string INV_USUARIOS = "/GetUsuariosParaInventario";
-		private const string INV_CONFIRMAR = "/ConfirmarInventario";
-		private const string INV_BOX = "/GetInventarioBox";
-		private const string INV_PLANILLA = "/GetInventarioPlanilla";
-		private const string INV_DATOS = "/ObtenerInventarioDatos";
-		private const string INV_REG_CTRL_STK = "/RegistrarControlDeStock";
-		private const string INV_PRODUCTOS = "/ObtenerProductosEnValorizacion";
-		private const string INV_CONTEOS = "/ObtenerConteosEnValorizacion";
+    {
+        private const string RutaAPI = "/api/apiinventario";
+        private const string INV_LISTA = "/ObtenerInventarioLista";
+        private const string INV_RUBROS = "/GetRubroParaInventario";
+        private const string INV_USUARIOS = "/GetUsuariosParaInventario";
+        private const string INV_CONFIRMAR = "/ConfirmarInventario";
+        private const string INV_BOX = "/GetInventarioBox";
+        private const string INV_PLANILLA = "/GetInventarioPlanilla";
+        private const string INV_DATOS = "/ObtenerInventarioDatos";
+        private const string INV_REG_CTRL_STK = "/RegistrarControlDeStock";
+        private const string INV_PRODUCTOS = "/ObtenerProductosEnValorizacion";
+        private const string INV_CONTEOS = "/ObtenerConteosEnValorizacion";
+        private const string INV_VERIFICA_CONTEO = "/VerificaConteo";
+        private const string INV_CONTEO = "/ObtenerConteos";
 		private const string INV_REG_VALORIZACION = "/RegistrarValorizacion";
+
 		public InventarioServicio(IOptions<AppSettings> options, ILogger<InventarioServicio> logger) : base(options, logger, RutaAPI)
-		{
-			
-		}
+        {
 
-		public List<InventarioListaDto> GetInventarioLista(GetInventarioListaRequest request, string token)
-		{
-			ApiResponse<List<InventarioListaDto>> apiResponse;
+        }
 
-			HelperAPI helper = new();
-			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
-			HttpResponseMessage response;
+		
+        public List<InventarioListaDto> GetInventarioLista(GetInventarioListaRequest request, string token)
+        {
+            ApiResponse<List<InventarioListaDto>> apiResponse;
 
-			var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_LISTA}";
+            HelperAPI helper = new();
+            HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+            HttpResponseMessage response;
 
-			response = client.PostAsync(link, contentData).Result;
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_LISTA}";
 
-			if (response.StatusCode == HttpStatusCode.OK)
-			{
-				string stringData = response.Content.ReadAsStringAsync().Result;
-				if (string.IsNullOrEmpty(stringData))
-				{
-					_logger.LogWarning($"La API devolvió error.");
-					return new();
-				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<InventarioListaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
-				return apiResponse.Data;
-			}
-			else
-			{
-				string stringData = response.Content.ReadAsStringAsync().Result;
-				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-				return new();
-			}
-		}
+            response = client.PostAsync(link, contentData).Result;
 
-		public List<RubroEnInventarioDto> GetRubrosEnInventario(string inv_nro, string token, string usu_id = "%")
-		{
-			ApiResponse<List<RubroEnInventarioDto>> respuesta;
-			string stringData;
-			try
-			{
-				HelperAPI helper = new();
-				HttpClient client = helper.InicializaCliente(token);
-				HttpResponseMessage response;
-				var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_RUBROS}?inv_nro={inv_nro}&usu_id={usu_id}";
-				response = client.GetAsync(link).GetAwaiter().GetResult();
-				if (response.StatusCode == HttpStatusCode.OK)
-				{
-					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-					if (!string.IsNullOrEmpty(stringData))
-					{
-						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<RubroEnInventarioDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
-					}
-					else
-					{
-						throw new Exception("Hubo un problema al deserializar los datos. Verifique.");
-					}
-					return respuesta.Data;
-				}
-				else
-				{
-					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-					_logger.LogError($"Hubo un problema al deserializar los datos: {stringData}");
-					throw new NegocioException("Hubo un problema al deserializar los datos");
-				}
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = response.Content.ReadAsStringAsync().Result;
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API devolvió error.");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<InventarioListaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+                return apiResponse.Data;
+            }
+            else
+            {
+                string stringData = response.Content.ReadAsStringAsync().Result;
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new();
+            }
+        }
 
-			}
-			catch (NegocioException)
-			{
-				throw;
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error al intentar obtener los datos de la cuenta financiera lista.");
-				throw;
-			}
-		}
+        public List<RubroEnInventarioDto> GetRubrosEnInventario(string inv_nro, string token, string usu_id = "%")
+        {
+            ApiResponse<List<RubroEnInventarioDto>> respuesta;
+            string stringData;
+            try
+            {
+                HelperAPI helper = new();
+                HttpClient client = helper.InicializaCliente(token);
+                HttpResponseMessage response;
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_RUBROS}?inv_nro={inv_nro}&usu_id={usu_id}";
+                response = client.GetAsync(link).GetAwaiter().GetResult();
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                    if (!string.IsNullOrEmpty(stringData))
+                    {
+                        respuesta = JsonConvert.DeserializeObject<ApiResponse<List<RubroEnInventarioDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+                    }
+                    else
+                    {
+                        throw new Exception("Hubo un problema al deserializar los datos. Verifique.");
+                    }
+                    return respuesta.Data;
+                }
+                else
+                {
+                    stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                    _logger.LogError($"Hubo un problema al deserializar los datos: {stringData}");
+                    throw new NegocioException("Hubo un problema al deserializar los datos");
+                }
 
-		public List<UsuarioEnInventarioDto> GetUsuariosEnInventario(string inv_nro, string token)
-		{
-			ApiResponse<List<UsuarioEnInventarioDto>> respuesta;
-			string stringData;
-			try
-			{
-				HelperAPI helper = new();
-				HttpClient client = helper.InicializaCliente(token);
-				HttpResponseMessage response;
-				var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_USUARIOS}?inv_nro={inv_nro}";
-				response = client.GetAsync(link).GetAwaiter().GetResult();
-				if (response.StatusCode == HttpStatusCode.OK)
-				{
-					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-					if (!string.IsNullOrEmpty(stringData))
-					{
-						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<UsuarioEnInventarioDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
-					}
-					else
-					{
-						throw new Exception("Hubo un problema al deserializar los datos. Verifique.");
-					}
-					return respuesta.Data;
-				}
-				else
-				{
-					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-					_logger.LogError($"Hubo un problema al deserializar los datos: {stringData}");
-					throw new NegocioException("Hubo un problema al deserializar los datos");
-				}
+            }
+            catch (NegocioException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al intentar obtener los datos de la cuenta financiera lista.");
+                throw;
+            }
+        }
 
-			}
-			catch (NegocioException)
-			{
-				throw;
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error al intentar obtener los datos de la cuenta financiera lista.");
-				throw;
-			}
-		}
+        public List<UsuarioEnInventarioDto> GetUsuariosEnInventario(string inv_nro, string token)
+        {
+            ApiResponse<List<UsuarioEnInventarioDto>> respuesta;
+            string stringData;
+            try
+            {
+                HelperAPI helper = new();
+                HttpClient client = helper.InicializaCliente(token);
+                HttpResponseMessage response;
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_USUARIOS}?inv_nro={inv_nro}";
+                response = client.GetAsync(link).GetAwaiter().GetResult();
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                    if (!string.IsNullOrEmpty(stringData))
+                    {
+                        respuesta = JsonConvert.DeserializeObject<ApiResponse<List<UsuarioEnInventarioDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+                    }
+                    else
+                    {
+                        throw new Exception("Hubo un problema al deserializar los datos. Verifique.");
+                    }
+                    return respuesta.Data;
+                }
+                else
+                {
+                    stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                    _logger.LogError($"Hubo un problema al deserializar los datos: {stringData}");
+                    throw new NegocioException("Hubo un problema al deserializar los datos");
+                }
 
-		public RespuestaGenerica<RespuestaDto> ConfirmarInventario(ConfirmarInventarioRequest request, string token)
-		{
-			ApiResponse<List<RespuestaDto>> apiResponse;
+            }
+            catch (NegocioException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al intentar obtener los datos de la cuenta financiera lista.");
+                throw;
+            }
+        }
 
-			HelperAPI helper = new();
-			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
-			HttpResponseMessage response;
+        public RespuestaGenerica<RespuestaDto> ConfirmarInventario(ConfirmarInventarioRequest request, string token)
+        {
+            ApiResponse<List<RespuestaDto>> apiResponse;
 
-			var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_CONFIRMAR}";
+            HelperAPI helper = new();
+            HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+            HttpResponseMessage response;
 
-			response = client.PostAsync(link, contentData).Result;
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_CONFIRMAR}";
 
-			if (response.StatusCode == HttpStatusCode.OK)
-			{
-				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-				if (string.IsNullOrEmpty(stringData))
-				{
-					_logger.LogWarning($"La API devolvió error.");
-					return new();
-				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
-				return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data.First() };
-			}
-			else
-			{
-				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-				return new();
-			}
-		}
+            response = client.PostAsync(link, contentData).Result;
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API devolvió error.");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+                return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data.First() };
+            }
+            else
+            {
+                string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new();
+            }
+        }
 
         public async Task<RespuestaGenerica<InventarioBoxDto>> GetInventarioBox(InventarioRequestDto req, string token)
         {
@@ -274,129 +278,280 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-		public List<InventarioListaDto> GetInventarioDatos(GetInventarioDatosRequest request, string token)
-		{
-			ApiResponse<List<InventarioListaDto>> apiResponse;
+        public List<InventarioListaDto> GetInventarioDatos(GetInventarioDatosRequest request, string token)
+        {
+            ApiResponse<List<InventarioListaDto>> apiResponse;
 
-			HelperAPI helper = new();
-			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
-			HttpResponseMessage response;
+            HelperAPI helper = new();
+            HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+            HttpResponseMessage response;
 
-			var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_DATOS}";
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_DATOS}";
 
-			response = client.PostAsync(link, contentData).Result;
+            response = client.PostAsync(link, contentData).Result;
 
-			if (response.StatusCode == HttpStatusCode.OK)
-			{
-				string stringData = response.Content.ReadAsStringAsync().Result;
-				if (string.IsNullOrEmpty(stringData))
-				{
-					_logger.LogWarning($"La API devolvió error.");
-					return new();
-				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<InventarioListaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
-				return apiResponse.Data;
-			}
-			else
-			{
-				string stringData = response.Content.ReadAsStringAsync().Result;
-				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-				return new();
-			}
-		}
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = response.Content.ReadAsStringAsync().Result;
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API devolvió error.");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<InventarioListaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+                return apiResponse.Data;
+            }
+            else
+            {
+                string stringData = response.Content.ReadAsStringAsync().Result;
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new();
+            }
+        }
 
-		public RespuestaGenerica<RespuestaDto> RegistrarControlDeStock(RegistrarStockDeControlRequest request, string token)
-		{
-			ApiResponse<List<RespuestaDto>> apiResponse;
+        public RespuestaGenerica<RespuestaDto> RegistrarControlDeStock(RegistrarStockDeControlRequest request, string token)
+        {
+            ApiResponse<List<RespuestaDto>> apiResponse;
 
-			HelperAPI helper = new();
-			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
-			HttpResponseMessage response;
+            HelperAPI helper = new();
+            HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+            HttpResponseMessage response;
 
-			var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_REG_CTRL_STK}";
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_REG_CTRL_STK}";
 
-			response = client.PostAsync(link, contentData).Result;
+            response = client.PostAsync(link, contentData).Result;
 
-			if (response.StatusCode == HttpStatusCode.OK)
-			{
-				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-				if (string.IsNullOrEmpty(stringData))
-				{
-					_logger.LogWarning($"La API devolvió error.");
-					return new();
-				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
-				return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data.First() };
-			}
-			else
-			{
-				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-				return new();
-			}
-		}
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API devolvió error.");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+                return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data.First() };
+            }
+            else
+            {
+                string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new();
+            }
+        }
 
-		public List<ProductosEnValorizacionDto> GetProductosEnValorizacion(ProductosEnValorizacionRequest request, string token)
-		{
-			ApiResponse<List<ProductosEnValorizacionDto>> apiResponse;
+        public List<ProductosEnValorizacionDto> GetProductosEnValorizacion(ProductosEnValorizacionRequest request, string token)
+        {
+            ApiResponse<List<ProductosEnValorizacionDto>> apiResponse;
 
-			HelperAPI helper = new();
-			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
-			HttpResponseMessage response;
+            HelperAPI helper = new();
+            HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+            HttpResponseMessage response;
 
-			var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_PRODUCTOS}";
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_PRODUCTOS}";
 
-			response = client.PostAsync(link, contentData).Result;
+            response = client.PostAsync(link, contentData).Result;
 
-			if (response.StatusCode == HttpStatusCode.OK)
-			{
-				string stringData = response.Content.ReadAsStringAsync().Result;
-				if (string.IsNullOrEmpty(stringData))
-				{
-					_logger.LogWarning($"La API devolvió error.");
-					return new();
-				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductosEnValorizacionDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
-				return apiResponse.Data;
-			}
-			else
-			{
-				string stringData = response.Content.ReadAsStringAsync().Result;
-				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-				return new();
-			}
-		}
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = response.Content.ReadAsStringAsync().Result;
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API devolvió error.");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductosEnValorizacionDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+                return apiResponse.Data;
+            }
+            else
+            {
+                string stringData = response.Content.ReadAsStringAsync().Result;
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new();
+            }
+        }
 
-		public List<ConteoEnValorizacionDto> GetConteosEnValorizacion(ConteosEnValorizacionRequest request, string token)
-		{
-			ApiResponse<List<ConteoEnValorizacionDto>> apiResponse;
+        public List<ConteoEnValorizacionDto> GetConteosEnValorizacion(ConteosEnValorizacionRequest request, string token)
+        {
+            ApiResponse<List<ConteoEnValorizacionDto>> apiResponse;
 
-			HelperAPI helper = new();
-			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
-			HttpResponseMessage response;
+            HelperAPI helper = new();
+            HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+            HttpResponseMessage response;
 
-			var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_CONTEOS}";
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_CONTEOS}";
 
-			response = client.PostAsync(link, contentData).Result;
+            response = client.PostAsync(link, contentData).Result;
 
-			if (response.StatusCode == HttpStatusCode.OK)
-			{
-				string stringData = response.Content.ReadAsStringAsync().Result;
-				if (string.IsNullOrEmpty(stringData))
-				{
-					_logger.LogWarning($"La API devolvió error.");
-					return new();
-				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConteoEnValorizacionDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
-				return apiResponse.Data;
-			}
-			else
-			{
-				string stringData = response.Content.ReadAsStringAsync().Result;
-				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-				return new();
-			}
-		}
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = response.Content.ReadAsStringAsync().Result;
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API devolvió error.");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConteoEnValorizacionDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+                return apiResponse.Data;
+            }
+            else
+            {
+                string stringData = response.Content.ReadAsStringAsync().Result;
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new();
+            }
+        }
+
+
+        public async Task<RespuestaGenerica<RespuestaDto>> ValidaConteo(InventarioRequestDto req, string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(req, token, out StringContent contentData);
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_VERIFICA_CONTEO}";
+
+                using var response = await client.PostAsync(link, contentData);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = false,
+                            Mensaje = "No se recibió respuesta válida de la API"
+                        };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+
+                    if (apiResponse == null || apiResponse.Data == null)
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = false,
+                            Mensaje = "Error deserializando la respuesta de la API"
+                        };
+                    }
+
+                    if (apiResponse.Data.resultado != 0)
+                    {
+                        if (apiResponse.Data.resultado > 0)
+                        {
+                            return new RespuestaGenerica<RespuestaDto>
+                            {
+                                Ok = false,
+                                Entidad = apiResponse.Data,
+                                EsWarn = true,
+                                Mensaje = apiResponse.Data.resultado_msj ?? "Error procesando la validación del Conteo."
+                            };
+                        }
+                        else
+                        {
+                            return new RespuestaGenerica<RespuestaDto>
+                            {
+                                Ok = false,
+                                Entidad = apiResponse.Data,
+                                EsError = true,
+                                Mensaje = apiResponse.Data.resultado_msj ?? "Error procesando la validación del Conteo."
+                            };
+                        }
+                    }
+                    else
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = true,
+                            Entidad = apiResponse?.Data ?? new RespuestaDto(),
+                            Mensaje = ""
+                        };
+                    }
+                }
+                else
+                {
+                    var errorData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {errorData}");
+
+                    var resp = JsonConvert.DeserializeObject<ErrorResponse>(errorData);
+
+                    var error = resp?.Error.FirstOrDefault();
+                    if (string.IsNullOrEmpty(error?.Detail))
+                    {
+                        //intentamos obtener los datos con otra entidad
+                    }
+
+                    var mensaje = error?.Detail ?? "Error desconocido en la API";
+
+                    return new RespuestaGenerica<RespuestaDto>
+                    {
+                        Ok = false,
+                        EsWarn = true,
+                        Mensaje = mensaje
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en Valida Conteo");
+
+                return new RespuestaGenerica<RespuestaDto>
+                {
+                    Ok = false,
+                    EsError = true,
+                    Mensaje = "Error procesando la validación del Conteo.."
+                };
+            }
+
+        }
+
+        public async Task<RespuestaGenerica<InventarioConteoDto>> GetConteno(InventarioRequestDto req, string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(req, token, out StringContent contentData);
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_CONTEO}";
+
+                using var response = await client.PostAsync(link, contentData);
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<InventarioConteoDto>>>(stringData);
+                    if (apiResponse == null || apiResponse.Data == null)
+                    {
+                        return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+                    }
+
+                    return new RespuestaGenerica<InventarioConteoDto>
+                    {
+                        Ok = true,
+                        Mensaje = "OK",
+                        ListaEntidad = apiResponse.Data
+                        // Nota: si necesitas la metadata (apiResponse.Meta), amplía RespuestaGenerica para incluirla.
+                    };
+                }
+                else
+                {
+                    var msg = await ReadApiErrorAsync(response);
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+                    return new() { Ok = false, Mensaje = msg };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+                return new() { Ok = false, Mensaje = "Error al buscar las Planillas" };
+            }
+        }
 
 		public RespuestaGenerica<RespuestaDto> RegistrarValorizacion(RegistrarValorizacionRequest request, string token)
 		{
@@ -427,6 +582,6 @@ namespace gc.sitio.core.Servicios.Implementacion
 				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
 				return new();
 			}
-		}
+		}	
 	}
 }
