@@ -608,7 +608,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 					return PartialView("_gridMensaje", response);
 				}
 
-				if (invt_id == "D" || invt_id == "S")
+				if (inv.First().invt_id == 'D' || inv.First().invt_id == 'S')
 				{
 					var listaRubro = _inventarioServicio.GetRubrosEnInventario(inv_nro, TokenCookie);
 					model.GrillaInvRubros = ObtenerGridCoreSmart<RubroEnInventarioDto>(listaRubro);
@@ -701,6 +701,85 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				var conteos = _inventarioServicio.GetConteosEnValorizacion(request, TokenCookie);
 				model.GrillaConteos = ObtenerGridCoreSmart<ConteoEnValorizacionDto>(conteos);
 				return PartialView("_valorizacionInventarioConteos", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public JsonResult RegistrarValorizacion(RegistrarValorizacionRequest request)
+		{ 
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return Json(new { error = true, warn = false, ok = false, msg = "No autenticado" });
+				if (string.IsNullOrEmpty(request.inv_nro))
+					return Json(new { error = true, warn = false, ok = false, msg = "Request inválido" });
+				request.adm_id = AdministracionId;
+				request.usu_id = UserName;
+				PrintProperties(request);
+				var respuesta = _inventarioServicio.RegistrarValorizacion(request, TokenCookie);
+				return AnalizarRespuesta(respuesta, "La acción se ejecutó correctamente.");
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					Mensaje = ex.Message
+				};
+				return Json(response);
+			}
+		}
+
+		public IActionResult InicializarTabCerrarInventario(string inv_nro)
+		{
+			var model = new CerrarInventarioModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var inv = ListaInventario.Where(x => x.inv_nro == inv_nro).ToList();
+				if (inv == null || inv.Count <= 0)
+				{
+					RespuestaGenerica<EntidadBase> response = new()
+					{
+						Ok = false,
+						EsError = true,
+						Mensaje = "No se han encontrado datos para realizar el cierre del inventario seleccionado."
+					};
+					return PartialView("_gridMensaje", response);
+				}
+
+				if (inv.First().invt_id == 'D' || inv.First().invt_id == 'S')
+				{
+					var listaRubro = _inventarioServicio.GetRubrosEnInventario(inv_nro, TokenCookie);
+					model.GrillaInvRubros = ObtenerGridCoreSmart<RubroEnInventarioDto>(listaRubro);
+					model.EsTipoBox = false;
+				}
+				else
+				{
+					var listaBox = _inventarioServicio.GetInventarioBox(new InventarioRequestDto() { inv_nro = inv_nro, usu_id = "%" }, TokenCookie).Result;
+					model.GrillaInvBoxes = ObtenerGridCoreSmart<InventarioBoxDto>(listaBox.ListaEntidad ?? []);
+					model.EsTipoBox = true;
+				}
+				var invSeleccionado = inv.First();
+				model.inv_nro = invSeleccionado.inv_nro;
+				model.inv_descripcion = invSeleccionado.inv_descripcion;
+				model.invt_id = inv.First().invt_id.ToString() ?? string.Empty;
+				return PartialView("_CerrarInventario", model);
 			}
 			catch (Exception ex)
 			{

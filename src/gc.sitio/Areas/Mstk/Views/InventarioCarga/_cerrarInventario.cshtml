@@ -1,4 +1,4 @@
-﻿@model ValorizacionInventarioModel
+﻿@model CerrarInventarioModel
 @using static gc.infraestructura.Helpers.GridHelper
 @{
 	var alt = true;
@@ -34,7 +34,9 @@
 					   class="form-control form-control-sm col-9"
 					   value="@Model.inv_descripcion"
 					   readonly />
-
+				<button type="button" class="btn btn-success btn-sm mt-1 me-1" id="btnConfirmarCierre">
+					<i class="bx bx-badge-check"></i> Cerrar y Ajustar
+				</button>
 			</div>
 		</div>
 	</div>
@@ -43,8 +45,8 @@
 	<div class="col-3">
 		@if (Model.EsTipoBox)
 		{
-			<div class="table-wrapper" id="containerValorListaBox">
-				<table class="table table-sm table-golden" id="tbValorGridBox">
+			<div class="table-wrapper" id="containerCerrarGridBox">
+				<table class="table table-sm table-golden" id="tbCerrarGridBox">
 					<thead>
 						<tr class="header">
 							<th class="text-center" style="width: 45%;">Box</th>
@@ -58,7 +60,7 @@
 							@foreach (var item in Model.GrillaInvBoxes.ListaDatos)
 							{
 								if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-								<tr class="@clase" onclick="selectReg(this, 'tbValorGridBox')" data-inv-nro="@item.inv_nro" data-inve-id="@item.box_id">
+								<tr class="@clase" onclick="selectReg(this, 'tbCerrarGridBox')" data-inv-nro="@item.inv_nro" data-inve-id="@item.box_id">
 									<td class="@Model.GrillaInvBoxes.ObtenerClase(item.box_desc) cell-fit-content">@Model.GrillaInvBoxes.FormatearDato(item.box_desc, FormatDato.Ninguno)</td>
 									<td class="@Model.GrillaInvBoxes.ObtenerClase(item.cant_prod_stk) align-right cell-fit-content">@Model.GrillaInvBoxes.FormatearDato(item.cant_prod_stk, FormatDato.Ninguno)</td>
 									<td class="@Model.GrillaInvBoxes.ObtenerClase(item.cant_prod_stk_positivo) align-right cell-fit-content">@Model.GrillaInvBoxes.FormatearDato(item.cant_prod_stk_positivo, FormatDato.Fecha)</td>
@@ -80,8 +82,8 @@
 		}
 		else
 		{
-			<div class="table-wrapper" id="containerValorListaRubros">
-				<table class="table table-sm table-golden" id="tbValorGridRubros">
+			<div class="table-wrapper" id="containerCerrarGridRubros">
+				<table class="table table-sm table-golden" id="tbCerrarGridRubros">
 					<thead>
 						<tr class="header">
 							<th class="text-center" style="width: 50%;">Rubros</th>
@@ -95,7 +97,7 @@
 							@foreach (var item in Model.GrillaInvRubros.ListaDatos)
 							{
 								if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-								<tr class="@clase" onclick="selectReg(this, 'tbValorGridRubros')" data-inv-nro="@item.inv_nro" data-inve-id="@item.rub_id">
+								<tr class="@clase" onclick="selectReg(this, 'tbCerrarGridRubros')" data-inv-nro="@item.inv_nro" data-inve-id="@item.rub_id">
 									<td class="@Model.GrillaInvRubros.ObtenerClase(item.rub_desc) cell-fit-content">@Model.GrillaInvRubros.FormatearDato(item.rub_desc, FormatDato.Ninguno)</td>
 									<td class="@Model.GrillaInvRubros.ObtenerClase(item.cant_prod_stk) align-right cell-fit-content">@Model.GrillaInvRubros.FormatearDato(item.cant_prod_stk, FormatDato.Ninguno)</td>
 									<td class="@Model.GrillaInvRubros.ObtenerClase(item.cant_prod_stk_positivo) align-right cell-fit-content">@Model.GrillaInvRubros.FormatearDato(item.cant_prod_stk_positivo, FormatDato.Fecha)</td>
@@ -115,16 +117,11 @@
 				</table>
 			</div>
 		}
-		
+
 	</div>
 	<div class="col-6">
 		<div id="divProductosValorizacion">
-			<partial name="_valorizacionInventarioProductos" model="new ProductosEnValorizacionModel()" />
-		</div>
-	</div>
-	<div class="col-3">
-		<div id="divConteosValorizacion">
-			<partial name="_valorizacionInventarioConteos" model="new ConteosEnValorizacionModel()" />
+			<partial name="_cerrarInventarioProductos" model="new ProductosEnValorizacionModel()" />
 		</div>
 	</div>
 </div>

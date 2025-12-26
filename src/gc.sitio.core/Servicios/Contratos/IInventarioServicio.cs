@@ -18,5 +18,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		RespuestaGenerica<RespuestaDto> RegistrarControlDeStock(RegistrarStockDeControlRequest request, string token);
 		List<ProductosEnValorizacionDto> GetProductosEnValorizacion(ProductosEnValorizacionRequest request, string token);
 		List<ConteoEnValorizacionDto> GetConteosEnValorizacion(ConteosEnValorizacionRequest request, string token);
+		RespuestaGenerica<RespuestaDto> RegistrarValorizacion(RegistrarValorizacionRequest request, string token);
 	}
 }

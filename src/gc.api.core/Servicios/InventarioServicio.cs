@@ -155,5 +155,18 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<ConteoEnValorizacionDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<RespuestaDto> RegistrarValorizacion(RegistrarValorizacionRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INV_VALORIZA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@inv_nro",request.inv_nro),
+				new("@adm_id",request.adm_id),
+				new("@usu_id",request.usu_id),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

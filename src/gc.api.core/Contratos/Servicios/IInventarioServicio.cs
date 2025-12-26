@@ -19,5 +19,6 @@ namespace gc.api.core.Contratos.Servicios
 		List<RespuestaDto> RegistrarControlDeStock(RegistrarStockDeControlRequest request);
 		List<ProductosEnValorizacionDto> GetProductosEnValorizacion(ProductosEnValorizacionRequest request);
 		List<ConteoEnValorizacionDto> GetConteoEnValorizacion(ConteosEnValorizacionRequest request);
+		List<RespuestaDto> RegistrarValorizacion(RegistrarValorizacionRequest request);
 	}
 }

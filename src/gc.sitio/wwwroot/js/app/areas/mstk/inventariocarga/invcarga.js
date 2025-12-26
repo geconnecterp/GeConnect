@@ -90,6 +90,7 @@ function CargarEventosABotonesEnDivPrincipal() {
 	$(document).on("click", "#btnEliminar", ControlaEliminarInventario);
 	$(document).on("click", "#btnRegStkCtrl", ControlaRegStkCtrl);
 	$(document).on("click", "#btnValorizacion", ControlaValorizacion);
+	$(document).on("click", "#btnCerrarInv", ControlaCerrarInventario);
 	$(document).on("click", "#btnConfirmar", ControlaConfirmarInventario);
 	$(document).on("click", "#btnCancelar", ControlaCancelarInventario);
 }
@@ -98,7 +99,7 @@ function ControlaAgregarInventario() {
 	HabilitarDatosInventario();
 	HabilitarDatosAdicionales();
 	DeshabilitarGrillaInventarios();
-	
+
 	ActualizarEstadoDeBotonesPorEventos(EstadoBtnEnDivPrincipal.AGREGAR)
 }
 
@@ -274,6 +275,108 @@ function ControlaValorizacion() {
 		$("#divValorizacion").html(obj);
 		TaskManager.end();
 		let tab = new bootstrap.Tab(document.querySelector("#btnTabValorizacion"));
+		setTimeout(() => {
+			$("#divEdicionConteos").find("input, select, textarea, button").prop("disabled", true);
+			$(document).off("click", "#btnConfirmarValoracion").on("click", "#btnConfirmarValoracion", ControlaConfirmarValoracion);
+		}, 300);
+		tab.show();
+		return true
+	});
+}
+
+function ControlaConfirmarValoracion() {
+	if (ValidarExistenciaDeInventario()) {
+		AbrirMensaje("ATENCIÓN", `Esta acción bloqueará el inventario actual para realizar conteos y/o modificaciones. ¿Desea continuar?`, function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI":
+					HandlerConfirmarValoracion();
+					break;
+				case "NO":
+					break;
+				default: //NO
+					break;
+			}
+			return true;
+
+		}, true, ["Aceptar", "Cancelar"], "question!", null);
+	}
+}
+
+function HandlerConfirmarValoracion() {
+	let inv_nro = $("#inv_nro").val();
+	var data = { inv_nro };
+	PostGen(data, registrarValorizacionURL, function (obj) {
+		CerrarWaiting();
+		if (!obj.ok && obj.error && obj.msg === "No autenticado") {
+			window.location.href = login;
+			return false;
+		}
+
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			setTimeout(() => {
+				//Hacer algo luego de actualizar
+				//Limpiar datos en controles
+				InicializarDatosDeInventario();
+				//Limpiar grillas adicionales
+				LimpiarGrillasEnDatosAdicionales();
+				//limpiar seleccion en selectLista de grillas adicionales
+				LimiparSelectListEnDatosAdicionales()
+				//Actualizar estado de botones
+				ActualizarEstadoDeBotonesPorEventos(EstadoBtnEnDivPrincipal.VALORIZACION)
+				//RecargarGrilla
+				CargarInventarioLista();
+				//Habilito lista principal
+				HabilitarGrillaInventarios();
+				//Deshabilitar Grillas adicionales y datos adicionales
+				DeshabilitarDatosAdicionales();
+				//Movemos al tab principal
+				let tab = new bootstrap.Tab(document.querySelector("#btnTabCargaInventario"));
+				tab.show();
+			}, 500);
+		}
+	});
+}
+
+function ValidarExistenciaDeInventario() {
+	let invtId = $("#invt_id").val();
+
+	if (invtId == "B") {
+		let filasBox = $("#tbValorGridBox tbody tr");
+		// Validar Box: al menos una fila y que no sea la de "No se encontraron box"
+		let tieneBox = filasBox.length > 0 &&
+			!filasBox.first().text().includes("No se encontraron box");
+
+		return tieneBox;
+	}
+	else {
+		let filasRubros = $("#tbValorGridRubros tbody tr");
+		// Validar Usuarios: al menos una fila y que no sea la de "No hay rubros cargados"
+		var tieneRubros = filasRubros.length > 0 &&
+			!filasRubros.first().text().includes("No se encontraron rubros");
+
+		return tieneRubros;
+	}
+}
+
+function ControlaCerrarInventario() {
+	TaskManager.start();
+	let inv_nro = $("#inv_nro").val();
+	var data = { inv_nro };
+	PostGenHtml(data, inicializarTabCerrarInventarioURL, function (obj) {
+		$("#divCerrarInv").html(obj);
+		TaskManager.end();
+		let tab = new bootstrap.Tab(document.querySelector("#btnTabCerrarInv"));
+		setTimeout(() => {
+			//$("#divEdicionConteos").find("input, select, textarea, button").prop("disabled", true);
+			$(document).off("click", "#btnConfirmarCierreDeInventario").on("click", "#btnConfirmarCierreDeInventario", ControlaConfirmarCierreDeInventario);
+		}, 300);
 		tab.show();
 		return true
 	});
@@ -578,7 +681,7 @@ function CargarCamposDatosInventario(invId = 0) {
 		if (invId == 0)
 			InicializarFechasEnDatos();
 		DeshabilitarDatosInventario();
-		
+
 		return true
 	});
 }
@@ -650,7 +753,7 @@ function ActualizarEstadoDeBotonesPorEventos(estado) {
 		$("#btnConfirmar, #btnCancelar")
 			.prop("disabled", false);
 	}
-	else if (estado === EstadoBtnEnDivPrincipal.CONFIRMAR || estado === EstadoBtnEnDivPrincipal.CANCELAR || estado === EstadoBtnEnDivPrincipal.REGISTRAR_STOCK_DE_CONTROL) {
+	else if (estado === EstadoBtnEnDivPrincipal.CONFIRMAR || estado === EstadoBtnEnDivPrincipal.CANCELAR || estado === EstadoBtnEnDivPrincipal.REGISTRAR_STOCK_DE_CONTROL || estado === EstadoBtnEnDivPrincipal.VALORIZACION) {
 		$("#btnModificar, #btnEliminar, #btnRegStkCtrl, #btnValorizacion, #btnCerrarInv, #btnConfirmar, #btnCancelar")
 			.prop("disabled", true);
 		$("#btnAgregar")
@@ -691,13 +794,15 @@ function ActualizarEstadoDeBotonesEnSeleccion() {
 	else {
 		if (inveIdSeleccionado === "P") {
 			$("#btnModificar, #btnEliminar, #btnRegStkCtrl").prop("disabled", false);
-		}
-		else if (inveIdSeleccionado === "R") {
-			$("#btnRegStkCtrl").prop("disabled", false);
+			$("#btnValorizacion, #btnCerrarInv").prop("disabled", true);
 		}
 		else if (inveIdSeleccionado === "S") {
 			$("#btnValorizacion, #btnModificar").prop("disabled", false);
 			$("#btnRegStkCtrl").prop("disabled", true);
+		}
+		else if (inveIdSeleccionado === "V") {
+			$("#btnCerrarInv").prop("disabled", false);
+			$("#btnRegStkCtrl, #btnValorizacion, #btnModificar").prop("disabled", true);
 		}
 		else {
 			$("#btnModificar, #btnEliminar").prop("disabled", true);
@@ -765,8 +870,25 @@ function selectReg(x, gridId) {
 			$("#divConteosValorizacion").html(obj);
 			TaskManager.end();
 			getMaskForIntegerMax1000("#conteo");
+			HabilitarSeccionEdicionDeConteo();
 			return true
 		});
+	}
+}
+
+function HabilitarSeccionEdicionDeConteo() {
+
+	var filasConteos = $("#tbValorGridConteos tbody tr");
+
+	// Validar Conteos: al menos una fila y que no sea la de "No hay conteos cargados"
+	var tieneConteos = filasConteos.length > 0 &&
+		!filasConteos.first().text().includes("No se encontraron conteos");
+
+	if (!tieneConteos) {
+		$("#divEdicionConteos").find("input, select, textarea, button").prop("disabled", true);
+	}
+	else {
+		$("#divEdicionConteos").find("input, select, textarea, button").prop("disabled", false);
 	}
 }
 
