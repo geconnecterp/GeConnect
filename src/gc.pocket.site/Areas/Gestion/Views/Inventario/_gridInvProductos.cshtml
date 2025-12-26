@@ -1,0 +1,66 @@
+﻿@model List<InventarioConteoDto>
+
+<div class="grid-golden">    
+    <div class="grid-golden-body">
+        <div class="table-wrapper-400">
+            <table id="tbGridConteoProductos" class="table table-golden table-sm table-hover mb-0">
+                <thead class="table-fixed-header">
+                    <tr>
+                        <th>ID</th>
+                        <th>Desc</th>
+                        <th class="text-end">Bultos</th>
+                        <th class="text-end">U. Pres.</th>
+                        <th class="text-end">Cantidad</th>
+                        <th class="text-center" style="width: 60px;">Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Count > 0)
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr data-p-id="@item.p_id" 
+                                data-box-id="@item.box_id" 
+                                data-carga-nro="@item.carga_nro">
+                                <td>@item.p_id</td>
+                                <td>@item.p_desc</td>
+                                <td class="text-end">@item.invd_bulto</td>
+                                <td class="text-end">@item.invd_unidad_pres</td>
+                                <td class="text-end">@item.invd_cantidad.ToString("N2")</td>
+                                <td class="text-center">
+                                    <button type="button" 
+                                            class="btn btn-danger btn-sm btn-eliminar-producto" 
+                                            data-p-id="@item.p_id"
+                                            data-p-desc="@item.p_desc"
+                                            title="Eliminar producto del conteo">
+                                        <i class="bx bx-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center">
+                                <div class="alert alert-info mb-0" role="alert">
+                                    <i class="bx bx-info-circle"></i> No hay productos para mostrar en el conteo.
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @if (Model != null && Model.Count > 0)
+    {
+        <div class="grid-golden-footer">
+            <small class="text-muted">
+                <i class="bx bx-list-ul"></i> Total de productos: <strong class="text-golden">@Model.Count</strong>
+            </small>
+        </div>
+    }
+</div>
+
+

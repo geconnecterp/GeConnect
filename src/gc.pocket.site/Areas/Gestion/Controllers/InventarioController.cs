@@ -15,6 +15,8 @@ using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Implementacion;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using Org.BouncyCastle.Ocsp;
 using X.PagedList;
 
 namespace gc.pocket.site.Areas.Gestion.Controllers
@@ -291,19 +293,183 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         }
 
         [HttpPost]
-        public IActionResult CargaConteo(InventarioRequestDto req)
+        public async Task<JsonResult> ObtenerConteo([FromBody] InventarioRequestDto req)
+        {
+            try
+            {
+                // Verificar autenticación
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+                if (req == null)
+                {
+                    throw new NegocioException("Los datos del conteo son incorrectos");
+                }
+
+                if (string.IsNullOrEmpty(req.tipo_id))
+                {
+                    if (req.tipo.Equals('B'))
+                    {
+                        throw new NegocioException("Es necesario que ingrese algun BOX para poder proceder");
+                    }
+                    else
+                    {
+                        throw new NegocioException("Es necesario que seleccione alguna Planilla antes de proceder.");
+                    }
+                }
+
+                req.usu_id = UserName;
+
+                var resultado = await _invSv.GetConteno(req, TokenCookie);
+                if (resultado == null || !resultado.Ok)
+                {
+                    if (resultado == null)
+                    {
+                        throw new NegocioException("Error al obtener el conteo");
+                    }
+
+                    if (resultado.EsWarn)
+                    {
+                        throw new NegocioException(resultado.Mensaje ?? "Error al obtener el conteo");
+                    }
+                    if (resultado.EsError)
+                    {
+                        throw new Exception(resultado.Mensaje ?? "Error al obtener el conteo");
+                    }
+                }
+                return Json(new { error = false, warn = false, msg = "Validación Exitosa." });
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CargaConteo(string invNro,string tipo,string tipoId)
         {
             if (!VerificarAutenticacion(out IActionResult redirectResult))
                 return redirectResult;
-            if (req == null || string.IsNullOrEmpty(req.inv_nro) || string.IsNullOrEmpty(req.tipo.ToString()) || string.IsNullOrEmpty(req.tipo_id))
+
+            var sigla = "inv";
+            var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
+            string? volver = Url.Action("index", "inventario", new { area = "gestion" });
+            ViewBag.AppItem = new AppItem { Nombre = modulo.Nombre, VolverUrl = volver ?? "#" };
+
+            if (string.IsNullOrEmpty(invNro) || 
+                string.IsNullOrEmpty(tipo) || 
+                string.IsNullOrEmpty(tipoId))
             {
                 TempData["error"] = "Los datos del conteo son incorrectos";
                 return RedirectToAction("Index");
             }
-            ViewBag.InvNro = req.inv_nro;
-            ViewBag.Tipo = req.tipo;
-            ViewBag.TipoId = req.tipo_id;
-            return View();
+            var req = new InventarioRequestDto { inv_nro = invNro, tipo = tipo[0], tipo_id = tipoId };
+            var resultado = await _invSv.GetConteno(req, TokenCookie);
+            if (resultado == null || !resultado.Ok)
+            {
+                if (resultado == null)
+                {
+                    TempData["error"] = "Error al obtener el conteo";
+                    return RedirectToAction("index", "inventario", new { area = "Gestion" });
+                }
+
+                if (resultado.EsWarn)
+                {
+                    TempData["warn"] = resultado.Mensaje ?? "Error al obtener el conteo";
+                    return RedirectToAction("index", "inventario", new { area = "Gestion" });
+                }
+                if (resultado.EsError)
+                {
+                    TempData["error"] =resultado.Mensaje ?? "Error al obtener el conteo";
+                    return RedirectToAction("index", "inventario", new { area = "Gestion" });
+                }
+            }
+            //return Json(new { error = false, warn = false, msg = "Validación Exitosa." });
+
+            ViewBag.InvNro = invNro;
+            ViewBag.Tipo = tipo;
+            ViewBag.TipoId = tipoId;
+            ViewBag.RegistrosConteo = resultado.ListaEntidad;
+            return View(modulo);
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> ConfirmarConteo([FromBody]InventarioRequestDto req)
+        {
+            try
+            {
+                // Verificar autenticación
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+                if (req == null)
+                {
+                    throw new NegocioException("Los datos para confirmar el conteo son incorrectos");
+                }
+
+                if (string.IsNullOrEmpty(req.tipo_id))
+                {
+                    if (req.tipo.Equals('B'))
+                    {
+                        throw new NegocioException("Es necesario que ingrese algun BOX para poder proceder");
+                    }
+                    else
+                    {
+                        throw new NegocioException("Es necesario que seleccione alguna Planilla antes de proceder.");
+                    }
+                }
+
+                if (req.json.Count == 0)
+                {
+                    throw new NegocioException("Es necesario que al menos un producto sea enviado para confirmar.");
+                }
+
+                req.usu_id = UserName;
+                req.json_p = JsonConvert.SerializeObject(req.json);
+
+                RespuestaGenerica<RespuestaDto> resultado = await _invSv.ConfirmarConteo(req, TokenCookie);
+                if (resultado == null || !resultado.Ok)
+                {
+                    if (resultado == null)
+                    {
+                        throw new NegocioException("Error al validar el conteo");
+                    }
+
+                    if (resultado.EsWarn)
+                    {
+                        throw new NegocioException(resultado.Mensaje ?? "Error al validar el conteo");
+                    }
+                    if (resultado.EsError)
+                    {
+                        throw new Exception(resultado.Mensaje ?? "Error al validar el conteo");
+                    }
+                }
+                return Json(new { error = false, warn = false, msg = "Validación Exitosa." });
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
         }
     }
 }

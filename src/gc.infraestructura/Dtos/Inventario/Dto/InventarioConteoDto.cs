@@ -3,6 +3,7 @@
     public class InventarioConteoDto
     {
         public string p_id { get; set; } = string.Empty;
+        public string p_desc { get; set; } = string.Empty;
         public string box_id { get; set; } = string.Empty;
         public int carga_nro { get; set; }
         public string carga_des { get; set; } = string.Empty;

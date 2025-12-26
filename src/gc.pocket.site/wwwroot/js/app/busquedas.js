@@ -168,7 +168,7 @@ function buscarProducto() {
                 $("#estadoFuncion").val(false);
                 $("#btnBusquedaBase").prop("disabled", false);
                 $("#msjModal").modal("hide");
-                $("#Busqueda").focus();
+                $("#Busqueda").trigger("focus");
                 return true;
             }, false, ["Aceptar"], "error!", null);
         }
@@ -180,7 +180,7 @@ function buscarProducto() {
                     $("#estadoFuncion").val(false);
                     $("#btnBusquedaBase").prop("disabled", false);
                     $("#msjModal").modal("hide");
-                    $("#Busqueda").focus();
+                    $("#Busqueda").trigger("focus");
                     return true;
                 }, false, ["Aceptar"], "error!", null);
             }

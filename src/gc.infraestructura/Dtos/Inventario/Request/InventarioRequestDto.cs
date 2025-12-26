@@ -1,4 +1,6 @@
-﻿namespace gc.infraestructura.Dtos.Inventario.Request
+﻿using gc.infraestructura.Dtos.Inventario.Dto;
+
+namespace gc.infraestructura.Dtos.Inventario.Request
 {
     public class InventarioRequestDto
     {
@@ -7,6 +9,8 @@
         public string? tipo_id { get; set; }
         public string usu_id { get; set; } = string.Empty;
         public string? p_id { get; set; }
+        public List<InventarioConteoDto> json { get; set; } = [];
         public string? json_p { get; set; }
+
     }
 }

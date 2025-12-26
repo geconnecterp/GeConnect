@@ -3,7 +3,7 @@
     cargarInventarios();
 });
 
-let inventarioSeleccionado = null;
+//variable "inventarioSeleccionado" declarada en siteGen
 
 function definirEventosIniInv() {
     $("#btnContinua01").on("click", ejecutaPaso01);
@@ -65,7 +65,7 @@ function ejecutaPaso01() {
     // Invocar la acción de validación
     AbrirWaiting("Validando...");
     $.ajax({
-        url: estado.inv_valida_conteo,
+        url: inv_valida_conteo,
         type: 'POST',
         dataType: 'json',
         contentType: 'application/json; charset=utf-8',
@@ -85,7 +85,10 @@ function ejecutaPaso01() {
                 }, false, ["Aceptar"], "warn!", null);
             } else {
                 ControlaMensajeInfo(obj.msg);
-                $.ajax()
+                estado.inv_nro = datos.inv_nro;
+                estado.tipo = datos.tipo;
+                estado.tipo_id = datos.tipo_id;
+                window.location.href = inv_conteo + `?invNro=${datos.inv_nro}&tipo=${datos.tipo}&tipoId=${datos.tipo_id}` ;
             }
         },
         error: function (xhr) {
@@ -111,7 +114,7 @@ function cargarInventarios() {
     AbrirWaiting("Espere mientras se cargan los datos...");
 
     $.ajax({
-        url: estado.inv_lista,
+        url: inv_lista,
         type: 'POST',
         dataType: 'html',
         cache: false,
@@ -167,13 +170,17 @@ function marcarInventarioSeleccionado($row) {
         invt_id: invtId,
         $elemento: $row
     };
+    estado.inv_nro = invNro;
+    estado.invt_id = invtId;
 
     console.log('Inventario seleccionado:', inventarioSeleccionado);
 
     // Determinar qué tipo de inventario cargar basado en invt_id
     if (invtId === 'B') {
+        estado.tipo = 'B';
         cargarBoxesInventario(invNro);
     } else {
+        estado.tipo = 'P';
         cargarPlanillasInventario(invNro);
     }
 }
@@ -185,7 +192,7 @@ function cargarBoxesInventario(invNro) {
     AbrirWaiting("Cargando boxes...");
 
     $.ajax({
-        url: estado.inv_box,
+        url: inv_box,
         type: 'POST',
         dataType: 'html',
         contentType: 'application/json',
@@ -218,7 +225,7 @@ function cargarPlanillasInventario(invNro) {
     AbrirWaiting("Cargando planillas...");
 
     $.ajax({
-        url: estado.inv_planilla,
+        url: inv_planilla,
         type: 'POST',
         dataType: 'html',
         contentType: 'application/json',
@@ -309,10 +316,10 @@ function inicializarOpcionesPlanilla() {
         manejarOpcionPlanilla(opcionSeleccionada);
     });
 
-    // Verificar si hay alguno seleccionado y ejecutar la lógica correspondiente
-    const $radioChecked = $radioButtons.filter(':checked');
+    // Verificar si hay alguno seleccionado dentro del grid de planillas
+    const $radioChecked = $('#tbGridInventarioPlanilla input[name="planillaSeleccionada"]:checked');
     if ($radioChecked.length > 0) {
-        manejarOpcionPlanilla($radioChecked.val());
+        manejarOpcionPlanilla($('input[name="opcionPlanilla"]:checked').val());
     }
 
     $("#btnContinua01").prop("disabled", false);
@@ -325,19 +332,32 @@ function manejarOpcionPlanilla(opcion) {
         case 'nueva':
             // Lógica para crear nueva planilla
             console.log('Preparando para crear nueva planilla');
-            // TODO: Implementar lógica para nueva planilla
+            estado.tipo_id = "0";
             $("#btnContinua01").prop("disabled", false);
-
-
-
             break;
         case 'modificar':
             // Lógica para modificar planilla existente
             console.log('Preparando para modificar planilla');
-            // TODO: Implementar lógica para modificar planilla
-            $("#btnContinua01").prop("disabled", true);
-
-
+            
+            // Obtener el valor de carga_nro de la planilla seleccionada
+            const $planillaSeleccionada = $('#tbGridInventarioPlanilla input[name="planillaSeleccionada"]:checked');
+            if ($planillaSeleccionada.length > 0) {
+                const cargaNro = $planillaSeleccionada.closest('tr').data('carga-nro');
+                estado.tipo_id = cargaNro ? cargaNro.toString() : null;
+                console.log('Planilla seleccionada - carga_nro:', estado.tipo_id);
+                $("#btnContinua01").prop("disabled", false);
+            } else {
+                estado.tipo_id = null;
+                $("#btnContinua01").prop("disabled", true);
+            }
+            
+            // Event listener para cambios en la selección de planilla
+            $('#tbGridInventarioPlanilla input[name="planillaSeleccionada"]').off('change').on('change', function() {
+                const cargaNro = $(this).closest('tr').data('carga-nro');
+                estado.tipo_id = cargaNro ? cargaNro.toString() : null;
+                console.log('Planilla cambiada - carga_nro:', estado.tipo_id);
+                $("#btnContinua01").prop("disabled", !estado.tipo_id);
+            });
             break;
         default:
             console.warn('Opción no reconocida:', opcion);
