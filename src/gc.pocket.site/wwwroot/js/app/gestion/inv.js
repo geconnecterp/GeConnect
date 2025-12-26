@@ -65,7 +65,7 @@ function ejecutaPaso01() {
     // Invocar la acción de validación
     AbrirWaiting("Validando...");
     $.ajax({
-        url: estado.int_valida_conteo,
+        url: estado.inv_valida_conteo,
         type: 'POST',
         dataType: 'json',
         contentType: 'application/json; charset=utf-8',
@@ -85,6 +85,7 @@ function ejecutaPaso01() {
                 }, false, ["Aceptar"], "warn!", null);
             } else {
                 ControlaMensajeInfo(obj.msg);
+                $.ajax()
             }
         },
         error: function (xhr) {

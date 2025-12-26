@@ -258,7 +258,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                 req.usu_id = UserName;
 
                 RespuestaGenerica<RespuestaDto> resultado = await _invSv.ValidaConteo(req, TokenCookie);
-                if(resultado == null || resultado.EsWarn || resultado.EsError)
+                if(resultado == null || !resultado.Ok)
                 {
                     if(resultado==null)
                     {
@@ -288,6 +288,22 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             {
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
+        }
+
+        [HttpPost]
+        public IActionResult CargaConteo(InventarioRequestDto req)
+        {
+            if (!VerificarAutenticacion(out IActionResult redirectResult))
+                return redirectResult;
+            if (req == null || string.IsNullOrEmpty(req.inv_nro) || string.IsNullOrEmpty(req.tipo.ToString()) || string.IsNullOrEmpty(req.tipo_id))
+            {
+                TempData["error"] = "Los datos del conteo son incorrectos";
+                return RedirectToAction("Index");
+            }
+            ViewBag.InvNro = req.inv_nro;
+            ViewBag.Tipo = req.tipo;
+            ViewBag.TipoId = req.tipo_id;
+            return View();
         }
     }
 }
