@@ -22,11 +22,13 @@ namespace gc.api.core.Servicios
 
         public List<InventarioListaDto> GetInventarioLista(GetInventarioListaRequest request)
         {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_INV_LISTA;
+            var sp = ConstantesGC.StoredProcedures.SP_INV_LISTA;
+            var d = request.desde.ToString("yyyy/MM/dd");
+            var h = request.hasta.ToString("yyyy/MM/dd");
             var ps = new List<SqlParameter>()
             {
-                new("@desde",request.desde),
-                new("@hasta",request.hasta),
+                new("@desde",d),
+                new("@hasta",h),
                 new("@adm_id",request.adm_id),
                 new("@usu_id",request.usu_id),
                 new("@inve_id",request.inve_id),

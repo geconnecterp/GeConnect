@@ -10,6 +10,7 @@
     List<InventarioConteoDto> conteo = regs?.Count>0?regs: [];
     var buscar = new BusquedaProducto();
 }
+
 <div class="container">
     @{
         await Html.RenderPartialAsync("~/views/shared/_menuprint.cshtml", Model);
@@ -66,7 +67,11 @@
                     <i class="bx bx-box"></i>
                 </button>
             </div>
-
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <span id="nnProducto" class="badge-golden-producto"></span>
+            </div>
         </div>
         <partial name="_gridInvProductos" model="conteo" />
     </div>
@@ -97,11 +102,8 @@
         let funcionBusquedaAvanzada = false;
         let busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "gestion" })";
         let validarEstado = true;
-
-
     </script>
 
     <script src="~/js/app/busquedas.js" type="text/javascript"></script>
     <script src="~/js/app/gestion/inv-conteo.js"></script>
-
 }

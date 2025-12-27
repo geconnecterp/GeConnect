@@ -105,23 +105,25 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                         return Json(new { error = true, msg = $"El producto {producto.P_desc} se encuentra {producto.Msj}" });
                     }
                     //Validación si pertenece o no al proveedor
-
-                    if (modulo.ToUpper().Equals("RTI"))
+                    if (!modulo.Trim().ToUpper().Equals("INV"))
                     {
-                        //verificamos si el producto se encuentra en el remito.
-                        var resp = await _remitoSv.VerificaProductoEnRemito(rm: RemitoActual.re_compte, pId: producto.P_id,TokenCookie);
-                        if (resp.resultado != 0)
+                        if (modulo.ToUpper().Equals("RTI"))
                         {
-                            return Json(new { error = true, msg = resp.resultado_msj });
+                            //verificamos si el producto se encuentra en el remito.
+                            var resp = await _remitoSv.VerificaProductoEnRemito(rm: RemitoActual.re_compte, pId: producto.P_id, TokenCookie);
+                            if (resp.resultado != 0)
+                            {
+                                return Json(new { error = true, msg = resp.resultado_msj });
+                            }
                         }
-                    }
-                    else
-                    {
-                        if (AutorizacionPendienteSeleccionada != null &&
-                            !AutorizacionPendienteSeleccionada.Cta_id.Equals(producto.Cta_id) && validarEstado)
+                        else
                         {
-                            warn = true;
-                            msg = $"El Producto NO pertenece al actual proveedor. Pertenece al Proveedor {producto.Cta_denominacion}.";
+                            if (AutorizacionPendienteSeleccionada != null &&
+                                !AutorizacionPendienteSeleccionada.Cta_id.Equals(producto.Cta_id) && validarEstado)
+                            {
+                                warn = true;
+                                msg = $"El Producto NO pertenece al actual proveedor. Pertenece al Proveedor {producto.Cta_denominacion}.";
+                            }
                         }
                     }
 

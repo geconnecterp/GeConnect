@@ -655,3 +655,91 @@ th, td {
 #tbGridInventarios tbody tr[data-inv-nro]:hover:not(.row-selected) {
     background-color: rgba(255, 193, 7, 0.1);
 }
+
+/* ====================================================================== */
+/* ✅ BADGE GOLDEN PARA PRODUCTO EN INVENTARIO */
+/* ====================================================================== */
+
+.badge-golden-producto {
+    display: inline-block;
+    background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.badge-golden-producto:empty {
+    display: none;
+}
+
+.badge-golden-producto:hover {
+    background: linear-gradient(135deg, #b8860b 0%, #d4af37 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+}   
+
+/* Versión con icono para productos */
+.badge-golden-producto::before {
+    content: '📦 ';
+    margin-right: 6px;
+}
+
+/* Responsive para badges */
+@media (max-width: 768px) {
+    .badge-golden-producto {
+        font-size: 0.8rem;
+        padding: 6px 12px;
+    }
+}
+
+@media (max-width: 576px) {
+    .badge-golden-producto {
+        font-size: 0.75rem;
+        padding: 5px 10px;
+        border-radius: 16px;
+    }
+}
+
+/* Variantes de estado para el badge */
+.badge-golden-producto.badge-success {
+    background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+}
+
+.badge-golden-producto.badge-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+    color: #333;
+}
+
+.badge-golden-producto.badge-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+
+/* Animación de entrada */
+@keyframes badgeFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.badge-golden-producto.fade-in {
+    animation: badgeFadeIn 0.3s ease-out;
+}
+
+/* ====================================================================== */
+/* FIN BADGE GOLDEN PARA PRODUCTO */
+/* ====================================================================== */
