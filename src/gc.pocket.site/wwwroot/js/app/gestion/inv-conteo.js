@@ -1,11 +1,16 @@
 ﻿$(function () {
+    inicializaPantallaConteo();
     iniciaEventosConteo();
 });
+
+function inicializaPantallaConteo() {
+    $("#nnProducto").hide();
+}
 
 function iniciaEventosConteo() {
     $("#btnBusquedaBase").off("click").on("click", function () {
         InicializaControlesConteo();
-        buscarProducto();
+        buscarProducto("INV");
     });
     
     // Delegación de eventos para botones de eliminación (mejor rendimiento)
@@ -337,10 +342,12 @@ function InicializaControlesConteo() {
     $("#pId").val("");
     $("#btos").val("");
     $("#uns").val("");
+    $("#nnProducto").hide();
 }
 
 function cargaProductoEnControl() {
     $("#pId").val(productoBase.p_id);
+    $("#nnProducto").text(productoBase.p_desc).show();
     $("#btos, #uns").prop("readonly", false);
     $("#btnCargaConteo").prop("disabled", false);
 

@@ -47,19 +47,27 @@ function ejecutaPaso01() {
         if ($("#rbNuevaPlanilla").is(":checked")) {
             datos.tipo_id = "0";
         } else if ($("#rbModificarPlanilla").is(":checked")) {
-            const $planillaSeleccionada = $('input[name="planillaExistente"]:checked');
+            // ✅ CORRECCIÓN: Selector correcto para el nombre del radio button
+            const $planillaSeleccionada = $('input[name="planillaSeleccionada"]:checked');
+            
             if ($planillaSeleccionada.length === 0) {
-                AbrirMensaje("Atención", "Debe seleccionar una planilla existente.", 
+                AbrirMensaje("Atención", "Debe seleccionar una planilla de la tabla.", 
                     () => $("#msjModal").modal("hide"), false, ["Aceptar"], "warn!", null);
                 return;
             }
-            const cargaNro = $planillaSeleccionada.data("carga-nro") || $planillaSeleccionada.val();
+            
+            // ✅ CORRECCIÓN: Obtener carga_nro del atributo data del TR
+            const $fila = $planillaSeleccionada.closest('tr');
+            const cargaNro = $fila.data('carga-nro');
+            
             if (!cargaNro) {
                 AbrirMensaje("Atención", "No se pudo obtener el número de planilla seleccionada.", 
                     () => $("#msjModal").modal("hide"), false, ["Aceptar"], "warn!", null);
                 return;
             }
+            
             datos.tipo_id = cargaNro.toString();
+            console.log('Planilla seleccionada - carga_nro:', datos.tipo_id);
         } else {
             AbrirMensaje("Atención", "Debe seleccionar una opción de planilla.", 
                 () => $("#msjModal").modal("hide"), false, ["Aceptar"], "warn!", null);
@@ -208,11 +216,11 @@ function cargarBoxesInventario(invNro) {
         success: function (html) {
             CerrarWaiting();
             $contenedorDetalle.html(html);
-            //especificamos que es box
             estado.esBox = true;
             $("#btnContinua01").prop("disabled", true);
-
-            //inicializarBusquedaBox();
+            
+            // ✅ Inicializar eventos de selección de box
+            inicializarSeleccionBox();
         },
         error: function (xhr) {
             CerrarWaiting();
@@ -223,6 +231,54 @@ function cargarBoxesInventario(invNro) {
             console.error('Error cargando boxes:', xhr);
         }
     });
+}
+
+// ✅ Nueva función optimizada para manejar la selección de boxes
+function inicializarSeleccionBox() {
+    const $tbody = $('#tbGridInventarioBox tbody');
+    
+    if ($tbody.length === 0) {
+        console.log('Tabla de boxes no encontrada');
+        return;
+    }
+
+    // Event delegation optimizada - un solo listener para todos los radio buttons
+    $tbody.off('change', 'input[name="boxSeleccionado"]').on('change', 'input[name="boxSeleccionado"]', function() {
+        const $radio = $(this);
+        const $fila = $radio.closest('tr');
+        const boxId = $fila.data('box-id');
+        const invNro = $fila.data('inv-nro');
+        
+        if (boxId) {
+            // Asignar el box_id al input de búsqueda
+            $('#txtBuscarBox').val(boxId);
+            
+            // Actualizar estado global
+            estado.tipo_id = boxId.toString();
+            estado.box_id = boxId;
+            estado.inv_nro = invNro;
+            
+            // Marcar visualmente la fila seleccionada
+            $tbody.find('tr.row-selected').removeClass('row-selected');
+            $fila.addClass('row-selected');
+            
+            // Habilitar botón continuar (validación de 11 caracteres se ejecuta automáticamente)
+            const esValido = boxId.toString().length === 11;
+            $("#btnContinua01").prop("disabled", !esValido);
+            
+            console.log('Box seleccionado:', { box_id: boxId, inv_nro: invNro });
+        }
+    });
+
+    // Click en la fila también selecciona el radio button
+    $tbody.off('click', 'tr[data-box-id]').on('click', 'tr[data-box-id]', function(e) {
+        // Evitar doble trigger si se clickea directamente en el radio button
+        if (!$(e.target).is('input[type="radio"]')) {
+            $(this).find('input[name="boxSeleccionado"]').prop('checked', true).trigger('change');
+        }
+    });
+    
+    console.log('Eventos de selección de box inicializados');
 }
 
 function cargarPlanillasInventario(invNro) {
@@ -317,55 +373,144 @@ function inicializarOpcionesPlanilla() {
 
     console.log('Inicializando opciones de planilla');
 
-    // Evento para cambio de radio button
+    // ✅ Desactivar todos los radio buttons del grid al inicio
+    const $radiosPlanillas = $('#tbGridInventarioPlanilla input[name="planillaSeleccionada"]');
+    $radiosPlanillas.prop('disabled', true).prop('checked', false);
+
+    // Evento para cambio de radio button de opciones
     $radioButtons.off('change').on('change', function () {
         const opcionSeleccionada = $(this).val();
         manejarOpcionPlanilla(opcionSeleccionada);
     });
 
-    // Verificar si hay alguno seleccionado dentro del grid de planillas
-    const $radioChecked = $('#tbGridInventarioPlanilla input[name="planillaSeleccionada"]:checked');
-    if ($radioChecked.length > 0) {
-        manejarOpcionPlanilla($('input[name="opcionPlanilla"]:checked').val());
+    // ✅ CORRECCIÓN: Event delegation optimizada para cambios en radio buttons
+    const $tbody = $('#tbGridInventarioPlanilla tbody');
+    
+    // Remover TODOS los event listeners previos para evitar duplicación
+    $tbody.off('click', 'tr[data-carga-nro]');
+    $tbody.off('change', 'input[name="planillaSeleccionada"]');
+    $(document).off('change', '#tbGridInventarioPlanilla input[name="planillaSeleccionada"]');
+
+    // ✅ Event listener ÚNICO para radio buttons (delegado en tbody)
+    $tbody.on('change', 'input[name="planillaSeleccionada"]', function(e) {
+        // Solo procesar si el radio no está deshabilitado
+        if (!$(this).prop('disabled')) {
+            e.stopPropagation(); // Evitar propagación
+            marcarPlanillaSeleccionada($(this).closest('tr'));
+        }
+    });
+
+    // ✅ Click en la fila (excluye el radio button para evitar doble trigger)
+    $tbody.on('click', 'tr[data-carga-nro]', function(e) {
+        // Solo permitir click si está en modo modificar
+        if ($('#rbModificarPlanilla').is(':checked')) {
+            // ✅ CRÍTICO: No prevenir default si se clickea en el radio button
+            const $target = $(e.target);
+            
+            // Si el click es directamente en el radio button, dejarlo manejar naturalmente
+            if ($target.is('input[type="radio"]')) {
+                return; // Dejar que el evento change del radio button lo maneje
+            }
+            
+            // Si el click es en cualquier otra parte de la fila
+            const $radio = $(this).find('input[name="planillaSeleccionada"]');
+            if ($radio.length > 0 && !$radio.prop('disabled')) {
+                $radio.prop('checked', true).trigger('change');
+            }
+        }
+    });
+
+    // ✅ Establecer estado inicial: Nueva planilla (deshabilitado)
+    $("#btnContinua01").prop("disabled", false);
+}
+
+// ✅ CORRECCIÓN: Función optimizada - marcarPlanillaSeleccionada
+function marcarPlanillaSeleccionada($row) {
+    const $tbody = $row.closest('tbody');
+    const cargaNro = $row.data('carga-nro');
+    const invNro = $row.data('inv-nro');
+
+    if (!cargaNro) {
+        console.error('No se encontró el atributo data-carga-nro en la fila seleccionada');
+        return;
     }
 
-    $("#btnContinua01").prop("disabled", false);
+    // Remover selección previa visual
+    $tbody.find('tr.row-selected').removeClass('row-selected');
+
+    // Marcar nueva selección visual
+    $row.addClass('row-selected');
+
+    // ✅ IMPORTANTE: No manipular el estado checked del radio button aquí
+    // porque ya viene marcado por el evento change natural del navegador
+
+    // Actualizar estado global
+    estado.tipo_id = cargaNro.toString();
+    estado.carga_nro = cargaNro;
+    estado.inv_nro = invNro;
+
+    console.log('Planilla seleccionada:', {
+        carga_nro: cargaNro,
+        inv_nro: invNro
+    });
+
+    // Si está en modo modificar, habilitar botón
+    if ($('#rbModificarPlanilla').is(':checked')) {
+        $("#btnContinua01").prop("disabled", false);
+    }
 }
 
 function manejarOpcionPlanilla(opcion) {
     console.log('Opción planilla seleccionada:', opcion);
 
+    const $gridPlanillas = $('#tbGridInventarioPlanilla');
+    const $radiosPlanillas = $gridPlanillas.find('input[name="planillaSeleccionada"]');
+    const $planillaSeleccionada = $radiosPlanillas.filter(':checked');
+
     switch (opcion) {
         case 'nueva':
-            // Lógica para crear nueva planilla
             console.log('Preparando para crear nueva planilla');
+            
+            // ✅ Desactivar todos los radio buttons del grid
+            $radiosPlanillas.prop('disabled', true).prop('checked', false);
+            
+            // Limpiar selección visual del grid
+            $gridPlanillas.find('tr.row-selected').removeClass('row-selected');
+            
+            // Actualizar estado
             estado.tipo_id = "0";
+            estado.carga_nro = null;
+            
             $("#btnContinua01").prop("disabled", false);
             break;
+
         case 'modificar':
-            // Lógica para modificar planilla existente
             console.log('Preparando para modificar planilla');
             
-            // Obtener el valor de carga_nro de la planilla seleccionada
-            const $planillaSeleccionada = $('#tbGridInventarioPlanilla input[name="planillaSeleccionada"]:checked');
+            // ✅ Activar todos los radio buttons del grid
+            $radiosPlanillas.prop('disabled', false);
+            
             if ($planillaSeleccionada.length > 0) {
-                const cargaNro = $planillaSeleccionada.closest('tr').data('carga-nro');
+                const $row = $planillaSeleccionada.closest('tr');
+                const cargaNro = $row.data('carga-nro');
+                
                 estado.tipo_id = cargaNro ? cargaNro.toString() : null;
+                estado.carga_nro = cargaNro;
+                
+                // Marcar visualmente la fila
+                $gridPlanillas.find('tr.row-selected').removeClass('row-selected');
+                $row.addClass('row-selected');
+                
                 console.log('Planilla seleccionada - carga_nro:', estado.tipo_id);
                 $("#btnContinua01").prop("disabled", false);
             } else {
+                // Si no hay planilla seleccionada, deshabilitar botón
                 estado.tipo_id = null;
+                estado.carga_nro = null;
                 $("#btnContinua01").prop("disabled", true);
             }
-            
-            // Event listener para cambios en la selección de planilla
-            $('#tbGridInventarioPlanilla input[name="planillaSeleccionada"]').off('change').on('change', function() {
-                const cargaNro = $(this).closest('tr').data('carga-nro');
-                estado.tipo_id = cargaNro ? cargaNro.toString() : null;
-                console.log('Planilla cambiada - carga_nro:', estado.tipo_id);
-                $("#btnContinua01").prop("disabled", !estado.tipo_id);
-            });
             break;
+
         default:
             console.warn('Opción no reconocida:', opcion);
     }

@@ -230,7 +230,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         }
 
         [HttpPost]
-        public async Task<JsonResult> ValidarConteo([FromBody]InventarioRequestDto req)
+        public async Task<JsonResult> ValidarConteo([FromBody] InventarioRequestDto req)
         {
             try
             {
@@ -260,16 +260,16 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                 req.usu_id = UserName;
 
                 RespuestaGenerica<RespuestaDto> resultado = await _invSv.ValidaConteo(req, TokenCookie);
-                if(resultado == null || !resultado.Ok)
+                if (resultado == null || !resultado.Ok)
                 {
-                    if(resultado==null)
+                    if (resultado == null)
                     {
                         throw new NegocioException("Error al validar el conteo");
                     }
 
                     if (resultado.EsWarn)
                     {
-                        throw new NegocioException(resultado.Mensaje ?? "Error al validar el conteo");  
+                        throw new NegocioException(resultado.Mensaje ?? "Error al validar el conteo");
                     }
                     if (resultado.EsError)
                     {
@@ -356,7 +356,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> CargaConteo(string invNro,string tipo,string tipoId)
+        public async Task<IActionResult> CargaConteo(string invNro, string tipo, string tipoId)
         {
             if (!VerificarAutenticacion(out IActionResult redirectResult))
                 return redirectResult;
@@ -366,14 +366,24 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             string? volver = Url.Action("index", "inventario", new { area = "gestion" });
             ViewBag.AppItem = new AppItem { Nombre = modulo.Nombre, VolverUrl = volver ?? "#" };
 
-            if (string.IsNullOrEmpty(invNro) || 
-                string.IsNullOrEmpty(tipo) || 
+            if (string.IsNullOrEmpty(invNro) ||
+                string.IsNullOrEmpty(tipo) ||
                 string.IsNullOrEmpty(tipoId))
             {
                 TempData["error"] = "Los datos del conteo son incorrectos";
                 return RedirectToAction("Index");
             }
-            var req = new InventarioRequestDto { inv_nro = invNro, tipo = tipo[0], tipo_id = tipoId };
+
+            var req = new InventarioRequestDto
+            {
+                inv_nro = invNro,
+                tipo = tipo[0],
+                tipo_id = tipoId,
+                usu_id = UserName,
+                p_id = "%"
+            };
+
+
             var resultado = await _invSv.GetConteno(req, TokenCookie);
             if (resultado == null || !resultado.Ok)
             {
@@ -390,7 +400,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                 }
                 if (resultado.EsError)
                 {
-                    TempData["error"] =resultado.Mensaje ?? "Error al obtener el conteo";
+                    TempData["error"] = resultado.Mensaje ?? "Error al obtener el conteo";
                     return RedirectToAction("index", "inventario", new { area = "Gestion" });
                 }
             }
@@ -404,7 +414,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         }
 
         [HttpPost]
-        public async Task<JsonResult> ConfirmarConteo([FromBody]InventarioRequestDto req)
+        public async Task<JsonResult> ConfirmarConteo([FromBody] InventarioRequestDto req)
         {
             try
             {

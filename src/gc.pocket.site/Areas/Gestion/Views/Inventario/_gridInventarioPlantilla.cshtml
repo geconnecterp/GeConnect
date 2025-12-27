@@ -51,7 +51,7 @@
                 <tbody>
                     @if (Model.ListaDatos?.Any() == true)
                     {
-                        var isFirst = true;
+                       
                         @foreach (var item in Model.ListaDatos)
                         {
                             alt = !alt;
@@ -63,14 +63,13 @@
                                            type="radio" 
                                            name="planillaSeleccionada" 
                                            id="rbPlanilla_@item.carga_nro" 
-                                           value="@item.carga_nro"
-                                           @(isFirst ? "checked" : string.Empty)>
+                                           value="@item.carga_nro"  >
                                 </td>
-                                <td class="@Model.ObtenerClase(item.carga_nro)">
-                                    @Model.FormatearDato(item.carga_nro, FormatDato.Ninguno)
+                                <td class="@Model.ObtenerClase(item.carga_nro)" title="@item.inv_descripcion">
+                                    @Model.FormatearDato(item.carga_des, FormatDato.Ninguno)
                                 </td>
                             </tr>
-                            isFirst = false;
+                          
                         }
                     }
                     else

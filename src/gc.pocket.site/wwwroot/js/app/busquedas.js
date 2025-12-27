@@ -131,7 +131,7 @@ function busquedaAvanzadaProductos(pag) {
     return true;
 }
 
-function buscarProducto() {
+function buscarProducto(mod = "RPR") {
     AbrirWaiting();
     var _post = busquedaProdBaseUrl;
     var valor = $("#Busqueda").val();
@@ -145,8 +145,7 @@ function buscarProducto() {
         }, false, ["Aceptar"], "error!", null);
         return false;
     }
-
-    var mod = "RPR";
+    
     var valEst = false;
 
     if (typeof modulo !== 'undefined') {
