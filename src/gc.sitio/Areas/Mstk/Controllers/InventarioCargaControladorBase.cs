@@ -108,6 +108,23 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				_context.HttpContext?.Session.SetString("ListaUsuarios", json);
 			}
 		}
-		//
+
+		public List<ProductoEnCierreDto> ListaProductoEnCierre
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("ListaProductoEnCierre");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<ProductoEnCierreDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ListaProductoEnCierre", json);
+			}
+		}
 	}
 }

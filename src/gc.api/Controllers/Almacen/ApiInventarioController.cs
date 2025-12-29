@@ -266,5 +266,37 @@ namespace gc.api.Controllers.Almacen
 			response = new ApiResponse<List<RespuestaDto>>(res);
 			return Ok(response);
 		}
+
+		[HttpPost("ObtenerProductosEnCierre")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoEnCierreDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public ActionResult<ProductoEnCierreDto> GetProductosEnCierre(ProductosEnCierreRequest req)
+		{
+			if (req == null)
+			{
+				return BadRequest("Request nulo.");
+			}
+			var resultado = _inventarioServicio.GetProductosEnCierre(req);
+
+			if (resultado == null)
+			{
+				return BadRequest("No se obtubieron resultados.");
+			}
+
+			return Ok(new ApiResponse<List<ProductoEnCierreDto>>(resultado));
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult RegistrarCierre([FromBody] RegistrarCierreRequest r)
+		{
+			ApiResponse<List<RespuestaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _inventarioServicio.RegistrarCierre(r);
+			response = new ApiResponse<List<RespuestaDto>>(res);
+			return Ok(response);
+		}
 	}
 }

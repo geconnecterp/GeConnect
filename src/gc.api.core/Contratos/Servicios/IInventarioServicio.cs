@@ -23,5 +23,7 @@ namespace gc.api.core.Contratos.Servicios
         List<InventarioConteoDto> GetInventarioConteo(InventarioRequestDto req);
 		RespuestaDto InventarioConfirmarConteo(InventarioRequestDto request);
 		List<RespuestaDto> RegistrarValorizacion(RegistrarValorizacionRequest request);
+		List<ProductoEnCierreDto> GetProductosEnCierre(ProductosEnCierreRequest request);
+		List<RespuestaDto> RegistrarCierre(RegistrarCierreRequest request);
 	}
 }

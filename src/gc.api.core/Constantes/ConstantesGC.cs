@@ -140,6 +140,7 @@
 			public const string SP_INV_REGISTRA_CTRL_STK = "SPGECO_INV_Registra_STK";
 			public const string SP_INV_PRODUCTOS = "SPGECO_INV_Productos";
 			public const string SP_INV_VALORIZA = "SPGECO_INV_Valoriza";
+			public const string SP_INV_CERRAR = "SPGECO_INV_Cerrar";
 			//
 			#endregion
 

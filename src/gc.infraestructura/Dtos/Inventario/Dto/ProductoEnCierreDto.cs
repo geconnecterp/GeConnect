@@ -12,5 +12,14 @@ namespace gc.infraestructura.Dtos
 		public decimal ps_conteo { get; set; } = 0.000M;
 		public char ps_ajuste { get; set; }
 		public bool seleccionar { get; set; }
+
+		private bool _mostrarCheck;
+		public bool mostrarCheck
+		{
+			get { return (ps_stk - ps_conteo) != 0; }
+			set { _mostrarCheck = value; }
+		}
+		public char tipo { get; set; }
+		public string tipo_id { get; set; }
 	}
 }

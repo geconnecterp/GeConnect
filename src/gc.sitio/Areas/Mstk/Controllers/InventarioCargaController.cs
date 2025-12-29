@@ -136,7 +136,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				{
 					//var inventario = ListaInventario.FirstOrDefault(x => x.inv_nro == inv_nro);
 					var inventarios = _inventarioServicio.GetInventarioDatos(new GetInventarioDatosRequest() { inv_nro = inv_nro }, TokenCookie);
-					if (inventarios != null && inventarios.Count>0)
+					if (inventarios != null && inventarios.Count > 0)
 					{
 						var inventario = inventarios.First();
 						model.inv_nro = inventario.inv_nro;
@@ -149,7 +149,8 @@ namespace gc.sitio.Areas.Mstk.Controllers
 						model.ConteoSeleccionado = inventario.invt_id?.ToString();
 					}
 				}
-				else {
+				else
+				{
 					model.AperturaDesde = DateTime.Now.AddDays(-1);
 					model.AperturaHasta = DateTime.Now;
 					model.Descripcion = string.Empty;
@@ -473,7 +474,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 			{
 				var auth = EstaAutenticado;
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
-					return Json(new { error = true, warn = false, ok=false, msg = "No autenticado" });
+					return Json(new { error = true, warn = false, ok = false, msg = "No autenticado" });
 
 				FixListaUsuariosEnInventarioEnControllerBase(request.inv_nro);
 
@@ -614,7 +615,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 					model.GrillaInvRubros = ObtenerGridCoreSmart<RubroEnInventarioDto>(listaRubro);
 					model.EsTipoBox = false;
 				}
-				else 
+				else
 				{
 					var listaBox = _inventarioServicio.GetInventarioBox(new InventarioRequestDto() { inv_nro = inv_nro, usu_id = "%" }, TokenCookie).Result;
 					model.GrillaInvBoxes = ObtenerGridCoreSmart<InventarioBoxDto>(listaBox.ListaEntidad ?? []);
@@ -623,7 +624,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				var invSeleccionado = inv.First();
 				model.inv_nro = invSeleccionado.inv_nro;
 				model.inv_descripcion = invSeleccionado.inv_descripcion;
-				model.invt_id = invt_id;
+				model.invt_id = invSeleccionado.invt_id.ToString() ?? string.Empty;
 				return PartialView("_valorizacionInventario", model);
 			}
 			catch (Exception ex)
@@ -716,7 +717,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 		}
 
 		public JsonResult RegistrarValorizacion(RegistrarValorizacionRequest request)
-		{ 
+		{
 			try
 			{
 				var auth = EstaAutenticado;
@@ -751,6 +752,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
+				ListaProductoEnCierre = [];
 				var inv = ListaInventario.Where(x => x.inv_nro == inv_nro).ToList();
 				if (inv == null || inv.Count <= 0)
 				{
@@ -767,12 +769,14 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				{
 					var listaRubro = _inventarioServicio.GetRubrosEnInventario(inv_nro, TokenCookie);
 					model.GrillaInvRubros = ObtenerGridCoreSmart<RubroEnInventarioDto>(listaRubro);
+					ObtenerListaDeProductosParaCierre(inv_nro, 'R', listaRubro.Select(x => x.rub_id).ToList());
 					model.EsTipoBox = false;
 				}
 				else
 				{
 					var listaBox = _inventarioServicio.GetInventarioBox(new InventarioRequestDto() { inv_nro = inv_nro, usu_id = "%" }, TokenCookie).Result;
 					model.GrillaInvBoxes = ObtenerGridCoreSmart<InventarioBoxDto>(listaBox.ListaEntidad ?? []);
+					ObtenerListaDeProductosParaCierre(inv_nro, 'B', listaBox.ListaEntidad.Select(x => x.box_id).ToList());
 					model.EsTipoBox = true;
 				}
 				var invSeleccionado = inv.First();
@@ -794,7 +798,173 @@ namespace gc.sitio.Areas.Mstk.Controllers
 			}
 		}
 
+		public IActionResult ObtenerProductosEnCierre(ProductosEnCierreRequest request)
+		{
+			var model = new ProductosEnCierreModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				if (request == null || string.IsNullOrEmpty(request.inv_nro) || string.IsNullOrEmpty(request.tipo_id))
+				{
+					RespuestaGenerica<EntidadBase> response = new()
+					{
+						Ok = false,
+						EsError = true,
+						Mensaje = "Faltan datos para cargar los productos a valorizar."
+					};
+					return PartialView("_gridMensaje", response);
+				}
+				var invt = ListaInventario.Where(x => x.inv_nro == request.inv_nro).FirstOrDefault()?.invt_id;
+				//request.usu_id = "%";
+				//var productos = _inventarioServicio.GetProductosEnCierre(request, TokenCookie);
+				var productos = ObtenerListaDeProductosEnCierrePorTipoYTipoId(request.tipo, request.tipo_id);
+				model.GrillaProductos = ObtenerGridCoreSmart<ProductoEnCierreDto>(productos);
+				model.MostrarConteoGrupo2 = invt == 'D';
+				return PartialView("_cerrarInventarioProductos", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public JsonResult MarcarProductoEnCierreParaAjustar(string p_id, bool ps_ajuste, string tipo_id)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return Json(new { error = true, warn = false, ok = false, msg = "No autenticado" });
+				if (string.IsNullOrEmpty(p_id))
+					return Json(new { error = true, warn = false, ok = false, msg = "Request inválido" });
+
+				var listaTemp = ListaProductoEnCierre;
+				var producto = listaTemp.FirstOrDefault(x => x.p_id == p_id.Trim() && x.tipo_id == tipo_id);
+				if (producto != null)
+				{
+					producto.ps_ajuste = ps_ajuste ? 'S' : 'N';
+				}
+				ListaProductoEnCierre = listaTemp;
+				return Json(new { error = false, warn = false, ok = true, msg = "" });
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					Mensaje = ex.Message
+				};
+				return Json(response);
+			}
+		}
+
+		public JsonResult MarcarProductosEnCierreParaAjustar(List<string> seleccionados, bool ps_ajuste, string tipo_id)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return Json(new { error = true, warn = false, ok = false, msg = "No autenticado" });
+				if (seleccionados == null || seleccionados.Count<=0)
+					return Json(new { error = true, warn = false, ok = false, msg = "Request inválido" });
+
+				var listaTemp = ListaProductoEnCierre;
+				foreach (var item in seleccionados)
+				{
+					var producto = listaTemp.FirstOrDefault(x => x.p_id == item.Trim() && x.tipo_id == tipo_id);
+					if (producto != null)
+					{
+						producto.ps_ajuste = ps_ajuste ? 'S' : 'N';
+					}
+				}
+				ListaProductoEnCierre = listaTemp;
+				return Json(new { error = false, warn = false, ok = true, msg = "" });
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					Mensaje = ex.Message
+				};
+				return Json(response);
+			}
+		}
+		//
+
+		public JsonResult RegistrarCierre(RegistrarCierreRequest request)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return Json(new { error = true, warn = false, ok = false, msg = "No autenticado" });
+				if (string.IsNullOrEmpty(request.inv_nro))
+					return Json(new { error = true, warn = false, ok = false, msg = "Request inválido" });
+				request.adm_id = AdministracionId;
+				request.usu_id = UserName;
+				request.json_p = ObtenerProductosParaCierre();
+				PrintProperties(request);
+				var respuesta = _inventarioServicio.RegistrarCierre(request, TokenCookie);
+				return AnalizarRespuesta(respuesta, "La acción se ejecutó correctamente.");
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					Mensaje = ex.Message
+				};
+				return Json(response);
+			}
+		}
+
 		#region Metodos privados
+		private string ObtenerProductosParaCierre()
+		{
+			if (ListaProductoEnCierre == null || ListaProductoEnCierre.Count <= 0)
+				return string.Empty;
+			var listaProdParaCierre = new List<ProductoParaCierreDeInventario>();
+			foreach (var item in ListaProductoEnCierre)
+			{
+				listaProdParaCierre.Add(new ProductoParaCierreDeInventario()
+				{
+					p_id = item.p_id,
+					box_id = item.tipo_id,
+					ps_ajuste = item.ps_ajuste
+				});
+			}
+			return JsonConvert.SerializeObject(listaProdParaCierre);
+
+		}
+		private void ObtenerListaDeProductosParaCierre(string inv_nro, char tipo, List<string> tipo_id_list)
+		{
+			var listaTemp = new List<ProductoEnCierreDto>();
+			foreach (var item in tipo_id_list)
+			{
+				var productos = _inventarioServicio.GetProductosEnCierre(new ProductosEnCierreRequest() { inv_nro = inv_nro, tipo = tipo, tipo_id = item, usu_id = AdministracionId }, TokenCookie);
+				productos.ForEach(x => { x.tipo = tipo; x.tipo_id = item; });
+				listaTemp.AddRange(productos);
+			}
+			ListaProductoEnCierre = listaTemp;
+		}
+		private List<ProductoEnCierreDto> ObtenerListaDeProductosEnCierrePorTipoYTipoId(char tipo, string tipo_id)
+		{
+			return ListaProductoEnCierre.Where(x => x.tipo == tipo && x.tipo_id == tipo_id).ToList();
+		}
 		public void FixListaUsuariosEnInventarioEnControllerBase(string inv_nro)
 		{
 			//Fix: por que la bosta de las variables de sesion se tiran pedos por los ojos cuando las cosas se hace rapido:
@@ -900,7 +1070,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 			else
 			{
 				return HelperMvc<ComboGenDto>.ListaGenerica([]);
-			}	
+			}
 		}
 		private SelectList ObtenerListaRubros(List<RubroListaDto> rub)
 		{
@@ -945,7 +1115,13 @@ namespace gc.sitio.Areas.Mstk.Controllers
 		#endregion
 
 		#region Clases privadas auxiliares
-		private class  RubroParaConfirmacion
+		private class ProductoParaCierreDeInventario
+		{
+			public string p_id { get; set; } = string.Empty;
+			public string box_id { get; set; } = string.Empty;
+			public char ps_ajuste { get; set; }
+		}
+		private class RubroParaConfirmacion
 		{
 			public string rub_id { get; set; } = string.Empty;
 			public string cta_id { get; set; } = "%";

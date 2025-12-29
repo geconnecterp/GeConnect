@@ -5,33 +5,29 @@
 	string clase = string.Empty;
 }
 <style>
-	/* El contenedor debe ser el scroll real y generar contexto */
 	#containerCerrarGridProductos {
 		position: relative;
 		height: 500px;
 		max-height: 500px;
-		overflow-y: auto; /* vertical */
-		overflow-x: auto; /* horizontal si hace falta */
-		z-index: auto; /* no fuerza stacking context */
+		overflow-y: auto;
+		overflow-x: auto;
+		z-index: auto;
 	}
-
-	/* Evitar collapse para que sticky funcione mejor en thead/th */
+	
 	.table-golden {
 		border-collapse: separate;
 		border-spacing: 0;
-		table-layout: fixed; /* estabiliza anchos con tus width% */
+		table-layout: fixed;
 	}
 
-		/* Fijar el thead y darle fondo del tema */
 		.table-golden thead {
 			position: sticky;
 			top: 0;
-			z-index: 1; /* suficiente para estar sobre las filas */
+			z-index: 1;
 			background: linear-gradient(to bottom, #b8860b, #daa520) !important;
 			color: #fff !important;
 		}
 
-			/* Redundancia intencional: asegurar cada th sticky y el mismo fondo */
 			.table-golden thead th {
 				position: sticky;
 				top: 0;
@@ -39,30 +35,41 @@
 				background: linear-gradient(to bottom, #b8860b, #daa520);
 				color: #fff;
 				box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
-				background-clip: padding-box; /* evita “sangrados” con border-spacing */
+				background-clip: padding-box;
 			}
 
-			/* Alinear colores: si tu app usa dorado para cabecera */
 			.table-golden thead,
 			.table-golden thead th {
-				/*background-color: #b8860b;  tu dorado */
-				/* color: #333; */
 			}
 
 	#tbCerrarGridProductos td {
-		padding: 0.01rem 0.15rem !important; /* o incluso 0 si querés máxima compresión */
-		line-height: 1.2 !important; /* más compacto */
-		height: auto !important; /* evita altura fija */
+		padding: 0.01rem 0.15rem !important;
+		line-height: 1.2 !important;
+		height: auto !important;
 	}
 
 	#tbCerrarGridProductos thead th {
-		/* padding: .5rem .5rem !important; */
 	}
 
-
-	/* Opcional: altura fija para todas las filas */
 	#tbCerrarGridProductos tr {
-		height: 1.6rem !important; /* ajustá según lo que quieras */
+		height: 1.6rem !important;
+	}
+
+	.check-column {
+		display: flex;
+		align-items: center;
+		justify-content: space-between; /* texto izquierda, checkbox derecha */
+		white-space: nowrap; /* evita saltos de línea */
+		padding-right: 6px; /* opcional, para que no quede pegado al borde */
+	}
+
+	.check-prod-container {
+		display: flex;
+		align-items: center;
+	}
+
+	.check-cell {
+		padding-left: 30px !important;
 	}
 
 </style>
@@ -121,14 +128,11 @@
 						{
 							<td class="@Model.GrillaProductos.ObtenerClase(item.planillas_conteo2) cell-fit-content">@Model.GrillaProductos.FormatearDato(item.planillas_conteo2, FormatDato.Monto)</td>
 						}
-						@* <td class="@Model.GrillaProductos.ObtenerClase(item.planillas_conteo2) cell-fit-content">@Model.GrillaProductos.FormatearDato(item.planillas_conteo2, FormatDato.Monto)</td> *@
 						<td class="@Model.GrillaProductos.ObtenerClase(item.ps_conteo) cell-fit-content">@Model.GrillaProductos.FormatearDato(item.ps_conteo, FormatDato.Monto)</td>
-						@if (item.seleccionar)
+						@if (item.mostrarCheck)
 						{
-							<td class="check-column">
-								<div class="check-prod-container">
-									<input type="checkbox" class="form-check-input check-prod" data-p-id="@item.p_id" >
-								</div>
+							<td class="check-cell" style="padding-left: 30px !important;">
+								<input type="checkbox" class="form-check-input check-prod" data-p-id="@item.p_id" @(item.ps_ajuste == 'S' ? "checked" : "")>
 							</td>
 						}
 						else
@@ -157,41 +161,42 @@
 
 <script>
 	$(function() {
-			// Funcionalidad para checkbox de seleccionar todos
+			$(document).off("change", "#checkAllProdEnInve");
+			$(document).off("change", ".check-prod");
+
 			$("#checkAllProdEnInve").on("change", function() {
 				const isChecked = $(this).prop("checked");
 				$(".check-prod").prop("checked", isChecked);
 
-				// Aplicar la clase 'selected' a las filas
 				$("#tbCerrarGridProductos tbody tr:not(.table-secondary)").each(function() {
 					$(this).toggleClass("selected", isChecked);
 				});
+
+				onProductosSeleccionados(isChecked);
+				actualizarCheckHeader();
 			});
 
-			// Evento para checkboxes individuales sin usar 'event' global
 			$(document).on("change", ".check-prod", function(e) {
-				// Evitar propagación del evento
 				e.stopPropagation();
 
 				const $checkbox = $(this);
 				const isChecked = $checkbox.prop("checked");
 				const $row = $checkbox.closest("tr");
+				const pId = $checkbox.data("p-id");
 
-				// Marcar/desmarcar la fila
+				onProductoSeleccionado(pId, isChecked);
+
 				$row.toggleClass("selected", isChecked);
 
-				// Si se desmarca uno, desmarcar el "seleccionar todos"
 				if (!isChecked) {
 					$("#checkAllProdEnInve").prop("checked", false);
 				} else {
-					// Verificar si todos están marcados para actualizar el checkbox principal
 					const totalCheckboxes = $(".check-prod").length;
 					const totalChecked = $(".check-prod:checked").length;
 					$("#checkAllProdEnInve").prop("checked", totalCheckboxes === totalChecked);
 				}
 			});
-
-			// Función de ayuda para obtener los IDs de productos seleccionados
+			
 			window.obtenerProdSeleccionados = function() {
 				const prodsMarcados = [];
 				$(".check-prod:checked").each(function () {

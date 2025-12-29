@@ -136,16 +136,6 @@ namespace gc.api.core.Servicios
             return listaTemp;
         }
 
-
-
-
-
-
-
-
-
-
-
         public List<InventarioBoxDto> GetInventarioBox(string inv_nro, string usu_id)
         {
             var sp = ConstantesGC.StoredProcedures.SP_INV_BOX;
@@ -245,6 +235,34 @@ namespace gc.api.core.Servicios
 				new("@inv_nro",request.inv_nro),
 				new("@adm_id",request.adm_id),
 				new("@usu_id",request.usu_id),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<ProductoEnCierreDto> GetProductosEnCierre(ProductosEnCierreRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INV_PRODUCTOS;
+			var ps = new List<SqlParameter>()
+			{
+				new("@inv_nro",request.inv_nro),
+				new("@tipo",request.tipo),
+				new("@tipo_id",request.tipo_id),
+				new("@usu_id",request.usu_id),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<ProductoEnCierreDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<RespuestaDto> RegistrarCierre(RegistrarCierreRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INV_CERRAR;
+			var ps = new List<SqlParameter>()
+			{
+				new("@inv_nro",request.inv_nro),
+				new("@adm_id",request.adm_id),
+				new("@usu_id",request.usu_id),
+				new("@json_p",request.json_p),
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return listaTemp;

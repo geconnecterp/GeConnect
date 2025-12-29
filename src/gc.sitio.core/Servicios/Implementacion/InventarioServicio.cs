@@ -34,6 +34,8 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string INV_CONTEO = "/ObtenerConteos";
         private const string INV_CONFIRMAR_CONTEO = "/ConfirmarConteo";
 		private const string INV_REG_VALORIZACION = "/RegistrarValorizacion";
+		private const string INV_PRODUCTOS_CIERRE = "/ObtenerProductosEnCierre";
+		private const string INV_REG_CIERRE = "/RegistrarCierre";
 
 		public InventarioServicio(IOptions<AppSettings> options, ILogger<InventarioServicio> logger) : base(options, logger, RutaAPI)
         {
@@ -689,5 +691,67 @@ namespace gc.sitio.core.Servicios.Implementacion
                 };
             }
         }
-    }
+
+		public List<ProductoEnCierreDto> GetProductosEnCierre(ProductosEnCierreRequest request, string token)
+		{
+			ApiResponse<List<ProductoEnCierreDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_PRODUCTOS_CIERRE}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoEnCierreDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public RespuestaGenerica<RespuestaDto> RegistrarCierre(RegistrarCierreRequest request, string token)
+		{
+			ApiResponse<List<RespuestaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_REG_CIERRE}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data.First() };
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+	}
 }
