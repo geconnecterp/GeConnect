@@ -298,5 +298,100 @@ namespace gc.api.Controllers.Almacen
 			response = new ApiResponse<List<RespuestaDto>>(res);
 			return Ok(response);
 		}
+
+		[HttpPost("GetReporteStockVsConteo")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<InvRepoStkVsConteoDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public ActionResult<InvRepoStkVsConteoDto> GetReporteStockVsConteo(ReporteInventarioRequest req)
+		{
+			if (req == null)
+			{
+				return BadRequest("Request nulo.");
+			}
+			var resultado = _inventarioServicio.GetReporteStockVsConteo(req);
+
+			if (resultado == null)
+			{
+				return BadRequest("No se obtubieron resultados.");
+			}
+
+			return Ok(new ApiResponse<List<InvRepoStkVsConteoDto>>(resultado));
+		}
+
+		[HttpPost("GetReporteValorizacionPorSector")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<InvRepoValPorSecDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public ActionResult<InvRepoValPorSecDto> GetReporteValorizacionPorSector(ReporteInventarioRequest req)
+		{
+			if (req == null)
+			{
+				return BadRequest("Request nulo.");
+			}
+			var resultado = _inventarioServicio.GetReporteValorizacionPorSector(req);
+
+			if (resultado == null)
+			{
+				return BadRequest("No se obtubieron resultados.");
+			}
+
+			return Ok(new ApiResponse<List<InvRepoValPorSecDto>>(resultado));
+		}
+
+		[HttpPost("GetReporteValorizacionPorRubro")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<InvRepoValPorRubDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public ActionResult<InvRepoValPorRubDto> GetReporteValorizacionPorRubro(ReporteInventarioRequest req)
+		{
+			if (req == null)
+			{
+				return BadRequest("Request nulo.");
+			}
+			var resultado = _inventarioServicio.GetReporteValorizacionPorRubro(req);
+
+			if (resultado == null)
+			{
+				return BadRequest("No se obtubieron resultados.");
+			}
+
+			return Ok(new ApiResponse<List<InvRepoValPorRubDto>>(resultado));
+		}
+
+		[HttpPost("GetReporteValorizadoDetalle")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<InvRepoValorDetalleDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public ActionResult<InvRepoValorDetalleDto> GetReporteValorizadoDetalle(ReporteInventarioRequest req)
+		{
+			if (req == null)
+			{
+				return BadRequest("Request nulo.");
+			}
+			var resultado = _inventarioServicio.GetReporteValorizadoDetalle(req);
+
+			if (resultado == null)
+			{
+				return BadRequest("No se obtubieron resultados.");
+			}
+
+			return Ok(new ApiResponse<List<InvRepoValorDetalleDto>>(resultado));
+		}
+
+		[HttpPost("GetReporteConteosPorUsu")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<InvRepoConteosPorUsuDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public ActionResult<InvRepoConteosPorUsuDto> GetReporteConteosPorUsu(ReporteInventarioRequest req)
+		{
+			if (req == null)
+			{
+				return BadRequest("Request nulo.");
+			}
+			var resultado = _inventarioServicio.GetReporteConteosPorUsu(req);
+
+			if (resultado == null)
+			{
+				return BadRequest("No se obtubieron resultados.");
+			}
+
+			return Ok(new ApiResponse<List<InvRepoConteosPorUsuDto>>(resultado));
+		}
 	}
 }

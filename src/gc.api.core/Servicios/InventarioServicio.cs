@@ -267,5 +267,61 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+        public List<InvRepoStkVsConteoDto> GetReporteStockVsConteo(ReporteInventarioRequest request)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_INV_REPO_STK_VS_CONTEO;
+            var ps = new List<SqlParameter>()
+            {
+                new("@inv_nro",request.inv_nro),
+            };
+            var listaTemp = _repository.EjecutarLstSpExt<InvRepoStkVsConteoDto>(sp, ps, true);
+            return listaTemp;
+		}
+
+        public List<InvRepoValPorSecDto> GetReporteValorizacionPorSector(ReporteInventarioRequest request)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_INV_REPO_VAL_X_SEC;
+            var ps = new List<SqlParameter>()
+            {
+                new("@inv_nro",request.inv_nro),
+            };
+            var listaTemp = _repository.EjecutarLstSpExt<InvRepoValPorSecDto>(sp, ps, true);
+            return listaTemp;
+		}
+
+        public List<InvRepoValPorRubDto> GetReporteValorizacionPorRubro(ReporteInventarioRequest request)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_INV_REPO_VAL_X_RUB;
+            var ps = new List<SqlParameter>()
+            {
+                new("@inv_nro",request.inv_nro),
+            };
+            var listaTemp = _repository.EjecutarLstSpExt<InvRepoValPorRubDto>(sp, ps, true);
+            return listaTemp;
+		}
+
+        public List<InvRepoValorDetalleDto> GetReporteValorizadoDetalle(ReporteInventarioRequest request)
+        {
+			var sp = ConstantesGC.StoredProcedures.SP_INV_REPO_VAL_DETALLE;
+			var ps = new List<SqlParameter>()
+			{
+				new("@inv_nro",request.inv_nro),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<InvRepoValorDetalleDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+        public List<InvRepoConteosPorUsuDto> GetReporteConteosPorUsu(ReporteInventarioRequest request)
+        {
+			var sp = ConstantesGC.StoredProcedures.SP_INV_REPO_CONTEO_X_USU;
+			var ps = new List<SqlParameter>()
+			{
+				new("@inv_nro",request.inv_nro),
+				new("@usu_id",request.usu_id),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<InvRepoConteosPorUsuDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

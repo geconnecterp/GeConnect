@@ -141,7 +141,11 @@
 			public const string SP_INV_PRODUCTOS = "SPGECO_INV_Productos";
 			public const string SP_INV_VALORIZA = "SPGECO_INV_Valoriza";
 			public const string SP_INV_CERRAR = "SPGECO_INV_Cerrar";
-			//
+			public const string SP_INV_REPO_STK_VS_CONTEO = "SPGECO_INV_Repo_Stk_vs_Conteos";
+			public const string SP_INV_REPO_VAL_X_SEC = "SPGECO_INV_Repo_Val_x_Sec";
+			public const string SP_INV_REPO_VAL_X_RUB = "SPGECO_INV_Repo_Val_x_Rub";
+			public const string SP_INV_REPO_VAL_DETALLE = "SPGECO_INV_Repo_Val";
+			public const string SP_INV_REPO_CONTEO_X_USU = "SPGECO_INV_Repo_Conteos_x_Usu";
 			#endregion
 
 			public const string SP_AJ_TIPOS = "dbo.SPGECO_AJ_Tipos";

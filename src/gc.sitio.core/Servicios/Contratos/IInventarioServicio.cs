@@ -24,5 +24,10 @@ namespace gc.sitio.core.Servicios.Contratos
 		RespuestaGenerica<RespuestaDto> RegistrarValorizacion(RegistrarValorizacionRequest request, string token);
 		List<ProductoEnCierreDto> GetProductosEnCierre(ProductosEnCierreRequest request, string token);
         RespuestaGenerica<RespuestaDto> RegistrarCierre(RegistrarCierreRequest request, string token);
+        List<InvRepoStkVsConteoDto> GetReporteStockVsConteo(ReporteInventarioRequest request, string token);
+        List<InvRepoValPorSecDto> GetReporteValorizacionPorSector(ReporteInventarioRequest request, string token);
+        List<InvRepoValPorRubDto> GetReporteValorizacionPorRubro(ReporteInventarioRequest request, string token);
+        List<InvRepoValorDetalleDto> GetReporteValorizadoDetalle(ReporteInventarioRequest request, string token);
+        List<InvRepoConteosPorUsuDto> GetReporteConteosPorUsu(ReporteInventarioRequest request, string token);
 	}
 }

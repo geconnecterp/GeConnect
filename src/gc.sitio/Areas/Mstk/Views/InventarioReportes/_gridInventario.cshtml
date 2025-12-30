@@ -1,0 +1,46 @@
+﻿@model InventarioCargaGrillaModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<div class="table-wrapper" id="containerListaInventarios">
+	<table class="table table-sm table-golden" id="tbGridInventario">
+		<thead>
+			<tr class="header">
+				<th class="text-center" style="width: 10%;">Inventario N°</th>
+				<th class="text-center" style="width: 30%;">Descripción</th>
+				<th class="text-center" style="width: 10%;">Apertura</th>
+				<th class="text-center" style="width: 10%;">Depósito</th>
+				<th class="text-center" style="width: 20%;">Estado</th>
+				<th class="text-center" style="width: 20%;">Usuario</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.GrillaInventario != null && Model.GrillaInventario.ListaDatos != null && Model.GrillaInventario.ListaDatos.Count > 0)
+			{
+				@foreach (var item in Model.GrillaInventario.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" onclick="selectReg(this, 'tbGridInventario')" data-inv-nro="@item.inv_nro" data-inve-id="@item.inve_id" data-invt-id="@item.invt_id">
+						<td class="@Model.GrillaInventario.ObtenerClase(item.inv_nro) align-center cell-fit-content">@Model.GrillaInventario.FormatearDato(item.inv_nro, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaInventario.ObtenerClase(item.inv_descripcion) cell-fit-content">@Model.GrillaInventario.FormatearDato(item.inv_descripcion, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaInventario.ObtenerClase(item.inv_apertura) cell-fit-content">@Model.GrillaInventario.FormatearDato(item.inv_apertura, FormatDato.Fecha)</td>
+						<td class="@Model.GrillaInventario.ObtenerClase(item.depo_nombre) cell-fit-content">@Model.GrillaInventario.FormatearDato(item.depo_nombre, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaInventario.ObtenerClase(item.inve_desc) cell-fit-content">@Model.GrillaInventario.FormatearDato(item.inve_desc, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaInventario.ObtenerClase(item.usu_apellidoynombre) cell-fit-content">@Model.GrillaInventario.FormatearDato(item.usu_apellidoynombre, FormatDato.Ninguno)</td>
+					</tr>
+				}
+			}
+			else
+			{
+				<tr>
+					<td colspan="6" class="text-center text-muted py-4">
+						<i class="bx bx-info-circle me-2"></i>
+						No se encontraron inventarios con los criterios especificados
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>
