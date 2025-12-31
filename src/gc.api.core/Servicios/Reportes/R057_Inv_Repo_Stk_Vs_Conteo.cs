@@ -3,10 +3,11 @@ using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
-using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
+using gc.infraestructura.Dtos.Inventario.Request;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using Microsoft.Extensions.Logging;
@@ -16,22 +17,20 @@ namespace gc.api.core.Servicios.Reportes
 {
 	public class R057_Inv_Repo_Stk_Vs_Conteo : Servicio<EntidadBase>, IGeneradorReporte
 	{
-		private readonly IConsultaServicio _consultaServicio;
-
+		private readonly IInventarioServicio _inventarioServicio;
 		private readonly EmpresaGeco _empresaGeco;
 		private readonly List<string> _titulos;
 		private readonly List<string> _campos;
 		private readonly ILogger _logger;
 
-		public R057_Inv_Repo_Stk_Vs_Conteo(IUnitOfWork uow, IConsultaServicio consulta, IFinancieroServicio financieroServicio,
+		public R057_Inv_Repo_Stk_Vs_Conteo(IUnitOfWork uow, IInventarioServicio inventarioServicio,
 											IOptions<EmpresaGeco> empresa, ICuentaServicio consultaSv, ILogger logger) : base(uow)
 		{
-			_consultaServicio = consulta;
-
 			_empresaGeco = empresa.Value;
 			_titulos = ["N° OP", "Tipo", "Fecha", "Proveedor", "Anulada", "Usuario", "Importe"];
 			_campos = ["op_compte", "opt_desc", "op_fecha", "cta_denominacion", "op_anulada_desc", "usu_apellidoynombre", "op_importe"];
 			_logger = logger;
+			_inventarioServicio = inventarioServicio;
 		}
 
 		public string Generar(ReporteSolicitudDto solicitud)
@@ -46,7 +45,7 @@ namespace gc.api.core.Servicios.Reportes
 				var ms = new MemoryStream();
 				#region Obteniendo registros desde la base de datos
 				string tit;
-				List<CertificadoListaDto> registros = ObtenerDatos(solicitud, out tit);
+				List<InvRepoStkVsConteoDto> registros = ObtenerDatos(solicitud, out tit);
 
 				solicitud.Titulo = tit;
 
@@ -98,7 +97,7 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Open();
 
 				#region Lista de Cheques Emitidos Propios
-				HelperPdf.CargarCertificadosNoRetencionNoPercepcion(pdf, registros, chico, normalBold);
+				//HelperPdf.CargarCertificadosNoRetencionNoPercepcion(pdf, registros, chico, normalBold);
 				#endregion
 
 				pdf.Close();
@@ -126,25 +125,15 @@ namespace gc.api.core.Servicios.Reportes
 			return bool.TryParse(valor, out var resultado) ? resultado : valorPorDefecto;
 		}
 
-		private List<CertificadoListaDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo)
+		private List<InvRepoStkVsConteoDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo)
 		{
-			var imp_id = solicitud.Parametros.GetValueOrDefault("imp_id", "")?.ToString() ?? null;
-			var ret = GetBoolParam(solicitud.Parametros, "ret");
-			var per = GetBoolParam(solicitud.Parametros, "per");
-			var no_vencido = GetBoolParam(solicitud.Parametros, "no_vencido");
-			var vencido = GetBoolParam(solicitud.Parametros, "vencido");
+			var inv_nro = solicitud.Parametros.GetValueOrDefault("inv_nro", "")?.ToString() ?? null;
 
-			titulo = $"Reporte de Proveedores";
+			titulo = $"Registro de Stock vs Conteo";
 
-			return _consultaServicio.ConsultarCertificadosNRNP(new ConsultarCertificadosRequest()
-			{
-				imp_id = imp_id,
-				ret = ret,
-				per = per,
-				no_vencido = no_vencido,
-				vencido = vencido,
-				Registros = 999999999,
-				Pagina = 1
+			return _inventarioServicio.GetReporteStockVsConteo(new ReporteInventarioRequest
+			{ 
+				inv_nro = inv_nro,
 			});
 		}
 
@@ -152,7 +141,7 @@ namespace gc.api.core.Servicios.Reportes
 		{
 			#region Obteniendo registros desde la base de datos
 			string tit;
-			List<CertificadoListaDto> registros = ObtenerDatos(solicitud, out tit);
+			List<InvRepoStkVsConteoDto> registros = ObtenerDatos(solicitud, out tit);
 
 			if (registros == null || registros.Count == 0)
 			{
@@ -175,7 +164,7 @@ namespace gc.api.core.Servicios.Reportes
 		{
 			#region Obteniendo registros desde la base de datos
 			string tit;
-			List<CertificadoListaDto> registros = ObtenerDatos(solicitud, out tit);
+			List<InvRepoStkVsConteoDto> registros = ObtenerDatos(solicitud, out tit);
 
 			if (registros == null || registros.Count == 0)
 			{

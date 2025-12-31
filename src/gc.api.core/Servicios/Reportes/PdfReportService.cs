@@ -34,7 +34,8 @@ namespace gc.api.core.Servicios.Reportes
             IApiEtiquetaServicio etiqSv,
             IApiPrecioListaServicio plSv,
             IApiPromoComboServicio cmbSv,
-             IOptions<EmpresaGeco> empresa, ICuentaServicio ctaSv, IOrdenDePagoServicio _opSv, ILogger<ReportService> logger) : base(uow)
+            IInventarioServicio invSv,
+			 IOptions<EmpresaGeco> empresa, ICuentaServicio ctaSv, IOrdenDePagoServicio _opSv, ILogger<ReportService> logger) : base(uow)
         {
 
             // Se inicializa el diccionario de generadores de reportes
@@ -94,6 +95,11 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R054_REPORTE_STOCK_COMPENSADO, new R054_ReporteStockCompensado(uow,consSv, finServ,empresa,ctaSv, logger) },
 				{ InfoReporte.R055_REPORTE_PRECIOS_MENOS, new R055_Modificaciones_Precios_Menos(uow,apiProdSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R056_PROVEEDOR_SMP, new R056_Proveedor_Sin_Modificacion_Precio(uow,apiProdSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R057_Inv_Repo_Stk_Vs_Conteo, new R057_Inv_Repo_Stk_Vs_Conteo(uow,invSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R058_Inv_Repo_Val_X_Sec, new R058_Inv_Repo_Val_X_Sec(uow,invSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R059_Inv_Repo_Val_X_Rub, new R059_Inv_Repo_Val_X_Rub(uow,invSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R060_Inv_Repo_Val_Detalle, new R060_Inv_Repo_Val_Detalle(uow,invSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R061_Inv_Repo_Conteo_X_Usu, new R061_Inv_Repo_Conteo_X_Usu(uow,invSv,empresa,ctaSv, logger) },
 			}; 
             _logger = logger;
         }

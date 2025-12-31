@@ -67,5 +67,10 @@ namespace gc.infraestructura.Enumeraciones
 		R054_REPORTE_STOCK_COMPENSADO = 54,
         R055_REPORTE_PRECIOS_MENOS = 55, 
         R056_PROVEEDOR_SMP = 56, //PROVEEDOR SIN MODIFICACION DE PRECIO.
-    }
+		R057_Inv_Repo_Stk_Vs_Conteo = 57,
+        R058_Inv_Repo_Val_X_Sec = 58,
+        R059_Inv_Repo_Val_X_Rub = 59,
+        R060_Inv_Repo_Val_Detalle = 60,
+        R061_Inv_Repo_Conteo_X_Usu = 61,
+	}
 }
