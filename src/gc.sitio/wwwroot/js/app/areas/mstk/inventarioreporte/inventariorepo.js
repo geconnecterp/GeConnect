@@ -1,4 +1,7 @@
-﻿$(function () {
+﻿var invNroSeleccionado = "";
+var inveIdSeleccionado = "";
+var invtIdSeleccionado = "";
+$(function () {
 	InicializarCamposEnFiltros(false);
 
 	$("#Date1, #Date2").on("blur", ValidarFechasClick);
@@ -34,16 +37,182 @@ function BuscarInventarios() {
 		$("#divFiltros").collapse("hide");
 		$("#divDetalle").collapse("show");
 		$("#btnTabInventarioReporte").addClass("tab-disabled");
+		AgregarHandlerEnTabs();
 		CerrarWaiting();
 		CargarInventarioLista();
-		//setTimeout(() => {
-		//	CargarCamposDatosInventario();
-		//	CargarDatosAdicionalesInicial();
-		//	CargarEventosABotonesEnDivPrincipal();
-		//	CerrarWaiting();
-		//}, 1000);
+		setTimeout(() => {
+			CargarEventosABotonesEnDivPrincipal();
+		}, 500);
 		return true
 	});
+}
+
+function AgregarHandlerEnTabs() {
+	// Cuando el usuario hace click en "Inventarios"
+	$('#btnTabInventarioLista').on('shown.bs.tab', function () {
+		$('#btnImprimir').hide();
+	});
+
+	// Cuando el usuario hace click en "Reporte"
+	$('#btnTabInventarioReporte').on('shown.bs.tab', function () {
+		$('#btnImprimir').show();
+	});
+
+}
+
+function CargarEventosABotonesEnDivPrincipal() {
+	$(document).on("click", "#btnRepoStkVsConteo", CargarTabRepoStkVsConteo);
+	$(document).on("click", "#btnRepoValorPorSec", CargarTabRepoValorPorSec);
+	$(document).on("click", "#btnRepoValorPorRub", CargarTabRepoValorPorRub);
+	$(document).on("click", "#btnRepoValorDetalle", CargarTabRepoValorDetalle);
+	$(document).on("click", "#btnRepoConteoPorUsu", CargarTabRepoConteoPorUsu);
+}
+
+function CargarTabRepoStkVsConteo() { }
+
+function CargarTabRepoValorDetalle() { }
+
+function CargarTabRepoConteoPorUsu() { }
+
+function CargarTabRepoValorPorRub() {
+	var inv_nro = invNroSeleccionado;
+	if (inv_nro == "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un inventario.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Cargando datos...");
+		var data = { inv_nro };
+		PostGenHtml(data, inicializarTabRepoValorPorRubURL, function (obj) {
+			$("#divReporte").html(obj);
+			let tab = new bootstrap.Tab(document.querySelector("#btnTabInventarioReporte"));
+			setTimeout(() => {
+				$(document).off("click", "#btnImprimir").on("click", "#btnImprimir", ControlaImprRepoValorPorRub);
+			}, 300);
+			tab.show();
+			$("#btnImprimir").show();
+			CerrarWaiting();
+			return true
+		});
+	}
+}
+
+function CargarTabRepoValorPorSec() {
+	var inv_nro = invNroSeleccionado;
+	if (inv_nro == "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un inventario.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Cargando datos...");
+		var data = { inv_nro };
+		PostGenHtml(data, inicializarTabRepoValorPorSecURL, function (obj) {
+			$("#divReporte").html(obj);
+			let tab = new bootstrap.Tab(document.querySelector("#btnTabInventarioReporte"));
+			setTimeout(() => {
+				$(document).off("click", "#btnImprimir").on("click", "#btnImprimir", ControlaImprRepoValorPorSec);
+			}, 300);
+			tab.show();
+			$("#btnImprimir").show();
+			CerrarWaiting();
+			return true
+		});
+	}
+}
+
+function ControlaImprRepoValorPorRub() {
+	var filas = $("#tbGridInvValorPorRub tbody tr[data-inv-nro]").length;
+	if (filas == 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos para imprimir.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Imprimiendo listado...");
+		var tipoReporte = 3;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				CerrarWaiting();
+				ImpimirRepoValorPorRub();
+			}
+		});
+	}
+}
+
+function ControlaImprRepoValorPorSec() {
+	var filas = $("#tbGridInvValorPorSec tbody tr[data-inv-nro]").length;
+	if (filas == 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos para imprimir.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Imprimiendo listado...");
+		var tipoReporte = 2;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				CerrarWaiting();
+				ImpimirRepoValorPorSec();
+			}
+		});
+	}
+}
+
+function ImpimirRepoValorPorRub() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var inv_nro = invNroSeleccionado;
+		var data = { inv_nro };
+		cargarReporteEnArre(59, data, "VALORIZADO POR RUBROS", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function ImpimirRepoValorPorSec() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var inv_nro = invNroSeleccionado;
+		var data = { inv_nro };
+		cargarReporteEnArre(58, data, "VALORIZADO POR SECTORES", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function selectReg(x, gridId) {
+	$("#" + gridId + " tbody tr").each(function (index) {
+		$(this).removeClass("selected-row");
+		$(this).removeClass("selectedEdit-row");
+	});
+	$(x).addClass("selected-row");
+	if (gridId == 'tbGridInventario') {
+		invNroSeleccionado = x.getAttribute("data-inv-nro");
+		inveIdSeleccionado = x.getAttribute("data-inve-id");
+		invtIdSeleccionado = x.getAttribute("data-invt-id");
+	}
 }
 
 function CargarInventarioLista() {
@@ -162,4 +331,9 @@ function ValidarFechasClick() {
 		}, false, ["Aceptar"], "error!", null);
 	} else {
 	}
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
 }

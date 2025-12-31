@@ -124,6 +124,7 @@
 
 
 using gc.infraestructura.Core.Helpers;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
@@ -4000,6 +4001,288 @@ namespace gc.infraestructura.Helpers
 
 				pdf.Add(tabla);
 			}
+
+		}
+
+		public static void CargarRepoInvValPorSec(Document pdf, List<InvRepoValPorSecDto> lista, Font fuenteEtiqueta, Font fuenteValor)
+		{
+			if (lista == null || lista.Count == 0)
+			{
+				Paragraph sinDatos = new Paragraph("No se encontraron datos", fuenteEtiqueta);
+				sinDatos.Alignment = Element.ALIGN_CENTER;
+				pdf.Add(sinDatos);
+				return;
+			}
+
+			BaseColor amarilloPastel = new BaseColor(255, 245, 200);
+
+			// Tabla con 9 columnas
+			PdfPTable tabla = new PdfPTable(9);
+			tabla.WidthPercentage = 100;
+
+			// Anchos proporcionales
+			tabla.SetWidths(new float[] { 15, 15, 15, 10, 10, 10, 10, 10, 10 });
+
+			tabla.HeaderRows = 2;
+
+			// ============================
+			// CABECERA NIVEL 1
+			// ============================
+			PdfPCell c1 = new(new Phrase("Sectores", fuenteValor))
+			{
+				Rowspan = 2,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				BackgroundColor = amarilloPastel
+			};
+			tabla.AddCell(c1);
+
+			PdfPCell c2 = new(new Phrase("Prod. Rubro", fuenteValor))
+			{
+				Rowspan = 2,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				BackgroundColor = amarilloPastel
+			};
+			tabla.AddCell(c2);
+
+			PdfPCell c3 = new(new Phrase("Prod. con Conteo", fuenteValor))
+			{
+				Rowspan = 2,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				BackgroundColor = amarilloPastel
+			};
+			tabla.AddCell(c3);
+
+			PdfPCell c4 = new(new Phrase("Cantidades", fuenteValor))
+			{
+				Colspan = 3,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				BackgroundColor = amarilloPastel
+			};
+			tabla.AddCell(c4);
+
+			PdfPCell c5 = new(new Phrase("Valorización", fuenteValor))
+			{
+				Colspan = 3,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				BackgroundColor = amarilloPastel
+			};
+			tabla.AddCell(c5);
+
+			// ============================
+			// CABECERA NIVEL 2
+			// ============================
+			tabla.AddCell(new PdfPCell(new Phrase("Stk", fuenteValor)) { HorizontalAlignment = Element.ALIGN_CENTER, BackgroundColor = amarilloPastel });
+			tabla.AddCell(new PdfPCell(new Phrase("Conteo", fuenteValor)) { HorizontalAlignment = Element.ALIGN_CENTER, BackgroundColor = amarilloPastel });
+			tabla.AddCell(new PdfPCell(new Phrase("Dif.", fuenteValor)) { HorizontalAlignment = Element.ALIGN_CENTER, BackgroundColor = amarilloPastel });
+
+			tabla.AddCell(new PdfPCell(new Phrase("Stk", fuenteValor)) { HorizontalAlignment = Element.ALIGN_CENTER, BackgroundColor = amarilloPastel });
+			tabla.AddCell(new PdfPCell(new Phrase("Conteo", fuenteValor)) { HorizontalAlignment = Element.ALIGN_CENTER, BackgroundColor = amarilloPastel });
+			tabla.AddCell(new PdfPCell(new Phrase("Dif.", fuenteValor)) { HorizontalAlignment = Element.ALIGN_CENTER, BackgroundColor = amarilloPastel });
+
+			// ============================
+			// FILAS DE DATOS
+			// ============================
+			decimal totalProdRubro = 0;
+			decimal totalProdConConteo = 0;
+			decimal totalStkCant = 0;
+			decimal totalPlaniCant = 0;
+			decimal totalStkVal = 0;
+			decimal totalPlaniVal = 0;
+
+			foreach (var item in lista)
+			{
+				decimal difCant = item.stk_cant - item.plani_cant;
+				decimal difVal = item.stk_val - item.plani_val;
+
+				totalProdRubro += item.prod_sec;
+				totalProdConConteo += item.prod_sec_cont;
+				totalStkCant += item.stk_cant;
+				totalPlaniCant += item.plani_cant;
+				totalStkVal += item.stk_val;
+				totalPlaniVal += item.plani_val;
+
+				tabla.AddCell(new PdfPCell(new Phrase(item.sec_desc, fuenteEtiqueta)));
+				tabla.AddCell(new PdfPCell(new Phrase(item.prod_sec.ToString("N0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+				tabla.AddCell(new PdfPCell(new Phrase(item.prod_sec_cont.ToString("N0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				tabla.AddCell(new PdfPCell(new Phrase(item.stk_cant.ToString("N0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+				tabla.AddCell(new PdfPCell(new Phrase(item.plani_cant.ToString("N0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+				tabla.AddCell(new PdfPCell(new Phrase(difCant.ToString("N0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				tabla.AddCell(new PdfPCell(new Phrase(item.stk_val.ToString("N2"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+				tabla.AddCell(new PdfPCell(new Phrase(item.plani_val.ToString("N2"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+				tabla.AddCell(new PdfPCell(new Phrase(difVal.ToString("N2"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+			}
+
+			// ============================
+			// FILA DE TOTALES
+			// ============================
+			decimal totalDifCant = totalStkCant - totalPlaniCant;
+			decimal totalDifVal = totalStkVal - totalPlaniVal;
+
+			PdfPCell totalCell = new PdfPCell(new Phrase("TOTAL", fuenteValor));
+			totalCell.Colspan = 1;
+			totalCell.HorizontalAlignment = Element.ALIGN_RIGHT;
+			totalCell.BackgroundColor = BaseColor.LightGray;
+			tabla.AddCell(totalCell);
+
+			tabla.AddCell(new PdfPCell(new Phrase(totalProdRubro.ToString("N0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+			tabla.AddCell(new PdfPCell(new Phrase(totalProdConConteo.ToString("N0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+
+			tabla.AddCell(new PdfPCell(new Phrase(totalStkCant.ToString("N0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+			tabla.AddCell(new PdfPCell(new Phrase(totalPlaniCant.ToString("N0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+			tabla.AddCell(new PdfPCell(new Phrase(totalDifCant.ToString("N0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+
+			tabla.AddCell(new PdfPCell(new Phrase(totalStkVal.ToString("N2"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+			tabla.AddCell(new PdfPCell(new Phrase(totalPlaniVal.ToString("N2"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+			tabla.AddCell(new PdfPCell(new Phrase(totalDifVal.ToString("N2"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+
+			// Agregar tabla al PDF
+			pdf.Add(tabla);
+
+		}
+
+		public static void CargarRepoInvValPorRub(Document pdf, List<InvRepoValPorRubDto> lista, Font fuenteEtiqueta, Font fuenteValor)
+		{
+			if (lista == null || lista.Count == 0)
+			{
+				Paragraph sinDatos = new Paragraph("No se encontraron datos", fuenteEtiqueta);
+				sinDatos.Alignment = Element.ALIGN_CENTER;
+				pdf.Add(sinDatos);
+				return;
+			}
+
+			BaseColor amarilloPastel = new BaseColor(255, 245, 200);
+
+			// Tabla con 9 columnas
+			PdfPTable tabla = new PdfPTable(9);
+			tabla.WidthPercentage = 100;
+
+			// Anchos proporcionales
+			tabla.SetWidths(new float[] { 15, 15, 15, 10, 10, 10, 10, 10, 10 });
+
+			tabla.HeaderRows = 2;
+
+			// ============================
+			// CABECERA NIVEL 1
+			// ============================
+			PdfPCell c1 = new(new Phrase("Rubros", fuenteValor))
+			{
+				Rowspan = 2,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				BackgroundColor = amarilloPastel
+			};
+			tabla.AddCell(c1);
+
+			PdfPCell c2 = new(new Phrase("Prod. Rubro", fuenteValor))
+			{
+				Rowspan = 2,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				BackgroundColor = amarilloPastel
+			};
+			tabla.AddCell(c2);
+
+			PdfPCell c3 = new(new Phrase("Prod. con Conteo", fuenteValor))
+			{
+				Rowspan = 2,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				BackgroundColor = amarilloPastel
+			};
+			tabla.AddCell(c3);
+
+			PdfPCell c4 = new(new Phrase("Cantidades", fuenteValor))
+			{
+				Colspan = 3,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				BackgroundColor = amarilloPastel
+			};
+			tabla.AddCell(c4);
+
+			PdfPCell c5 = new(new Phrase("Valorización", fuenteValor))
+			{
+				Colspan = 3,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				BackgroundColor = amarilloPastel
+			};
+			tabla.AddCell(c5);
+
+			// ============================
+			// CABECERA NIVEL 2
+			// ============================
+			tabla.AddCell(new PdfPCell(new Phrase("Stk", fuenteValor)) { HorizontalAlignment = Element.ALIGN_CENTER, BackgroundColor = amarilloPastel });
+			tabla.AddCell(new PdfPCell(new Phrase("Conteo", fuenteValor)) { HorizontalAlignment = Element.ALIGN_CENTER, BackgroundColor = amarilloPastel });
+			tabla.AddCell(new PdfPCell(new Phrase("Dif.", fuenteValor)) { HorizontalAlignment = Element.ALIGN_CENTER, BackgroundColor = amarilloPastel });
+
+			tabla.AddCell(new PdfPCell(new Phrase("Stk", fuenteValor)) { HorizontalAlignment = Element.ALIGN_CENTER, BackgroundColor = amarilloPastel });
+			tabla.AddCell(new PdfPCell(new Phrase("Conteo", fuenteValor)) { HorizontalAlignment = Element.ALIGN_CENTER, BackgroundColor = amarilloPastel });
+			tabla.AddCell(new PdfPCell(new Phrase("Dif.", fuenteValor)) { HorizontalAlignment = Element.ALIGN_CENTER, BackgroundColor = amarilloPastel });
+
+			// ============================
+			// FILAS DE DATOS
+			// ============================
+			decimal totalProdRubro = 0;
+			decimal totalProdConConteo = 0;
+			decimal totalStkCant = 0;
+			decimal totalPlaniCant = 0;
+			decimal totalStkVal = 0;
+			decimal totalPlaniVal = 0;
+
+			foreach (var item in lista)
+			{
+				decimal difCant = item.stk_cant - item.plani_cant;
+				decimal difVal = item.stk_val - item.plani_val;
+
+				totalProdRubro += item.prod_rub;
+				totalProdConConteo += item.prod_rub_cont;
+				totalStkCant += item.stk_cant;
+				totalPlaniCant += item.plani_cant;
+				totalStkVal += item.stk_val;
+				totalPlaniVal += item.plani_val;
+
+				tabla.AddCell(new PdfPCell(new Phrase(item.rub_desc, fuenteEtiqueta)));
+				tabla.AddCell(new PdfPCell(new Phrase(item.prod_rub.ToString("N0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+				tabla.AddCell(new PdfPCell(new Phrase(item.prod_rub_cont.ToString("N0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				tabla.AddCell(new PdfPCell(new Phrase(item.stk_cant.ToString("N0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+				tabla.AddCell(new PdfPCell(new Phrase(item.plani_cant.ToString("N0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+				tabla.AddCell(new PdfPCell(new Phrase(difCant.ToString("N0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				tabla.AddCell(new PdfPCell(new Phrase(item.stk_val.ToString("N2"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+				tabla.AddCell(new PdfPCell(new Phrase(item.plani_val.ToString("N2"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+				tabla.AddCell(new PdfPCell(new Phrase(difVal.ToString("N2"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+			}
+
+			// ============================
+			// FILA DE TOTALES
+			// ============================
+			decimal totalDifCant = totalStkCant - totalPlaniCant;
+			decimal totalDifVal = totalStkVal - totalPlaniVal;
+
+			PdfPCell totalCell = new PdfPCell(new Phrase("TOTAL", fuenteValor));
+			totalCell.Colspan = 1;
+			totalCell.HorizontalAlignment = Element.ALIGN_RIGHT;
+			totalCell.BackgroundColor = BaseColor.LightGray;
+			tabla.AddCell(totalCell);
+
+			tabla.AddCell(new PdfPCell(new Phrase(totalProdRubro.ToString("N0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+			tabla.AddCell(new PdfPCell(new Phrase(totalProdConConteo.ToString("N0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+
+			tabla.AddCell(new PdfPCell(new Phrase(totalStkCant.ToString("N0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+			tabla.AddCell(new PdfPCell(new Phrase(totalPlaniCant.ToString("N0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+			tabla.AddCell(new PdfPCell(new Phrase(totalDifCant.ToString("N0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+
+			tabla.AddCell(new PdfPCell(new Phrase(totalStkVal.ToString("N2"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+			tabla.AddCell(new PdfPCell(new Phrase(totalPlaniVal.ToString("N2"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+			tabla.AddCell(new PdfPCell(new Phrase(totalDifVal.ToString("N2"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = BaseColor.LightGray });
+
+			// Agregar tabla al PDF
+			pdf.Add(tabla);
 
 		}
 

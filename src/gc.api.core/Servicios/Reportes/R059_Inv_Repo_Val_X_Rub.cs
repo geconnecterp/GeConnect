@@ -46,9 +46,11 @@ namespace gc.api.core.Servicios.Reportes
 				var ms = new MemoryStream();
 				#region Obteniendo registros desde la base de datos
 				string tit;
-				List<InvRepoValPorRubDto> registros = ObtenerDatos(solicitud, out tit);
+				string subtit;
+				List<InvRepoValPorRubDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
 
 				solicitud.Titulo = tit;
+				solicitud.SubTitulo = subtit;
 
 				//hago el modelo de dato aca ya que necesito los datos de la cuenta
 				var regs = registros.Select(x => new
@@ -98,7 +100,7 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Open();
 
 				#region Lista de Cheques Emitidos Propios
-				//HelperPdf.CargarCertificadosNoRetencionNoPercepcion(pdf, registros, chico, normalBold);
+				HelperPdf.CargarRepoInvValPorRub(pdf, registros, chico, normalBold);
 				#endregion
 
 				pdf.Close();
@@ -126,23 +128,26 @@ namespace gc.api.core.Servicios.Reportes
 			return bool.TryParse(valor, out var resultado) ? resultado : valorPorDefecto;
 		}
 
-		private List<InvRepoValPorRubDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo)
+		private List<InvRepoValPorRubDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo, out string subtitulo)
 		{
 			var inv_nro = solicitud.Parametros.GetValueOrDefault("inv_nro", "")?.ToString() ?? null;
 
-			titulo = $"Valorizado por Rubros";
+			titulo = $"Inventario Valorizado por Rubros N° {inv_nro}";
 
-			return _inventarioServicio.GetReporteValorizacionPorRubro(new ReporteInventarioRequest
+			var lista = _inventarioServicio.GetReporteValorizacionPorRubro(new ReporteInventarioRequest
 			{
 				inv_nro = inv_nro
 			});
+			subtitulo = $"Estado: {lista.First().inve_desc}";
+			return lista;
 		}
 
 		public string GenerarTxt(ReporteSolicitudDto solicitud)
 		{
 			#region Obteniendo registros desde la base de datos
 			string tit;
-			List<InvRepoValPorRubDto> registros = ObtenerDatos(solicitud, out tit);
+			string subtit;
+			List<InvRepoValPorRubDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
 
 			if (registros == null || registros.Count == 0)
 			{
@@ -165,7 +170,8 @@ namespace gc.api.core.Servicios.Reportes
 		{
 			#region Obteniendo registros desde la base de datos
 			string tit;
-			List<InvRepoValPorRubDto> registros = ObtenerDatos(solicitud, out tit);
+			string subtit;
+			List<InvRepoValPorRubDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
 
 			if (registros == null || registros.Count == 0)
 			{
