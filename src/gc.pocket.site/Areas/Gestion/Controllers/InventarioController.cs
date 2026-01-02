@@ -441,6 +441,11 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                     }
                 }
 
+                if (req.tipo.Equals('B'))
+                {
+                    req.tipo_id = req.tipo_id.ToUpper();
+                }
+
                 if (req.json.Count == 0)
                 {
                     throw new NegocioException("Es necesario que al menos un producto sea enviado para confirmar.");
