@@ -15,12 +15,12 @@ namespace gc.api.core.Entidades
             Cx_base = string.Empty;
             Cx_login = string.Empty;
             Cx_pass = string.Empty;
-            Adm_MePa_Id = string.Empty;
-            Adm_Mepa_Localidad = string.Empty;
-            Adm_Mepa_Provincia = string.Empty;
-            Adm_Mepa_Latitud = string.Empty;
-            Adm_Mepa_Longitud = string.Empty;
-            Adm_Mepa_Calle = string.Empty;
+            //Adm_MePa_Id = string.Empty;
+            //Adm_Mepa_Localidad = string.Empty;
+            //Adm_Mepa_Provincia = string.Empty;
+            //Adm_Mepa_Latitud = string.Empty;
+            //Adm_Mepa_Longitud = string.Empty;
+            //Adm_Mepa_Calle = string.Empty;
             
         }
 
@@ -40,13 +40,13 @@ namespace gc.api.core.Entidades
         public DateTime? Lote_central_f { get; set; }
         public char Adm_activa { get; set; }
         public decimal Adm_oc_limite { get; set; }
-        public string? Adm_MePa_Id { get; set; }
-        public string Adm_Mepa_Localidad { get; set; }
-        public string Adm_Mepa_Provincia { get; set; }
-        public string Adm_Mepa_Latitud { get; set; }
-        public string Adm_Mepa_Longitud { get; set; }
-        public string Adm_Mepa_Calle { get; set; }
-        public int Adm_Mepa_Numero { get; set; }
+        //public string? Adm_MePa_Id { get; set; }
+        //public string Adm_Mepa_Localidad { get; set; }
+        //public string Adm_Mepa_Provincia { get; set; }
+        //public string Adm_Mepa_Latitud { get; set; }
+        //public string Adm_Mepa_Longitud { get; set; }
+        //public string Adm_Mepa_Calle { get; set; }
+        //public int Adm_Mepa_Numero { get; set; }
 
 
         //public virtual ICollection<depositos> depositoss { get; set; }

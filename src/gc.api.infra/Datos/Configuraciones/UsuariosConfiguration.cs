@@ -37,7 +37,7 @@ namespace gc.api.infra.Datos.Configuraciones
                 .HasColumnType("datetime");
 
 
-            builder.Property(e => e.Tdo_codigo)
+            builder.Property(e => e.Tdoc_id)
                  .HasMaxLength(2)
                  .IsUnicode(false);
 
