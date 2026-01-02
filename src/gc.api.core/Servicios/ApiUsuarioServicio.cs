@@ -29,7 +29,11 @@ namespace gc.api.core.Servicios
             };
 
             List<RespuestaDto> menu = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
-            return menu.First();
+            if (menu.Count == 0)
+            {
+                return new();
+            }
+            return menu?.First();
         }
 
         public List<MenuDto> GetMenu()

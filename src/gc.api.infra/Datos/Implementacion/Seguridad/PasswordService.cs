@@ -22,7 +22,7 @@ namespace gc.api.infra.Datos.Implementacion.Security
 
         public bool Check(string hash,string usuario, string password)
         {
-            if(hash == null || usuario == null || password == null)
+            if (hash == null || usuario == null || password == null)
             {
                 return false;
             }
@@ -30,18 +30,18 @@ namespace gc.api.infra.Datos.Implementacion.Security
             //se invoca la encriptación para comparar la con el hash
             var patron = new { usuario, clave = password };
 
-            string sp = $"select {ConstantesGC.StoredFunctions.FX_PASSWORD_ENCRIPTA}('{JsonSerializer.Serialize(patron)}')";
-            var pass = _repository.InvokarSpScalar(sp, null,false,true,false);
 
-            if (pass != null)
+            string sp = $"select {ConstantesGC.StoredFunctions.FX_PASSWORD_ENCRIPTA}('{JsonSerializer.Serialize(patron)}')";
+            var res =  AnalizaClave(hash, sp);
+
+            if (!res)
             {
-                //se comparar los resultados
-                if (hash.Equals(pass.ToString()))
-                {
-                    return true;
-                }
+                //probamos si la clave es vieja y no con patron
+                sp = $"select {ConstantesGC.StoredFunctions.FX_PASSWORD_ENCRIPTA}('{password}')";
+                res = AnalizaClave(hash, sp);
+                return res;
             }
-            return false ;
+            return res;
             //var parts = hash.Split('.');
             //if (parts.Length != 3)
             //{
@@ -58,6 +58,21 @@ namespace gc.api.infra.Datos.Implementacion.Security
 
             //    return keyToCheck.SequenceEqual(key);
             //}
+        }
+
+        private bool AnalizaClave(string hash, string sp)
+        {
+            var pass = _repository.InvokarSpScalar(sp, null, false, true, false);
+
+            if (pass != null)
+            {
+                //se comparar los resultados
+                if (hash.Equals(pass.ToString()))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public string CalculaClave(RegistroUserDto registroUserDto)

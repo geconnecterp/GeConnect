@@ -1,14 +1,11 @@
-﻿using Azure.Core;
-using gc.api.core.Constantes;
+﻿using gc.api.core.Constantes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.api.core.Interfaces.Servicios;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
-using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace gc.api.core.Servicios

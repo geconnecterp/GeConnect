@@ -33,13 +33,13 @@ namespace gc.infraestructura.Dtos.Administracion
         public DateTime? Lote_central_f { get; set; }
         public char Adm_activa { get; set; }
         public decimal Adm_oc_limite { get; set; }
-        public string? Adm_MePa_Id { get; set; }
-        public string Adm_Mepa_Localidad { get; set; }=string.Empty;
-        public string Adm_Mepa_Provincia { get; set; } = string.Empty;
-        public string Adm_Mepa_Latitud { get; set; } = string.Empty;
-        public string Adm_Mepa_Longitud { get; set; } = string.Empty;
-        public string Adm_Mepa_Calle { get; set; } = string.Empty;
-        public int Adm_Mepa_Numero { get; set; }
+        //public string? Adm_MePa_Id { get; set; }
+        //public string Adm_Mepa_Localidad { get; set; }=string.Empty;
+        //public string Adm_Mepa_Provincia { get; set; } = string.Empty;
+        //public string Adm_Mepa_Latitud { get; set; } = string.Empty;
+        //public string Adm_Mepa_Longitud { get; set; } = string.Empty;
+        //public string Adm_Mepa_Calle { get; set; } = string.Empty;
+        //public int Adm_Mepa_Numero { get; set; }
         public string  lp_id { get; set; }
 
     }
