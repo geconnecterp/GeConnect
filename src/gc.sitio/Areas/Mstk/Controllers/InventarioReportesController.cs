@@ -15,6 +15,7 @@ using gc.sitio.core.Servicios.Contratos.Tipos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace gc.sitio.Areas.Mstk.Controllers
 {
@@ -96,6 +97,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				var auth = EstaAutenticado;
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				return PartialView("_inventarioReportePantallaPrincipal");
 			}
 			catch (Exception ex)
@@ -137,8 +139,38 @@ namespace gc.sitio.Areas.Mstk.Controllers
 			}
 		}
 
+		public JsonResult ObtenerUsuariosDelInventario(string inv_nro)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return Json(new { error = true, warn = false, ok = false, msg = "No autenticado" });
+				if (string.IsNullOrWhiteSpace(inv_nro))
+					return Json(new { error = true, warn = false, ok = false, msg = "Request inválido" });
+
+				var usuarios = _inventarioServicio.GetUsuariosEnInventario(inv_nro, TokenCookie);
+				if (usuarios == null || usuarios.Count <= 0)
+					return Json(new { error = false, warn = false, ok = true, msg = "", usrs = "" });
+
+				var listaUsrs = new List<UsuariosDeInv>();
+				usuarios.ForEach(x => listaUsrs.Add(new UsuariosDeInv() { usu_id = x.usu_id, usu_apellidoynombre = x.usu_apellidoynombre }));
+				return Json(new { error = false, warn = false, ok = true, msg = "", usrs = JsonConvert.SerializeObject(listaUsrs) });
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					Mensaje = ex.Message
+				};
+				return Json(response);
+			}
+		}
+
 		public IActionResult InicializarTabRepoValorPorSec(ReporteInventarioRequest request)
-		{ 
+		{
 			try
 			{
 				var auth = EstaAutenticado;
@@ -179,6 +211,34 @@ namespace gc.sitio.Areas.Mstk.Controllers
 					GrillaRepoValPorRub = ObtenerGridCoreSmart<InvRepoValPorRubDto>(lista)
 				};
 				return PartialView("_gridRepoValPorRub", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult InicializarTabRepoConteosPorUsu(ReporteInventarioRequest request)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				request.inv_nro = request.inv_nro == null ? "%" : request.inv_nro;
+				var lista = _inventarioServicio.GetReporteConteosPorUsu(request, TokenCookie);
+				var model = new RepoConteoPorUsuModel
+				{
+					GrillaRepoConteosPorUsu = ObtenerGridCoreSmart<InvRepoConteosPorUsuDto>(lista)
+				};
+				return PartialView("_gridRepoConteoPorUsu", model);
 			}
 			catch (Exception ex)
 			{
@@ -305,6 +365,11 @@ namespace gc.sitio.Areas.Mstk.Controllers
 			RepoValPorRub = 3,
 			RepoValorDetalle = 4,
 			RepoConteoPorUsu = 5
+		}
+		private class UsuariosDeInv
+		{
+			public string usu_id { get; set; }
+			public string usu_apellidoynombre { get; set; }
 		}
 		#endregion
 	}

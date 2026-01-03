@@ -4286,6 +4286,136 @@ namespace gc.infraestructura.Helpers
 
 		}
 
+		public static void CargarRepoConteoPorUsu(Document pdf, List<InvRepoConteosPorUsuDto> lista, Font fuenteEtiqueta, Font fuenteValor)
+		{
+			if (lista == null || lista.Count == 0)
+			{
+				pdf.Add(new Paragraph("No se encontraron datos", fuenteEtiqueta));
+				return;
+			}
+
+			// Agrupar por planilla
+			var grupos = lista
+				.GroupBy(x => new { x.carga_nro, x.carga_des })
+				.OrderBy(g => g.Key.carga_nro);
+
+			BaseColor amarilloPastel = new BaseColor(255, 245, 200);
+			Font fuenteTitulo = new Font(fuenteEtiqueta.BaseFont, 14, Font.BOLD);
+			bool primera = true;
+
+			foreach (var grupo in grupos)
+			{
+				// Nueva hoja por cada planilla excepto la primera
+				if (!primera)
+					pdf.NewPage();
+				primera = false;
+
+				// ============================================================
+				// TABLA COMPLETA (TÍTULO + CABECERA + DATOS)
+				// ============================================================
+				PdfPTable tabla = new PdfPTable(7);
+				tabla.WidthPercentage = 100;
+				tabla.SetWidths(new float[] { 8, 12, 35, 10, 10, 12, 13 });
+
+				// Título + cabecera deben repetirse
+				tabla.HeaderRows = 3;
+
+				// ============================================================
+				// FILA 1: TÍTULO (se repite en cada página)
+				// ============================================================
+				string titulo = $"{grupo.Key.carga_des} ({grupo.Key.carga_nro})";
+
+				PdfPCell celdaTitulo = new PdfPCell(new Phrase(titulo, fuenteTitulo))
+				{
+					Colspan = 7,
+					Border = Rectangle.NO_BORDER,
+					HorizontalAlignment = Element.ALIGN_LEFT,
+					PaddingBottom = 6f
+				};
+
+				// Subrayado
+				celdaTitulo.CellEvent = new SubrayadoCellEvent();
+
+				tabla.AddCell(celdaTitulo);
+
+				// ============================================================
+				// FILA 2 y 3: CABECERA REAL (igual al HTML)
+				// ============================================================
+
+				// CABECERA FILA 1
+				PdfPCell c1 = new PdfPCell(new Phrase("Código", fuenteValor))
+				{
+					Rowspan = 2,
+					Colspan = 2,
+					BackgroundColor = amarilloPastel,
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					VerticalAlignment = Element.ALIGN_MIDDLE
+				};
+				tabla.AddCell(c1);
+
+				PdfPCell c2 = new PdfPCell(new Phrase("Producto", fuenteValor))
+				{
+					Rowspan = 2,
+					BackgroundColor = amarilloPastel,
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					VerticalAlignment = Element.ALIGN_MIDDLE
+				};
+				tabla.AddCell(c2);
+
+				PdfPCell c3 = new PdfPCell(new Phrase("UP", fuenteValor))
+				{
+					Rowspan = 2,
+					BackgroundColor = amarilloPastel,
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					VerticalAlignment = Element.ALIGN_MIDDLE
+				};
+				tabla.AddCell(c3);
+
+				PdfPCell c4 = new PdfPCell(new Phrase("Stock Inventariado", fuenteValor))
+				{
+					Colspan = 3,
+					BackgroundColor = amarilloPastel,
+					HorizontalAlignment = Element.ALIGN_CENTER
+				};
+				tabla.AddCell(c4);
+
+				// CABECERA FILA 2
+				tabla.AddCell(new PdfPCell(new Phrase("Bulto", fuenteValor)) { BackgroundColor = amarilloPastel, HorizontalAlignment = Element.ALIGN_CENTER });
+				tabla.AddCell(new PdfPCell(new Phrase("Cant. Suelta", fuenteValor)) { BackgroundColor = amarilloPastel, HorizontalAlignment = Element.ALIGN_CENTER });
+				tabla.AddCell(new PdfPCell(new Phrase("Cant. Total", fuenteValor)) { BackgroundColor = amarilloPastel, HorizontalAlignment = Element.ALIGN_CENTER });
+
+				// ============================================================
+				// FILAS DE DATOS
+				// ============================================================
+				foreach (var item in grupo)
+				{
+					tabla.AddCell(new PdfPCell(new Phrase(item.p_id, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
+					tabla.AddCell(new PdfPCell(new Phrase(item.p_id_barrado, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
+					tabla.AddCell(new PdfPCell(new Phrase(item.p_desc, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_LEFT });
+					tabla.AddCell(new PdfPCell(new Phrase(item.p_unidad_pres.ToString(), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
+					tabla.AddCell(new PdfPCell(new Phrase(item.invd_bulto.ToString(), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					tabla.AddCell(new PdfPCell(new Phrase(item.invd_unidad_suelta.ToString("N2"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					tabla.AddCell(new PdfPCell(new Phrase(item.invd_cantidad.ToString("N2"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+				}
+
+				pdf.Add(tabla);
+			}
+		}
+
+		public class SubrayadoCellEvent : IPdfPCellEvent
+		{
+			public void CellLayout(PdfPCell cell, Rectangle rect, PdfContentByte[] canvas)
+			{
+				PdfContentByte cb = canvas[PdfPTable.LINECANVAS];
+				cb.SetLineWidth(0.8f);
+				cb.MoveTo(rect.Left, rect.Bottom + 2);
+				cb.LineTo(rect.Right, rect.Bottom + 2);
+				cb.Stroke();
+			}
+		}
+
+
+
 		// Clase auxiliar para simular un grupo sin agrupamiento
 		private class AgrupacionSinGrupoComp : IGrouping<string, ProductoStkCompensadoDto>
 		{

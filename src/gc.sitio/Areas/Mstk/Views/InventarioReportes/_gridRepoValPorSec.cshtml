@@ -14,7 +14,69 @@
 	var totalDifVal = totalStkVal - totalPlaniVal;
 
 }
-<div class="table-wrapper" id="containerListaInventarios">
+<style>
+	/* El contenedor debe ser el scroll real y generar contexto */
+	#containerListaInvValorPorSec {
+		position: relative;
+		height: 500px;
+		max-height: 500px;
+		overflow-y: auto; /* vertical */
+		overflow-x: auto; /* horizontal si hace falta */
+		z-index: auto; /* no fuerza stacking context */
+	}
+
+	/* Evitar collapse para que sticky funcione mejor en thead/th */
+	.table-golden {
+		border-collapse: separate;
+		border-spacing: 0;
+		table-layout: fixed; /* estabiliza anchos con tus width% */
+	}
+
+		/* Fijar el thead y darle fondo del tema */
+		.table-golden thead {
+			position: sticky;
+			top: 0;
+			z-index: 1; /* suficiente para estar sobre las filas */
+			background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+			color: #fff !important;
+		}
+
+			/* Redundancia intencional: asegurar cada th sticky y el mismo fondo */
+			.table-golden thead th {
+				position: sticky;
+				top: 0;
+				z-index: 4;
+				background: linear-gradient(to bottom, #b8860b, #daa520);
+				color: #fff;
+				box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+				background-clip: padding-box; /* evita “sangrados” con border-spacing */
+			}
+
+			/* Alinear colores: si tu app usa dorado para cabecera */
+			.table-golden thead,
+			.table-golden thead th {
+				/*background-color: #b8860b;  tu dorado */
+				/* color: #333; */
+			}
+
+	#tbGridInvValorPorSec td {
+		padding: 0.01rem 0.15rem !important; /* o incluso 0 si querés máxima compresión */
+		line-height: 1.2 !important; /* más compacto */
+		height: auto !important; /* evita altura fija */
+	}
+
+	#tbGridInvValorPorSec thead th {
+		/* padding: .5rem .5rem !important; */
+	}
+
+
+	/* Opcional: altura fija para todas las filas */
+	#tbGridInvValorPorSec tr {
+		height: 1.6rem !important; /* ajustá según lo que quieras */
+	}
+
+</style>
+<div class="table-wrapper" id="containerListaInvValorPorSec">
 	<table class="table table-sm table-golden" id="tbGridInvValorPorSec">
 		<thead>
 			<tr class="header">

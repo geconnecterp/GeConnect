@@ -1,5 +1,118 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model RepoConteoPorUsuModel
+@using static gc.infraestructura.Helpers.GridHelper
 @{
+	var alt = true;
+	string clase = string.Empty;
+	string grupoActual = string.Empty;
+	string grupoAnterior = string.Empty;
+	string leyendaAgrupador = string.Empty;
 }
+<style>
+	#containerListaInvConteosPorUsu {
+		position: relative;
+		height: 500px;
+		max-height: 500px;
+		overflow-y: auto;
+		overflow-x: auto;
+		z-index: auto;
+	}
+
+	.table-golden {
+		border-collapse: separate;
+		border-spacing: 0;
+		table-layout: fixed;
+	}
+
+		.table-golden thead {
+			position: sticky;
+			top: 0;
+			z-index: 1; 
+			background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+			color: #fff !important;
+		}
+
+			.table-golden thead th {
+				position: sticky;
+				top: 0;
+				z-index: 4;
+				background: linear-gradient(to bottom, #b8860b, #daa520);
+				color: #fff;
+				box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+				background-clip: padding-box; 
+			}
+
+			.table-golden thead,
+			.table-golden thead th {
+			}
+
+	#tbGridInvConteosPorUsu td {
+		padding: 0.01rem 0.15rem !important; 
+		line-height: 1.2 !important;
+		height: auto !important; 
+	}
+
+	#tbGridInvConteosPorUsu thead th {
+	}
+
+	#tbGridInvConteosPorUsu tr {
+		height: 1.6rem !important; 
+	}
+
+</style>
+<div class="table-wrapper" id="containerListaInvConteosPorUsu">
+	<table class="table table-sm table-golden" id="tbGridInvConteosPorUsu">
+		<thead>
+			<tr class="header">
+				<th class="text-center" rowspan="2" colspan="2" style="width: 20%;">Código</th>
+				<th class="text-center" rowspan="2" style="width: 35%;">Producto</th>
+				<th class="text-center" rowspan="2" style="width: 20%;">UP</th>
+				<th class="text-center" colspan="3" style="width: 25%;">Stock Inventariado</th>
+			</tr>
+			<tr class="header">
+				<th class="text-center">Bulto</th>
+				<th class="text-center">Cant. Suelta</th>
+				<th class="text-center">Cant. Total</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.GrillaRepoConteosPorUsu != null && Model.GrillaRepoConteosPorUsu.ListaDatos != null && Model.GrillaRepoConteosPorUsu.ListaDatos.Count > 0)
+			{
+				@foreach (var item in Model.GrillaRepoConteosPorUsu.ListaDatos)
+				{
+					grupoActual = item.carga_nro.ToString();
+					leyendaAgrupador = $"{item.carga_des} ({item.carga_nro})";
+					if (grupoActual != grupoAnterior)
+					{
+						<tr class="table-secondary fw-bold">
+							<td colspan="7" class="text-center">
+								<i class="bx bx-folder me-1"></i>
+								@leyendaAgrupador
+							</td>
+						</tr>
+						grupoAnterior = grupoActual;
+						alt = true; // Reiniciar alternancia de colores después de cada familia
+					}
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" onclick="selectReg(this, 'tbGridInvConteosPorUsu')" data-inv-nro="@item.inv_nro" data-p-id="@item.p_id">
+						<td class="@Model.GrillaRepoConteosPorUsu.ObtenerClase(item.p_id) text-center cell-fit-content">@Model.GrillaRepoConteosPorUsu.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaRepoConteosPorUsu.ObtenerClase(item.p_id_barrado) text-center cell-fit-content">@Model.GrillaRepoConteosPorUsu.FormatearDato(item.p_id_barrado, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaRepoConteosPorUsu.ObtenerClase(item.p_desc) cell-fit-content">@Model.GrillaRepoConteosPorUsu.FormatearDato(item.p_desc, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaRepoConteosPorUsu.ObtenerClase(item.p_unidad_pres) text-center cell-fit-content">@Model.GrillaRepoConteosPorUsu.FormatearDato(item.p_unidad_pres, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaRepoConteosPorUsu.ObtenerClase(item.invd_bulto) cell-fit-content">@Model.GrillaRepoConteosPorUsu.FormatearDato(item.invd_bulto, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaRepoConteosPorUsu.ObtenerClase(item.invd_unidad_suelta) cell-fit-content">@Model.GrillaRepoConteosPorUsu.FormatearDato(item.invd_unidad_suelta, FormatDato.Monto)</td>
+						<td class="@Model.GrillaRepoConteosPorUsu.ObtenerClase(item.invd_cantidad) cell-fit-content">@Model.GrillaRepoConteosPorUsu.FormatearDato(item.invd_cantidad, FormatDato.Monto)</td>
+					</tr>
+				}
+			}
+			else
+			{
+				<tr>
+					<td colspan="9" class="text-center text-muted py-4">
+						<i class="bx bx-info-circle me-2"></i>
+						No se encontraron datos
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>

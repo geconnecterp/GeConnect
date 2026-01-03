@@ -60,6 +60,25 @@ function AgregarHandlerEnTabs() {
 
 }
 
+function usuarioSeleccionado() {
+	const ddl = $("#listaUsuarios");
+	// 1) Debe estar habilitado
+	if (ddl.prop("disabled")) {
+		return "";
+	}
+	// 2) Debe tener más opciones que la opción por defecto
+	if (ddl.find("option").length <= 1) {
+		return "";
+	}
+	// 3) Debe tener un valor seleccionado distinto de ""
+	const valor = ddl.val();
+	if (!valor || valor === "") {
+		return "";
+	}
+	return valor;
+}
+
+
 function CargarEventosABotonesEnDivPrincipal() {
 	$(document).on("click", "#btnRepoStkVsConteo", CargarTabRepoStkVsConteo);
 	$(document).on("click", "#btnRepoValorPorSec", CargarTabRepoValorPorSec);
@@ -72,7 +91,31 @@ function CargarTabRepoStkVsConteo() { }
 
 function CargarTabRepoValorDetalle() { }
 
-function CargarTabRepoConteoPorUsu() { }
+function CargarTabRepoConteoPorUsu() {
+	if (usuarioSeleccionado() == "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un usario.", function () {
+			$("#msjModal").modal("hide");
+			$("#listaUsuarios").trigger("focus");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		var inv_nro = invNroSeleccionado;
+		var usu_id = $("#listaUsuarios").val();
+		var data = { inv_nro, usu_id };
+		PostGenHtml(data, inicializarTabRepoConteosPorUsuURL, function (obj) {
+			$("#divReporte").html(obj);
+			let tab = new bootstrap.Tab(document.querySelector("#btnTabInventarioReporte"));
+			setTimeout(() => {
+				$(document).off("click", "#btnImprimir").on("click", "#btnImprimir", ControlaImprRepoConteosPorUsu);
+			}, 300);
+			tab.show();
+			$("#btnImprimir").show();
+			CerrarWaiting();
+			return true
+		});
+	}
+}
 
 function CargarTabRepoValorPorRub() {
 	var inv_nro = invNroSeleccionado;
@@ -120,6 +163,35 @@ function CargarTabRepoValorPorSec() {
 			$("#btnImprimir").show();
 			CerrarWaiting();
 			return true
+		});
+	}
+}
+
+function ControlaImprRepoConteosPorUsu() {
+	var filas = $("#tbGridInvConteosPorUsu tbody tr[data-inv-nro]").length;
+	if (filas == 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos para imprimir.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Imprimiendo listado...");
+		var tipoReporte = 5;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				CerrarWaiting();
+				ImpimirRepoConteosPorUsu();
+			}
 		});
 	}
 }
@@ -182,6 +254,18 @@ function ControlaImprRepoValorPorSec() {
 	}
 }
 
+function ImpimirRepoConteosPorUsu() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var inv_nro = invNroSeleccionado;
+		var usu_id = $("#listaUsuarios").val();
+		var usu_nombre = $("#listaUsuarios option:selected").text();
+		var data = { inv_nro, usu_id, usu_nombre };
+		cargarReporteEnArre(61, data, "PLANILLA POR USUARIOS", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
 function ImpimirRepoValorPorRub() {
 	ReseteoDeReportes();
 	setTimeout(() => {
@@ -212,6 +296,53 @@ function selectReg(x, gridId) {
 		invNroSeleccionado = x.getAttribute("data-inv-nro");
 		inveIdSeleccionado = x.getAttribute("data-inve-id");
 		invtIdSeleccionado = x.getAttribute("data-invt-id");
+		ActualizarListaDeUsuariosDelInventario();
+	}
+}
+
+function ActualizarListaDeUsuariosDelInventario() {
+	if (invNroSeleccionado != "") {
+		var data = { inv_nro: invNroSeleccionado };
+		PostGen(data, obtenerUsuariosDelInventarioURL, function (obj) {
+			CerrarWaiting();
+			const ddl = $("#listaUsuarios");
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else if (obj.error === false && obj.usrs.length === 0) {
+				ddl.append('<option value="">Seleccionar</option>');
+				ddl.empty();
+				ddl.prop("disabled", true);
+				return;
+			}
+			else {
+				ddl.empty();
+				ddl.append('<option value="">Seleccionar</option>');
+
+				// Si viene como string → parsearlo
+				let usuarios = obj.usrs;
+				if (typeof usuarios === "string") {
+					try {
+						usuarios = JSON.parse(usuarios);
+					} catch (e) {
+						console.error("Error al parsear JSON:", e);
+						ddl.prop("disabled", true);
+						return;
+					}
+				}
+
+				usuarios.forEach(function (usr) {
+					ddl.append($('<option></option>').val(usr.usu_id).html(usr.usu_apellidoynombre));
+				});
+				ddl.prop("disabled", false);
+				return;
+			}
+			return true
+		});
 	}
 }
 
