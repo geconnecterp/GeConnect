@@ -87,7 +87,30 @@ function CargarEventosABotonesEnDivPrincipal() {
 	$(document).on("click", "#btnRepoConteoPorUsu", CargarTabRepoConteoPorUsu);
 }
 
-function CargarTabRepoStkVsConteo() { }
+function CargarTabRepoStkVsConteo() {
+	var inv_nro = invNroSeleccionado;
+	if (inv_nro == "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un inventario.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Cargando datos...");
+		var data = { inv_nro };
+		PostGenHtml(data, inicializarTabRepoStkVsConteoURL, function (obj) {
+			$("#divReporte").html(obj);
+			let tab = new bootstrap.Tab(document.querySelector("#btnTabInventarioReporte"));
+			setTimeout(() => {
+				$(document).off("click", "#btnImprimir").on("click", "#btnImprimir", ControlaImprRepoStkVsConteo);
+			}, 300);
+			tab.show();
+			$("#btnImprimir").show();
+			CerrarWaiting();
+			return true
+		});
+	}
+}
 
 function CargarTabRepoValorDetalle() {
 	var inv_nro = invNroSeleccionado;
@@ -186,6 +209,35 @@ function CargarTabRepoValorPorSec() {
 			$("#btnImprimir").show();
 			CerrarWaiting();
 			return true
+		});
+	}
+}
+
+function ControlaImprRepoStkVsConteo() {
+	var filas = $("#tbGridInvStkVsConteo tbody tr[data-inv-nro]").length;
+	if (filas == 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos para imprimir.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Imprimiendo listado...");
+		var tipoReporte = 1;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				CerrarWaiting();
+				ImpimirRepoStkVsConteo();
+			}
 		});
 	}
 }
@@ -304,6 +356,16 @@ function ControlaImprRepoValorPorSec() {
 			}
 		});
 	}
+}
+
+function ImpimirRepoStkVsConteo() { 
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var inv_nro = invNroSeleccionado;
+		var data = { inv_nro };
+		cargarReporteEnArre(57, data, "REGISTRO DE STOCK VS CONTEO", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function ImpimirRepoValorDetalle() {

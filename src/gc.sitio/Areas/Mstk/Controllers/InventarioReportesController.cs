@@ -169,6 +169,34 @@ namespace gc.sitio.Areas.Mstk.Controllers
 			}
 		}
 
+		public IActionResult InicializarTabRepoStkVsConteo(ReporteInventarioRequest request)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				request.inv_nro = request.inv_nro == null ? "%" : request.inv_nro;
+				var lista = _inventarioServicio.GetReporteStockVsConteo(request, TokenCookie);
+				var model = new RepoStkVsConteoModel
+				{
+					GrillaRepoStkVsConteo = ObtenerGridCoreSmart<InvRepoStkVsConteoDto>(lista)
+				};
+				return PartialView("_gridRepoStkVsConteo", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
 		public IActionResult InicializarTabRepoValorPorSec(ReporteInventarioRequest request)
 		{
 			try
