@@ -89,7 +89,30 @@ function CargarEventosABotonesEnDivPrincipal() {
 
 function CargarTabRepoStkVsConteo() { }
 
-function CargarTabRepoValorDetalle() { }
+function CargarTabRepoValorDetalle() {
+	var inv_nro = invNroSeleccionado;
+	if (inv_nro == "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un inventario.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Cargando datos...");
+		var data = { inv_nro };
+		PostGenHtml(data, inicializarTabRepoValorDetalleURL, function (obj) {
+			$("#divReporte").html(obj);
+			let tab = new bootstrap.Tab(document.querySelector("#btnTabInventarioReporte"));
+			setTimeout(() => {
+				$(document).off("click", "#btnImprimir").on("click", "#btnImprimir", ControlaImprRepoValorDetalle);
+			}, 300);
+			tab.show();
+			$("#btnImprimir").show();
+			CerrarWaiting();
+			return true
+		});
+	}
+}
 
 function CargarTabRepoConteoPorUsu() {
 	if (usuarioSeleccionado() == "") {
@@ -163,6 +186,35 @@ function CargarTabRepoValorPorSec() {
 			$("#btnImprimir").show();
 			CerrarWaiting();
 			return true
+		});
+	}
+}
+
+function ControlaImprRepoValorDetalle() {
+	var filas = $("#tbGridInvValorDetalle tbody tr[data-registro]").length;
+	if (filas == 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos para imprimir.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Imprimiendo listado...");
+		var tipoReporte = 4;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				CerrarWaiting();
+				ImpimirRepoValorDetalle();
+			}
 		});
 	}
 }
@@ -252,6 +304,16 @@ function ControlaImprRepoValorPorSec() {
 			}
 		});
 	}
+}
+
+function ImpimirRepoValorDetalle() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var inv_nro = invNroSeleccionado;
+		var data = { inv_nro };
+		cargarReporteEnArre(60, data, "VALORIZADO DETALLE", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function ImpimirRepoConteosPorUsu() {

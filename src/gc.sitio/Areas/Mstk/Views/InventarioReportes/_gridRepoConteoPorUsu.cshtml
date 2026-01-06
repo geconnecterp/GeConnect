@@ -77,6 +77,7 @@
 		<tbody>
 			@if (Model != null && Model.GrillaRepoConteosPorUsu != null && Model.GrillaRepoConteosPorUsu.ListaDatos != null && Model.GrillaRepoConteosPorUsu.ListaDatos.Count > 0)
 			{
+
 				@foreach (var item in Model.GrillaRepoConteosPorUsu.ListaDatos)
 				{
 					grupoActual = item.carga_nro.ToString();
