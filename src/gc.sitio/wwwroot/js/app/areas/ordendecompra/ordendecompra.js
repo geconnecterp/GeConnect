@@ -742,21 +742,28 @@ function addTxtSemanasKeyUpHandler() {
 
 function selectListaProductoRow(x, event) {
 	if (event.target.closest('.no-propagar')) {
-		return; // El clic fue en un botón, no seleccionar la fila
+		return;
 	}
 	if (x) {
 		pIdSeleccionado = x.cells[0].innerText.trim();
-		/* ######	INICIO Componente de info adicional de producto ###### */
-		// disparar evento custom con datos del producto
-		$(document).trigger("productoSeleccionadoParaInfoAdicional", {
-			p_id: pIdSeleccionado,
-			ctaId: "",
-			ctaDeno: ""
-		});
-		/* ######	FIN Componente de info adicional de producto ###### */
-		//setTimeout(function () {
-		//	BuscarInfoAdicional();
-		//}, 500);
+		const el = document.getElementById("divInfo");
+		
+		if (!el || el.style.display === "none") {
+			return;
+		}
+		else {
+			/* ######	INICIO Componente de info adicional de producto ###### */
+			// disparar evento custom con datos del producto
+			$(document).trigger("productoSeleccionadoParaInfoAdicional", {
+				p_id: pIdSeleccionado,
+				ctaId: "",
+				ctaDeno: ""
+			});
+			/* ######	FIN Componente de info adicional de producto ###### */
+			//setTimeout(function () {
+			//	BuscarInfoAdicional();
+			//}, 500);
+		}
 	}
 	else {
 		pIdSeleccionado = "";
@@ -967,8 +974,9 @@ function BuscarProductos(pag = 1) {
 
 			if (pIdSeleccionado && pIdSeleccionado !== "") {
 				// toggle manual
-				$("#divInfoAdicionaDeProducto").collapse("toggle");
+				//$("#divInfoAdicionaDeProducto").collapse("toggle");
 
+				// 1) Cargar contenido primero
 				invocarComponenteDeInfoAdicionalDeProd({
 					p_id: pIdSeleccionado,
 					mostrarInfoProd,
@@ -980,6 +988,12 @@ function BuscarProductos(pag = 1) {
 					mostrarInfoProdStkMovS,
 					mostrarInfoProdSustituto,
 				});
+
+				// 2) Abrir el collapse recién DESPUÉS de cargar el contenido
+				//setTimeout(function () {
+				//	$("#divInfoAdicionaDeProducto").collapse("show");
+				//}, 50);
+
 			} else {
 				AbrirMensaje("ATENCIÓN", "Debe seleccionar un producto.", function () {
 					$("#msjModal").modal("hide");

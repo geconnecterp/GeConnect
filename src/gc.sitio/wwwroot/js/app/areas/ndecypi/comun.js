@@ -14,7 +14,7 @@ $(function () {
 
 		if (pIdSeleccionado && pIdSeleccionado !== "") {
 			// toggle manual
-			$("#divInfoAdicionaDeProducto").collapse("toggle");
+			//$("#divInfoAdicionaDeProducto").collapse("toggle");
 
 			// opcional: refrescar contenido si querés al abrir
 			invocarComponenteDeInfoAdicionalDeProd({
@@ -890,15 +890,22 @@ function selectListaProductoRow(x) {
 		ctaIdDeProdSeleccionado = ctaId;
 		ctaDenoProdSeleccionado = ctaDeno;
 
-		/* ######	INICIO Componente de info adicional de producto ###### */
-		//BuscarInfoAdicional();
-		// disparar evento custom con datos del producto
-		$(document).trigger("productoSeleccionadoParaInfoAdicional", {
-			p_id: id,
-			ctaId: ctaId,
-			ctaDeno: ctaDeno
-		});
-		/* ######	FIN Componente de info adicional de producto ###### */
+		const el = document.getElementById("divInfo");
+
+		if (!el || el.style.display === "none") {
+			return;
+		}
+		else {
+			/* ######	INICIO Componente de info adicional de producto ###### */
+			//BuscarInfoAdicional();
+			// disparar evento custom con datos del producto
+			$(document).trigger("productoSeleccionadoParaInfoAdicional", {
+				p_id: id,
+				ctaId: ctaId,
+				ctaDeno: ctaDeno
+			});
+			/* ######	FIN Componente de info adicional de producto ###### */
+		}
 	}
 	else {
 		pIdSeleccionado = "";

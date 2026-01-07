@@ -4,13 +4,13 @@
 	string clase = string.Empty;
 	var sucursales = Model.ComboSucursales;
 }
-<div class="row">
+<div class="row" style="max-width: 80%;">
 	<div class="input-group input-group-sm">
-		<span class="input-group-text fixed-width">Sucursal: </span>
+		<span class="input-group-text fixed-width" style="width: 20%;">Sucursal: </span>
 		@Html.DropDownListFor(m => m.selectedValue, sucursales, "Seleccionar", new { @id = "listaSucursalesD", @class = "form-control fixed-width" })
 	</div>
 </div>
-<div class="table-responsive text-nowrap table-wrapper-200-full">
+<div class="table-responsive text-nowrap table-wrapper-200-full" style="width: 75%;">
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbInfoProdStkD">
 		<thead>
 			<tr class="header">
@@ -27,7 +27,7 @@
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase" onclick="selectListaInfoProdStkD(this)">
 						<td class="align-left tiny-row">@item.Depo_nombre</td>
-						<td class="align-center tiny-row">@item.Ps_stk</td>
+						<td class="align-right tiny-row">@item.Ps_stk</td>
 						<td class="align-center tiny-row">@item.Vto?.ToString("dd/MM/yy")</td>
 					</tr>
 				}

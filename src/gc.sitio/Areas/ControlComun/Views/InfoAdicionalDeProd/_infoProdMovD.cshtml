@@ -7,9 +7,9 @@
 }
 <div class="row">
 	<div class="input-group input-group-sm">
-		<span class="input-group-text fixed-width">Deposito: </span>
+		<span class="input-group-text fixed-width" style="width: 12%;">Deposito: </span>
 		@Html.DropDownListFor(m => m.selectedValueDepos, depos, "Seleccionar", new { @id = "listaDeposMovD", @class = "form-control fixed-width" })
-		<span class="input-group-text fixed-width">TM: </span>
+		<span class="input-group-text fixed-width" style="width: 7%;">TM: </span>
 		@Html.DropDownListFor(m => m.selectedValueTM, tms, "Seleccionar", new { @id = "listaTMMovD", @class = "form-control fixed-width" })
 		<span class="input-group-text">D: </span>
 		@Html.TextBoxFor(m => m.Desde, "{0:yyyy-MM-dd}", new { @id = "txtDesde", @class = "form-control", type = "date" })

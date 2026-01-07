@@ -216,10 +216,27 @@ $(function () {
 		$("#divInfo").css("height", nuevoAlto + "%");
 	});
 
+	// Cerrar popup
+	$(document).on("click", "#btnCerrarDivInfo", function () {
+		const el = document.getElementById("divInfo");
+		if (el) el.style.display = "none";
+	});
 });
+function restoreDivInfoPosition() {
+	const el = document.getElementById("divInfo");
+	if (!el) return;
+
+	const top = localStorage.getItem("divInfo_top");
+	const left = localStorage.getItem("divInfo_left");
+
+	if (top && left) {
+		el.style.top = top;
+		el.style.left = left;
+	}
+}
+
 
 function invocarComponenteDeInfoAdicionalDeProd(p) {
-	// 1. Guardar el id del tab activo actual
 	var tabActivo = $("#divInfo .nav-link.active").data("bs-target");
 
 	pId = p.p_id;
@@ -235,6 +252,11 @@ function invocarComponenteDeInfoAdicionalDeProd(p) {
 	var data = { pId };
 	PostGenHtml(data, abrirComponenteDeInfoAdicionalDeProdUrl, function (obj) {
 		$("#divInfoAdicionaDeProducto").html(obj);
+		
+		restoreDivInfoPosition();
+		makeDivInfoDraggable();
+
+		$("#divInfoAdicionaDeProducto").collapse("show");
 
 		if (tabActivo) {
 			let boton = document.querySelector(`#divInfo .nav-link[data-bs-target='${tabActivo}']`);
@@ -303,14 +325,10 @@ function invocarComponenteDeInfoAdicionalDeProd(p) {
 		if (mostrarInfoProdStkMovD) {
 			var depId = "%";
 			var tmId = "%";
-			// fecha de hoy
 			var hoy = new Date();
 
-			// fecha 30 días atrás
 			var hace30dias = new Date();
 			hace30dias.setDate(hoy.getDate() - 30);
-
-			// formatear a string (ejemplo: yyyy-MM-dd)
 			function formatDate(d) {
 				let yyyy = d.getFullYear();
 				let mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -331,7 +349,7 @@ function invocarComponenteDeInfoAdicionalDeProd(p) {
 		}
 		if (mostrarInfoProdSustituto) {
 			var tipo = tipoDeOperacion;
-			var soloProv = true; //Valor por default
+			var soloProv = true;
 			var datos = { pId, tipo, soloProv }
 			PostGenHtml(datos, BuscarInfoProdSustitutoURL, function (obj) {
 				$("#divSus").html(obj);
@@ -340,7 +358,6 @@ function invocarComponenteDeInfoAdicionalDeProd(p) {
 				return true
 			});
 		}
-
 	});
 }
 
@@ -373,4 +390,52 @@ function selectListaInfoProdStkA(x) {
 function selectListaInfoProdSustituto(x) {
 }
 function selectListaInfoProdMovD(x) {
+}
+
+function makeDivInfoDraggable() {
+	const el = document.getElementById("divInfo");
+	if (!el) return;
+
+	let posX = 0, posY = 0, mouseX = 0, mouseY = 0;
+
+	// Usamos la barra de tabs como “handler”
+	//const header = el.querySelector(".nav-tabs");
+	//const dragHandle = header || el;
+	const dragHandle = document.getElementById("divInfoHeader");
+
+	dragHandle.style.cursor = "move";
+
+	dragHandle.onmousedown = dragMouseDown;
+
+	function dragMouseDown(e) {
+		e.preventDefault();
+
+		mouseX = e.clientX;
+		mouseY = e.clientY;
+
+		document.onmouseup = closeDragElement;
+		document.onmousemove = elementDrag;
+	}
+
+	function elementDrag(e) {
+		e.preventDefault();
+
+		posX = mouseX - e.clientX;
+		posY = mouseY - e.clientY;
+
+		mouseX = e.clientX;
+		mouseY = e.clientY;
+
+		el.style.top = (el.offsetTop - posY) + "px";
+		el.style.left = (el.offsetLeft - posX) + "px";
+
+		// Guardamos posición en localStorage
+		localStorage.setItem("divInfo_top", el.style.top);
+		localStorage.setItem("divInfo_left", el.style.left);
+	}
+
+	function closeDragElement() {
+		document.onmouseup = null;
+		document.onmousemove = null;
+	}
 }
