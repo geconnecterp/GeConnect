@@ -2144,7 +2144,39 @@ function cargaEventosCP() {
         }
     });
 
-    
+    //****** Rubros    * /
+    $(document).off("change.addRel02Item").on("change.addRel02Item", "select#Rel02", function () {
+        const $origen = $(this);
+        const $destino = $("#Rel02List");
+        const $seleccionadas = $origen.find("option:selected");
+        if ($seleccionadas.length === 0) return;
+
+        let huboCambios = false;
+
+        $seleccionadas.each(function () {
+            const val = this.value;
+            const txt = this.text;
+            if (!val) return;
+
+            const existe = $destino.find("option[value='" + $.escapeSelector(val) + "']").length > 0;
+            if (!existe) {
+                $destino.append($("<option></option>").val(val).text(txt));
+                huboCambios = true;
+            }
+        });
+
+        if (huboCambios) {
+            if ($.fn.selectpicker && $destino.hasClass("selectpicker")) {
+                $destino.selectpicker("refresh");
+            }
+            $destino.trigger("change");
+        }
+
+        $origen.val("");
+        if ($.fn.selectpicker && $origen.hasClass("selectpicker")) {
+            $origen.selectpicker("refresh");
+        }
+    });
 
 
     // Evento para Rel03

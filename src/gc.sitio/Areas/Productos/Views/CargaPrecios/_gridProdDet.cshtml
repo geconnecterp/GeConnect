@@ -108,12 +108,12 @@
                                         <input type="checkbox" class="form-check-input check-producto" data-p-id="@item.p_id">
                                     </div>
                                 </td>
-                                <td class="@Model.ObtenerClase(item.p_id)">@Model.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
+                                <td class="@Model.ObtenerClase('c')">@Model.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
                                 <td class="@Model.ObtenerClase(item.p_desc)" title="@Model.FormatearDato(item.p_desc, FormatDato.Ninguno)">
                                     @Model.FormatearDato(item.p_desc, FormatDato.Ninguno)
                                 </td>
 
-                                <td class="@Model.ObtenerClase(item.p_id_prov)">@Model.FormatearDato(item.p_id_prov, FormatDato.Ninguno)</td>
+                                <td class="@Model.ObtenerClase('c')">@Model.FormatearDato(item.p_id_prov, FormatDato.Ninguno)</td>
                                 <td class="@Model.ObtenerClase(item.p_id_barrado)">@Model.FormatearDato(item.p_id_barrado, FormatDato.Ninguno)</td>
                                 <td class="@Model.ObtenerClase(item.tp_plista)">
                                     <div class="input-container">
