@@ -23,7 +23,7 @@ $(function () {
 		console.log("Vista abierta desde Index con:", pId, ctaId, ctaDenominacion);
 		// acá podés disparar lógica adicional
 		// cargarVistaParcial(pId, ctaId);
-		BuscarProductosDesdeNCPI(1, pId, ctaId, ctaDenominacion);
+		BuscarProductosDesdeNCPI(1, pId, ctaId, ctaDenominacion, false);
 	} else {
 		console.warn("pId o ctaId no son válidos:", pId, ctaId);
 	}
@@ -1007,13 +1007,17 @@ function BuscarProductos(pag = 1) {
 	});
 }
 
-function BuscarProductosDesdeNCPI(pag = 1, pId, ctaId, ctaDeno) {
+function BuscarProductosDesdeNCPI(pag = 1, pId, ctaId, ctaDeno, SoloProductoSeleccionado = true) {
 	viendeDesdeBusquedaDeProducto = true;
 	AbrirWaiting();
 	var Tipo = tipoDeOperacion;
 	var Buscar = ""
-	var Id = pId;
-	var Id2 = pId;
+	var Id = "";
+	var Id2 = "";
+	if (SoloProductoSeleccionado) {
+		Id = pId;
+		Id2 = pId;
+	}
 	var Rel01 = [];
 	var Rel02 = [];
 	var Rel03 = [];

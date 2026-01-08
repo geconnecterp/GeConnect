@@ -1,4 +1,5 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Almacen;
 using gc.sitio.Controllers;
 using Microsoft.Extensions.Options;
@@ -30,7 +31,42 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var valor = JsonConvert.SerializeObject(value);
 				_context.HttpContext?.Session.SetString("ListaProductoNCPI", valor);
 			}
+		}
 
+		public List<AdministracionDto> ListaSucursales
+		{
+			get
+			{
+				var txt = _context.HttpContext?.Session.GetString("ListaSucursales");
+				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+				{
+					return new List<AdministracionDto>();
+				}
+				return JsonConvert.DeserializeObject<List<AdministracionDto>>(txt) ?? [];
+			}
+			set
+			{
+				var valor = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ListaSucursales", valor);
+			}
+		}
+
+		public List<DepositoDto> ListaDepositos
+		{
+			get
+			{
+				var txt = _context.HttpContext?.Session.GetString("ListaDepositos");
+				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+				{
+					return new List<DepositoDto>();
+				}
+				return JsonConvert.DeserializeObject<List<DepositoDto>>(txt) ?? [];
+			}
+			set
+			{
+				var valor = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ListaDepositos", valor);
+			}
 		}
 	}
 }

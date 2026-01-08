@@ -405,15 +405,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 				prod.pedido_tipo = "M"; //Manual
 				ListaProductoNCPI = listaTemp;
 
-				return Json(new { 
-					error = false, 
-					warn = false, 
-					msg = string.Empty, 
-					unidadPres = item.unidad_pres, 
-					pCosto = item.p_pcosto, 
-					bulto = item.bultos, 
-					cantidad = item.cantidad, 
-					pallet = item.pallet, 
+				return Json(new
+				{
+					error = false,
+					warn = false,
+					msg = string.Empty,
+					unidadPres = item.unidad_pres,
+					pCosto = item.p_pcosto,
+					bulto = item.bultos,
+					cantidad = item.cantidad,
+					pallet = item.pallet,
 					pCostoTotal = item.p_pcosto * item.cantidad,
 					pedidoTipo = "M"
 				});
@@ -569,19 +570,25 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				var depositos = _depositoServicio.ObtenerDepositosDeAdministracion("%", TokenCookie);
 				if (depositos != null && depositos.Count > 0)
+				{
+					ListaDepositos = depositos;
 					model.ListaDepositos = ObtenerListaDepositos(depositos);
+				}
 				else
+				{
+					ListaDepositos = [];
 					model.ListaDepositos = HelperMvc<ComboGenDto>.ListaGenerica([]);
+				}
 
 				var sucursales = _administracionServicio.ObtenerAdministraciones("S", TokenCookie);
 				if (sucursales != null && sucursales.Count > 0)
 				{
-					//model.ListaDepositos = ObtenerLista(canales.ListaEntidad);
+					ListaSucursales = sucursales;
 					model.ListaSucursales = ObtenerLista(sucursales);
 				}
 				else
 				{
-					//model.ListaDepositos = HelperMvc<ComboGenDto>.ListaGenerica([]);
+					ListaSucursales = [];
 					model.ListaSucursales = HelperMvc<ComboGenDto>.ListaGenerica([]);
 				}
 
@@ -601,6 +608,28 @@ namespace gc.sitio.Areas.Compras.Controllers
 					Mensaje = ex.Message
 				};
 				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public JsonResult ValidarPertenenciaDeDepositoEnSucursal(string depoId, List<string> sucuId)
+		{
+			try
+			{
+				if (string.IsNullOrWhiteSpace(depoId))
+					return Json(new { error = true, warn = false, msg = "Debe seleccionar un depósito.", puedoAgregar = false });
+				if (sucuId == null || sucuId.Count <= 0)
+					return Json(new { error = false, warn = false, msg = "", puedoAgregar = true });
+				var deposito = ListaDepositos.Where(x => x.Depo_Id == depoId).FirstOrDefault();
+				if (deposito == null)
+					return Json(new { error = true, warn = false, msg = "El depósito seleccionado no es válido.", puedoAgregar = false });
+				if (sucuId.Contains(deposito.Adm_Id))
+					return Json(new { error = false, warn = false, msg = "", puedoAgregar = true });
+				else
+					return Json(new { error = true, warn = false, msg = "El deposito seleccionado no pertence a la sucursal que ha incluido.", puedoAgregar = false });
+			}
+			catch (Exception)
+			{
+				return Json(new { error = true, warn = false, msg = "Se ha producido un error al intentar validar el depósito seleccionado." });
 			}
 		}
 

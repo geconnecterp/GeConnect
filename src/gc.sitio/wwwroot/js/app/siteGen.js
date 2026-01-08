@@ -1139,14 +1139,12 @@ function extraerValoresDeSelect(selectId, fallbackId, checkId) {
 //  Task Manager Reutilizable
 // ===============================
 
-const TaskManager = (function () {
+window.TaskManager = window.TaskManager || (function () {
 
     let pending = 0;
 
     function start() {
-        if (pending === 0) {
-            AbrirWaiting(); // tu spinner
-        }
+        if (pending === 0) AbrirWaiting();
         pending++;
     }
 
@@ -1154,7 +1152,7 @@ const TaskManager = (function () {
         pending--;
         if (pending <= 0) {
             pending = 0;
-            CerrarWaiting(); // tu spinner
+            CerrarWaiting();
         }
     }
 
@@ -1162,10 +1160,7 @@ const TaskManager = (function () {
         return pending;
     }
 
-    return {
-        start,
-        end,
-        getPending
-    };
+    return { start, end, getPending };
 
 })();
+

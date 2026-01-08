@@ -479,8 +479,17 @@ function inicializarCamposEnModal() {
 	$("#DepositosListModal").prop("disabled", false);
 
 	getMaskForIntegerMax1000("#DiasAprov");
-	$("#SucursalesListModal").on("dblclick", 'option', function () { $(this).remove(); })
-	$("#DepositosListModal").on("dblclick", 'option', function () { $(this).remove(); })
+	$("#SucursalesListModal").on("dblclick", 'option', function () {
+		$(this).remove();
+		//Si hay depositos, limpio la lista de depositos
+		var tieneItems = $("#DepositosListModal option").length > 0;
+		if (tieneItems) {
+			$("#DepositosListModal").empty();
+		}
+	})
+	$("#DepositosListModal").on("dblclick", 'option', function () {
+		$(this).remove();
+	})
 
 	const chkTomarUltimoPedido = document.getElementById("TomarUltimoPedido");
 	const chkLimitarCompletar = document.getElementById("LimitarPedidoACompletar");
@@ -506,11 +515,39 @@ function ControlalistaSucursalesModalSelected() {
 }
 
 function ControlalistaDepositosModalSelected() {
-	var item = $("#listaDepositosModal").val();
-	var desc = $("#listaDepositosModal option:selected").text();
-	if ($("#DepositosListModal").has('option:contains("' + item + '")').length === 0 && $("#DepositosListModal").has('option:contains("' + desc + '")').length === 0) {
-		var opc = "<option value=" + item + ">" + desc + "</option>"
-		$("#DepositosListModal").append(opc);
+	var tieneItems = $("#SucursalesListModal option").length > 0;
+	if (!tieneItems) {
+		var item = $("#listaDepositosModal").val();
+		var desc = $("#listaDepositosModal option:selected").text();
+		if ($("#DepositosListModal").has('option:contains("' + item + '")').length === 0 && $("#DepositosListModal").has('option:contains("' + desc + '")').length === 0) {
+			var opc = "<option value=" + item + ">" + desc + "</option>"
+			$("#DepositosListModal").append(opc);
+		}
+	}
+	else {
+		AbrirWaiting("Validando Deósito seleccionado...");
+		let sucuId = $("#SucursalesListModal option").map(function () {
+			return this.value;
+		}).get();
+		var depoId = $("#listaDepositosModal").val();
+		var data = { depoId, sucuId };
+		PostGen(data, validarPertenenciaDeDepositoEnSucursalUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				var item = $("#listaDepositosModal").val();
+				var desc = $("#listaDepositosModal option:selected").text();
+				if ($("#DepositosListModal").has('option:contains("' + item + '")').length === 0 && $("#DepositosListModal").has('option:contains("' + desc + '")').length === 0) {
+					var opc = "<option value=" + item + ">" + desc + "</option>"
+					$("#DepositosListModal").append(opc);
+				}
+			}
+		});
 	}
 }
 
@@ -619,77 +656,23 @@ function changeProductosDelMismoProveedor(x) {
 	});
 }
 
-function addTxtMesesKeyUpHandler() {
-	$("#txtMeses").on('keyup', function (e) {
-		if (e.keyCode == 13) {
-			BuscarInfoAdicional();
-		}
-	});
-}
-
-function addTxtSemanasKeyUpHandler() {
-	$("#txtSemanas").on('keyup', function (e) {
-		if (e.keyCode == 13) {
-			BuscarInfoAdicional();
-		}
-	});
-}
-
 function BuscarInfoAdicional() {
-	if (NoHayProdSeleccionado()) {
-		AbrirMensaje("Atención", "Debe seleccionar un producto.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "error!", null);
+	const el = document.getElementById("divInfo");
+
+	if (!el || el.style.display === "none") {
+		return;
 	}
-	AbrirWaiting();
-	var admId = $("#listaSucursales").val();
-	var meses = $("#txtMeses").val();
-	var semanas = $("#txtSemanas").val();
-	var pId = pIdSeleccionado;
-	var datos = { pId, admId, meses };
-	PostGenHtml(datos, BuscarInfoProdIExMesesURL, function (obj) {
-		$("#divInfoProdIExMeses").html(obj);
-		AddEventListenerToGrid("tbInfoProdMovMes");
-		CerrarWaiting();
-		return true
-	});
-	datos = { pId, admId, semanas };
-	PostGenHtml(datos, BuscarInfoProdIExSemanasURL, function (obj) {
-		$("#divInfoProdIExSemanas").html(obj);
-		AddEventListenerToGrid("tbInfoProdMovSem");
-		CerrarWaiting();
-		return true
-	});
-	datos = { pId, admId };
-	PostGenHtml(datos, BuscarInfoProdStkDepositoURL, function (obj) {
-		$("#divInfoProductoStkD").html(obj);
-		AddEventListenerToGrid("tbInfoProdStkD");
-		CerrarWaiting();
-		return true
-	});
-	PostGenHtml(datos, BuscarInfoProdStkSucursalURL, function (obj) {
-		$("#divInfoProductoStkA").html(obj);
-		AddEventListenerToGrid("tbInfoProdStkA");
-		CerrarWaiting();
-		return true
-	});
-	var tipo = tipoDeOperacion;
-	var soloProv = true; //Valor por default
-	datos = { pId, tipo, soloProv }
-	PostGenHtml(datos, BuscarInfoProdSustitutoURL, function (obj) {
-		$("#divInfoProdSustituto").html(obj);
-		AddEventListenerToGrid("tbListaProductoSust");
-		CerrarWaiting();
-		return true
-	});
-	datos = { pId }
-	PostGenHtml(datos, BuscarInfoProdURL, function (obj) {
-		$("#divInfoProducto").html(obj);
-		AddEventListenerToGrid("tbInfoProducto");
-		CerrarWaiting();
-		return true
-	});
+	else {
+		/* ######	INICIO Componente de info adicional de producto ###### */
+		//BuscarInfoAdicional();
+		// disparar evento custom con datos del producto
+		$(document).trigger("productoSeleccionadoParaInfoAdicional", {
+			p_id: pIdSeleccionado,
+			ctaId: "",
+			ctaDeno: ""
+		});
+		/* ######	FIN Componente de info adicional de producto ###### */
+	}
 }
 
 function InicializaPantallaNC() {
