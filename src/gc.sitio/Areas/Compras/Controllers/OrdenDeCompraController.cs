@@ -641,6 +641,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				request.Cta_Id = CtaIdSelected;
 				request.Nueva = string.IsNullOrEmpty(request.Oc_Compte);
 				request.Json = JsonConvert.SerializeObject(ListaProductosOC, new JsonSerializerSettings());
+				PrintProperties(request);
 				var respuesta = _productoServicio.ConfirmarOrdenDeCompra(request, TokenCookie).Result;
 				return AnalizarRespuesta(respuesta, "La Orden de Compra se Confirmo con Éxito");
 			}

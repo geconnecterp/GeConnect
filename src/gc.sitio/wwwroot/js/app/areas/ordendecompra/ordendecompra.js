@@ -100,14 +100,7 @@ $(function () {
 			BuscarProductos(pagina);
 		}
 	});
-	$("#btnAbmAceptar").on("click", function () {
-		ConfirmarOrdenDeCompra();
-	});
-	$("#btnCancel").on("click", function () {
-		LimpiarDatosDelFiltroInicial();
-		$("#btnFiltro").trigger("click");
-	});
-	$("#btnAbmCancelar").on("click", function () {
+	$(document).on("click", "#btnAbmCancelar", function () {
 		const filas = window.obtenerFilasGrillaOCModificadas();
 		if (filas.length !== 0) {
 			AbrirMensaje("ATENCIÓN", "Hay datos que han sido modificados, si continúan esos cambios se perderán. ¿Desea continuar?", function (e) {
@@ -151,6 +144,20 @@ $(function () {
 	$(document).on("keypress", ".inputEditable", analizaEnterInput);
 	$(document).on("change", "#listaLs02", ControlalistaRubroSelected);
 	$(document).on("change", "#listaLs03", ControlalistaFamiliaSelected);
+	$(document).on("click", "#btnAbmAceptar", function () {
+		ConfirmarOrdenDeCompra();
+	});
+	//$("#btnAbmAceptar").on("click", function () {
+	//	ConfirmarOrdenDeCompra();
+	//});
+	$(document).on("click", "#btnCancel", function () {
+		LimpiarDatosDelFiltroInicial();
+		$("#btnFiltro").trigger("click");
+	});
+	//$("#btnCancel").on("click", function () {
+	//	LimpiarDatosDelFiltroInicial();
+	//	$("#btnFiltro").trigger("click");
+	//});
 
 	$("#btnCollapseSection").on("click", btnCollapseSectionClicked);
 	$("#tabResumen").on("click", function () {
@@ -638,6 +645,7 @@ function presentaPaginacionOC(div) {
 
 /// Funcion que restaura el estado del producto en la grilla del primer Tab, luego de quitarlo de la lista de OC (segundo Tab)
 function ActualizarInfoDeProductoEnGrilla(pId) {
+	AbrirWaiting();
 	$("#tbListaProducto").find('tr').each(function (i, el) {
 		var td = $(this).find('td');
 		if (td.length > 0 && td[0].innerText !== undefined) {
@@ -649,11 +657,13 @@ function ActualizarInfoDeProductoEnGrilla(pId) {
 			}
 		}
 	});
+	CerrarWaiting();
 }
 
 /// Funcion que evalúa si el producto de la grilla del primer Tab ya esta cargado en la grilla de OC (segundo Tab), si es así cambiar el estilo del icono.
 function ActualizarInfoDeProductosEnGrilla() {
 	if ($("#tbListaProductoOC").length != 0) {
+		AbrirWaiting();
 		var idArrayOC = [];
 		$("#tbListaProductoOC").find('tr').each(function (i, el) {
 			var td = $(this).find('td');
@@ -675,6 +685,7 @@ function ActualizarInfoDeProductosEnGrilla() {
 				}
 			});
 		}
+		CerrarWaiting();
 	}
 }
 
@@ -938,7 +949,9 @@ function BuscarProductosTabOC() {
 	var ocCompte = ocIdSelected;
 	var ctaId = ctaIdSelected;
 	data = { ctaId, ocCompte }
+	AbrirWaiting();
 	PostGenHtml(data, BuscarProductosTabOCURL, function (obj) {
+		CerrarWaiting();
 		if (obj.error === true) {
 			AbrirMensaje("ATENCIÓN", obj.msg, function () {
 				$("#msjModal").modal("hide");
@@ -947,17 +960,11 @@ function BuscarProductosTabOC() {
 		}
 		else {
 			$("#divListaProductoNuevaOC").html(obj);
-			//$("#Total_Costo").val(formatter.format($("#Total_Costo").val()));
 			finalizarInicializacion();
 			formatearTotalesEnTabDetalleOC();
-			//$("#Total_Pallet").val(formatter.format($("#Total_Pallet").val()));
-			//AgregarHandlerAGrillaProdOC();
 			ActualizarInfoDeProductosEnGrilla();
 			activarBotones(true);
 			CargarResumenDeOc();
-			//setTimeout(function () {
-			//	pingARegistro();
-			//}, 100);
 		}
 	});
 }
@@ -1025,6 +1032,7 @@ function BuscarProductos(pag = 1) {
 	var data1 = { Tipo, Buscar, Id, Id2, Rel01, Rel02, Rel03, Opt1, Opt2, Opt3, Opt4, Opt5 };
 	var data = $.extend({}, data1, data2);
 	PostGenHtml(data, BuscarProductosURL, function (obj) {
+		CerrarWaiting();
 		$("#divListaProducto").html(obj);
 		$("#divDetalle").collapse("show");
 		AddEventListenerToGrid("tbListaProducto");
@@ -1085,7 +1093,8 @@ function BuscarProductos(pag = 1) {
 				}, false, ["Aceptar"], "error!", null);
 			}
 		});
-		CerrarWaiting();
+		let tab = new bootstrap.Tab(document.querySelector("#btnTabProductos"));
+		tab.show();
 		viendeDesdeBusquedaDeProducto = false;
 		return true
 	});
