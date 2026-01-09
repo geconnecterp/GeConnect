@@ -768,18 +768,23 @@ function actualizarRatioRapido(row, pvta) {
     if (celdaRatio.length === 0) return;
 
     // ✅ CALCULAR: Ratio de forma eficiente
-    let ratio = "0.00";
+    let ratio = 0.00;
     if (precioVentaOriginal > 0) {
-        ratio = (precioVentaNuevo / precioVentaOriginal).toFixed(2);
+        ratio = precioVentaNuevo / precioVentaOriginal;
     } else if (precioVentaNuevo > 0) {
-        ratio = "999.99";
+        ratio = 999.99;
     }
 
+    // Truncar a 2 decimales (sin redondear)
+    let ratioTruncado = Math.floor(ratio * 100) / 100;
+    // Mostrar en vista con 2 decimales como texto
+    let ratioTexto = ratioTruncado.toFixed(2);
+
     // ✅ ACTUALIZAR: Sin animaciones costosas
-    celdaRatio.text(ratio);
+    celdaRatio.text(ratioTexto);
 
     // ✅ APLICAR: Estilo de forma eficiente
-    const ratioNum = parseFloat(ratio);
+    const ratioNum = ratio;
     if (ratioNum > 1) {
         celdaRatio.css({ 'color': 'blue', 'font-weight': 'bold' });
     } else if (ratioNum < 1) {
@@ -1593,14 +1598,24 @@ function actualizarRatio(row, pvta) {
     if (celdaRatio.length === 0) return;
 
     // Calcular ratio
-    let ratio = precioVentaOriginal > 0 ? (precioVentaNuevo / precioVentaOriginal).toFixed(2) :
-        (precioVentaNuevo > 0 ? "999.99" : "0.00");
+    let ratio = 0.00;
+
+    if (precioVentaOriginal > 0) {
+        ratio = precioVentaNuevo / precioVentaOriginal;
+    } else if (precioVentaNuevo > 0) {
+        ratio = 999.99;
+    }
+
+    // Truncar a 2 decimales (sin redondear)
+    let ratioTruncado = Math.floor(ratio * 100) / 100;
+    // Mostrar en vista con 2 decimales como texto
+    let ratioTexto = ratioTruncado.toFixed(2);
 
     // Actualizar celda
-    celdaRatio.text(ratio);
+    celdaRatio.text(ratioTexto);
 
     // Aplicar estilo
-    const ratioNum = parseFloat(ratio);
+    const ratioNum = ratio;
     if (ratioNum > 1) {
         celdaRatio.css({
             'color': 'blue',

@@ -11,6 +11,31 @@
     string familiaAnterior = string.Empty;
 }
 
+@functions {
+    public string GeneraStyle(decimal ratioNum)
+    {
+        if (ratioNum > 1)
+            return "color: blue; font-weight: bold;";
+        else if (ratioNum < 1)
+            return "color: red; font-weight: bold;";
+        else
+            return "color: black; font-weight: normal;";
+    }
+    // public int GetColspan(PrecioListaDetalleDto reg)
+    // {
+    //     if (reg == null) return 0;
+
+    //     var colspan = 0;
+
+    //     if (!string.IsNullOrEmpty(reg.lp_desc1)) colspan++;
+    //     if (!string.IsNullOrEmpty(reg.lp_desc2)) colspan++;
+    //     if (!string.IsNullOrEmpty(reg.lp_desc3)) colspan++;
+    //     if (!string.IsNullOrEmpty(reg.lp_desc4)) colspan++;
+
+    //     return colspan;
+    // }
+}
+
 
 
 <div class="grid-golden">
@@ -95,7 +120,9 @@
                                 alt = true; // Reiniciar alternancia de colores después de cada familia
                             }
                             decimal re = 0M;
-                            if (item.p_pvta > 0) { re = Math.Round(item.tp_pvta / item.p_pvta, 2); }
+                            if (item.p_pvta > 0) { re = Math.Round(item.tp_pvta / item.p_pvta, 2); 
+                                
+                            }
                             if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
 
                             // Verificar si estamos en modo de carga temporal
@@ -242,7 +269,8 @@
                                         @Html.Hidden("tp_in", item.tp_in)
                                     </div>
                                 </td>
-                                <td class="@Model.ObtenerClase(item.p_pvta) tdRe">@Model.FormatearDato(re, FormatDato.Monto)</td>
+                                
+                                <td class="@Model.ObtenerClase(item.p_pvta) tdRe" style="@GeneraStyle(re)">@Model.FormatearDato(re, FormatDato.Monto)</td>
                             </tr>
                         }
                     }
