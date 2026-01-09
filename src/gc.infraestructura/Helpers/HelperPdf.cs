@@ -1774,7 +1774,7 @@ namespace gc.infraestructura.Helpers
 		{
 			List<string> _campos = ["pCodigo", "pNombre", "codProv", "pLista", "dto1", "dto2", "dto3", "dto4", "dtoPago", "bxp", "cant", "bonif", "pCosto", "cTotal", "total",];
 			List<string> _titulosTabla = ["Cód.", "Producto", "Cód. Prov.", "P. Lista", "Dto1", "Dto2", "Dto3", "Dto4", "Dto Pago", "B x P", "Cant.", "Bonif.", "P. Costo", "Cant. Total", "Total",];
-			float[] _anchosTitulosTabla = [5f, 30f, 5f, 5f, 5f, 5f, 5f, 5f, 5f, 5f, 5f, 5f, 5f, 5f, 5f];
+			float[] _anchosTitulosTabla = [5f, 25f, 5f, 6f, 5f, 5f, 5f, 5f, 5f, 5f, 5f, 5f, 6f, 5f, 8f];
 			PdfPTable tablaTitulo = GeneraTabla(1, [100f], 100, 10, 0);
 
 			// FILA 1
