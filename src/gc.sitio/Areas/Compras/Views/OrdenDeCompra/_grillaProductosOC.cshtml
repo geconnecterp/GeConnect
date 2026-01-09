@@ -14,7 +14,6 @@
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbListaProductoOC">
 		<thead>
 			<tr class="header">
-				@* <th><input name="select_all" value="1" type="checkbox"></th> *@
 				<th scope="col" class="check-column">
 					<div class="check-producto-container">
 						<input class="form-check-input" type="checkbox" id="checkAllProd" title="Seleccionar todos">
@@ -63,15 +62,15 @@
 								<input type="checkbox" class="form-check-input check-producto" data-p-id="@item.P_Id">
 							</div>
 						</td>
-						<td class="@Model.ListaOC.ObtenerClase(item.P_Id)">@Model.ListaOC.FormatearDato(item.P_Id, FormatDato.Ninguno)</td> @*01*@
-						<td class="@Model.ListaOC.ObtenerClase(item.P_Desc)" title="@Model.ListaOC.FormatearDato(item.P_Desc, FormatDato.Ninguno)">@*02*@
+						<td class="@Model.ListaOC.ObtenerClase(item.P_Id)">@Model.ListaOC.FormatearDato(item.P_Id, FormatDato.Ninguno)</td> 
+						<td class="@Model.ListaOC.ObtenerClase(item.P_Desc)" title="@Model.ListaOC.FormatearDato(item.P_Desc, FormatDato.Ninguno)">
 							@Model.ListaOC.FormatearDato(item.P_Desc, FormatDato.Ninguno)
 						</td> 
-						<td class="@Model.ListaOC.ObtenerClase(item.P_Id_Prov)">@Model.ListaOC.FormatearDato(item.P_Id_Prov, FormatDato.Ninguno)</td> @*03*@
-						<td class="@Model.ListaOC.ObtenerClase(item.Stk_Suc)">@Model.ListaOC.FormatearDato(item.Stk_Suc, FormatDato.Ninguno)</td> @*04*@
-						<td class="@Model.ListaOC.ObtenerClase(item.Stk)">@Model.ListaOC.FormatearDato(item.Stk, FormatDato.Ninguno)</td> @*05*@
-						<td class="@Model.ListaOC.ObtenerClase(item.P_Unidad_Pres)">@Model.ListaOC.FormatearDato(item.P_Unidad_Pres, FormatDato.Ninguno)</td> @*06*@
-						<td class="@Model.ListaOC.ObtenerClase(item.Bultos)">@*07*@
+						<td class="@Model.ListaOC.ObtenerClase(item.P_Id_Prov)">@Model.ListaOC.FormatearDato(item.P_Id_Prov, FormatDato.Ninguno)</td> 
+						<td class="@Model.ListaOC.ObtenerClase(item.Stk_Suc)">@Model.ListaOC.FormatearDato(item.Stk_Suc, FormatDato.Ninguno)</td> 
+						<td class="@Model.ListaOC.ObtenerClase(item.Stk)">@Model.ListaOC.FormatearDato(item.Stk, FormatDato.Ninguno)</td> 
+						<td class="@Model.ListaOC.ObtenerClase(item.P_Unidad_Pres)">@Model.ListaOC.FormatearDato(item.P_Unidad_Pres, FormatDato.Ninguno)</td> 
+						<td class="@Model.ListaOC.ObtenerClase(item.Bultos)">
 							<div class="input-container">
 								<input type="text" class="form-control form-control-sm input-bultos input-numeric"
 									   value="@(item.Bultos.ToString())"
@@ -80,8 +79,8 @@
 									   data-original-value="@(item.Bultos)" />
 							</div>
 						</td>
-						<td class="@Model.ListaOC.ObtenerClase(item.Cantidad)">@Model.ListaOC.FormatearDato(item.Cantidad.ToString("F3"), FormatDato.Ninguno)</td> @*08*@
-						<td class="@Model.ListaOC.ObtenerClase(item.P_Plista)">@*09*@
+						<td class="@Model.ListaOC.ObtenerClase(item.Cantidad)">@Model.ListaOC.FormatearDato(item.Cantidad.ToString("F3"), FormatDato.Ninguno)</td> 
+						<td class="@Model.ListaOC.ObtenerClase(item.P_Plista)">
 							<div class="input-container">
 								<input type="text" class="form-control form-control-sm input-p_plista input-numeric"
 									   value="@(item.P_Plista.ToString("F3"))"
@@ -90,7 +89,7 @@
 									   data-original-value="@(item.P_Plista)" />
 							</div>
 						</td>
-						<td class="@Model.ListaOC.ObtenerClase(item.P_Dto1)">@*10*@
+						<td class="@Model.ListaOC.ObtenerClase(item.P_Dto1)">
 							<div class="input-container">
 								<input type="text" class="form-control form-control-sm input-p_dto1 input-numeric"
 									   value="@(item.P_Dto1.ToString("F1"))"
@@ -99,7 +98,7 @@
 									   data-original-value="@item.P_Dto1" />
 							</div>
 						</td>
-						<td class="@Model.ListaOC.ObtenerClase(item.P_Dto2)">@*11*@
+						<td class="@Model.ListaOC.ObtenerClase(item.P_Dto2)">
 							<div class="input-container">
 								<input type="text" class="form-control form-control-sm input-p_dto2 input-numeric"
 									   value="@(item.P_Dto2.ToString("F1"))"
@@ -108,7 +107,7 @@
 									   data-original-value="@item.P_Dto2" />
 							</div>
 						</td>
-						<td class="@Model.ListaOC.ObtenerClase(item.P_Dto3)">@*12*@
+						<td class="@Model.ListaOC.ObtenerClase(item.P_Dto3)">
 							<div class="input-container">
 								<input type="text" class="form-control form-control-sm input-p_dto3 input-numeric"
 									   value="@(item.P_Dto3.ToString("F1"))"
@@ -117,7 +116,7 @@
 									   data-original-value="@item.P_Dto3" />
 							</div>
 						</td>
-						<td class="@Model.ListaOC.ObtenerClase(item.P_Dto4)">@*13*@
+						<td class="@Model.ListaOC.ObtenerClase(item.P_Dto4)">
 							<div class="input-container">
 								<input type="text" class="form-control form-control-sm input-p_dto4 input-numeric"
 									   value="@(item.P_Dto4.ToString("F1"))"
@@ -126,7 +125,7 @@
 									   data-original-value="@item.P_Dto4" />
 							</div>
 						</td>
-						<td class="@Model.ListaOC.ObtenerClase(item.P_Dto_Pa)">@*14*@
+						<td class="@Model.ListaOC.ObtenerClase(item.P_Dto_Pa)">
 							<div class="input-container">
 								<input type="text" class="form-control form-control-sm input-p_dto_pa input-numeric"
 									   value="@(item.P_Dto_Pa.ToString("F1"))"
@@ -139,7 +138,7 @@
 							bool resBoni = item.P_Boni?.Trim().Equals("0") ?? false;
 							string bonificacionMostrada = resBoni ? "" : Model.ListaOC.FormatearDato(item.P_Boni, FormatDato.Ninguno);
 						}
-						<td class="@Model.ListaOC.ObtenerClase('c')">@*15*@
+						<td class="@Model.ListaOC.ObtenerClase('c')">
 							<div class="input-container">
 								<input type="text" class="form-control form-control-sm input-p_boni"
 									   value="@bonificacionMostrada"
@@ -157,7 +156,7 @@
 							<a class="btn btn-xs btn-danger" data-interaction="@item.P_Id" onclick="quitarProductoEnOC(this);">
 								<i class="bx bxs-trash" style="line-height: 1.0;font-size: 1rem;"></i>
 							</a>
-						</td> @*20*@
+						</td>
 					</tr>
 				}
 			}
@@ -328,5 +327,19 @@
 				});
 				return productosSeleccionados;
 			};
+
+			window.obtenerFilasGrillaOCModificadas = function () {
+				const filas = new Set();
+
+				$(".campo-modificado").each(function () {
+					const fila = $(this).closest("tr");
+					if (fila.length) {
+						filas.add(fila[0]); // guardamos el elemento DOM
+					}
+				});
+
+				return Array.from(filas); // devolvemos un array limpio
+			};
+
 		});
 </script>

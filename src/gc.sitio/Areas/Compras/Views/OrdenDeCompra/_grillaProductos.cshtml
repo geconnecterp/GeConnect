@@ -14,20 +14,20 @@
 	}
 </style>
 <div class="table-responsive table-wrapper-400-full-width" id="containerListaProducto">
-	<table class="table table-bordered table-hover table-golden" id="tbListaProducto">
+	<table class="table table-sm mb-0 table-hover table-golden" id="tbListaProducto">
 		<thead>
 			<tr class="header">
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Código</th>
-				<th style="width:20%;" class="col-header-small align-center tiny-row">Descripción</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Cod. Prov</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">PI Pend</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">OC Pend</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Stock Suc</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Stock Tot</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Unidad Pres.</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Unidad Pallet</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Precio Costo</th>
-				<th style="width:0.1%;" class="col-header-small align-center tiny-row">Carro</th>
+				<th style="width:5%;" scope="col">Código</th>
+				<th style="width:20%;" scope="col">Descripción</th>
+				<th style="width:5%;" scope="col">Cod. Prov</th>
+				<th style="width:5%;" scope="col">PI Pend</th>
+				<th style="width:5%;" scope="col">OC Pend</th>
+				<th style="width:5%;" scope="col">Stock Suc</th>
+				<th style="width:5%;" scope="col">Stock Tot</th>
+				<th style="width:5%;" scope="col">Unidad Pres.</th>
+				<th style="width:5%;" scope="col">Unidad Pallet</th>
+				<th style="width:5%;" scope="col">Precio Costo</th>
+				<th style="width:2%;" scope="col"></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -37,29 +37,24 @@
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					var nombre = "a" + item.p_id;
-					switch (item.p_activo)
-					{
-						case "N":
-							color = EstadoColor.NoActivo;
-							break;
-						case "D":
-							color = EstadoColor.Discontinuo;
-							break;
-						default:
-							color = EstadoColor.Activo;
-							break;
-					}
 					<tr class="@clase" onclick="selectListaProductoRow(this, event)">
-						<td class="align-center tiny-row" style="border-left: 5px solid @color;text-align: left;">@item.p_id</td>
-						<td class="align-left tiny-row" style="text-overflow:ellipsis;">@item.p_desc</td>
-						<td class="align-center tiny-row">@item.p_id_prov</td>
+						<td class="@Model.grillaDatos.ObtenerClase(item.p_id) align-center">@item.p_id</td>
+						@if (item.p_activo == "D")
+						{
+							<td class="@Model.grillaDatos.ObtenerClase(item.p_desc)">@item.p_desc<span style="float:right;" title="Producto discontínuo"><i class="bx bx-dislike"></i></span></td>
+						}
+						else
+						{
+							<td class="@Model.grillaDatos.ObtenerClase(item.p_desc)">@item.p_desc</td>
+						}
+						<td class="@Model.grillaDatos.ObtenerClase(item.p_id_prov) align-center">@item.p_id_prov</td>
 						@if (item.pi_pendiente == 0)
 						{
 							<td class="align-right tiny-row"></td>
 						}
 						else
 						{
-							<td class="align-right tiny-row" style="font-weight:bold;">@item.pi_pendiente</td>
+							<td class="@Model.grillaDatos.ObtenerClase(item.pi_pendiente)" style="font-weight:bold;">@item.pi_pendiente</td>
 						}
 						@if (item.oc_pendiente == 0)
 						{
@@ -67,13 +62,13 @@
 						}
 						else
 						{
-							<td class="align-right tiny-row" style="font-weight:bold;">@item.oc_pendiente</td>
+							<td class="@Model.grillaDatos.ObtenerClase(item.oc_pendiente)" style="font-weight:bold;">@item.oc_pendiente</td>
 						}
-						<td class="align-right tiny-row">@item.stk_suc</td>
-						<td class="align-right tiny-row">@item.stk</td>
-						<td class="align-right tiny-row">@item.p_unidad_pres</td>
-						<td class="align-right tiny-row">@item.p_unidad_palet</td>
-						<td class="align-right tiny-row">@item.costo</td>
+						<td class="@Model.grillaDatos.ObtenerClase(item.stk_suc)">@item.stk_suc</td>
+						<td class="@Model.grillaDatos.ObtenerClase(item.stk)">@item.stk</td>
+						<td class="@Model.grillaDatos.ObtenerClase(item.p_unidad_pres)">@item.p_unidad_pres</td>
+						<td class="@Model.grillaDatos.ObtenerClase(item.p_unidad_palet)">@item.p_unidad_palet</td>
+						<td class="@Model.grillaDatos.ObtenerClase(item.costo)">@item.costo</td>
 						@if (item.p_activo == "D")
 						{
 							<td>

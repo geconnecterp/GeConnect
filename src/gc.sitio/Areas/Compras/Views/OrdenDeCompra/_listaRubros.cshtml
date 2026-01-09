@@ -1,0 +1,14 @@
+﻿@model ListaRubroModel
+@{
+	var lst = Model.ListaRubros;
+}
+<div class="input-group input-group-sm">
+	<span class="input-group-text">Nombre</span>
+	@Html.DropDownListFor(m => m.selectedValue, lst, "Seleccionar", new { @id = "listaLs02", @class = "form-control inputEditable activable" })
+</div>
+
+@section scripts {
+	<script type="text/javascript">
+	</script>
+	<script src="~/js/app/areas/ndecypi/nc.js"></script>
+}

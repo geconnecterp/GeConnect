@@ -530,7 +530,8 @@
         @*---------------------------BUSQUEDA DE FAMILIAS---------------------------*@
         @if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA) ||
                 Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA) ||
-                Model.Modelo.Equals(ModeloFilter.NECESIDADES_COMPRA))
+                Model.Modelo.Equals(ModeloFilter.NECESIDADES_COMPRA) ||
+                Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA))
         {
             var list = new List<ComboGenDto>();
             var ls03 = new SelectList(list, "Id", "Descripcion");
@@ -606,7 +607,8 @@
         @*---------------------------BUSQUEDA DE RUBROS---------------------------*@
         @if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA) ||
                 Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA) ||
-                Model.Modelo.Equals(ModeloFilter.NECESIDADES_COMPRA))
+                Model.Modelo.Equals(ModeloFilter.NECESIDADES_COMPRA) ||
+                Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA))
         {
             var list = new List<ComboGenDto>();
             var ls02 = new SelectList(list, "Id", "Descripcion");
@@ -621,12 +623,24 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-4 col-sm-6" id="divLs02">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text">Nombre</span>
-                        @Html.DropDownListFor(m => m.Tipo, ls02, "Seleccionar", new { @id = "listaLs02", disabled = "disabled", @class = "form-control inputEditable activable" })
+                @if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA))
+                {
+                    <div class="col-md-6" id="divLs02">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">Nombre</span>
+                            @Html.DropDownListFor(m => m.Tipo, ls02, "Seleccionar", new { @id = "listaLs02", disabled = "disabled", @class = "form-control inputEditable activable" })
+                        </div>
                     </div>
-                </div>
+                }
+                else
+                {
+                    <div class="col-md-4 col-sm-6" id="divLs02">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">Nombre</span>
+                            @Html.DropDownListFor(m => m.Tipo, ls02, "Seleccionar", new { @id = "listaLs02", disabled = "disabled", @class = "form-control inputEditable activable" })
+                        </div>
+                    </div>
+                }
                 <div class="col-sm-6">
                     @Html.ListBox("Rel02List", null, new { @class = "form-control", @disabled = "disabled" })
                 </div>

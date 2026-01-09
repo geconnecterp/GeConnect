@@ -156,6 +156,48 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 		#endregion
 
+		public IActionResult ObtenerProveedoresFamilia(string ctaId)
+		{
+			var model = new NDeCYPI.ProveedoresFamiliaDto();
+			try
+			{
+				model.ComboProveedoresFamilia = ComboProveedoresFamilia(ctaId, _cuentaServicio);
+				return PartialView("_listaProveedoresFamilia", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult ObtenerRubros()
+		{
+			var model = new ListaRubroModel();
+			try
+			{
+				model.ListaRubros = ComboRubros();
+				return PartialView("_listaRubros", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
 		public IActionResult BuscarProductos(NCPICargarListaDeProductos2Request request)
 		{
 			MetadataGrid metadata;
@@ -867,6 +909,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 		#endregion
 
 		#region Métodos privados
+		private SelectList ComboRubros()
+		{
+			var adms = _rubroServicio.ObtenerListaRubros("", TokenCookie);
+			var lista = adms.Select(x => new ComboGenDto { Id = x.Rub_Id, Descripcion = x.Rub_Desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
 		private SelectList ComboSucursales()
 		{
 			var adms = _adminServicio.GetAdministracionLogin();

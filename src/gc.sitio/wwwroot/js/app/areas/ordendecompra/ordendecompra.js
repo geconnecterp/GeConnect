@@ -63,7 +63,7 @@ $(function () {
 	$("input#Rel01").on("click", function () {
 		$("input#Rel01").val("");
 		$("#Rel01Item").val("");
-		$("input#Rel03").val("");
+		$("listaLs03").val("");
 		$("#Rel03Item").val("");
 		$("#Rel03List").empty();
 		$("input#Rel04").val("");
@@ -72,16 +72,16 @@ $(function () {
 		$("#chkRel03").trigger("change");
 		$("#chkRel04").prop('checked', false);
 		$("#chkRel04").trigger("change");
-		$("input#Rel03").prop("disabled", true);
+		$("listaLs03").prop("disabled", true);
 		$("input#Rel04").prop("disabled", true);
 	});
 	//elimina item de la lista
 	$("#Rel02List").on("dblclick", 'option', function () { $(this).remove(); })
 	$("#Rel03List").on("dblclick", 'option', function () { $(this).remove(); })
-	$("input#Rel03").on("click", function () {
-		$("input#Rel03").val("");
-		$("#Rel03Item").val("");
-	});
+	//$("input#Rel03").on("click", function () {
+	//	$("input#Rel03").val("");
+	//	$("#Rel03Item").val("");
+	//});
 	$("input#Rel04").on("click", function () {
 		$("input#Rel04").val("");
 		$("#Rel04Item").val("");
@@ -108,12 +108,36 @@ $(function () {
 		$("#btnFiltro").trigger("click");
 	});
 	$("#btnAbmCancelar").on("click", function () {
-		InicializarDatosEnSesion();
-		InicializaPantalla();
-		LimpiarDatosDelFiltroInicial();
-		$("#btnFiltro").trigger("click");
-		$("#btnDetalle").trigger("click");
-		$("#divDetalle").collapse("hide");
+		const filas = window.obtenerFilasGrillaOCModificadas();
+		if (filas.length !== 0) {
+			AbrirMensaje("ATENCIÓN", "Hay datos que han sido modificados, si continúan esos cambios se perderán. ¿Desea continuar?", function (e) {
+				$("#msjModal").modal("hide");
+				switch (e) {
+					case "SI": //Confirmar 
+						InicializarDatosEnSesion();
+						InicializaPantalla();
+						LimpiarDatosDelFiltroInicial();
+						$("#btnFiltro").trigger("click");
+						$("#btnDetalle").trigger("click");
+						$("#divDetalle").collapse("hide");
+						break;
+					case "NO":
+						break;
+					default: //NO
+						break;
+				}
+				return true;
+
+			}, true, ["Aceptar", "Cancelar"], "question!", null);
+		}
+		else {
+			InicializarDatosEnSesion();
+			InicializaPantalla();
+			LimpiarDatosDelFiltroInicial();
+			$("#btnFiltro").trigger("click");
+			$("#btnDetalle").trigger("click");
+			$("#divDetalle").collapse("hide");
+		}
 	});
 	funcCallBack = BuscarProductos;
 	InicializaPantalla();
@@ -125,6 +149,8 @@ $(function () {
 	$(document).on("change", "#listaOCPend", ControlaListaOcSelected);
 	$(document).on("change", "#listaSucursales", ControlaSucursalSeleccionada);
 	$(document).on("keypress", ".inputEditable", analizaEnterInput);
+	$(document).on("change", "#listaLs02", ControlalistaRubroSelected);
+	$(document).on("change", "#listaLs03", ControlalistaFamiliaSelected);
 
 	$("#btnCollapseSection").on("click", btnCollapseSectionClicked);
 	$("#tabResumen").on("click", function () {
@@ -140,8 +166,68 @@ $(function () {
 	$("#btnImprimirTemp").on("click", function () {
 		ImprimirOC_Generada("07-00000121", "C0017180");
 	});
+	$("#chkRel02").on("click", function () {
+		if ($("#chkRel02").is(":checked")) {
+			$("#listaLs02").prop("disabled", false);
+			$("#Rel02List").prop("disabled", false);
+		}
+		else {
+			$("#listaLs02").prop("disabled", true);
+			$("#Rel02List").prop("disabled", true);
+		}
+	})
+	$("#chkRel03").on("click", function () {
+		if ($("#chkRel03").is(":checked")) {
+			$("#listaLs03").prop("disabled", false);
+			$("#Rel03List").prop("disabled", false);
+		}
+		else {
+			$("#listaLs03").prop("disabled", true);
+			$("#Rel03List").prop("disabled", true);
+		}
+	})
+	CargarRubros();
 	return true;
 });
+
+function CargarFamiliaLista(id) {
+	var ctaId = id;
+	data = { ctaId };
+	PostGenHtml(data, BuscarProveedoresFamiliaURL, function (obj) {
+		$("#divLs03").html(obj);
+		CerrarWaiting();
+		return true
+	});
+}
+
+function CargarRubros() {
+	data = {};
+	PostGenHtml(data, BuscarRubrosURL, function (obj) {
+		$("#divLs02").html(obj);
+		//$("#divLs02").attr("class", "col-md-6 col-sm-6");
+		$("#listaLs02").prop("disabled", true);
+		CerrarWaiting();
+		return true
+	});
+}
+
+function ControlalistaFamiliaSelected() {
+	var item = $("#listaLs03").val();
+	var desc = $("#listaLs03 option:selected").text();
+	if ($("#Rel03List").has('option:contains("' + item + '")').length === 0 && $("#Rel03List").has('option:contains("' + desc + '")').length === 0) {
+		var opc = "<option value=" + item + ">" + desc + "</option>"
+		$("#Rel03List").append(opc);
+	}
+}
+
+function ControlalistaRubroSelected() {
+	var item = $("#listaLs02").val();
+	var desc = $("#listaLs02 option:selected").text();
+	if ($("#Rel02List").has('option:contains("' + item + '")').length === 0 && $("#Rel02List").has('option:contains("' + desc + '")').length === 0) {
+		var opc = "<option value=" + item + ">" + desc + "</option>"
+		$("#Rel02List").append(opc);
+	}
+}
 
 // Create our number formatter.
 const formatter = new Intl.NumberFormat('en-US', {
@@ -192,22 +278,20 @@ function LimpiarDatosDelFiltroInicial() {
 	$("#Rel04Item").val("");
 	$("input#Rel04").prop('disabled', true);
 
-	$("input#Rel03").val("");
-	$("#Rel03Item").val("");
+	$("#listaLs03").val("");
 	$("#Rel03List").empty();
 	$("#chkRel03").prop('checked', false);
 	$("#chkRel03").trigger("change");
-	$("input#Rel03").prop('disabled', true);
+	$("#listaLs03").prop('disabled', true);
 	$("#Rel03List").prop('disabled', true);
 	$("#chkRel03").prop('disabled', true);
 
-	$("input#Rel02").val("");
-	$("#Rel02Item").val("");
+	$("#listaLs02").val("");
 	$("#Rel02List").empty();
 	$("#chkRel02").prop('checked', false);
 	$("#chkRel02").trigger("change");
-	$("input#Rel02").prop('disabled', true);
 	$("#Rel02List").prop('disabled', true);
+	$("#listaLs02").prop('disabled', true);
 
 	$("#chk01").prop('checked', false);
 	$("#chk01").trigger("change");
@@ -1144,6 +1228,7 @@ $("#Rel01").autocomplete({
 		var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
 		$("#Rel01List").append(opc);
 		$("#chkRel03").prop("disabled", false);
+
 		CargarFamiliaLista(ui.item.id);
 		CargarOCLista(ui.item.id);
 
@@ -1212,21 +1297,21 @@ $("#Rel04").autocomplete({
 	}
 });
 
-function CargarFamiliaLista(id) {
-	var ctaId = id;
-	data = { ctaId };
-	PostGen(data, buscarFamiliaDesdeProveedorSeleccionadoUrl, function (obj) {
-		if (obj.error === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
-		}
-		else {
+//function CargarFamiliaLista(id) {
+//	var ctaId = id;
+//	data = { ctaId };
+//	PostGen(data, buscarFamiliaDesdeProveedorSeleccionadoUrl, function (obj) {
+//		if (obj.error === true) {
+//			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+//				$("#msjModal").modal("hide");
+//				return true;
+//			}, false, ["Aceptar"], "error!", null);
+//		}
+//		else {
 
-		}
-	});
-}
+//		}
+//	});
+//}
 
 function CargarOCLista(id) {
 	var ctaId = id;
