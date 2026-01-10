@@ -1,36 +1,30 @@
 ﻿@model string
 
-<div class="container-fluid">
-    <div class="card ">
-        <div class="card-header">
-            <div class="row ">
-                <div class="col-md-9" style="font-size: 0.5rem; transform: scale(0.9); transform-origin: left top;">
-                    <div class="row">
-                        <partial name="~/areas/controlcomun/views/cuenta/_ctrbuscarccv3.cshtml" model="Model" />
 
-                    </div>
-                    <div class="row">
-                        <partial name="_datosGenerales" />
-                    </div>
-
-                </div>
-                <div class="col-md-3">
-                    <div id="divProdLista">
-                        <div class="alert alert-info py-2 mb-0">
-                            <div class="d-flex align-items-center">
-                                <i class="bx bx-info-circle me-2 fs-5"></i>
-                                <small>Seleccione un producto para ver sus listas de precios</small>
-                            </div>
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <partial name="~/areas/controlcomun/views/cuenta/_ctrbuscarccv3.cshtml" model="Model" />
+        </div>
+        <div class="row ">
+            <div class="col-md-8 col-sm-6" style="font-size: 0.5rem; transform: scale(0.9); transform-origin: left top;">
+                <partial name="_datosGenerales" />
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div id="divProdLista">
+                    <div class="alert alert-info py-2 mb-0">
+                        <div class="d-flex align-items-center">
+                            <i class="bx bx-info-circle me-2 fs-5"></i>
+                            <small>Seleccione un producto para ver sus listas de precios</small>
                         </div>
                     </div>
                 </div>
             </div>
-            <!--ACA TIENEN QUE IR LAS VISTAS DE CUENTA Y DETALLE DE PISTA. TAMBIÉN GRID DE LAS LISTAS DEL PRODUCTO.-->
         </div>
-        <div class="card-body">
-            <div id="divPCP" class="row mt-2">
-
-            </div>
+        <!--ACA TIENEN QUE IR LAS VISTAS DE CUENTA Y DETALLE DE PISTA. TAMBIÉN GRID DE LAS LISTAS DEL PRODUCTO.-->
+    </div>
+    <div class="card-body" style="padding:0.2rem 1rem">
+        <div id="divPCP" class="row" >
         </div>
     </div>
 </div>

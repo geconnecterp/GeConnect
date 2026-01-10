@@ -2,35 +2,35 @@
 @{
     Layout = "~/views/shared/_Layout.cshtml";
     var filtro = new QueryFilters()
-            {
-                Rel01 = new List<string>(),
-                Rel02 = new List<string>(),
-                Rel03 = new List<ComboGenDto>(),
-                Modelo = ModeloFilter.PRODUCTO_CARGA_PRECIO,
-                Opt1 = true, //destinado a la opcion "Incluir Discontinuos"
-                Opt2 = false, //destinados a la opcion "Archivo"
-            };
+    {
+        Rel01 = new List<string>(),
+        Rel02 = new List<string>(),
+        Rel03 = new List<ComboGenDto>(),
+        Modelo = ModeloFilter.PRODUCTO_CARGA_PRECIO,
+        Opt1 = true, //destinado a la opcion "Incluir Discontinuos"
+        Opt2 = false, //destinados a la opcion "Archivo"
+    };
     //sub es el nombre de la variable sufijo para el control que presenta datos de la cuenta.
     string sub = "CPrecio";
 }
 
-@section styles{
+@section styles {
     <link rel="stylesheet" href="~/css/productocargaprecio.css" />
 }
-<div class="container">
-    <partial name="_botonera" model="filtro" />
-</div>
+
+<partial name="_botonera" model="filtro" />
+
 <div class="collapse show" id="divFiltro">
     <partial name="_filtroBase" model="filtro" />
     @Html.Hidden("pagEstado", false)
 </div>
 <div class="collapse" id="divDetalle">
-    <partial name="_n01TabsCP" model="@sub"/>
+    <partial name="_n01TabsCP" model="@sub" />
 </div>
 
 @section scripts {
     <script type="text/javascript">
-     
+
 
         var homeCPUrl = "@Url.Action("Index", "cargaprecios", new { area = "productos" })";
         var buscarProdDetUrl ="@Url.Action("ObtenerProductosDetalle", "cargaprecios", new { area = "productos" })";
@@ -39,11 +39,11 @@
         var resguardarCambiosProductoUrl = "@Url.Action("ResguardarCambiosProducto", "cargaprecios", new { area = "productos" })";
         var resguardarCambiosProductoListaUrl = "@Url.Action("ResguardarCambiosProductoLista", "cargaprecios", new { area = "productos" })";
         var confirmarPreciosTemporalesUrl = "@Url.Action("ConfirmarPreciosTemporales", "cargaprecios", new { area = "productos" })";
-        
+
         var calcularPrecioVentaBaseUrl = "@Url.Action("CalcularPrecioVentaBase", "cargaprecios", new { area = "productos" })";
         var calcularPrecioVentaMargenUrl = "@Url.Action("calcularPrecioVentaMargen", "cargaprecios", new { area = "productos" })";
         var calcularPrecioVentaLinkUrl = "@Url.Action("CalcularPrecioVentaLink", "cargaprecios", new { area = "productos" })";
-        
+
 
         var buscarFamiliaUrl = "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "cargaprecios", new { area = "productos" })";/**/
         var autoComRel01Url = "@Url.Action("BuscarProvs", "cargaprecios", new { area = "productos" })";/**/

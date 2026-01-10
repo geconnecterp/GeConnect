@@ -722,13 +722,13 @@ progress {
 }
 
 .row {
-  --bs-gutter-x: 1.625rem;
-  --bs-gutter-y: 0;
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: calc(-1 * var(--bs-gutter-y));
-  margin-right: calc(-0.5 * var(--bs-gutter-x));
-  margin-left: calc(-0.5 * var(--bs-gutter-x));
+    --bs-gutter-x: 1.625rem; /* 1.625rem;**/
+    --bs-gutter-y: 0;
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: calc(-1 * var(--bs-gutter-y));
+    margin-right: calc(-0.5 * var(--bs-gutter-x));
+    margin-left: calc(-0.5 * var(--bs-gutter-x));
 }
 .row > * {
   flex-shrink: 0;
@@ -3788,8 +3788,8 @@ textarea.form-control-lg {
 }
 
 .card {
-  --bs-card-spacer-y: 1.5rem;
-  --bs-card-spacer-x: 1.5rem;
+  --bs-card-spacer-y: 1rem;
+  --bs-card-spacer-x: 1rem;
   --bs-card-title-spacer-y: 0.875rem;
   --bs-card-title-color: #566a7f;
   --bs-card-subtitle-color: ;
@@ -3798,14 +3798,14 @@ textarea.form-control-lg {
   --bs-card-border-radius: 0.5rem;
   --bs-card-box-shadow: 0 2px 6px 0 rgba(67, 89, 113, 0.12);
   --bs-card-inner-border-radius: 0.5rem;
-  --bs-card-cap-padding-y: 1.5rem;
-  --bs-card-cap-padding-x: 1.5rem;
+  --bs-card-cap-padding-y: 0.5rem;
+  --bs-card-cap-padding-x: 0.5rem;
   --bs-card-cap-bg: transparent;
   --bs-card-cap-color: ;
   --bs-card-height: ;
   --bs-card-color: ;
   --bs-card-bg: #fff;
-  --bs-card-img-overlay-padding: 1.5rem;
+  --bs-card-img-overlay-padding: 0.5rem;
   --bs-card-group-margin: 0.8125rem;
   position: relative;
   display: flex;
