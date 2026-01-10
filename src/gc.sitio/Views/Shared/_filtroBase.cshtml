@@ -206,6 +206,8 @@
         }
 
         @*AGREGAR SECCION FECHA*@
+        
+        
         @if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA) ||
                 Model.Modelo.Equals(ModeloFilter.PRESUPUESTO) ||
                 Model.Modelo.Equals(ModeloFilter.ETIQUETA) ||
@@ -352,6 +354,8 @@
                 </div>
             </div>
         }
+        
+        
         @if (Model.Modelo.Equals(ModeloFilter.PLAN_CUENTA))
         {
             var list = new List<ComboGenDto> {
@@ -446,6 +450,7 @@
                 </div>
             }
         }
+
         @if (Model.Rel01 != null &&
                 (Model.Modelo.Equals(ModeloFilter.VALORIZACION_COMPROBANTE)))
         {
@@ -663,7 +668,8 @@
 
                 <div class="row">
                     @if (Model.Modelo.Equals(ModeloFilter.PRECIO_LISTA) ||
-                                Model.Modelo.Equals(ModeloFilter.D_IMPOSITIVO))
+                         Model.Modelo.Equals(ModeloFilter.PRODUCTO_CARGA_PRECIO) ||
+                         Model.Modelo.Equals(ModeloFilter.D_IMPOSITIVO))
                     {
                         <div class="col-md-6 col-sm-6" id="divLs02">
                             <div class="input-group input-group-sm">

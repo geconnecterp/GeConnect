@@ -1259,6 +1259,17 @@ namespace gc.sitio.Areas.Productos.Controllers
                 ObtenerRubros(_rubroServicio);
             }
 
+            var rubs = RubroLista
+                .Select(r => new ComboGenDto
+                {
+                    Id = r.Rub_Id,
+                    Descripcion = r.Rub_Id + " - " + r.Rub_Desc
+                })
+                .ToList();
+            ViewBag.Rel02 = HelperMvc<ComboGenDto>.ListaGenerica(rubs);
+            var listR01 = new List<ComboGenDto>();
+            ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR01); 
+
             ProductosDetalle = [];
             ProductosDetalleLista = [];
             ProductosDetalleTEMPORAL = [];

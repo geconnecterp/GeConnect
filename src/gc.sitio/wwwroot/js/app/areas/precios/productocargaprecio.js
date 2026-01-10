@@ -768,18 +768,23 @@ function actualizarRatioRapido(row, pvta) {
     if (celdaRatio.length === 0) return;
 
     // ✅ CALCULAR: Ratio de forma eficiente
-    let ratio = "0.00";
+    let ratio = 0.00;
     if (precioVentaOriginal > 0) {
-        ratio = (precioVentaNuevo / precioVentaOriginal).toFixed(2);
+        ratio = precioVentaNuevo / precioVentaOriginal;
     } else if (precioVentaNuevo > 0) {
-        ratio = "999.99";
+        ratio = 999.99;
     }
 
+    // Truncar a 2 decimales (sin redondear)
+    let ratioTruncado = Math.floor(ratio * 100) / 100;
+    // Mostrar en vista con 2 decimales como texto
+    let ratioTexto = ratioTruncado.toFixed(2);
+
     // ✅ ACTUALIZAR: Sin animaciones costosas
-    celdaRatio.text(ratio);
+    celdaRatio.text(ratioTexto);
 
     // ✅ APLICAR: Estilo de forma eficiente
-    const ratioNum = parseFloat(ratio);
+    const ratioNum = ratio;
     if (ratioNum > 1) {
         celdaRatio.css({ 'color': 'blue', 'font-weight': 'bold' });
     } else if (ratioNum < 1) {
@@ -1593,14 +1598,24 @@ function actualizarRatio(row, pvta) {
     if (celdaRatio.length === 0) return;
 
     // Calcular ratio
-    let ratio = precioVentaOriginal > 0 ? (precioVentaNuevo / precioVentaOriginal).toFixed(2) :
-        (precioVentaNuevo > 0 ? "999.99" : "0.00");
+    let ratio = 0.00;
+
+    if (precioVentaOriginal > 0) {
+        ratio = precioVentaNuevo / precioVentaOriginal;
+    } else if (precioVentaNuevo > 0) {
+        ratio = 999.99;
+    }
+
+    // Truncar a 2 decimales (sin redondear)
+    let ratioTruncado = Math.floor(ratio * 100) / 100;
+    // Mostrar en vista con 2 decimales como texto
+    let ratioTexto = ratioTruncado.toFixed(2);
 
     // Actualizar celda
-    celdaRatio.text(ratio);
+    celdaRatio.text(ratioTexto);
 
     // Aplicar estilo
-    const ratioNum = parseFloat(ratio);
+    const ratioNum = ratio;
     if (ratioNum > 1) {
         celdaRatio.css({
             'color': 'blue',
@@ -2144,7 +2159,39 @@ function cargaEventosCP() {
         }
     });
 
-    
+    //****** Rubros    * /
+    $(document).off("change.addRel02Item").on("change.addRel02Item", "select#Rel02", function () {
+        const $origen = $(this);
+        const $destino = $("#Rel02List");
+        const $seleccionadas = $origen.find("option:selected");
+        if ($seleccionadas.length === 0) return;
+
+        let huboCambios = false;
+
+        $seleccionadas.each(function () {
+            const val = this.value;
+            const txt = this.text;
+            if (!val) return;
+
+            const existe = $destino.find("option[value='" + $.escapeSelector(val) + "']").length > 0;
+            if (!existe) {
+                $destino.append($("<option></option>").val(val).text(txt));
+                huboCambios = true;
+            }
+        });
+
+        if (huboCambios) {
+            if ($.fn.selectpicker && $destino.hasClass("selectpicker")) {
+                $destino.selectpicker("refresh");
+            }
+            $destino.trigger("change");
+        }
+
+        $origen.val("");
+        if ($.fn.selectpicker && $origen.hasClass("selectpicker")) {
+            $origen.selectpicker("refresh");
+        }
+    });
 
 
     // Evento para Rel03

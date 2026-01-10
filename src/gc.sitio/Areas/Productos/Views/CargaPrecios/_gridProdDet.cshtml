@@ -11,7 +11,30 @@
     string familiaAnterior = string.Empty;
 }
 
+@functions {
+    public string GeneraStyle(decimal ratioNum)
+    {
+        if (ratioNum > 1)
+            return "color: blue; font-weight: bold;";
+        else if (ratioNum < 1)
+            return "color: red; font-weight: bold;";
+        else
+            return "color: black; font-weight: normal;";
+    }
+    // public int GetColspan(PrecioListaDetalleDto reg)
+    // {
+    //     if (reg == null) return 0;
 
+    //     var colspan = 0;
+
+    //     if (!string.IsNullOrEmpty(reg.lp_desc1)) colspan++;
+    //     if (!string.IsNullOrEmpty(reg.lp_desc2)) colspan++;
+    //     if (!string.IsNullOrEmpty(reg.lp_desc3)) colspan++;
+    //     if (!string.IsNullOrEmpty(reg.lp_desc4)) colspan++;
+
+    //     return colspan;
+    // }
+}
 
 <div class="grid-golden">
     <div class="grid-golden-header">
@@ -32,11 +55,10 @@
             </div>
         </div>
     </div>
-
     <div class="grid-golden-body">
         <div class="table-responsive text-nowrap table-wrapper">
             <table class="table table-sm mb-0 table-hover table-golden" id="tbProdDet">
-                <thead>
+                <thead class="sticky-top">
                     <tr class="header">
                         <!-- CORREGIDO: Columna para checkbox de seleccionar todos con mejor estructura -->
                         <th scope="col" class="check-column">
@@ -46,7 +68,7 @@
                         </th>
                         <th scope="col">Código</th>
                         <th scope="col">Descripción</th>
-                        <th scope="col">Cód.Prv</th>
+                        <th scope="col">CÓD.PROV</th>
                         <th scope="col">EAN</th>
                         <th scope="col">P.Lista</th>
                         <th scope="col">D1</th>
@@ -95,7 +117,9 @@
                                 alt = true; // Reiniciar alternancia de colores después de cada familia
                             }
                             decimal re = 0M;
-                            if (item.p_pvta > 0) { re = Math.Round(item.tp_pvta / item.p_pvta, 2); }
+                            if (item.p_pvta > 0) { re = Math.Round(item.tp_pvta / item.p_pvta, 2); 
+                                
+                            }
                             if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
 
                             // Verificar si estamos en modo de carga temporal
@@ -108,12 +132,12 @@
                                         <input type="checkbox" class="form-check-input check-producto" data-p-id="@item.p_id">
                                     </div>
                                 </td>
-                                <td class="@Model.ObtenerClase(item.p_id)">@Model.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
+                                <td class="@Model.ObtenerClase('c')">@Model.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
                                 <td class="@Model.ObtenerClase(item.p_desc)" title="@Model.FormatearDato(item.p_desc, FormatDato.Ninguno)">
                                     @Model.FormatearDato(item.p_desc, FormatDato.Ninguno)
                                 </td>
 
-                                <td class="@Model.ObtenerClase(item.p_id_prov)">@Model.FormatearDato(item.p_id_prov, FormatDato.Ninguno)</td>
+                                <td class="@Model.ObtenerClase('c')">@Model.FormatearDato(item.p_id_prov, FormatDato.Ninguno)</td>
                                 <td class="@Model.ObtenerClase(item.p_id_barrado)">@Model.FormatearDato(item.p_id_barrado, FormatDato.Ninguno)</td>
                                 <td class="@Model.ObtenerClase(item.tp_plista)">
                                     <div class="input-container">
@@ -242,7 +266,8 @@
                                         @Html.Hidden("tp_in", item.tp_in)
                                     </div>
                                 </td>
-                                <td class="@Model.ObtenerClase(item.p_pvta) tdRe">@Model.FormatearDato(re, FormatDato.Monto)</td>
+                                
+                                <td class="@Model.ObtenerClase(item.p_pvta) tdRe" style="@GeneraStyle(re)">@Model.FormatearDato(re, FormatDato.Monto)</td>
                             </tr>
                         }
                     }
