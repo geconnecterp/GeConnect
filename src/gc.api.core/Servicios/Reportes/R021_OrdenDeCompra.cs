@@ -121,6 +121,7 @@ namespace gc.api.core.Servicios.Reportes
 				anchos = [70f, 30f];
 
 				var chico = HelperPdf.FontChicoPredeterminado();
+				var chicoBold = HelperPdf.FontChicoPredeterminado(true);
 				var normal = HelperPdf.FontNormalPredeterminado();
 				var normalBold = HelperPdf.FontNormalPredeterminado(true);
 				var titulo = HelperPdf.FontTituloPredeterminado();
@@ -155,18 +156,8 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Add(linebreak);
 
 				#region Datos del Detall de la OC
-				HelperPdf.CargarTablaDatosDeDetalleEnOrdenDeCompra(pdf, registros.First(), registrosDetalle, chico, normalBold);
+				HelperPdf.CargarTablaDatosDeDetalleEnOrdenDeCompra(pdf, registros.First(), registrosDetalle, chico, chicoBold, writer);
 				#endregion
-
-				#region Datos del certificado
-				//HelperPdf.CargarTablaCertificadoIVADetalle(pdf, registros.Where(x => x.civa_base > 0).First(), subtitulo, subtituloBold, titulo);
-				#endregion
-
-				#region Firma
-				//HelperPdf.CargarSeccionFirmaParaCertificadoDeRetencion(pdf, subtitulo, normal, titulo, false, 490, 380);
-				#endregion
-
-				//HelperPdf.CargarSeccionCopiaParaCertificadoDeRetencion(pdf, writer);
 
 				pdf.Close();
 				#endregion

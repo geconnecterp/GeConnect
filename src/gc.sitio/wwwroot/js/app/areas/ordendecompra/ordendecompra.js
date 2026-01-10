@@ -171,7 +171,7 @@ $(function () {
 		$("#btnAbmAceptar").prop("disabled", true);
 	});
 	$("#btnImprimirTemp").on("click", function () {
-		ImprimirOC_Generada("07-00000121", "C0017180");
+		ImprimirOC_Generada("00-00063621", "C0017180");
 	});
 	$("#chkRel02").on("click", function () {
 		if ($("#chkRel02").is(":checked")) {

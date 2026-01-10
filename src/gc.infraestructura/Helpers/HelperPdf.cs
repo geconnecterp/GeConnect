@@ -1770,39 +1770,16 @@ namespace gc.infraestructura.Helpers
 			pdf.Add(tabla);
 		}
 
-		public static void CargarTablaDatosDeDetalleEnOrdenDeCompra(Document pdf, OrdenDeCompraDto reg, List<OrdenDeCompraDetalleDto> regs, Font fuenteEtiqueta, Font fuenteValor)
+		public static void CargarTablaDatosDeDetalleEnOrdenDeCompra(Document pdf, OrdenDeCompraDto reg, List<OrdenDeCompraDetalleDto> regs, Font fuenteValor, Font fuenteEtiqueta, PdfWriter writer)
 		{
-			List<string> _campos = ["pCodigo", "pNombre", "codProv", "pLista", "dto1", "dto2", "dto3", "dto4", "dtoPago", "bxp", "cant", "bonif", "pCosto", "cTotal", "total",];
-			List<string> _titulosTabla = ["Cód.", "Producto", "Cód. Prov.", "P. Lista", "Dto1", "Dto2", "Dto3", "Dto4", "Dto Pago", "B x P", "Cant.", "Bonif.", "P. Costo", "Cant. Total", "Total",];
-			float[] _anchosTitulosTabla = [5f, 25f, 5f, 6f, 5f, 5f, 5f, 5f, 5f, 5f, 5f, 5f, 6f, 5f, 8f];
-			PdfPTable tablaTitulo = GeneraTabla(1, [100f], 100, 10, 0);
-
-			// FILA 1
-			HelperPdf.GeneraCabeceraLista(pdf, _titulosTabla, _anchosTitulosTabla, HelperPdf.FontNormalPredeterminado(true));
-
-			// FILA 2
-			var regsAux = regs.Select(x => new
-			{
-				pCodigo = x.p_id,
-				pNombre = x.p_desc.Trim(),
-				codProv = x.p_id_prov,
-				pLista = x.ocd_plista,
-				dto1 = x.ocd_dto1,
-				dto2 = x.ocd_dto2,
-				dto3 = x.ocd_dto3,
-				dto4 = x.ocd_dto4,
-				dtoPago = x.ocd_dto_pa,
-				bxp = x.ocd_unidad_x_bulto,
-				cant = x.ocd_cantidad,
-				bonif = x.ocd_bonificacion,
-				pCosto = x.ocd_pcosto,
-				cTotal = x.ocd_cantidad + x.ocd_bonificacion,
-				total = x.ocd_pcosto_tot
-			}).ToList();
-			HelperPdf.GenerarListadoDesdeLista(pdf, regsAux, _campos, _anchosTitulosTabla, fuenteEtiqueta);
+			// 1) Tabla de detalle
+			GenerarDetalleDeOrdenDeCompra(pdf, regs, fuenteValor, fuenteEtiqueta);
 
 			// FILA 3
-			PdfPTable tablaTotal = GeneraTabla(1, [100f], 100, 0, 10);
+			// 2) Construimos las tablas del resumen (pero NO las agregamos todavía)
+			PdfPTable tablaTotal = GeneraTabla(1, new float[] { 100f }, 100, 0, 10);
+			tablaTotal.SpacingBefore = 10f; // ← ESPACIO ENTRE DETALLE Y RESUMEN
+
 			// Gravados
 			PdfPCell celdaGravado = new(new Phrase($"Gravados: {reg.Oc_Gravado.ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
 			{
@@ -1876,11 +1853,115 @@ namespace gc.infraestructura.Helpers
 			};
 			tablaTotal.AddCell(celdaTotal);
 
-			pdf.Add(tablaTotal);
-
-			PdfPTable tablaObservaciones = GeneraTabla(1, [100f], 100, 0, 10);
+			PdfPTable tablaObservaciones = GeneraTabla(1, new float[] { 100f }, 100, 0, 10);
 			tablaObservaciones.AddCell(CeldaSinBorde($"Observaciones: {reg.Oc_Observaciones}", fuenteValor, Element.ALIGN_LEFT));
+
+			// 3) Medimos espacio disponible
+			float espacioDisponible = writer.GetVerticalPosition(true);
+
+			// 4) Medimos cuánto ocupa el resumen
+			float alturaResumen =
+				tablaTotal.CalculateHeights(true) +
+				tablaObservaciones.CalculateHeights(true);
+
+			// 5) Decidimos si entra o no
+			bool entra = espacioDisponible - alturaResumen > 20f;
+
+			if (!entra)
+				pdf.NewPage();
+
+			// 6) Ahora sí agregamos el resumen
+
+			pdf.Add(tablaTotal);
 			pdf.Add(tablaObservaciones);
+		}
+
+		private static void GenerarDetalleDeOrdenDeCompra(Document pdf, List<OrdenDeCompraDetalleDto> lista, Font fuenteValor, Font fuenteEtiqueta)
+		{
+			if (lista == null || lista.Count == 0)
+			{
+				Paragraph sinDatos = new Paragraph("No hay detalles de la orden de compra.", fuenteEtiqueta);
+				pdf.Add(sinDatos);
+				return;
+			}
+
+			// Definición de columnas
+			string[] columnas = new[]
+			{
+				"Código", "Descripción", "Cod. Prov", "P. Lista",
+				"Dto1", "Dto2", "Dto3", "Dto4", "Dto Pago",
+				"BxB", "Cant", "Bonif", "P. Costo",
+				"Cant Total", "Total"
+			};
+
+			// Cantidad de columnas
+			PdfPTable tabla = new PdfPTable(columnas.Length);
+			tabla.WidthPercentage = 100;
+
+			// Anchos relativos (ajustalos si querés)
+			tabla.SetWidths(new float[]
+			{
+				7f, 31f, 7f, 10f,
+				6f, 6f, 6f, 6f, 8f,
+				6f, 6f, 6f, 10f,
+				8f, 12f
+			});
+
+			// ============================
+			// Encabezados
+			// ============================
+			foreach (var col in columnas)
+			{
+				PdfPCell celda = new PdfPCell(new Phrase(col, fuenteEtiqueta));
+				celda.HorizontalAlignment = Element.ALIGN_CENTER;
+				celda.BackgroundColor = new BaseColor(240, 200, 0);
+				celda.Padding = 4;
+				tabla.AddCell(celda);
+			}
+			// Repetir encabezado en cada página
+			tabla.HeaderRows = 1;
+
+			// ============================
+			// Filas
+			// ============================
+			foreach (var x in lista)
+			{
+				// Mapeo directo según tu especificación
+				var valores = new List<string>
+				{
+					x.p_id,
+					x.p_desc?.Trim() ?? "",
+					x.p_id_prov,
+					x.ocd_plista.ToString("N2"),
+					x.ocd_dto1.ToString("N2"),
+					x.ocd_dto2.ToString("N2"),
+					x.ocd_dto3.ToString("N2"),
+					x.ocd_dto4.ToString("N2"),
+					x.ocd_dto_pa.ToString("N2"),
+					x.ocd_unidad_x_bulto.ToString(),
+					x.ocd_cantidad.ToString(),
+					x.ocd_bonificacion.ToString(),
+					x.ocd_pcosto.ToString("N2"),
+					(x.ocd_cantidad + x.ocd_bonificacion).ToString(),
+					x.ocd_pcosto_tot.ToString("N2")
+				};
+
+				foreach (var val in valores)
+				{
+					PdfPCell celda = new PdfPCell(new Phrase(val, fuenteValor));
+					celda.HorizontalAlignment = Element.ALIGN_RIGHT;
+					celda.Padding = 3;
+
+					// Alineación especial para texto
+					if (!decimal.TryParse(val, out _))
+						celda.HorizontalAlignment = Element.ALIGN_LEFT;
+
+					tabla.AddCell(celda);
+				}
+			}
+
+			// Agregar tabla al PDF
+			pdf.Add(tabla);
 		}
 
 		public static void CargarTablaDatosDeAcuseDeTransferencia_Encabezado(Document pdf, FinancieroTraRepoDDto fTra, Font fuenteEtiqueta, Font fuenteValor, Font titulo)
