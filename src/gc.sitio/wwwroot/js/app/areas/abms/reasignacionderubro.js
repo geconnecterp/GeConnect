@@ -87,11 +87,12 @@ function selectReg(x, gridId) {
 		$(this).removeClass("selectedEdit-row");
 	});
 	$(x).addClass("selected-row");
-	LimpiarSeleccion();
+	if (gridId == 'tbGridSector')
+		LimpiarSeleccion();
 }
 
 function LimpiarSeleccion() {
-	BuscarProductosPorRubro("");
+	//BuscarProductosPorRubro("");
 	$("#btnDetalle").prop("disabled", true);
 	$("#divDetalle").collapse("hide");
 }
@@ -167,6 +168,7 @@ function selectRegDbl(x, gridId) {
 				$("#divDetalle").collapse("show");
 				$("#IdSelected").val(secId);
 				posicionarRegOnTop(x);
+				desactivarGrilla('tbGridSector');
 				CerrarWaiting();
 			}
 			else
@@ -248,6 +250,7 @@ function analizaEstadoBtnDetalle() {
 	var res = $("#divDetalle").hasClass("show");
 	if (res === true) {
 		selectReg(regSelected, Grids.GridSector);
+		activarGrilla(Grids.GridSector);
 	}
 	return true;
 

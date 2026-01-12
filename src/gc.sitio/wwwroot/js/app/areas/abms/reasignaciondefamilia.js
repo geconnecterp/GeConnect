@@ -85,6 +85,8 @@ function btnSubmitClick() {
 function ejecutaDblClickGrid(x, grid) {
 	AbrirWaiting("Espere mientras se busca el producto seleccionado...");
 	selectRegDbl(x, grid);
+	posicionarRegOnTop(x);
+	desactivarGrilla('tbGridProveedor');
 }
 
 function selectReg(x, gridId) {
@@ -93,11 +95,12 @@ function selectReg(x, gridId) {
 		$(this).removeClass("selectedEdit-row");
 	});
 	$(x).addClass("selected-row");
-	LimpiarSeleccion();
+	if (gridId == 'tbGridProveedor')
+		LimpiarSeleccion();
 }
 
 function LimpiarSeleccion() {
-	BuscarProductosPorFamilia("");
+	//BuscarProductosPorFamilia("");
 	$("#btnDetalle").prop("disabled", true);
 	$("#divDetalle").collapse("hide");
 
@@ -192,6 +195,7 @@ function analizaEstadoBtnDetalle() {
 	var res = $("#divDetalle").hasClass("show");
 	if (res === true) {
 		selectReg(regSelected, Grids.GridProveedor);
+		activarGrilla(Grids.GridProveedor);
 	}
 	return true;
 

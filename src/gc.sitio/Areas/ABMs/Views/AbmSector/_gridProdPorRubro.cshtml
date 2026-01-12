@@ -27,7 +27,7 @@
 						{
 							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 							var nombre = "chk" + item.P_id;
-							<tr class="@clase">
+							<tr class="@clase" onclick="selectReg(this, 'tbProductosPorRubro')">
 								<td><input type="checkbox" name=@nombre /></td>
 								<td class="align-center">@item.P_id</td>
 								<td class="align-left">@item.P_desc</td>
