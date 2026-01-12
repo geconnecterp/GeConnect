@@ -79,6 +79,7 @@ function analizaEstadoBtnDetalle() {
 	var res = $("#divDetalle").hasClass("show");
 	if (res === true) {
 		selectRegCli(regSelected, Grids.GridCliente);
+		activarGrilla(Grids.GridCliente);
 	}
 	return true;
 
@@ -154,7 +155,8 @@ function controlaCertIva() {
 }
 
 function controlaValorCanal() {
-	if ($("#listaTipoCanal option:selected").val() === "DI") {
+	var tipo_canal = $("#listaTipoCanal option:selected").val();
+	if (tipo_canal === "DI") {
 		$("#listaVendedor").prop("disabled", false);
 		$("#listaDias").prop("disabled", false);
 		$("#listaRepartidor").prop("disabled", false);
@@ -164,6 +166,14 @@ function controlaValorCanal() {
 		$("#listaDias").prop("disabled", true);
 		$("#listaRepartidor").prop("disabled", true);
 	}
+	if (tipo_canal === "EM") {
+		$("#Cliente_Cta_Emp_Legajo").prop("disabled", false);
+		$("#listaFinancieros").prop("disabled", false);
+	}
+	else {
+		$("#Cliente_Cta_Emp_Legajo").prop("disabled", true);
+		$("#listaFinancieros").prop("disabled", true);
+	} 
 }
 
 function InicializaPantallaAbmCliente() {
@@ -431,6 +441,7 @@ function selectRegDbl(x, gridId) {
 				$("#divDetalle").collapse("show");
 				$("#IdSelected").val(ctaId);
 				posicionarRegOnTop(x);
+				desactivarGrilla('tbGridCliente');
 			}
 			break;
 		case Grids.GridFP:
@@ -526,6 +537,7 @@ function ModificaCliente(tabAct) {
 	$(".activable").prop("disabled", false);
 	desactivarGrilla(Grids.GridCliente);
 	$("#Cliente_Cta_Denominacion").focus();
+	controlaValorCanal();
 }
 
 function PuedoBorrar(tabAct) {
@@ -579,7 +591,8 @@ function ObtenerDatosDeClienteParaJson(destinoDeOperacion, tipoDeOperacion) {
 	var cta_alta = null;
 	var cta_cuit_vto = null;
 	var cta_emp = "N";
-	if ($("#chkCtaEmpActiva")[0].checked)
+	var tipo_canal = $("#listaTipoCanal option:selected").val();
+	if (tipo_canal == 'EM')
 		cta_emp = "S";
 	var cta_emp_legajo = $("#Cliente_Cta_Emp_Legajo").val();
 	var cta_emp_ctaf = $("#listaFinancieros option:selected").text();

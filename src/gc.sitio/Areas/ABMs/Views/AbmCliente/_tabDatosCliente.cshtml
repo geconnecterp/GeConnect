@@ -177,10 +177,11 @@
 		</div>
 		<div class="row mt-1">
 			<div class="input-group input-group-sm">
-				<div class="form-check form-check-inline form-switch mb-2">
+				@* <div class="form-check form-check-inline form-switch mb-2">
 					<input class="form-check-input activable" type="checkbox" asp-for="Cliente.Cta_Emp_Activa" value="" id="chkCtaEmpActiva">
 					<label class="form-check-label" for="chkCtaEmpActiva"> Legajo Emp</label>
-				</div>
+				</div> *@
+				<span class="input-group-text fixed-lbl-for-abm-70">Leg. Emp:</span>
 				<input type="text" asp-for="Cliente.Cta_Emp_Legajo" class="form-control activable inputEditable" />
 				<span class="input-group-text fixed-lbl-for-abm-70">Bco:</span>
 				@Html.DropDownListFor(m => m.Cliente.Cta_Emp_Ctaf, financieros, "Seleccionar...", new { @id = "listaFinancieros", @class = "form-control activable" })

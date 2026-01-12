@@ -283,8 +283,9 @@ namespace gc.sitio.Areas.ABMs.Controllers
                     ComboDiasDeLaSemana = ComboDiasDeLaSemana(),
                     ComboZonas = ComboZonas(),
                     ComboRepartidores = ComboRepartidores(),
-                    ComboFinancieros = ComboFinanciero("BA", res.First().Cta_Emp.ToString()),
-                    CuentaFormasDePago = ObtenerGridCoreSmart<CuentaFPDto>(cfp),
+                    //ComboFinancieros = ComboFinanciero("BA", res.First().Cta_Emp.ToString()),
+					ComboFinancieros = ComboFinanciero2("BA"),
+					CuentaFormasDePago = ObtenerGridCoreSmart<CuentaFPDto>(cfp),
                     CuentaContactos = ObtenerGridCoreSmart<CuentaContactoDto>(ccon),
                     CuentaObs = ObtenerGridCoreSmart<CuentaObsDto>(cobs),
                     CuentaNota = ObtenerGridCoreSmart<CuentaNotaDto>(cnota)
@@ -1224,7 +1225,17 @@ namespace gc.sitio.Areas.ABMs.Controllers
             else
                 return HelperMvc<ComboGenDto>.ListaGenerica(new List<FinancieroDto>().Select(x => new ComboGenDto { Id = x.ctaf_id, Descripcion = x.ctaf_denominacion }));
         }
-        private static SelectList ComboFinanciero()
+		private SelectList ComboFinanciero2(string tcf_id)
+		{
+			if (tcf_id != "")
+			{
+				var ctfLista = _financieroServicio.GetFinancieroDesdeTipoParaSeleccionDeValores("BA", "0000", TokenCookie);
+				return HelperMvc<ComboGenDto>.ListaGenerica(ctfLista.Select(x => new ComboGenDto { Id = x.ctaf_id, Descripcion = $"{x.ctaf_denominacion} ({x.ctaf_id})" }));
+			}
+			else
+				return HelperMvc<ComboGenDto>.ListaGenerica(new List<FinancieroDto>().Select(x => new ComboGenDto { Id = x.ctaf_id, Descripcion = x.ctaf_denominacion }));
+		}
+		private static SelectList ComboFinanciero()
         {
             return HelperMvc<ComboGenDto>.ListaGenerica(new List<FinancieroDto>().Select(x => new ComboGenDto { Id = x.ctaf_id, Descripcion = x.ctaf_denominacion }));
         }
