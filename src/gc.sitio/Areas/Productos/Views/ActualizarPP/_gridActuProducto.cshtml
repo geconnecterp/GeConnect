@@ -10,22 +10,24 @@
     <div class="grid-golden-body">
         <div class="table-responsive text-nowrap table-wrapper-500">
             <table class="table table-sm mb-0 table-hover table-golden" id="tbGridProductos">
-                <thead class="sticky-top">
+                <thead class="sticky-top table-golden-header-compact">
                     <tr class="header">
-                        <th class="text-center" scope="col">Código</th>
-                        <th class="text-left" scope="col">DESCRIPCIÓN</th>
-                        <th class="text-right" scope="col">P.LISTA</th>
-                        <th class="text-right" scope="col">DTO1</th>
-                        <th class="text-right" scope="col">DTO2</th>
-                        <th class="text-right" scope="col">DTO3</th>
-                        <th class="text-right" scope="col">DTO4</th>
-                        <th class="text-right" scope="col">DTO PA</th>
-                        <th class="text-right" scope="col">FLETE</th>
-                        <th class="text-right" scope="col">COSTO</th>
-                        <th class="text-right" scope="col">IMP INT</th>
-                        <th class="text-right" scope="col">NETO</th>
-                        <th class="text-right" scope="col">IVA</th>
-                        <th class="text-right" scope="col">P.VTA</th>
+                        <th class="text-center th-compact" scope="col">Código</th>
+                        <th class="text-left th-compact" scope="col">Descripción</th>
+                        <th class="text-center th-compact" scope="col">Cod. Prov</th>
+                        <th class="text-center th-compact" scope="col">EAN</th>
+                        <th class="text-right th-compact" scope="col">P.LISTA</th>
+                        <th class="text-right th-compact" scope="col">DTO1</th>
+                        <th class="text-right th-compact" scope="col">DTO2</th>
+                        <th class="text-right th-compact" scope="col">DTO3</th>
+                        <th class="text-right th-compact" scope="col">DTO4</th>
+                        <th class="text-right th-compact" scope="col">DTO PA</th>
+                        <th class="text-right th-compact" scope="col">FLETE</th>
+                        <th class="text-right th-compact" scope="col">COSTO</th>
+                        <th class="text-right th-compact" scope="col">IMP INT</th>
+                        <th class="text-right th-compact" scope="col">NETO</th>
+                        <th class="text-right th-compact" scope="col">IVA</th>
+                        <th class="text-right th-compact" scope="col">P.VTA</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -33,49 +35,56 @@
                     {
                         @foreach (var item in Model.ListaDatos)
                         {
-                            if (alt) { clase = "table-row-alt"; alt = false; } else { clase = string.Empty; alt = true; }
+                            //table-row-alt
+                            if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
                             <tr class="@clase">
-                                <td class="@Model.ObtenerClase(item.p_id) text-center">
+                                <td class="@Model.ObtenerClase(item.p_id) text-center td-compact">
                                     @Model.FormatearDato(item.p_id, FormatDato.Ninguno)
                                 </td>
-                                <td class="@Model.ObtenerClase(item.p_desc) text-left">
+                                <td class="@Model.ObtenerClase(item.p_desc) text-left td-compact">
                                     @Model.FormatearDato(item.p_desc, FormatDato.Ninguno)
                                 </td>
-                                <td class="@Model.ObtenerClase(item.tp_plista) text-right">
+                                <td class="@Model.ObtenerClase('c') text-left td-compact">
+                                    @Model.FormatearDato(item.p_id_prov, FormatDato.Ninguno)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.p_id_barrado) text-left td-compact">
+                                    @Model.FormatearDato(item.p_id_barrado, FormatDato.Ninguno)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.tp_plista) text-right td-compact">
                                     @Model.FormatearDato(item.tp_plista, FormatDato.Monto)
                                 </td>
-                                <td class="@Model.ObtenerClase(item.tp_dto1) text-right">
+                                <td class="@Model.ObtenerClase(item.tp_dto1) text-right td-compact">
                                     @Model.FormatearDato(item.tp_dto1, FormatDato.Monto)
                                 </td>
-                                <td class="@Model.ObtenerClase(item.tp_dto2) text-right">
+                                <td class="@Model.ObtenerClase(item.tp_dto2) text-right td-compact">
                                     @Model.FormatearDato(item.tp_dto2, FormatDato.Monto)
                                 </td>
-                                <td class="@Model.ObtenerClase(item.tp_dto3) text-right">
+                                <td class="@Model.ObtenerClase(item.tp_dto3) text-right td-compact">
                                     @Model.FormatearDato(item.tp_dto3, FormatDato.Monto)
                                 </td>
-                                <td class="@Model.ObtenerClase(item.tp_dto4) text-right">
+                                <td class="@Model.ObtenerClase(item.tp_dto4) text-right td-compact">
                                     @Model.FormatearDato(item.tp_dto4, FormatDato.Monto)
                                 </td>
-                                <td class="@Model.ObtenerClase(item.tp_dto_pa) text-right">
+                                <td class="@Model.ObtenerClase(item.tp_dto_pa) text-right td-compact">
                                     @Model.FormatearDato(item.tp_dto_pa, FormatDato.Monto)
                                 </td>
-                                <td class="@Model.ObtenerClase(item.tp_porc_flete) text-right">
+                                <td class="@Model.ObtenerClase(item.tp_porc_flete) text-right td-compact">
                                     @Model.FormatearDato(item.tp_porc_flete, FormatDato.Monto)
                                 </td>
-                                <td class="@Model.ObtenerClase(item.tp_pcosto) text-right">
+                                <td class="@Model.ObtenerClase(item.tp_pcosto) text-right td-compact">
                                     @Model.FormatearDato(item.tp_pcosto, FormatDato.Monto)
                                 </td>
-                                <td class="@Model.ObtenerClase(item.tin_alicuota) text-right">
+                                <td class="@Model.ObtenerClase(item.tin_alicuota) text-right td-compact">
                                     @Model.FormatearDato(item.tin_alicuota, FormatDato.Monto)
                                 </td>
-                                <td class="@Model.ObtenerClase(item.tp_pneto) text-right">
+                                <td class="@Model.ObtenerClase(item.tp_pneto) text-right td-compact">
                                     @Model.FormatearDato(item.tp_pneto, FormatDato.Monto)
                                 </td>
-                                <td class="@Model.ObtenerClase(item.tp_iva) text-right">
+                                <td class="@Model.ObtenerClase(item.tp_iva) text-right td-compact">
                                     @Model.FormatearDato(item.tp_iva, FormatDato.Monto)
                                 </td>
-                                <td class="@Model.ObtenerClase(item.tp_pvta) text-right">
+                                <td class="@Model.ObtenerClase(item.tp_pvta) text-right td-compact">
                                     @Model.FormatearDato(item.tp_pvta, FormatDato.Monto)
                                 </td>
                             </tr>
@@ -84,8 +93,8 @@
                     else
                     {
                         <tr>
-                            <td colspan="15" class="text-center text-muted py-4">
-                                <i class="fas fa-info-circle me-2"></i>
+                            <td colspan="16" class="text-center text-muted py-4">
+                                <i class="bx bx-info-circle me-2"></i>
                                 No se encontraron productos para este proveedor
                             </td>
                         </tr>
@@ -96,14 +105,13 @@
 
         @if (Model.ListaDatos != null && Model.ListaDatos.Any())
         {
-            <div class="d-flex justify-content-between align-items-center mt-3 px-2">
+            <div class="d-flex justify-content-between align-items-center mt-2 px-2">
                 <div class="text-muted small">
-                    <i class="fas fa-calculator me-1"></i>
-                    Total: @Model.CantidadReg productos con precios
+                    <i class="bx bx-calculator me-1"></i>
+                    Total: @Model.CantidadReg productos
                 </div>
                 <div class="text-muted small">
-                    <div id="divPaginacion">
-                    </div>
+                    <div id="divPaginacion"></div>
                 </div>
                 <div class="text-muted small">
                     @Model.DatoAux01

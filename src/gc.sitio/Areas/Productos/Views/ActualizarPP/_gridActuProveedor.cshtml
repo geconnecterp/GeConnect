@@ -10,14 +10,14 @@
     <div class="grid-golden-body">
         <div class="table-responsive text-nowrap table-wrapper-500">
             <table class="table table-sm mb-0 table-hover table-golden" id="tbGridProveedores">
-                <thead class="sticky-top">
+                <thead class="sticky-top  table-golden-header-compact">
                     <tr class="header">
-                        <th class="text-center" scope="col" style="width: 50px;">
+                        <th class="text-center  th-compact" scope="col" style="width: 50px;">
                             <input type="checkbox" id="selectAllProveedores" class="form-check-input"
                                    title="Seleccionar todos">
                         </th>
-                        <th class="text-center" scope="col" style="width: 120px;">ID</th>
-                        <th class="text-left" scope="col">DENOMINACIÓN</th>
+                        <th class="text-center  th-compact" scope="col" style="width: 120px;">ID</th>
+                        <th class="text-left th-compact" scope="col">DENOMINACIÓN</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -25,7 +25,7 @@
                     {
                         @foreach (var item in Model.ListaDatos)
                         {
-                            if (alt) { clase = "table-row-alt"; alt = false; } else { clase = string.Empty; alt = true; }
+                            if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
                             <tr class="@clase proveedor-row"
                                 data-cta-id="@item.cta_id"

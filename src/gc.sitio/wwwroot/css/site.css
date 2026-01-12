@@ -2812,3 +2812,91 @@ input, select, textarea, button, checkbox, radio {
 }
 
 /* FIN ESTILOS PARA GRID DE PRECIOS */
+
+/* ====== OPTIMIZACIÓN DE HEADERS DE TABLA - ALTURA REDUCIDA ====== */
+
+/* Header compacto con altura reducida pero estético */
+.table-golden-header-compact {
+    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%) !important;
+    color: #ffffff !important;
+}
+
+    /* Reducción de padding en celdas del header */
+    .table-golden-header-compact th,
+    .th-compact {
+        padding: 0.35rem 0.5rem !important; /* ✅ Reducido de 0.625rem 1.25rem */
+        font-size: 0.8rem !important; /* ✅ Reducido de 0.9375rem */
+        font-weight: 600 !important;
+        line-height: 1.2 !important; /* ✅ Reducido para compactar más */
+        vertical-align: middle !important;
+        white-space: nowrap !important;
+        color: #ffffff !important;
+        border-bottom: 2px solid #8b6914 !important;
+    }
+
+/* Optimización para celdas del body también */
+.td-compact {
+    padding: 0.3rem 0.5rem !important; /* ✅ Reducido de 0.625rem 1.25rem */
+    font-size: 0.75rem !important;
+    line-height: 1.3 !important;
+}
+
+/* Mantener la estética golden en sticky headers */
+.table-golden-header-compact.sticky-top {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) !important;
+    z-index: 1 !important;
+}
+
+/* Asegurar que el gradiente y colores se mantengan */
+.table-golden-header-compact th * {
+    color: #ffffff !important;
+}
+
+/* Hover en headers compactos */
+.table-golden-header-compact th:hover {
+    background-color: rgba(139, 105, 20, 0.2) !important;
+    cursor: pointer;
+}
+
+/* Responsive - Ajustes para pantallas pequeñas */
+@media (max-width: 992px) {
+    .th-compact {
+        padding: 0.25rem 0.35rem !important;
+        font-size: 0.75rem !important;
+    }
+
+    .td-compact {
+        padding: 0.25rem 0.35rem !important;
+        font-size: 0.7rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .th-compact {
+        padding: 0.2rem 0.25rem !important;
+        font-size: 0.7rem !important;
+    }
+
+    .td-compact {
+        padding: 0.2rem 0.25rem !important;
+        font-size: 0.65rem !important;
+    }
+}
+
+/* Optimización específica para tabla de productos ActualizarPP */
+#tbGridProductos thead.table-golden-header-compact {
+    height: auto !important;
+    min-height: 32px !important; /* ✅ Altura mínima controlada */
+}
+
+#tbGridProductos thead th {
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+/* Mantener legibilidad en textos de encabezado */
+#tbGridProductos .th-compact {
+    letter-spacing: -0.3px; /* ✅ Ligero ajuste para aprovechar espacio */
+}
+
+/* FIN OPTIMIZACIÓN DE HEADERS DE TABLA */
