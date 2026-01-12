@@ -152,6 +152,7 @@ function analizaEstadoBtnDetalle() {
 	var res = $("#divDetalle").hasClass("show");
 	if (res === true) {
 		selectRegProv(regSelected, Grids.GridProveedor);
+		activarGrilla(Grids.GridProveedor);
 	}
 	return true;
 
@@ -431,6 +432,7 @@ function selectRegDbl(x, gridId) {
 				$("#divDetalle").collapse("show");
 				$("#IdSelected").val(ctaId);
 				posicionarRegOnTop(x);
+				desactivarGrilla('tbGridProveedor');
 			}
 			break;
 		case Grids.GridFP:

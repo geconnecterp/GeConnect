@@ -595,7 +595,7 @@ function ObtenerDatosDeClienteParaJson(destinoDeOperacion, tipoDeOperacion) {
 	if (tipo_canal == 'EM')
 		cta_emp = "S";
 	var cta_emp_legajo = $("#Cliente_Cta_Emp_Legajo").val();
-	var cta_emp_ctaf = $("#listaFinancieros option:selected").text();
+	var cta_emp_ctaf = $("#listaFinancieros option:selected").val();
 	var cta_actu_fecha = null;
 	var cta_actu = null;
 	var ctac_tope_credito =parseFloat($("#Cliente_Ctac_Tope_Credito").val())||0.00;

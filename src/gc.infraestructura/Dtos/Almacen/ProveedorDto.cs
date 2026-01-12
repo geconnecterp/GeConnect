@@ -92,9 +92,9 @@ namespace gc.infraestructura.Dtos.Almacen
 		public string Ib_Desc { get; set; } = string.Empty;
 		public string Cta_Emp { get; set; } = string.Empty;
 		public string Cta_Emp_Legajo { get; set; } = string.Empty;
-        public string? Cta_Emp_Ctaf { get; set; } = string.Empty;
+		public string? Cta_Emp_Ctaf { get; set; } = string.Empty;
 		public DateTime? Cta_Alta { get; set; }
-        public DateTime? Cta_Actu_Fecha { get; set; }
+		public DateTime? Cta_Actu_Fecha { get; set; }
 		public DateTime? Cta_Cuit_Vto { get; set; }
 		public string Cta_Actu { get; set; } = string.Empty;
 		public string Ope_Iva_Descripcion { get; set; } = string.Empty;
@@ -194,9 +194,9 @@ namespace gc.infraestructura.Dtos.Almacen
 		{
 			get
 			{
-				if (char.IsWhiteSpace(Ctap_Rib) || string.IsNullOrWhiteSpace(char.ToString(Ctap_Rib)))
+				if (string.IsNullOrWhiteSpace(char.ToString(Ctap_Rib)) || char.IsWhiteSpace(Ctap_Rib))
 					return false;
-				return Ctap_Rgan == 'S';
+				return Ctap_Rib == 'S';
 			}
 			set { ctap_Rib_bool = value; }
 		}

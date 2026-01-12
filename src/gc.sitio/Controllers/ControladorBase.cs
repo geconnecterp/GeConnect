@@ -2748,7 +2748,7 @@ namespace gc.sitio.Controllers
         }
         protected SelectList ComboTipoGasto()
         {
-            var lista = TipoGastoLista.Select(x => new ComboGenDto { Id = x.ctag_id, Descripcion = x.ctag_denominacion });
+            var lista = TipoGastoLista.Select(x => new ComboGenDto { Id = x.ctag_id, Descripcion = x.ctag_lista });
             return HelperMvc<ComboGenDto>.ListaGenerica(lista);
         }
         protected SelectList ComboTipoRetGan()
