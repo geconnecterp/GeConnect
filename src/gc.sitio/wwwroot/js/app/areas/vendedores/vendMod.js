@@ -6,7 +6,7 @@
         }
         activarGrilla(Grids.GridVendedor);
     });
-
+    $("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle);
     $("#btnDetalle").prop("disabled", true);
     $("#btnCancel").on("click", function () {
         $("#btnFiltro").trigger("click");
@@ -60,6 +60,17 @@
     //inicia la pantalla presentando la primer pagina de usuarios
     //$("#btnBuscar").trigger("click");
 });
+
+function analizaEstadoBtnDetalle() {
+    var res = $("#divDetalle").hasClass("show");
+    if (res === true) {
+        //selectReg(x, gridId);
+        //selectReg(regSelected, 'tbGridVendedor');
+        activarGrilla('tbGridVendedor');
+    }
+    return true;
+
+}
 
 function InicializaPantallaVendedor(grilla) {
     //si no es una de las grillas deteminadas en el modulo, se asignará una grilla segun el tab que se encuentre.
@@ -166,6 +177,7 @@ function selectVendedorDbl(x, gridId) {
             buscarVendedor(data);           
             //se posiciona el registro seleccionado
             posicionarRegOnTop(x);
+            desactivarGrilla('tbGridVendedor');
             break;
         default:
             return false;

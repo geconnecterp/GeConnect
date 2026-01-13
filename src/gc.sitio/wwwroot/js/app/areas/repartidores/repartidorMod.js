@@ -6,7 +6,7 @@
         }
         activarGrilla(Grids.GridRepartidor);
     });
-
+    $("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle);
     $("#btnDetalle").prop("disabled", true);
     $("#btnCancel").on("click", function () {
         window.location.href = homeRepartidorUrl
@@ -79,6 +79,15 @@
     //inicia la pantalla presentando la primer pagina de usuarios
     //$("#btnBuscar").trigger("click");
 });
+
+function analizaEstadoBtnDetalle() {
+    var res = $("#divDetalle").hasClass("show");
+    if (res === true) {
+        activarGrilla('tbGridRepartidor');
+    }
+    return true;
+
+}
 
 function InicializaPantallaRepartidor(grilla) {
     //si no es una de las grillas deteminadas en el modulo, se asignará una grilla segun el tab que se encuentre.
@@ -185,6 +194,7 @@ function selectRepartidorDbl(x, gridId) {
             buscarRepartidor(data);           
             //se posiciona el registro seleccionado
             posicionarRegOnTop(x);
+            desactivarGrilla('tbGridRepartidor');
             break;
         default:
             return false;

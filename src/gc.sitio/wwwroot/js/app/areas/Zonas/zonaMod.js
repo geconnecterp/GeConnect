@@ -6,7 +6,7 @@
         }
         activarGrilla(Grids.GridZona);
     });
-
+    $("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle);
     $("#btnDetalle").prop("disabled", true);
     $("#btnCancel").on("click", function () {
         window.location.href = homeZonaUrl;
@@ -47,6 +47,15 @@
     //inicia la pantalla presentando la primer pagina de usuarios
     //$("#btnBuscar").trigger("click");
 });
+
+function analizaEstadoBtnDetalle() {
+    var res = $("#divDetalle").hasClass("show");
+    if (res === true) {
+        activarGrilla('tbGridZona');
+    }
+    return true;
+
+}
 
 function InicializaPantallaZona(grilla) {
     //si no es una de las grillas deteminadas en el modulo, se asignará una grilla segun el tab que se encuentre.
@@ -153,6 +162,7 @@ function selectZonaDbl(x, gridId) {
             buscarZona(data);           
             //se posiciona el registro seleccionado
             posicionarRegOnTop(x);
+            desactivarGrilla('tbGridZona');
             break;
         default:
             return false;
