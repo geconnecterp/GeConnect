@@ -10,8 +10,10 @@
 						<table class="table table-sm mb-0 table-hover table-golden" id="tbOpcionesCuotas">
 							<thead>
 								<tr class="header">
-									<th class="col-header-small align-center">Cuota</th>
-									<th class="col-header-small align-center">Recargo</th>
+									<th class="col-header-small align-center">Opción</th>
+									<th class="col-header-small align-center">Cuota POS</th>
+									<th class="col-header-small align-left">Descripción</th>
+									<th class="col-header-small align-right">Recargo</th>
 									<th style="width:0%; display:none;">Ins_Id</th>
 								</tr>
 							</thead>
@@ -22,6 +24,7 @@
 									{
 										<tr onclick="selectRegCli(this, 'tbOpcionesCuotas')" ondblclick="selectRegDbl(this, 'tbOpcionesCuotas')">
 											<td class="align-left">@item.Cuota</td>
+											<td class="align-left">@item.Pos_Plan</td>
 											<td class="align-left">@item.Recargo</td>
 											<td style="display:none;">@item.Ins_Id</td>
 										</tr>

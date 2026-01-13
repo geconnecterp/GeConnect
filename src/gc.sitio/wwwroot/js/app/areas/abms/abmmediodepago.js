@@ -27,8 +27,9 @@
 
 	$("#btnCancel").on("click", function () {
 		//$("#btnFiltro").trigger("click");
-		$("#divDetalle").collapse('hide');
+		OcultarDivs(true);
 		$("#divFiltro").collapse('show');
+		$("#listaLs03").prop("disabled", false);
 	});
 
 	$("#btnBuscar").on("click", function () {
@@ -57,6 +58,13 @@
 	funcCallBack = buscarMediosDePago;
 	return true;
 });
+
+function OcultarDivs(valor) {
+	$("#divDetalle").collapse('hide');
+	$("#divTitulo").collapse('hide');
+	$("#divGrilla").collapse('hide');
+	$("#divPaginacion").collapse('hide');
+}
 
 function analizaEstadoBtnDetalle() {
 	var res = $("#divDetalle").hasClass("show");
@@ -358,11 +366,11 @@ function InicializaPantallaAbmMedioDePago() {
 	$("#chkRel03").prop('checked', true);
 	$("#chkRel03").trigger("change");
 	$("#chkRel03").prop("disabled", true);
-
 	$("#IdSelected").val("");
 	$(".activable").prop("disabled", true);
 	activarBotones(false);
 	CargarTiposDeMedioDePago();
+	$("#btnAbmNuevo").prop("disabled", true);
 	CerrarWaiting();
 	return true;
 }
@@ -449,7 +457,8 @@ function ActualizarTitulo() {
 }
 
 function BuscarMedioDePago(insId) {
-	var data = { insId };
+	var tcfId = $("#listaLs03").val(); 
+	var data = { insId, tcfId };
 	AbrirWaiting();
 	PostGenHtml(data, buscarMedioDePagoUrl, function (obj) {
 		$("#divDatosMedioDePago").html(obj);
@@ -460,11 +469,64 @@ function BuscarMedioDePago(insId) {
 		BuscarPos();
 		ActualizarTitulo();
 		$(".activable").prop("disabled", true);
+		$(document).off("change", "#chkLinkActivo").on("change", "#chkLinkActivo", ControlaChangeChkLinkActivo);
+		ControlaChangeChkLinkActivo();
+		ActualizarTabsSegunTipoSeleccionadoEnFiltro();
+		ControlarVisibilidadSegunTipoSeleccionadoEnFiltro();
 		CerrarWaiting();
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
 		CerrarWaiting();
 	});
+}
+
+function ActualizarTabsSegunTipoSeleccionadoEnFiltro() {
+	// Ocultar todos
+	$("#tabOpcionesCuotas, #tabPos").hide();
+	$("#navs-top-profile, #navs-top-notes").hide();
+
+	const valor = $("#listaLs03").val();
+
+	if (valor === "TC") {
+		$("#tabOpcionesCuotas").show();
+		$("#navs-top-profile").show();
+		$("#tabPos").show();
+		$("#navs-top-notes").show();
+	} else if (valor === "TD") {
+		$("#tabPos").show();
+		$("#navs-top-notes").show();
+
+		// Si estaba activo, volver al principal
+		if ($("#btnTabOpcionesCuotas").hasClass("active")) {
+			$("#btnTabMedioDePago").tab("show");
+		}
+	} 
+}
+function ControlarVisibilidadSegunTipoSeleccionadoEnFiltro() {
+	const valor = $("#listaLs03").val();
+
+	if (valor === "EF") {
+		$("#divDatosDeLiquidacion").hide();
+		$("#divChkLinkActivo").hide();
+		$("#divListaFinanciero").hide();
+	} else {
+		$("#divDatosDeLiquidacion").show();
+		$("#divChkLinkActivo").show();
+		$("#divListaFinanciero").show();
+	}
+}
+
+function ControlaChangeChkLinkActivo() {
+	const isChecked = $("#chkLinkActivo").prop("checked");
+
+	if (isChecked) {
+		// Habilitar la lista
+		$("#listaFinanciero").prop("disabled", false);
+	} else {
+		// Deshabilitar y limpiar selección
+		$("#listaFinanciero").prop("disabled", true).val("");
+	}
+
 }
 
 function ValidarTabs() {
@@ -497,8 +559,9 @@ function buscarMediosDePago(pag, esBaja = false) {
 		id = $("#Id").val();
 		id2 = $("#Id2").val();
 	}
+	//TODO: Mandar el valor seleccionado del combo
 	if ($("#chkRel01").is(":checked")) {
-		$("#Rel01List").children().each(function (i, item) { r01.push($(item).val()) });
+		r01.push($("#listaLs03").val());
 	}
 
 	var data1 = {
@@ -552,7 +615,9 @@ function buscarMediosDePago(pag, esBaja = false) {
 			}
 
 		});
-
+		$("#btnAbmNuevo").prop("disabled", false);
+		$("#divGrilla").collapse("show")
+		$("#divPaginacion").collapse("show")
 		CerrarWaiting();
 	}, function (obj) {
 		ControlaMensajeError(obj.message);

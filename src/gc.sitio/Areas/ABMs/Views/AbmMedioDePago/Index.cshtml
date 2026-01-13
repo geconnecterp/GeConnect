@@ -16,9 +16,9 @@
 
 	<div class="collapse" id="divFiltro" style="">
 		<partial name="_filtroBase" model="filtro" />
-		@Html.Hidden("pagEstado", false);
+		@Html.Hidden("pagEstado", false)
 	</div>
-	<div id="divTitulo">
+	<div class="collapse row" id="divTitulo">
 	</div>
 	<div class="collapse" id="divDetalle" style="">
 		<ul class="nav nav-tabs nav-tabs-golden" role="tablist" id="tabsAbmMedioDePago">
@@ -27,14 +27,14 @@
 					Medio de Pago
 				</button>
 			</li>
-			<li class="nav-item" role="presentation" id="tabOpcionesCuotas">
-				<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-profile" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1" id="btnTabOpcionesCuotas">
-					Opciones Cuotas
-				</button>
-			</li>
 			<li class="nav-item" role="presentation" id="tabCuentaFinContable">
 				<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-messages" aria-controls="navs-top-messages" aria-selected="false" tabindex="-1" id="btnTabCuentaFinContable">
 					Cuenta Financiera y Contable
+				</button>
+			</li>
+			<li class="nav-item" role="presentation" id="tabOpcionesCuotas">
+				<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-profile" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1" id="btnTabOpcionesCuotas">
+					Opciones Cuotas
 				</button>
 			</li>
 			<li class="nav-item" role="presentation" id="tabPos">
@@ -48,12 +48,12 @@
 				<div id="divDatosMedioDePago">
 				</div>
 			</div>
-			<div class="tab-pane fade tab-content-golden" id="navs-top-profile" role="tabpanel">
-				<div id="divOpcionesCuotas">
-				</div>
-			</div>
 			<div class="tab-pane fade tab-content-golden" id="navs-top-messages" role="tabpanel">
 				<div id="divCuentaFinContable">
+				</div>
+			</div>
+			<div class="tab-pane fade tab-content-golden" id="navs-top-profile" role="tabpanel">
+				<div id="divOpcionesCuotas">
 				</div>
 			</div>
 			<div class="tab-pane fade tab-content-golden" id="navs-top-notes" role="tabpanel">
@@ -62,16 +62,14 @@
 			</div>
 		</div>
 	</div>
-	<div class="row">
-		<div id="divGrilla">
-			<p style="background-color:gray">
-				<h5>No se han especificado datos aún.</h5>
-			</p>
-		</div>
+	<div class="collapse row" id="divGrilla">
+		<p style="background-color:gray">
+			<h5>No se han especificado datos aún.</h5>
+		</p>
 	</div>
-	<div class="row d-flex p-2 flex-fill">
+	<div class="collapse row d-flex p-2 flex-fill">
 		<div class="col-2"></div>
-		<div id="divPaginacion" class="">
+		<div id="divPaginacion" class="collapse">
 		</div>
 		<div class="col-2"></div>
 	</div>

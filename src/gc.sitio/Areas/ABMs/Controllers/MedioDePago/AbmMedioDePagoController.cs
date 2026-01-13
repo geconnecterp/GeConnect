@@ -146,7 +146,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 
 		[HttpPost]
 		//public async Task<IActionResult> BuscarMedioDePago(string insId)
-		public IActionResult BuscarMedioDePago(string insId)
+		public IActionResult BuscarMedioDePago(string insId, string tcfId)
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
@@ -162,7 +162,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 				{
 					MedioDePago = res.First(),
 					ComboMoneda = ComboMoneda(),
-					ComboFinanciero = ComboFinancieroRela(res.First().Tcf_Id),
+					ComboFinanciero = ComboFinancieroRela(tcfId),
 				};
 				SetearPosDeMedioDePagoSeleccionado(res.First());
 				MedioDePagoSelected = res.First();
