@@ -9,7 +9,17 @@
 	thead th {
 		position: sticky;
 		top: 0px;
+		z-index: 1; /* suficiente para estar sobre las filas */
+		background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+		color: #fff !important;
 	}
+
+	.table-wrapper {
+		/*max-height: 400px;  o lo que necesites */
+		overflow-y: auto;
+		position: relative;
+	}
+
 </style>
 <div class="card">
 	<div class="card-body">
@@ -17,10 +27,10 @@
 			<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbGridMedioDePago">
 				<thead>
 					<tr class="header">
-						<th scope="col">@nameof(dataMod.Ins_Id)</th>
-						<th scope="col">@nameof(dataMod.Ins_Desc)</th>
-						<th scope="col">@nameof(dataMod.Tcf_Id)</th>
-						<th scope="col">@nameof(dataMod.Ins_Vigente)</th>
+						<th scope="col">ID</th>
+						<th scope="col">Institución</th>
+						<th scope="col">Tipo</th>
+						<th scope="col">Vigente</th>
 					</tr>
 				</thead>
 				<tbody>

@@ -93,6 +93,7 @@ namespace gc.infraestructura.Constantes
             public const string MODIF_PRECIO = "MODIF_PRECIO";
             public const string PROV_SIN_MOD = "PROV_SIN_MOD";
 
-        }
+            public const string MEDIOS_DE_PAGO = "MEDIOS_DE_PAGO";
+		}
     }
 }

@@ -26,15 +26,27 @@
 	$("#btnDetalle").prop("disabled", true);
 
 	$("#btnCancel").on("click", function () {
-		$("#btnFiltro").trigger("click");
+		//$("#btnFiltro").trigger("click");
+		$("#divDetalle").collapse('hide');
+		$("#divFiltro").collapse('show');
 	});
 
 	$("#btnBuscar").on("click", function () {
-		//es nueva la busqueda no resguardamos la busqueda anterior. es util para paginado
-		dataBak = "";
-		//es una busqueda por filtro. siempre sera pagina 1
-		pagina = 1;
-		buscarMediosDePago(pagina);
+		let tipoSeleccionado = $("#listaLs03").val();
+		if (tipoSeleccionado == "") {
+			AbrirMensaje("ATENCIÓN", "Debe seleccionar un Tipo de Medio de Pago.", function () {
+				$("#msjModal").modal("hide");
+				$("#listaLs03").trigger('focus');
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			//es nueva la busqueda no resguardamos la busqueda anterior. es util para paginado
+			dataBak = "";
+			//es una busqueda por filtro. siempre sera pagina 1
+			pagina = 1;
+			buscarMediosDePago(pagina);
+		}
 	});
 
 	$(".inputEditable").on("keypress", analizaEnterInput);
@@ -50,6 +62,7 @@ function analizaEstadoBtnDetalle() {
 	var res = $("#divDetalle").hasClass("show");
 	if (res === true) {
 		selectRegCli(regSelected, Grids.GridMedioDePago);
+		activarGrilla(Grids.GridMedioDePago);
 	}
 	return true;
 
@@ -335,24 +348,32 @@ function InicializaPantallaAbmMedioDePago() {
 		$("#divFiltro").collapse("show")
 	}
 
-	$("#lbRel01").text("Medios de Pago");
-
-	$("#chkRel02").hide();
-	$("#lbRel02").hide();
-	$("#lbNombreRel02").hide();
-	$("#Rel02").hide();
-	$("#Rel02List").hide();
+	$("#lbRel03").text("Medios de Pago");
+	$("#Rel03List").hide();
 
 	$("#lbChkDescr").text("Denominación");
 	$("#lbDescr").html("Desc");
 
 	$("#lbChkDesdeHasta").text("ID Cuenta");
+	$("#chkRel03").prop('checked', true);
+	$("#chkRel03").trigger("change");
+	$("#chkRel03").prop("disabled", true);
 
 	$("#IdSelected").val("");
 	$(".activable").prop("disabled", true);
 	activarBotones(false);
+	CargarTiposDeMedioDePago();
 	CerrarWaiting();
 	return true;
+}
+
+function CargarTiposDeMedioDePago() {
+	var data = {};
+	PostGenHtml(data, cargarTiposDeMedioDePagoUrl, function (obj) {
+		$("#divLs03").html(obj);
+	}, function (obj) {
+		ControlaMensajeError(obj.message);
+	});
 }
 
 function selectRegDbl(x, gridId) {
@@ -378,6 +399,7 @@ function selectRegDbl(x, gridId) {
 				$("#divDetalle").collapse("show");
 				$("#IdSelected").val(insId);
 				posicionarRegOnTop(x);
+				desactivarGrilla('tbGridMedioDePago');
 			}
 			break;
 		case Grids.GridOpcionesCuotas:
@@ -530,6 +552,7 @@ function buscarMediosDePago(pag, esBaja = false) {
 			}
 
 		});
+
 		CerrarWaiting();
 	}, function (obj) {
 		ControlaMensajeError(obj.message);

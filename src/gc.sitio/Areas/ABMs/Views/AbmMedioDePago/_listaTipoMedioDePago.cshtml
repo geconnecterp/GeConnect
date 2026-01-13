@@ -1,0 +1,6 @@
+﻿@model ListaTipoMedioDePagoModel
+@{
+	var ls03 = Model.ListaTipo;
+}
+<span class="input-group-text">Nombre</span>
+@Html.DropDownListFor(m => m.TipoSeleccionado, ls03, "Seleccionar", new { @id = "listaLs03", @class = "form-control inputEditable activable" })

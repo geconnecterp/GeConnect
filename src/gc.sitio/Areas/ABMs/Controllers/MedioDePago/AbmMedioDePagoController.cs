@@ -68,8 +68,20 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			var listR02 = new List<ComboGenDto>();
 			ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
 
+			var listR03 = new List<ComboGenDto>();
+			ViewBag.Rel03List = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
+
 			ViewData["Titulo"] = "CUENTAS MEDIOS DE PAGO";
 			return View();
+		}
+
+		[HttpPost]
+		public IActionResult CargarTiposDeMedioDePago()
+		{
+			var model = new ListaTipoMedioDePagoModel();
+			var tipoNegs = TipoCuentaFinLista.Select(x => new ComboGenDto { Id = x.tcf_id, Descripcion = x.tcf_lista });
+			model.ListaTipo = HelperMvc<ComboGenDto>.ListaGenerica(tipoNegs.ToList());
+			return PartialView("_listaTipoMedioDePago", model);
 		}
 
 		[HttpPost]
