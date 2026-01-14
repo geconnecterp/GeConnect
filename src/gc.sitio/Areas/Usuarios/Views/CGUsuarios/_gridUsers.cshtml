@@ -17,20 +17,20 @@
             <div class="col-md-10 col-sm-6">
                 <h5 class="mb-0">
                     <i class="bx bx-package me-2"></i>
-                    <strong>##LEYENDA##</strong>
+                    <strong>Listado de Usuario</strong>
                 </h5>
             </div>
         </div>
     </div>
     <div class="grid-golden-body">
-        <div class="table-responsive text-nowrap  table-wrapper">
-            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridUsers">
-                <thead class="table-dark">
+        <div class="table-responsive text-nowrap table-wrapper">
+            <table class="table table-sm mb-0 table-hover  table-golden" id="tbGridUsers">
+                <thead class="sticky-top table-golden-header-compact">
                     <tr class="header">
 
-                        <th class="text-sm-center" scope="col">Logon</th>
-                        <th class="text-sm-center" scope="col">Apellido y Nombre</th>
-                        <th class="text-sm-center" scope="col">Bloqueado</th>
+                        <th class="text-sm-center th-compact" scope="col">Logon</th>
+                        <th class="text-sm-center th-compact" scope="col">Apellido y Nombre</th>
+                        <th class="text-sm-center th-compact" scope="col">Bloqueado</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -65,8 +65,8 @@
             <table style="width:300px;text-align:center">
                 <tr><td colspan="3" class="text-md-center"><strong>ESTADOS</strong></td></tr>
                 <tr>
-                    <td style="background-color: @EstadoColor.Activo;color:#FFFFFF;font-weight:600;">NO BLOQUEADO</td>
-                    <td style="background-color: @EstadoColor.NoActivo;color:#FFFFFF;font-weight:600;">BLOQUEADO</td>
+                    <td style="width:50%;background-color:@EstadoColor.Activo;color:#FFFFFF;font-weight:600;">NO BLOQUEADO</td>
+                    <td style="width:50%;background-color:@EstadoColor.NoActivo;color:#FFFFFF;font-weight:600;">BLOQUEADO</td>
                 </tr>
             </table>
         </div>

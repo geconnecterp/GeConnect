@@ -31,10 +31,10 @@
 
     $("#BtnLiTab01").on("click", function () {
         tabMn = 1;
-        activarGrilla(Grids.GridPerfil);
-        $("#btnAbmNuevo").prop("disabled", false);
-        $("#btnAbmElimi").prop("disabled", false);
-        $("#divFiltro").collapse("show");
+       // activarGrilla(Grids.GridPerfil);
+        //$("#btnAbmNuevo").prop("disabled", false);
+        //$("#btnAbmElimi").prop("disabled", false);
+        //$("#divFiltro").collapse("show");
         
     });
     $("#BtnLiTab02").on("click", function () {
@@ -118,6 +118,13 @@ function buscarPerfiles(pagina) {
 function selectRegPerfil(x, gridId) {
     //reinvoco para que me marque el registro 
     selectReg(x, gridId);
+
+    if (gridId === "tbGridPerfilUsers") {
+        tabMn = 2;
+    }
+    else {
+        tabMn = 1;
+    }
     //limpio el tab01 para que se seleccione el registro.
     //y desactivo el tab
     switch (tabMn) {
@@ -131,7 +138,7 @@ function selectRegPerfil(x, gridId) {
             activarBotones(false);
             break;
         case 2:
-            inicializaPantallaCtrlMenu(Grids.GridPerfil);
+            //inicializaPantallaCtrlMenu(Grids.GridPerfil);
 
             break;
         default:

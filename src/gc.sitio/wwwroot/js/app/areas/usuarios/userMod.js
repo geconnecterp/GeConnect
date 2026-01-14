@@ -119,6 +119,13 @@ function selectUserRegDbl(x, gridId) {
             EntidadEstado = x.find("td:nth-child(3)").text();
             var data = { id: id };
             EntidadSelect = id;
+
+            // Resetear acciones antes de cargar nuevo usuario
+            accion = "";
+            accion02 = "";
+            accion03 = "";
+            accion04 = "";
+
             desactivarGrilla(gridId);
             //se busca el perfil
             buscarUserServer(data);
@@ -282,7 +289,7 @@ function InicializaPantallaUser(grilla) {
                 break;
             default:
                 return false;
-        }
+        }        
     }
 
     accionBotones(AbmAction.CANCEL);
@@ -302,7 +309,7 @@ function InicializaPantallaUser(grilla) {
     //al inicio de todo se procede a la busqueda de los datos y carga de la grilla
 
     CerrarWaiting();
-    return true;
+    //return true;
 }
 
 function analizaEstadoBtnDetalle() {
@@ -310,7 +317,7 @@ function analizaEstadoBtnDetalle() {
     if (res === true) {
         selectRegProd(regSelected, tabGrid01);
     }
-    return true;
+   // return true;
 
 }
 
@@ -384,10 +391,6 @@ function buscarUsuario(data) {
 function buscarUserServer(data) {
     PostGenHtml(data, buscarUserUrl, function (obj) {
         $("#divpanel01").html(obj);
-        ////se procede a buscar la grilla de barrado
-        //buscarBarrado(data);
-        ////se procede a buscar la grilla de Sucursales
-        //buscarLimite(data);
 
         $("#btnDetalle").prop("disabled", false);
         $("#divFiltro").collapse("hide");
@@ -396,25 +399,24 @@ function buscarUserServer(data) {
         //activar botones de acción
         activarBotones(true);
 
-        if (EntidadEstado !== "S" && accion !== "") {
-            $("#BtnLiTab02").prop("disabled", true);
-            $("#BtnLiTab02").addClass("text-danger");
-            $("#BtnLiTab03").prop("disabled", true);
-            $("#BtnLiTab03").addClass("text-danger");
-            $("#BtnLiTab04").prop("disabled", true);
-            $("#BtnLiTab04").addClass("text-danger");
+        // Verificar si hay una acción activa antes de deshabilitar tabs
+        var hayAccionActiva = (accion !== "" && accion !== AbmAction.CANCEL) || 
+                              (accion02 !== "" && accion02 !== AbmAction.CANCEL) || 
+                              (accion03 !== "" && accion03 !== AbmAction.CANCEL) || 
+                              (accion04 !== "" && accion04 !== AbmAction.CANCEL);
+
+        if (EntidadEstado !== "NO" && hayAccionActiva) {
+            $("#BtnLiTab02").prop("disabled", true).addClass("text-danger");
+            $("#BtnLiTab03").prop("disabled", true).addClass("text-danger");
+            $("#BtnLiTab04").prop("disabled", true).addClass("text-danger");
         }
         else {
-            $("#BtnLiTab02").prop("disabled", false);
-            $("#BtnLiTab02").removeClass("text-danger");
-            $("#BtnLiTab03").prop("disabled", false);
-            $("#BtnLiTab03").removeClass("text-danger");
-            $("#BtnLiTab04").prop("disabled", false);
-            $("#BtnLiTab04").removeClass("text-danger");
+            $("#BtnLiTab02").prop("disabled", false).removeClass("text-danger");
+            $("#BtnLiTab03").prop("disabled", false).removeClass("text-danger");
+            $("#BtnLiTab04").prop("disabled", false).removeClass("text-danger");
         }
 
         CerrarWaiting();
-
     });
 }
 

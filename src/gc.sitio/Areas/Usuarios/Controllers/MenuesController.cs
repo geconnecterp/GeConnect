@@ -34,11 +34,9 @@ namespace gc.sitio.Areas.Usuarios.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var auth = EstaAutenticado;
-            if (!auth.Item1 || auth.Item2 < DateTime.Now)
-            {
-                return RedirectToAction("Login", "Token", new { area = "seguridad" });
-            }
+            if (!VerificarAutenticacion(out IActionResult redirectResult))
+                return redirectResult;
+
             PerfilesBuscados = [];
             PerfilIDSeleccionado = string.Empty;
             PerfilSeleccionado = new PerfilDto();

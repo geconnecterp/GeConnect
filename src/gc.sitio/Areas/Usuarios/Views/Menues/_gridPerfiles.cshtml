@@ -12,17 +12,18 @@
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
 }
 
-<div class="card">
-    <div class="card-body">
+<div class="grid-golden">
+    <div class="grid-golden-body">
         <div class="table-responsive text-nowrap  table-wrapper">
-            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridPerfil">
-                <thead class="table-dark">
+            @* table-wrapper-fixed-head *@
+            <table class="table table-sm mb-0 table-hover table-golden " id="tbGridPerfil">
+                <thead class="sticky-top table-golden-header-compact">
                     <tr class="header">
 
-                        <th class="text-sm-center" scope="col">CÓDIGO</th>
-                        <th class="text-sm-center" scope="col">PERFIL</th>
-                        <th class="text-sm-center" scope="col">ESTADO</th>
-                        <th class="text-sm-center" scope="col">DESCRIPCION</th>
+                        <th class="text-sm-center th-compact" scope="col">CÓDIGO</th>
+                        <th class="text-sm-center th-compact" scope="col">PERFIL</th>
+                        <th class="text-sm-center th-compact" scope="col">ESTADO</th>
+                        <th class="text-sm-center th-compact" scope="col">DESCRIPCION</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -54,11 +55,10 @@
         </div>
         <div class="row m-3">
             <table style="width:300px;text-align:center">
-                <tr><td colspan="3" class="text-md-center"><strong>PERFILES</strong></td></tr>
+                <tr><td colspan="2" class="text-md-center"><strong>PERFILES</strong></td></tr>
                 <tr>
-                    <td style="background-color: @EstadoColor.Activo;color:#FFFFFF;font-weight:600;">ACTIVO</td>
-                    <td style="background-color: @EstadoColor.NoActivo;color:#FFFFFF;font-weight:600;">NO ACTIVO</td>
-                    @* <td style="background-color: @EstadoColor.Discontinuo;color:#FFFFFF;font-weight:600;display:block;">DISCONTINUO</td> *@
+                    <td style="width:50%;background-color:@EstadoColor.Activo;color:#FFFFFF;font-weight:600;">ACTIVO</td>
+                    <td style="width:50%;background-color:@EstadoColor.NoActivo;color:#FFFFFF;font-weight:600;">NO ACTIVO</td>
                 </tr>
             </table>
         </div>
