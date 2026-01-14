@@ -22,7 +22,6 @@
 
                         <th class="text-sm-center th-compact" scope="col">CÓDIGO</th>
                         <th class="text-sm-center th-compact" scope="col">PERFIL</th>
-                        <th class="text-sm-center th-compact" scope="col">ESTADO</th>
                         <th class="text-sm-center th-compact" scope="col">DESCRIPCION</th>
                     </tr>
                 </thead>
@@ -46,7 +45,6 @@
                             <!--ondblclick="selectAbmRegDbl(this,'tbGridProd')"-->
                             <td class="@Model.ObtenerClase(item.perfil_id)" style="border-left: 5px solid @color;text-align: left;">@Model.FormatearDato(item.perfil_id,FormatDato.Ninguno )</td>
                             <td class="@Model.ObtenerClase(item.perfil_descripcion)">@Model.FormatearDato(item.perfil_descripcion, FormatDato.Ninguno)</td>
-                            <td class="@Model.ObtenerClase(item.perfil_activo)">@Model.FormatearDato(item.perfil_activo, FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase(item.perfil_activo_desc)">@Model.FormatearDato(item.perfil_activo_desc, FormatDato.Ninguno)</td>
                         </tr>
                     }
