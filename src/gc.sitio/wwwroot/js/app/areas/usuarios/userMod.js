@@ -295,10 +295,10 @@ function InicializaPantallaUser(grilla) {
         $("#divpanel01").empty();
         
         // Resetear variables de acción
-        accion = "";
-        accion02 = "";
-        accion03 = "";
-        accion04 = "";
+        //accion = "";
+        //accion02 = "";
+        //accion03 = "";
+        //accion04 = "";
         
         // Limpiar selección de registro
         $("#" + Grids.GridUser + " tbody tr").removeClass("selectedEdit-row");
