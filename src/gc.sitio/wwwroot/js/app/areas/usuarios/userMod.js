@@ -8,15 +8,17 @@
     });
 
     $("#btnDetalle").prop("disabled", true);
+    
     $("#btnCancel").on("click", function () {
         window.location.href = homeUser;
     });
+    
     $("#pagEstado").on("change", function () {
         var div = $("#divPaginacion");
         presentaPaginacion(div);
     });
+    
     $("#btnBuscar").on("click", function () {
-
         //es nueva la busqueda no resguardamos la busqueda anterior. es util para paginado
         $("#divpanel01").empty();
         dataBak = "";
@@ -24,6 +26,7 @@
         pagina = 1;
         buscarUsers(pagina);
     });
+    
     //callback para que funcione la paginación
     funcCallBack = buscarUsers;
 
@@ -53,54 +56,47 @@
                 }
                 else {
                     $("input#cta_denominacion").removeClass("text-success").addClass("text-danger");
-
                 }
-
                 return true;
             }
         });
     });
-
 
     $(".inputEditable").on("keypress", analizaEnterInput);
 
     $("#BtnLiTab01").on("click", function () {
         tabAbm = 1;
         activarGrilla(Grids.GridUser);
-        //$("#btnAbmNuevo").prop("disabled", false);
-        //$("#btnAbmElimi").prop("disabled", false);       
-
     });
+    
     $("#BtnLiTab02").on("click", function () {
         tabAbm = 2;
         desactivarGrilla(Grids.GridUser);
         activarBotones(true);
         presentaPerfilesUsuario();
     });
+    
     $("#BtnLiTab03").on("click", function () {
         tabAbm = 3;
         desactivarGrilla(Grids.GridUser);
         activarBotones(true);
-
         presentaAdministracionesUsuario();
     });
+    
     $("#BtnLiTab04").on("click", function () {
         tabAbm = 4;
         desactivarGrilla(Grids.GridUser);
         activarBotones(true);
-
         presentaDerechosUsuario();
     });
 
     $(document).on("dblclick", "#" + Grids.GridUser + " tbody tr", function () {
         x = $(this);
-        //se resguarda el registro de la tabla
         regSelected = x;
         ejecutaDblClickGrid1(x);
     });
 
     InicializaPantallaUser(Grids.GridUser);
-    //inicia la pantalla presentando la primer pagina de usuarios
     $("#btnBuscar").trigger("click");
 });
 
@@ -266,15 +262,14 @@ function presentaDerechosUsuario() {
 }
 
 function InicializaPantallaUser(grilla) {
-    //si no es una de las grillas deteminadas en el modulo, se asignará una grilla segun el tab que se encuentre.
-    if (grilla !== Grids.GridUser) {
+    // Si grilla es undefined, asignar GridUser por defecto
+    if (!grilla) {
+        grilla = Grids.GridUser;
+    }
+    
+    // Si no es la grilla principal, manejar según el tab activo
+    if (grilla !== Grids.GridUser && tabAbm !== 1) {
         switch (tabAbm) {
-            case 1:
-                grilla = Grids.GridUser;
-                if ($("#divDetalle").is(":visible")) {
-                    $("#divDetalle").collapse("hide");
-                }
-                break;
             case 2:
                 activarArbol("#divPerfiles", "#", false, true);
                 activarBotones(true);
@@ -289,36 +284,47 @@ function InicializaPantallaUser(grilla) {
                 break;
             default:
                 return false;
-        }        
+        }
+    } else {
+        // Lógica para tab 1 (grilla principal)
+        if ($("#divDetalle").is(":visible")) {
+            $("#divDetalle").collapse("hide");
+        }
+        
+        // Limpiar el panel de detalles
+        $("#divpanel01").empty();
+        
+        // Resetear variables de acción
+        accion = "";
+        accion02 = "";
+        accion03 = "";
+        accion04 = "";
+        
+        // Limpiar selección de registro
+        $("#" + Grids.GridUser + " tbody tr").removeClass("selectedEdit-row");
+        regSelected = null;
+        
+        // Reactivar la grilla
+        activarGrilla(Grids.GridUser);
     }
 
+    // Ejecutar acción de cancelación en botones
     accionBotones(AbmAction.CANCEL);
-
-    //borra seleccion de registro si hubiera cargdo algun grid
-    //TODO: ESTO SOLO LO HACE SI ES LA GRILLA PPAL (TABAMB = 1)
-    switch (tabAbm) {
-        case 1:
-            $("#" + grilla + " tbody tr").each(function (index) {
-                $(this).removeClass("selectedEdit-row");
-            });
-            break;
-        default:
-            break;
-    }
-
-    //al inicio de todo se procede a la busqueda de los datos y carga de la grilla
-
+    
+    // Reactivar botones principales
+    activarBotones(false);
+    
+    // Deshabilitar el botón detalle ya que no hay selección
+    $("#btnDetalle").prop("disabled", true);
+    
     CerrarWaiting();
-    //return true;
 }
 
+// NUEVA FUNCIÓN: Simplificar la lógica de análisis del botón detalle
 function analizaEstadoBtnDetalle() {
-    var res = $("#divDetalle").hasClass("show");
-    if (res === true) {
-        selectRegProd(regSelected, tabGrid01);
-    }
-   // return true;
-
+    // Esta función ahora solo verifica el estado
+    // La lógica de cancelación se maneja en el evento click de userRules.js
+    return $("#divDetalle").is(":visible");
 }
 
 function buscarUsers(pagina) {
@@ -400,10 +406,10 @@ function buscarUserServer(data) {
         activarBotones(true);
 
         // Verificar si hay una acción activa antes de deshabilitar tabs
-        var hayAccionActiva = (accion !== "" && accion !== AbmAction.CANCEL) || 
-                              (accion02 !== "" && accion02 !== AbmAction.CANCEL) || 
-                              (accion03 !== "" && accion03 !== AbmAction.CANCEL) || 
-                              (accion04 !== "" && accion04 !== AbmAction.CANCEL);
+        var hayAccionActiva = (accion !== "" && accion !== AbmAction.CANCEL) ||
+            (accion02 !== "" && accion02 !== AbmAction.CANCEL) ||
+            (accion03 !== "" && accion03 !== AbmAction.CANCEL) ||
+            (accion04 !== "" && accion04 !== AbmAction.CANCEL);
 
         if (EntidadEstado !== "NO" && hayAccionActiva) {
             $("#BtnLiTab02").prop("disabled", true).addClass("text-danger");
