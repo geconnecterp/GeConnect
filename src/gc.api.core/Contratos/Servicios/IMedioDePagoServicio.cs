@@ -8,7 +8,7 @@ namespace gc.api.core.Contratos.Servicios
 	{
 		List<MedioDePagoABMDto> GetMedioDePagoParaABM(string ins_id);
 		List<OpcionCuotaDto> GetOpcionesDeCuotaParaABM(string ins_id);
-		List<OpcionCuotaDto> GetOpcionDeCuotaParaABM(string ins_id, int cuota);
+		List<OpcionCuotaDto> GetOpcionDeCuotaParaABM(string ins_id, int opcion);
 		List<FinancieroListaDto> GetCuentaFinYContableListaParaABM(string ins_id);
 		List<FinancieroListaDto> GetCuentaFinYContableParaABM(string ctaf_id);
 	}

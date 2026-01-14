@@ -6,11 +6,11 @@
 	var gasto = Model.ComboCuentaGasto;
 	var conta = Model.ComboCuentaContable;
 }
-<div class="row">
+<div class="row ms-1">
 	<div class="col-md-8">
-		<div class="row">
-			<div class="card">
-				<div class="card-body mt-1">
+		<div class="row ms-1">
+			<div class="card p-0 mt-1 col-md-8">
+				<div class="card-body p-2">
 					<div class="table-responsive text-nowrap table-wrapper-200-full">
 						<table class="table table-sm mb-0 table-hover table-golden" id="tbCuentaFinYContable">
 							<thead>
@@ -27,7 +27,7 @@
 									@foreach (var item in Model.ListaCuentaFin.ListaDatos)
 									{
 										<tr onclick="selectRegCli(this, 'tbCuentaFinYContable')" ondblclick="selectRegDbl(this, 'tbCuentaFinYContable')">
-											<td class="align-left">@item.ctaf_id</td>
+											<td class="align-center">@item.ctaf_id</td>
 											<td class="align-left">@item.ctaf_denominacion</td>
 											<td class="align-left">@item.Ctaf_Estado_Des</td>
 											<td style="display:none;">@item.Ins_Id</td>
@@ -41,7 +41,7 @@
 			</div>
 		</div>
 		<div id="divCuentaFinYContableSelected">
-			<div class="row" style="padding-top: 10px;">
+			<div class="row col-md-9 py-1">
 				@Html.HiddenFor(x => x.CuentaFin.Ins_Id)
 				<div class="row mt-1">
 					<div class="input-group input-group-sm">

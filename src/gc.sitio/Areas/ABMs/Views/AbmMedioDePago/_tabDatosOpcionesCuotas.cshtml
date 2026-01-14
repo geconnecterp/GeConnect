@@ -1,11 +1,11 @@
 ﻿@model MedioDePagoAbmOpcCuotaModel
 @{
 }
-<div class="row">
+<div class="row ms-1">
 	<div class="col-md-8">
-		<div class="row">
-			<div class="card">
-				<div class="card-body mt-1">
+		<div class="row ms-1">
+			<div class="card p-0 mt-1 col-md-8">
+				<div class="card-body p-2">
 					<div class="table-responsive text-nowrap table-wrapper-200-full">
 						<table class="table table-sm mb-0 table-hover table-golden" id="tbOpcionesCuotas">
 							<thead>
@@ -23,9 +23,10 @@
 									@foreach (var item in Model.ListaOpcionesCuota.ListaDatos)
 									{
 										<tr onclick="selectRegCli(this, 'tbOpcionesCuotas')" ondblclick="selectRegDbl(this, 'tbOpcionesCuotas')">
-											<td class="align-left">@item.Cuota</td>
-											<td class="align-left">@item.Pos_Plan</td>
-											<td class="align-left">@item.Recargo</td>
+											<td class="align-center">@item.Opcion</td>
+											<td class="align-center">@item.Pos_Plan</td>
+											<td class="align-left">@item.Pos_Desc</td>
+											<td class="align-right">@item.Recargo</td>
 											<td style="display:none;">@item.Ins_Id</td>
 										</tr>
 									}
@@ -37,18 +38,25 @@
 			</div>
 		</div>
 		<div id="divOpcionesCuotasSelected">
-			<div class="row" style="padding-top: 10px;">
+			<div class="row col-md-9 py-1">
 				@Html.HiddenFor(x => x.OpcionCuota.Ins_Id)
+				@Html.HiddenFor(x => x.OpcionCuota.Opcion)
 				<div class="row mt-1">
 					<div class="input-group input-group-sm">
-						<span class="input-group-text fixed-lbl-for-abm-70">Cuota: </span>
-						<input type="number" asp-for="OpcionCuota.Cuota" class="form-control activable" />
+						<span class="input-group-text fixed-lbl-for-abm-100">Cuota Pos: </span>
+						<input type="number" asp-for="OpcionCuota.Pos_Plan" class="form-control activable" min="1" max="99" />
 					</div>
 				</div>
 				<div class="row mt-1">
 					<div class="input-group input-group-sm">
-						<span class="input-group-text fixed-lbl-for-abm-70">Recargo: </span>
-						<input type="number" asp-for="OpcionCuota.Recargo" class="form-control activable" />
+						<span class="input-group-text fixed-lbl-for-abm-100">Descripción: </span>
+						<input type="text" asp-for="OpcionCuota.Pos_Desc" class="form-control activable" />
+					</div>
+				</div>
+				<div class="row mt-1">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text fixed-lbl-for-abm-100">Recargo: </span>
+						<input type="number" asp-for="OpcionCuota.Recargo" class="form-control activable" min="-10" max="40" />
 					</div>
 				</div>
 			</div>

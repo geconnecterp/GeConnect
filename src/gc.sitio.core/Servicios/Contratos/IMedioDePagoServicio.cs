@@ -7,7 +7,7 @@ namespace gc.sitio.core.Servicios.Contratos
 	{
 		List<MedioDePagoABMDto> GetMedioDePagoParaABM(string insId, string token);
 		List<OpcionCuotaDto> GetOpcionesCuota(string insId, string token);
-		List<OpcionCuotaDto> GetOpcionCuota(string insId, int cuota, string token);
+		List<OpcionCuotaDto> GetOpcionCuota(string insId, int opcion, string token);
 		List<FinancieroListaDto> GetCuentaFinYContableLista(string insId, string token);
 		List<FinancieroListaDto> GetCuentaFinYContable(string ctafId, string token);
 	}

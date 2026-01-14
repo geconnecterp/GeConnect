@@ -3,8 +3,10 @@
 	public class OpcionCuotaModel
 	{
 		public string Ins_Id { get; set; } = string.Empty;
-		public int Cuota { get; set; } = 0;
+		public int Opcion { get; set; } = 0;
+		public string Pos_Plan { get; set; } = string.Empty;
+		public string Pos_Desc { get; set; } = string.Empty;
 		public decimal Recargo { get; set; } = 0.00M;
-		public string? Pos_Plan { get; set; }
+		
 	}
 }

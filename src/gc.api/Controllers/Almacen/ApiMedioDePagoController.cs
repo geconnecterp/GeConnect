@@ -65,11 +65,11 @@ namespace gc.api.Controllers.Almacen
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<OpcionCuotaDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]
-		public IActionResult GetOpcionDeCuotaParaABM(string ins_id, int cuota)
+		public IActionResult GetOpcionDeCuotaParaABM(string ins_id, int opcion)
 		{
 			ApiResponse<List<OpcionCuotaDto>> response;
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
-			var res = _medioDePagoServicio.GetOpcionDeCuotaParaABM(ins_id, cuota);
+			var res = _medioDePagoServicio.GetOpcionDeCuotaParaABM(ins_id, opcion);
 
 			response = new ApiResponse<List<OpcionCuotaDto>>(res);
 

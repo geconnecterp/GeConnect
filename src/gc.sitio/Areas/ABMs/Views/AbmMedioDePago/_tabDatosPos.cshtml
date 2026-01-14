@@ -1,9 +1,9 @@
 ﻿@model MedioDePagoAbmPosModel
 @{
 }
-<div class="row">
+<div class="row ms-1">
 	<div class="col-md-8">
-		<div class="row" style="padding-top: 10px;">
+		<div class="row col-md-9 py-1">
 			@Html.HiddenFor(x => x.Ins_Id)
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
@@ -14,7 +14,7 @@
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-130">POS Contactless: </span>
-					<input type="text" asp-for="Ins_Id_Pos_Ctls" class="form-control activable" maxlength="2"/>
+					<input type="text" asp-for="Ins_Id_Pos_Ctls" class="form-control activable" maxlength="2" />
 				</div>
 			</div>
 		</div>

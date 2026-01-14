@@ -100,7 +100,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 					else
 					{ TCSelected = string.Empty; }
 				}
-				else if(query != null && query.Rel01 != null && query.Rel01.Count > 0 && TCSelected!= query.Rel01.First())
+				else if (query != null && query.Rel01 != null && query.Rel01.Count > 0 && TCSelected != query.Rel01.First())
 				{ TCSelected = query.Rel01.First(); }
 
 				if (PaginaProd == pag && !buscaNew)
@@ -212,7 +212,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 
 		[HttpPost]
 		//public async Task<IActionResult> BuscarOpcionCuota(string insId, int cuota)
-		public IActionResult BuscarOpcionCuota(string insId, int cuota)
+		public IActionResult BuscarOpcionCuota(string insId, int opcion)
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
@@ -220,10 +220,17 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 				if (string.IsNullOrEmpty(insId))
 					return PartialView("_tabDatosOpcionesCuotasSelected", new MedioDePagoAbmOpcCuotaSelectedModel());
 
-				var opcCuota = _medioDePagoServicio.GetOpcionCuota(insId, cuota, TokenCookie);
+				var opcCuota = _medioDePagoServicio.GetOpcionCuota(insId, opcion, TokenCookie);
 				var model = new MedioDePagoAbmOpcCuotaSelectedModel()
 				{
-					OpcionCuota = new OpcionCuotaModel() { Cuota = opcCuota.First().Cuota, Ins_Id = opcCuota.First().Ins_Id, Recargo = opcCuota.First().Recargo, Pos_Plan = opcCuota.First().Pos_Plan }
+					OpcionCuota = new OpcionCuotaModel()
+					{
+						Pos_Plan = opcCuota.First().Pos_Plan,
+						Pos_Desc = opcCuota.First().Pos_Desc,
+						Ins_Id = opcCuota.First().Ins_Id,
+						Recargo = opcCuota.First().Recargo,
+						Opcion = opcCuota.First().Opcion
+					}
 				};
 				return PartialView("_tabDatosOpcionesCuotasSelected", model);
 			}
@@ -377,7 +384,14 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			{
 				var model = new MedioDePagoAbmOpcCuotaSelectedModel()
 				{
-					OpcionCuota = new OpcionCuotaModel() { Cuota = 1, Ins_Id = insId, Recargo = 0, Pos_Plan = null }
+					OpcionCuota = new OpcionCuotaModel() 
+					{ 
+						Pos_Plan = "1", 
+						Pos_Desc = "", 
+						Ins_Id = insId, 
+						Recargo = 0, 
+						Opcion = 0 
+					}
 				};
 				return PartialView("_tabDatosOpcionesCuotasSelected", model);
 			}
@@ -474,7 +488,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		}
 
 		[HttpPost]
-		public JsonResult DataOpsMedioDePago([FromBody] MPAbmValidationModel mp, string destinoDeOperacion, char tipoDeOperacion)
+		public JsonResult DataOpsMedioDePago(MPAbmValidationModel mp, string destinoDeOperacion, char tipoDeOperacion)
 		{
 			try
 			{
@@ -502,7 +516,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		}
 
 		[HttpPost]
-		public JsonResult DataOpsOpcionesCuota([FromBody] MPOpcionCuotaAbmValidationModel oc, string destinoDeOperacion, char tipoDeOperacion)
+		public JsonResult DataOpsOpcionesCuota(MPOpcionCuotaAbmValidationModel oc, string destinoDeOperacion, char tipoDeOperacion)
 		{
 			try
 			{
@@ -530,7 +544,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		}
 
 		[HttpPost]
-		public JsonResult DataOpsCuentaFinYContable(	[FromBody] MPCuentaFinYContableAbmValidationModel cc, string destinoDeOperacion, char tipoDeOperacion)
+		public JsonResult DataOpsCuentaFinYContable(MPCuentaFinYContableAbmValidationModel cc, string destinoDeOperacion, char tipoDeOperacion)
 		{
 			try
 			{
@@ -558,7 +572,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		}
 
 		[HttpPost]
-		public JsonResult DataOpsPos([FromBody] MPPosAbmValidationModel pos, string destinoDeOperacion, char tipoDeOperacion)
+		public JsonResult DataOpsPos(MPPosAbmValidationModel pos, string destinoDeOperacion, char tipoDeOperacion)
 		{
 			try
 			{

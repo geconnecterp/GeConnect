@@ -26,13 +26,13 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
-		public List<OpcionCuotaDto> GetOpcionDeCuotaParaABM(string ins_id, int cuota)
+		public List<OpcionCuotaDto> GetOpcionDeCuotaParaABM(string ins_id, int opcion)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_ABM_OPCION_CUOTA_DATOS;
 			var ps = new List<SqlParameter>()
 			{
 					new("@ins_id", ins_id),
-					new("@cuota", cuota)
+					new("@opcion", opcion)
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<OpcionCuotaDto>(sp, ps, true);
 			return listaTemp;

@@ -113,7 +113,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
-		public List<OpcionCuotaDto> GetOpcionCuota(string insId, int cuota, string token)
+		public List<OpcionCuotaDto> GetOpcionCuota(string insId, int opcion, string token)
 		{
 			ApiResponse<List<OpcionCuotaDto>> respuesta;
 			string stringData;
@@ -122,7 +122,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 				HelperAPI helper = new();
 				HttpClient client = helper.InicializaCliente(token);
 				HttpResponseMessage response;
-				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerOpcionDeCuotaParaABM}?ins_id={insId}&cuota={cuota}";
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerOpcionDeCuotaParaABM}?ins_id={insId}&opcion={opcion}";
 				response = client.GetAsync(link).GetAwaiter().GetResult();
 				if (response.StatusCode == HttpStatusCode.OK)
 				{

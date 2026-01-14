@@ -287,6 +287,7 @@ function ModificaMedioDePago(tabAct) {
 	desactivarGrilla(Grids.GridMedioDePago);
 	$("#MedioDePago_Ins_Id").prop("disabled", true);
 	$("#MedioDePago_Ins_Desc").focus();
+	ControlaChangeChkLinkActivo();
 }
 
 function ModificaOpcionesCuota(tabAct, mainGrid) {
@@ -411,13 +412,13 @@ function selectRegDbl(x, gridId) {
 			}
 			break;
 		case Grids.GridOpcionesCuotas:
-			var insId = x.cells[2].innerText.trim();
-			var cuota = x.cells[0].innerText.trim();
-			var data = { insId, cuota };
+			var insId = x.cells[4].innerText.trim();
+			var opcion = x.cells[0].innerText.trim();
+			var data = { insId, opcion };
 			AbrirWaiting();
 			PostGenHtml(data, buscarOpcionCuotaUrl, function (obj) {
 				$("#divOpcionesCuotasSelected").html(obj);
-				$("#IdSelected").val(cuota);
+				$("#IdSelected").val(opcion);
 				$(".activable").prop("disabled", true);
 				activarBotones(true);
 				CerrarWaiting();
@@ -483,23 +484,18 @@ function BuscarMedioDePago(insId) {
 function ActualizarTabsSegunTipoSeleccionadoEnFiltro() {
 	// Ocultar todos
 	$("#tabOpcionesCuotas, #tabPos").hide();
-	$("#navs-top-profile, #navs-top-notes").hide();
+	//$("#navs-top-profile, #navs-top-notes").hide();
 
 	const valor = $("#listaLs03").val();
 
 	if (valor === "TC") {
 		$("#tabOpcionesCuotas").show();
-		$("#navs-top-profile").show();
+		//$("#navs-top-profile").show();
 		$("#tabPos").show();
-		$("#navs-top-notes").show();
+		//$("#navs-top-notes").show();
 	} else if (valor === "TD") {
 		$("#tabPos").show();
-		$("#navs-top-notes").show();
-
-		// Si estaba activo, volver al principal
-		if ($("#btnTabOpcionesCuotas").hasClass("active")) {
-			$("#btnTabMedioDePago").tab("show");
-		}
+		//$("#navs-top-notes").show();
 	} 
 }
 function ControlarVisibilidadSegunTipoSeleccionadoEnFiltro() {
@@ -540,9 +536,9 @@ function ValidarTabs() {
 	if (tcfId != "TC" && tcfId!="TD") {
 		$("#btnTabPos").prop("disabled", true);
 	}
-	if ($("#chkLinkActivo")[0].checked) {
-		$("#btnTabCuentaFinContable").prop("disabled", true);
-	}
+	//if ($("#chkLinkActivo")[0].checked) {
+	//	$("#btnTabCuentaFinContable").prop("disabled", true);
+	//}
 }
 
 function buscarMediosDePago(pag, esBaja = false) {
@@ -560,7 +556,7 @@ function buscarMediosDePago(pag, esBaja = false) {
 		id2 = $("#Id2").val();
 	}
 	//TODO: Mandar el valor seleccionado del combo
-	if ($("#chkRel01").is(":checked")) {
+	if ($("#chkRel03").is(":checked")) {
 		r01.push($("#listaLs03").val());
 	}
 
@@ -665,10 +661,11 @@ function ObtenerDatosDeMedioDePagoParaJson(destinoDeOperacion, tipoDeOperacion) 
 
 function ObtenerDatosDeOpcCuotaParaJson(destinoDeOperacion, tipoDeOperacion) {
 	var ins_id = $("#MedioDePago_Ins_Id").val();
-	var cuota = $("#OpcionCuota_Cuota").val();
+	var pos_plan = $("#OpcionCuota_Pos_Plan").val();
+	var pos_desc = $("#OpcionCuota_Pos_Desc").val();
 	var recargo = $("#OpcionCuota_Recargo").val();
-
-	var data = { ins_id, cuota, recargo, destinoDeOperacion, tipoDeOperacion };
+	var opcion = $("#OpcionCuota_Opcion").val();
+	var data = { ins_id, pos_plan, pos_desc, recargo, opcion, destinoDeOperacion, tipoDeOperacion };
 	return data;
 }
 

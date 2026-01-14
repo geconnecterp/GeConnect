@@ -15,7 +15,7 @@
 		@Html.HiddenFor(x => x.MedioDePago.Ins_Tiene_Vto)
 		@Html.HiddenFor(x => x.MedioDePago.Tcf_Id)
 		@Html.HiddenFor(x => x.MedioDePago.Tcf_Desc)
-		<div class="row mt-1">
+		<div class="row mt-1 ms-1">
 			<div class="input-group input-group-sm">
 				<span class="input-group-text fixed-lbl-for-abm-100">ID</span>
 				<input type="text" asp-for="MedioDePago.Ins_Id" class="form-control activable" maxlength="3" />
@@ -25,19 +25,19 @@
 				</div>
 			</div>
 		</div>
-		<div class="row mt-1">
+		<div class="row mt-1 ms-1">
 			<div class="input-group input-group-sm">
 				<span class="input-group-text fixed-lbl-for-abm-100">Descripción</span>
 				<input type="text" asp-for="MedioDePago.Ins_Desc" class="form-control activable" />
 			</div>
 		</div>
-		<div class="row mt-1">
+		<div class="row mt-1 ms-1">
 			<div class="input-group input-group-sm">
 				<span class="input-group-text fixed-lbl-for-abm-100">Moneda: </span>
 				@Html.DropDownListFor(m => m.MedioDePago.Mon_Codigo, mon, "Seleccionar...", new { @id = "listaMoneda", @class = "form-control activable" })
 			</div>
 		</div>
-		<div class="row mt-1" id="divDatosDeLiquidacion">
+		<div class="row mt-1 ms-1" id="divDatosDeLiquidacion">
 			<fieldset>
 				<legend>
 					Datos de Liquidación
@@ -68,7 +68,7 @@
 				</div>
 			</fieldset>
 		</div>
-		<div class="row mt-1" id="divChkLinkActivo">
+		<div class="row mt-1 ms-1" id="divChkLinkActivo">
 			<div class="input-group input-group-sm">
 				<div class="form-check form-check-inline form-switch mb-2">
 					<input class="form-check-input activable" type="checkbox" asp-for="MedioDePago.Ctaf_Id_Link_Check" value="" id="chkLinkActivo">
@@ -76,7 +76,7 @@
 				</div>
 			</div>
 		</div>
-		<div class="row mt-1" id="divListaFinanciero">
+		<div class="row mt-1 ms-1 mb-1" id="divListaFinanciero">
 			<div class="input-group input-group-sm">
 				<span class="input-group-text fixed-lbl-for-abm-130">Cuenta Financiera: </span>
 				@Html.DropDownListFor(m => m.MedioDePago.Ctaf_Id_Link, fin, "Seleccionar...", new { @id = "listaFinanciero", @class = "form-control activable" })
