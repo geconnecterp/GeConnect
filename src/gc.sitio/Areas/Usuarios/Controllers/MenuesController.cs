@@ -241,7 +241,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 AbmGenDto abm = new AbmGenDto()
                 {
                     Json = JsonConvert.SerializeObject(perfil),
-                    Objeto = "Perfil",
+                    Objeto = "perfiles",
                     Administracion = AdministracionId,
                     Usuario = UserName,
                     Abm = accion

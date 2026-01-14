@@ -1,7 +1,6 @@
 ﻿$(function () {
     //configuraciones
 
-
     $("#btnAbmNuevo").on("click", ejecutarAlta);
     $("#btnAbmModif").on("click", ejecutarModificacion);
     $("#btnAbmElimi").on("click", ejecutarBaja);
@@ -9,14 +8,25 @@
     $("#btnAbmCancelar").on("click", InicializaPantallaUser);
     $("#btnAbmAceptar").on("click", confirmarOperacionAbmUsuario);
 
-    $("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle);
-    ////balanza
-    //$(document).on("click", "#PBalanza", controlaBalanza);
-    //$(document).on("click", "#PConVto", controlaVencimiento);
-    //$(document).on("click", "#PMatPri", controlaMateriaPrima);
-    //$(document).on("change", "#Up_Id", controlaValorUpId);
-    //$(document).on("change", "#iva_situacion", controlaValorIva);
+    // CORRECCIÓN: Cambiar de "mousedown" a "click" para mejor control
+    $("#btnDetalle").on("click", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        var divVisible = $("#divDetalle").is(":visible");
+        
+        if (divVisible) {
+            // Si el detalle está visible, realizar cancelación
+            InicializaPantallaUser(Grids.GridUser);
+        } else {
+            // Si no está visible, no hacer nada (se maneja en el dblclick)
+            // El div se abrirá cuando se seleccione un usuario
+        }
+    });
 
+    $("#btnCancel").on("click", function () {
+        window.location.href = homeUser;
+    });
 });
 
 function ejecutarBaja() {

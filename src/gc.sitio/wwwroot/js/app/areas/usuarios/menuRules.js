@@ -10,6 +10,9 @@
 
     $("#MenuId").on("change", buscarMenu);
 
+    $("BtnLiTab01").on("click", function () { tabMn = 1; })
+    $("BtnLiTab02").on("click", function () { tabMn = 2; })
+
     //$(document).on('changed.jstree', '#menu', function (e, mndata) {
 
     //    switch (mndata.action) {
@@ -239,7 +242,7 @@ function ejecutarAlta() {
 }
 
 function ejecutarModificacion() {
-    if ($("#MenuId option:selected").val() === "") {
+    if ($("#MenuId option:selected").val() === "" && tabMn === 2) {
         AbrirMensaje("AVISO!!", "ANTES DE REALIZAR LA MODIFICACIÓN DEL MENÚ, SELECCIONE UNO. GRACIAS.", function () {
             $("#msjModal").modal("hide");
         }, false, ["Continuar"], "warn!", null);
@@ -248,7 +251,9 @@ function ejecutarModificacion() {
     $("#divFiltro").collapse("hide");
     accionBotones(AbmAction.MODIFICACION);
     activarControles(true);
-    activarArbol("#", true);
+    if (tabMn === 2) {
+        activarArbol("#", true);
+    }
 }
 
 function ejecutarBaja() {
