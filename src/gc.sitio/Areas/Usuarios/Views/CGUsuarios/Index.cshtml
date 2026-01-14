@@ -4,7 +4,7 @@
 @{
     Layout = "~/views/shared/_Layout.cshtml";
     var filtro = new QueryFilters() { Rel01 = null, Rel02 = null, Modelo = ModeloFilter.USUARIOS };
-    
+
 }
 
 @section styles {
@@ -12,31 +12,31 @@
     <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
 
-<div class="container">
-    <partial name="_botonera" model="filtro" />
 
-    <div class="collapse" id="divFiltro" style="">
-        <partial name="_filtroBase" model="filtro" />
-        @Html.Hidden("pagEstado", false)
+<partial name="_botonera" model="filtro" />
+
+<div class="collapse" id="divFiltro" style="">
+    <partial name="_filtroBase" model="filtro" />
+    @Html.Hidden("pagEstado", false)
+</div>
+<div class="collapse" id="divDetalle" style="">
+    <partial name="_n01tabsUsuarios" />
+</div>
+<div class="row">
+    @* <partial name="_gridAbmProds"  /> *@
+    <div id="divGrilla">
+        <p style="background-color:gray">
+            <h5>No se han especificado datos aún.</h5>
+        </p>
     </div>
-    <div class="collapse" id="divDetalle" style="">
-        <partial name="_n01tabsUsuarios" />
-    </div>
-    <div class="row">
-        @* <partial name="_gridAbmProds"  /> *@
-        <div id="divGrilla">
-            <p style="background-color:gray">
-                <h5>No se han especificado datos aún.</h5>
-            </p>
-        </div>
-    </div>
-    <div class="row">
-        <div class="offset-md-3 col-md-6">
-            <div id="divPaginacion" class="">
-            </div>
+</div>
+<div class="row">
+    <div class="offset-md-3 col-md-6">
+        <div id="divPaginacion" class="">
         </div>
     </div>
 </div>
+
 
 @section scripts {
     <script type="text/javascript">
@@ -57,7 +57,7 @@
         var confirmarAdmsUserUrl = "@Url.Action("confirmarAdmsUser", "cgusuarios", new { area = "usuarios" })";
         var confirmarDersUserUrl = "@Url.Action("confirmarDersUser", "cgusuarios", new { area = "usuarios" })";
 
-        
+
         // var buscarPerfilesUrl = "@Url.Action("buscarPerfiles", "menues", new { area = "usuarios" })";
         // var buscarPerfilUrl = "@Url.Action("buscarPerfil", "menues", new { area = "usuarios" })";
         // var buscarPerfilesMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "menues", new { area = "usuarios" })";
@@ -80,10 +80,4 @@
     <script src="~/js/app/areas/usuarios/userMod.js"></script>
     <script src="~/js/app/areas/usuarios/userRules.js"></script>
 
-
-    @*  <script type="text/javascript" src="~/js/app/areas/usuarios/menuSettings.js"></script>
-    <script type="text/javascript" src="~/js/app/areas/abms/abmcommons.js"></script>
-
-    <script type="text/javascript" src="~/js/app/areas/usuarios/menuRules.js"></script>
-    <script type="text/javascript" src="~/js/app/areas/usuarios/menu.js"></script> *@
 }
