@@ -97,7 +97,7 @@
     });
 
     InicializaPantallaUser(Grids.GridUser);
-  
+    $("#divFiltro").collapse("show");
 });
 
 function selectUserRegDbl(x, gridId) {
@@ -293,7 +293,7 @@ function InicializaPantallaUser(grilla) {
         
         // Limpiar el panel de detalles
         $("#divpanel01").empty();
-        $("#divFiltro").collapse("show");
+        //$("#divFiltro").collapse("show");
         // Resetear variables de acción
         //accion = "";
         //accion02 = "";

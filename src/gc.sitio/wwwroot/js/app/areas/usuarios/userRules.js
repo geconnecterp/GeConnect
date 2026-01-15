@@ -332,9 +332,24 @@ function confirmarOperacionAbmUsuario() {
         }
         else {
             CerrarWaiting();
+
+            // Si es baja, redirigir
+            if (accion === 'B') {
+                AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                    window.location.href = homeUser;
+                }, false, ["CONTINUAR"], "succ!", null);
+                return;
+            }
+
+            // Para alta o modificación
+            var esAltaOModif = (accion === 'A' || accion === 'M');
+            var logon = $("#usu_id").val();
+            var logonNN = $("#usu_apellidoynombre").val();
+            var grilla = "tbGridUsers";
+
             AbrirMensaje("ATENCIÓN", obj.msg, function () {
                 //todo fue bien, por lo que se deberia reinicializar la pantalla.
-                var grilla = "";
+               
                 switch (tabAbm) {
                     case 1:
                         grilla = Grids.GridUser;
