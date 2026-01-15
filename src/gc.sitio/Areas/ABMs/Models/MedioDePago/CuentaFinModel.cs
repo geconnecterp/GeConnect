@@ -15,7 +15,9 @@
 		public string? Ins_Id { get; set; }
 		public string? Ins_Desc { get; set; }
 		public string Ccb_Id { get; set; } = string.Empty;
+		public string Ccb_Desc { get; set; } = string.Empty;
 		public string? Ccb_Id_Diferido { get; set; }
+		public string? Ccb_Desc_Diferido { get; set; } = string.Empty;
 		public string? Ctag_Id { get; set; }
 		public string? Mon_Codigo { get; set; }
 		public string? Cta_Id { get; set; }

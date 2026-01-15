@@ -6,6 +6,7 @@
 }
 
 @section styles {
+	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 	<link rel="stylesheet" href="~/css/simplePagination.css" />
 }
 
@@ -108,7 +109,18 @@
 		var dataOpsPosUrl = "@Url.Action("DataOpsPos", "abmmediodepago", new { area = "abms" })";
 		var buscarMedioDePagoCargadoUrl = "@Url.Action("BuscarMedioDePagoCargado", "abmmediodepago", new { area = "abms" })";
 		let cargarTiposDeMedioDePagoUrl = "@Url.Action("CargarTiposDeMedioDePago", "abmmediodepago", new { area = "abms" })";
+
+		// Añadir la URL para el plan de cuentas
+		var buscarPlanCuentasUrl = '@Url.Action("Buscar", "ABMPlanCuenta", new { area = "ABMs" })';
+
+		// Asignar la URL al cargar la página
+		$(function() {
+			// Configurar la URL para el selector de cuentas
+			window.buscarPlanCuentasUrl = buscarPlanCuentasUrl;
+		});
 	</script>
+	<script src="~/lib/jstree/jstree.min.js"></script>
+
 	<script src="~/js/plugins/jquery.simplePagination.js"></script>
 	<script src="~/js/app/busquedas.js"></script>
 	<script src="~/js/app/areas/abms/abmsettings.js" type="text/javascript"></script>

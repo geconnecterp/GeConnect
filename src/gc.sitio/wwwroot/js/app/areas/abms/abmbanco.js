@@ -180,13 +180,13 @@ function ObtenerDatosDeBancoParaJson(destinoDeOperacion, tipoDeOperacion) {
 	var ban_cuenta_cbu = $("#Banco_Ban_Cuenta_Cbu").val();
 	var mon_codigo = $("#listaMoneda").val();
 	var mon_desc = $("#listaMoneda option:selected").text();
-	var ban_che_nro = $("#Banco_Ban_Che_Nro").val();  
+	var ban_che_nro = $("#Banco_Ban_Che_Nro").val();
 	var ban_che_desde = $("#Banco_Ban_Che_Desde").val();
 	var ban_che_hasta = $("#Banco_Ban_Che_Hasta").val();
 	var ccb_id = $("#cuentaContableId").val();
-	var ccb_desc = $("#cuentaContable").val();
+	var ccb_desc = limpiarDescripcion($("#cuentaContable").val());
 	var ccb_id_diferido = $("#cuentaContableDifId").val();
-	var ccb_desc_diferido = $("#cuentaContableDif").val();
+	var ccb_desc_diferido = limpiarDescripcion($("#cuentaContableDif").val());
 	var ctag_id = $("#listaCtaGas").val();
 	var ctag_denominacion = $("#listaCtaGas option:selected").text();
 	var data = {
@@ -195,6 +195,11 @@ function ObtenerDatosDeBancoParaJson(destinoDeOperacion, tipoDeOperacion) {
 	}
 	return data;
 }
+
+function limpiarDescripcion(desc) {
+	return desc.replace(/^\(\d+\)\s*/, "");
+}
+
 
 function buscarBancos(pag, esBaja = false) {
 	AbrirWaiting();
@@ -287,8 +292,21 @@ function BuscarBanco(ctafId) {
 	PostGenHtml(data, buscarBancoUrl, function (obj) {
 		$("#divDatosBanco").html(obj);
 		$("#IdSelected").val($("#Banco_Ctaf_Id").val());
-		$("#cuentaContable").val($("#Banco_Ccb_Desc").val());
-		$("#cuentaContableDif").val($("#Banco_Ccb_Desc_Diferido").val());
+		let ccb_desc = "";
+		let id = $("#Banco_Ccb_Id").val();
+		let nombre = $("#Banco_Ccb_Desc").val();
+		if (id != undefined) {
+			ccb_desc = `(${id}) ${nombre}`;
+			$("#cuentaContable").val(ccb_desc);
+			$("#cuentaContableId").val(id);
+		}
+		id = $("#Banco_Ccb_Id_Diferido").val();
+		nombre = $("#Banco_Ccb_Desc_Diferido").val();
+		if (id != undefined) {
+			ccb_desc = `(${id}) ${nombre}`;
+			$("#cuentaContableDif").val(ccb_desc);
+			$("#cuentaContableDifId").val(id);
+		}
 		$(".activable").prop("disabled", true);
 		CerrarWaiting();
 	}, function (obj) {
@@ -318,8 +336,14 @@ function inicializarSelectorCuentas() {
 		// Abrir el modal
 		$('#selectorPlanCuentasModal').modal('show');
 
+		let tree = $('#cuentasTree').jstree(true);
+		let tieneNodos = false;
+		if (tree && tree.get_json('#', { flat: true }).length > 0) {
+			tieneNodos = true;
+		}
+
 		// Cargar el árbol si no está inicializado
-		if (!arbolCuentasInicializado) {
+		if (!arbolCuentasInicializado || !tieneNodos) {
 			cargarArbolCuentas();
 		}
 	});

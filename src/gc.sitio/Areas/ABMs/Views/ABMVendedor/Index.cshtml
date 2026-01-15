@@ -2,64 +2,61 @@
 @model QueryFilters
 
 @{
-    Layout = "~/views/shared/_Layout.cshtml";
-    var filtro = new QueryFilters() { Rel01 = null, Rel02 = null, Modelo = ModeloFilter.VENDEDORES };
+	Layout = "~/views/shared/_Layout.cshtml";
+	var filtro = new QueryFilters() { Rel01 = null, Rel02 = null, Modelo = ModeloFilter.VENDEDORES };
 
 }
 @section styles {
-    <link rel="stylesheet" href="~/css/simplePagination.css" />
-    <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+	<link rel="stylesheet" href="~/css/simplePagination.css" />
+	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
 
 <div class="container">
-    <partial name="_botonera" model="filtro" />
-    <div class="collapse" id="divFiltro" style="">
-        <partial name="_filtroBase" model="filtro" />
-        @Html.Hidden("pagEstado", false)
-    </div>
-    <div class="collapse" id="divDetalle" style="">
-        <partial name="_n01tabsVendedor" />
-    </div>
-    <div class="row">
-        @* <partial name="_gridAbmProds"  /> *@
-        <div id="divGrilla">
-            <p style="background-color:gray">
-                <h5>No se han especificado datos aún.</h5>
-            </p>
-        </div>
-    </div>
-    <div class="row">
-        <div class="offset-md-3 col-md-6">
-            <div id="divPaginacion" >
-            </div>
-        </div>
-    </div>
+	<partial name="_botonera" model="filtro" />
+	<div class="collapse" id="divFiltro" style="">
+		<partial name="_filtroBase" model="filtro" />
+		@Html.Hidden("pagEstado", false)
+	</div>
+	<div class="collapse" id="divDetalle" style="">
+		<partial name="_n01tabsVendedor" />
+	</div>
+	<div class="collapse row" id="divGrilla">
+		<p style="background-color:gray">
+			<h5>No se han especificado datos aún.</h5>
+		</p>
+	</div>
+	<div class="collapse row">
+		<div class="offset-md-3 col-md-6">
+			<div id="divPaginacion" class="collapse">
+			</div>
+		</div>
+	</div>
 </div>
 
 @section scripts {
-    <script type="text/javascript">
+	<script type="text/javascript">
 
-        var buscarUrl = "@Url.Action("buscar", "ABMVendedor", new { area = "abms" })";
-        var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "ABMVendedor", new { area = "abms" })";
-        var buscarVendedorUrl = "@Url.Action("BuscarVendedorDatos", "ABMVendedor", new { area = "abms" })";
-        var nuevoVendedorUrl = "@Url.Action("NuevoVendedor", "ABMVendedor", new { area = "abms" })";
+		var buscarUrl = "@Url.Action("buscar", "ABMVendedor", new { area = "abms" })";
+		var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "ABMVendedor", new { area = "abms" })";
+		var buscarVendedorUrl = "@Url.Action("BuscarVendedorDatos", "ABMVendedor", new { area = "abms" })";
+		var nuevoVendedorUrl = "@Url.Action("NuevoVendedor", "ABMVendedor", new { area = "abms" })";
 
-        var confirmarAbmVendedorUrl = "@Url.Action("ConfirmarAbmVendedor", "ABMVendedor", new { area = "abms" })";
-       
-
-    </script>
-
-    <script src="~/lib/jstree/jstree.min.js"></script>
-    <script src="~/js/plugins/jquery.simplePagination.js"></script>
-
-    <script src="~/js/app/areas/abms/abmsettings.js"></script>
-    <script src="~/js/app/areas/abms/abmcommons.js"></script>
-
-    <script src="~/js/app/areas/vendedores/vendMod.js"></script>
-    <script src="~/js/app/areas/vendedores/vendRules.js"></script>
+		var confirmarAbmVendedorUrl = "@Url.Action("ConfirmarAbmVendedor", "ABMVendedor", new { area = "abms" })";
 
 
-    @*  <script type="text/javascript" src="~/js/app/areas/usuarios/menuSettings.js"></script>
+	</script>
+
+	<script src="~/lib/jstree/jstree.min.js"></script>
+	<script src="~/js/plugins/jquery.simplePagination.js"></script>
+
+	<script src="~/js/app/areas/abms/abmsettings.js"></script>
+	<script src="~/js/app/areas/abms/abmcommons.js"></script>
+
+	<script src="~/js/app/areas/vendedores/vendMod.js"></script>
+	<script src="~/js/app/areas/vendedores/vendRules.js"></script>
+
+
+	@*  <script type="text/javascript" src="~/js/app/areas/usuarios/menuSettings.js"></script>
     <script type="text/javascript" src="~/js/app/areas/abms/abmcommons.js"></script>
 
     <script type="text/javascript" src="~/js/app/areas/usuarios/menuRules.js"></script>

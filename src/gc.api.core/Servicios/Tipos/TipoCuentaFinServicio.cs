@@ -28,6 +28,7 @@ namespace gc.api.core.Servicios
 					tcf_desc = x.tcf_desc,
 					tcf_id = x.tcf_id,
 					tcf_lista = x.tcf_lista,
+					tcf_rela = x.tcf_rela,
 					#endregion
 				}).ToList();
 		}

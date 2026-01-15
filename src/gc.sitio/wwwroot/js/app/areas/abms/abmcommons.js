@@ -1446,6 +1446,7 @@ function btnSubmitClick() {
 
 function Guardar() {
     if (validarCampos()) {
+        AbrirWaiting();
         var url = "";
         var gridParaActualizar = "";
         switch (destinoDeOperacion) {
@@ -1537,6 +1538,7 @@ function Guardar() {
         //var modelo = { ...data };
 
         PostGen(data, url, function (obj) {
+            CerrarWaiting();
             if (obj.error === true) {
                 AbrirMensaje("ATENCIÓN", obj.msg, function () {
                     $("#msjModal").modal("hide");

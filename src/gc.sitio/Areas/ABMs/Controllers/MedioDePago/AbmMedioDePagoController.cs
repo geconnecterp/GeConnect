@@ -79,7 +79,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		public IActionResult CargarTiposDeMedioDePago()
 		{
 			var model = new ListaTipoMedioDePagoModel();
-			var tipoNegs = TipoCuentaFinLista.Select(x => new ComboGenDto { Id = x.tcf_id, Descripcion = x.tcf_lista });
+			var tipoNegs = TipoCuentaFinLista.Where(x => x.tcf_rela == "I").Select(x => new ComboGenDto { Id = x.tcf_id, Descripcion = x.tcf_lista });
 			model.ListaTipo = HelperMvc<ComboGenDto>.ListaGenerica(tipoNegs.ToList());
 			return PartialView("_listaTipoMedioDePago", model);
 		}
@@ -384,13 +384,13 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			{
 				var model = new MedioDePagoAbmOpcCuotaSelectedModel()
 				{
-					OpcionCuota = new OpcionCuotaModel() 
-					{ 
-						Pos_Plan = "1", 
-						Pos_Desc = "", 
-						Ins_Id = insId, 
-						Recargo = 0, 
-						Opcion = 0 
+					OpcionCuota = new OpcionCuotaModel()
+					{
+						Pos_Plan = "1",
+						Pos_Desc = "",
+						Ins_Id = insId,
+						Recargo = 0,
+						Opcion = 0
 					}
 				};
 				return PartialView("_tabDatosOpcionesCuotasSelected", model);
@@ -670,6 +670,8 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 				Adm_Id = fin.Adm_Id,
 				Ccb_Id = fin.Ccb_Id,
 				Ccb_Id_Diferido = fin.Ccb_Id_Diferido,
+				Ccb_Desc = fin.Ccb_Desc,
+				Ccb_Desc_Diferido = fin.Ccb_Desc_Diferido,
 				Ctaf_Activo = fin.ctaf_activo,
 				Ctaf_Denominacion = fin.ctaf_denominacion,
 				Ctaf_Estado = fin.Ctaf_Estado,

@@ -5,7 +5,7 @@
 	var gasto = Model.ComboCuentaGasto;
 	var conta = Model.ComboCuentaContable;
 }
-<div class="row" style="padding-top: 10px;">
+<div class="row col-md-9 py-1">
 	@Html.HiddenFor(x => x.CuentaFin.Ins_Id)
 	@Html.HiddenFor(x => x.CuentaFin.Ctaf_Activo)
 	@Html.HiddenFor(x => x.CuentaFin.Ctaf_Saldo)
@@ -15,6 +15,8 @@
 	@Html.HiddenFor(x => x.CuentaFin.Ins_Desc)
 	@Html.HiddenFor(x => x.CuentaFin.Mon_Codigo)
 	@Html.HiddenFor(x => x.CuentaFin.Cta_Id)
+	@Html.HiddenFor(x => x.CuentaFin.Ccb_Id)
+	@Html.HiddenFor(x => x.CuentaFin.Ccb_Desc)
 	<div class="row mt-1">
 		<div class="input-group input-group-sm">
 			<span class="input-group-text fixed-lbl-for-abm-130">ID: </span>
@@ -48,7 +50,17 @@
 	<div class="row mt-1">
 		<div class="input-group input-group-sm">
 			<span class="input-group-text fixed-lbl-for-abm-130">Cuenta Contable: </span>
-			@Html.DropDownListFor(m => m.CuentaFin.Ccb_Id, conta, "Seleccionar...", new { @id = "listaConta", @class = "form-control activable" })
+			<input type="text" class="form-control activable" id="cuentaContable" name="cuentaContable"
+				   placeholder="Cuenta contable..." readonly
+				   data-bs-toggle="tooltip" title="Haga clic en la lupa para seleccionar una cuenta" />
+			<input type="hidden" id="cuentaContableId" name="cuentaContableId" />
+			<button class="btn btn-outline-secondary btnBuscarCuenta activable"
+					type="button"
+					data-target="cuentaContable"
+					data-target-id="cuentaContableId">
+				<i class="bx bx-search"></i>
+			</button>
+			@* @Html.DropDownListFor(m => m.CuentaFin.Ccb_Id, conta, "Seleccionar...", new { @id = "listaConta", @class = "form-control activable" }) *@
 		</div>
 	</div>
 </div>

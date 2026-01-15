@@ -9,7 +9,9 @@
     $("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle);
     $("#btnDetalle").prop("disabled", true);
     $("#btnCancel").on("click", function () {
-        $("#btnFiltro").trigger("click");
+        //$("#btnFiltro").trigger("click");
+        OcultarDivs(true);
+        $("#divFiltro").collapse('show');
     });
     $("#pagEstado").on("change", function () {
         var div = $("#divPaginacion");
@@ -60,6 +62,12 @@
     //inicia la pantalla presentando la primer pagina de usuarios
     //$("#btnBuscar").trigger("click");
 });
+
+function OcultarDivs(valor) {
+    $("#divDetalle").collapse('hide');
+    $("#divGrilla").collapse('hide');
+    $("#divPaginacion").collapse('hide');
+}
 
 function analizaEstadoBtnDetalle() {
     var res = $("#divDetalle").hasClass("show");
@@ -239,6 +247,8 @@ function buscarVendedores(pag) {
             }
 
         });
+        $("#divGrilla").collapse("show");
+        $("#divPaginacion").collapse("show");
         CerrarWaiting();
     }, function (obj) {
         ControlaMensajeError(obj.message);
