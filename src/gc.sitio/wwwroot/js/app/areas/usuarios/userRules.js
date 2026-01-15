@@ -274,18 +274,22 @@ function confirmarOperacionAbmUsuario() {
     switch (tabAbm) {
         case 1:            
             data = confirmarDatosTab01();
+            accion = data.accion;
             break;
         case 2:
             accion02 = AbmAction.SUBMIT;
             data = confirmarDatosJsTree("#divPerfiles");
+            accion = data.accion;
             break;
         case 3:
             accion03 = AbmAction.SUBMIT;
             data = confirmarDatosJsTree("#divAdmins");
+            accion = data.accion;
             break;
         case 4:
             accion04 = AbmAction.SUBMIT;
             data = confirmarDatosJsTree("#divDers");
+            accion = data.accion;
             break;
         default:
             return false;
@@ -351,18 +355,19 @@ function confirmarOperacionAbmUsuario() {
                             }
                             //data = { p_id: EntidadSelect };
                             //buscarProductoServer(data);
-                            InicializaFiltroAbmUsuario(EntidadSelect);
-                            $("#btnBuscar").trigger("click");
-                            $("#divpanel01").empty();
-                            //inicializamos la acción.
-                            accion = "";
+                            
+                            //inicializamos la acción.                           
                         }
                         else {
                             //borramos el id del producto si se eliminó
                             EntidadSelect = "";
                             //VAMOS A EJECUTAR NUEVAMENTE EL BUSCAR
-                            buscarUsers(pagina);
+                            //buscarUsers(pagina);
                         }
+                        InicializaFiltroAbmUsuario(EntidadSelect);
+                        $("#btnBuscar").trigger("click");
+                        $("#divpanel01").empty();
+                        accion = "";
                         break;
                     case 2:
                         $("#BtnLiTab02").trigger("click");
