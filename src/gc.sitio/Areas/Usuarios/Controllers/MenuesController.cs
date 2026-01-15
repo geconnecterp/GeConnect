@@ -237,6 +237,10 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 }
 
                 perfil = HelperGen.PasarAMayusculas(perfil);
+                if (accion == 'A')
+                {
+                    perfil.perfil_id = string.Empty;
+                }
 
                 AbmGenDto abm = new AbmGenDto()
                 {

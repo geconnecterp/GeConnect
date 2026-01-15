@@ -60,9 +60,8 @@
     $("#chkDescr").trigger("click");
 });
 
-function buscarPerfiles(pagina) {
+function buscarPerfiles(pagina, callback) {
     AbrirWaiting();
-
     activarBotones(false);
 
     var buscar = $("#Buscar").val();
@@ -70,10 +69,9 @@ function buscarPerfiles(pagina) {
     var id2 = $("#Id2").val();
 
     var data1 = { id, id2, buscar };
-    var buscaNew = JSON.stringify(dataBak) != JSON.stringify(data1)
+    var buscaNew = JSON.stringify(dataBak) != JSON.stringify(data1);
 
     if (buscaNew === false) {
-        //son iguales las condiciones cambia de pagina
         pagina = pag;
     }
     else {
@@ -83,32 +81,34 @@ function buscarPerfiles(pagina) {
     }
 
     var sort = null;
-    var sortDir = null
-
-    var data2 = { sort, sortDir, pag, buscaNew }
-
+    var sortDir = null;
+    var data2 = { sort, sortDir, pag, buscaNew };
     var data = $.extend({}, data1, data2);
 
     PostGenHtml(data, buscarPerfilesUrl, function (obj) {
         $("#divGrilla").html(obj);
-        $("#divFiltro").collapse("hide")
+        $("#divFiltro").collapse("hide");
+        
         PostGen({}, buscarPerfilesMetadataURL, function (obj) {
             if (obj.error === true) {
                 AbrirMensaje("ATENCIÓN", obj.msg, function () {
                     $("#msjModal").modal("hide");
-                    return true;
                 }, false, ["Aceptar"], "error!", null);
             }
             else {
                 totalRegs = obj.metadata.totalCount;
                 pags = obj.metadata.totalPages;
                 pagRegs = obj.metadata.pageSize;
-
                 $("#pagEstado").val(true).trigger("change");
             }
-
+            
+            CerrarWaiting();
+            
+            // Ejecutar callback si existe (para seleccionar registro después de buscar)
+            if (callback && typeof callback === 'function') {
+                callback();
+            }
         });
-        CerrarWaiting();
     }, function (obj) {
         ControlaMensajeError(obj.message);
         CerrarWaiting();
@@ -272,7 +272,7 @@ function inicializaPantallaCtrlMenu(grilla) {
     $("#MenuId").val("");
 
     accionBotones(AbmAction.CANCEL);
-
+    activarGrilla(Grids.GridPerfil);
     //borra seleccion de registro si hubiera cargdo algun grid
     $("#" + grilla + " tbody tr").each(function (index) {
         $(this).removeClass("selectedEdit-row");

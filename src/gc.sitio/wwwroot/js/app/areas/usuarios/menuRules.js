@@ -273,28 +273,21 @@ function ejecutarBaja() {
 function confirmarOperacionCtrlMenu() {
     AbrirWaiting("Completando proceso...");
     var data = {};
+    var urlabm = "";
+
     switch (tabMn) {
         case 1:
             data = confirmarDatosTab01();
-            break;
-        case 2:
-            data = confirmarDatosTab02();
-            break;
-
-        default:
-            return false;
-    }
-    urlabm = ""
-    switch (tabMn) {
-        case 1:
             urlabm = confirmarAbmPerfilUrl;
             break;
         case 2:
+            data = confirmarDatosTab02();
             urlabm = confirmarMenuPerfilUrl;
             break;
-
         default:
+            return false;
     }
+
     PostGen(data, urlabm, function (obj) {
         if (obj.error === true) {
             CerrarWaiting();
@@ -304,38 +297,78 @@ function confirmarOperacionCtrlMenu() {
         }
         else if (obj.warn === true) {
             CerrarWaiting();
-
             AbrirMensaje("ATENCIÓN", obj.msg, function () {
                 if (obj.auth === true) {
                     window.location.href = login;
-                }
-                else {
+                } else {
                     $("#msjModal").modal("hide");
                 }
             }, false, ["CONTINUAR"], "warn!", null);
-
         }
         else {
             CerrarWaiting();
+
+            // Si es baja, redirigir
+            if (accion === 'B') {
+                AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                    window.location.href = homeMenuUrl;
+                }, false, ["CONTINUAR"], "succ!", null);
+                return;
+            }
+
+            // Para alta o modificación
+            var esAltaOModif = (accion === 'A' || accion === 'M');
+            var perfilId = $("#perfil_id").val();
+            var grilla = Grids.GridPerfil;
+
             AbrirMensaje("ATENCIÓN", obj.msg, function () {
-                //todo fue bien, por lo que se deberia reinicializar la pantalla.
-                var grilla = Grids.GridPerfil;
-
-                dataBak = "";
-                inicializaPantallaCtrlMenu(grilla);
-
-                //siempre sera ALTA
-                EntidadSelect = $("#perfil_id").val();
-
-                InicializaFiltroAbmPerfil(EntidadSelect);
-                $("#MenuId").prop("disabled", false);
-                $("#BtnLiTab01").trigger("click");
-                $("#btnBuscar").trigger("click");
-
-
                 $("#msjModal").modal("hide");
-                //return true;
+                
+                if (esAltaOModif) {
+                    // Configurar estado inicial
+                    EntidadSelect = perfilId;
+                    //InicializaFiltroAbmPerfil(perfilId);
+                    $("#MenuId").prop("disabled", false);
+                    tabMn = 1;
+                    
+                    // Limpiar estado de la pantalla
+                    $("#divDetalle").collapse("hide");
+                    $("#divpanel01").empty();
+                    $("#divPerfilUsers").empty();
+                    
+                    // Buscar con callback para seleccionar el registro
+                    buscarPerfiles(1, function () {
+                        // Buscar la fila con el ID del perfil
+                        var $fila = $("#" + grilla + " tbody tr").filter(function () {
+                            return $(this).find("td:first").text().trim() === perfilId;
+                        }).first();
 
+                        // Si se encuentra la fila, solo marcarla visualmente
+                        if ($fila.length > 0) {
+                            // Remover selección previa
+                            $("#" + grilla + " tbody tr").removeClass("selectedEdit-row");
+                            
+                            // Marcar la fila
+                            $fila.addClass("selected-row");
+                            
+                            // Posicionar en el tope si existe la función
+                            if (typeof posicionarRegOnTop === 'function') {
+                                posicionarRegOnTop($fila);
+                            }
+                            
+                            // Activar grilla y estado final
+                            activarGrilla(grilla);
+                            $("#btnDetalle").prop("disabled", false);
+                            activarBotones(true);
+                        }
+                        
+                        // Resetear acción
+                        accionBotones(AbmAction.CANCEL);
+                    });
+                } else {
+                    dataBak = "";
+                    $("#btnBuscar").trigger("click");
+                }
             }, false, ["CONTINUAR"], "succ!", null);
         }
     });
@@ -343,8 +376,26 @@ function confirmarOperacionCtrlMenu() {
 
 function analizaEstadoBtnDetalle() {
     tabMn = 1;
-    inicializaPantallaCtrlMenu(Grids.GridPerfil);
-    return true;
+    
+    // Limpiar paneles de detalle
+    $("#divpanel01").empty();
+    $("#divPerfilUsers").empty();
+    
+    // Ocultar detalle y mostrar filtro
+    $("#divDetalle").collapse("hide");
+    $("#divFiltro").collapse("show");
+    
+    // Desactivar botón detalle
+    $("#btnDetalle").prop("disabled", true);
+    
+    // Activar grilla
+    activarGrilla(Grids.GridPerfil);
+    
+    // Limpiar selección visual
+    $("#" + Grids.GridPerfil + " tbody tr").removeClass("selectedEdit-row");
+    
+    // Resetear estado de botones
+    activarBotones(false);
 }
 
 function confirmarDatosTab01() {
