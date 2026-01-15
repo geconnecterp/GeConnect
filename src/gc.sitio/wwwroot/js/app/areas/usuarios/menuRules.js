@@ -318,6 +318,7 @@ function confirmarOperacionCtrlMenu() {
             // Para alta o modificación
             var esAltaOModif = (accion === 'A' || accion === 'M');
             var perfilId = $("#perfil_id").val();
+            var perfilNN = $("#perfil_descripcion").val();
             var grilla = Grids.GridPerfil;
 
             AbrirMensaje("ATENCIÓN", obj.msg, function () {
@@ -339,7 +340,12 @@ function confirmarOperacionCtrlMenu() {
                     buscarPerfiles(1, function () {
                         // Buscar la fila con el ID del perfil
                         var $fila = $("#" + grilla + " tbody tr").filter(function () {
-                            return $(this).find("td:first").text().trim() === perfilId;
+                            if (accion === 'A') {
+                                return $(this).find("td:nth-child(2)").text().trim() === perfilNN;
+                            }
+                            else {
+                                return $(this).find("td:first").text().trim() === perfilId;
+                            }
                         }).first();
 
                         // Si se encuentra la fila, solo marcarla visualmente
