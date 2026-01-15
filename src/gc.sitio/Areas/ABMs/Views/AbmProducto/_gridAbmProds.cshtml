@@ -10,28 +10,18 @@
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
 }
 
-<div class="grid-golden">
-    <div class="grid-golden-header">
-        <div class="row align-items-md-center">
-            <div class="col-md-10 col-sm-6">
-                <h5 class="mb-0">
-                    <i class="bx bx-honey"></i>
-                    <strong>Detalle de productos encontrados</strong>
-                </h5>
-            </div>
-        </div>
-    </div>
+<div class="grid-golden">    
     <div class="grid-golden-body">
         <div class="table-responsive text-nowrap  table-wrapper">
             <table class="table table-sm mb-0 table-hover table-golden" id="tbGridProd">
-                <thead>
+                <thead class="sticky-top table-golden-header-compact">
                     <tr class="header">
 
-                        <th scope="col">ID</th>
-                        <th scope="col">PRODUCTO</th>
-                        <th scope="col">PROVEEDOR</th>
-                        <th scope="col">RUBRO</th>
-                        <th scope="col">ACTIVO</th>
+                        <th class="text-left th-compact" scope="col">ID</th>
+                        <th class="text-left th-compact" scope="col">PRODUCTO</th>
+                        <th class="text-left th-compact" scope="col">PROVEEDOR</th>
+                        <th class="text-left th-compact" scope="col">RUBRO</th>
+                        <th class="text-left th-compact" scope="col">ACTIVO</th>
                     </tr>
                 </thead>
                 <tbody>

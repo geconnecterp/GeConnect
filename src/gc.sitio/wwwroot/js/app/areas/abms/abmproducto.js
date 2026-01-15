@@ -427,6 +427,8 @@ function selectRegProd(x, gridId) {
     //y desactivo el tab
     switch (tabAbm) {
         case 1:
+            if (gridId === "tbGridBarr" || gridId === "tbGridLim")
+                return;
             $("#divpanel01").empty();
             if ($("#divDetalle").is(":visible")) {
                 $("#divDetalle").collapse("hide");
