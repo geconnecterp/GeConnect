@@ -205,15 +205,15 @@ function buscarPerfilServer(data) {
         if (EntidadEstado !== "S" && accion !== "") {
             $("#BtnLiTab02").prop("disabled", true);
             $("#BtnLiTab02").addClass("text-danger");
-            $("#BtnLiTab03").prop("disabled", true);
-            $("#BtnLiTab03").addClass("text-danger");
+            //$("#BtnLiTab03").prop("disabled", true);
+            //$("#BtnLiTab03").addClass("text-danger");
 
         }
         else {
             $("#BtnLiTab02").prop("disabled", false);
             $("#BtnLiTab02").removeClass("text-danger");
-            $("#BtnLiTab03").prop("disabled", false);
-            $("#BtnLiTab03").removeClass("text-danger");
+            //$("#BtnLiTab03").prop("disabled", false);
+            //$("#BtnLiTab03").removeClass("text-danger");
         }
 
         CerrarWaiting();
@@ -240,6 +240,7 @@ function inicializaPantallaCtrlMenu(grilla) {
 
            // $("#btnBuscar").trigger("click");
             $("#BtnLiTab01").trigger("click");
+            $("#BtnLiTab02").prop("disabled", false);
             break;
         //case 2:
         //    break;

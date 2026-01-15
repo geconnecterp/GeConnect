@@ -115,7 +115,6 @@ function accionBotones(btn) {
         $("#BtnLiTab01").prop("disabled", true);
         $("#BtnLiTab02").prop("disabled", true);
 
-
         $("#btnAbmNuevo").prop("disabled", true);
         $("#btnAbmModif").prop("disabled", true);
         $("#btnAbmElimi").prop("disabled", true);
@@ -125,12 +124,18 @@ function accionBotones(btn) {
             $("#btnAbmCancelar").prop("disabled", false);
         }
         if (tabMn === 2 && btn === AbmAction.MODIFICACION) {
-            //desactivo el ddl
             $("#MenuId").prop("disabled", true);
         }
         $("#btnAbmAceptar").show();
         $("#btnAbmCancelar").show();
-    } else if (btn === AbmAction.SUBMIT || btn === AbmAction.CANCEL) {   // (S)uccess - (C)ancel
+    } else if (btn === AbmAction.SUBMIT || btn === AbmAction.CANCEL) {
+        // Limpiar acciones al cancelar o confirmar
+        if (btn === AbmAction.CANCEL) {
+            accion = "";
+            accion02 = "";
+            accion03 = "";
+        }
+        
         $("#btnFiltro").prop("disabled", false);
         $("#btnDetalle").prop("disabled", false);
 
@@ -140,12 +145,7 @@ function accionBotones(btn) {
         $("#BtnLiTab01").removeClass("text-danger");
         $("#BtnLiTab02").removeClass("text-danger");
 
-
-        if (btn === AbmAction.ALTA) {
-
-        }
-        else if (btn === AbmAction.CANCEL) {
-
+        if (btn === AbmAction.CANCEL) {
             activarBotones(false);
             activarControles(false);
 
@@ -153,7 +153,6 @@ function accionBotones(btn) {
                 $("#btnDetalle").prop("disabled", true);
                 activarGrilla(Grids.GridPerfil);
             }
-
         }
     }
 }
@@ -356,6 +355,7 @@ function confirmarOperacionCtrlMenu() {
                                 posicionarRegOnTop($fila);
                             }
                             
+
                             // Activar grilla y estado final
                             activarGrilla(grilla);
                             $("#btnDetalle").prop("disabled", false);
@@ -376,6 +376,9 @@ function confirmarOperacionCtrlMenu() {
 
 function analizaEstadoBtnDetalle() {
     tabMn = 1;
+    
+    // Limpiar variable de acción
+    accion = "";
     
     // Limpiar paneles de detalle
     $("#divpanel01").empty();
