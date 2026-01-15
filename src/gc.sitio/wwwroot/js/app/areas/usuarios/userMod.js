@@ -97,7 +97,7 @@
     });
 
     InicializaPantallaUser(Grids.GridUser);
-    $("#btnBuscar").trigger("click");
+  
 });
 
 function selectUserRegDbl(x, gridId) {
@@ -293,7 +293,7 @@ function InicializaPantallaUser(grilla) {
         
         // Limpiar el panel de detalles
         $("#divpanel01").empty();
-        
+        $("#divFiltro").collapse("show");
         // Resetear variables de acción
         //accion = "";
         //accion02 = "";
@@ -453,7 +453,7 @@ function selectRegUser(x, gridId) {
 
 function ejecutaDblClickGrid1(x) {
     AbrirWaiting("Espere mientras se busca el Usuario seleccionado...");
-    selectUserRegDbl(x, Grids.GridPerfil);
+    selectUserRegDbl(x, "tbGridUsers");
 }
 
 //function ejecutaDblClickGrid2(x) {
