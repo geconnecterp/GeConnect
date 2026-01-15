@@ -232,7 +232,7 @@ function inicializaPantallaCtrlMenu(grilla) {
                 $("#divDetalle").collapse("hide");
 
             }
-            $("#divFilter").collapse("show");
+            
 
             //$("#MenuId").prop("disabled", false);
             jsonMenuActual = {}
