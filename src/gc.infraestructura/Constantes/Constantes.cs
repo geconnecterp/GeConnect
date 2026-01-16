@@ -94,6 +94,7 @@ namespace gc.infraestructura.Constantes
             public const string PROV_SIN_MOD = "PROV_SIN_MOD";
 
             public const string MEDIOS_DE_PAGO = "MEDIOS_DE_PAGO";
+			public const string CUENTA_DIRECTA = "CUENTA_DIRECTA";
 		}
     }
 }

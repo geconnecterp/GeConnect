@@ -56,8 +56,8 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 			var listR01 = new List<ComboGenDto>();
 			ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
 
-			var listR02 = new List<ComboGenDto>();
-			ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
+			var listR03 = new List<ComboGenDto>();
+			ViewBag.Rel03List = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
 
 			ViewData["Titulo"] = "CUENTAS DIRECTAS";
 			return View();
@@ -188,7 +188,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 		}
 
 		[HttpPost]
-		public JsonResult DataOpsCuentaDirecta([FromBody] CuentaDirectaAbmValidationModel cd, string destinoDeOperacion, char tipoDeOperacion)
+		public JsonResult DataOpsCuentaDirecta(CuentaDirectaAbmValidationModel cd, string destinoDeOperacion, char tipoDeOperacion)
 		{
 			try
 			{
@@ -213,6 +213,15 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 			{
 				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
 			}
+		}
+
+		[HttpPost]
+		public IActionResult CargarTiposDeCuentaDirecta()
+		{
+			var model = new ListaTipoCuentaDirectaModel();
+			var tipoNegs = TipoCuentaGastoLista.Select(x => new ComboGenDto { Id = x.tcg_id, Descripcion = x.tcg_lista });
+			model.ListaCuentaDirecta = HelperMvc<ComboGenDto>.ListaGenerica(tipoNegs.ToList());
+			return PartialView("_listaTipoCuentaDirecta", model);
 		}
 
 		#region Métodos Privados

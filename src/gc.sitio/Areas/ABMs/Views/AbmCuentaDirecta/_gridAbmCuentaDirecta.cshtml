@@ -7,8 +7,17 @@
 }
 <style>
     thead th {
-    position: sticky;
-    top: 0px;
+        position: sticky;
+        top: 0px;
+        z-index: 1; /* suficiente para estar sobre las filas */
+        background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+        color: #fff !important;
+    }
+
+    .table-wrapper {
+        /*max-height: 400px;  o lo que necesites */
+        overflow-y: auto;
+        position: relative;
     }
 </style>
 <div class="card">

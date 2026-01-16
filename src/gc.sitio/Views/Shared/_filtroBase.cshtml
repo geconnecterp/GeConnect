@@ -8,6 +8,68 @@
         <h5 class="mb-0" id="tituloLegend">Filtros </h5>
     </div>
     <div class="filter-golden-body">
+        @if(Model.Modelo.Equals(ModeloFilter.CUENTA_DIRECTA))
+        {
+            <div class="row  mb-3 mt-1">
+                <div class=" col-md-4 col-sm-12">
+                    <div class="d-flex align-items-center">
+                        <div class="form-check form-check-inline form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDescr" />
+                            <label class="form-check-label" for="chkDescr" id="lbChkDescr"></label>
+                        </div>
+                    </div>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text" id="lbDescr">Descr:</span>
+                        <input type="text" class="form-control inputEditable" asp-for="Buscar" placeholder="Ingresar descripción a buscar" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
+                    </div>
+                </div>
+                <div class=" col-sm-8">
+                    <div class="row">
+                        <div class="input-group input-group-sm">
+                            <div class="form-check form-check-inline form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDesdeHasta" />
+                                <label class="form-check-label" for="chkDesdeHasta" id="lbChkDesdeHasta"></label>
+                            </div>
+                        </div>
+                        <div class=" col-sm-6">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text" id="lbIdDesde">Id Desde:</span>
+                                <input type="text" class="form-control inputEditable" asp-for="Id" placeholder="Ingresar Id a buscar" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
+                            </div>
+                        </div>
+                        <div class=" col-sm-6">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text" id="lbIdHasta">Id Hasta:</span>
+                                <input type="text" class="form-control inputEditable" asp-for="Id2" placeholder="Ingresar otro Id (no obligatorio)" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            var list = new List<ComboGenDto>();
+            var ls03 = new SelectList(list, "Id", "Descripcion");
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="input-group input-group-sm">
+                        <div class="form-check form-check-inline form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRel03" />
+                            <label class="form-check-label" for="chkRel03" id="lbRel03"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-1">
+                <div class="col-md-6">
+                    <div class="input-group input-group-sm" id="divLs03">
+                        <span class="input-group-text">Nombre</span>
+                        @Html.DropDownListFor(m => m.Tipo, ls03, "Seleccionar", new { @id = "listaLs03", disabled = "disabled", @class = "form-control inputEditable activable" })
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    @Html.ListBox("Rel03List", null, new { @class = "form-control", @disabled = "disabled" })
+                </div>
+            </div>
+        }
 
         @if (Model.Modelo.Equals(ModeloFilter.MEDIOS_DE_PAGO))
         {
@@ -367,7 +429,8 @@
                 !Model.Modelo.Equals(ModeloFilter.OF_REPORTE) &&
                 !Model.Modelo.Equals(ModeloFilter.D_IMPOSITIVO) &&
                 !Model.Modelo.Equals(ModeloFilter.ETIQUETA) &&
-                !Model.Modelo.Equals(ModeloFilter.CARGA_INVENTARIO))
+                !Model.Modelo.Equals(ModeloFilter.CARGA_INVENTARIO) &&
+                !Model.Modelo.Equals(ModeloFilter.CUENTA_DIRECTA))
         {
             <div class="row  mb-3 mt-1">
                 <div class=" col-md-4 col-sm-12">
@@ -460,7 +523,8 @@
                 !Model.Modelo.Equals(ModeloFilter.PLAN_CUENTA) &&
                 !Model.Modelo.Equals(ModeloFilter.MEDIOS_DE_PAGO) &&
                 !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_DIRECTA) &&
-                !Model.Modelo.Equals(ModeloFilter.CARGA_INVENTARIO))
+                !Model.Modelo.Equals(ModeloFilter.CARGA_INVENTARIO) &&
+                !Model.Modelo.Equals(ModeloFilter.CUENTA_DIRECTA))
         {
             if (Model.Modelo.Equals(ModeloFilter.PRESUPUESTO) ||
             Model.Modelo.Equals(ModeloFilter.ETIQUETA))
