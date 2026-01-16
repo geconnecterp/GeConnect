@@ -9,15 +9,26 @@
     $("#btnAbmAceptar").on("click", confirmarOperacionAbmUsuario);
 
     // CORRECCIÓN: Cambiar de "mousedown" a "click" para mejor control
-    $("#btnDetalle").on("click", function(e) {
+    $("#btnDetalle").on("click", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        
+
         var divVisible = $("#divDetalle").is(":visible");
-        
+
         if (divVisible) {
+            let grid = "";
+            switch (tabAbm) {
+                case 2:
+                case 3:
+                case 4:
+                    grid = "otro"
+                    break
+                default:
+                    grid = "tbGridUsers";
+                    break;
+            }
             // Si el detalle está visible, realizar cancelación
-            InicializaPantallaUser(Grids.GridUser);
+            InicializaPantallaUser(grid);
         } else {
             // Si no está visible, no hacer nada (se maneja en el dblclick)
             // El div se abrirá cuando se seleccione un usuario
@@ -272,7 +283,7 @@ function confirmarOperacionAbmUsuario() {
     AbrirWaiting("Completando proceso...");
     var data = {};
     switch (tabAbm) {
-        case 1:            
+        case 1:
             data = confirmarDatosTab01();
             accion = data.accion;
             break;
@@ -332,9 +343,24 @@ function confirmarOperacionAbmUsuario() {
         }
         else {
             CerrarWaiting();
+
+            // Si es baja, redirigir
+            if (accion === 'B') {
+                AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                    window.location.href = homeUser;
+                }, false, ["CONTINUAR"], "succ!", null);
+                return;
+            }
+
+            // Para alta o modificación
+            var esAltaOModif = (accion === 'A' || accion === 'M');
+            var logon = $("#usu_id").val();
+            var logonNN = $("#usu_apellidoynombre").val();
+            var grilla = "tbGridUsers";
+
             AbrirMensaje("ATENCIÓN", obj.msg, function () {
                 //todo fue bien, por lo que se deberia reinicializar la pantalla.
-                var grilla = "";
+
                 switch (tabAbm) {
                     case 1:
                         grilla = Grids.GridUser;
@@ -355,7 +381,7 @@ function confirmarOperacionAbmUsuario() {
                             }
                             //data = { p_id: EntidadSelect };
                             //buscarProductoServer(data);
-                            
+
                             //inicializamos la acción.                           
                         }
                         else {
@@ -364,7 +390,7 @@ function confirmarOperacionAbmUsuario() {
                             //VAMOS A EJECUTAR NUEVAMENTE EL BUSCAR
                             //buscarUsers(pagina);
                         }
-                        InicializaFiltroAbmUsuario(EntidadSelect);
+                        //InicializaFiltroAbmUsuario(EntidadSelect);
                         $("#btnBuscar").trigger("click");
                         $("#divpanel01").empty();
                         accion = "";
@@ -384,7 +410,34 @@ function confirmarOperacionAbmUsuario() {
                     default:
                 }
 
+                buscarUsers(1, function () {
+                    var $fila = $("#" + grilla + " tbody tr").filter(function () {                       
+                        return $(this).find("td:first").text().trim() === logon;                        
+                    }).first();
 
+                    // Si se encuentra la fila, solo marcarla visualmente
+                    if ($fila.length > 0) {
+                        // Remover selección previa
+                        $("#" + grilla + " tbody tr").removeClass("selectedEdit-row");
+
+                        // Marcar la fila
+                        $fila.addClass("selected-row");
+
+                        // Posicionar en el tope si existe la función
+                        if (typeof posicionarRegOnTop === 'function') {
+                            posicionarRegOnTop($fila);
+                        }
+
+
+                        // Activar grilla y estado final
+                        activarGrilla(grilla);
+                        $("#btnDetalle").prop("disabled", false);
+                        activarBotones(true);
+                    }
+
+                    // Resetear acción
+                    accionBotones(AbmAction.CANCEL);
+                });
 
 
                 $("#msjModal").modal("hide");

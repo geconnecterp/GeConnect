@@ -8,16 +8,16 @@
     });
 
     $("#btnDetalle").prop("disabled", true);
-    
+
     $("#btnCancel").on("click", function () {
         window.location.href = homeUser;
     });
-    
+
     $("#pagEstado").on("change", function () {
         var div = $("#divPaginacion");
         presentaPaginacion(div);
     });
-    
+
     $("#btnBuscar").on("click", function () {
         //es nueva la busqueda no resguardamos la busqueda anterior. es util para paginado
         $("#divpanel01").empty();
@@ -26,7 +26,7 @@
         pagina = 1;
         buscarUsers(pagina);
     });
-    
+
     //callback para que funcione la paginación
     funcCallBack = buscarUsers;
 
@@ -68,21 +68,21 @@
         tabAbm = 1;
         activarGrilla(Grids.GridUser);
     });
-    
+
     $("#BtnLiTab02").on("click", function () {
         tabAbm = 2;
         desactivarGrilla(Grids.GridUser);
         activarBotones(true);
         presentaPerfilesUsuario();
     });
-    
+
     $("#BtnLiTab03").on("click", function () {
         tabAbm = 3;
         desactivarGrilla(Grids.GridUser);
         activarBotones(true);
         presentaAdministracionesUsuario();
     });
-    
+
     $("#BtnLiTab04").on("click", function () {
         tabAbm = 4;
         desactivarGrilla(Grids.GridUser);
@@ -90,14 +90,14 @@
         presentaDerechosUsuario();
     });
 
-    $(document).on("dblclick", "#" + Grids.GridUser + " tbody tr", function () {
+    $(document).on("dblclick", "#tbGridUsers tbody tr", function () {
         x = $(this);
         regSelected = x;
         ejecutaDblClickGrid1(x);
     });
 
     InicializaPantallaUser(Grids.GridUser);
-  
+    $("#divFiltro").collapse("show");
 });
 
 function selectUserRegDbl(x, gridId) {
@@ -109,30 +109,34 @@ function selectUserRegDbl(x, gridId) {
     //resguardo el usuario seleccionado
     usuSelect = id;
 
-    switch (tabAbm) {
-        case 1:
-            //se agrega por inyection el tab con los datos del producto
-            EntidadEstado = x.find("td:nth-child(3)").text();
-            var data = { id: id };
-            EntidadSelect = id;
+    //al hacer click sobre usuario siempre tiene que volver a tab 1
+    $("#BtnLiTab01").trigger("click");
 
-            // Resetear acciones antes de cargar nuevo usuario
-            accion = "";
-            accion02 = "";
-            accion03 = "";
-            accion04 = "";
+    //switch (tabAbm) {
+    //    case 1:
+    //se agrega por inyection el tab con los datos del producto
+    EntidadEstado = x.find("td:nth-child(3)").text();
+    var data = { id: id };
+    EntidadSelect = id;
 
-            desactivarGrilla(gridId);
-            //se busca el perfil
-            buscarUserServer(data);
-            //se busca los usuarios del perfil
-            /*buscarUsuario(data);*/
-            //se posiciona el registro seleccionado
-            posicionarRegOnTop(x);
-            break;
-        default:
-            return false;
-    }
+    // Resetear acciones antes de cargar nuevo usuario
+    accion = "";
+    accion02 = "";
+    accion03 = "";
+    accion04 = "";
+
+    desactivarGrilla(gridId);
+    //se busca el perfil
+    buscarUserServer(data);
+    //se busca los usuarios del perfil
+    /*buscarUsuario(data);*/
+    //se posiciona el registro seleccionado
+    posicionarRegOnTop(x);
+    //        break;
+    //    default:
+    //        //return false;
+    //        break;
+    //}
 
 
     //agrego el id en el control de busqueda simple y acciono el buscar.
@@ -266,7 +270,7 @@ function InicializaPantallaUser(grilla) {
     if (!grilla) {
         grilla = Grids.GridUser;
     }
-    
+
     // Si no es la grilla principal, manejar según el tab activo
     if (grilla !== Grids.GridUser && tabAbm !== 1) {
         switch (tabAbm) {
@@ -285,39 +289,43 @@ function InicializaPantallaUser(grilla) {
             default:
                 return false;
         }
-    } else {
-        // Lógica para tab 1 (grilla principal)
-        if ($("#divDetalle").is(":visible")) {
-            $("#divDetalle").collapse("hide");
-        }
-        
-        // Limpiar el panel de detalles
-        $("#divpanel01").empty();
-        $("#divFiltro").collapse("show");
-        // Resetear variables de acción
-        //accion = "";
-        //accion02 = "";
-        //accion03 = "";
-        //accion04 = "";
-        
-        // Limpiar selección de registro
-        $("#" + Grids.GridUser + " tbody tr").removeClass("selectedEdit-row");
-        regSelected = null;
-        
-        // Reactivar la grilla
-        activarGrilla(Grids.GridUser);
     }
+    // Lógica para tab 1 (grilla principal)
+    if ($("#divDetalle").is(":visible")) {
+        $("#divDetalle").collapse("hide");
+    }
+
+    // Limpiar el panel de detalles
+    $("#divpanel01").empty();
+    //$("#divFiltro").collapse("show");
+    // Resetear variables de acción
+    //accion = "";
+    //accion02 = "";
+    //accion03 = "";
+    //accion04 = "";
+
+    // Limpiar selección de registro
+    $("#tbGridUsers tbody tr").removeClass("selectedEdit-row");
+    regSelected = null;
+
+    // Reactivar la grilla
+
+
 
     // Ejecutar acción de cancelación en botones
     accionBotones(AbmAction.CANCEL);
-    
+
     // Reactivar botones principales
     activarBotones(false);
-    
+
     // Deshabilitar el botón detalle ya que no hay selección
     $("#btnDetalle").prop("disabled", true);
-    
+
     CerrarWaiting();
+
+    setTimeout(function () {
+        activarGrilla("tbGridUsers");
+    }, 200);
 }
 
 // NUEVA FUNCIÓN: Simplificar la lógica de análisis del botón detalle
@@ -327,7 +335,7 @@ function analizaEstadoBtnDetalle() {
     return $("#divDetalle").is(":visible");
 }
 
-function buscarUsers(pagina) {
+function buscarUsers(pagina,callback) {
     AbrirWaiting();
     //desactivamos los botones de acción
     activarBotones(false);
@@ -382,6 +390,11 @@ function buscarUsers(pagina) {
 
         });
         CerrarWaiting();
+
+        // Ejecutar callback si existe (para seleccionar registro después de buscar)
+        if (callback && typeof callback === 'function') {
+            callback();
+        }
     }, function (obj) {
         ControlaMensajeError(obj.message);
         CerrarWaiting();
