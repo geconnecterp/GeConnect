@@ -13,6 +13,7 @@ $(function () {
 	var mostrarInfoProdStkMovS = true;
 	var mostrarInfoProdStkMovD = true;
 	var mostrarInfoProdSustituto = true;
+	const pasarAdmLogueo = false;
 
 	$(document).on("productoSeleccionadoParaInfoAdicional", function (e, data) {
 		console.log("Evento captado en componente:", data);
@@ -26,7 +27,8 @@ $(function () {
 			mostrarInfoProdStkMovM,
 			mostrarInfoProdStkMovS,
 			mostrarInfoProdStkMovD,
-			mostrarInfoProdSustituto
+			mostrarInfoProdSustituto,
+			pasarAdmLogueo
 		});
 	});
 	$(document).on("keydown", "#txtMeses", function (event) {
@@ -98,8 +100,8 @@ $(function () {
 		console.log("Sucursal seleccionada:", sucursalSeleccionada);
 
 		let pId = p_id;
-		let admId = sucursalSeleccionada;
-		var datos = { pId, admId };
+		let sucId = sucursalSeleccionada;
+		var datos = { pId, pasarAdmLogueo, sucId };
 		AbrirWaiting();
 		PostGenHtml(datos, BuscarInfoProdStkBoxURL, function (obj) {
 			$("#divStkBox").html(obj);
@@ -113,8 +115,8 @@ $(function () {
 		console.log("Sucursal seleccionada:", sucursalSeleccionada);
 
 		let pId = p_id;
-		let admId = sucursalSeleccionada;
-		var datos = { pId, admId };
+		let sucId = sucursalSeleccionada;
+		var datos = { pId, pasarAdmLogueo, sucId };
 		AbrirWaiting();
 		PostGenHtml(datos, BuscarInfoProdStkDURL, function (obj) {
 			$("#divStkD").html(obj);
@@ -249,6 +251,7 @@ function invocarComponenteDeInfoAdicionalDeProd(p) {
 	var mostrarInfoProdStkMovS = p.mostrarInfoProdStkMovS;
 	var mostrarInfoProdStkMovD = p.mostrarInfoProdStkMovD;
 	var mostrarInfoProdSustituto = p.mostrarInfoProdSustituto;
+	var pasarAdmLogueo = p.pasarAdmLogueo;
 	var data = { pId };
 	PostGenHtml(data, abrirComponenteDeInfoAdicionalDeProdUrl, function (obj) {
 		$("#divInfoAdicionaDeProducto").html(obj);
@@ -287,7 +290,8 @@ function invocarComponenteDeInfoAdicionalDeProd(p) {
 			});
 		}
 		if (mostrarInfoProdStkD) {
-			var datos = { pId, admId };
+			let sucId = $("#listaSucursalesD").val();
+			var datos = { pId, pasarAdmLogueo, sucId };
 			PostGenHtml(datos, BuscarInfoProdStkDURL, function (obj) {
 				$("#divStkD").html(obj);
 				AddEventListenerToTable("tbInfoProdStkD");
@@ -296,7 +300,8 @@ function invocarComponenteDeInfoAdicionalDeProd(p) {
 			});
 		}
 		if (mostrarInfoProdStkBox) {
-			var datos = { pId, admId };
+			let sucId = $("#listaSucursalesX").val();
+			var datos = { pId, pasarAdmLogueo, sucId };
 			PostGenHtml(datos, BuscarInfoProdStkBoxURL, function (obj) {
 				$("#divStkBox").html(obj);
 				AddEventListenerToTable("tbInfoProdStkBox");

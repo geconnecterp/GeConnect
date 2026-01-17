@@ -9,6 +9,7 @@ using gc.sitio.Areas.ControlComun.Models;
 using gc.sitio.Areas.ControlComun.Models.InfoAdicionalDeProd.Model;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.ABM;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
@@ -25,15 +26,17 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 		private readonly IProductoServicio _productoServicio;
 		private readonly ITipoMovStkServicio _tipoMovStkServicio;
 		private readonly IDepositoServicio _depositoServicio;
+		private readonly IABMProductoServicio _abmProdServicio;
 		public InfoAdicionalDeProdController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<InfoAdicionalDeProdController> logger,
 											 IAdministracionServicio administracionServicio, IProductoServicio productoServicio, ITipoMovStkServicio tipoMovStkServicio,
-											 IDepositoServicio depositoServicio) : base(options, contexto, logger)
+											 IDepositoServicio depositoServicio, IABMProductoServicio abmProdServicio) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_administracionServicio = administracionServicio;
 			_productoServicio = productoServicio;
 			_tipoMovStkServicio = tipoMovStkServicio;
 			_depositoServicio = depositoServicio;
+			_abmProdServicio = abmProdServicio;
 		}
 
 		public IActionResult Index()
@@ -48,6 +51,21 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 			try
 			{
 				var model = new AbrirComponenteModel();
+				var producto = _abmProdServicio.BuscarProducto(request.pId, TokenCookie).Result;
+				if (producto != null)
+				{
+					model.pId = producto.p_id;
+					model.pDesc = producto.p_desc;
+					model.ctaId = producto.cta_id;
+					model.ctaDesc = producto.cta_denominacion;
+				}
+				else 
+				{
+					model.pId = "";
+					model.pDesc = "";
+					model.ctaId = "";
+					model.ctaDesc = "";
+				}
 				model.ComboSucursales = ComboSucursales();
 				return View("~/areas/ControlComun/views/InfoAdicionalDeProd/_index.cshtml", model);
 			}
@@ -118,13 +136,18 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 			}
 		}
 
-		public async Task<IActionResult> BuscarInfoProdStkD(string pId, string admId)
+		public async Task<IActionResult> BuscarInfoProdStkD(string pId, bool pasarAdmLogueo, string sucId = "%")
 		{
 			var model = new BuscarInfoProdStkDModel();
 			try
 			{
-				if (string.IsNullOrWhiteSpace(admId))
-					admId = AdministracionId;
+				var admId = AdministracionId;
+				if (!pasarAdmLogueo && string.IsNullOrEmpty(sucId))
+					admId = "%";
+				else if (!pasarAdmLogueo && !string.IsNullOrEmpty(sucId))
+					admId = sucId;
+				else
+					admId = sucId;
 				var info = await _productoServicio.InfoProductoStkD(pId, admId, TokenCookie);
 				model.GrillaInfoProdStkD = ObtenerGridCoreSmart<InfoProdStkD>(info);
 				model.ComboSucursales = ComboSucursales();
@@ -144,14 +167,19 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 			}
 		}
 
-		public async Task<IActionResult> BuscarInfoProdStkBox(string pId, string admId)
+		public async Task<IActionResult> BuscarInfoProdStkBox(string pId, bool pasarAdmLogueo, string sucId = "%")
 		{
 			var model = new BuscarInfoProdStkBoxModel();
 			try
 			{
-				if (string.IsNullOrWhiteSpace(admId))
-					admId = AdministracionId;
-				var info = await _productoServicio.InfoProductoStkBoxes(pId, admId, "%", TokenCookie);
+				var admId = AdministracionId;
+				if (!pasarAdmLogueo && string.IsNullOrEmpty(sucId))
+					admId = "%";
+				else if (!pasarAdmLogueo && !string.IsNullOrEmpty(sucId))
+					admId = sucId;
+				else
+					admId = sucId;
+				var info = await _productoServicio.InfoProductoStkBoxes(pId, admId, "%", TokenCookie, "%");
 				model.GrillaInfoProdStkBox = ObtenerGridCoreSmart<InfoProdStkBox>(info);
 				model.ComboSucursales = ComboSucursales();
 				model.selectedValue = admId;

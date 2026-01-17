@@ -10,5 +10,7 @@
         public int s_ventas { get; set; }
         public int s_ri { get; set; }
         public int s_otros { get; set; }
-    }
+		public string GetIngresoFull() => $"Ingreso: {(e_compra + e_ri + e_otros).ToString()}";
+		public string GetEgresoFull() => $"Egreso: {(s_ventas + s_ri + s_otros).ToString()}";
+	}
 }

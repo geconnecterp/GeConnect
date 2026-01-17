@@ -27,6 +27,7 @@ $(function () {
 				mostrarInfoProdStkMovD,
 				mostrarInfoProdStkMovS,
 				mostrarInfoProdSustituto,
+				pasarAdmLogueo,
 			});
 		} else {
 			AbrirMensaje("ATENCIÓN", "Debe seleccionar un producto.", function () {
@@ -173,6 +174,7 @@ const mostrarInfoProdStkMovM = true;
 const mostrarInfoProdStkMovS = true;
 const mostrarInfoProdStkMovD = true;
 const mostrarInfoProdSustituto = true;
+const pasarAdmLogueo = false;
 
 function btnCollapseSectionValidar() {
 	if (pIdSeleccionado != "") {
@@ -186,7 +188,8 @@ function btnCollapseSectionValidar() {
 			mostrarInfoProdStkMovM,
 			mostrarInfoProdStkMovS,
 			mostrarInfoProdStkMovD,
-			mostrarInfoProdSustituto
+			mostrarInfoProdSustituto,
+			pasarAdmLogueo
 		};
 		invocarComponenteDeInfoAdicionalDeProd(data);
 	}
@@ -422,14 +425,20 @@ function AplicarEstilosTabla(tabla) {
 
 function ValidarDatosObligAnalizarCompraAuto() {
 	var ret = { msj: "", objeto: "" };
-	if ($("#DepositosListModal option").length <= 0) {
+	let registrosEnDepositos = $("#DepositosListModal option").length;
+	let registrosEnSucursal = $("#SucursalesListModal option").length;
+	if (registrosEnSucursal > 0 && registrosEnDepositos <= 0) {
 		ret.msj = "Debe seleccionar al menos un Depósito.";
 		ret.objeto = "#listaDepositosModal";
 	}
-	else if ($("#SucursalesListModal option").length <= 0) {
-		ret.msj = "Debe seleccionar al menos una Sucursal.";
-		ret.objeto = "#listaSucursalesModal";
-	}
+	//if ($("#DepositosListModal option").length <= 0) {
+	//	ret.msj = "Debe seleccionar al menos un Depósito.";
+	//	ret.objeto = "#listaDepositosModal";
+	//}
+	//else if ($("#SucursalesListModal option").length <= 0) {
+	//	ret.msj = "Debe seleccionar al menos una Sucursal.";
+	//	ret.objeto = "#listaSucursalesModal";
+	//}
 	return ret;
 }
 
@@ -1015,6 +1024,21 @@ function ActualizarListaProductos(row, campoActual) {
 				fila.setAttribute("data-pedido-tipo", "M"); // ahora la fila tiene data-pedido-tipo="M"
 
 				const pedidoTipo = fila.getAttribute("data-pedido-tipo"); // "A" o "M"
+
+				// Buscar el input dentro de la fila
+				const inputBulto = fila.querySelector("input.input-bulto");
+				// Si existe, actualizar su valor original
+				if (inputBulto) {
+					// Actualizar DOM
+					inputBulto.setAttribute("data-original-value", bultos);
+
+					// Actualizar caché jQuery
+					$(inputBulto).data("original-value", bultos);
+
+					// Sincronizar visualmente el input (opcional pero recomendable)
+					inputBulto.value = bultos;
+				}
+
 				var color = "";
 				if (o.cantidad != 0) {
 					if (pedidoTipo === "M") {
@@ -1136,6 +1160,9 @@ function configuracionInputMaskOptimizadaGridListaProductos() {
 let listProdActualEnLista = null;
 
 function configurarEventosEdicionOptimizadoGridListaProductos() {
+	let campoEditando = null;
+	let campoEditandoPrevio = null;
+
 	const camposEditables = '.input-bulto';
 	const camposSecuencia01 = '.input-bulto';
 
@@ -1143,6 +1170,9 @@ function configurarEventosEdicionOptimizadoGridListaProductos() {
 	$(document).off('click.camposEditables keydown.camposEditables blur.camposSecuencia01');
 
 	$(document).on("mousedown.camposEditables", ".input-bulto", function (e) {
+		campoEditandoPrevio = campoEditando; // guardamos el que se estaba editando
+		campoEditando = this; // ahora sí, actualizamos
+
 		const $input = $(this);
 		if ($input.prop("readonly")) {
 			e.preventDefault(); // evita que el primer click sea "inútil"
@@ -1156,6 +1186,7 @@ function configurarEventosEdicionOptimizadoGridListaProductos() {
 
 	// Evento click unificado
 	$(document).on('click.camposEditables', camposEditables, function (e) {
+		campoEditando = this;
 		e.stopPropagation();
 
 		const $this = $(this);
@@ -1170,6 +1201,34 @@ function configurarEventosEdicionOptimizadoGridListaProductos() {
 		// Habilitar campo
 		$this.prop('readonly', false).removeClass('campo-readonly-ncpi');
 		setTimeout(() => { $this[0].focus(); $this[0].select(); }, 0);
+	});
+
+	$(document).on("mousedown.cambioCelda", function (e) {
+
+		// Si no hay campo en edición, no hacemos nada
+		if (!campoEditandoPrevio) return;
+
+		// Si el clic fue dentro del mismo campo que se estaba editando → no hacemos nada
+		if (e.target === campoEditandoPrevio) return;
+
+		const $campo = $(campoEditandoPrevio);
+
+		if ($campo.prop("readonly")) {
+			campoEditandoPrevio = null;
+			return;
+		}
+
+		const fueModificado = marcarCampoModificadoGridListaProductos(campoEditandoPrevio);
+
+		if (fueModificado) {
+			const row = $campo.closest("tr");
+			ActualizarListaProductosDebounced(row, campoEditandoPrevio);
+		}
+
+		$campo.prop("readonly", true).addClass("campo-readonly-ncpi");
+
+		campoEditandoPrevio = null;
+
 	});
 
 	// Evento keydown unificado
@@ -1210,6 +1269,11 @@ function configurarEventosEdicionOptimizadoGridListaProductos() {
 		// 🔹 Nueva lógica para navegación con flechas
 		if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
 			e.preventDefault();
+
+			const esSecuencia01 = $(this).is(camposSecuencia01);
+			var fueModificado = marcarCampoModificadoGridListaProductos(this);
+			// Aplicar cálculos según tipo
+			if (esSecuencia01 && fueModificado) ActualizarListaProductosDebounced(row, this);
 
 			const $filaActual = $this.closest('tr');
 			let $filaDestino;

@@ -27,7 +27,7 @@
 				@foreach (var item in Model.ListaDatos)
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					<tr class="@clase" onclick="selectListaInfoProdSustituto(this)">
+					<tr class="@clase" onclick="selectListaInfoProdSustituto(this)" title='@item.ctaFull'>
 						<td class="align-center tiny-row">@item.p_id</td>
 						<td class="align-center tiny-row">@item.p_id_barrado</td>
 						<td class="align-left tiny-row">@item.p_desc</td>

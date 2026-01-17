@@ -8,6 +8,8 @@ const mostrarInfoProdStkMovM = true;
 const mostrarInfoProdStkMovS = true;
 const mostrarInfoProdStkMovD = true;
 const mostrarInfoProdSustituto = true;
+const pasarAdmLogueo = false;
+
 
 if (!customElements.get('box-icon')) {
 	customElements.define('box-icon', window.BoxIconElement.default);
@@ -46,6 +48,7 @@ $(function () {
 				mostrarInfoProdStkMovD,
 				mostrarInfoProdStkMovS,
 				mostrarInfoProdSustituto,
+				pasarAdmLogueo,
 			});
 		} else {
 			AbrirMensaje("ATENCIÓN", "Debe seleccionar un producto.", function () {
@@ -1079,6 +1082,7 @@ function BuscarProductos(pag = 1) {
 					mostrarInfoProdStkMovD,
 					mostrarInfoProdStkMovS,
 					mostrarInfoProdSustituto,
+					pasarAdmLogueo,
 				});
 
 				// 2) Abrir el collapse recién DESPUÉS de cargar el contenido

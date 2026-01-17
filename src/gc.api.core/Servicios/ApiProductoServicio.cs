@@ -306,14 +306,20 @@ namespace gc.api.core.Servicios
 			{
 					new SqlParameter("@tipo",request.tipo),
 					new SqlParameter("@json_p",request.json_p),
-					new SqlParameter("@adm_list",string.Join(",", request.adm_list) + ","),
+					new SqlParameter("@adm_list",
+	                                            request.adm_list != null && request.adm_list.Any()
+		                                            ? string.Join(",", request.adm_list) + ","
+		                                            : ""),
 					new SqlParameter("@dias_prevision",request.dias_prevision),
 					new SqlParameter("@vta_ana_desde",request.vta_ana_desde),
 					new SqlParameter("@vta_ana_hasta",request.vta_ana_hasta),
 					new SqlParameter("@limite_max",request.limite_max),
 					new SqlParameter("@limite_min",request.limite_min),
 					new SqlParameter("@ultimo_ped",request.ultimo_ped),
-					new SqlParameter("@depo_list",string.Join(",", request.depo_list) + ","),
+					new SqlParameter("@depo_list",
+	                                            request.depo_list != null && request.depo_list.Any()
+		                                            ? string.Join(",", request.depo_list) + ","
+		                                            : ""),
 					new SqlParameter("@excluir_pend",request.excluir_pend),
 			};
 

@@ -5,27 +5,48 @@
 	var tms = Model.ComboTM;
 	var depos = Model.ComboDepositos;
 }
+<style>
+	#tbInfoProdMovD {
+		table-layout: fixed;
+		width: 100%;
+	}
+
+		/* Columna 3: Concepto */
+		#tbInfoProdMovD th:nth-child(3),
+		#tbInfoProdMovD td:nth-child(3) {
+			width: 50%;
+		}
+
+		/* Truncado con elipsis directamente en la celda */
+		#tbInfoProdMovD td:nth-child(3) {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			max-width: 0; /* 🔑 clave para que no se expanda por el contenido */
+		}
+
+</style>
 <div class="row">
 	<div class="input-group input-group-sm">
-		<span class="input-group-text fixed-width" style="width: 12%;">Deposito: </span>
+		<span class="input-group-text" style="width: 6%;text-align: left;padding-left: 2px;">Deposito: </span>
 		@Html.DropDownListFor(m => m.selectedValueDepos, depos, "Seleccionar", new { @id = "listaDeposMovD", @class = "form-control fixed-width" })
-		<span class="input-group-text fixed-width" style="width: 7%;">TM: </span>
+		<span class="input-group-text" style="width: 5%;text-align: left;padding-left: 2px;">TM: </span>
 		@Html.DropDownListFor(m => m.selectedValueTM, tms, "Seleccionar", new { @id = "listaTMMovD", @class = "form-control fixed-width" })
-		<span class="input-group-text">D: </span>
+		<span class="input-group-text" style="width: 2%;text-align: left;padding-left: 2px;">D: </span>
 		@Html.TextBoxFor(m => m.Desde, "{0:yyyy-MM-dd}", new { @id = "txtDesde", @class = "form-control", type = "date" })
-		<span class="input-group-text">H: </span>
+		<span class="input-group-text" style="width: 2%;text-align: left;padding-left: 2px;">H: </span>
 		@Html.TextBoxFor(m => m.Hasta, "{0:yyyy-MM-dd}", new { @id = "txtHasta", @class = "form-control", type = "date" })
 	</div>
 </div>
-<div class="table-responsive text-nowrap table-wrapper-200-full">
+<div class="table-responsive table-wrapper-200-full">
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbInfoProdMovD">
 		<thead>
 			<tr>
-				<th style="width:13%;" class="tiny-row align-center">Box</th>
-				<th style="width:15%;" class="tiny-row align-center">Fecha</th>
-				<th style="width:15%;" class="tiny-row align-center">Mov.</th>
-				<th style="width:15%;" class="tiny-row align-center">E/S</th>
-				<th style="width:15%;" class="tiny-row align-center">Stk</th>
+				<th style="width:8%;" class="tiny-row align-center">Box</th>
+				<th style="width:7%;" class="tiny-row align-center">Fecha</th>
+				<th style="width:50%;" class="tiny-row align-center">Concepto</th>
+				<th style="width:10%;" class="tiny-row align-center">E/S</th>
+				<th style="width:10%;" class="tiny-row align-center">Stk</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -37,9 +58,9 @@
 					<tr class="@clase" onclick="selectListaInfoProdMovD(this)">
 						<td class="align-center tiny-row">@item.Box_id</td>
 						<td class="align-center tiny-row">@item.Sm_fecha.ToString("dd/MM/yy")</td>
-						<td class="align-center tiny-row">@item.Sm_tipo</td>
-						<td class="align-center tiny-row">@item.Sm_es</td>
-						<td class="align-center tiny-row">@item.Sm_stk</td>
+						<td class="align-left tiny-row" title="@item.Sm_concepto">@item.Sm_concepto</td>
+						<td class="align-right tiny-row">@item.Sm_es</td>
+						<td class="align-right tiny-row">@item.Sm_stk</td>
 					</tr>
 				}
 			}

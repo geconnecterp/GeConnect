@@ -70,5 +70,6 @@ namespace gc.infraestructura.Dtos.Almacen
 	public class ProductoNCPISustitutoDto : ProductoNCPIDto
 	{
 		public int orden { get; set; }
+		public string ctaFull => $"({cta_id}) {cta_denominacion}";
 	}
 }

@@ -16,26 +16,26 @@
 	}
 
 	.col-separador {
-		background-color: #fdfdfd !important; /* blanco casi puro */
-		width: 7px !important; /* o 15px si querés más separación */
+		background-color: #fdfdfd !important;
+		width: 7px !important;
 		padding: 0 !important;
 	}
 
 	.th-ingresos {
-		background-color: #f8d7da !important; /* mismo que col-entrada */
+		background-color: #f8d7da !important; 
 		color: #721c24 !important;
 	}
 
 	.th-egresos {
-		background-color: #d6eaf8 !important; /* mismo que col-salida */
+		background-color: #d6eaf8 !important;
 		color: #154360 !important;
 	}
 
 	.selected-row td {
-		background-color: #ffe599 !important; /* amarillo suave */
+		background-color: #ffe599 !important;
 		color: #000 !important;
 	}
-	/* Quita bordes superior e inferior de la columna separadora */
+	
 	#tbInfoProdMovSem td.col-separador,
 	#tbInfoProdMovSem th.col-separador {
 		border-top: none !important;
@@ -77,13 +77,25 @@
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase" onclick="selectListaInfoProdMovSem(this)">
 						<td class="align-center tiny-row">@item.desde.ToString("dd/MM/yy")-@item.hasta.ToString("dd/MM/yy")</td>
-						<td class="align-center tiny-row col-entrada">@item.e_compra</td>
-						<td class="align-center tiny-row col-entrada">@item.e_ri</td>
-						<td class="align-center tiny-row col-entrada">@item.e_otros</td>
+						<td class="align-right tiny-row col-entrada" title="@item.GetIngresoFull()">
+							@(item.e_compra == 0 ? "" : item.e_compra.ToString())
+						</td>
+						<td class="align-right tiny-row col-entrada" title="@item.GetIngresoFull()">
+							@(item.e_ri == 0 ? "" : item.e_ri.ToString())
+						</td>
+						<td class="align-right tiny-row col-entrada" title="@item.GetIngresoFull()">
+							@(item.e_otros == 0 ? "" : item.e_otros.ToString())
+						</td>
 						<td class="align-center tiny-row col-separador"></td>
-						<td class="align-center tiny-row col-salida">@item.s_ventas</td>
-						<td class="align-center tiny-row col-salida">@item.s_ri</td>
-						<td class="align-center tiny-row col-salida">@item.s_otros</td>
+						<td class="align-right tiny-row col-salida" title="@item.GetEgresoFull()">
+							@(item.s_ventas == 0 ? "" : item.s_ventas.ToString())
+						</td>
+						<td class="align-right tiny-row col-salida" title="@item.GetEgresoFull()">
+							@(item.s_ri == 0 ? "" : item.s_ri.ToString())
+						</td>
+						<td class="align-right tiny-row col-salida" title="@item.GetEgresoFull()">
+							@(item.s_otros == 0 ? "" : item.s_otros.ToString())
+						</td>
 					</tr>
 				}
 			}

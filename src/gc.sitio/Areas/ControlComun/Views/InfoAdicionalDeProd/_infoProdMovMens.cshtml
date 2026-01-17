@@ -76,13 +76,25 @@
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class ="@clase" onclick="selectListaInfoProdMovMens(this)">
 						<td class="align-center tiny-row">@item.periodo-@item.mes</td>
-						<td class="align-center tiny-row col-entrada">@item.e_compra</td>
-						<td class="align-center tiny-row col-entrada">@item.e_ri</td>
-						<td class="align-center tiny-row col-entrada">@item.e_otros</td>
+						<td class="align-right tiny-row col-entrada" title="@item.GetIngresoFull()">
+							@(item.e_compra == 0 ? "" : item.e_compra.ToString())
+						</td>
+						<td class="align-right tiny-row col-entrada" title="@item.GetIngresoFull()">
+							@(item.e_ri == 0 ? "" : item.e_ri.ToString())
+						</td>
+						<td class="align-right tiny-row col-entrada" title="@item.GetIngresoFull()">
+							@(item.e_otros == 0 ? "" : item.e_otros.ToString())
+						</td>
 						<td class="align-center tiny-row col-separador"></td>
-						<td class="align-center tiny-row col-salida">@item.s_ventas</td>
-						<td class="align-center tiny-row col-salida">@item.s_ri</td>
-						<td class="align-center tiny-row col-salida">@item.s_otros</td>
+						<td class="align-right tiny-row col-salida" title="@item.GetEgresoFull()">
+							@(item.s_ventas == 0 ? "" : item.s_ventas.ToString())
+						</td>
+						<td class="align-right tiny-row col-salida" title="@item.GetEgresoFull()">
+							@(item.s_ri == 0 ? "" : item.s_ri.ToString())
+						</td>
+						<td class="align-right tiny-row col-salida" title="@item.GetEgresoFull()">
+							@(item.s_otros == 0 ? "" : item.s_otros.ToString())
+						</td>
 					</tr>
 				}
 			}
