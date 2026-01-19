@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace gc.infraestructura.Dtos.Almacen
 {
     public partial class ProductoDto : Dto
@@ -21,17 +19,11 @@ namespace gc.infraestructura.Dtos.Almacen
             p_obs = string.Empty;
             p_balanza_id = string.Empty;
         }
-        [Display(Name = "Id")]
         public string p_id { get; set; }//
-        [Display(Name = "Marca")]
         public string p_m_marca { get; set; }//
-        [Display(Name = "Descripción")]
         public string p_m_desc { get; set; }//
-        [Display(Name = "Capacidad")]
         public string p_m_capacidad { get; set; }//
-        [Display(Name = "Prov.Id")]
         public string p_id_prov { get; set; }//
-        [Display(Name = "Descripción")]
         public string p_desc { get; set; }//
         /*----------------------------------------------*/
         public char? p_alta_rotacion { get; set; }//
@@ -248,5 +240,6 @@ namespace gc.infraestructura.Dtos.Almacen
         public int p_bulto_x_piso_dun { get; set; }
         public int p_piso_x_pallet_dun { get; set; }
 
+        public char accion { get; set; }
     }
 }

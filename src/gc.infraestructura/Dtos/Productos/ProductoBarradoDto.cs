@@ -11,5 +11,7 @@
         public string tba_id { get; set; } = string.Empty;
         public string tba_desc { get; set; } = string.Empty;
         public string tba_lista { get; set; } = string.Empty;
+
+        public char accion { get; set; }
     }
 }

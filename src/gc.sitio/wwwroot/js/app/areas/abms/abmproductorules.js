@@ -15,6 +15,7 @@
     $(document).on("click", "#PConVto", controlaVencimiento);
     $(document).on("click", "#PMatPri", controlaMateriaPrima);
     $(document).on("change", "#up_id", controlaValorUpId);
+    $(document).on("change","#iva_situacion",controlaSituacionIva)
     $(document).on("change", "#iva_situacion", controlaValorIva);
 
 });
@@ -114,6 +115,17 @@ function controlaMateriaPrima() {
     }
     else {
         $("#PElaboracion").prop("disabled", true);
+    }
+}
+
+function controlaSituacionIva() {
+    if ($("#iva_situacion option:selected").val() === "G") {
+        $("#iva_alicuota").prop("disabled", false);
+      
+    }
+    else {
+        $("#iva_alicuota").prop("disabled", true);
+        $("#iva_alicuota").val("0.00");
     }
 }
 
@@ -224,7 +236,7 @@ function accionBotones(btn) {
 
             }
 
-        }      
+        }
     }
 }
 
@@ -338,92 +350,135 @@ function activarControles(act) {
 
 function confirmarOperacionAbmProducto() {
     AbrirWaiting("Completando proceso...");
-    var data = {};
+
+    let data = {};
     let act = "";
+    let urlabm = "";
+
+    // Determinar datos y acción según la pestaña activa
     switch (tabAbm) {
         case 1:
             data = confirmarDatosTab01();
             act = accion;
+            urlabm = confirmarAbmProductoUrl;
             break;
         case 2:
             data = confirmarDatosTab02();
-            act = accion02
+            act = accion02;
+            urlabm = confirmarAbmBarradoUrl;
             break;
         case 3:
             data = confirmarDatosTab03();
             act = accion03;
-            break;
-        default:
-            return false;
-    }
-    urlabm = ""
-    switch (tabAbm) {
-        case 1:
-            urlabm = confirmarAbmProductoUrl;
-            break;
-        case 2:
-            urlabm = confirmarAbmBarradoUrl;
-            break;
-        case 3:
             urlabm = confirmarAbmLimiteUrl;
             break;
         default:
+            CerrarWaiting();
+            return false;
     }
-    PostGen(data, urlabm +"?accion="+act, function (obj) {
-        if (obj.error === true) {
-            CerrarWaiting();
-            AbrirMensaje("ALGO NO SALIO BIEN!", obj.msg, function () {
-                $("#msjModal").modal("hide");
-            }, false, ["CONTINUAR"], "error!", null);
-        }
-        else if (obj.warn === true) {
-            CerrarWaiting();
 
-            AbrirMensaje("ATENCIÓN", obj.msg, function () {
-                if (obj.auth === true) {
-                    window.location.href = login;
-                }
-                else {
+    // Agregar la acción al objeto data
+    data.accion = act;
+
+    // DEBUG: Verifica qué se está enviando
+    console.log("Datos a enviar:", data);
+    console.log("JSON stringified:", JSON.stringify(data));
+    console.log("URL destino:", urlabm);
+
+    // Realizar la petición AJAX
+    $.ajax({
+        url: urlabm,
+        type: 'POST',
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        data: JSON.stringify(data),
+        success: function (obj) {
+            CerrarWaiting();
+            console.log("Respuesta exitosa:", obj); // DEBUG
+            if (obj.error === true) {
+                AbrirMensaje("ALGO NO SALIO BIEN!", obj.msg, function () {
                     $("#msjModal").modal("hide");
-                }
-            }, false, ["CONTINUAR"], "warn!", null);
+                }, false, ["CONTINUAR"], "error!", null);
+                return;
+            }
 
-        }
-        else {
-            CerrarWaiting();
-            AbrirMensaje("ATENCIÓN", obj.msg, function () {
-                //todo fue bien, por lo que se deberia reinicializar la pantalla.
-                var grilla = "";
+            if (obj.warn === true) {
+                AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                    if (obj.auth === true) {
+                        window.location.href = login;
+                    } else {
+                        $("#msjModal").modal("hide");
+                    }
+                }, false, ["CONTINUAR"], "warn!", null);
+                return;
+            }
+            if (accion === AbmAction.BAJA) {
+                AbrirMensaje("ATENCIÓN", obj.msg, function () {
                 switch (tabAbm) {
                     case 1:
-                        grilla = tabGrid01;
-                        break;
+                        //si elimina un producto arranca de nuevo por ahora
+                        $("#btnCancel").trigger("click");
                     case 2:
-                        grilla = tabGrid02;
+                        presentarBarrado();
                         break;
                     case 3:
-                        grilla = tabGrid03;
+                        presentarLimites();
                         break;
-                    default:
-                        return false;
-                }
+                    }
+                }, false, ["CONTINUAR"], "succ!", null);
+                return;
+            }
+            // Para alta o modificación
+            var esAltaOModif = (accion === AbmAction.ALTA || accion === AbmAction.MODIFICACION);
+           
+            switch (tabAbm) {
+                case 1:
+                    // Para alta o modificación
+                    EntidadSelect = AbmAction == AbmAction.ALTA ? obj.id : $("#p_id").val();
+                default:
+            }
+
+            // Éxito
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                const grilla = tabAbm === 1 ? tabGrid01 : (tabAbm === 2 ? tabGrid02 : tabGrid03);
                 dataBak = "";
                 InicializaPantallaAbmProd(grilla);
-                //if (tabAbm === 2 || tabAbm === 3) {
-                //    activarGrilla(tabGrid01);
-                //}
-                if (accion !== AbmAction.BAJA) {
+                
                     switch (tabAbm) {
                         case 1:
-                            //se dió de alta o se modificó, se realiza la presentación del producto
-                            if (accion === AbmAction.ALTA) {
-                                EntidadSelect = obj.id;
-                            }
+                            // Limpiar estado de la pantalla
+                            $("#divDetalle").collapse("hide");
+                            $("#divpanel01").empty();
+                            buscarProductos(1, function () {
+                                // Buscar la fila con el ID del perfil
+                                var $fila = $("#" + grilla + " tbody tr").filter(function () {
+                                    return $(this).find("td:first").text().trim() === EntidadSelect;
+                                   
+                                }).first();
 
-                            //data = { p_id: EntidadSelect };
-                            //buscarProductoServer(data);
-                            //InicializaFiltroAbmProducto(EntidadSelect);
-                            $("#btnBuscar").trigger("click");
+                                // Si se encuentra la fila, solo marcarla visualmente
+                                if ($fila.length > 0) {
+                                    // Remover selección previa
+                                    $("#" + grilla + " tbody tr").removeClass("selectedEdit-row");
+
+                                    // Marcar la fila
+                                    $fila.addClass("selected-row");
+
+                                    // Posicionar en el tope si existe la función
+                                    if (typeof posicionarRegOnTop === 'function') {
+                                        posicionarRegOnTop($fila);
+                                    }
+
+
+                                    // Activar grilla y estado final
+                                    activarGrilla(grilla);
+                                    $("#btnDetalle").prop("disabled", false);
+                                    activarBotones(true);
+                                }
+
+                                // Resetear acción
+                                accionBotones(AbmAction.CANCEL);
+                            });
 
                             break;
                         case 2:
@@ -431,24 +486,28 @@ function confirmarOperacionAbmProducto() {
                             break;
                         case 3:
                             presentarLimites();
-                        default:
+                            break;
                     }
-
-                    //inicializamos la acción.
                     accion = "";
-                }
-                else {
-                    //borramos el id del producto si se eliminó
-                    EntidadSelect = "";
-                    //VAMOS A EJECUTAR NUEVAMENTE EL BUSCAR
-                    buscarProductos(pagina);
-                }
                 
 
                 $("#msjModal").modal("hide");
-                return true;
-
             }, false, ["CONTINUAR"], "succ!", null);
+        },
+        error: function (xhr, status, error) {
+            CerrarWaiting();
+
+            console.error("Error completo:", {
+                status: xhr.status,
+                statusText: xhr.statusText,
+                responseText: xhr.responseText,
+                error: error
+            });
+
+            const errorMsg = xhr.responseJSON?.msg || "Error al procesar la solicitud. Por favor, intente nuevamente.";
+            AbrirMensaje("ERROR", errorMsg, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["CONTINUAR"], "error!", null);
         }
     });
 }
@@ -458,7 +517,7 @@ function InicializaFiltroAbmProducto(id) {
         $("#chkDescr").prop("checked", false);
         $("#Buscar").val("");
     }
-    
+
 
     if (!$("#chkDesdeHasta").is(":checked")) {
         $("#chkDesdeHasta").prop("checked", true);
@@ -470,7 +529,7 @@ function InicializaFiltroAbmProducto(id) {
         $("#chkRel01").prop("checked", false);
         $("#Rel01").val("");
         $("#Rel01Item").val("");
-        $("#Rel01List").empty();        
+        $("#Rel01List").empty();
     }
 
     if ($("#chkRel02").is(":checked")) {
@@ -482,133 +541,132 @@ function InicializaFiltroAbmProducto(id) {
 }
 
 function confirmarDatosTab01() {
-    //linea 01
-    var p_id = $("#p_id").val();
-    var p_activo = $("#p_activo option:selected").val();
-    var up_id = $("#up_id option:selected").val();
-    var up_lista = $("#up_id option:selected").text();
-    var up_desc = up_lista.replace("(" + up_id + ")", '');
+    // ===== LÍNEA 01 =====
+    var p_id = $("#p_id").val() || "";
+    var p_activo = $("#p_activo option:selected").val() || "S";
+    var up_id = $("#up_id option:selected").val() || "";
+    var up_lista = $("#up_id option:selected").text() || "";
+    var up_desc = up_lista.replace(/\(.*\)/, "").trim();
 
-    //linea 02
-    var p_m_marca = $("#p_m_marca").val();
-    var p_balanza = "N"
-    if ($("#PBalanza").is(":checked")) { p_balanza = "S" }
-    var p_balanza_dvto = $("#p_balanza_dvto").val();
-    var p_peso = $("#p_peso").val();
-    //linea 03
-    var p_m_desc = $("#p_m_desc").val();
-    var p_desc = $("#p_desc").val();
-    var p_con_vto = "N";
-    if ($("#PConVto").is(":checked")) { p_con_vto = "S" }
-    var p_con_vto_min = $("#p_con_vto_min").val();
-    //linea 04
-    var p_m_capacidad = $("#p_m_capacidad").val();
-    var p_alta_rotacion = "N";
-    if ($("#PAltaRotacion").is(":checked")) { p_alta_rotacion = "S" }
-    //Linea 05
-    var p_id_prov = $("#p_id_prov").val();
-    var p_materia_prima = "N";
-    if ($("#PMatPri").is(":checked")) { p_materia_prima = "S" }
-    var p_elaboracion = "N";
-    if ($("#PElaboracion").is(":checked")) { p_elaboracion = "S" }
-    //Linea 06
-    var cta_id = $("#cta_id").val();
-    var cta_lista = $("#cta_lista").text();
-    var cta_denominacion = cta_lista.replace("(" + cta_id + ")", '');
+    // ===== LÍNEA 02 =====
+    var p_m_marca = $("#p_m_marca").val() || "";
+    var p_balanza = $("#PBalanza").is(":checked") ? "S" : "N";
+    var p_balanza_dvto = parseInt($("#p_balanza_dvto").val()) || 0;
+    var p_peso = parseFloat($("#p_peso").val()) || 0;
 
-    var adm_may_excluye = "N";
-    if ($("#AdmMayExcluye").is(":checked")) { adm_may_excluye = "S" }
-    var adm_min_excluye = "N";
-    if ($("#AdmMinExcluye").is(":checked")) { adm_min_excluye = "S" }
-    //Linea 07
-    var pg_id = $("#pg_id option:selected").val();
-    var pg_lista = $("#pg_id option:selected").text();
+    // ===== LÍNEA 03 =====
+    var p_m_desc = $("#p_m_desc").val() || "";
+    var p_desc = $("#p_desc").val() || "";
+    var p_con_vto = $("#PConVto").is(":checked") ? "S" : "N";
+    var p_con_vto_min = parseInt($("#p_con_vto_min").val()) || 0;
 
-    var pi_auto_exluye = "N";
-    if ($("#PiAutoExluye").is(":checked")) { pi_auto_exluye = "S" }
-    var oc_auto_exluye = "N";
-    if ($("#OcAutoExluye").is(":checked")) { oc_auto_exluye = "S" }
-    //linea 08
-    var rub_id = $("#rub_id").val();
-    var rub_lista = $("#rub_lista").text();
-    var rub_desc = rub_lista.replace("(" + rub_id + ")", '');
+    // ===== LÍNEA 04 =====
+    var p_m_capacidad = $("#p_m_capacidad").val() || "";
+    var p_alta_rotacion = $("#PAltaRotacion").is(":checked") ? "S" : "N";
 
-    var iva_situacion = $("#iva_situacion option:selected").val();
-    var iva_alicuota = $("#iva_alicuota option:selected").val();
-    //linea 09
-    var lp_id_default = $("#lp_id_default option:selected").val();
-    var in_alicuota = $("#in_alicuota").val();
-    //Linea 10
-    var p_obs = $("#p_obs").val();
-    var p_actu = $("#p_actu").val();  //para que sirve este campo???
+    // ===== LÍNEA 05 =====
+    var p_id_prov = $("#p_id_prov").val() || "";
+    var p_materia_prima = $("#PMatPri").is(":checked") ? "S" : "N";
+    var p_elaboracion = $("#PElaboracion").is(":checked") ? "S" : "N";
 
-    ////contoles hidden
-    //var p_alta = $("#p_alta").val();
-    //var usu_id_alta = $("#usu_id_alta").val();
-    //var p_modi = $("#p_modi").val();
-    //var usu_id_modi = $("#usu_id_modi").val();
-    var p_balanza_id = $("#p_balanza_id").val();
-    var p_id_barrado_ean = $("#p_id_barrado_ean").val();
-    var p_unidad_pres_ean = $("#p_unidad_pres_ean").val();
-    var p_unidad_x_bulto_ean = $("#p_unidad_x_bulto_ean").val();
-    var p_bulto_x_piso_ean = $("#p_bulto_x_piso_ean").val();
-    var p_piso_x_pallet_ean = $("#p_piso_x_pallet_ean").val();
-    var p_id_barrado_dun = $("#p_id_barrado_dun").val();
-    var p_unidad_pres_dun = $("#p_unidad_pres_dun").val();
-    var p_unidad_x_bulto_dun = $("#p_unidad_x_bulto_dun").val();
-    var p_bulto_x_piso_dun = $("#p_bulto_x_piso_dun").val();
-    var p_piso_x_pallet_dun = $("#p_piso_x_pallet_dun").val();
+    // ===== LÍNEA 06 =====
+    var cta_id = $("#cta_id").val() || "";
+    var cta_lista = $("#cta_lista").text() || "";
+    var cta_denominacion = cta_lista.replace(/\(.*\)/, "").trim();
+    var adm_may_excluye = $("#AdmMayExcluye").is(":checked") ? "S" : "N";
+    var adm_min_excluye = $("#AdmMinExcluye").is(":checked") ? "S" : "N";
 
+    // ===== LÍNEA 07 =====
+    var pg_id = $("#pg_id option:selected").val() || "";
+    var pg_lista = $("#pg_id option:selected").text() || "";
+    var pg_desc = pg_lista.replace(/\(.*\)/, "").trim(); // ✅ FALTABA
+
+    // ✅ CORRECCIÓN: "excluye" no "exluye"
+    var pi_auto_excluye = $("#PiAutoExluye").is(":checked") ? "S" : "N";
+    var oc_auto_excluye = $("#OcAutoExluye").is(":checked") ? "S" : "N";
+
+    // ===== LÍNEA 08 =====
+    var rub_id = $("#rub_id").val() || "";
+    var rub_lista = $("#rub_lista").text() || "";
+    var rub_desc = rub_lista.replace(/\(.*\)/, "").trim();
+    var iva_situacion = $("#iva_situacion option:selected").val() || "N";
+    var iva_alicuota = parseFloat($("#iva_alicuota option:selected").val()) || 0;
+
+    // ===== LÍNEA 09 =====
+    var lp_id_default = $("#lp_id_default option:selected").val() || "";
+    var in_alicuota = parseFloat($("#in_alicuota").val()) || 0;
+
+    // ===== LÍNEA 10 =====
+    var p_obs = $("#p_obs").val() || "";
+    var p_actu = $("#p_actu").val() || null;
+
+    // ===== CAMPOS OCULTOS =====
+    var p_balanza_id = $("#p_balanza_id").val() || "";
+
+    // ✅ Convertir a enteros
+    var p_id_barrado_ean = $("#p_id_barrado_ean").val() || "";
+    var p_unidad_pres_ean = parseInt($("#p_unidad_pres_ean").val()) || 0;
+    var p_unidad_x_bulto_ean = parseInt($("#p_unidad_x_bulto_ean").val()) || 0;
+    var p_bulto_x_piso_ean = parseInt($("#p_bulto_x_piso_ean").val()) || 0;
+    var p_piso_x_pallet_ean = parseInt($("#p_piso_x_pallet_ean").val()) || 0;
+
+    var p_id_barrado_dun = $("#p_id_barrado_dun").val() || "";
+    var p_unidad_pres_dun = parseInt($("#p_unidad_pres_dun").val()) || 0;
+    var p_unidad_x_bulto_dun = parseInt($("#p_unidad_x_bulto_dun").val()) || 0;
+    var p_bulto_x_piso_dun = parseInt($("#p_bulto_x_piso_dun").val()) || 0;
+    var p_piso_x_pallet_dun = parseInt($("#p_piso_x_pallet_dun").val()) || 0;
+
+    // ===== OBJETO DE RETORNO (Orden alfabético recomendado) =====
     var data = {
-        p_id,//
-        p_m_marca,//
-        p_m_desc,//
-        p_m_capacidad,
+        accion,                  // ✅ Se agregará después en confirmarOperacionAbmProducto
+        adm_may_excluye,
+        adm_min_excluye,
+        cta_denominacion,
+        cta_id,
+        cta_lista,
+        in_alicuota,
+        iva_alicuota,
+        iva_situacion,
+        lp_id_default,
+        oc_auto_excluye,        // ✅ CORREGIDO
+        p_actu,
+        p_activo,
+        p_alta_rotacion,
+        p_balanza,
+        p_balanza_dvto,
+        p_balanza_id,
+        p_bulto_x_piso_dun,
+        p_bulto_x_piso_ean,
+        p_con_vto,
+        p_con_vto_min,
         p_desc,
-        p_m_capacidad,//
-        p_alta_rotacion,//
+        p_elaboracion,
+        p_id,
+        p_id_barrado_dun,
+        p_id_barrado_ean,
         p_id_prov,
-        p_con_vto,//
-        p_con_vto_min,//
-        p_balanza_dvto,//
-        p_balanza_id,//
-        p_peso,//
-        p_elaboracion,//
-        p_materia_prima,//
-        up_id,//
-        up_desc,//
-        up_lista,//
-        rub_id,//
-        rub_desc,//
-        rub_lista,//
-        cta_id,//
-        cta_denominacion,//
-        cta_lista,//
-        pg_id,//
-        pg_lista,//
-        in_alicuota,//
-        iva_alicuota,//
-        iva_situacion,//
-        p_actu,//
-        p_activo,//
-        p_balanza,//
-        adm_min_excluye,//
-        adm_may_excluye,//
-        pi_auto_exluye,//
-        oc_auto_exluye,//
-        p_id_barrado_ean,//
-        p_unidad_pres_ean,//
-        p_unidad_x_bulto_ean,//
-        p_bulto_x_piso_ean,//
-        p_piso_x_pallet_ean,//
-        p_id_barrado_dun,//
-        p_unidad_pres_dun,//
-        p_unidad_x_bulto_dun,//
-        p_bulto_x_piso_dun,//
-        p_piso_x_pallet_dun,//
-        lp_id_default,//
-        p_obs,//
-        accion
+        p_m_capacidad,          // ✅ Sin duplicar
+        p_m_desc,
+        p_m_marca,
+        p_materia_prima,
+        p_obs,
+        p_peso,
+        p_piso_x_pallet_dun,
+        p_piso_x_pallet_ean,
+        p_unidad_pres_dun,
+        p_unidad_pres_ean,
+        p_unidad_x_bulto_dun,
+        p_unidad_x_bulto_ean,
+        pg_desc,                 // ✅ AGREGADO
+        pg_id,
+        pg_lista,
+        pi_auto_excluye,        // ✅ CORREGIDO
+        rub_desc,
+        rub_id,
+        rub_lista,
+        up_desc,
+        up_id,
+        up_lista
     };
 
     return data;
