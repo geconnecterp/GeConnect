@@ -814,7 +814,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             {
                 _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
-                return new RespuestaGenerica<LimiteStkDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener el barrado de producto." };
+                return new RespuestaGenerica<LimiteStkDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener los limites de stock del producto!!." };
             }
         }
 
