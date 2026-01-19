@@ -437,7 +437,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         }
 
         [HttpPost]
-        public async Task<JsonResult> ConfirmarAbmProducto([FromBody] ProductoDto prod, char accion)
+        public async Task<JsonResult> ConfirmarAbmProducto([FromBody] ProductoDto prod)
         {
             try
             {
@@ -447,44 +447,49 @@ namespace gc.sitio.Areas.ABMs.Controllers
                     return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
                 }
 
+                if (prod == null)
+                {
+                    return Json(new { error = true, msg = "No se recepcionaron datos del producto." });
+                }
+
+                List<char> lista = new() { 'A', 'B', 'M' };
+                if (!lista.Contains(prod.accion))
+                {
+                    return Json(new { error = true, msg = "Operación no reconocida." });
+                }
+
                 prod = HelperGen.PasarAMayusculas(prod);
-                //prod.P_Obs = prod.P_Obs.ToUpper();
-                AbmGenDto abm = new AbmGenDto()
+
+                AbmGenDto abm = new()
                 {
                     Json = JsonConvert.SerializeObject(prod),
                     Objeto = "productos",
                     Administracion = AdministracionId,
                     Usuario = UserName,
-                    Abm = accion
+                    Abm = prod.accion
                 };
 
                 var res = await _abmSv.AbmConfirmar(abm, TokenCookie);
+
                 if (res.Ok)
                 {
-                    string msg;
-                    switch (accion)
+                    string msg = prod.accion switch
                     {
-                        case 'A':
-                            msg = $"EL PROCESAMIENTO DEL ALTA DEL PRODUCTO {prod.p_desc} SE REALIZO SATISFACTORIAMENTE";
-                            break;
-                        case 'M':
-                            msg = $"EL PROCESAMIENTO DE LA MODIFICIACION DEL PRODUCTO {prod.p_desc} SE REALIZO SATISFACTORIAMENTE";
-                            break;
-                        default:
-                            msg = $"EL PROCESAMIENTO DE LA BAJA/DISCONTINUAR DEL PRODUCTO {prod.p_desc} SE REALIZO SATISFACTORIAMENTE";
-                            break;
-                    }
+                        'A' => $"ALTA DEL PRODUCTO {prod.p_desc} REALIZADA SATISFACTORIAMENTE",
+                        'M' => $"MODIFICACIÓN DEL PRODUCTO {prod.p_desc} REALIZADA SATISFACTORIAMENTE",
+                        _ => $"BAJA DEL PRODUCTO {prod.p_desc} REALIZADA SATISFACTORIAMENTE"
+                    };
+
                     ProductosBuscados = [];
-                    if (abm.Abm.Equals('A'))
+
+                    if (abm.Abm == 'A')
                     {
                         return Json(new { error = false, warn = false, msg, id = res.Entidad?.resultado_id });
                     }
                     return Json(new { error = false, warn = false, msg });
                 }
-                else
-                {
-                    return Json(new { error = false, warn = true, msg = res.Entidad?.resultado_msj, focus = res.Entidad?.resultado_setfocus });
-                }
+
+                return Json(new { error = false, warn = true, msg = res.Entidad?.resultado_msj, focus = res.Entidad?.resultado_setfocus });
             }
             catch (NegocioException ex)
             {
@@ -492,16 +497,17 @@ namespace gc.sitio.Areas.ABMs.Controllers
             }
             catch (UnauthorizedException ex)
             {
-                return Json(new { error = false, warn = true, msg = ex.Message });
+                return Json(new { error = false, warn = true, auth = true, msg = ex.Message });
             }
             catch (Exception ex)
             {
-                return Json(new { error = true, warn = false, msg = ex.Message });
+                _logger?.LogError(ex, "Error en ConfirmarAbmProducto");
+                return Json(new { error = true, warn = false, msg = "Error inesperado en el servidor." });
             }
         }
 
         [HttpPost]
-        public async Task<JsonResult> ConfirmarAbmBarrado(ProductoBarradoDto barr, char accion)
+        public async Task<JsonResult> ConfirmarAbmBarrado([FromBody] ProductoBarradoDto barr)
         {
             try
             {
@@ -509,6 +515,11 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 if (!auth.Item1 || auth.Item2 < DateTime.Now)
                 {
                     return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+
+                if (barr == null)
+                {
+                    return Json(new { error = true, msg = "No se recepcionaron datos del barrado." });
                 }
 
                 //agrego el id del producto que actulmente esta seleccionado
@@ -522,14 +533,14 @@ namespace gc.sitio.Areas.ABMs.Controllers
                     Objeto = "productos_barrados",
                     Administracion = AdministracionId,
                     Usuario = UserName,
-                    Abm = accion
+                    Abm = barr. accion
                 };
 
                 var res = await _abmSv.AbmConfirmar(abm, TokenCookie);
                 if (res.Ok)
                 {
                     string msg;
-                    switch (accion)
+                    switch (barr.accion)
                     {
                         case 'A':
                             msg = $"EL PROCESAMIENTO DEL ALTA DEL BARRADO {barr.p_id_barrado} SE REALIZO SATISFACTORIAMENTE";

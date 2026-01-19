@@ -4,6 +4,15 @@
         reverse: true,
     });
 
+    cargarEventosAbmProductos();   
+
+    $("#btnDetalle").prop("disabled", true);
+
+    InicializaPantallaAbmProd("tbGridProd");
+});
+
+function cargarEventosAbmProductos() {
+
     //valida que los datos ingresados en barral sean válidos
     $(document).on("blur", ".barr", function () {
         var value = parseInt($(this).val(), 10);
@@ -24,14 +33,16 @@
         ejecutaDblClickGrid1(x);
     });
     $(document).on("dblclick", "#" + tabGrid02 + " tbody tr", function () {
+        if (tabAbm === 1) {
+            return false;
+        }
         x = $(this);
         ejecutaDblClickGrid2(x);
     });
-    //$(document).on("dblclick", "#" + tabGrid03 + " tbody tr", function () {
-    //    x = $(this);
-    //    ejecutaDblClickGrid3(x);
-    //});
     $(document).on("dblclick", "#" + tabGrid03 + " tbody tr", function () {
+        if (tabAbm === 1) {
+            return false;
+        }
         x = $(this);
         //se resguarda el registro de la tabla
         regSelected = x;
@@ -45,8 +56,8 @@
         }
     });
 
-  
-    
+
+
     //busqueda no gen de proveedores
     $(document).on("keydown.autocomplete", "input#cta_lista", function () {
         $(this).autocomplete({
@@ -123,7 +134,39 @@
         });
     });
 
-    $("#btnDetalle").prop("disabled", true);
+    $(document).off("change.addRel02Item").on("change.addRel02Item", "select#Rel02", function () {
+        const $origen = $(this);
+        const $destino = $("#Rel02List");
+        const $seleccionadas = $origen.find("option:selected");
+        if ($seleccionadas.length === 0) return;
+
+        let huboCambios = false;
+
+        $seleccionadas.each(function () {
+            const val = this.value;
+            const txt = this.text;
+            if (!val) return;
+
+            const existe = $destino.find("option[value='" + $.escapeSelector(val) + "']").length > 0;
+            if (!existe) {
+                $destino.append($("<option></option>").val(val).text(txt));
+                huboCambios = true;
+            }
+        });
+
+        if (huboCambios) {
+            if ($.fn.selectpicker && $destino.hasClass("selectpicker")) {
+                $destino.selectpicker("refresh");
+            }
+            $destino.trigger("change");
+        }
+
+        $origen.val("");
+        if ($.fn.selectpicker && $origen.hasClass("selectpicker")) {
+            $origen.selectpicker("refresh");
+        }
+    });
+
 
     $("#btnCancel").on("click", function () {
         window.location.href = homeProductoUrl;
@@ -133,7 +176,7 @@
         presentaPaginacion(div);
     });
     $("#btnBuscar").on("click", function () {
-       
+
         //es una busqueda por filtro. siempre sera pagina 1
         if (accion !== AbmAction.MODIFICACION && accion !== AbmAction.ALTA) {
             //es nueva la busqueda no resguardamos la busqueda anterior. es util para paginado
@@ -152,14 +195,16 @@
                 }
             });
         }
-        
+
     });
+    //este es el callback que se usa para la paginacion
+    funcCallBack = buscarProductos;
 
     $(".inputEditable").on("keypress", analizaEnterInput);
 
     $("#BtnLiTab01").on("click", function () {
         tabAbm = 1;
-        activarGrilla(tabGrid01);        
+        activarGrilla(tabGrid01);
         if (EntidadSelect !== "" && regSelected !== "") {
             activarBotones(true);
         }
@@ -167,27 +212,41 @@
 
     $("#BtnLiTab02").on("click", presentarBarrado);
     $("#BtnLiTab03").on("click", presentarLimites);
-
-    
-
-    InicializaPantallaAbmProd("tbGridProd");
-
-    $("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle); 
-
-    funcCallBack = buscarProductos;
-    /*    AbrirWaiting();*/
-    return true;
-});
+    $("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle);
+}
 
 //divpanel01
 
 function analizaEstadoBtnDetalle() {
-    // Verificar si hay un asiento abierto (panel de detalle visible)
-    if ($("#divDetalle").is(":visible")) {
-        // Hay un asiento abierto, limpiarlo y cerrar el panel
-        limpiarProductoPresentado();
-    }
-    return true;
+    tabAbm = 1;
+    accion = "";
+
+    $("divBarrado2").empty();
+    $("tab211").empty();
+    $("tab212").empty();
+
+    $("divLimite2").empty();
+    $("tab311").empty();
+
+    // Ocultar detalle y mostrar filtro
+    $("#divDetalle").collapse("hide");
+    //$("#divFiltro").collapse("show");
+
+    //se posiciona en el tab 1
+    $("#BtnLiTab01").trigger("click");
+
+    // Desactivar botón detalle
+    $("#btnDetalle").prop("disabled", true);
+
+    // Activar grilla
+    activarGrilla(tabGrid01);
+
+    // Limpiar selección visual
+    $("#" + tabGrid01 + " tbody tr").removeClass("selectedEdit-row");
+
+    // Resetear estado de botones
+    activarBotones(false);
+
 
 }
 
@@ -460,100 +519,131 @@ function ejecutaDblClickGridLIm(x) {
     selectAbmRegDbl(x, tabGrid03);
 }
 
+function buscaElDatoDelBarral(id,abrirTab = false) {
+    //se busca el dato del barral
+    AbrirWaiting("Cargando Datos del Barral....");
+    if (abrirTab) {
+        $("#BtnLiTab02").trigger("click");
+    }
+
+    setTimeout(function () {
+        var data = { barradoId: id };
+        PostGen(data, buscarBarradoUrl, function (obj) {
+            CerrarWaiting();
+            if (obj.error === true) {
+                AbrirMensaje("¡¡Algo no fué bien!!", obj.msg, function () {
+                    $("#msjModal").modal("hide");
+                    return true;
+                }, false, ["Aceptar"], "error!", null);
+            } else if (obj.warn === true) {
+                AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                    if (obj.auth === true) {
+                        window.location.href = login;
+                    } else {
+                        $("#msjModal").modal("hide");
+                    }
+                    return true;
+                }, false, ["Aceptar"], "warn!", null);
+            }
+            else {
+                //se presentan los datos en los controles
+
+                $("#p_id").val(obj.datos.p_id);
+                $("#p_id_barrado").val(obj.datos.p_id_barrado);
+                $("#p_unidad_pres").val(obj.datos.p_unidad_pres);
+                $("#p_unidad_x_bulto").val(obj.datos.p_unidad_x_bulto);
+                $("#p_bulto_x_piso").val(obj.datos.p_bulto_x_piso);
+                $("#p_piso_x_pallet").val(obj.datos.p_piso_x_pallet);
+                $("#tba_id").val(obj.datos.tba_id);
+                //activar botones de acción
+                activarBotones(true);
+
+                $("#BtnLiTab01").prop("disabled", true);
+                $("#BtnLiTab01").addClass("text-danger");
+                $("#BtnLiTab03").prop("disabled", true);
+                $("#BtnLiTab03").addClass("text-danger");
+            }
+
+        });
+    }, 200);
+
+    
+}
+
+function buscarDatoslimiteStock(x, abrirTab = false) {
+    if (abrirTab) {
+        $("#BtnLiTab02").trigger("click");
+    }
+
+    setTimeout(function () {
+        // Obtener el ID de administración (que está en la primera columna de la grilla)
+        var admId = x.find("td:nth-child(1)").text();
+
+        // Crear los datos con el ID de administración
+        var data = { admId: admId };
+
+        PostGen(data, BuscaLimiteDatoUrl, function (obj) {
+            CerrarWaiting();
+            if (obj.error === true) {
+                AbrirMensaje("¡¡Algo no fué bien!!", obj.msg, function () {
+                    $("#msjModal").modal("hide");
+                    return true;
+                }, false, ["Aceptar"], "error!", null);
+            } else if (obj.warn === true) {
+                AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                    if (obj.auth === true) {
+                        window.location.href = login;
+                    } else {
+                        $("#msjModal").modal("hide");
+                    }
+                    return true;
+                }, false, ["Aceptar"], "warn!", null);
+            }
+            else {
+                // Asignar los datos a los controles correctos del límite de stock
+                $("#adm_id").val(obj.datos.adm_id);
+                $("#p_stk_min").val(obj.datos.p_stk_min);
+                $("#p_stk_max").val(obj.datos.p_stk_max);
+
+                // Activar los botones de acción
+                activarBotones(true);
+            }
+
+        });
+    }, 200);
+}
+
 function selectAbmRegDbl(x, gridId) {
     $("#" + gridId + " tbody tr").each(function (index) {
         $(this).removeClass("selectedEdit-row");
     });
     $(x).addClass("selectedEdit-row");
     var id = x.find("td:nth-child(1)").text();
-   
-
+  
     switch (tabAbm) {
         case 1:
-            //se agrega por inyection el tab con los datos del producto
-            EntidadEstado = x.find("td:nth-child(9)").text();
-            var data = { p_id: id };
-            EntidadSelect = id;
-            desactivarGrilla(tabGrid01);
-            buscarProductoServer(data);
-            posicionarRegOnTop(x);
-            break;
+            switch (gridId) {
+                case tabGrid02: //buscaElDatoDelBarral(id);                                        
+                case tabGrid03: //buscarDatoslimiteStock(x);                    
+                    return false;
+                break;
+                default:
+                    //se agrega por inyection el tab con los datos del producto
+                    EntidadEstado = x.find("td:nth-child(9)").text();
+                    var data = { p_id: id };
+                    EntidadSelect = id;
+                    desactivarGrilla(tabGrid01);
+                    buscarProductoServer(data);
+                    posicionarRegOnTop(x);
+                    break;
+            }
+            
         case 2:
-            //se busca el dato del barral 
-            var data = { barradoId: id };
-            PostGen(data, buscarBarradoUrl, function (obj) {
-                CerrarWaiting();
-                if (obj.error === true) {
-                    AbrirMensaje("¡¡Algo no fué bien!!", obj.msg, function () {
-                        $("#msjModal").modal("hide");
-                        return true;
-                    }, false, ["Aceptar"], "error!", null);
-                } else if (obj.warn === true) {
-                    AbrirMensaje("ATENCIÓN", obj.msg, function () {
-                        if (obj.auth === true) {
-                            window.location.href = login;
-                        } else {
-                            $("#msjModal").modal("hide");
-                        }
-                        return true;
-                    }, false, ["Aceptar"], "warn!", null);
-                }
-                else {
-                    //se presentan los datos en los controles
-
-                    $("#p_id").val(obj.datos.p_id);
-                    $("#p_id_barrado").val(obj.datos.p_id_barrado);
-                    $("#p_unidad_pres").val(obj.datos.p_unidad_pres);
-                    $("#p_unidad_x_bulto").val(obj.datos.p_unidad_x_bulto);
-                    $("#p_bulto_x_piso").val(obj.datos.p_bulto_x_piso);
-                    $("#p_piso_x_pallet").val(obj.datos.p_piso_x_pallet);
-                    $("#tba_id").val(obj.datos.tba_id);
-                    //activar botones de acción
-                    activarBotones(true);
-
-                    $("#BtnLiTab01").prop("disabled", true);
-                    $("#BtnLiTab01").addClass("text-danger");
-                    $("#BtnLiTab03").prop("disabled", true);
-                    $("#BtnLiTab03").addClass("text-danger");
-                }
-
-            });
+            buscaElDatoDelBarral(id);            
             break;
         case 3:
-            // Obtener el ID de administración (que está en la primera columna de la grilla)
-            var admId = x.find("td:nth-child(1)").text();
-
-            // Crear los datos con el ID de administración
-            var data = { admId: admId };
-
-            PostGen(data, BuscaLimiteDatoUrl, function (obj) {
-                CerrarWaiting();
-                if (obj.error === true) {
-                    AbrirMensaje("¡¡Algo no fué bien!!", obj.msg, function () {
-                        $("#msjModal").modal("hide");
-                        return true;
-                    }, false, ["Aceptar"], "error!", null);
-                } else if (obj.warn === true) {
-                    AbrirMensaje("ATENCIÓN", obj.msg, function () {
-                        if (obj.auth === true) {
-                            window.location.href = login;
-                        } else {
-                            $("#msjModal").modal("hide");
-                        }
-                        return true;
-                    }, false, ["Aceptar"], "warn!", null);
-                }
-                else {
-                    // Asignar los datos a los controles correctos del límite de stock
-                    $("#adm_id").val(obj.datos.adm_id);
-                    $("#p_stk_min").val(obj.datos.p_stk_min);
-                    $("#p_stk_max").val(obj.datos.p_stk_max);
-
-                    // Activar los botones de acción
-                    activarBotones(true);
-                }
-
-            });
+            buscarDatoslimiteStock(x);
+            
             break;
         default:
             return false;

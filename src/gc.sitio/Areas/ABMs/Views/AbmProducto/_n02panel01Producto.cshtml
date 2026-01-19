@@ -22,7 +22,7 @@
                     <span class="input-group-text" style="width:50px;">ID </span>
                     <input type="text" asp-for="p_id" class="form-control" disabled style="width:50px;margin-right:20px;" />
                     <span class="input-group-text">Estado</span>
-                    @Html.DropDownListFor(x => x.p_activo, listAct, "Sel.", new { @class = "form-control", style = "width:50px;", disabled = "disabled" })
+                    @Html.DropDownListFor(x => x.p_activo, listAct, new { @class = "form-control", style = "width:50px;", disabled = "disabled" })
                 </div>
             </div>
             <div class="col-sm-4">
@@ -182,19 +182,19 @@
             <div class="col-sm-2">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">IVA</span>
-                    @Html.DropDownListFor(x => x.iva_situacion, null, "Selecciona...", new { @class = "form-control", disabled = "disabled" })
+                    @Html.DropDownListFor(x => x.iva_situacion, null, new { @class = "form-control", disabled = "disabled" })
                 </div>
             </div>
             <div class="col-sm-2">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">Ali.IVA</span>
-                    @Html.DropDownListFor(x => x.iva_alicuota, null, "Selecciona...", new { @class = "form-control align-center", disabled = "disabled" })
+                    @Html.DropDownListFor(x => x.iva_alicuota, null, new { @class = "form-control align-center", disabled = "disabled" })
                 </div>
             </div>
             <div class="col-sm-2">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">II:</span>
-                    <input type="number" min="0" max="50" asp-for="in_alicuota" class="form-control inputEditable_r" disabled style="width:50px;" />
+                    <input type="number" min="0" max="80" asp-for="in_alicuota" class="form-control inputEditable_r" disabled style="width:50px;" />
                 </div>
             </div>
         </div>

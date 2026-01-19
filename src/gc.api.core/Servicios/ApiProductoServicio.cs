@@ -1518,7 +1518,8 @@ namespace gc.api.core.Servicios
             List<ProductoBarradoDto> resp = _repository.EjecutarLstSpExt<ProductoBarradoDto>(sp, ps, true);
             if (resp.Count == 0)
             {
-                throw new NegocioException("No se encontrol la información del barrado. Verifique los datos.");
+                //throw new NegocioException("No se encontrol la información del barrado. Verifique los datos.");
+                return new ProductoBarradoDto();
             }
             return resp.First();
         }

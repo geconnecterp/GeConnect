@@ -2192,7 +2192,7 @@ function cargaEventosCP() {
             $origen.selectpicker("refresh");
         }
     });
-
+    //****** FIN Rubros    * /
 
     // Evento para Rel03
     $("#Rel03").on("change", function () {
