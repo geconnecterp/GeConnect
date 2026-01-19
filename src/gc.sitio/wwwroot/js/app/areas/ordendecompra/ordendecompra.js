@@ -103,6 +103,10 @@ $(function () {
 			BuscarProductos(pagina);
 		}
 	});
+	//$("#btnFiltro").on("click", function () {
+	//	$("#divDetalle").collapse("hide");
+	//	$("#divFiltro").collapse("show");
+	//});
 	$(document).on("click", "#btnAbmCancelar", function () {
 		const filas = window.obtenerFilasGrillaOCModificadas();
 		if (filas.length !== 0) {
@@ -155,7 +159,8 @@ $(function () {
 	//});
 	$(document).on("click", "#btnCancel", function () {
 		LimpiarDatosDelFiltroInicial();
-		$("#btnFiltro").trigger("click");
+		$("#divDetalle").collapse("hide");
+		$("#divFiltro").collapse("show");
 	});
 	//$("#btnCancel").on("click", function () {
 	//	LimpiarDatosDelFiltroInicial();
@@ -1100,6 +1105,8 @@ function BuscarProductos(pag = 1) {
 		let tab = new bootstrap.Tab(document.querySelector("#btnTabProductos"));
 		tab.show();
 		viendeDesdeBusquedaDeProducto = false;
+			$("#divDetalle").collapse("show");
+			$("#divFiltro").collapse("hide");
 		return true
 	});
 }

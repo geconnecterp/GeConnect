@@ -6,24 +6,50 @@
 	string color = string.Empty;
 	var alt = true;
 	string clase = string.Empty;
+
+	string grupoActual = string.Empty;
+	string grupoAnterior = string.Empty;
 }
 <style>
 	thead th {
-	position: sticky;
-	top: 0px;
+		position: sticky;
+		top: 0px;
+		z-index: 1; /* suficiente para estar sobre las filas */
+		background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+		color: #fff !important;
 	}
+
+	.table-wrapper {
+		/*max-height: 400px;  o lo que necesites */
+		overflow-y: auto;
+		position: relative;
+	}
+
+	#tbListaProducto {
+		table-layout: fixed;
+		width: 100%;
+	}
+
+		#tbListaProducto th,
+		#tbListaProducto td {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
 </style>
-<div class="table-responsive table-wrapper-400-full-width" id="containerListaProducto">
+<div class="table-responsive table-wrapper-500-full-width" id="containerListaProducto">
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbListaProducto">
 		<thead>
 			<tr class="header">
 				<th style="width:5%;" scope="col">Código</th>
 				<th style="width:20%;" scope="col">Descripción</th>
+				<th style="width:5%;" scope="col">Barrado</th>
 				<th style="width:5%;" scope="col">Cod. Prov</th>
-				<th style="width:5%;" scope="col">PI Pend</th>
+				<th style="width:5%;" scope="col">Ult RP</th>
 				<th style="width:5%;" scope="col">OC Pend</th>
-				<th style="width:5%;" scope="col">Stock Suc</th>
-				<th style="width:5%;" scope="col">Stock Tot</th>
+				<th style="width:5%;" scope="col">Stk Suc</th>
+				<th style="width:5%;" scope="col">Stk Total</th>
 				<th style="width:5%;" scope="col">Unidad Pres.</th>
 				<th style="width:5%;" scope="col">Unidad Pallet</th>
 				<th style="width:5%;" scope="col">Precio Costo</th>
@@ -33,8 +59,24 @@
 		<tbody>
 			@if (Model != null && Model.grillaDatos != null && Model.grillaDatos.ListaDatos != null)
 			{
-				@foreach (var item in Model.grillaDatos.ListaDatos)
+				var productos = Model.grillaDatos.ListaDatos.OrderBy(x => x.pg_desc).ToList();
+				@foreach (var item in productos)
 				{
+					grupoActual = item.pg_id;
+					// Si cambia la cuenta+grupo, insertamos una fila de encabezado
+					if (grupoActual != grupoAnterior)
+					{
+						var leyenda = $"Familia: ({item.pg_id}) {item.pg_desc}";
+						<tr class="table-secondary fw-bold">
+							<td colspan="12" class="text-center">
+								<i class="bx bx-folder me-1"></i>
+								@leyenda
+							</td>
+						</tr>
+						grupoAnterior = grupoActual;
+						alt = true; // Reiniciar alternancia de colores después de cada familia
+					}
+
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					var nombre = "a" + item.p_id;
 					<tr class="@clase" onclick="selectListaProductoRow(this, event)">
@@ -47,15 +89,9 @@
 						{
 							<td class="@Model.grillaDatos.ObtenerClase(item.p_desc)">@item.p_desc</td>
 						}
+						<td class="@Model.grillaDatos.ObtenerClase(item.p_id_barrado) align-center">@item.p_id_barrado</td>
 						<td class="@Model.grillaDatos.ObtenerClase(item.p_id_prov) align-center">@item.p_id_prov</td>
-						@if (item.pi_pendiente == 0)
-						{
-							<td class="align-right tiny-row"></td>
-						}
-						else
-						{
-							<td class="@Model.grillaDatos.ObtenerClase(item.pi_pendiente)" style="font-weight:bold;">@item.pi_pendiente</td>
-						}
+						<td class="@Model.grillaDatos.ObtenerClase(item.rp_dias) align-center">@item.rp_dias</td>
 						@if (item.oc_pendiente == 0)
 						{
 							<td class="align-right tiny-row"></td>
@@ -92,23 +128,22 @@
 		</tbody>
 	</table>
 </div>
-<div class="row d-flex p-2 flex-fill">
-	<div class="col-2"></div>
-	<div id="divPaginacion" class="ms-3">
+<div class="row d-flex align-items-center p-2">
+	<div class="col">
+		<div id="divPaginacion"></div>
 	</div>
-	<div class="col-2"></div>
-</div>
-<div class="row">
-	<div class="row">
-		<div class="col-2">
-			<a class="btn btn-sm btn-primary me-1 collapsed" id="btnCollapseSectionInfoProd" role="button" aria-expanded="false" aria-controls="divInfoAdicionaDeProducto">
-				Info. Adicional
-			</a>
-		</div>
-		<div class="col-5"></div>
+
+	<div class="col text-end">
+		<a class="btn btn-sm btn-primary collapsed"
+		   id="btnCollapseSectionInfoProd"
+		   role="button"
+		   aria-expanded="false"
+		   aria-controls="divInfoAdicionaDeProducto">
+			Info. Adicional
+		</a>
 	</div>
-	<div id="divInfoAdicionaDeProducto" class="collapse"></div>
 </div>
+<div id="divInfoAdicionaDeProducto" class="collapse"></div>
 
 @section scripts {
 	<script type="text/javascript">
