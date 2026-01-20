@@ -5,6 +5,7 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
@@ -14,6 +15,7 @@ using iTextSharp.text.pdf;
 using iTextSharp.text.pdf.draw;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace gc.api.core.Servicios.Reportes
 {
@@ -56,7 +58,8 @@ namespace gc.api.core.Servicios.Reportes
 				string ctaId;
 				string tit;
 				string subTit;
-				List<OrdenDeCompraDto> registros = ObtenerDatosCabecera(solicitud, out ctaId, out tit, out subTit);
+				string ocCompte;
+				List<OrdenDeCompraDto> registros = ObtenerDatosCabecera(solicitud, out ctaId, out tit, out subTit, out ocCompte);
 
 				//Detalle
 				List<OrdenDeCompraDetalleDto> registrosDetalle = ObtenerDatosDetalle(solicitud);
@@ -73,6 +76,8 @@ namespace gc.api.core.Servicios.Reportes
 				{
 					throw new NegocioException($"No se encontraron datos del cliente {ctaId}.");
 				}
+
+				List<OrdenDeCompraConceptoDto> resumenOC = CargarResumenDeOC(solicitud, ctaId, ocCompte);
 				var cliente = cta[0];
 				cliente.Monto = 0m;
 				cliente.MontoEtiqueta = "";
@@ -156,7 +161,7 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Add(linebreak);
 
 				#region Datos del Detall de la OC
-				HelperPdf.CargarTablaDatosDeDetalleEnOrdenDeCompra(pdf, registros.First(), registrosDetalle, chico, chicoBold, writer);
+				HelperPdf.CargarTablaDatosDeDetalleEnOrdenDeCompra(pdf, registros.First(), registrosDetalle, resumenOC, chico, chicoBold, writer);
 				#endregion
 
 				pdf.Close();
@@ -178,11 +183,12 @@ namespace gc.api.core.Servicios.Reportes
 
 
 
-		private List<OrdenDeCompraDto> ObtenerDatosCabecera(ReporteSolicitudDto solicitud, out string ctaId, out string titulo, out string subTitulo)
+		private List<OrdenDeCompraDto> ObtenerDatosCabecera(ReporteSolicitudDto solicitud, out string ctaId, out string titulo, out string subTitulo, out string ocCompte)
 		{
 			//Se obtienen los parámetros del reporte - Cabecera (Datos de la cuenta)
 			ctaId = solicitud.Parametros.GetValueOrDefault("ctaId", "").ToString() ?? "";
 			string cmptId = solicitud.Parametros.GetValueOrDefault("oc_compte", "").ToString();
+			ocCompte = cmptId;
 			titulo = $"Orden de Compra N° {cmptId}";
 			var lista = _apiproductoServicio.ObtenerOrdenDeCompraPorOcCompte(cmptId);
 			subTitulo = $"Estado: {lista.FirstOrDefault().Oce_Desc}";
@@ -194,14 +200,46 @@ namespace gc.api.core.Servicios.Reportes
 			string cmptId = solicitud.Parametros.GetValueOrDefault("oc_compte", "").ToString();
 			return _apiproductoServicio.CargarDetalleDeOC(cmptId);
 		}
+		private List<OrdenDeCompraConceptoDto> CargarResumenDeOC(ReporteSolicitudDto solicitudDto, string ctaId, string ocCompte)
+		{
+			CargarProductoParaOcRequest request = new()
+			{
+				adm_id = "",
+				usu_id = "",
+				Cta_Id = ctaId,
+				Nueva = false,
+				Oc_Compte = ocCompte
+			};
+			var productos = _apiproductoServicio.CargarProductosDeOC(request);
+			var jsonstring = JsonConvert.SerializeObject(productos, new JsonSerializerSettings());
 
+			CargarResumenDeOCRequest req = new()
+			{
+				Adm_Id = "",
+				Usu_Id = "",
+				Cta_Id = ctaId,
+				Nueva = false,
+				Json = jsonstring,
+				Oc_Compte = ocCompte,
+				Entrega_Fecha = DateTime.Now,
+				Entrega_Adm = "",
+				Pago_Anticipado = 'N',
+				Pago_Fecha = DateTime.Now,
+				Observaciones = "",
+				Oce_Id = 'P',
+			};
+			var resumen = _apiproductoServicio.CargarResumenDeOC(req);
+			return resumen;
+
+		}
 		public string GenerarTxt(ReporteSolicitudDto solicitud)
 		{
 			#region Obteniendo registros desde la base de datos
 			string ctaId;
 			string tit;
 			string subTit;
-			List<OrdenDeCompraDto> registros = ObtenerDatosCabecera(solicitud, out ctaId, out tit, out subTit);
+			string ocCompte;
+			List<OrdenDeCompraDto> registros = ObtenerDatosCabecera(solicitud, out ctaId, out tit, out subTit, out ocCompte);
 
 			if (registros == null || registros.Count == 0)
 			{
@@ -225,7 +263,8 @@ namespace gc.api.core.Servicios.Reportes
 			string ctaId;
 			string tit;
 			string subTit;
-			List<OrdenDeCompraDto> registros = ObtenerDatosCabecera(solicitud, out ctaId, out tit, out subTit);
+			string ocCompte;
+			List<OrdenDeCompraDto> registros = ObtenerDatosCabecera(solicitud, out ctaId, out tit, out subTit, out ocCompte);
 
 			if (registros == null || registros.Count == 0)
 			{

@@ -91,23 +91,46 @@
 				</div>
 			</div>
 		</div>
-		<ul class="nav nav-tabs nav-tabs-golden mt-1" role="tablist" id="tabsOrdenDeCompra">
-			<li class="nav-item" role="presentation" id="tabProductos">
-				<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-home" aria-controls="navs-top-home" aria-selected="true" id="btnTabProductos">
-					Productos
-				</button>
-			</li>
-			<li class="nav-item" role="presentation" id="tabNuevaOC">
-				<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-profile" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1" id="btnTabNuevaOC">
-					Nueva OC
-				</button>
-			</li>
-			<li class="nav-item" role="presentation" id="tabResumen">
-				<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-resume" aria-controls="navs-top-resume" aria-selected="false" tabindex="-1" id="btnTabResumen">
-					Resumen
-				</button>
-			</li>
-		</ul>
+		<div class="d-flex align-items-center justify-content-between mt-1">
+
+			<!-- TABS -->
+			<ul class="nav nav-tabs nav-tabs-golden" role="tablist" id="tabsOrdenDeCompra">
+				<li class="nav-item" role="presentation" id="tabProductos">
+					<button type="button" class="nav-link active" role="tab"
+							data-bs-toggle="tab" data-bs-target="#navs-top-home"
+							aria-controls="navs-top-home" aria-selected="true"
+							id="btnTabProductos">
+						Productos
+					</button>
+				</li>
+				<li class="nav-item" role="presentation" id="tabNuevaOC">
+					<button type="button" class="nav-link" role="tab"
+							data-bs-toggle="tab" data-bs-target="#navs-top-profile"
+							aria-controls="navs-top-profile" aria-selected="false"
+							tabindex="-1" id="btnTabNuevaOC">
+						Nueva OC
+					</button>
+				</li>
+				<li class="nav-item" role="presentation" id="tabResumen">
+					<button type="button" class="nav-link" role="tab"
+							data-bs-toggle="tab" data-bs-target="#navs-top-resume"
+							aria-controls="navs-top-resume" aria-selected="false"
+							tabindex="-1" id="btnTabResumen">
+						Resumen
+					</button>
+				</li>
+			</ul>
+
+			<!-- BOTÓN A LA DERECHA -->
+			<a class="btn btn-sm btn-primary collapsed ms-2"
+			   id="btnCollapseSectionInfoProd"
+			   role="button"
+			   aria-expanded="false"
+			   aria-controls="divInfoAdicionaDeProducto">
+				Info. Adicional
+			</a>
+
+		</div>
 		<div class="tab-content tab-content-compact">
 			<div class="tab-pane fade tab-content-golden show active" id="navs-top-home" role="tabpanel">
 				<div id="divListaProducto">
@@ -124,6 +147,8 @@
 		</div>
 	</div>
 </div>
+
+<div id="divInfoAdicionaDeProducto" class="collapse"></div>
 
 <!-- para el modal del geston de impresion -->
 <div id="modalGestorDocumental"></div>

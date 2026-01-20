@@ -267,6 +267,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					Oc_Compte = ocCompte
 				};
 				var productos = _productoServicio.CargarProductosDeOC(request, TokenCookie).Result;
+				CalcularPedidoMasBoniMasivo(productos);
 				grillaDatos = ObtenerGridCoreSmart<ProductoParaOcDto>(productos);
 				ListaProductosOC = productos;
 				model.ListaOC = grillaDatos;
@@ -923,6 +924,54 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var lista = adms.Select(x => new ComboGenDto { Id = x.Id, Descripcion = x.Descripcion });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
+		private void CalcularPedidoMasBoniMasivo(List<ProductoParaOcDto> lista)
+		{
+			foreach (var item in lista)
+			{
+				CalcularPedidoMasBoni(item);
+			}
+		}
+		private void CalcularPedidoMasBoni(ProductoParaOcDto producto)
+		{
+			if (string.IsNullOrWhiteSpace(producto.P_Boni))
+			{
+				producto.Pedido_Mas_Boni = producto.Cantidad;
+				return;
+			}
+			
+			var arr = producto.P_Boni.Split('/');
+			if (!int.TryParse(arr[0], out int num))
+			{
+				producto.Pedido_Mas_Boni = producto.Cantidad;
+				return;
+			}
+
+			if (!int.TryParse(arr[1], out int den))
+			{
+				producto.Pedido_Mas_Boni = producto.Cantidad;
+				return;
+			}
+
+			if (num > den)
+			{
+				producto.Pedido_Mas_Boni = producto.Cantidad;
+				return;
+			}
+			
+			var res = den - num; //En la bonificacion viene NNN/MMM donde sería "cada NNN, lleva MMM", siendo MMM mayor a NNN. La diferencia es el valor adicional que se suma al pedido.
+			var multiplo = producto.Cantidad / num;
+			if (multiplo > 0)
+			{
+				producto.Bonificados = (res * (int)multiplo);
+				producto.Pedido_Mas_Boni = producto.Bonificados + producto.Cantidad;
+			}
+			else
+			{
+				producto.Bonificados = 0;
+				producto.Pedido_Mas_Boni = producto.Cantidad;
+			}
+			return;
+		}
 		private decimal CalcularPedidoMasBoni(string val, ProductoParaOcDto producto)
 		{
 			if (string.IsNullOrWhiteSpace(val))
@@ -971,11 +1020,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				model.Total_Costo = "0.00";
 				model.Total_Pallet = "0.00";
+				model.Precio_Costo = "0.00";
+				model.Cant_Items = "0";
 			}
 			else
 			{
 				model.Total_Costo = productos.Sum(x => x.P_Pcosto_Total).ToString("0.##");
 				model.Total_Pallet = productos.Sum(x => x.Paletizado).ToString("0.##");
+				model.Cant_Items = productos.Sum(x=>x.Pedido_Mas_Boni).ToString("0.##");
+				model.Precio_Costo = productos.Sum(x => x.P_Pcosto).ToString("0.##");
 			}
 		}
 		private static void ObtenerColor(ref List<ProductoNCPIDto> listaProd)

@@ -63,7 +63,6 @@
 				@foreach (var item in productos)
 				{
 					grupoActual = item.pg_id;
-					// Si cambia la cuenta+grupo, insertamos una fila de encabezado
 					if (grupoActual != grupoAnterior)
 					{
 						var leyenda = $"Familia: ({item.pg_id}) {item.pg_desc}";
@@ -74,7 +73,7 @@
 							</td>
 						</tr>
 						grupoAnterior = grupoActual;
-						alt = true; // Reiniciar alternancia de colores después de cada familia
+						alt = true;
 					}
 
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
@@ -134,16 +133,16 @@
 	</div>
 
 	<div class="col text-end">
-		<a class="btn btn-sm btn-primary collapsed"
+		@* <a class="btn btn-sm btn-primary collapsed"
 		   id="btnCollapseSectionInfoProd"
 		   role="button"
 		   aria-expanded="false"
 		   aria-controls="divInfoAdicionaDeProducto">
 			Info. Adicional
-		</a>
+		</a> *@
 	</div>
 </div>
-<div id="divInfoAdicionaDeProducto" class="collapse"></div>
+@* <div id="divInfoAdicionaDeProducto" class="collapse"></div> *@
 
 @section scripts {
 	<script type="text/javascript">

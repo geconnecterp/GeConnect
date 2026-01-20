@@ -1770,7 +1770,7 @@ namespace gc.infraestructura.Helpers
 			pdf.Add(tabla);
 		}
 
-		public static void CargarTablaDatosDeDetalleEnOrdenDeCompra(Document pdf, OrdenDeCompraDto reg, List<OrdenDeCompraDetalleDto> regs, Font fuenteValor, Font fuenteEtiqueta, PdfWriter writer)
+		public static void CargarTablaDatosDeDetalleEnOrdenDeCompra(Document pdf, OrdenDeCompraDto reg, List<OrdenDeCompraDetalleDto> regs, List<OrdenDeCompraConceptoDto> resumen, Font fuenteValor, Font fuenteEtiqueta, PdfWriter writer)
 		{
 			// 1) Tabla de detalle
 			GenerarDetalleDeOrdenDeCompra(pdf, regs, fuenteValor, fuenteEtiqueta);
@@ -1781,7 +1781,9 @@ namespace gc.infraestructura.Helpers
 			tablaTotal.SpacingBefore = 10f; // ← ESPACIO ENTRE DETALLE Y RESUMEN
 
 			// Gravados
-			PdfPCell celdaGravado = new(new Phrase($"Gravados: {reg.Oc_Gravado.ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			var listaTemp = new List<int>() { 3, 4, 5 };
+			var gravados = resumen.Where(y => listaTemp.Contains(y.Orden)).Sum(x => x.Importe);
+			PdfPCell celdaGravado = new(new Phrase($"Gravados: {gravados.ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
 			{
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_RIGHT,
@@ -1791,7 +1793,9 @@ namespace gc.infraestructura.Helpers
 			tablaTotal.AddCell(celdaGravado);
 
 			// No Gravados
-			PdfPCell celdaNoGravado = new(new Phrase($"No Gravados: {reg.Oc_No_Gravado.ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			listaTemp = new List<int>() { 2, 6, 7, 8 };
+			var noGravados = resumen.Where(y => listaTemp.Contains(y.Orden)).Sum(x => x.Importe);
+			PdfPCell celdaNoGravado = new(new Phrase($"No Gravados: {noGravados.ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
 			{
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_RIGHT,
@@ -1801,7 +1805,7 @@ namespace gc.infraestructura.Helpers
 			tablaTotal.AddCell(celdaNoGravado);
 
 			// Flete
-			PdfPCell celdaFlete = new(new Phrase($"Flete: {reg.Oc_Flete_Importe.ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			PdfPCell celdaFlete = new(new Phrase($"Flete: {resumen.Where(x => x.Orden == 3).First().Importe.ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
 			{
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_RIGHT,
@@ -1810,9 +1814,18 @@ namespace gc.infraestructura.Helpers
 			};
 			tablaTotal.AddCell(celdaFlete);
 
+			// IVA Flete
+			PdfPCell celdaIVAFlete = new(new Phrase($"IVA Flete: {resumen.Where(x => x.Orden == 4).First().Importe.ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				PaddingTop = 0f
+			};
+			tablaTotal.AddCell(celdaIVAFlete);
+
 			// Subtotal de la orden de compra
-			var subTotal = reg.Oc_Gravado + reg.Oc_No_Gravado + reg.Oc_Flete_Importe;
-			PdfPCell celdaSubTotal = new(new Phrase($"SUBTOTAL: ................. {subTotal.ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			PdfPCell celdaSubTotal = new(new Phrase($"SUBTOTAL: ................. {resumen.Where(x => x.Orden == 1).First().Importe.ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
 			{
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_RIGHT,
@@ -1822,7 +1835,7 @@ namespace gc.infraestructura.Helpers
 			tablaTotal.AddCell(celdaSubTotal);
 
 			// Impuestos Internos
-			PdfPCell celdaIN = new(new Phrase($"Impuestos Internos: {reg.Oc_In.ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			PdfPCell celdaIN = new(new Phrase($"Impuestos Internos: {resumen.Where(x => x.Orden == 2).First().Importe.ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
 			{
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_RIGHT,
@@ -1832,7 +1845,7 @@ namespace gc.infraestructura.Helpers
 			tablaTotal.AddCell(celdaIN);
 
 			// IVA 21%
-			PdfPCell celdaIva21 = new(new Phrase($"I.V.A. (21.00%): {reg.Oc_Iva.ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			PdfPCell celdaIva21 = new(new Phrase($"I.V.A. (21.00%): {resumen.Where(x => x.Orden == 5).First().Importe.ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
 			{
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_RIGHT,
@@ -1842,8 +1855,7 @@ namespace gc.infraestructura.Helpers
 			tablaTotal.AddCell(celdaIva21);
 
 			// Total de la orden de compra
-			var total = subTotal + reg.Oc_In + reg.Oc_Iva;
-			PdfPCell celdaTotal = new(new Phrase($"TOTAL ................. {total.ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			PdfPCell celdaTotal = new(new Phrase($"TOTAL ................. {resumen.Where(x => x.Orden == 100).First().Importe.ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
 			{
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_RIGHT,
@@ -3707,7 +3719,7 @@ namespace gc.infraestructura.Helpers
 		{
 			if (lista == null || !lista.Any())
 				return;
-			
+
 			decimal totalValorizado = 0;
 
 			switch (agrupador)
@@ -3735,7 +3747,7 @@ namespace gc.infraestructura.Helpers
 					{
 						var valStr = string.Empty;
 						var val = producto.stk_val ?? 0;
-						if (val<0)
+						if (val < 0)
 							valStr = $"({Math.Abs(val).ToString("0.000")})";
 						else
 							valStr = val.ToString("0.000");
@@ -4731,7 +4743,7 @@ namespace gc.infraestructura.Helpers
 
 				if (incluyeGrupo2)
 					tabla.AddCell(CeldaDato(item.conteo2.ToString("N2"), fChico, fondo, Element.ALIGN_RIGHT));
-					
+
 			}
 
 			pdf.Add(tabla);

@@ -10,6 +10,8 @@ namespace gc.infraestructura.Dtos.Almacen
 		public string P_Id { get; set; } = string.Empty;
 		[JsonProperty(PropertyName = "p_desc")]
 		public string P_Desc { get; set; } = string.Empty;
+		[JsonProperty(PropertyName = "p_id_barrado")]
+		public string P_Id_Barrado { get; set; } = string.Empty;
 		[JsonProperty(PropertyName = "p_id_prov")]
 		public string P_Id_Prov { get; set; } = string.Empty;
 		[JsonProperty(PropertyName = "cta_id")]

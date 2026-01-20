@@ -8,6 +8,8 @@ namespace gc.sitio.Areas.Compras.Models
 		public GridCoreSmart<ProductoParaOcDto> ListaOC { get; set; }
 		public string Total_Costo { get; set; } = string.Empty;
 		public string Total_Pallet { get; set; } = string.Empty;
+		public string Cant_Items { get; set; } = string.Empty;
+		public string Precio_Costo { get; set; } = string.Empty;
 		public decimal Dto1 { get; set; } = 0.0M;
 		public decimal Dto2 { get; set; } = 0.0M;
 		public decimal Dto3 { get; set; } = 0.0M;
