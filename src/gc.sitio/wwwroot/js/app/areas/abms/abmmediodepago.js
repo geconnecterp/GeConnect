@@ -248,6 +248,10 @@ function NuevaCuentaFinYContable() {
 			desactivarGrilla(Grids.GridCuentaFinYConta);
 			$("#CuentaFin_Ctaf_Id").prop("disabled", true);
 			$("#CuentaFin_Ctaf_Denominacion").prop("disabled", true);
+			setTimeout(function () {
+				// Inicializar el selector de cuentas
+				inicializarSelectorCuentas();
+			}, 500);
 			$("#listaTipo").focus();
 			CerrarWaiting();
 		}, function (obj) {
@@ -440,7 +444,7 @@ function selectRegDbl(x, gridId) {
 				$("#IdSelected").val(ctafId);
 				let id = $("#CuentaFin_Ccb_Id").val();
 				let nombre = $("#CuentaFin_Ccb_Desc").val();
-				if (id != undefined) {
+				if (id != undefined && id != "") {
 					let ccb_desc = `(${id}) ${nombre}`;
 					$("#cuentaContable").val(ccb_desc);
 					$("#cuentaContableId").val(id);
@@ -755,6 +759,10 @@ let arbolCuentasInicializado = false;
 * Modifica el selector de cuentas para implementar la búsqueda en tiempo real
 */
 function inicializarSelectorCuentas() {
+	$("input#cuentaContable").off('click').on("click", function () {
+		$("input#cuentaContable").val("");
+		$("input#cuentaContableId").val("");
+	});
 	// Configurar evento para abrir el selector al hacer clic en el botón
 	$('.btnBuscarCuenta').off('click').on('click', function () {
 		// Tomar los destinos desde los data-attributes

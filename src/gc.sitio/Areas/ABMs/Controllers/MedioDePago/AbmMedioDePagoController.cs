@@ -554,6 +554,9 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 					return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
 				}
 
+				// 🔥 Normalizar antes de validar
+				NormalizarCampos(cc);
+
 				var respuestaDeValidacion = ValidarJsonAntesDeGuardar(cc, tipoDeOperacion);
 				if (respuestaDeValidacion == "")
 				{
@@ -600,6 +603,12 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		}
 
 		#region Métodos Privados
+		// Normalizar strings vacíos a null
+		void NormalizarCampos(MPCuentaFinYContableAbmValidationModel b)
+		{
+			if (string.IsNullOrWhiteSpace(b.ccb_id)) b.ccb_id = null;
+			if (string.IsNullOrWhiteSpace(b.ccb_id_diferido)) b.ccb_id_diferido = null;
+		}
 		private string ValidarJsonAntesDeGuardar(MPAbmValidationModel mp, char abm)
 		{
 			return "";

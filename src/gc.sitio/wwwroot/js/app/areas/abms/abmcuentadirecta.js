@@ -254,11 +254,15 @@ function NuevaCuentaDirecta() {
 		$("#divDatosCuentaDirecta").html(obj);
 		$(".nav-link").prop("disabled", true);
 		$(".activable").prop("disabled", false);
-		$("#CuentaDirecta_Ctag_Id").prop("disabled", false);
+		$("#CuentaDirecta_Ctag_Id").prop("disabled", true);
 		desactivarGrilla(Grids.GridCuentaDirecta);
 		accionBotones(AbmAction.ALTA, Tabs.TabCuentaDirecta);
 		$("#divFiltro").collapse("hide");
 		$("#divDetalle").collapse("show");
+		setTimeout(function () {
+			// Inicializar el selector de cuentas
+			inicializarSelectorCuentas();
+		}, 500);
 		$("#CuentaDirecta_Ctag_Denominacion").focus();
 		CerrarWaiting();
 	}, function (obj) {
@@ -312,7 +316,7 @@ function BuscarCuentaDirecta(ctagId, tcgId) {
 		let ccb_desc = "";
 		let id = $("#CuentaDirecta_Ccb_Id").val();
 		let nombre = $("#CuentaDirecta_Ccb_Desc").val();
-		if (id != undefined) {
+		if (id != undefined && id != "") {
 			ccb_desc = `(${id}) ${nombre}`;
 			$("#cuentaContable").val(ccb_desc);
 			$("#cuentaContableId").val(id);
@@ -333,6 +337,10 @@ let arbolCuentasInicializado = false;
 * Modifica el selector de cuentas para implementar la búsqueda en tiempo real
 */
 function inicializarSelectorCuentas() {
+	$("input#cuentaContable").off('click').on("click", function () {
+		$("input#cuentaContable").val("");
+		$("input#cuentaContableId").val("");
+	});
 	// Configurar evento para abrir el selector al hacer clic en el botón
 	$('.btnBuscarCuenta').off('click').on('click', function () {
 		// Tomar los destinos desde los data-attributes

@@ -217,8 +217,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					return PartialView("_gridMensaje", response);
 				}
 
-				//request.Registros = _settings.NroRegistrosPagina;
-				request.Registros = 300;
+				request.Registros = _settings.NroRegistrosPagina;
 				request.Adm_id = AdministracionId;
 				request.Usu_id = UserName;
 				var productos = _productoServicio.NCPICargarListaDeProductosPag2(request, TokenCookie).Result;

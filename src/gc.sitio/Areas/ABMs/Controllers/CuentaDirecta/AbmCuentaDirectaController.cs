@@ -194,9 +194,10 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 			{
 				var auth = EstaAutenticado;
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
-				{
 					return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
-				}
+
+				// 🔥 Normalizar antes de validar
+				NormalizarCampos(cd);
 
 				var respuestaDeValidacion = ValidarJsonAntesDeGuardar(cd, tipoDeOperacion);
 				if (respuestaDeValidacion == "")
@@ -225,6 +226,12 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 		}
 
 		#region Métodos Privados
+		// Normalizar strings vacíos a null
+		void NormalizarCampos(CuentaDirectaAbmValidationModel b)
+		{
+			if (string.IsNullOrWhiteSpace(b.ccb_id)) b.ccb_id = null;
+			if (string.IsNullOrWhiteSpace(b.ccb_desc)) b.ccb_desc = null;
+		}
 		private string ValidarJsonAntesDeGuardar(CuentaDirectaAbmValidationModel banco, char abm)
 		{
 			return string.Empty;

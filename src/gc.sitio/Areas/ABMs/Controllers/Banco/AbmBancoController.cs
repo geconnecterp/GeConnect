@@ -184,9 +184,10 @@ namespace gc.sitio.Areas.ABMs.Controllers.Banco
 			{
 				var auth = EstaAutenticado;
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
-				{
 					return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
-				}
+
+				// 🔥 Normalizar antes de validar
+				NormalizarCampos(banco);
 
 				var respuestaDeValidacion = ValidarJsonAntesDeGuardar(banco, tipoDeOperacion);
 				if (respuestaDeValidacion == "")
@@ -235,6 +236,15 @@ namespace gc.sitio.Areas.ABMs.Controllers.Banco
 			if (CuentaPlanContableLista.Count == 0 || actualizar)
 				ObtenerCuentaPlanContableLista(_financieroServicio);
 		}
+		// Normalizar strings vacíos a null
+		void NormalizarCampos(BancoAbmValidationModel b)
+		{
+			if (string.IsNullOrWhiteSpace(b.ccb_id)) b.ccb_id = null;
+			if (string.IsNullOrWhiteSpace(b.ccb_desc)) b.ccb_desc = null;
+			if (string.IsNullOrWhiteSpace(b.ccb_id_diferido)) b.ccb_id_diferido = null;
+			if (string.IsNullOrWhiteSpace(b.ccb_desc_diferido)) b.ccb_desc_diferido = null;
+		}
+
 		#endregion
 	}
 }

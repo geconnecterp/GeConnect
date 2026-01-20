@@ -14,8 +14,8 @@
         public string tcf_desc { get; set; }
         public string ins_id { get; set; }
         public string ins_desc { get; set; }
-        public string ccb_id { get; set; }
-        public string ccb_id_diferido { get; set; }
+        public string? ccb_id { get; set; }
+        public string? ccb_id_diferido { get; set; }
         public string ctag_id { get; set; }
         public string mon_codigo { get; set; }
         public string cta_id { get; set; }

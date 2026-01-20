@@ -128,6 +128,10 @@ function NuevoBanco() {
 		accionBotones(AbmAction.ALTA, Tabs.TabBanco);
 		$("#divFiltro").collapse("hide");
 		$("#divDetalle").collapse("show");
+		setTimeout(function () {
+			// Inicializar el selector de cuentas
+			inicializarSelectorCuentas();
+		}, 500);
 		$("#Banco_Ban_Razon_Social").focus();
 		CerrarWaiting();
 	}, function (obj) {
@@ -295,14 +299,14 @@ function BuscarBanco(ctafId) {
 		let ccb_desc = "";
 		let id = $("#Banco_Ccb_Id").val();
 		let nombre = $("#Banco_Ccb_Desc").val();
-		if (id != undefined) {
+		if (id != undefined && id != "") {
 			ccb_desc = `(${id}) ${nombre}`;
 			$("#cuentaContable").val(ccb_desc);
 			$("#cuentaContableId").val(id);
 		}
 		id = $("#Banco_Ccb_Id_Diferido").val();
 		nombre = $("#Banco_Ccb_Desc_Diferido").val();
-		if (id != undefined) {
+		if (id != undefined && id != "") {
 			ccb_desc = `(${id}) ${nombre}`;
 			$("#cuentaContableDif").val(ccb_desc);
 			$("#cuentaContableDifId").val(id);
@@ -323,6 +327,14 @@ let arbolCuentasInicializado = false;
 * Modifica el selector de cuentas para implementar la búsqueda en tiempo real
 */
 function inicializarSelectorCuentas() {
+	$("input#cuentaContable").off('click').on("click", function () {
+		$("input#cuentaContable").val("");
+		$("input#cuentaContableId").val("");
+	});
+	$("input#cuentaContableDif").off('click').on("click", function () {
+		$("input#cuentaContableDif").val("");
+		$("input#cuentaContableDifId").val("");
+	});
 	// Configurar evento para abrir el selector al hacer clic en el botón
 	$('.btnBuscarCuenta').off('click').on('click', function () {
 		// Tomar los destinos desde los data-attributes

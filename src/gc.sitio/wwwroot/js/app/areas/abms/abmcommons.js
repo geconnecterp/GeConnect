@@ -1428,7 +1428,7 @@ function ActualizarRegistroEnGrilla(datos, grid) {
     if (grid === Grids.GridCuentaDirecta) {
         $("#" + grid + " tbody tr").each(function (index) {
             let aux = $(this)[0].cells[0].innerText;
-            if (aux == datos.ctaf_id) {
+            if (aux == datos.ctag_id) {
                 $(this)[0].cells[1].innerText = datos.ctag_denominacion.toUpperCase();
                 $(this)[0].cells[2].innerText = datos.tcg_desc.toUpperCase();
             }
