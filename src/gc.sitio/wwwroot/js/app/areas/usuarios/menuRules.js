@@ -403,8 +403,7 @@ function analizaEstadoBtnDetalle() {
     // Limpiar selección visual
     $("#" + Grids.GridPerfil + " tbody tr").removeClass("selectedEdit-row");
     
-    // Resetear estado de botones
-    activarBotones(false);
+  
 }
 
 function confirmarDatosTab01() {
