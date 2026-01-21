@@ -13,5 +13,6 @@ var tabGrid01 = "tbGridProd";
 var tabGrid02 = "tbGridBarr";
 var tabGrid03 = "tbGridLim";
 var EntidadSelect = "";
+var Entidad2Select = "";  //para el uso de barr y lim
 var EntidadEstado = "";
 var sizeMinGrid1 = "150px";

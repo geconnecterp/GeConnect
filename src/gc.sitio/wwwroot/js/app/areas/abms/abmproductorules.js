@@ -17,8 +17,18 @@
     $(document).on("change", "#up_id", controlaValorUpId);
     $(document).on("change","#iva_situacion",controlaSituacionIva)
     $(document).on("change", "#iva_situacion", controlaValorIva);
+    /*$(document).on("change", "#aplica_todas", controlaAplicarTodas);*/
 
 });
+
+//function controlaAplicarTodas() {
+//    if ($("#aplica_todas").is(":checked")) {
+//        $("#adm_id").prop("disabled", true);
+//    }
+//    else {
+//        $("#adm_id").prop("disabled", false);
+//    }
+//}
 
 function ejecutarBaja() {
     switch (tabAbm) {
@@ -330,13 +340,13 @@ function activarControles(act) {
                 $("#p_unidad_x_bulto").prop("disabled", act);
                 $("#p_bulto_x_piso").prop("disabled", act);
                 $("#p_piso_x_pallet").prop("disabled", act);
-
                 break;
             case 3:
                 //solo se puede modificar.
                 $("#adm_id").prop("disabled", true);
                 $("#p_stk_min").prop("disabled", act);
                 $("#p_stk_max").prop("disabled", act);
+                $("#aplica_todas").prop("disabled", act);
                 break;
             default:
                 return false;
@@ -430,12 +440,20 @@ function confirmarOperacionAbmProducto() {
             }
             // Para alta o modificación
             var esAltaOModif = (accion === AbmAction.ALTA || accion === AbmAction.MODIFICACION);
-           
+            let idEnt="";
             switch (tabAbm) {
                 case 1:
                     // Para alta o modificación
                     EntidadSelect = AbmAction == AbmAction.ALTA ? obj.id : $("#p_id").val();
+                    break;
+                case 2:
+                    idEnt = $("#p_id_barrado").val();
+                    break;
+                case 3:
+                    idEnt = $("#adm_id option:selected").val();
+                    break;
                 default:
+                    break;
             }
 
             // Éxito
@@ -443,23 +461,58 @@ function confirmarOperacionAbmProducto() {
                 const grilla = tabAbm === 1 ? tabGrid01 : (tabAbm === 2 ? tabGrid02 : tabGrid03);
                 dataBak = "";
                 InicializaPantallaAbmProd(grilla);
-                
-                    switch (tabAbm) {
-                        case 1:
-                            // Limpiar estado de la pantalla
-                            $("#divDetalle").collapse("hide");
-                            $("#divpanel01").empty();
-                            buscarProductos(1, function () {
-                                // Buscar la fila con el ID del perfil
-                                var $fila = $("#" + grilla + " tbody tr").filter(function () {
-                                    return $(this).find("td:first").text().trim() === EntidadSelect;
-                                   
+
+                switch (tabAbm) {
+                    case 1:
+                        // Limpiar estado de la pantalla
+                        $("#divDetalle").collapse("hide");
+                        $("#divpanel01").empty();
+                        buscarProductos(1, function () {
+                            // Buscar la fila con el ID del perfil
+                            let $fila = $("#" + grilla + " tbody tr").filter(function () {
+                                return $(this).find("td:first").text().trim() === EntidadSelect;
+
+                            }).first();
+
+                            // Si se encuentra la fila, solo marcarla visualmente
+                            if ($fila.length > 0) {
+                                // Remover selección previa
+                                $("#" + grilla + " tbody tr").removeClass("selectedEdit-row");
+
+                                // Marcar la fila
+                                $fila.addClass("selected-row");
+
+                                // Posicionar en el tope si existe la función
+                                if (typeof posicionarRegOnTop === 'function') {
+                                    posicionarRegOnTop($fila);
+                                }
+
+
+                                // Activar grilla y estado final
+                                activarGrilla(grilla);
+                                $("#btnDetalle").prop("disabled", false);
+                                activarBotones(true);
+                            }
+
+                            // Resetear acción
+                            accionBotones(AbmAction.CANCEL);
+                        });
+
+                        break;
+                    case 2:
+                    case 3:
+                        Entidad2Select = idEnt;
+                        if (tabAbm === 2) {
+                            //#divBarrado2 table#"
+                            presentarBarrado(function () {
+                                let $fila = $("#divBarrado2 table#" + grilla + " tbody tr").filter(function () {
+                                    return $(this).find("td:first").text().trim() === Entidad2Select;
                                 }).first();
 
                                 // Si se encuentra la fila, solo marcarla visualmente
                                 if ($fila.length > 0) {
                                     // Remover selección previa
-                                    $("#" + grilla + " tbody tr").removeClass("selectedEdit-row");
+                                    $("#divBarrado2 table#" + grilla + " tbody tr").removeClass("selectedEdit-row");
 
                                     // Marcar la fila
                                     $fila.addClass("selected-row");
@@ -471,7 +524,37 @@ function confirmarOperacionAbmProducto() {
 
 
                                     // Activar grilla y estado final
-                                    activarGrilla(grilla);
+                                    activarGrillav2("#divBarrado2 table#" + grilla, false);
+                                    $("#btnDetalle").prop("disabled", false);
+                                    activarBotones(true);
+                                }
+                                // Resetear acción
+                                accionBotones(AbmAction.CANCEL);
+                            });
+                        }
+                        else {
+                            presentarLimites(function () {
+                                let $fila = $("#divLimite2 table#" + grilla + " tbody tr").filter(function () {
+                                    return $(this).find("td:first").text().trim() === Entidad2Select;
+
+                                }).first();
+
+                                // Si se encuentra la fila, solo marcarla visualmente
+                                if ($fila.length > 0) {
+                                    // Remover selección previa
+                                    $("#divLimite2 table#" + grilla + " tbody tr").removeClass("selectedEdit-row");
+
+                                    // Marcar la fila
+                                    $fila.addClass("selected-row");
+
+                                    // Posicionar en el tope si existe la función
+                                    if (typeof posicionarRegOnTop === 'function') {
+                                        posicionarRegOnTop($fila);
+                                    }
+
+
+                                    // Activar grilla y estado final
+                                    activarGrillav2("#divLimite2 table#" + grilla,false);
                                     $("#btnDetalle").prop("disabled", false);
                                     activarBotones(true);
                                 }
@@ -479,17 +562,11 @@ function confirmarOperacionAbmProducto() {
                                 // Resetear acción
                                 accionBotones(AbmAction.CANCEL);
                             });
+                        }
 
-                            break;
-                        case 2:
-                            presentarBarrado();
-                            break;
-                        case 3:
-                            presentarLimites();
-                            break;
-                    }
-                    accion = "";
-                
+                        break;
+                }
+                accion = "";
 
                 $("#msjModal").modal("hide");
             }, false, ["CONTINUAR"], "succ!", null);
@@ -691,14 +768,16 @@ function confirmarDatosTab02() {
 }
 
 function confirmarDatosTab03() {
-    var adm_id = $("#adm_id option:selected").val();
-    var adm_nombre = $("#adm_id option:selected").text();
-    var adm_lista = adm_nombre + " (" + adm_id + ")";
+    let adm_id = $("#adm_id option:selected").val();
+    let adm_nombre = $("#adm_id option:selected").text();
+    let adm_lista = adm_nombre + " (" + adm_id + ")";
 
     var p_stk_min = $("#p_stk_min").val();
     var p_stk_max = $("#p_stk_max").val();
+    let aplica_todas = $("#aplica_todas").is(":checked");
 
-    var data = { adm_id, adm_nombre, adm_lista, p_stk_min, p_stk_max, accion: accion03 };
+
+    var data = { adm_id, adm_nombre, adm_lista, p_stk_min, p_stk_max, aplica_todas, accion: accion03 };
     return data;
 }
 

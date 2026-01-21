@@ -8,5 +8,7 @@
         public string adm_id { get; set; } = string.Empty;
         public string adm_nombre { get; set; } = string.Empty;
         public string adm_lista { get; set; } = string.Empty;
+        public bool aplica_todas { get; set; }
+        public char accion  { get; set; }
     }
 }

@@ -4,7 +4,7 @@
         reverse: true,
     });
 
-    cargarEventosAbmProductos();   
+    cargarEventosAbmProductos();
 
     $("#btnDetalle").prop("disabled", true);
 
@@ -329,7 +329,7 @@ function InicializaPantallaAbmProd(grilla) {
     }
     nng = "#" + grilla;
     tb = $(nng + " tbody tr");
-    if (tb.length === 0 ) {
+    if (tb.length === 0) {
         switch (tabAbm) {
             case 1:
                 $("#divFiltro").collapse("show");
@@ -338,6 +338,7 @@ function InicializaPantallaAbmProd(grilla) {
                 presentarBarrado();
                 break;
             case 3:
+                presentarLimites();
                 break;
             default:
                 return false;
@@ -372,7 +373,7 @@ function cargaPaginacion() {
     return true;
 }
 
-function buscarProductos(pag,callback) {
+function buscarProductos(pag, callback) {
     AbrirWaiting();
 
     //desactivamos los botones de acción
@@ -399,7 +400,7 @@ function buscarProductos(pag,callback) {
 
     var buscaNew = JSON.stringify(dataBak) != JSON.stringify(data1)
 
-    if (buscaNew === false || callback!==undefined) {
+    if (buscaNew === false || callback !== undefined) {
         //son iguales las condiciones cambia de pagina
         pagina = pag;
         //esto lo hago para que en caso que se haya hecho una modificación, si no se tiene la busqueda anterior, se carga en dataBak = data1
@@ -466,13 +467,13 @@ function buscarProductoServer(data) {
         //activar botones de acción
         activarBotones(true);
 
-        if (EntidadEstado !== "S" && accion!=="") {
+        if (EntidadEstado !== "S" && accion !== "") {
             $("#BtnLiTab02").prop("disabled", true);
             $("#BtnLiTab02").addClass("text-danger");
             $("#BtnLiTab03").prop("disabled", true);
             $("#BtnLiTab03").addClass("text-danger");
 
-        }      
+        }
 
         CerrarWaiting();
 
@@ -502,11 +503,11 @@ function selectRegProd(x, gridId) {
         default:
             return false;
     }
-   
+
 }
 
 function ejecutaDblClickGrid1(x) {
-    AbrirWaiting("Espere mientras se busca el producto seleccionado...");   
+    AbrirWaiting("Espere mientras se busca el producto seleccionado...");
     selectAbmRegDbl(x, tabGrid01);
 }
 function ejecutaDblClickGrid2(x) {
@@ -519,7 +520,7 @@ function ejecutaDblClickGridLIm(x) {
     selectAbmRegDbl(x, tabGrid03);
 }
 
-function buscaElDatoDelBarral(id,abrirTab = false) {
+function buscaElDatoDelBarral(id, abrirTab = false) {
     //se busca el dato del barral
     AbrirWaiting("Cargando Datos del Barral....");
     if (abrirTab) {
@@ -567,7 +568,7 @@ function buscaElDatoDelBarral(id,abrirTab = false) {
         });
     }, 200);
 
-    
+
 }
 
 function buscarDatoslimiteStock(x, abrirTab = false) {
@@ -604,7 +605,7 @@ function buscarDatoslimiteStock(x, abrirTab = false) {
                 $("#adm_id").val(obj.datos.adm_id);
                 $("#p_stk_min").val(obj.datos.p_stk_min);
                 $("#p_stk_max").val(obj.datos.p_stk_max);
-
+                $("#aplica_todas").prop("checked", false);
                 // Activar los botones de acción
                 activarBotones(true);
             }
@@ -619,14 +620,14 @@ function selectAbmRegDbl(x, gridId) {
     });
     $(x).addClass("selectedEdit-row");
     var id = x.find("td:nth-child(1)").text();
-  
+
     switch (tabAbm) {
         case 1:
             switch (gridId) {
                 case tabGrid02: //buscaElDatoDelBarral(id);                                        
                 case tabGrid03: //buscarDatoslimiteStock(x);                    
                     return false;
-                break;
+                    break;
                 default:
                     //se agrega por inyection el tab con los datos del producto
                     EntidadEstado = x.find("td:nth-child(9)").text();
@@ -637,13 +638,17 @@ function selectAbmRegDbl(x, gridId) {
                     posicionarRegOnTop(x);
                     break;
             }
-            
+
         case 2:
-            buscaElDatoDelBarral(id);            
+            buscaElDatoDelBarral(id);
+            console.log("Intentando bloquear grid #divBarrado2 table#tbGridLim");
+            desactivaGrillav2("#divBarrado2 table#" + gridId, false);
+            
             break;
         case 3:
             buscarDatoslimiteStock(x);
-            
+            console.log("Intentando bloquear grid #divLimite2 table#tbGridLim");
+            desactivaGrillav2("#divLimite2 table#"+ gridId, false);
             break;
         default:
             return false;
@@ -662,16 +667,16 @@ function buscarBarrado(data) {
     });
 }
 
-function presentarBarrado() {
+function presentarBarrado(callback) {
     AbrirWaiting("Buscando Barrados...");
     tabAbm = 2;
-    desactivarGrilla(Grids.GridBarrado);
-    InicializaPantallaAbmProd(Grids.GridBarrado);
+    //desactivarGrilla(Grids.GridBarrado);
+    InicializaPantallaAbmProd("divBarrado2 table#"+Grids.GridBarrado);
     $("#divBarrado2").empty();
     PostGenHtml({}, presentarBarradoUrl, function (obj) {
         $("#divBarrado2").html(obj);
 
-        var tb = $("#tbGridBarr tbody tr");
+        var tb = $("#divBarrado2 table#" + Grids.GridBarrado + " tbody tr");
         if (tb.length === 0) {
             $("#tab2l1").hide();
             $("#tab2l2").hide();
@@ -682,14 +687,18 @@ function presentarBarrado() {
         }
 
         CerrarWaiting();
+        // Ejecutar callback si existe (para seleccionar registro después de buscar)
+        if (callback && typeof callback === 'function') {
+            callback();
+        }
     });
 }
 
-function presentarLimites() {
+function presentarLimites(callback) {
     AbrirWaiting("Buscando Límites de Stock...");
     tabAbm = 3;
-    desactivarGrilla(tabGrid01);
-    InicializaPantallaAbmProd(tabGrid03);
+    //desactivarGrilla(tabGrid01);
+    InicializaPantallaAbmProd("divLimite2 table#tbGridLim");
 
     // Verificar si hay un producto seleccionado
     if (EntidadSelect === "") {
@@ -705,25 +714,31 @@ function presentarLimites() {
     // Incluir el ID del producto en la petición
     var data = { p_id: EntidadSelect };
 
-    PostGenHtml(data, presentarLimitesUrl, function (obj) {
-        $("#divLimite2").html(obj);
+    //PostGenHtml(data, presentarLimitesUrl, function (obj) {
+    //    $("#divLimite2").html(obj);
 
-        // Usar el mismo ID del producto para cargar los límites
-        PostGenHtml(data, buscarLimiteUrl, function (innerObj) {
-            // Reemplazar el contenido completo (no buscar un divLimite2 dentro de divLimite2)
-            $("#divLimite2").html(innerObj);
+    // Usar el mismo ID del producto para cargar los límites
+    PostGenHtml(data, buscarLimiteUrl, function (innerObj) {
+        // Reemplazar el contenido completo (no buscar un divLimite2 dentro de divLimite2)
+        $("#divLimite2").html(innerObj);
 
-            var tb = $("#" + tabGrid03 + " tbody tr");
-            if (tb.length === 0) {
-                $("#tab3l1").hide();
-            }
-            else {
-                $("#tab3l1").show();
-            }
+        var tb = $("#divLimite2 table#" + tabGrid03 + " tbody tr");
+        if (tb.length === 0) {
+            $("#tab3l1").hide();
+        }
+        else {
+            $("#tab3l1").show();
+        }
 
-            CerrarWaiting();
-        });
+        CerrarWaiting();
+        // Ejecutar callback si existe (para seleccionar registro después de buscar)
+        if (callback && typeof callback === 'function') {
+            callback();
+        }
     });
+
+
+    /* });*/
 }
 
 

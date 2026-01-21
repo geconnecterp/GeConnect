@@ -784,16 +784,188 @@ function selectReg(x, gridId) {
 }
 
 function desactivarGrilla(gridId) {
-    $("#" + gridId + "").addClass("disable-table-rows");
-    $(".table-wrapper").css("overflow", "hidden");
+    const $grid = $("#" + gridId);
+    $grid.addClass("disable-table-rows");
+    $grid.closest(".table-wrapper").css("overflow", "hidden");
 }
 
 function activarGrilla(gridId) {
-    $("#" + gridId + "").removeClass("disable-table-rows");
-    $(".table-wrapper").css("overflow", "auto");
+    const $grid = $("#" + gridId);
+    $grid.removeClass("disable-table-rows");
+    $grid.closest(".table-wrapper").css("overflow", "auto");
 
 }
 
+function desactivaGrillav2(gridId, esPadre = true) {
+    const $grid = $( gridId);
+    $grid.addClass("disable-table-rows");
+    if (esPadre) {
+        $grid.closest(".table-wrapper").css("overflow", "hidden");
+    }
+    else {
+        $grid.find(".table-wrapper").css("overflow", "hidden");
+    }
+}
+
+function activaGrillav2(gridId, esPadre = true) {
+    const $grid = $( gridId);
+    $grid.removeClass("disable-table-rows");
+    if (esPadre) {
+        $grid.closest(".table-wrapper").css("overflow", "auto");
+    }
+    else {
+        $grid.find(".table-wrapper").css("overflow", "auto");
+    }
+}
+
+//function desactivarGrillav2(gridId) {
+//    $("#" + gridId).addClass("grid-disabled").closest(".table-wrapper").css("overflow", "hidden");
+//}
+
+//function activarGrillav2(gridId) {
+//    $("#" + gridId).removeClass("grid-disabled").closest(".table-wrapper").css("overflow", "auto");
+//}
+
+
+//== codigo nuevo
+/**
+ * Desactiva una grilla (dinámica o estática) y su contenedor
+ * @param {string|HTMLElement|jQuery} gridIdentifier - ID de grilla, elemento DOM o selector jQuery
+ * @param {string} wrapperClass - Clase del contenedor (opcional, por defecto 'table-wrapper')
+ */
+function desactivarGrillav2(gridIdentifier, wrapperClass = 'table-wrapper') {
+    const $grid = resolverGrilla(gridIdentifier);
+
+    if ($grid.length === 0) {
+        console.warn(`⚠️ No se encontró la grilla: ${gridIdentifier}`);
+        return false;
+    }
+
+    $grid.addClass("grid-disabled");
+
+    // Buscar el wrapper más cercano con la clase especificada
+    const $wrapper = $grid.closest(`.${wrapperClass}`);
+    if ($wrapper.length > 0) {
+        $wrapper.css("overflow", "hidden");
+    }
+
+    return true;
+}
+
+/**
+ * Activa una grilla (dinámica o estática) y su contenedor
+ * @param {string|HTMLElement|jQuery} gridIdentifier - ID de grilla, elemento DOM o selector jQuery
+ * @param {string} wrapperClass - Clase del contenedor (opcional, por defecto 'table-wrapper')
+ */
+function activarGrillav2(gridIdentifier, wrapperClass = 'table-wrapper') {
+    const $grid = resolverGrilla(gridIdentifier);
+
+    if ($grid.length === 0) {
+        console.warn(`⚠️ No se encontró la grilla: ${gridIdentifier}`);
+        return false;
+    }
+
+    $grid.removeClass("grid-disabled");
+
+    // Buscar el wrapper más cercano con la clase especificada
+    const $wrapper = $grid.closest(`.${wrapperClass}`);
+    if ($wrapper.length > 0) {
+        $wrapper.css("overflow", "auto");
+    }
+
+    return true;
+}
+
+/**
+ * Resuelve el identificador de grilla a un objeto jQuery
+ * Soporta: ID string, elemento DOM, objeto jQuery, selector complejo
+ * @param {string|HTMLElement|jQuery} identifier - Identificador de la grilla
+ * @returns {jQuery} Objeto jQuery con la grilla encontrada
+ */
+function resolverGrilla(identifier) {
+    // Si ya es un objeto jQuery
+    if (identifier instanceof jQuery) {
+        return identifier;
+    }
+
+    // Si es un elemento DOM
+    if (identifier instanceof HTMLElement) {
+        return $(identifier);
+    }
+
+    // Si es un string
+    if (typeof identifier === 'string') {
+        identifier = identifier.trim();
+
+        // Si está vacío
+        if (identifier.length === 0) {
+            return $();
+        }
+
+        // Si ya es un selector completo (empieza con #, ., [, etc.)
+        if (/^[#.\[:]/.test(identifier)) {
+            return $(identifier);
+        }
+
+        // Si es solo un ID, agregamos el #
+        const $byId = $(`#${identifier}`);
+        if ($byId.length > 0) {
+            return $byId;
+        }
+
+        // Intentar como selector de clase
+        const $byClass = $(`.${identifier}`);
+        if ($byClass.length > 0) {
+            return $byClass;
+        }
+
+        // Intentar como selector de atributo data-grid
+        const $byDataAttr = $(`[data-grid="${identifier}"]`);
+        if ($byDataAttr.length > 0) {
+            return $byDataAttr;
+        }
+
+        // Intentar como selector personalizado
+        return $(identifier);
+    }
+
+    // Si no es ninguno de los anteriores, retornar jQuery vacío
+    return $();
+}
+
+/**
+ * Versión compatible con el código legacy (mantiene la firma original)
+ */
+function desactivarGrillav1(gridId) {
+    const $grid = resolverGrilla(gridId);
+
+    if ($grid.length === 0) {
+        console.warn(`⚠️ No se encontró la grilla: ${gridId}`);
+        return false;
+    }
+
+    $grid.addClass("disable-table-rows");
+    $grid.closest(".table-wrapper").css("overflow", "hidden");
+    return true;
+}
+
+/**
+ * Versión compatible con el código legacy (mantiene la firma original)
+ */
+function activarGrillav1(gridId) {
+    const $grid = resolverGrilla(gridId);
+
+    if ($grid.length === 0) {
+        console.warn(`⚠️ No se encontró la grilla: ${gridId}`);
+        return false;
+    }
+
+    $grid.removeClass("disable-table-rows");
+    $grid.closest(".table-wrapper").css("overflow", "auto");
+    return true;
+}
+
+//=====================
 
 //mueve registro al top de la grilla
 //se envia el registro seleccionado y la clase que realiza el scroll.
