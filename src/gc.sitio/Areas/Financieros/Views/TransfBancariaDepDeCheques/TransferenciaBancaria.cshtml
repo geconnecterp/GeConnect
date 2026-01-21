@@ -60,7 +60,7 @@
 					<span class="input-group-text">Concepto: </span>
 					<input type="text" asp-for="concepto" class="form-control inputEditable" />
 					<span class="input-group-text">Fecha: </span>
-					@Html.TextBoxFor(m => m.fecha, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeFecha(this);", @id = "fecha" })
+					@Html.TextBoxFor(m => m.fecha, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeFecha(this);", @id = "fecha",style = "width:105px; max-width:105px;" })
 					<button id="btnAbmAceptar" class="btn btn-success btn-sm me-1" type="button" title="Aceptar" style="margin-left: 10px;">
 						<i class="bx bx-badge-check"></i>Confirmar
 					</button>
@@ -85,9 +85,9 @@
 								<table class="table table-bordered table-hover table-golden" id="tbListaOrigen">
 									<thead>
 										<tr class="header">
-											<th style="width:35%;" class="col-header-small align-center tiny-row">Cuenta Financiera</th>
+											<th style="width:30%;" class="col-header-small align-center tiny-row">Cuenta Financiera</th>
 											<th style="width:55%;" class="col-header-small align-center tiny-row">Valor</th>
-											<th style="width:10%;" class="col-header-small align-center tiny-row">Importe</th>
+											<th style="width:15%;" class="col-header-small align-center tiny-row">Importe</th>
 											<th style="width:0%; display:none;">orden</th>
 											<th style="width:0%; display:none;">dia_movi</th>
 											<th style="width:0%; display:none;">fc_compte</th>

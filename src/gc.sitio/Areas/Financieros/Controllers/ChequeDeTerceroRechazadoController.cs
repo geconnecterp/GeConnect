@@ -164,12 +164,6 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					tra_fecha = fechaRechazo
 				};
 
-				Console.WriteLine($"ttra_id: {request.ttra_id}");
-				Console.WriteLine($"usu_id: {request.usu_id}");
-				Console.WriteLine($"adm_id: {request.adm_id}");
-				Console.WriteLine($"tra_concepto: {request.tra_concepto}");
-				Console.WriteLine($"tra_fecha: {request.tra_fecha}");
-
 				var newValor = new ValoresDesdeObligYCredDto()
 				{
 					ctaf_id = itemSeleccionado.ctaf_id,
@@ -199,22 +193,18 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					newValor
 				};
 				request.json_o = JsonConvert.SerializeObject(listaAux, new JsonSerializerSettings());
-				Console.WriteLine($"json_o: {request.json_o}");
 				listaAux = [];
 				request.json_d = JsonConvert.SerializeObject(listaAux, new JsonSerializerSettings());
-				Console.WriteLine($"json_d: {request.json_d}");
 				var encabezado = new Encabezado();
 				var ListaConceptoFacturado = new List<ConceptoFacturadoDto>();
 				var ListaOtrosTributos = new List<OtroTributoDto>();
 
 				request.json_concepto = JsonConvert.SerializeObject(ListaConceptoFacturado, new JsonSerializerSettings());
-				Console.WriteLine($"json_concepto: {request.json_concepto}");
 				request.json_encabezado = JsonConvert.SerializeObject(ListaConceptoFacturado, new JsonSerializerSettings());
-				Console.WriteLine($"json_encabezado: {request.json_encabezado}");
 				request.json_otro = JsonConvert.SerializeObject(ListaOtrosTributos, new JsonSerializerSettings());
-				Console.WriteLine($"json_otro: {request.json_otro}");
+				PrintProperties(request);
 				var respuesta = _financieroServicio.FinancieroConfirmarTransferencia(request, TokenCookie);
-				return AnalizarRespuesta(respuesta, "La confirmación del rechazo del valor se ha realizado con éxito.");
+				return AnalizarRespuesta(respuesta, "El rechazo de valor se registro con éxito.");
 				//return Json(new { error = false, warn = false, msg = "[MOCK] La confirmación del rechazo del valor se ha realizado con éxito." });
 			}
 			catch (NegocioException ex)

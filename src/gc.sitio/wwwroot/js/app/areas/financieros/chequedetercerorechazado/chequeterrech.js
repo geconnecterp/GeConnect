@@ -73,6 +73,9 @@ function InicializaPantalla() {
 	var data = {};
 	PostGenHtml(data, paso1Url, function (obj) {
 		$("#divPrincipal").html(obj);
+		$("#divUno").removeClass("col-2").addClass("col-4");
+		$("#divDos").removeClass("col-2").addClass("col-4");
+		$("#divPrincipal").removeClass("col-8").addClass("col-4");
 		InicializarCampos();
 	});
 }
@@ -95,7 +98,7 @@ function InicializarDatosEnSesion() {
 function btnCancelValidar() {
 	var data = {};
 	PostGenHtml(data, volverPasoUnoUrl, function (obj) {
-		$("#divPrincipal").html(obj);
+		$("#divPrincipal").removeClass("col-8").addClass("col-4").html(obj);
 		InicializarCampos();
 		$(document).on("click", "#btnCancel", btnCancelValidar);
 	});
@@ -135,7 +138,12 @@ function btnBuscarValidar() {
 			else {
 				var data = { ctaf_id: CuentaBancariaSelected, fechaDesde, fechaHasta };
 				PostGenHtml(data, buscarChequesDepositadosUrl, function (obj) {
+					$("#divUno").removeClass("col-4").addClass("col-2");
+					$("#divDos").removeClass("col-4").addClass("col-2");
 					$("#divPrincipal").html(obj);
+					$("#divPrincipal").removeClass("col-4").addClass("col-8");
+					// Centrar el div
+					$("#divPrincipal").parent().addClass("d-flex justify-content-center");
 					EstablecerValoresLimites();
 					$(document).on("click", "#btnCancel", btnCancelValidar);
 				});

@@ -6,7 +6,7 @@ namespace gc.sitio.Areas.Financieros.Models
 {
 	public class DepositoDeChequesModel
 	{
-		public string concepto { get; set; } = string.Empty;
+		public string concepto { get; set; } = "Dep. de Cheques";
 		public DateTime acreditacion { get; set; } = DateTime.Today;
 		public GridCoreSmart<ValoresDesdeObligYCredDto> GrillaOrigen { get; set; }
 		public GridCoreSmart<ValoresDesdeObligYCredDto> GrillaDestino { get; set; }

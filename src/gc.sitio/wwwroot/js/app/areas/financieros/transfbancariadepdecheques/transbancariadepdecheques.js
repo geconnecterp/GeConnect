@@ -218,7 +218,6 @@ function InicializarCampos() {
 			}
 		});
 	}
-	$("#concepto").val("");
 	$("#total_origen").val(0);
 	$("#total_destino").val(0);
 	getMaskForMoneyType("#total_origen");

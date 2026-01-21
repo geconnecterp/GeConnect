@@ -1,4 +1,5 @@
 ﻿let productoActualEnLista = null;
+let vieneDesdeModuloExterno = false;
 
 const mostrarInfoProd = true;
 const mostrarInfoProdStkA = true;
@@ -23,11 +24,13 @@ $(function () {
 	// Validación: que no sean null, undefined ni string vacío
 	if (pId && pId.trim() !== "" && ctaId && ctaId.trim() !== "") {
 		console.log("Vista abierta desde Index con:", pId, ctaId, ctaDenominacion);
-		// acá podés disparar lógica adicional
+		console.log("Viene desde módulo externo:");
+		vieneDesdeModuloExterno = true;
 		// cargarVistaParcial(pId, ctaId);
 		BuscarProductosDesdeNCPI(1, pId, ctaId, ctaDenominacion, false);
 	} else {
-		console.warn("pId o ctaId no son válidos:", pId, ctaId);
+		vieneDesdeModuloExterno = false;
+		console.info("pId o ctaId no son válidos:", pId, ctaId);
 	}
 
 	$("#btnCollapseSectionInfoProd").on("click", function (e) {
@@ -156,18 +159,12 @@ $(function () {
 	$(document).on("click", "#btnAbmAceptar", function () {
 		ConfirmarOrdenDeCompra();
 	});
-	//$("#btnAbmAceptar").on("click", function () {
-	//	ConfirmarOrdenDeCompra();
-	//});
+
 	$(document).on("click", "#btnCancel", function () {
 		LimpiarDatosDelFiltroInicial();
 		$("#divDetalle").collapse("hide");
 		$("#divFiltro").collapse("show");
 	});
-	//$("#btnCancel").on("click", function () {
-	//	LimpiarDatosDelFiltroInicial();
-	//	$("#btnFiltro").trigger("click");
-	//});
 
 	$("#btnCollapseSection").on("click", btnCollapseSectionClicked);
 	$("#tabResumen").on("click", function () {
@@ -228,9 +225,7 @@ function CargarRubros() {
 	data = {};
 	PostGenHtml(data, BuscarRubrosURL, function (obj) {
 		$("#divLs02").html(obj);
-		//$("#divLs02").attr("class", "col-md-6 col-sm-6");
 		$("#listaLs02").prop("disabled", true);
-		CerrarWaiting();
 		return true
 	});
 }
@@ -819,6 +814,8 @@ function InicializaPantalla() {
 	MostrarDatosDeCuenta(false);
 	$("#btnAbmAceptar").prop("disabled", true);
 	CerrarWaiting();
+	if (vieneDesdeModuloExterno)
+		AbrirWaiting("Cargando datos desde módulo externo");
 	return true;
 }
 
@@ -1132,39 +1129,7 @@ function BuscarProductos(pag = 1) {
 		CargarTopesDeOC();
 		CargarSucursalesParInfoAdicional();
 		LimpiarDatosDelFiltroInicial();
-		//$("#btnCollapseSectionInfoProd").on("click", function (e) {
-		//	e.preventDefault();
-		//	let pId = obtenerProductoSeleccionado();
-		//	if (pIdSeleccionado && pIdSeleccionado !== "") {
-		//		// toggle manual
-		//		//$("#divInfoAdicionaDeProducto").collapse("toggle");
-
-		//		// 1) Cargar contenido primero
-		//		invocarComponenteDeInfoAdicionalDeProd({
-		//			p_id: pIdSeleccionado,
-		//			mostrarInfoProd,
-		//			mostrarInfoProdStkA,
-		//			mostrarInfoProdStkD,
-		//			mostrarInfoProdStkBox,
-		//			mostrarInfoProdStkMovM,
-		//			mostrarInfoProdStkMovD,
-		//			mostrarInfoProdStkMovS,
-		//			mostrarInfoProdSustituto,
-		//			pasarAdmLogueo,
-		//		});
-
-		//		// 2) Abrir el collapse recién DESPUÉS de cargar el contenido
-		//		//setTimeout(function () {
-		//		//	$("#divInfoAdicionaDeProducto").collapse("show");
-		//		//}, 50);
-
-		//	} else {
-		//		AbrirMensaje("ATENCIÓN", "Debe seleccionar un producto.", function () {
-		//			$("#msjModal").modal("hide");
-		//			return true;
-		//		}, false, ["Aceptar"], "error!", null);
-		//	}
-		//});
+		
 		let tab = new bootstrap.Tab(document.querySelector("#btnTabProductos"));
 		tab.show();
 		viendeDesdeBusquedaDeProducto = false;

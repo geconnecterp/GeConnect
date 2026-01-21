@@ -28,14 +28,14 @@
 </style>
 <div class="row">
 	<div class="input-group input-group-sm">
-		<span class="input-group-text" style="width: 6%;text-align: left;padding-left: 2px;">Deposito: </span>
-		@Html.DropDownListFor(m => m.selectedValueDepos, depos, "Seleccionar", new { @id = "listaDeposMovD", @class = "form-control fixed-width" })
-		<span class="input-group-text" style="width: 5%;text-align: left;padding-left: 2px;">TM: </span>
-		@Html.DropDownListFor(m => m.selectedValueTM, tms, "Seleccionar", new { @id = "listaTMMovD", @class = "form-control fixed-width" })
-		<span class="input-group-text" style="width: 2%;text-align: left;padding-left: 2px;">D: </span>
-		@Html.TextBoxFor(m => m.Desde, "{0:yyyy-MM-dd}", new { @id = "txtDesde", @class = "form-control", type = "date" })
-		<span class="input-group-text" style="width: 2%;text-align: left;padding-left: 2px;">H: </span>
-		@Html.TextBoxFor(m => m.Hasta, "{0:yyyy-MM-dd}", new { @id = "txtHasta", @class = "form-control", type = "date" })
+		<span class="input-group-text" style="width: 6%;text-align: left;padding-left: 2px;font-size: 10px;">Dep.: </span>
+		@Html.DropDownListFor(m => m.selectedValueDepos, depos, "Seleccionar", new { @id = "listaDeposMovD", @class = "form-control fixed-width", style="font-size: 10px;" })
+		<span class="input-group-text" style="width: 5%;text-align: left;padding-left: 2px;font-size: 10px;">TM: </span>
+		@Html.DropDownListFor(m => m.selectedValueTM, tms, "Seleccionar", new { @id = "listaTMMovD", @class = "form-control fixed-width", style = "font-size: 10px;" })
+		<span class="input-group-text" style="width: 2%;text-align: left;padding-left: 2px;font-size: 10px;">D: </span>
+		@Html.TextBoxFor(m => m.Desde, "{0:yyyy-MM-dd}", new { @id = "txtDesde", @class = "form-control", type = "date", style = "font-size: 10px;" })
+		<span class="input-group-text" style="width: 2%;text-align: left;padding-left: 2px;font-size: 10px;">H: </span>
+		@Html.TextBoxFor(m => m.Hasta, "{0:yyyy-MM-dd}", new { @id = "txtHasta", @class = "form-control", type = "date", style = "font-size: 10px;" })
 	</div>
 </div>
 <div class="table-responsive table-wrapper-200-full">

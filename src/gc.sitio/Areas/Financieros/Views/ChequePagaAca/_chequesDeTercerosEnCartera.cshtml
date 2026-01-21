@@ -7,7 +7,67 @@
 	var alt = true;
 	string clase = string.Empty;
 }
-<fieldset style="height: 460px;">
+<style>
+	/* El contenedor debe ser el scroll real y generar contexto */
+	#containerChequesDeTercerosEnCartera {
+		position: relative;
+		height: 560px;
+		max-height: 560px;
+		overflow-y: auto; /* vertical */
+		overflow-x: auto; /* horizontal si hace falta */
+		z-index: auto; /* no fuerza stacking context */
+	}
+
+	/* Evitar collapse para que sticky funcione mejor en thead/th */
+	.table-golden {
+		border-collapse: separate;
+		border-spacing: 0;
+		table-layout: fixed; /* estabiliza anchos con tus width% */
+	}
+
+		/* Fijar el thead y darle fondo del tema */
+		.table-golden thead {
+			position: sticky;
+			top: 0;
+			z-index: 1; /* suficiente para estar sobre las filas */
+			background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+			color: #fff !important;
+		}
+
+			/* Redundancia intencional: asegurar cada th sticky y el mismo fondo */
+			.table-golden thead th {
+				position: sticky;
+				top: 0;
+				z-index: 4;
+				background: linear-gradient(to bottom, #b8860b, #daa520);
+				color: #fff;
+				box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+				background-clip: padding-box; /* evita “sangrados” con border-spacing */
+			}
+
+			/* Alinear colores: si tu app usa dorado para cabecera */
+			.table-golden thead,
+			.table-golden thead th {
+				/*background-color: #b8860b;  tu dorado */
+				/* color: #333; */
+				text-align: center;
+			}
+
+	#tbListaChequesDeTercerosEnCartera th,
+	#tbListaChequesDeTercerosEnCartera td {
+		padding: 0.01rem 0.15rem !important; /* o incluso 0 si querés máxima compresión */
+		line-height: 1.2 !important; /* más compacto */
+		height: auto !important; /* evita altura fija */
+	}
+
+	/* Opcional: altura fija para todas las filas */
+	#tbListaChequesDeTercerosEnCartera tr {
+		height: 1.6rem !important; /* ajustá según lo que quieras */
+	}
+
+</style>
+@Html.Hidden("MostrarFecha", Model.mostrar_fecha)
+<fieldset style="height: 620px;">
 	<legend></legend>
 	<div class="row">
 		<div class="col-4">
@@ -29,16 +89,16 @@
 		</div>
 		<div class="col-4"></div>
 	</div>
-	<div class="table-responsive table-wrapper-400-full-width mt-2" id="containerChequesDeTercerosEnCartera">
+	<div class="table-responsive mt-2" id="containerChequesDeTercerosEnCartera">
 		<table class="table table-bordered table-hover table-golden" id="tbListaChequesDeTercerosEnCartera">
 			<thead>
 				<tr class="header">
-					<th style="width:15%;" class="col-header-small align-center tiny-row">Fecha Valor</th>
-					<th style="width:15%;" class="col-header-small align-center tiny-row">Fecha Carga</th>
-					<th style="width:40%;" class="col-header-small align-center tiny-row">@col1</th>
-					<th style="width:10%;" class="col-header-small align-center tiny-row">@col2</th>
-					<th style="width:10%;" class="col-header-small align-center tiny-row">@col3</th>
-					<th style="width:10%;" class="col-header-small align-center tiny-row">Importe</th>
+					<th style="width:15%;">Fecha Valor</th>
+					<th style="width:15%;">Fecha Carga</th>
+					<th style="width:40%;">@col1</th>
+					<th style="width:10%;">@col2</th>
+					<th style="width:10%;">@col3</th>
+					<th style="width:10%;">Importe</th>
 					<th style="width:0%; display:none;">dia_movi</th>
 					<th style="width:0%; display:none;">fc_compte</th>
 					<th style="width:0%; display:none;">fc_item</th>
@@ -51,11 +111,11 @@
 					{
 						if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 						<tr class="@clase" onclick="selectReg(this, 'tbListaChequesDeTercerosEnCartera')" title="@item.concepto_valor">
-							<td class="@Model.GrillaChequesEnCartera.ObtenerClase(item.fc_fecha_valor) cell-fit-content">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_fecha_valor, FormatDato.Fecha)</td>
-							<td class="@Model.GrillaChequesEnCartera.ObtenerClase(item.fc_fecha) cell-fit-content">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_fecha, FormatDato.Fecha)</td>
+							<td class="align-center cell-fit-content">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_fecha_valor, FormatDato.Fecha)</td>
+							<td class="align-center cell-fit-content">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_fecha, FormatDato.Fecha)</td>
 							<td class="@Model.GrillaChequesEnCartera.ObtenerClase(item.fc_dato1_valor) cell-fit-content">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_dato1_valor, FormatDato.Ninguno)</td>
-							<td class="@Model.GrillaChequesEnCartera.ObtenerClase(item.fc_dato2_valor) cell-fit-content">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_dato2_valor, FormatDato.Monto)</td>
-							<td class="@Model.GrillaChequesEnCartera.ObtenerClase(item.fc_dato3_valor) cell-fit-content">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_dato3_valor, FormatDato.Monto)</td>
+							<td class="align-center cell-fit-content">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_dato2_valor, FormatDato.Monto)</td>
+							<td class="align-center cell-fit-content">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_dato3_valor, FormatDato.Monto)</td>
 							<td class="@Model.GrillaChequesEnCartera.ObtenerClase(item.fc_importe) cell-fit-content">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_importe, FormatDato.Monto)</td>
 							<td style="display:none;">@item.dia_movi</td>
 							<td style="display:none;">@item.fc_compte</td>

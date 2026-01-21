@@ -111,6 +111,11 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Header = header;
 				#endregion
 
+				if (registros.First().tra_anulada == 'S')
+				{
+					writer.PageEvent = new WatermarkPageEvent("ANULADO");
+				}
+
 				pdf.Open();
 
 				#region Datos de la Transferencia

@@ -103,6 +103,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
 				var lista = _financieroServicio.GetFinancieroDesdeTipoParaSeleccionDeValores(tcf_id, AdministracionId, TokenCookie);
+				ListaFinancieroDesdeSeleccionDeTipo = lista;
 				model.GrillaCtaFin = ObtenerGridCoreSmart<FinancieroDesdeSeleccionDeTipoDto>(lista);
 				return PartialView("_seleccionCtaFin", model);
 			}
@@ -238,13 +239,14 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					listaTemp.Add(newValor);
 				}
 				OPValoresSeleccionados = listaTemp;
+				var saldoDeCtaf = ListaFinancieroDesdeSeleccionDeTipo.Where(x => x.ctaf_id == request.ctafIdSelected).First().ctaf_saldo;
 				var cuenta_al_cobro = cuenta_al_cobro_lista.First();
 				model.concepto = string.Empty;
 				model.fecha_acreditacion = DateTime.Today;
 				model.cuenta_en_cartera = $"{request.ctafIdSelected} {request.ctafDescSelected}";
-				model.saldo_cuenta_en_cartera = request.saldoDeCtaf;
+				model.saldo_cuenta_en_cartera = saldoDeCtaf;
 				model.importe_a_presentar_en_cartera = request.totalSeleccionadoEnCartera;
-				model.saldo_a_constituir_en_cartera = request.saldoDeCtaf - request.totalSeleccionadoEnCartera;
+				model.saldo_a_constituir_en_cartera = saldoDeCtaf - request.totalSeleccionadoEnCartera;
 				model.ctaf_id_cartera = request.ctafIdSelected;
 				model.ctaf_desc_cartera = request.ctafDescSelected;
 
@@ -328,6 +330,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				CtafIdSelected = string.Empty;
 				OPValoresSeleccionados = [];
 				FinancieroCarteraLista = [];
+				ListaFinancieroDesdeSeleccionDeTipo = [];
 
 				return Json(new { error = false, warn = false, msg = "Inicializacion correcta." });
 			}

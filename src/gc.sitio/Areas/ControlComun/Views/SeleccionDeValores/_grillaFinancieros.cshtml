@@ -10,6 +10,15 @@
 	thead th {
 		position: sticky;
 		top: 0px;
+		z-index: 1; /* suficiente para estar sobre las filas */
+		background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+		color: #fff !important;
+	}
+
+	.table-wrapper {
+		/*max-height: 400px;  o lo que necesites */
+		overflow-y: auto;
+		position: relative;
 	}
 </style>
 <div class="col-11 table-responsive table-wrapper-200-full" id="containerFinanciero" style="padding-right: 0px;height: 200px;max-height: 200px;">

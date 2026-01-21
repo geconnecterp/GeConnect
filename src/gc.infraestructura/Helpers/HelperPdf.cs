@@ -5901,6 +5901,49 @@ namespace gc.infraestructura.Helpers
 			_totalPages.EndText();
 		}
 	}
+
+	public class WatermarkPageEvent : PdfPageEventHelper
+	{
+		private readonly string _texto;
+		private readonly BaseFont _font;
+
+		public WatermarkPageEvent(string texto)
+		{
+			_texto = texto;
+			_font = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.EMBEDDED);
+		}
+
+		public override void OnEndPage(PdfWriter writer, Document document)
+		{
+			PdfContentByte canvas = writer.DirectContentUnder;
+			canvas.SaveState();
+
+			PdfGState gState = new PdfGState();
+			gState.FillOpacity = 0.15f; // Transparencia
+			canvas.SetGState(gState);
+
+			canvas.BeginText();
+			canvas.SetColorFill(BaseColor.LightGray);
+			canvas.SetFontAndSize(_font, 80);
+
+			// Coordenadas para que quede cruzado
+			float x = document.PageSize.Width / 2;
+			float y = document.PageSize.Height / 2;
+
+			canvas.ShowTextAligned(
+				Element.ALIGN_CENTER,
+				_texto,
+				x,
+				y,
+				45 // Rotación diagonal
+			);
+
+			canvas.EndText();
+			canvas.RestoreState();
+		}
+	}
+
+
 	/// <summary>
 	/// Representa un nivel de agrupamiento en un reporte PDF
 	/// </summary>

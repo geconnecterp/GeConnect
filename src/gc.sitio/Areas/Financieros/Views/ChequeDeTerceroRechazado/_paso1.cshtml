@@ -15,8 +15,8 @@
 		@Html.TextBoxFor(m => m.FechaHasta, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeFechaHasta(this);", @id = "fechaHasta" })
 	</div>
 	<div class="row mt-3">
-		<div class="col-4"></div>
-		<div class="col-4">
+		<div class="col-2"></div>
+		<div class="col-8 text-center">
 			<button type="button" id="btnBuscar" class="btn btn-sm btn-primary">
 				<i class="bx bx-search"></i>Buscar
 			</button>
@@ -24,6 +24,6 @@
 				<i class="bx bx-x-circle"></i>Cancelar
 			</button>
 		</div>
-		<div class="col-4"></div>
+		<div class="col-2"></div>
 	</div>
 </fieldset>

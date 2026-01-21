@@ -4,6 +4,25 @@
 	string clase = string.Empty;
 }
 <style>
+	#tbListaProductoSust {
+		table-layout: fixed;
+		width: 100%;
+	}
+
+		/* Columna 3: Concepto */
+		#tbListaProductoSust th:nth-child(3),
+		#tbListaProductoSust td:nth-child(3) {
+			width: 50%;
+		}
+
+		/* Truncado con elipsis directamente en la celda */
+		#tbListaProductoSust td:nth-child(3) {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			max-width: 0; /* 🔑 clave para que no se expanda por el contenido */
+		}
+
 	#divInfo .table-responsive,
 	#divInfo .table-wrapper-200-full {
 		max-height: 100%;

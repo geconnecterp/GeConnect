@@ -168,7 +168,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
-		public JsonResult ConfirmarCargaDeChequeDeTerceroEnCartera(string dia_movi, string fc_compte, string fc_item, DateTime fecha_valor)
+		public JsonResult ConfirmarCargaDeChequeDeTerceroEnCartera(string dia_movi, string fc_compte, string fc_item, bool docEnCuenta, DateTime fecha_valor)
 		{
 			try
 			{
@@ -180,17 +180,14 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					return Json(new { error = true, warn = false, msg = $"Se ha producido un error al intentar obtener el ítem. dia_movi: {dia_movi} - fc_compte: {fc_compte} - fc_item: {fc_item}" });
 
 
-				var request = new ConfirmarTransferenciaRequest();
-				request.ttra_id = DocumentoEnCuenta ? "CQ" : "CF";
-				Console.WriteLine($"ttra_id: {request.ttra_id}");
-				request.usu_id = UserName;
-				Console.WriteLine($"usu_id : {request.usu_id}");
-				request.adm_id = AdministracionId;
-				Console.WriteLine($"adm_id: {request.adm_id}");
-				request.tra_concepto = string.Empty;
-				Console.WriteLine($"tra_concepto : {request.tra_concepto}");
-				request.tra_fecha = CambioDeFechaDePresentacion ? fecha_valor : DateTime.Now;
-				Console.WriteLine($"tra_fecha: {request.tra_fecha}");
+				var request = new ConfirmarTransferenciaRequest
+				{
+					ttra_id = DocumentoEnCuenta ? "CQ" : "CF",
+					usu_id = UserName,
+					adm_id = AdministracionId,
+					tra_concepto = string.Empty,
+					tra_fecha = CambioDeFechaDePresentacion ? fecha_valor : DateTime.Now
+				};
 
 				var ctafDenominacion = string.Empty;
 				var i = itemEnListaFinancieroCartera.First();
@@ -229,23 +226,23 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				};
 
 				request.json_o = JsonConvert.SerializeObject(listaAux, new JsonSerializerSettings());
-				Console.WriteLine($"json_o: {request.json_o}");
 				listaAux = [];
 				request.json_d = JsonConvert.SerializeObject(listaAux, new JsonSerializerSettings());
-				Console.WriteLine($"json_d: {request.json_d}");
 				var encabezado = new Encabezado();
 				var ListaConceptoFacturado = new List<ConceptoFacturadoDto>();
 				var ListaOtrosTributos = new List<OtroTributoDto>();
 
 				request.json_concepto = JsonConvert.SerializeObject(ListaConceptoFacturado, new JsonSerializerSettings());
-				Console.WriteLine($"json_concepto: {request.json_concepto}");
 				request.json_encabezado = JsonConvert.SerializeObject(ListaConceptoFacturado, new JsonSerializerSettings());
-				Console.WriteLine($"json_encabezado: {request.json_encabezado}");
 				request.json_otro = JsonConvert.SerializeObject(ListaOtrosTributos, new JsonSerializerSettings());
-				Console.WriteLine($"json_otro: {request.json_otro}");
+				PrintProperties(request);
 				var respuesta = _financieroServicio.FinancieroConfirmarTransferencia(request, TokenCookie);
-				return AnalizarRespuesta(respuesta, "La Transferencia se confirmó con Éxito");
-				//return Json(new { error = false, warn = false, msg = "Anulación de comprobante correctamente." });
+				var mensaje = string.Empty;
+				if (docEnCuenta)
+					mensaje = "El Documento “Cheque Paga acá” se registró con éxito en la cuenta del Cliente.";
+				else
+					mensaje = "La fecha de Vencimiento del Cheque se registró con éxito";
+				return AnalizarRespuesta(respuesta, mensaje);
 			}
 			catch (NegocioException ex)
 			{

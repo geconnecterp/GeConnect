@@ -3196,11 +3196,13 @@ namespace gc.sitio.Controllers
                 return retValue;
             foreach (var itemEnvia in listaQueEnvia)
             {
-                if (listaQueRecibe.Exists(x => x.fc_dia_movi == itemEnvia.fc_dia_movi && x.fc_compte == itemEnvia.fc_compte && x.fc_item == itemEnvia.fc_item))
-                {
-                    retValue = true;
-                    break;
-                }
+                if (itemEnvia.fc_dia_movi != null && itemEnvia.fc_compte != null && itemEnvia.fc_item != 0) {
+					if (listaQueRecibe.Exists(x => x.fc_dia_movi == itemEnvia.fc_dia_movi && x.fc_compte == itemEnvia.fc_compte && x.fc_item == itemEnvia.fc_item))
+					{
+						retValue = true;
+						break;
+					}
+				}
             }
             return retValue;
         }

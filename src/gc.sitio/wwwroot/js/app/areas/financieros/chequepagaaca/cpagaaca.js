@@ -61,7 +61,7 @@ function btnAceptarValidar() {
 						data2 = { fecha_valor }
 					}
 
-					var data1 = { dia_movi, fc_compte, fc_item };
+					var data1 = { dia_movi, fc_compte, fc_item, docEnCuenta };
 					var data = $.extend({}, data1, data2);
 					PostGen(data, confirmarCargaDeChequeDeTerceroEnCarteraUrl, function (obj) {
 						CerrarWaiting();

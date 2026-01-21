@@ -43,15 +43,15 @@
 	}
 
 </style>
-<div class="row">
+<div class="row" style="width: 96%;">
 	<div class="input-group input-group-sm">
-		<span class="input-group-text fixed-width">Sucursal: </span>
-		@Html.DropDownListFor(m => m.selectedValue, sucursales, "Seleccionar", new { @id = "listaSucursalesS", @class = "form-control fixed-width" })
-		<span class="input-group-text fixed-width-75">Semanas: </span>
-		@Html.TextBoxFor(m => m.Semanas, new { @id = "txtSemanas", @class = "fixed-width-50 align-right", type = "number" })
+		<span class="input-group-text" style="width: 11%;text-align: left;padding-left: 2px;font-size: 10px;">Sucursal: </span>
+		@Html.DropDownListFor(m => m.selectedValue, sucursales, "Seleccionar", new { @id = "listaSucursalesS", @class = "form-control fixed-width", style = "font-size: 10px;" })
+		<span class="input-group-text" style="width: 11%;text-align: left;padding-left: 2px;font-size: 10px;">Semanas: </span>
+		@Html.TextBoxFor(m => m.Semanas, new { @id = "txtSemanas", @class = "fixed-width-50 align-right", type = "number", style = "font-size: 10px;" })
 	</div>
 </div>
-<div class="table-responsive text-nowrap table-wrapper-200-full">
+<div class="table-responsive text-nowrap table-wrapper-200-full" style="width: 90%;">
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbInfoProdMovSem">
 		<thead>
 			<tr>
@@ -61,12 +61,12 @@
 				<th colspan="3" class="tiny-row align-center th-egresos">Egresos</th>
 			</tr>
 			<tr>
-				<th style="width:12%;" class="tiny-row align-center col-entrada">Comp.</th>
-				<th style="width:15%;" class="tiny-row align-center col-entrada">RI</th>
-				<th style="width:12%;" class="tiny-row align-center col-entrada">Otros</th>
-				<th style="width:12%;" class="tiny-row align-center col-salida">Vtas.</th>
-				<th style="width:15%;" class="tiny-row align-center col-salida">RI</th>
-				<th style="width:12%;" class="tiny-row align-center col-salida">Otros</th>
+				<th style="width:11%;" class="tiny-row align-center col-entrada">Comp.</th>
+				<th style="width:14%;" class="tiny-row align-center col-entrada">RI</th>
+				<th style="width:11%;" class="tiny-row align-center col-entrada">Otros</th>
+				<th style="width:11%;" class="tiny-row align-center col-salida">Vtas.</th>
+				<th style="width:14%;" class="tiny-row align-center col-salida">RI</th>
+				<th style="width:11%;" class="tiny-row align-center col-salida">Otros</th>
 			</tr>
 		</thead>
 		<tbody>

@@ -13,7 +13,7 @@
 	$(document).on("change", "#listaCFD", ControlalistaCFDSelected);
 	$(document).on("change", "#listaTT", ControlalistaTTSelected);
 	$(document).on("change", "#listaUsu", ControlalistaUsuSelected);
-	$(document).on("change", "#btnCancelar", btnCancelarClick);
+	//$(document).on("change", "#btnCancelar", btnCancelarClick);
 
 	$("#CFOList").on("dblclick", 'option', function () { $(this).remove(); })
 	$("#CFDList").on("dblclick", 'option', function () { $(this).remove(); })
@@ -81,12 +81,13 @@ function BuscarMovimientosFinancieros(pag) {
 	PostGenHtml(data, buscarMovimientosFinancieros2URL, function (obj) {
 		CerrarWaiting();
 		$("#divDatosMovimientoFinanciero").html(obj);
+		inicializarEventosTablaMovFin();
 		$("#divDetalleMovimiento").empty();
 		$("#divFiltros").removeClass("show").addClass("collapse");
 		$("#divDetalle").collapse("show");
-		$("#btnCancelar").on("click", function () {
-			btnCancelarClick();
-		});
+		//$("#btnCancelar").on("click", function () {
+		//	btnCancelarClick();
+		//});
 		$("#btnImprimirMovSele").on("click", function () {
 			btnImprimirMovSele();
 		});
@@ -132,29 +133,37 @@ function btnAnularMovimiento() {
 		}, false, ["Aceptar"], "error!", null);
 	}
 	else {
-		AbrirMensaje("ATENCIÓN", "¿Confirma que desea anular el comprobante seleccionado?", function () {
+		AbrirMensaje("ATENCIÓN", "¿Confirma que desea anular el comprobante seleccionado?", function (e) {
 			$("#msjModal").modal("hide");
-			AbrirWaiting("Anulando comprobante...");
-			var traCompte = ttraSelected;
-			var data = { tra_compte: traCompte };
-			PostGen(data, anularMovimientoFinancieroUrl, function (obj) {
-				CerrarWaiting();
-				if (obj.error === true) {
-					AbrirMensaje("ATENCIÓN", obj.msg, function () {
-						$("#msjModal").modal("hide");
-						return true;
-					}, false, ["Aceptar"], "error!", null);
-				}
-				else {
-					AbrirMensaje("ATENCIÓN", obj.msg, function () {
-						$("#msjModal").modal("hide");
-						BuscarMovimientosFinancieros(pagina);
-						return true;
-					}, false, ["Aceptar"], "info!", null);
-				}
-			});
+			switch (e) {
+				case "SI": //Confirmar
+					AbrirWaiting("Anulando comprobante...");
+					var traCompte = ttraSelected;
+					var data = { tra_compte: traCompte };
+					PostGen(data, anularMovimientoFinancieroUrl, function (obj) {
+						CerrarWaiting();
+						if (obj.error === true) {
+							AbrirMensaje("ATENCIÓN", obj.msg, function () {
+								$("#msjModal").modal("hide");
+								return true;
+							}, false, ["Aceptar"], "error!", null);
+						}
+						else {
+							AbrirMensaje("ATENCIÓN", obj.msg, function () {
+								$("#msjModal").modal("hide");
+								BuscarMovimientosFinancieros(pagina);
+								return true;
+							}, false, ["Aceptar"], "info!", null);
+						}
+					});
+					break;
+				case "NO":
+					break;
+				default: //NO
+					break;
+			}
 			return true;
-		}, true, ["Cancelar", "Aceptar"], "question", null);
+		}, true, ["Aceptar", "Cancelar"], "question!", null);
 	}
 }
 
@@ -284,22 +293,8 @@ function ImprimirTRA_Generada(traCompte) {
 	}, 500);
 }
 
-function selectReg(x, gridId) {
-	$("#" + gridId + " tbody tr").each(function (index) {
-		$(this).removeClass("selected-row");
-	});
-	$(x).addClass("selected-row");
-	if (gridId == "tbGridMovFin") {
-		ttraSelected = x.childNodes[1].innerText;
-		CargarDetalleDeMovimientoFinanciero(ttraSelected);
-		if (x.childNodes[9].innerText == "No") {
-			$("#btnAnularMovi").prop("disabled", false);
-		}
-		else {
-			$("#btnAnularMovi").prop("disabled", true);
-		}
-	}
-}
+
+
 
 function CargarDetalleDeMovimientoFinanciero(ttraSelected) {
 	AbrirWaiting("Cargando detalle del movimiento...");
@@ -518,7 +513,93 @@ function InicializarCamposEnFiltros() {
 		}
 	});
 	$("#Date1, #Date2").prop("disabled", false);
+	$("#divFiltro").collapse("show");
+	$("#divDetalle").collapse("hide");
 	$("#btnCancel").on("click", function () {
 		btnCancelarClick();
 	});
+}
+
+function selectReg(x, gridId) {
+	$("#" + gridId + " tbody tr").each(function (index) {
+		$(this).removeClass("selected-row");
+	});
+	$(x).addClass("selected-row");
+	if (gridId == "tbGridMovFin") {
+		ttraSelected = x.childNodes[1].innerText;
+		BuscarDetalleFinanciero(ttraSelected, x.childNodes[9].innerText);
+		//CargarDetalleDeMovimientoFinanciero(ttraSelected);
+		//if (x.childNodes[9].innerText == "No") {
+		//	$("#btnAnularMovi").prop("disabled", false);
+		//}
+		//else {
+		//	$("#btnAnularMovi").prop("disabled", true);
+		//}
+	}
+}
+
+function BuscarDetalleFinanciero(ttraSelected, AnularMovi) {
+	CargarDetalleDeMovimientoFinanciero(ttraSelected);
+	if (AnularMovi == "No") {
+		$("#btnAnularMovi").prop("disabled", false);
+	}
+	else {
+		$("#btnAnularMovi").prop("disabled", true);
+	}
+}
+
+function selectRegDbl(x, gridId) {
+	$("#" + gridId + " tbody tr").each(function (index) {
+		$(this).removeClass("selected-row");
+	});
+	$(x).addClass("selected-row");
+	ttraSelected = x.childNodes[1].innerText;
+	BuscarDetalleFinanciero(ttraSelected, x.childNodes[9].innerText);
+	AbrirWaiting();
+	setTimeout(function () {
+		CerrarWaiting();
+		irAlTabDetalle();
+	}, 500);
+}
+
+function irAlTabDetalle() {
+	var tabDetalle = document.getElementById("btnTabDetalle");
+	var tab = new bootstrap.Tab(tabDetalle);
+	tab.show();
+}
+
+function inicializarEventosTablaMovFin() {
+	let clickTimer = null;
+
+	// CLICK
+	$(document)
+		.off("click", "#tbGridMovFin tbody tr")
+		.on("click", "#tbGridMovFin tbody tr", function () {
+
+			const row = this;
+
+			if (clickTimer) {
+				clearTimeout(clickTimer);
+				clickTimer = null;
+				return;
+			}
+
+			clickTimer = setTimeout(function () {
+				clickTimer = null;
+				selectReg(row, "tbGridMovFin");   // CLICK NORMAL
+			}, 200);
+		});
+
+	// DOUBLE CLICK
+	$(document)
+		.off("dblclick", "#tbGridMovFin tbody tr")
+		.on("dblclick", "#tbGridMovFin tbody tr", function () {
+
+			if (clickTimer) {
+				clearTimeout(clickTimer);
+				clickTimer = null;
+			}
+
+			selectRegDbl(this, "tbGridMovFin");  // DOBLE CLICK
+		});
 }

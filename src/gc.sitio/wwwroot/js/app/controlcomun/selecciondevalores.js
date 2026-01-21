@@ -404,7 +404,12 @@ function seleccionarFinanciero(x) {
 			}
 			AgregarHandlerAHeaderEnGrillaValoresEnCartera();
 			$("#btnAceptarAgregarValor").prop("disabled", false);
+			$("#contenedorChkValoresVencidos").show();
 		});
+	}
+	else {
+		$("#contenedorChkValoresVencidos").hide();
+		$("#chkVerSoloValoresVencidos").prop("checked", false);
 	}
 	seleccionarGrilla(x, 'tbFinanciero');
 }

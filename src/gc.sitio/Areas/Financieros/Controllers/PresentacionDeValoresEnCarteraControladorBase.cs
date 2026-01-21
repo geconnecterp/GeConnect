@@ -68,5 +68,23 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				_context.HttpContext?.Session.SetString("FinancieroCarteraLista", json);
 			}
 		}
+
+		public List<FinancieroDesdeSeleccionDeTipoDto> ListaFinancieroDesdeSeleccionDeTipo
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("ListaFinancieroDesdeSeleccionDeTipo");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<FinancieroDesdeSeleccionDeTipoDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ListaFinancieroDesdeSeleccionDeTipo", json);
+			}
+		}
 	}
 }
