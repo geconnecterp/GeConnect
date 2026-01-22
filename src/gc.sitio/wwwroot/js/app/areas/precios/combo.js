@@ -615,6 +615,7 @@ function accionesIniciales() {
     $("#Tipo").prop("disabled", false);
     $("#Estado").prop("disabled", false);
 
+
     // Activar el botón de nuevo combo
     $("#btnAbmNuevo").prop("disabled", false);
     
