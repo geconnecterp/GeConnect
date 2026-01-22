@@ -5,38 +5,6 @@ class Origen {
 }
 
 $(function () {
-	//$("#btnCollapseSection").on("click", btnCollapseSectionClicked);
-	/*$(document).on("click", "#btnCollapseSectionInfoProd", btnCollapseSectionValidar);*/
-
-	/* ######	INICIO Componente de info adicional de producto ###### */
-	$("#btnCollapseSectionInfoProd").on("click", function (e) {
-		e.preventDefault();
-
-		if (pIdSeleccionado && pIdSeleccionado !== "") {
-			// toggle manual
-			//$("#divInfoAdicionaDeProducto").collapse("toggle");
-
-			// opcional: refrescar contenido si querés al abrir
-			invocarComponenteDeInfoAdicionalDeProd({
-				p_id: pIdSeleccionado,
-				mostrarInfoProd,
-				mostrarInfoProdStkA,
-				mostrarInfoProdStkD,
-				mostrarInfoProdStkBox,
-				mostrarInfoProdStkMovM,
-				mostrarInfoProdStkMovD,
-				mostrarInfoProdStkMovS,
-				mostrarInfoProdSustituto,
-				pasarAdmLogueo,
-			});
-		} else {
-			AbrirMensaje("ATENCIÓN", "Debe seleccionar un producto.", function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
-		}
-	});
-
 	$("#btnCancel").on("click", function () {
 		AbrirWaiting();
 		LimpiarDatosDelFiltroInicial();
@@ -374,6 +342,7 @@ function HandlerActualizarTablaPostOCAuto() {
 		finalizarInicializacionGridListaProductos();
 		const tabla = document.getElementById("tbListaProducto");
 		AplicarEstilosTabla(tabla);
+		AgregarHanlderColumnaDescripcion();
 		CerrarWaiting();
 		return true
 	});
@@ -431,14 +400,6 @@ function ValidarDatosObligAnalizarCompraAuto() {
 		ret.msj = "Debe seleccionar al menos un Depósito.";
 		ret.objeto = "#listaDepositosModal";
 	}
-	//if ($("#DepositosListModal option").length <= 0) {
-	//	ret.msj = "Debe seleccionar al menos un Depósito.";
-	//	ret.objeto = "#listaDepositosModal";
-	//}
-	//else if ($("#SucursalesListModal option").length <= 0) {
-	//	ret.msj = "Debe seleccionar al menos una Sucursal.";
-	//	ret.objeto = "#listaSucursalesModal";
-	//}
 	return ret;
 }
 
@@ -563,8 +524,8 @@ function ControlalistaDepositosModalSelected() {
 function getMaskForIntegerMax1000(selector) {
 	$(selector).inputmask({
 		alias: 'numeric',
-		groupSeparator: '.',       // separador de miles
-		digits: 0,                 // sin decimales
+		groupSeparator: '.',
+		digits: 0,
 		digitsOptional: false,
 		allowMinus: false,
 		prefix: '',
@@ -845,6 +806,7 @@ function BuscarProductos(pag = 1) {
 			}
 
 		});
+		AgregarHanlderColumnaDescripcion();
 		CerrarWaiting();
 		viendeDesdeBusquedaDeProducto = false;
 		return true
@@ -1020,22 +982,14 @@ function ActualizarListaProductos(row, campoActual) {
 			let fila = tabla.querySelector(`tr[data-id='${pId}']`);
 
 			if (fila) {
-				// Actualizar
-				fila.setAttribute("data-pedido-tipo", "M"); // ahora la fila tiene data-pedido-tipo="M"
+				fila.setAttribute("data-pedido-tipo", "M");
 
 				const pedidoTipo = fila.getAttribute("data-pedido-tipo"); // "A" o "M"
-
-				// Buscar el input dentro de la fila
 				const inputBulto = fila.querySelector("input.input-bulto");
-				// Si existe, actualizar su valor original
+				
 				if (inputBulto) {
-					// Actualizar DOM
 					inputBulto.setAttribute("data-original-value", bultos);
-
-					// Actualizar caché jQuery
 					$(inputBulto).data("original-value", bultos);
-
-					// Sincronizar visualmente el input (opcional pero recomendable)
 					inputBulto.value = bultos;
 				}
 
@@ -1082,10 +1036,8 @@ function ActualizarListaProductos(row, campoActual) {
 function destacarFilaSeleccionadaGridListaProductos(id) {
 	console.log(`🎯 Destacando fila para ID: ${id}`);
 
-	// Remover el destacado de todas las filas
 	$("#tbListaProducto tbody tr").removeClass("selected");
 
-	// Verificar que existe una fila con ese ID
 	const $fila = $("#tbListaProducto tbody tr[data-id='" + id + "']");
 
 	if ($fila.length === 0) {
@@ -1093,11 +1045,9 @@ function destacarFilaSeleccionadaGridListaProductos(id) {
 		return false;
 	}
 
-	// Añadir el destacado solo a la fila del producto seleccionado
 	$fila.addClass("selected");
 	console.log(`✅ Fila destacada correctamente para producto ${id}`);
 
-	// Hacer scroll a la fila si está fuera de vista
 	scrollAFilaSeleccionadaGridListaProductos($fila);
 
 	return true;
@@ -1111,7 +1061,6 @@ function scrollAFilaSeleccionadaGridListaProductos($fila) {
 		const containerHeight = $tableContainer.height();
 		const rowTop = $fila.offset().top;
 
-		// Solo hacer scroll si la fila está fuera del área visible
 		if (rowTop < containerTop || rowTop > containerTop + containerHeight) {
 			$tableContainer.animate({
 				scrollTop: $tableContainer.scrollTop() + (rowTop - containerTop - containerHeight / 2)
@@ -1124,15 +1073,14 @@ function scrollAFilaSeleccionadaGridListaProductos($fila) {
 function configuracionInputMaskOptimizadaGridListaProductos() {
 	console.log("Aplicando configuración InputMask optimizada...");
 
-	// Establecer todos los campos como readonly de una sola vez
 	$('.input-bulto').prop('readonly', true).addClass('campo-readonly-ncpi');
 
 	const maskConfigInt = {
 		alias: "numeric",
 		groupSeparator: ",",
 		autoGroup: true,
-		digits: 0,              // 🔹 sin decimales
-		digitsOptional: false,  // 🔹 no permite decimales
+		digits: 0,
+		digitsOptional: false,
 		rightAlign: true,
 		prefix: '',
 		placeholder: "0",
@@ -1148,12 +1096,8 @@ function configuracionInputMaskOptimizadaGridListaProductos() {
 		}
 	};
 
-	// Aplicar máscaras de forma eficiente con selección optimizada
 	Inputmask(maskConfigInt).mask('.input-bulto');
-
-	// Configurar eventos de edición
 	configurarEventosEdicionOptimizadoGridListaProductos();
-
 	console.log("Configuración InputMask aplicada");
 }
 
@@ -1166,7 +1110,6 @@ function configurarEventosEdicionOptimizadoGridListaProductos() {
 	const camposEditables = '.input-bulto';
 	const camposSecuencia01 = '.input-bulto';
 
-	// Limpiar eventos previos
 	$(document).off('click.camposEditables keydown.camposEditables blur.camposSecuencia01');
 
 	$(document).on("mousedown.camposEditables", ".input-bulto", function (e) {
@@ -1184,7 +1127,6 @@ function configurarEventosEdicionOptimizadoGridListaProductos() {
 		}
 	});
 
-	// Evento click unificado
 	$(document).on('click.camposEditables', camposEditables, function (e) {
 		campoEditando = this;
 		e.stopPropagation();
@@ -1192,23 +1134,19 @@ function configurarEventosEdicionOptimizadoGridListaProductos() {
 		const $this = $(this);
 		const id = $this.closest('tr').data('id');
 
-		// Cambio de producto si es necesario
 		if (id !== listProdActualEnLista) {
 			listProdActualEnLista = id;
 			destacarFilaSeleccionadaGridListaProductos(id);
 		}
 
-		// Habilitar campo
 		$this.prop('readonly', false).removeClass('campo-readonly-ncpi');
 		setTimeout(() => { $this[0].focus(); $this[0].select(); }, 0);
 	});
 
 	$(document).on("mousedown.cambioCelda", function (e) {
 
-		// Si no hay campo en edición, no hacemos nada
 		if (!campoEditandoPrevio) return;
 
-		// Si el clic fue dentro del mismo campo que se estaba editando → no hacemos nada
 		if (e.target === campoEditandoPrevio) return;
 
 		const $campo = $(campoEditandoPrevio);
@@ -1231,7 +1169,6 @@ function configurarEventosEdicionOptimizadoGridListaProductos() {
 
 	});
 
-	// Evento keydown unificado
 	$(document).on('keydown.camposEditables', camposEditables, function (e) {
 		const $this = $(this);
 		const row = $this.closest('tr');
@@ -1245,7 +1182,6 @@ function configurarEventosEdicionOptimizadoGridListaProductos() {
 			var fueModificado = marcarCampoModificadoGridListaProductos(this);
 			activarSiguienteCampoGridListaProductos(this);
 
-			// Aplicar cálculos según tipo
 			if (esSecuencia01 && fueModificado) ActualizarListaProductosDebounced(row, this);
 		}
 
@@ -1256,23 +1192,19 @@ function configurarEventosEdicionOptimizadoGridListaProductos() {
 			var fueModificado = marcarCampoModificadoGridListaProductos(this);
 
 			if (e.shiftKey) {
-				// 🔹 Navegar hacia el campo anterior
 				activarCampoAnteriorGridListaProductos(this);
 			} else {
-				// 🔹 Navegar hacia el siguiente campo
 				activarSiguienteCampoGridListaProductos(this);
 			}
 
 			if (esSecuencia01 && fueModificado) ActualizarListaProductosDebounced(row, this);
 		}
 
-		// 🔹 Nueva lógica para navegación con flechas
 		if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
 			e.preventDefault();
 
 			const esSecuencia01 = $(this).is(camposSecuencia01);
 			var fueModificado = marcarCampoModificadoGridListaProductos(this);
-			// Aplicar cálculos según tipo
 			if (esSecuencia01 && fueModificado) ActualizarListaProductosDebounced(row, this);
 
 			const $filaActual = $this.closest('tr');
@@ -1287,17 +1219,14 @@ function configurarEventosEdicionOptimizadoGridListaProductos() {
 			if ($filaDestino && $filaDestino.length) {
 				const $campoDestino = $filaDestino.find(camposEditables).first();
 
-				// cerrar el campo actual
 				$this.prop('readonly', true).addClass('campo-readonly-ncpi');
 
-				// abrir el campo destino
 				$campoDestino.prop('readonly', false).removeClass('campo-readonly-ncpi');
 				setTimeout(() => {
 					$campoDestino[0].focus();
 					$campoDestino[0].select();
 				}, 0);
 
-				// destacar la fila destino
 				const idDestino = $filaDestino.data('id');
 				if (idDestino) {
 					listProdActualEnLista = idDestino;
@@ -1318,16 +1247,11 @@ function configurarEventosEdicionOptimizadoGridListaProductos() {
 			}, 0);
 		}
 
-		// Quitar readonly en el primer focus
 		$this.prop("readonly", false).removeClass("campo-readonly-ncpi");
-
-		// Llamar a tu función personalizada
 		BuscarInfoAdicional();
-
 		console.log(`ℹ️ Disparado BuscarInfoAdicional para producto ${id}`);
 	});
 
-	// Eventos blur simplificados con delegación
 	const eventosBlur = {
 		[camposSecuencia01]: () => ActualizarListaProductosDebounced
 	};
@@ -1396,10 +1320,8 @@ function activarSiguienteCampoGridListaProductos(campoActual) {
 }
 
 function marcarCampoModificadoGridListaProductos(input) {
-	// Usar el parámetro input en lugar de this
 	const $input = $(input);
 
-	// Validar que el input existe
 	if (!$input.length) {
 		console.warn('marcarCampoModificado: Input no válido', input);
 		return false;
@@ -1407,7 +1329,6 @@ function marcarCampoModificadoGridListaProductos(input) {
 
 	const valorOriginal = $input.data('original-value');
 
-	// Obtener valor actual con manejo de errores
 	let valorActual = '';
 	try {
 		valorActual = $input.val() ? $input.val().replace(/,/g, '') : '';
@@ -1416,52 +1337,38 @@ function marcarCampoModificadoGridListaProductos(input) {
 		return false;
 	}
 
-	// Si no hay valor original definido, no podemos comparar
 	if (valorOriginal === undefined) {
 		return false;
 	}
 
-	// Determinar si el campo está modificado
 	let esModificado = false;
 
-
-	// Para campos numéricos - manejar correctamente el caso del valor 0
 	try {
-		// Convertir valores a números, manejando cadenas vacías como 0
 		let numOriginal = valorOriginal === '' || valorOriginal === null ? 0 : parseFloat(valorOriginal);
 		let numActual = valorActual === '' ? 0 : parseFloat(valorActual);
 
-		// Si ambos valores son realmente cero (o equivalentes a cero), no están modificados
 		if ((numOriginal === 0 || isNaN(numOriginal)) &&
 			(numActual === 0 || isNaN(numActual))) {
 			esModificado = false;
 		} else if (!isNaN(numOriginal) && !isNaN(numActual)) {
-			// Ambos son números válidos, usar tolerancias específicas según el campo
-			let tolerancia = 0.009; // Base para campos con 2 decimales
-
-			//if ($input.hasClass('input-importe')) {
-			//	tolerancia = 0.0009; // Para campos con 3 decimales
-			//}
+			let tolerancia = 0.009; 
 
 			// Si la diferencia supera la tolerancia, está modificado
 			esModificado = Math.abs(numOriginal - numActual) > tolerancia;
 		} else if (isNaN(numOriginal) !== isNaN(numActual)) {
-			// Si uno es NaN y el otro no, están diferentes
 			esModificado = true;
 		}
 	} catch (e) {
 		console.error("Error al comparar valores:", e);
-		esModificado = false; // En caso de error, no marcar como modificado
+		esModificado = false;
 	}
 
-	// Aplicar o quitar la clase según corresponda
 	if (esModificado) {
 		$input.addClass('campo-modificado');
 	} else {
 		$input.removeClass('campo-modificado');
 	}
 
-	// Manejar el indicador visual
 	const container = $input.closest('.input-container');
 	if (esModificado) {
 		if (container.find('.indicador-cambio').length === 0) {
@@ -1481,7 +1388,7 @@ function optimizarVisualizacionTablaGridListaProductos() {
 	}
 
 	// Ajustar columnas con texto para que no sean demasiado anchas
-	$("#tbListaProducto th:nth-child(0)").css('max-width', '180px'); // Descripción
+	$("#tbListaProducto th:nth-child(0)").css('max-width', '180px');
 	$("#tbListaProducto td:nth-child(0)").css({
 		'max-width': '180px',
 		'white-space': 'nowrap',
@@ -1497,3 +1404,45 @@ function optimizarVisualizacionTablaGridListaProductos() {
 /****************************************************************************************
 ################################ FIN ADD-ON --  tbListaProducto  #####################
 *****************************************************************************************/
+
+/* *************************************************************************************** */
+///Hanlder para manejar la apertura de Info de Producto desde la columna Descripción
+function AgregarHanlderColumnaDescripcion() {
+	$(document)
+		.off("click", "[data-action='info-producto']")
+		.on("click", "[data-action='info-producto']", function (e) {
+
+			e.stopPropagation();
+			e.preventDefault();
+			AbrirInfoProducto();
+		});
+}
+
+function AbrirInfoProducto() {
+	//e.preventDefault();
+
+	if (pIdSeleccionado && pIdSeleccionado !== "") {
+		$("#divInfoAdicionaDeProducto").collapse("toggle");
+
+		setTimeout(() => {
+			invocarComponenteDeInfoAdicionalDeProd({
+				p_id: pIdSeleccionado,
+				mostrarInfoProd,
+				mostrarInfoProdStkA,
+				mostrarInfoProdStkD,
+				mostrarInfoProdStkBox,
+				mostrarInfoProdStkMovM,
+				mostrarInfoProdStkMovD,
+				mostrarInfoProdStkMovS,
+				mostrarInfoProdSustituto,
+				pasarAdmLogueo,
+			});
+		}, 500);
+	} else {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un producto.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////

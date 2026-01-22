@@ -19,33 +19,29 @@
 		background-color: #6cc6f3 !important;
 	}
 
-	/* El contenedor debe ser el scroll real y generar contexto */
 	#containerListaProducto {
 		position: relative;
 		height: 600px;
 		max-height: 600px;
-		overflow-y: auto; /* vertical */
-		overflow-x: auto; /* horizontal si hace falta */
-		z-index: auto; /* no fuerza stacking context */
+		overflow-y: auto;
+		overflow-x: auto;
+		z-index: auto;
 	}
 
-	/* Evitar collapse para que sticky funcione mejor en thead/th */
 	.table-golden {
 		border-collapse: separate;
 		border-spacing: 0;
-		table-layout: fixed; /* estabiliza anchos con tus width% */
+		table-layout: fixed;
 	}
 
-		/* Fijar el thead y darle fondo del tema */
 		.table-golden thead {
 			position: sticky;
 			top: 0;
-			z-index: 1; /* suficiente para estar sobre las filas */
+			z-index: 1;
 			background: linear-gradient(to bottom, #b8860b, #daa520) !important;
 			color: #fff !important;
 		}
 
-			/* Redundancia intencional: asegurar cada th sticky y el mismo fondo */
 			.table-golden thead th {
 				position: sticky;
 				top: 0;
@@ -53,10 +49,9 @@
 				background: linear-gradient(to bottom, #b8860b, #daa520);
 				color: #fff;
 				box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
-				background-clip: padding-box; /* evita “sangrados” con border-spacing */
+				background-clip: padding-box;
 			}
 
-			/* Alinear colores: si tu app usa dorado para cabecera */
 			.table-golden thead,
 			.table-golden thead th {
 				/*background-color: #b8860b;  tu dorado */
@@ -65,23 +60,57 @@
 
 	#tbListaProducto th,
 	#tbListaProducto td {
-		padding: 0.01rem 0.15rem !important; /* o incluso 0 si querés máxima compresión */
-		line-height: 1.2 !important; /* más compacto */
-		height: auto !important; /* evita altura fija */
+		padding: 0.01rem 0.15rem !important;
+		line-height: 1.2 !important;
+		height: auto !important;
 	}
 
-	/* Opcional: altura fija para todas las filas */
 	#tbListaProducto tr {
-		height: 1.6rem !important; /* ajustá según lo que quieras */
+		height: 1.6rem !important;
 	}
 
+	.th-descripcion {
+		position: relative;
+		text-align: center;
+		vertical-align: middle;
+		width: 25%;
+	}
+
+		.th-descripcion .th-title {
+			display: inline-block;
+		}
+
+	.btn-info-producto {
+		position: absolute;
+		right: 4px; /* margen a la derecha */
+		top: 50%;
+		transform: translateY(-50%);
+		background: transparent !important;
+		border: none !important;
+		padding: 0;
+		color: #fff; /* o el color del header */
+		cursor: pointer;
+	}
+
+		.btn-info-producto i {
+			font-size: 1rem;
+			line-height: 1;
+		}
 </style>
 <div class="table-responsive table-wrapper-full-width" id="containerListaProducto">
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbListaProducto">
 		<thead>
 			<tr class="header">
 				<th style="width:5%;" class="align-center tiny-row">Código</th>
-				<th style="width:20%;" class="align-center tiny-row">Descripción</th>
+				<th class="th-descripcion">
+					<span class="th-title">Descripción</span>
+					<button type="button"
+							class="btn btn-info-producto"
+							data-action="info-producto"
+							title="Abrir info de producto">
+						<i class="bx bx-info-circle"></i>
+					</button>
+				</th>
 				<th style="width:5%;" class="align-center">Id. Barrado</th>
 				<th style="width:5%;" class="align-center tiny-row">Cod. Prov</th>
 				<th style="width:5%;" class="align-center tiny-row">Días Ult. RP</th>

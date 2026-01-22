@@ -35,9 +35,9 @@
 	}
 
 	#divInfoAdicionaDeProducto > div:first-child {
-		height: 400px; /* alto fijo */
-		max-height: 400px; /* opcional, para no crecer más */
-		overflow-y: auto; /* scroll interno si se excede */
+		height: 400px;
+		max-height: 400px;
+		overflow-y: auto;
 	}
 
 </style>
@@ -122,20 +122,8 @@
 		<div class="collapse" id="divFiltro" style="">
 			@Html.Hidden("pagEstado", false)
 		</div>
-		<div class="row">
-			@*Informacion adicional de producto*@
-			<div class="row">
-				<div class="col-2">
-					<a class="btn btn-sm btn-primary me-1 collapsed" id="btnCollapseSectionInfoProd" role="button" aria-expanded="false" aria-controls="divInfoAdicionaDeProducto">
-						Info. Adicional
-					</a>
-				</div>
-				<div class="col-5"></div>
-			</div>
-			<div id="divInfoAdicionaDeProducto" class="collapse"></div>
-			@*#################################*@
-		</div>
 	</div>
+	<div id="divInfoAdicionaDeProducto" class="collapse"></div>
 </div>
 
 <div class="modal fade modal-golden in" id="modalFiltroCompraAuto" tabindex="-1" style="display: none;" aria-hidden="true" data-backdrop="static">
@@ -150,22 +138,22 @@
 @section scripts {
 	<script type="text/javascript">
 		var tipoDeOperacion = "OC";
-		var totalRegs = 0;/**/
-		var pagRegs = 0;/**/
-		var pags = 0;/**/
-		var pagina = 1;/**/
-		var search = "";/**/
-		var funcCallBack = "BuscarProductos";/**/
+		var totalRegs = 0;
+		var pagRegs = 0;
+		var pags = 0;
+		var pagina = 1;
+		var search = "";
+		var funcCallBack = "BuscarProductos";
 		var pedido = "";
 		var pIdSeleccionado = "";
 		var ctaIdDeProdSeleccionado = "";
 		var ctaDenoProdSeleccionado = "";
-		var buscarFamiliaDesdeProveedorSeleccionadoUrl = "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "ndecypi", new { area = "Compras" })";/**/
-		var autoComRel01Url = "@Url.Action("BuscarProvs", "ndecypi", new { area = "Compras" })";/**/
-		var autoComRel02Url = "@Url.Action("BuscarRubros", "ndecypi", new { area = "Compras" })";/**/
-		var autoComRel03Url = "@Url.Action("BuscarFlias", "ndecypi", new { area = "Compras" })";/**/
-		var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "ndecypi", new { area = "Compras" })"; /**/
-		var BuscarProductosOCPI2URL = "@Url.Action("BuscarProductosOCPI2", "ndecypi", new { area = "Compras" })"; /**/
+		var buscarFamiliaDesdeProveedorSeleccionadoUrl = "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "ndecypi", new { area = "Compras" })";
+		var autoComRel01Url = "@Url.Action("BuscarProvs", "ndecypi", new { area = "Compras" })";
+		var autoComRel02Url = "@Url.Action("BuscarRubros", "ndecypi", new { area = "Compras" })";
+		var autoComRel03Url = "@Url.Action("BuscarFlias", "ndecypi", new { area = "Compras" })";
+		var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "ndecypi", new { area = "Compras" })";
+		var BuscarProductosOCPI2URL = "@Url.Action("BuscarProductosOCPI2", "ndecypi", new { area = "Compras" })";
 		var CargaPedidoOCPIURL = "@Url.Action("CargaPedidoOCPI", "ndecypi", new { area = "Compras" })";
 		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
 		var BuscarProveedoresFamiliaURL = "@Url.Action("ObtenerProveedoresFamilia", "ndecypi", new { area = "Compras" })";

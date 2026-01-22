@@ -18,6 +18,35 @@
 		overflow-y: auto;
 		position: relative; 
 	}
+
+	.th-descripcion {
+		position: relative;
+		text-align: center;
+		vertical-align: middle;
+		width: 25%;
+	}
+
+		.th-descripcion .th-title {
+			display: inline-block;
+		}
+
+	.btn-info-producto {
+		position: absolute;
+		right: 4px; 
+		top: 50%;
+		transform: translateY(-50%);
+		background: transparent !important;
+		border: none !important;
+		padding: 0;
+		color: #fff;
+		cursor: pointer;
+	}
+
+		.btn-info-producto i {
+			font-size: 1rem;
+			line-height: 1;
+		}
+
 </style>
 <div class="table-responsive text-nowrap table-wrapper" id="containerListaProductoOC">
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbListaProductoOC">
@@ -29,7 +58,15 @@
 					</div>
 				</th>
 				<th scope="col" title="Código de Producto">Código</th>
-				<th scope="col">Descripción</th>
+				<th class="th-descripcion">
+					<span class="th-title">Descripción</span>
+					<button type="button"
+							class="btn btn-info-producto"
+							data-action="info-producto"
+							title="Abrir info de producto">
+						<i class="bx bx-info-circle"></i>
+					</button>
+				</th>
 				<th scope="col">Barrado</th>
 				<th scope="col" title="Código de Proveedor">Cod. Prov</th>
 				<th scope="col" title="Unidad de Presentación">U.P.</th>
@@ -191,13 +228,6 @@
 </div>
 <div class="row mb-1">
 	<div class="col-4">
-		@* <a class="btn btn-sm btn-primary collapsed"
-		   id="btnCollapseSectionInfoProdEnOC"
-		   role="button"
-		   aria-expanded="false"
-		   aria-controls="divInfoAdicionaDeProducto">
-			Info. Adicional
-		</a> *@
 	</div>
 	<div class="col-8">
 		<div class="input-group input-group-sm mt-1">
@@ -225,25 +255,20 @@
 
 <script>
 	$(function() {
-			// Esta función aplica los indicadores visuales a los campos modificados en la carga inicial
 			$('.campo-modificado').each(function() {
-				// Solo si no tiene ya un indicador
 				if ($(this).parent('.input-container').find('.indicador-cambio').length === 0) {
 					$(this).parent('.input-container').append('<div class="indicador-cambio"></div>');
 				}
 			});
 
-			// Funcionalidad para checkbox de seleccionar todos
 			$("#checkAllProd").on("change", function() {
 				const isChecked = $(this).prop("checked");
 				$(".check-producto").prop("checked", isChecked);
 
-				// Aplicar la clase 'selected' a las filas
 				$("#tbListaProductoOC tbody tr:not(.table-secondary)").each(function() {
 					$(this).toggleClass("selected", isChecked);
 				});
 
-				// Si hay productos seleccionados, cargar el primero en la lista
 				if (isChecked) {
 					const primerProductoId = $("#tbListaProductoOC tbody tr:not(.table-secondary):first").data("p-id");
 					if (primerProductoId && typeof destacarFilaSeleccionada === 'function') {
@@ -252,28 +277,22 @@
 				}
 			});
 
-			// Evento para checkboxes individuales sin usar 'event' global
 			$(document).on("change", ".check-producto", function(e) {
-				// Evitar propagación del evento
 				e.stopPropagation();
 
 				const $checkbox = $(this);
 				const isChecked = $checkbox.prop("checked");
 				const $row = $checkbox.closest("tr");
 
-				// Marcar/desmarcar la fila
 				$row.toggleClass("selected", isChecked);
 
-				// Si se desmarca uno, desmarcar el "seleccionar todos"
 				if (!isChecked) {
 					$("#checkAllProd").prop("checked", false);
 				} else {
-					// Verificar si todos están marcados para actualizar el checkbox principal
 					const totalCheckboxes = $(".check-producto").length;
 					const totalChecked = $(".check-producto:checked").length;
 					$("#checkAllProd").prop("checked", totalCheckboxes === totalChecked);
 
-					// Si seleccionamos un producto, cargar sus listas
 					const productoId = $row.data("p-id");
 					if (productoId && typeof destacarFilaSeleccionada === 'function') {
 						destacarFilaSeleccionada(productoId);
@@ -281,38 +300,6 @@
 				}
 			});
 
-			// Manejo de clic en la fila para selección
-			// $(document).on("click", "#tbListaProductoOC tbody tr:not(.table-secondary)", function(e) {
-			// 	// No activar si el clic fue en un checkbox o input
-			// 	if (!$(e.target).is('input, .check-producto, .check-producto-container')) {
-			// 		const $row = $(this);
-			// 		const $checkbox = $row.find(".check-producto");
-			// 		const productoId = $row.data("p-id");
-
-			// 		// Invertir el estado del checkbox
-			// 		const newState = !$checkbox.prop("checked");
-			// 		$checkbox.prop("checked", newState);
-
-			// 		// Actualizar selección visual
-			// 		$row.toggleClass("selected", newState);
-
-			// 		// Actualizar el checkbox principal
-			// 		if (!newState) {
-			// 			$("#checkAllProd").prop("checked", false);
-			// 		} else {
-			// 			const totalCheckboxes = $(".check-producto").length;
-			// 			const totalChecked = $(".check-producto:checked").length;
-			// 			$("#checkAllProd").prop("checked", totalCheckboxes === totalChecked);
-
-			// 			// Si seleccionamos un producto, cargar sus listas
-			// 			if (productoId && typeof destacarFilaSeleccionada === 'function') {
-			// 				destacarFilaSeleccionada(productoId);
-			// 			}
-			// 		}
-			// 	}
-			// });
-
-			// Función de ayuda para obtener los IDs de productos seleccionados
 			window.obtenerProductosSeleccionados = function() {
 				const productosSeleccionados = [];
 				$(".check-producto:checked").each(function() {
@@ -330,11 +317,11 @@
 				$(".campo-modificado").each(function () {
 					const fila = $(this).closest("tr");
 					if (fila.length) {
-						filas.add(fila[0]); // guardamos el elemento DOM
+						filas.add(fila[0]);
 					}
 				});
 
-				return Array.from(filas); // devolvemos un array limpio
+				return Array.from(filas);
 			};
 
 		});

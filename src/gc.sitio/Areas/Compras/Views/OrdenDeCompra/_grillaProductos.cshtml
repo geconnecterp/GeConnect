@@ -14,13 +14,12 @@
 	thead th {
 		position: sticky;
 		top: 0px;
-		z-index: 1; /* suficiente para estar sobre las filas */
+		z-index: 1;
 		background: linear-gradient(to bottom, #b8860b, #daa520) !important;
 		color: #fff !important;
 	}
 
 	.table-wrapper {
-		/*max-height: 400px;  o lo que necesites */
 		overflow-y: auto;
 		position: relative;
 	}
@@ -37,13 +36,50 @@
 			text-overflow: ellipsis;
 		}
 
+	.th-descripcion {
+		position: relative;
+		text-align: center;
+		vertical-align: middle;
+		width: 25%;
+	}
+
+		.th-descripcion .th-title {
+			display: inline-block;
+		}
+
+	.btn-info-producto {
+		position: absolute;
+		right: 4px;
+		top: 50%;
+		transform: translateY(-50%);
+		background: transparent !important;
+		border: none !important;
+		padding: 0;
+		color: #fff;
+		cursor: pointer;
+	}
+
+		.btn-info-producto i {
+			font-size: 1rem;
+			line-height: 1;
+		}
+
+
 </style>
 <div class="table-responsive table-wrapper-500-full-width" id="containerListaProducto">
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbListaProducto">
 		<thead>
 			<tr class="header">
 				<th style="width:5%;" scope="col">Código</th>
-				<th style="width:20%;" scope="col">Descripción</th>
+				<th class="th-descripcion">
+					<span class="th-title">Descripción</span>
+					<button type="button"
+							class="btn btn-info-producto"
+							data-action="info-producto"
+							title="Abrir info de producto">
+						<i class="bx bx-info-circle"></i>
+					</button>
+				</th>
 				<th style="width:5%;" scope="col">Barrado</th>
 				<th style="width:5%;" scope="col">Cod. Prov</th>
 				<th style="width:5%;" scope="col">Ult RP</th>
@@ -133,16 +169,8 @@
 	</div>
 
 	<div class="col text-end">
-		@* <a class="btn btn-sm btn-primary collapsed"
-		   id="btnCollapseSectionInfoProd"
-		   role="button"
-		   aria-expanded="false"
-		   aria-controls="divInfoAdicionaDeProducto">
-			Info. Adicional
-		</a> *@
 	</div>
 </div>
-@* <div id="divInfoAdicionaDeProducto" class="collapse"></div> *@
 
 @section scripts {
 	<script type="text/javascript">

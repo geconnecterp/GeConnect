@@ -26,7 +26,6 @@ $(function () {
 		console.log("Vista abierta desde Index con:", pId, ctaId, ctaDenominacion);
 		console.log("Viene desde módulo externo:");
 		vieneDesdeModuloExterno = true;
-		// cargarVistaParcial(pId, ctaId);
 		BuscarProductosDesdeNCPI(1, pId, ctaId, ctaDenominacion, false);
 	} else {
 		vieneDesdeModuloExterno = false;
@@ -86,10 +85,7 @@ $(function () {
 	//elimina item de la lista
 	$("#Rel02List").on("dblclick", 'option', function () { $(this).remove(); })
 	$("#Rel03List").on("dblclick", 'option', function () { $(this).remove(); })
-	//$("input#Rel03").on("click", function () {
-	//	$("input#Rel03").val("");
-	//	$("#Rel03Item").val("");
-	//});
+
 	$("input#Rel04").on("click", function () {
 		$("input#Rel04").val("");
 		$("#Rel04Item").val("");
@@ -108,10 +104,7 @@ $(function () {
 			BuscarProductos(pagina);
 		}
 	});
-	//$("#btnFiltro").on("click", function () {
-	//	$("#divDetalle").collapse("hide");
-	//	$("#divFiltro").collapse("show");
-	//});
+
 	$(document).on("click", "#btnAbmCancelar", function () {
 		const filas = window.obtenerFilasGrillaOCModificadas();
 		if (filas.length !== 0) {
@@ -510,6 +503,7 @@ function AplicarSeteoMasivo() {
 				$("#divListaProductoNuevaOC").html(obj);
 				finalizarInicializacion();
 				formatearTotalesEnTabDetalleOC();
+				AgregarHanlderColumnaDescripcion();
 			}
 		});
 	}
@@ -520,6 +514,49 @@ function AplicarSeteoMasivo() {
 		}, false, ["Aceptar"], "error!", null);
 	}
 }
+
+///Hanlder para manejar la apertura de Info de Producto desde la columna Descripción
+function AgregarHanlderColumnaDescripcion() {
+	$(document)
+		.off("click", "[data-action='info-producto']")
+		.on("click", "[data-action='info-producto']", function (e) {
+
+			e.stopPropagation(); // evita interferir con clicks de filas
+			e.preventDefault();
+			AbrirInfoProducto();
+		});
+}
+
+function AbrirInfoProducto() {
+	//e.preventDefault();
+
+	if (pIdSeleccionado && pIdSeleccionado !== "") {
+		// toggle manual
+		$("#divInfoAdicionaDeProducto").collapse("toggle");
+
+		setTimeout(() => {
+			// opcional: refrescar contenido si querés al abrir
+			invocarComponenteDeInfoAdicionalDeProd({
+				p_id: pIdSeleccionado,
+				mostrarInfoProd,
+				mostrarInfoProdStkA,
+				mostrarInfoProdStkD,
+				mostrarInfoProdStkBox,
+				mostrarInfoProdStkMovM,
+				mostrarInfoProdStkMovD,
+				mostrarInfoProdStkMovS,
+				mostrarInfoProdSustituto,
+				pasarAdmLogueo,
+			});
+		}, 500);
+	} else {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un producto.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 function formatearTotalesEnTabDetalleOC() {
 	$("#Total_Costo").val(formatearValorConFormatoNumerico($("#Total_Costo").val(), 2));
@@ -736,6 +773,7 @@ function quitarProductoEnOC(e) {
 			finalizarInicializacion();
 			formatearTotalesEnTabDetalleOC();
 			ActualizarInfoDeProductosEnGrilla();
+			AgregarHanlderColumnaDescripcion();
 		}
 	});
 }
@@ -743,7 +781,6 @@ function quitarProductoEnOC(e) {
 //Funcion que agrega el producto seleccionado en la grilla del primer, en la grilla de OC (Segundo Tab)
 function actualizarProducto(e) {
 	if ($(e).hasClass("btn-success")) {
-		//event.stopPropagation(); // Evita que el clic se propague a la fila
 		AbrirWaiting("Actualizando información de Orden de Compra.");
 		var pId = $(e).attr("data-interaction");
 		var data = { pId };
@@ -760,6 +797,7 @@ function actualizarProducto(e) {
 				finalizarInicializacion();
 				formatearTotalesEnTabDetalleOC();
 				ActualizarInfoDeProductosEnGrilla();
+				AgregarHanlderColumnaDescripcion();
 				CerrarWaiting();
 			}
 		});
@@ -802,7 +840,6 @@ function InicializaPantalla() {
 
 	$("#lbChkDesdeHasta").text("ID Producto");
 
-	//$("#IdSelected").val("");
 	$(".activable").prop("disabled", true);
 	$("#chkRel03").prop("disabled", true);
 	$("#btnAbmAceptar").hide();
@@ -875,9 +912,6 @@ function selectListaProductoRow(x, event) {
 				ctaDeno: ""
 			});
 			/* ######	FIN Componente de info adicional de producto ###### */
-			//setTimeout(function () {
-			//	BuscarInfoAdicional();
-			//}, 500);
 		}
 	}
 	else {
@@ -1032,6 +1066,7 @@ function BuscarProductosTabOC() {
 			formatearTotalesEnTabDetalleOC();
 			ActualizarInfoDeProductosEnGrilla();
 			activarBotones(true);
+			AgregarHanlderColumnaDescripcion();
 			CargarResumenDeOc();
 		}
 	});
@@ -1122,7 +1157,7 @@ function BuscarProductos(pag = 1) {
 		});
 
 		BuscarProductosTabOC();
-
+		AgregarHanlderColumnaDescripcion();
 		$("#btnDetalle").prop("disabled", false);
 		$("#btnAbmCancelar").prop("disabled", false);
 		MostrarDatosDeCuenta(true);
@@ -1191,7 +1226,7 @@ function BuscarProductosDesdeNCPI(pag = 1, pId, ctaId, ctaDeno, SoloProductoSele
 		ctaIdSelected = ctaId;
 		ctaDescSelected = ctaDeno;
 		BuscarProductosTabOC();
-
+		AgregarHanlderColumnaDescripcion();
 		$("#btnDetalle").prop("disabled", false);
 		$("#btnAbmCancelar").prop("disabled", false);
 		MostrarDatosDeCuenta(true);
@@ -1345,22 +1380,6 @@ $("#Rel04").autocomplete({
 	}
 });
 
-//function CargarFamiliaLista(id) {
-//	var ctaId = id;
-//	data = { ctaId };
-//	PostGen(data, buscarFamiliaDesdeProveedorSeleccionadoUrl, function (obj) {
-//		if (obj.error === true) {
-//			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-//				$("#msjModal").modal("hide");
-//				return true;
-//			}, false, ["Aceptar"], "error!", null);
-//		}
-//		else {
-
-//		}
-//	});
-//}
-
 function CargarOCLista(id) {
 	var ctaId = id;
 	data = { ctaId };
@@ -1441,33 +1460,6 @@ function scrollAFilaSeleccionada($fila) {
 }
 
 function finalizarInicializacion() {
-	//$("#btnCollapseSectionInfoProdEnOC").off("click").on("click", function (e) {
-	//	e.preventDefault();
-
-	//	if (pIdEnOcSeleccionado && pIdEnOcSeleccionado !== "") {
-	//		// toggle manual
-	//		$("#divInfoAdicionaDeProducto").collapse("toggle");
-
-	//		// opcional: refrescar contenido si querés al abrir
-	//		invocarComponenteDeInfoAdicionalDeProd({
-	//			p_id: pIdEnOcSeleccionado,
-	//			mostrarInfoProd,
-	//			mostrarInfoProdStkA,
-	//			mostrarInfoProdStkD,
-	//			mostrarInfoProdStkBox,
-	//			mostrarInfoProdStkMovM,
-	//			mostrarInfoProdStkMovD,
-	//			mostrarInfoProdStkMovS,
-	//			mostrarInfoProdSustituto,
-	//			pasarAdmLogueo,
-	//		});
-	//	} else {
-	//		AbrirMensaje("ATENCIÓN", "Debe seleccionar un producto.", function () {
-	//			$("#msjModal").modal("hide");
-	//			return true;
-	//		}, false, ["Aceptar"], "error!", null);
-	//	}
-	//});
 	setTimeout(function () {
 		configuracionInputMaskOptimizada();
 		optimizarVisualizacionTabla();
@@ -1647,9 +1639,7 @@ function configurarEventosEdicionOptimizado() {
 		// Cambio de producto si es necesario
 		if (pIdDetalle !== productoActualEnLista) {
 			productoActualEnLista = pIdDetalle;
-			//$("#divProdLista").attr('data-producto-actual', pIdDetalle);
 			destacarFilaSeleccionada(pIdDetalle);
-			//buscarProductoListaOptimizado(pIdDetalle);
 		}
 
 		// Habilitar campo
@@ -1664,17 +1654,13 @@ function configurarEventosEdicionOptimizado() {
 
 			const row = $(this).closest('tr');
 			const esSecuencia01 = $(this).is(camposSecuencia01);
-			//const esMargen = $(this).hasClass('input-tp_margen');
-			//const esPrecioVenta = $(this).hasClass('input-tp_pvta');
 
 			var fueModificado = marcarCampoModificado(this);
-			//actualizarEstadoCarga(row);
+			
 			activarSiguienteCampo(this);
 
 			// Aplicar cálculos según tipo
 			if (esSecuencia01 && fueModificado) ActualizarProductoEnOcDebounced(row, this);
-			//else if (esMargen) calcularPrecioVentaAPIDebounced(row);
-			//else if (esPrecioVenta) calcularPrecioVentaMargenAPIDebounced(row);
 		}
 	});
 
