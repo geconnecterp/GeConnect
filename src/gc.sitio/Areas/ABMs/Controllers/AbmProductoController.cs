@@ -576,7 +576,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         }
 
         [HttpPost] //
-        public async Task<JsonResult> confirmarAbmLimite(LimiteStkDto lim, char accion)
+        public async Task<JsonResult> confirmarAbmLimite([FromBody] LimiteStkDto lim)
         {
             try
             {
@@ -585,9 +585,9 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 {
                     return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
                 }
-                if (string.IsNullOrEmpty(lim.adm_id))
+                if (string.IsNullOrEmpty(lim.adm_id) && !lim.aplica_todas)
                 {
-                    throw new NegocioException("No se recepcionaron datos importantes del Limite de Stock de la Sucursal. Verifique.");
+                    throw new NegocioException("No se recepcionó la Administración. Verifique.");
                 }
                 if (lim.p_stk_min > lim.p_stk_max)
                 {
@@ -608,14 +608,14 @@ namespace gc.sitio.Areas.ABMs.Controllers
                     Objeto = "productos_administraciones_stk",
                     Administracion = AdministracionId,
                     Usuario = UserName,
-                    Abm = accion
+                    Abm = lim.accion
                 };
 
                 var res = await _abmSv.AbmConfirmar(abm, TokenCookie);
                 if (res.Ok)
                 {
                     string msg;
-                    switch (accion)
+                    switch (lim.accion)
                     {
                         case 'A':
                             msg = $"EL PROCESAMIENTO DEL ALTA DEL Limite de Stock en {lim.adm_nombre} SE REALIZO SATISFACTORIAMENTE";

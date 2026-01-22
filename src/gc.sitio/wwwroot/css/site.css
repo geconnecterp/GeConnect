@@ -1298,9 +1298,11 @@ fieldset {
 }
 
 /*para desactivar la grilla*/
-    .disable-table-rows {
-    /*filter: blur(1px);*/
-    pointer-events: none;
+.disable-table-rows,
+.disable-table-rows * {
+    pointer-events: none !important;
+    opacity: 0.9;
+    user-select: none;
 }
 
 .div-wrapper-full-width {

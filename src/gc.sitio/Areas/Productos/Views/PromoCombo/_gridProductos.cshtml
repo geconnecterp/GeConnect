@@ -3,26 +3,26 @@
 @{
     BusquedaProducto busquedaProducto = new();
 }
-<div class="card h-100">
-    <div class="card-header py-1 d-flex justify-content-between align-items-center">
+<div class="grid-golden h-100">
+    <div class="grid-golden-header py-1 d-flex justify-content-between align-items-center">
         <h6 class="mb-0">Productos</h6>
         <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarCProducto" title="Agregar Producto" disabled>
             <i class="bx bx-plus"></i>
         </button>
         @* <partial name="~/areas/ControlComun/views/producto/_ctrBuscarProductoV02.cshtml" model="@busquedaProducto" /> *@
     </div>
-    <div class="card-body p-1">
+    <div class="grid-golden-body p-1">
         <div class="table-responsive" style="max-height: 300px;">
             <table class="table table-sm table-hover mb-0 table-golden" id="tbGridProductos">
-                <thead class="table-golden-header">
+                <thead class="sticky-top table-golden-header-compact">
                     <tr class="header">
-                        <th class="text-center">ID</th>
-                        <th class="text-left">Descripción</th>
-                        <th class="text-center">Costo</th>
-                        <th class="text-center">Cantidad</th>
-                        <th class="text-center">Descuento %</th>
-                        <th class="text-center">Estado</th>
-                        <th class="text-center">Acción</th>
+                        <th class="text-center th-compact">ID</th>
+                        <th class="text-left th-compact">Descripción</th>
+                        <th class="text-center th-compact">Costo</th>
+                        <th class="text-center th-compact">Cantidad</th>
+                        <th class="text-center th-compact">Descuento %</th>
+                        <th class="text-center th-compact">Estado</th>
+                        <th class="text-center th-compact">Acción</th>
                     </tr>
                 </thead>
                 <tbody>
