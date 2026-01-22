@@ -1169,13 +1169,13 @@ function btnCancelClick() {
         case Tabs.TabSubSector:
             LimpiarCampos(tabActiva);
             activarGrilla(Grids.GridSubSector);
-            activarGrilla(Grids.GridSector);
+            //activarGrilla(Grids.GridSector);
             selectReg(regSelected, Grids.GridSubSector);
             break;
         case Tabs.TabRubro:
             LimpiarCampos(tabActiva);
             activarGrilla(Grids.GridRubro);
-            activarGrilla(Grids.GridSector);
+            //activarGrilla(Grids.GridSector);
             selectReg(regSelected, Grids.GridRubro);
             break;
         case Tabs.TabOpcionesCuota:
