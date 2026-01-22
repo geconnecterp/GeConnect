@@ -643,7 +643,7 @@ function selectAbmRegDbl(x, gridId) {
                     posicionarRegOnTop(x);
                     break;
             }
-
+            break;
         case 2:
             buscaElDatoDelBarral(id);
             console.log("Intentando bloquear grid #divBarrado2 table#tbGridLim");
