@@ -204,7 +204,7 @@ function cargarEventosAbmProductos() {
 
     $("#BtnLiTab01").on("click", function () {
         tabAbm = 1;
-        activarGrilla(tabGrid01);
+       /* activarGrilla(tabGrid01);*/
         if (EntidadSelect !== "" && regSelected !== "") {
             activarBotones(true);
         }

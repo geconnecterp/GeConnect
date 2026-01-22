@@ -15,17 +15,20 @@
     $(document).off("click", "#PConVto").on("click", "#PConVto", controlaVencimiento);
     $(document).off("click", "#PMatPri").on("click", "#PMatPri", controlaMateriaPrima);
     $(document).off("change", "#up_id").on("change", "#up_id", controlaValorUpId);
-    $(document).off("change", "#iva_situacion").on("change","#iva_situacion",controlaSituacionIva)
+    $(document).off("change", "#iva_situacion").on("change", "#iva_situacion", controlaSituacionIva)
+    $(document).off("blur", "#in_alicuota").on("blur", "#in_alicuota", validaII);
 });
 
-//function controlaAplicarTodas() {
-//    if ($("#aplica_todas").is(":checked")) {
-//        $("#adm_id").prop("disabled", true);
-//    }
-//    else {
-//        $("#adm_id").prop("disabled", false);
-//    }
-//}
+function validaII() {
+    let valor = $("#in_alicuota").val();
+    if (valor < 0 || valor > 80) {
+        AbrirMensaje("Atención", "El valor de alícuota de Impuestos Internos debe ser entre 0 y 80",
+            function () {
+                $("#msjModal").modal("hide");
+                $("#in_alicuota").trigger("focus");
+            }, false, ["ACEPTAR"], "warn!", null)
+    }
+}
 
 function ejecutarBaja() {
     switch (tabAbm) {
