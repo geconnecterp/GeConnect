@@ -11,14 +11,11 @@
     $("#btnAbmAceptar").on("click", confirmarOperacionAbmProducto);
 
     //balanza
-    $(document).on("click", "#PBalanza", controlaBalanza);
-    $(document).on("click", "#PConVto", controlaVencimiento);
-    $(document).on("click", "#PMatPri", controlaMateriaPrima);
-    $(document).on("change", "#up_id", controlaValorUpId);
-    $(document).on("change","#iva_situacion",controlaSituacionIva)
-    $(document).on("change", "#iva_situacion", controlaValorIva);
-    /*$(document).on("change", "#aplica_todas", controlaAplicarTodas);*/
-
+    $(document).off("click", "#PBalanza").on("click", "#PBalanza", controlaBalanza);
+    $(document).off("click", "#PConVto").on("click", "#PConVto", controlaVencimiento);
+    $(document).off("click", "#PMatPri").on("click", "#PMatPri", controlaMateriaPrima);
+    $(document).off("change", "#up_id").on("change", "#up_id", controlaValorUpId);
+    $(document).off("change", "#iva_situacion").on("change","#iva_situacion",controlaSituacionIva)
 });
 
 //function controlaAplicarTodas() {
@@ -62,36 +59,25 @@ function ejecutarAlta() {
         case 1:
             PostGenHtml(data, nuevoProductoUrl, function (obj) {
                 $("#divpanel01").html(obj);
-                ////se procede a buscar la grilla de barrado
-                //buscarBarrado(data);
-                ////se procede a buscar la grilla de Sucursales
-                //buscarLimite(data);
-
                 $("#btnDetalle").prop("disabled", false);
                 $("#divFiltro").collapse("hide");
                 $("#divDetalle").collapse("show");
 
                 accionBotones(AbmAction.ALTA);
                 activarControles(true);
-
                 CerrarWaiting();
             });
-
             break;
         case 2:
             accionBotones(AbmAction.ALTA);
             inicializaControlesTab02();
             activarControles(true);
             CerrarWaiting();
-
             break;
         case 3:
             AbrirMensaje("ATENCIÓN!", "No puede realizar el alta de ningún Límite de Stock de producto. Solo puede Modificarlo.", function () {
                 $("#msjModal").modal("hide");
             }, false, ["ACEPTAR"], "warn!", null);
-            //accionBotones(AbmAction.ALTA);
-            //inicializaControlesTab03();
-            //activarControles(true);
             CerrarWaiting();
             break;
         default:
@@ -130,8 +116,7 @@ function controlaMateriaPrima() {
 
 function controlaSituacionIva() {
     if ($("#iva_situacion option:selected").val() === "G") {
-        $("#iva_alicuota").prop("disabled", false);
-      
+        $("#iva_alicuota").prop("disabled", false);      
     }
     else {
         $("#iva_alicuota").prop("disabled", true);
@@ -149,23 +134,11 @@ function controlaValorUpId() {
     }
 }
 
-function controlaValorIva() {
-    if ($("#iva_situacion option:selected").val() === "N") {
-        $("#iva_alicuota").val("0.00");
-        $("#iva_alicuota").prop("disabled", true);
-    }
-    else {
-        $("#iva_alicuota").prop("disabled", false);
-    }
-}
-
 function activarBotones(activar) {
     if (activar === true) {
-        //el activarlos es activar BM
         $("#btnAbmNuevo").prop("disabled", false);
         $("#btnAbmModif").prop("disabled", false);
         $("#btnAbmElimi").prop("disabled", false);
-
 
         $("#btnAbmAceptar").prop("disabled", true);
         $("#btnAbmCancelar").prop("disabled", true);
@@ -214,7 +187,7 @@ function accionBotones(btn) {
         $("#btnAbmCancelar").prop("disabled", false);
         $("#btnAbmAceptar").show();
         $("#btnAbmCancelar").show();
-    } else if (btn === AbmAction.SUBMIT || btn === AbmAction.CANCEL) {   // (S)uccess - (C)ancel
+    } else if (btn === AbmAction.SUBMIT || btn === AbmAction.CANCEL) {
         $("#btnFiltro").prop("disabled", false);
         $("#btnDetalle").prop("disabled", false);
 
@@ -225,11 +198,7 @@ function accionBotones(btn) {
         $("#BtnLiTab02").removeClass("text-danger");
         $("#BtnLiTab03").removeClass("text-danger");
 
-        if (btn === AbmAction.ALTA) {
-
-        }
-        else if (btn === AbmAction.CANCEL) {
-
+        if (btn === AbmAction.CANCEL) {
             activarBotones(false);
             activarControles(false);
 
@@ -238,36 +207,26 @@ function accionBotones(btn) {
                 $("#btnDetalle").prop("disabled", true);
                 activarGrilla(tabGrid01);
 
-
                 $("#BtnLiTab02").prop("disabled", false);
                 $("#BtnLiTab02").removeClass("text-danger");
                 $("#BtnLiTab03").prop("disabled", false);
                 $("#BtnLiTab03").removeClass("text-danger");
-
             }
-
         }
     }
 }
 
 function activarControles(act) {
-    //se cambia el sentido del valor act para que se interprete
-    //que si se activa los controles sea SI = TRUE y cuando sea False es que se ponen todos los controles en disabled
     if (act === true || act === false) {
-        act = !act; //se cambia el sentido del valor ya que con true, se activa el disabled.-
-        //se tiene en cuenta que tab es el que esta activo al momento de presionar el boton de acción
+        act = !act;
         switch (tabAbm) {
             case 1:
-                //Linea 1
-                //p_id NUNCA SE ACTIVA
                 if (accion === AbmAction.MODIFICACION) {
                     $("#p_activo").prop("disabled", act);
                 }
                 $("#up_id").prop("disabled", act);
-                //Linea 02
                 $("#p_m_marca").prop("disabled", act);
 
-                //SI EL UP_ID ES DISTINTO DE 07 SE PUEDE ACTIVAR EL CHECK DE BALANZA
                 if ($("#up_Id option:selected").val() !== "07") {
                     $("#PBalanza").prop("disabled", act);
                     if (act === false && $("#PBalanza").is(":checked")) {
@@ -275,50 +234,40 @@ function activarControles(act) {
                         $("#p_peso").prop("disabled", act);
                     }
                 }
-                //Linea 03
                 $("#p_m_desc").prop("disabled", act);
                 $("#PConVto").prop("disabled", act);
                 if (act === false && $("#PConVto").is(":checked")) {
                     $("#p_con_vto_min").prop("disabled", act);
                 }
-                //Linea 04
                 $("#p_m_capacidad").prop("disabled", act);
                 $("#PAltaRotacion").prop("disabled", act);
-                //Linea 05
                 $("#p_id_prov").prop("disabled", act);
                 $("#PMatPri").prop("disabled", act);
-                if (act === false && $("#PMatPri").is(":checked")) { //este campo se activa cuando el check PMatPri es TRUE
+                if (act === false && $("#PMatPri").is(":checked")) {
                     $("#PElaboracion").prop("disabled", act);
                 }
-                //Linea 06
                 $("#cta_lista").prop("disabled", act);
                 $("#AdmMayExcluye").prop("disabled", act);
                 $("#AdmMinExcluye").prop("disabled", act);
-                //Linea 07
                 $("#pg_id").prop("disabled", act);
                 $("#PiAutoExluye").prop("disabled", act);
                 $("#OcAutoExluye").prop("disabled", act);
-                //Linea 08
                 $("#rub_lista").prop("disabled", act);
                 $("#iva_situacion").prop("disabled", act);
                 $("#iva_alicuota").prop("disabled", act);
-                controlaValorIva();
-                //Linea 09
+                controlaSituacionIva();
                 $("#lp_id_default").prop("disabled", act);
                 $("#in_alicuota").prop("disabled", act);
-                //Linea 10
                 $("#p_id_barrado_ean").prop("disabled", act);
                 $("#p_unidad_pres_ean").prop("disabled", act);
                 $("#p_unidad_x_bulto_ean").prop("disabled", act);
                 $("#p_bulto_x_piso_ean").prop("disabled", act);
                 $("#p_piso_x_pallet_ean").prop("disabled", act);
-                //Linea 11
                 $("#p_id_barrado_dun").prop("disabled", act);
                 $("#p_unidad_pres_dun").prop("disabled", act);
                 $("#p_unidad_x_bulto_dun").prop("disabled", act);
                 $("#p_bulto_x_piso_dun").prop("disabled", act);
                 $("#p_piso_x_pallet_dun").prop("disabled", act);
-                //Linea 12
                 $("#p_obs").prop("disabled", act);
 
                 //hacemos el foco
@@ -355,17 +304,16 @@ function activarControles(act) {
     }
 }
 
-//se debe enviar que operacion se esta confirmando
-//enviando todos los campos de la entidad
-
-function confirmarOperacionAbmProducto() {
+/**
+ * ✅ OPTIMIZACIÓN: Función principal de confirmación con manejo mejorado de scroll
+ */
+function confirmarOperacionAbmProducto(e) {
     AbrirWaiting("Completando proceso...");
 
     let data = {};
     let act = "";
     let urlabm = "";
 
-    // Determinar datos y acción según la pestaña activa
     switch (tabAbm) {
         case 1:
             data = confirmarDatosTab01();
@@ -387,15 +335,8 @@ function confirmarOperacionAbmProducto() {
             return false;
     }
 
-    // Agregar la acción al objeto data
     data.accion = act;
 
-    // DEBUG: Verifica qué se está enviando
-    console.log("Datos a enviar:", data);
-    console.log("JSON stringified:", JSON.stringify(data));
-    console.log("URL destino:", urlabm);
-
-    // Realizar la petición AJAX
     $.ajax({
         url: urlabm,
         type: 'POST',
@@ -404,7 +345,7 @@ function confirmarOperacionAbmProducto() {
         data: JSON.stringify(data),
         success: function (obj) {
             CerrarWaiting();
-            console.log("Respuesta exitosa:", obj); // DEBUG
+            
             if (obj.error === true) {
                 AbrirMensaje("ALGO NO SALIO BIEN!", obj.msg, function () {
                     $("#msjModal").modal("hide");
@@ -422,29 +363,29 @@ function confirmarOperacionAbmProducto() {
                 }, false, ["CONTINUAR"], "warn!", null);
                 return;
             }
+
             if (accion === AbmAction.BAJA) {
                 AbrirMensaje("ATENCIÓN", obj.msg, function () {
-                switch (tabAbm) {
-                    case 1:
-                        //si elimina un producto arranca de nuevo por ahora
-                        $("#btnCancel").trigger("click");
-                    case 2:
-                        presentarBarrado();
-                        break;
-                    case 3:
-                        presentarLimites();
-                        break;
+                    switch (tabAbm) {
+                        case 1:
+                            $("#btnCancel").trigger("click");
+                            break;
+                        case 2:
+                            presentarBarrado();
+                            break;
+                        case 3:
+                            presentarLimites();
+                            break;
                     }
                 }, false, ["CONTINUAR"], "succ!", null);
                 return;
             }
+
             // Para alta o modificación
-            var esAltaOModif = (accion === AbmAction.ALTA || accion === AbmAction.MODIFICACION);
-            let idEnt="";
+            let idEnt = "";
             switch (tabAbm) {
                 case 1:
-                    // Para alta o modificación
-                    EntidadSelect = AbmAction == AbmAction.ALTA ? obj.id : $("#p_id").val();
+                    EntidadSelect = accion === AbmAction.ALTA ? obj.id : $("#p_id").val();
                     break;
                 case 2:
                     idEnt = $("#p_id_barrado").val();
@@ -452,128 +393,29 @@ function confirmarOperacionAbmProducto() {
                 case 3:
                     idEnt = $("#adm_id option:selected").val();
                     break;
-                default:
-                    break;
             }
 
-            // Éxito
             AbrirMensaje("ATENCIÓN", obj.msg, function () {
                 const grilla = tabAbm === 1 ? tabGrid01 : (tabAbm === 2 ? tabGrid02 : tabGrid03);
                 dataBak = "";
-                InicializaPantallaAbmProd(grilla);
-
+                
+                // ✅ SOLUCIÓN: Usar requestAnimationFrame para asegurar que el DOM esté completamente renderizado
                 switch (tabAbm) {
                     case 1:
-                        // Limpiar estado de la pantalla
-                        $("#divDetalle").collapse("hide");
-                        $("#divpanel01").empty();
-                        buscarProductos(1, function () {
-                            // Buscar la fila con el ID del perfil
-                            let $fila = $("#" + grilla + " tbody tr").filter(function () {
-                                return $(this).find("td:first").text().trim() === EntidadSelect;
-
-                            }).first();
-
-                            // Si se encuentra la fila, solo marcarla visualmente
-                            if ($fila.length > 0) {
-                                // Remover selección previa
-                                $("#" + grilla + " tbody tr").removeClass("selectedEdit-row");
-
-                                // Marcar la fila
-                                $fila.addClass("selected-row");
-
-                                // Posicionar en el tope si existe la función
-                                if (typeof posicionarRegOnTop === 'function') {
-                                    posicionarRegOnTop($fila);
-                                }
-
-
-                                // Activar grilla y estado final
-                                activarGrilla(grilla);
-                                $("#btnDetalle").prop("disabled", false);
-                                activarBotones(true);
-                            }
-
-                            // Resetear acción
-                            accionBotones(AbmAction.CANCEL);
-                        });
-
+                        procesarConfirmacionTab01(grilla);
                         break;
                     case 2:
                     case 3:
-                        Entidad2Select = idEnt;
-                        if (tabAbm === 2) {
-                            //#divBarrado2 table#"
-                            presentarBarrado(function () {
-                                let $fila = $("#divBarrado2 table#" + grilla + " tbody tr").filter(function () {
-                                    return $(this).find("td:first").text().trim() === Entidad2Select;
-                                }).first();
-
-                                // Si se encuentra la fila, solo marcarla visualmente
-                                if ($fila.length > 0) {
-                                    // Remover selección previa
-                                    $("#divBarrado2 table#" + grilla + " tbody tr").removeClass("selectedEdit-row");
-
-                                    // Marcar la fila
-                                    $fila.addClass("selected-row");
-
-                                    // Posicionar en el tope si existe la función
-                                    if (typeof posicionarRegOnTop === 'function') {
-                                        posicionarRegOnTop($fila);
-                                    }
-
-
-                                    // Activar grilla y estado final
-                                    activarGrillav2("#divBarrado2 table#" + grilla, false);
-                                    $("#btnDetalle").prop("disabled", false);
-                                    activarBotones(true);
-                                }
-                                // Resetear acción
-                                accionBotones(AbmAction.CANCEL);
-                            });
-                        }
-                        else {
-                            presentarLimites(function () {
-                                let $fila = $("#divLimite2 table#" + grilla + " tbody tr").filter(function () {
-                                    return $(this).find("td:first").text().trim() === Entidad2Select;
-
-                                }).first();
-
-                                // Si se encuentra la fila, solo marcarla visualmente
-                                if ($fila.length > 0) {
-                                    // Remover selección previa
-                                    $("#divLimite2 table#" + grilla + " tbody tr").removeClass("selectedEdit-row");
-
-                                    // Marcar la fila
-                                    $fila.addClass("selected-row");
-
-                                    // Posicionar en el tope si existe la función
-                                    if (typeof posicionarRegOnTop === 'function') {
-                                        posicionarRegOnTop($fila);
-                                    }
-
-
-                                    // Activar grilla y estado final
-                                    activarGrillav2("#divLimite2 table#" + grilla,false);
-                                    $("#btnDetalle").prop("disabled", false);
-                                    activarBotones(true);
-                                }
-
-                                // Resetear acción
-                                accionBotones(AbmAction.CANCEL);
-                            });
-                        }
-
+                        procesarConfirmacionTab2y3(grilla, idEnt, e);
                         break;
                 }
+                
                 accion = "";
-
                 $("#msjModal").modal("hide");
             }, false, ["CONTINUAR"], "succ!", null);
         },
         error: function (xhr, status, error) {
             CerrarWaiting();
-
             console.error("Error completo:", {
                 status: xhr.status,
                 statusText: xhr.statusText,
@@ -589,12 +431,105 @@ function confirmarOperacionAbmProducto() {
     });
 }
 
+/**
+ * ✅ OPTIMIZACIÓN: Procesar confirmación del Tab 1 con control de scroll mejorado
+ */
+function procesarConfirmacionTab01(grilla) {
+    $("#divDetalle").collapse("hide");
+    $("#divpanel01").empty();
+    
+    buscarProductos(1, function () {
+        // Usar setTimeout para asegurar que el DOM se haya actualizado completamente
+        setTimeout(function() {
+            const $fila = $("#" + grilla + " tbody tr").filter(function () {
+                return $(this).find("td:first").text().trim() === EntidadSelect;
+            }).first();
+
+            if ($fila.length > 0) {
+                // Remover selección previa
+                $("#" + grilla + " tbody tr").removeClass("selectedEdit-row selected-row");
+
+                // Marcar la fila
+                $fila.addClass("selected-row");
+
+                // ✅ CLAVE: Usar requestAnimationFrame para posicionamiento suave
+                requestAnimationFrame(function() {
+                    posicionarRegOnTopMejorado($fila, ".table-wrapper");
+                    
+                    // ✅ Segundo frame para asegurar estabilidad visual
+                    requestAnimationFrame(function() {
+                        activarGrilla(grilla);
+                        $("#btnDetalle").prop("disabled", false);
+                        activarBotones(true);
+                    });
+                });
+            }
+
+            accionBotones(AbmAction.CANCEL);
+        }, 150); // Delay mínimo para asegurar renderizado
+    });
+}
+
+/**
+ * ✅ OPTIMIZACIÓN: Procesar confirmación de Tabs 2 y 3 con control de scroll mejorado
+ */
+function procesarConfirmacionTab2y3(grilla, idEnt, e) {
+    Entidad2Select = idEnt;
+    InicializaPantallaAbmProd(grilla);
+    
+    const callback = function () {
+        setTimeout(function() {
+            const selector = tabAbm === 2 
+                ? "#divBarrado2 table#" + grilla + " tbody tr"
+                : "#divLimite2 table#" + grilla + " tbody tr";
+            
+            const $fila = $(selector).filter(function () {
+                return $(this).find("td:first").text().trim() === Entidad2Select;
+            }).first();
+
+            if ($fila.length > 0) {
+                $(selector).removeClass("selectedEdit-row selected-row");
+                $fila.addClass("selected-row");
+
+                // ✅ Prevenir propagación de eventos de scroll
+                if (e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                }
+
+                requestAnimationFrame(function() {
+                    posicionarRegOnTopMejorado($fila, ".table-wrapper");
+                    
+                    requestAnimationFrame(function() {
+                        $("#btnDetalle").prop("disabled", false);
+                        activarBotones(true);
+
+                        const data = { p_id: EntidadSelect };
+                        if (tabAbm === 2) {
+                            buscarBarrado(data);
+                        } else {
+                            buscarLimite(data);
+                        }
+                    });
+                });
+            }
+
+            accionBotones(AbmAction.CANCEL);
+        }, 150);
+    };
+
+    if (tabAbm === 2) {
+        presentarBarrado(callback);
+    } else {
+        presentarLimites(callback);
+    }
+}
+
 function InicializaFiltroAbmProducto(id) {
     if ($("#chkDescr").is(":checked")) {
         $("#chkDescr").prop("checked", false);
         $("#Buscar").val("");
     }
-
 
     if (!$("#chkDesdeHasta").is(":checked")) {
         $("#chkDesdeHasta").prop("checked", true);
@@ -617,70 +552,60 @@ function InicializaFiltroAbmProducto(id) {
     }
 }
 
+/**
+ * ✅ Recopila datos del Tab 1 (Producto)
+ */
 function confirmarDatosTab01() {
-    // ===== LÍNEA 01 =====
     var p_id = $("#p_id").val() || "";
     var p_activo = $("#p_activo option:selected").val() || "S";
     var up_id = $("#up_id option:selected").val() || "";
     var up_lista = $("#up_id option:selected").text() || "";
     var up_desc = up_lista.replace(/\(.*\)/, "").trim();
 
-    // ===== LÍNEA 02 =====
     var p_m_marca = $("#p_m_marca").val() || "";
     var p_balanza = $("#PBalanza").is(":checked") ? "S" : "N";
     var p_balanza_dvto = parseInt($("#p_balanza_dvto").val()) || 0;
     var p_peso = parseFloat($("#p_peso").val()) || 0;
 
-    // ===== LÍNEA 03 =====
     var p_m_desc = $("#p_m_desc").val() || "";
     var p_desc = $("#p_desc").val() || "";
     var p_con_vto = $("#PConVto").is(":checked") ? "S" : "N";
     var p_con_vto_min = parseInt($("#p_con_vto_min").val()) || 0;
 
-    // ===== LÍNEA 04 =====
     var p_m_capacidad = $("#p_m_capacidad").val() || "";
     var p_alta_rotacion = $("#PAltaRotacion").is(":checked") ? "S" : "N";
 
-    // ===== LÍNEA 05 =====
     var p_id_prov = $("#p_id_prov").val() || "";
     var p_materia_prima = $("#PMatPri").is(":checked") ? "S" : "N";
     var p_elaboracion = $("#PElaboracion").is(":checked") ? "S" : "N";
 
-    // ===== LÍNEA 06 =====
     var cta_id = $("#cta_id").val() || "";
     var cta_lista = $("#cta_lista").text() || "";
     var cta_denominacion = cta_lista.replace(/\(.*\)/, "").trim();
     var adm_may_excluye = $("#AdmMayExcluye").is(":checked") ? "S" : "N";
     var adm_min_excluye = $("#AdmMinExcluye").is(":checked") ? "S" : "N";
 
-    // ===== LÍNEA 07 =====
     var pg_id = $("#pg_id option:selected").val() || "";
     var pg_lista = $("#pg_id option:selected").text() || "";
-    var pg_desc = pg_lista.replace(/\(.*\)/, "").trim(); // ✅ FALTABA
+    var pg_desc = pg_lista.replace(/\(.*\)/, "").trim();
 
-    // ✅ CORRECCIÓN: "excluye" no "exluye"
     var pi_auto_excluye = $("#PiAutoExluye").is(":checked") ? "S" : "N";
     var oc_auto_excluye = $("#OcAutoExluye").is(":checked") ? "S" : "N";
 
-    // ===== LÍNEA 08 =====
     var rub_id = $("#rub_id").val() || "";
     var rub_lista = $("#rub_lista").text() || "";
     var rub_desc = rub_lista.replace(/\(.*\)/, "").trim();
     var iva_situacion = $("#iva_situacion option:selected").val() || "N";
     var iva_alicuota = parseFloat($("#iva_alicuota option:selected").val()) || 0;
 
-    // ===== LÍNEA 09 =====
     var lp_id_default = $("#lp_id_default option:selected").val() || "";
     var in_alicuota = parseFloat($("#in_alicuota").val()) || 0;
 
-    // ===== LÍNEA 10 =====
     var p_obs = $("#p_obs").val() || "";
     var p_actu = $("#p_actu").val() || null;
 
-    // ===== CAMPOS OCULTOS =====
     var p_balanza_id = $("#p_balanza_id").val() || "";
 
-    // ✅ Convertir a enteros
     var p_id_barrado_ean = $("#p_id_barrado_ean").val() || "";
     var p_unidad_pres_ean = parseInt($("#p_unidad_pres_ean").val()) || 0;
     var p_unidad_x_bulto_ean = parseInt($("#p_unidad_x_bulto_ean").val()) || 0;
@@ -693,9 +618,7 @@ function confirmarDatosTab01() {
     var p_bulto_x_piso_dun = parseInt($("#p_bulto_x_piso_dun").val()) || 0;
     var p_piso_x_pallet_dun = parseInt($("#p_piso_x_pallet_dun").val()) || 0;
 
-    // ===== OBJETO DE RETORNO (Orden alfabético recomendado) =====
-    var data = {
-        accion,                  // ✅ Se agregará después en confirmarOperacionAbmProducto
+    return {
         adm_may_excluye,
         adm_min_excluye,
         cta_denominacion,
@@ -705,7 +628,7 @@ function confirmarDatosTab01() {
         iva_alicuota,
         iva_situacion,
         lp_id_default,
-        oc_auto_excluye,        // ✅ CORREGIDO
+        oc_auto_excluye,
         p_actu,
         p_activo,
         p_alta_rotacion,
@@ -722,7 +645,7 @@ function confirmarDatosTab01() {
         p_id_barrado_dun,
         p_id_barrado_ean,
         p_id_prov,
-        p_m_capacidad,          // ✅ Sin duplicar
+        p_m_capacidad,
         p_m_desc,
         p_m_marca,
         p_materia_prima,
@@ -734,10 +657,10 @@ function confirmarDatosTab01() {
         p_unidad_pres_ean,
         p_unidad_x_bulto_dun,
         p_unidad_x_bulto_ean,
-        pg_desc,                 // ✅ AGREGADO
+        pg_desc,
         pg_id,
         pg_lista,
-        pi_auto_excluye,        // ✅ CORREGIDO
+        pi_auto_excluye,
         rub_desc,
         rub_id,
         rub_lista,
@@ -745,10 +668,11 @@ function confirmarDatosTab01() {
         up_id,
         up_lista
     };
-
-    return data;
 }
 
+/**
+ * ✅ Recopila datos del Tab 2 (Barrado)
+ */
 function confirmarDatosTab02() {
     var p_id_barrado = $("#p_id_barrado").val();
     var p_unidad_pres = $("#p_unidad_pres").val();
@@ -759,14 +683,21 @@ function confirmarDatosTab02() {
     var tba_desc = $("#tba_id option:selected").text();
     var tba_lista = tba_desc + "(" + tba_id + ")";
 
-    var data = {
-        p_id_barrado, p_unidad_pres, p_unidad_x_bulto, p_bulto_x_piso,
-        p_piso_x_pallet, tba_id, tba_lista, tba_desc, accion: accion02
+    return {
+        p_id_barrado, 
+        p_unidad_pres, 
+        p_unidad_x_bulto, 
+        p_bulto_x_piso,
+        p_piso_x_pallet, 
+        tba_id, 
+        tba_lista, 
+        tba_desc
     };
-
-    return data;
 }
 
+/**
+ * ✅ Recopila datos del Tab 3 (Límite de Stock)
+ */
 function confirmarDatosTab03() {
     let adm_id = $("#adm_id option:selected").val();
     let adm_nombre = $("#adm_id option:selected").text();
@@ -776,9 +707,14 @@ function confirmarDatosTab03() {
     var p_stk_max = $("#p_stk_max").val();
     let aplica_todas = $("#aplica_todas").is(":checked");
 
-
-    var data = { adm_id, adm_nombre, adm_lista, p_stk_min, p_stk_max, aplica_todas, accion: accion03 };
-    return data;
+    return { 
+        adm_id, 
+        adm_nombre, 
+        adm_lista, 
+        p_stk_min, 
+        p_stk_max, 
+        aplica_todas 
+    };
 }
 
 function inicializaControlesTab02() {

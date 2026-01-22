@@ -1013,6 +1013,72 @@ function posicionarRegOnTop(x,classWrapper="") {
     //}, 500);
 }
 
+/**
+ * ✅ OPTIMIZACIÓN: Versión mejorada que previene reajustes de scroll no deseados
+ * @param {jQuery} $registro - El registro seleccionado
+ * @param {string} classWrapper - Clase del contenedor (default: ".table-wrapper")
+ */
+function posicionarRegOnTopMejorado($registro, classWrapper = ".table-wrapper") {
+    if (!$registro || $registro.length === 0) {
+        console.warn("⚠️ posicionarRegOnTopMejorado: registro inválido");
+        return;
+    }
+
+    const $contenedor = $($registro).closest(classWrapper);
+
+    if ($contenedor.length === 0) {
+        console.warn("⚠️ posicionarRegOnTopMejorado: contenedor no encontrado");
+        return;
+    }
+
+    // ✅ Deshabilitar animaciones de scroll temporal
+    $contenedor.css('scroll-behavior', 'auto');
+
+    const $header = $contenedor.find("thead");
+    const headerHeight = $header.outerHeight() || 0;
+
+    // Calcular posición relativa
+    const registroOffset = $registro.position().top;
+    const scrollActual = $contenedor.scrollTop();
+
+    // ✅ Agregar offset adicional para compensar headers fijos
+    const offsetAdicional = 5;
+    const nuevoScroll = scrollActual + registroOffset - headerHeight - offsetAdicional;
+
+    // ✅ Scroll instantáneo sin animación para evitar conflictos
+    $contenedor.scrollTop(nuevoScroll);
+
+    // ✅ Restaurar comportamiento suave después de un breve delay
+    setTimeout(function () {
+        $contenedor.css('scroll-behavior', '');
+    }, 100);
+}
+
+/**
+ * ✅ Mantener función original por compatibilidad
+ */
+function posicionarRegOnTop(x, classWrapper = "") {
+    if (classWrapper.trim() === "") {
+        classWrapper = ".table-wrapper";
+    }
+
+    const $registro = $(x);
+    const $contenedor = $(classWrapper);
+    const $header = $contenedor.find("thead");
+
+    const registroOffset = $registro.offset().top;
+    const contenedorOffset = $contenedor.offset().top;
+    const scrollActual = $contenedor.scrollTop();
+    const headerHeight = $header.outerHeight() || 0;
+
+    const nuevoScroll = scrollActual + (registroOffset - contenedorOffset) - headerHeight;
+
+    // ✅ Reducir duración de animación para minimizar conflictos
+    $contenedor.animate({
+        scrollTop: nuevoScroll
+    }, 300);
+}
+
 function cambiaMenuApp() {
     var perf = $("#UserPerfilId option:selected").val();
     var data = { perId: perf };

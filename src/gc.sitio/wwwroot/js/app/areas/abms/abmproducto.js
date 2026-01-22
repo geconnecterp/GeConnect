@@ -349,10 +349,11 @@ function InicializaPantallaAbmProd(grilla) {
 
     //borra seleccion de registro si hubiera cargdo algun grid
     //TODO: ESTO SOLO LO HACE SI ES LA GRILLA PPAL (TABAMB = 1)
-
-    $("#" + grilla + " tbody tr").each(function (index) {
-        $(this).removeClass("selectedEdit-row");
-    });
+    if (tabAbm === 1) {
+        $("#" + grilla + " tbody tr").each(function (index) {
+            $(this).removeClass("selectedEdit-row");
+        });
+    }
 
     CerrarWaiting();
     return true;
@@ -373,78 +374,80 @@ function cargaPaginacion() {
     return true;
 }
 
+/**
+ * ✅ OPTIMIZACIÓN: Evitar múltiples refrescos de grilla
+ */
 function buscarProductos(pag, callback) {
     AbrirWaiting();
-
-    //desactivamos los botones de acción
     activarBotones(false);
 
+    const buscar = $("#Buscar").val();
+    const id = $("#Id").val();
+    const id2 = $("#Id2").val();
+    const r01 = [];
+    const r02 = [];
+    
+    $("#Rel01List").children().each(function (i, item) { 
+        r01.push($(item).val()); 
+    });
+    $("#Rel02List").children().each(function (i, item) { 
+        r02.push($(item).val()); 
+    });
 
-    var buscar = $("#Buscar").val();
-    var id = $("#Id").val();
-    var id2 = $("#Id2").val();
-    var r01 = [];
-    var r02 = [];
-    $("#Rel01List").children().each(function (i, item) { r01.push($(item).val()) });
-    $("#Rel02List").children().each(function (i, item) { r02.push($(item).val()) });
-
-    var data1 = {
+    const data1 = {
         id, id2,
         rel01: r01,
         rel02: r02,
         rel03: [],
-        "fechaD": null, //"0001-01-01T00:00:00",
-        "fechaH": null, //"0001-01-01T00:00:00",
+        fechaD: null,
+        fechaH: null,
         buscar,
     };
 
-    var buscaNew = JSON.stringify(dataBak) != JSON.stringify(data1)
+    const buscaNew = JSON.stringify(dataBak) !== JSON.stringify(data1);
 
     if (buscaNew === false || callback !== undefined) {
-        //son iguales las condiciones cambia de pagina
         pagina = pag;
-        //esto lo hago para que en caso que se haya hecho una modificación, si no se tiene la busqueda anterior, se carga en dataBak = data1
         if (callback !== undefined && dataBak === "") {
             dataBak = data1;
         }
-    }
-    else {
+    } else {
         dataBak = data1;
         pagina = 1;
         pag = 1;
     }
 
-    var sort = null;
-    var sortDir = null
-
-    var data2 = { sort, sortDir, pag, buscaNew }
-
-    var data = $.extend({}, data1, data2);
-
+    const data = $.extend({}, data1, { 
+        sort: null, 
+        sortDir: null, 
+        pag, 
+        buscaNew 
+    });
 
     PostGenHtml(data, buscarUrl, function (obj) {
         $("#divGrilla").html(obj);
-        $("#divFiltro").collapse("hide")
+        $("#divFiltro").collapse("hide");
+        
         PostGen({}, buscarMetadataURL, function (obj) {
             if (obj.error === true) {
                 AbrirMensaje("ATENCIÓN", obj.msg, function () {
                     $("#msjModal").modal("hide");
                     return true;
                 }, false, ["Aceptar"], "error!", null);
-            }
-            else {
+            } else {
                 totalRegs = obj.metadata.totalCount;
                 pags = obj.metadata.totalPages;
                 pagRegs = obj.metadata.pageSize;
-
                 $("#pagEstado").val(true).trigger("change");
             }
-
         });
+        
         CerrarWaiting();
-        // Ejecutar callback si está definido
+        
+        // ✅ CLAVE: Ejecutar callback después de asegurar renderizado completo
         if (typeof callback === "function") {
-            callback();
+            // Usar setTimeout para asegurar que el DOM esté estable
+            setTimeout(callback, 50);
         }
     }, function (obj) {
         ControlaMensajeError(obj.message);
@@ -633,6 +636,8 @@ function selectAbmRegDbl(x, gridId) {
                     EntidadEstado = x.find("td:nth-child(9)").text();
                     var data = { p_id: id };
                     EntidadSelect = id;
+                    $("#BtnLiTab02").prop("disabled", false);
+                    $("#BtnLiTab03").prop("disabled", false);
                     desactivarGrilla(tabGrid01);
                     buscarProductoServer(data);
                     posicionarRegOnTop(x);

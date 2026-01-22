@@ -1301,7 +1301,7 @@ fieldset {
 .disable-table-rows,
 .disable-table-rows * {
     pointer-events: none !important;
-    opacity: 0.8;
+    opacity: 0.9;
     user-select: none;
 }
 
