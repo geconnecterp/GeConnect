@@ -7,7 +7,11 @@
 	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
 <style>
-
+	.tab-content-compact {
+		padding: 0.25rem 0 !important;
+		border-radius: 0.375rem !important;
+		background-color: transparent !important;
+	}
 </style>
 
 <div class="container mt-2">
@@ -120,7 +124,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="row mt-2" id="divLibroBancoResumen">
+				<div class="row" id="divLibroBancoResumen" style="padding-left: 14px;padding-right: 13px;">
 				</div>
 			</div>
 			<div class="tab-pane fade tab-content-golden" id="navs-top-dog" role="tabpanel">
@@ -144,7 +148,7 @@
 						</div>
 					</div>
 					<div class="col-md-3 col-sm-6">
-						<div class="input-group input-group-sm">
+						<div class="input-group input-group-sm mt-2">
 							<div class="form-check form-check-inline">
 								<input class="form-check-input" type="radio" name="tipoFiltro" id="radioFecha" value="R" checked>
 								<label class="form-check-label" for="radioFecha">Fecha</label>
@@ -160,7 +164,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="row mt-2" id="divHistoricoLibro">
+				<div class="row" id="divHistoricoLibro" style="padding-left: 14px;padding-right: 13px;">
 				</div>
 			</div>
 			<div class="tab-pane fade tab-content-golden" id="navs-top-tiger" role="tabpanel">
@@ -184,7 +188,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="row mt-2" id="divExtractoBancario">
+				<div class="row" id="divExtractoBancario" style="padding-left: 14px;padding-right: 13px;">
 				</div>
 			</div>
 		</div>

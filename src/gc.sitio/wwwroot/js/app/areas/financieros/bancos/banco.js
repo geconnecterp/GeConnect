@@ -170,7 +170,12 @@ function ControlaBuscarVencChequeEmitidoClick() {
 				return true;
 			}, false, ["Aceptar"], "error!", null);
 		}
-		return true
+		else {
+			// Seleccionar la primera fila y disparar el click
+			var primera = $("#tbGridCheques tbody tr").first();
+			primera.trigger("click");
+			return true
+		}
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
 		CerrarWaiting();
@@ -270,9 +275,10 @@ function ImpimirVencChequeEmitidoClick() {
 		var hasta = $("#fechaHastaVencChequeEmitido").val();
 		var ctaf_id = ctafIdSelected;
 		var ctaf_desc = ctafDenominacionSelected;
+		var tipo_fecha = "V";
 		var Date1Print = moment($("#fechaDesdeVencChequeEmitido").val()).format('DD/MM/yyyy')
 		var Date2Print = moment($("#fechaHastaVencChequeEmitido").val()).format('DD/MM/yyyy')
-		var data = { desde, hasta, ctaf_id, ctaf_desc, Date1Print, Date2Print };
+		var data = { desde, hasta, ctaf_id, ctaf_desc, tipo_fecha, Date1Print, Date2Print };
 		cargarReporteEnArre(27, data, "VENCIMIENTO DE CHEQUES EMITIDOS", "", "");
 		invocacionGestorDoc({});
 	}, 500);
@@ -385,6 +391,18 @@ function ControlaBuscarLibroBancoResumenClick() {
 	PostGenHtml(data, obtenerLibroResumenURL, function (obj) {
 		CerrarWaiting();
 		$("#divLibroBancoResumen").html(obj);
+		var filas = $("#tabGrillaUno tbody tr").length;
+		if (filas === 0) {
+			$("#containerGrillaUno").addClass("container-auto");
+		} else {
+			$("#containerGrillaUno").removeClass("container-auto");
+		}
+		filas = $("#tabGrillaDos tbody tr").length;
+		if (filas === 0) {
+			$("#containerGrillaDos").addClass("container-auto");
+		} else {
+			$("#containerGrillaDos").removeClass("container-auto");
+		}
 		return true
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
@@ -402,6 +420,12 @@ function ControlaBuscarHistoricoLibroClick() {
 	PostGenHtml(data, buscarHistoricoLibroURL, function (obj) {
 		CerrarWaiting();
 		$("#divHistoricoLibro").html(obj);
+		var filas = $("#tbGridHistoricoLibro tbody tr").length;
+		if (filas === 0) {
+			$("#containerGridHistoricoLibro").addClass("container-auto");
+		} else {
+			$("#containerGridHistoricoLibro").removeClass("container-auto");
+		}
 		return true
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
@@ -418,6 +442,12 @@ function ControlaBuscarExtractoBancarioClick() {
 	PostGenHtml(data, buscarExtractoBancarioURL, function (obj) {
 		CerrarWaiting();
 		$("#divExtractoBancario").html(obj);
+		var filas = $("#tbGridExtractoBancario tbody tr").length;
+		if (filas === 0) {
+			$("#containerGridExtractoBancario").addClass("container-auto");
+		} else {
+			$("#containerGridExtractoBancario").removeClass("container-auto");
+		}
 		return true
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
@@ -452,8 +482,9 @@ function SetearCamposLibroBancoDetalle() {
 function SetearCamposVencChequeEmitido() {
 	var now = moment().format('yyyy-MM-DD');
 	var now2 = moment().subtract(30, 'days');
+	var now3 = moment().add(120, 'days');
 	$("#fechaDesdeVencChequeEmitido").val(now2.format('yyyy-MM-DD'));
-	$("#fechaHastaVencChequeEmitido").val(now);
+	$("#fechaHastaVencChequeEmitido").val(now3.format('yyyy-MM-DD'));
 }
 
 //const tab = bootstrap.Tab.getOrCreateInstance($('#btnTabVencimientoChequeEmitido')[0]);

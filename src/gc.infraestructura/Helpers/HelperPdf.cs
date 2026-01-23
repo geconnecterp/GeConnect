@@ -2322,7 +2322,7 @@ namespace gc.infraestructura.Helpers
 											Fecha = g.Key,
 											Cheques = g.ToList(),
 											TotalPendiente = g.Where(x => x.che_estado == 'C').Sum(x => x.che_importe),
-											TotalEmitidos = g.Where(x => x.che_estado != 'C').Sum(x => x.che_importe)
+											TotalEmitidos = g.Sum(x => x.che_importe)
 										}).OrderBy(g => g.Fecha).ToList();
 
 			foreach (var grupo in reportePorFecha)
@@ -2852,8 +2852,6 @@ namespace gc.infraestructura.Helpers
 			}).ToList();
 			HelperPdf.GenerarListadoDesdeLista(pdf, regsAux, _campos, _anchosTitulosTabla, fuenteNormal);
 
-
-
 			// Segunda grilla, grupo tipo '1' (movimientos extracto no Conciliados)
 			PdfPTable tablaSubTitulo = GeneraTabla(1, [100f], 100, 0, 10);
 			PdfPCell celdaSubTitulo = new(new Phrase($"Movimiento Extracto - no Conciliados", fuenteAzul))
@@ -2868,28 +2866,35 @@ namespace gc.infraestructura.Helpers
 			tablaSubTitulo.AddCell(celdaSubTitulo);
 			pdf.Add(tablaSubTitulo);
 
-
-			_titulosTabla = ["Concepto", "Fecha Reg.", "Fecha Vto.", "Importe", "Estado",];
-			_campos = ["concepto", "fecha", "fecha_vto", "importe", "strEstado",];
-			_anchosTitulosTabla = [55, 15, 15, 10, 5];
-			HelperPdf.GeneraCabeceraLista(pdf, _titulosTabla, _anchosTitulosTabla, HelperPdf.FontNormalPredeterminado(true), 0, 0);
-
-
-			var regsAuxUno = regs.Where(x => x.tipo == '1').Select(x => new
+			// Encabezados
+			PdfPTable tabla = HelperPdf.GeneraTabla(3, [70f, 15f, 15f], 90, 0, 0);
+			tabla.HorizontalAlignment = Element.ALIGN_LEFT;
+			string[] headers = { "Concepto", "Fecha Vto.", "Importe" };
+			foreach (var header in headers)
 			{
-				x.concepto,
-				fecha = x.fecha != null ? x.fecha?.ToString("dd/MM/yyyy") : "",
-				fecha_vto = x.fecha_vto != null ? x.fecha_vto?.ToString("dd/MM/yyyy") : "",
-				importe = x.importe.ToString("C", ForzarObtenerFormatoMonetario()),
-				x.strEstado
-			}).ToList();
-			HelperPdf.GenerarListadoDesdeLista(pdf, regsAuxUno, _campos, _anchosTitulosTabla, fuenteEtiqueta, false, false, null, true, BooleanDisplayFormat.SiNo, false, false);
-
-
-
+				PdfPCell celda = new(new Phrase(header, fuenteValor))
+				{
+					BackgroundColor = BaseColor.LightGray,
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					VerticalAlignment = Element.ALIGN_MIDDLE,
+					Padding = 5
+				};
+				tabla.AddCell(celda);
+			}
+			pdf.Add(tabla);
+			
+			tabla = HelperPdf.GeneraTabla(3, [70f, 15f, 15f], 90, 0, 0);
+			tabla.HorizontalAlignment = Element.ALIGN_LEFT;
+			foreach (var reg in regs.Where(x => x.tipo == '1'))
+			{
+				tabla.AddCell(new PdfPCell(new Phrase(reg.concepto, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_LEFT });
+				tabla.AddCell(new PdfPCell(new Phrase(reg.fecha_vto.Value.ToString("dd/MM/yy"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
+				tabla.AddCell(new PdfPCell(new Phrase(reg.importe.ToString("N2"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+			}
+			pdf.Add(tabla);
 
 			// Tercera grilla, grupo tipo '2' (movimientos libro banco no Conciliados)
-			PdfPTable tablaSubTitulo2 = GeneraTabla(1, [100f], 100, 0, 10);
+			PdfPTable tablaSubTitulo2 = GeneraTabla(1, [100f], 100, 10, 10);
 			PdfPCell celdaSubTitulo2 = new(new Phrase($"Movimientos Libro Banco con vto al {fHastaDate:dd/MM/yyyy} - no Conciliados", fuenteAzul))
 			{
 				Border = Rectangle.NO_BORDER,
@@ -2902,21 +2907,35 @@ namespace gc.infraestructura.Helpers
 			tablaSubTitulo2.AddCell(celdaSubTitulo2);
 			pdf.Add(tablaSubTitulo2);
 
-			_titulosTabla = ["Concepto", "Fecha Reg.", "Fecha Vto.", "Importe", "Estado",];
-			_campos = ["concepto", "fecha", "fecha_vto", "importe", "strEstado",];
-			_anchosTitulosTabla = [55, 15, 15, 10, 5];
-			HelperPdf.GeneraCabeceraLista(pdf, _titulosTabla, _anchosTitulosTabla, HelperPdf.FontNormalPredeterminado(true), 0, 0);
-
-
-			var regsAuxDos = regs.Where(x => x.tipo == '2').Select(x => new
+			tabla = HelperPdf.GeneraTabla(5, [50, 13, 14, 13, 10], 100, 0, 0);
+			string[] headers2 = { "Concepto", "Fecha Reg.", "Fecha Vto.", "Importe", "Estado" };
+			foreach (var header in headers2)
 			{
-				x.concepto,
-				fecha = x.fecha != null ? x.fecha?.ToString("dd/MM/yyyy") : "",
-				fecha_vto = x.fecha_vto != null ? x.fecha_vto?.ToString("dd/MM/yyyy") : "",
-				importe = x.importe.ToString("C", ForzarObtenerFormatoMonetario()),
-				x.strEstado
-			}).ToList();
-			HelperPdf.GenerarListadoDesdeLista(pdf, regsAuxDos, _campos, _anchosTitulosTabla, fuenteEtiqueta, false, false, null, true, BooleanDisplayFormat.SiNo, false, false);
+				PdfPCell celda = new(new Phrase(header, fuenteValor))
+				{
+					BackgroundColor = BaseColor.LightGray,
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					VerticalAlignment = Element.ALIGN_MIDDLE,
+					Padding = 5
+				};
+				tabla.AddCell(celda);
+			}
+			pdf.Add(tabla);
+
+			tabla = HelperPdf.GeneraTabla(5, [50, 13, 14, 13, 10], 100, 0, 10);
+			foreach (var reg in regs.Where(x => x.tipo == '2'))
+			{
+				tabla.AddCell(new PdfPCell(new Phrase(reg.concepto, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_LEFT });
+				tabla.AddCell(new PdfPCell(new Phrase(reg.fecha.Value.ToString("dd/MM/yy"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
+				tabla.AddCell(new PdfPCell(new Phrase(reg.fecha_vto.Value.ToString("dd/MM/yy"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
+				tabla.AddCell(new PdfPCell(new Phrase(reg.importe.ToString("N2"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+				string estado = (reg.strEstado) ? "SI" : "NO";
+				tabla.AddCell(new PdfPCell(new Phrase(estado, fuenteEtiqueta))
+				{
+					HorizontalAlignment = Element.ALIGN_CENTER
+				});
+			}
+			pdf.Add(tabla);
 		}
 
 

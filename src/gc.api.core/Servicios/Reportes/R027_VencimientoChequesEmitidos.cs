@@ -144,6 +144,7 @@ namespace gc.api.core.Servicios.Reportes
 			var fHasta = solicitud.Parametros.GetValueOrDefault("hasta", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
 			var ctaf_id = solicitud.Parametros.GetValueOrDefault("ctaf_id", "").ToString();
 			var ctaf_desc = solicitud.Parametros.GetValueOrDefault("ctaf_desc", "").ToString();
+			var tipo_fecha = solicitud.Parametros.GetValueOrDefault("tipo_fecha", "").ToString();
 			titulo = $"Cheques Emitidos con Vto. desde el {fDesdePrint} al {fHastaPrint}";
 			subTitulo = $"Cuenta: {ctaf_id} - {ctaf_desc}";
 			return _financieroServicio.GetFinancieroBcoVencChequeEmitidoLista(new FinancieroBcoVencChequeEmitidoListaRequest() 
@@ -151,6 +152,7 @@ namespace gc.api.core.Servicios.Reportes
 				desde = DateTime.Parse(fDesde),
 				hasta = DateTime.Parse(fHasta),
 				ctaf_id = ctaf_id,
+				tipo_fecha = Convert.ToChar(tipo_fecha)
 			});
 		}
 

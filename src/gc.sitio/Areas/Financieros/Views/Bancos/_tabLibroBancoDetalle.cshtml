@@ -43,6 +43,95 @@
 		font-weight: bold;
 	}
 
+	thead th {
+		position: sticky;
+		top: 0px;
+		z-index: 1; /* suficiente para estar sobre las filas */
+		background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+		color: #fff !important;
+	}
+
+	.table-wrapper {
+		/*max-height: 400px;  o lo que necesites */
+		overflow-y: auto;
+		position: relative;
+	}
+
+	#containerGrillaUno {
+		position: relative;
+		height: 480px;
+		max-height: 480px;
+		overflow-y: auto;
+		overflow-x: hidden !important;
+		z-index: auto;
+	}
+
+	#containerGrillaDos {
+		position: relative;
+		height: 480px;
+		max-height: 480px;
+		overflow-y: auto;
+		overflow-x: hidden !important;
+		z-index: auto;
+	}
+
+	.container-auto {
+		height: auto !important;
+		max-height: none !important;
+		overflow-x: hidden !important;
+	}
+
+	.table-golden {
+		border-collapse: separate;
+		border-spacing: 0;
+		table-layout: fixed;
+	}
+
+		.table-golden thead {
+			position: sticky;
+			top: 0;
+			z-index: 1;
+			background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+			color: #fff !important;
+		}
+
+			.table-golden thead th {
+				position: sticky;
+				top: 0;
+				z-index: 4;
+				background: linear-gradient(to bottom, #b8860b, #daa520);
+				color: #fff;
+				box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+				background-clip: padding-box;
+			}
+
+			.table-golden thead,
+			.table-golden thead th {
+				/*background-color: #b8860b;  tu dorado */
+				/* color: #333; */
+			}
+
+	#tabGrillaUno th,
+	#tabGrillaUno td {
+		padding: 0.01rem 0.15rem !important;
+		line-height: 1.2 !important;
+		height: auto !important;
+	}
+
+	#tabGrillaUno tr {
+		height: 1.6rem !important;
+	}
+
+	#tabGrillaDos th,
+	#tabGrillaDos td {
+		padding: 0.01rem 0.15rem !important;
+		line-height: 1.2 !important;
+		height: auto !important;
+	}
+
+	#tabGrillaDos tr {
+		height: 1.6rem !important;
+	}
 </style>
 <div class="card">
 	<div class="card-body">
@@ -105,34 +194,35 @@
 			@if (Model != null && Model.GrillaBcoLibro_Uno != null && Model.GrillaBcoLibro_Uno.ListaDatos != null && Model.GrillaBcoLibro_Uno.ListaDatos.Count > 0)
 			{
 				<h5 class="mt-4 mb-2 azul texto-uniforme">@Model.Descripcion_Grid_Uno</h5>
-				<div class="table-responsive table-wrapper-300">
+				<div class="table-responsive table-wrapper-300" style="max-width: 90%;" id="containerGrillaUno">
 					<table class="table table-bordered table-sm mb-0 table-golden" id="tabGrillaUno">
 						<thead>
 							<tr class="texto-uniforme">
-								<th class="align-center">Concepto</th>
-								<th class="align-center">Fecha Reg.</th>
+								<th class="align-center" style="width:80%;">Concepto</th>
+								@* <th class="align-center">Fecha Reg.</th> *@
 								<th class="align-center">Fecha Vto.</th>
 								<th class="align-center">Importe</th>
-								<th style="width: 5%;" class="text-sm-center" scope="col">Estado</th>
+								@* <th style="width: 5%;" class="text-sm-center" scope="col">Estado</th> *@
 							</tr>
 						</thead>
 						<tbody>
 							@foreach (var item in Model.GrillaBcoLibro_Uno.ListaDatos)
 							{
+								if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 								var importeFormateado = item.importe < 0 ? $"({Math.Abs(item.importe):N2})" : $"{item.importe:N2}";
 								var fecha = item.fecha != null ? item.fecha.Value.ToString("dd/MM/yyyy") : "";
 								var fecha_vto = item.fecha_vto != null ? item.fecha_vto.Value.ToString("dd/MM/yyyy") : "";
-								<tr class="texto-uniforme">
+								<tr class="texto-uniforme @clase">
 									<td>@item.concepto</td>
-									<td class="text-center">@fecha</td>
+									@* <td class="text-center">@fecha</td> *@
 									<td class="text-center">@fecha_vto</td>
 									<td class="text-end">@importeFormateado</td>
-									<td class="align-center">
+									@* <td class="align-center">
 										@if (item.strEstado)
 										{
 											<i class='bx bx-check text-danger'></i>
 										}
-									</td>
+									</td> *@
 								</tr>
 							}
 						</tbody>
@@ -144,24 +234,25 @@
 			@if (Model != null && Model.GrillaBcoLibro_Dos != null && Model.GrillaBcoLibro_Dos.ListaDatos != null && Model.GrillaBcoLibro_Dos.ListaDatos.Count > 0)
 			{
 				<h5 class="mt-4 mb-2 azul texto-uniforme">@Model.Descripcion_Grid_Dos</h5>
-				<div class="table-responsive table-wrapper-300">
+				<div class="table-responsive table-wrapper-300" id="containerGrillaDos">
 					<table class="table table-bordered table-sm mb-0 table-golden" id="tabGrillaDos">
 						<thead>
 							<tr class="texto-uniforme">
-								<th class="align-center">Concepto</th>
+								<th class="align-center" style="width: 65%;">Concepto</th>
 								<th class="align-center">Fecha Reg.</th>
 								<th class="align-center">Fecha Vto.</th>
 								<th class="align-center">Importe</th>
-								<th style="width: 5%;" class="text-sm-center" scope="col">Estado</th>
+								<th style="width: 8%;" class="text-sm-center" scope="col">CH en curso</th>
 							</tr>
 						</thead>
 						<tbody>
 							@foreach (var item in Model.GrillaBcoLibro_Dos.ListaDatos)
 							{
+								if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 								var importeFormateado = item.importe < 0 ? $"({Math.Abs(item.importe):N2})" : $"{item.importe:N2}";
 								var fecha = item.fecha != null ? item.fecha.Value.ToString("dd/MM/yyyy") : "";
 								var fecha_vto = item.fecha_vto != null ? item.fecha_vto.Value.ToString("dd/MM/yyyy") : "";
-								<tr class="texto-uniforme">
+								<tr class="texto-uniforme @clase">
 									<td>@item.concepto</td>
 									<td class="text-center">@fecha</td>
 									<td class="text-center">@fecha_vto</td>
@@ -169,7 +260,7 @@
 									<td class="align-center">
 										@if (item.strEstado)
 										{
-											<i class='bx bx-check text-danger'></i>
+											<i class='bx bx-check text-success'></i>
 										}
 									</td>
 								</tr>

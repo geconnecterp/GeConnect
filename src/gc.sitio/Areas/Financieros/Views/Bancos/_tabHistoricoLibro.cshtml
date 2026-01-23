@@ -5,20 +5,91 @@
     string clase = string.Empty;
     string sortDirInv = Model.GrillaHistorico.SortDir.Equals("ASC") ? "DESC" : "ASC";
 }
-<div class="card">
-    <div class="card-body">
-        <div class="table-responsive text-nowrap  table-wrapper-500">
+<style>
+    thead th {
+        position: sticky;
+        top: 0px;
+        z-index: 1; /* suficiente para estar sobre las filas */
+        background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+        color: #fff !important;
+    }
+
+    .table-wrapper {
+        /*max-height: 400px;  o lo que necesites */
+        overflow-y: auto;
+        position: relative;
+    }
+
+    #containerGridHistoricoLibro {
+        position: relative;
+        height: 480px;
+        max-height: 480px;
+        overflow-y: auto;
+        overflow-x: hidden !important;
+        z-index: auto;
+    }
+
+    .container-auto {
+        height: auto !important;
+        max-height: none !important;
+        overflow-x: hidden !important;
+    }
+
+    .table-golden {
+        border-collapse: separate;
+        border-spacing: 0;
+        table-layout: fixed;
+    }
+
+        .table-golden thead {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+            color: #fff !important;
+        }
+
+            .table-golden thead th {
+                position: sticky;
+                top: 0;
+                z-index: 4;
+                background: linear-gradient(to bottom, #b8860b, #daa520);
+                color: #fff;
+                box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+                background-clip: padding-box;
+            }
+
+            .table-golden thead,
+            .table-golden thead th {
+                /*background-color: #b8860b;  tu dorado */
+                /* color: #333; */
+            }
+
+    #tbGridHistoricoLibro th,
+    #tbGridHistoricoLibro td {
+        padding: 0.01rem 0.15rem !important;
+        line-height: 1.2 !important;
+        height: auto !important;
+    }
+
+    #tbGridHistoricoLibro tr {
+        height: 1.6rem !important;
+    }
+</style>
+<div class="card" style="padding-left: 0px;padding-right: 0px;">
+    <div class="card-body p-1">
+        <div class="table-responsive text-nowrap  table-wrapper-500" id="containerGridHistoricoLibro">
             <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbGridHistoricoLibro">
                 <thead>
                     <tr class="header">
                         <th style="width: 5%;" class="text-sm-center" scope="col">N° MOV.</th>
-                        <th style="width: 10%;" class="text-sm-center" scope="col">FECHA</th>
-                        <th style="width: 10%;" class="text-sm-center" scope="col">VENCIMIENTO</th>
-                        <th style="width: 10%;" class="text-sm-center" scope="col">PERCIBIDO</th>
+                        <th style="width: 9%;" class="text-sm-center" scope="col">FECHA</th>
+                        <th style="width: 9%;" class="text-sm-center" scope="col">VENCIMIENTO</th>
+                        <th style="width: 9%;" class="text-sm-center" scope="col">PERCIBIDO</th>
                         <th style="width: 30%;" class="text-sm-center" scope="col">CONCEPTO</th>
                         <th style="width: 15%;" class="text-sm-center" scope="col">DEBE</th>
                         <th style="width: 15%;" class="text-sm-center" scope="col">HABER</th>
-                        <th style="width: 5%;" class="text-sm-center" scope="col">CONCILIADO</th>
+                        <th style="width: 8%;" class="text-sm-center" scope="col">CONCILIADO</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,7 +110,7 @@
                                 <td class="align-center">
                                     @if (item.strConciliado)
                                     {
-                                        <i class='bx bx-check text-danger'></i>
+                                        <i class='bx bx-check text-success'></i>
                                     }
                                 </td>
                             </tr>
