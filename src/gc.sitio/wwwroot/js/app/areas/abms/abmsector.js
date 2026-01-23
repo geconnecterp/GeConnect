@@ -6,7 +6,7 @@
 
     $(document).on("dblclick", "#" + Grids.GridSector + " tbody tr", function () {
         x = $(this);
-        ejecutaDblClickGrid(x, Grids.GridSector);
+        ejecutaDblClickSector(x, Grids.GridSector);
     });
 
     $("#tabSector").on("click", function () { SeteaIDSectorSelected(); });
@@ -51,12 +51,12 @@ function posicionarRegEnGrid(callback) {
     if (callback && typeof callback === 'function') {
         callback();
     }
-    if (destinoDeOperacion === AbmObject.SECTORES) {
+    /*if (destinoDeOperacion === AbmObject.SECTORES) {*/
         setTimeout(function () {
-            if (secId !== "") {
-                let grilla = Grids.GridSector;
+            if (Entidad2Select !== "") {
+                let grilla = tabAbm ===1? Grids.GridSector: tabAbm===2?Grids.GridSubSector:Grids.GridRubro;
                 var $fila = $("#" + grilla + " tbody tr").filter(function () {
-                    return $(this).find("td:first").text().trim() === secId;
+                    return $(this).find("td:first").text().trim() === Entidad2Select;
                 }).first();
 
                 // Si se encuentra la fila, solo marcarla visualmente
@@ -83,7 +83,7 @@ function posicionarRegEnGrid(callback) {
                 accionBotones(AbmAction.CANCEL);
             }
         }, 1000);
-    }
+    //}
 }
 
 function NuevoSector() {
@@ -246,6 +246,7 @@ function analizaEstadoBtnDetalle() {
 }
 
 function SeteaIDSectorSelected() {
+    tabAbm = 1;
     $("#IdSelected").val($("#Sector_Sec_Id").val());
 }
 
@@ -253,6 +254,7 @@ function BuscarSubSectorTabClick() {
     if ($(".nav-link").prop("disabled")) {
         return false;
     }
+    tabAbm = 2;
     BuscarSubSector();
 }
 
@@ -277,6 +279,7 @@ function BuscarRubroTabClick() {
     if ($(".nav-link").prop("disabled")) {
         return false;
     }
+    tabAbm = 3;
     BuscarRubro();
 }
 
@@ -416,6 +419,17 @@ function buscarSectores(pag, esBaja = false, callback) {
 
 }
 
+function ejecutaDblClickSector(x, grid) {
+    AbrirWaiting("Espere mientras se busca el elementos seleccionado...");
+    selectRegDbl(x, grid);
+
+    // Asegurarse de que btnDetalle esté habilitado cuando hay un registro seleccionado
+    if (grid === Grids.GridSector) {
+        $("#btnDetalle").prop("disabled", false);
+    }
+}
+
+
 function selectRegDbl(x, gridId) {
     AbrirWaiting("Espere mientras se busca la información solicitada...");
     $("#" + gridId + " tbody tr").each(function (index) {
@@ -427,14 +441,14 @@ function selectRegDbl(x, gridId) {
     switch (gridId) {
         case Grids.GridSector:
             var id = x.find("td:nth-child(1)").text();
+            Entidad2Select = id;
             var data = { id: id };
             //EntidadSelect = id;
             desactivarGrilla(gridId);
             //se busca el sector
             BuscarSector(id);
             $("#divDetalle").collapse("show");
-            //se posiciona el registro seleccionado
-            posicionarRegOnTop(x);
+            
             secId = id;
             //var sec_id = x[0].cells[0].innerText.trim();
             //if (sec_id !== "") {
@@ -446,11 +460,14 @@ function selectRegDbl(x, gridId) {
             //	$("#divFiltro").collapse("hide");
 
             $("#IdSelected").val(Id);
-            //	posicionarRegOnTop(x);
+            //se posiciona el registro seleccionado
+            posicionarRegOnTop(x);
             //}
             break;
         case Grids.GridSubSector:
             var ssId = x.cells[0].innerText.trim();
+            Entidad2Select = ssId;
+            desactivarGrilla(Grids.GridSubSector);
             var data = { ssId };
             AbrirWaiting();
             PostGenHtml(data, buscarDatosSubSectorUrl, function (obj) {
@@ -463,9 +480,13 @@ function selectRegDbl(x, gridId) {
                 ControlaMensajeError(obj.message);
                 CerrarWaiting();
             });
+            posicionarRegOnTop(regSelected);
+
             break;
         case Grids.GridRubro:
             var rubId = x.cells[0].innerText.trim();
+            Entidad2Select = rubId
+            desactivarGrilla(Grids.GridRubro);
             var data = { rubId };
             AbrirWaiting();
             PostGenHtml(data, buscarDatosRubroUrl, function (obj) {
@@ -478,6 +499,7 @@ function selectRegDbl(x, gridId) {
                 ControlaMensajeError(obj.message);
                 CerrarWaiting();
             });
+            posicionarRegOnTop(regSelected);
             break;
         default:
     }
