@@ -40,4 +40,5 @@ namespace gc.infraestructura.Core.EntidadesComunes.Options
         public string RepoApiUrl { get; set; } = string.Empty;
         
     }
+    
 }

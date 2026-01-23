@@ -508,11 +508,12 @@ function procesarConfirmacionTab2y3(grilla, idEnt, e) {
                         activarBotones(true);
 
                         const data = { p_id: EntidadSelect };
-                        if (tabAbm === 2) {
-                            buscarBarrado(data);
-                        } else {
-                            buscarLimite(data);
-                        }
+                        buscarProductoServer(data);
+                        //if (tabAbm === 2) {
+                        //    buscarBarrado(data);
+                        //} else {
+                        //    buscarLimite(data);
+                        //}
                     });
                 });
             }
