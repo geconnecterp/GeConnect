@@ -38,10 +38,11 @@
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-					<tr class="@clase" onclick="selectReg(this, 'tbGridAnticipoFinEmp')" data-an-compte="@item.an_compte">
+					@* <tr class="@clase" onclick="selectReg(this, 'tbGridAnticipoFinEmp')" data-an-compte="@item.an_compte"> *@
+					<tr class="@clase" data-grid="tbGridAnticipoFinEmp">
 						<td class="@Model.GrillaAnticipoFinanEmp.ObtenerClase(item.an_compte) align-center cell-fit-content">@Model.GrillaAnticipoFinanEmp.FormatearDato(item.an_compte, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaAnticipoFinanEmp.ObtenerClase(item.an_concepto) align-center cell-fit-content">@Model.GrillaAnticipoFinanEmp.FormatearDato(item.an_concepto, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaAnticipoFinanEmp.ObtenerClase(item.an_fecha) align-left cell-fit-content">@Model.GrillaAnticipoFinanEmp.FormatearDato(item.an_fecha, FormatDato.Fecha)</td>
+						<td class="@Model.GrillaAnticipoFinanEmp.ObtenerClase(item.an_concepto) cell-fit-content">@Model.GrillaAnticipoFinanEmp.FormatearDato(item.an_concepto, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaAnticipoFinanEmp.ObtenerClase(item.an_fecha) cell-fit-content">@Model.GrillaAnticipoFinanEmp.FormatearDato(item.an_fecha, FormatDato.Fecha)</td>
 						<td class="@Model.GrillaAnticipoFinanEmp.ObtenerClase(item.ant_desc) align-left cell-fit-content">@Model.GrillaAnticipoFinanEmp.FormatearDato(item.ant_desc, FormatDato.Ninguno)</td>
 						<td class="@Model.GrillaAnticipoFinanEmp.ObtenerClase(item.str_an_anulada) align-center cell-fit-content">@Model.GrillaAnticipoFinanEmp.FormatearDato(item.str_an_anulada, FormatDato.Ninguno)</td>
 					</tr>

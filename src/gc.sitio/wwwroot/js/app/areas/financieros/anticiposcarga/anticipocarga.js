@@ -208,31 +208,40 @@ function imprimirOPP() {
 //############ COMENTAR AL FINALIZAR ############
 
 function AgregarAnticipo() {
-	AbrirWaiting();
-	var cta_id = clienteIdSelected;
-	var cta_desc = clienteDescSelected;
-	var cuotas = $("#cuotas").inputmask('unmaskedvalue');
-	var importe = $("#importe").inputmask('unmaskedvalue');
-	var intereses = $("#porc_interes").val();
-	var data = { cta_id, cta_desc, cuotas, importe, intereses };
-	PostGen(data, agregarAnticipoUrl, function (obj) {
-		if (obj.error === true) {
-			CerrarWaiting();
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
-
-		}
-		else {
-			setTimeout(() => {
-				//$('#modalCargaDeAnticipo').modal('hide');
+	if (ctaIdSelected == "") {
+		AbrirMensaje("ATENCIÓN", "Seleccionar un cliente.", function () {
+			$("#msjModal").modal("hide");
+			$("#porc_interes").trigger('focus');
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting();
+		var cta_id = clienteIdSelected;
+		var cta_desc = clienteDescSelected;
+		var cuotas = $("#cuotas").inputmask('unmaskedvalue');
+		var importe = $("#importe").inputmask('unmaskedvalue');
+		var intereses = $("#porc_interes").val();
+		var data = { cta_id, cta_desc, cuotas, importe, intereses };
+		PostGen(data, agregarAnticipoUrl, function (obj) {
+			if (obj.error === true) {
 				CerrarWaiting();
-				ActualizarListaDeAnticipos();
-				limpiarCamposEnModal();
-			}, 300);
-		}
-	});
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+
+			}
+			else {
+				setTimeout(() => {
+					//$('#modalCargaDeAnticipo').modal('hide');
+					CerrarWaiting();
+					ActualizarListaDeAnticipos();
+					limpiarCamposEnModal();
+				}, 300);
+			}
+		});
+	}
 }
 
 function CerrarModal() {
@@ -296,6 +305,7 @@ function limpiarCamposEnModal() {
 	$("#cuotas").val("1");
 	$("#importe").val("0");
 	$("#Rel02").trigger("focus");
+	clienteIdSelected = "";
 }
 
 function inicializarCamposEnModal() {

@@ -68,7 +68,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
 
 				#endregion
-
+				AnticiposLista = [];
 				CargarDatosIniciales(true);
 
 				model.ListaTipo = ComboTipoAnticipoEmpleados();
@@ -138,6 +138,8 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					return Json(new { error = true, warn = false, msg = "La cuota debe ser mayor a 0." });
 				if (AnticiposLista.Any() && AnticiposLista.Where(x => x.cta_id == cta_id).Any())
 					return Json(new { error = true, warn = false, msg = "El cliente ya se encuentra en la lista de anticipos." });
+				if (!ClientesLista.Any(x => x.Cta_Id == cta_id))
+					return Json(new { error = true, warn = false, msg = "El cliente especificado no existe." }); 
 
 				var tope = 0.00M;
 				var tope_original = 0.00M;

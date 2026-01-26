@@ -6,10 +6,40 @@
 	<link rel="stylesheet" href="~/css/simplePagination.css" />
 	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
+<style>
+	.contenedor-frames {
+		display: flex; /* coloca los fieldset en fila */
+		align-items: center; /* alinea verticalmente */
+		gap: 8px; /* separación horizontal */
+		white-space: nowrap; /* evita saltos de línea */
+	}
+
+	.frame-inputs,
+	.frame-botones {
+		display: inline-flex; /* evita que se expandan verticalmente */
+		align-items: center;
+		border: 1px solid #ccc;
+		padding: 4px 6px;
+		border-radius: 4px;
+	}
+
+	.contenedor-botones {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.btn-anticipo {
+		width: 125px !important;
+		text-align: center;
+		white-space: nowrap;
+	}
+
+</style>
 @Html.Hidden("prov_id_selected", Model.prov_id_selected)
 @Html.Hidden("prov_denominacion_selected", Model.prov_denominacion_selected)
 <div class="container mt-2" id="divAnticiposDeGastos">
-	<div class="mx-auto" style="max-width: 1300px;">
+	<div class="mx-auto">
 		<div class="collapse col-md-2">
 			<div class="d-flex justify-content-sm-end">
 				<!-- Botón Imprimir -->
@@ -23,29 +53,38 @@
 		</div>
 		<div class="row align-items-center mb-2">
 			<div class="col-12">
-				<div class="input-group input-group-sm" id="divInputs">
-					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Tipo: </span>
-					@Html.DropDownListFor(m => m.selectedValue, Model.ListaTipo, "Seleccionar", new { @id = "listaTipoAnticipo", @class = "form-control inputEditable activable", @style = "max-width: 13%;" })
-					<span class="input-group-text">Concepto: </span>
-					<input type="text" asp-for="Concepto" class="form-control activable inputEditable" />
-					<span class="input-group-text">% Interes: </span>
-					<input type="text" asp-for="porc_interes" class="form-control activable inputEditable" style="max-width: 8%;" value="0"/>
-					<span class="input-group-text fixed-lbl-for-abm-100" style="width: 160px;" title="Cuenta Proveedor">Contrapartida (cta. Prov.): </span>
-					<input type="text" class="form-control inputEditable" name="Rel01" id="Rel01" />
-					@Html.Hidden("Rel01Item")
-					<button type="button" class="btn btn-primary btn-icon-compact ms-1" id="btnAgregar">
-						<i class="bx bx-plus-circle"></i>
-					</button>
-					<button type="button" class="btn btn-success btn-sm ms-4" id="btnConfirmarCargaDeAnticipo">
-						<i class="bx bx-badge-check"></i> Confirmar
-					</button>
-					<button type="button" class="btn btn-danger btn-sm ms-1" id="btnCancelar">
-						<i class="bx bx-x-circle"></i> Cancelar
-					</button>
+				<div class="contenedor-frames">
+					<fieldset class="frame-inputs" style="min-height: 41px;padding-right: 6px;padding-top: 6px;margin-right: 0px;">
+						<div class="input-group input-group-sm" id="divInputs">
+							<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Tipo: </span>
+							@Html.DropDownListFor(m => m.selectedValue, Model.ListaTipo, "Seleccionar", new { @id = "listaTipoAnticipo", @class = "form-control inputEditable activable", @style = "max-width: 13%;" })
+							<span class="input-group-text">Concepto: </span>
+							<input type="text" asp-for="Concepto" class="form-control activable inputEditable" />
+							<span class="input-group-text">% Interes: </span>
+							<input type="text" asp-for="porc_interes" class="form-control activable inputEditable" style="max-width: 5%;" value="0" />
+							<span class="input-group-text fixed-lbl-for-abm-100" style="width: 160px;" title="Cuenta Proveedor">Contrapartida (cta. Prov.): </span>
+							<input type="text" class="form-control inputEditable" name="Rel01" id="Rel01" />
+							@Html.Hidden("Rel01Item")
+						</div>
+					</fieldset>
+
+					<fieldset class="frame-botones" style="min-width:420px;margin-left: 0px;">
+						<div class="contenedor-botones">
+							<button type="button" class="btn btn-primary btn-sm ms-1 btn-anticipo" id="btnAgregar">
+								<i class="bx bx-plus-circle"></i> Agregar Cuenta
+							</button>
+							<button type="button" class="btn btn-success btn-sm ms-2 btn-anticipo" id="btnConfirmarCargaDeAnticipo">
+								<i class="bx bx-badge-check"></i> Confirmar
+							</button>
+							<button type="button" class="btn btn-danger btn-sm ms-1 btn-anticipo" id="btnCancelar">
+								<i class="bx bx-x-circle"></i> Cancelar
+							</button>
+						</div>
+					</fieldset>
 				</div>
 			</div>
 		</div>
-		<div class="row mt-2" id="divGrillaAnticipos">
+		<div class="row" id="divGrillaAnticipos">
 			<partial name="_grillaAnticipos" model="Model" />
 		</div>
 	</div>

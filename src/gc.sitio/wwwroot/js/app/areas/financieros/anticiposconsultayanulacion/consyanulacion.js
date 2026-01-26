@@ -13,7 +13,14 @@
 	$("#chkDesdeHasta").trigger("change");
 	$("#chkDesdeHasta").prop("disabled", true);
 
+	$(document).on("change", "#Date1, #Date2", function () {
+		validarRangoFechas();
+	});
+
 	InicializarCamposEnFiltros();
+
+	$(document).on("change", "#listaUsuario", ControlalistaUsuSelected);
+	$("#UsuarioList").on("dblclick", 'option', function () { $(this).remove(); })
 
 	$("#btnFiltro").on("click", function () {
 		if ($("#divFiltros").hasClass("show")) {
@@ -41,6 +48,53 @@
 
 	funcCallBack = BuscarAnticiposDeEmpleados;
 });
+
+function ControlalistaUsuSelected() {
+	var item = $("#listaUsuario").val();
+	var desc = $("#listaUsuario option:selected").text();
+	if ($("#UsuarioList").has('option:contains("' + item + '")').length === 0 && $("#UsuarioList").has('option:contains("' + desc + '")').length === 0) {
+		var opc = "<option value=" + item + ">" + desc + "</option>"
+		$("#UsuarioList").append(opc);
+	}
+}
+
+function validarRangoFechas() {
+	const desde = $("#Date1").val();
+	const hasta = $("#Date2").val();
+
+	if (desde && hasta) {
+		const fDesde = new Date(desde);
+		const fHasta = new Date(hasta);
+
+		if (fDesde > fHasta) {
+			alert("La fecha 'Desde' no puede ser mayor que la fecha 'Hasta'.");
+			$("#Date1").val("");
+			$("#Date1").trigger("focus");
+		}
+		else {
+			ActualizarListaDeUsuarios(desde, hasta);
+		}
+	}
+}
+
+function ActualizarListaDeUsuarios(desde, hasta) {
+	console.log("ActualizarListaDeUsuarios");
+	var data = { desde, hasta };
+	PostGenHtml(data, cargarUsuariosUrl, function (obj) {
+		$("#divUsuarios").html(obj);
+		if ($("#chkUsuario").is(":checked")) {
+			console.log("Está chequeado");
+			$("#listaUsuario").prop("disabled", false);
+			$("#UsuarioList").prop("disabled", false);
+		} else {
+			console.log("NO está chequeado");
+			$("#listaUsuario").prop("disabled", true);
+			$("#UsuarioList").prop("disabled", true);
+		}
+		CerrarWaiting();
+		return true
+	});
+}
 
 function ControlaAnularAnticipo() {
 	if (an_compte_selected == "") {
@@ -235,7 +289,7 @@ function cargaPaginacion() {
 }
 
 function BuscarAnticiposDeEmpleados(pag) {
-	AbrirWaiting();
+	AbrirWaiting("");
 	var desde = $("#Date1").val();
 	var hasta = $("#Date2").val();
 	var cta_list = [];
@@ -264,6 +318,7 @@ function BuscarAnticiposDeEmpleados(pag) {
 	PostGenHtml(data, buscarAnticiposDeEmpleadosURL, function (obj) {
 		CerrarWaiting();
 		$("#divAntFinanEmp").html(obj);
+		inicializarEventosTablaAnticipoFinEmp();
 		$("#divAntFinanEmpDetalle").empty();
 		$("#divFiltros").removeClass("show").addClass("collapse");
 		$("#divDetalle").collapse("show");
@@ -300,10 +355,31 @@ function selectReg(x, gridId) {
 	});
 	$(x).addClass("selected-row");
 	if (gridId === "tbGridAnticipoFinEmp") {
-		let anCompte = $(x).data("an-compte");
+		let anCompte = x.childNodes[1].innerText;
 		an_compte_selected = anCompte;
 		CargarDetalleDeAnticipo(anCompte);
 	}
+}
+
+function selectRegDbl(x, gridId) {
+	$("#" + gridId + " tbody tr").each(function (index) {
+		$(this).removeClass("selected-row");
+	});
+	$(x).addClass("selected-row");
+	let anCompte = x.childNodes[1].innerText;
+	an_compte_selected = anCompte;
+	CargarDetalleDeAnticipo(anCompte);
+	AbrirWaiting();
+	setTimeout(function () {
+		CerrarWaiting();
+		irAlTabDetalle();
+	}, 500);
+}
+
+function irAlTabDetalle() {
+	var tabDetalle = document.getElementById("btnTabAntFinanEmpDetalle");
+	var tab = new bootstrap.Tab(tabDetalle);
+	tab.show();
 }
 
 function CargarDetalleDeAnticipo(anCompte) {
@@ -417,4 +493,40 @@ function ValidarFechasClick() {
 			return true;
 		}, false, ["Aceptar"], "error!", null);
 	}
+}
+
+function inicializarEventosTablaAnticipoFinEmp() {
+	let clickTimer = null;
+
+	// CLICK
+	$(document)
+		.off("click", "#tbGridAnticipoFinEmp tbody tr")
+		.on("click", "#tbGridAnticipoFinEmp tbody tr", function () {
+
+			const row = this;
+
+			if (clickTimer) {
+				clearTimeout(clickTimer);
+				clickTimer = null;
+				return;
+			}
+
+			clickTimer = setTimeout(function () {
+				clickTimer = null;
+				selectReg(row, "tbGridAnticipoFinEmp");   // CLICK NORMAL
+			}, 200);
+		});
+
+	// DOUBLE CLICK
+	$(document)
+		.off("dblclick", "#tbGridAnticipoFinEmp tbody tr")
+		.on("dblclick", "#tbGridAnticipoFinEmp tbody tr", function () {
+
+			if (clickTimer) {
+				clearTimeout(clickTimer);
+				clickTimer = null;
+			}
+
+			selectRegDbl(this, "tbGridAnticipoFinEmp");  // DOBLE CLICK
+		});
 }

@@ -10,6 +10,7 @@ using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Financieros.Models;
+using gc.sitio.Areas.Mstk.Models;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
@@ -254,6 +255,33 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			var top = ClientesLista.Where(x => x.Cta_Denominacion.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
 			var tipos = top.Select(x => new ComboGenDto { Id = x.Cta_Id, Descripcion = $"{x.Cta_Denominacion} ({x.Cta_Id})" });
 			return Json(tipos);
+		}
+
+		[HttpPost]
+		public IActionResult ObtenerUsuarios(DateTime desde, DateTime hasta)
+		{
+			try
+			{
+				var model = new ListaUsuModel();
+				var usuarios = _financieroServicio.GetFinancieroUsuarios(new GetFinancieroUsuariosRequest()
+				{
+					desde = desde,
+					hasta = hasta
+				}, TokenCookie);
+				model.ListaUsuario = ComboUsuarios(usuarios);
+				return PartialView("_listaUsuarios", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
 		}
 
 		#region Métodos privados

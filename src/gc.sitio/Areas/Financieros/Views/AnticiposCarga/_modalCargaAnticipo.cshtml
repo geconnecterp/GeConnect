@@ -1,6 +1,13 @@
 ﻿@model CargaAnticipoModel
 @{
 }
+<style>
+	.btn-abms {
+		width: 125px !important;
+		text-align: center;
+		white-space: nowrap;
+	}
+</style>
 @Html.Hidden("cta_id", Model.cta_id)
 @Html.Hidden("cta_desc", Model.cta_desc)
 @Html.Hidden("intereses", Model.intereses)
@@ -39,10 +46,10 @@
 	</div>
 	<div class="modal-footer">
 		<div class="input-group input-group-sm">
-			<button type="button" class="btn btn-success btn-sm ms-1" id="btnConfirmar" >
-				<i class="bx bx-badge-check"></i> Confirmar
+			<button type="button" class="btn btn-success btn-sm ms-1 btn-abms" id="btnConfirmar">
+				<i class="bx bx-badge-check"></i> Cargar
 			</button>
-			<button type="button" class="btn btn-outline-secondary btn-sm ms-1" id="btnSalir">
+			<button type="button" class="btn btn-outline-secondary btn-sm ms-1 btn-abms" id="btnSalir">
 				<i class="bx bx-log-out-circle"></i> Salir
 			</button>
 		</div>

@@ -1,0 +1,9 @@
+﻿@using gc.sitio.Areas.Mstk.Models
+@model ListaUsuModel
+@{
+	var lst = Model.ListaUsuario;
+}
+<div class="input-group input-group-sm">
+	<span class="input-group-text fixed-lbl-for-abm-70">Nombre</span>
+	@Html.DropDownListFor(m => m.UsuarioSeleccionado, lst, "Seleccionar", new { @id = "listaUsuario", @class = "form-control inputEditable activable" })
+</div>
