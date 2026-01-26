@@ -8,7 +8,7 @@
 
 <div class="grid-golden">
     <div class="grid-golden-body p-2">
-        <div id="divPromoCombo" class="table-responsive text-nowrap table-wrapper-500">
+        <div id="divPromoCombo" class="table-responsive text-nowrap table-wrapper" style="max-height:500px;">
             <table class="table table-sm mb-0 table-hover table-golden" id="tbGridPromoCombo">
                 <thead class="sticky-top table-golden-header-compact">
                     <tr class="header">
@@ -26,7 +26,7 @@
                         @foreach (var item in Model.ListaDatos)
                         {
                             alt = !alt;
-                            clase = alt ? string.Empty : "table-row-alt";
+                            clase = alt ? string.Empty : "alt";
 
                             var estadoClass = item.cmb_estado == 'A' ? "bg-success" :
                             (item.cmb_estado == 'H' ? "bg-danger" : "bg-warning");

@@ -2,6 +2,8 @@
 var campoEnPreparacionEdicion = null;
 // Agregar variable global para controlar el modo de modificación
 var modoModificacionCombo = false;
+// me permite saber si se hace una busqueda 
+var realizaAlgunaBusqueda = false;
 
 /**
  * Script para gestión de combos y promociones
@@ -9,6 +11,9 @@ var modoModificacionCombo = false;
 $(function () {
     // Inicialización
     console.log("🚀 Inicializando módulo de combos y promociones");
+
+    //callback para que funcione la paginación
+    var funcCallBack = buscarCombos;
 
     // Configurar eventos
     inicializarEventos();
@@ -49,12 +54,46 @@ $(function () {
 var productosSustitutosMap = {};
 var modoNuevoCombo = false;
 
+//activar botones btnAbmAcepar y btnAbmCancelar
+function ActivarBtnAC(band) {
+    if (band) {
+        $("#btnAbmCancelar").prop("disabled", false).show();
+        $("#btnAbmAceptar").prop("disabled", false).show();
+    }
+    else {
+        $("#btnAbmCancelar").prop("disabled", true).hide();
+        $("#btnAbmAceptar").prop("disabled", true).hide();
+    }
+}
+
+function analizaEstadoCombo() {
+
+    // Ocultar detalle y mostrar filtro
+    $("#divDetalle").collapse("hide");
+    $("#divPromoCombo").css("max-height", "500px");
+    $("#divTools").hide();
+    $("#divCanales").empty();
+    $("#divComboProducto").empty();
+    $("#divComboSustituto").empty();
+    // Desactivar botón detalle
+    $("#btnDetalle").prop("disabled", true);
+
+    activarGrilla("tbGridPromoCombo");
+    // Limpiar selección visual
+    $("#tbGridPromoCombo tbody tr").removeClass("selectedEdit-row");
+
+    accionesIniciales();
+}
+
 /**
  * Inicializa los eventos para los elementos del formulario
  */
 function inicializarEventos() {
+    //boton para realicar la cancelación de toda operación que se esté realizando
+    $("#btnDetalle").on("mousedown", analizaEstadoCombo);
+
     // Configurar el evento click para el botón Cancelar/Inicializar
-    $("#btnCancel, #btnAbmCancelar").on("click", function (e) {
+    $("#btnAbmCancelar").on("click", function (e) {
         cancelarOperacion(e);
     });
 
@@ -125,16 +164,16 @@ function inicializarEventos() {
         inicializarNuevoCombo();
 
         // Activar/desactivar botones
-        $("#btnAbmAceptar").prop("disabled", false);
+        ActivarBtnAC(true);
+
         $("#btnAbmNuevo").prop("disabled", true);
         $("#btnAbmModif").prop("disabled", true);
-
 
         // Verifico si el divFiltro esta SHOW. Si eso es así lo oculto.
         if ($("#divFiltro").is(":visible")) {
             $("#divFiltro").collapse("hide");
         }
-
+        $("#divTools").show();
         // Cargar el modal de búsqueda avanzada
         cargarModalBusquedaAvanzada();
         // Inicializar los campos editables para cantidad y descuento en la grilla de productos
@@ -167,7 +206,7 @@ function inicializarEventos() {
         modoModificacionCombo = true;
 
         // Activar/desactivar botones apropiados
-        $("#btnAbmAceptar").prop("disabled", false);
+        ActivarBtnAC(true);
         $("#btnAbmNuevo").prop("disabled", true);
         $("#btnAbmModif").prop("disabled", true);
 
@@ -183,28 +222,62 @@ function inicializarEventos() {
         confirmarCombo();
     });
 
-    // Evento delegado para el botón de agregar producto
-    $(document).on("click", "#btnAgregarCProducto", function () {
+    // ✅ OPTIMIZACIÓN: Usar delegación de eventos específica para botones dinámicos
+    // Remover solo el handler específico del botón antes de agregarlo
+    $(document).off("click", "#btnAgregarCProducto").on("click", "#btnAgregarCProducto", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        console.log("🔘 Click en botón Agregar Producto");
+        
+        // Verificar que estemos en modo edición
+        if (!modoNuevoCombo) {
+            console.warn("⚠️ No está en modo nuevo combo");
+            ControlaMensajeWarning("Debe estar creando un nuevo combo para agregar productos");
+            return;
+        }
+        
         // Cargar el modal si no existe y luego mostrarlo
         if ($("#busquedaModal").length === 0) {
+            console.log("📦 Cargando modal de búsqueda avanzada...");
             cargarModalBusquedaAvanzada(function () {
                 // Configurar el destino como "combos" y definir el callback
                 if (typeof configurarDestinoBusquedaProductos === 'function') {
                     configurarDestinoBusquedaProductos("combos", agregarProductosAlGrid, obtenerProductosExistentesIds);
+                } else {
+                    console.error("❌ Función configurarDestinoBusquedaProductos no está definida");
                 }
+                //limpia productos seleccionados
+                limpiarSeleccionBusqueda();
                 $("#busquedaModal").modal("show");
             });
         } else {
+            console.log("✅ Modal ya existe, configurando y mostrando...");
             // Si ya existe, configurar destino y mostrar
             if (typeof configurarDestinoBusquedaProductos === 'function') {
                 configurarDestinoBusquedaProductos("combos", agregarProductosAlGrid, obtenerProductosExistentesIds);
+            } else {
+                console.error("❌ Función configurarDestinoBusquedaProductos no está definida");
             }
+            limpiarSeleccionBusqueda();
             $("#busquedaModal").modal("show");
         }
     });
 
-    // Evento delegado para el botón de agregar sustituto
-    $(document).on("click", "#btnAgregarSustituto", function () {
+    // ✅ OPTIMIZACIÓN: Evento delegado específico para el botón de agregar sustituto
+    $(document).off("click", "#btnAgregarSustituto").on("click", "#btnAgregarSustituto", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        console.log("🔘 Click en botón Agregar Sustituto");
+        
+        // Verificar que estemos en modo edición
+        if (!modoNuevoCombo) {
+            console.warn("⚠️ No está en modo nuevo combo");
+            ControlaMensajeWarning("Debe estar creando un nuevo combo para agregar sustitutos");
+            return;
+        }
+        
         // Verificar si hay un producto seleccionado
         var productoSeleccionado = $("#tbGridProductos tbody tr.selected-row");
         if (productoSeleccionado.length === 0) {
@@ -214,25 +287,36 @@ function inicializarEventos() {
 
         var productoId = productoSeleccionado.find("td:first").text().trim();
         var productoDesc = productoSeleccionado.find("td:nth-child(2)").text().trim();
+        
+        console.log(`📍 Producto seleccionado: ${productoId} - ${productoDesc}`);
 
         // Cargar el modal de búsqueda avanzada
         if ($("#busquedaModal").length === 0) {
+            console.log("📦 Cargando modal de búsqueda avanzada para sustitutos...");
             cargarModalBusquedaAvanzada(function () {
                 // Configurar el destino como "sustitutos" y definir el callback
                 if (typeof configurarDestinoBusquedaProductos === 'function') {
                     configurarDestinoBusquedaProductos("sustitutos", function (productos) {
                         agregarSustitutosAlGrid(productos, productoId);
                     }, obtenerSustitutosExistentesIds);
+                } else {
+                    console.error("❌ Función configurarDestinoBusquedaProductos no está definida");
                 }
+                //limpia productos seleccionados
+                limpiarSeleccionBusqueda();
                 $("#busquedaModal").modal("show");
             });
         } else {
+            console.log("✅ Modal ya existe, configurando para sustitutos...");
             // Si ya existe, configurar destino y mostrar
             if (typeof configurarDestinoBusquedaProductos === 'function') {
                 configurarDestinoBusquedaProductos("sustitutos", function (productos) {
                     agregarSustitutosAlGrid(productos, productoId);
                 }, obtenerSustitutosExistentesIds);
+            } else {
+                console.error("❌ Función configurarDestinoBusquedaProductos no está definida");
             }
+            limpiarSeleccionBusqueda();
             $("#busquedaModal").modal("show");
         }
     });
@@ -472,7 +556,7 @@ function buscarCombos(pag = 1) {
         data: filtros,
         success: function (html) {
             CerrarWaiting();
-
+            realizaAlgunaBusqueda = true;
             // Ocultar el panel de filtros y mostrar el de resultados
             $("#divFiltro").collapse("hide");
             $("#divDetalle").collapse("show");
@@ -558,7 +642,9 @@ function configurarEventosSeleccion() {
 
                 if (comboId) {
 
-                    $("#divPromoCombo").removeClass("table-wrapper-500").addClass("table-wrapper-200");
+                    //$("#divPromoCombo").removeClass("table-wrapper-500").addClass("table-wrapper-200");
+                    $("#divPromoCombo").css("max-height", "200px");
+                    $("#divTools").show();
                     // Cargar datos del combo y sus canales
                     cargarDatosCombo(comboId);
                     cargarCanalesCombo(comboId);
@@ -605,11 +691,11 @@ function refrescarGridPromoCombo() {
 }
 
 
-function accionesIniciales() {
+function accionesIniciales(callback) {
     if ($("#divDetalle").is(":visible")) {
         $("#divDetalle").collapse("hide");
     }
-    $("#divFiltro").collapse("show");
+    
 
     // Habilitar los campos de filtro por defecto
     $("#Tipo").prop("disabled", false);
@@ -618,23 +704,35 @@ function accionesIniciales() {
 
     // Activar el botón de nuevo combo
     $("#btnAbmNuevo").prop("disabled", false);
-    
+    $("#btnAbmModif").prop("disabled", true);   
     //ocultamos el boton de eliminar
     $("#btnAbmElimi").hide();
 
-    $("#pagEstado").on("change", function () {
+    //inician ocultos los botones cancelar y confirmar
+    ActivarBtnAC(false);  
+
+    $("#pagEstado").off("change").on("change", function () {
         var div = $("#divPaginacion");
         presentaPaginacion(div);
     });
-    //callback para que funcione la paginación
-    var funcCallBack = buscarCombos;
+    
 
     // Delegación de eventos para autocomplete en el modal
-    $(document).on("autocompleteselect", "#busquedaModal #Rel01", function (event, ui) {
+    $(document).off("autocompleteselect", "#busquedaModal #Rel01").on("autocompleteselect", "#busquedaModal #Rel01", function (event, ui) {
         setTimeout(function () {
             cargarFamiliasParaBusquedaAvanzadaCombos(ui.item.id);
         }, 100);
     });
+
+    if (realizaAlgunaBusqueda) {
+        // Ejecutar callback si existe
+        if (typeof callback === "function") {
+            callback();
+        }       
+    }
+    else {
+        $("#divFiltro").collapse("show");
+    }
 }
 
 function cargarFamiliasParaBusquedaAvanzadaCombos(proveedorId) {
@@ -801,13 +899,13 @@ function actualizarContadorProductosSeleccionados() {
     $("#contadorSeleccionados").text(count);
 }
 
-/**
- * Limpia la selección de productos en la búsqueda
- */
-function limpiarSeleccionBusqueda() {
-    $("#divBusquedaAvanzada table tbody tr").removeClass("selected-row");
-    actualizarContadorProductosSeleccionados();
-}
+///**
+// * Limpia la selección de productos en la búsqueda
+// */
+//function limpiarSeleccionBusqueda() {
+//    $("#divBusquedaAvanzada table tbody tr").removeClass("selected-row");
+//    actualizarContadorProductosSeleccionados();
+//}
 
 /**
  * Agrega los productos seleccionados al grid de productos
@@ -982,10 +1080,10 @@ function guardarRelacionProductoSustitutoEnServidor(productoId) {
 /**
  * Cancela la operación currente y restaura el estado inicial
  */
-function cancelarOperacion(e) {
+function cancelarOperacion(e) {    
     // Ocultar formulario
     $("#divComboDatos").hide();
-    $("#divPromoCombo").removeClass("table-wrapper-200").addClass("table-wrapper-500");
+    $("#divPromoCombo").css("max-height", "500px");;
     // Desactivar modos de edición
     modoNuevoCombo = false;
     modoModificacionCombo = false;
@@ -1006,11 +1104,9 @@ function cancelarOperacion(e) {
     $("#btnAbmNuevo").prop("disabled", false);
     $("#btnAbmAceptar").prop("disabled", true);
     $("#btnAbmModif").prop("disabled", true); // Deshabilitar botón modificar también
-
-    // Si existe un homeCombo y necesitamos redirigir
-    if (e && $("#btnCancel").is(e.target) && typeof homeCombo !== 'undefined') {
-        window.location.href = homeCombo;
-    }
+    
+    accionesIniciales(buscarCombos());
+    
 }
 
 /**
@@ -1127,6 +1223,7 @@ function cargarDatosCombo(comboId) {
  * Inicializa los campos para un nuevo combo
  */
 function inicializarNuevoCombo() {
+    $("#divDetalle").collapse("hide")
     // Mostrar el panel de datos
     $("#divComboDatos").show();
 
@@ -2227,8 +2324,6 @@ function enviarConfirmacionCombo(request, tipoDesc) {
         }
     });
 }
-
-
 
 /**
  * Activa un combo o promoción existente
