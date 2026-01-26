@@ -89,6 +89,10 @@ function analizaEstadoCombo() {
  * Inicializa los eventos para los elementos del formulario
  */
 function inicializarEventos() {
+    $("#btnCancel").on("click", function () {
+        window.location.href = homeCombo;
+    });
+
     //boton para realicar la cancelación de toda operación que se esté realizando
     $("#btnDetalle").on("mousedown", analizaEstadoCombo);
 
@@ -695,7 +699,8 @@ function accionesIniciales(callback) {
     if ($("#divDetalle").is(":visible")) {
         $("#divDetalle").collapse("hide");
     }
-    
+
+    $("#btnDetalle").prop("disabled", true);
 
     // Habilitar los campos de filtro por defecto
     $("#Tipo").prop("disabled", false);
