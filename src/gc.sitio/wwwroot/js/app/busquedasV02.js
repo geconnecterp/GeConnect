@@ -17,17 +17,22 @@ function configurarDestinoBusquedaProductos(tipo, callback, validadorCallback) {
     busquedaDestinoCallback = callback;
     busquedaValidadorCallback = validadorCallback || function() { return []; };
     
+    // ✅ CRÍTICO: Limpiar selección previa al configurar nuevo destino
+    limpiarSeleccionBusqueda();
+    
     // ✅ ACTUALIZADO: Mapeo de títulos según tipo de destino
     const titulosModulos = {
         "ofertas": "Búsqueda Avanzada de Productos",
         "combos": "Selección de Productos para Combo",
         "sustitutos": "Selección de Productos Sustitutos",
         "presupuestos": "Selección de Productos para Presupuesto",
-        "etiquetas": "Selección de Productos para Etiquetas" // ✅ NUEVO
+        "etiquetas": "Selección de Productos para Etiquetas"
     };
     
     const titulo = titulosModulos[tipo] || "Búsqueda Avanzada de Productos";
     $("#buscTitulo").text(titulo);
+    
+    console.log(`🔄 Destino configurado: ${tipo} - Productos seleccionados limpiados`);
 }
 
 $(function () {
@@ -114,6 +119,7 @@ function busquedaAvanzadaProductosV02(pag) {
         dataBakV02 = data1;
         pagina = 1;
         pag = 1;
+        // ✅ CRÍTICO: Limpiar selección al iniciar nueva búsqueda
         limpiarSeleccionBusqueda();
     }
 
@@ -144,6 +150,9 @@ function busquedaAvanzadaProductosV02(pag) {
         $("#divBusquedaAvanzada").html(htmlGrid);
         
         configurarEventosGridBusquedaV02();
+        
+        // ✅ CRÍTICO: Restaurar estado de checkboxes basado en selección actual
+        restaurarEstadoCheckboxes();
 
         if (response.metadata) {
             totalRegs = response.metadata.totalCount;
@@ -247,13 +256,20 @@ function agregarProductoASeleccion(producto) {
     
     if (!productosSeleccionadosBusqueda.some(p => (p.p_id || p.P_id) === productoId)) {
         productosSeleccionadosBusqueda.push(producto);
+        console.log(`✅ Producto agregado a selección: ${productoId}`);
     }
 }
 
 function removerProductoDeSeleccion(productoId) {
+    const longitudAntes = productosSeleccionadosBusqueda.length;
     productosSeleccionadosBusqueda = productosSeleccionadosBusqueda.filter(p => 
         (p.p_id || p.P_id) !== productoId
     );
+    const longitudDespues = productosSeleccionadosBusqueda.length;
+    
+    if (longitudAntes !== longitudDespues) {
+        console.log(`🗑️ Producto removido de selección: ${productoId}`);
+    }
 }
 
 // ✅ OPTIMIZADA: Contador que refleja selección automática
@@ -261,7 +277,7 @@ function actualizarContadorSeleccion() {
     const cantidad = productosSeleccionadosBusqueda.length;
     
     $("#contadorSeleccionados").text(cantidad);
-    $("#badgeSeleccionados").text(cantidad + " seleccionados automáticamente");
+    $("#badgeSeleccionados").text(cantidad + " seleccionados");
     $("#badgeSeleccionadosHeader").text(cantidad + " seleccionados");
 
     if (cantidad > 0) {
@@ -271,11 +287,21 @@ function actualizarContadorSeleccion() {
     }
 }
 
+// ✅ CRÍTICA: Función mejorada para limpiar selección
 function limpiarSeleccionBusqueda() {
+    console.log(`🧹 Limpiando selección. Productos antes: ${productosSeleccionadosBusqueda.length}`);
+    
+    // Limpiar array
     productosSeleccionadosBusqueda = [];
+    
+    // Limpiar checkboxes visibles
     $(".check-producto-busqueda").prop("checked", false);
     $("#checkAllBusqueda").prop("checked", false);
+    
+    // Actualizar contador
     actualizarContadorSeleccion();
+    
+    console.log(`✅ Selección limpiada. Productos después: ${productosSeleccionadosBusqueda.length}`);
 }
 
 // ✅ OPTIMIZADA: Restaurar estado sin color de filas
@@ -326,6 +352,9 @@ function enfocarElementoSeguro(selector) {
 
 // ✅ COMPLETAMENTE ACTUALIZADA: Inicialización con todos los IDs B2
 function inicializaBusquedaAvanzadaV02() {
+    console.log("🔄 Inicializando búsqueda avanzada V02...");
+    
+    // ✅ CRÍTICO: Limpiar selección al inicializar
     limpiarSeleccionBusqueda();
 
     // Configurar proveedor (Rel01B2)
@@ -366,6 +395,7 @@ function inicializaBusquedaAvanzadaV02() {
         $("#chkInact").prop("checked", false).prop("disabled", false);
     }
 
+    console.log("✅ Búsqueda avanzada V02 inicializada");
     return true;
 }
 
@@ -379,7 +409,7 @@ function generarSeccionMetadataYControles(cantidadProductos, metadata) {
             </div>
             <div class="text-muted small text-center">
                 <span class="badge bg-golden-light" id="badgeSeleccionados">
-                    ${cantidadProductos} seleccionados automáticamente
+                    ${cantidadProductos} seleccionados
                 </span>
             </div>
             <div class="text-muted small">
@@ -400,7 +430,7 @@ function generarSeccionMetadataYControles(cantidadProductos, metadata) {
                         <div class="row align-items-center">
                             <div class="col-md-8">
                                 <p class="mb-0">
-                                    Has seleccionado <strong id="contadorSeleccionados">0</strong> productos para agregar a las ofertas.
+                                    Has seleccionado <strong id="contadorSeleccionados">0</strong> productos para agregar.
                                 </p>
                             </div>
                             <div class="col-md-4 text-end">
@@ -550,7 +580,7 @@ function parsearNumeroConCultura(valorTexto) {
     if (!valorTexto || valorTexto.trim() === '') return 0;
     
     let valor = valorTexto.toString().replace(/[$\s]/g, '');
-    valor = valor.replace(/\./g, '').replace(/,/g, '.');
+    valor = valor.replace(/\./g, '').replace(/,/g, '.' );
     
     const numero = parseFloat(valor);
     return isNaN(numero) ? 0 : numero;
@@ -567,7 +597,7 @@ function agregarProductosSeleccionadosAOfertas() {
     let titulo;
     
     switch (busquedaDestinoTipo) {
-        case "etiquetas": // ✅ NUEVO CASO
+        case "etiquetas":
             titulo = "CONFIRMAR AGREGADO A ETIQUETAS";
             mensaje = `¿Desea agregar ${productosSeleccionadosBusqueda.length} productos a las etiquetas?`;
             if (productosSeleccionadosBusqueda.length === 1) {
@@ -613,7 +643,6 @@ function agregarProductosSeleccionadosAOfertas() {
         mensaje,
         function (resp) {
             if (resp === "SI") {
-                // ✅ ACTUALIZADO: Incluir "etiquetas" en la condición
                 if ((busquedaDestinoTipo === "combos" ||
                     busquedaDestinoTipo === "sustitutos" ||
                     busquedaDestinoTipo === "presupuestos" ||
@@ -634,7 +663,7 @@ function agregarProductosSeleccionadosAOfertas() {
 }
 
 /**
- * ✅ ACTUALIZADA: Procesa el agregado de productos mediante callback personalizado
+ * ✅ CRÍTICA: Procesa el agregado de productos mediante callback personalizado
  */
 function procesarAgregarProductosCustom() {
     AbrirWaiting("Agregando productos...");
@@ -644,10 +673,9 @@ function procesarAgregarProductosCustom() {
             ? busquedaValidadorCallback() 
             : [];
         
-        // ✅ ACTUALIZADO: Estado según destino (etiquetas usa 'A' = Activo)
-        let estadoProducto = 'A'; // Por defecto activo
+        let estadoProducto = 'A';
         if (busquedaDestinoTipo === "combos" || busquedaDestinoTipo === "sustitutos") {
-            estadoProducto = 'P'; // Pendiente
+            estadoProducto = 'P';
         }
         
         const productosSeleccionadosOriginales = [...productosSeleccionadosBusqueda];
@@ -656,10 +684,8 @@ function procesarAgregarProductosCustom() {
         
         const cantidadDuplicados = productosSeleccionadosOriginales.length - productosFiltrados.length;
         
-        // ✅ OPTIMIZADO: Estructura de datos simplificada para etiquetas
         let productos;
         if (busquedaDestinoTipo === "etiquetas") {
-            // Para etiquetas solo necesitamos p_id y p_desc
             productos = productosFiltrados.map(function(producto) {
                 return {
                     p_id: producto.p_id,
@@ -668,7 +694,6 @@ function procesarAgregarProductosCustom() {
                 };
             });
         } else {
-            // Para presupuestos/combos/sustitutos (estructura completa existente)
             productos = productosFiltrados.map(function(producto) {
                 return {
                     p_id: producto.p_id,
@@ -696,6 +721,8 @@ function procesarAgregarProductosCustom() {
             } else {
                 ControlaMensajeWarning("No hay productos para agregar.");
             }
+            // ✅ CRÍTICO: Limpiar selección después de procesar
+            limpiarSeleccionBusqueda();
             return;
         }
         
@@ -706,11 +733,12 @@ function procesarAgregarProductosCustom() {
         $("#busquedaModal").modal("hide");
         
         const cantidadAgregada = productos.length;
+        
+        // ✅ CRÍTICO: Limpiar selección DESPUÉS de procesar exitosamente
         limpiarSeleccionBusqueda();
         
         CerrarWaiting();
         
-        // ✅ ACTUALIZADO: Mensajes según tipo de destino
         let mensaje = '';
         if (cantidadDuplicados > 0) {
             mensaje = `Se agregaron ${cantidadAgregada} producto(s). Se omitieron ${cantidadDuplicados} producto(s) duplicado(s).`;
@@ -736,6 +764,8 @@ function procesarAgregarProductosCustom() {
         CerrarWaiting();
         console.error("Error al procesar productos:", error);
         ControlaMensajeError("Error al agregar productos: " + error.message);
+        // ✅ CRÍTICO: Limpiar selección en caso de error
+        limpiarSeleccionBusqueda();
     }
 }
 
@@ -770,9 +800,9 @@ function confirmarLimpiezaSeleccion() {
 function inicializarControlesBusquedaAvanzada() {
     console.log("🔄 Inicializando controles del modal de búsqueda avanzada...");
 
+    // ✅ CRÍTICO: Limpiar selección al inicializar controles
     limpiarSeleccionBusqueda();
 
-    // ✅ ACTUALIZADO: Todos los IDs con B2
     $("#Rel01B2, #Rel02B2, #Search").val("").prop("disabled", false);
     $("#Rel01B2Item, #Rel02B2Item, #Rel03B2Item").val("");
     $("#Rel03B2").val("").prop("disabled", true);
@@ -799,16 +829,20 @@ function inicializarControlesBusquedaAvanzada() {
 }
 
 /**
- * Configura el evento para abrir el modal de búsqueda avanzada
+ * ✅ CRÍTICA: Configura el evento para abrir el modal de búsqueda avanzada
  */
 function configurarAperturaModalBusquedaAvanzada() {
     console.log("🔧 Configurando apertura del modal de búsqueda avanzada...");
 
+    // ✅ CRÍTICO: Limpiar selección al mostrar el modal
     $("#busquedaModal").on("show.bs.modal", function () {
+        console.log("📂 Modal de búsqueda abierto - limpiando selección previa");
         inicializarControlesBusquedaAvanzada();
     });
 
+    // ✅ CRÍTICO: Limpiar selección al ocultar el modal
     $("#busquedaModal").on("hidden.bs.modal", function () {
+        console.log("📕 Modal de búsqueda cerrado - limpiando selección");
         limpiarSeleccionBusqueda();
     });
 
