@@ -14,6 +14,16 @@
 	$("#chkDesdeHasta").prop("disabled", true);
 
 	$(document).on("change", "#Date1, #Date2", function () {
+		const d1 = $("#Date1").val();
+		const d2 = $("#Date2").val();
+		console.log(d1);
+		console.log(d2);
+
+		// Solo sigo si ambas fechas son “válidas de negocio”
+		if (!esFechaValidaFiltro(d1) || !esFechaValidaFiltro(d2)) {
+			return;
+		}
+
 		validarRangoFechas();
 	});
 
@@ -49,6 +59,32 @@
 	funcCallBack = BuscarAnticiposDeEmpleados;
 });
 
+function esFechaValidaFiltro(valor) {
+	if (!valor || valor.length !== 10) return false; // formato esperado yyyy-MM-dd
+
+	const partes = valor.split("-");
+	if (partes.length !== 3) return false;
+
+	const anio = parseInt(partes[0], 10);
+	const mes = parseInt(partes[1], 10);
+	const dia = parseInt(partes[2], 10);
+
+	// rango de años aceptable para tu negocio
+	if (isNaN(anio) || anio < 1900 || anio > 2500) return false;
+	if (isNaN(mes) || mes < 1 || mes > 12) return false;
+	if (isNaN(dia) || dia < 1 || dia > 31) return false;
+
+	return true;
+	//const f = new Date(valor);
+	//if (isNaN(f.getTime())) return false;
+
+	//// chequeo cruzado por seguridad
+	//return f.getFullYear() === anio &&
+	//	(f.getMonth() + 1) === mes &&
+	//	f.getDate() === dia;
+}
+
+
 function ControlalistaUsuSelected() {
 	var item = $("#listaUsuario").val();
 	var desc = $("#listaUsuario option:selected").text();
@@ -67,8 +103,7 @@ function validarRangoFechas() {
 		const fHasta = new Date(hasta);
 
 		if (fDesde > fHasta) {
-			alert("La fecha 'Desde' no puede ser mayor que la fecha 'Hasta'.");
-			$("#Date1").val("");
+			/*alert("La fecha 'Desde' no puede ser mayor que la fecha 'Hasta'.");*/
 			$("#Date1").trigger("focus");
 		}
 		else {
