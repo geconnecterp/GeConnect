@@ -2,6 +2,14 @@
 @{
 	string uploadId = ViewBag.UploadId ?? "default";
 }
+<style>
+	.dropzone-disabled {
+		pointer-events: none; /* bloquea clics, drag & drop, etc. */
+		opacity: 0.4; /* efecto visual de deshabilitado */
+		filter: grayscale(80%);
+	}
+
+</style>
 <div class="modal-header">
 	<h5 class="modal-title" id="tituloImportarArchivo">Importar archivo</h5>
 	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -74,7 +82,4 @@
 	<button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
 		<i class="bx bx-log-out-circle me-1"></i> Cancelar
 	</button>
-	@* <button type="button" class="btn btn-warning btn-sm" id="btnReiniciarImportacion" disabled>
-		<i class="bx bx-refresh me-1"></i> Reiniciar
-	</button> *@
 </div>

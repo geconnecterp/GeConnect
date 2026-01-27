@@ -20,6 +20,32 @@
 		overflow-x: hidden;
 	}
 
+	.contenedor-frames {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		white-space: nowrap;
+	}
+
+	.frame-botones {
+		display: inline-flex;
+		align-items: center;
+		border: 1px solid #ccc;
+		padding: 4px 6px;
+		border-radius: 4px;
+	}
+
+	.contenedor-botones {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.btn-liq-emp {
+		width: 125px !important;
+		text-align: center;
+		white-space: nowrap;
+	}
 </style>
 @section styles {
 	<link rel="stylesheet" href="~/css/financieros/liqdeemp/liqdeempleados.css" />
@@ -29,7 +55,7 @@
 @Html.Hidden("SelectedValueAnio", Model.SelectedValueAnio)
 @Html.Hidden("SelectedValueMes", Model.SelectedValueMes)
 <div class="container mt-2" id="divLiquidacionDeEmpleado">
-	<div class="mx-auto" style="max-width: 1300px;">
+	<div class="mx-auto">
 		<div class="collapse col-md-2">
 			<div class="d-flex justify-content-sm-end">
 				<!-- Botón Imprimir -->
@@ -41,42 +67,52 @@
 				</button>
 			</div>
 		</div>
-		<div class="row align-items-center mb-2">
+		<div class="row align-items-center">
 			<div class="col-12">
-				<div class="input-group input-group-sm" id="divInputs">
-					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Año: </span>
-					@Html.DropDownListFor(m => m.SelectedValueAnio, Model.Anio, "Seleccionar", new { @id = "listaAnio", @class = "form-control inputEditable activable", @style = "max-width: 5%;" })
-					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Mes: </span>
-					@Html.DropDownListFor(m => m.SelectedValueMes, Model.Mes, "Seleccionar", new { @id = "listaMes", @class = "form-control inputEditable activable", @style = "max-width: 5%;" })
-					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Porc. Tope: </span>
-					<input type="text" asp-for="PorcTope" class="form-control activable inputEditable" style="max-width: 50px;"/>
-					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Concepto: </span>
-					<input type="text" asp-for="Concepto" class="form-control activable inputEditable" />
-					<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Actualiza Tope:</span>
-					<div class="input-group-text">
-						@Html.CheckBoxFor(m => m.ActualizaTope, new { @class = "form-check-input mt-0", @id = "chkActualizaTope" })
-					</div>
-					<button type="button" class="btn btn-info btn-sm ms-1" id="btnCargar">
-						<i class="bx bx-upload"></i> Cargar
-					</button>
-					<button type="button" class="btn btn-success btn-sm ms-4" id="btnConfirmar">
-						<i class="bx bx-badge-check"></i> Confirmar
-					</button>
-					<button type="button" class="btn btn-danger btn-sm ms-1" id="btnCancelar">
-						<i class="bx bx-x-circle"></i> Cancelar
-					</button>
+				<div class="contenedor-frames">
+					<fieldset class="frame-inputs" style="min-height: 41px;padding-right: 6px;padding-top: 6px;margin-right: 0px;width: 1000px;">
+						<div class="input-group input-group-sm" id="divInputs">
+							<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Año: </span>
+							@Html.DropDownListFor(m => m.SelectedValueAnio, Model.Anio, "Seleccionar", new { @id = "listaAnio", @class = "form-control inputEditable activable", @style = "max-width: 5%;" })
+							<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Mes: </span>
+							@Html.DropDownListFor(m => m.SelectedValueMes, Model.Mes, "Seleccionar", new { @id = "listaMes", @class = "form-control inputEditable activable", @style = "max-width: 5%;" })
+							<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Porc. Tope: </span>
+							<input type="text" asp-for="PorcTope" class="form-control activable inputEditable" style="max-width: 50px;" />
+							<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Concepto: </span>
+							<input type="text" asp-for="Concepto" class="form-control activable inputEditable" />
+							<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Actualiza Tope:</span>
+							<div class="input-group-text">
+								@Html.CheckBoxFor(m => m.ActualizaTope, new { @class = "form-check-input mt-0", @id = "chkActualizaTope" })
+							</div>
+						</div>
+					</fieldset>
+
+					<fieldset class="frame-botones" style="min-width:420px; height:45px;margin-left: 0px;">
+						<div class="contenedor-botones">
+							<button type="button" class="btn btn-info btn-sm ms-1 btn-liq-emp" id="btnCargar">
+								<i class="bx bx-upload"></i> Cargar Archivo
+							</button>
+							<button type="button" class="btn btn-success btn-sm ms-2 btn-liq-emp" id="btnConfirmar">
+								<i class="bx bx-badge-check"></i> Confirmar
+							</button>
+							<button type="button" class="btn btn-danger btn-sm ms-1 btn-liq-emp" id="btnCancelar">
+								<i class="bx bx-x-circle"></i> Cancelar
+							</button>
+						</div>
+					</fieldset>
 				</div>
 			</div>
 		</div>
-		<div class="row mt-2" id="divGrillas">
-			<div class="col-7" id="divGrillaEncabezado">
-				<partial name="_grillaEncabezado" model="Model" />
-			</div>
-			<div class="col-5" id="divGrillaDetalle">
-				<partial name="_grillaDetalle" model="Model" />
-			</div>
+	</div>
+	<div class="row" id="divGrillas">
+		<div class="col-7" id="divGrillaEncabezado">
+			<partial name="_grillaEncabezado" model="Model" />
+		</div>
+		<div class="col-5" id="divGrillaDetalle">
+			<partial name="_grillaDetalle" model="Model" />
 		</div>
 	</div>
+</div>
 </div>
 
 <!-- para el modal del geston de impresion -->

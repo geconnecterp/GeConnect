@@ -2,9 +2,6 @@
 	'#listaAnio',
 	'#listaMes',
 	'#btnCargar'
-	//'input[name="PorcTope"]',
-	//'input[name="Concepto"]',
-	//'#chkActualizaTope'
 ];
 
 let liqEmpDetalleActualEnLista = null;
@@ -16,7 +13,14 @@ $(function () {
 	$(document).on("click", "#btnConfirmar", ValidarAntesDeConfirmarCargaDeLiquidacion);
 
 	getMaskForIntegerMin50Max100($("#PorcTope"));
+
+	InicializarEstadoDeBotones(true);
 });
+
+function InicializarEstadoDeBotones(valor) {
+	//
+	$("#btnConfirmar").prop('disabled', valor);
+}
 
 function ReseteoDeReportes() {
 	console.log("Reseto de reportes");
@@ -206,6 +210,7 @@ function CancelarCargaLiqEmp() {
 		else {
 			LimpiarCampos();
 			DeshabilitarCampos(false);
+			InicializarEstadoDeBotones(true);
 		}
 	});
 }
@@ -217,6 +222,7 @@ function LimpiarCampos() {
 	$("#listaMes").val($("#SelectedValueMes").val());
 	$("#PorcTope").val("50");
 	$("#Concepto").val("");
+	$("#containerLiqEmpDetalle .table-leyenda").hide();
 }
 
 function abrirModalImportarArchivo() {
@@ -246,6 +252,32 @@ function abrirModalImportarArchivo() {
 
 		initializeUploadControls();
 		$modal.modal('show');
+
+		// Cuando el modal termina de mostrarse
+		$(document).on("shown.bs.modal", "#modalImportarArchivo", function () {
+
+			const uploadId = $("#modalImportarArchivo").find("[id^='dropZone']").attr("id").replace("dropZone", "");
+
+			$("#dropZone" + uploadId).addClass("dropzone-disabled");
+			$("#fileInput" + uploadId).prop("disabled", true);
+		});
+
+		$(document).on("change", "#listaOrigenDeDatos", function () {
+
+			const valor = $(this).val();
+			const uploadId = $("#modalImportarArchivo").find("[id^='dropZone']").attr("id").replace("dropZone", "");
+
+			if (valor && valor !== "Seleccionar") {
+				// habilitar
+				$("#dropZone" + uploadId).removeClass("dropzone-disabled");
+				$("#fileInput" + uploadId).prop("disabled", false);
+			} else {
+				// deshabilitar
+				$("#dropZone" + uploadId).addClass("dropzone-disabled");
+				$("#fileInput" + uploadId).prop("disabled", true);
+			}
+		});
+
 		CerrarWaiting();
 		return true
 	});
@@ -540,6 +572,7 @@ function ProcesarArchivoImportado() {
 			$("#modalImportarArchivo").modal("hide");
 			ObtenerGrillaEncabezado();
 			DeshabilitarCampos(true);
+			InicializarEstadoDeBotones(false);
 		}
 	});
 }
@@ -651,6 +684,8 @@ function ActualizarLiqEmpDetalle(row, campoActual) {
 		if (obj.error === true) {
 			AbrirMensaje("ATENCIÓN", obj.msg, function () {
 				$("#msjModal").modal("hide");
+				//Actualizar valores en la grilla
+				$(`.input-importe[data-id="${idSeleccionado}"]`)[0].inputmask.setValue(0); // ✅ mantiene la máscara
 				return true;
 			}, false, ["Aceptar"], "error!", null);
 		}
@@ -765,18 +800,15 @@ function configurarEventosEdicionOptimizadoGridLiqEmpDetalle() {
 		const $this = $(this);
 		const idDetalle = $this.closest('tr').data('id');
 
-		// Cambio de producto si es necesario
 		if (idDetalle !== liqEmpDetalleActualEnLista) {
 			liqEmpDetalleActualEnLista = idDetalle;
 			destacarFilaSeleccionadaGridLiqEmpDetalle(idDetalle);
 		}
 
-		// Habilitar campo
 		$this.prop('readonly', false).removeClass('campo-readonly');
 		setTimeout(() => { $this[0].focus(); $this[0].select(); }, 0);
 	});
 
-	// Evento keydown unificado
 	$(document).on('keydown.camposEditables', camposEditables, function (e) {
 		if (e.key === 'Enter' || e.key === 'Tab') {
 			e.preventDefault();
@@ -789,12 +821,9 @@ function configurarEventosEdicionOptimizadoGridLiqEmpDetalle() {
 
 			// Aplicar cálculos según tipo
 			if (esSecuencia01 && fueModificado) ActualizarLiqEmpDetalleDebounced(row, this);
-			//else if (esMargen) calcularPrecioVentaAPIDebounced(row);
-			//else if (esPrecioVenta) calcularPrecioVentaMargenAPIDebounced(row);
 		}
 	});
 
-	// Eventos blur simplificados con delegación
 	const eventosBlur = {
 		[camposSecuencia01]: () => ActualizarLiqEmpDetalleDebounced
 	};
@@ -841,10 +870,8 @@ function activarSiguienteCampoGridLiqEmpDetalle(campoActual) {
 }
 
 function marcarCampoModificadoGridLiqEmpDetalle(input) {
-	// Usar el parámetro input en lugar de this
 	const $input = $(input);
 
-	// Validar que el input existe
 	if (!$input.length) {
 		console.warn('marcarCampoModificado: Input no válido', input);
 		return false;
@@ -852,7 +879,6 @@ function marcarCampoModificadoGridLiqEmpDetalle(input) {
 
 	const valorOriginal = $input.data('original-value');
 
-	// Obtener valor actual con manejo de errores
 	let valorActual = '';
 	try {
 		valorActual = $input.val() ? $input.val().replace(/,/g, '') : '';
@@ -861,52 +887,37 @@ function marcarCampoModificadoGridLiqEmpDetalle(input) {
 		return false;
 	}
 
-	// Si no hay valor original definido, no podemos comparar
 	if (valorOriginal === undefined) {
 		return false;
 	}
 
-	// Determinar si el campo está modificado
 	let esModificado = false;
 
-
-	// Para campos numéricos - manejar correctamente el caso del valor 0
 	try {
-		// Convertir valores a números, manejando cadenas vacías como 0
 		let numOriginal = valorOriginal === '' || valorOriginal === null ? 0 : parseFloat(valorOriginal);
 		let numActual = valorActual === '' ? 0 : parseFloat(valorActual);
 
-		// Si ambos valores son realmente cero (o equivalentes a cero), no están modificados
 		if ((numOriginal === 0 || isNaN(numOriginal)) &&
 			(numActual === 0 || isNaN(numActual))) {
 			esModificado = false;
 		} else if (!isNaN(numOriginal) && !isNaN(numActual)) {
-			// Ambos son números válidos, usar tolerancias específicas según el campo
-			let tolerancia = 0.009; // Base para campos con 2 decimales
+			let tolerancia = 0.009;
 
-			//if ($input.hasClass('input-importe')) {
-			//	tolerancia = 0.0009; // Para campos con 3 decimales
-			//}
-
-			// Si la diferencia supera la tolerancia, está modificado
 			esModificado = Math.abs(numOriginal - numActual) > tolerancia;
 		} else if (isNaN(numOriginal) !== isNaN(numActual)) {
-			// Si uno es NaN y el otro no, están diferentes
 			esModificado = true;
 		}
 	} catch (e) {
 		console.error("Error al comparar valores:", e);
-		esModificado = false; // En caso de error, no marcar como modificado
+		esModificado = false;
 	}
 
-	// Aplicar o quitar la clase según corresponda
 	if (esModificado) {
 		$input.addClass('campo-modificado');
 	} else {
 		$input.removeClass('campo-modificado');
 	}
 
-	// Manejar el indicador visual
 	const container = $input.closest('.input-container');
 	if (esModificado) {
 		if (container.find('.indicador-cambio').length === 0) {

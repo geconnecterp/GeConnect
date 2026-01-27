@@ -24,11 +24,11 @@
 		}
 		<thead>
 			<tr class="header">
-				<th class="text-center columna-comprobante">Comprobante</th>   <!-- 50% -->
-				<th class="text-center columna-cuota">Cuota</th>               <!-- 15% -->
-				<th class="text-center columna-fecha">Fecha</th>               <!-- 15% -->
-				<th class="text-center columna-importe">Importe</th>           <!-- 15% -->
-				<th class="text-center columna-dto">Dto. Sueldo</th>           <!-- 20% -->
+				<th class="text-center columna-comprobante">Comprobante</th>
+				<th class="text-center columna-cuota">Cuota</th>
+				<th class="text-center columna-fecha">Fecha</th>
+				<th class="text-center columna-importe">Importe</th>
+				<th class="text-center columna-dto">Dto. Sueldo</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -44,9 +44,7 @@
 						<td style="width:10%;" class="columna-cuota text-sm-center">@Model.GrillaDetalle.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
 						<td style="width:10%;" class="columna-fecha @Model.GrillaDetalle.ObtenerClase(item.cv_fecha_vto)">@Model.GrillaDetalle.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
 						<td style="width:15%;" class="columna-importe @Model.GrillaDetalle.ObtenerClase(item.cv_importe)">@Model.GrillaDetalle.FormatearDato(item.cv_importe, FormatDato.Monto)</td>
-						@* <td class="@Model.GrillaEncabezado.ObtenerClase(item.cv_importe_imputado)">@Model.GrillaEncabezado.FormatearDato(item.cv_importe_imputado, FormatDato.Monto)</td> *@
 						<td style="width:15%;" class="columna-dto @Model.GrillaDetalle.ObtenerClase(item.cv_importe_imputado)">
-							@*07*@
 							<div class="input-container">
 								<input type="text" class="form-control form-control-sm input-importe input-numeric"
 									   value="@(item.cv_importe_imputado.ToString("F3"))"

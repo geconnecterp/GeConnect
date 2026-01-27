@@ -365,34 +365,45 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return Json(new { error = true, warn = false, msg = "No autenticado." });
 
-				//Actualizamos el valor en la lista de detalle
+				if (val < 0)
+					return Json(new { error = true, warn = false, msg = "No se pueden especificar montos negativos." });
+
 				var listaTemp = LiqEmpleadoDetalleLista;
+				var listaTempEnc = LiqEmpleadoEncabezadoLista;
+
+				var dtoSueldo = LiqEmpleadoDetalleLista.Where(x => x.cta_id == cta_id).Sum(y => y.cv_importe_imputado) + val;
+				var listaTempEncFiltrada = listaTempEnc.Where(x => x.cta_id == cta_id).ToList();
+				if (listaTempEncFiltrada == null || listaTempEncFiltrada.Count <= 0)
+					return Json(new { error = true, warn = false, msg = "No se ha encontrado el elemento de encabezado para actualizar." });
+
+				//Validamos que el monto introducido no supere la Obligacion del empleado
+				if ((listaTempEncFiltrada[0].cv_importe_tot_pend - dtoSueldo) < 0)
+					return Json(new { error = true, warn = false, msg = "El monto introducido supera la obligación total de la cuenta." });
+
+				//Actualizamos el valor en la lista de detalle
 				var listaTempFiltrada = listaTemp.Where(x => x.cta_id == cta_id && x.dia_movi == dia_movi && x.cm_compte == cm_compte
 												&& x.tco_id == tco_id && x.cm_compte_cuota == cm_compte_cuota).ToList();
+
 				if (listaTempFiltrada == null || listaTempFiltrada.Count <= 0)
-				{
 					return Json(new { error = true, warn = false, msg = "No se ha encontrado el elemento para editar." });
-				}
+
+				if (listaTempFiltrada[0].cv_importe < val)
+					return Json(new { error = true, warn = false, msg = "El monto introducido es mayor al importe del anticipo." });
+
 				listaTempFiltrada[0].cv_importe_imputado = val;
 				LiqEmpleadoDetalleLista = listaTemp;
 				//Fin de actualizacion de item en detalle
 
 				//Actualizamos el valor en la lista de encabezado
-				var listaTempEnc = LiqEmpleadoEncabezadoLista;
-				var listaTempEncFiltrada = listaTempEnc.Where(x => x.cta_id == cta_id).ToList();
-				if (listaTempEncFiltrada == null || listaTempEncFiltrada.Count <= 0)
-				{
-					return Json(new { error = true, warn = false, msg = "No se ha encontrado el elemento de encabezado para actualizar." });
-				}
-				var dtoSueldo = LiqEmpleadoDetalleLista.Where(x => x.cta_id == cta_id).Sum(y => y.cv_importe_imputado);
-				var pendiente = listaTempEncFiltrada[0].cv_importe_tot_pend - dtoSueldo; 
+				var pendiente = listaTempEncFiltrada[0].cv_importe_tot_pend - val;
 				var porc = 0.00M;
 				if (listaTempEncFiltrada[0].tope > 0)
-					porc = RedondearHaciaArriba((dtoSueldo / listaTempEncFiltrada[0].tope), 2);
+					porc = (dtoSueldo / listaTempEncFiltrada[0].tope) * 100;
+				//porc = RedondearHaciaArriba((dtoSueldo / listaTempEncFiltrada[0].tope), 2);
 
-				listaTempEncFiltrada[0].cv_importe_tot_imputado = dtoSueldo;	// Dto Sueldo igual a la suma de Dto sueldo del detalle
-				listaTempEncFiltrada[0].porc_imputado_sobre_tope = porc;		// %:  es igual a Dto Sueldo / Tope
-				listaTempEncFiltrada[0].cv_importe_tot_pend = pendiente;		// Pendiente: igual a Obligaciones empleados – Dto Sueldo
+				listaTempEncFiltrada[0].cv_importe_tot_imputado = dtoSueldo;    // Dto Sueldo igual a la suma de Dto sueldo del detalle
+				listaTempEncFiltrada[0].porc_imputado_sobre_tope = porc;        // %:  es igual a Dto Sueldo / Tope
+				listaTempEncFiltrada[0].cv_importe_tot_pend = pendiente;        // Pendiente: igual a Obligaciones empleados – Dto Sueldo
 				return Json(new { error = false, warn = false, msg = "", data = new { listaTempFiltrada[0].id, importe = val, dtoSueldo, pendiente, porc } });
 			}
 			catch (NegocioException ex)
@@ -660,7 +671,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 		private static decimal RedondearHaciaArriba(decimal valor, int decimales)
 		{
 			decimal factor = (decimal)Math.Pow(10, decimales);
-			return Math.Ceiling(valor * factor) / factor;
+			return Math.Ceiling(valor) / factor;
 		}
 
 		private List<DetalleLiquidacion> MapperDetalle(List<LiqEmpleadoDetalleDto> listaDto)

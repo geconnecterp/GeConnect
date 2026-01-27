@@ -1,4 +1,9 @@
-﻿/* Estilos para campos readonly */
+﻿
+input[readonly]:not(.campo-readonly) {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+}
+
 .campo-readonly {
     background-color: #f8f9fa;
     cursor: pointer;
@@ -10,48 +15,38 @@
         border-color: #adb5bd;
     }
 
-input[readonly]:not(.campo-readonly) {
-    background-color: #e9ecef;
-    cursor: not-allowed;
-}
-
-/* OPTIMIZACIÓN: Reducción de espaciado general en tablas */
 #tbListaLiqEmpDetalle th, #tbListaLiqEmpDetalle td {
     padding: 0.15rem 0.25rem !important;
     box-sizing: border-box;
 }
 
-/* MEJORADO: */
 .input-importe {
-    width: 100%; /* Usar todo el ancho disponible */
-    min-width: 40px; /* Mantenemos este valor mínimo */
-    max-width: 50px; /* REDUCIDO para dar más espacio a otros campos */
+    width: 100%;
+    min-width: 40px; 
+    max-width: 50px; 
     font-size: 0.85rem;
     padding: 0.1rem 0.15rem !important;
 }
 
-/* REDISEÑADO: */
 .input-importe {
     width: 100%;
-    min-width: 85px; /* AUMENTADO para mejores proporciones */
-    max-width: 110px; /* AUMENTADO significativamente */
+    min-width: 85px;
+    max-width: 110px;
     font-size: 0.85rem;
-    font-family: monospace; /* Añadido para mejor alineación de decimales */
-    letter-spacing: -0.2px; /* Ajustado específicamente */
-    padding-right: 0.3rem !important; /* Más espacio a la derecha */
+    font-family: monospace;
+    letter-spacing: -0.2px;
+    padding-right: 0.3rem !important;
 }
 
-/* OPTIMIZADO: */
 .input-numeric {
-    height: 1.8rem !important; /* AUMENTADO ligeramente para mejor legibilidad */
+    height: 1.8rem !important;
     text-align: right;
-    letter-spacing: -0.2px; /* Ajustado para mejor legibilidad */
-    padding: 0.1rem 0.25rem !important; /* Más padding horizontal */
+    letter-spacing: -0.2px;
+    padding: 0.1rem 0.25rem !important;
     margin: 0 !important;
     border-radius: 0.2rem;
 }
 
-/* OPTIMIZADO: */
 .input-container {
     position: relative;
     width: 100%;
@@ -61,26 +56,22 @@ input[readonly]:not(.campo-readonly) {
     justify-content: flex-end;
 }
 
-/* NUEVO: */
 #tbListaLiqEmpDetalle td:nth-child(4) { 
-    width: 110px !important; /* Ancho fijo más amplio */
+    width: 110px !important;
     min-width: 110px !important;
     max-width: 110px !important;
     padding: 0.1rem 0.15rem !important;
 }
 
-/* Optimización específica para células de tabla */
 #tbListaLiqEmpDetalle td {
     white-space: nowrap;
     vertical-align: middle;
 }
 
-/* OPTIMIZADO: */
     #tbListaLiqEmpDetalle td:has(.input-numeric) {
-        padding: 0.1rem 0.05rem !important; /* Padding horizontal reducido */
+        padding: 0.1rem 0.05rem !important;
     }
 
-/* Estilo para la fila seleccionada */
 #tbListaLiqEmpDetalle tbody tr.selected {
     background-color: #e6f2ff !important;
     box-shadow: inset 0 0 0 1px #4c8dff;
@@ -90,13 +81,11 @@ input[readonly]:not(.campo-readonly) {
     background-color: rgba(230, 242, 255, 0.5);
 }
 
-/* Estilo para campos modificados */
 .campo-modificado {
     background-color: #d4f1f9 !important;
     border-color: #a8e1f5 !important;
 }
 
-/* Indicador visual de cambio - Optimizado para ocupar menos espacio */
 .indicador-cambio {
     position: absolute;
     top: 0;
@@ -108,17 +97,6 @@ input[readonly]:not(.campo-readonly) {
     border-color: transparent #4bacc6 transparent transparent;
 }
 
-/* NUEVO: Optimización para encabezados de tabla que contienen campos de 3 decimales */
-/*#tbListaLiqEmpDetalle th:nth-child(5) { 
-    width: 110px !important;
-    min-width: 110px !important;
-    max-width: 110px !important;
-    text-align: center;
-    font-size: 0.75rem;
-    padding: 0.15rem !important;
-}*/
-
-/* NUEVO: Optimización para encabezados de columnas compactos */
 #tbListaLiqEmpDetalle th {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -129,25 +107,14 @@ input[readonly]:not(.campo-readonly) {
     vertical-align: middle;
 }
 
-/* NUEVO: Ajuste específico para primera columna (checkbox) */
-/*    #tbListaLiqEmpDetalle th:first-child,
-    #tbListaLiqEmpDetalle td:first-child {
-        width: 30px !important;
-        max-width: 30px !important;
-        min-width: 30px !important;
-        padding: 0 !important;
-        text-align: center;
-    }*/
 
-/* NUEVO: Optimización de columnas código y descripción */
-#tbListaLiqEmpDetalle td:nth-child(0) { /* Código */
+#tbListaLiqEmpDetalle td:nth-child(0) {
     max-width: 80px !important;
     width: 80px !important;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-/* NUEVO: Input container con mejor control de espacio y alineación */
 .input-container {
     display: flex;
     justify-content: flex-end;
@@ -156,11 +123,10 @@ input[readonly]:not(.campo-readonly) {
     height: 100%;
 }
 
-    /* NUEVO: Prevenir que los inputs crezcan demasiado y mejorar legibilidad */
     .input-container input {
         width: 100% !important;
         box-sizing: border-box !important;
-        transition: background-color 0.2s ease; /* Transición suave para hover/focus */
+        transition: background-color 0.2s ease;
     }
 
         .input-container input:focus {
@@ -169,19 +135,16 @@ input[readonly]:not(.campo-readonly) {
             background-color: #ffffff;
         }
 
-/* NUEVO: Asegurar que la tabla se renderiza con anchos fijos */
 #tbListaLiqEmpDetalle {
     table-layout: fixed !important;
     width: 100%;
 }
 
-    /* NUEVO: Ajustes de alto de filas para compactarlas */
     #tbListaLiqEmpDetalle tr {
-        height: 2rem !important; /* Altura fija para todas las filas */
+        height: 1.6rem !important; 
     }
 
 
-    /* Anchos por columna */
     #tbListaLiqEmpDetalle th.columna-comprobante,
     #tbListaLiqEmpDetalle td.columna-comprobante {
         width: 50% !important;
@@ -219,7 +182,6 @@ input[readonly]:not(.campo-readonly) {
         text-align: right;
     }
 
-    /* Tooltip visual al pasar el mouse */
     #tbListaLiqEmpDetalle td.columna-comprobante:hover {
         cursor: help;
     }
@@ -249,7 +211,7 @@ input[readonly]:not(.campo-readonly) {
     box-sizing: border-box !important;
 }
 
-.table-leyenda {
+/*.table-leyenda {
     caption-side: top;
     text-align: center;
     font-weight: bold;
@@ -257,10 +219,35 @@ input[readonly]:not(.campo-readonly) {
     background-color: #f8f9fa;
     padding: 0.5rem;
     font-size: 0.9rem;
-}
+}*/
 
 
 #tbListaLiqEmpDetalle th,
 #tbListaLiqEmpDetalle td {
-    padding: 0.15rem 0.25rem !important; /* o incluso 0 si querés máxima compresión */
+    padding: 0.15rem 0.25rem !important; 
+}
+
+/* misma altura de header en ambas tablas */
+#tbListaLiqEmpEncabezado thead th,
+#tbListaLiqEmpDetalle thead th {
+    height: 2rem; /* mismo alto que las filas del detalle */
+    line-height: 2rem; /* centra verticalmente el texto */
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+
+.table-leyenda {
+    caption-side: top;
+    text-align: center;
+    font-weight: 600;
+    font-style: italic;
+    background-color: #fdfdfd; /* fondo muy suave */
+    border: 1px solid #dcdcdc; /* borde sutil */
+    border-radius: 4px; /* esquinas suaves */
+
+    padding: .3rem .75rem;
+    margin-bottom: .25rem; /* separación respecto de la tabla */
+
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* sombra muy leve */
 }
