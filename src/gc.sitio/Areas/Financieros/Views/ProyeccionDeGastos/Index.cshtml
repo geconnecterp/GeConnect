@@ -2,36 +2,68 @@
 @{
 	Layout = "~/views/shared/_Layout.cshtml";
 }
+<style>
+	.contenedor-frames {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		white-space: nowrap;
+	}
+
+	.frame-botones {
+		display: inline-flex;
+		align-items: center;
+		border: 1px solid #ccc;
+		padding: 4px 6px;
+		border-radius: 4px;
+	}
+
+	.contenedor-botones {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.fila-futura {
+		color: #b30000 !important;
+		font-weight: 600 !important;
+	}
+
+	.btn-proy-gastos {
+		width: 125px !important;
+		text-align: center;
+		white-space: nowrap;
+	}
+</style>
 <div class="container mt-2" id="divProyGastos">
-	<div class="mx-auto" style="max-width: 1100px;">
-		<div class="row align-items-center mb-2">
-			<div class="col-8">
+	<div class="mx-auto" style="max-width: 1000px;">
+		<div class="contenedor-frames">
+			<fieldset class="frame-inputs" style="min-height: 41px;padding-right: 6px;padding-top: 6px;margin-right: 0px;">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text">Fecha: </span>
-					<input type="date" asp-for="Fecha" class="form-control activable inputEditable" />
+					<input type="date" asp-for="Fecha" class="form-control activable inputEditable" style="width: 10%;"/>
 					<span class="input-group-text">Concepto: </span>
-					<input type="text" asp-for="Concepto" class="form-control activable inputEditable" />
+					<input type="text" asp-for="Concepto" class="form-control activable inputEditable" style="width: 20%"/>
 					<span class="input-group-text">Importe: </span>
 					<input type="text" asp-for="Importe" class="form-control activable inputEditable" />
-					<button type="button" class="btn btn-primary btn-sm ms-1" id="btnAgregar">
+					
+				</div>
+			</fieldset>
+			<fieldset class="frame-botones" style="min-width:405px; height:45px;margin-left: 0px;">
+				<div class="contenedor-botones">
+					<button type="button" class="btn btn-primary btn-sm ms-1 btn-proy-gastos" id="btnAgregar">
 						<i class="bx bx-plus-circle"></i> Agregar
 					</button>
-				</div>
-			</div>
-			<div class="col-1">
-			</div>
-			<div class="col-3">
-				<div class="d-flex justify-content-end gap-2">
-					<button type="button" class="btn btn-success btn-sm" id="btnConfirmar">
+					<button type="button" class="btn btn-success btn-sm btn-proy-gastos" id="btnConfirmar">
 						<i class="bx bx-badge-check"></i> Confirmar
 					</button>
-					<button type="button" class="btn btn-danger btn-sm" id="btnCancelar">
+					<button type="button" class="btn btn-danger btn-sm btn-proy-gastos" id="btnCancelar">
 						<i class="bx bx-x-circle"></i> Cancelar
 					</button>
 				</div>
-			</div>
+			</fieldset>
 		</div>
-		<div class="row mt-2" id="divGrillaProyeccion">
+		<div class="row" id="divGrillaProyeccion">
 			<partial name="_grillaProyeccionDeGastos" model="Model" />
 		</div>
 	</div>

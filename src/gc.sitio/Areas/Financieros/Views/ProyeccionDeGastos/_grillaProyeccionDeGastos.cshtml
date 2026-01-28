@@ -5,6 +5,54 @@
 	string clase = string.Empty;
 }
 <style>
+	#containerGrillaProyeccionDeGastos {
+		position: relative;
+		height: 560px;
+		max-height: 560px;
+		overflow-y: auto;
+		overflow-x: auto;
+		z-index: auto;
+	}
+
+	.table-golden {
+		border-collapse: separate;
+		border-spacing: 0;
+		table-layout: fixed;
+	}
+
+		.table-golden thead {
+			position: sticky;
+			top: 0;
+			z-index: 1;
+			background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+			color: #fff !important;
+		}
+
+			.table-golden thead th {
+				position: sticky;
+				top: 0;
+				z-index: 4;
+				background: linear-gradient(to bottom, #b8860b, #daa520);
+				color: #fff;
+				box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+				background-clip: padding-box;
+			}
+
+			.table-golden thead,
+			.table-golden thead th {
+				text-align: center;
+			}
+
+	#tbListaProyeccionDeGastos th,
+	#tbListaProyeccionDeGastos td {
+		padding: 0.01rem 0.15rem !important;
+		line-height: 1.2 !important;
+	}
+
+	#tbListaProyeccionDeGastos tr {
+		height: 1.6rem !important;
+	}
+
 	.btn-icon-compact {
 		padding: 0.15rem 0.3rem;
 		font-size: 0.7rem;
@@ -15,22 +63,30 @@
 			font-size: 0.9rem;
 		}
 
-	#tbListaProyeccionDeGastos td,
-	#tbListaProyeccionDeGastos th {
-		padding-top: 0.25rem;
-		padding-bottom: 0.25rem;
-		font-size: 0.75rem;
+	#tbListaProyeccionDeGastos tbody tr {
+		height: 1.75rem !important; /* antes era 1.6rem */
 	}
+
+	#tbListaProyeccionDeGastos tbody td {
+		padding-top: 0.1rem !important;
+		padding-bottom: 0.1rem !important;
+	}
+
+	.fila-futura {
+		color: #b30000 !important; /* rojo suave */
+		font-weight: 600 !important; /* semi-bold */
+	}
+
 </style>
 <div class="table-responsive table-wrapper-500-full-width" id="containerGrillaProyeccionDeGastos">
 	<table class="table table-bordered table-hover table-golden" id="tbListaProyeccionDeGastos">
 		<thead>
 			<tr class="header">
-				<th class="text-center" scope="col">Fecha</th>
-				<th class="text-center" scope="col">Concepto</th>
-				<th class="text-center" scope="col">Importe</th>
-				<th class="text-center" scope="col">Acumulado</th>
-				<th style="width:5%;"></th>
+				<th class="text-center" scope="col" style="width:10%">Fecha</th>
+				<th class="text-center" scope="col" style="width:40%">Concepto</th>
+				<th class="text-center" scope="col" style="width:15%">Importe</th>
+				<th class="text-center" scope="col" style="width:15%">Acumulado</th>
+				<th style="width:7%;"></th>
 			</tr>
 		</thead>
 		<tbody>

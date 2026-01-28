@@ -42,7 +42,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				ViewData["Titulo"] = titulo;
 
 				var listaProyeccion = _financieroServicio.GetGastosProyLista(TokenCookie);
-				ListaProyeccionDeGasto = listaProyeccion;
+				ListaProyeccionDeGasto = listaProyeccion.OrderByDescending(x => x.fecha).ToList();
 				model.Fecha = DateTime.Now;
 				model.Importe = 0;
 				model.Concepto = string.Empty;
@@ -297,14 +297,14 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					orden = orden,
 					items = item.items,
 					fecha = item.fecha,
-					concepto = item.concepto,
+					concepto = item.concepto.ToUpper(),
 					importe = item.importe,
 					acumulado = acumulado
 				};
 				resultado.Add(dto);
 				orden++;
 			}
-			return resultado;
+			return resultado.OrderByDescending(x => x.fecha).ToList();
 		}
 		#endregion
 	}

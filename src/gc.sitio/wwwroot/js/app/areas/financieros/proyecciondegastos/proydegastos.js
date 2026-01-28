@@ -4,7 +4,7 @@
 	$(document).on("click", "#btnCancelar", CancelarProyeccionDeGasto);
 	$(document).on("click", "#btnModificar", ModificarProyeccionDeGasto);
 	$(document).on("click", "#btnConfirmar", ConfirmarProyeccionDeGasto);
-	//
+	marcarFilasFuturas();
 });
 
 function ConfirmarProyeccionDeGasto() {
@@ -138,6 +138,7 @@ function ActualizarListaDeProyeccionDeGastos() {
 		$("#divGrillaProyeccion").html(obj);
 		LimpiarCampos();
 		$("#Fecha").trigger("focus");
+		marcarFilasFuturas();
 		CerrarWaiting();
 		return true
 	});
@@ -289,5 +290,46 @@ function getMaskForMoneyType(selector) {
 		suffix: '',
 		rightAlign: true,
 		unmaskAsNumber: true
+	});
+}
+
+function marcarFilasFuturas() {
+	const hoy = new Date();
+	hoy.setHours(0, 0, 0, 0);
+
+	$("#tbListaProyeccionDeGastos tbody tr").each(function () {
+
+		const $tdFecha = $(this).find("td").eq(0);
+		const textoFecha = $tdFecha.text().trim();
+
+		// Esperamos dd/MM/yy o dd/MM/yyyy
+		const partes = textoFecha.split("/");
+		if (partes.length !== 3) return;
+
+		let dia = parseInt(partes[0], 10);
+		let mes = parseInt(partes[1], 10) - 1;
+		let anio = partes[2].trim();
+
+		// Normalizar año:
+		// 00 → 2000
+		// 01 → 2001
+		// 25 → 2025
+		// 2025 → 2025
+		if (anio.length === 2) {
+			anio = 2000 + parseInt(anio, 10);
+		} else {
+			anio = parseInt(anio, 10);
+		}
+
+		const fecha = new Date(anio, mes, dia);
+
+		if (fecha > hoy) {
+			// Aplicar clase a TODOS los td de la fila
+			$(this).find("td").addClass("fila-futura");
+		}
+		if (textoFecha == "01/01/00") {
+			// Aplicar clase a TODOS los td de la fila
+			$(this).find("td").addClass("fila-futura");
+		}
 	});
 }
