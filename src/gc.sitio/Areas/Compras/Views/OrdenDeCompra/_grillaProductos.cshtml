@@ -11,46 +11,45 @@
 	string grupoAnterior = string.Empty;
 }
 <style>
-	thead th {
+	#containerListaProducto {
+		max-height: 500px;
+		overflow-y: auto;
+		overflow-x: hidden;
+		position: relative;
+	}
+
+	.table-responsive thead {
 		position: sticky;
-		top: 0px;
+		top: 0;
+		z-index: 1;
+	}
+
+	thead th {
+		position: static;
+		top: 0;
 		z-index: 1;
 		background: linear-gradient(to bottom, #b8860b, #daa520) !important;
 		color: #fff !important;
+		vertical-align: middle;
+		padding: 0.4rem 0.5rem;
+		height: 2.2rem; /* altura fija para todos los th */
 	}
-
-	.table-wrapper {
-		overflow-y: auto;
-		position: relative;
-	}
-
-	#tbListaProducto {
-		table-layout: fixed;
-		width: 100%;
-	}
-
-		#tbListaProducto th,
-		#tbListaProducto td {
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
-		}
 
 	.th-descripcion {
 		position: relative;
-		text-align: center;
-		vertical-align: middle;
 		width: 25%;
+		text-align: center;
 	}
 
-		.th-descripcion .th-title {
-			display: inline-block;
-		}
+	.th-title {
+		display: inline-block;
+		padding-right: 1.5rem; /* espacio para el ícono */
+	}
 
 	.btn-info-producto {
 		position: absolute;
-		right: 4px;
 		top: 50%;
+		right: 6px;
 		transform: translateY(-50%);
 		background: transparent !important;
 		border: none !important;
@@ -59,18 +58,12 @@
 		cursor: pointer;
 	}
 
-		.btn-info-producto i {
-			font-size: 1rem;
-			line-height: 1;
-		}
-
-
 </style>
 <div class="table-responsive table-wrapper-500-full-width" id="containerListaProducto">
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbListaProducto">
 		<thead>
 			<tr class="header">
-				<th style="width:5%;" scope="col">Código</th>
+				<th style="width:4%;" scope="col">Código</th>
 				<th class="th-descripcion">
 					<span class="th-title">Descripción</span>
 					<button type="button"
@@ -89,7 +82,7 @@
 				<th style="width:5%;" scope="col">Unidad Pres.</th>
 				<th style="width:5%;" scope="col">Unidad Pallet</th>
 				<th style="width:5%;" scope="col">Precio Costo</th>
-				<th style="width:2%;" scope="col"></th>
+				<th style="width:3%; " scope="col"></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -135,14 +128,14 @@
 						{
 							<td class="@Model.grillaDatos.ObtenerClase(item.oc_pendiente)" style="font-weight:bold;">@item.oc_pendiente</td>
 						}
-						<td class="@Model.grillaDatos.ObtenerClase(item.stk_suc)">@item.stk_suc</td>
-						<td class="@Model.grillaDatos.ObtenerClase(item.stk)">@item.stk</td>
+						<td class="@Model.grillaDatos.ObtenerClase(item.stk_suc)">@GridHelper.FormatearDato(item.stk_suc, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="@Model.grillaDatos.ObtenerClase(item.stk)">@GridHelper.FormatearDato(item.stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 						<td class="@Model.grillaDatos.ObtenerClase(item.p_unidad_pres)">@item.p_unidad_pres</td>
 						<td class="@Model.grillaDatos.ObtenerClase(item.p_unidad_palet)">@item.p_unidad_palet</td>
 						<td class="@Model.grillaDatos.ObtenerClase(item.costo)">@item.costo</td>
 						@if (item.p_activo == "D")
 						{
-							<td>
+							<td style="text-align: center;">
 								<a class="btn btn-xs btn-secondary no-propagar" id=@nombre data-interaction="@item.p_id" onclick="actualizarProducto(this);" title="Producto discontinuo">
 									<i class="bx bx-cart-alt" style="line-height: 1.0;font-size: 1rem;"></i>
 								</a>
@@ -150,7 +143,7 @@
 						}
 						else
 						{
-							<td>
+							<td style="text-align: center;">
 								<a class="btn btn-xs btn-success no-propagar" id=@nombre data-interaction="@item.p_id" onclick="actualizarProducto(this);">
 									<i class="bx bx-cart-alt" style="line-height: 1.0;font-size: 1rem;"></i>
 								</a>

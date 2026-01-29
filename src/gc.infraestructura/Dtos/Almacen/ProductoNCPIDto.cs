@@ -1,7 +1,7 @@
 ﻿
 namespace gc.infraestructura.Dtos.Almacen
 {
-	public class ProductoNCPIDto : Dto
+	public class ProductoNCPIDto : Dto, IProductoConUnidad
 	{
 		public int total_registros { get; set; }
 		public int total_paginas { get; set; }
@@ -65,6 +65,7 @@ namespace gc.infraestructura.Dtos.Almacen
 		public string re_compte { get; set; } = string.Empty;
 		public DateTime? re_fecha { get; set; }
 		public int? re_dias { get; set; }
+		public bool PermiteDecimales => up_tipo == "P";
 	}
 
 	public class ProductoNCPISustitutoDto : ProductoNCPIDto

@@ -4,117 +4,123 @@ using System.Runtime.CompilerServices;
 
 namespace gc.infraestructura.Dtos.Almacen
 {
-	public class ProductoParaOcDto : Dto
+	public class ProductoParaOcDto : Dto, IProductoConUnidad
 	{
 		[JsonProperty(PropertyName = "p_id")]
-		public string P_Id { get; set; } = string.Empty;
+		public string p_id { get; set; } = string.Empty;
 		[JsonProperty(PropertyName = "p_desc")]
-		public string P_Desc { get; set; } = string.Empty;
+		public string p_desc { get; set; } = string.Empty;
 		[JsonProperty(PropertyName = "p_id_barrado")]
-		public string P_Id_Barrado { get; set; } = string.Empty;
+		public string p_id_barrado { get; set; } = string.Empty;
 		[JsonProperty(PropertyName = "p_id_prov")]
-		public string P_Id_Prov { get; set; } = string.Empty;
+		public string p_id_prov { get; set; } = string.Empty;
 		[JsonProperty(PropertyName = "cta_id")]
-		public string Cta_Id { get; set; } = string.Empty;
+		public string cta_id { get; set; } = string.Empty;
 		[JsonProperty(PropertyName = "cta_denominacion")]
-		public string Cta_Denominacion { get; set; } = string.Empty;
+		public string cta_denominacion { get; set; } = string.Empty;
 		[JsonProperty(PropertyName = "pg_id")]
-		public string Pg_Id { get; set; } = string.Empty;
+		public string pg_id { get; set; } = string.Empty;
 		[JsonProperty(PropertyName = "pg_desc")]
-		public string Pg_Desc { get; set; } = string.Empty;
+		public string pg_desc { get; set; } = string.Empty;
 		[JsonProperty(PropertyName = "p_orden_pg")]
-		public int? P_Orden_Pg { get; set; }
+		public int? p_orden_pg { get; set; }
 		[JsonProperty(PropertyName = "rub_id")]
-		public string Rub_Id { get; set; } = string.Empty;
+		public string rub_id { get; set; } = string.Empty;
 		[JsonProperty(PropertyName = "rub_desc")]
-		public string Rub_Desc { get; set; } = string.Empty;
+		public string rub_desc { get; set; } = string.Empty;
 		[JsonProperty(PropertyName = "up_id")]
-		public string Up_Id { get; set; } = string.Empty;
+		public string up_id { get; set; } = string.Empty;
 		[JsonProperty(PropertyName = "p_unidad_pres")]
-		public int P_Unidad_Pres { get; set; }
+		public int p_unidad_pres { get; set; }
 		[JsonProperty(PropertyName = "p_unidad_palet")]
-		public int P_Unidad_Palet { get; set; }
+		public int p_unidad_palet { get; set; }
 		[JsonProperty(PropertyName = "bultos")]
-		public int Bultos { get; set; }
+		public int bultos { get; set; }
 		[JsonProperty(PropertyName = "cantidad")]
-		public decimal Cantidad { get; set; } = 0.00M;
+		public decimal cantidad { get; set; } = 0.00M;
 		[JsonProperty(PropertyName = "p_plista")]
-		public decimal P_Plista { get; set; } = 0.00M;
+		public decimal p_plista { get; set; } = 0.00M;
 		[JsonProperty(PropertyName = "p_dto1")]
-		public decimal P_Dto1 { get; set; } = 0.0M;
+		public decimal p_dto1 { get; set; } = 0.0M;
 		[JsonProperty(PropertyName = "p_dto2")]
-		public decimal P_Dto2 { get; set; } = 0.0M;
+		public decimal p_dto2 { get; set; } = 0.0M;
 		[JsonProperty(PropertyName = "p_dto3")]
-		public decimal P_Dto3 { get; set; } = 0.0M;
+		public decimal p_dto3 { get; set; } = 0.0M;
 		[JsonProperty(PropertyName = "p_dto4")]
-		public decimal P_Dto4 { get; set; } = 0.0M;
+		public decimal p_dto4 { get; set; } = 0.0M;
 		[JsonProperty(PropertyName = "p_dto_pa")]
-		public decimal P_Dto_Pa { get; set; } = 0.0M;
+		public decimal p_dto_pa { get; set; } = 0.0M;
 		[JsonProperty(PropertyName = "p_boni")]
-		public string P_Boni { get; set; } = string.Empty;
+		public string p_boni { get; set; } = string.Empty;
 		[JsonProperty(PropertyName = "p_porc_flete")]
-		public decimal P_Porc_Flete { get; set; } = 0.00M;
+		public decimal p_porc_flete { get; set; } = 0.00M;
 		[JsonProperty(PropertyName = "iva_situacion")]
-		public char Iva_Situacion { get; set; }
+		public char iva_situacion { get; set; }
 		[JsonProperty(PropertyName = "iva_alicuota")]
-		public decimal Iva_Alicuota { get; set; } = 0.00M;
+		public decimal iva_alicuota { get; set; } = 0.00M;
 		[JsonProperty(PropertyName = "in_alicuota")]
-		public decimal In_Alicuota { get; set; } = 0.00M;
+		public decimal in_alicuota { get; set; } = 0.00M;
 		[JsonProperty(PropertyName = "p_pcosto")]
-		public decimal P_Pcosto { get; set; } = 0.00M;
+		public decimal p_pcosto { get; set; } = 0.00M;
 		[JsonProperty(PropertyName = "bonificados")]
-		public int Bonificados { get; set; }
+		public int bonificados { get; set; }
 		[JsonProperty(PropertyName = "pedido_mas_boni")]
-		public decimal Pedido_Mas_Boni { get; set; } = 0.00M;
+		public decimal pedido_mas_boni { get; set; } = 0.00M;
 		[JsonProperty(PropertyName = "cantidad_total")]
-		public decimal Cantidad_Total { get; set; } = 0.00M;
+		public decimal cantidad_total { get; set; } = 0.00M;
 		[JsonProperty(PropertyName = "p_pcosto_total")]
-		public decimal P_Pcosto_Total { get; set; } = 0.00M;
+		public decimal p_pcosto_total { get; set; } = 0.00M;
 		[JsonProperty(PropertyName = "paletizado")]
-		public decimal Paletizado { get; set; } = 0.00M;
+		public decimal paletizado { get; set; } = 0.00M;
 		[JsonProperty(PropertyName = "stk")]
-		public decimal Stk { get; set; } = 0.00M;
+		public decimal stk { get; set; } = 0.00M;
 		[JsonProperty(PropertyName = "stk_suc")]
-		public decimal Stk_Suc { get; set; } = 0.00M;
-
+		public decimal stk_suc { get; set; } = 0.00M;
+		[JsonProperty(PropertyName = "up_tipo")]
+		public string up_tipo { get; set; } = string.Empty;
+		[JsonProperty(PropertyName = "up_desc")]
+		public string up_desc { get; set; } = string.Empty;
+		public bool PermiteDecimales => up_tipo == "P";
 		public ProductoParaOcDto() { }
 
 		public ProductoParaOcDto(ProductoNCPIDto item)
 		{
-			P_Id = item.p_id;
-			P_Desc = item.p_desc;
-			P_Id_Prov = item.p_id_prov;
-			Cta_Id = item.cta_id;
-			Cta_Denominacion = item.cta_denominacion;
-			Pg_Id = item.pg_id;
-			Pg_Desc = item.pg_desc;
-			P_Orden_Pg = item.p_orden_pg;
-			Rub_Id = item.rub_id;
-			Rub_Desc = item.rub_desc;
-			Up_Id = item.up_id;
-			P_Unidad_Pres = item.p_unidad_pres;
-			P_Unidad_Palet = item.p_unidad_palet;
-			Bultos = item.Bultos;
-			Cantidad = item.cantidad;
-			P_Plista = item.P_Plista;
-			P_Dto1 = item.P_Dto1;
-			P_Dto2 = item.P_Dto2;
-			P_Dto3 = item.P_Dto3;
-			P_Dto4 = item.P_Dto4;
-			P_Dto_Pa = item.P_Dto_Pa;
-			P_Boni = item.P_Boni;
-			P_Porc_Flete = item.P_Porc_Flete;
-			Iva_Situacion = item.Iva_Situacion;
-			Iva_Alicuota = item.Iva_Alicuota;
-			In_Alicuota = item.In_Alicuota;
-			P_Pcosto = CalcularPCosto(P_Plista, P_Dto1, P_Dto2, P_Dto3, P_Dto4, P_Dto_Pa, P_Boni, 0);
-			Bonificados = item.oc_pendiente;
-			Pedido_Mas_Boni = item.pedido;
-			Cantidad_Total = item.cantidad;
-			P_Pcosto_Total = item.costo_total;
-			Paletizado = item.paletizado;
-			Stk = item.stk;
-			Stk_Suc = item.stk_suc;
+			p_id = item.p_id;
+			p_desc = item.p_desc;
+			p_id_prov = item.p_id_prov;
+			cta_id = item.cta_id;
+			cta_denominacion = item.cta_denominacion;
+			pg_id = item.pg_id;
+			pg_desc = item.pg_desc;
+			p_orden_pg = item.p_orden_pg;
+			rub_id = item.rub_id;
+			rub_desc = item.rub_desc;
+			up_id = item.up_id;
+			up_desc = item.up_desc;
+			up_tipo = item.up_tipo;
+			p_unidad_pres = item.p_unidad_pres;
+			p_unidad_palet = item.p_unidad_palet;
+			bultos = item.Bultos;
+			cantidad = item.cantidad;
+			p_plista = item.P_Plista;
+			p_dto1 = item.P_Dto1;
+			p_dto2 = item.P_Dto2;
+			p_dto3 = item.P_Dto3;
+			p_dto4 = item.P_Dto4;
+			p_dto_pa = item.P_Dto_Pa;
+			p_boni = item.P_Boni;
+			p_porc_flete = item.P_Porc_Flete;
+			iva_situacion = item.Iva_Situacion;
+			iva_alicuota = item.Iva_Alicuota;
+			in_alicuota = item.In_Alicuota;
+			p_pcosto = CalcularPCosto(p_plista, p_dto1, p_dto2, p_dto3, p_dto4, p_dto_pa, p_boni, 0);
+			bonificados = item.oc_pendiente;
+			pedido_mas_boni = item.pedido;
+			cantidad_total = item.cantidad;
+			p_pcosto_total = item.costo_total;
+			paletizado = item.paletizado;
+			stk = item.stk;
+			stk_suc = item.stk_suc;
 		}
 
 		public static decimal CalcularPCosto(decimal p_plista, decimal p_d1, decimal p_d2, decimal p_d3, decimal p_d4, decimal p_dpa, string p_boni, decimal flete)

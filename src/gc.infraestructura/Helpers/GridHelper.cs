@@ -51,7 +51,7 @@ namespace gc.infraestructura.Helpers
         /// Una cadena que representa el dato formateado según el tipo y el formato especificado.
         /// Si el dato es nulo, devuelve una cadena vacía.
         /// </returns>
-        public static string FormatearDato(object? dato, FormatDato formato = FormatDato.Ninguno)
+        public static string FormatearDato(object? dato, FormatDato formato = FormatDato.Ninguno, bool permiteDecimales = false)
         {
             if (dato == null) return string.Empty;
 
@@ -73,8 +73,12 @@ namespace gc.infraestructura.Helpers
             if (dato is int i && formato == FormatDato.Entero)
                 return i.ToString("N");
 
-            if (dato is decimal d && formato== FormatDato.Monto)
-                return d.ToString("N2");
+            if (dato is decimal d && formato == FormatDato.Monto)
+            {
+                if (!permiteDecimales)
+                    return ((int)d).ToString("N0");
+				return d.ToString("N2");
+            }
 
             return dato.ToString() ?? string.Empty;
         }
@@ -91,7 +95,8 @@ namespace gc.infraestructura.Helpers
                    tipo == typeof(short) || tipo == typeof(uint) || tipo == typeof(ulong) ||
                    tipo == typeof(ushort);
         }
-        public enum FormatDato
+
+		public enum FormatDato
         {
             Ninguno,
             Fecha,
@@ -104,3 +109,4 @@ namespace gc.infraestructura.Helpers
         }
     }
 }
+

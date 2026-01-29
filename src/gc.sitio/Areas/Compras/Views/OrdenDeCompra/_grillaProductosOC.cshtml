@@ -92,112 +92,113 @@
 				@foreach (var item in Model.ListaOC.ListaDatos)
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					var nombre = "chk" + item.P_Id;
-					var nombre_Bultos = "bultos_" + item.P_Id;
-					var nombre_P_Plista = "p_plista_" + item.P_Id;
-					var nombre_P_Dto1 = "p_dto1_" + item.P_Id;
-					var nombre_P_Dto2 = "p_dto2_" + item.P_Id;
-					var nombre_P_Dto3 = "p_dto3_" + item.P_Id;
-					var nombre_P_Dto4 = "p_dto4_" + item.P_Id;
-					var nombre_P_Dto_Pa = "p_dto_pa_" + item.P_Id;
-					var nombre_P_Boni = "p_boni_" + item.P_Id;
-					<tr class="@clase" data-p-id="@item.P_Id" onclick="selectListaProductoRowOC(this, 'tbListaProductoOC')">
+					var nombre = "chk" + item.p_id;
+					var nombre_Bultos = "bultos_" + item.p_id;
+					var nombre_P_Plista = "p_plista_" + item.p_id;
+					var nombre_P_Dto1 = "p_dto1_" + item.p_id;
+					var nombre_P_Dto2 = "p_dto2_" + item.p_id;
+					var nombre_P_Dto3 = "p_dto3_" + item.p_id;
+					var nombre_P_Dto4 = "p_dto4_" + item.p_id;
+					var nombre_P_Dto_Pa = "p_dto_pa_" + item.p_id;
+					var nombre_P_Boni = "p_boni_" + item.p_id;
+					<tr class="@clase" data-p-id="@item.p_id" onclick="selectListaProductoRowOC(this, 'tbListaProductoOC')">
 						<td class="check-column">
 							<div class="check-producto-container">
-								<input type="checkbox" class="form-check-input check-producto" data-p-id="@item.P_Id">
+								<input type="checkbox" class="form-check-input check-producto" data-p-id="@item.p_id">
 							</div>
 						</td>
-						<td class="@Model.ListaOC.ObtenerClase(item.P_Id) align-center">@Model.ListaOC.FormatearDato(item.P_Id, FormatDato.Ninguno)</td> 
-						<td class="@Model.ListaOC.ObtenerClase(item.P_Desc)" title="@Model.ListaOC.FormatearDato(item.P_Desc, FormatDato.Ninguno)">
-							@Model.ListaOC.FormatearDato(item.P_Desc, FormatDato.Ninguno)
+						<td class="@Model.ListaOC.ObtenerClase(item.p_id) align-center">@Model.ListaOC.FormatearDato(item.p_id, FormatDato.Ninguno)</td> 
+						<td class="@Model.ListaOC.ObtenerClase(item.p_desc)" title="@Model.ListaOC.FormatearDato(item.p_desc, FormatDato.Ninguno)">
+							@Model.ListaOC.FormatearDato(item.p_desc, FormatDato.Ninguno)
 						</td>
-						<td class="@Model.ListaOC.ObtenerClase(item.P_Id_Barrado) align-center">@Model.ListaOC.FormatearDato(item.P_Id_Barrado, FormatDato.Ninguno)</td>
-						<td class="@Model.ListaOC.ObtenerClase(item.P_Id_Prov) align-center">@Model.ListaOC.FormatearDato(item.P_Id_Prov, FormatDato.Ninguno)</td>
-						<td class="@Model.ListaOC.ObtenerClase(item.P_Unidad_Pres) align-right">@Model.ListaOC.FormatearDato(item.P_Unidad_Pres, FormatDato.Ninguno)</td>
-						<td class="@Model.ListaOC.ObtenerClase(item.Bultos)">
+						<td class="@Model.ListaOC.ObtenerClase(item.p_id_barrado) align-center">@Model.ListaOC.FormatearDato(item.p_id_barrado, FormatDato.Ninguno)</td>
+						<td class="@Model.ListaOC.ObtenerClase(item.p_id_prov) align-center">@Model.ListaOC.FormatearDato(item.p_id_prov, FormatDato.Ninguno)</td>
+						<td class="@Model.ListaOC.ObtenerClase(item.p_unidad_pres) align-right">@Model.ListaOC.FormatearDato(item.p_unidad_pres, FormatDato.Ninguno)</td>
+						<td class="@Model.ListaOC.ObtenerClase(item.bultos)">
 							<div class="input-container">
 								<input type="text" class="form-control form-control-sm input-bultos input-numeric"
-									   value="@(item.Bultos.ToString())"
-									   data-p-id="@item.P_Id"
+									   value="@(item.bultos.ToString())"
+									   data-p-id="@item.p_id"
 									   data-field="bultos"
-									   data-original-value="@(item.Bultos)" />
+									   data-original-value="@(item.bultos)" />
 							</div>
 						</td>
-						<td class="@Model.ListaOC.ObtenerClase(item.Cantidad) align-right">@Model.ListaOC.FormatearDato(item.Cantidad.ToString("F3"), FormatDato.Ninguno)</td>
-						<td class="@Model.ListaOC.ObtenerClase(item.P_Plista)">
+						<td class="@Model.ListaOC.ObtenerClase(item.cantidad) align-right">@GridHelper.FormatearDato(item.cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="@Model.ListaOC.ObtenerClase(item.p_plista)">
 							<div class="input-container">
 								<input type="text" class="form-control form-control-sm input-p_plista input-numeric"
-									   value="@(item.P_Plista.ToString("F3"))"
-									   data-p-id="@item.P_Id"
+									   value="@(item.p_plista.ToString("F3"))"
+									   data-p-id="@item.p_id"
 									   data-field="p_plista"
-									   data-original-value="@(item.P_Plista)" />
+									   data-original-value="@(item.p_plista)" />
 							</div>
 						</td>
-						<td class="@Model.ListaOC.ObtenerClase(item.P_Dto1)">
+						<td class="@Model.ListaOC.ObtenerClase(item.p_dto1)">
 							<div class="input-container">
 								<input type="text" class="form-control form-control-sm input-p_dto1 input-numeric"
-									   value="@(item.P_Dto1.ToString("F1"))"
-									   data-p-id="@item.P_Id"
+									   value="@(item.p_dto1.ToString("F1"))"
+									   data-p-id="@item.p_id"
 									   data-field="p_dto1"
-									   data-original-value="@item.P_Dto1" />
+									   data-original-value="@item.p_dto1" />
 							</div>
 						</td>
-						<td class="@Model.ListaOC.ObtenerClase(item.P_Dto2)">
+						<td class="@Model.ListaOC.ObtenerClase(item.p_dto2)">
 							<div class="input-container">
 								<input type="text" class="form-control form-control-sm input-p_dto2 input-numeric"
-									   value="@(item.P_Dto2.ToString("F1"))"
-									   data-p-id="@item.P_Id"
+									   value="@(item.p_dto2.ToString("F1"))"
+									   data-p-id="@item.p_id"
 									   data-field="p_dto2"
-									   data-original-value="@item.P_Dto2" />
+									   data-original-value="@item.p_dto2" />
 							</div>
 						</td>
-						<td class="@Model.ListaOC.ObtenerClase(item.P_Dto3)">
+						<td class="@Model.ListaOC.ObtenerClase(item.p_dto3)">
 							<div class="input-container">
 								<input type="text" class="form-control form-control-sm input-p_dto3 input-numeric"
-									   value="@(item.P_Dto3.ToString("F1"))"
-									   data-p-id="@item.P_Id"
+									   value="@(item.p_dto3.ToString("F1"))"
+									   data-p-id="@item.p_id"
 									   data-field="p_dto3"
-									   data-original-value="@item.P_Dto3" />
+									   data-original-value="@item.p_dto3" />
 							</div>
 						</td>
-						<td class="@Model.ListaOC.ObtenerClase(item.P_Dto4)">
+						<td class="@Model.ListaOC.ObtenerClase(item.p_dto4)">
 							<div class="input-container">
 								<input type="text" class="form-control form-control-sm input-p_dto4 input-numeric"
-									   value="@(item.P_Dto4.ToString("F1"))"
-									   data-p-id="@item.P_Id"
+									   value="@(item.p_dto4.ToString("F1"))"
+									   data-p-id="@item.p_id"
 									   data-field="p_dto4"
-									   data-original-value="@item.P_Dto4" />
+									   data-original-value="@item.p_dto4" />
 							</div>
 						</td>
-						<td class="@Model.ListaOC.ObtenerClase(item.P_Dto_Pa)">
+						<td class="@Model.ListaOC.ObtenerClase(item.p_dto_pa)">
 							<div class="input-container">
 								<input type="text" class="form-control form-control-sm input-p_dto_pa input-numeric"
-									   value="@(item.P_Dto_Pa.ToString("F1"))"
-									   data-p-id="@item.P_Id"
+									   value="@(item.p_dto_pa.ToString("F1"))"
+									   data-p-id="@item.p_id"
 									   data-field="p_dto_pa"
-									   data-original-value="@item.P_Dto_Pa" />
+									   data-original-value="@item.p_dto_pa" />
 							</div>
 						</td>
 						@{
-							bool resBoni = item.P_Boni?.Trim().Equals("0") ?? false;
-							string bonificacionMostrada = resBoni ? "" : Model.ListaOC.FormatearDato(item.P_Boni, FormatDato.Ninguno);
+							bool resBoni = item.p_boni?.Trim().Equals("0") ?? false;
+							string bonificacionMostrada = resBoni ? "" : Model.ListaOC.FormatearDato(item.p_boni, FormatDato.Ninguno);
 						}
 						<td class="@Model.ListaOC.ObtenerClase('c')">
 							<div class="input-container">
 								<input type="text" class="form-control form-control-sm input-p_boni"
 									   value="@bonificacionMostrada"
-									   data-p-id="@item.P_Id"
+									   data-p-id="@item.p_id"
 									   data-field="p_boni"
 									   data-original-value="@bonificacionMostrada"
 									   placeholder="000/000" />
 							</div>
 						</td>
-						<td class="@Model.ListaOC.ObtenerClase(item.Pedido_Mas_Boni)  align-right">@Model.ListaOC.FormatearDato(item.Pedido_Mas_Boni, FormatDato.Ninguno)</td> @*16*@
-						<td class="@Model.ListaOC.ObtenerClase(item.P_Pcosto)">@Model.ListaOC.FormatearDato(item.P_Pcosto, FormatDato.Monto)</td> @*17*@
-						<td class="@Model.ListaOC.ObtenerClase(item.P_Pcosto_Total)">@Model.ListaOC.FormatearDato(item.P_Pcosto_Total, FormatDato.Monto)</td> @*18*@
-						<td class="@Model.ListaOC.ObtenerClase(item.Paletizado)">@item.Paletizado.ToString("0.##")</td> @*19*@
+						<td class="@Model.ListaOC.ObtenerClase(item.pedido_mas_boni)  align-right">@GridHelper.FormatearDato(item.pedido_mas_boni, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td> @*16*@
+						@*<td class="@Model.ListaOC.ObtenerClase(item.p_pcosto)">@Model.ListaOC.FormatearDato(item.p_pcosto, FormatDato.Monto)</td> 17 revisar el formato*@ 
+						<td class="@Model.ListaOC.ObtenerClase(item.p_pcosto)">@item.p_pcosto.ToString("#,##0.000")</td>
+						<td class="@Model.ListaOC.ObtenerClase(item.p_pcosto_total)">@Model.ListaOC.FormatearDato(item.p_pcosto_total, FormatDato.Monto)</td> @*18*@
+						<td class="@Model.ListaOC.ObtenerClase(item.paletizado)">@item.paletizado.ToString("0.##")</td> @*19*@
 						<td class="text-center">
-							<a class="btn btn-xs btn-danger" data-interaction="@item.P_Id" onclick="quitarProductoEnOC(this);">
+							<a class="btn btn-xs btn-danger" data-interaction="@item.p_id" onclick="quitarProductoEnOC(this);">
 								<i class="bx bxs-trash" style="line-height: 1.0;font-size: 1rem;"></i>
 							</a>
 						</td>

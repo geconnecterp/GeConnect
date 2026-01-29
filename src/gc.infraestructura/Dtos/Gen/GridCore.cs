@@ -50,8 +50,10 @@ namespace gc.infraestructura.Dtos.Gen
         public MetadataGrid? MetadataGeneral { get; set; }
 
         public Func<object?, string> ObtenerClase => GridHelper.ObtenerClaseAlineacion;
-        public Func<object?, FormatDato, string> FormatearDato => GridHelper.FormatearDato;
+		public Func<object?, FormatDato, string> FormatearDato => (dato, formato) => GridHelper.FormatearDato(dato, formato, false);
 
-        //public Func<object?, string> FormatearDato => GridHelper.FormatearDato;
-    }
+		//public Func<object?, FormatDato, bool, string> FormatearDato => GridHelper.FormatearDato;
+
+		//public Func<object?, string> FormatearDato => GridHelper.FormatearDato;
+	}
 }

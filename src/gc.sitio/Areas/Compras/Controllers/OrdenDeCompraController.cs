@@ -307,7 +307,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						}
 						else
 						{
-							if (!productos.Where(x => x.P_Id == pId).Any())
+							if (!productos.Where(x => x.p_id == pId).Any())
 							{
 								productos.Add(new ProductoParaOcDto(producto));
 							}
@@ -348,10 +348,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 				GridCoreSmart<ProductoParaOcDto> grillaDatos;
 				if (ListaProductosOC != null && ListaProductosOC.Count > 0)
 				{
-					var producto = ListaProductosOC.FirstOrDefault(x => x.P_Id == pId);
+					var producto = ListaProductosOC.FirstOrDefault(x => x.p_id == pId);
 					if (producto != null)
 					{
-						var productos = ListaProductosOC.Where(x => x.P_Id != pId).ToList();
+						var productos = ListaProductosOC.Where(x => x.p_id != pId).ToList();
 						grillaDatos = ObtenerGridCoreSmart<ProductoParaOcDto>(productos);
 						ListaProductosOC = productos;
 						model.ListaOC = grillaDatos;
@@ -396,65 +396,66 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (productos.Count > 0)
 				{
 					var datosDelProductoParaEnviar = new DatosDeProductoActualizado();
-					var producto = productos.FirstOrDefault(x => x.P_Id == pId);
+					var producto = productos.FirstOrDefault(x => x.p_id == pId);
 					if (producto != null)
 					{
 						if (field.Contains("p_dto1"))
 						{
 							val = val.Replace(",", ".");
-							producto.P_Dto1 = Convert.ToDecimal(val);
+							producto.p_dto1 = Convert.ToDecimal(val);
 						}
 						else if (field.Contains("p_dto2"))
 						{
 							val = val.Replace(",", ".");
-							producto.P_Dto2 = Convert.ToDecimal(val);
+							producto.p_dto2 = Convert.ToDecimal(val);
 						}
 						else if (field.Contains("p_dto3"))
 						{
 							val = val.Replace(",", ".");
-							producto.P_Dto3 = Convert.ToDecimal(val);
+							producto.p_dto3 = Convert.ToDecimal(val);
 						}
 						else if (field.Contains("p_dto4"))
 						{
 							val = val.Replace(",", ".");
-							producto.P_Dto4 = Convert.ToDecimal(val);
+							producto.p_dto4 = Convert.ToDecimal(val);
 						}
 						else if (field.Contains("p_dto_pa"))
 						{
 							val = val.Replace(",", ".");
-							producto.P_Dto_Pa = Convert.ToDecimal(val);
+							producto.p_dto_pa = Convert.ToDecimal(val);
 						}
 						else if (field.Contains("p_plista"))
 						{
 							val = val.Replace(",", "");
-							producto.P_Plista = Convert.ToDecimal(val);
+							producto.p_plista = Convert.ToDecimal(val);
 						}
 						else if (field.Contains("p_boni"))
 						{
-							producto.P_Boni = val;
+							producto.p_boni = val;
 						}
 						else if (field.Contains("bultos"))
 						{
 							val = val.Replace(",", "");
-							producto.Bultos = Convert.ToInt32(val);
-							producto.Cantidad = producto.Bultos * producto.P_Unidad_Pres;
+							producto.bultos = Convert.ToInt32(val);
+							producto.cantidad = producto.bultos * producto.p_unidad_pres;
 						}
-						
-						producto.Pedido_Mas_Boni = Math.Round(CalcularPedidoMasBoni(producto.P_Boni, producto), 1);
-						producto.P_Pcosto = Math.Round(ProductoParaOcDto.CalcularPCosto(producto.P_Plista, producto.P_Dto1, producto.P_Dto2, producto.P_Dto3, producto.P_Dto4, producto.P_Dto_Pa, producto.P_Boni, producto.P_Porc_Flete), 2);
-						producto.P_Pcosto_Total = Math.Round(producto.P_Pcosto * (producto.Pedido_Mas_Boni == 0.0M ? 1.0M : producto.Pedido_Mas_Boni), 2);
-						producto.Paletizado = Math.Round((producto.Pedido_Mas_Boni == 0.0M ? 1.0M : producto.Pedido_Mas_Boni) / producto.P_Unidad_Palet, 1);
-						producto.Cantidad_Total = producto.Cantidad + producto.Bonificados;
+
+						producto.pedido_mas_boni = Math.Round(CalcularPedidoMasBoni(producto.p_boni, producto), 1);
+						producto.p_pcosto = Math.Round(ProductoParaOcDto.CalcularPCosto(producto.p_plista, producto.p_dto1, producto.p_dto2, producto.p_dto3, producto.p_dto4, producto.p_dto_pa, producto.p_boni, producto.p_porc_flete), 2);
+						producto.p_pcosto_total = Math.Round(producto.p_pcosto * (producto.pedido_mas_boni == 0.0M ? 1.0M : producto.pedido_mas_boni), 2);
+						producto.paletizado = Math.Round((producto.pedido_mas_boni == 0.0M ? 1.0M : producto.pedido_mas_boni) / producto.p_unidad_palet, 1);
+						producto.cantidad_total = producto.cantidad + producto.bonificados;
 
 						datosDelProductoParaEnviar = new DatosDeProductoActualizado()
 						{
-							PedidoCantidad = producto.Cantidad,
-							Pedido_Mas_Boni = producto.Pedido_Mas_Boni,
-							P_Pcosto = producto.P_Pcosto,
-							P_Pcosto_Total = producto.P_Pcosto_Total,
-							Paletizado = producto.Paletizado,
-							Total_Costo = productos.Sum(x => x.P_Pcosto_Total),
-							Total_Pallet = productos.Sum(x => x.Paletizado)
+							PedidoCantidad = producto.cantidad,
+							Pedido_Mas_Boni = producto.pedido_mas_boni,
+							P_Pcosto = producto.p_pcosto,
+							P_Pcosto_Total = producto.p_pcosto_total,
+							Paletizado = producto.paletizado,
+							Total_Costo = productos.Sum(x => x.p_pcosto_total),
+							Total_Pallet = productos.Sum(x => x.paletizado),
+							PermiteDecimales = producto.up_tipo != "N"
 						};
 					}
 					ListaProductosOC = productos; //Actualizo la lista en memoria
@@ -496,18 +497,18 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					foreach (var pId in request.pIds)
 					{
-						var producto = productos.FirstOrDefault(x => x.P_Id == pId);
+						var producto = productos.FirstOrDefault(x => x.p_id == pId);
 						if (producto != null)
 						{
-							producto.P_Dto1 = request.dto1;
-							producto.P_Dto2 = request.dto2;
-							producto.P_Dto3 = request.dto3;
-							producto.P_Dto4 = request.dto4;
-							producto.P_Dto_Pa = request.dpa;
-							if (request.boolFlete) producto.P_Porc_Flete = request.flete;
-							producto.P_Pcosto = Math.Round(ProductoParaOcDto.CalcularPCosto(producto.P_Plista, producto.P_Dto1, producto.P_Dto2, producto.P_Dto3, producto.P_Dto4, producto.P_Dto_Pa, producto.P_Boni, producto.P_Porc_Flete), 2);
-							producto.P_Pcosto_Total = Math.Round(producto.P_Pcosto * ((producto.Pedido_Mas_Boni == 0.0M ? 1.0M : producto.Pedido_Mas_Boni) + producto.Cantidad), 2);
-							producto.Paletizado = Math.Round((producto.Cantidad + (producto.Pedido_Mas_Boni == 0.0M ? 1.0M : producto.Pedido_Mas_Boni)) / producto.P_Unidad_Palet, 1);
+							producto.p_dto1 = request.dto1;
+							producto.p_dto2 = request.dto2;
+							producto.p_dto3 = request.dto3;
+							producto.p_dto4 = request.dto4;
+							producto.p_dto_pa = request.dpa;
+							if (request.boolFlete) producto.p_porc_flete = request.flete;
+							producto.p_pcosto = Math.Round(ProductoParaOcDto.CalcularPCosto(producto.p_plista, producto.p_dto1, producto.p_dto2, producto.p_dto3, producto.p_dto4, producto.p_dto_pa, producto.p_boni, producto.p_porc_flete), 2);
+							producto.p_pcosto_total = Math.Round(producto.p_pcosto * ((producto.pedido_mas_boni == 0.0M ? 1.0M : producto.pedido_mas_boni) + producto.cantidad), 2);
+							producto.paletizado = Math.Round((producto.cantidad + (producto.pedido_mas_boni == 0.0M ? 1.0M : producto.pedido_mas_boni)) / producto.p_unidad_palet, 1);
 						}
 					}
 					ListaProductosOC = productos;
@@ -681,7 +682,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				CtaIdSelected = "";
 				ListaProductos = [];
 				ListaProductosOC = [];
-				
+
 				return Json(new { error = false, warn = false, msg = "Inicializacion correcta." });
 			}
 			catch (Exception)
@@ -735,7 +736,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				//if (OrdenDeCompraLista !=null && OrdenDeCompraLista.Count>0)
 				//	model.oc_compte = OrdenDeCompraLista.First().oc_compte;
 				//else
-					model.oc_compte = string.Empty;
+				model.oc_compte = string.Empty;
 				return PartialView("_listaOcPendientes", model);
 			}
 			catch (Exception)
@@ -932,42 +933,42 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 		private void CalcularPedidoMasBoni(ProductoParaOcDto producto)
 		{
-			if (string.IsNullOrWhiteSpace(producto.P_Boni))
+			if (string.IsNullOrWhiteSpace(producto.p_boni))
 			{
-				producto.Pedido_Mas_Boni = producto.Cantidad;
+				producto.pedido_mas_boni = producto.cantidad;
 				return;
 			}
-			
-			var arr = producto.P_Boni.Split('/');
+
+			var arr = producto.p_boni.Split('/');
 			if (!int.TryParse(arr[0], out int num))
 			{
-				producto.Pedido_Mas_Boni = producto.Cantidad;
+				producto.pedido_mas_boni = producto.cantidad;
 				return;
 			}
 
 			if (!int.TryParse(arr[1], out int den))
 			{
-				producto.Pedido_Mas_Boni = producto.Cantidad;
+				producto.pedido_mas_boni = producto.cantidad;
 				return;
 			}
 
 			if (num > den)
 			{
-				producto.Pedido_Mas_Boni = producto.Cantidad;
+				producto.pedido_mas_boni = producto.cantidad;
 				return;
 			}
-			
+
 			var res = den - num; //En la bonificacion viene NNN/MMM donde sería "cada NNN, lleva MMM", siendo MMM mayor a NNN. La diferencia es el valor adicional que se suma al pedido.
-			var multiplo = producto.Cantidad / num;
+			var multiplo = producto.cantidad / num;
 			if (multiplo > 0)
 			{
-				producto.Bonificados = (res * (int)multiplo);
-				producto.Pedido_Mas_Boni = producto.Bonificados + producto.Cantidad;
+				producto.bonificados = (res * (int)multiplo);
+				producto.pedido_mas_boni = producto.bonificados + producto.cantidad;
 			}
 			else
 			{
-				producto.Bonificados = 0;
-				producto.Pedido_Mas_Boni = producto.Cantidad;
+				producto.bonificados = 0;
+				producto.pedido_mas_boni = producto.cantidad;
 			}
 			return;
 		}
@@ -975,38 +976,38 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			if (string.IsNullOrWhiteSpace(val))
 			{
-				producto.Pedido_Mas_Boni = producto.Cantidad;
-				return producto.Pedido_Mas_Boni;
+				producto.pedido_mas_boni = producto.cantidad;
+				return producto.pedido_mas_boni;
 			}
 			var arr = val.Split('/');
 			if (!int.TryParse(arr[0], out int num))
 			{
-				producto.Pedido_Mas_Boni = producto.Cantidad;
-				return producto.Pedido_Mas_Boni;
+				producto.pedido_mas_boni = producto.cantidad;
+				return producto.pedido_mas_boni;
 			}
 			if (!int.TryParse(arr[1], out int den))
 			{
-				producto.Pedido_Mas_Boni = producto.Cantidad;
-				return producto.Pedido_Mas_Boni;
+				producto.pedido_mas_boni = producto.cantidad;
+				return producto.pedido_mas_boni;
 			}
 			if (num > den)
 			{
-				producto.Pedido_Mas_Boni = producto.Cantidad;
-				return producto.Pedido_Mas_Boni;
+				producto.pedido_mas_boni = producto.cantidad;
+				return producto.pedido_mas_boni;
 			}
 			var res = den - num; //En la bonificacion viene NNN/MMM donde sería "cada NNN, lleva MMM", siendo MMM mayor a NNN. La diferencia es el valor adicional que se suma al pedido.
-			var multiplo = producto.Cantidad / num;
+			var multiplo = producto.cantidad / num;
 			if (multiplo > 0)
 			{
-				producto.Bonificados = (res * (int)multiplo);
-				producto.Pedido_Mas_Boni = producto.Bonificados + producto.Cantidad;
+				producto.bonificados = (res * (int)multiplo);
+				producto.pedido_mas_boni = producto.bonificados + producto.cantidad;
 			}
 			else
 			{
-				producto.Bonificados = 0;
-				producto.Pedido_Mas_Boni = producto.Cantidad;
+				producto.bonificados = 0;
+				producto.pedido_mas_boni = producto.cantidad;
 			}
-			return producto.Pedido_Mas_Boni;
+			return producto.pedido_mas_boni;
 		}
 		private static SelectList ObtenerComboAdministraciones(List<AdministracionDto> lista)
 		{
@@ -1024,10 +1025,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			else
 			{
-				model.Total_Costo = productos.Sum(x => x.P_Pcosto_Total).ToString("0.##");
-				model.Total_Pallet = productos.Sum(x => x.Paletizado).ToString("0.##");
-				model.Cant_Items = productos.Sum(x=>x.Pedido_Mas_Boni).ToString("0.##");
-				model.Precio_Costo = productos.Sum(x => x.P_Pcosto).ToString("0.##");
+				model.Total_Costo = productos.Sum(x => x.p_pcosto_total).ToString("0.##");
+				model.Total_Pallet = productos.Sum(x => x.paletizado).ToString("0.##");
+				model.Cant_Items = productos.Sum(x => x.pedido_mas_boni).ToString("0.##");
+				model.Precio_Costo = productos.Sum(x => x.p_pcosto).ToString("0.##");
 			}
 		}
 		private static void ObtenerColor(ref List<ProductoNCPIDto> listaProd)
@@ -1041,8 +1042,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				if (item.p_activo == "D") //Discontinuo
 					item.Row_color = "#0066cc";
-					//item.Row_color = "#fc4641";
-				if (item.p_activo=="S") //Activo
+				//item.Row_color = "#fc4641";
+				if (item.p_activo == "S") //Activo
 					item.Row_color = "#33ff33";
 				if (item.p_activo == "N") //Inactivo
 					item.Row_color = "#ff0000";
@@ -1076,6 +1077,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private class DatosDeProductoActualizado()
 		{
 			public string P_Id { get; set; } = string.Empty;
+			public bool PermiteDecimales { get; set; }
 			public decimal PedidoCantidad { get; set; }
 			public decimal Pedido_Mas_Boni { get; set; }
 			public decimal P_Pcosto { get; set; }

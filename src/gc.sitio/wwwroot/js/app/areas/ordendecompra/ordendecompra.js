@@ -596,11 +596,18 @@ function ActualizarProductoEnOc(row, campoActual) {
 					var td = $(this).find('td');
 					if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
 						//GRILLA
-						td[8].innerText = obj.data.pedidoCantidad.toFixed(3);//
-						td[16].innerText = obj.data.pedido_Mas_Boni.toFixed(1);//PEDIDO +BONI -> obj.data.pedido_Mas_Boni
-						td[17].innerText = formatearValorConFormatoNumerico(obj.data.p_Pcosto.toFixed(2), 2);//PRECIO COSTO -> obj.data.p_Pcosto
-						td[18].innerText = formatearValorConFormatoNumerico(obj.data.p_Pcosto_Total.toFixed(2), 2);//TOTAL COSTO -> obj.data.p_Pcosto_Total
-						td[19].innerText = obj.data.paletizado;//TOTAL PALLET -> obj.data.paletizado
+						if (obj.data.permiteDecimales == "true") {
+							td[7].innerText = obj.data.pedidoCantidad.toFixed(3);//
+							td[15].innerText = obj.data.pedido_Mas_Boni.toFixed(1);//PEDIDO +BONI -> obj.data.pedido_Mas_Boni
+						}
+						else {
+							td[7].innerText = obj.data.pedidoCantidad;//
+							td[15].innerText = obj.data.pedido_Mas_Boni;//PEDIDO +BONI -> obj.data.pedido_Mas_Boni
+						}
+
+						td[16].innerText = formatearValorConFormatoNumerico(obj.data.p_Pcosto.toFixed(3), 3);//PRECIO COSTO -> obj.data.p_Pcosto
+						td[17].innerText = formatearValorConFormatoNumerico(obj.data.p_Pcosto_Total.toFixed(3), 3);//TOTAL COSTO -> obj.data.p_Pcosto_Total
+						td[18].innerText = obj.data.paletizado;//TOTAL PALLET -> obj.data.paletizado
 
 						//TOTALES
 						$("#Total_Costo").val(formatter.format(obj.data.total_Costo));//TOTAL_COSTO -> obj.data.total_Costo
