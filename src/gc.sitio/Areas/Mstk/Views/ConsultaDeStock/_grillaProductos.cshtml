@@ -1,4 +1,5 @@
 ﻿@using gc.infraestructura.Dtos.Mstk
+@using gc.infraestructura.Helpers
 @model ProductoStkListaModel
 @using static gc.infraestructura.Helpers.GridHelper
 @{
@@ -169,7 +170,7 @@
 						<td class="@Model.GrillaProductoStk.ObtenerClase(item.stk_ult_mov) text-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.stk_ult_mov, FormatDato.Fecha)</td>
 						<td class="@Model.GrillaProductoStk.ObtenerClase(item.rp_fecha) text-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.rp_fecha, FormatDato.Fecha)</td>
 						<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_unidad_pres) text-right cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_unidad_pres, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaProductoStk.ObtenerClase(item.stk) text-right cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.stk, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaProductoStk.ObtenerClase(item.stk) text-right cell-fit-content">@GridHelper.FormatearDato(item.stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 					</tr>
 				}
 			}

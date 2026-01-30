@@ -3725,7 +3725,10 @@ namespace gc.infraestructura.Helpers
 					tabla.AddCell(new PdfPCell(new Phrase(producto.rp_dias.ToString(), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
 					tabla.AddCell(new PdfPCell(new Phrase(producto.p_unidad_pres.ToString(), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
 					tabla.AddCell(new PdfPCell(new Phrase(string.Empty, fuenteEtiqueta)));
-					tabla.AddCell(new PdfPCell(new Phrase(producto.stk.ToString("0.00"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					if (producto.PermiteDecimales)
+						tabla.AddCell(new PdfPCell(new Phrase(producto.stk.ToString("0.00"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					else
+						tabla.AddCell(new PdfPCell(new Phrase(producto.stk.ToString("0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
 					tabla.AddCell(new PdfPCell(new Phrase(string.Empty, fuenteEtiqueta)));
 				}
 
