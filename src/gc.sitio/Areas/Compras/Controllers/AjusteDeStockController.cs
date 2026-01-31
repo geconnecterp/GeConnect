@@ -343,11 +343,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 					var productoStk = await _productoServicio.InfoProductoStkBoxes(pId, AdministracionId, depoId, TokenCookie, boxId);
 					if (productoStk == null)
 					{
-						productoStk = [new InfoProdStkBox() { Ps_stk = 0 }];
+						productoStk = [new InfoProdStkBox() { ps_stk = 0 }];
 					}
 					else if (productoStk.Count == 0)
 					{
-						productoStk.Add(new InfoProdStkBox() { Ps_stk = 0 });
+						productoStk.Add(new InfoProdStkBox() { ps_stk = 0 });
 					}
 					var producto = ObtenerDatosDeProducto(pId);
 					var box = await _depositoServicio.ObtenerInfoDeBox(boxId, TokenCookie);
@@ -362,13 +362,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 						{
 
 							//stkEnteroAux = Int32.Parse(productoStk.First().Ps_stk.ToString(), NumberStyles.AllowThousands, CultureInfo.CurrentCulture);
-							stkEnteroAux = ObtenerValorDeStock(productoStk.First().Ps_stk.ToString());
+							stkEnteroAux = ObtenerValorDeStock(productoStk.First().ps_stk.ToString());
 							var upxbto = unidadPres * bto;
 							cantidadAux = stkEnteroAux - ((upxbto < 0 ? upxbto * -1 : upxbto) + us);
 						}
 						else
 						{
-							stkDecimalAux = productoStk.First().Ps_stk;
+							stkDecimalAux = productoStk.First().ps_stk;
 							cantidadAux = stkDecimalAux - ((unidadPresDecimalAux * bultoDecimalAux) * us);
 						}
 
@@ -389,7 +389,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 							unidad_pres = unidadPres,
 							bulto = bto,
 							us = us,
-							as_stock = productoStk.First().Ps_stk,
+							as_stock = productoStk.First().ps_stk,
 							as_ajuste = (unidadPres * bto) + us,
 							cantidad = (unidadPres * bto) + us,
 							as_resultado = cantidadAux,
@@ -474,7 +474,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					return Json(new { error = false, warn = true, msg = respuesta.First().resultado_msj, jsonstring = json_string });
 
 				AjusteProductosLista = [];
-				return Json(new { error = false, warn = false, msg = respuesta.First().resultado_msj, jsonstring = json_string });
+				return Json(new { error = false, warn = false, msg = "El ajuste se ha realizado con éxito.", jsonstring = json_string });
 			}
 			catch (Exception ex)
 			{

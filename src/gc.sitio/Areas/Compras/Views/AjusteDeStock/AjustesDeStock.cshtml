@@ -144,9 +144,6 @@
 							<button type="button" class="btn btn-primary btn-sm" id="btnAddProd" title="Agregar Producto">
 								<i class="bx bx-plus-circle"></i> Agregar
 							</button>
-							@* <button type="button" class="btn btn-danger btn-sm" id="btnDelProd" title="Quitar Producto">
-								<i class="bx bx-trash"></i> Quitar
-							</button> *@
 						</div>
 					</div>
 					<div id="divDetalleDeProductosAAjustar" style="padding-top:5px;">
@@ -157,11 +154,11 @@
 										<th style="width:5%;" class="col-header-small align-center">ID</th>
 										<th style="width:20%;" class="col-header-small align-center">Descripción</th>
 										<th style="width:5%;" class="col-header-small align-center">Cod. Prov</th>
-										<th style="width:5%;" class="col-header-small align-center">Box</th>
+										<th style="width:10%;" class="col-header-small align-center">Box</th>
 										<th style="width:5%;" class="col-header-small align-center">Stk Actual</th>
 										<th style="width:5%;" class="col-header-small align-center">Ajuste</th>
 										<th style="width:5%;" class="col-header-small align-center">Stock Ajustado</th>
-										<th style="width:1%;"></th>
+										<th style="width:2%;"></th>
 									</tr>
 								</thead>
 								<tbody>
@@ -175,9 +172,9 @@
 												<td class="align-left">@item.p_desc</td>
 												<td class="align-center">@item.p_id_prov</td>
 												<td class="align-center">@item.box_desc</td>
-												<td class="align-center">@item.as_stock</td>
-												<td class="align-right">@item.as_ajuste</td>
-												<td class="align-right">@item.as_resultado</td>
+												<td class="align-center">@GridHelper.FormatearDato(item.as_stock, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+												<td class="align-right">@GridHelper.FormatearDato(item.as_ajuste, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+												<td class="align-right">@GridHelper.FormatearDato(item.as_resultado, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 												<td class="text-center align-middle">
 													<button type="button" class="btn btn-danger btn-icon-compact" title="Rechazar" onclick="quitarProducto('@item.p_id')">
 														<i class="bx bx-trash"></i>

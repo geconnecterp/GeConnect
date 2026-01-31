@@ -28,14 +28,14 @@
                 <tr class="@clase">
                     <td class="corta-linea">@item.Depo_nombre</td>
                     <td class="text-sm-center">@item.Box_id</td>
-                    <td class="text-sm-end">@if (item.Up_id == 7)
+                    <td class="text-sm-end">@if (item.up_id == "07")
                         {
-                            var spl = item.Ps_stk.ToString().Split('.');
+                            var spl = item.ps_stk.ToString().Split('.');
                             <span>@spl[0]</span>
                         }
                         else
                         {
-                            <span>@item.Ps_stk</span>
+                            <span>@item.ps_stk</span>
                         }
                        </td>
                     <td class="text-sm-center">

@@ -155,7 +155,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						if (producto.Up_id == "07") //Entero
 						{
 							//stkEnteroAux = Int32.Parse(productoStk.First().Ps_stk.ToString(), NumberStyles.AllowThousands, CultureInfo.CurrentCulture);
-							if (Decimal.TryParse(productoStk.First().Ps_stk.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal stkDecimal))
+							if (Decimal.TryParse(productoStk.First().ps_stk.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal stkDecimal))
 							{
 								stkEnteroAux = (int)Math.Floor(stkDecimal);
 							}
@@ -164,7 +164,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						}
 						else
 						{
-							stkDecimalAux = productoStk.First().Ps_stk;
+							stkDecimalAux = productoStk.First().ps_stk;
 							cantidadAux = stkDecimalAux - ((unidadPresDecimalAux * bultoDecimalAux) + us);
 						}
 
@@ -183,7 +183,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 							unidad_pres = unidadPres,
 							bulto = bto,
 							us = us,
-							as_stock = productoStk.First().Ps_stk,
+							as_stock = productoStk.First().ps_stk,
 							as_ajuste = (unidadPres * bto) + us,
 							cantidad = (unidadPres * bto) + us,
 							as_resultado = cantidadAux,

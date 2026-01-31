@@ -177,8 +177,8 @@
 						{
 							<td class="align-right tiny-row" style="font-weight:bold;">@item.oc_pendiente</td>
 						}
-						<td class="align-right tiny-row">@item.stk_suc</td>
-						<td class="align-right tiny-row">@item.stk</td>
+						<td class="align-right tiny-row">@GridHelper.FormatearDato(item.stk_suc, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="align-right tiny-row">@GridHelper.FormatearDato(item.stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 						<td style="display:none;">@item.stk_suc_comprometido</td>
 						<td class="align-right tiny-row">@item.p_unidad_pres</td>
 						<td class="align-right tiny-row">@item.p_unidad_palet</td>

@@ -6,7 +6,7 @@ namespace gc.infraestructura.Dtos.Almacen.AjusteDeStock
 {
 	[Serializable]
 	[DataContract]
-	public class ProductoAAjustarDto : Dto
+	public class ProductoAAjustarDto : Dto, IProductoConUnidad
 	{
 		[DataMember]
 		[JsonProperty("p_id")]
@@ -71,5 +71,10 @@ namespace gc.infraestructura.Dtos.Almacen.AjusteDeStock
 		[JsonProperty("as_motivo")]
 		//[JsonIgnore]
 		public string as_motivo { get; set; } = string.Empty;
+		public bool PermiteDecimales => up_tipo == "P";
+		[JsonProperty("up_desc")]
+		public string up_desc { get; set; } = string.Empty;
+		[JsonProperty("up_tipo")]
+		public string up_tipo { get; set; } = string.Empty;
 	}
 }

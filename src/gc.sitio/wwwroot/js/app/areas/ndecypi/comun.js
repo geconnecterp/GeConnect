@@ -333,6 +333,25 @@ function ControlaCompraAutoBuscar() {
 	}
 }
 
+function normalizarFechaInput(el) {
+	const v = el.value;
+	if (v == "") {
+		el.value = el.defaultValue;
+		ControlaMensajeWarning("Fecha no válida.");
+	}
+	if (!v || v.length < 10) return; // todavía no es una fecha completa
+
+	const [y, m, d] = v.split("-");
+	const fecha = new Date(y, m - 1, d);
+
+	// Si el mes no coincide, el día no existe (31/06, etc.)
+	if (fecha.getMonth() !== (parseInt(m, 10) - 1)) {
+		const ultimoDia = new Date(y, m, 0).getDate();
+		el.value = `${y}-${m}-${String(ultimoDia).padStart(2, "0")}`;
+	}
+}
+
+
 function HandlerActualizarTablaPostOCAuto() {
 	AbrirWaiting("Actualizando vista de la tabla...")
 	var datos = {};
@@ -473,6 +492,14 @@ function inicializarCamposEnModal() {
 			}
 		});
 	}
+
+	$("#VentaDiariaDesde").off("blur").on("blur", function () {
+		normalizarFechaInput(this);
+	});
+	$("#VentaDiariaHasta").off("blur").on("blur", function () {
+		normalizarFechaInput(this);
+	});
+
 }
 
 function ControlalistaSucursalesModalSelected() {

@@ -1,14 +1,18 @@
-﻿namespace gc.infraestructura.Dtos.Productos
+﻿using gc.infraestructura.Dtos.Almacen;
+
+namespace gc.infraestructura.Dtos.Productos
 {
 
-    public class InfoProdBase : Dto
-    {
-        public string P_id { get; set; } = string.Empty;
-        public decimal Ps_stk { get; set; }
-        public decimal Ps_bulto { get; set; }
-        public int Up_id { get; set; }
-        public string Up_desc { get; set; } = string.Empty;
-    }
+    public class InfoProdBase : Dto, IProductoConUnidad
+	{
+        public string p_id { get; set; } = string.Empty;
+        public decimal ps_stk { get; set; }
+        public decimal ps_bulto { get; set; }
+        public string up_id { get; set; } = string.Empty;
+		public string up_desc { get; set; } = string.Empty;
+		public bool PermiteDecimales => up_tipo == "P";
+		public string up_tipo { get; set; } = string.Empty;
+	}
     public class InfoProdExt : InfoProdBase
     {
         public string Depo_id { get; set; } = string.Empty;

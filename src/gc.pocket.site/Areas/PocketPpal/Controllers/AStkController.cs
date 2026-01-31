@@ -213,7 +213,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     {
                         //hay algun producto en el box.
                         var prod = restk.Single();
-                        if ((prod.Ps_stk + item.cantidad) < 0)
+                        if ((prod.ps_stk + item.cantidad) < 0)
                         {
                             return Json(new { error = true, msg = $"Verifique el ajuste del producto {item.p_desc} ya que el ajuste daria un Stock NEGATIVO." });
                         }

@@ -1,16 +1,11 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace gc.infraestructura.Dtos.Almacen.DevolucionAProveedor
 {
 	[Serializable]
 	[DataContract]
-	public class ProductoADevolverDto : Dto
+	public class ProductoADevolverDto : Dto, IProductoConUnidad
 	{
 		[DataMember]
 		[JsonProperty("p_id")]
@@ -69,5 +64,10 @@ namespace gc.infraestructura.Dtos.Almacen.DevolucionAProveedor
 		[JsonProperty("as_motivo")]
 		//[JsonIgnore]
 		public string as_motivo { get; set; } = string.Empty;
+		public bool PermiteDecimales => up_tipo == "P";
+		[JsonProperty("up_desc")]
+		public string up_desc { get; set; } = string.Empty;
+		[JsonProperty("up_tipo")]
+		public string up_tipo { get; set; } = string.Empty;
 	}
 }

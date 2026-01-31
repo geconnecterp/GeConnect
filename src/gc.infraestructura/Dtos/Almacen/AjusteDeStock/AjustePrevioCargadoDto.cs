@@ -1,7 +1,7 @@
 ﻿
 namespace gc.infraestructura.Dtos.Almacen.AjusteDeStock
 {
-	public class AjustePrevioCargadoDto : Dto
+	public class AjustePrevioCargadoDto : Dto, IProductoConUnidad
 	{
 		public string adm_id { get; set; } = string.Empty;
 		public string adm_nombre { get; set; } = string.Empty;
@@ -25,5 +25,8 @@ namespace gc.infraestructura.Dtos.Almacen.AjusteDeStock
 		public decimal ps_bulto { get; set; } = 0.000M;
 		public DateTime vto { get; set; }
 		public string up_id { get; set; } = string.Empty;
+		public bool PermiteDecimales => up_tipo == "P";
+		public string up_desc { get; set; } = string.Empty;
+		public string up_tipo { get; set; } = string.Empty;
 	}
 }

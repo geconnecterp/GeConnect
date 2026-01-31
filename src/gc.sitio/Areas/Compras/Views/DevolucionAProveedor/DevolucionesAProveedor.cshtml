@@ -154,7 +154,7 @@
 										<th style="width:5%;" class="col-header-small align-center">Stk Actual</th>
 										<th style="width:5%;" class="col-header-small align-center">A Devolver</th>
 										<th style="width:5%;" class="col-header-small align-center">Costo</th>
-										<th style="width:1%;"></th>
+										<th style="width:2%;"></th>
 									</tr>
 								</thead>
 								<tbody>
@@ -168,9 +168,9 @@
 												<td class="align-left">@item.p_desc</td>
 												<td class="align-center">@item.cta_id</td>
 												<td class="align-center">@item.box_desc</td>
-												<td class="align-center">@item.as_stock</td>
-												<td class="align-right">@item.as_ajuste</td>
-												<td class="align-right">@item.as_resultado</td>
+												<td class="align-right">@GridHelper.FormatearDato(item.as_stock, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+												<td class="align-right">@GridHelper.FormatearDato(item.as_ajuste, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+												<td class="align-right">@GridHelper.FormatearDato(item.as_resultado, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 												<td class="text-center align-middle">
 													<button type="button" class="btn btn-danger btn-icon-compact" title="Rechazar" onclick="quitarProducto('@item.p_id')">
 														<i class="bx bx-trash"></i>

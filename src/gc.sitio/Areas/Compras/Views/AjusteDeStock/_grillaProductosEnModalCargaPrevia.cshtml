@@ -27,7 +27,7 @@
 						<td class="align-center">@item.p_id</td>
 						<td class="align-left">@item.p_desc</td>
 						<td class="align-center">@item.p_id_prov</td>
-						<td class="align-right">@item.cantidad</td>
+						<td class="align-right">@GridHelper.FormatearDato(item.cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 					</tr>
 				}
 			}
