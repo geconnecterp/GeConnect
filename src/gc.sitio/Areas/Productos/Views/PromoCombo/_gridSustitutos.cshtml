@@ -16,7 +16,7 @@
                         <th class="text-center th-compact">ID</th>
                         <th class="text-left th-compact">Descripción</th>
                         <th class="text-center th-compact">Costo</th>
-                        <th class="text-center th-compact">Estado</th>
+                        @* <th class="text-center th-compact">Estado</th> *@
                         <th class="text-center th-compact">Acción</th>
                     </tr>
                 </thead>
@@ -35,11 +35,11 @@
                                 <td class="text-end">
                                     @item.p_pcosto.ToString("C2")
                                 </td>
-                                <td class="text-center">
+                                @* <td class="text-center">
                                     <span class="badge @(item.activo == 'S' ? "bg-success" : "bg-danger")">
                                         @(item.activo == 'S' ? "Activo" : "Inactivo")
                                     </span>
-                                </td>
+                                </td> *@
                                 <td class="text-center">
                                     <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-sustituto" 
                                             title="Eliminar sustituto" data-producto-id="@item.p_id_sustituto">

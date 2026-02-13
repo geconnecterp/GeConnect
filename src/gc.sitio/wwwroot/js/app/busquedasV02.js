@@ -85,6 +85,87 @@ $(function () {
         }
     });
 
+    // ✅ NUEVO: Configurar autocompletado genérico para Rel01B2 (Proveedor)
+    // Se usa delegación de eventos para que funcione incluso si el modal se carga dinámicamente
+    $(document).on("focus", "#busquedaModal #Rel01B2", function() {
+        var $input = $(this);
+        
+        // Verificar si ya está inicializado para evitar duplicaciones
+        if ($input.data("autocomplete-initialized")) {
+            return;
+        }
+        
+        // Verificar que la URL esté definida globalmente
+        if (typeof autoComRel01Url === 'undefined') {
+            console.error("❌ autoComRel01Url no está definida. Debe definirse en la vista que invoca el modal.");
+            return;
+        }
+        
+        console.log("🔧 Inicializando autocompletado para Rel01B2 (Proveedor)");
+        
+        $input.autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    url: autoComRel01Url,
+                    type: "POST",
+                    dataType: "json",
+                    data: { prefix: request.term },
+                    success: function (obj) {
+                        if (!obj || obj.length === 0) {
+                            response([{ label: "No se encontraron proveedores", value: "", disabled: true }]);
+                            return;
+                        }
+                        response($.map(obj, function (item) {
+                            var texto = item.descripcion;
+                            return { label: texto, value: item.descripcion, id: item.id, prov: item.provId, tipo: "P" };
+                        }));
+                        //response($.map(data, function (item) {
+                        //    return {
+                        //        label: item.cta_id + " - " + item.cta_denominacion,
+                        //        value: item.cta_denominacion,
+                        //        id: item.cta_id
+                        //    };
+                        //}));
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("❌ Error en autocompletado de proveedores:", error);
+                        response([]);
+                    }
+                });
+            },
+            minLength: 3,
+            select: function (event, ui) {
+                // Evitar selección de opciones deshabilitadas
+                if (ui.item.disabled) {
+                    return false;
+                }
+                
+                $("#Rel01B2").val(ui.item.value);
+                $("#Rel01B2Item").val(ui.item.id);
+                
+                // ✅ CRÍTICO: Disparar evento personalizado para que módulos externos reaccionen
+                // Esto permite que combo.js cargue las familias sin duplicar código
+                $("#busquedaModal #Rel01B2").trigger("autocompleteselect", [ui]);
+                
+                console.log(`✅ Proveedor seleccionado: ${ui.item.id} - ${ui.item.value}`);
+                
+                return false;
+            },
+            focus: function (event, ui) {
+                if (ui.item.disabled) {
+                    return false;
+                }
+                $("#Rel01B2").val(ui.item.value);
+                return false;
+            }
+        });
+        
+        // Marcar como inicializado
+        $input.data("autocomplete-initialized", true);
+        
+        console.log("✅ Autocompletado para Rel01B2 inicializado correctamente");
+    });
+
     // Callback para paginación
     funcCallBack = busquedaAvanzadaProductosV02;
 

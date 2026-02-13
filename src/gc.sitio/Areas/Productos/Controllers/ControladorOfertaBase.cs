@@ -154,6 +154,17 @@ namespace gc.sitio.Areas.Productos.Controllers
                     ComboEstadoLista = resEstado.ListaEntidad ?? [];
                 }                
             }
+            #region Carga de Rubros
+            var rubs = RubroLista
+                .Select(r => new ComboGenDto
+                {
+                    Id = r.Rub_Id,
+                    Descripcion = r.Rub_Id + " - " + r.Rub_Desc
+                })
+                .ToList();
+            ViewBag.Rel02B2 = HelperMvc<ComboGenDto>.ListaGenerica(rubs);
+            #endregion
+
 
             var listR03 = new List<ComboGenDto>();
             ViewBag.Rel03 = HelperMvc<ComboGenDto>.ListaGenerica(listR03);

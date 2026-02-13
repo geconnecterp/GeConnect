@@ -40,7 +40,8 @@
                             <div class="col-md-4 col-sm-12">
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">Rubro</span>
-                                    <input type="text" class="form-control inputEditable" name="Rel02B2" id="Rel02B2" />
+                                    @Html.DropDownList("Rel02B2", null, "Seleccionar...", new { @class = "form-control", @disabled = "disabled" })
+                                    @* <input type="text" class="form-control inputEditable" name="Rel02B2" id="Rel02B2" /> *@
                                     @Html.Hidden("Rel02B2Item")
                                 </div>
                             </div>

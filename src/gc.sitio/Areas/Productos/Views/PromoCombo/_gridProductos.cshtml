@@ -21,7 +21,7 @@
                         <th class="text-center th-compact">Costo</th>
                         <th class="text-center th-compact">Cantidad</th>
                         <th class="text-center th-compact">Descuento %</th>
-                        <th class="text-center th-compact">Estado</th>
+                        @* <th class="text-center th-compact">Estado</th> *@
                         <th class="text-center th-compact">Acción</th>
                     </tr>
                 </thead>
@@ -58,11 +58,11 @@
                                                readonly />
                                     </div>
                                 </td>
-                                <td class="text-center">
+                                @* <td class="text-center">
                                     <span class="badge @(item.activo == 'A' ? "bg-success" : "bg-danger")">
                                         @(item.activo == 'A' ? "Activo" : "Pendiente")
                                     </span>
-                                </td>
+                                </td> *@
                                 <td class="text-center">
                                     <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-producto" 
                                             title="Eliminar producto" data-producto-id="@item.p_id">
