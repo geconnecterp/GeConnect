@@ -1407,7 +1407,15 @@ function adaptarGrillaCanales() {
     $("#tbGridCanales th:nth-child(4), #tbGridCanales td:nth-child(4)").hide();
 
     // Añadir columna de selección en el encabezado
-    $("#tbGridCanales thead tr").prepend("<th class='text-center'>Selección</th>");
+    //$("#tbGridCanales thead tr").prepend("<th class='text-center'>Selección</th>");
+    $("#tbGridCanales thead tr").prepend(`
+    <th class='text-center'>
+        <div class='form-check'>
+            <input class='form-check-input' type='checkbox' id='chkSeleccionarTodosCanales' 
+                   title='Seleccionar/Deseleccionar todos'>
+            <label class='form-check-label' for='chkSeleccionarTodosCanales'>Selección</label>
+        </div>
+    </th>`);
 
     // Añadir checkbox a cada fila
     $("#tbGridCanales tbody tr").each(function () {
@@ -1423,12 +1431,49 @@ function adaptarGrillaCanales() {
         );
     });
 
-    // Añadir evento para manejar la selección de canales
+    // ✅ NUEVO: Evento para el checkbox maestro
+    $("#chkSeleccionarTodosCanales").on("change", function () {
+        var isChecked = $(this).prop("checked");
+
+        // Seleccionar/deseleccionar todos los canales
+        $(".canal-checkbox").prop("checked", isChecked);
+
+        console.log("📋 Canales " + (isChecked ? "seleccionados" : "deseleccionados") + " en masa");
+    });
+
+    // ✅ MEJORADO: Evento para checkboxes individuales con sincronización
     $(".canal-checkbox").on("change", function () {
         var checked = $(this).prop("checked");
-        // Se podría implementar lógica adicional aquí
         console.log("Canal " + $(this).val() + " " + (checked ? "seleccionado" : "deseleccionado"));
+
+        // Actualizar estado del checkbox maestro
+        actualizarCheckboxMaestroCanales();
     });
+
+    // ✅ NUEVO: Inicializar estado del checkbox maestro
+    actualizarCheckboxMaestroCanales();
+}
+
+/**
+ * ✅ NUEVA FUNCIÓN: Actualiza el estado del checkbox maestro de canales
+ * según la selección de checkboxes individuales
+ */
+function actualizarCheckboxMaestroCanales() {
+    var totalCheckboxes = $(".canal-checkbox").length;
+    var checkboxesMarcados = $(".canal-checkbox:checked").length;
+
+    var $checkboxMaestro = $("#chkSeleccionarTodosCanales");
+
+    if (checkboxesMarcados === 0) {
+        // Ninguno seleccionado
+        $checkboxMaestro.prop("checked", false).prop("indeterminate", false);
+    } else if (checkboxesMarcados === totalCheckboxes) {
+        // Todos seleccionados
+        $checkboxMaestro.prop("checked", true).prop("indeterminate", false);
+    } else {
+        // Algunos seleccionados (estado indeterminado)
+        $checkboxMaestro.prop("checked", false).prop("indeterminate", true);
+    }
 }
 
 /**
@@ -1467,18 +1512,18 @@ function agregarProductosAlGrid(productos) {
     // Agregar cada producto como una nueva fila
     $.each(productos, function (i, producto) {
         // MODIFICADO: Manejo de estado histórico
-        var estadoTexto, estadoClase;
+        //var estadoTexto, estadoClase;
 
-        if (producto.activo === 'A') {
-            estadoTexto = "Activo";
-            estadoClase = "bg-success";
-        } else if (producto.activo === 'H') {
-            estadoTexto = "Histórico";
-            estadoClase = "bg-secondary"; // Usar color gris para histórico
-        } else {
-            estadoTexto = "Pendiente";
-            estadoClase = "bg-danger";
-        }
+        //if (producto.activo === 'A') {
+        //    estadoTexto = "Activo";
+        //    estadoClase = "bg-success";
+        //} else if (producto.activo === 'H') {
+        //    estadoTexto = "Histórico";
+        //    estadoClase = "bg-secondary"; // Usar color gris para histórico
+        //} else {
+        //    estadoTexto = "Pendiente";
+        //    estadoClase = "bg-danger";
+        //}
 
         var fila = `
         <tr data-producto-id="${producto.p_id}" data-combo-id="${comboId}" data-producto-estado="${producto.activo}">
@@ -1503,17 +1548,12 @@ function agregarProductosAlGrid(productos) {
             <td class="text-end">
                 <div class="input-container">
                     <input type="text" class="form-control form-control-sm input-descuento input-numeric"
-                           value="${producto.dto_porc.toFixed(2)}"
+                           value="${producto.dto_porc.toFixed(5)}"
                            data-producto-id="${producto.p_id}"
                            data-original-value="${producto.dto_porc}"
                            readonly />
                 </div>
-            </td>
-            <td class="text-center">
-                <span class="badge ${estadoClase}">
-                    ${estadoTexto}
-                </span>
-            </td>
+            </td>            
             ${modoNuevoCombo ? `
             <td class="text-center">
                 <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-producto" 
@@ -1659,7 +1699,7 @@ function inicializarCamposEditablesProductos() {
             groupSeparator: ",",
             radixPoint: ".",
             autoGroup: true,
-            digits: 2,
+            digits: 5,
             digitsOptional: false,
             rightAlign: true,
             allowMinus: false,
@@ -1746,7 +1786,7 @@ function guardarCambiosCampoProducto(campo) {
     const valorActual = parseFloat($campo.val().replace(/,/g, '')) || 0;
 
     // Formatear el valor según el tipo de campo
-    const decimales = $campo.hasClass('input-cantidad') ? 2 : 2;
+    const decimales = $campo.hasClass('input-cantidad') ? 2 : 5;
     $campo.val(valorActual.toFixed(decimales));
 
     // Volver a readonly
@@ -2090,12 +2130,7 @@ function actualizarGridSustitutos(productoId) {
             </td>
             <td class="text-end">
                 ${parseFloat(sustituto.p_pcosto).toFixed(3)}
-            </td>
-            <td class="text-center">
-                <span class="badge ${sustituto.activo == 'A' ? "bg-success" : "bg-danger"}">
-                    ${sustituto.activo == 'A' ? "Activo" : "Pendiente"}
-                </span>
-            </td>
+            </td>          
             ${modoNuevoCombo ? `
             <td class="text-center">
                 <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-sustituto" 
