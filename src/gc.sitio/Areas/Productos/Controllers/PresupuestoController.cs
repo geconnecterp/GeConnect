@@ -32,11 +32,12 @@ namespace gc.sitio.Areas.Productos.Controllers
         private readonly IAdministracionServicio _admSv;
         private readonly IUserServicio _userSv;
         private readonly IPresupuestoServicio _presuSv;
+        private readonly IRubroServicio _rubroServicio;
 
         public PresupuestoController(IOptions<AppSettings> options, IHttpContextAccessor contexo,
            ILogger<OfertasController> logger, IOptions<DocsManager> docsManager,
            IDocManagerServicio docManagerServicio, IAdministracionServicio admSv,
-           IUserServicio userServicio, IPresupuestoServicio presupuestoServicio) : base(options, contexo, logger)
+           IUserServicio userServicio, IRubroServicio rubro, IPresupuestoServicio presupuestoServicio) : base(options, contexo, logger)
         {
             _configuracion = options.Value;
 
@@ -47,6 +48,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             _admSv = admSv;
             _userSv = userServicio;
             _presuSv = presupuestoServicio;
+            _rubroServicio = rubro;
         }
 
 
@@ -74,6 +76,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
 
                 #endregion
+
                 InicializaPresupuesto();
             }
             catch (NegocioException ex)
@@ -435,6 +438,23 @@ namespace gc.sitio.Areas.Productos.Controllers
             ObtenerAdministracionesLista(_admSv, "S");
             ObtenerEstadoPresupuesto(_presuSv);
             ObtenerTipoPresupuesto(_presuSv);
+
+            if (RubroLista.Count == 0 )
+            {
+                ObtenerRubros(_rubroServicio);
+            }
+
+            #region Carga de Rubros
+            var rubs = RubroLista
+                .Select(r => new ComboGenDto
+                {
+                    Id = r.Rub_Id,
+                    Descripcion = r.Rub_Id + " - " + r.Rub_Desc
+                })
+                .ToList();
+            ViewBag.Rel02B2 = HelperMvc<ComboGenDto>.ListaGenerica(rubs);
+            #endregion
+
 
             //CLIENTE
             var listR011 = new List<ComboGenDto>();

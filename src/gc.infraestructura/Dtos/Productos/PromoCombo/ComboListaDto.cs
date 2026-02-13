@@ -21,6 +21,7 @@ namespace gc.infraestructura.Dtos.Productos.PromoCombo
         public DateTime cmb_hasta { get; set; }
         public bool pasa_activar { get; set; }
         public bool pasa_historico { get; set; }
+
     }
 
     public class ConfirmacionRequestDto
