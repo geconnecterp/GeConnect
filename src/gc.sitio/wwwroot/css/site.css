@@ -2914,3 +2914,21 @@ input, select, textarea, button, checkbox, radio {
 }
 
 /* FIN OPTIMIZACIÓN DE HEADERS DE TABLA */
+
+/* Clases para controlar visibilidad del dropdown de preajustes */
+.preajuste-hidden {
+    display: none !important;
+}
+
+.preajuste-visible {
+    display: inline-block !important;
+}
+
+/* ✅ NUEVO: Clases para controlar visibilidad del input de importe único */
+.importe-hidden {
+    display: none !important;
+}
+
+.importe-visible {
+    display: inline-block !important;
+}

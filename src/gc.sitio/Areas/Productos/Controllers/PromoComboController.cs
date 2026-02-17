@@ -191,11 +191,11 @@ namespace gc.sitio.Areas.Productos.Controllers
                         Descripcion = p.cmb_tipo_desc
                     })
                     .ToList();
-                var preset_id = HelperMvc<ComboGenDto>.ListaGenerica(preset);
+                ViewBag.preset_id = HelperMvc<ComboGenDto>.ListaGenerica(preset);
                 #endregion
 
                 // Devolver vista parcial con los datos de preajuste
-                return PartialView("_ddlPreajustePromo", preset_id);
+                return PartialView("_ddlPreajustePromo");
             }
             catch (NegocioException ex)
             {

@@ -6,6 +6,7 @@ var modoModificacionCombo = false;
 var realizaAlgunaBusqueda = false;
 // Variable global para almacenar el ID del combo guardado/modificado
 var comboIdGuardado = null;
+
 /**
  * Script para gestión de combos y promociones
  */
@@ -115,6 +116,17 @@ function inicializarEventos() {
 
     $("#chkEstado").on("change", function () {
         $("#Estado").prop("disabled", !$(this).prop("checked"));
+    });
+
+    // ✅ NUEVO: Evento para controlar visibilidad del dropdown de preajustes
+    $(document).on("change", "#cmb_tipo", function () {
+        var tipoSeleccionado = $(this).val();
+        var $contenedorPreajuste = $("#contenedorPreajuste");
+
+        console.log("🔄 Tipo seleccionado:", tipoSeleccionado);
+
+        // Controlar visibilidad del dropdown de preajustes
+        actualizarVisibilidadSegunTipo(tipoSeleccionado);
     });
 
     // Evento para el checkbox de estado del combo
@@ -237,7 +249,7 @@ function inicializarEventos() {
         inicializarCamposEditablesProductos();
 
         // Mostrar mensaje informativo
-        ControlaMensajeInfo("Ahora puede modificar cantidades y descuentos. Al terminar haga clic en 'Confirmar'.");
+        //ControlaMensajeInfo("Ahora puede modificar cantidades y descuentos. Al terminar haga clic en 'Confirmar'.");
     });
    
     // Evento para el botón confirmar
@@ -1009,15 +1021,39 @@ function agregarProductosSeleccionados() {
  * @param {boolean} modoEdicion - Indica si estamos en modo edición (para mostrar columnas de acción)
  */
 function limpiarGridsProductos(modoEdicion = modoNuevoCombo) {
+    // ✅ MEJORADO: Contenedor para preajustes
+    var htmlPreajusteDropdown = modoEdicion && modoNuevoCombo ? `
+        <div id="contenedorPreajuste" class="d-inline-block me-2 preajuste-hidden">
+            <!-- El dropdown se cargará aquí dinámicamente -->
+        </div>
+    ` : '';
+
+    // ✅ NUEVO: Contenedor para importe único
+    var htmlImporteUnico = modoEdicion && modoNuevoCombo ? `
+        <div id="contenedorImporteUnico" class="d-inline-block me-2 importe-hidden">
+            <label class="form-label mb-0 me-1" style="font-size: 0.875rem;">Importe:</label>
+            <input type="text" 
+                   id="importeUnico" 
+                   class="form-control form-control-sm d-inline-block" 
+                   style="width: 100px;" 
+                   placeholder="0.00" 
+                   title="Importe único para todos los productos" />
+        </div>
+    ` : '';
+
     // Crear HTML para un grid vacío de productos
     var htmlProductosVacio = `
     <div class="card h-100">
         <div class="card-header py-1 d-flex justify-content-between align-items-center">
             <h6 class="mb-0">Productos</h6>
             ${modoEdicion ? `
-            <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarCProducto" title="Agregar Producto">
-                <i class="bx bx-plus" style="font-size: 24px;"></i>
-            </button>
+            <div class="d-flex align-items-center">
+                ${htmlPreajusteDropdown}
+                ${htmlImporteUnico}
+                <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarCProducto" title="Agregar Producto">
+                    <i class="bx bx-plus" style="font-size: 24px;"></i>
+                </button>
+            </div>
             ` : ''}
         </div>
         <div class="card-body p-1">
@@ -1045,7 +1081,7 @@ function limpiarGridsProductos(modoEdicion = modoNuevoCombo) {
         </div>
     </div>`;
 
-    // Crear HTML para un grid vacío de sustitutos
+    // Crear HTML para un grid vacío de sustitutos (sin cambios)
     var htmlSustitutosVacio = `
     <div class="card h-100">
         <div class="card-header py-1 d-flex justify-content-between align-items-center">
@@ -1069,7 +1105,7 @@ function limpiarGridsProductos(modoEdicion = modoNuevoCombo) {
                     </thead>
                     <tbody>
                         <tr>
-                            <td colspan="${modoEdicion ? 5 : 4}" class="text-center text-muted py-2">
+                            <td colspan="${modoEdicion ? 4 : 3}" class="text-center text-muted py-2">
                                 <i class="bx bx-info-circle me-1"></i>No hay sustitutos disponibles
                             </td>
                         </tr>
@@ -1083,15 +1119,40 @@ function limpiarGridsProductos(modoEdicion = modoNuevoCombo) {
     $(".col-sm-4:has(#tbGridProductos)").html(htmlProductosVacio).show();
     $(".col-sm-4:has(#tbGridSustitutos)").html(htmlSustitutosVacio).show();
 
+    // ✅ MEJORADO: Cargar dropdown de preajustes si estamos en modo nuevo
+    if (modoEdicion && modoNuevoCombo) {
+        // Usar setTimeout para asegurar que el DOM esté completamente actualizado
+        setTimeout(function () {
+            var $contenedorPreajuste = $("#contenedorPreajuste");
+            if ($contenedorPreajuste.length > 0) {
+                cargarDropdownPreajuste($contenedorPreajuste);
+            }
+
+            // ✅ NUEVO: Configurar InputMask para importe único
+            var $importeUnico = $("#importeUnico");
+            if ($importeUnico.length > 0 && typeof Inputmask !== 'undefined') {
+                Inputmask({
+                    alias: "numeric",
+                    groupSeparator: ",",
+                    radixPoint: ".",
+                    autoGroup: true,
+                    digits: 2,
+                    digitsOptional: false,
+                    rightAlign: true,
+                    allowMinus: false,
+                    min: 0
+                }).mask('#importeUnico');
+            }
+        }, 100);
+    }
+
     // Habilitar los botones de agregar solo en modo edición
     if (modoEdicion) {
-        //$("#btnAgregarCProducto, #btnAgregarSustituto").prop("disabled", false)
         var $btnAgregar = $("#btnAgregarCProducto, #btnAgregarSustituto");
         if ($btnAgregar.length > 0) {
             $btnAgregar.prop("disabled", false);
         }
     }
-
 }
 
 /**
@@ -2739,4 +2800,127 @@ function activarComboExistente(tipoDesc) {
             $("#lblEstadoCombo").text("No activo");
         }
     });
+}
+
+/**
+ * ✅ MEJORADA: Carga el dropdown de preajustes de promoción
+ * @param {jQuery} $contenedor - Contenedor donde se insertará el dropdown
+ * @param {Function} callback - Función a ejecutar después de cargar (opcional)
+ */
+function cargarDropdownPreajuste($contenedor, callback) {
+    // Verificar que la URL esté definida
+    if (typeof obtenerPreajustePromoUrl === 'undefined') {
+        console.error("❌ URL obtenerPreajustePromoUrl no definida");
+        return;
+    }
+
+    console.log("📦 Cargando dropdown de preajustes...");
+
+    // Limpiar contenedor antes de cargar
+    $contenedor.empty();
+
+    $.ajax({
+        url: obtenerPreajustePromoUrl,
+        type: "POST",
+        success: function (html) {
+            // Insertar el HTML del dropdown en el contenedor
+            $contenedor.html(html);
+
+            console.log("✅ Dropdown de preajustes cargado correctamente");
+
+            // ✅ NUEVO: Aplicar visibilidad según el tipo actual
+            aplicarVisibilidadPreajuste();
+
+            // Configurar evento change del dropdown
+            configurarEventoPreajuste();
+
+            // Ejecutar callback si existe
+            if (typeof callback === 'function') {
+                callback();
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error("❌ Error al cargar dropdown de preajustes:", error);
+            // No mostrar mensaje al usuario para no interrumpir el flujo
+            // El usuario simplemente no verá el dropdown
+        }
+    });
+}
+
+/**
+ * ✅ MEJORADA: Aplica la visibilidad del dropdown de preajustes según el tipo seleccionado
+ */
+function aplicarVisibilidadPreajuste() {
+    var tipoSeleccionado = $("#cmb_tipo").val();
+    actualizarVisibilidadSegunTipo(tipoSeleccionado);
+}
+
+/**
+ * ✅ NUEVA FUNCIÓN: Configura el evento change del dropdown de preajustes
+ */
+function configurarEventoPreajuste() {
+    // Usar delegación de eventos para asegurar que funcione con elementos dinámicos
+    $(document).off("change", "#preset_id").on("change", "#preset_id", function () {
+        var presetId = $(this).val();
+
+        if (!presetId) {
+            console.log("ℹ️ No se seleccionó ningún preajuste");
+            return;
+        }
+
+        console.log("🔄 Preajuste seleccionado:", presetId);
+
+        // Aquí puedes agregar lógica adicional según el preajuste seleccionado
+        // Por ejemplo: aplicar descuentos predefinidos, establecer cantidades, etc.
+
+        // Ejemplo: Mostrar mensaje informativo
+        //ControlaMensajeInfo(`Preajuste aplicado: ${$(this).find("option:selected").text()}`);
+
+        // TODO: Implementar lógica de negocio según el preajuste seleccionado
+    });
+}
+
+/**
+* ✅ NUEVA FUNCIÓN: Actualiza visibilidad de controles según el tipo seleccionado
+* @param {string} tipo - Tipo seleccionado ('P', 'C', 'Q', 'D')
+*/
+function actualizarVisibilidadSegunTipo(tipo) {
+    var $contenedorPreajuste = $("#contenedorPreajuste");
+    var $contenedorImporte = $("#contenedorImporteUnico");
+
+    // Tipos que usan preajustes: P (Promoción)
+    var usaPreajuste = tipo === 'P';
+
+    // Tipos que usan importe único: Q (Promo x Importe), D (Combo x Importe)
+    var usaImporteUnico = tipo === 'Q' || tipo === 'D';
+
+    // Tipos que usan descuento: P (Promoción), C (Combo)
+    var usaDescuento = tipo === 'P' || tipo === 'C';
+
+    // Controlar visibilidad del dropdown de preajustes
+    if (usaPreajuste) {
+        $contenedorPreajuste.removeClass('preajuste-hidden').addClass('preajuste-visible');
+        console.log("✅ Dropdown de preajustes mostrado");
+    } else {
+        $contenedorPreajuste.removeClass('preajuste-visible').addClass('preajuste-hidden');
+        console.log("🚫 Dropdown de preajustes ocultado");
+    }
+
+    // Controlar visibilidad del input de importe único
+    if (usaImporteUnico) {
+        $contenedorImporte.removeClass('importe-hidden').addClass('importe-visible');
+        console.log("✅ Input de importe único mostrado");
+    } else {
+        $contenedorImporte.removeClass('importe-visible').addClass('importe-hidden');
+        console.log("🚫 Input de importe único ocultado");
+    }
+
+    // Controlar visibilidad de la columna Descuento en el grid
+    if (usaDescuento) {
+        $("#tbGridProductos th:nth-child(5), #tbGridProductos td:nth-child(5)").show();
+        console.log("✅ Columna Descuento mostrada");
+    } else {
+        $("#tbGridProductos th:nth-child(5), #tbGridProductos td:nth-child(5)").hide();
+        console.log("🚫 Columna Descuento ocultada");
+    }
 }
