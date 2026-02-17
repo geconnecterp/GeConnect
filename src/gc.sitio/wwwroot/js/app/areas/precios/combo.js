@@ -555,7 +555,7 @@ function configurarEventosEliminacionProductos() {
 }
 
 /**
- * Elimina un producto del grid
+ * ✅ SIMPLIFICADO: Elimina un producto con colspan FIJO (siempre incluye columna descuento)
  */
 function eliminarProductoDeGrid($fila, productoId) {
     // Eliminar del mapa de productos (por si acaso está en modo edición)
@@ -571,11 +571,14 @@ function eliminarProductoDeGrid($fila, productoId) {
         guardarSustitutosEnSesion();
     }
 
+    // ✅ SIMPLIFICADO: Colspan SIEMPRE es 6 (ID, Desc, Costo, Cantidad, Descuento, Acción)
+    const colspan = modoNuevoCombo ? 6 : 5;
+
     // Si es la única fila, mostrar mensaje "No hay productos"
     if ($("#tbGridProductos tbody tr").length === 1) {
         $("#tbGridProductos tbody").html(`
             <tr>
-                <td colspan="${modoNuevoCombo ? 7 : 6}" class="text-center text-muted py-2">
+                <td colspan="${colspan}" class="text-center text-muted py-2">
                     <i class="bx bx-info-circle me-1"></i>No hay productos disponibles
                 </td>
             </tr>
@@ -1017,19 +1020,26 @@ function agregarProductosSeleccionados() {
 }
 
 /**
- * Limpia los grids de productos y sustitutos
- * @param {boolean} modoEdicion - Indica si estamos en modo edición (para mostrar columnas de acción)
+ * ✅ MODIFICADO: Limpia los grids considerando tipo de combo
  */
 function limpiarGridsProductos(modoEdicion = modoNuevoCombo) {
-    // ✅ MEJORADO: Contenedor para preajustes
-    var htmlPreajusteDropdown = modoEdicion && modoNuevoCombo ? `
+    // ✅ NUEVO: Determinar tipo de combo
+    const tipoCombo = $("#cmb_tipo").val() || 'C';
+    const usaDescuento = (tipoCombo === 'P' || tipoCombo === 'C');
+
+    // ✅ CRÍTICO: Crear SIEMPRE ambos contenedores en modo edición (inicialmente ocultos)
+    var htmlPreajusteDropdown = '';
+    var htmlImporteUnico = '';
+
+    if (modoEdicion && modoNuevoCombo) {
+        // Contenedor de preajustes (inicialmente oculto, se mostrará solo para tipo P)
+        htmlPreajusteDropdown = `
         <div id="contenedorPreajuste" class="d-inline-block me-2 preajuste-hidden">
             <!-- El dropdown se cargará aquí dinámicamente -->
-        </div>
-    ` : '';
+        </div>`;
 
-    // ✅ NUEVO: Contenedor para importe único
-    var htmlImporteUnico = modoEdicion && modoNuevoCombo ? `
+        // Contenedor de importe único (inicialmente oculto, se mostrará para Q/D)
+        htmlImporteUnico = `
         <div id="contenedorImporteUnico" class="d-inline-block me-2 importe-hidden">
             <label class="form-label mb-0 me-1" style="font-size: 0.875rem;">Importe:</label>
             <input type="text" 
@@ -1038,8 +1048,11 @@ function limpiarGridsProductos(modoEdicion = modoNuevoCombo) {
                    style="width: 100px;" 
                    placeholder="0.00" 
                    title="Importe único para todos los productos" />
-        </div>
-    ` : '';
+        </div>`;
+    }
+
+    // ✅ CRÍTICO: SIEMPRE crear columna descuento en el header, controlar visibilidad con clase
+    const claseHeaderDescuento = usaDescuento ? '' : 'd-none';
 
     // Crear HTML para un grid vacío de productos
     var htmlProductosVacio = `
@@ -1065,7 +1078,7 @@ function limpiarGridsProductos(modoEdicion = modoNuevoCombo) {
                             <th class="text-left th-compact">Descripción</th>
                             <th class="text-center th-compact">Costo</th>
                             <th class="text-center th-compact">Cantidad</th>
-                            <th class="text-center th-compact">Descuento %</th>                           
+                            <th class="text-center th-compact ${claseHeaderDescuento}">Descuento %</th>
                             ${modoEdicion ? '<th class="text-center th-compact">Acción</th>' : ''}
                         </tr>
                     </thead>
@@ -1119,16 +1132,19 @@ function limpiarGridsProductos(modoEdicion = modoNuevoCombo) {
     $(".col-sm-4:has(#tbGridProductos)").html(htmlProductosVacio).show();
     $(".col-sm-4:has(#tbGridSustitutos)").html(htmlSustitutosVacio).show();
 
-    // ✅ MEJORADO: Cargar dropdown de preajustes si estamos en modo nuevo
-    if (modoEdicion && modoNuevoCombo) {
-        // Usar setTimeout para asegurar que el DOM esté completamente actualizado
+    // ✅ MEJORADO: Cargar dropdown de preajustes solo para tipo P
+    if (modoEdicion && modoNuevoCombo && tipoCombo === 'P') {
         setTimeout(function () {
             var $contenedorPreajuste = $("#contenedorPreajuste");
             if ($contenedorPreajuste.length > 0) {
                 cargarDropdownPreajuste($contenedorPreajuste);
             }
+        }, 100);
+    }
 
-            // ✅ NUEVO: Configurar InputMask para importe único
+    // ✅ NUEVO: Configurar InputMask para importe único (Q/D)
+    if (modoEdicion && modoNuevoCombo && (tipoCombo === 'Q' || tipoCombo === 'D')) {
+        setTimeout(function () {
             var $importeUnico = $("#importeUnico");
             if ($importeUnico.length > 0 && typeof Inputmask !== 'undefined') {
                 Inputmask({
@@ -1145,6 +1161,11 @@ function limpiarGridsProductos(modoEdicion = modoNuevoCombo) {
             }
         }, 100);
     }
+
+    // ✅ CRÍTICO: Aplicar visibilidad según el tipo actual DESPUÉS de crear los contenedores
+    setTimeout(function () {
+        actualizarVisibilidadSegunTipo(tipoCombo);
+    }, 150);
 
     // Habilitar los botones de agregar solo en modo edición
     if (modoEdicion) {
@@ -1554,7 +1575,7 @@ function formatearFecha(fechaStr) {
 }
 
 /**
- * Agrega productos al grid
+ * ✅ MODIFICADO: Agrega productos SIEMPRE con celda descuento (visible u oculta según tipo)
  */
 function agregarProductosAlGrid(productos) {
     if (productos.length === 0) return;
@@ -1567,24 +1588,24 @@ function agregarProductosAlGrid(productos) {
         $tbody.empty();
     }
 
-    // Obtener ID del combo actuales
+    // Obtener ID del combo actual
     var comboId = $("#cmb_id").val();
+
+    // ✅ NUEVO: Determinar tipo de combo y si usa descuento
+    const tipoCombo = $("#cmb_tipo").val() || 'C';
+    const usaDescuento = (tipoCombo === 'P' || tipoCombo === 'C');
+
+    // ✅ NUEVO: Obtener valores según preset/tipo
+    const valoresPreset = obtenerValoresPreset();
 
     // Agregar cada producto como una nueva fila
     $.each(productos, function (i, producto) {
-        // MODIFICADO: Manejo de estado histórico
-        //var estadoTexto, estadoClase;
+        // ✅ NUEVO: Aplicar valores del preset/tipo
+        producto.cantidad = valoresPreset.cantidad;
+        producto.dto_porc = valoresPreset.descuento;
 
-        //if (producto.activo === 'A') {
-        //    estadoTexto = "Activo";
-        //    estadoClase = "bg-success";
-        //} else if (producto.activo === 'H') {
-        //    estadoTexto = "Histórico";
-        //    estadoClase = "bg-secondary"; // Usar color gris para histórico
-        //} else {
-        //    estadoTexto = "Pendiente";
-        //    estadoClase = "bg-danger";
-        //}
+        // ✅ CRÍTICO: SIEMPRE generar la celda, pero con clase .d-none si no se usa
+        var claseCeldaDescuento = usaDescuento ? '' : 'd-none';
 
         var fila = `
         <tr data-producto-id="${producto.p_id}" data-combo-id="${comboId}" data-producto-estado="${producto.activo}">
@@ -1606,7 +1627,7 @@ function agregarProductosAlGrid(productos) {
                            readonly />
                 </div>
             </td>
-            <td class="text-end">
+            <td class="text-end ${claseCeldaDescuento}">
                 <div class="input-container">
                     <input type="text" class="form-control form-control-sm input-descuento input-numeric"
                            value="${producto.dto_porc.toFixed(5)}"
@@ -1639,6 +1660,8 @@ function agregarProductosAlGrid(productos) {
     // Seleccionar el primer producto agregado
     var $primerProducto = $("#tbGridProductos tbody tr:first");
     $primerProducto.trigger("click");
+
+    console.log(`✅ ${productos.length} productos agregados con Cantidad: ${valoresPreset.cantidad}, Descuento: ${valoresPreset.descuento}%`);
 }
 
 /**
@@ -1663,7 +1686,7 @@ function esProductoHistorico(producto) {
 }
 
 /**
- * Inicializa los campos editables para cantidad y descuento en la grilla de productos
+ * ✅ MODIFICADO: Inicializa los campos editables controlando descuento según tipo
  */
 function inicializarCamposEditablesProductos() {
     console.log("🔄 Inicializando campos editables en grid de productos");
@@ -1675,6 +1698,15 @@ function inicializarCamposEditablesProductos() {
         return;
     }
 
+    // ✅ NUEVO: Determinar si el descuento es editable según tipo
+    const tipoCombo = $("#cmb_tipo").val();
+    const descuentoNoEditable = (tipoCombo === 'Q' || tipoCombo === 'D');
+
+    if (descuentoNoEditable) {
+        $('.input-descuento').prop('readonly', true).addClass('campo-readonly');
+        console.log("🚫 Descuento bloqueado para tipo Q/D");
+    }
+
     // NUEVO: Capturar el evento mousedown que ocurre ANTES del click
     $(document).off('mousedown', '.input-cantidad, .input-descuento')
         .on('mousedown', '.input-cantidad, .input-descuento', function (e) {
@@ -1684,13 +1716,17 @@ function inicializarCamposEditablesProductos() {
                 return false;
             }
 
+            // ✅ NUEVO: Bloquear edición de descuento si es tipo Q/D
+            if ($(this).hasClass('input-descuento') && descuentoNoEditable) {
+                e.preventDefault();
+                return false;
+            }
+
             // NUEVA VERIFICACIÓN: Comprobar si el producto es histórico
             var productoId = $(this).data('producto-id');
             if (esProductoHistorico(productoId)) {
                 e.preventDefault();
                 e.stopPropagation();
-                // No establecemos campoEnPreparacionEdicion para prevenir edición
-                // Mostraremos el mensaje de advertencia en el click
                 return false;
             }
 
@@ -1704,6 +1740,13 @@ function inicializarCamposEditablesProductos() {
             // Si no estamos en modo edición, no permitir la edición
             if (!modoNuevoCombo && !modoModificacionCombo) {
                 e.preventDefault();
+                return false;
+            }
+
+            // ✅ NUEVO: Bloquear edición de descuento si es tipo Q/D
+            if ($(this).hasClass('input-descuento') && descuentoNoEditable) {
+                e.preventDefault();
+                ControlaMensajeWarning("El descuento no es editable para este tipo de combo");
                 return false;
             }
 
@@ -1754,7 +1797,7 @@ function inicializarCamposEditablesProductos() {
             min: 0
         }).mask('.input-cantidad');
 
-        // Configuración para descuento (2 decimales, máx 100%)
+        // Configuración para descuento (5 decimales, máx 100%)
         Inputmask({
             alias: "numeric",
             groupSeparator: ",",
@@ -2214,8 +2257,7 @@ function actualizarGridSustitutos(productoId) {
 }
 
 /**
- * Carga los productos asociados a un combo
- * @param {string} comboId - ID del combo
+ * ✅ MEJORADO: Carga productos con aplicación de visibilidad según tipo
  */
 function cargarProductosCombo(comboId) {
     if (typeof obtenerProductosDeComboUrl === 'undefined') {
@@ -2235,11 +2277,13 @@ function cargarProductosCombo(comboId) {
             // Actualizar el contenido del grid de productos
             $(".col-sm-4:has(#tbGridProductos)").html(html).show();
 
+            const colspan = modoNuevoCombo ? 6 : 5;
+
             if ($("#tbGridProductos tbody tr").length === 0) {
                 // Si no hay filas después de cargar, mostrar mensaje "No hay productos"
                 $("#tbGridProductos tbody").html(`
                     <tr>
-                        <td colspan="${modoNuevoCombo ? 7 : 6}" class="text-center text-muted py-2">
+                        <td colspan="${colspan}" class="text-center text-muted py-2">
                             <i class="bx bx-info-circle me-1"></i>No hay productos disponibles
                         </td>
                     </tr>
@@ -2250,6 +2294,10 @@ function cargarProductosCombo(comboId) {
                     // Asegurar que los campos estén en modo readonly
                     $("#tbGridProductos .input-cantidad, #tbGridProductos .input-descuento").prop("readonly", true);
 
+                    // ✅ CRÍTICO: Aplicar visibilidad según tipo
+                    const tipoCombo = $("#cmb_tipo").val() || 'C';
+                    actualizarVisibilidadSegunTipo(tipoCombo);
+
                     // Si la columna de acción existe, ocultarla
                     if ($("#tbGridProductos th").length > 5) {
                         $("#tbGridProductos th:last-child, #tbGridProductos td:last-child").hide();
@@ -2257,6 +2305,10 @@ function cargarProductosCombo(comboId) {
                 } else {
                     // En modo edición, inicializar los campos editables
                     inicializarCamposEditablesProductos();
+
+                    // ✅ NUEVO: Aplicar visibilidad también en modo edición
+                    const tipoCombo = $("#cmb_tipo").val() || 'C';
+                    actualizarVisibilidadSegunTipo(tipoCombo);
                 }
             }
 
@@ -2856,34 +2908,77 @@ function aplicarVisibilidadPreajuste() {
 }
 
 /**
- * ✅ NUEVA FUNCIÓN: Configura el evento change del dropdown de preajustes
+ * ✅ MEJORADO: Configura el evento change del dropdown de preajustes
+ * Actualiza cantidad y descuento de TODOS los productos al cambiar preset
  */
 function configurarEventoPreajuste() {
     // Usar delegación de eventos para asegurar que funcione con elementos dinámicos
     $(document).off("change", "#preset_id").on("change", "#preset_id", function () {
-        var presetId = $(this).val();
+        var presetValue = $(this).val();
+        var tipoCombo = $("#cmb_tipo").val();
 
-        if (!presetId) {
-            console.log("ℹ️ No se seleccionó ningún preajuste");
+        if (!presetValue || tipoCombo !== 'P') {
+            console.log("ℹ️ No se seleccionó preset o tipo no es Promoción");
             return;
         }
 
-        console.log("🔄 Preajuste seleccionado:", presetId);
+        console.log("🔄 Preset seleccionado:", presetValue);
 
-        // Aquí puedes agregar lógica adicional según el preajuste seleccionado
-        // Por ejemplo: aplicar descuentos predefinidos, establecer cantidades, etc.
+        // ✅ NUEVO: Parsear preset y actualizar productos existentes
+        const preset = parsearPreset(presetValue);
 
-        // Ejemplo: Mostrar mensaje informativo
-        //ControlaMensajeInfo(`Preajuste aplicado: ${$(this).find("option:selected").text()}`);
+        if (!preset.esValido) {
+            console.warn("⚠️ Preset inválido, no se actualizan productos");
+            return;
+        }
 
-        // TODO: Implementar lógica de negocio según el preajuste seleccionado
+        // ✅ NUEVO: Actualizar cantidad y descuento de TODOS los productos
+        actualizarProductosConPreset(preset.cantidad, preset.descuento);
     });
 }
 
 /**
-* ✅ NUEVA FUNCIÓN: Actualiza visibilidad de controles según el tipo seleccionado
-* @param {string} tipo - Tipo seleccionado ('P', 'C', 'Q', 'D')
-*/
+ * ✅ NUEVA FUNCIÓN: Actualiza cantidad y descuento de todos los productos en el grid
+ * @param {number} cantidad - Nueva cantidad a aplicar
+ * @param {number} descuento - Nuevo descuento a aplicar
+ */
+function actualizarProductosConPreset(cantidad, descuento) {
+    var productosActualizados = 0;
+
+    $("#tbGridProductos tbody tr").each(function () {
+        // Verificar que no sea la fila de "No hay productos"
+        if (!$(this).find("td[colspan]").length) {
+            var $fila = $(this);
+
+            // Actualizar campo cantidad
+            var $inputCantidad = $fila.find(".input-cantidad");
+            if ($inputCantidad.length > 0) {
+                $inputCantidad.val(cantidad.toFixed(2));
+                $inputCantidad.data('original-value', cantidad);
+                productosActualizados++;
+            }
+
+            // Actualizar campo descuento
+            var $inputDescuento = $fila.find(".input-descuento");
+            if ($inputDescuento.length > 0) {
+                $inputDescuento.val(descuento.toFixed(5));
+                $inputDescuento.data('original-value', descuento);
+            }
+        }
+    });
+
+    if (productosActualizados > 0) {
+        console.log(`✅ ${productosActualizados} productos actualizados - Cantidad: ${cantidad}, Descuento: ${descuento}%`);
+        ControlaMensajeInfo(`Preset aplicado: ${productosActualizados} producto(s) actualizados`);
+    } else {
+        console.log("ℹ️ No hay productos para actualizar");
+    }
+}
+
+/**
+ * ✅ MEJORADO: Actualiza visibilidad con sincronización de header y celdas
+ * @param {string} tipo - Tipo seleccionado ('P', 'C', 'Q', 'D')
+ */
 function actualizarVisibilidadSegunTipo(tipo) {
     var $contenedorPreajuste = $("#contenedorPreajuste");
     var $contenedorImporte = $("#contenedorImporteUnico");
@@ -2897,30 +2992,126 @@ function actualizarVisibilidadSegunTipo(tipo) {
     // Tipos que usan descuento: P (Promoción), C (Combo)
     var usaDescuento = tipo === 'P' || tipo === 'C';
 
-    // Controlar visibilidad del dropdown de preajustes
-    if (usaPreajuste) {
-        $contenedorPreajuste.removeClass('preajuste-hidden').addClass('preajuste-visible');
-        console.log("✅ Dropdown de preajustes mostrado");
-    } else {
-        $contenedorPreajuste.removeClass('preajuste-visible').addClass('preajuste-hidden');
-        console.log("🚫 Dropdown de preajustes ocultado");
+    // ✅ NUEVO: Controlar visibilidad del dropdown de preajustes SOLO si existe
+    if ($contenedorPreajuste.length > 0) {
+        if (usaPreajuste) {
+            $contenedorPreajuste.removeClass('preajuste-hidden').addClass('preajuste-visible');
+            console.log("✅ Dropdown de preajustes mostrado");
+        } else {
+            $contenedorPreajuste.removeClass('preajuste-visible').addClass('preajuste-hidden');
+            console.log("🚫 Dropdown de preajustes ocultado");
+        }
     }
 
-    // Controlar visibilidad del input de importe único
-    if (usaImporteUnico) {
-        $contenedorImporte.removeClass('importe-hidden').addClass('importe-visible');
-        console.log("✅ Input de importe único mostrado");
-    } else {
-        $contenedorImporte.removeClass('importe-visible').addClass('importe-hidden');
-        console.log("🚫 Input de importe único ocultado");
+    // ✅ NUEVO: Controlar visibilidad del input de importe único SOLO si existe
+    if ($contenedorImporte.length > 0) {
+        if (usaImporteUnico) {
+            $contenedorImporte.removeClass('importe-hidden').addClass('importe-visible');
+            console.log("✅ Input de importe único mostrado");
+        } else {
+            $contenedorImporte.removeClass('importe-visible').addClass('importe-hidden');
+            console.log("🚫 Input de importe único ocultado");
+        }
     }
 
-    // Controlar visibilidad de la columna Descuento en el grid
-    if (usaDescuento) {
-        $("#tbGridProductos th:nth-child(5), #tbGridProductos td:nth-child(5)").show();
-        console.log("✅ Columna Descuento mostrada");
-    } else {
-        $("#tbGridProductos th:nth-child(5), #tbGridProductos td:nth-child(5)").hide();
-        console.log("🚫 Columna Descuento ocultada");
+    // ✅ CRÍTICO: Sincronizar visibilidad de columna Descuento (header + celdas)
+    var $headerDescuento = $("#tbGridProductos thead th:nth-child(5)");
+    var $celdasDescuento = $("#tbGridProductos tbody td:nth-child(5)");
+
+    console.log(`🔍 Encontrados: ${$headerDescuento.length} headers y ${$celdasDescuento.length} celdas de descuento`);
+
+    if ($headerDescuento.length > 0) {
+        if (usaDescuento) {
+            // Mostrar columna descuento
+            $headerDescuento.removeClass('d-none').show();
+            console.log("✅ Header Descuento mostrado");
+        } else {
+            // Ocultar columna descuento
+            $headerDescuento.addClass('d-none').hide();
+            console.log("🚫 Header Descuento ocultado");
+        }
+    }
+
+    if ($celdasDescuento.length > 0) {
+        if (usaDescuento) {
+            // Mostrar celdas descuento
+            $celdasDescuento.removeClass('d-none').show();
+            console.log(`✅ ${$celdasDescuento.length} celdas de Descuento mostradas`);
+        } else {
+            // Ocultar celdas descuento
+            $celdasDescuento.addClass('d-none').hide();
+            console.log(`🚫 ${$celdasDescuento.length} celdas de Descuento ocultadas`);
+        }
+    }
+}
+
+/**
+ * ✅ NUEVO: Obtiene cantidad y descuento del preset seleccionado o valores por defecto
+ * @returns {Object} { cantidad: number, descuento: number }
+ */
+function obtenerValoresPreset() {
+    const tipoCombo = $("#cmb_tipo").val();
+
+    // Tipo C: valores por defecto (sin preset)
+    if (tipoCombo === 'C') {
+        return { cantidad: 1, descuento: 0 };
+    }
+
+    // Tipo Q/D: cantidad 1, descuento 0 fijo
+    if (tipoCombo === 'Q' || tipoCombo === 'D') {
+        return { cantidad: 1, descuento: 0 };
+    }
+
+    // Tipo P: parsear preset si existe
+    if (tipoCombo === 'P') {
+        const presetValue = $("#preset_id").val();
+
+        if (presetValue && presetValue !== '') {
+            const preset = parsearPreset(presetValue);
+            return {
+                cantidad: preset.cantidad,
+                descuento: preset.descuento
+            };
+        }
+
+        // Preset no seleccionado para promoción
+        return { cantidad: 1, descuento: 0 };
+    }
+
+    // Fallback por defecto
+    return { cantidad: 1, descuento: 0 };
+}
+
+/**
+* ✅ NUEVO: Parsea el valor del preset seleccionado
+* @param {string} presetValue - Valor en formato "P#cantidad#descuento"
+* @returns {Object} { cantidad: number, descuento: number, esValido: boolean }
+*/
+function parsearPreset(presetValue) {
+    try {
+        if (!presetValue || presetValue === '') {
+            return { cantidad: 1, descuento: 0, esValido: false };
+        }
+
+        const partes = presetValue.split('#');
+
+        if (partes.length !== 3 || partes[0] !== 'P') {
+            console.warn("⚠️ Formato de preset inválido:", presetValue);
+            return { cantidad: 1, descuento: 0, esValido: false };
+        }
+
+        const cantidad = parseFloat(partes[1]) || 1;
+        const descuento = parseFloat(partes[2]) || 0;
+
+        console.log(`✅ Preset parseado - Cantidad: ${cantidad}, Descuento: ${descuento}%`);
+
+        return {
+            cantidad: cantidad,
+            descuento: descuento,
+            esValido: true
+        };
+    } catch (error) {
+        console.error("❌ Error al parsear preset:", error);
+        return { cantidad: 1, descuento: 0, esValido: false };
     }
 }

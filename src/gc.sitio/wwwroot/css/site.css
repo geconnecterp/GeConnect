@@ -2915,20 +2915,33 @@ input, select, textarea, button, checkbox, radio {
 
 /* FIN OPTIMIZACIÓN DE HEADERS DE TABLA */
 
-/* Clases para controlar visibilidad del dropdown de preajustes */
-.preajuste-hidden {
-    display: none !important;
-}
-
+/* Clases para controlar visibilidad de preajustes */
 .preajuste-visible {
     display: inline-block !important;
+    opacity: 1;
+    visibility: visible;
 }
 
-/* ✅ NUEVO: Clases para controlar visibilidad del input de importe único */
-.importe-hidden {
+.preajuste-hidden {
     display: none !important;
+    opacity: 0;
+    visibility: hidden;
 }
 
+/* Clases para controlar visibilidad de importe único */
 .importe-visible {
     display: inline-block !important;
+    opacity: 1;
+    visibility: visible;
+}
+
+.importe-hidden {
+    display: none !important;
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Asegurar que d-none funcione correctamente */
+.d-none {
+    display: none !important;
 }
