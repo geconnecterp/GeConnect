@@ -4,6 +4,7 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.Dtos.Productos.Presupuestos;
+using gc.infraestructura.Dtos.Productos.PromoCombo;
 using gc.infraestructura.Helpers;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
@@ -20,7 +21,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             :base(options,contexto,logger)
         {
             
-        }
+        }      
 
         public List<OfertaDto> OfertasSinActivar
         {
@@ -133,6 +134,11 @@ namespace gc.sitio.Areas.Productos.Controllers
             if (RubroLista.Count == 0 || actualizar)
             {
                 ObtenerRubros(_rubroServicio);
+            }
+
+            if(ListaPreset.Count ==0 || actualizar)
+            {
+                ObtenerListaPreset(_comboServicio);
             }
 
             if (_comboServicio != null)

@@ -7,6 +7,7 @@ using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.Dtos.Productos.PromoCombo;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
+using gc.infraestructura.Helpers;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
@@ -168,6 +169,43 @@ namespace gc.sitio.Areas.Productos.Controllers
             {
                 _logger?.LogError(ex, "Error interno al cargar promociones y combos");
                 return PartialView("_gridMensaje", CrearRespuestaError("Error interno al cargar promociones y combos"));
+            }
+        }
+
+        [HttpPost]
+        public IActionResult ObtenerPreajustePromo()
+        {
+            try
+            {
+                // Verificar autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
+                //se llamaron los valores del combo preset en el index
+
+                #region Carga de Preset
+                var preset = ListaPreset
+                    .Select(p => new ComboGenDto
+                    {
+                        Id = $"{p.cmb_tipo}#{p.cantidad}#{p.dto_porc}",
+                        Descripcion = p.cmb_tipo_desc
+                    })
+                    .ToList();
+                var preset_id = HelperMvc<ComboGenDto>.ListaGenerica(preset);
+                #endregion
+
+                // Devolver vista parcial con los datos de preajuste
+                return PartialView("_ddlPreajustePromo", preset_id);
+            }
+            catch (NegocioException ex)
+            {
+                _logger?.LogError(ex, "Error interno al obtener preajuste de promociones");
+                return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error interno al obtener preajuste de promociones");
+                return PartialView("_gridMensaje", CrearRespuestaError("Error interno al obtener preajuste de promociones"));
             }
         }
 

@@ -29,6 +29,7 @@ using gc.infraestructura.ViewModels;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.Asientos;
 using gc.sitio.core.Servicios.Contratos.Users;
+using gc.sitio.core.Servicios.Implementacion;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
@@ -1035,6 +1036,29 @@ namespace gc.sitio.Controllers
             {
                 var json = JsonConvert.SerializeObject(value);
                 _context.HttpContext?.Session.SetString("RubroLista", json);
+            }
+        }
+        #endregion
+
+        #region ComboPreset
+        /// <summary>
+        /// destinada la lista para preservar la lista de valores de Preseteo para promociones.
+        /// </summary>
+        public List<ComboPresetDto> ListaPreset
+        {
+            get
+            {
+                var json = _context.HttpContext?.Session.GetString("ListaPreset") ?? string.Empty;
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<ComboPresetDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("ListaPreset", json);
             }
         }
         #endregion
@@ -2228,30 +2252,30 @@ namespace gc.sitio.Controllers
                 _context.HttpContext?.Session.SetString("TipoConciliadoLista", json);
             }
         }
-		#endregion
+        #endregion
 
-		#region TIPO IMPUESTOS
-		public List<TipoImpuestoDto> TipoImpuestoLista
-		{
-			get
-			{
-				var json = _context.HttpContext?.Session.GetString("TipoImpuestoLista") ?? string.Empty;
-				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
-				{
-					return new List<TipoImpuestoDto>();
-				}
-				return JsonConvert.DeserializeObject<List<TipoImpuestoDto>>(json) ?? [];
-			}
-			set
-			{
-				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext?.Session.SetString("TipoImpuestoLista", json);
-			}
-		}
-		#endregion
+        #region TIPO IMPUESTOS
+        public List<TipoImpuestoDto> TipoImpuestoLista
+        {
+            get
+            {
+                var json = _context.HttpContext?.Session.GetString("TipoImpuestoLista") ?? string.Empty;
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return new List<TipoImpuestoDto>();
+                }
+                return JsonConvert.DeserializeObject<List<TipoImpuestoDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("TipoImpuestoLista", json);
+            }
+        }
+        #endregion
 
-		#region TIPO DE ANTICIPO DE EMPLEADO
-		public List<TipoAnticipoEmpleadoDto> TipoAnticipoEmpleadoLista
+        #region TIPO DE ANTICIPO DE EMPLEADO
+        public List<TipoAnticipoEmpleadoDto> TipoAnticipoEmpleadoLista
         {
             get
             {
@@ -2406,6 +2430,26 @@ namespace gc.sitio.Controllers
         protected void ObtenerRubros(IRubroServicio _rubSv)
         {
             RubroLista = _rubSv.ObtenerListaRubros("", TokenCookie);
+        }
+
+        protected void ObtenerListaPreset(IComboServicio _comboServicio)
+        {
+            var resp = _comboServicio.ObtenerPresetPromo(TokenCookie).GetAwaiter().GetResult();
+            if (resp.Ok)
+            {
+                if (resp.ListaEntidad == null || resp.EsError || resp.EsWarn)
+                {
+                    ListaPreset = new List<ComboPresetDto>();
+                }
+                else
+                {
+                    ListaPreset = resp.ListaEntidad;
+                }
+            }
+            else
+            {
+                ListaPreset = new List<ComboPresetDto>();
+            }
         }
 
         protected void ObtenerCuentas(ICuentaServicio _ctaSv, char tipo, string texto = "")
@@ -2574,13 +2618,13 @@ namespace gc.sitio.Controllers
 
         protected void ObtenerCargaPrevia(string adm_id, IEtiquetaServicio etSv)
         {
-            var res = etSv.ObtenerCargaPrevia(adm_id,TokenCookie).GetAwaiter().GetResult();
+            var res = etSv.ObtenerCargaPrevia(adm_id, TokenCookie).GetAwaiter().GetResult();
             CargasPrevias = res?.ListaEntidad ?? [];
         }
 
         protected void ObtenerListaPrecios(IPrecioListaServicio lpSv)
         {
-            var res = lpSv.ObtenerListaPrecios( TokenCookie).GetAwaiter().GetResult();
+            var res = lpSv.ObtenerListaPrecios(TokenCookie).GetAwaiter().GetResult();
             ListaPrecios = res?.ListaEntidad ?? [];
         }
 
@@ -2626,12 +2670,12 @@ namespace gc.sitio.Controllers
             TipoAnticipoEmpleadoLista = _tipoAntEmpleadoSrv.GetTipoAnticipoEmpleado(TokenCookie);
         }
 
-		protected void ObtenerTiposDeImpuestos(ITipoImpuestoServicio _tipoImpuesto)
-		{
-			TipoImpuestoLista = _tipoImpuesto.GetTiposDeImpuestos(TokenCookie);
-		}
-		#endregion
-		protected void ObtenerDiasDeLaSemana()
+        protected void ObtenerTiposDeImpuestos(ITipoImpuestoServicio _tipoImpuesto)
+        {
+            TipoImpuestoLista = _tipoImpuesto.GetTiposDeImpuestos(TokenCookie);
+        }
+        #endregion
+        protected void ObtenerDiasDeLaSemana()
         {
             var listaTemp = new List<DiaDeLaSemanaDto>();
             var lista = Enum.GetValues(typeof(DiasDeLaSemana)).Cast<DiasDeLaSemana>().ToList();
@@ -2837,20 +2881,20 @@ namespace gc.sitio.Controllers
             return HelperMvc<ComboGenDto>.ListaGenerica(lista);
         }
 
-		protected SelectList ComboTipoAnticipoEmpleados()
-		{
-			var lista = TipoAnticipoEmpleadoLista.Select(x => new ComboGenDto { Id = x.ant_id, Descripcion = x.ant_desc });
-			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
-		}
+        protected SelectList ComboTipoAnticipoEmpleados()
+        {
+            var lista = TipoAnticipoEmpleadoLista.Select(x => new ComboGenDto { Id = x.ant_id, Descripcion = x.ant_desc });
+            return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+        }
 
-		protected SelectList ComboTipoImpuestos()
-		{
-			var lista = TipoImpuestoLista.Select(x => new ComboGenDto { Id = x.imp_id, Descripcion = x.imp_descripcion });
-			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
-		}
-		#endregion
+        protected SelectList ComboTipoImpuestos()
+        {
+            var lista = TipoImpuestoLista.Select(x => new ComboGenDto { Id = x.imp_id, Descripcion = x.imp_descripcion });
+            return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+        }
+        #endregion
 
-		[HttpPost]
+        [HttpPost]
         public JsonResult BuscarProvs(string prefix)
         {
             //var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
@@ -3196,13 +3240,14 @@ namespace gc.sitio.Controllers
                 return retValue;
             foreach (var itemEnvia in listaQueEnvia)
             {
-                if (itemEnvia.fc_dia_movi != null && itemEnvia.fc_compte != null && itemEnvia.fc_item != 0) {
-					if (listaQueRecibe.Exists(x => x.fc_dia_movi == itemEnvia.fc_dia_movi && x.fc_compte == itemEnvia.fc_compte && x.fc_item == itemEnvia.fc_item))
-					{
-						retValue = true;
-						break;
-					}
-				}
+                if (itemEnvia.fc_dia_movi != null && itemEnvia.fc_compte != null && itemEnvia.fc_item != 0)
+                {
+                    if (listaQueRecibe.Exists(x => x.fc_dia_movi == itemEnvia.fc_dia_movi && x.fc_compte == itemEnvia.fc_compte && x.fc_item == itemEnvia.fc_item))
+                    {
+                        retValue = true;
+                        break;
+                    }
+                }
             }
             return retValue;
         }
@@ -3229,55 +3274,55 @@ namespace gc.sitio.Controllers
             EsOk = 3
         }
 
-		/// <summary>
-		/// Obtiene una lista con los últimos años en formato de 4 dígitos (por ejemplo "2025").
-		/// </summary>
-		/// <param name="cantidad">
-		/// Número de años anteriores a incluir. Por defecto 10.
-		/// Atención: con la implementación actual se devuelven <c>cantidad + 1</c> años porque el bucle
-		/// es inclusivo (<c>i <= cantidad</c>) e incluye el año actual.
-		/// </param>
-		/// <returns>
-		/// Lista de cadenas con los años, ordenada de más reciente a más antiguo.
-		/// </returns>
-		/// <remarks>
-		/// - Para obtener exactamente <c>cantidad</c> años (incluyendo el actual como uno de ellos),
-		///   cambiar el bucle a <c>for (int i = 0; i &lt; cantidad; i++)</c>.
-		/// - El formato usado es de 4 dígitos mediante <c>ToString("D4")</c>.
-		/// </remarks>
-		public static List<string> ObtenerUltimosAnios(int cantidad = 10)
-		{
-			int anioActual = DateTime.Now.Year;
-			List<string> listaAnios = new();
+        /// <summary>
+        /// Obtiene una lista con los últimos años en formato de 4 dígitos (por ejemplo "2025").
+        /// </summary>
+        /// <param name="cantidad">
+        /// Número de años anteriores a incluir. Por defecto 10.
+        /// Atención: con la implementación actual se devuelven <c>cantidad + 1</c> años porque el bucle
+        /// es inclusivo (<c>i <= cantidad</c>) e incluye el año actual.
+        /// </param>
+        /// <returns>
+        /// Lista de cadenas con los años, ordenada de más reciente a más antiguo.
+        /// </returns>
+        /// <remarks>
+        /// - Para obtener exactamente <c>cantidad</c> años (incluyendo el actual como uno de ellos),
+        ///   cambiar el bucle a <c>for (int i = 0; i &lt; cantidad; i++)</c>.
+        /// - El formato usado es de 4 dígitos mediante <c>ToString("D4")</c>.
+        /// </remarks>
+        public static List<string> ObtenerUltimosAnios(int cantidad = 10)
+        {
+            int anioActual = DateTime.Now.Year;
+            List<string> listaAnios = new();
 
-			for (int i = 0; i <= cantidad; i++)
-			{
-				listaAnios.Add((anioActual - i).ToString("D4"));
-			}
+            for (int i = 0; i <= cantidad; i++)
+            {
+                listaAnios.Add((anioActual - i).ToString("D4"));
+            }
 
-			return listaAnios;
-		}
+            return listaAnios;
+        }
 
-		/// <summary>
-		/// Devuelve una lista con los doce meses del año en formato de dos dígitos.
-		/// </summary>
-		/// <remarks>
-		/// - Formato de salida: "01", "02", ..., "12".
-		/// - El método es determinista y no depende de la configuración regional.
-		/// - Se puede usar para llenar combos, filtros por mes o cualquier lógica que requiera meses en formato "MM".
-		/// </remarks>
-		/// <returns>Lista de <see cref="string"/> con los meses "01" a "12".</returns>
-		public static List<string> ObtenerMeses()
-		{
-			List<string> listaMeses = new List<string>();
+        /// <summary>
+        /// Devuelve una lista con los doce meses del año en formato de dos dígitos.
+        /// </summary>
+        /// <remarks>
+        /// - Formato de salida: "01", "02", ..., "12".
+        /// - El método es determinista y no depende de la configuración regional.
+        /// - Se puede usar para llenar combos, filtros por mes o cualquier lógica que requiera meses en formato "MM".
+        /// </remarks>
+        /// <returns>Lista de <see cref="string"/> con los meses "01" a "12".</returns>
+        public static List<string> ObtenerMeses()
+        {
+            List<string> listaMeses = new List<string>();
 
-			for (int i = 1; i <= 12; i++)
-			{
-				listaMeses.Add(i.ToString("D2")); // Formato "01", "02", ..., "12"
-			}
+            for (int i = 1; i <= 12; i++)
+            {
+                listaMeses.Add(i.ToString("D2")); // Formato "01", "02", ..., "12"
+            }
 
-			return listaMeses;
-		}
+            return listaMeses;
+        }
 
         /// <summary>
         /// Imprime las propiedades de la clase que recibe como parametro
@@ -3285,22 +3330,22 @@ namespace gc.sitio.Controllers
         /// <typeparam name="T"></typeparam>
         /// <param name="obj"></param>
 		public static void PrintProperties<T>(T obj)
-		{
-			if (obj == null)
-			{
-				Console.WriteLine("El objeto es null");
-				return;
-			}
+        {
+            if (obj == null)
+            {
+                Console.WriteLine("El objeto es null");
+                return;
+            }
 
-			var type = typeof(T);
-			var properties = type.GetProperties();
+            var type = typeof(T);
+            var properties = type.GetProperties();
 
-			foreach (var prop in properties)
-			{
-				var value = prop.GetValue(obj, null);
-				Console.WriteLine($"{prop.Name}: {value}");
-			}
-		}
+            foreach (var prop in properties)
+            {
+                var value = prop.GetValue(obj, null);
+                Console.WriteLine($"{prop.Name}: {value}");
+            }
+        }
 
-	}
+    }
 }

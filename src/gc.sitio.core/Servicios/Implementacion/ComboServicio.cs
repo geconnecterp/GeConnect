@@ -33,6 +33,7 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string COMBO_SUSTITUTOS = "/combo/{id}/producto/{productoId}/sustitutos";
         private const string COMBO_CONFIRMAR = "/combo-confirmar";
         private const string COMBO_REPO = "/combo-repo";
+        private const string COMBO_PREAJUSTE = "/combos-preset";
 
 
         public ComboServicio(IOptions<AppSettings> options, ILogger<ComboServicio> logger)
@@ -93,6 +94,69 @@ namespace gc.sitio.core.Servicios.Implementacion
                 };
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public async Task<RespuestaGenerica<ComboPresetDto>> ObtenerPresetPromo(string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(token);
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{COMBO_PREAJUSTE}";
+                using var response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ComboPresetDto>>>(stringData)
+                        ?? throw new NegocioException("Error al deserializar los datos");
+
+                    if(apiResponse.Data == null || !apiResponse.Data.Any())
+                    {
+                        return new() { Ok = false, Mensaje = "No se encontraron datos de preajuste para promociones" };
+                    }
+
+                    return new RespuestaGenerica<ComboPresetDto>
+                    {
+                        Ok = true,
+                        ListaEntidad = apiResponse.Data,
+                        Mensaje = "OK"
+                    };
+                }
+                else
+                {
+                    var errorData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {errorData}");
+
+                    return new()
+                    {
+                        Ok = false,
+                        Mensaje = "Error al obtener los estados de combos. Si el problema persiste contacte al administrador."
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name}");
+                return new RespuestaGenerica<ComboPresetDto>
+                {
+                    Ok = false,
+                    Mensaje = "Error interno al obtener los estados de combos"
+                };
+            }
+        }
+
 
         /// <summary>
         /// Obtiene los estados disponibles para combos y promociones
@@ -584,6 +648,6 @@ namespace gc.sitio.core.Servicios.Implementacion
                 return new() { Ok = false, Mensaje = "Error al buscar los datos del Combo!!!" };
             }
 
-        }
+        }        
     }
 }

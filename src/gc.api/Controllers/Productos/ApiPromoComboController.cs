@@ -73,6 +73,23 @@ namespace gc.api.Controllers.Ofertas
             }
         }
 
+        [HttpGet("combos-preset")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public IActionResult ObtenerPreajustePromo()
+        {
+            try
+            {
+                var combos = _promoComboServicio.ObtenerPreajustePromo();
+                return Ok(new ApiResponse<List<ComboPresetDto>>(combos));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { ok = false, mensaje = ex.Message });
+            }
+        }
+
         /// <summary>
         /// Obtiene el detalle de combos según los filtros especificados
         /// </summary>

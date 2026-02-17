@@ -22,5 +22,6 @@ namespace gc.api.core.Contratos.Servicios.Ofertas
         /// <returns></returns>
         RespuestaDto ConfirmarCombo(AbmPlusGenDto req);
         List<ComboRepoDto> ObtenerCombosRepo(ComboReqDto req);
+        List<ComboPresetDto> ObtenerPreajustePromo();
     }
 }

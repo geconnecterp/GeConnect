@@ -53,8 +53,22 @@ namespace gc.api.core.Servicios.Ofertas
             }
 
             return lista;
-
         }
+
+        public List<ComboPresetDto> ObtenerPreajustePromo()
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_COMBO_PRESET;
+            var ps = new List<SqlParameter>();
+
+            var lista = _repository.EjecutarLstSpExt<ComboPresetDto>(sp, ps, true);
+            if (lista.Count == 0)
+            {
+                throw new Exception("No se encontraron los valores del preset de promos.");
+            }
+
+            return lista;
+        }
+            
 
         public ComboDatosDto ObtenerComboPorId(string id)
         {
