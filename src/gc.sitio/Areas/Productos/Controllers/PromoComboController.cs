@@ -7,6 +7,7 @@ using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.Dtos.Productos.PromoCombo;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
+using gc.infraestructura.Helpers;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
@@ -168,6 +169,43 @@ namespace gc.sitio.Areas.Productos.Controllers
             {
                 _logger?.LogError(ex, "Error interno al cargar promociones y combos");
                 return PartialView("_gridMensaje", CrearRespuestaError("Error interno al cargar promociones y combos"));
+            }
+        }
+
+        [HttpPost]
+        public IActionResult ObtenerPreajustePromo()
+        {
+            try
+            {
+                // Verificar autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
+                //se llamaron los valores del combo preset en el index
+
+                #region Carga de Preset
+                var preset = ListaPreset
+                    .Select(p => new ComboGenDto
+                    {
+                        Id = $"{p.cmb_tipo}#{p.cantidad}#{p.dto_porc}",
+                        Descripcion = p.cmb_tipo_desc
+                    })
+                    .ToList();
+                ViewBag.preset_id = HelperMvc<ComboGenDto>.ListaGenerica(preset);
+                #endregion
+
+                // Devolver vista parcial con los datos de preajuste
+                return PartialView("_ddlPreajustePromo");
+            }
+            catch (NegocioException ex)
+            {
+                _logger?.LogError(ex, "Error interno al obtener preajuste de promociones");
+                return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error interno al obtener preajuste de promociones");
+                return PartialView("_gridMensaje", CrearRespuestaError("Error interno al obtener preajuste de promociones"));
             }
         }
 
@@ -627,6 +665,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                     {
                         ok = true,
                         error = false,
+                        id = respuesta.Entidad?.resultado_id,
                         msg = respuesta.Mensaje ?? (request.Datos.cmb_tipo == 'C' ? 
                                "Combo guardado correctamente" : 
                                "Promoción guardada correctamente")
@@ -639,6 +678,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                     return Json(new
                     {
                         ok = false,
+                        id = "",
                         error = respuesta.EsError,
                         warn = respuesta.EsWarn,
                         msg = respuesta.Mensaje ?? "Error al procesar el combo/promoción"
@@ -655,6 +695,63 @@ namespace gc.sitio.Areas.Productos.Controllers
                     error = true,
                     msg = "Error interno al procesar la solicitud" 
                 });
+            }
+        }
+
+        /// <summary>
+        /// Elimina un sustituto específico de un producto en la sesión
+        /// </summary>
+        /// <param name="productoId">ID del producto principal</param>
+        /// <param name="sustitutoId">ID del producto sustituto a eliminar</param>
+        /// <returns>Resultado de la operación</returns>
+        [HttpPost]
+        public JsonResult EliminarSustituto(string productoId, string sustitutoId)
+        {
+            try
+            {
+                // Validar parámetros
+                if (string.IsNullOrEmpty(productoId))
+                {
+                    return Json(new { ok = false, mensaje = "El ID del producto es obligatorio" });
+                }
+
+                if (string.IsNullOrEmpty(sustitutoId))
+                {
+                    return Json(new { ok = false, mensaje = "El ID del sustituto es obligatorio" });
+                }
+
+                // Obtener la lista de relaciones de la sesión
+                var listaRelaciones = ProductosSustitutos ?? new List<ComboSustitutoDto>();
+
+                // Contar cuántos sustitutos había antes
+                int cantidadAntes = listaRelaciones.Count(r => r.p_id == productoId);
+
+                // Eliminar el sustituto específico
+                listaRelaciones.RemoveAll(r => r.p_id == productoId && r.p_id_sustituto == sustitutoId);
+
+                // Contar cuántos quedaron después
+                int cantidadDespues = listaRelaciones.Count(r => r.p_id == productoId);
+
+                // Guardar la lista actualizada en sesión
+                ProductosSustitutos = listaRelaciones;
+
+                // Verificar si se eliminó algo
+                bool seElimino = cantidadAntes > cantidadDespues;
+
+                return Json(new
+                {
+                    ok = true,
+                    mensaje = seElimino 
+                        ? $"Sustituto eliminado correctamente. Quedan {cantidadDespues} sustituto(s)" 
+                        : "No se encontró el sustituto especificado",
+                    cantidadRestante = cantidadDespues,
+                    eliminado = seElimino
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al eliminar sustituto");
+                return Json(new { ok = false, mensaje = "Error al procesar la solicitud de eliminación" });
             }
         }
     }

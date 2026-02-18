@@ -70,5 +70,7 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaGenerica<RespuestaDto>> ConfirmarCombo(AbmPlusGenDto req, string token);
 
         Task<RespuestaGenerica<ComboRepoDto>> ObtenerCombosRepo(ComboReqDto req, string token);
+
+        Task<RespuestaGenerica<ComboPresetDto>> ObtenerPresetPromo(string token);
     }
 }

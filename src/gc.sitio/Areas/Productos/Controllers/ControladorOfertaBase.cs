@@ -4,6 +4,7 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.Dtos.Productos.Presupuestos;
+using gc.infraestructura.Dtos.Productos.PromoCombo;
 using gc.infraestructura.Helpers;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
@@ -20,7 +21,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             :base(options,contexto,logger)
         {
             
-        }
+        }      
 
         public List<OfertaDto> OfertasSinActivar
         {
@@ -135,6 +136,11 @@ namespace gc.sitio.Areas.Productos.Controllers
                 ObtenerRubros(_rubroServicio);
             }
 
+            if(ListaPreset.Count ==0 || actualizar)
+            {
+                ObtenerListaPreset(_comboServicio);
+            }
+
             if (_comboServicio != null)
             {
                 if (ComboTipoLista.Count == 0 || actualizar)
@@ -154,6 +160,17 @@ namespace gc.sitio.Areas.Productos.Controllers
                     ComboEstadoLista = resEstado.ListaEntidad ?? [];
                 }                
             }
+            #region Carga de Rubros
+            var rubs = RubroLista
+                .Select(r => new ComboGenDto
+                {
+                    Id = r.Rub_Id,
+                    Descripcion = r.Rub_Id + " - " + r.Rub_Desc
+                })
+                .ToList();
+            ViewBag.Rel02B2 = HelperMvc<ComboGenDto>.ListaGenerica(rubs);
+            #endregion
+
 
             var listR03 = new List<ComboGenDto>();
             ViewBag.Rel03 = HelperMvc<ComboGenDto>.ListaGenerica(listR03);

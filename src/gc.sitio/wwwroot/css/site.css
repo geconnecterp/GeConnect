@@ -2914,3 +2914,66 @@ input, select, textarea, button, checkbox, radio {
 }
 
 /* FIN OPTIMIZACIÓN DE HEADERS DE TABLA */
+
+/* Clases para controlar visibilidad de preajustes */
+.preajuste-visible {
+    display: inline-block !important;
+    opacity: 1;
+    visibility: visible;
+}
+
+.preajuste-hidden {
+    display: none !important;
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Clases para controlar visibilidad de importe único */
+.importe-visible {
+    display: inline-block !important;
+    opacity: 1;
+    visibility: visible;
+}
+
+.importe-hidden {
+    display: none !important;
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Asegurar que d-none funcione correctamente */
+.d-none {
+    display: none !important;
+}
+
+/* Estilos para el campo de importe único */
+#importeUnico.is-invalid {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+    background-color: rgba(220, 53, 69, 0.05) !important;
+}
+
+#importeUnico.is-valid {
+    border-color: #28a745 !important;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.15) !important;
+    background-color: rgba(40, 167, 69, 0.05) !important;
+}
+
+/* Animación de error */
+@keyframes shakeField {
+    0%, 100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+#importeUnico.animate-error {
+    animation: shakeField 0.3s ease-in-out;
+}
