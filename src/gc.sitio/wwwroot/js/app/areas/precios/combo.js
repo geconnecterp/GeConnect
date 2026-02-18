@@ -981,13 +981,13 @@ function actualizarContadorProductosSeleccionados() {
     $("#contadorSeleccionados").text(count);
 }
 
-///**
-// * Limpia la selección de productos en la búsqueda
-// */
-//function limpiarSeleccionBusqueda() {
-//    $("#divBusquedaAvanzada table tbody tr").removeClass("selected-row");
-//    actualizarContadorProductosSeleccionados();
-//}
+/**
+ * Limpia la selección de productos en la búsqueda
+ */
+function limpiarSeleccionBusqueda() {
+    $("#divBusquedaAvanzada table tbody tr").removeClass("selected-row");
+    actualizarContadorProductosSeleccionados();
+}
 
 /**
  * Agrega los productos seleccionados al grid de productos
@@ -1350,7 +1350,10 @@ function cargarDatosCombo(comboId) {
                     // Establecer valores en los campos
                     $("#cmb_id").val(datos.cmb_id);
                     $("#cmb_desc").val(datos.cmb_desc).prop("readonly", false);
-                    $("#cmb_tipo").val(datos.cmb_tipo).prop("disabled", false);
+                    
+                    // ✅ CRÍTICO: cmb_tipo SIEMPRE bloqueado para combos existentes
+                    $("#cmb_tipo").val(datos.cmb_tipo).prop("disabled", true);
+                    console.log("🔒 Campo cmb_tipo bloqueado para combo existente");
 
                     // Determinar el estado activo y configurar checkbox
                     var esActivo = datos.cmb_estado === 'A';
@@ -2257,7 +2260,7 @@ function actualizarGridSustitutos(productoId) {
 }
 
 /**
- * ✅ MEJORADO: Carga productos con aplicación de visibilidad según tipo
+ * ✅ MEJORADA: Carga productos con aplicación de visibilidad según tipo
  */
 function cargarProductosCombo(comboId) {
     if (typeof obtenerProductosDeComboUrl === 'undefined') {
@@ -2349,6 +2352,15 @@ function confirmarCombo() {
     // 1. Recopilar datos del combo
     var datos = recopilarDatosCombo();
     if (!datos) return;
+
+    // ✅ NUEVO: Validar importe único para tipos Q y D
+    if (datos.cmb_tipo === 'Q' || datos.cmb_tipo === 'D') {
+        var importeUnico = obtenerYValidarImporteUnico();
+        if (importeUnico === null) {
+            // La función ya muestra el mensaje de error
+            return;
+        }
+    }
 
     // 2. Recopilar canales seleccionados (solo para nuevo combo)
     var canales = [];
@@ -2451,6 +2463,80 @@ function recopilarDatosCombo() {
     };
 }
 
+
+
+/**
+ * ✅ MODIFICADO: Recopila los productos desde el grid con manejo de importe único para Q/D
+ * @returns {Array} Array con los productos del combo
+ */
+function recopilarProductosCombo() {
+    var productos = [];
+
+    // ✅ NUEVO: Determinar tipo de combo y obtener importe único si aplica
+    var tipoCombo = $("#cmb_tipo").val();
+    var esImporteUnico = (tipoCombo === 'Q' || tipoCombo === 'D');
+    var importeUnico = 0;
+
+    if (esImporteUnico) {
+        // Obtener el importe único (ya validado previamente en confirmarCombo)
+        importeUnico = obtenerYValidarImporteUnico();
+        if (importeUnico === null) {
+            importeUnico = 0; // Fallback por seguridad
+        }
+    }
+
+    // Variable para controlar si es el primer producto
+    var esPrimerProducto = true;
+
+    // Recorrer todas las filas del grid de productos
+    $("#tbGridProductos tbody tr").each(function () {
+        // Verificar que no sea la fila de "No hay productos"
+        if (!$(this).find("td[colspan]").length) {
+            var $fila = $(this);
+
+            // Obtener valores de los inputs
+            var cantidad = parseFloat($fila.find(".input-cantidad").val().replace(/,/g, '')) || 0;
+            var descuento = 0;
+
+            // ✅ CRÍTICO: Lógica diferenciada según tipo de combo
+            if (esImporteUnico) {
+                // Para tipos Q/D: solo el primer producto lleva el importe único
+                if (esPrimerProducto) {
+                    descuento = importeUnico;
+                    esPrimerProducto = false;
+                    console.log(`✅ Importe único asignado al primer producto: ${descuento}`);
+                } else {
+                    descuento = 0;
+                }
+            } else {
+                // Para tipos P/C: usar el descuento individual de cada producto
+                descuento = parseFloat($fila.find(".input-descuento").val().replace(/,/g, '')) || 0;
+            }
+
+            var producto = {
+                cmb_id: $fila.data("combo-id") || '',
+                p_id: $fila.data("producto-id") || $fila.find("td:eq(0)").text().trim(),
+                p_desc: $fila.find("td:eq(1)").text().trim(),
+                p_pcosto: parseFloat($fila.find("td:eq(2)").text().replace(/[^\d.-]/g, '')) || 0,
+                cantidad: cantidad,
+                dto_porc: descuento, // ✅ Aquí se asigna el valor correcto según el tipo
+                activo: 'A'
+            };
+
+            productos.push(producto);
+        }
+    });
+
+    // ✅ NUEVO: Log informativo para debugging
+    if (esImporteUnico) {
+        console.log(`📦 Productos recopilados para tipo ${tipoCombo}:`);
+        console.log(`   - Total productos: ${productos.length}`);
+        console.log(`   - Importe único en primer producto: ${importeUnico}`);
+    }
+
+    return productos;
+}
+
 /**
  * Recopila los canales seleccionados desde la grilla
  * @returns {Array} Array con los canales seleccionados
@@ -2474,40 +2560,6 @@ function recopilarCanalesSeleccionados() {
     });
 
     return canales;
-}
-
-/**
- * Recopila los productos desde el grid con sus cantidades y descuentos actualizados
- * @returns {Array} Array con los productos del combo
- */
-function recopilarProductosCombo() {
-    var productos = [];
-
-    // Recorrer todas las filas del grid de productos
-    $("#tbGridProductos tbody tr").each(function () {
-        // Verificar que no sea la fila de "No hay productos"
-        if (!$(this).find("td[colspan]").length) {
-            var $fila = $(this);
-
-            // Obtener valores de los inputs
-            var cantidad = parseFloat($fila.find(".input-cantidad").val().replace(/,/g, '')) || 0;
-            var descuento = parseFloat($fila.find(".input-descuento").val().replace(/,/g, '')) || 0;
-
-            var producto = {
-                cmb_id: $fila.data("combo-id") || '',
-                p_id: $fila.data("producto-id") || $fila.find("td:eq(0)").text().trim(),
-                p_desc: $fila.find("td:eq(1)").text().trim(),
-                p_pcosto: parseFloat($fila.find("td:eq(2)").text().replace(/,/g, '')) || 0,
-                cantidad: cantidad,
-                dto_porc: descuento,
-                activo: 'A'
-            };
-
-            productos.push(producto);
-        }
-    });
-
-    return productos;
 }
 
 /**
@@ -3114,4 +3166,65 @@ function parsearPreset(presetValue) {
         console.error("❌ Error al parsear preset:", error);
         return { cantidad: 1, descuento: 0, esValido: false };
     }
+}
+
+/**
+ * ✅ MEJORADA: Obtiene y valida el importe único con feedback visual
+ * @returns {number|null} Valor del importe único o null si es inválido
+ */
+function obtenerYValidarImporteUnico() {
+    var $importeUnico = $("#importeUnico");
+
+    // Limpiar estados previos
+    $importeUnico.removeClass('is-invalid is-valid animate-error');
+
+    // Verificar que el campo exista
+    if ($importeUnico.length === 0) {
+        console.warn("⚠️ Campo #importeUnico no encontrado en el DOM");
+        ControlaMensajeWarning("No se encontró el campo de importe único");
+        return null;
+    }
+
+    // Obtener el valor y limpiar formato
+    var valorTexto = $importeUnico.val().trim();
+
+    // Validar que no esté vacío
+    if (valorTexto === '' || valorTexto === '0' || valorTexto === '0.00') {
+        $importeUnico.addClass('is-invalid animate-error');
+        ControlaMensajeWarning("Debe ingresar un importe único válido mayor a cero");
+        $importeUnico.trigger("focus");
+        return null;
+    }
+
+    // Convertir a número (eliminar comas si existen)
+    var valor = parseFloat(valorTexto.replace(/,/g, ''));
+
+    // Validar que sea un número válido
+    if (isNaN(valor) || !isFinite(valor)) {
+        $importeUnico.addClass('is-invalid animate-error');
+        ControlaMensajeWarning("El importe único ingresado no es un número válido");
+        $importeUnico.trigger("focus");
+        return null;
+    }
+
+    // Validar que sea mayor a cero
+    if (valor <= 0) {
+        $importeUnico.addClass('is-invalid animate-error');
+        ControlaMensajeWarning("El importe único debe ser mayor a cero");
+        $importeUnico.trigger("focus");
+        return null;
+    }
+
+    // Validar rango razonable (opcional, ajustar según necesidad)
+    if (valor > 999999.99) {
+        $importeUnico.addClass('is-invalid animate-error');
+        ControlaMensajeWarning("El importe único no puede ser mayor a $999,999.99");
+        $importeUnico.trigger("focus");
+        return null;
+    }
+
+    // ✅ Todo validado correctamente
+    $importeUnico.addClass('is-valid');
+    console.log(`✅ Importe único validado: ${valor}`);
+    return valor;
 }
