@@ -1,4 +1,5 @@
 ﻿@using gc.infraestructura.Dtos.Mstk
+@using gc.infraestructura.Helpers
 @model ProductoStkCompensadoListaModel
 @using static gc.infraestructura.Helpers.GridHelper
 @{
@@ -117,10 +118,10 @@
 						{
 							<td class="@Model.GrillaProductoStkComp.ObtenerClase(item.p_desc) cell-fit-content">@Model.GrillaProductoStkComp.FormatearDato(item.p_desc, FormatDato.Ninguno)<span style="float:right;" title="Producto discontínuo"><i class="bx bx-dislike"></i></span></td>
 						}
-						<td class="@Model.GrillaProductoStkComp.ObtenerClase(item.stk_positivo) cell-fit-content">@Model.GrillaProductoStkComp.FormatearDato(item.stk_positivo, FormatDato.Monto)</td>
-						<td class="@Model.GrillaProductoStkComp.ObtenerClase(item.st_negativo) cell-fit-content">@Model.GrillaProductoStkComp.FormatearDato(item.st_negativo, FormatDato.Monto)</td>
-						<td class="@Model.GrillaProductoStkComp.ObtenerClase(item.stk_diferencia) cell-fit-content">@Model.GrillaProductoStkComp.FormatearDato(item.stk_diferencia, FormatDato.Monto)</td>
-						<td class="@Model.GrillaProductoStkComp.ObtenerClase(item.stk_diferencia) cell-fit-content">@Model.GrillaProductoStkComp.FormatearDato(item.stk_diferencia, FormatDato.Monto)</td>
+						<td class="@Model.GrillaProductoStkComp.ObtenerClase(item.stk_positivo) cell-fit-content">@GridHelper.FormatearDato(item.stk_positivo, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="@Model.GrillaProductoStkComp.ObtenerClase(item.st_negativo) cell-fit-content">@GridHelper.FormatearDato(item.st_negativo, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="@Model.GrillaProductoStkComp.ObtenerClase(item.stk_diferencia) cell-fit-content">@GridHelper.FormatearDato(item.stk_diferencia, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="@Model.GrillaProductoStkComp.ObtenerClase(item.stk_diferencia) cell-fit-content">@GridHelper.FormatearDato(item.stk_diferencia, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 					</tr>
 				}
 			}

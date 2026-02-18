@@ -3775,7 +3775,11 @@ namespace gc.infraestructura.Helpers
 							valStr = val.ToString("0.000");
 						tabla.AddCell(new PdfPCell(new Phrase(producto.p_id, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
 						tabla.AddCell(new PdfPCell(new Phrase(producto.p_desc, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_LEFT });
-						tabla.AddCell(new PdfPCell(new Phrase(producto.stk.ToString("0.000"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+						if (producto.PermiteDecimales)
+							tabla.AddCell(new PdfPCell(new Phrase(producto.stk.ToString("0.00"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+						else
+							tabla.AddCell(new PdfPCell(new Phrase(producto.stk.ToString("0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+						//tabla.AddCell(new PdfPCell(new Phrase(producto.stk.ToString("0.000"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
 						tabla.AddCell(new PdfPCell(new Phrase(producto.p_pcosto.ToString("0.000"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
 						tabla.AddCell(new PdfPCell(new Phrase(valStr, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
 						tabla.AddCell(new PdfPCell(new Phrase(producto.porc_rub?.ToString("N6"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
@@ -4108,10 +4112,20 @@ namespace gc.infraestructura.Helpers
 					tabla.AddCell(new PdfPCell(new Phrase(producto.p_id, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
 					tabla.AddCell(new PdfPCell(new Phrase(producto.p_id_barrado, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_CENTER });
 					tabla.AddCell(new PdfPCell(new Phrase(producto.p_desc, fuenteEtiqueta)));
-					tabla.AddCell(new PdfPCell(new Phrase(producto.stk_positivo.ToString("0.00"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
-					tabla.AddCell(new PdfPCell(new Phrase(producto.st_negativo.ToString("0.00"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
-					tabla.AddCell(new PdfPCell(new Phrase(producto.stk_diferencia.ToString("0.00"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
-					tabla.AddCell(new PdfPCell(new Phrase(producto.stk_diferencia.ToString("0.00"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					if (producto.PermiteDecimales)
+					{
+						tabla.AddCell(new PdfPCell(new Phrase(producto.stk_positivo.ToString("0.00"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+						tabla.AddCell(new PdfPCell(new Phrase(producto.st_negativo.ToString("0.00"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+						tabla.AddCell(new PdfPCell(new Phrase(producto.stk_diferencia.ToString("0.00"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+						tabla.AddCell(new PdfPCell(new Phrase(producto.stk_diferencia.ToString("0.00"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					}
+					else
+					{
+						tabla.AddCell(new PdfPCell(new Phrase(producto.stk_positivo.ToString("0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+						tabla.AddCell(new PdfPCell(new Phrase(producto.st_negativo.ToString("0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+						tabla.AddCell(new PdfPCell(new Phrase(producto.stk_diferencia.ToString("0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+						tabla.AddCell(new PdfPCell(new Phrase(producto.stk_diferencia.ToString("0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					}
 				}
 
 				pdf.Add(tabla);

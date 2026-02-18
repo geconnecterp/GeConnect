@@ -1,7 +1,9 @@
 ﻿
+using gc.infraestructura.Dtos.Almacen;
+
 namespace gc.infraestructura.Dtos.Mstk
 {
-	public class ProductoStkCompensadoDto : Dto
+	public class ProductoStkCompensadoDto : Dto, IProductoConUnidad
 	{
 		public int total_registros { get; set; }
 		public int total_paginas { get; set; }
@@ -12,6 +14,8 @@ namespace gc.infraestructura.Dtos.Mstk
 		public int p_unidad_pres { get; set; }
 		public string p_desc { get; set; } = string.Empty;
 		public string up_id { get; set; } = string.Empty;
+		public string up_desc { get; set; } = string.Empty;
+		public string up_tipo { get; set; } = string.Empty;
 		public string rub_id { get; set; } = string.Empty;
 		public string rub_desc { get; set; } = string.Empty;
 		public string rubg_id { get; set; } = string.Empty;
@@ -43,5 +47,6 @@ namespace gc.infraestructura.Dtos.Mstk
 			get { return Math.Abs(stk_positivo - st_negativo); }
 			set { _stk_diferencia = value; }
 		}
+		public bool PermiteDecimales => up_tipo == "P";
 	}
 }
