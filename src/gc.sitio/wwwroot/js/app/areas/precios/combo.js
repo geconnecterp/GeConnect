@@ -313,6 +313,13 @@ function inicializarEventos() {
             return;
         }
 
+        // ✅ NUEVO: Bloquear sustitutos para tipos Q y D
+        var tipoCombo = $("#cmb_tipo").val();
+        if (tipoCombo === 'Q' || tipoCombo === 'D') {
+            ControlaMensajeWarning("No se pueden agregar sustitutos para este tipo de combo/promoción");
+            return;
+        }
+
         // Verificar si hay un producto seleccionado
         var productoSeleccionado = $("#tbGridProductos tbody tr.selected-row");
         if (productoSeleccionado.length === 0) {
