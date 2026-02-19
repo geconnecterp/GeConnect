@@ -26,6 +26,9 @@
 		padding: 0 !important;
 	}
 
+	#btnBusquedaBase {
+		z-index: 1;
+	}
 </style>
 <div class="card">
 	<div class="container">
@@ -33,7 +36,7 @@
 			<div class="col-4" style="padding-top: 8px;">
 				<div class="row">
 					<fieldset style="margin: 2px;padding: 2px;">
-						<div class="col-5" style="float:left;">
+						<div class="col-5" style="float:left;padding-left: 5px;">
 							<div class="d-flex flex-column gap-3">
 								<div class="form-check">
 									<input class="form-check-input" type="radio" name="btnradio" id="btnradioManual" checked>
@@ -53,16 +56,16 @@
 							<div class="row" style="min-height: 37px;">
 							</div>
 							<div class="row">
-								<div class="input-group" id="divRevertirAjuste">
-									<span class="input-group-text fixed-width-75" style="height:35px;">N°: </span>
-									<input type="text" id="txtNroAjuste" class="align-left" style="width: 50%;" value="" />
+								<div class="input-group input-group-sm" id="divRevertirAjuste">
+									<span class="input-group-text">N°: </span>
+									<input type="text" id="txtNroAjuste" class="align-left form-control activable inputEditable" style="width: 65%;max-width: 65%;" value="" />
 									<button type="button" class="btn btn-sm btn-primary btn-sm me-1" style="margin-left:5px;" id="btnRevertirAjuste">
 										<i class="bx bx-chevron-left"></i>
 									</button>
 								</div>
 							</div>
 							<div class="row" style="padding-top:4px;padding-left:7px;" id="divCargaPrevia">
-								<button type="button" class="btn btn-info btn-sm mt-1 me-1" style="margin-left:5px; width:88%;" id="btnCargaPrevia">
+								<button type="button" class="btn btn-info btn-sm mt-1 me-1" style="margin-left:5px; width:90%;" id="btnCargaPrevia">
 									<i class="bx bx-upload"></i> Carga Previa
 								</button>
 							</div>
@@ -72,45 +75,47 @@
 			</div>
 			<div class="col-8" style="padding-top: 8px;">
 				<div class="row">
-					<div class="col-6">
-						<div class="col-sm" id="divDepositos">
-							<div class="input-group input-group-sm fixed-padding-top">
-								<span class="input-group-text fixed-width">Depósito: </span>
-								@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control activable inputEditable" })
-							</div>
-						</div>
-						<div id="divComboBoxes">
-							<div class="col-sm" id="divComboBox" aria-disabled="true">
+					<fieldset style="margin: 2px;padding: 2px;">
+						<div class="col-6" style="float:left; padding: 2px;">
+							<div class="col-sm" id="divDepositos">
 								<div class="input-group input-group-sm fixed-padding-top">
-									<span class="input-group-text fixed-width">Box: </span>
-									@Html.DropDownList("id", boxes, "Seleccionar...", new { @id = "listaBox", @class = "form-control activable inputEditable" })
+									<span class="input-group-text fixed-width">Depósito: </span>
+									@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control activable inputEditable" })
+								</div>
+							</div>
+							<div id="divComboBoxes">
+								<div class="col-sm" id="divComboBox" aria-disabled="true">
+									<div class="input-group input-group-sm fixed-padding-top">
+										<span class="input-group-text fixed-width">Box: </span>
+										@Html.DropDownList("id", boxes, "Seleccionar...", new { @id = "listaBox", @class = "form-control activable inputEditable" })
+									</div>
 								</div>
 							</div>
 						</div>
-					</div>
-					<div class="col-6">
-						<div class="col-sm" id="divComboMotivos">
-							<div class="input-group input-group-sm fixed-padding-top">
-								<span class="input-group-text fixed-width">Tipo: </span>
-								@Html.DropDownList("id", motivos, "Seleccionar...", new { @id = "listaMotivo", @class = "form-control activable inputEditable" })
+						<div class="col-6" style="float:left; padding: 2px;">
+							<div class="col-sm" id="divComboMotivos">
+								<div class="input-group input-group-sm fixed-padding-top">
+									<span class="input-group-text fixed-width-75">Tipo: </span>
+									@Html.DropDownList("id", motivos, "Seleccionar...", new { @id = "listaMotivo", @class = "form-control activable inputEditable" })
+								</div>
+							</div>
+							<div class="input-group input-group-sm" style="padding-top: 5px;">
+								<span class="input-group-text fixed-width-75">Nota: </span>
+								<input type="text" id="txtNota" class="form-control activable inputEditable" style="width: 80%;" value="" />
 							</div>
 						</div>
-						<div class="input-group input-group-sm" style="padding-top: 5px;">
-							<span class="input-group-text fixed-width-75">Nota: </span>
-							<input type="text" id="txtNota" class="form-control activable inputEditable" style="width: 80%;" value="" />
+						<div class="row" style="padding-top: 3px;">
+							@* botones *@
+							<div style="text-align: right;align-content: center;">
+								<button type="button" class="btn btn-success btn-sm mt-1 me-1" id="btnConfirmar">
+									<i class="bx bx-badge-check"></i> Confirmar
+								</button>
+								<button type="button" class="btn btn-danger btn-sm mt-1 me-1" id="btnCancelar">
+									<i class="bx bx-x-circle"></i> Cancelar
+								</button>
+							</div>
 						</div>
-					</div>
-				</div>
-				<div class="row" style="padding-top: 5px;">
-					@* botones *@
-					<div style="text-align: right;align-content: center;">
-						<button type="button" class="btn btn-success btn-sm mt-1 me-1" id="btnConfirmar">
-							<i class="bx bx-badge-check"></i> Confirmar
-						</button>
-						<button type="button" class="btn btn-danger btn-sm mt-1 me-1" id="btnCancelar">
-							<i class="bx bx-x-circle"></i> Cancelar
-						</button>
-					</div>
+					</fieldset>
 				</div>
 			</div>
 		</div>
@@ -148,16 +153,16 @@
 					</div>
 					<div id="divDetalleDeProductosAAjustar" style="padding-top:5px;">
 						<div class="table-responsive table-wrapper-full-width">
-							<table class="table table-bordered table-hover table-golden" id="tbDetalleDeProductosAAjustar">
+							<table class="table table-sm table-golden" id="tbDetalleDeProductosAAjustar">
 								<thead>
 									<tr class="header">
-										<th style="width:5%;" class="col-header-small align-center">ID</th>
-										<th style="width:20%;" class="col-header-small align-center">Descripción</th>
-										<th style="width:5%;" class="col-header-small align-center">Cod. Prov</th>
-										<th style="width:10%;" class="col-header-small align-center">Box</th>
-										<th style="width:5%;" class="col-header-small align-center">Stk Actual</th>
-										<th style="width:5%;" class="col-header-small align-center">Ajuste</th>
-										<th style="width:5%;" class="col-header-small align-center">Stock Ajustado</th>
+										<th style="width:5%;" class="text-center">ID</th>
+										<th style="width:20%;" class="text-center">Descripción</th>
+										<th style="width:5%;" class="text-center">Cod. Prov</th>
+										<th style="width:10%;" class="text-center">Box</th>
+										<th style="width:5%;" class="text-center">Stk Actual</th>
+										<th style="width:5%;" class="text-center">Ajuste</th>
+										<th style="width:5%;" class="text-center">Stock Ajustado</th>
 										<th style="width:2%;"></th>
 									</tr>
 								</thead>

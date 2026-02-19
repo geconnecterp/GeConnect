@@ -11,6 +11,7 @@
 	string clase = string.Empty;
 
 	var productos = new List<ProductoStkDto>();
+	var leyenda = Model.Leyenda;
 }
 <style>
 	/* El contenedor debe ser el scroll real y generar contexto */
@@ -70,125 +71,147 @@
 	}
 
 </style>
-<div class="table-wrapper" id="containerListaProducto">
-	<table class="table table-sm table-golden" id="tbGridProductos">
-		<thead>
-			<tr class="header">
-				<th class="text-center" style="width: 10%;">Código</th>
-				<th class="text-center" style="width: 10%;">Barrado</th>
-				<th class="text-center" style="width: 30%;">Descripción</th>
-				<th class="text-center" style="width: 10%;">Cód. Prov.</th>
-				<th class="text-center" style="width: 10%;">Últ. Mov.</th>
-				<th class="text-center" style="width: 10%;">Últ. RP.</th>
-				<th class="text-center" style="width: 10%;">Unidad Pres.</th>
-				<th class="text-center" style="width: 10%;">Stock</th>
-			</tr>
-		</thead>
-		<tbody>
-			@if (Model != null && Model.GrillaProductoStk != null && Model.GrillaProductoStk.ListaDatos != null && Model.GrillaProductoStk.ListaDatos.Count > 0)
-			{
-				if (Model.AgrupadoPor == 0)
-				{
-					productos = Model.GrillaProductoStk.ListaDatos.ToList();
-				}
-				else
-				{
-					switch (Model.AgrupadoPor)
+<div class="grid-golden">
+	<div class="grid-golden-header">
+		<div class="row align-items-md-center">
+			<div class="col-md-10 col-sm-6">
+				<h5 class="mb-0">
+					<i class="bx bx-package me-2"></i>
+					<strong>@leyenda</strong>
+				</h5>
+			</div>
+			<div class="col-md-2 col-sm-6">
+				<div class="d-flex justify-content-sm-end">
+					<!-- Botón Imprimir
+					<button type="button" class="btn btn-golden btn-sm mt-1 me-1 btnImprimir" title="Imprimir">
+						<i class="bx bx-printer"></i>
+					</button>-->
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="grid-golden-body">
+		<div class="table-wrapper" id="containerListaProducto">
+			<table class="table table-sm table-golden" id="tbGridProductos">
+				<thead>
+					<tr class="header">
+						<th class="text-center" style="width: 10%;">Código</th>
+						<th class="text-center" style="width: 10%;">Barrado</th>
+						<th class="text-center" style="width: 30%;">Descripción</th>
+						<th class="text-center" style="width: 10%;">Cód. Prov.</th>
+						<th class="text-center" style="width: 10%;">Últ. Mov.</th>
+						<th class="text-center" style="width: 10%;">Últ. RP.</th>
+						<th class="text-center" style="width: 10%;">Unidad Pres.</th>
+						<th class="text-center" style="width: 10%;">Stock</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model != null && Model.GrillaProductoStk != null && Model.GrillaProductoStk.ListaDatos != null && Model.GrillaProductoStk.ListaDatos.Count > 0)
 					{
-						case 1:
-							productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.sec_id).ToList();
-							break;
-						case 2:
-							productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.rubg_id).ToList();
-							break;
-						case 3:
-							productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.rub_id).ToList();
-							break;
-						case 4:
-							productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.cta_id).ToList();
-							break;
-						default:
-							productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.p_id).ToList();
-							break;
-					}
-				}
-
-				@foreach (var item in productos)
-				{
-					if (Model.AgrupadoPor != 0)
-					{
-						switch (Model.AgrupadoPor)
+						if (Model.AgrupadoPor == 0)
 						{
-							case 1:
-								grupoActual = item.sec_id;
-								leyendaAgrupador = $"({item.sec_id}) {item.sec_desc}";
-								break;
-							case 2:
-								grupoActual = item.rubg_id;
-								leyendaAgrupador = $"({item.rubg_id}) {item.rubg_desc}";
-								break;
-							case 3:
-								grupoActual = item.rub_id;
-								leyendaAgrupador = $"({item.rub_id}) {item.rub_desc}";
-								break;
-							case 4:
-								grupoActual = item.cta_id;
-								leyendaAgrupador = $"({item.cta_id}) {item.cta_denominacion}";
-								break;
-							default:
-								grupoActual = item.p_id;
-								leyendaAgrupador = "";
-								break;
-						}
-						// Si cambia la cuenta, insertamos una fila de encabezado para la cuenta
-						if (grupoActual != grupoAnterior)
-						{
-							<tr class="table-secondary fw-bold">
-								<td colspan="8" class="text-center">
-									<i class="bx bx-folder me-1"></i>
-									@leyendaAgrupador
-								</td>
-							</tr>
-							grupoAnterior = grupoActual;
-							alt = true; // Reiniciar alternancia de colores después de cada familia
-						}
-					}
-
-					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					<tr class="@clase" onclick="selectReg(this, 'tbGridProductos')">
-						<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_id) align-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_id_barrado) align-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_id_barrado, FormatDato.Ninguno)</td>
-						@if (item.p_activo_bool)
-						{
-							<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_desc) cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_desc, FormatDato.Ninguno)</td>
+							productos = Model.GrillaProductoStk.ListaDatos.ToList();
 						}
 						else
 						{
-							<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_desc) cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_desc, FormatDato.Ninguno)<span style="float:right;" title="Producto discontínuo"><i class="bx bx-dislike"></i></span></td>
+							switch (Model.AgrupadoPor)
+							{
+								case 1:
+									productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.sec_id).ToList();
+									break;
+								case 2:
+									productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.rubg_id).ToList();
+									break;
+								case 3:
+									productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.rub_id).ToList();
+									break;
+								case 4:
+									productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.cta_id).ToList();
+									break;
+								default:
+									productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.p_id).ToList();
+									break;
+							}
 						}
-						<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_id_prov) align-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_id_prov, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaProductoStk.ObtenerClase(item.stk_ult_mov) text-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.stk_ult_mov, FormatDato.Fecha)</td>
-						<td class="@Model.GrillaProductoStk.ObtenerClase(item.rp_fecha) text-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.rp_fecha, FormatDato.Fecha)</td>
-						<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_unidad_pres) text-right cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_unidad_pres, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaProductoStk.ObtenerClase(item.stk) text-right cell-fit-content">@GridHelper.FormatearDato(item.stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-					</tr>
-				}
-			}
-			else
-			{
-				<tr>
-					<td colspan="9" class="text-center text-muted py-4">
-						<i class="bx bx-info-circle me-2"></i>
-						No se encontraron productos con los criterios especificados
-					</td>
-				</tr>
-			}
-		</tbody>
-	</table>
-</div>
-<div class="row mt-3">
-	<div class="offset-md-3 col-md-6">
-		<div id="divPaginacion" class="">
+
+						@foreach (var item in productos)
+						{
+							if (Model.AgrupadoPor != 0)
+							{
+								switch (Model.AgrupadoPor)
+								{
+									case 1:
+										grupoActual = item.sec_id;
+										leyendaAgrupador = $"({item.sec_id}) {item.sec_desc}";
+										break;
+									case 2:
+										grupoActual = item.rubg_id;
+										leyendaAgrupador = $"({item.rubg_id}) {item.rubg_desc}";
+										break;
+									case 3:
+										grupoActual = item.rub_id;
+										leyendaAgrupador = $"({item.rub_id}) {item.rub_desc}";
+										break;
+									case 4:
+										grupoActual = item.cta_id;
+										leyendaAgrupador = $"({item.cta_id}) {item.cta_denominacion}";
+										break;
+									default:
+										grupoActual = item.p_id;
+										leyendaAgrupador = "";
+										break;
+								}
+								// Si cambia la cuenta, insertamos una fila de encabezado para la cuenta
+								if (grupoActual != grupoAnterior)
+								{
+									<tr class="table-secondary fw-bold">
+										<td colspan="8" class="text-center">
+											<i class="bx bx-folder me-1"></i>
+											@leyendaAgrupador
+										</td>
+									</tr>
+									grupoAnterior = grupoActual;
+									alt = true; // Reiniciar alternancia de colores después de cada familia
+								}
+							}
+
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							<tr class="@clase" onclick="selectReg(this, 'tbGridProductos')">
+								<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_id) align-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_id_barrado) align-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_id_barrado, FormatDato.Ninguno)</td>
+								@if (item.p_activo_bool)
+								{
+									<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_desc) cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_desc, FormatDato.Ninguno)</td>
+								}
+								else
+								{
+									<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_desc) cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_desc, FormatDato.Ninguno)<span style="float:right;" title="Producto discontínuo"><i class="bx bx-dislike"></i></span></td>
+								}
+								<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_id_prov) align-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_id_prov, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaProductoStk.ObtenerClase(item.stk_ult_mov) text-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.stk_ult_mov, FormatDato.Fecha)</td>
+								<td class="@Model.GrillaProductoStk.ObtenerClase(item.rp_fecha) text-center cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.rp_fecha, FormatDato.Fecha)</td>
+								<td class="@Model.GrillaProductoStk.ObtenerClase(item.p_unidad_pres) text-right cell-fit-content">@Model.GrillaProductoStk.FormatearDato(item.p_unidad_pres, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaProductoStk.ObtenerClase(item.stk) text-right cell-fit-content">@GridHelper.FormatearDato(item.stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+							</tr>
+						}
+					}
+					else
+					{
+						<tr>
+							<td colspan="9" class="text-center text-muted py-4">
+								<i class="bx bx-info-circle me-2"></i>
+								No se encontraron productos con los criterios especificados
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+		<div class="row mt-3">
+			<div class="offset-md-3 col-md-6">
+				<div id="divPaginacion" class="">
+				</div>
+			</div>
 		</div>
 	</div>
 </div>

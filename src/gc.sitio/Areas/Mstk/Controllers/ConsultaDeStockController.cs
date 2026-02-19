@@ -123,6 +123,24 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				grillaDatos = GenerarGrillaSmart(ListaProductoStk, sort, _setting.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 				model.GrillaProductoStk = grillaDatos;
 				model.AgrupadoPor = request.agrupador;
+				switch (request.agrupador)
+				{
+					case 1:
+						model.Leyenda = "Productos agrupados por Sector";
+						break;
+					case 2:
+						model.Leyenda = "Productos agrupados por Grupos de Rubro";
+						break;
+					case 3:
+						model.Leyenda = "Productos agrupados por Rubro";
+						break;
+					case 4:
+						model.Leyenda = "Productos agrupados por Proveedor";
+						break;
+					default:
+						model.Leyenda = "Productos no agrupados";
+						break;
+				}
 				return PartialView("_grillaProductos", model);
 			}
 			catch (Exception ex)
