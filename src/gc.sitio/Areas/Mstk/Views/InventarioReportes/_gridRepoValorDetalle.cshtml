@@ -1,4 +1,5 @@
-﻿@model RepoValorDetalleModel
+﻿@using gc.infraestructura.Helpers
+@model RepoValorDetalleModel
 @using static gc.infraestructura.Helpers.GridHelper
 @{
 	var alt = true;
@@ -65,192 +66,218 @@
 		height: 1.6rem !important;
 	}
 
-    .table-golden .detalle-header th {
-        background: linear-gradient(to bottom, #b8860b, #daa520) !important;
-        color: #fff !important;
-        box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
-    }
-    .agrupador-titulo {
-        font-size: 1.15rem; /* más grande */
-        font-weight: 600; /* semi-bold */
-    }
-    .agrupador-detalle {
-        font-size: 0.90rem;
-        line-height: 1.25rem;
-    }
+	.table-golden .detalle-header th {
+		background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+		color: #fff !important;
+		box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+	}
 
-        .agrupador-detalle .d-flex span {
-            display: inline-block;
-            min-width: 180px; /* separa horizontalmente */
-        }
+	.agrupador-titulo {
+		font-size: 1.15rem; /* más grande */
+		font-weight: 600; /* semi-bold */
+	}
+
+	.agrupador-detalle {
+		font-size: 0.90rem;
+		line-height: 1.25rem;
+	}
+
+		.agrupador-detalle .d-flex span {
+			display: inline-block;
+			min-width: 180px; /* separa horizontalmente */
+		}
 </style>
-<div class="table-wrapper" id="containerListaInvValorDetalle">
-    <table class="table table-sm table-golden" id="tbGridInvValorDetalle">
-        <colgroup>
-            <col style="width:10%;">
-            <col style="width:45%;">
-            <col style="width:10%;">
-            <col style="width:7%;">
-            <col style="width:7%;">
-            <col style="width:7%;">
-            <col style="width:7%;">
-            <col style="width:7%;">
-            <col style="width:7%;">
-        </colgroup>
+<div class="grid-golden">
+	<div class="grid-golden-header">
+		<div class="row align-items-md-center">
+			<div class="col-md-10 col-sm-6">
+				<h5 class="mb-0">
+					<i class="bx bx-package me-2"></i>
+					<strong>Valorizado Detalle</strong>
+				</h5>
+			</div>
+			<div class="col-md-2 col-sm-6">
+				<div class="d-flex justify-content-sm-end">
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="grid-golden-body">
+		<div class="table-wrapper" id="containerListaInvValorDetalle">
+			<table class="table table-sm table-golden" id="tbGridInvValorDetalle">
+				<colgroup>
+					<col style="width:10%;">
+					<col style="width:45%;">
+					<col style="width:10%;">
+					<col style="width:7%;">
+					<col style="width:7%;">
+					<col style="width:7%;">
+					<col style="width:7%;">
+					<col style="width:7%;">
+					<col style="width:7%;">
+				</colgroup>
 
-        @foreach (var grupo in grupos)
-        {
-        var lista = grupo.ToList();
+				@foreach (var grupo in grupos)
+				{
+					var lista = grupo.ToList();
 
-        int prodDelRubro = lista.Count;
-        int prodConAjuste = lista.Count(x => x.ps_ajuste == 'S');
-        decimal prodConConteo = (prodConAjuste / prodDelRubro) * 100;
-        decimal valorProdSinConteo = lista.Where(y => y.conteo1 == 0).ToList().Sum(x => (x.ps_stk * x.p_costo));
-        decimal valorProdConConteo = lista.Where(y => y.conteo1 > 0).ToList().Sum(x => ((x.ps_conteo - x.ps_stk) * x.p_costo));
+					int prodDelRubro = lista.Count;
+					int prodConAjuste = lista.Count(x => x.ps_ajuste == 'S');
+					decimal prodConConteo = (prodConAjuste / prodDelRubro) * 100;
+					decimal valorProdSinConteo = lista.Where(y => y.conteo1 == 0).ToList().Sum(x => (x.ps_stk * x.p_costo));
+					decimal valorProdConConteo = lista.Where(y => y.conteo1 > 0).ToList().Sum(x => ((x.ps_conteo - x.ps_stk) * x.p_costo));
 
-        decimal stkTotal = lista.Sum(x => x.ps_stk);
-        decimal conteoTotal = lista.Sum(x => x.ps_conteo);
-        decimal difTotal = stkTotal - conteoTotal;
+					decimal stkTotal = lista.Sum(x => x.ps_stk);
+					decimal conteoTotal = lista.Sum(x => x.ps_conteo);
+					decimal difTotal = stkTotal - conteoTotal;
 
-        decimal stkTotalValorizado = lista.Sum(x => x.ps_stk * x.p_costo);
-        decimal conteoTotalValorizado = lista.Sum(x => (x.ps_conteo-x.ps_stk) * x.p_costo);
-        decimal difTotalValorizado = stkTotalValorizado - conteoTotalValorizado;
+					decimal stkTotalValorizado = lista.Sum(x => x.ps_stk * x.p_costo);
+					decimal conteoTotalValorizado = lista.Sum(x => (x.ps_conteo - x.ps_stk) * x.p_costo);
+					decimal difTotalValorizado = stkTotalValorizado - conteoTotalValorizado;
 
-        <tbody>
+					<tbody>
 
-            <!-- ========================================================= -->
-            <!-- Fila AGRUPADORA -->
-            <!-- ========================================================= -->
-            <tr class="table-secondary fw-bold">
-                <td colspan="9">
-                    <div class="d-flex justify-content-between">
+						<!-- ========================================================= -->
+						<!-- Fila AGRUPADORA -->
+						<!-- ========================================================= -->
+						<tr class="table-secondary fw-bold">
+							<td colspan="9">
+								<div class="d-flex justify-content-between">
 
-                        <!-- Título + datos -->
-                        <div>
+									<!-- Título + datos -->
+									<div>
 
-                            <!-- Título grande -->
-                            <div class="agrupador-titulo">
-                                Sector: @grupo.Key.sec_desc - Rubro: @grupo.Key.rub_desc
-                            </div>
-                            <!-- Datos en varias líneas -->
-                            <div class="agrupador-detalle mt-1">
-                                <div class="d-flex gap-5">
-                                    <span>Prod. del Rubro: @prodDelRubro</span>
-                                    <span>Prod. con Conteo: @prodConConteo</span>
-                                </div>
+										<!-- Título grande -->
+										<div class="agrupador-titulo">
+											Sector: @grupo.Key.sec_desc - Rubro: @grupo.Key.rub_desc
+										</div>
+										<!-- Datos en varias líneas -->
+										<div class="agrupador-detalle mt-1">
+											<div class="d-flex gap-5">
+												<span>Prod. del Rubro: @prodDelRubro</span>
+												<span>Prod. con Conteo: @prodConConteo</span>
+											</div>
 
-                                <div>Valoriza Prod. sin Conteo: @valorProdSinConteo.ToString("N2")</div>
-                                <div>Valoriza Dif. Prod. con Conteo: @valorProdConConteo.ToString("N2")</div>
-                            </div>
-                        </div>
+											<div>Valoriza Prod. sin Conteo: @valorProdSinConteo.ToString("N2")</div>
+											<div>Valoriza Dif. Prod. con Conteo: @valorProdConConteo.ToString("N2")</div>
+										</div>
+									</div>
 
-                        <!-- Mini‑tablas -->
-                        <div class="d-flex gap-4">
+									<!-- Mini‑tablas -->
+									<div class="d-flex gap-4">
 
-                            <!-- Cantidades -->
-                            <table class="table table-sm table-bordered m-0 text-center" style="width:300px;">
-                                <thead class="table-warning">
-                                    <tr><th colspan="3">Cantidades</th></tr>
-                                    <tr>
-                                        <th>Stk</th>
-                                        <th>Conteo</th>
-                                        <th>Dif</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>@stkTotal.ToString("N2")</td>
-                                        <td>@conteoTotal.ToString("N2")</td>
-                                        <td>@difTotal.ToString("N2")</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+										<!-- Cantidades -->
+										<table class="table table-sm table-bordered m-0 text-center" style="width:300px;">
+											<thead class="table-warning">
+												<tr><th colspan="3">Cantidades</th></tr>
+												<tr>
+													<th>Stk</th>
+													<th>Conteo</th>
+													<th>Dif</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr>
+													<td>@stkTotal.ToString("N2")</td>
+													<td>@conteoTotal.ToString("N2")</td>
+													<td>@difTotal.ToString("N2")</td>
+												</tr>
+											</tbody>
+										</table>
 
-                            <!-- Valorización -->
-                            <table class="table table-sm table-bordered m-0 text-center" style="width:300px;">
-                                <thead class="table-warning">
-                                    <tr><th colspan="3">Valorización</th></tr>
-                                    <tr>
-                                        <th>Stk</th>
-                                        <th>Conteo</th>
-                                        <th>Dif</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>@stkTotalValorizado.ToString("N2")</td>
-                                        <td>@conteoTotalValorizado.ToString("N2")</td>
-                                        <td>@difTotalValorizado.ToString("N2")</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+										<!-- Valorización -->
+										<table class="table table-sm table-bordered m-0 text-center" style="width:300px;">
+											<thead class="table-warning">
+												<tr><th colspan="3">Valorización</th></tr>
+												<tr>
+													<th>Stk</th>
+													<th>Conteo</th>
+													<th>Dif</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr>
+													<td>@stkTotalValorizado.ToString("N2")</td>
+													<td>@conteoTotalValorizado.ToString("N2")</td>
+													<td>@difTotalValorizado.ToString("N2")</td>
+												</tr>
+											</tbody>
+										</table>
 
-                        </div>
-                    </div>
-                </td>
-            </tr>
+									</div>
+								</div>
+							</td>
+						</tr>
 
-            <!-- ========================================================= -->
-            <!-- CABECERA DEL DETALLE -->
-            <!-- ========================================================= -->
-            <tr class="detalle-header text-center">
-                <th rowspan="2" style="width:10%;">Código</th>
-                <th rowspan="2" style="width:45%;">Descripción</th>
-                <th rowspan="2" style="width:10%;">Ajuste</th>
+						<!-- ========================================================= -->
+						<!-- CABECERA DEL DETALLE -->
+						<!-- ========================================================= -->
+						<tr class="detalle-header text-center">
+							<th rowspan="2" style="width:10%;">Código</th>
+							<th rowspan="2" style="width:45%;">Descripción</th>
+							<th rowspan="2" style="width:10%;">Ajuste</th>
 
-                <th colspan="3" class="text-center">Cantidades</th>
-                <th colspan="3" class="text-center">Valorización</th>
-            </tr>
+							<th colspan="3" class="text-center">Cantidades</th>
+							<th colspan="3" class="text-center">Valorización</th>
+						</tr>
 
-            <tr class="detalle-header text-center">
-                <th style="width:7%;">Stk</th>
-                <th style="width:7%;">Conteo</th>
-                <th style="width:7%;">Dif</th>
+						<tr class="detalle-header text-center">
+							<th style="width:7%;">Stk</th>
+							<th style="width:7%;">Conteo</th>
+							<th style="width:7%;">Dif</th>
 
-                <th style="width:7%;">Stk</th>
-                <th style="width:7%;">Conteo</th>
-                <th style="width:7%;">Dif</th>
-            </tr>
+							<th style="width:7%;">Stk</th>
+							<th style="width:7%;">Conteo</th>
+							<th style="width:7%;">Dif</th>
+						</tr>
 
-            <!-- ========================================================= -->
-            <!-- FILAS DE PRODUCTOS -->
-            <!-- ========================================================= -->
-            @foreach (var item in lista)
-            {
-            var difCant = item.ps_stk - item.ps_conteo;
+						<!-- ========================================================= -->
+						<!-- FILAS DE PRODUCTOS -->
+						<!-- ========================================================= -->
+						@foreach (var item in lista)
+						{
+							var difCant = item.ps_stk - item.ps_conteo;
 
-            var stkValorizado = item.ps_stk * item.p_costo;
-            var conteoValorizado = item.ps_conteo * item.p_costo;
-            var difVal = stkValorizado - conteoValorizado;
+							var stkValorizado = item.ps_stk * item.p_costo;
+							var conteoValorizado = item.ps_conteo * item.p_costo;
+							var difVal = stkValorizado - conteoValorizado;
 
-            if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-            <tr data-registro="1" class="@clase" onclick="selectReg(this, 'tbGridInvValorDetalle')">
-                <td class="text-center">@item.p_id</td>
-                <td>@item.p_des</td>
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							<tr data-registro="1" class="@clase" onclick="selectReg(this, 'tbGridInvValorDetalle')">
+								<td class="text-center">@item.p_id</td>
+								<td>@item.p_des</td>
 
-                <td class="text-center">
-                    @if (item.ps_ajuste == 'S')
-                    {
-                    <input type="checkbox" checked disabled />
-                    }
-                    else
-                    {
-                    <input type="checkbox" disabled />
-                    }
-                </td>
+								<td class="text-center">
+									@if (item.ps_ajuste == 'S')
+									{
+										<input type="checkbox" checked disabled />
+									}
+									else
+									{
+										<input type="checkbox" disabled />
+									}
+								</td>
 
-                <!-- Cantidades -->
-                <td class="text-end" style="width:7%;">@item.ps_stk.ToString("N2")</td>
-                <td class="text-end" style="width:7%;">@item.ps_conteo.ToString("N2")</td>
-                <td class="text-end" style="width:7%;">@difCant.ToString("N2")</td>
+								<!-- Cantidades -->
+								@* <td class="text-end" style="width:7%;">@item.ps_stk.ToString("N2")</td>
+								<td class="text-end" style="width:7%;">@item.ps_conteo.ToString("N2")</td>
+								<td class="text-end" style="width:7%;">@difCant.ToString("N2")</td> *@
+								<td class="text-end" style="width:7%;">@GridHelper.FormatearDato(item.ps_stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+								<td class="text-end" style="width:7%;">@GridHelper.FormatearDato(item.ps_conteo, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+								<td class="text-end" style="width:7%;">@GridHelper.FormatearDato(difCant, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 
-                <!-- Valorización (si es igual, se replica; si no, ajustamos luego) -->
-                <td class="text-end" style="width:7%;">@stkValorizado.ToString("N2")</td>
-                <td class="text-end" style="width:7%;">@conteoValorizado.ToString("N2")</td>
-                <td class="text-end" style="width:7%;">@difVal.ToString("N2")</td>
-            </tr>
-            }
-        </tbody>
-        }
-    </table>
+								<!-- Valorización (si es igual, se replica; si no, ajustamos luego) -->
+@* 								<td class="text-end" style="width:7%;">@stkValorizado.ToString("N2")</td>
+								<td class="text-end" style="width:7%;">@conteoValorizado.ToString("N2")</td>
+								<td class="text-end" style="width:7%;">@difVal.ToString("N2")</td> *@
+								<td class="text-end" style="width:7%;">@GridHelper.FormatearDato(stkValorizado, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+								<td class="text-end" style="width:7%;">@GridHelper.FormatearDato(conteoValorizado, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+								<td class="text-end" style="width:7%;">@GridHelper.FormatearDato(difVal, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+							</tr>
+						}
+					</tbody>
+				}
+			</table>
+		</div>
+	</div>
 </div>

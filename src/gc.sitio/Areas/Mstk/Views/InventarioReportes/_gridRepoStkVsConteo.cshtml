@@ -1,4 +1,5 @@
-﻿@model RepoStkVsConteoModel
+﻿@using gc.infraestructura.Helpers
+@model RepoStkVsConteoModel
 @using static gc.infraestructura.Helpers.GridHelper
 @{
 	var alt = true;
@@ -60,62 +61,80 @@
 		height: 1.6rem !important;
 	}
 </style>
-<div class="table-wrapper" id="containerListaInvStkVsConteo">
-	<table class="table table-sm table-golden" id="tbGridInvStkVsConteo">
-		<thead>
-			<tr class="header">
-				<th class="text-center" style="width: 10%;">Código</th>
-				<th class="text-center" style="width: 30%;">Descripción</th>
-				<th class="text-center" style="width: 20%;">Dif. a Ajustar</th>
-				<th class="text-center" style="width: 10%;">Aplico Ajuste</th>
-				<th class="text-center" style="width: 10%;">Stk</th>
-				<th class="text-center" style="width: 10%;">Conteo Grupo 1</th>
-				@if(mostrarConteo2)
-				{
-					<th class="text-center" style="width: 10%;">Conteo Grupo 2</th>
-				}
-			</tr>
-		</thead>
-		<tbody>
-			@if (Model != null && Model.GrillaRepoStkVsConteo != null && Model.GrillaRepoStkVsConteo.ListaDatos != null && Model.GrillaRepoStkVsConteo.ListaDatos.Count > 0)
-			{
-
-				@foreach (var item in Model.GrillaRepoStkVsConteo.ListaDatos)
-				{
-					var dif = item.ps_stk - item.ps_conteo;
-					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					<tr class="@clase" onclick="selectReg(this, 'tbGridInvStkVsConteo')" data-inv-nro="@item.inv_nro" data-p-id="@item.p_id">
-						<td class="@Model.GrillaRepoStkVsConteo.ObtenerClase(item.p_id) text-center cell-fit-content">@Model.GrillaRepoStkVsConteo.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaRepoStkVsConteo.ObtenerClase(item.p_des) cell-fit-content">@Model.GrillaRepoStkVsConteo.FormatearDato(item.p_des, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaRepoStkVsConteo.ObtenerClase(dif) cell-fit-content">@Model.GrillaRepoStkVsConteo.FormatearDato(dif, FormatDato.Monto)</td>
-						<td class="text-center">
-							@if (item.ps_ajuste == 'S')
-							{
-								<input type="checkbox" checked disabled />
-							}
-							else
-							{
-								<input type="checkbox" disabled />
-							}
-						</td>
-						<td class="@Model.GrillaRepoStkVsConteo.ObtenerClase(item.ps_stk) cell-fit-content">@Model.GrillaRepoStkVsConteo.FormatearDato(item.ps_stk, FormatDato.Monto)</td>
-						<td class="@Model.GrillaRepoStkVsConteo.ObtenerClase(item.conteo1) cell-fit-content">@Model.GrillaRepoStkVsConteo.FormatearDato(item.conteo1, FormatDato.Monto)</td>
+<div class="grid-golden">
+	<div class="grid-golden-header">
+		<div class="row align-items-md-center">
+			<div class="col-md-10 col-sm-6">
+				<h5 class="mb-0">
+					<i class="bx bx-package me-2"></i>
+					<strong>Registro de Stock vs Conteo</strong>
+				</h5>
+			</div>
+			<div class="col-md-2 col-sm-6">
+				<div class="d-flex justify-content-sm-end">
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="grid-golden-body">
+		<div class="table-wrapper" id="containerListaInvStkVsConteo">
+			<table class="table table-sm table-golden" id="tbGridInvStkVsConteo">
+				<thead>
+					<tr class="header">
+						<th class="text-center" style="width: 10%;">Código</th>
+						<th class="text-center" style="width: 30%;">Descripción</th>
+						<th class="text-center" style="width: 20%;">Dif. a Ajustar</th>
+						<th class="text-center" style="width: 10%;">Aplico Ajuste</th>
+						<th class="text-center" style="width: 10%;">Stk</th>
+						<th class="text-center" style="width: 10%;">Conteo Grupo 1</th>
 						@if(mostrarConteo2)
 						{
-							<td class="@Model.GrillaRepoStkVsConteo.ObtenerClase(item.conteo2) cell-fit-content">@Model.GrillaRepoStkVsConteo.FormatearDato(item.conteo2, FormatDato.Monto)</td>
+							<th class="text-center" style="width: 10%;">Conteo Grupo 2</th>
 						}
 					</tr>
-				}
-			}
-			else
-			{
-				<tr>
-					<td colspan="9" class="text-center text-muted py-4">
-						<i class="bx bx-info-circle me-2"></i>
-						No se encontraron datos
-					</td>
-				</tr>
-			}
-		</tbody>
-	</table>
+				</thead>
+				<tbody>
+					@if (Model != null && Model.GrillaRepoStkVsConteo != null && Model.GrillaRepoStkVsConteo.ListaDatos != null && Model.GrillaRepoStkVsConteo.ListaDatos.Count > 0)
+					{
+
+						@foreach (var item in Model.GrillaRepoStkVsConteo.ListaDatos)
+						{
+							var dif = item.ps_stk - item.ps_conteo;
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							<tr class="@clase" onclick="selectReg(this, 'tbGridInvStkVsConteo')" data-inv-nro="@item.inv_nro" data-p-id="@item.p_id">
+								<td class="@Model.GrillaRepoStkVsConteo.ObtenerClase(item.p_id) text-center cell-fit-content">@Model.GrillaRepoStkVsConteo.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaRepoStkVsConteo.ObtenerClase(item.p_des) cell-fit-content">@Model.GrillaRepoStkVsConteo.FormatearDato(item.p_des, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaRepoStkVsConteo.ObtenerClase(dif) cell-fit-content">@GridHelper.FormatearDato(dif, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+								<td class="text-center">
+									@if (item.ps_ajuste == 'S')
+									{
+										<input type="checkbox" checked disabled />
+									}
+									else
+									{
+										<input type="checkbox" disabled />
+									}
+								</td>
+								<td class="@Model.GrillaRepoStkVsConteo.ObtenerClase(item.ps_stk) cell-fit-content">@GridHelper.FormatearDato(item.ps_stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+								<td class="@Model.GrillaRepoStkVsConteo.ObtenerClase(item.conteo1) cell-fit-content">@GridHelper.FormatearDato(item.conteo1, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+								@if(mostrarConteo2)
+								{
+									<td class="@Model.GrillaRepoStkVsConteo.ObtenerClase(item.conteo2) cell-fit-content">@GridHelper.FormatearDato(item.conteo2, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+								}
+							</tr>
+						}
+					}
+					else
+					{
+						<tr>
+							<td colspan="9" class="text-center text-muted py-4">
+								<i class="bx bx-info-circle me-2"></i>
+								No se encontraron datos
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
 </div>

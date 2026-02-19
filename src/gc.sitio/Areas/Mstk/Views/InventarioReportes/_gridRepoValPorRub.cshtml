@@ -76,85 +76,103 @@
 	}
 
 </style>
-<div class="table-wrapper" id="containerListaInvValorPorRub">
-	<table class="table table-sm table-golden" id="tbGridInvValorPorRub">
-		<thead>
-			<tr class="header">
-				<th class="text-center" rowspan="2" style="width: 15%;">Rubros</th>
-				<th class="text-center" rowspan="2" style="width: 15%;">Prod. Rubro</th>
-				<th class="text-center" rowspan="2" style="width: 15%;">Prod. con Conteo</th>
-				<th class="text-center" colspan="3" style="width: 25%;">Cantidades</th>
-				<th class="text-center" colspan="3" style="width: 25%;">Valorización</th>
-			</tr>
-			<tr class="header">
-				<th class="text-center">Stk</th>
-				<th class="text-center">Conteo</th>
-				<th class="text-center">Dif</th>
-				<th class="text-center">Stk</th>
-				<th class="text-center">Conteo</th>
-				<th class="text-center">Dif</th>
-			</tr>
-		</thead>
-		<tbody>
-			@if (Model != null && Model.GrillaRepoValPorRub != null && Model.GrillaRepoValPorRub.ListaDatos != null && Model.GrillaRepoValPorRub.ListaDatos.Count > 0)
-			{
-				@foreach (var item in Model.GrillaRepoValPorRub.ListaDatos)
-				{
-					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					var dif_cant = item.stk_cant - item.plani_cant;
-					var dif_val = item.stk_val - item.plani_val;
-					<tr class="@clase" onclick="selectReg(this, 'tbGridInvValorPorRub')" data-inv-nro="@item.inv_nro" data-inve-id="@item.inve_id" data-invt-id="@item.invt_id">
-						<td class="@Model.GrillaRepoValPorRub.ObtenerClase(item.rub_desc) cell-fit-content">@Model.GrillaRepoValPorRub.FormatearDato(item.rub_desc, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaRepoValPorRub.ObtenerClase(item.prod_rub) cell-fit-content">@Model.GrillaRepoValPorRub.FormatearDato(item.prod_rub, FormatDato.Monto)</td>
-						<td class="@Model.GrillaRepoValPorRub.ObtenerClase(item.prod_rub_cont) cell-fit-content">@Model.GrillaRepoValPorRub.FormatearDato(item.prod_rub_cont, FormatDato.Monto)</td>
-						<td class="@Model.GrillaRepoValPorRub.ObtenerClase(item.stk_cant) cell-fit-content">@Model.GrillaRepoValPorRub.FormatearDato(item.stk_cant, FormatDato.Monto)</td>
-						<td class="@Model.GrillaRepoValPorRub.ObtenerClase(item.plani_cant) cell-fit-content">@Model.GrillaRepoValPorRub.FormatearDato(item.plani_cant, FormatDato.Monto)</td>
-						<td class="@Model.GrillaRepoValPorRub.ObtenerClase(dif_cant) cell-fit-content">@Model.GrillaRepoValPorRub.FormatearDato(dif_cant, FormatDato.Monto)</td>
-						<td class="@Model.GrillaRepoValPorRub.ObtenerClase(item.stk_val) cell-fit-content">@Model.GrillaRepoValPorRub.FormatearDato(item.stk_val, FormatDato.Monto)</td>
-						<td class="@Model.GrillaRepoValPorRub.ObtenerClase(item.plani_val) cell-fit-content">@Model.GrillaRepoValPorRub.FormatearDato(item.plani_val, FormatDato.Monto)</td>
-						<td class="@Model.GrillaRepoValPorRub.ObtenerClase(dif_val) cell-fit-content">@Model.GrillaRepoValPorRub.FormatearDato(dif_val, FormatDato.Monto)</td>
+<div class="grid-golden">
+	<div class="grid-golden-header">
+		<div class="row align-items-md-center">
+			<div class="col-md-10 col-sm-6">
+				<h5 class="mb-0">
+					<i class="bx bx-package me-2"></i>
+					<strong>Valorizado por Rubro</strong>
+				</h5>
+			</div>
+			<div class="col-md-2 col-sm-6">
+				<div class="d-flex justify-content-sm-end">
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="grid-golden-body">
+		<div class="table-wrapper" id="containerListaInvValorPorRub">
+			<table class="table table-sm table-golden" id="tbGridInvValorPorRub">
+				<thead>
+					<tr class="header">
+						<th class="text-center" rowspan="2" style="width: 15%;">Rubros</th>
+						<th class="text-center" rowspan="2" style="width: 15%;">Prod. Rubro</th>
+						<th class="text-center" rowspan="2" style="width: 15%;">Prod. con Conteo</th>
+						<th class="text-center" colspan="3" style="width: 25%;">Cantidades</th>
+						<th class="text-center" colspan="3" style="width: 25%;">Valorización</th>
 					</tr>
-				}
-				<tr class="table-success fw-bold">
-					<td colspan="1" class="text-start pe-2">Total</td>
+					<tr class="header">
+						<th class="text-center">Stk</th>
+						<th class="text-center">Conteo</th>
+						<th class="text-center">Dif</th>
+						<th class="text-center">Stk</th>
+						<th class="text-center">Conteo</th>
+						<th class="text-center">Dif</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model != null && Model.GrillaRepoValPorRub != null && Model.GrillaRepoValPorRub.ListaDatos != null && Model.GrillaRepoValPorRub.ListaDatos.Count > 0)
+					{
+						@foreach (var item in Model.GrillaRepoValPorRub.ListaDatos)
+						{
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							var dif_cant = item.stk_cant - item.plani_cant;
+							var dif_val = item.stk_val - item.plani_val;
+							<tr class="@clase" onclick="selectReg(this, 'tbGridInvValorPorRub')" data-inv-nro="@item.inv_nro" data-inve-id="@item.inve_id" data-invt-id="@item.invt_id">
+								<td class="@Model.GrillaRepoValPorRub.ObtenerClase(item.rub_desc) cell-fit-content">@Model.GrillaRepoValPorRub.FormatearDato(item.rub_desc, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaRepoValPorRub.ObtenerClase(item.prod_rub) cell-fit-content">@Model.GrillaRepoValPorRub.FormatearDato(item.prod_rub, FormatDato.Monto)</td>
+								<td class="@Model.GrillaRepoValPorRub.ObtenerClase(item.prod_rub_cont) cell-fit-content">@Model.GrillaRepoValPorRub.FormatearDato(item.prod_rub_cont, FormatDato.Monto)</td>
+								<td class="@Model.GrillaRepoValPorRub.ObtenerClase(item.stk_cant) cell-fit-content">@Model.GrillaRepoValPorRub.FormatearDato(item.stk_cant, FormatDato.Monto)</td>
+								<td class="@Model.GrillaRepoValPorRub.ObtenerClase(item.plani_cant) cell-fit-content">@Model.GrillaRepoValPorRub.FormatearDato(item.plani_cant, FormatDato.Monto)</td>
+								<td class="@Model.GrillaRepoValPorRub.ObtenerClase(dif_cant) cell-fit-content">@Model.GrillaRepoValPorRub.FormatearDato(dif_cant, FormatDato.Monto)</td>
+								<td class="@Model.GrillaRepoValPorRub.ObtenerClase(item.stk_val) cell-fit-content">@Model.GrillaRepoValPorRub.FormatearDato(item.stk_val, FormatDato.Monto)</td>
+								<td class="@Model.GrillaRepoValPorRub.ObtenerClase(item.plani_val) cell-fit-content">@Model.GrillaRepoValPorRub.FormatearDato(item.plani_val, FormatDato.Monto)</td>
+								<td class="@Model.GrillaRepoValPorRub.ObtenerClase(dif_val) cell-fit-content">@Model.GrillaRepoValPorRub.FormatearDato(dif_val, FormatDato.Monto)</td>
+							</tr>
+						}
+						<tr class="table-success fw-bold">
+							<td colspan="1" class="text-start pe-2">Total</td>
 
-					<td class="@Model.GrillaRepoValPorRub.ObtenerClase(totalProdRubro) cell-fit-content">
-						@Model.GrillaRepoValPorRub.FormatearDato(totalProdRubro, FormatDato.Monto)
-					</td>
-					<td class="@Model.GrillaRepoValPorRub.ObtenerClase(totalProdConConteo) cell-fit-content">
-						@Model.GrillaRepoValPorRub.FormatearDato(totalProdConConteo, FormatDato.Monto)
-					</td>
+							<td class="@Model.GrillaRepoValPorRub.ObtenerClase(totalProdRubro) cell-fit-content">
+								@Model.GrillaRepoValPorRub.FormatearDato(totalProdRubro, FormatDato.Monto)
+							</td>
+							<td class="@Model.GrillaRepoValPorRub.ObtenerClase(totalProdConConteo) cell-fit-content">
+								@Model.GrillaRepoValPorRub.FormatearDato(totalProdConConteo, FormatDato.Monto)
+							</td>
 
-					<td class="@Model.GrillaRepoValPorRub.ObtenerClase(totalStkCant) cell-fit-content">
-						@Model.GrillaRepoValPorRub.FormatearDato(totalStkCant, FormatDato.Monto)
-					</td>
-					<td class="@Model.GrillaRepoValPorRub.ObtenerClase(totalPlaniCant) cell-fit-content">
-						@Model.GrillaRepoValPorRub.FormatearDato(totalPlaniCant, FormatDato.Monto)
-					</td>
-					<td class="@Model.GrillaRepoValPorRub.ObtenerClase(totalDifCant) cell-fit-content">
-						@Model.GrillaRepoValPorRub.FormatearDato(totalDifCant, FormatDato.Monto)
-					</td>
+							<td class="@Model.GrillaRepoValPorRub.ObtenerClase(totalStkCant) cell-fit-content">
+								@Model.GrillaRepoValPorRub.FormatearDato(totalStkCant, FormatDato.Monto)
+							</td>
+							<td class="@Model.GrillaRepoValPorRub.ObtenerClase(totalPlaniCant) cell-fit-content">
+								@Model.GrillaRepoValPorRub.FormatearDato(totalPlaniCant, FormatDato.Monto)
+							</td>
+							<td class="@Model.GrillaRepoValPorRub.ObtenerClase(totalDifCant) cell-fit-content">
+								@Model.GrillaRepoValPorRub.FormatearDato(totalDifCant, FormatDato.Monto)
+							</td>
 
-					<td class="@Model.GrillaRepoValPorRub.ObtenerClase(totalStkVal) cell-fit-content">
-						@Model.GrillaRepoValPorRub.FormatearDato(totalStkVal, FormatDato.Monto)
-					</td>
-					<td class="@Model.GrillaRepoValPorRub.ObtenerClase(totalPlaniVal) cell-fit-content">
-						@Model.GrillaRepoValPorRub.FormatearDato(totalPlaniVal, FormatDato.Monto)
-					</td>
-					<td class="@Model.GrillaRepoValPorRub.ObtenerClase(totalDifVal) cell-fit-content">
-						@Model.GrillaRepoValPorRub.FormatearDato(totalDifVal, FormatDato.Monto)
-					</td>
-				</tr>
-			}
-			else
-			{
-				<tr>
-					<td colspan="9" class="text-center text-muted py-4">
-						<i class="bx bx-info-circle me-2"></i>
-						No se encontraron datos
-					</td>
-				</tr>
-			}
-		</tbody>
-	</table>
+							<td class="@Model.GrillaRepoValPorRub.ObtenerClase(totalStkVal) cell-fit-content">
+								@Model.GrillaRepoValPorRub.FormatearDato(totalStkVal, FormatDato.Monto)
+							</td>
+							<td class="@Model.GrillaRepoValPorRub.ObtenerClase(totalPlaniVal) cell-fit-content">
+								@Model.GrillaRepoValPorRub.FormatearDato(totalPlaniVal, FormatDato.Monto)
+							</td>
+							<td class="@Model.GrillaRepoValPorRub.ObtenerClase(totalDifVal) cell-fit-content">
+								@Model.GrillaRepoValPorRub.FormatearDato(totalDifVal, FormatDato.Monto)
+							</td>
+						</tr>
+					}
+					else
+					{
+						<tr>
+							<td colspan="9" class="text-center text-muted py-4">
+								<i class="bx bx-info-circle me-2"></i>
+								No se encontraron datos
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
 </div>
