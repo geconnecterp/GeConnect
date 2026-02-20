@@ -680,7 +680,7 @@ function cambiarModoSeleccion(nuevoModo) {
 
     switch (nuevoModo) {
         case "individual":
-            infoPanel.show();
+           // infoPanel.show();
             modoTexto.text("Individual").removeClass().addClass("badge bg-info");
 
             if (canalIndividualSeleccionado) {
@@ -692,7 +692,7 @@ function cambiarModoSeleccion(nuevoModo) {
             break;
 
         case "multiple":
-            infoPanel.show();
+            //infoPanel.show();
             modoTexto.text("Múltiple").removeClass().addClass("badge bg-warning");
             datosCanal.hide();
             canalIndividualSeleccionado = null;
@@ -700,7 +700,7 @@ function cambiarModoSeleccion(nuevoModo) {
 
         case "ninguno":
         default:
-            infoPanel.hide();
+           // infoPanel.hide();
             datosCanal.hide();
             canalIndividualSeleccionado = null;
             break;

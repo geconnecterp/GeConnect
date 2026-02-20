@@ -138,7 +138,10 @@ namespace gc.sitio.Areas.Productos.Controllers
 
             if(ListaPreset.Count ==0 || actualizar)
             {
-                ObtenerListaPreset(_comboServicio);
+                if (_comboServicio != null)
+                {
+                    ObtenerListaPreset(_comboServicio);
+                }
             }
 
             if (_comboServicio != null)
