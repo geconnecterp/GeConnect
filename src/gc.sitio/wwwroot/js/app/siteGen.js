@@ -513,6 +513,8 @@ function AbrirMensaje(Titulo, Mensaje, CallBack, EsConfirmacion, Botones, Tipo, 
     }
     //$('#msjModal').fadeIn(0);
     $("#msjIcono").html("");
+    // Al inicio del switch, antes de aplicar nuevos estilos:
+    $("#msjHeader").removeClass("info warn error success");
     // Aplicar clases según el tipo de mensaje
     switch (Tipo) {
         case "info!":

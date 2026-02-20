@@ -6,7 +6,6 @@ using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Productos.Etiqueta;
 using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.Dtos.Productos.PromoCombo;
 using gc.sitio.core.Servicios.Contratos;
@@ -16,7 +15,6 @@ using Newtonsoft.Json;
 using System.Net;
 using System.Reflection;
 using System.Text;
-using static Azure.Core.HttpHeader;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
