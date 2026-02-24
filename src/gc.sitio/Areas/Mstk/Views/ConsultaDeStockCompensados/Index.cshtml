@@ -35,6 +35,11 @@
 		padding: 1rem;
 	}
 
+	#divInfoAdicionaDeProducto > div:first-child {
+		height: 400px;
+		max-height: 400px;
+		overflow-y: auto;
+	}
 </style>
 
 <div class="container mt-2">
@@ -63,10 +68,11 @@
 			@* </div> *@
 		</div>
 	</div>
+	
 	<div class="collapse" id="divDetalle" style="">
 		<div id="divGrillaProductos">
 		</div>
-		<div class="row">
+		@* <div class="row">
 			<div class="row">
 				<div class="col-2">
 					<a class="btn btn-sm btn-primary me-1 collapsed" id="btnCollapseSection" data-bs-toggle="collapse" data-bs-target="#collapseSection" role="button" aria-expanded="false" aria-controls="collapseSection">
@@ -102,8 +108,9 @@
 					</div>
 				</div>
 			</div>
-		</div>
+		</div> *@
 	</div>
+	<div id="divInfoAdicionaDeProducto" class="collapse"></div>
 </div>
 
 <!-- para el modal del geston de impresion -->
@@ -126,6 +133,18 @@
 		var buscarStockProductosURL = "@Url.Action("BuscarStockProductos", "ConsultaDeStockCompensados", new { area = "Mstk" })"; /**/
 		var BuscarInfoProdStkDepositoURL = "@Url.Action("BuscarInfoProdStkDeposito", "ConsultaDeStockCompensados", new { area = "Mstk" })";
 
+		/*URL para componente de Información Adicional de Productos*/
+		var abrirComponenteDeInfoAdicionalDeProdUrl = "@Url.Action("AbrirComponente", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdURL = "@Url.Action("BuscarInfoProd", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdStkAURL = "@Url.Action("BuscarInfoProdStkA", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdStkDURL = "@Url.Action("BuscarInfoProdStkD", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdStkBoxURL = "@Url.Action("BuscarInfoProdStkBox", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdMovMensURL = "@Url.Action("BuscarInfoProdMovMens", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdMovSemURL = "@Url.Action("BuscarInfoProdMovSem", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdMovDURL = "@Url.Action("BuscarInfoProdMovD", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdSustitutoURL = "@Url.Action("BuscarInfoProdSustituto", "infoadicionaldeprod", new { area = "ControlComun" })";
+		/**/
+
 		// Gestor de impresión
 		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
 		var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
@@ -140,4 +159,5 @@
 	<script src="~/js/plugins/jquery.simplePagination.js"></script>
 
 	<script src="~/js/app/areas/mstk/consultastockcompensado/consstkcomp.js" type="text/javascript"></script>
+	<script src="~/js/app/controlcomun/infoAdicionalDeProd.js" type="text/javascript"></script>
 }

@@ -69,6 +69,33 @@
 		height: 1.6rem !important; /* ajustá según lo que quieras */
 	}
 
+	.th-descripcion {
+		position: relative;
+		text-align: center;
+		vertical-align: middle;
+		width: 25%;
+	}
+
+		.th-descripcion .th-title {
+			display: inline-block;
+		}
+
+	.btn-info-producto {
+		position: absolute;
+		right: 4px; /* margen a la derecha */
+		top: 50%;
+		transform: translateY(-50%);
+		background: transparent !important;
+		border: none !important;
+		padding: 0;
+		color: #fff; /* o el color del header */
+		cursor: pointer;
+	}
+
+		.btn-info-producto i {
+			font-size: 1rem;
+			line-height: 1;
+		}
 </style>
 <div class="table-wrapper" id="containerListaProducto">
 	<table class="table table-sm table-golden" id="tbGridProductos">
@@ -76,7 +103,16 @@
 			<tr class="header">
 				<th class="text-center" style="width: 10%;">Código</th>
 				<th class="text-center" style="width: 10%;">Barrado</th>
-				<th class="text-center" style="width: 30%;">Descripción</th>
+				@* <th class="text-center" style="width: 30%;">Descripción</th> *@
+				<th class="th-descripcion">
+					<span class="th-title">Descripción</span>
+					<button type="button"
+							class="btn btn-info-producto"
+							data-action="info-producto"
+							title="Abrir info de producto">
+						<i class="bx bx-info-circle"></i>
+					</button>
+				</th>
 				<th class="text-center" style="width: 10%;">Stock +</th>
 				<th class="text-center" style="width: 10%;">Stock -</th>
 				<th class="text-center" style="width: 10%;">Diferencia</th>

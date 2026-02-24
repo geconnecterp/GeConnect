@@ -160,6 +160,7 @@ function BuscarProductos(pag = 1) {
 			}
 
 		});
+		AgregarHanlderColumnaDescripcion();
 		CerrarWaiting();
 		viendeDesdeBusquedaDeProducto = false;
 		return true
@@ -346,3 +347,84 @@ function getMaskForIntegerMax99999(selector) {
 		max: 99999
 	});
 }
+
+/* ######	INICIO Componente de info adicional de producto ###### */
+const mostrarInfoProd = true;
+const mostrarInfoProdStkA = true;
+const mostrarInfoProdStkD = true;
+const mostrarInfoProdStkBox = true;
+const mostrarInfoProdStkMovM = true;
+const mostrarInfoProdStkMovS = true;
+const mostrarInfoProdStkMovD = true;
+const mostrarInfoProdSustituto = true;
+const pasarAdmLogueo = false;
+
+function btnCollapseSectionValidar() {
+	if (pIdSeleccionado != "") {
+		var p_id = pIdSeleccionado;
+		var data = {
+			p_id,
+			mostrarInfoProd,
+			mostrarInfoProdStkA,
+			mostrarInfoProdStkD,
+			mostrarInfoProdStkBox,
+			mostrarInfoProdStkMovM,
+			mostrarInfoProdStkMovS,
+			mostrarInfoProdStkMovD,
+			mostrarInfoProdSustituto,
+			pasarAdmLogueo
+		};
+		invocarComponenteDeInfoAdicionalDeProd(data);
+	}
+	else {
+		$("#divInfoAdicionaDeProducto").html("").collapse("hide");
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un producto.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+}
+
+/* ######	FIN Componente de info adicional de producto ###### */
+
+/* *************************************************************************************** */
+///Hanlder para manejar la apertura de Info de Producto desde la columna Descripción
+function AgregarHanlderColumnaDescripcion() {
+	$(document)
+		.off("click", "[data-action='info-producto']")
+		.on("click", "[data-action='info-producto']", function (e) {
+
+			e.stopPropagation();
+			e.preventDefault();
+			AbrirInfoProducto();
+		});
+}
+
+function AbrirInfoProducto() {
+	//e.preventDefault();
+
+	if (pIdSeleccionado && pIdSeleccionado !== "") {
+		$("#divInfoAdicionaDeProducto").collapse("toggle");
+
+		setTimeout(() => {
+			invocarComponenteDeInfoAdicionalDeProd({
+				p_id: pIdSeleccionado,
+				mostrarInfoProd,
+				mostrarInfoProdStkA,
+				mostrarInfoProdStkD,
+				mostrarInfoProdStkBox,
+				mostrarInfoProdStkMovM,
+				mostrarInfoProdStkMovD,
+				mostrarInfoProdStkMovS,
+				mostrarInfoProdSustituto,
+				pasarAdmLogueo,
+			});
+		}, 500);
+	} else {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un producto.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////
