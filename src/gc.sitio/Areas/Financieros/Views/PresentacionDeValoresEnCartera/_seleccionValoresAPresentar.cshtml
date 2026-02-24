@@ -7,6 +7,63 @@
 	var alt = true;
 	string clase = string.Empty;
 }
+<style>
+	/* El contenedor debe ser el scroll real y generar contexto */
+	#containerValores {
+		position: relative;
+		height: 530px;
+		max-height: 530px;
+		overflow-y: auto; /* vertical */
+		overflow-x: auto; /* horizontal si hace falta */
+		z-index: auto; /* no fuerza stacking context */
+	}
+
+	/* Evitar collapse para que sticky funcione mejor en thead/th */
+	.table-golden {
+		border-collapse: separate;
+		border-spacing: 0;
+		table-layout: fixed; /* estabiliza anchos con tus width% */
+	}
+
+		/* Fijar el thead y darle fondo del tema */
+		.table-golden thead {
+			position: sticky;
+			top: 0;
+			z-index: 1; /* suficiente para estar sobre las filas */
+			background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+			color: #fff !important;
+		}
+
+			/* Redundancia intencional: asegurar cada th sticky y el mismo fondo */
+			.table-golden thead th {
+				position: sticky;
+				top: 0;
+				z-index: 4;
+				background: linear-gradient(to bottom, #b8860b, #daa520);
+				color: #fff;
+				box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+				background-clip: padding-box; /* evita “sangrados” con border-spacing */
+			}
+
+			/* Alinear colores: si tu app usa dorado para cabecera */
+			.table-golden thead,
+			.table-golden thead th {
+				/*background-color: #b8860b;  tu dorado */
+				/* color: #333; */
+			}
+
+	#tbValores th,
+	#tbValores td {
+		padding: 0.01rem 0.15rem !important; /* o incluso 0 si querés máxima compresión */
+		line-height: 1.2 !important; /* más compacto */
+		height: auto !important; /* evita altura fija */
+	}
+
+	/* Opcional: altura fija para todas las filas */
+	#tbValores tr {
+		height: 1.6rem !important; /* ajustá según lo que quieras */
+	}
+</style>
 <div class="row justify-content-sm-center mb-1 mt-1">
 	<div class="col-md-2">
 		<div class="d-flex justify-content-sm-center">
@@ -42,16 +99,16 @@
 			<table class="table table-sm table-golden" id="tbValores">
 				<thead>
 					<tr class="header">
-						<th style="width:15%;" class="col-header-small align-center tiny-row">Fecha Valor</th>
-						<th style="width:15%;" class="col-header-small align-center tiny-row">Fecha Carga</th>
-						<th style="width:40%;" class="col-header-small align-center tiny-row">@col1</th>
-						<th style="width:10%;" class="col-header-small align-center tiny-row">@col2</th>
-						<th style="width:10%;" class="col-header-small align-center tiny-row">@col3</th>
-						<th style="width:10%;" class="col-header-small align-center tiny-row">Importe</th>
+						<th style="width:15%;" class="align-center">Fecha Valor</th>
+						<th style="width:15%;" class="align-center">Fecha Carga</th>
+						<th style="width:40%;" class="align-center">@col1</th>
+						<th style="width:10%;" class="align-center">@col2</th>
+						<th style="width:10%;" class="align-center">@col3</th>
+						<th style="width:10%;" class="align-center">Importe</th>
 						<th style="width:2%;padding: 0;text-align-last: center;vertical-align: middle;"><input name="select_all" value="1" type="checkbox"></th>
-						<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">dia_movi</th>
-						<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">fc_compte</th>
-						<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">fc_item</th>
+						<th style="width:0%;display:none;" class="align-center">dia_movi</th>
+						<th style="width:0%;display:none;" class="align-center">fc_compte</th>
+						<th style="width:0%;display:none;" class="align-center">fc_item</th>
 					</tr>
 				</thead>
 				<tbody>
