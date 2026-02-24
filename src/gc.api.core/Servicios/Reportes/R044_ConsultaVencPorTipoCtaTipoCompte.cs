@@ -103,8 +103,7 @@ namespace gc.api.core.Servicios.Reportes
 
 				pdf.Open();
 
-				#region Lista de Cheques Emitidos Propios
-				///TODO MARCE: Seguir aca, generar el reporte, verificar si los datos estan llegando bien en el metodo ObtenerDatos
+				#region Lista 
 				HelperPdf.CargarVencimientoPorTipoDeComprobante(pdf, registros, chico, normalBold);
 				#endregion
 

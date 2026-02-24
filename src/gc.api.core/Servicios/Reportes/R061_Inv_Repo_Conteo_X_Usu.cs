@@ -99,7 +99,7 @@ namespace gc.api.core.Servicios.Reportes
 
 				pdf.Open();
 
-				#region Lista de Cheques Emitidos Propios
+				#region Lista 
 				HelperPdf.CargarRepoConteoPorUsu(pdf, registros, chico, normalBold);
 				#endregion
 

@@ -144,6 +144,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
+using static gc.infraestructura.Helpers.GridHelper;
 
 
 namespace gc.infraestructura.Helpers
@@ -1944,7 +1945,7 @@ namespace gc.infraestructura.Helpers
 					x.p_id,
 					x.p_desc?.Trim() ?? "",
 					x.p_id_prov,
-					x.ocd_plista.ToString("N2"),
+					GridHelper.FormatearPrecio(x.ocd_plista, TipoPrecio.Lista),
 					x.ocd_dto1.ToString("N2"),
 					x.ocd_dto2.ToString("N2"),
 					x.ocd_dto3.ToString("N2"),
@@ -1953,9 +1954,9 @@ namespace gc.infraestructura.Helpers
 					x.ocd_unidad_x_bulto.ToString(),
 					x.ocd_cantidad.ToString(),
 					x.ocd_bonificacion.ToString(),
-					x.ocd_pcosto.ToString("N2"),
+					GridHelper.FormatearPrecio(x.ocd_pcosto, TipoPrecio.Costo),
 					(x.ocd_cantidad + x.ocd_bonificacion).ToString(),
-					x.ocd_pcosto_tot.ToString("N2")
+					GridHelper.FormatearPrecio(x.ocd_pcosto_tot, TipoPrecio.Costo)
 				};
 
 				foreach (var val in valores)
@@ -3487,12 +3488,6 @@ namespace gc.infraestructura.Helpers
 			{
 				var primer = grupo.First();
 
-				// Nueva hoja por empleado
-				//if (!esPrimeraPagina)
-				//	pdf.NewPage();
-				//else
-				//	esPrimeraPagina = false;
-
 				// Tabla de anticipos/documentos
 				var tabla = new PdfPTable(6) { WidthPercentage = 100 };
 				tabla.SetWidths(new float[] { 30, 10, 10, 10, 20, 20 });
@@ -3779,8 +3774,8 @@ namespace gc.infraestructura.Helpers
 							tabla.AddCell(new PdfPCell(new Phrase(producto.stk.ToString("0.00"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
 						else
 							tabla.AddCell(new PdfPCell(new Phrase(producto.stk.ToString("0"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
-						//tabla.AddCell(new PdfPCell(new Phrase(producto.stk.ToString("0.000"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
-						tabla.AddCell(new PdfPCell(new Phrase(producto.p_pcosto.ToString("0.000"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+						
+						tabla.AddCell(new PdfPCell(new Phrase(GridHelper.FormatearPrecio(producto.p_pcosto, TipoPrecio.Costo), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
 						tabla.AddCell(new PdfPCell(new Phrase(valStr, fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
 						tabla.AddCell(new PdfPCell(new Phrase(producto.porc_rub?.ToString("N6"), fuenteValor)) { HorizontalAlignment = Element.ALIGN_RIGHT });
 					}
@@ -4774,7 +4769,7 @@ namespace gc.infraestructura.Helpers
 				// Checkbox
 				string chk = item.ps_ajuste == 'S' ? "✔" : "✘";
 				tabla.AddCell(CeldaDato(chk, fChico, fondo, Element.ALIGN_CENTER));
-				tabla.AddCell(CeldaDato(item.ps_stk.ToString("N2"), fChico, fondo, Element.ALIGN_RIGHT));
+				tabla.AddCell(CeldaDato(GridHelper.FormatearDato(item.ps_stk, GridHelper.FormatDato.Monto, item.PermiteDecimales), fChico, fondo, Element.ALIGN_RIGHT));
 				tabla.AddCell(CeldaDato(item.conteo1.ToString("N2"), fChico, fondo, Element.ALIGN_RIGHT));
 
 				if (incluyeGrupo2)
