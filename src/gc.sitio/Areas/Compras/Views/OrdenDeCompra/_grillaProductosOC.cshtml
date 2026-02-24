@@ -194,8 +194,8 @@
 						</td>
 						<td class="@Model.ListaOC.ObtenerClase(item.pedido_mas_boni)  align-right">@GridHelper.FormatearDato(item.pedido_mas_boni, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td> @*16*@
 						@*<td class="@Model.ListaOC.ObtenerClase(item.p_pcosto)">@Model.ListaOC.FormatearDato(item.p_pcosto, FormatDato.Monto)</td> 17 revisar el formato*@ 
-						<td class="@Model.ListaOC.ObtenerClase(item.p_pcosto)">@item.p_pcosto.ToString("#,##0.000")</td>
-						<td class="@Model.ListaOC.ObtenerClase(item.p_pcosto_total)">@Model.ListaOC.FormatearDato(item.p_pcosto_total, FormatDato.Monto)</td> @*18*@
+						<td class="@Model.ListaOC.ObtenerClase(item.p_pcosto)">@GridHelper.FormatearPrecio(item.p_pcosto, TipoPrecio.Costo)</td>
+						<td class="@Model.ListaOC.ObtenerClase(item.p_pcosto_total)">@GridHelper.FormatearPrecio(item.p_pcosto_total, TipoPrecio.Costo)</td> @*18*@
 						<td class="@Model.ListaOC.ObtenerClase(item.paletizado)">@item.paletizado.ToString("0.##")</td> @*19*@
 						<td class="text-center">
 							<a class="btn btn-xs btn-danger" data-interaction="@item.p_id" onclick="quitarProductoEnOC(this);">

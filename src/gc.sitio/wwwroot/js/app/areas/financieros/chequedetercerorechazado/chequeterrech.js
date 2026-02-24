@@ -105,12 +105,16 @@ function btnCancelValidar() {
 }
 
 function btnBuscarValidar() {
+	let valFechas = ValidarFechasEnIndex();
 	if (CuentaBancariaSelected == "") {
 		AbrirMensaje("ATENCIÓN", "Debe seleccionar una cuenta bancaria.", function () {
 			$("#msjModal").modal("hide");
 			$("#ListaCuentaBancaria").trigger("focus");
 			return true;
 		}, false, ["Aceptar"], "error!", null);
+	}
+	else if (valFechas) {
+		return false;
 	}
 	else {
 		var fechaDesde = $("#fechaDesde").val();
@@ -176,11 +180,11 @@ function onChangeFechaRechazado(x) {
 }
 
 function onChangeFechaDesde(x) {
-	ValidarFechasEnIndex();
+	//ValidarFechasEnIndex();
 }
 
 function onChangeFechaHasta(x) {
-	ValidarFechasEnIndex();
+	//ValidarFechasEnIndex();
 }
 
 function ValidarFechasEnIndex() {
@@ -207,6 +211,7 @@ function ValidarFechasEnIndex() {
 			}, false, ["Aceptar"], "error!", null);
 		}
 	}
+	return false;
 }
 
 function selectReg(x, gridId) {

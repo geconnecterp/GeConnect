@@ -67,6 +67,8 @@ function ControlaListaCtaDir() {
 	}
 }
 
+function selectListaValidacionesPrev(e) { }
+
 function btnAgregarConceptoCancelatoriobtnAgregarConceptoCancelatorio() {
 	var ctagSelected = $("#listaCtaDir").val();
 	if (ctagSelected != "") {

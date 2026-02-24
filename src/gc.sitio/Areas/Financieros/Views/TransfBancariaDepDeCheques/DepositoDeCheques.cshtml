@@ -64,10 +64,10 @@
 					<span class="input-group-text">Acreditación: </span>
 					@Html.TextBoxFor(m => m.acreditacion, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeAcreditacion(this);", @id = "fechaAcreditacion", style = "width: 110px;max-width: 110px;" })
 					@Html.DropDownList("id", list, "Seleccionar...", new { @id = "listaIntervalo", @class = "form-control", style = "width: 75px;max-width: 75px;" })
-					<button id="btnAbmAceptar" class="btn btn-success btn-sm me-1" type="button" title="Aceptar" style="margin-left: 10px;">
+					<button id="btnAbmAceptar" class="btn btn-success btn-sm me-1" type="button" title="Aceptar" style="margin-left: 10px;z-index:1;">
 						<i class="bx bx-badge-check"></i>Confirmar
 					</button>
-					<button id="btnAbmCancelar" class="btn btn-danger btn-sm me-1" type="button" title="Cancelar">
+					<button id="btnAbmCancelar" class="btn btn-danger btn-sm me-1" type="button" title="Cancelar" style="z-index:1;">
 						<i class="bx bx-x-circle"></i>Cancelar
 					</button>
 				</div>

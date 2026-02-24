@@ -11,6 +11,56 @@
 		top: 0px;
 	}
 
+	#containerListaValorizacion {
+		position: relative;
+		height: 300px;
+		max-height: 300px;
+		overflow-y: auto;
+		overflow-x: auto;
+		z-index: auto;
+	}
+
+	.table-golden {
+		border-collapse: separate;
+		border-spacing: 0;
+		table-layout: fixed;
+	}
+
+		.table-golden thead {
+			position: sticky;
+			top: 0;
+			z-index: 1;
+			background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+			color: #fff !important;
+		}
+
+			.table-golden thead th {
+				position: sticky;
+				top: 0;
+				z-index: 4;
+				background: linear-gradient(to bottom, #b8860b, #daa520);
+				color: #fff;
+				box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+				background-clip: padding-box;
+			}
+
+			.table-golden thead,
+			.table-golden thead th {
+			}
+
+	#tbListaValorizacion td {
+		padding: 0.01rem 0.15rem !important;
+		line-height: 1.2 !important;
+		height: auto !important;
+	}
+
+	#tbListaValorizacion thead th {
+	}
+
+	#tbListaValorizacion tr {
+		height: 1.6rem !important;
+	}
+
 	fieldset {
 		margin: 8px;
 		border: 1px solid silver;
@@ -39,20 +89,20 @@
 	@Html.Hidden("tco_id", Model.DescFinanc.tco_id)
 	<div id="divListaValorizacion">
 		<div class="table-responsive table-wrapper-400-full-width" id="containerListaValorizacion">
-			<table class="table table-bordered table-hover table-golden" id="tbListaValorizacion">
+			<table class="table table-sm table-golden" id="tbListaValorizacion">
 				<thead>
 					<tr class="header">
-						<th style="width:20%;" class="col-header-small align-center tiny-row">Comprobante</th>
-						<th style="width:5%;" class="col-header-small align-center tiny-row">No Gravado</th>
-						<th style="width:5%;" class="col-header-small align-center tiny-row">Exento</th>
-						<th style="width:5%;" class="col-header-small align-center tiny-row">Gravado</th>
-						<th style="width:5%;" class="col-header-small align-center tiny-row">IVA</th>
-						<th style="width:5%;" class="col-header-small align-center tiny-row">II</th>
-						<th style="width:5%;" class="col-header-small align-center tiny-row">Percep.</th>
-						<th style="width:5%;" class="col-header-small align-center tiny-row">Otros NG</th>
-						<th style="width:5%;" class="col-header-small align-center tiny-row">Total</th>
-						<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">resultado</th>
-						<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">resultado_msj</th>
+						<th style="width:20%;" class="align-center">Comprobante</th>
+						<th style="width:5%;" class="align-center">No Gravado</th>
+						<th style="width:5%;" class="align-center">Exento</th>
+						<th style="width:5%;" class="align-center">Gravado</th>
+						<th style="width:5%;" class="align-center">IVA</th>
+						<th style="width:5%;" class="align-center">II</th>
+						<th style="width:5%;" class="align-center">Percep.</th>
+						<th style="width:5%;" class="align-center">Otros NG</th>
+						<th style="width:5%;" class="align-center">Total</th>
+						<th style="width:0%;display:none;" class="align-center">resultado</th>
+						<th style="width:0%;display:none;" class="align-center">resultado_msj</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -98,13 +148,13 @@
 								<table class="drageable-table table table-bordered table-hover table-golden" id="tbListaDescFinanc">
 									<thead>
 										<tr class="header">
-											<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">Item</th>
-											<th style="width:15%;" class="col-header-small align-center tiny-row">Neto Fijo</th>
-											<th style="width:15%;" class="col-header-small align-center tiny-row">Dto/Tot</th>
-											<th style="width:25%;" class="col-header-small align-center tiny-row">Concepto</th>
-											<th style="width:15%;" class="col-header-small align-center tiny-row">Dto %</th>
-											<th style="width:15%;" class="col-header-small align-center tiny-row">Neto</th>
-											<th style="width:15%;" class="col-header-small align-center tiny-row"></th>
+											<th style="width:0%;display:none;" class="align-center">Item</th>
+											<th style="width:15%;" class="align-center">Neto Fijo</th>
+											<th style="width:15%;" class="align-center">Dto/Tot</th>
+											<th style="width:25%;" class="align-center">Concepto</th>
+											<th style="width:15%;" class="align-center">Dto %</th>
+											<th style="width:15%;" class="align-center">Neto</th>
+											<th style="width:15%;" class="align-center"></th>
 										</tr>
 									</thead>
 									<tbody>

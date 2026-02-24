@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,17 +9,27 @@ namespace gc.infraestructura.Helpers
 {
     public static class GridHelper
     {
-        /// <summary>
-        /// Obtiene la clase de alineación CSS adecuada para un dato específico según su tipo.
-        /// </summary>
-        /// <param name="dato">El dato para el cual se determinará la clase de alineación. Puede ser nulo.</param>
-        /// <returns>
-        /// Una cadena que representa la clase de alineación CSS:
-        /// - "text-sm-start" para cadenas, valores nulos u otros tipos no especificados.
-        /// - "text-sm-center" para caracteres y fechas (DateTime o DateTime?).
-        /// - "text-sm-end" para tipos numéricos.
-        /// </returns>
-        public static string ObtenerClaseAlineacion(object? dato)
+		private static readonly NumberFormatInfo PrecioNumberFormat;
+
+		static GridHelper()
+		{
+			// Clonamos Invariant y seteamos separadores a mano
+			PrecioNumberFormat = (NumberFormatInfo)CultureInfo.InvariantCulture.NumberFormat.Clone();
+			PrecioNumberFormat.NumberDecimalSeparator = ".";
+			PrecioNumberFormat.NumberGroupSeparator = ",";
+		}
+
+		/// <summary>
+		/// Obtiene la clase de alineación CSS adecuada para un dato específico según su tipo.
+		/// </summary>
+		/// <param name="dato">El dato para el cual se determinará la clase de alineación. Puede ser nulo.</param>
+		/// <returns>
+		/// Una cadena que representa la clase de alineación CSS:
+		/// - "text-sm-start" para cadenas, valores nulos u otros tipos no especificados.
+		/// - "text-sm-center" para caracteres y fechas (DateTime o DateTime?).
+		/// - "text-sm-end" para tipos numéricos.
+		/// </returns>
+		public static string ObtenerClaseAlineacion(object? dato)
         {
             if (dato == null) return "text-sm-start";
 
@@ -55,7 +66,12 @@ namespace gc.infraestructura.Helpers
         {
             if (dato == null) return string.Empty;
 
-            if (dato is DateTime fecha)
+			// Formato numérico requerido
+			var nfi = (NumberFormatInfo)CultureInfo.InvariantCulture.NumberFormat.Clone();
+			nfi.NumberDecimalSeparator = ".";
+			nfi.NumberGroupSeparator = ",";
+
+			if (dato is DateTime fecha)
             {
                 return formato switch
                 {
@@ -75,12 +91,13 @@ namespace gc.infraestructura.Helpers
 
             if (dato is decimal d && formato == FormatDato.Monto)
             {
-                if (!permiteDecimales)
-                    return ((int)d).ToString("N0");
-				return d.ToString("N2");
-            }
+				if (!permiteDecimales)
+					return d.ToString("N0", nfi);   // SIN decimales, miles con coma
 
-            return dato.ToString() ?? string.Empty;
+				return d.ToString("N2", nfi);       // CON decimales, miles con coma
+			}
+
+			return dato.ToString() ?? string.Empty;
         }
 
         public static string FormatearDato(object? dato)
@@ -107,6 +124,29 @@ namespace gc.infraestructura.Helpers
             Monto,
             Entero
         }
-    }
+
+		public static string FormatearPrecio(decimal valor, TipoPrecio tipo)
+		{
+			int decimales = tipo switch
+			{
+				TipoPrecio.Lista => 3,
+				TipoPrecio.Costo => 3,
+				TipoPrecio.Neto => 3,
+				TipoPrecio.Venta => 2,
+				_ => 2
+			};
+
+			return valor.ToString($"N{decimales}", PrecioNumberFormat);
+		}
+
+		public enum TipoPrecio
+		{
+			Lista,
+			Costo,
+			Neto,
+			Venta
+		}
+
+	}
 }
 

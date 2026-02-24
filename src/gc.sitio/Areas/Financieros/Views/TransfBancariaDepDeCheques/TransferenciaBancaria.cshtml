@@ -61,10 +61,10 @@
 					<input type="text" asp-for="concepto" class="form-control inputEditable" />
 					<span class="input-group-text">Fecha: </span>
 					@Html.TextBoxFor(m => m.fecha, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeFecha(this);", @id = "fecha",style = "width:105px; max-width:105px;" })
-					<button id="btnAbmAceptar" class="btn btn-success btn-sm me-1" type="button" title="Aceptar" style="margin-left: 10px;">
+					<button id="btnAbmAceptar" class="btn btn-success btn-sm me-1" type="button" title="Aceptar" style="margin-left: 10px;z-index:1;">
 						<i class="bx bx-badge-check"></i>Confirmar
 					</button>
-					<button id="btnAbmCancelar" class="btn btn-danger btn-sm me-1" type="button" title="Cancelar">
+					<button id="btnAbmCancelar" class="btn btn-danger btn-sm me-1" type="button" title="Cancelar" style="z-index:1;">
 						<i class="bx bx-x-circle"></i>Cancelar
 					</button>
 				</div>

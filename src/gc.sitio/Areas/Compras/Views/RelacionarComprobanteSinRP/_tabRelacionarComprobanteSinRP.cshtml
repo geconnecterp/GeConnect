@@ -9,22 +9,85 @@
 		position: sticky;
 		top: 0px;
 	}
+
+	#containerListaComprobantes, #containerListaRP {
+		position: relative;
+		height: 500px;
+		max-height: 500px;
+		overflow-y: auto;
+		overflow-x: auto;
+		z-index: auto;
+	}
+
+	.table-golden {
+		border-collapse: separate;
+		border-spacing: 0;
+		table-layout: fixed;
+	}
+
+		.table-golden thead {
+			position: sticky;
+			top: 0;
+			z-index: 1;
+			background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+			color: #fff !important;
+		}
+
+			.table-golden thead th {
+				position: sticky;
+				top: 0;
+				z-index: 4;
+				background: linear-gradient(to bottom, #b8860b, #daa520);
+				color: #fff;
+				box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+				background-clip: padding-box;
+			}
+
+			.table-golden thead,
+			.table-golden thead th {
+			}
+
+	#tbListaComprobantes td {
+		padding: 0.01rem 0.15rem !important;
+		line-height: 1.2 !important;
+		height: auto !important;
+	}
+
+	#tbListaComprobantes thead th {
+	}
+
+	#tbListaComprobantes tr {
+		height: 1.6rem !important;
+	}
+
+	#tbListaRP td {
+		padding: 0.01rem 0.15rem !important;
+		line-height: 1.2 !important;
+		height: auto !important;
+	}
+
+	#tbListaRP thead th {
+	}
+
+	#tbListaRP tr {
+		height: 1.6rem !important;
+	}
 </style>
 <div class="row" style="padding-top: 10px;">
 	<div class="col-6">
 		<div class="table-responsive table-wrapper-400-full-width" id="containerListaComprobantes">
-			<table class="table table-bordered table-hover table-golden" id="tbListaComprobantes">
+			<table class="table tabletable-sm table-golden" id="tbListaComprobantes">
 				<thead>
 					<tr class="header">
-						<th style="width:20%;" class="col-header-small align-center tiny-row">Comprobante</th>
-						<th style="width:5%;" class="col-header-small align-center tiny-row">Vencimiento</th>
-						<th style="width:5%;" class="col-header-small align-center tiny-row">Cargado</th>
-						<th style="width:5%;" class="col-header-small align-center tiny-row">Importe</th>
-						<th style="width:5%;" class="col-header-small align-center tiny-row">Obs.</th>
+						<th style="width:20%;" class="align-center">Comprobante</th>
+						<th style="width:5%;" class="align-center">Vencimiento</th>
+						<th style="width:5%;" class="align-center">Cargado</th>
+						<th style="width:5%;" class="align-center">Importe</th>
+						<th style="width:5%;" class="align-center">Obs.</th>
 						<th style="width:1%;padding: 0;text-align-last: center;vertical-align: middle;"><input name="select_all" value="1" type="checkbox"></th>
-						<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">tco_id</th>
-						<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">dia_movi</th>
-						<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cm_compte</th>
+						<th style="width:0%;display:none;" class="align-center">tco_id</th>
+						<th style="width:0%;display:none;" class="align-center">dia_movi</th>
+						<th style="width:0%;display:none;" class="align-center">cm_compte</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -60,17 +123,17 @@
 	</div>
 	<div class="col-6">
 		<div class="table-responsive table-wrapper-400-full-width" id="containerListaRP">
-			<table class="table table-bordered table-hover table-golden" id="tbListaRP">
+			<table class="table table-sm table-golden" id="tbListaRP">
 				<thead>
 					<tr class="header">
-						<th style="width:20%;" class="col-header-small align-center tiny-row">Comprobante</th>
-						<th style="width:5%;" class="col-header-small align-center tiny-row">RP N°</th>
-						<th style="width:5%;" class="col-header-small align-center tiny-row">Fecha</th>
-						<th style="width:5%;" class="col-header-small align-center tiny-row">Sucursal</th>
-						<th style="width:5%;" class="col-header-small align-center tiny-row">Importe</th>
+						<th style="width:20%;" class="align-center">Comprobante</th>
+						<th style="width:5%;" class="align-center">RP N°</th>
+						<th style="width:5%;" class="align-center">Fecha</th>
+						<th style="width:5%;" class="align-center">Sucursal</th>
+						<th style="width:5%;" class="align-center">Importe</th>
 						<th style="width:1%;padding: 0;text-align-last: center;vertical-align: middle;"><input name="select_all" value="1" type="checkbox"></th>
-						<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cm_compte_rp</th>
-						<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">dia_movi</th>
+						<th style="width:0%;display:none;" class="align-center">cm_compte_rp</th>
+						<th style="width:0%;display:none;" class="align-center">dia_movi</th>
 					</tr>
 				</thead>
 				<tbody>

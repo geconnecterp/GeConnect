@@ -1,4 +1,5 @@
-﻿@using static gc.infraestructura.Constantes.Constantes
+﻿@using static gc.infraestructura.Helpers.GridHelper
+@using static gc.infraestructura.Constantes.Constantes
 @model CargarOcBuscarProductoModel
 @{
 	var lista = new List<ComboGenDto>();
@@ -132,7 +133,7 @@
 						<td class="@Model.grillaDatos.ObtenerClase(item.stk)">@GridHelper.FormatearDato(item.stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 						<td class="@Model.grillaDatos.ObtenerClase(item.p_unidad_pres)">@item.p_unidad_pres</td>
 						<td class="@Model.grillaDatos.ObtenerClase(item.p_unidad_palet)">@item.p_unidad_palet</td>
-						<td class="@Model.grillaDatos.ObtenerClase(item.costo)">@item.costo</td>
+						<td class="@Model.grillaDatos.ObtenerClase(item.costo)">@GridHelper.FormatearPrecio(item.costo, TipoPrecio.Costo)</td>
 						@if (item.p_activo == "D")
 						{
 							<td style="text-align: center;">
