@@ -9,233 +9,6 @@
  */
 
 $(function () {
-    $("<style>")
-        .prop("type", "text/css")
-        .html(`
-        /* Estilos para el modal del gestor documental */
-            #docmgrmodal .modal-content {
-                border: none;
-                border-radius: 8px;
-                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            }
-
-            /* CAMBIO 1: Gradiente naranja para el encabezado (similar al título de la vista) */
-            #docmgrmodal .modal-header {
-                background: linear-gradient(135deg, #b8860b 0%, #daa520 100%);
-                color: #333;
-                border-bottom: none;
-                border-radius: 8px 8px 0 0;
-                padding: 15px 20px;
-            }
-
-            /* CAMBIO 1: Adaptar color de texto del título */
-            #docmgrmodal .modal-title {
-                font-weight: 600;
-                display: flex;
-                align-items: center;
-                color: #333;
-                text-shadow: 0 1px 1px rgba(255,255,255,0.3);
-            }
-            
-            #docmgrmodal .modal-title:before {
-                content: '\\eb25';
-                font-family: 'boxicons';
-                margin-right: 10px;
-                font-size: 1.2em;
-            }
-
-            #docmgrmodal .close {
-                color: #333;
-                opacity: 0.8;
-                transition: opacity 0.2s;
-            }
-
-            #docmgrmodal .close:hover {
-                opacity: 1;
-            }
-
-            #docmgrmodal .modal-body {
-                padding: 20px;
-                background-color: #f8f9fa;
-            }
-
-            /* CAMBIO 3: Árbol de documentos más grande para mejor visualización */
-            #archivosDispuestos {
-                max-height: 500px; /* Aumentar altura máxima */
-                overflow-y: auto;
-                border: 1px solid #dee2e6;
-                border-radius: 6px;
-                padding: 10px;
-                background-color: white;
-                box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-                font-size: 1.05em; /* Aumentar tamaño de texto */
-            }
-
-            /* CAMBIO 3: Más espacio entre elementos del árbol */
-            .jstree-default .jstree-node {
-                margin-left: 20px;
-                margin-top: 3px;
-                margin-bottom: 3px;
-            }
-
-            /* CAMBIO 2: Asegurar que el icono de candado sea visible */
-            .jstree-default .jstree-icon.bx-lock-alt {
-                color: #dc3545 !important;
-                font-size: 1.1em !important;
-                opacity: 1 !important;
-                visibility: visible !important;
-            }
-            
-            /* Más espacio para los textos en los nodos */
-            .jstree-default .jstree-anchor {
-                padding-right: 10px !important;
-                line-height: 28px !important;
-                height: 28px !important;
-            }
-
-            /* Estilizar pestañas con los colores del tema principal */
-            #documentManagerTabs .nav-link {
-                border-radius: 4px 4px 0 0;
-                padding: 8px 15px;
-                font-weight: 500;
-                color: #495057;
-                transition: all 0.2s;
-            }
-            
-            #documentManagerTabs .nav-link:hover {
-                background-color: rgba(184, 134, 11, 0.1);
-            }
-
-            #documentManagerTabs .nav-link.active {
-                color: #b8860b;
-                font-weight: 600;
-                border-color: #dee2e6 #dee2e6 #fff;
-                border-bottom: 3px solid #b8860b;
-            }
-
-            #documentManagerTabs .nav-link i {
-                margin-right: 6px;
-                vertical-align: middle;
-            }
-
-            /* CAMBIO 2: Mejorar estilo de nodos deshabilitados */
-            .disabled-node {
-                color: #9da9b0 !important;
-                cursor: not-allowed !important;
-                opacity: 0.7 !important;
-                text-decoration: line-through;
-            }
-            
-            .jstree-default .jstree-disabled {
-                color: #9da9b0;
-                cursor: not-allowed;
-            }
-
-            /* CAMBIO 2: Aumentar visibilidad de los iconos en nodos deshabilitados */
-            .jstree-default .jstree-disabled > i.jstree-icon {
-                opacity: 1 !important;
-                color: #dc3545 !important;
-            }
-
-            /* Mejorar botones de acción manteniendo consistencia con el tema */
-            .doc-action-btn, 
-            #btnArchImprimir,
-            #btnEnviarEmail, 
-            #btnEnviarWhatsApp {
-                border-radius: 4px;
-                padding: 6px 16px;
-                font-weight: 500;
-                transition: all 0.2s;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                background-color: #b8860b;
-                border-color: #daa520;
-            }
-
-            #btnCancelarGD {
-                border-radius: 4px;
-                padding: 6px 16px;
-                font-weight: 500;
-                transition: all 0.2s;
-            }
-
-            #btnGenerarFile {
-                border-radius: 4px;
-                padding: 6px 16px;
-                font-weight: 500;
-                transition: all 0.2s;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                background-color: #b8860b;
-                border-color: #daa520;
-            }
-
-            .doc-action-btn:hover, 
-            #btnArchImprimir:hover,
-            #btnEnviarEmail:hover, 
-            #btnEnviarWhatsApp:hover,
-            #btnGenerarFile:hover {
-                background-color: #daa520;
-                border-color: #b8860b;
-            }
-
-            /* Estilizar los campos de formulario */
-            #docmgrmodal .form-control {
-                border-radius: 4px;
-                border: 1px solid #ced4da;
-                padding: 8px 12px;
-                transition: border-color 0.2s;
-            }
-            
-            #docmgrmodal .form-control:focus {
-                border-color: #b8860b;
-                box-shadow: 0 0 0 0.2rem rgba(184, 134, 11, 0.25);
-            }
-
-            /* Panel de contenido de pestañas */
-            #documentManagerTabs .tab-content {
-                background-color: white;
-                border: 1px solid #dee2e6;
-                border-top: none;
-                border-radius: 0 0 4px 4px;
-                padding: 20px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            }
-
-            /* Estilo especial para nodos seleccionados */
-            .jstree-clicked {
-                background-color: #faf5e6 !important;
-                box-shadow: inset 0 0 1px #b8860b !important;
-                border-radius: 3px !important;
-            }
-
-            /* Estilo para mostrar el ícono de candado al final del texto */
-            .jstree-default .disabled-node-icon {
-                margin-left: 5px;
-                font-size: 0.9em;
-                opacity: 0.8;
-                color: #999;
-                display: inline-block;
-            }
-
-            /* Estilo para los radio buttons de formato */
-            #docmgrmodal .form-check-input:checked {
-                background-color: #b8860b;
-                border-color: #b8860b;
-            }
-
-            /* Estilos para encabezados dentro del modal */
-            #docmgrmodal h5, #docmgrmodal .h5 {
-                color: #b8860b;
-                font-weight: 600;
-            }
-
-            /* Estilos consistentes para las etiquetas de formulario */
-            #docmgrmodal label {
-                color: #495057;
-                font-weight: 500;
-            }
-    `)
-        .appendTo("head");
-
     // Código para añadir efectos al abrir el modal
     $(document).on('shown.bs.modal', '#docmgrmodal', function () {
         // Animar la aparición del árbol de archivos
@@ -268,8 +41,150 @@ $(function () {
     $(document).on("click", "#btnEnviarEmail", enviarEmail);
     $(document).on("click", "#btnEnviarWhatsApp", enviarWhatsApp);
 
+    // Contador de caracteres para WhatsApp
+    $(document).on('input', '#whatsappMessage', function () {
+        const length = $(this).val().length;
+        const maxLength = 5000;
+
+        let color = 'text-muted';
+        if (length > 4000) color = 'text-warning';
+        if (length > 4800) color = 'text-danger';
+
+        $('#whatsappCharCounter')
+            .text(`${length}/${maxLength} caracteres`)
+            .attr('class', `text-muted ${color}`);
+    });
+
+    // Actualizar información de archivos para WhatsApp cuando cambia la selección
+    $(document).on('changed.jstree', '#archivosDispuestos', function () {
+        updateWhatsAppFilesInfo();
+    });
+
     inicializaArbolArchivos();
 });
+
+/**
+ * Función: Enviar mensaje por WhatsApp Web (100% Gratis - Sin Twilio)
+ */
+function enviarWhatsApp() {
+    // Validaciones básicas
+    const whatsappTo = $('#whatsappTo').val().trim();
+    const whatsappMessage = $('#whatsappMessage').val().trim();
+    
+    if (!whatsappTo) {
+        AbrirMensaje("ATENCIÓN", "Por favor ingresa un número de teléfono", function () {
+            $("#msjModal").modal("hide");
+        }, false, ["Aceptar"], "warn!", null);
+        return;
+    }
+
+    if (!whatsappMessage) {
+        AbrirMensaje("ATENCIÓN", "Por favor escribe un mensaje", function () {
+            $("#msjModal").modal("hide");
+        }, false, ["Aceptar"], "warn!", null);
+        return;
+    }
+
+    // Validar formato de número
+    const cleanNumber = whatsappTo.replace(/[\s\-\(\)]/g, '');
+    if (!cleanNumber.startsWith('+')) {
+        AbrirMensaje("ATENCIÓN", 
+            "El número debe incluir el código de país\n\nEjemplos:\n" +
+            "• Argentina: +5491123456789\n" +
+            "• México: +521234567890\n" +
+            "• Perú: +51999999999", 
+            function () {
+                $("#msjModal").modal("hide");
+            }, false, ["Aceptar"], "warn!", null);
+        return;
+    }
+
+    // Advertir sobre archivos seleccionados
+    const selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
+    if (selectedNodes.length > 0) {
+        const confirmSend = confirm(
+            '⚠️ WhatsApp Web no permite adjuntar archivos automáticamente.\n\n' +
+            'El mensaje se enviará sin adjuntos. Deberás agregarlos manualmente en WhatsApp.\n\n' +
+            '¿Continuar?'
+        );
+        if (!confirmSend) {
+            return;
+        }
+    }
+
+    AbrirWaiting("Abriendo WhatsApp Web...");
+
+    console.log('=== Abriendo WhatsApp Web ===');
+    console.log('Para:', cleanNumber);
+    console.log('Mensaje:', whatsappMessage);
+
+    $.ajax({
+        url: '/ControlComun/GestorImpresion/GenerateWhatsAppWebLink',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            To: cleanNumber,
+            Message: whatsappMessage
+        }),
+        success: function (response) {
+            CerrarWaiting();
+            console.log('Respuesta del servidor:', response);
+            
+            if (response.success && response.whatsappWebLink) {
+                // Abrir en nueva pestaña
+                const newWindow = window.open(response.whatsappWebLink, '_blank');
+                
+                if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                    AbrirMensaje("Advertencia", 
+                        '⚠️ El navegador bloqueó la ventana emergente.\n\n' +
+                        'Permite ventanas emergentes para este sitio o copia el enlace:\n' + 
+                        response.whatsappWebLink,
+                        function () {
+                            $("#msjModal").modal("hide");
+                        }, false, ["Aceptar"], "warn!", null);
+                } else {
+                    // Mostrar mensaje de éxito
+                    setTimeout(() => {
+                        AbrirMensaje("Éxito", 
+                            `✅ ${response.message}\n\n` +
+                            `📱 Destinatario: ${response.to}\n\n` +
+                            `${response.note}`,
+                            function () {
+                                $("#msjModal").modal("hide");
+                                $('#whatsappForm')[0].reset();
+                                $('#whatsappCharCounter').text('0/5000 caracteres');
+                            }, false, ["Aceptar"], "success", null);
+                    }, 500);
+                }
+            } else {
+                AbrirMensaje("Error", response.message, function () {
+                    $("#msjModal").modal("hide");
+                }, false, ["Aceptar"], "error!", null);
+            }
+        },
+        error: function (xhr, status, error) {
+            CerrarWaiting();
+            console.error('Error:', error);
+            console.error('Estado:', status);
+            console.error('Respuesta:', xhr.responseText);
+            
+            let errorMessage = '❌ Error al abrir WhatsApp Web:\n\n';
+            
+            try {
+                const errorResponse = JSON.parse(xhr.responseText);
+                errorMessage += errorResponse.message || error;
+            } catch (e) {
+                errorMessage += error;
+            }
+            
+            errorMessage += '\n\nRevisa la consola del navegador para más detalles.';
+            
+            AbrirMensaje("Error", errorMessage, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["Aceptar"], "error!", null);
+        }
+    });
+}
 
 function inicializaArbolArchivos() {
     //borramos el contenido del arbol.
@@ -314,7 +229,7 @@ function invocaGenerarArchivo() {
     }
 
     selectedNodes.forEach(function (node) {
-        if (node.data ) {
+        if (node.data) {
             var id = node.id;
             if (arrRepoParams[id - 1] !== undefined) {
                 var data1 = arrRepoParams[id - 1];
@@ -438,7 +353,6 @@ function presentarArchivos() {
             $("#archivosDispuestos").jstree("destroy").empty();
 
             // Inicializamos el árbol jsTree con configuración mejorada
-            // Inicializamos el árbol jsTree con configuración mejorada
             $("#archivosDispuestos").jstree({
                 "core": {
                     "data": jsonP,
@@ -447,7 +361,7 @@ function presentarArchivos() {
                         "dots": false,
                         "stripes": false,
                         "responsive": true,
-                        "variant": "large" // CAMBIO: Usar variante grande para los nodos
+                        "variant": "large"
                     },
                     "animation": 200
                 },
@@ -463,7 +377,7 @@ function presentarArchivos() {
                         "close_node": false,
                         "icon": "bx bx-lock-alt text-danger"
                     },
-                    "locked": { // CAMBIO: Tipo personalizado para nodos bloqueados
+                    "locked": {
                         "select_node": false,
                         "open_node": false,
                         "close_node": false,
@@ -477,7 +391,6 @@ function presentarArchivos() {
                     }
                 }
             }).on('ready.jstree', function () {
-                // CAMBIO: Aumentar el tamaño del árbol y sus elementos
                 $(this).find('.jstree-anchor').css({
                     'padding': '4px 7px',
                     'font-size': '1.05em'
@@ -497,13 +410,9 @@ function presentarArchivos() {
                     }
                 });
             });
-
-            // Código para cargar mensajes en WhatsApp y email...
-            // (código existente sin cambios)
         }
     });
 }
-
 
 /**
  * Procesa recursivamente el árbol de nodos verificando si cada nodo tiene parámetros guardados en arrRepoParams
@@ -525,13 +434,12 @@ function procesarNodosArbol(nodos) {
         if (nodo.id && !isNaN(parseInt(nodo.id)) && nodo.parent !== "#") {
             const reporteId = parseInt(nodo.id);
 
-            // Verificar si el reporte tiene parámetros guardados - MODIFICACIÓN: verificación más genérica
+            // Verificar si el reporte tiene parámetros guardados
             if (typeof arrRepoParams === 'undefined' ||
                 reporteId <= 0 ||
                 reporteId > arrRepoParams.length ||
                 arrRepoParams[reporteId - 1] === null ||
                 arrRepoParams[reporteId - 1] === undefined ||
-                // Verificar que tiene los campos mínimos necesarios
                 (arrRepoParams[reporteId - 1] && (
                     !arrRepoParams[reporteId - 1].parametros ||
                     Object.keys(arrRepoParams[reporteId - 1].parametros).length === 0
@@ -541,7 +449,6 @@ function procesarNodosArbol(nodos) {
                 nodo.state = nodo.state || {};
                 nodo.state.disabled = true;
 
-                // CAMBIO: Usar un tipo personalizado para nodos deshabilitados
                 nodo.type = "locked";
 
                 nodo.a_attr = nodo.a_attr || {};
@@ -549,7 +456,6 @@ function procesarNodosArbol(nodos) {
                 nodo.li_attr = nodo.li_attr || {};
                 nodo.li_attr.title = "Este reporte no está disponible porque no se han ejecutado sus parámetros";
 
-                // CAMBIO: Agregar emoji de candado al texto para asegurar visibilidad
                 nodo.text = nodo.text + " 🔒";
             }
         }
@@ -561,16 +467,14 @@ function procesarNodosArbol(nodos) {
     });
 }
 
-
 function imprimirArchivoSeleccionado() {
-   
+
     var selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
 
-    // Filtrar para eliminar el nodo raíz (que típicamente tiene parent = "#" o parent = null)
+    // Filtrar para eliminar el nodo raíz
     selectedNodes = selectedNodes.filter(function (node) {
         return node.parent !== "#" && node.parent !== null;
     });
-
 
     if (selectedNodes.length === 0) {
         AbrirMensaje("ATENCIÓN", "No hay archivos seleccionados para imprimir.", function () {
@@ -579,25 +483,24 @@ function imprimirArchivoSeleccionado() {
         }, false, ["Aceptar"], "error!", null);
         return;
     }
-    else {        
+    else {
         AbrirWaiting("Espere mientras se genera el archivo para imprimir...");
         selectedNodes.forEach(function (node) {
-            if (node.data) { //&& node.data.archivoB64
+            if (node.data) {
                 var id = node.id;
                 if (arrRepoParams[id - 1] !== undefined) {
                     data = arrRepoParams[id - 1];
 
-                    // Crear objeto de solicitud con nombres de propiedades que coincidan con el modelo C#
                     const solicitudReporte = {
-                        Reporte: data.reporte,  // Con mayúscula para coincidir con C#
-                        Parametros: data.parametros,  // Con mayúscula
-                        Ids: data.parametros.Ids,  // Con mayúscula
-                        Titulo: node.text,  // Con mayúscula
+                        Reporte: data.reporte,
+                        Parametros: data.parametros,
+                        Ids: data.parametros.Ids,
+                        Titulo: node.text,
                         SubTitulo: data.subTitulo,
-                        Observacion: data.observacion || "",  // Con mayúscula
-                        Formato: "P",  // Con mayúscula (PDF)
-                        LogoPath: "",  // Con mayúscula
-                        Administracion : data.administracion || administracion
+                        Observacion: data.observacion || "",
+                        Formato: "P",
+                        LogoPath: "",
+                        Administracion: data.administracion || administracion
                     };
 
                     PostGen(solicitudReporte, repoApiUrl, function (obj) {
@@ -639,19 +542,17 @@ function imprimirArchivoSeleccionado() {
                                         };
                                     }
                                 });
-
                             }
                         }
                     });
-                }                
+                }
                 else {
                     CerrarWaiting();
-
                     AbrirMensaje("Atención!", "El Informe no esta disponible, aún. Ejecutelo visualmente y recien podrá realizar la impresión del mismo.",
-                        function () {                       
+                        function () {
                             $("#msjModal").modal("hide");
-                            return true;                       
-                    }, false, ["Aceptar"], "error!", null);
+                            return true;
+                        }, false, ["Aceptar"], "error!", null);
                 }
             }
         });
@@ -677,21 +578,169 @@ function base64ToBlob(base64, mime) {
     return new Blob(byteArrays, { type: mime });
 }
 
-function enviarEmail() {
-    AbrirWaiting("Espere mientras se envia el correo electrónico...");
-    var selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
+// Configuración de proveedores
+const providerConfig = {
+    gmail: {
+        name: 'Gmail (SMTP)',
+        info: 'smtp.gmail.com:587 - TLS'
+    },
+    outlookweb: {
+        name: 'Outlook Web',
+        info: 'outlook.office.com - Deeplink'
+    },
+    outlookdesktop: {
+        name: 'Outlook Desktop',
+        info: 'Cliente local - mailto: protocol'
+    }
+};
+
+// Actualizar información cuando cambia el proveedor
+$(document).on('change', 'input[name="emailProvider"]', function () {
+    const selectedProvider = $(this).val();
+    const config = providerConfig[selectedProvider];
+
+    if (config) {
+        $('#providerInfo').text(`${config.name} (${config.info})`);
+    }
+
+    // Ocultar campos CC/BCC y advertencias
+    $('#ccBccContainer').hide();
+    $('#emailCc, #emailBcc').val('');
+    $('#fileHelp').html('<i class="bx bx-help-circle"></i> Máx: 25MB');
+
+    // Actualizar contenido del panel de advertencias
+    let warningHtml = '';
+    let warningClass = 'alert-info';
+
+    if (selectedProvider === 'outlookweb') {
+        warningClass = 'alert-info';
+        warningHtml = `
+            <strong><i class="bx bx-info-circle"></i> Outlook Web:</strong> 
+            Se abrirá una nueva pestaña con el borrador.
+            <br><small>⚠️ Requiere sesión activa. Los adjuntos se agregan manualmente en WhatsApp.</small>
+        `;
+        $('#ccBccContainer').slideDown();
+    }
+    else if (selectedProvider === 'outlookdesktop') {
+        warningClass = 'alert-warning';
+        warningHtml = `
+            <strong><i class="bx bx-exclamation-triangle"></i> Outlook Local:</strong> 
+            Se abrirá tu cliente local.
+            <br><small>⚠️ Selecciona la cuenta remitente manualmente. Adjuntos manuales.</small>
+        `;
+        $('#ccBccContainer').slideDown();
+        $('#fileHelp').html('<em class="text-muted">Adjuntos manuales</em>');
+    }
+    else {
+        // Gmail
+        warningClass = 'alert-success';
+        warningHtml = `
+            <strong><i class="bx bx-check-circle"></i> Gmail SMTP:</strong> 
+            Envío automático con adjuntos.
+            <br><small>✓ Los archivos seleccionados se adjuntan automáticamente (máx 25MB).</small>
+        `;
+    }
+
+    // Actualizar el panel de advertencias
+    $('#providerWarning')
+        .removeClass('alert-info alert-warning alert-success')
+        .addClass(warningClass)
+        .html(warningHtml);
+
+    // Actualizar información de archivos seleccionados
+    updateSelectedFilesInfo();
+});
+
+// Función mejorada para actualizar información de archivos (compacta)
+function updateSelectedFilesInfo() {
+    const selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
+    const selectedProvider = $('input[name="emailProvider"]:checked').val();
+
     if (selectedNodes.length === 0) {
-        AbrirMensaje("ATENCIÓN", "No hay archivos seleccionados para enviar por email.", function () {
-            $("#msjModal").modal("hide");
-            return true;
-        }, false, ["Aceptar"], "error!", null);
+        $('#emailFileInfo').html('Sin archivos');
         return;
     }
 
-    //inicializamos variables obteniendo los datos cargados para enviar el mail
-    var emailTo = $("#emailTo").val();
-    var emailSubject = $("#emailSubject").val();
-    var emailBody = $("#emailBody").val();
+    // Contar solo archivos (no carpetas)
+    const filesCount = selectedNodes.filter(node =>
+        node.data && node.data.archivoB64
+    ).length;
+
+    if (filesCount === 0) {
+        $('#emailFileInfo').html('Sin archivos');
+        return;
+    }
+
+    let fileText = `${filesCount} archivo${filesCount > 1 ? 's' : ''}`;
+
+    if (selectedProvider !== 'gmail') {
+        fileText += ' <span class="text-warning">(manual)</span>';
+    }
+
+    $('#emailFileInfo').html(fileText);
+}
+
+// Actualizar información de archivos cuando se cambia la selección en el árbol
+$(document).on('changed.jstree', '#archivosDispuestos', function() {
+    updateSelectedFilesInfo();
+    updateWhatsAppFilesInfo();
+});
+
+/**
+ * Función mejorada para enviar email con soporte para múltiples proveedores
+ * Soporta: Gmail SMTP, Outlook Web, Outlook Desktop
+ */
+function enviarEmail() {
+    const selectedProvider = $('input[name="emailProvider"]:checked').val();
+    
+    // Validaciones básicas
+    const emailTo = $('#emailTo').val().trim();
+    const emailSubject = $('#emailSubject').val().trim();
+    
+    if (!emailTo || !emailSubject) {
+        AbrirMensaje("ATENCIÓN", "Por favor completa los campos obligatorios (Para y Asunto)", function () {
+            $("#msjModal").modal("hide");
+        }, false, ["Aceptar"], "warn!", null);
+        return;
+    }
+
+    // ======= OUTLOOK DESKTOP: Abrir cliente local =======
+    if (selectedProvider === 'outlookdesktop') {
+        openOutlookDesktop(
+            emailTo, 
+            emailSubject, 
+            $('#emailBody').val() || '',
+            $('#emailCc').val() || '',
+            $('#emailBcc').val() || ''
+        );
+        return;
+    }
+
+    // ======= OUTLOOK WEB: Abrir cliente web =======
+    if (selectedProvider === 'outlookweb') {
+        openOutlookWeb(
+            emailTo, 
+            emailSubject, 
+            $('#emailBody').val() || '',
+            $('#emailCc').val() || '',
+            $('#emailBcc').val() || ''
+        );
+        return;
+    }
+
+    // ======= GMAIL SMTP: Envío tradicional (código existente) =======
+    AbrirWaiting("Espere mientras se envía el correo electrónico...");
+    
+    var selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
+    if (selectedNodes.length === 0) {
+        CerrarWaiting();
+        AbrirMensaje("ATENCIÓN", "No hay archivos seleccionados para enviar por email.", function () {
+            $("#msjModal").modal("hide");
+        }, false, ["Aceptar"], "warn!", null);
+        return;
+    }
+
+    var emailBody = $('#emailBody').val();
     var totalSize = 0;
     var maxSize = 25 * 1024 * 1024; // 25MB
     var archivos = [];
@@ -703,9 +752,9 @@ function enviarEmail() {
             totalSize += archivoSize;
 
             if (totalSize > maxSize) {
+                CerrarWaiting();
                 AbrirMensaje("ATENCIÓN", "El tamaño total de los archivos seleccionados excede el límite de 25MB para el envío por email.", function () {
                     $("#msjModal").modal("hide");
-                    return true;
                 }, false, ["Aceptar"], "error!", null);
                 return;
             }
@@ -729,118 +778,155 @@ function enviarEmail() {
         if (obj.error === true) {
             AbrirMensaje("Atención!", obj.msg, function () {
                 $("#msjModal").modal("hide");
-                return true;
             }, false, ["Aceptar"], "error!", null);
         } else {
-            AbrirMensaje("Éxito", "El email ha sido enviado correctamente.", function () {
+            AbrirMensaje("Éxito", "El email ha sido enviado correctamente vía Gmail SMTP.", function () {
                 $("#msjModal").modal("hide");
-                return true;
+                $('#emailForm')[0].reset();
             }, false, ["Aceptar"], "success", null);
         }
     });
 }
 
-function enviarWhatsApp() {
+/**
+ * Función: Abrir Outlook Desktop (mailto:)
+ */
+function openOutlookDesktop(to, subject, body, cc, bcc) {
+    AbrirWaiting("Abriendo Outlook Desktop...");
 
-    var selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
-    var whatsappTo = $("#whatsappTo").val();
-    var whatsappMessage = $("#whatsappMessage").val();
-    var adjuntarArchivos = $("#adjuntarArchivos").is(":checked");
-    var totalSize = 0;
-    var maxSize = 100 * 1024 * 1024; // 100MB
-    var archivos = [];
+    console.log('=== Abriendo Outlook Desktop (mailto:) ===');
+    console.log('Para:', to);
+    console.log('CC:', cc || '(ninguno)');
+    console.log('BCC:', bcc || '(ninguno)');
+    console.log('Asunto:', subject);
 
-    if (adjuntarArchivos) {
-
-        if (selectedNodes.length === 0) {
-
-            AbrirMensaje("ATENCIÓN", "No hay archivos seleccionados para enviar por WhatsApp. ¿Se CONTINUA sin archivos adjuntos?", function (resp) {
-                if (resp === "SI") {
-                    $("#adjuntarArchivos").prop("checked", false);
-                    adjuntarArchivos = false;
-                    $("#msjModal").modal("hide");
-                    return true;
-                }
-                else {
-                    $("#msjModal").modal("hide");
-                    return false;
-                }
-            }, true, ["SI", "NO"], "warn!", null);
-        }
-    }
-
-    var whatsappTo = $("#whatsappTo").val();
-    var whatsappMessage = $("#whatsappMessage").val();
-    var adjuntarArchivos = $("#adjuntarArchivos").is(":checked");
-    var totalSize = 0;
-    var maxSize = 100 * 1024 * 1024; // 100MB
-    var archivos = [];
-
-    if (adjuntarArchivos) {
-        selectedNodes.forEach(function (node) {
-            if (node.data && node.data.archivoB64) {
-                var archivoBase64 = node.data.archivoB64;
-                var archivoSize = (archivoBase64.length * (3 / 4)) - (archivoBase64.indexOf('=') > 0 ? (archivoBase64.length - archivoBase64.indexOf('=')) : 0);
-                totalSize += archivoSize;
-
-                if (totalSize > maxSize) {
-                    AbrirMensaje("ATENCIÓN", "El tamaño total de los archivos seleccionados excede el límite de 100MB para el envío por WhatsApp.", function () {
+    $.ajax({
+        url: '/ControlComun/GestorImpresion/GenerateMailtoLink',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            To: to,
+            Cc: cc,
+            Bcc: bcc,
+            Subject: subject,
+            Body: body
+        }),
+        success: function (response) {
+            CerrarWaiting();
+            console.log('Respuesta:', response);
+            
+            if (response.success && response.mailtoLink) {
+                // Redirigir al enlace mailto: (abre Outlook local)
+                window.location.href = response.mailtoLink;
+                
+                // Mostrar mensaje después de un breve delay
+                setTimeout(() => {
+                    AbrirMensaje("Éxito", `${response.message}\n\n${response.note}`, function () {
                         $("#msjModal").modal("hide");
-                        return true;
-                    }, false, ["Aceptar"], "error!", null);
-                    return;
+                        $('#emailForm')[0].reset();
+                    }, false, ["Aceptar"], "success", null);
+                }, 1000);
+            } else {
+                AbrirMensaje("Error", response.message, function () {
+                    $("#msjModal").modal("hide");
+                }, false, ["Aceptar"], "error!", null);
+            }
+        },
+        error: function (xhr, status, error) {
+            CerrarWaiting();
+            console.error('Error:', error);
+            AbrirMensaje("Error", `Error al generar enlace mailto:\n${error}`, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["Aceptar"], "error!", null);
+        }
+    });
+}
+
+/**
+ * Función: Abrir Outlook Web con CC/BCC
+ */
+function openOutlookWeb(to, subject, body, cc, bcc) {
+    AbrirWaiting("Abriendo Outlook Web...");
+
+    console.log('=== Abriendo Outlook Web ===');
+    console.log('Para:', to);
+    console.log('CC:', cc || '(ninguno)');
+    console.log('BCC:', bcc || '(ninguno)');
+    console.log('Asunto:', subject);
+
+    $.ajax({
+        url: '/ControlComun/GestorImpresion/GenerateOutlookWebLink',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            To: to,
+            Cc: cc,
+            Bcc: bcc,
+            Subject: subject,
+            Body: body
+        }),
+        success: function (response) {
+            CerrarWaiting();
+            console.log('Respuesta:', response);
+            
+            if (response.success && response.outlookWebLink) {
+                // Abrir en nueva pestaña
+                const newWindow = window.open(response.outlookWebLink, '_blank');
+                
+                if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                    AbrirMensaje("Advertencia", 
+                        '⚠️ El navegador bloqueó la ventana emergente.\n\nPermite ventanas emergentes para este sitio o copia el enlace:\n' + response.outlookWebLink,
+                        function () {
+                            $("#msjModal").modal("hide");
+                        }, false, ["Aceptar"], "warn!", null);
+                } else {
+                    // Mostrar mensaje de éxito
+                    setTimeout(() => {
+                        AbrirMensaje("Éxito", `${response.message}\n\n${response.note}`, function () {
+                            $("#msjModal").modal("hide");
+                            $('#emailForm')[0].reset();
+                        }, false, ["Aceptar"], "success", null);
+                    }, 500);
                 }
-
-                archivos.push({
-                    archivoBase64: archivoBase64,
-                    nombre: node.text
-                });
-            }
-        });
-
-        var data = {
-            archivos: archivos,
-            whatsappTo: whatsappTo,
-            whatsappMessage: whatsappMessage
-        };
-
-        PostGen(data, enviarWhatsAppUrl, function (obj) {
-            if (obj.error === true) {
-                AbrirMensaje("Atención!", obj.msg, function () {
-                    $("#msjModal").modal("hide");
-                    return true;
-                }, false, ["Aceptar"], "error!", null);
             } else {
-                window.open(obj.url, "_blank");
-                AbrirMensaje("Éxito", "El mensaje de WhatsApp ha sido enviado correctamente.", function () {
+                AbrirMensaje("Error", response.message, function () {
                     $("#msjModal").modal("hide");
-                    $("#whatsappMessage").val("");
-                    $("#whatsappTo").val("");
-                    return true;
-                }, false, ["Aceptar"], "success", null);
-            }
-        });
-    }
-    else {
-        var data = {
-            whatsappTo: whatsappTo,
-            whatsappMessage: whatsappMessage
-        };
-        PostGen(data, enviarWhatsAppUrl, function (obj) {
-            if (obj.error === false) {
-                window.open(obj.url, "_blank");
-                AbrirMensaje("Éxito", "El mensaje de WhatsApp ha sido enviado correctamente.", function () {
-                    $("#msjModal").modal("hide");
-                    $("#whatsappMessage").val("");
-                    $("#whatsappTo").val("");
-                    return true;
-                }, false, ["Aceptar"], "error!", null);
-            } else {
-                AbrirMensaje("Atención", obj.msj, function () {
-                    $("#msjModal").modal("hide");
-                    return true;
                 }, false, ["Aceptar"], "error!", null);
             }
-        });
+        },
+        error: function (xhr, status, error) {
+            CerrarWaiting();
+            console.error('Error:', error);
+            AbrirMensaje("Error", `Error al generar enlace de Outlook Web:\n${error}`, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["Aceptar"], "error!", null);
+        }
+    });
+}
+
+/**
+* Función: Actualizar información de archivos para WhatsApp
+*/
+function updateWhatsAppFilesInfo() {
+    const selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
+
+    if (selectedNodes.length === 0) {
+        $('#whatsappFileInfo').html('Sin archivos');
+        return;
     }
+
+    // Contar solo archivos (no carpetas)
+    const filesCount = selectedNodes.filter(node =>
+        node.data && node.data.archivoB64
+    ).length;
+
+    if (filesCount === 0) {
+        $('#whatsappFileInfo').html('Sin archivos');
+        return;
+    }
+
+    let fileText = `${filesCount} archivo${filesCount > 1 ? 's' : ''} seleccionado${filesCount > 1 ? 's' : ''}`;
+    fileText += ' <span class="text-warning">(se adjuntan manualmente)</span>';
+
+    $('#whatsappFileInfo').html(fileText);
 }

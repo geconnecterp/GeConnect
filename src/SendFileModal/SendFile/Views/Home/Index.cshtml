@@ -1,0 +1,172 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    
+    <button type="button" class="btn btn-primary mt-3" id="openModalBtn">
+        Abrir Modal
+    </button>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="myModalLabel">Enviar Archivo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Tabs Navigation -->
+                <ul class="nav nav-tabs" id="sendFileTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="email-tab" data-bs-toggle="tab" data-bs-target="#email-panel" type="button" role="tab" aria-controls="email-panel" aria-selected="true">
+                            <i class="bi bi-envelope"></i> Correo Electrónico
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="whatsapp-tab" data-bs-toggle="tab" data-bs-target="#whatsapp-panel" type="button" role="tab" aria-controls="whatsapp-panel" aria-selected="false">
+                            <i class="bi bi-whatsapp"></i> WhatsApp
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tabs Content -->
+                <div class="tab-content pt-3" id="sendFileTabsContent">
+                    <!-- Tab 1: Email -->
+                    <div class="tab-pane fade show active" id="email-panel" role="tabpanel" aria-labelledby="email-tab">
+                        <!-- Selector de Proveedor de Email -->
+                        <div class="mb-4 p-3 bg-light rounded">
+                            <label class="form-label fw-bold">Selecciona tu método de envío:</label>
+                            <div class="d-flex gap-3 justify-content-center mt-2 flex-wrap">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="emailProvider" id="gmailProvider" value="gmail" checked>
+                                    <label class="form-check-label" for="gmailProvider">
+                                        <span class="badge bg-danger fs-6">
+                                            <i class="bi bi-google"></i> Gmail (SMTP)
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="emailProvider" id="outlookWebProvider" value="outlookweb">
+                                    <label class="form-check-label" for="outlookWebProvider">
+                                        <span class="badge bg-primary fs-6">
+                                            <i class="bi bi-browser-edge"></i> Outlook Web
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="emailProvider" id="outlookDesktopProvider" value="outlookdesktop">
+                                    <label class="form-check-label" for="outlookDesktopProvider">
+                                        <span class="badge bg-info fs-6">
+                                            <i class="bi bi-microsoft"></i> Outlook Desktop
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                            <small class="text-muted d-block text-center mt-2">
+                                <i class="bi bi-info-circle"></i> 
+                                <span id="providerInfo">Usando Gmail (smtp.gmail.com:587 - TLS)</span>
+                            </small>
+
+                            <!-- Advertencia para Outlook Web -->
+                            <div class="alert alert-info mt-2" id="outlookWebWarning" style="display: none;">
+                                <i class="bi bi-info-circle-fill"></i> 
+                                <strong>Outlook Web:</strong> Se abrirá una nueva pestaña con el borrador precargado.
+                                <br>
+                                <small>⚠️ Requiere sesión activa en Microsoft 365. Los adjuntos deben agregarse manualmente.</small>
+                            </div>
+
+                            <!-- Advertencia para Outlook Desktop -->
+                            <div class="alert alert-warning mt-2" id="outlookDesktopWarning" style="display: none;">
+                                <i class="bi bi-exclamation-triangle-fill"></i> 
+                                <strong>Outlook Desktop:</strong> Se abrirá tu cliente de correo local instalado.
+                                <br>
+                                <small>
+                                    ⚠️ <strong>Importante:</strong><br>
+                                    • Selecciona manualmente la cuenta remitente (juanjobe@msn.com o tu@cafeamerica.com.ar)<br>
+                                    • Los adjuntos deben agregarse manualmente<br>
+                                    • No se puede preseleccionar la cuenta desde
+                                </small>
+                            </div>
+                        </div>
+
+                        <form id="emailForm">
+                            <div class="mb-3">
+                                <label for="emailTo" class="form-label">Para (Destinatario) <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="emailTo" placeholder="ejemplo@correo.com" required>
+                            </div>
+                            
+                            <!-- Campos CC/BCC (visibles solo con Outlook Web) -->
+                            <div class="mb-3" id="ccField" style="display: none;">
+                                <label for="emailCc" class="form-label">CC (Con Copia)</label>
+                                <input type="email" class="form-control" id="emailCc" placeholder="cc@correo.com (opcional)">
+                                <small class="form-text text-muted">Separa múltiples emails con punto y coma (;)</small>
+                            </div>
+                            
+                            <div class="mb-3" id="bccField" style="display: none;">
+                                <label for="emailBcc" class="form-label">BCC (Copia Oculta)</label>
+                                <input type="email" class="form-control" id="emailBcc" placeholder="bcc@correo.com (opcional)">
+                                <small class="form-text text-muted">Separa múltiples emails con punto y coma (;)</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="emailSubject" class="form-label">Asunto <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="emailSubject" placeholder="Asunto del correo" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="emailMessage" class="form-label">Mensaje</label>
+                                <textarea class="form-control" id="emailMessage" rows="4" placeholder="Escribe tu mensaje aquí..."></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="emailFile" class="form-label">Adjuntar Archivo</label>
+                                <input type="file" class="form-control" id="emailFile">
+                                <div class="form-text" id="fileHelp">Tamaño máximo: 25 MB</div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Tab 2: WhatsApp -->
+                    <div class="tab-pane fade" id="whatsapp-panel" role="tabpanel" aria-labelledby="whatsapp-tab">
+                        <!-- Advertencia de WhatsApp Web -->
+                        <div class="alert alert-info mb-3">
+                            <i class="bi bi-info-circle-fill"></i> 
+                            <strong>WhatsApp Web (100% Gratis):</strong> Se abrirá WhatsApp en tu navegador con el mensaje prellenado.
+                            <br>
+                            <small>
+                                ⚠️ <strong>Importante:</strong><br>
+                                • Debes tener WhatsApp Web activo en tu cuenta<br>
+                                • El usuario debe confirmar el envío manualmente<br>
+                                • Los archivos deben adjuntarse manualmente en WhatsApp
+                            </small>
+                        </div>
+
+                        <form id="whatsappForm">
+                            <div class="mb-3">
+                                <label for="whatsappPhone" class="form-label">Número de Teléfono</label>
+                                <input type="tel" class="form-control" id="whatsappPhone" placeholder="+51 999 999 999" required>
+                                <div class="form-text">Incluye el código de país (ej: +51)</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="whatsappMessage" class="form-label">Mensaje</label>
+                                <textarea class="form-control" id="whatsappMessage" rows="4" placeholder="Escribe tu mensaje aquí..."></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="whatsappFiles" class="form-label">Adjuntar Archivos</label>
+                                <input type="file" class="form-control" id="whatsappFiles" multiple>
+                                <div class="form-text">Puedes seleccionar múltiples archivos (máx. 16 MB c/u)</div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" id="saveModalBtn">Enviar</button>
+            </div>
+        </div>
+    </div>
+</div>

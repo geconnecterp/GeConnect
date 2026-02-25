@@ -1,17 +1,56 @@
 ﻿<div class="row">
     <div class="col-md-12">
-        <div class="form-group">
-            <label for="whatsappTo">Número de Teléfono:</label>
-            <input type="text" class="form-control" id="whatsappTo" placeholder="Ingrese el número de teléfono del destinatario">
+        <!-- Advertencia informativa -->
+        <div class="alert alert-success alert-sm py-2 mb-3">
+            <i class="bx bxl-whatsapp"></i> 
+            <strong>WhatsApp Web (100% Gratis):</strong> Se abrirá WhatsApp con el mensaje prellenado.
+            <br>
+            <small>
+                ⚠️ Debes confirmar el envío manualmente. Los archivos se adjuntan automáticamente si son pequeños.
+            </small>
         </div>
-        <div class="form-group">
-            <label for="whatsappMessage">Mensaje:</label>
-            <textarea class="form-control" id="whatsappMessage" rows="5" placeholder="Ingrese el mensaje"></textarea>
-        </div>
-        <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="adjuntarArchivos">
-            <label class="form-check-label" for="adjuntarArchivos">Adjuntar archivos seleccionados</label>
-        </div>
-        <button type="button" class="btn btn-primary mt-3" id="btnEnviarWhatsApp">Enviar</button>
+
+        <!-- Formulario de WhatsApp (Compactado) -->
+        <form id="whatsappForm">
+            <div class="mb-2">
+                <label for="whatsappTo" class="form-label mb-1">
+                    Número de Teléfono <span class="text-danger">*</span>
+                </label>
+                <input type="tel" 
+                       class="form-control form-control-sm" 
+                       id="whatsappTo" 
+                       placeholder="+54 11 2345-6789" 
+                       required>
+                <small class="text-muted">Incluye el código de país (ej: +54 para Argentina)</small>
+            </div>
+            
+            <div class="mb-2">
+                <label for="whatsappMessage" class="form-label mb-1">Mensaje</label>
+                <textarea class="form-control form-control-sm" 
+                          id="whatsappMessage" 
+                          rows="4" 
+                          placeholder="Escribe tu mensaje aquí..."
+                          maxlength="5000"></textarea>
+                <small class="text-muted" id="whatsappCharCounter">0/5000 caracteres</small>
+            </div>
+            
+            <!-- Información de archivos (compactada) -->
+            <div class="mb-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <small class="text-muted">
+                        <i class="bx bx-paperclip"></i> 
+                        <span id="whatsappFileInfo">Sin archivos</span>
+                    </small>
+                    <small class="text-muted">
+                        <i class="bx bx-help-circle"></i> 
+                        Los archivos deben agregarse manualmente
+                    </small>
+                </div>
+            </div>
+        </form>
+        
+        <button type="button" class="btn btn-success btn-sm w-100" id="btnEnviarWhatsApp">
+            <i class="bx bxl-whatsapp"></i> Abrir WhatsApp Web
+        </button>
     </div>
 </div>
