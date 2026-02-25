@@ -41,11 +41,149 @@ $(function () {
     $(document).on("click", "#btnEnviarEmail", enviarEmail);
     $(document).on("click", "#btnEnviarWhatsApp", enviarWhatsApp);
 
+    // Contador de caracteres para WhatsApp
+    $(document).on('input', '#whatsappMessage', function () {
+        const length = $(this).val().length;
+        const maxLength = 5000;
+
+        let color = 'text-muted';
+        if (length > 4000) color = 'text-warning';
+        if (length > 4800) color = 'text-danger';
+
+        $('#whatsappCharCounter')
+            .text(`${length}/${maxLength} caracteres`)
+            .attr('class', `text-muted ${color}`);
+    });
+
+    // Actualizar información de archivos para WhatsApp cuando cambia la selección
+    $(document).on('changed.jstree', '#archivosDispuestos', function () {
+        updateWhatsAppFilesInfo();
+    });
+
     inicializaArbolArchivos();
 });
 
+/**
+ * Función: Enviar mensaje por WhatsApp Web (100% Gratis - Sin Twilio)
+ */
 function enviarWhatsApp() {
+    // Validaciones básicas
+    const whatsappTo = $('#whatsappTo').val().trim();
+    const whatsappMessage = $('#whatsappMessage').val().trim();
+    
+    if (!whatsappTo) {
+        AbrirMensaje("ATENCIÓN", "Por favor ingresa un número de teléfono", function () {
+            $("#msjModal").modal("hide");
+        }, false, ["Aceptar"], "warn!", null);
+        return;
+    }
 
+    if (!whatsappMessage) {
+        AbrirMensaje("ATENCIÓN", "Por favor escribe un mensaje", function () {
+            $("#msjModal").modal("hide");
+        }, false, ["Aceptar"], "warn!", null);
+        return;
+    }
+
+    // Validar formato de número
+    const cleanNumber = whatsappTo.replace(/[\s\-\(\)]/g, '');
+    if (!cleanNumber.startsWith('+')) {
+        AbrirMensaje("ATENCIÓN", 
+            "El número debe incluir el código de país\n\nEjemplos:\n" +
+            "• Argentina: +5491123456789\n" +
+            "• México: +521234567890\n" +
+            "• Perú: +51999999999", 
+            function () {
+                $("#msjModal").modal("hide");
+            }, false, ["Aceptar"], "warn!", null);
+        return;
+    }
+
+    // Advertir sobre archivos seleccionados
+    const selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
+    if (selectedNodes.length > 0) {
+        const confirmSend = confirm(
+            '⚠️ WhatsApp Web no permite adjuntar archivos automáticamente.\n\n' +
+            'El mensaje se enviará sin adjuntos. Deberás agregarlos manualmente en WhatsApp.\n\n' +
+            '¿Continuar?'
+        );
+        if (!confirmSend) {
+            return;
+        }
+    }
+
+    AbrirWaiting("Abriendo WhatsApp Web...");
+
+    console.log('=== Abriendo WhatsApp Web ===');
+    console.log('Para:', cleanNumber);
+    console.log('Mensaje:', whatsappMessage);
+
+    $.ajax({
+        url: '/ControlComun/GestorImpresion/GenerateWhatsAppWebLink',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            To: cleanNumber,
+            Message: whatsappMessage
+        }),
+        success: function (response) {
+            CerrarWaiting();
+            console.log('Respuesta del servidor:', response);
+            
+            if (response.success && response.whatsappWebLink) {
+                // Abrir en nueva pestaña
+                const newWindow = window.open(response.whatsappWebLink, '_blank');
+                
+                if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                    AbrirMensaje("Advertencia", 
+                        '⚠️ El navegador bloqueó la ventana emergente.\n\n' +
+                        'Permite ventanas emergentes para este sitio o copia el enlace:\n' + 
+                        response.whatsappWebLink,
+                        function () {
+                            $("#msjModal").modal("hide");
+                        }, false, ["Aceptar"], "warn!", null);
+                } else {
+                    // Mostrar mensaje de éxito
+                    setTimeout(() => {
+                        AbrirMensaje("Éxito", 
+                            `✅ ${response.message}\n\n` +
+                            `📱 Destinatario: ${response.to}\n\n` +
+                            `${response.note}`,
+                            function () {
+                                $("#msjModal").modal("hide");
+                                $('#whatsappForm')[0].reset();
+                                $('#whatsappCharCounter').text('0/5000 caracteres');
+                            }, false, ["Aceptar"], "success", null);
+                    }, 500);
+                }
+            } else {
+                AbrirMensaje("Error", response.message, function () {
+                    $("#msjModal").modal("hide");
+                }, false, ["Aceptar"], "error!", null);
+            }
+        },
+        error: function (xhr, status, error) {
+            CerrarWaiting();
+            console.error('Error:', error);
+            console.error('Estado:', status);
+            console.error('Respuesta:', xhr.responseText);
+            
+            let errorMessage = '❌ Error al abrir WhatsApp Web:\n\n';
+            
+            try {
+                const errorResponse = JSON.parse(xhr.responseText);
+                errorMessage += errorResponse.message || error;
+            } catch (e) {
+                errorMessage += error;
+            }
+            
+            errorMessage += '\n\nRevisa la consola del navegador para más detalles.';
+            
+            AbrirMensaje("Error", errorMessage, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["Aceptar"], "error!", null);
+        }
+    });
 }
 
 function inicializaArbolArchivos() {
@@ -479,7 +617,7 @@ $(document).on('change', 'input[name="emailProvider"]', function () {
         warningHtml = `
             <strong><i class="bx bx-info-circle"></i> Outlook Web:</strong> 
             Se abrirá una nueva pestaña con el borrador.
-            <br><small>⚠️ Requiere sesión activa. Los adjuntos se agregan manualmente.</small>
+            <br><small>⚠️ Requiere sesión activa. Los adjuntos se agregan manualmente en WhatsApp.</small>
         `;
         $('#ccBccContainer').slideDown();
     }
@@ -545,6 +683,7 @@ function updateSelectedFilesInfo() {
 // Actualizar información de archivos cuando se cambia la selección en el árbol
 $(document).on('changed.jstree', '#archivosDispuestos', function() {
     updateSelectedFilesInfo();
+    updateWhatsAppFilesInfo();
 });
 
 /**
@@ -763,4 +902,31 @@ function openOutlookWeb(to, subject, body, cc, bcc) {
             }, false, ["Aceptar"], "error!", null);
         }
     });
+}
+
+/**
+* Función: Actualizar información de archivos para WhatsApp
+*/
+function updateWhatsAppFilesInfo() {
+    const selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
+
+    if (selectedNodes.length === 0) {
+        $('#whatsappFileInfo').html('Sin archivos');
+        return;
+    }
+
+    // Contar solo archivos (no carpetas)
+    const filesCount = selectedNodes.filter(node =>
+        node.data && node.data.archivoB64
+    ).length;
+
+    if (filesCount === 0) {
+        $('#whatsappFileInfo').html('Sin archivos');
+        return;
+    }
+
+    let fileText = `${filesCount} archivo${filesCount > 1 ? 's' : ''} seleccionado${filesCount > 1 ? 's' : ''}`;
+    fileText += ' <span class="text-warning">(se adjuntan manualmente)</span>';
+
+    $('#whatsappFileInfo').html(fileText);
 }

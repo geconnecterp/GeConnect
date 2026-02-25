@@ -473,6 +473,83 @@ namespace gc.sitio.Areas.ControlComun.Controllers
         }
 
         /// <summary>
+        /// Genera un enlace de WhatsApp Web con el mensaje prellenado (método gratuito)
+        /// </summary>
+        [HttpPost]
+        public JsonResult GenerateWhatsAppWebLink([FromBody] WhatsAppRequest request)
+        {
+            try
+            {
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { success = false, message = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+
+                // Validaciones básicas
+                if (string.IsNullOrWhiteSpace(request.To))
+                {
+                    return Json(new { success = false, message = "El número de teléfono es obligatorio" });
+                }
+
+                if (string.IsNullOrWhiteSpace(request.Message))
+                {
+                    return Json(new { success = false, message = "El mensaje es obligatorio" });
+                }
+
+                // Limpiar el número (quitar espacios, guiones, paréntesis)
+                var cleanNumber = new string(request.To.Where(c => char.IsDigit(c) || c == '+').ToArray());
+
+                // Validar que tenga código de país
+                if (!cleanNumber.StartsWith("+"))
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = "El número debe incluir el código de país (ej: +5491123456789 para Argentina)"
+                    });
+                }
+
+                // Remover el símbolo + para la URL de WhatsApp
+                var numberForUrl = cleanNumber.TrimStart('+');
+
+                // Validar longitud del mensaje (máximo 5000 caracteres recomendado)
+                if (request.Message.Length > 5000)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = "El mensaje es muy largo. Máximo recomendado: 5000 caracteres."
+                    });
+                }
+
+                // Construir URL de WhatsApp Web (API oficial - gratuita)
+                var whatsappWebUrl = $"https://wa.me/{numberForUrl}?text={Uri.EscapeDataString(request.Message)}";
+
+                _logger?.LogInformation(
+                    "Enlace de WhatsApp Web generado para {To} con mensaje de {Length} caracteres",
+                    cleanNumber,
+                    request.Message.Length
+                );
+
+                return Json(new
+                {
+                    success = true,
+                    message = "Se abrirá WhatsApp Web en una nueva pestaña",
+                    whatsappWebLink = whatsappWebUrl,
+                    to = cleanNumber,
+                    provider = "WhatsApp Web (API Oficial - Gratis)",
+                    note = "⚠️ Confirma el envío en WhatsApp. Los archivos deben adjuntarse manualmente."
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al generar enlace de WhatsApp Web");
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
         /// Clase DTO para solicitudes de mailto y Outlook Web
         /// </summary>
         public class MailtoRequest
@@ -482,6 +559,15 @@ namespace gc.sitio.Areas.ControlComun.Controllers
             public string Bcc { get; set; } = string.Empty;
             public string Subject { get; set; } = string.Empty;
             public string Body { get; set; } = string.Empty;
+        }
+
+        /// <summary>
+        /// Clase DTO para solicitudes de WhatsApp
+        /// </summary>
+        public class WhatsAppRequest
+        {
+            public string To { get; set; } = string.Empty;
+            public string Message { get; set; } = string.Empty;
         }
 
         public class ArchivoSendDto
