@@ -3201,3 +3201,71 @@ input, select, textarea, button, checkbox, radio {
 }
 
 /* FIN ESTILOS PARA GESTOR DOCUMENTAL */
+
+/* ====== ESTILOS PARA VISTA COMPACTA DE EMAIL TAB ====== */
+
+/* Botones de grupo más pequeños */
+.btn-group .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Alertas compactas */
+.alert-sm {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+/* Form controls más pequeños */
+.form-control-sm {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Labels más compactos */
+.form-label.mb-1 {
+    margin-bottom: 0.25rem !important;
+    font-size: 0.875rem;
+}
+
+/* Reducir espaciado entre elementos del formulario */
+.mb-2 {
+    margin-bottom: 0.5rem !important;
+}
+
+/* Ajustar tamaño de iconos en contexto compacto */
+#emailFileInfo i,
+#fileHelp i,
+#providerInfo i {
+    font-size: 1rem;
+}
+
+/* Panel colapsable con animación suave */
+.collapse {
+    transition: height 0.3s ease;
+}
+
+/* Botón de envío compacto pero visible */
+.btn-golden.btn-sm {
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+}
+
+/* FIN ESTILOS COMPACTOS */
+
+@media (max-width: 768px) {
+    /* Button group apilado en móvil */
+    .btn-group {
+        flex-direction: column;
+    }
+
+        .btn-group .btn-sm {
+            width: 100%;
+            margin-bottom: 0.25rem;
+        }
+
+    /* Campos CC/BCC apilados en móvil */
+    #ccBccContainer .col-md-6 {
+        width: 100%;
+    }
+}

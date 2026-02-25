@@ -44,6 +44,10 @@ $(function () {
     inicializaArbolArchivos();
 });
 
+function enviarWhatsApp() {
+
+}
+
 function inicializaArbolArchivos() {
     //borramos el contenido del arbol.
     $("#archivosDispuestos").jstree("destroy").empty();
@@ -436,20 +440,168 @@ function base64ToBlob(base64, mime) {
     return new Blob(byteArrays, { type: mime });
 }
 
-function enviarEmail() {
-    AbrirWaiting("Espere mientras se envia el correo electrónico...");
-    var selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
+// Configuración de proveedores
+const providerConfig = {
+    gmail: {
+        name: 'Gmail (SMTP)',
+        info: 'smtp.gmail.com:587 - TLS'
+    },
+    outlookweb: {
+        name: 'Outlook Web',
+        info: 'outlook.office.com - Deeplink'
+    },
+    outlookdesktop: {
+        name: 'Outlook Desktop',
+        info: 'Cliente local - mailto: protocol'
+    }
+};
+
+// Actualizar información cuando cambia el proveedor
+$(document).on('change', 'input[name="emailProvider"]', function () {
+    const selectedProvider = $(this).val();
+    const config = providerConfig[selectedProvider];
+
+    if (config) {
+        $('#providerInfo').text(`${config.name} (${config.info})`);
+    }
+
+    // Ocultar campos CC/BCC y advertencias
+    $('#ccBccContainer').hide();
+    $('#emailCc, #emailBcc').val('');
+    $('#fileHelp').html('<i class="bx bx-help-circle"></i> Máx: 25MB');
+
+    // Actualizar contenido del panel de advertencias
+    let warningHtml = '';
+    let warningClass = 'alert-info';
+
+    if (selectedProvider === 'outlookweb') {
+        warningClass = 'alert-info';
+        warningHtml = `
+            <strong><i class="bx bx-info-circle"></i> Outlook Web:</strong> 
+            Se abrirá una nueva pestaña con el borrador.
+            <br><small>⚠️ Requiere sesión activa. Los adjuntos se agregan manualmente.</small>
+        `;
+        $('#ccBccContainer').slideDown();
+    }
+    else if (selectedProvider === 'outlookdesktop') {
+        warningClass = 'alert-warning';
+        warningHtml = `
+            <strong><i class="bx bx-exclamation-triangle"></i> Outlook Local:</strong> 
+            Se abrirá tu cliente local.
+            <br><small>⚠️ Selecciona la cuenta remitente manualmente. Adjuntos manuales.</small>
+        `;
+        $('#ccBccContainer').slideDown();
+        $('#fileHelp').html('<em class="text-muted">Adjuntos manuales</em>');
+    }
+    else {
+        // Gmail
+        warningClass = 'alert-success';
+        warningHtml = `
+            <strong><i class="bx bx-check-circle"></i> Gmail SMTP:</strong> 
+            Envío automático con adjuntos.
+            <br><small>✓ Los archivos seleccionados se adjuntan automáticamente (máx 25MB).</small>
+        `;
+    }
+
+    // Actualizar el panel de advertencias
+    $('#providerWarning')
+        .removeClass('alert-info alert-warning alert-success')
+        .addClass(warningClass)
+        .html(warningHtml);
+
+    // Actualizar información de archivos seleccionados
+    updateSelectedFilesInfo();
+});
+
+// Función mejorada para actualizar información de archivos (compacta)
+function updateSelectedFilesInfo() {
+    const selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
+    const selectedProvider = $('input[name="emailProvider"]:checked').val();
+
     if (selectedNodes.length === 0) {
-        AbrirMensaje("ATENCIÓN", "No hay archivos seleccionados para enviar por email.", function () {
-            $("#msjModal").modal("hide");
-            return true;
-        }, false, ["Aceptar"], "error!", null);
+        $('#emailFileInfo').html('Sin archivos');
         return;
     }
 
-    var emailTo = $("#emailTo").val();
-    var emailSubject = $("#emailSubject").val();
-    var emailBody = $("#emailBody").val();
+    // Contar solo archivos (no carpetas)
+    const filesCount = selectedNodes.filter(node =>
+        node.data && node.data.archivoB64
+    ).length;
+
+    if (filesCount === 0) {
+        $('#emailFileInfo').html('Sin archivos');
+        return;
+    }
+
+    let fileText = `${filesCount} archivo${filesCount > 1 ? 's' : ''}`;
+
+    if (selectedProvider !== 'gmail') {
+        fileText += ' <span class="text-warning">(manual)</span>';
+    }
+
+    $('#emailFileInfo').html(fileText);
+}
+
+// Actualizar información de archivos cuando se cambia la selección en el árbol
+$(document).on('changed.jstree', '#archivosDispuestos', function() {
+    updateSelectedFilesInfo();
+});
+
+/**
+ * Función mejorada para enviar email con soporte para múltiples proveedores
+ * Soporta: Gmail SMTP, Outlook Web, Outlook Desktop
+ */
+function enviarEmail() {
+    const selectedProvider = $('input[name="emailProvider"]:checked').val();
+    
+    // Validaciones básicas
+    const emailTo = $('#emailTo').val().trim();
+    const emailSubject = $('#emailSubject').val().trim();
+    
+    if (!emailTo || !emailSubject) {
+        AbrirMensaje("ATENCIÓN", "Por favor completa los campos obligatorios (Para y Asunto)", function () {
+            $("#msjModal").modal("hide");
+        }, false, ["Aceptar"], "warn!", null);
+        return;
+    }
+
+    // ======= OUTLOOK DESKTOP: Abrir cliente local =======
+    if (selectedProvider === 'outlookdesktop') {
+        openOutlookDesktop(
+            emailTo, 
+            emailSubject, 
+            $('#emailBody').val() || '',
+            $('#emailCc').val() || '',
+            $('#emailBcc').val() || ''
+        );
+        return;
+    }
+
+    // ======= OUTLOOK WEB: Abrir cliente web =======
+    if (selectedProvider === 'outlookweb') {
+        openOutlookWeb(
+            emailTo, 
+            emailSubject, 
+            $('#emailBody').val() || '',
+            $('#emailCc').val() || '',
+            $('#emailBcc').val() || ''
+        );
+        return;
+    }
+
+    // ======= GMAIL SMTP: Envío tradicional (código existente) =======
+    AbrirWaiting("Espere mientras se envía el correo electrónico...");
+    
+    var selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
+    if (selectedNodes.length === 0) {
+        CerrarWaiting();
+        AbrirMensaje("ATENCIÓN", "No hay archivos seleccionados para enviar por email.", function () {
+            $("#msjModal").modal("hide");
+        }, false, ["Aceptar"], "warn!", null);
+        return;
+    }
+
+    var emailBody = $('#emailBody').val();
     var totalSize = 0;
     var maxSize = 25 * 1024 * 1024; // 25MB
     var archivos = [];
@@ -461,9 +613,9 @@ function enviarEmail() {
             totalSize += archivoSize;
 
             if (totalSize > maxSize) {
+                CerrarWaiting();
                 AbrirMensaje("ATENCIÓN", "El tamaño total de los archivos seleccionados excede el límite de 25MB para el envío por email.", function () {
                     $("#msjModal").modal("hide");
-                    return true;
                 }, false, ["Aceptar"], "error!", null);
                 return;
             }
@@ -487,108 +639,128 @@ function enviarEmail() {
         if (obj.error === true) {
             AbrirMensaje("Atención!", obj.msg, function () {
                 $("#msjModal").modal("hide");
-                return true;
             }, false, ["Aceptar"], "error!", null);
         } else {
-            AbrirMensaje("Éxito", "El email ha sido enviado correctamente.", function () {
+            AbrirMensaje("Éxito", "El email ha sido enviado correctamente vía Gmail SMTP.", function () {
                 $("#msjModal").modal("hide");
-                return true;
+                $('#emailForm')[0].reset();
             }, false, ["Aceptar"], "success", null);
         }
     });
 }
 
-function enviarWhatsApp() {
-    var selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
-    var whatsappTo = $("#whatsappTo").val();
-    var whatsappMessage = $("#whatsappMessage").val();
-    var adjuntarArchivos = $("#adjuntarArchivos").is(":checked");
-    var totalSize = 0;
-    var maxSize = 100 * 1024 * 1024; // 100MB
-    var archivos = [];
+/**
+ * Función: Abrir Outlook Desktop (mailto:)
+ */
+function openOutlookDesktop(to, subject, body, cc, bcc) {
+    AbrirWaiting("Abriendo Outlook Desktop...");
 
-    if (adjuntarArchivos) {
-        if (selectedNodes.length === 0) {
-            AbrirMensaje("ATENCIÓN", "No hay archivos seleccionados para enviar por WhatsApp. ¿Se CONTINUA sin archivos adjuntos?", function (resp) {
-                if (resp === "SI") {
-                    $("#adjuntarArchivos").prop("checked", false);
-                    adjuntarArchivos = false;
-                    $("#msjModal").modal("hide");
-                    return true;
-                }
-                else {
-                    $("#msjModal").modal("hide");
-                    return false;
-                }
-            }, true, ["SI", "NO"], "warn!", null);
-        }
-    }
+    console.log('=== Abriendo Outlook Desktop (mailto:) ===');
+    console.log('Para:', to);
+    console.log('CC:', cc || '(ninguno)');
+    console.log('BCC:', bcc || '(ninguno)');
+    console.log('Asunto:', subject);
 
-    if (adjuntarArchivos) {
-        selectedNodes.forEach(function (node) {
-            if (node.data && node.data.archivoB64) {
-                var archivoBase64 = node.data.archivoB64;
-                var archivoSize = (archivoBase64.length * (3 / 4)) - (archivoBase64.indexOf('=') > 0 ? (archivoBase64.length - archivoBase64.indexOf('=')) : 0);
-                totalSize += archivoSize;
-
-                if (totalSize > maxSize) {
-                    AbrirMensaje("ATENCIÓN", "El tamaño total de los archivos seleccionados excede el límite de 100MB para el envío por WhatsApp.", function () {
+    $.ajax({
+        url: '/ControlComun/GestorImpresion/GenerateMailtoLink',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            To: to,
+            Cc: cc,
+            Bcc: bcc,
+            Subject: subject,
+            Body: body
+        }),
+        success: function (response) {
+            CerrarWaiting();
+            console.log('Respuesta:', response);
+            
+            if (response.success && response.mailtoLink) {
+                // Redirigir al enlace mailto: (abre Outlook local)
+                window.location.href = response.mailtoLink;
+                
+                // Mostrar mensaje después de un breve delay
+                setTimeout(() => {
+                    AbrirMensaje("Éxito", `${response.message}\n\n${response.note}`, function () {
                         $("#msjModal").modal("hide");
-                        return true;
-                    }, false, ["Aceptar"], "error!", null);
-                    return;
+                        $('#emailForm')[0].reset();
+                    }, false, ["Aceptar"], "success", null);
+                }, 1000);
+            } else {
+                AbrirMensaje("Error", response.message, function () {
+                    $("#msjModal").modal("hide");
+                }, false, ["Aceptar"], "error!", null);
+            }
+        },
+        error: function (xhr, status, error) {
+            CerrarWaiting();
+            console.error('Error:', error);
+            AbrirMensaje("Error", `Error al generar enlace mailto:\n${error}`, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["Aceptar"], "error!", null);
+        }
+    });
+}
+
+/**
+ * Función: Abrir Outlook Web con CC/BCC
+ */
+function openOutlookWeb(to, subject, body, cc, bcc) {
+    AbrirWaiting("Abriendo Outlook Web...");
+
+    console.log('=== Abriendo Outlook Web ===');
+    console.log('Para:', to);
+    console.log('CC:', cc || '(ninguno)');
+    console.log('BCC:', bcc || '(ninguno)');
+    console.log('Asunto:', subject);
+
+    $.ajax({
+        url: '/ControlComun/GestorImpresion/GenerateOutlookWebLink',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            To: to,
+            Cc: cc,
+            Bcc: bcc,
+            Subject: subject,
+            Body: body
+        }),
+        success: function (response) {
+            CerrarWaiting();
+            console.log('Respuesta:', response);
+            
+            if (response.success && response.outlookWebLink) {
+                // Abrir en nueva pestaña
+                const newWindow = window.open(response.outlookWebLink, '_blank');
+                
+                if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                    AbrirMensaje("Advertencia", 
+                        '⚠️ El navegador bloqueó la ventana emergente.\n\nPermite ventanas emergentes para este sitio o copia el enlace:\n' + response.outlookWebLink,
+                        function () {
+                            $("#msjModal").modal("hide");
+                        }, false, ["Aceptar"], "warn!", null);
+                } else {
+                    // Mostrar mensaje de éxito
+                    setTimeout(() => {
+                        AbrirMensaje("Éxito", `${response.message}\n\n${response.note}`, function () {
+                            $("#msjModal").modal("hide");
+                            $('#emailForm')[0].reset();
+                        }, false, ["Aceptar"], "success", null);
+                    }, 500);
                 }
-
-                archivos.push({
-                    archivoBase64: archivoBase64,
-                    nombre: node.text
-                });
-            }
-        });
-
-        var data = {
-            archivos: archivos,
-            whatsappTo: whatsappTo,
-            whatsappMessage: whatsappMessage
-        };
-
-        PostGen(data, enviarWhatsAppUrl, function (obj) {
-            if (obj.error === true) {
-                AbrirMensaje("Atención!", obj.msg, function () {
-                    $("#msjModal").modal("hide");
-                    return true;
-                }, false, ["Aceptar"], "error!", null);
             } else {
-                window.open(obj.url, "_blank");
-                AbrirMensaje("Éxito", "El mensaje de WhatsApp ha sido enviado correctamente.", function () {
+                AbrirMensaje("Error", response.message, function () {
                     $("#msjModal").modal("hide");
-                    $("#whatsappMessage").val("");
-                    $("#whatsappTo").val("");
-                    return true;
-                }, false, ["Aceptar"], "success", null);
-            }
-        });
-    }
-    else {
-        var data = {
-            whatsappTo: whatsappTo,
-            whatsappMessage: whatsappMessage
-        };
-        PostGen(data, enviarWhatsAppUrl, function (obj) {
-            if (obj.error === false) {
-                window.open(obj.url, "_blank");
-                AbrirMensaje("Éxito", "El mensaje de WhatsApp ha sido enviado correctamente.", function () {
-                    $("#msjModal").modal("hide");
-                    $("#whatsappMessage").val("");
-                    $("#whatsappTo").val("");
-                    return true;
-                }, false, ["Aceptar"], "error!", null);
-            } else {
-                AbrirMensaje("Atención", obj.msj, function () {
-                    $("#msjModal").modal("hide");
-                    return true;
                 }, false, ["Aceptar"], "error!", null);
             }
-        });
-    }
+        },
+        error: function (xhr, status, error) {
+            CerrarWaiting();
+            console.error('Error:', error);
+            AbrirMensaje("Error", `Error al generar enlace de Outlook Web:\n${error}`, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["Aceptar"], "error!", null);
+        }
+    });
 }

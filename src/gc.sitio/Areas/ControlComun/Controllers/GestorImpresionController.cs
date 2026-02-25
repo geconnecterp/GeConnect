@@ -318,6 +318,172 @@ namespace gc.sitio.Areas.ControlComun.Controllers
             }
         }
 
+        /// <summary>
+        /// Genera un enlace mailto: para abrir Outlook Desktop con el borrador prellenado
+        /// </summary>
+        [HttpPost]
+        public JsonResult GenerateMailtoLink([FromBody] MailtoRequest request)
+        {
+            try
+            {
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+
+                if (string.IsNullOrWhiteSpace(request.To))
+                {
+                    return Json(new { success = false, message = "El destinatario es obligatorio" });
+                }
+
+                // Construir enlace mailto con CC/BCC
+                var mailtoBuilder = new System.Text.StringBuilder("mailto:");
+                mailtoBuilder.Append(Uri.EscapeDataString(request.To));
+
+                var queryParams = new List<string>();
+
+                // Agregar CC si existe
+                if (!string.IsNullOrWhiteSpace(request.Cc))
+                {
+                    queryParams.Add($"cc={Uri.EscapeDataString(request.Cc)}");
+                }
+
+                // Agregar BCC si existe
+                if (!string.IsNullOrWhiteSpace(request.Bcc))
+                {
+                    queryParams.Add($"bcc={Uri.EscapeDataString(request.Bcc)}");
+                }
+
+                // Agregar Subject
+                if (!string.IsNullOrWhiteSpace(request.Subject))
+                {
+                    queryParams.Add($"subject={Uri.EscapeDataString(request.Subject)}");
+                }
+
+                // Agregar Body
+                if (!string.IsNullOrWhiteSpace(request.Body))
+                {
+                    queryParams.Add($"body={Uri.EscapeDataString(request.Body)}");
+                }
+
+                if (queryParams.Count > 0)
+                {
+                    mailtoBuilder.Append("?");
+                    mailtoBuilder.Append(string.Join("&", queryParams));
+                }
+
+                var mailtoLink = mailtoBuilder.ToString();
+
+                _logger?.LogInformation(
+                    "Enlace mailto generado para {To} (CC: {Cc}, BCC: {Bcc}) con asunto '{Subject}'",
+                    request.To,
+                    request.Cc ?? "ninguno",
+                    request.Bcc ?? "ninguno",
+                    request.Subject
+                );
+
+                return Json(new
+                {
+                    success = true,
+                    message = "Se abrirá Outlook local con el borrador",
+                    mailtoLink = mailtoLink,
+                    provider = "Outlook Desktop (Cliente Local)",
+                    note = "⚠️ Debes seleccionar manualmente la cuenta remitente y adjuntar archivos manualmente."
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al generar enlace mailto");
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Genera un enlace deeplink para abrir Outlook Web con el borrador prellenado
+        /// </summary>
+        [HttpPost]
+        public JsonResult GenerateOutlookWebLink([FromBody] MailtoRequest request)
+        {
+            try
+            {
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+
+                if (string.IsNullOrWhiteSpace(request.To))
+                {
+                    return Json(new { success = false, message = "El destinatario es obligatorio" });
+                }
+
+                // Construir deeplink de Outlook Web con parámetros escapados
+                var urlBuilder = new System.Text.StringBuilder("https://outlook.office.com/mail/deeplink/compose");
+                urlBuilder.Append($"?to={Uri.EscapeDataString(request.To)}");
+
+                // Agregar CC si existe
+                if (!string.IsNullOrWhiteSpace(request.Cc))
+                {
+                    urlBuilder.Append($"&cc={Uri.EscapeDataString(request.Cc)}");
+                }
+
+                // Agregar BCC si existe
+                if (!string.IsNullOrWhiteSpace(request.Bcc))
+                {
+                    urlBuilder.Append($"&bcc={Uri.EscapeDataString(request.Bcc)}");
+                }
+
+                // Agregar Subject
+                if (!string.IsNullOrWhiteSpace(request.Subject))
+                {
+                    urlBuilder.Append($"&subject={Uri.EscapeDataString(request.Subject)}");
+                }
+
+                // Agregar Body
+                if (!string.IsNullOrWhiteSpace(request.Body))
+                {
+                    urlBuilder.Append($"&body={Uri.EscapeDataString(request.Body)}");
+                }
+
+                var outlookWebUrl = urlBuilder.ToString();
+
+                _logger?.LogInformation(
+                    "Enlace de Outlook Web generado para {To} (CC: {Cc}, BCC: {Bcc}) con asunto '{Subject}'",
+                    request.To,
+                    request.Cc ?? "ninguno",
+                    request.Bcc ?? "ninguno",
+                    request.Subject
+                );
+
+                return Json(new
+                {
+                    success = true,
+                    message = "Se abrirá Outlook Web en una nueva pestaña",
+                    outlookWebLink = outlookWebUrl,
+                    provider = "Outlook Web (Microsoft 365)",
+                    note = "⚠️ Requiere sesión activa en Microsoft 365. Los adjuntos deben agregarse manualmente."
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al generar enlace de Outlook Web");
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Clase DTO para solicitudes de mailto y Outlook Web
+        /// </summary>
+        public class MailtoRequest
+        {
+            public string To { get; set; } = string.Empty;
+            public string Cc { get; set; } = string.Empty;
+            public string Bcc { get; set; } = string.Empty;
+            public string Subject { get; set; } = string.Empty;
+            public string Body { get; set; } = string.Empty;
+        }
+
         public class ArchivoSendDto
         {
             public string archivoBase64 { get; set; } = string.Empty;
