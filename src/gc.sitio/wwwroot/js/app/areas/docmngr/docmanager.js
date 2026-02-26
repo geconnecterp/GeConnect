@@ -578,6 +578,134 @@ function base64ToBlob(base64, mime) {
     return new Blob(byteArrays, { type: mime });
 }
 
+/**
+ * ============================================
+ * FUNCIONES AUXILIARES PARA ENVÍO DE EMAIL
+ * ============================================
+ */
+
+/**
+ * Wrapper de PostGen que retorna una Promise
+ * @param {Object} data - Datos a enviar
+ * @param {string} url - URL del endpoint
+ * @returns {Promise}
+ */
+function PostGenPromise(data, url) {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            dataType: "json",
+            url: url,
+            type: "POST",
+            data: data,
+            xhrFields: {
+                withCredentials: true
+            },
+            success: resolve,
+            error: function(xhr, status, error) {
+                reject({
+                    status: xhr.status,
+                    statusText: xhr.statusText,
+                    message: error || "Error en la solicitud",
+                    responseText: xhr.responseText
+                });
+            }
+        });
+    });
+}
+
+/**
+ * Genera un PDF en tiempo real desde el servidor
+ * @param {Object} node - Nodo del árbol jsTree seleccionado
+ * @returns {Promise<Object>} - Promise con { base64, nombre, tamañoBytes }
+ */
+function generarPDFEnTiempoReal(node) {
+    return new Promise((resolve, reject) => {
+        const id = node.id;
+        
+        // Validar que existan parámetros guardados
+        if (!arrRepoParams[id - 1]) {
+            reject(new Error(`No hay parámetros guardados para "${node.text}". Debe ejecutar el reporte primero.`));
+            return;
+        }
+        
+        const data = arrRepoParams[id - 1];
+        
+        const solicitudReporte = {
+            Reporte: data.reporte,
+            Parametros: data.parametros,
+            Ids: data.parametros.Ids,
+            Titulo: node.text,
+            SubTitulo: data.subTitulo,
+            Observacion: data.observacion || "",
+            Formato: "P", // PDF
+            LogoPath: "",
+            Administracion: data.administracion || administracion
+        };
+        
+        console.log(`🔄 Generando PDF para: ${node.text}`);
+        
+        // Llamada AJAX para generar el PDF
+        PostGenPromise(solicitudReporte, repoApiUrl)
+            .then(obj => {
+                if (obj.error === true) {
+                    reject(new Error(obj.resultado_msg || "Error al generar PDF"));
+                } else if (obj.warn === true) {
+                    reject(new Error(obj.msg || "Advertencia al generar PDF"));
+                } else {
+                    // Calcular tamaño del PDF en bytes
+                    const base64 = obj.base64;
+                    const tamañoBytes = (base64.length * 3) / 4 - (base64.indexOf('=') > 0 ? (base64.length - base64.indexOf('=')) : 0);
+                    
+                    console.log(`✅ PDF generado: ${node.text} (${(tamañoBytes / 1024 / 1024).toFixed(2)} MB)`);
+                    
+                    resolve({
+                        base64: base64,
+                        nombre: node.text + ".pdf",
+                        tamañoBytes: tamañoBytes
+                    });
+                }
+            })
+            .catch(error => {
+                reject(error);
+            });
+    });
+}
+
+/**
+ * Guarda archivos grandes en el servidor y retorna enlaces
+ * @param {Array} archivos - Array de objetos { base64, nombre, tamañoBytes }
+ * @returns {Promise<Array>} - Array de { nombre, url }
+ */
+function guardarArchivosGrandesEnServidor(archivos) {
+    return new Promise((resolve, reject) => {
+        console.log(`💾 Guardando ${archivos.length} archivo(s) grande(s) en el servidor...`);
+        
+        const data = {
+            archivos: archivos.map(a => ({
+                archivoBase64: a.base64,
+                nombre: a.nombre
+            }))
+        };
+        
+        $.ajax({
+            url: '/ControlComun/GestorImpresion/GuardarArchivosGrandes',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function (response) {
+                if (response.error) {
+                    reject(new Error(response.msg || "Error al guardar archivos"));
+                } else {
+                    console.log(`✅ Archivos guardados exitosamente`);
+                    resolve(response.enlaces || []);
+                }
+            },
+            error: function (xhr, status, error) {
+                reject(new Error(`Error de red al guardar archivos: ${error}`));
+            }
+        });
+    });
+}
 // Configuración de proveedores
 const providerConfig = {
     gmail: {
@@ -603,9 +731,6 @@ $(document).on('change', 'input[name="emailProvider"]', function () {
         $('#providerInfo').text(`${config.name} (${config.info})`);
     }
 
-    // Ocultar campos CC/BCC y advertencias
-    $('#ccBccContainer').hide();
-    $('#emailCc, #emailBcc').val('');
     $('#fileHelp').html('<i class="bx bx-help-circle"></i> Máx: 25MB');
 
     // Actualizar contenido del panel de advertencias
@@ -619,7 +744,8 @@ $(document).on('change', 'input[name="emailProvider"]', function () {
             Se abrirá una nueva pestaña con el borrador.
             <br><small>⚠️ Requiere sesión activa. Los adjuntos se agregan manualmente en WhatsApp.</small>
         `;
-        $('#ccBccContainer').slideDown();
+        // NUEVO: Ocultar contenedor de archivos
+        $('#emailFileInfoContainer').hide();
     }
     else if (selectedProvider === 'outlookdesktop') {
         warningClass = 'alert-warning';
@@ -628,8 +754,9 @@ $(document).on('change', 'input[name="emailProvider"]', function () {
             Se abrirá tu cliente local.
             <br><small>⚠️ Selecciona la cuenta remitente manualmente. Adjuntos manuales.</small>
         `;
-        $('#ccBccContainer').slideDown();
         $('#fileHelp').html('<em class="text-muted">Adjuntos manuales</em>');
+        // NUEVO: Ocultar contenedor de archivos
+        $('#emailFileInfoContainer').hide();
     }
     else {
         // Gmail
@@ -639,6 +766,8 @@ $(document).on('change', 'input[name="emailProvider"]', function () {
             Envío automático con adjuntos.
             <br><small>✓ Los archivos seleccionados se adjuntan automáticamente (máx 25MB).</small>
         `;
+        // NUEVO: Mostrar contenedor de archivos
+        $('#emailFileInfoContainer').show();
     }
 
     // Actualizar el panel de advertencias
@@ -655,6 +784,15 @@ $(document).on('change', 'input[name="emailProvider"]', function () {
 function updateSelectedFilesInfo() {
     const selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
     const selectedProvider = $('input[name="emailProvider"]:checked').val();
+
+    // NUEVO: Ocultar contenedor si no es Gmail
+    if (selectedProvider !== 'gmail') {
+        $('#emailFileInfoContainer').hide();
+        return;
+    }
+
+    // NUEVO: Mostrar contenedor si es Gmail
+    $('#emailFileInfoContainer').show();
 
     if (selectedNodes.length === 0) {
         $('#emailFileInfo').html('Sin archivos');
@@ -673,10 +811,6 @@ function updateSelectedFilesInfo() {
 
     let fileText = `${filesCount} archivo${filesCount > 1 ? 's' : ''}`;
 
-    if (selectedProvider !== 'gmail') {
-        fileText += ' <span class="text-warning">(manual)</span>';
-    }
-
     $('#emailFileInfo').html(fileText);
 }
 
@@ -688,7 +822,7 @@ $(document).on('changed.jstree', '#archivosDispuestos', function() {
 
 /**
  * Función mejorada para enviar email con soporte para múltiples proveedores
- * Soporta: Gmail SMTP, Outlook Web, Outlook Desktop
+ * Soporta: Gmail SMTP (con generación en tiempo real), Outlook Web, Outlook Desktop
  */
 function enviarEmail() {
     const selectedProvider = $('input[name="emailProvider"]:checked').val();
@@ -706,32 +840,26 @@ function enviarEmail() {
 
     // ======= OUTLOOK DESKTOP: Abrir cliente local =======
     if (selectedProvider === 'outlookdesktop') {
-        openOutlookDesktop(
-            emailTo, 
-            emailSubject, 
-            $('#emailBody').val() || '',
-            $('#emailCc').val() || '',
-            $('#emailBcc').val() || ''
-        );
+        openOutlookDesktop(emailTo, emailSubject, $('#emailBody').val() || '');
         return;
     }
 
     // ======= OUTLOOK WEB: Abrir cliente web =======
     if (selectedProvider === 'outlookweb') {
-        openOutlookWeb(
-            emailTo, 
-            emailSubject, 
-            $('#emailBody').val() || '',
-            $('#emailCc').val() || '',
-            $('#emailBcc').val() || ''
-        );
+        openOutlookWeb(emailTo, emailSubject, $('#emailBody').val() || '');
         return;
     }
 
-    // ======= GMAIL SMTP: Envío tradicional (código existente) =======
-    AbrirWaiting("Espere mientras se envía el correo electrónico...");
+    // ======= GMAIL SMTP: NUEVA LÓGICA CON GENERACIÓN EN TIEMPO REAL =======
+    console.log('📧 Iniciando envío de email con Gmail SMTP...');
+    
+    AbrirWaiting("Generando archivos PDF...");
     
     var selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
+    
+    // Filtrar solo nodos hoja (archivos)
+    selectedNodes = selectedNodes.filter(node => node.parent !== "#" && node.parent !== null);
+    
     if (selectedNodes.length === 0) {
         CerrarWaiting();
         AbrirMensaje("ATENCIÓN", "No hay archivos seleccionados para enviar por email.", function () {
@@ -740,64 +868,137 @@ function enviarEmail() {
         return;
     }
 
-    var emailBody = $('#emailBody').val();
-    var totalSize = 0;
-    var maxSize = 25 * 1024 * 1024; // 25MB
-    var archivos = [];
-
-    selectedNodes.forEach(function (node) {
-        if (node.data && node.data.archivoB64) {
-            var archivoBase64 = node.data.archivoB64;
-            var archivoSize = (archivoBase64.length * (3 / 4)) - (archivoBase64.indexOf('=') > 0 ? (archivoBase64.length - archivoBase64.indexOf('=')) : 0);
-            totalSize += archivoSize;
-
-            if (totalSize > maxSize) {
-                CerrarWaiting();
-                AbrirMensaje("ATENCIÓN", "El tamaño total de los archivos seleccionados excede el límite de 25MB para el envío por email.", function () {
+    const emailBody = $('#emailBody').val();
+    const maxSize = 24 * 1024 * 1024; // 24MB (límite seguro para evitar problemas)
+    
+    console.log(`📄 Generando ${selectedNodes.length} archivo(s)...`);
+    
+    // Array de promesas para generar todos los PDFs
+    const promesas = selectedNodes.map(node => generarPDFEnTiempoReal(node));
+    
+    // Esperar a que se generen todos los PDFs
+    Promise.all(promesas)
+        .then(archivosGenerados => {
+            console.log(`✅ ${archivosGenerados.length} archivo(s) generado(s) exitosamente`);
+            
+            AbrirWaiting("Procesando archivos para envío...");
+            
+            // Separar archivos según tamaño
+            const archivosAdjuntos = [];
+            const archivosGrandes = [];
+            let totalSize = 0;
+            
+            archivosGenerados.forEach(archivo => {
+                const esPequeño = archivo.tamañoBytes < maxSize;
+                const cabeEnTotal = (totalSize + archivo.tamañoBytes) < maxSize;
+                
+                if (esPequeño && cabeEnTotal) {
+                    // Archivo pequeño → adjuntar directamente
+                    archivosAdjuntos.push({
+                        archivoBase64: archivo.base64,
+                        nombre: archivo.nombre
+                    });
+                    totalSize += archivo.tamañoBytes;
+                    console.log(`📎 Adjuntando: ${archivo.nombre} (${(archivo.tamañoBytes / 1024 / 1024).toFixed(2)} MB)`);
+                } else {
+                    // Archivo grande → guardar en servidor
+                    archivosGrandes.push(archivo);
+                    console.log(`💾 Archivo grande (se guardará en servidor): ${archivo.nombre} (${(archivo.tamañoBytes / 1024 / 1024).toFixed(2)} MB)`);
+                }
+            });
+            
+            console.log(`📊 Resumen: ${archivosAdjuntos.length} adjuntos, ${archivosGrandes.length} enlaces`);
+            
+            // Si hay archivos grandes, guardarlos en el servidor
+            if (archivosGrandes.length > 0) {
+                AbrirWaiting(`Guardando ${archivosGrandes.length} archivo(s) grande(s) en el servidor...`);
+                
+                return guardarArchivosGrandesEnServidor(archivosGrandes)
+                    .then(enlaces => {
+                        return { archivosAdjuntos, enlaces };
+                    });
+            } else {
+                return { archivosAdjuntos, enlaces: [] };
+            }
+        })
+        .then(resultado => {
+            AbrirWaiting("Enviando correo electrónico...");
+            
+            // Construir cuerpo del email
+            let cuerpoFinal = emailBody || "";
+            
+            if (resultado.enlaces.length > 0) {
+                cuerpoFinal += "\n\n" + "=".repeat(50) + "\n";
+                cuerpoFinal += "📎 ARCHIVOS ADJUNTOS (ENLACES DE DESCARGA):\n\n";
+                
+                resultado.enlaces.forEach((enlace, index) => {
+                    cuerpoFinal += `${index + 1}. ${enlace.nombre}\n`;
+                    cuerpoFinal += `   🔗 ${enlace.url}\n\n`;
+                });
+                
+                cuerpoFinal += "=".repeat(50) + "\n";
+                cuerpoFinal += "⚠️ Los enlaces son temporales y estarán disponibles por tiempo limitado.\n";
+            }
+            
+            // Enviar email
+            const data = {
+                archivos: resultado.archivosAdjuntos,
+                emailTo: emailTo,
+                emailSubject: emailSubject,
+                emailBody: cuerpoFinal
+            };
+            
+            console.log(`📤 Enviando email con ${resultado.archivosAdjuntos.length} adjunto(s)...`);
+            
+            return PostGenPromise(data, enviarEmailUrl);
+        })
+        .then(response => {
+            CerrarWaiting();
+            
+            if (response.error === true) {
+                console.error('❌ Error al enviar email:', response.msg);
+                AbrirMensaje("Error", response.msg, function () {
                     $("#msjModal").modal("hide");
                 }, false, ["Aceptar"], "error!", null);
-                return;
+            } else {
+                console.log('✅ Email enviado exitosamente');
+                AbrirMensaje("Éxito", 
+                    "✅ El email ha sido enviado correctamente vía Gmail SMTP.\n\n" +
+                    "Los archivos han sido adjuntados y/o se han incluido enlaces de descarga.",
+                    function () {
+                        $("#msjModal").modal("hide");
+                        $('#emailForm')[0].reset();
+                    }, false, ["Aceptar"], "success", null);
             }
-
-            archivos.push({
-                archivoBase64: archivoBase64,
-                nombre: node.text
-            });
-        }
-    });
-
-    var data = {
-        archivos: archivos,
-        emailTo: emailTo,
-        emailSubject: emailSubject,
-        emailBody: emailBody
-    };
-
-    PostGen(data, enviarEmailUrl, function (obj) {
-        CerrarWaiting();
-        if (obj.error === true) {
-            AbrirMensaje("Atención!", obj.msg, function () {
+        })
+        .catch(error => {
+            CerrarWaiting();
+            console.error("❌ Error al enviar email:", error);
+            
+            let errorMessage = "Error al procesar el envío:\n\n";
+            
+            if (error.message) {
+                errorMessage += error.message;
+            } else if (typeof error === 'string') {
+                errorMessage += error;
+            } else {
+                errorMessage += "Error desconocido. Revisa la consola para más detalles.";
+            }
+            
+            AbrirMensaje("Error", errorMessage, function () {
                 $("#msjModal").modal("hide");
             }, false, ["Aceptar"], "error!", null);
-        } else {
-            AbrirMensaje("Éxito", "El email ha sido enviado correctamente vía Gmail SMTP.", function () {
-                $("#msjModal").modal("hide");
-                $('#emailForm')[0].reset();
-            }, false, ["Aceptar"], "success", null);
-        }
-    });
+        });
 }
 
 /**
  * Función: Abrir Outlook Desktop (mailto:)
  */
-function openOutlookDesktop(to, subject, body, cc, bcc) {
+function openOutlookDesktop(to, subject, body) {
     AbrirWaiting("Abriendo Outlook Desktop...");
 
     console.log('=== Abriendo Outlook Desktop (mailto:) ===');
     console.log('Para:', to);
-    console.log('CC:', cc || '(ninguno)');
-    console.log('BCC:', bcc || '(ninguno)');
     console.log('Asunto:', subject);
 
     $.ajax({
@@ -806,8 +1007,6 @@ function openOutlookDesktop(to, subject, body, cc, bcc) {
         contentType: 'application/json',
         data: JSON.stringify({
             To: to,
-            Cc: cc,
-            Bcc: bcc,
             Subject: subject,
             Body: body
         }),
@@ -816,10 +1015,8 @@ function openOutlookDesktop(to, subject, body, cc, bcc) {
             console.log('Respuesta:', response);
             
             if (response.success && response.mailtoLink) {
-                // Redirigir al enlace mailto: (abre Outlook local)
                 window.location.href = response.mailtoLink;
                 
-                // Mostrar mensaje después de un breve delay
                 setTimeout(() => {
                     AbrirMensaje("Éxito", `${response.message}\n\n${response.note}`, function () {
                         $("#msjModal").modal("hide");
@@ -845,13 +1042,11 @@ function openOutlookDesktop(to, subject, body, cc, bcc) {
 /**
  * Función: Abrir Outlook Web con CC/BCC
  */
-function openOutlookWeb(to, subject, body, cc, bcc) {
+function openOutlookWeb(to, subject, body) {
     AbrirWaiting("Abriendo Outlook Web...");
 
     console.log('=== Abriendo Outlook Web ===');
     console.log('Para:', to);
-    console.log('CC:', cc || '(ninguno)');
-    console.log('BCC:', bcc || '(ninguno)');
     console.log('Asunto:', subject);
 
     $.ajax({
@@ -860,8 +1055,6 @@ function openOutlookWeb(to, subject, body, cc, bcc) {
         contentType: 'application/json',
         data: JSON.stringify({
             To: to,
-            Cc: cc,
-            Bcc: bcc,
             Subject: subject,
             Body: body
         }),
@@ -870,7 +1063,6 @@ function openOutlookWeb(to, subject, body, cc, bcc) {
             console.log('Respuesta:', response);
             
             if (response.success && response.outlookWebLink) {
-                // Abrir en nueva pestaña
                 const newWindow = window.open(response.outlookWebLink, '_blank');
                 
                 if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
@@ -880,7 +1072,6 @@ function openOutlookWeb(to, subject, body, cc, bcc) {
                             $("#msjModal").modal("hide");
                         }, false, ["Aceptar"], "warn!", null);
                 } else {
-                    // Mostrar mensaje de éxito
                     setTimeout(() => {
                         AbrirMensaje("Éxito", `${response.message}\n\n${response.note}`, function () {
                             $("#msjModal").modal("hide");

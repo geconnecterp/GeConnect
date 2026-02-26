@@ -1,5 +1,4 @@
-﻿using ClosedXML.Excel;
-using gc.api.core.Entidades;
+﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen;
@@ -9,11 +8,8 @@ using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System.Collections;
 using System.Net;
 using System.Net.Mail;
-using System.Reflection;
-using System.Text;
 
 namespace gc.sitio.Areas.ControlComun.Controllers
 {
@@ -547,6 +543,193 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                 _logger?.LogError(ex, "Error al generar enlace de WhatsApp Web");
                 return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
+        }
+
+        /// <summary>
+        /// Guarda archivos grandes en el servidor de archivos remoto y retorna enlaces públicos
+        /// </summary>
+        [HttpPost]
+        public async Task<JsonResult> GuardarArchivosGrandes([FromBody] GuardarArchivosRequest request)
+        {
+            try
+            {
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = true, msg = "Su sesión se ha terminado." });
+                }
+
+                if (request.Archivos == null || !request.Archivos.Any())
+                {
+                    return Json(new { error = true, msg = "No se recibieron archivos para guardar." });
+                }
+
+                _logger?.LogInformation("📥 Recibiendo {Cantidad} archivo(s) grande(s) para guardar", request.Archivos.Count);
+
+                var enlaces = new List<EnlaceArchivoDto>();
+                var timestamp = DateTime.Now.Ticks;
+                var cuentaId = CuentaComercialSeleccionada?.Cta_Id ?? "TEMP";
+
+                foreach (var archivo in request.Archivos)
+                {
+                    try
+                    {
+                        // Decodificar Base64
+                        var archivoBytes = Convert.FromBase64String(archivo.ArchivoBase64);
+                        
+                        // Sanitizar nombre de archivo
+                        var nombreSinExtension = Path.GetFileNameWithoutExtension(archivo.Nombre);
+                        var extension = Path.GetExtension(archivo.Nombre);
+                        var caracteresInvalidos = Path.GetInvalidFileNameChars();
+                        foreach (var c in caracteresInvalidos)
+                        {
+                            nombreSinExtension = nombreSinExtension.Replace(c, '_');
+                        }
+                        
+                        // Generar nombre único
+                        var nombreUnico = $"{nombreSinExtension}_{cuentaId}_{timestamp}{extension}";
+                        
+                        // Enviar archivo al servidor remoto
+                        var urlPublica = await EnviarArchivoAServidorRemoto(archivoBytes, nombreUnico);
+                        
+                        if (!string.IsNullOrEmpty(urlPublica))
+                        {
+                            enlaces.Add(new EnlaceArchivoDto
+                            {
+                                Nombre = archivo.Nombre,
+                                Url = urlPublica
+                            });
+                            
+                            _logger?.LogInformation(
+                                "✅ Archivo guardado en servidor remoto: {Nombre} ({Tamaño} KB) → {Url}",
+                                archivo.Nombre,
+                                archivoBytes.Length / 1024,
+                                urlPublica
+                            );
+                        }
+                        else
+                        {
+                            _logger?.LogWarning("⚠️ No se pudo guardar el archivo: {Nombre}", archivo.Nombre);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger?.LogError(ex, "❌ Error al procesar archivo: {Nombre}", archivo.Nombre);
+                    }
+                }
+
+                if (!enlaces.Any())
+                {
+                    _logger?.LogWarning("⚠️ No se pudo guardar ningún archivo");
+                    return Json(new { error = true, msg = "No se pudo guardar ningún archivo. Revisa los logs." });
+                }
+
+                _logger?.LogInformation("✅ {Cantidad} archivo(s) guardado(s) exitosamente", enlaces.Count);
+
+                return Json(new { error = false, enlaces });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "❌ Error crítico en GuardarArchivosGrandes");
+                return Json(new { error = true, msg = $"Error: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Envía un archivo al servidor remoto FileStore vía HTTP POST
+        /// </summary>
+        private async Task<string?> EnviarArchivoAServidorRemoto(byte[] archivoBytes, string nombreArchivo)
+        {
+            try
+            {
+                using var httpClient = new HttpClient();
+                httpClient.Timeout = TimeSpan.FromMinutes(10); // Timeout largo para archivos grandes
+                
+                // URL del endpoint de upload del FileStore
+                var uploadUrl = $"{_setting.RutaFileServer}api/upload";
+                
+                _logger?.LogInformation("📤 Enviando archivo al FileStore: {Nombre} ({Tamaño} KB) → {Url}", 
+                    nombreArchivo, 
+                    archivoBytes.Length / 1024,
+                    uploadUrl);
+                
+                // Crear contenido multipart/form-data
+                using var content = new MultipartFormDataContent();
+                using var fileContent = new ByteArrayContent(archivoBytes);
+                
+                // Detectar tipo MIME según extensión
+                var extension = Path.GetExtension(nombreArchivo).ToLowerInvariant();
+                var mimeType = extension switch
+                {
+                    ".pdf" => "application/pdf",
+                    ".xls" => "application/vnd.ms-excel",
+                    ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    ".txt" => "text/plain",
+                    _ => "application/octet-stream"
+                };
+                
+                fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(mimeType);
+                content.Add(fileContent, "file", nombreArchivo);
+                
+                // Enviar archivo
+                var response = await httpClient.PostAsync(uploadUrl, content);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    
+                    // Parsear respuesta JSON
+                    var jsonResponse = System.Text.Json.JsonDocument.Parse(responseContent);
+                    var urlPublica = jsonResponse.RootElement.GetProperty("url").GetString();
+                    
+                    _logger?.LogInformation("✅ Archivo subido exitosamente: {Url}", urlPublica);
+                    
+                    return urlPublica;
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger?.LogError("❌ Error al subir archivo: {StatusCode} - {Error}", 
+                        response.StatusCode, 
+                        errorContent);
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "❌ Excepción al enviar archivo al servidor remoto");
+                return null;
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // DTOs (AGREGAR AL FINAL DE LA CLASE)
+        // ═══════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// DTO para solicitud de guardar archivos grandes
+        /// </summary>
+        public class GuardarArchivosRequest
+        {
+            public List<ArchivoDto> Archivos { get; set; } = new();
+        }
+
+        /// <summary>
+        /// DTO para representar un archivo en Base64
+        /// </summary>
+        public class ArchivoDto
+        {
+            public string ArchivoBase64 { get; set; } = string.Empty;
+            public string Nombre { get; set; } = string.Empty;
+        }
+
+        /// <summary>
+        /// DTO para respuesta con enlaces de descarga
+        /// </summary>
+        public class EnlaceArchivoDto
+        {
+            public string Nombre { get; set; } = string.Empty;
+            public string Url { get; set; } = string.Empty;
         }
 
         /// <summary>
