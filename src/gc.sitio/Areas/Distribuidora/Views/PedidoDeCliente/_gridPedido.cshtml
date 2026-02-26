@@ -1,0 +1,84 @@
+﻿@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<PedidoListDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<div class="grid-golden h-100">
+	<div class="grid-golden-body p-1">
+		<div id="divPedido" class="table-responsive table-wrapper-300">
+			<table class="table table-sm table-hover mb-0 table-golden" id="tbGridPedido">
+				<thead class="sticky-top table-golden-header-compact">
+					<tr class="header">
+						<th class="text-center th-compact">ID</th>
+						<th class="text-center th-compact">Cliente</th>
+						<th class="text-center th-compact">Estado</th>
+						<th class="text-center th-compact">Generado</th>
+						<th class="text-center th-compact">Vendedor</th>
+						<th class="text-center th-compact">Repartidor</th>
+						<th class="text-center th-compact">Importe</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model?.ListaDatos?.Any() == true)
+					{
+						foreach (var item in Model.ListaDatos)
+						{
+							if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+							<tr class="@clase"
+								data-cta-id="@item.cta_id"
+								data-pc-compte="@item.pc_compte"
+								data-pce-id="@item.pce_id">
+								<td class="text-center">
+									@item.pc_compte
+								</td>
+								<td>
+									@item.cta_denominacion
+								</td>
+								<td class="text-center">
+									@item.pce_desc
+								</td>
+								<td class="text-center">
+									@item.pc_fecha.ToString("dd/MM/yy")
+								</td>
+								<td>
+									@item.ve_nombre
+								</td>
+								<td>
+									@item.rp_nombre
+								</td>
+								<td style="text-align: end;">
+									@GridHelper.FormatearPrecio(item.cm_total, TipoPrecio.Venta)
+								</td>
+							</tr>
+						}
+					}
+					else
+					{
+						<tr>
+							<td colspan="7" class="text-center text-muted py-2">
+								<i class="bx bx-info-circle me-1"></i>No hay pedidos disponibles
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+		@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Any())
+		{
+			<div class="d-flex justify-content-between align-items-center mt-3 px-2">
+				<div class="text-muted small">
+					<i class="bx bx-store me-1"></i>
+					Total: @Model.CantidadReg Pedidos disponibles
+				</div>
+				<div class="text-muted small">
+					@*  <span id="canalesSeleccionados">0</span> canales seleccionados *@
+				</div>
+				<div class="text-muted small">
+					@Model.DatoAux01
+				</div>
+			</div>
+		}
+	</div>
+</div>

@@ -95,6 +95,8 @@ namespace gc.infraestructura.Constantes
 
             public const string MEDIOS_DE_PAGO = "MEDIOS_DE_PAGO";
 			public const string CUENTA_DIRECTA = "CUENTA_DIRECTA";
+
+			public const string PEDIDO_DE_CLIENTE = "PEDIDO_DE_CLIENTE";
 		}
     }
 }
