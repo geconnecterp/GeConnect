@@ -132,6 +132,20 @@ namespace gc.sitio.Areas.Productos.Controllers
                 ObtenerRubros(_rubroServicio);
             }
 
+            #region Carga de Rubros
+            var rubs = RubroLista
+                .Select(r => new ComboGenDto
+                {
+                    Id = r.Rub_Id,
+                    Descripcion = r.Rub_Id + " - " + r.Rub_Desc
+                })
+                .ToList();
+            ViewBag.Rel02B2 = HelperMvc<ComboGenDto>.ListaGenerica(rubs);
+            ViewBag.Rel02 = HelperMvc<ComboGenDto>.ListaGenerica(rubs);
+
+            #endregion
+
+
             var listR01 = new List<ComboGenDto>();
             ViewBag.Rel011List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
 
