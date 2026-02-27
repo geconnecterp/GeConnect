@@ -132,7 +132,126 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			}
 		}
 
+		[HttpPost]
+		public async Task<IActionResult> ObtenerPedidoDatos(string pcCompte)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
+
+				if (pcCompte == null)
+				{
+					return PartialView("_gridMensaje", CrearRespuestaError("El Identificador del pedido no fue recepcionado."));
+				}
+
+				var ped = await _pedidoSv.ObtenerPedido(pcCompte, TokenCookie);
+				if (!ped.Ok)
+				{
+					throw new NegocioException(ped.Mensaje ?? "No se ha podido identificar el pedido.");
+				}
+
+				if (ped.ListaEntidad == null || ped.ListaEntidad.Count() == 0)
+				{
+					throw new NegocioException("No se encontraron los datos del Pedido de Cliente");
+				}
+
+				return PartialView("_pedidoDatos", ped.ListaEntidad[0]);
+			}
+			catch (NegocioException ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaError("Error"));
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> ObtenerPedidoProducto(string pcCompte)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
+
+				if (string.IsNullOrWhiteSpace(pcCompte))
+				{
+					return PartialView("_gridMensaje", CrearRespuestaError("El Identificador del pedido no fue recepcionado."));
+				}
+
+				var ped = await _pedidoSv.ObtenerDetalleDePedido(pcCompte, TokenCookie);
+				if (!ped.Ok)
+				{
+					throw new NegocioException(ped.Mensaje ?? "No se ha podido obtener el detalle del pedido.");
+				}
+
+				// Generar grid con productos del presupuesto
+				var productos = ped.ListaEntidad ?? [];
+				ProductosActualesEnPedido = productos;
+
+				var grid = GenerarGridPedidoProductos(productos);
+
+				return PartialView("_pedidoProds", grid);
+			}
+			catch (NegocioException ex)
+			{
+				_logger?.LogError(ex, "Error al obtener productos del pedido");
+				return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error al obtener productos del pedido");
+				return PartialView("_gridMensaje", CrearRespuestaError("Error al cargar productos del pedido"));
+			}
+		}
+
+		[HttpPost]
+		public IActionResult NuevoPedido()
+		{
+			if (!VerificarAutenticacion(out IActionResult redirectResult))
+				return redirectResult;
+			
+			PedidoDto pedido = new()
+			{
+				adm_id = AdministracionId,
+				adm_nombre = AdministracionName
+			};
+
+			return PartialView("_pedidoDatos", pedido);
+		}
+
 		#region Metodos Privados
+		private GridCoreSmart<PedidoProductoDto> GenerarGridPedidoProductos(List<PedidoProductoDto> productos)
+		{
+			const int registrosPorPagina = 50; // Mayor cantidad para productos
+			var ordenados = productos.OrderBy(p => p.p_id).ToList();
+
+			var pagedList = new StaticPagedList<PedidoProductoDto>(
+				ordenados,
+				1,
+				registrosPorPagina,
+				ordenados.Count
+			);
+
+			return new GridCoreSmart<PedidoProductoDto>
+			{
+				ListaDatos = pagedList,
+				CantidadReg = ordenados.Count,
+				PrimerRegistro = 1,
+				UltimoRegistro = ordenados.Count,
+				RegistroFinal = ordenados.Count,
+				CantidadPaginas = 1,
+				PaginaActual = 1,
+				Sort = "p_id",
+				SortDir = "ASC",
+				DatoAux01 = $"Productos: {ordenados.Count} | Total: {ordenados.Sum(x => x.pcd_pvta):N2}"
+			};
+		}
+
 		private GridCoreSmart<PedidoListDto> GenerarGridPedidos(List<PedidoListDto> lista, int page, QueryFilters filtro)
 		{
 			var pedidos = lista

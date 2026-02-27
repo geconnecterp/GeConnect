@@ -557,6 +557,8 @@
 
 			public const string SP_PC_ESTADOS = "SPGECO_PC_Estados";
 			public const string SP_PC_LISTA = "SPGECO_PC_lista";
+			public const string SP_PC_DATOS = "SPGECO_PC_Datos";
+			public const string SP_PC_PRODUCTOS = "SPGECO_PC_p";
 		}
 
 		public static class StoredFunctions

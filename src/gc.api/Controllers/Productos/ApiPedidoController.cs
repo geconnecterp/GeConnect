@@ -53,6 +53,50 @@ namespace gc.api.Controllers.Productos
 			}
 		}
 
+		// Obtiene datos de un pedido por id
+		[HttpGet("pedido/{id}")]
+		public IActionResult ObtenerPedido(string id)
+		{
+			const string msgError = "Error en la invocación de la API - Obtener Pedido de Cliente";
+			try
+			{
+				if (string.IsNullOrWhiteSpace(id))
+				{
+					return BadRequest("Debe indicar el identificador del pedido.");
+				}
+
+				var datos = _pedidoSrv.ObtenerPedido(id);
+				return Ok(new ApiResponse<List<PedidoDto>>(datos));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, msgError);
+				return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
+			}
+		}
+
+		// Obtiene el detalle de un presupuesto por id
+		[HttpGet("pedido/detalle/{id}")]
+		public IActionResult ObtenerDetalleDePedido(string id)
+		{
+			const string msgError = "Error en la invocación de la API - Obtener Detalle de Pedido";
+			try
+			{
+				if (string.IsNullOrWhiteSpace(id))
+				{
+					return BadRequest("Debe indicar el identificador del pedido.");
+				}
+
+				var detalle = _pedidoSrv.ObtenerDetalleDePedido(id);
+				return Ok(new ApiResponse<List<PedidoProductoDto>>(detalle));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, msgError);
+				return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
+			}
+		}
+
 		// Construye metadata del grid en base al primer elemento (evita recorrer la colección)
 		private static MetadataGrid? BuildMetadata(List<PedidoListDto>? lista, QueryFilters filtro)
 		{

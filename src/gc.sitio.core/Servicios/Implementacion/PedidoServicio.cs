@@ -5,6 +5,7 @@ using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Pedidos;
+using gc.infraestructura.Dtos.Productos.Presupuestos;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -18,6 +19,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 	{
 		private const string RutaAPI = "/api/apipedido";
 		private const string BUSCAR_PEDIDOS = "/buscar-pedidos";
+		private const string OBTENER_PEDIDO = "/pedido/";
+		private const string OBTENER_DETALLE = "/pedido/detalle/";
 
 		public PedidoServicio(IOptions<AppSettings> options, ILogger<PedidoServicio> logger) : base(options, logger)
 		{
@@ -65,6 +68,44 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 				return new() { Ok = false, Mensaje = "Error al buscar Pedidos" };
+			}
+		}
+
+		public async Task<RespuestaGenerica<PedidoProductoDto>> ObtenerDetalleDePedido(string pcCompte, string token)
+		{
+			try
+			{
+				if (string.IsNullOrWhiteSpace(pcCompte))
+				{
+					return new() { Ok = false, Mensaje = "Debe indicar el identificador del pedido." };
+				}
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{OBTENER_DETALLE}{pcCompte}";
+				return await GetListaAsync<PedidoProductoDto>(link, token, "Error al obtener el Detalle del Pedido");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+				return new() { Ok = false, Mensaje = "Error al obtener el Detalle del Pedido" };
+			}
+		}
+
+		public async Task<RespuestaGenerica<PedidoDto>> ObtenerPedido(string pcCompte, string token)
+		{
+			try
+			{
+				if (string.IsNullOrWhiteSpace(pcCompte))
+				{
+					return new() { Ok = false, Mensaje = "Debe indicar el identificador del pedido de cliente." };
+				}
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{OBTENER_PEDIDO}{pcCompte}";
+				return await GetListaAsync<PedidoDto>(link, token, "Error al obtener el Pedido");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+				return new() { Ok = false, Mensaje = "Error al obtener el Pedido" };
 			}
 		}
 	}

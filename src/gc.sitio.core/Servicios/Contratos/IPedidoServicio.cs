@@ -7,5 +7,7 @@ namespace gc.sitio.core.Servicios.Contratos
 	public interface IPedidoServicio
 	{
 		Task<RespuestaGenerica<PedidoListDto>> BuscarPedidos(QueryFilters filtro, string token);
+		Task<RespuestaGenerica<PedidoDto>> ObtenerPedido(string pcCompte, string token);
+		Task<RespuestaGenerica<PedidoProductoDto>> ObtenerDetalleDePedido(string pcCompte, string token);
 	}
 }

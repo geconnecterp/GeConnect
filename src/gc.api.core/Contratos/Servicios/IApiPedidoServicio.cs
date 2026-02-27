@@ -5,5 +5,7 @@ namespace gc.api.core.Contratos.Servicios
 	public interface IApiPedidoServicio
 	{
 		List<PedidoListDto> ObtenerListaPedidos(PedidoRequest req);
+		List<PedidoDto> ObtenerPedido(string pc_compte);
+		List<PedidoProductoDto> ObtenerDetalleDePedido(string pc_compte);
 	}
 }

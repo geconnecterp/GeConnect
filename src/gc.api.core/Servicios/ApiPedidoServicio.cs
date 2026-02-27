@@ -1,7 +1,9 @@
-﻿using gc.api.core.Contratos.Servicios;
+﻿using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using gc.api.core.Contratos.Servicios;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Dtos.Productos.Pedidos;
+using gc.infraestructura.Dtos.Productos.Presupuestos;
 using Microsoft.Data.SqlClient;
 
 namespace gc.api.core.Servicios
@@ -10,6 +12,20 @@ namespace gc.api.core.Servicios
 	{
 		public ApiPedidoServicio(IUnitOfWork uow) : base(uow)
 		{
+		}
+
+		public List<PedidoProductoDto> ObtenerDetalleDePedido(string pc_compte)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PC_PRODUCTOS;
+
+			var ps = new List<SqlParameter>
+			{
+				new("@pc_compte", pc_compte)
+			};
+
+			var detalle = _repository.EjecutarLstSpExt<PedidoProductoDto>(sp, ps, true);
+
+			return detalle;
 		}
 
 		public List<PedidoListDto> ObtenerListaPedidos(PedidoRequest req)
@@ -74,6 +90,19 @@ namespace gc.api.core.Servicios
 			var pedidos = _repository.EjecutarLstSpExt<PedidoListDto>(sp, ps, true);
 
 			return pedidos;
+		}
+
+		public List<PedidoDto> ObtenerPedido(string pc_compte)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PC_DATOS;
+
+			var ps = new List<SqlParameter>();
+
+			ps.Add(new SqlParameter("@pc_compte", pc_compte));
+
+			var presup = _repository.EjecutarLstSpExt<PedidoDto>(sp, ps, true);
+
+			return presup;
 		}
 	}
 }

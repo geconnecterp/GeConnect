@@ -8,6 +8,65 @@
 	<link rel="stylesheet" href="~/css/simplePagination.css" />
 	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
+<style>
+
+	#divPedidoDatos {
+		/* Estilos para inputs editables en presupuesto (no readonly) */
+	}
+
+		#divPedidoDatos .input-pcd_pedida:not([readonly]) {
+			background-color: #fff8dc !important;
+			border: 2px solid #daa520 !important;
+			font-weight: 700;
+			box-shadow: 0 0 0 0.2rem rgba(218, 165, 32, 0.15);
+		}
+
+		/* Indicador visual para doble click */
+		#divPedidoDatos .input-pcd_pedida {
+			cursor: pointer;
+			transition: all 0.2s ease;
+		}
+
+			#divPedidoDatos .input-pcd_pedida[readonly]:hover {
+				background-color: #e8f4fc !important;
+				border-color: #b8daff !important;
+			}
+
+			/* Tooltip de ayuda para campos editables */
+			#divPedidoDatos .input-pcd_pedida[title] {
+				position: relative;
+			}
+
+		/* Estilos para campos del formulario de presupuesto en modo edición */
+		#divPedidoDatos .form-control:not([readonly]):not(.campo-readonly),
+		#divPedidoDatos select:not([disabled]):not(.campo-readonly) {
+			background-color: #fff8dc;
+			border-color: #daa520;
+			font-weight: 600;
+		}
+
+			#divPedidoDatos .form-control:not([readonly]):not(.campo-readonly):focus,
+			#divPedidoDatos select:not([disabled]):not(.campo-readonly):focus {
+				background-color: #ffebcd;
+				border-color: #b8860b;
+				box-shadow: 0 0 0 0.25rem rgba(184, 134, 11, 0.25);
+			}
+
+		/* ✅ OPTIMIZADO: Campos que NUNCA se editan - Con contexto específico de presupuesto */
+		/* Solo se aplican dentro del contenedor #divPedidoDatos */
+		#divPedidoDatos #pc_compte,
+		#divPedidoDatos #pce_desc,
+		#divPedidoDatos #pce_id,
+		#divPedidoDatos #cta_denominacion,
+		#divPedidoDatos #pc_obs,
+		#divPedidoDatos #facturado {
+			background-color: #e9ecef !important;
+			color: #495057 !important;
+			font-weight: 600 !important;
+			cursor: not-allowed !important;
+		}
+
+</style>
 <partial name="_botonera" model="filtro" />
 <div class="collapse" id="divFiltro">
 	<partial name="_filtros" model="Model" />
@@ -16,9 +75,9 @@
 <div class="collapse" id="divDetalle"></div>
 
 <div class="row mt-2 py-1">
-	<div class="col-6" id="divPresDatos" style="display:none">
+	<div class="col-6" id="divPedDatos" style="display:none">
 	</div>
-	<div class="col-6" id="divPresProds" style="display:none">
+	<div class="col-6" id="divPedProds" style="display:none">
 	</div>
 </div>
 <div id="modalGestorDocumental"></div>
@@ -35,7 +94,9 @@
 		var autoComRel01Url = "@Url.Action("BuscarCuentas", "pedidodecliente", new { area = "Distribuidora" })";
 		var buscarPedidosUrl = "@Url.Action("BuscarPedidosDeCliente", "pedidodecliente", new { area = "Distribuidora" })";
 		let buscarMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "pedidodecliente", new { area = "Distribuidora" })';
-
+		var obtenerPedidoDatosUrl = "@Url.Action("ObtenerPedidoDatos", "pedidodecliente", new { area = "Distribuidora" })";
+		var obtenerPedidoProductoUrl = "@Url.Action("ObtenerPedidoProducto", "pedidodecliente", new { area = "Distribuidora" })";
+		var nuevoPedidoUrl =  "@Url.Action("NuevoPedido", "pedidodecliente", new { area = "Distribuidora" })";
 		let homePedido = '@Url.Action("index", "pedidodecliente", new { area = "Distribuidora" })';
 
 		//funcionalidad busqueda avanzada controlador común
