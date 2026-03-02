@@ -285,6 +285,7 @@ function configurarYMostrarModalEtiquetas() {
         console.log("⚙️ Configurando búsqueda para destino 'etiquetas'");
         configurarDestinoBusquedaProductos(
             "etiquetas",
+            "001",
             agregarProductosAlGridEtiquetas,
             obtenerProductosEtiquetasExistentes
         );

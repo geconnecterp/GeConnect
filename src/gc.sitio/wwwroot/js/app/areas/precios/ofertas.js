@@ -71,6 +71,7 @@ function configurarBusquedaAvanzadaOfertas() {
         if (typeof configurarDestinoBusquedaProductos === 'function') {
             configurarDestinoBusquedaProductos(
                 "ofertas",
+                "001",
                 agregarProductosAlGridOfertas,
                 obtenerProductosExistentesIdsOfertas
             );

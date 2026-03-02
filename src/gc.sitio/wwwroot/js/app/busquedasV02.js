@@ -9,13 +9,15 @@ var busquedaDestinoCallback = null;
 /**
  * Configura el destino de los productos seleccionados en la búsqueda avanzada
  * @param {string} tipo - Tipo de destino: "ofertas", "combos" o "sustitutos"
+ * @param {string} lpId - Tipo de Lista de Precios
  * @param {Function} callback - Función callback para procesar los productos
  * @param {Function} [validadorCallback] - Función opcional que devuelve IDs de productos existentes en el grid destino
  */
-function configurarDestinoBusquedaProductos(tipo, callback, validadorCallback) {
+function configurarDestinoBusquedaProductos(tipo, lpId = "001", callback, validadorCallback) {
     busquedaDestinoTipo = tipo || "ofertas";
     busquedaDestinoCallback = callback;
-    busquedaValidadorCallback = validadorCallback || function() { return []; };
+    busquedaValidadorCallback = validadorCallback || function () { return []; };
+    admLp_id = lpId;
     
     // ✅ CRÍTICO: Limpiar selección previa al configurar nuevo destino
     limpiarSeleccionBusqueda();
@@ -26,7 +28,8 @@ function configurarDestinoBusquedaProductos(tipo, callback, validadorCallback) {
         "combos": "Selección de Productos para Combo",
         "sustitutos": "Selección de Productos Sustitutos",
         "presupuestos": "Selección de Productos para Presupuesto",
-        "etiquetas": "Selección de Productos para Etiquetas"
+        "etiquetas": "Selección de Productos para Etiquetas",
+        "pedidos": "Selección de Productos para Pedidos"
     };
     
     const titulo = titulosModulos[tipo] || "Búsqueda Avanzada de Productos";
@@ -175,7 +178,7 @@ $(function () {
 // ✅ COMPLETAMENTE OPTIMIZADA: Función con todos los IDs B2
 function busquedaAvanzadaProductosV02(pag) {
     const ri01 = $("#Rel01B2Item").val() || "";
-    const ri02 = $("#Rel02B2Item").val() || "";
+    const ri02 = $("#Rel02B2Item").val() || $("#Rel02B2").val() || "";
     const ri03 = $("#Rel03B2 option:selected").val() || "%";
     const act = $("#chkActivos").is(":checked");
     const dis = $("#chkDisc").is(":checked");
@@ -710,6 +713,14 @@ function agregarProductosSeleccionadosAOfertas() {
                 mensaje = `¿Desea agregar el producto "${descripcion}" al combo?`;
             }
             break;
+        case "pedidos":
+            titulo = "CONFIRMAR AGREGADO A PEDIDO";
+            mensaje = `¿Desea agregar ${productosSeleccionadosBusqueda.length} productos al pedido?`;
+            if (productosSeleccionadosBusqueda.length === 1) {
+                const descripcion = productosSeleccionadosBusqueda[0].p_desc;
+                mensaje = `¿Desea agregar el producto "${descripcion}" al pedido?`;
+            }
+            break;
         default:
             titulo = "CONFIRMAR AGREGADO";
             mensaje = `¿Desea agregar ${productosSeleccionadosBusqueda.length} productos a las ofertas?`;
@@ -727,7 +738,8 @@ function agregarProductosSeleccionadosAOfertas() {
                 if ((busquedaDestinoTipo === "combos" ||
                     busquedaDestinoTipo === "sustitutos" ||
                     busquedaDestinoTipo === "presupuestos" ||
-                    busquedaDestinoTipo === "etiquetas") &&
+                    busquedaDestinoTipo === "etiquetas" ||
+                    busquedaDestinoTipo === "pedidos") &&
                     typeof busquedaDestinoCallback === 'function') {
                     procesarAgregarProductosCustom();
                 } else {
@@ -828,7 +840,8 @@ function procesarAgregarProductosCustom() {
                 "etiquetas": "a las etiquetas",
                 "presupuestos": "al presupuesto",
                 "sustitutos": "como sustituto",
-                "combos": "al combo"
+                "combos": "al combo",
+                "pedidos": "al pedido"
             };
             
             const destinoTexto = mensajesDestino[busquedaDestinoTipo] || "";

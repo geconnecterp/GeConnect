@@ -142,7 +142,7 @@ $("#Rel01").autocomplete({
         data = { prefix: request.term }; /*Rel01*/
 
         $.ajax({
-            url: autoComRel01Url,
+            url: autoComRel011Url,
             type: "POST",
             dataType: "json",
             data: data,
@@ -192,6 +192,155 @@ function imprimirPedido() {
     let data = { modulo: "", parametros: [] }
     invocacionGestorDoc(data);
 }
+
+function agregarProductosAlGrid(productos) {
+    if (!Array.isArray(productos) || productos.length === 0) return;
+
+    const $tbody = $('#tbGridPedidoProds tbody');
+
+    const $filaVacia = $tbody.find('tr td[colspan]');
+    if ($filaVacia.length > 0) {
+        $filaVacia.closest('tr').remove();
+    }
+
+    let $tfoot = $('#tbGridPedidoProds tfoot');
+    if ($tfoot.length === 0) {
+        $('#tbGridPedidoProds').append(`
+            <tfoot class="table-golden-footer">
+                <tr>
+                    <td colspan="7" class="text-end fw-bold">Total General:</td>
+                    <td class="text-end fw-bold">0.00</td>
+                </tr>
+            </tfoot>
+        `);
+        $tfoot = $('#tbGridPedidoProds tfoot');
+    }
+
+    let esAlternado = $tbody.find('tr').length % 2 !== 0;
+
+    productos.forEach(function (producto, index) {
+        const fila = crearFilaProductoPresupuesto(producto, esAlternado, index + 1);
+        $tbody.append(fila);
+        esAlternado = !esAlternado;
+    });
+
+    //aplicarInputMaskPresupuesto();
+    aplicarReadonlyCamposPedido();
+    actualizarTotalGeneralPedido();
+    configurarEventosEliminacionProducto();
+    setTimeout(() => {
+        finalizarInicializacion();
+        //calcularUtilidadMargen();
+        // Reinicializar drag & drop con las nuevas filas
+        inicializarDragAndDropProductos();
+    }, 100);
+}
+
+/**
+ * ✅ OPTIMIZADO: Crea HTML de fila de producto con TODOS los nuevos campos
+ * Unifica lógica de cálculo y evita duplicación de código
+ * @param {object} producto - ProductoListaDto
+ * @param {boolean} esAlternado - Alternar clase CSS
+ * @returns {string} HTML de la fila
+ */
+function crearFilaProductoPresupuesto(producto, esAlternado, pcd_item) {
+    // ✅ VALIDACIÓN Y NORMALIZACIÓN DE DATOS
+    const datosProducto = normalizarDatosProducto(producto);
+
+    // ✅ FORMATEO
+    const claseAlt = esAlternado ? 'alt' : '';
+
+    // ✅ CONSTRUCCIÓN HTML CON TEMPLATE LITERALS (más legible y performante)
+    return `
+        <tr class="${claseAlt}"
+            data-pcd-item="${pcd_item}"
+            data-p-id="${datosProducto.p_id}">
+            <td class="text-center">${pcd_item}</td>
+            <td class="text-center">${datosProducto.p_id}</td>
+            <td>${escaparHTML(datosProducto.p_desc)}</td>
+            <td class="text-end">
+                <div class="input-container">
+                    <input type="text" 
+                           class="form-control form-control-sm input-pcd_pedida input-numeric "
+                           value="${datosProducto.pcd_pedida}"
+                           data-original-value="${datosProducto.pcd_pedida}"
+                           title="Doble click para editar" />
+                </div>
+            </td>
+            <td class="text-end">${datosProducto.p_pvta.toFixed(2)}</td>
+            <td class="text-end">${datosProducto.p_pvta.toFixed(2)}</td>
+            <td class="text-center align-middle">
+                <input type="checkbox"
+                        class="form-check-input m-0 p-0"
+                        disabled
+                        @(item.pcd_origen_bool ? "checked" : "") />
+            </td>
+            <td class="text-center">
+                <button type="button" 
+                        class="btn btn-sm btn-danger btn-eliminar-producto" 
+                        data-p-id="${datosProducto.p_id}"
+                        title="Eliminar producto"
+                        style="${estaEnModoEdicionPedido() ? '' : 'display: none;'}">
+                    <i class="bx bx-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `;
+}
+
+/**
+ * ✅ NUEVO: Escapa HTML para prevenir XSS
+ * @param {string} texto - Texto a escapar
+ * @returns {string} Texto escapado
+ */
+function escaparHTML(texto) {
+    const div = document.createElement('div');
+    div.textContent = texto;
+    return div.innerHTML;
+}
+
+/**
+ * ✅ NUEVO: Normaliza y valida datos del ProductoListaDto
+ * Centraliza validación y conversión de tipos
+ * @param {object} producto - ProductoListaDto
+ * @returns {object} Datos normalizados y validados
+ */
+function normalizarDatosProducto(producto) {
+    // ✅ HELPER: Parsear decimal con fallback seguro
+    const parseDecimalSeguro = (valor, defecto = 0) => {
+        const num = parseFloat(valor);
+        return isNaN(num) ? defecto : num;
+    };
+
+    return {
+        // Identificadores
+        p_id: String(producto.p_id || producto.P_id || '').trim(),
+        p_desc: String(producto.p_desc || producto.P_desc || 'Sin descripción').trim(),
+        // Precios y costos
+        p_pcosto: parseDecimalSeguro(producto.p_pcosto || producto.P_pcosto, 0),
+        p_pvta: parseDecimalSeguro(producto.p_pvta || producto.P_pvta, 0),
+        p_pneto: parseDecimalSeguro(producto.p_pneto, 0), // ✅ NUEVO CAMPO
+
+        // Márgenes
+        p_margen: parseDecimalSeguro(producto.p_margen, 0), // ✅ USA p_margen DEL DTO
+        //margenActual: parseDecimalSeguro(producto.p_margen, 0), // ✅ NUEVO CAMPO
+
+        // Cantidad (siempre 1 para nuevos productos)
+        cantidad: 1,
+        pcd_pedida: 1,
+
+        // Impuestos
+        //ivaSituacion: String(producto.iva_situacion || 'E').trim(),
+        iva_situacion: producto.iva_situacion,
+        iva_alicuota: parseDecimalSeguro(producto.iva_alicuota, 21),
+        in_alicuota: parseDecimalSeguro(producto.in_alicuota, 0),
+
+        // ✅ NUEVOS CAMPOS: Previsiones
+        lp_prevision_tot: parseDecimalSeguro(producto.lp_prevision_tot, 0),
+        lp_prevision_pin: parseDecimalSeguro(producto.lp_prevision_pin, 0),
+    };
+}
+
 function InicializaEventosPedido() {
     $(document).on("click", "#btnImprimir", imprimirPedido);
     cargarReporteEnArre(62, {}, "Pedido de Cliente");
@@ -214,13 +363,13 @@ function InicializaEventosPedido() {
         if ($("#busquedaModal").length === 0) {
             cargarModalBusquedaAvanzada(function () {
                 if (typeof configurarDestinoBusquedaProductos === 'function') {
-                    configurarDestinoBusquedaProductos("presupuestos", agregarProductosAlGrid, obtenerProductosExistentesIds);
+                    configurarDestinoBusquedaProductos("pedidos", "003", agregarProductosAlGrid, obtenerProductosExistentesIds);
                 }
                 $("#busquedaModal").modal("show");
             });
         } else {
             if (typeof configurarDestinoBusquedaProductos === 'function') {
-                configurarDestinoBusquedaProductos("presupuestos", agregarProductosAlGrid, obtenerProductosExistentesIds);
+                configurarDestinoBusquedaProductos("pedidos", "003", agregarProductosAlGrid, obtenerProductosExistentesIds);
             }
             $("#busquedaModal").modal("show");
         }
@@ -232,7 +381,7 @@ function InicializaEventosPedido() {
         activarEdicionCampoPresup($(this));
     });
 
-    // Handler para Nuevo Presupuesto
+    // Handler para Nuevo Pedido
     $(document).on('click', '#btnAbmNuevo', function (e) {
         e.preventDefault();
 
@@ -251,10 +400,29 @@ function InicializaEventosPedido() {
         PostGenHtml({}, nuevoPedidoUrl, function (html) {
             $('#divPedDatos').html(html).show();
 
-            $('#divPedidoDatos').find('input:not([type=hidden]), textarea, select').each(function () {
-                const $el = $(this);
-                $el.prop('readonly', false).prop('disabled', false).removeClass('campo-readonly');
-            });
+            // Primero bloqueo todo
+            $('#divPedidoDatos')
+                .find('input:not([type=hidden]), textarea, select')
+                .each(function () {
+                    const $el = $(this);
+                    $el.prop('readonly', true)
+                        .prop('disabled', true)
+                        .addClass('campo-readonly');
+                });
+
+            // Luego habilito solo los permitidos
+            $('#divPedidoDatos')
+                .find('#pc_fecha, #pc_cons_final, #cta_denominacion, #pc_obs')
+                .each(function () {
+                    const $el = $(this);
+                    $el.prop('readonly', false)
+                        .prop('disabled', false)
+                        .removeClass('campo-readonly');
+                });
+
+            // Finalmente, seteo pc_fecha a hoy
+            const hoy = new Date().toISOString().split('T')[0];
+            $('#pc_fecha').val(hoy);
 
             const $first = $('#divPedidoDatos').find('input:not([type=hidden]), textarea, select').filter(':visible').first();
             if ($first && $first.length) {
@@ -282,17 +450,33 @@ function InicializaEventosPedido() {
     });
 }
 
+function obtenerProductosExistentesIds() {
+    const productosIds = [];
+
+    $('#tbGridPedidoProds tbody tr').each(function () {
+        const $fila = $(this);
+        if ($fila.find('td[colspan]').length > 0) return;
+
+        const pId = $fila.data('p-id');
+        if (pId) {
+            productosIds.push(pId);
+        }
+    });
+
+    return productosIds;
+}
+
 function crearGridPedidoVacioHtml() {
     return `
-    <div class="grid-golden h-100">
-        <div class="grid-golden-header py-1 d-flex align-items-center">
+    <div class="card h-100">
+        <div class="card-header py-1 d-flex justify-content-between align-items-center">
             <h6 class="mb-0">Productos del Pedido</h6>
 
             <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarCProducto" title="Agregar Producto" disabled>
                 <i class="bx bx-plus"></i>
             </button>
         </div>
-        <div class="grid-golden-body p-1">
+        <div class="card-body p-1">
             <div class="table-responsive" style="max-height: 400px;">
                 <table class="table table-sm table-hover mb-0 table-golden" id="tbGridPedidoProds">
                     <thead class="sticky-top table-golden-header-compact">
@@ -341,13 +525,14 @@ function cancelarOperacion(e) {
     campoEnEdicionPedido = null;
     _pedidoOriginal = null;
 
-    if ($("#divDetalle").is(":visible") && $("#divFiltro").is(":not(:visible)")) {
-        $("#divFiltro").collapse("show");
-        $("#divDetalle").collapse("hide");
-    }
+    //if ($("#divDetalle").is(":visible") && $("#divFiltro").is(":not(:visible)")) {
+        
+    //}
+    $("#divFiltro").collapse("show");
+    $("#divDetalle").collapse("hide");
 
     // ✅ PASO 2: Vaciar y ocultar divs de datos y productos
-    $("#divPresDatos, #divPresProds").empty().hide();
+    $("#divPedDatos, #divPedProds").empty().hide();
 
     // ✅ PASO 3: Determinar si hay fila seleccionada en el grid de búsqueda
     const $filaSeleccionada = $("#tbGridPedido tbody tr.selected-row");
@@ -534,7 +719,7 @@ function configurarEventosSeleccionPedido() {
 function cargarPedidoDatos(pcCompte) {
     const url = obtenerPedidoDatosUrl;
     PostGenHtml({ pcCompte: pcCompte }, url, function (html) {
-        $("#divPedidoDatos").html(html).show();
+        $("#divPedDatos").html(html).show();
 
         // ✅ DETERMINAR PERMISOS DE EDICIÓN BASÁNDOSE EN EL ESTADO DEL PEDIDO
         // ════════════════════════════════════════════════════════════════════
@@ -571,7 +756,7 @@ function cargarProductosPedido(pcCompte, isUpdate = false) {
     let url = obtenerPedidoProductoUrl;
 
     PostGenHtml({ pcCompte: pcCompte }, url, function (html) {
-        $("#divPedidoProds").empty().html(html).show();
+        $("#divPedProds").empty().html(html).show();
         // Forzar estado readonly acorde al modo
         aplicarReadonlyCamposPedido();
 
@@ -650,7 +835,7 @@ function configuracionInputMaskOptimizadaPedido() {
     // Aplicar máscaras de forma eficiente con selección optimizada
     Inputmask(maskConfig3Decimales).mask('.input-tp_pcosto');
     //Inputmask(maskConfig1Decimal).mask('.input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete');
-    Inputmask(maskConfig2Decimales).mask('.input-tp_margen, .input-tp_pvta');
+    Inputmask(maskConfig2Decimales).mask('.input-pcd_pedida');
     //Inputmask(maskConfigBoni).mask('.input-tp_boni');
 
     // Configurar eventos de edición

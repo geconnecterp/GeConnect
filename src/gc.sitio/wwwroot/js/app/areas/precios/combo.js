@@ -278,7 +278,7 @@ function inicializarEventos() {
             cargarModalBusquedaAvanzada(function () {
                 // Configurar el destino como "combos" y definir el callback
                 if (typeof configurarDestinoBusquedaProductos === 'function') {
-                    configurarDestinoBusquedaProductos("combos", agregarProductosAlGrid, obtenerProductosExistentesIds);
+                    configurarDestinoBusquedaProductos("combos", "001", agregarProductosAlGrid, obtenerProductosExistentesIds);
                 } else {
                     console.error("❌ Función configurarDestinoBusquedaProductos no está definida");
                 }
@@ -290,7 +290,7 @@ function inicializarEventos() {
             console.log("✅ Modal ya existe, configurando y mostrando...");
             // Si ya existe, configurar destino y mostrar
             if (typeof configurarDestinoBusquedaProductos === 'function') {
-                configurarDestinoBusquedaProductos("combos", agregarProductosAlGrid, obtenerProductosExistentesIds);
+                configurarDestinoBusquedaProductos("combos", "001", agregarProductosAlGrid, obtenerProductosExistentesIds);
             } else {
                 console.error("❌ Función configurarDestinoBusquedaProductos no está definida");
             }
@@ -338,7 +338,7 @@ function inicializarEventos() {
             cargarModalBusquedaAvanzada(function () {
                 // Configurar el destino como "sustitutos" y definir el callback
                 if (typeof configurarDestinoBusquedaProductos === 'function') {
-                    configurarDestinoBusquedaProductos("sustitutos", function (productos) {
+                    configurarDestinoBusquedaProductos("sustitutos", "001", function (productos) {
                         agregarSustitutosAlGrid(productos, productoId);
                     }, obtenerSustitutosExistentesIds);
                 } else {
@@ -352,7 +352,7 @@ function inicializarEventos() {
             console.log("✅ Modal ya existe, configurando para sustitutos...");
             // Si ya existe, configurar destino y mostrar
             if (typeof configurarDestinoBusquedaProductos === 'function') {
-                configurarDestinoBusquedaProductos("sustitutos", function (productos) {
+                configurarDestinoBusquedaProductos("sustitutos", "001", function (productos) {
                     agregarSustitutosAlGrid(productos, productoId);
                 }, obtenerSustitutosExistentesIds);
             } else {

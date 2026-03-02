@@ -31,7 +31,7 @@ namespace gc.infraestructura.Dtos.Productos.Pedidos
 		public decimal cm_total { get; set; } = 0.00M;
 		public decimal ve_comi { get; set; } = 0.00M;
 		public decimal rp_comi { get; set; } = 0.00M;
-		public bool pc_confirmado
+		public bool pc_cons_final
 		{
 			get => char.ToUpper(pc_cf) == 'S';
 			set => pc_cf = value ? 'S' : 'N';

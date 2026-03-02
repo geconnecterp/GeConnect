@@ -219,6 +219,7 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			{
 				adm_id = AdministracionId,
 				adm_nombre = AdministracionName
+				
 			};
 
 			return PartialView("_pedidoDatos", pedido);
@@ -295,6 +296,11 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			if (RubroLista.Count == 0)
 			{
 				ObtenerRubros(_rubroServicio);
+			}
+
+			if (ProveedoresLista.Count == 0)
+			{
+				ObtenerProveedores(_cuentaServicio, "BI");
 			}
 
 			#region Carga de Rubros

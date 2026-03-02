@@ -277,13 +277,13 @@ function InicializaEventosPresupuesto() {
         if ($("#busquedaModal").length === 0) {
             cargarModalBusquedaAvanzada(function () {
                 if (typeof configurarDestinoBusquedaProductos === 'function') {
-                    configurarDestinoBusquedaProductos("presupuestos", agregarProductosAlGrid, obtenerProductosExistentesIds);
+                    configurarDestinoBusquedaProductos("presupuestos", "001", agregarProductosAlGrid, obtenerProductosExistentesIds);
                 }
                 $("#busquedaModal").modal("show");
             });
         } else {
             if (typeof configurarDestinoBusquedaProductos === 'function') {
-                configurarDestinoBusquedaProductos("presupuestos", agregarProductosAlGrid, obtenerProductosExistentesIds);
+                configurarDestinoBusquedaProductos("presupuestos", "001", agregarProductosAlGrid, obtenerProductosExistentesIds);
             }
             $("#busquedaModal").modal("show");
         }

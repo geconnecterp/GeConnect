@@ -91,7 +91,11 @@
 		let pagina = 1;
 		let search = "";
 
-		var autoComRel01Url = "@Url.Action("BuscarCuentas", "pedidodecliente", new { area = "Distribuidora" })";
+		var autoComRel01Url = "@Url.Action("BuscarProvs", "cargaprecios", new { area = "productos" })";/**/
+		var autoComRel02Url = "@Url.Action("BuscarRubros", "cargaprecios", new { area = "productos" })";/**/
+		var autoComRel03Url =  "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "cargaprecios", new { area = "productos" })";/**/
+
+		var autoComRel011Url = "@Url.Action("BuscarCuentas", "pedidodecliente", new { area = "Distribuidora" })";
 		var buscarPedidosUrl = "@Url.Action("BuscarPedidosDeCliente", "pedidodecliente", new { area = "Distribuidora" })";
 		let buscarMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "pedidodecliente", new { area = "Distribuidora" })';
 		var obtenerPedidoDatosUrl = "@Url.Action("ObtenerPedidoDatos", "pedidodecliente", new { area = "Distribuidora" })";
