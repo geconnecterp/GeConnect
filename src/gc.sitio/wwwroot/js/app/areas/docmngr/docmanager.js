@@ -160,12 +160,47 @@ function procesarArchivosParaEmail(emailProvider, emailTo, emailSubject, emailBo
             // ✅ Construir mensaje con URLs
             let cuerpoConEnlaces = emailBody;
 
+            // ✅ Detectar si el cuerpo ya es HTML (contiene <br/> o <p>)
+            const esHtml = cuerpoConEnlaces.includes('<br') ||
+                cuerpoConEnlaces.includes('<p>') ||
+                cuerpoConEnlaces.includes('<div>');
+
+            if (!esHtml && (emailProvider === 'outlookweb' || emailProvider === 'gmail')) {
+                // ✅ Convertir saltos de línea a <br/> para Outlook Web y Gmail
+                cuerpoConEnlaces = cuerpoConEnlaces
+                    .replace(/\r\n/g, '\n')      // Normalizar CRLF a LF
+                    .replace(/\n\n/g, '<br/><br/>') // Párrafos dobles
+                    .replace(/\n/g, '<br/>');    // Saltos de línea simples
+
+                console.log('✅ Cuerpo convertido a HTML (saltos de línea → <br/>)');
+            } else if (emailProvider === 'outlookdesktop') {
+                // ✅ Para Outlook Desktop (mailto), mantener saltos de línea normales
+                // porque NO soporta HTML
+                console.log('ℹ️ Manteniendo texto plano para Outlook Desktop (mailto)');
+            }
+
+            //if (enlaces.length > 0) {
+            //    // ✅ NUEVO: Agregar enlaces como HTML clicables
+            //    cuerpoConEnlaces += '\n\n📎 <strong>Documentos disponibles:</strong><br/><br/>';
+            //    enlaces.forEach((enlace, index) => {
+            //        cuerpoConEnlaces += `${index + 1}. <a href="${enlace.url}" target="_blank" style="color: #0066cc; text-decoration: none;">${enlace.nombre}</a><br/><br/>`;
+            //    });
+            //}
+
             if (enlaces.length > 0) {
-                // ✅ NUEVO: Agregar enlaces como HTML clicables
-                cuerpoConEnlaces += '\n\n📎 <strong>Documentos disponibles:</strong><br/><br/>';
-                enlaces.forEach((enlace, index) => {
-                    cuerpoConEnlaces += `${index + 1}. <a href="${enlace.url}" target="_blank" style="color: #0066cc; text-decoration: none;">${enlace.nombre}</a><br/><br/>`;
-                });
+                // ✅ Agregar enlaces como HTML clicables (para Gmail y Outlook Web)
+                if (emailProvider === 'outlookweb' || emailProvider === 'gmail') {
+                    cuerpoConEnlaces += '<br/><br/>📎 <strong>Documentos disponibles:</strong><br/><br/>';
+                    enlaces.forEach((enlace, index) => {
+                        cuerpoConEnlaces += `${index + 1}. <a href="${enlace.url}" target="_blank" style="color: #0066cc; text-decoration: none;">${enlace.nombre}</a><br/><br/>`;
+                    });
+                } else {
+                    // ✅ Para Outlook Desktop, usar URLs planas
+                    cuerpoConEnlaces += '\n\n📎 Documentos disponibles:\n\n';
+                    enlaces.forEach((enlace, index) => {
+                        cuerpoConEnlaces += `${index + 1}. ${enlace.nombre}\n   ${enlace.url}\n\n`;
+                    });
+                }
             }
 
             console.log(`📧 Delegando a proveedor: ${emailProvider}`);
@@ -1334,12 +1369,15 @@ function generarPDFEnTiempoReal(node) {
                     // Calcular tamaño del PDF en bytes
                     const base64 = obj.base64;
                     const tamañoBytes = (base64.length * 3) / 4 - (base64.indexOf('=') > 0 ? (base64.length - base64.indexOf('=')) : 0);
-                    
+
+                    // ✅ MODIFICADO: Reemplazar espacios por underscore en el nombre
+                    const nombreSanitizado = node.text.replace(/\s+/g, '_');
+
                     console.log(`✅ PDF generado: ${node.text} (${(tamañoBytes / 1024 / 1024).toFixed(2)} MB)`);
                     
                     resolve({
                         base64: base64,
-                        nombre: node.text + ".pdf",
+                        nombre: nombreSanitizado + ".pdf",  // ✅ Usar nombre sanitizado
                         tamañoBytes: tamañoBytes
                     });
                 }

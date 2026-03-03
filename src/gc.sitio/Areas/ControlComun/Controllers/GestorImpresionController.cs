@@ -763,7 +763,10 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                         {
                             nombreSinExtension = nombreSinExtension.Replace(c, '_');
                         }
-                        
+
+                        // ✅ NUEVO: Reemplazar espacios en blanco por underscore
+                        nombreSinExtension = nombreSinExtension.Replace(' ', '_');
+
                         // Generar nombre único
                         var nombreUnico = $"{nombreSinExtension}_{cuentaId}_{timestamp}{extension}";
                         
