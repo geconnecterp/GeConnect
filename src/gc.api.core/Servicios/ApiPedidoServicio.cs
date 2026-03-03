@@ -1,9 +1,8 @@
-﻿using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
-using gc.api.core.Contratos.Servicios;
+﻿using gc.api.core.Contratos.Servicios;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Pedidos;
-using gc.infraestructura.Dtos.Productos.Presupuestos;
 using Microsoft.Data.SqlClient;
 
 namespace gc.api.core.Servicios
@@ -12,6 +11,32 @@ namespace gc.api.core.Servicios
 	{
 		public ApiPedidoServicio(IUnitOfWork uow) : base(uow)
 		{
+		}
+
+		public RespuestaDto ConfirmarPedido(ConfirmarPedidoRequest req)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PC_CONFIRMA;
+
+			var ps = new List<SqlParameter>() {
+				new("@abm", req.abm),
+				new("@pc_compte", req.pc_compte),
+				new("@pc_obs", req.pc_obs),
+				new("@cta_id", req.cta_id),
+				new("@pc_cf", req.pc_cf),
+				new("@json", req.json_prod),
+				new("@usu_id", req.usu_id),
+				new("@adm_id", req.adm_id),
+				new("@pc_fecha", req.pc_fecha),
+				new("@pc_entrega", req.pc_entrega),
+				};
+
+
+			var respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			if (respuesta.Count == 0)
+			{
+				return new RespuestaDto() { resultado = -1, resultado_msj = "No se Recepcionó respuesta del proceso." };
+			}
+			return respuesta[0];
 		}
 
 		public List<PedidoProductoDto> ObtenerDetalleDePedido(string pc_compte)

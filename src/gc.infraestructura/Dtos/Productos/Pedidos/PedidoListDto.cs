@@ -30,7 +30,11 @@ namespace gc.infraestructura.Dtos.Productos.Pedidos
 		public char? cm_repetido { get; set; }
 		public decimal cm_total { get; set; } = 0.00M;
 		public decimal ve_comi { get; set; } = 0.00M;
+		public decimal ve_comi_base { get; set; } = 0.00M;
+		public decimal ve_comi_por { get; set; } = 0.00M;
 		public decimal rp_comi { get; set; } = 0.00M;
+		public decimal rp_comi_base { get; set; } = 0.00M;
+		public decimal rp_comi_por { get; set; } = 0.00M;
 		public bool pc_cons_final
 		{
 			get => char.ToUpper(pc_cf) == 'S';
@@ -56,6 +60,24 @@ namespace gc.infraestructura.Dtos.Productos.Pedidos
 		public decimal rp_comi_base { get; set; }
 		public decimal rp_comi_porc { get; set; }
 		public bool pcd_origen_bool => pcd_origen == 'P';
+	}
+
+	public class PedidoElementoDto : Dto 
+	{
+		public int pcd_item { get; set; }
+		public string p_id { get; set; } = string.Empty;
+		public string p_desc { get; set; } = string.Empty;
+		public string lp_id { get; set; } = string.Empty;
+		public decimal pcd_pedida { get; set; }
+		public decimal pcd_pvta { get; set; }
+		public decimal pcd_enviada { get; set; }
+		public char pcd_oferta { get; set; }
+		public char pcd_origen { get; set; }
+		public string p_id_remplazo { get; set; } = string.Empty;
+		public decimal ve_comi_base { get; set; }
+		public decimal ve_comi_porc { get; set; }
+		public decimal rp_comi_base { get; set; }
+		public decimal rp_comi_porc { get; set; }
 	}
 }
 

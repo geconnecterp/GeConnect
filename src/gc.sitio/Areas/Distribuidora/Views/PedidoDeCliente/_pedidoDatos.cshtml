@@ -1,76 +1,85 @@
 ﻿@model PedidoDto
 
 <div id="divPedidoDatos" class="card mb-2">
-    <div class="card-header py-1">
-        <h6 class="mb-0">Datos del Pedido</h6>
-    </div>
-    <div class="card-body p-2">
-        <div class="row g-2">
-            <div class="row">
-                <!-- ID -->
-                <div class="col-md-3">
-                    <label for="pre_id" class="form-label form-label-sm mb-1">ID</label>
-                    <input type="text" class="form-control form-control-sm" id="pc_compte" name="pc_compte"
-                           value="@Model?.pc_compte" readonly />
-                </div>
-                <!-- Estado  -->
-                <div class="col-md-3">
-                    <input type="hidden" id="pce_id" name="pce_id" value="@Model?.pce_id" />
-                    <label for="pce_desc" class="form-label form-label-sm mb-1">Estado</label>
-                    <input type="text" class="form-control form-control-sm" id="pce_desc" name="pce_desc"
-                           value="@Model?.pce_desc" readonly />
-                </div>
+	<div class="card-header py-1">
+		<h6 class="mb-0">Datos del Pedido</h6>
+	</div>
+	<div class="card-body p-2">
+		<div class="row g-2">
+			<div class="row">
+				<!-- ID -->
+				<div class="col-md-3">
+					<label for="pc_compte" class="form-label form-label-sm mb-1">ID</label>
+					<input type="text" class="form-control form-control-sm" id="pc_compte" name="pc_compte"
+						   value="@Model?.pc_compte" readonly />
+				</div>
+				<!-- Estado  -->
+				<div class="col-md-3">
+					<input type="hidden" id="pce_id" name="pce_id" value="@Model?.pce_id" />
+					<label for="pce_desc" class="form-label form-label-sm mb-1">Estado</label>
+					<input type="text" class="form-control form-control-sm" id="pce_desc" name="pce_desc"
+						   value="@Model?.pce_desc" readonly />
+				</div>
 
-                <!-- Fecha PC -->
-                <div class="col-md-3">
-                    <label for="pc_fecha" class="form-label form-label-sm mb-1">Fecha</label>
-                    <input type="date" class="form-control form-control-sm" id="pc_fecha" name="pc_fecha"
-                           value="@Model?.pc_fecha.ToString("yyyy-MM-dd")" readonly />
-                </div>
+				<!-- Fecha PC -->
+				<div class="col-md-3">
+					<label for="pc_fecha" class="form-label form-label-sm mb-1">Fecha</label>
+					<input type="date" class="form-control form-control-sm" id="pc_fecha" name="pc_fecha"
+						   value="@Model?.pc_fecha.ToString("yyyy-MM-dd")" readonly />
+				</div>
 
-                <!-- CF -->
-                <div class="col-md-2">
-                    <div class="form-check form-check-inline form-switch mb-2">
-                        <input asp-for="pc_cons_final" class="form-check-input" type="checkbox" />
-                        <label asp-for="pc_cons_final" class="form-check-label">CF</label>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <!-- Cliente (oculto cta_id) -->
-                <input type="hidden" id="cta_id" name="cta_id" value="@Model?.cta_id" />
-                <div class="col-md-5">
-                    <label for="cta_denominacion" class="form-label form-label-sm mb-1">Cliente</label>
-                    <input type="text" class="form-control form-control-sm" id="cta_denominacion" name="cta_denominacion"
-                           value="@Model?.cta_denominacion" readonly />
-                </div>
+				<!-- CF -->
+				<div class="col-md-2">
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input asp-for="pc_cons_final" class="form-check-input" type="checkbox" />
+						<label asp-for="pc_cons_final" class="form-check-label">CF</label>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<!-- Cliente (oculto cta_id) -->
+				<input type="hidden" id="cta_id" name="cta_id" value="@Model?.cta_id" />
+				<div class="col-md-5">
+					@if (Model?.pc_compte == "0" || string.IsNullOrEmpty(Model?.pc_compte))   // Pedido nuevo
+					{
+						<label for="Rel01B" class="form-label form-label-sm mb-1">Cliente</label>
+						<input type="text" class="form-control inputEditable" name="Rel01B" id="Rel01B" readonly />
+						@Html.Hidden("Rel01BItem")
+					}
+					else   // Pedido existente
+					{
+						<label for="cta_denominacion" class="form-label form-label-sm mb-1">Cliente</label>
+						<input type="text" class="form-control form-control-sm" id="cta_denominacion" name="cta_denominacion"
+							   value="@Model?.cta_denominacion" readonly />
+					}
+				</div>
 
-                <!-- Observaciones -->
-                <div class="col-md-7">
-                    <label for="pre_nombre" class="form-label form-label-sm mb-1">Observaciones</label>
-                    <textarea class="form-control form-control-sm" id="pc_obs" name="pc_obs"
-                              rows="2" readonly>@Model?.pc_obs</textarea>
-                </div>
-                
-            </div>
-            <div class="row">
+				<!-- Observaciones -->
+				<div class="col-md-7">
+					<label for="pc_obs" class="form-label form-label-sm mb-1">Observaciones</label>
+					<textarea class="form-control form-control-sm" id="pc_obs" name="pc_obs"
+							  rows="2" readonly>@Model?.pc_obs</textarea>
+				</div>
 
-                <!-- Entregado -->
-                <div class="col-md-3">
-                    <label for="pc_entrega" class="form-label form-label-sm mb-1">Entregado</label>
-                    <input type="date" class="form-control form-control-sm" id="pc_entrega" name="pc_entrega"
-                           value="@Model?.pc_entrega?.ToString("yyyy-MM-dd")" readonly />
-                </div>
+			</div>
+			<div class="row">
 
-                <!-- Facturado -->
-                <div class="col-md-3">
-                    <label for="facturado" class="form-label form-label-sm mb-1">Facturado</label>
-                    <input type="text" class="form-control form-control-sm" id="facturado" name="facturado"
-                           value="@Model?.facturado" readonly />
-                </div>
+				<!-- Entregado -->
+				<div class="col-md-3">
+					<label for="pc_entrega" class="form-label form-label-sm mb-1">Entregado</label>
+					<input type="date" class="form-control form-control-sm" id="pc_entrega" name="pc_entrega"
+						   value="@Model?.pc_entrega?.ToString("yyyy-MM-dd")" readonly />
+				</div>
 
-            </div>
+				<!-- Facturado -->
+				<div class="col-md-3">
+					<label for="facturado" class="form-label form-label-sm mb-1">Facturado</label>
+					<input type="text" class="form-control form-control-sm" id="facturado" name="facturado"
+						   value="@Model?.facturado" readonly />
+				</div>
 
-        </div>
-    </div>
+			</div>
+
+		</div>
+	</div>
 </div>
