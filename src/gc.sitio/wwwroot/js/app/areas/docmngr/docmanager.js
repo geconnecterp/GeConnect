@@ -109,6 +109,16 @@ function enviarEmail() {
         return !esNodoRaiz && !esCarpeta;
     });
 
+    if (archivosSeleccionados.length === 0) {
+        AbrirMensaje("ATENCIÓN",
+            "⚠️ Debe seleccionar al menos un documento para procesar.\n\n" +
+            "Por favor, selecciona uno o más documentos del árbol de la izquierda.",
+            function () {
+                $("#msjModal").modal("hide");
+            }, false, ["Aceptar"], "warn!", null);
+        return; // ✅ Detener ejecución
+    }
+
     console.log(`📊 Total archivos seleccionados: ${archivosSeleccionados.length}`);
 
     // ✅ NUEVO: Procesar archivos de manera unificada ANTES de llamar a los proveedores específicos
@@ -621,6 +631,16 @@ function enviarWhatsApp() {
         return !esNodoRaiz && !esCarpeta;
     });
 
+    if (archivosSeleccionados.length === 0) {
+        AbrirMensaje("ATENCIÓN",
+            "⚠️ Debe seleccionar al menos un documento para procesar.\n\n" +
+            "Por favor, selecciona uno o más documentos del árbol de la izquierda.",
+            function () {
+                $("#msjModal").modal("hide");
+            }, false, ["Aceptar"], "warn!", null);
+        return; // ✅ Detener ejecución
+    }
+
     // ✅ DIAGNÓSTICO: Logging detallado
     console.log(`🔍 Total nodos seleccionados (antes de filtrar): ${selectedNodes.length}`);
     console.log(`📊 Total archivos válidos (después de filtrar): ${archivosSeleccionados.length}`);
@@ -1055,7 +1075,6 @@ function invocaGenerarArchivo() {
 }
 
 function presentarArchivos() {
-    // Mostrar estado de carga
     $("#archivosDispuestos").html(`
         <div class="d-flex justify-content-center align-items-center p-5">
             <div class="spinner-border text-primary" role="status">
@@ -1079,121 +1098,127 @@ function presentarArchivos() {
         }
         else {
             let cuenta = obj.cuenta;
-            
-            // ✅ DIAGNÓSTICO COMPLETO
-            console.log('📋 DEBUG COMPLETO - Objeto cuenta recibido:', cuenta);
-            console.log('  📧 cta_Email:', cuenta.cta_Email, 'Tipo:', typeof cuenta.cta_Email, 'Vacío:', !cuenta.cta_Email);
-            console.log('  📧 cta_Denominacion:', cuenta.cta_Denominacion);
-            console.log('  📱 cta_Celu:', cuenta.cta_Celu);
-            console.log('  🆔 cta_Id:', cuenta.cta_Id);
-            console.log('  📊 cta_Tipo:', cuenta.cta_Tipo);
-            
-            // ✅ VALIDACIÓN: Si el email está vacío, mostrar advertencia
-            if (!cuenta.cta_Email || cuenta.cta_Email.trim() === '') {
-                console.warn('⚠️ ADVERTENCIA: La cuenta no tiene email registrado');
-                console.warn('  → El usuario deberá ingresar el email manualmente');
+
+            // ✅ DIAGNÓSTICO EXHAUSTIVO DE CONFIGURACIÓN
+            console.log('═══════════════════════════════════════════════════════');
+            console.log('🔍 DIAGNÓSTICO EXHAUSTIVO DE CONFIGURACIÓN');
+            console.log('═══════════════════════════════════════════════════════');
+
+            if (!window.currentModuleConfig) {
+                console.error('❌ CRÍTICO: window.currentModuleConfig NO EXISTE');
+                console.error('  → Causa: Script del modal no se ejecutó');
+                console.error('  → Solución: Inicializar con fallback');
+                inicializarConfiguracionModulo();
+            } else {
+                console.log('✅ window.currentModuleConfig EXISTE');
+                console.log('  📋 Módulo ID:', window.currentModuleConfig.moduloId);
+                console.log('  📋 Módulo Título:', window.currentModuleConfig.moduloTitulo);
+
+                // Verificar mensajeriaTemplate
+                if (!window.currentModuleConfig.mensajeriaTemplate) {
+                    console.error('❌ mensajeriaTemplate es NULL');
+                    console.error('  → Causa: El módulo no tiene configuración de mensajería en appsettings.json');
+                } else {
+                    console.log('✅ mensajeriaTemplate EXISTE');
+
+                    // Verificar mensajeTemplate (el contenido del mensaje)
+                    if (!window.currentModuleConfig.mensajeriaTemplate.mensajeTemplate) {
+                        console.error('❌ mensajeTemplate es NULL/UNDEFINED');
+                        console.error('  → Objeto completo:', window.currentModuleConfig.mensajeriaTemplate);
+                    } else {
+                        console.log('✅ mensajeTemplate EXISTE (primeros 80 chars):');
+                        console.log('  "' + window.currentModuleConfig.mensajeriaTemplate.mensajeTemplate.substring(0, 80) + '..."');
+                        console.log('  📊 Longitud:', window.currentModuleConfig.mensajeriaTemplate.mensajeTemplate.length, 'caracteres');
+                        console.log('  📊 Es Personalizado:', window.currentModuleConfig.mensajeriaTemplate.esPersonalizado);
+                        console.log('  📊 Tipo Destinatario:', window.currentModuleConfig.mensajeriaTemplate.tipoDestinatario);
+                    }
+                }
+
+                // Verificar emailTemplate
+                if (!window.currentModuleConfig.emailTemplate) {
+                    console.warn('⚠️ emailTemplate es NULL');
+                } else {
+                    console.log('✅ emailTemplate EXISTE');
+                    console.log('  📧 Asunto:', window.currentModuleConfig.emailTemplate.asuntoTemplate);
+                }
+
+                // Verificar empresa
+                console.log('✅ Empresa:', window.currentModuleConfig.empresa);
             }
-            
-            // ✅ NUEVO: Guardar datos completos de la cuenta en variable global
+
+            console.log('═══════════════════════════════════════════════════════');
+
+            // Datos de cuenta
+            console.log('📋 Objeto cuenta recibido:', cuenta);
+
             window.datosCtaActual = {
                 id: cuenta.cta_Id || '',
                 nombre: cuenta.cta_Denominacion || '',
                 email: cuenta.cta_Email || '',
                 celular: cuenta.cta_Celu || '',
-                tipo: cuenta.cta_Tipo || 'E' // P o E
+                tipo: cuenta.cta_Tipo || 'E'
             };
-            
-            console.log('📋 Datos de cuenta guardados en window.datosCtaActual:', window.datosCtaActual);
-            
-            // ✅ NUEVO: Logging ANTES de asignar valores a los campos
-            console.log('🔍 Asignando valores a los campos del formulario:');
-            console.log('  → #emailTo ← ', cuenta.cta_Email || '(VACÍO - Usuario debe completar)');
-            console.log('  → #whatsappTo ← ', cuenta.cta_Celu || '(VACÍO - Usuario debe completar)');
-            
-            // Cargar email y celular en los campos
+
+            console.log('📋 Datos de cuenta guardados:', window.datosCtaActual);
+
+            // Cargar campos
             $("#emailTo").val(cuenta.cta_Email || '');
             $("#whatsappTo").val(cuenta.cta_Celu || '');
-            
-            // ✅ NUEVO: Verificar si se asignó correctamente (con delay para asegurar que el DOM se actualizó)
-            setTimeout(function() {
+
+            setTimeout(function () {
                 const emailAsignado = $("#emailTo").val();
                 const whatsappAsignado = $("#whatsappTo").val();
-                
-                console.log('✅ Verificación POST-asignación:');
-                console.log('  #emailTo:', emailAsignado, 'Longitud:', emailAsignado ? emailAsignado.length : 0);
-                console.log('  #whatsappTo:', whatsappAsignado, 'Longitud:', whatsappAsignado ? whatsappAsignado.length : 0);
-                
+
                 if (!emailAsignado || emailAsignado.trim() === '') {
-                    console.error('❌ PROBLEMA DETECTADO: El campo #emailTo está vacío');
-                    console.error('  ⚠️ Causa: cuenta.cta_Email es null/vacío en la base de datos');
-                    console.error('  ✅ Solución: El usuario debe ingresar el email manualmente');
-                    
-                    // ✅ NUEVO: Mostrar placeholder informativo
                     $("#emailTo").attr('placeholder', '⚠️ Email no disponible - Ingresar manualmente');
                     $("#emailTo").addClass('border-warning');
                 }
-                
+
                 if (!whatsappAsignado || whatsappAsignado.trim() === '') {
-                    console.warn('⚠️ El campo #whatsappTo está vacío');
                     $("#whatsappTo").attr('placeholder', '⚠️ Celular no disponible - Ingresar manualmente');
                     $("#whatsappTo").addClass('border-warning');
                 }
             }, 100);
 
-            // ✅ Pre-cargar mensaje usando la configuración unificada
-            if (window.currentModuleConfig && 
-                window.currentModuleConfig.mensajeriaTemplate) {
-                
-                console.log('📧📱 Pre-cargando mensajes desde configuración unificada');
-                
-                // ✅ Pre-cargar ASUNTO Y MENSAJE DE EMAIL
-                if (window.currentModuleConfig.emailTemplate && 
-                    window.currentModuleConfig.emailTemplate.asuntoTemplate) {
-                    
-                    const emailResult = generarContenidoEmailDesdeConfig(
-                        window.datosCtaActual,
-                        [],
-                        []
-                    );
-                    
-                    $("#emailSubject").val(emailResult.asunto);
-                    $("#emailBody").val(emailResult.cuerpo);
-                    
-                    console.log('📧 Email pre-cargado:');
-                    console.log('  Asunto:', emailResult.asunto);
-                    console.log('  Cuerpo (primeros 100 chars):', emailResult.cuerpo.substring(0, 100) + '...');
-                }
-                
-                // ✅ Pre-cargar MENSAJE DE WHATSAPP
-                const mensajeWhatsApp = generarContenidoWhatsAppDesdeConfig(window.datosCtaActual);
-                $("#whatsappMessage").val(mensajeWhatsApp);
-                
-                // Actualizar contador
-                const length = mensajeWhatsApp.length;
-                $('#whatsappCharCounter').text(`${length}/5000 caracteres`);
-                
-                console.log('📱 WhatsApp pre-cargado (primeros 100 chars):', mensajeWhatsApp.substring(0, 100) + '...');
-                
+            // ✅ Pre-cargar mensajes
+            console.log('📝 Pre-cargando mensajes de Email y WhatsApp...');
+
+            // Pre-cargar EMAIL
+            if (window.currentModuleConfig &&
+                window.currentModuleConfig.emailTemplate &&
+                window.currentModuleConfig.emailTemplate.asuntoTemplate) {
+
+                const emailResult = generarContenidoEmailDesdeConfig(
+                    window.datosCtaActual,
+                    [],
+                    []
+                );
+
+                $("#emailSubject").val(emailResult.asunto);
+                $("#emailBody").val(emailResult.cuerpo);
+
+                console.log('📧 Email pre-cargado:');
+                console.log('  Asunto:', emailResult.asunto);
+                console.log('  Cuerpo (primeros 100 chars):', emailResult.cuerpo.substring(0, 100) + '...');
             } else {
-                console.warn('⚠️ No hay configuración de mensajería - usando valores por defecto');
-                
-                // ✅ FALLBACK: Valores por defecto
-                $("#emailSubject").val(`Documentación - ${window.datosCtaActual.id}`);
+                console.warn('⚠️ No hay configuración de email - usando fallback');
+                $("#emailSubject").val(`Documentación${window.datosCtaActual.id ? ' - ' + window.datosCtaActual.id : ''}`);
                 $("#emailBody").val(`Estimado/a,\n\nAdjuntamos la documentación solicitada.\n\nSaludos cordiales.`);
-                $("#whatsappMessage").val(`Hola, adjuntamos la documentación correspondiente a la cuenta ${window.datosCtaActual.id}.`);
-                
-                console.log('📧 Valores por defecto asignados');
             }
 
+            // Pre-cargar WHATSAPP
+            const mensajeWhatsApp = generarContenidoWhatsAppDesdeConfig(window.datosCtaActual);
+            $("#whatsappMessage").val(mensajeWhatsApp);
+
+            const length = mensajeWhatsApp.length;
+            $('#whatsappCharCounter').text(`${length}/5000 caracteres`);
+
+            console.log('📱 WhatsApp pre-cargado (primeros 100 chars):', mensajeWhatsApp.substring(0, 100) + '...');
+
             jsonP = JSON.parse(obj.arbol);
-
-            // Modificar el árbol para deshabilitar los nodos sin parámetros
             procesarNodosArbol(jsonP);
-
-            // Limpiar y destruir árbol existente
             $("#archivosDispuestos").jstree("destroy").empty();
 
-            // Inicializamos el árbol jsTree con configuración mejorada
             $("#archivosDispuestos").jstree({
                 "core": {
                     "data": jsonP,
@@ -1239,7 +1264,6 @@ function presentarArchivos() {
 
                 $(this).find('.jstree-anchor').append('<span class="ms-1 badge bg-light text-dark count-badge"></span>');
 
-                // Añadir conteos a las carpetas
                 $(this).find('.jstree-anchor').each(function () {
                     const nodeId = $(this).parent().attr('id');
                     const node = $('#archivosDispuestos').jstree(true).get_node(nodeId);
@@ -1583,139 +1607,163 @@ function construirCuerpoEmail(cuerpoBase, archivosAdjuntos, enlacesArchivos) {
 
 /**
  * Genera el contenido personalizado UNIFICADO para Email y WhatsApp
- * ✅ MEJORADO: Usa MensajeriaTemplate común para ambos canales
- * @param {Object} cuentaInfo - Información de la cuenta { id, nombre, email, tipo }
- * @param {Array} archivosAdjuntos - Lista de archivos pequeños adjuntos
- * @param {Array} enlacesArchivos - Lista de enlaces de archivos grandes
+ * ✅ MEJORADO: Validación robusta de configuración
+ */
+function generarContenidoMensaje(cuentaInfo, archivosAdjuntos, enlacesArchivos, canal) {
+    // ✅ VALIDACIÓN MEJORADA: Verificar paso a paso
+    console.log(`🔍 [${canal.toUpperCase()}] Generando contenido de mensaje...`);
+
+    // PASO 1: Verificar window.currentModuleConfig
+    if (!window.currentModuleConfig) {
+        console.error(`❌ [${canal.toUpperCase()}] window.currentModuleConfig NO existe`);
+        return generarMensajeFallback(cuentaInfo, archivosAdjuntos, enlacesArchivos, canal);
+    }
+
+    console.log(`✅ [${canal.toUpperCase()}] window.currentModuleConfig existe:`, window.currentModuleConfig.moduloId);
+
+    // PASO 2: Verificar mensajeriaTemplate
+    if (!window.currentModuleConfig.mensajeriaTemplate) {
+        console.warn(`⚠️ [${canal.toUpperCase()}] mensajeriaTemplate es NULL para módulo: ${window.currentModuleConfig.moduloId}`);
+        return generarMensajeFallback(cuentaInfo, archivosAdjuntos, enlacesArchivos, canal);
+    }
+
+    console.log(`✅ [${canal.toUpperCase()}] mensajeriaTemplate existe`);
+
+    // PASO 3: Verificar mensajeTemplate
+    if (!window.currentModuleConfig.mensajeriaTemplate.mensajeTemplate) {
+        console.error(`❌ [${canal.toUpperCase()}] mensajeTemplate es UNDEFINED/NULL`);
+        console.error('  → Objeto mensajeriaTemplate:', window.currentModuleConfig.mensajeriaTemplate);
+        return generarMensajeFallback(cuentaInfo, archivosAdjuntos, enlacesArchivos, canal);
+    }
+
+    console.log(`✅ [${canal.toUpperCase()}] mensajeTemplate existe (primeros 50 chars):`,
+        window.currentModuleConfig.mensajeriaTemplate.mensajeTemplate.substring(0, 50) + '...');
+
+    // ✅ AHORA SÍ: Generar mensaje desde la plantilla
+    const mensajeria = window.currentModuleConfig.mensajeriaTemplate;
+    const empresa = window.currentModuleConfig.empresa || {};
+
+    const esPersonalizado = mensajeria.esPersonalizado === true;
+    const saludoGenerico = mensajeria.saludoGenerico || 'Estimado/a';
+
+    let nombreLimpio = (cuentaInfo.nombre || '').split('(')[0].trim();
+    let tieneNombre = nombreLimpio.length > 0;
+
+    const fechaActual = new Date().toLocaleDateString('es-ES');
+
+    let tipoDestinatario = '';
+    if (cuentaInfo.tipo === 'P') {
+        tipoDestinatario = 'Proveedor';
+    } else if (cuentaInfo.tipo === 'E') {
+        tipoDestinatario = 'Cliente';
+    } else {
+        tipoDestinatario = mensajeria.tipoDestinatario || 'Cliente/Proveedor';
+    }
+
+    let asuntoBase = '';
+    let cuerpoBase = '';
+
+    // GENERAR ASUNTO (solo para Email)
+    if (canal === 'email' && window.currentModuleConfig.emailTemplate) {
+        asuntoBase = window.currentModuleConfig.emailTemplate.asuntoTemplate
+            .replace(/\{cuenta\}/g, cuentaInfo.id || '')
+            .replace(/\{fecha\}/g, fechaActual)
+            .replace(/\{nombre\}/g, tieneNombre ? nombreLimpio : '');
+
+        console.log(`📧 Asunto generado: "${asuntoBase}"`);
+    }
+
+    // GENERAR MENSAJE (común para Email y WhatsApp)
+    if (esPersonalizado && tieneNombre) {
+        // CASO 1: Mensaje personalizado CON nombre
+        console.log(`📝 [${canal.toUpperCase()}] Generando mensaje personalizado con nombre`);
+
+        cuerpoBase = mensajeria.mensajeTemplate
+            .replace(/\{tipoDestinatario\}/g, tipoDestinatario)
+            .replace(/\{nombre\}/g, nombreLimpio)
+            .replace(/\{cuenta\}/g, cuentaInfo.id || '')
+            .replace(/\{fecha\}/g, fechaActual);
+
+    } else if (esPersonalizado && !tieneNombre) {
+        // CASO 2: Mensaje personalizado SIN nombre (usar saludo genérico)
+        console.log(`📝 [${canal.toUpperCase()}] Generando mensaje personalizado sin nombre`);
+
+        let mensajeGenerico = mensajeria.mensajeTemplate;
+        const patronSaludo = /Estimado\/a\s+\{tipoDestinatario\}\s+\{nombre\},?/gi;
+        mensajeGenerico = mensajeGenerico.replace(patronSaludo, saludoGenerico + ',');
+
+        cuerpoBase = mensajeGenerico
+            .replace(/\{tipoDestinatario\}/g, '')
+            .replace(/\{nombre\}/g, '')
+            .replace(/\{cuenta\}/g, cuentaInfo.id || '')
+            .replace(/\{fecha\}/g, fechaActual)
+            .replace(/\s{2,}/g, ' ')
+            .trim();
+
+    } else {
+        // ✅ CASO 3: Mensaje NO personalizado (genérico del módulo)
+        console.log(`📝 [${canal.toUpperCase()}] Generando mensaje NO personalizado (genérico del módulo)`);
+
+        // ✅ CORREGIDO: Simplemente usar la plantilla directamente
+        cuerpoBase = mensajeria.mensajeTemplate
+            .replace(/\{fecha\}/g, fechaActual)
+            .replace(/\{cuenta\}/g, cuentaInfo.id || '');
+    }
+
+    // Agregar prefijo de WhatsApp si existe
+    if (canal === 'whatsapp' && window.currentModuleConfig.whatsappTemplate) {
+        const whatsapp = window.currentModuleConfig.whatsappTemplate;
+        if (whatsapp.prefijoMensaje) {
+            cuerpoBase = whatsapp.prefijoMensaje + '\n\n' + cuerpoBase;
+        }
+    }
+
+    // Agregar pie con datos de la empresa
+    cuerpoBase += `\n\nAtentamente,\n`;
+    cuerpoBase += `${empresa.nombre || 'GeCoNet'}\n`;
+    if (empresa.telefono) cuerpoBase += `Tel: ${empresa.telefono}\n`;
+    if (empresa.email) cuerpoBase += `Email: ${empresa.email}\n`;
+
+    // Agregar información de archivos
+    cuerpoBase = construirCuerpoEmail(cuerpoBase, archivosAdjuntos, enlacesArchivos);
+
+    console.log(`✅ [${canal.toUpperCase()}] Mensaje generado exitosamente`);
+
+    return { asunto: asuntoBase, cuerpo: cuerpoBase };
+}
+
+/**
+ * ✅ NUEVA FUNCIÓN: Genera mensaje fallback cuando NO hay configuración
+ * @param {Object} cuentaInfo - Información de la cuenta
+ * @param {Array} archivosAdjuntos - Archivos adjuntos
+ * @param {Array} enlacesArchivos - Enlaces de archivos
  * @param {string} canal - 'email' o 'whatsapp'
  * @returns {Object} { asunto, cuerpo }
  */
-function generarContenidoMensaje(cuentaInfo, archivosAdjuntos, enlacesArchivos, canal) {
-    // ✅ Verificar si hay configuración de mensajería
-    const tieneConfiguracion = window.currentModuleConfig && 
-                               window.currentModuleConfig.mensajeriaTemplate &&
-                               window.currentModuleConfig.mensajeriaTemplate.mensajeTemplate;
-    
+function generarMensajeFallback(cuentaInfo, archivosAdjuntos, enlacesArchivos, canal) {
+    console.warn(`⚠️ [${canal.toUpperCase()}] Usando mensaje FALLBACK genérico`);
+
     let asuntoBase = '';
     let cuerpoBase = '';
-    
-    if (tieneConfiguracion) {
-        console.log(`📧📱 Usando plantilla de mensajería desde configuración para ${canal}`);
-        
-        const mensajeria = window.currentModuleConfig.mensajeriaTemplate;
-        const empresa = window.currentModuleConfig.empresa || {};
-        
-        // ✅ Verificar si el mensaje es personalizado
-        const esPersonalizado = mensajeria.esPersonalizado === true;
-        const saludoGenerico = mensajeria.saludoGenerico || 'Estimado/a';
-        
-        // Extraer nombre limpio de la razón social
-        let nombreLimpio = (cuentaInfo.nombre || '').split('(')[0].trim();
-        let tieneNombre = nombreLimpio.length > 0;
-        
-        const fechaActual = new Date().toLocaleDateString('es-ES');
-        
-        // ✅ Determinar tipo de destinatario with fallback
-        let tipoDestinatario = '';
-        if (cuentaInfo.tipo === 'P') {
-            tipoDestinatario = 'Proveedor';
-        } else if (cuentaInfo.tipo === 'E') {
-            tipoDestinatario = 'Cliente';
-        } else {
-            tipoDestinatario = mensajeria.tipoDestinatario || 'Cliente/Proveedor';
-        }
-        
-        // ✅ GENERAR ASUNTO (solo para Email)
-        if (canal === 'email' && window.currentModuleConfig.emailTemplate) {
-            asuntoBase = window.currentModuleConfig.emailTemplate.asuntoTemplate
-                .replace(/\{cuenta\}/g, cuentaInfo.id || '')
-                .replace(/\{fecha\}/g, fechaActual);
-            
-            // Si el asunto tiene {nombre} y hay nombre disponible, reemplazarlo
-            if (asuntoBase.includes('{nombre}')) {
-                asuntoBase = asuntoBase.replace(/\{nombre\}/g, tieneNombre ? nombreLimpio : '');
-            }
-        }
-        
-        // ✅ GENERAR MENSAJE (común para Email y WhatsApp)
-        if (esPersonalizado && tieneNombre) {
-            // ✅ CASO 1: Mensaje personalizado CON nombre disponible
-            console.log(`📝 Generando mensaje personalizado con nombre para ${canal}`);
-            
-            cuerpoBase = mensajeria.mensajeTemplate
-                .replace(/\{tipoDestinatario\}/g, tipoDestinatario)
-                .replace(/\{nombre\}/g, nombreLimpio)
-                .replace(/\{cuenta\}/g, cuentaInfo.id || '')
-                .replace(/\{fecha\}/g, fechaActual);
-                
-        } else if (esPersonalizado && !tieneNombre) {
-            // ✅ CASO 2: Mensaje personalizado pero SIN nombre disponible
-            console.log(`📝 Generando mensaje personalizado sin nombre (usando saludo genérico) para ${canal}`);
-            
-            let mensajeGenerico = mensajeria.mensajeTemplate;
-            
-            // Reemplazar el saludo personalizado por el genérico
-            const patronSaludo = /Estimado\/a\s+\{tipoDestinatario\}\s+\{nombre\},?/gi;
-            mensajeGenerico = mensajeGenerico.replace(patronSaludo, saludoGenerico + ',');
-            
-            // Limpiar cualquier placeholder restante
-            cuerpoBase = mensajeGenerico
-                .replace(/\{tipoDestinatario\}/g, '')
-                .replace(/\{nombre\}/g, '')
-                .replace(/\{cuenta\}/g, cuentaInfo.id || '')
-                .replace(/\{fecha\}/g, fechaActual)
-                .replace(/\s{2,}/g, ' ')
-                .trim();
-                
-        } else {
-            // ✅ CASO 3: Mensaje NO personalizado (genérico)
-            console.log(`📝 Generando mensaje genérico para ${canal}`);
-            
-            cuerpoBase = mensajeria.mensajeTemplate
-                .replace(/\{fecha\}/g, fechaActual)
-                .replace(/\{cuenta\}/g, cuentaInfo.id || '');
-        }
-        
-        // ✅ Agregar prefijo de WhatsApp si existe
-        if (canal === 'whatsapp' && window.currentModuleConfig.whatsappTemplate) {
-            const whatsapp = window.currentModuleConfig.whatsappTemplate;
-            if (whatsapp.prefijoMensaje) {
-                cuerpoBase = whatsapp.prefijoMensaje + '\n\n' + cuerpoBase;
-            }
-        }
-        
-        // Agregar pie con datos de la empresa
-        cuerpoBase += `\n\nAtentamente,\n`;
-        cuerpoBase += `${empresa.nombre || 'GeCoNet'}\n`;
-        if (empresa.telefono) cuerpoBase += `Tel: ${empresa.telefono}\n`;
-        if (empresa.email) cuerpoBase += `Email: ${empresa.email}\n`;
-        
-    } else {
-        console.warn(`⚠️ No hay configuración de mensajería - usando valores por defecto para ${canal}`);
-        
-        // ✅ FALLBACK: Plantilla por defecto
-        if (canal === 'email') {
-            asuntoBase = `Documentación - ${cuentaInfo.id || 'Sin cuenta'}`;
-        }
-        
-        const nombreLimpio = (cuentaInfo.nombre || '').split('(')[0].trim();
-        
-        if (nombreLimpio) {
-            cuerpoBase = `Estimado/a ${nombreLimpio},\n\n`;
-        } else {
-            cuerpoBase = `Estimado/a,\n\n`;
-        }
-        
-        cuerpoBase += `Adjuntamos la documentación solicitada correspondiente a su cuenta.\n\n`;
-        cuerpoBase += `Por favor, revise los archivos adjuntos.\n\n`;
-        cuerpoBase += `Saludos cordiales.`;
+
+    if (canal === 'email') {
+        asuntoBase = `Documentación${cuentaInfo.id ? ' - ' + cuentaInfo.id : ''}`;
     }
-    
-    // ✅ Agregar información de archivos
+
+    const nombreLimpio = (cuentaInfo.nombre || '').split('(')[0].trim();
+
+    if (nombreLimpio) {
+        cuerpoBase = `Estimado/a ${nombreLimpio},\n\n`;
+    } else {
+        cuerpoBase = `Estimado/a,\n\n`;
+    }
+
+    cuerpoBase += `Adjuntamos la documentación solicitada.\n\n`;
+    cuerpoBase += `Saludos cordiales.`;
+
+    // Agregar información de archivos
     cuerpoBase = construirCuerpoEmail(cuerpoBase, archivosAdjuntos, enlacesArchivos);
-    
-    console.log(`📧📱 Mensaje generado para ${canal} - Asunto: "${asuntoBase}"`);
-    
+
     return { asunto: asuntoBase, cuerpo: cuerpoBase };
 }
 

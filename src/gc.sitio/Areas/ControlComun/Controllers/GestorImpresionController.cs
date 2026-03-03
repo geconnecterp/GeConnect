@@ -56,7 +56,9 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                 var docMgr = DocumentManager;
                 
                 // ✅ Buscar configuración del módulo actual
-                var moduloConfig = _docsManager.Modulos.FirstOrDefault(m => m.Id == modulo);
+                var moduloConfig = !string.IsNullOrEmpty(modulo)?
+                                _docsManager.Modulos.FirstOrDefault(m => m.Id == modulo):
+                                _docsManager.Modulos.FirstOrDefault(m => m.Id == docMgr.Id);
                 
                 if (moduloConfig != null)
                 {
