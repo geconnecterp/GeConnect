@@ -161,9 +161,10 @@ function procesarArchivosParaEmail(emailProvider, emailTo, emailSubject, emailBo
             let cuerpoConEnlaces = emailBody;
 
             if (enlaces.length > 0) {
-                cuerpoConEnlaces += '\n\n📎 Documentos disponibles:\n';
+                // ✅ NUEVO: Agregar enlaces como HTML clicables
+                cuerpoConEnlaces += '\n\n📎 <strong>Documentos disponibles:</strong><br/><br/>';
                 enlaces.forEach((enlace, index) => {
-                    cuerpoConEnlaces += `${index + 1}. ${enlace.nombre}\n   ${enlace.url}\n\n`;
+                    cuerpoConEnlaces += `${index + 1}. <a href="${enlace.url}" target="_blank" style="color: #0066cc; text-decoration: none;">${enlace.nombre}</a><br/><br/>`;
                 });
             }
 
@@ -221,9 +222,10 @@ function clasificarYEnviarPorGmail(emailTo, emailSubject, emailBody, archivosGen
     let cuerpoFinal = emailBody;
 
     if (enlacesGrandes.length > 0) {
-        cuerpoFinal += '\n\n🔗 Archivos grandes disponibles para descarga:\n';
+        // ✅ NUEVO: Agregar enlaces como HTML clicables
+        cuerpoFinal += '\n\n🔗 <strong>Archivos grandes disponibles para descarga:</strong><br/><br/>';
         enlacesGrandes.forEach((enlace, index) => {
-            cuerpoFinal += `${index + 1}. ${enlace.nombre}\n   ${enlace.url}\n\n`;
+            cuerpoFinal += `${index + 1}. <a href="${enlace.url}" target="_blank" style="color: #0066cc; text-decoration: none;">${enlace.nombre}</a><br/><br/>`;
         });
     }
 
