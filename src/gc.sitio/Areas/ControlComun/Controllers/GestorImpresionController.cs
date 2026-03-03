@@ -3,6 +3,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.EntidadesComunes.Options; // ✅ NUEVO
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
@@ -20,35 +21,110 @@ namespace gc.sitio.Areas.ControlComun.Controllers
         private readonly IHttpContextAccessor _accessor;
         private readonly IDocManagerServicio _docMSv;
         private readonly IWebHostEnvironment _env;
+        
+        // ✅ NUEVO: Usar la infraestructura existente
+        private readonly DocsManager _docsManager;
+        private readonly EmpresaGeco _empresaGeco;
 
-
-        public GestorImpresionController(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<GestorImpresionController> logger,
-            IDocManagerServicio docManager, IWebHostEnvironment env)
+        public GestorImpresionController(
+            IOptions<AppSettings> options, 
+            IHttpContextAccessor accessor, 
+            ILogger<GestorImpresionController> logger,
+            IDocManagerServicio docManager, 
+            IWebHostEnvironment env,
+            IOptions<DocsManager> docsManager,        // ✅ EXISTENTE
+            IOptions<EmpresaGeco> empresaGeco)        // ✅ EXISTENTE
             : base(options, accessor, logger)
         {
             _setting = options.Value;
             _accessor = accessor;
             _docMSv = docManager;
             _env = env;
+            
+            // ✅ NUEVO: Inicializar usando infraestructura existente
+            _docsManager = docsManager.Value;
+            _empresaGeco = empresaGeco.Value;
         }
-
-
 
         [HttpPost]
         public IActionResult OrquestadorDeModulos(string modulo, params string[] parametros)
         {
             RespuestaGenerica<EntidadBase> response = new();
 
-            //esta action tendrá como funcion enviar al componente de impresión, la configuración
-            //del modulo respecto a la funcionalidad que tendrá permitida
             try
             {
-                //el VM se va cargado en el Modulo origen a medida que se van ejecutando las consultas.
                 var docMgr = DocumentManager;
+                
+                // ✅ Buscar configuración del módulo actual
+                var moduloConfig = _docsManager.Modulos.FirstOrDefault(m => m.Id == modulo);
+                
+                if (moduloConfig != null)
+                {
+                    // ✅ NUEVO: Pasar configuración de MENSAJERÍA (común para Email y WhatsApp)
+                    if (moduloConfig.MensajeriaTemplate != null)
+                    {
+                        ViewBag.MensajeriaTemplate = moduloConfig.MensajeriaTemplate;
+                        
+                        _logger?.LogInformation(
+                            "📧📱 Plantilla de mensajería cargada para módulo {ModuloId}", 
+                            moduloConfig.Id);
+                    }
+                    
+                    // ✅ NUEVO: Pasar configuración de EMAIL (solo asunto)
+                    if (moduloConfig.EmailTemplate != null && moduloConfig.Email)
+                    {
+                        ViewBag.EmailTemplate = moduloConfig.EmailTemplate;
+                        
+                        _logger?.LogInformation(
+                            "📧 Plantilla de email cargada para módulo {ModuloId}: {Asunto}", 
+                            moduloConfig.Id, 
+                            moduloConfig.EmailTemplate.AsuntoTemplate);
+                    }
+                    
+                    // ✅ NUEVO (opcional futuro): Pasar configuración de WHATSAPP
+                    if (moduloConfig.WhatsAppTemplate != null && moduloConfig.Whatsapp)
+                    {
+                        ViewBag.WhatsAppTemplate = moduloConfig.WhatsAppTemplate;
+                        
+                        _logger?.LogInformation(
+                            "📱 Plantilla de WhatsApp cargada para módulo {ModuloId}", 
+                            moduloConfig.Id);
+                    }
+                    
+                    // ✅ Pasar ID y título del módulo
+                    ViewBag.ModuloId = moduloConfig.Id;
+                    ViewBag.ModuloTitulo = moduloConfig.Titulo;
+                    
+                    // ✅ Pasar datos de la empresa para el pie
+                    ViewBag.EmpresaNombre = _empresaGeco.Nombre;
+                    ViewBag.EmpresaTelefono = _empresaGeco.Telefono;
+                    ViewBag.EmpresaEmail = _empresaGeco.Email;
+                    ViewBag.EmpresaDireccion = _empresaGeco.Direccion;
+                    ViewBag.EmpresaLocalidad = _empresaGeco.Localidad;
+                    ViewBag.EmpresaProvincia = _empresaGeco.Provincia;
+                    
+                    _logger?.LogInformation(
+                        "🏢 Datos de empresa cargados: {Nombre} - {Email}", 
+                        _empresaGeco.Nombre, 
+                        _empresaGeco.Email);
+                }
+                else
+                {
+                    _logger?.LogWarning("⚠️ No se encontró configuración para el módulo: {Modulo}", modulo);
+                    
+                    // ✅ FALLBACK: Asignar valores por defecto
+                    ViewBag.ModuloId = modulo;
+                    ViewBag.ModuloTitulo = "Documentación";
+                    ViewBag.MensajeriaTemplate = null;
+                    ViewBag.EmailTemplate = null;
+                    ViewBag.WhatsAppTemplate = null;
+                }
+                
                 return View("~/areas/ControlComun/views/GestorImpresion/_docManagerModal.cshtml", docMgr);
             }
             catch (NegocioException ex)
             {
+                _logger?.LogError(ex, "Error de negocio en OrquestadorDeModulos");
                 response.Mensaje = ex.Message;
                 response.Ok = false;
                 response.EsWarn = true;
@@ -57,7 +133,6 @@ namespace gc.sitio.Areas.ControlComun.Controllers
             }
             catch (Exception ex)
             {
-
                 string msg = "Error en la obtención de la configuración para el Gestor Documental.";
                 _logger?.LogError(ex, msg);
                 response.Mensaje = msg;
@@ -201,7 +276,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 
 
         [HttpPost]
-        public JsonResult EnviarEmail(List<ArchivoSendDto> archivos, string emailTo, string emailSubject, string emailBody)
+        public JsonResult EnviarEmail([FromBody] EnviarEmailRequest request)
         {
             try
             {
@@ -211,20 +286,97 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                     return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
                 }
 
-                var message = new MailMessage();
-                message.From = new MailAddress(_setting.CredUserEmail); // Establecer la dirección de correo del remitente
-                message.To.Add(new MailAddress(emailTo));
-                message.Subject = emailSubject;
-                message.Body = emailBody;
-                message.IsBodyHtml = true;
-
-                foreach (var archivo in archivos)
+                // ✅ Validaciones con el DTO
+                if (request == null)
                 {
-                    var archivoBytes = Convert.FromBase64String(archivo.archivoBase64);
-                    var archivoStream = new MemoryStream(archivoBytes);
-                    message.Attachments.Add(new Attachment(archivoStream, archivo.nombre, "application/pdf"));
+                    _logger?.LogWarning("⚠️ Request nulo recibido en EnviarEmail");
+                    return Json(new { error = true, warn = false, msg = "Datos de solicitud inválidos" });
                 }
 
+                if (string.IsNullOrWhiteSpace(request.EmailTo))
+                {
+                    _logger?.LogWarning("⚠️ EmailTo vacío");
+                    return Json(new { error = true, warn = false, msg = "El destinatario es obligatorio" });
+                }
+
+                if (string.IsNullOrWhiteSpace(request.EmailSubject))
+                {
+                    _logger?.LogWarning("⚠️ EmailSubject vacío");
+                    return Json(new { error = true, warn = false, msg = "El asunto es obligatorio" });
+                }
+
+                if (string.IsNullOrWhiteSpace(request.EmailBody))
+                {
+                    _logger?.LogWarning("⚠️ EmailBody vacío");
+                    return Json(new { error = true, warn = false, msg = "El mensaje es obligatorio" });
+                }
+
+                _logger?.LogInformation(
+                    "📧 Procesando envío de email: To={EmailTo}, Subject={Subject}, Archivos={Archivos}",
+                    request.EmailTo,
+                    request.EmailSubject,
+                    request.Archivos?.Count ?? 0
+                );
+
+                var message = new MailMessage();
+                message.From = new MailAddress(_setting.CredUserEmail);
+                
+                // ✅ Soportar múltiples destinatarios separados por ; o ,
+                var destinatarios = request.EmailTo.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
+                
+                int destinatariosAgregados = 0;
+                foreach (var destinatario in destinatarios)
+                {
+                    var emailLimpio = destinatario.Trim();
+                    
+                    if (!string.IsNullOrWhiteSpace(emailLimpio))
+                    {
+                        try
+                        {
+                            message.To.Add(new MailAddress(emailLimpio));
+                            destinatariosAgregados++;
+                            _logger?.LogDebug("✅ Destinatario agregado: {Email}", emailLimpio);
+                        }
+                        catch (FormatException ex)
+                        {
+                            _logger?.LogWarning(ex, "⚠️ Email inválido ignorado: {Email}", emailLimpio);
+                        }
+                    }
+                }
+                
+                if (destinatariosAgregados == 0)
+                {
+                    _logger?.LogWarning("⚠️ No se encontraron destinatarios válidos");
+                    return Json(new { error = true, warn = false, msg = "No se encontraron destinatarios válidos" });
+                }
+                
+                message.Subject = request.EmailSubject;
+                message.Body = request.EmailBody;
+                message.IsBodyHtml = true;
+
+                // ✅ Agregar archivos adjuntos
+                if (request.Archivos != null && request.Archivos.Count > 0)
+                {
+                    foreach (var archivo in request.Archivos)
+                    {
+                        try
+                        {
+                            var archivoBytes = Convert.FromBase64String(archivo.archivoBase64);
+                            var archivoStream = new MemoryStream(archivoBytes);
+                            message.Attachments.Add(new Attachment(archivoStream, archivo.nombre, "application/pdf"));
+                            
+                            _logger?.LogDebug("📎 Adjunto agregado: {Nombre} ({Tamaño} KB)", 
+                                archivo.nombre, 
+                                archivoBytes.Length / 1024);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger?.LogWarning(ex, "⚠️ Error al adjuntar archivo: {Nombre}", archivo.nombre);
+                        }
+                    }
+                }
+
+                // ✅ Enviar email
                 using (var smtp = new SmtpClient())
                 {
                     smtp.Host = _setting.ServerSMTP;
@@ -233,12 +385,38 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                     smtp.EnableSsl = _setting.EnabledSSL;
                     smtp.Send(message);
                 }
+                
+                _logger?.LogInformation(
+                    "✅ Email enviado exitosamente a {Cantidad} destinatario(s): {Destinatarios} con {CantidadArchivos} archivo(s)", 
+                    message.To.Count,
+                    string.Join(", ", message.To.Select(m => m.Address)),
+                    request.Archivos?.Count ?? 0
+                );
 
-                return Json(new { error = false, warn = false });
+                return Json(new { 
+                    error = false, 
+                    warn = false,
+                    destinatarios = message.To.Count,
+                    archivos = request.Archivos?.Count ?? 0
+                });
+            }
+            catch (SmtpException ex)
+            {
+                _logger?.LogError(ex, "❌ Error SMTP al enviar email");
+                return Json(new { 
+                    error = true, 
+                    warn = false, 
+                    msg = $"Error al enviar email: {ex.Message}\n\nVerifica la configuración SMTP." 
+                });
             }
             catch (Exception ex)
             {
-                return Json(new { error = true, warn = false, msg = ex.Message });
+                _logger?.LogError(ex, "❌ Error general al enviar email");
+                return Json(new { 
+                    error = true, 
+                    warn = false, 
+                    msg = $"Error al enviar email: {ex.Message}" 
+                });
             }
         }
 
@@ -637,27 +815,37 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 
         /// <summary>
         /// Envía un archivo al servidor remoto FileStore vía HTTP POST
+        /// ✅ CORREGIDO: Manejo robusto de errores y logging detallado
         /// </summary>
         private async Task<string?> EnviarArchivoAServidorRemoto(byte[] archivoBytes, string nombreArchivo)
         {
+            HttpClient? httpClient = null;
             try
             {
-                using var httpClient = new HttpClient();
-                httpClient.Timeout = TimeSpan.FromMinutes(10); // Timeout largo para archivos grandes
-                
-                // URL del endpoint de upload del FileStore
-                var uploadUrl = $"{_setting.RutaFileServer}api/upload";
-                
-                _logger?.LogInformation("📤 Enviando archivo al FileStore: {Nombre} ({Tamaño} KB) → {Url}", 
-                    nombreArchivo, 
+                httpClient = new HttpClient();
+                httpClient.Timeout = TimeSpan.FromMinutes(10);
+
+                // ✅ CORREGIDO: Sanitizar URL (quitar barra final duplicada)
+                var rutaBase = _setting.RutaFileServer?.TrimEnd('/') ?? "https://localhost:5001";
+                var uploadUrl = $"{rutaBase}/api/upload";
+
+                _logger?.LogInformation("📤 [FileStore] Enviando archivo: {Nombre} ({Tamaño} KB) → {Url}",
+                    nombreArchivo,
                     archivoBytes.Length / 1024,
                     uploadUrl);
-                
+
+                // ✅ NUEVO: Validar URL
+                if (!Uri.TryCreate(uploadUrl, UriKind.Absolute, out var validatedUri))
+                {
+                    _logger?.LogError("❌ [FileStore] URL inválida: {Url}", uploadUrl);
+                    return null;
+                }
+
                 // Crear contenido multipart/form-data
                 using var content = new MultipartFormDataContent();
                 using var fileContent = new ByteArrayContent(archivoBytes);
-                
-                // Detectar tipo MIME según extensión
+
+                // Detectar tipo MIME
                 var extension = Path.GetExtension(nombreArchivo).ToLowerInvariant();
                 var mimeType = extension switch
                 {
@@ -667,38 +855,111 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                     ".txt" => "text/plain",
                     _ => "application/octet-stream"
                 };
-                
+
                 fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(mimeType);
                 content.Add(fileContent, "file", nombreArchivo);
-                
-                // Enviar archivo
-                var response = await httpClient.PostAsync(uploadUrl, content);
-                
+
+                _logger?.LogDebug("📤 [FileStore] Enviando POST a {Url}", validatedUri);
+
+                // ✅ NUEVO: Captura de excepciones específicas
+                HttpResponseMessage? response = null;
+                try
+                {
+                    response = await httpClient.PostAsync(validatedUri, content);
+                }
+                catch (HttpRequestException httpEx)
+                {
+                    _logger?.LogError(httpEx, "❌ [FileStore] Error HTTP: {StatusCode} - {Message}",
+                        httpEx.StatusCode?.ToString() ?? "N/A",
+                        httpEx.Message);
+                    _logger?.LogError("❌ [FileStore] Verifica que el FileStore esté corriendo en: {Url}", rutaBase);
+                    return null;
+                }
+                catch (TaskCanceledException taskEx)
+                {
+                    _logger?.LogError(taskEx, "❌ [FileStore] Timeout (10 minutos) al enviar a {Url}", validatedUri);
+                    return null;
+                }
+
+                _logger?.LogDebug("📤 [FileStore] Response: StatusCode={StatusCode}", response.StatusCode);
+
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
-                    
-                    // Parsear respuesta JSON
-                    var jsonResponse = System.Text.Json.JsonDocument.Parse(responseContent);
-                    var urlPublica = jsonResponse.RootElement.GetProperty("url").GetString();
-                    
-                    _logger?.LogInformation("✅ Archivo subido exitosamente: {Url}", urlPublica);
-                    
-                    return urlPublica;
+
+                    _logger?.LogDebug("📤 [FileStore] Response JSON: {Content}", responseContent);
+
+                    if (string.IsNullOrWhiteSpace(responseContent))
+                    {
+                        _logger?.LogError("❌ [FileStore] Response vacío");
+                        return null;
+                    }
+
+                    try
+                    {
+                        var jsonResponse = System.Text.Json.JsonDocument.Parse(responseContent);
+
+                        if (!jsonResponse.RootElement.TryGetProperty("url", out var urlProperty))
+                        {
+                            _logger?.LogError("❌ [FileStore] Response sin propiedad 'url': {Response}", responseContent);
+                            return null;
+                        }
+
+                        var urlPublica = urlProperty.GetString();
+
+                        if (string.IsNullOrWhiteSpace(urlPublica))
+                        {
+                            _logger?.LogError("❌ [FileStore] URL pública vacía");
+                            return null;
+                        }
+
+                        _logger?.LogInformation("✅ [FileStore] Archivo subido: {Url}", urlPublica);
+
+                        return urlPublica;
+                    }
+                    catch (System.Text.Json.JsonException jsonEx)
+                    {
+                        _logger?.LogError(jsonEx, "❌ [FileStore] Error JSON: {Content}", responseContent);
+                        return null;
+                    }
                 }
                 else
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    _logger?.LogError("❌ Error al subir archivo: {StatusCode} - {Error}", 
-                        response.StatusCode, 
+                    _logger?.LogError("❌ [FileStore] HTTP {StatusCode}: {Error}",
+                        response.StatusCode,
                         errorContent);
+
+                    // ✅ Diagnóstico específico por código HTTP
+                    switch (response.StatusCode)
+                    {
+                        case System.Net.HttpStatusCode.BadRequest:
+                            _logger?.LogError("❌ [FileStore] Bad Request (400) - Problema con multipart/form-data");
+                            break;
+                        case System.Net.HttpStatusCode.NotFound:
+                            _logger?.LogError("❌ [FileStore] Not Found (404) - URL incorrecta: {Url}", validatedUri);
+                            _logger?.LogError("❌ [FileStore] Verifica appsettings.json → RutaFileServer: {Ruta}", rutaBase);
+                            break;
+                        case System.Net.HttpStatusCode.InternalServerError:
+                            _logger?.LogError("❌ [FileStore] Internal Server Error (500) - Problema en FileStore");
+                            break;
+                        case System.Net.HttpStatusCode.ServiceUnavailable:
+                            _logger?.LogError("❌ [FileStore] Service Unavailable (503) - FileStore no responde");
+                            break;
+                    }
+
                     return null;
                 }
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "❌ Excepción al enviar archivo al servidor remoto");
+                _logger?.LogError(ex, "❌ [FileStore] Excepción NO controlada al enviar {Nombre}", nombreArchivo);
+                _logger?.LogError("❌ [FileStore] StackTrace: {StackTrace}", ex.StackTrace);
                 return null;
+            }
+            finally
+            {
+                httpClient?.Dispose();
             }
         }
 
@@ -759,5 +1020,35 @@ namespace gc.sitio.Areas.ControlComun.Controllers
             public string nombre { get; set; } = string.Empty;
         }
 
+        // ✅ AGREGAR AL FINAL DE LA CLASE (después de los otros DTOs)
+
+        /// <summary>
+        /// DTO para solicitud de envío de email con archivos adjuntos
+        /// </summary>
+        public class EnviarEmailRequest
+        {
+            /// <summary>
+            /// Lista de archivos a adjuntar (en base64)
+            /// </summary>
+            public List<ArchivoSendDto> Archivos { get; set; } = new();
+
+            /// <summary>
+            /// Destinatario(s) del email (separados por ; o , si son múltiples)
+            /// </summary>
+            public string EmailTo { get; set; } = string.Empty;
+
+            /// <summary>
+            /// Asunto del email
+            /// </summary>
+            public string EmailSubject { get; set; } = string.Empty;
+
+            /// <summary>
+            /// Cuerpo del email (puede contener HTML)
+            /// </summary>
+            public string EmailBody { get; set; } = string.Empty;
+        }
+
     }
+
+    
 }

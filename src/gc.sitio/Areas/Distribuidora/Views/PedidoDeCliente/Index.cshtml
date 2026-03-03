@@ -1,0 +1,63 @@
+﻿@model FiltroModel
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+	var filtro = new QueryFilters() { Modelo = ModeloFilter.PEDIDO_DE_CLIENTE, Rel01 = [], Rel02 = [], Rel03 = [], Rel04 = [] };
+	List<ProductoListaDto> listaVacia = new();
+}
+@section styles {
+	<link rel="stylesheet" href="~/css/simplePagination.css" />
+	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+}
+<partial name="_botonera" model="filtro" />
+<div class="collapse" id="divFiltro">
+	<partial name="_filtros" model="Model" />
+	@Html.Hidden("pagEstado", false)
+</div>
+<div class="collapse" id="divDetalle"></div>
+
+<div class="row mt-2 py-1">
+	<div class="col-6" id="divPresDatos" style="display:none">
+	</div>
+	<div class="col-6" id="divPresProds" style="display:none">
+	</div>
+</div>
+<div id="modalGestorDocumental"></div>
+<partial name="~/areas/controlcomun/views/producto/busquedaadvanceV02.cshtml" model="@listaVacia" />
+
+@section scripts {
+	<script type="text/javascript">
+		let totalRegs = 0;
+		let pagRegs = 0;
+		let pags = 0;
+		let pagina = 1;
+		let search = "";
+
+		var autoComRel01Url = "@Url.Action("BuscarCuentas", "pedidodecliente", new { area = "Distribuidora" })";
+		var buscarPedidosUrl = "@Url.Action("BuscarPedidosDeCliente", "pedidodecliente", new { area = "Distribuidora" })";
+		let buscarMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "pedidodecliente", new { area = "Distribuidora" })';
+
+		let homePedido = '@Url.Action("index", "pedidodecliente", new { area = "Distribuidora" })';
+
+		//funcionalidad busqueda avanzada controlador común
+		let productoBase = null; //se hidrata en busquedas.
+		let p_id_selected = "";
+		let funcionBusquedaAvanzada = true;
+		let busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
+		let busquedaAvanzadaUrl = "@Url.Action("BusquedaAvanzadaV02", "producto", new { area = "ControlComun" })";
+		let busquedaAvanzadaModalUrl = "@Url.Action("BusquedaAvanzadaV02", "producto", new { area = "ControlComun" })";
+
+		// Gestor de impresión
+		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+		var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+		var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+		var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "GestorImpresion", new { area = "ControlComun" })";
+	</script>
+	<script src="~/lib/jstree/jstree.min.js"></script>
+	<script src="~/js/app/areas/docmngr/docmanager.js"></script>
+	<script src="~/js/plugins/jquery.simplePagination.js"></script>
+
+	<script src="~/js/app/busquedasV02.js"></script>
+	<script src="~/js/app/areas/distribuidora/pedidodecliente/pdecliente.js" type="text/javascript"></script>
+}

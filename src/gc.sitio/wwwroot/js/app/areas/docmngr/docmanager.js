@@ -63,13 +63,392 @@ $(function () {
     inicializaArbolArchivos();
 });
 
+
 /**
- * Función: Enviar mensaje por WhatsApp Web (100% Gratis - Sin Twilio)
+ * ✅ FUNCIÓN PRINCIPAL: Enviar Email con archivos adjuntos o enlaces
+ * CORREGIDO: Unifica generación de PDFs y URLs para TODOS los proveedores
+ */
+function enviarEmail() {
+    console.log('📧 Iniciando proceso de envío de email...');
+
+    // ✅ Detectar proveedor seleccionado
+    const emailProvider = $('input[name="emailProvider"]:checked').val();
+    console.log(`📧 Proveedor seleccionado: ${emailProvider}`);
+
+    // Validaciones básicas
+    const emailTo = $('#emailTo').val().trim();
+    const emailSubject = $('#emailSubject').val().trim();
+    const emailBody = $('#emailBody').val().trim();
+
+    if (!emailTo) {
+        AbrirMensaje("ATENCIÓN", "Por favor ingresa un correo electrónico", function () {
+            $("#msjModal").modal("hide");
+        }, false, ["Aceptar"], "warn!", null);
+        return;
+    }
+
+    if (!emailSubject) {
+        AbrirMensaje("ATENCIÓN", "Por favor ingresa un asunto", function () {
+            $("#msjModal").modal("hide");
+        }, false, ["Aceptar"], "warn!", null);
+        return;
+    }
+
+    if (!emailBody) {
+        AbrirMensaje("ATENCIÓN", "Por favor ingresa un mensaje", function () {
+            $("#msjModal").modal("hide");
+        }, false, ["Aceptar"], "warn!", null);
+        return;
+    }
+
+    // ✅ Obtener archivos seleccionados
+    const selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
+    const archivosSeleccionados = selectedNodes.filter(function (node) {
+        const esNodoRaiz = node.parent === "#" || node.parent === null;
+        const esCarpeta = node.children && node.children.length > 0;
+        return !esNodoRaiz && !esCarpeta;
+    });
+
+    console.log(`📊 Total archivos seleccionados: ${archivosSeleccionados.length}`);
+
+    // ✅ NUEVO: Procesar archivos de manera unificada ANTES de llamar a los proveedores específicos
+    if (archivosSeleccionados.length > 0) {
+        procesarArchivosParaEmail(emailProvider, emailTo, emailSubject, emailBody, archivosSeleccionados);
+    } else {
+        // Sin archivos, llamar directamente según el proveedor
+        switch (emailProvider) {
+            case 'outlookweb':
+                enviarEmailOutlookWeb(emailTo, emailSubject, emailBody, []);
+                break;
+            case 'outlookdesktop':
+                enviarEmailOutlookLocal(emailTo, emailSubject, emailBody, []);
+                break;
+            default:
+                enviarEmailGmail(emailTo, emailSubject, emailBody, []);
+        }
+    }
+}
+
+/**
+ * ✅ NUEVA FUNCIÓN: Procesa archivos de manera unificada
+ * Genera PDFs, guarda en FileStore y obtiene URLs públicas
+ * Luego delega al proveedor específico (Gmail/Outlook)
+ */
+function procesarArchivosParaEmail(emailProvider, emailTo, emailSubject, emailBody, archivosSeleccionados) {
+    AbrirWaiting("Generando PDFs y guardando en servidor...");
+
+    console.log(`📎 Procesando ${archivosSeleccionados.length} archivo(s) para ${emailProvider}`);
+
+    // ✅ PASO 1: Generar PDFs en tiempo real
+    const promesasGeneracion = archivosSeleccionados.map(node => {
+        console.log(`🔄 Generando PDF: "${node.text}" (ID: ${node.id})`);
+        return generarPDFEnTiempoReal(node);
+    });
+
+    Promise.all(promesasGeneracion)
+        .then(archivosGenerados => {
+            console.log(`✅ ${archivosGenerados.length} PDF(s) generados exitosamente`);
+
+            // ✅ PASO 2: Guardar TODOS los archivos en FileStore (obtener URLs públicas)
+            console.log('💾 Guardando archivos en FileStore para obtener URLs públicas...');
+            return guardarArchivosGrandesEnServidor(archivosGenerados);
+        })
+        .then(enlaces => {
+            CerrarWaiting();
+            console.log(`✅ ${enlaces.length} URL(s) pública(s) obtenida(s) del FileStore`);
+
+            // ✅ Construir mensaje con URLs
+            let cuerpoConEnlaces = emailBody;
+
+            if (enlaces.length > 0) {
+                cuerpoConEnlaces += '\n\n📎 Documentos disponibles:\n';
+                enlaces.forEach((enlace, index) => {
+                    cuerpoConEnlaces += `${index + 1}. ${enlace.nombre}\n   ${enlace.url}\n\n`;
+                });
+            }
+
+            console.log(`📧 Delegando a proveedor: ${emailProvider}`);
+
+            // ✅ PASO 3: Delegar al proveedor específico CON URLs
+            switch (emailProvider) {
+                case 'outlookweb':
+                    enviarEmailOutlookWeb(emailTo, emailSubject, cuerpoConEnlaces, enlaces);
+                    break;
+                case 'outlookdesktop':
+                    enviarEmailOutlookLocal(emailTo, emailSubject, cuerpoConEnlaces, enlaces);
+                    break;
+                default:
+                    // Para Gmail, clasificar por tamaño (pequeños adjuntos + grandes por enlace)
+                    clasificarYEnviarPorGmail(emailTo, emailSubject, emailBody, archivosGenerados, enlaces);
+            }
+        })
+        .catch(error => {
+            CerrarWaiting();
+            console.error('❌ Error al procesar archivos:', error);
+
+            AbrirMensaje("Error",
+                `❌ Error al procesar archivos:\n\n${error.message}\n\nRevisa la consola del navegador (F12) para más detalles.`,
+                function () {
+                    $("#msjModal").modal("hide");
+                }, false, ["Aceptar"], "error!", null);
+        });
+}
+
+/**
+ * ✅ FUNCIÓN AUXILIAR: Clasifica archivos por tamaño para Gmail
+ * (Gmail puede adjuntar archivos pequeños directamente)
+ */
+function clasificarYEnviarPorGmail(emailTo, emailSubject, emailBody, archivosGenerados, enlaces) {
+    const LIMITE_MB = 5;
+    const LIMITE_BYTES = LIMITE_MB * 1024 * 1024;
+
+    const archivosPequeños = [];
+    const enlacesGrandes = [];
+
+    archivosGenerados.forEach((archivo, index) => {
+        const tamañoMB = (archivo.tamañoBytes / 1024 / 1024).toFixed(2);
+
+        if (archivo.tamañoBytes <= LIMITE_BYTES) {
+            archivosPequeños.push(archivo);
+            console.log(`  📎 Pequeño: ${archivo.nombre} (${tamañoMB} MB) - Adjuntar directamente`);
+        } else {
+            enlacesGrandes.push(enlaces[index]); // Usar enlace del FileStore
+            console.log(`  🔗 Grande: ${archivo.nombre} (${tamañoMB} MB) - Usar enlace del FileStore`);
+        }
+    });
+
+    // Construir cuerpo con información de archivos
+    let cuerpoFinal = emailBody;
+
+    if (enlacesGrandes.length > 0) {
+        cuerpoFinal += '\n\n🔗 Archivos grandes disponibles para descarga:\n';
+        enlacesGrandes.forEach((enlace, index) => {
+            cuerpoFinal += `${index + 1}. ${enlace.nombre}\n   ${enlace.url}\n\n`;
+        });
+    }
+
+    // Enviar por Gmail con adjuntos pequeños
+    enviarEmailGmailConAdjuntos(emailTo, emailSubject, cuerpoFinal, archivosPequeños);
+}
+
+/**
+ * ✅ FUNCIÓN MODIFICADA: Envía email por SMTP usando Gmail
+ * Ahora recibe archivos YA clasificados
+ */
+function enviarEmailGmailConAdjuntos(emailTo, emailSubject, emailBody, archivosPequeños) {
+    AbrirWaiting("Enviando email por Gmail...");
+
+    const archivosParaAdjuntar = archivosPequeños.map(a => ({
+        archivoBase64: a.base64,
+        nombre: a.nombre
+    }));
+
+    console.log(`📎 Archivos a adjuntar: ${archivosParaAdjuntar.length}`);
+
+    $.ajax({
+        url: '/ControlComun/GestorImpresion/EnviarEmail',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            archivos: archivosParaAdjuntar,
+            emailTo: emailTo,
+            emailSubject: emailSubject,
+            emailBody: emailBody
+        }),
+        success: function (response) {
+            CerrarWaiting();
+
+            if (response.error) {
+                AbrirMensaje("Error", response.msg || "Error al enviar email", function () {
+                    $("#msjModal").modal("hide");
+                }, false, ["Aceptar"], "error!", null);
+            } else {
+                console.log('✅ Email enviado exitosamente por Gmail');
+
+                AbrirMensaje("Éxito",
+                    `✅ Email enviado exitosamente a ${emailTo}\n\n` +
+                    `📎 Archivos adjuntos: ${archivosPequeños.length}`,
+                    function () {
+                        $("#msjModal").modal("hide");
+                    }, false, ["Aceptar"], "success", null);
+            }
+        },
+        error: function (xhr, status, error) {
+            CerrarWaiting();
+            console.error('❌ Error al enviar email por Gmail:', error);
+
+            let errorMessage = '❌ Error al enviar email:\n\n';
+
+            try {
+                const errorResponse = JSON.parse(xhr.responseText);
+                errorMessage += errorResponse.msg || error;
+            } catch (e) {
+                errorMessage += error;
+            }
+
+            AbrirMensaje("Error", errorMessage, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["Aceptar"], "error!", null);
+        }
+    });
+}
+
+// ✅ MANTENER: La función enviarEmailGmail() original SOLO para compatibilidad
+// Ahora internamente llama a las nuevas funciones unificadas
+function enviarEmailGmail(emailTo, emailSubject, emailBody, archivosSeleccionados) {
+    if (archivosSeleccionados.length === 0) {
+        // Sin archivos, enviar directamente
+        enviarEmailGmailConAdjuntos(emailTo, emailSubject, emailBody, []);
+    } else {
+        // Con archivos, usar el flujo unificado
+        procesarArchivosParaEmail('gmail', emailTo, emailSubject, emailBody, archivosSeleccionados);
+    }
+}
+
+/**
+ * ✅ FUNCIÓN MODIFICADA: Envía email abriendo Outlook Web (deeplink)
+ * Ahora recibe enlaces del FileStore
+ */
+function enviarEmailOutlookWeb(emailTo, emailSubject, emailBody, enlaces) {
+    AbrirWaiting("Abriendo Outlook Web...");
+
+    console.log('🌐 Abriendo Outlook Web con deeplink');
+    console.log(`  Para: ${emailTo}`);
+    console.log(`  Enlaces incluidos: ${enlaces.length}`);
+
+    $.ajax({
+        url: '/ControlComun/GestorImpresion/GenerateOutlookWebLink',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            To: emailTo,
+            Subject: emailSubject,
+            Body: emailBody // Ya incluye los enlaces del FileStore
+        }),
+        success: function (response) {
+            CerrarWaiting();
+
+            if (response.success && response.outlookWebLink) {
+                const newWindow = window.open(response.outlookWebLink, '_blank');
+
+                if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                    AbrirMensaje("Advertencia",
+                        '⚠️ El navegador bloqueó la ventana emergente.\n\n' +
+                        'Permite ventanas emergentes para este sitio o copia el enlace:\n' +
+                        response.outlookWebLink,
+                        function () {
+                            $("#msjModal").modal("hide");
+                        }, false, ["Aceptar"], "warn!", null);
+                } else {
+                    setTimeout(() => {
+                        AbrirMensaje("Éxito",
+                            `✅ Outlook Web abierto exitosamente\n\n` +
+                            `📧 Destinatario: ${emailTo}\n` +
+                            `🔗 Enlaces incluidos: ${enlaces.length}\n\n` +
+                            `Los enlaces están disponibles en el mensaje.`,
+                            function () {
+                                $("#msjModal").modal("hide");
+                            }, false, ["Aceptar"], "success", null);
+                    }, 500);
+                }
+            } else {
+                AbrirMensaje("Error", response.message || "Error al abrir Outlook Web", function () {
+                    $("#msjModal").modal("hide");
+                }, false, ["Aceptar"], "error!", null);
+            }
+        },
+        error: function (xhr, status, error) {
+            CerrarWaiting();
+            console.error('❌ Error al abrir Outlook Web:', error);
+
+            let errorMessage = '❌ Error al abrir Outlook Web:\n\n';
+
+            try {
+                const errorResponse = JSON.parse(xhr.responseText);
+                errorMessage += errorResponse.message || error;
+            } catch (e) {
+                errorMessage += error;
+            }
+
+            AbrirMensaje("Error", errorMessage, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["Aceptar"], "error!", null);
+        }
+    });
+}
+
+/**
+ * ✅ FUNCIÓN MODIFICADA: Envía email abriendo Outlook Local (mailto)
+ * Ahora recibe enlaces del FileStore
+ */
+function enviarEmailOutlookLocal(emailTo, emailSubject, emailBody, enlaces) {
+    AbrirWaiting("Abriendo Outlook Local...");
+
+    console.log('💻 Abriendo Outlook Local con mailto');
+    console.log(`  Para: ${emailTo}`);
+    console.log(`  Enlaces incluidos: ${enlaces.length}`);
+
+    $.ajax({
+        url: '/ControlComun/GestorImpresion/GenerateMailtoLink',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            To: emailTo,
+            Subject: emailSubject,
+            Body: emailBody // Ya incluye los enlaces del FileStore
+        }),
+        success: function (response) {
+            CerrarWaiting();
+
+            if (response.success && response.mailtoLink) {
+                window.location.href = response.mailtoLink;
+
+                setTimeout(() => {
+                    AbrirMensaje("Éxito",
+                        `✅ Outlook Local abierto exitosamente\n\n` +
+                        `📧 Destinatario: ${emailTo}\n` +
+                        `🔗 Enlaces incluidos: ${enlaces.length}\n\n` +
+                        `Los enlaces están disponibles en el mensaje.`,
+                        function () {
+                            $("#msjModal").modal("hide");
+                        }, false, ["Aceptar"], "success", null);
+                }, 500);
+            } else {
+                AbrirMensaje("Error", response.message || "Error al abrir Outlook Local", function () {
+                    $("#msjModal").modal("hide");
+                }, false, ["Aceptar"], "error!", null);
+            }
+        },
+        error: function (xhr, status, error) {
+            CerrarWaiting();
+            console.error('❌ Error al abrir Outlook Local:', error);
+
+            let errorMessage = '❌ Error al abrir Outlook Local:\n\n';
+
+            try {
+                const errorResponse = JSON.parse(xhr.responseText);
+                errorMessage += errorResponse.message || error;
+            } catch (e) {
+                errorMessage += error;
+            }
+
+            AbrirMensaje("Error", errorMessage, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["Aceptar"], "error!", null);
+        }
+    });
+}
+
+/**
+ * Función: Enviar mensaje por WhatsApp Web con archivos
+ * ✅ MEJORADO: Genera PDFs, guarda en FileStore y envía enlaces
  */
 function enviarWhatsApp() {
+    console.log('📱 Iniciando proceso de envío por WhatsApp...');
+    
     // Validaciones básicas
     const whatsappTo = $('#whatsappTo').val().trim();
-    const whatsappMessage = $('#whatsappMessage').val().trim();
+    let whatsappMessage = $('#whatsappMessage').val().trim();
     
     if (!whatsappTo) {
         AbrirMensaje("ATENCIÓN", "Por favor ingresa un número de teléfono", function () {
@@ -78,13 +457,19 @@ function enviarWhatsApp() {
         return;
     }
 
+    // ✅ Si el mensaje está vacío, generarlo automáticamente
     if (!whatsappMessage) {
-        AbrirMensaje("ATENCIÓN", "Por favor escribe un mensaje", function () {
-            $("#msjModal").modal("hide");
-        }, false, ["Aceptar"], "warn!", null);
-        return;
+        console.log('📱 Generando mensaje automático para WhatsApp');
+        whatsappMessage = generarContenidoWhatsAppDesdeConfig(
+            window.datosCtaActual || {
+                id: 'N/A',
+                nombre: $('#whatsappTo').val() || 'Cliente/Proveedor',
+                email: '',
+                tipo: 'E'
+            }
+        );
     }
-
+    
     // Validar formato de número
     const cleanNumber = whatsappTo.replace(/[\s\-\(\)]/g, '');
     if (!cleanNumber.startsWith('+')) {
@@ -99,39 +484,100 @@ function enviarWhatsApp() {
         return;
     }
 
-    // Advertir sobre archivos seleccionados
+    // ✅ NUEVO: Obtener archivos seleccionados
     const selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
-    if (selectedNodes.length > 0) {
-        const confirmSend = confirm(
-            '⚠️ WhatsApp Web no permite adjuntar archivos automáticamente.\n\n' +
-            'El mensaje se enviará sin adjuntos. Deberás agregarlos manualmente en WhatsApp.\n\n' +
-            '¿Continuar?'
-        );
-        if (!confirmSend) {
-            return;
-        }
+    const archivosSeleccionados = selectedNodes.filter(function (node) {
+        return node.parent !== "#" && node.parent !== null && !node.children;
+    });
+
+    // ✅ CASO 1: Sin archivos seleccionados - enviar solo mensaje
+    if (archivosSeleccionados.length === 0) {
+        console.log('📱 Enviando WhatsApp sin archivos adjuntos');
+        enviarWhatsAppSinArchivos(cleanNumber, whatsappMessage);
+        return;
     }
 
+    // ✅ CASO 2: Con archivos seleccionados - generar PDFs y enviar con enlaces
+    console.log(`📎 Procesando ${archivosSeleccionados.length} archivo(s) para WhatsApp`);
+    
+    AbrirWaiting("Generando archivos para WhatsApp...");
+    
+    // Generar PDFs en tiempo real
+    const promesasGeneracion = archivosSeleccionados.map(node => generarPDFEnTiempoReal(node));
+    
+    Promise.all(promesasGeneracion)
+        .then(archivosGenerados => {
+            console.log('✅ Todos los PDFs generados exitosamente');
+            console.log('💾 Guardando archivos en FileStore...');
+            
+            // Guardar TODOS los archivos en FileStore (no importa el tamaño para WhatsApp)
+            return guardarArchivosGrandesEnServidor(archivosGenerados);
+        })
+        .then(enlaces => {
+            CerrarWaiting();
+            console.log(`✅ ${enlaces.length} enlace(s) generado(s)`);
+            
+            // Construir mensaje con enlaces
+            let mensajeFinal = whatsappMessage;
+            
+            if (enlaces.length > 0) {
+                mensajeFinal += '\n\n📎 Archivos disponibles para descarga:\n';
+                enlaces.forEach((enlace, index) => {
+                    mensajeFinal += `${index + 1}. ${enlace.nombre}\n${enlace.url}\n\n`;
+                });
+            }
+            
+            // Validar longitud del mensaje (máximo 5000 caracteres)
+            if (mensajeFinal.length > 5000) {
+                AbrirMensaje("ATENCIÓN", 
+                    `⚠️ El mensaje es muy largo (${mensajeFinal.length} caracteres).\n\n` +
+                    `Máximo permitido: 5000 caracteres.\n\n` +
+                    `Por favor, reduce la cantidad de archivos o el texto del mensaje.`,
+                    function () {
+                        $("#msjModal").modal("hide");
+                    }, false, ["Aceptar"], "warn!", null);
+                return;
+            }
+            
+            console.log('📱 Enviando WhatsApp con enlaces');
+            enviarWhatsAppConEnlaces(cleanNumber, mensajeFinal, enlaces.length);
+        })
+        .catch(error => {
+            CerrarWaiting();
+            console.error('❌ Error al procesar archivos para WhatsApp:', error);
+            
+            AbrirMensaje("Error", 
+                `❌ Error al procesar archivos:\n\n${error.message}\n\nRevisa la consola para más detalles.`,
+                function () {
+                    $("#msjModal").modal("hide");
+                }, false, ["Aceptar"], "error!", null);
+        });
+}
+
+/**
+ * Envía mensaje de WhatsApp SIN archivos adjuntos
+ * @param {string} numero - Número de teléfono con código de país
+ * @param {string} mensaje - Mensaje a enviar
+ */
+function enviarWhatsAppSinArchivos(numero, mensaje) {
     AbrirWaiting("Abriendo WhatsApp Web...");
 
-    console.log('=== Abriendo WhatsApp Web ===');
-    console.log('Para:', cleanNumber);
-    console.log('Mensaje:', whatsappMessage);
+    console.log('=== Abriendo WhatsApp Web (sin archivos) ===');
+    console.log('Para:', numero);
+    console.log('Mensaje:', mensaje);
 
     $.ajax({
         url: '/ControlComun/GestorImpresion/GenerateWhatsAppWebLink',
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({
-            To: cleanNumber,
-            Message: whatsappMessage
+            To: numero,
+            Message: mensaje
         }),
         success: function (response) {
             CerrarWaiting();
-            console.log('Respuesta del servidor:', response);
             
             if (response.success && response.whatsappWebLink) {
-                // Abrir en nueva pestaña
                 const newWindow = window.open(response.whatsappWebLink, '_blank');
                 
                 if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
@@ -143,12 +589,10 @@ function enviarWhatsApp() {
                             $("#msjModal").modal("hide");
                         }, false, ["Aceptar"], "warn!", null);
                 } else {
-                    // Mostrar mensaje de éxito
                     setTimeout(() => {
                         AbrirMensaje("Éxito", 
                             `✅ ${response.message}\n\n` +
-                            `📱 Destinatario: ${response.to}\n\n` +
-                            `${response.note}`,
+                            `📱 Destinatario: ${response.to}`,
                             function () {
                                 $("#msjModal").modal("hide");
                                 $('#whatsappForm')[0].reset();
@@ -165,8 +609,6 @@ function enviarWhatsApp() {
         error: function (xhr, status, error) {
             CerrarWaiting();
             console.error('Error:', error);
-            console.error('Estado:', status);
-            console.error('Respuesta:', xhr.responseText);
             
             let errorMessage = '❌ Error al abrir WhatsApp Web:\n\n';
             
@@ -186,6 +628,103 @@ function enviarWhatsApp() {
     });
 }
 
+/**
+ * Envía mensaje de WhatsApp CON enlaces de archivos
+ * @param {string} numero - Número de teléfono con código de país
+ * @param {string} mensaje - Mensaje con enlaces incluidos
+ * @param {number} cantidadArchivos - Cantidad de archivos incluidos
+ */
+function enviarWhatsAppConEnlaces(numero, mensaje, cantidadArchivos) {
+    AbrirWaiting("Abriendo WhatsApp Web...");
+
+    console.log('=== Abriendo WhatsApp Web (con enlaces) ===');
+    console.log('Para:', numero);
+    console.log('Archivos:', cantidadArchivos);
+    console.log('Mensaje:', mensaje);
+
+    $.ajax({
+        url: '/ControlComun/GestorImpresion/GenerateWhatsAppWebLink',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            To: numero,
+            Message: mensaje
+        }),
+        success: function (response) {
+            CerrarWaiting();
+            
+            if (response.success && response.whatsappWebLink) {
+                const newWindow = window.open(response.whatsappWebLink, '_blank');
+                
+                if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                    AbrirMensaje("Advertencia", 
+                        '⚠️ El navegador bloqueó la ventana emergente.\n\n' +
+                        'Permite ventanas emergentes para este sitio o copia el enlace:\n' + 
+                        response.whatsappWebLink,
+                        function () {
+                            $("#msjModal").modal("hide");
+                        }, false, ["Aceptar"], "warn!", null);
+                } else {
+                    setTimeout(() => {
+                        AbrirMensaje("Éxito", 
+                            `✅ WhatsApp Web abierto exitosamente\n\n` +
+                            `📱 Destinatario: ${response.to}\n` +
+                            `🔗 Enlaces incluidos: ${cantidadArchivos}\n\n` +
+                            `Los archivos están disponibles en los enlaces del mensaje.`,
+                            function () {
+                                $("#msjModal").modal("hide");
+                                $('#whatsappForm')[0].reset();
+                                $('#whatsappCharCounter').text('0/5000 caracteres');
+                            }, false, ["Aceptar"], "success", null);
+                    }, 500);
+                }
+            } else {
+                AbrirMensaje("Error", response.message, function () {
+                    $("#msjModal").modal("hide");
+                }, false, ["Aceptar"], "error!", null);
+            }
+        },
+        error: function (xhr, status, error) {
+            CerrarWaiting();
+            console.error('Error:', error);
+            
+            let errorMessage = '❌ Error al abrir WhatsApp Web:\n\n';
+            
+            try {
+                const errorResponse = JSON.parse(xhr.responseText);
+                errorMessage += errorResponse.message || error;
+            } catch (e) {
+                errorMessage += error;
+            }
+            
+            errorMessage += '\n\nRevisa la consola del navegador para más detalles.';
+            
+            AbrirMensaje("Error", errorMessage, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["Aceptar"], "error!", null);
+        }
+    });
+}
+
+ /**
+ * Actualiza la información de archivos para WhatsApp
+ * ✅ FUNCIONALIDAD ORIGINAL RESTAURADA
+ */
+function updateWhatsAppFilesInfo() {
+    const selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
+    const archivosSeleccionados = selectedNodes.filter(function (node) {
+        return node.parent !== "#" && node.parent !== null && !node.children;
+    });
+    
+    if (archivosSeleccionados.length > 0) {
+        let info = `⚠️ ${archivosSeleccionados.length} archivo(s) seleccionado(s).\n`;
+        info += 'Recuerda que deberás adjuntarlos manualmente en WhatsApp.';
+        $('#whatsappFilesInfo').text(info).show();
+    } else {
+        $('#whatsappFilesInfo').hide();
+    }
+}
+
 function inicializaArbolArchivos() {
     //borramos el contenido del arbol.
     $("#archivosDispuestos").jstree("destroy").empty();
@@ -194,20 +733,55 @@ function inicializaArbolArchivos() {
 function invocacionGestorDoc(data) {
     PostGenHtml(data, OrquestadorDeModulosUrl, function (obj) {
         $("#modalGestorDocumental").html(obj);
-        //detectaremos primero si hubo error
-        if ($("input#msgError").length > 0 || $("input#msgWarm").length > 0) {
-            $("#modalGestorDocumental").show();
-        }
-        else {
-            //si no hubo error, mostramos el modal
-            //antes de abrir el modal, se cargará el arbol de archivos
-            presentarArchivos();
+        
+        // ✅ NUEVO: Inicializar configuración antes de presentar archivos
+        // Esperar un momento para que el script de configuración del modal se ejecute
+        setTimeout(function() {
+            inicializarConfiguracionModulo();
+            
+            //detectaremos primero si hubo error
+            if ($("input#msgError").length > 0 || $("input#msgWarm").length > 0) {
+                $("#modalGestorDocumental").show();
+            }
+            else {
+                //si no hubo error, mostramos el modal
+                //antes de abrir el modal, se cargará el arbol de archivos
+                presentarArchivos();
 
-            $("#modalGestorDocumental").show();
+                $("#modalGestorDocumental").show();
 
-            $("#docmgrmodal").modal("show");
-        }
+                $("#docmgrmodal").modal("show");
+            }
+        }, 100); // ✅ Delay de 100ms para permitir que se ejecute el script del modal
     });
+}
+
+/**
+ * Inicializa window.currentModuleConfig con valores por defecto seguros
+ * Se ejecuta cuando se abre el modal, antes de presentar archivos
+ */
+function inicializarConfiguracionModulo() {
+    if (!window.currentModuleConfig) {
+        console.warn('⚠️ Inicializando configuración de módulo por defecto (no hay configuración del servidor)');
+        
+        window.currentModuleConfig = {
+            moduloId: 'DEFAULT',
+            moduloTitulo: 'Documentación',
+            mensajeriaTemplate: null,
+            emailTemplate: null,
+            whatsappTemplate: null,
+            empresa: {
+                nombre: 'GeCoNet',
+                telefono: '',
+                email: '',
+                direccion: '',  
+                localidad: '',
+                provincia: ''
+            }
+        };
+    } else {
+        console.log('✅ Configuración de módulo ya existe:', window.currentModuleConfig.moduloId);
+    }
 }
 
 function inicializaGestorDocumental() {
@@ -341,8 +915,111 @@ function presentarArchivos() {
         }
         else {
             let cuenta = obj.cuenta;
-            $("#emailTo").val(cuenta.cta_Email);
-            $("#whatsappTo").val(cuenta.cta_Celu);
+            
+            // ✅ DIAGNÓSTICO COMPLETO
+            console.log('📋 DEBUG COMPLETO - Objeto cuenta recibido:', cuenta);
+            console.log('  📧 cta_Email:', cuenta.cta_Email, 'Tipo:', typeof cuenta.cta_Email, 'Vacío:', !cuenta.cta_Email);
+            console.log('  📧 cta_Denominacion:', cuenta.cta_Denominacion);
+            console.log('  📱 cta_Celu:', cuenta.cta_Celu);
+            console.log('  🆔 cta_Id:', cuenta.cta_Id);
+            console.log('  📊 cta_Tipo:', cuenta.cta_Tipo);
+            
+            // ✅ VALIDACIÓN: Si el email está vacío, mostrar advertencia
+            if (!cuenta.cta_Email || cuenta.cta_Email.trim() === '') {
+                console.warn('⚠️ ADVERTENCIA: La cuenta no tiene email registrado');
+                console.warn('  → El usuario deberá ingresar el email manualmente');
+            }
+            
+            // ✅ NUEVO: Guardar datos completos de la cuenta en variable global
+            window.datosCtaActual = {
+                id: cuenta.cta_Id || '',
+                nombre: cuenta.cta_Denominacion || '',
+                email: cuenta.cta_Email || '',
+                celular: cuenta.cta_Celu || '',
+                tipo: cuenta.cta_Tipo || 'E' // P o E
+            };
+            
+            console.log('📋 Datos de cuenta guardados en window.datosCtaActual:', window.datosCtaActual);
+            
+            // ✅ NUEVO: Logging ANTES de asignar valores a los campos
+            console.log('🔍 Asignando valores a los campos del formulario:');
+            console.log('  → #emailTo ← ', cuenta.cta_Email || '(VACÍO - Usuario debe completar)');
+            console.log('  → #whatsappTo ← ', cuenta.cta_Celu || '(VACÍO - Usuario debe completar)');
+            
+            // Cargar email y celular en los campos
+            $("#emailTo").val(cuenta.cta_Email || '');
+            $("#whatsappTo").val(cuenta.cta_Celu || '');
+            
+            // ✅ NUEVO: Verificar si se asignó correctamente (con delay para asegurar que el DOM se actualizó)
+            setTimeout(function() {
+                const emailAsignado = $("#emailTo").val();
+                const whatsappAsignado = $("#whatsappTo").val();
+                
+                console.log('✅ Verificación POST-asignación:');
+                console.log('  #emailTo:', emailAsignado, 'Longitud:', emailAsignado ? emailAsignado.length : 0);
+                console.log('  #whatsappTo:', whatsappAsignado, 'Longitud:', whatsappAsignado ? whatsappAsignado.length : 0);
+                
+                if (!emailAsignado || emailAsignado.trim() === '') {
+                    console.error('❌ PROBLEMA DETECTADO: El campo #emailTo está vacío');
+                    console.error('  ⚠️ Causa: cuenta.cta_Email es null/vacío en la base de datos');
+                    console.error('  ✅ Solución: El usuario debe ingresar el email manualmente');
+                    
+                    // ✅ NUEVO: Mostrar placeholder informativo
+                    $("#emailTo").attr('placeholder', '⚠️ Email no disponible - Ingresar manualmente');
+                    $("#emailTo").addClass('border-warning');
+                }
+                
+                if (!whatsappAsignado || whatsappAsignado.trim() === '') {
+                    console.warn('⚠️ El campo #whatsappTo está vacío');
+                    $("#whatsappTo").attr('placeholder', '⚠️ Celular no disponible - Ingresar manualmente');
+                    $("#whatsappTo").addClass('border-warning');
+                }
+            }, 100);
+
+            // ✅ Pre-cargar mensaje usando la configuración unificada
+            if (window.currentModuleConfig && 
+                window.currentModuleConfig.mensajeriaTemplate) {
+                
+                console.log('📧📱 Pre-cargando mensajes desde configuración unificada');
+                
+                // ✅ Pre-cargar ASUNTO Y MENSAJE DE EMAIL
+                if (window.currentModuleConfig.emailTemplate && 
+                    window.currentModuleConfig.emailTemplate.asuntoTemplate) {
+                    
+                    const emailResult = generarContenidoEmailDesdeConfig(
+                        window.datosCtaActual,
+                        [],
+                        []
+                    );
+                    
+                    $("#emailSubject").val(emailResult.asunto);
+                    $("#emailBody").val(emailResult.cuerpo);
+                    
+                    console.log('📧 Email pre-cargado:');
+                    console.log('  Asunto:', emailResult.asunto);
+                    console.log('  Cuerpo (primeros 100 chars):', emailResult.cuerpo.substring(0, 100) + '...');
+                }
+                
+                // ✅ Pre-cargar MENSAJE DE WHATSAPP
+                const mensajeWhatsApp = generarContenidoWhatsAppDesdeConfig(window.datosCtaActual);
+                $("#whatsappMessage").val(mensajeWhatsApp);
+                
+                // Actualizar contador
+                const length = mensajeWhatsApp.length;
+                $('#whatsappCharCounter').text(`${length}/5000 caracteres`);
+                
+                console.log('📱 WhatsApp pre-cargado (primeros 100 chars):', mensajeWhatsApp.substring(0, 100) + '...');
+                
+            } else {
+                console.warn('⚠️ No hay configuración de mensajería - usando valores por defecto');
+                
+                // ✅ FALLBACK: Valores por defecto
+                $("#emailSubject").val(`Documentación - ${window.datosCtaActual.id}`);
+                $("#emailBody").val(`Estimado/a,\n\nAdjuntamos la documentación solicitada.\n\nSaludos cordiales.`);
+                $("#whatsappMessage").val(`Hola, adjuntamos la documentación correspondiente a la cuenta ${window.datosCtaActual.id}.`);
+                
+                console.log('📧 Valores por defecto asignados');
+            }
 
             jsonP = JSON.parse(obj.arbol);
 
@@ -624,7 +1301,7 @@ function generarPDFEnTiempoReal(node) {
         
         // Validar que existan parámetros guardados
         if (!arrRepoParams[id - 1]) {
-            reject(new Error(`No hay parámetros guardados para "${node.text}". Debe ejecutar el reporte primero.`));
+            reject(new Error(`No hay parámetros guardados para "${node.text}". Debe ejecutar el reporte primero."`));
             return;
         }
         
@@ -706,418 +1383,182 @@ function guardarArchivosGrandesEnServidor(archivos) {
         });
     });
 }
-// Configuración de proveedores
-const providerConfig = {
-    gmail: {
-        name: 'Gmail (SMTP)',
-        info: 'smtp.gmail.com:587 - TLS'
-    },
-    outlookweb: {
-        name: 'Outlook Web',
-        info: 'outlook.office.com - Deeplink'
-    },
-    outlookdesktop: {
-        name: 'Outlook Desktop',
-        info: 'Cliente local - mailto: protocol'
-    }
-};
-
-// Actualizar información cuando cambia el proveedor
-$(document).on('change', 'input[name="emailProvider"]', function () {
-    const selectedProvider = $(this).val();
-    const config = providerConfig[selectedProvider];
-
-    if (config) {
-        $('#providerInfo').text(`${config.name} (${config.info})`);
-    }
-
-    $('#fileHelp').html('<i class="bx bx-help-circle"></i> Máx: 25MB');
-
-    // Actualizar contenido del panel de advertencias
-    let warningHtml = '';
-    let warningClass = 'alert-info';
-
-    if (selectedProvider === 'outlookweb') {
-        warningClass = 'alert-info';
-        warningHtml = `
-            <strong><i class="bx bx-info-circle"></i> Outlook Web:</strong> 
-            Se abrirá una nueva pestaña con el borrador.
-            <br><small>⚠️ Requiere sesión activa. Los adjuntos se agregan manualmente en WhatsApp.</small>
-        `;
-        // NUEVO: Ocultar contenedor de archivos
-        $('#emailFileInfoContainer').hide();
-    }
-    else if (selectedProvider === 'outlookdesktop') {
-        warningClass = 'alert-warning';
-        warningHtml = `
-            <strong><i class="bx bx-exclamation-triangle"></i> Outlook Local:</strong> 
-            Se abrirá tu cliente local.
-            <br><small>⚠️ Selecciona la cuenta remitente manualmente. Adjuntos manuales.</small>
-        `;
-        $('#fileHelp').html('<em class="text-muted">Adjuntos manuales</em>');
-        // NUEVO: Ocultar contenedor de archivos
-        $('#emailFileInfoContainer').hide();
-    }
-    else {
-        // Gmail
-        warningClass = 'alert-success';
-        warningHtml = `
-            <strong><i class="bx bx-check-circle"></i> Gmail SMTP:</strong> 
-            Envío automático con adjuntos.
-            <br><small>✓ Los archivos seleccionados se adjuntan automáticamente (máx 25MB).</small>
-        `;
-        // NUEVO: Mostrar contenedor de archivos
-        $('#emailFileInfoContainer').show();
-    }
-
-    // Actualizar el panel de advertencias
-    $('#providerWarning')
-        .removeClass('alert-info alert-warning alert-success')
-        .addClass(warningClass)
-        .html(warningHtml);
-
-    // Actualizar información de archivos seleccionados
-    updateSelectedFilesInfo();
-});
-
-// Función mejorada para actualizar información de archivos (compacta)
-function updateSelectedFilesInfo() {
-    const selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
-    const selectedProvider = $('input[name="emailProvider"]:checked').val();
-
-    // NUEVO: Ocultar contenedor si no es Gmail
-    if (selectedProvider !== 'gmail') {
-        $('#emailFileInfoContainer').hide();
-        return;
-    }
-
-    // NUEVO: Mostrar contenedor si es Gmail
-    $('#emailFileInfoContainer').show();
-
-    if (selectedNodes.length === 0) {
-        $('#emailFileInfo').html('Sin archivos');
-        return;
-    }
-
-    // Contar solo archivos (no carpetas)
-    const filesCount = selectedNodes.filter(node =>
-        node.data && node.data.archivoB64
-    ).length;
-
-    if (filesCount === 0) {
-        $('#emailFileInfo').html('Sin archivos');
-        return;
-    }
-
-    let fileText = `${filesCount} archivo${filesCount > 1 ? 's' : ''}`;
-
-    $('#emailFileInfo').html(fileText);
-}
-
-// Actualizar información de archivos cuando se cambia la selección en el árbol
-$(document).on('changed.jstree', '#archivosDispuestos', function() {
-    updateSelectedFilesInfo();
-    updateWhatsAppFilesInfo();
-});
 
 /**
- * Función mejorada para enviar email con soporte para múltiples proveedores
- * Soporta: Gmail SMTP (con generación en tiempo real), Outlook Web, Outlook Desktop
+ * Construye el cuerpo del email/WhatsApp agregando información de archivos
+ * @param {string} cuerpoBase - Cuerpo base del mensaje
+ * @param {Array} archivosAdjuntos - Archivos pequeños adjuntos
+ * @param {Array} enlacesArchivos - Enlaces de archivos grandes
+ * @returns {string} - Cuerpo completo
  */
-function enviarEmail() {
-    const selectedProvider = $('input[name="emailProvider"]:checked').val();
+function construirCuerpoEmail(cuerpoBase, archivosAdjuntos, enlacesArchivos) {
+    let cuerpo = cuerpoBase;
     
-    // Validaciones básicas
-    const emailTo = $('#emailTo').val().trim();
-    const emailSubject = $('#emailSubject').val().trim();
-    
-    if (!emailTo || !emailSubject) {
-        AbrirMensaje("ATENCIÓN", "Por favor completa los campos obligatorios (Para y Asunto)", function () {
-            $("#msjModal").modal("hide");
-        }, false, ["Aceptar"], "warn!", null);
-        return;
-    }
-
-    // ======= OUTLOOK DESKTOP: Abrir cliente local =======
-    if (selectedProvider === 'outlookdesktop') {
-        openOutlookDesktop(emailTo, emailSubject, $('#emailBody').val() || '');
-        return;
-    }
-
-    // ======= OUTLOOK WEB: Abrir cliente web =======
-    if (selectedProvider === 'outlookweb') {
-        openOutlookWeb(emailTo, emailSubject, $('#emailBody').val() || '');
-        return;
-    }
-
-    // ======= GMAIL SMTP: NUEVA LÓGICA CON GENERACIÓN EN TIEMPO REAL =======
-    console.log('📧 Iniciando envío de email con Gmail SMTP...');
-    
-    AbrirWaiting("Generando archivos PDF...");
-    
-    var selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
-    
-    // Filtrar solo nodos hoja (archivos)
-    selectedNodes = selectedNodes.filter(node => node.parent !== "#" && node.parent !== null);
-    
-    if (selectedNodes.length === 0) {
-        CerrarWaiting();
-        AbrirMensaje("ATENCIÓN", "No hay archivos seleccionados para enviar por email.", function () {
-            $("#msjModal").modal("hide");
-        }, false, ["Aceptar"], "warn!", null);
-        return;
-    }
-
-    const emailBody = $('#emailBody').val();
-    const maxSize = 24 * 1024 * 1024; // 24MB (límite seguro para evitar problemas)
-    
-    console.log(`📄 Generando ${selectedNodes.length} archivo(s)...`);
-    
-    // Array de promesas para generar todos los PDFs
-    const promesas = selectedNodes.map(node => generarPDFEnTiempoReal(node));
-    
-    // Esperar a que se generen todos los PDFs
-    Promise.all(promesas)
-        .then(archivosGenerados => {
-            console.log(`✅ ${archivosGenerados.length} archivo(s) generado(s) exitosamente`);
-            
-            AbrirWaiting("Procesando archivos para envío...");
-            
-            // Separar archivos según tamaño
-            const archivosAdjuntos = [];
-            const archivosGrandes = [];
-            let totalSize = 0;
-            
-            archivosGenerados.forEach(archivo => {
-                const esPequeño = archivo.tamañoBytes < maxSize;
-                const cabeEnTotal = (totalSize + archivo.tamañoBytes) < maxSize;
-                
-                if (esPequeño && cabeEnTotal) {
-                    // Archivo pequeño → adjuntar directamente
-                    archivosAdjuntos.push({
-                        archivoBase64: archivo.base64,
-                        nombre: archivo.nombre
-                    });
-                    totalSize += archivo.tamañoBytes;
-                    console.log(`📎 Adjuntando: ${archivo.nombre} (${(archivo.tamañoBytes / 1024 / 1024).toFixed(2)} MB)`);
-                } else {
-                    // Archivo grande → guardar en servidor
-                    archivosGrandes.push(archivo);
-                    console.log(`💾 Archivo grande (se guardará en servidor): ${archivo.nombre} (${(archivo.tamañoBytes / 1024 / 1024).toFixed(2)} MB)`);
-                }
-            });
-            
-            console.log(`📊 Resumen: ${archivosAdjuntos.length} adjuntos, ${archivosGrandes.length} enlaces`);
-            
-            // Si hay archivos grandes, guardarlos en el servidor
-            if (archivosGrandes.length > 0) {
-                AbrirWaiting(`Guardando ${archivosGrandes.length} archivo(s) grande(s) en el servidor...`);
-                
-                return guardarArchivosGrandesEnServidor(archivosGrandes)
-                    .then(enlaces => {
-                        return { archivosAdjuntos, enlaces };
-                    });
-            } else {
-                return { archivosAdjuntos, enlaces: [] };
-            }
-        })
-        .then(resultado => {
-            AbrirWaiting("Enviando correo electrónico...");
-            
-            // Construir cuerpo del email
-            let cuerpoFinal = emailBody || "";
-            
-            if (resultado.enlaces.length > 0) {
-                cuerpoFinal += "\n\n" + "=".repeat(50) + "\n";
-                cuerpoFinal += "📎 ARCHIVOS ADJUNTOS (ENLACES DE DESCARGA):\n\n";
-                
-                resultado.enlaces.forEach((enlace, index) => {
-                    cuerpoFinal += `${index + 1}. ${enlace.nombre}\n`;
-                    cuerpoFinal += `   🔗 ${enlace.url}\n\n`;
-                });
-                
-                cuerpoFinal += "=".repeat(50) + "\n";
-                cuerpoFinal += "⚠️ Los enlaces son temporales y estarán disponibles por tiempo limitado.\n";
-            }
-            
-            // Enviar email
-            const data = {
-                archivos: resultado.archivosAdjuntos,
-                emailTo: emailTo,
-                emailSubject: emailSubject,
-                emailBody: cuerpoFinal
-            };
-            
-            console.log(`📤 Enviando email con ${resultado.archivosAdjuntos.length} adjunto(s)...`);
-            
-            return PostGenPromise(data, enviarEmailUrl);
-        })
-        .then(response => {
-            CerrarWaiting();
-            
-            if (response.error === true) {
-                console.error('❌ Error al enviar email:', response.msg);
-                AbrirMensaje("Error", response.msg, function () {
-                    $("#msjModal").modal("hide");
-                }, false, ["Aceptar"], "error!", null);
-            } else {
-                console.log('✅ Email enviado exitosamente');
-                AbrirMensaje("Éxito", 
-                    "✅ El email ha sido enviado correctamente vía Gmail SMTP.\n\n" +
-                    "Los archivos han sido adjuntados y/o se han incluido enlaces de descarga.",
-                    function () {
-                        $("#msjModal").modal("hide");
-                        $('#emailForm')[0].reset();
-                    }, false, ["Aceptar"], "success", null);
-            }
-        })
-        .catch(error => {
-            CerrarWaiting();
-            console.error("❌ Error al enviar email:", error);
-            
-            let errorMessage = "Error al procesar el envío:\n\n";
-            
-            if (error.message) {
-                errorMessage += error.message;
-            } else if (typeof error === 'string') {
-                errorMessage += error;
-            } else {
-                errorMessage += "Error desconocido. Revisa la consola para más detalles.";
-            }
-            
-            AbrirMensaje("Error", errorMessage, function () {
-                $("#msjModal").modal("hide");
-            }, false, ["Aceptar"], "error!", null);
+    // Agregar información de archivos adjuntos pequeños
+    if (archivosAdjuntos && archivosAdjuntos.length > 0) {
+        cuerpo += '\n\n📎 Archivos adjuntos:\n';
+        archivosAdjuntos.forEach((archivo, index) => {
+            const tamañoMB = (archivo.tamañoBytes / 1024 / 1024).toFixed(2);
+            cuerpo += `${index + 1}. ${archivo.nombre} (${tamañoMB} MB)\n`;
         });
-}
-
-/**
- * Función: Abrir Outlook Desktop (mailto:)
- */
-function openOutlookDesktop(to, subject, body) {
-    AbrirWaiting("Abriendo Outlook Desktop...");
-
-    console.log('=== Abriendo Outlook Desktop (mailto:) ===');
-    console.log('Para:', to);
-    console.log('Asunto:', subject);
-
-    $.ajax({
-        url: '/ControlComun/GestorImpresion/GenerateMailtoLink',
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({
-            To: to,
-            Subject: subject,
-            Body: body
-        }),
-        success: function (response) {
-            CerrarWaiting();
-            console.log('Respuesta:', response);
-            
-            if (response.success && response.mailtoLink) {
-                window.location.href = response.mailtoLink;
-                
-                setTimeout(() => {
-                    AbrirMensaje("Éxito", `${response.message}\n\n${response.note}`, function () {
-                        $("#msjModal").modal("hide");
-                        $('#emailForm')[0].reset();
-                    }, false, ["Aceptar"], "success", null);
-                }, 1000);
-            } else {
-                AbrirMensaje("Error", response.message, function () {
-                    $("#msjModal").modal("hide");
-                }, false, ["Aceptar"], "error!", null);
-            }
-        },
-        error: function (xhr, status, error) {
-            CerrarWaiting();
-            console.error('Error:', error);
-            AbrirMensaje("Error", `Error al generar enlace mailto:\n${error}`, function () {
-                $("#msjModal").modal("hide");
-            }, false, ["Aceptar"], "error!", null);
-        }
-    });
-}
-
-/**
- * Función: Abrir Outlook Web con CC/BCC
- */
-function openOutlookWeb(to, subject, body) {
-    AbrirWaiting("Abriendo Outlook Web...");
-
-    console.log('=== Abriendo Outlook Web ===');
-    console.log('Para:', to);
-    console.log('Asunto:', subject);
-
-    $.ajax({
-        url: '/ControlComun/GestorImpresion/GenerateOutlookWebLink',
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({
-            To: to,
-            Subject: subject,
-            Body: body
-        }),
-        success: function (response) {
-            CerrarWaiting();
-            console.log('Respuesta:', response);
-            
-            if (response.success && response.outlookWebLink) {
-                const newWindow = window.open(response.outlookWebLink, '_blank');
-                
-                if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-                    AbrirMensaje("Advertencia", 
-                        '⚠️ El navegador bloqueó la ventana emergente.\n\nPermite ventanas emergentes para este sitio o copia el enlace:\n' + response.outlookWebLink,
-                        function () {
-                            $("#msjModal").modal("hide");
-                        }, false, ["Aceptar"], "warn!", null);
-                } else {
-                    setTimeout(() => {
-                        AbrirMensaje("Éxito", `${response.message}\n\n${response.note}`, function () {
-                            $("#msjModal").modal("hide");
-                            $('#emailForm')[0].reset();
-                        }, false, ["Aceptar"], "success", null);
-                    }, 500);
-                }
-            } else {
-                AbrirMensaje("Error", response.message, function () {
-                    $("#msjModal").modal("hide");
-                }, false, ["Aceptar"], "error!", null);
-            }
-        },
-        error: function (xhr, status, error) {
-            CerrarWaiting();
-            console.error('Error:', error);
-            AbrirMensaje("Error", `Error al generar enlace de Outlook Web:\n${error}`, function () {
-                $("#msjModal").modal("hide");
-            }, false, ["Aceptar"], "error!", null);
-        }
-    });
-}
-
-/**
-* Función: Actualizar información de archivos para WhatsApp
-*/
-function updateWhatsAppFilesInfo() {
-    const selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
-
-    if (selectedNodes.length === 0) {
-        $('#whatsappFileInfo').html('Sin archivos');
-        return;
     }
-
-    // Contar solo archivos (no carpetas)
-    const filesCount = selectedNodes.filter(node =>
-        node.data && node.data.archivoB64
-    ).length;
-
-    if (filesCount === 0) {
-        $('#whatsappFileInfo').html('Sin archivos');
-        return;
+    
+    // Agregar enlaces de archivos grandes
+    if (enlacesArchivos && enlacesArchivos.length > 0) {
+        cuerpo += '\n\n🔗 Archivos disponibles para descarga:\n';
+        enlacesArchivos.forEach((enlace, index) => {
+            cuerpo += `${index + 1}. ${enlace.nombre}\n   ${enlace.url}\n\n`;
+        });
     }
+    
+    return cuerpo;
+}
 
-    let fileText = `${filesCount} archivo${filesCount > 1 ? 's' : ''} seleccionado${filesCount > 1 ? 's' : ''}`;
-    fileText += ' <span class="text-warning">(se adjuntan manualmente)</span>';
+/**
+ * Genera el contenido personalizado UNIFICADO para Email y WhatsApp
+ * ✅ MEJORADO: Usa MensajeriaTemplate común para ambos canales
+ * @param {Object} cuentaInfo - Información de la cuenta { id, nombre, email, tipo }
+ * @param {Array} archivosAdjuntos - Lista de archivos pequeños adjuntos
+ * @param {Array} enlacesArchivos - Lista de enlaces de archivos grandes
+ * @param {string} canal - 'email' o 'whatsapp'
+ * @returns {Object} { asunto, cuerpo }
+ */
+function generarContenidoMensaje(cuentaInfo, archivosAdjuntos, enlacesArchivos, canal) {
+    // ✅ Verificar si hay configuración de mensajería
+    const tieneConfiguracion = window.currentModuleConfig && 
+                               window.currentModuleConfig.mensajeriaTemplate &&
+                               window.currentModuleConfig.mensajeriaTemplate.mensajeTemplate;
+    
+    let asuntoBase = '';
+    let cuerpoBase = '';
+    
+    if (tieneConfiguracion) {
+        console.log(`📧📱 Usando plantilla de mensajería desde configuración para ${canal}`);
+        
+        const mensajeria = window.currentModuleConfig.mensajeriaTemplate;
+        const empresa = window.currentModuleConfig.empresa || {};
+        
+        // ✅ Verificar si el mensaje es personalizado
+        const esPersonalizado = mensajeria.esPersonalizado === true;
+        const saludoGenerico = mensajeria.saludoGenerico || 'Estimado/a';
+        
+        // Extraer nombre limpio de la razón social
+        let nombreLimpio = (cuentaInfo.nombre || '').split('(')[0].trim();
+        let tieneNombre = nombreLimpio.length > 0;
+        
+        const fechaActual = new Date().toLocaleDateString('es-ES');
+        
+        // ✅ Determinar tipo de destinatario with fallback
+        let tipoDestinatario = '';
+        if (cuentaInfo.tipo === 'P') {
+            tipoDestinatario = 'Proveedor';
+        } else if (cuentaInfo.tipo === 'E') {
+            tipoDestinatario = 'Cliente';
+        } else {
+            tipoDestinatario = mensajeria.tipoDestinatario || 'Cliente/Proveedor';
+        }
+        
+        // ✅ GENERAR ASUNTO (solo para Email)
+        if (canal === 'email' && window.currentModuleConfig.emailTemplate) {
+            asuntoBase = window.currentModuleConfig.emailTemplate.asuntoTemplate
+                .replace(/\{cuenta\}/g, cuentaInfo.id || '')
+                .replace(/\{fecha\}/g, fechaActual);
+            
+            // Si el asunto tiene {nombre} y hay nombre disponible, reemplazarlo
+            if (asuntoBase.includes('{nombre}')) {
+                asuntoBase = asuntoBase.replace(/\{nombre\}/g, tieneNombre ? nombreLimpio : '');
+            }
+        }
+        
+        // ✅ GENERAR MENSAJE (común para Email y WhatsApp)
+        if (esPersonalizado && tieneNombre) {
+            // ✅ CASO 1: Mensaje personalizado CON nombre disponible
+            console.log(`📝 Generando mensaje personalizado con nombre para ${canal}`);
+            
+            cuerpoBase = mensajeria.mensajeTemplate
+                .replace(/\{tipoDestinatario\}/g, tipoDestinatario)
+                .replace(/\{nombre\}/g, nombreLimpio)
+                .replace(/\{cuenta\}/g, cuentaInfo.id || '')
+                .replace(/\{fecha\}/g, fechaActual);
+                
+        } else if (esPersonalizado && !tieneNombre) {
+            // ✅ CASO 2: Mensaje personalizado pero SIN nombre disponible
+            console.log(`📝 Generando mensaje personalizado sin nombre (usando saludo genérico) para ${canal}`);
+            
+            let mensajeGenerico = mensajeria.mensajeTemplate;
+            
+            // Reemplazar el saludo personalizado por el genérico
+            const patronSaludo = /Estimado\/a\s+\{tipoDestinatario\}\s+\{nombre\},?/gi;
+            mensajeGenerico = mensajeGenerico.replace(patronSaludo, saludoGenerico + ',');
+            
+            // Limpiar cualquier placeholder restante
+            cuerpoBase = mensajeGenerico
+                .replace(/\{tipoDestinatario\}/g, '')
+                .replace(/\{nombre\}/g, '')
+                .replace(/\{cuenta\}/g, cuentaInfo.id || '')
+                .replace(/\{fecha\}/g, fechaActual)
+                .replace(/\s{2,}/g, ' ')
+                .trim();
+                
+        } else {
+            // ✅ CASO 3: Mensaje NO personalizado (genérico)
+            console.log(`📝 Generando mensaje genérico para ${canal}`);
+            
+            cuerpoBase = mensajeria.mensajeTemplate
+                .replace(/\{fecha\}/g, fechaActual)
+                .replace(/\{cuenta\}/g, cuentaInfo.id || '');
+        }
+        
+        // ✅ Agregar prefijo de WhatsApp si existe
+        if (canal === 'whatsapp' && window.currentModuleConfig.whatsappTemplate) {
+            const whatsapp = window.currentModuleConfig.whatsappTemplate;
+            if (whatsapp.prefijoMensaje) {
+                cuerpoBase = whatsapp.prefijoMensaje + '\n\n' + cuerpoBase;
+            }
+        }
+        
+        // Agregar pie con datos de la empresa
+        cuerpoBase += `\n\nAtentamente,\n`;
+        cuerpoBase += `${empresa.nombre || 'GeCoNet'}\n`;
+        if (empresa.telefono) cuerpoBase += `Tel: ${empresa.telefono}\n`;
+        if (empresa.email) cuerpoBase += `Email: ${empresa.email}\n`;
+        
+    } else {
+        console.warn(`⚠️ No hay configuración de mensajería - usando valores por defecto para ${canal}`);
+        
+        // ✅ FALLBACK: Plantilla por defecto
+        if (canal === 'email') {
+            asuntoBase = `Documentación - ${cuentaInfo.id || 'Sin cuenta'}`;
+        }
+        
+        const nombreLimpio = (cuentaInfo.nombre || '').split('(')[0].trim();
+        
+        if (nombreLimpio) {
+            cuerpoBase = `Estimado/a ${nombreLimpio},\n\n`;
+        } else {
+            cuerpoBase = `Estimado/a,\n\n`;
+        }
+        
+        cuerpoBase += `Adjuntamos la documentación solicitada correspondiente a su cuenta.\n\n`;
+        cuerpoBase += `Por favor, revise los archivos adjuntos.\n\n`;
+        cuerpoBase += `Saludos cordiales.`;
+    }
+    
+    // ✅ Agregar información de archivos
+    cuerpoBase = construirCuerpoEmail(cuerpoBase, archivosAdjuntos, enlacesArchivos);
+    
+    console.log(`📧📱 Mensaje generado para ${canal} - Asunto: "${asuntoBase}"`);
+    
+    return { asunto: asuntoBase, cuerpo: cuerpoBase };
+}
 
-    $('#whatsappFileInfo').html(fileText);
+// ✅ FUNCIÓN PARA EMAIL (usa la función unificada)
+function generarContenidoEmailDesdeConfig(cuentaInfo, archivosAdjuntos, enlacesArchivos) {
+    return generarContenidoMensaje(cuentaInfo, archivosAdjuntos, enlacesArchivos, 'email');
+}
+
+// ✅ FUNCIÓN PARA WHATSAPP (usa la misma función unificada)
+function generarContenidoWhatsAppDesdeConfig(cuentaInfo) {
+    const resultado = generarContenidoMensaje(cuentaInfo, [], [], 'whatsapp');
+    return resultado.cuerpo; // WhatsApp solo usa el cuerpo, no el asunto
 }

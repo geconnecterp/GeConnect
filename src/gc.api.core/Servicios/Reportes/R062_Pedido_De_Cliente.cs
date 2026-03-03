@@ -3,10 +3,10 @@ using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
-using gc.infraestructura.Dtos.Consultas.ConsVencTipoCtaTipoCompte;
-using gc.infraestructura.Dtos.Financieros;
-using gc.infraestructura.Dtos.Financieros.Request;
+using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Inventario.Request;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
 using iTextSharp.text;
@@ -16,28 +16,22 @@ using Microsoft.Extensions.Options;
 
 namespace gc.api.core.Servicios.Reportes
 {
-	public class R044_ConsultaVencPorTipoCtaTipoCompte : Servicio<EntidadBase>, IGeneradorReporte
+	public class R062_Pedido_De_Cliente : Servicio<EntidadBase>, IGeneradorReporte
 	{
-		private readonly IConsultaServicio _consultaServicio;
-		private readonly IFinancieroServicio _financieroServicio;
-
+		private readonly IInventarioServicio _inventarioServicio;
 		private readonly EmpresaGeco _empresaGeco;
 		private readonly List<string> _titulos;
 		private readonly List<string> _campos;
-		private readonly ICuentaServicio _cuentaSv;
 		private readonly ILogger _logger;
 
-		public R044_ConsultaVencPorTipoCtaTipoCompte(IUnitOfWork uow, IConsultaServicio consulta, IFinancieroServicio financieroServicio,
+		public R062_Pedido_De_Cliente(IUnitOfWork uow, IInventarioServicio inventarioServicio,
 											IOptions<EmpresaGeco> empresa, ICuentaServicio consultaSv, ILogger logger) : base(uow)
 		{
-			_consultaServicio = consulta;
-			_financieroServicio = financieroServicio;
-
 			_empresaGeco = empresa.Value;
 			_titulos = ["N° OP", "Tipo", "Fecha", "Proveedor", "Anulada", "Usuario", "Importe"];
 			_campos = ["op_compte", "opt_desc", "op_fecha", "cta_denominacion", "op_anulada_desc", "usu_apellidoynombre", "op_importe"];
-			_cuentaSv = consultaSv;
 			_logger = logger;
+			_inventarioServicio = inventarioServicio;
 		}
 
 		public string Generar(ReporteSolicitudDto solicitud)
@@ -52,9 +46,11 @@ namespace gc.api.core.Servicios.Reportes
 				var ms = new MemoryStream();
 				#region Obteniendo registros desde la base de datos
 				string tit;
-				List<VencimientoListaDto> registros = ObtenerDatos(solicitud, out tit);
+				string subtit;
+				List<InvRepoConteosPorUsuDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
 
 				solicitud.Titulo = tit;
+				solicitud.SubTitulo = subtit;
 
 				//hago el modelo de dato aca ya que necesito los datos de la cuenta
 				var regs = registros.Select(x => new
@@ -104,7 +100,7 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Open();
 
 				#region Lista 
-				HelperPdf.CargarVencimientoPorTipoDeComprobante(pdf, registros, chico, normalBold);
+				HelperPdf.CargarRepoConteoPorUsu(pdf, registros, chico, normalBold);
 				#endregion
 
 				pdf.Close();
@@ -132,72 +128,19 @@ namespace gc.api.core.Servicios.Reportes
 			return bool.TryParse(valor, out var resultado) ? resultado : valorPorDefecto;
 		}
 
-		private static string GetTipoTexto(string tipo)
+		private List<InvRepoConteosPorUsuDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo, out string subtitulo)
 		{
-			return tipo switch
+			var inv_nro = solicitud.Parametros.GetValueOrDefault("inv_nro", "")?.ToString() ?? null;
+			var usu_id = solicitud.Parametros.GetValueOrDefault("usu_id", "")?.ToString() ?? null;
+			var usu_nombre = solicitud.Parametros.GetValueOrDefault("usu_nombre", "")?.ToString() ?? null;
+
+			titulo = $"Planilla de Carga de {usu_nombre}";
+			subtitulo = $"Inventario N°: {inv_nro}";
+
+			return _inventarioServicio.GetReporteConteosPorUsu(new ReporteInventarioRequest
 			{
-				"V" => "Vencidos",
-				"E" => "Emitidos",
-				_ => "Desconocido"
-			};
-		}
-
-		private static string GetCadenaDeEstadosSeleccionados(ReporteSolicitudDto solicitud)
-		{
-			var aux = string.Empty;
-			var listaTempo = new List<string>();
-			var usu = GetBoolParam(solicitud.Parametros, "id_u_bool");
-			var prov = GetBoolParam(solicitud.Parametros, "id_c_bool");
-			var est = GetBoolParam(solicitud.Parametros, "id_e_bool");
-			var fin = GetBoolParam(solicitud.Parametros, "id_f_bool");
-			if (usu) listaTempo.Add("Usuarios");
-			if (est) listaTempo.Add("Estados");
-			if (fin) listaTempo.Add("Cuenta Banco");
-			if (prov) listaTempo.Add("Proveedores");
-			aux = string.Join(",", listaTempo);
-			if (aux.Length > 0) aux = "Filtrado por " + aux;
-			return aux;
-		}
-
-		private List<VencimientoListaDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo)
-		{
-			var fv = GetBoolParam(solicitud.Parametros, "fv");
-			var fvDesde = solicitud.Parametros.GetValueOrDefault("fvDesde", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
-			var fvHasta = solicitud.Parametros.GetValueOrDefault("fvhasta", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
-			var fvDesdePrint = solicitud.Parametros.GetValueOrDefault("fvDesdePrint", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
-			var fvHastaPrint = solicitud.Parametros.GetValueOrDefault("fvHastaPrint", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
-
-			var fg = GetBoolParam(solicitud.Parametros, "fg");
-			var fgDesde = solicitud.Parametros.GetValueOrDefault("fgDesde", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
-			var fgHasta = solicitud.Parametros.GetValueOrDefault("fghasta", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
-			var fgDesdePrint = solicitud.Parametros.GetValueOrDefault("fgDesdePrint", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
-			var fgHastaPrint = solicitud.Parametros.GetValueOrDefault("fgHastaPrint", "").ToString() ?? DateTime.Now.ToString("dd-MM-yyyy");
-
-			var id_ctc = GetBoolParam(solicitud.Parametros, "id_ctc");
-			var ctc_list = solicitud.Parametros.GetValueOrDefault("ctc_list", "")?.ToString() ?? null;
-			var id_ope = GetBoolParam(solicitud.Parametros, "id_ope");
-			var ope_list = solicitud.Parametros.GetValueOrDefault("ope_list", "")?.ToString() ?? null;
-			var id_tco = GetBoolParam(solicitud.Parametros, "id_tco");
-			var tco_list = solicitud.Parametros.GetValueOrDefault("tco_list", "")?.ToString() ?? null;
-
-			titulo = $"Informe de movimientos por Tipo de Comprobante";
-
-			return _consultaServicio.ConsultarVencimientosPorTipo(new ConsultarVencimientosRequest()
-			{
-				fv = fv,
-				fvDesde = Convert.ToDateTime(fvDesde),
-				fvhasta = Convert.ToDateTime(fvHasta),
-				fg = fg,
-				fgDesde = Convert.ToDateTime(fgDesde),
-				fghasta = Convert.ToDateTime(fgHasta),
-				id_ctc = id_ctc,
-				id_ope = id_ope,
-				id_tco = id_tco,
-				ctc_list = ctc_list.Split(',').ToList() ?? [],
-				ope_list = ope_list.Split(',').ToList() ?? [],
-				tco_list = tco_list.Split(',').ToList() ?? [],
-				Registros = 999999999,
-				Pagina = 1
+				inv_nro = inv_nro,
+				usu_id = usu_id
 			});
 		}
 
@@ -205,7 +148,8 @@ namespace gc.api.core.Servicios.Reportes
 		{
 			#region Obteniendo registros desde la base de datos
 			string tit;
-			List<VencimientoListaDto> registros = ObtenerDatos(solicitud, out tit);
+			string subtit;
+			List<InvRepoConteosPorUsuDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
 
 			if (registros == null || registros.Count == 0)
 			{
@@ -228,7 +172,8 @@ namespace gc.api.core.Servicios.Reportes
 		{
 			#region Obteniendo registros desde la base de datos
 			string tit;
-			List<VencimientoListaDto> registros = ObtenerDatos(solicitud, out tit);
+			string subtit;
+			List<InvRepoConteosPorUsuDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
 
 			if (registros == null || registros.Count == 0)
 			{

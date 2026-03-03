@@ -555,7 +555,8 @@
 
 			#endregion
 
-
+			public const string SP_PC_ESTADOS = "SPGECO_PC_Estados";
+			public const string SP_PC_LISTA = "SPGECO_PC_lista";
 		}
 
 		public static class StoredFunctions

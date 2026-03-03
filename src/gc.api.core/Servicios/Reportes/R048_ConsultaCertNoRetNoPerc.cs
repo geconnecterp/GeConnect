@@ -97,7 +97,7 @@ namespace gc.api.core.Servicios.Reportes
 
 				pdf.Open();
 
-				#region Lista de Cheques Emitidos Propios
+				#region Lista
 				HelperPdf.CargarCertificadosNoRetencionNoPercepcion(pdf, registros, chico, normalBold);
 				#endregion
 

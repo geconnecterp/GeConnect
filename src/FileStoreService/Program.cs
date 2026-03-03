@@ -1,5 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
+
+// ═══════════════════════════════════════════════════════════
+// VARIABLE GLOBAL PARA LOGGER ANTES DE INICIALIZAR LA APP
+// ═══════════════════════════════════════════════════════════
+ILogger<Program>? globalLogger = null;
 
 try
 {
@@ -73,6 +79,13 @@ try
     var app = builder.Build();
     Console.WriteLine("✅ Aplicación construida");
 
+    // ═══════════════════════════════════════════════════════════
+    // CREAR LOGGER GLOBAL DESPUÉS DE CONSTRUIR LA APP
+    // ═══════════════════════════════════════════════════════════
+    globalLogger = app.Services.GetRequiredService<ILogger<Program>>();
+    LogAndWrite(globalLogger, "🚀 Iniciando FileStoreService...");
+    LogAndWrite(globalLogger, "✅ Logger global inicializado correctamente");
+
     // Configurar middleware de logging personalizado
     app.Use(async (context, next) =>
     {
@@ -97,7 +110,7 @@ try
     {
         app.UseSwagger();
         app.UseSwaggerUI();
-        Console.WriteLine("✅ Swagger UI habilitado (Development)");
+        LogAndWrite(globalLogger, "✅ Swagger UI habilitado (Development)");
     }
 
     // ✅ SOLUCIÓN: Solo usar HTTPS Redirection si NO estamos detrás de IIS
@@ -105,41 +118,41 @@ try
     if (!app.Environment.IsProduction())
     {
         app.UseHttpsRedirection();
-        Console.WriteLine("✅ HTTPS Redirection habilitado (Development)");
+        LogAndWrite(globalLogger, "✅ HTTPS Redirection habilitado (Development)");
     }
     else
     {
-        Console.WriteLine("ℹ️ HTTPS Redirection deshabilitado (Production/IIS)");
+        LogAndWrite(globalLogger, "ℹ️ HTTPS Redirection deshabilitado (Production/IIS)");
     }
 
     app.UseCors("AllowGeConnect");
-    Console.WriteLine("✅ CORS middleware habilitado");
+    LogAndWrite(globalLogger, "✅ CORS middleware habilitado");
 
     // ✅ Leer ruta desde configuración
     var fileStorePath = app.Configuration["FileStoreSettings:PhysicalPath"] ?? @"C:\Sitios\FileStore";
     app.Logger.LogInformation("📁 Usando directorio FileStore: {Path}", fileStorePath);
-    Console.WriteLine($"📁 Ruta FileStore: {fileStorePath}");
+    LogAndWrite(globalLogger, $"📁 Ruta FileStore: {fileStorePath}");
 
     // Validar que el directorio exista
     if (!Directory.Exists(fileStorePath))
     {
         app.Logger.LogWarning("⚠️ El directorio no existe, creándolo: {Path}", fileStorePath);
-        Console.WriteLine($"⚠️ Creando directorio: {fileStorePath}");
+        LogAndWrite(globalLogger, $"⚠️ Creando directorio: {fileStorePath}", LogLevel.Warning);
         try
         {
             Directory.CreateDirectory(fileStorePath);
-            Console.WriteLine("✅ Directorio creado exitosamente");
+            LogAndWrite(globalLogger, "✅ Directorio creado exitosamente");
         }
         catch (Exception ex)
         {
             app.Logger.LogError(ex, "❌ Error al crear directorio");
-            Console.WriteLine($"❌ Error al crear directorio: {ex.Message}");
+            LogAndWrite(globalLogger, $"❌ Error al crear directorio: {ex.Message}", LogLevel.Error);
             throw;
         }
     }
     else
     {
-        Console.WriteLine("✅ Directorio FileStore existe");
+        LogAndWrite(globalLogger, "✅ Directorio FileStore existe");
     }
 
     // Servir archivos estáticos desde /fileStore
@@ -152,12 +165,12 @@ try
             ServeUnknownFileTypes = true, // Permitir servir cualquier tipo de archivo
             DefaultContentType = "application/octet-stream"
         });
-        Console.WriteLine("✅ Middleware de archivos estáticos configurado");
+        LogAndWrite(globalLogger, "✅ Middleware de archivos estáticos configurado");
     }
     catch (Exception ex)
     {
         app.Logger.LogError(ex, "❌ Error al configurar archivos estáticos");
-        Console.WriteLine($"❌ Error en UseStaticFiles: {ex.Message}");
+        LogAndWrite(globalLogger, $"❌ Error en UseStaticFiles: {ex.Message}", LogLevel.Error);
         throw;
     }
 
@@ -238,7 +251,7 @@ try
         }
     }).DisableAntiforgery(); // Deshabilitar antiforgery para este endpoint
 
-    Console.WriteLine("✅ Endpoint /api/upload mapeado");
+    LogAndWrite(globalLogger, "✅ Endpoint /api/upload mapeado");
 
     // Endpoint de health check
     app.MapGet("/api/health", (ILogger<Program> logger, HttpContext context) =>
@@ -264,7 +277,7 @@ try
         });
     });
 
-    Console.WriteLine("✅ Endpoint /api/health mapeado");
+    LogAndWrite(globalLogger, "✅ Endpoint /api/health mapeado");
 
     // Endpoint raíz para verificar que la app está corriendo
     app.MapGet("/", () => Results.Ok(new
@@ -280,49 +293,67 @@ try
         }
     }));
 
-    Console.WriteLine("✅ Endpoint raíz (/) mapeado");
+    LogAndWrite(globalLogger, "✅ Endpoint raíz (/) mapeado");
 
-    Console.WriteLine("🎉 Configuración completada. Iniciando servidor...");
+    LogAndWrite(globalLogger, "🎉 Configuración completada. Iniciando servidor...");
     app.Logger.LogInformation("🚀 FileStoreService iniciado correctamente en {Environment}", app.Environment.EnvironmentName);
 
-    // Después de la línea: var fileStorePath = app.Configuration["FileStoreSettings:PhysicalPath"] ?? @"C:\Sitios\FileStore";
-
-    // ✅ AGREGAR PARA DEBUG
-    Console.WriteLine("═══════════════════════════════════════════════════════");
-    Console.WriteLine($"🔍 CONFIGURACIÓN DEBUG:");
-    Console.WriteLine($"   Environment: {app.Environment.EnvironmentName}");
-    Console.WriteLine($"   ContentRootPath: {app.Environment.ContentRootPath}");
-    Console.WriteLine($"   WebRootPath: {app.Environment.WebRootPath}");
-    Console.WriteLine($"   FileStorePath: {fileStorePath}");
-    Console.WriteLine($"   Directorio existe: {Directory.Exists(fileStorePath)}");
+    // Información de debug
+    LogAndWrite(globalLogger, "═══════════════════════════════════════════════════════");
+    LogAndWrite(globalLogger, "🔍 CONFIGURACIÓN DEBUG:");
+    LogAndWrite(globalLogger, $"   Environment: {app.Environment.EnvironmentName}");
+    LogAndWrite(globalLogger, $"   ContentRootPath: {app.Environment.ContentRootPath}");
+    LogAndWrite(globalLogger, $"   WebRootPath: {app.Environment.WebRootPath}");
+    LogAndWrite(globalLogger, $"   FileStorePath: {fileStorePath}");
+    LogAndWrite(globalLogger, $"   Directorio existe: {Directory.Exists(fileStorePath)}");
 
     if (Directory.Exists(fileStorePath))
     {
         var dirInfo = new DirectoryInfo(fileStorePath);
-        Console.WriteLine($"   Permisos: {dirInfo.Attributes}");
-        Console.WriteLine($"   Archivos actuales: {dirInfo.GetFiles().Length}");
+        LogAndWrite(globalLogger, $"   Permisos: {dirInfo.Attributes}");
+        LogAndWrite(globalLogger, $"   Archivos actuales: {dirInfo.GetFiles().Length}");
     }
 
-    Console.WriteLine("═══════════════════════════════════════════════════════");
-
+    LogAndWrite(globalLogger, "═══════════════════════════════════════════════════════");
 
     app.Run();
 }
 catch (Exception ex)
 {
-    Console.WriteLine("═══════════════════════════════════════════════════════");
-    Console.WriteLine("❌❌❌ ERROR CRÍTICO AL INICIAR LA APLICACIÓN ❌❌❌");
-    Console.WriteLine("═══════════════════════════════════════════════════════");
-    Console.WriteLine($"Tipo: {ex.GetType().Name}");
-    Console.WriteLine($"Mensaje: {ex.Message}");
-    Console.WriteLine($"StackTrace:\n{ex.StackTrace}");
+    var errorMsg = $"""
+        ═══════════════════════════════════════════════════════
+        ❌❌❌ ERROR CRÍTICO AL INICIAR LA APLICACIÓN ❌❌❌
+        ═══════════════════════════════════════════════════════
+        Tipo: {ex.GetType().Name}
+        Mensaje: {ex.Message}
+        StackTrace:
+        {ex.StackTrace}
+        """;
+
+    Console.WriteLine(errorMsg);
+    
+    if (globalLogger != null)
+    {
+        globalLogger.LogCritical(ex, "❌❌❌ ERROR CRÍTICO AL INICIAR LA APLICACIÓN");
+    }
 
     if (ex.InnerException != null)
     {
-        Console.WriteLine("\n--- Inner Exception ---");
-        Console.WriteLine($"Tipo: {ex.InnerException.GetType().Name}");
-        Console.WriteLine($"Mensaje: {ex.InnerException.Message}");
-        Console.WriteLine($"StackTrace:\n{ex.InnerException.StackTrace}");
+        var innerErrorMsg = $"""
+            
+            --- Inner Exception ---
+            Tipo: {ex.InnerException.GetType().Name}
+            Mensaje: {ex.InnerException.Message}
+            StackTrace:
+            {ex.InnerException.StackTrace}
+            """;
+        
+        Console.WriteLine(innerErrorMsg);
+        
+        if (globalLogger != null)
+        {
+            globalLogger.LogCritical(ex.InnerException, "--- Inner Exception ---");
+        }
     }
 
     Console.WriteLine("═══════════════════════════════════════════════════════");
@@ -332,5 +363,40 @@ catch (Exception ex)
     Console.ReadKey();
 
     throw;
+}
+
+// ═══════════════════════════════════════════════════════════
+// MÉTODO HELPER PARA LOGGING DUAL (CONSOLA + LOG4NET)
+// ═══════════════════════════════════════════════════════════
+static void LogAndWrite(ILogger? logger, string message, LogLevel level = LogLevel.Information)
+{
+    // Siempre escribir en consola
+    Console.WriteLine(message);
+    
+    // Si el logger está disponible, también escribir en Log4Net
+    if (logger != null)
+    {
+        switch (level)
+        {
+            case LogLevel.Trace:
+                logger.LogTrace(message);
+                break;
+            case LogLevel.Debug:
+                logger.LogDebug(message);
+                break;
+            case LogLevel.Information:
+                logger.LogInformation(message);
+                break;
+            case LogLevel.Warning:
+                logger.LogWarning(message);
+                break;
+            case LogLevel.Error:
+                logger.LogError(message);
+                break;
+            case LogLevel.Critical:
+                logger.LogCritical(message);
+                break;
+        }
+    }
 }
 
