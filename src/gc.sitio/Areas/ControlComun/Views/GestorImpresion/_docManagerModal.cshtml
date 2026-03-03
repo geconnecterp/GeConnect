@@ -1,5 +1,83 @@
 ﻿@using gc.infraestructura.ViewModels
+@using gc.infraestructura.EntidadesComunes.Options
 @model DocumentManagerViewModel
+
+@{
+    // ✅ CORREGIDO: Usar los tipos correctos de DocsManager
+    var mensajeriaTemplate = ViewBag.MensajeriaTemplate as MensajeriaTemplate;
+    var emailTemplate = ViewBag.EmailTemplate as EmailTemplate;
+    var whatsappTemplate = ViewBag.WhatsAppTemplate as WhatsAppTemplate;
+    var moduloId = ViewBag.ModuloId as string ?? "";
+    var moduloTitulo = ViewBag.ModuloTitulo as string ?? "";
+    
+    // ✅ Datos de la empresa
+    var empresaNombre = ViewBag.EmpresaNombre as string ?? "GeCoNet";
+    var empresaTelefono = ViewBag.EmpresaTelefono as string ?? "";
+    var empresaEmail = ViewBag.EmpresaEmail as string ?? "";
+    var empresaDireccion = ViewBag.EmpresaDireccion as string ?? "";
+    var empresaLocalidad = ViewBag.EmpresaLocalidad as string ?? "";
+    var empresaProvincia = ViewBag.EmpresaProvincia as string ?? "";
+}
+
+<!-- ✅ Script de configuración global para JavaScript -->
+<script type="text/javascript">
+    // Configuración del módulo actual
+    window.currentModuleConfig = {
+        moduloId: '@moduloId',
+        moduloTitulo: '@moduloTitulo',
+        
+        // ✅ NUEVO: Configuración de MENSAJERÍA (común para Email y WhatsApp)
+        mensajeriaTemplate: @if (mensajeriaTemplate != null)
+        {
+            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
+                mensajeTemplate = mensajeriaTemplate.MensajeTemplate,
+                tipoDestinatario = mensajeriaTemplate.TipoDestinatario,
+                esPersonalizado = mensajeriaTemplate.EsPersonalizado,
+                saludoGenerico = mensajeriaTemplate.SaludoGenerico
+            }))
+        }
+        else
+        {
+            @:null
+        },
+        
+        // ✅ Configuración de EMAIL (solo asunto)
+        emailTemplate: @if (emailTemplate != null)
+        {
+            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
+                asuntoTemplate = emailTemplate.AsuntoTemplate
+            }))
+        }
+        else
+        {
+            @:null
+        },
+        
+        // ✅ NUEVO (opcional futuro): Configuración de WHATSAPP
+        whatsappTemplate: @if (whatsappTemplate != null)
+        {
+            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
+                prefijoMensaje = whatsappTemplate.PrefijoMensaje,
+                usarEmojis = whatsappTemplate.UsarEmojis
+            }))
+        }
+        else
+        {
+            @:null
+        },
+        
+        empresa: {
+            nombre: '@empresaNombre',
+            telefono: '@empresaTelefono',
+            email: '@empresaEmail',
+            direccion: '@empresaDireccion',
+            localidad: '@empresaLocalidad',
+            provincia: '@empresaProvincia'
+        }
+    };
+    
+    console.log('📋 Configuración del módulo cargada:', window.currentModuleConfig);
+</script>
 
 <div class="modal" id="docmgrmodal" tabindex="-1" role="dialog" aria-labelledby="docmgrmodalLabel" data-backdrop="static"
      style="z-index:9999;">

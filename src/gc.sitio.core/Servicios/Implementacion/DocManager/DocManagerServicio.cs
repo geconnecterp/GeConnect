@@ -2,7 +2,6 @@
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
-using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.DocManager;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Users;
@@ -16,8 +15,6 @@ using iTextSharp.text.pdf;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using OfficeOpenXml.FormulaParsing.LexicalAnalysis;
 using System.Net;
 
 namespace gc.sitio.core.Servicios.Implementacion.DocManager
@@ -41,7 +38,7 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
 
         public List<MenuRootModal> GeneraArbolArchivos(AppModulo modulo)
         {
-            List<Reporte> reportes = modulo.Reportes;
+            var reportes = modulo.Reportes;
             List<MenuRootModal> arbol = new List<MenuRootModal>();
             MenuRootModal root = new MenuRootModal
             {

@@ -25,6 +25,7 @@ namespace gc.infraestructura.Core.EntidadesComunes.Options
         public int LimiteAvalancha { get; set; }
         public int NroRegistrosPagina { get; set; }
         public string? RutaTemporal { get; set; }
+        public string? RutaFileServer { get; set; }
         public string? RutaLogo { get; set; }
         public bool LogExtension { get; set; }
         public string? RutaRepositorioPDF { get; set; }
