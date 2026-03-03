@@ -46,21 +46,6 @@
                 <input type="email" class="form-control form-control-sm" id="emailTo" placeholder="destinatario@ejemplo.com" required>
             </div>
             
-            <!-- Campos CC/BCC (colapsables) -->
-            <div class="mb-2" id="ccBccContainer" style="display: none;">
-                <div class="row">
-                    <div class="col-md-6 mb-2">
-                        <label for="emailCc" class="form-label mb-1">CC</label>
-                        <input type="email" class="form-control form-control-sm" id="emailCc" placeholder="cc@ejemplo.com">
-                    </div>
-                    <div class="col-md-6 mb-2">
-                        <label for="emailBcc" class="form-label mb-1">BCC</label>
-                        <input type="email" class="form-control form-control-sm" id="emailBcc" placeholder="bcc@ejemplo.com">
-                    </div>
-                </div>
-                <small class="text-muted">Separa múltiples emails con ;</small>
-            </div>
-            
             <div class="mb-2">
                 <label for="emailSubject" class="form-label mb-1">Asunto <span class="text-danger">*</span></label>
                 <input type="text" class="form-control form-control-sm" id="emailSubject" placeholder="Asunto del correo" required>
@@ -72,7 +57,7 @@
             </div>
             
             <!-- Información de archivos (compactada) -->
-            <div class="mb-3">
+            @* <div class="mb-3" id="emailFileInfoContainer">
                 <div class="d-flex align-items-center justify-content-between">
                     <small class="text-muted">
                         <i class="bx bx-paperclip"></i> 
@@ -82,7 +67,7 @@
                         <i class="bx bx-help-circle"></i> Máx: 25MB
                     </small>
                 </div>
-            </div>
+            </div> *@
         </form>
         
         <button type="button" class="btn btn-golden btn-sm w-100" id="btnEnviarEmail">

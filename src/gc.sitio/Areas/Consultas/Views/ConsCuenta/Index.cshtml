@@ -47,23 +47,15 @@
 
 @section scripts {
     <script type="text/javascript">
-        //esta variable global tendra por funcion afectar la logica de algunos controles
-        //del filtro
-        // Bandera para evitar recursión infinita
         let isInitializing = false;
-        var modeloDato= "@filtro.Modelo";
-
-
-
-        //esta variable es para usarla en Js. El (sub) es para usarlo aca nomas
+        var modeloDato = "@filtro.Modelo";
         nnControlCta01 = "@(sub)";
 
         $(function(){
-            //Inicializa el control.
             inicializaCtrl@(sub)();
         });
 
-        //se buscaran los registros para el autocompletar
+        // URLs de búsqueda y consulta
         var autoComRel01Url = "@Url.Action("BusquedaCuenta", "Cuenta", new { area = "ControlComun" })";
         var consultaCtaCteUrl = "@Url.Action("ConsultarCuentaCorriente", "ConsCuenta", new { area = "Consultas" })";
         var consultaVencimientoUrl = "@Url.Action("ConsultarVencimiento", "ConsCuenta", new { area = "Consultas" })";
@@ -73,41 +65,22 @@
         var consultarOPProvDetUrl = "@Url.Action("ConsultaOPagoProveedorDetalle", "ConsCuenta", new { area = "Consultas" })";
         var consultarRPProvUrl = "@Url.Action("ConsultaRecepcionProveedor", "ConsCuenta", new { area = "Consultas" })";
         var consultarRPProvDetUrl = "@Url.Action("ConsultaRecepcionProveedorDetalle", "ConsCuenta", new { area = "Consultas" })";
-
         var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "abmproducto", new { area = "abms" })";
 
+        // ✅ URLs del Gestor de Impresión (SOLO ESTAS)
         var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
         var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "GestorImpresion", new { area = "ControlComun" })";
-        var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
-
-        var enviarEmailUrl =  "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
-        var enviarWhatsAppUrl =  "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
-
+        var presentarArchivosUrl = "@Url.Action("PresentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+        var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+        var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
         var repoApiUrl = "@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })";
-
-        var initConsultaUrl =  "@Url.Action("index", "ConsCuenta", new { area = "Consultas" })";
-
-
-          // Nuevas URLs para el gestor documental
-        var obtenerModalGestorUrl = "@Url.Action("ObtenerModalGestor", "GestorDocumentos", new { area = "ControlComun" })";
-        var obtenerArbolDocumentosUrl = "@Url.Action("ObtenerArbolDocumentos", "GestorDocumentos", new { area = "ControlComun" })";
-        var imprimirDocumentosUrl = "@Url.Action("ImprimirDocumentos", "GestorDocumentos", new { area = "ControlComun" })";
-        var exportarDocumentosUrl = "@Url.Action("ExportarDocumentos", "GestorDocumentos", new { area = "ControlComun" })";
-        var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorDocumentos", new { area = "ControlComun" })";
-        var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorDocumentos", new { area = "ControlComun" })";
-
+        var initConsultaUrl = "@Url.Action("index", "ConsCuenta", new { area = "Consultas" })";
     </script>
+    
     <script src="~/lib/jstree/jstree.min.js"></script>
-
     <script src="~/js/plugins/jquery.simplePagination.js"></script>
-
-    <!--variables Globales y Enums Globales-->
     <script src="~/js/app/areas/abms/abmsettings.js"></script>
-
-    <!-- Incluir el nuevo script del gestor documental -->
-@*     <script src="~/js/app/areas/docmngr/gestorDocumental.js"></script> *@
-     <script src="~/js/app/areas/docmngr/docmanager.js"></script>
-
+    <script src="~/js/app/areas/docmngr/docmanager.js"></script>
     <script src="~/js/app/areas/consultas/ConsultaCuentas.js"></script>
     <script src="~/js/app/areas/consultas/ConsultaCuentaRules.js"></script>
 }
