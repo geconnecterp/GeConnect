@@ -151,9 +151,12 @@ function procesarArchivosParaEmail(emailProvider, emailTo, emailSubject, emailBo
 
             // ✅ PASO 2: Guardar TODOS los archivos en FileStore (obtener URLs públicas)
             console.log('💾 Guardando archivos en FileStore para obtener URLs públicas...');
-            return guardarArchivosGrandesEnServidor(archivosGenerados);
+
+            // ✅ CORREGIDO: Retornar AMBOS archivosGenerados y enlaces juntos
+            return guardarArchivosGrandesEnServidor(archivosGenerados)
+                .then(enlaces => ({ archivosGenerados, enlaces }));
         })
-        .then(enlaces => {
+        .then(({ archivosGenerados, enlaces }) => {  // ✅ CORREGIDO: Desestructurar ambos
             CerrarWaiting();
             console.log(`✅ ${enlaces.length} URL(s) pública(s) obtenida(s) del FileStore`);
 
@@ -178,14 +181,6 @@ function procesarArchivosParaEmail(emailProvider, emailTo, emailSubject, emailBo
                 // porque NO soporta HTML
                 console.log('ℹ️ Manteniendo texto plano para Outlook Desktop (mailto)');
             }
-
-            //if (enlaces.length > 0) {
-            //    // ✅ NUEVO: Agregar enlaces como HTML clicables
-            //    cuerpoConEnlaces += '\n\n📎 <strong>Documentos disponibles:</strong><br/><br/>';
-            //    enlaces.forEach((enlace, index) => {
-            //        cuerpoConEnlaces += `${index + 1}. <a href="${enlace.url}" target="_blank" style="color: #0066cc; text-decoration: none;">${enlace.nombre}</a><br/><br/>`;
-            //    });
-            //}
 
             if (enlaces.length > 0) {
                 // ✅ Agregar enlaces como HTML clicables (para Gmail y Outlook Web)
@@ -214,7 +209,7 @@ function procesarArchivosParaEmail(emailProvider, emailTo, emailSubject, emailBo
                     enviarEmailOutlookLocal(emailTo, emailSubject, cuerpoConEnlaces, enlaces);
                     break;
                 default:
-                    // Para Gmail, clasificar por tamaño (pequeños adjuntos + grandes por enlace)
+                    // ✅ CORREGIDO: Ahora archivosGenerados SÍ está disponible
                     clasificarYEnviarPorGmail(emailTo, emailSubject, emailBody, archivosGenerados, enlaces);
             }
         })
@@ -229,6 +224,107 @@ function procesarArchivosParaEmail(emailProvider, emailTo, emailSubject, emailBo
                 }, false, ["Aceptar"], "error!", null);
         });
 }
+
+///**
+// * ✅ NUEVA FUNCIÓN: Procesa archivos de manera unificada
+// * Genera PDFs, guarda en FileStore y obtiene URLs públicas
+// * Luego delega al proveedor específico (Gmail/Outlook)
+// */
+//function procesarArchivosParaEmail(emailProvider, emailTo, emailSubject, emailBody, archivosSeleccionados) {
+//    AbrirWaiting("Generando PDFs y guardando en servidor...");
+
+//    console.log(`📎 Procesando ${archivosSeleccionados.length} archivo(s) para ${emailProvider}`);
+
+//    // ✅ PASO 1: Generar PDFs en tiempo real
+//    const promesasGeneracion = archivosSeleccionados.map(node => {
+//        console.log(`🔄 Generando PDF: "${node.text}" (ID: ${node.id})`);
+//        return generarPDFEnTiempoReal(node);
+//    });
+
+//    Promise.all(promesasGeneracion)
+//        .then(archivosGenerados => {
+//            console.log(`✅ ${archivosGenerados.length} PDF(s) generados exitosamente`);
+
+//            // ✅ PASO 2: Guardar TODOS los archivos en FileStore (obtener URLs públicas)
+//            console.log('💾 Guardando archivos en FileStore para obtener URLs públicas...');
+//            return guardarArchivosGrandesEnServidor(archivosGenerados);
+//        })
+//        .then(enlaces => {
+//            CerrarWaiting();
+//            console.log(`✅ ${enlaces.length} URL(s) pública(s) obtenida(s) del FileStore`);
+
+//            // ✅ Construir mensaje con URLs
+//            let cuerpoConEnlaces = emailBody;
+
+//            // ✅ Detectar si el cuerpo ya es HTML (contiene <br/> o <p>)
+//            const esHtml = cuerpoConEnlaces.includes('<br') ||
+//                cuerpoConEnlaces.includes('<p>') ||
+//                cuerpoConEnlaces.includes('<div>');
+
+//            if (!esHtml && (emailProvider === 'outlookweb' || emailProvider === 'gmail')) {
+//                // ✅ Convertir saltos de línea a <br/> para Outlook Web y Gmail
+//                cuerpoConEnlaces = cuerpoConEnlaces
+//                    .replace(/\r\n/g, '\n')      // Normalizar CRLF a LF
+//                    .replace(/\n\n/g, '<br/><br/>') // Párrafos dobles
+//                    .replace(/\n/g, '<br/>');    // Saltos de línea simples
+
+//                console.log('✅ Cuerpo convertido a HTML (saltos de línea → <br/>)');
+//            } else if (emailProvider === 'outlookdesktop') {
+//                // ✅ Para Outlook Desktop (mailto), mantener saltos de línea normales
+//                // porque NO soporta HTML
+//                console.log('ℹ️ Manteniendo texto plano para Outlook Desktop (mailto)');
+//            }
+
+//            //if (enlaces.length > 0) {
+//            //    // ✅ NUEVO: Agregar enlaces como HTML clicables
+//            //    cuerpoConEnlaces += '\n\n📎 <strong>Documentos disponibles:</strong><br/><br/>';
+//            //    enlaces.forEach((enlace, index) => {
+//            //        cuerpoConEnlaces += `${index + 1}. <a href="${enlace.url}" target="_blank" style="color: #0066cc; text-decoration: none;">${enlace.nombre}</a><br/><br/>`;
+//            //    });
+//            //}
+
+//            if (enlaces.length > 0) {
+//                // ✅ Agregar enlaces como HTML clicables (para Gmail y Outlook Web)
+//                if (emailProvider === 'outlookweb' || emailProvider === 'gmail') {
+//                    cuerpoConEnlaces += '<br/><br/>📎 <strong>Documentos disponibles:</strong><br/><br/>';
+//                    enlaces.forEach((enlace, index) => {
+//                        cuerpoConEnlaces += `${index + 1}. <a href="${enlace.url}" target="_blank" style="color: #0066cc; text-decoration: none;">${enlace.nombre}</a><br/><br/>`;
+//                    });
+//                } else {
+//                    // ✅ Para Outlook Desktop, usar URLs planas
+//                    cuerpoConEnlaces += '\n\n📎 Documentos disponibles:\n\n';
+//                    enlaces.forEach((enlace, index) => {
+//                        cuerpoConEnlaces += `${index + 1}. ${enlace.nombre}\n   ${enlace.url}\n\n`;
+//                    });
+//                }
+//            }
+
+//            console.log(`📧 Delegando a proveedor: ${emailProvider}`);
+
+//            // ✅ PASO 3: Delegar al proveedor específico CON URLs
+//            switch (emailProvider) {
+//                case 'outlookweb':
+//                    enviarEmailOutlookWeb(emailTo, emailSubject, cuerpoConEnlaces, enlaces);
+//                    break;
+//                case 'outlookdesktop':
+//                    enviarEmailOutlookLocal(emailTo, emailSubject, cuerpoConEnlaces, enlaces);
+//                    break;
+//                default:
+//                    // Para Gmail, clasificar por tamaño (pequeños adjuntos + grandes por enlace)
+//                    clasificarYEnviarPorGmail(emailTo, emailSubject, emailBody, archivosGenerados, enlaces);
+//            }
+//        })
+//        .catch(error => {
+//            CerrarWaiting();
+//            console.error('❌ Error al procesar archivos:', error);
+
+//            AbrirMensaje("Error",
+//                `❌ Error al procesar archivos:\n\n${error.message}\n\nRevisa la consola del navegador (F12) para más detalles.`,
+//                function () {
+//                    $("#msjModal").modal("hide");
+//                }, false, ["Aceptar"], "error!", null);
+//        });
+//}
 
 /**
  * ✅ FUNCIÓN AUXILIAR: Clasifica archivos por tamaño para Gmail
@@ -478,15 +574,14 @@ function enviarEmailOutlookLocal(emailTo, emailSubject, emailBody, enlaces) {
 
 /**
  * Función: Enviar mensaje por WhatsApp Web con archivos
- * ✅ MEJORADO: Genera PDFs, guarda en FileStore y envía enlaces
+ * ✅ CORREGIDO: Filtro unificado con Email
  */
 function enviarWhatsApp() {
     console.log('📱 Iniciando proceso de envío por WhatsApp...');
-    
-    // Validaciones básicas
+
     const whatsappTo = $('#whatsappTo').val().trim();
     let whatsappMessage = $('#whatsappMessage').val().trim();
-    
+
     if (!whatsappTo) {
         AbrirMensaje("ATENCIÓN", "Por favor ingresa un número de teléfono", function () {
             $("#msjModal").modal("hide");
@@ -494,9 +589,7 @@ function enviarWhatsApp() {
         return;
     }
 
-    // ✅ Si el mensaje está vacío, generarlo automáticamente
     if (!whatsappMessage) {
-        console.log('📱 Generando mensaje automático para WhatsApp');
         whatsappMessage = generarContenidoWhatsAppDesdeConfig(
             window.datosCtaActual || {
                 id: 'N/A',
@@ -506,67 +599,100 @@ function enviarWhatsApp() {
             }
         );
     }
-    
-    // Validar formato de número
+
     const cleanNumber = whatsappTo.replace(/[\s\-\(\)]/g, '');
     if (!cleanNumber.startsWith('+')) {
-        AbrirMensaje("ATENCIÓN", 
+        AbrirMensaje("ATENCIÓN",
             "El número debe incluir el código de país\n\nEjemplos:\n" +
             "• Argentina: +5491123456789\n" +
             "• México: +521234567890\n" +
-            "• Perú: +51999999999", 
+            "• Perú: +51999999999",
             function () {
                 $("#msjModal").modal("hide");
             }, false, ["Aceptar"], "warn!", null);
         return;
     }
 
-    // ✅ NUEVO: Obtener archivos seleccionados
+    // ✅ CORREGIDO: Usar el MISMO filtro que Email
     const selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
     const archivosSeleccionados = selectedNodes.filter(function (node) {
-        return node.parent !== "#" && node.parent !== null && !node.children;
+        const esNodoRaiz = node.parent === "#" || node.parent === null;
+        const esCarpeta = node.children && node.children.length > 0;  // ✅ IGUAL QUE EMAIL
+        return !esNodoRaiz && !esCarpeta;
     });
 
-    // ✅ CASO 1: Sin archivos seleccionados - enviar solo mensaje
+    // ✅ DIAGNÓSTICO: Logging detallado
+    console.log(`🔍 Total nodos seleccionados (antes de filtrar): ${selectedNodes.length}`);
+    console.log(`📊 Total archivos válidos (después de filtrar): ${archivosSeleccionados.length}`);
+
+    if (archivosSeleccionados.length > 0) {
+        console.log('📎 Archivos seleccionados:');
+        archivosSeleccionados.forEach((node, index) => {
+            console.log(`  ${index + 1}. ${node.text} (ID: ${node.id})`);
+        });
+    }
+
     if (archivosSeleccionados.length === 0) {
         console.log('📱 Enviando WhatsApp sin archivos adjuntos');
         enviarWhatsAppSinArchivos(cleanNumber, whatsappMessage);
         return;
     }
 
-    // ✅ CASO 2: Con archivos seleccionados - generar PDFs y enviar con enlaces
+    // ✅ AHORA SÍ procesa archivos
     console.log(`📎 Procesando ${archivosSeleccionados.length} archivo(s) para WhatsApp`);
-    
+
     AbrirWaiting("Generando archivos para WhatsApp...");
-    
-    // Generar PDFs en tiempo real
+
     const promesasGeneracion = archivosSeleccionados.map(node => generarPDFEnTiempoReal(node));
-    
+
     Promise.all(promesasGeneracion)
         .then(archivosGenerados => {
             console.log('✅ Todos los PDFs generados exitosamente');
             console.log('💾 Guardando archivos en FileStore...');
-            
-            // Guardar TODOS los archivos en FileStore (no importa el tamaño para WhatsApp)
+
             return guardarArchivosGrandesEnServidor(archivosGenerados);
         })
         .then(enlaces => {
             CerrarWaiting();
-            console.log(`✅ ${enlaces.length} enlace(s) generado(s)`);
-            
+
+            // ✅ VALIDACIÓN EXHAUSTIVA
+            console.log(`🔍 Enlaces recibidos:`, enlaces);
+            console.log(`🔍 Tipo de enlaces:`, typeof enlaces);
+            console.log(`🔍 Longitud de enlaces:`, enlaces ? enlaces.length : 'null/undefined');
+
+            if (!enlaces || !Array.isArray(enlaces) || enlaces.length === 0) {
+                console.error('❌ PROBLEMA: No se recibieron enlaces del FileStore');
+
+                AbrirMensaje("Error",
+                    "❌ No se pudieron obtener los enlaces de descarga de los archivos.\n\n" +
+                    "Posibles causas:\n" +
+                    "• El FileStore no está funcionando\n" +
+                    "• No se pudo subir los archivos al servidor\n\n" +
+                    "Revisa la consola (F12) para más detalles.",
+                    function () {
+                        $("#msjModal").modal("hide");
+                    }, false, ["Aceptar"], "error!", null);
+                return;
+            }
+
+            console.log(`✅ ${enlaces.length} enlace(s) válido(s) recibido(s)`);
+
             // Construir mensaje con enlaces
             let mensajeFinal = whatsappMessage;
-            
-            if (enlaces.length > 0) {
-                mensajeFinal += '\n\n📎 Archivos disponibles para descarga:\n';
-                enlaces.forEach((enlace, index) => {
-                    mensajeFinal += `${index + 1}. ${enlace.nombre}\n${enlace.url}\n\n`;
-                });
-            }
-            
-            // Validar longitud del mensaje (máximo 5000 caracteres)
+
+            mensajeFinal += '\n\n📎 Archivos disponibles para descarga:\n';
+            enlaces.forEach((enlace, index) => {
+                if (!enlace.url) {
+                    console.warn(`⚠️ Advertencia: Enlace ${index + 1} no tiene URL`);
+                }
+                console.log(`  ${index + 1}. ${enlace.nombre} → ${enlace.url}`);
+                mensajeFinal += `${index + 1}. ${enlace.nombre}\n${enlace.url}\n\n`;
+            });
+
+            console.log(`📝 Mensaje final (${mensajeFinal.length} caracteres):`, mensajeFinal);
+
             if (mensajeFinal.length > 5000) {
-                AbrirMensaje("ATENCIÓN", 
+                AbrirMensaje("ATENCIÓN",
                     `⚠️ El mensaje es muy largo (${mensajeFinal.length} caracteres).\n\n` +
                     `Máximo permitido: 5000 caracteres.\n\n` +
                     `Por favor, reduce la cantidad de archivos o el texto del mensaje.`,
@@ -575,16 +701,17 @@ function enviarWhatsApp() {
                     }, false, ["Aceptar"], "warn!", null);
                 return;
             }
-            
+
             console.log('📱 Enviando WhatsApp con enlaces');
             enviarWhatsAppConEnlaces(cleanNumber, mensajeFinal, enlaces.length);
         })
         .catch(error => {
             CerrarWaiting();
             console.error('❌ Error al procesar archivos para WhatsApp:', error);
-            
-            AbrirMensaje("Error", 
-                `❌ Error al procesar archivos:\n\n${error.message}\n\nRevisa la consola para más detalles.`,
+            console.error('❌ Stack trace:', error.stack);
+
+            AbrirMensaje("Error",
+                `❌ Error al procesar archivos:\n\n${error.message}\n\nRevisa la consola (F12) para más detalles.`,
                 function () {
                     $("#msjModal").modal("hide");
                 }, false, ["Aceptar"], "error!", null);
