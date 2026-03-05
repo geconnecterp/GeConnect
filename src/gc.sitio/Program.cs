@@ -23,26 +23,23 @@ cultureInfo.DateTimeFormat.ShortDatePattern = "dd/MM/yyyy";
 CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
 CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
+// Obtener PathBase desde configuración
+var appSettings = builder.Configuration.GetSection("AppSettings").Get<AppSettings>();
+var pathBase = appSettings?.PathBase ?? string.Empty;
+
 builder.Services.Configure<CookieAuthenticationOptions>(opt => {
-    opt.LoginPath = new PathString("/seguridad/token/login");
+    opt.LoginPath = new PathString($"{pathBase}/seguridad/token/login");
 });
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
 .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, opt =>
  {
      opt.Cookie.Name = "GCSitioCookie";
-     opt.LoginPath = new PathString("/seguridad/token/login");
-     opt.LogoutPath = new PathString("/seguridad/token/logout");
-     opt.AccessDeniedPath = new PathString("/seguridad/token/login");  //aca debere generar la ruta para indicar el acceso denegado y volver al login
+     opt.LoginPath = new PathString($"{pathBase}/seguridad/token/login");
+     opt.LogoutPath = new PathString($"{pathBase}/seguridad/token/logout");
+     opt.AccessDeniedPath = new PathString($"{pathBase}/seguridad/token/login");  //aca debere generar la ruta para indicar el acceso denegado y volver al login    
  });
-//builder.Services.AddAuthentication("CGPOCKETCookie")
-//    .AddCookie("CGPOCKETCookie", opt =>
-//    {
-//        opt.Cookie.Name = "GCSitioCookie";
-//        opt.LoginPath = new PathString("/seguridad/token/login");
-//        opt.LogoutPath = new PathString("/seguridad/token/logout");
-//        opt.AccessDeniedPath = new PathString("/seguridad/token/login");  //aca debere generar la ruta para indicar el acceso denegado y volver al login
-//    });
+
 
 builder.Services.AddServicios();
 

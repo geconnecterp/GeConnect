@@ -23,7 +23,8 @@
             // Verificar autenticación
             if (!context.User.Identity.IsAuthenticated)
             {
-                context.Response.Redirect("/seguridad/Token/Login");
+                var loginPath = $"{context.Request.PathBase}/seguridad/Token/Login";
+                context.Response.Redirect(loginPath);
                 return;
             }
 
@@ -31,7 +32,8 @@
             var admClaim = context.User.Claims.FirstOrDefault(c => c.Type.Contains("AdmId"));
             if (admClaim == null || string.IsNullOrEmpty(admClaim.Value))
             {
-                context.Response.Redirect("/seguridad/Token/Login");
+                var loginPath = $"{context.Request.PathBase}/seguridad/Token/Login";
+                context.Response.Redirect(loginPath);
                 return;
             }
 

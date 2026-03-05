@@ -1,15 +1,17 @@
 ﻿var usuarioAuth = "";
 var administracion = "";
 var repoApiUrl = "";
+var pathBase = ""; // Variable global para PathBase
 
 $(function () {
+    // Obtener PathBase desde el DOM (se debe agregar en el layout)
+    pathBase = document.body.getAttribute('data-pathbase') || '';
+    
     AbrirWaiting("Espere, se esta inicializando la vista...");
     $("#formulario").slideUp(300).fadeIn(400);
     CerrarWaiting();
 
     desabilitarRetroceso();
-    //var exeUnlock = true;
-    //setTimeout($.unblockUI, 15000);
 
     InicializarPage();
     buildSubMenu();
@@ -29,6 +31,18 @@ $(function () {
         return false;
     });
 });
+
+/**
+ * Construye una ruta completa incluyendo el PathBase si existe
+ * @param {string} path - Ruta relativa (debe empezar con /)
+ * @returns {string} - Ruta completa con PathBase
+ */
+function buildPath(path) {
+    if (!path.startsWith('/')) {
+        path = '/' + path;
+    }
+    return pathBase + path;
+}
 
 function buildSubMenu() {
     document.addEventListener("DOMContentLoaded", function () {
@@ -96,7 +110,6 @@ function desabilitarRetroceso() {
     window.location.hash = "Again-No-back-button-" //chrome
     window.onhashchange = function () { window.location.hash = ""; }
 }
-
 
 function InicializarPage() {
     if (MensajeErrorTempData)
@@ -179,9 +192,6 @@ function ControlaMensajeWarning(mensaje, unlock = false) {
     }
 }
 
-
-// Agregar al final de site.js o en un archivo específico para manejo de AJAX
-
 // Interceptor para peticiones AJAX que verifica si la sesión ha expirado
 $(document).ajaxError(function (event, jqXHR, ajaxSettings, thrownError) {
     // Verificar si el error es por sesión expirada (código 440)
@@ -191,8 +201,8 @@ $(document).ajaxError(function (event, jqXHR, ajaxSettings, thrownError) {
             "Sesión expirada",
             "Su sesión ha expirado. Será redirigido a la página de inicio de sesión.",
             function () {
-                // Redirigir al login
-                window.location.href = "/seguridad/Token/Login";
+                // Redirigir al login usando PathBase
+                window.location.href = buildPath("/seguridad/Token/Login");
             },
             false,
             ["Aceptar"],
@@ -204,33 +214,4 @@ $(document).ajaxError(function (event, jqXHR, ajaxSettings, thrownError) {
         return false;
     }
 });
-
-//// Para peticiones fetch modernas (opcional, si usas fetch en lugar de jQuery)
-//const originalFetch = window.fetch;
-//window.fetch = async function (input, init) {
-//    const response = await originalFetch(input, init);
-
-//    if (response.status === 440) {
-//        const responseData = await response.json();
-
-//        // Mostrar mensaje al usuario
-//        AbrirMensaje(
-//            "Sesión expirada",
-//            responseData.msg || "Su sesión ha expirado. Será redirigido a la página de inicio de sesión.",
-//            function () {
-//                // Redirigir al login
-//                window.location.href = "/seguridad/Token/Login";
-//            },
-//            false,
-//            ["Aceptar"],
-//            "warn!",
-//            null
-//        );
-
-//        // Crear una promesa rechazada para que los manejadores catch puedan procesarla
-//        return Promise.reject(new Error("Sesión expirada"));
-//    }
-
-//    return response;
-//};
 
