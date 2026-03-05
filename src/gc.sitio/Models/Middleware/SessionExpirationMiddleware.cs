@@ -1,4 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
+using gc.infraestructura.Core.EntidadesComunes.Options;
+using Microsoft.Extensions.Options;
 
 namespace gc.sitio.Models.Middleware
 {
@@ -6,11 +8,16 @@ namespace gc.sitio.Models.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<SessionExpirationMiddleware> _logger;
+        private readonly string _pathBase;
 
-        public SessionExpirationMiddleware(RequestDelegate next, ILogger<SessionExpirationMiddleware> logger)
+        public SessionExpirationMiddleware(
+            RequestDelegate next, 
+            ILogger<SessionExpirationMiddleware> logger,
+            IOptions<AppSettings> options)
         {
             _next = next;
             _logger = logger;
+            _pathBase = options.Value.PathBase ?? string.Empty;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -37,15 +44,16 @@ namespace gc.sitio.Models.Middleware
                 if (isAjaxRequest)
                 {
                     // Para solicitudes AJAX, devolver un código de estado especial
-                    context.Response.StatusCode = 440; // Login Timeout (no estándar pero usado comúnmente)
+                    context.Response.StatusCode = 440; // Login Timeout
                     context.Response.ContentType = "application/json";
                     await context.Response.WriteAsync("{\"error\":true,\"auth\":false,\"msg\":\"Su sesión ha expirado. Por favor inicie sesión nuevamente.\"}");
                     return;
                 }
                 else
                 {
-                    // Redireccionar al login para solicitudes normales
-                    context.Response.Redirect("/seguridad/Token/Login");
+                    // Usar PathBase para redirección
+                    var loginPath = $"{context.Request.PathBase}/seguridad/Token/Login";
+                    context.Response.Redirect(loginPath);
                     return;
                 }
             }
@@ -77,7 +85,8 @@ namespace gc.sitio.Models.Middleware
                             }
                             else
                             {
-                                context.Response.Redirect("/seguridad/Token/Login");
+                                var loginPath = $"{context.Request.PathBase}/seguridad/Token/Login";
+                                context.Response.Redirect(loginPath);
                                 return;
                             }
                         }
@@ -95,7 +104,8 @@ namespace gc.sitio.Models.Middleware
                         }
                         else
                         {
-                            context.Response.Redirect("/seguridad/Token/Login");
+                            var loginPath = $"{context.Request.PathBase}/seguridad/Token/Login";
+                            context.Response.Redirect(loginPath);
                             return;
                         }
                     }
@@ -110,7 +120,8 @@ namespace gc.sitio.Models.Middleware
                 }
                 else
                 {
-                    context.Response.Redirect("/seguridad/Token/Login");
+                    var loginPath = $"{context.Request.PathBase}/seguridad/Token/Login";
+                    context.Response.Redirect(loginPath);
                     return;
                 }
             }
@@ -145,7 +156,8 @@ namespace gc.sitio.Models.Middleware
                 }
                 else
                 {
-                    context.Response.Redirect("/seguridad/Token/Login");
+                    var loginPath = $"{context.Request.PathBase}/seguridad/Token/Login";
+                    context.Response.Redirect(loginPath);
                     return;
                 }
             }

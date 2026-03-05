@@ -1,11 +1,13 @@
-﻿@{
+﻿@using gc.infraestructura.Core.EntidadesComunes.Options
+@inject Microsoft.Extensions.Options.IOptions<AppSettings> AppSettings
+@{
     var userId = User.Claims.First(c => c.Type.Contains("name")).Value;
     var adm = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
     var LPID = User.Claims.FirstOrDefault(c => c.Type.Contains("lp_id"))?.Value;
 }
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -33,7 +35,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
 
 </head>
-<body>
+<body data-pathbase="@(AppSettings.Value.PathBase ?? "")">
     <partial name="_header" />
     <partial name="_tituloVista" model="@ViewData["Titulo"]"></partial>
 

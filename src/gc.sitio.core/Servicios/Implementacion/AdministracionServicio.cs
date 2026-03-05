@@ -25,10 +25,12 @@ namespace gc.sitio.core.Servicios.Implementacion
 
 
 		private readonly AppSettings _appSettings;
+        ILogger<AdministracionServicio> _logger;
 
         public AdministracionServicio(IOptions<AppSettings> options, ILogger<AdministracionServicio> logger) : base(options, logger)
         {
             _appSettings = options.Value;
+            _logger = logger;
         }
 
 		public List<AdministracionDto> ObtenerAdministraciones(string adm_activa, string token)
@@ -85,6 +87,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 HttpClient client = helper.InicializaCliente("");
                 HttpResponseMessage response ;
                 var link = $"{_appSettings.RutaBase}{RutaAPI}{AccionLogin}";
+                _logger.LogInformation($"Enviando solicitud a la API para obtener Administarciones para el Combo. URL: {link}");
                 response = client.GetAsync(link).GetAwaiter().GetResult();
                 if (response.StatusCode == HttpStatusCode.OK)
                 {

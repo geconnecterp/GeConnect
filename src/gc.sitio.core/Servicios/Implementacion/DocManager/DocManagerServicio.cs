@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Net;
+using System.Reflection;
 
 namespace gc.sitio.core.Servicios.Implementacion.DocManager
 {
@@ -193,10 +194,12 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
             string stringData;
             try
             {
+                _logger.LogInformation($"Iniciando proceso para obtener el PDF desde la API de Reportes.{MethodBase.GetCurrentMethod().Name}");
                 HelperAPI helper = new();
                 HttpClient client = helper.InicializaCliente(reporteSolicitud, token, out StringContent content);
                 HttpResponseMessage response;
                 var link = $"{_docManager.ApiReporteUrl}{RutaAPI}{RutaGenerar}";
+                _logger.LogInformation($"Enviando solicitud a la API de Reportes. URL: {link}");
                 response = await client.PostAsync(link, content);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
@@ -237,10 +240,12 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
             string stringData;
             try
             {
+                _logger.LogInformation($"Iniciando proceso para obtener el reporte con formato desde la API de Reportes.{MethodBase.GetCurrentMethod().Name}");
                 HelperAPI helper = new();
                 HttpClient client = helper.InicializaCliente(reporteSolicitud, token, out StringContent content);
                 HttpResponseMessage response;
                 var link = $"{_docManager.ApiReporteUrl}{RutaAPI}{RutaGenerarFormato}";
+                _logger.LogInformation($"Enviando solicitud a la API de Reportes. URL: {link}");
                 response = await client.PostAsync(link, content);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
@@ -273,6 +278,6 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
                 _logger.LogError(ex, "Error al intentar obtener el Informe de Cta Cte.");
                 throw;
             }
-        }
+        }    
     }
 }

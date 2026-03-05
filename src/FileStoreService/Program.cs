@@ -63,17 +63,17 @@ try
     });
     Console.WriteLine("✅ HTTPS Redirection configurado con puerto 443");
 
-    // Configurar CORS para permitir desde tu app principal
-    builder.Services.AddCors(options =>
-    {
-        options.AddPolicy("AllowGeConnect", policy =>
-        {
-            policy.WithOrigins("https://localhost:7078", "https://172.10.10.11", "http://localhost:7078")
-                  .AllowAnyMethod()
-                  .AllowAnyHeader()
-                  .AllowCredentials();
-        });
-    });
+    //// Configurar CORS para permitir desde tu app principal
+    //builder.Services.AddCors(options =>
+    //{
+    //    options.AddPolicy("AllowGeConnect", policy =>
+    //    {
+    //        policy.WithOrigins("https://localhost:7145", "http://localhost:7078")
+    //              .AllowAnyMethod()
+    //              .AllowAnyHeader()
+    //              .AllowCredentials();
+    //    });
+    //});
     Console.WriteLine("✅ CORS configurado");
 
     var app = builder.Build();
@@ -125,8 +125,8 @@ try
         LogAndWrite(globalLogger, "ℹ️ HTTPS Redirection deshabilitado (Production/IIS)");
     }
 
-    app.UseCors("AllowGeConnect");
-    LogAndWrite(globalLogger, "✅ CORS middleware habilitado");
+    //app.UseCors("AllowGeConnect");
+    //LogAndWrite(globalLogger, "✅ CORS middleware habilitado");
 
     // ✅ Leer ruta desde configuración
     var fileStorePath = app.Configuration["FileStoreSettings:PhysicalPath"] ?? @"C:\Sitios\FileStore";
