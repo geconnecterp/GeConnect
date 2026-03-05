@@ -8,10 +8,13 @@ using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Pedidos;
 using gc.infraestructura.Dtos.Productos.Presupuestos;
+using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Distribuidora.Models.PedidoDeCliente;
 using gc.sitio.Areas.Mstk.Models;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
@@ -31,9 +34,16 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 		private readonly IRubroServicio _rubroServicio;
 		private readonly IPedidoServicio _pedidoSv;
 
+		//PARA MODULO DE IMPRESION
+		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
+		private AppModulo _modulo; 
+		private string APP_MODULO = AppModulos.PEDIDO_DE_CLIENTE.ToString();
+		private readonly IDocManagerServicio _docMSv;
+
 		public PedidoDeClienteController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<PedidoDeClienteController> logger,
 										 ICuentaServicio cuentaServicio, IPedidoDeClienteEstadoServicio pedidoDeClienteEstadoServicio, IVendedorServicio vendedorServicio, 
-										 IRepartidorServicio repartidorServicio, IRubroServicio rubroServicio, IPedidoServicio pedidoSv) : base(options, contexto, logger)
+										 IRepartidorServicio repartidorServicio, IRubroServicio rubroServicio, IPedidoServicio pedidoSv,
+										 IDocManagerServicio docManager, IOptions<DocsManager> docsManager) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_cuentaServicio = cuentaServicio;
@@ -42,6 +52,11 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			_repartidorServicio = repartidorServicio;
 			_rubroServicio = rubroServicio;
 			_pedidoSv = pedidoSv;
+
+			//PARA MODULO DE IMPRESION
+			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
+			_modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO); 
+			_docMSv = docManager; //instancio el servicio de impresión
 		}
 
 		public IActionResult Index()
@@ -57,8 +72,8 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 				ViewData["Titulo"] = titulo;
 
 				#region Gestor Impresion - Inicializacion de variables
-				//DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
-				//ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+				DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
 				#endregion
 
 				CargarDatosIniciales(model);

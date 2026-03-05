@@ -60,6 +60,8 @@ namespace gc.infraestructura.Dtos.Productos.Pedidos
 		public decimal rp_comi_base { get; set; }
 		public decimal rp_comi_porc { get; set; }
 		public bool pcd_origen_bool => pcd_origen == 'P';
+		public string rub_id { get; set; } = string.Empty;
+		public string rub_desc { get; set; } = string.Empty;
 	}
 
 	public class PedidoElementoDto : Dto 

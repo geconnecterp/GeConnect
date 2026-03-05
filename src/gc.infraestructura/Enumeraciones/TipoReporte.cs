@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace gc.infraestructura.Enumeraciones
 {
 
@@ -72,5 +67,6 @@ namespace gc.infraestructura.Enumeraciones
         R059_Inv_Repo_Val_X_Rub = 59,
         R060_Inv_Repo_Val_Detalle = 60,
         R061_Inv_Repo_Conteo_X_Usu = 61,
+        R062_Pedido_De_Cliente = 62,
 	}
 }

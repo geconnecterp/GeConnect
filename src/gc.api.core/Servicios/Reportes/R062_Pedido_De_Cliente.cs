@@ -7,6 +7,7 @@ using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Inventario.Request;
+using gc.infraestructura.Dtos.Productos.Pedidos;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
 using iTextSharp.text;
@@ -18,20 +19,20 @@ namespace gc.api.core.Servicios.Reportes
 {
 	public class R062_Pedido_De_Cliente : Servicio<EntidadBase>, IGeneradorReporte
 	{
-		private readonly IInventarioServicio _inventarioServicio;
+		private readonly IApiPedidoServicio _apiPedidoServicio;
 		private readonly EmpresaGeco _empresaGeco;
 		private readonly List<string> _titulos;
 		private readonly List<string> _campos;
 		private readonly ILogger _logger;
 
-		public R062_Pedido_De_Cliente(IUnitOfWork uow, IInventarioServicio inventarioServicio,
+		public R062_Pedido_De_Cliente(IUnitOfWork uow, IApiPedidoServicio apiPedidoServicio,
 											IOptions<EmpresaGeco> empresa, ICuentaServicio consultaSv, ILogger logger) : base(uow)
 		{
 			_empresaGeco = empresa.Value;
 			_titulos = ["N° OP", "Tipo", "Fecha", "Proveedor", "Anulada", "Usuario", "Importe"];
 			_campos = ["op_compte", "opt_desc", "op_fecha", "cta_denominacion", "op_anulada_desc", "usu_apellidoynombre", "op_importe"];
 			_logger = logger;
-			_inventarioServicio = inventarioServicio;
+			_apiPedidoServicio = apiPedidoServicio;
 		}
 
 		public string Generar(ReporteSolicitudDto solicitud)
@@ -46,11 +47,9 @@ namespace gc.api.core.Servicios.Reportes
 				var ms = new MemoryStream();
 				#region Obteniendo registros desde la base de datos
 				string tit;
-				string subtit;
-				List<InvRepoConteosPorUsuDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
+				List<PedidoProductoDto> registros = ObtenerDatos(solicitud, out tit);
 
 				solicitud.Titulo = tit;
-				solicitud.SubTitulo = subtit;
 
 				//hago el modelo de dato aca ya que necesito los datos de la cuenta
 				var regs = registros.Select(x => new
@@ -100,7 +99,7 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Open();
 
 				#region Lista 
-				HelperPdf.CargarRepoConteoPorUsu(pdf, registros, chico, normalBold);
+				HelperPdf.CargarRepoPedidoDeCliente(pdf, registros, chico, normalBold);
 				#endregion
 
 				pdf.Close();
@@ -128,28 +127,20 @@ namespace gc.api.core.Servicios.Reportes
 			return bool.TryParse(valor, out var resultado) ? resultado : valorPorDefecto;
 		}
 
-		private List<InvRepoConteosPorUsuDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo, out string subtitulo)
+		private List<PedidoProductoDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo)
 		{
-			var inv_nro = solicitud.Parametros.GetValueOrDefault("inv_nro", "")?.ToString() ?? null;
-			var usu_id = solicitud.Parametros.GetValueOrDefault("usu_id", "")?.ToString() ?? null;
-			var usu_nombre = solicitud.Parametros.GetValueOrDefault("usu_nombre", "")?.ToString() ?? null;
+			var pc_compte = solicitud.Parametros.GetValueOrDefault("pc_compte", "")?.ToString() ?? null;
 
-			titulo = $"Planilla de Carga de {usu_nombre}";
-			subtitulo = $"Inventario N°: {inv_nro}";
+			titulo = $"Pedido de Cliente N° {pc_compte}";
 
-			return _inventarioServicio.GetReporteConteosPorUsu(new ReporteInventarioRequest
-			{
-				inv_nro = inv_nro,
-				usu_id = usu_id
-			});
+			return _apiPedidoServicio.ObtenerDetalleDePedido(pc_compte);
 		}
 
 		public string GenerarTxt(ReporteSolicitudDto solicitud)
 		{
 			#region Obteniendo registros desde la base de datos
 			string tit;
-			string subtit;
-			List<InvRepoConteosPorUsuDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
+			List<PedidoProductoDto> registros = ObtenerDatos(solicitud, out tit);
 
 			if (registros == null || registros.Count == 0)
 			{
@@ -172,8 +163,7 @@ namespace gc.api.core.Servicios.Reportes
 		{
 			#region Obteniendo registros desde la base de datos
 			string tit;
-			string subtit;
-			List<InvRepoConteosPorUsuDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
+			List<PedidoProductoDto> registros = ObtenerDatos(solicitud, out tit);
 
 			if (registros == null || registros.Count == 0)
 			{

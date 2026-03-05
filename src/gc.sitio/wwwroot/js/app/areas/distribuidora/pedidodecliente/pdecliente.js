@@ -191,9 +191,8 @@ function initPeriodoFechas() {
     $("#Hasta").prop("disabled", !enabled);
 }
 
-function imprimirPedido() {
-    let data = { modulo: "", parametros: [] }
-    invocacionGestorDoc(data);
+function imprimirPedido(pcCompte) {
+    ImprimirPedido_Generado(pcCompte);
 }
 
 function validarCliente() {
@@ -248,6 +247,9 @@ function obtenerProductosDelGrid() {
         const $inputCantidad = $fila.find('.input-pcd_pedida');
         const pcdCantidad = parseFloat($inputCantidad.val().replace(/,/g, '')) || 0;
 
+        const $inputEnviada = $fila.find('.input-pcd_enviada');
+        const pcdEnviada = parseFloat($inputEnviada.val().replace(/,/g, '')) || 0;
+
         const $pvta = $fila.find('.input-pcd_pvta').text().trim();
         const pcdPVta = parseFloat($pvta.replace(/,/g, '')) || 0;
 
@@ -257,14 +259,14 @@ function obtenerProductosDelGrid() {
         const remplazoId = $fila.find('.input-pcd_reemplazo').val() || "";
         const remplazoDesc = $fila.find('.input-pcd_reemplazo option:selected').text().trim();
 
-        // ✅ Construir objeto PresupuestoProductoDto (coincide exactamente con el DTO de C#)
+        // ✅ Construir objeto Dto (coincide exactamente con el DTO de C#)
         productos.push({
             // Propiedades de productos
             p_id: pId,
             p_desc: pDes,
             pcd_item: cont,
             pcd_pedida: pcdCantidad,
-            pcd_enviada: 0,
+            pcd_enviada: pcdEnviada,
             lp_id: '003',
             pcd_pvta: pcdPVta,
             pcd_origen: pcdOrigen,
@@ -307,7 +309,7 @@ function validarPedido(abm) {
     if (productos.length === 0) {
         return {
             esValido: false,
-            mensaje: 'Debe agregar al menos un producto al presupuesto'
+            mensaje: 'Debe agregar al menos un producto al pedido'
         };
     }
 
@@ -324,7 +326,7 @@ function validarPedido(abm) {
     return { esValido: true, mensaje: '' };
 }
 
-// Handler para Aceptar/Confirmar Presupuesto
+// Handler para Aceptar/Confirmar Pedido
 $(document).on('click', '#btnAbmAceptar', function (e) {
     e.preventDefault();
 
@@ -397,13 +399,15 @@ function confirmarPedido(abm) {
             success: function (response) {
                 CerrarWaiting();
                 procesarRespuestaConfirmacion(response, abm);
+                if (abm == 'A' || abm == 'M')
+                    ImprimirPedido_Generado(response.id);
             },
             error: function (xhr, status, error) {
                 CerrarWaiting();
-                console.error('❌ Error al confirmar presupuesto:', error);
+                console.error('❌ Error al confirmar pedido:', error);
                 console.error('❌ Response:', xhr.responseText);
                 ControlaMensajeError(
-                    'Error al confirmar el presupuesto: ' +
+                    'Error al confirmar el pedido: ' +
                     (xhr.responseJSON?.mensaje || xhr.statusText || 'Error desconocido')
                 );
             }
@@ -412,9 +416,14 @@ function confirmarPedido(abm) {
     } catch (error) {
         CerrarWaiting();
         console.error('❌ Error al construir DTO:', error);
-        ControlaMensajeError('Error al procesar los datos del presupuesto: ' + error.message);
+        ControlaMensajeError('Error al procesar los datos del pedido: ' + error.message);
     }
 }
+
+//Temporal
+//$("#btnImprimir").on("click", function () {
+//    ImprimirPedido_Generado("00-00089741");
+//});
 
 /**
  * ✅ Construye el DTO PedidoConfirmaReqDto
@@ -477,7 +486,7 @@ function procesarRespuestaConfirmacion(response, abm) {
 
             // Si hay ID de pedido en la respuesta, imprimir el pedido
             if (response.id) {
-                // Opcional: Recargar el presupuesto recién creado/modificado
+                // Opcional: Recargar el pedido recién creado/modificado
                 console.log('✅ Pedido ID:', response.pc_compte);
             }
         },
@@ -515,6 +524,20 @@ function obtenerDatosFormularioPedido() {
 
     console.log('📋 Datos del formulario capturados:', datos);
     return datos;
+}
+
+function ReseteoDeReportes() {
+    console.log("Reseto de reportes");
+    ReporteResetArre();
+}
+
+function ImprimirPedido_Generado(pcCompte) {
+    ReseteoDeReportes();
+    setTimeout(() => {
+        let data = { pc_compte: pcCompte };
+        cargarReporteEnArre(62, data, "PEDIDO DE CLIENTE", "", "");
+        invocacionGestorDoc({});
+    }, 500);
 }
 
 function agregarProductosAlGrid(productos) {
@@ -597,7 +620,7 @@ function crearFilaProductoPedido(producto, esAlternado, pcd_item) {
                            title="Doble click para editar" />
                 </div>
             </td>
-
+            <td class="text-end input-pcd_enviada">${datosProducto.pcd_enviada.toFixed(0)}</td>
             <td class="text-end input-pcd_pvta">${datosProducto.p_pvta.toFixed(2)}</td>
             <td class="text-end input-pcd_pvta_total">${(datosProducto.p_pvta * datosProducto.pcd_pedida).toFixed(2)}</td>
 
@@ -681,6 +704,7 @@ function normalizarDatosProducto(producto) {
         // Cantidad (siempre 1 para nuevos productos)
         cantidad: 1,
         pcd_pedida: 1,
+        pcd_enviada: 0,
 
         // Impuestos
         //ivaSituacion: String(producto.iva_situacion || 'E').trim(),
@@ -695,8 +719,16 @@ function normalizarDatosProducto(producto) {
 }
 
 function InicializaEventosPedido() {
-    $(document).on("click", "#btnImprimir", imprimirPedido);
-    cargarReporteEnArre(62, {}, "Pedido de Cliente");
+    $(document).off("click", "#btnImprimir");
+    $(document).on("click", "#btnImprimir", function () {
+        if (!pcCompteSeleccionado) {
+            alert("Seleccione un pedido primero.");
+            return;
+        }
+        imprimirPedido(pcCompteSeleccionado);
+    });
+
+    //cargarReporteEnArre(62, {}, "Pedido de Cliente");
     $("#btnImprimir").prop("disabled", true);
 
 
@@ -731,7 +763,7 @@ function InicializaEventosPedido() {
     // Doble click para activar edición
     $(document).on('dblclick', '.input-pcd_pedida', function (e) {
         e.stopPropagation();
-        activarEdicionCampoPresup($(this));
+        activarEdicionCampoPedido($(this));
     });
 
     // Handler para Nuevo Pedido
@@ -820,11 +852,11 @@ function InicializaEventosPedido() {
                 // Agregar inicialización del drag & drop aquí
                 inicializarDragAndDropProductos();
             }, 100);
-            _presupOriginal = null;
+            _pedidoOriginal = null;
 
-            console.log('Modo Nuevo Presupuesto activado.');
+            console.log('Modo Nuevo Pedido activado.');
         }, function (err) {
-            console.error('Error al cargar NuevoPresupuesto:', err);
+            console.error('Error al cargar Nuevo Pedido:', err);
         });
     });
 
@@ -874,6 +906,180 @@ function InicializaEventosPedido() {
 
         console.log('✅ Modo Modificación Pedido activado');
     });
+
+
+    // ============================================================================
+    // ELIMINACIÓN DE PEDIDO
+    // ============================================================================
+
+    $(document).on('click', '#btnAbmElimi', function (e) {
+        e.preventDefault();
+        if ($(this).prop('disabled')) return;
+
+        const pcCompte = $('#pc_compte').val();
+        if (!pcCompte || pcCompte.trim() === '') {
+            ControlaMensajeWarning('Debe seleccionar un pedido para anular');
+            return;
+        }
+
+        const pceId = $('#pce_id').val();
+        const estadosEliminables = ['P'];
+
+        if (!estadosEliminables.includes(pceId)) {
+            const nombreEstado = pceId === 'F' ? 'facturado'
+                    : pceId === 'C' ? 'consolidado'
+                    : pceId === 'E' ? 'entregado'
+                    : pceId === 'O' ? 'en curso'
+                    : pceId === 'A' ? 'anulado'
+                    : pceId === 'T' ? 'a facturar'
+                        : 'en este estado';
+
+            ControlaMensajeError(
+                `No se puede anluar un pedido ${nombreEstado}. ` +
+                `Solo los pedidos en estado Pendiente pueden ser anulados.`
+            );
+            return;
+        }
+
+        const ctaDenominacion = $('#cta_denominacion').val() || 'Sin cliente';
+        const vigenciaDesde = $('#pre_vigencia_desde').val() || '';
+        const vigenciaHasta = $('#pre_vigencia_hasta').val() || '';
+
+        const mensajeConfirmacion = `
+            <div class="text-start">
+                <p class="mb-2"><strong>¿Está seguro que desea anular este pedido?</strong></p>
+                <hr class="my-2">
+                <p class="mb-1"><strong>ID:</strong> ${pcCompte}</p>
+                <p class="mb-1"><strong>Cliente:</strong> ${ctaDenominacion}</p>
+                <hr class="my-2">
+                <p class="text-danger mb-0">
+                    <i class="bx bx-error-circle me-1"></i>
+                    <strong>Esta acción no se puede deshacer.</strong>
+                </p>
+            </div>
+        `;
+
+        AbrirMensaje(
+            'ANULAR PEDIDO',
+            mensajeConfirmacion,
+            function (resp) {
+                if (resp === 'SI') {
+                    eliminarPedido();
+                }
+                $('#msjModal').modal('hide');
+            },
+            true,
+            ['Eliminar', 'Cancelar'],
+            'warn!',
+            null
+        );
+    });
+}
+
+// ============================================================================
+// FUNCIONES DE ELIMINACIÓN DE PEDIDO
+// ============================================================================
+
+function eliminarPedido() {
+    console.log('🗑️ Eliminando pedido...');
+
+    const pcCompte = $('#pc_compte').val();
+    if (!pcCompte || pcCompte.trim() === '') {
+        ControlaMensajeError('Error: No se encontró el ID del pedido para anular');
+        return;
+    }
+
+    AbrirWaiting('Anulado pedido...');
+
+    try {
+        const confirmacionDto = {
+            Abm: 'B',
+            Datos: obtenerDatosFormularioPedido(),
+            Productos: obtenerProductosDelGrid()
+        };
+
+        console.log('📦 DTO de eliminación:', confirmacionDto);
+
+        $.ajax({
+            url: confirmarPedidoUrl,
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8', // ⚠️ CRUCIAL
+            data: JSON.stringify(confirmacionDto), // ⚠️ SERIALIZAR EXPLÍCITAMENTE
+            dataType: 'json',
+            success: function (response) {
+                CerrarWaiting();
+                procesarRespuestaEliminacion(response);
+            },
+            error: function (xhr, status, error) {
+                CerrarWaiting();
+                console.error('❌ Error al anular pedido:', error);
+                console.error('❌ Response:', xhr.responseText);
+                ControlaMensajeError(
+                    'Error al anular pedido: ' +
+                    (xhr.responseJSON?.mensaje || xhr.statusText || 'Error desconocido')
+                );
+            }
+        });
+
+        //PostGen(
+        //    confirmacionDto,
+        //    confirmarPedidoUrl,
+        //    function (response) {
+        //        CerrarWaiting();
+        //        procesarRespuestaEliminacion(response);
+        //    },
+        //    function (error) {
+        //        CerrarWaiting();
+        //        console.error('❌ Error al anular pedido:', error);
+
+        //        const mensajeError = error.responseJSON?.mensaje
+        //            || error.responseJSON?.msg
+        //            || error.statusText
+        //            || 'Error desconocido';
+
+        //        ControlaMensajeError(`Error al anular el pedido: ${mensajeError}`);
+        //    }
+        //);
+    } catch (error) {
+        CerrarWaiting();
+        console.error('❌ Error al construir DTO:', error);
+        ControlaMensajeError('Error al procesar la anulación: ' + error.message);
+    }
+}
+
+function procesarRespuestaEliminacion(response) {
+    console.log('📥 Respuesta de eliminación:', response);
+
+    if (response.error || response.warn) {
+        if (response.error) {
+            ControlaMensajeError(response.mensaje || 'Error al anular el pedido');
+            return;
+        }
+        else //warn
+        {
+            ControlaMensajeWarning(response.mensaje || 'Atención al intentar anular el pedido');
+            return;
+        }
+
+    }
+
+    AbrirMensaje(
+        'ANULACIÖN EXITOSA',
+        'El pedido ha sido anulado correctamente',
+        function () {
+            $('#msjModal').modal('hide');
+            cancelarOperacion();
+
+            if ($('#tbGridPedido tbody tr').length > 0) {
+                console.log('🔄 Actualizando lista de pedidos...');
+                buscarPedidosDeCliente($('#btnBuscar'));
+            }
+        },
+        false,
+        ['Aceptar'],
+        'success!',
+        null
+    );
 }
 
 function capturarEstadoFormularioPedido() {
@@ -967,6 +1173,7 @@ function crearGridPedidoVacioHtml() {
                             <th class="text-center th-compact">Código</th>
                             <th class="text-left th-compact" style="width:35%;">Descripción</th>
                             <th class="text-end th-compact">Cantidad</th>
+                            <th class="text-end th-compact">Enviada</th>
                             <th class="text-end th-compact">Venta</th>
                             <th class="text-end th-compact">Total</th>
                             <th class="text-end th-compact">Remp</th>
@@ -976,7 +1183,7 @@ function crearGridPedidoVacioHtml() {
                     </thead>
                     <tbody>
                         <tr>
-                            <td colspan="8" class="text-center text-muted py-2">
+                            <td colspan="9" class="text-center text-muted py-2">
                                 <i class="bx bx-info-circle me-1"></i>No hay productos en este pedido
                             </td>
                             <td></td>
@@ -988,7 +1195,7 @@ function crearGridPedidoVacioHtml() {
     </div>`;
 }
 
-function activarEdicionCampoPresup($campo) {
+function activarEdicionCampoPedido($campo) {
     if (!estaEnModoEdicionPedido()) return;
     if (campoEnEdicionPedido !== null) return;
 
@@ -1037,8 +1244,8 @@ function cancelarOperacion(e) {
         // Si no hay selección, solo habilitar Nuevo
         $("#btnAbmNuevo").prop("disabled", false);
         $("#btnAbmModif, #btnAbmElimi, #btnImprimir").prop("disabled", true);
-        let data = {};
-        cargarReporteEnArre(62, data, "Pedido de Cliente");
+        //let data = {};
+        //cargarReporteEnArre(62, data, "Pedido de Cliente");
     }
 
     // ✅ PASO 5: Desactivar y ocultar botones de confirmación
@@ -1172,11 +1379,11 @@ function configurarEventosSeleccionPedido() {
             if (!fueSeleccionado) {
                 $this.addClass("selected-row");
                 let pcCompte = $this.data("pc-compte");
-
+                pcCompteSeleccionado = pcCompte;
                 if (pcCompte) {
                     $("#btnImprimir").prop("disabled", false);
                     let data = { pc_compte: pcCompte };
-                    cargarReporteEnArre(62, data, "Pedido de Cliente");
+                    cargarReporteEnArre(62, data, "Pedido de Cliente", "", "");
                     cargarPedidoDatos(pcCompte);
                     cargarProductosPedido(pcCompte);
                 }
@@ -1198,6 +1405,8 @@ function configurarEventosSeleccionPedido() {
     //configurando los eventos para el boton que elimina el registro.
     configurarEventosEliminacionProducto();
 }
+
+let pcCompteSeleccionado = null;
 
 function cargarPedidoDatos(pcCompte) {
     const url = obtenerPedidoDatosUrl;
@@ -1735,7 +1944,7 @@ function eliminarProductoDelGrid($fila) {
         if ($tbody.find('tr[data-p-id]').length === 0) {
             $tbody.html(`
                 <tr>
-                    <td colspan="8" class="text-center text-muted py-2">
+                    <td colspan="9" class="text-center text-muted py-2">
                         <i class="bx bx-info-circle me-1"></i>No hay productos en este pedido
                     </td>
                 </tr>
