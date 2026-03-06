@@ -11,9 +11,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="img\logoCA.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="img\gc.png">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="img\logoCA.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
