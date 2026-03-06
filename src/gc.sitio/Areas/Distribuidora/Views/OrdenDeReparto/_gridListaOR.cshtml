@@ -1,0 +1,116 @@
+﻿@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<OrdenDeRepartoListaDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<div class="row gx-2">
+	<div class="col-md-10">
+		<div class="grid-golden">
+			<div class="grid-golden-body p-1">
+				<div id="divOrdenesDeReparto" class="table-responsive table-wrapper-400">
+					<table class="table table-sm table-hover mb-0 table-golden" id="tbGridOrdenDeReparto">
+						<thead class="sticky-top table-golden-header-compact">
+							<tr class="header">
+								<th class="text-center th-compact">ID</th>
+								<th class="text-center th-compact">Estado</th>
+								<th class="text-center th-compact">Generado</th>
+								<th class="text-center th-compact">Repartidor</th>
+								<th class="text-center th-compact" title="Cantidad de Pedidos">Cant. Ped.</th>
+							</tr>
+						</thead>
+						<tbody>
+							@if (Model?.ListaDatos?.Any() == true)
+							{
+								foreach (var item in Model.ListaDatos)
+								{
+									if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+									<tr class="@clase"
+										data-or-compte="@item.or_compte"
+										data-ore-id="@item.ore_id">
+										<td class="text-center">
+											@item.or_compte
+										</td>
+										<td class="text-center">
+											@item.ore_desc
+										</td>
+										<td class="text-center">
+											@item.or_fecha.ToString("dd/MM/yy")
+										</td>
+										<td>
+											@item.rp_nombre
+										</td>
+										<td class="text-center">
+											0
+										</td>
+									</tr>
+								}
+							}
+							else
+							{
+								<tr>
+									<td colspan="5" class="text-center text-muted py-2">
+										<i class="bx bx-info-circle me-1"></i>No hay ordenes de reparto
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="offset-md-3 col-md-6">
+				<div id="divPaginacion">
+				</div>
+			</div>
+		</div>
+	</div>
+    <div class="col-md-2">
+        <div class="d-flex flex-column gap-2 align-items-stretch">
+            <button id="btnAgregarOR" type="button" class="btn btn-success btn-sm d-flex align-items-center">
+                <i class="bx bx-plus-circle me-2"></i> Agregar OR
+            </button>
+
+            <button id="btnModificarOR" type="button" class="btn btn-outline-success btn-sm d-flex align-items-center">
+                <i class="bx bx-pencil me-2"></i> Modificar OR
+            </button>
+
+            <button id="btnConsolidar" type="button" class="btn btn-primary btn-sm d-flex align-items-center">
+                <i class="bx bx-layer me-2"></i> A Consolidar
+            </button>
+
+            <button id="btnAFacturar" type="button" class="btn btn-primary btn-sm d-flex align-items-center">
+                <i class="bx bx-receipt me-2"></i> A Facturar
+            </button>
+
+            <button id="btnEnCurso" type="button" class="btn btn-primary btn-sm d-flex align-items-center">
+                <i class="bx bx-refresh me-2"></i> En Curso
+            </button>
+
+            <button id="btnHojaRuta" type="button" class="btn btn-info btn-sm d-flex align-items-center">
+                <i class="bx bx-map me-2"></i> Hoja de Ruta
+            </button>
+
+            <button id="btnHojaProd" type="button" class="btn btn-info btn-sm d-flex align-items-center">
+                <i class="bx bx-grid me-2"></i> Hoja de Prod.
+            </button>
+
+            <button id="btnImprimir" type="button" class="btn btn-dark btn-sm d-flex align-items-center">
+                <i class="bx bx-printer me-2"></i> Imprimir
+            </button>
+        </div>
+    </div>
+</div>
+<script>
+	// Delegación mínima para selección de fila (se puede integrar con el JS existente)
+	(function () {
+		const $table = $('#tbGridOrdenDeReparto');
+		$table.on('click', 'tbody tr.row-item', function () {
+			$table.find('tbody tr').removeClass('selected-row');
+			$(this).addClass('selected-row');
+			// Exponer data para scripts: data-or-compte
+		});
+	})();
+</script>

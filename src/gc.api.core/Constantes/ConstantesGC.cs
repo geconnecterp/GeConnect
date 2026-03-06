@@ -562,6 +562,12 @@
 			public const string SP_PC_PRODUCTOS = "SPGECO_PC_p";
 			public const string SP_PC_CONFIRMA = "SPGECO_PC_Confirma";
 			#endregion
+
+			#region Orden de Reparto
+			public const string SP_OR_ESTADOS = "SPGECO_OR_Estados";
+			public const string SP_OR_LISTA = "SPGECO_OR_lista";
+			//
+			#endregion
 		}
 
 		public static class StoredFunctions

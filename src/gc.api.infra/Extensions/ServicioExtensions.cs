@@ -148,6 +148,7 @@ namespace gc.api.infra.Extensions
             services.AddScoped<IInventarioServicio, InventarioServicio>();
 
 			services.AddScoped<IApiPedidoServicio, ApiPedidoServicio>();
+			services.AddScoped<IApiOrdenDeRepartoServicio, ApiOrdenDeRepartoServicio>();
 
 			services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));

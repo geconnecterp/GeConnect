@@ -17,6 +17,7 @@ using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Productos.Etiqueta;
 using gc.infraestructura.Dtos.Productos.Ofertas;
+using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
 using gc.infraestructura.Dtos.Productos.Precio;
 using gc.infraestructura.Dtos.Productos.Presupuestos;
 using gc.infraestructura.Dtos.Productos.PromoCombo;
@@ -1799,10 +1800,30 @@ namespace gc.sitio.Controllers
                 _context.HttpContext?.Session.SetString("AdministracionesLista", json);
             }
         }
-        #endregion
+		#endregion
 
-        #region Presupuesto ESTADO
-        public List<PresupE> EstadosPresupuesto
+		#region Orden de Reparto Estados
+		public List<OrdenDeRepartoEstadoDto> OrdenDeRepartoEstados
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("OrdenDeRepartoEstados") ?? string.Empty;
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<OrdenDeRepartoEstadoDto>();
+				}
+				return JsonConvert.DeserializeObject<List<OrdenDeRepartoEstadoDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("OrdenDeRepartoEstados", json);
+			}
+		}
+		#endregion
+
+		#region Presupuesto ESTADO
+		public List<PresupE> EstadosPresupuesto
         {
             get
             {
@@ -2604,7 +2625,13 @@ namespace gc.sitio.Controllers
             AdministracionesLista = admServicio.ObtenerAdministraciones(activa, TokenCookie);
         }
 
-        protected void ObtenerEstadoPresupuesto(IPresupuestoServicio preSv)
+		protected void ObtenerEstadoOrdenDeReparto(IOrdenDeRepartoServicio orSv)
+		{
+			var res = orSv.ObtenerEstadosDeOrdenDeReparto(TokenCookie).GetAwaiter().GetResult();
+			OrdenDeRepartoEstados = res?.ListaEntidad ?? [];
+		}
+
+		protected void ObtenerEstadoPresupuesto(IPresupuestoServicio preSv)
         {
             var res = preSv.ObtenerEstadosPresupuesto(TokenCookie).GetAwaiter().GetResult();
             EstadosPresupuesto = res?.ListaEntidad ?? [];

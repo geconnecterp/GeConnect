@@ -97,6 +97,7 @@ namespace gc.infraestructura.Constantes
 			public const string CUENTA_DIRECTA = "CUENTA_DIRECTA";
 
 			public const string PEDIDO_DE_CLIENTE = "PEDIDO_DE_CLIENTE";
+			public const string ORDEN_DE_REPARTO = "ORDEN_DE_REPARTO";
 		}
     }
 }
