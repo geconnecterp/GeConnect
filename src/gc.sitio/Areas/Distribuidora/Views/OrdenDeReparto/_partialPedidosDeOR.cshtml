@@ -1,0 +1,113 @@
+﻿@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<PedidoEnOrdenDeRepartoDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+
+	.input-dividir {
+		width: 55px; /* Tamaño ideal */
+		padding-left: 0;
+		padding-right: 0;
+	}
+
+</style>
+<div class="row gx-2">
+	<div class="col-md-10">
+		<div class="grid-golden">
+			<div class="grid-golden-body p-1">
+				<div id="divPedidosEnOrdenDeReparto" class="table-responsive table-wrapper-400">
+					<table class="table table-sm table-hover mb-0 table-golden" id="tbGridPedidosEnOrdenDeReparto">
+						<thead class="sticky-top table-golden-header-compact">
+							<tr class="header">
+								<th class="text-center th-compact">ID</th>
+								<th class="text-center th-compact">Cliente</th>
+								<th class="text-center th-compact">CF</th>
+								<th class="text-center th-compact">Generado</th>
+								<th class="text-center th-compact">Vendedor</th>
+								<th class="text-center th-compact">Repartidor</th>
+								<th class="text-center th-compact">Importe</th>
+							</tr>
+						</thead>
+						<tbody>
+							@if (Model?.ListaDatos?.Any() == true)
+							{
+								foreach (var item in Model.ListaDatos)
+								{
+									if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+									<tr class="@clase"
+										data-or-compte="@item.or_compte"
+										data-pc-compte="@item.pc_compte"
+										data-ore-id="@item.ore_id"
+										data-pce-id="@item.pce_id">
+										<td class="text-center">
+											@item.pc_compte
+										</td>
+										<td class="text-left">
+											@item.cta_denominacion
+										</td>
+										<td class="text-center align-middle">
+											<input type="checkbox"
+												   class="form-check-input m-0 p-0 input-pc_cons_final"
+												   disabled
+												   @(item.pc_cons_final ? "checked" : "") />
+										</td>
+										<td class="text-center">
+											@item.or_fecha.ToString("dd/MM/yy")
+										</td>
+										<td>
+											@item.ve_nombre
+										</td>
+										<td>
+											@item.rp_nombre
+										</td>
+										<td class="text-right">
+											@GridHelper.FormatearPrecio(item.cm_total, TipoPrecio.Venta)
+										</td>
+									</tr>
+								}
+							}
+							else
+							{
+								<tr>
+									<td colspan="5" class="text-center text-muted py-2">
+										<i class="bx bx-info-circle me-1"></i>No hay pedidos
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-2">
+		<div class="d-flex flex-column gap-2 align-items-stretch">
+
+			<button id="btnCF" type="button" class="btn btn-info d-flex align-items-center">
+				<i class="bx bx-user-pin me-1"></i> CF
+			</button>
+
+			<button id="btnAsociarNC" type="button" class="btn btn-info d-flex align-items-center">
+				<i class="bx bx-check-circle me-1"></i> Asociar NC
+			</button>
+
+			<button id="btnPedido" type="button" class="btn btn-info d-flex align-items-center">
+				<i class="bx bx-printer me-1"></i> Pedido
+			</button>
+
+			<!-- Dividir + input en la misma fila -->
+			<div class="d-flex align-items-center gap-2">
+				<button id="btnDividir" type="button" class="btn btn-info d-flex align-items-center">
+					<i class="bx bx-bar-chart-alt me-1"></i> Dividir
+				</button>
+
+				<input type="number"
+					   class="form-control form-control-sm text-center input-dividir"
+					   value="2" min="2" max="10">
+			</div>
+		</div>
+	</div>
+</div>

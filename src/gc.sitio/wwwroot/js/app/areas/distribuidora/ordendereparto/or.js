@@ -144,7 +144,9 @@ async function buscarOrdenesDeReparto(btn, pag = 1) {
 }
 
 function CargarOrdenesDeReparto(filtros, url) {
+    AbrirWaiting("Cargando ordenes de reparto...");
     PostGenHtml(filtros, url, function (html) {
+        CerrarWaiting();
         $("#divListaOrdenesDeReparto").html(html);
 
         configurarEventosSeleccionListaOR();
@@ -231,11 +233,27 @@ function configurarEventosSeleccionListaOR() {
             if (!fueSeleccionado) {
                 $this.addClass("selected-row");
                 let orCompte = $this.data("or-compte");
+                let oreId = $this.data("ore-id");
                 orCompteSeleccionado = orCompte;
                 if (orCompte) {
                     //Poder hacer algo, como por ejemplo, habilitar o no botones dependiendo del estado de la OR
+                    CargarPedidosDelReparto(orCompte);
+                    ConfigurarEstadoDeBotonesEnTabOrdenDeReparto(orCompte, oreId);
                 }
             }
         }
     });
+}
+
+function CargarPedidosDelReparto(orCompte) {
+    AbrirWaiting("Cargar pedidos de la orden de reparto...");
+    const url = obtenerPedidosDeLaOrdenDeRepartoUrl;
+    PostGenHtml({ orCompte: orCompte }, url, function (html) {
+        $("#divListaPedidosDeCliente").html(html);
+        CerrarWaiting();
+        //Evaluar estados de los botones
+    });
+}
+
+function ConfigurarEstadoDeBotonesEnTabOrdenDeReparto(orCompte, oreId) {
 }

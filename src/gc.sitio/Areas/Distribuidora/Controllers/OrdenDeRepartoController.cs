@@ -140,6 +140,40 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			}
 		}
 
+		[HttpPost]
+		public async Task<IActionResult> ObtenerPedidosDeLaOrdenDeReparto(string orCompte)
+		{ 
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
+				if (string.IsNullOrEmpty(orCompte))
+				{
+					return PartialView("_gridMensaje", CrearRespuestaError("No se recibió el número de orden de reparto para obtener los pedidos."));
+				}
+				var pedidosResponse = await _ordenDeRepartoServicio.ObtenerPedidosDeLaOrdenDeReparto(orCompte, TokenCookie);
+				if (!pedidosResponse.Ok)
+				{
+					throw new NegocioException(pedidosResponse.Mensaje ?? "Hubo algun problema al obtener los pedidos de la orden de reparto.");
+				}
+				var pedidos = pedidosResponse.ListaEntidad ?? [];
+				GridCoreSmart<PedidoEnOrdenDeRepartoDto> grid = ObtenerGridCoreSmart<PedidoEnOrdenDeRepartoDto>(pedidos);
+				return PartialView("_partialPedidosDeOR", grid);
+			}
+			catch (NegocioException ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaError("Error al obtener los pedidos de la orden de reparto"));
+			}
+		}
+
+
+
 		#region Metodos Privados
 		private void CargarDatosIniciales(FiltroDeORModel model)
 		{

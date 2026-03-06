@@ -22,4 +22,43 @@ namespace gc.infraestructura.Dtos.Productos.OrdenDeReparto
 		public string rp_id { get; set; } = string.Empty;
 		public string rp_nombre { get; set; } = string.Empty;
 	}
+
+	public class PedidoEnOrdenDeRepartoDto : OrdenDeRepartoDto
+	{
+		public string pc_compte { get; set; } = string.Empty;
+		public string pc_obs { get; set; } = string.Empty;
+		public DateTime pc_fecha { get; set; }
+		public DateTime pc_entrega { get; set; }
+		public string pce_id { get; set; } = string.Empty;
+		public string pce_desc { get; set; } = string.Empty;
+		public string ve_id { get; set; } = string.Empty;
+		public string ve_nombre { get; set; } = string.Empty;
+		public char pc_cf { get; set; }
+		public bool pc_cons_final
+		{
+			get => char.ToUpper(pc_cf) == 'S';
+			set => pc_cf = value ? 'S' : 'N';
+		}
+		public string cta_id { get; set; } = string.Empty;
+		public string cta_denominacion { get; set; } = string.Empty;
+		public string cta_domicilio { get; set; } = string.Empty;
+		public string cta_celu { get; set; } = string.Empty;
+		public string cta_email { get; set; } = string.Empty;
+		public string cta_te { get; set; } = string.Empty;
+		public string zn_id { get; set; } = string.Empty;
+		public string zn_desc { get; set; } = string.Empty;
+		public string adm_id { get; set; } = string.Empty;
+		public string adm_nombre { get; set; } = string.Empty;
+		public string tco_id { get; set; } = string.Empty;
+		public string tco_desc { get; set; } = string.Empty;
+		public string cm_compte { get; set; } = string.Empty;
+		public char? cm_repetido { get; set; }
+		public decimal cm_total { get; set; } = 0.00M;
+		public decimal ve_comi { get; set; } = 0.00M;
+		public decimal ve_comi_base { get; set; } = 0.00M;
+		public decimal ve_comi_porc { get; set; } = 0.00M;
+		public decimal rp_comi { get; set; } = 0.00M;
+		public decimal rp_comi_base { get; set; } = 0.00M;
+		public decimal rp_comi_porc { get; set; } = 0.00M;
+	}
 }

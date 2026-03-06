@@ -6,5 +6,6 @@ namespace gc.api.core.Contratos.Servicios
 	{
 		List<OrdenDeRepartoEstadoDto> GetOrdenDeRepartoEstados();
 		List<OrdenDeRepartoListaDto> ObtenerListaOrdenDeReparto(OrdenDeRepartoRequest req);
+		List<PedidoEnOrdenDeRepartoDto> ObtenerPedidosEnOrdenDeReparto(string orCompte);
 	}
 }

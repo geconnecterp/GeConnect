@@ -2,6 +2,7 @@
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
+using gc.infraestructura.Dtos.Productos.Pedidos;
 using gc.infraestructura.Dtos.Productos.Presupuestos;
 using Microsoft.Data.SqlClient;
 using System;
@@ -68,6 +69,20 @@ namespace gc.api.core.Servicios
 			var ordenes = _repository.EjecutarLstSpExt<OrdenDeRepartoListaDto>(sp, ps, true);
 
 			return ordenes;
+		}
+
+		public List<PedidoEnOrdenDeRepartoDto> ObtenerPedidosEnOrdenDeReparto(string orCompte)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OR_PEDIDOS_EN_OR;
+
+			var ps = new List<SqlParameter>
+			{
+				new("@or_compte", orCompte)
+			};
+
+			var detalle = _repository.EjecutarLstSpExt<PedidoEnOrdenDeRepartoDto>(sp, ps, true);
+
+			return detalle;
 		}
 	}
 }

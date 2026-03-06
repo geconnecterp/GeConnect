@@ -5,6 +5,7 @@ using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
+using gc.infraestructura.Dtos.Productos.Pedidos;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -19,6 +20,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string RutaAPI = "/api/apiordendereparto";
 		private const string OBTENER_ESTADOS = "/estados";
 		private const string BUSCAR_ORDENES = "/buscar-ordenes-de-reparto";
+		private const string BUSCAR_PEDIDOS_EN_ORDEN = "/buscar-pedidos-en-orden-de-reparto/";
 
 		public OrdenDeRepartoServicio(IOptions<AppSettings> options, ILogger<OrdenDeRepartoServicio> logger) : base(options, logger)
 		{
@@ -80,6 +82,25 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 				return new() { Ok = false, Mensaje = "Error al obtener los Estados de Orden de Reparto" };
+			}
+		}
+
+		public async Task<RespuestaGenerica<PedidoEnOrdenDeRepartoDto>> ObtenerPedidosDeLaOrdenDeReparto(string orCompte, string token)
+		{
+			try
+			{
+				if (string.IsNullOrWhiteSpace(orCompte))
+				{
+					return new() { Ok = false, Mensaje = "Debe indicar el identificador de la orden." };
+				}
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{BUSCAR_PEDIDOS_EN_ORDEN}{orCompte}";
+				return await GetListaAsync<PedidoEnOrdenDeRepartoDto>(link, token, "Error al obtener los Pedidos de la Orden");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+				return new() { Ok = false, Mensaje = "Error al obtener los Pedidos de la Orden" };
 			}
 		}
 	}

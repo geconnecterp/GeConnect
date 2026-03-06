@@ -71,6 +71,28 @@ namespace gc.api.Controllers.Productos
 			}
 		}
 
+		// Obtiene el detalle de un presupuesto por id
+		[HttpGet("buscar-pedidos-en-orden-de-reparto/{id}")]
+		public IActionResult ObtenerPedidosEnOrdenDeReparto(string id)
+		{
+			const string msgError = "Error en la invocación de la API - Obtener Pedidos en Orden de Reparto";
+			try
+			{
+				if (string.IsNullOrWhiteSpace(id))
+				{
+					return BadRequest("Debe indicar el identificador de la orden.");
+				}
+
+				var detalle = _orSrv.ObtenerPedidosEnOrdenDeReparto(id);
+				return Ok(new ApiResponse<List<PedidoEnOrdenDeRepartoDto>>(detalle));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, msgError);
+				return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
+			}
+		}
+
 		private static MetadataGrid? BuildMetadata(List<OrdenDeRepartoListaDto>? lista, QueryFilters filtro)
 		{
 			if (lista == null || lista.Count == 0)
