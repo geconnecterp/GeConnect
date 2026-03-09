@@ -2,6 +2,7 @@
 using gc.api.core.Contratos.Servicios;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
 using gc.infraestructura.Dtos.Productos.Pedidos;
 using gc.infraestructura.Dtos.Productos.Presupuestos;
@@ -91,6 +92,17 @@ namespace gc.api.Controllers.Productos
 				_logger?.LogError(ex, msgError);
 				return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
 			}
+		}
+
+		[HttpPost("orden-de-reparto/confirmar")]
+		public IActionResult ConfirmarOrdenDeReparto(ConfirmaOrdenDeRepartoRequest req)
+		{
+			if (req == null)
+			{
+				return BadRequest("No se recepcionó la información para confirmar la orden de reparto.");
+			}
+			var respuesta = _orSrv.ConfirmarOrdenDeReparto(req);
+			return Ok(new ApiResponse<RespuestaDto>(respuesta));
 		}
 
 		private static MetadataGrid? BuildMetadata(List<OrdenDeRepartoListaDto>? lista, QueryFilters filtro)

@@ -462,13 +462,13 @@ function procesarRespuestaConfirmacion(response, abm) {
     let mensajeExito = '';
     switch (abm) {
         case 'A':
-            mensajeExito = 'Peiddo creado exitosamente';
+            mensajeExito = 'Pedido creado exitosamente';
             break;
         case 'M':
-            mensajeExito = 'Peiddo modificado exitosamente';
+            mensajeExito = 'Pedido modificado exitosamente';
             break;
         case 'B':
-            mensajeExito = 'Peiddo eliminado exitosamente';
+            mensajeExito = 'Pedido eliminado exitosamente';
             break;
         default:
             mensajeExito = 'Operación completada exitosamente';

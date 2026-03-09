@@ -9,5 +9,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<RespuestaGenerica<OrdenDeRepartoEstadoDto>> ObtenerEstadosDeOrdenDeReparto(string token);
 		Task<RespuestaGenerica<OrdenDeRepartoListaDto>> BuscarOrdenesDeReparto(QueryFilters filtro, string token);
 		Task<RespuestaGenerica<PedidoEnOrdenDeRepartoDto>> ObtenerPedidosDeLaOrdenDeReparto(string orCompte, string token);
+		Task<RespuestaGenerica<RespuestaDto>> ConfirmarOrdenDeReparto(ConfirmaOrdenDeRepartoRequest req, string token);
 	}
 }

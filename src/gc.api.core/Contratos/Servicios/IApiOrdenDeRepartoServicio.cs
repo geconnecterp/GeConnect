@@ -1,4 +1,5 @@
-﻿using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
+﻿using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
 
 namespace gc.api.core.Contratos.Servicios
 {
@@ -7,5 +8,6 @@ namespace gc.api.core.Contratos.Servicios
 		List<OrdenDeRepartoEstadoDto> GetOrdenDeRepartoEstados();
 		List<OrdenDeRepartoListaDto> ObtenerListaOrdenDeReparto(OrdenDeRepartoRequest req);
 		List<PedidoEnOrdenDeRepartoDto> ObtenerPedidosEnOrdenDeReparto(string orCompte);
+		RespuestaDto ConfirmarOrdenDeReparto(ConfirmaOrdenDeRepartoRequest req);
 	}
 }

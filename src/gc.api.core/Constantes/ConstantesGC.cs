@@ -567,6 +567,7 @@
 			public const string SP_OR_ESTADOS = "SPGECO_OR_Estados";
 			public const string SP_OR_LISTA = "SPGECO_OR_lista";
 			public const string SP_OR_PEDIDOS_EN_OR = "SPGECO_OR_d_PC";
+			public const string SP_OR_CONFIRMA = "SPGECO_OR_Confirma";
 			//
 			#endregion
 		}
