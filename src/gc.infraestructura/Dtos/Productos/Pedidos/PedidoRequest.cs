@@ -12,5 +12,7 @@ namespace gc.infraestructura.Dtos.Productos.Pedidos
 		public string? pce_list { get; set; }
 		public string? ve_list { get; set; }
 		public string? rp_list { get; set; }
+		public bool id { get; set; } = false;
+		public string pc_compte { get; set; } = string.Empty;
 	}
 }

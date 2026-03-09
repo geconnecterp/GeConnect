@@ -58,8 +58,8 @@
 		#divPedidoDatos #pce_desc,
 		#divPedidoDatos #pce_id,
 		#divPedidoDatos #cta_denominacion,
-		#divPedidoDatos #pc_obs,
-		#divPedidoDatos #facturado {
+		#divPedidoDatos #facturado,
+		#divPedidoDatos #pc_entrega {
 			background-color: #e9ecef !important;
 			color: #495057 !important;
 			font-weight: 600 !important;
@@ -75,9 +75,9 @@
 <div class="collapse" id="divDetalle"></div>
 
 <div class="row mt-2 py-1">
-	<div class="col-6" id="divPedDatos" style="display:none">
+	<div class="col-5" id="divPedDatos" style="display:none">
 	</div>
-	<div class="col-6" id="divPedProds" style="display:none">
+	<div class="col-7" id="divPedProds" style="display:none">
 	</div>
 </div>
 <div id="modalGestorDocumental"></div>
@@ -102,6 +102,7 @@
 		var obtenerPedidoProductoUrl = "@Url.Action("ObtenerPedidoProducto", "pedidodecliente", new { area = "Distribuidora" })";
 		var nuevoPedidoUrl =  "@Url.Action("NuevoPedido", "pedidodecliente", new { area = "Distribuidora" })";
 		let homePedido = '@Url.Action("index", "pedidodecliente", new { area = "Distribuidora" })';
+		var confirmarPedidoUrl = "@Url.Action("ConfirmarPedido", "pedidodecliente", new { area = "Distribuidora" })";
 
 		//funcionalidad busqueda avanzada controlador común
 		let productoBase = null; //se hidrata en busquedas.

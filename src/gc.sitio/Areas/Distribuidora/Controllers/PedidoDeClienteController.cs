@@ -3,17 +3,22 @@ using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Pedidos;
 using gc.infraestructura.Dtos.Productos.Presupuestos;
+using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Distribuidora.Models.PedidoDeCliente;
 using gc.sitio.Areas.Mstk.Models;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using X.PagedList;
 
 namespace gc.sitio.Areas.Distribuidora.Controllers
@@ -29,9 +34,16 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 		private readonly IRubroServicio _rubroServicio;
 		private readonly IPedidoServicio _pedidoSv;
 
+		//PARA MODULO DE IMPRESION
+		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
+		private AppModulo _modulo; 
+		private string APP_MODULO = AppModulos.PEDIDO_DE_CLIENTE.ToString();
+		private readonly IDocManagerServicio _docMSv;
+
 		public PedidoDeClienteController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<PedidoDeClienteController> logger,
 										 ICuentaServicio cuentaServicio, IPedidoDeClienteEstadoServicio pedidoDeClienteEstadoServicio, IVendedorServicio vendedorServicio, 
-										 IRepartidorServicio repartidorServicio, IRubroServicio rubroServicio, IPedidoServicio pedidoSv) : base(options, contexto, logger)
+										 IRepartidorServicio repartidorServicio, IRubroServicio rubroServicio, IPedidoServicio pedidoSv,
+										 IDocManagerServicio docManager, IOptions<DocsManager> docsManager) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_cuentaServicio = cuentaServicio;
@@ -40,6 +52,11 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			_repartidorServicio = repartidorServicio;
 			_rubroServicio = rubroServicio;
 			_pedidoSv = pedidoSv;
+
+			//PARA MODULO DE IMPRESION
+			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
+			_modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO); 
+			_docMSv = docManager; //instancio el servicio de impresión
 		}
 
 		public IActionResult Index()
@@ -55,8 +72,8 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 				ViewData["Titulo"] = titulo;
 
 				#region Gestor Impresion - Inicializacion de variables
-				//DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
-				//ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+				DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
 				#endregion
 
 				CargarDatosIniciales(model);
@@ -223,6 +240,89 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			};
 
 			return PartialView("_pedidoDatos", pedido);
+		}
+
+		[HttpPost]
+		public async Task<JsonResult> ConfirmarPedido([FromBody] ConfirmarPedidoDto dto)
+		{
+			try
+			{
+				// Verificar autenticación - consistente con otros métodos
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return Json(new { ok = false, mensaje = "No autorizado" });
+
+				if (dto == null)
+				{
+					return Json(new { ok = false, mensaje = "Los datos de confirmación no fueron recepcionados. Verifique." });
+				}
+
+				// Validaciones de entrada
+				if (dto == null || string.IsNullOrEmpty(dto.Datos.cta_id))
+				{
+					return Json(new { ok = false, mensaje = "Los datos del pedido son requeridos" });
+				}
+				ConfirmarPedidoRequest request = new()
+				{
+					adm_id = AdministracionId,
+					usu_id = UserName,
+					abm = dto.Abm.ToString(),
+					cta_id = dto.Datos.cta_id,
+					pc_obs = dto.Datos.pc_obs,
+					pc_cf = dto.Datos.pc_cf,
+					pc_compte = dto.Datos.pc_compte,
+					json_prod = JsonConvert.SerializeObject(dto.Productos),
+					pc_fecha = dto.Datos.pc_fecha,
+					pc_entrega = dto.Datos.pc_entrega.Value,
+				};
+
+				if (string.IsNullOrEmpty(request.json_prod))
+				{
+					return Json(new { ok = false, mensaje = "Al menos un producto es necesario informar en el pedido." });
+				}
+
+				// Llamada al servicio
+				var respuesta = await _pedidoSv.ConfirmarPedido(request, TokenCookie);
+
+				// Procesamiento de respuesta
+				if (respuesta.Ok && !respuesta.EsError && !respuesta.EsWarn)
+				{
+					// Log y limpieza de datos temporales
+					var msg = $"PEDIDO de {request.cta_id}-{request.cta_denominacion} fue guardado exitosamente.";
+					_logger?.LogInformation(msg);
+					return AnalizarRespuesta(respuesta, msg);
+					// Respuesta de éxito
+					//return Json(new
+					//{
+					//	ok = true,
+					//	error = false,
+
+					//	msg//respuesta.Mensaje ?? "Pedido guardado correctamente"
+					//});
+				}
+				else
+				{
+					// Log y respuesta de error/advertencia
+					_logger?.LogWarning("Error en la confirmación del pedido: {Mensaje}", respuesta.Mensaje);
+					return Json(new
+					{
+						ok = false,
+						error = respuesta.EsError,
+						warn = respuesta.EsWarn,
+						mensaje = respuesta.Mensaje ?? "Error al procesar el pedido"
+					});
+				}
+			}
+			catch (Exception ex)
+			{
+				// Manejo de excepciones no esperadas
+				_logger?.LogError(ex, "Error inesperado al confirmar pedido");
+				return Json(new
+				{
+					ok = false,
+					error = true,
+					msg = "Error interno al procesar la solicitud"
+				});
+			}
 		}
 
 		#region Metodos Privados
