@@ -210,6 +210,10 @@
 			public const string SP_TR_CARGAR_CTRL_SALIDA = "SPGECO_TR_Cargar_CTL_Salida";
 			public const string SP_PI_DETALLE = "SPGECO_PI_Detalle";
 
+			#region Ordenes de Reparto
+			public const string SP_OR_LISTA = "SPGECO_OR_LISTA";
+			#endregion
+
 			#region Financieros
 			public const string SP_F_TR_CONFIRMA = "SPGECO_F_TR_Confirma";
 			public const string SP_F_TRA_REPO_CTAG = "SPGECO_F_Tra_Repo_Ctag";

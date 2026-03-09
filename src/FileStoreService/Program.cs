@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
+using System.Reflection;
 
 // ═══════════════════════════════════════════════════════════
 // VARIABLE GLOBAL PARA LOGGER ANTES DE INICIALIZAR LA APP
@@ -15,19 +16,58 @@ try
 
     Console.WriteLine("✅ WebApplicationBuilder creado");
 
-    // Configurar Log4Net
+    // ═══════════════════════════════════════════════════════════
+    // ✅ FIX 1: Obtener ruta absoluta de log4net.config
+    // ═══════════════════════════════════════════════════════════
+    var log4netConfigPath = Path.Combine(AppContext.BaseDirectory, "log4net.config");
+    Console.WriteLine($"📄 Ruta log4net.config: {log4netConfigPath}");
+    Console.WriteLine($"   Existe: {File.Exists(log4netConfigPath)}");
+
+    // ═══════════════════════════════════════════════════════════
+    // ✅ FIX 2: Configurar Log4Net con validación exhaustiva
+    // ═══════════════════════════════════════════════════════════
     try
     {
+        if (!File.Exists(log4netConfigPath))
+        {
+            throw new FileNotFoundException($"No se encontró log4net.config en: {log4netConfigPath}");
+        }
+
         builder.Logging.ClearProviders();
         builder.Logging.AddConsole();
         builder.Logging.AddDebug();
-        builder.Logging.AddLog4Net("log4net.config", watch: true);
-        Console.WriteLine("✅ Log4Net configurado");
+        
+        // ✅ Usar ruta absoluta
+        builder.Logging.AddLog4Net(log4netConfigPath, watch: true);
+        
+        Console.WriteLine("✅ Log4Net configurado correctamente");
+        Console.WriteLine($"   Archivo config: {log4netConfigPath}");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"⚠️ Error al configurar Log4Net: {ex.Message}");
-        // Continuar sin Log4Net si falla
+        // ✅ FIX 3: NO silenciar el error - mostrarlo con detalles
+        var errorMsg = $"""
+            ═══════════════════════════════════════════════════════
+            ❌ ERROR CRÍTICO AL CONFIGURAR LOG4NET
+            ═══════════════════════════════════════════════════════
+            Tipo: {ex.GetType().Name}
+            Mensaje: {ex.Message}
+            StackTrace:
+            {ex.StackTrace}
+            ═══════════════════════════════════════════════════════
+            DIAGNÓSTICO:
+            - Ruta buscada: {log4netConfigPath}
+            - Archivo existe: {File.Exists(log4netConfigPath)}
+            - AppContext.BaseDirectory: {AppContext.BaseDirectory}
+            - Environment.CurrentDirectory: {Environment.CurrentDirectory}
+            - Assembly Location: {Assembly.GetExecutingAssembly().Location}
+            ═══════════════════════════════════════════════════════
+            """;
+        
+        Console.WriteLine(errorMsg);
+        
+        // ✅ Si Log4Net falla, al menos tener Console logging
+        builder.Logging.SetMinimumLevel(LogLevel.Debug);
     }
 
     // Configurar AutoMapper
@@ -85,6 +125,17 @@ try
     globalLogger = app.Services.GetRequiredService<ILogger<Program>>();
     LogAndWrite(globalLogger, "🚀 Iniciando FileStoreService...");
     LogAndWrite(globalLogger, "✅ Logger global inicializado correctamente");
+    
+    // ✅ FIX 4: Validar que el logger realmente funciona
+    try
+    {
+        globalLogger.LogInformation("🧪 TEST: Logger funcionando correctamente");
+        Console.WriteLine("✅ Test de logger exitoso");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ ADVERTENCIA: Logger no funciona correctamente: {ex.Message}");
+    }
 
     // Configurar middleware de logging personalizado
     app.Use(async (context, next) =>
@@ -306,6 +357,8 @@ try
     LogAndWrite(globalLogger, $"   WebRootPath: {app.Environment.WebRootPath}");
     LogAndWrite(globalLogger, $"   FileStorePath: {fileStorePath}");
     LogAndWrite(globalLogger, $"   Directorio existe: {Directory.Exists(fileStorePath)}");
+    LogAndWrite(globalLogger, $"   AppContext.BaseDirectory: {AppContext.BaseDirectory}");
+    LogAndWrite(globalLogger, $"   log4net.config path: {log4netConfigPath}");
 
     if (Directory.Exists(fileStorePath))
     {

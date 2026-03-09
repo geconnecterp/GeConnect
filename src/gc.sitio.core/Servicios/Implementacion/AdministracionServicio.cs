@@ -24,7 +24,7 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string ObtenerAdministracionesUrl = "/ObtenerAdministraciones";
 
 
-		private readonly AppSettings _appSettings;
+        private readonly AppSettings _appSettings;
         ILogger<AdministracionServicio> _logger;
 
         public AdministracionServicio(IOptions<AppSettings> options, ILogger<AdministracionServicio> logger) : base(options, logger)
@@ -33,51 +33,51 @@ namespace gc.sitio.core.Servicios.Implementacion
             _logger = logger;
         }
 
-		public List<AdministracionDto> ObtenerAdministraciones(string adm_activa, string token)
-		{
-			ApiResponse<List<AdministracionDto>> respuesta;
-			string stringData;
-			try
-			{
-				HelperAPI helper = new();
-				HttpClient client = helper.InicializaCliente(token);
-				HttpResponseMessage response;
-				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerAdministracionesUrl}?adm_activa={adm_activa}";
-				response = client.GetAsync(link).GetAwaiter().GetResult();
-				if (response.StatusCode == HttpStatusCode.OK)
-				{
-					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-					if (!string.IsNullOrEmpty(stringData))
-					{
-						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<AdministracionDto>>>(stringData)
+        public List<AdministracionDto> ObtenerAdministraciones(string adm_activa, string token)
+        {
+            ApiResponse<List<AdministracionDto>> respuesta;
+            string stringData;
+            try
+            {
+                HelperAPI helper = new();
+                HttpClient client = helper.InicializaCliente(token);
+                HttpResponseMessage response;
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerAdministracionesUrl}?adm_activa={adm_activa}";
+                response = client.GetAsync(link).GetAwaiter().GetResult();
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                    if (!string.IsNullOrEmpty(stringData))
+                    {
+                        respuesta = JsonConvert.DeserializeObject<ApiResponse<List<AdministracionDto>>>(stringData)
                             ?? new ApiResponse<List<AdministracionDto>>(new List<AdministracionDto>());
                     }
-					else
-					{
-						throw new Exception("No se logro obtener la respuesta de la API con los datos de la cuenta administrativa. Verifique.");
-					}
-					return respuesta.Data;
-				}
-				else
-				{
-					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-					_logger.LogError($"Error al intentar obtener los datos de la cuenta administrativa: {stringData}");
-					throw new NegocioException("Hubo un error al intentar obtener los datos de la cuenta administrativa");
-				}
+                    else
+                    {
+                        throw new Exception("No se logro obtener la respuesta de la API con los datos de la cuenta administrativa. Verifique.");
+                    }
+                    return respuesta.Data;
+                }
+                else
+                {
+                    stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                    _logger.LogError($"Error al intentar obtener los datos de la cuenta administrativa: {stringData}");
+                    throw new NegocioException("Hubo un error al intentar obtener los datos de la cuenta administrativa");
+                }
 
-			}
-			catch (NegocioException)
-			{
-				throw;
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error al intentar obtener los datos de la cuenta administrativa.");
-				throw;
-			}
-		}
+            }
+            catch (NegocioException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al intentar obtener los datos de la cuenta administrativa.");
+                throw;
+            }
+        }
 
-		public List<AdministracionLoginDto> GetAdministracionLogin()
+        public List<AdministracionLoginDto> GetAdministracionLogin()
         {
             ApiResponse<List<AdministracionLoginDto>> respuesta;
             string stringData;
@@ -85,14 +85,14 @@ namespace gc.sitio.core.Servicios.Implementacion
             {
                 HelperAPI helper = new();
                 HttpClient client = helper.InicializaCliente("");
-                HttpResponseMessage response ;
+                HttpResponseMessage response;
                 var link = $"{_appSettings.RutaBase}{RutaAPI}{AccionLogin}";
                 _logger.LogInformation($"Enviando solicitud a la API para obtener Administarciones para el Combo. URL: {link}");
                 response = client.GetAsync(link).GetAwaiter().GetResult();
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                    respuesta = JsonConvert.DeserializeObject<ApiResponse<List<AdministracionLoginDto>>>(stringData) 
+                    respuesta = JsonConvert.DeserializeObject<ApiResponse<List<AdministracionLoginDto>>>(stringData)
                         ?? throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
 
                     return respuesta.Data;
@@ -105,9 +105,9 @@ namespace gc.sitio.core.Servicios.Implementacion
                 }
 
             }
-            catch (NegocioException )
+            catch (NegocioException)
             {
-                throw ;
+                throw;
             }
             catch (Exception ex)
             {
@@ -116,7 +116,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-		public async Task<ResponseBaseDto> ValidarUsuario(string userId, string tipo,string tiId, string token)
+        public async Task<ResponseBaseDto> ValidarUsuario(string userId, string tipo, string tiId, string token)
         {
             ApiResponse<ResponseBaseDto> apiResponse;
 
@@ -128,10 +128,11 @@ namespace gc.sitio.core.Servicios.Implementacion
 
             response = await client.GetAsync(link);
 
-            if (response.StatusCode == HttpStatusCode.Unauthorized) {
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+            {
                 throw new UnauthorizedException("No se autorizó el acceso al servidor. Salga y vuelva a ingresar en el sistema.");
             }
-        
+
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 string stringData = await response.Content.ReadAsStringAsync();
@@ -149,7 +150,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
 
                 try
-                {                
+                {
                     var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
                     if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
                     {
@@ -163,7 +164,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                     {
                         throw new Exception(error?.Detail);
                     }
-                    
+
                 }
                 catch
                 {
@@ -171,5 +172,5 @@ namespace gc.sitio.core.Servicios.Implementacion
                 }
             }
         }
-    }    
+    }
 }

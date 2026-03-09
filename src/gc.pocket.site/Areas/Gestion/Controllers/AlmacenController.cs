@@ -4,6 +4,7 @@ using gc.infraestructura.EntidadesComunes.Options;
 using gc.pocket.site.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Org.BouncyCastle.Asn1.X509;
 
 namespace gc.pocket.site.Areas.Gestion.Controllers
 {
@@ -176,11 +177,15 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         public IActionResult INFO()
         {
             var sigla = "info";
+            string? volver = Url.Action("index", "home", new { area = "" });
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             if (modulo == null)
             {
                 throw new NegocioException("No se logro encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
             }
+            modulo.VolverUrl = volver ?? "#";
+            ViewBag.AppItem = modulo;
+
             return View(modulo);
         }
         [HttpGet]
@@ -199,11 +204,15 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         public IActionResult cprev()
         {
             var sigla = "cprev";
+            string? volver = Url.Action("index", "home", new { area = "" });
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             if (modulo == null)
             {
                 throw new NegocioException("No se logro encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
             }
+            modulo.VolverUrl = volver ?? "#";
+            ViewBag.AppItem = modulo;
+
             return View("gen", modulo);
         }
     }

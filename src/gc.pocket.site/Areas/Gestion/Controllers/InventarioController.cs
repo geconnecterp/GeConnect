@@ -16,6 +16,7 @@ using gc.sitio.core.Servicios.Implementacion;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Ocsp;
 using X.PagedList;
 
@@ -46,11 +47,15 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                 return redirectResult;
 
             var sigla = "inv";
+            string? volver = Url.Action("index", "home", new { area = "" });
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             if (modulo == null)
             {
                 throw new NegocioException("No se logro encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
             }
+            modulo.VolverUrl = volver ?? "#";
+            ViewBag.AppItem = modulo;
+
             return View(modulo);
         }
 

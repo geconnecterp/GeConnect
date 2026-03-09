@@ -1,0 +1,71 @@
+﻿@{
+    Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+    var callback = Url.Action("index", "or", new { area = "pocketppal"});
+
+}
+
+<div class="grid-golden h-100">    
+    <div class="grid-golden-body p-1">
+        <div class="table-responsive" style="max-height: calc(100vh - 200px); overflow-y: auto;">
+            <table class="table table-sm table-hover mb-0 table-golden" id="tbGridOrdenesReparto">
+                <thead class="sticky-top table-golden-header-compact">
+                    <tr class="header">
+                        <th class="text-center th-compact">N° Ord. Repa.</th>
+                        <th class="text-left th-compact">Repartidor</th>
+                        <th class="text-center th-compact">Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @* Fila de ejemplo - Los datos se inyectarán dinámicamente *@
+                    <tr data-orden-id="1">
+                        <td class="text-center td-compact">
+                            <span class="badge bg-primary">OR-001</span>
+                        </td>
+                        <td class="td-compact">
+                            Juan Pérez
+                        </td>
+                        <td class="text-center td-compact">
+                            09/03/2026
+                        </td>
+                    </tr>
+                    <tr data-orden-id="2">
+                        <td class="text-center td-compact">
+                            <span class="badge bg-primary">OR-002</span>
+                        </td>
+                        <td class="td-compact">
+                            María González
+                        </td>
+                        <td class="text-center td-compact">
+                            09/03/2026
+                        </td>
+                    </tr>
+                    <tr data-orden-id="3">
+                        <td class="text-center td-compact">
+                            <span class="badge bg-primary">OR-003</span>
+                        </td>
+                        <td class="td-compact">
+                            Carlos Rodríguez
+                        </td>
+                        <td class="text-center td-compact">
+                            08/03/2026
+                        </td>
+                    </tr>
+                    @* Fila de mensaje cuando no hay datos *@
+                    @* <tr class="d-none" id="noDataRow">
+                        <td colspan="3" class="text-center text-muted py-3">
+                            <i class="bx bx-info-circle me-1"></i>No hay órdenes de reparto disponibles
+                        </td>
+                    </tr> *@
+                </tbody>
+            </table>
+        </div>
+    </div>
+   
+</div>
+
+<div class="row mb-3">
+    <div class="d-flex justify-content-center">
+        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-3"><i class="bx bx-ms bx-info-circle"></i></a>
+        @* <button type="button" id="btnCtrlSalida" ti="@Model.Ti" class="btn btn-sm btn-success m-3" style="display:none;"><i class="bx bx-sm bxs-truck"></i></button> *@
+    </div>
+</div>

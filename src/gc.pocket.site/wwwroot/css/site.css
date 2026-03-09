@@ -743,3 +743,187 @@ th, td {
 /* ====================================================================== */
 /* FIN BADGE GOLDEN PARA PRODUCTO */
 /* ====================================================================== */
+
+/* ====== OPTIMIZACIÓN DE HEADERS DE TABLA - ALTURA REDUCIDA ====== */
+
+/* Header compacto con altura reducida pero estético */
+.table-golden-header-compact {
+    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%) !important;
+    color: #ffffff !important;
+}
+
+    /* Reducción de padding en celdas del header */
+    .table-golden-header-compact th,
+    .th-compact {
+        padding: 0.35rem 0.5rem !important; /* ✅ Reducido de 0.625rem 1.25rem */
+        font-size: 0.8rem !important; /* ✅ Reducido de 0.9375rem */
+        font-weight: 600 !important;
+        line-height: 1.2 !important; /* ✅ Reducido para compactar más */
+        vertical-align: middle !important;
+        white-space: nowrap !important;
+        color: #ffffff !important;
+        border-bottom: 2px solid #8b6914 !important;
+    }
+
+/* Optimización para celdas del body también */
+.td-compact {
+    padding: 0.3rem 0.5rem !important; /* ✅ Reducido de 0.625rem 1.25rem */
+    font-size: 0.75rem !important;
+    line-height: 1.3 !important;
+}
+
+/* Mantener la estética golden en sticky headers */
+.table-golden-header-compact.sticky-top {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) !important;
+    z-index: 1 !important;
+}
+
+/* Asegurar que el gradiente y colores se mantengan */
+.table-golden-header-compact th * {
+    color: #ffffff !important;
+}
+
+/* Hover en headers compactos */
+.table-golden-header-compact th:hover {
+    background-color: rgba(139, 105, 20, 0.2) !important;
+    cursor: pointer;
+}
+
+/* Responsive - Ajustes para pantallas pequeñas */
+@media (max-width: 992px) {
+    .th-compact {
+        padding: 0.25rem 0.35rem !important;
+        font-size: 0.75rem !important;
+    }
+
+    .td-compact {
+        padding: 0.25rem 0.35rem !important;
+        font-size: 0.7rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .th-compact {
+        padding: 0.2rem 0.25rem !important;
+        font-size: 0.7rem !important;
+    }
+
+    .td-compact {
+        padding: 0.2rem 0.25rem !important;
+        font-size: 0.65rem !important;
+    }
+}
+/* ====== OPTIMIZACIONES MOBILE-FIRST PARA GRID DE ÓRDENES ====== */
+
+/* Ajustes específicos para el grid de órdenes en móviles */
+#tbGridOrdenesReparto tbody tr {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+    #tbGridOrdenesReparto tbody tr:hover {
+        background-color: rgba(212, 175, 55, 0.1);
+        transform: scale(1.01);
+    }
+
+    #tbGridOrdenesReparto tbody tr:active {
+        background-color: rgba(212, 175, 55, 0.2);
+    }
+
+/* Badge con mejor visibilidad en móvil */
+#tbGridOrdenesReparto .badge {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.6rem;
+    font-weight: 600;
+}
+
+/* Optimización de espaciado para móviles */
+@@media (max-width: 768px) {
+    .grid-golden-header h6 {
+        font-size: 0.9rem;
+    }
+
+    .grid-golden-header .btn {
+        padding: 0.25rem 0.5rem;
+    }
+
+    .grid-golden-header i {
+        font-size: 1rem;
+    }
+
+    #tbGridOrdenesReparto .th-compact {
+        font-size: 0.7rem;
+        padding: 0.3rem 0.4rem !important;
+    }
+
+    #tbGridOrdenesReparto .td-compact {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.5rem !important;
+    }
+
+    #tbGridOrdenesReparto .badge {
+        font-size: 0.7rem;
+        padding: 0.3rem 0.5rem;
+    }
+
+    .grid-golden-footer {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+        .grid-golden-footer small {
+            font-size: 0.7rem;
+        }
+}
+
+/* Optimización para pantallas muy pequeñas */
+@@media (max-width: 480px) {
+    .grid-golden-header h6 {
+        font-size: 0.85rem;
+    }
+
+    #tbGridOrdenesReparto .th-compact {
+        font-size: 0.65rem;
+        padding: 0.25rem 0.3rem !important;
+    }
+
+    #tbGridOrdenesReparto .td-compact {
+        font-size: 0.7rem;
+        padding: 0.35rem 0.4rem !important;
+    }
+
+    .grid-golden-footer small {
+        font-size: 0.65rem;
+    }
+}
+
+/* Efecto de selección de fila */
+#tbGridOrdenesReparto tbody tr.selected {
+    background-color: rgba(212, 175, 55, 0.25) !important;
+    border-left: 3px solid var(--bs-golden-primary);
+}
+
+/* Scroll suave */
+.table-responsive {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+    /* Indicador visual de scroll */
+    .table-responsive::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+    }
+
+    .table-responsive::-webkit-scrollbar-track {
+        background: rgba(212, 175, 55, 0.1);
+    }
+
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: var(--bs-golden-primary);
+        border-radius: 4px;
+    }
+
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: var(--bs-golden-secondary);
+        }
