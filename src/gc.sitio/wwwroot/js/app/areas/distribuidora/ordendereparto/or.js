@@ -1,5 +1,6 @@
 ﻿let _pedidoLoading = false;
 let orCompteSeleccionado = null;
+let pcCompteSeleccionado = null;
 
 $(function () {
 	InicializaPantallaOrdenDeReparto();
@@ -167,13 +168,87 @@ function CargarOrdenesDeReparto(filtros, url) {
 	});
 }
 
-$(document).on("click", "#btnAgregarOR, #btnModificarOR", function () {
-	CargarVistaNuevaOrdenDeReparto();
+$(document).on("click", "#btnAgregarOR", function () {
+	CargarVistaNuevaOrdenDeReparto("A", "");
 });
 
-function CargarVistaNuevaOrdenDeReparto() {
+$(document).on("click", "#btnModificarOR", function () {
+	CargarVistaNuevaOrdenDeReparto("M", orCompteSeleccionado);
+});
+
+$(document).on("click", "#btnEnCurso", function () {
+	CargarVistaAnalizaAutEnOrdenDeReparto(orCompteSeleccionado);
+});
+
+function CargarVistaAnalizaAutEnOrdenDeReparto(orCompte) {
+	AbrirWaiting("Cargando vista de análisis de autorización de Orden de Reparto...");
+	PostGenHtml({ orCompte: orCompte }, cargarVistaAnalizaAutEnOrdenDeRepartoUrl, function (html) {
+		CerrarWaiting();
+		$("#vistaPonerEnCursoOR").html(html);
+		$("#vistaListaOR").addClass("d-none");
+		$("#vistaPonerEnCursoOR").removeClass("d-none");
+		ConfigurarEventosEnPonerEnCurso();
+	});
+}
+
+function ConfigurarEventosEnPonerEnCurso() {
+	$(document).off("click", "#btnAnalizarPonerEnCurso");
+	$(document).on("click", "#btnAnalizarPonerEnCurso", function () {
+		// Obtener depósitos seleccionados
+		const depositosSeleccionados = [...document.querySelectorAll(".chk-depo:checked")]
+			.map(chk => chk.closest("tr").dataset.depoId);
+
+		// Validar selección
+		if (depositosSeleccionados.length === 0) {
+			AbrirMensaje("ATENCIÓN", "Debe seleccionar al menos un depósito.", function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+			return;
+		}
+
+		// Armar string con @
+		const cadenaDepositos = depositosSeleccionados.join("@");
+
+		console.log("Depósitos seleccionados:", cadenaDepositos);
+
+		// Llamada al backend
+		AbrirWaiting("Ejecutando análisis");
+		var data = { orCompte: orCompteSeleccionado, listaDepo: cadenaDepositos }
+		PostGenHtml(data, actualizarGrillaAnalizaAutoEnOrdenDeRepartoUrl, function (html) {
+			CerrarWaiting();
+			$("#tbGrillaAnalizaAut").html(html);
+			configurarEventosSeleccionListaAnalisisAutOR();
+		});
+	});
+
+	$(document).off("click", "#btnCancelarPonerEnCurso");
+	$(document).on("click", "#btnCancelarPonerEnCurso", function () {
+		AbrirMensaje(
+			'CONFIRMAR CANCELACIÓN',
+			"¿Desea cancelar el análisis?",
+			function (resp) {
+				if (resp === 'SI') {
+					// Ocultar vista de edición
+					document.querySelector("#vistaPonerEnCursoOR").classList.add("d-none");
+					// Mostrar vista de lista
+					document.querySelector("#vistaListaOR").classList.remove("d-none");
+					// Opcional: limpiar contenido de edición
+					document.querySelector("#vistaPonerEnCursoOR").innerHTML = "";
+				}
+				$('#msjModal').modal('hide');
+			},
+			true,
+			['Confirmar', 'Cancelar'],
+			'info!',
+			null
+		);
+	});
+}
+
+function CargarVistaNuevaOrdenDeReparto(abm, orCompte) {
 	AbrirWaiting("Cargando ABM de Orden de Reparto");
-	PostGenHtml({ accion: "A", orCompte: "" }, cargarVistaABMOrdenDeRepartoUrl, function (html) {
+	PostGenHtml({ accion: abm, orCompte: orCompte }, cargarVistaABMOrdenDeRepartoUrl, function (html) {
 		CerrarWaiting();
 		$("#vistaEditarOR").html(html);
 		$("#vistaListaOR").addClass("d-none");
@@ -392,7 +467,7 @@ document.addEventListener("click", function (e) {
 	const btn = e.target.closest(".btnAgregarPedido");
 	if (!btn) return;
 
-	bloquearTablas(); // 🔥 Bloqueo inmediato
+	bloquearTablas();
 
 	const filaDerecha = btn.closest("tr");
 
@@ -406,13 +481,22 @@ document.addEventListener("click", function (e) {
 	};
 
 	const tablaIzquierda = document.querySelector("#tbPedidosOR tbody");
-
 	if (!tablaIzquierda) {
 		console.error("No se encontró la tabla izquierda");
 		return;
 	}
 
-	// Crear fila nueva para la tabla izquierda
+	// 🔥 Verificar si ya existe
+	const existe = [...tablaIzquierda.querySelectorAll("tr")]
+		.some(tr => tr.querySelector("td")?.textContent.trim() === pedido.id);
+
+	if (existe) {
+		desbloquearTablas();
+		ControlaMensajeError('El pedido ya fue agregado.');
+		return;
+	}
+
+	// Crear fila nueva
 	const tr = document.createElement("tr");
 	tr.classList.add("fade-in-row");
 
@@ -424,31 +508,23 @@ document.addEventListener("click", function (e) {
         <td>${pedido.repartidor}</td>
         <td class="text-end">${pedido.importe}</td>
         <td class="text-center">
-			<div class="d-flex justify-content-center gap-1">
-				<button class="btn btn-danger btn-table btn-sm btnQuitarPedido"
-						data-id="${pedido.id}"
-						data-cliente="${pedido.cliente}"
-						data-fecha="${pedido.fecha}"
-						data-vendedor="${pedido.vendedor}"
-						data-repartidor="${pedido.repartidor}"
-						data-rp-id="${pedido.rpId}"
-						data-importe="${pedido.importe}">
-					<i class="bx bx-minus"></i>
-				</button>
+            <div class="d-flex justify-content-center gap-1">
+                <button class="btn btn-danger btn-table btn-sm btnQuitarPedido"
+                        data-id="${pedido.id}">
+                    <i class="bx bx-minus"></i>
+                </button>
 
-				<button class="btn btn-secondary btn-table btn-sm btnEditarPedido"
-						data-id="${pedido.id}">
-					<i class="bx bx-edit"></i>
-				</button>
-			</div>
-		</td>
+                <button class="btn btn-secondary btn-table btn-sm btnEditarPedido"
+                        data-id="${pedido.id}">
+                    <i class="bx bx-edit"></i>
+                </button>
+            </div>
+        </td>
     `;
 
-	// Eliminar la fila "No hay pedidos" si existe
+	// Eliminar fila vacía si existe
 	const filaVacia = tablaIzquierda.querySelector(".fila-vacia");
-	if (filaVacia) {
-		filaVacia.remove();
-	}
+	if (filaVacia) filaVacia.remove();
 
 	tablaIzquierda.appendChild(tr);
 
@@ -457,9 +533,10 @@ document.addEventListener("click", function (e) {
 
 	setTimeout(() => {
 		filaDerecha.remove();
-		desbloquearTablas(); // 🔥 Desbloqueo
+		desbloquearTablas();
 	}, 300);
 });
+
 
 document.addEventListener("click", function (e) {
 
@@ -766,10 +843,6 @@ function desbloquearTablas() {
 	document.querySelector("#tbPedidosPendientes").classList.remove("tabla-bloqueada");
 }
 
-
-function configurarEventosSeleccionListaOR() {
-}
-
 function buildQueryFilters(pag) {
 	const usaPeriodo = $("#chkDesdeHasta").is(":checked");
 	const fechaD = usaPeriodo ? $("#Desde").val() : null;
@@ -800,6 +873,23 @@ function setBtnLoading($btn, loading, originalHtml) {
 	}
 }
 
+function configurarEventosSeleccionListaAnalisisAutOR() {
+	$(document).off("click", "#tbGrillaAnalizaAut tbody tr");
+	$(document).on("click", "#tbGrillaAnalizaAut tbody tr", function (e) {
+		if (!$(e.target).is("button, a, .btn, i")) {
+			var $this = $(this);
+			var fueSeleccionado = $this.hasClass("selected-row");
+
+			$("#tbGrillaAnalizaAut tbody tr").removeClass("selected-row");
+
+			if (!fueSeleccionado) {
+				$this.addClass("selected-row");
+				//Poder hacer algo, como por ejemplo, habilitar o no botones dependiendo del estado de la OR
+			}
+		}
+	});
+}
+
 function configurarEventosSeleccionListaOR() {
 	$(document).off("click", "#tbGridOrdenDeReparto tbody tr");
 	$(document).on("click", "#tbGridOrdenDeReparto tbody tr", function (e) {
@@ -824,6 +914,28 @@ function configurarEventosSeleccionListaOR() {
 	});
 }
 
+function configurarEventosSeleccionListaPedidosDeOR() {
+	$(document).off("click", "#tbGridPedidosEnOrdenDeReparto tbody tr");
+	$(document).on("click", "#tbGridPedidosEnOrdenDeReparto tbody tr", function (e) {
+		if (!$(e.target).is("button, a, .btn, i")) {
+			var $this = $(this);
+			var fueSeleccionado = $this.hasClass("selected-row");
+
+			$("#tbGridPedidosEnOrdenDeReparto tbody tr").removeClass("selected-row");
+
+			if (!fueSeleccionado) {
+				$this.addClass("selected-row");
+				let pcCompte = $this.data("pc-compte");
+				let pceId = $this.data("pce-id");
+				pcCompteSeleccionado = pcCompte;
+				if (pcCompte) {
+					ConfigurarEstadoDeBotonesEnTabPedidosDeLaOrdenDeReparto(pcCompte, pceId);
+				}
+			}
+		}
+	});
+}
+
 function CargarPedidosDelReparto(orCompte) {
 	AbrirWaiting("Cargar pedidos de la orden de reparto...");
 	const url = obtenerPedidosDeLaOrdenDeRepartoUrl;
@@ -834,7 +946,164 @@ function CargarPedidosDelReparto(orCompte) {
 	});
 }
 
+function ConfigurarEstadoDeBotonesEnTabPedidosDeLaOrdenDeReparto(pcCompte, pceId) {
+	const estadosPermitidosCF = ["C", "O", "T"];
+	const btnCF = document.getElementById("btnCF");
+	if (btnCF) {
+		if (estadosPermitidosCF.includes(pceId)) {
+			btnCF.disabled = false;
+			btnCF.classList.remove("disabled");
+		} else {
+			btnCF.disabled = true;
+			btnCF.classList.add("disabled");
+		}
+	}
+
+	const btnAsociarNC = document.getElementById("btnAsociarNC");
+	if (btnAsociarNC) {
+		if (pceId === "F") {
+			btnAsociarNC.disabled = false;
+			btnAsociarNC.classList.remove("disabled");
+		} else {
+			btnAsociarNC.disabled = true;
+			btnAsociarNC.classList.add("disabled");
+		}
+	}
+
+	const btnDividir = document.getElementById("btnDividir");
+	const inputDividir = document.querySelector(".input-dividir");
+	if (btnDividir) {
+		if (pceId === "T") {
+			btnDividir.disabled = false;
+			btnDividir.classList.remove("disabled");
+			if (inputDividir) {
+				inputDividir.disabled = false;
+				inputDividir.classList.remove("disabled");
+			}
+		} else {
+			btnDividir.disabled = true;
+			btnDividir.classList.add("disabled");
+			if (inputDividir) {
+				inputDividir.disabled = true;
+				inputDividir.classList.add("disabled");
+			}
+
+		}
+	}
+}
+
 function ConfigurarEstadoDeBotonesEnTabOrdenDeReparto(orCompte, oreId) {
+	// Estados permitidos para modificar
+	const estadosPermitidosModificar = ["C", "O", "S"];
+
+	// Botón Modificar OR
+	const btnModificar = document.getElementById("btnModificarOR");
+	if (btnModificar) {
+		if (estadosPermitidosModificar.includes(oreId)) {
+			btnModificar.disabled = false;
+			btnModificar.classList.remove("disabled");
+		} else {
+			btnModificar.disabled = true;
+			btnModificar.classList.add("disabled");
+		}
+	}
+
+	// Botón En Curso → solo habilitado si oreId === 'S'
+	const btnEnCurso = document.getElementById("btnEnCurso");
+	if (btnEnCurso) {
+		if (oreId === "S") {
+			btnEnCurso.disabled = false;
+			btnEnCurso.classList.remove("disabled");
+		} else {
+			btnEnCurso.disabled = true;
+			btnEnCurso.classList.add("disabled");
+		}
+	}
+
+	// Botón A Consolidar → solo habilitado si oreId === 'O'
+	const btnConsolidar = document.getElementById("btnConsolidar");
+	if (btnConsolidar) {
+		if (oreId === "O") {
+			btnConsolidar.disabled = false;
+			btnConsolidar.classList.remove("disabled");
+		} else {
+			btnConsolidar.disabled = true;
+			btnConsolidar.classList.add("disabled");
+		}
+	}
+
+	// Botón A Facturar → solo habilitado si oreId === 'C'
+	const btnAFacturar = document.getElementById("btnAFacturar");
+	if (btnAFacturar) {
+		if (oreId === "C") {
+			btnAFacturar.disabled = false;
+			btnAFacturar.classList.remove("disabled");
+		} else {
+			btnAFacturar.disabled = true;
+			btnAFacturar.classList.add("disabled");
+		}
+	}
+
+	// Botón A Facturar → solo habilitado si oreId === 'C'
+	//const btnCambioPrecio = document.getElementById("btnCambioPrecio");
+	//if (btnCambioPrecio) {
+	//	if (oreId === "C") {
+	//		btnCambioPrecio.disabled = false;
+	//		btnCambioPrecio.classList.remove("disabled");
+	//	} else {
+	//		btnCambioPrecio.disabled = true;
+	//		btnCambioPrecio.classList.add("disabled");
+	//	}
+	//}
+
+	const estadosPermitidosCambioPrecio = ["C", "O", "T"];
+	const btnCambioPrecio = document.getElementById("btnCambioPrecio");
+	if (btnCambioPrecio) {
+		if (estadosPermitidosCambioPrecio.includes(oreId)) {
+			btnCambioPrecio.disabled = false;
+			btnCambioPrecio.classList.remove("disabled");
+		} else {
+			btnCambioPrecio.disabled = true;
+			btnCambioPrecio.classList.add("disabled");
+		}
+	}
+
+	const estadosPermitidosRegresarEnCurso = ["O", "T"];
+	const btnVolverCurso = document.getElementById("btnVolverCurso");
+	if (btnVolverCurso) {
+		if (estadosPermitidosRegresarEnCurso.includes(oreId)) {
+			btnVolverCurso.disabled = false;
+			btnVolverCurso.classList.remove("disabled");
+		} else {
+			btnVolverCurso.disabled = true;
+			btnVolverCurso.classList.add("disabled");
+		}
+	}
+
+	const estadosPermitidosHojaDeRuta = ["C", "E", "F", "S", "T"];
+	const btnHojaRuta = document.getElementById("btnHojaRuta");
+	if (btnHojaRuta) {
+		if (estadosPermitidosHojaDeRuta.includes(oreId)) {
+			btnHojaRuta.disabled = false;
+			btnHojaRuta.classList.remove("disabled");
+		} else {
+			btnHojaRuta.disabled = true;
+			btnHojaRuta.classList.add("disabled");
+		}
+	}
+
+	const estadosPermitidosHojaDeProductos = ["C", "E", "F", "S", "T"];
+	const btnHojaProd = document.getElementById("btnHojaRuta");
+	if (btnHojaProd) {
+		if (estadosPermitidosHojaDeProductos.includes(oreId)) {
+			btnHojaProd.disabled = false;
+			btnHojaProd.classList.remove("disabled");
+		} else {
+			btnHojaProd.disabled = true;
+			btnHojaProd.classList.add("disabled");
+		}
+	}
+	
 }
 
 function activarSeleccionDeFilas(selectorTabla) {
@@ -855,3 +1124,34 @@ function activarSeleccionDeFilas(selectorTabla) {
 		fila.classList.add("selected-row");
 	});
 }
+
+
+
+$(document).on("click", "#btnAnalizar", function () {
+
+	// Obtener depósitos seleccionados
+	const seleccionados = [...document.querySelectorAll(".chk-depo:checked")]
+		.map(chk => chk.closest("tr").dataset.depoId);
+
+	if (seleccionados.length === 0) {
+		AlertaWarning("Debe seleccionar al menos un depósito.");
+		return;
+	}
+
+	bloquearPantalla();
+
+	$.ajax({
+		url: "/OrdenDeReparto/AnalizarOR",
+		type: "POST",
+		data: {
+			orCompte: "@Model.OrdenDeReparto.or_compte",
+			depositos: seleccionados
+		},
+		success: function (html) {
+			$("#divAnalisis").html(html);
+		},
+		complete: function () {
+			desbloquearPantalla();
+		}
+	});
+});

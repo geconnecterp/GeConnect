@@ -5,6 +5,7 @@ using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
 using gc.infraestructura.Dtos.Productos.Pedidos;
@@ -27,15 +28,18 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 		private readonly IOrdenDeRepartoServicio _ordenDeRepartoServicio;
 		private readonly IRepartidorServicio _repartidorServicio;
 		private readonly IPedidoServicio _pedidoSv;
+		private readonly IProductoServicio _productoServicio;
 
 		public OrdenDeRepartoController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<OrdenDeRepartoController> logger,
-										IOrdenDeRepartoServicio ordenDeRepartoServicio, IRepartidorServicio repartidorServicio, IPedidoServicio pedidoSv) : base(options, contexto, logger)
+										IOrdenDeRepartoServicio ordenDeRepartoServicio, IRepartidorServicio repartidorServicio, IPedidoServicio pedidoSv,
+										IProductoServicio productoServicio) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_ordenDeRepartoServicio = ordenDeRepartoServicio;
 			_repartidorServicio = repartidorServicio;
-			OrdenDeRepartoLista = [];
+			//OrdenDeRepartoLista = [];
 			_pedidoSv = pedidoSv;
+			_productoServicio = productoServicio;
 		}
 
 		public IActionResult Index()
@@ -187,7 +191,7 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 					return redirectResult;
 				if (accion == '\0' || accion == ' ')
 					return PartialView("_gridMensaje", CrearRespuestaError("No se han provisto los datos necesarios: Acción."));
-				if (accion=='M' && string.IsNullOrEmpty(orCompte))
+				if (accion == 'M' && string.IsNullOrEmpty(orCompte))
 					return PartialView("_gridMensaje", CrearRespuestaError("No se han provisto los datos necesarios: Orden de Reparto."));
 
 				var or = ObtenerOrdenDeRepartoPorAccion(accion, orCompte);
@@ -240,7 +244,9 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 					return Json(new { ok = false, mensaje = "Los datos de confirmación no fueron recepcionados. Verifique." });
 				}
 
-				dto.json = JsonConvert.SerializeObject(dto.pc);
+				dto.json = JsonConvert.SerializeObject(
+					dto.pc.Select(x => new { pc_compte = x })
+				);
 				dto.adm_id = AdministracionId;
 				dto.usu_id = UserName;
 
@@ -281,6 +287,66 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 					error = true,
 					msg = "Error interno al procesar la orden de reparto"
 				});
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> AbrirOrdenDeRepartoEnPonerEnCurso(string orCompte)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
+				if (string.IsNullOrEmpty(orCompte))
+					return PartialView("_gridMensaje", CrearRespuestaError("No se han provisto los datos necesarios: Orden de Reparto."));
+
+				var itemsAutDepo = await _productoServicio.TRObtenerAutDepositos(AdministracionId, TokenCookie);
+				var or = ObtenerOrdenDeRepartoPorAccion('M', orCompte);
+				var model = new OrdenDeRepartoPonerEnCursoModel
+				{
+
+					OrdenDeReparto = or,
+					ListaDepositos = ObtenerGridCoreSmart<TRAutDepoDto>(itemsAutDepo ?? []),
+					ListaAnalizaAut = ObtenerGridCoreSmart<AnalizarAutOrdenDeRepartoDto>([])
+				};
+				return PartialView("_gridOR_PonerEnCurso", model);
+			}
+			catch (NegocioException ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaError("Error al abrir la orden de reparto para poner en curso"));
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> AnalizarAutDeOREnPonerEnCurso(string orCompte, string listaDepo)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
+				if (string.IsNullOrEmpty(orCompte))
+					return PartialView("_gridMensaje", CrearRespuestaError("No se han provisto los datos necesarios: Orden de Reparto."));
+				if (string.IsNullOrEmpty(listaDepo))
+					return PartialView("_gridMensaje", CrearRespuestaError("No se han provisto los datos necesarios: Debe seleccionar al menos un depósito."));
+
+				var itemsAnaliza = await _ordenDeRepartoServicio.AnalizarAutOrdenDeReparto(new AnalizarAutOrdenDeRepartoRequest() { or_compte = orCompte, dep_ids = listaDepo, palet_nro = 0, stk_existente = false, sustituto = false }, TokenCookie);
+				return PartialView("_gridOR_PonerEnCurso_TablaAnalizaAut", ObtenerGridCoreSmart<AnalizarAutOrdenDeRepartoDto>(itemsAnaliza.ListaEntidad == null ? [] : itemsAnaliza.ListaEntidad.ToList()));
+			}
+			catch (NegocioException ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaError("Error al abrir la orden de reparto para poner en curso"));
 			}
 		}
 

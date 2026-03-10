@@ -105,6 +105,25 @@ namespace gc.api.Controllers.Productos
 			return Ok(new ApiResponse<RespuestaDto>(respuesta));
 		}
 
+		[HttpPost("analiza-aut-orden-de-reparto")]
+		public IActionResult AnalizarAutOrdenDeReparto(AnalizarAutOrdenDeRepartoRequest request)
+		{
+			const string msgError = "Error en la invocación de la API - AnalizarAutOrdenDeReparto";
+			try
+			{
+				if (Request == null)
+					return BadRequest("No se recepcionó el filtro - AnalizarAutOrdenDeReparto");
+
+				var resultados = _orSrv.AnalizarAutOrdenDeReparto(request);
+				return Ok(new ApiResponse<List<AnalizarAutOrdenDeRepartoDto>>(resultados));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, msgError);
+				return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
+			}
+		}
+
 		private static MetadataGrid? BuildMetadata(List<OrdenDeRepartoListaDto>? lista, QueryFilters filtro)
 		{
 			if (lista == null || lista.Count == 0)

@@ -1,5 +1,6 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Almacen.AnulacionDeComprobante;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
 using gc.infraestructura.Dtos.Productos.Pedidos;

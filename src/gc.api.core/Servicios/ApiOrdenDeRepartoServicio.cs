@@ -108,5 +108,22 @@ namespace gc.api.core.Servicios
 			}
 			return respuesta[0];
 		}
+
+		public List<AnalizarAutOrdenDeRepartoDto> AnalizarAutOrdenDeReparto(AnalizarAutOrdenDeRepartoRequest req)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OR_AUT_ANALIZA;
+
+			var ps = new List<SqlParameter>() {
+				new("@or_compte", req.or_compte),
+				new("@lista_depo", req.dep_ids),
+				new("@stk_existente", req.stk_existente),
+				new("@sustituto", req.sustituto),
+				new("@palet_nro", req.palet_nro),
+				};
+
+			var detalle = _repository.EjecutarLstSpExt<AnalizarAutOrdenDeRepartoDto>(sp, ps, true);
+
+			return detalle;
+		}
 	}
 }
