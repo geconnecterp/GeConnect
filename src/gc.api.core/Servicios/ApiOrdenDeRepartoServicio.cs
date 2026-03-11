@@ -1,6 +1,7 @@
 ﻿using gc.api.core.Contratos.Servicios;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
 using gc.infraestructura.Dtos.Productos.Pedidos;
 using gc.infraestructura.Dtos.Productos.Presupuestos;
@@ -81,6 +82,46 @@ namespace gc.api.core.Servicios
 			};
 
 			var detalle = _repository.EjecutarLstSpExt<PedidoEnOrdenDeRepartoDto>(sp, ps, true);
+
+			return detalle;
+		}
+
+		public RespuestaDto ConfirmarOrdenDeReparto(ConfirmaOrdenDeRepartoRequest req)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OR_CONFIRMA;
+
+			var ps = new List<SqlParameter>() {
+				new("@abm", req.abm),
+				new("@or_compte", req.or_compte),
+				new("@or_obs", req.or_obs),
+				new("@rp_id", req.rp_id),
+				new("@json", req.json),
+				new("@usu_id", req.usu_id),
+				new("@adm_id", req.adm_id),
+				};
+
+
+			var respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			if (respuesta.Count == 0)
+			{
+				return new RespuestaDto() { resultado = -1, resultado_msj = "No se Recepcionó respuesta del proceso." };
+			}
+			return respuesta[0];
+		}
+
+		public List<AnalizarAutOrdenDeRepartoDto> AnalizarAutOrdenDeReparto(AnalizarAutOrdenDeRepartoRequest req)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OR_AUT_ANALIZA;
+
+			var ps = new List<SqlParameter>() {
+				new("@or_compte", req.or_compte),
+				new("@lista_depo", req.dep_ids),
+				new("@stk_existente", req.stk_existente),
+				new("@sustituto", req.sustituto),
+				new("@palet_nro", req.palet_nro),
+				};
+
+			var detalle = _repository.EjecutarLstSpExt<AnalizarAutOrdenDeRepartoDto>(sp, ps, true);
 
 			return detalle;
 		}

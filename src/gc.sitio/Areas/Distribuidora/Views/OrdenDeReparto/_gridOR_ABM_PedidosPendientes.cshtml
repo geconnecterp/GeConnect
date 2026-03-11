@@ -1,10 +1,23 @@
 ﻿@model GridCoreSmart<PedidoListDto>
+<style>
+    .btn-table {
+        padding: 0.15rem 0.35rem;
+        font-size: 0.70rem;
+        line-height: 1;
+    }
 
+    .tabla-bloqueada {
+        pointer-events: none;
+        opacity: 0.6;
+        transition: opacity 0.2s ease;
+    }
+
+</style>
 <div class="card h-100">
     <div class="card-header fw-bold d-flex justify-content-between align-items-center">
         <span>Pedidos de Clientes Pendientes</span>
 
-        <button class="btn btn-primary btn-sm">
+        <button class="btn btn-primary btn-sm" id="btnCargarPCDelRepartidor">
             <i class="bx bx-plus"></i> Carga PC del Repartidor
         </button>
     </div>
@@ -12,15 +25,16 @@
     <div class="card-body p-0">
         <div class="table-responsive table-wrapper-400">
 
-            <table class="table table-sm table-hover mb-0">
-                <thead class="table-light sticky-top">
-                    <tr>
-                        <th class="text-center">ID</th>
+            <table class="table table-sm table-hover mb-0 table-golden" id="tbPedidosPendientes">
+                <thead class="sticky-top table-golden-header-compact">
+                    <tr class="header">
+                        <th class="text-center" style="width: 12%;">ID</th>
                         <th>Cliente</th>
-                        <th class="text-center">Generado</th>
+                        <th class="text-center" title="Fecha Generado">Gen.</th>
                         <th>Vendedor</th>
                         <th>Repartidor</th>
                         <th class="text-end">Importe</th>
+                        <th class="text-center" title="Acciones">Acc.</th>
                     </tr>
                 </thead>
 
@@ -32,17 +46,30 @@
                             <tr>
                                 <td class="text-center">@p.pc_compte</td>
                                 <td>@p.cta_denominacion</td>
-                                <td class="text-center">@p.pc_fecha.ToString("dd/MM/yyyy")</td>
+                                <td class="text-center">@p.pc_fecha.ToString("dd/MM/yy")</td>
                                 <td>@p.ve_nombre</td>
                                 <td>@p.rp_nombre</td>
                                 <td class="text-end">@p.cm_total.ToString("N2")</td>
+                                <td class="text-center">
+                                    <button class="btn btn-success btn-table btn-sm btnAgregarPedido"
+                                            data-id="@p.pc_compte"
+                                            data-cliente="@p.cta_denominacion"
+                                            data-fecha="@p.pc_fecha.ToString("yyyy-MM-dd")"
+                                            data-vendedor="@p.ve_nombre"
+                                            data-repartidor="@p.rp_nombre"
+                                            data-rp-id="@p.rp_id"
+                                            data-importe="@p.cm_total"
+                                            title="Agregar a pedido de la Orden de Reparto">
+                                        <i class="bx bx-plus"></i>
+                                    </button>
+                                </td>
                             </tr>
                         }
                     }
                     else
                     {
-                        <tr>
-                            <td colspan="6" class="text-center text-muted py-2">
+                        <tr class="fila-vacia">
+                            <td colspan="7" class="text-center text-muted py-2">
                                 <i class="bx bx-info-circle me-1"></i>No hay pedidos
                             </td>
                         </tr>

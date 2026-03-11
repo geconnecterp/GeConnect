@@ -9,6 +9,19 @@
 	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
 <style>
+	.fade-out-row {
+		transition: opacity 0.3s ease-out;
+		opacity: 0;
+	}
+
+	.fade-in-row {
+		animation: fadeIn 0.3s ease-out;
+	}
+
+	@@keyframes fadeIn {
+		from{ opacity: 0; transform: scale(0.98); }
+		to { opacity: 1; transform: scale(1); }
+	}
 </style>
 <partial name="_botonera" model="filtro" />
 <div class="collapse" id="divFiltro">
@@ -30,6 +43,10 @@
 		var buscarOrdenesDeRepartoUrl = "@Url.Action("BuscarOrdenesDeReparto", "ordendereparto", new { area = "Distribuidora" })";
 		let buscarMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "ordendereparto", new { area = "Distribuidora" })';
 		let obtenerPedidosDeLaOrdenDeRepartoUrl = '@Url.Action("ObtenerPedidosDeLaOrdenDeReparto", "ordendereparto", new { area = "Distribuidora" })';
+		let cargarVistaABMOrdenDeRepartoUrl = '@Url.Action("AbrirOrdenDeRepartoEnABM", "ordendereparto", new { area = "Distribuidora" })';
+		let confirmarOrdenDeRepartoUrl = '@Url.Action("ConfirmarOrdenDeReparto", "ordendereparto", new { area = "Distribuidora" })';
+		let cargarVistaAnalizaAutEnOrdenDeRepartoUrl = '@Url.Action("AbrirOrdenDeRepartoEnPonerEnCurso", "ordendereparto", new { area = "Distribuidora" })';
+		let actualizarGrillaAnalizaAutoEnOrdenDeRepartoUrl = '@Url.Action("AnalizarAutDeOREnPonerEnCurso", "ordendereparto", new { area = "Distribuidora" })';
 
 		// Gestor de impresión
 		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';

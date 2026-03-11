@@ -2,6 +2,7 @@
 using gc.api.core.Contratos.Servicios;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
 using gc.infraestructura.Dtos.Productos.Pedidos;
 using gc.infraestructura.Dtos.Productos.Presupuestos;
@@ -85,6 +86,36 @@ namespace gc.api.Controllers.Productos
 
 				var detalle = _orSrv.ObtenerPedidosEnOrdenDeReparto(id);
 				return Ok(new ApiResponse<List<PedidoEnOrdenDeRepartoDto>>(detalle));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, msgError);
+				return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
+			}
+		}
+
+		[HttpPost("orden-de-reparto/confirmar")]
+		public IActionResult ConfirmarOrdenDeReparto(ConfirmaOrdenDeRepartoRequest req)
+		{
+			if (req == null)
+			{
+				return BadRequest("No se recepcionó la información para confirmar la orden de reparto.");
+			}
+			var respuesta = _orSrv.ConfirmarOrdenDeReparto(req);
+			return Ok(new ApiResponse<RespuestaDto>(respuesta));
+		}
+
+		[HttpPost("analiza-aut-orden-de-reparto")]
+		public IActionResult AnalizarAutOrdenDeReparto(AnalizarAutOrdenDeRepartoRequest request)
+		{
+			const string msgError = "Error en la invocación de la API - AnalizarAutOrdenDeReparto";
+			try
+			{
+				if (Request == null)
+					return BadRequest("No se recepcionó el filtro - AnalizarAutOrdenDeReparto");
+
+				var resultados = _orSrv.AnalizarAutOrdenDeReparto(request);
+				return Ok(new ApiResponse<List<AnalizarAutOrdenDeRepartoDto>>(resultados));
 			}
 			catch (Exception ex)
 			{

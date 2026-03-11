@@ -1,0 +1,130 @@
+﻿@using gc.infraestructura.Dtos.Almacen.Tr.Transferencia
+@model OrdenDeRepartoPonerEnCursoModel
+
+@{
+	var or = Model.OrdenDeReparto;
+	var listaDepositos = Model.ListaDepositos?.ListaDatos?.ToList() ?? new List<TRAutDepoDto>();
+}
+
+<div class="container-fluid min-vh-100 d-flex flex-column">
+
+	<!-- ============================
+		 FILA SUPERIOR: DATOS DE LA OR
+		 ============================ -->
+	<div class="row mb-1">
+		<div class="col-12">
+			<div class="p-1 border rounded bg-light">
+				<div class="row">
+					<div class="col-md-3">
+						<strong>ID OR:</strong> @or.or_compte
+					</div>
+					<div class="col-md-4">
+						<strong>Repartidor:</strong> @or.rp_nombre
+					</div>
+					<div class="col-md-3">
+						<strong>Estado:</strong> @or.ore_desc
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- ============================
+		 FILA PRINCIPAL: 2 COLUMNAS
+		 ============================ -->
+	<div class="row gx-2 flex-grow-1 h-100">
+
+		<!-- COLUMNA IZQUIERDA -->
+		<div class="col-md-2 d-flex flex-column h-100">
+
+			<div class="card h-100 d-flex flex-column">
+
+				<div class="card-header fw-bold">
+					Depósitos de Envío
+				</div>
+
+				<div class="card-body p-0 flex-grow-1 overflow-auto">
+					<div class="table-responsive table-wrapper-200">
+						<table class="table table-sm table-hover mb-0 table-golden" id="tbDepositos">
+							<thead class="sticky-top table-golden-header-compact">
+								<tr class="header">
+									<th>Depósito</th>
+									<th class="text-center">Sel</th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var d in listaDepositos)
+								{
+									<tr data-depo-id="@d.depo_id">
+										<td>@d.depo_nombre</td>
+										<td class="text-center">
+											<input type="checkbox"
+												   class="form-check-input chk-depo"
+												   @(d.seleccionado ? "checked" : "") />
+										</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+				<!-- Botonera dentro del card -->
+				<div class="card-footer d-flex flex-column gap-2 mt-auto">
+					<button id="btnAnalizarPonerEnCurso" class="btn btn-primary d-flex align-items-center">
+						<i class="bx bx-search-alt me-1"></i> Analizar OR
+					</button>
+
+					<button id="btnConfirmarPonerEnCurso" class="btn btn-success d-flex align-items-center">
+						<i class="bx bx-refresh me-1"></i> Poner En Curso
+					</button>
+
+					<button id="btnCancelarPonerEnCurso" class="btn btn-danger d-flex align-items-center">
+						<i class="bx bx-x-circle me-1"></i> Cancelar
+					</button>
+				</div>
+
+			</div>
+
+		</div>
+
+		<!-- COLUMNA DERECHA -->
+		<div class="col-md-10 d-flex flex-column h-100">
+			<div class="card flex-grow-1 d-flex flex-column">
+				<div class="card-header fw-bold">
+					Análisis de Stk y Recolección
+				</div>
+				<div class="card-body p-0 flex-grow-1 overflow-auto" id="tbGrillaAnalizaAut">
+					<div class="table-responsive table-wrapper-400">
+						<!-- TABLA VACÍA INICIAL -->
+						<table class="table table-sm table-hover mb-0 table-golden" id="tbAnalisis">
+							<thead class="sticky-top table-golden-header-compact">
+								<tr class="header">
+									<th>ID</th>
+									<th>Descripción</th>
+									<th>ID Prov</th>
+									<th>PC</th>
+									<th>STK Suc</th>
+									<th>Pedido</th>
+									<th>A Enviar</th>
+									<th>Dif.</th>
+									<th>BOX</th>
+									<th>A Enviar BOX</th>
+									<th>Nota</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr class="fila-vacia">
+									<td colspan="11" class="text-center text-muted py-2">
+										<i class="bx bx-info-circle me-1"></i>
+										No hay datos para mostrar. Seleccione depósitos y presione <strong>Analizar OR</strong>.
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
