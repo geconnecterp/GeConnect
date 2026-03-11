@@ -11,9 +11,9 @@
         public string or_obs { get; set; } = string.Empty;
         public DateTime or_fecha { get; set; }
         public DateTime or_fecha_fac { get; set; }
-        public int ore_id { get; set; }
+        public string ore_id { get; set; } = string.Empty;
         public string ore_desc { get; set; } = string.Empty;
-        public int rp_id { get; set; }
+        public string rp_id { get; set; } = string.Empty;
         public string rp_nombre { get; set; } = string.Empty;
 
     }

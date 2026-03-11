@@ -1,4 +1,6 @@
-﻿using gc.api.core.Contratos.Servicios;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using gc.api.core.Contratos.Servicios;
+using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.OrdenReparto;
 using Microsoft.AspNetCore.Authorization;
@@ -28,8 +30,10 @@ namespace gc.api.Controllers.OrdenReparto
         [HttpPost]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<OrdenRepartoListDto>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
         public IActionResult ObtenerOrdenesReparto(ORRequestDto request)
         {
+
             try
             {
                 if (request == null)
@@ -38,7 +42,27 @@ namespace gc.api.Controllers.OrdenReparto
                     return BadRequest(new ApiResponse<string>("La solicitud no puede estar vacía."));
                 }
 
+                var reg = new OrdenRepartoListDto { total_paginas = 0,total_registros=0 };
+               
                 var data = _orSv.ObtenerOrdenesReparto(request);
+
+                if (data.Count > 0)
+                {
+                    reg = data[0];
+                }
+
+                var metadata = new MetadataGrid
+                {
+                    TotalCount = reg.total_registros,
+                    PageSize = request.Registros,
+                    CurrentPage = request.Pagina ,
+                    TotalPages = reg.total_paginas,
+                    HasNextPage = request.Pagina  < reg.total_paginas,
+                    HasPreviousPage = request.Pagina  > 1,
+                    NextPageUrl = string.Empty,
+                    PreviousPageUrl = string.Empty,
+                };
+
                 return Ok(new ApiResponse<List<OrdenRepartoListDto>>(data));
             }
             catch (Exception ex)

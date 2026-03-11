@@ -1,111 +1,260 @@
-# Gu�a de Contribuci�n - GeConnect
+﻿# Guía de Contribución - GeConnect
 
-## ?? Est�ndares de Desarrollo
+## 📋 Tabla de Contenidos
 
-### ?? Principios de An�lisis y Modificaci�n de C�digo
+1. [Principios Fundamentales](#-principios-fundamentales)
+2. [Análisis y Modificación de Código](#-análisis-y-modificación-de-código)
+3. [Código Simple, Robusto y Escalable](#-código-simple-robusto-y-escalable)
+4. [Estándares Técnicos](#-estándares-técnicos)
+5. [Presentación de Cambios](#-presentación-de-cambios)
+6. [Patrones de Diseño](#-patrones-de-diseño)
+7. [Checklist de Calidad](#-checklist-de-calidad)
+8. [Mejores Prácticas](#-mejores-prácticas)
+9. [Guía de Respuesta](#-guía-de-respuesta)
 
-#### **Regla de Objetividad en Cambios de C�digo**
+---
 
-**Cuando se analiza un archivo, funci�n o proceso espec�fico:**
+## 🎯 Principios Fundamentales
 
-? **HACER:**
-- Analizar **SOLO** el c�digo directamente relacionado con el objetivo del an�lisis
-- Modificar **�NICAMENTE** las funciones o bloques de c�digo que est�n causando el problema o necesitan la funcionalidad solicitada
-- Mantener el resto del c�digo sin cambios, incluso si existen oportunidades de mejora
-- Documentar claramente QU� se modific� y POR QU�
+### Análisis Exhaustivo Obligatorio
 
-? **NO HACER:**
-- Modificar c�digo perif�rico que funciona correctamente
+**Antes de modificar cualquier código, se debe realizar un análisis completo que incluya:**
+
+#### Pasos del Análisis
+
+1. **Identificación de Componentes**
+   - Listar archivos que serán modificados
+   - Identificar dependencias directas e indirectas
+   - Verificar impacto en módulos relacionados
+
+2. **Análisis de Contexto**
+   - Revisar archivos abiertos en el IDE
+   - Examinar arquitectura existente
+   - Identificar patrones de diseño utilizados
+   - Verificar convenciones de nomenclatura
+
+3. **Evaluación de Riesgos**
+   - Detectar código periférico que NO debe modificarse
+   - Identificar funciones críticas del sistema
+   - Evaluar compatibilidad con versiones anteriores
+
+4. **Planificación de Cambios**
+   - Definir alcance preciso
+   - Establecer orden de implementación
+   - Preparar plan de rollback
+
+---
+
+## 🔧 Análisis y Modificación de Código
+
+### Regla de Objetividad en Cambios de Código
+
+**Cuando se analiza un archivo, función o proceso específico:**
+
+#### ✅ **HACER:**
+- Analizar **SOLO** el código directamente relacionado con el objetivo
+- Modificar **ÚNICAMENTE** las funciones que causan el problema o necesitan la funcionalidad
+- Mantener el resto del código sin cambios
+- Documentar claramente QUÉ se modificó y POR QUÉ
+
+#### ❌ **NO HACER:**
+- Modificar código periférico que funciona correctamente
 - Realizar "mejoras" no solicitadas en funciones no relacionadas
-- Refactorizar c�digo que no est� dentro del alcance del an�lisis
+- Refactorizar código fuera del alcance del análisis
 - Tocar funciones que NO pertenecen al proceso objetivo
-- Cambiar estilos de c�digo o formateo en �reas no relacionadas
+- Cambiar estilos de código o formateo en áreas no relacionadas
 
-#### **Ejemplo Pr�ctico**
+### Alcance de Modificaciones
 
-**Solicitud:** "Corregir el env�o de emails en Outlook Web para que los enlaces sean HTML"
+#### 1. **Código Objetivo Principal** (✅ Modificar)
+- La función específicamente mencionada
+- Funciones que llaman directamente a la función objetivo
+- Funciones llamadas por la función objetivo
 
-? **Correcto:**
+#### 2. **Código Periférico** (❌ NO Modificar)
+- Funciones con nombres similares pero funcionalidad diferente
+- Código que funciona correctamente en otros módulos
+- Utilidades generales que no causan el problema
+
+#### 3. **Código de Soporte** (⚠️ Modificar solo si es necesario)
+- DTOs o modelos compartidos (solo si afectan directamente)
+- Constantes o configuraciones (solo las relevantes)
+
+### Ejemplo Práctico
+
+**Solicitud:** "Cambiar sistema de mensajes de Lobibox a AbrirMensaje"
+
+#### ✅ **Correcto:**
 ```javascript
-// Modificar SOLO la funci�n procesarArchivosParaEmail()
-// y las funciones directamente relacionadas con formateo de enlaces
-function procesarArchivosParaEmail() {
-    // ... cambios espec�ficos aqu�
+// Modificar SOLO la función abrirMensaje()
+function abrirMensaje() {
+    // ... cambios específicos aquí
 }
 ```
 
-? **Incorrecto:**
+#### ❌ **Incorrecto:**
 ```javascript
 // NO modificar funciones como:
-// - enviarWhatsApp() (no relacionada con emails)
-// - presentarArchivos() (no relacionada con env�o)
+// - enviarWhatsApp() (no relacionada con mensajes)
+// - presentarArchivos() (no relacionada con el sistema de mensajería)
 // - invocaGenerarArchivo() (funcionalidad diferente)
 ```
 
-#### **Alcance de Modificaciones**
+---
 
-Al realizar cambios, considerar **SOLO** estas categor�as:
+## 🏗️ Código Simple, Robusto y Escalable
 
-1. **C�digo Objetivo Principal** (Modificar)
-   - La funci�n espec�ficamente mencionada
-   - Funciones que llaman directamente a la funci�n objetivo
-   - Funciones llamadas por la funci�n objetivo
+### Simplicidad (KISS - Keep It Simple, Stupid)
 
-2. **C�digo Perif�rico** (NO Modificar)
-   - Funciones con nombres similares pero funcionalidad diferente
-   - C�digo que funciona correctamente en otros m�dulos
-   - Utilidades generales que no causan el problema
+#### Principios
+- ✅ Una función = Una responsabilidad
+- ✅ Nombres descriptivos y autoexplicativos
+- ✅ Evitar anidamiento excesivo (máximo 3 niveles)
+- ✅ Preferir código legible sobre código "inteligente"
+- ✅ Funciones pequeñas (<50 líneas idealmente)
 
-3. **C�digo de Soporte** (Modificar solo si es necesario)
-   - DTOs o modelos compartidos (solo si afectan directamente)
-   - Constantes o configuraciones (solo las relevantes)
+#### Ejemplo Correcto
+```javascript
+// Buena práctica: función pequeña y con nombre descriptivo
+function calcularPrecioConIVA(precioSinIVA) {
+    const tasaIVA = 0.21;
+    return precioSinIVA * (1 + tasaIVA);
+}
+```
+
+### Robustez
+
+#### Checklist de Robustez
+- ✅ Validación de parámetros de entrada
+- ✅ Manejo de errores con try-catch
+- ✅ Valores por defecto para evitar null/undefined
+- ✅ Mensajes de error descriptivos
+- ✅ Logging en puntos críticos
+- ✅ Timeouts en operaciones asíncronas
+
+#### Template de Función Robusta
+```javascript
+function nombreFuncion(param1, param2) {
+    // ✅ Validación de parámetros
+    if (!param1 || !param2) {
+        throw new Error('Faltan parámetros obligatorios');
+    }
+
+    // ✅ Valores por defecto
+    const timeout = 5000;
+    let resultado;
+
+    try {
+        // ... código de la función
+
+        // ✅ Manejo de errores
+    } catch (error) {
+        console.error('Error en nombreFuncion:', error);
+        throw error; // Volver a lanzar el error después de hacer logging
+    }
+
+    // ✅ Logging
+    console.log('Resultado de nombreFuncion:', resultado);
+
+    return resultado;
+}
+```
+
+### Escalabilidad
+
+#### Principios de Escalabilidad
+- ✅ Separación de responsabilidades (SRP)
+- ✅ Uso de patrones de diseño apropiados
+- ✅ API pública bien documentada
+- ✅ Configuración externalizada
+- ✅ Código preparado para extensión futura (Open/Closed Principle)
+
+#### Ejemplo de Código Escalable
+```javascript
+// Ejemplo de función que sigue los principios de escalabilidad
+function configurarRuta(api) {
+    // ✅ Separación de responsabilidades: configuración de ruta en su propia función
+    api.get('/ruta', manejarSolicitud);
+
+    // ✅ Uso de patrones de diseño: manejo de solicitudes usando el patrón Strategy
+    function manejarSolicitud(req, res) {
+        // ... lógica para manejar la solicitud
+    }
+}
+
+// Configuración externalizada: las credenciales no están en el código
+const configuracion = obtenerConfiguracion();
+```
+---
+
+## 🛠️ Estándares Técnicos
+
+- Seguir las convenciones de codificación del lenguaje utilizado.
+- Mantener una estructura de archivos y carpetas ordenada y predecible.
+- Escribir pruebas unitarias y de integración para validar los cambios.
 
 ---
 
-## ?? Pr�cticas de C�digo
+## 🚀 Presentación de Cambios
+
+- Hacer commit de los cambios en pequeñas cantidades y de forma atómica.
+- Escribir mensajes de commit claros y descriptivos.
+- Asegurarse de que todos los tests pasen antes de enviar un pull request.
+
+---
+
+## 🎨 Patrones de Diseño
+
+- Aplicar patrones de diseño apropiados según la situación (p. ej., Singleton, Factory, Observer).
+- Ser coherente en el uso de patrones a lo largo del código.
+- Documentar la decisión de diseño y el patrón utilizado.
+
+---
+
+## ✔️ Checklist de Calidad
+
+Antes de solicitar una revisión de código, asegurarse de que:
+
+- [ ] Se ha realizado un análisis exhaustivo.
+- [ ] Solo se modificó el código objetivo.
+- [ ] Se documentaron claramente los cambios.
+- [ ] Se probaron todas las funcionalidades afectadas.
+- [ ] Se siguieron los estándares técnicos y de codificación.
+
+---
+
+## 🌟 Mejores Prácticas
+
+- Mantener el código limpio y bien comentado.
+- Refactorizar el código regularmente para mejorar la calidad.
+- Aprender y aplicar nuevos conocimientos y tecnologías que beneficien al proyecto.
+
+---
+
+## 📖 Guía de Respuesta
+
+- Ser constructivo y respetuoso en las revisiones de código.
+- Hacer preguntas si algo no está claro.
+- Sugerir mejoras pero también reconocer el buen trabajo.
+
+---
+
+**Última actualización:** 3 de marzo de 2026
+
+### Sistema de Mensajes Unificado
+
+**Usar SIEMPRE la función `AbrirMensaje` de `siteGen.js`:**
+
+**Tipos de mensajes disponibles:**
+- `"succ!"` - Éxito (icono check, color verde)
+- `"error!"` - Error (icono hand, color rojo)
+- `"warn!"` - Advertencia (icono error, color naranja)
+- `"info!"` - Información (icono info-circle, color azul)
+
+### Logging Estandarizado
+
+#### JavaScript
 
 ### Formato y Estilo
 
-Seguir las reglas definidas en `.editorconfig` para mantener consistencia en el c�digo.
-
-### Logging
-
-Usar logging estructurado con emojis para facilitar el debugging:
-```csharp
-_logger?.LogInformation("? Operaci�n exitosa: {Detalle}", detalle);
-_logger?.LogWarning("?? Advertencia: {Mensaje}", mensaje);
-_logger?.LogError("? Error: {Error}", error);
-```
-
-### Nomenclatura
-
-- **C#**: PascalCase para clases, m�todos y propiedades
-- **JavaScript**: camelCase para funciones y variables
-- **Constantes**: UPPER_SNAKE_CASE
-
----
-
-## ?? Documentaci�n de Cambios
-
-Cada modificaci�n debe incluir:
-
-1. **Qu�** se cambi� (funci�n/archivo espec�fico)
-2. **Por qu�** se cambi� (problema que resuelve)
-3. **C�mo** se prob� (verificaci�n del cambio)
-4. **Alcance** (qu� NO se toc� intencionalmente)
-
----
-
-## ? Checklist de Revisi�n
-
-Antes de finalizar cualquier cambio, verificar:
-
-- [ ] �Solo modifiqu� el c�digo objetivo?
-- [ ] �Dej� intacto el c�digo perif�rico que funciona?
-- [ ] �Document� claramente los cambios?
-- [ ] �Expliqu� por qu� NO toqu� otras funciones?
-- [ ] �El cambio es m�nimo y enfocado?
-
----
-
-**�ltima actualizaci�n:** 3 de marzo de 2026
+Seguir las reglas definidas en `.editorconfig` para mantener consistencia:

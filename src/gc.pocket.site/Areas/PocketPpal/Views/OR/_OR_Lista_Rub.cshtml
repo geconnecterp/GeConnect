@@ -1,0 +1,24 @@
+﻿@model ORListaDto
+
+@{
+    (string, string) mensaje = ("Itinerario x Rubros", @Model.or_compte);
+}
+
+<partial name="_NroComprobante" model="mensaje" />
+
+<div class="grid-golden h-100">
+    <div class="grid-golden-body p-1">
+        <div class="table-responsive" style="max-height: calc(100vh - 200px); overflow-y: auto;">
+            <table class="table table-sm table-hover mb-0 table-golden" id="tbOrRubList">
+                <thead class="sticky-top table-golden-header-compact">
+                    <tr class="header">
+                        <th class="text-left th-compact">Rubro</th>
+                        <th class="text-center th-compact">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

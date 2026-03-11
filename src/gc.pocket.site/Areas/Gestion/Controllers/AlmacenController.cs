@@ -25,6 +25,12 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         [HttpGet]
         public IActionResult RPR()
         {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
+
             var sigla = "rpr";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             string? volver = Url.Action("index", "home", new { area = "" });           
@@ -35,6 +41,13 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         [HttpGet]
         public IActionResult BOXALM()
         {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
+
+
             var sigla = "box alm";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             if (modulo == null)
@@ -46,6 +59,12 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         [HttpGet]
         public IActionResult BOXCMB()
         {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
+
             var sigla = "boxcmb";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             if (modulo == null)
@@ -57,6 +76,12 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         [HttpGet]
         public IActionResult RTI()
         {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
+
             var sigla = "rti";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             string? volver = Url.Action("index", "home", new { area = "" });
@@ -66,6 +91,13 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         [HttpGet]
         public IActionResult TI()
         {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
+
+
             var sigla = "ti";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             if (modulo == null)
@@ -77,6 +109,12 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         [HttpGet]
         public IActionResult CTLTI()
         {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
+
             var sigla = "ctl ti";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             if (modulo == null)
@@ -88,6 +126,12 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         [HttpGet]
         public IActionResult REXPED()
         {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
+
             var sigla = "rex ped";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             if (modulo == null)
@@ -99,6 +143,12 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         [HttpGet]
         public IActionResult REXTI()
         {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
+
             var sigla = "rexti";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             if (modulo == null)
@@ -110,6 +160,13 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         [HttpGet]
         public IActionResult CTLREXTI()
         {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
+
+
             var sigla = "ctlrexti";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             if (modulo == null)
@@ -121,6 +178,12 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         [HttpGet]
         public IActionResult DPR()
         {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
+
             var sigla = "drp";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             if (modulo == null)
@@ -132,6 +195,12 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         [HttpGet]
         public IActionResult OR()
         {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
+
             var sigla = "or";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             if (modulo == null)
@@ -143,6 +212,13 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         [HttpGet]
         public IActionResult CTLOR()
         {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
+
+
             var sigla = "ctlor";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             if (modulo == null)
@@ -154,6 +230,12 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         [HttpGet]
         public IActionResult ROTULO()
         {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
+
             var sigla = "rotulo";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             if (modulo == null)
@@ -165,6 +247,12 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         [HttpGet]
         public IActionResult PREFACTURA()
         {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
+
             var sigla = "prefactura";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             if (modulo == null)
@@ -176,6 +264,13 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         [HttpGet]
         public IActionResult INFO()
         {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
+
+
             var sigla = "info";
             string? volver = Url.Action("index", "home", new { area = "" });
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
@@ -191,6 +286,13 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         [HttpGet]
         public IActionResult INV()
         {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
+
+
             var sigla = "inv";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             if (modulo == null)
@@ -203,6 +305,13 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         [HttpGet]
         public IActionResult cprev()
         {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
+
+
             var sigla = "cprev";
             string? volver = Url.Action("index", "home", new { area = "" });
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));

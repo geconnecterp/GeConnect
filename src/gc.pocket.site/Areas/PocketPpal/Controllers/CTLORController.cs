@@ -7,19 +7,19 @@ using Microsoft.Extensions.Options;
 
 namespace gc.pocket.site.Areas.PocketPpal.Controllers
 {
-        [Area("PocketPpal")]
+    [Area("PocketPpal")]
     public class CTLORController : ControladorBase
     {
         private readonly MenuSettings _menuSettings;
 
-        public CTLORController(IOptions<AppSettings> options, 
-            IHttpContextAccessor context, 
+        public CTLORController(IOptions<AppSettings> options,
+            IHttpContextAccessor context,
             ILogger<TrIntController> logger,
             IOptions<MenuSettings> options1) : base(options, context, logger)
         {
             _menuSettings = options1.Value;
         }
-        
+
 
 
         public IActionResult Index()
@@ -44,5 +44,6 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
             return View();
         }
+
     }
 }
