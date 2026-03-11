@@ -10,5 +10,6 @@ namespace gc.api.core.Contratos.Servicios
 		List<PedidoEnOrdenDeRepartoDto> ObtenerPedidosEnOrdenDeReparto(string orCompte);
 		RespuestaDto ConfirmarOrdenDeReparto(ConfirmaOrdenDeRepartoRequest req);
 		List<AnalizarAutOrdenDeRepartoDto> AnalizarAutOrdenDeReparto(AnalizarAutOrdenDeRepartoRequest req);
+		RespuestaDto APonerEnCursoOrdenDeReparto(APonerEnCursoOrdenDeRepartoRequest req);
 	}
 }

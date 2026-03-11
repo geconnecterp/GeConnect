@@ -125,5 +125,25 @@ namespace gc.api.core.Servicios
 
 			return detalle;
 		}
+
+		public RespuestaDto APonerEnCursoOrdenDeReparto(APonerEnCursoOrdenDeRepartoRequest req)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OR_AEN_CURSO;
+
+			var ps = new List<SqlParameter>() {
+				new("@or_compte", req.or_compte),
+				new("@json", req.json),
+				new("@usu_id", req.usu_id),
+				new("@adm_id", req.adm_id),
+				};
+
+
+			var respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			if (respuesta.Count == 0)
+			{
+				return new RespuestaDto() { resultado = -1, resultado_msj = "No se Recepcionó respuesta del proceso." };
+			}
+			return respuesta[0];
+		}
 	}
 }

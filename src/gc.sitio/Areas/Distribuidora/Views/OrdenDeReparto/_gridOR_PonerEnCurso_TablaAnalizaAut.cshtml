@@ -1,13 +1,61 @@
 ﻿@model GridCoreSmart<AnalizarAutOrdenDeRepartoDto>
 @{
 }
+<style>
+    .th-descripcion {
+        position: relative;
+        text-align: center;
+        vertical-align: middle;
+        width: 25%;
+    }
+
+        .th-descripcion .th-title {
+            display: inline-block;
+        }
+
+    .btn-info-producto {
+        position: absolute;
+        right: 4px; /* margen a la derecha */
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent !important;
+        border: none !important;
+        padding: 0;
+        color: #fff; /* o el color del header */
+        cursor: pointer;
+    }
+
+        .btn-info-producto i {
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+    .dif-positivo {
+        background-color: #ffb3b3 !important; /* rojo suave */
+        font-weight: bold;
+    }
+
+    .dif-negativo {
+        background-color: #ffe0b3 !important; /* naranja suave */
+        font-weight: bold;
+    }
+
+</style>
 <div class="table-responsive table-wrapper-400">
 	<!-- TABLA VACÍA INICIAL -->
     <table class="table table-sm table-hover mb-0 table-golden" id="tbGrillaAnalizaAut">
 		<thead class="sticky-top table-golden-header-compact">
 			<tr class="header">
 				<th>ID</th>
-				<th>Descripción</th>
+                <th class="th-descripcion">
+                    <span class="th-title">Descripción</span>
+                    <button type="button"
+                            class="btn btn-info-producto"
+                            data-action="info-producto"
+                            title="Abrir info de producto">
+                        <i class="bx bx-info-circle"></i>
+                    </button>
+                </th>
 				<th>ID Prov</th>
 				<th>PC</th>
 				<th>STK Suc</th>
@@ -34,6 +82,8 @@
                 foreach (var item in Model.ListaDatos)
                 {
                     var dif = @item.a_enviar - @item.pedido;
+                    var claseDif = dif > 0 ? "dif-positivo" : (dif < 0 ? "dif-negativo" : "");
+
                     <tr class="row-analisis"
                         data-p-id="@item.p_id"
                         data-pc-compte="@item.pc_compte"
@@ -49,7 +99,7 @@
                         <td class="text-end">@GridHelper.FormatearDato(item.stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
                         <td class="text-end">@GridHelper.FormatearDato(item.pedido, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
                         <td class="text-end">@GridHelper.FormatearDato(item.a_enviar, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-                        <td class="text-end">@GridHelper.FormatearDato(dif, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+                        <td class="text-end @claseDif">@GridHelper.FormatearDato(dif, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
                         <td>@item.box_id</td>
                         <td class="text-end">@GridHelper.FormatearDato(item.a_enviar_box, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
                         <td class="text-end">@item.nota</td>

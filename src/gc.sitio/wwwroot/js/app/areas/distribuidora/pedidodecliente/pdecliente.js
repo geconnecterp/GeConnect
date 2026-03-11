@@ -739,7 +739,7 @@ function InicializaEventosPedido() {
 
     // Buscar
     $("#btnBuscar").on("click", function () {
-        buscarPedidosDeCliente(this);
+        buscarPedidosDeCliente(1);
     });
     funcCallBack = buscarPedidosDeCliente;
 
@@ -1072,7 +1072,7 @@ function procesarRespuestaEliminacion(response) {
 
             if ($('#tbGridPedido tbody tr').length > 0) {
                 console.log('🔄 Actualizando lista de pedidos...');
-                buscarPedidosDeCliente($('#btnBuscar'));
+                buscarPedidosDeCliente(1);
             }
         },
         false,
@@ -1270,15 +1270,16 @@ function cancelarOperacion(e) {
 
 let _pedidoLoading = false;
 
-async function buscarPedidosDeCliente(btn, pag = 1) {
+async function buscarPedidosDeCliente(pag = 1) {
     if (_pedidoLoading) return;
     _pedidoLoading = true;
-
-    const $btn = $(btn);
-    const originalHtml = $btn.html();
-    setBtnLoading($btn, true);
+    pagina = pag;
+    //const $btn = $(btn);
+    //const originalHtml = $btn.html();
+    //setBtnLoading($btn, true);
 
     try {
+        AbrirWaiting("Buscando Pedidos de Cliente...")
         const filtros = buildQueryFilters(pag);
         const url = buscarPedidosUrl;
 
@@ -1290,7 +1291,7 @@ async function buscarPedidosDeCliente(btn, pag = 1) {
 
             $("#btnAbmAceptar").prop("disabled", true).show();
             $("#btnAbmCancelar").prop("disabled", false).show();
-
+            CerrarWaiting();
             PostGen({}, buscarMetadataURL, function (obj) {
                 if (obj.error === true) {
                     AbrirMensaje("ATENCIÓN", obj.msg, function () {
@@ -1309,7 +1310,7 @@ async function buscarPedidosDeCliente(btn, pag = 1) {
         console.error("Error al buscar pedidos de clientes:", e);
         $("#divDetalle").html('<div class="alert alert-danger py-2 mb-0">No se pudo obtener la información.</div>').collapse("show");
     } finally {
-        setBtnLoading($btn, false, originalHtml);
+        //setBtnLoading($btn, false, originalHtml);
         _pedidoLoading = false;
     }
 }

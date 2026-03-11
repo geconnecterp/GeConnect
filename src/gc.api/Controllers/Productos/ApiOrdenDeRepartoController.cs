@@ -45,7 +45,7 @@ namespace gc.api.Controllers.Productos
 		}
 
 		[HttpPost("buscar-ordenes-de-reparto")]
-		public IActionResult BuscarPresupuestos(QueryFilters filtro)
+		public IActionResult BuscarOrdenesDeReparto(QueryFilters filtro)
 		{
 			const string msgError = "Error en la invocación de la API - Búsqueda de OR";
 			try
@@ -122,6 +122,17 @@ namespace gc.api.Controllers.Productos
 				_logger?.LogError(ex, msgError);
 				return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
 			}
+		}
+
+		[HttpPost("aponer-en-curso-or")]
+		public IActionResult APonerEnCursoOrdenDeReparto(APonerEnCursoOrdenDeRepartoRequest req)
+		{
+			if (req == null)
+			{
+				return BadRequest("No se recepcionó la información para analizar y poner en curso la orden de reparto.");
+			}
+			var respuesta = _orSrv.APonerEnCursoOrdenDeReparto(req);
+			return Ok(new ApiResponse<RespuestaDto>(respuesta));
 		}
 
 		private static MetadataGrid? BuildMetadata(List<OrdenDeRepartoListaDto>? lista, QueryFilters filtro)

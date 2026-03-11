@@ -56,7 +56,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 					{
 						Ok = true,
 						Mensaje = "OK",
-						ListaEntidad = apiResponse.Data
+						ListaEntidad = apiResponse.Data,
+						Meta = apiResponse.Meta ?? new()
 					};
 				}
 				else

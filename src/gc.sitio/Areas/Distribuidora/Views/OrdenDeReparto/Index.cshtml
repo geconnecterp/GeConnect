@@ -22,6 +22,12 @@
 		from{ opacity: 0; transform: scale(0.98); }
 		to { opacity: 1; transform: scale(1); }
 	}
+
+	#divInfoAdicionaDeProducto > div:first-child {
+		height: 400px;
+		max-height: 400px;
+		overflow-y: auto;
+	}
 </style>
 <partial name="_botonera" model="filtro" />
 <div class="collapse" id="divFiltro">
@@ -30,6 +36,7 @@
 </div>
 <div class="collapse" id="divDetalle"></div>
 <div id="modalGestorDocumental"></div>
+<div id="divInfoAdicionaDeProducto" class="collapse"></div>
 
 @section scripts {
 	<script type="text/javascript">
@@ -38,6 +45,8 @@
 		let pags = 0;
 		let pagina = 1;
 		let search = "";
+		var pIdSeleccionadoEnAnalisisAut = "";
+		var tipoDeOperacion = "OC";
 
 		var inicializarViewUrl = "@Url.Action("InicializarView", "ordendereparto", new { area = "Distribuidora" })";
 		var buscarOrdenesDeRepartoUrl = "@Url.Action("BuscarOrdenesDeReparto", "ordendereparto", new { area = "Distribuidora" })";
@@ -47,6 +56,19 @@
 		let confirmarOrdenDeRepartoUrl = '@Url.Action("ConfirmarOrdenDeReparto", "ordendereparto", new { area = "Distribuidora" })';
 		let cargarVistaAnalizaAutEnOrdenDeRepartoUrl = '@Url.Action("AbrirOrdenDeRepartoEnPonerEnCurso", "ordendereparto", new { area = "Distribuidora" })';
 		let actualizarGrillaAnalizaAutoEnOrdenDeRepartoUrl = '@Url.Action("AnalizarAutDeOREnPonerEnCurso", "ordendereparto", new { area = "Distribuidora" })';
+		let confirmarPonerEnCursoOrdenDeRepartoUrl = '@Url.Action("APonerEnCursoOrdenDeReparto", "ordendereparto", new { area = "Distribuidora" })';
+
+		/*URL para componente de Información Adicional de Productos*/
+		var abrirComponenteDeInfoAdicionalDeProdUrl = "@Url.Action("AbrirComponente", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdURL = "@Url.Action("BuscarInfoProd", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdStkAURL = "@Url.Action("BuscarInfoProdStkA", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdStkDURL = "@Url.Action("BuscarInfoProdStkD", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdStkBoxURL = "@Url.Action("BuscarInfoProdStkBox", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdMovMensURL = "@Url.Action("BuscarInfoProdMovMens", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdMovSemURL = "@Url.Action("BuscarInfoProdMovSem", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdMovDURL = "@Url.Action("BuscarInfoProdMovD", "infoadicionaldeprod", new { area = "ControlComun" })";
+		var BuscarInfoProdSustitutoURL = "@Url.Action("BuscarInfoProdSustituto", "infoadicionaldeprod", new { area = "ControlComun" })";
+		/**/
 
 		// Gestor de impresión
 		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
@@ -56,9 +78,11 @@
 		var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
 		var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "GestorImpresion", new { area = "ControlComun" })";
 	</script>
+	<script src="~/js/plugins/jquery.simplePagination.js"></script>
+	<script src="~/js/app/siteGen.js"></script>@**@
 	<script src="~/lib/jstree/jstree.min.js"></script>
 	<script src="~/js/app/areas/docmngr/docmanager.js"></script>
-	<script src="~/js/plugins/jquery.simplePagination.js"></script>
 
 	<script src="~/js/app/areas/distribuidora/ordendereparto/or.js" type="text/javascript"></script>
+	<script src="~/js/app/controlcomun/infoAdicionalDeProd.js" type="text/javascript"></script>
 }

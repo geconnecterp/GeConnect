@@ -336,6 +336,7 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 					return PartialView("_gridMensaje", CrearRespuestaError("No se han provisto los datos necesarios: Debe seleccionar al menos un depósito."));
 
 				var itemsAnaliza = await _ordenDeRepartoServicio.AnalizarAutOrdenDeReparto(new AnalizarAutOrdenDeRepartoRequest() { or_compte = orCompte, dep_ids = listaDepo, palet_nro = 0, stk_existente = false, sustituto = false }, TokenCookie);
+				AnalizarAutOrdenDeRepartoLista = itemsAnaliza.ListaEntidad ?? [];
 				return PartialView("_gridOR_PonerEnCurso_TablaAnalizaAut", ObtenerGridCoreSmart<AnalizarAutOrdenDeRepartoDto>(itemsAnaliza.ListaEntidad == null ? [] : itemsAnaliza.ListaEntidad.ToList()));
 			}
 			catch (NegocioException ex)
@@ -347,6 +348,89 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			{
 				_logger?.LogError(ex, "Error");
 				return PartialView("_gridMensaje", CrearRespuestaError("Error al abrir la orden de reparto para poner en curso"));
+			}
+		}
+
+		[HttpPost]
+		public async Task<JsonResult> APonerEnCursoOrdenDeReparto([FromBody] APonerEnCursoOrdenDeRepartoRequest dto)
+		{
+			try
+			{
+				// Verificar autenticación - consistente con otros métodos
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return Json(new { ok = false, mensaje = "No autorizado" });
+
+				if (dto == null)
+					return Json(new { ok = false, mensaje = "Los datos de análisis no fueron recepcionados. Verifique." });
+				if (AnalizarAutOrdenDeRepartoLista== null || !AnalizarAutOrdenDeRepartoLista.Any())
+					return Json(new { ok = false, mensaje = "No se han analizado los datos de la orden de reparto para poner en curso. Verifique." });
+
+				var json = JsonConvert.SerializeObject(
+					AnalizarAutOrdenDeRepartoLista.Select(x => new
+					{
+						x.p_id,
+						x.p_desc,
+						x.pedido,
+						x.stk,
+						x.stk_adm,
+						x.box_id,
+						x.depo_id,
+						x.depo_nombre,
+						x.a_enviar,
+						x.a_enviar_box,
+						x.fv,
+						x.pc_compte,
+						x.cta_id,
+						x.cta_denominacion,
+						x.unidad_palet,
+						x.palet,
+						x.or_compte,
+						x.p_sustituto,
+						x.p_id_sustituto,
+						x.nota,
+						x.p_id_prov,
+						x.adm_id
+					})
+				);
+
+				dto.json = json;
+				dto.adm_id = AdministracionId;
+				dto.usu_id = UserName;
+
+				// Llamada al servicio
+				var respuesta = await _ordenDeRepartoServicio.APonerEnCursoOrdenDeReparto(dto, TokenCookie);
+
+				// Procesamiento de respuesta
+				if (respuesta.Ok && !respuesta.EsError && !respuesta.EsWarn)
+				{
+					// Log y limpieza de datos temporales
+					var msg = $"Analisis y puesta en curso realizado exitosamente.";
+					_logger?.LogInformation(msg);
+					return AnalizarRespuesta(respuesta, msg);
+				}
+				else
+				{
+					// Log y respuesta de error/advertencia
+					_logger?.LogWarning("Error en el análisis y puesta en curso de la orden de reparto: {Mensaje}", respuesta.Mensaje);
+					return Json(new
+					{
+						ok = false,
+						error = respuesta.EsError,
+						warn = respuesta.EsWarn,
+						mensaje = respuesta.Mensaje ?? "Error en el análisis y puesta en curso de la orden de reparto"
+					});
+				}
+			}
+			catch (Exception ex)
+			{
+				// Manejo de excepciones no esperadas
+				_logger?.LogError(ex, "Error inesperado en el análisis y puesta en curso de la orden de reparto");
+				return Json(new
+				{
+					ok = false,
+					error = true,
+					msg = "Error interno en el análisis y puesta en curso de la orden de reparto"
+				});
 			}
 		}
 

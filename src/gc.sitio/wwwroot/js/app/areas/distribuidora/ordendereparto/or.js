@@ -4,7 +4,7 @@ let pcCompteSeleccionado = null;
 
 $(function () {
 	InicializaPantallaOrdenDeReparto();
-	InicializaEventosPedido();
+	InicializaEventosOrdenDeReparto();
 });
 
 function InicializaPantallaOrdenDeReparto() {
@@ -101,7 +101,7 @@ function ControlalistaRepartidoresSelected() {
 	}
 }
 
-function InicializaEventosPedido() {
+function InicializaEventosOrdenDeReparto() {
 	$("#pagEstado").on("change", function () {
 		var div = $("#divPaginacion");
 		presentaPaginacion(div);
@@ -109,19 +109,21 @@ function InicializaEventosPedido() {
 
 	// Buscar
 	$("#btnBuscar").on("click", function () {
-		buscarOrdenesDeReparto(this);
+		buscarOrdenesDeReparto(1);
 	});
 	funcCallBack = buscarOrdenesDeReparto;
 }
 
-async function buscarOrdenesDeReparto(btn, pag = 1) {
+//async function buscarOrdenesDeReparto(btn, pag = 1) {
+async function buscarOrdenesDeReparto(pag = 1) {
 	if (_pedidoLoading) return;
 	_pedidoLoading = true;
+	pagina = pag;
 
-	const $btn = $(btn);
-	const originalHtml = $btn.html();
-	setBtnLoading($btn, true);
-
+	//const $btn = $(btn);
+	//const originalHtml = $btn.html();
+	//setBtnLoading($btn, true);
+	AbrirWaiting("Inicializando búsqueda...")
 	try {
 		const filtros = buildQueryFilters(pag);
 		const url = buscarOrdenesDeRepartoUrl;
@@ -130,7 +132,7 @@ async function buscarOrdenesDeReparto(btn, pag = 1) {
 		PostGenHtml({}, urlInitView, function (html) {
 			$("#divDetalle").html(html).collapse("show");
 			$("#divFiltro").collapse("hide");
-
+			CerrarWaiting();
 			CargarOrdenesDeReparto(filtros, url);
 		});
 
@@ -139,7 +141,7 @@ async function buscarOrdenesDeReparto(btn, pag = 1) {
 		console.error("Error al buscar pedidos de clientes:", e);
 		$("#divDetalle").html('<div class="alert alert-danger py-2 mb-0">No se pudo obtener la información.</div>').collapse("show");
 	} finally {
-		setBtnLoading($btn, false, originalHtml);
+		//setBtnLoading($btn, false, originalHtml);
 		_pedidoLoading = false;
 	}
 }
@@ -219,8 +221,39 @@ function ConfigurarEventosEnPonerEnCurso() {
 			CerrarWaiting();
 			$("#tbGrillaAnalizaAut").html(html);
 			configurarEventosSeleccionListaAnalisisAutOR();
+			AgregarHanlderColumnaDescripcion();
 		});
 	});
+
+	$(document).off("click", "#btnConfirmarPonerEnCurso");
+	$(document).on("click", "#btnConfirmarPonerEnCurso", function () {
+
+		// Validar que existan filas con datos
+		const filas = $("#tbGrillaAnalizaAut tbody tr.row-analisis");
+
+		if (filas.length === 0) {
+			AbrirMensaje("ATENCIÓN", "Debe analizar la orden de reparto antes de ponerla en curso.", function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+			return;
+		}
+
+		// Si hay filas → abrir confirmación
+		AbrirMensaje(
+			'CONFIRMAR',
+			"¿Desea poner en curso la orden de reparto?",
+			function (resp) {
+				ConfirmarPonerEnCursoOrdenDeReparto(orCompteSeleccionado);
+				$('#msjModal').modal('hide');
+			},
+			true,
+			['Confirmar', 'Cancelar'],
+			'info!',
+			null
+		);
+	});
+
 
 	$(document).off("click", "#btnCancelarPonerEnCurso");
 	$(document).on("click", "#btnCancelarPonerEnCurso", function () {
@@ -243,6 +276,57 @@ function ConfigurarEventosEnPonerEnCurso() {
 			'info!',
 			null
 		);
+	});
+}
+
+function ConfirmarPonerEnCursoOrdenDeReparto(orCompteSeleccionado) {
+	AbrirWaiting("Poniendo en curso la orden de reparto...");
+	$.ajax({
+		url: confirmarPonerEnCursoOrdenDeRepartoUrl,
+		type: 'POST',
+		contentType: 'application/json; charset=utf-8',
+		data: JSON.stringify({ or_compte: orCompteSeleccionado }),
+		dataType: 'json',
+		success: function (response) {
+			CerrarWaiting();
+			if (response.error || response.warn) {
+				console.error('❌ Response:', response.mensaje);
+				ControlaMensajeError(
+					'Error al poner en curso la orden de reparto: ' +
+					(response.mensaje || 'Error desconocido')
+				);
+			}
+			else {
+				AbrirMensaje(
+					'CONFIRMACIÓN EXITOSA',
+					'Se ha puesto en curso la orden de reparto',
+					function () {
+						$('#msjModal').modal('hide');
+						document.querySelector("#vistaPonerEnCursoOR").classList.add("d-none");
+						document.querySelector("#vistaListaOR").classList.remove("d-none");
+						document.querySelector("#vistaPonerEnCursoOR").innerHTML = "";
+
+						//Actualizar tabla de Ordenes de Reparto
+						const filtros = buildQueryFilters(pagina);
+						const url = buscarOrdenesDeRepartoUrl;
+						CargarOrdenesDeReparto(filtros, url);
+					},
+					false,
+					['Aceptar'],
+					'success!',
+					null
+				);
+			}
+		},
+		error: function (xhr, status, error) {
+			CerrarWaiting();
+			console.error('❌ Error al poner en curso la orden de reparto:', error);
+			console.error('❌ Response:', xhr.responseText);
+			ControlaMensajeError(
+				'Error al poner en curso la orden de reparto: ' +
+				(xhr.responseJSON?.mensaje || xhr.statusText || 'Error desconocido')
+			);
+		}
 	});
 }
 
@@ -416,6 +500,10 @@ function procesarRespuestaConfirmacion(response, abm) {
 
 			// Resetear formulario y volver al inicio
 			cancelarOperacion();
+			//Actualizar tabla de Ordenes de Reparto
+			const filtros = buildQueryFilters(pagina);
+			const url = buscarOrdenesDeRepartoUrl;
+			CargarOrdenesDeReparto(filtros, url);
 
 			if (response.id) {
 				console.log('✅ OR ID:', response.id);
@@ -884,6 +972,8 @@ function configurarEventosSeleccionListaAnalisisAutOR() {
 
 			if (!fueSeleccionado) {
 				$this.addClass("selected-row");
+				let pId = $this.data("p-id");
+				pIdSeleccionadoEnAnalisisAut = pId;
 				//Poder hacer algo, como por ejemplo, habilitar o no botones dependiendo del estado de la OR
 			}
 		}
@@ -1155,3 +1245,102 @@ $(document).on("click", "#btnAnalizar", function () {
 		}
 	});
 });
+
+
+mostrarInfoProd = true;
+const mostrarInfoProdStkA = true;
+const mostrarInfoProdStkD = true;
+const mostrarInfoProdStkBox = true;
+const mostrarInfoProdStkMovM = true;
+const mostrarInfoProdStkMovS = true;
+const mostrarInfoProdStkMovD = true;
+const mostrarInfoProdSustituto = true;
+const pasarAdmLogueo = false;
+
+function btnCollapseSectionValidar() {
+	if (pIdSeleccionado != "") {
+		var p_id = pIdSeleccionado;
+		var data = {
+			p_id,
+			mostrarInfoProd,
+			mostrarInfoProdStkA,
+			mostrarInfoProdStkD,
+			mostrarInfoProdStkBox,
+			mostrarInfoProdStkMovM,
+			mostrarInfoProdStkMovS,
+			mostrarInfoProdStkMovD,
+			mostrarInfoProdSustituto,
+			pasarAdmLogueo
+		};
+		invocarComponenteDeInfoAdicionalDeProd(data);
+	}
+	else {
+		$("#divInfoAdicionaDeProducto").html("").collapse("hide");
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un producto.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+}
+
+function BuscarInfoAdicional() {
+	const el = document.getElementById("divInfo");
+
+	if (!el || el.style.display === "none") {
+		return;
+	}
+	else {
+		/* ######	INICIO Componente de info adicional de producto ###### */
+		//BuscarInfoAdicional();
+		// disparar evento custom con datos del producto
+		$(document).trigger("productoSeleccionadoParaInfoAdicional", {
+			p_id: pIdSeleccionado,
+			ctaId: "",
+			ctaDeno: ""
+		});
+		/* ######	FIN Componente de info adicional de producto ###### */
+	}
+}
+
+/* *************************************************************************************** */
+///Hanlder para manejar la apertura de Info de Producto desde la columna Descripción
+function AgregarHanlderColumnaDescripcion() {
+	$(document)
+		.off("click", "[data-action='info-producto']")
+		.on("click", "[data-action='info-producto']", function (e) {
+
+			e.stopPropagation();
+			e.preventDefault();
+			AbrirInfoProducto();
+		});
+}
+
+function AbrirInfoProducto() {
+	//e.preventDefault();
+
+	if (pIdSeleccionadoEnAnalisisAut && pIdSeleccionadoEnAnalisisAut !== "") {
+		$("#divInfoAdicionaDeProducto").collapse("toggle");
+
+		setTimeout(() => {
+			invocarComponenteDeInfoAdicionalDeProd({
+				p_id: pIdSeleccionadoEnAnalisisAut,
+				mostrarInfoProd,
+				mostrarInfoProdStkA,
+				mostrarInfoProdStkD,
+				mostrarInfoProdStkBox,
+				mostrarInfoProdStkMovM,
+				mostrarInfoProdStkMovD,
+				mostrarInfoProdStkMovS,
+				mostrarInfoProdSustituto,
+				pasarAdmLogueo,
+			});
+		}, 500);
+	} else {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un producto.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/* ######	FIN Componente de info adicional de producto ###### */
