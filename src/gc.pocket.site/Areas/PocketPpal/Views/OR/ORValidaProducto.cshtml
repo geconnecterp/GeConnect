@@ -1,0 +1,32 @@
+﻿@model OrdenRepartoDto
+
+<partial name="_NroComprobante" model="@Model.or_compte" />
+
+@* Validación BOX (común con TI pero sin BoxDestino) *@
+<div class="row">
+    <div class="col-sm-12">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text">BOX:</span>
+            <input type="text" class="form-control inputEditable" id="txtBox" />
+            <button type="button" class="btn btn-danger btn-sm" disabled id="btnValBox">
+                <i class="bx bx-check-circle bx-sm"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+@* Reutilización de componentes *@
+<partial name="~/areas/gestion/views/producto/_ctrBuscarProducto.cshtml" model="@(new BusquedaProducto())" />
+<partial name="~/areas/gestion/views/producto/_productoDetalle.cshtml" model="true" />
+
+@section scripts {
+    <script>
+        var orActual = null;
+        var validarBoxIngresadoUrl = "@Url.Action("ValidarBoxIngresado", "or", new { area = "pocketppal" })";
+        var validarProductoUrl = "@Url.Action("ValidarProductoIngresado", "or", new { area = "pocketppal" })";
+        var resguardarUrl = "@Url.Action("ResguardarProductoOR", "or", new { area = "pocketppal" })";
+        var proximoProductoUrl = "@Url.Action("ORCargaCarrito", "or", new { area = "pocketppal" })";
+    </script>
+    <script src="~/js/app/busquedas.js"></script>
+    <script src="~/js/app/or/orvalidaProducto.js"></script> @* ← Específico OR *@
+}

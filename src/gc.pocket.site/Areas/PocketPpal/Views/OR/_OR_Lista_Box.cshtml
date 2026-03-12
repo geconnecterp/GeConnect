@@ -1,0 +1,65 @@
+﻿@model GridCoreSmart<ORListaDto>
+
+@{  
+    var primerRegistro = Model.ListaDatos?.FirstOrDefault();
+    string orCompte = primerRegistro?.or_compte ?? "N/A";
+    (string, string) mensaje = ("Itinerario x BOX", orCompte);
+}
+
+<partial name="_NroComprobante" model="mensaje" />
+
+<div class="grid-golden h-100">
+    <div class="grid-golden-body p-1">
+        <div class="table-responsive table-wrapper table-wrapper-500 ">
+            <table class="table table-sm table-hover mb-0 table-golden" id="tbOrBoxList">
+                <thead class="sticky-top table-golden-header-compact">
+                    <tr class="header">
+                        <th class="text-left th-compact">Depo</th>
+                        <th class="text-center th-compact">BOX</th>
+                       @*  <th class="text-center th-compact">Desarma</th> *@
+                        <th class="text-center th-compact">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ListaDatos != null && Model.ListaDatos.Any())
+                    {
+                        foreach (var item in Model.ListaDatos)
+                        {
+                            <tr data-box-id="@item.box_id" 
+                                data-depo-id="@item.depo_id" 
+                                data-conteo="@item.conteo"
+                                class="cursor-pointer">
+                                <td class="text-left td-compact">@item.depo_nombre</td>
+                                <td class="text-center td-compact">
+                                    <span class="badge bg-info">@item.box_id</span>
+                                </td>
+                                @* <td class="text-center td-compact">
+                                    @if (item.ori == 1)
+                                    {
+                                        <i class="bx bx-check text-success"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bx bx-x text-danger"></i>
+                                    }
+                                </td> *@
+                                <td class="text-center td-compact">                                    
+                                    <span class="badge bg-success">@item.conteo</span>                                   
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-3">
+                                <i class="bx bx-info-circle me-2"></i>No hay registros disponibles
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+

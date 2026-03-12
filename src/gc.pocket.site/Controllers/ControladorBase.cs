@@ -32,7 +32,7 @@ namespace gc.pocket.site.Controllers
         private readonly MenuSettings? _menuSettings;
         protected readonly IHttpContextAccessor _context;
         //public List<Orden> _orden;
-        private readonly ILogger _logger;
+        internal readonly ILogger _logger;
 
         public ControladorBase(IOptions<AppSettings> options, IOptions<MenuSettings> options1, IHttpContextAccessor contexto, ILogger logger)
         {
