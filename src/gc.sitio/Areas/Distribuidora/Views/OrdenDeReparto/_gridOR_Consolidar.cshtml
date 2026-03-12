@@ -2,97 +2,101 @@
 @{
 	var or = Model.OrdenDeReparto;
 }
+<style>
+    .btn-or {
+        min-width: 140px; /* Ajustá el ancho que prefieras */
+    }
+</style>
+
 <div class="container-fluid min-vh-100 d-flex flex-column">
-	<!-- ============================
-	 FILA SUPERIOR: DATOS DE LA OR
-	 ============================ -->
 	<div class="row mb-1">
-		<div class="col-12">
-			<div class="p-1 border rounded bg-light">
-				<div class="row">
-					<div class="col-md-3">
-						<strong>ID OR:</strong> @or.or_compte
-					</div>
-					<div class="col-md-4">
-						<strong>Repartidor:</strong> @or.rp_nombre
-					</div>
-					<div class="col-md-3">
-						<strong>Estado:</strong> @or.ore_desc
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+        <div class="col-12">
+            <div class="p-1 border rounded bg-light">
 
-    <div class="row">
-        <!-- COLUMNA IZQUIERDA -->
-        <div class="col-md-6">
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
 
-            <!-- TABLA 1: Pedidos en la OR -->
-            <div class="card mb-3">
-                <div class="card-header">Pedidos en la Orden</div>
-                <div class="card-body p-2">
-                    @Html.Partial("_gridOR_Consolidar_PedidosDeOR", Model.ListaPedidosEnOrdenDeReparto)
+                    <!-- IZQUIERDA: textos -->
+                    <div class="d-flex flex-wrap gap-4">
+
+                        <div><strong>ID OR:</strong> @or.or_compte</div>
+                        <div><strong>Repartidor:</strong> @or.rp_nombre</div>
+                        <div><strong>Estado:</strong> @or.ore_desc</div>
+                        <div><strong>Fecha:</strong> @or.or_fecha.ToString("dd/MM/yyyy")</div>
+                        <div><strong>Obs:</strong> @or.or_obs</div>
+
+                    </div>
+
+                    <!-- DERECHA: botones -->
+                    <div class="d-flex align-items-center gap-2">
+
+                        <button id="btnConfirmarConciliacion" class="btn btn-success btn-sm btn-or">
+                            <i class="bx bx-check-circle"></i> Consolidar OR
+                        </button>
+
+                        <button id="btnCancelarConciliacion" class="btn btn-danger btn-sm btn-or">
+                            <i class="bx bx-x-circle"></i> Cancelar
+                        </button>
+
+                    </div>
+
                 </div>
+
             </div>
 
-            <!-- TABLA 2: Detalles del pedido seleccionado -->
-            <div class="card">
-                <div class="card-header">Detalle del Pedido Seleccionado</div>
+        </div>
+	</div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header fw-bold">Pedidos en la Orden</div>
                 <div class="card-body p-2">
-                    <div id="contenedorDetallesPedido">
+                    <div id="divConsolidarPedidosEnOrdenDeReparto">
+                        @Html.Partial("_gridOR_Consolidar_PedidosDeOR", Model.ListaPedidosEnOrdenDeReparto)
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header fw-bold">Detalle del Pedido Seleccionado</div>
+                <div class="card-body p-2">
+                    <div id="divConsolidarDetallesPedido">
                         @Html.Partial("_gridOR_Consolidar_PedidoDeORDetalle", Model.ListaDetallesAConsolidar)
                     </div>
                 </div>
             </div>
-
         </div>
-
-        <!-- COLUMNA DERECHA -->
         <div class="col-md-6">
-
-            <!-- TABLA 3: Conteos del producto seleccionado -->
             <div class="card mb-3">
-                <div class="card-header">Conteos del Producto</div>
+                <div class="card-header fw-bold">Conteos del Producto</div>
                 <div class="card-body p-2">
-                    <div id="contenedorConteos">
+                    <div id="divConsolidarConteos">
                         @Html.Partial("_gridOR_Consolidar_PedidoDeORConteos", Model.ListaConteosDeLaOrdenDeReparto)
                     </div>
                 </div>
             </div>
-
-            <!-- TABLA 4: Detalle del conteo seleccionado -->
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="card-header fw-bold d-flex justify-content-between align-items-center">
                     <span>Detalle del Conteo</span>
-
                     <div class="d-flex align-items-center gap-2">
-
                         <button id="btnReasignar"
                                 class="btn btn-success btn-sm">
                             Reasignar
                         </button>
-
                         <button id="btnConfirmarReasignacion"
                                 class="btn btn-primary btn-sm">
                             <i class="bx bx-check"></i>
                         </button>
-
                         <button id="btnCancelarReasignacion"
                                 class="btn btn-danger btn-sm">
                             <i class="bx bx-block"></i>
                         </button>
-
                     </div>
                 </div>
-
                 <div class="card-body p-2">
-                    <div id="contenedorDetalleProductoSeleccionado">
+                    <div id="divConsolidarDetalleProductoSeleccionado">
                         @Html.Partial("_gridOR_Consolidar_PedidoDeORConteosDetalle", Model.ListaDetalleProductoSeleccionado)
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 </div>

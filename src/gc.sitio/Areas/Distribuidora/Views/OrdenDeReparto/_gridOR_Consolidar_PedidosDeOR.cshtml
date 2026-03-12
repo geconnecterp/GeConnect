@@ -1,8 +1,10 @@
 ﻿@model GridCoreSmart<PedidoEnOrdenDeRepartoDto>
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 <div class="table-responsive table-wrapper-400">
-	<table class="table table-sm table-hover mb-0 table-golden" id="tbPedidos">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbConsolidarPedidos">
 		<thead class="sticky-top table-golden-header-compact">
 			<tr class="header">
 				<th>ID</th>
@@ -30,7 +32,8 @@
 			{
 				foreach (var item in Model.ListaDatos)
 				{
-					<tr class="row-pedido"
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase row-pedido"
 						data-pc-compte="@item.pc_compte">
 
 						<td>@item.pc_compte</td>

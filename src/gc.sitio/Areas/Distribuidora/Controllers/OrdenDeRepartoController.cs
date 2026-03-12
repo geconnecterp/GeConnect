@@ -435,7 +435,7 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> AbrirOrdenDeRepartoParaConsolidar(string orCompte)
+		public async Task<IActionResult> CargarVistaConsolidarOrdenDeReparto(string orCompte)
 		{
 			try
 			{
@@ -444,16 +444,23 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 				if (string.IsNullOrEmpty(orCompte))
 					return PartialView("_gridMensaje", CrearRespuestaError("No se han provisto los datos necesarios: Orden de Reparto."));
 
-				var itemsAutDepo = await _productoServicio.TRObtenerAutDepositos(AdministracionId, TokenCookie);
-				var or = ObtenerOrdenDeRepartoPorAccion('M', orCompte);
-				var model = new OrdenDeRepartoPonerEnCursoModel
-				{
+				var respuestaGen = await _ordenDeRepartoServicio.ObtenerPedidosDeLaOrdenDeReparto(orCompte, TokenCookie);
+				if (respuestaGen == null)
+					return PartialView("_gridMensaje", CrearRespuestaError("No se han podido obtener los pedidos de la orden de reparto."));
+				if (respuestaGen.ListaEntidad == null || respuestaGen.ListaEntidad.Count == 0)
+					return PartialView("_gridMensaje", CrearRespuestaError("No se han encontrado pedidos asociados a la orden de reparto."));
 
-					OrdenDeReparto = or,
-					ListaDepositos = ObtenerGridCoreSmart<TRAutDepoDto>(itemsAutDepo ?? []),
-					ListaAnalizaAut = ObtenerGridCoreSmart<AnalizarAutOrdenDeRepartoDto>([])
+				var respuestaGen2 = await _ordenDeRepartoServicio.AConsolidarConteos(orCompte, TokenCookie);
+				var listaConteos = respuestaGen2.ListaEntidad ?? [];
+				var model = new OrdenDeRepartoConsolidarModel
+				{
+					OrdenDeReparto = ObtenerOrdenDeRepartoPorAccion('M', orCompte),
+					ListaPedidosEnOrdenDeReparto = ObtenerGridCoreSmart<PedidoEnOrdenDeRepartoDto>(respuestaGen.ListaEntidad),
+					ListaConteosDeLaOrdenDeReparto = ObtenerGridCoreSmart<AConsolidarConteosDto>(listaConteos),
+					ListaDetallesAConsolidar = ObtenerGridCoreSmart<AConsolidarPedidoClienteDetalleDto>([]),
+					ListaDetalleProductoSeleccionado = ObtenerGridCoreSmart<AConsolidarPedidoClienteDetalleDto>([])
 				};
-				return PartialView("_gridOR_PonerEnCurso", model);
+				return PartialView("_gridOR_Consolidar", model);
 			}
 			catch (NegocioException ex)
 			{

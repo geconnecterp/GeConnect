@@ -1,5 +1,7 @@
 ﻿@model GridCoreSmart<AConsolidarPedidoClienteDetalleDto>
 @{
+    var alt = true;
+    string clase = string.Empty;
 }
 <style>
     .dif-positivo {
@@ -13,7 +15,7 @@
     }
 </style>
 <div class="table-responsive table-wrapper-400">
-    <table class="table table-sm table-hover mb-0 table-golden" id="tbDetalleConteo">
+    <table class="table table-sm table-hover mb-0 table-golden" id="tbConsolidarDetalleConteo">
         <thead class="sticky-top table-golden-header-compact">
             <tr class="header">
                 <th>Item</th>
@@ -41,8 +43,8 @@
                 {
                     var dif = item.cantidad - item.pcd_pedida;
                     var claseDif = dif > 0 ? "dif-positivo" : (dif < 0 ? "dif-negativo" : "");
-
-                    <tr class="row-detalle-conteo"
+                    if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+                    <tr class="@clase row-detalle-conteo"
                         data-p-id="@item.p_id">
 
                         <td>@item.pcd_item</td>

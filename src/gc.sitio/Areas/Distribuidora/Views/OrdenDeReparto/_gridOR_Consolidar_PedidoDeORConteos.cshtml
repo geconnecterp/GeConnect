@@ -1,9 +1,13 @@
 ﻿@model GridCoreSmart<AConsolidarConteosDto>
 @{
+    string rubActual = "";
+    string rubAnterior = "";
+    var alt = true;
+    string clase = string.Empty;
 }
 
 <div class="table-responsive table-wrapper-400">
-    <table class="table table-sm table-hover mb-0 table-golden" id="tbConteos">
+    <table class="table table-sm table-hover mb-0 table-golden" id="tbConsolidarConteos">
         <thead class="sticky-top table-golden-header-compact">
             <tr class="header">
                 <th>Código</th>
@@ -29,7 +33,22 @@
             {
                 foreach (var item in Model.ListaDatos)
                 {
-                    <tr class="row-conteo"
+                    rubActual = item.rub_id;
+                    if (rubActual != rubAnterior)
+                    {
+                        <tr class="table-secondary fw-bold">
+                            <td colspan="13" class="text-center">
+                                <i class="bx bx-folder me-1"></i>
+                                @item.rub_desc
+                            </td>
+                        </tr>
+                        rubAnterior = rubActual;
+                        alt = true;
+                    }
+
+                    var dif = item.pcd_pedida - item.cantidad;
+                    if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+                    <tr class="@clase row-conteo"
                         data-or-compte="@item.or_compte"
                         data-p-id="@item.p_id">
                         <td>@item.p_id</td>
@@ -37,7 +56,7 @@
                         <td class="text-end">@item.pcd_pedida</td>
                         <td class="text-end">@item.cantidad</td>
                         <td class="text-end">@item.cantidad_ctl</td>
-                        <td>@item.estado</td>
+                        <td class="text-end">@dif</td>
                     </tr>
                 }
             }

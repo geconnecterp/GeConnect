@@ -1,6 +1,7 @@
 ﻿let _pedidoLoading = false;
 let orCompteSeleccionado = null;
 let pcCompteSeleccionado = null;
+let pcCompteSeleccionadoEnConsolidar = null;
 
 $(function () {
 	InicializaPantallaOrdenDeReparto();
@@ -190,11 +191,34 @@ function CargarVistConsolidarOrdenDeReparto(orCompte) {
 	AbrirWaiting("Cargando vista para consolidar Orden de Reparto...");
 	PostGenHtml({ orCompte: orCompte }, cargarVistaConsolidarOrdenDeRepartoUrl, function (html) {
 		CerrarWaiting();
-		$("#vistaPonerEnCursoOR").html(html);
+		$("#vistaConsolidarOR").html(html);
 		$("#vistaListaOR").addClass("d-none");
-		$("#vistaPonerEnCursoOR").removeClass("d-none");
-		ConfigurarEventosEnPonerEnCurso();
+		$("#vistaConsolidarOR").removeClass("d-none");
+		ConfigurarEventosEnPonerEnConsolidar();
 	});
+}
+
+function ConfigurarEventosEnPonerEnConsolidar() {
+	$(document).off("click", "#tbConsolidarPedidos tbody tr");
+	$(document).on("click", "#tbConsolidarPedidos tbody tr", function (e) {
+		if (!$(e.target).is("button, a, .btn, i")) {
+			var $this = $(this);
+			var fueSeleccionado = $this.hasClass("selected-row");
+
+			$("#tbConsolidarPedidos tbody tr").removeClass("selected-row");
+
+			if (!fueSeleccionado) {
+				$this.addClass("selected-row");
+				let pcCompte = $this.data("pc-compte");
+				pcCompteSeleccionadoEnConsolidar = pcCompte;
+				CargarPedidosDeLaOrdenEnConsolidar(orCompteSeleccionado, pcCompteSeleccionadoEnConsolidar);
+			}
+		}
+	});
+}
+
+function CargarPedidosDeLaOrdenEnConsolidar(orCompte, pcCompte) {
+
 }
 
 function CargarVistaAnalizaAutEnOrdenDeReparto(orCompte) {
@@ -545,7 +569,7 @@ $(document).on("click", "#btnConsolidar", function () {
 	$("#vistaConsolidarOR").removeClass("d-none");
 });
 
-$(document).on("click", "#btnConfirmarReasignacion, #btnCancelarReasignacion, function () {
+$(document).on("click", "#btnConfirmarReasignacion, #btnCancelarReasignacion", function () {
 	$("#vistaConsolidarOR").addClass("d-none");
 	$("#vistaListaOR").removeClass("d-none");
 });
