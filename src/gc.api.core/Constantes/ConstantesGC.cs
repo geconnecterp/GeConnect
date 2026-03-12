@@ -570,17 +570,12 @@
 			public const string SP_OR_PEDIDOS_EN_OR = "SPGECO_OR_d_PC";
 			public const string SP_OR_CONFIRMA = "SPGECO_OR_Confirma";
 			public const string SP_OR_AUT_ANALIZA = "SPGECO_OR_Aut_Analiza";
-<<<<<<< HEAD
-			public const string SP_OR_AEN_CURSO = "SPGECO_OR_AEnCurso";
-			#endregion
-		}
-=======
 			public const string SP_OR_LISTA_BOX = "SPGECO_OR_Lista_BOX";
 			public const string SP_OR_LISTA_RUBROS = "SPGECO_OR_Lista_Rubros";
 			public const string SP_OR_LISTA_PRODUCTOS = "SPGECO_OR_LISTA_PRODUCTOS";
-            #endregion
-        }
->>>>>>> developjj
+			public const string SP_OR_AEN_CURSO = "SPGECO_OR_AEnCurso";
+			#endregion
+		}
 
 		public static class StoredFunctions
 		{
