@@ -1,0 +1,31 @@
+﻿@{
+    Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+    var callback = Url.Action("index", "or", new { area = "pocketppal" });
+
+}
+
+<partial name="_gridOrdenReparto" />
+
+<div class="row mb-3">
+    <div class="d-flex justify-content-center">
+        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-3"><i class="bx bx-ms bx-info-circle"></i></a>
+        <button type="button" id="btnContinuar" class="btn btn-sm btn-success m-3" style="display:none;"><i class="bx bx-sm bx-right-arrow-alt"></i></button>
+    </div>
+</div>
+
+@section scripts {
+    <script type="text/javascript">
+
+        var ObtenerOrdenesRepartoUrl = "@Url.Action("ObtenerOrdenesReparto", "or", new { area = "pocketppal" })";
+        var homeModUrl = "@Url.Action("index", "or", new { area = "pocketppal" })";
+        var ValidarUsuarioUrl = "@Url.Action("ValidarUsuario", "or", new { area = "pocketppal" })"; 
+        var AbrirOrListaUrl =  "@Url.Action("CargaORLista", "or", new { area = "pocketppal" })";
+        var PresentarListaORbyBoxUrl = "@Url.Action("PresentarListaORbyBox", "or", new { area = "pocketppal" })";
+        var PresentarListaORbyRubroUrl = "@Url.Action("PresentarListaORbyRubro", "or", new { area = "pocketppal" })";
+         var ORCargaCarritoUrl = "@Url.Action("ORCargaCarrito", "or", new { area = "pocketppal" })";
+
+    </script>
+    <script src="~/js/app/or/orCoreCommon.js"></script>
+
+    <script src="~/js/app/or/orCore.js"></script>
+}

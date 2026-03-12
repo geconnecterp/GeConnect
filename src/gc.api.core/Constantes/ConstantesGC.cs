@@ -210,6 +210,7 @@
 			public const string SP_TR_CARGAR_CTRL_SALIDA = "SPGECO_TR_Cargar_CTL_Salida";
 			public const string SP_PI_DETALLE = "SPGECO_PI_Detalle";
 
+
 			#region Financieros
 			public const string SP_F_TR_CONFIRMA = "SPGECO_F_TR_Confirma";
 			public const string SP_F_TRA_REPO_CTAG = "SPGECO_F_Tra_Repo_Ctag";
@@ -569,9 +570,17 @@
 			public const string SP_OR_PEDIDOS_EN_OR = "SPGECO_OR_d_PC";
 			public const string SP_OR_CONFIRMA = "SPGECO_OR_Confirma";
 			public const string SP_OR_AUT_ANALIZA = "SPGECO_OR_Aut_Analiza";
+<<<<<<< HEAD
 			public const string SP_OR_AEN_CURSO = "SPGECO_OR_AEnCurso";
 			#endregion
 		}
+=======
+			public const string SP_OR_LISTA_BOX = "SPGECO_OR_Lista_BOX";
+			public const string SP_OR_LISTA_RUBROS = "SPGECO_OR_Lista_Rubros";
+			public const string SP_OR_LISTA_PRODUCTOS = "SPGECO_OR_LISTA_PRODUCTOS";
+            #endregion
+        }
+>>>>>>> developjj
 
 		public static class StoredFunctions
 		{

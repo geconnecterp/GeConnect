@@ -20,13 +20,13 @@ namespace gc.sitio.core.Servicios.Implementacion.Asientos
         private const string RutaAPI = "/api/ApiAsientoTemporal";
         private const string POST_OBTENER_ASIENTOS = "/obtener-asientos";
 
-        private readonly AppSettings _appSettings;
+        //private readonly AppSettings _appSettings;
         private const string POST_PASAR_ASIENTOS = "/pasar-asientos-contabilidad";
         private const string GET_OBTENER_ASIENTO_DETALLE = "/obtener-asiento-detalle";
 
         public AsientoTemporalServicio(IOptions<AppSettings> options, ILogger<AsientoTemporalServicio> logger) : base(options, logger, RutaAPI)
         {
-            _appSettings = options.Value;
+            
         }
 
         /// <inheritdoc/>
