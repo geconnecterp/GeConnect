@@ -1,0 +1,66 @@
+﻿@model GridCoreSmart<AConsolidarPedidoClienteDetalleDto>
+@{
+}
+<style>
+    .dif-positivo {
+        background-color: #ffb3b3 !important; /* rojo suave */
+        font-weight: bold;
+    }
+
+    .dif-negativo {
+        background-color: #ffe0b3 !important; /* naranja suave */
+        font-weight: bold;
+    }
+</style>
+<div class="table-responsive table-wrapper-400">
+    <table class="table table-sm table-hover mb-0 table-golden" id="tbDetalleConteo">
+        <thead class="sticky-top table-golden-header-compact">
+            <tr class="header">
+                <th>Item</th>
+                <th>Código</th>
+                <th>Descripción</th>
+                <th>Pedido</th>
+                <th>A Enviar</th>
+                <th>Dif.</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+            {
+                <tr class="fila-vacia">
+                    <td colspan="6" class="text-center text-muted py-2">
+                        <i class="bx bx-info-circle me-1"></i>
+                        No hay detalles del conteo.
+                    </td>
+                </tr>
+            }
+            else
+            {
+                foreach (var item in Model.ListaDatos)
+                {
+                    var dif = item.cantidad - item.pcd_pedida;
+                    var claseDif = dif > 0 ? "dif-positivo" : (dif < 0 ? "dif-negativo" : "");
+
+                    <tr class="row-detalle-conteo"
+                        data-p-id="@item.p_id">
+
+                        <td>@item.pcd_item</td>
+                        <td>@item.p_id</td>
+                        <td>@item.p_desc</td>
+                        <td class="text-end">@item.pcd_pedida</td>
+                        <td class="text-end">@item.cantidad</td>
+                        <td class="text-end @claseDif">@dif</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<script>
+    $("#tbDetalleConteo tbody tr.row-detalle-conteo").on("click", function () {
+        const p_id = $(this).data("p-id");
+        $(document).trigger("rowSelectedDetalleConteo", p_id);
+    });
+</script>

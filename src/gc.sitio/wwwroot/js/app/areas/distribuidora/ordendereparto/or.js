@@ -182,6 +182,21 @@ $(document).on("click", "#btnEnCurso", function () {
 	CargarVistaAnalizaAutEnOrdenDeReparto(orCompteSeleccionado);
 });
 
+$(document).on("click", "#btnConsolidar", function () {
+	CargarVistConsolidarOrdenDeReparto(orCompteSeleccionado);
+});
+
+function CargarVistConsolidarOrdenDeReparto(orCompte) {
+	AbrirWaiting("Cargando vista para consolidar Orden de Reparto...");
+	PostGenHtml({ orCompte: orCompte }, cargarVistaConsolidarOrdenDeRepartoUrl, function (html) {
+		CerrarWaiting();
+		$("#vistaPonerEnCursoOR").html(html);
+		$("#vistaListaOR").addClass("d-none");
+		$("#vistaPonerEnCursoOR").removeClass("d-none");
+		ConfigurarEventosEnPonerEnCurso();
+	});
+}
+
 function CargarVistaAnalizaAutEnOrdenDeReparto(orCompte) {
 	AbrirWaiting("Cargando vista de análisis de autorización de Orden de Reparto...");
 	PostGenHtml({ orCompte: orCompte }, cargarVistaAnalizaAutEnOrdenDeRepartoUrl, function (html) {
@@ -530,7 +545,7 @@ $(document).on("click", "#btnConsolidar", function () {
 	$("#vistaConsolidarOR").removeClass("d-none");
 });
 
-$(document).on("click", "#btnConsolidarOR, #btnCancelarConsolidar, #btnReasignar", function () {
+$(document).on("click", "#btnConfirmarReasignacion, #btnCancelarReasignacion, function () {
 	$("#vistaConsolidarOR").addClass("d-none");
 	$("#vistaListaOR").removeClass("d-none");
 });

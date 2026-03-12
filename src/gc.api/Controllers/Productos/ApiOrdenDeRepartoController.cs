@@ -135,6 +135,41 @@ namespace gc.api.Controllers.Productos
 			return Ok(new ApiResponse<RespuestaDto>(respuesta));
 		}
 
+		[HttpPost("aconsolidar-detalle-pedido-cliente")]
+		public IActionResult AConsolidarPedidoClienteDetalle(AConsolidarPedidoClienteDetalleRequest request)
+		{
+			const string msgError = "Error en la invocación de la API - AConsolidarPedidoClienteDetalleRequest";
+			try
+			{
+				if (Request == null)
+					return BadRequest("No se recepcionó el filtro - AConsolidarPedidoClienteDetalleRequest");
+
+				var resultados = _orSrv.AConsolidarPedidoClienteDetalle(request);
+				return Ok(new ApiResponse<List<AConsolidarPedidoClienteDetalleDto>>(resultados));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, msgError);
+				return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
+			}
+		}
+
+		[HttpGet("aconsolidar-conteos/{id}")]
+		public IActionResult AConsolidarConteos(string id)
+		{
+			const string msgError = "Error en la invocación de la API - AConsolidarConteos";
+			try
+			{
+				var estados = _orSrv.AConsolidarConteos(id);
+				return Ok(new ApiResponse<List<AConsolidarConteosDto>>(estados));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, msgError);
+				return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
+			}
+		}
+
 		private static MetadataGrid? BuildMetadata(List<OrdenDeRepartoListaDto>? lista, QueryFilters filtro)
 		{
 			if (lista == null || lista.Count == 0)

@@ -1,0 +1,56 @@
+﻿@model GridCoreSmart<PedidoEnOrdenDeRepartoDto>
+@{
+}
+<div class="table-responsive table-wrapper-400">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbPedidos">
+		<thead class="sticky-top table-golden-header-compact">
+			<tr class="header">
+				<th>ID</th>
+				<th>Cliente</th>
+				<th>Generado</th>
+				<th>Vendedor</th>
+				<th>Repartidor</th>
+				<th>Importe</th>
+				<th>Up</th>
+				<th>Dw</th>
+			</tr>
+		</thead>
+
+		<tbody>
+			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+			{
+				<tr class="fila-vacia">
+					<td colspan="6" class="text-center text-muted py-2">
+						<i class="bx bx-info-circle me-1"></i>
+						No hay pedidos para mostrar.
+					</td>
+				</tr>
+			}
+			else
+			{
+				foreach (var item in Model.ListaDatos)
+				{
+					<tr class="row-pedido"
+						data-pc-compte="@item.pc_compte">
+
+						<td>@item.pc_compte</td>
+						<td>@item.cta_denominacion</td>
+						<td>@item.pc_fecha.ToShortDateString()</td>
+						<td>@item.ve_nombre</td>
+						<td>@item.rp_nombre</td>
+						<td></td> @*calcular el color de fondo de acuerdo a lo que dicta el docx*@
+						<td></td> @*calcular el color de fondo de acuerdo a lo que dicta el docx*@
+						<td class="text-end">@item.pc_precio_tot.ToString("N2")</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>
+
+<script>
+	$("#tbPedidos tbody tr.row-pedido").on("click", function () {
+		const pc_compte = $(this).data("pc-compte");
+		$(document).trigger("rowSelectedPedidos", pc_compte);
+	});
+</script>

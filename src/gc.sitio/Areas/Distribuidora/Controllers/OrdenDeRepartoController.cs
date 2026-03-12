@@ -434,6 +434,39 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			}
 		}
 
+		[HttpPost]
+		public async Task<IActionResult> AbrirOrdenDeRepartoParaConsolidar(string orCompte)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
+				if (string.IsNullOrEmpty(orCompte))
+					return PartialView("_gridMensaje", CrearRespuestaError("No se han provisto los datos necesarios: Orden de Reparto."));
+
+				var itemsAutDepo = await _productoServicio.TRObtenerAutDepositos(AdministracionId, TokenCookie);
+				var or = ObtenerOrdenDeRepartoPorAccion('M', orCompte);
+				var model = new OrdenDeRepartoPonerEnCursoModel
+				{
+
+					OrdenDeReparto = or,
+					ListaDepositos = ObtenerGridCoreSmart<TRAutDepoDto>(itemsAutDepo ?? []),
+					ListaAnalizaAut = ObtenerGridCoreSmart<AnalizarAutOrdenDeRepartoDto>([])
+				};
+				return PartialView("_gridOR_PonerEnCurso", model);
+			}
+			catch (NegocioException ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaError("Error al abrir la orden de reparto para poner en curso"));
+			}
+		}
+
 		#region Metodos Privados
 		private List<PedidoEnOrdenDeRepartoDto> ObtenerListaDePedidosEnOrdenDeRepartoPorAccion(char accion, string orCompte)
 		{

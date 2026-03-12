@@ -12,5 +12,7 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<RespuestaGenerica<RespuestaDto>> ConfirmarOrdenDeReparto(ConfirmaOrdenDeRepartoRequest req, string token);
 		Task<RespuestaGenerica<AnalizarAutOrdenDeRepartoDto>> AnalizarAutOrdenDeReparto(AnalizarAutOrdenDeRepartoRequest request, string token);
 		Task<RespuestaGenerica<RespuestaDto>> APonerEnCursoOrdenDeReparto(APonerEnCursoOrdenDeRepartoRequest req, string token);
+		Task<RespuestaGenerica<AConsolidarPedidoClienteDetalleDto>> AConsolidarPedidoClienteDetalle(AConsolidarPedidoClienteDetalleRequest request, string token);
+		Task<RespuestaGenerica<AConsolidarConteosDto>> AConsolidarConteos(string orCompte, string token);
 	}
 }

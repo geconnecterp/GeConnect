@@ -145,5 +145,33 @@ namespace gc.api.core.Servicios
 			}
 			return respuesta[0];
 		}
+
+		public List<AConsolidarPedidoClienteDetalleDto> AConsolidarPedidoClienteDetalle(AConsolidarPedidoClienteDetalleRequest req)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OR_ACONSOLIDAR_PC_DETALLE;
+
+			var ps = new List<SqlParameter>() {
+				new("@or_compte", req.or_compte),
+				new("@pc_compte", req.pc_compte),
+				new("@p_id", req.p_id),
+				};
+
+			var detalle = _repository.EjecutarLstSpExt<AConsolidarPedidoClienteDetalleDto>(sp, ps, true);
+
+			return detalle;
+		}
+
+		public List<AConsolidarConteosDto> AConsolidarConteos(string or_compte)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OR_ACONSOLIDAR_CONTEOS;
+
+			var ps = new List<SqlParameter>() {
+				new("@or_compte", or_compte),
+				};
+
+			var detalle = _repository.EjecutarLstSpExt<AConsolidarConteosDto>(sp, ps, true);
+
+			return detalle;
+		}
 	}
 }

@@ -24,6 +24,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string CONFIRMAR_ORDEN = "/orden-de-reparto/confirmar";
 		private const string ANALIZA_AUT_ORDEN_DE_REPARTO = "/analiza-aut-orden-de-reparto/";
 		private const string ANALIZA_PONER_EN_CURSO_ORDEN_DE_REPARTO = "/aponer-en-curso-or/";
+		private const string ACONSOLIDAR_DETALLE_PEDIDO_DE_CLIENTE = "/aconsolidar-detalle-pedido-cliente/";
+		private const string ACONSOLIDAR_CONTEOS = "/aconsolidar-conteos/";
 
 		public OrdenDeRepartoServicio(IOptions<AppSettings> options, ILogger<OrdenDeRepartoServicio> logger) : base(options, logger)
 		{
@@ -285,6 +287,65 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 				return new() { Ok = false, Mensaje = "Error al APonerEnCursoOrdenDeReparto" };
+			}
+		}
+
+		public async Task<RespuestaGenerica<AConsolidarPedidoClienteDetalleDto>> AConsolidarPedidoClienteDetalle(AConsolidarPedidoClienteDetalleRequest request, string token)
+		{
+			try
+			{
+				var helper = new HelperAPI();
+				var client = helper.InicializaCliente(request, token, out StringContent contentData);
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ACONSOLIDAR_DETALLE_PEDIDO_DE_CLIENTE}";
+
+				using var response = await client.PostAsync(link, contentData);
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					var stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+					}
+
+					var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AConsolidarPedidoClienteDetalleDto>>>(stringData);
+					if (apiResponse == null || apiResponse.Data == null)
+						return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+
+					return new RespuestaGenerica<AConsolidarPedidoClienteDetalleDto>
+					{
+						Ok = true,
+						Mensaje = "OK",
+						ListaEntidad = apiResponse.Data
+					};
+				}
+				else
+				{
+					var msg = await ReadApiErrorAsync(response);
+					_logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+					return new() { Ok = false, Mensaje = msg };
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+				return new() { Ok = false, Mensaje = "Error al AConsolidarPedidoClienteDetalle" };
+			}
+		}
+
+		public async Task<RespuestaGenerica<AConsolidarConteosDto>> AConsolidarConteos(string orCompte, string token)
+		{
+			try
+			{
+				if (string.IsNullOrWhiteSpace(orCompte))
+					return new() { Ok = false, Mensaje = "Debe indicar el identificador de la orden." };
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ACONSOLIDAR_CONTEOS}{orCompte}";
+				return await GetListaAsync<AConsolidarConteosDto>(link, token, "Error al obtener los conteos de la Orden");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+				return new() { Ok = false, Mensaje = "Error al obtener los conteos de la Orden" };
 			}
 		}
 	}
