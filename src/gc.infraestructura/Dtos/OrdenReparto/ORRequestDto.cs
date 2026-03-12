@@ -1,4 +1,6 @@
-﻿namespace gc.infraestructura.Dtos.OrdenReparto
+﻿using SixLabors.ImageSharp.Formats.Gif;
+
+namespace gc.infraestructura.Dtos.OrdenReparto
 {
     public class ORRequestDto:Dto
     {

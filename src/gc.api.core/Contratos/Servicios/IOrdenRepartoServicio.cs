@@ -8,9 +8,12 @@ using System.Threading.Tasks;
 
 namespace gc.api.core.Contratos.Servicios
 {
-    public interface IOrdenRepartoServicio:IServicio<EntidadBase>
+    public interface IOrdenRepartoServicio : IServicio<EntidadBase>
     {
         List<OrdenRepartoListDto> ObtenerOrdenesReparto(ORRequestDto request);
-         OrdenRepartoDto ObtenerOrdenRepartoPorId(int id);
+        List<ORListaDto> ObtenerListaORbyRubro(string or_compte, string adm, string usu);
+        List<ORListaDto> ObtenerListaORbyBox(string or_compte, string adm, string usu);
+        List<ORProductoDto> ObtenerListaORProductos(ORProdRequestDto request);
+     
     }
 }

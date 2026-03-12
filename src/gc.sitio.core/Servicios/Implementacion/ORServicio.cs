@@ -1,6 +1,4 @@
-﻿
-
-using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
@@ -14,6 +12,7 @@ using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System;
 using System.Net;
 using System.Reflection;
 
@@ -26,10 +25,126 @@ namespace gc.sitio.core.Servicios.Implementacion
 
         private const string POST_OBTENER_OR = "/ObtenerOrdenesReparto";
         private const string GET_VALIDA_USU = "/TIValidarUsuario";
+        private const string GET_LISTA_OR_BOX = "/ObtenerListaORbyBox";
+        private const string GET_LISTA_OR_RUBRO = "/ObtenerListaORbyRubro";
+        private const string POST_LISTA_OR_PRODUCTOS = "/ObtenerListaORProductos";
         public ORServicio(IOptions<AppSettings> options,ILogger<ORServicio> logger):base(options,logger,RutaAPI)
         {
             
         }
+
+        public async Task<RespuestaGenerica<ORListaDto>> ObtenerListaORbyBox(string or_compte, string adm, string usu, string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(token);
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_LISTA_OR_BOX}?or_compte={or_compte}&adm={adm}&usu={usu}";
+                using var response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recibió respuesta válida de los OR x BOX" };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ORListaDto>>>(stringData)
+                        ?? throw new NegocioException("Error al deserializar los datos");
+
+                    if (apiResponse.Data == null)
+                    {
+                        return new() { Ok = false, Mensaje = "No se encontraron datos de los OR x BOX." };
+                    }
+
+                    return new RespuestaGenerica<ORListaDto>
+                    {
+                        Ok = true,
+                        ListaEntidad = apiResponse.Data,
+                        Mensaje = "OK"
+                    };
+                }
+                else
+                {
+                    var errorData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {errorData}");
+
+                    return new()
+                    {
+                        Ok = false,
+                        Mensaje = "Error al obtener los OR x BOX. Si el problema persiste contacte al administrador."
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name}");
+                return new RespuestaGenerica<ORListaDto>
+                {
+                    Ok = false,
+                    Mensaje = "Error interno al obtener los OR x BOX"
+                };
+            }
+        }
+
+        public async Task<RespuestaGenerica<ORListaDto>> ObtenerListaORbyRubro(string or_compte, string adm, string usu, string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(token);
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_LISTA_OR_RUBRO}?or_compte={or_compte}&adm={adm}&usu={usu}";
+                using var response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recibió respuesta válida de los OR x RUBRO" };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ORListaDto>>>(stringData)
+                        ?? throw new NegocioException("Error al deserializar los datos");
+
+                    if (apiResponse.Data == null)
+                    {
+                        return new() { Ok = false, Mensaje = "No se encontraron datos de los OR x RUBRO." };
+                    }
+
+                    return new RespuestaGenerica<ORListaDto>
+                    {
+                        Ok = true,
+                        ListaEntidad = apiResponse.Data,
+                        Mensaje = "OK"
+                    };
+                }
+                else
+                {
+                    var errorData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {errorData}");
+
+                    return new()
+                    {
+                        Ok = false,
+                        Mensaje = "Error al obtener los OR x RUBRO. Si el problema persiste contacte al administrador."
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name}");
+                return new RespuestaGenerica<ORListaDto>
+                {
+                    Ok = false,
+                    Mensaje = "Error interno al obtener los OR x RUBRO"
+                };
+            }
+        }
+
         public async  Task<RespuestaGenerica<OrdenRepartoListDto>> ObtenerOrdenesReparto(ORRequestDto request, string token)
         {
             try
@@ -128,6 +243,51 @@ namespace gc.sitio.core.Servicios.Implementacion
                     Ok = false,
                     Mensaje = "Error interno al validar el usuario"
                 };
+            }
+        }
+
+        public async Task<RespuestaGenerica<ORProductoDto>> ObtenerORProductos(ORProdRequestDto request, string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(request, token, out StringContent contentData);
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_LISTA_OR_PRODUCTOS}";
+
+                using var response = await client.PostAsync(link, contentData);
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ORProductoDto>>>(stringData);
+                    if (apiResponse == null || apiResponse.Data == null)
+                    {
+                        return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+                    }
+
+                    return new RespuestaGenerica<ORProductoDto>
+                    {
+                        Ok = true,
+                        Mensaje = "OK",
+                        ListaEntidad = apiResponse.Data
+                        // Nota: si necesitas la metadata (apiResponse.Meta), amplía RespuestaGenerica para incluirla.
+                    };
+                }
+                else
+                {
+                    var msg = await ReadApiErrorAsync(response);
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+                    return new() { Ok = false, Mensaje = msg };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+                return new() { Ok = false, Mensaje = "Error al buscar las Etiquetas" };
             }
         }
     }

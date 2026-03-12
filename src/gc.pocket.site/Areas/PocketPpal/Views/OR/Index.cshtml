@@ -18,44 +18,14 @@
 
         var ObtenerOrdenesRepartoUrl = "@Url.Action("ObtenerOrdenesReparto", "or", new { area = "pocketppal" })";
         var homeModUrl = "@Url.Action("index", "or", new { area = "pocketppal" })";
-         var ValidarUsuarioUrl = "@Url.Action("ValidarUsuario", "or", new { area = "pocketppal" })"; // ✅ NUEVO
-        // ======================================================================
-        // VARIABLES GLOBALES Y CONFIGURACIÓN
-        // ======================================================================
-
-        const OR = {
-            // Configuración de endpoints
-            endpoints: {
-                obtenerOrdenes: ObtenerOrdenesRepartoUrl,
-                validarUsuario: ValidarUsuarioUrl // ✅ NUEVO
-            },
-
-            // Cache de datos
-            cache: {
-                ordenesActuales: [],
-                ordenSeleccionada: null
-            },
-
-            // Configuración de la aplicación
-            config: {
-                animacionDuracion: 300,
-                intentosMaximos: 3,
-                tiempoEsperaReintento: 2000
-            },
-
-            // Selectores DOM
-            dom: {
-                grid: '#tbGridOrdenesReparto',
-                tbody: '#tbGridOrdenesReparto tbody',
-                btnRefrescar: '#btnRefrescar',
-                btnContinuar: '#btnContinuar',
-                noDataRow: '#noDataRow',
-                totalOrdenes: '#totalOrdenes',
-                ultimaActualizacion: '#ultimaActualizacion'
-            }
-        };
-
+        var ValidarUsuarioUrl = "@Url.Action("ValidarUsuario", "or", new { area = "pocketppal" })"; 
+        var AbrirOrListaUrl =  "@Url.Action("CargaORLista", "or", new { area = "pocketppal" })";
+        var PresentarListaORbyBoxUrl = "@Url.Action("PresentarListaORbyBox", "or", new { area = "pocketppal" })";
+        var PresentarListaORbyRubroUrl = "@Url.Action("PresentarListaORbyRubro", "or", new { area = "pocketppal" })";
+         var ORCargaCarritoUrl = "@Url.Action("ORCargaCarrito", "or", new { area = "pocketppal" })";
 
     </script>
+    <script src="~/js/app/or/orCoreCommon.js"></script>
+
     <script src="~/js/app/or/orCore.js"></script>
 }

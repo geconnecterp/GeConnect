@@ -79,9 +79,51 @@ namespace gc.api.core.Servicios
         }
 
 
-        public OrdenRepartoDto ObtenerOrdenRepartoPorId(int id)
+        public List<ORListaDto> ObtenerListaORbyRubro(string or_compte,string adm,string usu)
         {
-            throw new NotImplementedException();
+            var sp = ConstantesGC.StoredProcedures.SP_OR_LISTA_RUBROS;
+
+            var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@or_compte", or_compte),
+                new SqlParameter("@adm_id", adm),
+                new SqlParameter("@usu_id", usu)
+             }; 
+
+            var result = _repository.EjecutarLstSpExt<ORListaDto>(sp, ps, true);
+            return result;
+        }
+
+        public List<ORListaDto> ObtenerListaORbyBox(string or_compte, string adm, string usu)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_OR_LISTA_BOX;
+
+            var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@or_compte", or_compte),
+                new SqlParameter("@adm_id", adm),
+                new SqlParameter("@usu_id", usu)
+             };
+
+            var result = _repository.EjecutarLstSpExt<ORListaDto>(sp, ps, true);
+            return result;
+        }
+
+
+        public List<ORProductoDto> ObtenerListaORProductos(ORProdRequestDto request)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_OR_LISTA_PRODUCTOS;
+            var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@or_compte", request.or_compte),
+                new SqlParameter("@adm_id", request.adm_id),
+                new SqlParameter("@usu_id", request.usu_id),
+                new SqlParameter("@box_id", request.box_id),
+                new SqlParameter("@rub_id", request.rub_id)
+            };
+            var result = _repository.EjecutarLstSpExt<ORProductoDto>(sp, ps, true);
+            return result;
+
         }
     }
 }

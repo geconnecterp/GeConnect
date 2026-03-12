@@ -838,7 +838,7 @@ th, td {
 }
 
 /* Optimización de espaciado para móviles */
-@@media (max-width: 768px) {
+@media (max-width: 768px) {
     .grid-golden-header h6 {
         font-size: 0.9rem;
     }
@@ -877,7 +877,7 @@ th, td {
 }
 
 /* Optimización para pantallas muy pequeñas */
-@@media (max-width: 480px) {
+@media (max-width: 480px) {
     .grid-golden-header h6 {
         font-size: 0.85rem;
     }
@@ -897,11 +897,83 @@ th, td {
     }
 }
 
-/* Efecto de selección de fila */
-#tbGridOrdenesReparto tbody tr.selected {
-    background-color: rgba(212, 175, 55, 0.25) !important;
-    border-left: 3px solid var(--bs-golden-primary);
+/* ====================================================================== */
+/* ✅ UNIFICACIÓN DE ESTILOS CON GC.SITIO - SELECCIÓN Y FILAS ALTERNAS */
+/* ====================================================================== */
+
+/* === FILAS ALTERNAS (CELESTE CLARO) === */
+#tbGridOrdenesReparto tbody tr.alt,
+#tbOrBoxList tbody tr.alt,
+#tbOrRubList tbody tr.alt,
+.table-golden tbody tr.alt {
+    background-color: #e3f2fd !important; /* ✅ CELESTE CLARO - Mismo que GC.SITIO */
 }
+
+/* Hover en filas alternas - celeste más oscuro */
+#tbGridOrdenesReparto tbody tr.alt:hover,
+#tbOrBoxList tbody tr.alt:hover,
+#tbOrRubList tbody tr.alt:hover,
+.table-golden tbody tr.alt:hover {
+    background-color: #d1ecf1 !important; /* ✅ CELESTE OSCURO AL HOVER - Mismo que GC.SITIO */
+}
+
+/* === FILA SELECCIONADA (AMARILLO DORADO SÓLIDO) === */
+#tbGridOrdenesReparto tbody tr.selected,
+#tbGridOrdenesReparto tbody tr.selected-row,
+#tbOrBoxList tbody tr.selected,
+#tbOrBoxList tbody tr.selected-row,
+#tbOrRubList tbody tr.selected,
+#tbOrRubList tbody tr.selected-row,
+.selected-row > td {
+    background-color: #FCD25F !important; /* ✅ AMARILLO DORADO - Mismo que GC.SITIO */
+    color: black !important;
+    border-left: 3px solid #d4af37 !important; /* Borde dorado para destacar */
+    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3) !important;
+}
+
+/* === FILA EN EDICIÓN (DORADO OSCURO) === */
+#tbGridOrdenesReparto tbody tr.selectedEdit-row,
+#tbOrBoxList tbody tr.selectedEdit-row,
+#tbOrRubList tbody tr.selectedEdit-row,
+.selectedEdit-row > td {
+    background-color: #A07603 !important; /* ✅ DORADO OSCURO - Mismo que GC.SITIO */
+    color: black !important;
+    border-left: 3px solid #8b6914 !important;
+    box-shadow: 0 2px 8px rgba(160, 118, 3, 0.4) !important;
+}
+
+/* === HOVER EN FILAS NORMALES (SIN SELECCIÓN) === */
+#tbGridOrdenesReparto tbody tr:not(.selected):not(.selected-row):not(.selectedEdit-row):not(.alt):hover,
+#tbOrBoxList tbody tr:not(.selected):not(.selected-row):not(.selectedEdit-row):not(.alt):hover,
+#tbOrRubList tbody tr:not(.selected):not(.selected-row):not(.selectedEdit-row):not(.alt):hover,
+.table-golden tbody tr:not(.selected):not(.selected-row):not(.selectedEdit-row):not(.alt):hover {
+    background-color: rgba(212, 175, 55, 0.1) !important; /* Hover sutil en filas normales */
+    transform: scale(1.01);
+}
+
+/* === ANIMACIÓN DE SELECCIÓN === */
+@keyframes selectRowAnimation {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+#tbGridOrdenesReparto tbody tr.selected,
+#tbOrBoxList tbody tr.selected,
+#tbOrRubList tbody tr.selected,
+.selected-row {
+    animation: selectRowAnimation 0.3s ease-out;
+}
+
+/* ====================================================================== */
+/* FIN UNIFICACIÓN DE ESTILOS CON GC.SITIO */
+/* ====================================================================== */
 
 /* Scroll suave */
 .table-responsive {

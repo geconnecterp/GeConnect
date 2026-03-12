@@ -13,5 +13,8 @@ namespace gc.sitio.core.Servicios.Contratos
     {
         Task<RespuestaGenerica<OrdenRepartoListDto>> ObtenerOrdenesReparto(ORRequestDto request, string token);
         Task<RespuestaGenerica<ResponseBaseDto>> ValidarUsuario(string id, string usuId, string token);
+        Task<RespuestaGenerica<ORListaDto>> ObtenerListaORbyRubro(string or_compte, string adm, string usu, string token);
+        Task<RespuestaGenerica<ORListaDto>> ObtenerListaORbyBox(string or_compte, string adm, string usu, string token);
+        Task<RespuestaGenerica<ORProductoDto>> ObtenerORProductos(ORProdRequestDto request, string token);
     }
 }

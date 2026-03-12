@@ -109,7 +109,18 @@ function procesarRespuestaOrdenes(response) {
     console.log('🔄 Procesando respuesta...');
 
     if (!response) {
-        mostrarMensajeError('Respuesta del servidor inválida');
+        AbrirMensaje(
+            "ERROR",
+            "Respuesta del servidor inválida",
+            function() {
+                $("#msjModal").modal("hide");
+                return true;
+            },
+            false,
+            ["Aceptar"],
+            "error!",
+            null
+        );
         return;
     }
 
@@ -128,7 +139,18 @@ function procesarRespuestaOrdenes(response) {
     } else {
         const mensaje = response.message || 'Error desconocido al obtener órdenes';
         console.warn('⚠️ Error en respuesta:', mensaje);
-        mostrarMensajeAdvertencia(mensaje);
+        AbrirMensaje(
+            "ADVERTENCIA",
+            mensaje,
+            function() {
+                $("#msjModal").modal("hide");
+                return true;
+            },
+            false,
+            ["Aceptar"],
+            "warn!",
+            null
+        );
         renderizarOrdenesVacio();
     }
 }
@@ -304,7 +326,18 @@ function seleccionarOrden($row) {
  */
 function verDetalleOrden(ordenId) {
     console.log('🔍 Ver detalle de orden:', ordenId);
-    mostrarMensajeInfo(`Detalle de orden ${ordenId} - Próximamente`);
+    AbrirMensaje(
+        "INFORMACIÓN",
+        `Detalle de orden ${ordenId} - Próximamente`,
+        function() {
+            $("#msjModal").modal("hide");
+            return true;
+        },
+        false,
+        ["Aceptar"],
+        "info!",
+        null
+    );
 }
 
 /**
@@ -316,7 +349,18 @@ function continuarConOrden() {
 
     // 1. Validar que hay una orden seleccionada
     if (!OR.cache.ordenSeleccionada) {
-        mostrarMensajeAdvertencia('Por favor, seleccione una orden primero');
+        AbrirMensaje(
+            "ADVERTENCIA",
+            "Por favor, seleccione una orden primero",
+            function() {
+                $("#msjModal").modal("hide");
+                return true;
+            },
+            false,
+            ["Aceptar"],
+            "warn!",
+            null
+        );
         return;
     }
 
@@ -326,7 +370,18 @@ function continuarConOrden() {
     // 3. Validar que existe el ID de orden
     if (!ordenId) {
         console.error('❌ ID de orden no disponible');
-        mostrarMensajeError('No se pudo obtener el ID de la orden');
+        AbrirMensaje(
+            "ERROR",
+            "No se pudo obtener el ID de la orden",
+            function() {
+                $("#msjModal").modal("hide");
+                return true;
+            },
+            false,
+            ["Aceptar"],
+            "error!",
+            null
+        );
         return;
     }
 
@@ -336,7 +391,18 @@ function continuarConOrden() {
     // 5. Validar que existe el ID de usuario
     if (!usuarioId) {
         console.error('❌ ID de usuario no disponible');
-        mostrarMensajeError('No se pudo identificar el usuario. Por favor, inicie sesión nuevamente.');
+        AbrirMensaje(
+            "ERROR",
+            "No se pudo identificar el usuario. Por favor, inicie sesión nuevamente.",
+            function() {
+                $("#msjModal").modal("hide");
+                return true;
+            },
+            false,
+            ["Aceptar"],
+            "error!",
+            null
+        );
         return;
     }
 
@@ -380,9 +446,19 @@ function validarUsuarioParaOrden(orCompte, usuId) {
             switch (xhr.status) {
                 case 401:
                     mensajeError = 'Sesión expirada. Por favor, inicie sesión nuevamente.';
-                    mostrarMensajeError(mensajeError, function() {
-                        window.location.href = '/seguridad/token/login';
-                    });
+                    AbrirMensaje(
+                        "ERROR",
+                        mensajeError,
+                        function() {
+                            $("#msjModal").modal("hide");
+                            window.location.href = '/seguridad/token/login';
+                            return true;
+                        },
+                        false,
+                        ["Aceptar"],
+                        "error!",
+                        null
+                    );
                     return;
                 case 403:
                     mensajeError = 'No tiene permisos para procesar esta orden.';
@@ -397,7 +473,18 @@ function validarUsuarioParaOrden(orCompte, usuId) {
                     mensajeError = `Error: ${error || 'Desconocido'}`;
             }
             
-            mostrarMensajeError(mensajeError);
+            AbrirMensaje(
+                "ERROR",
+                mensajeError,
+                function() {
+                    $("#msjModal").modal("hide");
+                    return true;
+                },
+                false,
+                ["Aceptar"],
+                "error!",
+                null
+            );
         }
     });
 }
@@ -412,7 +499,18 @@ function procesarRespuestaValidacion(response, orCompte) {
 
     // Validar respuesta
     if (!response) {
-        mostrarMensajeError('Respuesta de validación inválida');
+        AbrirMensaje(
+            "ERROR",
+            "Respuesta de validación inválida",
+            function() {
+                $("#msjModal").modal("hide");
+                return true;
+            },
+            false,
+            ["Aceptar"],
+            "error!",
+            null
+        );
         return;
     }
 
@@ -421,54 +519,68 @@ function procesarRespuestaValidacion(response, orCompte) {
         const mensaje = response.message || 'Usuario no autorizado para procesar esta orden';
         console.warn('⚠️ Validación fallida:', mensaje);
         
-        mostrarMensajeAdvertencia(mensaje);
+        AbrirMensaje(
+            "ADVERTENCIA",
+            mensaje,
+            function() {
+                $("#msjModal").modal("hide");
+                return true;
+            },
+            false,
+            ["Aceptar"],
+            "warn!",
+            null
+        );
         return;
     }
 
     // ✅ Validación exitosa
     console.log('✅ Usuario validado correctamente');
     
-    // Mostrar mensaje de éxito y continuar con el proceso
-    AbrirMensaje(
-        "VALIDACIÓN EXITOSA",
-        `Usuario validado correctamente para la orden ${orCompte}. ¿Desea continuar con el proceso?`,
-        function(resp) {
-            $("#msjModal").modal("hide");
-            
-            if (resp === "SI") {
-                // Continuar con el proceso de la orden
-                procesarOrden(orCompte);
-            }
-            
-            return true;
-        },
-        true,
-        ["Continuar", "Cancelar"],
-        "succ!",
-        null
-    );
+    procesarOrden(orCompte);
 }
 
 /**
- * ✅ NUEVA FUNCIÓN: Procesa la orden después de validar el usuario
+ * ✅ MODIFICADO: Procesa la orden después de validar el usuario
+ * Redirige a la vista de lista de OR para continuar con el proceso
  * @param {string} orCompte - ID del comprobante de orden
  */
 function procesarOrden(orCompte) {
     console.log('🚀 Procesando orden:', orCompte);
 
-    // TODO: Implementar lógica de procesamiento de la orden
-    // Por ejemplo: navegar a pantalla de detalle, iniciar proceso de entrega, etc.
-    
-    // Placeholder temporal
-    mostrarMensajeInfo(`Procesando orden ${orCompte}...`);
-    
-    // Feedback haptic
+    // Validar que existe el ID de orden
+    if (!orCompte) {
+        console.error('❌ ID de orden no disponible');
+        AbrirMensaje(
+            "ERROR",
+            "No se pudo obtener el ID de la orden",
+            function() {
+                $("#msjModal").modal("hide");
+                return true;
+            },
+            false,
+            ["Aceptar"],
+            "error!",
+            null
+        );
+        return;
+    }
+
+    // Mostrar indicador de carga durante la transición
+    AbrirWaiting('Cargando orden de reparto...');
+
+    // Feedback haptic para dispositivos móviles
     if ('vibrate' in navigator) {
         navigator.vibrate([100, 50, 100]);
     }
 
-    // Ejemplo de navegación (descomentar cuando esté implementado)
-    // window.location.href = `/PocketPpal/OR/Detalle/${orCompte}`;
+    // Construir URL para la action CargaORLista
+    const url =  `${OR.endpoints.abrirORLista}?or_compte=${encodeURIComponent(orCompte)}`;
+
+    console.log(`📍 Navegando a: ${url}`);
+
+    // Redirigir a la vista de lista de OR
+    window.location.href = url;
 }
 
 // ======================================================================
@@ -598,9 +710,19 @@ function manejarErrorCarga(xhr, status, error) {
         case 401:
             mensajeError = 'Sesión expirada. Por favor, inicia sesión nuevamente.';
             // Mostrar mensaje y redirigir
-            mostrarMensajeError(mensajeError, function() {
-                window.location.href = '/seguridad/token/login';
-            });
+            AbrirMensaje(
+                "ERROR",
+                mensajeError,
+                function() {
+                    $("#msjModal").modal("hide");
+                    window.location.href = '/seguridad/token/login';
+                    return true;
+                },
+                false,
+                ["Aceptar"],
+                "error!",
+                null
+            );
             return;
         case 403:
             mensajeError = 'No tienes permisos para acceder a esta información.';
@@ -618,51 +740,11 @@ function manejarErrorCarga(xhr, status, error) {
             mensajeError = `Error: ${error || 'Desconocido'}`;
     }
 
-    mostrarMensajeError(mensajeError);
-    renderizarOrdenesVacio();
-}
-
-// ======================================================================
-// FUNCIONES DE MENSAJES - INTEGRACIÓN CON SITEGEN.JS
-// ======================================================================
-
-/**
- * Muestra mensaje de éxito usando AbrirMensaje de siteGen.js
- * @param {string} mensaje - Mensaje a mostrar
- * @param {Function} [callback] - Función callback opcional
- */
-function mostrarMensajeExito(mensaje, callback) {
-    AbrirMensaje(
-        "ÉXITO",
-        mensaje,
-        function() {
-            $("#msjModal").modal("hide");
-            if (typeof callback === 'function') {
-                callback();
-            }
-            return true;
-        },
-        false,
-        ["Aceptar"],
-        "succ!",
-        null
-    );
-}
-
-/**
- * Muestra mensaje de error usando AbrirMensaje de siteGen.js
- * @param {string} mensaje - Mensaje a mostrar
- * @param {Function} [callback] - Función callback opcional
- */
-function mostrarMensajeError(mensaje, callback) {
     AbrirMensaje(
         "ERROR",
-        mensaje,
+        mensajeError,
         function() {
             $("#msjModal").modal("hide");
-            if (typeof callback === 'function') {
-                callback();
-            }
             return true;
         },
         false,
@@ -670,52 +752,7 @@ function mostrarMensajeError(mensaje, callback) {
         "error!",
         null
     );
-}
-
-/**
- * Muestra mensaje de advertencia usando AbrirMensaje de siteGen.js
- * @param {string} mensaje - Mensaje a mostrar
- * @param {Function} [callback] - Función callback opcional
- */
-function mostrarMensajeAdvertencia(mensaje, callback) {
-    AbrirMensaje(
-        "ADVERTENCIA",
-        mensaje,
-        function() {
-            $("#msjModal").modal("hide");
-            if (typeof callback === 'function') {
-                callback();
-            }
-            return true;
-        },
-        false,
-        ["Aceptar"],
-        "warn!",
-        null
-    );
-}
-
-/**
- * Muestra mensaje informativo usando AbrirMensaje de siteGen.js
- * @param {string} mensaje - Mensaje a mostrar
- * @param {Function} [callback] - Función callback opcional
- */
-function mostrarMensajeInfo(mensaje, callback) {
-    AbrirMensaje(
-        "INFORMACIÓN",
-        mensaje,
-        function() {
-            $("#msjModal").modal("hide");
-            if (typeof callback === 'function') {
-                callback();
-            }
-            return true;
-        },
-        false,
-        ["Aceptar"],
-        "info!",
-        null
-    );
+    renderizarOrdenesVacio();
 }
 
 // ======================================================================
@@ -789,4 +826,4 @@ if (!document.getElementById('or-animations-style')) {
 // FIN DEL MÓDULO
 // ======================================================================
 
-console.log('🎉 Módulo orCore.js cargado completamente - Versión 1.0.2');
+console.log('🎉 Módulo orCore.js cargado completamente - Versión 1.0.3');
