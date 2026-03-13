@@ -49,7 +49,7 @@
                                             </div>
                                             <div class="p-0">
                                                 <span class="badge bg-info">
-                                                    Cantidad: @item.pedido
+                                                    Pedido: @item.pedido
                                                 </span>
                                                 @if (item.colectado > 0)
                                                 {
@@ -65,7 +65,7 @@
                                             <a asp-action="ORValidaProducto" 
                                                asp-controller="or" 
                                                asp-area="pocketppal" 
-                                               asp-route-pId="@item.p_id" 
+                                               asp-route-p_id="@item.p_id" 
                                                class="btn btn-sm btn-success">
                                                 <i class="bx bx-barcode"></i>
                                             </a>
@@ -83,7 +83,7 @@
                                             {
                                                 <button type="button" 
                                                         class="btn btn-sm btn-danger" 
-                                                        onclick="limpiarProductoCarrito('@item.p_id','@item.box_id')">
+                                                        onclick="limpiaProductoCarritoOR('@item.p_id','@item.box_id')">
                                                     <i class="bx bx-eraser"></i>
                                                 </button>
                                             }
