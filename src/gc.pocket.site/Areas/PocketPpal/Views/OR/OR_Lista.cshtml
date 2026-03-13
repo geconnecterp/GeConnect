@@ -1,6 +1,7 @@
 ﻿@{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
     var callback = Url.Action("CargaORLista", "or", new { area = "pocketppal", or_compte = ViewBag.Compte ??""});
+    var compte = ViewBag.Compte ?? "";
 }
 
 <div class="d-flex justify-content-center align-items-center gap-4 my-3">
@@ -43,7 +44,7 @@
         administracion = '@(User.Claims.First(c => c.Type.Contains("AdmId")).Value ?? "")';
         var admAuth = administracion.split('#')[0];
         var usuAuth = '@(User.Claims.First(c => c.Type.Contains("name"))?.Value ?? "")';
-        var orCompteActual = '@(ViewContext.HttpContext.Session.GetString("ORComprobanteActual") ?? "")';
+        var orCompteActual = '@compte';
     </script>
     <script src="~/js/app/or/orCoreCommon.js"></script>
     <script src="~/js/app/or/orCoreLista.js"></script>

@@ -2,6 +2,8 @@
 using gc.api.core.Contratos.Servicios;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos.Almacen.Tr;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenReparto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -166,6 +168,76 @@ namespace gc.api.Controllers.OrdenReparto
             }
             var data = _orSv.ObtenerListaORProductos(request);
             return Ok(new ApiResponse<List<ORProductoDto>>(data));
+        }
+
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult ValidaProductoCarritoOR(ORCargaCarritoRequest request)
+        {
+            if (request == null)
+            {
+                _logger.LogWarning("Solicitud de validación de producto en carrito vacía o nula.");
+                return BadRequest(new ApiResponse<string>("La solicitud no puede estar vacía."));
+            }
+            if (string.IsNullOrWhiteSpace(request.or_compte))
+            {
+                _logger.LogWarning("Parámetro or_compte se encuentra vacío o nulo.");
+                return BadRequest(new ApiResponse<string>("El parámetro or_compte no puede estar vacío."));
+            }
+            if (string.IsNullOrWhiteSpace(request.adm_id))
+            {
+                _logger.LogWarning("Parámetro adm_id se encuentra vacío o nulo.");
+                return BadRequest(new ApiResponse<string>("El parámetro adm_id no puede estar vacío."));
+            }
+            if (string.IsNullOrWhiteSpace(request.usu_id))
+            {
+                _logger.LogWarning("Parámetro usu_id se encuentra vacío o nulo.");
+                return BadRequest(new ApiResponse<string>("El parámetro usu_id no puede estar vacío."));
+            }
+            if (string.IsNullOrWhiteSpace(request.p_id))
+            {
+                _logger.LogWarning("Parámetro prod_id se encuentra vacío o nulo.");
+                return BadRequest(new ApiResponse<string>("El parámetro prod_id no puede estar vacío."));
+            }
+            var data = _orSv.ValidaProductoCarritoOR(request);
+            return Ok(new ApiResponse<RespuestaDto>(data));
+        }
+
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult ResguardarProductoCarritoOR(ORCargaCarritoRequest request)
+        {
+            if (request == null)
+            {
+                _logger.LogWarning("Solicitud de resguardo de producto en carrito vacía o nula.");
+                return BadRequest(new ApiResponse<string>("La solicitud no puede estar vacía."));
+            }
+            if (string.IsNullOrWhiteSpace(request.or_compte))
+            {
+                _logger.LogWarning("Parámetro or_compte se encuentra vacío o nulo.");
+                return BadRequest(new ApiResponse<string>("El parámetro or_compte no puede estar vacío."));
+            }
+            if (string.IsNullOrWhiteSpace(request.adm_id))
+            {
+                _logger.LogWarning("Parámetro adm_id se encuentra vacío o nulo.");
+                return BadRequest(new ApiResponse<string>("El parámetro adm_id no puede estar vacío."));
+            }
+            if (string.IsNullOrWhiteSpace(request.usu_id))
+            {
+                _logger.LogWarning("Parámetro usu_id se encuentra vacío o nulo.");
+                return BadRequest(new ApiResponse<string>("El parámetro usu_id no puede estar vacío."));
+            }
+            if (string.IsNullOrWhiteSpace(request.p_id))
+            {
+                _logger.LogWarning("Parámetro prod_id se encuentra vacío o nulo.");
+                return BadRequest(new ApiResponse<string>("El parámetro prod_id no puede estar vacío."));
+            }
+            var data = _orSv.ResguardarProductoCarrito(request);
+            return Ok(new ApiResponse<RespuestaDto>(data));
         }
     }
 }

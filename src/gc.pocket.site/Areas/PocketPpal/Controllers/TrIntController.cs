@@ -746,6 +746,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
         }
+        
         [HttpPost]
         public async Task<IActionResult> ValidarBoxIngresado(string boxId, bool esBoxDest = false)
         {

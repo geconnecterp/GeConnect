@@ -1,6 +1,18 @@
-﻿@model OrdenRepartoDto
+﻿@model (string,string)
 
-<partial name="_NroComprobante" model="@Model.or_compte" />
+@{
+    Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+
+    var buscar = new BusquedaProducto();
+
+    var callback = Url.Action("CargaORLista", "or", new { area = "pocketppal", or_compte = ViewBag.Compte ?? "" });
+    var compte = ViewBag.Compte ?? "";
+
+    ORProductoDto producto = ViewBag.Producto as ORProductoDto ?? new();
+}
+
+<partial name="_NroComprobante" model="@Model" />
+
 
 @* Validación BOX (común con TI pero sin BoxDestino) *@
 <div class="row">
@@ -11,21 +23,43 @@
             <button type="button" class="btn btn-danger btn-sm" disabled id="btnValBox">
                 <i class="bx bx-check-circle bx-sm"></i>
             </button>
+            <div class="form-check form-check-inline form-switch m-2 ">
+                <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDesarma" checked disabled>
+                <label class="form-check-label" for="chkDesarma">Desarma</label>
+            </div>
         </div>
     </div>
 </div>
 
-@* Reutilización de componentes *@
-<partial name="~/areas/gestion/views/producto/_ctrBuscarProducto.cshtml" model="@(new BusquedaProducto())" />
-<partial name="~/areas/gestion/views/producto/_productoDetalle.cshtml" model="true" />
+<div id="divBusquedaProd" style="display:none">
+
+    @* Reutilización de componentes *@
+    <partial name="~/areas/gestion/views/producto/_ctrBuscarProducto.cshtml" model="@buscar" />
+    <partial name="~/areas/gestion/views/producto/_productoDetalle.cshtml" model="true" />
+
+    
+
+</div>
+
 
 @section scripts {
     <script>
-        var orActual = null;
+        var orActual = '@Model.Item2';
         var validarBoxIngresadoUrl = "@Url.Action("ValidarBoxIngresado", "or", new { area = "pocketppal" })";
         var validarProductoUrl = "@Url.Action("ValidarProductoIngresado", "or", new { area = "pocketppal" })";
         var resguardarUrl = "@Url.Action("ResguardarProductoOR", "or", new { area = "pocketppal" })";
         var proximoProductoUrl = "@Url.Action("ORCargaCarrito", "or", new { area = "pocketppal" })";
+
+        //funcionalidad busqueda avanzada
+        var productoBase = null; //se hidrata en busquedas.
+        var productoActualOR = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(producto));
+        var funcionBusquedaAvanzada = false;
+        var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "gestion" })";
+        var validarProductoIngresadoUrl = "@Url.Action("ValidarProductoIngresado", "or", new { area = "pocketppal" })";
+        var buscarFechaVtoUrl = "@Url.Action("BuscarFechaVto", "trint", new { area = "pocketppal" })";
+        var ResguardarProductoCarritoORUrl = "@Url.Action("ResguardarProductoCarritoOR", "or", new { area = "pocketppal" })";
+
+
     </script>
     <script src="~/js/app/busquedas.js"></script>
     <script src="~/js/app/or/orvalidaProducto.js"></script> @* ← Específico OR *@

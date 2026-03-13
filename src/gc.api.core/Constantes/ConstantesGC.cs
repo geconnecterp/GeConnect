@@ -574,6 +574,9 @@
 			public const string SP_OR_LISTA_RUBROS = "SPGECO_OR_Lista_Rubros";
 			public const string SP_OR_LISTA_PRODUCTOS = "SPGECO_OR_LISTA_PRODUCTOS";
 			public const string SP_OR_AEN_CURSO = "SPGECO_OR_AEnCurso";
+			public const string SP_OR_CARRITO_VALIDA = "SPGECO_OR_Carrito_Valida";
+			public const string SP_OR_CARRITO_CARGA = "SPGECO_OR_Carrito_Carga";
+           
 			public const string SP_OR_ACONSOLIDAR_PC_DETALLE = "SPGECO_OR_AConsolidar_PC_d";
 			public const string SP_OR_ACONSOLIDAR_CONTEOS = "SPGECO_OR_AConsolidar_Conteos";
 			#endregion
