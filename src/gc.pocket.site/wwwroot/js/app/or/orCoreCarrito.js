@@ -41,7 +41,7 @@ function inicializarEventosCarrito() {
             console.log('📝 Cambiando ordenamiento a PRODUCTO');
             presentaListaProducto("P");
         }
-    });
+    });   
 
     console.log('✅ Eventos de OR Carrito inicializados');
 }
@@ -136,7 +136,7 @@ function mostrarMensaje(nota) {
  * @param {string} p_id - ID del producto
  * @param {string} boxId - ID del BOX
  */
-function limpiarProductoCarrito(p_id, boxId) {
+function limpiaProductoCarritoOR(p_id, boxId) {
     console.log(`🧹 Limpiando producto del carrito - P_ID: ${p_id}, BOX: ${boxId}`);
     
     AbrirWaiting('Limpiando producto del carrito...');
@@ -181,8 +181,7 @@ function limpiarProductoCarrito(p_id, boxId) {
                 function() {
                     $("#msjModal").modal("hide");
                     // Recargar lista con el mismo ordenamiento
-                    var ordenActual = $("input[name='tipoOR']:checked").val();
-                    presentaListaProducto(ordenActual);
+                    window.location.href = proximoProductoUrl + `?or_compte=${orCompteActual}`
                     return true;
                 },
                 false,

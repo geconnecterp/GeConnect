@@ -1,4 +1,5 @@
 ﻿using gc.infraestructura.Dtos.Almacen.Rpr;
+using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenReparto;
 using System;
@@ -16,5 +17,7 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaGenerica<ORListaDto>> ObtenerListaORbyRubro(string or_compte, string adm, string usu, string token);
         Task<RespuestaGenerica<ORListaDto>> ObtenerListaORbyBox(string or_compte, string adm, string usu, string token);
         Task<RespuestaGenerica<ORProductoDto>> ObtenerORProductos(ORProdRequestDto request, string token);
+        Task<RespuestaGenerica<RespuestaDto>> ValidaProductoCarritoOR(ORCargaCarritoRequest request, string tokenCookie);
+        Task<RespuestaGenerica<RespuestaDto>> ResguardarProductoCarrito(ORCargaCarritoRequest request, string tokenCookie);
     }
 }

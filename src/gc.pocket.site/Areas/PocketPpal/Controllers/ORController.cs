@@ -1,12 +1,14 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenReparto;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using System.Reflection;
 using X.PagedList;
 
 namespace gc.pocket.site.Areas.PocketPpal.Controllers
@@ -187,218 +189,227 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
             if (string.IsNullOrEmpty(or_compte))
             {
-                TempData["error"] = "No se recepciono el Nro de Comprobante de la OR.";
+                TempData["error"] = "No se recepcionó el Nro de Comprobante de la OR.";
                 return RedirectToAction("index");
             }
-            ORComprobanteActual = or_compte;
+
+            // ✅ REFACTORIZADO: Usar ORSession
+            var session = ORSession;
+            session.ORComprobanteActual = or_compte;
+            session.UltimaActualizacion = DateTime.Now;
+            ORSession = session;
+
+            _logger?.LogInformation("📝 OR Seleccionada: {OrCompte}", or_compte);
 
             var sigla = "OR";
             string? volver = Url.Action("index", "or", new { area = "PocketPpal" });
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
+
             if (modulo == null)
             {
-                throw new NegocioException("No se logro encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
+                throw new NegocioException("No se logró encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
             }
+
             modulo.VolverUrl = volver ?? "#";
             ViewBag.AppItem = modulo;
-            ViewBag.Compte = ORComprobanteActual;
+            ViewBag.Compte = session.ORComprobanteActual;
 
             return View("or_lista");
         }
 
-        /// <summary>
-        /// ✅ NUEVA ACTION: Obtiene la lista de OR según BOX
-        /// </summary>
-        /// <param name="or_compte">ID del comprobante de orden de reparto</param>
-        /// <param name="adm">ID de la administración</param>
-        /// <param name="usu">ID del usuario</param>
-        /// <returns>Lista de OR filtrada por BOX</returns>
-        [HttpPost]
-        public async Task<JsonResult> ObtenerListaORbyBox(string or_compte, string adm, string usu)
-        {
-            try
-            {
-                // Validación de entrada
-                if (string.IsNullOrWhiteSpace(or_compte))
-                {
-                    _logger?.LogWarning("⚠️ Parámetro or_compte vacío");
-                    return Json(new
-                    {
-                        success = false,
-                        message = "ID de orden de reparto requerido"
-                    });
-                }
+        ///// <summary>
+        ///// ✅ NUEVA ACTION: Obtiene la lista de OR según BOX
+        ///// </summary>
+        ///// <param name="or_compte">ID del comprobante de orden de reparto</param>
+        ///// <param name="adm">ID de la administración</param>
+        ///// <param name="usu">ID del usuario</param>
+        ///// <returns>Lista de OR filtrada por BOX</returns>
+        //[HttpPost]
+        //public async Task<JsonResult> ObtenerListaORbyBox(string or_compte, string adm, string usu)
+        //{
+        //    try
+        //    {
+        //        // Validación de entrada
+        //        if (string.IsNullOrWhiteSpace(or_compte))
+        //        {
+        //            _logger?.LogWarning("⚠️ Parámetro or_compte vacío");
+        //            return Json(new
+        //            {
+        //                success = false,
+        //                message = "ID de orden de reparto requerido"
+        //            });
+        //        }
 
-                if (string.IsNullOrWhiteSpace(adm))
-                {
-                    _logger?.LogWarning("⚠️ Parámetro adm vacío");
-                    return Json(new
-                    {
-                        success = false,
-                        message = "ID de administración requerido"
-                    });
-                }
+        //        if (string.IsNullOrWhiteSpace(adm))
+        //        {
+        //            _logger?.LogWarning("⚠️ Parámetro adm vacío");
+        //            return Json(new
+        //            {
+        //                success = false,
+        //                message = "ID de administración requerido"
+        //            });
+        //        }
 
-                if (string.IsNullOrWhiteSpace(usu))
-                {
-                    _logger?.LogWarning("⚠️ Parámetro usu vacío");
-                    return Json(new
-                    {
-                        success = false,
-                        message = "ID de usuario requerido"
-                    });
-                }
+        //        if (string.IsNullOrWhiteSpace(usu))
+        //        {
+        //            _logger?.LogWarning("⚠️ Parámetro usu vacío");
+        //            return Json(new
+        //            {
+        //                success = false,
+        //                message = "ID de usuario requerido"
+        //            });
+        //        }
 
-                _logger?.LogInformation("📡 Obteniendo lista OR por BOX - OR: {OrCompte}, ADM: {Adm}, USU: {Usu}",
-                    or_compte, adm, usu);
+        //        _logger?.LogInformation("📡 Obteniendo lista OR por BOX - OR: {OrCompte}, ADM: {Adm}, USU: {Usu}",
+        //            or_compte, adm, usu);
 
-                // Invocar servicio
-                var resultado = await _orServicio.ObtenerListaORbyBox(
-                    or_compte,
-                    adm,
-                    usu,
-                    TokenCookie
-                );
+        //        // Invocar servicio
+        //        var resultado = await _orServicio.ObtenerListaORbyBox(
+        //            or_compte,
+        //            adm,
+        //            usu,
+        //            TokenCookie
+        //        );
 
-                if (resultado == null)
-                {
-                    _logger?.LogError("❌ Respuesta nula del servicio ObtenerListaORbyBox");
-                    return Json(new
-                    {
-                        success = false,
-                        message = "Error al obtener lista de OR por BOX"
-                    });
-                }
+        //        if (resultado == null)
+        //        {
+        //            _logger?.LogError("❌ Respuesta nula del servicio ObtenerListaORbyBox");
+        //            return Json(new
+        //            {
+        //                success = false,
+        //                message = "Error al obtener lista de OR por BOX"
+        //            });
+        //        }
 
-                if (!resultado.Ok)
-                {
-                    _logger?.LogWarning("⚠️ Error al obtener lista OR por BOX: {Mensaje}",
-                        resultado.Mensaje);
-                    return Json(new
-                    {
-                        success = false,
-                        message = resultado.Mensaje ?? "Error al obtener lista de OR por BOX"
-                    });
-                }
+        //        if (!resultado.Ok)
+        //        {
+        //            _logger?.LogWarning("⚠️ Error al obtener lista OR por BOX: {Mensaje}",
+        //                resultado.Mensaje);
+        //            return Json(new
+        //            {
+        //                success = false,
+        //                message = resultado.Mensaje ?? "Error al obtener lista de OR por BOX"
+        //            });
+        //        }
 
-                _logger?.LogInformation("✅ Lista OR por BOX obtenida correctamente");
+        //        _logger?.LogInformation("✅ Lista OR por BOX obtenida correctamente");
 
-                return Json(new
-                {
-                    success = true,
-                    data = resultado.ListaEntidad
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex,
-                    "❌ Error al obtener lista OR por BOX - OR: {OrCompte}",
-                    or_compte);
+        //        return Json(new
+        //        {
+        //            success = true,
+        //            data = resultado.ListaEntidad
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger?.LogError(ex,
+        //            "❌ Error al obtener lista OR por BOX - OR: {OrCompte}",
+        //            or_compte);
 
-                return Json(new
-                {
-                    success = false,
-                    message = $"Error al obtener lista de OR por BOX: {ex.Message}"
-                });
-            }
-        }
+        //        return Json(new
+        //        {
+        //            success = false,
+        //            message = $"Error al obtener lista de OR por BOX: {ex.Message}"
+        //        });
+        //    }
+        //}
 
-        /// <summary>
-        /// ✅ NUEVA ACTION: Obtiene la lista de OR según Rubro
-        /// </summary>
-        /// <param name="or_compte">ID del comprobante de orden de reparto</param>
-        /// <param name="adm">ID de la administración</param>
-        /// <param name="usu">ID del usuario</param>
-        /// <returns>Lista de OR filtrada por Rubro</returns>
-        [HttpPost]
-        public async Task<JsonResult> ObtenerListaORbyRubro(string or_compte, string adm, string usu)
-        {
-            try
-            {
-                // Validación de entrada
-                if (string.IsNullOrWhiteSpace(or_compte))
-                {
-                    _logger?.LogWarning("⚠️ Parámetro or_compte vacío");
-                    return Json(new
-                    {
-                        success = false,
-                        message = "ID de orden de reparto requerido"
-                    });
-                }
+        ///// <summary>
+        ///// ✅ NUEVA ACTION: Obtiene la lista de OR según Rubro
+        ///// </summary>
+        ///// <param name="or_compte">ID del comprobante de orden de reparto</param>
+        ///// <param name="adm">ID de la administración</param>
+        ///// <param name="usu">ID del usuario</param>
+        ///// <returns>Lista de OR filtrada por Rubro</returns>
+        //[HttpPost]
+        //public async Task<JsonResult> ObtenerListaORbyRubro(string or_compte, string adm, string usu)
+        //{
+        //    try
+        //    {
+        //        // Validación de entrada
+        //        if (string.IsNullOrWhiteSpace(or_compte))
+        //        {
+        //            _logger?.LogWarning("⚠️ Parámetro or_compte vacío");
+        //            return Json(new
+        //            {
+        //                success = false,
+        //                message = "ID de orden de reparto requerido"
+        //            });
+        //        }
 
-                if (string.IsNullOrWhiteSpace(adm))
-                {
-                    _logger?.LogWarning("⚠️ Parámetro adm vacío");
-                    return Json(new
-                    {
-                        success = false,
-                        message = "ID de administración requerido"
-                    });
-                }
+        //        if (string.IsNullOrWhiteSpace(adm))
+        //        {
+        //            _logger?.LogWarning("⚠️ Parámetro adm vacío");
+        //            return Json(new
+        //            {
+        //                success = false,
+        //                message = "ID de administración requerido"
+        //            });
+        //        }
 
-                if (string.IsNullOrWhiteSpace(usu))
-                {
-                    _logger?.LogWarning("⚠️ Parámetro usu vacío");
-                    return Json(new
-                    {
-                        success = false,
-                        message = "ID de usuario requerido"
-                    });
-                }
+        //        if (string.IsNullOrWhiteSpace(usu))
+        //        {
+        //            _logger?.LogWarning("⚠️ Parámetro usu vacío");
+        //            return Json(new
+        //            {
+        //                success = false,
+        //                message = "ID de usuario requerido"
+        //            });
+        //        }
 
-                _logger?.LogInformation("📡 Obteniendo lista OR por Rubro - OR: {OrCompte}, ADM: {Adm}, USU: {Usu}",
-                    or_compte, adm, usu);
+        //        _logger?.LogInformation("📡 Obteniendo lista OR por Rubro - OR: {OrCompte}, ADM: {Adm}, USU: {Usu}",
+        //            or_compte, adm, usu);
 
-                // Invocar servicio
-                var resultado = await _orServicio.ObtenerListaORbyRubro(
-                    or_compte,
-                    adm,
-                    usu,
-                    TokenCookie
-                );
+        //        // Invocar servicio
+        //        var resultado = await _orServicio.ObtenerListaORbyRubro(
+        //            or_compte,
+        //            adm,
+        //            usu,
+        //            TokenCookie
+        //        );
 
-                if (resultado == null)
-                {
-                    _logger?.LogError("❌ Respuesta nula del servicio ObtenerListaORbyRubro");
-                    return Json(new
-                    {
-                        success = false,
-                        message = "Error al obtener lista de OR por Rubro"
-                    });
-                }
+        //        if (resultado == null)
+        //        {
+        //            _logger?.LogError("❌ Respuesta nula del servicio ObtenerListaORbyRubro");
+        //            return Json(new
+        //            {
+        //                success = false,
+        //                message = "Error al obtener lista de OR por Rubro"
+        //            });
+        //        }
 
-                if (!resultado.Ok)
-                {
-                    _logger?.LogWarning("⚠️ Error al obtener lista OR por Rubro: {Mensaje}",
-                        resultado.Mensaje);
-                    return Json(new
-                    {
-                        success = false,
-                        message = resultado.Mensaje ?? "Error al obtener lista de OR por Rubro"
-                    });
-                }
+        //        if (!resultado.Ok)
+        //        {
+        //            _logger?.LogWarning("⚠️ Error al obtener lista OR por Rubro: {Mensaje}",
+        //                resultado.Mensaje);
+        //            return Json(new
+        //            {
+        //                success = false,
+        //                message = resultado.Mensaje ?? "Error al obtener lista de OR por Rubro"
+        //            });
+        //        }
 
-                _logger?.LogInformation("✅ Lista OR por Rubro obtenida correctamente");
+        //        _logger?.LogInformation("✅ Lista OR por Rubro obtenida correctamente");
 
-                return Json(new
-                {
-                    success = true,
-                    data = resultado.ListaEntidad
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex,
-                    "❌ Error al obtener lista OR por Rubro - OR: {OrCompte}",
-                    or_compte);
+        //        return Json(new
+        //        {
+        //            success = true,
+        //            data = resultado.ListaEntidad
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger?.LogError(ex,
+        //            "❌ Error al obtener lista OR por Rubro - OR: {OrCompte}",
+        //            or_compte);
 
-                return Json(new
-                {
-                    success = false,
-                    message = $"Error al obtener lista de OR por Rubro: {ex.Message}"
-                });
-            }
-        }
+        //        return Json(new
+        //        {
+        //            success = false,
+        //            message = $"Error al obtener lista de OR por Rubro: {ex.Message}"
+        //        });
+        //    }
+        //}
 
         /// <summary>
         /// ✅ NUEVA ACTION: Renderiza la vista parcial con lista de OR por BOX
@@ -592,62 +603,84 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         {
             try
             {
-                // Validar autenticación
                 var auth = EstaAutenticado;
                 if (!auth.Item1 || auth.Item2 < DateTime.Now)
                 {
                     return RedirectToAction("Login", "Token", new { area = "seguridad" });
                 }
 
-                // Validar que el comprobante seleccionado originalmente exista
-                if (string.IsNullOrEmpty(ORComprobanteActual))
+                // ✅ REFACTORIZADO: Obtener sesión completa
+                var session = ORSession;
+
+                //si los parametros vienen en null y verificamos que ORSession
+                //tiene el box_id o el rub_id, se cargan los parametros con el valor
+                //resguardado en session.
+                if (string.IsNullOrEmpty(box_id) && string.IsNullOrEmpty(rub_id))
+                {
+                    //analizamos la variable de sesion
+                    if (string.IsNullOrEmpty(session.ORBoxSeleccionado) &&
+                        string.IsNullOrEmpty(session.ORRubroSeleccionado))
+                    {
+                        TempData["error"] = "No se encontro ni el box ni el rubro seleccionado";
+                        return RedirectToAction("CargaORLista", "or", new { area = "pocketppal", or_compte = session.ORComprobanteActual });
+                    }
+                    else
+                    {
+                        //asignamos el valor segun exista en la sesion
+                        box_id = session.ORBoxSeleccionado ?? "";
+                        rub_id = session.ORRubroSeleccionado ?? "";
+                    }
+
+                }
+
+
+                if (string.IsNullOrEmpty(session.ORComprobanteActual))
                 {
                     TempData["error"] = "No se recepcionó el Nro de Comprobante de la OR.";
                     return RedirectToAction("index");
                 }
 
                 // ✅ Determinar parámetros para el servicio
-                string boxIdParam = "%";  // Valor por defecto (todos)
-                string rubIdParam = "%";  // Valor por defecto (todos)
+                string boxIdParam = "%";
+                string rubIdParam = "%";
 
-                // ✅ Guardar BOX o RUBRO en sesión según lo recibido
                 if (!string.IsNullOrWhiteSpace(box_id))
                 {
-                    ORBoxSeleccionado = box_id;
-                    ORRubroSeleccionado = string.Empty; // Limpiar rubro si viene BOX
+                    session.ORBoxSeleccionado = box_id;
+                    session.ORRubroSeleccionado = null;
+                    session.FiltroEsBox = true;
                     boxIdParam = box_id;
-                    
-                    _logger?.LogInformation("📦 BOX seleccionado guardado en sesión: {BoxId}", box_id);
+
+                    _logger?.LogInformation("📦 BOX seleccionado: {BoxId}", box_id);
                 }
                 else if (!string.IsNullOrWhiteSpace(rub_id))
                 {
-                    ORRubroSeleccionado = rub_id;
-                    ORBoxSeleccionado = string.Empty; // Limpiar box si viene RUBRO
+                    session.ORRubroSeleccionado = rub_id;
+                    session.ORBoxSeleccionado = null;
+                    session.FiltroEsBox = false;
                     rubIdParam = rub_id;
-                    
-                    _logger?.LogInformation("🏷️ RUBRO seleccionado guardado en sesión: {RubId}", rub_id);
+
+                    _logger?.LogInformation("🏷️ RUBRO seleccionado: {RubId}", rub_id);
                 }
                 else
                 {
-                    // ✅ Si no viene ninguno, usar los valores de sesión existentes
-                    _logger?.LogWarning("⚠️ No se recibió BOX ni RUBRO. Usando valores de sesión si existen.");
-                    
-                    if (!string.IsNullOrWhiteSpace(ORBoxSeleccionado))
+                    // Usar valores existentes en sesión
+                    if (!string.IsNullOrWhiteSpace(session.ORBoxSeleccionado))
                     {
-                        boxIdParam = ORBoxSeleccionado;
-                        _logger?.LogInformation("📦 Usando BOX de sesión: {BoxId}", ORBoxSeleccionado);
+                        boxIdParam = session.ORBoxSeleccionado;
+                        session.FiltroEsBox = true;
                     }
-                    else if (!string.IsNullOrWhiteSpace(ORRubroSeleccionado))
+                    else if (!string.IsNullOrWhiteSpace(session.ORRubroSeleccionado))
                     {
-                        rubIdParam = ORRubroSeleccionado;
-                        _logger?.LogInformation("🏷️ Usando RUBRO de sesión: {RubId}", ORRubroSeleccionado);
+                        rubIdParam = session.ORRubroSeleccionado;
+                        session.FiltroEsBox = false;
                     }
                 }
 
-                // ✅ Preparar request para el servicio
+                // Preparar request
                 var request = new ORProdRequestDto
                 {
-                    or_compte = ORComprobanteActual,
+                    or_compte = session.ORComprobanteActual,
                     adm_id = AdministracionId,
                     usu_id = UserName,
                     box_id = boxIdParam,
@@ -655,67 +688,52 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 };
 
                 _logger?.LogInformation(
-                    "📡 Obteniendo productos OR - Compte: {OrCompte}, Box: {BoxId}, Rub: {RubId}",
+                    "📡 Obteniendo productos - Compte: {Compte}, Box: {Box}, Rub: {Rub}",
                     request.or_compte, request.box_id, request.rub_id);
 
-                // ✅ Invocar servicio para obtener productos
+                // Invocar servicio
                 var resultado = await _orServicio.ObtenerORProductos(request, TokenCookie);
 
-                if (resultado == null)
+                if (resultado == null || !resultado.Ok)
                 {
-                    _logger?.LogError("❌ Respuesta nula del servicio ObtenerORProductos");
-                    TempData["error"] = "Error al obtener la lista de productos de la OR.";
-                    return RedirectToAction("CargaORLista", new { or_compte = ORComprobanteActual });
+                    _logger?.LogWarning("⚠️ Error al obtener productos: {Msg}", resultado?.Mensaje);
+                    TempData["warn"] = resultado?.Mensaje ?? "No se encontraron productos.";
+                    return RedirectToAction("CargaORLista", new { or_compte = session.ORComprobanteActual });
                 }
 
-                if (!resultado.Ok)
-                {
-                    _logger?.LogWarning("⚠️ Error al obtener productos OR: {Mensaje}", resultado.Mensaje);
-                    TempData["warn"] = resultado.Mensaje ?? "No se encontraron productos para los criterios seleccionados.";
-                    return RedirectToAction("CargaORLista", new { or_compte = ORComprobanteActual });
-                }
+                // ✅ Guardar productos en sesión
+                session.ORListaProductosActual = resultado.ListaEntidad ?? new List<ORProductoDto>();
+                session.UltimaActualizacion = DateTime.Now;
+                ORSession = session;
 
-                // ✅ Guardar lista de productos en sesión
-                ORListaProductosActual = resultado.ListaEntidad ?? new List<ORProductoDto>();
+                _logger?.LogInformation("✅ {Count} productos guardados en sesión", session.ORListaProductosActual.Count);
 
-                _logger?.LogInformation(
-                    "✅ Productos OR obtenidos y guardados en sesión - Total: {Count} productos",
-                    ORListaProductosActual.Count);
-
-                // ✅ Configurar ViewBag para la vista
-                string or = ORComprobanteActual;
+                // Configurar ViewBag
                 var sigla = "OR";
-                string? volver = Url.Action("CargaORLista", "or", new { area = "PocketPpal", or_compte = or });
-                var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
-                
+                string? volver = Url.Action("CargaORLista", "or",
+                    new { area = "PocketPpal", or_compte = session.ORComprobanteActual });
+
+                var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x =>
+                    x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
+
                 if (modulo == null)
                 {
-                    throw new NegocioException("No se logró encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
+                    throw new NegocioException("No se logró encontrar la configuración del Módulo.");
                 }
-                
+
                 modulo.VolverUrl = volver ?? "#";
                 ViewBag.AppItem = modulo;
-                ViewBag.Compte = ORComprobanteActual;
+                ViewBag.Compte = session.ORComprobanteActual;
 
                 return View();
             }
-            catch (NegocioException ex)
-            {
-                _logger?.LogWarning(ex, "⚠️ Error de negocio en ORCargaCarrito");
-                TempData["warn"] = ex.Message;
-                return RedirectToAction("CargaORLista", new { or_compte = ORComprobanteActual });
-            }
-            catch (UnauthorizedException ex)
-            {
-                _logger?.LogWarning(ex, "🔒 Usuario no autorizado en ORCargaCarrito");
-                TempData["warn"] = ex.Message;
-                return RedirectToAction("Login", "Token", new { area = "seguridad" });
-            }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "❌ Error inesperado en ORCargaCarrito");
-                TempData["error"] = "Error al cargar el carrito de productos. Por favor, intente nuevamente.";
-                return RedirectToAction("CargaORLista", new { or_compte = ORComprobanteActual });
+                _logger?.LogError(ex, "❌ Error en ORCargaCarrito");
+                TempData["error"] = "Error al cargar el carrito de productos.";
+
+                var session = ORSession;
+                return RedirectToAction("CargaORLista", new { or_compte = session.ORComprobanteActual });
             }
         }
 
@@ -728,21 +746,19 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpPost]
         public IActionResult BuscaORListaProductos(string orden)
         {
-            GridCoreSmart<ORProductoDto> grid;
-
             try
             {
-                _logger?.LogInformation("📋 Buscando lista de productos OR - Orden: {Orden}", orden);
+                _logger?.LogInformation("📋 Ordenando productos - Criterio: {Orden}", orden);
 
-                // Obtener productos de sesión
-                var productos = ORListaProductosActual;
+                // ✅ REFACTORIZADO: Obtener productos desde ORSession
+                var session = ORSession;
+                var productos = session.ORListaProductosActual;
 
                 if (productos == null || !productos.Any())
                 {
                     _logger?.LogWarning("⚠️ No hay productos en sesión");
 
-                    // Retornar grid vacío
-                    grid = new GridCoreSmart<ORProductoDto>
+                    var gridVacio = new GridCoreSmart<ORProductoDto>
                     {
                         ListaDatos = new StaticPagedList<ORProductoDto>(new List<ORProductoDto>(), 1, 999, 0),
                         CantidadReg = 999,
@@ -752,64 +768,34 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                         SortDir = "ASC"
                     };
 
-                    return PartialView("_gridORListaProducto", grid);
+                    return PartialView("_gridORListaProducto", gridVacio);
                 }
 
-                // ✅ Ordenar según criterio
-                List<ORProductoDto> productosOrdenados;
-
-                switch (orden?.ToUpper())
+                // Ordenar según criterio
+                List<ORProductoDto> productosOrdenados = orden?.ToUpper() switch
                 {
-                    case "B": // Ordenar por BOX
-                        productosOrdenados = productos.OrderBy(x => x.box_id)
-                                                     .ThenBy(x => x.p_desc)
-                                                     .ToList();
-                        _logger?.LogInformation("📦 Productos ordenados por BOX");
-                        break;
+                    "B" => productos.OrderBy(x => x.box_id).ThenBy(x => x.p_desc).ToList(),
+                    "R" => productos.OrderBy(x => x.rub_id).ThenBy(x => x.p_desc).ToList(),
+                    _ => productos.OrderBy(x => x.p_desc).ToList()
+                };
 
-                    case "R": // Ordenar por RUBRO
-                        productosOrdenados = productos.OrderBy(x => x.rub_id)
-                                                     .ThenBy(x => x.p_desc)
-                                                     .ToList();
-                        _logger?.LogInformation("🏷️ Productos ordenados por RUBRO");
-                        break;
+                // ✅ Actualizar sesión con lista ordenada
+                session.ORListaProductosActual = productosOrdenados;
+                session.UltimaActualizacion = DateTime.Now;
+                ORSession = session;
 
-                    case "P": // Ordenar por PRODUCTO
-                    default:
-                        productosOrdenados = productos.OrderBy(x => x.p_desc)
-                                                     .ToList();
-                        _logger?.LogInformation("📝 Productos ordenados por PRODUCTO");
-                        break;
-                }
+                _logger?.LogInformation("✅ {Count} productos ordenados y guardados", productosOrdenados.Count);
 
-                // ✅ Actualizar variable de sesión con lista ordenada
-                ORListaProductosActual = productosOrdenados;
+                var grid = ObtenerGrillaORListaProductos(productosOrdenados, orden ?? "P");
 
-                // ✅ Generar grid
-                grid = ObtenerGrillaORListaProductos(productosOrdenados, orden ?? "P");
-
-                _logger?.LogInformation("✅ Grid generado - {Count} productos", productosOrdenados.Count);
-            }
-            catch (NegocioException ex)
-            {
-                _logger?.LogWarning(ex, "⚠️ Error de negocio al buscar productos OR");
-                TempData["warn"] = ex.Message;
-                return RedirectToAction("ORCargaCarrito");
-            }
-            catch (UnauthorizedException ex)
-            {
-                _logger?.LogWarning(ex, "🔒 Usuario no autorizado");
-                TempData["warn"] = ex.Message;
-                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+                return PartialView("_gridORListaProducto", grid);
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "❌ Error inesperado al buscar productos OR");
+                _logger?.LogError(ex, "❌ Error al ordenar productos OR");
                 TempData["error"] = ex.Message;
                 return RedirectToAction("ORCargaCarrito");
             }
-
-            return PartialView("_gridORListaProducto", grid);
         }
 
         /// <summary>
@@ -846,5 +832,376 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 SortDir = "ASC"
             };
         }
+
+        [HttpGet]
+        public IActionResult ORValidaProducto(string p_id)
+        {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
+
+            if (string.IsNullOrEmpty(p_id))
+            {
+                TempData["error"] = "No se recepcionó el ID del Producto.";
+                return RedirectToAction("ORCargaCarrito");
+            }
+
+            // ✅ REFACTORIZADO: Usar ORSession "7794000006294"
+            var session = ORSession;
+            var producto = session.ORListaProductosActual?.FirstOrDefault(x => x.p_id == p_id);
+
+            if (producto == null)
+            {
+                TempData["error"] = "Producto no encontrado en la lista actual.";
+                return RedirectToAction("ORCargaCarrito");
+            }
+
+            // ✅ Guardar producto seleccionado en sesión
+            session.ORProductoSeleccionado = p_id;
+            session.UltimaActualizacion = DateTime.Now;
+            ORSession = session;
+
+            _logger?.LogInformation("✅ Producto seleccionado: {PId} - {Desc}", p_id, producto.p_desc);
+
+
+            // Configurar ViewBag
+            var sigla = "OR";
+            string? volver = Url.Action("ORCargaCarrito", "or",
+                new { area = "PocketPpal", or_compte = session.ORComprobanteActual });
+
+            var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x =>
+                x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
+
+            if (modulo == null)
+            {
+                throw new NegocioException("No se logró encontrar la configuración del Módulo.");
+            }
+
+            modulo.VolverUrl = volver ?? "#";
+            ViewBag.AppItem = modulo;
+            ViewBag.Compte = session.ORComprobanteActual;
+
+            //lo tengo que mandar para hacer la comparativa de si la cantidad 
+            //solicitada es correcta o no.
+            ViewBag.Producto = producto;
+
+            return View((string.Empty, session.ORComprobanteActual));
+        }
+
+        [HttpPost]
+        public IActionResult ValidarProductoIngresado(string pId)
+        {
+            string prod = string.Empty;
+            try
+            {
+                var sesion = ORSession;
+
+                prod = sesion.ORProductoSeleccionado ?? "";
+
+
+                if (prod != null && prod.Equals(pId))
+                {
+                    return Json(new { error = false, warn = false, msg = "Producto es Correcto" });
+                }
+                else
+                {
+                    throw new NegocioException("El Producto ingresado no corresponde al Producto esperado");
+                }
+
+            }
+            catch (NegocioException ex)
+            {
+
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} Producto ingresado:{pId} - Producto Esperado {prod}");
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                _logger.LogWarning($"{ex.Message} - antes de continuar debera autenticarse nuevamente.");
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} Producto ingresado:{pId} - Producto Esperado {prod}");
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// ✅ NUEVA ACTION: Valida que el BOX ingresado coincida con el seleccionado en sesión
+        /// </summary>
+        /// <param name="boxIngresado">Código de BOX escaneado por el usuario</param>
+        /// <returns>Resultado de la validación</returns>
+        [HttpPost]
+        public IActionResult ValidarBoxIngresado(string boxIngresado)
+        {
+            try
+            {
+                // Validación de entrada
+                if (string.IsNullOrWhiteSpace(boxIngresado))
+                {
+                    _logger?.LogWarning("⚠️ Validación BOX: parámetro vacío");
+                    return Json(new
+                    {
+                        success = false,
+                        message = "Debe ingresar un código de BOX"
+                    });
+                }
+
+                boxIngresado = boxIngresado.Trim();
+
+                if (boxIngresado.Length != 11)
+                {
+                    _logger?.LogWarning("⚠️ Validación BOX: longitud incorrecta ({Length})", boxIngresado.Length);
+                    return Json(new
+                    {
+                        success = false,
+                        message = "El código de BOX debe tener 11 caracteres"
+                    });
+                }
+
+                // ✅ Obtener sesión OR
+                var session = ORSession;
+
+                if (string.IsNullOrEmpty(session.ORComprobanteActual))
+                {
+                    _logger?.LogWarning("⚠️ Validación BOX: sin comprobante en sesión");
+                    return Json(new
+                    {
+                        success = false,
+                        message = "No hay una orden de reparto activa en sesión"
+                    });
+                }
+
+                // ✅ Validar según el tipo de filtro usado
+                string boxEnSesion = string.Empty;
+
+                if (session.FiltroEsBox && !string.IsNullOrWhiteSpace(session.ORBoxSeleccionado))
+                {
+                    boxEnSesion = session.ORBoxSeleccionado;
+                }
+                else if (!session.FiltroEsBox)
+                {
+                    // Si se filtró por rubro, obtener el box del producto seleccionado
+                    var productoActual = session.ORListaProductosActual?
+                        .FirstOrDefault(p => p.p_id == session.ORProductoSeleccionado);
+
+                    if (productoActual != null)
+                    {
+                        boxEnSesion = productoActual.box_id;
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(boxEnSesion))
+                {
+                    _logger?.LogWarning("⚠️ Validación BOX: sin BOX seleccionado en sesión");
+                    return Json(new
+                    {
+                        success = false,
+                        message = "No hay un BOX seleccionado en la sesión actual"
+                    });
+                }
+
+                _logger?.LogInformation("🔍 Comparando BOX - Ingresado: {Ingresado}, Sesión: {Sesion}",
+                    boxIngresado, boxEnSesion);
+
+                // ✅ Comparación exacta (case-sensitive)
+                if (boxIngresado.Equals(boxEnSesion, StringComparison.Ordinal))
+                {
+                    _logger?.LogInformation("✅ BOX validado correctamente: {BoxId}", boxIngresado);
+
+                    // Actualizar timestamp de sesión
+                    session.UltimaActualizacion = DateTime.Now;
+                    ORSession = session;
+
+                    return Json(new
+                    {
+                        success = true,
+                        message = "BOX validado correctamente",
+                        data = new
+                        {
+                            boxId = boxIngresado,
+                            comprobante = session.ORComprobanteActual
+                        }
+                    });
+                }
+                else
+                {
+                    _logger?.LogWarning("⚠️ BOX no coincide - Esperado: {Esperado}, Ingresado: {Ingresado}",
+                        boxEnSesion, boxIngresado);
+
+                    return Json(new
+                    {
+                        success = false,
+                        message = $"El BOX ingresado no coincide. Se esperaba: {boxEnSesion}"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "❌ Error al validar BOX ingresado: {Box}", boxIngresado);
+
+                return Json(new
+                {
+                    success = false,
+                    message = $"Error al validar BOX: {ex.Message}"
+                });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> LimpiaProductoCarritoOR(string p_id, string boxId = "")
+        {
+            try
+            {
+                var sesion = ORSession;
+
+                var prod = sesion.ORListaProductosActual.FirstOrDefault(x => x.p_id == p_id);
+
+                if (prod == null)
+                {
+                    return Json(new { error = false, warn = true, msg = $"No se encontró el producto en la lista actual." });
+                }
+
+                ORCargaCarritoRequest request = new ORCargaCarritoRequest();
+                request.or_compte = prod.ti;
+                request.adm_id = AdministracionId;
+                request.usu_id = UserName;
+                request.box_id = prod.box_id;
+                request.desarma_box = true;
+                request.p_id = prod.p_id;
+                request.unidad_pres = prod.unidad_pres;
+                request.bulto = 0;
+                request.us = 0;
+                request.cantidad = 0;
+                request.fv = DateTime.MinValue.ToStringYYYYMMDD();
+
+                RespuestaGenerica<RespuestaDto> respv = await _orServicio.ValidaProductoCarritoOR(request, TokenCookie);
+                if (respv.Ok)
+                {
+                    RespuestaGenerica<RespuestaDto> resp = await _orServicio.ResguardarProductoCarrito(request, TokenCookie);
+
+                    if (resp.Ok)
+                    {
+                        return Json(new { error = false, warn = false, msg = $"Producto {ProductoBase.P_desc} fue Limpiado exitosamente" });
+                    }
+                    else { return Json(new { error = false, warn = true, msg = resp.Mensaje }); }
+                }
+                else
+                {
+                    return Json(new { error = false, warn = true, msg = respv.Mensaje });
+                }
+            }
+            catch (NegocioException ex)
+            {
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name}params: {p_id}");
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} params: {p_id} ");
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} params: {p_id} ");
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResguardarProductoCarritoOR(string p_id, int up, int bulto, decimal unid, decimal cantidad, DateTime? fv)//, bool desarma = true)
+        {
+            try
+            {
+                var sesion = ORSession;
+
+                var prod = sesion.ORListaProductosActual.FirstOrDefault(x => x.p_id == p_id);
+
+                if (prod == null)
+                {
+                    return Json(new { error = false, warn = true, msg = $"No se encontró el producto en la lista actual." });
+                }
+
+                if (cantidad < 1)// && desarma)
+                {
+                    return Json(new { error = false, warn = true, msg = $"La cantidades de los productos a cargar siempre tienen que ser positivas, mayores a 0 (cero)." });
+                }
+                if (prod.pedido < cantidad && ProductoBase.Up_id.Equals("07"))// && (!TIActual.SinAU || !desarma)) //verificamos las cantidades siempre y cuando haya una autorización o en el caso de transferencia de box completo con desarma = false
+                {
+                    return Json(new { error = false, warn = true, msg = $"No se puede cargar más unidades o cantidades ({cantidad}) que las pedidas ({prod.pedido})" });
+                }
+                //DEBO VALIAR SI ES PESABLE UP_ID != 07 QUE LA UP==1
+                if (!ProductoBase.Up_id.Equals("07") && up != 1)// && desarma)
+                {
+                    return Json(new { error = false, warn = true, msg = $"EL PRODUCTO NO ES POR UNIDADES. LA UNIDAD DE PRESENTACIÓN TIENE QUE SER IGUAL A 1 SIEMPRE." });
+                }
+                ////VALIDAR LA FECHA FV CON LA FECHA DE CONTROL (SOLO PARA TRANSFERENCIA DE SUCURSALES)
+                //var fechaControl = ProductoBase.p_con_vto_ctl;
+
+                //if (ProductoBase.P_con_vto.Equals("S") && (fv == null || fechaControl > fv.Value) && prod.TipoTI.Equals("S"))
+                //{
+                //    return Json(new { error = false, warn = true, msg = $"LA FECHA DE CONTROL DEL PRODUCTO {ProductoBase.P_desc} NO ES VALIDA." });
+                //}
+
+                ORCargaCarritoRequest request = new ORCargaCarritoRequest();
+
+                request.or_compte = prod.ti;
+                request.adm_id = AdministracionId;
+                request.usu_id = UserName;
+                request.box_id = prod.box_id;
+                request.desarma_box = true;
+                request.p_id = prod.p_id;
+                request.unidad_pres = up;
+                request.bulto = bulto;
+                request.us = unid;
+                request.cantidad = cantidad;
+
+                if (fv.HasValue)
+                {
+                    request.fv = fv.Value.ToStringYYYYMMDD();   ///debo traer fecha de vencimiento del producto a mostrar
+                }
+                else
+                {
+                    request.fv = "19700101";
+                }
+
+                RespuestaGenerica<RespuestaDto> respv = await _orServicio.ValidaProductoCarritoOR(request, TokenCookie);
+                if (respv.Ok)
+                {
+                    RespuestaGenerica<RespuestaDto> resp = await _orServicio.ResguardarProductoCarrito(request, TokenCookie);
+
+                    if (resp.Ok)
+                    {
+                        return Json(new { error = false, warn = false, msg = $"Producto {ProductoBase.P_desc} fue cargado exitosamente" });
+                    }
+                    else { return Json(new { error = false, warn = true, msg = resp.Mensaje }); }
+                }
+                else
+                {
+                    return Json(new { error = false, warn = true, msg = respv.Mensaje });
+                }
+
+            }
+            catch (NegocioException ex)
+            {
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name}params: {p_id} {up} {bulto} {unid} {cantidad} {fv}");
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} params: {p_id} {up} {bulto} {unid} {cantidad} {fv}");
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} params: {p_id} {up} {bulto} {unid} {cantidad} {fv}");
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
+
     }
 }

@@ -49,14 +49,17 @@
          // ✅ NUEVO: URL para buscar productos con ordenamiento
             var BuscarListaProductosORUrl = "@Url.Action("BuscaORListaProductos", "or", new { area = "pocketppal" })";
 
-            // ✅ NUEVO: URL para limpiar producto del carrito (TODO: implementar)
-            var LimpiaProductoCarritoORUrl = "@Url.Action("LimpiaProductoCarrito", "or", new { area = "pocketppal" })";
+            // ✅ NUEVO: URL para limpiar producto del carrito 
+            var LimpiaProductoCarritoORUrl = "@Url.Action("LimpiaProductoCarritoOR", "or", new { area = "pocketppal" })";
+
+        var proximoProductoUrl = "@Url.Action("ORCargaCarrito", "or", new { area = "pocketppal" })";
+
 
           // Variables globales desde PocketControllerBase
         administracion = '@(User.Claims.First(c => c.Type.Contains("AdmId")).Value ?? "")';
         var admAuth = administracion.split('#')[0];
         var usuAuth = '@(User.Claims.First(c => c.Type.Contains("name"))?.Value ?? "")';
-        var orCompteActual = '@(ViewContext.HttpContext.Session.GetString("ORComprobanteActual") ?? "")';
+        var orCompteActual = '@orCompte';
     </script>
     <script src="~/js/app/or/orCoreCommon.js"></script>
     <script src="~/js/app/or/orCoreCarrito.js"></script>

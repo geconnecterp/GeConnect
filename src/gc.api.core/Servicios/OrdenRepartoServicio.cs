@@ -5,6 +5,8 @@ using gc.api.core.Interfaces.Datos;
 using gc.api.core.Interfaces.Servicios;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Almacen.Tr;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenReparto;
 using Microsoft.Data.SqlClient;
 using System;
@@ -124,6 +126,72 @@ namespace gc.api.core.Servicios
             var result = _repository.EjecutarLstSpExt<ORProductoDto>(sp, ps, true);
             return result;
 
+        }
+
+        public RespuestaDto ValidaProductoCarritoOR(ORCargaCarritoRequest request)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_OR_CARRITO_VALIDA;
+
+            var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@or_compte", request.or_compte),
+                new SqlParameter("@adm_id", request.adm_id),
+                new SqlParameter("@usu_id", request.usu_id),
+                new SqlParameter("@box_id", request.box_id),
+                new SqlParameter("@desarma_box", request.desarma_box),
+                new SqlParameter("@p_id", request.p_id),
+                new SqlParameter("@unidad_pres", request.unidad_pres),
+                new SqlParameter("@bulto", request.bulto),
+                new SqlParameter("@us", request.us),
+                new SqlParameter("@cantidad", request.cantidad),
+                new SqlParameter("@fv", request.fv)
+            };
+            var result = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+            if(result != null && result.Count > 0)
+            {
+                return result[0];
+            }
+            else
+            {
+                return new RespuestaDto()
+                {
+                    resultado = -1,
+                    resultado_msj = "Error al validar el producto"
+                };
+            }
+        }
+
+        public RespuestaDto ResguardarProductoCarrito(ORCargaCarritoRequest request)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_OR_CARRITO_CARGA;
+
+            var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@or_compte", request.or_compte),
+                new SqlParameter("@adm_id", request.adm_id),
+                new SqlParameter("@usu_id", request.usu_id),
+                new SqlParameter("@box_id", request.box_id),
+                new SqlParameter("@desarma_box", request.desarma_box),
+                new SqlParameter("@p_id", request.p_id),
+                new SqlParameter("@unidad_pres", request.unidad_pres),
+                new SqlParameter("@bulto", request.bulto),
+                new SqlParameter("@us", request.us),
+                new SqlParameter("@cantidad", request.cantidad),
+                new SqlParameter("@fv", request.fv)
+            };
+            var result = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+            if (result != null && result.Count > 0)
+            {
+                return result[0];
+            }
+            else
+            {
+                return new RespuestaDto()
+                {
+                    resultado = -1,
+                    resultado_msj = "Error al cargar el producto"
+                };
+            }
         }
     }
 }
