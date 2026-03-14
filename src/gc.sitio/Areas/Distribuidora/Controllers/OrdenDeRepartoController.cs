@@ -362,7 +362,7 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 
 				if (dto == null)
 					return Json(new { ok = false, mensaje = "Los datos de análisis no fueron recepcionados. Verifique." });
-				if (AnalizarAutOrdenDeRepartoLista== null || !AnalizarAutOrdenDeRepartoLista.Any())
+				if (AnalizarAutOrdenDeRepartoLista == null || !AnalizarAutOrdenDeRepartoLista.Any())
 					return Json(new { ok = false, mensaje = "No se han analizado los datos de la orden de reparto para poner en curso. Verifique." });
 
 				var json = JsonConvert.SerializeObject(
@@ -450,6 +450,9 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 				if (respuestaGen.ListaEntidad == null || respuestaGen.ListaEntidad.Count == 0)
 					return PartialView("_gridMensaje", CrearRespuestaError("No se han encontrado pedidos asociados a la orden de reparto."));
 
+				CargarDetalleDeLosPedidosDeLaOrdenDeReparto(orCompte, respuestaGen.ListaEntidad);
+				CalcularUpDownEnPedidosDeLaOrdenDeReparto(respuestaGen.ListaEntidad);
+
 				var respuestaGen2 = await _ordenDeRepartoServicio.AConsolidarConteos(orCompte, TokenCookie);
 				var listaConteos = respuestaGen2.ListaEntidad ?? [];
 				var model = new OrdenDeRepartoConsolidarModel
@@ -474,7 +477,136 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			}
 		}
 
+		[HttpPost]
+		public IActionResult CargarDetalleDelPedidoDeLaOrdenEnConsolidar(string orCompte, string pcCompte)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
+				if (string.IsNullOrEmpty(orCompte))
+					return PartialView("_gridMensaje", CrearRespuestaError("No se han provisto los datos necesarios: Orden de Reparto."));
+				if (string.IsNullOrEmpty(pcCompte))
+					return PartialView("_gridMensaje", CrearRespuestaError("No se han provisto los datos necesarios: Pedido de Cliente."));
+
+				var itemsDetalle = AConsolidarPedidoClienteDetalleLista.Where(x => x.or_compte == orCompte && x.pc_compte == pcCompte).ToList();
+				return PartialView("_gridOR_Consolidar_PedidoDeORDetalle", ObtenerGridCoreSmart<AConsolidarPedidoClienteDetalleDto>(itemsDetalle == null ? [] : [.. itemsDetalle]));
+			}
+			catch (NegocioException ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaError("Error al obtener el detalle de productos del pedido en Consolidar."));
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> CargarConteosEnConsolidar(string orCompte)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
+				if (string.IsNullOrEmpty(orCompte))
+					return PartialView("_gridMensaje", CrearRespuestaError("No se han provisto los datos necesarios: Orden de Reparto."));
+
+				var itemsConteos = await _ordenDeRepartoServicio.AConsolidarConteos(orCompte, TokenCookie);
+				return PartialView("_gridOR_Consolidar_PedidoDeORConteos", ObtenerGridCoreSmart<AConsolidarConteosDto>(itemsConteos.ListaEntidad == null ? [] : [.. itemsConteos.ListaEntidad]));
+			}
+			catch (NegocioException ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaError("Error al obtener el detalle de productos del pedido en Consolidar."));
+			}
+		}
+
+		[HttpPost]
+		public IActionResult CargarDetalleDelProductoEnConteoEnConsolidar(string orCompte, string pId)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
+				if (string.IsNullOrEmpty(orCompte))
+					return PartialView("_gridMensaje", CrearRespuestaError("No se han provisto los datos necesarios: Orden de Reparto."));
+				if (string.IsNullOrEmpty(pId))
+					return PartialView("_gridMensaje", CrearRespuestaError("No se han provisto los datos necesarios: Producto."));
+
+				var itemsDetalle = AConsolidarPedidoClienteDetalleLista.Where(x => x.or_compte == orCompte && x.p_id == pId).ToList();
+				return PartialView("_gridOR_Consolidar_PedidoDeORConteosDetalle", ObtenerGridCoreSmart<AConsolidarPedidoClienteDetalleDto>(itemsDetalle == null ? [] : [.. itemsDetalle]));
+			}
+			catch (NegocioException ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaError("Error al obtener el detalle de productos del pedido en Consolidar."));
+			}
+		}
+
 		#region Metodos Privados
+		private void CalcularUpDownEnPedidosDeLaOrdenDeReparto(List<PedidoEnOrdenDeRepartoDto> pedidosDeLaOrdenDeReparto)
+		{
+			if (AConsolidarPedidoClienteDetalleLista == null || AConsolidarPedidoClienteDetalleLista.Count == 0)
+				return;
+
+			var listaTemp = AConsolidarPedidoClienteDetalleLista;
+			// 1) Agrupar por OR y Pedido
+			var grupos = listaTemp
+				.GroupBy(x => new { x.or_compte, x.pc_compte })
+				.ToList();
+
+			foreach (var grupo in grupos)
+			{
+				string or = grupo.Key.or_compte;
+				string pc = grupo.Key.pc_compte;
+
+				// Sublista de productos de ese OR + Pedido
+				var productosDelPedido = grupo.ToList();
+				var pedido = pedidosDeLaOrdenDeReparto.Where(x => x.or_compte == or && x.pc_compte == pc).FirstOrDefault();
+
+				if (productosDelPedido == null || productosDelPedido.Count <= 0)
+					continue;
+				if (pedido == null)
+					continue;
+
+				if (productosDelPedido.Where(x => (x.pcd_pedida - x.cantidad) < 0).Any())
+					pedido.mostrar_down = true;
+				if (productosDelPedido.Where(x => (x.pcd_pedida - x.cantidad) > 0).Any())
+					pedido.mostrar_up = true;
+
+			}
+		}
+
+		private void CargarDetalleDeLosPedidosDeLaOrdenDeReparto(string orCompte, List<PedidoEnOrdenDeRepartoDto> lista)
+		{
+			if (lista == null || lista.Count <= 0)
+				return;
+			var listaIdsPedidos = lista.Select(x => x.pc_compte).ToList();
+			if (listaIdsPedidos == null || listaIdsPedidos.Count <= 0)
+				return;
+			var listaTemp = new List<AConsolidarPedidoClienteDetalleDto>();
+			foreach (var item in listaIdsPedidos)
+			{
+				var itemsDetalle = _ordenDeRepartoServicio.AConsolidarPedidoClienteDetalle(new AConsolidarPedidoClienteDetalleRequest() { or_compte = orCompte, pc_compte = item, p_id = "%" }, TokenCookie).Result.ListaEntidad;
+				if (itemsDetalle != null && itemsDetalle.Count > 0)
+					listaTemp.AddRange(itemsDetalle);
+			}
+			AConsolidarPedidoClienteDetalleLista = listaTemp;
+		}
+
 		private List<PedidoEnOrdenDeRepartoDto> ObtenerListaDePedidosEnOrdenDeRepartoPorAccion(char accion, string orCompte)
 		{
 			if (accion == 'M')

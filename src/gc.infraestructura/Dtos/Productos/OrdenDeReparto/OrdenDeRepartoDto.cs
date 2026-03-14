@@ -61,5 +61,7 @@ namespace gc.infraestructura.Dtos.Productos.OrdenDeReparto
 		public decimal rp_comi_base { get; set; } = 0.00M;
 		public decimal rp_comi_porc { get; set; } = 0.00M;
 		public decimal pc_precio_tot { get; set; } = 0.00M;
+		public bool mostrar_up { get; set; } = false;
+		public bool mostrar_down { get; set; } = false;
 	}
 }

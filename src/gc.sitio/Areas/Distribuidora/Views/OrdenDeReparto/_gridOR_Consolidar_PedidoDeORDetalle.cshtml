@@ -3,6 +3,22 @@
 	var alt = true;
 	string clase = string.Empty;
 }
+<style>
+	.table-golden td.cell-up {
+		background-color: #b6f7b6 !important; /* verde */
+		color: #0f4d0f !important;
+		font-weight: bold;
+		text-align: center;
+	}
+
+	.table-golden td.cell-down {
+		background-color: #ffb3b3 !important; /* rojo */
+		color: #7a0000 !important;
+		font-weight: bold;
+		text-align: center;
+	}
+
+</style>
 <div class="table-responsive table-wrapper-400">
 	<table class="table table-sm table-hover mb-0 table-golden" id="tbConsolidarDetallesPedido">
 		<thead class="sticky-top table-golden-header-compact">
@@ -31,7 +47,7 @@
 			{
 				foreach (var item in Model.ListaDatos)
 				{
-					var dif = item.cantidad - item.pcd_pedida;
+					var dif = item.pcd_pedida - item.cantidad;
 					var claseDif = dif > 0 ? "dif-positivo" : (dif < 0 ? "dif-negativo" : "");
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase row-detalle"
@@ -43,7 +59,9 @@
 						<td>@item.pcd_origen</td>
 						<td class="text-end">@item.pcd_pedida</td>
 						<td class="text-end">@item.cantidad</td>
-						<td class="text-end @claseDif">@dif</td>
+						<td class="text-end @(dif > 0 ? "cell-up" : (dif < 0 ? "cell-down" : ""))">
+							@dif
+						</td>
 					</tr>
 				}
 			}

@@ -211,14 +211,95 @@ function ConfigurarEventosEnPonerEnConsolidar() {
 				$this.addClass("selected-row");
 				let pcCompte = $this.data("pc-compte");
 				pcCompteSeleccionadoEnConsolidar = pcCompte;
-				CargarPedidosDeLaOrdenEnConsolidar(orCompteSeleccionado, pcCompteSeleccionadoEnConsolidar);
+				CargarDetalleDelPedidoDeLaOrdenEnConsolidar(orCompteSeleccionado, pcCompteSeleccionadoEnConsolidar);
+				CargarConteosEnConsolidar(orCompteSeleccionado);
+			}
+		}
+	});
+
+	$(document).off("click", "#tbConsolidarConteos tbody tr");
+	$(document).on("click", "#tbConsolidarConteos tbody tr", function (e) {
+		if (!$(e.target).is("button, a, .btn, i")) {
+			var $this = $(this);
+			var fueSeleccionado = $this.hasClass("selected-row");
+
+			$("#tbConsolidarConteos tbody tr").removeClass("selected-row");
+
+			if (!fueSeleccionado) {
+				$this.addClass("selected-row");
+				let orCompte = $this.data("or-compte");
+				let pId = $this.data("p-id");
+				CargarDetalleDelProductoSeleccionadoEnConteo(orCompte, pId);
 			}
 		}
 	});
 }
 
-function CargarPedidosDeLaOrdenEnConsolidar(orCompte, pcCompte) {
+function CargarDetalleDelProductoSeleccionadoEnConteo(orCompte, pId) {
+	AbrirWaiting("Cargando detalle de conteos en Pedidos...");
+	PostGenHtml({ orCompte: orCompte, pId: pId }, cargarDetalleDelProductoEnConteoEnConsolidarUrl, function (html) {
+		CerrarWaiting();
+		$("#divConsolidarDetalleProductoSeleccionado").html(html);
+		ConfigurarEventosEnProductoSeleccionadoEnConteo();
+	});
+}
 
+function ConfigurarEventosEnProductoSeleccionadoEnConteo() {
+}
+
+function CargarDetalleDelPedidoDeLaOrdenEnConsolidar(orCompte, pcCompte) {
+	AbrirWaiting("Cargando productos del pedido...");
+	PostGenHtml({ orCompte: orCompte, pcCompte: pcCompte }, cargarDetalleDelPedidoDeLaOrdenEnConsolidarUrl, function (html) {
+		CerrarWaiting();
+		$("#divConsolidarDetallesPedido").html(html);
+		ConfigurarEventosEnPedidosDeLaOrdenEnConsolidar();
+	});
+}
+
+function CargarConteosEnConsolidar(orCompte) {
+	AbrirWaiting("Cargando conteos...");
+	PostGenHtml({ orCompte: orCompte }, cargarConteosEnConsolidarUrl, function (html) {
+		CerrarWaiting();
+		$("#divConsolidarConteos").html(html);
+		ConfigurarEventosEnConteosEnConsolidar();
+	});
+}
+
+function ConfigurarEventosEnConteosEnConsolidar() {
+	$(document).off("click", "#tbConsolidarConteos tbody tr");
+	$(document).on("click", "#tbConsolidarConteos tbody tr", function (e) {
+		if (!$(e.target).is("button, a, .btn, i")) {
+			var $this = $(this);
+			var fueSeleccionado = $this.hasClass("selected-row");
+
+			$("#tbConsolidarConteos tbody tr").removeClass("selected-row");
+
+			if (!fueSeleccionado) {
+				$this.addClass("selected-row");
+				let pId = $this.data("p-id");
+				let orCompte = $this.data("or-compte");
+				CargarDetalleDelProductoSeleccionadoEnConteo(orCompte, pId);
+			}
+		}
+	});
+}
+
+function ConfigurarEventosEnPedidosDeLaOrdenEnConsolidar() {
+	$(document).off("click", "#tbConsolidarDetallesPedido tbody tr");
+	$(document).on("click", "#tbConsolidarDetallesPedido tbody tr", function (e) {
+		if (!$(e.target).is("button, a, .btn, i")) {
+			var $this = $(this);
+			var fueSeleccionado = $this.hasClass("selected-row");
+
+			$("#tbConsolidarDetallesPedido tbody tr").removeClass("selected-row");
+
+			if (!fueSeleccionado) {
+				$this.addClass("selected-row");
+				let pId = $this.data("p-id");
+				//Hacer algo?
+			}
+		}
+	});
 }
 
 function CargarVistaAnalizaAutEnOrdenDeReparto(orCompte) {

@@ -76,6 +76,23 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 				_context.HttpContext?.Session.SetString("AnalizarAutOrdenDeRepartoLista", json);
 			}
 		}
-		//
+
+		public List<AConsolidarPedidoClienteDetalleDto> AConsolidarPedidoClienteDetalleLista
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("AConsolidarPedidoClienteDetalleLista") ?? string.Empty;
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<AConsolidarPedidoClienteDetalleDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("AConsolidarPedidoClienteDetalleLista", json);
+			}
+		}
 	}
 }
