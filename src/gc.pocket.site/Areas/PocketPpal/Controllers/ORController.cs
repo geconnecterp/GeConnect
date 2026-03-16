@@ -194,7 +194,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
 
             // ✅ REFACTORIZADO: Usar ORSession
-            var session = ORSession;
+            //la inicializacion con nuevo comprobante
+            var session = new ORSessionDto(); 
             session.ORComprobanteActual = or_compte;
             session.UltimaActualizacion = DateTime.Now;
             ORSession = session;
