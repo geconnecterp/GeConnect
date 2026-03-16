@@ -38,7 +38,7 @@ function inicializarEventos() {
     // Evento de botón continuar
     $('#btnContinuar').on('click', function (e) {
         e.preventDefault();
-        continuarConOrden();    
+        continuarConOrden();
     });
 
     // Evento de doble tap para móviles
@@ -112,7 +112,7 @@ function procesarRespuestaOrdenes(response) {
         AbrirMensaje(
             "ERROR",
             "Respuesta del servidor inválida",
-            function() {
+            function () {
                 $("#msjModal").modal("hide");
                 return true;
             },
@@ -142,7 +142,7 @@ function procesarRespuestaOrdenes(response) {
         AbrirMensaje(
             "ADVERTENCIA",
             mensaje,
-            function() {
+            function () {
                 $("#msjModal").modal("hide");
                 return true;
             },
@@ -329,7 +329,7 @@ function verDetalleOrden(ordenId) {
     AbrirMensaje(
         "INFORMACIÓN",
         `Detalle de orden ${ordenId} - Próximamente`,
-        function() {
+        function () {
             $("#msjModal").modal("hide");
             return true;
         },
@@ -352,7 +352,7 @@ function continuarConOrden() {
         AbrirMensaje(
             "ADVERTENCIA",
             "Por favor, seleccione una orden primero",
-            function() {
+            function () {
                 $("#msjModal").modal("hide");
                 return true;
             },
@@ -366,14 +366,14 @@ function continuarConOrden() {
 
     // 2. Obtener ID de la orden
     const ordenId = OR.cache.ordenSeleccionada.or_compte;
-    
+
     // 3. Validar que existe el ID de orden
     if (!ordenId) {
         console.error('❌ ID de orden no disponible');
         AbrirMensaje(
             "ERROR",
             "No se pudo obtener el ID de la orden",
-            function() {
+            function () {
                 $("#msjModal").modal("hide");
                 return true;
             },
@@ -387,14 +387,14 @@ function continuarConOrden() {
 
     // 4. Obtener ID de usuario desde variable global
     const usuarioId = typeof usuarioAuth !== 'undefined' ? usuarioAuth : null;
-    
+
     // 5. Validar que existe el ID de usuario
     if (!usuarioId) {
         console.error('❌ ID de usuario no disponible');
         AbrirMensaje(
             "ERROR",
             "No se pudo identificar el usuario. Por favor, inicie sesión nuevamente.",
-            function() {
+            function () {
                 $("#msjModal").modal("hide");
                 return true;
             },
@@ -432,24 +432,24 @@ function validarUsuarioParaOrden(orCompte, usuId) {
             usuId: usuId
         },
         timeout: 30000,
-        success: function(response) {
+        success: function (response) {
             CerrarWaiting();
             console.log('✅ Respuesta de validación recibida:', response);
             procesarRespuestaValidacion(response, orCompte);
         },
-        error: function(xhr, status, error) {
+        error: function (xhr, status, error) {
             CerrarWaiting();
             console.error('❌ Error al validar usuario:', error);
-            
+
             let mensajeError = 'Error al validar usuario';
-            
+
             switch (xhr.status) {
                 case 401:
                     mensajeError = 'Sesión expirada. Por favor, inicie sesión nuevamente.';
                     AbrirMensaje(
                         "ERROR",
                         mensajeError,
-                        function() {
+                        function () {
                             $("#msjModal").modal("hide");
                             window.location.href = '/seguridad/token/login';
                             return true;
@@ -472,11 +472,11 @@ function validarUsuarioParaOrden(orCompte, usuId) {
                 default:
                     mensajeError = `Error: ${error || 'Desconocido'}`;
             }
-            
+
             AbrirMensaje(
                 "ERROR",
                 mensajeError,
-                function() {
+                function () {
                     $("#msjModal").modal("hide");
                     return true;
                 },
@@ -502,7 +502,7 @@ function procesarRespuestaValidacion(response, orCompte) {
         AbrirMensaje(
             "ERROR",
             "Respuesta de validación inválida",
-            function() {
+            function () {
                 $("#msjModal").modal("hide");
                 return true;
             },
@@ -518,11 +518,11 @@ function procesarRespuestaValidacion(response, orCompte) {
         // ⚠️ Validación fallida - Mostrar warning
         const mensaje = response.message || 'Usuario no autorizado para procesar esta orden';
         console.warn('⚠️ Validación fallida:', mensaje);
-        
+
         AbrirMensaje(
             "ADVERTENCIA",
             mensaje,
-            function() {
+            function () {
                 $("#msjModal").modal("hide");
                 return true;
             },
@@ -536,7 +536,7 @@ function procesarRespuestaValidacion(response, orCompte) {
 
     // ✅ Validación exitosa
     console.log('✅ Usuario validado correctamente');
-    
+
     procesarOrden(orCompte);
 }
 
@@ -554,7 +554,7 @@ function procesarOrden(orCompte) {
         AbrirMensaje(
             "ERROR",
             "No se pudo obtener el ID de la orden",
-            function() {
+            function () {
                 $("#msjModal").modal("hide");
                 return true;
             },
@@ -713,7 +713,7 @@ function manejarErrorCarga(xhr, status, error) {
             AbrirMensaje(
                 "ERROR",
                 mensajeError,
-                function() {
+                function () {
                     $("#msjModal").modal("hide");
                     window.location.href = '/seguridad/token/login';
                     return true;
@@ -743,7 +743,7 @@ function manejarErrorCarga(xhr, status, error) {
     AbrirMensaje(
         "ERROR",
         mensajeError,
-        function() {
+        function () {
             $("#msjModal").modal("hide");
             return true;
         },

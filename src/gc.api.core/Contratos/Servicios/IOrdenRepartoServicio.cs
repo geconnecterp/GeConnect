@@ -18,5 +18,6 @@ namespace gc.api.core.Contratos.Servicios
         List<ORProductoDto> ObtenerListaORProductos(ORProdRequestDto request);
         RespuestaDto ValidaProductoCarritoOR(ORCargaCarritoRequest request);
         RespuestaDto ResguardarProductoCarrito(ORCargaCarritoRequest request);
+        List<ORProductoDto> ObtenerListaProductosOrCtl(ORProdRequestDto request);
     }
 }
