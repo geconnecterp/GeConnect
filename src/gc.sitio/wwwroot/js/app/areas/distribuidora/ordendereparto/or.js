@@ -416,6 +416,8 @@ function GuardarReasignacionEnDatosDeSesion() {
 		let $fila = $(this);
 		// Obtener ID del producto (p_id)
 		let productoId = $fila.data("p-id");
+		let orCompte = $fila.data("or-compte");
+		let pcCompte = $fila.data("pc-compte");
 		// Obtener cantidad desde el input
 		let $input = $fila.find("td.celda-a-enviar input");
 		let cantidad = $input.val().trim();
@@ -425,14 +427,14 @@ function GuardarReasignacionEnDatosDeSesion() {
 		// Quitar separadores de miles
 		cantidad = cantidad.replace(/,/g, "");
 		detalle.push({
-			productoId: parseInt(productoId),
-			cantidad: parseFloat(cantidad)
+			pId: productoId,
+			cantidad: parseFloat(cantidad),
+			orCompte: orCompte,
+			pcCompte: pcCompte
 		});
 	});
 
 	let data = {
-		orCompte: orId,
-		pcCompte: pedidoClienteId,
 		detalle: detalle
 	};
 

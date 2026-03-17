@@ -17,13 +17,23 @@
     .input-cantidad {
         width: 60px !important;
         text-align: right !important;
-        padding-right: 4px;
+        padding: 0 4px !important;
+        height: 22px !important; /* 🔥 Ajustá este valor a gusto */
+        line-height: 22px !important;
+        font-size: 0.75rem !important; /* Más compacto */
     }
 
     td.celda-a-enviar {
         display: flex;
         justify-content: flex-end;
         align-items: center;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    #tbConsolidarDetalleConteo tbody tr td {
+        padding-top: 2px !important;
+        padding-bottom: 2px !important;
     }
 
 </style>
@@ -59,6 +69,8 @@
                     if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
                     <tr class="@clase row-detalle-conteo-conteo"
                         data-p-id="@item.p_id"
+                        data-or-compte="@item.or_compte"
+                        data-pc-compte="@item.pc_compte"
                         data-permite-decimales="@(item.PermiteDecimales.ToString().ToLower())">
 
                         <td>@item.pcd_item</td>

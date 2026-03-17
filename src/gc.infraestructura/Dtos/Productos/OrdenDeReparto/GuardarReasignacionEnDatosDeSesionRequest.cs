@@ -17,6 +17,8 @@ namespace gc.infraestructura.Dtos.Productos.OrdenDeReparto
 	{
 		public string pId { get; set; }
 		public decimal Cantidad { get; set; }
+		public string orCompte { get; set; } = string.Empty;
+		public string pcCompte { get; set; } = string.Empty;
 	}
 
 }
