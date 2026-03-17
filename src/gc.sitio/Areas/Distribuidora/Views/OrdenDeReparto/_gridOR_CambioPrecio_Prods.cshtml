@@ -1,0 +1,59 @@
+﻿@model GridCoreSmart<CambioDePrecioDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	#tbCambioDePrecio thead th {
+		text-align: center !important;
+		vertical-align: middle !important;
+		white-space: nowrap;
+	}
+</style>
+<div class="table-responsive table-wrapper-400">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbCambioDePrecio">
+		<thead class="sticky-top table-golden-header-compact">
+			<tr class="header">
+				<th>ID</th>
+				<th>Descripción</th>
+				<th>ID Prov.</th>
+				<th>Precio Pedido</th>
+				<th>Precio Distrib.</th>
+				<th>Actu.</th>
+			</tr>
+		</thead>
+
+		<tbody>
+			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+			{
+				<tr class="fila-vacia">
+					<td colspan="7" class="text-center text-muted py-2">
+						<i class="bx bx-info-circle me-1"></i>
+						No hay detalles para mostrar.
+					</td>
+				</tr>
+			}
+			else
+			{
+				foreach (var item in Model.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase row-cambio-precio"
+						data-p-id="@item.p_id">
+						<td class="text-center">@item.p_id</td>
+						<td>@item.p_desc</td>
+						<td></td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.pcd_pvta, TipoPrecio.Venta)</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.p_pvta, TipoPrecio.Venta)</td>
+						<td class="text-center">
+							<input type="checkbox"
+								   class="chk-actualizar-precio"
+								   data-p-id="@item.p_id"
+								   @(item.SeleccionaItem ? "checked" : "") />
+						</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

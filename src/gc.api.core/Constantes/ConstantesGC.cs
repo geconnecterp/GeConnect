@@ -580,6 +580,7 @@
 			public const string SP_OR_A_CONSOLIDAR = "SPGECO_OR_AConsolidar";
 			public const string SP_OR_ACONSOLIDAR_PC_DETALLE = "SPGECO_OR_AConsolidar_PC_d";
 			public const string SP_OR_ACONSOLIDAR_CONTEOS = "SPGECO_OR_AConsolidar_Conteos";
+			public const string SP_OR_PRECIOS_DIFERENTES = "SPGECO_OR_Precios_Diferentes";
 			#endregion
 		}
 

@@ -193,5 +193,19 @@ namespace gc.api.core.Servicios
 			}
 			return respuesta[0];
 		}
+
+		public List<CambioDePrecioDto> CambioDePreciosLista(CambioDePrecioRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OR_PRECIOS_DIFERENTES;
+
+			var ps = new List<SqlParameter>() {
+				new("@or_compte", request.or_compte),
+				new("@lp_id", request.lp_id),
+				};
+
+			var detalle = _repository.EjecutarLstSpExt<CambioDePrecioDto>(sp, ps, true);
+
+			return detalle;
+		}
 	}
 }

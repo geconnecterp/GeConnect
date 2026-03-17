@@ -181,6 +181,25 @@ namespace gc.api.Controllers.Productos
 			return Ok(new ApiResponse<RespuestaDto>(respuesta));
 		}
 
+		[HttpPost("obtener-cambio-precio-lista")]
+		public IActionResult CambioDePreciosLista(CambioDePrecioRequest request)
+		{
+			const string msgError = "Error en la invocación de la API - CambioDePreciosLista";
+			try
+			{
+				if (Request == null)
+					return BadRequest("No se recepcionó el filtro - CambioDePreciosLista");
+
+				var resultados = _orSrv.CambioDePreciosLista(request);
+				return Ok(new ApiResponse<List<CambioDePrecioDto>>(resultados));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, msgError);
+				return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
+			}
+		}
+
 		private static MetadataGrid? BuildMetadata(List<OrdenDeRepartoListaDto>? lista, QueryFilters filtro)
 		{
 			if (lista == null || lista.Count == 0)

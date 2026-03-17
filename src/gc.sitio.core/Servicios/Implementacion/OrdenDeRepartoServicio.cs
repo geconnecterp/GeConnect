@@ -27,6 +27,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string ACONSOLIDAR_DETALLE_PEDIDO_DE_CLIENTE = "/aconsolidar-detalle-pedido-cliente/";
 		private const string ACONSOLIDAR_CONTEOS = "/aconsolidar-conteos/";
 		private const string A_CONSOLIDAR_ORDEN_DE_REPARTO = "/aconsolidar-or/";
+		private const string OBTENER_CAMBIO_DE_PRECIOS = "/obtener-cambio-precio-lista/";
 
 		public OrdenDeRepartoServicio(IOptions<AppSettings> options, ILogger<OrdenDeRepartoServicio> logger) : base(options, logger)
 		{
@@ -416,6 +417,48 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 				return new() { Ok = false, Mensaje = "Error al APonerEnCursoOrdenDeReparto" };
+			}
+		}
+
+		public async Task<RespuestaGenerica<CambioDePrecioDto>> CambioDePreciosLista(CambioDePrecioRequest request, string token)
+		{
+			try
+			{
+				var helper = new HelperAPI();
+				var client = helper.InicializaCliente(request, token, out StringContent contentData);
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{OBTENER_CAMBIO_DE_PRECIOS}";
+
+				using var response = await client.PostAsync(link, contentData);
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					var stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+					}
+
+					var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<CambioDePrecioDto>>>(stringData);
+					if (apiResponse == null || apiResponse.Data == null)
+						return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+
+					return new RespuestaGenerica<CambioDePrecioDto>
+					{
+						Ok = true,
+						Mensaje = "OK",
+						ListaEntidad = apiResponse.Data
+					};
+				}
+				else
+				{
+					var msg = await ReadApiErrorAsync(response);
+					_logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+					return new() { Ok = false, Mensaje = msg };
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+				return new() { Ok = false, Mensaje = "Error al CambioDePreciosLista" };
 			}
 		}
 	}

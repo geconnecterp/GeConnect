@@ -668,6 +668,41 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			}
 		}
 
+		[HttpPost]
+		public async Task<IActionResult> CargarVistaCambioPrecioOrdenDeReparto(CambioDePrecioRequest request)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
+				if (string.IsNullOrEmpty(request.or_compte))
+					return PartialView("_gridMensaje", CrearRespuestaError("No se han provisto los datos necesarios: Orden de Reparto."));
+				if (string.IsNullOrEmpty(request.lp_id))
+					return PartialView("_gridMensaje", CrearRespuestaError("No se han provisto los datos necesarios: Lista de Precios."));
+
+				var respuestaGen = await _ordenDeRepartoServicio.CambioDePreciosLista(request, TokenCookie);
+				if (respuestaGen == null)
+					return PartialView("_gridMensaje", CrearRespuestaError("No se han podido obtener los datos para cambio de precios."));
+
+				var model = new OrdenDeRepartoCambioPrecioModel
+				{
+					OrdenDeReparto = ObtenerOrdenDeRepartoPorAccion('M', request.or_compte),
+					ListaCambioPrecios = ObtenerGridCoreSmart<CambioDePrecioDto>(respuestaGen.ListaEntidad ?? []),
+				};
+				return PartialView("_gridOR_CambioPrecio", model);
+			}
+			catch (NegocioException ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaError("Error al abrir la orden de reparto para cambio de precio"));
+			}
+		}
+
 		#region Metodos Privados
 		private void CalcularUpDownEnPedidosDeLaOrdenDeReparto(List<PedidoEnOrdenDeRepartoDto> pedidosDeLaOrdenDeReparto)
 		{

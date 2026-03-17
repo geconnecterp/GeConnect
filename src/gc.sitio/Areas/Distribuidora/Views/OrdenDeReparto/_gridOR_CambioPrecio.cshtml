@@ -1,0 +1,57 @@
+﻿@model OrdenDeRepartoCambioPrecioModel
+@{
+	var or = Model.OrdenDeReparto;
+}
+
+<div class="container-fluid min-vh-50 d-flex flex-column">
+
+	<!-- ============================
+		 FILA SUPERIOR: DATOS DE LA OR
+		 ============================ -->
+	<div class="row mb-1">
+		<div class="col-12">
+            <div class="p-1 border rounded bg-light">
+
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
+
+                    <!-- IZQUIERDA: textos -->
+                    <div class="d-flex flex-wrap gap-4">
+
+                        <div><strong>ID OR:</strong> @or.or_compte</div>
+                        <div><strong>Repartidor:</strong> @or.rp_nombre</div>
+                        <div><strong>Estado:</strong> @or.ore_desc</div>
+                        <div><strong>Fecha:</strong> @or.or_fecha.ToString("dd/MM/yyyy")</div>
+                        <div><strong>Obs:</strong> @or.or_obs</div>
+
+                    </div>
+
+                    <!-- DERECHA: botones -->
+                    <div class="d-flex align-items-center gap-2">
+
+                        <button id="btnAnalizarCambioPrecio" class="btn btn-success btn-sm btn-or">
+                            <i class="bx bx-check-circle"></i> Analizar Precios
+                        </button>
+
+                        <button id="btnCancelarCambioPrecio" class="btn btn-danger btn-sm btn-or">
+                            <i class="bx bx-x-circle"></i> Cancelar
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="card mb-3">
+			<div class="card-header fw-bold">Pedidos en la Orden</div>
+			<div class="card-body p-2">
+				<div id="divProdsCambioPrecioEnOrdenDeReparto">
+					@Html.Partial("_gridOR_CambioPrecio_Prods", Model.ListaCambioPrecios)
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

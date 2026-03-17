@@ -188,6 +188,82 @@ $(document).on("click", "#btnConsolidar", function () {
 	CargarVistConsolidarOrdenDeReparto(orCompteSeleccionado);
 });
 
+$(document).on("click", "#btnCambioPrecio", function () {
+	CargarVistCambioPrecioOrdenDeReparto(orCompteSeleccionado);
+});
+
+function CargarVistCambioPrecioOrdenDeReparto(orCompteSeleccionado) {
+	AbrirWaiting("Cargando vista para cambio de precio en Orden de Reparto...");
+	PostGenHtml({ or_compte: orCompteSeleccionado, lp_id: '003' }, cargarVistCambioPrecioOrdenDeRepartoUrl, function (html) {
+		CerrarWaiting();
+		$("#vistaCambioPrecioOR").html(html);
+		$("#vistaListaOR").addClass("d-none");
+		$("#vistaCambioPrecioOR").removeClass("d-none");
+		ConfigurarEventosEnCambioPrecio();
+	});
+}
+
+function ConfigurarEventosEnCambioPrecio() {
+	$(document).off("click", "#tbCambioDePrecio tbody tr");
+	$(document).on("click", "#tbCambioDePrecio tbody tr", function (e) {
+		if (!$(e.target).is("button, a, .btn, i")) {
+			var $this = $(this);
+			var fueSeleccionado = $this.hasClass("selected-row");
+
+			$("#tbCambioDePrecio tbody tr").removeClass("selected-row");
+
+			if (!fueSeleccionado) {
+				$this.addClass("selected-row");
+				let pId = $this.data("p-id");
+				//Do something
+			}
+		}
+	});
+
+	//btnAnalizarCambioPrecio
+	$(document).off("click", "#btnAnalizarCambioPrecio");
+	$(document).on("click", "#btnAnalizarCambioPrecio", function () {
+		AbrirMensaje(
+			'CONFIRMAR CAMBIO DE PRECIOS',
+			"¿Desea confirmar lo cambios de precioes en la orden de reparto?",
+			function (resp) {
+				if (resp === 'SI') {
+					//LLamar metodo para confirmar cambio de precios
+				}
+				$('#msjModal').modal('hide');
+			},
+			true,
+			['Confirmar', 'Cancelar'],
+			'info!',
+			null
+		);
+	});
+
+	//btnCancelarCambioPrecio
+	$(document).off("click", "#btnCancelarCambioPrecio");
+	$(document).on("click", "#btnCancelarCambioPrecio", function () {
+		AbrirMensaje(
+			'CANCELAR CAMBIO DE PRECIOS',
+			"¿Desea cancelar los cambios de precio en la orden de reparto?",
+			function (resp) {
+				if (resp === 'SI') {
+					// Ocultar vista de edición
+					document.querySelector("#vistaCambioPrecioOR").classList.add("d-none");
+					// Mostrar vista de lista
+					document.querySelector("#vistaListaOR").classList.remove("d-none");
+					// Opcional: limpiar contenido de edición
+					document.querySelector("#vistaCambioPrecioOR").innerHTML = "";
+				}
+				$('#msjModal').modal('hide');
+			},
+			true,
+			['Confirmar', 'Cancelar'],
+			'info!',
+			null
+		);
+	});
+}
+
 function CargarVistConsolidarOrdenDeReparto(orCompte) {
 	AbrirWaiting("Cargando vista para consolidar Orden de Reparto...");
 	PostGenHtml({ orCompte: orCompte }, cargarVistaConsolidarOrdenDeRepartoUrl, function (html) {
@@ -1171,10 +1247,10 @@ function cancelarOperacion() {
 	document.querySelector("#vistaEditarOR").innerHTML = "";
 }
 
-$(document).on("click", "#btnConsolidar", function () {
-	$("#vistaListaOR").addClass("d-none");
-	$("#vistaConsolidarOR").removeClass("d-none");
-});
+//$(document).on("click", "#btnConsolidar", function () {
+//	$("#vistaListaOR").addClass("d-none");
+//	$("#vistaConsolidarOR").removeClass("d-none");
+//});
 
 //$(document).on("click", "#btnConfirmarReasignacion, #btnCancelarReasignacion", function () {
 //	$("#vistaConsolidarOR").addClass("d-none");

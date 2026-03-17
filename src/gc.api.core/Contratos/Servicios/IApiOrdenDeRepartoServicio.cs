@@ -14,5 +14,6 @@ namespace gc.api.core.Contratos.Servicios
 		List<AConsolidarPedidoClienteDetalleDto> AConsolidarPedidoClienteDetalle(AConsolidarPedidoClienteDetalleRequest req);
 		List<AConsolidarConteosDto> AConsolidarConteos(string or_compte);
 		RespuestaDto AConsolidarOrdenDeReparto(AConciliarOrdenDeRepartoRequest req);
+		List<CambioDePrecioDto> CambioDePreciosLista(CambioDePrecioRequest request);
 	}
 }
