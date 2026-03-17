@@ -7,8 +7,8 @@ const OR = {
         obtenerOrdenes: ObtenerOrdenesRepartoUrl,
         validarUsuario: ValidarUsuarioUrl,
         abrirORLista: AbrirOrListaUrl,
-        obtenerORListByBox: PresentarListaORbyBoxUrl,
-        obtenerORListByRubro: PresentarListaORbyRubroUrl
+        //obtenerORListByBox: PresentarListaORbyBoxUrl,
+        //obtenerORListByRubro: PresentarListaORbyRubroUrl
         //abrirORCarrito: ORCargaCarritoUrl
     },
 

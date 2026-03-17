@@ -1,0 +1,24 @@
+﻿@{
+    Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+    var callback = Url.Action("index", "orctl", new { area = "pocketppal" });
+
+}
+<partial name="~/areas/pocketppal/views/or/_gridOrdenReparto.cshtml" />
+
+<div class="row mb-3">
+    <div class="d-flex justify-content-center">
+        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-3"><i class="bx bx-ms bx-info-circle"></i></a>
+        <button type="button" id="btnContinuar" class="btn btn-sm btn-success m-3" style="display:none;"><i class="bx bx-sm bx-right-arrow-alt"></i></button>
+    </div>
+</div>
+
+@section scripts {
+    <script type="text/javascript">
+        var ObtenerOrdenesRepartoUrl = "@Url.Action("ObtenerOrdenesReparto", "or", new { area = "pocketppal" })"; //reutilizo fx de OR
+        var homeModUrl = "@Url.Action("index", "orctl", new { area = "pocketppal" })";
+        var ValidarUsuarioUrl = "@Url.Action("ValidarUsuario", "or", new { area = "pocketppal" })"; //reutilizo fx de OR
+        var AbrirOrListaUrl  = "@Url.Action("PresentaProductosOrCtl", "orctl", new { area = "pocketppal" })";
+    </script>
+    <script src="~/js/app/or/orCoreCommon.js"></script>
+    <script src="~/js/app/or/orCtlCore.js"></script>
+}

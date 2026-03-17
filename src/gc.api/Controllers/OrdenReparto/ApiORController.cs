@@ -171,6 +171,41 @@ namespace gc.api.Controllers.OrdenReparto
         }
 
         [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<ORProdRequestDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult ObtenerListaProductosOrCtl(ORProdRequestDto request)
+        {
+            if (request == null)
+            {
+                _logger.LogWarning("Solicitud de productos de orden de reparto vacía o nula.");
+                return BadRequest(new ApiResponse<string>("La solicitud no puede estar vacía."));
+            }
+            if (string.IsNullOrWhiteSpace(request.or_compte))
+            {
+                _logger.LogWarning("Parámetro or_compte se encuentra vacío o nulo.");
+                return BadRequest(new ApiResponse<string>("El parámetro or_compte no puede estar vacío."));
+            }
+            if (string.IsNullOrWhiteSpace(request.adm_id))
+            {
+                _logger.LogWarning("Parámetro adm_id se encuentra vacío o nulo.");
+                return BadRequest(new ApiResponse<string>("El parámetro adm_id no puede estar vacío."));
+            }
+            if (string.IsNullOrWhiteSpace(request.usu_id))
+            {
+                _logger.LogWarning("Parámetro usu_id se encuentra vacío o nulo.");
+                return BadRequest(new ApiResponse<string>("El parámetro usu_id no puede estar vacío."));
+            }
+            if (string.IsNullOrWhiteSpace(request.box_id))
+            {
+                _logger.LogWarning("Parámetro box_id se encuentra vacío o nulo.");
+                return BadRequest(new ApiResponse<string>("El parámetro box_id no puede estar vacío."));
+            }
+            var data = _orSv.ObtenerListaProductosOrCtl(request);
+            return Ok(new ApiResponse<List<ORProductoDto>>(data));
+        }
+
+        [HttpPost]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]

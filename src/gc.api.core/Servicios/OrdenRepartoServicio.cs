@@ -128,6 +128,22 @@ namespace gc.api.core.Servicios
 
         }
 
+        public List<ORProductoDto> ObtenerListaProductosOrCtl(ORProdRequestDto request)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_OR_LISTA_PRODUCTOS;
+            var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@or_compte", request.or_compte),
+                new SqlParameter("@adm_id", request.adm_id),
+                new SqlParameter("@usu_id", request.usu_id),
+                new SqlParameter("@box_id", request.box_id),
+                new SqlParameter("@rub_id", request.rub_id)
+            };
+            var result = _repository.EjecutarLstSpExt<ORProductoDto>(sp, ps, true);
+            return result;
+        }
+
+
         public RespuestaDto ValidaProductoCarritoOR(ORCargaCarritoRequest request)
         {
             var sp = ConstantesGC.StoredProcedures.SP_OR_CARRITO_VALIDA;
@@ -193,5 +209,8 @@ namespace gc.api.core.Servicios
                 };
             }
         }
+
+
+
     }
 }

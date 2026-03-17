@@ -1,0 +1,20 @@
+﻿@{
+    Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+    var callback = Url.Action("index", "orctl", new { area = "pocketppal" });
+
+    string orCompte = ViewBag.Compte ?? "N/A";
+    (string, string) mensaje = (string.Empty, orCompte);
+}
+
+<partial name="_NroComprobante" model="mensaje" />
+
+<partial name="listacontrol" />
+
+@section scripts {
+    <script type="text/javascript">
+ 
+        var homeModUrl = "@Url.Action("index", "orctl", new { area = "pocketppal" })";
+ 
+    </script>
+    <script src="~/js/app/or/orCtlLista.js"></script>
+}
