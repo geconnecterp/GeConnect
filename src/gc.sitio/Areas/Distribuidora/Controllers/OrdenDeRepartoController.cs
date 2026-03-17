@@ -556,6 +556,56 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			}
 		}
 
+		[HttpPost]
+		public JsonResult GuardarReasignacionEnDatosDeSesion([FromBody] GuardarReasignacionEnDatosDeSesionRequest request)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return Json(new { error = true, ok = false, mensaje = "No autorizado" });
+				if (string.IsNullOrEmpty(request.orCompte))
+					return Json(new { error = true, ok = false, mensaje = "No se han provisto los datos necesarios: Orden de Reparto." });
+				if (string.IsNullOrEmpty(request.pcCompte))
+					return Json(new { error = true, ok = false, mensaje = "No se han provisto los datos necesarios: Pedido de Cliente." });
+				if (request.Detalle == null || request.Detalle.Count <= 0)
+					return Json(new { error = true, ok = false, mensaje = "No se han provisto los datos necesarios: Productos reasignados." });
+
+				var listaTemp = AConsolidarPedidoClienteDetalleLista;
+				foreach (var i in request.Detalle)
+				{
+					var item = listaTemp.Where(x => x.or_compte == request.orCompte && x.pc_compte == request.pcCompte && x.p_id == i.pId).First();
+					if (item == null)
+						continue;
+					item.cantidad = i.Cantidad;
+				}
+				AConsolidarPedidoClienteDetalleLista = listaTemp;
+				return Json(new { error = true, warn = false, mensaje = "OK" });
+			}
+			catch (NegocioException ex)
+			{
+				// Manejo de excepciones no esperadas
+				_logger?.LogError(ex, ex.Message);
+				return Json(new
+				{
+					ok = false,
+					error = true,
+					mensaje = ex.Message
+				});
+			}
+			catch (Exception ex)
+			{
+				// Manejo de excepciones no esperadas
+				_logger?.LogError(ex, ex.Message);
+				return Json(new
+				{
+					ok = false,
+					error = true,
+					mensaje = ex.Message
+				});
+			}
+		}
+
+
 		#region Metodos Privados
 		private void CalcularUpDownEnPedidosDeLaOrdenDeReparto(List<PedidoEnOrdenDeRepartoDto> pedidosDeLaOrdenDeReparto)
 		{

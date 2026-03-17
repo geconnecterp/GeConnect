@@ -2,6 +2,7 @@
 let orCompteSeleccionado = null;
 let pcCompteSeleccionado = null;
 let pcCompteSeleccionadoEnConsolidar = null;
+let modoEdicionConteo = false;
 
 $(function () {
 	InicializaPantallaOrdenDeReparto();
@@ -195,6 +196,7 @@ function CargarVistConsolidarOrdenDeReparto(orCompte) {
 		$("#vistaListaOR").addClass("d-none");
 		$("#vistaConsolidarOR").removeClass("d-none");
 		ConfigurarEventosEnPonerEnConsolidar();
+		CargarConteosEnConsolidar(orCompteSeleccionado);
 	});
 }
 
@@ -212,7 +214,7 @@ function ConfigurarEventosEnPonerEnConsolidar() {
 				let pcCompte = $this.data("pc-compte");
 				pcCompteSeleccionadoEnConsolidar = pcCompte;
 				CargarDetalleDelPedidoDeLaOrdenEnConsolidar(orCompteSeleccionado, pcCompteSeleccionadoEnConsolidar);
-				CargarConteosEnConsolidar(orCompteSeleccionado);
+				//CargarConteosEnConsolidar(orCompteSeleccionado);
 			}
 		}
 	});
@@ -233,6 +235,239 @@ function ConfigurarEventosEnPonerEnConsolidar() {
 			}
 		}
 	});
+
+	//btnConfirmarConciliacion
+	$(document).off("click", "#btnConfirmarConciliacion");
+	$(document).on("click", "#btnConfirmarConciliacion", function () {
+
+		//Confirmar consolidacion
+	});
+
+	//btnCancelarConciliacion
+	$(document).off("click", "#btnCancelarConciliacion");
+	$(document).on("click", "#btnCancelarConciliacion", function () {
+		AbrirMensaje(
+			'CONFIRMAR CANCELACIÓN',
+			"¿Desea cancelar la consolidación?",
+			function (resp) {
+				if (resp === 'SI') {
+					// Ocultar vista de edición
+					document.querySelector("#vistaConsolidarOR").classList.add("d-none");
+					// Mostrar vista de lista
+					document.querySelector("#vistaListaOR").classList.remove("d-none");
+					// Opcional: limpiar contenido de edición
+					document.querySelector("#vistaConsolidarOR").innerHTML = "";
+				}
+				$('#msjModal').modal('hide');
+			},
+			true,
+			['Confirmar', 'Cancelar'],
+			'info!',
+			null
+		);
+	});
+
+	//btnReasignar
+	$(document).off("click", "#btnReasignar");
+	$(document).on("click", "#btnReasignar", function () {
+		modoEdicionConteo = true;
+
+		// 🔥 Deshabilitar selección de tablas
+		$("#tbConsolidarConteos").addClass("tabla-bloqueada");
+		$("#tbConsolidarDetallesPedido").addClass("tabla-bloqueada");
+		$("#tbConsolidarPedidos").addClass("tabla-bloqueada");
+
+		// 🔥 Deshabilitar botones
+		$("#btnReasignar").prop("disabled", true);
+		$("#btnConfirmarConciliacion").prop("disabled", true);
+		$("#btnCancelarConciliacion").prop("disabled", true);
+
+
+		HabilitarEdicionEnDetalleConteo();
+	});
+
+	//btnConfirmarReasignacion
+	$(document).off("click", "#btnConfirmarReasignacion");
+	$(document).on("click", "#btnConfirmarReasignacion", function () {
+		// 1) Ver si hubo cambios
+		if (HayCambiosEnDetalleConteo()) {
+			AbrirMensaje(
+				'CONFIRMAR REASIGNACIÓN',
+				"¿Desea confirmar las modificaciones realizadas?",
+				function (resp) {
+					GuardarReasignacionEnDatosDeSesion();
+					$('#msjModal').modal('hide');
+				},
+				true,
+				['Confirmar', 'Cancelar'],
+				'info!',
+				null
+			);
+
+			// 2) Pedir confirmación
+			//if (!confirm("Hay cambios sin guardar. ¿Desea descartar las modificaciones?")) {
+			//	return; // ❌ No salir del modo edición
+			//}
+		}
+		else {
+		}
+
+	});
+
+	//btnCancelarReasignacion
+	$(document).off("click", "#btnCancelarReasignacion");
+	$(document).on("click", "#btnCancelarReasignacion", function () {
+		// 1) Ver si hubo cambios
+		if (HayCambiosEnDetalleConteo()) {
+			AbrirMensaje(
+				'CANCELAR REASIGNACIÓN',
+				"¿Desea cancelar las modificaciones realizadas?",
+				function (resp) {
+					CancelarModificacionesEnReasginacion();
+					$('#msjModal').modal('hide');
+				},
+				true,
+				['Confirmar', 'Cancelar'],
+				'info!',
+				null
+			);
+
+			// 2) Pedir confirmación
+			//if (!confirm("Hay cambios sin guardar. ¿Desea descartar las modificaciones?")) {
+			//	return; // ❌ No salir del modo edición
+			//}
+		}
+		else {
+			CancelarModificacionesEnReasginacion();
+		}
+	});
+}
+
+function GuardarReasignacionEnDatosDeSesion() {
+
+	let orId = orCompteSeleccionado;
+	let pedidoClienteId = pcCompteSeleccionado;
+	let detalle = [];
+
+	$("#tbConsolidarDetalleConteo tbody tr").each(function () {
+
+		let $fila = $(this);
+		// Obtener ID del producto (p_id)
+		let productoId = $fila.data("p-id");
+		// Obtener cantidad desde el input
+		let $input = $fila.find("td.celda-a-enviar input");
+		let cantidad = $input.val().trim();
+
+		if (cantidad === "") cantidad = "0";
+
+		// Quitar separadores de miles
+		cantidad = cantidad.replace(/,/g, "");
+		detalle.push({
+			productoId: parseInt(productoId),
+			cantidad: parseFloat(cantidad)
+		});
+	});
+
+	let data = {
+		orCompte: orId,
+		pcCompte: pedidoClienteId,
+		detalle: detalle
+	};
+
+	console.log("Payload a enviar:", data);
+	AbrirWaiting("Actualizando cantidades de productos...")
+	$.ajax({
+		url: guardarReasignacionEnDatosDeSesionUrl,
+		type: "POST",
+		contentType: "application/json",
+		data: JSON.stringify(data),
+		success: function (resp) {
+			CerrarWaiting();
+			if (resp.error || resp.warn) {
+				console.error('❌ Response:', resp.mensaje);
+				ControlaMensajeError(
+					'Error al intentar reasignar cantidades de productos: ' +
+					(resp.mensaje || 'Error desconocido')
+				);
+			}
+			else {
+				ConfirmarModificacionesEnReasginacion();
+			}
+		},
+		error: function (err) {
+			CerrarWaiting();
+			console.error("Error al enviar reasignación:", err);
+		}
+	});
+}
+
+function ConfirmarModificacionesEnReasginacion() {
+	AbrirWaiting("Finalizando actualización...");
+	// 2) Guardar valores definitivos
+	$("#tbConsolidarDetalleConteo tbody tr").each(function () {
+
+		let $input = $(this).find("td.celda-a-enviar input");
+
+		if ($input.length > 0) {
+
+			let valor = $input.val().trim();
+			if (valor === "") valor = "0";
+
+			// Quitar separadores de miles
+			valor = valor.replace(/,/g, "");
+
+			// Guardar valor final en el input
+			$input.val(valor);
+
+			// Actualizar el valor original para futuras ediciones
+			$input.data("original", valor);
+		}
+	});
+
+	// 3) Recalcular diferencias
+	RecalcularDiferenciasEnDetalleConteo();
+
+	// 4) Salir de modo edición
+	modoEdicionConteo = false;
+
+	// 5) Deshabilitar inputs
+	$("#tbConsolidarDetalleConteo tbody tr td.celda-a-enviar input")
+		.prop("disabled", true);
+
+	// 6) Habilitar tablas y botones
+	$("#tbConsolidarConteos, #tbConsolidarDetallesPedido, #tbConsolidarPedidos")
+		.removeClass("tabla-bloqueada");
+
+	$("#btnReasignar").prop("disabled", false);
+	$("#btnConfirmarConciliacion").prop("disabled", false);
+	$("#btnCancelarConciliacion").prop("disabled", false);
+	CerrarWaiting();
+}
+
+function CancelarModificacionesEnReasginacion() {
+	$("#tbConsolidarDetalleConteo tbody tr").each(function () {
+
+		let $input = $(this).find("td.celda-a-enviar input");
+		let original = $input.data("original");
+
+		$input.val(original);
+	});
+
+	RecalcularDiferenciasEnDetalleConteo();
+
+	modoEdicionConteo = false;
+
+	// Deshabilitar inputs
+	$("#tbConsolidarDetalleConteo tbody tr td.celda-a-enviar input")
+		.prop("disabled", true);
+
+	// Habilitar tablas y botones
+	$("#tbConsolidarConteos, #tbConsolidarDetallesPedido, #tbConsolidarPedidos")
+		.removeClass("tabla-bloqueada");
+
+	$("#btnReasignar").prop("disabled", false);
+	$("#btnConfirmarConciliacion").prop("disabled", false);
+	$("#btnCancelarConciliacion").prop("disabled", false);
 }
 
 function CargarDetalleDelProductoSeleccionadoEnConteo(orCompte, pId) {
@@ -240,11 +475,245 @@ function CargarDetalleDelProductoSeleccionadoEnConteo(orCompte, pId) {
 	PostGenHtml({ orCompte: orCompte, pId: pId }, cargarDetalleDelProductoEnConteoEnConsolidarUrl, function (html) {
 		CerrarWaiting();
 		$("#divConsolidarDetalleProductoSeleccionado").html(html);
-		ConfigurarEventosEnProductoSeleccionadoEnConteo();
+		ConfigurarEventosEnProductoSeleccionadoEnDetalleDeConteo();
+
+		EvaluarHabilitarReasignar();
+		EstadoInicialBotonesOKCancelEnDetalleDeConteos();
 	});
 }
 
-function ConfigurarEventosEnProductoSeleccionadoEnConteo() {
+
+function HayCambiosEnDetalleConteo() {
+
+	let huboCambios = false;
+
+	$("#tbConsolidarDetalleConteo tbody tr").each(function () {
+
+		let $celda = $(this).find("td.celda-a-enviar");
+		let original = $celda.attr("data-original");
+
+		let valorActual;
+
+		if ($celda.find("input").length > 0) {
+			valorActual = $celda.find("input").val().trim();
+		} else {
+			valorActual = $celda.text().trim();
+		}
+
+		valorActual = valorActual.replace(/,/g, "");
+
+		if (original !== valorActual) {
+			huboCambios = true;
+			return false; // cortar el each
+		}
+	});
+
+	return huboCambios;
+}
+
+function ConfigurarEventosEnProductoSeleccionadoEnDetalleDeConteo() {
+}
+
+function RecalcularDiferenciasEnDetalleConteo() {
+
+	$("#tbConsolidarDetalleConteo tbody tr").each(function () {
+
+		let $fila = $(this);
+
+		let pedido = parseFloat($fila.find("td").eq(3).text().trim().replace(",", "."));
+		let enviar = parseFloat(
+			$fila.find("td.celda-a-enviar input").val().trim().replace(/,/g, "").replace(",", ".")
+		);
+
+
+		if (isNaN(pedido)) pedido = 0;
+		if (isNaN(enviar)) enviar = 0;
+
+		let dif = enviar - pedido;
+
+		let $celdaDif = $fila.find("td.celda-dif");
+
+		// Actualizar valor
+		$celdaDif.text(dif);
+	});
+}
+
+
+function HabilitarEdicionEnDetalleConteo() {
+
+	$("#tbConsolidarDetalleConteo tbody tr").each(function () {
+
+		let $fila = $(this);
+		let $input = $fila.find("td.celda-a-enviar input");
+
+		let permiteDecimales = $input.data("permite-decimales") === true ||
+			$input.data("permite-decimales") === "true";
+
+		// Habilitar input
+		$input.prop("disabled", false);
+
+		// Aplicar máscara
+		if (permiteDecimales) {
+			$input.inputmask(maskConfigDecimales);
+		} else {
+			$input.inputmask(maskConfigEnteros);
+		}
+	});
+
+	ConfigurarEventosDeEdicionEnDetalleConteo();
+
+}
+
+function ConfigurarEventosDeEdicionEnDetalleConteo() {
+
+	$("#tbConsolidarDetalleConteo .editor-celda").off();
+	$("#tbConsolidarDetalleConteo .editor-celda").on("keypress", function (e) {
+		let permiteDecimales = $(this).data("permite-decimales");
+
+		// Solo números
+		if (e.which < 48 || e.which > 57) {
+			// Permitir punto decimal si corresponde
+			if (permiteDecimales && e.which === 46)
+				return;
+
+			e.preventDefault();
+		}
+	});
+
+	$("#tbConsolidarDetalleConteo .editor-celda").on("blur", function () {
+		if (modoEdicionConteo) {
+			// No salir de edición mientras el modo está activo
+			return;
+		}
+
+		// Modo edición desactivado → sí se aplica el blur normal
+		let valor = $(this).val().trim();
+		if (valor === "") valor = "0";
+
+		// Quitar máscara para obtener el número real
+		valor = valor.replace(/,/g, "");
+
+		$(this).parent().text(valor);
+
+		// 🔥 Recalcular diferencias
+		RecalcularDiferenciasEnDetalleConteo();
+
+	});
+
+	$("#tbConsolidarDetalleConteo").on("keydown", ".editor-celda", function (e) {
+
+		let $input = $(this);
+		let $fila = $input.closest("tr");
+		let $todasLasFilas = $("#tbConsolidarDetalleConteo tbody tr").not(".fila-vacia");
+		let index = $todasLasFilas.index($fila);
+
+		// ENTER o TAB → guardar y pasar a la siguiente fila
+		if (e.key === "Enter" || e.key === "Tab") {
+			e.preventDefault();
+			GuardarValorYRecalcular($input);
+
+			// Ir a la siguiente fila
+			let nextIndex = (index + 1) % $todasLasFilas.length;
+			ActivarEdicionEnFila($todasLasFilas.eq(nextIndex));
+			return;
+		}
+
+		// FLECHA ARRIBA
+		if (e.key === "ArrowUp") {
+			e.preventDefault();
+			GuardarValorYRecalcular($input);
+
+			let prevIndex = index - 1;
+			if (prevIndex < 0) prevIndex = $todasLasFilas.length - 1;
+
+			ActivarEdicionEnFila($todasLasFilas.eq(prevIndex));
+			return;
+		}
+
+		// FLECHA ABAJO
+		if (e.key === "ArrowDown") {
+			e.preventDefault();
+			GuardarValorYRecalcular($input);
+
+			let nextIndex = (index + 1) % $todasLasFilas.length;
+
+			ActivarEdicionEnFila($todasLasFilas.eq(nextIndex));
+			return;
+		}
+	});
+
+	$("#tbConsolidarDetalleConteo").on("change", ".editor-celda", function () {
+		if (!modoEdicionConteo) return;
+
+		let $input = $(this);
+		GuardarValorYRecalcular($input);
+	});
+}
+function GuardarValorYRecalcular($input) {
+
+	let valor = $input.val().trim();
+	if (valor === "") valor = "0";
+
+	valor = valor.replace(/,/g, "");
+
+	// Guardar en el input (no reemplazar el td)
+	$input.val(valor);
+
+	RecalcularDiferenciasEnDetalleConteo();
+}
+
+
+function EvaluarHabilitarReasignar() {
+	// 1) Obtener la fila seleccionada en la grilla superior
+	let filaSeleccionada = $("#tbConsolidarConteos tbody tr.selected-row");
+
+	if (filaSeleccionada.length === 0) {
+		$("#btnReasignar").prop("disabled", true);
+		return;
+	}
+
+	// 2) Obtener el valor de Dif de la fila seleccionada
+	let difTexto = filaSeleccionada.find("td").eq(5).text().trim(); // columna Dif es la 6ta
+	let dif = parseFloat(difTexto.replace(",", "."));
+
+	// 3) Contar filas reales en la grilla inferior
+	let filasInferiores = $("#tbConsolidarDetalleConteo tbody tr")
+		.not(".fila-vacia")
+		.length;
+
+	// 4) Aplicar la lógica
+	if (dif > 0 && filasInferiores > 1) {
+		$("#btnReasignar").prop("disabled", false);
+	} else {
+		$("#btnReasignar").prop("disabled", true);
+	}
+}
+
+function ActivarEdicionEnFila($fila) {
+
+	let $input = $fila.find("td.celda-a-enviar input");
+
+	let permiteDecimales = $input.data("permite-decimales") === true ||
+		$input.data("permite-decimales") === "true";
+
+	// Habilitar input
+	$input.prop("disabled", false);
+
+	// Aplicar máscara
+	if (permiteDecimales) {
+		$input.inputmask(maskConfigDecimales);
+	} else {
+		$input.inputmask(maskConfigEnteros);
+	}
+
+	// Foco automático
+	setTimeout(() => $input.focus().select(), 10);
+}
+
+
+function EstadoInicialBotonesOKCancelEnDetalleDeConteos() {
+	$("#btnConfirmarReasignacion").prop("disabled", true);
+	$("#btnCancelarReasignacion").prop("disabled", true);
 }
 
 function CargarDetalleDelPedidoDeLaOrdenEnConsolidar(orCompte, pcCompte) {
@@ -650,10 +1119,10 @@ $(document).on("click", "#btnConsolidar", function () {
 	$("#vistaConsolidarOR").removeClass("d-none");
 });
 
-$(document).on("click", "#btnConfirmarReasignacion, #btnCancelarReasignacion", function () {
-	$("#vistaConsolidarOR").addClass("d-none");
-	$("#vistaListaOR").removeClass("d-none");
-});
+//$(document).on("click", "#btnConfirmarReasignacion, #btnCancelarReasignacion", function () {
+//	$("#vistaConsolidarOR").addClass("d-none");
+//	$("#vistaListaOR").removeClass("d-none");
+//});
 
 function obtenerListaPedidosOR() {
 	const filas = document.querySelectorAll("#tbPedidosOR tbody tr:not(.fila-vacia)");
@@ -1464,3 +1933,41 @@ function AbrirInfoProducto() {
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* ######	FIN Componente de info adicional de producto ###### */
+
+
+const maskConfigDecimales = {
+	alias: "numeric",
+	groupSeparator: ",",
+	radixPoint: ".",
+	autoGroup: true,
+	digits: 2,
+	digitsOptional: false,
+	rightAlign: true,
+	prefix: '',
+	placeholder: "0",
+	clearMaskOnLostFocus: false,
+	showMaskOnHover: false,
+	showMaskOnFocus: false,
+	onBeforeMask: function (value) {
+		if (value) {
+			let numValue = parseFloat(value.toString().replace(/,/g, ''));
+			return isNaN(numValue) ? value : numValue.toFixed(2);
+		}
+		return value;
+	}
+};
+
+const maskConfigEnteros = {
+	alias: "numeric",
+	groupSeparator: ",",
+	radixPoint: ".",
+	autoGroup: true,
+	digits: 0,
+	digitsOptional: true,
+	rightAlign: true,
+	prefix: '',
+	placeholder: "0",
+	clearMaskOnLostFocus: false,
+	showMaskOnHover: false,
+	showMaskOnFocus: false
+};

@@ -13,6 +13,19 @@
         background-color: #ffe0b3 !important; /* naranja suave */
         font-weight: bold;
     }
+
+    .input-cantidad {
+        width: 60px !important;
+        text-align: right !important;
+        padding-right: 4px;
+    }
+
+    td.celda-a-enviar {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+    }
+
 </style>
 <div class="table-responsive table-wrapper-400">
     <table class="table table-sm table-hover mb-0 table-golden" id="tbConsolidarDetalleConteo">
@@ -44,15 +57,23 @@
                     var dif = item.cantidad - item.pcd_pedida;
                     var claseDif = dif > 0 ? "dif-positivo" : (dif < 0 ? "dif-negativo" : "");
                     if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-                    <tr class="@clase row-detalle-conteo"
-                        data-p-id="@item.p_id">
+                    <tr class="@clase row-detalle-conteo-conteo"
+                        data-p-id="@item.p_id"
+                        data-permite-decimales="@(item.PermiteDecimales.ToString().ToLower())">
 
                         <td>@item.pcd_item</td>
                         <td>@item.p_id</td>
                         <td>@item.p_desc</td>
-                        <td class="text-end">@item.pcd_pedida</td>
-                        <td class="text-end">@item.cantidad</td>
-                        <td class="text-end @claseDif">@dif</td>
+                        <td class="text-end">@GridHelper.FormatearDato(item.pcd_pedida, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+                        <td class="text-end celda-a-enviar">
+                            <input type="text"
+                                   class="form-control form-control-sm editor-celda input-cantidad"
+                                   value="@GridHelper.FormatearDato(item.cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)"
+                                   data-original="@item.cantidad"
+                                   data-permite-decimales="@(item.PermiteDecimales.ToString().ToLower())"
+                                   disabled />
+                        </td>
+                        <td class="text-end celda-dif @claseDif">@GridHelper.FormatearDato(dif, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
                     </tr>
                 }
             }

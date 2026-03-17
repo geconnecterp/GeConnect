@@ -6,6 +6,12 @@
     .btn-or {
         min-width: 140px; /* Ajustá el ancho que prefieras */
     }
+
+    .tabla-bloqueada {
+        pointer-events: none;
+        opacity: 0.6;
+    }
+
 </style>
 
 <div class="container-fluid min-vh-100 d-flex flex-column">
@@ -78,15 +84,18 @@
                     <span>Detalle del Conteo</span>
                     <div class="d-flex align-items-center gap-2">
                         <button id="btnReasignar"
-                                class="btn btn-success btn-sm">
+                                class="btn btn-success btn-sm"
+                                disabled>
                             Reasignar
                         </button>
                         <button id="btnConfirmarReasignacion"
-                                class="btn btn-primary btn-sm">
+                                class="btn btn-primary btn-sm"
+                                disabled>
                             <i class="bx bx-check"></i>
                         </button>
                         <button id="btnCancelarReasignacion"
-                                class="btn btn-danger btn-sm">
+                                class="btn btn-danger btn-sm"
+                                disabled>
                             <i class="bx bx-block"></i>
                         </button>
                     </div>

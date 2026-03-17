@@ -53,9 +53,9 @@
                         data-p-id="@item.p_id">
                         <td>@item.p_id</td>
                         <td>@item.p_desc</td>
-                        <td class="text-end">@item.pcd_pedida</td>
-                        <td class="text-end">@item.cantidad</td>
-                        <td class="text-end">@item.cantidad_ctl</td>
+                        <td class="text-end">@GridHelper.FormatearDato(item.pcd_pedida, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+                        <td class="text-end">@GridHelper.FormatearDato(item.cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+                        <td class="text-end">@GridHelper.FormatearDato(item.cantidad_ctl, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
                         <td class="text-end">@dif</td>
                     </tr>
                 }
