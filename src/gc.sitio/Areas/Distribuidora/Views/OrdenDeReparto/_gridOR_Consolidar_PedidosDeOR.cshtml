@@ -18,15 +18,34 @@
 		text-align: center;
 	}
 
+	#tbConsolidarPedidos thead th {
+		text-align: center !important;
+		vertical-align: middle !important;
+		white-space: nowrap;
+	}
+
+	.col-ellipsis {
+		max-width: 140px; /* ajustá el ancho a gusto */
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	/* Columna ID más ancha y sin salto de línea */
+	#tbConsolidarPedidos td.col-id,
+	#tbConsolidarPedidos th.col-id {
+		min-width: 80px; /* Ajustá este valor a gusto */
+		white-space: nowrap; /* Evita salto de línea */
+	}
+
 </style>
 
 <div class="table-responsive table-wrapper-400">
 	<table class="table table-sm table-hover mb-0 table-golden" id="tbConsolidarPedidos">
 		<thead class="sticky-top table-golden-header-compact">
 			<tr class="header">
-				<th>ID</th>
+				<th class="col-id">ID</th>
 				<th>Cliente</th>
-				<th>Generado</th>
+				<th title="Generado">Gen.</th>
 				<th>Vendedor</th>
 				<th>Repartidor</th>
 				<th>Importe</th>
@@ -53,11 +72,11 @@
 					<tr class="@clase row-pedido"
 						data-pc-compte="@item.pc_compte">
 
-						<td>@item.pc_compte</td>
-						<td>@item.cta_denominacion</td>
-						<td>@item.pc_fecha.ToShortDateString()</td>
-						<td>@item.ve_nombre</td>
-						<td>@item.rp_nombre</td>
+						<td class="col-id">@item.pc_compte</td>
+						<td class="col-ellipsis" title="@item.cta_denominacion">@item.cta_denominacion</td>
+						<td>@item.pc_fecha.ToString("dd/MM/yy")</td>
+						<td class="col-ellipsis" title="@item.ve_nombre">@item.ve_nombre</td>
+						<td class="col-ellipsis" title="@item.rp_nombre">@item.rp_nombre</td>
 						<td class="text-end">@item.pc_precio_tot.ToString("N2")</td>
 						<td class="@(item.mostrar_up ? "cell-up" : "")">
 							@(item.mostrar_up ? "UP" : "")

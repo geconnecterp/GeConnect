@@ -291,8 +291,8 @@ function ConfigurarEventosEnPonerEnConsolidar() {
 
 		// 🔥 Deshabilitar botones
 		$("#btnReasignar").prop("disabled", true);
-		$("#btnConfirmarConciliacion").prop("disabled", true);
-		$("#btnCancelarConciliacion").prop("disabled", true);
+		$("#btnConfirmarReasignacion").prop("disabled", false);
+		$("#btnCancelarReasignacion").prop("disabled", false);
 
 
 		HabilitarEdicionEnDetalleConteo();
@@ -361,22 +361,17 @@ function confirmarConsolidarOrdenDeReparto() {
 		orCompte: orCompteSeleccionado
 	};
 	console.log("Payload a enviar:", data);
-	AbrirWaiting("Confirmando consolidación de orden de reparto...")
-	$.ajax({
-		url: confirmarConsolidarOrdenDeRepartoUrl,
-		type: "POST",
-		contentType: "application/json",
-		data: JSON.stringify(data),
-		success: function (resp) {
-			CerrarWaiting();
-			if (resp.error || resp.warn) {
-				console.error('❌ Response:', resp.mensaje);
-				ControlaMensajeError(
-					'Error al intentar consolidar la orden de reparto: ' +
-					(resp.mensaje || 'Error desconocido')
-				);
-			}
-			else {
+	PostGen(data, confirmarConsolidarOrdenDeRepartoUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true || obj.warn === true) {
+			console.error('❌ Response:', obj.mensaje);
+			ControlaMensajeError(
+				'Error al intentar consolidar la O.R.: ' +
+				(obj.mensaje || 'Error desconocido')
+			);
+		}
+		else {
+			setTimeout(() => {
 				AbrirMensaje(
 					'CONFIRMACIÓN EXITOSA',
 					'Se ha consolidado la orden de reparto',
@@ -396,11 +391,7 @@ function confirmarConsolidarOrdenDeReparto() {
 					'success!',
 					null
 				);
-			}
-		},
-		error: function (err) {
-			CerrarWaiting();
-			console.error("Error al consolidar la orden de reparto:", err);
+			}, 200);
 		}
 	});
 }
@@ -541,8 +532,10 @@ function CargarDetalleDelProductoSeleccionadoEnConteo(orCompte, pId) {
 		$("#divConsolidarDetalleProductoSeleccionado").html(html);
 		ConfigurarEventosEnProductoSeleccionadoEnDetalleDeConteo();
 
-		EvaluarHabilitarReasignar();
-		EstadoInicialBotonesOKCancelEnDetalleDeConteos();
+		setTimeout(() =>
+			EvaluarHabilitarReasignar(),
+			EstadoInicialBotonesOKCancelEnDetalleDeConteos(),
+		500);
 	});
 }
 
@@ -746,7 +739,7 @@ function EvaluarHabilitarReasignar() {
 		.length;
 
 	// 4) Aplicar la lógica
-	if (dif > 0 && filasInferiores > 1) {
+	if (dif != 0 && filasInferiores > 1) {
 		$("#btnReasignar").prop("disabled", false);
 	} else {
 		$("#btnReasignar").prop("disabled", true);
@@ -1846,7 +1839,7 @@ function ConfigurarEstadoDeBotonesEnTabOrdenDeReparto(orCompte, oreId) {
 			btnHojaProd.classList.add("disabled");
 		}
 	}
-	
+
 }
 
 function activarSeleccionDeFilas(selectorTabla) {
