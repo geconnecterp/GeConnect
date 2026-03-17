@@ -13,5 +13,6 @@ namespace gc.api.core.Contratos.Servicios
 		RespuestaDto APonerEnCursoOrdenDeReparto(APonerEnCursoOrdenDeRepartoRequest req);
 		List<AConsolidarPedidoClienteDetalleDto> AConsolidarPedidoClienteDetalle(AConsolidarPedidoClienteDetalleRequest req);
 		List<AConsolidarConteosDto> AConsolidarConteos(string or_compte);
+		RespuestaDto AConsolidarOrdenDeReparto(AConciliarOrdenDeRepartoRequest req);
 	}
 }

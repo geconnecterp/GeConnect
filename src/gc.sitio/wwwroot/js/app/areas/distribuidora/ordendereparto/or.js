@@ -239,8 +239,20 @@ function ConfigurarEventosEnPonerEnConsolidar() {
 	//btnConfirmarConciliacion
 	$(document).off("click", "#btnConfirmarConciliacion");
 	$(document).on("click", "#btnConfirmarConciliacion", function () {
-
-		//Confirmar consolidacion
+		AbrirMensaje(
+			'CONFIRMAR CONSOLIDAR',
+			"¿Desea confirmar la consolidación de la orden de reparto?",
+			function (resp) {
+				if (resp === 'SI') {
+					confirmarConsolidarOrdenDeReparto();
+				}
+				$('#msjModal').modal('hide');
+			},
+			true,
+			['Confirmar', 'Cancelar'],
+			'info!',
+			null
+		);
 	});
 
 	//btnCancelarConciliacion
@@ -339,6 +351,56 @@ function ConfigurarEventosEnPonerEnConsolidar() {
 		}
 		else {
 			CancelarModificacionesEnReasginacion();
+		}
+	});
+}
+
+function confirmarConsolidarOrdenDeReparto() {
+	AbrirWaiting("Consolidando orden de reparto...");
+	let data = {
+		orCompte: orCompteSeleccionado
+	};
+	console.log("Payload a enviar:", data);
+	AbrirWaiting("Confirmando consolidación de orden de reparto...")
+	$.ajax({
+		url: confirmarConsolidarOrdenDeRepartoUrl,
+		type: "POST",
+		contentType: "application/json",
+		data: JSON.stringify(data),
+		success: function (resp) {
+			CerrarWaiting();
+			if (resp.error || resp.warn) {
+				console.error('❌ Response:', resp.mensaje);
+				ControlaMensajeError(
+					'Error al intentar consolidar la orden de reparto: ' +
+					(resp.mensaje || 'Error desconocido')
+				);
+			}
+			else {
+				AbrirMensaje(
+					'CONFIRMACIÓN EXITOSA',
+					'Se ha consolidado la orden de reparto',
+					function () {
+						$('#msjModal').modal('hide');
+						document.querySelector("#vistaConsolidarOR").classList.add("d-none");
+						document.querySelector("#vistaListaOR").classList.remove("d-none");
+						document.querySelector("#vistaConsolidarOR").innerHTML = "";
+
+						//Actualizar tabla de Ordenes de Reparto
+						const filtros = buildQueryFilters(pagina);
+						const url = buscarOrdenesDeRepartoUrl;
+						CargarOrdenesDeReparto(filtros, url);
+					},
+					false,
+					['Aceptar'],
+					'success!',
+					null
+				);
+			}
+		},
+		error: function (err) {
+			CerrarWaiting();
+			console.error("Error al consolidar la orden de reparto:", err);
 		}
 	});
 }

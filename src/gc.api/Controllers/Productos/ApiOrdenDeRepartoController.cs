@@ -170,6 +170,17 @@ namespace gc.api.Controllers.Productos
 			}
 		}
 
+		[HttpPost("aconsolidar-or")]
+		public IActionResult AConsolidarOrdenDeReparto(AConciliarOrdenDeRepartoRequest req)
+		{
+			if (req == null)
+			{
+				return BadRequest("No se recepcionó la información para poner a conciliar la orden de reparto.");
+			}
+			var respuesta = _orSrv.AConsolidarOrdenDeReparto(req);
+			return Ok(new ApiResponse<RespuestaDto>(respuesta));
+		}
+
 		private static MetadataGrid? BuildMetadata(List<OrdenDeRepartoListaDto>? lista, QueryFilters filtro)
 		{
 			if (lista == null || lista.Count == 0)

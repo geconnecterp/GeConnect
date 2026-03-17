@@ -556,6 +556,11 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			}
 		}
 
+		/// <summary>
+		/// Funcion que se usa para actualizar los valores en session de la lista de productos a consolidar, luego de realizar una reasignacion de cantidades en la vista de consolidar.
+		/// </summary>
+		/// <param name="request"></param>
+		/// <returns></returns>
 		[HttpPost]
 		public JsonResult GuardarReasignacionEnDatosDeSesion([FromBody] GuardarReasignacionEnDatosDeSesionRequest request)
 		{
@@ -605,6 +610,67 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			}
 		}
 
+		[HttpPost]
+		public JsonResult ConfirmarConsolidarOrdenDeReparto(string orCompte)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return Json(new { error = true, ok = false, mensaje = "No autorizado" });
+				if (string.IsNullOrEmpty(orCompte))
+					return Json(new { error = true, ok = false, mensaje = "No se han provisto los datos necesarios: Orden de Reparto." });
+
+				var request = new AConciliarOrdenDeRepartoRequest();
+				request.or_compte = orCompte;
+				request.adm_id = AdministracionId;
+				request.usu_id = UserName;
+				request.json = JsonConvert.SerializeObject(AConsolidarPedidoClienteDetalleLista);
+				
+				var respuesta = _ordenDeRepartoServicio.AConsolidarOrdenDeReparto(request, TokenCookie).Result;
+				// Procesamiento de respuesta
+				if (respuesta.Ok && !respuesta.EsError && !respuesta.EsWarn)
+				{
+					// Log y limpieza de datos temporales
+					var msg = $"Consolidar orden de reparto realizado exitosamente.";
+					_logger?.LogInformation(msg);
+					return AnalizarRespuesta(respuesta, msg);
+				}
+				else
+				{
+					// Log y respuesta de error/advertencia
+					_logger?.LogWarning("Error en consolidar la orden de reparto: {Mensaje}", respuesta.Mensaje);
+					return Json(new
+					{
+						ok = false,
+						error = respuesta.EsError,
+						warn = respuesta.EsWarn,
+						mensaje = respuesta.Mensaje ?? "Error en consolidar la orden de reparto"
+					});
+				}
+			}
+			catch (NegocioException ex)
+			{
+				// Manejo de excepciones no esperadas
+				_logger?.LogError(ex, ex.Message);
+				return Json(new
+				{
+					ok = false,
+					error = true,
+					mensaje = ex.Message
+				});
+			}
+			catch (Exception ex)
+			{
+				// Manejo de excepciones no esperadas
+				_logger?.LogError(ex, ex.Message);
+				return Json(new
+				{
+					ok = false,
+					error = true,
+					mensaje = ex.Message
+				});
+			}
+		}
 
 		#region Metodos Privados
 		private void CalcularUpDownEnPedidosDeLaOrdenDeReparto(List<PedidoEnOrdenDeRepartoDto> pedidosDeLaOrdenDeReparto)
