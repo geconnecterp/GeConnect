@@ -170,39 +170,42 @@ namespace gc.api.Controllers.OrdenReparto
             return Ok(new ApiResponse<List<ORProductoDto>>(data));
         }
 
-        [HttpPost]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<ORProdRequestDto>>))]
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<OrCtlProductoDto>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
-        public IActionResult ObtenerListaProductosOrCtl(ORProdRequestDto request)
+        public IActionResult ObtenerListaProductosOrCtl(string or_compte, string usu_id)
         {
-            if (request == null)
-            {
-                _logger.LogWarning("Solicitud de productos de orden de reparto vacía o nula.");
-                return BadRequest(new ApiResponse<string>("La solicitud no puede estar vacía."));
-            }
-            if (string.IsNullOrWhiteSpace(request.or_compte))
+           
+            if (string.IsNullOrWhiteSpace(or_compte))
             {
                 _logger.LogWarning("Parámetro or_compte se encuentra vacío o nulo.");
                 return BadRequest(new ApiResponse<string>("El parámetro or_compte no puede estar vacío."));
             }
-            if (string.IsNullOrWhiteSpace(request.adm_id))
-            {
-                _logger.LogWarning("Parámetro adm_id se encuentra vacío o nulo.");
-                return BadRequest(new ApiResponse<string>("El parámetro adm_id no puede estar vacío."));
-            }
-            if (string.IsNullOrWhiteSpace(request.usu_id))
+            
+            if (string.IsNullOrWhiteSpace(usu_id))
             {
                 _logger.LogWarning("Parámetro usu_id se encuentra vacío o nulo.");
                 return BadRequest(new ApiResponse<string>("El parámetro usu_id no puede estar vacío."));
             }
-            if (string.IsNullOrWhiteSpace(request.box_id))
+            
+            var data = _orSv.ObtenerListaProductosOrCtl(or_compte,usu_id);
+            return Ok(new ApiResponse<List<OrCtlProductoDto>>(data));
+        }
+        
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult CargaProductoORCtl([FromBody] string json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
             {
-                _logger.LogWarning("Parámetro box_id se encuentra vacío o nulo.");
-                return BadRequest(new ApiResponse<string>("El parámetro box_id no puede estar vacío."));
+                _logger.LogWarning("Parámetro json se encuentra vacío o nulo.");
+                return BadRequest(new ApiResponse<string>("El parámetro json no puede estar vacío."));
             }
-            var data = _orSv.ObtenerListaProductosOrCtl(request);
-            return Ok(new ApiResponse<List<ORProductoDto>>(data));
+            var data = _orSv.CargaProductoORCtl(json);
+            return Ok(new ApiResponse<RespuestaDto>(data));
         }
 
         [HttpPost]

@@ -19,4 +19,21 @@
         public int unidad_pres { get; set; }
         public string nota { get; set; } = string.Empty;
     }
+
+    public class OrCtlProductoDto
+    {
+        public string or_compte { get; set; } = string.Empty;
+        public string p_id { get; set; } = string.Empty;
+        public string p_desc { get; set; } = string.Empty;
+        public string up_id { get; set; } = string.Empty;
+        public char adm_min_excluye { get; set; }
+        public char adm_may_excluye { get; set; }
+        public int unidad_pres { get; set; }
+        public int bultos { get; set; }
+        public decimal us { get; set; }
+        public decimal cantidad { get; set; }
+        public DateTime vto { get; set; }
+        public decimal cantidad_total { get; set; }
+        public decimal diferencia { get; set; }
+    }
 }

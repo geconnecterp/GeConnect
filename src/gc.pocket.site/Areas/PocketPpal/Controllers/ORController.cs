@@ -84,10 +84,10 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     return Json(new { success = false, message = resp.Mensaje });
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                _logger.LogError(ex.Message, "❌ Error inesperado al intentar obtener las OR");
+                return Json(new { success = false, message = "Se produjo un error al intentar obtener las OR."});
             }
         }
 

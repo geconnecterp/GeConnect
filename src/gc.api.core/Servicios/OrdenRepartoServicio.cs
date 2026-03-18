@@ -128,21 +128,41 @@ namespace gc.api.core.Servicios
 
         }
 
-        public List<ORProductoDto> ObtenerListaProductosOrCtl(ORProdRequestDto request)
+        public List<OrCtlProductoDto> ObtenerListaProductosOrCtl(string or_compte,string usu_id)
         {
-            var sp = ConstantesGC.StoredProcedures.SP_OR_LISTA_PRODUCTOS;
+            var sp = ConstantesGC.StoredProcedures.SP_OR_VER_CTL_SALIDA;
             var ps = new List<SqlParameter>()
             {
-                new SqlParameter("@or_compte", request.or_compte),
-                new SqlParameter("@adm_id", request.adm_id),
-                new SqlParameter("@usu_id", request.usu_id),
-                new SqlParameter("@box_id", request.box_id),
-                new SqlParameter("@rub_id", request.rub_id)
+                new SqlParameter("@or_compte", or_compte),
+                new SqlParameter("@usu_id", usu_id),
             };
-            var result = _repository.EjecutarLstSpExt<ORProductoDto>(sp, ps, true);
+            var result = _repository.EjecutarLstSpExt<OrCtlProductoDto>(sp, ps, true);
             return result;
         }
 
+        public RespuestaDto CargaProductoORCtl(string json)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_OR_CARGA_CTL_SALIDA;
+
+            var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@json", json),
+            };
+               
+            var result = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+            if (result != null && result.Count > 0)
+            {
+                return result[0];
+            }
+            else
+            {
+                return new RespuestaDto()
+                {
+                    resultado = -1,
+                    resultado_msj = "Error al cargar el producto"
+                };
+            }
+        }
 
         public RespuestaDto ValidaProductoCarritoOR(ORCargaCarritoRequest request)
         {

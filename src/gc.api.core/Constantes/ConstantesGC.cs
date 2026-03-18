@@ -576,6 +576,9 @@
 			public const string SP_OR_AEN_CURSO = "SPGECO_OR_AEnCurso";
 			public const string SP_OR_CARRITO_VALIDA = "SPGECO_OR_Carrito_Valida";
 			public const string SP_OR_CARRITO_CARGA = "SPGECO_OR_Carrito_Carga";
+            public const string SP_OR_CARGA_CTL_SALIDA = "SPGECO_OR_CARGAR_Ctl_Salida";
+			public const string SP_OR_VER_CTL_SALIDA = "SPGECO_OR_Ver_CTL_Salida";
+
             public const string SP_OR_CTL_SALIDA = "SPGECO_OR_CARGAR_Ctl_Salida";
 			public const string SP_OR_A_CONSOLIDAR = "SPGECO_OR_AConsolidar";
 			public const string SP_OR_ACONSOLIDAR_PC_DETALLE = "SPGECO_OR_AConsolidar_PC_d";
