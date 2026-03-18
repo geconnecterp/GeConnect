@@ -1,0 +1,30 @@
+﻿@{
+    Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+    var callback = Url.Action("index", "orctl", new { area = "pocketppal" });
+
+    string orCompte = ViewBag.Compte ?? "N/A";
+    (string, string) mensaje = (string.Empty, orCompte);
+}
+
+
+
+<div class="d-flex justify-content-between align-items-center gap-4 my-3">
+    <partial name="_NroComprobante" model="mensaje" />
+
+    <a asp-action="ORValidaProducto" asp-controller="orctl" asp-area="pocketppal" 
+     asp-route-or_compte ="@orCompte" asp-route-p_id="" asp-route-nuevo="true" class="btn btn-sm btn-success">
+        <i class="bx bx-cart"></i> Cargar
+    </a>
+</div>
+
+
+<partial name="_listacontrol" />
+
+@section scripts {
+    <script type="text/javascript">
+        const orCompte = '@orCompte';
+        var homeModUrl = "@Url.Action("index", "orctl", new { area = "pocketppal" })";
+        var CargaProductosOrCtlUrl = "@Url.Action("CargaProductosOrCtl", "orctl", new { area = "pocketppal" })"
+    </script>
+    <script src="~/js/app/or/orCtlLista.js"></script>
+}

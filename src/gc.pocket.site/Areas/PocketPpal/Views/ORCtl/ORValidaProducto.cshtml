@@ -1,0 +1,43 @@
+﻿@model (string,string)
+
+@{
+    Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+
+    var buscar = new BusquedaProducto();
+
+    var callback = Url.Action("CargaORLista", "or", new { area = "pocketppal", or_compte = ViewBag.Compte ?? "" });
+    var compte = ViewBag.Compte ?? "";
+
+    // ORProductoDto producto = ViewBag.Producto as ORProductoDto ?? new();
+}
+
+<partial name="_NroComprobante" model="@Model" />
+
+    @* Reutilización de componentes *@
+    <partial name="~/areas/gestion/views/producto/_ctrBuscarProducto.cshtml" model="@buscar" />
+    <partial name="~/areas/gestion/views/producto/_productoDetalle.cshtml" model="true" />
+
+    
+
+
+
+@section scripts {
+    <script>
+        var orActual = '@Model.Item2';
+        // var validarBoxIngresadoUrl = "@Url.Action("ValidarBoxIngresado", "or", new { area = "pocketppal" })";
+        // var validarProductoUrl = "@Url.Action("ValidarProductoIngresado", "or", new { area = "pocketppal" })";
+        // var resguardarUrl = "@Url.Action("ResguardarProductoOR", "or", new { area = "pocketppal" })";
+        var proximoProductoUrl = "@Url.Action("PresentaProductosOrCtl", "orctl", new { area = "pocketppal" })";
+
+        //funcionalidad busqueda avanzada
+        var productoBase = null; //se hidrata en busquedas.
+        // var productoActualOR = Html.Raw(System.Text.Json.JsonSerializer.Serialize(producto));
+        var funcionBusquedaAvanzada = false;
+        var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "gestion" })";
+        var ResguardarProductoCarritoORUrl = "@Url.Action("ResguardarProductoCarritoORCtl", "orctl", new { area = "pocketppal" })";
+
+
+    </script>
+    <script src="~/js/app/busquedas.js"></script>
+    <script src="~/js/app/or/orctlvalidaProducto.js"></script> @* ← Específico ORctl *@
+}

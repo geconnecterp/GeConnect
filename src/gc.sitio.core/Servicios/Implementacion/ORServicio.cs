@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics.Arm;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
@@ -29,6 +30,8 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string POST_LISTA_OR_PRODUCTOS = "/ObtenerListaORProductos";
         private const string POST_VALIDA_PRODUCTO_CARRITO_OR = "/ValidaProductoCarritoOR";
         private const string POST_RESGUARDAR_PRODUCTO_CARRITO_OR = "/ResguardarProductoCarritoOR";
+        private const string GET_LISTA_ORCTL_PRODUCTOS = "/ObtenerListaProductosOrCtl";
+        private const string POST_CARGA_PRODUCTO_OR_CTL = "/CargaProductoORCtl";
 
         public ORServicio(IOptions<AppSettings> options,ILogger<ORServicio> logger):base(options,logger,RutaAPI)
         {
@@ -380,6 +383,137 @@ namespace gc.sitio.core.Servicios.Implementacion
             {
                 _logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
                 return new() { Ok = false, Mensaje = "Error al buscar las Etiquetas" };
+            }
+        }
+
+        public async Task<RespuestaGenerica<OrCtlProductoDto>> ObtenerListaProductosOrCtl(string or_compte, string usu_id, string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(token);
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_LISTA_ORCTL_PRODUCTOS}?or_compte={or_compte}&usu_id={usu_id}";
+                using var response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recibió respuesta válida de los OR x BOX" };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<OrCtlProductoDto>>>(stringData)
+                        ?? throw new NegocioException("Error al deserializar los datos");
+
+                    if (apiResponse.Data == null)
+                    {
+                        return new() { Ok = false, Mensaje = "No se encontraron datos de los OR x BOX." };
+                    }
+
+                    return new RespuestaGenerica<OrCtlProductoDto>
+                    {
+                        Ok = true,
+                        ListaEntidad = apiResponse.Data,
+                        Mensaje = "OK"
+                    };
+                }
+                else
+                {
+                    var errorData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {errorData}");
+
+                    return new()
+                    {
+                        Ok = false,
+                        Mensaje = "Error al obtener los OR x BOX. Si el problema persiste contacte al administrador."
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name}");
+                return new RespuestaGenerica<OrCtlProductoDto>
+                {
+                    Ok = false,
+                    Mensaje = "Error interno al obtener los OR x BOX"
+                };
+            }
+        }
+
+        public async Task<RespuestaGenerica<RespuestaDto>> CargaProductoORCtl(string json, string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(json, token, out StringContent contentData);
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_CARGA_PRODUCTO_OR_CTL}";
+
+                using var response = await client.PostAsync(link, contentData);
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API, al cargar el Producto Controlado" };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+                    if (apiResponse == null || apiResponse.Data == null)
+                    {
+                        return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API, al cargar el Producto Controlado" };
+                    }
+
+                    if (apiResponse.Data.resultado == 0)
+                    {
+
+                    return new RespuestaGenerica<RespuestaDto>
+                    {
+                        Ok = true,
+                        Mensaje = "OK",
+                        Entidad = apiResponse.Data
+                        // Nota: si necesitas la metadata (apiResponse.Meta), amplía RespuestaGenerica para incluirla.
+                    };
+
+                    } else if(apiResponse.Data.resultado>0)
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = false,
+                            Mensaje = apiResponse.Data.resultado_msj,
+                            Entidad = apiResponse.Data,
+                            EsWarn = true,
+                            EsError =false,
+
+                            // Nota: si necesitas la metadata (apiResponse.Meta), amplía RespuestaGenerica para incluirla.
+                        };
+                    }
+                    else
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = false,
+                            Mensaje = apiResponse.Data.resultado_msj,
+                            Entidad = apiResponse.Data,
+                            EsWarn = false,
+                            EsError = true,
+
+                            // Nota: si necesitas la metadata (apiResponse.Meta), amplía RespuestaGenerica para incluirla.
+                        };
+                    }
+                }
+                else
+                {
+                    var msg = await ReadApiErrorAsync(response);
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+                    return new() { Ok = false, Mensaje = msg };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+                return new() { Ok = false, Mensaje = "Error al Validar producto en el carrito" };
             }
         }
     }
