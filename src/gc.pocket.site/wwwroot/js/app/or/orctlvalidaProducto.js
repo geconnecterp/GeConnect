@@ -276,9 +276,29 @@ function agregaProductoAListaOrCtl() {
                     null
                 );
             } else {
+                // ✅ ÉXITO: Verificar si fue actualización o inserción
+                const esActualizacion = obj.data?.esActualizacion || false;
+                const icono = esActualizacion ? "🔄" : "✅";
+                const titulo = esActualizacion ? "Producto Actualizado" : "Producto Agregado";
 
-                window.location.href = `${proximoProductoUrl}?or_compte=${orActual}`;
+                console.log(`${icono} ${titulo}: ${obj.data?.esActualizacion ? 'Actualizado' : 'Nuevo'}`);
 
+                AbrirMensaje(
+                    titulo,
+                    obj.msg || "Operación exitosa",
+                    function () {
+                        $("#msjModal").modal("hide");
+                       /* if (proximoProductoUrl && orActual) {*/
+                            window.location.href = `${proximoProductoUrl}?or_compte=${orActual}`;
+                        //} else {
+                        //    window.location.href = homeModUrl || '/PocketPpal/ORCtl/PresentaProductosOrCtl?or_compte=' + orActual;
+                        //}
+                    },
+                    false,
+                    ["Aceptar"],
+                    "succ!",
+                    null
+                );
             }
         },
         error: function (xhr, status, error) {

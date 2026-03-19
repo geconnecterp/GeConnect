@@ -161,7 +161,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                             p_id_prov = p.p_id_prov,
                             unidad_pres = p.unidad_pres,
                             us = p.us,
-                            usu_id = cant == 1 ? UserName : "",
+                            usu_id = UserName,
                             vto = p.vto.ToString("yyyyMMdd")
                         });
                     }
@@ -244,7 +244,10 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         {
             try
             {
-                // Validación básica de datos recibidos
+                // ===================================================================
+                // PASO 1: VALIDACIONES BÁSICAS
+                // ===================================================================
+
                 if (request == null)
                 {
                     return Json(new { error = true, warn = false, msg = "No se recibieron datos del producto." });
@@ -266,10 +269,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     return Json(new { error = false, warn = true, msg = "El producto no es por unidades. La unidad de presentación tiene que ser igual a 1 siempre." });
                 }
 
-                // Completar campos faltantes del request
+                // ===================================================================
+                // PASO 2: COMPLETAR CAMPOS FALTANTES
+                // ===================================================================
+
                 if (string.IsNullOrWhiteSpace(request.or_compte))
                 {
-                    // Obtener or_compte desde la sesión
                     request.or_compte = ORSession?.ORComprobanteActual ?? string.Empty;
                 }
 
@@ -278,63 +283,108 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     return Json(new { error = true, warn = false, msg = "No se especificó el número de comprobante de la OR." });
                 }
 
-
-
-                // Validar fecha de vencimiento (opcional según negocio)
                 if (string.IsNullOrWhiteSpace(request.vto))
                 {
-                    request.vto = "19700101"; // Fecha por defecto si no tiene vencimiento
+                    request.vto = "19700101"; // Fecha por defecto
                 }
+
+                // ===================================================================
+                // PASO 3: VALIDAR SESIÓN
+                // ===================================================================
 
                 var sesion = ORSession;
-
                 if (sesion == null)
                 {
-                    return RedirectToAction("Login", "Token", new { area = "seguridad" });
+                    return Json(new { error = true, warn = false, msg = "Sesión inválida. Por favor, inicie sesión nuevamente." });
                 }
 
-                request.item = sesion.ORCtlListaProductos.Count() == 0 ? 1 : sesion.ORCtlListaProductos.Count() + 1;
-
-                if (request.item == 1)
+                // Inicializar lista si es null
+                if (sesion.ORCtlListaProductos == null)
                 {
-                    sesion.ORCtlListaProductos = [];
+                    sesion.ORCtlListaProductos = new List<OrCtlCargaProductoDto>();
                 }
 
-                // Completar usuario pero solo para el primer item
-                if (string.IsNullOrWhiteSpace(request.usu_id) && request.item == 1)
+                // ===================================================================
+                // PASO 4: VERIFICAR SI EL PRODUCTO YA EXISTE (DUPLICADO)
+                // ===================================================================
+
+                var productoExistente = BuscarProductoEnLista(sesion.ORCtlListaProductos, request.p_id);
+                bool esActualizacion = productoExistente != null;
+
+                if (esActualizacion)
                 {
+                    // ===================================================================
+                    // CASO A: PRODUCTO DUPLICADO - ACTUALIZAR
+                    // ===================================================================
+
+                    _logger?.LogInformation("🔄 Producto duplicado detectado: {PId}. Actualizando datos...", request.p_id);
+
+                    // Actualizar el producto existente con los nuevos datos
+                    ActualizarProductoExistente(productoExistente, request);
+
+                    // Actualizar sesión
+                    sesion.UltimaActualizacion = DateTime.Now;
+                    ORSession = sesion;
+
+                    var mensajeActualizacion = $"Producto {request.p_desc ?? request.p_id} actualizado correctamente";
+
+                    _logger?.LogInformation("✅ Producto actualizado exitosamente: {PId}", request.p_id);
+                    TempData["succ"] = mensajeActualizacion;
+
+                    return Json(new
+                    {
+                        error = false,
+                        warn = false,
+                        msg = mensajeActualizacion,
+                        data = new
+                        {
+                            esActualizacion = true,
+                            productoActualizado = productoExistente,
+                            totalProductos = sesion.ORCtlListaProductos.Count
+                        }
+                    });
+                }
+                else
+                {
+                    // ===================================================================
+                    // CASO B: PRODUCTO NUEVO - AGREGAR
+                    // ===================================================================
+
+                    _logger?.LogInformation("➕ Producto nuevo: {PId}. Agregando a la lista...", request.p_id);
+
+                    // Calcular nuevo item (siguiente número secuencial)
+                    request.item = sesion.ORCtlListaProductos.Count + 1;
+
+                    // ✅ CORRECCIÓN: ASIGNAR USUARIO A TODOS LOS PRODUCTOS
                     request.usu_id = UserName;
+                    _logger?.LogDebug("👤 Asignando usuario {Usuario} al producto item {Item}", UserName, request.item);
+
+                    // Agregar a la lista
+                    sesion.ORCtlListaProductos.Add(request);
+
+                    // Actualizar sesión
+                    sesion.UltimaActualizacion = DateTime.Now;
+                    ORSession = sesion;
+
+                    var mensajeNuevo = $"Producto {request.p_desc ?? request.p_id} agregado correctamente";
+
+                    _logger?.LogInformation("✅ Producto agregado exitosamente: {PId} - Total: {Total}",
+                        request.p_id, sesion.ORCtlListaProductos.Count);
+                    TempData["succ"] = mensajeNuevo;
+
+                    return Json(new
+                    {
+                        error = false,
+                        warn = false,
+                        msg = mensajeNuevo,
+                        data = new
+                        {
+                            esActualizacion = false,
+                            productoAgregado = request,
+                            totalProductos = sesion.ORCtlListaProductos.Count
+                        }
+                    });
                 }
-                else 
-                {
-                    request.usu_id = string.Empty; // Dejar vacío para los siguientes items
-                }
-
-                sesion.ORCtlListaProductos.Add(request);
-
-                ORSession = sesion;
-                //// Serializar el request completo a JSON
-                //var jsonRequest = JsonConvert.SerializeObject(request);
-
-                //_logger?.LogInformation("📦 Cargando producto OR Control: {PId}, Cantidad: {Cantidad}", request.p_id, request.cantidad);
-
-                //// Invocar servicio de carga de producto controlado
-                //var resp = await _orServicio.CargaProductoORCtl(jsonRequest, TokenCookie);
-
-                //if (!resp.Ok)
-                //{
-                //    _logger?.LogWarning("⚠️ Error al cargar producto: {Mensaje}", resp.Mensaje);
-                //    return Json(new { error = resp.EsError, warn = resp.EsWarn, msg = resp.Mensaje ?? "Error al cargar el producto." });
-                //}
-
-                // Respuesta exitosa
-
-                var mensaje = $"Producto {request.p_desc} fue cargado exitosamente";
-
-                _logger?.LogInformation("✅ Producto cargado exitosamente: {PId}", request.p_id);
-                TempData["succ"] = mensaje;
-
-                return Json(new { error = false, warn = false, msg = $"✅ Producto cargado exitosamente: {request.p_id}" });
             }
             catch (NegocioException ex)
             {
@@ -425,18 +475,13 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 // Eliminar el producto de la lista
                 sesion.ORCtlListaProductos.Remove(productoAEliminar);
 
-                // Reindexar items (mantener secuencia correcta)
+                // Reindexar items (ahora asigna usuario a todos)
                 ReindexarProductosOrCtl(sesion.ORCtlListaProductos);
 
-                // Si se eliminó el último producto, limpiar usuario del primer item
+                // Log informativo
                 if (sesion.ORCtlListaProductos.Count == 0)
                 {
                     _logger?.LogInformation("📝 Lista de productos vacía después de eliminar {PId}", p_id);
-                }
-                else if (sesion.ORCtlListaProductos.Count == 1)
-                {
-                    // Asegurar que el primer producto tenga el usuario
-                    sesion.ORCtlListaProductos[0].usu_id = UserName;
                 }
 
                 // Actualizar sesión
@@ -478,18 +523,64 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             {
                 listaProductos[i].item = i + 1;
 
-                // Solo el primer item debe tener usuario
-                if (i == 0 && string.IsNullOrWhiteSpace(listaProductos[i].usu_id))
+                if (string.IsNullOrWhiteSpace(listaProductos[i].usu_id))
                 {
                     listaProductos[i].usu_id = UserName;
-                }
-                else if (i > 0)
-                {
-                    listaProductos[i].usu_id = string.Empty;
+                    _logger?.LogDebug("👤 Usuario asignado al item {Item}", i + 1);
                 }
             }
 
             _logger?.LogDebug("🔄 Productos reindexados: {Cantidad} items", listaProductos.Count);
+        }
+
+        /// <summary>
+        /// Actualiza los datos de un producto existente con nueva información
+        /// </summary>
+        /// <param name="productoExistente">Producto a actualizar</param>
+        /// <param name="nuevosDatos">Nuevos datos del producto</param>
+        /// <remarks>
+        /// ✅ CORRECCIÓN: Mantiene el item original pero actualiza el usuario
+        /// </remarks>
+        private void ActualizarProductoExistente(OrCtlCargaProductoDto productoExistente, OrCtlCargaProductoDto nuevosDatos)
+        {
+            // Guardar valor que NO debe cambiar
+            var itemOriginal = productoExistente.item;
+
+            // Actualizar TODOS los campos con los nuevos datos
+            productoExistente.or_compte = nuevosDatos.or_compte;
+            productoExistente.p_desc = nuevosDatos.p_desc;
+            productoExistente.p_id_prov = nuevosDatos.p_id_prov;
+            productoExistente.p_id_barrado = nuevosDatos.p_id_barrado;
+            productoExistente.up_id = nuevosDatos.up_id;
+            productoExistente.unidad_pres = nuevosDatos.unidad_pres;
+            productoExistente.bulto = nuevosDatos.bulto;
+            productoExistente.us = nuevosDatos.us;
+            productoExistente.cantidad = nuevosDatos.cantidad;
+            productoExistente.vto = nuevosDatos.vto;
+
+            // ✅ CORRECCIÓN: ACTUALIZAR USUARIO TAMBIÉN
+            productoExistente.usu_id = UserName;
+
+            // Restaurar valor que debe mantenerse
+            productoExistente.item = itemOriginal;
+
+            _logger?.LogInformation("🔄 Producto actualizado: {PId} en posición {Item} por usuario {Usuario}",
+                productoExistente.p_id, productoExistente.item, UserName);
+        }
+
+        /// <summary>
+        /// Busca un producto en la lista por su ID
+        /// </summary>
+        /// <param name="listaProductos">Lista de productos donde buscar</param>
+        /// <param name="pId">ID del producto a buscar</param>
+        /// <returns>El producto encontrado o null</returns>
+        private OrCtlCargaProductoDto? BuscarProductoEnLista(List<OrCtlCargaProductoDto> listaProductos, string pId)
+        {
+            if (listaProductos == null || listaProductos.Count == 0 || string.IsNullOrWhiteSpace(pId))
+                return null;
+
+            return listaProductos.FirstOrDefault(p =>
+                p.p_id.Equals(pId, StringComparison.OrdinalIgnoreCase));
         }
     }
 }
