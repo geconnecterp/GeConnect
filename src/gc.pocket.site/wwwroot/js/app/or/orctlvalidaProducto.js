@@ -28,7 +28,7 @@ function inicializarEventosValidacion() {
     // ✅ CORRECCIÓN: Vincular el evento UNA SOLA VEZ usando delegación
     // Esto evita múltiples vinculaciones
     //$(document).off("click", "#btnCargarProd").on("click", "#btnCargarProd", cargarCarritoORCtl);
-    $(document).on("click", "#btnCargarProd", cargarCarritoORCtl);
+    $(document).on("click", "#btnCargarProd", agregaProductoAListaOrCtl);
 }
 
 /**
@@ -111,20 +111,20 @@ function verificaEstadoOrCtl() {
     //charly confirma 12/03/2026 unidad de presentacion que trae producto
     $("#up").val(prod.p_unidad_pres).prop("disabled", false);
 
-    if (prod.up_id === "07") {  
+    if (prod.up_id === "07") {
         // Unidades enteras
         $("#box").mask("000,000,000,000", { reverse: true });
         $("#box").val(0).prop("disabled", false);
-        
+
         $("#unid").mask("000,000,000,000", { reverse: true });
         $("#unid").val(0).prop("disabled", false);
     }
-    else { 
+    else {
         // Unidades decimales (pesables)
         $("#up").val(1).prop("readonly", true).addClass("backReadOnly");
-        
+
         $("#box").val(0).prop("disabled", true);
-        
+
         $("#unid").mask("000,000,000,000.000", { reverse: true });
         $("#unid").val(0).prop("disabled", false);
     }
@@ -156,7 +156,7 @@ function verificaEstadoOrCtl() {
     $("#btnBusquedaBase").prop("disabled", false);
 }
 
-function cargarCarritoORCtl() {
+function agregaProductoAListaOrCtl() {
     // Validar contexto básico
     if (!productoBase) {
         mostrarMensaje("No hay producto seleccionado para cargar", "error");
@@ -276,28 +276,15 @@ function cargarCarritoORCtl() {
                     null
                 );
             } else {
-                AbrirMensaje(
-                    "Éxito",
-                    obj.msg || "Producto cargado exitosamente",
-                    function () {
-                        $("#msjModal").modal("hide");
-                        if (proximoProductoUrl && orActual) {
-                            window.location.href = `${proximoProductoUrl}?or_compte=${orActual}`;
-                        } else {
-                            window.location.href = homeModUrl || '/PocketPpal/ORCtl/PresentaProductosOrCtl?or_compte=' + orActual;
-                        }
-                    },
-                    false,
-                    ["Aceptar"],
-                    "succ!",
-                    null
-                );
+
+                window.location.href = `${proximoProductoUrl}?or_compte=${orActual}`;
+
             }
         },
         error: function (xhr, status, error) {
             console.error("❌ Error AJAX:", error, xhr);
             CerrarWaiting();
-            
+
             let mensajeError = "Error de conexión al cargar el producto";
             if (xhr.responseJSON && xhr.responseJSON.msg) {
                 mensajeError = xhr.responseJSON.msg;
