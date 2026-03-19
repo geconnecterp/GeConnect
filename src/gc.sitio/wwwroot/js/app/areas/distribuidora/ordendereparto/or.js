@@ -64,6 +64,11 @@ function InicializaPantallaOrdenDeReparto() {
 	$(document).on("change", "#listaRepartidores", ControlalistaRepartidoresSelected);
 }
 
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
 function initPeriodoFechas() {
 	const hoy = new Date();
 	const base = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
@@ -191,6 +196,48 @@ $(document).on("click", "#btnConsolidar", function () {
 $(document).on("click", "#btnCambioPrecio", function () {
 	CargarVistCambioPrecioOrdenDeReparto(orCompteSeleccionado);
 });
+
+$(document).on("click", "#btnHojaRuta", function () {
+	ControlaImprimirHojaDeRutaDeOrdenDeReparto();
+});
+
+function ControlaImprimirHojaDeRutaDeOrdenDeReparto() {
+	if (!orCompteSeleccionado || orCompteSeleccionado == "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar una orden de reparto.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Imprimiendo ...");
+		var tipoReporte = 1;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				CerrarWaiting();
+				ImprimirHojaDeRutaDeOrdenDeReparto();
+			}
+		});
+	}
+}
+
+function ImprimirHojaDeRutaDeOrdenDeReparto() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var orCompte = orCompteSeleccionado;
+		var data = { orCompte };
+		cargarReporteEnArre(63, data, "Orden de Reparto - Hoja de Ruta", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
 
 function CargarVistCambioPrecioOrdenDeReparto(orCompteSeleccionado) {
 	AbrirWaiting("Cargando vista para cambio de precio en Orden de Reparto...");
@@ -741,7 +788,7 @@ function CargarDetalleDelProductoSeleccionadoEnConteo(orCompte, pId) {
 		setTimeout(() =>
 			EvaluarHabilitarReasignar(),
 			EstadoInicialBotonesOKCancelEnDetalleDeConteos(),
-		500);
+			500);
 	});
 }
 

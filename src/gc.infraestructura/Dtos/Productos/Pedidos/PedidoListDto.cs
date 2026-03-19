@@ -7,7 +7,7 @@ namespace gc.infraestructura.Dtos.Productos.Pedidos
 		public int Total_paginas { get; set; } = 0;
 	}
 
-	public class PedidoDto
+	public class PedidoDto : Dto
 	{
 		public string pc_compte { get; set; } = string.Empty;
 		public string pc_obs { get; set; } = string.Empty;

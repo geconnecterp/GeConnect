@@ -9,9 +9,12 @@ using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
 using gc.infraestructura.Dtos.Productos.Pedidos;
+using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Distribuidora.Models.OrdenDeReparto;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.DocManager;
 using Humanizer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -30,9 +33,15 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 		private readonly IPedidoServicio _pedidoSv;
 		private readonly IProductoServicio _productoServicio;
 
+		//PARA MODULO DE IMPRESION
+		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
+		private AppModulo _modulo_1;
+		private string APP_MODULO_1 = AppModulos.ORDEN_DE_REPARTO_HOJA_DE_RUTA.ToString();
+		private readonly IDocManagerServicio _docMSv;
+
 		public OrdenDeRepartoController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<OrdenDeRepartoController> logger,
 										IOrdenDeRepartoServicio ordenDeRepartoServicio, IRepartidorServicio repartidorServicio, IPedidoServicio pedidoSv,
-										IProductoServicio productoServicio) : base(options, contexto, logger)
+										IProductoServicio productoServicio, IDocManagerServicio docManager, IOptions<DocsManager> docsManager) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_ordenDeRepartoServicio = ordenDeRepartoServicio;
@@ -40,6 +49,11 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			//OrdenDeRepartoLista = [];
 			_pedidoSv = pedidoSv;
 			_productoServicio = productoServicio;
+
+			//PARA MODULO DE IMPRESION
+			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
+			_modulo_1 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_1);
+			_docMSv = docManager; //instancio el servicio de impresión
 		}
 
 		public IActionResult Index()
@@ -195,6 +209,8 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 					return PartialView("_gridMensaje", CrearRespuestaError("No se han provisto los datos necesarios: Orden de Reparto."));
 
 				var or = ObtenerOrdenDeRepartoPorAccion(accion, orCompte);
+				var listaRep = ObtenerListaRepartidores(_repartidorServicio.GetRepartidorLista(TokenCookie));
+				var listaPedidosEnOrdenDeReparto = ObtenerGridCoreSmart<PedidoEnOrdenDeRepartoDto>(ObtenerListaDePedidosEnOrdenDeRepartoPorAccion(accion, orCompte));
 				var query = new QueryFilters
 				{
 					Rel01 = new List<string>(),
@@ -203,16 +219,16 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 					Rel04 = new List<ComboGenDto>(),
 					//FechaD = new DateTime(1950, 1, 1),
 					//FechaH = new DateTime(2500, 12, 31),
-					Registros = 5000,
+					Registros = 500,
 					Pagina = 1
 				};
-				var pedidos = await _pedidoSv.BuscarPedidos(query, TokenCookie);
+				var pedidos = _pedidoSv.BuscarPedidos(query, TokenCookie).Result;
 				var model = new OrdenDeRepartoABMModel
 				{
 					Accion = accion,
 					OrdenDeReparto = or,
-					ListaRepartidores = ObtenerListaRepartidores(_repartidorServicio.GetRepartidorLista(TokenCookie)),
-					ListaPedidosEnOrdenDeReparto = ObtenerGridCoreSmart<PedidoEnOrdenDeRepartoDto>(ObtenerListaDePedidosEnOrdenDeRepartoPorAccion(accion, orCompte)),
+					ListaRepartidores = listaRep,
+					ListaPedidosEnOrdenDeReparto = listaPedidosEnOrdenDeReparto,
 					ListaPedidosPendientes = GenerarGridPedidos(pedidos.ListaEntidad, query.Pagina ?? 1, query),
 					RepartidorSeleccionado = accion == 'M' ? or.rp_id.ToString() : string.Empty,
 				};
@@ -773,7 +789,69 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			}
 		}
 
+		public JsonResult SetearTipoDeReporte(int tipoReporte)
+		{
+			try
+			{
+				if (tipoReporte < 0)
+					return Json(new { error = true, warn = false, msg = "Debe seleccionar un tipo de reporte." });
+
+				string titulo = string.Empty;
+				switch ((TipoDeReporte)tipoReporte)
+				{
+					case TipoDeReporte.RepoHojaDeRuta:
+						#region Gestor Impresion - Inicializacion de variables
+						titulo = "Registro de Stock vs Conteo";
+						DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_1);
+						ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_1);
+						#endregion
+						break;
+					case TipoDeReporte.RepoHojaDeProducto:
+						#region Gestor Impresion - Inicializacion de variables
+						//titulo = "Valorizado por Sectores";
+						//DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_2);
+						//ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_2);
+						#endregion
+						break;
+					case TipoDeReporte.RepoOrdenDeReparto:
+						#region Gestor Impresion - Inicializacion de variables
+						//titulo = "Valorizado por Rubros";
+						//DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_3);
+						//ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_3);
+						#endregion
+						break;
+					//case TipoDeReporte.RepoValorDetalle:
+					//	#region Gestor Impresion - Inicializacion de variables
+					//	titulo = "Valorizado Detalle";
+					//	DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_4);
+					//	ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_4);
+					//	#endregion
+					//	break;
+					//case TipoDeReporte.RepoConteoPorUsu:
+					//	#region Gestor Impresion - Inicializacion de variables
+					//	titulo = "Planilla por Usuarios";
+					//	DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_5);
+					//	ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_5);
+					//	#endregion
+					//	break;
+					default:
+						break;
+				}
+
+				return Json(new { error = false, warn = false, msg = "Tipo de reporte actualizado correctamente." });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar setear el tipo de reporte: {ex.Message}" });
+			}
+		}
 		#region Metodos Privados
+		enum TipoDeReporte
+		{
+			RepoHojaDeRuta = 1,
+			RepoHojaDeProducto = 2,
+			RepoOrdenDeReparto = 3,
+		}
 		private void CalcularUpDownEnPedidosDeLaOrdenDeReparto(List<PedidoEnOrdenDeRepartoDto> pedidosDeLaOrdenDeReparto)
 		{
 			if (AConsolidarPedidoClienteDetalleLista == null || AConsolidarPedidoClienteDetalleLista.Count == 0)
@@ -929,6 +1007,9 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 		}
 		private GridCoreSmart<PedidoListDto> GenerarGridPedidos(List<PedidoListDto> lista, int page, QueryFilters filtro)
 		{
+			if (lista == null)
+				return ObtenerGridCoreSmart<PedidoListDto>([]);
+
 			var pedidos = lista
 				.OrderBy(c => c.pc_compte)
 				.ToList();

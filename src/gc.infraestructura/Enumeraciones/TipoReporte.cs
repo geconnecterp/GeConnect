@@ -68,5 +68,6 @@ namespace gc.infraestructura.Enumeraciones
         R060_Inv_Repo_Val_Detalle = 60,
         R061_Inv_Repo_Conteo_X_Usu = 61,
         R062_Pedido_De_Cliente = 62,
+		R062_Orden_De_Reparto_Hoja_De_Ruta = 63,
 	}
 }

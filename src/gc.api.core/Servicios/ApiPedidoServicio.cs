@@ -55,7 +55,7 @@ namespace gc.api.core.Servicios
 
 		public List<PedidoListDto> ObtenerListaPedidos(PedidoRequest req)
 		{
-			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PC_LISTA;
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PC_LISTA_2;
 
 			var ps = new List<SqlParameter>();
 			if (string.IsNullOrEmpty(req.cli_list))
@@ -111,6 +111,11 @@ namespace gc.api.core.Servicios
 
 			ps.Add(new SqlParameter("@registros", req.Registros));
 			ps.Add(new SqlParameter("@pagina", req.Pagina));
+
+			foreach (var p in ps)
+			{
+				Console.WriteLine($"{p.ParameterName} = {p.Value}");
+			}
 
 			var pedidos = _repository.EjecutarLstSpExt<PedidoListDto>(sp, ps, true);
 

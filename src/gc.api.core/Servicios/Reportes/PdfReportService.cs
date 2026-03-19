@@ -36,6 +36,7 @@ namespace gc.api.core.Servicios.Reportes
             IApiPromoComboServicio cmbSv,
             IInventarioServicio invSv,
 			IApiPedidoServicio pedSv,
+            IApiOrdenDeRepartoServicio ordRepSv,
 			 IOptions<EmpresaGeco> empresa, ICuentaServicio ctaSv, IOrdenDePagoServicio _opSv, ILogger<ReportService> logger) : base(uow)
         {
 
@@ -102,6 +103,7 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R060_Inv_Repo_Val_Detalle, new R060_Inv_Repo_Val_Detalle(uow,invSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R061_Inv_Repo_Conteo_X_Usu, new R061_Inv_Repo_Conteo_X_Usu(uow,invSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R062_Pedido_De_Cliente, new R062_Pedido_De_Cliente(uow,pedSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R062_Orden_De_Reparto_Hoja_De_Ruta, new R063_Orden_De_Reparto_Hoja_De_Ruta(uow,ordRepSv,empresa,ctaSv, logger) },
 			}; 
             _logger = logger;
         }
