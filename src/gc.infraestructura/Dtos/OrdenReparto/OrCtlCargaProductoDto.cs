@@ -2,7 +2,7 @@
 {
     public class OrCtlCargaProductoDto
     {
-        public int item { get; set; } = 1;
+        public int item { get; set; } = 0;
         public string or_compte { get; set; } = string.Empty;
         public string p_id { get; set; } = string.Empty;
         public string p_desc { get; set; } = string.Empty;

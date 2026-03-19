@@ -26,6 +26,8 @@
         public string p_id { get; set; } = string.Empty;
         public string p_desc { get; set; } = string.Empty;
         public string up_id { get; set; } = string.Empty;
+        public string p_id_prov { get; set; } = string.Empty;
+        public string p_id_barrado { get; set; } = string.Empty;
         public char adm_min_excluye { get; set; }
         public char adm_may_excluye { get; set; }
         public int unidad_pres { get; set; }

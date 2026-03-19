@@ -30,6 +30,8 @@
         /// </summary>
         public List<ORProductoDto> ORListaProductosActual { get; set; } = new List<ORProductoDto>();
 
+
+        public List<OrCtlCargaProductoDto> ORCtlListaProductos { get; set; } = new();
         /// <summary>
         /// ✅ NUEVO: Indica si el filtro actual es por BOX (true) o RUBRO (false)
         /// </summary>

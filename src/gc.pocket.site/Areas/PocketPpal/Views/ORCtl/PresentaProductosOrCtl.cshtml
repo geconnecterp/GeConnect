@@ -1,9 +1,10 @@
 ﻿@{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
-    var callback = Url.Action("index", "orctl", new { area = "pocketppal" });
 
     string orCompte = ViewBag.Compte ?? "N/A";
     (string, string) mensaje = (string.Empty, orCompte);
+
+    var callback = Url.Action("PresentaProductosOrCtl", "orctl", new { area = "pocketppal", or_compte=orCompte });
 }
 
 
@@ -20,11 +21,20 @@
 
 <partial name="_listacontrol" />
 
+<div class="row mb-3">
+    <div class="d-flex justify-content-center">
+        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-3"><i class="bx bx-ms bx-info-circle"></i></a>
+        <button type="button" id="btnConfirmar" class="btn btn-sm btn-success m-3" style="display:none;"><i class="bx bx-sm bx-right-arrow-alt"></i></button>
+    </div>
+</div>
+
 @section scripts {
     <script type="text/javascript">
         const orCompte = '@orCompte';
         var homeModUrl = "@Url.Action("index", "orctl", new { area = "pocketppal" })";
         var CargaProductosOrCtlUrl = "@Url.Action("CargaProductosOrCtl", "orctl", new { area = "pocketppal" })"
+        var ReguardaProductosEnServerOrCtlUrl = "@Url.Action("ReguardaProductosEnServerOrCtl", "orctl", new { area = "pocketppal" })"
+        var EliminarProductoOrCtlUrl = "@Url.Action("EliminarProductoOrCtl", "orctl", new { area = "pocketppal" })";
     </script>
     <script src="~/js/app/or/orCtlLista.js"></script>
 }
