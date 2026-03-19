@@ -19,5 +19,7 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaGenerica<ORProductoDto>> ObtenerORProductos(ORProdRequestDto request, string token);
         Task<RespuestaGenerica<RespuestaDto>> ValidaProductoCarritoOR(ORCargaCarritoRequest request, string tokenCookie);
         Task<RespuestaGenerica<RespuestaDto>> ResguardarProductoCarrito(ORCargaCarritoRequest request, string tokenCookie);
+        Task<RespuestaGenerica<OrCtlProductoDto>> ObtenerListaProductosOrCtl(string or_compte, string usu_id, string token);
+        Task<RespuestaGenerica<RespuestaDto>> CargaProductoORCtl(string json, string token);
     }
 }
