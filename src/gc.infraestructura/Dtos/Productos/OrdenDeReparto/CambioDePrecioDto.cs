@@ -5,6 +5,7 @@ namespace gc.infraestructura.Dtos.Productos.OrdenDeReparto
 	{
 		public string p_id { get; set; } = string.Empty;
 		public string p_desc { get; set; } = string.Empty;
+		public string p_id_prov { get; set; } = string.Empty;
 		public decimal pcd_pvta { get; set; }
 		public decimal p_pvta { get; set; }
 		public decimal p_pvta_oferta { get; set; }

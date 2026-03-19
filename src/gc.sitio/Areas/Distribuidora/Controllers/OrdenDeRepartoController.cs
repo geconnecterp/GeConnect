@@ -616,12 +616,14 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 				if (string.IsNullOrEmpty(orCompte))
 					return Json(new { error = true, ok = false, mensaje = "No se han provisto los datos necesarios: Orden de Reparto." });
 
-				var request = new AConciliarOrdenDeRepartoRequest();
-				request.or_compte = orCompte;
-				request.adm_id = AdministracionId;
-				request.usu_id = UserName;
-				request.json = JsonConvert.SerializeObject(AConsolidarPedidoClienteDetalleLista);
-				
+				var request = new AConciliarOrdenDeRepartoRequest
+				{
+					or_compte = orCompte,
+					adm_id = AdministracionId,
+					usu_id = UserName,
+					json = JsonConvert.SerializeObject(MapearAConsolidarOrden(AConsolidarPedidoClienteDetalleLista))
+				};
+
 				var respuesta = _ordenDeRepartoServicio.AConsolidarOrdenDeReparto(request, TokenCookie).Result;
 				// Procesamiento de respuesta
 				if (respuesta.Ok && !respuesta.EsError && !respuesta.EsWarn)
@@ -667,6 +669,7 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 				});
 			}
 		}
+		
 
 		[HttpPost]
 		public async Task<IActionResult> CargarVistaCambioPrecioOrdenDeReparto(CambioDePrecioRequest request)
@@ -684,6 +687,7 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 				if (respuestaGen == null)
 					return PartialView("_gridMensaje", CrearRespuestaError("No se han podido obtener los datos para cambio de precios."));
 
+				CambioPrecioLista = respuestaGen.ListaEntidad ?? [];
 				var model = new OrdenDeRepartoCambioPrecioModel
 				{
 					OrdenDeReparto = ObtenerOrdenDeRepartoPorAccion('M', request.or_compte),
@@ -700,6 +704,72 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			{
 				_logger?.LogError(ex, "Error");
 				return PartialView("_gridMensaje", CrearRespuestaError("Error al abrir la orden de reparto para cambio de precio"));
+			}
+		}
+
+		[HttpPost]
+		public JsonResult ConfirmarCambioPreciosEnOrdenDeReparto(string orCompte, List<CambiaPrecioOrdenDeReparto> prods)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return Json(new { error = true, ok = false, mensaje = "No autorizado" });
+				if (string.IsNullOrEmpty(orCompte))
+					return Json(new { error = true, ok = false, mensaje = "No se han provisto los datos necesarios: Orden de Reparto." });
+				if (prods == null || prods.Count <= 0)
+					return Json(new { error = true, ok = false, mensaje = "No se han provisto los datos necesarios: Productos y precios para modificar." });
+
+				var request = new CambioDePrecioConfirmaRequest
+				{
+					or_compte = orCompte,
+					adm_id = AdministracionId,
+					usu_id = UserName,
+					json = JsonConvert.SerializeObject(prods)
+				};
+
+				var respuesta = _ordenDeRepartoServicio.CambioDePreciosEnOrdenDeReparto(request, TokenCookie).Result;
+				// Procesamiento de respuesta
+				if (respuesta.Ok && !respuesta.EsError && !respuesta.EsWarn)
+				{
+					// Log y limpieza de datos temporales
+					var msg = $"Cambios de precios en orden de reparto realizado exitosamente.";
+					_logger?.LogInformation(msg);
+					return AnalizarRespuesta(respuesta, msg);
+				}
+				else
+				{
+					// Log y respuesta de error/advertencia
+					_logger?.LogWarning("Cambios de precios en orden de reparto: {Mensaje}", respuesta.Mensaje);
+					return Json(new
+					{
+						ok = false,
+						error = respuesta.EsError,
+						warn = respuesta.EsWarn,
+						mensaje = respuesta.Mensaje ?? "Error en cambios de precios en la orden de reparto"
+					});
+				}
+			}
+			catch (NegocioException ex)
+			{
+				// Manejo de excepciones no esperadas
+				_logger?.LogError(ex, ex.Message);
+				return Json(new
+				{
+					ok = false,
+					error = true,
+					mensaje = ex.Message
+				});
+			}
+			catch (Exception ex)
+			{
+				// Manejo de excepciones no esperadas
+				_logger?.LogError(ex, ex.Message);
+				return Json(new
+				{
+					ok = false,
+					error = true,
+					mensaje = ex.Message
+				});
 			}
 		}
 
@@ -886,6 +956,44 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			};
 
 			return grid;
+		}
+
+		private static List<ConsolidarOrdenDeReparto> MapearAConsolidarOrden(List<AConsolidarPedidoClienteDetalleDto> origen)
+		{
+			if (origen == null)
+				return [];
+
+			return [.. origen.Select(x => new ConsolidarOrdenDeReparto
+			{
+				pc_compte = x.pc_compte,
+				pcd_item = x.pcd_item,
+				p_id = x.p_id,
+				p_desc = x.p_desc,
+				pcd_pedida = x.pcd_pedida,
+				cantidad = x.cantidad,
+				pcd_origen = x.pcd_origen,
+				p_id_reemplazo = x.p_id_remplazo
+			})];
+		}
+
+		private class ConsolidarOrdenDeReparto
+		{
+
+			public string pc_compte { get; set; } = string.Empty;
+			public string pcd_item { get; set; } = string.Empty;
+			public string p_id { get; set; } = string.Empty;
+			public string p_desc { get; set; } = string.Empty;
+			public decimal pcd_pedida { get; set; }
+			public decimal cantidad { get; set; }
+			public char pcd_origen { get; set; }
+			public string p_id_reemplazo { get; set; } = string.Empty;
+		}
+
+		public class CambiaPrecioOrdenDeReparto
+		{
+			public string p_id { get; set; } = string.Empty;
+			public decimal pcd_pvta { get; set; }
+			public decimal p_vta_ctl { get; set; }
 		}
 		#endregion
 	}

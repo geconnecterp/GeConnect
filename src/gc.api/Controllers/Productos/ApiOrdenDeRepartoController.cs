@@ -200,6 +200,17 @@ namespace gc.api.Controllers.Productos
 			}
 		}
 
+		[HttpPost("cambia-precios-or")]
+		public IActionResult CambioDePreciosEnOrdenDeReparto(CambioDePrecioConfirmaRequest req)
+		{
+			if (req == null)
+			{
+				return BadRequest("No se recepcionó la información para cambiar precioes en la orden de reparto.");
+			}
+			var respuesta = _orSrv.CambioDePreciosEnOrdenDeReparto(req);
+			return Ok(new ApiResponse<RespuestaDto>(respuesta));
+		}
+
 		private static MetadataGrid? BuildMetadata(List<OrdenDeRepartoListaDto>? lista, QueryFilters filtro)
 		{
 			if (lista == null || lista.Count == 0)

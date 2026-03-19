@@ -199,6 +199,18 @@ function CargarVistCambioPrecioOrdenDeReparto(orCompteSeleccionado) {
 		$("#vistaCambioPrecioOR").html(html);
 		$("#vistaListaOR").addClass("d-none");
 		$("#vistaCambioPrecioOR").removeClass("d-none");
+
+		// ================================
+		// VALIDAR SI LA TABLA TIENE DATOS
+		// ================================
+		let hayDatos = $("#tbCambioDePrecio tbody tr").not(".fila-vacia").length > 0;
+
+		if (!hayDatos) {
+			$("#btnAnalizarCambioPrecio").prop("disabled", true);
+		} else {
+			$("#btnAnalizarCambioPrecio").prop("disabled", false);
+		}
+
 		ConfigurarEventosEnCambioPrecio();
 	});
 }
@@ -223,44 +235,162 @@ function ConfigurarEventosEnCambioPrecio() {
 	//btnAnalizarCambioPrecio
 	$(document).off("click", "#btnAnalizarCambioPrecio");
 	$(document).on("click", "#btnAnalizarCambioPrecio", function () {
-		AbrirMensaje(
-			'CONFIRMAR CAMBIO DE PRECIOS',
-			"¿Desea confirmar lo cambios de precioes en la orden de reparto?",
-			function (resp) {
-				if (resp === 'SI') {
-					//LLamar metodo para confirmar cambio de precios
-				}
-				$('#msjModal').modal('hide');
-			},
-			true,
-			['Confirmar', 'Cancelar'],
-			'info!',
-			null
-		);
+		// 1) Obtener todos los checkboxes seleccionados
+		let $seleccionados = $("#tbCambioDePrecio tbody .chk-actualizar-precio:checked");
+
+		// 2) Validar si hay al menos uno
+		if ($seleccionados.length === 0) {
+			alert("Debe seleccionar al menos un producto para actualizar el precio.");
+			AbrirMensaje("ATENCIÓN", "Debe seleccionar al menos un producto para actualizar el precio.", function () {
+				$("#msjModal").modal("hide");
+				return;
+			}, false, ["Aceptar"], "error!", null);
+			return;
+		}
+		else {
+			AbrirMensaje(
+				'CONFIRMAR CAMBIO DE PRECIOS',
+				"¿Desea confirmar lo cambios de precioes en la orden de reparto?",
+				function (resp) {
+					if (resp === 'SI') {
+						confirmarCambiosDePrecioEnOrdenDeReparto();
+					}
+					$('#msjModal').modal('hide');
+				},
+				true,
+				['Confirmar', 'Cancelar'],
+				'info!',
+				null
+			);
+		}
 	});
 
 	//btnCancelarCambioPrecio
 	$(document).off("click", "#btnCancelarCambioPrecio");
 	$(document).on("click", "#btnCancelarCambioPrecio", function () {
-		AbrirMensaje(
-			'CANCELAR CAMBIO DE PRECIOS',
-			"¿Desea cancelar los cambios de precio en la orden de reparto?",
-			function (resp) {
-				if (resp === 'SI') {
-					// Ocultar vista de edición
-					document.querySelector("#vistaCambioPrecioOR").classList.add("d-none");
-					// Mostrar vista de lista
-					document.querySelector("#vistaListaOR").classList.remove("d-none");
-					// Opcional: limpiar contenido de edición
-					document.querySelector("#vistaCambioPrecioOR").innerHTML = "";
-				}
-				$('#msjModal').modal('hide');
-			},
-			true,
-			['Confirmar', 'Cancelar'],
-			'info!',
-			null
-		);
+		// 1) Obtener todos los checkboxes seleccionados
+		let $seleccionados = $("#tbCambioDePrecio tbody .chk-actualizar-precio:checked");
+		// 2) Validar si hay al menos uno
+		if ($seleccionados.length === 0) {
+			// Ocultar vista de edición
+			document.querySelector("#vistaCambioPrecioOR").classList.add("d-none");
+			// Mostrar vista de lista
+			document.querySelector("#vistaListaOR").classList.remove("d-none");
+			// Opcional: limpiar contenido de edición
+			document.querySelector("#vistaCambioPrecioOR").innerHTML = "";
+		}
+		else {
+			AbrirMensaje(
+				'CANCELAR CAMBIO DE PRECIOS',
+				"¿Desea cancelar los cambios de precio en la orden de reparto?",
+				function (resp) {
+					if (resp === 'SI') {
+						// Ocultar vista de edición
+						document.querySelector("#vistaCambioPrecioOR").classList.add("d-none");
+						// Mostrar vista de lista
+						document.querySelector("#vistaListaOR").classList.remove("d-none");
+						// Opcional: limpiar contenido de edición
+						document.querySelector("#vistaCambioPrecioOR").innerHTML = "";
+					}
+					$('#msjModal').modal('hide');
+				},
+				true,
+				['Confirmar', 'Cancelar'],
+				'info!',
+				null
+			);
+		}
+	});
+
+	// Selección global
+	$(document).off("change", "#chkSeleccionGlobal");
+	$(document).on("change", "#chkSeleccionGlobal", function () {
+
+		let marcado = $(this).is(":checked");
+
+		$("#tbCambioDePrecio tbody .chk-actualizar-precio")
+			.prop("checked", marcado);
+	});
+
+	// Si el usuario marca/desmarca manualmente, actualizar el checkbox global
+	$(document).off("change", ".chk-actualizar-precio");
+	$(document).on("change", ".chk-actualizar-precio", function () {
+
+		let total = $("#tbCambioDePrecio tbody .chk-actualizar-precio").length;
+		let marcados = $("#tbCambioDePrecio tbody .chk-actualizar-precio:checked").length;
+
+		$("#chkSeleccionGlobal").prop("checked", total === marcados);
+	});
+
+}
+
+function confirmarCambiosDePrecioEnOrdenDeReparto() {
+	// Armar lista de productos seleccionados
+	let $seleccionados = $("#tbCambioDePrecio tbody .chk-actualizar-precio:checked");
+	let productos = [];
+
+	$seleccionados.each(function () {
+
+		let $chk = $(this);
+		let p_id = $chk.data("p-id");
+
+		// Buscar la fila completa
+		let $fila = $chk.closest("tr");
+
+		// Extraer precios desde las celdas
+		let pcd_pvta = $fila.find("td").eq(3).text().trim(); // Precio Pedido
+		let p_vta_ctl = $fila.find("td").eq(4).text().trim(); // Precio Distrib.
+
+		// Normalizar decimales (quita separadores de miles)
+		pcd_pvta = pcd_pvta.replace(/,/g, "");   // quita separador de miles
+		p_vta_ctl = p_vta_ctl.replace(/,/g, ""); // quita separador de miles
+
+		productos.push({
+			p_id: p_id,
+			pcd_pvta: parseFloat(pcd_pvta),
+			p_vta_ctl: parseFloat(p_vta_ctl)
+		});
+	});
+
+	// Armar request final
+	let data = {
+		orCompte: orCompteSeleccionado,
+		prods: productos
+	};
+
+	console.log("Request a enviar:", data);
+	PostGen(data, confirmarCambioDePreciosEnOrdenDeRepartoUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true || obj.warn === true) {
+			console.error('❌ Response:', obj.mensaje);
+			ControlaMensajeError(
+				'Error al intentar consolidar la O.R.: ' +
+				(obj.mensaje || 'Error desconocido')
+			);
+		}
+		else {
+			setTimeout(() => {
+				AbrirMensaje(
+					'CONFIRMACIÓN EXITOSA',
+					'Se han modificado los precios de la orden de reparto',
+					function () {
+						$('#msjModal').modal('hide');
+						document.querySelector("#vistaCambioPrecioOR").classList.add("d-none");
+						document.querySelector("#vistaListaOR").classList.remove("d-none");
+						document.querySelector("#vistaCambioPrecioOR").innerHTML = "";
+
+						//Actualizar tabla de Ordenes de Reparto
+						const filtros = buildQueryFilters(pagina);
+						const url = buscarOrdenesDeRepartoUrl;
+						CargarOrdenesDeReparto(filtros, url);
+					},
+					false,
+					['Aceptar'],
+					'success!',
+					null
+				);
+			}, 200);
+		}
 	});
 }
 

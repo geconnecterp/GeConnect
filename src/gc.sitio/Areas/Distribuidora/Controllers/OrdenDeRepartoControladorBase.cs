@@ -94,5 +94,24 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 				_context.HttpContext?.Session.SetString("AConsolidarPedidoClienteDetalleLista", json);
 			}
 		}
+
+		public List<CambioDePrecioDto> CambioPrecioLista
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("CambioPrecioLista") ?? string.Empty;
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<CambioDePrecioDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("CambioPrecioLista", json);
+			}
+		}
+		
 	}
 }
