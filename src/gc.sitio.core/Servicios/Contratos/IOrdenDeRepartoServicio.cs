@@ -17,5 +17,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<RespuestaGenerica<RespuestaDto>> AConsolidarOrdenDeReparto(AConciliarOrdenDeRepartoRequest req, string token);
 		Task<RespuestaGenerica<CambioDePrecioDto>> CambioDePreciosLista(CambioDePrecioRequest request, string token);
 		Task<RespuestaGenerica<RespuestaDto>> CambioDePreciosEnOrdenDeReparto(CambioDePrecioConfirmaRequest req, string token);
+		Task<RespuestaGenerica<RespuestaDto>> CambiarEstadoOrdenDeReparto(CambiarEstadoRequest req, string token);
 	}
 }

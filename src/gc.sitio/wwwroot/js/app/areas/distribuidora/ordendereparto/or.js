@@ -197,9 +197,69 @@ $(document).on("click", "#btnCambioPrecio", function () {
 	CargarVistCambioPrecioOrdenDeReparto(orCompteSeleccionado);
 });
 
+$(document).on("click", "#btnAFacturar", function () {
+	PonerAFacturarOrdenDeReparto(orCompteSeleccionado);
+});
+
 $(document).on("click", "#btnHojaRuta", function () {
 	ControlaImprimirHojaDeRutaDeOrdenDeReparto();
 });
+
+function PonerAFacturarOrdenDeReparto(orCompteSeleccionado) {
+	if (!orCompteSeleccionado || orCompteSeleccionado == "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar una orden de reparto.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirMensaje(
+			'CONFIRMAR CAMBIO DE ESTADO',
+			"¿Desea poner A Facturar la orden de reparto?",
+			function (resp) {
+				if (resp === 'SI') {
+					var data = { or_compte: orCompteSeleccionado, ore_id: "T" };
+					PostGen(data, cambiarEstadoOrdenDeRepartoUrl, function (obj) {
+						CerrarWaiting();
+						if (obj.error === true || obj.warn === true) {
+							console.error('❌ Response:', obj.mensaje);
+							ControlaMensajeError(
+								'Error al intentar poner a facutrar la O.R.: ' +
+								(obj.mensaje || 'Error desconocido')
+							);
+						}
+						else {
+							setTimeout(() => {
+								AbrirMensaje(
+									'CONFIRMACIÓN EXITOSA',
+									'Se ha cambiado el estado A Facturar de la orden de reparto',
+									function () {
+										$('#msjModal').modal('hide');
+
+										//Actualizar tabla de Ordenes de Reparto
+										const filtros = buildQueryFilters(pagina);
+										const url = buscarOrdenesDeRepartoUrl;
+										CargarOrdenesDeReparto(filtros, url);
+									},
+									false,
+									['Aceptar'],
+									'success!',
+									null
+								);
+							}, 200);
+						}
+					});
+				}
+				$('#msjModal').modal('hide');
+			},
+			true,
+			['Confirmar', 'Cancelar'],
+			'info!',
+			null
+		);
+		
+	}
+}
 
 function ControlaImprimirHojaDeRutaDeOrdenDeReparto() {
 	if (!orCompteSeleccionado || orCompteSeleccionado == "") {

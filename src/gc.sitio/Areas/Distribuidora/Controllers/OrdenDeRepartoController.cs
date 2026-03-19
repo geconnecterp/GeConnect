@@ -789,6 +789,66 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			}
 		}
 
+		[HttpPost]
+		public JsonResult CambiarEstadoOrdenDeReparto(CambiarEstadoRequest request)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return Json(new { error = true, ok = false, mensaje = "No autorizado" });
+				if (string.IsNullOrEmpty(request.or_compte))
+					return Json(new { error = true, ok = false, mensaje = "No se han provisto los datos necesarios: Orden de Reparto." });
+
+				request.ore_id = 'T';
+				request.adm_id = AdministracionId;
+				request.usu_id = UserName;
+				
+				var respuesta = _ordenDeRepartoServicio.CambiarEstadoOrdenDeReparto(request, TokenCookie).Result;
+				// Procesamiento de respuesta
+				if (respuesta.Ok && !respuesta.EsError && !respuesta.EsWarn)
+				{
+					// Log y limpieza de datos temporales
+					var msg = $"Cambios de estado en orden de reparto realizado exitosamente.";
+					_logger?.LogInformation(msg);
+					return AnalizarRespuesta(respuesta, msg);
+				}
+				else
+				{
+					// Log y respuesta de error/advertencia
+					_logger?.LogWarning("Cambios de estado en orden de reparto: {Mensaje}", respuesta.Mensaje);
+					return Json(new
+					{
+						ok = false,
+						error = respuesta.EsError,
+						warn = respuesta.EsWarn,
+						mensaje = respuesta.Mensaje ?? "Error en cambios de estado en la orden de reparto"
+					});
+				}
+			}
+			catch (NegocioException ex)
+			{
+				// Manejo de excepciones no esperadas
+				_logger?.LogError(ex, ex.Message);
+				return Json(new
+				{
+					ok = false,
+					error = true,
+					mensaje = ex.Message
+				});
+			}
+			catch (Exception ex)
+			{
+				// Manejo de excepciones no esperadas
+				_logger?.LogError(ex, ex.Message);
+				return Json(new
+				{
+					ok = false,
+					error = true,
+					mensaje = ex.Message
+				});
+			}
+		}
+
 		public JsonResult SetearTipoDeReporte(int tipoReporte)
 		{
 			try
@@ -801,7 +861,7 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 				{
 					case TipoDeReporte.RepoHojaDeRuta:
 						#region Gestor Impresion - Inicializacion de variables
-						titulo = "Registro de Stock vs Conteo";
+						titulo = "Imprimir Hoja de Ruta";
 						DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_1);
 						ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_1);
 						#endregion

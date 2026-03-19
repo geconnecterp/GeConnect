@@ -16,5 +16,6 @@ namespace gc.api.core.Contratos.Servicios
 		RespuestaDto AConsolidarOrdenDeReparto(AConciliarOrdenDeRepartoRequest req);
 		List<CambioDePrecioDto> CambioDePreciosLista(CambioDePrecioRequest request);
 		RespuestaDto CambioDePreciosEnOrdenDeReparto(CambioDePrecioConfirmaRequest req);
+		RespuestaDto CambiarEstadoOrdenDeReparto(CambiarEstadoRequest req);
 	}
 }

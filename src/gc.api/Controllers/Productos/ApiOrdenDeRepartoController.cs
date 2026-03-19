@@ -211,6 +211,17 @@ namespace gc.api.Controllers.Productos
 			return Ok(new ApiResponse<RespuestaDto>(respuesta));
 		}
 
+		[HttpPost("cambiar-estado-or")]
+		public IActionResult CambiarEstadoOrdenDeReparto(CambiarEstadoRequest req)
+		{
+			if (req == null)
+			{
+				return BadRequest("No se recepcionó la información para cambiar el estado de la orden de reparto.");
+			}
+			var respuesta = _orSrv.CambiarEstadoOrdenDeReparto(req);
+			return Ok(new ApiResponse<RespuestaDto>(respuesta));
+		}
+
 		private static MetadataGrid? BuildMetadata(List<OrdenDeRepartoListaDto>? lista, QueryFilters filtro)
 		{
 			if (lista == null || lista.Count == 0)
