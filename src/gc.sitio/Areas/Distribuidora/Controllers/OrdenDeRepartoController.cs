@@ -802,7 +802,6 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 				if (string.IsNullOrEmpty(request.or_compte))
 					return Json(new { error = true, ok = false, mensaje = "No se han provisto los datos necesarios: Orden de Reparto." });
 
-				request.ore_id = 'T';
 				request.adm_id = AdministracionId;
 				request.usu_id = UserName;
 				

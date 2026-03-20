@@ -2219,7 +2219,7 @@ function ConfigurarEstadoDeBotonesEnTabOrdenDeReparto(orCompte, oreId) {
 		}
 	}
 
-	const estadosPermitidosRegresarEnCurso = ["O", "T"];
+	const estadosPermitidosRegresarEnCurso = ["C", "T"];
 	const btnVolverCurso = document.getElementById("btnVolverCurso");
 	if (btnVolverCurso) {
 		if (estadosPermitidosRegresarEnCurso.includes(oreId)) {
