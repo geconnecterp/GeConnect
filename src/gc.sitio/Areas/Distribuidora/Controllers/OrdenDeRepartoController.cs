@@ -36,7 +36,9 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 		//PARA MODULO DE IMPRESION
 		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
 		private AppModulo _modulo_1;
+		private AppModulo _modulo_2;
 		private string APP_MODULO_1 = AppModulos.ORDEN_DE_REPARTO_HOJA_DE_RUTA.ToString();
+		private string APP_MODULO_2 = AppModulos.ORDEN_DE_REPARTO_HOJA_DE_PRODUCTO.ToString();
 		private readonly IDocManagerServicio _docMSv;
 
 		public OrdenDeRepartoController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<OrdenDeRepartoController> logger,
@@ -53,6 +55,7 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			//PARA MODULO DE IMPRESION
 			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
 			_modulo_1 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_1);
+			_modulo_2 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_2);
 			_docMSv = docManager; //instancio el servicio de impresión
 		}
 
@@ -868,9 +871,9 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 						break;
 					case TipoDeReporte.RepoHojaDeProducto:
 						#region Gestor Impresion - Inicializacion de variables
-						//titulo = "Valorizado por Sectores";
-						//DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_2);
-						//ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_2);
+						titulo = "Imprimir Hoja de Producto";
+						DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_2);
+						ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_2);
 						#endregion
 						break;
 					case TipoDeReporte.RepoOrdenDeReparto:

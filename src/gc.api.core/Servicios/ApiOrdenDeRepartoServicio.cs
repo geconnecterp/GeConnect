@@ -247,6 +247,20 @@ namespace gc.api.core.Servicios
 			}
 			return respuesta[0];
 		}
+
+		public List<OrdenDeRepartoDetalleDto> ObtenerDetalleDeOrdenDeReparto(string orCompte)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OR_D;
+
+			var ps = new List<SqlParameter>
+			{
+				new("@or_compte", orCompte)
+			};
+
+			var detalle = _repository.EjecutarLstSpExt<OrdenDeRepartoDetalleDto>(sp, ps, true);
+
+			return detalle;
+		}
 	}
 
 }

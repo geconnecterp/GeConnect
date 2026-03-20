@@ -4984,34 +4984,6 @@ namespace gc.infraestructura.Helpers
 			// ============================
 			var or = registros.First();
 
-			//PdfPTable tablaEncabezado = new PdfPTable(1);
-			//tablaEncabezado.WidthPercentage = 100;
-
-			//tablaEncabezado.AddCell(new PdfPCell(new Phrase(
-			//	$"HOJA DE RUTA - ORDEN DE REPARTO {or.or_compte}", normalBold))
-			//{
-			//	Border = Rectangle.NO_BORDER,
-			//	PaddingBottom = 5
-			//});
-
-			//tablaEncabezado.AddCell(new PdfPCell(new Phrase(
-			//	$"Repartidor: {or.rp_nombre}     Fecha: {or.or_fecha:dd/MM/yyyy}", normal))
-			//{
-			//	Border = Rectangle.NO_BORDER
-			//});
-
-			//if (!string.IsNullOrWhiteSpace(or.or_obs))
-			//{
-			//	tablaEncabezado.AddCell(new PdfPCell(new Phrase(
-			//		$"Observaciones: {or.or_obs}", chico))
-			//	{
-			//		Border = Rectangle.NO_BORDER,
-			//		PaddingBottom = 10
-			//	});
-			//}
-
-			//pdf.Add(tablaEncabezado);
-
 			// ============================
 			// AGRUPAR POR CLIENTE
 			// ============================
@@ -5129,6 +5101,108 @@ namespace gc.infraestructura.Helpers
 			pdf.Add(tablaTotal);
 
 		}
+
+		public static void CargarRepoHojaDeProductoDeOrdenDeReparto(Document pdf, List<OrdenDeRepartoDetalleDto> registros, Font chico, Font normal, Font normalBold)
+		{
+			if (registros == null || registros.Count == 0)
+				return;
+
+			// Agrupar por rubro
+			var grupos = registros
+				.GroupBy(x => new { x.rub_id, x.rub_desc })
+				.OrderBy(g => g.Key.rub_desc);
+
+			foreach (var grupo in grupos)
+			{
+				// ============================================================
+				// SEPARADOR DE ANCHO COMPLETO
+				// ============================================================
+				PdfPTable sep = new PdfPTable(1);
+				sep.WidthPercentage = 100;
+
+				sep.AddCell(new PdfPCell(new Phrase(" ", chico))
+				{
+					Border = Rectangle.BOTTOM_BORDER,
+					BorderWidthBottom = 1f,
+					PaddingBottom = 5
+				});
+
+				pdf.Add(sep);
+
+				// ============================================================
+				// TÍTULO DEL RUBRO
+				// ============================================================
+				Font fontRubro = new Font(normalBold.BaseFont, normalBold.Size + 2, Font.BOLD);
+
+				PdfPTable tablaTitulo = new PdfPTable(1);
+				tablaTitulo.WidthPercentage = 100;
+
+				tablaTitulo.AddCell(new PdfPCell(new Phrase(
+					$"Rubros: {grupo.Key.rub_desc}", fontRubro))
+				{
+					Border = Rectangle.NO_BORDER,
+					PaddingTop = 4,
+					PaddingBottom = 6
+				});
+
+				pdf.Add(tablaTitulo);
+
+				// ============================================================
+				// TABLA DE PRODUCTOS (VISIBLE, ENCABEZADO GRIS)
+				// ============================================================
+				PdfPTable tabla = new PdfPTable(new float[] { 15, 65, 20 });
+				tabla.WidthPercentage = 100;
+
+				BaseColor grisSuave = new BaseColor(230, 230, 230);
+
+				// Encabezados visibles
+				tabla.AddCell(CeldaHeaderVisible("Código", normalBold, grisSuave));
+				tabla.AddCell(CeldaHeaderVisible("Descripción", normalBold, grisSuave));
+				tabla.AddCell(CeldaHeaderVisible("Cant. Enviada", normalBold, grisSuave, Element.ALIGN_RIGHT));
+
+				// Filas de productos
+				foreach (var item in grupo)
+				{
+					tabla.AddCell(CeldaDatoVisible(item.p_id, normal));
+					tabla.AddCell(CeldaDatoVisible(item.p_desc, normal));
+
+					string cantidad = item.PermiteDecimales
+						? item.pcd_enviada.ToString("N2")
+						: ((int)item.pcd_enviada).ToString();
+
+					tabla.AddCell(CeldaDatoVisible(cantidad, normal, Element.ALIGN_RIGHT));
+				}
+
+				pdf.Add(tabla);
+			}
+
+
+		}
+
+		private static PdfPCell CeldaHeaderVisible(string texto, Font font, BaseColor fondo, int align = Element.ALIGN_LEFT)
+		{
+			return new PdfPCell(new Phrase(texto, font))
+			{
+				BackgroundColor = fondo,
+				Border = Rectangle.BOX,
+				PaddingTop = 4,
+				PaddingBottom = 4,
+				HorizontalAlignment = align
+			};
+		}
+
+		private static PdfPCell CeldaDatoVisible(string texto, Font font, int align = Element.ALIGN_LEFT)
+		{
+			return new PdfPCell(new Phrase(texto, font))
+			{
+				Border = Rectangle.BOX,
+				PaddingTop = 3,
+				PaddingBottom = 3,
+				HorizontalAlignment = align
+			};
+		}
+
+
 
 		private static void AgregarSeparador(Document pdf, Font chico)
 		{

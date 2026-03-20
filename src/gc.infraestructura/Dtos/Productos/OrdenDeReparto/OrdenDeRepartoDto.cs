@@ -1,4 +1,5 @@
-﻿using System;
+﻿using gc.infraestructura.Dtos.Almacen;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -63,5 +64,23 @@ namespace gc.infraestructura.Dtos.Productos.OrdenDeReparto
 		public decimal pc_precio_tot { get; set; } = 0.00M;
 		public bool mostrar_up { get; set; } = false;
 		public bool mostrar_down { get; set; } = false;
+	}
+
+	public class OrdenDeRepartoDetalleDto: PedidoEnOrdenDeRepartoDto, IProductoConUnidad
+	{
+		public string rub_id { get; set; } = string.Empty;
+		public string rub_desc { get; set; } = string.Empty;
+		public string p_id { get; set; } = string.Empty;
+		public string p_desc { get; set; } = string.Empty;
+		public int pcd_item { get; set; }
+		public string up_id { get; set; } = string.Empty;
+		public string up_desc { get; set; } = string.Empty;
+		public string up_tipo { get; set; } = string.Empty;
+		public char pcd_origen { get; set; }
+		public decimal pcd_pvta { get; set; }
+		public decimal pcd_enviada { get; set; }
+		public decimal pcd_pedida { get; set; }
+		public string p_id_remplazo { get; set; } = string.Empty;
+		public bool PermiteDecimales => up_tipo == "P";
 	}
 }

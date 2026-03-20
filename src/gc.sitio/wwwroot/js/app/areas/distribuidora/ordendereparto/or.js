@@ -201,9 +201,73 @@ $(document).on("click", "#btnAFacturar", function () {
 	PonerAFacturarOrdenDeReparto(orCompteSeleccionado);
 });
 
+$(document).on("click", "#btnVolverCurso", function () {
+	VolverAEnCursoOrdenDeReparto(orCompteSeleccionado);
+});
+
 $(document).on("click", "#btnHojaRuta", function () {
 	ControlaImprimirHojaDeRutaDeOrdenDeReparto();
 });
+
+$(document).on("click", "#btnHojaProd", function () {
+	ControlaImprimirHojaDeProductoDeOrdenDeReparto();
+});
+
+function VolverAEnCursoOrdenDeReparto(orCompteSeleccionado) {
+	if (!orCompteSeleccionado || orCompteSeleccionado == "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar una orden de reparto.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirMensaje(
+			'CONFIRMAR CAMBIO DE ESTADO',
+			"¿Desea volver a En Curso la orden de reparto?",
+			function (resp) {
+				if (resp === 'SI') {
+					var data = { or_compte: orCompteSeleccionado, ore_id: "O" };
+					PostGen(data, cambiarEstadoOrdenDeRepartoUrl, function (obj) {
+						CerrarWaiting();
+						if (obj.error === true || obj.warn === true) {
+							console.error('❌ Response:', obj.mensaje);
+							ControlaMensajeError(
+								'Error al intentar volver a en curso la O.R.: ' +
+								(obj.mensaje || 'Error desconocido')
+							);
+						}
+						else {
+							setTimeout(() => {
+								AbrirMensaje(
+									'CONFIRMACIÓN EXITOSA',
+									'Se ha cambiado el estado a En Curso de la orden de reparto',
+									function () {
+										$('#msjModal').modal('hide');
+
+										//Actualizar tabla de Ordenes de Reparto
+										const filtros = buildQueryFilters(pagina);
+										const url = buscarOrdenesDeRepartoUrl;
+										CargarOrdenesDeReparto(filtros, url);
+									},
+									false,
+									['Aceptar'],
+									'success!',
+									null
+								);
+							}, 200);
+						}
+					});
+				}
+				$('#msjModal').modal('hide');
+			},
+			true,
+			['Confirmar', 'Cancelar'],
+			'info!',
+			null
+		);
+
+	}
+}
 
 function PonerAFacturarOrdenDeReparto(orCompteSeleccionado) {
 	if (!orCompteSeleccionado || orCompteSeleccionado == "") {
@@ -224,7 +288,7 @@ function PonerAFacturarOrdenDeReparto(orCompteSeleccionado) {
 						if (obj.error === true || obj.warn === true) {
 							console.error('❌ Response:', obj.mensaje);
 							ControlaMensajeError(
-								'Error al intentar poner a facutrar la O.R.: ' +
+								'Error al intentar poner a facturar la O.R.: ' +
 								(obj.mensaje || 'Error desconocido')
 							);
 						}
@@ -259,6 +323,44 @@ function PonerAFacturarOrdenDeReparto(orCompteSeleccionado) {
 		);
 		
 	}
+}
+
+function ControlaImprimirHojaDeProductoDeOrdenDeReparto() {
+	if (!orCompteSeleccionado || orCompteSeleccionado == "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar una orden de reparto.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Imprimiendo ...");
+		var tipoReporte = 2;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				CerrarWaiting();
+				ImprimirHojaDeProductoDeOrdenDeReparto();
+			}
+		});
+	}
+}
+
+function ImprimirHojaDeProductoDeOrdenDeReparto() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var orCompte = orCompteSeleccionado;
+		var data = { orCompte };
+		cargarReporteEnArre(64, data, "Orden de Reparto - Hoja de Producto", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function ControlaImprimirHojaDeRutaDeOrdenDeReparto() {

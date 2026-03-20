@@ -587,6 +587,7 @@
 			public const string SP_OR_PRECIOS_DIFERENTES = "SPGECO_OR_Precios_Diferentes";
 			public const string SP_OR_PRECIOS_CAMBIA = "SPGECO_OR_Precios_Cambia";
 			public const string SP_OR_SETEA = "SPGECO_OR_Setea";
+			public const string SP_OR_D = "SPGECO_OR_d";
 			#endregion
 		}
 
