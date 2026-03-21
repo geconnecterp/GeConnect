@@ -586,9 +586,17 @@
 			public const string SP_OR_PRECIOS_DIFERENTES = "SPGECO_OR_Precios_Diferentes";
 			public const string SP_OR_PRECIOS_CAMBIA = "SPGECO_OR_Precios_Cambia";
 			#endregion
-		}
 
-		public static class StoredFunctions
+			#region ReporteLink
+			public const string SP_REPO_INSERTAR = "SPGECO_REPO_ReporteLink_Insert";
+			public const string SP_REPO_RESUELVE = "SPGECO_REPO_ReporteLink_ResuelveTodoEnUno";
+			public const string SP_REPO_EXISTE = "SPGECO_REPO_ReporteLink_ExisteXCodigo";
+            public const string SP_REPO_DELETE = "SPGECO_REPO_ReporteLink_EliminarExpirados";
+
+            #endregion
+        }
+
+        public static class StoredFunctions
 		{
 			public const string FX_PASSWORD_ENCRIPTA = "dbo.sf_pass_e";
 			public const string FX_PASSWORD_DESENCRIPTA = "dbo.sf_pass_d";

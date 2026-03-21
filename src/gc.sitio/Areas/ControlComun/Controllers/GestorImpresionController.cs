@@ -1,6 +1,7 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options; // ✅ NUEVO
@@ -11,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Net;
 using System.Net.Mail;
+using System.Text;
 
 namespace gc.sitio.Areas.ControlComun.Controllers
 {
@@ -966,6 +968,168 @@ namespace gc.sitio.Areas.ControlComun.Controllers
             }
         }
 
+        /// <summary>
+        /// Genera URLs de acceso directo a documentos usando códigos temporales
+        /// POST: /ControlComun/GestorImpresion/GenerarURLsDocumentos
+        /// ✅ MODIFICADO: Ahora usa LinkController para generar códigos únicos
+        /// </summary>
+        [HttpPost]
+        public async Task<JsonResult> GenerarURLsDocumentos([FromBody] List<ReporteSolicitudDto> solicitudes)
+        {
+            try
+            {
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new
+                    {
+                        error = false,
+                        warn = true,
+                        auth = true,
+                        msg = "Su sesión se ha terminado."
+                    });
+                }
+
+                if (solicitudes == null || !solicitudes.Any())
+                {
+                    return Json(new
+                    {
+                        error = true,
+                        msg = "No se recibieron solicitudes para generar URLs."
+                    });
+                }
+
+                _logger?.LogInformation(
+                    "🔗 Generando {Cantidad} URL(s) de documentos usando LinkController",
+                    solicitudes.Count);
+
+                var enlaces = new List<EnlaceArchivoDto>();
+                var dominioBase = _setting.PathApp?.TrimEnd('/')
+                    ?? $"{Request.Scheme}://{Request.Host}";
+
+                // ✅ NUEVO: Obtener usuario actual
+                var usuarioId = UserName;
+
+                // ✅ NUEVO: Obtener cliente actual (opcional)
+                var clienteId = CuentaComercialSeleccionada?.Cta_Id;
+
+                foreach (var solicitud in solicitudes)
+                {
+                    try
+                    {
+                        // ✅ PASO 1: Llamar a LinkController para crear el código
+                        var linkRequest = new
+                        {
+                            Solicitud = solicitud,
+                            Usu_id = usuarioId,
+                            ClienteId = clienteId
+                        };
+
+                        _logger?.LogDebug(
+                            "📡 Llamando a LinkController.CrearLink para: {Titulo}",
+                            solicitud.Titulo);
+
+                        // ✅ Llamada HTTP a la API
+                        using var httpClient = new HttpClient();
+                        httpClient.Timeout = TimeSpan.FromSeconds(30);
+
+                        var apiUrl = _docsManager.ApiReporteUrl?.TrimEnd('/')
+                            ?? throw new Exception("ApiReporteUrl no configurada");
+
+                        var createLinkUrl = $"{apiUrl}/api/Link/CrearLink";
+
+                        var jsonContent = System.Text.Json.JsonSerializer.Serialize(linkRequest);
+                        var content = new StringContent(
+                            jsonContent,
+                            Encoding.UTF8,
+                            "application/json");
+
+                        // ✅ Agregar token de autenticación si es necesario
+                        if (!string.IsNullOrEmpty(TokenCookie))
+                        {
+                            httpClient.DefaultRequestHeaders.Authorization =
+                                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", TokenCookie);
+                        }
+
+                        var response = await httpClient.PostAsync(createLinkUrl, content);
+
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            var errorContent = await response.Content.ReadAsStringAsync();
+                            _logger?.LogError(
+                                "❌ Error al crear link: {StatusCode} - {Error}",
+                                response.StatusCode,
+                                errorContent);
+                            continue; // Saltar este documento
+                        }
+
+                        var responseContent = await response.Content.ReadAsStringAsync();
+                        var apiResponse = System.Text.Json.JsonSerializer.Deserialize<ApiResponse<ReporteLinkResponseDto>>(
+                            responseContent,
+                            new System.Text.Json.JsonSerializerOptions
+                            {
+                                PropertyNameCaseInsensitive = true
+                            });
+
+                        if (apiResponse?.Data == null)
+                        {
+                            _logger?.LogError("❌ Respuesta nula de LinkController");
+                            continue;
+                        }
+
+                        // ✅ PASO 2: Construir URL con el código retornado
+                        var codigo = apiResponse.Data.Codigo;
+                        var urlDocumento = $"{dominioBase}/d/{codigo}";
+
+                        _logger?.LogInformation(
+                            "✅ URL generada para '{Titulo}': {Url} (expira: {Expira})",
+                            solicitud.Titulo,
+                            urlDocumento,
+                            apiResponse.Data.ExpiraEnUtc);
+
+                        enlaces.Add(new EnlaceArchivoDto
+                        {
+                            Nombre = !string.IsNullOrWhiteSpace(solicitud.Titulo)
+                                ? $"{solicitud.Titulo.Replace(" ", "_")}.pdf"
+                                : "documento.pdf",
+                            Url = urlDocumento
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger?.LogError(
+                            ex,
+                            "❌ Error al generar URL para: {Titulo}",
+                            solicitud.Titulo);
+                    }
+                }
+
+                if (!enlaces.Any())
+                {
+                    return Json(new
+                    {
+                        error = true,
+                        msg = "No se pudo generar ninguna URL. Revisa los logs."
+                    });
+                }
+
+                _logger?.LogInformation(
+                    "✅ {Cantidad} URL(s) generada(s) exitosamente",
+                    enlaces.Count);
+
+                return Json(new { error = false, enlaces });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "❌ Error crítico en GenerarURLsDocumentos");
+                return Json(new
+                {
+                    error = true,
+                    msg = $"Error: {ex.Message}"
+                });
+            }
+        }
+
         // ═══════════════════════════════════════════════════════════
         // DTOs (AGREGAR AL FINAL DE LA CLASE)
         // ═══════════════════════════════════════════════════════════
@@ -1051,7 +1215,5 @@ namespace gc.sitio.Areas.ControlComun.Controllers
             public string EmailBody { get; set; } = string.Empty;
         }
 
-    }
-
-    
+    }    
 }

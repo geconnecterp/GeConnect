@@ -140,67 +140,45 @@ function enviarEmail() {
 }
 
 /**
- * ✅ NUEVA FUNCIÓN: Procesa archivos de manera unificada
- * Genera PDFs, guarda en FileStore y obtiene URLs públicas
- * Luego delega al proveedor específico (Gmail/Outlook)
+ * ✅ FUNCIÓN MODIFICADA: Genera URLs directamente (sin PDFs)
  */
 function procesarArchivosParaEmail(emailProvider, emailTo, emailSubject, emailBody, archivosSeleccionados) {
-    AbrirWaiting("Generando PDFs y guardando en servidor...");
+    AbrirWaiting("Generando enlaces de documentos...");
 
     console.log(`📎 Procesando ${archivosSeleccionados.length} archivo(s) para ${emailProvider}`);
 
-    // ✅ PASO 1: Generar PDFs en tiempo real
-    const promesasGeneracion = archivosSeleccionados.map(node => {
-        console.log(`🔄 Generando PDF: "${node.text}" (ID: ${node.id})`);
-        return generarPDFEnTiempoReal(node);
-    });
-
-    Promise.all(promesasGeneracion)
-        .then(archivosGenerados => {
-            console.log(`✅ ${archivosGenerados.length} PDF(s) generados exitosamente`);
-
-            // ✅ PASO 2: Guardar TODOS los archivos en FileStore (obtener URLs públicas)
-            console.log('💾 Guardando archivos en FileStore para obtener URLs públicas...');
-
-            // ✅ CORREGIDO: Retornar AMBOS archivosGenerados y enlaces juntos
-            return guardarArchivosGrandesEnServidor(archivosGenerados)
-                .then(enlaces => ({ archivosGenerados, enlaces }));
-        })
-        .then(({ archivosGenerados, enlaces }) => {  // ✅ CORREGIDO: Desestructurar ambos
+    // ✅ Generar URLs usando LinkController
+    generarURLsDocumentos(archivosSeleccionados)
+        .then(enlaces => {
             CerrarWaiting();
-            console.log(`✅ ${enlaces.length} URL(s) pública(s) obtenida(s) del FileStore`);
+            console.log(`✅ ${enlaces.length} URL(s) generada(s)`);
 
-            // ✅ Construir mensaje con URLs
+            // ✅ Construir mensaje con URLs clicables
             let cuerpoConEnlaces = emailBody;
 
-            // ✅ Detectar si el cuerpo ya es HTML (contiene <br/> o <p>)
+            // ✅ CORREGIDO: Detectar si ya es HTML
             const esHtml = cuerpoConEnlaces.includes('<br') ||
                 cuerpoConEnlaces.includes('<p>') ||
                 cuerpoConEnlaces.includes('<div>');
 
+            // ✅ Para Outlook Web y Gmail: Convertir a HTML si es necesario
             if (!esHtml && (emailProvider === 'outlookweb' || emailProvider === 'gmail')) {
-                // ✅ Convertir saltos de línea a <br/> para Outlook Web y Gmail
                 cuerpoConEnlaces = cuerpoConEnlaces
-                    .replace(/\r\n/g, '\n')      // Normalizar CRLF a LF
-                    .replace(/\n\n/g, '<br/><br/>') // Párrafos dobles
-                    .replace(/\n/g, '<br/>');    // Saltos de línea simples
-
-                console.log('✅ Cuerpo convertido a HTML (saltos de línea → <br/>)');
-            } else if (emailProvider === 'outlookdesktop') {
-                // ✅ Para Outlook Desktop (mailto), mantener saltos de línea normales
-                // porque NO soporta HTML
-                console.log('ℹ️ Manteniendo texto plano para Outlook Desktop (mailto)');
+                    .replace(/\r\n/g, '\n')
+                    .replace(/\n\n/g, '<br/><br/>')
+                    .replace(/\n/g, '<br/>');
             }
 
+            // ✅ Agregar enlaces según el proveedor
             if (enlaces.length > 0) {
-                // ✅ Agregar enlaces como HTML clicables (para Gmail y Outlook Web)
                 if (emailProvider === 'outlookweb' || emailProvider === 'gmail') {
+                    // ✅ HTML para Outlook Web y Gmail
                     cuerpoConEnlaces += '<br/><br/>📎 <strong>Documentos disponibles:</strong><br/><br/>';
                     enlaces.forEach((enlace, index) => {
                         cuerpoConEnlaces += `${index + 1}. <a href="${enlace.url}" target="_blank" style="color: #0066cc; text-decoration: none;">${enlace.nombre}</a><br/><br/>`;
                     });
                 } else {
-                    // ✅ Para Outlook Desktop, usar URLs planas
+                    // ✅ Texto plano para Outlook Desktop (mailto)
                     cuerpoConEnlaces += '\n\n📎 Documentos disponibles:\n\n';
                     enlaces.forEach((enlace, index) => {
                         cuerpoConEnlaces += `${index + 1}. ${enlace.nombre}\n   ${enlace.url}\n\n`;
@@ -210,7 +188,7 @@ function procesarArchivosParaEmail(emailProvider, emailTo, emailSubject, emailBo
 
             console.log(`📧 Delegando a proveedor: ${emailProvider}`);
 
-            // ✅ PASO 3: Delegar al proveedor específico CON URLs
+            // ✅ Delegar al proveedor específico CON URLs
             switch (emailProvider) {
                 case 'outlookweb':
                     enviarEmailOutlookWeb(emailTo, emailSubject, cuerpoConEnlaces, enlaces);
@@ -219,21 +197,116 @@ function procesarArchivosParaEmail(emailProvider, emailTo, emailSubject, emailBo
                     enviarEmailOutlookLocal(emailTo, emailSubject, cuerpoConEnlaces, enlaces);
                     break;
                 default:
-                    // ✅ CORREGIDO: Ahora archivosGenerados SÍ está disponible
-                    clasificarYEnviarPorGmail(emailTo, emailSubject, emailBody, archivosGenerados, enlaces);
+                    enviarEmailGmailConAdjuntos(emailTo, emailSubject, cuerpoConEnlaces, []);
             }
         })
         .catch(error => {
             CerrarWaiting();
-            console.error('❌ Error al procesar archivos:', error);
+            console.error('❌ Error al generar URLs:', error);
 
             AbrirMensaje("Error",
-                `❌ Error al procesar archivos:\n\n${error.message}\n\nRevisa la consola del navegador (F12) para más detalles.`,
+                `❌ Error al generar enlaces:\n\n${error.message}`,
                 function () {
                     $("#msjModal").modal("hide");
                 }, false, ["Aceptar"], "error!", null);
         });
 }
+
+///**
+// * ✅ NUEVA FUNCIÓN: Procesa archivos de manera unificada
+// * Genera PDFs, guarda en FileStore y obtiene URLs públicas
+// * Luego delega al proveedor específico (Gmail/Outlook)
+// */
+//function procesarArchivosParaEmail(emailProvider, emailTo, emailSubject, emailBody, archivosSeleccionados) {
+//    AbrirWaiting("Generando PDFs y guardando en servidor...");
+
+//    console.log(`📎 Procesando ${archivosSeleccionados.length} archivo(s) para ${emailProvider}`);
+
+//    // ✅ PASO 1: Generar PDFs en tiempo real
+//    const promesasGeneracion = archivosSeleccionados.map(node => {
+//        console.log(`🔄 Generando PDF: "${node.text}" (ID: ${node.id})`);
+//        return generarPDFEnTiempoReal(node);
+//    });
+
+//    Promise.all(promesasGeneracion)
+//        .then(archivosGenerados => {
+//            console.log(`✅ ${archivosGenerados.length} PDF(s) generados exitosamente`);
+
+//            // ✅ PASO 2: Guardar TODOS los archivos en FileStore (obtener URLs públicas)
+//            console.log('💾 Guardando archivos en FileStore para obtener URLs públicas...');
+
+//            // ✅ CORREGIDO: Retornar AMBOS archivosGenerados y enlaces juntos
+//            return guardarArchivosGrandesEnServidor(archivosGenerados)
+//                .then(enlaces => ({ archivosGenerados, enlaces }));
+//        })
+//        .then(({ archivosGenerados, enlaces }) => {  // ✅ CORREGIDO: Desestructurar ambos
+//            CerrarWaiting();
+//            console.log(`✅ ${enlaces.length} URL(s) pública(s) obtenida(s) del FileStore`);
+
+//            // ✅ Construir mensaje con URLs
+//            let cuerpoConEnlaces = emailBody;
+
+//            // ✅ Detectar si el cuerpo ya es HTML (contiene <br/> o <p>)
+//            const esHtml = cuerpoConEnlaces.includes('<br') ||
+//                cuerpoConEnlaces.includes('<p>') ||
+//                cuerpoConEnlaces.includes('<div>');
+
+//            if (!esHtml && (emailProvider === 'outlookweb' || emailProvider === 'gmail')) {
+//                // ✅ Convertir saltos de línea a <br/> para Outlook Web y Gmail
+//                cuerpoConEnlaces = cuerpoConEnlaces
+//                    .replace(/\r\n/g, '\n')      // Normalizar CRLF a LF
+//                    .replace(/\n\n/g, '<br/><br/>') // Párrafos dobles
+//                    .replace(/\n/g, '<br/>');    // Saltos de línea simples
+
+//                console.log('✅ Cuerpo convertido a HTML (saltos de línea → <br/>)');
+//            } else if (emailProvider === 'outlookdesktop') {
+//                // ✅ Para Outlook Desktop (mailto), mantener saltos de línea normales
+//                // porque NO soporta HTML
+//                console.log('ℹ️ Manteniendo texto plano para Outlook Desktop (mailto)');
+//            }
+
+//            if (enlaces.length > 0) {
+//                // ✅ Agregar enlaces como HTML clicables (para Gmail y Outlook Web)
+//                if (emailProvider === 'outlookweb' || emailProvider === 'gmail') {
+//                    cuerpoConEnlaces += '<br/><br/>📎 <strong>Documentos disponibles:</strong><br/><br/>';
+//                    enlaces.forEach((enlace, index) => {
+//                        cuerpoConEnlaces += `${index + 1}. <a href="${enlace.url}" target="_blank" style="color: #0066cc; text-decoration: none;">${enlace.nombre}</a><br/><br/>`;
+//                    });
+//                } else {
+//                    // ✅ Para Outlook Desktop, usar URLs planas
+//                    cuerpoConEnlaces += '\n\n📎 Documentos disponibles:\n\n';
+//                    enlaces.forEach((enlace, index) => {
+//                        cuerpoConEnlaces += `${index + 1}. ${enlace.nombre}\n   ${enlace.url}\n\n`;
+//                    });
+//                }
+//            }
+
+//            console.log(`📧 Delegando a proveedor: ${emailProvider}`);
+
+//            // ✅ PASO 3: Delegar al proveedor específico CON URLs
+//            switch (emailProvider) {
+//                case 'outlookweb':
+//                    enviarEmailOutlookWeb(emailTo, emailSubject, cuerpoConEnlaces, enlaces);
+//                    break;
+//                case 'outlookdesktop':
+//                    enviarEmailOutlookLocal(emailTo, emailSubject, cuerpoConEnlaces, enlaces);
+//                    break;
+//                default:
+//                    // ✅ CORREGIDO: Ahora archivosGenerados SÍ está disponible
+//                    clasificarYEnviarPorGmail(emailTo, emailSubject, emailBody, archivosGenerados, enlaces);
+//            }
+//        })
+//        .catch(error => {
+//            CerrarWaiting();
+//            console.error('❌ Error al procesar archivos:', error);
+
+//            AbrirMensaje("Error",
+//                `❌ Error al procesar archivos:\n\n${error.message}\n\nRevisa la consola del navegador (F12) para más detalles.`,
+//                function () {
+//                    $("#msjModal").modal("hide");
+//                }, false, ["Aceptar"], "error!", null);
+//        });
+//}
 
 ///**
 // * ✅ NUEVA FUNCIÓN: Procesa archivos de manera unificada
@@ -293,6 +366,7 @@ function procesarArchivosParaEmail(emailProvider, emailTo, emailSubject, emailBo
 //            //    });
 //            //}
 
+
 //            if (enlaces.length > 0) {
 //                // ✅ Agregar enlaces como HTML clicables (para Gmail y Outlook Web)
 //                if (emailProvider === 'outlookweb' || emailProvider === 'gmail') {
@@ -336,43 +410,43 @@ function procesarArchivosParaEmail(emailProvider, emailTo, emailSubject, emailBo
 //        });
 //}
 
-/**
- * ✅ FUNCIÓN AUXILIAR: Clasifica archivos por tamaño para Gmail
- * (Gmail puede adjuntar archivos pequeños directamente)
- */
-function clasificarYEnviarPorGmail(emailTo, emailSubject, emailBody, archivosGenerados, enlaces) {
-    const LIMITE_MB = 5;
-    const LIMITE_BYTES = LIMITE_MB * 1024 * 1024;
+///**
+// * ✅ FUNCIÓN AUXILIAR: Clasifica archivos por tamaño para Gmail
+// * (Gmail puede adjuntar archivos pequeños directamente)
+// */
+//function clasificarYEnviarPorGmail(emailTo, emailSubject, emailBody, archivosGenerados, enlaces) {
+//    const LIMITE_MB = 5;
+//    const LIMITE_BYTES = LIMITE_MB * 1024 * 1024;
 
-    const archivosPequeños = [];
-    const enlacesGrandes = [];
+//    const archivosPequeños = [];
+//    const enlacesGrandes = [];
 
-    archivosGenerados.forEach((archivo, index) => {
-        const tamañoMB = (archivo.tamañoBytes / 1024 / 1024).toFixed(2);
+//    archivosGenerados.forEach((archivo, index) => {
+//        const tamañoMB = (archivo.tamañoBytes / 1024 / 1024).toFixed(2);
 
-        if (archivo.tamañoBytes <= LIMITE_BYTES) {
-            archivosPequeños.push(archivo);
-            console.log(`  📎 Pequeño: ${archivo.nombre} (${tamañoMB} MB) - Adjuntar directamente`);
-        } else {
-            enlacesGrandes.push(enlaces[index]); // Usar enlace del FileStore
-            console.log(`  🔗 Grande: ${archivo.nombre} (${tamañoMB} MB) - Usar enlace del FileStore`);
-        }
-    });
+//        if (archivo.tamañoBytes <= LIMITE_BYTES) {
+//            archivosPequeños.push(archivo);
+//            console.log(`  📎 Pequeño: ${archivo.nombre} (${tamañoMB} MB) - Adjuntar directamente`);
+//        } else {
+//            enlacesGrandes.push(enlaces[index]); // Usar enlace del FileStore
+//            console.log(`  🔗 Grande: ${archivo.nombre} (${tamañoMB} MB) - Usar enlace del FileStore`);
+//        }
+//    });
 
-    // Construir cuerpo con información de archivos
-    let cuerpoFinal = emailBody;
+//    // Construir cuerpo con información de archivos
+//    let cuerpoFinal = emailBody;
 
-    if (enlacesGrandes.length > 0) {
-        // ✅ NUEVO: Agregar enlaces como HTML clicables
-        cuerpoFinal += '\n\n🔗 <strong>Archivos grandes disponibles para descarga:</strong><br/><br/>';
-        enlacesGrandes.forEach((enlace, index) => {
-            cuerpoFinal += `${index + 1}. <a href="${enlace.url}" target="_blank" style="color: #0066cc; text-decoration: none;">${enlace.nombre}</a><br/><br/>`;
-        });
-    }
+//    if (enlacesGrandes.length > 0) {
+//        // ✅ NUEVO: Agregar enlaces como HTML clicables
+//        cuerpoFinal += '\n\n🔗 <strong>Archivos grandes disponibles para descarga:</strong><br/><br/>';
+//        enlacesGrandes.forEach((enlace, index) => {
+//            cuerpoFinal += `${index + 1}. <a href="${enlace.url}" target="_blank" style="color: #0066cc; text-decoration: none;">${enlace.nombre}</a><br/><br/>`;
+//        });
+//    }
 
-    // Enviar por Gmail con adjuntos pequeños
-    enviarEmailGmailConAdjuntos(emailTo, emailSubject, cuerpoFinal, archivosPequeños);
-}
+//    // Enviar por Gmail con adjuntos pequeños
+//    enviarEmailGmailConAdjuntos(emailTo, emailSubject, cuerpoFinal, archivosPequeños);
+//}
 
 /**
  * ✅ FUNCIÓN MODIFICADA: Envía email por SMTP usando Gmail
@@ -658,68 +732,31 @@ function enviarWhatsApp() {
         return;
     }
 
-    // ✅ AHORA SÍ procesa archivos
     console.log(`📎 Procesando ${archivosSeleccionados.length} archivo(s) para WhatsApp`);
 
-    AbrirWaiting("Generando archivos para WhatsApp...");
+    AbrirWaiting("Generando enlaces de documentos...");
 
-    const promesasGeneracion = archivosSeleccionados.map(node => generarPDFEnTiempoReal(node));
-
-    Promise.all(promesasGeneracion)
-        .then(archivosGenerados => {
-            console.log('✅ Todos los PDFs generados exitosamente');
-            console.log('💾 Guardando archivos en FileStore...');
-
-            return guardarArchivosGrandesEnServidor(archivosGenerados);
-        })
+    // ✅ NUEVO FLUJO: Generar URLs directamente
+    generarURLsDocumentos(archivosSeleccionados)
         .then(enlaces => {
             CerrarWaiting();
 
-            // ✅ VALIDACIÓN EXHAUSTIVA
-            console.log(`🔍 Enlaces recibidos:`, enlaces);
-            console.log(`🔍 Tipo de enlaces:`, typeof enlaces);
-            console.log(`🔍 Longitud de enlaces:`, enlaces ? enlaces.length : 'null/undefined');
-
             if (!enlaces || !Array.isArray(enlaces) || enlaces.length === 0) {
-                console.error('❌ PROBLEMA: No se recibieron enlaces del FileStore');
-
-                AbrirMensaje("Error",
-                    "❌ No se pudieron obtener los enlaces de descarga de los archivos.\n\n" +
-                    "Posibles causas:\n" +
-                    "• El FileStore no está funcionando\n" +
-                    "• No se pudo subir los archivos al servidor\n\n" +
-                    "Revisa la consola (F12) para más detalles.",
-                    function () {
-                        $("#msjModal").modal("hide");
-                    }, false, ["Aceptar"], "error!", null);
-                return;
+                throw new Error("No se pudieron generar los enlaces");
             }
 
-            console.log(`✅ ${enlaces.length} enlace(s) válido(s) recibido(s)`);
+            console.log(`✅ ${enlaces.length} enlace(s) generado(s)`);
 
             // Construir mensaje con enlaces
             let mensajeFinal = whatsappMessage;
 
             mensajeFinal += '\n\n📎 Archivos disponibles para descarga:\n';
             enlaces.forEach((enlace, index) => {
-                if (!enlace.url) {
-                    console.warn(`⚠️ Advertencia: Enlace ${index + 1} no tiene URL`);
-                }
-                console.log(`  ${index + 1}. ${enlace.nombre} → ${enlace.url}`);
                 mensajeFinal += `${index + 1}. ${enlace.nombre}\n${enlace.url}\n\n`;
             });
 
-            console.log(`📝 Mensaje final (${mensajeFinal.length} caracteres):`, mensajeFinal);
-
             if (mensajeFinal.length > 5000) {
-                AbrirMensaje("ATENCIÓN",
-                    `⚠️ El mensaje es muy largo (${mensajeFinal.length} caracteres).\n\n` +
-                    `Máximo permitido: 5000 caracteres.\n\n` +
-                    `Por favor, reduce la cantidad de archivos o el texto del mensaje.`,
-                    function () {
-                        $("#msjModal").modal("hide");
-                    }, false, ["Aceptar"], "warn!", null);
-                return;
+                throw new Error(`Mensaje muy largo (${mensajeFinal.length} caracteres). Máximo: 5000.`);
             }
 
             console.log('📱 Enviando WhatsApp con enlaces');
@@ -728,10 +765,9 @@ function enviarWhatsApp() {
         .catch(error => {
             CerrarWaiting();
             console.error('❌ Error al procesar archivos para WhatsApp:', error);
-            console.error('❌ Stack trace:', error.stack);
 
             AbrirMensaje("Error",
-                `❌ Error al procesar archivos:\n\n${error.message}\n\nRevisa la consola (F12) para más detalles.`,
+                `❌ Error al generar enlaces:\n\n${error.message}`,
                 function () {
                     $("#msjModal").modal("hide");
                 }, false, ["Aceptar"], "error!", null);
@@ -1478,102 +1514,102 @@ function PostGenPromise(data, url) {
     });
 }
 
-/**
- * Genera un PDF en tiempo real desde el servidor
- * @param {Object} node - Nodo del árbol jsTree seleccionado
- * @returns {Promise<Object>} - Promise con { base64, nombre, tamañoBytes }
- */
-function generarPDFEnTiempoReal(node) {
-    return new Promise((resolve, reject) => {
-        const id = node.id;
+///**
+// * Genera un PDF en tiempo real desde el servidor
+// * @param {Object} node - Nodo del árbol jsTree seleccionado
+// * @returns {Promise<Object>} - Promise con { base64, nombre, tamañoBytes }
+// */
+//function generarPDFEnTiempoReal(node) {
+//    return new Promise((resolve, reject) => {
+//        const id = node.id;
         
-        // Validar que existan parámetros guardados
-        if (!arrRepoParams[id - 1]) {
-            reject(new Error(`No hay parámetros guardados para "${node.text}". Debe ejecutar el reporte primero."`));
-            return;
-        }
+//        // Validar que existan parámetros guardados
+//        if (!arrRepoParams[id - 1]) {
+//            reject(new Error(`No hay parámetros guardados para "${node.text}". Debe ejecutar el reporte primero."`));
+//            return;
+//        }
         
-        const data = arrRepoParams[id - 1];
+//        const data = arrRepoParams[id - 1];
         
-        const solicitudReporte = {
-            Reporte: data.reporte,
-            Parametros: data.parametros,
-            Ids: data.parametros.Ids,
-            Titulo: node.text,
-            SubTitulo: data.subTitulo,
-            Observacion: data.observacion || "",
-            Formato: "P", // PDF
-            LogoPath: "",
-            Administracion: data.administracion || administracion
-        };
+//        const solicitudReporte = {
+//            Reporte: data.reporte,
+//            Parametros: data.parametros,
+//            Ids: data.parametros.Ids,
+//            Titulo: node.text,
+//            SubTitulo: data.subTitulo,
+//            Observacion: data.observacion || "",
+//            Formato: "P", // PDF
+//            LogoPath: "",
+//            Administracion: data.administracion || administracion
+//        };
         
-        console.log(`🔄 Generando PDF para: ${node.text}`);
+//        console.log(`🔄 Generando PDF para: ${node.text}`);
         
-        // Llamada AJAX para generar el PDF
-        PostGenPromise(solicitudReporte, repoApiUrl)
-            .then(obj => {
-                if (obj.error === true) {
-                    reject(new Error(obj.resultado_msg || "Error al generar PDF"));
-                } else if (obj.warn === true) {
-                    reject(new Error(obj.msg || "Advertencia al generar PDF"));
-                } else {
-                    // Calcular tamaño del PDF en bytes
-                    const base64 = obj.base64;
-                    const tamañoBytes = (base64.length * 3) / 4 - (base64.indexOf('=') > 0 ? (base64.length - base64.indexOf('=')) : 0);
+//        // Llamada AJAX para generar el PDF
+//        PostGenPromise(solicitudReporte, repoApiUrl)
+//            .then(obj => {
+//                if (obj.error === true) {
+//                    reject(new Error(obj.resultado_msg || "Error al generar PDF"));
+//                } else if (obj.warn === true) {
+//                    reject(new Error(obj.msg || "Advertencia al generar PDF"));
+//                } else {
+//                    // Calcular tamaño del PDF en bytes
+//                    const base64 = obj.base64;
+//                    const tamañoBytes = (base64.length * 3) / 4 - (base64.indexOf('=') > 0 ? (base64.length - base64.indexOf('=')) : 0);
 
-                    // ✅ MODIFICADO: Reemplazar espacios por underscore en el nombre
-                    const nombreSanitizado = node.text.replace(/\s+/g, '_');
+//                    // ✅ MODIFICADO: Reemplazar espacios por underscore en el nombre
+//                    const nombreSanitizado = node.text.replace(/\s+/g, '_');
 
-                    console.log(`✅ PDF generado: ${node.text} (${(tamañoBytes / 1024 / 1024).toFixed(2)} MB)`);
+//                    console.log(`✅ PDF generado: ${node.text} (${(tamañoBytes / 1024 / 1024).toFixed(2)} MB)`);
                     
-                    resolve({
-                        base64: base64,
-                        nombre: nombreSanitizado + ".pdf",  // ✅ Usar nombre sanitizado
-                        tamañoBytes: tamañoBytes
-                    });
-                }
-            })
-            .catch(error => {
-                reject(error);
-            });
-    });
-}
+//                    resolve({
+//                        base64: base64,
+//                        nombre: nombreSanitizado + ".pdf",  // ✅ Usar nombre sanitizado
+//                        tamañoBytes: tamañoBytes
+//                    });
+//                }
+//            })
+//            .catch(error => {
+//                reject(error);
+//            });
+//    });
+//}
 
-/**
- * Guarda archivos grandes en el servidor y retorna enlaces
- * @param {Array} archivos - Array de objetos { base64, nombre, tamañoBytes }
- * @returns {Promise<Array>} - Array de { nombre, url }
- */
-function guardarArchivosGrandesEnServidor(archivos) {
-    return new Promise((resolve, reject) => {
-        console.log(`💾 Guardando ${archivos.length} archivo(s) grande(s) en el servidor...`);
+///**
+// * Guarda archivos grandes en el servidor y retorna enlaces
+// * @param {Array} archivos - Array de objetos { base64, nombre, tamañoBytes }
+// * @returns {Promise<Array>} - Array de { nombre, url }
+// */
+//function guardarArchivosGrandesEnServidor(archivos) {
+//    return new Promise((resolve, reject) => {
+//        console.log(`💾 Guardando ${archivos.length} archivo(s) grande(s) en el servidor...`);
         
-        const data = {
-            archivos: archivos.map(a => ({
-                archivoBase64: a.base64,
-                nombre: a.nombre
-            }))
-        };
+//        const data = {
+//            archivos: archivos.map(a => ({
+//                archivoBase64: a.base64,
+//                nombre: a.nombre
+//            }))
+//        };
         
-        $.ajax({
-            url: '/ControlComun/GestorImpresion/GuardarArchivosGrandes',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify(data),
-            success: function (response) {
-                if (response.error) {
-                    reject(new Error(response.msg || "Error al guardar archivos"));
-                } else {
-                    console.log(`✅ Archivos guardados exitosamente`);
-                    resolve(response.enlaces || []);
-                }
-            },
-            error: function (xhr, status, error) {
-                reject(new Error(`Error de red al guardar archivos: ${error}`));
-            }
-        });
-    });
-}
+//        $.ajax({
+//            url: '/ControlComun/GestorImpresion/GuardarArchivosGrandes',
+//            type: 'POST',
+//            contentType: 'application/json',
+//            data: JSON.stringify(data),
+//            success: function (response) {
+//                if (response.error) {
+//                    reject(new Error(response.msg || "Error al guardar archivos"));
+//                } else {
+//                    console.log(`✅ Archivos guardados exitosamente`);
+//                    resolve(response.enlaces || []);
+//                }
+//            },
+//            error: function (xhr, status, error) {
+//                reject(new Error(`Error de red al guardar archivos: ${error}`));
+//            }
+//        });
+//    });
+//}
 
 /**
  * Construye el cuerpo del email/WhatsApp agregando información de archivos
@@ -1776,4 +1812,60 @@ function generarContenidoEmailDesdeConfig(cuentaInfo, archivosAdjuntos, enlacesA
 function generarContenidoWhatsAppDesdeConfig(cuentaInfo) {
     const resultado = generarContenidoMensaje(cuentaInfo, [], [], 'whatsapp');
     return resultado.cuerpo; // WhatsApp solo usa el cuerpo, no el asunto
+}
+
+/**
+ * ✅ NUEVA FUNCIÓN: Genera URLs de documentos sin pre-generarlos
+ * @param {Array} archivosSeleccionados - Nodos del árbol jsTree
+ * @returns {Promise<Array>} - Array de { Nombre, Url }
+ */
+function generarURLsDocumentos(archivosSeleccionados) {
+    return new Promise((resolve, reject) => {
+        console.log(`🔗 Generando URLs para ${archivosSeleccionados.length} documento(s)`);
+
+        // ✅ PASO 1: Construir solicitudes ReporteSolicitudDto
+        const solicitudes = archivosSeleccionados.map(node => {
+            const id = node.id;
+
+            if (!arrRepoParams[id - 1]) {
+                throw new Error(`No hay parámetros guardados para "${node.text}"`);
+            }
+
+            const data = arrRepoParams[id - 1];
+
+            // ✅ Construir ReporteSolicitudDto
+            return {
+                Reporte: data.reporte,
+                Parametros: data.parametros,
+                Ids: data.parametros.Ids || [],
+                Titulo: node.text,
+                SubTitulo: data.subTitulo || "",
+                Observacion: data.observacion || "",
+                LogoPath: data.logoPath || "",
+                Administracion: data.administracion || administracion,
+                Formato: "P" // PDF
+            };
+        });
+
+        console.log('📦 Solicitudes construidas:', solicitudes);
+
+        // ✅ PASO 2: Enviar al backend para generar URLs
+        $.ajax({
+            url: '/ControlComun/GestorImpresion/GenerarURLsDocumentos',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(solicitudes),
+            success: function (response) {
+                if (response.error) {
+                    reject(new Error(response.msg || "Error al generar URLs"));
+                } else {
+                    console.log(`✅ ${response.enlaces.length} URL(s) generada(s)`);
+                    resolve(response.enlaces || []);
+                }
+            },
+            error: function (xhr, status, error) {
+                reject(new Error(`Error de red: ${error}`));
+            }
+        });
+    });
 }

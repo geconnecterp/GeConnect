@@ -8,6 +8,9 @@ namespace gc.infraestructura.EntidadesComunes.Options
     public class DocsManager
     {
         public string ApiReporteUrl { get; set; } = string.Empty;
+        public string ApiLink { get; set; } = string.Empty;
+        public string Crear { get; set; } = string.Empty;
+        public string Obtener { get; set; } = string.Empty;
         public List<AppModulo> Modulos { get; set; } = new();
     }
 
