@@ -36,7 +36,7 @@
 						<th class="text-end th-compact">Enviada</th>
 						<th class="text-end th-compact">Venta</th>
 						<th class="text-end th-compact">Total</th>
-						<th class="text-end th-compact">Remp</th>
+						<th class="text-center th-compact">Remp</th>
 						<th class="text-end th-compact">Código</th>
 						<th class="text-center th-compact" style="width: 40px;">Acción</th>
 					</tr>
@@ -126,10 +126,13 @@
 				</tbody>
 				@if (Model?.ListaDatos?.Any() == true)
 				{
+					var total = @Model.ListaDatos.Sum(x => (x.pcd_pedida * x.pcd_pvta));
 					<tfoot class="table-golden-footer">
 						<tr>
-							<td colspan="7" class="text-end fw-bold">Total General:</td>
-							<td class="text-end fw-bold">@Model.ListaDatos.Sum(x => (x.pcd_pedida * x.pcd_pvta)).ToString("N2")</td>
+							<td colspan="6" class="text-end fw-bold">Total General:</td>
+							<td class="text-end fw-bold">@GridHelper.FormatearPrecio(total, TipoPrecio.Venta)</td>
+							<td></td>
+							<td></td>
 							<td></td>
 						</tr>
 					</tfoot>

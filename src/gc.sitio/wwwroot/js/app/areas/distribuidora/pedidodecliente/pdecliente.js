@@ -40,7 +40,7 @@ function InicializaPantallaPedido() {
         window.location.href = homePedido;
     });
 
-    $("#btnAbmAceptar, #btnAbmCancelar").prop("disabled", true).hide();
+    $("#btnAbmAceptar, #btnAbmCancelar, #btnImprimir").prop("disabled", true).hide();
 
     // Inicializa el período de fechas (hoy / hoy + 30 días)
     initPeriodoFechas();
@@ -52,15 +52,12 @@ function InicializaPantallaPedido() {
     $("#lbVendedores").text("Vendedores"); // Vendedores"
     $("#lbRepartidores").text("Repartidores"); // Repartidores
 
-    $("#chkDesdeHasta").on("click", function () {
-        if ($("#chkDesdeHasta").is(":checked")) {
-            $("#Desde").prop("disabled", false);
-            $("#Hasta").prop("disabled", false);
-        } else {
-            $("#Desde").prop("disabled", true);
-            $("#Hasta").prop("disabled", true);
-        }
-    });
+    $("#chkDesdeHasta")
+        .prop("checked", true)
+        .prop("disabled", true);
+
+    $("#Desde").prop("disabled", false);
+    $("#Hasta").prop("disabled", false);
 
     $("#chkEstados").on("click", function () {
         if ($("#chkEstados").is(":checked")) {
@@ -171,24 +168,58 @@ $("#Rel01").autocomplete({
 
 
 function initPeriodoFechas() {
+    // Último lunes pasado
+    const desde = obtenerUltimoLunes();
+
+    // Hoy
+    const hasta = new Date();
+
+    // Formatear YYYY-MM-DD
+    const fmt = d => d.toISOString().split("T")[0];
+
+    $("#Desde").val(fmt(desde));
+    $("#Hasta").val(fmt(hasta));
+
+    // Siempre habilitadas
+    $("#Desde").prop("disabled", false);
+    $("#Hasta").prop("disabled", false);
+
+    // Checkbox siempre marcado y deshabilitado
+    $("#chkDesdeHasta")
+        .prop("checked", true)
+        .prop("disabled", true);
+
+    //const hoy = new Date();
+    //const base = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+    //const hasta = new Date(base);
+    //hasta.setDate(hasta.getDate() + 30);
+
+    //const format = (d) => {
+    //    const y = d.getFullYear();
+    //    const m = String(d.getMonth() + 1).padStart(2, '0');
+    //    const day = String(d.getDate()).padStart(2, '0');
+    //    return `${y}-${m}-${day}`;
+    //};
+
+    //$("#Desde").val(format(base));
+    //$("#Hasta").val(format(hasta));
+
+    //const enabled = $("#chkDesdeHasta").is(":checked");
+    //$("#Desde").prop("disabled", !enabled);
+    //$("#Hasta").prop("disabled", !enabled);
+}
+
+function obtenerUltimoLunes() {
     const hoy = new Date();
-    const base = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
-    const hasta = new Date(base);
-    hasta.setDate(hasta.getDate() + 30);
+    const diaSemana = hoy.getDay(); // 0=Domingo ... 1=Lunes
 
-    const format = (d) => {
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        return `${y}-${m}-${day}`;
-    };
+    // Si hoy es lunes → retroceder 7 días
+    const diferencia = diaSemana === 1 ? 7 : (diaSemana + 6) % 7;
 
-    $("#Desde").val(format(base));
-    $("#Hasta").val(format(hasta));
+    const ultimoLunes = new Date(hoy);
+    ultimoLunes.setDate(hoy.getDate() - diferencia);
 
-    const enabled = $("#chkDesdeHasta").is(":checked");
-    $("#Desde").prop("disabled", !enabled);
-    $("#Hasta").prop("disabled", !enabled);
+    return ultimoLunes;
 }
 
 function imprimirPedido(pcCompte) {
@@ -350,28 +381,37 @@ $(document).on('click', '#btnAbmAceptar', function (e) {
     const validacion = validarPedido(abm);
     if (!validacion.esValido) {
         ControlaMensajeWarning(validacion.mensaje);
+        AbrirMensaje("ATENCIÓN", validacion.mensaje, function () {
+            $("#msjModal").modal("hide");
+            return true;
+        }, false, ["Aceptar"], "error!", null);
         return;
     }
+    else {
+        // Mostrar confirmación
+        const mensajeConfirmacion = abm === 'A'
+            ? '¿Desea confirmar la creación del pedido?'
+            : '¿Desea confirmar las modificaciones del pedido?';
 
-    // Mostrar confirmación
-    const mensajeConfirmacion = abm === 'A'
-        ? '¿Desea confirmar la creación del pedido?'
-        : '¿Desea confirmar las modificaciones del pedido?';
-
-    AbrirMensaje(
-        'CONFIRMAR PEDIDO',
-        mensajeConfirmacion,
-        function (resp) {
-            if (resp === 'SI') {
-                confirmarPedido(abm);
-            }
-            $('#msjModal').modal('hide');
-        },
-        true,
-        ['Confirmar', 'Cancelar'],
-        'info!',
-        null
-    );
+        AbrirMensaje(
+            'CONFIRMAR PEDIDO',
+            mensajeConfirmacion,
+            function (resp) {
+                if (resp === 'SI') {
+                    confirmarPedido(abm);
+                }
+                activarTablaPedidos();
+                $("#divPedido")
+                    .removeClass("table-wrapper-small")
+                    .addClass("table-wrapper-full");
+                $('#msjModal').modal('hide');
+            },
+            true,
+            ['Confirmar', 'Cancelar'],
+            'info!',
+            null
+        );
+    }
 });
 
 /**
@@ -398,9 +438,18 @@ function confirmarPedido(abm) {
             dataType: 'json',
             success: function (response) {
                 CerrarWaiting();
-                procesarRespuestaConfirmacion(response, abm);
-                if (abm == 'A' || abm == 'M')
-                    ImprimirPedido_Generado(response.id);
+                if (response.error === true || response.warn === true) {
+                    console.error('❌ Response:', response.msg);
+                    AbrirMensaje("ATENCIÓN", 'Error al intentar confirmar el pedido: ' + (response.msg || 'Error desconocido'), function () {
+                        $("#msjModal").modal("hide");
+                        return true;
+                    }, false, ["Aceptar"], "error!", null);
+                }
+                else {
+                    procesarRespuestaConfirmacion(response, abm);
+                    if (abm == 'A' || abm == 'M')
+                        ImprimirPedido_Generado(response.id);
+                }
             },
             error: function (xhr, status, error) {
                 CerrarWaiting();
@@ -448,12 +497,18 @@ function procesarRespuestaConfirmacion(response, abm) {
 
     if (response.error || response.warn) {
         if (response.error) {
-            ControlaMensajeError(response.mensaje || 'Error al confirmar el pedido');
+            AbrirMensaje("ATENCIÓN", response.mensaje || 'Error al confirmar el pedido', function () {
+                $("#msjModal").modal("hide");
+                return true;
+            }, false, ["Aceptar"], "error!", null);
             return;
         }
         else //warn
         {
-            ControlaMensajeWarning(response.mensaje || 'Atención al confirmar el pedido');
+            AbrirMensaje("ATENCIÓN", response.mensaje || 'Atención al confirmar el pedido', function () {
+                $("#msjModal").modal("hide");
+                return true;
+            }, false, ["Aceptar"], "error!", null);
             return;
         }
     }
@@ -775,6 +830,7 @@ function InicializaEventosPedido() {
         }
 
         modoNuevoPedido = true;
+        desactivarTablaPedidos();
         modoModificacionPedido = false;
         modoEliminacionPedido = false;
 
@@ -882,6 +938,7 @@ function InicializaEventosPedido() {
 
         modoNuevoPedido = false;
         modoModificacionPedido = true;
+        desactivarTablaPedidos();
         modoEliminacionPedido = false;
 
         _pedidoOriginal = capturarEstadoFormularioPedido();
@@ -918,61 +975,67 @@ function InicializaEventosPedido() {
 
         const pcCompte = $('#pc_compte').val();
         if (!pcCompte || pcCompte.trim() === '') {
-            ControlaMensajeWarning('Debe seleccionar un pedido para anular');
-            return;
+            AbrirMensaje("ATENCIÓN", "Debe seleccionar un pedido para anular.", function () {
+                $("#msjModal").modal("hide");
+                return true;
+            }, false, ["Aceptar"], "error!", null);
         }
+        else {
+            const pceId = $('#pce_id').val();
+            const estadosEliminables = ['P'];
 
-        const pceId = $('#pce_id').val();
-        const estadosEliminables = ['P'];
-
-        if (!estadosEliminables.includes(pceId)) {
-            const nombreEstado = pceId === 'F' ? 'facturado'
+            if (!estadosEliminables.includes(pceId)) {
+                const nombreEstado = pceId === 'F' ? 'facturado'
                     : pceId === 'C' ? 'consolidado'
-                    : pceId === 'E' ? 'entregado'
-                    : pceId === 'O' ? 'en curso'
-                    : pceId === 'A' ? 'anulado'
-                    : pceId === 'T' ? 'a facturar'
-                        : 'en este estado';
+                        : pceId === 'E' ? 'entregado'
+                            : pceId === 'O' ? 'en curso'
+                                : pceId === 'A' ? 'anulado'
+                                    : pceId === 'T' ? 'a facturar'
+                                        : 'en este estado';
+                let mensaje = `No se puede anluar un pedido ${nombreEstado}. ` +
+                    `Solo los pedidos en estado Pendiente pueden ser anulados.`;
+                AbrirMensaje("ATENCIÓN", mensaje, function () {
+                    $("#msjModal").modal("hide");
+                    return true;
+                }, false, ["Aceptar"], "error!", null);
+            }
+            else {
+                desactivarTablaPedidos();
+                const ctaDenominacion = $('#cta_denominacion').val() || 'Sin cliente';
+                const vigenciaDesde = $('#pre_vigencia_desde').val() || '';
+                const vigenciaHasta = $('#pre_vigencia_hasta').val() || '';
 
-            ControlaMensajeError(
-                `No se puede anluar un pedido ${nombreEstado}. ` +
-                `Solo los pedidos en estado Pendiente pueden ser anulados.`
-            );
-            return;
+                const mensajeConfirmacion = `
+                    <div class="text-start">
+                        <p class="mb-2"><strong>¿Está seguro que desea anular este pedido?</strong></p>
+                        <hr class="my-2">
+                        <p class="mb-1"><strong>ID:</strong> ${pcCompte}</p>
+                        <p class="mb-1"><strong>Cliente:</strong> ${ctaDenominacion}</p>
+                        <hr class="my-2">
+                        <p class="text-danger mb-0">
+                            <i class="bx bx-error-circle me-1"></i>
+                            <strong>Esta acción no se puede deshacer.</strong>
+                        </p>
+                    </div>
+                    `;
+
+                AbrirMensaje(
+                    'ANULAR PEDIDO',
+                    mensajeConfirmacion,
+                    function (resp) {
+                        if (resp === 'SI') {
+                            eliminarPedido();
+                        }
+                        activarTablaPedidos();
+                        $('#msjModal').modal('hide');
+                    },
+                    true,
+                    ['Eliminar', 'Cancelar'],
+                    'warn!',
+                    null
+                );
+            }
         }
-
-        const ctaDenominacion = $('#cta_denominacion').val() || 'Sin cliente';
-        const vigenciaDesde = $('#pre_vigencia_desde').val() || '';
-        const vigenciaHasta = $('#pre_vigencia_hasta').val() || '';
-
-        const mensajeConfirmacion = `
-            <div class="text-start">
-                <p class="mb-2"><strong>¿Está seguro que desea anular este pedido?</strong></p>
-                <hr class="my-2">
-                <p class="mb-1"><strong>ID:</strong> ${pcCompte}</p>
-                <p class="mb-1"><strong>Cliente:</strong> ${ctaDenominacion}</p>
-                <hr class="my-2">
-                <p class="text-danger mb-0">
-                    <i class="bx bx-error-circle me-1"></i>
-                    <strong>Esta acción no se puede deshacer.</strong>
-                </p>
-            </div>
-        `;
-
-        AbrirMensaje(
-            'ANULAR PEDIDO',
-            mensajeConfirmacion,
-            function (resp) {
-                if (resp === 'SI') {
-                    eliminarPedido();
-                }
-                $('#msjModal').modal('hide');
-            },
-            true,
-            ['Eliminar', 'Cancelar'],
-            'warn!',
-            null
-        );
     });
 }
 
@@ -1208,27 +1271,16 @@ function activarEdicionCampoPedido($campo) {
 
 function cancelarOperacion(e) {
     console.log('🔄 Cancelando operación de pedido...');
-
-    // ✅ PASO 1: Resetear modos de edición
     modoNuevoPedido = false;
     modoModificacionPedido = false;
     campoEnEdicionPedido = null;
     _pedidoOriginal = null;
 
-    //if ($("#divDetalle").is(":visible") && $("#divFiltro").is(":not(:visible)")) {
-        
-    //}
-    $("#divFiltro").collapse("show");
-    $("#divDetalle").collapse("hide");
-
-    // ✅ PASO 2: Vaciar y ocultar divs de datos y productos
     $("#divPedDatos, #divPedProds").empty().hide();
 
-    // ✅ PASO 3: Determinar si hay fila seleccionada en el grid de búsqueda
     const $filaSeleccionada = $("#tbGridPedido tbody tr.selected-row");
     const hayPedidoSeleccionado = $filaSeleccionada.length > 0;
 
-    // ✅ PASO 4: Restaurar botones ABM según contexto
     if (hayPedidoSeleccionado) {
         // Si hay un pedido seleccionado, mantener habilitados Modificar y Eliminar
         const pceId = $filaSeleccionada.data('pce-id') || 'P';
@@ -1244,29 +1296,30 @@ function cancelarOperacion(e) {
         // Si no hay selección, solo habilitar Nuevo
         $("#btnAbmNuevo").prop("disabled", false);
         $("#btnAbmModif, #btnAbmElimi, #btnImprimir").prop("disabled", true);
-        //let data = {};
-        //cargarReporteEnArre(62, data, "Pedido de Cliente");
     }
 
-    // ✅ PASO 5: Desactivar y ocultar botones de confirmación
-    $("#btnAbmAceptar, #btnAbmCancelar").prop("disabled", true).hide();
-
-    // ✅ PASO 6: Deshabilitar botón de agregar productos
+    $("#btnAbmAceptar, #btnAbmCancelar, #btnImprimir").prop("disabled", true).hide();
     $("#btnAgregarCProducto").prop("disabled", true);
-
-    // ✅ PASO 7: Limpiar clases de edición en el grid (mantener selección)
     $("#tbGridPedido tbody tr").removeClass("selectedEdit-row").removeClass("selected-row");
 
     console.log('✅ Operación cancelada - Vista reinicializada');
 
-    $("#divPedido").removeClass("table-wrapper-100").addClass("table-wrapper-300");
-
-    //// ✅ PASO 8: Redirección si es necesario
-    //if (e && $(e.target).is("#btnAbmCancelar") && typeof homePedido !== 'undefined') {
-    //    console.log('🔀 Redirigiendo a:', homePedido);
-    //    window.location.href = homePedido;
-    //}
+    $("#divPedido")
+        .removeClass("table-wrapper-small")
+        .addClass("table-wrapper-full");
+    activarTablaPedidos();
 }
+
+function desactivarTablaPedidos() {
+    $("#tbGridPedido").addClass("tabla-desactivada");
+    $("#tbGridPedido tbody tr").addClass("disabled-row");
+}
+
+function activarTablaPedidos() {
+    $("#tbGridPedido").removeClass("tabla-desactivada");
+    $("#tbGridPedido tbody tr").removeClass("disabled-row");
+}
+
 
 let _pedidoLoading = false;
 
@@ -1288,9 +1341,7 @@ async function buscarPedidosDeCliente(pag = 1) {
             $("#divFiltro").collapse("hide");
 
             configurarEventosSeleccionPedido();
-
-            $("#btnAbmAceptar").prop("disabled", true).show();
-            $("#btnAbmCancelar").prop("disabled", false).show();
+            
             CerrarWaiting();
             PostGen({}, buscarMetadataURL, function (obj) {
                 if (obj.error === true) {
@@ -1367,45 +1418,110 @@ function actualizarTotalGeneralPedido() {
     $('#tbGridPedidoProds tfoot .fw-bold:last').text(totalGeneral.toFixed(2));
 }
 
-
 function configurarEventosSeleccionPedido() {
-    $(document).off("click", "#tbGridPedido tbody tr");
-    $(document).on("click", "#tbGridPedido tbody tr", function (e) {
-        if (!$(e.target).is("button, a, .btn, i")) {
-            var $this = $(this);
-            var fueSeleccionado = $this.hasClass("selected-row");
 
+    // Limpio handlers previos
+    $(document).off("click", "#tbGridPedido tbody tr");
+    $(document).off("dblclick", "#tbGridPedido tbody tr");
+
+    // ============================
+    // CLICK SIMPLE → Seleccionar fila
+    // ============================
+    $(document).on("click", "#tbGridPedido tbody tr", function (e) {
+
+        if (!$(e.target).is("button, a, .btn, i")) {
+
+            const $this = $(this);
+
+            // Quitar selección previa
             $("#tbGridPedido tbody tr").removeClass("selected-row");
 
-            if (!fueSeleccionado) {
-                $this.addClass("selected-row");
-                let pcCompte = $this.data("pc-compte");
-                pcCompteSeleccionado = pcCompte;
-                if (pcCompte) {
-                    $("#btnImprimir").prop("disabled", false);
-                    let data = { pc_compte: pcCompte };
-                    cargarReporteEnArre(62, data, "Pedido de Cliente", "", "");
-                    cargarPedidoDatos(pcCompte);
-                    cargarProductosPedido(pcCompte);
-                }
-            }
+            // Marcar fila seleccionada
+            $this.addClass("selected-row");
 
-            //achico el tamaño del grid
-            const $grid = $("#divPedido");
-            var gridAchicado = $grid.hasClass("table-wrapper-100");
-            if (!gridAchicado) {
-                $grid.removeClass("table-wrapper-300").addClass("table-wrapper-100")
-            }
-            setTimeout(() => {
-                ///posiciona el select en la parte visual del grid al achicarlo
-                posicionarRegOnTop($this, ".table-wrapper-100");
-            }, 200);
+            // Guardar valor seleccionado
+            pcCompteSeleccionado = $this.data("pc-compte");
 
+            // Habilitar botón imprimir
+            if (pcCompteSeleccionado) {
+                $("#btnImprimir").prop("disabled", false).show();
+            }
         }
     });
-    //configurando los eventos para el boton que elimina el registro.
+
+    // ============================
+    // DOBLE‑CLICK → Cargar datos + achicar grid
+    // ============================
+    $(document).on("dblclick", "#tbGridPedido tbody tr", function (e) {
+
+        if (!$(e.target).is("button, a, .btn, i")) {
+
+            const $this = $(this);
+            const pcCompte = $this.data("pc-compte");
+
+            if (!pcCompte) return;
+
+            // Ejecutar funciones de carga
+            let data = { pc_compte: pcCompte };
+            cargarReporteEnArre(62, data, "Pedido de Cliente", "", "");
+            cargarPedidoDatos(pcCompte);
+            cargarProductosPedido(pcCompte);
+
+            // Achicar grid
+            const $grid = $("#divPedido");
+            if (!$grid.hasClass("table-wrapper-100")) {
+                $grid.removeClass("table-wrapper-full").addClass("table-wrapper-small");
+            }
+
+            // Reposicionar fila seleccionada
+            setTimeout(() => {
+                posicionarRegOnTop($this, ".table-wrapper-small");
+            }, 200);
+        }
+    });
+
+    // Eventos de eliminación
     configurarEventosEliminacionProducto();
 }
+
+//function configurarEventosSeleccionPedido() {
+//    $(document).off("click", "#tbGridPedido tbody tr");
+//    $(document).on("click", "#tbGridPedido tbody tr", function (e) {
+//        if (!$(e.target).is("button, a, .btn, i")) {
+//            var $this = $(this);
+//            var fueSeleccionado = $this.hasClass("selected-row");
+
+//            $("#tbGridPedido tbody tr").removeClass("selected-row");
+
+//            if (!fueSeleccionado) {
+//                $this.addClass("selected-row");
+//                let pcCompte = $this.data("pc-compte");
+//                pcCompteSeleccionado = pcCompte;
+//                if (pcCompte) {
+//                    $("#btnImprimir").prop("disabled", false).show();
+//                    let data = { pc_compte: pcCompte };
+//                    cargarReporteEnArre(62, data, "Pedido de Cliente", "", "");
+//                    cargarPedidoDatos(pcCompte);
+//                    cargarProductosPedido(pcCompte);
+//                }
+//            }
+
+//            //achico el tamaño del grid
+//            const $grid = $("#divPedido");
+//            var gridAchicado = $grid.hasClass("table-wrapper-100");
+//            if (!gridAchicado) {
+//                $grid.removeClass("table-wrapper-300").addClass("table-wrapper-100")
+//            }
+//            setTimeout(() => {
+//                ///posiciona el select en la parte visual del grid al achicarlo
+//                posicionarRegOnTop($this, ".table-wrapper-100");
+//            }, 200);
+
+//        }
+//    });
+//    //configurando los eventos para el boton que elimina el registro.
+//    configurarEventosEliminacionProducto();
+//}
 
 let pcCompteSeleccionado = null;
 

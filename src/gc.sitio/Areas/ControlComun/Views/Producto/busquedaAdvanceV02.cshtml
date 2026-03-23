@@ -1,7 +1,14 @@
 ﻿@model List<ProductoListaDto>
 
-<div class="modal modal-golden" id="busquedaModal" tabindex="-1" role="dialog" aria-labelledby="buscTitulo" 
-     data-keyboard="false" data-backdrop="static" aria-hidden="true" style="z-index: 999999;">
+<div class="modal modal-golden" 
+    id="busquedaModal" 
+    tabindex="-1" 
+    role="dialog" 
+    aria-labelledby="buscTitulo" 
+    aria-hidden="true" 
+    data-bs-backdrop="static"
+    data-bs-keyboard="false"
+    style="z-index: 999999;">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -9,7 +16,10 @@
                     <i class="bx bx-search-alt me-2"></i>
                     Búsqueda Avanzada de Productos
                 </h5>
-                <button type="button" class="btn-close buscAdv" aria-label="Close">
+                <button type="button" 
+                        class="btn-close buscAdv" 
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
                     <span aria-hidden="true">@* &times; *@</span>
                 </button>
             </div>
