@@ -308,7 +308,7 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 						ok = false,
 						error = respuesta.EsError,
 						warn = respuesta.EsWarn,
-						mensaje = respuesta.Mensaje ?? "Error al procesar el pedido"
+						msg = respuesta.Mensaje ?? "Error al procesar el pedido"
 					});
 				}
 			}
