@@ -37,8 +37,10 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
 		private AppModulo _modulo_1;
 		private AppModulo _modulo_2;
+		private AppModulo _modulo_4;
 		private string APP_MODULO_1 = AppModulos.ORDEN_DE_REPARTO_HOJA_DE_RUTA.ToString();
 		private string APP_MODULO_2 = AppModulos.ORDEN_DE_REPARTO_HOJA_DE_PRODUCTO.ToString();
+		private string APP_MODULO_4 = AppModulos.PEDIDO_DE_CLIENTE.ToString();
 		private readonly IDocManagerServicio _docMSv;
 
 		public OrdenDeRepartoController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<OrdenDeRepartoController> logger,
@@ -56,6 +58,7 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
 			_modulo_1 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_1);
 			_modulo_2 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_2);
+			_modulo_4 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_4);
 			_docMSv = docManager; //instancio el servicio de impresión
 		}
 
@@ -688,7 +691,7 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 				});
 			}
 		}
-		
+
 
 		[HttpPost]
 		public async Task<IActionResult> CargarVistaCambioPrecioOrdenDeReparto(CambioDePrecioRequest request)
@@ -804,7 +807,7 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 
 				request.adm_id = AdministracionId;
 				request.usu_id = UserName;
-				
+
 				var respuesta = _ordenDeRepartoServicio.CambiarEstadoOrdenDeReparto(request, TokenCookie).Result;
 				// Procesamiento de respuesta
 				if (respuesta.Ok && !respuesta.EsError && !respuesta.EsWarn)
@@ -882,13 +885,13 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 						//ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_3);
 						#endregion
 						break;
-					//case TipoDeReporte.RepoValorDetalle:
-					//	#region Gestor Impresion - Inicializacion de variables
-					//	titulo = "Valorizado Detalle";
-					//	DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_4);
-					//	ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_4);
-					//	#endregion
-					//	break;
+					case TipoDeReporte.RepoPedidoDeCliente:
+						#region Gestor Impresion - Inicializacion de variables
+						titulo = "Pedido de Cliente";
+						DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_4);
+						ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_4);
+						#endregion
+						break;
 					//case TipoDeReporte.RepoConteoPorUsu:
 					//	#region Gestor Impresion - Inicializacion de variables
 					//	titulo = "Planilla por Usuarios";
@@ -907,12 +910,162 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar setear el tipo de reporte: {ex.Message}" });
 			}
 		}
+
+		[HttpPost]
+		public JsonResult PasarPedidoDeClienteACF(PasarPedidoACFRequest request)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return Json(new { error = true, ok = false, mensaje = "No autorizado" });
+				if (string.IsNullOrEmpty(request.pc_compte))
+					return Json(new { error = true, ok = false, mensaje = "No se han provisto los datos necesarios: Pedido de Cliente." });
+
+				request.adm_id = AdministracionId;
+				request.usu_id = UserName;
+
+				var respuesta = _pedidoSv.PasarPedidoACF(request, TokenCookie).Result;
+				// Procesamiento de respuesta
+				if (respuesta.Ok && !respuesta.EsError && !respuesta.EsWarn)
+				{
+					// Log y limpieza de datos temporales
+					var msg = $"Se ha actualizado el pedido de cliente a CF exitósamente.";
+					_logger?.LogInformation(msg);
+					return AnalizarRespuesta(respuesta, msg);
+				}
+				else
+				{
+					// Log y respuesta de error/advertencia
+					_logger?.LogWarning("Paso a CF de pedido de cliente: {Mensaje}", respuesta.Mensaje);
+					return Json(new
+					{
+						ok = false,
+						error = respuesta.EsError,
+						warn = respuesta.EsWarn,
+						mensaje = respuesta.Mensaje ?? "Error en el paso a CF del pedido de cliente."
+					});
+				}
+			}
+			catch (NegocioException ex)
+			{
+				// Manejo de excepciones no esperadas
+				_logger?.LogError(ex, ex.Message);
+				return Json(new
+				{
+					ok = false,
+					error = true,
+					mensaje = ex.Message
+				});
+			}
+			catch (Exception ex)
+			{
+				// Manejo de excepciones no esperadas
+				_logger?.LogError(ex, ex.Message);
+				return Json(new
+				{
+					ok = false,
+					error = true,
+					mensaje = ex.Message
+				});
+			}
+		}
+
+		[HttpPost]
+		public IActionResult CargarPedidosDeLaOrdenDeReparto(string orCompte)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
+				if (string.IsNullOrEmpty(orCompte))
+					return PartialView("_gridMensaje", CrearRespuestaError("No se han provisto los datos necesarios: Orden de Reparto."));
+				var listaPedidosEnOrdenDeReparto = ObtenerGridCoreSmart<PedidoEnOrdenDeRepartoDto>(ObtenerListaDePedidosEnOrdenDeRepartoPorAccion('M', orCompte));
+				var model = new PedidoDeClienteModel
+				{
+					ListaPedidosEnOrdenDeReparto = listaPedidosEnOrdenDeReparto
+				};
+				return PartialView("_gridPC_PedidosDeOR", model);
+			}
+			catch (NegocioException ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaError("Error al obtener los pedidos de la orden de reparto."));
+			}
+		}
+
+		[HttpPost]
+		public JsonResult DividePedidoDeCliente(DividePedidoDeClienteRequest request)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return Json(new { error = true, ok = false, mensaje = "No autorizado" });
+				if (string.IsNullOrEmpty(request.pc_compte))
+					return Json(new { error = true, ok = false, mensaje = "No se han provisto los datos necesarios: Pedido de Cliente." });
+				if (request.divide <= 0)
+					return Json(new { error = true, ok = false, mensaje = "No se han provisto los datos necesarios: Unidades a dividir el Pedido de Cliente." });
+
+				request.adm_id = AdministracionId;
+				request.usu_id = UserName;
+
+				var respuesta = _pedidoSv.DividePedidoDeCliente(request, TokenCookie).Result;
+				// Procesamiento de respuesta
+				if (respuesta.Ok && !respuesta.EsError && !respuesta.EsWarn)
+				{
+					// Log y limpieza de datos temporales
+					var msg = $"Se ha dividido el pedido de cliente exitósamente.";
+					_logger?.LogInformation(msg);
+					return AnalizarRespuesta(respuesta, msg);
+				}
+				else
+				{
+					// Log y respuesta de error/advertencia
+					_logger?.LogWarning("División de pedido de cliente: {Mensaje}", respuesta.Mensaje);
+					return Json(new
+					{
+						ok = false,
+						error = respuesta.EsError,
+						warn = respuesta.EsWarn,
+						mensaje = respuesta.Mensaje ?? "Error en la división del pedido de cliente."
+					});
+				}
+			}
+			catch (NegocioException ex)
+			{
+				// Manejo de excepciones no esperadas
+				_logger?.LogError(ex, ex.Message);
+				return Json(new
+				{
+					ok = false,
+					error = true,
+					mensaje = ex.Message
+				});
+			}
+			catch (Exception ex)
+			{
+				// Manejo de excepciones no esperadas
+				_logger?.LogError(ex, ex.Message);
+				return Json(new
+				{
+					ok = false,
+					error = true,
+					mensaje = ex.Message
+				});
+			}
+		}
+
 		#region Metodos Privados
 		enum TipoDeReporte
 		{
 			RepoHojaDeRuta = 1,
 			RepoHojaDeProducto = 2,
 			RepoOrdenDeReparto = 3,
+			RepoPedidoDeCliente = 4,
 		}
 		private void CalcularUpDownEnPedidosDeLaOrdenDeReparto(List<PedidoEnOrdenDeRepartoDto> pedidosDeLaOrdenDeReparto)
 		{

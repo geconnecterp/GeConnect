@@ -23,6 +23,7 @@
 						<thead class="sticky-top table-golden-header-compact">
 							<tr class="header">
 								<th class="text-center th-compact">ID</th>
+								<th class="text-center th-compact">Estado</th>
 								<th class="text-center th-compact">Cliente</th>
 								<th class="text-center th-compact">CF</th>
 								<th class="text-center th-compact">Generado</th>
@@ -46,7 +47,10 @@
 											@item.pc_compte
 										</td>
 										<td class="text-left">
-											@item.cta_denominacion
+											@item.pce_desc
+										</td>
+										<td class="text-left">
+											(@item.cta_id) @item.cta_denominacion
 										</td>
 										<td class="text-center align-middle">
 											<input type="checkbox"
@@ -106,6 +110,7 @@
 
 				<input type="number"
 					   class="form-control form-control-sm text-center input-dividir"
+					   id ="txtDividir"
 					   value="2" min="2" max="10">
 			</div>
 		</div>

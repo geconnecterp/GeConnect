@@ -134,5 +134,44 @@ namespace gc.api.core.Servicios
 
 			return presup;
 		}
+
+		public RespuestaDto PasarPedidoACF(PasarPedidoACFRequest req)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PC_CF;
+
+			var ps = new List<SqlParameter>() {
+				new("@pc_compte", req.pc_compte),
+				new("@usu_id", req.usu_id),
+				new("@adm_id", req.adm_id),
+				};
+
+
+			var respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			if (respuesta.Count == 0)
+			{
+				return new RespuestaDto() { resultado = -1, resultado_msj = "No se Recepcionó respuesta del proceso." };
+			}
+			return respuesta[0];
+		}
+
+		public RespuestaDto DividePedidoDeCliente(DividePedidoDeClienteRequest req)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PC_DIVIDE;
+
+			var ps = new List<SqlParameter>() {
+				new("@pc_compte", req.pc_compte),
+				new("@divide", req.divide),
+				new("@usu_id", req.usu_id),
+				new("@adm_id", req.adm_id),
+				};
+
+
+			var respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			if (respuesta.Count == 0)
+			{
+				return new RespuestaDto() { resultado = -1, resultado_msj = "No se Recepcionó respuesta del proceso." };
+			}
+			return respuesta[0];
+		}
 	}
 }

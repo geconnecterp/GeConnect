@@ -1,6 +1,8 @@
 ﻿let _pedidoLoading = false;
 let orCompteSeleccionado = null;
+let oreCompteSeleccionado = null;
 let pcCompteSeleccionado = null;
+let pceCompteSeleccionado = null;
 let pcCompteSeleccionadoEnConsolidar = null;
 let modoEdicionConteo = false;
 
@@ -212,6 +214,177 @@ $(document).on("click", "#btnHojaRuta", function () {
 $(document).on("click", "#btnHojaProd", function () {
 	ControlaImprimirHojaDeProductoDeOrdenDeReparto();
 });
+
+$(document).on("click", "#btnCF", function () {
+	PonerCFPedidoDeCliente(pcCompteSeleccionado);
+});
+
+$(document).on("click", "#btnPedido", function () {
+	ControlaImprimirPedidoDeLaOrdenDeReparto();
+});
+
+$(document).on("click", "#btnDividir", function () {
+	DividirPedidoDeCliente(pcCompteSeleccionado);
+});
+
+function DividirPedidoDeCliente(pcCompteSeleccionado) {
+	var dividir = $("#txtDividir").val();
+	if (!pcCompteSeleccionado || pcCompteSeleccionado == "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un pedido de cliente.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else if (dividir <= 0) {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un valor válido para dividir el pedido del cliente.", function () {
+			$("#msjModal").modal("hide");
+			$("#txtDividir").trigger("focus");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirMensaje(
+			'CONFIRMAR DIVISIÓN',
+			"¿Desea dividir el pedido de cliente seleccionado en " + dividir + " pedidos?",
+			function (resp) {
+				if (resp === 'SI') {
+					var data = { pc_compte: pcCompteSeleccionado, divide: dividir };
+					PostGen(data, dividirPedidoDeClienteURL, function (obj) {
+						CerrarWaiting();
+						if (obj.error === true || obj.warn === true) {
+							console.error('❌ Response:', obj.mensaje);
+							ControlaMensajeError(
+								'Error al intentar dividir el pedido de cliente: ' +
+								(obj.mensaje || 'Error desconocido')
+							);
+						}
+						else {
+							setTimeout(() => {
+								AbrirMensaje(
+									'CONFIRMACIÓN EXITOSA',
+									'Se ha dividido el pedido de cliente en ' + dividir + ' pedidos.',
+									function () {
+										$('#msjModal').modal('hide');
+										//Actualizar tabla de Ordenes de Reparto
+										CargarPedidosDeLaOrdenesDeReparto(orCompteSeleccionado);
+									},
+									false,
+									['Aceptar'],
+									'success!',
+									null
+								);
+							}, 200);
+						}
+					});
+				}
+				$('#msjModal').modal('hide');
+			},
+			true,
+			['Confirmar', 'Cancelar'],
+			'info!',
+			null
+		);
+	}
+}
+
+function ControlaImprimirPedidoDeLaOrdenDeReparto() {
+	if (!pcCompteSeleccionado || pcCompteSeleccionado == "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un pedido de cliente.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Imprimiendo ...");
+		var tipoReporte = 4;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				CerrarWaiting();
+				ImprimirPedidoDeLaOrdenDeReparto();
+			}
+		});
+	}
+}
+
+function ImprimirPedidoDeLaOrdenDeReparto() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var pc_compte = pcCompteSeleccionado;
+		var data = { pc_compte };
+		cargarReporteEnArre(62, data, "PEDIDO DE CLIENTE", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function PonerCFPedidoDeCliente(pcCompteSeleccionado) {
+	if (!pcCompteSeleccionado || pcCompteSeleccionado == "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un pedido de cliente.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirMensaje(
+			'CONFIRMAR CAMBIO DE ESTADO',
+			"¿Desea poner CF el pedido de cliente?",
+			function (resp) {
+				if (resp === 'SI') {
+					var data = { pc_compte: pcCompteSeleccionado };
+					PostGen(data, pasarPedidoDeClienteACFURL, function (obj) {
+						CerrarWaiting();
+						if (obj.error === true || obj.warn === true) {
+							console.error('❌ Response:', obj.mensaje);
+							ControlaMensajeError(
+								'Error al intentar poner CF el pedido de cliente: ' +
+								(obj.mensaje || 'Error desconocido')
+							);
+						}
+						else {
+							setTimeout(() => {
+								AbrirMensaje(
+									'CONFIRMACIÓN EXITOSA',
+									'Se ha puesto CF el pedido de cliente',
+									function () {
+										$('#msjModal').modal('hide');
+										//Actualizar tabla de Ordenes de Reparto
+										CargarPedidosDeLaOrdenesDeReparto(orCompteSeleccionado);
+									},
+									false,
+									['Aceptar'],
+									'success!',
+									null
+								);
+							}, 200);
+						}
+					});
+				}
+				$('#msjModal').modal('hide');
+			},
+			true,
+			['Confirmar', 'Cancelar'],
+			'info!',
+			null
+		);
+	}
+}
+
+function CargarPedidosDeLaOrdenesDeReparto(orCompte) {
+	AbrirWaiting("Cargando pedidos de cliente de la orden de reparto...");
+	PostGenHtml({ orCompte }, cargarPedidosDeLaOrdenDeRepartoUrl, function (html) {
+		CerrarWaiting();
+		$("#divPedidosDeLaOrdenDeReparto").html(html).collapse("show");
+	});
+}
+
 
 function VolverAEnCursoOrdenDeReparto(orCompteSeleccionado) {
 	if (!orCompteSeleccionado || orCompteSeleccionado == "") {
@@ -2055,6 +2228,7 @@ function configurarEventosSeleccionListaOR() {
 				let orCompte = $this.data("or-compte");
 				let oreId = $this.data("ore-id");
 				orCompteSeleccionado = orCompte;
+				oreCompteSeleccionado = oreId;
 				if (orCompte) {
 					//Poder hacer algo, como por ejemplo, habilitar o no botones dependiendo del estado de la OR
 					CargarPedidosDelReparto(orCompte);
@@ -2079,6 +2253,7 @@ function configurarEventosSeleccionListaPedidosDeOR() {
 				let pcCompte = $this.data("pc-compte");
 				let pceId = $this.data("pce-id");
 				pcCompteSeleccionado = pcCompte;
+				pceCompteSeleccionado = pceId;
 				if (pcCompte) {
 					ConfigurarEstadoDeBotonesEnTabPedidosDeLaOrdenDeReparto(pcCompte, pceId);
 				}
@@ -2093,55 +2268,113 @@ function CargarPedidosDelReparto(orCompte) {
 	PostGenHtml({ orCompte: orCompte }, url, function (html) {
 		$("#divListaPedidosDeCliente").html(html);
 		CerrarWaiting();
-		//Evaluar estados de los botones
+		configurarEventosSeleccionListaPedidosDeOR();
+		ConfigurarEstadoDeBotonesEnTabPedidosDeLaOrdenDeReparto("","")
 	});
 }
 
-function ConfigurarEstadoDeBotonesEnTabPedidosDeLaOrdenDeReparto(pcCompte, pceId) {
+function ConfigurarEstadoDeBotonesEnTabPedidosDeLaOrdenDeReparto(pcCompte, pceCompte) {
+
+	const controls = {
+		btnCF: document.getElementById("btnCF"),
+		btnAsociarNC: document.getElementById("btnAsociarNC"),
+		btnPedido: document.getElementById("btnPedido"),
+		btnDividir: document.getElementById("btnDividir"),
+		inputDividir: document.querySelector(".input-dividir")
+	};
+
+	const setState = (el, enabled) => {
+		if (!el) return;
+		el.disabled = !enabled;
+		el.classList.toggle("disabled", !enabled);
+	};
+
+	// Si no hay pedido seleccionado → todo deshabilitado
+	if (!pcCompte) {
+		Object.values(controls).forEach(ctrl => setState(ctrl, false));
+		return;
+	}
+
+	// Siempre habilitado si hay pedido
+	setState(controls.btnPedido, true);
+
+	// CF habilitado solo si el estado está permitido
 	const estadosPermitidosCF = ["C", "O", "T"];
-	const btnCF = document.getElementById("btnCF");
-	if (btnCF) {
-		if (estadosPermitidosCF.includes(pceId)) {
-			btnCF.disabled = false;
-			btnCF.classList.remove("disabled");
-		} else {
-			btnCF.disabled = true;
-			btnCF.classList.add("disabled");
-		}
-	}
+	setState(controls.btnCF, estadosPermitidosCF.includes(pceCompte));
 
-	const btnAsociarNC = document.getElementById("btnAsociarNC");
-	if (btnAsociarNC) {
-		if (pceId === "F") {
-			btnAsociarNC.disabled = false;
-			btnAsociarNC.classList.remove("disabled");
-		} else {
-			btnAsociarNC.disabled = true;
-			btnAsociarNC.classList.add("disabled");
-		}
-	}
+	// Asociar NC solo si estado = F
+	setState(controls.btnAsociarNC, pceCompte === "F");
 
-	const btnDividir = document.getElementById("btnDividir");
-	const inputDividir = document.querySelector(".input-dividir");
-	if (btnDividir) {
-		if (pceId === "T") {
-			btnDividir.disabled = false;
-			btnDividir.classList.remove("disabled");
-			if (inputDividir) {
-				inputDividir.disabled = false;
-				inputDividir.classList.remove("disabled");
-			}
-		} else {
-			btnDividir.disabled = true;
-			btnDividir.classList.add("disabled");
-			if (inputDividir) {
-				inputDividir.disabled = true;
-				inputDividir.classList.add("disabled");
-			}
-
-		}
-	}
+	// Dividir solo si estado = T
+	const dividirHabilitado = pceCompte === "T";
+	setState(controls.btnDividir, dividirHabilitado);
+	setState(controls.inputDividir, dividirHabilitado);
 }
+
+
+//function ConfigurarEstadoDeBotonesEnTabPedidosDeLaOrdenDeReparto(pcCompte, pceCompte) {
+//	const btnCF = document.getElementById("btnCF");
+//	const btnAsociarNC = document.getElementById("btnAsociarNC");
+//	const btnPedido = document.getElementById("btnPedido");
+//	const btnDividir = document.getElementById("btnDividir");
+//	const txtDividir = document.querySelector(".input-dividir");
+//	if (pcCompte == "") {
+//		btnCF.disabled = true;
+//		btnCF.classList.add("disabled");
+//		btnAsociarNC.disabled = true;
+//		btnAsociarNC.classList.add("disabled");
+//		btnPedido.disabled = true;
+//		btnPedido.classList.add("disabled");
+//		txtDividir.disabled = true;
+//		txtDividir.classList.add("disabled");
+//		btnDividir.disabled = true;
+//		btnDividir.classList.add("disabled");
+//	}
+//	else {
+//		btnPedido.disabled = false;
+//		btnPedido.classList.remove("disabled");
+//		const estadosPermitidosCF = ["C", "O", "T"];
+//		if (btnCF) {
+//			if (estadosPermitidosCF.includes(pceCompte)) {
+//				btnCF.disabled = false;
+//				btnCF.classList.remove("disabled");
+//			} else {
+//				btnCF.disabled = true;
+//				btnCF.classList.add("disabled");
+//			}
+//		}
+//		const btnAsociarNC = document.getElementById("btnAsociarNC");
+//		if (btnAsociarNC) {
+//			if (pceCompte === "F") {
+//				btnAsociarNC.disabled = false;
+//				btnAsociarNC.classList.remove("disabled");
+//			} else {
+//				btnAsociarNC.disabled = true;
+//				btnAsociarNC.classList.add("disabled");
+//			}
+//		}
+//		const btnDividir = document.getElementById("btnDividir");
+//		const inputDividir = document.querySelector(".input-dividir");
+//		if (btnDividir) {
+//			if (pceCompte === "T") {
+//				btnDividir.disabled = false;
+//				btnDividir.classList.remove("disabled");
+//				if (inputDividir) {
+//					inputDividir.disabled = false;
+//					inputDividir.classList.remove("disabled");
+//				}
+//			} else {
+//				btnDividir.disabled = true;
+//				btnDividir.classList.add("disabled");
+//				if (inputDividir) {
+//					inputDividir.disabled = true;
+//					inputDividir.classList.add("disabled");
+//				}
+
+//			}
+//		}
+//	}
+//}
 
 function ConfigurarEstadoDeBotonesEnTabOrdenDeReparto(orCompte, oreId) {
 	// Estados permitidos para modificar

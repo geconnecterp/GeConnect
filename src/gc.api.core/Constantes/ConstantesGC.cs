@@ -563,6 +563,8 @@
 			public const string SP_PC_DATOS = "SPGECO_PC_Datos";
 			public const string SP_PC_PRODUCTOS = "SPGECO_PC_p";
 			public const string SP_PC_CONFIRMA = "SPGECO_PC_Confirma";
+			public const string SP_PC_CF = "SPGECO_PC_CF";
+			public const string SP_PC_DIVIDE = "SPGECO_PC_Divide";
 			#endregion
 
 			#region Orden de Reparto

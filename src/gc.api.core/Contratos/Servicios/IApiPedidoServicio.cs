@@ -9,5 +9,7 @@ namespace gc.api.core.Contratos.Servicios
 		List<PedidoDto> ObtenerPedido(string pc_compte);
 		List<PedidoProductoDto> ObtenerDetalleDePedido(string pc_compte);
 		RespuestaDto ConfirmarPedido(ConfirmarPedidoRequest request);
+		RespuestaDto PasarPedidoACF(PasarPedidoACFRequest req);
+		RespuestaDto DividePedidoDeCliente(DividePedidoDeClienteRequest req);
 	}
 }

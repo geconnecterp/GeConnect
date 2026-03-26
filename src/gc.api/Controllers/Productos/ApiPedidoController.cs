@@ -110,6 +110,28 @@ namespace gc.api.Controllers.Productos
 			return Ok(new ApiResponse<RespuestaDto>(respuesta));
 		}
 
+		[HttpPost("pedido/pasar-cf")]
+		public IActionResult PasarPedidoACF(PasarPedidoACFRequest req)
+		{
+			if (req == null)
+			{
+				return BadRequest("No se recepcionó la información para pasar a cf el pedido.");
+			}
+			var respuesta = _pedidoSrv.PasarPedidoACF(req);
+			return Ok(new ApiResponse<RespuestaDto>(respuesta));
+		}
+
+		[HttpPost("pedido/divide")]
+		public IActionResult DividePedidoDeCliente(DividePedidoDeClienteRequest req)
+		{
+			if (req == null)
+			{
+				return BadRequest("No se recepcionó la información para dividir el pedido.");
+			}
+			var respuesta = _pedidoSrv.DividePedidoDeCliente(req);
+			return Ok(new ApiResponse<RespuestaDto>(respuesta));
+		}
+
 		// Construye metadata del grid en base al primer elemento (evita recorrer la colección)
 		private static MetadataGrid? BuildMetadata(List<PedidoListDto>? lista, QueryFilters filtro)
 		{

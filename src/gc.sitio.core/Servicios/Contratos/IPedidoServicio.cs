@@ -10,5 +10,7 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<RespuestaGenerica<PedidoDto>> ObtenerPedido(string pcCompte, string token);
 		Task<RespuestaGenerica<PedidoProductoDto>> ObtenerDetalleDePedido(string pcCompte, string token);
 		Task<RespuestaGenerica<RespuestaDto>> ConfirmarPedido(ConfirmarPedidoRequest req, string token);
+		Task<RespuestaGenerica<RespuestaDto>> PasarPedidoACF(PasarPedidoACFRequest req, string token);
+		Task<RespuestaGenerica<RespuestaDto>> DividePedidoDeCliente(DividePedidoDeClienteRequest req, string token);
 	}
 }
