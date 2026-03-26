@@ -16,5 +16,6 @@ namespace gc.sitio.core.Servicios.Contratos.DocManager
         List<MenuRoot> MarcarConsultaRealizada(List<MenuRoot> reportes, AppReportes consulta, int orden,string archB64,string tipoDato);
         Task<RespuestaReportDto> ObtenerPdfDesdeAPI(ReporteSolicitudDto reporteSolicitud, string tokenCookie);
         Task<RespuestaReportDto> ObtenerRepoDesdeAPI(ReporteSolicitudDto reporteSolicitud, string tokenCookie);
+
     }
 }

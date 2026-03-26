@@ -11,6 +11,13 @@
 
         public async Task InvokeAsync(HttpContext context)
         {
+            //// ✅ PERMITIR acceso público a /docmanager SIN autenticación
+            //if (context.Request.Path.StartsWithSegments("/docmanager", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    await _next(context);
+            //    return;
+            //}
+
             // Si la ruta es para login o áreas públicas, permitimos el acceso
             if (context.Request.Path.StartsWithSegments("/seguridad/Token/Login") ||
                 context.Request.Path.StartsWithSegments("/css") ||

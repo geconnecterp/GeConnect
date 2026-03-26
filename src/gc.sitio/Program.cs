@@ -1,4 +1,4 @@
-using gc.sitio.core.Extensions;
+﻿using gc.sitio.core.Extensions;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Globalization;
@@ -23,11 +23,12 @@ cultureInfo.DateTimeFormat.ShortDatePattern = "dd/MM/yyyy";
 CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
 CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
-// Obtener PathBase desde configuraci�n
+// Obtener PathBase desde configuración
 var appSettings = builder.Configuration.GetSection("AppSettings").Get<AppSettings>();
 var pathBase = appSettings?.PathBase ?? string.Empty;
 
-builder.Services.Configure<CookieAuthenticationOptions>(opt => {
+builder.Services.Configure<CookieAuthenticationOptions>(opt =>
+{
     opt.LoginPath = new PathString($"{pathBase}/seguridad/token/login");
 });
 
@@ -43,7 +44,17 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddServicios();
 
-
+// ✅ AGREGADO: Configurar política CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowEmailClients",
+        policy =>
+        {
+            policy.AllowAnyOrigin()  // Permitir cualquier origen (para clientes de email)
+                  .AllowAnyMethod()  // Permitir GET, POST, etc.
+                  .AllowAnyHeader(); // Permitir cualquier header
+        });
+});
 
 builder.Services.AddRazorPages();
 builder.Services.AddHttpClient();
@@ -66,7 +77,7 @@ builder.Services.AddSession(opt =>
 // Add services to the container.
 builder.Services.AddControllersWithViews(options =>
 {
-   //options.Filters.Add<AuthenticationCheckAttribute>();
+    //options.Filters.Add<AuthenticationCheckAttribute>();
 });
 
 builder.Services.AddMvc();
@@ -77,9 +88,9 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
-    
+
 }
-else 
+else
 {
     app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
@@ -90,23 +101,35 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseCors();
 app.UseSession();
 
-//estas dos llamadas permite establecer la prioridad de HttpContext.User  y ejecutar la autorizaci�n para las solicitudes
+//estas dos llamadas permite establecer la prioridad de HttpContext.User  y ejecutar la autorización para las solicitudes
 //quien sos??
 app.UseAuthentication();
 //se te permite algo??? estas autorizado?
 app.UseAuthorization();
 
-// En Program.cs, despu�s de app.UseAuthentication() y app.UseAuthorization()
+// En Program.cs, después de app.UseAuthentication() y app.UseAuthorization()
 app.UseSessionExpirationCheck(); // Agregar antes de app.UseMiddleware<AuthenticationCheckMiddleware>();
 app.UseMiddleware<AuthenticationCheckMiddleware>();
 
 
-app.UseEndpoints(endpoints => {
-    _ = endpoints.MapControllerRoute(name: "areas", pattern: "{area:exists}/{controller=Home}/{action=index}/{id?}");
-    _ = endpoints.MapControllerRoute(name:"default",pattern: "{controller=Home}/{action=Index}/{id?}");
-} );
+app.UseEndpoints(endpoints =>
+{
+    _ = endpoints.MapControllerRoute(
+        name: "docmanager",
+        pattern: "docmanager/{parametros?}",
+        defaults: new { controller = "DocMg", action = "Index" });
+
+    _ = endpoints.MapControllerRoute(
+        name: "areas", 
+        pattern: "{area:exists}/{controller=Home}/{action=index}/{id?}");
+
+    _ = endpoints.MapControllerRoute(
+        name: "default", 
+        pattern: "{controller=Home}/{action=Index}/{id?}");
+});
 
 //app.MapControllerRoute(
 //    name: "default",

@@ -25,6 +25,7 @@
     <Content Remove="Areas\Asientos\Views\AsientoDefinitivo\_asiento.cshtml" />
     <Content Remove="Areas\Asientos\Views\AsientoDefinitivo\_filtroAsiento.cshtml" />
     <Content Remove="log4net.config" />
+    <Content Remove="wwwroot\js\app\areas\docmngr\gestorDocumental.js" />
   </ItemGroup>
 
   <ItemGroup>

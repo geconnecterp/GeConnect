@@ -137,7 +137,9 @@ namespace gc.api.infra.Extensions
             services.AddScoped<IApiDiscontinuoServicio, ApiDiscontinuoServicio>();
 
             services.AddScoped<IReportService, ReportService>();
-			services.AddScoped<IOrdenDePagoServicio, OrdenDePagoServicio>();
+            services.AddScoped<ILinkServicio, LinkServicio>();
+
+            services.AddScoped<IOrdenDePagoServicio, OrdenDePagoServicio>();
 			//De Reportes
 
 			services.AddScoped<IReportService, ReportService>();

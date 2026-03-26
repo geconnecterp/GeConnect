@@ -114,6 +114,7 @@ namespace gc.sitio.core.Extensions
 			services.AddScoped<IPrecioListaServicio, PrecioListaServicio>();
 
             services.AddScoped<IORServicio, ORServicio>();
+			services.AddScoped<IDocMgServicio, DocMgServicio>();
 
             return services;
         }
