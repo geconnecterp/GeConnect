@@ -5,7 +5,30 @@
     var alt = true;
     string clase = string.Empty;
 }
+<style>
+    .cell-zero {
+        background-color: #b6f7b6 !important;
+        color: #0f4d0f !important;
+        font-weight: bold;
+        text-align: center;
+    }
 
+    /* DIF > 0 → celeste fuerte */
+    .cell-up {
+        background-color: #79bff2 !important; /* celeste intenso */
+        color: #003B57 !important; /* azul oscuro para contraste */
+        font-weight: bold;
+        text-align: center;
+    }
+
+    /* DIF < 0 → rojo */
+    .cell-down {
+        background-color: #ffb3b3 !important;
+        color: #7a0000 !important;
+        font-weight: bold;
+        text-align: center;
+    }
+</style>
 <div class="table-responsive table-wrapper-400">
     <table class="table table-sm table-hover mb-0 table-golden" id="tbConsolidarConteos">
         <thead class="sticky-top table-golden-header-compact">
@@ -56,7 +79,14 @@
                         <td class="text-end">@GridHelper.FormatearDato(item.pcd_pedida, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
                         <td class="text-end">@GridHelper.FormatearDato(item.cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
                         <td class="text-end">@GridHelper.FormatearDato(item.cantidad_ctl, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-                        <td class="text-end">@dif</td>
+                        <td class="text-end
+                            @(dif > 0
+                                ? "cell-up"
+                                : (dif < 0
+                                    ? "cell-down"
+                                    : "cell-zero"))">
+                            @GridHelper.FormatearDato(dif, GridHelper.FormatDato.Monto, item.PermiteDecimales)
+                        </td>
                     </tr>
                 }
             }

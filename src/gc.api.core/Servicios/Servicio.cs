@@ -585,7 +585,7 @@
 			return tabla;
 		}
 
-		protected PdfPTable GeneraCabeceraPDF2_NoFecha(ReporteSolicitudDto solicitud, Font chico, Font titulo, Image? logo, EmpresaGeco _empresaGeco)
+		protected PdfPTable GeneraCabeceraPDF2_NoFecha(ReporteSolicitudDto solicitud, Font chico, Font titulo, Font tituloBig, Image? logo, EmpresaGeco _empresaGeco)
 		{
 			PdfPTable tabla = HelperPdf.GeneraTabla(3, [10f, 20f, 70f], 100, 10, 20);
 
@@ -593,7 +593,7 @@
 			PdfPCell celdaLogo;
 			if (logo == null)
 			{
-				celdaLogo = new PdfPCell(new Paragraph("CA", titulo));
+				celdaLogo = new PdfPCell(new Paragraph("CA", tituloBig));
 			}
 			else
 			{
@@ -620,7 +620,7 @@
 			tabla.AddCell(celdaSubTabla);
 
 			// Columna 3: Título del informe
-			PdfPCell celdaTitulo = new PdfPCell(new Phrase(solicitud.Titulo, titulo))
+			PdfPCell celdaTitulo = new PdfPCell(new Phrase(solicitud.Titulo, tituloBig))
 			{
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_CENTER,
@@ -631,7 +631,7 @@
 			if (!string.IsNullOrEmpty(solicitud.SubTitulo))
 			{
 				// Título del informe
-				celdaSubTitulo = new PdfPCell(new Phrase(solicitud.SubTitulo, titulo))
+				celdaSubTitulo = new PdfPCell(new Paragraph(solicitud.SubTitulo, titulo))
 				{
 					Border = Rectangle.NO_BORDER,
 					HorizontalAlignment = Element.ALIGN_CENTER,

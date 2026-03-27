@@ -4,15 +4,38 @@
 	string clase = string.Empty;
 }
 <style>
-	.table-golden td.cell-up {
-		background-color: #b6f7b6 !important; /* verde */
+	/* .table-golden td.cell-up {
+		background-color: #b6f7b6 !important;
 		color: #0f4d0f !important;
 		font-weight: bold;
 		text-align: center;
 	}
 
 	.table-golden td.cell-down {
-		background-color: #ffb3b3 !important; /* rojo */
+		background-color: #ffb3b3 !important;
+		color: #7a0000 !important;
+		font-weight: bold;
+		text-align: center;
+	} */
+	/* DIF = 0 → verde */
+	.cell-zero {
+		background-color: #b6f7b6 !important;
+		color: #0f4d0f !important;
+		font-weight: bold;
+		text-align: center;
+	}
+
+	/* DIF > 0 → celeste fuerte */
+	.cell-up {
+		background-color: #79bff2 !important; /* celeste intenso */
+		color: #003B57 !important; /* azul oscuro para contraste */
+		font-weight: bold;
+		text-align: center;
+	}
+
+	/* DIF  */
+	.cell-down {
+		background-color: #ffb3b3 !important;
 		color: #7a0000 !important;
 		font-weight: bold;
 		text-align: center;
@@ -60,7 +83,12 @@
 						<td>@item.pcd_origen</td>
 						<td class="text-end">@GridHelper.FormatearDato(item.pcd_pedida, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 						<td class="text-end">@GridHelper.FormatearDato(item.cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-						<td class="text-end @(dif > 0 ? "cell-up" : (dif < 0 ? "cell-down" : ""))">
+						<td class="text-end
+							@(dif > 0
+								? "cell-up"
+								: (dif < 0
+									? "cell-down"
+									: "cell-zero"))">
 							@GridHelper.FormatearDato(dif, GridHelper.FormatDato.Monto, item.PermiteDecimales)
 						</td>
 					</tr>

@@ -1108,12 +1108,15 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			if (listaIdsPedidos == null || listaIdsPedidos.Count <= 0)
 				return;
 			var listaTemp = new List<AConsolidarPedidoClienteDetalleDto>();
-			foreach (var item in listaIdsPedidos)
-			{
-				var itemsDetalle = _ordenDeRepartoServicio.AConsolidarPedidoClienteDetalle(new AConsolidarPedidoClienteDetalleRequest() { or_compte = orCompte, pc_compte = item, p_id = "%" }, TokenCookie).Result.ListaEntidad;
-				if (itemsDetalle != null && itemsDetalle.Count > 0)
-					listaTemp.AddRange(itemsDetalle);
-			}
+			//Dejo este codigo comentado por las dudas.
+			//foreach (var item in listaIdsPedidos)
+			//{
+			//	var itemsDetalle = _ordenDeRepartoServicio.AConsolidarPedidoClienteDetalle(new AConsolidarPedidoClienteDetalleRequest() { or_compte = orCompte, pc_compte = item, p_id = "%" }, TokenCookie).Result.ListaEntidad;
+			//	if (itemsDetalle != null && itemsDetalle.Count > 0)
+			//		listaTemp.AddRange(itemsDetalle);
+			//}
+			var itemsDetalle = _ordenDeRepartoServicio.AConsolidarPedidoClienteDetalle(new AConsolidarPedidoClienteDetalleRequest() { or_compte = orCompte, pc_compte = "%", p_id = "%" }, TokenCookie).Result.ListaEntidad;
+			listaTemp.AddRange(itemsDetalle ?? []);
 			AConsolidarPedidoClienteDetalleLista = listaTemp;
 		}
 

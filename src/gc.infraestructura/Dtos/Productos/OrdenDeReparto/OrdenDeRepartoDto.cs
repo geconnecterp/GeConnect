@@ -22,6 +22,8 @@ namespace gc.infraestructura.Dtos.Productos.OrdenDeReparto
 		public string ore_desc { get; set; } = string.Empty;
 		public string rp_id { get; set; } = string.Empty;
 		public string rp_nombre { get; set; } = string.Empty;
+		public int cantidad_de_pc { get; set; } = 0;
+
 	}
 
 	public class PedidoEnOrdenDeRepartoDto : OrdenDeRepartoDto

@@ -4,21 +4,60 @@
 	string clase = string.Empty;
 }
 <style>
+	.table-wrapper-400-75 {
+		max-height: 400px;
+		max-width: 75%;
+		overflow: auto;
+	}
+
 	#tbCambioDePrecio thead th {
 		text-align: center !important;
 		vertical-align: middle !important;
 		white-space: nowrap;
 	}
+
+	.col-precio {
+		width: 12ch;
+		min-width: 12ch;
+		max-width: 12ch;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.col-desc {
+		position: relative;
+		padding-right: 20px; /* espacio para el icono */
+		white-space: nowrap;
+	}
+
+	.icon-precio-up,
+	.icon-precio-down {
+		position: absolute;
+		right: 4px;
+		top: 50%;
+		transform: translateY(-50%);
+		font-size: 1rem;
+	}
+
+	.icon-precio-up {
+		color: #28a745; /* verde */
+	}
+
+	.icon-precio-down {
+		color: #dc3545; /* rojo */
+	}
+
 </style>
-<div class="table-responsive table-wrapper-400">
+<div class="table-responsive table-wrapper-400-75">
 	<table class="table table-sm table-hover mb-0 table-golden" id="tbCambioDePrecio">
 		<thead class="sticky-top table-golden-header-compact">
 			<tr class="header">
-				<th>ID</th>
-				<th>Descripción</th>
-				<th>ID Prov.</th>
-				<th>Precio Pedido</th>
-				<th>Precio Distrib.</th>
+				<th class="text-center">ID</th>
+				<th class="text-center">Descripción</th>
+				<th class="text-center">ID Prov.</th>
+				<th class="text-center col-precio">Precio Pedido</th>
+				<th class="text-center col-precio">Precio Distrib.</th>
 				<th class="text-center">
 					<input type="checkbox" id="chkSeleccionGlobal" />
 					Actu.
@@ -44,15 +83,26 @@
 					<tr class="@clase row-cambio-precio"
 						data-p-id="@item.p_id">
 						<td class="text-center">@item.p_id</td>
-						<td>@item.p_desc</td>
+						<td class="col-desc">
+							<span class="desc-text">@item.p_desc</span>
+							@if (item.pcd_pvta > item.p_vta_ctl)
+							{
+								<i class="bx bx-up-arrow-alt icon-precio-up"></i>
+							}
+							else if (item.pcd_pvta < item.p_vta_ctl)
+							{
+								<i class="bx bx-down-arrow-alt icon-precio-down"></i>
+							}
+						</td>
 						<td class="text-center">@item.p_id_prov</td>
-						<td class="text-end">@GridHelper.FormatearPrecio(item.pcd_pvta, TipoPrecio.Venta)</td>
-						<td class="text-end">@GridHelper.FormatearPrecio(item.p_vta_ctl, TipoPrecio.Venta)</td>
+						<td class="text-end col-precio">@GridHelper.FormatearPrecio(item.pcd_pvta, TipoPrecio.Venta)</td>
+						<td class="text-end col-precio">@GridHelper.FormatearPrecio(item.p_vta_ctl, TipoPrecio.Venta)</td>
 						<td class="text-center">
 							<input type="checkbox"
 								   class="chk-actualizar-precio"
 								   data-p-id="@item.p_id"
-								   @(item.SeleccionaItem ? "checked" : "") />
+								   @(item.SeleccionaItem ? "checked" : "")
+								   @(item.pcd_pvta == item.p_vta_ctl ? "disabled" : "") />
 						</td>
 					</tr>
 				}

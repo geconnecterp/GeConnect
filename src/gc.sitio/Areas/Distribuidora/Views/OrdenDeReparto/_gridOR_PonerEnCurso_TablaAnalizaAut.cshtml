@@ -2,110 +2,128 @@
 @{
 }
 <style>
-    .th-descripcion {
-        position: relative;
-        text-align: center;
-        vertical-align: middle;
-        width: 25%;
-    }
+	.th-descripcion {
+		position: relative;
+		text-align: center;
+		vertical-align: middle;
+		width: 25%;
+	}
 
-        .th-descripcion .th-title {
-            display: inline-block;
-        }
+		.th-descripcion .th-title {
+			display: inline-block;
+		}
 
-    .btn-info-producto {
-        position: absolute;
-        right: 4px; /* margen a la derecha */
-        top: 50%;
-        transform: translateY(-50%);
-        background: transparent !important;
-        border: none !important;
-        padding: 0;
-        color: #fff; /* o el color del header */
-        cursor: pointer;
-    }
+	.btn-info-producto {
+		position: absolute;
+		right: 4px; /* margen a la derecha */
+		top: 50%;
+		transform: translateY(-50%);
+		background: transparent !important;
+		border: none !important;
+		padding: 0;
+		color: #fff; /* o el color del header */
+		cursor: pointer;
+	}
 
-        .btn-info-producto i {
-            font-size: 1rem;
-            line-height: 1;
-        }
+		.btn-info-producto i {
+			font-size: 1rem;
+			line-height: 1;
+		}
 
-    .dif-positivo {
-        background-color: #ffb3b3 !important; /* rojo suave */
-        font-weight: bold;
-    }
+	.dif-positivo {
+		background-color: #ffb3b3 !important; /* rojo suave */
+		font-weight: bold;
+	}
 
-    .dif-negativo {
-        background-color: #ffe0b3 !important; /* naranja suave */
-        font-weight: bold;
-    }
+	.dif-negativo {
+		background-color: #ffe0b3 !important; /* naranja suave */
+		font-weight: bold;
+	}
+
+	.col-num {
+		width: 7ch; /* ancho equivalente a 7 caracteres */
+		min-width: 7ch;
+		max-width: 7ch;
+		white-space: nowrap;
+		text-align: right;
+		overflow: hidden;
+	}
+
+	.col-nota {
+		width: 25ch;
+		min-width: 25ch;
+		max-width: 25ch;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 
 </style>
 <div class="table-responsive table-wrapper-400">
 	<!-- TABLA VACÍA INICIAL -->
-    <table class="table table-sm table-hover mb-0 table-golden" id="tbGrillaAnalizaAut">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbGrillaAnalizaAut">
 		<thead class="sticky-top table-golden-header-compact">
 			<tr class="header">
-				<th>ID</th>
-                <th class="th-descripcion">
-                    <span class="th-title">Descripción</span>
-                    <button type="button"
-                            class="btn btn-info-producto"
-                            data-action="info-producto"
-                            title="Abrir info de producto">
-                        <i class="bx bx-info-circle"></i>
-                    </button>
-                </th>
-				<th>ID Prov</th>
-				<th>PC</th>
-				<th>STK Suc</th>
-				<th>Pedido</th>
-				<th>A Enviar</th>
-				<th>Dif.</th>
-				<th>BOX</th>
-				<th>A Enviar BOX</th>
-				<th>Nota</th>
+				<th class="text-center">ID</th>
+				<th class="th-descripcion">
+					<span class="th-title">Descripción</span>
+					<button type="button"
+							class="btn btn-info-producto"
+							data-action="info-producto"
+							title="Abrir info de producto">
+						<i class="bx bx-info-circle"></i>
+					</button>
+				</th>
+				<th class="text-center">ID Prov</th>
+				<th class="text-center">PC</th>
+				<th class="text-center col-num">STK Suc</th>
+				<th class="text-center col-num">Pedido</th>
+				<th class="text-center col-num">A Enviar</th>
+				<th class="text-center col-num">Dif.</th>
+				<th class="text-center">BOX</th>
+				<th class="text-center col-num">A Enviar BOX</th>
+				<th class="text-center col-nota">Nota</th>
 			</tr>
 		</thead>
 		<tbody>
-            @if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
-            {
-                <tr class="fila-vacia">
-                    <td colspan="11" class="text-center text-muted py-2">
-                        <i class="bx bx-info-circle me-1"></i>
-                        No hay datos para mostrar.
-                    </td>
-                </tr>
-            }
-            else
-            {
-                foreach (var item in Model.ListaDatos)
-                {
-                    var dif = @item.a_enviar - @item.pedido;
-                    var claseDif = dif > 0 ? "dif-positivo" : (dif < 0 ? "dif-negativo" : "");
+			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+			{
+				<tr class="fila-vacia">
+					<td colspan="11" class="text-center text-muted py-2">
+						<i class="bx bx-info-circle me-1"></i>
+						No hay datos para mostrar.
+					</td>
+				</tr>
+			}
+			else
+			{
+				foreach (var item in Model.ListaDatos)
+				{
+					var dif = @item.a_enviar - @item.pedido;
+					var claseDif = dif > 0 ? "dif-positivo" : (dif < 0 ? "dif-negativo" : "");
 
-                    <tr class="row-analisis"
-                        data-p-id="@item.p_id"
-                        data-pc-compte="@item.pc_compte"
-                        data-depo-id="@item.depo_id"
-                        data-box-id="@item.box_id"
-                        data-sustituto="@item.p_sustituto"
-                        data-p-id-sustituto="@item.p_id_sustituto">
+					<tr class="row-analisis"
+						data-p-id="@item.p_id"
+						data-pc-compte="@item.pc_compte"
+						data-depo-id="@item.depo_id"
+						data-box-id="@item.box_id"
+						data-sustituto="@item.p_sustituto"
+						data-p-id-sustituto="@item.p_id_sustituto">
 
-                        <td>@item.p_id</td>
-                        <td>@item.p_desc</td>
-                        <td>@item.p_id_prov</td>
-                        <td>@item.pc_compte</td>
-                        <td class="text-end">@GridHelper.FormatearDato(item.stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-                        <td class="text-end">@GridHelper.FormatearDato(item.pedido, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-                        <td class="text-end">@GridHelper.FormatearDato(item.a_enviar, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-                        <td class="text-end @claseDif">@GridHelper.FormatearDato(dif, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-                        <td>@item.box_id</td>
-                        <td class="text-end">@GridHelper.FormatearDato(item.a_enviar_box, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-                        <td class="text-end">@item.nota</td>
-                    </tr>
-                }
-            }
+						<td class="text-center">@item.p_id</td>
+						<td>@item.p_desc</td>
+						<td class="text-center">@item.p_id_prov</td>
+						<td class="text-center">@item.pc_compte</td>
+						<td class="text-end col-num">@GridHelper.FormatearDato(item.stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="text-end col-num">@GridHelper.FormatearDato(item.pedido, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="text-end col-num">@GridHelper.FormatearDato(item.a_enviar, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="text-end col-num @claseDif">@GridHelper.FormatearDato(dif, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="text-center">@item.box_id</td>
+						<td class="text-end col-num">@GridHelper.FormatearDato(item.a_enviar_box, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="text-start col-nota">@item.nota</td>
+					</tr>
+				}
+			}
 
 		</tbody>
 	</table>

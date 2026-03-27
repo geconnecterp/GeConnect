@@ -80,11 +80,12 @@ namespace gc.api.core.Servicios.Reportes
 				var normal = HelperPdf.FontNormalPredeterminado();
 				var normalBold = HelperPdf.FontNormalPredeterminado(true);
 				var titulo = HelperPdf.FontTituloPredeterminado();
+				var tituloBig = HelperPdf.FontTituloBigBoldPredeterminado();
 				var subtitulo = HelperPdf.FontSubtituloPredeterminado();
 
 				#region Generación de Cabecera               
 
-				PdfPTable tabla = GeneraCabeceraPDF2_NoFecha(solicitud, chico, titulo, logo, _empresaGeco);
+				PdfPTable tabla = GeneraCabeceraPDF2_NoFecha(solicitud, chico, titulo, tituloBig, logo, _empresaGeco);
 
 				// Convertir la tabla en un Phrase
 				Phrase phrase = [tabla];
@@ -132,7 +133,7 @@ namespace gc.api.core.Servicios.Reportes
 
 				var listaTemp = _apiOrdenReparto.ObtenerPedidosEnOrdenDeReparto(or_compte);
 				var item = listaTemp.First();
-				subtit = $"Repartidor: {item.rp_nombre} Fecha: {item.or_fecha:dd/MM/yyyy} \t Obs: {item.or_obs}";
+				subtit = $"Repartidor: {item.rp_nombre} Fecha: {item.or_fecha:dd/MM/yyyy}\nObs: {item.or_obs}";
 				return listaTemp;
 			}
 			catch (Exception)

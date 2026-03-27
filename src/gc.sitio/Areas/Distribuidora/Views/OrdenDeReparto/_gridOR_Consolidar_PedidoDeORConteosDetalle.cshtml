@@ -36,6 +36,28 @@
         padding-bottom: 2px !important;
     }
 
+    .cell-zero {
+        background-color: #b6f7b6 !important;
+        color: #0f4d0f !important;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    /* DIF > 0 → celeste fuerte */
+    .cell-up {
+        background-color: #79bff2 !important; /* celeste intenso */
+        color: #003B57 !important; /* azul oscuro para contraste */
+        font-weight: bold;
+        text-align: center;
+    }
+
+    /* DIF */
+    .cell-down {
+        background-color: #ffb3b3 !important;
+        color: #7a0000 !important;
+        font-weight: bold;
+        text-align: center;
+    }
 </style>
 <div class="table-responsive table-wrapper-400">
     <table class="table table-sm table-hover mb-0 table-golden" id="tbConsolidarDetalleConteo">
@@ -85,7 +107,14 @@
                                    data-permite-decimales="@(item.PermiteDecimales.ToString().ToLower())"
                                    disabled />
                         </td>
-                        <td class="text-end celda-dif @claseDif">@GridHelper.FormatearDato(dif, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+                        <td class="text-end 
+                            @(dif > 0
+                                ? "cell-up"
+                                : (dif < 0
+                                    ? "cell-down"
+                                    : "cell-zero"))">
+                            @GridHelper.FormatearDato(dif, GridHelper.FormatDato.Monto, item.PermiteDecimales)
+                        </td>
                     </tr>
                 }
             }

@@ -188,25 +188,6 @@ function initPeriodoFechas() {
     $("#chkDesdeHasta")
         .prop("checked", true)
         .prop("disabled", true);
-
-    //const hoy = new Date();
-    //const base = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
-    //const hasta = new Date(base);
-    //hasta.setDate(hasta.getDate() + 30);
-
-    //const format = (d) => {
-    //    const y = d.getFullYear();
-    //    const m = String(d.getMonth() + 1).padStart(2, '0');
-    //    const day = String(d.getDate()).padStart(2, '0');
-    //    return `${y}-${m}-${day}`;
-    //};
-
-    //$("#Desde").val(format(base));
-    //$("#Hasta").val(format(hasta));
-
-    //const enabled = $("#chkDesdeHasta").is(":checked");
-    //$("#Desde").prop("disabled", !enabled);
-    //$("#Hasta").prop("disabled", !enabled);
 }
 
 function obtenerUltimoLunes() {

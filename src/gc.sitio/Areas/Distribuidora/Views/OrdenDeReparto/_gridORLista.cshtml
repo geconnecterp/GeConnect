@@ -17,6 +17,7 @@
 								<th class="text-center th-compact">Estado</th>
 								<th class="text-center th-compact">Generado</th>
 								<th class="text-center th-compact">Repartidor</th>
+								<th class="text-center th-compact">Observaciones</th>
 								<th class="text-center th-compact" title="Cantidad de Pedidos">Cant. Ped.</th>
 							</tr>
 						</thead>
@@ -41,8 +42,11 @@
 										<td>
 											@item.rp_nombre
 										</td>
+										<td>
+											@item.or_obs
+										</td>
 										<td class="text-center">
-											0
+											@item.cantidad_de_pc
 										</td>
 									</tr>
 								}

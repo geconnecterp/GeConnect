@@ -20,20 +20,17 @@ function InicializaPantallaOrdenDeReparto() {
 
 	initPeriodoFechas();
 
+	$("#chkDesdeHasta")
+		.prop("checked", true)
+		.prop("disabled", true);
+
+	$("#Desde").prop("disabled", false);
+	$("#Hasta").prop("disabled", false);
+
 	// Etiquetas de filtros
 	$("#lbChkDesdeHasta").text("Periodo");
 	$("#lbEstados").text("Estado"); // Estados
 	$("#lbRepartidores").text("Repartidores"); // Repartidores
-
-	$("#chkDesdeHasta").on("click", function () {
-		if ($("#chkDesdeHasta").is(":checked")) {
-			$("#Desde").prop("disabled", false);
-			$("#Hasta").prop("disabled", false);
-		} else {
-			$("#Desde").prop("disabled", true);
-			$("#Hasta").prop("disabled", true);
-		}
-	});
 
 	$("#chkEstados").on("click", function () {
 		if ($("#chkEstados").is(":checked")) {
@@ -72,24 +69,39 @@ function ReseteoDeReportes() {
 }
 
 function initPeriodoFechas() {
+	// Último lunes pasado
+	const desde = obtenerUltimoLunes();
+
+	// Hoy
+	const hasta = new Date();
+
+	// Formatear YYYY-MM-DD
+	const fmt = d => d.toISOString().split("T")[0];
+
+	$("#Desde").val(fmt(desde));
+	$("#Hasta").val(fmt(hasta));
+
+	// Siempre habilitadas
+	$("#Desde").prop("disabled", false);
+	$("#Hasta").prop("disabled", false);
+
+	// Checkbox siempre marcado y deshabilitado
+	$("#chkDesdeHasta")
+		.prop("checked", true)
+		.prop("disabled", true);
+}
+
+function obtenerUltimoLunes() {
 	const hoy = new Date();
-	const base = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
-	const hasta = new Date(base);
-	hasta.setDate(hasta.getDate() + 30);
+	const diaSemana = hoy.getDay(); // 0=Domingo ... 1=Lunes
 
-	const format = (d) => {
-		const y = d.getFullYear();
-		const m = String(d.getMonth() + 1).padStart(2, '0');
-		const day = String(d.getDate()).padStart(2, '0');
-		return `${y}-${m}-${day}`;
-	};
+	// Si hoy es lunes → retroceder 7 días
+	const diferencia = diaSemana === 1 ? 7 : (diaSemana + 6) % 7;
 
-	$("#Desde").val(format(base));
-	$("#Hasta").val(format(hasta));
+	const ultimoLunes = new Date(hoy);
+	ultimoLunes.setDate(hoy.getDate() - diferencia);
 
-	const enabled = $("#chkDesdeHasta").is(":checked");
-	$("#Desde").prop("disabled", !enabled);
-	$("#Hasta").prop("disabled", !enabled);
+	return ultimoLunes;
 }
 
 function ControlalistaEstadosSelected() {
@@ -253,10 +265,10 @@ function DividirPedidoDeCliente(pcCompteSeleccionado) {
 						CerrarWaiting();
 						if (obj.error === true || obj.warn === true) {
 							console.error('❌ Response:', obj.mensaje);
-							ControlaMensajeError(
-								'Error al intentar dividir el pedido de cliente: ' +
-								(obj.mensaje || 'Error desconocido')
-							);
+							AbrirMensaje("ATENCIÓN", 'Error al intentar dividir el pedido de cliente: ' + (obj.mensaje || 'Error desconocido'), function () {
+								$("#msjModal").modal("hide");
+								return true;
+							}, false, ["Aceptar"], "error!", null);
 						}
 						else {
 							setTimeout(() => {
@@ -343,10 +355,10 @@ function PonerCFPedidoDeCliente(pcCompteSeleccionado) {
 						CerrarWaiting();
 						if (obj.error === true || obj.warn === true) {
 							console.error('❌ Response:', obj.mensaje);
-							ControlaMensajeError(
-								'Error al intentar poner CF el pedido de cliente: ' +
-								(obj.mensaje || 'Error desconocido')
-							);
+							AbrirMensaje("ATENCIÓN", 'Error al intentar poner CF el pedido de cliente: ' + (obj.mensaje || 'Error desconocido'), function () {
+								$("#msjModal").modal("hide");
+								return true;
+							}, false, ["Aceptar"], "error!", null);
 						}
 						else {
 							setTimeout(() => {
@@ -404,10 +416,10 @@ function VolverAEnCursoOrdenDeReparto(orCompteSeleccionado) {
 						CerrarWaiting();
 						if (obj.error === true || obj.warn === true) {
 							console.error('❌ Response:', obj.mensaje);
-							ControlaMensajeError(
-								'Error al intentar volver a en curso la O.R.: ' +
-								(obj.mensaje || 'Error desconocido')
-							);
+							AbrirMensaje("ATENCIÓN", 'Error al intentar volver a en curso la O.R.: ' + (obj.mensaje || 'Error desconocido'), function () {
+								$("#msjModal").modal("hide");
+								return true;
+							}, false, ["Aceptar"], "error!", null);
 						}
 						else {
 							setTimeout(() => {
@@ -460,10 +472,10 @@ function PonerAFacturarOrdenDeReparto(orCompteSeleccionado) {
 						CerrarWaiting();
 						if (obj.error === true || obj.warn === true) {
 							console.error('❌ Response:', obj.mensaje);
-							ControlaMensajeError(
-								'Error al intentar poner a facturar la O.R.: ' +
-								(obj.mensaje || 'Error desconocido')
-							);
+							AbrirMensaje("ATENCIÓN", 'Error al intentar poner a facturar la O.R.: ' + (obj.mensaje || 'Error desconocido'), function () {
+								$("#msjModal").modal("hide");
+								return true;
+							}, false, ["Aceptar"], "error!", null);
 						}
 						else {
 							setTimeout(() => {
@@ -614,6 +626,19 @@ function ConfigurarEventosEnCambioPrecio() {
 		}
 	});
 
+	$(document).off("mouseenter", "#tbCambioDePrecio th, #tbCambioDePrecio td");
+	$(document).on("mouseenter", "#tbCambioDePrecio th, #tbCambioDePrecio td", function () {
+
+		const el = this;
+		const isOverflowing = el.scrollWidth > el.clientWidth;
+
+		if (isOverflowing) {
+			$(el).attr("title", $(el).text().trim());
+		} else {
+			$(el).removeAttr("title");
+		}
+	});
+
 	//btnAnalizarCambioPrecio
 	$(document).off("click", "#btnAnalizarCambioPrecio");
 	$(document).on("click", "#btnAnalizarCambioPrecio", function () {
@@ -660,6 +685,7 @@ function ConfigurarEventosEnCambioPrecio() {
 			document.querySelector("#vistaListaOR").classList.remove("d-none");
 			// Opcional: limpiar contenido de edición
 			document.querySelector("#vistaCambioPrecioOR").innerHTML = "";
+			habilitarTabPedidos();
 		}
 		else {
 			AbrirMensaje(
@@ -673,6 +699,7 @@ function ConfigurarEventosEnCambioPrecio() {
 						document.querySelector("#vistaListaOR").classList.remove("d-none");
 						// Opcional: limpiar contenido de edición
 						document.querySelector("#vistaCambioPrecioOR").innerHTML = "";
+						habilitarTabPedidos();
 					}
 					$('#msjModal').modal('hide');
 				},
@@ -688,22 +715,23 @@ function ConfigurarEventosEnCambioPrecio() {
 	$(document).off("change", "#chkSeleccionGlobal");
 	$(document).on("change", "#chkSeleccionGlobal", function () {
 
-		let marcado = $(this).is(":checked");
+		const marcado = $(this).is(":checked");
 
-		$("#tbCambioDePrecio tbody .chk-actualizar-precio")
+		$("#tbCambioDePrecio tbody .chk-actualizar-precio:not(:disabled)")
 			.prop("checked", marcado);
 	});
 
 	// Si el usuario marca/desmarca manualmente, actualizar el checkbox global
-	$(document).off("change", ".chk-actualizar-precio");
-	$(document).on("change", ".chk-actualizar-precio", function () {
+	$(document).off("change", "#tbCambioDePrecio .chk-actualizar-precio");
+	$(document).on("change", "#tbCambioDePrecio .chk-actualizar-precio", function () {
 
-		let total = $("#tbCambioDePrecio tbody .chk-actualizar-precio").length;
-		let marcados = $("#tbCambioDePrecio tbody .chk-actualizar-precio:checked").length;
+		const totalHabilitados = $("#tbCambioDePrecio .chk-actualizar-precio:not(:disabled)").length;
+		const marcados = $("#tbCambioDePrecio .chk-actualizar-precio:not(:disabled):checked").length;
 
-		$("#chkSeleccionGlobal").prop("checked", total === marcados);
+		$("#chkSeleccionGlobal").prop("checked", totalHabilitados > 0 && totalHabilitados === marcados);
 	});
 
+	deshabilitarTabPedidos();
 }
 
 function confirmarCambiosDePrecioEnOrdenDeReparto() {
@@ -745,10 +773,10 @@ function confirmarCambiosDePrecioEnOrdenDeReparto() {
 		CerrarWaiting();
 		if (obj.error === true || obj.warn === true) {
 			console.error('❌ Response:', obj.mensaje);
-			ControlaMensajeError(
-				'Error al intentar consolidar la O.R.: ' +
-				(obj.mensaje || 'Error desconocido')
-			);
+			AbrirMensaje("ATENCIÓN", 'Error al intentar cambiar precios en la O.R.: ' + (obj.mensaje || 'Error desconocido'), function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
 		}
 		else {
 			setTimeout(() => {
@@ -760,7 +788,7 @@ function confirmarCambiosDePrecioEnOrdenDeReparto() {
 						document.querySelector("#vistaCambioPrecioOR").classList.add("d-none");
 						document.querySelector("#vistaListaOR").classList.remove("d-none");
 						document.querySelector("#vistaCambioPrecioOR").innerHTML = "";
-
+						habilitarTabPedidos();
 						//Actualizar tabla de Ordenes de Reparto
 						const filtros = buildQueryFilters(pagina);
 						const url = buscarOrdenesDeRepartoUrl;
@@ -785,7 +813,28 @@ function CargarVistConsolidarOrdenDeReparto(orCompte) {
 		$("#vistaConsolidarOR").removeClass("d-none");
 		ConfigurarEventosEnPonerEnConsolidar();
 		CargarConteosEnConsolidar(orCompteSeleccionado);
+
+		// Seleccionar automáticamente el primer pedido
+		SeleccionarPrimerPedidoEnConsolidar();
 	});
+}
+
+function SeleccionarPrimerPedidoEnConsolidar() {
+
+	const $primerRow = $("#tbConsolidarPedidos tbody tr.row-pedido").first();
+
+	if ($primerRow.length === 0) return; // no hay datos
+
+	// Marcar visualmente
+	$("#tbConsolidarPedidos tbody tr").removeClass("selected-row");
+	$primerRow.addClass("selected-row");
+
+	// Obtener pc_compte
+	const pcCompte = $primerRow.data("pc-compte");
+	pcCompteSeleccionadoEnConsolidar = pcCompte;
+
+	// Cargar detalle
+	CargarDetalleDelPedidoDeLaOrdenEnConsolidar(orCompteSeleccionado, pcCompteSeleccionadoEnConsolidar);
 }
 
 function ConfigurarEventosEnPonerEnConsolidar() {
@@ -857,6 +906,7 @@ function ConfigurarEventosEnPonerEnConsolidar() {
 					document.querySelector("#vistaListaOR").classList.remove("d-none");
 					// Opcional: limpiar contenido de edición
 					document.querySelector("#vistaConsolidarOR").innerHTML = "";
+					habilitarTabPedidos();
 				}
 				$('#msjModal').modal('hide');
 			},
@@ -889,13 +939,31 @@ function ConfigurarEventosEnPonerEnConsolidar() {
 	//btnConfirmarReasignacion
 	$(document).off("click", "#btnConfirmarReasignacion");
 	$(document).on("click", "#btnConfirmarReasignacion", function () {
-		// 1) Ver si hubo cambios
+		// 🔥 Asegurar que los cambios del input se apliquen
+		ConsolidarEdicionDetalleConteo();
+
+		if (!ValidarAEnviarIgualAPedido()) {
+			AbrirMensaje(
+				'VALIDACIÓN',
+				'Los valores de "A Enviar" deben coincidir con los valores de "Pedido".',
+				function () { $('#msjModal').modal('hide'); },
+				false,
+				['Aceptar'],
+				'error!',
+				null
+			);
+			return;
+		}
+
 		if (HayCambiosEnDetalleConteo()) {
 			AbrirMensaje(
 				'CONFIRMAR REASIGNACIÓN',
 				"¿Desea confirmar las modificaciones realizadas?",
 				function (resp) {
-					GuardarReasignacionEnDatosDeSesion();
+					if (resp === 'SI') {
+						GuardarReasignacionEnDatosDeSesion();
+
+					}
 					$('#msjModal').modal('hide');
 				},
 				true,
@@ -903,15 +971,9 @@ function ConfigurarEventosEnPonerEnConsolidar() {
 				'info!',
 				null
 			);
-
-			// 2) Pedir confirmación
-			//if (!confirm("Hay cambios sin guardar. ¿Desea descartar las modificaciones?")) {
-			//	return; // ❌ No salir del modo edición
-			//}
 		}
 		else {
 		}
-
 	});
 
 	//btnCancelarReasignacion
@@ -941,6 +1003,8 @@ function ConfigurarEventosEnPonerEnConsolidar() {
 			CancelarModificacionesEnReasginacion();
 		}
 	});
+
+	deshabilitarTabPedidos();
 }
 
 function confirmarConsolidarOrdenDeReparto() {
@@ -953,10 +1017,10 @@ function confirmarConsolidarOrdenDeReparto() {
 		CerrarWaiting();
 		if (obj.error === true || obj.warn === true) {
 			console.error('❌ Response:', obj.mensaje);
-			ControlaMensajeError(
-				'Error al intentar consolidar la O.R.: ' +
-				(obj.mensaje || 'Error desconocido')
-			);
+			AbrirMensaje("ATENCIÓN", obj.mensaje || "Error desconocido", function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
 		}
 		else {
 			setTimeout(() => {
@@ -968,7 +1032,7 @@ function confirmarConsolidarOrdenDeReparto() {
 						document.querySelector("#vistaConsolidarOR").classList.add("d-none");
 						document.querySelector("#vistaListaOR").classList.remove("d-none");
 						document.querySelector("#vistaConsolidarOR").innerHTML = "";
-
+						habilitarTabPedidos();
 						//Actualizar tabla de Ordenes de Reparto
 						const filtros = buildQueryFilters(pagina);
 						const url = buscarOrdenesDeRepartoUrl;
@@ -1028,12 +1092,20 @@ function GuardarReasignacionEnDatosDeSesion() {
 			CerrarWaiting();
 			if (resp.error || resp.warn) {
 				console.error('❌ Response:', resp.mensaje);
-				ControlaMensajeError(
-					'Error al intentar reasignar cantidades de productos: ' +
-					(resp.mensaje || 'Error desconocido')
-				);
+				AbrirMensaje("ATENCIÓN", 'Error al intentar reasignar cantidades de productos: ' + (resp.mensaje || 'Error desconocido'), function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
 			}
 			else {
+				setTimeout(() =>
+					EvaluarHabilitarReasignar(),
+					EstadoInicialBotonesOKCancelEnDetalleDeConteos(),
+					500);
+				$("#tbConsolidarDetalleConteo .editor-celda").each(function () {
+					let valor = $(this).val().trim().replace(/,/g, "");
+					$(this).attr("data-original", valor);
+				});
 				ConfirmarModificacionesEnReasginacion();
 			}
 		},
@@ -1113,6 +1185,44 @@ function CancelarModificacionesEnReasginacion() {
 	$("#btnCancelarConciliacion").prop("disabled", false);
 }
 
+function RecalcularColoresEnDetallesPedido() {
+
+	$("#tbConsolidarDetalleConteo tbody tr").each(function () {
+
+		let $row = $(this);
+
+		// Obtener Pedido (columna 3 → índice 3)
+		let pedidoTexto = $row.find("td").eq(3).text().trim();
+
+		// Obtener A Enviar (columna 4 → índice 4)
+		let enviarTexto = $row.find("td").eq(4).find("input").val().trim();
+
+		let pedido = parseFloat(pedidoTexto.replace(",", "."));
+		let enviar = parseFloat(enviarTexto.replace(",", "."));
+
+		if (isNaN(pedido) || isNaN(enviar)) return true;
+
+		let dif = pedido - enviar;
+
+		// Actualizar celda DIF (columna 5 → índice 5)
+		let $celdaDif = $row.find("td").eq(5);
+		$celdaDif.text(dif);
+
+		// Quitar clases previas
+		$celdaDif.removeClass("cell-up cell-down cell-zero");
+
+		// Aplicar clase nueva
+		if (dif > 0) {
+			$celdaDif.addClass("cell-up");
+		} else if (dif < 0) {
+			$celdaDif.addClass("cell-down");
+		} else {
+			$celdaDif.addClass("cell-zero");
+		}
+	});
+}
+
+
 function CargarDetalleDelProductoSeleccionadoEnConteo(orCompte, pId) {
 	AbrirWaiting("Cargando detalle de conteos en Pedidos...");
 	PostGenHtml({ orCompte: orCompte, pId: pId }, cargarDetalleDelProductoEnConteoEnConsolidarUrl, function (html) {
@@ -1127,6 +1237,31 @@ function CargarDetalleDelProductoSeleccionadoEnConteo(orCompte, pId) {
 	});
 }
 
+function ValidarAEnviarIgualAPedido() {
+
+	let valido = true;
+
+	$("#tbConsolidarDetalleConteo tbody tr").each(function () {
+
+		let $row = $(this);
+
+		// Obtener Pedido (columna 4 → índice 3)
+		let pedidoTexto = $row.find("td").eq(3).text().trim();
+		let pedido = parseFloat(pedidoTexto.replace(",", "."));
+
+		// Obtener A Enviar
+		let valorActual = $row.find("td.celda-a-enviar input").val().trim();
+		valorActual = parseFloat(valorActual.replace(",", "."));
+
+		// Comparación
+		if (pedido !== valorActual) {
+			valido = false;
+			return false; // cortar el each
+		}
+	});
+
+	return valido;
+}
 
 function HayCambiosEnDetalleConteo() {
 
@@ -1135,17 +1270,12 @@ function HayCambiosEnDetalleConteo() {
 	$("#tbConsolidarDetalleConteo tbody tr").each(function () {
 
 		let $celda = $(this).find("td.celda-a-enviar");
-		let original = $celda.attr("data-original");
+		let $input = $celda.find("input");
 
-		let valorActual;
+		if ($input.length === 0) return true; // continuar
 
-		if ($celda.find("input").length > 0) {
-			valorActual = $celda.find("input").val().trim();
-		} else {
-			valorActual = $celda.text().trim();
-		}
-
-		valorActual = valorActual.replace(/,/g, "");
+		let original = $input.attr("data-original");
+		let valorActual = $input.val().trim().replace(/,/g, "");
 
 		if (original !== valorActual) {
 			huboCambios = true;
@@ -1227,7 +1357,6 @@ function ConfigurarEventosDeEdicionEnDetalleConteo() {
 
 	$("#tbConsolidarDetalleConteo .editor-celda").on("blur", function () {
 		if (modoEdicionConteo) {
-			// No salir de edición mientras el modo está activo
 			return;
 		}
 
@@ -1238,11 +1367,10 @@ function ConfigurarEventosDeEdicionEnDetalleConteo() {
 		// Quitar máscara para obtener el número real
 		valor = valor.replace(/,/g, "");
 
-		$(this).parent().text(valor);
-
-		// 🔥 Recalcular diferencias
+		$(this).val(valor);
 		RecalcularDiferenciasEnDetalleConteo();
-
+		// 🔥 Recalcular colores en la tabla de detalles del pedido
+		RecalcularColoresEnDetallesPedido();
 	});
 
 	$("#tbConsolidarDetalleConteo").on("keydown", ".editor-celda", function (e) {
@@ -1294,6 +1422,27 @@ function ConfigurarEventosDeEdicionEnDetalleConteo() {
 		GuardarValorYRecalcular($input);
 	});
 }
+
+function ConsolidarEdicionDetalleConteo() {
+	$("#tbConsolidarDetalleConteo .editor-celda").each(function () {
+
+		let $input = $(this);
+		let valor = $input.val().trim();
+
+		if (valor === "") valor = "0";
+
+		// Normalizar número
+		valor = valor.replace(/,/g, "");
+
+		// 🔥 Mantener el input, solo actualizar su valor
+		$input.val(valor);
+
+		// 🔥 Actualizar data-original en el TD contenedor
+		let $td = $input.closest("td");
+		$td.attr("data-original", valor);
+	});
+}
+
 function GuardarValorYRecalcular($input) {
 
 	let valor = $input.val().trim();
@@ -1305,11 +1454,13 @@ function GuardarValorYRecalcular($input) {
 	$input.val(valor);
 
 	RecalcularDiferenciasEnDetalleConteo();
+	// 🔥 Recalcular colores en la tabla de detalles del pedido
+	RecalcularColoresEnDetallesPedido();
 }
 
-
 function EvaluarHabilitarReasignar() {
-	// 1) Obtener la fila seleccionada en la grilla superior
+
+	// 1) Fila seleccionada
 	let filaSeleccionada = $("#tbConsolidarConteos tbody tr.selected-row");
 
 	if (filaSeleccionada.length === 0) {
@@ -1317,17 +1468,27 @@ function EvaluarHabilitarReasignar() {
 		return;
 	}
 
-	// 2) Obtener el valor de Dif de la fila seleccionada
-	let difTexto = filaSeleccionada.find("td").eq(5).text().trim(); // columna Dif es la 6ta
+	// 2) Obtener Dif (columna 6 → índice 5)
+	let difTexto = filaSeleccionada.find("td").eq(5).text().trim();
 	let dif = parseFloat(difTexto.replace(",", "."));
 
-	// 3) Contar filas reales en la grilla inferior
+	// 3) Obtener Cantidad (columna 4 → índice 3)
+	let cantidadTexto = filaSeleccionada.find("td").eq(3).text().trim();
+	let cantidad = parseFloat(cantidadTexto.replace(",", "."));
+
+	// 4) Filas reales en la grilla inferior
 	let filasInferiores = $("#tbConsolidarDetalleConteo tbody tr")
 		.not(".fila-vacia")
 		.length;
 
-	// 4) Aplicar la lógica
-	if (dif != 0 && filasInferiores > 1) {
+	// 5) Nueva regla: si cantidad == 0 → NO habilitar
+	if (cantidad === 0) {
+		$("#btnReasignar").prop("disabled", true);
+		return;
+	}
+
+	// 6) Reglas originales
+	if (dif !== 0 && filasInferiores > 1) {
 		$("#btnReasignar").prop("disabled", false);
 	} else {
 		$("#btnReasignar").prop("disabled", true);
@@ -1431,8 +1592,12 @@ function ConfigurarEventosEnPonerEnCurso() {
 	$(document).off("click", "#btnAnalizarPonerEnCurso");
 	$(document).on("click", "#btnAnalizarPonerEnCurso", function () {
 		// Obtener depósitos seleccionados
-		const depositosSeleccionados = [...document.querySelectorAll(".chk-depo:checked")]
-			.map(chk => chk.closest("tr").dataset.depoId);
+		//const depositosSeleccionados = [...document.querySelectorAll(".chk-depo:checked")]
+		//	.map(chk => chk.closest("tr").dataset.depoId);
+		const depositosSeleccionados = $("#tbDepositos tbody .chk-depo:checked")
+			.map(function () {
+				return $(this).closest("tr").data("depoId");
+			}).get();
 
 		// Validar selección
 		if (depositosSeleccionados.length === 0) {
@@ -1502,6 +1667,7 @@ function ConfigurarEventosEnPonerEnCurso() {
 					document.querySelector("#vistaListaOR").classList.remove("d-none");
 					// Opcional: limpiar contenido de edición
 					document.querySelector("#vistaPonerEnCursoOR").innerHTML = "";
+					habilitarTabPedidos();
 				}
 				$('#msjModal').modal('hide');
 			},
@@ -1511,6 +1677,23 @@ function ConfigurarEventosEnPonerEnCurso() {
 			null
 		);
 	});
+
+	$(document).off("change", "#chkDepoMaster");
+	$(document).on("change", "#chkDepoMaster", function () {
+		const checked = $(this).is(":checked");
+		$("#tbDepositos tbody .chk-depo").prop("checked", checked);
+	});
+
+	$(document).off("change", "#tbDepositos tbody .chk-depo");
+	$(document).on("change", "#tbDepositos tbody .chk-depo", function () {
+
+		const total = $("#tbDepositos tbody .chk-depo").length;
+		const marcados = $("#tbDepositos tbody .chk-depo:checked").length;
+
+		$("#chkDepoMaster").prop("checked", total > 0 && total === marcados);
+	});
+
+	deshabilitarTabPedidos();
 }
 
 function ConfirmarPonerEnCursoOrdenDeReparto(orCompteSeleccionado) {
@@ -1525,10 +1708,10 @@ function ConfirmarPonerEnCursoOrdenDeReparto(orCompteSeleccionado) {
 			CerrarWaiting();
 			if (response.error || response.warn) {
 				console.error('❌ Response:', response.mensaje);
-				ControlaMensajeError(
-					'Error al poner en curso la orden de reparto: ' +
-					(response.mensaje || 'Error desconocido')
-				);
+				AbrirMensaje("ATENCIÓN", 'Error al poner en curso la orden de reparto: ' + (response.mensaje || 'Error desconocido'), function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
 			}
 			else {
 				AbrirMensaje(
@@ -1573,6 +1756,7 @@ function CargarVistaNuevaOrdenDeReparto(abm, orCompte) {
 		$("#vistaEditarOR").removeClass("d-none");
 		activarSeleccionDeFilas("#tbPedidosOR tbody");
 		activarSeleccionDeFilas("#tbPedidosPendientes tbody");
+		deshabilitarTabPedidos();
 	});
 }
 
@@ -1677,9 +1861,7 @@ function confirmarOrdenDeReparto() {
 		success: function (response) {
 			CerrarWaiting();
 			procesarRespuestaConfirmacion(response, accion);
-			///TODO: Descomentar si corresponde
-			//if (abm == 'A' || abm == 'M')
-			//	ImprimirPedido_Generado(response.id);
+			habilitarTabPedidos();
 		},
 		error: function (xhr, status, error) {
 			CerrarWaiting();
@@ -2124,6 +2306,8 @@ document.addEventListener("click", function (e) {
 				document.querySelector("#vistaListaOR").classList.remove("d-none");
 				// Opcional: limpiar contenido de edición
 				document.querySelector("#vistaEditarOR").innerHTML = "";
+
+				habilitarTabPedidos();
 			}
 			$('#msjModal').modal('hide');
 		},
@@ -2212,6 +2396,24 @@ function configurarEventosSeleccionListaAnalisisAutOR() {
 			}
 		}
 	});
+
+	$(document).off("mouseenter", "#tbGrillaAnalizaAut th, #tbGrillaAnalizaAut td");
+	$(document).on("mouseenter", "#tbGrillaAnalizaAut th, #tbGrillaAnalizaAut td", function () {
+
+		const el = this;
+
+		// Detectar si el contenido está truncado
+		const isOverflowing = el.scrollWidth > el.clientWidth;
+
+		if (isOverflowing) {
+			// Agregar tooltip con el contenido completo
+			$(el).attr("title", $(el).text().trim());
+		} else {
+			// Evitar tooltips innecesarios
+			$(el).removeAttr("title");
+		}
+	});
+
 }
 
 function configurarEventosSeleccionListaOR() {
@@ -2311,71 +2513,6 @@ function ConfigurarEstadoDeBotonesEnTabPedidosDeLaOrdenDeReparto(pcCompte, pceCo
 	setState(controls.inputDividir, dividirHabilitado);
 }
 
-
-//function ConfigurarEstadoDeBotonesEnTabPedidosDeLaOrdenDeReparto(pcCompte, pceCompte) {
-//	const btnCF = document.getElementById("btnCF");
-//	const btnAsociarNC = document.getElementById("btnAsociarNC");
-//	const btnPedido = document.getElementById("btnPedido");
-//	const btnDividir = document.getElementById("btnDividir");
-//	const txtDividir = document.querySelector(".input-dividir");
-//	if (pcCompte == "") {
-//		btnCF.disabled = true;
-//		btnCF.classList.add("disabled");
-//		btnAsociarNC.disabled = true;
-//		btnAsociarNC.classList.add("disabled");
-//		btnPedido.disabled = true;
-//		btnPedido.classList.add("disabled");
-//		txtDividir.disabled = true;
-//		txtDividir.classList.add("disabled");
-//		btnDividir.disabled = true;
-//		btnDividir.classList.add("disabled");
-//	}
-//	else {
-//		btnPedido.disabled = false;
-//		btnPedido.classList.remove("disabled");
-//		const estadosPermitidosCF = ["C", "O", "T"];
-//		if (btnCF) {
-//			if (estadosPermitidosCF.includes(pceCompte)) {
-//				btnCF.disabled = false;
-//				btnCF.classList.remove("disabled");
-//			} else {
-//				btnCF.disabled = true;
-//				btnCF.classList.add("disabled");
-//			}
-//		}
-//		const btnAsociarNC = document.getElementById("btnAsociarNC");
-//		if (btnAsociarNC) {
-//			if (pceCompte === "F") {
-//				btnAsociarNC.disabled = false;
-//				btnAsociarNC.classList.remove("disabled");
-//			} else {
-//				btnAsociarNC.disabled = true;
-//				btnAsociarNC.classList.add("disabled");
-//			}
-//		}
-//		const btnDividir = document.getElementById("btnDividir");
-//		const inputDividir = document.querySelector(".input-dividir");
-//		if (btnDividir) {
-//			if (pceCompte === "T") {
-//				btnDividir.disabled = false;
-//				btnDividir.classList.remove("disabled");
-//				if (inputDividir) {
-//					inputDividir.disabled = false;
-//					inputDividir.classList.remove("disabled");
-//				}
-//			} else {
-//				btnDividir.disabled = true;
-//				btnDividir.classList.add("disabled");
-//				if (inputDividir) {
-//					inputDividir.disabled = true;
-//					inputDividir.classList.add("disabled");
-//				}
-
-//			}
-//		}
-//	}
-//}
-
 function ConfigurarEstadoDeBotonesEnTabOrdenDeReparto(orCompte, oreId) {
 	// Estados permitidos para modificar
 	const estadosPermitidosModificar = ["C", "O", "S"];
@@ -2427,18 +2564,6 @@ function ConfigurarEstadoDeBotonesEnTabOrdenDeReparto(orCompte, oreId) {
 			btnAFacturar.classList.add("disabled");
 		}
 	}
-
-	// Botón A Facturar → solo habilitado si oreId === 'C'
-	//const btnCambioPrecio = document.getElementById("btnCambioPrecio");
-	//if (btnCambioPrecio) {
-	//	if (oreId === "C") {
-	//		btnCambioPrecio.disabled = false;
-	//		btnCambioPrecio.classList.remove("disabled");
-	//	} else {
-	//		btnCambioPrecio.disabled = true;
-	//		btnCambioPrecio.classList.add("disabled");
-	//	}
-	//}
 
 	const estadosPermitidosCambioPrecio = ["C", "O", "T"];
 	const btnCambioPrecio = document.getElementById("btnCambioPrecio");
@@ -2676,3 +2801,12 @@ const maskConfigEnteros = {
 	showMaskOnHover: false,
 	showMaskOnFocus: false
 };
+
+function deshabilitarTabPedidos() {
+	$("#tabPedidosDeCliente").addClass("tab-disabled");
+}
+
+function habilitarTabPedidos() {
+	$("#tabPedidosDeCliente").removeClass("tab-disabled");
+}
+

@@ -1375,8 +1375,31 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		}
 
+		public static string NormalizarImporteEuropeo(string valor)
+		{
+			if (string.IsNullOrWhiteSpace(valor))
+				return valor;
+
+			// Quitar puntos de miles
+			string sinPuntos = valor.Replace(".", "");
+
+			// Reemplazar coma decimal por punto
+			string normalizado = sinPuntos.Replace(",", ".");
+
+			return normalizado;
+		}
+
 		private string GenerarJsonDesdeJsonEncabezadoDeRPLista()
 		{
+			var objTemp = JsonDeRP;
+			foreach (var item in objTemp.encabezado)
+			{
+				foreach (var itemComp in item.Comprobantes)
+				{
+					itemComp.Cm_importe = NormalizarImporteEuropeo(itemComp.Cm_importe);
+				}
+			}
+			JsonDeRP = objTemp;
 			var jsonstring = JsonConvert.SerializeObject(JsonDeRP, new JsonSerializerSettings() { ContractResolver = new IgnorePropertiesResolver(new[] { "Producto" }) });
 			return jsonstring;
 		}

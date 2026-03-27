@@ -1078,6 +1078,16 @@ namespace gc.infraestructura.Helpers
 			throw new NotImplementedException();
 		}
 
+		public static Font FontTituloBigBoldPredeterminado()
+		{
+			return DefineFontWithStyle("Arial", 14, Font.BOLD, 0, 0, 0);
+		}
+
+		public static Font FontTituloBigPredeterminado()
+		{
+			return DefineFontWithStyle("Arial", 14, Font.NORMAL, 0, 0, 0);
+		}
+
 		public static Font FontTituloPredeterminado()
 		{
 			return DefineFontWithStyle("Arial", 12, Font.BOLD, 0, 0, 0);
