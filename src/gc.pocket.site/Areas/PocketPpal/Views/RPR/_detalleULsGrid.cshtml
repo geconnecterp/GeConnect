@@ -7,31 +7,102 @@
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
     int cont = 0;
 }
-<div class="table-responsive table-wrapper ">
-    <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbRPRxUL">
-        <thead class=" table-dark">
-            <tr class="header">
-                <th scope="col" style="width:1%"></th>
-                <th scope="col">UL</th>
-                <th scope="col">Usuario</th>
-                <th scope="col">Estado</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.ListaDatos)
-            {
-                cont++;
-                if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                <tr class="@clase" onclick="seleccionaRegistroUL(this)">
-                    <td>@cont </td>
-                    <td style="min-width:200px;">@item.ul_id</td>
-                    <td class="corta-linea">@item.usu_apellidoynombre
-                        @Html.Hidden("ul" + @cont, item.ul_id)
-                    </td>
-                    <td>@item.ule_desc</td>
-                </tr>
+<div class="grid-golden h-100">
+    <div class="grid-golden-body p-1">
+        <div class="table-responsive table-wrapper table-wrapper-500">
+            <table class="table table-sm table-hover mb-0 table-golden" id="tbRPRxUL">
+                <thead class="sticky-top table-golden-header-compact">
+                    <tr class="header">
+                        <th class="text-center th-compact" scope="col" style="width:5%">#</th>
+                        <th class="text-left th-compact" scope="col" style="width:25%">UL</th>
+                        <th class="text-left th-compact" scope="col" style="width:50%">Usuario</th>
+                        <th class="text-center th-compact" scope="col" style="width:20%">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ListaDatos != null && Model.ListaDatos.Any())
+                    {
+                        @foreach (var item in Model.ListaDatos)
+                        {
+                            cont++;
+                            if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                            <tr class="@clase cursor-pointer" onclick="seleccionaRegistroUL(this)" data-ul-id="@item.ul_id">
+                                <td class="text-center td-compact">
+                                    <span class="badge bg-secondary">@cont</span>
+                                </td>
+                                <td class="td-compact" style="min-width:200px;">
+                                    <strong class="text-golden">@item.ul_id</strong>
+                                    @Html.Hidden("ul" + @cont, item.ul_id)
+                                </td>
+                                <td class="td-compact">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bx bx-user me-1"></i>
+                                        <span class="corta-linea">@item.usu_apellidoynombre</span>
+                                    </div>
+                                </td>
+                                <td class="text-center td-compact">
+                                    @{
+                                        var estadoBadgeClass = "bg-secondary";
+                                        if (!string.IsNullOrEmpty(item.ule_desc))
+                                        {
+                                            var estadoLower = item.ule_desc.ToLower();
+                                            if (estadoLower.Contains("activ") || estadoLower.Contains("proces") || estadoLower.Contains("en curso"))
+                                            {
+                                                estadoBadgeClass = "bg-success";
+                                            }
+                                            else if (estadoLower.Contains("pend") || estadoLower.Contains("espera"))
+                                            {
+                                                estadoBadgeClass = "bg-warning";
+                                            }
+                                            else if (estadoLower.Contains("cerr") || estadoLower.Contains("finaliz") || estadoLower.Contains("complet"))
+                                            {
+                                                estadoBadgeClass = "bg-info";
+                                            }
+                                            else if (estadoLower.Contains("cancel") || estadoLower.Contains("rechaz"))
+                                            {
+                                                estadoBadgeClass = "bg-danger";
+                                            }
+                                        }
+                                    }
+                                    <span class="badge @estadoBadgeClass">@item.ule_desc</span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">
+                                <i class="bx bx-info-circle bx-md"></i>
+                                <p class="mb-0">No hay unidades logísticas disponibles</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    @* Footer con información adicional *@
+    @if (Model.ListaDatos != null && Model.ListaDatos.Any())
+    {
+        <div class="grid-golden-footer d-flex justify-content-between align-items-center">
+            <small class="text-muted">
+                <i class="bx bx-package"></i> Total ULs: <strong>@Model.ListaDatos.Count()</strong>
+            </small>
+            @{
+                var estadosCounts = Model.ListaDatos.GroupBy(x => x.ule_desc).Select(g => new { Estado = g.Key, Count = g.Count() });
             }
-        </tbody>
-    </table>
+            <small class="text-muted">
+                @foreach (var estado in estadosCounts.Take(2))
+                {
+                    <span class="me-2">
+                        <i class="bx bx-check-circle"></i> @estado.Estado: <strong>@estado.Count</strong>
+                    </span>
+                }
+            </small>
+        </div>
+    }
 </div>

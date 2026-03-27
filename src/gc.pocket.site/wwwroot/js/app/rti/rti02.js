@@ -197,9 +197,9 @@ function verificaEstadoRTI02(e) {
         //    //};
         //}
         if (prod.up_id === "07") {
-            $("#up").focus();
+            $("#up").trigger("focus");
         } else {
-            $("#unid").focus();
+            $("#unid").trigger("focus");
         }
     }
 

@@ -8,26 +8,73 @@
     var alt = true;
     string clase = string.Empty;
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+    int cont = 0;
 }
-<div class="table-responsive table-wrapper text-nowrap">
-    <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head">
-        <thead class="table-dark">
-            <tr class="header">
-                <th class="text-sm-center" scope="col">Lista</th>
-                <th class="text-sm-center" scope="col">Precio</th>
 
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.ListaDatos)
-            {
-                if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+<div class="grid-golden h-100">
+    <div class="grid-golden-body p-1">
+        <div class="table-responsive table-wrapper table-wrapper-300 text-nowrap">
+            <table class="table table-sm table-hover mb-0 table-golden">
+                <thead class="sticky-top table-golden-header-compact">
+                    <tr class="header">
+                        <th class="text-left th-compact" scope="col" style="width:60%">
+                            <i class="bx bx-list-ul"></i> Lista de Precio
+                        </th>
+                        <th class="text-center th-compact" scope="col" style="width:40%">
+                            <i class="bx bx-dollar-circle"></i> Precio
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ListaDatos != null && Model.ListaDatos.Any())
+                    {
+                        @foreach (var item in Model.ListaDatos)
+                        {
+                            cont++;
+                            if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                <tr class="@clase">
-                    <td class="corta-linea">@item.Lp_desc</td>
-                    <td class="text-sm-end">@item.p_pvta</td>
-                </tr>
-            }            
-        </tbody>
-    </table>
+                            <tr class="@clase" data-lista="@item.Lp_desc">
+                                <td class="td-compact">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bx bx-purchase-tag me-2 text-golden"></i>
+                                        <span class="corta-linea">@item.Lp_desc</span>
+                                    </div>
+                                </td>
+                                <td class="text-end td-compact">
+                                    <span class="badge bg-success">
+                                        <i class="bx bx-dollar"></i> @item.p_pvta.ToString("N2")
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="2" class="text-center text-muted py-4">
+                                <i class="bx bx-info-circle bx-md"></i>
+                                <p class="mb-0">No hay listas de precios disponibles</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    @* Footer con información adicional *@
+    @if (Model.ListaDatos != null && Model.ListaDatos.Any())
+    {
+        <div class="grid-golden-footer d-flex justify-content-between align-items-center">
+            <small class="text-muted">
+                <i class="bx bx-list-ul"></i> Listas: <strong>@Model.ListaDatos.Count()</strong>
+            </small>
+            <small class="text-muted">
+                <i class="bx bx-trending-up"></i> Precio más alto: <strong>$@Model.ListaDatos.Max(x => x.p_pvta).ToString("N2")</strong>
+            </small>
+            <small class="text-muted">
+                <i class="bx bx-trending-down"></i> Precio más bajo: <strong>$@Model.ListaDatos.Min(x => x.p_pvta).ToString("N2")</strong>
+            </small>
+        </div>
+    }
 </div>
