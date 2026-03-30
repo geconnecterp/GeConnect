@@ -147,9 +147,9 @@ function verificaEstadoASTK(e) {
         //    //};
         //}
         if (prod.up_id === "07") {
-            $("#up").focus();
+            $("#up").trigger("focus");
         } else {
-            $("#unid").focus();
+            $("#unid").trigger("focus");
         }
     }
 
@@ -223,7 +223,7 @@ function cargarProductosASTK() {
             return true;
         }
     });
-    $("input#Busqueda").focus();
+    $("input#Busqueda").trigger("focus");
     return true;
 }
 

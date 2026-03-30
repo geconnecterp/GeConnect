@@ -250,9 +250,9 @@ function verificaEstado(e) {
             //asigno callback para que se ejecute luego que cierre el waiting
             /*FunctionCallback = function () {*/
             if (prod.up_id === "07") {
-                $("#up").focus();
+                $("#up").trigger("focus");
             } else {
-                $("#unid").focus();
+                $("#unid").trigger("focus");
             }
             //    //return true;
             //};

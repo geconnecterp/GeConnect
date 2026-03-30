@@ -364,10 +364,10 @@ function verificaEstado() {
 
                             if (prod.p_con_vto !== "N" && prod.p_con_vto !== null && prod.p_con_vto !== " ") {                               
                                 $("#fvto").prop("disabled", false);                             
-                                $("#fvto").focus();
+                                $("#fvto").trigger("focus");
                                
                             } else {                               
-                                $("#up").focus();                               
+                                $("#up").trigger("focus");                               
                             }                           
 
                             return true;

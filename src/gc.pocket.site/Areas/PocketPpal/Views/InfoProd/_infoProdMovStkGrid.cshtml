@@ -8,40 +8,145 @@
     var alt = true;
     string clase = string.Empty;
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+    int cont = 0;
+    var esClass = "bg-secondary";
+    var esIcon = "bx-transfer";
+    var esTexto = string.Empty;
+    var stockClass = string.Empty;
+    var reg = Model.ListaDatos?.FirstOrDefault();
+    var esUnidad = reg == null ? false : reg.Up_id == 7 ? true : false;
+    var stk = "";
 }
-<div class="table-responsive table-wrapper text-nowrap">
-    <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head">
-        <thead class="table-dark">
-            <tr class="header">
-                <th class="text-sm-center" scope="col">BOX</th>
-                <th class="text-sm-center" scope="col">Fecha</th>
-                <th class="text-sm-start" scope="col">Mov</th>
-                <th class="text-sm-center" scope="col">E/S</th>
-                <th class="text-sm-center" scope="col">STK</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.ListaDatos)
-            {
-                if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                <tr class="@clase">
-                    <td class="text-sm-center">@item.Box_id</td>
-                    <td class="text-sm-center">@item.Sm_fecha.ToShortDateString()</td>
-                    <td class="text-sm-start corta-linea">@item.Sm_concepto</td>
-                    <td class="text-sm-end">@item.Sm_es</td>
-                    <td class="text-sm-end">
-                        @if (item.Up_id == 7)
+<div class="grid-golden h-100">
+    <div class="grid-golden-body p-1">
+        <div class="table-responsive table-wrapper table-wrapper-300 text-nowrap">
+            <table class="table table-sm table-hover mb-0 table-golden">
+                <thead class="sticky-top table-golden-header-compact">
+                    <tr class="header">
+                        <th class="text-center th-compact" scope="col" style="width:12%">
+                            <i class="bx bx-box"></i> BOX
+                        </th>
+                        <th class="text-center th-compact" scope="col" style="width:15%">
+                            <i class="bx bx-calendar"></i> Fecha
+                        </th>
+                        <th class="text-left th-compact" scope="col" style="width:38%">
+                            <i class="bx bx-transfer"></i> Movimiento
+                        </th>
+                        <th class="text-center th-compact" scope="col" style="width:15%">
+                            <i class="bx bx-transfer-alt"></i> E/S
+                        </th>
+                        <th class="text-center th-compact" scope="col" style="width:20%">
+                            <i class="bx bx-package"></i> STK
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ListaDatos != null && Model.ListaDatos.Any())
+                    {
+                        @foreach (var item in Model.ListaDatos)
                         {
-                            var spl = item.Sm_stk.ToString().Split('.');
-                            <span>@spl[0]</span>
+                            cont++;
+                            if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                            {
+                                // Determinar badge según E/S
+                                var sm_es = item.Sm_es;
+                                if (sm_es > 0)
+                                {
+                                    esClass = "bg-success";
+                                    esIcon = "bx-log-in-circle";
+                                    esTexto = $"+{item.Sm_es}";
+                                }
+                                else if (sm_es < 0)
+                                {
+                                    esClass = "bg-danger";
+                                    esIcon = "bx-log-out-circle";
+                                    esTexto = item.Sm_es.ToString();
+                                }
+
+                                // Determinar badge de stock
+                                stockClass = item.Sm_stk > 0 ? "bg-info" : "bg-secondary";
+                            }
+
+                            <tr class="@clase" data-box="@item.Box_id">
+                                <td class="text-center td-compact">
+                                    <span class="badge bg-primary">@item.Box_id</span>
+                                </td>
+                                <td class="text-center td-compact">
+                                    <small>
+                                        <i class="bx bx-calendar-event"></i>
+                                        @item.Sm_fecha.ToString("dd/MM/yyyy")
+                                    </small>
+                                </td>
+                                <td class="text-left td-compact">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bx bx-receipt me-1"></i>
+                                        <span class="corta-linea">@item.Sm_concepto</span>
+                                    </div>
+                                </td>
+                                <td class="text-center td-compact">
+                                    <span class="badge @esClass">
+                                        <i class="bx @esIcon"></i> @esTexto
+                                    </span>
+                                </td>
+                                <td class="text-center td-compact">
+                                    @if (item.Up_id == 7)
+                                    {
+                                        var spl = item.Sm_stk.ToString().Split('.');
+                                        <span class="badge @stockClass">
+                                            <i class="bx bx-box"></i> @spl[0]
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge @stockClass">
+                                            <i class="bx bx-box"></i> @item.Sm_stk
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
                         }
-                        else
-                        {
-                            <span>@item.Sm_stk</span>
-                        }
-                </tr>
-            }         
-        </tbody>
-    </table>
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                <i class="bx bx-info-circle bx-md"></i>
+                                <p class="mb-0">No hay movimientos de stock disponibles</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @* Footer con información adicional *@
+    @if (Model.ListaDatos != null && Model.ListaDatos.Any())
+    {
+        <div class="grid-golden-footer d-flex justify-content-between align-items-center flex-wrap">
+            <small class="text-muted">
+                <i class="bx bx-receipt"></i> Movimientos: <strong>@Model.ListaDatos.Count()</strong>
+            </small>
+            <small class="text-success">
+                <i class="bx bx-log-in-circle"></i> Entradas: <strong>@Model.ListaDatos.Count(x => x.Sm_es > 0)</strong>
+            </small>
+            <small class="text-danger">
+                <i class="bx bx-log-out-circle"></i> Salidas: <strong>@Model.ListaDatos.Count(x => x.Sm_es < 0)</strong>
+            </small>
+            <small class="text-muted">
+                @if (esUnidad && reg!=null)
+                {
+                    var spl = reg.Sm_stk.ToString().Split('.');
+                    stk = spl[0];
+                }
+                else
+                {
+                    stk = reg?.Sm_stk.ToString();
+                }
+                <i class="bx bx-package"></i> Stock actual: <strong>@stk</strong>
+            </small>
+        </div>
+    }
 </div>

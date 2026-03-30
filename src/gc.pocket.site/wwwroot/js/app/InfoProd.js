@@ -17,9 +17,6 @@
 
     //asignamos valor a los controles de fecha
     var f = new Date();
-    //var month = ('0' + (f.getMonth() + 1)).slice(-2); // Asegura que el mes siempre tenga dos dígitos
-    //var day = ('0' + f.getDate()).slice(-2); // Asegura que el día siempre tenga dos dígitos
-    //var newfecha = f.getFullYear() + '-' + month + '-' + day;
 
     $("#fdesde").val(formatoFechaYMD(restarFecha(f, 7)));
     $("#fhasta").val(formatoFechaYMD(f));
@@ -77,6 +74,7 @@ function PresentarStkBox() {
     });
     return true;
 }
+
 function PresentarStkA() {
     AbrirWaiting();
     var data = {};
@@ -89,21 +87,33 @@ function PresentarStkA() {
     });
     return true;
 }
+
 function PresentarMov() {
-    //AbrirWaiting("Espere... se estan recuperando los datos.");
+    // ✅ NUEVO: Activar spinner en el botón
+    var estadoOriginalBtn = ActivarSpinnerBoton("#btnBuscarMov", "Buscando...");
+    
     var idtm = $("#TmId").find(":selected").val();
-    var data = { idTm: idtm, fdesde:$("#fdesde").val(),fhasta:$("#fhasta").val()};
+    var data = { 
+        idTm: idtm, 
+        fdesde: $("#fdesde").val(),
+        fhasta: $("#fhasta").val()
+    };
+    
     PostGenHtml(data, infoProdMovUrl, function (obj) {
         $("#gridInfoProdMov").html(obj);
-        CerrarWaiting();
-        return true
+        // ✅ NUEVO: Desactivar spinner en éxito
+        DesactivarSpinnerBoton("#btnBuscarMov", estadoOriginalBtn);
+        return true;
     }, function (obj) {
         ControlaMensajeError(obj.message);
-        CerrarWaiting();
+        // ✅ NUEVO: Desactivar spinner en error
+        DesactivarSpinnerBoton("#btnBuscarMov", estadoOriginalBtn);
         return true;
     });
+    
     return true;
 }
+
 function PresentarLP() {
     AbrirWaiting();
     var data = {};

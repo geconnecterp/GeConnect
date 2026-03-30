@@ -8,47 +8,89 @@
     var alt = true;
     string clase = string.Empty;
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+    int cont = 0;
+    var stockClass = string.Empty;
 }
-<div class="table-responsive table-wrapper text-nowrap">
-    <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head">
-        <thead class="table-dark">            
-            <tr class="header">
-                <th scope="col">Sucursal</th>
-                <th class="text-sm-center" scope="col">Stk</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.ListaDatos)
-            {
-                if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                <tr class="@clase">
-                    <td>@item.Adm_nombre</td>
-                    <td class="text-sm-end">
-                        @if (item.up_id == "07")
+<div class="grid-golden h-100">
+    <div class="grid-golden-body p-1">
+        <div class="table-responsive table-wrapper table-wrapper-300 text-nowrap">
+            <table class="table table-sm table-hover mb-0 table-golden">
+                <thead class="sticky-top table-golden-header-compact">
+                    <tr class="header">
+                        <th class="text-left th-compact" scope="col" style="width:60%">
+                            <i class="bx bx-buildings"></i> Sucursal
+                        </th>
+                        <th class="text-center th-compact" scope="col" style="width:40%">
+                            <i class="bx bx-package"></i> Stock
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ListaDatos != null && Model.ListaDatos.Any())
+                    {
+                        @foreach (var item in Model.ListaDatos)
                         {
-                            var spl = item.ps_stk.ToString().Split('.');
-                            <span>@spl[0]</span>
+                            cont++;
+                            if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+                            
+                            {
+                                // Determinar badge de stock
+                                stockClass = item.ps_stk > 0 ? "bg-success" : "bg-secondary";
+                            }
+
+                            <tr class="@clase" data-sucursal="@item.Adm_nombre">
+                                <td class="td-compact">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bx bx-building me-2 text-golden"></i>
+                                        <span>@item.Adm_nombre</span>
+                                    </div>
+                                </td>
+                                <td class="text-center td-compact">
+                                    @if (item.up_id == "07")
+                                    {
+                                        var spl = item.ps_stk.ToString().Split('.');
+                                        <span class="badge @stockClass">
+                                            <i class="bx bx-box"></i> @spl[0]
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge @stockClass">
+                                            <i class="bx bx-box"></i> @item.ps_stk
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
                         }
-                        else
-                        {
-                            <span>@item.ps_stk</span>
-                        }
-                     </td>
-                </tr>
-            }
-            @* <tr>
-            <td colspan="9">
-            @Html.PagedListPager(
-            (IPagedList)Model.ListaDatos,
-            page => Url.Action("Index", "producto", new { page = page, area = "Personas", sort = Model.Sort, sortdir = sortDirInv }), new PagedListRenderOptions
-            {
-            LiElementClasses = new string[] { "page-item" },
-            PageClasses = new string[] { "page-link" },
-            Display = PagedListDisplayMode.IfNeeded
-            })
-            </td>
-            </tr> *@
-        </tbody>
-    </table>
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="2" class="text-center text-muted py-4">
+                                <i class="bx bx-info-circle bx-md"></i>
+                                <p class="mb-0">No hay información de stock por sucursal disponible</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    @* Footer con información adicional *@
+    @if (Model.ListaDatos != null && Model.ListaDatos.Any())
+    {
+        <div class="grid-golden-footer d-flex justify-content-between align-items-center">
+            <small class="text-muted">
+                <i class="bx bx-buildings"></i> Sucursales: <strong>@Model.ListaDatos.Count()</strong>
+            </small>
+            <small class="text-muted">
+                <i class="bx bx-package"></i> Stock Total: <strong>@Model.ListaDatos.Sum(x => x.ps_stk)</strong>
+            </small>
+            <small class="text-muted">
+                <i class="bx bx-check-circle"></i> Con Stock: <strong>@Model.ListaDatos.Count(x => x.ps_stk > 0)</strong>
+            </small>
+        </div>
+    }
 </div>

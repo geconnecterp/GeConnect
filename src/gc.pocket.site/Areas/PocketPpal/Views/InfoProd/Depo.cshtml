@@ -4,81 +4,186 @@
     var callback = Url.Action("depo", "infoprod", new { area = "pocketppal" });
 }
 
-<div class="row mt-3">
-    <div class="col-md-12 col-sm-12">
-        <div class="input-group input-group-sm">
-            <span class="input-group-text" style="width:50px;">DEPO:</span>
-            @Html.DropDownList("DepoId", null, new { @class = "form-control" })
+<div class="container-fluid px-3 py-3">
+    <!-- ✅ SELECTOR DE DEPÓSITO CON ESTILO GOLDEN -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card-golden">
+                <div class="card-golden-header">
+                    <i class="bx bx-buildings"></i>
+                    <h6 class="mb-0">Selección de Depósito</h6>
+                </div>
+                <div class="card-body">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-golden-label" style="min-width:80px;">
+                            <i class="bx bx-store-alt me-1"></i>DEPO
+                        </span>
+                        @Html.DropDownList("DepoId", null, new { @class = "form-control form-select" })
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
-<div class="row">
-    <div class="col-sm-12">
-        <div class="nav-align-top mb-4">
-            <ul class="nav nav-tabs nav-fill" role="tablist">
-                <li class="nav-item" role="presentation" title="BOX LIBRES">
-                    <button type="button" id="btnBox" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#boxfree" aria-controls="boxfree" aria-selected="false" tabindex="-1" >
-                        <i class="tf-icon bx bx-box me-1"></i><span class="d-none d-sm-block">BOX Libres</span>
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation" title="STK DEPO">
-                    <button type="button" id="btnStkD" class="nav-link " role="tab" data-bs-toggle="tab" data-bs-target="#stkd" aria-controls="stkd" aria-selected="true">
-                        <i class="tf-icon bx bx-store-alt me-1"></i><span class="d-none d-sm-block">STK D</span>
-                    </button>
-                </li>
 
-                <li class="nav-item" role="presentation" title="STK VALORIZADO">
-                    <button type="button" id="btnStkVal" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#stkval" aria-controls="stkval" aria-selected="false" tabindex="-1">
-                        <i class="tf-icon bx bx-store me-1"></i><span class="d-none d-sm-block">STK Val</span>
-                    </button>
-                </li>
+    <!-- ✅ TABS CON INFORMACIÓN DEL DEPÓSITO -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card-golden">
+                <div class="card-golden-header">
+                    <i class="bx bx-info-circle"></i>
+                    <h6 class="mb-0">Información del Depósito</h6>
+                </div>
+                <div class="card-body p-2">
+                    <ul class="nav nav-tabs nav-fill border-bottom-0" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button type="button" 
+                                    id="btnBox" 
+                                    class="nav-link active" 
+                                    role="tab" 
+                                    data-bs-toggle="tab" 
+                                    data-bs-target="#boxfree" 
+                                    aria-controls="boxfree" 
+                                    aria-selected="true">
+                                <i class="bx bx-box me-1"></i>
+                                <span class="d-none d-sm-inline">BOX</span> Libres
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button type="button" 
+                                    id="btnStkD" 
+                                    class="nav-link" 
+                                    role="tab" 
+                                    data-bs-toggle="tab" 
+                                    data-bs-target="#stkd" 
+                                    aria-controls="stkd" 
+                                    aria-selected="false">
+                                <i class="bx bx-store-alt me-1"></i>
+                                <span class="d-none d-sm-inline">Stock</span> DEPO
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button type="button" 
+                                    id="btnStkVal" 
+                                    class="nav-link" 
+                                    role="tab" 
+                                    data-bs-toggle="tab" 
+                                    data-bs-target="#stkval" 
+                                    aria-controls="stkval" 
+                                    aria-selected="false">
+                                <i class="bx bx-dollar-circle me-1"></i>
+                                <span class="d-none d-sm-inline">Stock</span> Valorizado
+                            </button>
+                        </li>
+                    </ul>
 
-            </ul>
-            <div class="tab-content">
-                <div class="tab-pane fade active show" id="boxfree" role="tabpanel">
-                    <div class="d-flex justify-content-sm-center">
-                        <div class="input-group input-group-sm">
-                            <div class="form-check form-check-inline form-switch mb-2">
-                                <input class="form-check-input" type="checkbox" name="SoloLibres" id="chkSoloLibres" checked />
-                                <label class="form-check-label" for="chkSoloLibres">Solo Libres</label>
+                    <div class="tab-content pt-3">
+                        <!-- ✅ TAB 1: BOX LIBRES -->
+                        <div class="tab-pane fade show active" id="boxfree" role="tabpanel">
+                            <div class="filter-golden mb-3">
+                                <div class="filter-golden-body py-2">
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" 
+                                                   type="checkbox" 
+                                                   name="SoloLibres" 
+                                                   id="chkSoloLibres" 
+                                                   checked />
+                                            <label class="form-check-label fw-semibold" for="chkSoloLibres">
+                                                <i class="bx bx-filter-alt me-1"></i>Solo Libres
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="grid-golden">
+                                <div class="grid-golden-body">
+                                    <div id="gridBoxFree" class="table-responsive"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ✅ TAB 2: STOCK DEPO -->
+                        <div class="tab-pane fade" id="stkd" role="tabpanel">
+                            <div class="grid-golden">
+                                <div class="grid-golden-body">
+                                    <div id="gridStkD" class="table-responsive"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ✅ TAB 3: STOCK VALORIZADO -->
+                        <div class="tab-pane fade" id="stkval" role="tabpanel">
+                            <div class="filter-golden mb-3">
+                                <div class="filter-golden-header">
+                                    <h6 class="mb-0">
+                                        <i class="bx bx-category me-1"></i>Filtrar por Concepto
+                                    </h6>
+                                </div>
+                                <div class="filter-golden-body py-2">
+                                    <div class="row g-2">
+                                        <div class="col-6 col-md-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" 
+                                                       name="concepto" 
+                                                       type="radio" 
+                                                       value="S" 
+                                                       id="rdSectCom" 
+                                                       checked>
+                                                <label class="form-check-label fw-medium" for="rdSectCom">
+                                                    <i class="bx bx-buildings me-1"></i>
+                                                    <span class="d-none d-md-inline">Sector</span> Comercial
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" 
+                                                       name="concepto" 
+                                                       type="radio" 
+                                                       value="G" 
+                                                       id="rdGrRubro">
+                                                <label class="form-check-label fw-medium" for="rdGrRubro">
+                                                    <i class="bx bx-folder me-1"></i>
+                                                    <span class="d-none d-md-inline">Grupo de</span> Rubros
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" 
+                                                       name="concepto" 
+                                                       type="radio" 
+                                                       value="R" 
+                                                       id="rdRubro">
+                                                <label class="form-check-label fw-medium" for="rdRubro">
+                                                    <i class="bx bx-category-alt me-1"></i>
+                                                    Rubros
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" 
+                                                       name="concepto" 
+                                                       type="radio" 
+                                                       value="P" 
+                                                       id="rdProd">
+                                                <label class="form-check-label fw-medium" for="rdProd">
+                                                    <i class="bx bx-package me-1"></i>
+                                                    Producto
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="grid-golden">
+                                <div class="grid-golden-body">
+                                    <div id="gridStkVal" class="table-responsive"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div id="gridBoxFree"></div>
-                </div>
-                <div class="tab-pane fade" id="stkd" role="tabpanel">
-                    <div id="gridStkD"></div>
-                </div>
-                <div class="tab-pane fade" id="stkval" role="tabpanel">
-                    <div class="row mt-1">
-                        <div class="d-flex d-inline-flex justify-content-between">
-                            <div class="input-group input-group-sm">
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" name="concepto" type="radio" value="S" id="rdSectCom" checked>
-                                    <label class="form-check-label" for="rdSectCom">Sector Comercial</label>
-                                </div>
-                            </div>
-                            <div class="input-group input-group-sm">
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" name="concepto" type="radio" value="G" id="rdGrRubro">
-                                    <label class="form-check-label" for="rdGrRubro">Grupo de Rubros</label>
-                                </div>
-                            </div>
-                            <div class="input-group input-group-sm">
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" name="concepto" type="radio" value="R" id="rdRubro">
-                                    <label class="form-check-label" for="rdRubro">Rubros</label>
-                                </div>
-                            </div>
-                            <div class="input-group input-group-sm">
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" name="concepto" type="radio" value="P" id="rdProd">
-                                    <label class="form-check-label" for="rdProd">Producto</label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="gridStkVal"></div>
                 </div>
             </div>
         </div>
@@ -91,7 +196,6 @@
         var buscarDepoStk = "@Url.Action("buscarDepoStk", "infoprod", new { area = "pocketppal" })";
         var buscarDepoStkVal = "@Url.Action("buscarDepoStkVAl", "infoprod", new { area = "pocketppal" })";
         var concepto = "S";
-
     </script>
     <script src="~/js/app/infoprod/infodepo.js"></script>
 }

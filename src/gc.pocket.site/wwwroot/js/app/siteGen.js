@@ -17,6 +17,116 @@ estado = {
 
 };
 
+/* ========================================================================
+   SISTEMA DE SPINNER PARA BOTONES - GOLDEN THEME
+   ======================================================================== */
+
+/**
+ * Activa el spinner en un botón y lo deshabilita
+ * @param {string|jQuery} btnSelector - Selector CSS o objeto jQuery del botón
+ * @param {string} textoLoading - Texto opcional a mostrar durante la carga (default: "Cargando...")
+ * @returns {object} Estado original del botón para restauración
+ */
+function ActivarSpinnerBoton(btnSelector, textoLoading) {
+    var $btn = typeof btnSelector === 'string' ? $(btnSelector) : btnSelector;
+    
+    if ($btn.length === 0) {
+        console.warn('ActivarSpinnerBoton: No se encontró el botón con selector', btnSelector);
+        return null;
+    }
+
+    // Guardar estado original
+    var estadoOriginal = {
+        contenidoHTML: $btn.html(),
+        deshabilitado: $btn.prop('disabled'),
+        clases: $btn.attr('class')
+    };
+
+    // Texto de carga
+    var texto = textoLoading || 'Cargando...';
+    
+    // Crear spinner con boxicons (ya disponible en el proyecto)
+    var spinnerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i>' + texto;
+
+    // Aplicar spinner y deshabilitar
+    $btn.prop('disabled', true)
+        .html(spinnerHTML)
+        .addClass('btn-loading'); // Clase adicional para estilos custom si se necesitan
+
+    return estadoOriginal;
+}
+
+/**
+ * Desactiva el spinner y restaura el estado original del botón
+ * @param {string|jQuery} btnSelector - Selector CSS o objeto jQuery del botón
+ * @param {object} estadoOriginal - Estado original retornado por ActivarSpinnerBoton
+ */
+function DesactivarSpinnerBoton(btnSelector, estadoOriginal) {
+    var $btn = typeof btnSelector === 'string' ? $(btnSelector) : btnSelector;
+    
+    if ($btn.length === 0 || !estadoOriginal) {
+        console.warn('DesactivarSpinnerBoton: Botón no encontrado o estado original inválido');
+        return;
+    }
+
+    // Restaurar estado original
+    $btn.prop('disabled', estadoOriginal.deshabilitado)
+        .html(estadoOriginal.contenidoHTML)
+        .removeClass('btn-loading');
+}
+
+/**
+ * Wrapper para ejecutar función con spinner en botón
+ * Maneja automáticamente la activación y desactivación del spinner
+ * @param {string|jQuery} btnSelector - Selector del botón
+ * @param {function} asyncFunction - Función asíncrona a ejecutar (debe retornar Promise o usar callbacks)
+ * @param {string} textoLoading - Texto opcional durante la carga
+ * @param {function} onFinally - Callback opcional que siempre se ejecuta al finalizar
+ */
+function EjecutarConSpinner(btnSelector, asyncFunction, textoLoading, onFinally) {
+    var $btn = typeof btnSelector === 'string' ? $(btnSelector) : btnSelector;
+    var estadoOriginal = ActivarSpinnerBoton($btn, textoLoading);
+
+    if (!estadoOriginal) {
+        console.error('EjecutarConSpinner: No se pudo activar el spinner');
+        return;
+    }
+
+    // Función de limpieza
+    var cleanup = function() {
+        DesactivarSpinnerBoton($btn, estadoOriginal);
+        if (typeof onFinally === 'function') {
+            onFinally();
+        }
+    };
+
+    // Ejecutar función asíncrona
+    try {
+        var result = asyncFunction();
+        
+        // Si retorna una Promise
+        if (result && typeof result.then === 'function') {
+            result
+                .then(cleanup)
+                .catch(function(error) {
+                    console.error('Error en EjecutarConSpinner:', error);
+                    cleanup();
+                });
+        } else {
+            // Si no es Promise, asumir que maneja sus propios callbacks
+            // El usuario debe llamar a DesactivarSpinnerBoton manualmente en callbacks
+            // o pasar el cleanup como parámetro
+        }
+    } catch (error) {
+        console.error('Error ejecutando función con spinner:', error);
+        cleanup();
+    }
+}
+
+/* ========================================================================
+   FIN SISTEMA DE SPINNER PARA BOTONES
+   ======================================================================== */
+
 function PostGenHtml(data, path, retorno) {
     PostGen(data, path, retorno, fnError, "HTML");
 }

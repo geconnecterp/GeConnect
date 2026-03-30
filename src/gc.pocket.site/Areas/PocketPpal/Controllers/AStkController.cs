@@ -114,37 +114,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                 if (!ProductoBase.Up_id.Equals("07") && up != 1)
                 {
-                    return Json(new { error = true, msg = "EL PRODUCTO NO ES POR UNIDADES. LA UNIDAD DE PRESENTACIÓN TIENE QUE SER IGUAL A 1 SIEMPRE." });
-                }
-
-                //if (ProductoBase.P_con_vto.Equals("S"))
-                //{
-                //    var fecha = vto.ToDateTimeOrNull();
-                //    var tope = ProductoBase.p_con_vto_ctl;
-                //    if (fecha == null)
-                //    {
-                //        return Json(new { error = true, msg = "La fecha recepcionada no es válida. Verifique." });
-                //    }
-                //    else if (fecha < tope)
-                //    {
-                //        return Json(new { error = true, msg = $"La fecha recepcionada no puede ser menor a {tope}. Verifique, por favor." });
-                //    }
-                //}
-
-                //if (!string.IsNullOrEmpty(vto) && !string.IsNullOrWhiteSpace(vto))
-                //{
-                //    var fecha = vto.ToDateTimeOrNull();
-                //    var tope = DateTime.Today.AddDays(_settings.FechaVtoCota);
-
-                //    if (fecha == null)
-                //    {
-                //        return Json(new { error = true, msg = "La fecha recepcionada no es válida. Verifique." });
-                //    }
-                //    else if (fecha < tope)
-                //    {
-                //        return Json(new { error = true, msg = $"La fecha recepcionada no puede ser menor a {tope}. Verifique, por favor." });
-                //    }
-                //}
+                    return Json(new { error = true, msg = "EL PRODUCTO NO ES POR UNIDADES. LA UNIDAD DE PRESENTACIÓN TIENE QUE SER IGUAL A 1, SIEMPRE." });
+                }                
 
                 //valido cantidad. Si el resultado es igual a 0 dar error
                 if (!sig)
@@ -160,12 +131,6 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     }
                 }
                 var cantidad = ProductoBase.Up_id.Equals("07") ? (up * bulto) + unidad : unidad;
-
-
-                //if (cantidad <= 0)
-                //{
-                //    return Json(new { error = true, msg = "La cantidad dió como resultado 0 (cero). Verifique." });
-                //}
 
                 //armo producto a resguardar
                 var item = new ProductoGenDto();
@@ -184,15 +149,6 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 item.bulto = bulto;
                 item.us = unidad;
 
-                //if (string.IsNullOrEmpty(vto) && string.IsNullOrWhiteSpace(vto))
-                //{
-                //    item.vto = null;
-                //}
-                //else
-                //{
-                //    var f = vto.Split('-', StringSplitOptions.RemoveEmptyEntries);
-                //    item.vto = new DateTime(f[0].ToInt(), f[1].ToInt(), f[2].ToInt());
-                //}
                 item.cantidad = cantidad;
 
                 var res = ProductoGenRegs.Any(x => x.p_id.Equals(item.p_id));

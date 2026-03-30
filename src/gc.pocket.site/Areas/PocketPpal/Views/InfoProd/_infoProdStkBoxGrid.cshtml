@@ -8,60 +8,155 @@
     var alt = true;
     string clase = string.Empty;
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+    int cont = 0;
+
+    // Determinar estado de vencimiento
+    var vencimientoClass = "bg-success";
+    var vencimientoIcon = "bx-check-circle";
+    var diasVencimiento = 0;
+    var stockClass = string.Empty;
 }
-<div class="table-responsive table-wrapper text-nowrap">
-    <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head">
-        <thead class="table-dark">
-            <tr class="header">
-                <th scope="col">Dep</th>
-                <th class ="text-sm-center" scope="col">Box</th>
-                <th class="text-sm-center" scope="col">Stk</th>
-                <th class="text-sm-center" scope="col">FV</th>
 
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.ListaDatos)
-            {
-                if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+<div class="grid-golden h-100">
+    <div class="grid-golden-body p-1">
+        <div class="table-responsive table-wrapper table-wrapper-300 text-nowrap">
+            <table class="table table-sm table-hover mb-0 table-golden">
+                <thead class="sticky-top table-golden-header-compact">
+                    <tr class="header">
+                        <th class="text-left th-compact" scope="col" style="width:35%">
+                            <i class="bx bx-store-alt"></i> Depósito
+                        </th>
+                        <th class="text-center th-compact" scope="col" style="width:15%">
+                            <i class="bx bx-box"></i> Box
+                        </th>
+                        <th class="text-center th-compact" scope="col" style="width:25%">
+                            <i class="bx bx-package"></i> Stock
+                        </th>
+                        <th class="text-center th-compact" scope="col" style="width:25%">
+                            <i class="bx bx-calendar"></i> F. Vto
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ListaDatos != null && Model.ListaDatos.Any())
+                    {
+                        @foreach (var item in Model.ListaDatos)
+                        {
+                            cont++;
+                            if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }                            
+                            {                                
+                                
+                                if (item.Vto.HasValue)
+                                {
+                                    diasVencimiento = (item.Vto.Value - DateTime.Now).Days;
+                                    
+                                    if (diasVencimiento < 0)
+                                    {
+                                        vencimientoClass = "bg-danger";
+                                        vencimientoIcon = "bx-x-circle";
+                                    }
+                                    else if (diasVencimiento <= 30)
+                                    {
+                                        vencimientoClass = "bg-warning";
+                                        vencimientoIcon = "bx-error";
+                                    }
+                                    else if (diasVencimiento <= 90)
+                                    {
+                                        vencimientoClass = "bg-info";
+                                        vencimientoIcon = "bx-info-circle";
+                                    }
+                                }
+                                
+                                // Determinar badge de stock
+                                stockClass = item.ps_stk > 0 ? "bg-success" : "bg-secondary";
+                            }
 
-                <tr class="@clase">
-                    <td class="corta-linea">@item.Depo_nombre</td>
-                    <td class="text-sm-center">@item.Box_id</td>
-                    <td class="text-sm-end">@if (item.up_id == "07")
-                        {
-                            var spl = item.ps_stk.ToString().Split('.');
-                            <span>@spl[0]</span>
+                            <tr class="@clase" data-box="@item.Box_id" data-depo="@item.Depo_nombre">
+                                <td class="td-compact">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bx bx-store-alt me-2 text-golden"></i>
+                                        <span class="corta-linea">@item.Depo_nombre</span>
+                                    </div>
+                                </td>
+                                <td class="text-center td-compact">
+                                    <span class="badge bg-info">@item.Box_id</span>
+                                </td>
+                                <td class="text-center td-compact">
+                                    @if (item.up_id == "07")
+                                    {
+                                        var spl = item.ps_stk.ToString().Split('.');
+                                        <span class="badge @stockClass">
+                                            <i class="bx bx-box"></i> @spl[0]
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge @stockClass">
+                                            <i class="bx bx-box"></i> @item.ps_stk
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-center td-compact">
+                                    @if (!item.Vto.HasValue)
+                                    {
+                                        <span class="badge bg-secondary">
+                                            <i class="bx bx-minus"></i> S/F
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge @vencimientoClass" title="@(diasVencimiento >= 0 ? $"Vence en {diasVencimiento} días" : $"Vencido hace {Math.Abs(diasVencimiento)} días")">
+                                            <i class="bx @vencimientoIcon"></i> @item.Vto.Value.ToString("dd/MM/yyyy")
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
                         }
-                        else
-                        {
-                            <span>@item.ps_stk</span>
-                        }
-                       </td>
-                    <td class="text-sm-center">
-                        @if (!item.Vto.HasValue)
-                        {
-                            <span>- - -</span>
-                        }
-                        else
-                        {
-                            <span>@item.Vto.Value.ToShortDateString()</span>
-                        }
-                    </td>
-                </tr>
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">
+                                <i class="bx bx-info-circle bx-md"></i>
+                                <p class="mb-0">No hay información de stock por box disponible</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    @* Footer con información adicional *@
+    @if (Model.ListaDatos != null && Model.ListaDatos.Any())
+    {
+        <div class="grid-golden-footer d-flex justify-content-between align-items-center flex-wrap">
+            <small class="text-muted">
+                <i class="bx bx-box"></i> Total boxes: <strong>@Model.ListaDatos.Count()</strong>
+            </small>
+            <small class="text-muted">
+                <i class="bx bx-package"></i> Stock Total: <strong>@Model.ListaDatos.Sum(x => x.ps_stk)</strong>
+            </small>
+            @{
+                var conVencimiento = Model.ListaDatos.Count(x => x.Vto.HasValue);
+                var vencidos = Model.ListaDatos.Count(x => x.Vto.HasValue && x.Vto.Value < DateTime.Now);
+                var porVencer = Model.ListaDatos.Count(x => x.Vto.HasValue && x.Vto.Value >= DateTime.Now && (x.Vto.Value - DateTime.Now).Days <= 30);
             }
-            @* <tr>
-            <td colspan="9">
-            @Html.PagedListPager(
-            (IPagedList)Model.ListaDatos,
-            page => Url.Action("Index", "producto", new { page = page, area = "Personas", sort = Model.Sort, sortdir = sortDirInv }), new PagedListRenderOptions
+            <small class="text-muted">
+                <i class="bx bx-calendar-check"></i> Con F. Vto: <strong>@conVencimiento</strong>
+            </small>
+            @if (vencidos > 0)
             {
-            LiElementClasses = new string[] { "page-item" },
-            PageClasses = new string[] { "page-link" },
-            Display = PagedListDisplayMode.IfNeeded
-            })
-            </td>
-            </tr> *@
-        </tbody>
-    </table>
+                <small class="text-danger">
+                    <i class="bx bx-error-circle"></i> Vencidos: <strong>@vencidos</strong>
+                </small>
+            }
+            @if (porVencer > 0)
+            {
+                <small class="text-warning">
+                    <i class="bx bx-time"></i> Por vencer (30d): <strong>@porVencer</strong>
+                </small>
+            }
+        </div>
+    }
 </div>

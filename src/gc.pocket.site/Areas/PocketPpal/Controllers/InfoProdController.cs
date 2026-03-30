@@ -137,6 +137,9 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 ViewBag.Callback = callback;
             }
 
+            //Inicializamos producto base
+            ProductoBase = new();
+
             string volver = Url.Action("info", "almacen", new { area = "gestion" })??"#";
             ViewBag.AppItem = new AppItem { Nombre = "Información de Productos", VolverUrl = volver ?? "#" };
 
@@ -445,7 +448,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
             var lista = new StaticPagedList<InfoProdMovStk>(listInfoProd, 1, 999, listInfoProd.Count);
 
-            return new GridCoreSmart<InfoProdMovStk>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
+            return new GridCoreSmart<InfoProdMovStk>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Sm_fecha", SortDir = "ASC" };
         }
 
         [HttpPost]
