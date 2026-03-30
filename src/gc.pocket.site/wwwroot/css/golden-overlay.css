@@ -492,7 +492,56 @@ body.auth-golden {
         box-shadow: none;
     }
 
-/* ===== PERFORMANCE OPTIMIZATIONS ===== */
+/* ====== FIX: ELIMINAR ESPACIADO INNECESARIO EN GRIDS ====== */
+
+/* Forzar padding y margin cero en grid-golden-body */
+.grid-golden-body,
+.grid-golden-body.p-0,
+.grid-golden .grid-golden-body {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Eliminar espaciado en table-responsive dentro de grid-golden */
+.grid-golden .table-responsive,
+.grid-golden .table-wrapper,
+.grid-golden .table-wrapper-500,
+.grid-golden .table-wrapper-400,
+.grid-golden .table-wrapper-300,
+.grid-golden .table-wrapper-200 {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Eliminar márgenes de la tabla dentro del grid */
+.grid-golden .table-responsive .table,
+.grid-golden .table-wrapper .table {
+    margin-bottom: 0 !important;
+}
+
+/* Asegurar que el header sticky no tenga espaciado extra */
+.grid-golden thead.sticky-top {
+    top: 0 !important;
+    margin: 0 !important;
+}
+
+/* Footer con espaciado correcto */
+.grid-golden-footer {
+    padding: 10px 16px !important;
+    margin: 0 !important;
+}
+
+/* Fix para container h-100 */
+.grid-golden.h-100 {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* ====================================================================== */
+/* FIN FIX ESPACIADO GOLDEN GRIDS */
+/* ====================================================================== */
+
+/* PERFORMANCE OPTIMIZATIONS */
 @media (prefers-reduced-motion: reduce) {
     .btn, .nav-link, .form-control, .form-select,
     .btn-login-golden, .app-brand-golden .app-brand-text {
