@@ -4,21 +4,57 @@
     var callback = Url.Action("index", "impret", new { area = "pocketppal" });
 }
 
-<div class="row mt-2 justify-content-center">
-    <div class="col-md-6 col-sm-6">
-        <partial name="~/areas/gestion/views/producto/_ctrBuscarProducto.cshtml" model="@buscar" />
-    </div>        
-</div>
-<div class="row mt-2 justify-content-center">
-    <div class="col-md-6 col-sm-6">
-        <partial name="_productosEtiqueta" />
+<div class="container-fluid px-3 py-3">
+    <!-- ✅ SECCIÓN DE BÚSQUEDA -->
+    <div class="row justify-content-center mb-3">
+        <div class="col-lg-8 col-md-10 col-sm-12">
+            <div class="card-golden">
+                <div class="card-golden-header">
+                    <i class="bx bx-search me-2"></i>
+                    <h6 class="mb-0">Búsqueda de Productos</h6>
+                </div>
+                <div class="card-body">
+                    <partial name="~/areas/gestion/views/producto/_ctrBuscarProducto.cshtml" model="@buscar" />
+                </div>
+            </div>
+        </div>
+    </div>
 
-    </div> 
-</div>
-<div class="row mt-2 mb-3">
-    <div class="d-flex justify-content-center">
-        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></a>
-        <button type="button" disabled id="btnConfirmar" class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>
+    <!-- ✅ LISTA DE PRODUCTOS SELECCIONADOS -->
+    <div class="row justify-content-center mb-3">
+        <div class="col-lg-8 col-md-10 col-sm-12">
+            <partial name="_productosEtiqueta" />
+        </div>
+    </div>
+
+    <!-- ✅ BOTONES DE ACCIÓN -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10 col-sm-12">
+            <div class="card-golden">
+                <div class="card-body">
+                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                        <a asp-action="producto" 
+                           asp-controller="infoprod" 
+                           asp-area="pocketppal" 
+                           asp-route-callback="@callback" 
+                           class="btn btn-info btn-sm">
+                            <i class="bx bx-info-circle me-1"></i>Info Producto
+                        </a>
+                        <button type="button" 
+                                id="btnCancelar" 
+                                class="btn btn-secondary btn-sm">
+                            <i class="bx bx-x me-1"></i>Cancelar
+                        </button>
+                        <button type="button" 
+                                disabled 
+                                id="btnConfirmar" 
+                                class="btn btn-success btn-sm">
+                            <i class="bx bx-check me-1"></i>Confirmar Impresión
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -26,7 +62,6 @@
     <script type="text/javascript">
         var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "gestion" })";
         var busquedaAvanzadaUrl = "@Url.Action("busquedaavanzada", "producto", new { area = "gestion" })";
-
         var confirmarCargaPreviaUrl = "@Url.Action("ConfirmarCargaPrevia", "impret", new { area = "PocketPpal" })";
     </script>
 

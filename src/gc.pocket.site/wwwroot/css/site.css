@@ -30,6 +30,25 @@ input[type="text"], div, select {
     margin: 2px;
 }
 
+/* ====================================================================== */
+/* ✅ UTILIDADES GENERALES ADICIONALES */
+/* ====================================================================== */
+
+/* Utilidad: Cursor pointer para elementos interactivos */
+.cursor-pointer {
+    cursor: pointer !important;
+}
+
+/* Utilidad: Cursor no permitido */
+.cursor-not-allowed {
+    cursor: not-allowed !important;
+}
+
+/* Utilidad: Cursor de ayuda */
+.cursor-help {
+    cursor: help !important;
+}
+
 .textoEncabezado {
     font-weight: 600;
     font-size: 1em;
@@ -90,13 +109,13 @@ th, td {
 
 .table-wrapper-500 {
     max-height: 500px;
-    max-width: 98%;
+    max-width: 100%;
     overflow: auto;
 }
 
 .table-wrapper-400 {
     max-height: 400px;
-    max-width: 98%;
+    max-width: 100%;
     overflow: auto;
 }
 
@@ -108,7 +127,7 @@ th, td {
 
 .table-wrapper-700 {
     max-height: 700px;
-    max-width: 98%;
+    max-width: 100%;
     overflow: auto;
 }
 

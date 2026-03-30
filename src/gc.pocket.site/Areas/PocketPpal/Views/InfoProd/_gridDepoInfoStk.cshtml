@@ -6,38 +6,87 @@
     string clase = string.Empty;
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
 }
-<div class="table-responsive table-wrapper text-nowrap">
-    <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head">
-        <thead class="table-dark">
-            <tr class="header">
-                <th class="text-sm-center" scope="col">Id</th>
-                <th class="text-sm-center" scope="col">Desc</th>
-                <th class="text-sm-center" scope="col">stk</th>
-                <th class="text-sm-center" scope="col">FV</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.ListaDatos)
-            {
-                if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                <tr class="@clase">
-                    <td class="text-sm-start corta-linea">@item.P_id</td>
-                    <td class="text-sm-start">@item.P_desc.Trim()</td>
-                    <td class="text-sm-end">@item.Ps_stk</td>
-                    <td class="text-sm-center">
-                        @if (!item.Vto.HasValue)
+<!-- ✅ ESTRUCTURA GOLDEN COMPLETA -->
+<div class="grid-golden h-100">
+    <div class="grid-golden-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">
+            <i class="bx bx-package me-2"></i>Stock en Depósito
+            <span class="badge bg-primary ms-2">@Model.ListaDatos.Count()</span>
+        </h6>
+    </div>
+    <div class="grid-golden-body p-0">
+        <div class="table-responsive table-wrapper table-wrapper-500">
+            <table class="table table-sm table-hover mb-0 table-golden" id="tbGridDepoStk">
+                <thead class="sticky-top table-golden-header-compact">
+                    <tr class="header">
+                        <th scope="col" class="th-compact text-center">ID</th>
+                        <th scope="col" class="th-compact">Descripción</th>
+                        <th scope="col" class="th-compact text-end">Stock</th>
+                        <th scope="col" class="th-compact text-center">F. Vencimiento</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ListaDatos != null && Model.ListaDatos.Any())
+                    {
+                        @foreach (var item in Model.ListaDatos)
                         {
-                            <span>- - -</span>
+                            if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                            <tr class="@clase cursor-pointer" data-p-id="@item.P_id">
+                                <td class="td-compact text-center">
+                                    <strong class="text-golden">@item.P_id</strong>
+                                </td>
+                                <td class="td-compact corta-linea" title="@item.P_desc.Trim()">
+                                    @item.P_desc.Trim()
+                                </td>
+                                <td class="td-compact text-end">
+                                    <span class="badge @(item.Ps_stk > 0 ? "bg-success" : "bg-secondary")">
+                                        @item.Ps_stk
+                                    </span>
+                                </td>
+                                <td class="td-compact text-center">
+                                    @if (!item.Vto.HasValue)
+                                    {
+                                        <span class="text-muted">- - -</span>
+                                    }
+                                    else
+                                    {
+                                        var diasParaVencer = (item.Vto.Value - DateTime.Now).Days;
+                                        var claseBadge = diasParaVencer < 30 ? "bg-danger" : diasParaVencer < 90 ? "bg-warning" : "bg-info";
+                                        
+                                        <span class="badge @claseBadge">
+                                            @item.Vto.Value.ToShortDateString()
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
                         }
-                        else
-                        {
-                            <span>@item.Vto.Value.ToShortDateString()</span>
-                        }
-                    </td>
-                    
-                </tr>
-            }
-        </tbody>
-    </table>
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">
+                                <i class="bx bx-info-circle bx-md"></i>
+                                <p class="mb-0">No hay stock disponible en este depósito</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    @* Footer informativo *@
+    @if (Model.ListaDatos != null && Model.ListaDatos.Any())
+    {
+        <div class="grid-golden-footer d-flex justify-content-between align-items-center">
+            <small class="text-muted">
+                <i class="bx bx-package"></i> Total productos: <strong>@Model.ListaDatos.Count()</strong>
+            </small>
+            <small class="text-muted">
+                <i class="bx bx-check-circle"></i> Con stock: <strong>@Model.ListaDatos.Count(x => x.Ps_stk > 0)</strong>
+            </small>
+        </div>
+    }
 </div>

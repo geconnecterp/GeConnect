@@ -257,4 +257,41 @@ Antes de solicitar una revisión de código, asegurarse de que:
 
 ### Formato y Estilo
 
-Seguir las reglas definidas en `.editorconfig` para mantener consistencia:
+Seguir las reglas definidas en `.editorconfig` para mantener consistencia.
+
+## 🎨 **ESTÁNDARES DE ESTILOS CSS**
+
+### **Regla de Reutilización de Estilos**
+
+✅ **SIEMPRE** utilizar estilos existentes en:
+- `site.css` - Estilos base del proyecto
+- `golden-overlay.css` - Tema Golden completo
+
+❌ **NUNCA** crear estilos inline o en `<style>` si ya existe una clase equivalente.
+
+⚠️ **EXCEPCIÓN**: Solo crear nuevos estilos si es **IMPERATIVO** y no existe alternativa.
+
+### **Proceso para Nuevos Estilos**
+
+1. **Verificar** que NO exista en `site.css` o `golden-overlay.css`
+2. **Presentar** propuesta con justificación
+3. **Evaluar** si puede agregarse como clase global o debe ser específico
+4. **Documentar** el nuevo estilo con comentarios claros
+
+### **Clases Globales Disponibles**
+
+#### Golden Theme:
+- `.grid-golden`, `.grid-golden-header`, `.grid-golden-body`, `.grid-golden-footer`
+- `.card-golden`, `.card-golden-header`
+- `.table-golden`, `.table-golden-header-compact`
+- `.th-compact`, `.td-compact`
+- `.text-golden`, `.bg-golden`, `.border-golden`
+- `.btn-golden`, `.input-busqueda-golden`
+
+#### Utilidades:
+- `.corta-linea` - Truncar texto con ellipsis
+- `.backReadOnly` - Fondo amarillo para campos readonly
+- `.selected-row` - Fila seleccionada en tablas
+- `.table-wrapper-*` - Contenedores con scroll
+
+### **Ejemplo Incorrecto** ❌

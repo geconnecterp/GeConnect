@@ -7,43 +7,72 @@
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
     int cont = 0;
 }
-<div class="table-responsive table-wrapper  table-wrapper">
-    <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbAuPend">
-        <thead class=" table-dark">
-            <tr class="header">
-                <th scope="col" style="width:1%"></th>
-                <th scope="col">Proveedores</th>
-                <th scope="col">N° Autorización</th>
-                @* <th scope="col"></th> *@
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.ListaDatos)
-            {
-                cont++;
-                if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+<div class="grid-golden h-100">
+    <div class="grid-golden-body p-0">
+        <div class="table-responsive table-wrapper table-wrapper-500">
+            <table class="table table-sm table-hover mb-0 table-golden" id="tbAuPend">
+                <thead class="sticky-top table-golden-header-compact">
+                    <tr class="header">
+                        <th scope="col" class="th-compact text-center" style="width:5%">#</th>
+                        <th scope="col" class="th-compact">Proveedor</th>
+                        <th scope="col" class="th-compact text-center">N° Autorización</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ListaDatos != null && Model.ListaDatos.Any())
+                    {
+                        @foreach (var item in Model.ListaDatos)
+                        {
+                            cont++;
+                            if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                <tr class="@clase" onclick="seleccionaRegistroAP(this)">
-                    <td>@cont </td>
-                    <td style="min-width:200px;" class="corta-linea">@item.Cta_denominacion</td>
-                    <td>@item.Rp
-                        @Html.Hidden("rp" + @cont, item.Rp)
-                    </td>
-                    @* <td><a asp-action="ResguardarAutorizacionProveedor" asp-controller="rpr" asp-area="pocketppal" class="btn btn-xs btn-secondary" asp-route-rp="@item.Rp"> <i class="bx bxs-send bx-xs"></i></a></td> *@
-                </tr>
-            }
-            @* <tr>
-            <td colspan="9">
-            @Html.PagedListPager(
-            (IPagedList)Model.ListaDatos,
-            page => Url.Action("Index", "producto", new { page = page, area = "Personas", sort = Model.Sort, sortdir = sortDirInv }), new PagedListRenderOptions
-            {
-            LiElementClasses = new string[] { "page-item" },
-            PageClasses = new string[] { "page-link" },
-            Display = PagedListDisplayMode.IfNeeded
-            })
-            </td>
-            </tr> *@
-        </tbody>
-    </table>
+                            <tr class="@clase"
+                                style="cursor: pointer;"
+                                data-rp="@item.Rp"
+                                data-cta-id="@item.Cta_id"
+                                onclick="seleccionaRegistroAP(this)">
+                                <td class="td-compact text-center">
+                                    <span class="badge bg-secondary">@cont</span>
+                                </td>
+                                <td class="td-compact corta-linea" style="min-width:200px;" title="@item.Cta_denominacion">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bx bx-building me-2 text-golden"></i>
+                                        <span>@item.Cta_denominacion</span>
+                                    </div>
+                                </td>
+                                <td class="td-compact text-center">
+                                    <strong class="text-golden">@item.Rp</strong>
+                                    @Html.Hidden("rp" + @cont, item.Rp)
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">
+                                <i class="bx bx-info-circle bx-md"></i>
+                                <p class="mb-0">No hay autorizaciones pendientes</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        @* Footer informativo *@
+        @if (Model.ListaDatos != null && Model.ListaDatos.Any())
+        {
+            <div class="grid-golden-footer d-flex justify-content-between align-items-center">
+                <small class="text-muted">
+                    <i class="bx bx-file"></i> Total autorizaciones: <strong>@Model.ListaDatos.Count()</strong>
+                </small>
+                @if (Model.CantidadPaginas > 1)
+                {
+                    <small class="text-muted">
+                        Página <strong>@Model.PaginaActual</strong> de <strong>@Model.CantidadPaginas</strong>
+                    </small>
+                }
+            </div>
+        }
+    </div>
 </div>

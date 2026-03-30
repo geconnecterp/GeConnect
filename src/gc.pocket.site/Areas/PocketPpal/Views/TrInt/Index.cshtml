@@ -1,26 +1,111 @@
-﻿
-@{
+﻿@{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
 }
 
-<div class="row mt-3">
-    <div class="col-sm-12">
-        <a asp-action="TI_AU" asp-controller="trint" asp-area="pocketppal" asp-route-tiId="S" asp-route-cs="false" class="btn btn-lg btn-block m-2" style="background-color:darkred;color:#FFF"><span>Entre Sucursal</span></a>
+<div class="container-fluid px-3 py-3">
+    <!-- ✅ TÍTULO Y DESCRIPCIÓN -->
+    <div class="row mb-4 text-center">
+        <div class="col-12">
+            <h3 class="text-golden-dark">
+                <i class="bx bx-transfer-alt"></i> Transferencias Internas
+            </h3>
+            <p class="text-muted">Seleccione el tipo de transferencia a realizar</p>
+        </div>
     </div>
-</div>
-<div class="row mt-3">
-    <div class="col-sm-6">
-        <a asp-action="TI_AU" asp-controller="trint" asp-area="pocketppal" asp-route-tiId="D" asp-route-cs="true" class="btn btn-lg btn-block m-2" style="background-color:indianred;color:#FFF"><span>Entre Depositos</span></a>
-    </div>
-    <div class="col-sm-6">
-        <a asp-action="TICargaCarrito" asp-controller="trint" asp-area="pocketppal" asp-route-tiId="E" asp-route-cs="false" class="btn btn-lg btn-block m-2" style="background-color:indianred;color:#FFF"><span>Entre Depositos (SIN AUTORIZACION)</span></a>
-    </div>
-</div>
-<div class="row mt-3">
-    <div class="col-sm-6">
-        <a asp-action="TI_AU" asp-controller="trint" asp-area="pocketppal" asp-route-tiId="B" asp-route-cs="true" class="btn btn-lg btn-block m-2" style="background-color:palevioletred;color:#FFF"><span>Entre Box</span></a>
-    </div>
-    <div class="col-sm-6">
-        <a asp-action="TICargaCarrito" asp-controller="trint" asp-area="pocketppal" asp-route-tiId="O" asp-route-cs="false" class="btn btn-lg btn-block m-2" style="background-color:palevioletred;color:#FFF"><span>Entre Box (SIN AUTORIZACION)</span></a>
+
+    <!-- ✅ OPCIONES DE TRANSFERENCIA CON CARDS GOLDEN -->
+    <div class="row g-3">
+        <!-- Entre Sucursales -->
+        <div class="col-md-12 col-sm-12">
+            <a asp-action="TI_AU" 
+               asp-controller="trint" 
+               asp-area="pocketppal" 
+               asp-route-tiId="S" 
+               asp-route-cs="false" 
+               class="card-golden text-decoration-none h-100 d-block">
+                <div class="card-golden-header" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+                    <h5 class="mb-0 text-white">
+                        <i class="bx bx-building me-2"></i>Entre Sucursales
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="mb-0 text-muted">Transferencia con autorización entre sucursales</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Entre Depósitos -->
+        <div class="col-md-6 col-sm-12">
+            <a asp-action="TI_AU" 
+               asp-controller="trint" 
+               asp-area="pocketppal" 
+               asp-route-tiId="D" 
+               asp-route-cs="true" 
+               class="card-golden text-decoration-none h-100 d-block">
+                <div class="card-golden-header" style="background: linear-gradient(135deg, #cd5c5c 0%, #b04a4a 100%);">
+                    <h5 class="mb-0 text-white">
+                        <i class="bx bx-package me-2"></i>Entre Depósitos
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="mb-0 text-muted">Con autorización</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-6 col-sm-12">
+            <a asp-action="TICargaCarrito" 
+               asp-controller="trint" 
+               asp-area="pocketppal" 
+               asp-route-tiId="E" 
+               asp-route-cs="false" 
+               class="card-golden text-decoration-none h-100 d-block">
+                <div class="card-golden-header" style="background: linear-gradient(135deg, #cd5c5c 0%, #b04a4a 100%);">
+                    <h5 class="mb-0 text-white">
+                        <i class="bx bx-package me-2"></i>Entre Depósitos (SIN AUTORIZACIÓN)
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="mb-0 text-muted">Sin necesidad de autorización previa</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Entre Box -->
+        <div class="col-md-6 col-sm-12">
+            <a asp-action="TI_AU" 
+               asp-controller="trint" 
+               asp-area="pocketppal" 
+               asp-route-tiId="B" 
+               asp-route-cs="true" 
+               class="card-golden text-decoration-none h-100 d-block">
+                <div class="card-golden-header" style="background: linear-gradient(135deg, #db7093 0%, #c2607b 100%);">
+                    <h5 class="mb-0 text-white">
+                        <i class="bx bx-box me-2"></i>Entre Box
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="mb-0 text-muted">Con autorización</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-6 col-sm-12">
+            <a asp-action="TICargaCarrito" 
+               asp-controller="trint" 
+               asp-area="pocketppal" 
+               asp-route-tiId="O" 
+               asp-route-cs="false" 
+               class="card-golden text-decoration-none h-100 d-block">
+                <div class="card-golden-header" style="background: linear-gradient(135deg, #db7093 0%, #c2607b 100%);">
+                    <h5 class="mb-0 text-white">
+                        <i class="bx bx-box me-2"></i>Entre Box (SIN AUTORIZACIÓN)
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="mb-0 text-muted">Sin necesidad de autorización previa</p>
+                </div>
+            </a>
+        </div>
     </div>
 </div>

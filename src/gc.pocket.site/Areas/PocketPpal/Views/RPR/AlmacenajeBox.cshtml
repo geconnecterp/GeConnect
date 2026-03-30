@@ -1,40 +1,83 @@
 ﻿@{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
-
     var callback = Url.Action("almacenajeBox", "rpr", new { area = "pocketppal" });
 }
 
-<div class="row mt-3">
-    <div class="col-sm-6">
-        <div class="input-group input-group-sm">
-            <span class="input-group-text" style="width:40px;">UL: </span>
-            <input type="text" maxlength="16" id="txtUl" class="form-control inputEditable" placeholder="Ingresar UL..." />
+<div class="container-fluid px-3 py-3">
+    <!-- ✅ CARD GOLDEN PARA ALMACENAJE -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card-golden">
+                <div class="card-golden-header">
+                    <i class="bx bx-box me-2"></i>
+                    <h6 class="mb-0">Almacenamiento de UL en BOX</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6 col-12">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-golden-label" style="min-width:70px;">
+                                    <i class="bx bx-barcode me-1"></i>UL
+                                </span>
+                                <input type="text" 
+                                       maxlength="16" 
+                                       id="txtUl" 
+                                       class="form-control input-busqueda-golden" 
+                                       placeholder="Ingresar UL..." 
+                                       autofocus />
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-12">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-golden-label" style="min-width:70px;">
+                                    <i class="bx bx-package me-1"></i>Box
+                                </span>
+                                <input type="text" 
+                                       maxlength="11" 
+                                       id="txtBox" 
+                                       disabled 
+                                       class="form-control input-busqueda-golden" 
+                                       placeholder="Agregar Box" />
+                            </div>
+                        </div>
+                    </div>
+                    <small class="text-muted mt-2 d-block">
+                        <i class="bx bx-info-circle"></i> 
+                        Escanee la UL y luego el BOX de destino para confirmar el almacenamiento
+                    </small>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="col-sm-6">
-        <div class="input-group input-group-sm">
-            <span class="input-group-text" style="width:40px;">Box: </span>
-            <input type="text" maxlength="11" id="txtBox" disabled class="form-control inputEditable" placeholder="Agregar Box" />
+
+    <!-- ✅ BOTONES DE ACCIÓN -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-center gap-2">
+                <a asp-action="producto" 
+                   asp-controller="infoprod" 
+                   asp-area="pocketppal" 
+                   asp-route-callback="@callback" 
+                   title="Info Producto"
+                   class="btn btn-info btn-sm">
+                    <i class="bx bx-info-circle me-1"></i>@*  *@
+                </a>
+              @*   <button type="button" 
+                        id="btnCancelar" 
+                        class="btn btn-secondary btn-sm">
+                    <i class="bx bx-x me-1"></i>Cancelar
+                </button> *@
+                <button type="button"  
+                        disabled 
+                        id="btnConfirmar" 
+                        title="Confirmar"
+                        class="btn btn-success btn-sm">
+                    <i class="bx bx-check me-1"></i>
+                </button>
+            </div>
         </div>
     </div>
 </div>
-<div class="row mb-3">
-    <div class="d-flex justify-content-center">
-        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></a>
-        <button type="button"  disabled id="btnConfirmar" class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>
-    </div>
-</div>
-@* <div class="row mt-2">
-    <div class="offset-sm-3 col-sm-2">
-        <a asp-action="rpr" asp-controller="almacen" asp-area="gestion" id="btnVolver" class="btn btn-xs btn-danger"><i class="bx bx-left-arrow bx-sm"></i><span> Volver</span></a>
-    </div>
-    <div class="col-sm-2">
-        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" type="button" id="btnInfoProd" class="btn btn-xs btn-info"><i class="bx bx-info-circle bx-sm "></i><span> Info</span></a>
-    </div>
-    <div class="col-sm-2">
-        <button type="button" id="btnConfirmar" class="btn btn-xs btn-success"><i class="bx bx-check-circle bx-sm"></i><span> Confirma</span></button>
-    </div>
-</div> *@
 
 @section scripts {
     <script type="text/javascript">
@@ -44,6 +87,5 @@
         var homeRPRUrl = "@Url.Action("rpr", "almacen", new { area = "gestion" })";
         var homeInicio = "@Url.Action("index", "home", new { area = "" })";
     </script>
-
     <script src="~/js/app/rpr/rprab.js"></script>
 }

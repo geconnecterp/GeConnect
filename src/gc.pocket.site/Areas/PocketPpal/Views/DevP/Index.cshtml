@@ -1,25 +1,75 @@
 ﻿@{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
 }
-<div class="row mt-1">
-    <div class="col-sm-12">
-        <div class="input-group input-group-sm">
-            <span class="input-group-text" style="width:70px;">box:</span>
-            <input type="text" id="boxId" maxlength="11" class="form-control inputEditable" />
-            <button id="btnVerifica" type="button" class="btn btn-sm btn-success"><i class="bx bx-sm bx-check-circle"></i></button>
+
+<div class="container-fluid px-3 py-3">
+    <!-- ✅ CARD GOLDEN PARA BÚSQUEDA DE BOX -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card-golden">
+                <div class="card-golden-header">
+                    <i class="bx bx-box me-2"></i>
+                    <h6 class="mb-0">Búsqueda de BOX para Devolución</h6>
+                </div>
+                <div class="card-body">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-golden-label" style="min-width:80px;">
+                            <i class="bx bx-barcode me-1"></i>BOX
+                        </span>
+                        <input type="text" 
+                               id="boxId" 
+                               maxlength="11" 
+                               class="form-control input-busqueda-golden" 
+                               placeholder="Ingrese código de BOX..." 
+                               autofocus />
+                        <button id="btnVerifica" 
+                                type="button" 
+                                class="btn btn-sm btn-success">
+                            <i class="bx bx-check-circle me-1"></i>Verificar
+                        </button>
+                    </div>
+                    <small class="text-muted mt-2 d-block">
+                        <i class="bx bx-info-circle"></i> 
+                        Ingrese el código del BOX para procesar la devolución de productos
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ ÁREA DE RESULTADOS (se llena dinámicamente) -->
+    <div class="row">
+        <div class="col-12">
+            <div id="divResultadosBox" class="d-none">
+                <!-- Aquí se cargarán los productos del BOX -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ BOTONES DE ACCIÓN -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-center gap-2">
+                <button type="button" 
+                        id="btnCancelar" 
+                        class="btn btn-secondary btn-sm">
+                    <i class="bx bx-x me-1"></i>Cancelar
+                </button>
+                <button type="button" 
+                        id="btnContinua01" 
+                        disabled 
+                        class="btn btn-success btn-sm">
+                    <i class="bx bx-right-arrow-alt me-1"></i>Continuar
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="row mb-3">
-    <div class="d-flex justify-content-center">
-        <button type="button" id="btnContinua01" disabled class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>
-    </div>
-</div>
 @section scripts{
     <script type="text/javascript">
         var validaBoxUrl = "@Url.Action("ValidarBox", "infoprod", new { area = "pocketppal" })";
         var cargaProducto = "@Url.Action("CargarProductos", "devp", new { area = "pocketppal" })";
     </script>
-    <script src="~/js/app/cprevias/devp.js" ></script>
+    <script src="~/js/app/cprevias/devp.js"></script>
 }

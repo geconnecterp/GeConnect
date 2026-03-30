@@ -54,7 +54,7 @@ namespace gc.infraestructura.Dtos.Productos
         public string Depo_nombre { get; set; } = string.Empty;//
         public string Box_id { get; set; }=string.Empty;
         public string Sm_desc { get; set; } = string.Empty;
-        public string Sm_es { get; set; } = string.Empty;
+        public decimal Sm_es { get; set; } 
         public string Sm_es_b { get; set; } = string.Empty; 
         public decimal Sm_stk { get; set; }
         public decimal Sm_stk_b { get; set; }
