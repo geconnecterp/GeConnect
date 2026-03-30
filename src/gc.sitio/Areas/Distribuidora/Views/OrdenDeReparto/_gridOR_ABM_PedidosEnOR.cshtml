@@ -1,4 +1,8 @@
 ﻿@model GridCoreSmart<PedidoEnOrdenDeRepartoDto>
+@{
+    var alt = true;
+    string clase = string.Empty;
+}
 <style>
     .btn-table {
         padding: 0.15rem 0.35rem;
@@ -12,6 +16,29 @@
         transition: opacity 0.2s ease;
     }
 
+    .td-nowrap {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .table-fixed {
+        table-layout: fixed !important;
+        width: 100% !important;
+    }
+
+    .col-cliente {
+        width: 180px;
+    }
+
+    .col-vendedor {
+        width: 140px;
+    }
+
+    .col-repartidor {
+        width: 140px;
+    }
+
 </style>
 <div class="card h-100">
     <div class="card-header fw-bold">
@@ -21,7 +48,7 @@
     <div class="card-body p-0">
         <div class="table-responsive table-wrapper-400">
 
-            <table class="table table-sm table-hover mb-0 table-golden" id="tbPedidosOR">
+            <table class="table table-sm table-hover mb-0 table-golden table-fixed" id="tbPedidosOR">
                 <thead class="sticky-top table-golden-header-compact">
                     <tr class="header">
                         <th class="text-center">ID</th>
@@ -39,13 +66,14 @@
                     {
                         foreach (var p in Model.ListaDatos)
                         {
-                            <tr>
+                            if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+                            <tr class="@clase">
                                 <td class="text-center">@p.pc_compte</td>
-                                <td>@p.cta_denominacion</td>
+                                <td class="td-nowrap col-cliente" title="@p.cta_denominacion">@p.cta_denominacion</td>
                                 <td class="text-center">@p.pc_fecha.ToString("dd/MM/yy")</td>
-                                <td>@p.ve_nombre</td>
-                                <td>@p.rp_nombre</td>
-                                <td class="text-end">@p.cm_total.ToString("N2")</td>
+                                <td class="td-nowrap col-vendedor" title="@p.ve_nombre">@p.ve_nombre</td>
+                                <td class="td-nowrap col-repartidor" title="@p.rp_nombre">@p.rp_nombre</td>
+                                <td class="text-end">@p.pc_precio_tot.ToString("N2")</td>
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center gap-1">
                                         <button class="btn btn-danger btn-table btn-sm btnQuitarPedido"
@@ -60,6 +88,7 @@
                                         </button>
                                         <button class="btn btn-secondary btn-table btn-sm btnEditarPedido"
                                                 data-id="@p.pc_compte"
+                                                data-eid="@p.pce_id"
                                                 title="Editar pedido">
                                             <i class="bx bx-edit"></i>
                                         </button>

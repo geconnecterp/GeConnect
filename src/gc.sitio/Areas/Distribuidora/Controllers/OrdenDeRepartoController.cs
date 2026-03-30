@@ -32,6 +32,8 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 		private readonly IRepartidorServicio _repartidorServicio;
 		private readonly IPedidoServicio _pedidoSv;
 		private readonly IProductoServicio _productoServicio;
+		private readonly IRubroServicio _rubroServicio;
+		private readonly ICuentaServicio _cuentaServicio;
 
 		//PARA MODULO DE IMPRESION
 		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
@@ -45,7 +47,8 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 
 		public OrdenDeRepartoController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<OrdenDeRepartoController> logger,
 										IOrdenDeRepartoServicio ordenDeRepartoServicio, IRepartidorServicio repartidorServicio, IPedidoServicio pedidoSv,
-										IProductoServicio productoServicio, IDocManagerServicio docManager, IOptions<DocsManager> docsManager) : base(options, contexto, logger)
+										IProductoServicio productoServicio, IDocManagerServicio docManager, IOptions<DocsManager> docsManager,
+										IRubroServicio rubroServicio, ICuentaServicio cuentaServicio) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_ordenDeRepartoServicio = ordenDeRepartoServicio;
@@ -60,6 +63,8 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			_modulo_2 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_2);
 			_modulo_4 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_4);
 			_docMSv = docManager; //instancio el servicio de impresión
+			_rubroServicio = rubroServicio;
+			_cuentaServicio = cuentaServicio;
 		}
 
 		public IActionResult Index()
@@ -249,6 +254,32 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			{
 				_logger?.LogError(ex, "Error");
 				return PartialView("_gridMensaje", CrearRespuestaError("Error al obtener los pedidos de la orden de reparto"));
+			}
+		}
+
+		[HttpPost]
+		public IActionResult ActualizarListaPedidosDeLaOrdenDeReparto(string orCompte)
+		{ 
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
+				if (string.IsNullOrEmpty(orCompte))
+					return PartialView("_gridMensaje", CrearRespuestaError("No se recibió el número de orden de reparto para actualizar los pedidos."));
+				
+				var pedidos = ObtenerListaDePedidosEnOrdenDeRepartoPorAccion('M', orCompte);
+				GridCoreSmart<PedidoEnOrdenDeRepartoDto> grid = ObtenerGridCoreSmart<PedidoEnOrdenDeRepartoDto>(pedidos);
+				return PartialView("_gridOR_ABM_PedidosEnOR", grid);
+			}
+			catch (NegocioException ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaError("Error al actualizar los pedidos de la orden de reparto"));
 			}
 		}
 
@@ -1059,6 +1090,46 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			}
 		}
 
+		[HttpPost]
+		public IActionResult CargarVistaEdicionPedidoDeCliente(string pcCompte, string orCompte)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
+
+				if (pcCompte == null)
+					return PartialView("_gridMensaje", CrearRespuestaError("El Identificador del pedido no fue recepcionado."));
+
+				var pedDatos = _pedidoSv.ObtenerPedido(pcCompte, TokenCookie).Result;
+				var pedProds = _pedidoSv.ObtenerDetalleDePedido(pcCompte, TokenCookie).Result;
+				if (!pedDatos.Ok || !pedProds.Ok)
+					throw new NegocioException("No se ha podido identificar el pedido.");
+
+				if (pedProds == null || pedProds.ListaEntidad == null || pedProds.ListaEntidad.Count == 0)
+					throw new NegocioException("No se encontraron los datos del Pedido de Cliente");
+
+				var or = OrdenDeRepartoLista.Where(x => x.or_compte == orCompte).FirstOrDefault() ?? new();
+				var model = new PedidoDeClienteEnEdicionModel
+				{
+					DatosDelPedido = pedDatos.ListaEntidad?.FirstOrDefault() ?? new(),
+					ListaProductosDelPedido = ObtenerGridCoreSmart<PedidoProductoDto>(pedProds.ListaEntidad),
+					OrdenDeReparto = or
+				};
+				return PartialView("_partialPC", model);
+			}
+			catch (NegocioException ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaError("Error"));
+			}
+		}
+
 		#region Metodos Privados
 		enum TipoDeReporte
 		{
@@ -1108,13 +1179,6 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			if (listaIdsPedidos == null || listaIdsPedidos.Count <= 0)
 				return;
 			var listaTemp = new List<AConsolidarPedidoClienteDetalleDto>();
-			//Dejo este codigo comentado por las dudas.
-			//foreach (var item in listaIdsPedidos)
-			//{
-			//	var itemsDetalle = _ordenDeRepartoServicio.AConsolidarPedidoClienteDetalle(new AConsolidarPedidoClienteDetalleRequest() { or_compte = orCompte, pc_compte = item, p_id = "%" }, TokenCookie).Result.ListaEntidad;
-			//	if (itemsDetalle != null && itemsDetalle.Count > 0)
-			//		listaTemp.AddRange(itemsDetalle);
-			//}
 			var itemsDetalle = _ordenDeRepartoServicio.AConsolidarPedidoClienteDetalle(new AConsolidarPedidoClienteDetalleRequest() { or_compte = orCompte, pc_compte = "%", p_id = "%" }, TokenCookie).Result.ListaEntidad;
 			listaTemp.AddRange(itemsDetalle ?? []);
 			AConsolidarPedidoClienteDetalleLista = listaTemp;
@@ -1178,10 +1242,33 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			else
 				model.ListaRepartidores = HelperMvc<ComboGenDto>.ListaGenerica([]);
 
+			if (RubroLista.Count == 0)
+			{
+				ObtenerRubros(_rubroServicio);
+			}
+
+			if (ProveedoresLista.Count == 0)
+			{
+				ObtenerProveedores(_cuentaServicio, "BI");
+			}
+
+			#region Carga de Rubros
+			var rubs = RubroLista
+				.Select(r => new ComboGenDto
+				{
+					Id = r.Rub_Id,
+					Descripcion = r.Rub_Id + " - " + r.Rub_Desc
+				})
+				.ToList();
+			ViewBag.Rel02B2 = HelperMvc<ComboGenDto>.ListaGenerica(rubs);
+			#endregion
+
 			var EstadosList = new List<ComboGenDto>();
 			ViewBag.EstadosList = HelperMvc<ComboGenDto>.ListaGenerica(EstadosList);
 			var RepartidoresList = new List<ComboGenDto>();
 			ViewBag.RepartidoresList = HelperMvc<ComboGenDto>.ListaGenerica(RepartidoresList);
+			var listR03 = new List<ComboGenDto>();
+			ViewBag.Rel03B2 = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
 		}
 		private SelectList ObtenerListaEstados(List<OrdenDeRepartoEstadoDto> estadosLista)
 		{

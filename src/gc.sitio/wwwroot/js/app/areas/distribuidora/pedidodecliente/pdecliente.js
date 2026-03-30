@@ -244,36 +244,37 @@ function obtenerProductosDelGrid() {
     const productos = [];
     const $filas = $('#tbGridPedidoProds tbody tr');
     let cont = 0;
+
+    let errorReemplazo = null; // 🔥 Para capturar el primer error
+
     $filas.each(function () {
         const $fila = $(this);
         cont++;
-        // ✅ OPTIMIZACIÓN: Saltar filas vacías o de mensaje en una sola verificación
+
         if ($fila.find('td[colspan]').length > 0) return;
 
-        // ✅ OPTIMIZACIÓN: Extraer datos del DOM usando data attributes (más eficiente)
         const pId = $fila.data('p-id');
-        if (!pId) return; // Si no hay ID, saltar esta fila
+        if (!pId) return;
 
-        // ✅ OPTIMIZACIÓN: Parsear valores numéricos una sola vez
         const pDes = $fila.find('.input-p_desc').text().trim() || "";
-        const $inputCantidad = $fila.find('.input-pcd_pedida');
-        const pcdCantidad = parseFloat($inputCantidad.val().replace(/,/g, '')) || 0;
+        const pcdCantidad = parseFloat($fila.find('.input-pcd_pedida').val().replace(/,/g, '')) || 0;
+        const pcdEnviada = parseFloat($fila.find('.input-pcd_enviada').text().replace(/,/g, '')) || 0;
+        const pcdPVta = parseFloat($fila.find('.input-pcd_pvta').text().replace(/,/g, '')) || 0;
 
-        const $inputEnviada = $fila.find('.input-pcd_enviada');
-        const pcdEnviada = parseFloat($inputEnviada.val().replace(/,/g, '')) || 0;
+        const pcdOrigenBool = $fila.find('.input-pcd_origen_bool').prop('checked');
+        const pcdOrigen = pcdOrigenBool ? 'S' : 'N';
 
-        const $pvta = $fila.find('.input-pcd_pvta').text().trim();
-        const pcdPVta = parseFloat($pvta.replace(/,/g, '')) || 0;
+        const $selectReemplazo = $fila.find('.input-pcd_reemplazo');
+        const remplazoId = $selectReemplazo.val() || "";
+        const remplazoDesc = $selectReemplazo.find("option:selected").text().trim();
 
-        const $origenBool = $fila.find('.input-pcd_origen_bool').prop('checked');
-        const pcdOrigen = $origenBool ? 'S' : 'N';
+        // 🔥 VALIDACIÓN: si es origen y no eligió reemplazo → ERROR
+        if (pcdOrigenBool && remplazoId === "") {
+            errorReemplazo = `Debe seleccionar un reemplazo para el producto ${pId} - ${pDes}`;
+            return false; // cortar el each
+        }
 
-        const remplazoId = $fila.find('.input-pcd_reemplazo').val() || "";
-        const remplazoDesc = $fila.find('.input-pcd_reemplazo option:selected').text().trim();
-
-        // ✅ Construir objeto Dto (coincide exactamente con el DTO de C#)
         productos.push({
-            // Propiedades de productos
             p_id: pId,
             p_desc: pDes,
             pcd_item: cont,
@@ -291,7 +292,15 @@ function obtenerProductosDelGrid() {
         });
     });
 
-    console.log(`📦 ${productos.length} productos capturados del grid`);
+    // 🔥 Si hubo error → mostrar aviso y devolver null
+    if (errorReemplazo) {
+        AbrirMensaje("VALIDACIÓN", errorReemplazo, function () {
+            $('#msjModal').modal('hide');
+        }, false, ["Aceptar"], "error!", null);
+
+        return null;
+    }
+
     return productos;
 }
 
@@ -318,6 +327,8 @@ function validarPedido(abm) {
 
     // ✅ VALIDACIÓN 6: Debe haber al menos un producto
     const productos = obtenerProductosDelGrid();
+    if (productos == null || productos == undefined)
+        return;
     if (productos.length === 0) {
         return {
             esValido: false,
@@ -360,6 +371,8 @@ $(document).on('click', '#btnAbmAceptar', function (e) {
 
     // Validar antes de confirmar
     const validacion = validarPedido(abm);
+    if (validacion == null || validacion == undefined)
+        return;
     if (!validacion.esValido) {
         ControlaMensajeWarning(validacion.mensaje);
         AbrirMensaje("ATENCIÓN", validacion.mensaje, function () {
@@ -402,11 +415,16 @@ $(document).on('click', '#btnAbmAceptar', function (e) {
 function confirmarPedido(abm) {
     console.log(`📤 Confirmando pedido (Modo: ${abm})...`);
 
-    AbrirWaiting('Confirmando pedido...');
-
     try {
         // Construir objeto de confirmación
         const confirmacionDto = construirPedidoConfirmaReqDto(abm);
+
+        // 🔥 Si hubo error en la construcción del DTO, detener todo
+        if (!confirmacionDto) {
+            return;
+        }
+
+        AbrirWaiting('Confirmando pedido...');
 
         // Debug: Ver estructura completa
         console.log('📦 DTO de confirmación:', confirmacionDto);
@@ -461,10 +479,13 @@ function confirmarPedido(abm) {
  * @returns {object} PedidoConfirmaReqDto
  */
 function construirPedidoConfirmaReqDto(abm) {
+    const productos = obtenerProductosDelGrid();
+
+    if (!productos) return null; // 🔥 Evita continuar si hubo error
     return {
         Abm: abm,
         Datos: obtenerDatosFormularioPedido(),
-        Productos: obtenerProductosDelGrid()
+        Productos: productos
     };
 }
 
@@ -688,7 +709,7 @@ function crearSelectReemplazo(p_id_actual, p_id_remplazo) {
     let html = `<select class="form-select form-select-sm input-pcd_reemplazo">
                     <option value="">-- Seleccionar --</option>`;
 
-    productosReemplazables.forEach(prod => {
+    window.productosReemplazables.forEach(prod => {
         if (prod.p_id !== p_id_actual) {
             const selected = (prod.p_id === p_id_remplazo) ? "selected" : "";
             html += `<option value="${prod.p_id}" ${selected}>${prod.p_id} - ${prod.p_desc}</option>`;
@@ -741,7 +762,7 @@ function normalizarDatosProducto(producto) {
         cantidad: 1,
         pcd_pedida: 1,
         pcd_enviada: 0,
-
+        pcd_origen_bool: true,
         // Impuestos
         //ivaSituacion: String(producto.iva_situacion || 'E').trim(),
         iva_situacion: producto.iva_situacion,

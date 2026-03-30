@@ -3,6 +3,7 @@
 	Layout = "~/views/shared/_Layout.cshtml";
 	var filtro = new QueryFilters() { Modelo = ModeloFilter.ORDEN_DE_REPARTO, Rel01 = [], Rel02 = [], Rel03 = [], Rel04 = [] };
 	List<OrdenDeRepartoListaDto> listaVacia = new();
+	List<ProductoListaDto> listaProdVacia = new();
 }
 @section styles {
 	<link rel="stylesheet" href="~/css/simplePagination.css" />
@@ -37,6 +38,7 @@
 <div class="collapse" id="divDetalle"></div>
 <div id="modalGestorDocumental"></div>
 <div id="divInfoAdicionaDeProducto" class="collapse"></div>
+<partial name="~/areas/controlcomun/views/producto/busquedaadvanceV02.cshtml" model="@listaProdVacia" />
 
 @section scripts {
 	<script type="text/javascript">
@@ -53,6 +55,7 @@
 		let buscarMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "ordendereparto", new { area = "Distribuidora" })';
 		let obtenerPedidosDeLaOrdenDeRepartoUrl = '@Url.Action("ObtenerPedidosDeLaOrdenDeReparto", "ordendereparto", new { area = "Distribuidora" })';
 		let cargarVistaABMOrdenDeRepartoUrl = '@Url.Action("AbrirOrdenDeRepartoEnABM", "ordendereparto", new { area = "Distribuidora" })';
+		let actualizarListaPedidosDeLaOrdenDeReparto = '@Url.Action("ActualizarListaPedidosDeLaOrdenDeReparto", "ordendereparto", new { area = "Distribuidora" })';
 		let confirmarOrdenDeRepartoUrl = '@Url.Action("ConfirmarOrdenDeReparto", "ordendereparto", new { area = "Distribuidora" })';
 		let cargarVistaAnalizaAutEnOrdenDeRepartoUrl = '@Url.Action("AbrirOrdenDeRepartoEnPonerEnCurso", "ordendereparto", new { area = "Distribuidora" })';
 		let actualizarGrillaAnalizaAutoEnOrdenDeRepartoUrl = '@Url.Action("AnalizarAutDeOREnPonerEnCurso", "ordendereparto", new { area = "Distribuidora" })';
@@ -70,6 +73,19 @@
 		let pasarPedidoDeClienteACFURL = '@Url.Action("PasarPedidoDeClienteACF", "ordendereparto", new { area = "Distribuidora" })';
 		let cargarPedidosDeLaOrdenDeRepartoUrl = '@Url.Action("CargarPedidosDeLaOrdenDeReparto", "ordendereparto", new { area = "Distribuidora" })';
 		let dividirPedidoDeClienteURL = '@Url.Action("DividePedidoDeCliente", "ordendereparto", new { area = "Distribuidora" })';
+		let cargarVistaEdicionPedidoDeClienteURL = '@Url.Action("CargarVistaEdicionPedidoDeCliente", "ordendereparto", new { area = "Distribuidora" })';
+		var confirmarPedidoUrl = "@Url.Action("ConfirmarPedido", "pedidodecliente", new { area = "Distribuidora" })";
+
+		//funcionalidad busqueda avanzada controlador común
+		var autoComRel01Url = "@Url.Action("BuscarProvs", "cargaprecios", new { area = "productos" })";/**/
+		var autoComRel02Url = "@Url.Action("BuscarRubros", "cargaprecios", new { area = "productos" })";/**/
+		var autoComRel03Url =  "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "cargaprecios", new { area = "productos" })";/**/
+		let productoBase = null; //se hidrata en busquedas.
+		let p_id_selected = "";
+		let funcionBusquedaAvanzada = true;
+		let busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
+		let busquedaAvanzadaUrl = "@Url.Action("BusquedaAvanzadaV02", "producto", new { area = "ControlComun" })";
+		let busquedaAvanzadaModalUrl = "@Url.Action("BusquedaAvanzadaV02", "producto", new { area = "ControlComun" })";
 
 		/*URL para componente de Información Adicional de Productos*/
 		var abrirComponenteDeInfoAdicionalDeProdUrl = "@Url.Action("AbrirComponente", "infoadicionaldeprod", new { area = "ControlComun" })";
@@ -96,6 +112,7 @@
 	<script src="~/lib/jstree/jstree.min.js"></script>
 	<script src="~/js/app/areas/docmngr/docmanager.js"></script>
 
+	<script src="~/js/app/busquedasV02.js"></script>
 	<script src="~/js/app/areas/distribuidora/ordendereparto/or.js" type="text/javascript"></script>
 	<script src="~/js/app/controlcomun/infoAdicionalDeProd.js" type="text/javascript"></script>
 }

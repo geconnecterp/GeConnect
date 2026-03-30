@@ -1,0 +1,109 @@
+﻿@model PedidoDeClienteEnEdicionModel
+@{
+	var or = Model.OrdenDeReparto;
+}
+<style>
+	.btn-or {
+		min-width: 140px; /* Ajustá el ancho que prefieras */
+	}
+
+	#divPedidoDatos {
+		/* Estilos para inputs editables en presupuesto (no readonly) */
+	}
+
+		#divPedidoDatos .input-pcd_pedida:not([readonly]) {
+			background-color: #fff8dc !important;
+			border: 2px solid #daa520 !important;
+			font-weight: 700;
+			box-shadow: 0 0 0 0.2rem rgba(218, 165, 32, 0.15);
+		}
+
+		/* Indicador visual para doble click */
+		#divPedidoDatos .input-pcd_pedida {
+			cursor: pointer;
+			transition: all 0.2s ease;
+		}
+
+			#divPedidoDatos .input-pcd_pedida[readonly]:hover {
+				background-color: #e8f4fc !important;
+				border-color: #b8daff !important;
+			}
+
+			/* Tooltip de ayuda para campos editables */
+			#divPedidoDatos .input-pcd_pedida[title] {
+				position: relative;
+			}
+
+		/* Estilos para campos del formulario de presupuesto en modo edición */
+		#divPedidoDatos .form-control:not([readonly]):not(.campo-readonly),
+		#divPedidoDatos select:not([disabled]):not(.campo-readonly) {
+			background-color: #fff8dc;
+			border-color: #daa520;
+			font-weight: 600;
+		}
+
+			#divPedidoDatos .form-control:not([readonly]):not(.campo-readonly):focus,
+			#divPedidoDatos select:not([disabled]):not(.campo-readonly):focus {
+				background-color: #ffebcd;
+				border-color: #b8860b;
+				box-shadow: 0 0 0 0.25rem rgba(184, 134, 11, 0.25);
+			}
+
+		/* ✅ OPTIMIZADO: Campos que NUNCA se editan - Con contexto específico de presupuesto */
+		/* Solo se aplican dentro del contenedor #divPedidoDatos */
+		#divPedidoDatos #pc_compte,
+		#divPedidoDatos #pce_desc,
+		#divPedidoDatos #pce_id,
+		#divPedidoDatos #cta_denominacion,
+		#divPedidoDatos #facturado,
+		#divPedidoDatos #pc_entrega {
+			background-color: #e9ecef !important;
+			color: #495057 !important;
+			font-weight: 600 !important;
+			cursor: not-allowed !important;
+		}
+</style>
+<div class="container-fluid min-vh-100 d-flex flex-column">
+	<div class="row mb-1">
+		<div class="col-12">
+			<div class="p-1 border rounded bg-light">
+
+				<div class="d-flex justify-content-between align-items-center flex-wrap">
+
+					<!-- IZQUIERDA: textos -->
+					<div class="d-flex flex-wrap gap-4">
+
+						<div><strong>ID OR:</strong> @or.or_compte</div>
+						<div><strong>Repartidor:</strong> @or.rp_nombre</div>
+						<div><strong>Estado:</strong> @or.ore_desc</div>
+						<div><strong>Fecha:</strong> @or.or_fecha.ToString("dd/MM/yyyy")</div>
+						<div><strong>Obs:</strong> @or.or_obs</div>
+
+					</div>
+
+					<!-- DERECHA: botones -->
+					<div class="d-flex align-items-center gap-2">
+						<button id="btnConfirmarEdicionPC" class="btn btn-success btn-sm btn-or">
+							<i class="bx bx-check-circle"></i> Confirmar
+						</button>
+						<button id="btnCancelarEdicionPC" class="btn btn-danger btn-sm btn-or">
+							<i class="bx bx-x-circle"></i> Cancelar
+						</button>
+					</div>
+
+				</div>
+
+			</div>
+
+		</div>
+	</div>
+	<div class="row mt-2 py-1">
+		<div class="col-5" id="divPedDatos">
+			@Html.Partial("~/Areas/Distribuidora/Views/PedidoDeCliente/_pedidoDatos.cshtml", Model.DatosDelPedido)
+		</div>
+
+		<div class="col-7" id="divPedProds">
+			@Html.Partial("~/Areas/Distribuidora/Views/PedidoDeCliente/_pedidoProds.cshtml", Model.ListaProductosDelPedido)
+		</div>
+	</div>
+</div>

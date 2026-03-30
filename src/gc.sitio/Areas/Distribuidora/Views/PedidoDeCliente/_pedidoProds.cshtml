@@ -80,7 +80,7 @@
 								<td class="text-center">
 									@if (item.pcd_origen_bool)
 									{
-										<select class="form-select form-select-sm input-pcd_reemplazo">
+										<select class="form-select form-select-sm input-pcd_reemplazo" disabled>
 											<option value="">-- Seleccionar --</option>
 											@foreach (var prod in Model.ListaDatos.Where(x=>!x.pcd_origen_bool).ToList())
 											{
@@ -163,7 +163,7 @@
 		if (typeof aplicarVisibilidadBotonesEliminar === 'function') {
 			aplicarVisibilidadBotonesEliminar();
 		}
-		const productosReemplazables = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+		window.productosReemplazables = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
 				Model.ListaDatos
 						.Where(x => !x.pcd_origen_bool)
 						.Select(x => new { x.p_id, x.p_desc })

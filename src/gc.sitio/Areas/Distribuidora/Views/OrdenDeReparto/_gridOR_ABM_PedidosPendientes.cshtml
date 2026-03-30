@@ -1,4 +1,8 @@
 ﻿@model GridCoreSmart<PedidoListDto>
+@{
+    var alt = true;
+    string clase = string.Empty;
+}
 <style>
     .btn-table {
         padding: 0.15rem 0.35rem;
@@ -43,7 +47,8 @@
                     {
                         foreach (var p in Model.ListaDatos)
                         {
-                            <tr>
+                            if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+                            <tr class="@clase">
                                 <td class="text-center">@p.pc_compte</td>
                                 <td>@p.cta_denominacion</td>
                                 <td class="text-center">@p.pc_fecha.ToString("dd/MM/yy")</td>
