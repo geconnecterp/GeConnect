@@ -190,7 +190,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
                         Pagina = pag,
                         Sort = sort,
                         SortDir = sortDir,
-                        Administracion = AdministracionId
+                        Administracion = AdministracionId,
+                        ListaPrecio = "003"
                     };
 
                     var res = await _productoServicio.BusquedaListaProductos(busc, TokenCookie);

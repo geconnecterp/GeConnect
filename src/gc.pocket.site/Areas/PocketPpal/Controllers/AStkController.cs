@@ -112,7 +112,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     return Json(new { error = true, msg = "Las unidades sueltas no puede tener valores negativos. Verifique, por favor." });
                 }
 
-                if (!ProductoBase.Up_id.Equals("07") && up != 1)
+                if (!ProductoBase.up_id.Equals("07") && up != 1)
                 {
                     return Json(new { error = true, msg = "EL PRODUCTO NO ES POR UNIDADES. LA UNIDAD DE PRESENTACIÓN TIENE QUE SER IGUAL A 1, SIEMPRE." });
                 }                
@@ -120,7 +120,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 //valido cantidad. Si el resultado es igual a 0 dar error
                 if (!sig)
                 {
-                    if (ProductoBase.Up_id.Equals("07"))
+                    if (ProductoBase.up_id.Equals("07"))
                     {
                         bulto *= -1;
                         unidad *= -1;
@@ -130,7 +130,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                         unidad *= -1;
                     }
                 }
-                var cantidad = ProductoBase.Up_id.Equals("07") ? (up * bulto) + unidad : unidad;
+                var cantidad = ProductoBase.up_id.Equals("07") ? (up * bulto) + unidad : unidad;
 
                 //armo producto a resguardar
                 var item = new ProductoGenDto();
@@ -140,7 +140,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 item.item = ProductoGenRegs.Count + 1;
                 item.p_id = ProductoBase.P_id;
                 item.p_desc = ProductoBase.P_desc;
-                item.up_id = ProductoBase.Up_id;
+                item.up_id = ProductoBase.up_id;
                 //item.Cta_id = ProductoBase.Cta_id;
                 item.p_id_prov = ProductoBase.P_id_prov;
                 item.p_id_barrado = ProductoBase.P_id_barrado;

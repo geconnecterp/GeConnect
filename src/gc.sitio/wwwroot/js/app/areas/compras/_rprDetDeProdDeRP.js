@@ -65,6 +65,22 @@ function analizaInputUnid(x) {
 	}
 }
 
+function ActualizarEstadoBotonAgregarOC() {
+	const $tabla = $("#tbDetalleDeOC tbody tr");
+
+	// Si no hay filas → deshabilitar
+	if ($tabla.length === 0) {
+		$("#btnAddOCProdEnComprobanteRP").prop("disabled", true);
+		return;
+	}
+
+	// Verificar si algún checkbox está marcado
+	const haySeleccionados = $("#tbDetalleDeOC tbody input[type='checkbox']:checked").length > 0;
+
+	$("#btnAddOCProdEnComprobanteRP").prop("disabled", !haySeleccionados);
+}
+
+
 //Valores de parametro:
 //0-> Agregar
 //1-> Reemplazar
@@ -480,13 +496,32 @@ function selectOCRow(x) {
 		CerrarWaiting();
 		$("#divDetalleDeOrdenDeCompra").html(obj);
 		document.getElementById("leyendDetalleOC").outerHTML = "<h5 id=\"leyendDetalleOC\" style=\"margin-bottom: 0; margin-top: 10px;\"> Detalle de OC " + oc_compte + "</h5>";
+		ActualizarEstadoBotonAgregarOC();
 		AgregarHandlerAGrillaDetalleDeOC();
+		$(document).on("change", "#tbDetalleDeOC tbody input[type='checkbox']", function () {
+			SincronizarCheckboxEncabezado();
+			ActualizarEstadoBotonAgregarOC();
+		});
+		$(document).on("change", "input[name='select_all']", function () {
+			const checked = $(this).prop("checked");
+			// Marcar o desmarcar todos los checkboxes del body
+			$("#tbDetalleDeOC tbody input[type='checkbox']").prop("checked", checked);
+			// Actualizar el estado del botón
+			ActualizarEstadoBotonAgregarOC();
+		});
 		return true;
 	}, function (obj) {
 		CerrarWaiting();
 		ControlaMensajeError(obj.message);
 		return true;
 	});
+}
+
+function SincronizarCheckboxEncabezado() {
+	const total = $("#tbDetalleDeOC tbody input[type='checkbox']").length;
+	const marcados = $("#tbDetalleDeOC tbody input[type='checkbox']:checked").length;
+
+	$("input[name='select_all']").prop("checked", total > 0 && total === marcados);
 }
 
 function AgregarHandlerAGrillaDetalleDeOC() {

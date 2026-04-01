@@ -87,7 +87,8 @@ function busquedaAvanzadaProductos(pag) {
 		ri01, ri02, act, dis, ina, cstk, sstk, buscar
 	};
 	//si es distinto es TRUE    
-	var buscaNew = JSON.stringify(dataBak) != JSON.stringify(data1)
+	//var buscaNew = JSON.stringify(dataBak) != JSON.stringify(data1)
+	var buscaNew = true;
 	if (buscaNew === false) {
 		//son iguales las condiciones cambia de pagina
 		pagina = pag;

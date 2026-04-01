@@ -358,7 +358,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						var cantidadAux = 0.000M;
 						var unidadPresDecimalAux = Convert.ToDecimal(unidadPres);
 						var bultoDecimalAux = Convert.ToDecimal(bto);
-						if (producto.Up_id == "07") //Entero
+						if (producto.up_id == "07") //Entero
 						{
 
 							//stkEnteroAux = Int32.Parse(productoStk.First().Ps_stk.ToString(), NumberStyles.AllowThousands, CultureInfo.CurrentCulture);

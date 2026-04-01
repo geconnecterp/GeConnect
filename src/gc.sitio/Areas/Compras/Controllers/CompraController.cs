@@ -642,12 +642,14 @@ namespace gc.sitio.Areas.Compras.Controllers
 					var existeProd = lista.Where(x => x.P_id == id_prod).FirstOrDefault();
 					if (existeProd == null || existeProd == default(ProductoBusquedaDto)) //No existe
 					{
+						var producto = ObtenerDatosDeProductos(id_prod);
 						lista.Add(new ProductoBusquedaDto()
 						{
 							P_id = id_prod,
 							P_desc = p_desc,
 							P_id_prov = prov_id,
-							Up_id = up_id,
+							up_id = up_id,
+							up_tipo = producto?.FirstOrDefault().up_tipo,
 							P_id_barrado = id_barrado,
 							P_unidad_pres = up,
 							Bulto = Convert.ToInt32(bulto),
@@ -668,7 +670,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 								P_id = id_prod,
 								P_desc = p_desc,
 								P_id_prov = prov_id,
-								Up_id = up_id,
+								up_id = up_id,
 								P_id_barrado = id_barrado,
 								P_unidad_pres = up,
 								Bulto = Convert.ToInt32(bulto),
@@ -823,7 +825,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						var aux = JsonDeRP;
 						foreach (var item in aux.encabezado)
 						{
-							item.Ul_cantidad =r.ulCantidad;
+							item.Ul_cantidad = r.ulCantidad;
 							item.Depo_id = r.depoId;
 							item.Nota = r.nota;
 							item.Turno = r.fechaTurno;
@@ -1033,7 +1035,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			else
 			{
-				if (JsonDeRP != null)
+				if (JsonDeRP != null && JsonDeRP.encabezado != null && JsonDeRP.encabezado.Count > 0)
 				{
 					RPRComptesDeRPRegs = CargarComprobantesDeRPDesdeJson(JsonDeRP.encabezado);
 				}
@@ -1280,7 +1282,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			decimal retValue = 0;
 
-			if (up_id == "07")
+			if (up_id == "01")
 			{
 				return (Convert.ToDecimal(bulto) * Convert.ToDecimal(up)) + Convert.ToDecimal(unidad);
 			}

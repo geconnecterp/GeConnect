@@ -197,7 +197,7 @@ function verificaEstado(e) {
 		var prod = productoBase;
 
 		$("#txtIdProdEnComprobanteRP").val(prod.p_id);
-		$("#txtProDescripcion").val(prod.p_desc);
+		$("#txtProDescripcion").val(prod.p_desc).attr("title", prod.p_desc);
 		$("#estadoFuncion").val(false);
 		$("#txtUP_ID").val(prod.up_id);
 		$("#txtBARRADO_ID").val(prod.p_id_barrado);

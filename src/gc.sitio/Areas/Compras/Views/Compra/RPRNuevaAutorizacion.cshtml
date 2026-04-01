@@ -4,7 +4,17 @@
 	var depositos = Model.ComboDeposito;
 
 }
+<style>
+	.btn-abm-rpr {
+		min-width: 180px;
+		width: 180px;
+	}
 
+	.btn-comp-rpr {
+		min-width: 165px;
+		width: 165px;
+	}
+</style>
 <div class="card">
 	<div class="card-body">
 		<input type="text" id="idTipoCompteDeRPSelected" style="display:none;" />
@@ -27,13 +37,13 @@
 						<partial name="~/areas/controlcomun/views/cuentacomercial/_ctrBuscarCC.cshtml" />
 					</div>
 					<div class="col-md-6 col-sm-6" style="text-align: right;">
-						<button type="button" class="btn btn-success btn-sm mt-1 me-1" id="btnAceptarAutoRP" title="Guardar Autorización RP">
+						<button type="button" class="btn btn-success btn-sm mt-1 me-1 btn-abm-rpr" id="btnAceptarAutoRP" title="Guardar Autorización RP">
 							<i class="bx bx-check-circle"></i> Guardar Autorización RP
 						</button>
-						<button type="button" class="btn btn-danger btn-sm mt-1 me-1" id="btnEliminarAutoRP" title="Eliminar Autorización RP">
+						<button type="button" class="btn btn-danger btn-sm mt-1 me-1 btn-abm-rpr" id="btnEliminarAutoRP" title="Eliminar Autorización RP">
 							<i class="bx bx-trash"></i> Eliminar Autorización RP
 						</button>
-						<button type="button" class="btn btn-secondary btn-sm mt-1 me-1" id="btnRegresarASelAuto" title="Regresar">
+						<button type="button" class="btn btn-secondary btn-sm mt-1 me-1 btn-abm-rpr" id="btnRegresarASelAuto" title="Regresar">
 							<i class="bx bx-chevron-left"></i> Volver
 						</button>
 					</div>
@@ -44,13 +54,16 @@
 							<h5>Comprobantes de RP</h5>
 						</legend>
 						<div class="row d-flex align-items-start">
-							<div class="col-md-8 col-sm-8">
+							<div class="col-md-7 col-sm-7">
 								<div class="input-group input-group-sm">
 									<span class="input-group-text">Tipo: </span>
 									<div id="divTiposComptes" class="input-group input-group-sm" style="width: 35%;">
 									</div>
 									<span class="input-group-text">N°: </span>
-									<input type="text" id="txtNroCompte" class="form-control activable inputEditable" />
+									<input type="text" asp-for="@Model.Compte.NroComprobantePtoVta" id="NroComprobantePtoVta" style="max-width:50px;border-color: rgb(70,196,104);text-align: left;font-weight: 700;" class="form-control activable" />
+									<span class="input-group-text" style="display: block;float: right;text-align: right;">-</span>
+									<input type="text" asp-for="@Model.Compte.NroComprobanteNumero" id="NroComprobanteNumero" style="max-width:78px;border-color: rgb(70,196,104);text-align: left;font-weight: 700;" class="form-control activable" />
+									@*<input type="text" id="txtNroCompte" class="form-control activable inputEditable" /> *@
 									<span class="input-group-text">Fecha: </span>
 									<input type="date" id="dtpFechCompte" class="form-control activable inputEditable" />
 									<span class="input-group-text">Monto: </span>
@@ -59,14 +72,14 @@
 									@* <a href="#" id="VerDetalle" class="btn btn-info btn-sm mt-1 me-1" style="margin-left: 5px;" title="Ver detalle de comprobante"><span class="bx bx-show"> Detalle</span></a> *@
 								</div>
 							</div>
-							<div class="col-md-4 col-sm-4 d-flex justify-content-center align-items-start flex-wrap">
-								<button type="button" class="btn btn-primary btn-sm me-1" id="btnNuevoCompteDeRP" title="Agregar comprobante">
+							<div class="col-md-5 col-sm-5 d-flex justify-content-center align-items-start flex-wrap">
+								<button type="button" class="btn btn-primary btn-sm me-1 btn-comp-rpr" id="btnNuevoCompteDeRP" title="Agregar comprobante">
 									<i class="bx bx-plus-circle"></i> Agregar comprobante
 								</button>
-								<button type="button" class="btn btn-danger btn-sm me-1" id="btnEliminarCompteDeRP" title="Eliminar comprobante">
+								<button type="button" class="btn btn-danger btn-sm me-1 btn-comp-rpr" id="btnEliminarCompteDeRP" title="Eliminar comprobante">
 									<i class="bx bx-trash"></i> Eliminar comprobante
 								</button>
-								<button type="button" class="btn btn-info btn-sm me-1" id="VerDetalle" title="Ver detalle de comprobante">
+								<button type="button" class="btn btn-info btn-sm me-1 btn-comp-rpr" id="VerDetalle" title="Ver detalle de comprobante">
 									<i class="bx bx-show"></i> Ver Detalle
 								</button>
 							</div>

@@ -40,7 +40,7 @@
 	$("#btnAceptarAutoRP").on("click", AceptarAutoRP); //Generar Json de comprobante RPR
 	$("#btnEliminarAutoRP").on("click", EliminarAutoRP); //Eliminar RPR cargado
 
-	$("#txtNroCompte").mask("0000-00000000", { reverse: true });
+	//$("#txtNroCompte").mask("0000-00000000", { reverse: true });
 	//$("#txtMonto").mask("000.000.000.000,00", { reverse: true });
 
 	$("#Cuenta").on("keyup", analizaInputEnCuenta);
@@ -59,10 +59,17 @@
 	});
 
 	$("#txtNota").on("keyup", analizaInputTxtNota);
+	$("#tco_id").on("change", analizaInputlistaTco);
+	$("#txtMonto").on("keyup", ControlaKeyUpInputMonto);
 	$("#listaDeposito").on("change", analizaInputlistaDeposito);
 	$("#dtpFechaTurno").on("change", analizaInputTurno);
 	$("#chkPonerEnCurso").on("change", analizaInputChkPonerEnCurso);
 	$("#txtCantidadUL").on("keyup", analizaInputCantidadUL);
+
+	$(document).on("keyup", "#NroComprobantePtoVta", ControlaKeyUpComptePtoVta);
+	$(document).on("focusout", "#NroComprobantePtoVta", ControlaFocusOutComptePtoVta);
+	$(document).on("keyup", "#NroComprobanteNumero", ControlaKeyUpCompteNro);
+	$(document).on("focusout", "#NroComprobanteNumero", ControlaFocusOutCompteNro);
 
 	if ($("#CtaId").val() !== "") {
 		$("#btnBuscarCC").trigger("click");
@@ -91,6 +98,50 @@
 
 	AplicarFormato();
 });
+
+function ControlaKeyUpInputMonto(e) {
+	if (e.which == 13 || e.which == 109) {
+		$("#btnNuevoCompteDeRP").trigger("focus");
+	}
+}
+
+function analizaInputlistaTco() {
+	$("#NroComprobantePtoVta").trigger('focus');
+}
+
+function ControlaFocusOutComptePtoVta() {
+	var ptv = $("#NroComprobantePtoVta").inputmask('unmaskedvalue');
+	if (ptv != "") {
+		var aux = $("#NroComprobantePtoVta").inputmask('unmaskedvalue').padStart(4, '0');
+		$("#NroComprobantePtoVta").val(aux);
+		$("#NroComprobanteNumero").trigger("focus");
+	}
+}
+
+function ControlaKeyUpComptePtoVta(e) {
+	if (e.which == 13 || e.which == 109) {
+		var aux = $("#NroComprobantePtoVta").inputmask('unmaskedvalue').padStart(4, '0');
+		$("#NroComprobantePtoVta").val(aux);
+		$("#NroComprobanteNumero").trigger("focus");
+	}
+}
+
+function ControlaFocusOutCompteNro() {
+	var nro = $("#NroComprobanteNumero").inputmask('unmaskedvalue');
+	if (nro != "") {
+		var aux = $("#NroComprobanteNumero").inputmask('unmaskedvalue').padStart(8, '0');
+		$("#NroComprobanteNumero").val(aux);
+		$("#dtpFechCompte").trigger("focus");
+	}
+}
+
+function ControlaKeyUpCompteNro(e) {
+	if (e.which == 13 || e.which == 109) {
+		var aux = $("#NroComprobanteNumero").inputmask('unmaskedvalue').padStart(8, '0');
+		$("#NroComprobanteNumero").val(aux);
+		$("#dtpFechCompte").trigger("focus");
+	}
+}
 
 const formatter = new Intl.NumberFormat('de-DE', {
 	minimumFractionDigits: 2,
@@ -208,7 +259,8 @@ function ActualizarLinkBotonVerDetalle() {
 	var ul = $("#txtCantidadUL").val();
 	var rp = $("#Rp").val();
 	var tipoCompte = $("#idTipoCompteDeRPSelected").val();
-	var nroCompte = $("#txtNroCompte").val();
+	//var nroCompte = $("#txtNroCompte").val(); TODO: Reemplazar por el nuevo componente
+	var nroCompte = $("#NroComprobantePtoVta").val() + "-" + $("#NroComprobanteNumero").val();
 	var rp = $("#Rp").val();
 	var fechaCompte = moment($("#fechaCompteDeRPSelected").val()).format("X");
 	var monto = $("#txtMonto").val();
@@ -399,12 +451,13 @@ function InicializaPantallaCC(tipo) {
 }
 
 function NuevoCompteDeRP() {
-	var resultValidation = ValidarCamposEnComprobantesDeRP($("#Cuenta").val(), $("#tco_id").val(), $("#txtNroCompte").val(), $("#txtMonto").val());
+	var nroCompte = $("#NroComprobantePtoVta").val() + "-" + $("#NroComprobanteNumero").val();
+	var resultValidation = ValidarCamposEnComprobantesDeRP($("#Cuenta").val(), $("#tco_id").val(), nroCompte, $("#txtMonto").val());
 	if (!resultValidation) {
 		return;
 	}
 	else {
-		comptesDeRPGrid($("#tco_id").val(), $("#tco_id")[0].selectedOptions[0].text, $("#txtNroCompte").val(), $("#dtpFechCompte").val(), $("#txtMonto").val(), $("#Rp").val());
+		comptesDeRPGrid($("#tco_id").val(), $("#tco_id")[0].selectedOptions[0].text, nroCompte, $("#dtpFechCompte").val(), $("#txtMonto").val(), $("#Rp").val());
 	}
 }
 
@@ -737,6 +790,7 @@ function CargarComboTiposComptes(cuenta) {
 	PostGenHtml(datos, buscarTiposComptesUrl, function (obj) {
 		$("#divTiposComptes").html(obj);
 		console.log("CargarComboTiposComptes");
+		$("#tco_id").on("change", analizaInputlistaTco);
 		CerrarWaiting();
 		return true
 	})
@@ -744,7 +798,14 @@ function CargarComboTiposComptes(cuenta) {
 
 
 function selectCompteDeRPRow(x) {
-	$("#txtNroCompte").val(x.cells[2].innerText.trim());
+	//$("#txtNroCompte").val(x.cells[2].innerText.trim());
+	const valor = x.cells[2].innerText.trim(); // Ej: "0001-000123456"
+	// Dividir por el guion
+	const partes = valor.split('-');
+	// Asignar a los inputs
+	$("#NroComprobantePtoVta").val(partes[0] || "");
+	$("#NroComprobanteNumero").val(partes[1] || "");
+
 	var monto = x.cells[4].innerText.trim();
 	if (monto.includes(",")) {
 		$("#txtMonto").val(x.cells[4].innerText.trim().replace(".", ""));

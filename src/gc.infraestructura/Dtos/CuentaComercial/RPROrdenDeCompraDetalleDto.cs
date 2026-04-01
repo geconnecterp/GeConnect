@@ -1,4 +1,5 @@
-﻿using System;
+﻿using gc.infraestructura.Dtos.Almacen;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace gc.infraestructura.Dtos.CuentaComercial
 {
-	public class RPROrdenDeCompraDetalleDto : RPROrdenDeCompraDto
+	public class RPROrdenDeCompraDetalleDto : RPROrdenDeCompraDto, IProductoConUnidad
 	{
 		public string ocd_item { get; set; } = string.Empty;
 		public string p_id { get; set; } = string.Empty;
@@ -31,5 +32,7 @@ namespace gc.infraestructura.Dtos.CuentaComercial
 		public string p_id_prov { get; set; } = string.Empty;
 		public string up_id { get; set; } = string.Empty;
 		public string up_desc { get; set; } = string.Empty;
+		public string up_tipo { get; set; } = string.Empty;
+		public bool PermiteDecimales => up_tipo == "P";
 	}
 }

@@ -90,7 +90,7 @@
             {
                 if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                <tr class="@clase" onclick="selectReg(this)" ondblclick="selectRegDbl(this)" data-producto-id="@item.P_id">
+                <tr class="@clase" onclick="selectReg(this, 'tbGridProd')" ondblclick="selectRegDbl(this)" data-producto-id="@item.P_id">
                     <td class="@Model.ObtenerClase(item.P_id)">@item.P_id</td>
                     <td class="@Model.ObtenerClase(item.P_desc)">@item.P_desc</td>
                     <td class="@Model.ObtenerClase(item.P_id_barrado)">@item.P_id_barrado</td>

@@ -10,5 +10,7 @@ namespace gc.infraestructura.Dtos.CuentaComercial
         public string Importe { get; set; }=string.Empty ;
 		public decimal Importe2 { get; set; } = 0.00M;
 		public string Rp { get; set; } = string.Empty;
-    }
+		public string NroComprobantePtoVta { get; set; } = string.Empty;
+		public string NroComprobanteNumero { get; set; } = string.Empty;
+	}
 }

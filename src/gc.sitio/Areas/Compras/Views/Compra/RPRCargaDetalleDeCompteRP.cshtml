@@ -20,6 +20,15 @@
 		padding: 0 !important;
 	}
 
+	.btn-comp-rpr-abm {
+		min-width: 130px;
+		width: 130px;
+	}
+
+	.lbl-ancho{
+		padding-left: 5px !important;
+		padding-right: 5px !important;
+	}
 </style>
 
 <div class="card">
@@ -38,15 +47,6 @@
 				<div class="col-8">
 					<span>@Model.Leyenda</span>
 				</div>
-				@* <div class="col-4" style="text-align: right;padding-right: 30px;">
-					<button type="button" class="btn btn-success btn-sm mt-1 me-1" id="btnAceptarComprobanteRP" title="Aceptar">
-						<i class="bx bx-badge-check"></i> Guardar Detalle
-					</button>
-					<button type="button" class="btn btn-danger btn-sm mt-1 me-1" id="btnRegresarDesdeComprobanteRP" title="Regresar">
-						<i class="bx bx-x-circle"></i> Cancelar
-					</button>
-				</div> *@
-
 			</div>
 		</div>
 	</row>
@@ -64,10 +64,10 @@
 			</div>
 		</div>
 		<div class="col-4 d-flex justify-content-center align-items-start flex-row">
-			<button type="button" class="btn btn-success btn-sm me-1" id="btnAceptarComprobanteRP" title="Aceptar">
+			<button type="button" class="btn btn-success btn-sm me-1 btn-comp-rpr-abm" id="btnAceptarComprobanteRP" title="Aceptar">
 				<i class="bx bx-badge-check"></i> Guardar Detalle
 			</button>
-			<button type="button" class="btn btn-danger btn-sm me-1" id="btnRegresarDesdeComprobanteRP" title="Regresar">
+			<button type="button" class="btn btn-danger btn-sm me-1 btn-comp-rpr-abm" id="btnRegresarDesdeComprobanteRP" title="Regresar">
 				<i class="bx bx-x-circle"></i> Cancelar
 			</button>
 		</div>
@@ -85,14 +85,14 @@
 							<div class="col-8" style="padding-right: 0px;padding-left: 0px;width: 64%;">
 								<div class="input-group input-group-sm">
 									<span class="input-group-text">ID: </span>
-									<input type="text" id="txtIdProdEnComprobanteRP" class="form-control form-control-sm" style="width:10%;" readonly />
+									<input type="text" id="txtIdProdEnComprobanteRP" class="form-control form-control-sm" style="width:7%;" readonly />
 									<input type="text" id="txtProDescripcion" class="form-control form-control-sm" style="width: 35%;height: 32px;" readonly />
-									<span class="input-group-text">UP: </span>
-									<input type="text" id="txtUPEnComprobanteRP" class="form-control form-control-sm activable inputEditable" />
-									<span class="input-group-text">Bto: </span>
-									<input type="number" id="txtBtoEnComprobanteRP" class="form-control form-control-sm activable inputEditable" min="0" />
-									<span class="input-group-text">Unid: </span>
-									<input type="text" id="txtUnidEnComprobanteRP" class="form-control form-control-sm activable inputEditable" />
+									<span class="input-group-text lbl-ancho">UP: </span>
+									<input type="text" id="txtUPEnComprobanteRP" class="form-control form-control-sm activable inputEditable text-end" />
+									<span class="input-group-text lbl-ancho">Bto: </span>
+									<input type="number" id="txtBtoEnComprobanteRP" class="form-control form-control-sm activable inputEditable text-end" min="0" />
+									<span class="input-group-text lbl-ancho">Unid: </span>
+									<input type="text" id="txtUnidEnComprobanteRP" class="form-control form-control-sm activable inputEditable text-end" />
 									<input type="text" id="txtUP_ID" style="display:none;" />
 									<input type="text" id="txtBARRADO_ID" style="display:none;" />
 								</div>
@@ -114,9 +114,6 @@
 						<input class="form-check-input" type="checkbox" value="" id="chkOCdeOtrasSuc" checked="">
 						<label class="form-check-label" for="defaultCheck3"> OC de Otras Sucursales</label>
 					</div>
-					<button type="button" class="btn btn-primary btn-sm mt-1 me-1" id="btnAddOCProdEnComprobanteRP" title="Agregar Productos desde Orden de Compra">
-						<i class="bx bx-plus-circle"></i> Agregar producto de OC
-					</button>
 				</div>
 				<div>
 					<h5 style="margin-bottom:0;">Ordenes de Compra</h5>
@@ -124,9 +121,19 @@
 					</div>
 				</div>
 				<div>
-					<h5 id="leyendDetalleOC" style="margin-bottom:0; margin-top: 10px;">Detalle de OC</h5>
-					<div id="divDetalleDeOrdenDeCompra">
+					<div class="d-flex align-items-center justify-content-between mt-2 mb-1">
+						<h5 id="leyendDetalleOC" class="mb-0">Detalle de OC</h5>
+
+						<button type="button"
+								class="btn btn-primary btn-sm ms-2 me-3"
+								id="btnAddOCProdEnComprobanteRP"
+								title="Agregar Productos desde Orden de Compra"
+								disabled>
+							<i class="bx bx-plus-circle"></i> Agregar producto de OC
+						</button>
 					</div>
+
+					<div id="divDetalleDeOrdenDeCompra"></div>
 				</div>
 			</div>
 		</div>

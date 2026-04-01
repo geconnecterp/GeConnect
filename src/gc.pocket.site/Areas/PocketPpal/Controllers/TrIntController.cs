@@ -667,12 +667,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     return Json(new { error = false, warn = true, msg = $"La cantidades de los productos a cargar siempre tienen que ser positivas, mayores a 0 (cero)." });
                 }
-                if (ti.PPedido < cantidad && ProductoBase.Up_id.Equals("07") && (!TIActual.SinAU || !desarma)) //verificamos las cantidades siempre y cuando haya una autorización o en el caso de transferencia de box completo con desarma = false
+                if (ti.PPedido < cantidad && ProductoBase.up_id.Equals("07") && (!TIActual.SinAU || !desarma)) //verificamos las cantidades siempre y cuando haya una autorización o en el caso de transferencia de box completo con desarma = false
                 {
                     return Json(new { error = false, warn = true, msg = $"No se puede cargar más unidades o cantidades ({cantidad}) que las pedidas ({ti.PPedido})" });
                 }
                 //DEBO VALIAR SI ES PESABLE UP_ID != 07 QUE LA UP==1
-                if(!ProductoBase.Up_id.Equals("07") && up != 1 && desarma)
+                if(!ProductoBase.up_id.Equals("07") && up != 1 && desarma)
                 {
                     return Json(new { error = false, warn = true, msg = $"EL PRODUCTO NO ES POR UNIDADES. LA UNIDAD DE PRESENTACIÓN TIENE QUE SER IGUAL A 1 SIEMPRE." });
                 }
