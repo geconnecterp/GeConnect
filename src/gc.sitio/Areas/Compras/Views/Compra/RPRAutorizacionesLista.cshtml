@@ -4,62 +4,84 @@
 	string clase = string.Empty;
 	Layout = "~/views/shared/_Layout.cshtml";
 }
+<div class="container-fluid min-vh-100 d-flex flex-column">
+	<div class="row">
+		<div class="col-1"></div>
+		<div class="col-10">
+            <div class="card mt-3 mb-3">
 
-<div class="card">
-	<div class="card-body">
-		<input type="text" id="idRPSelected" style="display:none;" />
-		<div class="row align-items-md-center mb-2 ms-1">
-			<div class="col-md-6 col-sm-6">
-				<button id="btnNuevaAut" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Agregar Nueva Autorización" asp-action="NuevaAut" asp-controller="Compra" asp-area="Compras">
-					<i class="bx bx-plus-circle"></i> Nueva Autorización
-				</button>
-				<button id="btnModificarAut" class="btn btn-info btn-sm mt-1 me-1" type="button" title="Modificar Autorizacion seleccionada">
-					<i class="bx bx-edit-alt"></i> Modificar Autorización
-				</button>
-				<button id="btnVer" class="btn btn-info btn-sm mt-1 me-1" type="button" title="Ver Autorización seleccionada">
-					<i class="bx bx-show"></i> Ver Autorización
-				</button>
-			</div>
+                <!-- HEADER CON TÍTULO + BOTONES -->
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span class="fw-bold">Listado de Autorizaciones</span>
+
+                    <div>
+                        <button id="btnNuevaAut" class="btn btn-primary btn-sm me-1" type="button"
+                                title="Agregar Nueva Autorización"
+                                asp-action="NuevaAut" asp-controller="Compra" asp-area="Compras">
+                            <i class="bx bx-plus-circle"></i> Nueva Autorización
+                        </button>
+
+                        <button id="btnModificarAut" class="btn btn-info btn-sm me-1" type="button"
+                                title="Modificar Autorizacion seleccionada">
+                            <i class="bx bx-edit-alt"></i> Modificar Autorización
+                        </button>
+
+                        <button id="btnVer" class="btn btn-info btn-sm me-1" type="button"
+                                title="Ver Autorización seleccionada">
+                            <i class="bx bx-show"></i> Ver Autorización
+                        </button>
+                    </div>
+                </div>
+
+                <!-- BODY DEL CARD -->
+                <div class="card-body p-3">
+
+                    <input type="text" id="idRPSelected" style="display:none;" />
+
+                    <div class="table-responsive text-nowrap table-wrapper">
+                        <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbListaAutorizaciones">
+                            <thead>
+                                <tr class="header">
+                                    <th class="align-center">N° Auto</th>
+                                    <th class="align-center">ID</th>
+                                    <th class="align-center">Cuenta</th>
+                                    <th class="align-center">Turno</th>
+                                    <th class="align-center">Nota</th>
+                                    <th class="align-center">Factura</th>
+                                    <th class="align-center">Fecha</th>
+                                    <th class="align-center">Monto</th>
+                                    <th class="align-center">Estado</th>
+                                    <th style="width:0%; display:none;">rp_id</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
+                                {
+                                    foreach (var item in Model.ListaDatos)
+                                    {
+                                        if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+                                        <tr class="@clase" onclick="selectRPRow(this)">
+                                            <td class="align-center">@item.Rp</td>
+                                            <td class="align-center">@item.Cta_id</td>
+                                            <td class="align-left">@item.Cta_denominacion</td>
+                                            <td class="align-center">@item.Fecha?.ToString("dd/MM/yyyy HH:mm")</td>
+                                            <td class="align-left">@item.Nota</td>
+                                            <td class="align-center">@item.Cm_compte</td>
+                                            <td class="align-center">@item.Cm_fecha.ToString("dd/MM/yyyy")</td>
+                                            <td class="align-right">@GridHelper.FormatearPrecio(item.Cm_importe, GridHelper.TipoPrecio.Venta)</td>
+                                            <td class="align-center">@item.Rpe_desc</td>
+                                            <td style="display:none;">@item.Rp_hidden</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
 		</div>
-		<div class="table-responsive text-nowrap table-wrapper">
-			<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbListaAutorizaciones">
-				<thead>
-					<tr class="header">
-						<th class="align-center">N° Auto</th>
-						<th class="align-center">ID</th>
-						<th class="align-center">Cuenta</th>
-						<th class="align-center">Turno</th>
-						<th class="align-center">Nota</th>
-						<th class="align-center">Factura</th>
-						<th class="align-center">Fecha</th>
-						<th class="align-center">Monto</th>
-						<th class="align-center">Estado</th>
-						<th style="width:0%; display:none;">rp_id</th>
-					</tr>
-				</thead>
-				<tbody>
-					@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
-					{
-						@foreach (var item in Model.ListaDatos)
-						{
-							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-							<tr class="@clase" onclick="selectRPRow(this)">
-								<td class="align-center">@item.Rp</td>
-								<td class="align-center">@item.Cta_id</td>
-								<td class="align-left">@item.Cta_denominacion</td>
-								<td class="align-center">@item.Fecha?.ToString("dd/MM/yyyy hh:mm")</td>
-								<td class="align-left">@item.Nota</td>
-								<td class="align-center">@item.Cm_compte</td>
-								<td class="align-center">@item.Cm_fecha.ToString("dd/MM/yyyy")</td>
-								<td class="align-right">@item.Cm_importe</td>
-								<td class="align-center">@item.Rpe_desc</td>
-								<td style="display:none;">@item.Rp_hidden</td>
-							</tr>
-						}
-					}
-				</tbody>
-			</table>
-		</div>
+		<div class="col-1"></div>
 	</div>
 </div>
 

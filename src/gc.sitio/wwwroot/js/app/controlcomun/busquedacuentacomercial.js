@@ -258,13 +258,13 @@ function ActualizarLinkBotonVerDetalle() {
 	var ponerEnCurso = $("#chkPonerEnCurso")[0].checked;
 	var ul = $("#txtCantidadUL").val();
 	var rp = $("#Rp").val();
-	var tipoCompte = $("#idTipoCompteDeRPSelected").val();
+	var tipoCompte = $("#tco_id").val();
 	//var nroCompte = $("#txtNroCompte").val(); TODO: Reemplazar por el nuevo componente
 	var nroCompte = $("#NroComprobantePtoVta").val() + "-" + $("#NroComprobanteNumero").val();
 	var rp = $("#Rp").val();
 	var fechaCompte = moment($("#fechaCompteDeRPSelected").val()).format("X");
 	var monto = $("#txtMonto").val();
-	var descTipoCompte = $("#descTipoCompteDeRPSelected").val();
+	var descTipoCompte = $("#tco_id option:selected").text();//
 	var cta = $("#Cuenta").val();
 	var link = VerDetalleDeCompteDeRPUrl + "?idTipoCompte=" + tipoCompte + "&nroCompte=" + nroCompte + "&depoSelec=" + depoSelec + "&notaAuto=" + notaAuto + "&turno=" + turno + "&ponerEnCurso=" + ponerEnCurso + "&ulCantidad=" + ul + "&rp=" + rp + "&ctaId=" + cta + "&tipoCuenta=" + tipoCuenta + "&fechaCompte=" + fechaCompte + "&monto=" + monto + "&descTipoCompte=" + descTipoCompte;
 	linkVerDetalle = link;
@@ -613,6 +613,37 @@ function SelecccionarPrimerRegistro(grilla) {
 		}
 	}
 }
+
+$("#Rel01").autocomplete({
+	source: function (request, response) {
+
+		data = { prefix: request.term }; /*Rel01*/
+
+		$.ajax({
+			url: autoComRel01Url,
+			type: "POST",
+			dataType: "json",
+			data: data,
+			success: function (obj) {
+				response($.map(obj, function (item) {
+					var texto = item.descripcion;
+					return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
+				}));
+			}
+		})
+	},
+	minLength: 3,
+	select: function (event, ui) {
+		$("#razonsocial").val(ui.item.value);
+		$("#Cuenta").val(ui.item.id)
+		$("#Rel01List").empty();
+		$("#Rel01Item").val(ui.item.id);
+		var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
+		$("#Rel01List").append(opc);
+		CargarComboTiposComptes(ui.item.id);
+		return true;
+	}
+});
 
 function buscarCuentasComercial() {
 	if ($("#CtaId").val() !== "" && $("#CtaId").val() !== undefined) {

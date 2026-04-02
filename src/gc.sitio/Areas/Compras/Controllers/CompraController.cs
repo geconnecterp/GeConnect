@@ -408,6 +408,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (RPRComprobanteDeRPSeleccionado != null && string.IsNullOrEmpty(rp ?? string.Empty))
 				{
 					model.Cuenta = RPRComprobanteDeRPSeleccionado.cta_id;
+					model.Cuenta_Denominacion = RPRComprobanteDeRPSeleccionado.cta_denominacion;
 					model.Nota = RPRComprobanteDeRPSeleccionado.Nota;
 					model.FechaTurno = !string.IsNullOrWhiteSpace(RPRComprobanteDeRPSeleccionado.FechaTurno) ? Convert.ToDateTime(RPRComprobanteDeRPSeleccionado.FechaTurno).ToString("yyyy-MM-dd") : DateTime.Now.ToString("yyyy-MM-dd");
 					model.Depo_id = RPRComprobanteDeRPSeleccionado.Depo_id;
@@ -426,7 +427,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 					};
 					if (jsonAux != null && jsonAux != default(JsonDeRPDto))
 					{
-						model.Cuenta = jsonAux.encabezado.First().Cta_id;
+						model.Cuenta = RPRAutorizacionSeleccionada.Cta_id;
+						model.Cuenta_Denominacion = RPRAutorizacionSeleccionada.Cta_denominacion;
 						model.Nota = jsonAux.encabezado.First().Nota;
 						model.Rpe_id = jsonAux.encabezado.First().Rpe_id;
 						if (int.TryParse(jsonAux.encabezado.First().Ul_cantidad, out int ulCantidad))
@@ -460,7 +462,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 					ViewData["Titulo"] = "MODIFICAR AUTORIZACIÓN";
 					model.TituloVista = $"Autorización RPR N° {rp}";
 				}
-
+				var listR01 = new List<ComboGenDto>();
+				ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
+				if (ProveedoresLista.Count == 0)
+					ObtenerProveedores(_cuentaServicio, "%");
 				return PartialView("RPRNuevaAutorizacion", model);
 			}
 			catch (Exception ex)

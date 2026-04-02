@@ -2,8 +2,8 @@
 @{
 	Layout = "~/views/shared/_Layout.cshtml";
 	var depositos = Model.ComboDeposito;
-
 }
+
 <style>
 	.btn-abm-rpr {
 		min-width: 180px;
@@ -15,124 +15,143 @@
 		width: 165px;
 	}
 </style>
-<div class="card">
-	<div class="card-body">
-		<input type="text" id="idTipoCompteDeRPSelected" style="display:none;" />
-		<input type="text" id="nroCompteDeRPSelected" style="display:none;" />
-		<input type="text" id="fechaCompteDeRPSelected" style="display:none;" />
-		<input type="text" id="descTipoCompteDeRPSelected" style="display:none;" />
-		@Html.Hidden("CtaId", Model.Cuenta)
-		@Html.Hidden("IdTipoCompte", Model.IdTipoCompte)
-		@Html.Hidden("NroCompte", Model.NroCompte)
-		@Html.Hidden("DepoId", Model.Depo_id)
-		@Html.Hidden("Rp", Model.rp)
-		@Html.Hidden("FechaTurno", Model.FechaTurno)
-		<div style="float:left; width: 100%;">
-			<fieldset>
-				<legend>
-					<h5 id="txtTituloVista">@Model.TituloVista</h5>
-				</legend>
-				<div class="input-group col-12">
-					<div class="col-md-6 col-sm-6">
-						<partial name="~/areas/controlcomun/views/cuentacomercial/_ctrBuscarCC.cshtml" />
-					</div>
-					<div class="col-md-6 col-sm-6" style="text-align: right;">
-						<button type="button" class="btn btn-success btn-sm mt-1 me-1 btn-abm-rpr" id="btnAceptarAutoRP" title="Guardar Autorización RP">
-							<i class="bx bx-check-circle"></i> Guardar Autorización RP
-						</button>
-						<button type="button" class="btn btn-danger btn-sm mt-1 me-1 btn-abm-rpr" id="btnEliminarAutoRP" title="Eliminar Autorización RP">
-							<i class="bx bx-trash"></i> Eliminar Autorización RP
-						</button>
-						<button type="button" class="btn btn-secondary btn-sm mt-1 me-1 btn-abm-rpr" id="btnRegresarASelAuto" title="Regresar">
-							<i class="bx bx-chevron-left"></i> Volver
-						</button>
-					</div>
-				</div>
-				<div id="sectionNuevaAutorizacionRP">
-					<fieldset style="margin-left: 0px;margin-right: 0px;">
-						<legend>
-							<h5>Comprobantes de RP</h5>
-						</legend>
-						<div class="row d-flex align-items-start">
-							<div class="col-md-7 col-sm-7">
-								<div class="input-group input-group-sm">
-									<span class="input-group-text">Tipo: </span>
-									<div id="divTiposComptes" class="input-group input-group-sm" style="width: 35%;">
-									</div>
-									<span class="input-group-text">N°: </span>
-									<input type="text" asp-for="@Model.Compte.NroComprobantePtoVta" id="NroComprobantePtoVta" style="max-width:50px;border-color: rgb(70,196,104);text-align: left;font-weight: 700;" class="form-control activable" />
-									<span class="input-group-text" style="display: block;float: right;text-align: right;">-</span>
-									<input type="text" asp-for="@Model.Compte.NroComprobanteNumero" id="NroComprobanteNumero" style="max-width:78px;border-color: rgb(70,196,104);text-align: left;font-weight: 700;" class="form-control activable" />
-									@*<input type="text" id="txtNroCompte" class="form-control activable inputEditable" /> *@
-									<span class="input-group-text">Fecha: </span>
-									<input type="date" id="dtpFechCompte" class="form-control activable inputEditable" />
-									<span class="input-group-text">Monto: </span>
-									<input type="text" id="txtMonto" class="form-control activable inputEditable" @* style="text-align:end;" *@ />
 
-									@* <a href="#" id="VerDetalle" class="btn btn-info btn-sm mt-1 me-1" style="margin-left: 5px;" title="Ver detalle de comprobante"><span class="bx bx-show"> Detalle</span></a> *@
+<div class="container-fluid min-vh-100 d-flex flex-column">
+
+	@Html.Hidden("CtaId", Model.Cuenta)
+	@Html.Hidden("Cuenta", Model.Cuenta)
+	@Html.Hidden("IdTipoCompte", Model.IdTipoCompte)
+	@Html.Hidden("NroCompte", Model.NroCompte)
+	@Html.Hidden("DepoId", Model.Depo_id)
+	@Html.Hidden("Rp", Model.rp)
+	@Html.Hidden("FechaTurno", Model.FechaTurno)
+
+	<div class="row">
+		<div class="col-2"></div>
+		<div class="col-8">
+			<div class="card mt-3 mb-3">
+				<div class="card-header fw-bold">
+					@Model.TituloVista
+				</div>
+				<div class="card-body p-3">
+					<div class="card mb-3">
+						<div class="card-header d-flex justify-content-between align-items-center">
+							<span class="fw-bold">Autorización</span>
+
+							<div>
+								<button type="button" class="btn btn-success btn-sm me-1 btn-abm-rpr" id="btnAceptarAutoRP">
+									<i class="bx bx-check-circle"></i> Guardar Autorización RP
+								</button>
+								<button type="button" class="btn btn-danger btn-sm me-1 btn-abm-rpr" id="btnEliminarAutoRP">
+									<i class="bx bx-trash"></i> Eliminar Autorización RP
+								</button>
+								<button type="button" class="btn btn-secondary btn-sm me-1 btn-abm-rpr" id="btnRegresarASelAuto">
+									<i class="bx bx-chevron-left"></i> Volver
+								</button>
+							</div>
+						</div>
+						<div class="card-body p-2">
+							@if (Model.Cuenta != "")
+							{
+								<div class="d-flex flex-wrap gap-4 mb-2">
+									<div><strong>Cuenta:</strong> @Model.Cuenta</div>
+									<div><strong>Denominación:</strong> @Model.Cuenta_Denominacion</div>
+								</div>
+							}
+							else
+							{
+								<div class="row mb-2">
+									<div class="col-md-12" id="divLs01">
+										<div class="input-group  input-group-sm">
+											<span class="input-group-text">Cuenta</span>
+											<input type="text" class="form-control inputEditable" name="Rel01" id="Rel01" />
+											@Html.Hidden("Rel01Item")
+										</div>
+									</div>
+									<div class="col-md-6 col-sm-6" hidden>
+										@Html.ListBox("Rel01List", null, new { @class = "form-control", @disabled = "disabled" })
+									</div>
+								</div>
+							}
+							<div class="row mb-2">
+								<div class="col-sm-8">
+									<div class="input-group input-group-sm mb-3">
+										<span class="input-group-text">Nota Autorización:</span>
+										<input type="text" id="txtNota" class="form-control activable inputEditable" asp-for="@Model.Nota" />
+									</div>
+								</div>
+								<div class="col-sm-4">
+									<div class="input-group input-group-sm">
+										<span class="input-group-text">Cantidad de UL (pallet):</span>
+										<input type="number" id="txtCantidadUL" class="form-control activable inputEditable" asp-for="@Model.CantidadUL" min="1" max="999" />
+									</div>
 								</div>
 							</div>
-							<div class="col-md-5 col-sm-5 d-flex justify-content-center align-items-start flex-wrap">
-								<button type="button" class="btn btn-primary btn-sm me-1 btn-comp-rpr" id="btnNuevoCompteDeRP" title="Agregar comprobante">
+							<div class="row mb-2">
+								<div class="col-sm">
+									<div class="input-group input-group-sm">
+										<span class="input-group-text">Depósito:</span>
+										@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control activable inputEditable" })
+									</div>
+								</div>
+								<div class="col-sm">
+									<div class="input-group input-group-sm">
+										<span class="input-group-text">Turno:</span>
+										<input type="date" id="dtpFechaTurno" class="form-control activable inputEditable" />
+									</div>
+								</div>
+								<div class="col-sm d-flex align-items-center">
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" id="chkPonerEnCurso" checked>
+										<label class="form-check-label">Poner en Curso</label>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="card">
+						<div class="card-header d-flex justify-content-between align-items-center">
+							<span class="fw-bold">Comprobantes de RP</span>
+							<div>
+								<button type="button" class="btn btn-primary btn-sm me-1 btn-comp-rpr" id="btnNuevoCompteDeRP">
 									<i class="bx bx-plus-circle"></i> Agregar comprobante
 								</button>
-								<button type="button" class="btn btn-danger btn-sm me-1 btn-comp-rpr" id="btnEliminarCompteDeRP" title="Eliminar comprobante">
+								<button type="button" class="btn btn-danger btn-sm me-1 btn-comp-rpr" id="btnEliminarCompteDeRP">
 									<i class="bx bx-trash"></i> Eliminar comprobante
 								</button>
-								<button type="button" class="btn btn-info btn-sm me-1 btn-comp-rpr" id="VerDetalle" title="Ver detalle de comprobante">
+								<button type="button" class="btn btn-info btn-sm me-1 btn-comp-rpr" id="VerDetalle">
 									<i class="bx bx-show"></i> Ver Detalle
 								</button>
 							</div>
 						</div>
-						<div class="row d-flex align-items-start">
-							<div id="divComptesDeRPGrid" style="padding-top: 10px;" class="col-md-4 col-sm-4">
+						<div class="card-body p-2">
+							<div class="row mb-3">
+								<div class="col-md-12">
+									<div class="input-group input-group-sm">
+										<span class="input-group-text">Tipo:</span>
+										<div id="divTiposComptes" class="input-group input-group-sm" style="width: 35%;"></div>
+
+										<span class="input-group-text">N°:</span>
+										<input type="text" id="NroComprobantePtoVta" class="form-control activable" style="max-width:50px; font-weight:700;" />
+										<span class="input-group-text">-</span>
+										<input type="text" id="NroComprobanteNumero" class="form-control activable" style="max-width:78px; font-weight:700;" />
+
+										<span class="input-group-text">Fecha:</span>
+										<input type="date" id="dtpFechCompte" class="form-control activable inputEditable" />
+
+										<span class="input-group-text">Monto:</span>
+										<input type="text" id="txtMonto" class="form-control activable inputEditable" />
+									</div>
+								</div>
 							</div>
-							<div class="col-md-8 col-sm-8 d-flex justify-content-center align-items-start flex-wrap">
-								<fieldset class="w-100" style="margin-left: 0px;margin-right: 0px;">
-									<legend>
-										<h5>Autorización</h5>
-									</legend>
-									<div class="row mb-2">
-										<div class="col-sm-8">
-											<div class="input-group input-group-sm mb-3">
-												<span class="input-group-text">Nota Autorización: </span>
-												<input type="text" id="txtNota" class="form-control activable inputEditable" asp-for="@Model.Nota" />
-											</div>
-										</div>
-										<div class="col-sm-4">
-											<div class="form-check">
-												<input class="form-check-input" type="checkbox" value="" id="chkPonerEnCurso" checked="">
-												<label class="form-check-label" for="defaultCheck3"> Poner en Curso</label>
-											</div>
-										</div>
-									</div>
-									<div class="row">
-										<div class="col-sm">
-											<div class="input-group input-group-sm">
-												<span class="input-group-text">Depósito: </span>
-												@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control activable inputEditable" })
-											</div>
-										</div>
-										<div class="col-sm">
-											<div class="input-group input-group-sm">
-												<span class="input-group-text">Turno: </span>
-												<input type="date" id="dtpFechaTurno" class="form-control activable inputEditable" />
-											</div>
-										</div>
-										<div class="col-sm">
-											<div class="input-group input-group-sm mb-3">
-												<span class="input-group-text">Cantidad de UL (pallet): </span>
-												<input type="number" id="txtCantidadUL" class="form-control activable inputEditable" asp-for="@Model.CantidadUL" min="1" max="999" />
-											</div>
-										</div>
-									</div>
-								</fieldset>
+							<div id="divComptesDeRPGrid" class="mt-2">
 							</div>
 						</div>
-					</fieldset>
+					</div>
 				</div>
-			</fieldset>
+			</div>
 		</div>
+		<div class="col-2"></div>
 	</div>
 </div>
 
@@ -203,6 +222,7 @@
 		var volverAListaDeAutorizacionesUrl = "@Url.Action("RPRAutorizacionesLista", "compra", new { area = "Compras" })";
 		var eliminarComprobanteRPRUrl = "@Url.Action("RPREliminarComprobante", "compra", new { area = "Compras" })";
 		var ActualizarCuentaComercialSeleccionadaUrl = "@Url.Action("ActualizarCuentaComercialSeleccionada", "compra", new { area = "Compras" })";
+		var autoComRel01Url = "@Url.Action("BuscarProvs", "cargaprecios", new { area = "productos" })";/**/
 	</script>
 	<script src="~/js/app/controlcomun/busquedacuentacomercial.js"></script>
 	@* <script src="~/js/app/areas/compras/_rprComprobantesDeRP.js"></script> *@
