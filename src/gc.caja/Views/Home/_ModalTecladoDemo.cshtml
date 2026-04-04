@@ -1,0 +1,153 @@
+<!-- Modal Demo Teclado Virtual -->
+<div class="modal modal-golden fade" id="modalTecladoDemo" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalTecladoDemoTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <!-- Header -->
+            <div class="modal-header bg-gradient-golden">
+                <h5 class="modal-title fw-bold" id="modalTecladoDemoTitle">
+                    <i class='bx bx-keyboard text-white'></i>
+                    Demo Teclado Virtual
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body p-4">
+                <div class="alert alert-info d-flex align-items-center mb-3" role="alert">
+                    <i class='bx bx-info-circle fs-4 me-2'></i>
+                    <div>
+                        <strong>Vista .NET MVC (Demo)</strong>
+                        <p class="mb-0 small">Simulación de integración del teclado virtual en proyecto Visual Studio.</p>
+                    </div>
+                </div>
+
+                <!-- Formulario de Demo -->
+                <form id="formTecladoDemo">
+                    <!-- Usuario -->
+                    <div class="mb-3">
+                        <label for="txtUsuario" class="form-label">
+                            Usuario
+                            <span class="badge bg-info text-dark">class="jsteclado"</span>
+                        </label>
+                        <input type="text"
+                               id="txtUsuario"
+                               class="form-control jsteclado"
+                               placeholder="Escribe tu nombre...">
+                        <small class="form-text text-muted">
+                            <i class='bx bx-chevron-right'></i> Teclado alfanumérico completo
+                        </small>
+                    </div>
+
+                    <!-- Monto -->
+                    <div class="mb-3">
+                        <label for="txtMonto" class="form-label">
+                            Monto
+                            <span class="badge bg-warning text-dark">class="jsteclado jsdecimal"</span>
+                        </label>
+                        <input type="text"
+                               id="txtMonto"
+                               class="form-control jsteclado jsdecimal"
+                               placeholder="0.00">
+                        <small class="form-text text-muted">
+                            <i class='bx bx-chevron-right'></i> Teclado numérico con decimales
+                        </small>
+                    </div>
+
+                    <!-- Cantidad -->
+                    <div class="mb-3">
+                        <label for="txtCantidad" class="form-label">
+                            Cantidad (Solo Enteros)
+                            <span class="badge bg-success text-white">class="jsteclado jsinteger"</span>
+                        </label>
+                        <input type="text"
+                               id="txtCantidad"
+                               class="form-control jsteclado jsinteger"
+                               placeholder="Solo números enteros">
+                        <small class="form-text text-muted">
+                            <i class='bx bx-chevron-right'></i> Teclado numérico sin decimales
+                        </small>
+                    </div>
+
+                    <!-- Teléfono -->
+                    <div class="mb-3">
+                        <label for="txtTelefono" class="form-label">
+                            Teléfono
+                            <span class="badge bg-primary">type="tel" class="jsteclado"</span>
+                        </label>
+                        <input type="tel"
+                               id="txtTelefono"
+                               class="form-control jsteclado"
+                               placeholder="555-1234">
+                        <small class="form-text text-muted">
+                            <i class='bx bx-chevron-right'></i> Teclado numérico para teléfono
+                        </small>
+                    </div>
+
+                    <!-- Comentarios -->
+                    <div class="mb-3">
+                        <label for="txtComentarios" class="form-label">
+                            Comentarios
+                            <span class="badge bg-secondary">textarea class="jsteclado"</span>
+                        </label>
+                        <textarea id="txtComentarios"
+                                  class="form-control jsteclado"
+                                  rows="3"
+                                  placeholder="Notas adicionales..."></textarea>
+                        <small class="form-text text-muted">
+                            <i class='bx bx-chevron-right'></i> Teclado completo con Enter para saltos de línea
+                        </small>
+                    </div>
+
+                    <!-- Instrucciones -->
+                    <div class="card bg-light border-0 mt-4">
+                        <div class="card-body">
+                            <h6 class="card-title text-primary">
+                                <i class='bx bx-info-circle'></i> Instrucciones de Uso
+                            </h6>
+                            <ul class="small mb-0">
+                                <li><strong>Clic en campo:</strong> Abre automáticamente el teclado virtual</li>
+                                <li><strong>jsteclado:</strong> Teclado alfanumérico completo</li>
+                                <li><strong>jsdecimal:</strong> Teclado numérico con punto decimal</li>
+                                <li><strong>jsinteger:</strong> Teclado numérico sin decimales</li>
+                                <li><strong>type="tel":</strong> Optimizado para entrada telefónica</li>
+                            </ul>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class='bx bx-x'></i> Cerrar
+                </button>
+                <button type="button" class="btn btn-success" id="btnLimpiarDemo">
+                    <i class='bx bx-refresh'></i> Limpiar Campos
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script específico del modal -->
+<script>
+    $(document).ready(function () {
+        // Limpiar campos del formulario demo
+        $('#btnLimpiarDemo').on('click', function () {
+            $('#formTecladoDemo')[0].reset();
+            console.log('📋 Campos del demo limpiados');
+        });
+
+        // Evento cuando se abre el modal
+        $('#modalTecladoDemo').on('shown.bs.modal', function () {
+            console.log('⌨️ Modal Teclado Demo abierto');
+            // Opcional: hacer foco en el primer campo
+            $('#txtUsuario').focus();
+        });
+
+        // Evento cuando se cierra el modal
+        $('#modalTecladoDemo').on('hidden.bs.modal', function () {
+            console.log('⌨️ Modal Teclado Demo cerrado');
+        });
+    });
+</script>

@@ -1,47 +1,122 @@
-<!-- Parcial para Componente Menú Principal Caja -->
+<!-- Modal Menú Principal Caja -->
 <div class="modal modal-golden fade" id="modalMenuCaja" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalMenuTitle" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalMenuTitle">
-                    <i class='bx bx-store-alt text-white'></i> Menú Principal - Caja <span id="lblPV" class="badge bg-light text-dark ms-2"></span>
+            <!-- Header con gradiente dorado -->
+            <div class="modal-header bg-gradient-golden">
+                <h5 class="modal-title fw-bold" id="modalMenuTitle">
+                    <i class='bx bx-store-alt text-white'></i>
+                    Menú Principal - Caja
+                    <span id="lblPV" class="badge bg-light text-dark ms-2 shadow-sm"></span>
                 </h5>
-                <button type="button" class="btn btn-sm btn-danger d-flex align-items-center" id="btnCerrarMenu">
+                <button type="button" class="btn btn-sm btn-danger d-flex align-items-center shadow" id="btnCerrarMenu">
                     <i class='bx bx-x fs-5'></i> Salir
                 </button>
             </div>
+
+            <!-- Body con grid mejorado -->
             <div class="modal-body p-4 bg-light">
-                <!-- Cada opción tiene un color distinto según los requerimientos de la maqueta y aprovecha la paleta Golden system -->
-                <div class="menu-grid">
-                    <button class="btn btn-golden menu-btn" onclick="alert('Módulo de Facturación');">
-                        <i class='bx bx-receipt'></i>
-                        <span>Facturación C.F.</span>
-                    </button>
-                    <button class="btn btn-info menu-btn text-white" onclick="alert('Módulo Cliente Registrado');">
-                        <i class='bx bx-id-card'></i>
-                        <span>Facturación C.R.</span>
-                    </button>
-                    <button class="btn btn-success menu-btn" onclick="alert('Módulo Cobranza');">
-                        <i class='bx bx-dollar-circle'></i>
-                        <span>Cobranzas</span>
-                    </button>
-                    <button class="btn btn-warning menu-btn text-white" onclick="alert('Órdenes de Reparto');">
-                        <i class='bx bx-package'></i>
-                        <span>Órdenes Reparto</span>
-                    </button>
-                    <button class="btn btn-secondary menu-btn" onclick="alert('Depósito Box');">
-                        <i class='bx bx-box'></i>
-                        <span>Depósito - Box</span>
-                    </button>
-                    <button class="btn btn-outline-primary menu-btn" onclick="alert('Módulo de Presupuestos');">
-                        <i class='bx bx-calculator'></i>
-                        <span>Presupuestos</span>
-                    </button>
+                <div class="menu-grid-enhanced">
+
+                    <!-- FILA 1: Operaciones de Facturación -->
+                    <div class="menu-row">
+                        <button class="btn menu-btn-enhanced btn-success" data-action="facturacion">
+                            <i class='bx bx-receipt'></i>
+                            <span>FACTURACIÓN</span>
+                        </button>
+
+                        <button class="btn menu-btn-enhanced btn-orange" data-action="devolucion-nc">
+                            <i class='bx bx-undo'></i>
+                            <span>DEVOLUCIÓN NC</span>
+                        </button>
+
+                        <button class="btn menu-btn-enhanced btn-pink" data-action="debito-credito">
+                            <i class='bx bx-transfer'></i>
+                            <span>N DÉBITO y CRÉDITO</span>
+                        </button>
+
+                        <button class="btn menu-btn-enhanced btn-danger" data-action="cobranza">
+                            <i class='bx bx-dollar-circle'></i>
+                            <span>COBRANZA</span>
+                        </button>
+
+                        <button class="btn menu-btn-enhanced btn-dark-red" data-action="anula-cobranza">
+                            <i class='bx bx-x-circle'></i>
+                            <span>ANULA COBRANZA</span>
+                        </button>
+                    </div>
+
+                    <!-- FILA 2: Distribución y Operaciones -->
+                    <div class="menu-row">
+                        <button class="btn menu-btn-enhanced btn-success" data-action="dist-facturacion">
+                            <i class='bx bx-spreadsheet'></i>
+                            <span>DIST. FACTURACIÓN</span>
+                        </button>
+
+                        <button class="btn menu-btn-enhanced btn-danger" data-action="dist-cobranza">
+                            <i class='bx bx-list-check'></i>
+                            <span>DIST. COBRANZA</span>
+                        </button>
+
+                        <button class="btn menu-btn-enhanced btn-dark-red" data-action="cambio-valores">
+                            <i class='bx bx-refresh'></i>
+                            <span>CAMBIO VALORES</span>
+                        </button>
+
+                        <button class="btn menu-btn-enhanced btn-warning text-dark" data-action="rendiciones">
+                            <i class='bx bx-file-blank'></i>
+                            <span>RENDICIONES</span>
+                        </button>
+
+                        <button class="btn menu-btn-enhanced btn-secondary" data-action="cierre">
+                            <i class='bx bx-lock'></i>
+                            <span>CIERRE</span>
+                        </button>
+                    </div>
+
+                    <!-- FILA 3: Administración y Configuración -->
+                    <div class="menu-row">
+                        <button class="btn menu-btn-enhanced btn-primary" data-action="administrador">
+                            <i class='bx bx-shield'></i>
+                            <span>ADMINISTRADOR</span>
+                        </button>
+
+                        <button class="btn menu-btn-enhanced btn-purple" data-action="reportes-z">
+                            <i class='bx bx-bar-chart-alt-2'></i>
+                            <span>REPORTES Z</span>
+                        </button>
+
+                        <button class="btn menu-btn-enhanced btn-dark-orange" data-action="cambio-pass">
+                            <i class='bx bx-key'></i>
+                            <span>CAMBIO PASS</span>
+                        </button>
+                        <!-- ✅ NUEVO: Botón que abre el modal del teclado demo -->
+                        <button class="btn menu-btn-enhanced btn-dark-orange" data-action="demo-teclado">
+                            <i class='bx bx-keyboard'></i>
+                            <span>DEMO TECLADO</span>
+                        </button>
+                        <!-- Espacios vacíos para mantener alineación -->
+                        <div class="menu-btn-placeholder"></div>
+                        <div class="menu-btn-placeholder"></div>
+                    </div>
+
                 </div>
             </div>
-            <div class="modal-footer d-flex justify-content-between">
-                <small class="text-muted"><i class='bx bx-user'></i> Cajero Logueado: <strong id="lblCajero">---</strong></small>
-                <small class="text-muted"><i class='bx bx-pulse'></i> Estado: <span class="text-success fw-bold">ONLINE</span></small>
+
+            <!-- Footer -->
+            <div class="modal-footer d-flex justify-content-between bg-white border-top">
+                <small class="text-muted">
+                    <i class='bx bx-user'></i> Cajero:
+                    <strong id="lblCajero" class="text-dark">---</strong>
+                </small>
+                <small class="text-muted">
+                    <i class='bx bx-time-five'></i>
+                    <span id="lblFechaHora" class="fw-bold text-dark">---</span>
+                </small>
+                <small class="text-muted">
+                    <i class='bx bx-pulse'></i> Estado:
+                    <span class="badge bg-success">ONLINE</span>
+                </small>
             </div>
         </div>
     </div>

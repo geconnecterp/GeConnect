@@ -22,12 +22,15 @@
 <!-- 3. Modal Menú Principal -->
 @await Html.PartialAsync("_ModalMenu")
 
+<partial name="_ModalTecladoDemo" />
+
 @section scripts{
 
     <script type="text/javascript">
 
         var ValidacionIntegridadUrl = "@Url.Action("ValidacionIntegridad", "Home", new { area = "" })";
         var AperturaCajaUrl = "@Url.Action("AperturaCaja", "Home", new { area = "" })";
+
     </script>
 
     <script src="~/js/app/caja.js"></script>

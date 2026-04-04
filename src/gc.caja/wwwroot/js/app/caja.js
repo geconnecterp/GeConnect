@@ -1,3 +1,184 @@
+// ============================================
+// GESTOR DE ACCIONES DEL MENÚ PRINCIPAL CAJA
+// ============================================
+
+$(document).ready(function () {
+    
+    // Manejador de eventos para todos los botones del menú
+    $('.menu-btn-enhanced').on('click', function () {
+        const accion = $(this).data('action');
+        manejarAccionMenu(accion);
+    });
+
+    /**
+     * Procesa las acciones del menú principal
+     * @param {string} accion - Identificador de la acción a realizar
+     */
+    function manejarAccionMenu(accion) {
+        console.log(`🎯 Acción seleccionada: ${accion}`);
+
+        switch (accion) {
+            case 'facturacion':
+                abrirModuloFacturacion();
+                break;
+
+            case 'devolucion-nc':
+                abrirModuloDevolucion();
+                break;
+
+            case 'debito-credito':
+                abrirModuloDebitoCredito();
+                break;
+
+            case 'cobranza':
+                abrirModuloCobranza();
+                break;
+
+            case 'anula-cobranza':
+                abrirModuloAnulaCobranza();
+                break;
+
+            case 'dist-facturacion':
+                abrirModuloDistribucionFacturacion();
+                break;
+
+            case 'dist-cobranza':
+                abrirModuloDistribucionCobranza();
+                break;
+
+            case 'cambio-valores':
+                abrirModuloCambioValores();
+                break;
+
+            case 'rendiciones':
+                abrirModuloRendiciones();
+                break;
+
+            case 'cierre':
+                abrirModuloCierre();
+                break;
+
+            case 'administrador':
+                abrirModuloAdministrador();
+                break;
+
+            case 'reportes-z':
+                abrirModuloReportesZ();
+                break;
+
+            case 'demo-teclado':
+                abrirModalTecladoDemo();
+                break;
+
+            default:
+                console.warn(`⚠️ Acción no implementada: ${accion}`);
+                mostrarMensajeNoImplementado(accion);
+                break;
+        }
+    }
+
+    /**
+     * Abre el modal de demo del teclado virtual
+     */
+    function abrirModalTecladoDemo() {
+        console.log('⌨️ Abriendo modal de demo teclado virtual');
+        
+        // Cerrar el menú principal
+        $('#modalMenuCaja').modal('hide');
+        
+        // Esperar animación de cierre antes de abrir el nuevo modal
+        setTimeout(() => {
+            $('#modalTecladoDemo').modal('show');
+        }, 500);
+    }
+
+    /**
+     * Muestra mensaje de funcionalidad no implementada
+     * @param {string} nombreModulo - Nombre del módulo
+     */
+    function mostrarMensajeNoImplementado(nombreModulo) {
+        const mensaje = `
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class='bx bx-info-circle fs-4'></i>
+                <strong>Módulo en desarrollo</strong>
+                <p class="mb-0">La funcionalidad <em>${nombreModulo}</em> estará disponible próximamente.</p>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+        
+        // Mostrar en un contenedor temporal o usar toastr/sweetalert
+        console.info(`ℹ️ ${nombreModulo} - Módulo en desarrollo`);
+    }
+
+    // ============================================
+    // FUNCIONES PLACEHOLDER PARA MÓDULOS
+    // ============================================
+
+    function abrirModuloFacturacion() {
+        console.log('💵 Abriendo módulo de Facturación...');
+        // TODO: Implementar lógica de facturación
+    }
+
+    function abrirModuloDevolucion() {
+        console.log('↩️ Abriendo módulo de Devolución NC...');
+        // TODO: Implementar lógica de devolución
+    }
+
+    function abrirModuloDebitoCredito() {
+        console.log('💳 Abriendo módulo de Débito y Crédito...');
+        // TODO: Implementar lógica de débito/crédito
+    }
+
+    function abrirModuloCobranza() {
+        console.log('💰 Abriendo módulo de Cobranza...');
+        // TODO: Implementar lógica de cobranza
+    }
+
+    function abrirModuloAnulaCobranza() {
+        console.log('❌ Abriendo módulo de Anula Cobranza...');
+        // TODO: Implementar lógica de anulación
+    }
+
+    function abrirModuloDistribucionFacturacion() {
+        console.log('📊 Abriendo módulo de Distribución Facturación...');
+        // TODO: Implementar lógica de distribución
+    }
+
+    function abrirModuloDistribucionCobranza() {
+        console.log('📈 Abriendo módulo de Distribución Cobranza...');
+        // TODO: Implementar lógica de distribución cobranza
+    }
+
+    function abrirModuloCambioValores() {
+        console.log('🔄 Abriendo módulo de Cambio de Valores...');
+        // TODO: Implementar lógica de cambio valores
+    }
+
+    function abrirModuloRendiciones() {
+        console.log('📄 Abriendo módulo de Rendiciones...');
+        // TODO: Implementar lógica de rendiciones
+    }
+
+    function abrirModuloCierre() {
+        console.log('🔒 Abriendo módulo de Cierre...');
+        // TODO: Implementar lógica de cierre
+    }
+
+    function abrirModuloAdministrador() {
+        console.log('🛡️ Abriendo módulo de Administrador...');
+        // TODO: Implementar lógica de administrador
+    }
+
+    function abrirModuloReportesZ() {
+        console.log('📊 Abriendo módulo de Reportes Z...');
+        // TODO: Implementar lógica de reportes Z
+    }
+});
+
+// ===============================
+// CÓDIGO EXISTENTE DE VALIDACIÓN
+// ===============================
+
 $(function () {
     // Referencias a instancias de Modal en BS5
     const modalValidacion = new bootstrap.Modal(document.getElementById('modalValidacionIngreso'));
@@ -37,7 +218,7 @@ $(function () {
      */
     $("#btnSale").on("click", function () {
         modalValidacion.hide();
-        window.location.href = "/seguridad/token/logout";
+        window.location.href = logout;
     });
 
     // ---------------------------------------------------------
@@ -51,7 +232,7 @@ $(function () {
     $("#btnCerrarMenu").on("click", function () {
         modalMenu.hide();
         setTimeout(() => {
-            window.location.href = "/seguridad/token/logout";
+            window.location.href = logout;
         }, 300);
     });
 

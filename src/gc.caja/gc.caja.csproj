@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Content Remove="log4net.config" />
+    <Content Remove="Views\Shared\_ModalTecladoDemo.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,6 +20,7 @@
     <None Include="log4net.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Views\Home\_ModalTecladoDemo.cshtml" />
   </ItemGroup>
 
   <ItemGroup>

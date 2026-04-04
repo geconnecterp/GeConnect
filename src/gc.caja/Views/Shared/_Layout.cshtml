@@ -63,6 +63,8 @@
             align-items: center;
         }
     </style>
+
+    <link rel="stylesheet" href="~/lib/virtual-keyboard/css/virtual-keyboard.css" asp-append-version="true" />
 </head>
 <body>
     <div class="container">
@@ -90,7 +92,7 @@
     
     <script src="~/js/app/siteGen.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    
+    <script src="~/lib/virtual-keyboard/js/virtual-keyboard.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
     
     <script type="text/javascript">
@@ -102,6 +104,7 @@
 
         var home = "@Url.Action("index", "home", new { area = "" })";
         var login = "@Url.Action("Login", "Token", new { area = "seguridad" })";
+        var logout = "@Url.Action("logout", "Token", new { area = "seguridad" })";
     </script>
 </body>
 </html>

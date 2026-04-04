@@ -210,6 +210,40 @@ namespace gc.caja.Areas.Seguridad.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            //// Acá debo invocar la api
+            //HelperAPI api = new HelperAPI();
+            //var cliente = api.InicializaCliente();
+            //cliente.BaseAddress = new Uri(_configuration["AppSettings:RutaBase"]);
+            //string usuario = UserName;
+            //HttpResponseMessage response;
+            //var link = $"/api/token/Logoff?UserName={usuario}";
+            //response = await cliente.GetAsync(link);
+
+            //if (response.StatusCode == HttpStatusCode.OK)
+            //{
+
+            //}
+            //else if (response.StatusCode == HttpStatusCode.Unauthorized)
+            //{
+
+            //}
+            //else
+            //{
+            //    string stringData = await response.Content.ReadAsStringAsync();
+            //    _logger?.LogError($"stringData: {stringData}");
+
+
+            //}
+
+            //al desloguear redirecciona a HOME
+            return RedirectToAction("Index", new RouteValueDictionary(new { area = "Seguridad", controller = "token", action = "login" }));
+        }
+
         private string ObtenerIpCliente(HttpRequest request)
         {
             var host = Dns.GetHostEntry(Dns.GetHostName());
