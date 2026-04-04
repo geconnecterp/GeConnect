@@ -8,10 +8,16 @@
 		}
 		public static class StoredProcedures
 		{
-			public const string FX_PASSWORD_ENCRIPTA = "dbo.sf_pass_e";
-			public const string FX_PASSWORD_DESENCRIPTA = "dbo.sf_pass_d";
+			//public const string FX_PASSWORD_ENCRIPTA = "dbo.sf_pass_e";
+			//public const string FX_PASSWORD_DESENCRIPTA = "dbo.sf_pass_d";
 
-			public const string MNU_GET_MENU_LIST = "dbo.SP_web_geco_get_menu_list";
+			#region CAJA
+			public const string SP_CAJA_VALIDA_INTEGRIDAD = "SPGECO_CAJA_Valida_Ingreso";
+			public const string SP_CAJA_APERTURA = "SPGECO_CAJA_Apertura";
+
+            #endregion
+
+            public const string MNU_GET_MENU_LIST = "dbo.SP_web_geco_get_menu_list";
 
 			public const string SP_BILLETERAORD_CARGA = "dbo.SP_BilleteraOrdenCarga";
 			public const string SP_BILLETERAORD_REGISTRA = "dbo.SP_BilleteraOrdenRegistro";

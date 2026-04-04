@@ -1,0 +1,658 @@
+﻿/*!
+ * Golden Theme Overlay v2.0
+ * Sistema de botones optimizado con paleta golden completa
+ * Rendimiento mejorado y código unificado
+ */
+
+/* ===== VARIABLES GOLDEN SISTEMA COMPLETO ===== */
+:root,
+[data-bs-theme=light] {
+    /* Golden Core Colors */
+    --bs-golden-primary: #d4af37;
+    --bs-golden-primary-rgb: 212, 175, 55;
+    --bs-golden-secondary: #b8860b;
+    --bs-golden-secondary-rgb: 184, 134, 11;
+    --bs-golden-light: #f5e6a3;
+    --bs-golden-dark: #8b7355;
+    --bs-golden-accent: #daa520;
+    /* Golden Extended Palette */
+    --bs-golden-success: #71dd37; /* Verde mantenido de Bootstrap */
+    --bs-golden-success-rgb: 113, 221, 55;
+    --bs-golden-danger: #ff3e1d; /* Rojo mantenido de Bootstrap */
+    --bs-golden-danger-rgb: 255, 62, 29;
+    --bs-golden-warning: #ffab00; /* Amarillo mantenido de Bootstrap */
+    --bs-golden-warning-rgb: 255, 171, 0;
+    --bs-golden-info: #1070E3; /* #20c997; /* Azul que combina con golden */
+    --bs-golden-info-rgb: 16, 112, 227;
+    --bs-golden-secondary-muted: #9d926e; /* Golden apagado para secondary */
+    --bs-golden-secondary-muted-rgb: 157, 146, 110;
+    /* Bootstrap Overrides */
+    --bs-primary: var(--bs-golden-primary) !important;
+    --bs-primary-rgb: var(--bs-golden-primary-rgb) !important;
+    --bs-secondary: var(--bs-golden-secondary-muted) !important;
+    --bs-secondary-rgb: var(--bs-golden-secondary-muted-rgb) !important;
+    --bs-success: var(--bs-golden-success) !important;
+    --bs-success-rgb: var(--bs-golden-success-rgb) !important;
+    --bs-info: var(--bs-golden-info) !important;
+    --bs-info-rgb: var(--bs-golden-info-rgb) !important;
+    --bs-warning: var(--bs-golden-warning) !important;
+    --bs-warning-rgb: var(--bs-golden-warning-rgb) !important;
+    --bs-danger: var(--bs-golden-danger) !important;
+    --bs-danger-rgb: var(--bs-golden-danger-rgb) !important;
+    /* System Overrides */
+    --bs-focus-ring-color: rgba(var(--bs-golden-primary-rgb), 0.25) !important;
+    --bs-link-color: var(--bs-golden-primary) !important;
+    --bs-link-hover-color: var(--bs-golden-secondary) !important;
+    --bs-link-color-rgb: var(--bs-golden-primary-rgb) !important;
+    --bs-link-hover-color-rgb: var(--bs-golden-secondary-rgb) !important;
+}
+
+/* ===== SISTEMA DE BOTONES GOLDEN UNIFICADO ===== */
+
+/* Mixin base para botones (usando variables CSS para eficiencia) */
+.btn-golden-base {
+    font-weight: 500;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease-in-out;
+    border-width: 1px;
+    border-style: solid;
+}
+
+/* === PRIMARY BUTTONS === */
+.btn-primary,
+.btn-golden {
+    --btn-color: white;
+    --btn-bg: var(--bs-golden-primary);
+    --btn-border: var(--bs-golden-primary);
+    --btn-hover-bg: var(--bs-golden-secondary);
+    --btn-hover-border: var(--bs-golden-secondary);
+    --btn-active-bg: var(--bs-golden-dark);
+    --btn-active-border: var(--bs-golden-dark);
+    --btn-shadow: 0 0.125rem 0.25rem 0 rgba(var(--bs-golden-primary-rgb), 0.4);
+    color: var(--btn-color) !important;
+    background-color: var(--btn-bg) !important;
+    border-color: var(--btn-border) !important;
+    box-shadow: var(--btn-shadow);
+}
+
+    .btn-primary:hover, .btn-primary:focus,
+    .btn-golden:hover, .btn-golden:focus {
+        color: white !important;
+        background-color: var(--btn-hover-bg) !important;
+        border-color: var(--btn-hover-border) !important;
+        transform: translateY(-1px);
+    }
+
+    .btn-primary:active, .btn-primary.active,
+    .btn-golden:active, .btn-golden.active {
+        color: white !important;
+        background-color: var(--btn-active-bg) !important;
+        border-color: var(--btn-active-border) !important;
+    }
+
+.btn-outline-primary {
+    --btn-color: var(--bs-golden-primary);
+    --btn-border: var(--bs-golden-primary);
+    --btn-hover-color: white;
+    --btn-hover-bg: var(--bs-golden-primary);
+    color: var(--btn-color) !important;
+    border-color: var(--btn-border) !important;
+    background: transparent;
+}
+
+    .btn-outline-primary:hover, .btn-outline-primary:focus {
+        color: var(--btn-hover-color) !important;
+        background-color: var(--btn-hover-bg) !important;
+        transform: translateY(-1px);
+    }
+
+/* === SECONDARY BUTTONS === */
+.btn-secondary {
+    --btn-color: white;
+    --btn-bg: var(--bs-golden-secondary-muted);
+    --btn-border: var(--bs-golden-secondary-muted);
+    --btn-hover-bg: #8a7f5d;
+    --btn-hover-border: #8a7f5d;
+    --btn-shadow: 0 0.125rem 0.25rem 0 rgba(var(--bs-golden-secondary-muted-rgb), 0.4);
+    color: var(--btn-color) !important;
+    background-color: var(--btn-bg) !important;
+    border-color: var(--btn-border) !important;
+    box-shadow: var(--btn-shadow);
+}
+
+    .btn-secondary:hover, .btn-secondary:focus {
+        color: white !important;
+        background-color: var(--btn-hover-bg) !important;
+        border-color: var(--btn-hover-border) !important;
+        transform: translateY(-1px);
+    }
+
+.btn-outline-secondary {
+    color: var(--bs-golden-secondary-muted) !important;
+    border-color: var(--bs-golden-secondary-muted) !important;
+    background: transparent;
+}
+
+    .btn-outline-secondary:hover, .btn-outline-secondary:focus {
+        color: white !important;
+        background-color: var(--bs-golden-secondary-muted) !important;
+        transform: translateY(-1px);
+    }
+
+/* === SUCCESS BUTTONS === */
+.btn-success {
+    --btn-color: white;
+    --btn-bg: var(--bs-golden-success);
+    --btn-border: var(--bs-golden-success);
+    --btn-hover-bg: #66c732;
+    --btn-hover-border: #66c732;
+    --btn-shadow: 0 0.125rem 0.25rem 0 rgba(var(--bs-golden-success-rgb), 0.4);
+    color: var(--btn-color) !important;
+    background-color: var(--btn-bg) !important;
+    border-color: var(--btn-border) !important;
+    box-shadow: var(--btn-shadow);
+}
+
+    .btn-success:hover, .btn-success:focus {
+        color: white !important;
+        background-color: var(--btn-hover-bg) !important;
+        border-color: var(--btn-hover-border) !important;
+        transform: translateY(-1px);
+    }
+
+.btn-outline-success {
+    color: var(--bs-golden-success) !important;
+    border-color: var(--bs-golden-success) !important;
+    background: transparent;
+}
+
+    .btn-outline-success:hover, .btn-outline-success:focus {
+        color: white !important;
+        background-color: var(--bs-golden-success) !important;
+        transform: translateY(-1px);
+    }
+
+/* === INFO BUTTONS === */
+.btn-info {
+    --btn-color: white;
+    --btn-bg: var(--bs-golden-info);
+    --btn-border: var(--bs-golden-info);
+    --btn-hover-bg: #1ba085;
+    --btn-hover-border: #1ba085;
+    --btn-shadow: 0 0.125rem 0.25rem 0 rgba(var(--bs-golden-info-rgb), 0.4);
+    color: var(--btn-color) !important;
+    background-color: var(--btn-bg) !important;
+    border-color: var(--btn-border) !important;
+    box-shadow: var(--btn-shadow);
+}
+
+    .btn-info:hover, .btn-info:focus {
+        color: white !important;
+        background-color: var(--btn-hover-bg) !important;
+        border-color: var(--btn-hover-border) !important;
+        transform: translateY(-1px);
+    }
+
+.btn-outline-info {
+    color: var(--bs-golden-info) !important;
+    border-color: var(--bs-golden-info) !important;
+    background: transparent;
+}
+
+    .btn-outline-info:hover, .btn-outline-info:focus {
+        color: white !important;
+        background-color: var(--bs-golden-info) !important;
+        transform: translateY(-1px);
+    }
+
+/* === WARNING BUTTONS === */
+.btn-warning {
+    --btn-color: white;
+    --btn-bg: var(--bs-golden-warning);
+    --btn-border: var(--bs-golden-warning);
+    --btn-hover-bg: #e69a00;
+    --btn-hover-border: #e69a00;
+    --btn-shadow: 0 0.125rem 0.25rem 0 rgba(var(--bs-golden-warning-rgb), 0.4);
+    color: var(--btn-color) !important;
+    background-color: var(--btn-bg) !important;
+    border-color: var(--btn-border) !important;
+    box-shadow: var(--btn-shadow);
+}
+
+    .btn-warning:hover, .btn-warning:focus {
+        color: white !important;
+        background-color: var(--btn-hover-bg) !important;
+        border-color: var(--btn-hover-border) !important;
+        transform: translateY(-1px);
+    }
+
+.btn-outline-warning {
+    color: var(--bs-golden-warning) !important;
+    border-color: var(--bs-golden-warning) !important;
+    background: transparent;
+}
+
+    .btn-outline-warning:hover, .btn-outline-warning:focus {
+        color: white !important;
+        background-color: var(--bs-golden-warning) !important;
+        transform: translateY(-1px);
+    }
+
+/* === DANGER BUTTONS === */
+.btn-danger {
+    --btn-color: white;
+    --btn-bg: var(--bs-golden-danger);
+    --btn-border: var(--bs-golden-danger);
+    --btn-hover-bg: #e6381a;
+    --btn-hover-border: #e6381a;
+    --btn-shadow: 0 0.125rem 0.25rem 0 rgba(var(--bs-golden-danger-rgb), 0.4);
+    color: var(--btn-color) !important;
+    background-color: var(--btn-bg) !important;
+    border-color: var(--btn-border) !important;
+    box-shadow: var(--btn-shadow);
+}
+
+    .btn-danger:hover, .btn-danger:focus {
+        color: white !important;
+        background-color: var(--btn-hover-bg) !important;
+        border-color: var(--btn-hover-border) !important;
+        transform: translateY(-1px);
+    }
+
+.btn-outline-danger {
+    color: var(--bs-golden-danger) !important;
+    border-color: var(--bs-golden-danger) !important;
+    background: transparent;
+}
+
+    .btn-outline-danger:hover, .btn-outline-danger:focus {
+        color: white !important;
+        background-color: var(--bs-golden-danger) !important;
+        transform: translateY(-1px);
+    }
+
+/* === ESTADOS DISABLED Y ACTIVOS UNIFICADOS === */
+.btn-primary:disabled, .btn-secondary:disabled, .btn-success:disabled,
+.btn-info:disabled, .btn-warning:disabled, .btn-danger:disabled,
+.btn-golden:disabled {
+    box-shadow: none !important;
+    transform: none !important;
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.btn-outline-primary:disabled, .btn-outline-secondary:disabled,
+.btn-outline-success:disabled, .btn-outline-info:disabled,
+.btn-outline-warning:disabled, .btn-outline-danger:disabled {
+    box-shadow: none !important;
+    background-color: transparent !important;
+    transform: none !important;
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+/* ===== COMPONENTES ADICIONALES OPTIMIZADOS ===== */
+
+/* Forms */
+.form-control:focus, .form-select:focus {
+    border-color: var(--bs-golden-light) !important;
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-golden-primary-rgb), 0.25) !important;
+}
+
+.form-check-input:checked {
+    background-color: var(--bs-golden-primary) !important;
+    border-color: var(--bs-golden-primary) !important;
+}
+
+/* Navigation */
+.nav-link {
+    color: var(--bs-golden-dark) !important;
+    transition: color 0.2s ease !important;
+}
+
+    .nav-link:hover, .nav-link:focus {
+        color: var(--bs-golden-primary) !important;
+    }
+
+.nav-tabs .nav-link.active {
+    color: var(--bs-golden-primary) !important;
+    border-bottom-color: var(--bs-golden-primary) !important;
+}
+
+/* Cards */
+.card {
+    border: 1px solid var(--bs-golden-light) !important;
+    box-shadow: 0 2px 6px 0 rgba(var(--bs-golden-primary-rgb), 0.1) !important;
+}
+
+.card-header {
+    background-color: var(--bs-golden-light) !important;
+    color: var(--bs-golden-dark) !important;
+    border-bottom: 1px solid var(--bs-golden-secondary) !important;
+}
+
+/* Dropdown Menus */
+.dropdown-menu {
+    border: 1px solid var(--bs-golden-light) !important;
+    box-shadow: 0 0.5rem 1rem rgba(var(--bs-golden-primary-rgb), 0.15) !important;
+}
+
+.dropdown-item:hover, .dropdown-item:focus {
+    background-color: var(--bs-golden-light) !important;
+    color: var(--bs-golden-dark) !important;
+}
+
+/* ===== UTILIDADES GOLDEN ===== */
+.text-golden {
+    color: var(--bs-golden-primary) !important;
+}
+
+.text-golden-dark {
+    color: var(--bs-golden-dark) !important;
+}
+
+.bg-golden {
+    background-color: var(--bs-golden-primary) !important;
+    color: white !important;
+}
+
+.bg-golden-light {
+    background-color: var(--bs-golden-light) !important;
+    color: var(--bs-golden-dark) !important;
+}
+
+.border-golden {
+    border-color: var(--bs-golden-primary) !important;
+}
+
+/* ===== PERFORMANCE OPTIMIZATIONS ===== */
+@media (prefers-reduced-motion: reduce) {
+    .btn, .nav-link, .form-control, .form-select {
+        transition: none !important;
+        transform: none !important;
+    }
+}
+
+/* Print Optimizations */
+@media print {
+    .btn {
+        box-shadow: none !important;
+        transform: none !important;
+    }
+}
+
+/* Navbar fixes mantenidos */
+.navbar-nav .nav-item {
+    list-style: none !important;
+    list-style-type: none !important;
+}
+
+.nav-item::before, .nav-item::after,
+.navbar-dropdown::before, .navbar-dropdown::after {
+    display: none !important;
+    content: none !important;
+}
+
+/* ====== COMPONENTES PARA CARGA DE PRECIOS Y DATOS GOLDEN ====== */
+/* Ya existen clases base para grid-golden en el archivo, solo agregar variantes específicas */
+
+/* Estilos específicos para campos de edición con tema golden */
+.campo-edicion {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--bs-golden-light);
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    padding: 0;
+    overflow: hidden;
+    margin-right: 0.25rem;
+}
+
+.campo-etiqueta {
+    display: inline-block;
+    margin: 0;
+    padding: 0.25rem 0.5rem;
+    background-color: #faf5e6;
+    border-right: 1px solid var(--bs-golden-light);
+    font-size: 0.875rem;
+    width: 45px;
+    text-align: center;
+    color: var(--bs-golden-secondary);
+    font-weight: 500;
+}
+
+.campo-valor {
+    border: none;
+    border-radius: 0;
+    width: 60px;
+    text-align: right;
+    font-size: 0.6rem;
+    padding: 0.25rem 0.5rem;
+    background-color: #ffffff;
+}
+
+.campo-valor:focus {
+    box-shadow: inset 0 0 0 1px var(--bs-golden-primary);
+    outline: none;
+    background-color: #fffdf5;
+}
+
+.campo-valor:disabled {
+    background-color: #f8f9fa;
+    opacity: 0.75;
+    cursor: not-allowed;
+}
+
+/* Estilos para campos con diferentes anchos */
+.campo-valor-lg {
+    width: 100px;
+}
+
+.campo-valor-md {
+    width: 80px;
+}
+
+.campo-valor-sm {
+    width: 60px;
+}
+
+/* Optimización responsive para campos de edición */
+@media (max-width: 992px) {
+    .campos-grupo {
+        flex-wrap: wrap;
+    }
+    
+    .campo-edicion {
+        margin-bottom: 0.25rem;
+        flex-grow: 1;
+    }
+    
+    .campo-etiqueta {
+        width: 40px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .campo-edicion {
+        flex-basis: 48%;
+    }
+}
+
+/* Estilos trasladados desde la vista parcial _presupuestoProds.cshtml */
+/* Solo se añaden si no existen previamente en otras hojas de estilo */
+.campo-modificado {
+    background-color: #d4f1f9 !important;
+    border-color: #a8e1f5 !important;
+}
+.indicador-cambio {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 8px 8px 0;
+    border-color: transparent #4bacc6 transparent transparent;
+}
+.input-container {
+    position: relative;
+}
+.campo-readonly {
+    cursor: pointer;
+    background-color: #f8f9fa;
+}
+.campo-readonly:hover {
+    background-color: #e9ecef;
+}
+
+/* Compatibilidad: mantener selector para inputs editables visualmente cuando no readonly */
+.input-container .form-control:not([readonly]) {
+    background-color: #fff8e1;
+    border-color: #ffc107;
+}
+
+/* ====== CORRECCIÓN CRÍTICA: ESTILOS PARA GRID DE PRECIOS ====== */
+
+/* Encabezado principal con gradiente dorado visible */
+.table-golden-header {
+    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%) !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+    border-bottom: 3px solid #8b6914 !important;
+}
+
+/* Asegurar que TODOS los elementos dentro del header tengan contraste */
+.table-golden-header th,
+.table-golden-header th span,
+.table-golden-header th small,
+.table-golden-header th i,
+.table-golden-header th div {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+
+/* Específico para textos pequeños en el header */
+.table-golden-header small.text-muted {
+    color: rgba(255, 255, 255, 0.85) !important;
+    font-weight: 500 !important;
+}
+
+/* CORRECCIÓN CRÍTICA: Sobreescribir bg-opacity-10 SOLO en headers de tabla */
+.table-golden-header .bg-opacity-10 {
+    opacity: 1 !important; /* ✅ FORZAR OPACIDAD COMPLETA */
+    background-color: rgba(218, 165, 32, 0.25) !important;
+}
+
+/* Colores específicos para cada grupo de columnas con mejor contraste */
+.table-golden-header .bg-info {
+    background-color: rgba(13, 110, 253, 0.25) !important;
+    border-left: 2px solid #0d6efd !important;
+}
+
+.table-golden-header .bg-warning {
+    background-color: rgba(255, 193, 7, 0.25) !important;
+    border-left: 2px solid #ffc107 !important;
+}
+
+.table-golden-header .bg-danger {
+    background-color: rgba(220, 53, 69, 0.25) !important;
+    border-left: 2px solid #dc3545 !important;
+}
+
+.table-golden-header .bg-success {
+    background-color: rgba(25, 135, 84, 0.25) !important;
+    border-left: 2px solid #198754 !important;
+}
+
+.table-golden-header .bg-primary {
+    background-color: rgba(13, 110, 253, 0.25) !important;
+    border-left: 2px solid #0d6efd !important;
+}
+
+/* Iconos del header con mejor visibilidad */
+.table-golden-header i {
+    font-size: 1.1em !important;
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+    margin-right: 0.25rem !important;
+}
+
+/* Sticky header mejorado */
+.table-golden-header.sticky-top {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+    z-index: 0 !important;
+}
+
+/* Bordes entre columnas del header para mejor separación visual */
+.table-golden-header th {
+    border-right: 1px solid rgba(255, 255, 255, 0.2) !important;
+    padding: 0.75rem 0.5rem !important;
+}
+
+.table-golden-header th:last-child {
+    border-right: none !important;
+}
+
+/* Segunda fila del header (subheaders) */
+.table-golden-header tr:nth-child(2) th {
+    font-size: 0.85rem !important;
+    padding: 0.5rem 0.35rem !important;
+    background: linear-gradient(135deg, #8b6914 0%, #b8860b 100%) !important;
+}
+
+/* Hover en headers para ordenación */
+.table-golden-header th.sortable:hover {
+    background-color: rgba(139, 105, 20, 0.3) !important;
+    cursor: pointer;
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+}
+
+/* ====== CORRECCIÓN PARA BADGES DENTRO DEL GRID ====== */
+.table-golden tbody .badge.bg-info,
+.table-golden tbody .badge.bg-success,
+.table-golden tbody .badge.bg-warning,
+.table-golden tbody .badge.bg-danger,
+.table-golden tbody .badge.bg-secondary,
+.table-golden tbody .badge.bg-primary {
+    opacity: 1 !important; /* ✅ BADGES siempre 100% visibles */
+    font-weight: 600 !important;
+}
+
+/* Específico para badge con bg-opacity-75 */
+.table-golden tbody .bg-opacity-75 {
+    opacity: 1 !important;
+}
+
+/* Clases específicas para grupos de headers */
+.header-group-info,
+.header-subgroup-info {
+    background-color: rgba(13, 110, 253, 0.15) !important;
+    border-left: 3px solid #0d6efd !important;
+}
+
+.header-group-warning,
+.header-subgroup-warning {
+    background-color: rgba(255, 193, 7, 0.15) !important;
+    border-left: 3px solid #ffc107 !important;
+}
+
+.header-group-danger,
+.header-subgroup-danger {
+    background-color: rgba(220, 53, 69, 0.15) !important;
+    border-left: 3px solid #dc3545 !important;
+}
+
+.header-group-success,
+.header-subgroup-success {
+    background-color: rgba(25, 135, 84, 0.15) !important;
+    border-left: 3px solid #198754 !important;
+}
+
+.header-group-primary,
+.header-subgroup-primary {
+    background-color: rgba(13, 110, 253, 0.15) !important;
+    border-left: 3px solid #0d6efd !important;
+}

@@ -1,0 +1,228 @@
+﻿using gc.caja.Controllers;
+using gc.caja.core.Servicios.Contratos.Cajas;
+using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Core.Helpers;
+using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Seguridad;
+using gc.infraestructura.Dtos.Users;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using System.IdentityModel.Tokens.Jwt;
+using System.Net;
+using System.Net.Sockets;
+using System.Security.Claims;
+using System.Text;
+
+namespace gc.caja.Areas.Seguridad.Controllers
+{
+    [Area("Seguridad")]
+    [AllowAnonymous] // ✅ AGREGADO: Permite acceso anónimo al controlador
+    public class TokenController : ControladorBase
+    {
+        private readonly IConfiguration _configuration;
+        private new readonly IHttpContextAccessor _context;
+        private readonly ICajaServicio _caja;
+        private readonly AppSettings _appSettings;
+
+        public TokenController(IConfiguration configuration, IHttpContextAccessor context,
+            IOptions<AppSettings> appSettings, ICajaServicio caja,
+            ILogger<TokenController> logger) : base(appSettings, context, logger)
+        {
+            _configuration = configuration;
+            _context = context;
+            _appSettings = appSettings.Value;
+            _caja = caja;
+        }
+        [HttpGet]
+        public async Task<IActionResult> Login()
+        {
+            LoginDto login;
+            try
+            {
+                CajaActual = new();
+                //ComboAdministracion();
+                await RecuperarConfigCaja();
+                ViewBag.CajaConfig = CajaActual;
+                login = new LoginDto { Fecha = DateTime.Now };
+                return View(login);
+            }
+            catch (NegocioException ex)
+            {
+                _logger?.LogError(ex, "Error al inicializar Caja.");
+                TempData["error"] = ex.Message;
+
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error en Login");
+                TempData["error"] = "Hubo algún error al intentar cargar la vista de autenticación. Si el problema persiste, avise al administardor.";
+            }
+
+            ViewBag.CajaConfig = CajaActual;
+
+            login = new LoginDto { Fecha = DateTime.Now };
+            return View(login);
+        }
+
+        /// <summary>
+        /// Me permite levantar la configuracion de la estacion de trabajo
+        /// </summary>
+        private async Task RecuperarConfigCaja()
+        {
+            var config = await _caja.ObtenerAsync(_appSettings.RutaFileCaja);
+            if (config == null)
+            {
+                throw new NegocioException("No se ha podido cargar la configuración de caja. Si el problema persiste, avise al administrador.");
+            }
+
+            CajaActual = config;
+
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Login(LoginDto autenticar)
+        {
+            try
+            {
+                var cajaConfig = CajaActual;
+
+                //obtengo IP del cliente
+                //var ip = ObtenerIpCliente(Request);
+                var ip = cajaConfig.IP;
+
+                // Acá debo invocar la api
+                HelperAPI api = new HelperAPI();
+                var cliente = api.InicializaCliente();
+                //inyectamos la ip en el header del request
+                cliente.DefaultRequestHeaders.Add("X-ClientUsr", ip.ToString());
+
+                //cliente.BaseAddress = new Uri(_configuration["AppSettings:RutaBase"]);
+                var userModel = new { autenticar.UserName, autenticar.Password,Admid = cajaConfig.AdmId};
+                var userJson = JsonConvert.SerializeObject(userModel);
+                var contentData = new StringContent(userJson, Encoding.UTF8, "application/json");
+                var link = $"{_appSettings.RutaBase}/api/apitoken";
+                var response = await cliente.PostAsync(link, contentData);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    //se debe leer el cuerpo del response
+                    string strJWT = await response.Content.ReadAsStringAsync();
+                    //obtenermos el TOKEN   
+                    AutenticacionDto auth = JsonConvert.DeserializeObject<AutenticacionDto>(strJWT);
+                    if (!string.IsNullOrEmpty(auth.Token))
+                    {
+                        var token = auth.Token;
+                        var handler = new JwtSecurityTokenHandler(); //Libreria System.IdentityModel.Token.Jwt (6.7.1)
+
+                        var tokenS = handler.ReadToken(token) as JwtSecurityToken;
+                        if (tokenS == null)
+                        {
+                            throw new NegocioException("El Token no es válido. Debe autenticarse nuevamente.");
+                        }
+                        var user = tokenS.Claims.First(c => c.Type.Contains("name")).Value;
+                        var email = tokenS.Claims.First(c => c.Type.Contains("email")).Value;
+                        var nombre = tokenS.Claims.First(c => c.Type.Contains("nya")).Value;
+                        var jsonp = tokenS.Claims.First(c => c.Type.Contains("perfiles")).Value.ToString();
+                        ADMID = tokenS.Claims.First(c => c.Type.Contains("AdmId")).Value;
+
+                        //29/10/2024 Ñoquis - se resguarda etiqueta, que sera la que almacene los datos en la cookie
+                        Etiqueta = $"{user}GCCaja";
+
+                        //se comienza a armar  el usuario autenticado. Se resguardara en una cookie
+                        var userClaims = new List<Claim>();
+                        userClaims.AddRange(tokenS.Claims);
+
+                        var identity = new ClaimsIdentity(userClaims, "User Identity");
+                        var authProperties = new AuthenticationProperties
+                        {
+                            ExpiresUtc = tokenS.ValidTo,
+                        };
+
+                        var cookieOptions = new CookieOptions
+                        {
+                            Expires = tokenS.ValidTo,
+                            SameSite = SameSiteMode.Unspecified,
+
+                        };
+
+                        var principal = new ClaimsPrincipal(new[] { identity });
+                        await _context.HttpContext?.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
+                        _context.HttpContext?.Response.Cookies.Append(Etiqueta, token, cookieOptions); //se resguarda el token con el nombre del usuario
+
+                        #region resguardamos los perfiles del usuario. 11/02/2025
+
+                        UserPerfiles = JsonConvert.DeserializeObject<List<PerfilUserDto>>(jsonp);
+
+                        if (UserPerfiles == null || UserPerfiles.Count() == 0)
+                        {
+                            throw new NegocioException("El usuario no tiene perfiles para operar en el sistema. PERMISO DENEGADO PARA ACCEDER. ");
+                        }
+                        //verifico si tiene un valor predeterminado.
+                        if (UserPerfiles.Any(x => x.perfil_default.Equals("S")))
+                        {
+                            UserPerfilSeleccionado = UserPerfiles.First(x => x.perfil_default.Equals("S"));
+                        }
+                        else
+                        {
+                            //no tiene perfil predeterminado. tomare el primero de la lista.
+                            //luego se le asigna ese perfil como SU determinado.
+                            PerfilUserDto up = UserPerfiles.First();
+                            UserPerfilSeleccionado = up;
+
+                            //RespuestaGenerica<RespuestaDto> res = await _mnSv.DefinePerfilDefault(up, token);
+                        }
+
+                        //se procede a buscar el menu inicial del sistema
+
+
+                        #endregion
+
+                        return RedirectToAction("Index", new RouteValueDictionary(new { area = "", controller = "Home", action = "Index" }));
+                    }
+                    else
+                    {
+                        TempData["error"] = "No se ha podido autenticar. Si el problema persiste avisé al administrador";
+                    }
+                }
+                else
+                {
+                    var respuesta = await response.Content.ReadAsStringAsync();
+
+                    _logger?.LogError($"Error al autenticar: {respuesta}");
+                    throw new NegocioException("No se ha podido autenticar. El usuario o contraseña no son correctos.");
+                }
+
+                return View(autenticar);
+            }
+            catch (Exception ex)
+            {
+                await RecuperarConfigCaja();
+                ViewBag.CajaConfig = CajaActual;
+                TempData["error"] = ex.Message;               
+                var login = new LoginDto { Fecha = DateTime.Now };
+                return View(login);
+            }
+        }
+
+        private string ObtenerIpCliente(HttpRequest request)
+        {
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    return ip.ToString();
+                }
+            }
+
+            return "255.255.255.255";
+        }
+
+    }
+}

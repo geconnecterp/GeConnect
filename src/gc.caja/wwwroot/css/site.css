@@ -1,0 +1,3274 @@
+﻿[class^="bx"] {
+    font-size: 1.2rem !important;
+}
+
+/* Utilitarios más específicos (tienen 2 clases, mayor especificidad) */
+.bx.bx--sm {
+    font-size: .875rem !important;
+}
+
+.bx.bx--lg {
+    font-size: 1.6rem !important;
+}
+
+.bx.bx--xl {
+    font-size: 2rem !important;
+}
+
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    margin-bottom: 60px;
+}
+
+activable {
+}
+/* Para agrandar el tamaño del icono*/
+.bx-custom-size {
+    font-size: 2.5em !important;
+}
+/* Estilos para bloquear la tabla durante la carga */
+.tabla-desactivada {
+    position: relative;
+    opacity: 0.7;
+    cursor: wait !important;
+}
+
+.overlay-tabla {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.1);
+    z-index: 1000;
+    cursor: wait !important;
+}
+
+.tabla-desactivada tr {
+    pointer-events: none;
+}
+
+.sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.sticky-bottom {
+    position: sticky;
+    bottom: 0;
+    z-index: 1020;
+}
+
+
+
+
+/*ESTILO UPLOAD */
+/* Estilos para el componente de carga de archivo */
+/* Estilos Golden para Upload de Archivos */
+.upload-container-golden {
+    border: 2px solid #DAA520;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #FFF8DC 0%, #FFFACD 100%);
+    padding: 20px;
+    margin: 15px 0;
+    box-shadow: 0 4px 15px rgba(218, 165, 32, 0.2);
+    transition: all 0.3s ease;
+}
+
+    .upload-container-golden:hover {
+        box-shadow: 0 6px 20px rgba(218, 165, 32, 0.3);
+        transform: translateY(-2px);
+    }
+
+.upload-header-golden {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    color: #B8860B;
+}
+
+    .upload-header-golden i {
+        font-size: 1.5rem;
+        margin-right: 10px;
+    }
+
+.upload-title-golden {
+    margin: 0;
+    font-weight: 600;
+    color: #B8860B;
+}
+
+.upload-drop-zone-golden {
+    border: 2px dashed #DAA520;
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    background-color: #FFFEF7;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+    .upload-drop-zone-golden:hover {
+        border-color: #B8860B;
+        background-color: #FFF8DC;
+    }
+
+    .upload-drop-zone-golden.dragover {
+        border-color: #FFD700;
+        background-color: #FFFFE0;
+        transform: scale(1.02);
+    }
+
+.upload-content-golden {
+    pointer-events: none;
+}
+
+.upload-icon-golden {
+    font-size: 3rem;
+    color: #DAA520;
+    margin-bottom: 15px;
+}
+
+.upload-text-golden {
+    font-size: 1.1rem;
+    color: #B8860B;
+    margin: 10px 0 5px;
+    font-weight: 500;
+}
+
+.upload-subtext-golden {
+    color: #CD853F;
+    margin: 5px 0 15px;
+    font-size: 0.9rem;
+}
+
+.btn-upload-golden {
+    background: linear-gradient(135deg, #DAA520 0%, #B8860B 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-block;
+    text-decoration: none;
+    pointer-events: all;
+}
+
+    .btn-upload-golden:hover {
+        background: linear-gradient(135deg, #B8860B 0%, #DAA520 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(218, 165, 32, 0.4);
+        color: white;
+    }
+
+.file-input-hidden {
+    display: none;
+}
+
+.upload-info-golden {
+    margin-top: 20px;
+    padding: 15px;
+    background: linear-gradient(135deg, #FFFACD 0%, #FFF8DC 100%);
+    border-radius: 8px;
+    border: 1px solid #DAA520;
+}
+
+.file-info-golden {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.upload-file-icon-golden {
+    font-size: 2rem;
+    color: #DAA520;
+    margin-right: 15px;
+}
+
+.file-details-golden {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.file-name-golden {
+    font-weight: 600;
+    color: #B8860B;
+    font-size: 1rem;
+    margin-bottom: 3px;
+}
+
+.file-size-golden {
+    color: #CD853F;
+    font-size: 0.85rem;
+}
+
+.btn-remove-golden {
+    background-color: #DC3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+    .btn-remove-golden:hover {
+        background-color: #C82333;
+        transform: scale(1.1);
+    }
+
+.upload-progress-golden {
+    margin-top: 15px;
+}
+
+.progress-bar-golden {
+    width: 100%;
+    height: 8px;
+    background-color: #F0F0F0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.progress-fill-golden {
+    height: 100%;
+    background: linear-gradient(90deg, #DAA520 0%, #FFD700 100%);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+.progress-text-golden {
+    font-size: 0.9rem;
+    color: #B8860B;
+    font-weight: 600;
+}
+
+/* Responsive para upload golden */
+@media screen and (max-width: 768px) {
+    .upload-container-golden {
+        padding: 15px;
+        margin: 10px 0;
+    }
+
+    .upload-drop-zone-golden {
+        padding: 30px 15px;
+    }
+
+    .upload-icon-golden {
+        font-size: 2.5rem;
+    }
+
+    .upload-text-golden {
+        font-size: 1rem;
+    }
+
+    .btn-upload-golden {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .upload-drop-zone-golden {
+        padding: 25px 10px;
+    }
+
+    .upload-icon-golden {
+        font-size: 2rem;
+    }
+
+    .upload-text-golden {
+        font-size: 0.9rem;
+    }
+
+    .file-info-golden {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .upload-file-icon-golden {
+        margin-right: 0;
+    }
+}
+/*FINAL */
+
+/*ESTILO GOLDE PARA MENSAJES*/
+/* Estilos para mensajes Golden */
+/*.selected-row {
+    background-color: #B8DFFA !important;
+}*/
+
+#divAajDet .grid-golden {
+    margin-top: 0;
+}
+
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    flex-direction: column;
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.05) 0%, rgba(184, 134, 11, 0.02) 100%);
+    border-radius: 0.5rem;
+}
+
+.loading-spinner .spinner-border {
+    color: #daa520;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-width: 0.3rem;
+    animation: spin 1s linear infinite, pulse 2s ease-in-out infinite;
+}
+
+/* Mejorar .spinner-border-golden existente */
+.spinner-border-golden {
+    color: #d4af37 !important;
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+    border-width: 0.3em !important;
+    animation: spin 1s linear infinite, goldPulse 2s ease-in-out infinite;
+}
+
+@keyframes goldPulse {
+    0%, 100% {
+        border-color: #d4af37 transparent transparent transparent;
+    }
+    50% {
+        border-color: #b8860b transparent transparent transparent;
+    }
+}
+
+/* Texto de carga con estilo dorado */
+.loading-text-golden {
+    color: #b8860b;
+    font-weight: 600;
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+.golden-message-container {
+    width: 100%;
+    padding: 0.5rem;
+}
+
+.golden-message {
+    border-left-width: 5px !important;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+    .golden-message:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15) !important;
+    }
+
+.golden-message-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+}
+
+.golden-message-content {
+    padding-left: 0.5rem;
+}
+
+/* Estilos específicos por tipo */
+.golden-message-error {
+    background-color: rgba(255, 235, 238, 0.4);
+}
+
+.golden-message-warning {
+    background-color: rgba(255, 248, 225, 0.4);
+}
+
+.golden-message-success {
+    background-color: rgba(232, 245, 233, 0.4);
+}
+
+.golden-message-info {
+    background-color: rgba(227, 242, 253, 0.4);
+}
+
+/* Animaciones */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.animate__fadeIn {
+    animation: fadeIn 0.5s;
+}
+
+/* ✅ ANIMACIONES SUAVES */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+.fade-out {
+    animation: fadeOut 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+/* ✅ ESTILOS PARA INFORMACIÓN DE ARCHIVO */
+#fileSelectedInfo {
+    background-color: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+/* ✅ RESPONSIVE PARA BOTONES */
+@media screen and (max-width: 768px) {
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+        .d-flex.justify-content-between .d-flex:first-child {
+            justify-content: center;
+        }
+}
+
+/* FIN ESTILO*/
+/* ESTILO GOLDEN PARA MODALES*/
+/* Estilos para modales con tema dorado */
+.modal-golden {
+    z-index: 9999;
+}
+
+    .modal-golden .modal-content {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .modal-golden .modal-header {
+        background: linear-gradient(135deg, #b8860b 0%, #daa520 100%);
+        color: #333;
+        border-bottom: none;
+        border-radius: 8px 8px 0 0;
+        padding: 15px 20px;
+    }
+
+    .modal-golden .modal-title {
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        color: #333;
+        text-shadow: 0 1px 1px rgba(255,255,255,0.3);
+    }
+
+        .modal-golden .modal-title i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+    .modal-golden .btn-close {
+        color: #333;
+        opacity: 0.8;
+        transition: opacity 0.2s;
+    }
+
+        .modal-golden .btn-close:hover {
+            opacity: 1;
+        }
+
+    .modal-golden .modal-body {
+        padding: 20px;
+        background-color: #f8f9fa;
+    }
+
+    .modal-golden .modal-footer {
+        background-color: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        padding: 15px 20px;
+        border-radius: 0 0 8px 8px;
+    }
+
+/* Botones estilo dorado */
+.btn-golden {
+    background: linear-gradient(135deg, #DAA520 0%, #B8860B 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+    .btn-golden:hover {
+        background: linear-gradient(135deg, #B8860B 0%, #DAA520 100%);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(218, 165, 32, 0.3);
+    }
+
+    .btn-golden:focus,
+    .btn-golden:active {
+        background: linear-gradient(135deg, #B8860B 0%, #DAA520 100%);
+        color: white;
+        box-shadow: 0 0 0 0.25rem rgba(218, 165, 32, 0.25);
+    }
+
+    .btn-golden:disabled {
+        background: #cccccc;
+        color: #666666;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+/* Estilos para componentes dentro de modales dorados */
+.modal-golden .form-control:focus {
+    border-color: #b8860b;
+    box-shadow: 0 0 0 0.2rem rgba(184, 134, 11, 0.25);
+}
+
+.modal-golden .nav-tabs .nav-link.active {
+    color: #b8860b;
+    border-bottom: 3px solid #b8860b;
+}
+
+.modal-golden .nav-tabs .nav-link:hover {
+    background-color: rgba(184, 134, 11, 0.1);
+}
+
+/* Contenedor de árbol con estilo dorado */
+.tree-container-golden {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 10px;
+    background-color: white;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Estilos para resultados de búsqueda */
+.jstree-search {
+    color: #000 !important;
+    font-weight: bold !important;
+    background-color: #ffff99 !important;
+}
+
+/* Animación de resaltado */
+@keyframes highlight-search {
+    0% {
+        background-color: #ffff99;
+    }
+
+    50% {
+        background-color: #ffffd9;
+    }
+
+    100% {
+        background-color: #ffff99;
+    }
+}
+
+.jstree-search {
+    animation: highlight-search 1.5s ease-in-out infinite;
+}
+
+/* Estilos para jstree en tema dorado */
+.jstree-golden .jstree-clicked {
+    background-color: #faf5e6 !important;
+    box-shadow: inset 0 0 1px #b8860b !important;
+    border-radius: 3px !important;
+}
+
+.jstree-golden .jstree-wholerow-hovered {
+    background: rgba(184, 134, 11, 0.1);
+}
+
+.jstree-golden .jstree-wholerow-clicked {
+    background: rgba(184, 134, 11, 0.2);
+}
+
+.jstree-golden .jstree-anchor {
+    padding-right: 10px !important;
+    line-height: 28px !important;
+    height: 28px !important;
+}
+
+/* Etiquetas y encabezados en modales dorados */
+.modal-golden h5,
+.modal-golden .h5,
+.modal-golden label.section-title {
+    color: #b8860b;
+    font-weight: 600;
+}
+
+.modal-golden label {
+    color: #495057;
+    font-weight: 500;
+}
+
+/* FIN ESTILO GOLDEN PARA MODAL*/
+
+/* ESTILO GOLDE PARA CARD */
+/* ====== Estilos para Cards con tema dorado ====== */
+.card-golden {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+    /* Encabezado con gradiente dorado */
+    .card-golden .card-header {
+        background: linear-gradient(135deg, #b8860b 0%, #daa520 100%);
+        color: #333;
+        border-bottom: none;
+        padding: 12px 16px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
+
+        /* Iconos en el encabezado */
+        .card-golden .card-header i {
+            margin-right: 8px;
+            font-size: 1.1em;
+        }
+
+        /* Título del card */
+        .card-golden .card-header h5,
+        .card-golden .card-header h6 {
+            margin-bottom: 0;
+            font-weight: 600;
+            color: #333;
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
+        }
+
+    /* Cuerpo del card */
+    .card-golden .card-body {
+        padding: 15px;
+        background-color: #fff;
+    }
+
+    /* Footer del card */
+    .card-golden .card-footer {
+        background-color: #faf5e6;
+        border-top: 1px solid #f5e7c1;
+        padding: 10px 16px;
+    }
+
+/* Variante con encabezado más sutil */
+.card-golden-subtle .card-header {
+    background: #faf5e6;
+    border-bottom: 2px solid #daa520;
+    color: #b8860b;
+}
+
+/* Variante con borde en lugar de sombra */
+.card-golden-bordered {
+    border: 1px solid #daa520;
+    box-shadow: none;
+}
+
+/* Variante con borde izquierdo destacado */
+.card-golden-accent {
+    border-left: 4px solid #b8860b;
+    border-radius: 0 8px 8px 0;
+}
+
+/* Estilos para tablas dentro de cards dorados */
+.card-golden .table thead th {
+    border-bottom-color: #daa520;
+    background-color: rgba(184, 134, 11, 0.05);
+}
+
+.card-golden .table-hover tbody tr:hover {
+    background-color: rgba(184, 134, 11, 0.03);
+}
+
+/* Variante con fondo completo para el encabezado */
+.card-golden-full .card-header {
+    background-color: #b8860b;
+    background-image: none;
+    color: #fff;
+    text-shadow: none;
+}
+
+    .card-golden-full .card-header h5,
+    .card-golden-full .card-header h6 {
+        color: #fff;
+        text-shadow: none;
+    }
+
+/* Estilos para badge y elementos destacados dentro de cards dorados */
+.card-golden .badge-golden {
+    background-color: #b8860b;
+    color: #fff;
+}
+
+/* Líneas divisorias con color dorado */
+.card-golden hr {
+    border-color: rgba(184, 134, 11, 0.2);
+}
+
+/* Variante oscura con texto claro */
+.card-golden-dark .card-header {
+    background: linear-gradient(135deg, #8b6508 0%, #b8860b 100%);
+    color: #fff;
+}
+
+    .card-golden-dark .card-header h5,
+    .card-golden-dark .card-header h6 {
+        color: #fff;
+        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+    }
+
+/* FIN ESTILO GOLDEN PARA CARD*/
+
+/* ESTILO GOLDEN PARA GRID Y TABLA*/
+/* ====== Estilos para Grids con tema dorado ====== */
+.grid-golden {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+    background-color: #fff;
+}
+
+.grid-golden-header {
+    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%);
+    color: #333;
+    padding: 6px 16px;
+    border-radius: 8px 8px 0 0;
+}
+
+    .grid-golden-header h5 {
+        color: #333;
+        font-weight: 600;
+        text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
+    }
+
+    .grid-golden-header i {
+        font-size: 1.2em;
+    }
+
+.grid-golden-body {
+    padding: 0;
+    background-color: #fff;
+}
+
+.grid-golden-footer {
+    background-color: #faf5e6;
+    border-top: 1px solid #f5e7c1;
+    padding: 10px 16px;
+    border-radius: 0 0 8px 8px;
+}
+
+/* Estilos para tablas dentro de grid dorado */
+.table-golden {
+    border-collapse: collapse;
+    margin-bottom: 0;
+}
+
+    .table-golden thead {
+        background: linear-gradient(to bottom, #b8860b, #daa520);
+        color: #fff;
+    }
+
+    .table-golden th {
+        border-bottom: none;
+        font-weight: 600;
+        vertical-align: middle;
+        padding: 10px 8px;
+    }
+
+    .table-golden tbody tr:nth-child(odd) {
+        background-color: rgba(184, 134, 11, 0.03);
+    }
+
+    .table-golden tbody tr:hover {
+        background-color: rgba(184, 134, 11, 0.08);
+    }
+
+    /* Estilos para grupos y totales */
+    .table-golden .group-header {
+        background-color: #faf5e6;
+        color: #b8860b;
+        font-weight: bold;
+        border-top: 1px solid #f5e7c1;
+        border-bottom: 1px solid #f5e7c1;
+    }
+
+    .table-golden .group-footer {
+        background-color: #f8f6ef;
+        color: #8b6914;
+        border-top: 1px dashed #f0e4c3;
+        border-bottom: 1px dashed #f0e4c3;
+    }
+
+    .table-golden .total-general {
+        background-color: #f0e4c3;
+        color: #8b6914;
+        font-weight: bold;
+        border-top: 2px solid #daa520;
+    }
+
+    .table-golden .saldo-anterior {
+        background-color: #faf8f0;
+        font-style: italic;
+        color: #8b6914;
+        border-bottom: 1px dashed #f0e4c3;
+    }
+
+    /* Estilos alternos para filas */
+    .table-golden .alt {
+        /**background-color: rgba(218, 165, 32, 0.03);*/
+        background-color: #e3f2fd !important;
+    }
+
+/* ✅ MEJORADO: Asegurar que las filas alternas se mantengan visibles con hover */
+    .table-golden tbody tr.alt:hover {
+        background-color: #d1ecf1 !important; /* Celeste claro pero más visible al hover */
+    }
+
+    /* Estilos para ordenación en columnas */
+    .table-golden th.sortable {
+        cursor: pointer;
+        position: relative;
+    }
+
+        .table-golden th.sortable:after {
+            content: '\25B4';
+            position: absolute;
+            right: 8px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .table-golden th.sortable.sorted-asc:after {
+            content: '\25B4';
+            color: white;
+        }
+
+        .table-golden th.sortable.sorted-desc:after {
+            content: '\25BE';
+            color: white;
+        }
+
+    /* Estilos específicos para importes financieros */
+    .table-golden .importe-positivo {
+        color: #28a745;
+    }
+
+    .table-golden .importe-negativo {
+        color: #dc3545;
+    }
+
+    .table-golden .importe-cero {
+        color: #6c757d;
+    }
+
+/* FIN ESTILO GOLDEN PARA GRID Y TABLA*/
+/* ESTILO GOLDEN PARA FILTROS */
+/* ====== Estilos para Filtros con tema dorado ====== */
+.filter-golden {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    /*margin-bottom: 20px;*/
+    overflow: hidden;
+    background-color: #fff;
+}
+
+.filter-golden-header {
+    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%);
+    color: #333;
+    padding: 12px 8px;
+    border-radius: 8px 8px 0 0;
+}
+
+    .filter-golden-header h5,h4 {
+        color: #333;
+        font-weight: 600;
+        margin-bottom: 0;
+        text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
+        display: flex;
+        align-items: center;
+    }
+
+/* Estilos adicionales para alinear logo y título */
+.filter-golden-header-inline {
+    display: flex; /*!important;*/
+    flex-direction: row; /*!important;*/
+    align-items: center; /*!important;*/
+}
+
+.filter-golden-body {
+    padding: 16px;
+    background-color: #fff;
+}
+
+.filter-golden-footer {
+    background-color: #faf5e6;
+    border-top: 1px solid #f5e7c1;
+    padding: 16px;
+    border-radius: 0 0 8px 8px;
+}
+
+/* Secciones de filtro individuales */
+.filter-section {
+    margin-bottom: 15px;
+    background-color: #fefcf7;
+    border-radius: 6px;
+    border: 1px solid #f5e7c1;
+}
+
+.filter-section-header {
+    background-color: #faf5e6;
+    padding: 8px 12px;
+    border-bottom: 1px solid #f5e7c1;
+    border-radius: 6px 6px 0 0;
+}
+
+.filter-section-body {
+    padding: 12px;
+}
+
+/* Estilo para form switches */
+.filter-golden .form-check-input:checked {
+    background-color: #b8860b;
+    border-color: #b8860b;
+}
+
+/* Estilos para los controles de formulario */
+.filter-golden .input-group-text {
+    background-color: #faf5e6;
+    border-color: #f5e7c1;
+    color: #8b6914;
+}
+
+.filter-golden .form-control:focus,
+.filter-golden .form-select:focus {
+    border-color: #daa520;
+    box-shadow: 0 0 0 0.2rem rgba(184, 134, 11, 0.25);
+}
+
+/* Estilo para inputs deshabilitados con fondos específicos */
+.filter-golden .golden-disabled {
+    background-color: #faf5e6 !important;
+    border-color: #f5e7c1 !important;
+    color: #b8860b !important;
+    opacity: 0.7;
+    font-style: italic;
+}
+
+/* FIN ESTILO */
+/* ESTILO GOLDEN PARA DATEPICKER */
+/* Estilo Golden para bootstrap-datepicker */
+.datepicker-dropdown {
+    background-color: #fff8dc;
+    border: 1px solid #f5e7c1;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    padding: 0.5rem;
+    font-family: inherit;
+}
+
+/* Cabecera con degradado dorado */
+.datepicker-days .datepicker-switch,
+.datepicker-days .prev,
+.datepicker-days .next {
+    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%);
+    color: #333;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 4px;
+    margin: 2px;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+.datepicker table tr td,
+.datepicker table tr th {
+    color: #333;
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 0.4rem;
+}
+
+    /* Día seleccionado */
+    .datepicker table tr td.active,
+    .datepicker table tr td.active:hover {
+        background-color: #b8860b !important;
+        color: #fff !important;
+        border-radius: 0.25rem;
+    }
+
+    /* Hover */
+    .datepicker table tr td.day:hover {
+        background-color: #f5e7c1;
+        border-radius: 0.25rem;
+    }
+
+    /* Hoy resaltado */
+    .datepicker table tr td.today {
+        background-color: #fff3cd;
+        border: 1px solid #daa520;
+        border-radius: 0.25rem;
+        font-weight: bold;
+    }
+
+    /* Deshabilitados */
+    .datepicker table tr td.disabled {
+        color: #d6c9a0;
+        pointer-events: none;
+    }
+
+/* Flechas navegación */
+.datepicker .prev:hover,
+.datepicker .next:hover {
+    background-color: #f5e7c1;
+    border-radius: 50%;
+}
+
+/* FIN ESTILO GOLDE PARA DATEPICKER*/
+.content-editable-td-2 {
+    text-align: right !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100px;
+    border-style: inset !important;
+    border-width: medium !important;
+}
+
+.content-editable-td {
+    text-align: right !important;
+    padding: 0.325rem 0.30rem !important;
+    border-style: inset !important;
+    border-width: medium !important;
+}
+
+input.form-control, select.form-control {
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #e96691;
+    box-shadow: 0 0 10px #e96691;
+}
+
+span.input-group {
+    width: 50px;
+    font-size: 0.7em;
+}
+
+table > tbody > tr > td {
+    font-size: 11px !important;
+}
+
+table > thead > tr > th {
+    font-size: 10px !important;
+}
+
+.table-fontsize {
+    font-size: 11px !important;
+}
+
+/*---CONFIGURACION SOBRE TABLAS----*/
+tr.alt {
+    background-color: #e3f2fd;/*#C0FFC0; /*!important**/
+}
+
+tr.sel {
+    background-color: #7b82c8;
+}
+
+td.corta-linea {
+    max-width: 150px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.alinearDerecha {
+    justify-content: flex-end;
+}
+
+.sinbordefondo {
+    background-color: transparent;
+    border: 0;
+}
+
+.inputEditableNoBorder {
+    font-weight: 700;
+    border-style: hidden;
+    background: none;
+    max-width: 100px;
+    max-height: 20px !important;
+}
+
+.inputEditableNoBorder-mw35 {
+    font-weight: 700;
+    border-style: hidden;
+    background: none;
+    max-width: 35px;
+    max-height: 20px !important;
+}
+
+.inputEditableNoBorder-mw50 {
+    font-weight: 700;
+    border-style: hidden;
+    background: none;
+    max-width: 50px;
+    max-height: 20px !important;
+}
+
+.inputEditableNoBorder-mw70 {
+    font-weight: 700;
+    border-style: hidden;
+    background: none;
+    max-width: 70px;
+    max-height: 20px !important;
+}
+
+.inputEditable {
+    border-color: rgb(70, 196, 104);
+    text-align: left;
+    font-weight: 700;
+}
+
+.inputEditable_r {
+    border-color: rgb(70, 196, 104);
+    text-align: right;
+    font-weight: 700;
+}
+
+
+/* VER COMO HACER PARA QUE APLIQUEN ESTOS ESTILOS EN TABLA */
+.estados {
+    border-left: 5px solid #00ff00;
+    text-align: left;
+}
+
+.estadon {
+    border-left: 5px solid #0000ff;
+    text-align: left;
+}
+
+.estadod {
+    border-left: 5px solid #ff0000;
+    text-align: left;
+}
+/*---------------------------------------------------------*/
+.selected-row > td {
+    background-color: #FCD25F; /*lightslategray;*/
+    color: black;
+}
+
+.selectedEdit-row > td {
+    background-color: #A07603; /*firebrick;*/
+    color: black;
+}
+
+
+fieldset {
+    margin: 8px;
+    border: 1px solid silver;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.align-left {
+    text-align: left !important;
+}
+
+.align-right {
+    text-align: right !important;
+}
+
+.align-center {
+    text-align: center !important;
+    align-content: center !important;
+}
+
+.custom-lbl {
+    font-weight: 500;
+    font-style: normal;
+}
+
+.font-bold {
+    font-weight: bold;
+}
+
+.fixed-width-50 {
+    width: 50px;
+}
+
+.fixed-width-75 {
+    width: 75px;
+}
+
+.fixed-width-80 {
+    width: 80px;
+}
+
+.fixed-width {
+    width: 100px;
+}
+
+.fixed-width-130 {
+    width: 130px;
+}
+
+.fixed-width-150 {
+    width: 150px;
+}
+
+.fixed-padding-top {
+    padding-top: 5px;
+}
+
+.fixed-font-size {
+    font-size: small;
+    width: 96%;
+}
+
+.fixed-font-size-xmall {
+    font-size: x-small;
+    width: 96%;
+}
+
+/*para desactivar la grilla*/
+.disable-table-rows,
+.disable-table-rows * {
+    pointer-events: none !important;
+    opacity: 0.9;
+    user-select: none;
+}
+
+.div-wrapper-full-width {
+    max-height: 500px;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.table-wrapper-fixed-head thead th {
+    position: sticky;
+    top: 0px;
+}
+
+
+.table-wrapper-full-width {
+    max-height: 500px;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.table-wrapper {
+    max-height: 500px;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.table-wrapper-500 {
+    max-height: 500px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-400 {
+    max-height: 400px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-300 {
+    max-height: 300px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-700 {
+    max-height: 700px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-300-full-width {
+    max-height: 300px;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.table-wrapper-400-full-width {
+    max-height: 400px;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.table-wrapper-500-full-width {
+    max-height: 500px;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.table-wrapper-200-full-width {
+    max-height: 200px;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.table-wrapper-225-full-width {
+    max-height: 225px;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.table-wrapper-200 {
+    max-height: 200px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-230 {
+    max-height: 230px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-100-full {
+    max-height: 100px;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.table-wrapper-200-full {
+    max-height: 200px;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.table-wrapper-225-full {
+    max-height: 225px;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.table-wrapper-300-full {
+    max-height: 300px;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.table-wrapper-440-full {
+    max-height: 440px;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.table-wrapper-100 {
+    max-height: 100px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-170 {
+    max-height: 170px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-150 {
+    max-height: 150px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-125 {
+    max-height: 125px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-180 {
+    max-height: 180px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-xs {
+    max-height: 270px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-fixed-header {
+    position: sticky;
+    top: 0px;
+}
+
+.table-wrapper-modal {
+    max-height: 300px;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.jstree-checkbox {
+    margin-right: 5px;
+}
+
+/*.table-thead, .table-tbody {
+    display: block;
+}
+
+.table-tbody-ext {
+    max-width: 90%;
+    overflow-y: auto;
+    overflow-x:  hidden;
+}*/
+
+
+.tiny-row {
+    padding: 0.325rem 0.30rem !important;
+}
+
+.table:not(.table-dark) th {
+    color: #efefef;
+}
+
+.col-header-small {
+    text-wrap: pretty;
+    font-size: 8px !important;
+    font-weight: 900;
+    color: #e1e4e8;
+}
+
+.col-header-x-small {
+    text-wrap: pretty;
+    font-size: 7px !important;
+    font-weight: 900;
+    color: #e1e4e8;
+}
+/*Hide Arrows/Spinners from input type number*/
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+
+/* Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+/* Estilos para menús multinivel */
+.dropdown-submenu {
+    position: relative;
+}
+
+    .dropdown-submenu > .dropdown-menu {
+        top: -30px;
+        left: 101% !important; 
+        margin-top: -20px;
+        margin-left: -1px !important; 
+        border: 1px solid var(--bs-golden-light) !important;
+        box-shadow: 0 0.5rem 1rem rgba(212, 175, 55, 0.15) !important;
+    }
+
+    
+    .dropdown-submenu:hover > .dropdown-menu,
+    .dropdown-submenu:focus > .dropdown-menu {
+        display: block;
+    }
+
+   
+    .dropdown-submenu > a:after {
+        display: block;
+        content: "";
+        float: right;
+        width: 0;
+        height: 0;
+        border-color: transparent;
+        border-style: solid;
+        border-width: 5px 0 5px 5px;
+        border-left-color: #ccc;
+        margin-top: -12px;
+        margin-right: -5px;
+    }
+   
+    .dropdown-submenu:hover > a:after {
+        border-left-color: #fff;
+    }
+
+
+/* Estilo para el tooltip del atributo title */
+/*tr[title]:hover::after {
+    content: attr(title);
+    position: fixed;
+    background-color: var(--bs-dark);
+    color: var(--bs-white);
+    padding: 0.5rem 1rem;
+    border-radius: var(--bs-border-radius-sm);
+    box-shadow: var(--bs-box-shadow-sm);
+    font-size: 0.875rem;
+    white-space: nowrap;
+    max-width: 80vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 1000;
+    transform: translate(-50%, 0);
+    pointer-events: none;
+    opacity: 0.95;
+    visibility: visible;
+    transition: opacity 0.2s;
+}
+
+tr[title]:hover {
+    position: relative;
+}*/
+
+
+/*estilos para los asientos aunque se pueden usar para otra cosa tb*/
+/* Resalta los totales desbalanceados en rojo y negrita */
+.total-desbalanceado {
+    color: #d32f2f !important; /* rojo suave */
+    font-weight: bold;
+    border-bottom: 2px solid #d32f2f;
+    background-color: #fff0f0;
+}
+
+/* Resalta la celda de cuenta faltante con fondo rojo pálido y texto rojo */
+.cuenta-faltante {
+    background-color: #ffeaea !important;
+    color: #d32f2f !important;
+    font-weight: bold;
+    position: relative;
+}
+
+    /* Ajusta el icono de advertencia para que quede alineado y sutil */
+    .cuenta-faltante .bx {
+        vertical-align: middle;
+        font-size: 1.1em;
+    }
+
+/* Estilo para mensajes informativos */
+.modal-header.info {
+    background-color: #d9edf7; /* Azul claro */
+    color: #31708f; /* Azul oscuro */
+}
+
+/* Estilo para mensajes exitosos */
+.modal-header.success {
+    background-color: #dff0d8; /* Verde claro */
+    color: #3c763d; /* Verde oscuro */
+}
+
+/* Estilo para mensajes de advertencia */
+.modal-header.warn {
+    background-color: #fcf8e3; /* Amarillo claro */
+    color: #8a6d3b; /* Marrón oscuro */
+}
+
+/* Estilo para mensajes de error */
+.modal-header.error {
+    background-color: #f2dede; /* Rojo claro */
+    color: #a94442; /* Rojo oscuro */
+}
+
+/*****
+    Modulo de asientos
+ */
+/* Estilos para el indicador de usuario seleccionado */
+.usuario-seleccionado-badge {
+    display: flex;
+    align-items: center;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 0.25rem 0.75rem;
+    margin-left: 0.5rem;
+    font-size: 0.85rem;
+    color: #495057;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+    .usuario-seleccionado-badge i {
+        margin-right: 0.5rem;
+        color: #6c757d;
+    }
+
+    /* Distinción para Asientos Definitivos */
+.modulo-definitivo {
+    --modulo-color: #2c3e50;
+    --modulo-accent: #3498db;
+    --modulo-light: #e8f4fc;
+    --modulo-badge: #e8f4fc;
+    --modulo-badge-text: #2c3e50;
+    --modulo-badge-border: #3498db;
+}
+
+/* Distinción para Asientos Temporales */
+.modulo-temporal {
+    --modulo-color: #27ae60;
+    --modulo-accent: #2ecc71;
+    --modulo-light: #eafaf1;
+    --modulo-badge: #eafaf1;
+    --modulo-badge-text: #27ae60;
+    --modulo-badge-border: #2ecc71;
+}
+
+/* Estilos comunes para aplicar el tema de color del módulo */
+.modulo-header {
+    border-bottom: 3px solid var(--modulo-color);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+}
+
+    .modulo-header h2 {
+        color: var(--modulo-color);
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+        .modulo-header h2 i {
+            margin-right: 0.5rem;
+        }
+
+.modulo-badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    margin-left: 0.75rem;
+    background-color: var(--modulo-badge);
+    color: var(--modulo-badge-text);
+    border: 1px solid var(--modulo-badge-border);
+    font-weight: bold;
+}
+
+.modulo-btn {
+    background-color: var(--modulo-color);
+    border-color: var(--modulo-color);
+    color: white;
+}
+
+    .modulo-btn:hover {
+        background-color: var(--modulo-accent);
+        border-color: var(--modulo-accent);
+        color: white;
+    }
+
+.modulo-table thead {
+    background-color: var(--modulo-color);
+    color: white;
+}
+
+.modulo-form .form-control:focus,
+.modulo-form .form-select:focus {
+    border-color: var(--modulo-accent);
+    box-shadow: 0 0 0 0.25rem rgba(var(--modulo-accent-rgb), 0.25);
+}
+
+/* Borde sutil para el filtro */
+.filtro-container {
+    border-left: 4px solid var(--modulo-color);
+    padding-left: 0.75rem;
+    background-color: var(--modulo-light);
+    border-radius: 0 4px 4px 0;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Estilos para las filas seleccionadas en las tablas */
+.modulo-definitivo .selectedEdit-row > td {
+    background-color: rgba(52, 152, 219, 0.2) !important;
+    border-left: 4px solid #3498db !important;
+    color: #2c3e50 !important;
+}
+
+.modulo-temporal .selectedEdit-row > td {
+    background-color: rgba(46, 204, 113, 0.2) !important;
+    border-left: 4px solid #2ecc71 !important;
+    color: #27ae60 !important;
+}
+
+/* Ajustes para dispositivos móviles */
+@media (max-width: 991px) {
+}
+
+/* Para dispositivos móviles */
+@media (max-width: 991px) {
+}
+
+/* ============ desktop view ============ */
+@media all and (min-width: 992px) {
+
+    .dropdown-menu li {
+        position: relative;
+    }
+
+    .dropdown-menu .submenu {
+        display: none;
+        position: absolute;
+        left: 100%;
+        top: -7px;
+    }
+
+    .dropdown-menu .submenu-left {
+        right: 100%;
+        left: auto;
+    }
+
+    .dropdown-menu > li:hover {
+        background-color: #f1f1f1
+    }
+
+        .dropdown-menu > li:hover > .submenu {
+            display: block;
+        }
+
+    .dropdown-submenu > .dropdown-menu {
+        left: 0;
+        margin-left: 15px;
+        top: 100%;
+        border-left: 1px solid #ccc;
+    }
+
+    .dropdown-submenu > a:after {
+        transform: rotate(90deg);
+        margin-top: 8px;
+    }
+}
+/* ============ desktop view .end// ============ */
+
+/* ============ small devices ============ */
+@media (max-width: 991px) {
+
+    .dropdown-menu .dropdown-menu {
+        margin-left: 0.7rem;
+        margin-right: 0.7rem;
+        margin-bottom: .5rem;
+    }
+}
+/* ============ small devices .end// ============ */
+
+
+.autocomplete {
+    /*the container must be positioned relative:*/
+    position: relative;
+    display: inline-block;
+}
+
+.autocomplete-items {
+    position: absolute;
+    border: 1px solid #d4d4d4;
+    border-bottom: none;
+    border-top: none;
+    z-index: 99;
+    /*position the autocomplete items to be the same width as the container:*/
+    top: 100%;
+    left: 0;
+    right: 0;
+}
+
+    .autocomplete-items div {
+        padding: 10px;
+        cursor: pointer;
+        background-color: #fff;
+        border-bottom: 1px solid #d4d4d4;
+    }
+
+        .autocomplete-items div:hover {
+            /*when hovering an item:*/
+            background-color: #e9e9e9;
+        }
+
+.autocomplete-active {
+    /*when navigating through the items using the arrow keys:*/
+    background-color: DodgerBlue !important;
+    color: #ffffff;
+}
+
+.ui-front {
+    z-index: 9999999 !important;
+}
+
+.fixed-lbl-for-abm-50-nodisp {
+    width: 50px;
+    text-align: right;
+}
+
+.fixed-lbl-for-abm-60-nodisp {
+    width: 60px;
+    text-align: right;
+}
+
+.fixed-lbl-for-abm-70-nodisp {
+    width: 70px;
+    text-align: right;
+}
+
+.fixed-lbl-for-abm-20 {
+    width: 20px;
+    display: block;
+    float: right;
+    text-align: right;
+}
+
+.fixed-lbl-for-abm-30 {
+    width: 30px;
+    display: block;
+    float: right;
+    text-align: right;
+}
+
+.fixed-lbl-for-abm-50 {
+    width: 50px;
+    display: block;
+    float: right;
+    text-align: right;
+}
+
+.fixed-lbl-for-abm-60 {
+    width: 60px;
+    display: block;
+    float: right;
+    text-align: right;
+}
+
+.fixed-lbl-for-abm-70 {
+    width: 70px;
+    display: block;
+    float: right;
+    text-align: right;
+}
+
+.fixed-lbl-for-abm-100 {
+    width: 100px;
+    display: block;
+    float: right;
+    text-align: right;
+}
+
+.fixed-lbl-for-abm-150 {
+    width: 150px;
+    display: block;
+    float: right;
+    text-align: right;
+}
+
+.fixed-lbl-for-abm-130 {
+    width: 130px;
+    display: block;
+    float: right;
+    text-align: right;
+}
+
+/* Estilo general para los controles */
+input, select, textarea, button, checkbox, radio {
+    border: 1px solid #ccc; /* Borde normal */
+    outline: none; /* Eliminar el contorno predeterminado de algunos navegadores */
+    transition: all 0.3s ease; /* Transición suave */
+}
+
+    /* Estilo cuando el control recibe el foco */
+    input:focus, select:focus, textarea:focus, button:focus,
+    input[type="radio"]:focus, input[type="checkbox"]:focus {
+        border-color: #3a87ad; /* Color de borde sutil pero visible (un azul suave) */
+        box-shadow: 0 0 8px rgba(58, 135, 173, 0.5); /* Sombra suave para dar la iluminación */
+    }
+
+.mt-1-ctm {
+    --bs-card-spacer-y: 0.5rem !important;
+    --bs-card-spacer-x: 0.5rem !important;
+}
+
+.padding-5 {
+    padding: 5px;
+}
+
+.bg-label-danger-strong {
+    background-color: #ff2603 !important;
+    color: #ffffff !important;
+    font-weight: bolder;
+}
+
+.bg-label-info-strong {
+    background-color: #1d55f9 !important;
+    color: #ffffff !important;
+    font-weight: bolder;
+}
+
+.text-align-right {
+    text-align: right !important;
+}
+
+.styled-1 select:focus {
+    box-shadow: 0 0 3pt 2pt #719ECE;
+}
+
+.wrapper {
+    position: relative;
+}
+
+.wrapper select {
+    display: block;
+}
+
+.wrapper select:focus {
+    color: blue;
+}
+
+.wrapper select:focus + label {
+    color: blue;
+}
+
+.cell-fit-content {
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+}
+
+.fixed-cell-height-20 {
+    height: 20px;
+    max-height: 20px;
+}
+
+/* Al final del archivo, después de la línea ~2845 */
+
+/* ====== ESTILOS GOLDEN PARA TABS/NAVEGACIÓN ====== */
+/* Estilos para tabs con tema dorado */
+.nav-tabs-golden {
+    border-bottom: 2px solid #d4af37;
+}
+
+    .nav-tabs-golden .nav-link {
+        color: #d4af37;
+        border: 1px solid transparent;
+        border-bottom: 2px solid transparent;
+        background-color: transparent;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+        .nav-tabs-golden .nav-link:hover {
+            border-color: #d4af37;
+            color: #b8941f;
+            background-color: rgba(212, 175, 55, 0.05);
+        }
+
+        .nav-tabs-golden .nav-link.active {
+            color: #b8941f;
+            background-color: #fff;
+            border-color: #d4af37 #d4af37 #fff;
+            border-bottom: 2px solid #d4af37;
+            font-weight: 600;
+        }
+
+        .nav-tabs-golden .nav-link:focus {
+            box-shadow: 0 0 0 0.2rem rgba(212, 175, 55, 0.25);
+            outline: none;
+        }
+
+        .nav-tabs-golden .nav-link:disabled {
+            color: #6c757d;
+            background-color: transparent;
+            border-color: transparent;
+            cursor: not-allowed;
+        }
+
+/* Contenido de tabs */
+.tab-content-golden {
+    border: 1px solid #d4af37;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    background-color: #fff;
+}
+
+    .tab-content-golden .tab-pane {
+        padding: 15px;
+    }
+
+/* Estilos adicionales para carga y spinners golden */
+.loading-container {
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.spinner-container {
+    text-align: center;
+}
+
+.spinner-border-golden {
+    color: #d4af37;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-width: 0.3em;
+}
+
+.text-golden {
+    color: #b8941f !important;
+}
+
+.text-golden-light {
+    color: #d4af37 !important;
+}
+
+.bg-golden-light {
+    background-color: rgba(212, 175, 55, 0.1) !important;
+}
+
+/* Estados de tabs responsivos */
+@media (max-width: 768px) {
+    .nav-tabs-golden .nav-link {
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .nav-tabs-golden {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+    }
+
+        .nav-tabs-golden .nav-item {
+            flex: 0 0 auto;
+            white-space: nowrap;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .nav-tabs-golden .nav-link {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.6rem;
+        }
+    }
+
+/* FIN ESTILOS GOLDEN PARA TABS */
+
+/* Al final del archivo, después de FIN ESTILOS GOLDEN PARA TABS */
+
+/* ====== ESTILOS OPTIMIZADOS PARA CONTENIDO DE TABS ====== */
+/* Contenedor de tabs con padding compacto */
+.tab-content-compact {
+    padding: 0.75rem 0;
+    border-radius: 0.375rem;
+    background-color: transparent;
+}
+
+/* Variante con padding mínimo */
+.tab-content-minimal {
+    padding: 0.5rem 0;
+    border-radius: 0.375rem;
+    background-color: transparent;
+}
+
+/* Variante con padding lateral */
+.tab-content-spaced {
+    padding: 0.75rem 1rem;
+    border-radius: 0.375rem;
+    background-color: transparent;
+}
+
+/* Contenido de tabs para formularios */
+.tab-content-form {
+    padding: 1rem 0.75rem;
+    border-radius: 0.375rem;
+    background-color: transparent;
+}
+
+/* Estados responsive para contenido de tabs */
+@media (max-width: 768px) {
+    .tab-content-compact {
+        padding: 0.5rem 0;
+    }
+
+    .tab-content-spaced {
+        padding: 0.5rem;
+    }
+
+    .tab-content-form {
+        padding: 0.75rem 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .tab-content-compact {
+        padding: 0.25rem 0;
+    }
+
+    .tab-content-minimal {
+        padding: 0.25rem 0;
+    }
+
+    .tab-content-spaced {
+        padding: 0.5rem 0.25rem;
+    }
+
+    .tab-content-form {
+        padding: 0.5rem 0.25rem;
+    }
+}
+
+/* Utilidades de padding específicas para tabs golden */
+.tab-golden-padding {
+    padding: 0.75rem 0;
+}
+
+.tab-golden-padding-sm {
+    padding: 0.5rem 0;
+}
+
+.tab-golden-padding-lg {
+    padding: 1rem 0.5rem;
+}
+
+/* FIN ESTILOS OPTIMIZADOS PARA CONTENIDO DE TABS */
+
+/* UNIFICACIÓN: Estilo base para todos los campos numéricos */
+.input-numeric {
+    text-align: right;
+    padding-right: 5px;
+    font-size: 0.7rem !important; /* Reducido para todos */
+    letter-spacing: -0.4px; /* Mismo espaciado entre caracteres para todos */
+}
+
+/* Ajustar el padding interno para aprovechar mejor el espacio */
+.form-control-sm.input-numeric {
+    padding: 0.1rem 0.2rem !important; /* Padding reducido para todos */
+    height: auto !important;
+}
+
+/* NUEVO: Campos de descuento y flete ya con tamaño reducido */
+.input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete {
+    min-width: 35px !important;
+    width: 50px !important;
+    padding-left: 0.1rem !important;
+    padding-right: 0.1rem !important;
+}
+
+/* NUEVO: Campos con 3 decimales */
+.input-tp_plista, .input-tp_pcosto, .input-tp_pneto {
+    min-width: 60px !important;
+    width: 80px !important;
+    padding-left: 0.1rem !important;
+    padding-right: 0.1rem !important;
+}
+
+/* NUEVO: Campos con 2 decimales */
+.input-tp_margen, .input-tin_alicuota, .input-tp_pvta {
+    min-width: 50px !important;
+    width: 65px !important;
+    padding-left: 0.1rem !important;
+    padding-right: 0.1rem !important;
+}
+
+/* Validación visual para campos inválidos en ofertas */
+.input-precio-oferta.is-invalid,
+.input-tope-venta.is-invalid,
+.input-fecha-desde.is-invalid,
+.input-fecha-hasta.is-invalid,
+#txtPrecioOferta.is-invalid,
+#txtTopeVenta.is-invalid,
+#txtFechaDesde.is-invalid,
+#txtFechaHasta.is-invalid {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+    background-color: rgba(220, 53, 69, 0.05) !important;
+    animation: fieldError 0.3s ease-in-out;
+}
+
+@keyframes fieldError {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    75% { transform: translateX(2px); }
+    100% { transform: translateX(0); }
+}
+
+/* Estados válidos para campos de ofertas */
+#txtPrecioOferta.is-valid,
+#txtTopeVenta.is-valid,
+#txtFechaDesde.is-valid,
+#txtFechaHasta.is-valid {
+    border-color: #28a745 !important;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.15) !important;
+    background-color: rgba(40, 167, 69, 0.05) !important;
+}
+
+/* ====== ESTILOS PARA INPUTMASK DE OFERTAS (NUEVO) ====== */
+/* Campos con InputMask aplicado */
+.input-numeric-golden {
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    background: linear-gradient(135deg, #fefcf7 0%, #fff8dc 100%);
+    border: 1px solid #daa520;
+    transition: all 0.2s ease;
+}
+
+.input-numeric-golden:focus {
+    background: linear-gradient(135deg, #fff8dc 0%, #fefcf7 100%);
+    border-color: #b8860b;
+    box-shadow: 0 0 0 0.2rem rgba(184, 134, 11, 0.15);
+    transform: scale(1.02);
+}
+
+/* Específico para precio de oferta */
+#txtPrecioOferta {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #7a4a0e;
+    text-align: right;
+    padding-right: 0.75rem;
+    background-color: #fefcf7;
+}
+
+#txtPrecioOferta:focus {
+    color: #1e3a1c;
+    box-shadow: 0 0 0 0.2rem rgba(45, 90, 39, 0.15);
+}
+
+/* Específico para tope de venta */
+#txtTopeVenta {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #7a4a0e;
+    text-align: right;
+    padding-right: 0.75rem;
+    background-color: #fefcf7;
+}
+
+#txtTopeVenta:focus {
+    color: #5d3609;
+    box-shadow: 0 0 0 0.2rem rgba(122, 74, 14, 0.15);
+}
+
+/* Campos de fecha con estilo dorado */
+#txtFechaDesde,
+#txtFechaHasta {
+    font-weight: 600;
+    color: #8b4513;
+    border: 1px solid #daa520;
+    background-color: #fefcf7;
+    font-size: 0.95rem;
+}
+
+#txtFechaDesde:focus,
+#txtFechaHasta:focus {
+    border-color: #b8860b;
+    background-color: #fff8dc;
+    box-shadow: 0 0 0 0.2rem rgba(184, 134, 11, 0.15);
+}
+
+/* ====== RESPONSIVE ESPECÍFICO PARA OFERTAS ====== */
+@media (max-width: 768px) {
+    /* Ajustar campos de ofertas en móviles */
+    #txtPrecioOferta,
+    #txtTopeVenta {
+        font-size: 0.875rem;
+        padding: 0.375rem 0.5rem;
+    }
+    
+    #txtFechaDesde,
+    #txtFechaHasta {
+        font-size: 0.875rem;
+        padding: 0.375rem;
+    }
+    
+    /* Ajustar información de canales */
+    #infoSeleccionCanales .d-flex {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+    
+    #infoSeleccionCanales .text-end {
+        text-align: center !important;
+    }
+    
+    /* Tooltips más pequeños en móvil */
+    .tooltip-error .tooltip-inner {
+        font-size: 0.8rem !important;
+        max-width: 200px !important;
+        padding: 0.375rem 0.5rem !important;
+    }
+    
+    /* Información de período más compacta */
+    #infoPeriodo {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.8rem;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Campos de ofertas extra pequeños */
+    #txtPrecioOferta,
+    #txtTopeVenta,
+    #txtFechaDesde,
+    #txtFechaHasta {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.375rem;
+    }
+    
+    /* Badges más pequeños */
+    #infoSeleccionCanales .badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    /* Spinners más pequeños */
+    .loading-spinner .spinner-border,
+    .spinner-border-golden {
+        width: 2rem !important;
+        height: 2rem !important;
+        border-width: 0.25rem !important;
+    }
+}
+
+/* ====== UTILIDADES ADICIONALES PARA OFERTAS ====== */
+/* Clases helper para estados de campos */
+.field-processing {
+    position: relative;
+    pointer-events: none;
+}
+
+.field-processing::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 0.5rem;
+    transform: translateY(-50%);
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #daa520;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Estilo para campos bloqueados durante procesamiento */
+.field-locked {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Indicador de campo obligatorio */
+.field-required::after {
+    content: ' *';
+    color: #dc3545;
+    font-weight: bold;
+}
+
+/* Animación suave para cambios de estado */
+.field-state-change {
+    transition: all 0.3s ease;
+}
+
+/* Estilo para resaltar información importante */
+.info-highlight {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(220, 165, 32, 0.05) 100%);
+    border-left: 4px solid #ffc107;
+    padding: 0.75rem;
+    border-radius: 0 0.375rem 0.375rem 0;
+    margin: 0.5rem 0;
+}
+
+.info-highlight .bx {
+    color: #ffc107;
+    margin-right: 0.5rem;
+}
+
+/* Estilo para texto de ayuda */
+.help-text-golden {
+    font-size: 0.875rem;
+    color: #b8860b;
+    font-style: italic;
+    margin-top: 0.25rem;
+}
+
+/* ====== CAMPOS DE EDICIÓN Y ESTILOS PARA CARGA DE PRECIOS ====== */
+/* Estilos específicos para los campos de precio lista y otros inputs numéricos */
+.input-precio-lista,
+.input-PListaValor {
+    width: 100px !important;
+}
+
+.input-descuento {
+    width: 60px !important;
+}
+
+.input-bonificacion {
+    width: 70px !important;
+}
+
+/* Máscaras de entrada y formateo de números */
+.input-mask-3-decimals {
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    letter-spacing: -0.5px;
+}
+.input-mask-2-decimal {
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    letter-spacing: -0.5px;
+}
+.input-mask-1-decimal {
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    letter-spacing: -0.5px;
+}
+.input-mask-0-decimal {
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    letter-spacing: -0.5px;
+}
+
+.input-mask-boni {
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0;
+}
+
+/* Utilitarios para organización de campos */
+.campos-grupo {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+}
+
+/* Helpers para etiquetas cortas */
+.etiqueta-plista::after { content: "PL"; }
+.etiqueta-dto1::after { content: "D1"; }
+.etiqueta-dto2::after { content: "D2"; }
+.etiqueta-dto3::after { content: "D3"; }
+.etiqueta-dto4::after { content: "D4"; }
+.etiqueta-dtopa::after { content: "DPa"; }
+.etiqueta-bon::after { content: "Bon"; }
+.etiqueta-fl::after { content: "Fl"; }
+/* Estilo para campos editables en modo activo - se agrega al final del archivo */
+.input-container .form-control:not([readonly]) {
+    background-color: #fff8e1;
+    border-color: #ffc107;
+}
+
+/* ====== ESTILOS PARA PRESUPUESTO - EDICIÓN DE CAMPOS ====== */
+/* Estilo para campos readonly en presupuesto */
+.campo-readonly {
+    background-color: #f8f9fa !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+    border-color: #dee2e6 !important;
+}
+
+/* Estilo para campos modificados con feedback visual */
+.campo-modificado {
+    animation: flashModificado 1.5s ease-in-out;
+    border-color: #28a745 !important;
+}
+
+@keyframes flashModificado {
+    0% {
+        background-color: #d4edda;
+        border-color: #28a745;
+    }
+    50% {
+        background-color: #c3e6cb;
+        border-color: #1e7e34;
+    }
+    100% {
+        background-color: #ffffff;
+        border-color: #28a745;
+    }
+}
+
+/* ✅ CONTEXTO ESPECÍFICO PARA PRESUPUESTO - Evita conflictos con otros módulos */
+/* Wrapper: #divPresupuestoDatos para aislar los estilos solo al módulo de presupuesto */
+#divPresupuestoDatos {
+    /* Estilos para inputs editables en presupuesto (no readonly) */
+}
+
+    #divPresupuestoDatos .input-pre_margen:not([readonly]),
+    #divPresupuestoDatos .input-pre_pvta:not([readonly]),
+    #divPresupuestoDatos .input-pre_cantidad:not([readonly]) {
+        background-color: #fff8dc !important;
+        border: 2px solid #daa520 !important;
+        font-weight: 700;
+        box-shadow: 0 0 0 0.2rem rgba(218, 165, 32, 0.15);
+    }
+
+    /* Indicador visual para doble click */
+    #divPresupuestoDatos .input-pre_margen,
+    #divPresupuestoDatos .input-pre_pvta,
+    #divPresupuestoDatos .input-pre_cantidad {
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        #divPresupuestoDatos .input-pre_margen[readonly]:hover,
+        #divPresupuestoDatos .input-pre_pvta[readonly]:hover,
+        #divPresupuestoDatos .input-pre_cantidad[readonly]:hover {
+            background-color: #e8f4fc !important;
+            border-color: #b8daff !important;
+        }
+
+    /* Tooltip de ayuda para campos editables */
+    #divPresupuestoDatos .input-pre_margen[title],
+    #divPresupuestoDatos .input-pre_pvta[title],
+    #divPresupuestoDatos .input-pre_cantidad[title] {
+        position: relative;
+    }
+
+    /* Estilos para campos del formulario de presupuesto en modo edición */
+    #divPresupuestoDatos .form-control:not([readonly]):not(.campo-readonly),
+    #divPresupuestoDatos select:not([disabled]):not(.campo-readonly) {
+        background-color: #fff8dc;
+        border-color: #daa520;
+        font-weight: 600;
+    }
+
+        #divPresupuestoDatos .form-control:not([readonly]):not(.campo-readonly):focus,
+        #divPresupuestoDatos select:not([disabled]):not(.campo-readonly):focus {
+            background-color: #ffebcd;
+            border-color: #b8860b;
+            box-shadow: 0 0 0 0.25rem rgba(184, 134, 11, 0.25);
+        }
+
+    /* ✅ OPTIMIZADO: Campos que NUNCA se editan - Con contexto específico de presupuesto */
+    /* Solo se aplican dentro del contenedor #divPresupuestoDatos */
+    #divPresupuestoDatos #pre_id,
+    #divPresupuestoDatos #pret_id,
+    #divPresupuestoDatos #pree_id,
+    #divPresupuestoDatos #usu_id,
+    #divPresupuestoDatos #usu_apellidoynombre,
+    #divPresupuestoDatos #adm_id,
+    #divPresupuestoDatos #adm_nombre,
+    #divPresupuestoDatos #tco_id,
+    #divPresupuestoDatos #cm_compte {
+        background-color: #e9ecef !important;
+        color: #495057 !important;
+        font-weight: 600 !important;
+        cursor: not-allowed !important;
+    }
+    /*Permite alertar un campo cuando hay algun evento que tiene que ser tenido en cuenta.*/
+.input-alerta-costo {
+    border: 3px solid #e53935 !important; /* rojo fuerte, borde grueso medio */
+}
+
+
+/* estilos para el drag & drop de filas de presupuestos */
+.drag-handle {
+    cursor: move !important;
+    user-select: none;
+    background-color: #f8f9fa;
+    transition: background-color 0.2s;
+}
+
+    .drag-handle:hover {
+        background-color: #e9ecef;
+    }
+
+.ui-sortable-helper {
+    display: table;
+    background: #fff !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+    opacity: 0.9;
+}
+
+.ui-sortable-placeholder {
+    visibility: visible !important;
+    background-color: #f8f9fa !important;
+    border: 2px dashed #dee2e6 !important;
+}
+
+/* ====== ESTILOS PARA GRID DE PRECIOS - MÓDULO PRECIO LISTA ====== */
+/* Específico para tabla de precios con optimizaciones de rendimiento */
+
+/* Tabla principal de precios */
+.table-grid-precios {
+    font-size: 0.85rem;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+/* Contenedor responsive con scroll personalizado */
+.table-responsive-precios {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+/* Scroll personalizado para tabla de precios */
+.table-responsive-precios::-webkit-scrollbar {
+    height: 10px;
+    width: 10px;
+}
+
+.table-responsive-precios::-webkit-scrollbar-track {
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.table-responsive-precios::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #b8860b, #daa520);
+    border-radius: 4px;
+    border: 2px solid #f8f9fa;
+}
+
+.table-responsive-precios::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #8b6914, #b8860b);
+}
+
+/* Estilos de header para grid de precios */
+#tbGridPrecios thead.table-golden-header {
+    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%) !important;
+}
+
+#tbGridPrecios thead th {
+    font-weight: 700 !important;
+    white-space: nowrap;
+    vertical-align: middle;
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Sobreescribir colores de texto dentro del header */
+#tbGridPrecios thead th *,
+#tbGridPrecios thead th span,
+#tbGridPrecios thead th small,
+#tbGridPrecios thead th i,
+#tbGridPrecios thead th div {
+    color: #ffffff !important;
+}
+
+/* Small text en header con ligera transparencia */
+#tbGridPrecios thead th small {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 500 !important;
+}
+
+/* Filas de datos con transición suave */
+.row-precio-detalle {
+    transition: all 0.15s ease-in-out;
+}
+
+/* Hover mejorado en filas del body */
+#tbGridPrecios tbody tr:hover {
+    background-color: rgba(218, 165, 32, 0.08) !important;
+    cursor: pointer;
+    transform: scale(1.001);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Grupos de columnas con fondos sutiles - Info (Azul) */
+#tbGridPrecios thead .bg-info,
+#tbGridPrecios thead .header-group-info,
+#tbGridPrecios thead .header-subgroup-info {
+    background-color: rgba(13, 110, 253, 0.2) !important;
+}
+
+/* Grupos de columnas - Warning (Amarillo) */
+#tbGridPrecios thead .bg-warning,
+#tbGridPrecios thead .header-group-warning,
+#tbGridPrecios thead .header-subgroup-warning {
+    background-color: rgba(255, 193, 7, 0.2) !important;
+}
+
+/* Grupos de columnas - Danger (Rojo) */
+#tbGridPrecios thead .bg-danger,
+#tbGridPrecios thead .header-group-danger,
+#tbGridPrecios thead .header-subgroup-danger {
+    background-color: rgba(220, 53, 69, 0.2) !important;
+}
+
+/* Grupos de columnas - Success (Verde) */
+#tbGridPrecios thead .bg-success,
+#tbGridPrecios thead .header-group-success,
+#tbGridPrecios thead .header-subgroup-success {
+    background-color: rgba(25, 135, 84, 0.2) !important;
+}
+
+/* Grupos de columnas - Primary (Azul oscuro) */
+#tbGridPrecios thead .bg-primary,
+#tbGridPrecios thead .header-group-primary,
+#tbGridPrecios thead .header-subgroup-primary {
+    background-color: rgba(13, 110, 253, 0.2) !important;
+}
+
+/* Badges con máxima visibilidad */
+#tbGridPrecios tbody .badge {
+    opacity: 1 !important;
+    font-weight: 600 !important;
+    padding: 0.35em 0.65em !important;
+}
+
+/* Sticky header con sombra */
+#tbGridPrecios thead.table-golden-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Celda de descripción de producto con ancho máximo */
+.td-descripcion-producto .text-truncate {
+    max-width: 250px;
+}
+
+/* Celda cuando no hay datos */
+.td-no-datos i.bx-info-circle {
+    font-size: 1.5rem;
+}
+
+/* Optimización para impresión */
+@media print {
+    .table-responsive-precios {
+        max-height: none;
+        overflow: visible;
+    }
+    
+    #tbGridPrecios thead.table-golden-header {
+        position: relative;
+    }
+}
+
+/* Optimización para pantallas pequeñas */
+@media (max-width: 992px) {
+    .table-grid-precios {
+        font-size: 0.75rem;
+    }
+    
+    .td-descripcion-producto .text-truncate {
+        max-width: 150px;
+    }
+}
+
+@media (max-width: 768px) {
+    .table-grid-precios {
+        font-size: 0.7rem;
+    }
+    
+    #tbGridPrecios thead th {
+        padding: 0.5rem 0.25rem !important;
+    }
+    
+    .td-descripcion-producto .text-truncate {
+        max-width: 120px;
+    }
+}
+
+/* FIN ESTILOS PARA GRID DE PRECIOS */
+
+/* ====== OPTIMIZACIÓN DE HEADERS DE TABLA - ALTURA REDUCIDA ====== */
+
+/* Header compacto con altura reducida pero estético */
+.table-golden-header-compact {
+    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%) !important;
+    color: #ffffff !important;
+}
+
+    /* Reducción de padding en celdas del header */
+    .table-golden-header-compact th,
+    .th-compact {
+        padding: 0.35rem 0.5rem !important; /* ✅ Reducido de 0.625rem 1.25rem */
+        font-size: 0.8rem !important; /* ✅ Reducido de 0.9375rem */
+        font-weight: 600 !important;
+        line-height: 1.2 !important; /* ✅ Reducido para compactar más */
+        vertical-align: middle !important;
+        white-space: nowrap !important;
+        color: #ffffff !important;
+        border-bottom: 2px solid #8b6914 !important;
+    }
+
+/* Optimización para celdas del body también */
+.td-compact {
+    padding: 0.3rem 0.5rem !important; /* ✅ Reducido de 0.625rem 1.25rem */
+    font-size: 0.75rem !important;
+    line-height: 1.3 !important;
+}
+
+/* Mantener la estética golden en sticky headers */
+.table-golden-header-compact.sticky-top {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) !important;
+    z-index: 1 !important;
+}
+
+/* Asegurar que el gradiente y colores se mantengan */
+.table-golden-header-compact th * {
+    color: #ffffff !important;
+}
+
+/* Hover en headers compactos */
+.table-golden-header-compact th:hover {
+    background-color: rgba(139, 105, 20, 0.2) !important;
+    cursor: pointer;
+}
+
+/* Responsive - Ajustes para pantallas pequeñas */
+@media (max-width: 992px) {
+    .th-compact {
+        padding: 0.25rem 0.35rem !important;
+        font-size: 0.75rem !important;
+    }
+
+    .td-compact {
+        padding: 0.25rem 0.35rem !important;
+        font-size: 0.7rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .th-compact {
+        padding: 0.2rem 0.25rem !important;
+        font-size: 0.7rem !important;
+    }
+
+    .td-compact {
+        padding: 0.2rem 0.25rem !important;
+        font-size: 0.65rem !important;
+    }
+}
+
+/* Optimización específica para tabla de productos ActualizarPP */
+#tbGridProductos thead.table-golden-header-compact {
+    height: auto !important;
+    min-height: 32px !important; /* ✅ Altura mínima controlada */
+}
+
+#tbGridProductos thead th {
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+/* Mantener legibilidad en textos de encabezado */
+#tbGridProductos .th-compact {
+    letter-spacing: -0.3px; /* ✅ Ligero ajuste para aprovechar espacio */
+}
+
+/* FIN OPTIMIZACIÓN DE HEADERS DE TABLA */
+
+/* Clases para controlar visibilidad de preajustes */
+.preajuste-visible {
+    display: inline-block !important;
+    opacity: 1;
+    visibility: visible;
+}
+
+.preajuste-hidden {
+    display: none !important;
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Clases para controlar visibilidad de importe único */
+.importe-visible {
+    display: inline-block !important;
+    opacity: 1;
+    visibility: visible;
+}
+
+.importe-hidden {
+    display: none !important;
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Asegurar que d-none funcione correctamente */
+.d-none {
+    display: none !important;
+}
+
+/* Estilos para el campo de importe único */
+#importeUnico.is-invalid {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+    background-color: rgba(220, 53, 69, 0.05) !important;
+}
+
+#importeUnico.is-valid {
+    border-color: #28a745 !important;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.15) !important;
+    background-color: rgba(40, 167, 69, 0.05) !important;
+}
+
+/* Animación de error */
+@keyframes shakeField {
+    0%, 100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+#importeUnico.animate-error {
+    animation: shakeField 0.3s ease-in-out;
+}
+
+/* ====== ESTILOS PARA GESTOR DOCUMENTAL (DOCUMENT MANAGER) ====== */
+/* Modal del gestor documental */
+#docmgrmodal .modal-content {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* Encabezado con gradiente dorado del gestor documental */
+#docmgrmodal .modal-header {
+    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%);
+    color: #333;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    padding: 15px 20px;
+}
+
+/* Título del modal del gestor */
+#docmgrmodal .modal-title {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    color: #333;
+    text-shadow: 0 1px 1px rgba(255,255,255,0.3);
+}
+
+    #docmgrmodal .modal-title:before {
+        content: '\eb25';
+        font-family: 'boxicons';
+        margin-right: 10px;
+        font-size: 1.2em;
+    }
+
+/* Botón de cierre del modal */
+#docmgrmodal .close {
+    color: #333;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+    #docmgrmodal .close:hover {
+        opacity: 1;
+    }
+
+/* Cuerpo del modal del gestor */
+#docmgrmodal .modal-body {
+    padding: 20px;
+    background-color: #f8f9fa;
+}
+
+/* Árbol de documentos disponibles */
+#archivosDispuestos {
+    max-height: 500px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 10px;
+    background-color: white;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    font-size: 1.05em;
+}
+
+/* Nodos del árbol jsTree */
+.jstree-default .jstree-node {
+    margin-left: 20px;
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
+
+/* Icono de candado en nodos bloqueados */
+.jstree-default .jstree-icon.bx-lock-alt {
+    color: #dc3545 !important;
+    font-size: 1.1em !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Espaciado para textos de nodos */
+.jstree-default .jstree-anchor {
+    padding-right: 10px !important;
+    line-height: 28px !important;
+    height: 28px !important;
+}
+
+/* Pestañas del gestor documental */
+#documentManagerTabs .nav-link {
+    border-radius: 4px 4px 0 0;
+    padding: 8px 15px;
+    font-weight: 500;
+    color: #495057;
+    transition: all 0.2s;
+}
+
+    #documentManagerTabs .nav-link:hover {
+        background-color: rgba(184, 134, 11, 0.1);
+    }
+
+    #documentManagerTabs .nav-link.active {
+        color: #b8860b;
+        font-weight: 600;
+        border-color: #dee2e6 #dee2e6 #fff;
+        border-bottom: 3px solid #b8860b;
+    }
+
+    #documentManagerTabs .nav-link i {
+        margin-right: 6px;
+        vertical-align: middle;
+    }
+
+/* Nodos deshabilitados en el árbol */
+.disabled-node {
+    color: #9da9b0 !important;
+    cursor: not-allowed !important;
+    opacity: 0.7 !important;
+    text-decoration: line-through;
+}
+
+.jstree-default .jstree-disabled {
+    color: #9da9b0;
+    cursor: not-allowed;
+}
+
+    .jstree-default .jstree-disabled > i.jstree-icon {
+        opacity: 1 !important;
+        color: #dc3545 !important;
+    }
+
+/* Botones de acción del gestor documental */
+.doc-action-btn,
+#btnArchImprimir,
+#btnEnviarEmail,
+#btnEnviarWhatsApp,
+#btnGenerarFile {
+    border-radius: 4px;
+    padding: 6px 16px;
+    font-weight: 500;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background-color: #b8860b;
+    border-color: #daa520;
+}
+
+#btnCancelarGD {
+    border-radius: 4px;
+    padding: 6px 16px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.doc-action-btn:hover,
+#btnArchImprimir:hover,
+#btnEnviarEmail:hover,
+#btnEnviarWhatsApp:hover,
+#btnGenerarFile:hover {
+    background-color: #daa520;
+    border-color: #b8860b;
+}
+
+/* Campos de formulario del gestor */
+#docmgrmodal .form-control {
+    border-radius: 4px;
+    border: 1px solid #ced4da;
+    padding: 8px 12px;
+    transition: border-color 0.2s;
+}
+
+    #docmgrmodal .form-control:focus {
+        border-color: #b8860b;
+        box-shadow: 0 0 0 0.2rem rgba(184, 134, 11, 0.25);
+    }
+
+/* Contenido de pestañas */
+#documentManagerTabs .tab-content {
+    background-color: white;
+    border: 1px solid #dee2e6;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* Nodos seleccionados en el árbol */
+.jstree-clicked {
+    background-color: #faf5e6 !important;
+    box-shadow: inset 0 0 1px #b8860b !important;
+    border-radius: 3px !important;
+}
+
+/* Icono de nodo deshabilitado */
+.jstree-default .disabled-node-icon {
+    margin-left: 5px;
+    font-size: 0.9em;
+    opacity: 0.8;
+    color: #999;
+    display: inline-block;
+}
+
+/* Radio buttons de formato */
+#docmgrmodal .form-check-input:checked {
+    background-color: #b8860b;
+    border-color: #b8860b;
+}
+
+/* Encabezados dentro del modal del gestor */
+#docmgrmodal h5,
+#docmgrmodal .h5 {
+    color: #b8860b;
+    font-weight: 600;
+}
+
+/* Etiquetas de formulario del gestor */
+#docmgrmodal label {
+    color: #495057;
+    font-weight: 500;
+}
+
+/* Badge de conteo en nodos del árbol */
+.count-badge {
+    font-size: 0.75rem;
+    padding: 0.15em 0.4em;
+}
+
+/* FIN ESTILOS PARA GESTOR DOCUMENTAL */
+
+/* ====== ESTILOS PARA VISTA COMPACTA DE EMAIL TAB ====== */
+
+/* Botones de grupo más pequeños */
+.btn-group .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Alertas compactas */
+.alert-sm {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+/* Form controls más pequeños */
+.form-control-sm {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Labels más compactos */
+.form-label.mb-1 {
+    margin-bottom: 0.25rem !important;
+    font-size: 0.875rem;
+}
+
+/* Reducir espaciado entre elementos del formulario */
+.mb-2 {
+    margin-bottom: 0.5rem !important;
+}
+
+/* Ajustar tamaño de iconos en contexto compacto */
+#emailFileInfo i,
+#fileHelp i,
+#providerInfo i {
+    font-size: 1rem;
+}
+
+/* Panel colapsable con animación suave */
+.collapse {
+    transition: height 0.3s ease;
+}
+
+/* Botón de envío compacto pero visible */
+.btn-golden.btn-sm {
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+}
+
+/* FIN ESTILOS COMPACTOS */
+
+@media (max-width: 768px) {
+    /* Button group apilado en móvil */
+    .btn-group {
+        flex-direction: column;
+    }
+
+        .btn-group .btn-sm {
+            width: 100%;
+            margin-bottom: 0.25rem;
+        }
+
+    /* Campos CC/BCC apilados en móvil */
+    #ccBccContainer .col-md-6 {
+        width: 100%;
+    }
+}

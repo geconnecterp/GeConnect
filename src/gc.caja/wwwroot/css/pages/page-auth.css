@@ -1,0 +1,580 @@
+/*!
+ * Page Auth CSS - Estilos para páginas de autenticación
+ * Tema Golden para Login
+ */
+
+/* ===== ESTILOS PARA AUTHENTICATION WRAPPER ===== */
+.authentication-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(135deg, #fefcf7 0%, #f5e6a3 50%, #daa520 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+    0%, 100% { 
+        background-position: 0% 50%; 
+    }
+    50% { 
+        background-position: 100% 50%; 
+    }
+}
+
+.authentication-basic {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.authentication-inner {
+    width: 100%;
+    max-width: 450px;
+}
+
+/* ===== CARD LOGIN CON TEMA GOLDEN ===== */
+.card-golden-login {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(184, 134, 11, 0.3);
+    overflow: hidden;
+    background: white;
+    animation: fadeInUp 0.6s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card-golden-login .card-body {
+    padding: 2.5rem;
+}
+
+/* ===== APP BRAND GOLDEN ===== */
+.app-brand-golden {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.app-brand-golden .app-brand-logo {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    box-shadow: 0 4px 12px rgba(184, 134, 11, 0.3);
+}
+
+.app-brand-golden .app-brand-logo i {
+    font-size: 2rem;
+    color: white;
+}
+
+.app-brand-golden .app-brand-text {
+    font-size: 1.75rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ===== TEXTOS DE BIENVENIDA ===== */
+.welcome-title {
+    color: #8b6914;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.welcome-subtitle {
+    color: #b8860b;
+    margin-bottom: 1rem;
+}
+
+/* ===== DISPLAY DE FECHA ===== */
+.fecha-display {
+    background: linear-gradient(135deg, rgba(184, 134, 11, 0.1) 0%, rgba(218, 165, 32, 0.05) 100%);
+    padding: 0.75rem;
+    border-radius: 8px;
+    border-left: 4px solid #daa520;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.fecha-display i {
+    color: #b8860b;
+    margin-right: 0.5rem;
+}
+
+/* ===== FORM LABELS GOLDEN ===== */
+.form-label-golden {
+    color: #8b6914;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.form-label-golden i {
+    margin-right: 0.5rem;
+    color: #daa520;
+}
+
+/* ===== FORM CONTROLS GOLDEN - MEJORADO PARA CONTRASTE ===== */
+.form-control-golden,
+.form-select-golden {
+    border: 2px solid #daa520;
+    background-color: #ffffff !important; /* ✅ Fondo blanco sólido */
+    color: #2c2c2c !important; /* ✅ Texto negro oscuro para máximo contraste */
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+/* Placeholder con contraste mejorado */
+.form-control-golden::placeholder {
+    color: #6c757d !important; /* ✅ Gris medio para placeholder visible */
+    opacity: 1;
+}
+
+.form-control-golden:-ms-input-placeholder {
+    color: #6c757d !important;
+}
+
+.form-control-golden::-ms-input-placeholder {
+    color: #6c757d !important;
+}
+
+/* Estado focus mejorado */
+.form-control-golden:focus,
+.form-select-golden:focus {
+    border-color: #b8860b;
+    box-shadow: 0 0 0 0.25rem rgba(184, 134, 11, 0.25);
+    background-color: #ffffff !important; /* ✅ Mantener fondo blanco en focus */
+    color: #2c2c2c !important; /* ✅ Mantener texto oscuro en focus */
+}
+
+/* Select con mejor contraste */
+.form-select-golden {
+    color: #2c2c2c !important;
+    background-color: #ffffff !important;
+}
+
+.form-select-golden option {
+    background-color: #ffffff;
+    color: #2c2c2c;
+}
+
+/* Estado disabled */
+.form-control-golden:disabled,
+.form-select-golden:disabled {
+    background-color: #f5f5f5 !important;
+    color: #6c757d !important;
+    border-color: #ddd;
+    cursor: not-allowed;
+}
+
+/* ===== BOTÓN LOGIN GOLDEN ===== */
+.btn-login-golden {
+    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(184, 134, 11, 0.3);
+}
+
+.btn-login-golden:hover {
+    background: linear-gradient(135deg, #8b6914 0%, #b8860b 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(184, 134, 11, 0.4);
+    color: white;
+}
+
+.btn-login-golden:active {
+    transform: translateY(0);
+}
+
+.btn-login-golden:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ===== INPUT GROUP GOLDEN - MEJORADO ===== */
+.input-group-golden .input-group-text {
+    background-color: #ffffff; /* ✅ Fondo blanco para consistencia */
+    border: 2px solid #daa520;
+    border-left: none;
+    color: #8b6914; /* ✅ Color más oscuro para el icono */
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.input-group-golden .input-group-text:hover {
+    background-color: #faf5e6;
+    color: #6b5410;
+}
+
+/* Asegurar que el input dentro del grupo tenga el borde correcto */
+.input-group-golden .form-control-golden {
+    border-right: none;
+}
+
+/* ===== LOADING OVERLAY ===== */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loading-overlay.active {
+    display: flex;
+}
+
+.loading-content {
+    text-align: center;
+}
+
+/* ===== SPINNER GOLDEN ===== */
+.spinner-golden {
+    width: 60px;
+    height: 60px;
+    border: 5px solid #f5e7c1;
+    border-top: 5px solid #daa520;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { 
+        transform: rotate(0deg); 
+    }
+    100% { 
+        transform: rotate(360deg); 
+    }
+}
+
+/* ===== UTILIDADES DE TEXTO GOLDEN ===== */
+.text-golden {
+    color: #b8860b !important;
+}
+
+.text-golden-dark {
+    color: #8b6914 !important;
+}
+
+.text-golden-light {
+    color: #daa520 !important;
+}
+
+/* ===== ALERTAS CON MEJOR CONTRASTE ===== */
+.alert {
+    color: #2c2c2c !important;
+    font-weight: 500;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c2c7;
+    color: #842029 !important;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    border-color: #ffecb5;
+    color: #664d03 !important;
+}
+
+.alert-info {
+    background-color: #cff4fc;
+    border-color: #b6effb;
+    color: #055160 !important;
+}
+
+.alert-success {
+    background-color: #d1e7dd;
+    border-color: #badbcc;
+    color: #0f5132 !important;
+}
+
+/* ===== CAJA INFO DISPLAY - NUEVO ===== */
+.caja-info-display {
+    background: linear-gradient(135deg, rgba(184, 134, 11, 0.08) 0%, rgba(218, 165, 32, 0.05) 100%);
+    border: 2px solid #daa520;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 8px rgba(184, 134, 11, 0.15);
+    animation: slideInDown 0.5s ease;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.caja-info-header {
+    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%);
+    color: white;
+    padding: 0.75rem 1rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.caja-info-header i {
+    font-size: 1.25rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.caja-info-body {
+    padding: 1rem;
+    background: white;
+}
+
+.caja-info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.65rem 0.75rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+    background: rgba(245, 245, 245, 0.5);
+    border-left: 3px solid transparent;
+}
+
+.caja-info-item:hover {
+    background: rgba(184, 134, 11, 0.08);
+    border-left-color: #daa520;
+    transform: translateX(3px);
+}
+
+.caja-info-item:last-child {
+    margin-bottom: 0;
+}
+
+.caja-info-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #6b5410;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.caja-info-label i {
+    font-size: 1.1rem;
+    color: #b8860b;
+}
+
+.caja-info-value {
+    color: #2c2c2c;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-align: right;
+    font-family: 'Courier New', monospace;
+}
+
+/* ===== BADGES PARA FACTURACIÓN Y CONEXIÓN ===== */
+.badge {
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.badge-facturacion-fe {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+}
+
+.badge-facturacion-cf {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
+}
+
+.badge-conexion-ip {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    color: white;
+    box-shadow: 0 2px 6px rgba(23, 162, 184, 0.3);
+}
+
+.badge-conexion-usb {
+    background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);
+    color: white;
+    box-shadow: 0 2px 6px rgba(111, 66, 193, 0.3);
+}
+
+/* ===== ESTADO DE CAJA NO CONFIGURADA ===== */
+.caja-info-value:contains("No configurada") {
+    color: #dc3545;
+    font-style: italic;
+}
+
+/* ===== RESPONSIVE PARA CAJA INFO ===== */
+@media (max-width: 768px) {
+    .caja-info-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .caja-info-value {
+        text-align: left;
+        width: 100%;
+        font-size: 0.85rem;
+    }
+
+    .caja-info-label {
+        font-size: 0.8rem;
+    }
+
+    .caja-info-header {
+        font-size: 0.875rem;
+        padding: 0.65rem 0.85rem;
+    }
+
+    .badge {
+        font-size: 0.7rem;
+        padding: 0.3rem 0.6rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .caja-info-display {
+        margin-bottom: 1rem;
+    }
+
+    .caja-info-body {
+        padding: 0.75rem;
+    }
+
+    .caja-info-item {
+        padding: 0.5rem 0.6rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .caja-info-header i {
+        font-size: 1.1rem;
+    }
+
+    .badge {
+        font-size: 0.65rem;
+        padding: 0.25rem 0.5rem;
+    }
+}
+
+/* ===== ANIMACIÓN DE CONEXIÓN ACTIVA ===== */
+.caja-info-item:first-child::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: #28a745;
+    border-radius: 50%;
+    position: absolute;
+    left: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+        box-shadow: 0 0 5px #28a745;
+    }
+    50% {
+        opacity: 0.3;
+        box-shadow: 0 0 2px #28a745;
+    }
+}
+
+/* Agregar position relative al contenedor */
+.caja-info-item {
+    position: relative;
+}
+
+/* ===== ACCESIBILIDAD PARA CAJA INFO ===== */
+@media (prefers-reduced-motion: reduce) {
+    .caja-info-display,
+    .caja-info-header i,
+    .caja-info-item::before {
+        animation: none !important;
+    }
+
+    .caja-info-item:hover {
+        transform: none;
+    }
+}
+
+/* ===== DARK MODE PARA CAJA INFO ===== */
+@media (prefers-color-scheme: dark) {
+    .caja-info-body {
+        background: #2a2a2a;
+    }
+
+    .caja-info-item {
+        background: rgba(50, 50, 50, 0.5);
+    }
+
+    .caja-info-item:hover {
+        background: rgba(184, 134, 11, 0.15);
+    }
+
+    .caja-info-label {
+        color: #daa520;
+    }
+
+    .caja-info-value {
+        color: #f5f5f5;
+    }
+}

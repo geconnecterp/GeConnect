@@ -1,0 +1,48 @@
+<!-- Parcial para Componente Menú Principal Caja -->
+<div class="modal modal-golden fade" id="modalMenuCaja" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalMenuTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalMenuTitle">
+                    <i class='bx bx-store-alt text-white'></i> Menú Principal - Caja <span id="lblPV" class="badge bg-light text-dark ms-2"></span>
+                </h5>
+                <button type="button" class="btn btn-sm btn-danger d-flex align-items-center" id="btnCerrarMenu">
+                    <i class='bx bx-x fs-5'></i> Salir
+                </button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <!-- Cada opción tiene un color distinto según los requerimientos de la maqueta y aprovecha la paleta Golden system -->
+                <div class="menu-grid">
+                    <button class="btn btn-golden menu-btn" onclick="alert('Módulo de Facturación');">
+                        <i class='bx bx-receipt'></i>
+                        <span>Facturación C.F.</span>
+                    </button>
+                    <button class="btn btn-info menu-btn text-white" onclick="alert('Módulo Cliente Registrado');">
+                        <i class='bx bx-id-card'></i>
+                        <span>Facturación C.R.</span>
+                    </button>
+                    <button class="btn btn-success menu-btn" onclick="alert('Módulo Cobranza');">
+                        <i class='bx bx-dollar-circle'></i>
+                        <span>Cobranzas</span>
+                    </button>
+                    <button class="btn btn-warning menu-btn text-white" onclick="alert('Órdenes de Reparto');">
+                        <i class='bx bx-package'></i>
+                        <span>Órdenes Reparto</span>
+                    </button>
+                    <button class="btn btn-secondary menu-btn" onclick="alert('Depósito Box');">
+                        <i class='bx bx-box'></i>
+                        <span>Depósito - Box</span>
+                    </button>
+                    <button class="btn btn-outline-primary menu-btn" onclick="alert('Módulo de Presupuestos');">
+                        <i class='bx bx-calculator'></i>
+                        <span>Presupuestos</span>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <small class="text-muted"><i class='bx bx-user'></i> Cajero Logueado: <strong id="lblCajero">---</strong></small>
+                <small class="text-muted"><i class='bx bx-pulse'></i> Estado: <span class="text-success fw-bold">ONLINE</span></small>
+            </div>
+        </div>
+    </div>
+</div>
