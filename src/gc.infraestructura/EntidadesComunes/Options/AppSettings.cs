@@ -41,6 +41,8 @@ namespace gc.infraestructura.Core.EntidadesComunes.Options
         public string RepoApiUrl { get; set; } = string.Empty;
         public string? PathBase { get; set; }
         public string? PathApp { get; set; }
+
+        public string RutaFileCaja { get; set; }
     }
     
 }

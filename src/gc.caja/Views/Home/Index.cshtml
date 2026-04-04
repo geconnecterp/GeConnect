@@ -1,0 +1,37 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+<!-- MAIN CONTENT PUSHED BEHIND MODALS -->
+<div class="container mt-5">
+    <div class="text-center">
+        <h1 class="text-golden-dark"><i class='bx bx-desktop'></i> Sistema de Caja GECO</h1>
+        <p class="text-muted">La interfaz está delegada a las ventanas modales flotantes por requerimiento.</p>
+       @* <button class="btn btn-golden mt-3 border" onclick="location.reload();">
+            <i class='bx bx-refresh'></i> Reiniciar Prototipo
+        </button> *@
+    </div>
+</div>
+
+
+<!-- 1. Overlay de inicialización asíncrona -->
+@await Html.PartialAsync("_LoaderOverlay")
+
+<!-- 2. Modal Pregunta (Alta/Logueo) -->
+@await Html.PartialAsync("_ModalValidacion")
+
+<!-- 3. Modal Menú Principal -->
+@await Html.PartialAsync("_ModalMenu")
+
+<partial name="_ModalTecladoDemo" />
+
+@section scripts{
+
+    <script type="text/javascript">
+
+        var ValidacionIntegridadUrl = "@Url.Action("ValidacionIntegridad", "Home", new { area = "" })";
+        var AperturaCajaUrl = "@Url.Action("AperturaCaja", "Home", new { area = "" })";
+
+    </script>
+
+    <script src="~/js/app/caja.js"></script>
+}

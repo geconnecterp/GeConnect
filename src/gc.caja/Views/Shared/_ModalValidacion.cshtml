@@ -1,0 +1,29 @@
+<!-- Parcial para Componente Validación -->
+<div class="modal modal-golden fade" id="modalValidacionIngreso" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalValidacionTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalValidacionTitle">
+                    <i class='bx bx-error-circle text-white'></i> Atención: Apertura de Caja
+                </h5>
+            </div>
+            <div class="modal-body text-center p-4 fade-in">
+                <p class="fs-5 text-dark">La caja actual <strong>no tiene un cierre asociado</strong>.</p>
+                <p class="text-muted">¿Qué acción deseas tomar para continuar operando en el sistema?</p>
+            </div>
+            <div class="modal-footer d-flex justify-content-between p-3">
+                <button type="button" class="btn btn-outline-danger" id="btnSale">
+                    <i class='bx bx-exit'></i> Salir
+                </button>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-secondary" id="btnOperaSinCaja">
+                        <i class='bx bx-block'></i> Operar sin Caja
+                    </button>
+                    <button type="button" class="btn btn-success" id="btnHaceApertura">
+                        <i class='bx bx-check-circle'></i> Hacer Apertura
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,94 @@
+﻿/*!
+ * Theme Default - Tema por defecto compatible con Golden
+ */
+
+/* Overrides básicos para compatibilidad */
+:root {
+    --bs-blue: #0d6efd;
+    --bs-indigo: #6610f2;
+    --bs-purple: #6f42c1;
+    --bs-pink: #d63384;
+    --bs-red: #dc3545;
+    --bs-orange: #fd7e14;
+    --bs-yellow: #ffc107;
+    --bs-green: #28a745;
+    --bs-teal: #20c997;
+    --bs-cyan: #17a2b8;
+    --bs-white: #fff;
+    --bs-gray: #6c757d;
+    --bs-gray-dark: #343a40;
+    
+    /* Usar variables golden */
+    --bs-primary: var(--bs-golden-primary, #d4af37);
+    --bs-secondary: var(--bs-golden-secondary-muted, #9d926e);
+    --bs-success: var(--bs-golden-success, #71dd37);
+    --bs-info: var(--bs-golden-info, #1070E3);
+    --bs-warning: var(--bs-golden-warning, #ffab00);
+    --bs-danger: var(--bs-golden-danger, #ff3e1d);
+    --bs-light: #f8f9fa;
+    --bs-dark: #212529;
+}
+
+/* Authentication pages specific */
+.authentication-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    overflow: hidden;
+}
+
+.authentication-inner {
+    width: 100%;
+}
+
+.authentication-basic {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+/* App brand */
+.app-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.app-brand-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.app-brand-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--bs-primary);
+}
+
+/* Form password toggle */
+.form-password-toggle {
+    position: relative;
+}
+
+.form-password-toggle .input-group-text {
+    cursor: pointer;
+}
+
+/* Template customizer (opcional, puede estar vacío) */
+.template-customizer-core-css,
+.template-customizer-theme-css {
+    /* Placeholder para compatibilidad */
+}
+
+/* Page authentication */
+.authentication-wrapper .card {
+    max-width: 400px;
+    width: 100%;
+}
+
+@media (max-width: 575.98px) {
+    .authentication-wrapper .card {
+        margin: 1rem;
+    }
+}

@@ -4,6 +4,7 @@ using gc.api.core.Contratos.Servicios.Asientos;
 using gc.api.core.Contratos.Servicios.Contable;
 using gc.api.core.Contratos.Servicios.Importacion;
 using gc.api.core.Contratos.Servicios.Libros;
+using gc.api.core.Contratos.Servicios.LineaCaja;
 using gc.api.core.Contratos.Servicios.Ofertas;
 using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Contratos.Servicios.Tipos;
@@ -15,6 +16,7 @@ using gc.api.core.Servicios.Asientos;
 using gc.api.core.Servicios.Contable;
 using gc.api.core.Servicios.Importacion;
 using gc.api.core.Servicios.Libros;
+using gc.api.core.Servicios.LineaCaja;
 using gc.api.core.Servicios.Ofertas;
 using gc.api.core.Servicios.Reportes;
 using gc.api.core.Servicios.Tipos;
@@ -160,6 +162,8 @@ namespace gc.api.infra.Extensions
             services.AddScoped(typeof(IExceptionManager), typeof(ExceptionManager));
             services.AddScoped(typeof(ILoggerHelper), typeof(LoggerHelper));
 
+            //CAJA
+            services.AddScoped<IApiCajaServicio, ApiCajaServicio>();
 
             return services;
         }

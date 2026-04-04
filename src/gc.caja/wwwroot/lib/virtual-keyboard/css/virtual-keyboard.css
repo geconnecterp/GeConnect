@@ -1,0 +1,154 @@
+/* 
+   Estilos para el Teclado Virtual Flotante 
+   Compatible con .NET MVC (wwwroot/css/virtual-keyboard.css)
+*/
+
+:root {
+    --vk-bg: rgba(23, 23, 23, 0.95);
+    --vk-border: #404040;
+    --vk-text: #e5e5e5;
+    --vk-text-muted: #a3a3a3;
+    --vk-key-bg: #262626;
+    --vk-key-active: #404040;
+    --vk-accent: #2563eb;
+    --vk-danger: #f87171;
+}
+
+.vk-container {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    background: var(--vk-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--vk-border);
+    padding: 16px;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    width: 95vw;
+    max-width: 480px;
+    user-select: none;
+    touch-action: none;
+    display: none; /* Se activa por JS */
+    flex-direction: column;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: opacity 0.2s ease;
+}
+
+.vk-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 12px;
+    cursor: grab;
+}
+
+.vk-header:active {
+    cursor: grabbing;
+}
+
+.vk-drag-handle {
+    width: 40px;
+    height: 5px;
+    background: var(--vk-border);
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.vk-title-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0 4px;
+}
+
+.vk-title {
+    color: var(--vk-text-muted);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+}
+
+.vk-close {
+    cursor: pointer;
+    color: var(--vk-text-muted);
+    font-size: 18px;
+    line-height: 1;
+    padding: 4px;
+    transition: color 0.2s;
+}
+
+.vk-close:hover {
+    color: white;
+}
+
+.vk-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.vk-row {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+}
+
+.vk-key {
+    background: var(--vk-key-bg);
+    border: 1px solid var(--vk-border);
+    color: var(--vk-text);
+    border-radius: 10px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.1s;
+    flex: 1;
+    min-width: 32px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.vk-key:active {
+    transform: scale(0.92);
+    background: var(--vk-key-active);
+}
+
+.vk-key-special {
+    background: #171717;
+    color: #60a5fa;
+}
+
+.vk-key-backspace {
+    color: var(--vk-danger);
+}
+
+.vk-key-enter {
+    background: var(--vk-accent);
+    color: white;
+    flex: 2;
+    border-color: transparent;
+}
+
+.vk-key-enter:hover {
+    background: #1d4ed8;
+}
+
+.vk-key-space {
+    flex: 4;
+}
+
+/* Responsive para móviles muy pequeños */
+@media (max-width: 400px) {
+    .vk-key {
+        height: 42px;
+        font-size: 13px;
+    }
+}
