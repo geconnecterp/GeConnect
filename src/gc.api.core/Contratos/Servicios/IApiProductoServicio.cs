@@ -132,5 +132,7 @@ namespace gc.api.core.Contratos.Servicios
 
 		List<ProductoTraceDto> ObtenerProductoTrace(DateTime desde, DateTime hasta);
 		List<ProvSinModPrecioDto> ProvSinModPrecio(DateTime desde);
-    }
+		List<PedidoInternoPendienteDetalleDto> PIPendienteDetalle(string adm_id, string usu_id);
+
+	}
 }

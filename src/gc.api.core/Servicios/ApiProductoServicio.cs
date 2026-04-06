@@ -16,6 +16,7 @@ using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Response;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
+using gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.CuentaComercial;
@@ -1811,6 +1812,18 @@ namespace gc.api.core.Servicios
 				new("@pi_compte",pi_compte),
 			};
 			List<PIDetalleDto> resp = _repository.EjecutarLstSpExt<PIDetalleDto>(sp, ps, true);
+			return resp;
+		}
+
+		public List<PedidoInternoPendienteDetalleDto> PIPendienteDetalle(string adm_id, string usu_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PI_PENDIENTE_DETALLE;
+			var ps = new List<SqlParameter>()
+			{
+				new("@adm_id",adm_id),
+				new("@usu_id",usu_id),
+			};
+			List<PedidoInternoPendienteDetalleDto> resp = _repository.EjecutarLstSpExt<PedidoInternoPendienteDetalleDto>(sp, ps, true);
 			return resp;
 		}
 	}

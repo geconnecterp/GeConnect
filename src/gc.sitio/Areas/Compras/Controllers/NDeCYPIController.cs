@@ -11,6 +11,7 @@ using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Compras.Models;
+//using gc.sitio.Areas.Compras.Models.NDeCYPI;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using iTextSharp.text.pdf.codec.wmf;
@@ -206,9 +207,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public IActionResult BuscarProductosOCPI2(NCPICargarListaDeProductos2Request request)
 		{
-			var model = new GridCoreSmart<ProductoNCPIDto>();
+			//var model = new GridCoreSmart<ProductoNCPIDto>();
 			MetadataGrid metadata;
 			GridCoreSmart<ProductoNCPIDto> grillaDatos;
+			var model = new BuscarProductosOCPI2Model();
 			try
 			{
 				request.Registros = _appSettings.NroRegistrosPagina;
@@ -224,7 +226,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 				grillaDatos = GenerarGrillaSmart(productos.Item1, request.Sort ?? "p_desc", _appSettings.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, request.SortDir ?? "ASC");
 				productos.Item1.Where(x => x.p_orden_pg == null).ToList().ForEach(x => x.p_orden_pg = 0);
 				ListaProductoNCPI = productos.Item1;
-				return PartialView("_grillaProductos", grillaDatos);
+				model.ListaDatosProductos = grillaDatos;
+				model.Tipo = request.Tipo;
+				return PartialView("_grillaProductos", model);
 			}
 			catch (Exception ex)
 			{
@@ -672,6 +676,32 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 		#endregion
 
+		#region Pedidos Internos
+		public IActionResult AbrirPantallaPasarAPI()
+		{ 
+			var model = new PasarAPIModel();
+			try
+			{
+				var productos = _productoServicio.PIPendienteDetalle(AdministracionId, UserName, TokenCookie).Result;
+				productos.ToList().ForEach(x => x.selected = true);
+				model.ListaSucursales = ComboSucursales(AdministracionId);
+				model.ListaProductos = ObtenerGridCoreSmart<PedidoInternoPendienteDetalleDto>(productos);
+				return PartialView("_pasar_a_PI", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+		#endregion
+
 		#region Métodos privados
 		private SelectList ObtenerLista(List<AdministracionDto> adms)
 		{
@@ -762,6 +792,20 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private SelectList ComboSucursales()
 		{
 			var adms = _administracionServicio.GetAdministracionLogin();
+			var lista = adms.Select(x => new ComboGenDto { Id = x.Id, Descripcion = x.Descripcion });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		private SelectList ComboSucursales(string exclude)
+		{
+			var adms = _administracionServicio.GetAdministracionLogin();
+			if (adms != null && adms.Count > 0)
+			{
+				adms = adms.Where(x => x.Id != exclude).ToList();
+			}
+			else
+			{
+				return HelperMvc<ComboGenDto>.ListaGenerica([]);
+			}
 			var lista = adms.Select(x => new ComboGenDto { Id = x.Id, Descripcion = x.Descripcion });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}

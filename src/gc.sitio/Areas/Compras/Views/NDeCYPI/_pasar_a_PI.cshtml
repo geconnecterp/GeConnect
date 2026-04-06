@@ -1,0 +1,135 @@
+﻿@model PasarAPIModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	var alt = true;
+	string clase = string.Empty;
+
+	string grupoActual = string.Empty;
+	string grupoAnterior = string.Empty;
+}
+@section styles {
+	<link rel="stylesheet" href="~/css/compras/ndecypi/ndecypi.css" />
+}
+<style>
+	.th-descripcion {
+		position: relative;
+		text-align: center;
+		vertical-align: middle;
+		width: 33%;
+	}
+
+		.th-descripcion .th-title {
+			display: inline-block;
+		}
+
+	.btn-info-producto {
+		position: absolute;
+		right: 4px; /* margen a la derecha */
+		top: 50%;
+		transform: translateY(-50%);
+		background: transparent !important;
+		border: none !important;
+		padding: 0;
+		color: #fff; /* o el color del header */
+		cursor: pointer;
+	}
+
+		.btn-info-producto i {
+			font-size: 1rem;
+			line-height: 1;
+		}
+</style>
+<div class="row">
+
+</div>
+<div class="row">
+	<div class="col-12">
+		<div id="divListaProductoParaPasarAPI">
+			<div class="table-responsive text-nowrap table-wrapper">
+				<table class="table table-sm mb-0 table-hover table-golden" id="tbListaProductoParaPasarAPI">
+					<thead>
+						<tr class="header">
+							<th style="width:5%;" class="align-center tiny-row">Código</th>
+							<th class="th-descripcion">
+								<span class="th-title">Descripción</span>
+								<button type="button"
+										class="btn btn-info-producto"
+										data-action="info-producto"
+										title="Abrir info de producto">
+									<i class="bx bx-info-circle"></i>
+								</button>
+							</th>
+							<th style="width:7%;" class="tiny-row align-center">Id. Barrado</th>
+							<th style="width:5%;" class="tiny-row align-center">Cod. Prov</th>
+							<th style="width:5%;" class="tiny-row align-center" title="Días Última Transferencia">Días Ult. Transf.</th>
+							<th style="width:5%;" class="tiny-row align-center" title="PI Pendiente">PI Pend.</th>
+							<th style="width:5%;" class="tiny-row align-center">Stock Suc</th>
+							<th style="width:5%;" class="tiny-row align-center">Stock Tot</th>
+							<th style="width:7%;" class="tiny-row align-center">Unidad Pres.</th>
+							<th style="width:7%;" class="tiny-row align-center">Unidad Palet</th>
+							<th style="width:7%;" class="tiny-row align-center">Pedido Bulto</th>
+							<th style="width:7%;" class="tiny-row align-center">Pedido Cantidad</th>
+							<th class="text-center">
+								<input type="checkbox" id="chkMaster" class="form-check-input" />
+							</th>
+							<th style="width:0%; display:none;">pg_id</th>
+							<th style="width:0%; display:none;">rub_id</th>
+						</tr>
+					</thead>
+					<tbody>
+						@if (Model != null && Model.ListaProductos != null && Model.ListaProductos.ListaDatos != null && Model.ListaProductos.ListaDatos.Count > 0)
+						{
+							var productos = Model.ListaProductos.ListaDatos.OrderBy(x => x.cta_id).ThenBy(y => y.pg_id).ThenBy(z => z.p_orden_pg).ToList();
+							@foreach (var item in productos)
+							{
+								grupoActual = item.cta_id + item.pg_id;
+								// Si cambia la cuenta+grupo, insertamos una fila de encabezado
+								if (grupoActual != grupoAnterior)
+								{
+									var leyenda = $"Prov: {item.cta_id} {item.cta_denominacion} Familia: {item.pg_id} {item.pg_desc}";
+									<tr class="table-secondary fw-bold">
+										<td colspan="13" class="text-center">
+											<i class="bx bx-folder me-1"></i>
+											@leyenda
+										</td>
+									</tr>
+									grupoAnterior = grupoActual;
+									alt = true; // Reiniciar alternancia de colores después de cada familia
+								}
+								if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+								<tr class="@clase"
+									data-id="@item.p_id"
+									data-cta-id="@item.cta_id"
+									data-cta-denominacion="@item.cta_denominacion"
+									onclick="selectListaProductoParaPasarAPIRow(this)">
+									<td class="align-center tiny-row">@item.p_id</td>
+									<td class="align-left tiny-row">@item.p_desc</td>
+									<td class="align-center tiny-row">@item.p_id_barrado</td>
+									<td class="align-center tiny-row">@item.p_id_prov</td>
+									<td class="align-right tiny-row">@item.re_dias</td>
+									<td class="align-right tiny-row">@item.pi_pendiente</td>
+									<td class="align-right tiny-row">@GridHelper.FormatearDato(item.stk_suc, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+									<td class="align-right tiny-row">@GridHelper.FormatearDato(item.stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+									<td class="align-right tiny-row">@item.p_unidad_pres</td>
+									<td class="align-right tiny-row">@item.p_unidad_palet</td>
+									<td class="align-right tiny-row">@item.bultos</td>
+									<td class="align-right tiny-row">@GridHelper.FormatearDato(item.cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+									<td class="text-center">
+										<input type="checkbox"
+											   class="form-check-input chk-sele"
+											   @(item.selected ? "checked" : "") />
+									</td>
+									<td style="display:none;">@item.pg_id</td>
+									<td style="display:none;">@item.rub_id</td>
+								</tr>
+							}
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div>
+		</div>
+	</div>
+</div>

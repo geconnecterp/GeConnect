@@ -20,7 +20,9 @@ $(function () {
 	$('#divFiltro').on('shown.bs.collapse', function (e) {
 		if (e.target.id === 'divFiltro') { // aseguramos que sea el filtro
 			$('#divDetalle').collapse('hide');
+			$('#divListaProductoParaPasarAPI').collapse('hide');
 			$('#divBtnOpciones').collapse('hide');
+			$('#divBtnOpcionesPasarAPI').collapse('hide');
 		}
 	});
 
@@ -34,9 +36,17 @@ $(function () {
 				if (filas > 0) {
 					$('#divDetalle').collapse('show');
 					console.log("divDetalle > show");
+					$('#divListaProductoParaPasarAPI').collapse('hide');
+					console.log("divListaProductoParaPasarAPI > hide");
+					$('#divBtnOpcionesPasarAPI').collapse('hide');
+					console.log("divBtnOpcionesPasarAPI > hide");
 				} else {
 					$('#divDetalle').collapse('hide');
 					console.log("divDetalle > hide");
+					$('#divListaProductoParaPasarAPI').collapse('hide');
+					console.log("divListaProductoParaPasarAPI > hide");
+					$('#divBtnOpcionesPasarAPI').collapse('hide');
+					console.log("divBtnOpcionesPasarAPI > hide");
 				}
 			} else {
 				console.warn("La tabla #tbListaProducto no existe en el DOM");
@@ -48,6 +58,8 @@ $(function () {
 		console.log("divFiltro > show");
 		$('#divBtnOpciones').hide();
 		console.log("divBtnOpciones > hide");
+		$('#divBtnOpcionesPasarAPI').hide();
+		console.log("divBtnOpcionesPasarAPI > hide");
 	});
 
 	// Controlar directamente el estado de divDetalle
@@ -59,14 +71,20 @@ $(function () {
 				if (filas > 0) {
 					$('#divBtnOpciones').show();
 					console.log("divDetalle > show");
+					$('#divBtnOpcionesPasarAPI').hide();
+					console.log("divBtnOpcionesPasarAPI > hide");
 				} else {
 					$('#divBtnOpciones').hide();
 					console.log("divDetalle > hide");
+					$('#divBtnOpcionesPasarAPI').hide();
+					console.log("divBtnOpcionesPasarAPI > hide");
 				}
 			}
 			else {
 				$('#divBtnOpciones').hide();
 				console.log("divBtnOpciones > hide");
+				$('#divBtnOpcionesPasarAPI').hide();
+				console.log("divBtnOpcionesPasarAPI > hide");
 			}
 		}
 	});
@@ -75,6 +93,10 @@ $(function () {
 		if (e.target.id === 'divDetalle') {
 			$('#divBtnOpciones').hide();
 			console.log("divBtnOpciones > hide");
+			if (!mostrarPasarAPI) {
+				$('#divBtnOpcionesPasarAPI').hide();
+				console.log("divBtnOpcionesPasarAPI > hide");
+			}
 		}
 	});
 
@@ -99,6 +121,10 @@ $(function () {
 	$(document).on("change", "#listaSucursalesModal", ControlalistaSucursalesModalSelected);
 	$(document).on("change", "#listaDepositosModal", ControlalistaDepositosModalSelected);
 	$(document).on("click", "#btnCompraAutoBuscar", ControlaCompraAutoBuscar);
+	$(document).on("click", "#btnPasarAPI", ControlaPasarAPedidoInterno);
+	$(document).on("click", "#btnPasarAPI", ControlaPasarAPedidoInterno);
+	$(document).on("click", "#btnRegresar", ControlaRegresarDesdePedidoInterno);
+	//
 
 	$(document).on("change", "#listaLs02", ControlalistaRubroSelected);
 	$(document).on("change", "#listaLs03", ControlalistaFamiliaSelected);
@@ -132,6 +158,66 @@ $(function () {
 	funcCallBack = BuscarProductos;
 	return true;
 });
+
+var mostrarPasarAPI = false;
+function ControlaPasarAPedidoInterno() {
+	var datos = {};
+	PostGenHtml(datos, abrirPantallaPasarAPIUrl, function (obj) {
+		mostrarPasarAPI = true;
+		$("#divPasarPI").html(obj);
+		$('#divBtnOpciones').hide();
+		console.log("divBtnOpciones > hide");
+		$('#divDetalle').collapse('hide');
+		console.log("divDetalle > hide");
+		$('#divBtnOpcionesPasarAPI').show();
+		console.log("divBtnOpcionesPasarAPI > show");
+		$('#divPasarPI').collapse('show');
+		console.log("divPasarPI > show");
+
+		$(document).off("change", "#chkMaster");
+		$(document).on("change", "#chkMaster", function () {
+			const checked = $(this).is(":checked");
+			$("#tbListaProductoParaPasarAPI tbody .chk-sele").prop("checked", checked);
+		});
+
+		$(document).off("change", "#tbListaProductoParaPasarAPI tbody .chk-sele");
+		$(document).on("change", "#tbListaProductoParaPasarAPI tbody .chk-sele", function () {
+
+			const total = $("#tbListaProductoParaPasarAPI tbody .chk-sele").length;
+			const marcados = $("#tbListaProductoParaPasarAPI tbody .chk-sele:checked").length;
+
+			$("#chkMaster").prop("checked", total > 0 && total === marcados);
+		});
+
+		CerrarWaiting();
+		return true
+	});
+}
+
+function ControlaRegresarDesdePedidoInterno() {
+	AbrirMensaje(
+		'REGRESAR',
+		"¿Desea volver a la pantalla anterior?",
+		function (resp) {
+			if (resp === 'SI') {
+				mostrarPasarAPI = false;
+				$('#divDetalle').collapse('show');
+				console.log("divDetalle > show");
+				$('#divBtnOpciones').show();
+				console.log("divBtnOpciones > show");
+				$('#divBtnOpcionesPasarAPI').collapse('hide');
+				console.log("divBtnOpcionesPasarAPI > hide");
+				$('#divPasarPI').collapse('hide');
+				console.log("divPasarPI > hide");
+			}
+			$('#msjModal').modal('hide');
+		},
+		true,
+		['Confirmar', 'Cancelar'],
+		'info!',
+		null
+	);
+}
 
 /* ######	INICIO Componente de info adicional de producto ###### */
 const mostrarInfoProd = true;
@@ -817,6 +903,9 @@ function BuscarProductos(pag = 1) {
 		$("#divDetalle").collapse("show");
 		finalizarInicializacionGridListaProductos();
 		$("#divBtnOpciones").show();
+		$("#divBtnOpcionesPasarAPI").hide();
+		//$('#divBtnOpcionesPasarAPI').collapse('hide');
+		console.log("divBtnOpcionesPasarAPI > hide");
 		PostGen({}, buscarMetadataURL, function (obj) {
 			if (obj.error === true) {
 				AbrirMensaje("ATENCIÓN", obj.msg, function () {
@@ -857,6 +946,44 @@ function AddEventListenerToGrid(tabla) {
 
 function selectListaProductoRow(x) {
 	$("#tbListaProducto tbody tr").each(function (index) {
+		$(this).removeClass("selected-row");
+		$(this).removeClass("selectedEdit-row");
+	});
+	$(x).addClass("selected-row");
+	const id = x.getAttribute("data-id");
+	const ctaId = x.getAttribute("data-cta-id");
+	const ctaDeno = x.getAttribute("data-cta-denominacion");
+	console.log("Producto ID:", id);
+	console.log("Cuenta ID:", ctaId);
+	if (id) {
+		pIdSeleccionado = id;
+		ctaIdDeProdSeleccionado = ctaId;
+		ctaDenoProdSeleccionado = ctaDeno;
+
+		const el = document.getElementById("divInfo");
+
+		if (!el || el.style.display === "none") {
+			return;
+		}
+		else {
+			/* ######	INICIO Componente de info adicional de producto ###### */
+			//BuscarInfoAdicional();
+			// disparar evento custom con datos del producto
+			$(document).trigger("productoSeleccionadoParaInfoAdicional", {
+				p_id: id,
+				ctaId: ctaId,
+				ctaDeno: ctaDeno
+			});
+			/* ######	FIN Componente de info adicional de producto ###### */
+		}
+	}
+	else {
+		pIdSeleccionado = "";
+	}
+}
+
+function selectListaProductoParaPasarAPIRow(x) {
+	$("#tbListaProductoParaPasarAPI tbody tr").each(function (index) {
 		$(this).removeClass("selected-row");
 		$(this).removeClass("selectedEdit-row");
 	});

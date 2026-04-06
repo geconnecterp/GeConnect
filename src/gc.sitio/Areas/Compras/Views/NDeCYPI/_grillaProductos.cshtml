@@ -1,4 +1,4 @@
-﻿@model GridCoreSmart<ProductoNCPIDto>
+﻿@model BuscarProductosOCPI2Model;
 @using static gc.infraestructura.Helpers.GridHelper
 @{
 	var alt = true;
@@ -113,8 +113,16 @@
 				</th>
 				<th style="width:5%;" class="align-center">Id. Barrado</th>
 				<th style="width:5%;" class="align-center tiny-row">Cod. Prov</th>
-				<th style="width:5%;" class="align-center tiny-row">Días Ult. RP</th>
-				<th style="width:5%;" class="align-center tiny-row">OC Pend</th>
+				@if (Model.Tipo == "PI")
+				{
+					<th style="width:5%;" class="align-center tiny-row" title="Días de Última Transferencia">Días Ult. Transf.</th>
+					<th style="width:5%;" class="align-center tiny-row" title="Pedido Interno Pendiente">PI Pend</th>
+				}
+				else
+				{
+					<th style="width:5%;" class="align-center tiny-row">Días Ult. RP</th>
+					<th style="width:5%;" class="align-center tiny-row">OC Pend</th>
+				}
 				<th style="width:5%;" class="align-center tiny-row">Stock Suc</th>
 				<th style="width:5%;" class="align-center tiny-row">Stock Tot</th>
 				<th style="width:0%; display:none;" class="align-center tiny-row">Stock a Facturar</th>
@@ -130,9 +138,9 @@
 			</tr>
 		</thead>
 		<tbody>
-			@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
+			@if (Model != null && Model.ListaDatosProductos != null && Model.ListaDatosProductos.ListaDatos != null && Model.ListaDatosProductos.ListaDatos.Count > 0)
 			{
-				var productos = Model.ListaDatos.OrderBy(x => x.cta_id).ThenBy(y => y.pg_id).ThenBy(z => z.p_orden_pg).ToList();
+				var productos = Model.ListaDatosProductos.ListaDatos.OrderBy(x => x.cta_id).ThenBy(y => y.pg_id).ThenBy(z => z.p_orden_pg).ToList();
 				@foreach (var item in productos)
 				{
 					grupoActual = item.cta_id + item.pg_id;
@@ -168,24 +176,33 @@
 						}
 						<td class="align-center tiny-row">@item.p_id_barrado</td>
 						<td class="align-center tiny-row">@item.p_id_prov</td>
-						<td class="align-right tiny-row">@item.rp_dias</td>
-						@if (item.oc_pendiente == 0)
+						@if(Model.Tipo == "PI")
+						{
+							<td class="align-right tiny-row">@item.re_dias</td>
+							<td class="align-right tiny-row" style="font-weight:bold;">@item.pi_pendiente</td>
+						}
+						else
+						{
+							<td class="align-right tiny-row">@item.rp_dias</td>
+							<td class="align-right tiny-row" style="font-weight:bold;">@item.oc_pendiente</td>
+						}
+						@* @if (item.oc_pendiente == 0)
 						{
 							<td class="align-right tiny-row"></td>
 						}
 						else
 						{
 							<td class="align-right tiny-row" style="font-weight:bold;">@item.oc_pendiente</td>
-						}
+						} *@
 						<td class="align-right tiny-row">@GridHelper.FormatearDato(item.stk_suc, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 						<td class="align-right tiny-row">@GridHelper.FormatearDato(item.stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 						<td style="display:none;">@item.stk_suc_comprometido</td>
 						<td class="align-right tiny-row">@item.p_unidad_pres</td>
 						<td class="align-right tiny-row">@item.p_unidad_palet</td>
-						<td style="width:5%;" 
-							class="columna-bulto @Model.ObtenerClase(item.pedido)
-						   @(item.pedido > 0 && item.pedido_tipo == "M" ? "bg-pedido-m" : "")
-						   @(item.pedido > 0 && item.pedido_tipo == "A" ? "bg-pedido-a" : "")">
+						<td style="width:5%;"
+							class="columna-bulto @Model.ListaDatosProductos.ObtenerClase(item.pedido)
+								   @(item.pedido > 0 && item.pedido_tipo == "M" ? "bg-pedido-m" : "")
+								   @(item.pedido > 0 && item.pedido_tipo == "A" ? "bg-pedido-a" : "")">
 							<div class="input-container">
 								<input type="text" class="form-control form-control-sm input-bulto input-numeric"
 									   value="@(item.pedido)"

@@ -110,5 +110,7 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<RespuestaGenerica<RespuestaDto>> ModificarOrdenDeCompra(ModificarOCRequest request, string token);
 		Task<RespuestaGenerica<RespuestaDto>> OCValidar(OCValidarRequest request, string token);
         Task<RespuestaGenerica<RespuestaDto>> ConfirmarCargaPrevia(AbmGenDto req, string tokenCookie);
-    }
+		Task<List<PedidoInternoPendienteDetalleDto>> PIPendienteDetalle(string admId, string usuId, string token);
+
+	}
 }

@@ -106,7 +106,6 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string TR_Validar_Transferencia = "/TRValidarTransferencia";
 		private const string PI_Detalle = "/PIDetalle";
 
-
 		//NCYPI
 		private const string OC_Productos = "/NCPICargarListaDeProductos";
 		private const string OC_Productos_Pag = "/NCPICargarListaDeProductosPag";
@@ -124,6 +123,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 
 		private const string OC_Cargar_Lista = "/CargarOrdenesDeCompraList";
 		private const string OC_Validar = "/OCValidar";
+
+		private const string PI_Pendiente_Detalle = "/PIPendienteDetalle";
 
 		private const string CONFIRMAR_CARGA_PREVIA = "/Confirmar-Carga-Previa";
 
@@ -2750,5 +2751,37 @@ namespace gc.sitio.core.Servicios.Implementacion
                 return new() { Ok = false, Mensaje = "Error al confirmar las etiquetas" };
             }
         }
-    }
+
+		public async Task<List<PedidoInternoPendienteDetalleDto>> PIPendienteDetalle(string admId, string usuId, string token)
+		{
+			ApiResponse<List<PedidoInternoPendienteDetalleDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{PI_Pendiente_Detalle}?admId={admId}&&usuId={usuId}";
+
+			response = client.GetAsync(link).GetAwaiter().GetResult();
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<PedidoInternoPendienteDetalleDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+
+		}
+	}
 }

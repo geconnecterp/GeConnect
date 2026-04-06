@@ -1620,5 +1620,12 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
-    }
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult PIPendienteDetalle(string admId, string usuId)
+		{
+			var res = _productosSv.PIPendienteDetalle(admId, usuId);
+			return Ok(new ApiResponse<List<PedidoInternoPendienteDetalleDto>>(res));
+		}
+	}
 }

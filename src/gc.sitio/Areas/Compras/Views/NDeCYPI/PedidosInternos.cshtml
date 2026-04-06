@@ -38,11 +38,19 @@
 					<i class="bx bx-check-circle"></i> PI Auto
 				</button>
 			</div>
+			<div class="collapse" style="text-align: right;align-content: center;padding-bottom:5px;" id="divBtnOpcionesPasarAPI">
+				<button type="button" class="btn btn-sm btn-primary btn-sm mt-1 me-1" id="btnConfirmarPI" title="Confirmar PI">
+					<i class="bx bx-check-circle"></i> Confirmar PI
+				</button>
+				<button type="button" class="btn btn-sm btn-info btn-sm mt-1 me-1" id="btnRegresar" title="Volver a pantalla principal">
+					<i class="bx bx-arrow-back"></i> Regresar
+				</button>
+			</div>
 		</div>
 	</div>
 	<div class="collapse" id="divFiltro" style="">
 		<partial name="_filtroBase" model="filtro" />
-		@Html.Hidden("pagEstado", false);
+		@Html.Hidden("pagEstado", false)
 	</div>
 	<div class="collapse" id="divDetalle" style="">
 		<div class="row">
@@ -85,10 +93,11 @@
 			</div>
 			<div class="col-2"></div>
 		</div>
-		<div class="collapse" id="divFiltro" style="">
-			@Html.Hidden("pagEstado", false);
-		</div>
+		@* <div class="collapse" id="divFiltro" style="">
+			@Html.Hidden("pagEstado", false)
+		</div> *@
 	</div>
+	<div id="divPasarPI" class="collapse"></div>
 	<div id="divInfoAdicionaDeProducto" class="collapse"></div>
 </div>
 
@@ -114,6 +123,7 @@
 		var BuscarRubrosURL = "@Url.Action("ObtenerRubros", "ndecypi", new { area = "Compras" })";
 		var BuscarProveedoresFamiliaURL = "@Url.Action("ObtenerProveedoresFamilia", "ndecypi", new { area = "Compras" })";
 		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
+		var abrirPantallaPasarAPIUrl = "@Url.Action("AbrirPantallaPasarAPI", "ndecypi", new { area = "Compras" })";
 
 		/*URL para componente de Información Adicional de Productos*/
 		var abrirComponenteDeInfoAdicionalDeProdUrl = "@Url.Action("AbrirComponente", "infoadicionaldeprod", new { area = "ControlComun" })";
