@@ -8,7 +8,9 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI
 		public SelectList ComboProveedores { get; set; } = new SelectList(new List<Dto>());
 		public SelectList ComboProveedoresFamilia { get; set; } = new SelectList(new List<Dto>());
 		public SelectList ComboRubros { get; set; } = new SelectList(new List<Dto>());
-		public SelectList ComboSucursales { get; set; } = new SelectList(new List<Dto>());	
+		public SelectList ComboSucursales { get; set; } = new SelectList(new List<Dto>());
+		public SelectList ListaSucursales { get; set; }
+		public string ListaSucursalesSeleccionada { get; set; } = string.Empty;
 		public GridCoreSmart<ProductoNCPIDto> Productos { get; set; }
 		public bool ProductosSimilares { get; set; }
 		public PedidosInternosDto()

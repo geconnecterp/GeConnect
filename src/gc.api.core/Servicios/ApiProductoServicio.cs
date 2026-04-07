@@ -1826,5 +1826,19 @@ namespace gc.api.core.Servicios
 			List<PedidoInternoPendienteDetalleDto> resp = _repository.EjecutarLstSpExt<PedidoInternoPendienteDetalleDto>(sp, ps, true);
 			return resp;
 		}
+
+		public RespuestaDto ConfirmarPedidoInterno(ConfirmarPedidoInternoRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_PI_CONFIRMAR;
+			var ps = new List<SqlParameter>()
+			{
+				new("@adm_id_entrega",request.adm_id_entrega),
+				new("@usu_id",request.usu_id),
+				new("@adm_id",request.adm_id),
+				new("@json",request.json),
+			};
+			List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return resp.First();
+		}
 	}
 }

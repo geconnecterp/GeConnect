@@ -1627,5 +1627,18 @@ namespace gc.api.Controllers.Almacen
 			var res = _productosSv.PIPendienteDetalle(admId, usuId);
 			return Ok(new ApiResponse<List<PedidoInternoPendienteDetalleDto>>(res));
 		}
+
+		[HttpPost("confirmar-pedido-interno")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public ActionResult<RespuestaDto> ConfirmarPedidoInterno(ConfirmarPedidoInternoRequest req)
+		{
+			if (req == null)
+				return BadRequest("No se recepcionaron los valores para la confirmación del pedido interno");
+			
+            var resultado = _productosSv.ConfirmarPedidoInterno(req);
+			var response = new ApiResponse<RespuestaDto>(resultado);
+			return Ok(response);
+		}
 	}
 }

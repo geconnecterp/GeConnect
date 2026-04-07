@@ -216,6 +216,7 @@
 			public const string SP_TR_CARGAR_CTRL_SALIDA = "SPGECO_TR_Cargar_CTL_Salida";
 			public const string SP_PI_DETALLE = "SPGECO_PI_Detalle";
 			public const string SP_PI_PENDIENTE_DETALLE = "SPGECO_PI_Pendiente_Detalle";
+			public const string SP_PI_CONFIRMAR = "SPGECO_PI_Confirma";
 
 			#region Financieros
 			public const string SP_F_TR_CONFIRMA = "SPGECO_F_TR_Confirma";

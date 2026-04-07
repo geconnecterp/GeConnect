@@ -18,6 +18,7 @@
 }
 @section styles {
 	<link rel="stylesheet" href="~/css/simplePagination.css" />
+	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
 
 <div class="container">
@@ -38,13 +39,26 @@
 					<i class="bx bx-check-circle"></i> PI Auto
 				</button>
 			</div>
-			<div class="collapse" style="text-align: right;align-content: center;padding-bottom:5px;" id="divBtnOpcionesPasarAPI">
-				<button type="button" class="btn btn-sm btn-primary btn-sm mt-1 me-1" id="btnConfirmarPI" title="Confirmar PI">
-					<i class="bx bx-check-circle"></i> Confirmar PI
-				</button>
-				<button type="button" class="btn btn-sm btn-info btn-sm mt-1 me-1" id="btnRegresar" title="Volver a pantalla principal">
-					<i class="bx bx-arrow-back"></i> Regresar
-				</button>
+			<div class="collapse" id="divBtnOpcionesPasarAPI" style="text-align: right; align-content: center; padding-bottom:5px;">
+				<div class="d-flex align-items-center justify-content-end gap-2">
+					<div class="input-group input-group-sm" style="width: auto;">
+						<span class="input-group-text">Sucursal a la que se le realiza el pedido:</span>
+						@Html.DropDownListFor(
+								m => m.ListaSucursalesSeleccionada,
+									Model.ListaSucursales,
+									"Seleccionar",
+									new { @id = "ListaSucursales", @class = "form-control inputEditable" }
+									)
+					</div>
+					<button type="button" class="btn btn-sm btn-primary mt-1 me-1"
+							id="btnConfirmarPI" title="Confirmar PI">
+						<i class="bx bx-check-circle"></i> Confirmar PI
+					</button>
+					<button type="button" class="btn btn-sm btn-info mt-1 me-1"
+							id="btnRegresar" title="Volver a pantalla principal">
+						<i class="bx bx-arrow-back"></i> Regresar
+					</button>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -99,6 +113,16 @@
 	</div>
 	<div id="divPasarPI" class="collapse"></div>
 	<div id="divInfoAdicionaDeProducto" class="collapse"></div>
+	<div id="modalGestorDocumental"></div>
+</div>
+
+<div class="modal fade modal-golden in" id="modalFiltroCompraAuto" tabindex="-1" style="display: none;" aria-hidden="true" data-backdrop="static">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div id="divFiltroCompraAuto">
+			</div>
+		</div>
+	</div>
 </div>
 
 @section scripts {
@@ -112,7 +136,7 @@
 		var funcCallBack = "BuscarProductos";
 		var pedido = "";
 		var pIdSeleccionado = "";
-		
+
 		var buscarFamiliaDesdeProveedorSeleccionadoUrl = "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "ndecypi", new { area = "Compras" })";
 		var autoComRel01Url = "@Url.Action("BuscarProvs", "ndecypi", new { area = "Compras" })";
 		var autoComRel02Url = "@Url.Action("BuscarRubros", "ndecypi", new { area = "Compras" })";
@@ -124,6 +148,8 @@
 		var BuscarProveedoresFamiliaURL = "@Url.Action("ObtenerProveedoresFamilia", "ndecypi", new { area = "Compras" })";
 		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
 		var abrirPantallaPasarAPIUrl = "@Url.Action("AbrirPantallaPasarAPI", "ndecypi", new { area = "Compras" })";
+		var confirmarPedidoInternoUrl = "@Url.Action("ConfirmarPedidoInterno", "ndecypi", new { area = "Compras" })";
+		var abrirModalAutoUrl = "@Url.Action("AbrirModalAuto", "ndecypi", new { area = "Compras" })";
 
 		/*URL para componente de Información Adicional de Productos*/
 		var abrirComponenteDeInfoAdicionalDeProdUrl = "@Url.Action("AbrirComponente", "infoadicionaldeprod", new { area = "ControlComun" })";
@@ -136,9 +162,20 @@
 		var BuscarInfoProdMovDURL = "@Url.Action("BuscarInfoProdMovD", "infoadicionaldeprod", new { area = "ControlComun" })";
 		var BuscarInfoProdSustitutoURL = "@Url.Action("BuscarInfoProdSustituto", "infoadicionaldeprod", new { area = "ControlComun" })";
 		/**/
+
+		// Gestor de impresión
+		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+		var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+		var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+		var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "GestorImpresion", new { area = "ControlComun" })";
+		/**/
 	</script>
 	<script src="~/js/plugins/jquery.simplePagination.js"></script>
-	<script src="~/js/app/siteGen.js"></script>@**@
+	<script src="~/js/app/siteGen.js"></script>
+	<script src="~/lib/jstree/jstree.min.js"></script>
+	<script src="~/js/app/areas/docmngr/docmanager.js"></script>
 	<script src="~/js/app/areas/ndecypi/comun.js"></script>
 	<script src="~/js/app/areas/ndecypi/pi.js"></script>
 	<script src="~/js/app/busquedas.js" type="text/javascript"></script>

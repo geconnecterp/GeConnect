@@ -3,7 +3,7 @@ class Origen {
 	static PedidoInterno = 'PI';
 	static NecesidadesDeCompra = 'NC';
 }
-
+var tipoOP = "";
 $(function () {
 	$("#btnCancel").on("click", function () {
 		AbrirWaiting();
@@ -113,10 +113,15 @@ $(function () {
 	});
 	$(document).on("change", "#listaSucursales", ControlaSucursalSeleccionada);
 	$("#btnOCAuto").on("click", function () {
+		tipoOP = Origen.NecesidadesDeCompra;
 		AbrirlModalAuto(Origen.NecesidadesDeCompra);
 	});
 	$("#btnPasarAOC").on("click", function () {
 		AbrirOrdenDeCompra();
+	});
+	$("#btnPIAuto").on("click", function () {
+		tipoOP = Origen.PedidoInterno;
+		AbrirlModalAuto(Origen.PedidoInterno);
 	});
 	$(document).on("change", "#listaSucursalesModal", ControlalistaSucursalesModalSelected);
 	$(document).on("change", "#listaDepositosModal", ControlalistaDepositosModalSelected);
@@ -124,7 +129,7 @@ $(function () {
 	$(document).on("click", "#btnPasarAPI", ControlaPasarAPedidoInterno);
 	$(document).on("click", "#btnPasarAPI", ControlaPasarAPedidoInterno);
 	$(document).on("click", "#btnRegresar", ControlaRegresarDesdePedidoInterno);
-	//
+	$(document).on("click", "#btnConfirmarPI", ControlaConfirmarPedidoInterno);
 
 	$(document).on("change", "#listaLs02", ControlalistaRubroSelected);
 	$(document).on("change", "#listaLs03", ControlalistaFamiliaSelected);
@@ -188,7 +193,7 @@ function ControlaPasarAPedidoInterno() {
 
 			$("#chkMaster").prop("checked", total > 0 && total === marcados);
 		});
-
+		$("#chkMaster").prop("checked", true);
 		CerrarWaiting();
 		return true
 	});
@@ -217,6 +222,109 @@ function ControlaRegresarDesdePedidoInterno() {
 		'info!',
 		null
 	);
+}
+
+function ControlaConfirmarPedidoInterno() {
+	const seleccionados = obtenerProductosSeleccionadosParaConfirmarPedidoInterno();
+	if (!seleccionados.haySeleccionados) {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar al menos un producto.", function () {
+			$("#msjModal").modal("hide");
+			return;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else if (!seleccionados.adm_seleccionado) {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar una sucursal de envío.", function () {
+			$("#msjModal").modal("hide");
+			$("#ListaSucursales").trigger("focus");
+			return;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirMensaje(
+			'CONFIRMAR',
+			"¿Desea confirmar el pedido interno?",
+			function (resp) {
+				if (resp === 'SI') {
+					ConfirmarPedidoInterno(seleccionados.productos);
+				}
+				$('#msjModal').modal('hide');
+			},
+			true,
+			['Confirmar', 'Cancelar'],
+			'info!',
+			null
+		);
+	}
+}
+
+function ConfirmarPedidoInterno(productos) {
+	const json = JSON.stringify(productos);
+	console.log(json);
+	const adm_id_entrega = $("#ListaSucursales").val();
+	var data = { json: json, adm_id_entrega: adm_id_entrega };
+	AbrirWaiting("Confirmando pedido...")
+	PostGen(data, confirmarPedidoInternoUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				mostrarPasarAPI = false;
+				$('#divDetalle').collapse('show');
+				console.log("divDetalle > show");
+				$('#divBtnOpciones').show();
+				console.log("divBtnOpciones > show");
+				$('#divBtnOpcionesPasarAPI').collapse('hide');
+				console.log("divBtnOpcionesPasarAPI > hide");
+				$('#divPasarPI').collapse('hide');
+				console.log("divPasarPI > hide");
+				$("#msjModal").modal("hide");
+				ImprimirPedidoInterno(obj.id);
+				return true;
+			}, false, ["Aceptar"], "succ!", null);
+		}
+	});
+}
+
+function ImprimirPedidoInterno(id) {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		let data = { id: id };
+		cargarReporteEnArre(65, data, "PEDIDO INTERNO", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
+function obtenerProductosSeleccionadosParaConfirmarPedidoInterno() {
+	const productos = [];
+	let haySeleccionados = false;
+	let adm_seleccionado = false;
+	$("#tbListaProductoParaPasarAPI tbody tr").each(function () {
+		const chk = $(this).find(".chk-sele");
+		if (chk.length && chk.is(":checked")) {
+			haySeleccionados = true;
+			const producto = {
+				p_id: $(this).data("id"),
+				p_desc: $(this).data("p-desc"),
+				stk_suc: $(this).data("stk-suc"),
+				bultos: $(this).data("bultos"),
+				cantidad: $(this).data("cantidad")
+			};
+			productos.push(producto);
+		}
+	});
+	if ($("#ListaSucursales").val() != "")
+		adm_seleccionado = true;
+	return { haySeleccionados, adm_seleccionado, productos };
 }
 
 /* ######	INICIO Componente de info adicional de producto ###### */
@@ -373,7 +481,7 @@ function ControlalistaRubroSelected() {
 }
 
 function ControlaCompraAutoBuscar() {
-	var resultado = ValidarDatosObligAnalizarCompraAuto(); //ValidarDatosObligatoriosAntesDeAnalizarCompraAuto
+	var resultado = ValidarDatosObligAnalizarCompraAuto(tipoOP); //ValidarDatosObligatoriosAntesDeAnalizarCompraAuto
 	if (resultado.msj != "") {
 		AbrirMensaje("Atención", resultado.msj, function () {
 			$("#msjModal").modal("hide");
@@ -383,7 +491,7 @@ function ControlaCompraAutoBuscar() {
 	}
 	else {
 		AbrirWaiting("Actualizando datos...");
-		let tipo = "OC";
+		let tipo = tipoOP;
 		let dias_prevision = $("#DiasAprov").inputmask('unmaskedvalue');
 		let vta_ana_desde = $("#VentaDiariaDesde").val();
 		let vta_ana_hasta = $("#VentaDiariaHasta").val();
@@ -396,13 +504,15 @@ function ControlaCompraAutoBuscar() {
 			console.log("El checkbox ExcluirOCPendientes está renderizado");
 		} else {
 			var es_pedido_interno = false;
-			var excluir_pend = null;
+			var excluir_pend = $("#ExcluirPIPendientes")[0].checked;
 			console.log("El checkbox ExcluirOCPendientes NO está en el DOM");
 		}
 		let adm_list = [];
-		$("#SucursalesListModal").children().each(function (i, item) { adm_list.push($(item).val()) });
 		let depo_list = [];
-		$("#DepositosListModal").children().each(function (i, item) { depo_list.push($(item).val()) });
+		if (tipoOP == Origen.NecesidadesDeCompra) {
+			$("#SucursalesListModal").children().each(function (i, item) { adm_list.push($(item).val()) });
+			$("#DepositosListModal").children().each(function (i, item) { depo_list.push($(item).val()) });
+		}
 		var data = { tipo, adm_list, dias_prevision, vta_ana_desde, vta_ana_hasta, limite_max, limite_min, ultimo_ped, depo_list, excluir_pend, es_pedido_interno };
 		PostGen(data, confirmarCambiosPedidoAutoUrl, function (obj) {
 			CerrarWaiting();
@@ -419,6 +529,14 @@ function ControlaCompraAutoBuscar() {
 	}
 }
 
+function obtenerTipoOrigen(origen) {
+	if (origen == Origen.NecesidadesDeCompra) {
+		return "OC";
+	}
+	else {
+		return "PI";
+	}
+}
 function normalizarFechaInput(el) {
 	const v = el.value;
 	if (v == "") {
@@ -497,13 +615,15 @@ function AplicarEstilosTabla(tabla) {
 
 }
 
-function ValidarDatosObligAnalizarCompraAuto() {
+function ValidarDatosObligAnalizarCompraAuto(origen) {
 	var ret = { msj: "", objeto: "" };
-	let registrosEnDepositos = $("#DepositosListModal option").length;
-	let registrosEnSucursal = $("#SucursalesListModal option").length;
-	if (registrosEnSucursal > 0 && registrosEnDepositos <= 0) {
-		ret.msj = "Debe seleccionar al menos un Depósito.";
-		ret.objeto = "#listaDepositosModal";
+	if (origen == Origen.NecesidadesDeCompra) {
+		let registrosEnDepositos = $("#DepositosListModal option").length;
+		let registrosEnSucursal = $("#SucursalesListModal option").length;
+		if (registrosEnSucursal > 0 && registrosEnDepositos <= 0) {
+			ret.msj = "Debe seleccionar al menos un Depósito.";
+			ret.objeto = "#listaDepositosModal";
+		}
 	}
 	return ret;
 }
@@ -525,12 +645,14 @@ function AbrirlModalAuto(abrirComo) {
 		$modal.modal('show');
 
 		setTimeout(() => {
-			const $item = $("#listaSucursalesModal");
-			if ($item.length > 0) {
-				$item.trigger("focus");
-				console.log("Foco aplicado a #listaSucursalesModal");
-			} else {
-				console.warn("No se encontró el input #listaSucursalesModal");
+			if (abrirComo == Origen.NecesidadesDeCompra) {
+				const $item = $("#listaSucursalesModal");
+				if ($item.length > 0) {
+					$item.trigger("focus");
+					console.log("Foco aplicado a #listaSucursalesModal");
+				} else {
+					console.warn("No se encontró el input #listaSucursalesModal");
+				}
 			}
 		}, 500);
 

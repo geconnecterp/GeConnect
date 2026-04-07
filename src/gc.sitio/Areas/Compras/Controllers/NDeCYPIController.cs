@@ -2,18 +2,24 @@
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Response;
+using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Productos.Ofertas;
+using gc.infraestructura.Dtos.Productos.Pedidos;
+using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Compras.Models;
 //using gc.sitio.Areas.Compras.Models.NDeCYPI;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.DocManager;
 using iTextSharp.text.pdf.codec.wmf;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -35,9 +41,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private readonly IAdministracionServicio _administracionServicio;
 		private readonly IOfertaServicio _ofertaServicio;
 		private readonly IDepositoServicio _depositoServicio;
+
+		//PARA MODULO DE IMPRESION
+		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
+		private AppModulo _modulo;
+		private string APP_MODULO = AppModulos.PEDIDO_INTERNO.ToString();
+		private readonly IDocManagerServicio _docMSv;
 		public NDeCYPIController(ICuentaServicio cuentaServicio, IRubroServicio rubroServicio, IProductoServicio productoServicio,
 								 IAdministracionServicio administracionServicio, ILogger<CompraController> logger, IOptions<AppSettings> options, IHttpContextAccessor context,
-								 IOfertaServicio ofertaServicio, IHttpContextAccessor accessor, IDepositoServicio depositoServicio) : base(options, accessor, logger)
+								 IOfertaServicio ofertaServicio, IHttpContextAccessor accessor, IDepositoServicio depositoServicio,
+								 IDocManagerServicio docManager, IOptions<DocsManager> docsManager) : base(options, accessor, logger)
 		{
 			_appSettings = options.Value;
 			_cuentaServicio = cuentaServicio;
@@ -46,6 +59,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 			_administracionServicio = administracionServicio;
 			_ofertaServicio = ofertaServicio;
 			_depositoServicio = depositoServicio;
+
+			//PARA MODULO DE IMPRESION
+			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
+			_modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO);
+			_docMSv = docManager; //instancio el servicio de impresión
 		}
 
 		public IActionResult Index()
@@ -132,9 +150,17 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var listR03 = new List<ComboGenDto>();
 				ViewBag.Rel03List = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
 
-				ViewData["Titulo"] = "NECESIDADES DE PEDIDOS INTERNOS";
+				var titulo = "NECESIDADES DE PEDIDOS INTERNOS";
+				ViewData["Titulo"] = titulo;
 				model.ComboSucursales = ComboSucursales();
+				model.ListaSucursales = ComboSucursales(AdministracionId);
 				CargarDatosIniciales(true);
+
+				#region Gestor Impresion - Inicializacion de variables
+				DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+				#endregion
+
 				return View(model);
 			}
 			catch (Exception ex)
@@ -557,11 +583,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 				}
 				if (abrirComo == NecesidadesCompra)
 				{
+					model.EsOC = true;
 					model.Titulo = "Determinación Automática de Compra (NC)";
 					model.MostrarExcluirOCPendientes = true;
 				}
 				else
 				{
+					model.EsOC = false;
 					model.Titulo = "Determinación Automática de Compra (PI)";
 					model.MostrarExcluirOCPendientes = false;
 				}
@@ -651,9 +679,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 				ListaProductoNCPI.ForEach(x => listaProdPedAuto.Add(new ProductoNCPI_AutoDto_() { p_id = x.p_id }));
 
 				request.json_p = JsonConvert.SerializeObject(listaProdPedAuto, new JsonSerializerSettings());
-
+				
+				if (request.tipo == PedidoInterno)
+					request.adm_list.Add(AdministracionId);
+				
 				PrintProperties(request);
-
 				var respuesta = _productoServicio.NecesidadesStockAuto(request, TokenCookie);
 
 				if (respuesta != null && respuesta.Count > 0)
@@ -678,7 +708,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		#region Pedidos Internos
 		public IActionResult AbrirPantallaPasarAPI()
-		{ 
+		{
 			var model = new PasarAPIModel();
 			try
 			{
@@ -698,6 +728,63 @@ namespace gc.sitio.Areas.Compras.Controllers
 					Mensaje = ex.Message
 				};
 				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public async Task<JsonResult> ConfirmarPedidoInterno(ConfirmarPedidoInternoRequest request)
+		{
+			try
+			{
+				// Verificar autenticación - consistente con otros métodos
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return Json(new { ok = false, mensaje = "No autorizado" });
+
+				if (request == null)
+					return Json(new { ok = false, mensaje = "Los datos de confirmación no fueron recepcionados. Verifique." });
+				if (string.IsNullOrEmpty(request.adm_id_entrega))
+					return Json(new { ok = false, mensaje = "Debe especificar una sucursal válida. Verifique." });
+
+				request.adm_id = AdministracionId;
+				request.usu_id = UserName;
+
+				if (string.IsNullOrEmpty(request.json))
+					return Json(new { ok = false, mensaje = "Al menos un producto es necesario." });
+
+				// Llamada al servicio
+				var respuesta = await _productoServicio.ConfirmarPedidoInterno(request, TokenCookie);
+
+				// Procesamiento de respuesta
+				if (respuesta.Ok && !respuesta.EsError && !respuesta.EsWarn)
+				{
+					// Log y limpieza de datos temporales
+					var msg = $"Se ha genetado el pedido interno exitosamente.";
+					_logger?.LogInformation(msg);
+					return AnalizarRespuesta(respuesta, msg);
+				}
+				else
+				{
+					// Log y respuesta de error/advertencia
+					_logger?.LogWarning("Error en la confirmación del pedido: {Mensaje}", respuesta.Mensaje);
+					return Json(new
+					{
+						ok = false,
+						error = respuesta.EsError,
+						warn = respuesta.EsWarn,
+						msg = respuesta.Mensaje ?? "Error al procesar el pedido"
+					});
+				}
+			}
+			catch (Exception ex)
+			{
+				// Manejo de excepciones no esperadas
+				_logger?.LogError(ex, "Error inesperado al confirmar pedido");
+				return Json(new
+				{
+					ok = false,
+					error = true,
+					msg = "Error interno al procesar la solicitud"
+				});
 			}
 		}
 		#endregion

@@ -25,6 +25,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OfficeOpenXml.FormulaParsing.LexicalAnalysis;
+using Org.BouncyCastle.Ocsp;
 using System.Net;
 using System.Reflection;
 using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
@@ -105,6 +106,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string TR_Ver_Conteos = "/TRVerConteos";
 		private const string TR_Validar_Transferencia = "/TRValidarTransferencia";
 		private const string PI_Detalle = "/PIDetalle";
+		private const string PI_Confirmar = "/confirmar-pedido-interno";
 
 		//NCYPI
 		private const string OC_Productos = "/NCPICargarListaDeProductos";
@@ -2782,6 +2784,75 @@ namespace gc.sitio.core.Servicios.Implementacion
 				return new();
 			}
 
+		}
+
+		public async Task<RespuestaGenerica<RespuestaDto>> ConfirmarPedidoInterno(ConfirmarPedidoInternoRequest request, string token)
+		{
+			try
+			{
+				var helper = new HelperAPI();
+				var client = helper.InicializaCliente(request, token, out StringContent contentData);
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{PI_Confirmar}";
+
+				using var response = await client.PostAsync(link, contentData);
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					var stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+					}
+
+					var apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+					if (apiResponse == null || apiResponse.Data == null)
+					{
+						return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+					}
+					var resp = apiResponse.Data;
+					if (resp.resultado == 0)
+					{
+						return new RespuestaGenerica<RespuestaDto>
+						{
+							Ok = true,
+							Mensaje = "OK",
+							Entidad = apiResponse.Data
+						};
+					}
+					else if (resp.resultado > 0)
+					{
+						return new RespuestaGenerica<RespuestaDto>
+						{
+							Ok = false,
+							EsWarn = true,
+							EsError = false,
+							Mensaje = resp.resultado_msj,
+							Entidad = apiResponse.Data
+						};
+					}
+					else
+					{
+						return new RespuestaGenerica<RespuestaDto>
+						{
+							Ok = false,
+							EsWarn = false,
+							EsError = true,
+							Mensaje = resp.resultado_msj,
+							Entidad = apiResponse.Data
+						};
+					}
+				}
+				else
+				{
+					var msg = await ReadApiErrorAsync(response);
+					_logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+					return new() { Ok = false, Mensaje = msg };
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+				return new() { Ok = false, Mensaje = "Error" };
+			}
 		}
 	}
 }

@@ -70,5 +70,6 @@ namespace gc.infraestructura.Enumeraciones
         R062_Pedido_De_Cliente = 62,
 		R063_Orden_De_Reparto_Hoja_De_Ruta = 63,
 		R064_Orden_De_Reparto_Hoja_De_Producto = 64,
+        R065_Pedido_Interno = 65,
 	}
 }
