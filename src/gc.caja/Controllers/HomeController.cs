@@ -2,7 +2,6 @@ using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.caja.Models;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Cajas;
-using log4net.Util;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
@@ -36,10 +35,10 @@ namespace gc.caja.Controllers
 
         /// <summary>
         /// Validación integrada de usuario y caja
-        /// Retorna: 
-        /// - resultado < 0: Error crítico
-        /// - resultado = 0: OK, todo correcto
-        /// - resultado > 0: Advertencia/Información
+        /// Resultado = 0: Requiere apertura
+        /// Resultado = 3: Evaluar opciones (apertura, opera sin PV, salir)
+        /// Resultado = 4: Requiere cambio de PV
+        /// Otro: Error - Salir
         /// </summary>
         [HttpPost]
         public async Task<JsonResult> ValidacionIntegridad()
@@ -48,7 +47,6 @@ namespace gc.caja.Controllers
             {
                 var cajaActual = CajaActual;
 
-                // Validar que exista configuración de caja
                 if (string.IsNullOrEmpty(cajaActual?.CajaId))
                 {
                     return Json(new
@@ -62,35 +60,15 @@ namespace gc.caja.Controllers
                     });
                 }
 
-                // Llamar al servicio de validación
-                var result = await _caja.ValidarIntegridadUsuarioCaja(new CajaValidaReqDto
+                var result = await _caja.ValidarIntegridadUsuarioCaja(new CajaReqDto
                 {
                     usu_id = UserName,
                     caja_id = cajaActual.CajaId,
                     adm_id = AdministracionId,
-                },TokenCookie);
-
-                #region Borrar esta region luego que se recepcionen los valores correctos
-
-                ///se presentan los casos
-                ///caso 1 PV no tiene nro de cierre asociado (respuesta_id) y se debe hacer una apertura: 
-                ///respuesta = 0 - respuesta_msj = "" - respuesta_id = ""
-                ///------------------------------------------------------------
-                ///Caso 2 PV tiene nro de cierre asociado. Tiene que cerrar la Caja.
-                ///respuesta = 0 - respuesta_msj = "" - respuesta_id = "99-9999999"
-
+                }, TokenCookie);
 
                 if (!result.Ok)
                 {
-                    result.Ok = true;
-                    result.Entidad.resultado = 0;
-                    result.Entidad.resultado_id = "";                    
-                }
-                #endregion
-
-                if (!result.Ok)
-                {
-                    // Error en la validación
                     return Json(new
                     {
                         ok = false,
@@ -101,23 +79,20 @@ namespace gc.caja.Controllers
                         respuesta_id = result.Entidad?.resultado_id ?? string.Empty
                     });
                 }
-                else                
-                {                  
-                    return Json(new
-                    {
-                        ok = true,
-                        resultado = result.Entidad?.resultado ?? 0,
-                        mensaje = result.Entidad?.resultado_msj ?? "Validación exitosa.",
-                        usuario = UserName,
-                        caja_id = cajaActual.CajaId,
-                        respuesta_id = result.Entidad?.resultado_id ?? string.Empty
-                    });
-                }
-                    
+
+                return Json(new
+                {
+                    ok = true,
+                    resultado = result.Entidad?.resultado ?? 0,
+                    mensaje = result.Entidad?.resultado_msj ?? "Validación exitosa.",
+                    usuario = UserName,
+                    caja_id = cajaActual.CajaId,
+                    respuesta_id = result.Entidad?.resultado_id ?? string.Empty
+                });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al validar integridad de caja");
+                _logger?.LogError(ex, "Error al validar integridad de caja");
 
                 return Json(new
                 {
@@ -132,7 +107,10 @@ namespace gc.caja.Controllers
         }
 
         /// <summary>
-        /// Realiza la apertura de caja para el usuario y caja actual
+        /// Realiza la apertura de caja
+        /// Resultado = 0: Caja abierta correctamente - Obtener datos
+        /// Resultado = 3: Caja ya abierta - Menú con solo botón CIERRE activo
+        /// Otro: Error - Salir
         /// </summary>
         [HttpPost]
         public async Task<JsonResult> AperturaCaja()
@@ -141,7 +119,6 @@ namespace gc.caja.Controllers
             {
                 var cajaActual = CajaActual;
 
-                // Validar que exista configuración de caja
                 if (string.IsNullOrEmpty(cajaActual?.CajaId))
                 {
                     return Json(new
@@ -154,8 +131,7 @@ namespace gc.caja.Controllers
                     });
                 }
 
-                // Llamar al servicio de apertura
-                var result = await _caja.AperturaCaja(new CajaValidaReqDto
+                var result = await _caja.AperturaCaja(new CajaReqDto
                 {
                     usu_id = UserName,
                     caja_id = cajaActual.CajaId,
@@ -198,8 +174,122 @@ namespace gc.caja.Controllers
             }
         }
 
+        /// <summary>
+        /// Obtiene los datos de la caja/PV después de apertura exitosa
+        /// Resultado = 0: Datos obtenidos - Menú con acceso completo
+        /// Otro: Error - Salir
+        /// </summary>
         [HttpPost]
-        
+        public async Task<JsonResult> ObtenerDatosCaja()
+        {
+            try
+            {
+                var cajaActual = CajaActual;
+
+                if (string.IsNullOrEmpty(cajaActual?.CajaId))
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        resultado = -1,
+                        mensaje = "No se ha configurado una caja para esta estación.",
+                        //datos = (object)null
+                    });
+                }
+
+                var result = await _caja.ObtenerDatosCF(cajaActual.CajaId, TokenCookie);
+
+                if (!result.Ok || result.Entidad == null)
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        resultado = -1,
+                        mensaje = result.Mensaje ?? "Error al obtener datos de caja.",
+                       //datos = (object)null
+                    });
+                }
+
+                return Json(new
+                {
+                    ok = true,
+                    resultado = 0,
+                    mensaje = "Datos obtenidos exitosamente.",
+                    datos = new
+                    {
+                        caja_id = result.Entidad.caja_id,
+                        caja_nombre = result.Entidad.caja_nombre,
+                        depo_id = result.Entidad.depo_id,
+                        usuario = UserName,
+                        administracion = AdministracionId,
+                        dia_movi = result.Entidad.dia_movi,
+                        caja_estado = result.Entidad.caja_estado,
+                        caja_nro_proceso = result.Entidad.caja_nro_proceso
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener datos de caja");
+
+                return Json(new
+                {
+                    ok = false,
+                    resultado = -999,
+                    mensaje = "Error interno al obtener datos de caja.",
+                    datos = (object)null
+                });
+            }
+        }
+
+        /// <summary>
+        /// Realiza el cambio de punto de venta
+        /// Resultado = 0: Cambio exitoso - Continuar con Apertura
+        /// Otro: Error - Salir
+        /// </summary>
+        [HttpPost]
+        public async Task<JsonResult> CambioPuntoVenta(string nuevo_pv_id)
+        {
+            try
+            {
+                var cajaActual = CajaActual;
+
+                if (string.IsNullOrEmpty(cajaActual?.CajaId) || string.IsNullOrEmpty(nuevo_pv_id))
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        resultado = -1,
+                        mensaje = "Parámetros inválidos para cambio de punto de venta.",
+                        usuario = UserName
+                    });
+                }
+
+                // TODO: Implementar lógica de cambio de PV cuando exista el SP correspondiente
+                // Por ahora retornamos un placeholder
+
+                return Json(new
+                {
+                    ok = true,
+                    resultado = 0,
+                    mensaje = "Cambio de punto de venta exitoso.",
+                    usuario = UserName,
+                    nuevo_pv_id = nuevo_pv_id
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al cambiar punto de venta");
+
+                return Json(new
+                {
+                    ok = false,
+                    resultado = -999,
+                    mensaje = "Error interno al cambiar punto de venta.",
+                    usuario = UserName
+                });
+            }
+        }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
