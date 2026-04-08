@@ -558,7 +558,7 @@ function normalizarFechaInput(el) {
 
 function HandlerActualizarTablaPostOCAuto() {
 	AbrirWaiting("Actualizando vista de la tabla...")
-	var datos = {};
+	var datos = { tipo: tipoDeOperacion };
 	PostGenHtml(datos, recargarGrillaUrl, function (obj) {
 		$('#modalFiltroCompraAuto').modal('hide');
 		$("#divListaProducto").html(obj);
@@ -1227,12 +1227,12 @@ function finalizarInicializacionGridListaProductos() {
 }
 
 function ActualizarListaProductos(row, campoActual) {
-	AbrirWaiting();
 	var tipo = tipoDeOperacion;
 	var pId = row.data('id');
 	var tipoCarga = "M";
 	var bultos = $(campoActual).val();
 	var datos = { tipo, pId, tipoCarga, bultos }
+	AbrirWaiting(`Actualizando producto: ${pId}`);
 	PostGen(datos, CargaPedidoOCPIURL, function (o) {
 		if (o.error === true) {
 			CerrarWaiting();

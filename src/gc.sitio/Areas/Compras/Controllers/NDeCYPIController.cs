@@ -2,7 +2,6 @@
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
-using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Request;
@@ -10,17 +9,12 @@ using gc.infraestructura.Dtos.Almacen.Response;
 using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
-using gc.infraestructura.Dtos.Productos.Ofertas;
-using gc.infraestructura.Dtos.Productos.Pedidos;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Compras.Models;
-//using gc.sitio.Areas.Compras.Models.NDeCYPI;
-using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
-using iTextSharp.text.pdf.codec.wmf;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
@@ -542,12 +536,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return Json(rubros);
 		}
 
-		public IActionResult RecargarGrilla()
+		public IActionResult RecargarGrilla(string tipo)
 		{
-			var model = new GridCoreSmart<ProductoNCPIDto>();
+			var model = new BuscarProductosOCPI2Model();
 			try
 			{
-				model = ObtenerGridCoreSmart<ProductoNCPIDto>(ListaProductoNCPI);
+				model.Tipo = tipo;
+				model.ListaDatosProductos = ObtenerGridCoreSmart<ProductoNCPIDto>(ListaProductoNCPI);
 				return PartialView("_grillaProductos", model);
 			}
 			catch (Exception ex)
@@ -691,7 +686,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					var listaTemp = ListaProductoNCPI;
 					foreach (var item in respuesta)
 					{
-						ActualizarProductos(item, listaTemp, "A");
+						ActualizarProductos(item, listaTemp, request.tipo, "A");
 					}
 					ListaProductoNCPI = listaTemp;
 					return Json(new { error = false, warn = false, msg = "" });
@@ -808,11 +803,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 		/// <param name="prod">Producto a actualizar</param>
 		/// <param name="listaT">Lista de productos obtenidos en base a los filtros de busquedas, reservados en sesión</param>
 		/// <param name="pedidoTipo">Tipo de actualización: M -> Manual; A -> Automático</param>
-		private void ActualizarProductos(ProductoNCPI_AutoDto prod, List<ProductoNCPIDto> listaT, string pedidoTipo = "M")
+		private void ActualizarProductos(ProductoNCPI_AutoDto prod, List<ProductoNCPIDto> listaT, string tipo, string pedidoTipo = "M")
 		{
 			if (prod == null)
 				return;
-			var req = new NCPICargaPedidoRequest() { adm_id = AdministracionId, usu_id = UserName, tipo = "OC", pId = prod.p_id, tipoCarga = "A", bultos = prod.auto_bulto };
+			var req = new NCPICargaPedidoRequest() { adm_id = AdministracionId, usu_id = UserName, tipo = tipo, pId = prod.p_id, tipoCarga = "A", bultos = prod.auto_bulto };
 			var respuesta = CargaPedidoOCPI(req);
 			if (respuesta == null)
 				return;
