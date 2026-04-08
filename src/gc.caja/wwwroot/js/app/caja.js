@@ -9,7 +9,10 @@ $(function () {
     let modalCambiaPV = null;
 
     // Variable global para control de acceso al menú
-    let nivelAccesoMenu = 'ninguno'; // 'ninguno', 'parcial', 'solo-cierre', 'completo'
+    let nivelAccesoMenu = 'ninguno';
+
+    // Variable global para control de cierre intencional del modal Cambio PV
+    let cierreIntencional = false;
 
     // ---------------------------------------------------------
     // FUNCIONES HELPER PARA GESTIÓN DE MODALES
@@ -75,7 +78,7 @@ $(function () {
     $("#btnBuenoApertura").on("click", function () {
         const modal = getModalValidacion();
         if (modal) modal.hide();
-        
+
         // Pequeña pausa para que el modal se cierre antes de procesar
         setTimeout(() => {
             procesarAperturaCaja();
@@ -88,7 +91,7 @@ $(function () {
     $("#btnOperaSinCaja").on("click", function () {
         const modal = getModalValidacion();
         if (modal) modal.hide();
-        
+
         nivelAccesoMenu = 'parcial';
         setTimeout(() => {
             configurarMenuSegunAcceso();
@@ -114,12 +117,16 @@ $(function () {
      * Botón: CONFIRMAR CAMBIO PV
      */
     $("#btnConfirmaCambioPV").on("click", function () {
-        const nuevoPvId = $("#inputNuevoPV").val();
-        if (!nuevoPvId) {
-            mostrarMensajeError("Debe ingresar un punto de venta válido.");
-            return;
-        }
-        procesarCambioPV(nuevoPvId);
+        cierreIntencional = true;
+        
+        // Cerrar modal ANTES de procesar
+        const modal = getModalCambiaPV();
+        if (modal) modal.hide();
+        
+        // Esperar que el modal se cierre completamente
+        setTimeout(() => {
+            procesarCambioPV();
+        }, 300);
     });
 
     /**
@@ -128,7 +135,48 @@ $(function () {
     $("#btnCancelaCambiaPV").on("click", function () {
         const modal = getModalCambiaPV();
         if (modal) modal.hide();
-        window.location.href = logout;
+    });
+
+    /**
+     * Event listener para prevenir cierre accidental del modal
+     */
+    $('#modalCambiaPV').on('hide.bs.modal', function (e) {
+        if (!cierreIntencional) {
+            e.preventDefault();
+
+            AbrirMensaje(
+                "Confirmar Salida",
+                "¿Está seguro de que desea cancelar el cambio de punto de venta?<br><br>" +
+                "<small class='text-muted'><i class='bx bx-info-circle'></i> Si cancela, será redirigido al inicio de sesión.</small>",
+                function (respuesta) {
+                    $("#msjModal").modal("hide");
+
+                    if (respuesta === "SI") {
+                        cierreIntencional = true;
+                        setTimeout(() => {
+                            $('#modalCambiaPV').modal('hide');
+                            setTimeout(() => {
+                                window.location.href = logout;
+                            }, 300);
+                        }, 300);
+                    }
+                },
+                true,
+                ["Sí, Salir", "No, Continuar"],
+                "warn!",
+                null
+            );
+        } else {
+            cierreIntencional = false;
+        }
+    });
+
+    /**
+     * Preparar modal al mostrarse
+     */
+    $('#modalCambiaPV').on('shown.bs.modal', function () {
+        cierreIntencional = false;
+        $("#lblUsuarioPV").text($("#lblCajero").text() || "---");
     });
 
     // ---------------------------------------------------------
@@ -146,7 +194,9 @@ $(function () {
         }, 300);
     });
 
-    // Manejadores de botones del menú
+    /**
+     * Manejadores de botones del menú
+     */
     $('.menu-btn-enhanced').on('click', function () {
         const accion = $(this).data('action');
         manejarAccionMenu(accion);
@@ -196,22 +246,22 @@ $(function () {
             // ✅ CORRECTO: Procede automáticamente con apertura
             console.log("✅ Validación OK - Procediendo automáticamente con apertura");
             mostrarLoader("Procediendo a realizar apertura de caja...<br><small class='text-muted'>Inicializando punto de venta</small>");
-            
+
             // Pequeña pausa visual para que el usuario vea el mensaje
             setTimeout(() => {
                 procesarAperturaCaja();
             }, 800);
-        } 
+        }
         else if (resultado === 3) {
             // ✅ CORRECTO: Muestra modal para que usuario evalúe opciones
             console.log("⚠️ Validación resultado=3 - Mostrando opciones al usuario");
             mostrarModalValidacionConOpciones(response.mensaje);
-        } 
+        }
         else if (resultado === 4) {
             // Cambiar punto de venta
             console.log("🔄 Validación resultado=4 - Cambiar PV");
             mostrarModalCambioPV(response.mensaje);
-        } 
+        }
         else if (resultado < 0) {
             // Error crítico
             console.error("❌ Error crítico en validación");
@@ -267,27 +317,27 @@ $(function () {
                     const modal = getModalValidacion();
                     if (modal) modal.hide();
                     obtenerDatosCaja();
-                } 
+                }
                 else if (resultado === 3) {
                     // ✅ CORREGIDO: Caja ya abierta - Cerrar modal ANTES de mostrar mensaje
                     console.log("⚠️ Caja ya abierta - Menú solo cierre");
                     const modal = getModalValidacion();
-                    
+
                     // ✅ PASO 1: Cerrar el modal de validación
                     if (modal) modal.hide();
-                    
+
                     nivelAccesoMenu = 'solo-cierre';
-                    
+
                     // ✅ PASO 2: Esperar que el modal se cierre COMPLETAMENTE
                     setTimeout(() => {
                         // ✅ PASO 3: Mostrar mensaje informativo
                         AbrirMensaje(
-                            "Atención", 
-                            response.mensaje, 
+                            "Atención",
+                            response.mensaje,
                             function () {
                                 // ✅ PASO 4: Cerrar mensaje
                                 $("#msjModal").modal("hide");
-                                
+
                                 // ✅ PASO 5: Esperar que el mensaje se cierre
                                 setTimeout(() => {
                                     // ✅ PASO 6: Configurar y mostrar menú
@@ -296,13 +346,13 @@ $(function () {
                                     if (menuModal) menuModal.show();
                                 }, 400); // Esperar cierre completo del mensaje
                             },
-                            false, 
-                            ["Continuar"], 
-                            "info!", 
+                            false,
+                            ["Continuar"],
+                            "info!",
                             null
                         );
                     }, 500); // ✅ Esperar cierre completo del modal de validación
-                } 
+                }
                 else {
                     // Error en apertura - Salir
                     console.error("❌ Error en apertura de caja");
@@ -343,7 +393,7 @@ $(function () {
                 console.log("✅ Datos de caja obtenidos - Menú completo");
                 console.log("📊 Datos:", response.datos);
                 nivelAccesoMenu = 'completo';
-                
+
                 setTimeout(() => {
                     configurarMenuSegunAcceso();
                     const menuModal = getModalMenu();
@@ -360,31 +410,62 @@ $(function () {
     /**
      * PASO ALTERNATIVO: Procesa el cambio de punto de venta
      * resultado = 0: Cambio exitoso - Continuar con apertura
+     * resultado = -1: MOCK - Funcionalidad no implementada
      * otro: Error - Salir
      */
-    function procesarCambioPV(nuevoPvId) {
-        let $btn = $("#btnConfirmaCambioPV");
-        let originalText = $btn.html();
-
-        $btn.prop("disabled", true).html("<i class='bx bx-loader-alt bx-spin'></i> Cambiando PV...");
+    function procesarCambioPV() {
+        // Mostrar loader inmediatamente (modal ya está cerrado)
+        mostrarLoader("Procesando cambio de punto de venta...<br><small class='text-muted'>Por favor espere</small>");
 
         $.ajax({
             url: CambioPVUrl,
             type: 'POST',
             dataType: 'json',
-            data: { nuevo_pv_id: nuevoPvId },
+            data: { nuevo_pv_id: "" },
+            timeout: 30000,
             success: function (response) {
-                $btn.prop("disabled", false).html(originalText);
+                ocultarLoader();
 
-                if (!response.ok || response.resultado !== 0) {
-                    mostrarErrorYSalir(response.mensaje || "Error al cambiar punto de venta.");
+                // Validar respuesta
+                if (!response.ok) {
+                    // Error controlado (incluye MOCK)
+                    const esMock = response.resultado === -1 && response.mensaje && response.mensaje.includes("MOCK");
+                    
+                    if (esMock) {
+                        // MOCK: Funcionalidad no implementada
+                        console.warn("⚠️ Cambio de PV - MOCK: Funcionalidad no implementada");
+                        
+                        AbrirMensaje(
+                            "Funcionalidad en Desarrollo",
+                            `<div class="text-center">
+                                <i class='bx bx-info-circle text-info' style='font-size: 3rem;'></i>
+                                <p class="mt-3">${response.mensaje}</p>
+                                <hr>
+                                <small class="text-muted">
+                                    <i class='bx bx-user'></i> Usuario: <strong>${response.usuario}</strong><br>
+                                    <i class='bx bx-store'></i> Caja: <strong>${response.caja_id}</strong>
+                                </small>
+                            </div>`,
+                            function () {
+                                $("#msjModal").modal("hide");
+                                setTimeout(() => {
+                                    window.location.href = logout;
+                                }, 300);
+                            },
+                            false,
+                            ["Aceptar"],
+                            "info!",
+                            null
+                        );
+                    } else {
+                        // Error real
+                        mostrarErrorYSalir(response.mensaje || "Error al cambiar punto de venta.");
+                    }
                     return;
                 }
 
-                // Cambio exitoso - Proceder automáticamente con apertura
+                // Cambio exitoso (resultado = 0)
                 console.log("✅ Cambio de PV exitoso - Procediendo con apertura automática");
-                const modal = getModalCambiaPV();
-                if (modal) modal.hide();
                 
                 mostrarLoader("Procediendo a realizar apertura de caja...<br><small class='text-muted'>Nuevo punto de venta configurado</small>");
                 setTimeout(() => {
@@ -392,8 +473,26 @@ $(function () {
                 }, 800);
             },
             error: function (xhr, status, error) {
-                $btn.prop("disabled", false).html(originalText);
-                manejarErrorAjax(xhr, status, error, "cambio de punto de venta");
+                ocultarLoader();
+                
+                let mensajeError = "Error al procesar cambio de punto de venta.";
+                
+                if (status === 'timeout') {
+                    mensajeError = "El proceso de cambio de PV tardó demasiado tiempo. Por favor, contacte al administrador.";
+                } else if (xhr.status === 401) {
+                    mensajeError = "Su sesión ha expirado. Será redirigido al login.";
+                    mostrarErrorYSalir(mensajeError);
+                    setTimeout(() => {
+                        window.location.href = logout;
+                    }, 2000);
+                    return;
+                } else if (xhr.status === 500) {
+                    mensajeError = "Error interno del servidor. Contacte al administrador.";
+                } else if (xhr.responseJSON && xhr.responseJSON.mensaje) {
+                    mensajeError = xhr.responseJSON.mensaje;
+                }
+
+                mostrarErrorYSalir(mensajeError);
             }
         });
     }
@@ -455,10 +554,18 @@ $(function () {
     /**
      * Muestra el modal de cambio de PV (resultado = 4)
      */
-    function mostrarModalCambioPV(mensaje) {
+    function mostrarModalCambioPV(mensaje, nuevoPvId) {
         if (mensaje) {
             $("#mensajeCambioPV").text(mensaje);
         }
+
+        // Mostrar el PV destino si viene del backend
+        if (nuevoPvId) {
+            $("#lblNuevoPV").text(`Punto de Venta: ${nuevoPvId}`);
+        }
+
+        $("#lblUsuarioPV").text($("#lblCajero").text() || "---");
+
         setTimeout(() => {
             const modal = getModalCambiaPV();
             if (modal) modal.show();
@@ -621,7 +728,30 @@ $(function () {
     function abrirModuloDistribucionCobranza() { console.log('📈 Distribución Cobranza...'); }
     function abrirModuloCambioValores() { console.log('🔄 Cambio de Valores...'); }
     function abrirModuloRendiciones() { console.log('📄 Rendiciones...'); }
-    function abrirModuloCierre() { console.log('🔒 Cierre...'); }
+
+    function abrirModuloCierre() {
+        console.log('🔒 Iniciando proceso de cierre de caja...');
+
+        AbrirMensaje(
+            "CONFIRMAR CIERRE DE CAJA",
+            "¿Está seguro de que desea cerrar la caja?<br><br>" +
+            "<strong class='text-danger'>⚠️ Esta acción finalizará su sesión y cerrará la caja.</strong>",
+            function (confirmado) {
+                $("#msjModal").modal("hide");
+
+                if (confirmado === "SI") {
+                    setTimeout(() => {
+                        procesarCierreCaja();
+                    }, 300);
+                }
+            },
+            true,
+            ["Sí, Cerrar Caja", "Cancelar"],
+            "warn!",
+            null
+        );
+    }
+
     function abrirModuloAdministrador() { console.log('🛡️ Administrador...'); }
     function abrirModuloReportesZ() { console.log('📊 Reportes Z...'); }
 
@@ -636,4 +766,212 @@ $(function () {
     function mostrarMensajeNoImplementado(nombreModulo) {
         console.info(`ℹ️ ${nombreModulo} - Módulo en desarrollo`);
     }
+
+    // ---------------------------------------------------------
+    // FUNCIONES: CIERRE DE CAJA
+    // ---------------------------------------------------------
+
+    function procesarCierreCaja() {
+        mostrarLoader("Procesando cierre de caja...<br><small class='text-muted'>Por favor espere, esto puede tardar unos momentos</small>");
+
+        $.ajax({
+            url: CierreCajaUrl,
+            type: 'POST',
+            dataType: 'json',
+            timeout: 120000,
+            success: function (response) {
+                ocultarLoader();
+
+                if (!response.ok) {
+                    mostrarErrorCierre(response.mensaje || "Error al procesar cierre de caja.");
+                    return;
+                }
+
+                const resultado = response.resultado;
+
+                if (resultado === 0) {
+                    console.log("✅ Cierre exitoso");
+                    mostrarResumenCierre(response);
+                } else {
+                    console.error("❌ Error en cierre - Resultado:", resultado);
+                    mostrarErrorCierre(response.mensaje || "No se pudo completar el cierre de caja.");
+                }
+            },
+            error: function (xhr, status, error) {
+                ocultarLoader();
+
+                let mensajeError = "Error al procesar cierre de caja.";
+
+                if (status === 'timeout') {
+                    mensajeError = "El proceso de cierre tardó demasiado tiempo. Por favor, contacte al administrador para verificar el estado de la caja.";
+                } else if (xhr.status === 401) {
+                    mensajeError = "Su sesión ha expirado. Será redirigido al login.";
+                    mostrarErrorCierre(mensajeError);
+                    setTimeout(() => {
+                        window.location.href = logout;
+                    }, 2000);
+                    return;
+                } else if (xhr.status === 500) {
+                    mensajeError = "Error interno del servidor al procesar el cierre. Contacte al administrador.";
+                } else if (xhr.responseJSON && xhr.responseJSON.mensaje) {
+                    mensajeError = xhr.responseJSON.mensaje;
+                }
+
+                mostrarErrorCierre(mensajeError);
+            }
+        });
+    }
+
+    function mostrarResumenCierre(response) {
+        const datos = response.datos || {};
+
+        let tablaResumen = '<div class="table-responsive"><table class="table table-sm table-bordered">';
+
+        for (let clave in datos) {
+            if (datos.hasOwnProperty(clave)) {
+                let valor = datos[clave];
+
+                let nombreCampo = clave
+                    .split('_')
+                    .map(palabra => palabra.charAt(0).toUpperCase() + palabra.slice(1))
+                    .join(' ');
+
+                let valorFormateado = valor;
+
+                if (typeof valor === 'number') {
+                    if (clave.toLowerCase().includes('total') ||
+                        clave.toLowerCase().includes('monto') ||
+                        clave.toLowerCase().includes('importe')) {
+                        valorFormateado = '$ ' + formatearMoneda(valor);
+                    } else {
+                        valorFormateado = valor;
+                    }
+                } else if (valor === null || valor === undefined) {
+                    valorFormateado = '---';
+                }
+
+                let claseDestacada = '';
+                if (clave.toLowerCase().includes('total_general') ||
+                    clave.toLowerCase().includes('resultado')) {
+                    claseDestacada = 'table-active fw-bold';
+                }
+
+                tablaResumen += `
+                    <tr class="${claseDestacada}">
+                        <td class="text-end" style="width: 50%;"><strong>${nombreCampo}:</strong></td>
+                        <td class="text-start" style="width: 50%;">${valorFormateado}</td>
+                    </tr>
+                `;
+            }
+        }
+
+        tablaResumen += '</table></div>';
+
+        const mensajeResumen = `
+            <div class="text-center">
+                <i class='bx bx-check-circle text-success' style='font-size: 3.5rem;'></i>
+                <h4 class="mt-3 mb-3 text-success">✅ Cierre de Caja Exitoso</h4>
+                <p class="text-muted mb-3">${response.mensaje || 'El proceso se completó correctamente'}</p>
+                <hr>
+            </div>
+            ${tablaResumen}
+            <div class="text-center mt-3">
+                <small class="text-muted">
+                    <i class='bx bx-info-circle'></i>
+                    Usuario: <strong>${response.usuario || '---'}</strong> | 
+                    Caja: <strong>${response.caja_id || '---'}</strong>
+                </small>
+            </div>
+        `;
+
+        AbrirMensaje(
+            "RESUMEN DE CIERRE",
+            mensajeResumen,
+            function () {
+                $("#msjModal").modal("hide");
+
+                const menuModal = getModalMenu();
+                if (menuModal) menuModal.hide();
+
+                setTimeout(() => {
+                    console.log("🚪 Redirigiendo al login después del cierre...");
+                    window.location.href = logout;
+                }, 500);
+            },
+            false,
+            ["Salir"],
+            "succ!",
+            null
+        );
+    }
+
+    function mostrarErrorCierre(mensaje) {
+        AbrirMensaje(
+            "ERROR EN CIERRE",
+            `<div class="text-center">
+                <i class='bx bx-error-circle text-danger' style='font-size: 3rem;'></i>
+                <p class="mt-3">${mensaje}</p>
+            </div>`,
+            function () {
+                $("#msjModal").modal("hide");
+            },
+            false,
+            ["Aceptar"],
+            "error!",
+            null
+        );
+    }
+
+    function formatearMoneda(valor) {
+        if (valor === null || valor === undefined || isNaN(valor)) {
+            return '0,00';
+        }
+
+        return new Intl.NumberFormat('es-AR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(valor);
+    }
+
+    // ---------------------------------------------------------
+    // COMPORTAMIENTO MODAL CAMBIO PV (SIMPLIFICADO)
+    // ---------------------------------------------------------
+
+    //const $modalCambiaPV = $('#modalCambiaPV');
+    //cierreIntencional = false;
+
+    //$modalCambiaPV.on('shown.bs.modal', function () {
+    //    cierreIntencional = false;
+    //    $("#lblUsuarioPV").text($("#lblCajero").text() || "---");
+    //});
+
+    //$('#btnCancelaCambiaPV, #btnConfirmaCambioPV').on('click', function () {
+    //    cierreIntencional = true;
+    //});
+
+    //$modalCambiaPV.on('hide.bs.modal', function (e) {
+    //    if (!cierreIntencional) {
+    //        e.preventDefault();
+
+    //        AbrirMensaje(
+    //            "Confirmar Salida",
+    //            "¿Está seguro de que desea cancelar el cambio de punto de venta?<br><br>" +
+    //            "<small class='text-muted'><i class='bx bx-info-circle'></i> Si cancela, será redirigido al inicio de sesión.</small>",
+    //            function (respuesta) {
+    //                $("#msjModal").modal("hide");
+
+    //                if (respuesta === "SI") {
+    //                    cierreIntencional = true;
+    //                    window.location.href = logout;
+    //                }
+    //            },
+    //            true,
+    //            ["Sí, Salir", "No, Continuar"],
+    //            "warn!",
+    //            null
+    //        );
+    //    } else {
+    //        cierreIntencional = false;
+    //    }
+    //});
 });

@@ -67,6 +67,15 @@ namespace gc.caja.Controllers
                     adm_id = AdministracionId,
                 }, TokenCookie);
 
+                #region Mock para que si viene en 0 o 3 ponerlo en 4 para emular el cambio de Puesto de venta
+                //if (result.Ok && result.Entidad != null && (result.Entidad.resultado == 3 || result.Entidad.resultado == 0))
+                //{
+                //    // Solo para pruebas, forzamos a que el resultado sea 0 para simular apertura exitosa
+                //    result.Entidad.resultado = 4;
+                //    result.Entidad.resultado_msj = "Cambio de PV";
+                //}
+                #endregion
+
                 if (!result.Ok)
                 {
                     return Json(new
@@ -77,6 +86,7 @@ namespace gc.caja.Controllers
                         usuario = UserName,
                         caja_id = cajaActual.CajaId,
                         respuesta_id = result.Entidad?.resultado_id ?? string.Empty
+
                     });
                 }
 
@@ -137,6 +147,17 @@ namespace gc.caja.Controllers
                     caja_id = cajaActual.CajaId,
                     adm_id = AdministracionId,
                 }, TokenCookie);
+
+                #region Mock - forzamos si es 3 a que este en 0
+
+                if(result.Ok && result.Entidad != null && result.Entidad.resultado == 3)
+                {
+                    // Solo para pruebas, forzamos a que el resultado sea 0 para simular apertura exitosa
+                    result.Entidad.resultado = 0;
+                    result.Entidad.resultado_msj = "Apertura de caja exitosa (mock).";
+                }
+                #endregion
+
 
                 if (!result.Ok)
                 {
@@ -206,9 +227,13 @@ namespace gc.caja.Controllers
                         ok = false,
                         resultado = -1,
                         mensaje = result.Mensaje ?? "Error al obtener datos de caja.",
-                       //datos = (object)null
+                        //datos = (object)null
                     });
                 }
+
+                //resguardo los datos desde el sp
+                var caja = CajaActual;
+                caja.Caja = result.Entidad;
 
                 return Json(new
                 {
@@ -245,6 +270,7 @@ namespace gc.caja.Controllers
         /// <summary>
         /// Realiza el cambio de punto de venta
         /// Resultado = 0: Cambio exitoso - Continuar con Apertura
+        /// Resultado = -1: Funcionalidad no implementada (MOCK)
         /// Otro: Error - Salir
         /// </summary>
         [HttpPost]
@@ -254,28 +280,64 @@ namespace gc.caja.Controllers
             {
                 var cajaActual = CajaActual;
 
-                if (string.IsNullOrEmpty(cajaActual?.CajaId) || string.IsNullOrEmpty(nuevo_pv_id))
+                // Validación de parámetros
+                if (string.IsNullOrEmpty(cajaActual?.CajaId))
                 {
                     return Json(new
                     {
                         ok = false,
                         resultado = -1,
-                        mensaje = "Parámetros inválidos para cambio de punto de venta.",
-                        usuario = UserName
+                        mensaje = "No se ha configurado una caja para esta estación.",
+                        usuario = UserName,
+                        caja_id = string.Empty
                     });
                 }
 
-                // TODO: Implementar lógica de cambio de PV cuando exista el SP correspondiente
-                // Por ahora retornamos un placeholder
+                // MOCK: Funcionalidad no implementada aún
+                _logger.LogWarning("CambioPuntoVenta llamado pero funcionalidad no implementada (MOCK). Usuario: {Usuario}, CajaId: {CajaId}, NuevoPvId: {NuevoPvId}", 
+                    UserName, cajaActual.CajaId, nuevo_pv_id ?? "null");
+
+                return Json(new
+                {
+                    ok = false,
+                    resultado = -1,
+                    mensaje = "MOCK - El Cambio de PV aún no puede ser ejecutado (TODO).",
+                    usuario = UserName,
+                    caja_id = cajaActual.CajaId
+                });
+
+                // TODO: Implementar lógica real cuando exista el SP correspondiente
+                /*
+                var result = await _caja.CambiarPuntoVenta(new CajaReqDto
+                {
+                    usu_id = UserName,
+                    caja_id = cajaActual.CajaId,
+                    adm_id = AdministracionId,
+                    nuevo_pv_id = nuevo_pv_id
+                }, TokenCookie);
+
+                if (!result.Ok)
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        resultado = result.Entidad?.resultado ?? -1,
+                        mensaje = result.Mensaje ?? "Error al cambiar punto de venta.",
+                        usuario = UserName,
+                        caja_id = cajaActual.CajaId
+                    });
+                }
 
                 return Json(new
                 {
                     ok = true,
-                    resultado = 0,
-                    mensaje = "Cambio de punto de venta exitoso.",
+                    resultado = result.Entidad?.resultado ?? 0,
+                    mensaje = result.Entidad?.resultado_msj ?? "Cambio de punto de venta exitoso.",
                     usuario = UserName,
+                    caja_id = cajaActual.CajaId,
                     nuevo_pv_id = nuevo_pv_id
                 });
+                */
             }
             catch (Exception ex)
             {
@@ -286,7 +348,80 @@ namespace gc.caja.Controllers
                     ok = false,
                     resultado = -999,
                     mensaje = "Error interno al cambiar punto de venta.",
-                    usuario = UserName
+                    usuario = UserName,
+                    caja_id = CajaActual?.CajaId ?? string.Empty
+                });
+            }
+        }
+
+        /// <summary>
+        /// Realiza el cierre de caja
+        /// Resultado = 0: Cierre exitoso - Mostrar resumen y redirigir a login
+        /// Otro: Error - Mostrar mensaje de error
+        /// </summary>
+        [HttpPost]
+        public async Task<JsonResult> CierreCaja()
+        {
+            try
+            {
+                var cajaActual = CajaActual;
+
+                if (string.IsNullOrEmpty(cajaActual?.CajaId))
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        resultado = -1,
+                        mensaje = "No se ha configurado una caja para esta estación.",
+                        usuario = UserName,
+                        caja_id = string.Empty
+                    });
+                }
+
+                var result = await _caja.CierreCaja(new CajaReqDto
+                {
+                    usu_id = UserName,
+                    caja_id = cajaActual.CajaId,
+                    adm_id = AdministracionId,
+                }, TokenCookie);
+
+                if (!result.Ok)
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        resultado = result.Entidad?.resultado ?? -1,
+                        mensaje = result.Mensaje ?? "Error al realizar cierre de caja.",
+                        usuario = UserName,
+                        caja_id = cajaActual.CajaId
+                    });
+                }
+
+                // Extraer datos del cierre si existen
+                var entidad = result.Entidad;
+                
+                return Json(new
+                {
+                    ok = true,
+                    resultado = entidad?.resultado ?? 0,
+                    mensaje = entidad?.resultado_msj ?? "Cierre de caja exitoso.",
+                    usuario = UserName,
+                    caja_id = cajaActual.CajaId,
+                    // Datos adicionales del cierre (estructura flexible)
+                    datos = entidad
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al realizar cierre de caja");
+
+                return Json(new
+                {
+                    ok = false,
+                    resultado = -999,
+                    mensaje = "Error interno al realizar cierre de caja. Por favor, contacte al administrador.",
+                    usuario = UserName,
+                    caja_id = CajaActual?.CajaId ?? string.Empty
                 });
             }
         }

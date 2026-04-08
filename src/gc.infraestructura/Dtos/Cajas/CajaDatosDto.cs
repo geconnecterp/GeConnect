@@ -13,9 +13,9 @@
         public string caja_modalidad { get; set; } = string.Empty;
         public DateTime? caja_apertura { get; set; }
         public DateTime? caja_cierre { get; set; }
-        public int? caja_nro_proceso { get; set; }
-        public int? caja_nro_cierre { get; set; }
-        public int? caja_nro_operacion { get; set; }
+        public string? caja_nro_proceso { get; set; }
+        public string? caja_nro_cierre { get; set; }
+        public string? caja_nro_operacion { get; set; }
         public string caja_activa { get; set; } = string.Empty;
         public string caja_manual { get; set; } = string.Empty;
         public string caja_cae { get; set; } = string.Empty;

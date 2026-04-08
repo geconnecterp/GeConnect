@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.ApplicationModels;
+﻿using gc.infraestructura.Dtos.Cajas;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using System.Diagnostics;
 
 namespace gc.infraestructura.EntidadesComunes.Options
@@ -10,19 +11,21 @@ namespace gc.infraestructura.EntidadesComunes.Options
         public TipoFact Facturacion { get; set; }
         public TipoCnnCF TipoCnnCF { get; set; }
         public string AdmId { get; set; } = string.Empty; //Sucursal
-        public string TipoCanal { get; set; } = string.Empty; //Tipo de Canal Comercial
-        public string LP { get; set; } = string.Empty; //Lista de Precios
-        public bool FactCF { get; set; } //Facturación Consumidor Final
-        public bool FactCR { get; set; } //Factiración Cliente Registrado
-        public bool Cobranza { get; set; }
-        public bool FactOR { get; set; } // Facturacion Ordenes de Reparto
-        public bool CobranzaOR { get; set; }
-        public bool Prefacturas { get; set; }
-        public TipoAPI APIExterna { get; set; }
-        public string NroProceso { get; set; } = string.Empty;  //caja_nro_proceso
-        public string NroCierre { get; set; } = string.Empty; //caja_nro_cierre
-        public string NroOperacion { get; set; } = string.Empty; //caja_nro_operacion
-        public string POSRelac { get; set; } = string.Empty;
+
+        public CajaDatosDto Caja { get; set; } = new();
+        //public string TipoCanal { get; set; } = string.Empty; //Tipo de Canal Comercial
+        //public string LP { get; set; } = string.Empty; //Lista de Precios
+        //public bool FactCF { get; set; } //Facturación Consumidor Final
+        //public bool FactCR { get; set; } //Factiración Cliente Registrado
+        //public bool Cobranza { get; set; }
+        //public bool FactOR { get; set; } // Facturacion Ordenes de Reparto
+        //public bool CobranzaOR { get; set; }
+        //public bool Prefacturas { get; set; }
+        //public TipoAPI APIExterna { get; set; }
+        //public string NroProceso { get; set; } = string.Empty;  //caja_nro_proceso
+        //public string NroCierre { get; set; } = string.Empty; //caja_nro_cierre
+        //public string NroOperacion { get; set; } = string.Empty; //caja_nro_operacion
+        //public string POSRelac { get; set; } = string.Empty;
     }
 
     public enum TipoAPI

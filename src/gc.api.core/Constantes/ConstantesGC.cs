@@ -14,7 +14,7 @@
 			#region CAJA
 			public const string SP_CAJA_VALIDA_INTEGRIDAD = "SPGECO_CAJA_Valida_Ingreso";
 			public const string SP_CAJA_APERTURA = "SPGECO_CAJA_Apertura";
-			public const string SP_CAJA_CIERRE = "SPGECO_CAJA_Cierre";
+			public const string SP_CAJA_CIERRE = "SPGECO_CAJA_Apertura_Cierre";
 			public const string SP_CAJA_BCUENTA = "SPGECO_CAJA_B_CUENTA";
 			public const string SP_CAJA_BCUENTA_D = "SPGECO_CAJA_B_CUENTA_DATOS";
 			public const string SP_CAJA_BPROD_D = "SPGECO_CAJA_B_PRODUCTO_DATOS";
