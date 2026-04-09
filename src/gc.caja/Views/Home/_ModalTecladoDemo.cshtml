@@ -130,24 +130,28 @@
 </div>
 
 <!-- Script específico del modal -->
-<script>
-    $(document).ready(function () {
-        // Limpiar campos del formulario demo
-        $('#btnLimpiarDemo').on('click', function () {
-            $('#formTecladoDemo')[0].reset();
-            console.log('📋 Campos del demo limpiados');
-        });
 
-        // Evento cuando se abre el modal
-        $('#modalTecladoDemo').on('shown.bs.modal', function () {
-            console.log('⌨️ Modal Teclado Demo abierto');
-            // Opcional: hacer foco en el primer campo
-            $('#txtUsuario').focus();
-        });
+@section scripts{
 
-        // Evento cuando se cierra el modal
-        $('#modalTecladoDemo').on('hidden.bs.modal', function () {
-            console.log('⌨️ Modal Teclado Demo cerrado');
+    <script>
+        $(document).ready(function () {
+            // Limpiar campos del formulario demo
+            $('#btnLimpiarDemo').on('click', function () {
+                $('#formTecladoDemo')[0].reset();
+                console.log('📋 Campos del demo limpiados');
+            });
+
+            // Evento cuando se abre el modal
+            $('#modalTecladoDemo').on('shown.bs.modal', function () {
+                console.log('⌨️ Modal Teclado Demo abierto');
+                // Opcional: hacer foco en el primer campo
+                $('#txtUsuario').focus();
+            });
+
+            // Evento cuando se cierra el modal
+            $('#modalTecladoDemo').on('hidden.bs.modal', function () {
+                console.log('⌨️ Modal Teclado Demo cerrado');
+            });
         });
-    });
-</script>
+    </script>
+}

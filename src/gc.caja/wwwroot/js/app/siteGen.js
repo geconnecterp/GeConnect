@@ -27,41 +27,41 @@ $(function () {
     // Añadir estilos específicos si no están ya definidos en el CSS
     if (!$("style#golden-tooltip-styles").length) {
         $("head").append(`
-            <style id="golden-tooltip-styles">
-                .tooltip-golden {
-                    position: absolute;
-                    display: none;
-                    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%);
-                    color: #333;
-                    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
-                    padding: 0.5rem 1rem;
-                    border-radius: 0.25rem;
-                    font-size: 0.875rem;
-                    font-weight: 600;
-                    white-space: nowrap;
-                    max-width: 80vw;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    z-index: 9999;
-                    pointer-events: none;
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-                    border: 1px solid #f5e7c1;
-                }
+                                                    <style id="golden-tooltip-styles">
+                                                        .tooltip-golden {
+                                                            position: absolute;
+                                                            display: none;
+                                                            background: linear-gradient(135deg, #b8860b 0%, #daa520 100%);
+                                                            color: #333;
+                                                            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
+                                                            padding: 0.5rem 1rem;
+                                                            border-radius: 0.25rem;
+                                                            font-size: 0.875rem;
+                                                            font-weight: 600;
+                                                            white-space: nowrap;
+                                                            max-width: 80vw;
+                                                            overflow: hidden;
+                                                            text-overflow: ellipsis;
+                                                            z-index: 9999;
+                                                            pointer-events: none;
+                                                            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                                                            border: 1px solid #f5e7c1;
+                                                        }
                 
-                .tooltip-golden::after {
-                    content: '';
-                    position: absolute;
-                    top: 100%;
-                    left: 50%;
-                    margin-left: -8px;
-                    width: 0;
-                    height: 0;
-                    border-left: 8px solid transparent;
-                    border-right: 8px solid transparent;
-                    border-top: 8px solid #daa520;
-                }
-            </style>
-        `);
+                                                        .tooltip-golden::after {
+                                                            content: '';
+                                                            position: absolute;
+                                                            top: 100%;
+                                                            left: 50%;
+                                                            margin-left: -8px;
+                                                            width: 0;
+                                                            height: 0;
+                                                            border-left: 8px solid transparent;
+                                                            border-right: 8px solid transparent;
+                                                            border-top: 8px solid #daa520;
+                                                        }
+                                                    </style>
+                                                `);
     }
 
     // Variable para almacenar la instancia de Popper
@@ -183,41 +183,46 @@ $(function () {
         }
     });
 
-
-
-
-
-
-    //const mainContent = $("main"); // Ajusta el selector según tu estructura HTML
-
+    // ========================================
+    // GESTIÓN DEL MODAL DE MENSAJES
+    // ========================================
     const modal = $("#msjModal");
     const btnAceptar = $("#btnMensajeAceptar");
+    let elementoAnteriorConFoco = null;
 
     // Gestionar el foco y eliminar aria-hidden al mostrar el modal
     modal.on("show.bs.modal", function () {
-        // Asegúrate de que aria-hidden no esté presente
-        modal.removeAttr("aria-hidden");
-
-        //mainContent.attr("inert", "true"); // Desactiva el contenido principal
+        // Guardar elemento que tenía el foco antes de abrir el modal
+        elementoAnteriorConFoco = document.activeElement;
     });
 
-    // Mover el foco al botón "Aceptar" cuando el modal se abre
+    // Cuando el modal YA está visible, mover foco al botón Aceptar
     modal.on("shown.bs.modal", function () {
-        btnAceptar.trigger("focus");
+        // Mover foco al botón visible más importante
+        const $botonVisible = $("#btnMensajeAceptar:visible, #btnMensajeCancelar:visible").first();
+        if ($botonVisible.length > 0) {
+            $botonVisible.trigger("focus");
+        }
     });
 
-    // Restaurar aria-hidden y el foco al cerrar el modal
+    // Al INICIAR el cierre del modal
     modal.on("hide.bs.modal", function () {
-        // Opcional: Si necesitas ocultar el modal de los lectores de pantalla
-        modal.attr("aria-hidden", "true");
-
-        //mainContent.removeAttr("inert"); // Reactiva el contenido principal
+        // ✅ NO manipular aria-hidden aquí (causa el warning)
     });
 
-    // Restaurar el foco al elemento que activó el modal cuando se cierra
+    // Cuando el modal YA está oculto, restaurar el foco
     modal.on("hidden.bs.modal", function () {
-        const triggerElement = $(document.activeElement);
-        triggerElement.trigger("focus");
+        // Esperar a que Bootstrap limpie completamente el modal
+        setTimeout(() => {
+            if (elementoAnteriorConFoco && typeof elementoAnteriorConFoco.focus === 'function') {
+                try {
+                    elementoAnteriorConFoco.focus();
+                } catch (e) {
+                    console.warn("No se pudo restaurar el foco:", e);
+                }
+            }
+            elementoAnteriorConFoco = null;
+        }, 150); // ✅ Delay crucial para evitar conflictos
     });
 
     //check generico REL01 activando componentes disables
@@ -228,11 +233,8 @@ $(function () {
             $("#Rel01").trigger("focus");
         }
         else {
-
-
             $("#Rel01").prop("disabled", true).val("");
             $("#Rel01List").prop("disabled", true).empty();
-
         }
     });
 
@@ -315,17 +317,8 @@ $(function () {
         }
     });
 
-
     $("#UserPerfilId").on("change", cambiaMenuApp);
 });
-
-//const AbmAction = {
-//    ALTA: 'A',
-//    BAJA: 'B',
-//    MODIFICACION: 'M',
-//    SUBMIT: 'S',
-//    CANCEL: 'C'
-//}
 
 function PostGenHtml(data, path, retorno) {
     PostGen(data, path, retorno, fnError, "HTML");
@@ -492,50 +485,50 @@ function AbrirMensaje(Titulo, Mensaje, CallBack, EsConfirmacion, Botones, Tipo, 
     }
     FunctionCallback = CallBack;
     if (Botones != null) {
-        if (Botones.length == 1) {
+        if (Botones.length === 1) {
             $("#btnMensajeAceptar").text(Botones[0]);
+        } else {
+            if (Botones.length === 2) {
+                $("#btnMensajeAceptar").text(Botones[0]);
+                $("#btnMensajeCancelar").text(Botones[1]);
+            }
+            else {
+                $("#btnMensajeAceptar").text(Botones[0]);
+                $("#btnMensajeAlternativa").text(Botones[1]);
+                $("#btnMensajeCancelar").text(Botones[2]);
+            }
         }
-        if (Botones.length == 2) {
-            $("#btnMensajeAceptar").text(Botones[0]);
-            $("#btnMensajeCancelar").text(Botones[1]);
-        }
-        else {
-            $("#btnMensajeAceptar").text(Botones[0]);
-            $("#btnMensajeAlternativa").text(Botones[1]);
-            $("#btnMensajeCancelar").text(Botones[2]);
-        }
-        if (Botones.length == 0) {
+        if (Botones.length === 0) {
             $("#btnMensajeCancelar").text("Cancelar");
         }
     } else {
         $("#btnMensajeAceptar").text("Aceptar");
         $("#btnMensajeCancelar").text("Cancelar");
     }
-    //$('#msjModal').fadeIn(0);
+
     $("#msjIcono").html("");
-    // Al inicio del switch, antes de aplicar nuevos estilos:
     $("#msjHeader").removeClass("info warn error success");
-    // Aplicar clases según el tipo de mensaje
+
     switch (Tipo) {
         case "info!":
             $("#msjTitulo").prop("class", "text-info");
             $("#msjIcono").html('<i class="bx bx-md bx-spin bx-info-circle text-info"></i>');
-            $("#msjHeader").addClass("info"); // Agregar clase al encabezado
+            $("#msjHeader").addClass("info");
             break;
         case "warn!":
             $("#msjTitulo").prop("class", "text-warning");
             $("#msjIcono").html('<i class="bx bx-md bx-spin bx-error text-warning"></i>');
-            $("#msjHeader").addClass("warn"); // Agregar clase al encabezado
+            $("#msjHeader").addClass("warn");
             break;
         case "error!":
             $("#msjTitulo").prop("class", "text-danger");
             $("#msjIcono").html('<i class="bx bx-md bx-spin bx-hand text-danger"></i>');
-            $("#msjHeader").addClass("error"); // Agregar clase al encabezado
+            $("#msjHeader").addClass("error");
             break;
         case "succ!":
             $("#msjTitulo").prop("class", "text-success");
             $("#msjIcono").html('<i class="bx bx-md bx-spin bx-check text-success"></i>');
-            $("#msjHeader").addClass("success"); // Agregar clase al encabezado (nota: usamos "success", no "succ")
+            $("#msjHeader").addClass("success");
             break;
         default:
             $("#msjIcono").prop("class", "");
@@ -551,99 +544,14 @@ function AbrirMensaje(Titulo, Mensaje, CallBack, EsConfirmacion, Botones, Tipo, 
         $("#btnMensajeCancelar").show();
     }
 
+    // ✅ MOSTRAR EL MODAL
     $('#msjModal').modal('show');
 }
-
-
-//function AbrirMensaje(Titulo, Mensaje, CallBack, EsConfirmacion, Botones, Tipo, CallBackExportar) {
-//    if (EsConfirmacion) {
-//        if (Botones.length > 2) {
-//            $("#btnMensajeAceptar").show();
-//            $("#btnMensajeAlternativa").show();
-//            $("#btnMensajeCancelar").show();
-//        }
-//        else {
-//            $("#btnMensajeAceptar").show();
-//            $("#btnMensajeAlternativa").hide();
-//            $("#btnMensajeCancelar").show();
-//        }
-
-//    } else {
-//        $("#btnMensajeAceptar").show();
-//        $("#btnMensajeAlternativa").hide();
-//        $("#btnMensajeCancelar").hide();
-//    }
-//    if (Mensaje != null) {
-//        $('#msjContenido').html(Mensaje);
-//    } else {
-//        $('#msjContenido').html('Error inesperado, intente de nuevo en unos minutos...');
-//    }
-//    if (Titulo != null) {
-//        $('#msjTitulo').text(Titulo);
-//    } else {
-//        $('#msjTitulo').text('¡Atención!');
-//    }
-//    FunctionCallback = CallBack;
-//    if (Botones != null) {
-//        if (Botones.length == 1) {
-//            $("#btnMensajeAceptar").text(Botones[0]);
-//        }
-//        if (Botones.length == 2) {
-//            $("#btnMensajeAceptar").text(Botones[0]);
-//            $("#btnMensajeCancelar").text(Botones[1]);
-//        }
-//        else {
-//            $("#btnMensajeAceptar").text(Botones[0]);
-//            $("#btnMensajeAlternativa").text(Botones[1]);
-//            $("#btnMensajeCancelar").text(Botones[2]);
-//        }
-//        if (Botones.length == 0) {
-//            $("#btnMensajeCancelar").text("Cancelar");
-//        }
-//    } else {
-//        $("#btnMensajeAceptar").text("Aceptar");
-//        $("#btnMensajeCancelar").text("Cancelar");
-//    }
-//    //$('#msjModal').fadeIn(0);
-//    $("#msjIcono").html("");
-//    switch (Tipo) {
-//        case "info!":
-//            $("#msjTitulo").prop("class", "text-info");
-//            $("#msjIcono").html('<i class="bx bx-md bx-spin bx-info-circle text-info"></i>');
-//            break;
-//        case "warn!":
-//            $("#msjTitulo").prop("class", "text-warning");
-//            $("#msjIcono").html('<i class="bx bx-md bx-spin bx-error text-warning"></i>');
-//            break;
-//        case "error!":
-//            $("#msjTitulo").prop("class", "text-danger");
-//            $("#msjIcono").html('<i class="bx bx-md bx-spin bx-hand text-danger"></i>');
-//            break;
-//        case "succ!":
-//            $("#msjTitulo").prop("class", "text-success");
-//            $("#msjIcono").html('<i class="bx bx-md bx-spin bx-check text-success"></i>');
-//            break;
-//        default:
-//            $("#msjIcono").prop("class", "");
-//            $("#msjIcono").html('');
-//            break;
-//    }
-//    $("#btnMensajeExportar").hide();
-//    if (CallBackExportar != null) {
-//        FunctionCallBackExportar = CallBackExportar;
-//        $("#btnMensajeExportar").show();
-//        $("#btnMensajeAceptar").hide();
-//        $("#btnMensajeCancelar").show();
-//    }
-
-//    $('#msjModal').modal('show');
-//}
 
 //codigo generico para autocomplete 01
 $("#Rel01").autocomplete({
     source: function (request, response) {
-
-        data = { prefix: request.term }; Rel01
+        data = { prefix: request.term };
 
         $.ajax({
             url: autoComRel01Url,
@@ -721,8 +629,6 @@ $("input#Cta_Lista").autocomplete({
     minLength: 3,
     select: function (event, ui) {
         $("#Cta_Id").val(ui.item.id);
-        //var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
-        //$("#Rel01List").append(opc);
         return true;
     }
 });
@@ -734,7 +640,6 @@ function presentaPaginacion(div) {
         cssStyle: "dark-theme",
         currentPage: pagina,
         onPageClick: function (num) {
-            //buscarProductos(num);
             if (funcCallBack !== null) {
                 funcCallBack(num);
             }
@@ -747,10 +652,8 @@ function analizaEnterInput(e) {
     if (e.which == "13") {
         tope = 99999;
         index = -1;
-        //obtengo los inputs dentro del div
         var inputss = $("main :input:not(:disabled)");
         tope = inputss.length;
-        //le el id del input en el que he dado enter
         var cual = $(this).prop("id");
         inputss.each(function (i, item) {
             if ($(item).prop("id") === cual) {
@@ -761,20 +664,9 @@ function analizaEnterInput(e) {
         if (index > -1 && tope > index + 1) {
             inputss[index + 1].focus();
         }
-
-        ////verifico cuantos input habilitados encuentro
-        //var $nextInput = $(this).nextAll("input:not(:disabled)");
-        //if ($nextInput.length>0) {
-        //    $nextInput.first().focus();
-        //    return true;
-        //} else if ($(this).prop("id") === "unid") {
-        //    e.preventDefault();
-        //    $("#btnCargarProd").focus();
-        //}
     }
     return true;
 }
-
 
 function selectReg(x, gridId) {
     $("#" + gridId + " tbody tr").each(function (index) {
@@ -782,7 +674,6 @@ function selectReg(x, gridId) {
         $(this).removeClass("selectedEdit-row");
     });
     $(x).addClass("selected-row");
-
 }
 
 function desactivarGrilla(gridId) {
@@ -795,11 +686,10 @@ function activarGrilla(gridId) {
     const $grid = $("#" + gridId);
     $grid.removeClass("disable-table-rows");
     $grid.closest(".table-wrapper").css("overflow", "auto");
-
 }
 
 function desactivaGrillav2(gridId, esPadre = true) {
-    const $grid = $( gridId);
+    const $grid = $(gridId);
     $grid.addClass("disable-table-rows");
     if (esPadre) {
         $grid.closest(".table-wrapper").css("overflow", "hidden");
@@ -810,7 +700,7 @@ function desactivaGrillav2(gridId, esPadre = true) {
 }
 
 function activaGrillav2(gridId, esPadre = true) {
-    const $grid = $( gridId);
+    const $grid = $(gridId);
     $grid.removeClass("disable-table-rows");
     if (esPadre) {
         $grid.closest(".table-wrapper").css("overflow", "auto");
@@ -820,21 +710,6 @@ function activaGrillav2(gridId, esPadre = true) {
     }
 }
 
-//function desactivarGrillav2(gridId) {
-//    $("#" + gridId).addClass("grid-disabled").closest(".table-wrapper").css("overflow", "hidden");
-//}
-
-//function activarGrillav2(gridId) {
-//    $("#" + gridId).removeClass("grid-disabled").closest(".table-wrapper").css("overflow", "auto");
-//}
-
-
-//== codigo nuevo
-/**
- * Desactiva una grilla (dinámica o estática) y su contenedor
- * @param {string|HTMLElement|jQuery} gridIdentifier - ID de grilla, elemento DOM o selector jQuery
- * @param {string} wrapperClass - Clase del contenedor (opcional, por defecto 'table-wrapper')
- */
 function desactivarGrillav2(gridIdentifier, wrapperClass = 'table-wrapper') {
     const $grid = resolverGrilla(gridIdentifier);
 
@@ -845,7 +720,6 @@ function desactivarGrillav2(gridIdentifier, wrapperClass = 'table-wrapper') {
 
     $grid.addClass("grid-disabled");
 
-    // Buscar el wrapper más cercano con la clase especificada
     const $wrapper = $grid.closest(`.${wrapperClass}`);
     if ($wrapper.length > 0) {
         $wrapper.css("overflow", "hidden");
@@ -854,11 +728,6 @@ function desactivarGrillav2(gridIdentifier, wrapperClass = 'table-wrapper') {
     return true;
 }
 
-/**
- * Activa una grilla (dinámica o estática) y su contenedor
- * @param {string|HTMLElement|jQuery} gridIdentifier - ID de grilla, elemento DOM o selector jQuery
- * @param {string} wrapperClass - Clase del contenedor (opcional, por defecto 'table-wrapper')
- */
 function activarGrillav2(gridIdentifier, wrapperClass = 'table-wrapper') {
     const $grid = resolverGrilla(gridIdentifier);
 
@@ -869,7 +738,6 @@ function activarGrillav2(gridIdentifier, wrapperClass = 'table-wrapper') {
 
     $grid.removeClass("grid-disabled");
 
-    // Buscar el wrapper más cercano con la clase especificada
     const $wrapper = $grid.closest(`.${wrapperClass}`);
     if ($wrapper.length > 0) {
         $wrapper.css("overflow", "auto");
@@ -878,66 +746,47 @@ function activarGrillav2(gridIdentifier, wrapperClass = 'table-wrapper') {
     return true;
 }
 
-/**
- * Resuelve el identificador de grilla a un objeto jQuery
- * Soporta: ID string, elemento DOM, objeto jQuery, selector complejo
- * @param {string|HTMLElement|jQuery} identifier - Identificador de la grilla
- * @returns {jQuery} Objeto jQuery con la grilla encontrada
- */
 function resolverGrilla(identifier) {
-    // Si ya es un objeto jQuery
     if (identifier instanceof jQuery) {
         return identifier;
     }
 
-    // Si es un elemento DOM
     if (identifier instanceof HTMLElement) {
         return $(identifier);
     }
 
-    // Si es un string
     if (typeof identifier === 'string') {
         identifier = identifier.trim();
 
-        // Si está vacío
         if (identifier.length === 0) {
             return $();
         }
 
-        // Si ya es un selector completo (empieza con #, ., [, etc.)
         if (/^[#.\[:]/.test(identifier)) {
             return $(identifier);
         }
 
-        // Si es solo un ID, agregamos el #
         const $byId = $(`#${identifier}`);
         if ($byId.length > 0) {
             return $byId;
         }
 
-        // Intentar como selector de clase
         const $byClass = $(`.${identifier}`);
         if ($byClass.length > 0) {
             return $byClass;
         }
 
-        // Intentar como selector de atributo data-grid
         const $byDataAttr = $(`[data-grid="${identifier}"]`);
         if ($byDataAttr.length > 0) {
             return $byDataAttr;
         }
 
-        // Intentar como selector personalizado
         return $(identifier);
     }
 
-    // Si no es ninguno de los anteriores, retornar jQuery vacío
     return $();
 }
 
-/**
- * Versión compatible con el código legacy (mantiene la firma original)
- */
 function desactivarGrillav1(gridId) {
     const $grid = resolverGrilla(gridId);
 
@@ -951,9 +800,6 @@ function desactivarGrillav1(gridId) {
     return true;
 }
 
-/**
- * Versión compatible con el código legacy (mantiene la firma original)
- */
 function activarGrillav1(gridId) {
     const $grid = resolverGrilla(gridId);
 
@@ -967,59 +813,28 @@ function activarGrillav1(gridId) {
     return true;
 }
 
-//=====================
-
-//mueve registro al top de la grilla
-//se envia el registro seleccionado y la clase que realiza el scroll.
-//puesde ser table-wrapper-200,table-wrapper-300, etc.
-function posicionarRegOnTop(x,classWrapper="") {
-
+function posicionarRegOnTop(x, classWrapper = "") {
     if (classWrapper.trim() == "") {
         classWrapper = ".table-wrapper";
     }
 
-    var $registro = $(x); // El registro seleccionado
-    //var $contenedor = $(".table-wrapper"); // El contenedor desplazable
-    var $contenedor = $(classWrapper); // El contenedor desplazable
-    var $header = $contenedor.find("thead"); // El header fijo de la tabla
+    var $registro = $(x);
+    var $contenedor = $(classWrapper);
+    var $header = $contenedor.find("thead");
 
-    // Calcular la posición del registro relativo al contenedor
-    var registroOffset = $registro.offset().top; // Posición del registro en el documento
-    var contenedorOffset = $contenedor.offset().top; // Posición del contenedor en el documento
-    var scrollActual = $contenedor.scrollTop(); // Posición actual del scroll del contenedor
+    var registroOffset = $registro.offset().top;
+    var contenedorOffset = $contenedor.offset().top;
+    var scrollActual = $contenedor.scrollTop();
 
-    // Obtener la altura del header
-    var headerHeight = $header.outerHeight() || 0; // Si no hay header, usar 0
+    var headerHeight = $header.outerHeight() || 0;
 
-    // Calcular el nuevo scroll para que el registro quede en la parte superior
     var nuevoScroll = scrollActual + (registroOffset - contenedorOffset) - headerHeight;
 
-    // Animar el scroll del contenedor para posicionar el registro en la parte superior
     $contenedor.animate({
         scrollTop: nuevoScroll
     }, 500);
-
-    //rowOffset = 0;
-    //posActScrollTop = 0;
-    //newPosScrollTop = 0
-
-    //posTabla = $(".table-wrapper");
-    ////calculamos la posicion del offset del registro seleccionado
-    //rowOffset = x.position().top;
-    ////posición actual del scroll
-    //posActScrollTop = posTabla.scrollTop();
-    ////calculamos la nueva posición del scroll
-    //newPosScrollTop = rowOffset + posActScrollTop - posTabla.position().top;
-    //posTabla.animate({
-    //    scrollTop: newPosScrollTop
-    //}, 500);
 }
 
-/**
- * ✅ OPTIMIZACIÓN: Versión mejorada que previene reajustes de scroll no deseados
- * @param {jQuery} $registro - El registro seleccionado
- * @param {string} classWrapper - Clase del contenedor (default: ".table-wrapper")
- */
 function posicionarRegOnTopMejorado($registro, classWrapper = ".table-wrapper") {
     if (!$registro || $registro.length === 0) {
         console.warn("⚠️ posicionarRegOnTopMejorado: registro inválido");
@@ -1033,52 +848,22 @@ function posicionarRegOnTopMejorado($registro, classWrapper = ".table-wrapper") 
         return;
     }
 
-    // ✅ Deshabilitar animaciones de scroll temporal
     $contenedor.css('scroll-behavior', 'auto');
 
     const $header = $contenedor.find("thead");
     const headerHeight = $header.outerHeight() || 0;
 
-    // Calcular posición relativa
     const registroOffset = $registro.position().top;
     const scrollActual = $contenedor.scrollTop();
 
-    // ✅ Agregar offset adicional para compensar headers fijos
     const offsetAdicional = 5;
     const nuevoScroll = scrollActual + registroOffset - headerHeight - offsetAdicional;
 
-    // ✅ Scroll instantáneo sin animación para evitar conflictos
     $contenedor.scrollTop(nuevoScroll);
 
-    // ✅ Restaurar comportamiento suave después de un breve delay
     setTimeout(function () {
         $contenedor.css('scroll-behavior', '');
     }, 100);
-}
-
-/**
- * ✅ Mantener función original por compatibilidad
- */
-function posicionarRegOnTop(x, classWrapper = "") {
-    if (classWrapper.trim() === "") {
-        classWrapper = ".table-wrapper";
-    }
-
-    const $registro = $(x);
-    const $contenedor = $(classWrapper);
-    const $header = $contenedor.find("thead");
-
-    const registroOffset = $registro.offset().top;
-    const contenedorOffset = $contenedor.offset().top;
-    const scrollActual = $contenedor.scrollTop();
-    const headerHeight = $header.outerHeight() || 0;
-
-    const nuevoScroll = scrollActual + (registroOffset - contenedorOffset) - headerHeight;
-
-    // ✅ Reducir duración de animación para minimizar conflictos
-    $contenedor.animate({
-        scrollTop: nuevoScroll
-    }, 300);
 }
 
 function cambiaMenuApp() {
@@ -1118,17 +903,16 @@ function cambiaMenuApp() {
 
 function formatoFechaYMD(pFecha) {
     var f = new Date(pFecha);
-    var month = ('0' + (f.getMonth() + 1)).slice(-2); // Asegura que el mes siempre tenga dos dígitos
-    var day = ('0' + f.getDate()).slice(-2); // Asegura que el día siempre tenga dos dígitos
+    var month = ('0' + (f.getMonth() + 1)).slice(-2);
+    var day = ('0' + f.getDate()).slice(-2);
     return f.getFullYear() + '-' + month + '-' + day;
 }
 
 function formatoFecha_ddMMyyyy(pFecha) {
     var f = new Date(pFecha);
-    var month = ('0' + (f.getMonth() + 1)).slice(-2); // Asegura que el mes siempre tenga dos dígitos
-    var day = ('0' + f.getDate()).slice(-2); // Asegura que el día siempre tenga dos dígitos
+    var month = ('0' + (f.getMonth() + 1)).slice(-2);
+    var day = ('0' + f.getDate()).slice(-2);
     return day + "/" + month + "/" + f.getFullYear();
- 
 }
 
 function restarFecha(pFecha, diasRestar) {
@@ -1151,14 +935,6 @@ function hayRegistrosEnTabla(grid) {
     }
 }
 
-/**
- * Carga los datos de un reporte en la posición correspondiente del arreglo.
- * @param {number} numeroReporte - El índice (número de reporte).
- * @param {Object} parametros - Objeto con los parámetros clave-valor del reporte.
- * @param {string} titulo - Título del reporte.
- * @param {string} observacion - Observación del reporte.
- * @param {number} admId - ID de la Sucursal.
- */
 function cargarReporteEnArre(numeroReporte, parametros, titulo, observacion, admId) {
     if (numeroReporte - 1 < 0 || numeroReporte - 1 >= arrRepoParams.length) {
         let msg = "El número de reporte está fuera de rango (0-" + arrRepoParams.length + "). Verifique la identificación del Reporte. El mismo no se ha resguardado. ";
@@ -1193,13 +969,6 @@ function ReporteResetArre() {
     arrRepoParams = new Array(300);
 }
 
-/**
- * Activa o desactiva un componente (input, select, etc.) según el estado de un checkbox.
- * Si el checkbox está marcado, habilita el componente y restaura su estilo visual.
- * Si el checkbox está desmarcado, deshabilita el componente y aplica un estilo de fondo y negrita.
- * @param {string} checkboxId - El ID del checkbox que controla el estado.
- * @param {string} componentSelector - Selector jQuery del componente a activar/desactivar.
- */
 function toggleComponent(checkboxId, componentSelector) {
     try {
         const isChecked = $(`#${checkboxId}`).is(':checked');
@@ -1221,13 +990,6 @@ function toggleComponent(checkboxId, componentSelector) {
     }
 }
 
-/**
-* Convierte un string Base64 a un objeto Blob
-* @param {string} b64Data - Datos en formato Base64
-* @param {string} contentType - Tipo de contenido MIME
-* @param {number} sliceSize - Tamaño de las porciones de datos (opcional)
-* @returns {Blob} - Objeto Blob con los datos
-*/
 function b64toBlob(b64Data, contentType, sliceSize) {
     contentType = contentType || "";
     sliceSize = sliceSize || 512;
@@ -1250,94 +1012,72 @@ function b64toBlob(b64Data, contentType, sliceSize) {
     return new Blob(byteArrays, { type: contentType });
 }
 
-/**
- * Valida que la fecha Desde no sea mayor a la fecha Hasta
- */
 function validarRangoFechas() {
-    // Remover mensaje de error previo
     $("#fechaError").remove();
 
     const fechaDesde = $("input[name='Desde']").val();
     const fechaHasta = $("input[name='Hasta']").val();
 
-    // Solo validar si ambas fechas tienen valor
     if (fechaDesde && fechaHasta) {
         const desde = parseFechaES(fechaDesde);
         const hasta = parseFechaES(fechaHasta);
 
         if (desde && hasta && desde > hasta) {
-            // Agregar mensaje de error después del campo Hasta
             $("input[name='Hasta']").parent().after(
                 `<div id="fechaError" class="text-danger small mt-1">
-                    <i class="bx bx-error-circle"></i> 
-                    La fecha Desde no puede ser mayor a la fecha Hasta
-                </div>`
+                                                            <i class="bx bx-error-circle"></i> 
+                                                            La fecha Desde no puede ser mayor a la fecha Hasta
+                                                        </div>`
             );
 
-            // Cambiar estilo de los campos de fecha para indicar error
             $("input[name='Desde'], input[name='Hasta']").addClass("is-invalid");
         } else {
-            // Quitar estilo de error si las fechas son válidas
             $("input[name='Desde'], input[name='Hasta']").removeClass("is-invalid");
         }
     }
 }
 
 function validarRangoFechasC() {
-    // Remover mensaje de error previo
     $("#fechaError").remove();
 
     const fechaDesde = $("input[name='DesdeFC']").val();
     const fechaHasta = $("input[name='HastaFC']").val();
 
-    // Solo validar si ambas fechas tienen valor
     if (fechaDesde && fechaHasta) {
         const desde = parseFechaES(fechaDesde);
         const hasta = parseFechaES(fechaHasta);
 
         if (desde && hasta && desde > hasta) {
-            // Agregar mensaje de error después del campo Hasta
             $("input[name='HastaFC']").parent().after(
                 `<div id="fechaError" class="text-danger small mt-1">
-                    <i class="bx bx-error-circle"></i> 
-                    La fecha Desde no puede ser mayor a la fecha Hasta
-                </div>`
+                                                            <i class="bx bx-error-circle"></i> 
+                                                            La fecha Desde no puede ser mayor a la fecha Hasta
+                                                        </div>`
             );
 
-            // Cambiar estilo de los campos de fecha para indicar error
             $("input[name='DesdeFC'], input[name='HastaFC']").addClass("is-invalid");
         } else {
-            // Quitar estilo de error si las fechas son válidas
             $("input[name='DesdeFC'], input[name='HastaFC']").removeClass("is-invalid");
         }
     }
 }
 
-/**
- * Parsea una fecha en formato DD/MM/YYYY a objeto Date
- * @param {string} fechaStr - Fecha en formato DD/MM/YYYY
- * @returns {Date|null} Objeto Date o null si el formato es inválido
- */
 function parseFechaES(fechaStr) {
     if (!fechaStr) return null;
 
-    // Diferentes formatos posibles (DD/MM/YYYY o YYYY-MM-DD)
     let fecha;
 
     if (fechaStr.includes('/')) {
-        // Formato DD/MM/YYYY
         const partes = fechaStr.split('/');
         if (partes.length !== 3) return null;
 
         fecha = new Date(parseInt(partes[2]), parseInt(partes[1]) - 1, parseInt(partes[0]));
     } else if (fechaStr.includes('-')) {
-        // Formato YYYY-MM-DD
         fecha = new Date(fechaStr);
     } else {
         return null;
     }
 
-    // Verificar si la fecha es válida
     return isNaN(fecha.getTime()) ? null : fecha;
 }
 
@@ -1374,7 +1114,6 @@ function extraerValoresDeSelect(selectId, fallbackId, checkId) {
     return valores;
 }
 
-
 // ===============================
 //  Task Manager Reutilizable
 // ===============================
@@ -1404,3 +1143,95 @@ window.TaskManager = window.TaskManager || (function () {
 
 })();
 
+function AbrirMensaje(Titulo, Mensaje, CallBack, EsConfirmacion, Botones, Tipo, CallBackExportar) {
+    if (EsConfirmacion) {
+        if (Botones.length > 2) {
+            $("#btnMensajeAceptar").show();
+            $("#btnMensajeAlternativa").show();
+            $("#btnMensajeCancelar").show();
+        }
+        else {
+            $("#btnMensajeAceptar").show();
+            $("#btnMensajeAlternativa").hide();
+            $("#btnMensajeCancelar").show();
+        }
+
+    } else {
+        $("#btnMensajeAceptar").show();
+        $("#btnMensajeAlternativa").hide();
+        $("#btnMensajeCancelar").hide();
+    }
+    if (Mensaje != null) {
+        $('#msjContenido').html(Mensaje);
+    } else {
+        $('#msjContenido').html('Error inesperado, intente de nuevo en unos minutos...');
+    }
+    if (Titulo != null) {
+        $('#msjTitulo').text(Titulo);
+    } else {
+        $('#msjTitulo').text('¡Atención!');
+    }
+    FunctionCallback = CallBack;
+    if (Botones != null) {
+        if (Botones.length === 1) {
+            $("#btnMensajeAceptar").text(Botones[0]);
+        } else {
+            if (Botones.length === 2) {
+                $("#btnMensajeAceptar").text(Botones[0]);
+                $("#btnMensajeCancelar").text(Botones[1]);
+            }
+            else {
+                $("#btnMensajeAceptar").text(Botones[0]);
+                $("#btnMensajeAlternativa").text(Botones[1]);
+                $("#btnMensajeCancelar").text(Botones[2]);
+            }
+        }
+        if (Botones.length === 0) {
+            $("#btnMensajeCancelar").text("Cancelar");
+        }
+    } else {
+        $("#btnMensajeAceptar").text("Aceptar");
+        $("#btnMensajeCancelar").text("Cancelar");
+    }
+
+    $("#msjIcono").html("");
+    $("#msjHeader").removeClass("info warn error success");
+
+    switch (Tipo) {
+        case "info!":
+            $("#msjTitulo").prop("class", "text-info");
+            $("#msjIcono").html('<i class="bx bx-md bx-spin bx-info-circle text-info"></i>');
+            $("#msjHeader").addClass("info");
+            break;
+        case "warn!":
+            $("#msjTitulo").prop("class", "text-warning");
+            $("#msjIcono").html('<i class="bx bx-md bx-spin bx-error text-warning"></i>');
+            $("#msjHeader").addClass("warn");
+            break;
+        case "error!":
+            $("#msjTitulo").prop("class", "text-danger");
+            $("#msjIcono").html('<i class="bx bx-md bx-spin bx-hand text-danger"></i>');
+            $("#msjHeader").addClass("error");
+            break;
+        case "succ!":
+            $("#msjTitulo").prop("class", "text-success");
+            $("#msjIcono").html('<i class="bx bx-md bx-spin bx-check text-success"></i>');
+            $("#msjHeader").addClass("success");
+            break;
+        default:
+            $("#msjIcono").prop("class", "");
+            $("#msjIcono").html('');
+            break;
+    }
+
+    $("#btnMensajeExportar").hide();
+    if (CallBackExportar != null) {
+        FunctionCallBackExportar = CallBackExportar;
+        $("#btnMensajeExportar").show();
+        $("#btnMensajeAceptar").hide();
+        $("#btnMensajeCancelar").show();
+    }
+
+    // ✅ MOSTRAR EL MODAL
+    $('#msjModal').modal('show');
+}
