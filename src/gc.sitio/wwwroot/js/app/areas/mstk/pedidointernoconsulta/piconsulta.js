@@ -73,6 +73,7 @@ function BuscarPedidosInternos(pag = 1) {
 			$("#divDetalle").html(html).collapse("show");
 			$("#divFiltros").collapse("hide");
 			CerrarWaiting();
+			CargarEventosDeTabs();
 			CargarPedidosInternos(filtros, url);
 		});
 
@@ -83,6 +84,54 @@ function BuscarPedidosInternos(pag = 1) {
 	} finally {
 		_pedidoLoading = false;
 	}
+}
+
+function CargarEventosDeTabs() {
+	$(document).off("click", "#btnTabDetalleDePedidoInterno");
+	$(document).on("click", "#btnTabDetalleDePedidoInterno", function () {
+
+		const pi = validarSeleccionAntesDeCambiarTab();
+		if (!pi) return;
+
+		// Llamada AJAX o función que vos tengas
+		cargarDetalleDePedidoInterno(pi.pi_compte, pi.pie_id);
+	});
+
+	$(document).off("click", "#btnTabRtrAsociadas");
+	$(document).on("click", "#btnTabRtrAsociadas", function () {
+
+		const pi = validarSeleccionAntesDeCambiarTab();
+		if (!pi) return;
+
+		// Llamada AJAX o función que vos tengas
+		cargarRtrAsociadas(pi.pi_compte, pi.pie_id);
+	});
+
+}
+
+function cargarDetalleDePedidoInterno(piCompte, pieId) {
+	AbrirWaiting("Cargando detalle de pedido interno...");
+	PostGenHtml({ pi_compte: piCompte, pieId }, detallePedidoInternoUrl, function (html) {
+		CerrarWaiting();
+		$("#divDetalleDePedidoInterno").html(html);
+		ConfigurarEventosSeleccionListaDetalleDePI();
+	});
+}
+
+function ConfigurarEventosSeleccionListaDetalleDePI() {
+	$(document).off("click", "#tbGridPedidoInternoDetalle tbody tr");
+	$(document).on("click", "#tbGridPedidoInternoDetalle tbody tr", function (e) {
+		if (!$(e.target).is("button, a, .btn, i")) {
+			var $this = $(this);
+			var fueSeleccionado = $this.hasClass("selected-row");
+
+			$("#tbGridPedidoInternoDetalle tbody tr").removeClass("selected-row");
+
+			if (!fueSeleccionado) {
+				$this.addClass("selected-row");
+			}
+		}
+	});
 }
 
 function CargarPedidosInternos(filtros, url) {
@@ -329,6 +378,37 @@ function ConfirmarAnulacionDePedidoInternoSeleccionado() {
 		}
 	});
 }
+
+function getPedidoInternoSeleccionado() {
+	const fila = $("#tbGridPedidosInternos tbody tr.selected-row");
+	if (fila.length === 0) return null;
+
+	return {
+		pi_compte: fila.data("pi-compte"),
+		pie_id: fila.data("pie-id")
+	};
+}
+
+function validarSeleccionAntesDeCambiarTab() {
+	const pi = getPedidoInternoSeleccionado();
+	if (!pi) {
+		AbrirMensaje(
+			"ATENCIÓN",
+			"Debe seleccionar un pedido interno de la lista.",
+			function () {
+				$("#msjModal").modal("hide");
+				return true;
+			},
+			false,
+			["Aceptar"],
+			"error!",
+			null
+		);
+		return null;
+	}
+	return pi;
+}
+
 
 function buildQueryFilters(pag) {
 	const usaPeriodo = $("#chkDesdeHasta").is(":checked");

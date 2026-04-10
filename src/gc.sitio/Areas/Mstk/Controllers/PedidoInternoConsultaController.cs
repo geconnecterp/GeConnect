@@ -4,6 +4,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Almacen.Tr;
+using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.DocManager;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
@@ -253,6 +254,30 @@ namespace gc.sitio.Areas.Mstk.Controllers
 			catch (Exception ex)
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar setear el tipo de reporte: {ex.Message}" });
+			}
+		}
+
+		public IActionResult DetallePedidoInterno(string pi_compte)
+		{
+			var model = new PedidoInternoDetalleModel();
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
+				if (string.IsNullOrEmpty(pi_compte))
+					return PartialView("_gridMensaje", CrearRespuestaError("No se ha recibido un identificador de Pedido Interno válido."));
+				
+				var pedido = _productoServicio.PIDetalle(pi_compte, TokenCookie).Result;
+				if (pedido == null)
+					return PartialView("_gridMensaje", CrearRespuestaError("No se encontró el Pedido Interno solicitado."));
+
+				model.DetalleDePedidoInterno = ObtenerGridCoreSmart<PIDetalleDto>(pedido);
+				return PartialView("_partial_pedido_interno_detalle", model);
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error al obtener detalle de Pedido Interno");
+				return PartialView("_gridMensaje", CrearRespuestaError("Error al obtener detalle de Pedido Interno"));
 			}
 		}
 

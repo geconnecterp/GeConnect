@@ -1,6 +1,6 @@
 ﻿namespace gc.infraestructura.Dtos.Almacen.Tr.Transferencia
 {
-	public class PIDetalleDto : Dto
+	public class PIDetalleDto : Dto, IProductoConUnidad
 	{
 		public string pi_compte { get; set; } = string.Empty;
 		public DateTime pi_fecha { get; set; }
@@ -25,5 +25,10 @@
 		public decimal pid_cantidad { get; set; } = 0.000M;
 		public decimal pid_enviado { get; set; } = 0.000M;
 		public decimal pid_stk { get; set; } = 0.000M;
+		public string up_id { get; set; } = string.Empty;
+		public string up_desc { get; set; } = string.Empty;
+		public string up_tipo { get; set; } = string.Empty;
+		public bool PermiteDecimales => up_tipo == "P";
+		public int unidad_pres { get; set; }
 	}
 }

@@ -1,0 +1,73 @@
+﻿@using gc.infraestructura.Helpers
+@model PedidoInternoDetalleModel
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+</style>
+<div class="row gx-2">
+	<div class="col-md-10">
+		<div class="grid-golden">
+			<div class="grid-golden-body p-1">
+				<div id="divOrdenesDeReparto" class="table-responsive table-wrapper-400">
+					<table class="table table-sm table-hover mb-0 table-golden" id="tbGridPedidoInternoDetalle">
+						<thead class="sticky-top table-golden-header-compact">
+							<tr class="header">
+								<th class="text-center th-compact">Código</th>
+								<th class="text-center th-compact">Descripcion</th>
+								<th class="text-center th-compact">Cod. Prov.</th>
+								<th class="text-center th-compact">Unidad Pres.</th>
+								<th class="text-center th-compact">Cant. Pedida</th>
+								<th class="text-center th-compact">Cant. Enviada</th>
+								<th class="text-center th-compact">Diferencia</th>
+							</tr>
+						</thead>
+						<tbody>
+							@if (Model.DetalleDePedidoInterno?.ListaDatos?.Any() == true)
+							{
+								foreach (var item in Model.DetalleDePedidoInterno.ListaDatos)
+								{
+									var dif = item.pid_cantidad - item.pid_enviado;
+									if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+									<tr class="@clase"
+										data-p-id="@item.p_id">
+										<td class="text-center">
+											@item.p_id
+										</td>
+										<td>
+											@item.p_desc
+										</td>
+										<td class="text-center">
+											@item.p_id_prov
+										</td>
+										<td class="text-center">
+											@item.unidad_pres
+										</td>
+										<td class="text-right">
+											@GridHelper.FormatearDato(item.pid_cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)
+										</td>
+										<td class="text-right">
+											@GridHelper.FormatearDato(item.pid_enviado, GridHelper.FormatDato.Monto, item.PermiteDecimales)
+										</td>
+										<td class="text-right">
+											@GridHelper.FormatearDato(dif, GridHelper.FormatDato.Monto, item.PermiteDecimales)
+										</td>
+									</tr>
+								}
+							}
+							else
+							{
+								<tr class="fila-vacia">
+									<td colspan="5" class="text-center text-muted py-2">
+										<i class="bx bx-info-circle me-1"></i>No hay pedidos internos
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
