@@ -23,9 +23,11 @@ using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Productos.Impositivo;
+using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
 using gc.infraestructura.EntidadesComunes.Options;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
+using Org.BouncyCastle.Ocsp;
 using System.Data;
 using System.Diagnostics;
 using System.Linq.Dynamic.Core;
@@ -1839,6 +1841,44 @@ namespace gc.api.core.Servicios
 			};
 			List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return resp.First();
+		}
+
+		public List<PedidoInternoListaDto> PedidosInternosLista(PedidoInternoRequest req)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PI_Lista;
+			var ps = new List<SqlParameter>();
+			if (req.fecha_d != default && req.fecha_h != default)
+			{
+				ps.Add(new SqlParameter("@fecha_d", req.fecha_d));
+				ps.Add(new SqlParameter("@fecha_h", req.fecha_h));
+			}
+
+			if (string.IsNullOrEmpty(req.adm_list))
+			{
+				ps.Add(new SqlParameter("@adm", false));
+			}
+			else
+			{
+				ps.Add(new SqlParameter("@adm", true));
+				ps.Add(new SqlParameter("@adm_list", req.adm_list));
+			}
+
+			if (string.IsNullOrEmpty(req.estado_list))
+			{
+				ps.Add(new SqlParameter("@estado", false));
+			}
+			else
+			{
+				ps.Add(new SqlParameter("@estado", true));
+				ps.Add(new SqlParameter("@estado_list", req.estado_list));
+			}
+
+			ps.Add(new SqlParameter("@registros", req.Registros));
+			ps.Add(new SqlParameter("@pagina", req.Pagina));
+
+			var ordenes = _repository.EjecutarLstSpExt<PedidoInternoListaDto>(sp, ps, true);
+
+			return ordenes;
 		}
 	}
 }

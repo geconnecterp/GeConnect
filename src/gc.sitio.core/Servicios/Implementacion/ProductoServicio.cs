@@ -107,6 +107,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string TR_Validar_Transferencia = "/TRValidarTransferencia";
 		private const string PI_Detalle = "/PIDetalle";
 		private const string PI_Confirmar = "/confirmar-pedido-interno";
+		private const string PI_Lista = "/obtener-pedidos-internos";
 
 		//NCYPI
 		private const string OC_Productos = "/NCPICargarListaDeProductos";
@@ -2852,6 +2853,37 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 				return new() { Ok = false, Mensaje = "Error" };
+			}
+		}
+
+		public async Task<(List<PedidoInternoDto>, MetadataGrid)> PedidosInternosLista(PedidoInternoRequest request, string token)
+		{
+			ApiResponse<List<PedidoInternoDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{PI_Lista}";
+
+			response = await client.PostAsync(link, contentData);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<PedidoInternoDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				return (apiResponse.Data ?? [], apiResponse.Meta ?? new());
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
 			}
 		}
 	}

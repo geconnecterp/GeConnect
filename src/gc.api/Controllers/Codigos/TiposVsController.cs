@@ -55,6 +55,7 @@ namespace gc.api.Controllers.Codigos
 		private readonly IInventarioEstadoServicio _inventarioEstadoServicio;
 		private readonly ITipoInventarioServicio _tipoInventarioServicio;
 		private readonly IPedidoDeClienteEstadoServicio _pedidoDeClienteServicio;
+		private readonly IPedidoInternoEstadoServicio _pedidoInternoEstadoServicio;
 
 		public TiposVsController( IMapper mapper, IUriService uriService, ILogger<TiposVsController> logger, ICondicionAfipServicio condicionAfipServicio,
 								ICondicionIBServicio condicionIBServicio, IDepartamentoServicio departamentoServicio, IFormaDePagoServicio formaDePagoServicio,
@@ -68,7 +69,7 @@ namespace gc.api.Controllers.Codigos
 								ITipoDtoValorizaRprServicio tipoDtoValorizaRprServicio, ITipoOrdenDePagoServicio tipoOrdenDePagoServicio, ITipoTransferenciaServicio tipoTransferenciaServicio,
 								ITipoConciliadoServicio tipoConciliadoServicio, ITipoAnticipoEmpleadoServicio tipoAnticipoEmpleadoServicio, ITipoImpuestoServicio tipoImpuestoServicio,
 								ITipoMovStkServicio tipoMovStkServicio, IInventarioEstadoServicio inventarioEstadoServicio, ITipoInventarioServicio tipoInventarioServicio,
-								IPedidoDeClienteEstadoServicio pedidoDeClienteServicio)
+								IPedidoDeClienteEstadoServicio pedidoDeClienteServicio, IPedidoInternoEstadoServicio pedidoInternoEstadoServicio)
         {
             _mapper = mapper;
             _uriService = uriService;
@@ -108,6 +109,7 @@ namespace gc.api.Controllers.Codigos
 			_inventarioEstadoServicio = inventarioEstadoServicio;
 			_tipoInventarioServicio = tipoInventarioServicio;
 			_pedidoDeClienteServicio = pedidoDeClienteServicio;
+			_pedidoInternoEstadoServicio = pedidoInternoEstadoServicio;
 		}
 
 		[HttpGet]
@@ -611,6 +613,18 @@ namespace gc.api.Controllers.Codigos
 			var lista = _mapper.Map<List<PedidoDeClienteEstadoDto>>(condAfip);
 
 			var response = new ApiResponse<List<PedidoDeClienteEstadoDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetPedidoInternoEstados()
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			List<PedidoInternoEstadoDto> condPIE = _pedidoInternoEstadoServicio.GetPedidoInternoEstados();
+			var lista = _mapper.Map<List<PedidoInternoEstadoDto>>(condPIE);
+
+			var response = new ApiResponse<List<PedidoInternoEstadoDto>>(lista);
 			return Ok(response);
 		}
 	}

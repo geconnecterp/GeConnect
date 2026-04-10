@@ -1640,5 +1640,88 @@ namespace gc.api.Controllers.Almacen
 			var response = new ApiResponse<RespuestaDto>(resultado);
 			return Ok(response);
 		}
+
+		[HttpPost("obtener-pedidos-internos")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<PedidoInternoListaDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public ActionResult<PedidoInternoListaDto> PedidosInternosLista(QueryFilters filtro)
+		{
+			const string msgError = "Error en la invocación de la API - Búsqueda de OR";
+			try
+			{
+				if (filtro == null)
+					return BadRequest("No se recepcionó el filtro de la búsqueda de PI.");
+
+				var request = MapToRequest(filtro);
+				var resultados = _productosSv.PedidosInternosLista(request);
+
+				var response = new ApiResponse<List<PedidoInternoListaDto>>(resultados)
+				{
+					Meta = BuildMetadata(resultados, filtro)
+				};
+
+				return Ok(response);
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, msgError);
+				return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
+			}
+		}
+
+		private static PedidoInternoRequest MapToRequest(QueryFilters filtro)
+		{
+			return new PedidoInternoRequest
+			{
+				Registros = filtro.Registros ?? 0,
+				Pagina = filtro.Pagina ?? 0,
+				fecha_d = filtro.FechaD ?? DateTime.MinValue,
+				fecha_h = filtro.FechaH ?? DateTime.MaxValue,
+				adm_list = ToCsv(filtro.Rel01),
+				estado_list = ToCsv(filtro.Rel02),
+			};
+		}
+
+		private static string? ToCsv(List<string>? values)
+		{
+			if (values == null || values.Count == 0) return null;
+			return string.Join(",", values);
+		}
+
+		private static MetadataGrid? BuildMetadata(List<PedidoInternoListaDto>? lista, QueryFilters filtro)
+		{
+			if (lista == null || lista.Count == 0)
+			{
+				return new MetadataGrid
+				{
+					TotalCount = 0,
+					PageSize = filtro.Registros ?? 0,
+					CurrentPage = filtro.Pagina ?? 0,
+					TotalPages = 0,
+					HasNextPage = false,
+					HasPreviousPage = false,
+					NextPageUrl = null,
+					PreviousPageUrl = null
+				};
+			}
+
+			var reg = lista[0];
+			var pageSize = filtro.Registros ?? 0;
+			var currentPage = filtro.Pagina ?? 0;
+			var totalCount = reg.Total_registros;
+			var totalPages = reg.Total_paginas;
+
+			return new MetadataGrid
+			{
+				TotalCount = totalCount,
+				PageSize = pageSize,
+				CurrentPage = currentPage,
+				TotalPages = totalPages,
+				HasNextPage = currentPage < totalPages,
+				HasPreviousPage = currentPage > 1,
+				NextPageUrl = null,
+				PreviousPageUrl = null
+			};
+		}
 	}
 }
