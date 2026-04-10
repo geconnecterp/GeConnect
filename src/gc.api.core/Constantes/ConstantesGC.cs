@@ -227,6 +227,8 @@
 			public const string SP_PI_CONFIRMAR = "SPGECO_PI_Confirma";
 			public const string SP_PI_Lista = "SPGECO_PI_Lista";
 			public const string SP_PI_Estados = "SPGECO_PI_Estados";
+			public const string SP_PI_Cerrar = "SPGECO_PI_Cerrar";
+			public const string SP_PI_Anular = "SPGECO_PI_Anular";
 
 			#region Financieros
 			public const string SP_F_TR_CONFIRMA = "SPGECO_F_TR_Confirma";

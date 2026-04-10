@@ -106,6 +106,7 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R063_Orden_De_Reparto_Hoja_De_Ruta, new R063_Orden_De_Reparto_Hoja_De_Ruta(uow,ordRepSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R064_Orden_De_Reparto_Hoja_De_Producto, new R064_Orden_De_Reparto_Hoja_De_Producto(uow,ordRepSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R065_Pedido_Interno, new R065_Pedido_Interno(uow,apiProdSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R066_Pedido_Interno_Listado, new R066_Pedido_Interno_Lista(uow,apiProdSv,empresa,ctaSv, logger) },
 			}; 
             _logger = logger;
         }

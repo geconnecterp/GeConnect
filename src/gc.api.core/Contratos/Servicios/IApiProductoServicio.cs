@@ -135,5 +135,6 @@ namespace gc.api.core.Contratos.Servicios
 		List<PedidoInternoPendienteDetalleDto> PIPendienteDetalle(string adm_id, string usu_id);
 		RespuestaDto ConfirmarPedidoInterno(ConfirmarPedidoInternoRequest request);
 		List<PedidoInternoListaDto> PedidosInternosLista(PedidoInternoRequest req);
+		RespuestaDto CambiarEstadoPedidoInterno(PedidoInternoCambiarEstadoRequest request);
 	}
 }

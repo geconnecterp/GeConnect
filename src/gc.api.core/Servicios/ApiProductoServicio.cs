@@ -1880,5 +1880,23 @@ namespace gc.api.core.Servicios
 
 			return ordenes;
 		}
+
+		public RespuestaDto CambiarEstadoPedidoInterno(PedidoInternoCambiarEstadoRequest request)
+		{
+			var sp = "";
+            if (request.Anula)
+                sp = ConstantesGC.StoredProcedures.SP_PI_Anular;
+            else 
+                sp = ConstantesGC.StoredProcedures.SP_PI_Cerrar;
+
+			var ps = new List<SqlParameter>()
+			{
+				new("@usu_id",request.usu_id),
+				new("@adm_id",request.adm_id),
+				new("@pi_compte",request.PiCompte),
+			};
+			List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return resp.First();
+		}
 	}
 }

@@ -1,4 +1,8 @@
-﻿$(function () {
+﻿let _pedidoLoading = false;
+var orCompteSeleccionado = null;
+var oreCompteSeleccionado = null;
+
+$(function () {
 	$("#pagEstado").on("change", function () {
 		var div = $("#divPaginacion");
 		cargaPaginacion();
@@ -58,7 +62,293 @@ function ControlalistaEstadosSelected() {
 	}
 }
 
-function BuscarPedidosInternos(num) {
+function BuscarPedidosInternos(pag = 1) {
+	AbrirWaiting("Inicializando búsqueda...")
+	try {
+		const filtros = buildQueryFilters(pag);
+		const url = buscarPedidosInternosUrl;
+		const urlInitView = inicializarViewUrl;
+
+		PostGenHtml({}, urlInitView, function (html) {
+			$("#divDetalle").html(html).collapse("show");
+			$("#divFiltros").collapse("hide");
+			CerrarWaiting();
+			CargarPedidosInternos(filtros, url);
+		});
+
+
+	} catch (e) {
+		console.error("Error al buscar pedidos internos:", e);
+		$("#divDetalle").html('<div class="alert alert-danger py-2 mb-0">No se pudo obtener la información.</div>').collapse("show");
+	} finally {
+		_pedidoLoading = false;
+	}
+}
+
+function CargarPedidosInternos(filtros, url) {
+	AbrirWaiting("Cargando pedidos internos...");
+	PostGenHtml(filtros, url, function (html) {
+		CerrarWaiting();
+		$("#divPedidosInternos").html(html);
+
+		configurarEventosSeleccionListaPI();
+
+		PostGen({}, buscarMetadataURL, function (obj) {
+			if (obj.error === true) {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			} else {
+				totalRegs = obj.metadata.totalCount;
+				pags = obj.metadata.totalPages;
+				pagRegs = obj.metadata.pageSize;
+				$("#pagEstado").val(true).trigger("change");
+			}
+		});
+	});
+
+}
+
+
+
+function configurarEventosSeleccionListaPI() {
+	$(document).off("click", "#tbGridPedidosInternos tbody tr");
+	$(document).on("click", "#tbGridPedidosInternos tbody tr", function (e) {
+		if (!$(e.target).is("button, a, .btn, i")) {
+			var $this = $(this);
+			var fueSeleccionado = $this.hasClass("selected-row");
+
+			$("#tbGridPedidosInternos tbody tr").removeClass("selected-row");
+
+			if (!fueSeleccionado) {
+				$this.addClass("selected-row");
+				let piCompte = $this.data("pi-compte");
+				let pieId = $this.data("pie-id");
+				piCompteSeleccionado = piCompte;
+				pieCompteSeleccionado = pieId;
+				if (piCompte) {
+					//Poder hacer algo, como por ejemplo, habilitar o no botones dependiendo del estado de la OR
+					ActualizarEstadosDeBotonesEnPI();
+				}
+			}
+		}
+	});
+	$(document).off("click", "#btnCerrarPI");
+	$(document).on("click", "#btnCerrarPI", function () {
+		if (piCompteSeleccionado != "") {
+			AbrirMensaje(
+				'CONFIRMAR CERRAR',
+				"¿Desea confirmar el cierre del pedido interno seleccionado?",
+				function (resp) {
+					if (resp === 'SI') {
+						ConfirmarCierreDePedidoInternoSeleccionado();
+					}
+					$('#msjModal').modal('hide');
+				},
+				true,
+				['Confirmar', 'Cancelar'],
+				'info!',
+				null
+			);
+		}
+		else {
+			AbrirMensaje("ATENCIÓN", "Debe seleccionar un pedido interno para cerrar.", function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+	});
+	$(document).off("click", "#btnAnularPI");
+	$(document).on("click", "#btnAnularPI", function () {
+		if (piCompteSeleccionado != "") {
+			AbrirMensaje(
+				'CONFIRMAR ANULAR',
+				"¿Desea confirmar la anulación del pedido interno seleccionado?",
+				function (resp) {
+					if (resp === 'SI') {
+						ConfirmarAnulacionDePedidoInternoSeleccionado();
+					}
+					$('#msjModal').modal('hide');
+				},
+				true,
+				['Confirmar', 'Cancelar'],
+				'info!',
+				null
+			);
+		}
+		else {
+			AbrirMensaje("ATENCIÓN", "Debe seleccionar un pedido interno para anular.", function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+	});
+	$(document).off("click", "#btnImprimirLista");
+	$(document).on("click", "#btnImprimirLista", function () {
+
+	});
+	$(document).off("click", "#btnImprimirPI");
+	$(document).on("click", "#btnImprimirPI", function () {
+		if (piCompteSeleccionado != "") {
+			var tipoReporte = 1;
+			var data = { tipoReporte };
+			PostGen(data, setearTipoDeReporteUrl, function (obj) {
+				CerrarWaiting();
+				if (obj.error === true) {
+					CerrarWaiting();
+					AbrirMensaje("ATENCIÓN", obj.msg, function () {
+						$("#msjModal").modal("hide");
+						return true;
+					}, false, ["Aceptar"], "error!", null);
+				}
+				else {
+					CerrarWaiting();
+					ImprimirPedidoInterno(piCompteSeleccionado)
+				}
+			});
+		}
+		else {
+			AbrirMensaje("ATENCIÓN", "Debe seleccionar un pedido interno para imprimir.", function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+	});
+}
+
+function ImprimirPedidoInterno(id) {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		let data = { id: id };
+		cargarReporteEnArre(65, data, "PEDIDO INTERNO", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function ActualizarEstadosDeBotonesEnPI() {
+	const estadosPermitidosCerrar = ["R"];
+	const btnCerrarPI = document.getElementById("btnCerrarPI");
+	if (btnCerrarPI) {
+		if (estadosPermitidosCerrar.includes(pieCompteSeleccionado)) {
+			btnCerrarPI.disabled = false;
+			btnCerrarPI.classList.remove("disabled");
+		} else {
+			btnCerrarPI.disabled = true;
+			btnCerrarPI.classList.add("disabled");
+		}
+	}
+
+	const estadosPermitidosAnular = ["P"];
+	const btnAnularPI = document.getElementById("btnAnularPI");
+	if (btnAnularPI) {
+		if (estadosPermitidosAnular.includes(pieCompteSeleccionado)) {
+			btnAnularPI.disabled = false;
+			btnAnularPI.classList.remove("disabled");
+		} else {
+			btnAnularPI.disabled = true;
+			btnAnularPI.classList.add("disabled");
+		}
+	}
+}
+
+function ConfirmarCierreDePedidoInternoSeleccionado() {
+	var data = {
+		PiCompte: piCompteSeleccionado,
+		Cierra: true,
+		Anula: false
+	}
+	AbrirWaiting("Cerrando pedido interno...");
+	PostGen(data, cambiarEstadoPedidoInternoUrl, function (response) {
+		CerrarWaiting();
+		if (response.error === true || response.warn === true) {
+			console.error('❌ Response:', response.mensaje);
+			AbrirMensaje("ATENCIÓN", 'Error al intentar cerrar el PI.: ' + (response.mensaje || 'Error desconocido'), function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			setTimeout(() => {
+				AbrirMensaje(
+					'CONFIRMACIÓN EXITOSA',
+					'Se ha cerrado el pedido interno',
+					function () {
+						$('#msjModal').modal('hide');
+
+						//Actualizar tabla de Ordenes de Reparto
+						const filtros = buildQueryFilters(pagina);
+						const url = buscarPedidosInternosUrl;
+						CargarPedidosInternos(filtros, url);
+					},
+					false,
+					['Aceptar'],
+					'success!',
+					null
+				);
+			}, 200);
+		}
+	});
+}
+
+function ConfirmarAnulacionDePedidoInternoSeleccionado() {
+	var data = {
+		PiCompte: piCompteSeleccionado,
+		Cierra: false,
+		Anula: true
+	}
+	AbrirWaiting("Anulando pedido interno...");
+	PostGen(data, cambiarEstadoPedidoInternoUrl, function (response) {
+		CerrarWaiting();
+		if (response.error === true || response.warn === true) {
+			console.error('❌ Response:', response.mensaje);
+			AbrirMensaje("ATENCIÓN", 'Error al intentar anular el PI.: ' + (response.mensaje || 'Error desconocido'), function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			setTimeout(() => {
+				AbrirMensaje(
+					'CONFIRMACIÓN EXITOSA',
+					'Se ha anulado el pedido interno',
+					function () {
+						$('#msjModal').modal('hide');
+
+						//Actualizar tabla de Ordenes de Reparto
+						const filtros = buildQueryFilters(pagina);
+						const url = buscarPedidosInternosUrl;
+						CargarPedidosInternos(filtros, url);
+					},
+					false,
+					['Aceptar'],
+					'success!',
+					null
+				);
+			}, 200);
+		}
+	});
+}
+
+function buildQueryFilters(pag) {
+	const usaPeriodo = $("#chkDesdeHasta").is(":checked");
+	const fechaD = usaPeriodo ? $("#FechaDesde").val() : null;
+	const fechaH = usaPeriodo ? $("#FechaHasta").val() : null;
+
+	var rel01 = [];
+	$("#SucursalesList").children().each(function (i, item) { rel01.push($(item).val()) });
+
+	var rel02 = [];
+	$("#EstadosList").children().each(function (i, item) { rel02.push($(item).val()) });
+
+	return {
+		Registros: 200,
+		Pagina: pag,
+		FechaD: fechaD || null,
+		FechaH: fechaH || null,
+		Rel01: rel01.length ? rel01 : null,
+		Rel02: rel02.length ? rel02 : null,
+	};
 }
 
 function cargaPaginacion() {
@@ -204,4 +494,9 @@ function ValidarFechasClick() {
 		return;
 	}
 
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
 }

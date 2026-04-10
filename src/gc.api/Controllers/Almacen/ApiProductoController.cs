@@ -1669,6 +1669,19 @@ namespace gc.api.Controllers.Almacen
 			}
 		}
 
+		[HttpPost("cambiar-estado-pedido-interno")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public ActionResult<RespuestaDto> CambiarEstadoPedidoInterno(PedidoInternoCambiarEstadoRequest req)
+		{
+			if (req == null)
+				return BadRequest("No se recepcionaron los valores para el cambio de estado del pedido interno");
+
+			var resultado = _productosSv.CambiarEstadoPedidoInterno(req);
+			var response = new ApiResponse<RespuestaDto>(resultado);
+			return Ok(response);
+		}
+
 		private static PedidoInternoRequest MapToRequest(QueryFilters filtro)
 		{
 			return new PedidoInternoRequest

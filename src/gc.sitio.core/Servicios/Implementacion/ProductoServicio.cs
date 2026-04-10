@@ -19,6 +19,7 @@ using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.General;
 using gc.infraestructura.Dtos.Productos;
+using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
@@ -108,6 +109,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string PI_Detalle = "/PIDetalle";
 		private const string PI_Confirmar = "/confirmar-pedido-interno";
 		private const string PI_Lista = "/obtener-pedidos-internos";
+		private const string PI_Cambiar_Estado = "/cambiar-estado-pedido-interno";
 
 		//NCYPI
 		private const string OC_Productos = "/NCPICargarListaDeProductos";
@@ -2856,34 +2858,117 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
-		public async Task<(List<PedidoInternoDto>, MetadataGrid)> PedidosInternosLista(PedidoInternoRequest request, string token)
+		public async Task<RespuestaGenerica<PedidoInternoListaDto>> PedidosInternosLista(QueryFilters request, string token)
 		{
-			ApiResponse<List<PedidoInternoDto>> apiResponse;
-
-			HelperAPI helper = new();
-			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
-			HttpResponseMessage response;
-
-			var link = $"{_appSettings.RutaBase}{RutaAPI}{PI_Lista}";
-
-			response = await client.PostAsync(link, contentData);
-
-			if (response.StatusCode == HttpStatusCode.OK)
+			try
 			{
-				string stringData = await response.Content.ReadAsStringAsync();
-				if (string.IsNullOrEmpty(stringData))
+				var helper = new HelperAPI();
+				var client = helper.InicializaCliente(request, token, out StringContent contentData);
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{PI_Lista}";
+
+				using var response = await client.PostAsync(link, contentData);
+				if (response.StatusCode == HttpStatusCode.OK)
 				{
-					_logger.LogWarning($"La API devolvió error.");
-					return new();
+					var stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+					}
+
+					var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<PedidoInternoListaDto>>>(stringData);
+					if (apiResponse == null || apiResponse.Data == null)
+					{
+						return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+					}
+
+					return new RespuestaGenerica<PedidoInternoListaDto>
+					{
+						Ok = true,
+						Mensaje = "OK",
+						ListaEntidad = apiResponse.Data,
+						Meta = apiResponse.Meta ?? new()
+					};
 				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<PedidoInternoDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
-				return (apiResponse.Data ?? [], apiResponse.Meta ?? new());
+				else
+				{
+					var msg = await ReadApiErrorAsync(response);
+					_logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+					return new() { Ok = false, Mensaje = msg };
+				}
 			}
-			else
+			catch (Exception ex)
 			{
-				string stringData = await response.Content.ReadAsStringAsync();
-				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-				return new();
+				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+				return new() { Ok = false, Mensaje = "Error al buscar pedidos internos" };
+			}
+		}
+
+		public async Task<RespuestaGenerica<RespuestaDto>> CambiarEstadoPedidoInterno(PedidoInternoCambiarEstadoRequest request, string token)
+		{
+			try
+			{
+				var helper = new HelperAPI();
+				var client = helper.InicializaCliente(request, token, out StringContent contentData);
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{PI_Cambiar_Estado}";
+
+				using var response = await client.PostAsync(link, contentData);
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					var stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+					}
+
+					var apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+					if (apiResponse == null || apiResponse.Data == null)
+					{
+						return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+					}
+					var resp = apiResponse.Data;
+					if (resp.resultado == 0)
+					{
+						return new RespuestaGenerica<RespuestaDto>
+						{
+							Ok = true,
+							Mensaje = "OK",
+							Entidad = apiResponse.Data
+						};
+					}
+					else if (resp.resultado > 0)
+					{
+						return new RespuestaGenerica<RespuestaDto>
+						{
+							Ok = false,
+							EsWarn = true,
+							EsError = false,
+							Mensaje = resp.resultado_msj,
+							Entidad = apiResponse.Data
+						};
+					}
+					else
+					{
+						return new RespuestaGenerica<RespuestaDto>
+						{
+							Ok = false,
+							EsWarn = false,
+							EsError = true,
+							Mensaje = resp.resultado_msj,
+							Entidad = apiResponse.Data
+						};
+					}
+				}
+				else
+				{
+					var msg = await ReadApiErrorAsync(response);
+					_logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+					return new() { Ok = false, Mensaje = msg };
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+				return new() { Ok = false, Mensaje = "Error" };
 			}
 		}
 	}

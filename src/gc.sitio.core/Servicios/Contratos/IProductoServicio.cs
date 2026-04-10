@@ -112,5 +112,7 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaGenerica<RespuestaDto>> ConfirmarCargaPrevia(AbmGenDto req, string tokenCookie);
 		Task<List<PedidoInternoPendienteDetalleDto>> PIPendienteDetalle(string admId, string usuId, string token);
 		Task<RespuestaGenerica<RespuestaDto>> ConfirmarPedidoInterno(ConfirmarPedidoInternoRequest request, string token);
+		Task<RespuestaGenerica<PedidoInternoListaDto>> PedidosInternosLista(QueryFilters request, string token);
+		Task<RespuestaGenerica<RespuestaDto>> CambiarEstadoPedidoInterno(PedidoInternoCambiarEstadoRequest request, string token);
 	}
 }

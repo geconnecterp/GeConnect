@@ -30,10 +30,7 @@
 			@Html.Hidden("pagEstado", false);
 		</div>
 	</div>
-	<div class="collapse" id="divDetalle" style="">
-		<div id="divInventarioReporte">
-		</div>
-	</div>
+	<div class="collapse" id="divDetalle"></div>
 </div>
 
 <div id="modalGestorDocumental"></div>
@@ -47,6 +44,12 @@
 		var search = "";
 		var funcCallBack = "BuscarPedidosInternos";
 		var dataBak = {};
+
+		var inicializarViewUrl = "@Url.Action("InicializarView", "pedidointernoconsulta", new { area = "Mstk" })";
+		var buscarPedidosInternosUrl = "@Url.Action("BuscarPedidosInternos", "pedidointernoconsulta", new { area = "Mstk" })";
+		let buscarMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "pedidointernoconsulta", new { area = "Mstk" })';
+		let cambiarEstadoPedidoInternoUrl = "@Url.Action("CambiarEstadoPedidoInterno", "pedidointernoconsulta", new { area = "Mstk" })";
+		let setearTipoDeReporteUrl = '@Url.Action("SetearTipoDeReporte", "pedidointernoconsulta", new { area = "Mstk" })';
 
 		// Gestor de impresión
 		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';

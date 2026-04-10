@@ -1,7 +1,12 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.api.core.Entidades;
+using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Almacen.Tr;
+using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
 using gc.sitio.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace gc.sitio.Areas.Mstk.Controllers
 {
@@ -13,5 +18,44 @@ namespace gc.sitio.Areas.Mstk.Controllers
 			_setting = options.Value;
 		}
 
+		internal RespuestaGenerica<EntidadBase> CrearRespuestaError(string mensaje)
+		{
+			return new RespuestaGenerica<EntidadBase>
+			{
+				Mensaje = mensaje,
+				Ok = false,
+				EsWarn = false,
+				EsError = true
+			};
+		}
+
+		internal RespuestaGenerica<EntidadBase> CrearRespuestaWarning(string mensaje)
+		{
+			return new RespuestaGenerica<EntidadBase>
+			{
+				Mensaje = mensaje,
+				Ok = false,
+				EsWarn = true,
+				EsError = false
+			};
+		}
+
+		public List<PedidoInternoListaDto> PedidosInternosLista
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("PedidosInternosLista") ?? string.Empty;
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<PedidoInternoListaDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("PedidosInternosLista", json);
+			}
+		}
 	}
 }
