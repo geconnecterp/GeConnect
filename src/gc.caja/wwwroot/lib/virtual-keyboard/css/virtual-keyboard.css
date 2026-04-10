@@ -133,7 +133,7 @@
 .vk-key-enter {
     background: var(--vk-accent);
     color: white;
-    flex: 2;
+    flex: 1; /* Changed from 2 to 1 to align with action column */
     border-color: transparent;
 }
 
@@ -142,7 +142,19 @@
 }
 
 .vk-key-space {
-    flex: 4;
+    flex: 7;
+}
+
+.vk-key-w2 {
+    flex: 2;
+}
+
+.vk-key-w3 {
+    flex: 3;
+}
+
+.vk-key-w1-5 {
+    flex: 1.5;
 }
 
 /* Responsive para móviles muy pequeños */

@@ -3643,3 +3643,370 @@ input, select, textarea, button, checkbox, radio {
 }
 
 /* FIN ESTILOS MODAL CAMBIO DE PV */
+
+/* ESTILOS PARA FULLSCREEN MENU */
+/* ====== MODAL MENÚ FULLSCREEN OPTIMIZADO ====== */
+#modalMenuCaja.modal-fullscreen .modal-content {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    border-radius: 0;
+}
+
+#modalMenuCaja.modal-fullscreen .modal-body {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+#modalMenuCaja.modal-fullscreen .menu-grid-enhanced {
+    max-width: 1800px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Ajustar botones para pantallas grandes */
+@media (min-width: 1400px) {
+    #modalMenuCaja .menu-btn-enhanced {
+        min-height: 140px;
+        padding: 30px 20px;
+        font-size: 1rem;
+    }
+
+        #modalMenuCaja .menu-btn-enhanced i {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+}
+
+@media (min-width: 1920px) {
+    #modalMenuCaja .menu-btn-enhanced {
+        min-height: 160px;
+        padding: 35px 25px;
+        font-size: 1.1rem;
+    }
+
+        #modalMenuCaja .menu-btn-enhanced i {
+            font-size: 3.5rem;
+        }
+}
+
+/* Evitar scroll horizontal en móviles */
+@media (max-width: 576px) {
+    #modalMenuCaja.modal-fullscreen .modal-body {
+        padding: 1rem 0.5rem;
+    }
+}
+/* FIN ESTILO FULLSCREEN MENU*/
+/* ====== MEJORAS ADICIONALES PARA FULLSCREEN (OPCIONAL) ====== */
+
+/* Animación de entrada suave del modal fullscreen */
+#modalMenuCaja.modal-fullscreen.show .modal-content {
+    animation: fadeInScale 0.4s ease-out;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Sombra sutil en el body para dar profundidad */
+#modalMenuCaja.modal-fullscreen .modal-body {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+/* Grid con espaciado dinámico según viewport */
+#modalMenuCaja.modal-fullscreen .menu-row {
+    gap: clamp(15px, 2vw, 30px);
+}
+
+/* Botones con efecto de relieve en pantallas grandes */
+@media (min-width: 1400px) {
+    #modalMenuCaja .menu-btn-enhanced {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.18), inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+        #modalMenuCaja .menu-btn-enhanced:hover {
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.28), inset 0 -2px 4px rgba(0, 0, 0, 0.15);
+        }
+}
+
+/* Ajuste de tamaño de fuente del footer en fullscreen */
+#modalMenuCaja.modal-fullscreen .modal-footer small {
+    font-size: 0.95rem;
+}
+
+/* Header más prominente en fullscreen */
+#modalMenuCaja.modal-fullscreen .modal-header {
+    padding: 1.25rem 2rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#modalMenuCaja.modal-fullscreen .modal-title {
+    font-size: 1.5rem;
+}
+
+/* Badge del PV más grande */
+#modalMenuCaja.modal-fullscreen #lblPV {
+    padding: 10px 18px;
+    font-size: 1rem;
+}
+
+/* Footer con padding aumentado */
+#modalMenuCaja.modal-fullscreen .modal-footer {
+    padding: 1rem 2rem;
+}
+
+/* Optimización para pantallas ultra anchas (>2560px) */
+@media (min-width: 2560px) {
+    #modalMenuCaja.modal-fullscreen .menu-grid-enhanced {
+        max-width: 2200px;
+    }
+
+    #modalMenuCaja .menu-btn-enhanced {
+        min-height: 180px;
+        padding: 40px 30px;
+        font-size: 1.2rem;
+    }
+
+        #modalMenuCaja .menu-btn-enhanced i {
+            font-size: 4rem;
+        }
+}
+
+/* FIN MEJORAS ADICIONALES */
+
+/* ====== ESTILOS ESPECÍFICOS PARA MODAL IDENTIFICAR CLIENTE ====== */
+
+/* Campo de búsqueda destacado */
+#txtBuscarCliente {
+    border: 2px solid var(--bs-golden-primary);
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+}
+
+    #txtBuscarCliente:focus {
+        border-color: var(--bs-golden-secondary);
+        box-shadow: 0 0 0 0.25rem rgba(var(--bs-golden-primary-rgb), 0.25);
+        background-color: #fffef5;
+    }
+
+/* Input group con estilo golden */
+#modalIdentificarCliente .input-group-text.bg-golden {
+    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%);
+    border-color: var(--bs-golden-secondary);
+}
+
+/* Card de datos del cliente oculto por defecto */
+#cardDatosCliente {
+    display: none;
+}
+
+    #cardDatosCliente.show {
+        display: block;
+        animation: fadeInUp 0.4s ease-out;
+    }
+
+/* Alert sin cliente visible por defecto */
+#alertSinCliente {
+    display: block;
+}
+
+    #alertSinCliente.hide {
+        display: none;
+    }
+
+/* Animación de entrada para el card */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Botones de acción rápida con hover mejorado */
+#btnListaPrecios:hover,
+#btnNuevoCliente:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(255, 171, 0, 0.4);
+}
+
+/* Estado disabled del botón SEGUIR */
+#btnSeguirCliente:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Kbd (teclas) con estilo golden */
+#modalIdentificarCliente kbd {
+    background-color: var(--bs-golden-primary);
+    color: white;
+    border-radius: 0.25rem;
+    padding: 0.2rem 0.4rem;
+    font-size: 0.875rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Labels con icono mejorados */
+#modalIdentificarCliente .form-label i {
+    margin-right: 0.25rem;
+}
+
+/* Responsive para modal en pantallas pequeñas */
+@media (max-width: 768px) {
+    #modalIdentificarCliente .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    #btnListaPrecios,
+    #btnNuevoCliente {
+        padding: 1.5rem 1rem !important;
+        font-size: 0.9rem;
+    }
+
+    #btnCancelarCliente,
+    #btnSeguirCliente {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+}
+
+/* FIN ESTILOS MODAL IDENTIFICAR CLIENTE */
+
+/* ====== ESTILOS ESPECÍFICOS PARA MODAL CLIENTE UPDATE ====== */
+
+/* Select mejorado con estilo golden */
+#selTipoDocumento {
+    border: 2px solid var(--bs-golden-primary);
+    background-color: #fffef5;
+}
+
+    #selTipoDocumento:focus {
+        border-color: var(--bs-golden-secondary);
+        box-shadow: 0 0 0 0.25rem rgba(var(--bs-golden-primary-rgb), 0.25);
+        background-color: #fff8dc;
+    }
+
+/* Inputs con validación visual mejorada */
+#modalClienteUpdate .form-control.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+    animation: shakeInput 0.3s ease-in-out;
+}
+
+#modalClienteUpdate .form-control.is-valid {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.15);
+}
+
+/* Animación de error en input */
+@keyframes shakeInput {
+    0%, 100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+/* Input de número de documento destacado */
+#txtNumeroDocumento {
+    letter-spacing: 1px;
+    font-family: 'Courier New', monospace;
+}
+
+/* Alert informativo con icono grande */
+#modalClienteUpdate .alert-warning i.bx-lg {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+/* Labels con iconos mejorados */
+#modalClienteUpdate .form-label i {
+    margin-right: 0.25rem;
+    color: var(--bs-golden-primary);
+}
+
+/* Campos obligatorios destacados */
+#modalClienteUpdate .form-label .text-danger {
+    font-size: 1.2rem;
+    margin-left: 0.25rem;
+}
+
+/* Feedback mejorado */
+#modalClienteUpdate .invalid-feedback {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Botón de acción con estado de procesamiento */
+#btnCargarCliente.processing {
+    pointer-events: none;
+    opacity: 0.7;
+    position: relative;
+}
+
+    #btnCargarCliente.processing::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: 1rem;
+        transform: translateY(-50%);
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid white;
+        border-top: 2px solid transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+@keyframes spin {
+    0% {
+        transform: translateY(-50%) rotate(0deg);
+    }
+
+    100% {
+        transform: translateY(-50%) rotate(360deg);
+    }
+}
+
+/* Responsive para modal en pantallas pequeñas */
+@media (max-width: 768px) {
+    #modalClienteUpdate .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    #modalClienteUpdate .form-control-lg,
+    #modalClienteUpdate .form-select-lg {
+        font-size: 1rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    #btnCancelarClienteUpdate,
+    #btnCargarCliente {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+}
+
+/* FIN ESTILOS MODAL CLIENTE UPDATE */

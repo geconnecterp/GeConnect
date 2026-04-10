@@ -1,0 +1,168 @@
+<!-- Modal Identificar Cliente - Facturación -->
+<div class="modal modal-golden fade" id="modalIdentificarCliente" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalIdentificarClienteTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <!-- Header con gradiente dorado -->
+            <div class="modal-header bg-gradient-golden">
+                <h5 class="modal-title fw-bold" id="modalIdentificarClienteTitle">
+                    <i class='bx bx-user-circle text-white'></i>
+                    FACTURACIÓN - Identificar Cliente
+                </h5>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body p-4 bg-light">
+                <!-- Sección de búsqueda CUIT/DNI -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-golden text-white fw-bold">
+                                <i class='bx bx-search-alt'></i> CUIT/DNI/ID
+                            </span>
+                            <input type="text" 
+                                   class="form-control form-control-lg fw-bold" 
+                                   id="txtBuscarCliente" 
+                                   placeholder="Ingrese CUIT, DNI o ID del cliente..." 
+                                   maxlength="20"
+                                   autocomplete="off">
+                            <button class="btn btn-golden btn-lg" type="button" id="btnBuscarCliente">
+                                <i class='bx bx-search'></i> Buscar
+                            </button>
+                        </div>
+                        <small class="text-muted d-block mt-1">
+                            <i class='bx bx-info-circle'></i> 
+                            Presione <kbd>Enter</kbd> o haga clic en <strong>Buscar</strong> para identificar al cliente
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Separador con botones de acción rápida -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <button class="btn btn-warning w-100 py-3 fw-bold shadow-sm" id="btnListaPrecios" type="button">
+                            <i class='bx bx-list-ul bx-lg'></i><br>
+                            Lista Precios
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn btn-warning w-100 py-3 fw-bold shadow-sm" id="btnNuevoCliente" type="button">
+                            <i class='bx bx-user-plus bx-lg'></i><br>
+                            Nuevo CF
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Card con datos del cliente -->
+                <div class="card card-golden" id="cardDatosCliente">
+                    <div class="card-header">
+                        <i class='bx bx-data'></i> Datos del Cliente
+                    </div>
+                    <div class="card-body">
+                        <!-- Fila 1: Nombre, ID, Domicilio -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-5">
+                                <label for="txtNombre" class="form-label fw-semibold text-golden-dark">
+                                    <i class='bx bx-user'></i> Nombre:
+                                </label>
+                                <input type="text" 
+                                       class="form-control form-control-sm" 
+                                       id="txtNombre" 
+                                       readonly>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="txtClienteId" class="form-label fw-semibold text-golden-dark">
+                                    <i class='bx bx-id-card'></i> ID:
+                                </label>
+                                <input type="text" 
+                                       class="form-control form-control-sm text-center fw-bold" 
+                                       id="txtClienteId" 
+                                       readonly>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="txtDomicilio" class="form-label fw-semibold text-golden-dark">
+                                    <i class='bx bx-home'></i> Domicilio:
+                                </label>
+                                <input type="text" 
+                                       class="form-control form-control-sm" 
+                                       id="txtDomicilio" 
+                                       readonly>
+                            </div>
+                        </div>
+
+                        <!-- Fila 2: Condición AFIP, Tipo/N°, Emite -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label for="txtCondicionAfip" class="form-label fw-semibold text-golden-dark">
+                                    <i class='bx bx-receipt'></i> Condición AFIP:
+                                </label>
+                                <input type="text" 
+                                       class="form-control form-control-sm" 
+                                       id="txtCondicionAfip" 
+                                       readonly>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="txtTipoNumero" class="form-label fw-semibold text-golden-dark">
+                                    <i class='bx bx-file'></i> Tipo/N°:
+                                </label>
+                                <input type="text" 
+                                       class="form-control form-control-sm" 
+                                       id="txtTipoNumero" 
+                                       readonly>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="txtEmite" class="form-label fw-semibold text-golden-dark">
+                                    <i class='bx bx-buildings'></i> Emite:
+                                </label>
+                                <input type="text" 
+                                       class="form-control form-control-sm" 
+                                       id="txtEmite" 
+                                       readonly>
+                            </div>
+                        </div>
+
+                        <!-- Fila 3: Email, Móvil -->
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="txtEmail" class="form-label fw-semibold text-golden-dark">
+                                    <i class='bx bx-envelope'></i> Email:
+                                </label>
+                                <input type="email" 
+                                       class="form-control form-control-sm" 
+                                       id="txtEmail" 
+                                       readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="txtMovil" class="form-label fw-semibold text-golden-dark">
+                                    <i class='bx bx-phone'></i> Móvil:
+                                </label>
+                                <input type="text" 
+                                       class="form-control form-control-sm" 
+                                       id="txtMovil" 
+                                       readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mensaje cuando no hay cliente seleccionado -->
+                <div class="alert alert-info text-center mb-0" id="alertSinCliente" role="alert">
+                    <i class='bx bx-info-circle bx-lg'></i>
+                    <p class="mb-0 mt-2">
+                        <strong>No hay cliente seleccionado</strong><br>
+                        <small>Ingrese CUIT, DNI o ID para buscar un cliente</small>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Footer con botones de acción -->
+            <div class="modal-footer d-flex justify-content-between bg-white border-top">
+                <button type="button" class="btn btn-danger btn-lg shadow" id="btnCancelarCliente">
+                    <i class='bx bx-x-circle'></i> CANCELAR
+                </button>
+                <button type="button" class="btn btn-success btn-lg shadow" id="btnSeguirCliente" disabled>
+                    <i class='bx bx-check-circle'></i> SEGUIR
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -5,6 +5,7 @@
 (function () {
     let activeInput = null;
     let isShift = false;
+    let isSymbols = false;
     let isDragging = false;
     let currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
     let container = null;
@@ -16,21 +17,32 @@
             ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
             ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Ñ'],
             ['SHIFT', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'BACK'],
-            ['SPACE', 'ENTER']
+            ['?123', 'SPACE', 'ENTER']
+        ],
+        symbols: [
+            ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+            ['@', '#', '$', '%', '&', '-', '+', '(', ')', '/'],
+            ['*', '"', "'", ':', ';', '!', '?', '_', ',', '.'],
+            ['=', '<', '>', '[', ']', '{', '}', '\\', 'BACK'],
+            ['ABC', 'SPACE', 'ENTER']
         ],
         numeric: [
-            ['1', '2', '3'],
-            ['4', '5', '6'],
-            ['7', '8', '9'],
-            ['.', '0', 'BACK'],
-            ['ENTER']
+            ['1', '2', '3', '+'],
+            ['4', '5', '6', '*'],
+            ['7', '8', '9', 'BACK'],
+            ['.', '0', 'ENTER']
         ],
         integer: [
-            ['1', '2', '3'],
-            ['4', '5', '6'],
-            ['7', '8', '9'],
-            ['0', 'BACK'],
-            ['ENTER']
+            ['1', '2', '3', '+'],
+            ['4', '5', '6', '*'],
+            ['7', '8', '9', 'BACK'],
+            ['0', 'ENTER']
+        ],
+        tel: [
+            ['1', '2', '3', '+'],
+            ['4', '5', '6', '*'],
+            ['7', '8', '9', '-'],
+            ['0', 'BACK', 'ENTER']
         ]
     };
 
@@ -72,10 +84,14 @@
             let type = 'alphanumeric';
             if (isInteger) {
                 type = 'integer';
+            } else if (target.type === 'tel') {
+                type = 'tel';
             } else if (isNum) {
                 type = 'numeric';
             }
 
+            isShift = false;
+            isSymbols = false;
             container.dataset.type = type;
             render(type);
             container.style.display = 'flex';
@@ -84,10 +100,14 @@
     }
 
     function render(type) {
-        const layout = layouts[type];
+        let layout = layouts[type];
+        if (type === 'alphanumeric' && isSymbols) {
+            layout = layouts.symbols;
+        }
         let title = 'Teclado Alfanumérico';
         if (type === 'numeric') title = 'Teclado Decimal';
         if (type === 'integer') title = 'Teclado Entero';
+        if (type === 'tel') title = 'Teclado Telefónico';
 
         let html = `
             <div class="vk-header" id="vk-header">
@@ -100,7 +120,7 @@
             <div class="vk-body">
         `;
 
-        layout.forEach(row => {
+        layout.forEach((row, rowIndex) => {
             html += '<div class="vk-row">';
             row.forEach(key => {
                 let className = 'vk-key';
@@ -108,9 +128,11 @@
 
                 if (key === 'SHIFT') {
                     className += ' vk-key-special' + (isShift ? ' active-shift' : '');
+                    if (type === 'alphanumeric') className += ' vk-key-w1-5';
                     label = '⇧';
                 } else if (key === 'BACK') {
                     className += ' vk-key-backspace';
+                    if (type === 'alphanumeric') className += ' vk-key-w1-5';
                     label = '⌫';
                 } else if (key === 'ENTER') {
                     className += ' vk-key-enter';
@@ -118,6 +140,13 @@
                 } else if (key === 'SPACE') {
                     className += ' vk-key-space';
                     label = 'Espacio';
+                } else if (key === '?123' || key === 'ABC') {
+                    className += ' vk-key-special vk-key-w2';
+                    label = key;
+                } else if (key === '0' && (type === 'numeric' || type === 'tel') && rowIndex === 3) {
+                    className += ' vk-key-w2';
+                } else if (key === '0' && type === 'integer' && rowIndex === 3) {
+                    className += ' vk-key-w3';
                 } else {
                     label = isShift ? key.toUpperCase() : key.toLowerCase();
                 }
@@ -160,6 +189,18 @@
             isShift = !isShift;
             const currentType = container.dataset.type;
             render(currentType);
+            return;
+        }
+
+        if (key === '?123') {
+            isSymbols = true;
+            render('alphanumeric');
+            return;
+        }
+
+        if (key === 'ABC') {
+            isSymbols = false;
+            render('alphanumeric');
             return;
         }
 
