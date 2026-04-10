@@ -1,0 +1,147 @@
+<!-- Modal Nuevo/Editar Cliente - Facturación -->
+<div class="modal modal-golden fade" id="modalClienteUpdate" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalClienteUpdateTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <!-- Header con gradiente dorado -->
+            <div class="modal-header bg-gradient-golden">
+                <h5 class="modal-title fw-bold" id="modalClienteUpdateTitle">
+                    <i class='bx bx-user-plus text-white'></i>
+                    <span id="lblTituloClienteUpdate">Nuevo CF</span>
+                </h5>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body p-4 bg-light">
+                <form id="formClienteUpdate" novalidate>
+                    <!-- Fila 1: Tipo y N° -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label for="selTipoDocumento" class="form-label fw-semibold text-golden-dark">
+                                <i class='bx bx-id-card'></i> Tipo:
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select form-select-lg fw-bold" id="selTipoDocumento" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="DNI" selected>DNI</option>
+                                <option value="CUIT">CUIT</option>
+                                <option value="CUIL">CUIL</option>
+                                <option value="CDI">CDI</option>
+                                <option value="PASAPORTE">PASAPORTE</option>
+                            </select>
+                            <div class="invalid-feedback">
+                                Seleccione el tipo de documento
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <label for="txtNumeroDocumento" class="form-label fw-semibold text-golden-dark">
+                                <i class='bx bx-hash'></i> N°:
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control form-control-lg fw-bold" 
+                                   id="txtNumeroDocumento" 
+                                   placeholder="Ingrese el número de documento..."
+                                   maxlength="20"
+                                   required
+                                   autocomplete="off">
+                            <div class="invalid-feedback">
+                                Ingrese el número de documento
+                            </div>
+                            <small class="text-muted d-block mt-1">
+                                <i class='bx bx-info-circle'></i> 
+                                Sin guiones ni puntos (ej: 20123456789)
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Fila 2: Nombre y Domicilio -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="txtNombreCliente" class="form-label fw-semibold text-golden-dark">
+                                <i class='bx bx-user'></i> Nombre:
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control form-control-lg" 
+                                   id="txtNombreCliente" 
+                                   placeholder="Apellido y Nombre / Razón Social"
+                                   maxlength="100"
+                                   required
+                                   autocomplete="off">
+                            <div class="invalid-feedback">
+                                Ingrese el nombre del cliente
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="txtDomicilioCliente" class="form-label fw-semibold text-golden-dark">
+                                <i class='bx bx-home'></i> Domicilio:
+                            </label>
+                            <input type="text" 
+                                   class="form-control form-control-lg" 
+                                   id="txtDomicilioCliente" 
+                                   placeholder="Calle y Número"
+                                   maxlength="150"
+                                   autocomplete="off">
+                        </div>
+                    </div>
+
+                    <!-- Fila 3: Email y Móvil -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="txtEmailCliente" class="form-label fw-semibold text-golden-dark">
+                                <i class='bx bx-envelope'></i> Email:
+                            </label>
+                            <input type="email" 
+                                   class="form-control form-control-lg" 
+                                   id="txtEmailCliente" 
+                                   placeholder="correo@ejemplo.com"
+                                   maxlength="100"
+                                   autocomplete="off">
+                            <div class="invalid-feedback">
+                                Ingrese un email válido
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="txtMovilCliente" class="form-label fw-semibold text-golden-dark">
+                                <i class='bx bx-phone'></i> Móvil:
+                            </label>
+                            <input type="tel" 
+                                   class="form-control form-control-lg" 
+                                   id="txtMovilCliente" 
+                                   placeholder="1234-567890"
+                                   maxlength="20"
+                                   autocomplete="off">
+                            <div class="invalid-feedback">
+                                Ingrese un número de teléfono válido
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mensaje informativo -->
+                    <div class="alert alert-warning d-flex align-items-center" role="alert">
+                        <i class='bx bx-info-circle bx-lg me-2'></i>
+                        <div>
+                            <strong>Atención:</strong> Los campos marcados con <span class="text-danger">*</span> son obligatorios.
+                            <br>
+                            <small>El cliente será creado como <strong>Consumidor Final</strong> por defecto.</small>
+                        </div>
+                    </div>
+
+                    <!-- Campo oculto para ID (modo edición) -->
+                    <input type="hidden" id="txtClienteIdUpdate" value="">
+                </form>
+            </div>
+
+            <!-- Footer con botones de acción -->
+            <div class="modal-footer d-flex justify-content-between bg-white border-top">
+                <button type="button" class="btn btn-danger btn-lg shadow" id="btnCancelarClienteUpdate">
+                    <i class='bx bx-x-circle'></i> CANCELAR
+                </button>
+                <button type="submit" form="formClienteUpdate" class="btn btn-success btn-lg shadow" id="btnCargarCliente">
+                    <i class='bx bx-save'></i> 
+                    <span id="lblBotonAccion">Cargar CF</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

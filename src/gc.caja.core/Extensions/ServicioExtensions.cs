@@ -1,4 +1,5 @@
 ﻿using gc.caja.core.Servicios.Contratos.Cajas;
+using gc.caja.core.Servicios.Implementacion.Cajas;
 using gc.caja.core.Servicios.Implementacion.Seguridad;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Interfaces;
@@ -15,6 +16,7 @@ namespace gc.sitio.core.Extensions
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
            
             services.AddScoped<ICajaServicio, CajaServicio>();
+            services.AddScoped<ICajaInitServicio, CajaInitServicio>();
 
             return services;
         }

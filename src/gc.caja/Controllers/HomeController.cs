@@ -150,12 +150,12 @@ namespace gc.caja.Controllers
 
                 #region Mock - forzamos si es 3 a que este en 0
 
-                if(result.Ok && result.Entidad != null && result.Entidad.resultado == 3)
-                {
-                    // Solo para pruebas, forzamos a que el resultado sea 0 para simular apertura exitosa
-                    result.Entidad.resultado = 0;
-                    result.Entidad.resultado_msj = "Apertura de caja exitosa (mock).";
-                }
+                //if(result.Ok && result.Entidad != null && result.Entidad.resultado == 3)
+                //{
+                //    // Solo para pruebas, forzamos a que el resultado sea 0 para simular apertura exitosa
+                //    result.Entidad.resultado = 0;
+                //    result.Entidad.resultado_msj = "Apertura de caja exitosa (mock).";
+                //}
                 #endregion
 
 
@@ -182,7 +182,7 @@ namespace gc.caja.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al realizar apertura de caja");
+                _logger?.LogError(ex, "Error al realizar apertura de caja");
 
                 return Json(new
                 {
@@ -234,6 +234,7 @@ namespace gc.caja.Controllers
                 //resguardo los datos desde el sp
                 var caja = CajaActual;
                 caja.Caja = result.Entidad;
+                CajaActual = caja;
 
                 return Json(new
                 {
@@ -255,7 +256,7 @@ namespace gc.caja.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener datos de caja");
+                _logger?.LogError(ex, "Error al obtener datos de caja");
 
                 return Json(new
                 {
@@ -294,7 +295,7 @@ namespace gc.caja.Controllers
                 }
 
                 // MOCK: Funcionalidad no implementada aún
-                _logger.LogWarning("CambioPuntoVenta llamado pero funcionalidad no implementada (MOCK). Usuario: {Usuario}, CajaId: {CajaId}, NuevoPvId: {NuevoPvId}", 
+                _logger?.LogWarning("CambioPuntoVenta llamado pero funcionalidad no implementada (MOCK). Usuario: {Usuario}, CajaId: {CajaId}, NuevoPvId: {NuevoPvId}", 
                     UserName, cajaActual.CajaId, nuevo_pv_id ?? "null");
 
                 return Json(new
@@ -341,7 +342,7 @@ namespace gc.caja.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al cambiar punto de venta");
+                _logger?.LogError(ex, "Error al cambiar punto de venta");
 
                 return Json(new
                 {
@@ -413,7 +414,7 @@ namespace gc.caja.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al realizar cierre de caja");
+                _logger?.LogError(ex, "Error al realizar cierre de caja");
 
                 return Json(new
                 {

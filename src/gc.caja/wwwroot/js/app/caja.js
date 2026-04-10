@@ -75,7 +75,7 @@ $(function () {
     /**
      * Botón: HACE APERTURA
      */
-    $("#btnBuenoApertura").on("click", function () {
+    $("#btnHaceApertura").on("click", function () {
         const modal = getModalValidacion();
         if (modal) modal.hide();
 
@@ -719,7 +719,109 @@ $(function () {
     }
 
     // Funciones placeholder para módulos
-    function abrirModuloFacturacion() { console.log('💵 Facturación...'); }
+    function abrirModuloFacturacion() {
+        console.log('💵 Iniciando validación para Facturación...');
+
+        // Mostrar loader
+        mostrarLoader("Validando datos de caja...<br><small class='text-muted'>Preparando módulo de facturación</small>");
+
+        $.ajax({
+            url: FacturacionValidarUrl,
+            type: 'post',
+            dataType: 'json',
+            timeout: 10000,
+            success: function (response) {
+                ocultarLoader();
+
+                if (!response.success) {
+                    // ❌ Validación fallida
+                    console.error("❌ Validación de datos de caja fallida:", response.message);
+                    
+                    AbrirMensaje(
+                        "Error de Validación",
+                        `<div class="text-center">
+                            <i class='bx bx-error-circle text-danger' style='font-size: 3rem;'></i>
+                            <p class="mt-3">${response.message}</p>
+                            <hr>
+                            <small class="text-muted">
+                                Por favor, contacte al administrador o verifique la configuración de la caja.
+                            </small>
+                        </div>`,
+                        function () {
+                            $("#msjModal").modal("hide");
+                        },
+                        false,
+                        ["Aceptar"],
+                        "error!",
+                        null
+                    );
+                    return;
+                }
+
+                // ✅ Validación exitosa
+                console.log("✅ Validación exitosa - Abriendo módulo de Facturación");
+                
+                // Cerrar el modal del menú principal
+                const menuModal = getModalMenu();
+                if (menuModal) menuModal.hide();
+                
+                // Mostrar loader de transición
+                mostrarLoader("Abriendo módulo de Facturación...<br><small class='text-muted'>Por favor espere</small>");
+                
+                // Redirigir al área de Facturación después de una breve pausa
+                setTimeout(() => {
+                    window.location.href = facturacionInicializaUrl;
+                }, 800);
+            },
+            error: function (xhr, status, error) {
+                ocultarLoader();
+                
+                console.error("❌ Error al validar datos para Facturación:", error);
+                
+                let mensajeError = "Error al validar los datos de la caja para Facturación.";
+                
+                if (status === 'timeout') {
+                    mensajeError = "La validación tardó demasiado tiempo. Por favor, intente nuevamente.";
+                } else if (xhr.status === 401) {
+                    mensajeError = "Su sesión ha expirado. Será redirigido al login.";
+                    AbrirMensaje(
+                        "Sesión Expirada",
+                        mensajeError,
+                        function () {
+                            $("#msjModal").modal("hide");
+                            setTimeout(() => {
+                                window.location.href = logout;
+                            }, 300);
+                        },
+                        false,
+                        ["Aceptar"],
+                        "warn!",
+                        null
+                    );
+                    return;
+                } else if (xhr.status === 500) {
+                    mensajeError = "Error interno del servidor. Contacte al administrador.";
+                } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                    mensajeError = xhr.responseJSON.message;
+                }
+
+                AbrirMensaje(
+                    "Error",
+                    `<div class="text-center">
+                        <i class='bx bx-error-circle text-danger' style='font-size: 3rem;'></i>
+                        <p class="mt-3">${mensajeError}</p>
+                    </div>`,
+                    function () {
+                        $("#msjModal").modal("hide");
+                    },
+                    false,
+                    ["Aceptar"],
+                    "error!",
+                    null
+                );
+            }
+        });
+    }
     function abrirModuloDevolucion() { console.log('↩️ Devolución NC...'); }
     function abrirModuloDebitoCredito() { console.log('💳 Débito y Crédito...'); }
     function abrirModuloCobranza() { console.log('💰 Cobranza...'); }
