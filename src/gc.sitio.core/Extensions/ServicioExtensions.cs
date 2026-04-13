@@ -3,6 +3,7 @@ using gc.infraestructura.Core.Interfaces;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.ABM;
 using gc.sitio.core.Servicios.Contratos.Asientos;
+using gc.sitio.core.Servicios.Contratos.Cajas;
 using gc.sitio.core.Servicios.Contratos.DocManager;
 using gc.sitio.core.Servicios.Contratos.Importacion;
 using gc.sitio.core.Servicios.Contratos.Libros;
@@ -11,6 +12,7 @@ using gc.sitio.core.Servicios.Contratos.Users;
 using gc.sitio.core.Servicios.Implementacion;
 using gc.sitio.core.Servicios.Implementacion.ABM;
 using gc.sitio.core.Servicios.Implementacion.Asientos;
+using gc.sitio.core.Servicios.Implementacion.Cajas;
 using gc.sitio.core.Servicios.Implementacion.DocManager;
 using gc.sitio.core.Servicios.Implementacion.Importacion;
 using gc.sitio.core.Servicios.Implementacion.Libros;
@@ -109,6 +111,7 @@ namespace gc.sitio.core.Extensions
 			services.AddScoped<IPedidoServicio, PedidoServicio>();
 			services.AddScoped<IOrdenDeRepartoServicio, OrdenDeRepartoServicio>();
 			services.AddScoped<IPedidoInternoEstadoServicio, PedidoInternoEstadoServicio>();
+			services.AddScoped<ICajaServicio, CajaServicio>();
 
 			services.AddScoped<IOrdenDePagoServicio, OrdenDePagoServicio>();
 			services.AddScoped<IEtiquetaServicio, EtiquetaServicio>();

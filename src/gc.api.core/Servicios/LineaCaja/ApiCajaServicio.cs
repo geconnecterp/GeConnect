@@ -3,6 +3,7 @@ using gc.api.core.Contratos.Servicios;
 using gc.api.core.Contratos.Servicios.LineaCaja;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
+using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Cajas;
 using gc.infraestructura.Dtos.Gen;
 using Microsoft.Data.SqlClient;
@@ -171,5 +172,16 @@ namespace gc.api.core.Servicios.LineaCaja
             }
             return new() { resultado = -1, resultado_msj = "Hubo un error al habilitar la caja general." };
         }
-    }
+
+		public List<CajaPVAbiertosDto> ObtenerPVAbiertos(string adm_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_CAJA_PV_ABIERTOS;
+			var ps = new List<SqlParameter>()
+			{
+				new("@adm_id",adm_id),
+			};
+			List<CajaPVAbiertosDto> resp = _repository.EjecutarLstSpExt<CajaPVAbiertosDto>(sp, ps, true);
+			return resp;
+		}
+	}
 }

@@ -22,10 +22,11 @@
 			public const string SP_CAJA_DATOS = "SPGECO_CAJA_DATOS";
 			public const string SP_CAJA_GRAL_CIERRE = "SPGECO_CAJA_GRAL_CIERRE";
 			public const string SP_CAJA_GRAL_HAB = "SPGECO_CAJA_GRAL_HABILITACION";
+			public const string SP_CAJA_PV_ABIERTOS = "SPGECO_CAJA_PV_ABIERTOS";
+			//
+			#endregion
 
-            #endregion
-
-            public const string MNU_GET_MENU_LIST = "dbo.SP_web_geco_get_menu_list";
+			public const string MNU_GET_MENU_LIST = "dbo.SP_web_geco_get_menu_list";
 
 			public const string SP_BILLETERAORD_CARGA = "dbo.SP_BilleteraOrdenCarga";
 			public const string SP_BILLETERAORD_REGISTRA = "dbo.SP_BilleteraOrdenRegistro";

@@ -1,5 +1,6 @@
 ﻿using gc.api.core.Contratos.Servicios.LineaCaja;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Cajas;
 using gc.infraestructura.Dtos.Gen;
 using Microsoft.AspNetCore.Authorization;
@@ -162,5 +163,13 @@ namespace gc.api.Controllers.Caja
             var res = _apiCajaServicio.HabilitarCajaGral(usu_id, adm_id);
             return Ok(new ApiResponse<RespuestaDto>(res));
         }
-    }
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult ObtenerPVAbiertos(string admId)
+		{
+			var res = _apiCajaServicio.ObtenerPVAbiertos(admId);
+			return Ok(new ApiResponse<List<CajaPVAbiertosDto>>(res));
+		}
+	}
 }
