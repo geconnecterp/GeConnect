@@ -1,6 +1,8 @@
 ﻿$(function () {
 	$(document).on("click", "#btnHabilitacionGeneralCaja", ControlaHabilitacionGeneralCaja);
-	$(document).on("click", "#btnSalir", ControlaSalir);
+	$(document).on("click", "#btnSalir", function () {
+		window.location.href = salirUrl;
+	});
 });
 
 function ControlaHabilitacionGeneralCaja() {

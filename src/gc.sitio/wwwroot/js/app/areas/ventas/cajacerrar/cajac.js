@@ -1,6 +1,8 @@
 ﻿$(function () {
 	$(document).on("click", "#btnCierreGeneralCaja", ControlaCierreGeneralCaja);
-	$(document).on("click", "#btnSalir", ControlaSalir);
+	$(document).on("click", "#btnSalir", function () {
+		window.location.href = salirUrl;
+	});
 });
 
 function ControlaCierreGeneralCaja() {
