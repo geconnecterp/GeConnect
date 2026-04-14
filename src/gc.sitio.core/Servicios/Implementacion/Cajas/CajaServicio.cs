@@ -5,6 +5,7 @@ using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Cajas;
+using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.sitio.core.Servicios.Contratos.Cajas;
 using Microsoft.Extensions.Logging;
@@ -37,8 +38,8 @@ namespace gc.sitio.core.Servicios.Implementacion.Cajas
 			try
 			{
 				var helper = new HelperAPI();
-				var parametros = new { usu_id, adm_id };
-				var client = helper.InicializaCliente(parametros, token, out StringContent contentData);
+				var request = new CajaCerrarRequest() { adm_id = adm_id, usu_id = usu_id };
+				var client = helper.InicializaCliente(request, token, out StringContent contentData);
 				var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_CIERRE_CAJA_GRAL}";
 
 				using var response = await client.PostAsync(link, contentData);
@@ -108,8 +109,8 @@ namespace gc.sitio.core.Servicios.Implementacion.Cajas
 			try
 			{
 				var helper = new HelperAPI();
-				var parametros = new { usu_id, adm_id };
-				var client = helper.InicializaCliente(parametros, token, out StringContent contentData);
+				var request = new CajaHabilitarRequest() { adm_id = adm_id, usu_id = usu_id };
+				var client = helper.InicializaCliente(request, token, out StringContent contentData);
 				var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_HABILITAR_CAJA_GRAL}";
 
 				using var response = await client.PostAsync(link, contentData);

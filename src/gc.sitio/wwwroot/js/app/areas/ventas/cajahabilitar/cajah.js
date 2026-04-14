@@ -1,6 +1,6 @@
 ﻿$(function () {
-	$(document).on("change", "#btnHabilitacionGeneralCaja", ControlaHabilitacionGeneralCaja);
-	$(document).on("change", "#btnSalir", ControlaSalir);
+	$(document).on("click", "#btnHabilitacionGeneralCaja", ControlaHabilitacionGeneralCaja);
+	$(document).on("click", "#btnSalir", ControlaSalir);
 });
 
 function ControlaHabilitacionGeneralCaja() {
@@ -34,6 +34,12 @@ function HandlerHabilitarCaja() {
 				$("#msjModal").modal("hide");
 				return true;
 			}, false, ["Aceptar"], "error!", null);
+		}
+		else if (obj.warn === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "warn!", null);
 		}
 		else {
 			setTimeout(() => {

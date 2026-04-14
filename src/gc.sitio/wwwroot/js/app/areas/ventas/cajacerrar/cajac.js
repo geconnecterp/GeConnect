@@ -1,6 +1,6 @@
 ﻿$(function () {
-	$(document).on("change", "#btnCierreGeneralCaja", ControlaCierreGeneralCaja);
-	$(document).on("change", "#btnSalir", ControlaSalir);
+	$(document).on("click", "#btnCierreGeneralCaja", ControlaCierreGeneralCaja);
+	$(document).on("click", "#btnSalir", ControlaSalir);
 });
 
 function ControlaCierreGeneralCaja() {
@@ -34,6 +34,12 @@ function HandlerCierreDeCajas() {
 				$("#msjModal").modal("hide");
 				return true;
 			}, false, ["Aceptar"], "error!", null);
+		}
+		else if (obj.warn === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "warn!", null);
 		}
 		else {
 			setTimeout(() => {

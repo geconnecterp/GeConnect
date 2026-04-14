@@ -2,6 +2,7 @@
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Cajas;
+using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Gen;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -138,14 +139,15 @@ namespace gc.api.Controllers.Caja
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
-        public IActionResult CierreCajaGral(string usu_id, string adm_id)
+        public IActionResult CierreCajaGral(CajaCerrarRequest request)
         {
-            if (string.IsNullOrEmpty(usu_id) || string.IsNullOrEmpty(adm_id))
-            {
-                return BadRequest("Los parámetros usu_id y adm_id son requeridos.");
-            }
+			if (request == null)
+				return BadRequest("El parámetro request es requerido.");
 
-            var res = _apiCajaServicio.CierreCajaGral(usu_id, adm_id);
+			if (string.IsNullOrEmpty(request.usu_id) || string.IsNullOrEmpty(request.adm_id))
+                return BadRequest("Los parámetros usu_id y adm_id son requeridos.");
+
+            var res = _apiCajaServicio.CierreCajaGral(request.usu_id, request.adm_id);
             return Ok(new ApiResponse<RespuestaDto>(res));
         }
 
@@ -153,14 +155,15 @@ namespace gc.api.Controllers.Caja
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
-        public IActionResult HabilitarCajaGral(string usu_id, string adm_id)
+        public IActionResult HabilitarCajaGral(CajaHabilitarRequest request)
         {
-            if (string.IsNullOrEmpty(usu_id) || string.IsNullOrEmpty(adm_id))
-            {
+            if (request == null)
+                return BadRequest("El parámetro request es requerido.");
+			
+            if (string.IsNullOrEmpty(request.usu_id) || string.IsNullOrEmpty(request.adm_id))
                 return BadRequest("Los parámetros usu_id y adm_id son requeridos.");
-            }
 
-            var res = _apiCajaServicio.HabilitarCajaGral(usu_id, adm_id);
+            var res = _apiCajaServicio.HabilitarCajaGral(request.usu_id, request.adm_id);
             return Ok(new ApiResponse<RespuestaDto>(res));
         }
 
