@@ -2244,7 +2244,6 @@ input, select, textarea, button, checkbox, radio {
     border-color: #dc3545 !important;
     box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
     background-color: rgba(220, 53, 69, 0.05) !important;
-    animation: fieldError 0.3s ease-in-out;
 }
 
 @keyframes fieldError {
@@ -2680,13 +2679,13 @@ input, select, textarea, button, checkbox, radio {
 }
 
 .table-responsive-precios::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #b8860b, #daa520);
+    background: #f0ad4e;
     border-radius: 4px;
     border: 2px solid #f8f9fa;
 }
 
 .table-responsive-precios::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #8b6914, #b8860b);
+    background: #d58512;
 }
 
 /* Estilos de header para grid de precios */
@@ -2720,7 +2719,7 @@ input, select, textarea, button, checkbox, radio {
 
 /* Filas de datos con transición suave */
 .row-precio-detalle {
-    transition: all 0.15s ease-in-out;
+    transition: all 0.2s ease-in-out;
 }
 
 /* Hover mejorado en filas del body */
@@ -2964,17 +2963,10 @@ input, select, textarea, button, checkbox, radio {
 
 /* Animación de error */
 @keyframes shakeField {
-    0%, 100% {
-        transform: translateX(0);
-    }
-
-    25% {
-        transform: translateX(-5px);
-    }
-
-    75% {
-        transform: translateX(5px);
-    }
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    75% { transform: translateX(2px); }
+    100% { transform: translateX(0); }
 }
 
 #importeUnico.animate-error {
@@ -3186,15 +3178,10 @@ input, select, textarea, button, checkbox, radio {
 
 /* Encabezados dentro del modal del gestor */
 #docmgrmodal h5,
-#docmgrmodal .h5 {
+#docmgrmodal .h5,
+#docmgrmodal label {
     color: #b8860b;
     font-weight: 600;
-}
-
-/* Etiquetas de formulario del gestor */
-#docmgrmodal label {
-    color: #495057;
-    font-weight: 500;
 }
 
 /* Badge de conteo en nodos del árbol */
@@ -3336,7 +3323,6 @@ input, select, textarea, button, checkbox, radio {
 
     .menu-btn-enhanced:active {
         transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
 
     /* ========================================
@@ -3486,7 +3472,8 @@ input, select, textarea, button, checkbox, radio {
     }
 
         .menu-btn-enhanced i {
-            font-size: 2rem;
+            font-size: 3rem;
+            margin-bottom: 12px;
         }
 }
 
@@ -3554,7 +3541,7 @@ input, select, textarea, button, checkbox, radio {
     font-size: 0.75rem;
 }
 
-/* FIN ESTILOS MODAL MENÚ CAJA */
+/* FIN ESTILOS MODAL MENÚ */
 
 /* ====== ESTILOS ESPECÍFICOS PARA MODAL CAMBIO DE PV (SIMPLIFICADO) ====== */
 
@@ -3642,9 +3629,9 @@ input, select, textarea, button, checkbox, radio {
         }
 }
 
-/* FIN ESTILOS MODAL CAMBIO DE PV */
+/* FIN ESTILO MODAL CAMBIO DE PV */
 
-/* ESTILOS PARA FULLSCREEN MENU */
+/* ====== ESTILOS PARA FULLSCREEN MENU */
 /* ====== MODAL MENÚ FULLSCREEN OPTIMIZADO ====== */
 #modalMenuCaja.modal-fullscreen .modal-content {
     height: 100vh;
@@ -4010,3 +3997,168 @@ input, select, textarea, button, checkbox, radio {
 }
 
 /* FIN ESTILOS MODAL CLIENTE UPDATE */
+
+/* ============================================
+   GRILLA DE CLIENTES - ESTILO GOLDEN (OPTIMIZADO)
+   ============================================ */
+
+/* ✅ Table layout fixed para respetar anchos en porcentaje */
+.table-layout-fixed {
+    table-layout: fixed;
+    width: 100%;
+}
+
+/* ✅ Filas compactas para mostrar más registros */
+.compact-row td {
+    padding: 0.35rem 0.5rem !important;
+    vertical-align: middle;
+    line-height: 1.3;
+}
+
+/* ✅ Texto truncado con ellipsis */
+.text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 0; /* Necesario para que funcione en celdas de tabla */
+}
+
+/* ✅ Badge compacto */
+.badge-compact {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+/* ✅ Botón extra-small (más pequeño que btn-sm) */
+.btn-xs {
+    padding: 0.15rem 0.4rem;
+    font-size: 0.75rem;
+    line-height: 1.2;
+    border-radius: 0.2rem;
+}
+
+/* ✅ Botón golden compacto para la grilla */
+.btn-golden-compact {
+    background-color: #f0ad4e;
+    border-color: #f0ad4e;
+    color: white;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btn-golden-compact:hover {
+    background-color: #d58512;
+    border-color: #d58512;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(240, 173, 78, 0.3);
+}
+
+.btn-golden-compact:active {
+    transform: translateY(0);
+}
+
+/* ============================================
+   TABLA GOLDEN - ESTILOS BASE
+   ============================================ */
+
+.table-golden {
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.85rem;
+}
+
+.table-golden-header {
+    background: linear-gradient(135deg, #f0ad4e 0%, #d58512 100%);
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+}
+
+.table-golden-header th {
+    padding: 0.5rem 0.5rem;
+    border: none;
+    vertical-align: middle;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.table-golden tbody tr {
+    transition: all 0.15s ease;
+}
+
+.table-golden tbody tr:hover {
+    background-color: #fff3cd !important;
+    cursor: pointer;
+    transform: scale(1.005);
+    box-shadow: 0 1px 4px rgba(240, 173, 78, 0.2);
+}
+
+.table-golden tbody tr.alt {
+    background-color: #f8f9fa;
+}
+
+.table-golden tbody tr.selected-golden {
+    background-color: #ffeaa7 !important;
+    border-left: 3px solid #f0ad4e;
+}
+
+/* ============================================
+   CARD GOLDEN - ESTILOS
+   ============================================ */
+
+.card-header-golden {
+    background: linear-gradient(135deg, #f0ad4e 0%, #d58512 100%);
+    color: white;
+    border-bottom: 2px solid #d58512;
+}
+
+.text-golden-dark {
+    color: #d58512 !important;
+}
+
+.btn-golden {
+    background-color: #f0ad4e;
+    border-color: #f0ad4e;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.btn-golden:hover {
+    background-color: #d58512;
+    border-color: #d58512;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(240, 173, 78, 0.4);
+}
+
+.badge.bg-golden {
+    background-color: #f0ad4e !important;
+}
+
+/* ============================================
+   SCROLLBAR PERSONALIZADO
+   ============================================ */
+
+.table-responsive::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #f0ad4e;
+    border-radius: 10px;
+    border: 2px solid #f8f9fa;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #d58512;
+}

@@ -23,7 +23,7 @@ namespace gc.caja.Areas.Seguridad.Controllers
 {
     [Area("Seguridad")]
     [AllowAnonymous] // ✅ AGREGADO: Permite acceso anónimo al controlador
-    public class TokenController : ControladorBase
+    public class TokenController : ControladorBaseCaja
     {
         private readonly IConfiguration _configuration;
         private new readonly IHttpContextAccessor _context;

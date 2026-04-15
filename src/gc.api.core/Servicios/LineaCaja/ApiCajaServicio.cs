@@ -3,6 +3,7 @@ using gc.api.core.Contratos.Servicios;
 using gc.api.core.Contratos.Servicios.LineaCaja;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Cajas;
 using gc.infraestructura.Dtos.Gen;
 using Microsoft.Data.SqlClient;
@@ -68,18 +69,43 @@ namespace gc.api.core.Servicios.LineaCaja
             return new() { resultado = -1, resultado_msj = "Hubo un error al cerrar la caja." };
         }
 
-        public CuentaBusquedaResultadoDto BusquedaCaja_b_cuenta(string busqueda)
+        /// <summary>
+        /// esta metodo puede devolver 0,1 o mas registros 
+        /// </summary>
+        /// <param name="busqueda">criterio de busqueda</param>
+        /// <param name="adm_id">sucursal</param>
+        /// <param name="usu_id">usuario</param>
+        /// <returns></returns>
+        public List<CuentaBusquedaResultadoDto> BusquedaClientes(string busqueda, string adm_id, string usu_id)
         {
             var sp = ConstantesGC.StoredProcedures.SP_CAJA_BCUENTA;
             var ps = new List<SqlParameter>() {
-                new SqlParameter("@busqueda", busqueda)
+                new SqlParameter("@busqueda", busqueda),
+                new SqlParameter("@adm_id", adm_id),
+                new SqlParameter("@usu_id", usu_id)
             };
-            var res = _repository.EjecutarLstSpExt<CuentaBusquedaResultadoDto>(sp, ps);
-            if (res != null && res.Count > 0)
+            var res = _repository.EjecutarLstSpExt<CuentaBusquedaResultadoDto>(sp, ps, true);
+
+            return res;
+        }
+
+        public CuentaDatosResultadoDto BusquedaDatosCliente(string origen, string valor, string adm_id, string usu_id)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_CAJA_BCUENTA_D;
+
+            var ps = new List<SqlParameter>() {
+                new SqlParameter("@origen", origen),
+                new SqlParameter("@valor", valor),
+                new SqlParameter("@adm_id", adm_id),
+                new SqlParameter("@usu_id", usu_id)
+            };
+            var res = _repository.EjecutarLstSpExt<CuentaDatosResultadoDto>(sp, ps, true);
+            if (res == null || !res.Any())
             {
-                return res[0];
+                throw new NegocioException($"No se logró recuperar los datos de {origen}-{valor}");
             }
-            return new CuentaBusquedaResultadoDto();
+
+            return res[0];
         }
 
         public ProductoDatosResponseDto ObtenerProductoDatos(ProductoDatosRequestDto req)

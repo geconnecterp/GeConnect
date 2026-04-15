@@ -10,7 +10,8 @@ namespace gc.caja.core.Servicios.Contratos.Cajas
         Task<RespuestaGenerica<RespuestaDto>> ValidarIntegridadUsuarioCaja(CajaReqDto req, string token);
         Task<RespuestaGenerica<RespuestaDto>> AperturaCaja(CajaReqDto req, string token);
         Task<RespuestaGenerica<RespuestaDto>> CierreCaja(CajaReqDto req, string token);
-        Task<RespuestaGenerica<CuentaBusquedaResultadoDto>> BusquedaCaja_b_cuenta(string busqueda, string token);
+        Task<RespuestaGenerica<CuentaBusquedaResultadoDto>> BusquedaClientes(string busqueda, string adm_id, string usu_id, string token);
+        Task<RespuestaGenerica<CuentaDatosResultadoDto>> BusquedaDatosCliente(string origen, string valor, string adm_id, string usu_id, string token);
         Task<RespuestaGenerica<ProductoDatosResponseDto>> ObtenerProductoDatos(ProductoDatosRequestDto req, string token);
         Task<RespuestaGenerica<RespuestaDto>> Cargar_CF(CargaCFRequestDto req, string token);
         Task<RespuestaGenerica<CajaDatosDto>> ObtenerDatosCF(string caja_id, string token);

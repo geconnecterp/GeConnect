@@ -1,5 +1,7 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Administracion;
+using gc.infraestructura.Dtos.Cajas;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Users;
 using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.EntidadesComunes.Options;
@@ -7,16 +9,17 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
+using X.PagedList;
 
 namespace gc.caja.Controllers
 {
-    public class ControladorBase:Controller
+    public class ControladorBaseCaja : Controller
     {
         private readonly AppSettings _options;
         protected readonly IHttpContextAccessor _context;
         internal readonly ILogger? _logger;
 
-        public ControladorBase(IOptions<AppSettings> options, IHttpContextAccessor contexto,
+        public ControladorBaseCaja(IOptions<AppSettings> options, IHttpContextAccessor contexto,
             ILogger logger)
         {
             _options = options.Value;
@@ -24,7 +27,7 @@ namespace gc.caja.Controllers
             _logger = logger;
         }
 
-        public ControladorBase(IOptions<AppSettings> options, IHttpContextAccessor contexto)
+        public ControladorBaseCaja(IOptions<AppSettings> options, IHttpContextAccessor contexto)
         {
             _options = options.Value;
             _context = contexto;
@@ -334,6 +337,56 @@ namespace gc.caja.Controllers
                 if (string.IsNullOrEmpty(usuario)) { return string.Empty; }
                 return usuario;
             }
+        }
+
+        /// <summary>
+        /// Lista de clientes encontrados en la última búsqueda (para grilla)
+        /// </summary>
+        protected List<CuentaBusquedaResultadoDto> ClientesBuscados
+        {
+            get
+            {
+                string json = _context.HttpContext?.Session.GetString("ClientesBuscados") ?? string.Empty;
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new List<CuentaBusquedaResultadoDto>();
+                }
+                return JsonConvert.DeserializeObject<List<CuentaBusquedaResultadoDto>>(json) ?? new List<CuentaBusquedaResultadoDto>();
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("ClientesBuscados", json);
+            }
+        }
+
+        /// <summary>
+        /// Genera una grilla smart con paginación básica
+        /// </summary>
+        protected GridCoreSmart<T> GenerarGrillaSmart<T>(List<T>? lista, string sort, int cantReg = 999, int pagina = 1, int totalReg = 0, int totalPag = 1, string sortDir = "ASC")
+        {
+            lista ??= new List<T>();
+            totalReg = lista.Count;
+            
+            var pagedList = new StaticPagedList<T>(lista, pagina, cantReg, totalReg);
+
+            return new GridCoreSmart<T>
+            {
+                ListaDatos = pagedList,
+                CantidadReg = cantReg,
+                PaginaActual = pagina,
+                CantidadPaginas = totalPag,
+                Sort = sort,
+                SortDir = sortDir
+            };
+        }
+
+        /// <summary>
+        /// Sobrecarga simplificada para generar grilla sin paginación compleja
+        /// </summary>
+        protected GridCoreSmart<T> GenerarGrillaSmart<T>(List<T>? lista, string sort)
+        {
+            return GenerarGrillaSmart(lista, sort, 999, 1, 0, 1, "ASC");
         }
     }
 }

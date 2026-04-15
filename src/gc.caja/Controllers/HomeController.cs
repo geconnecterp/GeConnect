@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace gc.caja.Controllers
 {
-    public class HomeController : ControladorBase
+    public class HomeController : ControladorBaseCaja
     {
         private new readonly IHttpContextAccessor _context;
         private readonly ICajaServicio _caja;

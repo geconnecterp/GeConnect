@@ -21,7 +21,8 @@ namespace gc.caja.core.Servicios.Implementacion.Seguridad
         private const string POST_VALIDA_INTEGRIDAD = "/ValidaIntegridadUsuarioCaja";
         private const string POST_APERTURA_CAJA = "/AperturaCaja";
         private const string POST_CIERRE_CAJA = "/CierreCaja";
-        private const string GET_BUSQUEDA_CUENTA = "/BusquedaCaja_b_cuenta";
+        private const string GET_BUSQUEDA_CUENTA = "/BusquedaClientes";
+        private const string GET_BUSQUEDA_DATOS_CLIENTE = "/BuscarDatosCliente";
         private const string POST_OBTENER_PRODUCTO_DATOS = "/ObtenerProductoDatos";
         private const string POST_CARGAR_CF = "/Cargar_CF";
         private const string GET_OBTENER_DATOS_CF = "/ObtenerDatosCF";
@@ -239,14 +240,14 @@ namespace gc.caja.core.Servicios.Implementacion.Seguridad
             }
         }
 
-        public async Task<RespuestaGenerica<CuentaBusquedaResultadoDto>> BusquedaCaja_b_cuenta(string busqueda, string token)
+        public async Task<RespuestaGenerica<CuentaBusquedaResultadoDto>> BusquedaClientes(string busqueda, string adm_id, string usu_id , string token)
         {
             try
             {
                 var helper = new HelperAPI();
                 var client = helper.InicializaCliente(token);
 
-                var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_BUSQUEDA_CUENTA}?busqueda={busqueda}";
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_BUSQUEDA_CUENTA}?busqueda={busqueda}&adm_id={adm_id}&usu_id={usu_id}";
                 using var response = await client.GetAsync(link);
 
                 if (response.StatusCode == HttpStatusCode.OK)
@@ -257,7 +258,7 @@ namespace gc.caja.core.Servicios.Implementacion.Seguridad
                         return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la búsqueda de cuenta" };
                     }
 
-                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<CuentaBusquedaResultadoDto>>(stringData);
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<CuentaBusquedaResultadoDto>>>(stringData);
                     if (apiResponse == null || apiResponse.Data == null)
                     {
                         return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
@@ -266,7 +267,7 @@ namespace gc.caja.core.Servicios.Implementacion.Seguridad
                     return new RespuestaGenerica<CuentaBusquedaResultadoDto>
                     {
                         Ok = true,
-                        Entidad = apiResponse.Data,
+                        ListaEntidad = apiResponse.Data,
                         Mensaje = "OK"
                     };
                 }
@@ -643,6 +644,55 @@ namespace gc.caja.core.Servicios.Implementacion.Seguridad
             }
 
             return cajaSettings;
+        }
+
+        public async Task<RespuestaGenerica<CuentaDatosResultadoDto>> BusquedaDatosCliente(string origen, string valor, string adm_id, string usu_id, string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(token);
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_BUSQUEDA_DATOS_CLIENTE}?origen={origen}&valor={valor}&adm_id={adm_id}&usu_id={usu_id}";
+                using var response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la búsqueda de datos del cliente" };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<CuentaDatosResultadoDto>>(stringData);
+                    if (apiResponse == null || apiResponse.Data == null)
+                    {
+                        return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+                    }
+
+                    return new RespuestaGenerica<CuentaDatosResultadoDto>
+                    {
+                        Ok = true,
+                        Entidad = apiResponse.Data,
+                        Mensaje = "OK"
+                    };
+                }
+                else
+                {
+                    var msg = await ReadApiErrorAsync(response);
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+                    return new() { Ok = false, Mensaje = msg };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name}");
+                return new RespuestaGenerica<CuentaDatosResultadoDto>
+                {
+                    Ok = false,
+                    Mensaje = "Error interno al buscar los datos del cliente"
+                };
+            }
         }
     }
 }

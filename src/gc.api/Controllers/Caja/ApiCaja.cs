@@ -77,15 +77,40 @@ namespace gc.api.Controllers.Caja
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaBusquedaResultadoDto>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
-        public IActionResult BusquedaCaja_b_cuenta(string busqueda)
+        public IActionResult BusquedaClientes(string busqueda,string adm_id,string usu_id)
         {
             if (string.IsNullOrEmpty(busqueda))
             {
                 return BadRequest("El parámetro busqueda es requerido.");
             }
 
-            var res = _apiCajaServicio.BusquedaCaja_b_cuenta(busqueda);
-            return Ok(new ApiResponse<CuentaBusquedaResultadoDto>(res));
+            if (string.IsNullOrEmpty(usu_id) || string.IsNullOrEmpty(adm_id))
+            {
+                return BadRequest("Los datos del usuario y la sucursal es necesario");
+            }
+
+            var res = _apiCajaServicio.BusquedaClientes(busqueda,adm_id,usu_id);
+            return Ok(new ApiResponse<List<CuentaBusquedaResultadoDto>>(res));
+        }
+
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaDatosResultadoDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult BuscarDatosCliente(string origen, string valor, string adm_id, string usu_id)
+        {
+            if (string.IsNullOrEmpty(origen) || string.IsNullOrEmpty(valor))
+            {
+                return BadRequest("Faltan identificadores importantes, origen o valor. Verifique");
+            }
+
+            if (string.IsNullOrEmpty(usu_id) || string.IsNullOrEmpty(adm_id))
+            {
+                return BadRequest("Los datos del usuario y la sucursal es necesario");
+            }
+
+            var res = _apiCajaServicio.BusquedaDatosCliente(origen, valor, adm_id, usu_id);
+            return Ok(new ApiResponse<CuentaDatosResultadoDto>(res));
         }
 
         [HttpPost]
@@ -162,5 +187,6 @@ namespace gc.api.Controllers.Caja
             var res = _apiCajaServicio.HabilitarCajaGral(usu_id, adm_id);
             return Ok(new ApiResponse<RespuestaDto>(res));
         }
+        
     }
 }
