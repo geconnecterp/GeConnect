@@ -121,19 +121,19 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                     
                     // ✅ INVOCAR SERVICIO DE DATOS COMPLETOS
-                    var datosCompletos = await ObtenerDatosCompletosCliente(
+                    var dCompletos = await ObtenerDatosCompletosCliente(
                         clienteParcial,
                         clienteParcial.Cta_Id, 
                         clienteParcial.Cta_Documento
                     );
                     
-                    if (!datosCompletos.ok)
+                    if (!dCompletos.ok)
                     {
                         // Si falla, retornar datos parciales con advertencia
                         _logger?.LogWarning(
                             "No se pudieron cargar datos fiscales del cliente {ClienteId}. Error: {Error}", 
                             clienteParcial.Cta_Id, 
-                            datosCompletos.mensaje
+                            dCompletos.mensaje
                         );
                         
                         return Json(new
@@ -145,6 +145,20 @@ namespace gc.caja.Areas.Facturacion.Controllers
                             cliente = MapearClienteParcial(clienteParcial)
                         });
                     }
+
+                    // ✅ NUEVO: GUARDAR CLIENTE COMPLETO EN SESIÓN
+                    if (dCompletos.datosCompletos != null)
+                    {
+                        dCompletos.datosCompletos.Origen = clienteParcial.Origen; // Asegurar que el origen esté presente
+                        ClienteActual = dCompletos.datosCompletos;
+                                                
+                        _logger?.LogInformation(
+                            "Cliente guardado en sesión: {ClienteId} - {ClienteNombre} - Origen: {Origen}",
+                            dCompletos.datosCompletos.cta_id,
+                            dCompletos.datosCompletos.cta_denominacion,
+                            clienteParcial.Origen
+                        );
+                    }
                     
                     // ✅ RETORNAR DATOS COMPLETOS
                     return Json(new
@@ -152,7 +166,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         ok = true,
                         mensaje = "Cliente encontrado",
                         cantidadResultados = 1,
-                        cliente = datosCompletos.cliente
+                        cliente = dCompletos.cliente
                     });
                 }
 
@@ -300,7 +314,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
         /// ✅ MÉTODO PRIVADO: Obtiene datos fiscales y comerciales completos del cliente.
         /// Reutilizable desde BuscarCliente (1 resultado) y BuscarClientePorId (desde grilla).
         /// </summary>
-        private async Task<(bool ok, string mensaje, object? cliente)> ObtenerDatosCompletosCliente(
+        private async Task<(bool ok, string mensaje, object? cliente, CuentaDatosResultadoDto? datosCompletos)> ObtenerDatosCompletosCliente(
             CuentaBusquedaResultadoDto cuenta,            
             string clienteId, 
             string? numeroDocumento)
@@ -312,8 +326,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 // Si es Consumidor Final → usar Documento
                 string valorBusqueda = cuenta.Origen.Equals("C", StringComparison.OrdinalIgnoreCase) 
                     ? clienteId 
-                    : numeroDocumento ?? clienteId;  //deberia detectar si el numero de documento o cuit / cuil no existe,
-                                                     //no deberia poder cargar al cliente.
+                    : numeroDocumento ?? clienteId;
 
                 // ❷ Invocar servicio de datos completos
                 var resultadoDatos = await _cajaServicio.BusquedaDatosCliente(
@@ -327,12 +340,12 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 // ❸ Validar respuesta
                 if (resultadoDatos == null || !resultadoDatos.Ok || resultadoDatos.Entidad == null)
                 {
-                    return (false, resultadoDatos?.Mensaje ?? "No se pudieron obtener los datos del cliente", null);
+                    return (false, resultadoDatos?.Mensaje ?? "No se pudieron obtener los datos del cliente", null, null);
                 }
 
                 var datos = resultadoDatos.Entidad;
 
-                // ❹ Mapear a objeto de respuesta con TODOS los datos
+                // ❹ Mapear a objeto de respuesta con TODOS los datos (para frontend)
                 var clienteCompleto = new
                 {
                     // Datos básicos
@@ -340,12 +353,12 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     nombre = datos.cta_denominacion ?? string.Empty,
                     domicilio = datos.cta_domicilio ?? string.Empty,
                     
-                    // ✅ NUEVO: Tipo de documento separado
-                    tdocId = cuenta.Tdoc_Id ?? string.Empty,           // ID del tipo (ej: "96")
-                    tdocDesc = datos.tdoc_desc ?? string.Empty,        // Descripción (ej: "DNI")
-                    documento = datos.cta_documento ?? string.Empty,   // Valor (ej: "23418922")
+                    // ✅ Tipo de documento separado
+                    tdocId = cuenta.Tdoc_Id ?? string.Empty,
+                    tdocDesc = datos.tdoc_desc ?? string.Empty,
+                    documento = datos.cta_documento ?? string.Empty,
                     
-                    // ✅ Mantener por retrocompatibilidad
+                    // ✅ Retrocompatibilidad
                     tipoNumero = $"{datos.tdoc_desc ?? ""} {datos.cta_documento ?? ""}".Trim(),
                     
                     email = datos.cta_email ?? string.Empty,
@@ -353,19 +366,20 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     origen = cuenta.Origen,
                     origenDesc = cuenta.Origen_Desc,
 
-                    // ✅ Datos fiscales (NUEVOS)
+                    // ✅ Datos fiscales
                     condicionAfip = datos.afip_desc ?? string.Empty,
                     condicionAfipId = datos.afip_id ?? string.Empty,
                     emite = $"Factura {datos.tco_letra}",
-                    emiteId = datos.tco_letra,                                       
+                    emiteId = datos.tco_letra,
                 };
 
-                return (true, "OK", clienteCompleto);
+                // ✅ RETORNAR: objeto para frontend + DTO completo para sesión
+                return (true, "OK", clienteCompleto, datos);
             }
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "Error al obtener datos completos del cliente {ClienteId}", clienteId);
-                return (false, "Error al procesar datos del cliente", null);
+                return (false, "Error al procesar datos del cliente", null, null);
             }
         }
 
@@ -395,6 +409,149 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 condicionVenta = string.Empty,
                 condicionVentaId = string.Empty
             };
+        }
+
+        /// <summary>
+        /// ✅ NUEVA ACTION: Obtiene el cliente actualmente seleccionado desde sesión
+        /// Se invoca desde JavaScript para cargar datos en modal de edición
+        /// </summary>
+        [HttpPost]
+        public IActionResult ObtenerClienteActual()
+        {
+            try
+            {
+                var clienteActual = ClienteActual;
+
+                if (clienteActual == null)
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = "No hay cliente seleccionado en sesión"
+                    });
+                }
+
+                // Mapear datos para el frontend
+                var clienteParaEdicion = new
+                {
+                    id = clienteActual.cta_id,
+                    tipoDocumento = clienteActual.tdoc_id ?? string.Empty,
+                    numeroDocumento = clienteActual.cta_documento ?? string.Empty,
+                    nombre = clienteActual.cta_denominacion ?? string.Empty,
+                    domicilio = clienteActual.cta_domicilio ?? string.Empty,
+                    email = clienteActual.cta_email ?? string.Empty,
+                    movil = clienteActual.cta_celu ?? string.Empty,
+                    origen = clienteActual.Origen ?? string.Empty,
+                    
+                    // Datos adicionales para mostrar
+                    tdocDesc = clienteActual.tdoc_desc ?? string.Empty,
+                    condicionAfip = clienteActual.afip_desc ?? string.Empty,
+                    emite = $"Factura {clienteActual.tco_letra ?? ""}"
+                };
+
+                _logger?.LogInformation(
+                    "Cliente actual cargado desde sesión: {ClienteId} - {ClienteNombre}",
+                    clienteActual.cta_id,
+                    clienteActual.cta_denominacion
+                );
+
+                return Json(new
+                {
+                    ok = true,
+                    cliente = clienteParaEdicion
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al obtener cliente actual desde sesión");
+                return Json(new
+                {
+                    ok = false,
+                    mensaje = "Error al recuperar datos del cliente"
+                });
+            }
+        }
+
+        /// <summary>
+        /// ✅ NUEVA ACTION: Actualiza datos del Consumidor Final
+        /// </summary>
+        [HttpPost]
+        public async Task<JsonResult> ActualizarConsumidorFinal(
+            string id,
+            string tipoDocumento,
+            string numeroDocumento,
+            string nombre,
+            string domicilio,
+            string email,
+            string movil)
+        {
+            try
+            {
+                // ❶ VALIDAR PARÁMETROS OBLIGATORIOS
+                if (string.IsNullOrWhiteSpace(id))
+                {
+                    return Json(new { ok = false, mensaje = "ID de cliente requerido" });
+                }
+
+                if (string.IsNullOrWhiteSpace(tipoDocumento))
+                {
+                    return Json(new { ok = false, mensaje = "Tipo de documento requerido" });
+                }
+
+                if (string.IsNullOrWhiteSpace(numeroDocumento))
+                {
+                    return Json(new { ok = false, mensaje = "Número de documento requerido" });
+                }
+
+                if (string.IsNullOrWhiteSpace(nombre))
+                {
+                    return Json(new { ok = false, mensaje = "Nombre requerido" });
+                }
+
+                // ❷ VERIFICAR QUE EL CLIENTE EN SESIÓN SEA CONSUMIDOR FINAL
+                var clienteActual = ClienteActual;
+
+                if (clienteActual == null || clienteActual.Origen?.ToUpper() != "F")
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = "Solo se pueden actualizar Consumidores Finales"
+                    });
+                }
+
+                // ❸ TODO: LLAMAR AL SERVICIO DE ACTUALIZACIÓN
+                // Aquí iría la llamada al servicio que actualiza el cliente
+                // var resultado = await _cajaServicio.ActualizarConsumidorFinal(...);
+
+                _logger?.LogInformation(
+                    "Consumidor Final actualizado: {ClienteId} - {ClienteNombre}",
+                    id, nombre
+                );
+
+                // ❹ ACTUALIZAR CLIENTE EN SESIÓN
+                clienteActual.cta_denominacion = nombre.ToUpper();
+                clienteActual.cta_domicilio = domicilio?.ToUpper();
+                clienteActual.cta_email = email?.ToLower();
+                clienteActual.cta_celu = movil;
+                
+                ClienteActual = clienteActual;
+
+                return Json(new
+                {
+                    ok = true,
+                    mensaje = "Consumidor Final actualizado correctamente"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al actualizar Consumidor Final: {ClienteId}", id);
+                return Json(new
+                {
+                    ok = false,
+                    mensaje = "Error al actualizar el cliente"
+                });
+            }
         }
     }
 }

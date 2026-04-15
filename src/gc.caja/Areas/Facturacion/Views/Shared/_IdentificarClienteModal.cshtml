@@ -120,9 +120,9 @@
                             </div>
                         </div>
 
-                        <!-- Fila 3: Email, Móvil -->
+                        <!-- Fila 3: Email, Móvil, BOTÓN EDITAR -->
                         <div class="row g-3">
-                            <div class="col-md-6">
+                            <div class="col-md-5">
                                 <label for="txtEmail" class="form-label fw-semibold text-golden-dark">
                                     <i class='bx bx-envelope'></i> Email:
                                 </label>
@@ -131,7 +131,7 @@
                                        id="txtEmail" 
                                        readonly>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label for="txtMovil" class="form-label fw-semibold text-golden-dark">
                                     <i class='bx bx-phone'></i> Móvil:
                                 </label>
@@ -139,6 +139,16 @@
                                        class="form-control form-control-sm" 
                                        id="txtMovil" 
                                        readonly>
+                            </div>
+                            <!-- ✅ NUEVO: Botón Editar (solo para Consumidores Finales) -->
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button type="button" 
+                                        class="btn btn-warning btn-sm w-100 shadow" 
+                                        id="btnEditarCliente"
+                                        style="display: none;"
+                                        title="Editar datos del Consumidor Final">
+                                    <i class='bx bx-edit'></i> EDITAR DATOS
+                                </button>
                             </div>
                         </div>
                     </div>

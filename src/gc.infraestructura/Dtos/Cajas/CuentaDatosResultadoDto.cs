@@ -55,6 +55,7 @@ namespace gc.infraestructura.Dtos.Cajas
 
         public string fp { get; set; } = string.Empty;
         public string tco_letra { get; set; } = string.Empty;
+        public string? Origen { get; set; }
     }
 
     //seria la representacion del json fp que viene en el resultado del sp, para facilitar su uso en el front.

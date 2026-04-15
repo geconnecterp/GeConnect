@@ -388,5 +388,35 @@ namespace gc.caja.Controllers
         {
             return GenerarGrillaSmart(lista, sort, 999, 1, 0, 1, "ASC");
         }
+
+        /// <summary>
+        /// ✅ NUEVO: Cliente actualmente seleccionado (datos completos)
+        /// Almacena el cliente único encontrado o seleccionado desde la grilla
+        /// Incluye datos básicos + datos fiscales completos
+        /// </summary>
+        protected CuentaDatosResultadoDto? ClienteActual
+        {
+            get
+            {
+                string json = _context.HttpContext?.Session.GetString("ClienteActual") ?? string.Empty;
+                if (string.IsNullOrEmpty(json))
+                {
+                    return null;
+                }
+                return JsonConvert.DeserializeObject<CuentaDatosResultadoDto>(json);
+            }
+            set
+            {
+                if (value == null)
+                {
+                    _context.HttpContext?.Session.Remove("ClienteActual");
+                }
+                else
+                {
+                    var json = JsonConvert.SerializeObject(value);
+                    _context.HttpContext?.Session.SetString("ClienteActual", json);
+                }
+            }
+        }
     }
 }
