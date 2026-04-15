@@ -13,18 +13,16 @@
     // Layouts de teclado
     const layouts = {
         alphanumeric: [
-            ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
-            ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
-            ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Ñ'],
-            ['SHIFT', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'BACK'],
-            ['?123', 'SPACE', 'ENTER']
+            ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'SEP', '7', '8', '9'],
+            ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Ñ', 'SEP', '4', '5', '6'],
+            ['SHIFT', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'BACK', 'SEP', '1', '2', '3'],
+            ['?123', 'SPACE', 'ENTER', 'SEP', '0']
         ],
         symbols: [
-            ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
-            ['@', '#', '$', '%', '&', '-', '+', '(', ')', '/'],
-            ['*', '"', "'", ':', ';', '!', '?', '_', ',', '.'],
-            ['=', '<', '>', '[', ']', '{', '}', '\\', 'BACK'],
-            ['ABC', 'SPACE', 'ENTER']
+            ['@', '#', '$', '%', '&', '-', '+', '(', ')', '/', 'SEP', '7', '8', '9'],
+            ['*', '"', "'", ':', ';', '!', '?', '_', ',', '.', 'SEP', '4', '5', '6'],
+            ['=', '<', '>', '[', ']', '{', '}', '\\', 'BACK', 'SEP', '1', '2', '3'],
+            ['ABC', 'SPACE', 'ENTER', 'SEP', '0']
         ],
         numeric: [
             ['1', '2', '3', '+'],
@@ -126,7 +124,10 @@
                 let className = 'vk-key';
                 let label = key;
 
-                if (key === 'SHIFT') {
+                if (key === 'SEP') {
+                    className = 'vk-separator';
+                    label = '';
+                } else if (key === 'SHIFT') {
                     className += ' vk-key-special' + (isShift ? ' active-shift' : '');
                     if (type === 'alphanumeric') className += ' vk-key-w1-5';
                     label = '⇧';
@@ -143,6 +144,8 @@
                 } else if (key === '?123' || key === 'ABC') {
                     className += ' vk-key-special vk-key-w2';
                     label = key;
+                } else if (key === '0' && (type === 'alphanumeric' || type === 'symbols')) {
+                    className += ' vk-key-w1'; // Standard width for 0 in alphanumeric
                 } else if (key === '0' && (type === 'numeric' || type === 'tel') && rowIndex === 3) {
                     className += ' vk-key-w2';
                 } else if (key === '0' && type === 'integer' && rowIndex === 3) {
@@ -177,7 +180,7 @@
     }
 
     function handleKeyPress(key) {
-        if (!activeInput) return;
+        if (!activeInput || key === 'SEP') return;
 
         const start = activeInput.selectionStart ?? activeInput.value.length;
         const end = activeInput.selectionEnd ?? activeInput.value.length;

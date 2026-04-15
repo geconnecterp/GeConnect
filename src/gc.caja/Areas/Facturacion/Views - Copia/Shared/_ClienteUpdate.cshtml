@@ -22,16 +22,11 @@
                             </label>
                             <select class="form-select form-select-lg fw-bold" id="selTipoDocumento" required>
                                 <option value="">Seleccionar...</option>
-                                <option value="80">CUIT</option>
-                                <option value="86">CUIL</option>
-                                <option value="87">CDI</option>
-                                <option value="89">LE</option>
-                                <option value="90">LC</option>
-                                <option value="91">CI Extranjera</option>
-                                <option value="94">Pasaporte</option>
-                                <option value="95">CI Bs. As. RNP</option>
-                                <option value="96" selected>D.N.I.</option>
-                                <option value="99">Sin Identificar</option>
+                                <option value="DNI" selected>DNI</option>
+                                <option value="CUIT">CUIT</option>
+                                <option value="CUIL">CUIL</option>
+                                <option value="CDI">CDI</option>
+                                <option value="PASAPORTE">PASAPORTE</option>
                             </select>
                             <div class="invalid-feedback">
                                 Seleccione el tipo de documento
@@ -43,7 +38,7 @@
                                 <span class="text-danger">*</span>
                             </label>
                             <input type="text" 
-                                   class="form-control form-control-lg fw-bold jsteclado jsinteger" 
+                                   class="form-control form-control-lg fw-bold" 
                                    id="txtNumeroDocumento" 
                                    placeholder="Ingrese el número de documento..."
                                    maxlength="20"
