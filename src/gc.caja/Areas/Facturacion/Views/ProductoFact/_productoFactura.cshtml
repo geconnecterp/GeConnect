@@ -1,0 +1,291 @@
+﻿@* 
+    ============================================
+    MODAL: PRODUCTOS DE FACTURACIÓN
+    ============================================
+    Diseño Golden con tabla de productos y acciones
+    Integración con flujo de identificación de cliente
+    ✅ ACTUALIZADO: Convertido a modal, sin teclado numérico
+*@
+
+<!-- ====== MODAL PRODUCTOS DE FACTURACIÓN ====== -->
+<div class="modal modal-golden fade" 
+     id="modalProductosFactura" 
+     data-bs-backdrop="static" 
+     data-bs-keyboard="false" 
+     tabindex="-1" 
+     aria-labelledby="modalProductosFacturaTitle" 
+     aria-hidden="true">
+    
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            
+            <!-- ====== HEADER CON DATOS DEL CLIENTE ====== -->
+            <div class="modal-header bg-gradient-golden p-0">
+                <!-- Card con datos del cliente integrado en el header -->
+                <div class="w-100">
+                    <div class="d-flex justify-content-between align-items-center p-3 border-bottom border-light">
+                        <h5 class="mb-0 text-white">
+                            <i class='bx bx-receipt'></i>
+                            FACTURACIÓN
+                        </h5>
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-white text-dark fs-6" id="badgeTipoComprobante">
+                                <i class='bx bx-file'></i> FACTURA A
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Datos del cliente compactos -->
+                    <div class="p-2 bg-white bg-opacity-10">
+                        <!-- FILA 1: Datos principales -->
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-5">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
+                                        <i class='bx bx-user'></i> Cliente
+                                    </span>
+                                    <input type="text" 
+                                           class="form-control form-control-sm fw-bold bg-white" 
+                                           id="txtClienteNombre" 
+                                           readonly>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-2">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
+                                        <i class='bx bx-id-card'></i> ID
+                                    </span>
+                                    <input type="text" 
+                                           class="form-control form-control-sm text-center fw-bold bg-white" 
+                                           id="txtClienteId" 
+                                           readonly>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-5">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
+                                        <i class='bx bx-map'></i> Domicilio
+                                    </span>
+                                    <input type="text" 
+                                           class="form-control form-control-sm bg-white" 
+                                           id="txtClienteDomicilio" 
+                                           readonly>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- FILA 2: Datos adicionales -->
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
+                                        <i class='bx bx-receipt'></i> AFIP
+                                    </span>
+                                    <input type="text" 
+                                           class="form-control form-control-sm bg-white" 
+                                           id="txtCondicionAfip" 
+                                           readonly>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
+                                        <i class='bx bx-file'></i> CUIT
+                                    </span>
+                                    <input type="text" 
+                                           class="form-control form-control-sm bg-white" 
+                                           id="txtClienteCuit" 
+                                           readonly>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
+                                        <i class='bx bx-envelope'></i> Email
+                                    </span>
+                                    <input type="text" 
+                                           class="form-control form-control-sm bg-white" 
+                                           id="txtClienteEmail" 
+                                           readonly>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
+                                        <i class='bx bx-phone'></i> Móvil
+                                    </span>
+                                    <input type="text" 
+                                           class="form-control form-control-sm bg-white" 
+                                           id="txtClienteMovil" 
+                                           readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== BODY DEL MODAL ====== -->
+            <div class="modal-body p-3 bg-light">
+                
+                <!-- ====== SECCIÓN: BÚSQUEDA Y ACCIONES ====== -->
+                <div class="card card-golden mb-3">
+                    <div class="card-body p-2">
+                        <div class="row g-2">
+                            <!-- Campo de búsqueda de código -->
+                            <div class="col-md-8">
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text bg-golden text-white fw-bold">
+                                        <i class='bx bx-search-alt'></i> Código
+                                    </span>
+                                    <input type="text" 
+                                           class="form-control form-control-lg fw-bold jsteclado" 
+                                           id="txtCodigoProducto" 
+                                           placeholder="Ingrese código de producto..." 
+                                           maxlength="20"
+                                           autocomplete="off">
+                                    <button class="btn btn-golden btn-lg" type="button" id="btnBuscarProducto">
+                                        <i class='bx bx-search'></i> BUSCAR
+                                    </button>
+                                </div>
+                                <small class="text-muted d-block mt-1">
+                                    <i class='bx bx-info-circle'></i> 
+                                    <span id="mensajeEstadoProducto" class="fw-bold">
+                                        Presione <kbd>Enter</kbd> o <strong>BUSCAR</strong> para agregar producto
+                                    </span>
+                                </small>
+                            </div>
+                            
+                            <!-- Botones de acción rápida -->
+                            <div class="col-md-4">
+                                <div class="row g-2 h-100">
+                                    <div class="col-6">
+                                        <button class="btn btn-warning w-100 h-100 d-flex flex-column align-items-center justify-content-center" 
+                                                id="btnPreFactura" 
+                                                type="button"
+                                                title="Cargar pre-factura existente">
+                                            <i class='bx bx-file bx-lg'></i>
+                                            <span class="fw-bold small">Pre-Factura</span>
+                                        </button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button class="btn btn-warning w-100 h-100 d-flex flex-column align-items-center justify-content-center" 
+                                                id="btnFacturaEmitida" 
+                                                type="button"
+                                                title="Consultar facturas emitidas">
+                                            <i class='bx bx-receipt bx-lg'></i>
+                                            <span class="fw-bold small">Fact. Emitida</span>
+                                        </button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button class="btn btn-warning w-100 h-100 d-flex flex-column align-items-center justify-content-center" 
+                                                id="btnCotizacion" 
+                                                type="button"
+                                                title="Generar cotización">
+                                            <i class='bx bx-dollar-circle bx-lg'></i>
+                                            <span class="fw-bold small">Cotización</span>
+                                        </button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button class="btn btn-warning w-100 h-100 d-flex flex-column align-items-center justify-content-center" 
+                                                id="btnUltimoDetalle" 
+                                                type="button"
+                                                title="Ver último detalle cargado">
+                                            <i class='bx bx-time-five bx-lg'></i>
+                                            <span class="fw-bold small">Último Detalle</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ====== TABLA DE PRODUCTOS (ANCHO COMPLETO) ====== -->
+                <div class="card card-golden">
+                    <div class="card-body p-0">
+                        <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
+                            <table class="table table-golden table-hover table-sm mb-0">
+                                <thead class="table-golden-header sticky-top">
+                                    <tr>
+                                        <th class="text-center" style="width: 8%;">Código</th>
+                                        <th class="text-center" style="width: 10%;">Cód. Barras</th>
+                                        <th style="width: 35%;">Descripción</th>
+                                        <th class="text-center" style="width: 5%;">Bts</th>
+                                        <th class="text-end" style="width: 8%;">Cantidad</th>
+                                        <th class="text-end" style="width: 10%;">P. Unitario</th>
+                                        <th class="text-end" style="width: 12%;">P. Total</th>
+                                        <th class="text-center" style="width: 7%;">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyProductos">
+                                    <!-- ✅ Mensaje inicial (se elimina al agregar primer producto) -->
+                                    <tr id="rowSinProductos" class="compact-row">
+                                        <td colspan="8" class="text-center text-muted py-4">
+                                            <i class='bx bx-package bx-lg text-golden'></i>
+                                            <p class="mb-0 mt-2">
+                                                <strong>No hay productos cargados</strong><br>
+                                                <small>Busque un producto por código o código de barras</small>
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Footer con Total -->
+                    <div class="card-footer bg-golden-light border-top border-golden">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-8 text-end">
+                                <span class="fw-bold text-golden-dark fs-4">TOTAL:</span>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" 
+                                       class="form-control form-control-lg text-end fw-bold text-success" 
+                                       id="txtTotalFactura" 
+                                       readonly 
+                                       value="$ 0.00"
+                                       style="font-size: 1.75rem; background-color: #fff; border: 2px solid var(--bs-golden-primary);">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ====== FOOTER CON BOTONES DE ACCIÓN ====== -->
+            <div class="modal-footer d-flex justify-content-between bg-white border-top">
+                <!-- Información adicional (izquierda) -->
+                <div class="d-flex align-items-center gap-3">
+                    <span class="badge bg-info fs-6" id="badgeCantidadItems">
+                        <i class='bx bx-package'></i> 
+                        <span id="cantidadItems">0</span> items
+                    </span>
+                </div>
+
+                <!-- Botones de acción (derecha) -->
+                <div class="d-flex gap-3">
+                    <button type="button"
+                            class="btn btn-danger btn-lg shadow"
+                            id="btnCancelarFactura"
+                            title="Cancelar y volver a identificar cliente">
+                        <i class='bx bx-x-circle'></i> CANCELAR
+                    </button>
+                    <button type="button"
+                            class="btn btn-success btn-lg shadow"
+                            id="btnConfirmarFactura"
+                            title="Continuar con el proceso de facturación">
+                        <i class='bx bx-check-circle'></i> SEGUIR
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

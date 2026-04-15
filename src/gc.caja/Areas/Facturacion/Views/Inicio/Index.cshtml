@@ -54,6 +54,7 @@
 
 @await Html.PartialAsync("_IdentificarClienteModal")
 @await Html.PartialAsync("_ClienteUpdate")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/ProductoFact/_productoFactura.cshtml")
 
 @section Scripts {
     <script>
@@ -68,4 +69,6 @@
     </script>
 
     <script src="~/js/app/fact.js"></script>
+    <script src="~/js/app/prodfact.js"></script>
+
 }

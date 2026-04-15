@@ -464,6 +464,17 @@ Antes de commit, verificar para **CADA COMPONENTE MODIFICADO**:
 
 **ANTES de eliminar, renombrar o modificar la firma de CUALQUIER componente, se DEBE:**
 
+## ⚠️ REGLA CRÍTICA ADICIONAL: VERIFICACIÓN DE DEPENDENCIAS
+
+Antes de eliminar CUALQUIER función:
+
+1. **BUSCAR** todas las referencias en el archivo con `Ctrl+F`
+2. **VERIFICAR** si otras funciones la invocan
+3. **CONFIRMAR** con el usuario si es seguro eliminar
+4. **DOCUMENTAR** por qué se elimina
+
+**Si una función es llamada por otra función existente → NUNCA ELIMINAR**
+
 #### 1️⃣ Análisis de Dependencias Obligatorio
 
 Verificar referencias en:

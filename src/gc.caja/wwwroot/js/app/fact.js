@@ -188,6 +188,29 @@ function inicializaEventosFact() {
         console.log('✏️ Editar Consumidor Final...');
         abrirModalClienteEditar();
     });
+
+    // ════════════════════════════════════════════════════════════════
+    // ✅ INTEGRACIÓN CON MÓDULO DE PRODUCTOS DE FACTURACIÓN
+    // ════════════════════════════════════════════════════════════════
+    // AGREGAR AL FINAL DEL ARCHIVO (después de todas las funciones existentes)
+    // NO MODIFICA NINGUNA FUNCIÓN EXISTENTE
+    // ════════════════════════════════════════════════════════════════
+
+    /**
+     * ✅ NUEVO: Listener para evento de vuelta a identificar cliente
+     * Se dispara desde prodfact.js cuando el usuario cancela la factura
+     */
+    $(document).on('volverAIdentificarCliente', function () {
+        console.log('═══════════════════════════════════════════════════');
+        console.log('📡 EVENTO RECIBIDO: volverAIdentificarCliente');
+        console.log('═══════════════════════════════════════════════════');
+
+        // Abrir modal de identificar cliente con delay
+        setTimeout(() => {
+            abrirModalIdentificarCliente();
+            console.log('✅ Modal de identificar cliente reabierto');
+        }, 400);
+    });
 }
 
 // ====== INICIALIZACIÓN DE VISTA ======
@@ -763,7 +786,7 @@ function seleccionarClienteDesdeGrilla($row) {
         .hide()
         .empty();
 
-    // ❾ OCULTAR ALERT DE "SIN CLIENTE"
+    // ❽ OCULTAR ALERT DE "SIN CLIENTE"
     $('#alertSinCliente').hide();
 
     // ❿ MOSTRAR LOADER CON INFORMACIÓN DEL CRITERIO
@@ -1297,6 +1320,52 @@ function limpiarFormularioCliente(preservarModoEdicion = false) {
 }
 
 /**
+ * ✅ ACTUALIZADO v2.0: Confirma el cliente seleccionado y abre productos
+ * 
+ * Se invoca cuando el usuario hace clic en "SEGUIR".
+ * Valida que haya cliente seleccionado, cierra el modal y dispara evento para mostrar productos.
+ * 
+ * @param {Object} cliente - Objeto con datos del cliente seleccionado
+ * @returns {void}
+ */
+function confirmarCliente(cliente) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('✅ CONFIRMAR CLIENTE SELECCIONADO v2.0');
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ VALIDAR que hay cliente
+    if (!cliente) {
+        console.error('❌ No hay cliente para confirmar');
+        mostrarMensajeError('No hay cliente seleccionado');
+        return;
+    }
+
+    console.log(`   Cliente: ${cliente.nombre}`);
+    console.log(`   ID: ${cliente.id || 'N/A'}`);
+    console.log(`   Origen: ${cliente.origenDesc} (${cliente.origen})`);
+    console.log(`   Documento: ${cliente.documento || 'N/A'}`);
+
+    // ❷ Cerrar modal de identificar cliente
+    $('#modalIdentificarCliente').modal('hide');
+    console.log('✅ Modal de identificar cliente cerrado');
+
+    // ❸ ✅ NUEVO v2.0: Disparar evento personalizado para prodfact.js
+    setTimeout(() => {
+        $(document).trigger('clienteConfirmado', [cliente]);
+        console.log('✅ Evento "clienteConfirmado" disparado con datos del cliente');
+        console.log('   prodfact.js debería mostrar la sección de productos automáticamente');
+    }, 400);
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('✅ CONFIRMAR CLIENTE - FINALIZADO v2.0');
+    console.log('═══════════════════════════════════════════════════');
+}
+
+// ════════════════════════════════════════════════════════════════
+// ✅ FUNCIONES AUXILIARES Y DE VALIDACIÓN
+// ════════════════════════════════════════════════════════════════
+
+/**
  * ✅ ACTUALIZADO v3.1: Corrige manejo de ID en Consumidores Finales
  * 
  * CAMBIOS v3.1:
@@ -1322,13 +1391,15 @@ function guardarCliente() {
     }
     
     // URL de actualización (fallback en caso de que no esté definida la variable global)
-    const urlActualizar = typeof ActualizarClienteUrl !== 'undefined' && ActualizarClienteUrl 
-        ? ActualizarClienteUrl 
-        : '/Facturacion/Cliente/ActualizarCliente';
+    const urlActualizar = typeof ActualizarConsumidorFinalUrl !== 'undefined' && ActualizarConsumidorFinalUrl 
+        ? ActualizarConsumidorFinalUrl 
+        : '/Facturacion/Cliente/ActualizarConsumidorFinal';
     
     console.log('🔄 Guardando cliente...', clienteData);
     
     if (modoEdicionCliente) {
+        $('#btnCargarCliente').addClass('processing').prop('disabled', true);
+        
         $.ajax({
             url: urlActualizar,
             type: 'POST',
@@ -1374,165 +1445,25 @@ function guardarCliente() {
                         
                         mostrarDatosCliente(clienteActualizado);
                     }, 1500);
+                } else {
+                    console.error('❌ Error al actualizar:', response.mensaje);
+                    mostrarMensajeError(response.mensaje || 'Error al actualizar el cliente');
+                    $('#btnCargarCliente').removeClass('processing').prop('disabled', false);
                 }
+            },
+            error: function(xhr) {
+                console.error('❌ Error AJAX:', xhr);
+                mostrarMensajeError('Error al comunicarse con el servidor');
+                $('#btnCargarCliente').removeClass('processing').prop('disabled', false);
             }
         });
-    }
-}
-
-/**
- * ✅ ACTUALIZADO v2.0: Limpia el formulario de cliente
- * 
- * Cambios desde v1.0:
- * - Modificado: Ahora llama a ajustarPlaceholderSegunTipo con limpiarValor=true
- * 
- * Resetea todos los campos y quita clases de validación.
- * 
- * @returns {void}
- */
-function limpiarFormularioCliente() {
-    console.log('🧹 Limpiando formulario de cliente v2.0...');
-
-    // ❶ Resetear formulario HTML
-    $('#formClienteUpdate')[0].reset();
-
-    // ❷ Limpiar campo oculto de ID
-    $('#txtClienteIdUpdate').val('');
-
-    // ❸ Quitar clases de validación
-    $('#formClienteUpdate .form-control, #formClienteUpdate .form-select')
-        .removeClass('is-valid is-invalid');
-
-    // ❹ Habilitar botón de guardar
-    $('#btnCargarCliente')
-        .removeClass('processing')
-        .prop('disabled', false);
-
-    // ❺ Habilitar campo de número de documento
-    $('#txtNumeroDocumento').prop('readonly', false);
-
-    // ❻ Resetear placeholder según tipo seleccionado (CON limpieza de valor)
-    ajustarPlaceholderSegunTipo(true); // ← LIMPIAR en modo NUEVO
-
-    // ❼ Resetear modo de edición
-    modoEdicionCliente = false;
-
-    console.log('✅ Formulario limpiado correctamente v2.0');
-}
-
-/**
- * ✅ ACTUALIZADO v2.0: Ajusta placeholder, maxlength Y clases CSS del input según tipo de documento
- * 
- * Cambios desde v1.0:
- * - Agregado: Parámetro limpiarValor para control de limpieza
- * - Modificado: Solo limpia valor si limpiarValor = true
- * 
- * Reglas de clases CSS:
- * - Tipos numéricos (80, 86, 87, 89, 90, 95, 96): "jsteclado jsinteger"
- * - Tipos alfanuméricos (91, 94, 99): "jsteclado"
- * 
- * @param {boolean} limpiarValor - Si es true, limpia el valor del input (default: true)
- */
-function ajustarPlaceholderSegunTipo(limpiarValor = true) {
-    const tipoSeleccionado = $('#selTipoDocumento').val();
-    const $inputNumero = $('#txtNumeroDocumento');
-
-    let placeholder = 'Ingrese el número de documento...';
-    let maxLength = 20;
-    let clasesCss = 'form-control form-control-lg fw-bold jsteclado'; // Base común
-
-    // ✅ Tipos que SOLO aceptan números
-    const tiposNumericos = ['80', '86', '87', '89', '90', '95', '96'];
-
-    switch (tipoSeleccionado) {
-        case '80': // CUIT
-            placeholder = 'Ej: 20123456789 (sin guiones)';
-            maxLength = 11;
-            clasesCss += ' jsinteger';
-            break;
-
-        case '86': // CUIL
-            placeholder = 'Ej: 27123456789 (sin guiones)';
-            maxLength = 11;
-            clasesCss += ' jsinteger';
-            break;
-
-        case '87': // CDI
-            placeholder = 'Ej: 12345678';
-            maxLength = 8;
-            clasesCss += ' jsinteger';
-            break;
-
-        case '89': // LE (Libreta de Enrolamiento)
-            placeholder = 'Ej: 1234567';
-            maxLength = 8;
-            clasesCss += ' jsinteger';
-            break;
-
-        case '90': // LC (Libreta Cívica)
-            placeholder = 'Ej: 1234567';
-            maxLength = 8;
-            clasesCss += ' jsinteger';
-            break;
-
-        case '91': // CI Extranjera
-            placeholder = 'Ej: ABC123456';
-            maxLength = 15;
-            // Solo "jsteclado" (sin jsinteger)
-            break;
-
-        case '94': // Pasaporte
-            placeholder = 'Ej: AAA123456';
-            maxLength = 15;
-            // Solo "jsteclado" (sin jsinteger)
-            break;
-
-        case '95': // CI Bs. As. RNP
-            placeholder = 'Ej: 12345678';
-            maxLength = 8;
-            clasesCss += ' jsinteger';
-            break;
-
-        case '96': // D.N.I.
-            placeholder = 'Ej: 12345678';
-            maxLength = 8;
-            clasesCss += ' jsinteger';
-            break;
-
-        case '99': // Sin Identificar
-            placeholder = 'No aplica';
-            maxLength = 1;
-            // Solo "jsteclado" (sin jsinteger)
-            break;
-
-        default:
-            placeholder = 'Ingrese el número de documento...';
-            maxLength = 20;
-        // Solo "jsteclado" (sin jsinteger)
-    }
-
-    // ✅ Aplicar cambios al input
-    $inputNumero
-        .attr('placeholder', placeholder)
-        .attr('maxlength', maxLength)
-        .attr('class', clasesCss); // Reemplazar todas las clases
-
-    // ✅ MODIFICADO v2.0: Limpiar valor SOLO si se indica explícitamente
-    if (limpiarValor) {
-        $inputNumero.val('');
-        console.log(`📝 Valor del documento limpiado (modo: ${limpiarValor ? 'LIMPIAR' : 'PRESERVAR'})`);
     } else {
-        console.log(`📝 Valor del documento PRESERVADO`);
+        // ✅ MODO NUEVO: Crear Consumidor Final (TODO: Implementar)
+        console.log('⚠️ TODO: Implementar creación de nuevo cliente');
+        mostrarMensajeError('Funcionalidad de creación de cliente no implementada aún');
     }
-
-    console.log(`📝 Tipo documento cambiado a: ${tipoSeleccionado}`);
-    console.log(`   - Placeholder: "${placeholder}"`);
-    console.log(`   - MaxLength: ${maxLength}`);
-    console.log(`   - Clases CSS: "${clasesCss}"`);
-    console.log(`   - Solo números: ${tiposNumericos.includes(tipoSeleccionado) ? 'SÍ' : 'NO'}`);
 }
 
-// ====== VALIDAR FORMULARIO CLIENTE ====== (NUEVO)
 /**
  * ✅ NUEVO: Valida todos los campos del formulario de cliente
  * 
@@ -1624,8 +1555,9 @@ function validarFormularioCliente() {
     return esValido;
 }
 
-// ====== FUNCIONES AUXILIARES ======
-
+/**
+ * Valida un campo individual
+ */
 function validarCampo($campo) {
     const valor = $campo.val().trim();
 
@@ -1641,6 +1573,9 @@ function validarCampo($campo) {
     }
 }
 
+/**
+ * Valida formato de email
+ */
 function validarEmail($campo) {
     const email = $campo.val().trim();
 
@@ -1659,101 +1594,6 @@ function validarEmail($campo) {
     }
 
     return esValido;
-}
-
-function guardarCliente() {
-    $('#btnCargarCliente').addClass('processing').prop('disabled', true);
-
-    const clienteData = {
-        id: $('#txtClienteIdUpdate').val() || null,
-        tipoDocumento: $('#selTipoDocumento').val(),
-        numeroDocumento: $('#txtNumeroDocumento').val().trim(),
-        nombre: $('#txtNombreCliente').val().trim().toUpperCase(),
-        domicilio: $('#txtDomicilioCliente').val().trim().toUpperCase(),
-        email: $('#txtEmailCliente').val().trim().toLowerCase(),
-        movil: $('#txtMovilCliente').val().trim()
-    };
-
-    console.log(modoEdicionCliente ? '✏️ Actualizando cliente...' : '➕ Creando nuevo cliente...', clienteData);
-
-    // ✅ MODO EDICIÓN: Actualizar Consumidor Final
-    if (modoEdicionCliente) {
-        const urlActualizar = typeof ActualizarConsumidorFinalUrl !== 'undefined' && ActualizarConsumidorFinalUrl
-            ? ActualizarConsumidorFinalUrl
-            : '/Facturacion/Cliente/ActualizarConsumidorFinal';
-
-        $.ajax({
-            url: urlActualizar,
-            type: 'POST',
-            data: clienteData,
-            success: function (response) {
-                if (response.ok) {
-                    console.log('✅ Cliente actualizado en el servidor');
-
-                    mostrarMensajeExito('Consumidor Final actualizado correctamente');
-
-                    // Actualizar datos en la vista de identificación
-                    setTimeout(() => {
-                        cerrarModalClienteUpdate();
-
-                        // Actualizar datos mostrados
-                        const clienteActualizado = {
-                            ...clienteSeleccionado,
-                            nombre: clienteData.nombre,
-                            domicilio: clienteData.domicilio,
-                            email: clienteData.email,
-                            movil: clienteData.movil,
-                            tdocDesc: obtenerDescripcionTipoDoc(clienteData.tipoDocumento),
-                            documento: clienteData.numeroDocumento,
-                            tipoNumero: `${obtenerDescripcionTipoDoc(clienteData.tipoDocumento)} ${clienteData.numeroDocumento}`
-                        };
-
-                        mostrarDatosCliente(clienteActualizado);
-                    }, 1500);
-                } else {
-                    console.error('❌ Error al actualizar:', response.mensaje);
-                    mostrarMensajeError(response.mensaje || 'Error al actualizar el cliente');
-                    $('#btnCargarCliente').removeClass('processing').prop('disabled', false);
-                }
-            },
-            error: function (xhr) {
-                console.error('❌ Error AJAX:', xhr);
-                mostrarMensajeError('Error al comunicarse con el servidor');
-                $('#btnCargarCliente').removeClass('processing').prop('disabled', false);
-            }
-        });
-
-        return; // Salir de la función
-    }
-
-    // ✅ MODO NUEVO: Crear Consumidor Final (TODO: Implementar)
-    setTimeout(() => {
-        console.log('✅ Cliente guardado exitosamente (MOCK)');
-
-        mostrarMensajeExito('Cliente creado correctamente');
-
-        setTimeout(() => {
-            cerrarModalClienteUpdate();
-
-            const clienteCreado = {
-                id: Math.floor(Math.random() * 10000).toString(),
-                nombre: clienteData.nombre,
-                domicilio: clienteData.domicilio,
-                condicionAfip: 'CONSUMIDOR FINAL',
-                tdocDesc: obtenerDescripcionTipoDoc(clienteData.tipoDocumento),
-                tdocId: clienteData.tipoDocumento,
-                documento: clienteData.numeroDocumento,
-                tipoNumero: `${obtenerDescripcionTipoDoc(clienteData.tipoDocumento)} ${clienteData.numeroDocumento}`,
-                emite: 'FACTURA B',
-                email: clienteData.email,
-                movil: clienteData.movil,
-                origen: 'F',
-                origenDesc: 'CONSUMIDOR FINAL'
-            };
-
-            mostrarDatosCliente(clienteCreado);
-        }, 1500);
-    }, 1000);
 }
 
 /**
@@ -1776,9 +1616,9 @@ function obtenerDescripcionTipoDoc(tdocId) {
     return tipos[tdocId] || 'Desconocido';
 }
 
-// ========================================
-// FUNCIONES DE LIMPIEZA Y SESIÓN
-// ========================================
+// ════════════════════════════════════════════════════════════════
+// ✅ FUNCIONES DE LIMPIEZA Y SESIÓN
+// ════════════════════════════════════════════════════════════════
 
 /**
  * ✅ NUEVO v1.0: Limpia la sesión de clientes buscados en el servidor
@@ -1893,43 +1733,6 @@ function redirigirAlMenu() {
     setTimeout(() => {
         window.location.href = urlMenu;
     }, 300);
-}
-
-/**
- * ✅ NUEVO v1.0: Confirma el cliente seleccionado y cierra el modal
- * 
- * Se invoca cuando el usuario hace clic en "SEGUIR".
- * Valida que haya cliente seleccionado y procede con el flujo de facturación.
- * 
- * @param {Object} cliente - Objeto con datos del cliente seleccionado
- * @returns {void}
- */
-function confirmarCliente(cliente) {
-    console.log('═══════════════════════════════════════════════════');
-    console.log('✅ CONFIRMAR CLIENTE SELECCIONADO');
-    console.log('═══════════════════════════════════════════════════');
-
-    if (!cliente) {
-        console.error('❌ No hay cliente para confirmar');
-        mostrarMensajeError('No hay cliente seleccionado');
-        return;
-    }
-
-    console.log(`   Cliente: ${cliente.nombre}`);
-    console.log(`   ID: ${cliente.id}`);
-    console.log(`   Origen: ${cliente.origenDesc} (${cliente.origen})`);
-
-    // ❶ Cerrar modal de identificar cliente
-    $('#modalIdentificarCliente').modal('hide');
-
-    // ❷ TODO: Continuar con el flujo de facturación
-    console.log('🚀 Cliente confirmado - Continuando con facturación...');
-    console.log('⚠️ TODO: Implementar siguiente paso del flujo');
-
-    // Aquí iría la lógica para:
-    // - Cargar productos
-    // - Mostrar interfaz de facturación
-    // - etc.
 }
 
 /**
@@ -2102,423 +1905,3 @@ function ajustarPlaceholderSegunTipo(limpiarValor = true) {
     console.log(`   - Clases CSS: "${clasesCss}"`);
     console.log(`   - Solo números: ${tiposNumericos.includes(tipoSeleccionado) ? 'SÍ' : 'NO'}`);
 }
-
-// ====== VALIDAR FORMULARIO CLIENTE ====== (NUEVO)
-/**
- * ✅ NUEVO: Valida todos los campos del formulario de cliente
- * 
- * Reglas de validación:
- * - Tipo y número de documento: Obligatorios y con formato específico según tipo
- * - Nombre: Obligatorio
- * - Email: Opcional, pero debe ser válido si se ingresa
- * 
- * Cambios en la interfaz:
- * - Los campos inválidos recibirán la clase "is-invalid" y los válidos "is-valid"
- * - Se mostrará un mensaje de error específico debajo de cada campo inválido
- * 
- * @returns {boolean} Verdadero si el formulario es válido, falso si hay errores
- */
-function validarFormularioCliente() {
-    let esValido = true;
-
-    // Validar tipo de documento
-    if (!$('#selTipoDocumento').val()) {
-        $('#selTipoDocumento').addClass('is-invalid').removeClass('is-valid');
-        esValido = false;
-    } else {
-        $('#selTipoDocumento').addClass('is-valid').removeClass('is-invalid');
-    }
-
-    // Validar número de documento
-    const numeroDoc = $('#txtNumeroDocumento').val().trim();
-    const tipoDoc = $('#selTipoDocumento').val();
-
-    if (!numeroDoc) {
-        $('#txtNumeroDocumento').addClass('is-invalid').removeClass('is-valid');
-        esValido = false;
-    } else {
-        let valido = true;
-
-        // ✅ Validaciones específicas por tipo
-        switch (tipoDoc) {
-            case '80': // CUIT
-            case '86': // CUIL
-                if (numeroDoc.length !== 11 || !/^\d+$/.test(numeroDoc)) {
-                    valido = false;
-                }
-                break;
-
-            case '87': // CDI
-            case '89': // LE
-            case '90': // LC
-            case '95': // CI Bs. As. RNP
-            case '96': // DNI
-                if (numeroDoc.length !== 8 || !/^\d+$/.test(numeroDoc)) {
-                    valido = false;
-                }
-                break;
-
-            case '91': // CI Extranjera
-            case '94': // Pasaporte
-                if (numeroDoc.length < 4 || numeroDoc.length > 15) {
-                    valido = false;
-                }
-                break;
-
-            case '99': // Sin Identificar
-                // No se valida longitud
-                break;
-        }
-
-        if (!valido) {
-            $('#txtNumeroDocumento').addClass('is-invalid').removeClass('is-valid');
-            esValido = false;
-        } else {
-            $('#txtNumeroDocumento').addClass('is-valid').removeClass('is-invalid');
-        }
-    }
-
-    // Validar nombre
-    if (!$('#txtNombreCliente').val().trim()) {
-        $('#txtNombreCliente').addClass('is-invalid').removeClass('is-valid');
-        esValido = false;
-    } else {
-        $('#txtNombreCliente').addClass('is-valid').removeClass('is-invalid');
-    }
-
-    // Validar email (opcional)
-    const email = $('#txtEmailCliente').val().trim();
-    if (email && !validarEmail($('#txtEmailCliente'))) {
-        esValido = false;
-    }
-
-    return esValido;
-}
-
-// ====== FUNCIONES AUXILIARES ======
-
-function validarCampo($campo) {
-    const valor = $campo.val().trim();
-
-    if ($campo.prop('required') && !valor) {
-        $campo.addClass('is-invalid').removeClass('is-valid');
-        return false;
-    } else if (valor) {
-        $campo.addClass('is-valid').removeClass('is-invalid');
-        return true;
-    } else {
-        $campo.removeClass('is-invalid is-valid');
-        return true;
-    }
-}
-
-function validarEmail($campo) {
-    const email = $campo.val().trim();
-
-    if (!email) {
-        $campo.removeClass('is-invalid is-valid');
-        return true;
-    }
-
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const esValido = regex.test(email);
-
-    if (esValido) {
-        $campo.addClass('is-valid').removeClass('is-invalid');
-    } else {
-        $campo.addClass('is-invalid').removeClass('is-valid');
-    }
-
-    return esValido;
-}
-
-function guardarCliente() {
-    $('#btnCargarCliente').addClass('processing').prop('disabled', true);
-
-    const clienteData = {
-        id: $('#txtClienteIdUpdate').val() || null,
-        tipoDocumento: $('#selTipoDocumento').val(),
-        numeroDocumento: $('#txtNumeroDocumento').val().trim(),
-        nombre: $('#txtNombreCliente').val().trim().toUpperCase(),
-        domicilio: $('#txtDomicilioCliente').val().trim().toUpperCase(),
-        email: $('#txtEmailCliente').val().trim().toLowerCase(),
-        movil: $('#txtMovilCliente').val().trim()
-    };
-
-    console.log(modoEdicionCliente ? '✏️ Actualizando cliente...' : '➕ Creando nuevo cliente...', clienteData);
-
-    // ✅ MODO EDICIÓN: Actualizar Consumidor Final
-    if (modoEdicionCliente) {
-        const urlActualizar = typeof ActualizarConsumidorFinalUrl !== 'undefined' && ActualizarConsumidorFinalUrl
-            ? ActualizarConsumidorFinalUrl
-            : '/Facturacion/Cliente/ActualizarConsumidorFinal';
-
-        $.ajax({
-            url: urlActualizar,
-            type: 'POST',
-            data: clienteData,
-            success: function (response) {
-                if (response.ok) {
-                    console.log('✅ Cliente actualizado en el servidor');
-
-                    mostrarMensajeExito('Consumidor Final actualizado correctamente');
-
-                    // Actualizar datos en la vista de identificación
-                    setTimeout(() => {
-                        cerrarModalClienteUpdate();
-
-                        // Actualizar datos mostrados
-                        const clienteActualizado = {
-                            ...clienteSeleccionado,
-                            nombre: clienteData.nombre,
-                            domicilio: clienteData.domicilio,
-                            email: clienteData.email,
-                            movil: clienteData.movil,
-                            tdocDesc: obtenerDescripcionTipoDoc(clienteData.tipoDocumento),
-                            documento: clienteData.numeroDocumento,
-                            tipoNumero: `${obtenerDescripcionTipoDoc(clienteData.tipoDocumento)} ${clienteData.numeroDocumento}`
-                        };
-
-                        mostrarDatosCliente(clienteActualizado);
-                    }, 1500);
-                } else {
-                    console.error('❌ Error al actualizar:', response.mensaje);
-                    mostrarMensajeError(response.mensaje || 'Error al actualizar el cliente');
-                    $('#btnCargarCliente').removeClass('processing').prop('disabled', false);
-                }
-            },
-            error: function (xhr) {
-                console.error('❌ Error AJAX:', xhr);
-                mostrarMensajeError('Error al comunicarse con el servidor');
-                $('#btnCargarCliente').removeClass('processing').prop('disabled', false);
-            }
-        });
-
-        return; // Salir de la función
-    }
-
-    // ✅ MODO NUEVO: Crear Consumidor Final (TODO: Implementar)
-    setTimeout(() => {
-        console.log('✅ Cliente guardado exitosamente (MOCK)');
-
-        mostrarMensajeExito('Cliente creado correctamente');
-
-        setTimeout(() => {
-            cerrarModalClienteUpdate();
-
-            const clienteCreado = {
-                id: Math.floor(Math.random() * 10000).toString(),
-                nombre: clienteData.nombre,
-                domicilio: clienteData.domicilio,
-                condicionAfip: 'CONSUMIDOR FINAL',
-                tdocDesc: obtenerDescripcionTipoDoc(clienteData.tipoDocumento),
-                tdocId: clienteData.tipoDocumento,
-                documento: clienteData.numeroDocumento,
-                tipoNumero: `${obtenerDescripcionTipoDoc(clienteData.tipoDocumento)} ${clienteData.numeroDocumento}`,
-                emite: 'FACTURA B',
-                email: clienteData.email,
-                movil: clienteData.movil,
-                origen: 'F',
-                origenDesc: 'CONSUMIDOR FINAL'
-            };
-
-            mostrarDatosCliente(clienteCreado);
-        }, 1500);
-    }, 1000);
-}
-
-/**
- * ✅ NUEVA: Obtiene la descripción del tipo de documento según su ID
- */
-function obtenerDescripcionTipoDoc(tdocId) {
-    const tipos = {
-        '80': 'CUIT',
-        '86': 'CUIL',
-        '87': 'CDI',
-        '89': 'LE',
-        '90': 'LC',
-        '91': 'CI Extranjera',
-        '94': 'Pasaporte',
-        '95': 'CI Bs. As. RNP',
-        '96': 'D.N.I.',
-        '99': 'Sin Identificar'
-    };
-
-    return tipos[tdocId] || 'Desconocido';
-}
-
-// ========================================
-// FUNCIONES DE LIMPIEZA Y SESIÓN
-// ========================================
-
-/**
- * ✅ NUEVO v1.0: Limpia la sesión de clientes buscados en el servidor
- * 
- * Esta función se invoca cuando el usuario limpia el modal de identificar cliente.
- * Realiza una llamada AJAX asíncrona al servidor para limpiar las variables de sesión:
- * - ClientesBuscados: Lista de clientes encontrados en búsqueda múltiple
- * 
- * Comportamiento:
- * - No bloquea el flujo de ejecución (fire and forget)
- * - Si falla, solo registra warning en consola (no crítico para UX)
- * - Libera memoria en el servidor
- * 
- * @returns {void}
- */
-function limpiarSesionClientesBuscados() {
-    // ❶ Verificar si existe la URL configurada
-    const urlLimpiarSesion = typeof LimpiarSesionClientesUrl !== 'undefined' && LimpiarSesionClientesUrl
-        ? LimpiarSesionClientesUrl
-        : '/Facturacion/Cliente/LimpiarSesionClientes';
-
-    console.log('🧹 Limpiando sesión de clientes buscados en el servidor...');
-    console.log(`   URL: ${urlLimpiarSesion}`);
-
-    // ❷ Llamada AJAX asíncrona (fire and forget)
-    $.ajax({
-        url: urlLimpiarSesion,
-        type: 'POST',
-        async: true, // No bloquear la ejecución
-        timeout: 5000, // Timeout de 5 segundos
-        success: function (response) {
-            if (response && response.ok) {
-                console.log('✅ Sesión de clientes limpiada en el servidor');
-            } else {
-                console.warn('⚠️ Respuesta inesperada al limpiar sesión:', response);
-            }
-        },
-        error: function (xhr, status, error) {
-            // No mostrar error al usuario, solo log de advertencia
-            console.warn('═══════════════════════════════════════════════════');
-            console.warn('⚠️ No se pudo limpiar la sesión en el servidor');
-            console.warn(`   Status HTTP: ${xhr.status}`);
-            console.warn(`   Error: ${error}`);
-            console.warn(`   Nota: Esto no afecta la funcionalidad del cliente`);
-            console.warn('═══════════════════════════════════════════════════');
-        }
-    });
-}
-
-/**
- * ✅ NUEVO v1.0: Cierra modal y retorna al menú principal de caja
- * 
- * Se invoca cuando el usuario hace clic en el botón "SALIR AL MENÚ".
- * Muestra confirmación antes de redirigir.
- * 
- * @returns {void}
- */
-function confirmarSalidaAlMenu() {
-    console.log('═══════════════════════════════════════════════════');
-    console.log('🚪 CONFIRMACIÓN DE SALIDA AL MENÚ PRINCIPAL');
-    console.log('═══════════════════════════════════════════════════');
-
-    // ❶ Verificar si hay cliente seleccionado
-    if (clienteSeleccionado) {
-        console.warn('⚠️ Hay cliente seleccionado - Requiere confirmación');
-
-        // Mostrar confirmación
-        AbrirMensaje(
-            "Confirmar Salida",
-            "¿Está seguro que desea salir al menú principal?\n\n" +
-            "Se perderá el cliente seleccionado.",
-            function () {
-                $("#msjModal").modal("hide");
-                // Usuario confirmó - Redirigir
-                redirigirAlMenu();
-            },
-            true, // Mostrar botón cancelar
-            ["Sí, salir", "Cancelar"],
-            "warning",
-            null
-        );
-    } else {
-        console.log('ℹ️ No hay cliente seleccionado - Salida directa');
-
-        // No hay cliente seleccionado - Salir directamente
-        redirigirAlMenu();
-    }
-}
-
-/**
- * ✅ NUEVO v1.0: Redirige al menú principal de caja
- * 
- * Función auxiliar que realiza la redirección efectiva.
- * Limpia sesión antes de redirigir.
- * 
- * @returns {void}
- */
-function redirigirAlMenu() {
-    console.log('🚀 Redirigiendo al menú principal...');
-
-    // ❶ Limpiar sesión del servidor
-    limpiarSesionClientesBuscados();
-
-    // ❷ Obtener URL del menú
-    const urlMenu = typeof MenuCajaUrl !== 'undefined' && MenuCajaUrl
-        ? MenuCajaUrl
-        : '/Home/Index';
-
-    console.log(`   URL destino: ${urlMenu}`);
-
-    // ❸ Redirigir después de un pequeño delay (permite que el AJAX termine)
-    setTimeout(() => {
-        window.location.href = urlMenu;
-    }, 300);
-}
-
-/**
- * ✅ NUEVO v1.0: Confirma el cliente seleccionado y cierra el modal
- * 
- * Se invoca cuando el usuario hace clic en "SEGUIR".
- * Valida que haya cliente seleccionado y procede con el flujo de facturación.
- * 
- * @param {Object} cliente - Objeto con datos del cliente seleccionado
- * @returns {void}
- */
-function confirmarCliente(cliente) {
-    console.log('═══════════════════════════════════════════════════');
-    console.log('✅ CONFIRMAR CLIENTE SELECCIONADO');
-    console.log('═══════════════════════════════════════════════════');
-
-    if (!cliente) {
-        console.error('❌ No hay cliente para confirmar');
-        mostrarMensajeError('No hay cliente seleccionado');
-        return;
-    }
-
-    console.log(`   Cliente: ${cliente.nombre}`);
-    console.log(`   ID: ${cliente.id}`);
-    console.log(`   Origen: ${cliente.origenDesc} (${cliente.origen})`);
-
-    // ❶ Cerrar modal de identificar cliente
-    $('#modalIdentificarCliente').modal('hide');
-
-    // ❷ TODO: Continuar con el flujo de facturación
-    console.log('🚀 Cliente confirmado - Continuando con facturación...');
-    console.log('⚠️ TODO: Implementar siguiente paso del flujo');
-
-    // Aquí iría la lógica para:
-    // - Cargar productos
-    // - Mostrar interfaz de facturación
-    // - etc.
-}
-
-/**
- * ✅ NUEVO v1.0: Cierra el modal de actualización de cliente
- * 
- * Limpia el formulario y resetea el modo de edición.
- * 
- * @returns {void}
- */
-function cerrarModalClienteUpdate() {
-    console.log('🔒 Cerrando modal de actualización de cliente...');
-
-    // ❶ Cerrar modal
-    $('#modalClienteUpdate').modal('hide');
-
-    // ❷ Limpiar formulario
-    limpiarFormularioCliente();
-
-    console.log('✅ Modal de actualización cerrado');
-}
-
