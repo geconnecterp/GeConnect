@@ -1,0 +1,7 @@
+﻿@model DiasPorSucursalModel
+@{
+}
+<div class="input-group input-group-sm">
+	<span class="input-group-text">Nombre</span>
+	@Html.DropDownListFor(m => m.DiaSeleccionado, Model.ListaDias, "Seleccionar", new { @id = "listaDias", disabled = "disabled", @class = "form-control inputEditable activable" })
+</div>

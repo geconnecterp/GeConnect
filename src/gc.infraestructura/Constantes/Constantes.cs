@@ -98,6 +98,7 @@ namespace gc.infraestructura.Constantes
 
 			public const string PEDIDO_DE_CLIENTE = "PEDIDO_DE_CLIENTE";
 			public const string ORDEN_DE_REPARTO = "ORDEN_DE_REPARTO";
+			public const string CAJA_CORRECCION_VALORES = "CAJA_CORRECCION_VALORES";
 		}
     }
 }

@@ -23,7 +23,13 @@
 			public const string SP_CAJA_GRAL_CIERRE = "SPGECO_CAJA_Grl_Cierre";
 			public const string SP_CAJA_GRAL_HAB = "SPGECO_CAJA_Grl_Habilitacion";
 			public const string SP_CAJA_PV_ABIERTOS = "SPGECO_CAJA_PV_Abiertos";
-			//
+			#endregion
+
+			#region VTAS
+			public const string SP_VTAS_PV_CTL_PROCESOS = "SPGECO_Vtas_PV_CTL_Procesos";
+			public const string SP_VTAS_PV_CTL_CIERRES = "SPGECO_Vtas_PV_CTL_Cierres";
+			public const string SP_VTAS_PV_CTL_REND = "SPGECO_Vtas_PV_CTL_Rend";
+			public const string SP_VTAS_PV_CTL_REND_DETALLE = "SPGECO_Vtas_PV_CTL_Rend_Detalle";
 			#endregion
 
 			public const string MNU_GET_MENU_LIST = "dbo.SP_web_geco_get_menu_list";

@@ -156,8 +156,9 @@ namespace gc.api.infra.Extensions
 			services.AddScoped<IApiOrdenDeRepartoServicio, ApiOrdenDeRepartoServicio>();
 
             services.AddScoped<IOrdenRepartoServicio, OrdenRepartoServicio>();
+			services.AddScoped<IApiVentasServicio, ApiVentasServicio>();
 
-            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+			services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
             services.AddScoped(typeof(IServicio<>), typeof(Servicio<>));
             services.AddScoped(typeof(IExceptionManager), typeof(ExceptionManager));
