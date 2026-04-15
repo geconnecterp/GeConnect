@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 namespace gc.caja.Areas.Facturacion.Controllers
 {
     [Area("Facturacion")]
-    public class InicioController : ControladorBase
+    public class InicioController : ControladorBaseCaja
     {
         private readonly ICajaInitServicio _cajaInitSv;
         //private readonly ILogger<InicioController> _logger;

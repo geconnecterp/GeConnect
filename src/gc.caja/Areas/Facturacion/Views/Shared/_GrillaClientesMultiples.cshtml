@@ -1,0 +1,118 @@
+﻿@model GridCoreSmart<CuentaBusquedaResultadoDto>
+
+@{
+    var hasData = Model?.ListaDatos?.Any() == true;
+    var totalRegistros = hasData ? Model.ListaDatos.Count() : 0;
+}
+
+<div class="card h-100">
+    <div class="card-header card-header-golden py-2">
+        <h6 class="mb-0 fw-bold text-white">
+            <i class='bx bx-search-alt'></i> Resultados de Búsqueda
+            <span class="badge bg-white text-golden ms-2">@totalRegistros cliente(s)</span>
+        </h6>
+    </div>
+    
+    <div class="card-body p-0">
+        <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
+            <table class="table table-sm table-hover mb-0 table-golden table-layout-fixed">
+                <thead class="table-golden-header sticky-top">
+                    <tr class="header">
+                        <th class="text-center" style="width: 10%;">ID</th>
+                        <th style="width: 30%;">Nombre / Razón Social</th>
+                        <th class="text-center" style="width: 10%;">Documento</th>
+                        <th style="width: 30%;">Domicilio</th>
+                        <th class="text-center" style="width: 10%;">Origen</th>
+                        <th class="text-center" style="width: 10%;">Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @if (hasData)
+                {
+                    var index = 0;
+                    foreach (var item in Model.ListaDatos)
+                    {
+                        index++;
+                        var rowClass = (index % 2 == 0) ? "" : "alt";
+                        var domicilio = string.IsNullOrEmpty(item.Cta_Domicilio) 
+                            ? "<span class='text-muted fst-italic'>Sin domicilio</span>" 
+                            : item.Cta_Domicilio;
+                        
+                        <!-- ✅ MODIFICADO: Agregados 3 data-attributes separados -->
+                        <tr class="@rowClass cliente-row compact-row" 
+                            data-cta-id="@item.Cta_Id"
+                            data-cta-nombre="@item.Cta_Denominacion"
+                            data-cta-domicilio="@(item.Cta_Domicilio ?? "")"
+                            data-cta-tdoc-id="@(item.Tdoc_Id ?? "")"
+                            data-cta-tdoc-desc="@(item.Tdoc_Desc ?? "")"
+                            data-cta-documento="@(item.Cta_Documento ?? "")"
+                            data-cta-email="@(item.Cta_Email ?? "")"
+                            data-cta-movil="@(item.Cta_Celu ?? "")"
+                            data-cta-origen="@item.Origen"
+                            data-cta-origen-desc="@item.Origen_Desc">
+                            
+                            <!-- ✅ 10% - ID -->
+                            <td class="text-center fw-bold text-golden-dark py-1">
+                                <small>@item.Cta_Id</small>
+                            </td>
+                            
+                            <!-- ✅ 30% - Nombre -->
+                            <td class="fw-semibold py-1 text-truncate" title="@item.Cta_Denominacion">
+                                <small>@item.Cta_Denominacion</small>
+                            </td>
+                            
+                            <!-- ✅ 10% - Documento -->
+                            <td class="text-center py-1">
+                                <small class="text-muted d-block" style="font-size: 0.7rem;">@item.Tdoc_Desc</small>
+                                <small class="fw-bold">@item.Cta_Documento</small>
+                            </td>
+                            
+                            <!-- ✅ 30% - Domicilio -->
+                            <td class="py-1 text-truncate" title="@(item.Cta_Domicilio ?? "Sin domicilio")">
+                                <small>@Html.Raw(domicilio)</small>
+                            </td>
+                            
+                            <!-- ✅ 10% - Origen -->
+                            <td class="text-center py-1">
+                                <span class="badge bg-golden badge-compact">
+                                    <small>@item.Origen_Desc</small>
+                                </span>
+                            </td>
+                            
+                            <!-- ✅ 10% - Acción -->
+                            <td class="text-center py-1">
+                                <button type="button" 
+                                        class="btn btn-xs btn-golden-compact btn-seleccionar-cliente" 
+                                        data-cta-id="@item.Cta_Id"
+                                        title="Seleccionar cliente">
+                                    <i class='bx bx-check-circle' style="font-size: 0.9rem;"></i>
+                                    <span class="d-none d-lg-inline ms-1" style="font-size: 0.75rem;">Seleccionar</span>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr class="empty-message">
+                        <td colspan="6" class="text-center text-muted py-3">
+                            <i class='bx bx-info-circle me-1'></i>No hay resultados para mostrar
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="card-footer bg-light py-2">
+        <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">
+                <i class='bx bx-info-circle'></i> Haga clic en <strong>Seleccionar</strong> o doble clic en una fila
+            </small>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="btnCerrarGrilla">
+                <i class='bx bx-x'></i> Cerrar
+            </button>
+        </div>
+    </div>
+</div>

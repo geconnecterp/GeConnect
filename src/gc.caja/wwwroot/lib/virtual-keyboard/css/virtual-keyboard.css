@@ -28,7 +28,7 @@
     border-radius: 20px;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     width: 95vw;
-    max-width: 480px;
+    max-width: 600px;
     user-select: none;
     touch-action: none;
     display: none; /* Se activa por JS */
@@ -142,7 +142,7 @@
 }
 
 .vk-key-space {
-    flex: 7;
+    flex: 9;
 }
 
 .vk-key-w2 {
@@ -155,6 +155,12 @@
 
 .vk-key-w1-5 {
     flex: 1.5;
+}
+
+.vk-separator {
+    width: 12px;
+    flex: none;
+    pointer-events: none;
 }
 
 /* Responsive para móviles muy pequeños */

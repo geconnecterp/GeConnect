@@ -1,0 +1,104 @@
+@model List<gc.infraestructura.Dtos.Cajas.CuentaBusquedaResultadoDto>
+
+@{
+    var hasData = Model?.Any() == true;
+    var totalRegistros = hasData ? Model?.Count() : 0;
+}
+
+<div class="card h-100">
+    <div class="card-header card-header-golden py-2">
+        <h6 class="mb-0 fw-bold">
+            <i class='bx bx-search-alt'></i>
+            Resultados de Búsqueda
+            <span class="badge bg-white text-golden ms-2">@totalRegistros cliente(s)</span>
+        </h6>
+    </div>
+    
+    <div class="card-body p-0">
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-sm table-hover mb-0 table-golden" id="tbGrillaClientes">
+                <thead class="table-golden-header sticky-top">
+                    <tr>
+                        <th class="text-center" style="width: 80px;">ID</th>
+                        <th>Nombre / Razón Social</th>
+                        <th class="text-center" style="width: 150px;">Documento</th>
+                        <th>Domicilio</th>
+                        <th class="text-center" style="width: 120px;">Origen</th>
+                        <th class="text-center" style="width: 80px;">Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @if (hasData)
+                {
+                    var index = 0;
+                    foreach (var item in Model??new())
+                    {
+                        index++;
+                        var rowClass = (index % 2 == 0) ? "" : "alt";
+                        
+                        <tr class="@rowClass cliente-row" 
+                            data-cta-id="@item.Cta_Id"
+                            data-cta-nombre="@item.Cta_Denominacion"
+                            data-cta-domicilio="@item.Cta_Domicilio"
+                            data-cta-tipo-numero="@item.Tdoc_Desc @item.Cta_Documento"
+                            data-cta-email="@item.Cta_Email"
+                            data-cta-movil="@item.Cta_Celu"
+                            data-cta-origen="@item.Origen"
+                            data-cta-origen-desc="@item.Origen_Desc">
+                            
+                            <td class="text-center fw-bold text-golden-dark">@item.Cta_Id</td>
+                            <td class="fw-semibold">@item.Cta_Denominacion</td>
+                            <td class="text-center">
+                                <small class="text-muted">@item.Tdoc_Desc</small><br>
+                                <strong>@item.Cta_Documento</strong>
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.Cta_Domicilio))
+                                {
+                                    <small>@item.Cta_Domicilio</small>
+                                }
+                                else
+                                {
+                                    <span class="text-muted fst-italic">Sin domicilio</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-golden">@item.Origen_Desc</span>
+                            </td>
+                            <td class="text-center">
+                                <button type="button" 
+                                        class="btn btn-sm btn-golden btn-seleccionar-cliente" 
+                                        data-cta-id="@item.Cta_Id"
+                                        title="Seleccionar cliente">
+                                    <i class='bx bx-check-circle'></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-3">
+                            <i class='bx bx-info-circle bx-lg'></i><br>
+                            No se encontraron resultados
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="card-footer bg-light py-2">
+        <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">
+                <i class='bx bx-info-circle'></i>
+                Haga clic en <strong>Seleccionar</strong> o doble clic en una fila
+            </small>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="btnCerrarGrilla">
+                <i class='bx bx-x'></i> Cerrar
+            </button>
+        </div>
+    </div>
+</div>

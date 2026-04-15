@@ -281,7 +281,6 @@ $(function () {
      * otro: Error - Salir
      */
     function procesarAperturaCaja() {
-        // Si hay un botón visible, mostrar loading en él
         let $btn = $("#btnBuenoApertura");
         let originalText = "";
         let botonExiste = $btn.length > 0;
@@ -296,16 +295,16 @@ $(function () {
             type: 'POST',
             dataType: 'json',
             success: function (response) {
-                // Ocultar loader si estaba visible
                 ocultarLoader();
 
-                // Restaurar botón si existe
                 if (botonExiste) {
                     $btn.prop("disabled", false).html(originalText);
                 }
 
+                // ✅ CORRECCIÓN: Validar response.ok y redirigir a login
                 if (!response.ok) {
-                    mostrarMensajeError(response.mensaje || "Error al realizar apertura de caja.");
+                    console.error("❌ No se pudo realizar apertura - Redirigiendo a login");
+                    mostrarMensajeErrorYSalir(response.mensaje || "Error al realizar apertura de caja.");
                     return;
                 }
 
@@ -319,43 +318,37 @@ $(function () {
                     obtenerDatosCaja();
                 }
                 else if (resultado === 3) {
-                    // ✅ CORREGIDO: Caja ya abierta - Cerrar modal ANTES de mostrar mensaje
+                    // Caja ya abierta - Cerrar modal ANTES de mostrar mensaje
                     console.log("⚠️ Caja ya abierta - Menú solo cierre");
                     const modal = getModalValidacion();
 
-                    // ✅ PASO 1: Cerrar el modal de validación
                     if (modal) modal.hide();
 
                     nivelAccesoMenu = 'solo-cierre';
 
-                    // ✅ PASO 2: Esperar que el modal se cierre COMPLETAMENTE
                     setTimeout(() => {
-                        // ✅ PASO 3: Mostrar mensaje informativo
                         AbrirMensaje(
                             "Atención",
                             response.mensaje,
                             function () {
-                                // ✅ PASO 4: Cerrar mensaje
                                 $("#msjModal").modal("hide");
 
-                                // ✅ PASO 5: Esperar que el mensaje se cierre
                                 setTimeout(() => {
-                                    // ✅ PASO 6: Configurar y mostrar menú
                                     configurarMenuSegunAcceso();
                                     const menuModal = getModalMenu();
                                     if (menuModal) menuModal.show();
-                                }, 400); // Esperar cierre completo del mensaje
+                                }, 400);
                             },
                             false,
                             ["Continuar"],
                             "info!",
                             null
                         );
-                    }, 500); // ✅ Esperar cierre completo del modal de validación
+                    }, 500);
                 }
                 else {
-                    // Error en apertura - Salir
-                    console.error("❌ Error en apertura de caja");
+                    // ✅ CORRECCIÓN: Error en apertura - Redirigir a login
+                    console.error("❌ Error en apertura de caja - Resultado:", resultado);
                     mostrarErrorYSalir(response.mensaje || "No se pudo realizar la apertura de caja.");
                 }
             },
@@ -626,6 +619,32 @@ $(function () {
             false,
             ["Salir"],
             "warn!",
+            null
+        );
+    }
+
+    // ✅ NUEVA FUNCIÓN: Muestra error y redirige a login
+    function mostrarMensajeErrorYSalir(mensaje) {
+        AbrirMensaje(
+            "ERROR",
+            `<div class="text-center">
+                <i class='bx bx-error-circle text-danger' style='font-size: 3rem;'></i>
+                <p class="mt-3">${mensaje}</p>
+                <hr>
+                <small class="text-muted">
+                    <i class='bx bx-info-circle'></i> Será redirigido al inicio de sesión.
+                </small>
+            </div>`,
+            function () {
+                $("#msjModal").modal("hide");
+                setTimeout(() => {
+                    console.log("🚪 Redirigiendo al login...");
+                    window.location.href = logout;
+                }, 300);
+            },
+            false,
+            ["Salir"],
+            "error!",
             null
         );
     }
