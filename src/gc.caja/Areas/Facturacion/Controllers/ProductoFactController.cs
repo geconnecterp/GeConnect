@@ -279,12 +279,12 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
-                // ⓬ ÉXITO
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
-                _logger?.LogInformation("✅ PRODUCTO OBTENIDO EXITOSAMENTE");
-                _logger?.LogInformation($"   Código: {productos.respuesta}");
-                _logger?.LogInformation($"   Mensaje: {productos.respuesta_msj}");
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                //// ⓬ ÉXITO
+                //_logger?.LogInformation("═══════════════════════════════════════════════════");
+                //_logger?.LogInformation("✅ PRODUCTO OBTENIDO EXITOSAMENTE");
+                //_logger?.LogInformation($"   Código: {productos.respuesta}");
+                //_logger?.LogInformation($"   Mensaje: {productos.respuesta_msj}");
+                //_logger?.LogInformation("═══════════════════════════════════════════════════");
 
                 return Json(new 
                 { 

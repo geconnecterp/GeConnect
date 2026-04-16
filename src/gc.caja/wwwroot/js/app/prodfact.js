@@ -1,9 +1,10 @@
 ﻿// ============================================
 // GESTOR DE PRODUCTOS DE FACTURACIÓN
 // ============================================
-// VERSIÓN COMPLETA v5.0
+// VERSIÓN COMPLETA v5.0 CORREGIDA
 // Integración mediante eventos personalizados
 // ✅ NUEVO: Soporte para selección de múltiples productos
+// ✅ CORREGIDO: Validación correcta de respuesta del servidor
 // ============================================
 
 // ====== VARIABLES GLOBALES ======
@@ -25,7 +26,7 @@ const REGEX_BARRAS_BALANZA = /^2(\d{5})(\d{5})(\d)$/; // Formato balanza: 2 + 5 
 
 // ====== INICIALIZACIÓN ======
 $(function () {
-    console.log('🚀 Módulo de Productos de Factura inicializado v5.0');
+    console.log('🚀 Módulo de Productos de Factura inicializado v5.0 CORREGIDA');
     inicializarEventosProductos();
     configurarListenersIntegracion();
 });
@@ -274,7 +275,14 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
             bulto: bulto
         },
         success: function(response) {
-            console.log('✅ Respuesta recibida:', response);
+            console.log('═══════════════════════════════════════════════════');
+            console.log('✅ RESPUESTA RECIBIDA DEL SERVIDOR');
+            console.log('═══════════════════════════════════════════════════');
+            console.log('   Response completo:', response);
+            console.log(`   - ok: ${response.ok}`);
+            console.log(`   - mensaje: ${response.mensaje}`);
+            console.log(`   - esUnico: ${response.esUnico}`);
+            console.log(`   - esMultiple: ${response.esMultiple}`);
             
             if (response.ok) {
                 // Producto(s) encontrado(s)
@@ -333,19 +341,19 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
 }
 
 /**
- * ✅ ACTUALIZADO v5.0: Procesa la respuesta del servidor
- * NUEVO: Detecta array de productos y muestra modal de selección
+ * ✅ ACTUALIZADO v5.0 CORREGIDA: Procesa la respuesta del servidor
+ * NUEVO: Detecta si es único o múltiple según flags del servidor
  */
 function procesarRespuestaProducto(response, origenCarga) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('📊 PROCESANDO RESPUESTA DE PRODUCTO v5.0');
+    console.log('📊 PROCESANDO RESPUESTA DE PRODUCTO v5.0 CORREGIDA');
     console.log('═══════════════════════════════════════════════════');
     console.log('   Origen de carga:', origenCarga);
     console.log('   Response:', response);
     
     const producto = response.producto;
     
-    // ❶ CASO: Sin productos (respuesta = vacío o null)
+    // ❶ VALIDAR QUE EXISTA PRODUCTO
     if (!producto) {
         console.warn('⚠️ No se recibió producto en la respuesta');
         
@@ -371,18 +379,37 @@ function procesarRespuestaProducto(response, origenCarga) {
         return;
     }
     
-    // ❸ CASO: Producto único (objeto)
-    if (!Array.isArray(producto)) {
-        console.log('✅ Producto único recibido');
-        validarYAgregarProducto(producto, origenCarga);
+    // ❸ CASO: Producto único (esUnico = true o no es array)
+    if (response.esUnico === true || !Array.isArray(producto)) {
+        console.log('═══════════════════════════════════════════════════');
+        console.log('✅ PRODUCTO ÚNICO DETECTADO');
+        console.log('═══════════════════════════════════════════════════');
+        
+        // Si es array con un solo elemento, extraerlo
+        const productoUnico = Array.isArray(producto) ? producto[0] : producto;
+        
+        validarYAgregarProducto(productoUnico, origenCarga);
         return;
     }
     
-    // ❹ CASO: Múltiples productos (array)
-    console.log(`✅ Múltiples productos recibidos: ${producto.length}`);
+    // ❹ CASO: Múltiples productos (esMultiple = true o es array con más de 1 elemento)
+    if (response.esMultiple === true || (Array.isArray(producto) && producto.length > 1)) {
+        console.log('═══════════════════════════════════════════════════');
+        console.log(`✅ MÚLTIPLES PRODUCTOS DETECTADOS: ${producto.length}`);
+        console.log('═══════════════════════════════════════════════════');
+        console.log(`   - Total productos: ${response.totalProductos || producto.length}`);
+        console.log(`   - Productos válidos: ${response.productosValidos || 'N/A'}`);
+        console.log(`   - Productos inválidos: ${response.productosInvalidos || 'N/A'}`);
+        
+        // Mostrar modal de selección
+        mostrarModalSeleccionProducto(producto, origenCarga);
+        return;
+    }
     
-    // ✅ NUEVO v5.0: Mostrar modal de selección
-    mostrarModalSeleccionProducto(producto, origenCarga);
+    // ❺ FALLBACK: Si no se detectó ningún caso anterior
+    console.warn('⚠️ Caso no contemplado, tratando como producto único');
+    const productoFallback = Array.isArray(producto) ? producto[0] : producto;
+    validarYAgregarProducto(productoFallback, origenCarga);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -404,10 +431,15 @@ function mostrarModalSeleccionProducto(productos, origenCarga) {
     
     const $tbody = $('#tbodySeleccionProducto');
     let html = '';
+    let productosValidosCount = 0;
     
     productos.forEach((producto, index) => {
         const respuesta = producto.respuesta || 0;
         const esValido = respuesta === 0;
+        
+        if (esValido) {
+            productosValidosCount++;
+        }
         
         // Datos del producto
         const codigo = producto.p_id || '???';
@@ -415,9 +447,12 @@ function mostrarModalSeleccionProducto(productos, origenCarga) {
         const descripcion = producto.p_desc || 'Sin descripción';
         const unidadPres = producto.p_unidad_pres || 1;
         const precio = producto.p_pvta || 0;
+        const cantidad = producto.cantidad_tot || 1;
         const mensajeError = producto.respuesta_msj || '';
         
-        console.log(`   [${index}] ${descripcion} - Respuesta: ${respuesta} - ${esValido ? 'VÁLIDO' : 'INVÁLIDO'}`);
+        console.log(`   [${index}] ${descripcion}`);
+        console.log(`      - Respuesta: ${respuesta} ${esValido ? '✅ VÁLIDO' : '❌ INVÁLIDO'}`);
+        console.log(`      - Mensaje: ${mensajeError}`);
         
         // ❶ Fila con clase según validez
         const rowClass = esValido ? '' : 'table-danger';
@@ -428,13 +463,13 @@ function mostrarModalSeleccionProducto(productos, origenCarga) {
                 <td class="${textClass} fw-bold">${escapeHtml(codigo)}</td>
                 <td class="${textClass}">${escapeHtml(barras)}</td>
                 <td class="${textClass}">
-                    <div>${escapeHtml(descripcion)}</div>
+                    <div class="fw-semibold">${escapeHtml(descripcion)}</div>
                     ${!esValido ? `<small class="text-danger fw-bold"><i class='bx bx-error-circle'></i> ${escapeHtml(mensajeError)}</small>` : ''}
                 </td>
                 <td class="text-center ${textClass}">
                     <span class="badge bg-info">${unidadPres}</span>
                 </td>
-                <td class="text-end ${textClass}">$ ${formatearNumero(precio, 2)}</td>
+                <td class="text-end ${textClass} fw-semibold">$ ${formatearNumero(precio, 2)}</td>
                 <td class="text-center">
                     ${esValido 
                         ? '<span class="badge bg-success"><i class="bx bx-check"></i> Disponible</span>'
@@ -462,6 +497,13 @@ function mostrarModalSeleccionProducto(productos, origenCarga) {
     });
     
     $tbody.html(html);
+    
+    console.log('═══════════════════════════════════════════════════');
+    console.log(`📊 GRILLA GENERADA:`);
+    console.log(`   - Total productos: ${productos.length}`);
+    console.log(`   - Productos válidos (seleccionables): ${productosValidosCount}`);
+    console.log(`   - Productos inválidos: ${productos.length - productosValidosCount}`);
+    console.log('═══════════════════════════════════════════════════');
     
     // ❷ Guardar productos en memoria temporal del modal
     $('#modalSeleccionProducto').data('productos', productos);
@@ -496,12 +538,69 @@ function seleccionarProductoDeModal(index) {
     const productoSeleccionado = productos[index];
     
     console.log('   Producto seleccionado:', productoSeleccionado);
+    console.log(`   - Código: ${productoSeleccionado.p_id}`);
+    console.log(`   - Descripción: ${productoSeleccionado.p_desc}`);
+    console.log(`   - Respuesta: ${productoSeleccionado.respuesta}`);
     
     // ❷ Cerrar modal
     $modal.modal('hide');
     
     // ❸ Agregar producto a la grilla principal
     validarYAgregarProducto(productoSeleccionado, origenCarga);
+}
+
+/**
+ * ✅ ACTUALIZADO v5.0: Valida y agrega un producto único
+ */
+function validarYAgregarProducto(producto, origenCarga) {
+    const respuesta = producto.respuesta || 0;
+    const descripcion = producto.p_desc || 'Sin descripción';
+    
+    console.log('═══════════════════════════════════════════════════');
+    console.log(`🔍 VALIDANDO PRODUCTO ÚNICO`);
+    console.log('═══════════════════════════════════════════════════');
+    console.log(`   Descripción: ${descripcion}`);
+    console.log(`   Respuesta: ${respuesta}`);
+    console.log(`   Origen carga: ${origenCarga}`);
+    
+    // ❶ Producto con error (respuesta != 0)
+    if (respuesta !== 0) {
+        const mensaje = producto.respuesta_msj || 'El producto no se puede cargar';
+        
+        console.error(`❌ Producto con error: ${mensaje}`);
+        
+        // Para último detalle, ignorar silenciosamente
+        if (origenCarga === 'ultimo') {
+            console.log('ℹ️ Error ignorado (último detalle)');
+            return;
+        }
+        
+        // Para carga directa, mostrar error
+        $('#mensajeEstadoProducto')
+            .removeClass('text-info text-success')
+            .addClass('text-danger')
+            .html(`<i class='bx bx-error-circle'></i> ${mensaje}`);
+        
+        mostrarMensajeError(mensaje);
+        return;
+    }
+    
+    // ❷ Producto válido
+    console.log('✅ Producto válido, agregando a grilla...');
+    agregarProductoAGrilla(producto);
+    
+    // Mensaje de éxito
+    $('#mensajeEstadoProducto')
+        .removeClass('text-info text-danger')
+        .addClass('text-success')
+        .html(`<i class='bx bx-check-circle'></i> Producto agregado`);
+    
+    setTimeout(() => {
+        $('#mensajeEstadoProducto')
+            .removeClass('text-success')
+            .addClass('text-muted')
+            .html('Presione <kbd>Enter</kbd> o <strong>BUSCAR</strong> para agregar producto');
+    }, 3000);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -555,7 +654,10 @@ function agregarProductoAGrilla(producto) {
         
         // Datos de origen
         preNro: producto.pre_nro || null,
-        cpfNro: producto.cpf_nro || null
+        cpfNro: producto.cpf_nro || null,
+        
+        // ✅ NUEVO: Guardar datos completos para edición posterior
+        _original: producto
     };
     
     // Agregar al array
@@ -565,8 +667,9 @@ function agregarProductoAGrilla(producto) {
     console.log(`   - Código: ${productoNormalizado.p_id}`);
     console.log(`   - Descripción: ${productoNormalizado.descripcion}`);
     console.log(`   - Cantidad: ${productoNormalizado.cantidadTotal}`);
+    console.log(`   - Precio Venta: $ ${formatearNumero(productoNormalizado.precioVenta, 2)}`);
     console.log(`   - Precio Total: $ ${formatearNumero(productoNormalizado.precioTotal, 2)}`);
-    console.log(`   Total productos en grilla: ${productosFactura.length}`);
+    console.log(`   📊 Total productos en grilla: ${productosFactura.length}`);
     console.log('═══════════════════════════════════════════════════');
     
     // Recalcular total
@@ -581,22 +684,17 @@ function agregarProductoAGrilla(producto) {
 
 /**
  * ✅ NUEVO v5.0: Calcula el precio total de un producto
- * Fórmula: (Precio Venta + IVA + Imp. Internos) * Cantidad
+ * Fórmula: Precio Venta * Cantidad
+ * (IVA e Imp. Internos ya están incluidos en p_pvta)
  */
 function calcularPrecioTotal(producto) {
-    const precioBase = producto.p_pvta || 0;
-    const ivaImporte = producto.p_iva || 0;
-    const internImporte = producto.p_in || 0;
+    const precioVenta = producto.p_pvta || 0;
     const cantidad = producto.cantidad_tot || 1;
     
-    const precioUnitarioTotal = precioBase + ivaImporte + internImporte;
-    const precioTotal = precioUnitarioTotal * cantidad;
+    const precioTotal = precioVenta * cantidad;
     
     console.log(`💰 Cálculo precio total:`);
-    console.log(`   Precio Base: $ ${precioBase}`);
-    console.log(`   IVA: $ ${ivaImporte}`);
-    console.log(`   Imp. Internos: $ ${internImporte}`);
-    console.log(`   Precio Unitario Total: $ ${precioUnitarioTotal}`);
+    console.log(`   Precio Venta (incluye impuestos): $ ${precioVenta}`);
     console.log(`   Cantidad: ${cantidad}`);
     console.log(`   PRECIO TOTAL: $ ${precioTotal}`);
     
@@ -675,7 +773,7 @@ function recalcularTotalFactura() {
     
     $('#txtTotalFactura').val(`$ ${formatearNumero(totalFactura, 2)}`);
     
-    console.log(`💰 Total recalculado: $ ${formatearNumero(totalFactura, 2)}`);
+    console.log(`💰 Total factura recalculado: $ ${formatearNumero(totalFactura, 2)}`);
 }
 
 /**
@@ -689,7 +787,7 @@ function eliminarProducto(index) {
     
     const producto = productosFactura[index];
     
-    console.log(`🗑️ Eliminando producto: ${producto.descripcion}`);
+    console.log(`🗑️ Solicitando eliminación de producto: ${producto.descripcion}`);
     
     AbrirMensaje(
         "Confirmar Eliminación",
