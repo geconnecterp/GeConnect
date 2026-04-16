@@ -1,0 +1,68 @@
+﻿
+@model GridCoreSmart<VtasPVCtlRendDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	#tbVtasPVCtlRend thead th {
+		text-align: center !important;
+		vertical-align: middle !important;
+		white-space: nowrap;
+	}
+</style>
+<div class="table-responsive table-wrapper-500">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbVtasPVCtlRend">
+		<thead class="sticky-top table-golden-header-compact">
+			<tr class="header">
+				<th title="Medio de Pago">Med. Pago</th>
+				<th>Rend</th>
+				<th>Rendido</th>
+				<th>Arqueo</th>
+				<th>Diferencia</th>
+				<th>Ok</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+			{
+				<tr class="fila-vacia">
+					<td colspan="6" class="text-center text-muted py-2">
+						<i class="bx bx-info-circle me-1"></i>
+						No hay items para mostrar.
+					</td>
+				</tr>
+			}
+			else
+			{
+				foreach (var item in Model.ListaDatos)
+				{
+					var dif = item.rend_importe_ok - item.rend_importe_arq;
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase row-pedido"
+						data-caja-nro-proceso="@item.caja_nro_proceso"
+						data-caja-nro-cierre="@item.caja_nro_cierre"
+						data-caja-nro-rend="@item.caja_nro_rend"
+						data-tcf-id="@item.tcf_id"
+						data-rend-pendiente="@item.pendientes_bool">
+						<td class="text-start">@item.tcf_desc</td>
+						<td class="text-center">@item.rend_tipo</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.rend_importe_ok, TipoPrecio.Venta)</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.rend_importe_arq, TipoPrecio.Venta)</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(dif, TipoPrecio.Venta)</td>
+						<td class="text-center">
+							@if (item.pendientes_bool)
+							{
+								<i class="bx bx-x-circle text-danger" title="Pendiente"></i>
+							}
+							else
+							{
+								<i class="bx bx-check-circle text-success" title="OK"></i>
+							}
+						</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>
