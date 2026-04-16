@@ -1,10 +1,8 @@
 ﻿using gc.api.core.Constantes;
-using gc.api.core.Contratos.Servicios;
 using gc.api.core.Contratos.Servicios.LineaCaja;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
-using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Cajas;
 using gc.infraestructura.Dtos.Gen;
 using Microsoft.Data.SqlClient;
@@ -109,29 +107,7 @@ namespace gc.api.core.Servicios.LineaCaja
             return res[0];
         }
 
-        public ProductoDatosResponseDto ObtenerProductoDatos(ProductoDatosRequestDto req)
-        {
-            var sp = ConstantesGC.StoredProcedures.SP_CAJA_BPROD_D;
-            var ps = new List<SqlParameter>() {
-                new SqlParameter("@tipo_valor", req.tipo_valor),
-                new SqlParameter("@valor", req.valor),
-                new SqlParameter("@lp_id", req.lp_id),
-                new SqlParameter("@adm_id", req.adm_id),
-                new SqlParameter("@cantidad", req.cantidad),
-                new SqlParameter("@bulto", req.bulto),
-                new SqlParameter("@ctc_id", req.ctc_id),
-                new SqlParameter("@cta_id", req.cta_id),
-                new SqlParameter("@ctac_dto", req.ctac_dto)
-            };
-            var res = _repository.EjecutarLstSpExt<ProductoDatosResponseDto>(sp, ps);
-            if (res != null && res.Count > 0)
-            {
-                return res[0];
-            }
-            return new ProductoDatosResponseDto() { respuesta = -1, respuesta_msj = "Hubo un error al obtener los datos del producto." };
-        }
-
-
+        
         public RespuestaDto Cargar_CF(CargaCFRequestDto req)
         {
             var sp = ConstantesGC.StoredProcedures.SP_CAJA_CF_CARGA;

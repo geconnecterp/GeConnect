@@ -1,4 +1,4 @@
-﻿namespace gc.infraestructura.Dtos.Cajas
+﻿namespace gc.infraestructura.Dtos.Cajas.Request
 {
     public class ProductoDatosRequestDto
     {

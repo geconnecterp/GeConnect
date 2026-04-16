@@ -101,33 +101,42 @@ function inicializarEventosProductos() {
     console.log('✅ Eventos configurados correctamente');
 }
 
-// ====== MOSTRAR SECCIÓN DE PRODUCTOS ====== (✅ ACTUALIZADO v3.0)
+// ====== MOSTRAR SECCIÓN DE PRODUCTOS ====== (✅ CORREGIDO v3.2)
 /**
- * ✅ ACTUALIZADO v3.0: Ahora abre el modal en lugar de mostrar div
+ * ✅ CORREGIDO v3.2: Badge de tipo de comprobante corregido
  * 
- * CAMBIOS v3.0:
- * - Cambió de fadeIn() a modal('show')
- * - Actualizado ID de #seccionProductosFactura a #modalProductosFactura
+ * CAMBIOS v3.2:
+ * - Eliminada línea incorrecta que usaba .val() en <span>
+ * - actualizarTipoComprobante() ahora maneja correctamente el badge
+ * - Usa clienteData.emite si está disponible, sino calcula desde condicionAfip
  */
 function mostrarSeccionProductos(clienteData) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('📦 MOSTRAR MODAL DE PRODUCTOS v3.0');
+    console.log('📦 MOSTRAR MODAL DE PRODUCTOS v3.2');
     console.log('═══════════════════════════════════════════════════');
     console.log('Cliente recibido:', clienteData);
     
     // ❶ Hidratar datos del cliente en el modal
-    $('#txtClienteNombre').val(clienteData.nombre || '');
-    $('#txtClienteId').val(clienteData.id || 'N/A');
-    $('#txtClienteDomicilio').val(clienteData.domicilio || '');
-    $('#txtCondicionAfip').val(clienteData.condicionAfip || '');
-    $('#txtClienteCuit').val(clienteData.tipoNumero || '');
-    $('#txtClienteEmail').val(clienteData.email || '');
-    $('#txtClienteMovil').val(clienteData.movil || '');
+    $('#txtClienteNombreProd').val(clienteData.nombre || '');
+    $('#txtClienteIdProd').val(clienteData.id || 'N/A');
+    $('#txtClienteDomicilioProd').val(clienteData.domicilio || '');
+    $('#txtCondicionAfipProd').val(clienteData.condicionAfip || '');
+    $('#txtClienteCuitProd').val(clienteData.tipoNumero || '');
+    $('#txtClienteEmailProd').val(clienteData.email || '');
+    $('#txtClienteMovilProd').val(clienteData.movil || '');
+    
+    console.log('✅ Datos hidratados correctamente:');
+    console.log('   - Nombre:', clienteData.nombre);
+    console.log('   - ID:', clienteData.id || 'N/A');
+    console.log('   - Condición AFIP:', clienteData.condicionAfip);
+    console.log('   - Tipo/Número:', clienteData.tipoNumero);
+    console.log('   - Emite:', clienteData.emite);
     
     // ❷ Actualizar badge de tipo de comprobante
+    // ✅ CORREGIDO: Ahora maneja clienteData.emite correctamente
     actualizarTipoComprobante(clienteData);
     
-    // ❸ ✅ NUEVO v3.0: Abrir modal en lugar de fadeIn
+    // ❸ Abrir modal
     $('#modalProductosFactura').modal('show');
     console.log('✅ Modal de productos abierto');
     
@@ -138,19 +147,51 @@ function mostrarSeccionProductos(clienteData) {
         }, 200);
     });
     
-    console.log('✅ Modal de productos mostrado correctamente');
+    console.log('═══════════════════════════════════════════════════');
+    console.log('✅ MODAL DE PRODUCTOS MOSTRADO CORRECTAMENTE v3.2');
+    console.log('═══════════════════════════════════════════════════');
 }
 
-// ====== ACTUALIZAR TIPO DE COMPROBANTE ======
+// ====== ACTUALIZAR TIPO DE COMPROBANTE ====== (✅ CORREGIDO v2.0)
+/**
+ * ✅ CORREGIDO v2.0: Ahora usa clienteData.emite como prioridad
+ * 
+ * CAMBIOS v2.0:
+ * - Primero intenta usar clienteData.emite (dato directo del servidor)
+ * - Si no existe, calcula desde clienteData.condicionAfip
+ * - Mejora precisión del tipo de comprobante
+ */
 function actualizarTipoComprobante(clienteData) {
     const $badge = $('#badgeTipoComprobante');
     
-    // Determinar tipo de factura según condición AFIP
     let tipoFactura = 'FACTURA B'; // Por defecto
     let iconoFactura = 'bx-file';
     
-    if (clienteData.condicionAfip) {
+    // ❶ PRIORIDAD 1: Usar clienteData.emite si existe
+    if (clienteData.emite && clienteData.emite.trim() !== '') {
+        tipoFactura = clienteData.emite.toUpperCase();
+        
+        console.log(`✅ Tipo de comprobante obtenido desde clienteData.emite: "${tipoFactura}"`);
+        
+        // Determinar icono según el tipo
+        if (tipoFactura.includes('FACTURA A')) {
+            iconoFactura = 'bx-file-blank';
+        } else if (tipoFactura.includes('FACTURA C')) {
+            iconoFactura = 'bx-file';
+        } else if (tipoFactura.includes('FACTURA B')) {
+            iconoFactura = 'bx-file';
+        } else if (tipoFactura.includes('NOTA')) {
+            iconoFactura = 'bx-receipt';
+        } else {
+            iconoFactura = 'bx-file'; // Default
+        }
+        
+    } 
+    // ❷ PRIORIDAD 2: Calcular desde clienteData.condicionAfip
+    else if (clienteData.condicionAfip) {
         const condicion = clienteData.condicionAfip.toUpperCase();
+        
+        console.log(`ℹ️ clienteData.emite no disponible, calculando desde condicionAfip: "${condicion}"`);
         
         if (condicion.includes('INSCRIPTO') || condicion.includes('MONOTRIBUTO')) {
             tipoFactura = 'FACTURA A';
@@ -158,30 +199,45 @@ function actualizarTipoComprobante(clienteData) {
         } else if (condicion.includes('EXENTO')) {
             tipoFactura = 'FACTURA C';
             iconoFactura = 'bx-file';
+        } else {
+            tipoFactura = 'FACTURA B';
+            iconoFactura = 'bx-file';
         }
     }
+    // ❸ FALLBACK: Consumidor Final por defecto
+    else {
+        console.warn('⚠️ No se pudo determinar tipo de comprobante, usando FACTURA B por defecto');
+        tipoFactura = 'FACTURA B';
+        iconoFactura = 'bx-file';
+    }
     
+    // ❹ Actualizar el badge (✅ Usar .html() para <span>)
     $badge.html(`<i class='bx ${iconoFactura}'></i> ${tipoFactura}`);
-    console.log(`📋 Tipo de comprobante: ${tipoFactura}`);
+    
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📋 TIPO DE COMPROBANTE ACTUALIZADO');
+    console.log(`   Texto: "${tipoFactura}"`);
+    console.log(`   Icono: "${iconoFactura}"`);
+    console.log('═══════════════════════════════════════════════════');
 }
 
-// ====== OCULTAR SECCIÓN DE PRODUCTOS ====== (✅ ACTUALIZADO v3.0)
+// ====== OCULTAR SECCIÓN DE PRODUCTOS ====== (✅ CORREGIDO v3.1)
 /**
- * ✅ ACTUALIZADO v3.0: Ahora cierra el modal en lugar de fadeOut
+ * ✅ CORREGIDO v3.1: Actualizado para usar IDs únicos con sufijo "Prod"
  */
 function ocultarSeccionProductos() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔙 OCULTAR MODAL DE PRODUCTOS v3.0');
+    console.log('🔙 OCULTAR MODAL DE PRODUCTOS v3.1');
     console.log('═══════════════════════════════════════════════════');
     
-    // ❶ Limpiar campos de cliente
-    $('#txtClienteNombre').val('');
-    $('#txtClienteId').val('');
-    $('#txtClienteDomicilio').val('');
-    $('#txtCondicionAfip').val('');
-    $('#txtClienteCuit').val('');
-    $('#txtClienteEmail').val('');
-    $('#txtClienteMovil').val('');
+    // ❶ Limpiar campos de cliente (✅ CORREGIDO: IDs con sufijo Prod)
+    $('#txtClienteNombreProd').val('');
+    $('#txtClienteIdProd').val('');
+    $('#txtClienteDomicilioProd').val('');
+    $('#txtCondicionAfipProd').val('');
+    $('#txtClienteCuitProd').val('');
+    $('#txtClienteEmailProd').val('');
+    $('#txtClienteMovilProd').val('');
     
     // ❷ Limpiar campo de búsqueda
     $('#txtCodigoProducto').val('');
@@ -192,10 +248,10 @@ function ocultarSeccionProductos() {
     // ❹ Limpiar cliente actual
     clienteActualFactura = null;
     
-    // ❺ ✅ NUEVO v3.0: Cerrar modal en lugar de fadeOut
+    // ❺ Cerrar modal
     $('#modalProductosFactura').modal('hide');
     
-    console.log('✅ Modal de productos ocultado');
+    console.log('✅ Modal de productos ocultado correctamente');
 }
 
 // ====== CONFIRMAR CANCELAR FACTURA ======
