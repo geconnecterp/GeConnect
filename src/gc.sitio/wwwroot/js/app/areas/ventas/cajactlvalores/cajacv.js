@@ -2,6 +2,9 @@
 var caja_nro_cierre_selected = null;
 var caja_id_selected = null;
 var cierre_pendientes_bool = null;
+var caja_nro_rend_selected = null;
+var tcf_id_selected = null;
+var rend_pendiente_selected = null;
 
 $(function () {
     if ($("#divDetalle").is(":visible")) {
@@ -77,6 +80,13 @@ function ControlalistaSucursalesSelected() {
         CerrarWaiting();
         $("#divListaDias").html(html);
         $("#divDetalle").empty();
+        setTimeout(function () {
+            $("#chkDias").prop("disabled", false);
+            $("#chkDias").trigger('change');
+            $("#chkDias").prop("checked", true);
+            $("#listaDias").prop("disabled", false);
+            $("#listaDias").trigger('focus');
+        }, 0);
     });
 }
 
@@ -114,6 +124,9 @@ function InicializaEventosGrillaVtasPVCtlCierres() {
     });
 
     $("#btnConfirmacionContable").prop("disabled", true);
+    $("#btnConfirmarArqueo").prop("disabled", true);
+    $("#btnAnularArqueo").prop("disabled", true);
+    $("#btnAgregarArqueo").prop("disabled", true);
 }
 
 function CargarGrillaVtasPVCtlRend() {
@@ -149,23 +162,60 @@ function InicializaEventosGrillaVtasPVCtlRend() {
             $this.addClass("selected-row");
 
             // Guardar valor seleccionado
-            caja_nro_proceso_selected = $this.data("caja-nro-proceso");
-            caja_nro_cierre_selected = $this.data("caja-nro-cierre");
-            caja_id_selected = $this.data("caja-id");
-            cierre_pendientes_bool = $this.data("pendientes-bool");
+            caja_nro_rend_selected = $this.data("caja-nro-rend");
+			tcf_id_selected = $this.data("tcf-id");
+			rend_pendiente_selected = $this.data("rend-pendiente");
 
-            if (cierre_pendientes_bool === true || cierre_pendientes_bool === "true" || cierre_pendientes_bool === "True") {
-                $("#btnConfirmacionContable").prop("disabled", false);
+            if (rend_pendiente_selected === true || rend_pendiente_selected === "true" || rend_pendiente_selected === "True") {
+                $("#btnConfirmarArqueo").prop("disabled", false);
+                $("#btnAnularArqueo").prop("disabled", false);
+                $("#btnAgregarArqueo").prop("disabled", false);
             } else {
-                $("#btnConfirmacionContable").prop("disabled", true);
+                $("#btnConfirmarArqueo").prop("disabled", true);
+                $("#btnAnularArqueo").prop("disabled", true);
+                $("#btnAgregarArqueo").prop("disabled", true);
             }
 
             // Habilitar 
-            if (caja_nro_proceso_selected) {
-                CargarGrillaVtasPVCtlRend();
+            if (caja_nro_rend_selected) {
+                CargarGrillaVtasPVCtlRendDetalle();
             }
         }
     });
+    $("#btnConfirmarArqueo").prop("disabled", true);
+    $("#btnAnularArqueo").prop("disabled", true);
+    $("#btnAgregarArqueo").prop("disabled", true);
+}
+
+function CargarGrillaVtasPVCtlRendDetalle() {
+    if (!validarRendSeleccionado()) {
+        AbrirMensaje("ATENCIÓN", "Debe seleccionar un Medio de Pago.", function () {
+            $("#msjModal").modal("hide");
+            return;
+        }, false, ["Aceptar"], "error!", null);
+    }
+    else {
+        var data = { nro_proceso: caja_nro_proceso_selected, nro_cierre: caja_nro_cierre_selected, caja_nro_rend: caja_nro_rend_selected, tcf_id: tcf_id_selected };
+        AbrirWaiting("Cargando datos de detalle de rendición de Cierre seleccionado...");
+        PostGenHtml(data, obtenerDetalleDeRendDeCierreSeleccionadoUrl, function (html) {
+            CerrarWaiting();
+            $("#divVtasPVCtlRendDetalle").html(html);
+            InicializaEventosGrillaVtasPVCtlRendDetalle();
+            //TODO MARCE: Forzar un ancho fijo de la columna Medio de pago, si es mas grande el contenido, que se muestre la elipsis y el mismo en un 
+            //tooltip
+        });
+    }
+}
+
+function InicializaEventosGrillaVtasPVCtlRendDetalle() {
+}
+
+function validarRendSeleccionado() {
+    if (caja_nro_rend_selected == null || caja_nro_rend_selected == undefined || caja_nro_rend_selected == "")
+        return false;
+    if (tcf_id_selected == null || tcf_id_selected == undefined || tcf_id_selected == "")
+        return false;
+    return true;
 }
 
 function validarCierreSeleccionado() {

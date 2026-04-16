@@ -173,6 +173,44 @@ namespace gc.sitio.Areas.Ventas.Controllers
 			}
 		}
 
+		[HttpPost]
+		public async Task<IActionResult> ObtenerDetalleDeRendDeCierreSeleccionado(string nro_proceso, int nro_cierre, int caja_nro_rend, string tcf_id)
+		{
+			var model = new GridCoreSmart<VtasPVCtlRendDetalleDto>();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				if (string.IsNullOrEmpty(nro_proceso))
+					throw new NegocioException("Faltan datos obligatorios: nro_proceso");
+				if (nro_cierre <= 0)
+					throw new NegocioException("Faltan datos obligatorios: nro_cierre");
+				if (caja_nro_rend <= 0)
+					throw new NegocioException("Faltan datos obligatorios: caja_nro_rend");
+				if (string.IsNullOrEmpty(tcf_id))
+					throw new NegocioException("Faltan datos obligatorios: tcf_id");
+				var resultado = await _apiVentasServicio.ObtenerVtasPVCtlRendDetalleLista(nro_proceso, nro_cierre, caja_nro_rend, tcf_id, TokenCookie);
+				if (resultado == null)
+					throw new NegocioException("Error al obtener datos de detalle de rendición de cierre");
+				if (!resultado.Ok)
+					throw new NegocioException(resultado.Mensaje ?? "Error al obtener datos de detalle de rendición de cierre");
+				model = ObtenerGridCoreSmart<VtasPVCtlRendDetalleDto>(resultado.ListaEntidad ?? []);
+				return PartialView("_datos_correccion_VtasPVCtlRendDetalle", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
 		#region Métodos Privados
 		private void CargarDatosIniciales(FiltroCtlValoresModel model)
 		{
