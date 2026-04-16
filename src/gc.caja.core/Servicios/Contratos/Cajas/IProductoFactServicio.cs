@@ -1,13 +1,10 @@
-﻿using gc.infraestructura.Dtos;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using gc.infraestructura.Dtos.Cajas.Request;
+using gc.infraestructura.Dtos.Gen;
 
 namespace gc.caja.core.Servicios.Contratos.Cajas
 {
     public interface IProductoFactServicio 
     {
+        Task<RespuestaGenerica<ProductoDatosResponseDto>> ObtenerProductoDatos(ProductoDatosRequestDto req, string token);
     }
 }

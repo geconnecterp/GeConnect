@@ -55,6 +55,8 @@
 @await Html.PartialAsync("_IdentificarClienteModal")
 @await Html.PartialAsync("_ClienteUpdate")
 @await Html.PartialAsync("~/Areas/Facturacion/Views/ProductoFact/_productoFactura.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/ProductoFact/_SeleccionProductoModal.cshtml")
+
 
 @section Scripts {
     <script>
@@ -66,6 +68,7 @@
         var LimpiarSesionClientesUrl = "@Url.Action("LimpiarSesionClientes", "Cliente", new { Area = "Facturacion" })";
         var ObtenerClienteActualUrl = "@Url.Action("ObtenerClienteActual", "Cliente", new { Area = "Facturacion" })";
         var ActualizarConsumidorFinalUrl = "@Url.Action("ActualizarConsumidorFinal", "Cliente", new { Area = "Facturacion" })";
+        var ObtenerProductoDatosUrl = "@Url.Action("ObtenerProductoDatos", "ProductoFact", new { Area = "Facturacion" })";
     </script>
 
     <script src="~/js/app/fact.js"></script>

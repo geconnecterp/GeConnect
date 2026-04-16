@@ -17,6 +17,7 @@ namespace gc.sitio.core.Extensions
            
             services.AddScoped<ICajaServicio, CajaServicio>();
             services.AddScoped<ICajaInitServicio, CajaInitServicio>();
+            services.AddScoped<IProductoFactServicio, ProductoFactServicio>();
 
             return services;
         }
