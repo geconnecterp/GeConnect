@@ -35,7 +35,7 @@ namespace gc.api.Controllers.Caja
             }
 
             var res = _apiProductoFactServicio.ObtenerProductoDatos(req);
-            return Ok(new ApiResponse<ProductoDatosResponseDto>(res));
+            return Ok(new ApiResponse<List<ProductoDatosResponseDto>>(res));
         }
     }
 }

@@ -4,6 +4,6 @@ namespace gc.api.core.Contratos.Servicios.LineaCaja
 {
     public interface IApiProductoFactServicio
     {
-        ProductoDatosResponseDto ObtenerProductoDatos(ProductoDatosRequestDto req);
+        List<ProductoDatosResponseDto> ObtenerProductoDatos(ProductoDatosRequestDto req);
     }
 }

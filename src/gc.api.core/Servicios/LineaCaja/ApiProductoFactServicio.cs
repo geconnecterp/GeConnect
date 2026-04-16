@@ -3,17 +3,18 @@ using gc.api.core.Contratos.Servicios.LineaCaja;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Dtos.Cajas.Request;
+using Microsoft.Data.SqlClient;
 
 namespace gc.api.core.Servicios.LineaCaja
 {
-    public class ApiProductoFactServicio: Servicio<EntidadBase>,IApiProductoFactServicio
+    public class ApiProductoFactServicio : Servicio<EntidadBase>, IApiProductoFactServicio
     {
         public ApiProductoFactServicio(IUnitOfWork uow) : base(uow)
         {
 
         }
 
-        public ProductoDatosResponseDto ObtenerProductoDatos(ProductoDatosRequestDto req)
+        public List<ProductoDatosResponseDto> ObtenerProductoDatos(ProductoDatosRequestDto req)
         {
             var sp = ConstantesGC.StoredProcedures.SP_CAJA_BPROD_D;
             var ps = new List<SqlParameter>() {
@@ -28,11 +29,9 @@ namespace gc.api.core.Servicios.LineaCaja
                 new SqlParameter("@ctac_dto", req.ctac_dto)
             };
             var res = _repository.EjecutarLstSpExt<ProductoDatosResponseDto>(sp, ps);
-            if (res != null && res.Count > 0)
-            {
-                return res[0];
-            }
-            return new ProductoDatosResponseDto() { respuesta = -1, respuesta_msj = "Hubo un error al obtener los datos del producto." };
+
+            return res;
+
         }
 
 

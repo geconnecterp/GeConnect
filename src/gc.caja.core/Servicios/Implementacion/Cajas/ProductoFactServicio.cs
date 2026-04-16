@@ -41,44 +41,26 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
                         return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
                     }
 
-                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<ProductoDatosResponseDto>>(stringData);
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoDatosResponseDto>>>(stringData);
                     if (apiResponse == null || apiResponse.Data == null)
                     {
                         return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
                     }
 
                     var resp = apiResponse.Data;
-                    if (resp.respuesta == 0)
+                    if (!resp.Any())
                     {
-                        return new RespuestaGenerica<ProductoDatosResponseDto>
-                        {
-                            Ok = true,
-                            Mensaje = "OK",
-                            Entidad = apiResponse.Data
-                        };
-                    }
-                    else if (resp.respuesta > 0)
-                    {
-                        return new RespuestaGenerica<ProductoDatosResponseDto>
-                        {
-                            Ok = false,
-                            EsWarn = true,
-                            EsError = false,
-                            Mensaje = resp.respuesta_msj,
-                            Entidad = apiResponse.Data
-                        };
+                        return new() { Ok = false, Mensaje = "No se encontraron productos según el criterio." };
                     }
                     else
                     {
                         return new RespuestaGenerica<ProductoDatosResponseDto>
                         {
-                            Ok = false,
-                            EsWarn = false,
-                            EsError = true,
-                            Mensaje = resp.respuesta_msj,
-                            Entidad = apiResponse.Data
+                            Ok = true,
+                            Mensaje = "OK",
+                            ListaEntidad = apiResponse.Data
                         };
-                    }
+                    }                    
                 }
                 else
                 {

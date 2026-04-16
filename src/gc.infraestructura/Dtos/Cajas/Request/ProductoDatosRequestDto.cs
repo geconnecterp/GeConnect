@@ -12,7 +12,7 @@
         public string lp_id { get; set; } = string.Empty;
         public string adm_id { get; set; } = string.Empty;
         public decimal cantidad { get; set; } = 1m;
-        public int bulto { get; set; } = 1;
+        public bool bulto { get; set; } = true;
         public string ctc_id { get; set; } = "MI";
         public string cta_id { get; set; } = string.Empty;
         public decimal ctac_dto { get; set; } = 0m;
