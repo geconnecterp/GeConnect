@@ -4,6 +4,7 @@ using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Cajas;
+using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using Microsoft.Extensions.Logging;
@@ -23,7 +24,6 @@ namespace gc.caja.core.Servicios.Implementacion.Seguridad
         private const string POST_CIERRE_CAJA = "/CierreCaja";
         private const string GET_BUSQUEDA_CUENTA = "/BusquedaClientes";
         private const string GET_BUSQUEDA_DATOS_CLIENTE = "/BuscarDatosCliente";
-        private const string POST_OBTENER_PRODUCTO_DATOS = "/ObtenerProductoDatos";
         private const string POST_CARGAR_CF = "/Cargar_CF";
         private const string GET_OBTENER_DATOS_CF = "/ObtenerDatosCF";
         private const string POST_CIERRE_CAJA_GRAL = "/CierreCajaGral";
@@ -289,76 +289,7 @@ namespace gc.caja.core.Servicios.Implementacion.Seguridad
             }
         }
 
-        public async Task<RespuestaGenerica<ProductoDatosResponseDto>> ObtenerProductoDatos(ProductoDatosRequestDto req, string token)
-        {
-            try
-            {
-                var helper = new HelperAPI();
-                var client = helper.InicializaCliente(req, token, out StringContent contentData);
-                var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_OBTENER_PRODUCTO_DATOS}";
-
-                using var response = await client.PostAsync(link, contentData);
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    var stringData = await response.Content.ReadAsStringAsync();
-                    if (string.IsNullOrEmpty(stringData))
-                    {
-                        return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
-                    }
-
-                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<ProductoDatosResponseDto>>(stringData);
-                    if (apiResponse == null || apiResponse.Data == null)
-                    {
-                        return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
-                    }
-
-                    var resp = apiResponse.Data;
-                    if (resp.respuesta == 0)
-                    {
-                        return new RespuestaGenerica<ProductoDatosResponseDto>
-                        {
-                            Ok = true,
-                            Mensaje = "OK",
-                            Entidad = apiResponse.Data
-                        };
-                    }
-                    else if (resp.respuesta > 0)
-                    {
-                        return new RespuestaGenerica<ProductoDatosResponseDto>
-                        {
-                            Ok = false,
-                            EsWarn = true,
-                            EsError = false,
-                            Mensaje = resp.respuesta_msj,
-                            Entidad = apiResponse.Data
-                        };
-                    }
-                    else
-                    {
-                        return new RespuestaGenerica<ProductoDatosResponseDto>
-                        {
-                            Ok = false,
-                            EsWarn = false,
-                            EsError = true,
-                            Mensaje = resp.respuesta_msj,
-                            Entidad = apiResponse.Data
-                        };
-                    }
-                }
-                else
-                {
-                    var msg = await ReadApiErrorAsync(response);
-                    _logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
-                    return new() { Ok = false, Mensaje = msg };
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
-                return new() { Ok = false, Mensaje = "Error al obtener los datos del producto" };
-            }
-        }
-
+     
         public async Task<RespuestaGenerica<RespuestaDto>> Cargar_CF(CargaCFRequestDto req, string token)
         {
             try

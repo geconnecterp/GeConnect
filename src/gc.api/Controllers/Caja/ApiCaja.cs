@@ -113,22 +113,7 @@ namespace gc.api.Controllers.Caja
 
             var res = _apiCajaServicio.BusquedaDatosCliente(origen, valor, adm_id, usu_id);
             return Ok(new ApiResponse<CuentaDatosResultadoDto>(res));
-        }
-
-        [HttpPost]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoDatosResponseDto>))]
-        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        [Route("[action]")]
-        public IActionResult ObtenerProductoDatos(ProductoDatosRequestDto req)
-        {
-            if (req == null)
-            {
-                return BadRequest("El parámetro req es requerido.");
-            }
-
-            var res = _apiCajaServicio.ObtenerProductoDatos(req);
-            return Ok(new ApiResponse<ProductoDatosResponseDto>(res));
-        }
+        }        
 
         [HttpPost]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
