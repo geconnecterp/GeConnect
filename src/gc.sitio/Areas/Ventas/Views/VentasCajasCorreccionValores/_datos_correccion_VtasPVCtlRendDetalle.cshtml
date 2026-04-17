@@ -4,21 +4,61 @@
 	string clase = string.Empty;
 }
 <style>
+	#tbVtasPVCtlRendDetalle {
+		table-layout: fixed;
+		width: 100%;
+	}
 	#tbVtasPVCtlRendDetalle thead th {
 		text-align: center !important;
 		vertical-align: middle !important;
 		white-space: nowrap;
+	}
+	/* Medio de Pago: 20% + elipsis */
+	#tbVtasPVCtlRendDetalle td.col-mp,
+	#tbVtasPVCtlRendDetalle th.col-mp {
+		width: 20%;
+		max-width: 20%;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	/* Importe / Arqueo / Diferencia: 10% */
+	#tbVtasPVCtlRendDetalle td.col-num,
+	#tbVtasPVCtlRendDetalle th.col-num {
+		width: 10%;
+		max-width: 10%;
+		white-space: nowrap;
+	}
+
+	/* Valores: ocupa el espacio restante */
+	#tbVtasPVCtlRendDetalle td.col-valores,
+	#tbVtasPVCtlRendDetalle th.col-valores {
+		width: auto;
+	}
+
+	/* Botón: 2% */
+	#tbVtasPVCtlRendDetalle td.col-btn,
+	#tbVtasPVCtlRendDetalle th.col-btn {
+		width: 8%;
+		max-width: 8%;
+		white-space: nowrap;
+		padding-left: 2px;
+		padding-right: 2px;
+		padding-top: 2px;
+		padding-bottom: 2px;
 	}
 </style>
 <div class="table-responsive table-wrapper-500">
 	<table class="table table-sm table-hover mb-0 table-golden" id="tbVtasPVCtlRendDetalle">
 		<thead class="sticky-top table-golden-header-compact">
 			<tr class="header">
-				<th>Medio de Pago</th>
-				<th>Importe</th>
-				<th>Arqueo</th>
-				<th>Diferencia</th>
-				<th>Valores</th>
+				<th class="col-mp" title="Medio de Pago">Medio de Pago</th>
+				<th class="col-num">Importe</th>
+				<th class="col-num">Arqueo</th>
+				<th class="col-num" title="Diferencia">Dif.</th>
+				<th class="col-valores">Valores</th>
+				<th class="col-btn"></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -42,11 +82,11 @@
 						data-ins-ins="@item.ins_ins"
 						data-tcf-id="@item.tcf_id"
 						data-ins-detalle="@item.ins_detalle_bool">
-						<td class="text-start">@item.tcf_desc</td>
-						<td class="text-end">@GridHelper.FormatearPrecio(item.rend_importe_ok ?? 0, TipoPrecio.Venta)</td>
-						<td class="text-end">@GridHelper.FormatearPrecio(item.rend_importe_arq ?? 0, TipoPrecio.Venta)</td>
-						<td class="text-end">@GridHelper.FormatearPrecio(dif ?? 0, TipoPrecio.Venta)</td>
-						<td class="text-start">
+						<td class="col-mp text-start" title="@item.ins_desc">@item.ins_desc</td>
+						<td class="col-num text-end">@GridHelper.FormatearPrecio(item.rend_importe_ok ?? 0, TipoPrecio.Venta)</td>
+						<td class="col-num text-end">@GridHelper.FormatearPrecio(item.rend_importe_arq ?? 0, TipoPrecio.Venta)</td>
+						<td class="col-num text-end">@GridHelper.FormatearPrecio(dif ?? 0, TipoPrecio.Venta)</td>
+						<td class="col-valores text-start">
 							@if (item.ins_detalle_bool)
 							{
 								@item.concepto_valor
@@ -56,9 +96,30 @@
 								@conceptoVacio
 							}
 						</td>
+						<td class="col-btn text-center">
+							@if (item.pendiente)
+							{
+								<button type="button"
+										class="btn btn-sm btn-info btnEditarValor"
+										data-ins-ins="@item.ins_ins"
+										data-tcf-id="@item.tcf_id"
+										data-ins-detalle="@item.ins_detalle_bool"
+										title="Editar valores">
+									<i class="bx bx-edit"></i>
+								</button>
+							}
+						</td>
 					</tr>
 				}
 			}
 		</tbody>
 	</table>
+</div>
+<div class="mt-3 d-flex justify-content-center gap-3">
+	<button id="btnGuardarValores" class="btn btn-sm btn-primary">
+		<i class="bx bx-save"></i> Guardar Valores
+	</button>
+	<button id="btnAgregarValor" class="btn btn-sm btn-success">
+		<i class="bx bx-plus"></i>
+	</button>
 </div>

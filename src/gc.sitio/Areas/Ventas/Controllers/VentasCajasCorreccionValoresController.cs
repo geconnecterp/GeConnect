@@ -174,7 +174,7 @@ namespace gc.sitio.Areas.Ventas.Controllers
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> ObtenerDetalleDeRendDeCierreSeleccionado(string nro_proceso, int nro_cierre, int caja_nro_rend, string tcf_id)
+		public async Task<IActionResult> ObtenerDetalleDeRendDeCierreSeleccionado(string nro_proceso, int nro_cierre, int caja_nro_rend, string tcf_id, bool pendiente)
 		{
 			var model = new GridCoreSmart<VtasPVCtlRendDetalleDto>();
 			try
@@ -195,7 +195,13 @@ namespace gc.sitio.Areas.Ventas.Controllers
 					throw new NegocioException("Error al obtener datos de detalle de rendición de cierre");
 				if (!resultado.Ok)
 					throw new NegocioException(resultado.Mensaje ?? "Error al obtener datos de detalle de rendición de cierre");
-				model = ObtenerGridCoreSmart<VtasPVCtlRendDetalleDto>(resultado.ListaEntidad ?? []);
+				var lista = resultado.ListaEntidad ?? [];
+				if (lista != null && lista.Count > 0)
+				{
+					foreach (var item in lista)
+						item.pendiente = pendiente;
+				}
+				model = ObtenerGridCoreSmart<VtasPVCtlRendDetalleDto>(lista);
 				return PartialView("_datos_correccion_VtasPVCtlRendDetalle", model);
 			}
 			catch (Exception ex)

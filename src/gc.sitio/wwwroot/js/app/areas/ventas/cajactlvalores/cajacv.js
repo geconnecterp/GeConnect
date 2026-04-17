@@ -164,16 +164,20 @@ function InicializaEventosGrillaVtasPVCtlRend() {
             // Guardar valor seleccionado
             caja_nro_rend_selected = $this.data("caja-nro-rend");
 			tcf_id_selected = $this.data("tcf-id");
-			rend_pendiente_selected = $this.data("rend-pendiente");
+            rend_pendiente_selected = String($this.data("rend-pendiente")).toLowerCase() === "true";
 
-            if (rend_pendiente_selected === true || rend_pendiente_selected === "true" || rend_pendiente_selected === "True") {
+            if (rend_pendiente_selected === true) {
                 $("#btnConfirmarArqueo").prop("disabled", false);
                 $("#btnAnularArqueo").prop("disabled", false);
                 $("#btnAgregarArqueo").prop("disabled", false);
+                $("#btnGuardarValores").prop("disabled", false);
+                $("#btnAgregarValor").prop("disabled", false);
             } else {
                 $("#btnConfirmarArqueo").prop("disabled", true);
                 $("#btnAnularArqueo").prop("disabled", true);
                 $("#btnAgregarArqueo").prop("disabled", true);
+                $("#btnGuardarValores").prop("disabled", true);
+                $("#btnAgregarValor").prop("disabled", true);
             }
 
             // Habilitar 
@@ -195,19 +199,42 @@ function CargarGrillaVtasPVCtlRendDetalle() {
         }, false, ["Aceptar"], "error!", null);
     }
     else {
-        var data = { nro_proceso: caja_nro_proceso_selected, nro_cierre: caja_nro_cierre_selected, caja_nro_rend: caja_nro_rend_selected, tcf_id: tcf_id_selected };
+        var data = {
+            nro_proceso: caja_nro_proceso_selected,
+            nro_cierre: caja_nro_cierre_selected,
+            caja_nro_rend: caja_nro_rend_selected,
+            tcf_id: tcf_id_selected,
+            pendiente: rend_pendiente_selected
+        };
         AbrirWaiting("Cargando datos de detalle de rendición de Cierre seleccionado...");
         PostGenHtml(data, obtenerDetalleDeRendDeCierreSeleccionadoUrl, function (html) {
             CerrarWaiting();
             $("#divVtasPVCtlRendDetalle").html(html);
             InicializaEventosGrillaVtasPVCtlRendDetalle();
-            //TODO MARCE: Forzar un ancho fijo de la columna Medio de pago, si es mas grande el contenido, que se muestre la elipsis y el mismo en un 
-            //tooltip
         });
     }
 }
 
 function InicializaEventosGrillaVtasPVCtlRendDetalle() {
+    // Evitar eventos duplicados
+    $(document).off("click", ".btnEditarValor");
+
+    // Delegación de eventos
+    $(document).on("click", ".btnEditarValor", function (e) {
+        e.stopPropagation(); // evita seleccionar la fila
+
+        const $btn = $(this);
+
+        const ins_ins = $btn.data("ins-ins");
+        const tcf_id = $btn.data("tcf-id");
+        const ins_detalle = $btn.data("ins-detalle");
+
+        // Lógica de edición
+        AbrirModalEditarValor(ins_ins, tcf_id, ins_detalle);
+    });
+}
+
+function AbrirModalEditarValor(ins_ins, tcf_id, ins_detalle) {
 }
 
 function validarRendSeleccionado() {
