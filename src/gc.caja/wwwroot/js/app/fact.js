@@ -48,6 +48,16 @@ function mostrarMensajeExito(mensaje) {
 
 // ====== INICIALIZACIÓN ======
 $(function () {
+    console.log('🚀 Módulo de Facturación Cargado');
+
+    // ✅ NUEVO: Inicializar lista de precios por defecto
+    if (typeof admLp_id === 'undefined') {
+        window.admLp_id = "001"; // Mayorista por defecto
+        console.log('⚠️ admLp_id no estaba definida, se inicializó en "001"');
+    }
+
+    console.log(`✅ Lista de precios inicial: ${admLp_id}`);
+
     inicializaEventosFact();
     inicializaVistaFact();
 });
@@ -1070,234 +1080,69 @@ function obtenerDescripcionTipoDoc(tdocId) {
     };
     return tipos[tdocId] || 'Desconocido';
 }
-// ================================================================
-//                         MÓDULO DE FACTURACIÓN
-// ================================================================
 
-// ========================================
-// FUNCIONES DE MENSAJES AL USUARIO
-// ========================================
+/**
+* ✅ NUEVA: Actualiza la lista de precios según el tipo de cliente
+* @param {string} tipoCliente - "FINAL" o "REGISTRADO"
+* @param {object} clienteData - Datos del cliente (opcional)
+*/
+function actualizarListaPreciosGlobal(tipoCliente, clienteData = null) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔄 ACTUALIZAR LISTA DE PRECIOS GLOBAL');
+    console.log('═══════════════════════════════════════════════════');
+    console.log(`   Tipo de cliente: ${tipoCliente}`);
 
+    // ✅ Lógica de negocio para determinar lista de precios
+    if (tipoCliente === "FINAL") {
+        // Consumidor final → Lista de precios 002 (Minorista)
+        admLp_id = "002";
+        console.log('   → Consumidor Final: Lista de precios MINORISTA (002)');
+    } else if (tipoCliente === "REGISTRADO") {
+        // Cliente registrado → Verificar su configuración
+        if (clienteData && clienteData.lp_id) {
+            admLp_id = clienteData.lp_id;
+            console.log(`   → Cliente Registrado: Lista de precios ${clienteData.lp_id}`);
+        } else {
+            // Por defecto: Lista de precios 001 (Mayorista)
+            admLp_id = "001";
+            console.log('   → Cliente Registrado (sin config): Lista de precios MAYORISTA (001)');
+        }
+    } else {
+        // Caso por defecto
+        admLp_id = "001";
+        console.log('   → Caso por defecto: Lista de precios MAYORISTA (001)');
+    }
 
+    console.log(`✅ Lista de precios actualizada globalmente: ${admLp_id}`);
+    console.log('═══════════════════════════════════════════════════');
+}
 
+/**
+* ✅ ACTUALIZADO: Confirma el cliente seleccionado
+* Ahora actualiza la lista de precios global
+*/
+function confirmarClienteSeleccionado() {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('✅ CONFIRMAR CLIENTE SELECCIONADO');
+    console.log('═══════════════════════════════════════════════════');
 
-//// ========================================
-//// MODAL IDENTIFICAR CLIENTE - FUNCIONES
-//// ========================================
+    const clienteData = obtenerClienteSeleccionadoUI();
 
-//function abrirModalIdentificarCliente() {
-//    // Resetear estado
-//    limpiarModalCliente();
+    if (!clienteData) {
+        mostrarMensajeError('Debe seleccionar un cliente');
+        return;
+    }
 
-//    // ✅ SOLUCIÓN SIMPLE: Usar jQuery para mostrar el modal
-//    $('#modalIdentificarCliente').modal('show');
+    // ✅ NUEVO: Actualizar lista de precios según tipo de cliente
+    const tipoCliente = clienteData.esConsumidorFinal ? "FINAL" : "REGISTRADO";
+    actualizarListaPreciosGlobal(tipoCliente, clienteData);
 
-//    // Focus en campo de búsqueda
-//    setTimeout(() => {
-//        $('#txtBuscarCliente').trigger("focus");
-//    }, 500);
-//}
+    // Disparar evento para que prodfact.js reaccione
+    $(document).trigger('clienteConfirmado', [clienteData]);
 
+    // Cerrar modal
+    $('#modalIdentificarCliente').modal('hide');
 
-//// ====== EVENTOS DE LA GRILLA ======
-//function attachGrillaEventos() {
-//    $(document).off('dblclick', '.cliente-row');
-//    $(document).off('click', '.btn-seleccionar-cliente');
-//    $(document).off('click', '#btnCerrarGrilla');
-    
-//    $(document).on('dblclick', '.cliente-row', function() {
-//        const $row = $(this);
-        
-//        if (!validarClienteAntesDeSeleccionar($row)) {
-//            return;
-//        }
-        
-//        seleccionarClienteDesdeGrilla($row);
-//    });
-    
-//    $(document).on('click', '.btn-seleccionar-cliente', function (e) {
-//        e.stopPropagation();
-//        const $row = $(this).closest('.cliente-row');
-
-//        if ($row.length === 0) {
-//            mostrarMensajeError('Error: No se pudo identificar el cliente seleccionado');
-//            return;
-//        }
-
-//        if (!validarClienteAntesDeSeleccionar($row)) {
-//            return;
-//        }
-        
-//        seleccionarClienteDesdeGrilla($row);
-//    });
-    
-//    $(document).on('click', '#btnCerrarGrilla', function() {
-//        limpiarVista();
-//    });
-//}
-
-//// ====== SELECCIONAR CLIENTE DESDE GRILLA ======
-//function seleccionarClienteDesdeGrilla($row) {
-//    if (!$row || $row.length === 0) {
-//        mostrarMensajeError('Error: No se pudo acceder a los datos de la fila seleccionada');
-//        return;
-//    }
-
-//    const datosCliente = {
-//        id: $row.data('cta-id'),
-//        nombre: $row.data('cta-nombre'),
-//        domicilio: $row.data('cta-domicilio'),
-//        tdocId: $row.data('cta-tdoc-id'),
-//        tdocDesc: $row.data('cta-tdoc-desc'),
-//        documento: $row.data('cta-documento'),
-//        email: $row.data('cta-email'),
-//        movil: $row.data('cta-movil'),
-//        origen: $row.data('cta-origen'),
-//        origenDesc: $row.data('cta-origen-desc')
-//    };
-
-//    if (!datosCliente.id && !datosCliente.documento) {
-//        mostrarMensajeError('Error: No se pudo identificar el ID del cliente');
-//        return;
-//    }
-
-//    if (!datosCliente.origen || datosCliente.origen.toString().trim() === '') {
-//        mostrarMensajeError('Error: Los datos de origen del cliente están incompletos');
-//        return;
-//    }
-
-//    let criterioBusqueda = '';
-//    const origenUpper = datosCliente.origen.toUpperCase();
-
-//    if (origenUpper === 'C') {
-//        criterioBusqueda = datosCliente.id;
-//    } else if (origenUpper === 'F') {
-//        if (!datosCliente.documento || datosCliente.documento.toString().trim() === '') {
-//            mostrarMensajeError('El consumidor final no tiene documento registrado');
-//            return;
-//        }
-//        criterioBusqueda = datosCliente.documento.toString();
-//    } else {
-//        criterioBusqueda = datosCliente.id;
-//    }
-
-//    $('#cardGrillaClientes').removeClass('show').hide().empty();
-//    $('#alertSinCliente').hide();
-
-//    const $cardBody = $('#cardDatosCliente .card-body');
-//    const loaderMensaje = origenUpper === 'C' 
-//        ? `ID: ${criterioBusqueda}` 
-//        : `${datosCliente.tdocDesc}: ${criterioBusqueda}`;
-
-//    if ($cardBody.length > 0) {
-//        $cardBody.hide();
-        
-//        if ($('#loaderClienteTemp').length === 0) {
-//            $cardBody.after(`
-//                <div id="loaderClienteTemp" class="card-body text-center py-5">
-//                    <i class='bx bx-loader-alt bx-spin' style='font-size: 3rem; color: #f0ad4e;'></i>
-//                    <p class="mt-3 text-muted fw-semibold">Cargando datos del cliente...</p>
-//                    <small class="text-muted">${loaderMensaje}</small>
-//                </div>
-//            `);
-//        }
-//    }
-
-//    $('#cardDatosCliente').show();
-//    $('#btnSeguirCliente').prop('disabled', true);
-
-//    buscarClientePorId(criterioBusqueda);
-//}
-
-//// ====== BUSCAR CLIENTE POR ID ======
-//function buscarClientePorId(clienteId) {
-//    if (!clienteId || clienteId.toString().trim() === '') {
-//        mostrarMensajeError('Error: ID de cliente inválido');
-//        limpiarVista();
-//        return;
-//    }
-    
-//    const url = typeof BuscarClienteUrl !== 'undefined' && BuscarClienteUrl 
-//        ? BuscarClienteUrl 
-//        : '/Facturacion/Cliente/BuscarCliente';
-    
-//    $.ajax({
-//        url: url,
-//        type: 'POST',
-//        data: { criterio: clienteId },
-//        timeout: 30000,
-//        success: function (response) {
-//            if (!response.ok) {
-//                mostrarMensajeError(response.mensaje || 'Error al cargar los datos del cliente');
-//                limpiarVista();
-//                return;
-//            }
-            
-//            const cantidadResultados = response.cantidadResultados || 0;
-            
-//            if (cantidadResultados !== 1) {
-//                mostrarMensajeError('Error: No se pudieron obtener los datos del cliente seleccionado');
-//                limpiarVista();
-//                return;
-//            }
-            
-//            if (!response.cliente) {
-//                mostrarMensajeError('Error: Los datos del cliente no están disponibles');
-//                limpiarVista();
-//                return;
-//            }
-            
-//            mostrarDatosCliente(response.cliente);
-//        },
-//        error: function (xhr, status) {
-//            let mensaje = 'Error al cargar los datos del cliente';
-            
-//            if (status === 'timeout') mensaje = 'La búsqueda tardó demasiado tiempo';
-//            else if (xhr.status === 404) mensaje = 'Servicio no encontrado';
-//            else if (xhr.status === 401 || xhr.status === 403) mensaje = 'Sesión expirada';
-//            else if (xhr.status === 500) mensaje = 'Error interno del servidor';
-            
-//            mostrarMensajeError(mensaje);
-//            limpiarVista();
-//        }
-//    });
-//}
-
-///**
-// * ✅ FUNCIÓN VÁLIDA v1.0: Limpia la sesión de clientes buscados en el servidor
-// * 
-// * Esta función se invoca cuando el usuario limpia el modal de identificar cliente.
-// * Realiza una llamada AJAX asíncrona al servidor para limpiar las variables de sesión:
-// * - ClientesBuscados: Lista de clientes encontrados en búsqueda múltiple
-// * 
-// * Comportamiento:
-// * - No bloquea el flujo de ejecución (fire and forget)
-// * - Si falla, solo registra warning en consola (no crítico para UX)
-// * - Libera memoria en el servidor
-// * 
-// * @returns {void}
-// */
-//function limpiarSesionClientesBuscados() {
-//    const urlLimpiarSesion = typeof LimpiarSesionClientesUrl !== 'undefined' && LimpiarSesionClientesUrl
-//        ? LimpiarSesionClientesUrl
-//        : '/Facturacion/Cliente/LimpiarSesionClientes';
-
-//    $.ajax({
-//        url: urlLimpiarSesion,
-//        type: 'POST',
-//        async: true,
-//        timeout: 5000,
-//        success: function (response) {
-//            if (response && response.ok) {
-//                console.log('✅ Sesión de clientes limpiada en el servidor');
-//            }
-//        },
-//        error: function () {
-//            console.warn('⚠️ No se pudo limpiar la sesión en el servidor');
-//        }
-//    });
-//}
-
-// ================================================================
-//                         MÓDULO DE FACTURACIÓN
-// ================================================================
+    console.log('✅ Cliente confirmado y lista de precios actualizada');
+    console.log('═══════════════════════════════════════════════════');
+}

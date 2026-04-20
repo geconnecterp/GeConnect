@@ -1,7 +1,10 @@
 ﻿using gc.caja.Controllers;
 using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Cajas.Request;
+using gc.infraestructura.Dtos.Productos;
+using gc.infraestructura.EntidadesComunes.Options;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -256,6 +259,16 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "No se recibieron datos del producto" });
                 }
 
+                // ⓫ VALIDA SI EL PRODUCTO FUE SOLICITADO CON EL CODIGO DE BARRAS O CON EL ID DE PRODUCTO
+                //siempre sera un solo producto
+                var prod = resultado.ListaEntidad[0];
+                //tiene barrado y no lo utilizó
+                if (prod.sin_scan_con_barrado)
+                {
+                    _logger?.LogError("❌ Tiene barrado y no lo utilizó");
+                    return Json(new { ok = false, mensaje = "El producto tiene código de barras y debe ser escaneado o ingresado manualmente." });
+                }
+
                 var productos = resultado.ListaEntidad;
 
                 // ⓫ DETECTAR WARNINGS O ERRORES EN LA RESPUESTA
@@ -307,6 +320,151 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 { 
                     ok = false, 
                     mensaje = "Error inesperado al procesar el producto. Por favor, intente nuevamente." 
+                });
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> BusquedaBase(string busqueda, bool validarEstado = false, bool acumularProductos = false, string modulo = "RPR")
+        {
+            try
+            {
+                ProductoBusquedaDto producto = new ProductoBusquedaDto { P_id = "0000-0000" };
+                if (string.IsNullOrEmpty(busqueda))
+                {
+                    return Json(new { error = false, producto });
+                }
+
+                //InicializaVariablesBusquedaBase();
+
+                if (busqueda.Trim().Length < 6)
+                {
+                    busqueda = busqueda.Trim().PadLeft(6, '0');
+                }
+                BusquedaBase buscar = new BusquedaBase
+                {
+                    Administracion = AdministracionId,
+                    Busqueda = busqueda,
+                    //DescuentoCli = _busqueda.DescuentoCli,
+                    //ListaPrecio = _busqueda.ListaPrecio,
+                    //TipoOperacion = _busqueda.TipoOperacion
+                };
+
+                producto = await _productoFactServicio.BusquedaBaseProductos(buscar, TokenCookie);
+
+                if (producto != null && !string.IsNullOrEmpty(producto.P_id))
+                {
+                    bool warn = false;
+                    string msg = string.Empty;
+                    //validación de Estado
+                    if (!producto.P_activo.Equals("S") && validarEstado)
+                    {
+                        //se valida que no esta activo. Valores Noactivo Discontinuo
+                        return Json(new { error = true, msg = $"El producto {producto.P_desc} se encuentra {producto.Msj}" });
+                    }
+                    ////Validación si pertenece o no al proveedor
+                    //if (!modulo.Trim().ToUpper().Equals("INV"))
+                    //{
+                    //    if (modulo.ToUpper().Equals("RTI"))
+                    //    {
+                    //        //verificamos si el producto se encuentra en el remito.
+                    //        var resp = await _remitoSv.VerificaProductoEnRemito(rm: RemitoActual.re_compte, pId: producto.P_id, TokenCookie);
+                    //        if (resp.resultado != 0)
+                    //        {
+                    //            return Json(new { error = true, msg = resp.resultado_msj });
+                    //        }
+                    //    }
+                    //    else
+                    //    {
+                    //        if (AutorizacionPendienteSeleccionada != null &&
+                    //            !AutorizacionPendienteSeleccionada.Cta_id.Equals(producto.Cta_id) && validarEstado)
+                    //        {
+                    //            warn = true;
+                    //            msg = $"El Producto NO pertenece al actual proveedor. Pertenece al Proveedor {producto.Cta_denominacion}.";
+                    //        }
+                    //    }
+                    //}
+
+                    //se resguarda el producto recien buscado.
+                    ProductoBase = producto;
+                    if (acumularProductos)
+                    {
+                        var productos = ProductosSeleccionados;
+                        productos.Add(producto);
+                        ProductosSeleccionados = productos;
+                    }
+                    return Json(new { error = false, producto, warn, msg, });
+                }
+                else
+                {
+                    return Json(new { error = false, warn = true, msg = "El producto no ha sido identificado.", producto = new ProductoBusquedaDto() { P_id = "NO" } });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Hubo un error en la busqueda avanzada");
+                return Json(new { error = true, msg = "Algo no salió bien. Vuelva a intentarlo." });
+            }
+        }
+
+        //private void InicializaVariablesBusquedaBase()
+        //{
+        //    #region Variables de InfoProd
+        //    InfoProdStkDId = "";
+        //    InfoProdStkDRegs = [];
+        //    InfoProdStkBoxesIds = ("", "");
+        //    InfoProdStkBoxesRegs = [];
+        //    InfoProdStkAId = "";
+        //    InfoProdStkARegs = [];
+        //    InfoProdMovStkIds = "";
+        //    InfoProdMovStkRegs = [];
+        //    InfoProdLPId = "";
+        //    InfoProdLPRegs = [];
+
+        //    #endregion
+        //}
+
+
+        [HttpPost]
+        public async Task<IActionResult> BusquedaAvanzada(string ri01, string ri02, bool act, bool dis, bool ina, bool cstk, bool sstk, string buscar, bool buscaNew, string sort = "p_id", string sortDir = "asc", int pag = 1)
+        {
+            return await BusquedaAvanzada(ri01, ri02, act, dis, ina, cstk, sstk, buscar, buscaNew, _productoFactServicio, sort, sortDir, pag);
+        }
+
+        /// <summary>
+        /// Búsqueda avanzada V02 que devuelve JSON con ProductoListaDto para ofertas
+        /// </summary>
+        [HttpPost]
+        public async Task<JsonResult> BusquedaAvanzadaV02(string ri01, string ri02, string ri03, bool act, bool dis, bool ina, bool cstk, bool sstk, string buscar, string lp_id, bool buscaNew = true, string sort = "p_desc", string sortDir = "asc", int pag = 1)
+        {
+            try
+            {
+                // ✅ VALIDACIÓN: Verificar autenticación
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || (auth.Item1 && !auth.Item2.HasValue) || (auth.Item1 && auth.Item2.HasValue && auth.Item2.Value < DateTime.Now))
+                {
+                    return new JsonResult(new
+                    {
+                        error = true,
+                        msg = "Sesión expirada. Debe autenticarse nuevamente.",
+                        productos = new List<ProductoListaDto>(),
+                        redirect = true,
+                        redirectUrl = Url.Action("Login", "Token", new { area = "Seguridad" })
+                    });
+                }
+                lp_id = LP_Id;
+                // ✅ DELEGACIÓN: Llamar al método base optimizado
+                return await BusquedaAvanzadaV02(ri01, ri02, ri03 ?? "%", act, dis, ina, cstk, sstk, buscar, lp_id, buscaNew, _productoFactServicio, sort, sortDir, pag);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error en búsqueda avanzada V02");
+                return new JsonResult(new
+                {
+                    error = true,
+                    msg = "Error interno en la búsqueda de productos",
+                    productos = new List<ProductoListaDto>(),
+                    metadata = new { totalCount = 0, totalPages = 0, pageSize = 0, currentPage = pag }
                 });
             }
         }

@@ -78,7 +78,12 @@ function inicializarEventosProductos() {
     $('#btnBuscarProducto').on('click', function () {
         procesarEntradaCodigo();
     });
-    
+
+    // Buscar otros productos desde la base (botón)
+    $('#btnBuscarProductos').on('click', function () {
+        BuscarProductos();
+    });
+
     // ✅ CRÍTICO: Botón CANCELAR - Vuelve a identificar cliente
     $('#btnCancelarFactura').on('click', function () {
         console.log('🔙 Usuario solicitó cancelar factura...');
@@ -118,6 +123,46 @@ function inicializarEventosProductos() {
 // ═══════════════════════════════════════════════════════════════════
 // SECCIÓN 1: PROCESAMIENTO DE ENTRADA
 // ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Nuevo v1.0: Busca productos desde el modal.
+ * 
+ */
+function BuscarProductos() {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔍 ABRIR MODAL DE BÚSQUEDA DE PRODUCTOS v5.1');
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Validar que exista el modal
+    const $modalBusqueda = $('#busquedaModal');
+
+    if ($modalBusqueda.length === 0) {
+        console.error('❌ Modal #busquedaModal no encontrado');
+        mostrarMensajeError('Error: Modal de búsqueda no disponible');
+        return;
+    }
+
+    // ❷ Limpiar campos de búsqueda previos (si existen)
+    $modalBusqueda.find('input[type="text"], input[type="search"]').val('');
+
+    // ❸ Abrir modal
+    $modalBusqueda.modal('show');
+
+    console.log('✅ Modal de búsqueda abierto');
+
+    // ❹ Focus en campo de búsqueda al mostrarse
+    $modalBusqueda.on('shown.bs.modal', function () {
+        const $campoBusqueda = $modalBusqueda.find('input[type="text"], input[type="search"]').first();
+
+        if ($campoBusqueda.length > 0) {
+            setTimeout(() => {
+                $campoBusqueda.trigger('focus');
+            }, 200);
+        }
+    });
+
+    console.log('═══════════════════════════════════════════════════');
+}
 
 /**
  * ✅ NUEVO v4.0: Procesa la entrada del campo de código

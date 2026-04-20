@@ -55,11 +55,22 @@
 @await Html.PartialAsync("_IdentificarClienteModal")
 @await Html.PartialAsync("_ClienteUpdate")
 @await Html.PartialAsync("~/Areas/Facturacion/Views/ProductoFact/_productoFactura.cshtml")
-@await Html.PartialAsync("~/Areas/Facturacion/Views/ProductoFact/_SeleccionProductoModal.cshtml")
-
+@* @await Html.PartialAsync("~/Areas/Facturacion/Views/ProductoFact/_SeleccionProductoModal.cshtml") *@
+@await Html.PartialAsync("~/Areas/Facturacion/Views/ProductoFact/_busquedaAdvanceV02.cshtml")
 
 @section Scripts {
     <script>
+        // ✅ CRÍTICO: Lista de precios por defecto
+        // ⚠️ TODO: Obtener dinámicamente según cliente/caja
+        var admLp_id = "001"; // Lista de precios por defecto (Mayorista)
+         //parapaginacion
+        let totalRegs = 0;
+        let pagRegs = 0;
+        let pags = 0;
+        let pagina = 1;
+        let funcCallBack = null;
+        var dataBak = {};
+        var dataBakV02 = {};
         // ═══════════════════════════════════════════════════════════
         // ✅ URLs DEL BACKEND (JavaScript Global Variables)
         // ═══════════════════════════════════════════════════════════
@@ -74,10 +85,19 @@
         // URLs de Menú
         var MenuCajaUrl = '@Url.Action("Index", "Home", new { area = "" })';
 
+        //funcionalidad busqueda avanzada controlador común
+        let productoBase = null; //se hidrata en busquedas.
+        let p_id_selected = "";
+        let funcionBusquedaAvanzada = true;
+        let busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
+        let busquedaAvanzadaUrl = "@Url.Action("busquedaavanzada", "ProductoFact", new { area = "Facturacion" })";
+
         // URLs de Productos (agregar aquí cuando sea necesario)
         // var BuscarProductoUrl = '@Url.Action("BuscarProducto", "ProductoFact", new { area = "Facturacion" })';
     </script>
 
     <script src="~/js/app/fact.js" asp-append-version="true"></script>
     <script src="~/js/app/prodfact.js" asp-append-version="true"></script>
+    <script src="~/js/app/busquedas.js" asp-append-version="true"></script>
+    <script src="~/js/app/busquedasV02.js" asp-append-version="true"></script>
 }
