@@ -11,6 +11,7 @@ using gc.sitio.core.Servicios.Contratos.Cajas;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System;
 
 namespace gc.sitio.Areas.Ventas.Controllers
@@ -201,7 +202,8 @@ namespace gc.sitio.Areas.Ventas.Controllers
 					foreach (var item in lista)
 						item.pendiente = pendiente;
 				}
-				model = ObtenerGridCoreSmart<VtasPVCtlRendDetalleDto>(lista);
+				model = ObtenerGridCoreSmart<VtasPVCtlRendDetalleDto>(lista ?? []);
+				VtasPVCtlRendDetalleLista = lista ?? [];
 				return PartialView("_datos_correccion_VtasPVCtlRendDetalle", model);
 			}
 			catch (Exception ex)
@@ -217,7 +219,149 @@ namespace gc.sitio.Areas.Ventas.Controllers
 			}
 		}
 
+		[HttpPost]
+		public JsonResult ActualizarImporteEnItemDeDetalleDeArqueo(string ins_ins, decimal importe)
+		{
+			try
+			{
+				var listaTemp = VtasPVCtlRendDetalleLista;
+				var item = listaTemp.FirstOrDefault(x => x.ins_id == ins_ins);
+				if (item != null)
+				{
+					item.rend_importe_ok = importe;
+					VtasPVCtlRendDetalleLista = listaTemp;
+				}
+				return Json(new { Ok = true, error = false });
+			}
+			catch (Exception)
+			{
+				return Json(new { Ok = false, error = true });
+			}
+		}
+
+		[HttpPost]
+		public JsonResult CargaCtlNuevoItemDetalle(string caja_nro_proceso, int caja_nro_cierre, int caja_nro_rend)
+		{
+			try
+			{
+				if (string.IsNullOrEmpty(caja_nro_proceso))
+					throw new NegocioException("Faltan datos obligatorios: nro_proceso");
+				if (caja_nro_cierre <= 0)
+					throw new NegocioException("Faltan datos obligatorios: nro_cierre");
+				if (caja_nro_rend <= 0)
+					throw new NegocioException("Faltan datos obligatorios: caja_nro_rend");
+				var request = new CargaCtlNuevoItemDetalleRequest()
+				{
+					caja_nro_proceso = caja_nro_proceso,
+					caja_nro_cierre = caja_nro_cierre,
+					caja_nro_rend = caja_nro_rend,
+					tcf_id = "",
+					nuevo_tcf = false,
+					adm_id = AdministracionId,
+					usu_id = UserName
+				};
+				var resultado = _apiVentasServicio.CargaCtlNuevoItemDetalle(request, TokenCookie).Result;
+				if (resultado == null)
+					throw new NegocioException("Error al cargar nuevo item de detalle");
+				// Procesamiento de respuesta
+				if (resultado.Ok && !resultado.EsError && !resultado.EsWarn)
+				{
+					return Json(new
+					{
+						ok = true,
+						error = false,
+					});
+				}
+				else
+				{
+					// Log y respuesta de error/advertencia
+					_logger?.LogWarning("Error: {Mensaje}", resultado.Mensaje);
+					return Json(new
+					{
+						ok = false,
+						error = resultado.EsError,
+						warn = resultado.EsWarn,
+						msg = resultado.Mensaje ?? "Error"
+					});
+				}
+			}
+			catch (Exception)
+			{
+				return Json(new { Ok = false, error = true });
+			}
+		}
+
+		[HttpPost]
+		public JsonResult GuardarCtlDetalle(string caja_nro_proceso, int caja_nro_cierre, int caja_nro_rend, string tcf_id)
+		{
+			try
+			{
+				if (string.IsNullOrEmpty(caja_nro_proceso))
+					throw new NegocioException("Faltan datos obligatorios: nro_proceso");
+				if (caja_nro_cierre <= 0)
+					throw new NegocioException("Faltan datos obligatorios: nro_cierre");
+				if (caja_nro_rend <= 0)
+					throw new NegocioException("Faltan datos obligatorios: caja_nro_rend");
+				if (string.IsNullOrEmpty(tcf_id))
+					throw new NegocioException("Faltan datos obligatorios: tcf_id");
+				var json = ArmarJsonDetalle();
+				if (string.IsNullOrEmpty(json))
+					throw new NegocioException("Error al intentar parsear productos");
+				var request = new GuardarCtlDetalleRequest()
+				{
+					caja_nro_proceso = caja_nro_proceso,
+					caja_nro_cierre = caja_nro_cierre,
+					caja_nro_rend = caja_nro_rend,
+					tcf_id = tcf_id,
+					adm_id = AdministracionId,
+					usu_id = UserName,
+					json_rend = json
+				};
+				var resultado = _apiVentasServicio.GuardarCtlDetalle(request, TokenCookie).Result;
+				if (resultado == null)
+					throw new NegocioException("Error al guardar detalle");
+				// Procesamiento de respuesta
+				if (resultado.Ok && !resultado.EsError && !resultado.EsWarn)
+				{
+					return Json(new
+					{
+						ok = true,
+						error = false,
+					});
+				}
+				else
+				{
+					// Log y respuesta de error/advertencia
+					_logger?.LogWarning("Error: {Mensaje}", resultado.Mensaje);
+					return Json(new
+					{
+						ok = false,
+						error = resultado.EsError,
+						warn = resultado.EsWarn,
+						msg = resultado.Mensaje ?? "Error"
+					});
+				}
+			}
+			catch (Exception)
+			{
+				return Json(new { Ok = false, error = true });
+			}
+		}
+
 		#region Métodos Privados
+		private string ArmarJsonDetalle()
+		{
+			try
+			{
+				var str = string.Empty;
+				str = JsonConvert.SerializeObject(VtasPVCtlRendDetalleLista);
+				return str;
+			}
+			catch (Exception)
+			{
+				return string.Empty;
+			}
+		}
 		private void CargarDatosIniciales(FiltroCtlValoresModel model)
 		{
 			var sucursales = _administracionServicio.ObtenerAdministraciones("S", TokenCookie);

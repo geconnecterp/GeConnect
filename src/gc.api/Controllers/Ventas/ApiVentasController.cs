@@ -1,6 +1,7 @@
 ﻿using gc.api.Controllers.OrdenReparto;
 using gc.api.core.Contratos.Servicios;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenReparto;
 using gc.infraestructura.Dtos.Ventas;
 using Microsoft.AspNetCore.Authorization;
@@ -107,6 +108,36 @@ namespace gc.api.Controllers.Ventas
 
 			return Ok(new ApiResponse<List<VtasPVCtlRendDetalleDto>>(data));
 
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult CargaCtlNuevoItemDetalle(CargaCtlNuevoItemDetalleRequest request)
+		{
+			if (request == null)
+			{
+				_logger.LogWarning("Parámetro request se encuentra vacío o nulo.");
+				return BadRequest(new ApiResponse<string>("El parámetro request no puede estar vacío."));
+			}
+			var data = _iApiVentasServicio.CargaCtlNuevoItemDetalle(request);
+			return Ok(new ApiResponse<RespuestaDto>(data));
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GuardarCtlDetalle(GuardarCtlDetalleRequest request)
+		{
+			if (request == null)
+			{
+				_logger.LogWarning("Parámetro request se encuentra vacío o nulo.");
+				return BadRequest(new ApiResponse<string>("El parámetro request no puede estar vacío."));
+			}
+			var data = _iApiVentasServicio.GuardarCtlDetalle(request);
+			return Ok(new ApiResponse<RespuestaDto>(data));
 		}
 	}
 }

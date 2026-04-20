@@ -30,6 +30,8 @@
 			public const string SP_VTAS_PV_CTL_CIERRES = "SPGECO_Vtas_PV_CTL_Cierres";
 			public const string SP_VTAS_PV_CTL_REND = "SPGECO_Vtas_PV_CTL_Rend";
 			public const string SP_VTAS_PV_CTL_REND_DETALLE = "SPGECO_Vtas_PV_CTL_Rend_Detalle";
+			public const string SP_VTAS_PV_CTL_NUEVO = "SPGECO_Vtas_PV_CTL_Nuevo";
+			public const string SP_VTAS_PV_CTL_GUARDAR = "SPGECO_Vtas_PV_CTL_Guardar";
 			#endregion
 
 			public const string MNU_GET_MENU_LIST = "dbo.SP_web_geco_get_menu_list";

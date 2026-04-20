@@ -2,6 +2,7 @@
 using gc.api.core.Contratos.Servicios;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Ventas;
 using Microsoft.Data.SqlClient;
 
@@ -67,6 +68,66 @@ namespace gc.api.core.Servicios
 
 			var result = _repository.EjecutarLstSpExt<VtasPVCtlRendDetalleDto>(sp, ps, true);
 			return result;
+		}
+
+		public RespuestaDto CargaCtlNuevoItemDetalle(CargaCtlNuevoItemDetalleRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_VTAS_PV_CTL_NUEVO;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@caja_nro_proceso", request.caja_nro_proceso),
+				new SqlParameter("@caja_nro_cierre", request.caja_nro_cierre),
+				new SqlParameter("@caja_nro_rend", request.caja_nro_rend),
+				new SqlParameter("@tcf_id", request.tcf_id),
+				new SqlParameter("@nuevo_tcf", request.nuevo_tcf),
+				new SqlParameter("@adm_id", request.adm_id),
+				new SqlParameter("@usu_id", request.usu_id),
+			};
+
+			var result = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			if (result != null && result.Count > 0)
+			{
+				return result[0];
+			}
+			else
+			{
+				return new RespuestaDto()
+				{
+					resultado = -1,
+					resultado_msj = "Error al cargar ctl detalle"
+				};
+			}
+		}
+
+		public RespuestaDto GuardarCtlDetalle(GuardarCtlDetalleRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_VTAS_PV_CTL_GUARDAR;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@caja_nro_proceso", request.caja_nro_proceso),
+				new SqlParameter("@caja_nro_cierre", request.caja_nro_cierre),
+				new SqlParameter("@caja_nro_rend", request.caja_nro_rend),
+				new SqlParameter("@tcf_id", request.tcf_id),
+				new SqlParameter("@json_rend", request.json_rend),
+				new SqlParameter("@adm_id", request.adm_id),
+				new SqlParameter("@usu_id", request.usu_id),
+			};
+
+			var result = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			if (result != null && result.Count > 0)
+			{
+				return result[0];
+			}
+			else
+			{
+				return new RespuestaDto()
+				{
+					resultado = -1,
+					resultado_msj = "Error al guardar ctl detalle"
+				};
+			}
 		}
 	}
 }

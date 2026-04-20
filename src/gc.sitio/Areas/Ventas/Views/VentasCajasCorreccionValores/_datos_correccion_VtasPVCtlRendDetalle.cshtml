@@ -2,6 +2,9 @@
 @{
 	var alt = true;
 	string clase = string.Empty;
+	var pendiente = false;
+	if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
+		pendiente = Model.ListaDatos.First().pendiente;
 }
 <style>
 	#tbVtasPVCtlRendDetalle {
@@ -26,8 +29,8 @@
 	/* Importe / Arqueo / Diferencia: 10% */
 	#tbVtasPVCtlRendDetalle td.col-num,
 	#tbVtasPVCtlRendDetalle th.col-num {
-		width: 10%;
-		max-width: 10%;
+		width: 13%;
+		max-width: 13%;
 		white-space: nowrap;
 	}
 
@@ -48,6 +51,44 @@
 		padding-top: 2px;
 		padding-bottom: 2px;
 	}
+
+	.editable-importe[data-pendiente="True"] {
+		cursor: pointer;
+	}
+
+	.editable-importe input {
+		width: 100%;
+		text-align: right;
+		padding: 0 4px;
+	}
+
+	#tbVtasPVCtlRendDetalle .input-importe {
+		height: 18px !important; /* más bajo */
+		padding: 0 1px !important; /* mínimo padding */
+		font-size: 0.72rem !important; /* igual a texto de tabla */
+		line-height: 16px !important; /* alinea verticalmente */
+		font-weight: normal !important;
+		border-radius: 2px !important;
+	}
+
+	#tbVtasPVCtlRendDetalle .btnEditarValor {
+		padding: 0 4px !important; /* menos padding horizontal */
+		height: 20px !important; /* más bajo */
+		line-height: 18px !important; /* alinea el ícono */
+		font-size: 0.70rem !important; /* ícono más chico */
+		border-radius: 2px !important; /* más compacto */
+	}
+
+		#tbVtasPVCtlRendDetalle .btnEditarValor i {
+			font-size: 0.85rem !important; /* ícono más pequeño */
+			line-height: 1 !important;
+		}
+
+	#tbVtasPVCtlRendDetalle td,
+	#tbVtasPVCtlRendDetalle th {
+		padding-top: 2px !important;
+		padding-bottom: 2px !important;
+	}
 </style>
 <div class="table-responsive table-wrapper-500">
 	<table class="table table-sm table-hover mb-0 table-golden" id="tbVtasPVCtlRendDetalle">
@@ -58,14 +99,17 @@
 				<th class="col-num">Arqueo</th>
 				<th class="col-num" title="Diferencia">Dif.</th>
 				<th class="col-valores">Valores</th>
-				<th class="col-btn"></th>
+				@if (pendiente)
+				{
+					<th class="col-btn"></th>
+				}
 			</tr>
 		</thead>
 		<tbody>
 			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
 			{
 				<tr class="fila-vacia">
-					<td colspan="6" class="text-center text-muted py-2">
+					<td colspan="5" class="text-center text-muted py-2">
 						<i class="bx bx-info-circle me-1"></i>
 						No hay items para mostrar.
 					</td>
@@ -83,7 +127,24 @@
 						data-tcf-id="@item.tcf_id"
 						data-ins-detalle="@item.ins_detalle_bool">
 						<td class="col-mp text-start" title="@item.ins_desc">@item.ins_desc</td>
-						<td class="col-num text-end">@GridHelper.FormatearPrecio(item.rend_importe_ok ?? 0, TipoPrecio.Venta)</td>
+						<td class="col-num text-end editable-importe"
+							data-ins-ins="@item.ins_ins"
+							data-tcf-id="@item.tcf_id"
+							data-rend-item="@item.rend_item"
+							data-pendiente="@item.pendiente">
+
+							@if (item.pendiente)
+							{
+								<input type="text"
+									   class="form-control form-control-sm input-importe"
+									   value="@GridHelper.FormatearPrecio(item.rend_importe_ok ?? 0, TipoPrecio.Venta)"
+									   data-original="@GridHelper.FormatearPrecio(item.rend_importe_ok ?? 0, TipoPrecio.Venta)" />
+							}
+							else
+							{
+								<span>@GridHelper.FormatearPrecio(item.rend_importe_ok ?? 0, TipoPrecio.Venta)</span>
+							}
+						</td>
 						<td class="col-num text-end">@GridHelper.FormatearPrecio(item.rend_importe_arq ?? 0, TipoPrecio.Venta)</td>
 						<td class="col-num text-end">@GridHelper.FormatearPrecio(dif ?? 0, TipoPrecio.Venta)</td>
 						<td class="col-valores text-start">
@@ -96,9 +157,9 @@
 								@conceptoVacio
 							}
 						</td>
-						<td class="col-btn text-center">
-							@if (item.pendiente)
-							{
+						@if (item.pendiente)
+						{
+							<td class="col-btn text-center">
 								<button type="button"
 										class="btn btn-sm btn-info btnEditarValor"
 										data-ins-ins="@item.ins_ins"
@@ -107,8 +168,8 @@
 										title="Editar valores">
 									<i class="bx bx-edit"></i>
 								</button>
-							}
-						</td>
+							</td>
+						}
 					</tr>
 				}
 			}
