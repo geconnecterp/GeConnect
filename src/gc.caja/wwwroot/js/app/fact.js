@@ -68,11 +68,24 @@ function inicializaEventosFact() {
         buscarCliente();
     });
 
-    // Buscar cliente (Enter)
+    // ✅ RESTAURADO v3.0: Buscar cliente (Enter) - Con detección de campo vacío
     $('#txtBuscarCliente').on('keypress', function (e) {
-        if (e.which === 13) { // Enter
+        if (e.which === 13) {
             e.preventDefault();
-            buscarCliente();
+            
+            const criterioBusqueda = $(this).val().trim();
+            
+            console.log('═══════════════════════════════════════════════════');
+            console.log('⌨️ ENTER EN CAMPO BUSCAR CLIENTE v3.0');
+            console.log(`   Criterio ingresado: "${criterioBusqueda}"`);
+            
+            if (criterioBusqueda === '') {
+                console.log('✅ CASO 1: Campo vacío - Abrir modal Nuevo CF');
+                abrirModalClienteNuevo();
+            } else {
+                console.log('✅ CASO 2: Campo con texto - Buscar cliente');
+                buscarCliente();
+            }
         }
     });
 
@@ -110,30 +123,14 @@ function inicializaEventosFact() {
     // PREVENIR CIERRE ACCIDENTAL DEL MODAL
     // ========================================
 
-    // ✅ MODIFICADO: Permitir cierre desde CANCELAR y SALIR
     $('#modalIdentificarCliente').on('hide.bs.modal', function (e) {
-        // ❶ Identificar el elemento que disparó el cierre
         const disparadorId = e.relatedTarget ? e.relatedTarget.id : null;
-        
-        console.log('🔍 Modal intentando cerrarse - Disparador:', disparadorId);
-        
-        // ❷ Permitir cierre SOLO desde botones específicos
         const cierresPermitidos = ['btnCancelarCliente', 'btnSalirFacturacion'];
         const esCierrePermitido = cierresPermitidos.includes(disparadorId);
         
-        // ❸ Evaluar si se debe prevenir el cierre
-        if (!esCierrePermitido) {
-            // No es un cierre autorizado (ESC, clic fuera, etc.)
-            if (!clienteSeleccionado) {
-                // Si no hay cliente seleccionado, prevenir cierre
-                e.preventDefault();
-                console.warn('⚠️ Cierre no autorizado - Debe seleccionar un cliente o usar CANCELAR/SALIR');
-            } else {
-                // Hay cliente seleccionado, se puede cerrar
-                console.log('✅ Hay cliente seleccionado - Permitiendo cierre');
-            }
-        } else {
-            console.log(`✅ Cierre autorizado desde: ${disparadorId}`);
+        if (!esCierrePermitido && !clienteSeleccionado) {
+            e.preventDefault();
+            console.warn('⚠️ Cierre no autorizado - Debe seleccionar un cliente o usar CANCELAR/SALIR');
         }
     });
 
@@ -142,18 +139,20 @@ function inicializaEventosFact() {
     // ========================================
     
     // Validación en tiempo real del select
-    $('#selTipoDocumento').on('change', function () {
+    $('#selTipoDocumento, #selSexoCliente').on('change', function () {
         validarCampo($(this));
-        ajustarPlaceholderSegunTipo();
+        if ($(this).attr('id') === 'selTipoDocumento') {
+            ajustarPlaceholderSegunTipo();
+        }
     });
 
     // Validación en tiempo real de inputs
-    $('#txtNumeroDocumento, #txtNombreCliente, #txtEmailCliente, #txtMovilCliente').on('input', function () {
+    $('#txtNumeroDocumento, #txtApellidoCliente, #txtNombreCliente, #txtEmailCliente, #txtMovilCliente').on('input', function () {
         validarCampo($(this));
     });
 
-    // Formatear número de documento (solo números)
-    $('#txtNumeroDocumento').on('input', function () {
+    // Formatear número de documento y móvil (solo números)
+    $('#txtNumeroDocumento, #txtMovilCliente').on('input', function () {
         let valor = $(this).val().replace(/\D/g, '');
         $(this).val(valor);
     });
@@ -161,12 +160,6 @@ function inicializaEventosFact() {
     // Validar email al perder foco
     $('#txtEmailCliente').on('blur', function () {
         validarEmail($(this));
-    });
-
-    // ✅ NUEVO: Salir al menú principal
-    $('#btnSalirFacturacion').on('click', function () {
-        console.log('🚪 Salir al menú principal de caja...');
-        confirmarSalidaAlMenu();
     });
 
     // Cancelar modal cliente update
@@ -189,36 +182,19 @@ function inicializaEventosFact() {
         abrirModalClienteEditar();
     });
 
-    // ════════════════════════════════════════════════════════════════
     // ✅ INTEGRACIÓN CON MÓDULO DE PRODUCTOS DE FACTURACIÓN
-    // ════════════════════════════════════════════════════════════════
-    // AGREGAR AL FINAL DEL ARCHIVO (después de todas las funciones existentes)
-    // NO MODIFICA NINGUNA FUNCIÓN EXISTENTE
-    // ════════════════════════════════════════════════════════════════
-
-    /**
-     * ✅ NUEVO: Listener para evento de vuelta a identificar cliente
-     * Se dispara desde prodfact.js cuando el usuario cancela la factura
-     */
     $(document).on('volverAIdentificarCliente', function () {
-        console.log('═══════════════════════════════════════════════════');
         console.log('📡 EVENTO RECIBIDO: volverAIdentificarCliente');
-        console.log('═══════════════════════════════════════════════════');
-
-        // Abrir modal de identificar cliente con delay
         setTimeout(() => {
             abrirModalIdentificarCliente();
-            console.log('✅ Modal de identificar cliente reabierto');
         }, 400);
     });
 }
 
 // ====== INICIALIZACIÓN DE VISTA ======
 function inicializaVistaFact() {
-    // ✅ NUEVO: Abrir modal automáticamente al cargar la vista
     console.log('🚀 Inicializando módulo de Facturación...');
     
-    // Esperar que el DOM esté completamente renderizado
     setTimeout(() => {
         abrirModalIdentificarCliente();
         console.log('✅ Modal de Identificar Cliente abierto automáticamente');
@@ -277,14 +253,7 @@ function limpiarModalCliente() {
     console.log('✅ Campo de búsqueda limpiado');
     
     // ❸ LIMPIAR VALORES DE LOS INPUTS (sin eliminar el HTML)
-    $('#txtNombre').val('');
-    $('#txtClienteId').val('');
-    $('#txtDomicilio').val('');
-    $('#txtCondicionAfip').val('');
-    $('#txtTipoNumero').val('');
-    $('#txtEmite').val('');
-    $('#txtEmail').val('');
-    $('#txtMovil').val('');
+    $('#txtNombre, #txtClienteId, #txtDomicilio, #txtCondicionAfip, #txtTipoNumero, #txtEmite, #txtEmail, #txtMovil').val('');
     console.log('✅ Valores de inputs limpiados');
 
     // ❹ OCULTAR CARD DE DATOS DEL CLIENTE
@@ -348,16 +317,12 @@ function buscarCliente() {
         return;
     }
 
-    console.log(`🔍 Buscando cliente: ${criterioBusqueda}`);
-
     const $btnBuscar = $('#btnBuscarCliente');
     $btnBuscar.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Buscando...');
 
     const url = typeof BuscarClienteUrl !== 'undefined' && BuscarClienteUrl 
         ? BuscarClienteUrl 
         : '/Facturacion/Cliente/BuscarCliente';
-
-    console.log('📡 URL de llamada:', url);
 
     $.ajax({
         url: url,
@@ -366,82 +331,50 @@ function buscarCliente() {
         success: function (response) {
             if (response.ok) {
                 const cantidadResultados = response.cantidadResultados || 0;
-
-                //limpiamos el campo #txtBuscarCliente para por si hay una nueva busqueda.
                 $("#txtBuscarCliente").val("");
 
-                // ❶ CASO: 1 CLIENTE ENCONTRADO
                 if (cantidadResultados === 1 && response.cliente) {
-                    console.log('✅ Cliente único encontrado:', response.cliente);                    
                     mostrarDatosCliente(response.cliente);
-                }
-                // ❷ CASO: MÚLTIPLES CLIENTES ENCONTRADOS
-                else if (cantidadResultados > 1) {
-                    console.log(`✅ Múltiples clientes encontrados: ${cantidadResultados}`);
-                    // ✅ LLAMAR A TRAER GRILLA (AJAX)
+                } else if (cantidadResultados > 1) {
                     cargarGrillaClientes();
-                }
-                // ❸ CASO: NO SE ENCONTRARON CLIENTES (fallback)
-                else {
-                    console.warn('⚠️ Respuesta inesperada:', response);
+                } else {
                     mostrarMensajeError('No se encontraron clientes');
                     limpiarVista();
                 }
             } else {
-                // ❹ CASO: BÚSQUEDA SIN RESULTADOS
-                console.warn('⚠️ Cliente no encontrado');
                 mostrarMensajeError(response.mensaje || 'Cliente no encontrado');
                 limpiarVista();
             }
         },
-        error: function (xhr, status, error) {
-            console.error('❌ Error AJAX:', {
-                status: xhr.status,
-                statusText: xhr.statusText,
-                error: error,
-                url: url
-            });
+        error: function (xhr) {
+            let mensaje = 'Error al buscar el cliente';
             
-            let mensaje = 'Error al buscar el cliente. Por favor, intente nuevamente.';
-            
-            if (xhr.status === 404) {
-                mensaje = 'Servicio de búsqueda no encontrado. Verifique la configuración.';
-            } else if (xhr.status === 400) {
-                mensaje = 'Criterio de búsqueda inválido';
-            } else if (xhr.status === 401 || xhr.status === 403) {
-                mensaje = 'Su sesión ha expirado. Por favor, vuelva a iniciar sesión.';
-            } else if (xhr.status === 500) {
-                mensaje = 'Error interno del servidor. Contacte al administrador.';
-            }
+            if (xhr.status === 404) mensaje = 'Servicio no encontrado';
+            else if (xhr.status === 401 || xhr.status === 403) mensaje = 'Sesión expirada';
+            else if (xhr.status === 500) mensaje = 'Error interno del servidor';
             
             mostrarMensajeError(mensaje);
             limpiarVista();
         },
         complete: function () {
-            $btnBuscar.prop('disabled', false).html('<i class="bx bx-search"></i> Buscar');
+            $btnBuscar.prop('disabled', false).html('<i class="bx bx-search"></i>');
         }
     });
 }
 
 // ====== CARGAR GRILLA DE CLIENTES (AJAX) ======
 function cargarGrillaClientes() {
-    console.log('📊 Cargando grilla de clientes desde servidor...');
-    
-    // ❶ Ocultar card de cliente único e alert
     $('#cardDatosCliente').removeClass('show').hide();
     $('#alertSinCliente').addClass('hide').hide();
     
-    // ❷ Mostrar loader en el contenedor de grilla
     const urlTraerGrilla = typeof TraerGrillaClientesUrl !== 'undefined' && TraerGrillaClientesUrl 
         ? TraerGrillaClientesUrl 
         : '/Facturacion/Cliente/TraerGrillaClientes';
     
-    // Verificar si existe el contenedor, si no, crearlo
     if ($('#cardGrillaClientes').length === 0) {
         $('#alertSinCliente').after('<div class="card card-golden" id="cardGrillaClientes"></div>');
     }
     
-    // Mostrar loader
     $('#cardGrillaClientes').html(`
         <div class="text-center py-5">
             <i class='bx bx-loader-alt bx-spin' style='font-size: 3rem; color: #f0ad4e;'></i>
@@ -449,36 +382,19 @@ function cargarGrillaClientes() {
         </div>
     `).show();
     
-    // ❸ Llamada AJAX para obtener la vista parcial
     $.ajax({
         url: urlTraerGrilla,
         type: 'POST',
-        dataType: 'html', // ✅ Esperamos HTML (vista parcial)
+        dataType: 'html',
         success: function (htmlGrilla) {
-            console.log('✅ Grilla recibida del servidor');
-            
-            // ❹ Insertar HTML de la grilla
             $('#cardGrillaClientes').html(htmlGrilla).show().removeClass('hide').addClass('show');
-            
-            // ❺ Deshabilitar botón SEGUIR
             $('#btnSeguirCliente').prop('disabled', true);
-            
-            // ❻ Adjuntar eventos
             attachGrillaEventos();
         },
-        error: function (xhr, status, error) {
-            console.error('❌ Error al cargar grilla:', {
-                status: xhr.status,
-                error: error
-            });
-            
-            let mensajeError = 'Error al cargar la grilla de clientes.';
-            
-            if (xhr.status === 401 || xhr.status === 403) {
-                mensajeError = 'Su sesión ha expirado. Por favor, vuelva a iniciar sesión.';
-            } else if (xhr.status === 500) {
-                mensajeError = 'Error interno del servidor. Contacte al administrador.';
-            }
+        error: function (xhr) {
+            let mensajeError = 'Error al cargar la grilla de clientes';
+            if (xhr.status === 401 || xhr.status === 403) mensajeError = 'Sesión expirada';
+            else if (xhr.status === 500) mensajeError = 'Error interno del servidor';
             
             $('#cardGrillaClientes').html(`
                 <div class="alert alert-danger m-3">
@@ -489,183 +405,78 @@ function cargarGrillaClientes() {
     });
 }
 
-// ====== VALIDAR CLIENTE ANTES DE SELECCIONAR ====== (✅ CORREGIDO)
-/**
- * ✅ CORREGIDO: Función centralizada para validar datos críticos del cliente
- * 
- * Valida que el cliente puede ser seleccionado verificando:
- * 1. Origen "N" (No Habilitado) → BLOQUEA con mensaje
- * 2. Consumidor Final (F) sin documento → BLOQUEA con mensaje
- * 
- * Se reutiliza desde:
- * - Evento doble clic en fila
- * - Evento clic en botón "Seleccionar"
- * 
- * @param {jQuery} $row - Fila de la grilla que contiene los data-attributes
- * @returns {boolean} true si el cliente es válido, false si debe bloquearse
- */
+// ====== VALIDAR CLIENTE ANTES DE SELECCIONAR ======
 function validarClienteAntesDeSeleccionar($row) {
-    // ❶ Extraer datos mínimos necesarios para validación
     const origen = $row.data('cta-origen');
     const origenDesc = $row.data('cta-origen-desc');
     const nombre = $row.data('cta-nombre');
     const documento = $row.data('cta-documento');
     
-    console.log(`🔍 Validando cliente: "${nombre}" | Origen: ${origenDesc} (${origen})`);
-    
-    // ❷ VALIDACIÓN CRÍTICA 1: Origen "N" (No Habilitado)
     if (origen && origen.toUpperCase() === 'N') {
-        console.error('═══════════════════════════════════════════════════');
-        console.error('❌ BLOQUEADO: Cliente NO HABILITADO');
-        console.error(`   Cliente: ${nombre}`);
-        console.error(`   Origen: ${origenDesc} (${origen})`);
-        console.error('═══════════════════════════════════════════════════');
-        
         mostrarMensajeError(
             `⚠️ CLIENTE NO HABILITADO\n\n` +
-            `El cliente "${nombre}" NO ESTÁ HABILITADO para operar.\n\n` +
-            `Por favor, contacte al administrador del sistema.`
+            `El cliente "${nombre}" NO ESTÁ HABILITADO para operar.`
         );
         return false;
     }
     
-    // ❸ VALIDACIÓN CRÍTICA 2: Consumidor Final sin documento
     if (origen && origen.toUpperCase() === 'F') {
         if (!documento || documento.toString().trim() === '') {
-            console.error('═══════════════════════════════════════════════════');
-            console.error('❌ BLOQUEADO: Consumidor Final sin documento');
-            console.error(`   Cliente: ${nombre}`);
-            console.error(`   Documento: ${documento || '(vacío)'}`);
-            console.error('═══════════════════════════════════════════════════');
-            
             mostrarMensajeError(
                 `⚠️ DATOS INCOMPLETOS\n\n` +
-                `El consumidor final "${nombre}" no tiene número de documento registrado.\n\n` +
-                `Este dato es obligatorio para continuar.`
+                `El consumidor final "${nombre}" no tiene número de documento registrado.`
             );
             return false;
         }
     }
     
-    // ❹ TODAS LAS VALIDACIONES PASARON
-    console.log('✅ Validaciones básicas aprobadas');
     return true;
 }
 
-// ====== EVENTOS DE LA GRILLA ====== (✅ CORREGIDO v3.1)
+// ====== EVENTOS DE LA GRILLA ======
 function attachGrillaEventos() {
-    console.log('🔧 Adjuntando eventos a la grilla de clientes...');
-    
-    // ❶ LIMPIAR EVENTOS ANTERIORES (prevenir duplicados)
     $(document).off('dblclick', '.cliente-row');
     $(document).off('click', '.btn-seleccionar-cliente');
     $(document).off('click', '#btnCerrarGrilla');
     
-    // ❷ EVENTO: Doble clic en fila completa (✅ CORREGIDO v3.1)
-    /**
-     * ✅ CORREGIDO v3.1: Ahora valida ANTES de seleccionar
-     * 
-     * Flujo:
-     * 1. Obtiene la fila
-     * 2. Llama a validarClienteAntesDeSeleccionar()
-     * 3. Si pasa validación → Llama a seleccionarClienteDesdeGrilla()
-     * 4. Si falla validación → Muestra error y termina
-     */
     $(document).on('dblclick', '.cliente-row', function() {
-        console.log('═══════════════════════════════════════════════════');
-        console.log('🖱️ DOBLE CLIC EN FILA - Iniciando validación...');
-        console.log('═══════════════════════════════════════════════════');
-        
         const $row = $(this);
         
-        // ✅ Validar ANTES de continuar
         if (!validarClienteAntesDeSeleccionar($row)) {
-            console.error('❌ Validación fallida - Selección bloqueada');
-            console.log('═══════════════════════════════════════════════════');
-            return; // DETENER ejecución
+            return;
         }
         
-        console.log('✅ Validación aprobada - Continuando con selección...');
-        console.log('═══════════════════════════════════════════════════');
-        
-        // ✅ Continuar con la selección normal
         seleccionarClienteDesdeGrilla($row);
     });
     
-    // ❸ EVENTO: Clic en botón "Seleccionar" (✅ SIMPLIFICADO v3.1)
-    /**
-     * ✅ SIMPLIFICADO v3.1: Ahora usa la función de validación compartida
-     */
     $(document).on('click', '.btn-seleccionar-cliente', function (e) {
         e.stopPropagation();
-
-        console.log('═══════════════════════════════════════════════════');
-        console.log('🖱️ BOTÓN SELECCIONAR - Iniciando validación...');
-        console.log('═══════════════════════════════════════════════════');
-
-        // ❶ OBTENER FILA PADRE
         const $row = $(this).closest('.cliente-row');
 
         if ($row.length === 0) {
-            console.error('❌ No se pudo obtener la fila padre del botón');
             mostrarMensajeError('Error: No se pudo identificar el cliente seleccionado');
             return;
         }
 
-        // ❷ VALIDAR usando función compartida
         if (!validarClienteAntesDeSeleccionar($row)) {
-            console.error('❌ Validación fallida - Selección bloqueada');
-            console.log('═══════════════════════════════════════════════════');
-            return; // DETENER ejecución
+            return;
         }
-
-        console.log('✅ Validación aprobada - Delegando a seleccionarClienteDesdeGrilla()');
-        console.log('═══════════════════════════════════════════════════');
         
-        // ❸ Continuar con la selección normal
         seleccionarClienteDesdeGrilla($row);
     });
     
-    // ❹ EVENTO: Botón "Cerrar" grilla
     $(document).on('click', '#btnCerrarGrilla', function() {
-        console.log('🖱️ Cerrar grilla - Limpiando vista...');
         limpiarVista();
     });
-    
-    console.log('✅ Eventos de grilla adjuntados correctamente');
 }
 
-// ====== SELECCIONAR CLIENTE DESDE GRILLA ====== (✅ OPTIMIZADO v3.0)
-/**
- * ✅ OPTIMIZADO v3.0: ÚNICA FUNCIÓN que maneja la lógica completa de selección
- * 
- * Esta función es el PUNTO CENTRAL para seleccionar un cliente desde la grilla.
- * Se llama desde:
- * - Doble clic en fila
- * - Clic en botón "Seleccionar" (después de validaciones básicas)
- * 
- * Responsabilidades:
- * 1. Extraer TODOS los datos del cliente desde data-attributes
- * 2. Validar integridad de datos
- * 3. Determinar criterio de búsqueda según origen:
- *    • Origen "C" → cta_id
- *    • Origen "F" → documento
- * 4. Mostrar loader
- * 5. Llamar a buscarClientePorId() con el criterio correcto
- */
+// ====== SELECCIONAR CLIENTE DESDE GRILLA ======
 function seleccionarClienteDesdeGrilla($row) {
-    console.log('═══════════════════════════════════════════════════');
-    console.log('📍 SELECCIONAR CLIENTE DESDE GRILLA - v3.0');
-    console.log('═══════════════════════════════════════════════════');
-
-    // ❶ VALIDAR QUE LA FILA EXISTE
     if (!$row || $row.length === 0) {
-        console.error('❌ Parámetro $row inválido o vacío');
         mostrarMensajeError('Error: No se pudo acceder a los datos de la fila seleccionada');
         return;
     }
 
-    // ❷ EXTRAER TODOS LOS DATA-ATTRIBUTES
     const datosCliente = {
         id: $row.data('cta-id'),
         nombre: $row.data('cta-nombre'),
@@ -679,132 +490,42 @@ function seleccionarClienteDesdeGrilla($row) {
         origenDesc: $row.data('cta-origen-desc')
     };
 
-    console.log('📊 Datos extraídos de la fila:');
-    console.log('   ID:', datosCliente.id);
-    console.log('   Nombre:', datosCliente.nombre);
-    console.log('   Origen:', datosCliente.origenDesc, `(${datosCliente.origen})`);
-    console.log('   Tipo Doc:', datosCliente.tdocDesc, `(ID: ${datosCliente.tdocId})`);
-    console.log('   Documento:', datosCliente.documento);
-
-    // ❸ VALIDACIÓN: ID del cliente (SIEMPRE REQUERIDO)
     if (!datosCliente.id && !datosCliente.documento) {
-        console.error('❌ ID del cliente vacío o inválido');
-        console.error('   Fila problemática:', $row);
-        mostrarMensajeError(
-            'Error: No se pudo identificar el ID del cliente.\n' +
-            'Por favor, intente nuevamente.'
-        );
+        mostrarMensajeError('Error: No se pudo identificar el ID del cliente');
         return;
     }
 
-    // ❹ VALIDACIÓN: Origen del cliente (SIEMPRE REQUERIDO)
     if (!datosCliente.origen || datosCliente.origen.toString().trim() === '') {
-        console.error('❌ Origen del cliente vacío o inválido');
-        mostrarMensajeError('Error: Los datos de origen del cliente están incompletos.');
+        mostrarMensajeError('Error: Los datos de origen del cliente están incompletos');
         return;
     }
 
-    // ❺ VALIDACIÓN: Origen "N" (doble verificación, aunque el botón ya validó)
-    if (datosCliente.origen.toUpperCase() === 'N') {
-        console.warn('⚠️ Origen N detectado en seleccionarClienteDesdeGrilla()');
-        mostrarMensajeError(
-            `El cliente "${datosCliente.nombre}" NO ESTÁ HABILITADO.\n` +
-            `Por favor, contacte al administrador.`
-        );
-        return;
-    }
-
-    // ❻ DETERMINAR CRITERIO DE BÚSQUEDA SEGÚN ORIGEN
     let criterioBusqueda = '';
-    let tipoBusqueda = '';
-
     const origenUpper = datosCliente.origen.toUpperCase();
 
     if (origenUpper === 'C') {
-        // ✅ CLIENTE REGISTRADO → Usar ID
         criterioBusqueda = datosCliente.id;
-        tipoBusqueda = 'ID de Cliente Registrado';
-
-        console.log('═══════════════════════════════════════════════════');
-        console.log('✅ CRITERIO: CLIENTE REGISTRADO (Origen C)');
-        console.log(`   Buscando por: ID = "${criterioBusqueda}"`);
-        console.log('═══════════════════════════════════════════════════');
-
     } else if (origenUpper === 'F') {
-        // ✅ CONSUMIDOR FINAL → Usar Documento
-
-        // Validación crítica: El documento DEBE existir
         if (!datosCliente.documento || datosCliente.documento.toString().trim() === '') {
-            console.error('═══════════════════════════════════════════════════');
-            console.error('❌ ERROR CRÍTICO: Consumidor Final sin documento');
-            console.error(`   Cliente: ${datosCliente.nombre}`);
-            console.error(`   ID: ${datosCliente.id}`);
-            console.error(`   Documento: ${datosCliente.documento || '(vacío)'}`);
-            console.error('═══════════════════════════════════════════════════');
-
-            mostrarMensajeError(
-                `⚠️ DATOS INCOMPLETOS\n\n` +
-                `El consumidor final "${datosCliente.nombre}" no tiene documento registrado.\n\n` +
-                `No se puede continuar con la búsqueda.`
-            );
+            mostrarMensajeError('El consumidor final no tiene documento registrado');
             return;
         }
-
-        criterioBusqueda = datosCliente.documento;
-        tipoBusqueda = `Documento ${datosCliente.tdocDesc}`;
-
-        console.log('═══════════════════════════════════════════════════');
-        console.log('✅ CRITERIO: CONSUMIDOR FINAL (Origen F)');
-        console.log(`   Buscando por: Documento = "${criterioBusqueda}"`);
-        console.log(`   Tipo: ${datosCliente.tdocDesc} (ID: ${datosCliente.tdocId})`);
-        console.log('═══════════════════════════════════════════════════');
-
+        criterioBusqueda = datosCliente.documento.toString();
     } else {
-        // ⚠️ ORIGEN DESCONOCIDO - Usar ID por defecto
-        console.warn('═══════════════════════════════════════════════════');
-        console.warn('⚠️ ADVERTENCIA: Origen desconocido "${datosCliente.origen}"');
-        console.warn('   Usando ID por defecto como fallback');
-        console.warn('═══════════════════════════════════════════════════');
-
         criterioBusqueda = datosCliente.id;
-        tipoBusqueda = 'ID (Origen desconocido - fallback)';
     }
 
-    // ❼ RESUMEN ANTES DE LA BÚSQUEDA
-    console.log('═══════════════════════════════════════════════════');
-    console.log('📋 RESUMEN ANTES DE BÚSQUEDA');
-    console.log('═══════════════════════════════════════════════════');
-    console.log(`   Cliente: ${datosCliente.nombre}`);
-    console.log(`   Origen: ${datosCliente.origenDesc} (${datosCliente.origen})`);
-    console.log(`   Tipo de Búsqueda: ${tipoBusqueda}`);
-    console.log(`   Criterio: "${criterioBusqueda}"`);
-    console.log('═══════════════════════════════════════════════════');
-
-    // ❽ OCULTAR GRILLA INMEDIATAMENTE (mejora UX)
-    $('#cardGrillaClientes')
-        .removeClass('show')
-        .hide()
-        .empty();
-
-    // ❽ OCULTAR ALERT DE "SIN CLIENTE"
+    $('#cardGrillaClientes').removeClass('show').hide().empty();
     $('#alertSinCliente').hide();
 
-    // ❿ MOSTRAR LOADER CON INFORMACIÓN DEL CRITERIO
     const $cardBody = $('#cardDatosCliente .card-body');
-
-    // Mensaje del loader según tipo de búsqueda
-    let loaderMensaje = '';
-    if (origenUpper === 'C') {
-        loaderMensaje = `ID: ${criterioBusqueda}`;
-    } else if (origenUpper === 'F') {
-        loaderMensaje = `${datosCliente.tdocDesc}: ${criterioBusqueda}`;
-    } else {
-        loaderMensaje = criterioBusqueda;
-    }
+    const loaderMensaje = origenUpper === 'C' 
+        ? `ID: ${criterioBusqueda}` 
+        : `${datosCliente.tdocDesc}: ${criterioBusqueda}`;
 
     if ($cardBody.length > 0) {
         $cardBody.hide();
-
+        
         if ($('#loaderClienteTemp').length === 0) {
             $cardBody.after(`
                 <div id="loaderClienteTemp" class="card-body text-center py-5">
@@ -813,136 +534,62 @@ function seleccionarClienteDesdeGrilla($row) {
                     <small class="text-muted">${loaderMensaje}</small>
                 </div>
             `);
-        } else {
-            $('#loaderClienteTemp').show();
         }
-    } else {
-        console.warn('⚠️ No se encontró .card-body, usando método alternativo');
-        $('#cardDatosCliente').append(`
-            <div id="loaderClienteTemp" class="text-center py-5">
-                <i class='bx bx-loader-alt bx-spin' style='font-size: 3rem; color: #f0ad4e;'></i>
-                <p class="mt-3 text-muted fw-semibold">Cargando datos del cliente...</p>
-                <small class="text-muted">${loaderMensaje}</small>
-            </div>
-        `);
     }
 
     $('#cardDatosCliente').show();
-
-    // ⓪ DESHABILITAR BOTÓN SEGUIR TEMPORALMENTE
     $('#btnSeguirCliente').prop('disabled', true);
-
-    // ⓻ LLAMAR A LA FUNCIÓN DE BÚSQUEDA CON EL CRITERIO CORRECTO
-    console.log(`📡 Llamando a buscarClientePorId("${criterioBusqueda}")...`);
-    console.log('═══════════════════════════════════════════════════');
 
     buscarClientePorId(criterioBusqueda);
 }
 
-// ====== BUSCAR CLIENTE POR ID ====== (✅ CORREGIDO)
+// ====== BUSCAR CLIENTE POR ID ======
 function buscarClientePorId(clienteId) {
-    console.log('═══════════════════════════════════════════════════');
-    console.log('🔍 BUSCAR CLIENTE POR ID - INICIO');
-    console.log(`   Cliente ID: ${clienteId}`);
-    console.log('═══════════════════════════════════════════════════');
-    
-    // ❶ VALIDAR PARÁMETRO
     if (!clienteId || clienteId.toString().trim() === '') {
-        console.error('❌ clienteId inválido:', clienteId);
         mostrarMensajeError('Error: ID de cliente inválido');
         limpiarVista();
         return;
     }
     
-    // ❷ CONSTRUIR URL (con fallback)
     const url = typeof BuscarClienteUrl !== 'undefined' && BuscarClienteUrl 
         ? BuscarClienteUrl 
         : '/Facturacion/Cliente/BuscarCliente';
     
-    console.log(`📡 URL de búsqueda: ${url}`);
-    console.log(`📤 Criterio de búsqueda: "${clienteId}"`);
-    
-    // ❸ REALIZAR AJAX
     $.ajax({
         url: url,
         type: 'POST',
         data: { criterio: clienteId },
         timeout: 30000,
         success: function (response) {
-            console.log('✅ Respuesta AJAX recibida');
-            console.log('   response.ok:', response.ok);
-            console.log('   cantidadResultados:', response.cantidadResultados);
-            
-            // ❹ VALIDAR QUE LA BÚSQUEDA FUE EXITOSA
             if (!response.ok) {
-                console.error('❌ Error en la búsqueda - response.ok === false');
-                console.error('   Mensaje del servidor:', response.mensaje);
-                
                 mostrarMensajeError(response.mensaje || 'Error al cargar los datos del cliente');
                 limpiarVista();
                 return;
             }
             
-            // ❺ VALIDAR CANTIDAD DE RESULTADOS (debe ser exactamente 1)
             const cantidadResultados = response.cantidadResultados || 0;
             
             if (cantidadResultados !== 1) {
-                console.error('❌ Cantidad de resultados inesperada');
-                console.error(`   Se esperaba: 1`);
-                console.error(`   Se recibió: ${cantidadResultados}`);
-                console.error('   Respuesta completa:', response);
-                
                 mostrarMensajeError('Error: No se pudieron obtener los datos del cliente seleccionado');
                 limpiarVista();
                 return;
             }
             
-            // ❻ VALIDAR QUE EXISTE EL OBJETO CLIENTE
             if (!response.cliente) {
-                console.error('❌ response.cliente es null o undefined');
-                console.error('   Respuesta completa:', response);
-                
                 mostrarMensajeError('Error: Los datos del cliente no están disponibles');
                 limpiarVista();
                 return;
             }
             
-            // ❼ ✅ TODO CORRECTO - MOSTRAR DATOS
-            console.log('✅ Cliente encontrado correctamente');
-            console.log('   ID:', response.cliente.id);
-            console.log('   Nombre:', response.cliente.nombre);
-            console.log('   Datos completos:', response.cliente);
-            
-            // ✅ CORRECCIÓN: NO hacer .empty() aquí
-            // Mostrar datos en el modal (esta función se encargará de limpiar el loader)
             mostrarDatosCliente(response.cliente);
-            
-            console.log('═══════════════════════════════════════════════════');
-            console.log('✅ BUSCAR CLIENTE POR ID - FINALIZADO EXITOSAMENTE');
-            console.log('═══════════════════════════════════════════════════');
         },
-        error: function (xhr, status, error) {
-            console.error('═══════════════════════════════════════════════════');
-            console.error('❌ ERROR AJAX - BUSCAR CLIENTE POR ID');
-            console.error('   Status HTTP:', xhr.status);
-            console.error('   Status Text:', xhr.statusText);
-            console.error('   Error:', error);
-            console.error('   Status de jQuery:', status);
-            console.error('═══════════════════════════════════════════════════');
+        error: function (xhr, status) {
+            let mensaje = 'Error al cargar los datos del cliente';
             
-            let mensaje = 'Error al cargar los datos del cliente. Por favor, intente nuevamente.';
-            
-            if (status === 'timeout') {
-                mensaje = 'La búsqueda tardó demasiado tiempo. Por favor, verifique su conexión e intente nuevamente.';
-            } else if (xhr.status === 404) {
-                mensaje = 'Servicio de búsqueda no encontrado. Contacte al administrador.';
-            } else if (xhr.status === 401 || xhr.status === 403) {
-                mensaje = 'Su sesión ha expirado. Por favor, vuelva a iniciar sesión.';
-            } else if (xhr.status === 500) {
-                mensaje = 'Error interno del servidor. Contacte al administrador.';
-            } else if (xhr.responseJSON && xhr.responseJSON.mensaje) {
-                mensaje = xhr.responseJSON.mensaje;
-            }
+            if (status === 'timeout') mensaje = 'La búsqueda tardó demasiado tiempo';
+            else if (xhr.status === 404) mensaje = 'Servicio no encontrado';
+            else if (xhr.status === 401 || xhr.status === 403) mensaje = 'Sesión expirada';
+            else if (xhr.status === 500) mensaje = 'Error interno del servidor';
             
             mostrarMensajeError(mensaje);
             limpiarVista();
@@ -950,107 +597,29 @@ function buscarClientePorId(clienteId) {
     });
 }
 
-// ====== MOSTRAR DATOS DEL CLIENTE ====== (✅ ACTUALIZADO v3.0)
-/**
- * ✅ ACTUALIZADO v3.1: Ahora maneja correctamente el ID según origen
- * 
- * CAMBIOS v3.1:
- * - Para Origen C: Muestra cta_id
- * - Para Origen F: Muestra "N/A" (no tiene ID de cliente)
- */
+// ====== MOSTRAR DATOS DEL CLIENTE ======
 function mostrarDatosCliente(cliente) {
-    console.log('═══════════════════════════════════════════════════');
-    console.log('📋 MOSTRAR DATOS DEL CLIENTE - INICIO v3.1');
-    console.log('═══════════════════════════════════════════════════');
-    console.log('Cliente recibido:', cliente);
-    
-    // ❶ Ocultar grilla (si existe)
     if ($('#cardGrillaClientes').length > 0) {
         $('#cardGrillaClientes').removeClass('show').hide().empty();
-        console.log('✅ Grilla ocultada y limpiada');
     }
     
-    // ❷ Ocultar alert de "sin cliente"
     $('#alertSinCliente').hide();
-    console.log('✅ Alert "sin cliente" ocultado');
+    $('#loaderClienteTemp').remove();
     
-    // ❸ CRÍTICO: Eliminar SOLO el loader temporal (si existe)
-    const $loader = $('#loaderClienteTemp');
-    if ($loader.length > 0) {
-        $loader.remove();
-        console.log('✅ Loader temporal eliminado');
-    }
-    
-    // ❹ Mostrar el card-body original (que contiene los inputs)
     const $cardBody = $('#cardDatosCliente .card-body');
     if ($cardBody.length > 0) {
         $cardBody.show();
-        console.log('✅ Card-body con inputs mostrado');
     }
     
-    // ❺ VALIDACIÓN: Verificar que los inputs existen en el DOM
-    const inputsRequeridos = [
-        'txtNombre', 'txtClienteId', 'txtDomicilio', 
-        'txtCondicionAfip', 'txtTipoNumero', 'txtEmite', 
-        'txtEmail', 'txtMovil'
-    ];
-    
-    let todosExisten = true;
-    inputsRequeridos.forEach(inputId => {
-        if ($(`#${inputId}`).length === 0) {
-            console.error(`❌ ERROR: Input #${inputId} NO existe en el DOM`);
-            todosExisten = false;
-        }
-    });
-    
-    if (!todosExisten) {
-        console.error('❌ ERROR CRÍTICO: Algunos inputs no existen');
-        console.error('   HTML de #cardDatosCliente:', $('#cardDatosCliente').html());
-        
-        mostrarMensajeError(
-            'Error crítico: La estructura del modal no está completa. ' +
-            'Por favor, recargue la página e intente nuevamente.'
-        );
-        return;
-    }
-    
-    console.log('✅ Todos los inputs existen en el DOM');
-    
-    // ❻ Hidratar campos con datos del cliente
-    console.log('📝 Hidratando campos con datos del cliente...');
-    
-    // ✅ NUEVO v3.1: Determinar valor de ID según origen
-    let idDisplay = '';
     const origenUpper = (cliente.origen || '').toUpperCase();
+    const idDisplay = origenUpper === 'C' ? (cliente.id || '') : 'N/A';
     
-    if (origenUpper === 'C') {
-        // Cliente Registrado → Mostrar ID
-        idDisplay = cliente.id || '';
-        console.log('   - ID (Cliente Registrado):', idDisplay);
-    } else if (origenUpper === 'F') {
-        // Consumidor Final → No tiene ID
-        idDisplay = 'N/A';
-        console.log('   - ID (Consumidor Final): N/A (no aplica)');
-    } else {
-        // Origen desconocido → Mostrar ID si existe
-        idDisplay = cliente.id || 'N/A';
-        console.log('   - ID (Origen desconocido):', idDisplay);
-    }
-    
-    // Determinar valor de tipoNumero (con retrocompatibilidad)
-    let tipoNumeroDisplay = '';
-    
-    if (cliente.tdocDesc && cliente.documento) {
-        tipoNumeroDisplay = `${cliente.tdocDesc} ${cliente.documento}`;
-        console.log('   - Tipo de documento (separado):', cliente.tdocDesc);
-        console.log('   - Número de documento:', cliente.documento);
-    } else if (cliente.tipoNumero) {
-        tipoNumeroDisplay = cliente.tipoNumero;
-        console.log('   - Tipo/Número (combinado):', cliente.tipoNumero);
-    }
+    const tipoNumeroDisplay = (cliente.tdocDesc && cliente.documento) 
+        ? `${cliente.tdocDesc} ${cliente.documento}` 
+        : (cliente.tipoNumero || '');
     
     $('#txtNombre').val(cliente.nombre || '');
-    $('#txtClienteId').val(idDisplay); // ← USAR idDisplay (no cliente.id directamente)
+    $('#txtClienteId').val(idDisplay);
     $('#txtDomicilio').val(cliente.domicilio || '');
     $('#txtCondicionAfip').val(cliente.condicionAfip || '');
     $('#txtTipoNumero').val(tipoNumeroDisplay);
@@ -1058,150 +627,72 @@ function mostrarDatosCliente(cliente) {
     $('#txtEmail').val(cliente.email || '');
     $('#txtMovil').val(cliente.movil || '');
     
-    console.log('   - Nombre:', cliente.nombre);
-    console.log('   - ID Display:', idDisplay);
-    console.log('   - Domicilio:', cliente.domicilio);
-    console.log('   - Tipo/Número Display:', tipoNumeroDisplay);
-    
-    // ❼ ✅ NUEVO: Mostrar/Ocultar botón EDITAR según origen
     const esConsumidorFinal = cliente.origen && cliente.origen.toUpperCase() === 'F';
     
     if (esConsumidorFinal) {
         $('#btnEditarCliente').fadeIn(300);
-        console.log('✅ Botón EDITAR mostrado (Consumidor Final)');
     } else {
         $('#btnEditarCliente').fadeOut(300);
-        console.log('ℹ️ Botón EDITAR ocultado (no es Consumidor Final)');
     }
     
-    // ❽ Mostrar el card con los datos
-    $('#cardDatosCliente')
-        .show()
-        .removeClass('hide')
-        .addClass('show');
-    
-    console.log('✅ Card de datos mostrado');
-    
-    // ❾ Habilitar botón SEGUIR
+    $('#cardDatosCliente').show().removeClass('hide').addClass('show');
     $('#btnSeguirCliente').prop('disabled', false);
-    console.log('✅ Botón SEGUIR habilitado');
     
-    // ❿ Guardar cliente seleccionado en variable global
     clienteSeleccionado = cliente;
-    console.log('✅ Cliente guardado en variable global');
-    
-    console.log('═══════════════════════════════════════════════════');
-    console.log('✅ MOSTRAR DATOS DEL CLIENTE - FINALIZADO v3.0');
-    console.log('═══════════════════════════════════════════════════');
 }
 
-// ====== LIMPIAR VISTA ====== (✅ VALIDAR QUE SEA IGUAL A limpiarModalCliente)
-
-/**
- * ✅ VALIDADO: Esta función hace lo mismo que limpiarModalCliente()
- * Se llama desde errores de búsqueda o cuando se cierra la grilla.
- */
+// ====== LIMPIAR VISTA ======
 function limpiarVista() {
-    console.log('🧹 Limpiando vista...');
-    
-    // ❶ Limpiar valores de los inputs (NO eliminar los inputs)
-    $('#txtNombre').val('');
-    $('#txtClienteId').val('');
-    $('#txtDomicilio').val('');
-    $('#txtCondicionAfip').val('');
-    $('#txtTipoNumero').val('');
-    $('#txtEmite').val('');
-    $('#txtEmail').val('');
-    $('#txtMovil').val('');
-    
-    // ❷ Ocultar card de datos
+    $('#txtNombre, #txtClienteId, #txtDomicilio, #txtCondicionAfip, #txtTipoNumero, #txtEmite, #txtEmail, #txtMovil').val('');
     $('#cardDatosCliente').removeClass('show').hide();
     
-    // ❸ Mostrar el card-body original (si estaba oculto)
     const $cardBody = $('#cardDatosCliente .card-body');
     if ($cardBody.length > 0) {
         $cardBody.show();
     }
     
-    // ❹ Eliminar loader temporal si existe
     $('#loaderClienteTemp').remove();
     
-    // ❺ Limpiar grilla
     if ($('#cardGrillaClientes').length > 0) {
         $('#cardGrillaClientes').removeClass('show').hide().empty();
     }
     
-    // ❻ Mostrar alert de "sin cliente"
     $('#alertSinCliente').removeClass('hide').show();
-    
-    // ❼ Deshabilitar botón SEGUIR
     $('#btnSeguirCliente').prop('disabled', true);
-    
-    // ✅ NUEVO: Ocultar botón EDITAR
     $('#btnEditarCliente').hide();
     
-    // ❽ Limpiar variable global
     clienteSeleccionado = null;
-    
-    console.log('✅ Vista limpiada - Estado inicial restaurado');
 }
 
 // ========================================
 // MODAL CLIENTE UPDATE - FUNCIONES
 // ========================================
 
-/**
- * Abre el modal para crear un nuevo cliente
- */
 function abrirModalClienteNuevo() {
-    // Configurar modo NUEVO
     modoEdicionCliente = false;
-    
-    // Resetear formulario
     limpiarFormularioCliente();
     
-    // Configurar textos para NUEVO
     $('#lblTituloClienteUpdate').html('<i class="bx bx-user-plus"></i> Nuevo CF');
     $('#lblBotonAccion').text('Cargar CF');
     
-    // Mostrar modal
     $('#modalClienteUpdate').modal('show');
     
-    // Focus en tipo de documento
     setTimeout(() => {
         $('#selTipoDocumento').trigger("focus");
     }, 500);
-    
-    console.log('➕ Modal Nuevo Cliente abierto');
 }
 
-/**
- * ✅ ACTUALIZADO: Abre el modal para editar un Consumidor Final
- * Ahora carga datos desde la sesión del servidor
- */
 function abrirModalClienteEditar() {
-    console.log('═══════════════════════════════════════════════════');
-    console.log('✏️ ABRIR MODAL EDITAR CONSUMIDOR FINAL v2.0');
-    console.log('═══════════════════════════════════════════════════');
-    
-    // ❶ Verificar si hay cliente seleccionado en memoria
     if (!clienteSeleccionado) {
-        console.error('❌ No hay cliente seleccionado');
         mostrarMensajeError('No hay cliente seleccionado para editar');
         return;
     }
     
-    // ❷ Verificar que sea Consumidor Final
     if (!clienteSeleccionado.origen || clienteSeleccionado.origen.toUpperCase() !== 'F') {
-        console.error('❌ El cliente seleccionado no es Consumidor Final');
-        console.error('   Origen:', clienteSeleccionado.origen);
         mostrarMensajeError('Solo se pueden editar Consumidores Finales');
         return;
     }
     
-    console.log('✅ Cliente es Consumidor Final - Cargando datos desde sesión...');
-    
-    // ❸ Obtener datos completos desde el servidor (sesión)
     const urlObtenerCliente = typeof ObtenerClienteActualUrl !== 'undefined' && ObtenerClienteActualUrl
         ? ObtenerClienteActualUrl
         : '/Facturacion/Cliente/ObtenerClienteActual';
@@ -1209,699 +700,604 @@ function abrirModalClienteEditar() {
     $.ajax({
         url: urlObtenerCliente,
         type: 'POST',
+        timeout: 10000,
         success: function(response) {
-            if (response.ok && response.cliente) {
-                console.log('✅ Datos del cliente obtenidos desde sesión:', response.cliente);
-                
-                // ✅ CRÍTICO: Establecer modo EDITAR PRIMERO
-                modoEdicionCliente = true;
-                console.log('✅ Modo edición establecido a: TRUE');
-                
-                // ✅ CORREGIDO v3.0: Limpiar formulario PRESERVANDO el modo
-                limpiarFormularioCliente(true); // ← PASAR true PARA PRESERVAR
-                
-                // Configurar textos para EDITAR
-                $('#lblTituloClienteUpdate').html('<i class="bx bx-edit"></i> Editar Consumidor Final');
-                $('#lblBotonAccion').text('Actualizar');
-                
-                // ❹ Hidratar formulario con datos desde sesión
-                $('#txtClienteIdUpdate').val(response.cliente.id);
-                $('#selTipoDocumento').val(response.cliente.tipoDocumento || '96');
-                $('#txtNumeroDocumento').val(response.cliente.numeroDocumento).prop('readonly', true);
-                $('#txtNombreCliente').val(response.cliente.nombre);
-                $('#txtDomicilioCliente').val(response.cliente.domicilio || '');
-                $('#txtEmailCliente').val(response.cliente.email || '');
-                $('#txtMovilCliente').val(response.cliente.movil || '');
-                
-                // ✅ CORREGIDO v2.0: Ajustar placeholder SIN limpiar valor
-                ajustarPlaceholderSegunTipo(false); // ← PASAR false PARA NO LIMPIAR
-                
-                console.log('═══════════════════════════════════════════════════');
-                console.log('📊 VERIFICACIÓN DE DATOS HIDRATADOS');
-                console.log('═══════════════════════════════════════════════════');
-                console.log('   ID:', $('#txtClienteIdUpdate').val());
-                console.log('   Tipo Doc:', $('#selTipoDocumento').val());
-                console.log('   Número Doc:', $('#txtNumeroDocumento').val());
-                console.log('   Nombre:', $('#txtNombreCliente').val());
-                console.log('   Domicilio:', $('#txtDomicilioCliente').val());
-                console.log('   Email:', $('#txtEmailCliente').val());
-                console.log('   Móvil:', $('#txtMovilCliente').val());
-                console.log('═══════════════════════════════════════════════════');
-                
-                // Mostrar modal
-                $('#modalClienteUpdate').modal('show');
-                
-                // Focus en nombre
-                setTimeout(() => {
-                    $('#txtNombreCliente').trigger("focus").trigger("select");
-                }, 500);
-                
-                console.log('═══════════════════════════════════════════════════');
-                console.log('✅ Modal de edición abierto exitosamente v2.0');
-                console.log('═══════════════════════════════════════════════════');
-            } else {
-                console.error('❌ No se pudieron obtener datos del cliente desde sesión');
-                mostrarMensajeError(response.mensaje || 'No se pudieron cargar los datos del cliente');
+            if (!response.ok) {
+                mostrarMensajeError(response.mensaje || 'Error al obtener datos del cliente');
+                return;
             }
+            
+            if (!response.cliente) {
+                mostrarMensajeError('Los datos del cliente no están disponibles');
+                return;
+            }
+            
+            const datosCliente = response.cliente;
+            
+            modoEdicionCliente = true;
+            limpiarFormularioCliente(true);
+            
+            $('#lblTituloClienteUpdate').html('<i class="bx bx-edit"></i> Editar Consumidor Final');
+            $('#lblBotonAccion').text('Actualizar');
+            
+            $('#txtClienteIdUpdate').val(datosCliente.id || '');
+            $('#selTipoDocumento').val(datosCliente.tipoDocumento || '96');
+            $('#txtNumeroDocumento').val(datosCliente.numeroDocumento || '').prop('readonly', true);
+            
+            let apellidoFinal = '';
+            if (datosCliente.apellido && datosCliente.apellido.trim() !== '') {
+                apellidoFinal = datosCliente.apellido.trim();
+            } else if (datosCliente.cta_denominacion && datosCliente.cta_denominacion.trim() !== '') {
+                const partes = datosCliente.cta_denominacion.split(' ').filter(p => p.trim() !== '');
+                apellidoFinal = partes.length > 0 ? partes[0] : '';
+            }
+            $('#txtApellidoCliente').val(apellidoFinal);
+            
+            let nombreFinal = '';
+            if (datosCliente.nombre && datosCliente.nombre.trim() !== '') {
+                nombreFinal = datosCliente.nombre.trim();
+            } else if (datosCliente.cta_denominacion && datosCliente.cta_denominacion.trim() !== '') {
+                const partes = datosCliente.cta_denominacion.split(' ').filter(p => p.trim() !== '');
+                nombreFinal = partes.length > 1 ? partes.slice(1).join(' ') : '';
+            }
+            $('#txtNombreCliente').val(nombreFinal);
+            
+            $('#selSexoCliente').val(datosCliente.sexo || 'M');
+            $('#txtDomicilioCliente').val(datosCliente.domicilio || '');
+            $('#txtEmailCliente').val(datosCliente.email || '');
+            $('#txtMovilCliente').val(datosCliente.movil || '');
+            
+            ajustarPlaceholderSegunTipo(false);
+            
+            $('#modalClienteUpdate').modal('show');
+            
+            setTimeout(() => {
+                $('#txtApellidoCliente').trigger("focus").trigger("select");
+            }, 500);
         },
-        error: function(xhr) {
-            console.error('❌ Error AJAX al obtener cliente:', xhr);
-            mostrarMensajeError('Error al cargar datos del cliente desde el servidor');
+        error: function(xhr, status) {
+            let mensajeError = 'Error al cargar datos del cliente desde el servidor';
+            
+            if (status === 'timeout') mensajeError = 'La solicitud tardó demasiado tiempo';
+            else if (xhr.status === 401 || xhr.status === 403) mensajeError = 'Sesión expirada';
+            else if (xhr.status === 500) mensajeError = 'Error interno del servidor';
+            else if (xhr.status === 404) mensajeError = 'Servicio no encontrado';
+            
+            mostrarMensajeError(mensajeError);
         }
     });
 }
 
-/**
- * ✅ ACTUALIZADO v3.0: Limpia el formulario de cliente
- * 
- * CAMBIOS v3.0:
- * - Agregado parámetro preservarModoEdicion
- * - Solo resetea modoEdicionCliente si preservarModoEdicion = false
- * 
- * @param {boolean} preservarModoEdicion - Si es true, NO resetea modoEdicionCliente (default: false)
- * @returns {void}
- */
 function limpiarFormularioCliente(preservarModoEdicion = false) {
-    console.log('🧹 Limpiando formulario de cliente v3.0...');
-    console.log(`   Preservar modo edición: ${preservarModoEdicion ? 'SÍ' : 'NO'}`);
-    console.log(`   Modo actual ANTES: ${modoEdicionCliente ? 'EDITAR' : 'NUEVO'}`);
-    
-    // ❶ Resetear formulario HTML
     $('#formClienteUpdate')[0].reset();
-    
-    // ❷ Limpiar campo oculto de ID
     $('#txtClienteIdUpdate').val('');
-    
-    // ❸ Quitar clases de validación
-    $('#formClienteUpdate .form-control, #formClienteUpdate .form-select')
-        .removeClass('is-valid is-invalid');
-    
-    // ❹ Habilitar botón de guardar
-    $('#btnCargarCliente')
-        .removeClass('processing')
-        .prop('disabled', false);
-    
-    // ❺ Habilitar campo de número de documento
+    $('#selTipoDocumento').val('96');
+    $('#selSexoCliente').val('M');
+    $('#formClienteUpdate .form-control, #formClienteUpdate .form-select').removeClass('is-valid is-invalid');
+    $('#btnCargarCliente').removeClass('processing').prop('disabled', false);
     $('#txtNumeroDocumento').prop('readonly', false);
+    ajustarPlaceholderSegunTipo(true);
     
-    // ❶ Resetear placeholder según tipo seleccionado (CON limpieza de valor)
-    ajustarPlaceholderSegunTipo(true); // ← LIMPIAR en modo NUEVO
-    
-    // ❼ ✅ NUEVO v3.0: Resetear modo SOLO si NO se debe preservar
     if (!preservarModoEdicion) {
         modoEdicionCliente = false;
-        console.log('   ✅ Modo edición reseteado a FALSE');
-    } else {
-        console.log(`   ℹ️ Modo edición PRESERVADO como: ${modoEdicionCliente ? 'EDITAR' : 'NUEVO'}`);
     }
-    
-    console.log(`   Modo actual DESPUÉS: ${modoEdicionCliente ? 'EDITAR' : 'NUEVO'}`);
-    console.log('✅ Formulario limpiado correctamente v3.0');
 }
 
-/**
- * ✅ ACTUALIZADO v2.0: Confirma el cliente seleccionado y abre productos
- * 
- * Se invoca cuando el usuario hace clic en "SEGUIR".
- * Valida que haya cliente seleccionado, cierra el modal y dispara evento para mostrar productos.
- * 
- * @param {Object} cliente - Objeto con datos del cliente seleccionado
- * @returns {void}
- */
 function confirmarCliente(cliente) {
-    console.log('═══════════════════════════════════════════════════');
-    console.log('✅ CONFIRMAR CLIENTE SELECCIONADO v2.0');
-    console.log('═══════════════════════════════════════════════════');
-
-    // ❶ VALIDAR que hay cliente
     if (!cliente) {
-        console.error('❌ No hay cliente para confirmar');
         mostrarMensajeError('No hay cliente seleccionado');
         return;
     }
 
-    console.log(`   Cliente: ${cliente.nombre}`);
-    console.log(`   ID: ${cliente.id || 'N/A'}`);
-    console.log(`   Origen: ${cliente.origenDesc} (${cliente.origen})`);
-    console.log(`   Documento: ${cliente.documento || 'N/A'}`);
-
-    // ❷ Cerrar modal de identificar cliente
     $('#modalIdentificarCliente').modal('hide');
-    console.log('✅ Modal de identificar cliente cerrado');
 
-    // ❸ ✅ NUEVO v2.0: Disparar evento personalizado para prodfact.js
     setTimeout(() => {
         $(document).trigger('clienteConfirmado', [cliente]);
-        console.log('✅ Evento "clienteConfirmado" disparado con datos del cliente');
-        console.log('   prodfact.js debería mostrar la sección de productos automáticamente');
     }, 400);
-
-    console.log('═══════════════════════════════════════════════════');
-    console.log('✅ CONFIRMAR CLIENTE - FINALIZADO v2.0');
-    console.log('═══════════════════════════════════════════════════');
 }
-
-// ════════════════════════════════════════════════════════════════
-// ✅ FUNCIONES AUXILIARES Y DE VALIDACIÓN
-// ════════════════════════════════════════════════════════════════
-
-/**
- * ✅ ACTUALIZADO v3.1: Corrige manejo de ID en Consumidores Finales
- * 
- * CAMBIOS v3.1:
- * - NO sobrescribe el ID (los Consumidores Finales no tienen ID)
- * - Solo actualiza campos modificables
- */
-function guardarCliente() {
-    // Obtener datos del formulario
-    const clienteData = {
-        id: $('#txtClienteIdUpdate').val(),
-        nombre: $('#txtNombreCliente').val().trim(),
-        domicilio: $('#txtDomicilioCliente').val().trim(),
-        email: $('#txtEmailCliente').val().trim(),
-        movil: $('#txtMovilCliente').val().trim(),
-        tipoDocumento: $('#selTipoDocumento').val(),
-        numeroDocumento: $('#txtNumeroDocumento').val().trim()
-    };
     
-    // Validar datos requeridos
-    if (!clienteData.nombre || !clienteData.tipoDocumento || !clienteData.numeroDocumento) {
-        mostrarMensajeError('Por favor, complete todos los campos obligatorios');
-        return;
-    }
-    
-    // URL de actualización (fallback en caso de que no esté definida la variable global)
-    const urlActualizar = typeof ActualizarConsumidorFinalUrl !== 'undefined' && ActualizarConsumidorFinalUrl 
-        ? ActualizarConsumidorFinalUrl 
-        : '/Facturacion/Cliente/ActualizarConsumidorFinal';
-    
-    console.log('🔄 Guardando cliente...', clienteData);
-    
-    if (modoEdicionCliente) {
-        $('#btnCargarCliente').addClass('processing').prop('disabled', true);
-        
-        $.ajax({
-            url: urlActualizar,
-            type: 'POST',
-            data: clienteData,
-            success: function(response) {
-                if (response.ok) {
-                    console.log('✅ Cliente actualizado en el servidor');
-                    
-                    mostrarMensajeExito('Consumidor Final actualizado correctamente');
-                    
-                    setTimeout(() => {
-                        cerrarModalClienteUpdate();
-                        
-                        // ✅ CORREGIDO v3.1: NO sobrescribir ID (Consumidores Finales no tienen)
-                        const clienteActualizado = {
-                            ...clienteSeleccionado, // ← Mantiene el ID original (null o vacío)
-                            
-                            // ✅ Actualizar SOLO campos modificables
-                            nombre: clienteData.nombre,
-                            domicilio: clienteData.domicilio,
-                            email: clienteData.email,
-                            movil: clienteData.movil,
-                            
-                            // ✅ Actualizar campos derivados del tipo de documento
-                            tdocDesc: obtenerDescripcionTipoDoc(clienteData.tipoDocumento),
-                            tdocId: clienteData.tipoDocumento,
-                            documento: clienteData.numeroDocumento,
-                            tipoNumero: `${obtenerDescripcionTipoDoc(clienteData.tipoDocumento)} ${clienteData.numeroDocumento}`
-                            
-                            // ❌ NO agregar: id: clienteData.id
-                            // Razón: Los Consumidores Finales NO tienen ID
-                        };
-                        
-                        console.log('═══════════════════════════════════════════════════');
-                        console.log('📊 CLIENTE ACTUALIZADO - OBJETO CORREGIDO v3.1');
-                        console.log('═══════════════════════════════════════════════════');
-                        console.log('   ID:', clienteActualizado.id, '(debe ser null o vacío para CF)');
-                        console.log('   Origen:', clienteActualizado.origen);
-                        console.log('   Nombre:', clienteActualizado.nombre);
-                        console.log('   Documento:', clienteActualizado.documento);
-                        console.log('   Tipo Doc:', clienteActualizado.tdocDesc);
-                        console.log('═══════════════════════════════════════════════════');
-                        
-                        mostrarDatosCliente(clienteActualizado);
-                    }, 1500);
-                } else {
-                    console.error('❌ Error al actualizar:', response.mensaje);
-                    mostrarMensajeError(response.mensaje || 'Error al actualizar el cliente');
-                    $('#btnCargarCliente').removeClass('processing').prop('disabled', false);
-                }
-            },
-            error: function(xhr) {
-                console.error('❌ Error AJAX:', xhr);
-                mostrarMensajeError('Error al comunicarse con el servidor');
-                $('#btnCargarCliente').removeClass('processing').prop('disabled', false);
-            }
-        });
-    } else {
-        // ✅ MODO NUEVO: Crear Consumidor Final (TODO: Implementar)
-        console.log('⚠️ TODO: Implementar creación de nuevo cliente');
-        mostrarMensajeError('Funcionalidad de creación de cliente no implementada aún');
-    }
-}
-
-/**
- * ✅ NUEVO: Valida todos los campos del formulario de cliente
- * 
- * Reglas de validación:
- * - Tipo y número de documento: Obligatorios y con formato específico según tipo
- * - Nombre: Obligatorio
- * - Email: Opcional, pero debe ser válido si se ingresa
- * 
- * Cambios en la interfaz:
- * - Los campos inválidos recibirán la clase "is-invalid" y los válidos "is-valid"
- * - Se mostrará un mensaje de error específico debajo de cada campo inválido
- * 
- * @returns {boolean} Verdadero si el formulario es válido, falso si hay errores
- */
-function validarFormularioCliente() {
-    let esValido = true;
-
-    // Validar tipo de documento
-    if (!$('#selTipoDocumento').val()) {
-        $('#selTipoDocumento').addClass('is-invalid').removeClass('is-valid');
-        esValido = false;
-    } else {
-        $('#selTipoDocumento').addClass('is-valid').removeClass('is-invalid');
-    }
-
-    // Validar número de documento
-    const numeroDoc = $('#txtNumeroDocumento').val().trim();
-    const tipoDoc = $('#selTipoDocumento').val();
-
-    if (!numeroDoc) {
-        $('#txtNumeroDocumento').addClass('is-invalid').removeClass('is-valid');
-        esValido = false;
-    } else {
-        let valido = true;
-
-        // ✅ Validaciones específicas por tipo
-        switch (tipoDoc) {
-            case '80': // CUIT
-            case '86': // CUIL
-                if (numeroDoc.length !== 11 || !/^\d+$/.test(numeroDoc)) {
-                    valido = false;
-                }
-                break;
-
-            case '87': // CDI
-            case '89': // LE
-            case '90': // LC
-            case '95': // CI Bs. As. RNP
-            case '96': // DNI
-                if (numeroDoc.length !== 8 || !/^\d+$/.test(numeroDoc)) {
-                    valido = false;
-                }
-                break;
-
-            case '91': // CI Extranjera
-            case '94': // Pasaporte
-                if (numeroDoc.length < 4 || numeroDoc.length > 15) {
-                    valido = false;
-                }
-                break;
-
-            case '99': // Sin Identificar
-                // No se valida longitud
-                break;
-        }
-
-        if (!valido) {
-            $('#txtNumeroDocumento').addClass('is-invalid').removeClass('is-valid');
-            esValido = false;
-        } else {
-            $('#txtNumeroDocumento').addClass('is-valid').removeClass('is-invalid');
-        }
-    }
-
-    // Validar nombre
-    if (!$('#txtNombreCliente').val().trim()) {
-        $('#txtNombreCliente').addClass('is-invalid').removeClass('is-valid');
-        esValido = false;
-    } else {
-        $('#txtNombreCliente').addClass('is-valid').removeClass('is-invalid');
-    }
-
-    // Validar email (opcional)
-    const email = $('#txtEmailCliente').val().trim();
-    if (email && !validarEmail($('#txtEmailCliente'))) {
-        esValido = false;
-    }
-
-    return esValido;
-}
-
-/**
- * Valida un campo individual
- */
-function validarCampo($campo) {
-    const valor = $campo.val().trim();
-
-    if ($campo.prop('required') && !valor) {
-        $campo.addClass('is-invalid').removeClass('is-valid');
-        return false;
-    } else if (valor) {
-        $campo.addClass('is-valid').removeClass('is-invalid');
-        return true;
-    } else {
-        $campo.removeClass('is-invalid is-valid');
-        return true;
-    }
-}
-
-/**
- * Valida formato de email
- */
-function validarEmail($campo) {
-    const email = $campo.val().trim();
-
-    if (!email) {
-        $campo.removeClass('is-invalid is-valid');
-        return true;
-    }
-
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const esValido = regex.test(email);
-
-    if (esValido) {
-        $campo.addClass('is-valid').removeClass('is-invalid');
-    } else {
-        $campo.addClass('is-invalid').removeClass('is-valid');
-    }
-
-    return esValido;
-}
-
-/**
- * ✅ NUEVA: Obtiene la descripción del tipo de documento según su ID
- */
-function obtenerDescripcionTipoDoc(tdocId) {
-    const tipos = {
-        '80': 'CUIT',
-        '86': 'CUIL',
-        '87': 'CDI',
-        '89': 'LE',
-        '90': 'LC',
-        '91': 'CI Extranjera',
-        '94': 'Pasaporte',
-        '95': 'CI Bs. As. RNP',
-        '96': 'D.N.I.',
-        '99': 'Sin Identificar'
-    };
-
-    return tipos[tdocId] || 'Desconocido';
-}
-
-// ════════════════════════════════════════════════════════════════
-// ✅ FUNCIONES DE LIMPIEZA Y SESIÓN
-// ════════════════════════════════════════════════════════════════
-
-/**
- * ✅ NUEVO v1.0: Limpia la sesión de clientes buscados en el servidor
- * 
- * Esta función se invoca cuando el usuario limpia el modal de identificar cliente.
- * Realiza una llamada AJAX asíncrona al servidor para limpiar las variables de sesión:
- * - ClientesBuscados: Lista de clientes encontrados en búsqueda múltiple
- * 
- * Comportamiento:
- * - No bloquea el flujo de ejecución (fire and forget)
- * - Si falla, solo registra warning en consola (no crítico para UX)
- * - Libera memoria en el servidor
- * 
- * @returns {void}
- */
 function limpiarSesionClientesBuscados() {
-    // ❶ Verificar si existe la URL configurada
     const urlLimpiarSesion = typeof LimpiarSesionClientesUrl !== 'undefined' && LimpiarSesionClientesUrl
         ? LimpiarSesionClientesUrl
         : '/Facturacion/Cliente/LimpiarSesionClientes';
 
-    console.log('🧹 Limpiando sesión de clientes buscados en el servidor...');
-    console.log(`   URL: ${urlLimpiarSesion}`);
-
-    // ❷ Llamada AJAX asíncrona (fire and forget)
     $.ajax({
         url: urlLimpiarSesion,
         type: 'POST',
-        async: true, // No bloquear la ejecución
-        timeout: 5000, // Timeout de 5 segundos
+        async: true,
+        timeout: 5000,
         success: function (response) {
             if (response && response.ok) {
                 console.log('✅ Sesión de clientes limpiada en el servidor');
-            } else {
-                console.warn('⚠️ Respuesta inesperada al limpiar sesión:', response);
             }
         },
-        error: function (xhr, status, error) {
-            // No mostrar error al usuario, solo log de advertencia
-            console.warn('═══════════════════════════════════════════════════');
+        error: function () {
             console.warn('⚠️ No se pudo limpiar la sesión en el servidor');
-            console.warn(`   Status HTTP: ${xhr.status}`);
-            console.warn(`   Error: ${error}`);
-            console.warn(`   Nota: Esto no afecta la funcionalidad del cliente`);
-            console.warn('═══════════════════════════════════════════════════');
         }
     });
 }
 
-/**
- * ✅ NUEVO v1.0: Cierra modal y retorna al menú principal de caja
- * 
- * Se invoca cuando el usuario hace clic en el botón "SALIR AL MENÚ".
- * Muestra confirmación antes de redirigir.
- * 
- * @returns {void}
- */
 function confirmarSalidaAlMenu() {
-    console.log('═══════════════════════════════════════════════════');
-    console.log('🚪 CONFIRMACIÓN DE SALIDA AL MENÚ PRINCIPAL');
-    console.log('═══════════════════════════════════════════════════');
-
-    // ❶ Verificar si hay cliente seleccionado
     if (clienteSeleccionado) {
-        console.warn('⚠️ Hay cliente seleccionado - Requiere confirmación');
-
-        // Mostrar confirmación
         AbrirMensaje(
             "Confirmar Salida",
-            "¿Está seguro que desea salir al menú principal?\n\n" +
-            "Se perderá el cliente seleccionado.",
+            "¿Está seguro que desea salir al menú principal?\n\nSe perderá el cliente seleccionado.",
             function () {
                 $("#msjModal").modal("hide");
-                // Usuario confirmó - Redirigir
                 redirigirAlMenu();
             },
-            true, // Mostrar botón cancelar
+            true,
             ["Sí, salir", "Cancelar"],
             "warning",
             null
         );
     } else {
-        console.log('ℹ️ No hay cliente seleccionado - Salida directa');
-
-        // No hay cliente seleccionado - Salir directamente
         redirigirAlMenu();
     }
 }
 
-/**
- * ✅ NUEVO v1.0: Redirige al menú principal de caja
- * 
- * Función auxiliar que realiza la redirección efectiva.
- * Limpia sesión antes de redirigir.
- * 
- * @returns {void}
- */
 function redirigirAlMenu() {
-    console.log('🚀 Redirigiendo al menú principal...');
-
-    // ❶ Limpiar sesión del servidor
     limpiarSesionClientesBuscados();
-
-    // ❷ Obtener URL del menú
+    
     const urlMenu = typeof MenuCajaUrl !== 'undefined' && MenuCajaUrl
         ? MenuCajaUrl
         : '/Home/Index';
 
-    console.log(`   URL destino: ${urlMenu}`);
-
-    // ❸ Redirigir después de un pequeño delay (permite que el AJAX termine)
     setTimeout(() => {
         window.location.href = urlMenu;
     }, 300);
 }
 
-/**
- * ✅ NUEVO v1.0: Cierra el modal de actualización de cliente
- * 
- * Limpia el formulario y resetea el modo de edición.
- * 
- * @returns {void}
- */
 function cerrarModalClienteUpdate() {
-    console.log('🔒 Cerrando modal de actualización de cliente...');
-
-    // ❶ Cerrar modal
     $('#modalClienteUpdate').modal('hide');
-
-    // ❷ Limpiar formulario
     limpiarFormularioCliente();
-
-    console.log('✅ Modal de actualización cerrado');
 }
 
-/**
- * ✅ ACTUALIZADO v2.0: Limpia el formulario de cliente
- * 
- * Cambios desde v1.0:
- * - Modificado: Ahora llama a ajustarPlaceholderSegunTipo con limpiarValor=true
- * 
- * Resetea todos los campos y quita clases de validación.
- * 
- * @returns {void}
- */
-function limpiarFormularioCliente() {
-    console.log('🧹 Limpiando formulario de cliente v2.0...');
-
-    // ❶ Resetear formulario HTML
-    $('#formClienteUpdate')[0].reset();
-
-    // ❷ Limpiar campo oculto de ID
-    $('#txtClienteIdUpdate').val('');
-
-    // ❸ Quitar clases de validación
-    $('#formClienteUpdate .form-control, #formClienteUpdate .form-select')
-        .removeClass('is-valid is-invalid');
-
-    // ❹ Habilitar botón de guardar
-    $('#btnCargarCliente')
-        .removeClass('processing')
-        .prop('disabled', false);
-
-    // ❺ Habilitar campo de número de documento
-    $('#txtNumeroDocumento').prop('readonly', false);
-
-    // ❻ Resetear placeholder según tipo seleccionado (CON limpieza de valor)
-    ajustarPlaceholderSegunTipo(true); // ← LIMPIAR en modo NUEVO
-
-    // ❼ Resetear modo de edición
-    modoEdicionCliente = false;
-
-    console.log('✅ Formulario limpiado correctamente v2.0');
-}
-
-/**
- * ✅ ACTUALIZADO v2.0: Ajusta placeholder, maxlength Y clases CSS del input según tipo de documento
- * 
- * Cambios desde v1.0:
- * - Agregado: Parámetro limpiarValor para control de limpieza
- * - Modificado: Solo limpia valor si limpiarValor = true
- * 
- * Reglas de clases CSS:
- * - Tipos numéricos (80, 86, 87, 89, 90, 95, 96): "jsteclado jsinteger"
- * - Tipos alfanuméricos (91, 94, 99): "jsteclado"
- * 
- * @param {boolean} limpiarValor - Si es true, limpia el valor del input (default: true)
- */
 function ajustarPlaceholderSegunTipo(limpiarValor = true) {
     const tipoSeleccionado = $('#selTipoDocumento').val();
     const $inputNumero = $('#txtNumeroDocumento');
 
     let placeholder = 'Ingrese el número de documento...';
     let maxLength = 20;
-    let clasesCss = 'form-control form-control-lg fw-bold jsteclado'; // Base común
-
-    // ✅ Tipos que SOLO aceptan números
-    const tiposNumericos = ['80', '86', '87', '89', '90', '95', '96'];
+    let clasesCss = 'form-control form-control-lg fw-bold jsteclado';
 
     switch (tipoSeleccionado) {
-        case '80': // CUIT
+        case '80': case '86':
             placeholder = 'Ej: 20123456789 (sin guiones)';
             maxLength = 11;
             clasesCss += ' jsinteger';
             break;
-
-        case '86': // CUIL
-            placeholder = 'Ej: 27123456789 (sin guiones)';
-            maxLength = 11;
-            clasesCss += ' jsinteger';
-            break;
-
-        case '87': // CDI
+        case '87': case '89': case '90': case '95': case '96':
             placeholder = 'Ej: 12345678';
             maxLength = 8;
             clasesCss += ' jsinteger';
             break;
-
-        case '89': // LE (Libreta de Enrolamiento)
-            placeholder = 'Ej: 1234567';
-            maxLength = 8;
-            clasesCss += ' jsinteger';
-            break;
-
-        case '90': // LC (Libreta Cívica)
-            placeholder = 'Ej: 1234567';
-            maxLength = 8;
-            clasesCss += ' jsinteger';
-            break;
-
-        case '91': // CI Extranjera
+        case '91': case '94':
             placeholder = 'Ej: ABC123456';
             maxLength = 15;
-            // Solo "jsteclado" (sin jsinteger)
             break;
-
-        case '94': // Pasaporte
-            placeholder = 'Ej: AAA123456';
-            maxLength = 15;
-            // Solo "jsteclado" (sin jsinteger)
-            break;
-
-        case '95': // CI Bs. As. RNP
-            placeholder = 'Ej: 12345678';
-            maxLength = 8;
-            clasesCss += ' jsinteger';
-            break;
-
-        case '96': // D.N.I.
-            placeholder = 'Ej: 12345678';
-            maxLength = 8;
-            clasesCss += ' jsinteger';
-            break;
-
-        case '99': // Sin Identificar
+        case '99':
             placeholder = 'No aplica';
             maxLength = 1;
-            // Solo "jsteclado" (sin jsinteger)
             break;
-
-        default:
-            placeholder = 'Ingrese el número de documento...';
-            maxLength = 20;
-        // Solo "jsteclado" (sin jsinteger)
     }
 
-    // ✅ Aplicar cambios al input
-    $inputNumero
-        .attr('placeholder', placeholder)
-        .attr('maxlength', maxLength)
-        .attr('class', clasesCss); // Reemplazar todas las clases
+    $inputNumero.attr('placeholder', placeholder).attr('maxlength', maxLength).attr('class', clasesCss);
 
-    // ✅ MODIFICADO v2.0: Limpiar valor SOLO si se indica explícitamente
     if (limpiarValor) {
         $inputNumero.val('');
-        console.log(`📝 Valor del documento limpiado (modo: ${limpiarValor ? 'LIMPIAR' : 'PRESERVAR'})`);
-    } else {
-        console.log(`📝 Valor del documento PRESERVADO`);
+    }
+}
+
+/**
+ * ✅ ACTUALIZADO v5.0: Guarda o actualiza un Consumidor Final
+ * 
+ * CAMBIOS v5.0:
+ * - Agregado: Envío de apellido y nombre separados
+ * - Agregado: Envío de sexo
+ * - Agregado: Manejo de modo EDITAR vs NUEVO
+ * - Agregado: Actualización de clienteSeleccionado con datos del servidor
+ * - Mejorado: Logs detallados para debugging
+ * - Mejorado: Manejo de errores completo
+ * 
+ * Flujo:
+ * 1. Obtiene datos del formulario
+ * 2. Valida campos obligatorios
+ * 3. Determina URL del endpoint
+ * 4. Realiza petición AJAX POST
+ * 5. Procesa respuesta del servidor
+ * 6. Actualiza clienteSeleccionado en JavaScript
+ * 7. Cierra modal y muestra datos actualizados
+ */
+function guardarCliente() {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('💾 GUARDAR CLIENTE v5.0');
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ OBTENER DATOS DEL FORMULARIO
+    const clienteData = {
+        id: $('#txtClienteIdUpdate').val(), // ← Vacío si es NUEVO, con valor si es EDITAR
+        abm: modoEdicionCliente ? 'M' : 'A', // ← ✅ CRÍTICO
+        apellido: $('#txtApellidoCliente').val().trim(),
+        nombre: $('#txtNombreCliente').val().trim(),
+        sexo: $('#selSexoCliente').val(),
+        tipoDocumento: $('#selTipoDocumento').val(),
+        numeroDocumento: $('#txtNumeroDocumento').val().trim(),
+        domicilio: $('#txtDomicilioCliente').val().trim(),
+        email: $('#txtEmailCliente').val().trim(),
+        movil: $('#txtMovilCliente').val().trim()
+    };
+
+    console.log('📊 Datos del cliente a guardar:', clienteData);
+    console.log(`   Modo: ${clienteData.id ? 'EDITAR (ABM=M)' : 'NUEVO (ABM=A)'}`);
+
+    // ❷ VALIDAR DATOS REQUERIDOS
+    if (!clienteData.apellido || !clienteData.nombre || !clienteData.sexo ||
+        !clienteData.tipoDocumento || !clienteData.numeroDocumento) {
+        console.error('❌ Validación fallida - Campos obligatorios vacíos');
+        mostrarMensajeError('Por favor, complete todos los campos obligatorios (*)');
+        return;
     }
 
-    console.log(`📝 Tipo documento cambiado a: ${tipoSeleccionado}`);
-    console.log(`   - Placeholder: "${placeholder}"`);
-    console.log(`   - MaxLength: ${maxLength}`);
-    console.log(`   - Clases CSS: "${clasesCss}"`);
-    console.log(`   - Solo números: ${tiposNumericos.includes(tipoSeleccionado) ? 'SÍ' : 'NO'}`);
+    // ❸ URL DE ACTUALIZACIÓN
+    const urlActualizar = typeof ActualizarConsumidorFinalUrl !== 'undefined' && ActualizarConsumidorFinalUrl
+        ? ActualizarConsumidorFinalUrl
+        : '/Facturacion/Cliente/ActualizarConsumidorFinal';
+
+    console.log(`📡 URL de actualización: ${urlActualizar}`);
+
+    // ❹ DESHABILITAR BOTÓN MIENTRAS SE PROCESA
+    $('#btnCargarCliente').addClass('processing').prop('disabled', true);
+
+    // ❺ REALIZAR PETICIÓN AJAX
+    $.ajax({
+        url: urlActualizar,
+        type: 'POST',
+        data: clienteData, // ← Se envía como FormData automáticamente
+        timeout: 15000,
+        success: function (response) {
+            console.log('═══════════════════════════════════════════════════');
+            console.log('✅ RESPUESTA DEL SERVIDOR RECIBIDA');
+            console.log('═══════════════════════════════════════════════════');
+            console.log('   response.ok:', response.ok);
+            console.log('   response.mensaje:', response.mensaje);
+
+            if (response.ok) {
+                console.log('✅ Cliente guardado exitosamente en el servidor');
+
+                // ❻ OBTENER DATOS ACTUALIZADOS DEL SERVIDOR
+                const datosActualizados = response.cliente || {};
+
+                console.log('📊 Datos actualizados desde servidor:', datosActualizados);
+
+                // ❼ MOSTRAR MENSAJE DE ÉXITO
+                mostrarMensajeExito(response.mensaje || 'Consumidor Final actualizado correctamente');
+
+                // ❽ CERRAR MODAL DESPUÉS DE 1.5 SEGUNDOS
+                setTimeout(() => {
+                    cerrarModalClienteUpdate();
+
+                    // ❾ CONSTRUIR OBJETO CLIENTE ACTUALIZADO
+                    const clienteActualizado = {
+                        ...clienteSeleccionado, // Mantener datos base
+
+                        // ✅ Datos actualizados (priorizar servidor, fallback a form)
+                        nombre: datosActualizados.nombre || `${clienteData.apellido}, ${clienteData.nombre}`,
+                        apellido: datosActualizados.apellido || clienteData.apellido,
+                        nombreSolo: datosActualizados.nombreSolo || clienteData.nombre,
+                        sexo: datosActualizados.sexo || clienteData.sexo,
+                        domicilio: datosActualizados.domicilio || clienteData.domicilio,
+                        email: datosActualizados.email || clienteData.email,
+                        movil: datosActualizados.movil || clienteData.movil,
+
+                        // ✅ Campos derivados del tipo de documento
+                        tdocDesc: obtenerDescripcionTipoDoc(clienteData.tipoDocumento),
+                        tdocId: clienteData.tipoDocumento,
+                        documento: datosActualizados.numeroDocumento || clienteData.numeroDocumento,
+                        tipoNumero: `${obtenerDescripcionTipoDoc(clienteData.tipoDocumento)} ${clienteData.numeroDocumento}`
+                    };
+
+                    console.log('═══════════════════════════════════════════════════');
+                    console.log('📊 CLIENTE ACTUALIZADO v5.0');
+                    console.log('═══════════════════════════════════════════════════');
+                    console.log('   Nombre completo:', clienteActualizado.nombre);
+                    console.log('   Apellido:', clienteActualizado.apellido);
+                    console.log('   Nombre:', clienteActualizado.nombreSolo);
+                    console.log('   Sexo:', clienteActualizado.sexo);
+                    console.log('   Documento:', clienteActualizado.documento);
+                    console.log('   Email:', clienteActualizado.email);
+                    console.log('   Móvil:', clienteActualizado.movil);
+                    console.log('═══════════════════════════════════════════════════');
+
+                    // ❿ ACTUALIZAR VARIABLE GLOBAL
+                    clienteSeleccionado = clienteActualizado;
+
+                    // ⓫ MOSTRAR DATOS ACTUALIZADOS EN EL MODAL DE IDENTIFICAR
+                    mostrarDatosCliente(clienteActualizado);
+                }, 1500);
+            } else {
+                // ⓬ ERROR REPORTADO POR EL SERVIDOR
+                console.error('❌ Error al guardar:', response.mensaje);
+                mostrarMensajeError(response.mensaje || 'Error al actualizar el cliente');
+                $('#btnCargarCliente').removeClass('processing').prop('disabled', false);
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error('═══════════════════════════════════════════════════');
+            console.error('❌ ERROR AJAX AL GUARDAR CLIENTE');
+            console.error('═══════════════════════════════════════════════════');
+            console.error('   Status HTTP:', xhr.status);
+            console.error('   Status:', status);
+            console.error('   Error:', error);
+            console.error('═══════════════════════════════════════════════════');
+
+            let mensajeError = 'Error al comunicarse con el servidor';
+
+            if (xhr.status === 400) {
+                mensajeError = 'Datos inválidos. Por favor, verifique los campos.';
+            } else if (xhr.status === 401 || xhr.status === 403) {
+                mensajeError = 'Su sesión ha expirado. Por favor, vuelva a iniciar sesión.';
+            } else if (xhr.status === 500) {
+                mensajeError = 'Error interno del servidor. Contacte al administrador.';
+            } else if (xhr.responseJSON && xhr.responseJSON.mensaje) {
+                mensajeError = xhr.responseJSON.mensaje;
+            }
+
+            mostrarMensajeError(mensajeError);
+            $('#btnCargarCliente').removeClass('processing').prop('disabled', false);
+        }
+    });
 }
+
+function validarFormularioCliente() {
+    // TODO: Implementar validación completa
+    return true;
+}
+
+function validarCampo($campo) {
+    // TODO: Implementar validación de campo
+}
+
+function validarEmail($campo) {
+    // TODO: Implementar validación de email
+}
+
+function obtenerDescripcionTipoDoc(tdocId) {
+    const tipos = {
+        '80': 'CUIT', '86': 'CUIL', '87': 'CDI', '89': 'LE', '90': 'LC',
+        '91': 'CI Extranjera', '94': 'Pasaporte', '95': 'CI Bs. As. RNP',
+        '96': 'D.N.I.', '99': 'Sin Identificar'
+    };
+    return tipos[tdocId] || 'Desconocido';
+}
+// ================================================================
+//                         MÓDULO DE FACTURACIÓN
+// ================================================================
+
+// ========================================
+// FUNCIONES DE MENSAJES AL USUARIO
+// ========================================
+
+
+
+
+//// ========================================
+//// MODAL IDENTIFICAR CLIENTE - FUNCIONES
+//// ========================================
+
+//function abrirModalIdentificarCliente() {
+//    // Resetear estado
+//    limpiarModalCliente();
+
+//    // ✅ SOLUCIÓN SIMPLE: Usar jQuery para mostrar el modal
+//    $('#modalIdentificarCliente').modal('show');
+
+//    // Focus en campo de búsqueda
+//    setTimeout(() => {
+//        $('#txtBuscarCliente').trigger("focus");
+//    }, 500);
+//}
+
+
+//// ====== EVENTOS DE LA GRILLA ======
+//function attachGrillaEventos() {
+//    $(document).off('dblclick', '.cliente-row');
+//    $(document).off('click', '.btn-seleccionar-cliente');
+//    $(document).off('click', '#btnCerrarGrilla');
+    
+//    $(document).on('dblclick', '.cliente-row', function() {
+//        const $row = $(this);
+        
+//        if (!validarClienteAntesDeSeleccionar($row)) {
+//            return;
+//        }
+        
+//        seleccionarClienteDesdeGrilla($row);
+//    });
+    
+//    $(document).on('click', '.btn-seleccionar-cliente', function (e) {
+//        e.stopPropagation();
+//        const $row = $(this).closest('.cliente-row');
+
+//        if ($row.length === 0) {
+//            mostrarMensajeError('Error: No se pudo identificar el cliente seleccionado');
+//            return;
+//        }
+
+//        if (!validarClienteAntesDeSeleccionar($row)) {
+//            return;
+//        }
+        
+//        seleccionarClienteDesdeGrilla($row);
+//    });
+    
+//    $(document).on('click', '#btnCerrarGrilla', function() {
+//        limpiarVista();
+//    });
+//}
+
+//// ====== SELECCIONAR CLIENTE DESDE GRILLA ======
+//function seleccionarClienteDesdeGrilla($row) {
+//    if (!$row || $row.length === 0) {
+//        mostrarMensajeError('Error: No se pudo acceder a los datos de la fila seleccionada');
+//        return;
+//    }
+
+//    const datosCliente = {
+//        id: $row.data('cta-id'),
+//        nombre: $row.data('cta-nombre'),
+//        domicilio: $row.data('cta-domicilio'),
+//        tdocId: $row.data('cta-tdoc-id'),
+//        tdocDesc: $row.data('cta-tdoc-desc'),
+//        documento: $row.data('cta-documento'),
+//        email: $row.data('cta-email'),
+//        movil: $row.data('cta-movil'),
+//        origen: $row.data('cta-origen'),
+//        origenDesc: $row.data('cta-origen-desc')
+//    };
+
+//    if (!datosCliente.id && !datosCliente.documento) {
+//        mostrarMensajeError('Error: No se pudo identificar el ID del cliente');
+//        return;
+//    }
+
+//    if (!datosCliente.origen || datosCliente.origen.toString().trim() === '') {
+//        mostrarMensajeError('Error: Los datos de origen del cliente están incompletos');
+//        return;
+//    }
+
+//    let criterioBusqueda = '';
+//    const origenUpper = datosCliente.origen.toUpperCase();
+
+//    if (origenUpper === 'C') {
+//        criterioBusqueda = datosCliente.id;
+//    } else if (origenUpper === 'F') {
+//        if (!datosCliente.documento || datosCliente.documento.toString().trim() === '') {
+//            mostrarMensajeError('El consumidor final no tiene documento registrado');
+//            return;
+//        }
+//        criterioBusqueda = datosCliente.documento.toString();
+//    } else {
+//        criterioBusqueda = datosCliente.id;
+//    }
+
+//    $('#cardGrillaClientes').removeClass('show').hide().empty();
+//    $('#alertSinCliente').hide();
+
+//    const $cardBody = $('#cardDatosCliente .card-body');
+//    const loaderMensaje = origenUpper === 'C' 
+//        ? `ID: ${criterioBusqueda}` 
+//        : `${datosCliente.tdocDesc}: ${criterioBusqueda}`;
+
+//    if ($cardBody.length > 0) {
+//        $cardBody.hide();
+        
+//        if ($('#loaderClienteTemp').length === 0) {
+//            $cardBody.after(`
+//                <div id="loaderClienteTemp" class="card-body text-center py-5">
+//                    <i class='bx bx-loader-alt bx-spin' style='font-size: 3rem; color: #f0ad4e;'></i>
+//                    <p class="mt-3 text-muted fw-semibold">Cargando datos del cliente...</p>
+//                    <small class="text-muted">${loaderMensaje}</small>
+//                </div>
+//            `);
+//        }
+//    }
+
+//    $('#cardDatosCliente').show();
+//    $('#btnSeguirCliente').prop('disabled', true);
+
+//    buscarClientePorId(criterioBusqueda);
+//}
+
+//// ====== BUSCAR CLIENTE POR ID ======
+//function buscarClientePorId(clienteId) {
+//    if (!clienteId || clienteId.toString().trim() === '') {
+//        mostrarMensajeError('Error: ID de cliente inválido');
+//        limpiarVista();
+//        return;
+//    }
+    
+//    const url = typeof BuscarClienteUrl !== 'undefined' && BuscarClienteUrl 
+//        ? BuscarClienteUrl 
+//        : '/Facturacion/Cliente/BuscarCliente';
+    
+//    $.ajax({
+//        url: url,
+//        type: 'POST',
+//        data: { criterio: clienteId },
+//        timeout: 30000,
+//        success: function (response) {
+//            if (!response.ok) {
+//                mostrarMensajeError(response.mensaje || 'Error al cargar los datos del cliente');
+//                limpiarVista();
+//                return;
+//            }
+            
+//            const cantidadResultados = response.cantidadResultados || 0;
+            
+//            if (cantidadResultados !== 1) {
+//                mostrarMensajeError('Error: No se pudieron obtener los datos del cliente seleccionado');
+//                limpiarVista();
+//                return;
+//            }
+            
+//            if (!response.cliente) {
+//                mostrarMensajeError('Error: Los datos del cliente no están disponibles');
+//                limpiarVista();
+//                return;
+//            }
+            
+//            mostrarDatosCliente(response.cliente);
+//        },
+//        error: function (xhr, status) {
+//            let mensaje = 'Error al cargar los datos del cliente';
+            
+//            if (status === 'timeout') mensaje = 'La búsqueda tardó demasiado tiempo';
+//            else if (xhr.status === 404) mensaje = 'Servicio no encontrado';
+//            else if (xhr.status === 401 || xhr.status === 403) mensaje = 'Sesión expirada';
+//            else if (xhr.status === 500) mensaje = 'Error interno del servidor';
+            
+//            mostrarMensajeError(mensaje);
+//            limpiarVista();
+//        }
+//    });
+//}
+
+///**
+// * ✅ FUNCIÓN VÁLIDA v1.0: Limpia la sesión de clientes buscados en el servidor
+// * 
+// * Esta función se invoca cuando el usuario limpia el modal de identificar cliente.
+// * Realiza una llamada AJAX asíncrona al servidor para limpiar las variables de sesión:
+// * - ClientesBuscados: Lista de clientes encontrados en búsqueda múltiple
+// * 
+// * Comportamiento:
+// * - No bloquea el flujo de ejecución (fire and forget)
+// * - Si falla, solo registra warning en consola (no crítico para UX)
+// * - Libera memoria en el servidor
+// * 
+// * @returns {void}
+// */
+//function limpiarSesionClientesBuscados() {
+//    const urlLimpiarSesion = typeof LimpiarSesionClientesUrl !== 'undefined' && LimpiarSesionClientesUrl
+//        ? LimpiarSesionClientesUrl
+//        : '/Facturacion/Cliente/LimpiarSesionClientes';
+
+//    $.ajax({
+//        url: urlLimpiarSesion,
+//        type: 'POST',
+//        async: true,
+//        timeout: 5000,
+//        success: function (response) {
+//            if (response && response.ok) {
+//                console.log('✅ Sesión de clientes limpiada en el servidor');
+//            }
+//        },
+//        error: function () {
+//            console.warn('⚠️ No se pudo limpiar la sesión en el servidor');
+//        }
+//    });
+//}
+
+// ================================================================
+//                         MÓDULO DE FACTURACIÓN
+// ================================================================

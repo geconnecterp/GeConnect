@@ -51,6 +51,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
             
             try
             {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
                 _logger?.LogInformation("🔍 OBTENER DATOS DE PRODUCTO - INICIO");
                 _logger?.LogInformation($"   Parámetros recibidos:");

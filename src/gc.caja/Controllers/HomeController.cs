@@ -1,4 +1,4 @@
-using gc.caja.core.Servicios.Contratos.Cajas;
+﻿using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.caja.Models;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Cajas;
@@ -25,16 +25,14 @@ namespace gc.caja.Controllers
 
         public IActionResult Index()
         {
-            if (UserPerfiles.Count() == 0)
-            {
-                return RedirectToAction("login", "token", new { area = "seguridad" });
-            }
+            if (!VerificarAutenticacion(out IActionResult redirectResult))
+                return redirectResult;
 
             return View();
         }
 
         /// <summary>
-        /// Validaci�n integrada de usuario y caja
+        /// Validación integrada de usuario y caja
         /// Resultado = 0: Requiere apertura
         /// Resultado = 3: Evaluar opciones (apertura, opera sin PV, salir)
         /// Resultado = 4: Requiere cambio de PV
@@ -45,6 +43,10 @@ namespace gc.caja.Controllers
         {
             try
             {
+                // ✅ VALIDACIÓN: Autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, resultado = -1, mensaje = "Sesión expirada" });
+
                 var cajaActual = CajaActual;
 
                 if (string.IsNullOrEmpty(cajaActual?.CajaId))
@@ -53,7 +55,7 @@ namespace gc.caja.Controllers
                     {
                         ok = false,
                         resultado = -1,
-                        mensaje = "No se ha configurado una caja para esta estaci�n.",
+                        mensaje = "No se ha configurado una caja para esta estación.",
                         usuario = UserName,
                         caja_id = string.Empty,
                         respuesta_id = string.Empty
@@ -94,7 +96,7 @@ namespace gc.caja.Controllers
                 {
                     ok = true,
                     resultado = result.Entidad?.resultado ?? 0,
-                    mensaje = result.Entidad?.resultado_msj ?? "Validaci�n exitosa.",
+                    mensaje = result.Entidad?.resultado_msj ?? "Validación exitosa.",
                     usuario = UserName,
                     caja_id = cajaActual.CajaId,
                     respuesta_id = result.Entidad?.resultado_id ?? string.Empty
@@ -119,7 +121,7 @@ namespace gc.caja.Controllers
         /// <summary>
         /// Realiza la apertura de caja
         /// Resultado = 0: Caja abierta correctamente - Obtener datos
-        /// Resultado = 3: Caja ya abierta - Men� con solo bot�n CIERRE activo
+        /// Resultado = 3: Caja ya abierta - Menú con solo botón CIERRE activo
         /// Otro: Error - Salir
         /// </summary>
         [HttpPost]
@@ -127,6 +129,10 @@ namespace gc.caja.Controllers
         {
             try
             {
+                // ✅ VALIDACIÓN: Autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, resultado = -1, mensaje = "Sesión expirada" });
+
                 var cajaActual = CajaActual;
 
                 if (string.IsNullOrEmpty(cajaActual?.CajaId))
@@ -135,7 +141,7 @@ namespace gc.caja.Controllers
                     {
                         ok = false,
                         resultado = -1,
-                        mensaje = "No se ha configurado una caja para esta estaci�n.",
+                        mensaje = "No se ha configurado una caja para esta estación.",
                         usuario = UserName,
                         caja_id = string.Empty
                     });
@@ -196,8 +202,8 @@ namespace gc.caja.Controllers
         }
 
         /// <summary>
-        /// Obtiene los datos de la caja/PV despu�s de apertura exitosa
-        /// Resultado = 0: Datos obtenidos - Men� con acceso completo
+        /// Obtiene los datos de la caja/PV después de apertura exitosa
+        /// Resultado = 0: Datos obtenidos - Menú con acceso completo
         /// Otro: Error - Salir
         /// </summary>
         [HttpPost]
@@ -205,6 +211,10 @@ namespace gc.caja.Controllers
         {
             try
             {
+                // ✅ VALIDACIÓN: Autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, resultado = -1, mensaje = "Sesión expirada" });
+
                 var cajaActual = CajaActual;
 
                 if (string.IsNullOrEmpty(cajaActual?.CajaId))
@@ -213,7 +223,7 @@ namespace gc.caja.Controllers
                     {
                         ok = false,
                         resultado = -1,
-                        mensaje = "No se ha configurado una caja para esta estaci�n.",
+                        mensaje = "No se ha configurado una caja para esta estación.",
                         //datos = (object)null
                     });
                 }
@@ -263,7 +273,7 @@ namespace gc.caja.Controllers
                     ok = false,
                     resultado = -999,
                     mensaje = "Error interno al obtener datos de caja.",
-                    datos = (object)null
+                    datos = ""
                 });
             }
         }
@@ -279,22 +289,26 @@ namespace gc.caja.Controllers
         {
             try
             {
+                // ✅ VALIDACIÓN: Autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, resultado = -1, mensaje = "Sesión expirada" });
+
                 var cajaActual = CajaActual;
 
-                // Validaci�n de par�metros
+                // Validación de parámetros
                 if (string.IsNullOrEmpty(cajaActual?.CajaId))
                 {
                     return Json(new
                     {
                         ok = false,
                         resultado = -1,
-                        mensaje = "No se ha configurado una caja para esta estaci�n.",
+                        mensaje = "No se ha configurado una caja para esta estación.",
                         usuario = UserName,
                         caja_id = string.Empty
                     });
                 }
 
-                // MOCK: Funcionalidad no implementada a�n
+                // MOCK: Funcionalidad no implementada aún
                 _logger?.LogWarning("CambioPuntoVenta llamado pero funcionalidad no implementada (MOCK). Usuario: {Usuario}, CajaId: {CajaId}, NuevoPvId: {NuevoPvId}", 
                     UserName, cajaActual.CajaId, nuevo_pv_id ?? "null");
 
@@ -302,12 +316,12 @@ namespace gc.caja.Controllers
                 {
                     ok = false,
                     resultado = -1,
-                    mensaje = "MOCK - El Cambio de PV a�n no puede ser ejecutado (TODO).",
+                    mensaje = "MOCK - El Cambio de PV aún no puede ser ejecutado (TODO).",
                     usuario = UserName,
                     caja_id = cajaActual.CajaId
                 });
 
-                // TODO: Implementar l�gica real cuando exista el SP correspondiente
+                // TODO: Implementar lógica real cuando exista el SP correspondiente
                 /*
                 var result = await _caja.CambiarPuntoVenta(new CajaReqDto
                 {
@@ -365,6 +379,10 @@ namespace gc.caja.Controllers
         {
             try
             {
+                // ✅ VALIDACIÓN: Autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, resultado = -1, mensaje = "Sesión expirada" });
+
                 var cajaActual = CajaActual;
 
                 if (string.IsNullOrEmpty(cajaActual?.CajaId))
@@ -373,7 +391,7 @@ namespace gc.caja.Controllers
                     {
                         ok = false,
                         resultado = -1,
-                        mensaje = "No se ha configurado una caja para esta estaci�n.",
+                        mensaje = "No se ha configurado una caja para esta estación.",
                         usuario = UserName,
                         caja_id = string.Empty
                     });

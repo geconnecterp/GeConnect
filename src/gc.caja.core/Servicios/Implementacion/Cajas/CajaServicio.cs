@@ -24,7 +24,7 @@ namespace gc.caja.core.Servicios.Implementacion.Seguridad
         private const string POST_CIERRE_CAJA = "/CierreCaja";
         private const string GET_BUSQUEDA_CUENTA = "/BusquedaClientes";
         private const string GET_BUSQUEDA_DATOS_CLIENTE = "/BuscarDatosCliente";
-        private const string POST_CARGAR_CF = "/Cargar_CF";
+        private const string POST_CONFIRMA_CONSUMIDOR_FINAL = "/ConfirmaConsumidorFinal";
         private const string GET_OBTENER_DATOS_CF = "/ObtenerDatosCF";
         private const string POST_CIERRE_CAJA_GRAL = "/CierreCajaGral";
         private const string POST_HABILITAR_CAJA_GRAL = "/HabilitarCajaGral";
@@ -290,13 +290,13 @@ namespace gc.caja.core.Servicios.Implementacion.Seguridad
         }
 
      
-        public async Task<RespuestaGenerica<RespuestaDto>> Cargar_CF(CargaCFRequestDto req, string token)
+        public async Task<RespuestaGenerica<RespuestaDto>> ConfirmaConsumidorFinal(ClienteRequestDto req, string token)
         {
             try
             {
                 var helper = new HelperAPI();
                 var client = helper.InicializaCliente(req, token, out StringContent contentData);
-                var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_CARGAR_CF}";
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_CONFIRMA_CONSUMIDOR_FINAL}";
 
                 using var response = await client.PostAsync(link, contentData);
                 if (response.StatusCode == HttpStatusCode.OK)

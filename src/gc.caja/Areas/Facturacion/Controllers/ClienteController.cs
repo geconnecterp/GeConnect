@@ -2,6 +2,7 @@
 using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Cajas;
+using gc.infraestructura.Dtos.Cajas.Request;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -37,6 +38,10 @@ namespace gc.caja.Areas.Facturacion.Controllers
         {
             try
             {
+                // ✅ VALIDACIÓN: Autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, resultado = -1, mensaje = "Sesión expirada" });
+
                 // ❶ VALIDAR CRITERIO
                 if (string.IsNullOrWhiteSpace(criterio))
                 {
@@ -92,7 +97,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 }
 
                 // ❻ CASOS SEGÚN CANTIDAD DE RESULTADOS
-                
+
                 // ❻.1 - NO SE ENCONTRARON REGISTROS
                 if (cantidadResultados == 0)
                 {
@@ -108,7 +113,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 {
                     var clienteParcial = listaClientes[0];
 
-                    if(clienteParcial.Origen.Equals("N", StringComparison.OrdinalIgnoreCase))
+                    if (clienteParcial.Origen.Equals("N", StringComparison.OrdinalIgnoreCase))
                     {
                         return Json(new
                         {
@@ -119,23 +124,23 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         });
                     }
 
-                    
+
                     // ✅ INVOCAR SERVICIO DE DATOS COMPLETOS
                     var dCompletos = await ObtenerDatosCompletosCliente(
                         clienteParcial,
-                        clienteParcial.Cta_Id, 
+                        clienteParcial.Cta_Id,
                         clienteParcial.Cta_Documento
                     );
-                    
+
                     if (!dCompletos.ok)
                     {
                         // Si falla, retornar datos parciales con advertencia
                         _logger?.LogWarning(
-                            "No se pudieron cargar datos fiscales del cliente {ClienteId}. Error: {Error}", 
-                            clienteParcial.Cta_Id, 
+                            "No se pudieron cargar datos fiscales del cliente {ClienteId}. Error: {Error}",
+                            clienteParcial.Cta_Id,
                             dCompletos.mensaje
                         );
-                        
+
                         return Json(new
                         {
                             ok = true,
@@ -151,7 +156,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     {
                         dCompletos.datosCompletos.Origen = clienteParcial.Origen; // Asegurar que el origen esté presente
                         ClienteActual = dCompletos.datosCompletos;
-                                                
+
                         _logger?.LogInformation(
                             "Cliente guardado en sesión: {ClienteId} - {ClienteNombre} - Origen: {Origen}",
                             dCompletos.datosCompletos.cta_id,
@@ -159,7 +164,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                             clienteParcial.Origen
                         );
                     }
-                    
+
                     // ✅ RETORNAR DATOS COMPLETOS
                     return Json(new
                     {
@@ -172,7 +177,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 // ❻.3 - MÚLTIPLES CLIENTES → GUARDAR EN SESIÓN
                 ClientesBuscados = listaClientes;
-                
+
                 return Json(new
                 {
                     ok = true,
@@ -203,13 +208,18 @@ namespace gc.caja.Areas.Facturacion.Controllers
         {
             try
             {
+                // ✅ VALIDACIÓN: Autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, resultado = -1, mensaje = "Sesión expirada" });
+
+
                 // ❶ Obtener lista desde sesión
                 var listaClientes = ClientesBuscados;
 
                 if (listaClientes == null || listaClientes.Count == 0)
                 {
                     _logger?.LogWarning("TraerGrillaClientes llamado sin datos en sesión");
-                    
+
                     // Retornar grilla vacía con mensaje
                     var gridVacio = GenerarGrillaSmart(new List<CuentaBusquedaResultadoDto>(), nameof(CuentaBusquedaResultadoDto.Cta_Denominacion));
                     return PartialView("_GrillaClientesMultiples", gridVacio);
@@ -229,7 +239,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "Error al generar grilla declientes múltiples");
-                
+
                 // En caso de error, retornar grilla vacía
                 var gridError = GenerarGrillaSmart(new List<CuentaBusquedaResultadoDto>(), nameof(CuentaBusquedaResultadoDto.Cta_Denominacion));
                 return PartialView("_GrillaClientesMultiples", gridError);
@@ -249,9 +259,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
             {
                 // Limpiar la lista de sesión
                 ClientesBuscados = new List<CuentaBusquedaResultadoDto>();
-                
+
                 _logger?.LogInformation("Sesión de ClientesBuscados limpiada por el usuario");
-                
+
                 return Json(new { ok = true, mensaje = "Sesión limpiada" });
             }
             catch (Exception ex)
@@ -283,7 +293,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
         //        // ❷ OBTENER DATOS COMPLETOS
         //        var resultado = await ObtenerDatosCompletosCliente(origen, clienteId, documento);
-                
+
         //        if (!resultado.ok)
         //        {
         //            return Json(new { ok = false, mensaje = resultado.mensaje });
@@ -301,7 +311,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
         //    catch (Exception ex)
         //    {
         //        _logger?.LogError(ex, "Error al buscar cliente por ID: {ClienteId}", clienteId);
-                
+
         //        return Json(new
         //        {
         //            ok = false,
@@ -315,8 +325,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
         /// Reutilizable desde BuscarCliente (1 resultado) y BuscarClientePorId (desde grilla).
         /// </summary>
         private async Task<(bool ok, string mensaje, object? cliente, CuentaDatosResultadoDto? datosCompletos)> ObtenerDatosCompletosCliente(
-            CuentaBusquedaResultadoDto cuenta,            
-            string clienteId, 
+            CuentaBusquedaResultadoDto cuenta,
+            string clienteId,
             string? numeroDocumento)
         {
             try
@@ -324,8 +334,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 // ❶ Determinar valor de búsqueda según origen
                 // Si es Cuenta Registrada → usar ID
                 // Si es Consumidor Final → usar Documento
-                string valorBusqueda = cuenta.Origen.Equals("C", StringComparison.OrdinalIgnoreCase) 
-                    ? clienteId 
+                string valorBusqueda = cuenta.Origen.Equals("C", StringComparison.OrdinalIgnoreCase)
+                    ? clienteId
                     : numeroDocumento ?? clienteId;
 
                 // ❷ Invocar servicio de datos completos
@@ -345,22 +355,26 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 var datos = resultadoDatos.Entidad;
 
+                string[] nombre = datos.cta_denominacion
+                    .Split([' '], StringSplitOptions.RemoveEmptyEntries);
+
                 // ❹ Mapear a objeto de respuesta con TODOS los datos (para frontend)
                 var clienteCompleto = new
                 {
                     // Datos básicos
                     id = datos.cta_id,
-                    nombre = datos.cta_denominacion ?? string.Empty,
+                    apellido = nombre[0] ?? string.Empty,
+                    nombre = string.Join(" ", nombre.Skip(1)) ?? string.Empty,
                     domicilio = datos.cta_domicilio ?? string.Empty,
-                    
+
                     // ✅ Tipo de documento separado
                     tdocId = cuenta.Tdoc_Id ?? string.Empty,
                     tdocDesc = datos.tdoc_desc ?? string.Empty,
                     documento = datos.cta_documento ?? string.Empty,
-                    
+
                     // ✅ Retrocompatibilidad
                     tipoNumero = $"{datos.tdoc_desc ?? ""} {datos.cta_documento ?? ""}".Trim(),
-                    
+
                     email = datos.cta_email ?? string.Empty,
                     movil = datos.cta_celu ?? string.Empty,
                     origen = cuenta.Origen,
@@ -398,7 +412,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 movil = cliente.Cta_Celu ?? string.Empty,
                 origen = cliente.Origen,
                 origenDesc = cliente.Origen_Desc,
-                
+
                 // Datos fiscales vacíos (no disponibles)
                 condicionAfip = string.Empty,
                 condicionAfipId = string.Empty,
@@ -420,6 +434,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
         {
             try
             {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
                 var clienteActual = ClienteActual;
 
                 if (clienteActual == null)
@@ -431,18 +448,23 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
+                string[] nombre = clienteActual.cta_denominacion
+                                .Split([' '], StringSplitOptions.RemoveEmptyEntries);
+
                 // Mapear datos para el frontend
                 var clienteParaEdicion = new
                 {
                     id = clienteActual.cta_id,
                     tipoDocumento = clienteActual.tdoc_id ?? string.Empty,
                     numeroDocumento = clienteActual.cta_documento ?? string.Empty,
-                    nombre = clienteActual.cta_denominacion ?? string.Empty,
+                    apellido = nombre[0] ?? string.Empty,
+                    nombre = string.Join(" ", nombre.Skip(1)) ?? string.Empty,
                     domicilio = clienteActual.cta_domicilio ?? string.Empty,
                     email = clienteActual.cta_email ?? string.Empty,
                     movil = clienteActual.cta_celu ?? string.Empty,
                     origen = clienteActual.Origen ?? string.Empty,
-                    
+                    sexo = clienteActual.cta_sexo,
+
                     // Datos adicionales para mostrar
                     tdocDesc = clienteActual.tdoc_desc ?? string.Empty,
                     condicionAfip = clienteActual.afip_desc ?? string.Empty,
@@ -473,25 +495,37 @@ namespace gc.caja.Areas.Facturacion.Controllers
         }
 
         /// <summary>
-        /// ✅ NUEVA ACTION: Actualiza datos del Consumidor Final
+        /// ✅ ACTUALIZADO v2.0: Actualiza datos del Consumidor Final
+        /// 
+        /// CAMBIOS v2.0:
+        /// - Agregado parámetro apellido
+        /// - Agregado parámetro sexo
+        /// - Integrado con servicio ConfirmaConsumidorFinal
+        /// - Manejo completo de respuestas del backend
         /// </summary>
         [HttpPost]
         public async Task<JsonResult> ActualizarConsumidorFinal(
-            string id,
+            string id,          // ← Vacío si ABM=A, con valor si ABM=M
+            string abm,
+            string apellido,    // ← ✅ NUEVO en v2.0
+            string nombre,      // ← ✅ NUEVO en v2.0
+            string sexo,        // ← ✅ NUEVO en v2.0
             string tipoDocumento,
             string numeroDocumento,
-            string nombre,
             string domicilio,
             string email,
             string movil)
         {
             try
             {
+                // ✅ VALIDACIÓN: Autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, resultado = -1, mensaje = "Sesión expirada" });
+
+
+                // ═══════════════════════════════════════════════════════════
                 // ❶ VALIDAR PARÁMETROS OBLIGATORIOS
-                if (string.IsNullOrWhiteSpace(id))
-                {
-                    return Json(new { ok = false, mensaje = "ID de cliente requerido" });
-                }
+                // ═══════════════════════════════════════════════════════════
 
                 if (string.IsNullOrWhiteSpace(tipoDocumento))
                 {
@@ -503,15 +537,35 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "Número de documento requerido" });
                 }
 
+                if (string.IsNullOrWhiteSpace(apellido))
+                {
+                    return Json(new { ok = false, mensaje = "Apellido requerido" });
+                }
+
                 if (string.IsNullOrWhiteSpace(nombre))
                 {
                     return Json(new { ok = false, mensaje = "Nombre requerido" });
                 }
 
-                // ❷ VERIFICAR QUE EL CLIENTE EN SESIÓN SEA CONSUMIDOR FINAL
+                if (string.IsNullOrWhiteSpace(sexo))
+                {
+                    return Json(new { ok = false, mensaje = "Sexo requerido" });
+                }
+
+                // ═══════════════════════════════════════════════════════════
+                // ❷ VERIFICAR CLIENTE EN SESIÓN
+                // ═══════════════════════════════════════════════════════════
+
                 var clienteActual = ClienteActual;
 
-                if (clienteActual == null || clienteActual.Origen?.ToUpper() != "F")
+                if (clienteActual == null)
+                {
+                    //significa que es un cliente nuevo.                    
+                    clienteActual = new();
+                    clienteActual.Origen = "F";
+                }
+
+                if (clienteActual.Origen?.ToUpper() != "F")
                 {
                     return Json(new
                     {
@@ -520,36 +574,132 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
-                // ❸ TODO: LLAMAR AL SERVICIO DE ACTUALIZACIÓN
-                // Aquí iría la llamada al servicio que actualiza el cliente
-                // var resultado = await _cajaServicio.ActualizarConsumidorFinal(...);
+                // ═══════════════════════════════════════════════════════════
+                // ❸ CONSTRUIR DTO CON DATOS DEL FORMULARIO
+                // ═══════════════════════════════════════════════════════════
+
+                var request = new ClienteRequestDto
+                {
+                    // ✅ ACTUALIZADO: Usar parámetro explícito con validación
+                    Abm = !string.IsNullOrWhiteSpace(abm) && abm.ToUpper() == "M"
+                            ? "M"
+                            : "A",
+
+                    // ✅ DATOS DE USUARIO (desde sesión)
+                    UsuId = UserName,
+                    AdmId = AdministracionId,
+
+                    // ✅ DATOS DEL DOCUMENTO
+                    TdocId = tipoDocumento,
+                    CtaDocumento = numeroDocumento.Trim(),
+
+                    // ✅ DATOS PERSONALES
+                    CtaApellido = apellido.Trim().ToUpper(),
+                    CtaNombre = nombre.Trim().ToUpper(),
+                    Sexo = sexo.ToUpper(),
+
+                    // ✅ DATOS DE CONTACTO (opcionales)
+                    CtaDomicilio = domicilio?.Trim().ToUpper() ?? string.Empty,
+                    CtaEmail = email?.Trim().ToLower() ?? string.Empty,
+                    CtaCelu = movil?.Trim() ?? string.Empty
+                };
 
                 _logger?.LogInformation(
-                    "Consumidor Final actualizado: {ClienteId} - {ClienteNombre}",
-                    id, nombre
+                    "Actualizando Consumidor Final - Modo: {Modo}, Doc: {TipoDoc} {NumDoc}, Nombre: {Apellido}, {Nombre}",
+                    request.Abm, request.TdocId, request.CtaDocumento, request.CtaApellido, request.CtaNombre
                 );
 
-                // ❹ ACTUALIZAR CLIENTE EN SESIÓN
-                clienteActual.cta_denominacion = nombre.ToUpper();
-                clienteActual.cta_domicilio = domicilio?.ToUpper();
-                clienteActual.cta_email = email?.ToLower();
-                clienteActual.cta_celu = movil;
-                
+                // ═══════════════════════════════════════════════════════════
+                // ❹ LLAMAR AL SERVICIO BACKEND
+                // ═══════════════════════════════════════════════════════════
+
+                var tokenAcceso = TokenCookie;
+
+                if (string.IsNullOrEmpty(tokenAcceso))
+                {
+                    _logger?.LogError("Token de acceso no disponible");
+                    return Json(new { ok = false, mensaje = "Error de autenticación" });
+                }
+
+                var resultado = await _cajaServicio.ConfirmaConsumidorFinal(request, tokenAcceso);
+
+                // ═══════════════════════════════════════════════════════════
+                // ❺ PROCESAR RESPUESTA DEL BACKEND
+                // ═══════════════════════════════════════════════════════════
+
+                if (!resultado.Ok)
+                {
+                    _logger?.LogWarning(
+                        "Error al actualizar CF: {Mensaje}",
+                        resultado.Mensaje
+                    );
+
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = resultado.Mensaje ?? "Error al actualizar el cliente"
+                    });
+                }
+
+                // ═══════════════════════════════════════════════════════════
+                // ❻ ACTUALIZAR CLIENTE EN SESIÓN
+                // ═══════════════════════════════════════════════════════════
+
+                // Construir nombre completo (Apellido, Nombre)
+                var nombreCompleto = $"{apellido.Trim().ToUpper()}, {nombre.Trim().ToUpper()}";
+
+                clienteActual.cta_denominacion = nombreCompleto;
+                clienteActual.cta_domicilio = domicilio?.Trim().ToUpper();
+                clienteActual.cta_email = email?.Trim().ToLower();
+                clienteActual.cta_celu = movil?.Trim();
+                clienteActual.cta_sexo = sexo;
+
+                // Actualizar datos de documento
+                clienteActual.tdoc_id = tipoDocumento;
+                clienteActual.cta_documento = numeroDocumento.Trim();
+
                 ClienteActual = clienteActual;
+
+                _logger?.LogInformation(
+                    "Consumidor Final actualizado exitosamente: {ClienteNombre}",
+                    nombreCompleto
+                );
+
+                // ═══════════════════════════════════════════════════════════
+                // ❼ RETORNAR RESPUESTA EXITOSA
+                // ═══════════════════════════════════════════════════════════
 
                 return Json(new
                 {
                     ok = true,
-                    mensaje = "Consumidor Final actualizado correctamente"
+                    mensaje = "Consumidor Final actualizado correctamente",
+                    cliente = new
+                    {
+                        id = clienteActual.cta_id,
+                        nombre = nombreCompleto,
+                        apellido = apellido.Trim().ToUpper(),
+                        nombreSolo = nombre.Trim().ToUpper(),
+                        sexo = sexo.ToUpper(),
+                        tipoDocumento = tipoDocumento,
+                        numeroDocumento = numeroDocumento.Trim(),
+                        domicilio = clienteActual.cta_domicilio,
+                        email = clienteActual.cta_email,
+                        movil = clienteActual.cta_celu
+                    }
                 });
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Error al actualizar Consumidor Final: {ClienteId}", id);
+                _logger?.LogError(
+                    ex,
+                    "Error inesperado al actualizar Consumidor Final - Doc: {TipoDoc} {NumDoc}",
+                    tipoDocumento, numeroDocumento
+                );
+
                 return Json(new
                 {
                     ok = false,
-                    mensaje = "Error al actualizar el cliente"
+                    mensaje = "Error inesperado al actualizar el cliente. Por favor, intente nuevamente."
                 });
             }
         }

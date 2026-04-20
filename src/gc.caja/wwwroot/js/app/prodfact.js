@@ -732,10 +732,8 @@ function actualizarGrillaProductos() {
             <tr class="compact-row" data-index="${index}">
                 <td class="text-center fw-bold">${escapeHtml(producto.p_id)}</td>
                 <td class="text-center">${escapeHtml(producto.p_id_barrado)}</td>
-                <td>
-                    <span class="text-truncate d-block" title="${escapeHtml(producto.descripcion)}">
-                        ${escapeHtml(producto.descripcion)}
-                    </span>
+                <td class="text-start" style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(producto.descripcion)}">
+                    ${escapeHtml(producto.descripcion)}
                 </td>
                 <td class="text-center">
                     <span class="badge badge-compact bg-info">${producto.unidadPresentacion}</span>

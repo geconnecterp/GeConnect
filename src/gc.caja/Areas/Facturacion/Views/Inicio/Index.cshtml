@@ -60,18 +60,24 @@
 
 @section Scripts {
     <script>
-        console.log('✅ Módulo de Facturación cargado correctamente');
+        // ═══════════════════════════════════════════════════════════
+        // ✅ URLs DEL BACKEND (JavaScript Global Variables)
+        // ═══════════════════════════════════════════════════════════
 
-        var BuscarClienteUrl = "@Url.Action("BuscarCliente", "cliente", new { Area = "Facturacion" })"
-        var TraerGrillaClientesUrl = "@Url.Action("TraerGrillaClientes", "Cliente", new { Area = "Facturacion" })";
-        var MenuCajaUrl = "@Url.Action("Index", "Home", new { Area = "" })";
-        var LimpiarSesionClientesUrl = "@Url.Action("LimpiarSesionClientes", "Cliente", new { Area = "Facturacion" })";
-        var ObtenerClienteActualUrl = "@Url.Action("ObtenerClienteActual", "Cliente", new { Area = "Facturacion" })";
-        var ActualizarConsumidorFinalUrl = "@Url.Action("ActualizarConsumidorFinal", "Cliente", new { Area = "Facturacion" })";
-        var ObtenerProductoDatosUrl = "@Url.Action("ObtenerProductoDatos", "ProductoFact", new { Area = "Facturacion" })";
+        // URLs de Cliente
+        var BuscarClienteUrl = '@Url.Action("BuscarCliente", "Cliente", new { area = "Facturacion" })';
+        var TraerGrillaClientesUrl = '@Url.Action("TraerGrillaClientes", "Cliente", new { area = "Facturacion" })';
+        var LimpiarSesionClientesUrl = '@Url.Action("LimpiarSesionClientes", "Cliente", new { area = "Facturacion" })';
+        var ObtenerClienteActualUrl = '@Url.Action("ObtenerClienteActual", "Cliente", new { area = "Facturacion" })';
+        var ActualizarConsumidorFinalUrl = '@Url.Action("ActualizarConsumidorFinal", "Cliente", new { area = "Facturacion" })';
+
+        // URLs de Menú
+        var MenuCajaUrl = '@Url.Action("Index", "Home", new { area = "" })';
+
+        // URLs de Productos (agregar aquí cuando sea necesario)
+        // var BuscarProductoUrl = '@Url.Action("BuscarProducto", "ProductoFact", new { area = "Facturacion" })';
     </script>
 
-    <script src="~/js/app/fact.js"></script>
-    <script src="~/js/app/prodfact.js"></script>
-
+    <script src="~/js/app/fact.js" asp-append-version="true"></script>
+    <script src="~/js/app/prodfact.js" asp-append-version="true"></script>
 }

@@ -13,6 +13,7 @@ namespace gc.infraestructura.Dtos.Cajas
         public string tdoc_id { get; set; } = string.Empty;
         public string tdoc_desc { get; set; } = string.Empty;
         public string cta_documento { get; set; } = string.Empty;
+        public string cta_sexo { get; set; } = string.Empty;
 
         public string afip_id { get; set; } = string.Empty;
         public string afip_desc { get; set; } = string.Empty;

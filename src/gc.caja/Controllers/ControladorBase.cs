@@ -418,5 +418,21 @@ namespace gc.caja.Controllers
                 }
             }
         }
+
+        // Método auxiliar para el controlador
+        protected bool VerificarAutenticacion(out IActionResult redirectResult)
+        {
+            redirectResult = null;
+
+            var (estaAutenticado, fechaExpiracion) = EstaAutenticado;
+
+            if (!estaAutenticado || fechaExpiracion < DateTime.Now)
+            {
+                redirectResult = RedirectToAction("Login", "Token", new { area = "seguridad" });
+                return false;
+            }
+
+            return true;
+        }
     }
 }
