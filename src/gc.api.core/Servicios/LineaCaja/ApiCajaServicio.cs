@@ -4,6 +4,7 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Cajas;
+using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Gen;
 using Microsoft.Data.SqlClient;
 
@@ -108,20 +109,21 @@ namespace gc.api.core.Servicios.LineaCaja
         }
 
         
-        public RespuestaDto Cargar_CF(CargaCFRequestDto req)
+        public RespuestaDto ConfirmaConsumidorFinal(ClienteRequestDto req)
         {
-            var sp = ConstantesGC.StoredProcedures.SP_CAJA_CF_CARGA;
+            var sp = ConstantesGC.StoredProcedures.SP_CAJA_CF_CONFIRMAR;
             var ps = new List<SqlParameter>() {
-                new SqlParameter("@tdco_id", req.tdco_id),
-                new SqlParameter("@documento", req.documento),
-                new SqlParameter("@nombre", req.nombre),
-                new SqlParameter("@apellido", req.apellido),
-                new SqlParameter("@sexo", req.sexo),
-                new SqlParameter("@domicilio", req.domicilio),
-                new SqlParameter("@celu", req.celu),
-                new SqlParameter("@email", req.email),
-                new SqlParameter("@adm_id", req.adm_id),
-                new SqlParameter("@usu_id", req.usu_id)
+                new SqlParameter("@abm", req.Abm),
+                new SqlParameter("@tdoc_id", req.TdocId),
+                new SqlParameter("@cta_documento", req.CtaDocumento),
+                new SqlParameter("@cta_nombre", req.CtaNombre),
+                new SqlParameter("@cta_apellido", req.CtaApellido),
+                new SqlParameter("@sexo", req.Sexo),
+                new SqlParameter("@cta_domicilio", req.CtaDomicilio),
+                new SqlParameter("@cta_celu", req.CtaCelu),
+                new SqlParameter("@cta_email", req.CtaEmail),
+                new SqlParameter("@adm_id", req.AdmId),
+                new SqlParameter("@usu_id", req.UsuId)
             };
             var res = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps);
             if (res != null && res.Count > 0)
@@ -130,6 +132,8 @@ namespace gc.api.core.Servicios.LineaCaja
             }
             return new() { resultado = -1, resultado_msj = "Hubo un error al cargar el cliente final." };
         }
+
+        
 
         public CajaDatosDto ObtenerDatosCF(string caja_id)
         {

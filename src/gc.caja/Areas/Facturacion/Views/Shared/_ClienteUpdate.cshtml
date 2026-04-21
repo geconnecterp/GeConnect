@@ -13,7 +13,7 @@
             <!-- Body -->
             <div class="modal-body p-4 bg-light">
                 <form id="formClienteUpdate" novalidate>
-                    <!-- Fila 1: Tipo y N° -->
+                    <!-- Fila 1: Tipo y N° de Documento -->
                     <div class="row g-3 mb-3">
                         <div class="col-md-4">
                             <label for="selTipoDocumento" class="form-label fw-semibold text-golden-dark">
@@ -59,45 +59,79 @@
                         </div>
                     </div>
 
-                    <!-- Fila 2: Nombre y Domicilio -->
+                    <!-- Fila 2: Apellido, Nombre y Sexo -->
                     <div class="row g-3 mb-3">
-                        <div class="col-md-6">
-                            <label for="txtNombreCliente" class="form-label fw-semibold text-golden-dark">
-                                <i class='bx bx-user'></i> Nombre:
+                        <div class="col-md-5">
+                            <label for="txtApellidoCliente" class="form-label fw-semibold text-golden-dark">
+                                <i class='bx bx-user'></i> Apellido:
                                 <span class="text-danger">*</span>
                             </label>
                             <input type="text" 
-                                   class="form-control form-control-lg" 
-                                   id="txtNombreCliente" 
-                                   placeholder="Apellido y Nombre / Razón Social"
+                                   class="form-control form-control-lg jsteclado" 
+                                   id="txtApellidoCliente" 
+                                   placeholder="Apellido / Razón Social"
                                    maxlength="100"
                                    required
                                    autocomplete="off">
                             <div class="invalid-feedback">
-                                Ingrese el nombre del cliente
+                                Ingrese el apellido
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-5">
+                            <label for="txtNombreCliente" class="form-label fw-semibold text-golden-dark">
+                                <i class='bx bx-user-circle'></i> Nombre:
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control form-control-lg jsteclado" 
+                                   id="txtNombreCliente" 
+                                   placeholder="Nombre"
+                                   maxlength="100"
+                                   required
+                                   autocomplete="off">
+                            <div class="invalid-feedback">
+                                Ingrese el nombre
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="selSexoCliente" class="form-label fw-semibold text-golden-dark">
+                                <i class='bx bx-male-female'></i> Sexo:
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select form-select-lg fw-bold" id="selSexoCliente" required>
+                                <option value="">...</option>
+                                <option value="M" selected>M</option>
+                                <option value="F">F</option>
+                            </select>
+                            <div class="invalid-feedback">
+                                Requerido
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fila 3: Domicilio -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-12">
                             <label for="txtDomicilioCliente" class="form-label fw-semibold text-golden-dark">
                                 <i class='bx bx-home'></i> Domicilio:
                             </label>
                             <input type="text" 
-                                   class="form-control form-control-lg" 
+                                   class="form-control form-control-lg jsteclado" 
                                    id="txtDomicilioCliente" 
-                                   placeholder="Calle y Número"
+                                   placeholder="Calle, Número, Piso, Departamento"
                                    maxlength="150"
                                    autocomplete="off">
                         </div>
                     </div>
 
-                    <!-- Fila 3: Email y Móvil -->
+                    <!-- Fila 4: Email y Móvil -->
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label for="txtEmailCliente" class="form-label fw-semibold text-golden-dark">
                                 <i class='bx bx-envelope'></i> Email:
                             </label>
                             <input type="email" 
-                                   class="form-control form-control-lg" 
+                                   class="form-control form-control-lg jsteclado" 
                                    id="txtEmailCliente" 
                                    placeholder="correo@ejemplo.com"
                                    maxlength="100"
@@ -111,9 +145,9 @@
                                 <i class='bx bx-phone'></i> Móvil:
                             </label>
                             <input type="tel" 
-                                   class="form-control form-control-lg" 
+                                   class="form-control form-control-lg jsteclado jsinteger" 
                                    id="txtMovilCliente" 
-                                   placeholder="1234-567890"
+                                   placeholder="1234567890"
                                    maxlength="20"
                                    autocomplete="off">
                             <div class="invalid-feedback">

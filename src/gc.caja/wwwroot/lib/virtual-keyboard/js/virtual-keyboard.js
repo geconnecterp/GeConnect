@@ -13,34 +13,34 @@
     // Layouts de teclado
     const layouts = {
         alphanumeric: [
-            ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'SEP', '7', '8', '9'],
-            ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Ñ', 'SEP', '4', '5', '6'],
-            ['SHIFT', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'BACK', 'SEP', '1', '2', '3'],
-            ['?123', 'SPACE', 'ENTER', 'SEP', '0']
+            ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'SEP', '7', '8', '9', 'BACK'],
+            ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Ñ', 'SEP', '4', '5', '6', '+'],
+            ['SHIFT', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'BACK', 'SEP', '1', '2', '3', '*'],
+            ['?123', 'SPACE', 'SEP', '0', '.', 'ENTER']
         ],
         symbols: [
-            ['@', '#', '$', '%', '&', '-', '+', '(', ')', '/', 'SEP', '7', '8', '9'],
-            ['*', '"', "'", ':', ';', '!', '?', '_', ',', '.', 'SEP', '4', '5', '6'],
-            ['=', '<', '>', '[', ']', '{', '}', '\\', 'BACK', 'SEP', '1', '2', '3'],
-            ['ABC', 'SPACE', 'ENTER', 'SEP', '0']
+            ['@', '#', '$', '%', '&', '-', '+', '(', ')', '/', 'SEP', '7', '8', '9', 'BACK'],
+            ['*', '"', "'", ':', ';', '!', '?', '_', ',', '.', 'SEP', '4', '5', '6', '+'],
+            ['=', '<', '>', '[', ']', '{', '}', '\\', 'BACK', 'SEP', '1', '2', '3', '*'],
+            ['ABC', 'SPACE', 'SEP', '0', '.', 'ENTER']
         ],
         numeric: [
-            ['1', '2', '3', '+'],
-            ['4', '5', '6', '*'],
             ['7', '8', '9', 'BACK'],
-            ['.', '0', 'ENTER']
+            ['4', '5', '6', '+'],
+            ['1', '2', '3', '*'],
+            ['0', '.', 'ENTER']
         ],
         integer: [
-            ['1', '2', '3', '+'],
-            ['4', '5', '6', '*'],
             ['7', '8', '9', 'BACK'],
+            ['4', '5', '6', '+'],
+            ['1', '2', '3', '*'],
             ['0', 'ENTER']
         ],
         tel: [
-            ['1', '2', '3', '+'],
-            ['4', '5', '6', '*'],
-            ['7', '8', '9', '-'],
-            ['0', 'BACK', 'ENTER']
+            ['7', '8', '9', 'BACK'],
+            ['4', '5', '6', '+'],
+            ['1', '2', '3', '-'],
+            ['0', '*', 'ENTER']
         ]
     };
 
@@ -133,11 +133,21 @@
                     label = '⇧';
                 } else if (key === 'BACK') {
                     className += ' vk-key-backspace';
-                    if (type === 'alphanumeric') className += ' vk-key-w1-5';
+                    if (type === 'alphanumeric' || type === 'symbols') className += ' vk-key-w1-5';
                     label = '⌫';
                 } else if (key === 'ENTER') {
                     className += ' vk-key-enter';
-                    label = 'Listo';
+                    if (type === 'alphanumeric' || type === 'symbols' || type === 'numeric' || type === 'tel') {
+                        className += ' vk-key-w2';
+                    } else if (type === 'integer') {
+                        className += ' vk-key-w2';
+                    }
+
+                    // Dinámicamente decidir el label
+                    const inputs = Array.from(document.querySelectorAll('.jsteclado'));
+                    const currentIndex = inputs.indexOf(activeInput);
+                    const hasNext = currentIndex > -1 && currentIndex < inputs.length - 1;
+                    label = hasNext ? 'Sig.' : 'Listo';
                 } else if (key === 'SPACE') {
                     className += ' vk-key-space';
                     label = 'Espacio';
@@ -145,11 +155,11 @@
                     className += ' vk-key-special vk-key-w2';
                     label = key;
                 } else if (key === '0' && (type === 'alphanumeric' || type === 'symbols')) {
-                    className += ' vk-key-w1'; // Standard width for 0 in alphanumeric
+                    className += ' vk-key-w1'; 
                 } else if (key === '0' && (type === 'numeric' || type === 'tel') && rowIndex === 3) {
-                    className += ' vk-key-w2';
+                    className += ' vk-key-w1';
                 } else if (key === '0' && type === 'integer' && rowIndex === 3) {
-                    className += ' vk-key-w3';
+                    className += ' vk-key-w2'; 
                 } else {
                     label = isShift ? key.toUpperCase() : key.toLowerCase();
                 }
@@ -219,8 +229,30 @@
                 newCursorPos = start;
             }
         } else if (key === 'ENTER') {
-            container.style.display = 'none';
-            activeInput.blur();
+            const inputs = Array.from(document.querySelectorAll('.jsteclado'));
+            const currentIndex = inputs.indexOf(activeInput);
+            
+            // Despachar eventos de teclado para compatibilidad
+            const enterEvt = {
+                key: 'Enter',
+                code: 'Enter',
+                keyCode: 13,
+                which: 13,
+                bubbles: true
+            };
+            activeInput.dispatchEvent(new KeyboardEvent('keydown', enterEvt));
+            
+            if (currentIndex > -1 && currentIndex < inputs.length - 1) {
+                // Navegar al siguiente campo
+                const nextInput = inputs[currentIndex + 1];
+                nextInput.focus();
+            } else {
+                // Cerrar teclado si es el último
+                container.style.display = 'none';
+                activeInput.blur();
+            }
+            
+            activeInput.dispatchEvent(new KeyboardEvent('keyup', enterEvt));
             return;
         } else if (key === 'SPACE') {
             if (isInteger || isDecimal) return; // No espacios en números

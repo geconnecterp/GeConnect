@@ -7,6 +7,7 @@
         public string Cta_Domicilio { get; set; } = string.Empty;
         public string Cta_Celu { get; set; } = string.Empty;
         public string Cta_Email { get; set; } = string.Empty;
+        public string Cta_Sexo { get; set; } = string.Empty;
 
         // Lo dejo como string por seguridad, porque no vemos el tipo real en la tabla.
         // Si en BD es int/smallint, puedes cambiarlo a int? o short?.
