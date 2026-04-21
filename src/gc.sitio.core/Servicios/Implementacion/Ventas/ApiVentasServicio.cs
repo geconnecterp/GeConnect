@@ -24,6 +24,10 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string GET_VTAS_PV_CTL_REND_DETALLE = "/ObtenerVtasPVCtlRendDetalleLista";
 		private const string SET_VTAS_CTL_NUEVO = "/CargaCtlNuevoItemDetalle";
 		private const string SET_VTAS_CTL_GUARDAR = "/GuardarCtlDetalle";
+		private const string SET_VTAS_CTL_CONFIRMAR = "/ConfirmarCtlArqueo";
+		private const string SET_VTAS_CTL_ANULAR = "/AnularCtlArqueo";
+		private const string SET_VTAS_CTL_AGREGAR_MEDIO_DE_PAGO = "/AgregarMedioDePago";
+
 		public ApiVentasServicio(IOptions<AppSettings> options, ILogger<ApiVentasServicio> logger) : base(options, logger, RutaAPI)
 		{
 
@@ -329,6 +333,213 @@ namespace gc.sitio.core.Servicios.Implementacion
 				var helper = new HelperAPI();
 				var client = helper.InicializaCliente(req, token, out StringContent contentData);
 				var link = $"{_appSettings.RutaBase}{RutaAPI}{SET_VTAS_CTL_GUARDAR}";
+
+				using var response = await client.PostAsync(link, contentData);
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					var stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+					}
+
+					var apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+					if (apiResponse == null || apiResponse.Data == null)
+					{
+						return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+					}
+					var resp = apiResponse.Data;
+					if (resp.resultado == 0)
+					{
+						return new RespuestaGenerica<RespuestaDto>
+						{
+							Ok = true,
+							Mensaje = "OK",
+							Entidad = apiResponse.Data
+						};
+					}
+					else if (resp.resultado > 0)
+					{
+						return new RespuestaGenerica<RespuestaDto>
+						{
+							Ok = false,
+							EsWarn = true,
+							EsError = false,
+							Mensaje = resp.resultado_msj,
+							Entidad = apiResponse.Data
+						};
+					}
+					else
+					{
+						return new RespuestaGenerica<RespuestaDto>
+						{
+							Ok = false,
+							EsWarn = false,
+							EsError = true,
+							Mensaje = resp.resultado_msj,
+							Entidad = apiResponse.Data
+						};
+					}
+				}
+				else
+				{
+					var msg = await ReadApiErrorAsync(response);
+					_logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+					return new() { Ok = false, Mensaje = msg };
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+				return new() { Ok = false, Mensaje = "Error al buscar Presupuestos" };
+			}
+		}
+
+		public async Task<RespuestaGenerica<RespuestaDto>> ConfirmarCtlArqueo(ConfirmarCtlArqueoRequest req, string token)
+		{
+			try
+			{
+				var helper = new HelperAPI();
+				var client = helper.InicializaCliente(req, token, out StringContent contentData);
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{SET_VTAS_CTL_CONFIRMAR}";
+
+				using var response = await client.PostAsync(link, contentData);
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					var stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+					}
+
+					var apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+					if (apiResponse == null || apiResponse.Data == null)
+					{
+						return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+					}
+					var resp = apiResponse.Data;
+					if (resp.resultado == 0)
+					{
+						return new RespuestaGenerica<RespuestaDto>
+						{
+							Ok = true,
+							Mensaje = "OK",
+							Entidad = apiResponse.Data
+						};
+					}
+					else if (resp.resultado > 0)
+					{
+						return new RespuestaGenerica<RespuestaDto>
+						{
+							Ok = false,
+							EsWarn = true,
+							EsError = false,
+							Mensaje = resp.resultado_msj,
+							Entidad = apiResponse.Data
+						};
+					}
+					else
+					{
+						return new RespuestaGenerica<RespuestaDto>
+						{
+							Ok = false,
+							EsWarn = false,
+							EsError = true,
+							Mensaje = resp.resultado_msj,
+							Entidad = apiResponse.Data
+						};
+					}
+				}
+				else
+				{
+					var msg = await ReadApiErrorAsync(response);
+					_logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+					return new() { Ok = false, Mensaje = msg };
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+				return new() { Ok = false, Mensaje = "Error al buscar Presupuestos" };
+			}
+		}
+
+		public async Task<RespuestaGenerica<RespuestaDto>> AnularCtlArqueo(AnularCtlArqueoRequest req, string token)
+		{
+			try
+			{
+				var helper = new HelperAPI();
+				var client = helper.InicializaCliente(req, token, out StringContent contentData);
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{SET_VTAS_CTL_ANULAR}";
+
+				using var response = await client.PostAsync(link, contentData);
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					var stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+					}
+
+					var apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+					if (apiResponse == null || apiResponse.Data == null)
+					{
+						return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+					}
+					var resp = apiResponse.Data;
+					if (resp.resultado == 0)
+					{
+						return new RespuestaGenerica<RespuestaDto>
+						{
+							Ok = true,
+							Mensaje = "OK",
+							Entidad = apiResponse.Data
+						};
+					}
+					else if (resp.resultado > 0)
+					{
+						return new RespuestaGenerica<RespuestaDto>
+						{
+							Ok = false,
+							EsWarn = true,
+							EsError = false,
+							Mensaje = resp.resultado_msj,
+							Entidad = apiResponse.Data
+						};
+					}
+					else
+					{
+						return new RespuestaGenerica<RespuestaDto>
+						{
+							Ok = false,
+							EsWarn = false,
+							EsError = true,
+							Mensaje = resp.resultado_msj,
+							Entidad = apiResponse.Data
+						};
+					}
+				}
+				else
+				{
+					var msg = await ReadApiErrorAsync(response);
+					_logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+					return new() { Ok = false, Mensaje = msg };
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+				return new() { Ok = false, Mensaje = "Error al buscar Presupuestos" };
+			}
+		}
+
+		public async Task<RespuestaGenerica<RespuestaDto>> AgregarMedioDePago(AgregarMedioDePagoRequest req, string token)
+		{
+			try
+			{
+				var helper = new HelperAPI();
+				var client = helper.InicializaCliente(req, token, out StringContent contentData);
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{SET_VTAS_CTL_AGREGAR_MEDIO_DE_PAGO}";
 
 				using var response = await client.PostAsync(link, contentData);
 				if (response.StatusCode == HttpStatusCode.OK)

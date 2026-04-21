@@ -1,0 +1,23 @@
+﻿@model MedioDePagoAgregarModel
+@{
+}
+<div class="modal-header">
+	<h5 class="modal-title" id="modalCenterTitle">Agregar Tipo de Medio de Pago</h5>
+	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+	<div class="input-group input-group-sm">
+		<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Tipo de Archivo: </span>
+		@Html.DropDownListFor(m => m.MedioDePagoSeleccionado, Model.ListaMedioDePago, "Seleccionar", new { @id = "listaMedioDePago", @class = "form-control inputEditable activable" })
+	</div>
+</div>
+<div class="modal-footer">
+	<div class="input-group input-group-sm">
+		<button type="button" class="btn btn-info btn-sm ms-1" id="btnAceptarAgregarTipoMedioDePago">
+			<i class="bx bx-edit"></i> Aceptar
+		</button>
+		<button type="button" class="btn btn-outline-secondary btn-sm ms-1" id="btnSalir" data-bs-dismiss="modal">
+			<i class="bx bx-log-out-circle"></i> Cancelar
+		</button>
+	</div>
+</div>

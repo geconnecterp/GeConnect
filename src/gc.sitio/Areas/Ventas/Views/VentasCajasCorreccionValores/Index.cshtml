@@ -8,12 +8,6 @@
 	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
 <style>
-/* 	.filter-golden {
-		width: 50%;
-		margin-left: auto;
-		margin-right: auto;
-	} */
-
 </style>
 <div style="margin-left: 25%;">
 	<partial name="_botonera" model="filtro" />
@@ -23,6 +17,14 @@
 	@Html.Hidden("pagEstado", false)
 </div>
 <div class="collapse" id="divDetalle"></div>
+<div class="modal fade modal-golden in" id="modalMedioDePagoAgregar" tabindex="-1" style="display: none;" aria-hidden="true" data-backdrop="static">
+	<div class="modal-dialog modal-x" role="document">
+		<div class="modal-content">
+			<div id="divMedioDePagoAgregar">
+			</div>
+		</div>
+	</div>
+</div>
 
 @section scripts {
 	<script type="text/javascript">
@@ -35,6 +37,10 @@
 		let actualizarImporteEnItemDeDetalleDeArqueoUrl = '@Url.Action("ActualizarImporteEnItemDeDetalleDeArqueo", "ventascajascorreccionvalores", new { area = "Ventas" })';
 		let cargaCtlNuevoItemDetalleUrl = '@Url.Action("CargaCtlNuevoItemDetalle", "ventascajascorreccionvalores", new { area = "Ventas" })';
 		let guardarCtlDetalleUrl = '@Url.Action("GuardarCtlDetalle", "ventascajascorreccionvalores", new { area = "Ventas" })';
+		let confirmarCtlArqueoUrl = '@Url.Action("ConfirmarCtlArqueo", "ventascajascorreccionvalores", new { area = "Ventas" })';
+		let anularCtlArqueoUrl = '@Url.Action("AnularCtlArqueo", "ventascajascorreccionvalores", new { area = "Ventas" })';
+		let abrirModalAgregarMedioDePagoUrl = '@Url.Action("AbrirModalAgregarMedioDePago", "ventascajascorreccionvalores", new { area = "Ventas" })';
+		let agregarMedioDePagoUrl = '@Url.Action("AgregarMedioDePago", "ventascajascorreccionvalores", new { area = "Ventas" })'
  
 		/*URL para componente de Seleccion de Valores*/
 		let abrirComponenteDeSeleccionDeValoresUrl = "@Url.Action("AbrirComponente", "selecciondevalores", new { area = "ControlComun" })";

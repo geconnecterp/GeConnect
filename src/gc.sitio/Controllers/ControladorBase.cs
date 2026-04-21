@@ -37,6 +37,7 @@ using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq.Dynamic.Core;
@@ -3374,5 +3375,32 @@ namespace gc.sitio.Controllers
             }
         }
 
-    }
+		public static bool EsJsonValido(string str)
+		{
+			if (string.IsNullOrWhiteSpace(str))
+				return false;
+
+			try
+			{
+				Newtonsoft.Json.Linq.JToken.Parse(str);
+				return true;
+			}
+			catch
+			{
+				return false;
+			}
+		}
+
+		public static JObject ParsearJsonSeguro(string str)
+		{
+			try
+			{
+				return JObject.Parse(str);
+			}
+			catch
+			{
+				return null;
+			}
+		}
+	}
 }

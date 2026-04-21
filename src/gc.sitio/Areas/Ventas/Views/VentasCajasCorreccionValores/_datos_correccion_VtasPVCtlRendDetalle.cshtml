@@ -123,12 +123,12 @@
 					var dif = item.rend_importe_ok - item.rend_importe_arq;
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase row-pedido"
-						data-ins-ins="@item.ins_ins"
+						data-ins-id="@item.ins_id"
 						data-tcf-id="@item.tcf_id"
 						data-ins-detalle="@item.ins_detalle_bool">
 						<td class="col-mp text-start" title="@item.ins_desc">@item.ins_desc</td>
 						<td class="col-num text-end editable-importe"
-							data-ins-ins="@item.ins_ins"
+							data-ins-id="@item.ins_id"
 							data-tcf-id="@item.tcf_id"
 							data-rend-item="@item.rend_item"
 							data-pendiente="@item.pendiente">
@@ -162,7 +162,7 @@
 							<td class="col-btn text-center">
 								<button type="button"
 										class="btn btn-sm btn-info btnEditarValor"
-										data-ins-ins="@item.ins_ins"
+										data-ins-id="@item.ins_id"
 										data-tcf-id="@item.tcf_id"
 										data-ins-detalle="@item.ins_detalle_bool"
 										title="Editar valores">

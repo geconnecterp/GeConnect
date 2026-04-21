@@ -229,6 +229,20 @@ function SeleccionarPrimeraFilaRend() {
 }
 
 function InicializaEventosGrillaVtasPVCtlRend() {
+    $(document).off("click", "#btnConfirmarArqueo");
+    $(document).on("click", "#btnConfirmarArqueo", function (e) {
+        EvaluarConfirmarCtlArqueo();
+    });
+
+    $(document).off("click", "#btnAnularArqueo");
+    $(document).on("click", "#btnAnularArqueo", function (e) {
+        EvaluarAnularCtlArqueo();
+    });
+
+    $(document).off("click", "#btnAgregarArqueo");
+    $(document).on("click", "#btnAgregarArqueo", function (e) {
+        EvaluarAgregarCtlArqueo();
+    });
 
     $(document).off("click", "#tbVtasPVCtlRend tbody tr");
     $(document).on("click", "#tbVtasPVCtlRend tbody tr", function (e) {
@@ -269,6 +283,158 @@ function InicializaEventosGrillaVtasPVCtlRend() {
     $("#btnConfirmarArqueo").prop("disabled", true);
     $("#btnAnularArqueo").prop("disabled", true);
     $("#btnAgregarArqueo").prop("disabled", true);
+}
+
+function EvaluarConfirmarCtlArqueo() {
+    AbrirMensaje("ATENCIÓN", `¿Esta seguro que desea Confirmar el Arqueo?`, function (e) {
+        $("#msjModal").modal("hide");
+        switch (e) {
+            case "SI":
+                ConfirmarCtlArqueo();
+                break;
+            case "NO":
+                break;
+            default: //NO
+                break;
+        }
+        return true;
+
+    }, true, ["Aceptar", "Cancelar"], "question!", null);
+
+}
+
+function ConfirmarCtlArqueo() {
+    var data = {
+        caja_nro_proceso: caja_nro_proceso_selected,
+        caja_nro_cierre: caja_nro_cierre_selected,
+        caja_nro_rend: caja_nro_rend_selected,
+        tcf_id: tcf_id_selected
+    };
+    AbrirWaiting("Confirmando arqueo...");
+    PostGen(data, confirmarCtlArqueoUrl, function (obj) {
+        CerrarWaiting();
+        if (obj.error === true || obj.warn === true) {
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                $("#msjModal").modal("hide");
+                return true;
+            }, false, ["Aceptar"], "error!", null);
+        }
+        else {
+            AbrirMensaje("ATENCIÓN", "Se ha confirmado el Arqueo de forma exitosa.", function () {
+                $("#msjModal").modal("hide");
+                CargarGrillaVtasPVCtlRend();
+                return true;
+            }, false, ["Aceptar"], "succ!", null);
+        }
+	});
+}
+
+function EvaluarAnularCtlArqueo() {
+    AbrirMensaje("ATENCIÓN", `¿Esta seguro que desea Anular el Arqueo?`, function (e) {
+        $("#msjModal").modal("hide");
+        switch (e) {
+            case "SI": 
+                AnularCtlArqueo();
+                break;
+            case "NO":
+                break;
+            default: //NO
+                break;
+        }
+        return true;
+    }, true, ["Aceptar", "Cancelar"], "question!", null);
+
+}
+
+function AnularCtlArqueo() {
+    var data = {
+        caja_nro_proceso: caja_nro_proceso_selected,
+        caja_nro_cierre: caja_nro_cierre_selected,
+        caja_nro_rend: caja_nro_rend_selected,
+        tcf_id: tcf_id_selected
+    };
+    AbrirWaiting("Anulando arqueo...");
+    PostGen(data, anularCtlArqueoUrl, function (obj) {
+        CerrarWaiting();
+        if (obj.error === true || obj.warn === true) {
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                $("#msjModal").modal("hide");
+                return true;
+            }, false, ["Aceptar"], "error!", null);
+        }
+        else {
+            AbrirMensaje("ATENCIÓN", "Se ha anulado el Arqueo de forma exitosa.", function () {
+                $("#msjModal").modal("hide");
+                CargarGrillaVtasPVCtlRend();
+                return true;
+            }, false, ["Aceptar"], "succ!", null);
+        }
+    });
+}
+
+function EvaluarAgregarCtlArqueo() {
+    AbrirWaiting();
+    var datos = {};
+    PostGenHtml(datos, abrirModalAgregarMedioDePagoUrl, function (obj) {
+        $("#divMedioDePagoAgregar").html(obj);
+        const $modal = $("#modalMedioDePagoAgregar");
+
+        $modal.modal({
+            backdrop: 'static',
+        });
+
+        $modal.modal('show');
+
+        // Cuando el modal termina de mostrarse
+        $(document).on("shown.bs.modal", "#modalImportarArchivo", function () {
+        });
+
+        $(document).on("change", "#listaMedioDePago", function () {
+        });
+
+        $(document).off("click", "#btnAceptarAgregarTipoMedioDePago");
+        $(document).on("click", "#btnAceptarAgregarTipoMedioDePago", function (e) {
+            EvaluarAgregarTipoMedioDePago();
+        });
+
+        CerrarWaiting();
+        return true
+    });
+}
+
+function EvaluarAgregarTipoMedioDePago() {
+    var tipoSelected = $("#listaMedioDePago").val();
+    if (tipoSelected == null || tipoSelected == undefined || tipoSelected == "") {
+        AbrirMensaje("ATENCIÓN", "Debe seleccionar un Tipo de Medio de Pago válido.", function () {
+            $("#msjModal").modal("hide");
+            return true;
+        }, false, ["Aceptar"], "error!", null);
+    }
+    else {
+        AgregarTipoMedioDePago(tipoSelected);
+    }
+}
+
+function AgregarTipoMedioDePago(tipoSelected) {
+    AbrirWaiting("Agregando medio de pago...");
+    var data = {
+        caja_nro_proceso: caja_nro_proceso_selected,
+        caja_nro_cierre: caja_nro_cierre_selected,
+        caja_nro_rend: caja_nro_rend_selected,
+        tcf_id: tipoSelected
+    };
+    PostGen(data, agregarMedioDePagoUrl, function (obj) {
+        CerrarWaiting();
+        if (obj.error || obj.warn) {
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["Aceptar"], "error!", null);
+        } else {
+            // 🔥 Cerrar modal solo si todo salió bien
+            $("#modalMedioDePagoAgregar").modal("hide");
+            CargarGrillaVtasPVCtlRend();
+        }
+    });
 }
 
 function ProcesarSeleccionFila($fila) {
@@ -374,12 +540,12 @@ function InicializaEventosGrillaVtasPVCtlRendDetalle() {
 
         const $btn = $(this);
 
-        const ins_ins = $btn.data("ins-ins");
+        const ins_id = $btn.data("ins-id");
         const tcf_id = $btn.data("tcf-id");
         const ins_detalle = $btn.data("ins-detalle");
 
         // Lógica de edición
-        AbrirModalEditarValor(ins_ins, tcf_id, ins_detalle);
+        AbrirModalEditarValor(ins_id, tcf_id, ins_detalle);
     });
 
     // Evitar duplicados
@@ -483,11 +649,15 @@ function GuardarCtlDetalle() {
     var caja_nro_rend = caja_nro_rend_selected; 
     var tcf_id = tcf_id_selected;
     var data = { caja_nro_proceso, caja_nro_cierre, caja_nro_rend, tcf_id }
+    AbrirWaiting("Guardando datos de Detalle de Arqueo...")
     PostGen(data, guardarCtlDetalleUrl, function (obj) {
         CerrarWaiting();
         if (obj.error === true || obj.warn === true) {
             AbrirMensaje("ATENCIÓN", obj.msg, function () {
                 $("#msjModal").modal("hide");
+                existe_edicion = false;
+                CargarGrillaVtasPVCtlRend();
+                CargarGrillaVtasPVCtlRendDetalle();
                 return true;
             }, false, ["Aceptar"], "error!", null);
         }
@@ -574,7 +744,7 @@ function GuardarImporteEditado($input) {
     }
 
     AbrirWaiting("Guardando importe...");
-    var data = { ins_ins: $td.data("ins-ins"), importe: nuevoValor };
+    var data = { ins_id: $td.data("ins-id"), importe: nuevoValor };
     PostGen(data, actualizarImporteEnItemDeDetalleDeArqueoUrl, function (obj) {
         CerrarWaiting();
         if (obj.error === true) {
@@ -660,7 +830,7 @@ function CancelarEdicion($input) {
     $input.val(original);
 }
 
-function AbrirModalEditarValor(ins_ins, tcf_id, ins_detalle) {
+function AbrirModalEditarValor(ins_id, tcf_id, ins_detalle) {
 }
 
 function validarRendSeleccionado() {

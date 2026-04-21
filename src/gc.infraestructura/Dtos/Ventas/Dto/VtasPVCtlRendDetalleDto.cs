@@ -3,7 +3,7 @@ namespace gc.infraestructura.Dtos.Ventas
 {
 	public class VtasPVCtlRendDetalleDto : Dto
 	{
-		public string ins_ins { get; set; } = string.Empty;
+		public string ins_id { get; set; } = string.Empty;
 		public string ins_desc { get; set; } = string.Empty;
 		public string ins_dato1_desc { get; set; } = string.Empty;
 		public string ins_dato2_desc { get; set; } = string.Empty;
@@ -20,7 +20,6 @@ namespace gc.infraestructura.Dtos.Ventas
 		public string caja_id { get; set; } = string.Empty;
 		public char? rend_tipo { get; set; }
 		public DateTime? rend_fecha { get; set; }
-		public string ins_id { get; set; } = string.Empty;
 		public string rend_dato1_valor { get; set; } = string.Empty;
 		public string rend_dato2_valor { get; set; } = string.Empty;
 		public string rend_dato3_valor { get; set; } = string.Empty;

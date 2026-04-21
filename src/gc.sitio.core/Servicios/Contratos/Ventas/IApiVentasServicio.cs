@@ -11,5 +11,8 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<RespuestaGenerica<VtasPVCtlRendDetalleDto>> ObtenerVtasPVCtlRendDetalleLista(string caja_nro_proceso, int caja_nro_cierre, int caja_nro_rend, string tcf_id, string token);
 		Task<RespuestaGenerica<RespuestaDto>> CargaCtlNuevoItemDetalle(CargaCtlNuevoItemDetalleRequest request, string token);
 		Task<RespuestaGenerica<RespuestaDto>> GuardarCtlDetalle(GuardarCtlDetalleRequest req, string token);
+		Task<RespuestaGenerica<RespuestaDto>> ConfirmarCtlArqueo(ConfirmarCtlArqueoRequest req, string token);
+		Task<RespuestaGenerica<RespuestaDto>> AnularCtlArqueo(AnularCtlArqueoRequest req, string token);
+		Task<RespuestaGenerica<RespuestaDto>> AgregarMedioDePago(AgregarMedioDePagoRequest req, string token);
 	}
 }

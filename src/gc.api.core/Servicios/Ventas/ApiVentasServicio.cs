@@ -129,5 +129,93 @@ namespace gc.api.core.Servicios
 				};
 			}
 		}
+
+		public RespuestaDto ConfirmarCtlArqueo(ConfirmarCtlArqueoRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_VTAS_PV_CTL_CONFIRMAR;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@caja_nro_proceso", request.caja_nro_proceso),
+				new SqlParameter("@caja_nro_cierre", request.caja_nro_cierre),
+				new SqlParameter("@caja_nro_rend", request.caja_nro_rend),
+				new SqlParameter("@tcf_id", request.tcf_id),
+				new SqlParameter("@adm_id", request.adm_id),
+				new SqlParameter("@usu_id", request.usu_id),
+			};
+
+			var result = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			if (result != null && result.Count > 0)
+			{
+				return result[0];
+			}
+			else
+			{
+				return new RespuestaDto()
+				{
+					resultado = -1,
+					resultado_msj = "Error al guardar ctl detalle"
+				};
+			}
+		}
+
+		public RespuestaDto AnularCtlArqueo(AnularCtlArqueoRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_VTAS_PV_CTL_ANULAR;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@caja_nro_proceso", request.caja_nro_proceso),
+				new SqlParameter("@caja_nro_cierre", request.caja_nro_cierre),
+				new SqlParameter("@caja_nro_rend", request.caja_nro_rend),
+				new SqlParameter("@tcf_id", request.tcf_id),
+				new SqlParameter("@adm_id", request.adm_id),
+				new SqlParameter("@usu_id", request.usu_id),
+			};
+
+			var result = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			if (result != null && result.Count > 0)
+			{
+				return result[0];
+			}
+			else
+			{
+				return new RespuestaDto()
+				{
+					resultado = -1,
+					resultado_msj = "Error al guardar ctl detalle"
+				};
+			}
+		}
+
+		public RespuestaDto AgregarMedioDePago(AgregarMedioDePagoRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_VTAS_PV_CTL_NUEVO;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@caja_nro_proceso", request.caja_nro_proceso),
+				new SqlParameter("@caja_nro_cierre", request.caja_nro_cierre),
+				new SqlParameter("@caja_nro_rend", request.caja_nro_rend),
+				new SqlParameter("@tcf_id", request.tcf_id),
+				new SqlParameter("@nuevo_tcf", request.nuevo_tcf),
+				new SqlParameter("@adm_id", request.adm_id),
+				new SqlParameter("@usu_id", request.usu_id),
+			};
+
+			var result = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			if (result != null && result.Count > 0)
+			{
+				return result[0];
+			}
+			else
+			{
+				return new RespuestaDto()
+				{
+					resultado = -1,
+					resultado_msj = "Error al guardar ctl detalle"
+				};
+			}
+		}
 	}
 }
