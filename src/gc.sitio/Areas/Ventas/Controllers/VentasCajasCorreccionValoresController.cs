@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using System;
 
 namespace gc.sitio.Areas.Ventas.Controllers
@@ -320,6 +321,7 @@ namespace gc.sitio.Areas.Ventas.Controllers
 					usu_id = UserName,
 					json_rend = json
 				};
+				PrintProperties(request);
 				var resultado = _apiVentasServicio.GuardarCtlDetalle(request, TokenCookie).Result;
 				if (resultado == null)
 					throw new NegocioException("Error al guardar detalle");
@@ -569,16 +571,14 @@ namespace gc.sitio.Areas.Ventas.Controllers
 		{
 			try
 			{
+				var propsAExcluir = new[] { "concepto_valor", "ins_detalle_bool", "pendiente" };
 				var settings = new JsonSerializerSettings
 				{
-					ContractResolver = new TrimStringResolver(),
+					ContractResolver = new IgnoreAndTrimResolver(propsAExcluir),
 					Formatting = Formatting.None
 				};
 
 				string json = JsonConvert.SerializeObject(VtasPVCtlRendDetalleLista, settings);
-
-				//var str = string.Empty;
-				//str = JsonConvert.SerializeObject(VtasPVCtlRendDetalleLista);
 				return json;
 			}
 			catch (Exception)
@@ -586,6 +586,7 @@ namespace gc.sitio.Areas.Ventas.Controllers
 				return string.Empty;
 			}
 		}
+
 		private void CargarDatosIniciales(FiltroCtlValoresModel model)
 		{
 			var sucursales = _administracionServicio.ObtenerAdministraciones("S", TokenCookie);
@@ -601,46 +602,62 @@ namespace gc.sitio.Areas.Ventas.Controllers
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
 
-		public class TrimStringResolver : Newtonsoft.Json.Serialization.DefaultContractResolver
-		{
-			protected override IList<Newtonsoft.Json.Serialization.JsonProperty> CreateProperties(Type type, Newtonsoft.Json.MemberSerialization memberSerialization)
-			{
-				var props = base.CreateProperties(type, memberSerialization);
-
-				foreach (var prop in props)
-				{
-					if (prop.PropertyType == typeof(string))
-					{
-						var oldValueProvider = prop.ValueProvider;
-
-						prop.ValueProvider = new TrimStringValueProvider(oldValueProvider);
-					}
-				}
-
-				return props;
-			}
-
-			class TrimStringValueProvider : Newtonsoft.Json.Serialization.IValueProvider
-			{
-				private readonly Newtonsoft.Json.Serialization.IValueProvider _innerProvider;
-
-				public TrimStringValueProvider(Newtonsoft.Json.Serialization.IValueProvider innerProvider)
-				{
-					_innerProvider = innerProvider;
-				}
-
-				public object GetValue(object target)
-				{
-					var value = _innerProvider.GetValue(target) as string;
-					return value?.Trim();
-				}
-
-				public void SetValue(object target, object value)
-				{
-					_innerProvider.SetValue(target, value);
-				}
-			}
-		}
+		
 		#endregion
 	}
+
+	public class IgnoreAndTrimResolver : DefaultContractResolver
+	{
+		private readonly HashSet<string> _propsAExcluir;
+
+		public IgnoreAndTrimResolver(IEnumerable<string> propsAExcluir)
+		{
+			_propsAExcluir = new HashSet<string>(propsAExcluir, StringComparer.OrdinalIgnoreCase);
+		}
+
+		protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
+		{
+			var props = base.CreateProperties(type, memberSerialization);
+
+			// 1) Excluir propiedades
+			props = props
+				.Where(p => !_propsAExcluir.Contains(p.PropertyName))
+				.ToList();
+
+			// 2) Recortar strings
+			foreach (var prop in props)
+			{
+				if (prop.PropertyType == typeof(string))
+				{
+					var originalProvider = prop.ValueProvider;
+
+					prop.ValueProvider = new TrimStringValueProvider(originalProvider);
+				}
+			}
+
+			return props;
+		}
+
+		class TrimStringValueProvider : IValueProvider
+		{
+			private readonly IValueProvider _inner;
+
+			public TrimStringValueProvider(IValueProvider inner)
+			{
+				_inner = inner;
+			}
+
+			public object GetValue(object target)
+			{
+				var value = _inner.GetValue(target) as string;
+				return value?.Trim();
+			}
+
+			public void SetValue(object target, object value)
+			{
+				_inner.SetValue(target, value);
+			}
+		}
+	}
+
 }
