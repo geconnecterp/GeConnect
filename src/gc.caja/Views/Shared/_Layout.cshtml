@@ -63,7 +63,7 @@
             align-items: center;
         }
     </style>
-
+    @await RenderSectionAsync("styles", required: false)
     <link rel="stylesheet" href="~/lib/virtual-keyboard/css/virtual-keyboard.css" asp-append-version="true" />
 </head>
 <body>

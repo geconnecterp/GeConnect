@@ -435,13 +435,28 @@ namespace gc.caja.Areas.Facturacion.Controllers
         /// Búsqueda avanzada V02 que devuelve JSON con ProductoListaDto para ofertas
         /// </summary>
         [HttpPost]
-        public async Task<JsonResult> BusquedaAvanzadaV02(string ri01, string ri02, string ri03, bool act, bool dis, bool ina, bool cstk, bool sstk, string buscar, string lp_id, bool buscaNew = true, string sort = "p_desc", string sortDir = "asc", int pag = 1)
+        public async Task<JsonResult> BusquedaAvanzadaV02(
+            string ri01,        // ✅ Proveedor (por defecto "")
+            string ri02,        // ✅ Rubro (por defecto "")
+            string ri03,        // ✅ Familia (por defecto "%")
+            bool act,           // ✅ Buscar activos
+            bool dis,           // ✅ Buscar discontinuos
+            bool ina,           // ✅ Buscar inactivos
+            bool cstk,          // ✅ Con stock
+            bool sstk,          // ✅ Sin stock
+            string buscar,      // ✅ Texto de búsqueda
+            string lp_id,       // ✅ CRÍTICO: Lista de precios
+            bool buscaNew = true, 
+            string sort = "p_desc", 
+            string sortDir = "asc", 
+            int pag = 1)
         {
             try
             {
-                // ✅ VALIDACIÓN: Verificar autenticación
+                // ✅ Validar autenticación
                 var auth = EstaAutenticado;
-                if (!auth.Item1 || (auth.Item1 && !auth.Item2.HasValue) || (auth.Item1 && auth.Item2.HasValue && auth.Item2.Value < DateTime.Now))
+                if (!auth.Item1 || (auth.Item1 && !auth.Item2.HasValue) || 
+                    (auth.Item1 && auth.Item2.HasValue && auth.Item2.Value < DateTime.Now))
                 {
                     return new JsonResult(new
                     {
@@ -452,9 +467,28 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         redirectUrl = Url.Action("Login", "Token", new { area = "Seguridad" })
                     });
                 }
-                lp_id = LP_Id;
-                // ✅ DELEGACIÓN: Llamar al método base optimizado
-                return await BusquedaAvanzadaV02(ri01, ri02, ri03 ?? "%", act, dis, ina, cstk, sstk, buscar, lp_id, buscaNew, _productoFactServicio, sort, sortDir, pag);
+                
+                // ✅ CRÍTICO: Usa lp_id del parámetro si viene, sino de sesión
+                lp_id = string.IsNullOrEmpty(lp_id) ? LP_Id : lp_id;
+                
+                // ✅ Delegación al método base optimizado
+                return await BusquedaAvanzadaV02(
+                    ri01, 
+                    ri02, 
+                    ri03 ?? "%",  // ✅ Usa "%" si viene null
+                    act, 
+                    dis, 
+                    ina, 
+                    cstk, 
+                    sstk, 
+                    buscar, 
+                    lp_id,        // ✅ Parámetro recibido correctamente
+                    buscaNew, 
+                    _productoFactServicio, 
+                    sort, 
+                    sortDir, 
+                    pag
+                );
             }
             catch (Exception ex)
             {

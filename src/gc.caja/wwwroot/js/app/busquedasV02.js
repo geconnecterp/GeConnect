@@ -64,18 +64,38 @@ $(function () {
  * ✅ COMPLETAMENTE SIMPLIFICADA: Sin filtros de proveedor/rubro/familia
  */
 function busquedaAvanzadaProductosV02(pag) {
-    console.log('═══════════════════════════════════════════════════');
     console.log('🔍 BÚSQUEDA AVANZADA DE PRODUCTOS - CAJA V2.0');
-    console.log(`   Página solicitada: ${pag}`);
-    console.log('═══════════════════════════════════════════════════');
     
-    // ✅ SIMPLIFICADO: Solo estados y búsqueda de texto
+    // ✅ Parámetros con valores por defecto correctos
+    const ri01 = $("#Rel01B2Item").val() || "";        // ✅ "" (vacío)
+    const ri02 = $("#Rel02B2Item").val() || $("#Rel02B2").val() || ""; // ✅ "" (vacío)
+    const ri03 = $("#Rel03B2 option:selected").val() || "%"; // ✅ "%" (comodín)
     const act = $("#chkActivos").is(":checked");
     const dis = $("#chkDisc").is(":checked");
     const ina = $("#chkInact").is(":checked");
+    
+    let cstk = true;
+    let sstk = false;
+    //if ($("#rdConStk").is(":checked") || $("#rdSinStk").is(":checked")) {
+    //    sstk = $("#rdSinStk").is(":checked");
+    //    cstk = !sstk;
+    //}
+
     const buscar = $("#Search").val() || "";
     
-    const data1 = { act, dis, ina, buscar, lp_id: admLp_id };
+    // ✅ CRÍTICO: Incluir lp_id
+    const data1 = { 
+        ri01,        // ✅ ""
+        ri02,        // ✅ ""
+        ri03,        // ✅ "%"
+        act, 
+        dis, 
+        ina, 
+        cstk, 
+        sstk, 
+        buscar, 
+        lp_id: admLp_id  // ✅ "001" (o valor actualizado dinámicamente)
+    };
 
     const buscaNew = JSON.stringify(dataBakV02) !== JSON.stringify(data1);
     
@@ -92,10 +112,11 @@ function busquedaAvanzadaProductosV02(pag) {
     const data2 = { sort, sortDir, pag, buscaNew };
     const data = $.extend({}, data1, data2);
 
+    // ✅ Usar la URL correcta (BusquedaAvanzadaV02)
     const urlBusqueda = busquedaAvanzadaUrl;
     
-    console.log('📡 Enviando petición AJAX:', urlBusqueda);
-    console.log('   Datos:', data);
+    console.log('📡 Enviando petición a:', urlBusqueda);
+    console.log('📦 Datos enviados:', data);
     
     PostGen(data, urlBusqueda, function (response) {
         try { buscarAvUIStop(); } catch (e) { }
@@ -161,18 +182,14 @@ function busquedaAvanzadaProductosV02(pag) {
  */
 function generarGridSimplificadoCaja(productos, metadata) {
     const lista = Array.isArray(productos) ? productos : [];
-    const meta = metadata || { totalCount: lista.length, totalPages: 1, currentPage: 1, pageSize: lista.length };
 
     if (lista.length === 0) {
-        return `
-            <div class="text-center text-muted py-4">
-                <i class="bx bx-info-circle me-2"></i>
-                No se encontraron productos con los criterios especificados
-            </div>
-        `;
+        return `<div class="text-center text-muted py-4">
+            <i class="bx bx-info-circle me-2"></i>
+            No se encontraron productos con los criterios especificados
+        </div>`;
     }
 
-    // ✅ SIMPLIFICADO: Solo 6 columnas esenciales
     const filas = lista.map((item, index) => {
         const claseAlternada = index % 2 === 0 ? "table-row-alt" : "";
         const estadoActivo = item.p_activo === "S";
@@ -181,23 +198,26 @@ function generarGridSimplificadoCaja(productos, metadata) {
 
         const precioFormateado = formatearNumeroConCultura(item.p_pvta_001 || 0, 2);
 
+        // ✅ CRÍTICO: Manejar código de barras vacío o null
+        const codigoBarras = item.p_id_barrado || '-';
+
         return `
             <tr class="${claseAlternada} fila-producto-caja" 
                 data-producto-id="${item.p_id}"
-                ondblclick="seleccionarProductoCaja(this)"
+                ondblclick="selectRegDbl(this)"
                 style="cursor: pointer;">
                 
-                <td class="text-center fw-bold">${item.p_id}</td>
-                <td class="text-left" title="${item.p_desc || ''}">${item.p_desc || ''}</td>
-                <td class="text-center">${item.p_id_barrado || ''}</td>
-                <td class="text-right fw-semibold text-success">$ ${precioFormateado}</td>
+                <td class="text-center fw-bold">${item.p_id}</td>                          <!-- [1] ID -->
+                <td class="text-left" title="${item.p_desc || ''}">${item.p_desc || ''}</td> <!-- [2] DESC -->
+                <td class="text-center">${codigoBarras}</td>                               <!-- [3] EAN ⬅️ CRÍTICO -->
+                <td class="text-right fw-semibold text-success">$ ${precioFormateado}</td> <!-- [4] PRECIO -->
                 <td class="text-center">
                     <span class="badge ${estadoBadge}">${estadoTexto}</span>
                 </td>
                 <td class="text-center">
                     <button type="button" 
                             class="btn btn-success btn-sm"
-                            onclick="seleccionarProductoCaja(this.closest('tr'))"
+                            onclick="selectRegDbl(this.closest('tr'))"
                             title="Seleccionar este producto">
                         <i class="bx bx-check-circle"></i> Seleccionar
                     </button>
@@ -213,7 +233,7 @@ function generarGridSimplificadoCaja(productos, metadata) {
                     <tr class="header">
                         <th class="text-center">ID</th>
                         <th class="text-left">DESCRIPCIÓN</th>
-                        <th class="text-center">CÓDIGO EAN</th>
+                        <th class="text-center">CÓDIGO EAN</th> <!-- ⬅️ IMPORTANTE -->
                         <th class="text-right">PRECIO</th>
                         <th class="text-center">ESTADO</th>
                         <th class="text-center">ACCIÓN</th>
@@ -225,10 +245,10 @@ function generarGridSimplificadoCaja(productos, metadata) {
         <div class="d-flex justify-content-between align-items-center mt-3 px-2">
             <div class="text-muted small">
                 <i class="bx bx-package me-1"></i>
-                Total: ${meta.totalCount} productos encontrados
+                Total: ${metadata.totalCount} productos encontrados
             </div>
             <div class="text-muted small">
-                Página ${meta.currentPage} de ${meta.totalPages}
+                Página ${metadata.currentPage} de ${metadata.totalPages}
             </div>
         </div>
     `;
@@ -264,6 +284,60 @@ function seleccionarProductoCaja(fila) {
     // ✅ CRÍTICO: Enviar a búsqueda base para agregar a factura
     $("#Busqueda").val(id);
     $("#btnBusquedaBase").trigger("click");
+}
+
+/**
+ * ✅ ACTUALIZADO: Selecciona producto y coloca código en campo (sin agregar automáticamente)
+ * @param {HTMLTableRowElement} x - Fila de la tabla seleccionada
+ */
+function selectRegDbl(x) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('✅ PRODUCTO SELECCIONADO VIA BOTÓN INDIVIDUAL');
+    console.log('═══════════════════════════════════════════════════');
+    
+    // ❶ Limpiar selección visual previa
+    $("#tbGridBusquedaProductos tbody tr").removeClass("selected-row");
+
+    // ❷ Seleccionar fila actual (resaltar visualmente)
+    $(x).addClass("selected-row");
+
+    // ❸ Obtener datos del producto desde las celdas
+    const idProducto = x.cells[0].innerText.trim();     // Columna ID
+    const codigoBarras = x.cells[2].innerText.trim();   // Columna CÓDIGO EAN
+    const descripcion = x.cells[1].innerText.trim();    // Columna DESCRIPCIÓN (para log)
+
+    console.log(`   Producto seleccionado:`);
+    console.log(`   - ID: ${idProducto}`);
+    console.log(`   - Código de Barras: ${codigoBarras || '(sin código)'}`);
+    console.log(`   - Descripción: ${descripcion}`);
+    
+    // ❹ CRÍTICO: Determinar qué código usar (priorizar código de barras)
+    let codigoAUsar;
+    if (codigoBarras && codigoBarras !== '' && codigoBarras !== '-' && codigoBarras !== 'N/A') {
+        codigoAUsar = codigoBarras;
+        console.log(`   ✅ Usando código de barras: ${codigoAUsar}`);
+    } else {
+        codigoAUsar = idProducto;
+        console.log(`   ✅ Usando ID de producto: ${codigoAUsar}`);
+    }
+    
+    // ❺ Cerrar modal de búsqueda avanzada
+    $("#busquedaModal").modal("hide");
+    console.log('   → Modal cerrado');
+    
+    // ❻ CRÍTICO: Colocar código en el campo de entrada (sin disparar búsqueda)
+    $("#txtCodigoProducto").val(codigoAUsar);
+    console.log(`   → Código asignado a txtCodigoProducto: ${codigoAUsar}`);
+    
+    // ❼ Hacer focus en el campo para que el operador pueda continuar
+    setTimeout(() => {
+        $("#txtCodigoProducto").trigger("focus").trigger("select");
+        console.log('   → Focus aplicado en txtCodigoProducto');
+    }, 300); // Delay para asegurar que el modal se cerró completamente
+    
+    console.log('═══════════════════════════════════════════════════');
+    console.log('⚠️  OPERADOR DEBE PRESIONAR ENTER O CLICK EN BUSCAR');
+    console.log('═══════════════════════════════════════════════════');
 }
 
 // ═══════════════════════════════════════════════════════════════════

@@ -1,8 +1,11 @@
 ﻿@{
     ViewData["Title"] = "Facturación";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    BusquedaProducto busquedaProducto = new();
 }
-
+@section styles {
+    <link rel="stylesheet" href="~/css/simplePagination.css" />
+}
 <div class="container-fluid p-4">
     <div class="row">
         <div class="col-12">
@@ -81,7 +84,7 @@
         var LimpiarSesionClientesUrl = '@Url.Action("LimpiarSesionClientes", "Cliente", new { area = "Facturacion" })';
         var ObtenerClienteActualUrl = '@Url.Action("ObtenerClienteActual", "Cliente", new { area = "Facturacion" })';
         var ActualizarConsumidorFinalUrl = '@Url.Action("ActualizarConsumidorFinal", "Cliente", new { area = "Facturacion" })';
-
+        var ObtenerProductoDatosUrl = '@Url.Action("ObtenerProductoDatos", "ProductoFact", new { area = "Facturacion" })';
         // URLs de Menú
         var MenuCajaUrl = '@Url.Action("Index", "Home", new { area = "" })';
 
@@ -90,12 +93,12 @@
         let p_id_selected = "";
         let funcionBusquedaAvanzada = true;
         let busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
-        let busquedaAvanzadaUrl = "@Url.Action("busquedaavanzada", "ProductoFact", new { area = "Facturacion" })";
+        let busquedaAvanzadaUrl = "@Url.Action("BusquedaAvanzadaV02", "ProductoFact", new { area = "Facturacion" })";
 
         // URLs de Productos (agregar aquí cuando sea necesario)
         // var BuscarProductoUrl = '@Url.Action("BuscarProducto", "ProductoFact", new { area = "Facturacion" })';
     </script>
-
+    <script src="~/js/plugins/jquery.simplePagination.js"></script>
     <script src="~/js/app/fact.js" asp-append-version="true"></script>
     <script src="~/js/app/prodfact.js" asp-append-version="true"></script>
     <script src="~/js/app/busquedas.js" asp-append-version="true"></script>
