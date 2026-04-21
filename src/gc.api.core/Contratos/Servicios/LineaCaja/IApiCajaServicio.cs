@@ -11,7 +11,7 @@ namespace gc.api.core.Contratos.Servicios.LineaCaja
         RespuestaDto CierreCaja(CajaReqDto reqDto);
         List<CuentaBusquedaResultadoDto> BusquedaClientes(string busqueda, string adm_id, string usu_id);
         CuentaDatosResultadoDto BusquedaDatosCliente(string origen, string valor, string adm_id, string usu_id);
-        RespuestaDto Cargar_CF(CargaCFRequestDto req);
+        RespuestaDto ConfirmaConsumidorFinal(ClienteRequestDto req);
         CajaDatosDto ObtenerDatosCF(string caja_id);
         RespuestaDto CierreCajaGral(string usu_id, string adm_id);
         RespuestaDto HabilitarCajaGral(string usu_id, string adm_id);

@@ -119,14 +119,14 @@ namespace gc.api.Controllers.Caja
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
-        public IActionResult Cargar_CF(CargaCFRequestDto req)
+        public IActionResult ConfirmaConsumidorFinal(ClienteRequestDto req)
         {
             if (req == null)
             {
                 return BadRequest("El parámetro req es requerido.");
             }
 
-            var res = _apiCajaServicio.Cargar_CF(req);
+            var res = _apiCajaServicio.ConfirmaConsumidorFinal(req);
             return Ok(new ApiResponse<RespuestaDto>(res));
         }
 

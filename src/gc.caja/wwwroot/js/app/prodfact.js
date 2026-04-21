@@ -78,7 +78,12 @@ function inicializarEventosProductos() {
     $('#btnBuscarProducto').on('click', function () {
         procesarEntradaCodigo();
     });
-    
+
+    // Buscar otros productos desde la base (botón)
+    $('#btnBuscarProductos').on('click', function () {
+        BuscarProductos();
+    });
+
     // ✅ CRÍTICO: Botón CANCELAR - Vuelve a identificar cliente
     $('#btnCancelarFactura').on('click', function () {
         console.log('🔙 Usuario solicitó cancelar factura...');
@@ -110,14 +115,54 @@ function inicializarEventosProductos() {
     $('#btnUltimoDetalle').on('click', function() {
         console.log('🕒 Cargar Último Detalle...');
         cargarUltimoDetalle();
-    });
-    
+    });   
+
     console.log('✅ Eventos configurados correctamente');
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // SECCIÓN 1: PROCESAMIENTO DE ENTRADA
 // ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Nuevo v1.0: Busca productos desde el modal.
+ * 
+ */
+function BuscarProductos() {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔍 ABRIR MODAL DE BÚSQUEDA DE PRODUCTOS v5.1');
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Validar que exista el modal
+    const $modalBusqueda = $('#busquedaModal');
+
+    if ($modalBusqueda.length === 0) {
+        console.error('❌ Modal #busquedaModal no encontrado');
+        mostrarMensajeError('Error: Modal de búsqueda no disponible');
+        return;
+    }
+
+    // ❷ Limpiar campos de búsqueda previos (si existen)
+    $modalBusqueda.find('input[type="text"], input[type="search"]').val('');
+
+    // ❸ Abrir modal
+    $modalBusqueda.modal('show');
+
+    console.log('✅ Modal de búsqueda abierto');
+
+    // ❹ Focus en campo de búsqueda al mostrarse
+    $modalBusqueda.on('shown.bs.modal', function () {
+        const $campoBusqueda = $modalBusqueda.find('input[type="text"], input[type="search"]').first();
+
+        if ($campoBusqueda.length > 0) {
+            setTimeout(() => {
+                $campoBusqueda.trigger('focus');
+            }, 200);
+        }
+    });
+
+    console.log('═══════════════════════════════════════════════════');
+}
 
 /**
  * ✅ NUEVO v4.0: Procesa la entrada del campo de código
@@ -157,54 +202,75 @@ function procesarEntradaCodigo() {
 }
 
 /**
- * ✅ NUEVO v4.0: Procesa código simple (sin cantidad comodín)
+ * ✅ ACTUALIZADO v5.1: Procesa código simple (sin cantidad comodín)
+ * NUEVO: Respeta el checkbox "Por Bulto"
  * Detecta si es barras de balanza, barras normal o ID de producto
  */
 function procesarCodigoSimple(codigo) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('📦 PROCESANDO CÓDIGO SIMPLE');
+    console.log('📦 PROCESANDO CÓDIGO SIMPLE v5.1');
     console.log(`   Código: "${codigo}"`);
     console.log('═══════════════════════════════════════════════════');
-    
+
     // ❶ Detectar barras de balanza (formato: 2 + 5 dígitos + 5 dígitos + 1 dígito)
     const matchBalanza = codigo.match(REGEX_BARRAS_BALANZA);
-    
+
     if (matchBalanza) {
         const codigoProducto = matchBalanza[1]; // 5 dígitos del código
         const pesoStr = matchBalanza[2]; // 5 dígitos del peso
         const peso = parseInt(pesoStr, 10) / 1000; // Convertir a kg
-        
+
         console.log('✅ Detectado: BARRAS DE BALANZA');
         console.log(`   Código producto: ${codigoProducto}`);
         console.log(`   Peso (kg): ${peso}`);
-        
-        // Buscar producto con peso como cantidad
+        console.log('   ⚠️  Para balanza, el checkbox "Por Bulto" se IGNORA (siempre bulto=true)');
+
+        // ⚠️ IMPORTANTE: Balanza siempre usa bulto=true (el peso es la cantidad exacta)
         buscarProductoPorCodigo(TIPO_CARGA.PRODUCTO, codigo, peso, true, 'directo');
         return;
     }
-    
+
     // ❷ Si no es balanza, buscar como producto normal (cantidad = 1)
     console.log('✅ Detectado: BARRAS NORMAL o ID PRODUCTO');
-    buscarProductoPorCodigo(TIPO_CARGA.PRODUCTO, codigo, 1, true, 'directo');
+    console.log('   → Enviando cantidad=1, bulto=true al servidor');
+    console.log('   → El SP decide si multiplica por unidad_pres o no');
+
+    // ⬇️ SIEMPRE bulto=true (el SP decide)
+    buscarProductoPorCodigo(
+        TIPO_CARGA.PRODUCTO,  // "P"
+        codigo,                // EAN o ID
+        1,                     // cantidad = 1
+        true,                  // ✅ SIEMPRE true (el SP decide)
+        'directo'              // origen = 'directo'
+    );
+
+
+    console.log('═══════════════════════════════════════════════════');
 }
 
 /**
- * ✅ NUEVO v4.0: Procesa código con cantidad comodín
+ * ✅ ACTUALIZADO v5.1: Procesa código con cantidad comodín
+ * NUEVO: Respeta el checkbox "Por Bulto"
  */
 function procesarCodigoConCantidad(codigo, cantidad) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('📦 PROCESANDO CÓDIGO CON CANTIDAD COMODÍN');
+    console.log('📦 PROCESANDO CÓDIGO CON CANTIDAD COMODÍN v5.1');
     console.log(`   Código: "${codigo}"`);
-    console.log(`   Cantidad: ${cantidad}`);
+    console.log(`   Cantidad ingresada: ${cantidad}`);
     console.log('═══════════════════════════════════════════════════');
-    
+
     if (cantidad <= 0) {
         mostrarMensajeError('La cantidad debe ser mayor a cero');
         return;
     }
-    
-    // Buscar producto con la cantidad especificada
+
+    console.log(`   → Enviando cantidad=${cantidad}, bulto=true al servidor`);
+    console.log('   → El SP decide si multiplica por unidad_pres o no');
+
+    // ⬇️ SIEMPRE bulto=true (el SP decide)
     buscarProductoPorCodigo(TIPO_CARGA.PRODUCTO, codigo, cantidad, true, 'directo');
+
+    console.log('═══════════════════════════════════════════════════');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -212,22 +278,17 @@ function procesarCodigoConCantidad(codigo, cantidad) {
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * ✅ ACTUALIZADO v5.0: Busca producto por código mediante AJAX
- * 
- * @param {string} tipoValor - Tipo de búsqueda (P/F/C)
- * @param {string} valor - Código/ID del producto
- * @param {number} cantidad - Cantidad a cargar
- * @param {boolean} bulto - Si la cantidad es por bulto
- * @param {string} origenCarga - Origen de la carga ('directo', 'prefactura', 'cotizacion', 'ultimo')
+ * ✅ ACTUALIZADO v5.1: Busca producto por código mediante AJAX
+ * LOGS MEJORADOS: Muestra claramente el estado del parámetro "bulto"
  */
 function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, origenCarga = 'directo') {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔍 BUSCAR PRODUCTO POR CÓDIGO - v5.0');
+    console.log('🔍 BUSCAR PRODUCTO POR CÓDIGO - v5.1');
     console.log('═══════════════════════════════════════════════════');
     console.log(`   Tipo Valor: ${tipoValor}`);
     console.log(`   Valor: ${valor}`);
     console.log(`   Cantidad: ${cantidad}`);
-    console.log(`   Bulto: ${bulto}`);
+    console.log(`   Bulto: ${bulto} ${bulto ? '✅ (Por bulto)' : '❌ (Por unidad)'}`);  // ✅ LOG MEJORADO
     console.log(`   Origen Carga: ${origenCarga}`);
     console.log('═══════════════════════════════════════════════════');
     
@@ -269,33 +330,33 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
         url: url,
         type: 'POST',
         data: {
-            tipoValor: tipoValor,
-            valor: valor,
-            cantidad: cantidad,
-            bulto: bulto
+            tipoValor: tipoValor,  // "P"
+            valor: valor,          // "0001-0001" o "7790070036599"
+            cantidad: cantidad,    // 1 o cantidad del comodín (ej: 7)
+            bulto: bulto           // ✅ true o false según checkbox
         },
         success: function(response) {
             console.log('═══════════════════════════════════════════════════');
             console.log('✅ RESPUESTA RECIBIDA DEL SERVIDOR');
             console.log('═══════════════════════════════════════════════════');
             console.log('   Response completo:', response);
-            console.log(`   - ok: ${response.ok}`);
-            console.log(`   - mensaje: ${response.mensaje}`);
-            console.log(`   - esUnico: ${response.esUnico}`);
-            console.log(`   - esMultiple: ${response.esMultiple}`);
+            
+            // ✅ NUEVO: Mostrar cálculo de cantidad en el log
+            if (response.ok && response.producto) {
+                const prod = Array.isArray(response.producto) ? response.producto[0] : response.producto;
+                console.log(`   📊 Cantidad calculada por SP: ${prod.cantidad_tot || 'N/A'}`);
+                console.log(`   🔧 El SP ya aplicó la lógica de unidad_pres si corresponde`);
+                console.log(`   💰 Precio total: $ ${formatearNumero((prod.p_pvta || 0) * (prod.cantidad_tot || 1), 2)}`);
+            }
             
             if (response.ok) {
-                // Producto(s) encontrado(s)
                 procesarRespuestaProducto(response, origenCarga);
             } else {
-                // Error o advertencia
                 console.error('❌ Error en respuesta:', response.mensaje);
-                
                 $('#mensajeEstadoProducto')
                     .removeClass('text-info text-success')
                     .addClass('text-danger')
                     .html(`<i class='bx bx-error-circle'></i> ${response.mensaje}`);
-                
                 mostrarMensajeError(response.mensaje);
             }
         },
@@ -613,71 +674,73 @@ function validarYAgregarProducto(producto, origenCarga) {
  */
 function agregarProductoAGrilla(producto) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('➕ AGREGANDO PRODUCTO A LA GRILLA v5.0');
+    console.log('➕ AGREGANDO PRODUCTO A LA GRILLA v5.0 REVERTIDO');
     console.log('═══════════════════════════════════════════════════');
     console.log('   Producto recibido:', producto);
-    
-    // ✅ Normalizar producto según DTO real (ProductoDatosResponseDto)
+
+    // ✅ Normalizar producto
     const productoNormalizado = {
         // IDs y códigos
         p_id: producto.p_id || '???',
         p_id_barrado: producto.p_id_barrado || '',
-        
+
         // Descripción
         descripcion: producto.p_desc || 'Sin descripción',
-        
+
         // Presentación
         unidadPresentacion: producto.p_unidad_pres || 1,
         peso: producto.p_peso || 0,
-        
-        // Cantidades
+
+        // ✅ Cantidad (YA calculada por el SP)
         cantidadTotal: producto.cantidad_tot || 1,
-        
+
         // Precios
         precioVenta: producto.p_pvta || 0,
         precioCosto: producto.p_pcosto || 0,
-        
+
         // IVA
         ivaAlicuota: producto.iva_alicuota || 0,
         ivaImporte: producto.p_iva || 0,
-        
+
         // Impuestos internos
         internAlicuota: producto.in_alicuota || 0,
         internImporte: producto.p_in || 0,
-        
+
         // Otros
         rubro: producto.rub_desc || '',
         activo: producto.p_activo || 'S',
-        
+
         // ✅ Calcular precio total
         precioTotal: calcularPrecioTotal(producto),
-        
+
         // Datos de origen
         preNro: producto.pre_nro || null,
         cpfNro: producto.cpf_nro || null,
-        
-        // ✅ NUEVO: Guardar datos completos para edición posterior
+
+        // ✅ Guardar datos completos
         _original: producto
     };
-    
+
     // Agregar al array
     productosFactura.push(productoNormalizado);
-    
+
+    // ✅ LOGS SIMPLIFICADOS
     console.log(`✅ Producto agregado a grilla:`);
     console.log(`   - Código: ${productoNormalizado.p_id}`);
     console.log(`   - Descripción: ${productoNormalizado.descripcion}`);
-    console.log(`   - Cantidad: ${productoNormalizado.cantidadTotal}`);
-    console.log(`   - Precio Venta: $ ${formatearNumero(productoNormalizado.precioVenta, 2)}`);
+    console.log(`   - Unidades por Presentación: ${productoNormalizado.unidadPresentacion}`);
+    console.log(`   - Cantidad Total (calculada por SP): ${productoNormalizado.cantidadTotal}`);
+    console.log(`   - Precio Unitario: $ ${formatearNumero(productoNormalizado.precioVenta, 2)}`);
     console.log(`   - Precio Total: $ ${formatearNumero(productoNormalizado.precioTotal, 2)}`);
     console.log(`   📊 Total productos en grilla: ${productosFactura.length}`);
     console.log('═══════════════════════════════════════════════════');
-    
+
     // Recalcular total
     recalcularTotalFactura();
-    
+
     // Actualizar grilla visual
     actualizarGrillaProductos();
-    
+
     // Actualizar contador de items
     $('#cantidadItems').text(productosFactura.length);
 }
@@ -732,10 +795,8 @@ function actualizarGrillaProductos() {
             <tr class="compact-row" data-index="${index}">
                 <td class="text-center fw-bold">${escapeHtml(producto.p_id)}</td>
                 <td class="text-center">${escapeHtml(producto.p_id_barrado)}</td>
-                <td>
-                    <span class="text-truncate d-block" title="${escapeHtml(producto.descripcion)}">
-                        ${escapeHtml(producto.descripcion)}
-                    </span>
+                <td class="text-start" style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(producto.descripcion)}">
+                    ${escapeHtml(producto.descripcion)}
                 </td>
                 <td class="text-center">
                     <span class="badge badge-compact bg-info">${producto.unidadPresentacion}</span>
