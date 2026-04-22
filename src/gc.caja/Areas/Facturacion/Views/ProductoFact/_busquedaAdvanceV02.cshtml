@@ -30,10 +30,14 @@
                             <i class="bx bx-filter-alt me-2"></i>Filtros de Búsqueda
                         </h6>
                     </div>
-                    <div class="filter-golden-body">                                                
-                        <div class="row g-2 mt-2">
+                    <div class="filter-golden-body">   
+                        <!--reemplazamos los check por input hidden-->
+                        @Html.Hidden("chkActivos", true)
+                        @Html.Hidden("chkDisc", false)
+                        @Html.Hidden("chkInact", false)
+                        @* <div class="row g-2 mt-2">
                             <!-- ✅ Estados de producto -->
-                            <div class="col-md-6">
+                             <div class="col-md-6">
                                 <div class="d-flex gap-3">
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkActivos" checked />
@@ -48,10 +52,8 @@
                                         <label class="form-check-label fw-medium" for="chkInact">Inactivos</label>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <!-- ✅ REMOVIDO: Stock (no relevante en Caja) -->
-                        </div>
+                            </div>                                                         
+                        </div>*@
                         
                         <!-- ✅ Campo de búsqueda + Botón -->
                         <div class="row g-2 mt-2">
@@ -69,7 +71,7 @@
                                 </div>
                             </div>
                             <div class="col-md-4 text-end">
-                                <button type="button" class="btn btn-success btn-sm d-inline-flex align-items-center" id="btnBuscarProd">
+                                <button type="button" class="btn btn-golden btn-sm d-inline-flex align-items-center" id="btnBuscarProd">
                                     <i class="bx bx-search me-1"></i>
                                     <span>Buscar</span>
                                     <span id="spnBuscarProd" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>

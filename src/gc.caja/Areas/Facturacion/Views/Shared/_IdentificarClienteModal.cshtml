@@ -19,10 +19,10 @@
                             <span class="input-group-text bg-golden text-white fw-bold">
                                 <i class='bx bx-search-alt'></i> CUIT/DNI/ID
                             </span>
-                            <input type="text" 
+                            <input type="text"
                                    class="form-control form-control-lg fw-bold jsteclado"
-                                   id="txtBuscarCliente" 
-                                   placeholder="Ingrese CUIT, DNI o ID del cliente..." 
+                                   id="txtBuscarCliente"
+                                   placeholder="Ingrese CUIT, DNI o ID del cliente..."
                                    maxlength="20"
                                    autocomplete="off">
                             <button class="btn btn-golden btn-lg" type="button" id="btnBuscarCliente">
@@ -30,7 +30,7 @@
                             </button>
                         </div>
                         <small class="text-muted d-block mt-1">
-                            <i class='bx bx-info-circle'></i> 
+                            <i class='bx bx-info-circle'></i>
                             Presione <kbd>Enter</kbd> o haga clic en <strong>Buscar</strong> para identificar al cliente
                         </small>
                     </div>
@@ -39,7 +39,7 @@
                 <!-- Separador con botones de acción rápida -->
                 <div class="row mb-4">
                     <div class="col-md-6">
-                        <button class="btn btn-warning w-100 py-3 fw-bold" id="btnListaPrecios" type="button">
+                        <button class="btn btn-warning w-100 py-3 fw-bold" id="btnListaPrecios" type="button" disabled>
                             <i class='bx bx-list-ul bx-lg'></i><br>
                             Lista Precios
                         </button>
@@ -57,93 +57,117 @@
                     <div class="card-header">
                         <i class='bx bx-data'></i> Datos del Cliente
                     </div>
-                    <div class="card-body">
+                    <div class="card-body bg-gradient-golden p-0">
                         <!-- Fila 1: Nombre, ID, Domicilio -->
-                        <div class="row g-3 mb-3">
+                        <div class="row g-2 mb-2">
                             <div class="col-md-5">
-                                <label for="txtNombre" class="form-label fw-semibold text-golden-dark">
-                                    <i class='bx bx-user'></i> Nombre:
-                                </label>
-                                <input type="text" 
-                                       class="form-control form-control-sm" 
-                                       id="txtNombre" 
-                                       readonly>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
+                                        <i class='bx bx-user'></i> Cliente
+                                    </span>
+                                    <!-- ✅ CORREGIDO: ID único con sufijo Prod -->
+                                    <input type="text"
+                                           class="form-control form-control-sm fw-bold bg-white"
+                                           id="txtNombre"
+                                           readonly>
+                                </div>
                             </div>
-                            <div class="col-md-3">
-                                <label for="txtClienteId" class="form-label fw-semibold text-golden-dark">
-                                    <i class='bx bx-id-card'></i> ID:
-                                </label>
-                                <input type="text" 
-                                       class="form-control form-control-sm text-center fw-bold" 
-                                       id="txtClienteId" 
-                                       readonly>
+                            <div class="col-md-2">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
+                                        <i class='bx bx-id-card'></i> ID
+                                    </span>
+                                    <!-- ✅ CORREGIDO: ID único con sufijo Prod -->
+                                    <input type="text"
+                                           class="form-control form-control-sm text-center fw-bold bg-white"
+                                           id="txtClienteId"
+                                           readonly>
+                                </div>
                             </div>
-                            <div class="col-md-4">
-                                <label for="txtDomicilio" class="form-label fw-semibold text-golden-dark">
-                                    <i class='bx bx-home'></i> Domicilio:
-                                </label>
-                                <input type="text" 
-                                       class="form-control form-control-sm" 
-                                       id="txtDomicilio" 
-                                       readonly>
+                            <div class="col-md-5">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
+                                        <i class='bx bx-map'></i> Domicilio
+                                    </span>
+                                    <!-- ✅ CORREGIDO: ID único con sufijo Prod -->
+                                    <input type="text"
+                                           class="form-control form-control-sm bg-white"
+                                           id="txtDomicilio"
+                                           readonly>
+                                </div>
                             </div>
                         </div>
 
                         <!-- Fila 2: Condición AFIP, Tipo/N°, Emite -->
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-4">
-                                <label for="txtCondicionAfip" class="form-label fw-semibold text-golden-dark">
-                                    <i class='bx bx-receipt'></i> Condición AFIP:
-                                </label>
-                                <input type="text" 
-                                       class="form-control form-control-sm" 
-                                       id="txtCondicionAfip" 
-                                       readonly>
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-2">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
+                                        <i class='bx bx-receipt'></i> AFIP
+                                    </span>
+                                    <!-- ✅ CORREGIDO: ID único con sufijo Prod -->
+                                    <input type="text"
+                                           class="form-control form-control-sm bg-white"
+                                           id="txtCondicionAfip"
+                                           readonly>
+                                </div>
                             </div>
-                            <div class="col-md-4">
-                                <label for="txtTipoNumero" class="form-label fw-semibold text-golden-dark">
-                                    <i class='bx bx-file'></i> Tipo/N°:
-                                </label>
-                                <input type="text" 
-                                       class="form-control form-control-sm" 
-                                       id="txtTipoNumero" 
-                                       readonly>
+                            <div class="col-md-2">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
+                                        <i class='bx bx-file'></i> CUIT
+                                    </span>
+                                    <!-- ✅ CORREGIDO: ID único con sufijo Prod -->
+                                    <input type="text"
+                                           class="form-control form-control-sm bg-white"
+                                           id="txtTipoNumero"
+                                           readonly>
+                                </div>
                             </div>
-                            <div class="col-md-4">
-                                <label for="txtEmite" class="form-label fw-semibold text-golden-dark">
-                                    <i class='bx bx-buildings'></i> Emite:
-                                </label>
-                                <input type="text" 
-                                       class="form-control form-control-sm" 
-                                       id="txtEmite" 
-                                       readonly>
+                            <div class="col-md-2">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
+                                        <i class='bx bx-file'></i> Emite
+                                    </span>
+                                    <!-- ✅ CORREGIDO: ID único con sufijo Prod -->
+                                    <input type="text"
+                                           class="form-control form-control-sm bg-white"
+                                           id="txtEmite"
+                                           readonly>
+                                </div>
                             </div>
-                        </div>
+                            @*  </div> *@
 
-                        <!-- Fila 3: Email, Móvil, BOTÓN EDITAR -->
-                        <div class="row g-3">
-                            <div class="col-md-5">
-                                <label for="txtEmail" class="form-label fw-semibold text-golden-dark">
-                                    <i class='bx bx-envelope'></i> Email:
-                                </label>
-                                <input type="email" 
-                                       class="form-control form-control-sm" 
-                                       id="txtEmail" 
-                                       readonly>
+                            <!-- Fila 3: Email, Móvil, BOTÓN EDITAR -->
+                            @* <div class="row g-3"> *@
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
+                                        <i class='bx bx-envelope'></i> Email
+                                    </span>
+                                    <!-- ✅ CORREGIDO: ID único con sufijo Prod -->
+                                    <input type="text"
+                                           class="form-control form-control-sm bg-white"
+                                           id="txtEmail"
+                                           readonly>
+                                </div>
                             </div>
-                            <div class="col-md-4">
-                                <label for="txtMovil" class="form-label fw-semibold text-golden-dark">
-                                    <i class='bx bx-phone'></i> Móvil:
-                                </label>
-                                <input type="text" 
-                                       class="form-control form-control-sm" 
-                                       id="txtMovil" 
-                                       readonly>
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
+                                        <i class='bx bx-phone'></i> Móvil
+                                    </span>
+                                    <!-- ✅ CORREGIDO: ID único con sufijo Prod -->
+                                    <input type="text"
+                                           class="form-control form-control-sm bg-white"
+                                           id="txtMovil"
+                                           readonly>
+                                </div>
                             </div>
                             <!-- ✅ NUEVO: Botón Editar (solo para Consumidores Finales) -->
                             <div class="col-md-3 d-flex align-items-end">
-                                <button type="button" 
-                                        class="btn btn-warning btn-sm w-100 shadow" 
+                                <button type="button"
+                                        class="btn btn-warning btn-sm w-100 shadow"
                                         id="btnEditarCliente"
                                         style="display: none;"
                                         title="Editar datos del Consumidor Final">
