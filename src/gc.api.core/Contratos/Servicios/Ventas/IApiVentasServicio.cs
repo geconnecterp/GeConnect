@@ -15,5 +15,6 @@ namespace gc.api.core.Contratos.Servicios
 		RespuestaDto ConfirmarCtlArqueo(ConfirmarCtlArqueoRequest request);
 		RespuestaDto AnularCtlArqueo(AnularCtlArqueoRequest request);
 		RespuestaDto AgregarMedioDePago(AgregarMedioDePagoRequest request);
+		RespuestaDto ConfirmacionContable(ConfirmacionContableRequest request);
 	}
 }

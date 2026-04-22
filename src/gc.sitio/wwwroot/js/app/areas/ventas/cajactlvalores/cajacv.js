@@ -9,7 +9,9 @@ var existe_edicion = false;
 var fila_seleccionada_actual = null;
 var fila_cierre_seleccionada_actual = null;
 var guardando_importe = false;
-
+var sucDesc_selected = null;
+var sucId_selected = null;
+var diaId_selected = null;
 
 $(function () {
     if ($("#divDetalle").is(":visible")) {
@@ -53,10 +55,10 @@ $(function () {
 });
 
 function InicializarBusqueda() {
-    var sucDesc = $("#listaSucursales").find("option:selected").text();
-    var sucId = $("#listaSucursales").find("option:selected").val();
-    var diaId = $("#listaDias").find("option:selected").val();
-    var data = { admDesc: sucDesc, admId: sucId, nroProceso: diaId };
+    sucDesc_selected = $("#listaSucursales").find("option:selected").text();
+    sucId_selected = $("#listaSucursales").find("option:selected").val();
+    diaId_selected = $("#listaDias").find("option:selected").val();
+    var data = { admDesc: sucDesc_selected, admId: sucId_selected, nroProceso: diaId_selected };
     AbrirWaiting("Cargando datos de cierres...");
     PostGenHtml(data, cargarDatosDeCierresUrl, function (html) {
         $("#divDetalle").html(html);
@@ -64,6 +66,16 @@ function InicializarBusqueda() {
         $("#divDetalle").collapse("show");
         InicializaEventosGrillaVtasPVCtlCierres();
         CerrarWaiting();
+    });
+}
+
+function CargarGrillaVtasPVCtlCierres() {
+    var data = { admDesc: sucDesc_selected, admId: sucId_selected, nroProceso: diaId_selected };
+    AbrirWaiting("Actualizando cierres...");
+    PostGenHtml(data, cargarDatosDeCierresUrl, function (html) {
+        CerrarWaiting();
+        $("#divDetalle").html(html);
+        InicializaEventosGrillaVtasPVCtlCierres();
     });
 }
 
@@ -129,11 +141,11 @@ function ProcesarSeleccionFilaCierres($fila) {
     caja_nro_proceso_selected = $fila.data("caja-nro-proceso");
     caja_nro_cierre_selected = $fila.data("caja-nro-cierre");
     caja_id_selected = $fila.data("caja-id");
-    cierre_pendientes_bool = $fila.data("pendientes-bool");
+    cierre_pendientes_bool = String($fila.data("pendientes-bool")).toLowerCase() === "true";
 
     // Habilitar / deshabilitar botón
     const habilitar = (cierre_pendientes_bool === true || cierre_pendientes_bool === "true" || cierre_pendientes_bool === "True");
-    $("#btnConfirmacionContable").prop("disabled", !habilitar);
+    $("#btnConfirmacionContable").prop("disabled", habilitar);
 
     // Cargar grilla de rendiciones
     if (caja_nro_proceso_selected) {
@@ -143,6 +155,10 @@ function ProcesarSeleccionFilaCierres($fila) {
 
 
 function InicializaEventosGrillaVtasPVCtlCierres() {
+    $(document).off("click", "#btnConfirmacionContable");
+    $(document).on("click", "#btnConfirmacionContable", function (e) {
+        EvaluarConfirmacionContable();
+    });
 
     $(document).off("click", "#tbVtasPVCtlCierres tbody tr");
     $(document).on("click", "#tbVtasPVCtlCierres tbody tr", function (e) {
@@ -182,11 +198,52 @@ function InicializaEventosGrillaVtasPVCtlCierres() {
     $("#btnConfirmacionContable").prop("disabled", true);
     $("#btnConfirmarArqueo").prop("disabled", true);
     $("#btnAnularArqueo").prop("disabled", true);
-    $("#btnAgregarArqueo").prop("disabled", true);
+    $("#btnAgregarArqueo").prop("disabled", !cierre_pendientes_bool);
     $("#btnGuardarValores").prop("disabled", true);
 
     // 🔥 Seleccionar automáticamente la primera fila válida
     SeleccionarPrimeraFilaCierres();
+}
+
+function EvaluarConfirmacionContable() {
+    AbrirMensaje("ATENCIÓN", `¿Esta seguro que desea realizar la confirmación contable?`, function (e) {
+        $("#msjModal").modal("hide");
+        switch (e) {
+            case "SI":
+                ConfirmacionContable();
+                break;
+            case "NO":
+                break;
+            default: //NO
+                break;
+        }
+        return true;
+
+    }, true, ["Aceptar", "Cancelar"], "question!", null);
+}
+
+function ConfirmacionContable() {
+    var data = {
+        caja_nro_proceso: caja_nro_proceso_selected,
+        caja_nro_cierre: caja_nro_cierre_selected,
+    };
+    AbrirWaiting("Realizando confirmación contable...");
+    PostGen(data, confirmacionContableUrl, function (obj) {
+        CerrarWaiting();
+        if (obj.error === true || obj.warn === true) {
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                $("#msjModal").modal("hide");
+                return true;
+            }, false, ["Aceptar"], "error!", null);
+        }
+        else {
+            AbrirMensaje("ATENCIÓN", "Se ha realizado la confirmación contable de forma exitosa.", function () {
+                $("#msjModal").modal("hide");
+                CargarGrillaVtasPVCtlCierres();
+                return true;
+            }, false, ["Aceptar"], "succ!", null);
+        }
+	});
 }
 
 function CargarGrillaVtasPVCtlRend() {
@@ -282,7 +339,7 @@ function InicializaEventosGrillaVtasPVCtlRend() {
 
     $("#btnConfirmarArqueo").prop("disabled", true);
     $("#btnAnularArqueo").prop("disabled", true);
-    $("#btnAgregarArqueo").prop("disabled", true);
+    $("#btnAgregarArqueo").prop("disabled", !cierre_pendientes_bool);
 }
 
 function EvaluarConfirmarCtlArqueo() {
@@ -322,7 +379,7 @@ function ConfirmarCtlArqueo() {
         else {
             AbrirMensaje("ATENCIÓN", "Se ha confirmado el Arqueo de forma exitosa.", function () {
                 $("#msjModal").modal("hide");
-                CargarGrillaVtasPVCtlRend();
+                CargarGrillaVtasPVCtlCierres();
                 return true;
             }, false, ["Aceptar"], "succ!", null);
         }
@@ -464,7 +521,7 @@ function ProcesarSeleccionFila($fila) {
     const habilitar = rend_pendiente_selected === true;
     $("#btnConfirmarArqueo").prop("disabled", !habilitar);
     $("#btnAnularArqueo").prop("disabled", habilitar);
-    $("#btnAgregarArqueo").prop("disabled", !habilitar);
+    $("#btnAgregarArqueo").prop("disabled", !cierre_pendientes_bool);
 
     // Cargar detalle
     if (caja_nro_rend_selected) {
@@ -519,8 +576,14 @@ function InicializaEventosGrillaVtasPVCtlRendDetalle() {
         $("#btnAgregarValor").prop("disabled", true);
     }
     $("#btnGuardarValores").prop("disabled", true);
-    // Aplicar máscara a todos los inputs de importe
-    getMaskForMoneyType(".input-importe");
+
+    // Aplica máscara a todos los inputs de importe
+    getMaskForMoneyType('#tbVtasPVCtlRendDetalle .input-importe');
+    // (Opcional) Si querés que al hacer click se seleccione todo
+    $('#tbVtasPVCtlRendDetalle').on('focus', '.input-importe', function () {
+        $(this).select();
+    });
+
     // Evitar eventos duplicados
     $(document).off("click", ".btnEditarValor");
     $(document).off("click", "#btnAgregarValor");
@@ -545,7 +608,7 @@ function InicializaEventosGrillaVtasPVCtlRendDetalle() {
         const ins_detalle = $btn.data("ins-detalle");
 
         // Lógica de edición
-        AbrirModalEditarValor(ins_id, tcf_id, ins_detalle);
+        AbrirModalEditarValor(tcf_id);
     });
 
     // Evitar duplicados
@@ -642,6 +705,37 @@ function InicializaEventosGrillaVtasPVCtlRendDetalle() {
         ProcesarSeleccionFilaRendDetalle($nuevaFila);
     });
 }
+
+function AbrirModalEditarValor(tcf_id) {
+    if (tcf_id == "") {
+        AbrirMensaje("ATENCIÓN", "El Tipo Cuenta Financiero seleccionado no es válido", function () {
+            $("#msjModal").modal("hide");
+            return true;
+        }, false, ["Aceptar"], "error!", null);
+    }
+    else {
+        AbrirWaiting("Cargando datos...");
+        var data = { tcf_id };
+        PostGenHtml(data, obtenerPartialDeValoresUrl, function (obj) {
+            $("#divEdicionDeValores").html(obj);
+            const $modal = $("#modalEdicionDeValores");
+
+            $modal.modal({
+                backdrop: 'static',
+            });
+
+            $modal.modal('show');
+
+            CerrarWaiting();
+            return true
+            
+        });
+    }
+}
+
+/*
+
+*/
 
 function GuardarCtlDetalle() {
     var caja_nro_proceso = caja_nro_proceso_selected;
@@ -830,9 +924,6 @@ function CancelarEdicion($input) {
     $input.val(original);
 }
 
-function AbrirModalEditarValor(ins_id, tcf_id, ins_detalle) {
-}
-
 function validarRendSeleccionado() {
     if (caja_nro_rend_selected == null || caja_nro_rend_selected == undefined || caja_nro_rend_selected == "")
         return false;
@@ -852,8 +943,8 @@ function validarCierreSeleccionado() {
 function getMaskForMoneyType(selector) {
     $(selector).inputmask({
         alias: 'numeric',
-        groupSeparator: '.',
-        radixPoint: ',',
+        groupSeparator: ',',
+        radixPoint: '.',
         digits: 2,
         digitsOptional: false,
         allowMinus: false,

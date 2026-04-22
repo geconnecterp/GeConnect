@@ -25,6 +25,14 @@
 		</div>
 	</div>
 </div>
+<div class="modal fade modal-golden in" id="modalEdicionDeValores" tabindex="-1" style="display: none;" aria-hidden="true" data-backdrop="static">
+	<div class="modal-dialog modal-x" role="document">
+		<div class="modal-content">
+			<div id="divEdicionDeValores">
+			</div>
+		</div>
+	</div>
+</div>
 
 @section scripts {
 	<script type="text/javascript">
@@ -41,6 +49,8 @@
 		let anularCtlArqueoUrl = '@Url.Action("AnularCtlArqueo", "ventascajascorreccionvalores", new { area = "Ventas" })';
 		let abrirModalAgregarMedioDePagoUrl = '@Url.Action("AbrirModalAgregarMedioDePago", "ventascajascorreccionvalores", new { area = "Ventas" })';
 		let agregarMedioDePagoUrl = '@Url.Action("AgregarMedioDePago", "ventascajascorreccionvalores", new { area = "Ventas" })'
+		let confirmacionContableUrl = '@Url.Action("ConfirmacionContable", "ventascajascorreccionvalores", new { area = "Ventas" })';
+		let obtenerPartialDeValoresUrl = '@Url.Action("ObtenerPartialDeValores", "ventascajascorreccionvalores", new { area = "Ventas" })';
  
 		/*URL para componente de Seleccion de Valores*/
 		let abrirComponenteDeSeleccionDeValoresUrl = "@Url.Action("AbrirComponente", "selecciondevalores", new { area = "ControlComun" })";

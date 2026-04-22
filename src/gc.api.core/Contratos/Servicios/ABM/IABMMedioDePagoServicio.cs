@@ -7,5 +7,6 @@ namespace gc.api.core.Contratos.Servicios
 	public interface IABMMedioDePagoServicio : IServicio<Instrumento>
 	{
 		List<ABMMedioDePagoSearchDto> Buscar(QueryFilters filtro);
+		List<MedioDePagoListaDto> ObtenerMediosDePagoLista(string tcf_id);
 	}
 }

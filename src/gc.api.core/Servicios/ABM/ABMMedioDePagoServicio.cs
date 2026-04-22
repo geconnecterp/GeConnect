@@ -5,6 +5,7 @@ using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.ABM;
+using gc.infraestructura.Dtos.Ventas;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using System.Text;
@@ -115,6 +116,19 @@ namespace gc.api.core.Servicios.ABM
 			List<ABMMedioDePagoSearchDto> mp = _repository.EjecutarLstSpExt<ABMMedioDePagoSearchDto>(sp, ps, true);
 
 			return mp;
+		}
+
+		public List<MedioDePagoListaDto> ObtenerMediosDePagoLista(string tcf_id)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_ABM_MEDIOS_PAGOS_LISTA_2;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@tcf_id", tcf_id),
+			 };
+
+			var result = _repository.EjecutarLstSpExt<MedioDePagoListaDto>(sp, ps, true);
+			return result;
 		}
 	}
 }

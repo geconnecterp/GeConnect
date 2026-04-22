@@ -4,6 +4,8 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.ABM;
+using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Ventas;
 using gc.sitio.core.Servicios.Contratos.ABM;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -17,6 +19,7 @@ namespace gc.sitio.core.Servicios.Implementacion.ABM
 	{
 		private const string RUTAAPI = "/api/abmmediodepago";
 		private const string BUSCAR_MEDIOS_DE_PAGO = "/BuscarMediosDePago";
+		private const string OBTENER_MEDIOS_DE_PAGO_LISTA = "/ObtenerMediosDePagoLista";
 
 		private readonly AppSettings _appSettings;
 
@@ -63,6 +66,62 @@ namespace gc.sitio.core.Servicios.Implementacion.ABM
 				_logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
 				throw new Exception("Algo no fue bien al intentar cargar los conteos previso de ajustes.");
+			}
+		}
+
+		public async Task<RespuestaGenerica<MedioDePagoListaDto>> ObtenerMediosDePagoLista(string tcf_id, string token)
+		{
+			try
+			{
+				var helper = new HelperAPI();
+				var client = helper.InicializaCliente(token);
+
+				var link = $"{_appSettings.RutaBase}{RUTAAPI}{OBTENER_MEDIOS_DE_PAGO_LISTA}?tcf_id={tcf_id}";
+				using var response = await client.GetAsync(link);
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					var stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						return new() { Ok = false, Mensaje = "No se recibió respuesta válida de ObtenerMediosDePagoLista" };
+					}
+
+					var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<MedioDePagoListaDto>>>(stringData)
+						?? throw new NegocioException("Error al deserializar los datos");
+
+					if (apiResponse.Data == null)
+					{
+						return new() { Ok = false, Mensaje = "No se encontraron datos de ObtenerMediosDePagoLista." };
+					}
+
+					return new RespuestaGenerica<MedioDePagoListaDto>
+					{
+						Ok = true,
+						ListaEntidad = apiResponse.Data,
+						Mensaje = "OK"
+					};
+				}
+				else
+				{
+					var errorData = await response.Content.ReadAsStringAsync();
+					_logger.LogWarning($"Error API ({response.StatusCode}): {errorData}");
+
+					return new()
+					{
+						Ok = false,
+						Mensaje = "Error al obtener ObtenerMediosDePagoLista. Si el problema persiste contacte al administrador."
+					};
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name}");
+				return new RespuestaGenerica<MedioDePagoListaDto>
+				{
+					Ok = false,
+					Mensaje = "Error interno al obtener ObtenerMediosDePagoLista"
+				};
 			}
 		}
 	}

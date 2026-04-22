@@ -1,4 +1,5 @@
-﻿@model GridCoreSmart<VtasPVCtlRendDetalleDto>
+﻿@using System.Globalization
+@model GridCoreSmart<VtasPVCtlRendDetalleDto>
 @{
 	var alt = true;
 	string clase = string.Empty;
@@ -138,7 +139,7 @@
 								<input type="text"
 									   class="form-control form-control-sm input-importe"
 									   value="@GridHelper.FormatearPrecio(item.rend_importe_ok ?? 0, TipoPrecio.Venta)"
-									   data-original="@GridHelper.FormatearPrecio(item.rend_importe_ok ?? 0, TipoPrecio.Venta)" />
+									   data-original="@((item.rend_importe_ok ?? 0).ToString(CultureInfo.InvariantCulture))" />
 							}
 							else
 							{

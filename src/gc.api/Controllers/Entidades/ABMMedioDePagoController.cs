@@ -4,6 +4,7 @@ using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.ABM;
+using gc.infraestructura.Dtos.Ventas;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net;
@@ -62,5 +63,23 @@ namespace gc.api.Controllers.Entidades
 
             return Ok(response);
         }
-    }
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<VtasPVCtlRendDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerMediosDePagoLista(string tcf_id)
+		{
+
+			if (string.IsNullOrWhiteSpace(tcf_id))
+			{
+				return BadRequest(new ApiResponse<string>("El parámetro tcf_id no puede estar vacío."));
+			}
+
+			var data = _abmMedioDePagoServicio.ObtenerMediosDePagoLista(tcf_id);
+
+			return Ok(new ApiResponse<List<MedioDePagoListaDto>>(data));
+
+		}
+	}
 }

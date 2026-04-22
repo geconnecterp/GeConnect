@@ -184,5 +184,20 @@ namespace gc.api.Controllers.Ventas
 			var data = _iApiVentasServicio.AgregarMedioDePago(request);
 			return Ok(new ApiResponse<RespuestaDto>(data));
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ConfirmacionContable(ConfirmacionContableRequest request)
+		{
+			if (request == null)
+			{
+				_logger.LogWarning("Parámetro request se encuentra vacío o nulo.");
+				return BadRequest(new ApiResponse<string>("El parámetro request no puede estar vacío."));
+			}
+			var data = _iApiVentasServicio.ConfirmacionContable(request);
+			return Ok(new ApiResponse<RespuestaDto>(data));
+		}
 	}
 }

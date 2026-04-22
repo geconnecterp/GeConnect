@@ -35,6 +35,7 @@
 			public const string SP_VTAS_PV_CTL_GUARDAR = "SPGECO_Vtas_PV_CTL_Guardar";
 			public const string SP_VTAS_PV_CTL_CONFIRMAR = "SPGECO_Vtas_PV_CTL_Confirmar";
 			public const string SP_VTAS_PV_CTL_ANULAR = "SPGECO_Vtas_PV_CTL_Anular";
+			public const string SP_VTAS_PV_CTL_CCB = "SPGECO_Vtas_PV_CTL_CCB";
 			#endregion
 
 			public const string MNU_GET_MENU_LIST = "dbo.SP_web_geco_get_menu_list";
@@ -468,6 +469,7 @@
 			public const string SP_ABM_RUBRO_DATOS = "SPGECO_ABM_Rubros_Datos";
 
 			public const string SP_ABM_MEDIOS_PAGOS_LISTA = "SPGECO_ABM_MediosPagos_Lista";
+			public const string SP_ABM_MEDIOS_PAGOS_LISTA_2 = "SPGECO_ABM_MediosPagos_Lista_2";
 			public const string SP_ABM_MEDIOS_PAGOS_DATOS = "SPGECO_ABM_MediosPagos_Datos";
 			public const string SP_ABM_OPCION_CUOTA_LISTA = "SPGECO_ABM_MediosPagos_Cuotas_Lista";
 			public const string SP_ABM_OPCION_CUOTA_DATOS = "SPGECO_ABM_MediosPagos_Cuotas_Datos";

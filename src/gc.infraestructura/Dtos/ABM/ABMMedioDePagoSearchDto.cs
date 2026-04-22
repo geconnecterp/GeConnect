@@ -1,5 +1,6 @@
 ﻿
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.SymbolStore;
 
 namespace gc.infraestructura.Dtos.ABM
 {
@@ -38,6 +39,35 @@ namespace gc.infraestructura.Dtos.ABM
 		//public string? Ins_Id_Archivo { get; set; }
 		public string? Ins_Id_Pos { get; set; }
 		public string? Ins_Id_Pos_Ctls { get; set; }
+
+
+	}
+
+	public class MedioDePagoListaDto : Dto
+	{
+		public string ins_id { get; set; } = string.Empty;
+		public string ins_desc { get; set; } = string.Empty;
+		public string ins_lista { get; set; } = string.Empty;
+		public string ins_dato1_desc { get; set; } = string.Empty;
+		public string ins_dato2_desc { get; set; } = string.Empty;
+		public string ins_dato3_desc { get; set; } = string.Empty;
+		public char ins_detalle { get; set; }
+		public decimal ins_comision { get; set; }
+		public decimal ins_comision_fija { get; set; }
+		public string ins_razon_social { get; set; } = string.Empty;
+		public string ins_cuit { get; set; } = string.Empty;
+		public decimal ins_ret_gan { get; set; }
+		public decimal ins_ret_ib { get; set; }
+		public decimal ins_ret_iva { get; set; }
+		public char ins_arqueo { get; set; }
+		public char ins_tiene_vto { get; set; }
+		public char ins_vigente { get; set; }
+		public int ctaf_id_link_check { get; set; }
+		public string ctaf_id_link { get; set; } = string.Empty;
+		public string tcf_id { get; set; } = string.Empty;
+		public string tcf_desc { get; set; } = string.Empty;
+		public string ins_id_pos { get; set; } = string.Empty;
+		public string ins_id_pos_ctls { get; set; } = string.Empty;
 
 
 	}

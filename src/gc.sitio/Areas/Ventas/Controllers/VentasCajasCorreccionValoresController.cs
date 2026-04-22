@@ -7,6 +7,7 @@ using gc.infraestructura.Dtos.Ventas;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Ventas.Models.VentasCajasCorreccionValores;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.ABM;
 using gc.sitio.core.Servicios.Contratos.Cajas;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -26,14 +27,17 @@ namespace gc.sitio.Areas.Ventas.Controllers
 		private readonly IApiVentasServicio _apiVentasServicio;
 		private readonly IAdministracionServicio _administracionServicio;
 		private readonly ITipoCuentaFinServicio _tipoCuentaServicio;
+		private readonly IABMMedioDePagoServicio _iABMMedioDePagoServicio;
 		public VentasCajasCorreccionValoresController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<VentasCajasCorreccionValoresController> logger,
 													  ICajaServicio cajaServicio, IAdministracionServicio administracionServicio,
-													  IApiVentasServicio apiVentasServicio, ITipoCuentaFinServicio tipoCuentaServicio) : base(options, contexto, logger)
+													  IApiVentasServicio apiVentasServicio, ITipoCuentaFinServicio tipoCuentaServicio,
+													  IABMMedioDePagoServicio iABMMedioDePagoServicio) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_iCajaSrv = cajaServicio;
 			_administracionServicio = administracionServicio;
 			_apiVentasServicio = apiVentasServicio;
+			_iABMMedioDePagoServicio = iABMMedioDePagoServicio;
 			_tipoCuentaServicio = tipoCuentaServicio;
 		}
 
@@ -376,6 +380,7 @@ namespace gc.sitio.Areas.Ventas.Controllers
 					adm_id = AdministracionId,
 					usu_id = UserName
 				};
+				PrintProperties(request);
 				var resultado = _apiVentasServicio.ConfirmarCtlArqueo(request, TokenCookie).Result;
 				if (resultado == null)
 					throw new NegocioException("Error al guardar detalle");
@@ -537,7 +542,117 @@ namespace gc.sitio.Areas.Ventas.Controllers
 			}
 		}
 
+		public JsonResult ConfirmacionContable(string caja_nro_proceso, int caja_nro_cierre)
+		{
+			try
+			{
+				if (string.IsNullOrEmpty(caja_nro_proceso))
+					throw new NegocioException("Faltan datos obligatorios: nro_proceso");
+				if (caja_nro_cierre <= 0)
+					throw new NegocioException("Faltan datos obligatorios: nro_cierre");
+				var request = new ConfirmacionContableRequest()
+				{
+					caja_nro_proceso = caja_nro_proceso,
+					caja_nro_cierre = caja_nro_cierre,
+					adm_id = AdministracionId,
+					usu_id = UserName
+				};
+				var resultado = _apiVentasServicio.ConfirmacionContable(request, TokenCookie).Result;
+				if (resultado == null)
+					throw new NegocioException("Error al guardar detalle");
+				// Procesamiento de respuesta
+				if (resultado.Ok && !resultado.EsError && !resultado.EsWarn)
+				{
+					return Json(new
+					{
+						ok = true,
+						error = false,
+					});
+				}
+				else
+				{
+					var msj = ObtenerMensajeDesdeError(resultado.Mensaje ?? "");
+					// Log y respuesta de error/advertencia
+					_logger?.LogWarning("Error: {Mensaje}", resultado.Mensaje);
+					return Json(new
+					{
+						ok = false,
+						error = true,
+						warn = resultado.EsWarn,
+						msg = msj
+					});
+				}
+			}
+			catch (Exception ex)
+			{
+				return Json(new { Ok = false, error = true, msg = ex.Message });
+			}
+		}
+
+		[HttpPost]
+		public IActionResult ObtenerPartialDeValores(string tcf_id)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				if (string.IsNullOrWhiteSpace(tcf_id))
+					throw new NegocioException("Faltan datos obligatorios: tcf_id");
+
+				string partialName = $"_partial_modal_{tcf_id}";
+				var model = ObtenerModelDesdeTcf_id(tcf_id);
+				return PartialView(partialName, model);
+			}
+			
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
 		#region Métodos Privados
+		private IMedioDePago ObtenerModelDesdeTcf_id(string tcf_id)
+		{
+			switch (tcf_id)
+			{
+				case "EF":
+					var modelEF = new MedioDePagoEFModel();
+					return modelEF;
+				case "TC":
+					var modelTC = new MedioDePagoTCModel
+					{
+						ListaMediosDePago = ObtenerMediosDePago(tcf_id)
+					};
+					return modelTC;
+				case "TD":
+					var modelTD = new MedioDePagoTDModel
+					{
+						ListaMediosDePago = ObtenerMediosDePago(tcf_id)
+					};
+					return modelTD;
+				case "MU":
+					var modelMU = new MedioDePagoMUModel();
+					return modelMU;
+				case "CH":
+					var modelCH = new MedioDePagoCHModel();
+					return modelCH;
+				case "BA":
+					var modelBA = new MedioDePagoBAModel();
+					return modelBA;
+				default:
+					var modelNI = new MedioDePagoNIModel();
+					return modelNI;
+			}
+		}
 		private static string ObtenerMensajeDesdeError(string msj)
 		{
 			if (EsJsonValido(msj))
@@ -603,7 +718,14 @@ namespace gc.sitio.Areas.Ventas.Controllers
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
 
-		
+		private SelectList ObtenerMediosDePago(string tcf_id)
+		{
+			var medios = _iABMMedioDePagoServicio.ObtenerMediosDePagoLista(tcf_id, TokenCookie).Result;
+			if (medios != null && medios.ListaEntidad !=null && medios.ListaEntidad.Count > 0)
+				return HelperMvc<ComboGenDto>.ListaGenerica(medios.ListaEntidad.Select(x => new ComboGenDto { Id = x.ins_id, Descripcion = x.ins_lista }));
+			else
+				return HelperMvc<ComboGenDto>.ListaGenerica([]);
+		}
 		#endregion
 	}
 

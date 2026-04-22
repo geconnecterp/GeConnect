@@ -14,5 +14,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<RespuestaGenerica<RespuestaDto>> ConfirmarCtlArqueo(ConfirmarCtlArqueoRequest req, string token);
 		Task<RespuestaGenerica<RespuestaDto>> AnularCtlArqueo(AnularCtlArqueoRequest req, string token);
 		Task<RespuestaGenerica<RespuestaDto>> AgregarMedioDePago(AgregarMedioDePagoRequest req, string token);
+		Task<RespuestaGenerica<RespuestaDto>> ConfirmacionContable(ConfirmacionContableRequest req, string token);
 	}
 }
