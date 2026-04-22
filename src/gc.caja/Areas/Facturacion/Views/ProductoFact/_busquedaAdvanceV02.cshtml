@@ -32,9 +32,9 @@
                     </div>
                     <div class="filter-golden-body">   
                         <!--reemplazamos los check por input hidden-->
-                        @Html.Hidden("EstadoActivo", true)
-                        @Html.Hidden("EstadoDiscont", false)
-                        @Html.Hidden("EstadoInactivo", false)
+                        @Html.Hidden("chkActivos", true)
+                        @Html.Hidden("chkDisc", false)
+                        @Html.Hidden("chkInact", false)
                         @* <div class="row g-2 mt-2">
                             <!-- ✅ Estados de producto -->
                              <div class="col-md-6">
@@ -71,7 +71,7 @@
                                 </div>
                             </div>
                             <div class="col-md-4 text-end">
-                                <button type="button" class="btn btn-success btn-sm d-inline-flex align-items-center" id="btnBuscarProd">
+                                <button type="button" class="btn btn-golden btn-sm d-inline-flex align-items-center" id="btnBuscarProd">
                                     <i class="bx bx-search me-1"></i>
                                     <span>Buscar</span>
                                     <span id="spnBuscarProd" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
