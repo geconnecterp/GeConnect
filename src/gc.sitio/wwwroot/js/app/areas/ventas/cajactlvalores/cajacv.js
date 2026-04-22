@@ -463,7 +463,7 @@ function ProcesarSeleccionFila($fila) {
     // Habilitar / deshabilitar botones
     const habilitar = rend_pendiente_selected === true;
     $("#btnConfirmarArqueo").prop("disabled", !habilitar);
-    $("#btnAnularArqueo").prop("disabled", !habilitar);
+    $("#btnAnularArqueo").prop("disabled", habilitar);
     $("#btnAgregarArqueo").prop("disabled", !habilitar);
 
     // Cargar detalle

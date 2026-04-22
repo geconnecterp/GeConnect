@@ -390,14 +390,15 @@ namespace gc.sitio.Areas.Ventas.Controllers
 				}
 				else
 				{
+					var msj = ObtenerMensajeDesdeError(resultado.Mensaje ?? "");
 					// Log y respuesta de error/advertencia
 					_logger?.LogWarning("Error: {Mensaje}", resultado.Mensaje);
 					return Json(new
 					{
 						ok = false,
-						error = resultado.EsError,
+						error = true,
 						warn = resultado.EsWarn,
-						msg = resultado.Mensaje ?? "Error"
+						msg = msj
 					});
 				}
 			}
