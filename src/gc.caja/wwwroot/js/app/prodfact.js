@@ -312,9 +312,9 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
     $txtCodigo.prop('disabled', true);
     $btnBuscar.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> '); //Buscando...
     
-    // ❹ Actualizar mensaje de estado
+    // ❹ CORREGIDO: Actualizar mensaje de estado a "Buscando..."
     $('#mensajeEstadoProducto')
-        .removeClass('text-danger text-success')
+        .removeClass('text-danger text-success text-muted')  // ✅ Incluir text-muted
         .addClass('text-info')
         .html(`<i class='bx bx-loader-alt bx-spin'></i> Buscando producto...`);
     
@@ -353,10 +353,13 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
                 procesarRespuestaProducto(response, origenCarga);
             } else {
                 console.error('❌ Error en respuesta:', response.mensaje);
+                
+                // ✅ CORREGIDO: Mostrar error
                 $('#mensajeEstadoProducto')
-                    .removeClass('text-info text-success')
+                    .removeClass('text-info text-success text-muted')  // ✅ Incluir text-muted
                     .addClass('text-danger')
                     .html(`<i class='bx bx-error-circle'></i> ${response.mensaje}`);
+                
                 mostrarMensajeError(response.mensaje);
             }
         },
@@ -383,8 +386,9 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
                 }
             }
             
+            // ✅ CORREGIDO: Mostrar error de comunicación
             $('#mensajeEstadoProducto')
-                .removeClass('text-info text-success')
+                .removeClass('text-info text-success text-muted')  // ✅ Incluir text-muted
                 .addClass('text-danger')
                 .html(`<i class='bx bx-error-circle'></i> Error de comunicación`);
             
@@ -393,7 +397,7 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
         complete: function() {
             // Rehabilitar campo y botón
             $txtCodigo.prop('disabled', false).val('');
-            $btnBuscar.prop('disabled', false).html('<i class="bx bx-search"></i> '); //BUSCAR
+            $btnBuscar.prop('disabled', false).html('<i class="bx bx-search"></i>');
             
             // Focus en el campo
             $txtCodigo.trigger('focus');
@@ -402,8 +406,8 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
 }
 
 /**
- * ✅ ACTUALIZADO v5.0 CORREGIDA: Procesa la respuesta del servidor
- * NUEVO: Detecta si es único o múltiple según flags del servidor
+ * ✅ ACTUALIZADO: Procesa la respuesta del servidor
+ * CORREGIDO: Manejo correcto de estados del mensaje
  */
 function procesarRespuestaProducto(response, origenCarga) {
     console.log('═══════════════════════════════════════════════════');
@@ -418,8 +422,9 @@ function procesarRespuestaProducto(response, origenCarga) {
     if (!producto) {
         console.warn('⚠️ No se recibió producto en la respuesta');
         
+        // ✅ CORREGIDO
         $('#mensajeEstadoProducto')
-            .removeClass('text-info text-success')
+            .removeClass('text-info text-success text-muted')  // ✅ Incluir text-muted
             .addClass('text-danger')
             .html(`<i class='bx bx-error-circle'></i> Producto no encontrado`);
         
@@ -431,8 +436,9 @@ function procesarRespuestaProducto(response, origenCarga) {
     if (Array.isArray(producto) && producto.length === 0) {
         console.warn('⚠️ Array de productos vacío');
         
+        // ✅ CORREGIDO
         $('#mensajeEstadoProducto')
-            .removeClass('text-info text-success')
+            .removeClass('text-info text-success text-muted')  // ✅ Incluir text-muted
             .addClass('text-danger')
             .html(`<i class='bx bx-error-circle'></i> Producto no encontrado`);
         
@@ -611,55 +617,57 @@ function seleccionarProductoDeModal(index) {
 }
 
 /**
- * ✅ ACTUALIZADO v5.0: Valida y agrega un producto único
+ * ✅ ACTUALIZADO v5.1: Valida y agrega un producto único
+ * CORREGIDO: Manejo correcto de clases de color
  */
 function validarYAgregarProducto(producto, origenCarga) {
     const respuesta = producto.respuesta || 0;
     const descripcion = producto.p_desc || 'Sin descripción';
-    
+
     console.log('═══════════════════════════════════════════════════');
     console.log(`🔍 VALIDANDO PRODUCTO ÚNICO`);
     console.log('═══════════════════════════════════════════════════');
     console.log(`   Descripción: ${descripcion}`);
     console.log(`   Respuesta: ${respuesta}`);
     console.log(`   Origen carga: ${origenCarga}`);
-    
+
     // ❶ Producto con error (respuesta != 0)
     if (respuesta !== 0) {
         const mensaje = producto.respuesta_msj || 'El producto no se puede cargar';
-        
+
         console.error(`❌ Producto con error: ${mensaje}`);
-        
+
         // Para último detalle, ignorar silenciosamente
         if (origenCarga === 'ultimo') {
             console.log('ℹ️ Error ignorado (último detalle)');
             return;
         }
-        
-        // Para carga directa, mostrar error
+
+        // ✅ CORREGIDO: Eliminar TODAS las clases de color
         $('#mensajeEstadoProducto')
-            .removeClass('text-info text-success')
+            .removeClass('text-info text-success text-muted')  // ✅ Incluir text-muted
             .addClass('text-danger')
             .html(`<i class='bx bx-error-circle'></i> ${mensaje}`);
-        
+
         mostrarMensajeError(mensaje);
         return;
     }
-    
-    // ❷ Producto válido
+
+    // �②  Producto válido
     console.log('✅ Producto válido, agregando a grilla...');
     agregarProductoAGrilla(producto);
-    
-    // Mensaje de éxito
+
+    // ✅ CORREGIDO: Mensaje de éxito
     $('#mensajeEstadoProducto')
-        .removeClass('text-info text-danger')
+        .removeClass('text-info text-danger text-muted')  // ✅ Incluir text-muted
         .addClass('text-success')
         .html(`<i class='bx bx-check-circle'></i> Producto agregado`);
-    
+
+    // ✅ CORREGIDO: Restaurar estado inicial después de 3 segundos
     setTimeout(() => {
         $('#mensajeEstadoProducto')
-            .removeClass('text-success')
-            .addClass('text-muted')
+            .removeClass('text-success text-danger text-info')  // ✅ Eliminar colores
+            .addClass('text-muted')  // ✅ Restaurar text-muted
             .html('Presione <kbd>Enter</kbd> o <strong>BUSCAR</strong> para agregar producto');
     }, 3000);
 }
@@ -1015,7 +1023,7 @@ function mostrarSeccionProductos(clienteData) {
     console.log('Cliente recibido:', clienteData);
     
     // ❶ Hidratar datos del cliente en el modal
-    $('#txtClienteNombreProd').val(clienteData.nombre || '');
+    $('#txtClienteNombreProd').val(clienteData.denominacion || '');
     $('#txtClienteIdProd').val(clienteData.id || 'N/A');
     $('#txtClienteDomicilioProd').val(clienteData.domicilio || '');
     $('#txtCondicionAfipProd').val(clienteData.condicionAfip || '');
@@ -1114,7 +1122,8 @@ function ocultarSeccionProductos() {
 }
 
 /**
- * ✅ Limpia la grilla de productos
+ * ✅ ACTUALIZADO: Limpia la grilla de productos
+ * CORREGIDO: Restaurar estado inicial del mensaje
  */
 function limpiarGrillaProductos() {
     console.log('🧹 Limpiando grilla de productos...');
@@ -1138,9 +1147,10 @@ function limpiarGrillaProductos() {
     $('#txtTotalFactura').val('$ 0.00');
     $('#cantidadItems').text('0');
     
+    // ✅ CORREGIDO: Restaurar estado inicial del mensaje
     $('#mensajeEstadoProducto')
-        .removeClass('text-danger text-success text-info')
-        .addClass('text-muted')
+        .removeClass('text-danger text-success text-info')  // ✅ Eliminar todos los colores
+        .addClass('text-muted')  // ✅ Restaurar text-muted
         .html('Presione <kbd>Enter</kbd> o <strong>BUSCAR</strong> para agregar producto');
     
     console.log('✅ Grilla limpiada');
