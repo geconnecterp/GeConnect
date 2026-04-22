@@ -309,6 +309,10 @@ function limpiarModalCliente() {
     // ✅ NUEVO: Ocultar botón EDITAR
     $('#btnEditarCliente').hide();
     console.log('✅ Botón EDITAR ocultado');
+
+    //activamos boton Nuevo CF y desactivamos Lista de Precios
+    $("#btnListaPrecios").prop("disabled", true);
+    $("#btnNuevoCliente").prop("disabled", false);
     
     // ❿ LIMPIAR SESIÓN DEL SERVIDOR
     limpiarSesionClientesBuscados();
@@ -615,6 +619,10 @@ function mostrarDatosCliente(cliente) {
     
     $('#alertSinCliente').hide();
     $('#loaderClienteTemp').remove();
+
+    //activamos boton Lista de Precios y desactivamos Nuevo CF
+    $("#btnListaPrecios").prop("disabled", false);
+    $("#btnNuevoCliente").prop("disabled", true);
     
     const $cardBody = $('#cardDatosCliente .card-body');
     if ($cardBody.length > 0) {
@@ -628,7 +636,7 @@ function mostrarDatosCliente(cliente) {
         ? `${cliente.tdocDesc} ${cliente.documento}` 
         : (cliente.tipoNumero || '');
     
-    $('#txtNombre').val(cliente.nombre || '');
+    $('#txtNombre').val(cliente.denominacion || '');
     $('#txtClienteId').val(idDisplay);
     $('#txtDomicilio').val(cliente.domicilio || '');
     $('#txtCondicionAfip').val(cliente.condicionAfip || '');

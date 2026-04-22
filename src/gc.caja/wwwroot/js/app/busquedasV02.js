@@ -70,9 +70,9 @@ function busquedaAvanzadaProductosV02(pag) {
     const ri01 = $("#Rel01B2Item").val() || "";        // ✅ "" (vacío)
     const ri02 = $("#Rel02B2Item").val() || $("#Rel02B2").val() || ""; // ✅ "" (vacío)
     const ri03 = $("#Rel03B2 option:selected").val() || "%"; // ✅ "%" (comodín)
-    const act = $("#chkActivos").is(":checked");
-    const dis = $("#chkDisc").is(":checked");
-    const ina = $("#chkInact").is(":checked");
+    const act = $("#chkActivos").val(); // $("#chkActivos").is(":checked");
+    const dis = $("#chkDisc").val();// $("#chkDisc").is(":checked");
+    const ina = $("#chkInact").val();// $("#chkInact").is(":checked");
     
     let cstk = true;
     let sstk = false;
@@ -313,14 +313,17 @@ function selectRegDbl(x) {
     
     // ❹ CRÍTICO: Determinar qué código usar (priorizar código de barras)
     let codigoAUsar;
-    if (codigoBarras && codigoBarras !== '' && codigoBarras !== '-' && codigoBarras !== 'N/A') {
-        codigoAUsar = codigoBarras;
-        console.log(`   ✅ Usando código de barras: ${codigoAUsar}`);
-    } else {
-        codigoAUsar = idProducto;
-        console.log(`   ✅ Usando ID de producto: ${codigoAUsar}`);
-    }
-    
+    codigoAUsar = idProducto; //solo se proporcionará el codigo del producto y no el barrado
+
+    //if (codigoBarras && codigoBarras !== '' && codigoBarras !== '-' && codigoBarras !== 'N/A') {
+    //    codigoAUsar = codigoBarras;
+    //    console.log(`   ✅ Usando código de barras: ${codigoAUsar}`);
+    //} else {
+    //    codigoAUsar = idProducto;
+    //    console.log(`   ✅ Usando ID de producto: ${codigoAUsar}`);
+    //}
+
+
     // ❺ Cerrar modal de búsqueda avanzada
     $("#busquedaModal").modal("hide");
     console.log('   → Modal cerrado');
