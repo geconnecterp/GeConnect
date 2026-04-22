@@ -365,6 +365,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     id = datos.cta_id,
                     apellido = nombre[0] ?? string.Empty,
                     nombre = string.Join(" ", nombre.Skip(1)) ?? string.Empty,
+                    denominacion = datos.cta_denominacion,
                     domicilio = datos.cta_domicilio ?? string.Empty,
 
                     // ✅ Tipo de documento separado

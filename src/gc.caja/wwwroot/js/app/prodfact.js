@@ -310,7 +310,7 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
     const $btnBuscar = $('#btnBuscarProducto');
     
     $txtCodigo.prop('disabled', true);
-    $btnBuscar.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Buscando...');
+    $btnBuscar.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> '); //Buscando...
     
     // ❹ Actualizar mensaje de estado
     $('#mensajeEstadoProducto')
@@ -393,7 +393,7 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
         complete: function() {
             // Rehabilitar campo y botón
             $txtCodigo.prop('disabled', false).val('');
-            $btnBuscar.prop('disabled', false).html('<i class="bx bx-search"></i> BUSCAR');
+            $btnBuscar.prop('disabled', false).html('<i class="bx bx-search"></i> '); //BUSCAR
             
             // Focus en el campo
             $txtCodigo.trigger('focus');

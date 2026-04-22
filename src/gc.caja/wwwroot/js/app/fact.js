@@ -628,7 +628,7 @@ function mostrarDatosCliente(cliente) {
         ? `${cliente.tdocDesc} ${cliente.documento}` 
         : (cliente.tipoNumero || '');
     
-    $('#txtNombre').val(cliente.nombre || '');
+    $('#txtNombre').val(cliente.denominacion || '');
     $('#txtClienteId').val(idDisplay);
     $('#txtDomicilio').val(cliente.domicilio || '');
     $('#txtCondicionAfip').val(cliente.condicionAfip || '');
