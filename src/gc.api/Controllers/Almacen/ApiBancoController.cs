@@ -42,5 +42,20 @@ namespace gc.api.Controllers.Almacen
 
 			return Ok(response);
 		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ABMChequeListaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetBancoChequeLista()
+		{
+			ApiResponse<List<ABMChequeListaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _bancoServicio.GetBancoChequeLista();
+
+			response = new ApiResponse<List<ABMChequeListaDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }

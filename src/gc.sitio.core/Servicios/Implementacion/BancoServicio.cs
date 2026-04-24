@@ -21,6 +21,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 	{
 		private const string RutaAPI = "/api/apibanco";
 		private const string ObtenerBancoParaABM = "/GetBancoParaABM";
+		private const string ObtenerBancoChequeLista = "/GetBancoChequeLista";
 		private readonly AppSettings _appSettings;
 		public BancoServicio(IOptions<AppSettings> options, ILogger<BancoServicio> logger) : base(options, logger)
 		{
@@ -67,6 +68,50 @@ namespace gc.sitio.core.Servicios.Implementacion
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error al intentar obtener los datos del banco.");
+				throw;
+			}
+		}
+
+		public List<ABMChequeListaDto> GetBancoChequeLista(string token)
+		{
+			ApiResponse<List<ABMChequeListaDto>> respuesta;
+			string stringData;
+			try
+			{
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerBancoChequeLista}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (!string.IsNullOrEmpty(stringData))
+					{
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<ABMChequeListaDto>>>(stringData)
+							?? new ApiResponse<List<ABMChequeListaDto>>([]);
+					}
+					else
+					{
+						throw new Exception("No se logro obtener la respuesta de la API con los datos de los cheques. Verifique.");
+					}
+					return respuesta.Data;
+				}
+				else
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogError($"Error al intentar obtener los datos de los cheques: {stringData}");
+					throw new NegocioException("Hubo un error al intentar obtener los datos de los cheques");
+				}
+
+			}
+			catch (NegocioException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener los datos de los cheques.");
 				throw;
 			}
 		}

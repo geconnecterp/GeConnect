@@ -1,4 +1,6 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Ventas;
 using gc.sitio.Controllers;
 using Microsoft.Extensions.Options;
@@ -49,6 +51,41 @@ namespace gc.sitio.Areas.Ventas.Controllers
 				_context.HttpContext?.Session.SetString("VtasPVCtlRendDetalleLista", json);
 			}
 		}
-		
+
+		public List<CuentaDto> ClientesLista
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("ClientesLista") ?? string.Empty;
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<CuentaDto>();
+				}
+				return JsonConvert.DeserializeObject<List<CuentaDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ClientesLista", json);
+			}
+		}
+
+		public List<ABMChequeListaDto> ChequesLista
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("ChequesLista") ?? string.Empty;
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<ABMChequeListaDto>();
+				}
+				return JsonConvert.DeserializeObject<List<ABMChequeListaDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ChequesLista", json);
+			}
+		}
 	}
 }

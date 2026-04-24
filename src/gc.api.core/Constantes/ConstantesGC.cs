@@ -477,6 +477,8 @@
 			public const string SP_ABM_CUENTA_FIN_DATOS = "SPGECO_ABM_MediosPagos_Ctaf_Datos";
 			public const string SP_ABM_BANCO_LISTA = "SPGECO_ABM_Bancos_Lista";
 			public const string SP_ABM_BANCO_DATOS = "SPGECO_ABM_Bancos_Datos";
+			public const string SP_ABM_BCO_CH_LISTA = "SPGECO_ABM_BCO_CH_Lista";
+			public const string SP_ABM_BCO_CH_LISTA_2 = "SPGECO_ABM_BCO_CH_Lista_2";
 			public const string SP_ABM_GASTOS_LISTA = "SPGECO_ABM_Gastos_Lista";
 			public const string SP_ABM_GASTOS_DATOS = "SPGECO_ABM_Gastos_Datos";
 

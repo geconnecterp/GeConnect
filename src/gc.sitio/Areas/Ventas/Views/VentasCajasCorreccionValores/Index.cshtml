@@ -37,6 +37,7 @@
 @section scripts {
 	<script type="text/javascript">
 
+		var autoComRel01Url = "@Url.Action("BuscarClientes", "ventascajascorreccionvalores", new { area = "Ventas" })";
 		let homeCtlValoresUrl = '@Url.Action("index", "ventascajascorreccionvalores", new { area = "Ventas" })';
 		let obtenerDiasPorSucursalUrl = '@Url.Action("ObtenerDiasPorSucursal", "ventascajascorreccionvalores", new { area = "Ventas" })';
 		let cargarDatosDeCierresUrl = '@Url.Action("CargarDatosDeCierres", "ventascajascorreccionvalores", new { area = "Ventas" })';
@@ -51,6 +52,11 @@
 		let agregarMedioDePagoUrl = '@Url.Action("AgregarMedioDePago", "ventascajascorreccionvalores", new { area = "Ventas" })'
 		let confirmacionContableUrl = '@Url.Action("ConfirmacionContable", "ventascajascorreccionvalores", new { area = "Ventas" })';
 		let obtenerPartialDeValoresUrl = '@Url.Action("ObtenerPartialDeValores", "ventascajascorreccionvalores", new { area = "Ventas" })';
+		let guardarTCTDUrl = '@Url.Action("guardarTCTD", "ventascajascorreccionvalores", new { area = "Ventas" })';
+		let guardarMUBAUrl = '@Url.Action("guardarMUBA", "ventascajascorreccionvalores", new { area = "Ventas" })';
+		let guardarCHUrl = '@Url.Action("guardarCH", "ventascajascorreccionvalores", new { area = "Ventas" })';
+		let urlObtenerPlazaPorBanco = '@Url.Action("ObtenerPlazaPorBanco", "ventascajascorreccionvalores", new { area = "Ventas" })';
+		let actualizarItemConceptoValorEnDetalleRendUrl = '@Url.Action("ActualizarItemConceptoValorEnDetalleRend", "ventascajascorreccionvalores", new { area = "Ventas" })';
  
 		/*URL para componente de Seleccion de Valores*/
 		let abrirComponenteDeSeleccionDeValoresUrl = "@Url.Action("AbrirComponente", "selecciondevalores", new { area = "ControlComun" })";

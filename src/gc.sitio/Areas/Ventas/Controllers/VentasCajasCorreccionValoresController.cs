@@ -1,8 +1,10 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.Ventas;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Ventas.Models.VentasCajasCorreccionValores;
@@ -28,17 +30,22 @@ namespace gc.sitio.Areas.Ventas.Controllers
 		private readonly IAdministracionServicio _administracionServicio;
 		private readonly ITipoCuentaFinServicio _tipoCuentaServicio;
 		private readonly IABMMedioDePagoServicio _iABMMedioDePagoServicio;
+		private readonly IBancoServicio _bancoServicio;
+		private readonly ICuentaServicio _cuentaServicio;
 		public VentasCajasCorreccionValoresController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<VentasCajasCorreccionValoresController> logger,
 													  ICajaServicio cajaServicio, IAdministracionServicio administracionServicio,
 													  IApiVentasServicio apiVentasServicio, ITipoCuentaFinServicio tipoCuentaServicio,
-													  IABMMedioDePagoServicio iABMMedioDePagoServicio) : base(options, contexto, logger)
+													  IABMMedioDePagoServicio iABMMedioDePagoServicio, IBancoServicio bancoServicio,
+													  ICuentaServicio cuentaServicio) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_iCajaSrv = cajaServicio;
 			_administracionServicio = administracionServicio;
 			_apiVentasServicio = apiVentasServicio;
+			_cuentaServicio = cuentaServicio;
 			_iABMMedioDePagoServicio = iABMMedioDePagoServicio;
 			_tipoCuentaServicio = tipoCuentaServicio;
+			_bancoServicio = bancoServicio;
 		}
 
 		public IActionResult Index()
@@ -605,7 +612,7 @@ namespace gc.sitio.Areas.Ventas.Controllers
 				var model = ObtenerModelDesdeTcf_id(tcf_id);
 				return PartialView(partialName, model);
 			}
-			
+
 			catch (Exception ex)
 			{
 				RespuestaGenerica<EntidadBase> response = new()
@@ -619,7 +626,84 @@ namespace gc.sitio.Areas.Ventas.Controllers
 			}
 		}
 
+		[HttpPost]
+		public IActionResult ObtenerPlazaPorBanco(string bc_id)
+		{
+			if (string.IsNullOrWhiteSpace(bc_id))
+				return Json(new { ok = false, mensaje = "bc_id inválido" });
+
+			// Aquí obtenés la lista desde tu servicio o repositorio
+			List<ABMChequeListaDto> lista = ChequesLista;
+
+			var item = lista.FirstOrDefault(x => x.bc_id == bc_id);
+
+			if (item == null)
+				return Json(new { ok = false, mensaje = "Banco no encontrado" });
+
+			return Json(new { ok = true, data = item });
+		}
+
+		[HttpPost]
+		public JsonResult BuscarClientes(string prefix)
+		{
+			var top = ClientesLista.Where(x => x.Cta_Denominacion.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
+			var tipos = top.Select(x => new ComboGenDto { Id = x.Cta_Id, Descripcion = $"{x.Cta_Denominacion} ({x.Cta_Id})" });
+			return Json(tipos);
+		}
+
+		[HttpPost]
+		public JsonResult ActualizarItemConceptoValorEnDetalleRend(ConceptoValorDesdeCorreccionVtaPVDto detalle, string caja_nro_proceso, int caja_nro_cierre, int caja_nro_rend, string tcf_id, string ins_id, string ins_detalle, int rend_item)
+		{
+			var msg = string.Empty;
+			try
+			{
+				if (string.IsNullOrEmpty(caja_nro_proceso))
+				{
+					msg = "Faltan datos obligatorios: nro_proceso";
+					throw new NegocioException(msg);
+				}
+				if (caja_nro_cierre <= 0)
+				{
+					msg = "Faltan datos obligatorios: nro_cierre";
+					throw new NegocioException(msg);
+				}
+				if (caja_nro_rend <= 0)
+				{
+					msg = "Faltan datos obligatorios: caja_nro_rend";
+					throw new NegocioException(msg);
+				}
+				if (VtasPVCtlRendDetalleLista == null || VtasPVCtlRendDetalleLista.Count <= 0)
+				{
+					msg = $"Error al obtener los datos del detalle de la rendicion seleccionada. Nro. Proceso: {caja_nro_proceso} Cierre: {caja_nro_cierre} Rendición: {caja_nro_rend}";
+					throw new NegocioException(msg);
+				}
+
+				var item = new VtasPVCtlRendDetalleDto();
+				var listaTempo = VtasPVCtlRendDetalleLista;
+				var listaFiltrada = listaTempo.Where(x => x.caja_nro_proceso == caja_nro_proceso && x.caja_nro_cierre == caja_nro_cierre && x.caja_nro_rend == caja_nro_rend).ToList();
+				if (rend_item != 0)
+					item = listaFiltrada.Where(x => x.rend_item == rend_item).First();
+				else
+					item = listaFiltrada.First();
+				ObtenerConceptoValor(item, detalle);
+				return Json(new { Ok = false, error = false, msg, concepto = item.concepto_valor });
+			}
+			catch (Exception)
+			{
+				return Json(new { Ok = false, error = true, msg });
+			}
+		}
+
 		#region Métodos Privados
+
+		private void ObtenerConceptoValor(VtasPVCtlRendDetalleDto source, ConceptoValorDesdeCorreccionVtaPVDto detalle)
+		{
+			var dato1_valor = string.IsNullOrWhiteSpace(detalle.op_dato1_valor) && string.IsNullOrWhiteSpace(detalle.op_dato1_desc) ? string.Empty : detalle.op_dato1_valor;
+			var dato2_valor = string.IsNullOrWhiteSpace(detalle.op_dato2_valor) && string.IsNullOrWhiteSpace(detalle.op_dato2_desc) ? string.Empty : $"{detalle.op_dato2_desc}:{detalle.op_dato2_valor}";
+			var dato3_valor = string.IsNullOrWhiteSpace(detalle.op_dato3_valor) && string.IsNullOrWhiteSpace(detalle.op_dato3_desc) ? string.Empty : $"{detalle.op_dato3_desc}:{detalle.op_dato3_valor}";
+			var dato_fecha = detalle.op_fecha_valor != null ? $"Fecha Val.:{detalle.op_fecha_valor.Value:dd/MM/yyyy}" : string.Empty;
+			source.concepto_valor = $"{dato1_valor} {dato2_valor} {dato3_valor} {dato_fecha}";
+		}
 		private IMedioDePago ObtenerModelDesdeTcf_id(string tcf_id)
 		{
 			switch (tcf_id)
@@ -640,13 +724,25 @@ namespace gc.sitio.Areas.Ventas.Controllers
 					};
 					return modelTD;
 				case "MU":
-					var modelMU = new MedioDePagoMUModel();
+					var modelMU = new MedioDePagoMUModel()
+					{
+						ListaMediosDePago = ObtenerMediosDePago(tcf_id)
+					};
 					return modelMU;
 				case "CH":
-					var modelCH = new MedioDePagoCHModel();
+					var modelCH = new MedioDePagoCHModel()
+					{
+						ListaBcoCheqs = ObtenerChequeLista(),
+						FechaVto = DateTime.Now.Date
+					};
+					var Rel01List = new List<ComboGenDto>();
+					ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(Rel01List);
 					return modelCH;
 				case "BA":
-					var modelBA = new MedioDePagoBAModel();
+					var modelBA = new MedioDePagoBAModel()
+					{
+						ListaMediosDePago = ObtenerMediosDePago(tcf_id)
+					};
 					return modelBA;
 				default:
 					var modelNI = new MedioDePagoNIModel();
@@ -711,6 +807,11 @@ namespace gc.sitio.Areas.Ventas.Controllers
 			else
 				model.ListaSucursales = HelperMvc<ComboGenDto>.ListaGenerica([]);
 			model.ListaDias = HelperMvc<ComboGenDto>.ListaGenerica([]);
+			if (ClientesLista.Count == 0)
+			{
+				var lista = _cuentaServicio.ObtenerListaCuentaComercial("%", 'C', TokenCookie).Result;
+				ClientesLista = lista;
+			}
 		}
 		private SelectList ObtenerLista(List<AdministracionDto> adms)
 		{
@@ -721,12 +822,42 @@ namespace gc.sitio.Areas.Ventas.Controllers
 		private SelectList ObtenerMediosDePago(string tcf_id)
 		{
 			var medios = _iABMMedioDePagoServicio.ObtenerMediosDePagoLista(tcf_id, TokenCookie).Result;
-			if (medios != null && medios.ListaEntidad !=null && medios.ListaEntidad.Count > 0)
+			if (medios != null && medios.ListaEntidad != null && medios.ListaEntidad.Count > 0)
 				return HelperMvc<ComboGenDto>.ListaGenerica(medios.ListaEntidad.Select(x => new ComboGenDto { Id = x.ins_id, Descripcion = x.ins_lista }));
 			else
 				return HelperMvc<ComboGenDto>.ListaGenerica([]);
 		}
+
+		private SelectList ObtenerChequeLista()
+		{
+			var cheques = _bancoServicio.GetBancoChequeLista(TokenCookie);
+			if (cheques != null && cheques.Count > 0)
+			{
+				ChequesLista = cheques;
+				return HelperMvc<ComboGenDto>.ListaGenerica(cheques.Select(x => new ComboGenDto { Id = x.bc_id, Descripcion = x.bc_denominacion }));
+			}
+			else
+			{
+				ChequesLista = [];
+				return HelperMvc<ComboGenDto>.ListaGenerica([]);
+			}
+		}
 		#endregion
+	}
+
+	public class ConceptoValorDesdeCorreccionVtaPVDto : Dto
+	{
+		public string tcf_id { get; set; } = string.Empty;
+		public string op_dato1_valor { get; set; } = string.Empty;
+		public string op_dato1_desc { get; set; } = string.Empty;
+		public string op_dato2_valor { get; set; } = string.Empty;
+		public string op_dato2_desc { get; set; } = string.Empty;
+		public string op_dato3_valor { get; set; } = string.Empty;
+		public string op_dato3_desc { get; set; } = string.Empty;
+		public DateTime? op_fecha_valor { get; set; }
+		public decimal op_importe { get; set; } = 0.00M;
+		public string? cta_id { get; set; } = string.Empty;
+		public string ins_id { get; set; } = string.Empty;
 	}
 
 	public class IgnoreAndTrimResolver : DefaultContractResolver

@@ -1,5 +1,45 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model MedioDePagoBAModel
 @{
 }
+<style>
+	.min-width {
+		width: 30% !important;
+		max-width: 30% !important;
+	}
+</style>
+<div class="modal-header">
+	<h5 class="modal-title" id="modalCenterTitle">Transferencia Bancaria</h5>
+	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+	<div class="input-group input-group-sm">
+		<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm fixed-width-80">Tarjeta: </span>
+		@Html.DropDownListFor(m => m.MedioDePagoSeleccionado, Model.ListaMediosDePago, "Seleccionar", new { @id = "listaMediosDePago", @class = "form-control inputEditable activable" })
+	</div>
+	<div class="input-group input-group-sm mt-2">
+		<span class="input-group-text fixed-width-80 justify-content-end">Nro. Tarjeta: </span>
+		<input type="text" asp-for="Titular" class="form-control activable inputEditable text-start min-width" />
+	</div>
+	<div class="input-group input-group-sm mt-2">
+		<span class="input-group-text fixed-width-80 justify-content-end">Lote: </span>
+		<input type="text" asp-for="NroOrden" class="form-control activable inputEditable text-start min-width" />
+	</div>
+	<div class="input-group input-group-sm mt-2">
+		<span class="input-group-text fixed-width-80 justify-content-end">Cupón: </span>
+		<input type="text" asp-for="Cuit" class="form-control activable inputEditable text-start min-width" />
+	</div>
+	<div class="input-group input-group-sm mt-2">
+		<span class="input-group-text fixed-width-80 justify-content-end">Importe: </span>
+		<input type="text" asp-for="Importe" class="form-control activable inputEditable text-start min-width" />
+	</div>
+</div>
+<div class="modal-footer">
+	<div class="input-group input-group-sm">
+		<button type="button" class="btn btn-info btn-sm ms-1" id="btnAceptarDesdeModalValores">
+			<i class="bx bx-edit"></i> Aceptar
+		</button>
+		<button type="button" class="btn btn-outline-secondary btn-sm ms-1" id="btnSalir" data-bs-dismiss="modal">
+			<i class="bx bx-log-out-circle"></i> Cancelar
+		</button>
+	</div>
+</div>

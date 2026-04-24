@@ -24,5 +24,13 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<BancoDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<ABMChequeListaDto> GetBancoChequeLista()
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_ABM_BCO_CH_LISTA_2;
+			var ps = new List<SqlParameter>();
+			var listaTemp = _repository.EjecutarLstSpExt<ABMChequeListaDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

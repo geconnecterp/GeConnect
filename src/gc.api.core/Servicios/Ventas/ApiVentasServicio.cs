@@ -113,6 +113,7 @@ namespace gc.api.core.Servicios
 				new SqlParameter("@json_rend", request.json_rend),
 				new SqlParameter("@adm_id", request.adm_id),
 				new SqlParameter("@usu_id", request.usu_id),
+				new SqlParameter("@app", "CTL"),
 			};
 
 			var result = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
