@@ -472,14 +472,7 @@ $(function () {
                 
                 if (status === 'timeout') {
                     mensajeError = "El proceso de cambio de PV tardó demasiado tiempo. Por favor, contacte al administrador.";
-                } else if (xhr.status === 401) {
-                    mensajeError = "Su sesión ha expirado. Será redirigido al login.";
-                    mostrarErrorYSalir(mensajeError);
-                    setTimeout(() => {
-                        window.location.href = logout;
-                    }, 2000);
-                    return;
-                } else if (xhr.status === 500) {
+                }  else if (xhr.status === 500) {
                     mensajeError = "Error interno del servidor. Contacte al administrador.";
                 } else if (xhr.responseJSON && xhr.responseJSON.mensaje) {
                     mensajeError = xhr.responseJSON.mensaje;
@@ -663,17 +656,18 @@ $(function () {
         );
     }
 
+    // ✅ ACTUALIZADO: Función de manejo de errores AJAX unificada
     function manejarErrorAjax(xhr, status, error, operacion) {
         let mensajeError = `Error desconocido al ${operacion}.`;
 
+        // ✅ NUEVO: Usar función centralizada de siteGen.js
+        if (esSesionExpirada(xhr.status)) {
+            manejarSesionExpirada(`La operación de ${operacion} falló porque su sesión ha expirado.`);
+            return;
+        }
+
         if (status === 'timeout') {
             mensajeError = `La operación de ${operacion} tardó demasiado tiempo. Por favor, intente nuevamente.`;
-        } else if (xhr.status === 401) {
-            mensajeError = "Su sesión ha expirado. Será redirigido al login.";
-            setTimeout(() => {
-                window.location.href = logout;
-            }, 2000);
-            return;
         } else if (xhr.status === 500) {
             mensajeError = "Error interno del servidor. Contacte al administrador.";
         } else if (xhr.responseJSON && xhr.responseJSON.mensaje) {
@@ -801,24 +795,7 @@ $(function () {
                 
                 if (status === 'timeout') {
                     mensajeError = "La validación tardó demasiado tiempo. Por favor, intente nuevamente.";
-                } else if (xhr.status === 401) {
-                    mensajeError = "Su sesión ha expirado. Será redirigido al login.";
-                    AbrirMensaje(
-                        "Sesión Expirada",
-                        mensajeError,
-                        function () {
-                            $("#msjModal").modal("hide");
-                            setTimeout(() => {
-                                window.location.href = logout;
-                            }, 300);
-                        },
-                        false,
-                        ["Aceptar"],
-                        "warn!",
-                        null
-                    );
-                    return;
-                } else if (xhr.status === 500) {
+                }  else if (xhr.status === 500) {
                     mensajeError = "Error interno del servidor. Contacte al administrador.";
                 } else if (xhr.responseJSON && xhr.responseJSON.message) {
                     mensajeError = xhr.responseJSON.message;
@@ -925,14 +902,7 @@ $(function () {
 
                 if (status === 'timeout') {
                     mensajeError = "El proceso de cierre tardó demasiado tiempo. Por favor, contacte al administrador para verificar el estado de la caja.";
-                } else if (xhr.status === 401) {
-                    mensajeError = "Su sesión ha expirado. Será redirigido al login.";
-                    mostrarErrorCierre(mensajeError);
-                    setTimeout(() => {
-                        window.location.href = logout;
-                    }, 2000);
-                    return;
-                } else if (xhr.status === 500) {
+                }  else if (xhr.status === 500) {
                     mensajeError = "Error interno del servidor al procesar el cierre. Contacte al administrador.";
                 } else if (xhr.responseJSON && xhr.responseJSON.mensaje) {
                     mensajeError = xhr.responseJSON.mensaje;

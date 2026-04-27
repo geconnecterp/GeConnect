@@ -1,0 +1,156 @@
+﻿@*
+    ════════════════════════════════════════════════════════════
+    VISTA PARCIAL: DATOS DEL CLIENTE (HEADER REUTILIZABLE)
+    ════════════════════════════════════════════════════════════
+    Uso:
+        @await Html.PartialAsync("_datosClienteComun", new { 
+            SufijoId = "Calc",
+            MostrarTipoComprobante = true,
+            TipoComprobanteTexto = "FACTURA A"
+        })
+    
+    Parámetros:
+    - SufijoId: string (ej: "Calc", "Prod", "Pago") - Para IDs únicos
+    - MostrarTipoComprobante: bool - Si muestra el badge de tipo comprobante
+    - TipoComprobanteTexto: string - Texto del badge (opcional)
+*@
+
+@{
+    // ✅ Obtener parámetros del ViewData o usar valores por defecto
+    var sufijoId = ViewData["SufijoId"] as string ?? "Default";
+    var mostrarTipoComprobante = (ViewData["MostrarTipoComprobante"] as bool?) ?? true;
+    var tipoComprobanteTexto = ViewData["TipoComprobanteTexto"] as string ?? "FACTURA A";
+    
+    // ✅ Generar IDs únicos con el sufijo
+    var idNombre = $"txtClienteNombre{sufijoId}";
+    var idClienteId = $"txtClienteId{sufijoId}";
+    var idDomicilio = $"txtClienteDomicilio{sufijoId}";
+    var idCondicionAfip = $"txtCondicionAfip{sufijoId}";
+    var idCuit = $"txtClienteCuit{sufijoId}";
+    var idEmail = $"txtClienteEmail{sufijoId}";
+    var idMovil = $"txtClienteMovil{sufijoId}";
+    var idBadgeTipoComprobante = $"badgeTipoComprobante{sufijoId}";
+}
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- HEADER GOLDEN CON DATOS DEL CLIENTE -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div class="modal-header bg-gradient-golden p-0">
+    <div class="w-100">
+        <!-- Título y Badge -->
+        <div class="d-flex justify-content-between align-items-center p-3 border-bottom border-light">
+            <h5 class="mb-0 text-white">
+                <i class='bx bx-receipt'></i>
+                FACTURACIÓN
+            </h5>
+            @if (mostrarTipoComprobante)
+            {
+                <div class="d-flex gap-2">
+                    <span class="badge bg-white text-dark fs-6" id="@idBadgeTipoComprobante">
+                        <i class='bx bx-file'></i> @tipoComprobanteTexto
+                    </span>
+                </div>
+            }
+        </div>
+        
+        <!-- Datos del cliente compactos -->
+        <div class="p-2 bg-white bg-opacity-10">
+            <!-- FILA 1: Datos principales -->
+            <div class="row g-2 mb-2">
+                <!-- Nombre -->
+                <div class="col-md-5">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
+                            <i class='bx bx-user'></i> Cliente
+                        </span>
+                        <input type="text" 
+                               class="form-control form-control-sm fw-bold bg-white" 
+                               id="@idNombre" 
+                               readonly>
+                    </div>
+                </div>
+                
+                <!-- ID -->
+                <div class="col-md-2">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
+                            <i class='bx bx-id-card'></i> ID
+                        </span>
+                        <input type="text" 
+                               class="form-control form-control-sm text-center fw-bold bg-white" 
+                               id="@idClienteId" 
+                               readonly>
+                    </div>
+                </div>
+                
+                <!-- Domicilio -->
+                <div class="col-md-5">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
+                            <i class='bx bx-map'></i> Domicilio
+                        </span>
+                        <input type="text" 
+                               class="form-control form-control-sm bg-white" 
+                               id="@idDomicilio" 
+                               readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- FILA 2: Datos adicionales -->
+            <div class="row g-2">
+                <!-- Condición AFIP -->
+                <div class="col-md-3">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
+                            <i class='bx bx-receipt'></i> AFIP
+                        </span>
+                        <input type="text" 
+                               class="form-control form-control-sm bg-white" 
+                               id="@idCondicionAfip" 
+                               readonly>
+                    </div>
+                </div>
+                
+                <!-- CUIT/DNI -->
+                <div class="col-md-3">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
+                            <i class='bx bx-file'></i> CUIT
+                        </span>
+                        <input type="text" 
+                               class="form-control form-control-sm bg-white" 
+                               id="@idCuit" 
+                               readonly>
+                    </div>
+                </div>
+                
+                <!-- Email -->
+                <div class="col-md-3">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
+                            <i class='bx bx-envelope'></i> Email
+                        </span>
+                        <input type="text" 
+                               class="form-control form-control-sm bg-white" 
+                               id="@idEmail" 
+                               readonly>
+                    </div>
+                </div>
+                
+                <!-- Móvil -->
+                <div class="col-md-3">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
+                            <i class='bx bx-phone'></i> Móvil
+                        </span>
+                        <input type="text" 
+                               class="form-control form-control-sm bg-white" 
+                               id="@idMovil" 
+                               readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

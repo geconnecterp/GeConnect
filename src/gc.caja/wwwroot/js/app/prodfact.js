@@ -99,7 +99,7 @@ function inicializarEventosProductos() {
     // ✅ Botones de acción especial
     $('#btnPreFactura').on('click', function() {
         console.log('📄 Cargar Pre-Factura...');
-        cargarPreFactura();
+        abrirModalPreFacturas(); // ← Llamar función de factPreFactura.js
     });
     
     $('#btnFacturaEmitida').on('click', function() {
@@ -364,34 +364,25 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
             }
         },
         error: function(xhr, status, error) {
-            console.error('❌ Error AJAX:', {
-                status: xhr.status,
-                error: error,
-                responseText: xhr.responseText
-            });
-            
-            let mensaje = 'Error al buscar el producto. Por favor, intente nuevamente.';
-            
-            if (xhr.status === 401 || xhr.status === 403) {
-                mensaje = 'Su sesión ha expirado. Por favor, vuelva a iniciar sesión.';
-            } else if (xhr.status === 500) {
-                mensaje = 'Error interno del servidor. Contacte al administrador.';
-                
-                // ✅ NUEVO: Mostrar detalles del error en consola
-                try {
-                    const errorDetail = JSON.parse(xhr.responseText);
-                    console.error('📋 Detalles del error 500:', errorDetail);
-                } catch (e) {
-                    console.error('📋 Respuesta del servidor:', xhr.responseText);
-                }
+            console.error('❌ ERROR AJAX AL BUSCAR PRODUCTO');
+            ocultarLoaderCalculando();
+
+            // ✅ NUEVO: Usar función centralizada
+            if (esSesionExpirada(xhr.status)) {
+                manejarSesionExpirada();
+                return;
             }
-            
-            // ✅ CORREGIDO: Mostrar error de comunicación
+
+            let mensaje = 'Error al buscar el producto. Por favor, intente nuevamente.';
+            if (xhr.status === 500) {
+                mensaje = 'Error interno del servidor. Contacte al administrador.';
+            }
+
             $('#mensajeEstadoProducto')
-                .removeClass('text-info text-success text-muted')  // ✅ Incluir text-muted
+                .removeClass('text-info text-success text-muted')
                 .addClass('text-danger')
                 .html(`<i class='bx bx-error-circle'></i> Error de comunicación`);
-            
+
             mostrarMensajeError(mensaje);
         },
         complete: function() {
@@ -676,80 +667,128 @@ function validarYAgregarProducto(producto, origenCarga) {
 // SECCIÓN 3: GESTIÓN DE GRILLA PRINCIPAL
 // ═══════════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════════
+// SECCIÓN 3: GESTIÓN DE GRILLA PRINCIPAL
+// ═══════════════════════════════════════════════════════════════════
+
 /**
- * ✅ ACTUALIZADO v5.0: Agrega un producto a la grilla principal
- * Adaptado a la estructura de ProductoDatosResponseDto
+ * ✅ ACTUALIZADO v7.2: Agrega un producto capturando TODOS los campos necesarios
+ * NUEVO: Captura campos adicionales del SP
  */
 function agregarProductoAGrilla(producto) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('➕ AGREGANDO PRODUCTO A LA GRILLA v5.0 REVERTIDO');
+    console.log('➕ AGREGANDO PRODUCTO A LA GRILLA v7.2');
     console.log('═══════════════════════════════════════════════════');
     console.log('   Producto recibido:', producto);
 
-    // ✅ Normalizar producto
+    // ❶ CALCULAR SIGUIENTE ITEM CORRELATIVO
+    const siguienteItem = productosFactura.length > 0
+        ? Math.max(...productosFactura.map(p => p.item || 0)) + 1
+        : 1;
+
+    console.log(`📊 Item correlativo calculado: ${siguienteItem}`);
+
+    // ❷ Normalizar producto CON TODOS LOS CAMPOS
     const productoNormalizado = {
-        // IDs y códigos
+        // ✅ Item correlativo
+        item: siguienteItem,
+
+        // ✅ IDs y códigos
         p_id: producto.p_id || '???',
         p_id_barrado: producto.p_id_barrado || '',
 
-        // Descripción
-        descripcion: producto.p_desc || 'Sin descripción',
+        // ✅ Descripción
+        p_desc: producto.p_desc || 'Sin descripción',
+        descripcion: producto.p_desc || 'Sin descripción', // Alias para uso interno
 
-        // Presentación
+        // ✅ Presentación
         unidadPresentacion: producto.p_unidad_pres || 1,
         peso: producto.p_peso || 0,
 
-        // ✅ Cantidad (YA calculada por el SP)
-        cantidadTotal: producto.cantidad_tot || 1,
+        // ✅ Cantidad
+        cantidad_tot: producto.cantidad_tot || 1,
+        cantidadTotal: producto.cantidad_tot || 1, // Alias para uso interno
 
-        // Precios
-        precioVenta: producto.p_pvta || 0,
-        precioCosto: producto.p_pcosto || 0,
+        // ✅ Precios
+        p_pvta: producto.p_pvta || 0,
+        precioVenta: producto.p_pvta || 0, // Alias para uso interno
+        p_pcosto: producto.p_pcosto || 0,
+        precioCosto: producto.p_pcosto || 0, // Alias para uso interno
+        p_pcosto_repo: producto.p_pcosto_repo || 0, // ✅ NUEVO
+        p_pneto: producto.p_pneto || 0, // ✅ NUEVO
 
-        // IVA
-        ivaAlicuota: producto.iva_alicuota || 0,
-        ivaImporte: producto.p_iva || 0,
+        // ✅ IVA
+        iva_situacion: producto.iva_situacion || '', // ✅ NUEVO
+        iva_alicuota: producto.iva_alicuota || 0,
+        ivaAlicuota: producto.iva_alicuota || 0, // Alias
+        p_iva: producto.p_iva || 0,
+        ivaImporte: producto.p_iva || 0, // Alias
 
-        // Impuestos internos
-        internAlicuota: producto.in_alicuota || 0,
-        internImporte: producto.p_in || 0,
+        // ✅ Impuestos internos
+        in_alicuota: producto.in_alicuota || 0,
+        internAlicuota: producto.in_alicuota || 0, // Alias
+        p_in: producto.p_in || 0,
+        internImporte: producto.p_in || 0, // Alias
 
-        // Otros
+        // ✅ Previsión de lista
+        lp_prevision_tot: producto.lp_prevision_tot || 0, // ✅ NUEVO
+        lp_prevision_pin: producto.lp_prevision_pin || 0, // ✅ NUEVO
+
+        // ✅ Precio de oferta
+        po: producto.po || false, // ✅ NUEVO
+        po_limite: producto.po_limite || 0, // ✅ NUEVO
+
+        // ✅ Precio total calculado
+        p_pvta_tot: calcularPrecioTotal(producto),
+        precioTotal: calcularPrecioTotal(producto), // Alias
+
+        // ✅ Otros datos
         rubro: producto.rub_desc || '',
         activo: producto.p_activo || 'S',
 
-        // ✅ Calcular precio total
-        precioTotal: calcularPrecioTotal(producto),
+        // ✅ Datos de origen
+        cta_id: clienteActualFactura?.id || '', // ✅ NUEVO - Del cliente en sesión
+        pre_id: producto.pre_id || null,
+        preId: producto.pre_id || null, // Alias
+        cpf_nro: producto.cpf_nro || null,
+        cpfNro: producto.cpf_nro || null, // Alias
 
-        // Datos de origen
-        preNro: producto.pre_nro || null,
-        cpfNro: producto.cpf_nro || null,
-
-        // ✅ Guardar datos completos
+        // ✅ Objeto completo original
         _original: producto
     };
 
-    // Agregar al array
+    // ❸ Agregar al array
     productosFactura.push(productoNormalizado);
 
-    // ✅ LOGS SIMPLIFICADOS
-    console.log(`✅ Producto agregado a grilla:`);
-    console.log(`   - Código: ${productoNormalizado.p_id}`);
-    console.log(`   - Descripción: ${productoNormalizado.descripcion}`);
-    console.log(`   - Unidades por Presentación: ${productoNormalizado.unidadPresentacion}`);
-    console.log(`   - Cantidad Total (calculada por SP): ${productoNormalizado.cantidadTotal}`);
-    console.log(`   - Precio Unitario: $ ${formatearNumero(productoNormalizado.precioVenta, 2)}`);
-    console.log(`   - Precio Total: $ ${formatearNumero(productoNormalizado.precioTotal, 2)}`);
+    // ❹ LOGS COMPLETOS
+    console.log(`✅ Producto agregado con TODOS los campos:`);
+    console.log(`   - Item: ${productoNormalizado.item}`);
+    console.log(`   - p_id: ${productoNormalizado.p_id}`);
+    console.log(`   - p_id_barrado: ${productoNormalizado.p_id_barrado}`);
+    console.log(`   - p_desc: ${productoNormalizado.p_desc}`);
+    console.log(`   - p_pcosto: ${productoNormalizado.p_pcosto}`);
+    console.log(`   - p_pcosto_repo: ${productoNormalizado.p_pcosto_repo}`);
+    console.log(`   - p_pneto: ${productoNormalizado.p_pneto}`);
+    console.log(`   - p_pvta: ${productoNormalizado.p_pvta}`);
+    console.log(`   - cantidad_tot: ${productoNormalizado.cantidad_tot}`);
+    console.log(`   - p_pvta_tot: ${productoNormalizado.p_pvta_tot}`);
+    console.log(`   - iva_situacion: ${productoNormalizado.iva_situacion}`);
+    console.log(`   - iva_alicuota: ${productoNormalizado.iva_alicuota}`);
+    console.log(`   - p_iva: ${productoNormalizado.p_iva}`);
+    console.log(`   - in_alicuota: ${productoNormalizado.in_alicuota}`);
+    console.log(`   - p_in: ${productoNormalizado.p_in}`);
+    console.log(`   - po: ${productoNormalizado.po}`);
+    console.log(`   - po_limite: ${productoNormalizado.po_limite}`);
+    console.log(`   - lp_prevision_tot: ${productoNormalizado.lp_prevision_tot}`);
+    console.log(`   - lp_prevision_pin: ${productoNormalizado.lp_prevision_pin}`);
+    console.log(`   - cta_id: ${productoNormalizado.cta_id}`);
+    console.log(`   - pre_id: ${productoNormalizado.pre_id}`);
+    console.log(`   - cpf_nro: ${productoNormalizado.cpf_nro}`);
     console.log(`   📊 Total productos en grilla: ${productosFactura.length}`);
     console.log('═══════════════════════════════════════════════════');
 
-    // Recalcular total
     recalcularTotalFactura();
-
-    // Actualizar grilla visual
     actualizarGrillaProductos();
-
-    // Actualizar contador de items
     $('#cantidadItems').text(productosFactura.length);
 }
 
@@ -775,13 +814,17 @@ function calcularPrecioTotal(producto) {
 /**
  * ✅ ACTUALIZADO v5.0: Actualiza la visualización de la grilla principal
  */
+/**
+ * ✅ ACTUALIZADO v7.1: Actualiza la visualización de la grilla principal
+ * NUEVO: Muestra el campo `item` en la primera columna
+ */
 function actualizarGrillaProductos() {
     const $tbody = $('#tbodyProductos');
-    
+
     if (productosFactura.length === 0) {
         $tbody.html(`
             <tr id="rowSinProductos" class="compact-row">
-                <td colspan="8" class="text-center text-muted py-4">
+                <td colspan="9" class="text-center text-muted py-4">
                     <i class='bx bx-package bx-lg text-golden'></i>
                     <p class="mb-0 mt-2">
                         <strong>No hay productos cargados</strong><br>
@@ -792,15 +835,15 @@ function actualizarGrillaProductos() {
         `);
         return;
     }
-    
-    // Eliminar mensaje de "sin productos"
+
     $('#rowSinProductos').remove();
-    
-    // Generar filas
+
+    // ✅ Generar filas (con item)
     let html = '';
     productosFactura.forEach((producto, index) => {
         html += `
-            <tr class="compact-row" data-index="${index}">
+            <tr class="compact-row" data-index="${index}" data-item="${producto.item}">
+                <td class="text-center text-muted fw-bold">${producto.item}</td>
                 <td class="text-center fw-bold">${escapeHtml(producto.p_id)}</td>
                 <td class="text-center">${escapeHtml(producto.p_id_barrado)}</td>
                 <td class="text-start" style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(producto.descripcion)}">
@@ -829,9 +872,9 @@ function actualizarGrillaProductos() {
             </tr>
         `;
     });
-    
+
     $tbody.html(html);
-    console.log('✅ Grilla principal actualizada visualmente');
+    console.log('✅ Grilla principal actualizada visualmente (con items)');
 }
 
 /**
@@ -1154,7 +1197,7 @@ function limpiarGrillaProductos() {
         .html('Presione <kbd>Enter</kbd> o <strong>BUSCAR</strong> para agregar producto');
     
     console.log('✅ Grilla limpiada');
-}
+}   
 
 // ═══════════════════════════════════════════════════════════════════
 // SECCIÓN 6: CONFIRMACIÓN Y CANCELACIÓN
@@ -1200,104 +1243,240 @@ function ejecutarCancelarFactura() {
 /**
  * Confirma la factura
  */
+/**
+ * ✅ ACTUALIZADO v7.1: Confirma la factura y abre modal de cálculo
+ * 
+ * CAMBIOS RESPECTO A v7.0:
+ * - Incluye campo `item` en JSON de productos
+ * - Mantiene orden correlativo
+ */
+/**
+ * ✅ ACTUALIZADO v7.2: JSON COMPLETO con TODOS los campos requeridos
+ */
 function confirmarFactura() {
-    console.log('✅ Confirmando factura...');
-    
+    console.log('═══════════════════════════════════════════════════');
+    console.log('✅ CONFIRMANDO FACTURA v7.2');
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Validaciones previas...
     if (productosFactura.length === 0) {
+        console.warn('⚠️ No hay productos cargados');
         mostrarMensajeError('Debe cargar al menos un producto para continuar');
         return;
     }
-    
-    console.log('⚠️ TODO: Implementar confirmación de factura');
-    // TODO: Continuar con el flujo (pago, impresión, etc.)
-}
 
-// ═══════════════════════════════════════════════════════════════════
-// SECCIÓN 7: FUNCIONES AUXILIARES
-// ═══════════════════════════════════════════════════════════════════
+    if (!clienteActualFactura) {
+        console.error('❌ No hay cliente seleccionado');
+        mostrarMensajeError('Error: No hay cliente seleccionado');
+        return;
+    }
 
-/**
- * Formatea un número con separadores de miles
- */
-function formatearNumero(numero, decimales = 0) {
-    if (isNaN(numero)) return '0';
-    
-    return numero.toLocaleString('es-AR', {
-        minimumFractionDigits: decimales,
-        maximumFractionDigits: decimales
+    // ❸ Construir JSON COMPLETO con TODOS los campos
+    const productosArray = productosFactura.map((producto) => {
+        return {
+            // ✅ Item correlativo
+            item: producto.item || 0,
+
+            // ✅ IDs y códigos
+            p_id: producto.p_id || '',
+            p_id_barrado: producto.p_id_barrado || '',
+            p_desc: producto.p_desc || '',
+
+            // ✅ Precios
+            p_pcosto: producto.p_pcosto || 0,
+            p_pcosto_repo: producto.p_pcosto_repo || 0,
+            p_pneto: producto.p_pneto || 0,
+            p_pvta: producto.p_pvta || 0,
+
+            // ✅ Cantidad y total
+            cantidad_tot: producto.cantidad_tot || 0,
+            p_pvta_tot: producto.p_pvta_tot || 0,
+
+            // ✅ IVA
+            iva_situacion: producto.iva_situacion || '',
+            iva_alicuota: producto.iva_alicuota || 0,
+            p_iva: producto.p_iva || 0,
+
+            // ✅ Impuestos internos
+            in_alicuota: producto.in_alicuota || 0,
+            p_in: producto.p_in || 0,
+
+            // ✅ Previsión de lista
+            lp_prevision_tot: producto.lp_prevision_tot || 0,
+            lp_prevision_pin: producto.lp_prevision_pin || 0,
+
+            // ✅ Precio de oferta
+            po: producto.po || false,
+            po_limite: producto.po_limite || 0,
+
+            // ✅ Origen
+            cta_id: producto.cta_id || '',
+            pre_id: producto.pre_id || null,
+            cpf_nro: producto.cpf_nro || null
+        };
+    });
+
+    const jsonProductos = JSON.stringify(productosArray);
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📋 JSON COMPLETO de productos generado:');
+    console.log(jsonProductos);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❹ Calcular totales
+    const tot_rows = productosFactura.length;
+    const tot_cantidad = productosFactura.reduce((sum, p) => sum + (p.cantidad_tot || 0), 0);
+    const tot_pvta = totalFactura;
+
+    // ❺ Construir request DTO
+    const request = {
+        json_p: jsonProductos,
+        tot_rows: tot_rows,
+        tot_cantidad: tot_cantidad,
+        tot_pvta: tot_pvta,
+        lp_id: clienteActualFactura.listaPrecio || '001'
+    };
+
+    console.log('📤 Request completo a enviar:', request);
+
+    // ❻ Mostrar loader
+    mostrarLoaderCalculando();
+
+    // ❼ Llamar a la API
+    $.ajax({
+        url: typeof CalcularFilasUrl !== 'undefined' && CalcularFilasUrl
+            ? CalcularFilasUrl
+            : '/Facturacion/ProductoFact/CalcularFilas',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(request),
+        success: function (response) {
+            console.log('✅ RESPUESTA RECIBIDA');
+            ocultarLoaderCalculando();
+
+            if (!response || typeof response !== 'object') {
+                mostrarMensajeError('Error: Respuesta inválida del servidor');
+                return;
+            }
+
+            if (!response.ok) {
+                mostrarMensajeError(response.mensaje || 'Error al calcular totales');
+                return;
+            }
+
+            abrirModalCalculoFactura(response);
+        },
+        error: function (xhr, status, error) {
+            console.error('❌ ERROR EN CALCULAR FILAS');
+            ocultarLoaderCalculando();
+
+            // ✅ NUEVO: Usar función centralizada
+            if (esSesionExpirada(xhr.status)) {
+                manejarSesionExpirada('No se pudo calcular la factura porque su sesión ha expirado.');
+                return;
+            }
+
+            let mensaje = 'Error al calcular totales. Por favor, intente nuevamente.';
+            if (xhr.status === 500) {
+                mensaje = 'Error interno del servidor. Contacte al administrador.';
+            }
+
+            mostrarMensajeError(mensaje);
+        }
     });
 }
 
 /**
- * Escapa caracteres HTML para prevenir XSS
+ * ✅ NUEVO v6.0: Construye el array de productos en formato DTO
+ * 
+ * Transforma productosFactura a CalculaFilasJsonPDto[]
  */
-function escapeHtml(texto) {
-    if (!texto) return '';
+function construirProductosDTO() {
+    console.log('🔧 Construyendo productos DTO...');
     
-    const map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
-    };
+    const productosDTO = productosFactura.map((producto, index) => {
+        return {
+            // IDs
+            p_id: producto.p_id || '',
+            
+            // Cantidades (el SP ya calculó cantidad_tot)
+            cantidad: producto.cantidadTotal || 1,
+            
+            // Precios
+            p_pvta: producto.precioVenta || 0,
+            p_pcosto: producto.precioCosto || 0,
+            
+            // Impuestos
+            iva_alicuota: producto.ivaAlicuota || 0,
+            iva_importe: producto.ivaImporte || 0,
+            in_alicuota: producto.internAlicuota || 0,
+            in_importe: producto.internImporte || 0,
+            
+            // Datos de origen (para trazabilidad)
+            pre_id: producto.preId || null,
+            cpf_nro: producto.cpfNro || null,
+            
+            // Datos adicionales (opcionales)
+            p_desc: producto.descripcion || '',
+            unidad_pres: producto.unidadPresentacion || 1,
+            
+            // ✅ NUEVO: Índice para ordenamiento
+            orden: index + 1
+        };
+    });
     
-    return texto.replace(/[&<>"']/g, m => map[m]);
+    console.log(`✅ ${productosDTO.length} productos transformados a DTO`);
+    
+    return productosDTO;
 }
 
 /**
- * Muestra mensaje de error
+ * ✅ NUEVO v6.0: Muestra loader mientras se calculan totales
  */
-function mostrarMensajeError(mensaje) {
-    console.error('💬 Error:', mensaje);
+function mostrarLoaderCalculando() {
+    console.log('⏳ Mostrando loader de cálculo...');
     
-    AbrirMensaje(
-        "Error",
-        mensaje,
-        function () {
-            $("#msjModal").modal("hide");
-        },
-        false,
-        ["Aceptar"],
-        "error!",
-        null
-    );
+    // Deshabilitar botones
+    $('#btnConfirmarFactura').prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Calculando...');
+    $('#btnCancelarFactura').prop('disabled', true);
+    
+    // Mostrar overlay en la grilla
+    if ($('#overlayCalculando').length === 0) {
+        $('#modalProductosFactura .modal-body').append(`
+            <div id="overlayCalculando" style="
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(255, 255, 255, 0.9);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+            ">
+                <div class="text-center">
+                    <div class="spinner-border spinner-border-golden mb-3" role="status">
+                        <span class="visually-hidden">Calculando...</span>
+                    </div>
+                    <h5 class="text-golden">Calculando totales...</h5>
+                    <p class="text-muted">Por favor, espere un momento</p>
+                </div>
+            </div>
+        `);
+    }
 }
 
 /**
- * Muestra mensaje de éxito
+ * ✅ NUEVO v6.0: Oculta loader de cálculo
  */
-function mostrarMensajeExito(mensaje) {
-    console.log('💬 Éxito:', mensaje);
+function ocultarLoaderCalculando() {
+    console.log('✅ Ocultando loader de cálculo...');
     
-    AbrirMensaje(
-        "Éxito",
-        mensaje,
-        function () {
-            $("#msjModal").modal("hide");
-        },
-        false,
-        ["Aceptar"],
-        "ok!",
-        null
-    );
-}
-
-/**
- * ✅ NUEVO v4.0: Muestra mensaje de advertencia
- */
-function mostrarMensajeAdvertencia(mensaje) {
-    console.warn('💬 Advertencia:', mensaje);
+    // Rehabilitar botones
+    $('#btnConfirmarFactura').prop('disabled', false).html('<i class="bx bx-check-circle"></i> SEGUIR');
+    $('#btnCancelarFactura').prop('disabled', false);
     
-    AbrirMensaje(
-        "Advertencia",
-        mensaje,
-        function () {
-            $("#msjModal").modal("hide");
-        },
-        false,
-        ["Aceptar"],
-        "warning",
-        null
-    );
+    // Remover overlay
+    $('#overlayCalculando').remove();
 }

@@ -57,7 +57,7 @@
 
             public decimal cantidad_tot { get; set; }
 
-            public string? pre_nro { get; set; }
+            public string? pre_id { get; set; }
             public string? cpf_nro { get; set; }
 
             public int respuesta { get; set; }

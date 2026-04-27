@@ -19,7 +19,7 @@
     bottom: 40px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 9999;
+    z-index: 1000000;
     background: var(--vk-bg);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -88,14 +88,48 @@
 
 .vk-body {
     display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0;
+}
+
+.vk-alpha-section {
+    display: flex;
     flex-direction: column;
     gap: 6px;
+    flex: 1;
+}
+
+.vk-numpad-section {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    width: 100%;
+}
+
+/* Modo solo teclado numérico (más compacto y botones más grandes) */
+.vk-numpad-only {
+    max-width: 360px !important;
+}
+
+.vk-numpad-only .vk-body {
+    padding: 10px;
+}
+
+.vk-numpad-only .vk-key {
+    height: 70px;
+    font-size: 22px;
+}
+
+.vk-numpad-only .vk-key-v2 {
+    height: 148px; /* (70 * 2) + 8px gap */
 }
 
 .vk-row {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     gap: 6px;
+    width: 100%;
 }
 
 .vk-key {
@@ -111,9 +145,26 @@
     font-weight: 500;
     cursor: pointer;
     transition: all 0.1s;
-    flex: 1;
     min-width: 32px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.vk-alpha-section .vk-key {
+    flex: 1;
+}
+
+.vk-numpad-section .vk-key {
+    width: 100%;
+    margin: 0;
+}
+
+.vk-key-v2 {
+    grid-row: span 2;
+    height: 102px; /* (48 * 2) + 6px gap */
+}
+
+.vk-key-h2 {
+    grid-column: span 2;
 }
 
 .vk-key:active {
@@ -133,7 +184,6 @@
 .vk-key-enter {
     background: var(--vk-accent);
     color: white;
-    flex: 1; /* Changed from 2 to 1 to align with action column */
     border-color: transparent;
 }
 
@@ -142,31 +192,35 @@
 }
 
 .vk-key-space {
-    flex: 8;
+    flex: 6 !important;
 }
 
 .vk-key-w2 {
-    flex: 2;
-}
-
-.vk-key-w3 {
-    flex: 3;
+    flex: 2 !important;
 }
 
 .vk-key-w1-5 {
-    flex: 1.5;
+    flex: 1.5 !important;
 }
 
 .vk-separator {
     width: 12px;
-    flex: none;
-    pointer-events: none;
+    flex-shrink: 0;
 }
 
 /* Responsive para móviles muy pequeños */
-@media (max-width: 400px) {
-    .vk-key {
-        height: 42px;
-        font-size: 13px;
+@media (max-width: 600px) {
+    .vk-container {
+        padding: 10px;
+    }
+    .vk-body {
+        flex-direction: column;
+    }
+    .vk-numpad-section {
+        width: 100%;
+        margin-top: 10px;
+    }
+    .vk-separator {
+        display: none;
     }
 }

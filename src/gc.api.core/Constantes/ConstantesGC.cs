@@ -17,17 +17,19 @@
 			public const string SP_CAJA_CIERRE = "SPGECO_CAJA_Apertura_Cierre";
 			public const string SP_CAJA_BCUENTA = "SPGECO_CAJA_B_CUENTA";
 			public const string SP_CAJA_BCUENTA_D = "SPGECO_CAJA_B_CUENTA_DATOS";
-			public const string SP_CAJA_BPROD_D = "SPGECO_CAJA_B_PRODUCTO_DATOS";
 			public const string SP_CAJA_CF_CARGA = "SPGECO_CAJA_CF_CARGA";
 			public const string SP_CAJA_CF_CONFIRMAR = "SPGECO_CAJA_CF_CONFIRMAR";
             public const string SP_CAJA_DATOS = "SPGECO_CAJA_DATOS";
 			public const string SP_CAJA_GRAL_CIERRE = "SPGECO_CAJA_Grl_Cierre";
 			public const string SP_CAJA_GRAL_HAB = "SPGECO_CAJA_Grl_Habilitacion";
 			public const string SP_CAJA_PV_ABIERTOS = "SPGECO_CAJA_PV_Abiertos";
-			#endregion
+            //en ApiProductoFactServicio.cs se llama a este SP para obtener los datos del producto al ingresar un producto en la caja.
+            public const string SP_CAJA_BPROD_D = "SPGECO_CAJA_B_PRODUCTO_DATOS";
+			public const string SP_CAJA_CALCULA_FILAS = "SPGECO_CAJA_Ope_Calcula_Filas";
+            #endregion
 
-			#region VTAS
-			public const string SP_VTAS_PV_CTL_PROCESOS = "SPGECO_Vtas_PV_CTL_Procesos";
+            #region VTAS
+            public const string SP_VTAS_PV_CTL_PROCESOS = "SPGECO_Vtas_PV_CTL_Procesos";
 			public const string SP_VTAS_PV_CTL_CIERRES = "SPGECO_Vtas_PV_CTL_Cierres";
 			public const string SP_VTAS_PV_CTL_REND = "SPGECO_Vtas_PV_CTL_Rend";
 			public const string SP_VTAS_PV_CTL_REND_DETALLE = "SPGECO_Vtas_PV_CTL_Rend_Detalle";

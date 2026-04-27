@@ -1,0 +1,132 @@
+﻿@*
+    ════════════════════════════════════════════════════════════
+    MODAL: PRE-FACTURAS
+    ════════════════════════════════════════════════════════════
+    Permite seleccionar una pre-factura pendiente para cargar
+*@
+
+<!-- Modal Pre-Facturas -->
+<div class="modal fade modal-golden" 
+     id="modalPreFacturas" 
+     data-bs-backdrop="static" 
+     data-bs-keyboard="false" 
+     tabindex="-1" 
+     aria-labelledby="modalPreFacturasTitle" 
+     aria-hidden="true">
+    
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            
+            <!-- ════════════════════════════════════════════════════ -->
+            <!-- HEADER -->
+            <!-- ════════════════════════════════════════════════════ -->
+            <div class="modal-header bg-gradient-golden">
+                <h5 class="modal-title fw-bold text-white" id="modalPreFacturasTitle">
+                    <i class='bx bx-file-blank'></i> Prefacturas
+                </h5>
+            </div>
+
+            <!-- ════════════════════════════════════════════════════ -->
+            <!-- BODY -->
+            <!-- ════════════════════════════════════════════════════ -->
+            <div class="modal-body p-4 bg-light">
+                
+                <!-- Filtro: Solo Pendientes -->
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="form-check form-check-lg">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="chkSoloPendientes" 
+                                   checked>
+                            <label class="form-check-label fw-bold" for="chkSoloPendientes">
+                                <i class='bx bx-time-five'></i> Solo Pendientes
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla de Pre-Facturas -->
+                <div class="card card-golden">
+                    <div class="card-body p-0">
+                        <div class="table-responsive" style="max-height: 550px; overflow-y: auto;">
+                            <table class="table table-golden table-hover table-sm mb-0" id="tbPreFacturas">
+                                <thead class="table-golden-header sticky-top">
+                                    <tr>
+                                        <th class="text-center" style="width: 10%;">Código PF</th>
+                                        <th style="width: 25%;">Cliente</th>
+                                        <th class="text-center" style="width: 15%;">Docuemento</th>
+                                        <th class="text-center" style="width: 15%;">Fecha</th>
+                                        <th style="width: 20%;">Sector_sele</th>
+                                        <th class="text-center" style="width: 5%;">
+                                            <input type="checkbox" 
+                                                   class="form-check-input" 
+                                                   id="chkSeleccionarTodos"
+                                                   title="Seleccionar todos">
+                                        </th>
+                                        <th class="text-center" style="width: 10%;">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyPreFacturas">
+                                    <!-- Mensaje inicial -->
+                                    <tr id="rowSinPreFacturas">
+                                        <td colspan="7" class="text-center text-muted py-5">
+                                            <i class='bx bx-file-blank bx-lg text-golden'></i>
+                                            <p class="mb-0 mt-2">
+                                                <strong>No hay pre-facturas disponibles</strong><br>
+                                                <small>Cambie el filtro o verifique que existan pre-facturas pendientes</small>
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ════════════════════════════════════════════════════ -->
+            <!-- FOOTER -->
+            <!-- ════════════════════════════════════════════════════ -->
+            <div class="modal-footer bg-white">
+                <button type="button" 
+                        class="btn btn-danger btn-lg px-5" 
+                        id="btnCancelarPreFactura">
+                    <i class='bx bx-x-circle'></i> CANCELAR
+                </button>
+                <button type="button" 
+                        class="btn btn-success btn-lg px-5" 
+                        id="btnSeguirPreFactura"
+                        disabled>
+                    <i class='bx bx-check-circle'></i> SEGUIR
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- ESTILOS ADICIONALES -->
+<!-- ════════════════════════════════════════════════════════ -->
+<style>
+    /* Fila seleccionada */
+    #tbPreFacturas tbody tr.selected-prefactura {
+        background-color: #d4e6f1;
+        border-left: 4px solid #3498db;
+    }
+
+    /* Hover en filas */
+    #tbPreFacturas tbody tr:not(#rowSinPreFacturas):hover {
+        background-color: #faf5e6;
+        cursor: pointer;
+    }
+
+    /* Checkbox en la tabla */
+    #tbPreFacturas .form-check-input {
+        width: 1.2rem;
+        height: 1.2rem;
+        cursor: pointer;
+    }
+</style>

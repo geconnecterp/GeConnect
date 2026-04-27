@@ -1,0 +1,121 @@
+﻿@*
+    ════════════════════════════════════════════════════════════
+    MODAL: CAMBIAR LISTA DE PRECIOS
+    ════════════════════════════════════════════════════════════
+    Permite cambiar la lista de precios activa durante la facturación
+*@
+
+<!-- Modal Cambiar Lista de Precios -->
+<div class="modal fade modal-golden" 
+     id="modalCambiarListaPrecios" 
+     data-bs-backdrop="static" 
+     data-bs-keyboard="false" 
+     tabindex="-1" 
+     aria-labelledby="modalCambiarListaPreciosTitle" 
+     aria-hidden="true">
+    
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 600px;">
+        <div class="modal-content">
+            
+            <!-- ════════════════════════════════════════════════════ -->
+            <!-- HEADER -->
+            <!-- ════════════════════════════════════════════════════ -->
+            <div class="modal-header bg-gradient-golden">
+                <h5 class="modal-title fw-bold text-white" id="modalCambiarListaPreciosTitle">
+                    <i class='bx bx-list-ul'></i> Cambiar Lista de Precios
+                </h5>
+            </div>
+
+            <!-- ════════════════════════════════════════════════════ -->
+            <!-- BODY -->
+            <!-- ════════════════════════════════════════════════════ -->
+            <div class="modal-body p-4">
+                
+                <!-- Select de Lista de Precios -->
+                <div class="mb-3">
+                    <label for="selListaPreciosModal" class="form-label fw-bold">
+                        <i class='bx bx-purchase-tag'></i> Lista de Precios:
+                    </label>
+                    <select class="form-select form-select-lg fw-bold" 
+                            id="selListaPreciosModal">
+                        <option value="">-- Seleccione una lista --</option>
+                        <!-- Las opciones se cargarán dinámicamente -->
+                    </select>
+                </div>
+
+                <!-- Listbox con listas disponibles -->
+                <div class="border rounded p-2 bg-light" style="max-height: 300px; overflow-y: auto;">
+                    <div class="fw-bold text-muted mb-2 px-2">
+                        <i class='bx bx-list-check'></i> Lista de Precios Disponibles:
+                    </div>
+                    <div class="list-group" id="listboxListasPrecios">
+                        <!-- Las opciones se cargarán dinámicamente -->
+                        <button type="button" 
+                                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                                disabled>
+                            <span class="text-muted">
+                                <i class='bx bx-loader-alt bx-spin'></i> Cargando listas de precios...
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Información adicional -->
+                <div class="alert alert-info mt-3 mb-0" role="alert">
+                    <i class='bx bx-info-circle'></i>
+                    <small>
+                        <strong>Nota:</strong> El cambio de lista de precios afectará 
+                        los precios de los productos agregados a partir de este momento.
+                    </small>
+                </div>
+
+            </div>
+
+            <!-- ════════════════════════════════════════════════════ -->
+            <!-- FOOTER -->
+            <!-- ════════════════════════════════════════════════════ -->
+            <div class="modal-footer">
+                <button type="button" 
+                        class="btn btn-danger btn-lg px-4" 
+                        id="btnCancelarCambiarLP">
+                    <i class='bx bx-x-circle'></i> CANCELAR
+                </button>
+                <button type="button" 
+                        class="btn btn-success btn-lg px-4" 
+                        id="btnConfirmarCambiarLP"
+                        disabled>
+                    <i class='bx bx-check-circle'></i> Cambiar LP
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- ESTILOS ADICIONALES -->
+<!-- ════════════════════════════════════════════════════════ -->
+<style>
+    /* Ítem seleccionado en el listbox */
+    #listboxListasPrecios .list-group-item.active {
+        background-color: #daa520;
+        border-color: #b8860b;
+        color: white;
+        font-weight: 600;
+    }
+
+    /* Hover en items del listbox */
+    #listboxListasPrecios .list-group-item:hover:not(.active):not(:disabled) {
+        background-color: #faf5e6;
+        cursor: pointer;
+    }
+
+    /* Badge con código de lista */
+    .badge-lp-codigo {
+        background-color: #f0ad4e;
+        color: white;
+        font-weight: 600;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+    }
+</style>

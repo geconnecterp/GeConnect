@@ -362,11 +362,16 @@ function buscarCliente() {
         },
         error: function (xhr) {
             let mensaje = 'Error al buscar el cliente';
-            
+
+            // ✅ NUEVO: Usar función centralizada
+            if (esSesionExpirada(xhr.status)) {
+                manejarSesionExpirada();
+                return;
+            }
+
             if (xhr.status === 404) mensaje = 'Servicio no encontrado';
-            else if (xhr.status === 401 || xhr.status === 403) mensaje = 'Sesión expirada';
             else if (xhr.status === 500) mensaje = 'Error interno del servidor';
-            
+
             mostrarMensajeError(mensaje);
             limpiarVista();
         },
@@ -406,15 +411,20 @@ function cargarGrillaClientes() {
             attachGrillaEventos();
         },
         error: function (xhr) {
+            // ✅ NUEVO: Usar función centralizada
+            if (esSesionExpirada(xhr.status)) {
+                manejarSesionExpirada();
+                return;
+            }
+
             let mensajeError = 'Error al cargar la grilla de clientes';
-            if (xhr.status === 401 || xhr.status === 403) mensajeError = 'Sesión expirada';
-            else if (xhr.status === 500) mensajeError = 'Error interno del servidor';
-            
+            if (xhr.status === 500) mensajeError = 'Error interno del servidor';
+
             $('#cardGrillaClientes').html(`
-                <div class="alert alert-danger m-3">
-                    <i class='bx bx-error-circle'></i> ${mensajeError}
-                </div>
-            `);
+            <div class="alert alert-danger m-3">
+                <i class='bx bx-error-circle'></i> ${mensajeError}
+            </div>
+        `);
         }
     });
 }
@@ -598,13 +608,17 @@ function buscarClientePorId(clienteId) {
             mostrarDatosCliente(response.cliente);
         },
         error: function (xhr, status) {
+            // ✅ NUEVO: Usar función centralizada
+            if (esSesionExpirada(xhr.status)) {
+                manejarSesionExpirada();
+                return;
+            }
+
             let mensaje = 'Error al cargar los datos del cliente';
-            
             if (status === 'timeout') mensaje = 'La búsqueda tardó demasiado tiempo';
             else if (xhr.status === 404) mensaje = 'Servicio no encontrado';
-            else if (xhr.status === 401 || xhr.status === 403) mensaje = 'Sesión expirada';
             else if (xhr.status === 500) mensaje = 'Error interno del servidor';
-            
+
             mostrarMensajeError(mensaje);
             limpiarVista();
         }
@@ -774,13 +788,17 @@ function abrirModalClienteEditar() {
             }, 500);
         },
         error: function(xhr, status) {
+            // ✅ NUEVO: Usar función centralizada
+            if (esSesionExpirada(xhr.status)) {
+                manejarSesionExpirada();
+                return;
+            }
+
             let mensajeError = 'Error al cargar datos del cliente desde el servidor';
-            
             if (status === 'timeout') mensajeError = 'La solicitud tardó demasiado tiempo';
-            else if (xhr.status === 401 || xhr.status === 403) mensajeError = 'Sesión expirada';
             else if (xhr.status === 500) mensajeError = 'Error interno del servidor';
             else if (xhr.status === 404) mensajeError = 'Servicio no encontrado';
-            
+
             mostrarMensajeError(mensajeError);
         }
     });
@@ -1041,20 +1059,17 @@ function guardarCliente() {
             }
         },
         error: function (xhr, status, error) {
-            console.error('═══════════════════════════════════════════════════');
             console.error('❌ ERROR AJAX AL GUARDAR CLIENTE');
-            console.error('═══════════════════════════════════════════════════');
-            console.error('   Status HTTP:', xhr.status);
-            console.error('   Status:', status);
-            console.error('   Error:', error);
-            console.error('═══════════════════════════════════════════════════');
+
+            // ✅ NUEVO: Usar función centralizada
+            if (esSesionExpirada(xhr.status)) {
+                manejarSesionExpirada('No se pudo guardar el cliente porque su sesión ha expirado.');
+                return;
+            }
 
             let mensajeError = 'Error al comunicarse con el servidor';
-
             if (xhr.status === 400) {
                 mensajeError = 'Datos inválidos. Por favor, verifique los campos.';
-            } else if (xhr.status === 401 || xhr.status === 403) {
-                mensajeError = 'Su sesión ha expirado. Por favor, vuelva a iniciar sesión.';
             } else if (xhr.status === 500) {
                 mensajeError = 'Error interno del servidor. Contacte al administrador.';
             } else if (xhr.responseJSON && xhr.responseJSON.mensaje) {

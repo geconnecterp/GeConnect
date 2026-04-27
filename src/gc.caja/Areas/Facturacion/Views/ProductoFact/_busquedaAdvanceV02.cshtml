@@ -11,8 +11,10 @@
     style="z-index: 999999;">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="buscTitulo">
+            
+            <!-- ✅ HEADER COMPACTO -->
+            <div class="modal-header py-2">
+                <h5 class="modal-title mb-0" id="buscTitulo">
                     <i class="bx bx-search-alt me-2"></i>
                     Búsqueda de Productos
                 </h5>
@@ -22,80 +24,61 @@
                         aria-label="Close">
                 </button>
             </div>
-            <div class="modal-body">
-                <!-- ✅ SIMPLIFICADO: Solo filtros básicos -->
-                <div class="filter-golden mb-3">
-                    <div class="filter-golden-header">
-                        <h6 class="mb-0">
-                            <i class="bx bx-filter-alt me-2"></i>Filtros de Búsqueda
-                        </h6>
-                    </div>
-                    <div class="filter-golden-body">   
-                        <!--reemplazamos los check por input hidden-->
-                        @Html.Hidden("chkActivos", true)
-                        @Html.Hidden("chkDisc", false)
-                        @Html.Hidden("chkInact", false)
-                        @* <div class="row g-2 mt-2">
-                            <!-- ✅ Estados de producto -->
-                             <div class="col-md-6">
-                                <div class="d-flex gap-3">
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkActivos" checked />
-                                        <label class="form-check-label fw-medium" for="chkActivos">Activos</label>
-                                    </div>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" name="EstadoDiscont" id="chkDisc" />
-                                        <label class="form-check-label fw-medium" for="chkDisc">Discontinuos</label>
-                                    </div>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" name="EstadoInactivo" id="chkInact" />
-                                        <label class="form-check-label fw-medium" for="chkInact">Inactivos</label>
-                                    </div>
-                                </div>
-                            </div>                                                         
-                        </div>*@
-                        
-                        <!-- ✅ Campo de búsqueda + Botón -->
-                        <div class="row g-2 mt-2">
-                            <div class="col-md-8">
-                                <div class="input-group input-group-sm">
-                                    <span class="input-group-text">
-                                        <i class="bx bx-search"></i> Buscar
-                                    </span>
-                                    <input type="text" 
-                                           class="form-control inputEditable" 
-                                           name="Search" 
-                                           id="Search" 
-                                           placeholder="Ingrese código, descripción o código de barras..." 
-                                           autofocus />
-                                </div>
+            
+            <!-- ✅ BODY OPTIMIZADO -->
+            <div class="modal-body p-2">
+                
+                <!-- ✅ FILTROS HIDDEN (no ocupan espacio visual) -->
+                @Html.Hidden("chkActivos", true)
+                @Html.Hidden("chkDisc", false)
+                @Html.Hidden("chkInact", false)
+                
+                <!-- ✅ BARRA DE BÚSQUEDA COMPACTA -->
+                <div class="bg-golden-search p-2 rounded mb-2">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-9">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-golden text-white border-0">
+                                    <i class="bx bx-search"></i>
+                                </span>
+                                <input type="text" 
+                                       class="form-control form-control-sm inputEditable jsteclado" 
+                                       name="Search" 
+                                       id="Search" 
+                                       placeholder="Código, descripción o código de barras..." 
+                                       autofocus />
                             </div>
-                            <div class="col-md-4 text-end">
-                                <button type="button" class="btn btn-golden btn-sm d-inline-flex align-items-center" id="btnBuscarProd">
-                                    <i class="bx bx-search me-1"></i>
-                                    <span>Buscar</span>
-                                    <span id="spnBuscarProd" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
-                                </button>
-                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" 
+                                    class="btn btn-golden btn-sm w-100" 
+                                    id="btnBuscarProd">
+                                <i class="bx bx-search me-1"></i>
+                                Buscar
+                                <span id="spnBuscarProd" 
+                                      class="spinner-border spinner-border-sm ms-2 d-none" 
+                                      role="status" 
+                                      aria-hidden="true"></span>
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- ✅ SIMPLIFICADO: Grid de resultados SIN selección múltiple -->
-                <div class="card card-golden">
-                    <div class="card-body p-2">
-                        <div id="divBusquedaAvanzada">
-                            <!-- Aquí se carga el grid dinámicamente -->
+                <!-- ✅ GRID COMPACTO (sin card wrapper extra) -->
+                <div class="border border-golden rounded">
+                    <div id="divBusquedaAvanzada" class="p-0">
+                        <!-- Aquí se carga el grid dinámicamente -->
+                        <div class="text-center text-muted py-3">
+                            <i class="bx bx-info-circle me-2"></i>
+                            Ingrese un criterio de búsqueda
                         </div>
-                        @Html.Hidden("pagEstado", false)
                     </div>
+                    @Html.Hidden("pagEstado", false)
                 </div>
 
-                <!-- Paginación -->
-                <div class="row mt-3">
-                    <div class="col-md-12 d-flex justify-content-center">
-                        <div id="divPaginacionAdv"></div>
-                    </div>
+                <!-- ✅ PAGINACIÓN COMPACTA -->
+                <div class="mt-2">
+                    <div id="divPaginacionAdv" class="d-flex justify-content-center"></div>
                 </div>
             </div>
         </div>

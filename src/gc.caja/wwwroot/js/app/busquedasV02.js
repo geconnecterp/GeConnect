@@ -61,40 +61,36 @@ $(function () {
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * ✅ COMPLETAMENTE SIMPLIFICADA: Sin filtros de proveedor/rubro/familia
+ * ✅ ACTUALIZADO v3.0: Búsqueda avanzada con detección de sesión expirada
  */
 function busquedaAvanzadaProductosV02(pag) {
-    console.log('🔍 BÚSQUEDA AVANZADA DE PRODUCTOS - CAJA V2.0');
+    console.log('🔍 BÚSQUEDA AVANZADA DE PRODUCTOS - CAJA V3.0');
     
     // ✅ Parámetros con valores por defecto correctos
-    const ri01 = $("#Rel01B2Item").val() || "";        // ✅ "" (vacío)
-    const ri02 = $("#Rel02B2Item").val() || $("#Rel02B2").val() || ""; // ✅ "" (vacío)
-    const ri03 = $("#Rel03B2 option:selected").val() || "%"; // ✅ "%" (comodín)
-    const act = $("#chkActivos").val(); // $("#chkActivos").is(":checked");
-    const dis = $("#chkDisc").val();// $("#chkDisc").is(":checked");
-    const ina = $("#chkInact").val();// $("#chkInact").is(":checked");
+    const ri01 = $("#Rel01B2Item").val() || "";
+    const ri02 = $("#Rel02B2Item").val() || $("#Rel02B2").val() || "";
+    const ri03 = $("#Rel03B2 option:selected").val() || "%";
+    const act = $("#chkActivos").val();
+    const dis = $("#chkDisc").val();
+    const ina = $("#chkInact").val();
     
     let cstk = true;
     let sstk = false;
-    //if ($("#rdConStk").is(":checked") || $("#rdSinStk").is(":checked")) {
-    //    sstk = $("#rdSinStk").is(":checked");
-    //    cstk = !sstk;
-    //}
 
     const buscar = $("#Search").val() || "";
     
     // ✅ CRÍTICO: Incluir lp_id
     const data1 = { 
-        ri01,        // ✅ ""
-        ri02,        // ✅ ""
-        ri03,        // ✅ "%"
+        ri01,
+        ri02,
+        ri03,
         act, 
         dis, 
         ina, 
         cstk, 
         sstk, 
         buscar, 
-        lp_id: admLp_id  // ✅ "001" (o valor actualizado dinámicamente)
+        lp_id: admLp_id
     };
 
     const buscaNew = JSON.stringify(dataBakV02) !== JSON.stringify(data1);
@@ -112,7 +108,6 @@ function busquedaAvanzadaProductosV02(pag) {
     const data2 = { sort, sortDir, pag, buscaNew };
     const data = $.extend({}, data1, data2);
 
-    // ✅ Usar la URL correcta (BusquedaAvanzadaV02)
     const urlBusqueda = busquedaAvanzadaUrl;
     
     console.log('📡 Enviando petición a:', urlBusqueda);
@@ -123,12 +118,42 @@ function busquedaAvanzadaProductosV02(pag) {
 
         console.log('📦 Respuesta recibida:', response);
 
+        // ═══════════════════════════════════════════════════════════════════
+        // ✅ NUEVO: DETECCIÓN DE SESIÓN EXPIRADA
+        // ═══════════════════════════════════════════════════════════════════
         if (response.error) {
+            console.log('═══════════════════════════════════════════════════');
+            console.log('⚠️ RESPUESTA CON ERROR DETECTADA');
+            console.log('═══════════════════════════════════════════════════');
+            console.log('   response.error:', response.error);
+            console.log('   response.msg:', response.msg);
+            console.log('   response.redirect:', response.redirect);
+            console.log('   response.redirectUrl:', response.redirectUrl);
+            
+            // ❶ CRÍTICO: Detectar sesión expirada mediante validarRespuestaSesion()
+            if (!validarRespuestaSesion(response)) {
+                console.log('🚪 Sesión expirada detectada - Redirigiendo...');
+                return; // validarRespuestaSesion() ya maneja la redirección
+            }
+            
+            // ❷ ALTERNATIVO: Detección explícita de redirect
+            if (response.redirect && response.redirectUrl) {
+                console.log('🚪 Redirección solicitada por el servidor');
+                console.log(`   URL destino: ${response.redirectUrl}`);
+                
+                manejarSesionExpirada(response.msg);
+                return;
+            }
+            
+            // ❸ Si es otro tipo de error, mostrar mensaje
+            console.log('❌ Error de búsqueda (no es sesión expirada)');
             ControlaMensajeError(response.msg || "Error en búsqueda");
+            
+            console.log('═══════════════════════════════════════════════════');
             return;
         }
 
-        // ✅ CRÍTICO: Validación y asignación de metadata
+        // ✅ Procesamiento normal de resultados exitosos
         const metadata = response.metadata || {
             totalCount: response.productos ? response.productos.length : 0,
             totalPages: 1,
@@ -138,7 +163,6 @@ function busquedaAvanzadaProductosV02(pag) {
 
         console.log('📊 Metadata procesada:', metadata);
 
-        // ✅ CRÍTICO: Actualizar variables globales de paginación
         totalRegs = metadata.totalCount;
         pags = metadata.totalPages;
         pagRegs = metadata.pageSize;
@@ -150,11 +174,9 @@ function busquedaAvanzadaProductosV02(pag) {
         console.log(`   - pagRegs: ${pagRegs}`);
         console.log(`   - pagina: ${pagina}`);
 
-        // ✅ SIMPLIFICADO: Generar grid sin selección múltiple
         const htmlGrid = generarGridSimplificadoCaja(response.productos, metadata);
         $("#divBusquedaAvanzada").html(htmlGrid);
 
-        // ✅ CRÍTICO: Activar paginación solo si hay resultados
         if (metadata.totalCount > 0) {
             $("#pagEstado").val(true).trigger("change");
         } else {
@@ -166,8 +188,20 @@ function busquedaAvanzadaProductosV02(pag) {
         console.log('═══════════════════════════════════════════════════');
     }, function (error) {
         try { buscarAvUIStop(); } catch (e) { }
-        console.error('❌ Error en búsqueda avanzada:', error);
-        ControlaMensajeError("Error en búsqueda avanzada: " + (error.message || "Error desconocido"));
+        
+        console.error('═══════════════════════════════════════════════════');
+        console.error('❌ ERROR EN CALLBACK DE ERROR AJAX');
+        console.error('═══════════════════════════════════════════════════');
+        console.error('   Error completo:', error);
+        
+        // ✅ CRÍTICO: El interceptor global de siteGen.js ya maneja sesiones expiradas
+        // Si llegamos aquí y no es sesión expirada, mostrar error genérico
+        if (error && !esSesionExpirada(error.status)) {
+            console.error('❌ Error de comunicación (no es sesión expirada)');
+            ControlaMensajeError("Error en búsqueda avanzada: " + (error.message || "Error desconocido"));
+        }
+        
+        console.error('═══════════════════════════════════════════════════');
     });
 
     return true;
