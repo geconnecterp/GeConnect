@@ -11,6 +11,7 @@ using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.EntidadesComunes.Options;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq.Dynamic.Core;
@@ -196,28 +197,42 @@ namespace gc.caja.Controllers
         {
             get
             {
-
-                try
+                string json = _context.HttpContext?.Session.GetString("LP_Id") ?? string.Empty;
+                if (string.IsNullOrEmpty(json))
                 {
-                    // Solo intentar acceder a los claims si el usuario está autenticado
-                    if (!(User.Identity?.IsAuthenticated ?? false))
-                    {
-                        return string.Empty;
-                    }
-
-                    var lpidClaim = User.Claims.FirstOrDefault(c => c.Type.Contains("lp_id"));
-                    if (lpidClaim == null || string.IsNullOrEmpty(lpidClaim.Value))
-                    {
-                        return string.Empty;
-                    }
-                    return lpidClaim.Value;
-                }
-                catch (Exception)
-                {
-                    // Manejo de excepciones
                     return string.Empty;
                 }
+                return JsonConvert.DeserializeObject<string>(json) ?? string.Empty;
             }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("LP_Id", json);
+            }
+            //get
+            //{
+
+            //    try
+            //    {
+            //        // Solo intentar acceder a los claims si el usuario está autenticado
+            //        if (!(User.Identity?.IsAuthenticated ?? false))
+            //        {
+            //            return string.Empty;
+            //        }
+
+            //        var lpidClaim = User.Claims.FirstOrDefault(c => c.Type.Contains("lp_id"));
+            //        if (lpidClaim == null || string.IsNullOrEmpty(lpidClaim.Value))
+            //        {
+            //            return string.Empty;
+            //        }
+            //        return lpidClaim.Value;
+            //    }
+            //    catch (Exception)
+            //    {
+            //        // Manejo de excepciones
+            //        return string.Empty;
+            //    }
+            //}
         }
 
         public string AdministracionId
@@ -368,17 +383,99 @@ namespace gc.caja.Controllers
             }
         }
 
-        public string UserName
+        //public string UserName
+        //{
+        //    get
+        //    {
+        //        var handler = new JwtSecurityTokenHandler(); //Libreria System.IdentityModel.Token.Jwt (6.7.1)
+        //        var tokenS = handler.ReadToken(TokenCookie) as JwtSecurityToken;
+        //        if (tokenS == null)
+        //            return string.Empty;
+        //        var usuario = tokenS.Claims.First(c => c.Type.Contains("user")).Value;
+        //        if (string.IsNullOrEmpty(usuario)) { return string.Empty; }
+        //        return usuario;
+        //    }
+        //}
+
+        // ✅ ACTUALIZADO: Propiedad UserName con protección contra tokens nulos
+        protected string UserName
         {
             get
             {
-                var handler = new JwtSecurityTokenHandler(); //Libreria System.IdentityModel.Token.Jwt (6.7.1)
-                var tokenS = handler.ReadToken(TokenCookie) as JwtSecurityToken;
-                if (tokenS == null)
+                try
+                {
+                    // ✅ CRÍTICO: Validar que TokenCookie no sea nulo/vacío
+                    if (string.IsNullOrWhiteSpace(TokenCookie))
+                    {
+                        _logger?.LogWarning("Intento de acceso a UserName con TokenCookie nulo/vacío");
+                        return string.Empty;
+                    }
+
+                    var handler = new JwtSecurityTokenHandler();
+
+                    // ✅ NUEVO: Validar que el token sea legible antes de intentar leerlo
+                    if (!handler.CanReadToken(TokenCookie))
+                    {
+                        _logger?.LogWarning("Intento de acceso a UserName con token ilegible");
+                        return string.Empty;
+                    }
+
+                    var tokenS = handler.ReadToken(TokenCookie) as JwtSecurityToken;
+
+                    if (tokenS == null)
+                    {
+                        _logger?.LogWarning("No se pudo convertir el token a JwtSecurityToken");
+                        return string.Empty;
+                    }
+
+                    var userName = tokenS?.Claims.First(claim => claim.Type == "user").Value;
+                    return userName ?? string.Empty;
+                }
+                catch (ArgumentNullException ex)
+                {
+                    // ✅ NUEVO: Captura específica para tokens nulos
+                    _logger?.LogError(ex, "Error ArgumentNullException al obtener UserName. TokenCookie: {HasToken}",
+                        !string.IsNullOrEmpty(TokenCookie));
                     return string.Empty;
-                var usuario = tokenS.Claims.First(c => c.Type.Contains("user")).Value;
-                if (string.IsNullOrEmpty(usuario)) { return string.Empty; }
-                return usuario;
+                }
+                catch (SecurityTokenException ex)
+                {
+                    // ✅ NUEVO: Captura específica para errores de seguridad
+                    _logger?.LogError(ex, "Error de seguridad al obtener UserName");
+                    return string.Empty;
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, "Error inesperado al obtener UserName desde token JWT");
+                    return string.Empty;
+                }
+            }
+        }
+
+        // ✅ NUEVO: Método de validación rápida de sesión
+        protected bool TieneTokenValido()
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(TokenCookie))
+                {
+                    return false;
+                }
+
+                var handler = new JwtSecurityTokenHandler();
+
+                if (!handler.CanReadToken(TokenCookie))
+                {
+                    return false;
+                }
+
+                var tokenS = handler.ReadToken(TokenCookie) as JwtSecurityToken;
+
+                return tokenS != null && tokenS.ValidTo >= DateTime.UtcNow;
+            }
+            catch
+            {
+                return false;
             }
         }
 
@@ -462,15 +559,32 @@ namespace gc.caja.Controllers
             }
         }
 
-        // Método auxiliar para el controlador
+        // ✅ ACTUALIZADO: Método de verificación de autenticación mejorado
         protected bool VerificarAutenticacion(out IActionResult redirectResult)
         {
             redirectResult = null;
 
-            var (estaAutenticado, fechaExpiracion) = EstaAutenticado;
-
-            if (!estaAutenticado || fechaExpiracion < DateTime.Now)
+            // Validación 1: Usuario autenticado
+            if (!HttpContext.User.Identity.IsAuthenticated)
             {
+                _logger?.LogWarning("Usuario no autenticado intentando acceder al controlador");
+                redirectResult = RedirectToAction("Login", "Token", new { area = "seguridad" });
+                return false;
+            }
+
+            // ✅ NUEVO: Validación 2: Token válido presente
+            if (!TieneTokenValido())
+            {
+                _logger?.LogWarning("Token inválido o ausente para usuario autenticado: {User}", HttpContext.User.Identity.Name);
+                redirectResult = RedirectToAction("Login", "Token", new { area = "seguridad" });
+                return false;
+            }
+
+            // Validación 3: Sesión de caja configurada
+            if (CajaActual == null || string.IsNullOrEmpty(CajaActual.CajaId))
+            {
+                _logger?.LogWarning("Sesión de caja no configurada para usuario: {User}", UserName);
+                TempData["error"] = "No se ha configurado una caja para esta estación.";
                 redirectResult = RedirectToAction("Login", "Token", new { area = "seguridad" });
                 return false;
             }
@@ -511,6 +625,60 @@ namespace gc.caja.Controllers
             {
                 var valor = value.ToString();
                 _context.HttpContext?.Session.SetString("PaginaGrid", valor);
+            }
+        }
+
+        public List<ProductoFactJsonDto> FacturaProductos
+        {
+            get
+            {
+                var json = _context.HttpContext?.Session?.GetString("FacturaProductos");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<ProductoFactJsonDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session?.SetString("FacturaProductos", json);
+            }
+        }
+
+        public List<FactSubtotalJsonDto> FacturaSubtotales
+        {
+            get
+            {
+                var json = _context.HttpContext?.Session?.GetString("FacturaSubtotales");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<FactSubtotalJsonDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session?.SetString("FacturaSubtotales", json);
+            }
+        }
+
+        public List<FactSorteoJsonDto> FacturaSorteos
+        {
+            get
+            {
+                var json = _context.HttpContext?.Session?.GetString("FacturaSorteos");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<FactSorteoJsonDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session?.SetString("FacturaSorteos", json);
             }
         }
 

@@ -75,7 +75,7 @@ builder.Services.AddHsts(opt =>
 builder.Services.AddSession(opt =>
 {
     opt.Cookie.Name = ".gccaja.session";
-    opt.IdleTimeout = TimeSpan.FromMinutes(60);
+    opt.IdleTimeout = TimeSpan.FromMinutes(240);
     opt.Cookie.HttpOnly = true;
     opt.Cookie.IsEssential = true;
 });

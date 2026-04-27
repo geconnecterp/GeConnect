@@ -58,8 +58,11 @@
 @await Html.PartialAsync("_IdentificarClienteModal")
 @await Html.PartialAsync("_ClienteUpdate")
 @await Html.PartialAsync("~/Areas/Facturacion/Views/ProductoFact/_productoFactura.cshtml")
-@* @await Html.PartialAsync("~/Areas/Facturacion/Views/ProductoFact/_SeleccionProductoModal.cshtml") *@
 @await Html.PartialAsync("~/Areas/Facturacion/Views/ProductoFact/_busquedaAdvanceV02.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/ProductoFact/_productoFacturaCalculo.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/shared/_cambiarListaPreciosModal.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/shared/_prefacturaModal.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/shared/_cotizacionModal.cshtml")
 
 @section Scripts {
     <script>
@@ -95,12 +98,23 @@
         let busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
         let busquedaAvanzadaUrl = "@Url.Action("BusquedaAvanzadaV02", "ProductoFact", new { area = "Facturacion" })";
 
-        // URLs de Productos (agregar aquí cuando sea necesario)
-        // var BuscarProductoUrl = '@Url.Action("BuscarProducto", "ProductoFact", new { area = "Facturacion" })';
+        // ✅ NUEVO: URL para calcular filas
+        
+        var CalcularFilasUrl = '@Url.Action("CalcularFilas", "ProductoFact", new { area = "Facturacion" })';
+        var ObtenerPreFacturasUrl = '@Url.Action("ObtenerPreFacturas", "ProductoFact", new { area = "Facturacion" })';
+        var CargarPreFacturaUrl = '@Url.Action("CargarPreFactura", "ProductoFact", new { area = "Facturacion" })';
+
+        var ObtenerCotizacionesUrl = '@Url.Action("ObtenerCotizaciones", "ProductoFact", new { area = "Facturacion" })';
+        var CargarCotizacionUrl = '@Url.Action("CargarCotizacion", "ProductoFact", new { area = "Facturacion" })';
     </script>
     <script src="~/js/plugins/jquery.simplePagination.js"></script>
     <script src="~/js/app/fact.js" asp-append-version="true"></script>
     <script src="~/js/app/prodfact.js" asp-append-version="true"></script>
     <script src="~/js/app/busquedas.js" asp-append-version="true"></script>
     <script src="~/js/app/busquedasV02.js" asp-append-version="true"></script>
+    <script src="~/js/app/prodfactcalc.js" asp-append-version="true"></script>
+    <script src="~/js/app/factListaPrecio.js" asp-append-version="true"></script>
+    <script src="~/js/app/factPreFactura.js" asp-append-version="true"></script>
+    <script src="~/js/app/factCotizacion.js" asp-append-version="true"></script>
+
 }

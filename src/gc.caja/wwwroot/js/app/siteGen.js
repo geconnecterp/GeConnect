@@ -431,7 +431,7 @@ function AbrirWaiting(Mensaje) {
 }
 
 
-///debo mandar true siempre y cuando
+//debo mandar true siempre y cuando
 ///haya definido una funcion de callback, 
 ///para ejecutar funcionalidad luego de cerrar modal waiting
 function CerrarWaiting(ejecutar) {
@@ -1143,95 +1143,193 @@ window.TaskManager = window.TaskManager || (function () {
 
 })();
 
-function AbrirMensaje(Titulo, Mensaje, CallBack, EsConfirmacion, Botones, Tipo, CallBackExportar) {
-    if (EsConfirmacion) {
-        if (Botones.length > 2) {
-            $("#btnMensajeAceptar").show();
-            $("#btnMensajeAlternativa").show();
-            $("#btnMensajeCancelar").show();
-        }
-        else {
-            $("#btnMensajeAceptar").show();
-            $("#btnMensajeAlternativa").hide();
-            $("#btnMensajeCancelar").show();
-        }
+// ═══════════════════════════════════════════════════════════════════
+// SISTEMA DE GESTIÓN DE SESIONES (✅ NUEVO)
+// ═══════════════════════════════════════════════════════════════════
 
-    } else {
-        $("#btnMensajeAceptar").show();
-        $("#btnMensajeAlternativa").hide();
-        $("#btnMensajeCancelar").hide();
-    }
-    if (Mensaje != null) {
-        $('#msjContenido').html(Mensaje);
-    } else {
-        $('#msjContenido').html('Error inesperado, intente de nuevo en unos minutos...');
-    }
-    if (Titulo != null) {
-        $('#msjTitulo').text(Titulo);
-    } else {
-        $('#msjTitulo').text('¡Atención!');
-    }
-    FunctionCallback = CallBack;
-    if (Botones != null) {
-        if (Botones.length === 1) {
-            $("#btnMensajeAceptar").text(Botones[0]);
-        } else {
-            if (Botones.length === 2) {
-                $("#btnMensajeAceptar").text(Botones[0]);
-                $("#btnMensajeCancelar").text(Botones[1]);
+/**
+ * ✅ NUEVO v1.0: Valida si la respuesta indica sesión expirada
+ * 
+ * @param {number} statusCode - Código HTTP de respuesta
+ * @returns {boolean} - true si es sesión expirada
+ */
+function esSesionExpirada(statusCode) {
+    // 401 = No autorizado
+    // 403 = Prohibido
+    // 440 = Login Timeout (código personalizado del middleware)
+    return statusCode === 401 || statusCode === 403 || statusCode === 440;
+}
+
+/**
+ * ✅ NUEVO v1.0: Muestra mensaje de sesión expirada y redirige al login
+ * 
+ * @param {string} mensajePersonalizado - Mensaje opcional
+ */
+function manejarSesionExpirada(mensajePersonalizado = null) {
+    console.error('🚪 Sesión expirada detectada - Redirigiendo al login...');
+    
+    const mensaje = mensajePersonalizado || 
+        'Su sesión ha expirado.<br><br>' +
+        '<small class="text-muted"><i class="bx bx-info-circle"></i> Por favor, vuelva a iniciar sesión.</small>';
+    
+    AbrirMensaje(
+        "Sesión Expirada",
+        mensaje,
+        function () {
+            $("#msjModal").modal("hide");
+            
+            setTimeout(() => {
+                // ✅ Usar variable global 'logout' definida en _Layout.cshtml
+                if (typeof logout !== 'undefined' && logout) {
+                    window.location.href = logout;
+                } else {
+                    // Fallback si 'logout' no está definida
+                    console.error('⚠️ Variable logout no definida, usando URL por defecto');
+                    window.location.href = '/Token/Login?area=seguridad';
+                }
+            }, 500);
+        },
+        false,
+        ["Aceptar"],
+        "warn!",
+        null
+    );
+}
+
+/**
+ * ✅ NUEVO v1.0: Interceptor global de errores AJAX
+ * 
+ * Configura jQuery para detectar automáticamente sesiones expiradas
+ * en TODAS las llamadas AJAX del sitio
+ */
+function configurarInterceptorSesiones() {
+    // ✅ Interceptor global de errores AJAX
+    $(document).ajaxError(function (event, jqXHR, ajaxSettings, thrownError) {
+        // Detectar sesiones expiradas (incluye código 440)
+        if (esSesionExpirada(jqXHR.status)) {
+            console.error('═══════════════════════════════════════════════════');
+            console.error('🚨 INTERCEPTOR GLOBAL: Sesión expirada detectada');
+            console.error('═══════════════════════════════════════════════════');
+            console.error(`   URL: ${ajaxSettings.url}`);
+            console.error(`   Status: ${jqXHR.status}`);
+            console.error(`   Error: ${thrownError}`);
+
+            // ✅ NUEVO: Mostrar respuesta JSON si existe
+            if (jqXHR.responseJSON) {
+                console.error('   Respuesta JSON:', jqXHR.responseJSON);
             }
-            else {
-                $("#btnMensajeAceptar").text(Botones[0]);
-                $("#btnMensajeAlternativa").text(Botones[1]);
-                $("#btnMensajeCancelar").text(Botones[2]);
+
+            console.error('═══════════════════════════════════════════════════');
+
+            // Prevenir múltiples redirecciones
+            if (!window.sesionExpiradaEnProceso) {
+                window.sesionExpiradaEnProceso = true;
+
+                // ✅ NUEVO: Usar mensaje del servidor si está disponible
+                let mensajePersonalizado = null;
+                if (jqXHR.responseJSON && jqXHR.responseJSON.msg) {
+                    mensajePersonalizado = jqXHR.responseJSON.msg;
+                }
+
+                manejarSesionExpirada(mensajePersonalizado);
             }
         }
-        if (Botones.length === 0) {
-            $("#btnMensajeCancelar").text("Cancelar");
+    });
+
+    console.log('✅ Interceptor global de sesiones configurado');
+}
+
+/**
+ * ✅ NUEVO v1.0: Valida respuesta JSON de endpoints
+ * 
+ * @param {Object} response - Respuesta del servidor
+ * @param {Function} callbackError - Callback para manejar error
+ * @returns {boolean} - true si la sesión está activa, false si expiró
+ */
+function validarRespuestaSesion(response, callbackError = null) {
+    // Detectar mensaje de sesión expirada en respuesta JSON
+    if (response && !response.ok && response.mensaje) {
+        const mensajeLower = response.mensaje.toLowerCase();
+        
+        if (mensajeLower.includes('sesión expirada') || 
+            mensajeLower.includes('sesion expirada') ||
+            mensajeLower.includes('session expired') ||
+            response.resultado === -1) {
+            
+            console.warn('⚠️ Sesión expirada detectada en respuesta JSON');
+            
+            if (callbackError) {
+                callbackError(response.mensaje);
+            } else {
+                manejarSesionExpirada(response.mensaje);
+            }
+            
+            return false;
         }
+    }
+    
+    return true;
+}
+
+// ════════════════════════════════════════════════════════════
+// HELPERS (Reutilización de funciones)
+// ════════════════════════════════════════════════════════════
+
+/**
+ * Formatea un número con separadores de miles
+ */
+function formatearNumero(numero, decimales = 2) {
+    if (isNaN(numero)) return '0.00';
+    return numero.toLocaleString('es-AR', {
+        minimumFractionDigits: decimales,
+        maximumFractionDigits: decimales
+    });
+}
+
+/**
+ * Escapa caracteres HTML para prevenir XSS
+ */
+function escapeHtml(texto) {
+    if (!texto) return '';
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return texto.replace(/[&<>"']/g, m => map[m]);
+}
+
+/**
+ * Muestra mensaje de error
+ */
+function mostrarMensajeError(mensaje) {
+    console.error('💬 Error:', mensaje);
+    AbrirMensaje("Error", mensaje, function () {
+        $("#msjModal").modal("hide");
+    }, false, ["Aceptar"], "error!", null);
+}
+
+/**
+ * Muestra mensaje de advertencia
+ */
+function mostrarMensajeAdvertencia(mensaje) {
+    console.warn('💬 Advertencia:', mensaje);
+    AbrirMensaje("Advertencia", mensaje, function () {
+        $("#msjModal").modal("hide");
+    }, false, ["Aceptar"], "warning", null);
+}
+
+
+/**
+ * Muestra mensaje de éxito
+ */
+function mostrarMensajeExito(mensaje) {
+    if (typeof window.mostrarMensajeExito === 'function') {
+        window.mostrarMensajeExito(mensaje);
     } else {
-        $("#btnMensajeAceptar").text("Aceptar");
-        $("#btnMensajeCancelar").text("Cancelar");
+        console.log('💬 Éxito:', mensaje);
+        alert(mensaje);
     }
-
-    $("#msjIcono").html("");
-    $("#msjHeader").removeClass("info warn error success");
-
-    switch (Tipo) {
-        case "info!":
-            $("#msjTitulo").prop("class", "text-info");
-            $("#msjIcono").html('<i class="bx bx-md bx-spin bx-info-circle text-info"></i>');
-            $("#msjHeader").addClass("info");
-            break;
-        case "warn!":
-            $("#msjTitulo").prop("class", "text-warning");
-            $("#msjIcono").html('<i class="bx bx-md bx-spin bx-error text-warning"></i>');
-            $("#msjHeader").addClass("warn");
-            break;
-        case "error!":
-            $("#msjTitulo").prop("class", "text-danger");
-            $("#msjIcono").html('<i class="bx bx-md bx-spin bx-hand text-danger"></i>');
-            $("#msjHeader").addClass("error");
-            break;
-        case "succ!":
-            $("#msjTitulo").prop("class", "text-success");
-            $("#msjIcono").html('<i class="bx bx-md bx-spin bx-check text-success"></i>');
-            $("#msjHeader").addClass("success");
-            break;
-        default:
-            $("#msjIcono").prop("class", "");
-            $("#msjIcono").html('');
-            break;
-    }
-
-    $("#btnMensajeExportar").hide();
-    if (CallBackExportar != null) {
-        FunctionCallBackExportar = CallBackExportar;
-        $("#btnMensajeExportar").show();
-        $("#btnMensajeAceptar").hide();
-        $("#btnMensajeCancelar").show();
-    }
-
-    // ✅ MOSTRAR EL MODAL
-    $('#msjModal').modal('show');
 }

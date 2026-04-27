@@ -7,6 +7,7 @@ using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Cajas.Request;
+using gc.infraestructura.Dtos.Cajas.Response;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using Microsoft.Extensions.Logging;
@@ -25,6 +26,7 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
         private const string POST_OBTENER_PRODUCTO_DATOS = "/ObtenerProductoDatos";
         private const string BUSCAR_PROD = "/ProductoBuscar";
         private const string BUSCAR_LISTA = "/ProductoListaBuscar";
+        private const string POST_CALCULAR_FILAS = "/CalcularFilas"; // ✅ NUEVO
 
         public ProductoFactServicio(IOptions<AppSettings> options, ILogger<ProductoFactServicio> logger) : base(options, logger)
         {
@@ -143,6 +145,101 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
                 string stringData = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
                 return (new(), null);
+            }
+        }
+
+        /// <summary>
+        /// ✅ NUEVO: Invoca al SP SPGECO_CAJA_Ope_Calcula_Filas para calcular totales
+        /// </summary>
+        /// <param name="req">Request con datos del cliente, totales y JSON de productos</param>
+        /// <param name="token">Token de autenticación</param>
+        /// <returns>Response con 3 JSONs: subtotal, sorteo, productos impositivos</returns>
+        public async Task<CalculaFilasResDto> CalcularFilas(CalcularFilasReqDto req, string token)
+        {
+            try
+            {
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("🔢 CALCULAR FILAS - SERVICIO");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation($"   caja_id: {req.caja_id}");
+                _logger?.LogInformation($"   usu_id: {req.usu_id}");
+                _logger?.LogInformation($"   cta_id: {req.cta_id}");
+                _logger?.LogInformation($"   lp_id: {req.lp_id}");
+                _logger?.LogInformation($"   tot_rows: {req.tot_rows}");
+                _logger?.LogInformation($"   tot_cantidad: {req.tot_cantidad}");
+                _logger?.LogInformation($"   tot_pvta: {req.tot_pvta}");
+                _logger?.LogInformation($"   Longitud JSON productos: {req.json_p?.Length ?? 0}");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                // ❶ Validar request
+                if (req == null)
+                {
+                    _logger?.LogError("❌ Request es null");
+                    return new CalculaFilasResDto();
+                }
+
+                if (string.IsNullOrEmpty(req.json_p) || req.json_p == "[]")
+                {
+                    _logger?.LogWarning("⚠️ JSON de productos vacío");
+                    return new CalculaFilasResDto();
+                }
+
+                // ❷ Inicializar helper y cliente HTTP
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(req, token, out StringContent contentData);
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_CALCULAR_FILAS}";
+
+                _logger?.LogInformation($"📡 Endpoint: {link}");
+
+                // ❸ Realizar POST
+                using var response = await client.PostAsync(link, contentData);
+
+                // ❹ Procesar respuesta
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        _logger?.LogWarning("⚠️ API retornó respuesta vacía");
+                        return new CalculaFilasResDto();
+                    }
+
+                    _logger?.LogInformation("✅ Respuesta recibida correctamente");
+                    _logger?.LogInformation($"   Longitud respuesta: {stringData.Length} caracteres");
+
+                    // ❺ Deserializar respuesta
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<CalculaFilasResDto>>(stringData);
+
+                    if (apiResponse == null || apiResponse.Data == null)
+                    {
+                        _logger?.LogError("❌ Error deserializando la respuesta");
+                        return new CalculaFilasResDto();
+                    }
+
+                    var resultado = apiResponse.Data;
+
+                    _logger?.LogInformation("═══════════════════════════════════════════════════");
+                    _logger?.LogInformation("✅ DATOS CALCULADOS EXITOSAMENTE");
+                    _logger?.LogInformation($"   json_subtotal: {(string.IsNullOrEmpty(resultado.json_subtotal) ? "vacío" : $"{resultado.json_subtotal.Length} caracteres")}");
+                    _logger?.LogInformation($"   json_sorteo: {(string.IsNullOrEmpty(resultado.json_sorteo) ? "vacío" : $"{resultado.json_sorteo.Length} caracteres")}");
+                    _logger?.LogInformation($"   json_p: {(string.IsNullOrEmpty(resultado.json_p) ? "vacío" : $"{resultado.json_p.Length} caracteres")}");
+                    _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                    return resultado;
+                }
+                else
+                {
+                    var msg = await ReadApiErrorAsync(response);
+                    _logger?.LogWarning($"❌ Error API ({response.StatusCode}): {msg}");
+                    return new CalculaFilasResDto();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError($"❌ EXCEPCIÓN en CalcularFilas: {ex.Message}");
+                _logger?.LogError($"   Stack Trace: {ex.StackTrace}");
+                return new CalculaFilasResDto();
             }
         }
     }

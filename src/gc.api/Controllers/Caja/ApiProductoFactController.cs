@@ -1,6 +1,7 @@
 ﻿using gc.api.core.Contratos.Servicios.LineaCaja;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Cajas.Request;
+using gc.infraestructura.Dtos.Cajas.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -36,6 +37,21 @@ namespace gc.api.Controllers.Caja
 
             var res = _apiProductoFactServicio.ObtenerProductoDatos(req);
             return Ok(new ApiResponse<List<ProductoDatosResponseDto>>(res));
+        }
+
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CalculaFilasResDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult CalcularFilas(CalcularFilasReqDto req)
+        {
+            if (req == null)
+            {
+                return BadRequest("El parámetro req es requerido.");
+            }
+
+            var res = _apiProductoFactServicio.CalcularFilas(req);
+            return Ok(new ApiResponse<CalculaFilasResDto>(res));
         }
     }
 }

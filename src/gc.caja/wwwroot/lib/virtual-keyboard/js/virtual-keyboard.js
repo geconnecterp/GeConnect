@@ -12,36 +12,24 @@
 
     // Layouts de teclado
     const layouts = {
-        alphanumeric: [
-            ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'SEP', '7', '8', '9', 'BACK'],
-            ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Ñ', 'SEP', '4', '5', '6', '+'],
-            ['SHIFT', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'BACK', 'SEP', '1', '2', '3', '*'],
-            ['?123', 'SPACE', 'SEP', '0', '.', 'ENTER']
+        alpha: [
+            ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+            ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Ñ'],
+            ['SHIFT', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'BACK'],
+            ['?123', 'SPACE', 'ENTER']
         ],
         symbols: [
-            ['@', '#', '$', '%', '&', '-', '+', '(', ')', '/', 'SEP', '7', '8', '9', 'BACK'],
-            ['*', '"', "'", ':', ';', '!', '?', '_', ',', '.', 'SEP', '4', '5', '6', '+'],
-            ['=', '<', '>', '[', ']', '{', '}', '\\', 'BACK', 'SEP', '1', '2', '3', '*'],
-            ['ABC', 'SPACE', 'SEP', '0', '.', 'ENTER']
+            ['@', '#', '$', '%', '&', '-', '+', '(', ')', '/'],
+            ['*', '"', "'", ':', ';', '!', '?', '_', ',', '.'],
+            ['=', '<', '>', '[', ']', '{', '}', '\\', 'BACK'],
+            ['ABC', 'SPACE', 'ENTER']
         ],
-        numeric: [
-            ['7', '8', '9', 'BACK'],
-            ['4', '5', '6', '+'],
-            ['1', '2', '3', '*'],
-            ['0', '.', 'ENTER']
-        ],
-        integer: [
-            ['7', '8', '9', 'BACK'],
-            ['4', '5', '6', '+'],
-            ['1', '2', '3', '*'],
-            ['0', 'ENTER']
-        ],
-        tel: [
-            ['7', '8', '9', 'BACK'],
-            ['4', '5', '6', '+'],
-            ['1', '2', '3', '-'],
-            ['0', '*', 'ENTER']
-        ]
+        numpad: {
+            // Layout de 4 columnas (Grid)
+            numeric: ['7', '8', '9', '+', '4', '5', '6', '1', '2', '3', '*', '0', '.', 'ENTER'],
+            integer: ['7', '8', '9', '+', '4', '5', '6', '1', '2', '3', '*', '0', 'ENTER'], // 0 será h2 mediante lógica en render
+            tel:     ['7', '8', '9', '+', '4', '5', '6', '1', '2', '3', '-', '0', '*', 'ENTER']
+        }
     };
 
     function init() {
@@ -63,13 +51,20 @@
             document.addEventListener("touchend", dragEnd);
         }
 
-        // Escuchar focus en todo el documento
+        // Escuchar focus y click en todo el documento para máxima compatibilidad con modales dinámicos
         document.addEventListener('focusin', handleGlobalFocus);
+        document.addEventListener('mousedown', function (e) {
+            if (e.target && e.target.classList && e.target.classList.contains('jsteclado')) {
+                handleGlobalFocus(e);
+            }
+        });
     }
 
     function handleGlobalFocus(e) {
         const target = e.target;
-        if (target.classList.contains('jsteclado')) {
+        if (target && target.classList && target.classList.contains('jsteclado')) {
+            if (activeInput === target && container.style.display === 'flex') return;
+            
             activeInput = target;
             
             const isDecimal = target.classList.contains('jsdecimal') || target.getAttribute('inputmode') === 'decimal';
@@ -98,10 +93,15 @@
     }
 
     function render(type) {
-        let layout = layouts[type];
-        if (type === 'alphanumeric' && isSymbols) {
-            layout = layouts.symbols;
+        let isAlphanumeric = (type === 'alphanumeric');
+        
+        // Manejar clase para modo solo numérico
+        if (isAlphanumeric) {
+            container.classList.remove('vk-numpad-only');
+        } else {
+            container.classList.add('vk-numpad-only');
         }
+
         let title = 'Teclado Alfanumérico';
         if (type === 'numeric') title = 'Teclado Decimal';
         if (type === 'integer') title = 'Teclado Entero';
@@ -118,56 +118,62 @@
             <div class="vk-body">
         `;
 
-        layout.forEach((row, rowIndex) => {
-            html += '<div class="vk-row">';
-            row.forEach(key => {
-                let className = 'vk-key';
-                let label = key;
+        // Render Alpha section if needed
+        if (isAlphanumeric) {
+            let alphaLayout = isSymbols ? layouts.symbols : layouts.alpha;
+            html += '<div class="vk-alpha-section">';
+            alphaLayout.forEach(row => {
+                html += '<div class="vk-row">';
+                row.forEach(key => {
+                    let className = 'vk-key';
+                    let label = key;
 
-                if (key === 'SEP') {
-                    className = 'vk-separator';
-                    label = '';
-                } else if (key === 'SHIFT') {
-                    className += ' vk-key-special' + (isShift ? ' active-shift' : '');
-                    if (type === 'alphanumeric') className += ' vk-key-w1-5';
-                    label = '⇧';
-                } else if (key === 'BACK') {
-                    className += ' vk-key-backspace';
-                    if (type === 'alphanumeric' || type === 'symbols') className += ' vk-key-w1-5';
-                    label = '⌫';
-                } else if (key === 'ENTER') {
-                    className += ' vk-key-enter';
-                    if (type === 'alphanumeric' || type === 'symbols' || type === 'numeric' || type === 'tel') {
-                        className += ' vk-key-w2';
-                    } else if (type === 'integer') {
-                        className += ' vk-key-w2';
+                    if (key === 'SHIFT') {
+                        className += ' vk-key-special' + (isShift ? ' active-shift' : '');
+                        className += ' vk-key-w1-5';
+                        label = '⇧';
+                    } else if (key === 'BACK') {
+                        className += ' vk-key-backspace vk-key-w1-5';
+                        label = '⌫';
+                    } else if (key === 'ENTER') {
+                        className += ' vk-key-enter vk-key-w2';
+                        label = 'ENTER';
+                    } else if (key === 'SPACE') {
+                        className += ' vk-key-space';
+                        label = 'Espacio';
+                    } else if (key === '?123' || key === 'ABC') {
+                        className += ' vk-key-special vk-key-w2';
+                        label = key;
+                    } else {
+                        label = isShift ? key.toUpperCase() : key.toLowerCase();
                     }
-
-                    // Dinámicamente decidir el label
-                    const inputs = Array.from(document.querySelectorAll('.jsteclado'));
-                    const currentIndex = inputs.indexOf(activeInput);
-                    const hasNext = currentIndex > -1 && currentIndex < inputs.length - 1;
-                    label = hasNext ? 'Sig.' : 'Listo';
-                } else if (key === 'SPACE') {
-                    className += ' vk-key-space';
-                    label = 'Espacio';
-                } else if (key === '?123' || key === 'ABC') {
-                    className += ' vk-key-special vk-key-w2';
-                    label = key;
-                } else if (key === '0' && (type === 'alphanumeric' || type === 'symbols')) {
-                    className += ' vk-key-w1'; 
-                } else if (key === '0' && (type === 'numeric' || type === 'tel') && rowIndex === 3) {
-                    className += ' vk-key-w1';
-                } else if (key === '0' && type === 'integer' && rowIndex === 3) {
-                    className += ' vk-key-w2'; 
-                } else {
-                    label = isShift ? key.toUpperCase() : key.toLowerCase();
-                }
-
-                html += `<div class="${className}" data-key="${key}">${label}</div>`;
+                    html += `<div class="${className}" data-key="${key}">${label}</div>`;
+                });
+                html += '</div>';
             });
             html += '</div>';
+            html += '<div class="vk-separator"></div>';
+        }
+
+        // Render Numpad section
+        const numpadKey = isAlphanumeric ? 'numeric' : type;
+        const numLayout = layouts.numpad[numpadKey];
+        html += '<div class="vk-numpad-section">';
+        numLayout.forEach(key => {
+            let className = 'vk-key';
+            let label = key;
+
+            if (key === '+') className += ' vk-key-v2';
+            if (key === '0' && type === 'integer') className += ' vk-key-h2';
+            if (key === 'ENTER') {
+                className += ' vk-key-h2 vk-key-enter';
+                label = 'ENTER';
+            }
+            if (key === 'BACK') className += ' vk-key-backspace';
+
+            html += `<div class="${className}" data-key="${key}">${label}</div>`;
         });
+        html += '</div>';
 
         html += '</div>';
         container.innerHTML = html;
@@ -229,30 +235,45 @@
                 newCursorPos = start;
             }
         } else if (key === 'ENTER') {
+            if (activeInput.tagName === 'TEXTAREA') {
+                newValue = val.substring(0, start) + '\n' + val.substring(end);
+                activeInput.value = newValue;
+                const newPos = start + 1;
+                activeInput.setSelectionRange(newPos, newPos);
+                activeInput.dispatchEvent(new Event('input', { bubbles: true }));
+                return;
+            }
+
             const inputs = Array.from(document.querySelectorAll('.jsteclado'));
             const currentIndex = inputs.indexOf(activeInput);
             
-            // Despachar eventos de teclado para compatibilidad
-            const enterEvt = {
+            // Despachar eventos de teclado para compatibilidad (keydown, keypress, keyup)
+            const eventProps = {
                 key: 'Enter',
                 code: 'Enter',
                 keyCode: 13,
                 which: 13,
-                bubbles: true
+                bubbles: true,
+                cancelable: true
             };
-            activeInput.dispatchEvent(new KeyboardEvent('keydown', enterEvt));
+            
+            const keydownEvt = new KeyboardEvent('keydown', eventProps);
+            const keypressEvt = new KeyboardEvent('keypress', eventProps);
+            activeInput.dispatchEvent(keydownEvt);
+            activeInput.dispatchEvent(keypressEvt);
             
             if (currentIndex > -1 && currentIndex < inputs.length - 1) {
-                // Navegar al siguiente campo
+                // Navegar al siguiente campo compatible
                 const nextInput = inputs[currentIndex + 1];
                 nextInput.focus();
             } else {
-                // Cerrar teclado si es el último
+                // Cerrar teclado si es el último o no hay más
                 container.style.display = 'none';
                 activeInput.blur();
             }
             
-            activeInput.dispatchEvent(new KeyboardEvent('keyup', enterEvt));
+            const keyupEvt = new KeyboardEvent('keyup', eventProps);
+            activeInput.dispatchEvent(keyupEvt);
             return;
         } else if (key === 'SPACE') {
             if (isInteger || isDecimal) return; // No espacios en números

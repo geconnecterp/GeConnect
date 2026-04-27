@@ -2,12 +2,14 @@
 using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Cajas;
 using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System.Diagnostics;
 
 namespace gc.caja.Areas.Facturacion.Controllers
@@ -51,7 +53,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
             bool bulto = true)
         {
             var stopwatch = Stopwatch.StartNew();
-            
+
             try
             {
                 if (!VerificarAutenticacion(out IActionResult redirectResult))
@@ -154,7 +156,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 // ❺ DETERMINAR CANAL (ctc_id)
                 // Usar el canal del cliente si existe, sino determinar por origen
                 string canalId = clienteActual.ctc_id ?? string.Empty;
-                
+
                 if (string.IsNullOrEmpty(canalId))
                 {
                     if (origenUpper == "F")
@@ -176,7 +178,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 // ❻ DETERMINAR IDENTIFICADOR DEL CLIENTE (cta_id)
                 // Según origen: F (documento) o C (cta_id)
                 string identificadorCliente;
-                
+
                 if (origenUpper == "F")
                 {
                     identificadorCliente = clienteActual.cta_documento ?? string.Empty;
@@ -205,7 +207,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     bulto = bulto,
                     ctc_id = canalId,
                     cta_id = identificadorCliente,
-                    ctac_dto = clienteActual.ctac_dto_operacion 
+                    ctac_dto = clienteActual.ctac_dto_operacion
                 };
 
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
@@ -245,10 +247,10 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 if (!resultado.Ok)
                 {
                     _logger?.LogWarning($"⚠️ Servicio retornó error: {resultado.Mensaje}");
-                    return Json(new 
-                    { 
-                        ok = false, 
-                        mensaje = resultado.Mensaje ?? "Error al obtener datos del producto" 
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = resultado.Mensaje ?? "Error al obtener datos del producto"
                     });
                 }
 
@@ -275,8 +277,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 if (resultado.EsWarn)
                 {
                     _logger?.LogWarning($"⚠️ WARNING del servidor: {resultado.Mensaje}");
-                    return Json(new 
-                    { 
+                    return Json(new
+                    {
                         ok = false,
                         esWarning = true,
                         mensaje = resultado.Mensaje,
@@ -287,8 +289,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 if (resultado.EsError)
                 {
                     _logger?.LogError($"❌ ERROR del servidor: {resultado.Mensaje}");
-                    return Json(new 
-                    { 
+                    return Json(new
+                    {
                         ok = false,
                         esError = true,
                         mensaje = resultado.Mensaje
@@ -302,9 +304,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 //_logger?.LogInformation($"   Mensaje: {productos.respuesta_msj}");
                 //_logger?.LogInformation("═══════════════════════════════════════════════════");
 
-                return Json(new 
-                { 
-                    ok = true, 
+                return Json(new
+                {
+                    ok = true,
                     mensaje = resultado.Mensaje ?? "Producto cargado correctamente",
                     producto = productos
                 });
@@ -315,11 +317,11 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogError($"❌ EXCEPCIÓN en ObtenerProductoDatos: {ex.Message}");
                 _logger?.LogError($"   Stack Trace: {ex.StackTrace}");
                 _logger?.LogError($"   Tiempo transcurrido antes del error: {stopwatch.ElapsedMilliseconds}ms");
-                
-                return Json(new 
-                { 
-                    ok = false, 
-                    mensaje = "Error inesperado al procesar el producto. Por favor, intente nuevamente." 
+
+                return Json(new
+                {
+                    ok = false,
+                    mensaje = "Error inesperado al procesar el producto. Por favor, intente nuevamente."
                 });
             }
         }
@@ -446,16 +448,16 @@ namespace gc.caja.Areas.Facturacion.Controllers
             bool sstk,          // ✅ Sin stock
             string buscar,      // ✅ Texto de búsqueda
             string lp_id,       // ✅ CRÍTICO: Lista de precios
-            bool buscaNew = true, 
-            string sort = "p_desc", 
-            string sortDir = "asc", 
+            bool buscaNew = true,
+            string sort = "p_desc",
+            string sortDir = "asc",
             int pag = 1)
         {
             try
             {
                 // ✅ Validar autenticación
                 var auth = EstaAutenticado;
-                if (!auth.Item1 || (auth.Item1 && !auth.Item2.HasValue) || 
+                if (!auth.Item1 || (auth.Item1 && !auth.Item2.HasValue) ||
                     (auth.Item1 && auth.Item2.HasValue && auth.Item2.Value < DateTime.Now))
                 {
                     return new JsonResult(new
@@ -467,26 +469,26 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         redirectUrl = Url.Action("Login", "Token", new { area = "Seguridad" })
                     });
                 }
-                
+
                 // ✅ CRÍTICO: Usa lp_id del parámetro si viene, sino de sesión
                 lp_id = string.IsNullOrEmpty(lp_id) ? LP_Id : lp_id;
-                
+
                 // ✅ Delegación al método base optimizado
                 return await BusquedaAvanzadaV02(
-                    ri01, 
-                    ri02, 
+                    ri01,
+                    ri02,
                     ri03 ?? "%",  // ✅ Usa "%" si viene null
-                    act, 
-                    dis, 
-                    ina, 
-                    cstk, 
-                    sstk, 
-                    buscar, 
+                    act,
+                    dis,
+                    ina,
+                    cstk,
+                    sstk,
+                    buscar,
                     lp_id,        // ✅ Parámetro recibido correctamente
-                    buscaNew, 
-                    _productoFactServicio, 
-                    sort, 
-                    sortDir, 
+                    buscaNew,
+                    _productoFactServicio,
+                    sort,
+                    sortDir,
                     pag
                 );
             }
@@ -500,6 +502,398 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     productos = new List<ProductoListaDto>(),
                     metadata = new { totalCount = 0, totalPages = 0, pageSize = 0, currentPage = pag }
                 });
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // NUEVA ACTION: CALCULAR FILAS Y TOTALES
+        // ═══════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// ✅ NUEVO: Calcula totales de factura invocando SPGECO_CAJA_Ope_Calcula_Filas
+        /// </summary>
+        /// <param name="request">Request con datos del cliente, totales y JSON de productos</param>
+        /// <returns>JSON con subtotales, sorteos y datos impositivos</returns>
+        [HttpPost]
+        public async Task<JsonResult> CalcularFilas([FromBody] CalcularFilasReqDto request)
+        {
+            var stopwatch = Stopwatch.StartNew();
+
+            try
+            {
+                // ❶ VALIDAR AUTENTICACIÓN
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, resultado = -1, mensaje = "Sesión expirada" });
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("🔢 CALCULAR FILAS - INICIO");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                // ❷ VALIDAR REQUEST
+                if (request == null)
+                {
+                    _logger?.LogWarning("❌ Request es null");
+                    return Json(new { ok = false, mensaje = "Datos inválidos" });
+                }
+
+                _logger?.LogInformation($"   Request recibido:");
+                _logger?.LogInformation($"   - caja_id: {request.caja_id}");
+                _logger?.LogInformation($"   - usu_id: {request.usu_id}");
+                _logger?.LogInformation($"   - cta_id: {request.cta_id}");
+                _logger?.LogInformation($"   - tot_rows: {request.tot_rows}");
+                _logger?.LogInformation($"   - tot_cantidad: {request.tot_cantidad}");
+                _logger?.LogInformation($"   - tot_pvta: {request.tot_pvta}");
+
+                // ❸ VALIDAR QUE HAYA PRODUCTOS
+                if (string.IsNullOrEmpty(request.json_p) || request.json_p == "[]")
+                {
+                    _logger?.LogWarning("❌ No hay productos en el JSON");
+                    return Json(new { ok = false, mensaje = "Debe cargar al menos un producto" });
+                }
+
+                // ❹ VALIDAR DATOS DE CAJA
+                var cajaActual = CajaActual;
+                if (cajaActual == null)
+                {
+                    _logger?.LogError("❌ No hay caja en sesión");
+                    return Json(new { ok = false, mensaje = "No hay caja abierta" });
+                }
+
+                // ❺ COMPLETAR DATOS FALTANTES DEL REQUEST
+                if (string.IsNullOrEmpty(request.caja_id))
+                    request.caja_id = cajaActual.CajaId ?? string.Empty;
+
+                if (string.IsNullOrEmpty(request.usu_id))
+                    request.usu_id = UserName ?? string.Empty;
+
+                if (string.IsNullOrEmpty(request.adm_id))
+                    request.adm_id = cajaActual.AdmId ?? AdministracionId;
+
+                if (request.caja_nro_cierre.ToInt() == 0)
+                    request.caja_nro_cierre = cajaActual.Caja.caja_nro_cierre ?? string.Empty;
+
+                if (string.IsNullOrEmpty(request.caja_nro_proceso))
+                    request.caja_nro_proceso = cajaActual.Caja.caja_nro_proceso ?? string.Empty;
+
+                // ❻ VALIDAR DATOS DE CLIENTE
+                var clienteActual = ClienteActual;
+                if (clienteActual == null)
+                {
+                    _logger?.LogError("❌ No hay cliente en sesión");
+                    return Json(new { ok = false, mensaje = "No hay cliente seleccionado" });
+                }
+
+                // ❼ COMPLETAR DATOS DEL CLIENTE
+                if (string.IsNullOrEmpty(request.cta_id))
+                {
+                    // Según origen: F (documento) o C (cta_id)
+                    string origenUpper = clienteActual.Origen?.ToUpper() ?? "F";
+                    request.cta_id = origenUpper == "F"
+                        ? (clienteActual.cta_documento ?? string.Empty)
+                        : (clienteActual.cta_id ?? string.Empty);
+                }
+
+                if (request.ctac_dto == 0)
+                    request.ctac_dto = clienteActual.ctac_dto_operacion;
+
+                if (string.IsNullOrEmpty(request.ctc_id))
+                    request.ctc_id = clienteActual.ctc_id ?? string.Empty;
+
+                if (string.IsNullOrEmpty(request.afip_id))
+                    request.afip_id = clienteActual.afip_id ?? string.Empty;
+
+                if (string.IsNullOrEmpty(request.afip_desc))
+                    request.afip_desc = clienteActual.afip_desc ?? string.Empty;
+
+                if (string.IsNullOrEmpty(request.cta_ib_nro))
+                    request.cta_ib_nro = clienteActual.cta_ib_nro ?? string.Empty;
+
+                if (string.IsNullOrEmpty(request.ib_id))
+                    request.ib_id = clienteActual.ib_id ?? string.Empty;
+
+                // ❽ COMPLETAR DATOS DE COMPROBANTE (si existen en sesión)
+                // TODO: Completar según datos de factura en sesión
+                // request.tco_letra = ...
+                // request.tco_id = ...
+                if (string.IsNullOrEmpty(request.tco_letra))
+                    request.tco_letra = clienteActual.tco_letra ?? string.Empty;
+
+                request.tco_id = string.Empty; // No se obtiene de cliente, se asigna vacío para que el SP lo determine
+                request.tco_id_ori = string.Empty;
+                request.cm_compte_ori = string.Empty;
+
+                if (string.IsNullOrEmpty(request.pib_cert))
+                    request.pib_cert = clienteActual.pib_cert ?? string.Empty;
+
+                if (request.pib_cert_vto == DateTime.MinValue)
+                    request.pib_cert_vto = clienteActual.pib_cert_vto;
+
+                if (string.IsNullOrEmpty(request.piva_cert))
+                    request.piva_cert = clienteActual.piva_cert ?? string.Empty;
+
+                if (request.piva_cert_vto == DateTime.MinValue)
+                    request.piva_cert_vto = clienteActual.piva_cert_vto;
+
+
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("📋 REQUEST COMPLETO:");
+                _logger?.LogInformation($"   caja_id: {request.caja_id}");
+                _logger?.LogInformation($"   usu_id: {request.usu_id}");
+                _logger?.LogInformation($"   adm_id: {request.adm_id}");
+                _logger?.LogInformation($"   lp_id: {request.lp_id}");
+                _logger?.LogInformation($"   cta_id: {request.cta_id}");
+                _logger?.LogInformation($"   ctac_dto: {request.ctac_dto}");
+                _logger?.LogInformation($"   ctc_id: {request.ctc_id}");
+                _logger?.LogInformation($"   afip_id: {request.afip_id}");
+                _logger?.LogInformation($"   tot_rows: {request.tot_rows}");
+                _logger?.LogInformation($"   tot_cantidad: {request.tot_cantidad}");
+                _logger?.LogInformation($"   tot_pvta: {request.tot_pvta}");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                // ❾ INVOCAR SERVICIO
+                var token = TokenCookie;
+                if (string.IsNullOrEmpty(token))
+                {
+                    _logger?.LogError("❌ No hay token de autenticación");
+                    return Json(new { ok = false, mensaje = "Sesión expirada" });
+                }
+
+                _logger?.LogInformation("📡 Invocando servicio ProductoFactServicio.CalcularFilas...");
+                var resultado = await _productoFactServicio.CalcularFilas(request, token);
+
+                stopwatch.Stop();
+                _logger?.LogInformation($"⏱️ Tiempo de ejecución: {stopwatch.ElapsedMilliseconds}ms");
+
+                // ❿ VALIDAR RESPUESTA
+                if (resultado == null)
+                {
+                    _logger?.LogError("❌ El servicio retornó null");
+                    return Json(new { ok = false, mensaje = "Error al calcular totales" });
+                }
+
+                // ⓫ GUARDAR JSON DE PRODUCTOS IMPOSITIVOS EN SESIÓN, SUBTOTALES Y SORTEOS
+                if (!string.IsNullOrEmpty(resultado.json_p))
+                {
+                    FacturaProductos = [];
+                    var prods = JsonConvert.DeserializeObject<List<ProductoFactJsonDto>>(resultado.json_p);
+                    FacturaProductos = prods ?? [];
+
+                    //HttpContext.Session.SetString("FacturaProductosImpositivos", resultado.json_p);
+                    _logger?.LogInformation("✅ JSON de productos impositivos guardado en sesión");
+
+                    FacturaSubtotales = [];
+                    if (!string.IsNullOrEmpty(resultado.json_subtotal))
+                    {
+                        var subtots = JsonConvert.DeserializeObject<List<FactSubtotalJsonDto>>(resultado.json_subtotal);
+                        FacturaSubtotales = subtots ?? [];
+                        _logger?.LogInformation("✅ JSON de subtotales guardado en sesión");
+                    }
+
+                    FacturaSorteos = [];
+                }
+
+                // ⓬ RETORNAR RESPUESTA
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("✅ CÁLCULO COMPLETADO EXITOSAMENTE");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                return Json(new
+                {
+                    ok = true,
+                    mensaje = "Totales calculados correctamente",
+                    json_subtotal = resultado.json_subtotal,
+                    json_sorteo = resultado.json_sorteo,
+                    json_p = resultado.json_p
+                });
+            }
+            catch (Exception ex)
+            {
+                stopwatch.Stop();
+                _logger?.LogError($"❌ EXCEPCIÓN en CalcularFilas: {ex.Message}");
+                _logger?.LogError($"   Stack Trace: {ex.StackTrace}");
+                _logger?.LogError($"   Tiempo antes del error: {stopwatch.ElapsedMilliseconds}ms");
+
+                return Json(new
+                {
+                    ok = false,
+                    mensaje = "Error inesperado al calcular totales. Por favor, intente nuevamente."
+                });
+            }
+        }
+
+        /// <summary>
+        /// ✅ NUEVO: Obtiene las listas de precios disponibles
+        /// </summary>
+        [HttpPost]
+        public async Task<JsonResult> ObtenerListasPrecios()
+        {
+            try
+            {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, mensaje = "Sesión expirada" });
+
+                var cajaActual = CajaActual;
+                if (cajaActual == null)
+                {
+                    return Json(new { ok = false, mensaje = "No hay caja abierta" });
+                }
+
+                // TODO: Implementar servicio que obtenga las listas de precios
+                // var resultado = await _productoFactServicio.ObtenerListasPrecios(TokenCookie);
+
+                // MOCK para desarrollo:
+                var listas = new[]
+                {
+            new { lp_id = "001", lp_desc = "Mayorista" },
+            new { lp_id = "002", lp_desc = "Minorista" },
+            new { lp_id = "003", lp_desc = "Distribuidora" }
+        };
+
+                return Json(new
+                {
+                    ok = true,
+                    listas = listas,
+                    lp_actual = LP_Id // Lista actual del usuario
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al obtener listas de precios");
+                return Json(new { ok = false, mensaje = "Error al obtener listas de precios" });
+            }
+        }
+
+        /// <summary>
+        /// ✅ NUEVO: Cambia la lista de precios activa
+        /// </summary>
+        [HttpPost]
+        public async Task<JsonResult> CambiarListaPrecios(string lp_id)
+        {
+            try
+            {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, mensaje = "Sesión expirada" });
+
+                if (string.IsNullOrEmpty(lp_id))
+                {
+                    return Json(new { ok = false, mensaje = "Debe especificar una lista de precios" });
+                }
+
+                // TODO: Implementar servicio que cambie la lista de precios en sesión
+                // var resultado = await _productoFactServicio.CambiarListaPrecios(lp_id, TokenCookie);
+
+                // MOCK para desarrollo:LP_Id
+                LP_Id = lp_id; // Actualizar variable de sesión
+
+                return Json(new
+                {
+                    ok = true,
+                    mensaje = "Lista de precios cambiada exitosamente",
+                    lp_id = lp_id
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al cambiar lista de precios");
+                return Json(new { ok = false, mensaje = "Error al cambiar lista de precios" });
+            }
+        }
+
+        /// <summary>
+        /// ✅ NUEVO: Obtiene las pre-facturas disponibles para un cliente
+        /// </summary>
+        [HttpPost]
+        public async Task<JsonResult> ObtenerPreFacturas(string cta_id, bool solo_pendientes = true)
+        {
+            try
+            {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, mensaje = "Sesión expirada" });
+
+                if (string.IsNullOrEmpty(cta_id))
+                {
+                    return Json(new { ok = false, mensaje = "Debe especificar un cliente" });
+                }
+
+                // TODO: Implementar servicio
+                // var resultado = await _productoFactServicio.ObtenerPreFacturas(cta_id, solo_pendientes, TokenCookie);
+
+                // MOCK para desarrollo:
+                var prefacturas = new[]
+                {
+            new
+            {
+                pre_id = "000888",
+                cta_denominacion = "Roberto Fulano",
+                cta_documento = "25147852",
+                pre_fecha = "15/01/26 10:40",
+                sector_desc = "Perfumeria"
+            },
+            new
+            {
+                pre_id = "000889",
+                cta_denominacion = "Roberto Fulano",
+                cta_documento = "25147852",
+                pre_fecha = "15/01/26 10:55",
+                sector_desc = "Perfumeria"
+            }
+        };
+
+                return Json(new
+                {
+                    ok = true,
+                    prefacturas = prefacturas
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al obtener pre-facturas");
+                return Json(new { ok = false, mensaje = "Error al obtener pre-facturas" });
+            }
+        }
+
+        /// <summary>
+        /// ✅ NUEVO: Obtiene las cotizaciones disponibles para un cliente
+        /// </summary>
+        [HttpPost]
+        public async Task<JsonResult> ObtenerCotizaciones(string cta_id)
+        {
+            try
+            {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, mensaje = "Sesión expirada" });
+
+                if (string.IsNullOrEmpty(cta_id))
+                {
+                    return Json(new { ok = false, mensaje = "Debe especificar un cliente" });
+                }
+
+                // TODO: Implementar servicio
+                // var resultado = await _productoFactServicio.ObtenerCotizaciones(cta_id, TokenCookie);
+
+                // MOCK para desarrollo:
+                var cotizaciones = new[]
+                {
+            new
+            {
+                cpf_nro = "000888",
+                cpf_descripcion = "Licitación 1889-25",
+                cpf_fecha = "10/02/26",
+                obs_pago = "Pago de Contado",
+                cpf_importe = 455500.00
+            }};
+
+                return Json(new
+                {
+                    ok = true,
+                    cotizaciones = cotizaciones
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al obtener cotizaciones");
+                return Json(new { ok = false, mensaje = "Error al obtener cotizaciones" });
             }
         }
     }

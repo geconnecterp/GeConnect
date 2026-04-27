@@ -931,7 +931,7 @@ activable {
 
 /* FIN ESTILO GOLDEN PARA GRID Y TABLA*/
 /* ESTILO GOLDEN PARA FILTROS */
-/* ====== Estilos para Filtros con tema dorado ====== */
+/* ====== Estilos para Filtros con tema dorado */
 .filter-golden {
     border: none;
     border-radius: 8px;
@@ -4150,15 +4150,174 @@ input, select, textarea, button, checkbox, radio {
 
 .table-responsive::-webkit-scrollbar-track {
     background: #f1f1f1;
-    border-radius: 10px;
+    border-radius: 4px;
 }
 
 .table-responsive::-webkit-scrollbar-thumb {
     background: #f0ad4e;
-    border-radius: 10px;
+    border-radius: 4px;
     border: 2px solid #f8f9fa;
 }
 
 .table-responsive::-webkit-scrollbar-thumb:hover {
     background: #d58512;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+    ESTILOS ESPECÍFICOS PARA MODAL DE BÚSQUEDA COMPACTO
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ✅ Tabla más compacta */
+#busquedaModal .table-golden-header th {
+    padding: 0.375rem 0.5rem !important;
+    font-size: 0.813rem !important;
+    font-weight: 600 !important;
+}
+
+#busquedaModal .table tbody td {
+    padding: 0.375rem 0.5rem !important;
+    font-size: 0.813rem !important;
+    line-height: 1.2 !important;
+}
+
+/* ✅ Botones más compactos */
+#busquedaModal .btn-sm {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.813rem !important;
+}
+
+/* ✅ Badges más compactos */
+#busquedaModal .badge {
+    padding: 0.25em 0.5em !important;
+    font-size: 0.75rem !important;
+}
+
+/* ✅ Scroll vertical optimizado */
+#busquedaModal .table-wrapper-400 {
+    max-height: 500px !important; /* ⬆️ Aumentado de 400px a 500px */
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* ✅ Filas hover más sutil */
+#busquedaModal .table-hover tbody tr:hover {
+    background-color: rgba(218, 165, 32, 0.1) !important;
+    cursor: pointer;
+}
+
+/* ✅ Optimizar altura del modal */
+#busquedaModal .modal-dialog {
+    max-width: 1200px;
+    margin: 1.75rem auto;
+}
+
+#busquedaModal .modal-body {
+    max-height: calc(100vh - 150px); /* ⬆️ Maximizar altura disponible */
+    overflow-y: auto;
+}
+
+/* ✅ Barra de scroll golden */
+#busquedaModal .table-wrapper-400::-webkit-scrollbar {
+    width: 8px;
+}
+
+#busquedaModal .table-wrapper-400::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+#busquedaModal .table-wrapper-400::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #DAA520 0%, #B8860B 100%);
+    border-radius: 4px;
+}
+
+    #busquedaModal .table-wrapper-400::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #FFD700 0%, #DAA520 100%);
+    }
+
+/* ✅ Fondo dorado sutil para barra de búsqueda */
+.bg-golden-search {
+    background: linear-gradient(135deg, rgba(218, 165, 32, 0.1) 0%, rgba(184, 134, 11, 0.05) 100%);
+    border: 1px solid rgba(218, 165, 32, 0.2);
+}
+
+/* Clase para labels fijas de diferentes anchos */
+.fixed-lbl-40 {
+    min-width: 40px;
+    max-width: 40px;
+}
+
+.fixed-lbl-50 {
+    min-width: 50px;
+    max-width: 50px;
+}
+
+.fixed-lbl-60 {
+    min-width: 60px;
+    max-width: 60px;
+}
+
+.fixed-lbl-80 {
+    min-width: 80px;
+    max-width: 80px;
+}
+
+.fixed-lbl-110 {
+    min-width: 110px;
+    max-width: 110px;
+}
+
+/* Tabla de conceptos */
+#tbConceptosCalculo tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+#tbConceptosCalculo tfoot tr {
+    border-top: 2px solid #dee2e6;
+}
+
+/* Header pegajoso */
+.sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* Botones del footer */
+.modal-footer .btn-lg {
+    font-weight: 600;
+    min-width: 150px;
+}
+
+/* Filas de totales destacadas */
+.row-subtotal {
+    background-color: #fff3cd !important;
+    font-weight: 600;
+}
+
+.row-total {
+    background-color: #d1e7dd !important;
+    font-weight: 700;
+    font-size: 1.1em;
+}
+
+/* Sorteos */
+#tbSorteos tbody tr {
+    border-bottom: 1px solid #dee2e6;
+    padding: 8px 0;
+}
+
+    #tbSorteos tbody tr:last-child {
+        border-bottom: none;
+    }
+
+
+/* Header pegajoso */
+.sticky-top-modal-calc {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+
+/* FIN ESTILOS */

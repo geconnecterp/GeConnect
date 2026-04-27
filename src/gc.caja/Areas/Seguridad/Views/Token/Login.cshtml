@@ -44,6 +44,8 @@
     <!-- Helpers -->
     <script src="~/js/helpers.js" asp-append-version="true"></script>
     <script src="~/js/config.js"></script>
+    <link rel="stylesheet" href="~/lib/virtual-keyboard/css/virtual-keyboard.css" asp-append-version="true" />
+
 </head>
 
 <body>
@@ -151,7 +153,7 @@
                                     Usuario
                                 </label>
                                 <input type="text"
-                                       class="form-control form-control-golden"
+                                       class="form-control form-control-golden jsteclado"
                                        id="UserName"
                                        name="UserName"
                                        placeholder="Ingrese su usuario"
@@ -170,7 +172,7 @@
                                 <div class="input-group input-group-merge input-group-golden">
                                     <input type="password"
                                            id="Password"
-                                           class="form-control form-control-golden"
+                                           class="form-control form-control-golden jsteclado"
                                            name="Password"
                                            placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
                                            required
@@ -207,6 +209,7 @@
     <script src="~/lib/lobibox/js/messageboxes.min.js"></script>
     <script src="~/lib/lobibox/js/notifications.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/lib/virtual-keyboard/js/virtual-keyboard.js" asp-append-version="true"></script>
 
     <script type="text/javascript">
         // Variables de TempData
