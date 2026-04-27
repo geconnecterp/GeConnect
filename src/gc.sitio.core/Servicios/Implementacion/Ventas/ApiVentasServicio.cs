@@ -28,6 +28,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string SET_VTAS_CTL_ANULAR = "/AnularCtlArqueo";
 		private const string SET_VTAS_CTL_AGREGAR_MEDIO_DE_PAGO = "/AgregarMedioDePago";
 		private const string SET_VTAS_CTL_CONFIRMACION_CONTABLE = "/ConfirmacionContable";
+		private const string GET_VTAS_PV_CTL_ENTREGA = "/ObtenerVtasPVCtlEntregaLista";
+		private const string GET_VTAS_PV_CTL_ENTREGA_REND = "/ObtenerVtasPVCtlEntregaRendLista";
 
 		public ApiVentasServicio(IOptions<AppSettings> options, ILogger<ApiVentasServicio> logger) : base(options, logger, RutaAPI)
 		{
@@ -669,6 +671,118 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 				return new() { Ok = false, Mensaje = "Error al buscar Presupuestos" };
+			}
+		}
+
+		public async Task<RespuestaGenerica<VtasPVCtlEntregaDto>> ObtenerVtasPVCtlEntregaLista(string adm_id, string estado, string token)
+		{
+			try
+			{
+				var helper = new HelperAPI();
+				var client = helper.InicializaCliente(token);
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_VTAS_PV_CTL_ENTREGA}?adm_id={adm_id}&estado={estado}";
+				using var response = await client.GetAsync(link);
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					var stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						return new() { Ok = false, Mensaje = "No se recibió respuesta válida de VtasPVCtlEntrega" };
+					}
+
+					var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<VtasPVCtlEntregaDto>>>(stringData)
+						?? throw new NegocioException("Error al deserializar los datos");
+
+					if (apiResponse.Data == null)
+					{
+						return new() { Ok = false, Mensaje = "No se encontraron datos de VtasPVCtlEntrega." };
+					}
+
+					return new RespuestaGenerica<VtasPVCtlEntregaDto>
+					{
+						Ok = true,
+						ListaEntidad = apiResponse.Data,
+						Mensaje = "OK"
+					};
+				}
+				else
+				{
+					var errorData = await response.Content.ReadAsStringAsync();
+					_logger.LogWarning($"Error API ({response.StatusCode}): {errorData}");
+
+					return new()
+					{
+						Ok = false,
+						Mensaje = "Error al obtener VtasPVCtlEntrega. Si el problema persiste contacte al administrador."
+					};
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name}");
+				return new RespuestaGenerica<VtasPVCtlEntregaDto>
+				{
+					Ok = false,
+					Mensaje = "Error interno al obtener VtasPVCtlEntrega"
+				};
+			}
+		}
+
+		public async Task<RespuestaGenerica<VtasPVCtlEntregaRendDto>> ObtenerVtasPVCtlEntregaRendLista(string ent_compte, string token)
+		{
+			try
+			{
+				var helper = new HelperAPI();
+				var client = helper.InicializaCliente(token);
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_VTAS_PV_CTL_ENTREGA_REND}?ent_compte={ent_compte}";
+				using var response = await client.GetAsync(link);
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					var stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						return new() { Ok = false, Mensaje = "No se recibió respuesta válida de VtasPVCtlEntregaRend" };
+					}
+
+					var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<VtasPVCtlEntregaRendDto>>>(stringData)
+						?? throw new NegocioException("Error al deserializar los datos");
+
+					if (apiResponse.Data == null)
+					{
+						return new() { Ok = false, Mensaje = "No se encontraron datos de VtasPVCtlEntregaRend." };
+					}
+
+					return new RespuestaGenerica<VtasPVCtlEntregaRendDto>
+					{
+						Ok = true,
+						ListaEntidad = apiResponse.Data,
+						Mensaje = "OK"
+					};
+				}
+				else
+				{
+					var errorData = await response.Content.ReadAsStringAsync();
+					_logger.LogWarning($"Error API ({response.StatusCode}): {errorData}");
+
+					return new()
+					{
+						Ok = false,
+						Mensaje = "Error al obtener VtasPVCtlEntregaRend. Si el problema persiste contacte al administrador."
+					};
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name}");
+				return new RespuestaGenerica<VtasPVCtlEntregaRendDto>
+				{
+					Ok = false,
+					Mensaje = "Error interno al obtener VtasPVCtlEntregaRend"
+				};
 			}
 		}
 	}

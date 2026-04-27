@@ -1,0 +1,7 @@
+﻿@model ListaEntregasModel
+@{
+}
+<div class="input-group input-group-sm">
+	<span class="input-group-text">Nombre</span>
+	@Html.DropDownListFor(m => m.EntregaSeleccionada, Model.ListaEntregas, "Seleccionar", new { @id = "listaEntregas", disabled = "disabled", @class = "form-control inputEditable activable" })
+</div>

@@ -1,0 +1,122 @@
+﻿@using System.Globalization
+@model GridCoreSmart<VtasPVCtlEntregaRendDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	#tbVtasPVCtlEntregaRend {
+		table-layout: fixed;
+		width: 100%;
+	}
+
+		#tbVtasPVCtlEntregaRend thead th {
+			text-align: center !important;
+			vertical-align: middle !important;
+			white-space: nowrap;
+		}
+	.editable-importe[data-pendiente="True"] {
+		cursor: pointer;
+	}
+
+	.editable-importe input {
+		width: 100%;
+		text-align: right;
+		padding: 0 4px;
+	}
+
+	#tbVtasPVCtlEntregaRend .input-importe {
+		height: 18px !important; /* más bajo */
+		padding: 0 1px !important; /* mínimo padding */
+		font-size: 0.72rem !important; /* igual a texto de tabla */
+		line-height: 16px !important; /* alinea verticalmente */
+		font-weight: normal !important;
+		border-radius: 2px !important;
+	}
+
+	#tbVtasPVCtlEntregaRend td,
+	#tbVtasPVCtlEntregaRend th {
+		padding-top: 2px !important;
+		padding-bottom: 2px !important;
+	}
+</style>
+<div class="table-responsive table-wrapper-500">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbVtasPVCtlEntregaRend">
+		<thead class="sticky-top table-golden-header-compact">
+			<tr class="header">
+				<th class="text-center">Proceso</th>
+				<th class="text-center">Cierre</th>
+				<th class="text-center">Rend. Tipo</th>
+				<th class="text-center">Fecha</th>
+				<th class="text-center">PV</th>
+				<th class="text-center">Cajero</th>
+				<th class="text-center">Rendido</th>
+				<th class="text-center">importe Ok</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+			{
+				<tr class="fila-vacia">
+					<td colspan="8" class="text-center text-muted py-2">
+						<i class="bx bx-info-circle me-1"></i>
+						No hay items para mostrar.
+					</td>
+				</tr>
+			}
+			else
+			{
+				foreach (var item in Model.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase row-entrega"
+						data-ent-compte="@item.ent_compte"
+						data-caja-nro-proceso="@item.caja_nro_proceso"
+						data-caja-nro-cierre="@item.caja_nro_cierre"
+						data-caja-nro-rend="@item.caja_nro_rend"
+						data-rend-item="@item.rend_item"
+						data-caja-id="@item.caja_id"
+						data-rend-tipo="@item.rend_tipo"
+						data-ent-estado="@item.ent_estado">
+						<td class="text-center">@item.caja_nro_proceso</td>
+						<td class="text-center">@item.caja_nro_cierre</td>
+						<td class="text-center">@item.rend_tipo</td>
+						<td class="text-center">@item.rend_fecha.ToString("dd/MM/yy")</td>
+						<td class="text-center">@item.caja_id</td>
+						<td class="text-start">@item.usu_apellidoynombre</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.rend_importe_arq, TipoPrecio.Venta)</td>
+						<td class="col-num text-end editable-importe"
+							data-caja-nro-proceso="@item.caja_nro_proceso"
+							data-caja-nro-cierre="@item.caja_nro_cierre"
+							data-caja-nro-rend="@item.caja_nro_rend"
+							data-rend-item="@item.rend_item"
+							data-caja-id="@item.caja_id"
+							data-rend-tipo="@item.rend_tipo">
+							@if (item.ent_estado_bool)
+							{
+								<input type="text"
+									   class="form-control form-control-sm input-importe"
+									   value="@GridHelper.FormatearPrecio(item.rend_importe_ok, TipoPrecio.Venta)"
+									   data-original="@((item.rend_importe_ok).ToString(CultureInfo.InvariantCulture))" />
+							}
+							else
+							{
+								<span>@GridHelper.FormatearPrecio(item.rend_importe_ok, TipoPrecio.Venta)</span>
+							}
+						</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>
+<div class="mt-3 d-flex justify-content-center gap-3" id="divOpcionesEntregaRend">
+	<button id="btnGuardarValores" class="btn btn-sm btn-primary">
+		<i class="bx bx-save"></i> Aceptar Cambios
+	</button>
+	<button id="btnGuardarValores" class="btn btn-sm btn-primary">
+		<i class="bx bx-save"></i> Mover a Entrega
+	</button>
+	<div id="divListaEntregas">
+	</div>
+</div>

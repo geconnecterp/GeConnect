@@ -245,5 +245,32 @@ namespace gc.api.core.Servicios
 				};
 			}
 		}
+
+		public List<VtasPVCtlEntregaDto> ObtenerVtasPVCtlEntregaLista(string adm_id, char estado)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_VTAS_PV_CTL_ENTREGAS;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@adm_id", adm_id),
+				new SqlParameter("@estado", estado),
+			 };
+
+			var result = _repository.EjecutarLstSpExt<VtasPVCtlEntregaDto>(sp, ps, true);
+			return result;
+		}
+
+		public List<VtasPVCtlEntregaRendDto> ObtenerVtasPVCtlEntregaRendLista(string ent_compte)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_VTAS_PV_CTL_ENTREGAS_REND;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@ent_compte", ent_compte),
+			 };
+
+			var result = _repository.EjecutarLstSpExt<VtasPVCtlEntregaRendDto>(sp, ps, true);
+			return result;
+		}
 	}
 }

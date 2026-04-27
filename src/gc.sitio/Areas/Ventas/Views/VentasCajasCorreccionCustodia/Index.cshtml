@@ -1,0 +1,30 @@
+﻿@model FiltroCtlCustodiaModel
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+	var filtro = new QueryFilters() { Modelo = ModeloFilter.CAJA_CORRECCION_CUSTODIA, Rel01 = [], Rel02 = [], Rel03 = [], Rel04 = [] };
+}
+@section styles {
+	<link rel="stylesheet" href="~/css/simplePagination.css" />
+	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+}
+<style>
+</style>
+<div style="margin-left: 25%;">
+	<partial name="_botonera" model="filtro" />
+</div>
+<div class="collapse" id="divFiltro">
+	<partial name="_filtros" model="Model" />
+	@Html.Hidden("pagEstado", false)
+</div>
+<div class="collapse" id="divDetalle"></div>
+@section scripts {
+	<script type="text/javascript">
+		let cargarDatosDeValoresUrl = '@Url.Action("CargarDatosDeValores", "VentasCajasCorreccionCustodia", new { area = "Ventas" })';
+		let obtenerRendDeEntregaSeleccionadaUrl = '@Url.Action("ObtenerRendDeEntregaSeleccionada", "VentasCajasCorreccionCustodia", new { area = "Ventas" })';
+		let actualizarImporteEnItemDeDetalleUrl = '@Url.Action("ActualizarImporteEnItemDeDetalle", "VentasCajasCorreccionCustodia", new { area = "Ventas" })';
+		let obtenerEntregasParaCambioDeRendicionUrl = '@Url.Action("ObtenerEntregasParaCambioDeRendicion", "VentasCajasCorreccionCustodia", new { area = "Ventas" })';
+	</script>
+
+	<script src="~/js/app/siteGen.js"></script>
+	<script src="~/js/app/areas/ventas/cajactlcustodia/cajacu.js" type="text/javascript"></script>
+}

@@ -16,5 +16,7 @@ namespace gc.api.core.Contratos.Servicios
 		RespuestaDto AnularCtlArqueo(AnularCtlArqueoRequest request);
 		RespuestaDto AgregarMedioDePago(AgregarMedioDePagoRequest request);
 		RespuestaDto ConfirmacionContable(ConfirmacionContableRequest request);
+		List<VtasPVCtlEntregaDto> ObtenerVtasPVCtlEntregaLista(string adm_id, char estado);
+		List<VtasPVCtlEntregaRendDto> ObtenerVtasPVCtlEntregaRendLista(string ent_compte);
 	}
 }

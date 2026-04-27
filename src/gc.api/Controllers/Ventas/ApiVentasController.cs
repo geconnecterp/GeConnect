@@ -199,5 +199,46 @@ namespace gc.api.Controllers.Ventas
 			var data = _iApiVentasServicio.ConfirmacionContable(request);
 			return Ok(new ApiResponse<RespuestaDto>(data));
 		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<VtasPVCtlEntregaDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerVtasPVCtlEntregaLista(string adm_id, char estado)
+		{
+
+			if (string.IsNullOrWhiteSpace(adm_id))
+			{
+				_logger.LogWarning("Parámetro adm_id se encuentra vacío o nulo.");
+				return BadRequest(new ApiResponse<string>("El parámetro adm_id no puede estar vacío."));
+			}
+			if (estado == '\0')
+			{
+				_logger.LogWarning("Parámetro estado se encuentra vacío o nulo.");
+				return BadRequest(new ApiResponse<string>("El parámetro estado no puede estar vacío."));
+			}
+
+			var data = _iApiVentasServicio.ObtenerVtasPVCtlEntregaLista(adm_id, estado);
+			return Ok(new ApiResponse<List<VtasPVCtlEntregaDto>>(data));
+
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<VtasPVCtlEntregaRendDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerVtasPVCtlEntregaRendLista(string ent_compte)
+		{
+
+			if (string.IsNullOrWhiteSpace(ent_compte))
+			{
+				_logger.LogWarning("Parámetro ent_compte se encuentra vacío o nulo.");
+				return BadRequest(new ApiResponse<string>("El parámetro ent_compte no puede estar vacío."));
+			}
+
+			var data = _iApiVentasServicio.ObtenerVtasPVCtlEntregaRendLista(ent_compte);
+			return Ok(new ApiResponse<List<VtasPVCtlEntregaRendDto>>(data));
+
+		}
 	}
 }
