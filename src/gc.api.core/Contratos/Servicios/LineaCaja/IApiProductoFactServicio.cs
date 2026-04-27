@@ -7,5 +7,7 @@ namespace gc.api.core.Contratos.Servicios.LineaCaja
     {
         List<ProductoDatosResponseDto> ObtenerProductoDatos(ProductoDatosRequestDto req);
         CalculaFilasResDto CalcularFilas(CalcularFilasReqDto req);
+        List<PrefacturaResDto> ObtenerPrefactura(PrefacturaReqDto req);
+        List<CotizacionResDto> ObtenerCotizacion(CotizacionReqDto req);
     }
 }

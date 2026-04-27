@@ -27,6 +27,8 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
         private const string BUSCAR_PROD = "/ProductoBuscar";
         private const string BUSCAR_LISTA = "/ProductoListaBuscar";
         private const string POST_CALCULAR_FILAS = "/CalcularFilas"; // ✅ NUEVO
+        private const string POST_OBTENER_PREFACTURA = "/ObtenerPrefactura";
+        private const string POST_OBTENER_COTIZACION = "/ObtenerCotizacion";
 
         public ProductoFactServicio(IOptions<AppSettings> options, ILogger<ProductoFactServicio> logger) : base(options, logger)
         {
@@ -240,6 +242,140 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
                 _logger?.LogError($"❌ EXCEPCIÓN en CalcularFilas: {ex.Message}");
                 _logger?.LogError($"   Stack Trace: {ex.StackTrace}");
                 return new CalculaFilasResDto();
+            }
+        }
+
+        /// <summary>
+        /// Obtiene los datos de prefactura para un cliente
+        /// </summary>
+        /// <param name="req">Request con datos de la prefactura</param>
+        /// <param name="token">Token de autenticación</param>
+        /// <returns>Response con datos de la prefactura</returns>
+        public async Task<RespuestaGenerica<PrefacturaResDto>> ObtenerPrefactura(PrefacturaReqDto req, string token)
+        {
+            try
+            {
+               
+                if (req == null)
+                {
+                    _logger?.LogError("❌ Request es null");
+                    return new() { Ok = false, Mensaje = "Request inválido" };
+                }
+
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(req, token, out StringContent contentData);
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_OBTENER_PREFACTURA}";
+
+                _logger?.LogInformation($"📡 Endpoint: {link}");
+
+                using var response = await client.PostAsync(link, contentData);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        _logger?.LogWarning("⚠️ API retornó respuesta vacía");
+                        return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<PrefacturaResDto>>>(stringData);
+
+                    if (apiResponse == null || apiResponse.Data == null)
+                    {
+                        _logger?.LogError("❌ Error deserializando la respuesta");
+                        return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+                    }
+
+                    _logger?.LogInformation("✅ Prefactura obtenida exitosamente");
+
+                    return new RespuestaGenerica<PrefacturaResDto>
+                    {
+                        Ok = true,
+                        Mensaje = "OK",
+                        ListaEntidad = apiResponse.Data
+                    };
+                }
+                else
+                {
+                    var msg = await ReadApiErrorAsync(response);
+                    _logger?.LogWarning($"❌ Error API ({response.StatusCode}): {msg}");
+                    return new() { Ok = false, Mensaje = msg };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError($"❌ EXCEPCIÓN en ObtenerPrefactura: {ex.Message}");
+                _logger?.LogError($"   Stack Trace: {ex.StackTrace}");
+                return new() { Ok = false, Mensaje = "Error al obtener la prefactura" };
+            }
+        }
+
+        /// <summary>
+        /// Obtiene los datos de cotización para un cliente
+        /// </summary>
+        /// <param name="req">Request con datos de la cotización</param>
+        /// <param name="token">Token de autenticación</param>
+        /// <returns>Response con datos de la cotización</returns>
+        public async Task<RespuestaGenerica<CotizacionResDto>> ObtenerCotizacion(CotizacionReqDto req, string token)
+        {
+            try
+            {
+               
+                if (req == null)
+                {
+                    _logger?.LogError("❌ Request es null");
+                    return new() { Ok = false, Mensaje = "Request inválido" };
+                }
+
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(req, token, out StringContent contentData);
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_OBTENER_COTIZACION}";
+
+                _logger?.LogInformation($"📡 Endpoint: {link}");
+
+                using var response = await client.PostAsync(link, contentData);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        _logger?.LogWarning("⚠️ API retornó respuesta vacía");
+                        return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<CotizacionResDto>>>(stringData);
+
+                    if (apiResponse == null || apiResponse.Data == null)
+                    {
+                        _logger?.LogError("❌ Error deserializando la respuesta");
+                        return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+                    }
+
+                    _logger?.LogInformation("✅ Cotización obtenida exitosamente");
+
+                    return new RespuestaGenerica<CotizacionResDto>
+                    {
+                        Ok = true,
+                        Mensaje = "OK",
+                        ListaEntidad = apiResponse.Data
+                    };
+                }
+                else
+                {
+                    var msg = await ReadApiErrorAsync(response);
+                    _logger?.LogWarning($"❌ Error API ({response.StatusCode}): {msg}");
+                    return new() { Ok = false, Mensaje = msg };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError($"❌ EXCEPCIÓN en ObtenerCotizacion: {ex.Message}");
+                _logger?.LogError($"   Stack Trace: {ex.StackTrace}");
+                return new() { Ok = false, Mensaje = "Error al obtener la cotización" };
             }
         }
     }
