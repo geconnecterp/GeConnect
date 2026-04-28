@@ -26,6 +26,9 @@
             //en ApiProductoFactServicio.cs se llama a este SP para obtener los datos del producto al ingresar un producto en la caja.
             public const string SP_CAJA_BPROD_D = "SPGECO_CAJA_B_PRODUCTO_DATOS";
 			public const string SP_CAJA_CALCULA_FILAS = "SPGECO_CAJA_Ope_Calcula_Filas";
+
+			public const string SP_CAJA_PREFACTURA = "SPGECO_CAJA_B_Prefacturas";
+			public const string SP_CAJA_COTIZACION = "SPGECO_CAJA_B_Cotizaciones";
             #endregion
 
             #region VTAS

@@ -4,6 +4,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Cajas;
 using gc.infraestructura.Dtos.Cajas.Request;
+using gc.infraestructura.Dtos.Cajas.Response;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
 using Microsoft.AspNetCore.Authorization;
@@ -894,6 +895,150 @@ namespace gc.caja.Areas.Facturacion.Controllers
             {
                 _logger?.LogError(ex, "Error al obtener cotizaciones");
                 return Json(new { ok = false, mensaje = "Error al obtener cotizaciones" });
+            }
+        }
+
+        /// <summary>
+        /// ✅ NUEVO: Busca pre-facturas según filtros
+        /// Implementa el requerimiento del 23 de abril
+        /// </summary>
+        [HttpPost]
+        public async Task<JsonResult> BuscarPrefacturas(string cta_id, string documento, bool solo_pendientes = true)
+        {
+            try
+            {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, mensaje = "Sesión expirada" });
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("🔍 BUSCAR PRE-FACTURAS - CONTROLLER");
+                _logger?.LogInformation($"   cta_id: {cta_id}");
+                _logger?.LogInformation($"   documento: {documento}");
+                _logger?.LogInformation($"   solo_pendientes: {solo_pendientes}");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                // ❶ VALIDAR CLIENTE
+                var clienteActual = ClienteActual;
+                if (clienteActual == null)
+                {
+                    _logger?.LogWarning("❌ No hay cliente seleccionado");
+                    return Json(new { ok = false, mensaje = "Debe seleccionar un cliente primero" });
+                }
+
+                // ❷ CONSTRUIR REQUEST SEGÚN TIPO DE CLIENTE
+                var request = new PrefacturaReqDto
+                {
+                    sec_id = "CAJA", // ✅ FIJO según requerimiento
+                    usada = solo_pendientes ? "N" : "%" // ✅ Checkbox: N (pendientes) o % (todos)
+                };
+
+                // ✅ LÓGICA DIFERENCIAL: Cliente registrado vs Consumidor Final
+                string origenUpper = clienteActual.Origen?.ToUpper() ?? "F";
+
+                if (origenUpper == "C") // Cliente Registrado
+                {
+                    request.cta_id = clienteActual.cta_id ?? cta_id ?? "%";
+                    request.documento = "%"; // ✅ Anular documento
+                    _logger?.LogInformation($"✅ Cliente registrado → cta_id: {request.cta_id}");
+                }
+                else // Consumidor Final
+                {
+                    request.cta_id = "%"; // ✅ Anular cta_id
+                    request.documento = clienteActual.cta_documento ?? documento ?? "%";
+                    _logger?.LogInformation($"✅ Consumidor final → documento: {request.documento}");
+                }
+
+                // ❸ INVOCAR SERVICIO
+                var resultado = await _productoFactServicio.ObtenerPrefactura(request, TokenCookie);
+
+                if (resultado == null || !resultado.Ok)
+                {
+                    _logger?.LogWarning($"⚠️ Error al buscar: {resultado?.Mensaje}");
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = resultado?.Mensaje ?? "Error al buscar pre-facturas",
+                        prefacturas = new List<PrefacturaResDto>()
+                    });
+                }
+
+                _logger?.LogInformation($"✅ Se encontraron {resultado.ListaEntidad?.Count ?? 0} pre-facturas");
+
+                return Json(new
+                {
+                    ok = true,
+                    mensaje = "OK",
+                    prefacturas = resultado.ListaEntidad ?? new List<PrefacturaResDto>()
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al buscar pre-facturas");
+                return Json(new { ok = false, mensaje = "Error al buscar pre-facturas", prefacturas = new List<PrefacturaResDto>() });
+            }
+        }
+
+        /// <summary>
+        /// ✅ NUEVO: Busca cotizaciones para un cliente
+        /// Implementa el requerimiento del 23 de abril
+        /// </summary>
+        [HttpPost]
+        public async Task<JsonResult> BuscarCotizaciones(string cta_id)
+        {
+            try
+            {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, mensaje = "Sesión expirada" });
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("🔍 BUSCAR COTIZACIONES - CONTROLLER");
+                _logger?.LogInformation($"   cta_id: {cta_id}");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                // ❶ VALIDAR CLIENTE
+                var clienteActual = ClienteActual;
+                if (clienteActual == null)
+                {
+                    _logger?.LogWarning("❌ No hay cliente seleccionado");
+                    return Json(new { ok = false, mensaje = "Debe seleccionar un cliente primero" });
+                }
+
+                // ❷ CONSTRUIR REQUEST
+                // ✅ SOLO RECIBE CTA_ID (no maneja consumidor final según SP)
+                var request = new CotizacionReqDto
+                {
+                    cta_id = clienteActual.cta_id ?? cta_id ?? "%"
+                };
+
+                _logger?.LogInformation($"✅ Buscando cotizaciones para cta_id: {request.cta_id}");
+
+                // ❸ INVOCAR SERVICIO
+                var resultado = await _productoFactServicio.ObtenerCotizacion(request, TokenCookie);
+
+                if (resultado == null || !resultado.Ok)
+                {
+                    _logger?.LogWarning($"⚠️ Error al buscar: {resultado?.Mensaje}");
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = resultado?.Mensaje ?? "Error al buscar cotizaciones",
+                        cotizaciones = new List<CotizacionResDto>()
+                    });
+                }
+
+                _logger?.LogInformation($"✅ Se encontraron {resultado.ListaEntidad?.Count ?? 0} cotizaciones");
+
+                return Json(new
+                {
+                    ok = true,
+                    mensaje = "OK",
+                    cotizaciones = resultado.ListaEntidad ?? new List<CotizacionResDto>()
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al buscar cotizaciones");
+                return Json(new { ok = false, mensaje = "Error al buscar cotizaciones", cotizaciones = new List<CotizacionResDto>() });
             }
         }
     }

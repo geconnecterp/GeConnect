@@ -53,5 +53,35 @@ namespace gc.api.Controllers.Caja
             var res = _apiProductoFactServicio.CalcularFilas(req);
             return Ok(new ApiResponse<CalculaFilasResDto>(res));
         }
+
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<PrefacturaResDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult ObtenerPrefactura(PrefacturaReqDto req)
+        {
+            if (req == null)
+            {
+                return BadRequest("El parámetro req es requerido.");
+            }
+
+            var res = _apiProductoFactServicio.ObtenerPrefactura(req);
+            return Ok(new ApiResponse<List<PrefacturaResDto>>(res));
+        }
+
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<CotizacionResDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult ObtenerCotizacion(CotizacionReqDto req)
+        {
+            if (req == null)
+            {
+                return BadRequest("El parámetro req es requerido.");
+            }
+
+            var res = _apiProductoFactServicio.ObtenerCotizacion(req);
+            return Ok(new ApiResponse<List<CotizacionResDto>>(res));
+        }
     }
 }

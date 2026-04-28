@@ -17,41 +17,6 @@ namespace gc.api.core.Servicios.LineaCaja
 
         public CalculaFilasResDto CalcularFilas(CalcularFilasReqDto req)
         {
-            /*
-             estos son los parametros del sp
-            @caja_id varchar(4), 
-  @usu_id varchar(10), 
-  @adm_id varchar(10),
-  @lp_id char(2),
-  @caja_nro_proceso varchar(15),
-  @caja_nro_cierre int,
-
-  @cta_id varchar(10),
-  @ctac_dto decimal(5,2),
-  @ctc_id char(2),
-
-  @tco_letra varchar(1),
-  @tco_id varchar(3),
-  @tco_id_ori varchar(3),
-  @cm_compte_ori varchar(3),
-
-  @afip_id char(2),
-  @afip_desc varchar(80),
-
-  @cta_ib_nro varchar(15),
-  @ib_id char(1), 
-
-  @pib_cert char(1),
-  @pib_cert_vto datetime,
-  @piva_cert char(1),
-  @piva_cert_vto datetime,
-
-  @tot_rows smallint,
-  @tot_cantidad decimal(15,3),
-  @tot_pvta decimal(15,2),
-  @json_p varchar(max))
-             */
-
             var sp = ConstantesGC.StoredProcedures.SP_CAJA_CALCULA_FILAS;
 
             var ps = new List<SqlParameter>() {
@@ -84,6 +49,30 @@ namespace gc.api.core.Servicios.LineaCaja
 
             var res = _repository.EjecutarLstSpExt<CalculaFilasResDto>(sp, ps,true);
             return res.FirstOrDefault();
+        }
+
+        public List<CotizacionResDto> ObtenerCotizacion(CotizacionReqDto req)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_CAJA_COTIZACION;
+            var ps = new List<SqlParameter>() {
+                new SqlParameter("@cta_id", req.cta_id)
+            };
+            var res = _repository.EjecutarLstSpExt<CotizacionResDto>(sp, ps);
+            return res; 
+        }
+
+        public List<PrefacturaResDto> ObtenerPrefactura(PrefacturaReqDto req)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_CAJA_PREFACTURA;
+           
+            var ps = new List<SqlParameter>() {
+                new SqlParameter("@sec_id", req.sec_id),
+                new SqlParameter("@cta_id", req.cta_id),
+                new SqlParameter("@documento", req.documento),
+                new SqlParameter("@usada", req.usada)
+            };
+            var res = _repository.EjecutarLstSpExt<PrefacturaResDto>(sp, ps);
+            return res;
         }
 
         public List<ProductoDatosResponseDto> ObtenerProductoDatos(ProductoDatosRequestDto req)
