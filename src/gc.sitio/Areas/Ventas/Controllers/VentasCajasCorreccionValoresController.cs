@@ -775,7 +775,10 @@ namespace gc.sitio.Areas.Ventas.Controllers
 			}
 			else
 			{
-				return "El mensaje NO es JSON válido.";
+				if (string.IsNullOrWhiteSpace(msj))
+					return "El mensaje NO es JSON válido.";
+				else
+					return msj;
 			}
 		}
 

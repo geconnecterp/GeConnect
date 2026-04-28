@@ -83,6 +83,9 @@ function InicializaEventosGrillaVtasPVCtlEntregas() {
 
 		ProcesarSeleccionFilaEntrega($nuevaFila);
 	});
+	setTimeout(() => {
+		$("#divOpcionesEntregaRend").hide();
+	}, 500);
 }
 
 function ProcesarSeleccionFilaEntrega($fila) {

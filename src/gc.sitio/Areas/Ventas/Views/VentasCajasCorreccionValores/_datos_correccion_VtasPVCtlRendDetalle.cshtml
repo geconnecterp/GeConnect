@@ -12,46 +12,47 @@
 		table-layout: fixed;
 		width: 100%;
 	}
-	#tbVtasPVCtlRendDetalle thead th {
-		text-align: center !important;
-		vertical-align: middle !important;
-		white-space: nowrap;
-	}
-	/* Medio de Pago: 20% + elipsis */
-	#tbVtasPVCtlRendDetalle td.col-mp,
-	#tbVtasPVCtlRendDetalle th.col-mp {
-		width: 20%;
-		max-width: 20%;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
 
-	/* Importe / Arqueo / Diferencia: 10% */
-	#tbVtasPVCtlRendDetalle td.col-num,
-	#tbVtasPVCtlRendDetalle th.col-num {
-		width: 13%;
-		max-width: 13%;
-		white-space: nowrap;
-	}
+		#tbVtasPVCtlRendDetalle thead th {
+			text-align: center !important;
+			vertical-align: middle !important;
+			white-space: nowrap;
+		}
+		/* Medio de Pago: 20% + elipsis */
+		#tbVtasPVCtlRendDetalle td.col-mp,
+		#tbVtasPVCtlRendDetalle th.col-mp {
+			width: 20%;
+			max-width: 20%;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
 
-	/* Valores: ocupa el espacio restante */
-	#tbVtasPVCtlRendDetalle td.col-valores,
-	#tbVtasPVCtlRendDetalle th.col-valores {
-		width: auto;
-	}
+		/* Importe / Arqueo / Diferencia: 10% */
+		#tbVtasPVCtlRendDetalle td.col-num,
+		#tbVtasPVCtlRendDetalle th.col-num {
+			width: 13%;
+			max-width: 13%;
+			white-space: nowrap;
+		}
 
-	/* Botón: 2% */
-	#tbVtasPVCtlRendDetalle td.col-btn,
-	#tbVtasPVCtlRendDetalle th.col-btn {
-		width: 8%;
-		max-width: 8%;
-		white-space: nowrap;
-		padding-left: 2px;
-		padding-right: 2px;
-		padding-top: 2px;
-		padding-bottom: 2px;
-	}
+		/* Valores: ocupa el espacio restante */
+		#tbVtasPVCtlRendDetalle td.col-valores,
+		#tbVtasPVCtlRendDetalle th.col-valores {
+			width: auto;
+		}
+
+		/* Botón: 2% */
+		#tbVtasPVCtlRendDetalle td.col-btn,
+		#tbVtasPVCtlRendDetalle th.col-btn {
+			width: 8%;
+			max-width: 8%;
+			white-space: nowrap;
+			padding-left: 2px;
+			padding-right: 2px;
+			padding-top: 2px;
+			padding-bottom: 2px;
+		}
 
 	.editable-importe[data-pendiente="True"] {
 		cursor: pointer;
@@ -159,7 +160,7 @@
 								@conceptoVacio
 							}
 						</td>
-						@if (item.pendiente)
+						@if (item.pendiente && item.tcf_id != "EF")
 						{
 							<td class="col-btn text-center">
 								<button type="button"

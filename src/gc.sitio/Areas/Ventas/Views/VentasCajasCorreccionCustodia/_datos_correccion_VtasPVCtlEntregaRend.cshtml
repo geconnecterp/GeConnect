@@ -25,6 +25,16 @@
 		padding: 0 4px;
 	}
 
+	.fixed-width{
+		max-width: 8% !important;
+		width: 8% !important;
+	}
+
+	.fixed-width-25 {
+		max-width: 8% !important;
+		width: 8% !important;
+	}
+
 	#tbVtasPVCtlEntregaRend .input-importe {
 		height: 18px !important; /* más bajo */
 		padding: 0 1px !important; /* mínimo padding */
@@ -44,12 +54,12 @@
 	<table class="table table-sm table-hover mb-0 table-golden" id="tbVtasPVCtlEntregaRend">
 		<thead class="sticky-top table-golden-header-compact">
 			<tr class="header">
-				<th class="text-center">Proceso</th>
-				<th class="text-center">Cierre</th>
-				<th class="text-center">Rend. Tipo</th>
-				<th class="text-center">Fecha</th>
-				<th class="text-center">PV</th>
-				<th class="text-center">Cajero</th>
+				<th class="text-center fixed-width">Proceso</th>
+				<th class="text-center fixed-width">Cierre</th>
+				<th class="text-center fixed-width">Rend. Tipo</th>
+				<th class="text-center fixed-width">Fecha</th>
+				<th class="text-center fixed-width">PV</th>
+				<th class="text-center fixed-width-25">Cajero</th>
 				<th class="text-center">Rendido</th>
 				<th class="text-center">importe Ok</th>
 			</tr>
@@ -111,10 +121,10 @@
 	</table>
 </div>
 <div class="mt-3 d-flex justify-content-center gap-3" id="divOpcionesEntregaRend">
-	<button id="btnGuardarValores" class="btn btn-sm btn-primary">
+	<button id="btnGuardarCambios" class="btn btn-sm btn-primary">
 		<i class="bx bx-save"></i> Aceptar Cambios
 	</button>
-	<button id="btnGuardarValores" class="btn btn-sm btn-primary">
+	<button id="btnMoverEntrega" class="btn btn-sm btn-primary">
 		<i class="bx bx-save"></i> Mover a Entrega
 	</button>
 	<div id="divListaEntregas">
