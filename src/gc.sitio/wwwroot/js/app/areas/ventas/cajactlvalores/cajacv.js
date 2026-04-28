@@ -571,6 +571,13 @@ function CargarGrillaVtasPVCtlRendDetalle() {
 	}
 }
 
+function HabilitarBotonGuardarValores() {
+	if (existe_edicion)
+		return true;
+	else
+		return false;
+}
+
 function InicializaEventosGrillaVtasPVCtlRendDetalle() {
 	if (rend_pendiente_selected === true) {
 		$("#btnAgregarValor").prop("disabled", false);
@@ -608,10 +615,11 @@ function InicializaEventosGrillaVtasPVCtlRendDetalle() {
 		const ins_id = $btn.data("ins-id");
 		const tcf_id = $btn.data("tcf-id");
 		const ins_detalle = $btn.data("ins-detalle");
-		const rend_item = $btn.data("rend-item");
+		//const rend_item = $btn.data("rend-item");
+		const rend_item = parseInt($btn.data("rend-item")) || 0;
 
 		// Lógica de edición
-		AbrirModalEditarValor(tcf_id, ins_id, ins_detalle, rend_item);
+		AbrirModalEditarValor(tcf_id, ins_id, ins_detalle, rend_item, caja_nro_proceso_selected, caja_nro_cierre_selected, caja_nro_rend_selected);
 	});
 
 	// Evitar duplicados
@@ -709,7 +717,7 @@ function InicializaEventosGrillaVtasPVCtlRendDetalle() {
 	});
 }
 
-function AbrirModalEditarValor(tcf_id, ins_id, ins_detalle, rend_item) {
+function AbrirModalEditarValor(tcf_id, ins_id, ins_detalle, rend_item, nro_proceso, nro_cierre, nro_rend) {
 	if (tcf_id == "") {
 		AbrirMensaje("ATENCIÓN", "El Tipo Cuenta Financiero seleccionado no es válido", function () {
 			$("#msjModal").modal("hide");
@@ -718,7 +726,7 @@ function AbrirModalEditarValor(tcf_id, ins_id, ins_detalle, rend_item) {
 	}
 	else {
 		AbrirWaiting("Cargando datos...");
-		var data = { tcf_id };
+		var data = { tcf_id, ins_id, rend_item, nro_proceso, nro_cierre, nro_rend };
 		PostGenHtml(data, obtenerPartialDeValoresUrl, function (obj) {
 			$("#divEdicionDeValores").html(obj);
 
@@ -729,11 +737,19 @@ function AbrirModalEditarValor(tcf_id, ins_id, ins_detalle, rend_item) {
 			});
 			if (tcf_id == "CH") {
 				InicializarCamposEnTcfId_CH();
+				CargarCamposEnCH();
 			}
 			// Máscara de número de tarjeta SOLO si es TC
 			if (tcf_id === "TC" || tcf_id === "TD") {
 				getMaskForCardNumber("#NroTarjeta");
 				inicializarCamposTC_TD();
+				CargarCamposEnTC_TD();
+			}
+			if (tcf_id == "BA") {
+				CargarCamposEnBA();
+			}
+			if (tcf_id == "MU") {
+				CargarCamposEnMU();
 			}
 			const $modal = $("#modalEdicionDeValores");
 			$modal.data("tcf-id", tcf_id);
@@ -760,7 +776,7 @@ const camposPorModal = {
 	"TD": ["MedioDePagoSeleccionado", "NroTarjeta", "Lote", "Cupon", "Importe"],
 
 	"MU": ["MedioDePagoSeleccionado", "Titular", "NroOrden", "Cuit", "Importe"],
-	"BA": ["MedioDePagoSeleccionado", "Titular", "NroOrden", "Cuit", "Importe"],
+	"BA": ["MedioDePagoSeleccionado", "Banco", "NroCuenta", "NroDeposito", "Importe"],
 
 	"CH": ["BcoCheqsSeleccionado", "NroCheque", "Plaza", "FechaVto", "Importe", "Rel01"]
 };
@@ -770,7 +786,7 @@ const reglasValidacion = {
 	"TD": ["#listaMediosDePago", "#NroTarjeta", "#Lote", "#Cupon", "#Importe"],
 
 	"MU": ["#listaMediosDePago", "#Titular", "#NroOrden", "#Cuit", "#Importe"],
-	"BA": ["#listaMediosDePago", "#Titular", "#NroOrden", "#Cuit", "#Importe"],
+	"BA": ["#listaMediosDePago", "#Banco", "#NroCuenta", "#NroDeposito", "#Importe"],
 
 	"CH": ["#listaBcoCheqs", "#NroCheque", "#Plaza", "#FechaVto", "#Importe", "#Rel01"]
 };
@@ -911,11 +927,13 @@ function GuardarDetalleDeValor(tcf_id) {
 			url = actualizarItemConceptoValorEnDetalleRendUrl;
 			request = new ObjValorCorreccionVtaPV(tcf_id, data.NroTarjeta, "Tarjeta", data.Lote, "Lote", data.Cupon, "Cupon", data.Importe, obtenerFechaActualISO(), "");
 			break;
-
 		case "MU":
+			url = actualizarItemConceptoValorEnDetalleRendUrl;
+			request = new ObjValorCorreccionVtaPV(tcf_id, data.Titular, "Titular", data.NroOrden, "Nº Orden", data.Cuit, "CUIT", data.Importe, obtenerFechaActualISO(), "");
+			break;
 		case "BA":
 			url = actualizarItemConceptoValorEnDetalleRendUrl;
-			request = new ObjValorCorreccionVtaPV(tcf_id, data.Titular, "Titular", data.NroOrden, "Nro.Orden", data.Cuit, "CUIT", data.Importe, obtenerFechaActualISO(), "");
+			request = new ObjValorCorreccionVtaPV(tcf_id, data.Banco, "Banco", data.NroCuenta, "Nº Cuenta", data.NroDeposito, "Nº Depósito", data.Importe, obtenerFechaActualISO(), "");
 			break;
 
 		case "CH":
@@ -985,16 +1003,22 @@ function GuardarDetalleDeValor(tcf_id) {
 				$inputImporte.data("original", nuevoImporte.toString());
 
 				// Volver a aplicar la máscara correctamente
-				getMaskForMoneyType($inputImporte.selector);
+				//getMaskForMoneyType($inputImporte.selector);
+				getMaskForMoneyType($inputImporte);
+
+				// 🔥 3) ACTUALIZAR DIFERENCIA
+				const textoArqueo = $fila.find("td.col-num").eq(1).text().trim();
+				const arqueo = convertirImporteADecimal(textoArqueo);
+				const diferencia = nuevoImporte - arqueo;
+
+				const $celdaDif = $fila.find("td.col-num").eq(2);
+				$celdaDif.text(FormatearPrecio(diferencia));
 			}
 
-			AbrirMensaje("ATENCIÓN", "Se han actualizado los datos del Detalle de Arqueo de forma exitosa.", function () {
-				$("#msjModal").modal("hide");
-				existe_edicion = true;
-				$("#modalEdicionDeValores").modal("hide");
-				return true;
-
-			}, false, ["Aceptar"], "succ!", null);
+			existe_edicion = true;
+			$("#modalEdicionDeValores").modal("hide");
+			$("#btnGuardarValores").prop("disabled", !HabilitarBotonGuardarValores());
+			ActualizarTotalesEnPadre();
 		}
 	});
 }
@@ -1211,6 +1235,127 @@ function inicializarCamposTC_TD() {
 	});
 }
 
+function CargarCamposEnCH() {
+	//N° Cheque
+	const rend_dato1_valor = $("#rend_dato1_valor").val() || "";
+	//Plaza
+	const rend_dato2_valor = $("#rend_dato2_valor").val() || "";
+	//Fecha Vto.
+	const rend_dato3_valor = $("#rend_dato3_valor").val() || "";
+	//Importe
+	const rend_importe_ok = $("#rend_importe_ok").val() || 0;
+	//Instrumento
+	const ins_id = $("#ins_id").val() || "";
+
+	if (rend_dato1_valor != "") {
+		$("#NroCheque").val(rend_dato1_valor);
+	}
+	if (rend_dato2_valor != "") {
+		$("#Plaza").val(padLeftZeros(rend_dato2_valor, 6));
+	}
+	if (rend_dato3_valor != "") {
+		$("#FechaVto").val(padLeftZeros(rend_dato3_valor, 6));
+	}
+	if (rend_importe_ok > 0) {
+		$("#Importe").val(FormatearPrecio(rend_importe_ok));
+		getMaskForMoneyType($("#Importe"));
+	}
+	if (ins_id != "") {
+		$("#listaMediosDePago").val(ins_id);
+	}
+}
+
+function CargarCamposEnMU() {
+	//Titular
+	const rend_dato1_valor = $("#rend_dato1_valor").val() || "";
+	//Nro. Orden
+	const rend_dato2_valor = $("#rend_dato2_valor").val() || "";
+	//Cuit
+	const rend_dato3_valor = $("#rend_dato3_valor").val() || "";
+	//Importe
+	const rend_importe_ok = $("#rend_importe_ok").val() || 0;
+	//Instrumento
+	const ins_id = $("#ins_id").val() || "";
+
+	if (rend_dato1_valor != "") {
+		$("#Titular").val(rend_dato1_valor);
+	}
+	if (rend_dato2_valor != "") {
+		$("#NroOrden").val(padLeftZeros(rend_dato2_valor, 6));
+	}
+	if (rend_dato3_valor != "") {
+		$("#Cuit").val(padLeftZeros(rend_dato3_valor, 6));
+	}
+	if (rend_importe_ok > 0) {
+		$("#Importe").val(FormatearPrecio(rend_importe_ok));
+		getMaskForMoneyType($("#Importe"));
+	}
+	if (ins_id != "") {
+		$("#listaMediosDePago").val(ins_id);
+	}
+}
+
+function CargarCamposEnBA() {
+	//Banco
+	const rend_dato1_valor = $("#rend_dato1_valor").val() || "";
+	//N°. Cuenta
+	const rend_dato2_valor = $("#rend_dato2_valor").val() || "";
+	//N°. Depósito
+	const rend_dato3_valor = $("#rend_dato3_valor").val() || "";
+	//Importe
+	const rend_importe_ok = $("#rend_importe_ok").val() || 0;
+	//Instrumento
+	const ins_id = $("#ins_id").val() || "";
+
+	if (rend_dato1_valor != "") {
+		$("#Banco").val(rend_dato1_valor);
+	}
+	if (rend_dato2_valor != "") {
+		$("#NroCuenta").val(padLeftZeros(rend_dato2_valor, 6));
+	}
+	if (rend_dato3_valor != "") {
+		$("#NroDeposito").val(padLeftZeros(rend_dato3_valor, 6));
+	}
+	if (rend_importe_ok > 0) {
+		$("#Importe").val(FormatearPrecio(rend_importe_ok));
+		getMaskForMoneyType($("#Importe"));
+	}
+	if (ins_id != "") {
+		$("#listaMediosDePago").val(ins_id);
+	}
+}
+
+function CargarCamposEnTC_TD() { 
+	//Tarjeta
+	const rend_dato1_valor = $("#rend_dato1_valor").val() || "";
+	//Lote
+	const rend_dato2_valor = $("#rend_dato2_valor").val() || "";
+	//Cupón
+	const rend_dato3_valor = $("#rend_dato3_valor").val() || "";
+	//Importe
+	const rend_importe_ok = $("#rend_importe_ok").val() || 0;
+	//Instrumento
+	const ins_id = $("#ins_id").val() || "";
+
+	if (rend_dato1_valor != "") {
+		$("#NroTarjeta").val(rend_dato1_valor);
+		getMaskForCardNumber($("#NroTarjeta")); 
+	}
+	if (rend_dato2_valor != "") {
+		$("#Lote").val(padLeftZeros(rend_dato2_valor, 6));
+	}
+	if (rend_dato3_valor != "") {
+		$("#Cupon").val(padLeftZeros(rend_dato3_valor, 6));
+	}
+	if (rend_importe_ok > 0) {
+		$("#Importe").val(FormatearPrecio(rend_importe_ok)); 
+		getMaskForMoneyType($("#Importe"));
+	}
+	if (ins_id != "") {
+		$("#listaMediosDePago").val(ins_id);
+	}
+}
+
 function padLeftZeros(value, length) {
 	return value.toString().padStart(length, "0");
 }
@@ -1294,33 +1439,7 @@ function ActualizarValorCampoPlaza(bc_id) {
 		}
 	});
 }
-/*
 
-
-$("#Rel01").autocomplete({
-	source: function (request, response) {
-
-		data = { prefix: request.term }; Rel01
-
-		$.ajax({
-			url: autoComRel01Url,
-			type: "POST",
-			dataType: "json",
-			data: data,
-			success: function (obj) {
-				response($.map(obj, function (item) {
-					var texto = item.descripcion;
-					return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
-				}));
-			}
-		})
-	},
-	minLength: 3,
-	select: function (event, ui) {
-		return true;
-	}
-});
-*/
 function GuardarCtlDetalle() {
 	var caja_nro_proceso = caja_nro_proceso_selected;
 	var caja_nro_cierre = caja_nro_cierre_selected;
@@ -1446,6 +1565,17 @@ function GuardarImporteEditado($input) {
 	});
 }
 
+function toDecimalSafe(valor) {
+	if (!valor) return 0;
+
+	return Number(
+		valor
+			.toString()
+			.trim()
+			.replace(/\./g, "")
+			.replace(",", ".")
+	) || 0;
+}
 
 function ActualizarTotalesEnPadre() {
 	const $filas = $("#tbVtasPVCtlRendDetalle tbody tr").not(".fila-vacia");
@@ -1457,44 +1587,37 @@ function ActualizarTotalesEnPadre() {
 	$filas.each(function () {
 		const $tr = $(this);
 
-		// --- RENDIDO (columna 1) ---
-		let $tdRendido = $tr.find("td").eq(1);
-		let rendido;
+		// --- RENDIDO ---
+		const $tdRendido = $tr.find("td.editable-importe");
+		let rendido = 0;
 
 		if ($tdRendido.find("input").length) {
-			// Si tiene input → tomar valor del inputmask
-			rendido = Number($tdRendido.find("input").inputmask("unmaskedvalue") || 0);
+			rendido = toDecimalSafe($tdRendido.find("input").inputmask("unmaskedvalue"));
 		} else {
-			// Si no tiene input → tomar texto
-			rendido = Number(
-				$tdRendido.text().replace(/\./g, "").replace(",", ".") || 0
-			);
+			rendido = toDecimalSafe($tdRendido.text());
 		}
 
-		// --- ARQUEO (columna 2) ---
-		let arqueo = Number(
-			$tr.find("td").eq(2).text().replace(/\./g, "").replace(",", ".") || 0
-		);
+		// --- ARQUEO ---
+		const $tdArqueo = $tr.find("td.col-num").eq(1);
+		const arqueo = toDecimalSafe($tdArqueo.text());
 
-		// --- DIFERENCIA (columna 3) ---
-		let diferencia = Number(
-			$tr.find("td").eq(3).text().replace(/\./g, "").replace(",", ".") || 0
-		);
+		// --- DIFERENCIA ---
+		const $tdDiferencia = $tr.find("td.col-num").eq(2);
+		const diferencia = toDecimalSafe($tdDiferencia.text());
 
 		totalRendido += rendido;
 		totalArqueo += arqueo;
 		totalDiferencia += diferencia;
 	});
 
-	// Actualizar la fila seleccionada en la tabla padre
 	if (fila_seleccionada_actual) {
 		const $tds = fila_seleccionada_actual.find("td");
-
 		$tds.eq(2).text(FormatearPrecio(totalRendido));
 		$tds.eq(3).text(FormatearPrecio(totalArqueo));
-		$tds.eq(4).text(FormatearPrecio(totalDiferencia));
+		$tds.eq(4).text(FormatearPrecio(totalRendido - totalArqueo));
 	}
 }
+
 
 function FormatearPrecio(valor) {
 	return Number(valor).toLocaleString("en-US", {
@@ -1541,7 +1664,7 @@ function getMaskForMoneyType(selector) {
 
 function getMaskForCardNumber(selector) {
 	$(selector).inputmask({
-		mask: "9999-9999-9999-9999",
+		mask: "99999999",
 		placeholder: " ",
 		showMaskOnHover: false,
 		showMaskOnFocus: true,

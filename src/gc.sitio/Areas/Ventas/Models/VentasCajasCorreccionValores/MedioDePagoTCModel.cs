@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using gc.infraestructura.Dtos.Ventas;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace gc.sitio.Areas.Ventas.Models.VentasCajasCorreccionValores
 {
@@ -11,5 +12,6 @@ namespace gc.sitio.Areas.Ventas.Models.VentasCajasCorreccionValores
 		public string Lote { get; set; } = string.Empty;
 		public string Cupon { get; set; } = string.Empty;
 		public decimal Importe { get; set; }
+		public VtasPVCtlRendDetalleDto Item { get; set; }
 	}
 }

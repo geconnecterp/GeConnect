@@ -7,6 +7,16 @@
 		max-width: 30% !important;
 	}
 </style>
+@Html.Hidden("ins_dato1_desc", Model.Item?.ins_dato1_desc)
+@Html.Hidden("ins_dato2_desc", Model.Item?.ins_dato2_desc)
+@Html.Hidden("ins_dato3_desc", Model.Item?.ins_dato3_desc)
+@Html.Hidden("rend_dato1_valor", Model.Item?.rend_dato1_valor)
+@Html.Hidden("rend_dato2_valor", Model.Item?.rend_dato2_valor)
+@Html.Hidden("rend_dato3_valor", Model.Item?.rend_dato3_valor)
+@Html.Hidden("ins_id", Model.Item?.ins_id)
+@Html.Hidden("rend_fecha_valor", Model.Item?.rend_fecha_valor)
+@Html.Hidden("rend_importe_ok", Model.Item?.rend_importe_ok)
+@Html.Hidden("rend_item", Model.Item?.rend_item)
 <div class="modal-header">
 	<h5 class="modal-title" id="modalCenterTitle">Mutuales</h5>
 	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>

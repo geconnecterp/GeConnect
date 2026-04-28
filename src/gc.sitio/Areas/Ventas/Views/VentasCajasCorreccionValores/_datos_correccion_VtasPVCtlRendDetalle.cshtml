@@ -4,8 +4,12 @@
 	var alt = true;
 	string clase = string.Empty;
 	var pendiente = false;
+	var tcf_id = "";
 	if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
+	{
 		pendiente = Model.ListaDatos.First().pendiente;
+		tcf_id = Model.ListaDatos.First().tcf_id;
+	}
 }
 <style>
 	#tbVtasPVCtlRendDetalle {
@@ -101,9 +105,13 @@
 				<th class="col-num">Arqueo</th>
 				<th class="col-num" title="Diferencia">Dif.</th>
 				<th class="col-valores">Valores</th>
-				@if (pendiente)
+				@if (pendiente && tcf_id != "EF")
 				{
 					<th class="col-btn"></th>
+				}
+				else
+				{
+					<th></th>
 				}
 			</tr>
 		</thead>
@@ -173,6 +181,10 @@
 									<i class="bx bx-edit"></i>
 								</button>
 							</td>
+						}
+						else
+						{
+							<td></td>
 						}
 					</tr>
 				}

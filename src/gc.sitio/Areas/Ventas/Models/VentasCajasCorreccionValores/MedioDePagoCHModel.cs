@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using gc.infraestructura.Dtos.Ventas;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 
 namespace gc.sitio.Areas.Ventas.Models.VentasCajasCorreccionValores
@@ -13,5 +14,6 @@ namespace gc.sitio.Areas.Ventas.Models.VentasCajasCorreccionValores
 		[DataType(DataType.Date)]
 		public DateTime FechaVto { get; set; }
 		public decimal Importe { get; set; }
+		public VtasPVCtlRendDetalleDto Item { get; set; }
 	}
 }

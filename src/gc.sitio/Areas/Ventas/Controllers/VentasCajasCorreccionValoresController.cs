@@ -13,6 +13,7 @@ using gc.sitio.core.Servicios.Contratos.ABM;
 using gc.sitio.core.Servicios.Contratos.Cajas;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -597,7 +598,7 @@ namespace gc.sitio.Areas.Ventas.Controllers
 		}
 
 		[HttpPost]
-		public IActionResult ObtenerPartialDeValores(string tcf_id)
+		public IActionResult ObtenerPartialDeValores(string tcf_id, string ins_id, int rend_item, string nro_proceso, int nro_cierre, int nro_rend)
 		{
 			try
 			{
@@ -608,8 +609,13 @@ namespace gc.sitio.Areas.Ventas.Controllers
 				if (string.IsNullOrWhiteSpace(tcf_id))
 					throw new NegocioException("Faltan datos obligatorios: tcf_id");
 
+				var item = new VtasPVCtlRendDetalleDto();
+				if (!string.IsNullOrWhiteSpace(nro_proceso) && !string.IsNullOrEmpty(ins_id))
+					item = VtasPVCtlRendDetalleLista.Where(x=>x.ins_id == ins_id && x.caja_nro_proceso == nro_proceso && x.caja_nro_cierre == nro_cierre && x.caja_nro_rend == nro_rend && x.rend_item == rend_item).FirstOrDefault();
+
 				string partialName = $"_partial_modal_{tcf_id}";
 				var model = ObtenerModelDesdeTcf_id(tcf_id);
+				model.Item = item;
 				return PartialView(partialName, model);
 			}
 
@@ -678,19 +684,34 @@ namespace gc.sitio.Areas.Ventas.Controllers
 					throw new NegocioException(msg);
 				}
 
-				var item = new VtasPVCtlRendDetalleDto();
-				var listaTempo = VtasPVCtlRendDetalleLista;
-				var listaFiltrada = listaTempo.Where(x => x.caja_nro_proceso == caja_nro_proceso && x.caja_nro_cierre == caja_nro_cierre && x.caja_nro_rend == caja_nro_rend).ToList();
-				if (rend_item != 0)
-					item = listaFiltrada.Where(x => x.rend_item == rend_item).First();
-				else
-					item = listaFiltrada.First();
+				//var item = new VtasPVCtlRendDetalleDto();
+				//var listaTempo = VtasPVCtlRendDetalleLista;
+				//var listaFiltrada = listaTempo.Where(x => x.caja_nro_proceso == caja_nro_proceso && x.caja_nro_cierre == caja_nro_cierre && x.caja_nro_rend == caja_nro_rend).ToList();
+				//if (rend_item != 0)
+				//	item = listaFiltrada.Where(x => x.rend_item == rend_item).First();
+				//else
+				//	item = listaFiltrada.First();
+				//ObtenerConceptoValor(item, detalle);
+				var lista = VtasPVCtlRendDetalleLista;
+
+				var item = lista
+					.Where(x => x.caja_nro_proceso == caja_nro_proceso &&
+								x.caja_nro_cierre == caja_nro_cierre &&
+								x.caja_nro_rend == caja_nro_rend)
+					.FirstOrDefault(x => rend_item == 0 || x.rend_item == rend_item);
+
+				if (item == null)
+					throw new Exception("No se encontró el item para actualizar.");
+
 				ObtenerConceptoValor(item, detalle);
-				return Json(new { Ok = false, error = false, msg, concepto = item.concepto_valor });
+
+				// Guardar cambios
+				VtasPVCtlRendDetalleLista = lista;
+				return Json(new { Ok = true, error = false, msg = "", concepto = item.concepto_valor });
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
-				return Json(new { Ok = false, error = true, msg });
+				return Json(new { Ok = false, error = true, msg = ex.Message });
 			}
 		}
 
@@ -702,6 +723,10 @@ namespace gc.sitio.Areas.Ventas.Controllers
 			var dato2_valor = string.IsNullOrWhiteSpace(detalle.op_dato2_valor) && string.IsNullOrWhiteSpace(detalle.op_dato2_desc) ? string.Empty : $"{detalle.op_dato2_desc}:{detalle.op_dato2_valor}";
 			var dato3_valor = string.IsNullOrWhiteSpace(detalle.op_dato3_valor) && string.IsNullOrWhiteSpace(detalle.op_dato3_desc) ? string.Empty : $"{detalle.op_dato3_desc}:{detalle.op_dato3_valor}";
 			var dato_fecha = detalle.op_fecha_valor != null ? $"Fecha Val.:{detalle.op_fecha_valor.Value:dd/MM/yyyy}" : string.Empty;
+			source.rend_dato1_valor = dato1_valor;
+			source.rend_dato2_valor = dato2_valor;
+			source.rend_dato3_valor = dato3_valor;
+			source.rend_fecha = detalle.op_fecha_valor.Value;
 			source.concepto_valor = $"{dato1_valor} {dato2_valor} {dato3_valor} {dato_fecha}";
 		}
 		private IMedioDePago ObtenerModelDesdeTcf_id(string tcf_id)
