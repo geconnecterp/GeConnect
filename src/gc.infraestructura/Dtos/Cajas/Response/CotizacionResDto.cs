@@ -2,7 +2,7 @@
 {
     public class CotizacionResDto
     {
-        public int pre_id { get; set; }
+        public string pre_id { get; set; }
 
         public string? pre_descripcion { get; set; }
 

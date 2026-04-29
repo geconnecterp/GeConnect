@@ -1,0 +1,104 @@
+﻿@*
+    ════════════════════════════════════════════════════════════
+    MODAL: COTIZACIONES
+    ════════════════════════════════════════════════════════════
+    Permite seleccionar una cotización para convertir en factura
+*@
+
+<!-- Modal Cotizaciones -->
+<div class="modal fade modal-golden" 
+     id="modalCotizaciones" 
+     data-bs-backdrop="static" 
+     data-bs-keyboard="false" 
+     tabindex="-1" 
+     aria-labelledby="modalCotizacionesTitle" 
+     aria-hidden="true">
+    
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            
+            <!-- ════════════════════════════════════════════════════ -->
+            <!-- HEADER -->
+            <!-- ════════════════════════════════════════════════════ -->
+            <div class="modal-header bg-gradient-golden">
+                <h5 class="modal-title fw-bold text-white" id="modalCotizacionesTitle">
+                    <i class='bx bx-dollar-circle'></i> Cotización
+                </h5>
+            </div>
+
+            <!-- ════════════════════════════════════════════════════ -->
+            <!-- BODY -->
+            <!-- ════════════════════════════════════════════════════ -->
+            <div class="modal-body p-4 bg-light">
+                
+                <!-- Tabla de Cotizaciones -->
+                <div class="card card-golden">
+                    <div class="card-body p-0">
+                        <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                            <table class="table table-golden table-hover table-sm mb-0" id="tbCotizaciones">
+                                <thead class="table-golden-header sticky-top">
+                                    <tr>
+                                        <th class="text-center" style="width: 12%;">Cotización</th>
+                                        <th style="width: 30%;">Descripción</th>
+                                        <th class="text-center" style="width: 12%;">Fecha</th>
+                                        <th style="width: 25%;">Obs Pago</th>
+                                        <th class="text-end" style="width: 15%;">Importe</th>
+                                        <th class="text-center" style="width: 6%;">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyCotizaciones">
+                                    <!-- Mensaje inicial -->
+                                    <tr id="rowSinCotizaciones">
+                                        <td colspan="6" class="text-center text-muted py-5">
+                                            <i class='bx bx-dollar-circle bx-lg text-golden'></i>
+                                            <p class="mb-0 mt-2">
+                                                <strong>No hay cotizaciones disponibles</strong><br>
+                                                <small>Verifique que existan cotizaciones para este cliente</small>
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ════════════════════════════════════════════════════ -->
+            <!-- FOOTER -->
+            <!-- ════════════════════════════════════════════════════ -->
+            <div class="modal-footer bg-white">
+                <button type="button" 
+                        class="btn btn-danger btn-lg px-5" 
+                        id="btnCancelarCotizacion">
+                    <i class='bx bx-x-circle'></i> CANCELAR
+                </button>
+                <button type="button" 
+                        class="btn btn-success btn-lg px-5" 
+                        id="btnSeguirCotizacion"
+                        disabled>
+                    <i class='bx bx-check-circle'></i> SEGUIR
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- ESTILOS ADICIONALES -->
+<!-- ════════════════════════════════════════════════════════ -->
+<style>
+    /* Fila seleccionada */
+    #tbCotizaciones tbody tr.selected-cotizacion {
+        background-color: #d5f4e6;
+        border-left: 4px solid #27ae60;
+    }
+
+    /* Hover en filas */
+    #tbCotizaciones tbody tr:not(#rowSinCotizaciones):hover {
+        background-color: #faf5e6;
+        cursor: pointer;
+    }
+</style>
