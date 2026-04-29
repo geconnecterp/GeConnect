@@ -109,7 +109,7 @@ function inicializarEventosProductos() {
     
     $('#btnCotizacion').on('click', function() {
         console.log('💰 Cargar Cotización...');
-        cargarCotizacion();
+        abrirModalCotizaciones(); // ← Llamar función de factCotizacion.js
     });
     
     $('#btnUltimoDetalle').on('click', function() {
@@ -397,12 +397,12 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
 }
 
 /**
- * ✅ ACTUALIZADO: Procesa la respuesta del servidor
- * CORREGIDO: Manejo correcto de estados del mensaje
+ * ✅ ACTUALIZADO v5.1 CORREGIDA: Procesa la respuesta del servidor
+ * NUEVO: Soporte correcto para cotizaciones (múltiples productos)
  */
 function procesarRespuestaProducto(response, origenCarga) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('📊 PROCESANDO RESPUESTA DE PRODUCTO v5.0 CORREGIDA');
+    console.log('📊 PROCESANDO RESPUESTA DE PRODUCTO v5.1 CORREGIDA');
     console.log('═══════════════════════════════════════════════════');
     console.log('   Origen de carga:', origenCarga);
     console.log('   Response:', response);
@@ -413,9 +413,8 @@ function procesarRespuestaProducto(response, origenCarga) {
     if (!producto) {
         console.warn('⚠️ No se recibió producto en la respuesta');
         
-        // ✅ CORREGIDO
         $('#mensajeEstadoProducto')
-            .removeClass('text-info text-success text-muted')  // ✅ Incluir text-muted
+            .removeClass('text-info text-success text-muted')
             .addClass('text-danger')
             .html(`<i class='bx bx-error-circle'></i> Producto no encontrado`);
         
@@ -427,9 +426,8 @@ function procesarRespuestaProducto(response, origenCarga) {
     if (Array.isArray(producto) && producto.length === 0) {
         console.warn('⚠️ Array de productos vacío');
         
-        // ✅ CORREGIDO
         $('#mensajeEstadoProducto')
-            .removeClass('text-info text-success text-muted')  // ✅ Incluir text-muted
+            .removeClass('text-info text-success text-muted')
             .addClass('text-danger')
             .html(`<i class='bx bx-error-circle'></i> Producto no encontrado`);
         
@@ -437,7 +435,84 @@ function procesarRespuestaProducto(response, origenCarga) {
         return;
     }
     
+    // ═══════════════════════════════════════════════════════════════════
+    // ✅ NUEVO: CASO ESPECIAL PARA COTIZACIONES
+    // ═══════════════════════════════════════════════════════════════════
+    if (origenCarga === 'cotizacion') {
+        console.log('═══════════════════════════════════════════════════');
+        console.log('💰 PROCESAMIENTO ESPECIAL: COTIZACIÓN');
+        console.log('═══════════════════════════════════════════════════');
+        
+        // ❶ Validar que sea un array
+        if (!Array.isArray(producto)) {
+            console.error('❌ Cotización no retornó un array de productos');
+            mostrarMensajeError('Error en el formato de la cotización');
+            return;
+        }
+        
+        console.log(`   Total productos en cotización: ${producto.length}`);
+        
+        // ❷ Validar que no haya productos con error
+        let productosValidos = 0;
+        let productosInvalidos = 0;
+        
+        producto.forEach((prod, index) => {
+            if (prod.respuesta === 0) {
+                productosValidos++;
+            } else {
+                productosInvalidos++;
+                console.warn(`⚠️ Producto ${index + 1} con error: ${prod.respuesta_msj}`);
+            }
+        });
+        
+        console.log(`   - Productos válidos: ${productosValidos}`);
+        console.log(`   - Productos inválidos: ${productosInvalidos}`);
+        
+        if (productosValidos === 0) {
+            console.error('❌ Ningún producto válido en la cotización');
+            mostrarMensajeError('La cotización no contiene productos válidos');
+            return;
+        }
+        
+        // ❸ ESTABLECER MODO DE BLOQUEO
+        modoBloqueoGrilla = 'cotizacion';
+        console.log('⚠️ MODO BLOQUEO ACTIVADO: No se podrán agregar productos individuales');
+        
+        // ❹ PROCESAR CADA PRODUCTO VÁLIDO
+        let productosAgregados = 0;
+        
+        producto.forEach((prod, index) => {
+            if (prod.respuesta === 0) {
+                console.log(`   [${index + 1}/${producto.length}] Agregando: ${prod.p_desc}`);
+                agregarProductoAGrilla(prod);
+                productosAgregados++;
+            }
+        });
+        
+        // ❺ MENSAJE DE ÉXITO
+        console.log('═══════════════════════════════════════════════════');
+        console.log(`✅ COTIZACIÓN CARGADA: ${productosAgregados} productos`);
+        console.log('═══════════════════════════════════════════════════');
+        
+        $('#mensajeEstadoProducto')
+            .removeClass('text-info text-danger text-muted')
+            .addClass('text-success')
+            .html(`<i class='bx bx-check-circle'></i> Cotización cargada: ${productosAgregados} productos`);
+        
+        // Restaurar después de 5 segundos
+        setTimeout(() => {
+            $('#mensajeEstadoProducto')
+                .removeClass('text-success text-danger text-info')
+                .addClass('text-muted')
+                .html('Presione <kbd>Enter</kbd> o <strong>BUSCAR</strong> para agregar producto');
+        }, 5000);
+        
+        return; // ← SALIR (ya procesamos la cotización)
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════
     // ❸ CASO: Producto único (esUnico = true o no es array)
+    // ═══════════════════════════════════════════════════════════════════
     if (response.esUnico === true || !Array.isArray(producto)) {
         console.log('═══════════════════════════════════════════════════');
         console.log('✅ PRODUCTO ÚNICO DETECTADO');
@@ -524,8 +599,8 @@ function mostrarModalSeleccionProducto(productos, origenCarga) {
                     <div class="fw-semibold">${escapeHtml(descripcion)}</div>
                     ${!esValido ? `<small class="text-danger fw-bold"><i class='bx bx-error-circle'></i> ${escapeHtml(mensajeError)}</small>` : ''}
                 </td>
-                <td class="text-center ${textClass}">
-                    <span class="badge bg-info">${unidadPres}</span>
+                <td class="text-center ${textClass} fw-semibold">
+                    ${unidadPres}
                 </td>
                 <td class="text-end ${textClass} fw-semibold">$ ${formatearNumero(precio, 2)}</td>
                 <td class="text-center">
@@ -1011,6 +1086,7 @@ function cargarCotizacion() {
     }
     
     // TODO: Implementar búsqueda de cotizaciones
+    // se invoca la action 
     // Al seleccionar una, invocar buscarProductoPorCodigo con:
     // - tipoValor: 'C'
     // - valor: ID de la cotización

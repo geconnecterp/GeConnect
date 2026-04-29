@@ -1,11 +1,13 @@
 ﻿@*
     ════════════════════════════════════════════════════════════
-    MODAL: COTIZACIONES
+    MODAL: SELECCIÓN DE COTIZACIÓN
     ════════════════════════════════════════════════════════════
-    Permite seleccionar una cotización para convertir en factura
+    VERSIÓN v1.1 MEJORADA - ESTILOS GOLDEN COMPLETOS
+    RESTRICCIÓN: Solo se puede seleccionar UNA cotización
+    REQUISITO: La grilla de productos debe estar vacía
+    ════════════════════════════════════════════════════════════
 *@
 
-<!-- Modal Cotizaciones -->
 <div class="modal fade modal-golden" 
      id="modalCotizaciones" 
      data-bs-backdrop="static" 
@@ -14,91 +16,117 @@
      aria-labelledby="modalCotizacionesTitle" 
      aria-hidden="true">
     
-    <div class="modal-dialog modal-fullscreen">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             
-            <!-- ════════════════════════════════════════════════════ -->
-            <!-- HEADER -->
-            <!-- ════════════════════════════════════════════════════ -->
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <!-- HEADER CON GRADIENTE GOLDEN -->
+            <!-- ══════════════════════════════════════════════════════════ -->
             <div class="modal-header bg-gradient-golden">
-                <h5 class="modal-title fw-bold text-white" id="modalCotizacionesTitle">
-                    <i class='bx bx-dollar-circle'></i> Cotización
+                <h5 class="modal-title text-white" id="modalCotizacionesTitle">
+                    <i class='bx bx-dollar-circle'></i>
+                    Seleccionar Cotización
                 </h5>
+                <button type="button" 
+                        class="btn-close btn-close-white" 
+                        data-bs-dismiss="modal" 
+                        aria-label="Close">
+                </button>
             </div>
 
-            <!-- ════════════════════════════════════════════════════ -->
-            <!-- BODY -->
-            <!-- ════════════════════════════════════════════════════ -->
-            <div class="modal-body p-4 bg-light">
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <!-- BODY CON ESTILOS GOLDEN MEJORADOS -->
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <div class="modal-body">
                 
-                <!-- Tabla de Cotizaciones -->
-                <div class="card card-golden">
-                    <div class="card-body p-0">
-                        <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
-                            <table class="table table-golden table-hover table-sm mb-0" id="tbCotizaciones">
-                                <thead class="table-golden-header sticky-top">
-                                    <tr>
-                                        <th class="text-center" style="width: 12%;">Cotización</th>
-                                        <th style="width: 30%;">Descripción</th>
-                                        <th class="text-center" style="width: 12%;">Fecha</th>
-                                        <th style="width: 25%;">Obs Pago</th>
-                                        <th class="text-end" style="width: 15%;">Importe</th>
-                                        <th class="text-center" style="width: 6%;">Acción</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tbodyCotizaciones">
-                                    <!-- Mensaje inicial -->
-                                    <tr id="rowSinCotizaciones">
-                                        <td colspan="6" class="text-center text-muted py-5">
-                                            <i class='bx bx-dollar-circle bx-lg text-golden'></i>
-                                            <p class="mb-0 mt-2">
-                                                <strong>No hay cotizaciones disponibles</strong><br>
-                                                <small>Verifique que existan cotizaciones para este cliente</small>
-                                            </p>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                <!-- ✅ MEJORADO: Información del cliente con estilo info-highlight -->
+                <div class="info-highlight">
+                    <i class='bx bx-info-circle'></i>
+                    <strong class="text-golden-dark">Cliente:</strong> 
+                    <span id="lblClienteCotizacion" class="fw-semibold">-</span>
+                </div>
+
+                <!-- ✅ MEJORADO: Advertencia con borde golden y fondo más suave -->
+                <div class="alert alert-warning border-golden mb-3" style="background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(218, 165, 32, 0.05) 100%); border-width: 0 0 0 4px;">
+                    <div class="d-flex align-items-center">
+                        <i class='bx bx-error-alt text-golden' style="font-size: 2rem; margin-right: 1rem;"></i>
+                        <div>
+                            <strong class="text-golden-dark">Importante:</strong>
+                            <p class="mb-0 mt-1 text-dark">
+                                Solo puede seleccionar <strong class="text-golden-dark">UNA cotización</strong>. 
+                                Una vez cargada, no podrá agregar más productos hasta confirmar o cancelar la factura.
+                            </p>
                         </div>
                     </div>
                 </div>
 
+                <!-- ✅ MEJORADO: Tabla con header golden y scroll personalizado -->
+                <div class="table-responsive table-responsive-precios" style="max-height: 450px;">
+                    <table class="table table-hover table-bordered table-sm table-layout-fixed">
+                        
+                        <!-- ✅ HEADER GOLDEN CON GRADIENTE -->
+                        <thead class="table-golden-header sticky-top">
+                            <tr>
+                                <th class="text-center" style="width: 12%;">
+                                    <i class='bx bx-hash'></i> Código
+                                </th>
+                                <th style="width: 28%;">
+                                    <i class='bx bx-file-blank'></i> Descripción
+                                </th>
+                                <th class="text-center" style="width: 12%;">
+                                    <i class='bx bx-calendar'></i> Fecha
+                                </th>
+                                <th style="width: 20%;">
+                                    <i class='bx bx-credit-card'></i> Condición Pago
+                                </th>
+                                <th class="text-end" style="width: 15%;">
+                                    <i class='bx bx-dollar-circle'></i> Importe
+                                </th>
+                                <th class="text-center" style="width: 13%;">
+                                    <i class='bx bx-check-circle'></i> Acción
+                                </th>
+                            </tr>
+                        </thead>
+                        
+                        <!-- ✅ BODY CON FILAS COMPACTAS -->
+                        <tbody id="tbodyCotizaciones">
+                            <!-- Mensaje inicial (se llena dinámicamente) -->
+                            <tr id="rowSinCotizaciones">
+                                <td colspan="6" class="text-center text-muted py-5">
+                                    <div class="loading-container">
+                                        <i class='bx bx-dollar-circle bx-lg text-golden' style="font-size: 3rem;"></i>
+                                        <p class="mb-0 mt-3 text-golden-dark">
+                                            <strong>Seleccione un cliente para ver sus cotizaciones</strong>
+                                        </p>
+                                        <small class="text-muted mt-1">
+                                            Las cotizaciones pendientes se mostrarán aquí
+                                        </small>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
             </div>
 
-            <!-- ════════════════════════════════════════════════════ -->
-            <!-- FOOTER -->
-            <!-- ════════════════════════════════════════════════════ -->
-            <div class="modal-footer bg-white">
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <!-- FOOTER CON BOTONES GOLDEN -->
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <div class="modal-footer bg-golden-light">
                 <button type="button" 
-                        class="btn btn-danger btn-lg px-5" 
+                        class="btn btn-secondary btn-lg" 
                         id="btnCancelarCotizacion">
-                    <i class='bx bx-x-circle'></i> CANCELAR
+                    <i class='bx bx-x'></i> Cancelar
                 </button>
                 <button type="button" 
-                        class="btn btn-success btn-lg px-5" 
-                        id="btnSeguirCotizacion"
+                        class="btn btn-success btn-lg" 
+                        id="btnConfirmarCotizacion"
                         disabled>
-                    <i class='bx bx-check-circle'></i> SEGUIR
+                    <i class='bx bx-check-circle'></i> Cargar Cotización
                 </button>
             </div>
 
         </div>
     </div>
 </div>
-
-<!-- ════════════════════════════════════════════════════════ -->
-<!-- ESTILOS ADICIONALES -->
-<!-- ════════════════════════════════════════════════════════ -->
-<style>
-    /* Fila seleccionada */
-    #tbCotizaciones tbody tr.selected-cotizacion {
-        background-color: #d5f4e6;
-        border-left: 4px solid #27ae60;
-    }
-
-    /* Hover en filas */
-    #tbCotizaciones tbody tr:not(#rowSinCotizaciones):hover {
-        background-color: #faf5e6;
-        cursor: pointer;
-    }
-</style>

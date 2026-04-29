@@ -1,10 +1,12 @@
 ﻿using gc.caja.Controllers;
 using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Cajas;
 using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Cajas.Response;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
 using Microsoft.AspNetCore.Authorization;
@@ -36,6 +38,67 @@ namespace gc.caja.Areas.Facturacion.Controllers
         public IActionResult Index()
         {
             return View();
+        }
+
+
+        // tengo que generar una action via post que se llame ObtenerProductosDatosPrefactura
+        // que me permita recepcionar los distintos cpf_nro en una lista y luego ir iterandola
+        // para obtener todos los productos desde la logica de ObtenerProductoDatos. 
+        // Por un lado se debera encapsular el codigo de la action para poder ser invocada desde 
+        // multiples action y por el otro lado generar una variable de session para ir acumuladno
+        // los productos obtenidos por cada prefactura. 
+
+        private async Task<RespuestaGenerica<ProductoDatosResponseDto>> ObtenerProductoDatosCommon(
+            string tipoValor,
+            string valor,
+            string listaPreciosId,
+            string canalId,
+            string identificadorCliente,
+            decimal cantidad = 1,
+            bool bulto = true
+
+            )
+        {
+            var cajaActual = CajaActual;
+            var clienteActual = ClienteActual;
+
+            // ❼ CONSTRUIR REQUEST DTO
+            var request = new ProductoDatosRequestDto
+            {
+                tipo_valor = tipoValor,
+                valor = valor.Trim(),
+                lp_id = listaPreciosId,
+                adm_id = cajaActual.AdmId ?? AdministracionId,
+                cantidad = cantidad,
+                bulto = bulto,
+                ctc_id = canalId,
+                cta_id = identificadorCliente,
+                ctac_dto = clienteActual?.ctac_dto_operacion ?? 0
+            };
+
+            _logger?.LogInformation("═══════════════════════════════════════════════════");
+            _logger?.LogInformation("📦 REQUEST DTO CONSTRUIDO:");
+            _logger?.LogInformation($"   - tipo_valor: {request.tipo_valor}");
+            _logger?.LogInformation($"   - valor: {request.valor}");
+            _logger?.LogInformation($"   - lp_id: {request.lp_id}");
+            _logger?.LogInformation($"   - adm_id: {request.adm_id}");
+            _logger?.LogInformation($"   - cantidad: {request.cantidad}");
+            _logger?.LogInformation($"   - bulto: {request.bulto}");
+            _logger?.LogInformation($"   - ctc_id: {request.ctc_id}");
+            _logger?.LogInformation($"   - cta_id: {request.cta_id}");
+            _logger?.LogInformation($"   - ctac_dto: {request.ctac_dto}");
+            _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+            // ❽ INVOCAR SERVICIO
+            var token = TokenCookie;
+            if (string.IsNullOrEmpty(token))
+            {
+                _logger?.LogError("❌ No se pudo obtener el token de autenticación");
+                throw new NegocioException("Sesión expirada. Por favor, vuelva a iniciar sesión.");
+            }
+
+            _logger?.LogInformation("📡 Invocando servicio ProductoFactServicio.ObtenerProductoDatos...");
+            return await _productoFactServicio.ObtenerProductoDatos(request, token);
         }
 
         /// <summary>
@@ -197,48 +260,13 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "Error: Datos incompletos del cliente" });
                 }
 
-                // ❼ CONSTRUIR REQUEST DTO
-                var request = new ProductoDatosRequestDto
-                {
-                    tipo_valor = tipoValor,
-                    valor = valor.Trim(),
-                    lp_id = listaPreciosId,
-                    adm_id = cajaActual.AdmId ?? AdministracionId,
-                    cantidad = cantidad,
-                    bulto = bulto,
-                    ctc_id = canalId,
-                    cta_id = identificadorCliente,
-                    ctac_dto = clienteActual.ctac_dto_operacion
-                };
-
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
-                _logger?.LogInformation("📦 REQUEST DTO CONSTRUIDO:");
-                _logger?.LogInformation($"   - tipo_valor: {request.tipo_valor}");
-                _logger?.LogInformation($"   - valor: {request.valor}");
-                _logger?.LogInformation($"   - lp_id: {request.lp_id}");
-                _logger?.LogInformation($"   - adm_id: {request.adm_id}");
-                _logger?.LogInformation($"   - cantidad: {request.cantidad}");
-                _logger?.LogInformation($"   - bulto: {request.bulto}");
-                _logger?.LogInformation($"   - ctc_id: {request.ctc_id}");
-                _logger?.LogInformation($"   - cta_id: {request.cta_id}");
-                _logger?.LogInformation($"   - ctac_dto: {request.ctac_dto}");
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
-
-                // ❽ INVOCAR SERVICIO
-                var token = TokenCookie;
-                if (string.IsNullOrEmpty(token))
-                {
-                    _logger?.LogError("❌ No se pudo obtener el token de autenticación");
-                    return Json(new { ok = false, mensaje = "Sesión expirada. Por favor, vuelva a iniciar sesión." });
-                }
-
-                _logger?.LogInformation("📡 Invocando servicio ProductoFactServicio.ObtenerProductoDatos...");
-                var resultado = await _productoFactServicio.ObtenerProductoDatos(request, token);
+                // ❼ CONSTRUIR Y ENVIAR REQUEST AL SERVICIO - se encapsula en el método ObtenerProductoDatosCommon para poder ser reutilizado desde otras acciones (como la de prefactura)
+                var resultado = await ObtenerProductoDatosCommon(tipoValor, valor, listaPreciosId, canalId, identificadorCliente, cantidad, bulto);
 
                 stopwatch.Stop();
                 _logger?.LogInformation($"⏱️ Tiempo de ejecución: {stopwatch.ElapsedMilliseconds}ms");
 
-                // ❾ PROCESAR RESPUESTA
+                // 8 PROCESAR RESPUESTA
                 if (resultado == null)
                 {
                     _logger?.LogError("❌ El servicio retornó null");
@@ -311,6 +339,14 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     mensaje = resultado.Mensaje ?? "Producto cargado correctamente",
                     producto = productos
                 });
+            }
+            catch (NegocioException ex)
+            {
+                stopwatch.Stop();
+                _logger?.LogError($"❌ EXCEPCIÓN en ObtenerProductoDatos: {ex.Message}");
+                _logger?.LogError($"   Stack Trace: {ex.StackTrace}");
+                _logger?.LogError($"   Tiempo transcurrido antes del error: {stopwatch.ElapsedMilliseconds}ms");
+                return Json(new { ok = false, mensaje = ex.Message });
             }
             catch (Exception ex)
             {
@@ -409,24 +445,6 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 return Json(new { error = true, msg = "Algo no salió bien. Vuelva a intentarlo." });
             }
         }
-
-        //private void InicializaVariablesBusquedaBase()
-        //{
-        //    #region Variables de InfoProd
-        //    InfoProdStkDId = "";
-        //    InfoProdStkDRegs = [];
-        //    InfoProdStkBoxesIds = ("", "");
-        //    InfoProdStkBoxesRegs = [];
-        //    InfoProdStkAId = "";
-        //    InfoProdStkARegs = [];
-        //    InfoProdMovStkIds = "";
-        //    InfoProdMovStkRegs = [];
-        //    InfoProdLPId = "";
-        //    InfoProdLPRegs = [];
-
-        //    #endregion
-        //}
-
 
         [HttpPost]
         public async Task<IActionResult> BusquedaAvanzada(string ri01, string ri02, bool act, bool dis, bool ina, bool cstk, bool sstk, string buscar, bool buscaNew, string sort = "p_id", string sortDir = "asc", int pag = 1)
@@ -802,130 +820,50 @@ namespace gc.caja.Areas.Facturacion.Controllers
         }
 
         /// <summary>
-        /// ✅ NUEVO: Obtiene las pre-facturas disponibles para un cliente
-        /// </summary>
-        [HttpPost]
-        public async Task<JsonResult> ObtenerPreFacturas(string cta_id, bool solo_pendientes = true)
-        {
-            try
-            {
-                if (!VerificarAutenticacion(out IActionResult redirectResult))
-                    return Json(new { ok = false, mensaje = "Sesión expirada" });
-
-                if (string.IsNullOrEmpty(cta_id))
-                {
-                    return Json(new { ok = false, mensaje = "Debe especificar un cliente" });
-                }
-
-                // TODO: Implementar servicio
-                // var resultado = await _productoFactServicio.ObtenerPreFacturas(cta_id, solo_pendientes, TokenCookie);
-
-                // MOCK para desarrollo:
-                var prefacturas = new[]
-                {
-            new
-            {
-                pre_id = "000888",
-                cta_denominacion = "Roberto Fulano",
-                cta_documento = "25147852",
-                pre_fecha = "15/01/26 10:40",
-                sector_desc = "Perfumeria"
-            },
-            new
-            {
-                pre_id = "000889",
-                cta_denominacion = "Roberto Fulano",
-                cta_documento = "25147852",
-                pre_fecha = "15/01/26 10:55",
-                sector_desc = "Perfumeria"
-            }
-        };
-
-                return Json(new
-                {
-                    ok = true,
-                    prefacturas = prefacturas
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex, "Error al obtener pre-facturas");
-                return Json(new { ok = false, mensaje = "Error al obtener pre-facturas" });
-            }
-        }
-
-        /// <summary>
-        /// ✅ NUEVO: Obtiene las cotizaciones disponibles para un cliente
-        /// </summary>
-        [HttpPost]
-        public async Task<JsonResult> ObtenerCotizaciones(string cta_id)
-        {
-            try
-            {
-                if (!VerificarAutenticacion(out IActionResult redirectResult))
-                    return Json(new { ok = false, mensaje = "Sesión expirada" });
-
-                if (string.IsNullOrEmpty(cta_id))
-                {
-                    return Json(new { ok = false, mensaje = "Debe especificar un cliente" });
-                }
-
-                // TODO: Implementar servicio
-                // var resultado = await _productoFactServicio.ObtenerCotizaciones(cta_id, TokenCookie);
-
-                // MOCK para desarrollo:
-                var cotizaciones = new[]
-                {
-            new
-            {
-                cpf_nro = "000888",
-                cpf_descripcion = "Licitación 1889-25",
-                cpf_fecha = "10/02/26",
-                obs_pago = "Pago de Contado",
-                cpf_importe = 455500.00
-            }};
-
-                return Json(new
-                {
-                    ok = true,
-                    cotizaciones = cotizaciones
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex, "Error al obtener cotizaciones");
-                return Json(new { ok = false, mensaje = "Error al obtener cotizaciones" });
-            }
-        }
-
-        /// <summary>
         /// ✅ NUEVO: Busca pre-facturas según filtros
-        /// Implementa el requerimiento del 23 de abril
+        /// Implementa el requerimiento del 23 de abril de 2026
+        /// 
+        /// INVOCA: SPGECO_CAJA_B_Prefacturas con parámetros:
+        /// - @sec_id: 'CAJA' (fijo)
+        /// - @cta_id: ID del cliente registrado o '%' para CF
+        /// - @documento: Documento del CF o '%' para cliente registrado
+        /// - @usada: 'N' (solo pendientes) o '%' (todas)
         /// </summary>
+        /// <param name="solo_pendientes">Si es true, filtra solo pendientes (usada='N')</param>
         [HttpPost]
-        public async Task<JsonResult> BuscarPrefacturas(string cta_id, string documento, bool solo_pendientes = true)
+        public async Task<JsonResult> ObtenerPreFacturas(bool solo_pendientes = true)
         {
             try
             {
+                // ❶ VALIDAR AUTENTICACIÓN
                 if (!VerificarAutenticacion(out IActionResult redirectResult))
                     return Json(new { ok = false, mensaje = "Sesión expirada" });
 
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
-                _logger?.LogInformation("🔍 BUSCAR PRE-FACTURAS - CONTROLLER");
-                _logger?.LogInformation($"   cta_id: {cta_id}");
-                _logger?.LogInformation($"   documento: {documento}");
+                _logger?.LogInformation("🔍 OBTENER PRE-FACTURAS - CONTROLLER v2.0");
                 _logger?.LogInformation($"   solo_pendientes: {solo_pendientes}");
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
-                // ❶ VALIDAR CLIENTE
+                // 🛑 VALIDAR CLIENTE ACTUAL (OBLIGATORIO)
                 var clienteActual = ClienteActual;
                 if (clienteActual == null)
                 {
-                    _logger?.LogWarning("❌ No hay cliente seleccionado");
-                    return Json(new { ok = false, mensaje = "Debe seleccionar un cliente primero" });
+                    _logger?.LogWarning("❌ No hay cliente seleccionado en sesión");
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = "Debe seleccionar un cliente antes de buscar pre-facturas",
+                        prefacturas = new List<PrefacturaResDto>()
+                    });
                 }
 
-                // ❷ CONSTRUIR REQUEST SEGÚN TIPO DE CLIENTE
+                _logger?.LogInformation("✅ Cliente actual obtenido de sesión:");
+                _logger?.LogInformation($"   - Nombre: {clienteActual.cta_denominacion}");
+                _logger?.LogInformation($"   - Origen: {clienteActual.Origen} ({clienteActual.valida_desc})");
+                _logger?.LogInformation($"   - CTA_ID: {clienteActual.cta_id}");
+                _logger?.LogInformation($"   - Documento: {clienteActual.cta_documento}");
+
+                // ③ CONSTRUIR REQUEST DTO SEGÚN TIPO DE CLIENTE
                 var request = new PrefacturaReqDto
                 {
                     sec_id = "CAJA", // ✅ FIJO según requerimiento
@@ -937,44 +875,84 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 if (origenUpper == "C") // Cliente Registrado
                 {
-                    request.cta_id = clienteActual.cta_id ?? cta_id ?? "%";
+                    request.cta_id = clienteActual.cta_id ?? "%";
                     request.documento = "%"; // ✅ Anular documento
-                    _logger?.LogInformation($"✅ Cliente registrado → cta_id: {request.cta_id}");
+                    _logger?.LogInformation($"✅ Cliente REGISTRADO → cta_id: {request.cta_id}, documento: %");
                 }
-                else // Consumidor Final
+                else // Consumidor Final (F) o cualquier otro
                 {
                     request.cta_id = "%"; // ✅ Anular cta_id
-                    request.documento = clienteActual.cta_documento ?? documento ?? "%";
-                    _logger?.LogInformation($"✅ Consumidor final → documento: {request.documento}");
+                    request.documento = clienteActual.cta_documento ?? "%";
+                    _logger?.LogInformation($"✅ Cliente CONSUMIDOR FINAL → cta_id: %, documento: {request.documento}");
                 }
 
-                // ❸ INVOCAR SERVICIO
-                var resultado = await _productoFactServicio.ObtenerPrefactura(request, TokenCookie);
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("📦 REQUEST DTO CONSTRUIDO:");
+                _logger?.LogInformation($"   - sec_id: {request.sec_id}");
+                _logger?.LogInformation($"   - cta_id: {request.cta_id}");
+                _logger?.LogInformation($"   - documento: {request.documento}");
+                _logger?.LogInformation($"   - usada: {request.usada} ('{(solo_pendientes ? "Solo pendientes" : "Todas")}')");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
 
-                if (resultado == null || !resultado.Ok)
+                // ❹ INVOCAR SERVICIO
+                var token = TokenCookie;
+                if (string.IsNullOrEmpty(token))
                 {
-                    _logger?.LogWarning($"⚠️ Error al buscar: {resultado?.Mensaje}");
+                    _logger?.LogError("❌ No hay token de autenticación");
+                    return Json(new { ok = false, mensaje = "Sesión expirada", prefacturas = new List<PrefacturaResDto>() });
+                }
+
+                _logger?.LogInformation("📡 Invocando servicio IProductoFactServicio.ObtenerPrefactura...");
+                var resultado = await _productoFactServicio.ObtenerPrefactura(request, token);
+
+                // ❺ VALIDAR RESPUESTA
+                if (resultado == null)
+                {
+                    _logger?.LogError("❌ El servicio retornó null");
                     return Json(new
                     {
                         ok = false,
-                        mensaje = resultado?.Mensaje ?? "Error al buscar pre-facturas",
+                        mensaje = "Error al buscar pre-facturas",
                         prefacturas = new List<PrefacturaResDto>()
                     });
                 }
 
-                _logger?.LogInformation($"✅ Se encontraron {resultado.ListaEntidad?.Count ?? 0} pre-facturas");
+                if (!resultado.Ok)
+                {
+                    _logger?.LogWarning($"⚠️ Error del servicio: {resultado.Mensaje}");
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = resultado.Mensaje ?? "Error al buscar pre-facturas",
+                        prefacturas = new List<PrefacturaResDto>()
+                    });
+                }
+
+                // ❻ RESPUESTA EXITOSA
+                var prefacturas = resultado.ListaEntidad ?? new List<PrefacturaResDto>();
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation($"✅ SE ENCONTRARON {prefacturas.Count} PRE-FACTURAS");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                 return Json(new
                 {
                     ok = true,
-                    mensaje = "OK",
-                    prefacturas = resultado.ListaEntidad ?? new List<PrefacturaResDto>()
+                    mensaje = prefacturas.Count > 0
+                        ? $"Se encontraron {prefacturas.Count} pre-factura(s)"
+                        : "No hay pre-facturas disponibles",
+                    prefacturas = prefacturas
                 });
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Error al buscar pre-facturas");
-                return Json(new { ok = false, mensaje = "Error al buscar pre-facturas", prefacturas = new List<PrefacturaResDto>() });
+                _logger?.LogError(ex, "❌ EXCEPCIÓN en ObtenerPreFacturas");
+                return Json(new
+                {
+                    ok = false,
+                    mensaje = "Error inesperado al buscar pre-facturas. Por favor, intente nuevamente.",
+                    prefacturas = new List<PrefacturaResDto>()
+                });
             }
         }
 
@@ -983,7 +961,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
         /// Implementa el requerimiento del 23 de abril
         /// </summary>
         [HttpPost]
-        public async Task<JsonResult> BuscarCotizaciones(string cta_id)
+        public async Task<JsonResult> ObtenerCotizaciones(string cta_id)
         {
             try
             {
@@ -1032,7 +1010,10 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 {
                     ok = true,
                     mensaje = "OK",
-                    cotizaciones = resultado.ListaEntidad ?? new List<CotizacionResDto>()
+                    cotizaciones = resultado?.ListaEntidad?
+                                        .OrderByDescending(x=>x.pre_fecha)
+                                        .ThenByDescending(x=>x.pree_id)
+                                        .ToList() ?? new List<CotizacionResDto>()
                 });
             }
             catch (Exception ex)
@@ -1041,5 +1022,301 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 return Json(new { ok = false, mensaje = "Error al buscar cotizaciones", cotizaciones = new List<CotizacionResDto>() });
             }
         }
+
+        /// <summary>
+        /// ✅ NUEVO: Obtiene productos de múltiples pre-facturas y acumula en sesión
+        /// CORREGIDO: Mapeo COMPLETO de todos los campos del DTO ProductoFactJsonDto
+        /// </summary>
+        /// <param name="cpf_nros">Lista de códigos de pre-factura (cpf_nro)</param>
+        /// <returns>JSON con productos acumulados o error</returns>
+        [HttpPost]
+        public async Task<IActionResult> ObtenerProductosDatosPrefactura([FromBody] List<string> cpf_nros)
+        {
+            var stopwatch = Stopwatch.StartNew();
+
+            try
+            {
+                // ❶ VALIDAR AUTENTICACIÓN
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("📦 OBTENER PRODUCTOS DE PRE-FACTURAS - INICIO v2.0");
+                _logger?.LogInformation($"   Cantidad de pre-facturas: {cpf_nros?.Count ?? 0}");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                // ❷ VALIDAR PARÁMETROS
+                if (cpf_nros == null || cpf_nros.Count == 0)
+                {
+                    _logger?.LogWarning("❌ No se recibieron códigos de pre-factura");
+                    return Json(new { ok = false, mensaje = "Debe seleccionar al menos una pre-factura" });
+                }
+
+                // ❸ VALIDAR CLIENTE Y CAJA (REQUERIDOS)
+                var clienteActual = ClienteActual;
+                if (clienteActual == null)
+                {
+                    _logger?.LogWarning("❌ No hay cliente seleccionado");
+                    return Json(new { ok = false, mensaje = "No hay cliente seleccionado" });
+                }
+
+                var cajaActual = CajaActual;
+                if (cajaActual == null)
+                {
+                    _logger?.LogWarning("❌ No hay caja abierta");
+                    return Json(new { ok = false, mensaje = "No hay caja abierta" });
+                }
+
+                // ❹ DETERMINAR LISTA DE PRECIOS, CANAL E IDENTIFICADOR
+                string listaPreciosId;
+                string canalId;
+                string identificadorCliente;
+                string origenUpper = clienteActual.Origen?.ToUpper() ?? "F";
+
+                if (origenUpper == "F") // Consumidor Final
+                {
+                    listaPreciosId = cajaActual.Caja.lp_id_min ?? string.Empty;
+                    canalId = clienteActual.ctc_id ?? "MI";
+                    identificadorCliente = clienteActual.cta_documento ?? string.Empty;
+                    
+                    _logger?.LogInformation($"✅ Cliente CF → LP: {listaPreciosId}, Canal: {canalId}, Doc: {identificadorCliente}");
+                }
+                else // Cliente Registrado
+                {
+                    listaPreciosId = cajaActual.Caja.lp_id_may ?? string.Empty;
+                    canalId = clienteActual.ctc_id ?? "MA";
+                    identificadorCliente = clienteActual.cta_id ?? string.Empty;
+                    
+                    _logger?.LogInformation($"✅ Cliente Registrado → LP: {listaPreciosId}, Canal: {canalId}, CTA_ID: {identificadorCliente}");
+                }
+
+                if (string.IsNullOrEmpty(identificadorCliente))
+                {
+                    _logger?.LogError("❌ No se pudo determinar el identificador del cliente");
+                    return Json(new { ok = false, mensaje = "Error: Datos incompletos del cliente" });
+                }
+
+                // ❺ INICIALIZAR LISTA DE ACUMULACIÓN EN SESIÓN
+                var productosAcumulados = new List<ProductoFactJsonDto>();
+                int productosAgregados = 0;
+                int erroresEncontrados = 0;
+                var errores = new List<string>();
+                int itemCorrelativo = 1; // ✅ NUEVO: Contador de items
+
+                _logger?.LogInformation($"✅ Inicio de iteración de {cpf_nros.Count} pre-facturas");
+
+                // ❻ ITERAR CADA PRE-FACTURA
+                foreach (var cpf_nro in cpf_nros)
+                {
+                    if (string.IsNullOrWhiteSpace(cpf_nro))
+                    {
+                        _logger?.LogWarning($"⚠️ Pre-factura vacía, omitiendo...");
+                        continue;
+                    }
+
+                    _logger?.LogInformation($"───────────────────────────────────────────────────");
+                    _logger?.LogInformation($"🔄 Procesando pre-factura: {cpf_nro}");
+
+                    try
+                    {
+                        // ❼ INVOCAR MÉTODO ENCAPSULADO (REUTILIZABLE)
+                        var resultado = await ObtenerProductoDatosCommon(
+                            tipoValor: "F",           // ✅ Tipo Pre-Factura
+                            valor: cpf_nro.Trim().PadLeft(6,'0'),
+                            listaPreciosId,
+                            canalId,
+                            identificadorCliente,
+                            cantidad: 1,
+                            bulto: true
+                        );
+
+                        // ❽ VALIDAR RESULTADO
+                        if (resultado == null || !resultado.Ok)
+                        {
+                            erroresEncontrados++;
+                            string mensajeError = resultado?.Mensaje ?? "Error desconocido";
+                            errores.Add($"Pre-factura {cpf_nro}: {mensajeError}");
+                            _logger?.LogWarning($"❌ Error en {cpf_nro}: {mensajeError}");
+                            continue;
+                        }
+
+                        // ❾ ACUMULAR PRODUCTOS EN LISTA DE SESIÓN CON MAPEO COMPLETO
+                        if (resultado.ListaEntidad != null && resultado.ListaEntidad.Count > 0)
+                        {
+                            foreach (var producto in resultado.ListaEntidad)
+                            {
+                                // ✅ VALIDAR QUE EL PRODUCTO SEA VÁLIDO (respuesta = 0)
+                                if (producto.respuesta != 0)
+                                {
+                                    _logger?.LogWarning($"⚠️ Producto {producto.p_id} omitido: {producto.respuesta_msj}");
+                                    continue;
+                                }
+
+                                // ✅ MAPEO COMPLETO: Convertir ProductoDatosDto a ProductoFactJsonDto
+                                var productoJson = new ProductoFactJsonDto
+                                {
+                                    // ═══════════════════════════════════════════════════
+                                    // ✅ SECCIÓN 1: IDENTIFICACIÓN
+                                    // ═══════════════════════════════════════════════════
+                                    item = itemCorrelativo++, // ✅ CRÍTICO: Item correlativo
+                                    p_id = producto.p_id ?? string.Empty,
+                                    p_id_barrado = producto.p_id_barrado ?? string.Empty,
+                                    p_desc = producto.p_desc ?? string.Empty,
+
+                                    // ═══════════════════════════════════════════════════
+                                    // ✅ SECCIÓN 2: PRECIOS BASE
+                                    // ═══════════════════════════════════════════════════
+                                    p_pcosto = producto.p_pcosto,
+                                    p_pcosto_repo = producto.p_pcosto_repo,
+                                    p_pneto = producto.p_pneto,
+                                    p_pvta = producto.p_pvta,
+
+                                    // ═══════════════════════════════════════════════════
+                                    // ✅ SECCIÓN 3: CANTIDAD Y PRECIO TOTAL
+                                    // ═══════════════════════════════════════════════════
+                                    cantidad_tot = producto.cantidad_tot,
+                                    p_pvta_tot = producto.p_pvta * producto.cantidad_tot,
+
+                                    // ═══════════════════════════════════════════════════
+                                    // ✅ SECCIÓN 4: IVA
+                                    // ═══════════════════════════════════════════════════
+                                    iva_situacion = producto.iva_situacion ?? string.Empty,
+                                    iva_alicuota = producto.iva_alicuota,
+                                    p_iva = producto.p_iva,
+
+                                    // ═══════════════════════════════════════════════════
+                                    // ✅ SECCIÓN 5: IMPUESTOS INTERNOS
+                                    // ═══════════════════════════════════════════════════
+                                    in_alicuota = producto.in_alicuota,
+                                    p_in = producto.p_in,
+
+                                    // ═══════════════════════════════════════════════════
+                                    // ✅ SECCIÓN 6: PRECIO DE OFERTA
+                                    // ═══════════════════════════════════════════════════
+                                    po = producto.po,
+                                    po_limite = producto.po_limite,
+
+                                    // ═══════════════════════════════════════════════════
+                                    // ✅ SECCIÓN 7: MÁRGENES (SI EL SP LOS RETORNA)
+                                    // ═══════════════════════════════════════════════════
+                                    //p_margen_imp = producto.p_margen_imp,
+                                    //p_margen_vig = producto.p_margen_vig,
+
+                                    // ═══════════════════════════════════════════════════
+                                    // ✅ SECCIÓN 8: TOTALES CALCULADOS POR COMPROBANTE
+                                    // ═══════════════════════════════════════════════════
+                                    cm_gravado = producto.cm_gravado,
+                                    cm_no_gravado = producto.cm_no_gravado,
+                                    cm_exento = producto.cm_exento,
+                                    cm_iva = producto.cm_iva,
+                                    cm_ii = producto.cm_ii,
+
+                                    // ═══════════════════════════════════════════════════
+                                    // ✅ SECCIÓN 9: DESCUENTOS (OPCIONALES)
+                                    // ═══════════════════════════════════════════════════
+                                    cm_dto = producto.cm_dto,
+                                    cm_dto_porc = producto.cm_dto_porc,
+
+                                    // ═══════════════════════════════════════════════════
+                                    // ✅ SECCIÓN 10: TRAZABILIDAD DE ORIGEN
+                                    // ═══════════════════════════════════════════════════
+                                    cta_id = identificadorCliente, // ✅ Cliente actual (no del producto)
+                                    pre_id = producto.pre_id,
+                                    cpf_nro = cpf_nro, // ✅ Código de pre-factura actual
+
+                                    // ═══════════════════════════════════════════════════
+                                    // ✅ SECCIÓN 11: COMBOS (SI APLICA)
+                                    // ═══════════════════════════════════════════════════
+                                    //cmb_p_id = producto.cmb_p_id ?? string.Empty,
+                                    //cmb = producto.cmb ?? string.Empty,
+                                    //cmb_id = producto.cmb_id,
+                                    //cmb_dto = producto.cmb_dto,
+                                    //cmb_cant = producto.cmb_cant,
+                                    //cmb_desc = producto.cmb_desc
+                                };
+
+                                productosAcumulados.Add(productoJson);
+                                productosAgregados++;
+
+                                _logger?.LogInformation($"  ✅ Producto {itemCorrelativo - 1}: {producto.p_desc} (Cant: {producto.cantidad_tot})");
+                            }
+                        }
+                        else
+                        {
+                            _logger?.LogWarning($"⚠️ Pre-factura {cpf_nro} no tiene productos");
+                        }
+                    }
+                    catch (Exception exPrefactura)
+                    {
+                        erroresEncontrados++;
+                        errores.Add($"Pre-factura {cpf_nro}: Error inesperado");
+                        _logger?.LogError(exPrefactura, $"❌ Excepción al procesar {cpf_nro}");
+                    }
+                }
+
+                // ❿ GUARDAR PRODUCTOS ACUMULADOS EN SESIÓN
+                FacturaProductos = productosAcumulados;
+                _logger?.LogInformation($"✅ Total productos en sesión: {productosAcumulados.Count}");
+
+                stopwatch.Stop();
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation($"✅ PROCESO COMPLETADO");
+                _logger?.LogInformation($"   Productos agregados: {productosAgregados}");
+                _logger?.LogInformation($"   Errores encontrados: {erroresEncontrados}");
+                _logger?.LogInformation($"   Tiempo total: {stopwatch.ElapsedMilliseconds}ms");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                // ⓫ RETORNAR RESPUESTA EN FORMATO ESPERADO POR JAVASCRIPT
+                if (erroresEncontrados > 0 && productosAgregados == 0)
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = "No se pudieron cargar productos de ninguna pre-factura",
+                        errores = errores,
+                        productosAgregados = 0,
+                        totalProductos = productosAcumulados.Count
+                    });
+                }
+
+                return Json(new
+                {
+                    ok = true,
+                    mensaje = erroresEncontrados > 0
+                        ? $"Se cargaron {productosAgregados} productos con {erroresEncontrados} errores"
+                        : $"Se cargaron {productosAgregados} productos exitosamente",
+                    productosAgregados = productosAgregados,
+                    totalProductos = productosAcumulados.Count,
+                    errores = errores.Count > 0 ? errores : null,
+                    producto = productosAcumulados // ✅ CRÍTICO: Mismo nombre que ObtenerProductoDatos
+                });
+            }
+            catch (Exception ex)
+            {
+                stopwatch.Stop();
+                _logger?.LogError(ex, "❌ EXCEPCIÓN en ObtenerProductosDatosPrefactura");
+                _logger?.LogError($"   Tiempo antes del error: {stopwatch.ElapsedMilliseconds}ms");
+
+                return Json(new
+                {
+                    ok = false,
+                    mensaje = "Error inesperado al procesar pre-facturas. Por favor, intente nuevamente."
+                });
+            }
+        }
+
+       
     }
+
+    // Necesitaremos recibir lista de códigos de pre-factura
+    public class PrefacturaProductosReqDto
+    {
+        public List<string> cpf_nros { get; set; } = [];
+    }
+
+    //public class ProductoDatosResponseDto
+    //{
+    //    public bool Ok { get; set; } = false;
+    //    public string Mensaje { get; set; } = "Parámetros inválidos";
+    //}
 }
