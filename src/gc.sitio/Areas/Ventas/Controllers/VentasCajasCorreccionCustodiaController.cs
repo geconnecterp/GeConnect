@@ -10,6 +10,8 @@ using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace gc.sitio.Areas.Ventas.Controllers
 {
@@ -124,7 +126,7 @@ namespace gc.sitio.Areas.Ventas.Controllers
 				}
 				else
 				{
-					var item = VtasPVCtlEntregaLista.Where(x=>x.ent_compte == ent_compte).FirstOrDefault();
+					var item = VtasPVCtlEntregaLista.Where(x => x.ent_compte == ent_compte).FirstOrDefault();
 					var listaTempo = resultado.ListaEntidad ?? [];
 					listaTempo.ForEach(x => x.ent_estado = item?.ent_estado ?? ' ');
 					VtasPVCtlEntregaRendLista = listaTempo;
@@ -162,7 +164,7 @@ namespace gc.sitio.Areas.Ventas.Controllers
 					model.ListaEntregas = new SelectList(Enumerable.Empty<ComboGenDto>());
 				else
 					model.ListaEntregas = ObtenerListaEntregas(listaTempo);
-				return PartialView("_grid_entregas_para_cambio_rendicion", model);
+				return PartialView("_partial_entregas_para_cambio_rendicion", model);
 			}
 			catch (Exception ex)
 			{
@@ -177,7 +179,172 @@ namespace gc.sitio.Areas.Ventas.Controllers
 			}
 		}
 
+		[HttpPost]
+		public JsonResult ActualizarImporteEnItemDeDetalle(string caja_nro_proceso, int caja_nro_cierre, int caja_nro_rend, int caja_rend_item, decimal importe)
+		{
+			try
+			{
+				var listaTemp = VtasPVCtlEntregaRendLista;
+				var item = listaTemp.FirstOrDefault(x => x.caja_nro_proceso == caja_nro_proceso && x.caja_nro_cierre == caja_nro_cierre && x.caja_nro_rend == caja_nro_rend && x.rend_item == caja_rend_item);
+				if (item != null)
+				{
+					item.rend_importe_ok = importe;
+					VtasPVCtlEntregaRendLista = listaTemp;
+				}
+				return Json(new { Ok = true, error = false });
+			}
+			catch (Exception)
+			{
+				return Json(new { Ok = false, error = true });
+			}
+		}
+
+		[HttpPost]
+		public JsonResult GuardarCtlDetalle(string tcf_id)
+		{
+			try
+			{
+				if (string.IsNullOrEmpty(tcf_id))
+					throw new NegocioException("Faltan datos obligatorios: tcf_id");
+				string json = JsonConvert.SerializeObject(VtasPVCtlEntregaRendLista);
+				if (string.IsNullOrEmpty(json))
+					throw new NegocioException("Error al intentar parsear productos");
+				var item = VtasPVCtlEntregaRendLista.First();
+				var request = new GuardarCtlDetalleRequest()
+				{
+					caja_nro_proceso = item.caja_nro_proceso,
+					caja_nro_cierre = item.caja_nro_cierre,
+					caja_nro_rend = item.caja_nro_rend,
+					tcf_id = tcf_id,
+					adm_id = AdministracionId,
+					usu_id = UserName,
+					json_rend = json,
+					app = "ENTREGA"
+				};
+				PrintProperties(request);
+				var resultado = _apiVentasServicio.GuardarCtlDetalle(request, TokenCookie).Result;
+				if (resultado == null)
+					throw new NegocioException("Error al guardar detalle");
+				// Procesamiento de respuesta
+				if (resultado.Ok && !resultado.EsError && !resultado.EsWarn)
+				{
+					return Json(new
+					{
+						ok = true,
+						error = false,
+					});
+				}
+				else
+				{
+					// Log y respuesta de error/advertencia
+					var msj = ObtenerMensajeDesdeError(resultado.Mensaje ?? "");
+					_logger?.LogWarning("Error: {Mensaje}", msj);
+					return Json(new
+					{
+						ok = false,
+						error = true,
+						warn = resultado.EsWarn,
+						msg = msj
+					});
+				}
+			}
+			catch (Exception ex)
+			{
+				return Json(new { Ok = false, error = true, warn = false, msg = ex.Message });
+			}
+		}
+
+		[HttpPost]
+		public JsonResult MoverCtlDetalle(string ent_compte, string tcf_id)
+		{
+			try
+			{
+				if (string.IsNullOrEmpty(ent_compte))
+					throw new NegocioException("Faltan datos obligatorios: ent_compte");
+				
+				var listaTemp = VtasPVCtlEntregaRendLista;
+				var item = listaTemp.First();
+				listaTemp.ForEach(x => x.ent_compte = ent_compte);
+				VtasPVCtlEntregaRendLista = listaTemp;
+				string json = JsonConvert.SerializeObject(VtasPVCtlEntregaRendLista);
+				if (string.IsNullOrEmpty(json))
+					throw new NegocioException("Error al intentar parsear productos");
+				var request = new GuardarCtlDetalleRequest()
+				{
+					caja_nro_proceso = item.caja_nro_proceso,
+					caja_nro_cierre = item.caja_nro_cierre,
+					caja_nro_rend = item.caja_nro_rend,
+					tcf_id = tcf_id,
+					adm_id = AdministracionId,
+					usu_id = UserName,
+					json_rend = json,
+					app = "ENTREGA"
+				};
+				PrintProperties(request);
+				var resultado = _apiVentasServicio.GuardarCtlDetalle(request, TokenCookie).Result;
+				if (resultado == null)
+					throw new NegocioException("Error al guardar detalle");
+				// Procesamiento de respuesta
+				if (resultado.Ok && !resultado.EsError && !resultado.EsWarn)
+				{
+					return Json(new
+					{
+						ok = true,
+						error = false,
+					});
+				}
+				else
+				{
+					// Log y respuesta de error/advertencia
+					var msj = ObtenerMensajeDesdeError(resultado.Mensaje ?? "");
+					_logger?.LogWarning("Error: {Mensaje}", msj);
+					return Json(new
+					{
+						ok = false,
+						error = true,
+						warn = resultado.EsWarn,
+						msg = msj
+					});
+				}
+			}
+			catch (Exception ex)
+			{
+				return Json(new { Ok = false, error = true, warn = false, msg = ex.Message });
+			}
+		}
 		#region Metodos Privados
+		private static string ObtenerMensajeDesdeError(string msj)
+		{
+			if (EsJsonValido(msj))
+			{
+				JObject json = ParsearJsonSeguro(msj);
+
+				if (json != null && json["error"] != null)
+				{
+					var err = json["error"].First();
+
+					int status = (int)err["status"];
+					string title = (string)err["title"];
+					string detail = (string)err["detail"];
+					string typeException = (string)err["typeException"];
+
+					Console.WriteLine($"Status: {status}");
+					Console.WriteLine($"Title: {title}");
+					Console.WriteLine($"Detail: {detail}");
+					Console.WriteLine($"Type: {typeException}");
+					return $"({status} {detail})";
+				}
+				else
+					return "El mensaje NO es JSON válido.";
+			}
+			else
+			{
+				if (string.IsNullOrWhiteSpace(msj))
+					return "El mensaje NO es JSON válido.";
+				else
+					return msj;
+			}
+		}
 		private void CargarDatosIniciales(FiltroCtlCustodiaModel model)
 		{
 			var sucursales = _administracionServicio.ObtenerAdministraciones("S", TokenCookie);

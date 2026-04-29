@@ -331,7 +331,8 @@ namespace gc.sitio.Areas.Ventas.Controllers
 					tcf_id = tcf_id,
 					adm_id = AdministracionId,
 					usu_id = UserName,
-					json_rend = json
+					json_rend = json,
+					app = "CTL"
 				};
 				PrintProperties(request);
 				var resultado = _apiVentasServicio.GuardarCtlDetalle(request, TokenCookie).Result;

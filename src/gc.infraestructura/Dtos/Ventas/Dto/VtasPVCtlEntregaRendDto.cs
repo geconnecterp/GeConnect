@@ -7,8 +7,8 @@ namespace gc.infraestructura.Dtos.Ventas
 		public string adm_id { get; set; } = string.Empty;
 		public string adm_nombre { get; set; } = string.Empty;
 		public string caja_nro_proceso { get; set; } = string.Empty;
-		public string caja_nro_cierre { get; set; } = string.Empty;
-		public string caja_nro_rend { get; set; } = string.Empty;
+		public int caja_nro_cierre { get; set; }
+		public int caja_nro_rend { get; set; }
 		public int rend_item { get; set; }
 		public string caja_id { get; set; } = string.Empty;
 		public char rend_tipo { get; set; }

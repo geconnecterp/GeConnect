@@ -3,7 +3,9 @@ var ent_compte_selected = null;
 var ent_estado_selected = null;
 var ent_actu_selected = null;
 var ent_actu_bool_selected = null;
+var ent_tcf_id_selected = null;
 var guardando_importe = false;
+var existe_edicion = false;
 
 $(function () {
 	if ($("#divDetalle").is(":visible")) {
@@ -80,12 +82,147 @@ function InicializaEventosGrillaVtasPVCtlEntregas() {
 		if ($(e.target).is("button, a, .btn, i")) return;
 
 		const $nuevaFila = $(this);
+		// Si ya había una fila seleccionada y se intenta cambiar
+		if (fila_entrega_seleccionada_actual && fila_entrega_seleccionada_actual[0] !== $nuevaFila[0]) {
+			if (existe_edicion === true) {
+				AbrirMensaje("ATENCIÓN", "Tiene cambios sin guardar en la grilla de entregas. Si cambia de entrega perderá los cambios realizados. ¿Desea continuar?", function (e) {
+					$("#msjModal").modal("hide");
+					switch (e) {
+						case "SI":
+							existe_edicion = false; // Se descartan cambios
+							ProcesarSeleccionFilaEntrega($nuevaFila);
+							break;
+						case "NO":
+							break;
+						default: //NO
+							break;
+					}
+					return true;
+
+				}, true, ["Aceptar", "Cancelar"], "question!", null);
+
+				return; // Detener el click original
+			}
+		}
 
 		ProcesarSeleccionFilaEntrega($nuevaFila);
 	});
-	setTimeout(() => {
-		$("#divOpcionesEntregaRend").hide();
-	}, 500);
+
+	const $btn = $("#btnConfirmacionContable");
+	var tipoRend = $("#TipoEntrega").val();
+	if (tipoRend === "P") {
+		$btn.html('<i class="bx bx-check"></i> Confirmación Entregas Seleccionadas');
+	}
+	else {
+		$btn.html('<i class="bx bx-check"></i> Volver a Pendiente Entregas Seleccionadas');
+	}
+
+	SeleccionarPrimeraFilaEntregas();
+}
+
+function GuardarCtlDetalle() {
+	AbrirMensaje("ATENCIÓN", "Esta a punto de confirmar los cambios. ¿Desea continuar?", function (e) {
+		$("#msjModal").modal("hide");
+		switch (e) {
+			case "SI":
+				var tcf_id = ent_tcf_id_selected;
+				var data = { tcf_id }
+				AbrirWaiting("Guardando datos de Entrega...")
+				PostGen(data, guardarCtlDetalleUrl, function (obj) {
+					CerrarWaiting();
+					if (obj.error === true || obj.warn === true) {
+						AbrirMensaje("ATENCIÓN", obj.msg, function () {
+							$("#msjModal").modal("hide");
+							existe_edicion = false;
+							InicializarBusqueda();
+							return true;
+						}, false, ["Aceptar"], "error!", null);
+					}
+					else {
+						existe_edicion = false;
+						InicializarBusqueda();
+					}
+				});
+				break;
+			case "NO":
+				break;
+			default: //NO
+				break;
+		}
+		return true;
+
+	}, true, ["Aceptar", "Cancelar"], "question!", null);
+
+	return; // Detener el click original
+	
+}
+
+function MoverCtlDetalle() {
+	var ent_compte = $("#listaEntregas").val();
+	if (!ent_compte || ent_compte === "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar una Entrega para mover.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+		return;
+	}
+	else {
+
+		AbrirMensaje("ATENCIÓN", `Esta a punto de mover las rendiciones a la entrega ${ent_compte}. ¿Desea continuar?`, function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI":
+					var tcf_id = ent_tcf_id_selected;
+					var data = { ent_compte, tcf_id }
+					AbrirWaiting("Moviendo Entrega seleccionada...")
+					PostGen(data, moverCtlDetalleUrl, function (obj) {
+						CerrarWaiting();
+						if (obj.error === true || obj.warn === true) {
+							AbrirMensaje("ATENCIÓN", obj.msg, function () {
+								$("#msjModal").modal("hide");
+								InicializarBusqueda();
+								return true;
+							}, false, ["Aceptar"], "error!", null);
+						}
+						else {
+							AbrirMensaje("ATENCIÓN", "Se ha movido la Entrega seleccionada de forma exitosa.", function () {
+								$("#msjModal").modal("hide");
+								InicializarBusqueda();
+								return true;
+							}, false, ["Aceptar"], "succ!", null);
+						}
+					});
+					break;
+				case "NO":
+					break;
+				default: //NO
+					break;
+			}
+			return true;
+
+		}, true, ["Aceptar", "Cancelar"], "question!", null);
+
+		return; // Detener el click original
+		
+	}
+}
+
+function SeleccionarPrimeraFilaEntregas() {
+	const $filas = $("#tbVtasPVCtlEntrega tbody tr").not(".fila-vacia");
+
+	if ($filas.length === 0) return;
+
+	const $primera = $filas.first();
+
+	// Guardar referencia
+	fila_cierre_seleccionada_actual = $primera;
+
+	// Marcar visualmente
+	$("#tbVtasPVCtlEntrega tbody tr").removeClass("selected-row");
+	$primera.addClass("selected-row");
+
+	// Ejecutar la lógica normal de selección
+	ProcesarSeleccionFilaEntrega($primera);
 }
 
 function ProcesarSeleccionFilaEntrega($fila) {
@@ -104,6 +241,7 @@ function ProcesarSeleccionFilaEntrega($fila) {
 	ent_estado_selected = $fila.data("ent-estado");
 	ent_actu_selected = $fila.data("ent-actu");
 	ent_actu_bool_selected = $fila.data("ent-actu-bool");
+	ent_tcf_id_selected = $fila.data("tcf-id");
 
 	// Habilitar / deshabilitar botón
 	////const habilitar = (ent_actu_bool_selected === true || ent_actu_bool_selected === "true" || ent_actu_bool_selected === "True");
@@ -136,11 +274,12 @@ function CargarGrillaVtasPVCtlEntregaRend() {
 function InicializaEventosGrillaVtasPVCtlRend() {
 	var tipoRend = $("#TipoEntrega").val();
 	if (tipoRend === "P") {
-		$("#divOpcionesEntregaRend").show();
+		$("#divOpcionesEntregaRend").collapse("show");
 		CargarListaEntregasParaCambioDeRendicion();
 	}
 	else {
-		$("#divOpcionesEntregaRend").hide();
+		$("#divOpcionesEntregaRend").collapse("hide");
+		console.log("TipoEntrega:", $("#TipoEntrega").val());
 	}
 	getMaskForMoneyType('#tbVtasPVCtlEntregaRend .input-importe');
 	// (Opcional) Si querés que al hacer click se seleccione todo
@@ -241,12 +380,22 @@ function InicializaEventosGrillaVtasPVCtlRend() {
 
 		ProcesarSeleccionFilaRendDetalle($nuevaFila);
 	});
+
+	$(document).off("click", "#btnGuardarCambios");
+	$(document).on("click", "#btnGuardarCambios", function (e) {
+		GuardarCtlDetalle();
+	});
+
+	$(document).off("click", "#btnMoverEntrega");
+	$(document).on("click", "#btnMoverEntrega", function (e) {
+		MoverCtlDetalle();
+	});
 }
 
 function CargarListaEntregasParaCambioDeRendicion() {
 	var data = { ent_compte: ent_compte_selected };
 	PostGenHtml(data, obtenerEntregasParaCambioDeRendicionUrl, function (html) {
-		$("#divEntregasParaCambioRend").html(html);
+		$("#divListaEntregas").html(html);
 	});
 }
 
@@ -260,6 +409,7 @@ function GuardarImporteEditado($input) {
 	const $td = $input.closest("td");
 	const valorOriginal = $input.data("original");
 	const nuevoValor = $input.inputmask("unmaskedvalue");
+	const ent_compte = $td.data("ent-compte");
 
 	if (nuevoValor === "" || isNaN(nuevoValor)) {
 		CancelarEdicion($input);
@@ -284,10 +434,8 @@ function GuardarImporteEditado($input) {
 			}, false, ["Aceptar"], "error!", null);
 		}
 		else {
-			ActualizarTotalesEnPadre();
+			ActualizarTotalesEnPadre(ent_compte);
 			existe_edicion = true;
-			$("#btnGuardarValores").prop("disabled", !existe_edicion);
-
 			// 🔥 IMPORTANTE: actualizar el valor original
 			$input.data("original", nuevoValor);
 			guardando_importe = false;
@@ -295,7 +443,7 @@ function GuardarImporteEditado($input) {
 	});
 }
 
-function ActualizarTotalesEnPadre() {
+function ActualizarTotalesEnPadre(ent_compte) {
 	// 1) Buscar todas las filas del detalle que correspondan a esta entrega
 	const filasDetalle = $(`#tbVtasPVCtlEntregaRend tr.row-entrega[data-ent-compte="${ent_compte}"]`);
 
