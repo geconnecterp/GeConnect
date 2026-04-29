@@ -1,11 +1,13 @@
 ﻿@*
     ════════════════════════════════════════════════════════════
-    MODAL: COTIZACIONES
+    MODAL: SELECCIÓN DE COTIZACIÓN
     ════════════════════════════════════════════════════════════
-    Permite seleccionar una cotización para convertir en factura
+    VERSIÓN v1.0
+    RESTRICCIÓN: Solo se puede seleccionar UNA cotización
+    REQUISITO: La grilla de productos debe estar vacía
+    ════════════════════════════════════════════════════════════
 *@
 
-<!-- Modal Cotizaciones -->
 <div class="modal fade modal-golden" 
      id="modalCotizaciones" 
      data-bs-backdrop="static" 
@@ -14,91 +16,88 @@
      aria-labelledby="modalCotizacionesTitle" 
      aria-hidden="true">
     
-    <div class="modal-dialog modal-fullscreen">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             
-            <!-- ════════════════════════════════════════════════════ -->
+            <!-- ══════════════════════════════════════════════════════════ -->
             <!-- HEADER -->
-            <!-- ════════════════════════════════════════════════════ -->
+            <!-- ══════════════════════════════════════════════════════════ -->
             <div class="modal-header bg-gradient-golden">
-                <h5 class="modal-title fw-bold text-white" id="modalCotizacionesTitle">
-                    <i class='bx bx-dollar-circle'></i> Cotización
+                <h5 class="modal-title text-white" id="modalCotizacionesTitle">
+                    <i class='bx bx-dollar-circle'></i>
+                    Seleccionar Cotización
                 </h5>
+                <button type="button" 
+                        class="btn-close btn-close-white" 
+                        data-bs-dismiss="modal" 
+                        aria-label="Close">
+                </button>
             </div>
 
-            <!-- ════════════════════════════════════════════════════ -->
+            <!-- ══════════════════════════════════════════════════════════ -->
             <!-- BODY -->
-            <!-- ════════════════════════════════════════════════════ -->
-            <div class="modal-body p-4 bg-light">
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <div class="modal-body">
                 
-                <!-- Tabla de Cotizaciones -->
-                <div class="card card-golden">
-                    <div class="card-body p-0">
-                        <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
-                            <table class="table table-golden table-hover table-sm mb-0" id="tbCotizaciones">
-                                <thead class="table-golden-header sticky-top">
-                                    <tr>
-                                        <th class="text-center" style="width: 12%;">Cotización</th>
-                                        <th style="width: 30%;">Descripción</th>
-                                        <th class="text-center" style="width: 12%;">Fecha</th>
-                                        <th style="width: 25%;">Obs Pago</th>
-                                        <th class="text-end" style="width: 15%;">Importe</th>
-                                        <th class="text-center" style="width: 6%;">Acción</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tbodyCotizaciones">
-                                    <!-- Mensaje inicial -->
-                                    <tr id="rowSinCotizaciones">
-                                        <td colspan="6" class="text-center text-muted py-5">
-                                            <i class='bx bx-dollar-circle bx-lg text-golden'></i>
-                                            <p class="mb-0 mt-2">
-                                                <strong>No hay cotizaciones disponibles</strong><br>
-                                                <small>Verifique que existan cotizaciones para este cliente</small>
-                                            </p>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                <!-- Información del cliente -->
+                <div class="alert alert-info mb-3">
+                    <i class='bx bx-info-circle'></i>
+                    <strong>Cliente:</strong> <span id="lblClienteCotizacion">-</span>
+                </div>
+
+                <!-- Advertencia de restricción -->
+                <div class="alert alert-warning mb-3">
+                    <i class='bx bx-error-alt'></i>
+                    <strong>Importante:</strong> Solo puede seleccionar UNA cotización. 
+                    Una vez cargada, no podrá agregar más productos hasta confirmar o cancelar la factura.
+                </div>
+
+                <!-- Tabla de cotizaciones -->
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-hover table-bordered table-sm">
+                        <thead class="table-golden sticky-top">
+                            <tr>
+                                <th class="text-center" style="width: 10%;">Código</th>
+                                <th style="width: 30%;">Descripción</th>
+                                <th class="text-center" style="width: 12%;">Fecha</th>
+                                <th style="width: 20%;">Condición Pago</th>
+                                <th class="text-end" style="width: 15%;">Importe</th>
+                                <th class="text-center" style="width: 13%;">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyCotizaciones">
+                            <!-- Mensaje inicial (se llena dinámicamente) -->
+                            <tr id="rowSinCotizaciones">
+                                <td colspan="6" class="text-center text-muted py-5">
+                                    <i class='bx bx-search-alt bx-lg text-golden'></i>
+                                    <p class="mb-0 mt-2">
+                                        <strong>Cargue un cliente para ver sus cotizaciones</strong>
+                                    </p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
             </div>
 
-            <!-- ════════════════════════════════════════════════════ -->
+            <!-- ══════════════════════════════════════════════════════════ -->
             <!-- FOOTER -->
-            <!-- ════════════════════════════════════════════════════ -->
-            <div class="modal-footer bg-white">
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <div class="modal-footer">
                 <button type="button" 
-                        class="btn btn-danger btn-lg px-5" 
+                        class="btn btn-secondary" 
                         id="btnCancelarCotizacion">
-                    <i class='bx bx-x-circle'></i> CANCELAR
+                    <i class='bx bx-x'></i> Cancelar
                 </button>
                 <button type="button" 
-                        class="btn btn-success btn-lg px-5" 
-                        id="btnSeguirCotizacion"
+                        class="btn btn-success" 
+                        id="btnConfirmarCotizacion"
                         disabled>
-                    <i class='bx bx-check-circle'></i> SEGUIR
+                    <i class='bx bx-check-circle'></i> Cargar Cotización
                 </button>
             </div>
 
         </div>
     </div>
 </div>
-
-<!-- ════════════════════════════════════════════════════════ -->
-<!-- ESTILOS ADICIONALES -->
-<!-- ════════════════════════════════════════════════════════ -->
-<style>
-    /* Fila seleccionada */
-    #tbCotizaciones tbody tr.selected-cotizacion {
-        background-color: #d5f4e6;
-        border-left: 4px solid #27ae60;
-    }
-
-    /* Hover en filas */
-    #tbCotizaciones tbody tr:not(#rowSinCotizaciones):hover {
-        background-color: #faf5e6;
-        cursor: pointer;
-    }
-</style>

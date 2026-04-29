@@ -109,7 +109,7 @@ function inicializarEventosProductos() {
     
     $('#btnCotizacion').on('click', function() {
         console.log('💰 Cargar Cotización...');
-        cargarCotizacion();
+        abrirModalCotizaciones(); // ← Llamar función de factCotizacion.js
     });
     
     $('#btnUltimoDetalle').on('click', function() {
@@ -1011,6 +1011,7 @@ function cargarCotizacion() {
     }
     
     // TODO: Implementar búsqueda de cotizaciones
+    // se invoca la action 
     // Al seleccionar una, invocar buscarProductoPorCodigo con:
     // - tipoValor: 'C'
     // - valor: ID de la cotización
