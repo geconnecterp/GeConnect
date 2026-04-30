@@ -17,5 +17,7 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<RespuestaGenerica<RespuestaDto>> ConfirmacionContable(ConfirmacionContableRequest req, string token);
 		Task<RespuestaGenerica<VtasPVCtlEntregaDto>> ObtenerVtasPVCtlEntregaLista(string adm_id, string estado, string token);
 		Task<RespuestaGenerica<VtasPVCtlEntregaRendDto>> ObtenerVtasPVCtlEntregaRendLista(string ent_compte, string token);
+		Task<RespuestaGenerica<RespuestaDto>> ConfirmarCtlEntrega(ConfirmarCtlEntregaRequest req, string token);
+		Task<RespuestaGenerica<RespuestaDto>> AnularCtlEntrega(AnularCtlEntregaRequest req, string token);
 	}
 }

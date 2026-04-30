@@ -240,5 +240,35 @@ namespace gc.api.Controllers.Ventas
 			return Ok(new ApiResponse<List<VtasPVCtlEntregaRendDto>>(data));
 
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ConfirmarCtlEntrega(ConfirmarCtlEntregaRequest request)
+		{
+			if (request == null)
+			{
+				_logger.LogWarning("Parámetro request se encuentra vacío o nulo.");
+				return BadRequest(new ApiResponse<string>("El parámetro request no puede estar vacío."));
+			}
+			var data = _iApiVentasServicio.ConfirmarCtlEntrega(request);
+			return Ok(new ApiResponse<RespuestaDto>(data));
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult AnularCtlEntrega(AnularCtlEntregaRequest request)
+		{
+			if (request == null)
+			{
+				_logger.LogWarning("Parámetro request se encuentra vacío o nulo.");
+				return BadRequest(new ApiResponse<string>("El parámetro request no puede estar vacío."));
+			}
+			var data = _iApiVentasServicio.AnularCtlEntrega(request);
+			return Ok(new ApiResponse<RespuestaDto>(data));
+		}
 	}
 }

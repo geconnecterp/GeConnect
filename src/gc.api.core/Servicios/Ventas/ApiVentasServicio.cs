@@ -272,5 +272,57 @@ namespace gc.api.core.Servicios
 			var result = _repository.EjecutarLstSpExt<VtasPVCtlEntregaRendDto>(sp, ps, true);
 			return result;
 		}
+
+		public RespuestaDto ConfirmarCtlEntrega(ConfirmarCtlEntregaRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_VTAS_PV_CTL_ENTREGAS_CONFIRMAR;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@ent_compte", request.ent_compte),
+				new SqlParameter("@adm_id", request.adm_id),
+				new SqlParameter("@usu_id", request.usu_id),
+			};
+
+			var result = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			if (result != null && result.Count > 0)
+			{
+				return result[0];
+			}
+			else
+			{
+				return new RespuestaDto()
+				{
+					resultado = -1,
+					resultado_msj = "Error al confirmar ctl entrega"
+				};
+			}
+		}
+
+		public RespuestaDto AnularCtlEntrega(AnularCtlEntregaRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_VTAS_PV_CTL_ENTREGAS_ANULAR;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@ent_compte", request.ent_compte),
+				new SqlParameter("@adm_id", request.adm_id),
+				new SqlParameter("@usu_id", request.usu_id),
+			};
+
+			var result = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			if (result != null && result.Count > 0)
+			{
+				return result[0];
+			}
+			else
+			{
+				return new RespuestaDto()
+				{
+					resultado = -1,
+					resultado_msj = "Error al confirmar ctl entrega"
+				};
+			}
+		}
 	}
 }

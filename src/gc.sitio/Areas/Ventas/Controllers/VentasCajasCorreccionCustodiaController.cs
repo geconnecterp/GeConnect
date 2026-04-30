@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
 
 namespace gc.sitio.Areas.Ventas.Controllers
 {
@@ -261,7 +262,7 @@ namespace gc.sitio.Areas.Ventas.Controllers
 			{
 				if (string.IsNullOrEmpty(ent_compte))
 					throw new NegocioException("Faltan datos obligatorios: ent_compte");
-				
+
 				var listaTemp = VtasPVCtlEntregaRendLista;
 				var item = listaTemp.First();
 				listaTemp.ForEach(x => x.ent_compte = ent_compte);
@@ -306,6 +307,162 @@ namespace gc.sitio.Areas.Ventas.Controllers
 						msg = msj
 					});
 				}
+			}
+			catch (Exception ex)
+			{
+				return Json(new { Ok = false, error = true, warn = false, msg = ex.Message });
+			}
+		}
+
+		[HttpPost]
+		//public JsonResult ConfirmarCtlEntrega(ConfirmarCtlEntregaInput input)
+		public JsonResult ConfirmarCtlEntrega(string ent_comptes)
+		{
+			try
+			{
+				if (string.IsNullOrEmpty(ent_comptes))
+					throw new NegocioException("Faltan datos obligatorios: ent_compte");
+
+				List<string> lista = ent_comptes.Split(';').ToList();
+				// Diccionario: ent_compte → respuesta de la API
+				var dictRespuestas = new Dictionary<string, RespuestaGenerica<RespuestaDto>>();
+				
+				foreach (var item in lista)
+				{
+					var request = new ConfirmarCtlEntregaRequest()
+					{
+						adm_id = AdministracionId,
+						usu_id = UserName,
+						ent_compte = item
+					};
+
+					PrintProperties(request);
+
+					var respuesta = _apiVentasServicio
+						.ConfirmarCtlEntrega(request, TokenCookie)
+						.Result;
+
+					dictRespuestas[item] = respuesta;
+				}
+
+				// Evaluar fallos
+				var fallidos = dictRespuestas
+					.Where(x =>
+						x.Value == null ||
+						!x.Value.Ok ||
+						x.Value.EsError ||
+						(x.Value.Entidad != null && x.Value.Entidad.resultado != 0)
+					)
+					.Select(x => new
+					{
+						ent_compte = x.Key,
+						mensaje = x.Value?.Mensaje
+								   ?? x.Value?.Entidad?.resultado_msj
+								   ?? "Error desconocido"
+					})
+					.ToList();
+
+				// Si todos OK
+				if (fallidos.Count == 0)
+				{
+					return Json(new
+					{
+						Ok = true,
+						error = false,
+						warn = false,
+						msg = "Todas las entregas fueron confirmadas correctamente",
+						respuestas = dictRespuestas
+					});
+				}
+
+				// Si hubo fallos
+				return Json(new
+				{
+					Ok = false,
+					error = true,
+					warn = false,
+					msg = "Algunas entregas no pudieron confirmarse",
+					fallidos,
+					respuestas = dictRespuestas
+				});
+			}
+			catch (Exception ex)
+			{
+				return Json(new { Ok = false, error = true, warn = false, msg = ex.Message });
+			}
+		}
+
+
+		[HttpPost]
+		public JsonResult AnularCtlEntrega(string ent_comptes)
+		{
+			try
+			{
+				if (string.IsNullOrEmpty(ent_comptes))
+					throw new NegocioException("Faltan datos obligatorios: ent_compte");
+
+				List<string> lista = ent_comptes.Split(';').ToList();
+				// Diccionario: ent_compte → respuesta de la API
+				var dictRespuestas = new Dictionary<string, RespuestaGenerica<RespuestaDto>>();
+
+				foreach (var item in lista)
+				{
+					var request = new AnularCtlEntregaRequest()
+					{
+						adm_id = AdministracionId,
+						usu_id = UserName,
+						ent_compte = item
+					};
+
+					PrintProperties(request);
+
+					var respuesta = _apiVentasServicio
+						.AnularCtlEntrega(request, TokenCookie)
+						.Result;
+
+					dictRespuestas[item] = respuesta;
+				}
+
+				// Evaluar fallos
+				var fallidos = dictRespuestas
+					.Where(x =>
+						x.Value == null ||
+						!x.Value.Ok ||
+						x.Value.EsError ||
+						(x.Value.Entidad != null && x.Value.Entidad.resultado != 0)
+					)
+					.Select(x => new
+					{
+						ent_compte = x.Key,
+						mensaje = x.Value?.Mensaje
+								   ?? x.Value?.Entidad?.resultado_msj
+								   ?? "Error desconocido"
+					})
+					.ToList();
+
+				// Si todos OK
+				if (fallidos.Count == 0)
+				{
+					return Json(new
+					{
+						Ok = true,
+						error = false,
+						warn = false,
+						msg = "Todas las entregas fueron revertidas correctamente",
+						respuestas = dictRespuestas
+					});
+				}
+
+				// Si hubo fallos
+				return Json(new
+				{
+					Ok = false,
+					error = true,
+					warn = false,
+					msg = "Algunas entregas no pudieron revertirse",
+					fallidos,
+					respuestas = dictRespuestas
+				});
 			}
 			catch (Exception ex)
 			{

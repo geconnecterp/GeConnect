@@ -117,7 +117,71 @@ function InicializaEventosGrillaVtasPVCtlEntregas() {
 		$btn.html('<i class="bx bx-check"></i> Volver a Pendiente Entregas Seleccionadas');
 	}
 
+	$(document).off("click", "#btnConfirmacionContable");
+	$(document).on("click", "#btnConfirmacionContable", function (e) {
+		ConfirmacionContable();
+	});
+
 	SeleccionarPrimeraFilaEntregas();
+}
+
+function ConfirmacionContable() {
+	var listaEntregas = obtenerEntregasSeleccionadasString();
+	if (listaEntregas.length === 0) {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar al menos una Entrega para confirmar.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+		return;
+	}
+	else {
+		var mensaje = "";
+		var mensajeEnCurso = "";
+		var url = "";
+		var tipoRend = $("#TipoEntrega").val();
+		if (tipoRend === "P") {
+			mensaje = "Esta a punto de confirmar las entregas seleccionadas. ¿Desea continuar?";
+			mensajeEnCurso = "Confirmando Entregas seleccionadas...";
+			url = confirmarCtlEntregaUrl;
+		}
+		else {
+			mensaje = "Esta a punto de volver a pendiente las entregas seleccionadas. ¿Desea continuar?";
+			mensajeEnCurso = "Volviendo a pendiente las Entregas seleccionadas...";
+			url = anularCtlEntregaUrl;
+		}
+		AbrirMensaje("ATENCIÓN", mensaje, function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI":
+					var data = { ent_comptes: listaEntregas.join(";") }
+					AbrirWaiting(mensajeEnCurso);
+					PostGen(data, url, function (obj) {
+						CerrarWaiting();
+						if (obj.error === true || obj.warn === true) {
+							AbrirMensaje("ATENCIÓN", obj.msg, function () {
+								$("#msjModal").modal("hide");
+								return true;
+							}, false, ["Aceptar"], "error!", null);
+						}
+						else {
+							AbrirMensaje("ATENCIÓN", obj.msg, function () {
+								$("#msjModal").modal("hide");
+								InicializarBusqueda();
+								return true;
+							}, false, ["Aceptar"], "succ!", null);
+							
+						}
+					});
+					break;
+				case "NO":
+					break;
+				default: //NO
+					break;
+			}
+			return true;
+
+		}, true, ["Aceptar", "Cancelar"], "question!", null);
+	}
 }
 
 function GuardarCtlDetalle() {
@@ -493,6 +557,21 @@ function ProcesarSeleccionFilaRendDetalle($fila) {
 function validarEntregaSeleccionada() {
 	//Aca agregar lo que sea necesario para validar la entrega seleccionada antes de cargar las rendiciones
 	return true;
+}
+
+function obtenerEntregasSeleccionadasString() {
+	const seleccionadas = [];
+
+	$(".row-entrega").each(function () {
+		const $row = $(this);
+		const chk = $row.find(".chkRow").is(":checked");
+
+		if (chk) {
+			seleccionadas.push($row.data("ent-compte"));
+		}
+	});
+
+	return seleccionadas;
 }
 
 function obtenerEntregasSeleccionadas() {

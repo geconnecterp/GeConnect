@@ -18,5 +18,7 @@ namespace gc.api.core.Contratos.Servicios
 		RespuestaDto ConfirmacionContable(ConfirmacionContableRequest request);
 		List<VtasPVCtlEntregaDto> ObtenerVtasPVCtlEntregaLista(string adm_id, char estado);
 		List<VtasPVCtlEntregaRendDto> ObtenerVtasPVCtlEntregaRendLista(string ent_compte);
+		RespuestaDto ConfirmarCtlEntrega(ConfirmarCtlEntregaRequest request);
+		RespuestaDto AnularCtlEntrega(AnularCtlEntregaRequest request);
 	}
 }

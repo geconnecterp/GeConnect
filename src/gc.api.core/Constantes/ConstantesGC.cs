@@ -43,6 +43,8 @@
 			public const string SP_VTAS_PV_CTL_CCB = "SPGECO_Vtas_PV_CTL_CCB";
 			public const string SP_VTAS_PV_CTL_ENTREGAS = "SPGECO_Vtas_PV_CTL_Entregas";
 			public const string SP_VTAS_PV_CTL_ENTREGAS_REND = "SPGECO_Vtas_PV_CTL_Entregas_Rend";
+			public const string SP_VTAS_PV_CTL_ENTREGAS_CONFIRMAR = "SPGECO_Vtas_PV_CTL_Entregas_Confirmar";
+			public const string SP_VTAS_PV_CTL_ENTREGAS_ANULAR = "SPGECO_Vtas_PV_CTL_Entregas_Anular";
 			#endregion
 
 			public const string MNU_GET_MENU_LIST = "dbo.SP_web_geco_get_menu_list";
