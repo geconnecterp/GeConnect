@@ -323,41 +323,384 @@ function cerrarModalCalculoFactura() {
 }
 
 // ════════════════════════════════════════════════════════════
-// FUNCIONES DE NEGOCIO (TODO: Implementar)
+// FUNCIONES DE NEGOCIO - DIFERIMIENTO
 // ════════════════════════════════════════════════════════════
 
 /**
- * ⚠️ TODO: Implementar modal de diferir pago
- */
-function mostrarModalDiferirPago() {
-    console.log('⚠️ TODO: Implementar modal de diferir pago');
-    mostrarMensajeAdvertencia('Funcionalidad de diferir pago en desarrollo');
-}
-
-/**
- * ⚠️ TODO: Implementar confirmación de diferir factura
+ * ✅ CORREGIDO v9.1: Confirma y ejecuta el diferimiento de factura
+ * Usa funciones de mensaje de siteGen.js
  */
 function confirmarDiferirFactura() {
-    console.log('⚠️ TODO: Implementar confirmación de diferir factura');
-    mostrarMensajeAdvertencia('Funcionalidad de diferir factura en desarrollo');
+    console.log('═══════════════════════════════════════════════════');
+    console.log('💾 CONFIRMAR DIFERIR FACTURA v9.1');
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Confirmar acción con el cajero
+    AbrirMensaje(
+        "¿Diferir Factura?",
+        `<div class="text-start">
+            <p class="mb-2"><i class='bx bx-info-circle text-info'></i> Esta acción creará una <strong>Factura Diferida (Pre-Factura)</strong>:</p>
+            <ul class="list-unstyled ms-3">
+                <li class="mb-1"><i class='bx bx-check text-success'></i> Se guardará la venta temporalmente</li>
+                <li class="mb-1"><i class='bx bx-x text-danger'></i> NO se afectará el stock</li>
+                <li class="mb-1"><i class='bx bx-x text-danger'></i> NO se generará comprobante fiscal</li>
+                <li class="mb-1"><i class='bx bx-time-five text-warning'></i> El cliente podrá volver más tarde a finalizar la compra</li>
+            </ul>
+        </div>`,
+        function(respuesta) {
+            $("#msjModal").modal("hide");
+            
+            if (respuesta === "SI") {
+                setTimeout(() => {
+                    ejecutarDiferirFactura();
+                }, 300);
+            }
+        },
+        true, // Es confirmación
+        ["Sí, Diferir Factura", "Cancelar"],
+        "info!",
+        null
+    );
 }
 
 /**
- * ✅ NUEVO v6.0: Procesa el pago de la factura
- * 
- * TODO: Abrir siguiente modal (Pago)
+ * ✅ CORREGIDO v9.1: Ejecuta la llamada AJAX para diferir factura
  */
-function procesarPagoFactura() {
+function ejecutarDiferirFactura() {
+    console.log('📡 Invocando /ProductoFact/DiferirFactura...');
+
+    // ❶ Mostrar loader
+    AbrirWaiting("Creando Factura Diferida...<br><small class='text-muted'>Por favor espere</small>");
+
+    // ❷ Llamada AJAX
+    $.ajax({
+        url: '/Facturacion/ProductoFact/DiferirFactura',
+        type: 'POST',
+        dataType: 'json',
+        timeout: 30000,
+        success: function(response) {
+            CerrarWaiting();
+            
+            console.log('═══════════════════════════════════════════════════');
+            console.log('✅ RESPUESTA DE DIFERIR FACTURA');
+            console.log('═══════════════════════════════════════════════════');
+            console.log('Response:', response);
+
+            if (!response.ok) {
+                console.error('❌ Error en respuesta:', response.mensaje);
+                
+                AbrirMensaje(
+                    "Error al Diferir Factura",
+                    response.mensaje || 'No se pudo crear la factura diferida',
+                    function() {
+                        $("#msjModal").modal("hide");
+                    },
+                    false,
+                    ["Aceptar"],
+                    "error!",
+                    null
+                );
+                return;
+            }
+
+            // ✅ ÉXITO
+            console.log('✅ Factura diferida creada exitosamente');
+            console.log(`   ID: ${response.prefactura_id}`);
+            console.log(`   Mensaje: ${response.mensaje}`);
+
+            AbrirMensaje(
+                "¡Factura Diferida Creada!",
+                `<div class="text-center">
+                    <div class="mb-3">
+                        <i class='bx bx-check-circle text-success' style="font-size: 4rem;"></i>
+                    </div>
+                    <h4 class="text-golden mb-3">${response.mensaje}</h4>
+                    <p class="text-muted mb-0">El cliente podrá retomar esta compra más tarde</p>
+                </div>`,
+                function() {
+                    $("#msjModal").modal("hide");
+                    
+                    setTimeout(() => {
+                        // ❃ Cerrar modal de cálculo y volver al inicio
+                        cerrarModalCalculoFactura();
+                        
+                        // ❹ Disparar evento para limpiar (si existe función en prodfact.js)
+                        if (typeof limpiarVentaCompleta === 'function') {
+                            limpiarVentaCompleta();
+                        }
+                        
+                        // ❺ Volver al modal de identificar cliente
+                        setTimeout(() => {
+                            if (typeof abrirModalIdentificarCliente === 'function') {
+                                abrirModalIdentificarCliente();
+                            }
+                        }, 500);
+                    }, 300);
+                },
+                false,
+                ["Aceptar"],
+                "succ!",
+                null
+            );
+        },
+        error: function(xhr, status, error) {
+            CerrarWaiting();
+            
+            console.error('═══════════════════════════════════════════════════');
+            console.error('❌ ERROR EN AJAX DIFERIR FACTURA');
+            console.error(`   Status: ${status}`);
+            console.error(`   Error: ${error}`);
+            console.error(`   HTTP Status: ${xhr.status}`);
+            console.error('═══════════════════════════════════════════════════');
+
+            // ✅ NUEVO: Usar función centralizada
+            if (esSesionExpirada(xhr.status)) {
+                manejarSesionExpirada('No se pudo diferir la factura porque su sesión ha expirado.');
+                return;
+            }
+
+            let mensajeError = 'Error de comunicación con el servidor';
+
+            if (xhr.status === 500) {
+                mensajeError = 'Error interno del servidor. Contacte al administrador.';
+            } else if (xhr.status === 0) {
+                mensajeError = 'No se pudo conectar con el servidor. Verifique su conexión.';
+            } else if (xhr.responseJSON && xhr.responseJSON.mensaje) {
+                mensajeError = xhr.responseJSON.mensaje;
+            }
+
+            AbrirMensaje(
+                "Error de Comunicación",
+                mensajeError,
+                function() {
+                    $("#msjModal").modal("hide");
+                },
+                false,
+                ["Aceptar"],
+                "error!",
+                null
+            );
+        }
+    });
+}
+
+/**
+ * ✅ CORREGIDO v9.1: Modal de diferir pago con advertencias
+ * Emite factura fiscal sin cobrar
+ */
+function mostrarModalDiferirPago() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('💰 PROCESAR PAGO DE FACTURA');
+    console.log('⏱️ MOSTRAR MODAL DIFERIR PAGO v9.1');
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Confirmar acción con ADVERTENCIAS críticas
+    AbrirMensaje(
+        "⚠️ ¿Diferir Pago?",
+        `<div class="text-start">
+            <div class="alert alert-danger mb-3">
+                <i class='bx bx-error-alt'></i> <strong>OPERACIÓN DE ALTA COMPLEJIDAD</strong>
+            </div>
+            <p class="mb-2">Esta acción <strong>EMITIRÁ LA FACTURA FISCAL</strong> pero <strong>SIN COBRAR</strong>:</p>
+            <ul class="list-unstyled ms-3">
+                <li class="mb-1"><i class='bx bx-check text-success'></i> ✅ Se generará el comprobante fiscal</li>
+                <li class="mb-1"><i class='bx bx-check text-success'></i> ✅ Se afectará el stock</li>
+                <li class="mb-1"><i class='bx bx-check text-success'></i> ✅ Se registrará en Libro IVA Ventas</li>
+                <li class="mb-1"><i class='bx bx-check text-warning'></i> ⚠️ El pago quedará PENDIENTE en cuenta del cliente</li>
+                <li class="mb-1"><i class='bx bx-check text-warning'></i> ⚠️ Se imprimirá el comprobante</li>
+            </ul>
+            <div class="alert alert-warning mt-3 mb-0">
+                <i class='bx bx-info-circle'></i> Esta operación NO puede deshacerse fácilmente
+            </div>
+        </div>`,
+        function(respuesta) {
+            $("#msjModal").modal("hide");
+            
+            if (respuesta === "SI") {
+                setTimeout(() => {
+                    ejecutarDiferirPago();
+                }, 300);
+            }
+        },
+        true, // Es confirmación
+        ["Sí, Emitir Factura sin Cobrar", "Cancelar"],
+        "warn!",
+        null
+    );
+}
+
+/**
+ * ✅ CORREGIDO v9.1: Ejecuta la llamada AJAX para diferir pago
+ */
+function ejecutarDiferirPago() {
+    console.log('📡 Invocando /ProductoFact/DiferirPago...');
+
+    // ❶ Mostrar loader
+    AbrirWaiting("Emitiendo Factura con Pago Diferido...<br><small class='text-muted'>Por favor espere, esto puede tardar unos momentos</small>");
+
+    // ❷ Llamada AJAX
+    $.ajax({
+        url: '/Facturacion/ProductoFact/DiferirPago',
+        type: 'POST',
+        dataType: 'json',
+        timeout: 30000,
+        success: function(response) {
+            CerrarWaiting();
+            
+            console.log('═══════════════════════════════════════════════════');
+            console.log('✅ RESPUESTA DE DIFERIR PAGO');
+            console.log('═══════════════════════════════════════════════════');
+            console.log('Response:', response);
+
+            if (!response.ok) {
+                console.error('❌ Error en respuesta:', response.mensaje);
+                
+                AbrirMensaje(
+                    "Error al Diferir Pago",
+                    response.mensaje || 'No se pudo emitir la factura',
+                    function() {
+                        $("#msjModal").modal("hide");
+                    },
+                    false,
+                    ["Aceptar"],
+                    "error!",
+                    null
+                );
+                return;
+            }
+
+            // ✅ ÉXITO
+            console.log('✅ Factura emitida con pago diferido');
+            console.log(`   Comprobante: ${response.comprobante.letra} ${response.comprobante.numero}`);
+            console.log(`   ID: ${response.comprobante.id}`);
+            console.log(`   Identificador completo: ${response.comprobante.identificador_completo}`);
+
+            AbrirMensaje(
+                "¡Factura Emitida!",
+                `<div class="text-center">
+                    <div class="mb-3">
+                        <i class='bx bx-receipt text-success' style='font-size: 4rem;'></i>
+                    </div>
+                    <h4 class="text-golden mb-3">${response.mensaje}</h4>
+                    <div class="alert alert-info">
+                        <strong>Comprobante ${response.comprobante.letra}</strong><br>
+                        Nro: <strong>${response.comprobante.numero}</strong><br>
+                        ID: <strong>${response.comprobante.id}</strong>
+                    </div>
+                    <p class="text-muted mb-0">
+                        <i class='bx bx-printer'></i> El comprobante se imprimirá automáticamente
+                    </p>
+                </div>`,
+                function() {
+                    $("#msjModal").modal("hide");
+                    
+                    setTimeout(() => {
+                        // ❸ DISPARAR IMPRESIÓN DEL COMPROBANTE
+                        if (response.debe_imprimir) {
+                            console.log('🖨️ Iniciando impresión de comprobante...');
+                            imprimirComprobante(response.comprobante);
+                        }
+
+                        // ❹ Cerrar modal y limpiar
+                        cerrarModalCalculoFactura();
+                        
+                        if (typeof limpiarVentaCompleta === 'function') {
+                            limpiarVentaCompleta();
+                        }
+                        
+                        // ❺ Volver al modal de identificar cliente
+                        setTimeout(() => {
+                            if (typeof abrirModalIdentificarCliente === 'function') {
+                                abrirModalIdentificarCliente();
+                            }
+                        }, 500);
+                    }, 300);
+                },
+                false,
+                ["Aceptar"],
+                "succ!",
+                null
+            );
+        },
+        error: function(xhr, status, error) {
+            CerrarWaiting();
+            
+            console.error('═══════════════════════════════════════════════════');
+            console.error('❌ ERROR EN AJAX DIFERIR PAGO');
+            console.error(`   Status: ${status}`);
+            console.error(`   Error: ${error}`);
+            console.error(`   HTTP Status: ${xhr.status}`);
+            console.error('═══════════════════════════════════════════════════');
+
+            // ✅ NUEVO: Usar función centralizada
+            if (esSesionExpirada(xhr.status)) {
+                manejarSesionExpirada('No se pudo diferir el pago porque su sesión ha expirado.');
+                return;
+            }
+
+            let mensajeError = 'Error de comunicación con el servidor';
+
+            if (xhr.status === 500) {
+                mensajeError = 'Error interno del servidor. Contacte al administrador.';
+            } else if (xhr.status === 0) {
+                mensajeError = 'No se pudo conectar con el servidor. Verifique su conexión.';
+            } else if (xhr.responseJSON && xhr.responseJSON.mensaje) {
+                mensajeError = xhr.responseJSON.mensaje;
+            }
+
+            AbrirMensaje(
+                "Error de Comunicación",
+                mensajeError,
+                function() {
+                    $("#msjModal").modal("hide");
+                },
+                false,
+                ["Aceptar"],
+                "error!",
+                null
+            );
+        }
+    });
+}
+
+/**
+ * ✅ ACTUALIZADO v9.1: Imprime el comprobante de venta
+ * TODO: Integrar con sistema de impresión fiscal
+ * 
+ * @param {Object} comprobante - Datos del comprobante a imprimir
+ */
+function imprimirComprobante(comprobante) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🖨️ IMPRIMIR COMPROBANTE');
+    console.log('═══════════════════════════════════════════════════');
+    console.log('Datos del comprobante:', comprobante);
+
+    // TODO: Implementar según sistema de impresión fiscal
+    // Opciones:
+    // 1. Llamar a servicio de impresión fiscal (controlador fiscal)
+    // 2. Generar PDF y enviarlo a impresora
+    // 3. Enviar a servicio de facturación electrónica
+
+    console.log('⚠️ TODO: Integrar con sistema de impresión fiscal');
+    console.log(`   Comprobante: ${comprobante.letra} ${comprobante.numero}`);
+    console.log(`   ID: ${comprobante.id}`);
+    console.log(`   Identificador: ${comprobante.identificador_completo}`);
     console.log('═══════════════════════════════════════════════════');
     
-    // TODO: Abrir modal de medios de pago
-    console.log('⚠️ TODO: Abrir modal de medios de pago');
-    mostrarMensajeAdvertencia('Funcionalidad de pago en desarrollo');
-    
-    // Ejemplo de lo que vendría:
-    // cerrarModalCalculoFactura();
-    // abrirModalMediosPago(datosFactura);
+    // Placeholder: Mostrar alerta de que se debe imprimir
+    AbrirMensaje(
+        "Imprimir Comprobante",
+        `<div class="text-center">
+            <i class='bx bx-printer' style='font-size: 3rem;'></i>
+            <p class="mt-3">Comprobante ${comprobante.letra} ${comprobante.numero}</p>
+            <small class="text-muted">La impresión debe ser implementada</small>
+        </div>`,
+        function() {
+            $("#msjModal").modal("hide");
+        },
+        false,
+        ["Aceptar"],
+        "info!",
+        null
+    );
 }
 

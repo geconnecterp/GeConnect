@@ -18,5 +18,7 @@ namespace gc.caja.core.Servicios.Contratos.Cajas
 
         Task<RespuestaGenerica<PrefacturaResDto>> ObtenerPrefactura(PrefacturaReqDto req, string token);
         Task<RespuestaGenerica<CotizacionResDto>> ObtenerCotizacion(CotizacionReqDto req, string token);
+        Task<RespuestaGenerica<RespuestaDto>> CrearPrefacturaDiferida(CajaPrefDiferidaReqDto req, string token);
+        Task<RespuestaGenerica<RespuestaDto>> CrearDiferirPago(CajaOpeConfirmarReq req, string token);
     }
 }

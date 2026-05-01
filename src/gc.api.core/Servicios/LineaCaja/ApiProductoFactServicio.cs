@@ -4,6 +4,7 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Cajas.Response;
+using gc.infraestructura.Dtos.Gen;
 using Microsoft.Data.SqlClient;
 
 namespace gc.api.core.Servicios.LineaCaja
@@ -47,7 +48,7 @@ namespace gc.api.core.Servicios.LineaCaja
                 new SqlParameter("@json_p", req.json_p)
             };
 
-            var res = _repository.EjecutarLstSpExt<CalculaFilasResDto>(sp, ps,true);
+            var res = _repository.EjecutarLstSpExt<CalculaFilasResDto>(sp, ps, true);
             return res.FirstOrDefault();
         }
 
@@ -58,13 +59,13 @@ namespace gc.api.core.Servicios.LineaCaja
                 new SqlParameter("@cta_id", req.cta_id)
             };
             var res = _repository.EjecutarLstSpExt<CotizacionResDto>(sp, ps);
-            return res; 
+            return res;
         }
 
         public List<PrefacturaResDto> ObtenerPrefactura(PrefacturaReqDto req)
         {
             var sp = ConstantesGC.StoredProcedures.SP_CAJA_PREFACTURA;
-           
+
             var ps = new List<SqlParameter>() {
                 new SqlParameter("@sec_id", req.sec_id),
                 new SqlParameter("@cta_id", req.cta_id),
@@ -95,6 +96,87 @@ namespace gc.api.core.Servicios.LineaCaja
 
         }
 
+        public RespuestaDto CrearPrefacturaDiferida(CajaPrefDiferidaReqDto req)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_CAJA_PREFACTURA_CARGA;
 
+            var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@caja_id",req.Caja_Id),
+                new SqlParameter("@usu_id",req.Usu_Id),
+                new SqlParameter("@adm_id",req.Adm_Id),
+                new SqlParameter("@lp_id",req.Lp_Id),
+                new SqlParameter("@caja_nro_proceso",req.Caja_Nro_Proceso),
+                new SqlParameter("@caja_nro_cierre",req.Caja_Nro_Cierre),
+                new SqlParameter("@cta_id",req.Cta_Id),
+                new SqlParameter("@tdoc_id",req.Tdoc_Id),
+                new SqlParameter("@cta_documento",req.Cta_Documento),
+                new SqlParameter("@cta_denominacion",req.Cta_Denominacion),
+                new SqlParameter("@sec_id",req.Sec_Id),
+                new SqlParameter("@json_p",req.Json_P)
+            };
+
+            var res = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+            if (!res.Any())
+            {
+                return new()
+                {
+                    resultado = -1,
+                    resultado_msj = "No se logro obtener un resultado especifico para la operación. Intentelo nuevamente."
+                };
+            }
+            else
+            {
+                return res[0];
+            }
+        }
+
+        public RespuestaDto CrearPagoDiferido(CajaOpeConfirmarReq req)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_CAJA_OPE_CONFIRMAR;
+
+            var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@caja_id", req.caja_id),
+                new SqlParameter("@usu_id", req.usu_id),
+                new SqlParameter("@adm_id", req.adm_id),
+                new SqlParameter("@lp_id", req.lp_id),
+                new SqlParameter("@caja_nro_proceso", req.caja_nro_proceso),
+                new SqlParameter("@caja_nro_cierre", req.caja_nro_cierre),
+                new SqlParameter("@cta_id", req.cta_id),
+                new SqlParameter("@ctac_dto", req.ctac_dto),
+                new SqlParameter("@co_tipo", req.co_tipo),
+                new SqlParameter("@ctc_id", req.ctc_id),
+                new SqlParameter("@tco_letra", req.tco_letra),
+                new SqlParameter("@tco_id_ori", req.tco_id_ori),
+                new SqlParameter("@cm_compte_ori", req.cm_compte_ori),
+                new SqlParameter("@afip_id", req.afip_id),
+                new SqlParameter("@tdoc_id", req.tdoc_id),
+                new SqlParameter("@cta_documento", req.cta_documento),
+                new SqlParameter("@cta_denominacion", req.cta_denominacion),
+                new SqlParameter("@cta_domicilio", req.cta_domicilio),
+                new SqlParameter("@ve_id", req.ve_id),
+                new SqlParameter("@json_p", req.json_p),
+                new SqlParameter("@json_valores", req.json_valores),
+                new SqlParameter("@json_cancela", req.json_cancela),
+                new SqlParameter("@json_union", req.json_union),
+                new SqlParameter("@json_subtotal", req.json_subtotal),
+                new SqlParameter("@json_sorteo", req.json_sorteo)
+            };
+
+            var res = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+            if (!res.Any())
+            {
+                return new()
+                {
+                    resultado = -1,
+                    resultado_msj = "No se logro obtener un resultado especifico para la operación. Intentelo nuevamente."
+                };
+            }
+            else
+            {
+                return res[0];
+            }
+        }
     }
 }

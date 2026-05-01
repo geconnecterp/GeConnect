@@ -4320,4 +4320,216 @@ input, select, textarea, button, checkbox, radio {
 }
 
 
-/* FIN ESTILOS */
+/* ====== ESTILOS PARA MODAL DE CÁLCULO DE FACTURA ====== */
+
+/* ═══════════════════════════════════════════════════════════
+   TABLA DE CONCEPTOS CON TAMAÑOS AUMENTADOS
+   ═══════════════════════════════════════════════════════════ */
+
+/* Contenedor con scroll y altura optimizada */
+.table-calc-conceptos {
+    max-height: 400px;
+    overflow-y: auto;
+    position: relative;
+}
+
+/* Celdas del body con tamaño aumentado */
+#tbConceptosCalculo tbody td {
+    font-size: 1.1rem !important;
+    padding: 0.75rem !important;
+}
+
+    /* Importes en el body más grandes */
+    #tbConceptosCalculo tbody td.text-end {
+        font-size: 1.3rem !important;
+        font-weight: 600 !important;
+    }
+
+/* Footer de totales con tamaño prominente */
+.table-golden-footer {
+    background-color: #faf5e6;
+    border-top: 3px solid #daa520 !important;
+}
+
+    .table-golden-footer td {
+        padding: 1rem 0.75rem !important;
+        font-size: 1.5rem !important;
+    }
+
+/* Total final con tamaño muy grande y destacado */
+.total-final-calc {
+    font-size: 2.2rem !important;
+    font-weight: 700 !important;
+    color: #28a745 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Fila del total con fondo destacado */
+.total-row-golden {
+    background: linear-gradient(135deg, rgba(218, 165, 32, 0.15) 0%, rgba(184, 134, 11, 0.1) 100%) !important;
+}
+
+/* Hover en filas de conceptos */
+#tbConceptosCalculo tbody tr:hover {
+    background-color: rgba(218, 165, 32, 0.08) !important;
+    transition: background-color 0.2s ease;
+}
+
+/* Separador visual antes del total */
+#tbConceptosCalculo tfoot tr {
+    border-top: 3px solid #daa520 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TABLA DE SORTEOS
+   ═══════════════════════════════════════════════════════════ */
+
+.table-calc-sorteos {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+#tbSorteos tbody tr {
+    border-bottom: 1px solid #dee2e6;
+    padding: 8px 0;
+}
+
+    #tbSorteos tbody tr:last-child {
+        border-bottom: none;
+    }
+
+/* ═══════════════════════════════════════════════════════════
+   FOOTER DEL MODAL
+   ═══════════════════════════════════════════════════════════ */
+
+.footer-calc-factura {
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    padding: 15px 20px;
+}
+
+    /* Iconos en botones con mejor espaciado */
+    .footer-calc-factura .btn i {
+        margin-right: 0.5rem;
+        font-size: 1.2rem;
+        vertical-align: middle;
+    }
+
+    /* Animación sutil en botones */
+    .footer-calc-factura .btn {
+        transition: all 0.2s ease;
+    }
+
+        .footer-calc-factura .btn:not(:disabled):hover {
+            transform: translateY(-2px);
+        }
+
+        .footer-calc-factura .btn:not(:disabled):active {
+            transform: translateY(0);
+        }
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE PARA MODAL DE CÁLCULO
+   ═══════════════════════════════════════════════════════════ */
+
+/* Tablets y pantallas medianas */
+@media (max-width: 992px) {
+    #tbConceptosCalculo tbody td {
+        font-size: 1rem !important;
+        padding: 0.6rem !important;
+    }
+
+        #tbConceptosCalculo tbody td.text-end {
+            font-size: 1.2rem !important;
+        }
+
+    .table-golden-footer td {
+        font-size: 1.3rem !important;
+    }
+
+    .total-final-calc {
+        font-size: 1.8rem !important;
+    }
+
+    .footer-calc-factura .btn-lg {
+        font-size: 0.95rem;
+        padding: 0.6rem 1rem;
+    }
+
+    .botones-accion-calc {
+        gap: 0.75rem !important;
+    }
+}
+
+/* Móviles */
+@media (max-width: 768px) {
+    #tbConceptosCalculo tbody td {
+        font-size: 0.95rem !important;
+        padding: 0.5rem !important;
+    }
+
+        #tbConceptosCalculo tbody td.text-end {
+            font-size: 1.1rem !important;
+        }
+
+    .table-golden-footer td {
+        font-size: 1.1rem !important;
+    }
+
+    .total-final-calc {
+        font-size: 1.5rem !important;
+    }
+
+    /* Apilar botones en móvil */
+    .footer-calc-factura {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+        .footer-calc-factura .d-flex {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .footer-calc-factura .btn-lg {
+            width: 100%;
+            font-size: 0.9rem;
+            padding: 0.5rem 0.75rem;
+        }
+
+    .botones-accion-calc {
+        width: 100%;
+    }
+}
+
+/* Móviles pequeños */
+@media (max-width: 576px) {
+    #tbConceptosCalculo tbody td {
+        font-size: 0.875rem !important;
+        padding: 0.4rem !important;
+    }
+
+        #tbConceptosCalculo tbody td.text-end {
+            font-size: 1rem !important;
+        }
+
+    .table-golden-footer td {
+        font-size: 1rem !important;
+        padding: 0.75rem 0.5rem !important;
+    }
+
+    .total-final-calc {
+        font-size: 1.3rem !important;
+    }
+
+    .footer-calc-factura .btn-lg {
+        font-size: 0.85rem;
+        padding: 0.5rem;
+    }
+
+        .footer-calc-factura .btn-lg i {
+            font-size: 1rem;
+        }
+}
+
+/* FIN ESTILOS MODAL CÁLCULO FACTURA */
