@@ -2,6 +2,7 @@
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Cajas.Response;
+using gc.infraestructura.Dtos.Gen;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -82,6 +83,37 @@ namespace gc.api.Controllers.Caja
 
             var res = _apiProductoFactServicio.ObtenerCotizacion(req);
             return Ok(new ApiResponse<List<CotizacionResDto>>(res));
+        }
+
+        //genera las action para diferir la prefactura y el pago, se llama desde la pantalla de caja al hacer click en diferir pago, se le pasa el id de la caja y el id 
+        //del proceso, se genera una prefactura diferida y se genera un registro en la tabla de diferidos para luego poder consultarlo desde la pantalla de diferidos
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult CrearPrefacturaDiferida(CajaPrefDiferidaReqDto req)
+        {
+            if (req == null)
+            {
+                return BadRequest("El parámetro req es requerido.");
+            }
+            var res = _apiProductoFactServicio.CrearPrefacturaDiferida(req);
+            return Ok(new ApiResponse<RespuestaDto>(res));
+        }
+
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult CrearPagoDiferido(CajaOpeConfirmarReq req)
+        {
+            if (req == null)
+            {
+                return BadRequest("El parámetro req es requerido.");
+            }
+            var res = _apiProductoFactServicio.CrearPagoDiferido(req);
+            return Ok(new ApiResponse<RespuestaDto>(res));
+
         }
     }
 }

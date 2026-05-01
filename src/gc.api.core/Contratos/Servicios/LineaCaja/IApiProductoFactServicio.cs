@@ -1,5 +1,6 @@
 ﻿using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Cajas.Response;
+using gc.infraestructura.Dtos.Gen;
 
 namespace gc.api.core.Contratos.Servicios.LineaCaja
 {
@@ -9,5 +10,7 @@ namespace gc.api.core.Contratos.Servicios.LineaCaja
         CalculaFilasResDto CalcularFilas(CalcularFilasReqDto req);
         List<PrefacturaResDto> ObtenerPrefactura(PrefacturaReqDto req);
         List<CotizacionResDto> ObtenerCotizacion(CotizacionReqDto req);
+        RespuestaDto CrearPrefacturaDiferida(CajaPrefDiferidaReqDto req);
+        RespuestaDto CrearPagoDiferido(CajaOpeConfirmarReq req);
     }
 }

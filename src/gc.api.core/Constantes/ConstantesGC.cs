@@ -29,6 +29,10 @@
 
 			public const string SP_CAJA_PREFACTURA = "SPGECO_CAJA_B_Prefacturas";
 			public const string SP_CAJA_COTIZACION = "SPGECO_CAJA_B_Cotizaciones";
+            public const string SP_CAJA_PREFACTURA_CARGA = "SPGECO_CAJA_Prefacturas_Carga";
+			public const string SP_CAJA_OPE_CONFIRMAR = "SPGECO_CAJA_Ope_Confirmar";
+
+            
             #endregion
 
             #region VTAS

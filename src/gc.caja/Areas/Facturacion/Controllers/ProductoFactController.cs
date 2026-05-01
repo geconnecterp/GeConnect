@@ -1011,8 +1011,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     ok = true,
                     mensaje = "OK",
                     cotizaciones = resultado?.ListaEntidad?
-                                        .OrderByDescending(x=>x.pre_fecha)
-                                        .ThenByDescending(x=>x.pree_id)
+                                        .OrderByDescending(x => x.pre_fecha)
+                                        .ThenByDescending(x => x.pree_id)
                                         .ToList() ?? new List<CotizacionResDto>()
                 });
             }
@@ -1078,7 +1078,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     listaPreciosId = cajaActual.Caja.lp_id_min ?? string.Empty;
                     canalId = clienteActual.ctc_id ?? "MI";
                     identificadorCliente = clienteActual.cta_documento ?? string.Empty;
-                    
+
                     _logger?.LogInformation($"✅ Cliente CF → LP: {listaPreciosId}, Canal: {canalId}, Doc: {identificadorCliente}");
                 }
                 else // Cliente Registrado
@@ -1086,7 +1086,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     listaPreciosId = cajaActual.Caja.lp_id_may ?? string.Empty;
                     canalId = clienteActual.ctc_id ?? "MA";
                     identificadorCliente = clienteActual.cta_id ?? string.Empty;
-                    
+
                     _logger?.LogInformation($"✅ Cliente Registrado → LP: {listaPreciosId}, Canal: {canalId}, CTA_ID: {identificadorCliente}");
                 }
 
@@ -1122,7 +1122,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         // ❼ INVOCAR MÉTODO ENCAPSULADO (REUTILIZABLE)
                         var resultado = await ObtenerProductoDatosCommon(
                             tipoValor: "F",           // ✅ Tipo Pre-Factura
-                            valor: cpf_nro.Trim().PadLeft(6,'0'),
+                            valor: cpf_nro.Trim().PadLeft(6, '0'),
                             listaPreciosId,
                             canalId,
                             identificadorCliente,
@@ -1305,7 +1305,444 @@ namespace gc.caja.Areas.Facturacion.Controllers
             }
         }
 
-       
+        /// <summary>
+        /// ✅ NUEVO: Diferir Factura - Crea una pre-factura (factura diferida)
+        /// Permite pausar la compra del cliente sin afectar el stock ni generar comprobante fiscal
+        /// </summary>
+        /// <returns>JSON con resultado de la operación</returns>
+        [HttpPost]
+        public async Task<JsonResult> DiferirFactura()
+        {
+            var stopwatch = Stopwatch.StartNew();
+
+            try
+            {
+                // ❶ VALIDAR AUTENTICACIÓN
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, mensaje = "Sesión expirada" });
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("💾 DIFERIR FACTURA - INICIO");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                // ❷ VALIDAR DATOS DE CAJA
+                var cajaActual = CajaActual;
+                if (cajaActual == null)
+                {
+                    _logger?.LogError("❌ No hay caja en sesión");
+                    return Json(new { ok = false, mensaje = "No hay caja abierta" });
+                }
+
+                // ❸ VALIDAR DATOS DE CLIENTE
+                var clienteActual = ClienteActual;
+                if (clienteActual == null)
+                {
+                    _logger?.LogError("❌ No hay cliente en sesión");
+                    return Json(new { ok = false, mensaje = "No hay cliente seleccionado" });
+                }
+
+                // ❹ VALIDAR QUE HAYA PRODUCTOS
+                var productosFactura = FacturaProductos;
+                if (productosFactura == null || productosFactura.Count == 0)
+                {
+                    _logger?.LogWarning("❌ No hay productos en la factura");
+                    return Json(new { ok = false, mensaje = "Debe cargar al menos un producto" });
+                }
+
+                _logger?.LogInformation($"✅ Productos en factura: {productosFactura.Count}");
+
+                // ❺ SERIALIZAR JSON DE PRODUCTOS
+                string jsonProductos = JsonConvert.SerializeObject(productosFactura);
+
+                _logger?.LogInformation($"✅ JSON de productos generado (longitud: {jsonProductos.Length})");
+
+                // ❻ DETERMINAR IDENTIFICADOR DEL CLIENTE SEGÚN ORIGEN
+                string ctaId;
+                string origenUpper = clienteActual.Origen?.ToUpper() ?? "F";
+
+                if (origenUpper == "F") // Consumidor Final
+                {
+                    ctaId = clienteActual.cta_documento ?? string.Empty;
+                    _logger?.LogInformation($"✅ Cliente CF → Identificador (documento): {ctaId}");
+                }
+                else // Cliente Registrado
+                {
+                    ctaId = clienteActual.cta_id ?? string.Empty;
+                    _logger?.LogInformation($"✅ Cliente Registrado → Identificador (cta_id): {ctaId}");
+                }
+
+                // ❼ CONSTRUIR REQUEST DTO
+                var request = new CajaPrefDiferidaReqDto
+                {
+                    Caja_Id = cajaActual.CajaId ?? string.Empty,
+                    Usu_Id = UserName ?? string.Empty,
+                    Adm_Id = cajaActual.AdmId ?? AdministracionId,
+                    Lp_Id = LP_Id ?? string.Empty,
+                    Caja_Nro_Proceso = cajaActual.Caja.caja_nro_proceso ?? string.Empty,
+                    Caja_Nro_Cierre = cajaActual.Caja.caja_nro_cierre.ToInt(),
+                    Cta_Id = ctaId,
+                    Tdoc_Id = clienteActual.tdoc_id ?? string.Empty,
+                    Cta_Documento = clienteActual.cta_documento ?? string.Empty,
+                    Cta_Denominacion = clienteActual.cta_denominacion ?? string.Empty,
+                    Sec_Id = "CAJA",
+                    Json_P = jsonProductos
+                };
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("📦 REQUEST DTO CONSTRUIDO:");
+                _logger?.LogInformation($"   Caja_Id: {request.Caja_Id}");
+                _logger?.LogInformation($"   Usu_Id: {request.Usu_Id}");
+                _logger?.LogInformation($"   Adm_Id: {request.Adm_Id}");
+                _logger?.LogInformation($"   Lp_Id: {request.Lp_Id}");
+                _logger?.LogInformation($"   Caja_Nro_Proceso: {request.Caja_Nro_Proceso}");
+                _logger?.LogInformation($"   Caja_Nro_Cierre: {request.Caja_Nro_Cierre}");
+                _logger?.LogInformation($"   Cta_Id: {request.Cta_Id}");
+                _logger?.LogInformation($"   Tdoc_Id: {request.Tdoc_Id}");
+                _logger?.LogInformation($"   Cta_Documento: {request.Cta_Documento}");
+                _logger?.LogInformation($"   Cta_Denominacion: {request.Cta_Denominacion}");
+                _logger?.LogInformation($"   Sec_Id: {request.Sec_Id}");
+                _logger?.LogInformation($"   Json_P (longitud): {request.Json_P.Length}");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                // ❽ INVOCAR SERVICIO
+                var token = TokenCookie;
+                if (string.IsNullOrEmpty(token))
+                {
+                    _logger?.LogError("❌ No hay token de autenticación");
+                    return Json(new { ok = false, mensaje = "Sesión expirada" });
+                }
+
+                _logger?.LogInformation("📡 Invocando servicio ProductoFactServicio.CrearPrefacturaDiferida...");
+                var resultado = await _productoFactServicio.CrearPrefacturaDiferida(request, token);
+
+                stopwatch.Stop();
+                _logger?.LogInformation($"⏱️ Tiempo de ejecución: {stopwatch.ElapsedMilliseconds}ms");
+
+                // ❾ VALIDAR RESPUESTA
+                if (resultado == null)
+                {
+                    _logger?.LogError("❌ El servicio retornó null");
+                    return Json(new { ok = false, mensaje = "Error al diferir la factura" });
+                }
+
+                if (!resultado.Ok)
+                {
+                    _logger?.LogWarning($"⚠️ Error del servicio: {resultado.Mensaje}");
+                    return Json(new { ok = false, mensaje = resultado.Mensaje ?? "Error al diferir la factura" });
+                }
+
+                // ❿ EXTRAER DATOS DE RESPUESTA
+                var respuestaDto = resultado.Entidad;
+
+                if (respuestaDto == null)
+                {
+                    _logger?.LogError("❌ No se recibió entidad de respuesta");
+                    return Json(new { ok = false, mensaje = "Error: respuesta vacía del servidor" });
+                }
+
+                // ⓫ VALIDAR RESULTADO DEL SP
+                if (respuestaDto.resultado != 0)
+                {
+                    _logger?.LogError($"❌ Error del SP: {respuestaDto.resultado_msj}");
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = respuestaDto.resultado_msj ?? "Error al crear la factura diferida"
+                    });
+                }
+
+                // ⓬ ÉXITO - Formatear ID de prefactura
+                string prefacturaId = respuestaDto.resultado_id ?? "DESCONOCIDO";
+
+                // ✅ Formatear como '000256' (6 dígitos con ceros a la izquierda)
+                if (int.TryParse(prefacturaId, out int idNumerico))
+                {
+                    prefacturaId = idNumerico.ToString("D6");
+                }
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("✅ FACTURA DIFERIDA CREADA EXITOSAMENTE");
+                _logger?.LogInformation($"   ID: {prefacturaId}");
+                _logger?.LogInformation($"   Mensaje: {respuestaDto.resultado_msj}");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                // ⓭ LIMPIAR SESIÓN DE FACTURA (opcional, según requerimiento)
+                // FacturaProductos = new List<ProductoFactJsonDto>();
+                // FacturaSubtotales = new List<FactSubtotalJsonDto>();
+                // FacturaSorteos = new List<object>();
+
+                // ⓮ RETORNAR RESPUESTA
+                return Json(new
+                {
+                    ok = true,
+                    mensaje = $"Factura Diferida Creada '{prefacturaId}'",
+                    prefactura_id = prefacturaId,
+                    resultado_completo = respuestaDto.resultado_msj
+                });
+            }
+            catch (Exception ex)
+            {
+                stopwatch.Stop();
+                _logger?.LogError($"❌ EXCEPCIÓN en DiferirFactura: {ex.Message}");
+                _logger?.LogError($"   Stack Trace: {ex.StackTrace}");
+                _logger?.LogError($"   Tiempo antes del error: {stopwatch.ElapsedMilliseconds}ms");
+
+                return Json(new
+                {
+                    ok = false,
+                    mensaje = "Error inesperado al diferir la factura. Por favor, intente nuevamente."
+                });
+            }
+        }
+
+        /// <summary>
+        /// ✅ NUEVO: Diferir Pago - Emite factura sin cobrar
+        /// Genera comprobante fiscal, impacta stock e IVA Ventas, pero deja el pago pendiente
+        /// </summary>
+        /// <returns>JSON con resultado de la operación y datos del comprobante</returns>
+        [HttpPost]
+        public async Task<JsonResult> DiferirPago()
+        {
+            var stopwatch = Stopwatch.StartNew();
+
+            try
+            {
+                // ❶ VALIDAR AUTENTICACIÓN
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, mensaje = "Sesión expirada" });
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("⏱️ DIFERIR PAGO - INICIO");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                // ❷ VALIDAR DATOS DE CAJA
+                var cajaActual = CajaActual;
+                if (cajaActual == null)
+                {
+                    _logger?.LogError("❌ No hay caja en sesión");
+                    return Json(new { ok = false, mensaje = "No hay caja abierta" });
+                }
+
+                // ❸ VALIDAR DATOS DE CLIENTE
+                var clienteActual = ClienteActual;
+                if (clienteActual == null)
+                {
+                    _logger?.LogError("❌ No hay cliente en sesión");
+                    return Json(new { ok = false, mensaje = "No hay cliente seleccionado" });
+                }
+
+                // ❹ VALIDAR QUE HAYA PRODUCTOS
+                var productosFactura = FacturaProductos;
+                if (productosFactura == null || productosFactura.Count == 0)
+                {
+                    _logger?.LogWarning("❌ No hay productos en la factura");
+                    return Json(new { ok = false, mensaje = "Debe cargar al menos un producto" });
+                }
+
+                // ❺ VALIDAR QUE HAYA SUBTOTALES
+                var subtotalesFactura = FacturaSubtotales;
+                if (subtotalesFactura == null || subtotalesFactura.Count == 0)
+                {
+                    _logger?.LogWarning("❌ No hay subtotales calculados");
+                    return Json(new { ok = false, mensaje = "Debe calcular los totales primero" });
+                }
+
+                _logger?.LogInformation($"✅ Productos: {productosFactura.Count}");
+                _logger?.LogInformation($"✅ Subtotales: {subtotalesFactura.Count}");
+
+                // ❻ SERIALIZAR JSONs
+                string jsonProductos = JsonConvert.SerializeObject(productosFactura);
+                string jsonSubtotales = JsonConvert.SerializeObject(subtotalesFactura);
+
+                var sorteosFactura = FacturaSorteos ;
+                string jsonSorteos = JsonConvert.SerializeObject(sorteosFactura);
+
+                _logger?.LogInformation($"✅ JSON productos (longitud): {jsonProductos.Length}");
+                _logger?.LogInformation($"✅ JSON subtotales (longitud): {jsonSubtotales.Length}");
+                _logger?.LogInformation($"✅ JSON sorteos (longitud): {jsonSorteos.Length}");
+
+                // ❼ DETERMINAR IDENTIFICADOR DEL CLIENTE SEGÚN ORIGEN
+                string ctaId;
+                string origenUpper = clienteActual.Origen?.ToUpper() ?? "F";
+
+                if (origenUpper == "F") // Consumidor Final
+                {
+                    ctaId = clienteActual.cta_documento ?? string.Empty;
+                    _logger?.LogInformation($"✅ Cliente CF → Identificador (documento): {ctaId}");
+                }
+                else // Cliente Registrado
+                {
+                    ctaId = clienteActual.cta_id ?? string.Empty;
+                    _logger?.LogInformation($"✅ Cliente Registrado → Identificador (cta_id): {ctaId}");
+                }
+
+                // ❽ CONSTRUIR REQUEST DTO
+                var request = new CajaOpeConfirmarReq
+                {
+                    // ═══ Datos de caja ═══
+                    caja_id = cajaActual.CajaId ?? string.Empty,
+                    usu_id = UserName ?? string.Empty,
+                    adm_id = cajaActual.AdmId ?? AdministracionId,
+                    lp_id = LP_Id ?? string.Empty,
+                    caja_nro_proceso = cajaActual.Caja.caja_nro_proceso ?? string.Empty,
+                    caja_nro_cierre = cajaActual.Caja.caja_nro_cierre.ToInt(),
+
+                    // ═══ Datos de cliente ═══
+                    cta_id = ctaId,
+                    ctac_dto = clienteActual.ctac_dto_operacion,
+                    ctc_id = clienteActual.ctc_id ?? string.Empty,
+
+                    // ═══ CRÍTICO: Tipo de operación DIFERIR PAGO ═══
+                    co_tipo = "DP",
+
+                    // ═══ Datos de comprobante ═══
+                    tco_letra = clienteActual.tco_letra ?? string.Empty,
+                    tco_id_ori = string.Empty,
+                    cm_compte_ori = string.Empty,
+
+                    // ═══ Datos fiscales ═══
+                    afip_id = clienteActual.afip_id ?? string.Empty,
+                    tdoc_id = clienteActual.tdoc_id ?? string.Empty,
+                    cta_documento = clienteActual.cta_documento ?? string.Empty,
+                    cta_denominacion = clienteActual.cta_denominacion ?? string.Empty,
+                    cta_domicilio = clienteActual.cta_domicilio ?? string.Empty,
+
+                    // ═══ Vendedor (opcional) ═══
+                    ve_id = string.Empty, // TODO: Obtener de sesión si aplica
+
+                    // ═══ JSONs de operación ═══
+                    json_p = jsonProductos,
+                    json_subtotal = jsonSubtotales,
+                    json_sorteo = jsonSorteos,
+
+                    // ═══ CRÍTICO: JSONs de pago VACÍOS ═══
+                    json_valores = "{}",
+                    json_cancela = "{}",
+                    json_union = "{}"
+                };
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("📦 REQUEST DTO CONSTRUIDO:");
+                _logger?.LogInformation($"   caja_id: {request.caja_id}");
+                _logger?.LogInformation($"   usu_id: {request.usu_id}");
+                _logger?.LogInformation($"   adm_id: {request.adm_id}");
+                _logger?.LogInformation($"   cta_id: {request.cta_id}");
+                _logger?.LogInformation($"   co_tipo: {request.co_tipo} (DIFERIR PAGO)");
+                _logger?.LogInformation($"   tco_letra: {request.tco_letra}");
+                _logger?.LogInformation($"   afip_id: {request.afip_id}");
+                _logger?.LogInformation($"   json_p (longitud): {request.json_p.Length}");
+                _logger?.LogInformation($"   json_subtotal (longitud): {request.json_subtotal.Length}");
+                _logger?.LogInformation($"   json_sorteo (longitud): {request.json_sorteo.Length}");
+                _logger?.LogInformation($"   json_valores: {request.json_valores} (VACÍO)");
+                _logger?.LogInformation($"   json_cancela: {request.json_cancela} (VACÍO)");
+                _logger?.LogInformation($"   json_union: {request.json_union} (VACÍO)");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                // ❾ INVOCAR SERVICIO
+                var token = TokenCookie;
+                if (string.IsNullOrEmpty(token))
+                {
+                    _logger?.LogError("❌ No hay token de autenticación");
+                    return Json(new { ok = false, mensaje = "Sesión expirada" });
+                }
+
+                _logger?.LogInformation("📡 Invocando servicio ProductoFactServicio.CrearDiferirPago...");
+                var resultado = await _productoFactServicio.CrearDiferirPago(request, token);
+
+                stopwatch.Stop();
+                _logger?.LogInformation($"⏱️ Tiempo de ejecución: {stopwatch.ElapsedMilliseconds}ms");
+
+                // ❿ VALIDAR RESPUESTA
+                if (resultado == null)
+                {
+                    _logger?.LogError("❌ El servicio retornó null");
+                    return Json(new { ok = false, mensaje = "Error al diferir el pago" });
+                }
+
+                if (!resultado.Ok)
+                {
+                    _logger?.LogWarning($"⚠️ Error del servicio: {resultado.Mensaje}");
+                    return Json(new { ok = false, mensaje = resultado.Mensaje ?? "Error al diferir el pago" });
+                }
+
+                // ⓫ EXTRAER DATOS DE RESPUESTA
+                var respuestaDto = resultado.Entidad;
+
+                if (respuestaDto == null)
+                {
+                    _logger?.LogError("❌ No se recibió entidad de respuesta");
+                    return Json(new { ok = false, mensaje = "Error: respuesta vacía del servidor" });
+                }
+
+                // ⓬ VALIDAR RESULTADO DEL SP
+                if (respuestaDto.resultado != 0)
+                {
+                    _logger?.LogError($"❌ Error del SP: {respuestaDto.resultado_msj}");
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = respuestaDto.resultado_msj ?? "Error al emitir la factura diferida"
+                    });
+                }
+
+                // ⓭ PARSEAR IDENTIFICADOR COMPUESTO
+                // Formato esperado: "A|12345|00001234|00001234" (letra + ID + Nro + repetido)
+                string identificadorCompuesto = respuestaDto.resultado_id ?? string.Empty;
+
+                _logger?.LogInformation($"✅ Identificador compuesto recibido: {identificadorCompuesto}");
+
+                // Separar componentes
+                string[] partes = identificadorCompuesto.Split('|');
+
+                string letraComprobante = partes.Length > 0 ? partes[0] : "";
+                string idComprobante = partes.Length > 1 ? partes[1] : "";
+                string nroComprobante = partes.Length > 2 ? partes[2] : "";
+                string nroComprobanteRepetido = partes.Length > 3 ? partes[3] : "";
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("✅ FACTURA DIFERIDA EMITIDA EXITOSAMENTE");
+                _logger?.LogInformation($"   Letra: {letraComprobante}");
+                _logger?.LogInformation($"   ID: {idComprobante}");
+                _logger?.LogInformation($"   Nro: {nroComprobante}");
+                _logger?.LogInformation($"   Mensaje: {respuestaDto.resultado_msj}");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                // ⓮ LIMPIAR SESIÓN DE FACTURA
+                FacturaProductos = new List<ProductoFactJsonDto>();
+                FacturaSubtotales = [];
+                FacturaSorteos = [];
+
+                // ⓯ RETORNAR RESPUESTA PARA IMPRESIÓN
+                return Json(new
+                {
+                    ok = true,
+                    mensaje = $"Factura {letraComprobante} Nro {nroComprobante} emitida con pago diferido",
+                    comprobante = new
+                    {
+                        letra = letraComprobante,
+                        id = idComprobante,
+                        numero = nroComprobante,
+                        numero_repetido = nroComprobanteRepetido,
+                        identificador_completo = identificadorCompuesto
+                    },
+                    resultado_completo = respuestaDto.resultado_msj,
+                    debe_imprimir = true
+                });
+            }
+            catch (Exception ex)
+            {
+                stopwatch.Stop();
+                _logger?.LogError($"❌ EXCEPCIÓN en DiferirPago: {ex.Message}");
+                _logger?.LogError($"   Stack Trace: {ex.StackTrace}");
+                _logger?.LogError($"   Tiempo antes del error: {stopwatch.ElapsedMilliseconds}ms");
+
+                return Json(new
+                {
+                    ok = false,
+                    mensaje = "Error inesperado al diferir el pago. Por favor, intente nuevamente."
+                });
+            }
+        }
     }
 
     // Necesitaremos recibir lista de códigos de pre-factura
