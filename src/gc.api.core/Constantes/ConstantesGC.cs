@@ -51,6 +51,10 @@
 			public const string SP_VTAS_PV_CTL_ENTREGAS_ANULAR = "SPGECO_Vtas_PV_CTL_Entregas_Anular";
 			#endregion
 
+			#region Análisis de Ventas
+			public const string SP_E_AV_MES = "SPGECO_E_AV_mes";
+			#endregion
+
 			public const string MNU_GET_MENU_LIST = "dbo.SP_web_geco_get_menu_list";
 
 			public const string SP_BILLETERAORD_CARGA = "dbo.SP_BilleteraOrdenCarga";

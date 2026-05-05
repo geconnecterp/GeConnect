@@ -3,7 +3,9 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Users;
 using gc.infraestructura.Dtos.Ventas;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
@@ -32,6 +34,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string GET_VTAS_PV_CTL_ENTREGA_REND = "/ObtenerVtasPVCtlEntregaRendLista";
 		private const string SET_VTAS_CTL_ENTREGA_CONFIRMR = "/ConfirmarCtlEntrega";
 		private const string SET_VTAS_CTL_ENTREGA_ANULAR = "/AnularCtlEntrega";
+		private const string GET_ANA_VTA_MES = "/ObtenerAnaVtaMesLista";
 
 		public ApiVentasServicio(IOptions<AppSettings> options, ILogger<ApiVentasServicio> logger) : base(options, logger, RutaAPI)
 		{
@@ -923,6 +926,37 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 				return new() { Ok = false, Mensaje = "Error al anular la Entrega" };
+			}
+		}
+
+		public List<AnaVtaMesDto> ObtenerAnaVtaMesLista(AnaVtaMesRequest request, string token)
+		{
+			ApiResponse<List<AnaVtaMesDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_ANA_VTA_MES}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return [];
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AnaVtaMesDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
 			}
 		}
 	}

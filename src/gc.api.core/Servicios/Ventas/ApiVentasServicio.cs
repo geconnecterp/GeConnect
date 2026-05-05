@@ -324,5 +324,20 @@ namespace gc.api.core.Servicios
 				};
 			}
 		}
+
+		public List<AnaVtaMesDto> ObtenerAnaVtaMesLista(AnaVtaMesRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_E_AV_MES;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@adm_list", request.adm_list),
+				new SqlParameter("@desde", request.desde),
+				new SqlParameter("@hasta", request.hasta),
+			 };
+
+			var result = _repository.EjecutarLstSpExt<AnaVtaMesDto>(sp, ps, true);
+			return result;
+		}
 	}
 }

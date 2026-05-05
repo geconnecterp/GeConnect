@@ -1,12 +1,15 @@
 ﻿using gc.api.Controllers.OrdenReparto;
 using gc.api.core.Contratos.Servicios;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenReparto;
+using gc.infraestructura.Dtos.Users;
 using gc.infraestructura.Dtos.Ventas;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
+using System.Reflection;
 
 namespace gc.api.Controllers.Ventas
 {
@@ -269,6 +272,21 @@ namespace gc.api.Controllers.Ventas
 			}
 			var data = _iApiVentasServicio.AnularCtlEntrega(request);
 			return Ok(new ApiResponse<RespuestaDto>(data));
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<AnaVtaMesDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerAnaVtaMesLista(AnaVtaMesRequest request)
+		{
+			ApiResponse<List<AnaVtaMesDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _iApiVentasServicio.ObtenerAnaVtaMesLista(request);
+
+			response = new ApiResponse<List<AnaVtaMesDto>>(res);
+
+			return Ok(response);
 		}
 	}
 }

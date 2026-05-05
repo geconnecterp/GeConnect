@@ -20,5 +20,6 @@ namespace gc.api.core.Contratos.Servicios
 		List<VtasPVCtlEntregaRendDto> ObtenerVtasPVCtlEntregaRendLista(string ent_compte);
 		RespuestaDto ConfirmarCtlEntrega(ConfirmarCtlEntregaRequest request);
 		RespuestaDto AnularCtlEntrega(AnularCtlEntregaRequest request);
+		List<AnaVtaMesDto> ObtenerAnaVtaMesLista(AnaVtaMesRequest request);
 	}
 }

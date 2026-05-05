@@ -1,0 +1,128 @@
+﻿@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
+@model AnalisisDeVentasMesModel
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	.porc-box {
+		padding: 0 4px;
+		border-radius: 3px;
+		font-weight: 600;
+		display: inline-block;
+		white-space: nowrap;
+	}
+
+	/* positivo */
+	.porc-pos {
+		background-color: #c9e4ff; /* celeste un poco más fuerte */
+		color: #004a85;
+	}
+
+	/* negativo */
+	.porc-neg {
+		background-color: #ffe0e0; /* rojo suave */
+		color: #a10000;
+	}
+
+	/* cero → sin fondo */
+	.porc-zero {
+		background-color: transparent;
+		color: #666;
+	}
+
+</style>
+<div class="table-responsive table-wrapper-500">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbAnaVtaMes">
+		<thead class="sticky-top table-golden-header-compact">
+			<tr class="header">
+				<th class="text-center">Mes</th>
+				<th class="text-center">Facturación</th>
+				<th class="text-center" title="Facturación Acumulada">Fact. Ac.</th>
+				<th class="text-center" title="Diferencia Respecto a Mes Anterior">Dif. Mes Ant.</th>
+				<th class="text-center" title="Diferencia Respecto a Mes/Año Anterior">Dif. Mes/Año Ant.</th>
+				<th class="text-center">Costo</th>
+				<th class="text-center">Rentabilidad</th>
+				<th class="text-center" title="Rentabilidad Acumulada">Rent. Ac.</th>
+				<th class="text-center">Vta. CtaCte.</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model == null || Model.ListaAnaVtaMes == null || Model.ListaAnaVtaMes.ListaDatos == null || !Model.ListaAnaVtaMes.ListaDatos.Any())
+			{
+				<tr class="fila-vacia">
+					<td colspan="6" class="text-center text-muted py-2">
+						<i class="bx bx-info-circle me-1"></i>
+						No hay items para mostrar.
+					</td>
+				</tr>
+			}
+			else
+			{
+				foreach (var item in Model.ListaAnaVtaMes.ListaDatos)
+				{
+					var mes_ant_porc = item.mes_ant_dif_porc * 100;
+					var per_ant_dif_porc = item.per_ant_dif_porc * 100;
+					var ctacte_dif_porc = item.ctacte_dif_porc * 100;
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase row-pedido"
+						data-mes="@item.mes"
+						data-periodo="@item.periodo">
+						<td class="text-center">@item.periodo - @item.mes</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.co_facturacion, TipoPrecio.Venta)</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.co_facturacion_acu, TipoPrecio.Venta)</td>
+						<td>
+							<table style="width:100%; border-collapse:collapse;">
+								<tr>
+									<td style="text-align:left; padding:0; border:0;">
+										<span class="porc-box
+											@(mes_ant_porc > 0 ? "porc-pos" : mes_ant_porc < 0 ? "porc-neg" : "porc-zero")">
+											@mes_ant_porc%
+										</span>
+									</td>
+									<td style="text-align:right; padding:0; border:0;">
+										@GridHelper.FormatearPrecio(item.mes_ant_dif, TipoPrecio.Venta)
+									</td>
+								</tr>
+							</table>
+						</td>
+						<td>
+							<table style="width:100%; border-collapse:collapse;">
+								<tr>
+									<td style="text-align:left; padding:0; border:0;">
+										<span class="porc-box
+											@(per_ant_dif_porc > 0 ? "porc-pos" : per_ant_dif_porc < 0 ? "porc-neg" : "porc-zero")">
+											@per_ant_dif_porc%
+										</span>
+									</td>
+									<td style="text-align:right; padding:0; border:0;">
+										@GridHelper.FormatearPrecio(item.per_ant_dif, TipoPrecio.Venta)
+									</td>
+								</tr>
+							</table>
+						</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.co_costo, TipoPrecio.Venta)</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.rentabilidad, TipoPrecio.Venta)</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.rentabilidad_acu, TipoPrecio.Venta)</td>
+						<td>
+							<table style="width:100%; border-collapse:collapse;">
+								<tr>
+									<td style="text-align:left; padding:0; border:0;">
+										<span class="porc-box
+											@(ctacte_dif_porc > 0 ? "porc-pos" : ctacte_dif_porc < 0 ? "porc-neg" : "porc-zero")">
+											@ctacte_dif_porc%
+										</span>
+									</td>
+									<td style="text-align:right; padding:0; border:0;">
+										@GridHelper.FormatearPrecio(item.ctacte_dif, TipoPrecio.Venta)
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>
