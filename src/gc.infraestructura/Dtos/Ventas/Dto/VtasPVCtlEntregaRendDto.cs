@@ -24,5 +24,6 @@ namespace gc.infraestructura.Dtos.Ventas
 		public bool rend_entrega_bool => rend_entrega == 'S';
 		public char ent_estado { get; set; }
 		public bool ent_estado_bool => ent_estado == 'P';
+		public bool editado { get; set; } = false;
 	}
 }

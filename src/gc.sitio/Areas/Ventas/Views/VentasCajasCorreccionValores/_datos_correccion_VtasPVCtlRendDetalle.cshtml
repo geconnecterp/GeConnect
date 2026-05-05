@@ -12,90 +12,111 @@
 	}
 }
 <style>
+	#divVtasPVCtlRendDetalle {
+		line-height: normal !important;
+	}
+
 	#tbVtasPVCtlRendDetalle {
 		table-layout: fixed;
 		width: 100%;
 	}
 
-		#tbVtasPVCtlRendDetalle thead th {
-			text-align: center !important;
-			vertical-align: middle !important;
-			white-space: nowrap;
-		}
-		/* Medio de Pago: 20% + elipsis */
-		#tbVtasPVCtlRendDetalle td.col-mp,
-		#tbVtasPVCtlRendDetalle th.col-mp {
-			width: 20%;
-			max-width: 20%;
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
+		#tbVtasPVCtlRendDetalle,
+		#tbVtasPVCtlRendDetalle * {
+			line-height: 24px !important;
+			font-size: 0.72rem !important;
 		}
 
-		/* Importe / Arqueo / Diferencia: 10% */
-		#tbVtasPVCtlRendDetalle td.col-num,
-		#tbVtasPVCtlRendDetalle th.col-num {
-			width: 13%;
-			max-width: 13%;
-			white-space: nowrap;
-		}
+			/* Cabecera */
+			#tbVtasPVCtlRendDetalle thead th {
+				text-align: center !important;
+				vertical-align: middle !important;
+				white-space: nowrap;
+				height: 24px !important;
+				padding-top: 0 !important;
+				padding-bottom: 0 !important;
+			}
 
-		/* Valores: ocupa el espacio restante */
-		#tbVtasPVCtlRendDetalle td.col-valores,
-		#tbVtasPVCtlRendDetalle th.col-valores {
-			width: auto;
-		}
+			/* Filas */
+			#tbVtasPVCtlRendDetalle tbody tr {
+				height: 28px !important;
+			}
 
-		/* Botón: 2% */
-		#tbVtasPVCtlRendDetalle td.col-btn,
-		#tbVtasPVCtlRendDetalle th.col-btn {
-			width: 8%;
-			max-width: 8%;
-			white-space: nowrap;
-			padding-left: 2px;
-			padding-right: 2px;
-			padding-top: 2px;
-			padding-bottom: 2px;
-		}
+			/* Celdas */
+			#tbVtasPVCtlRendDetalle td,
+			#tbVtasPVCtlRendDetalle th {
+				padding: 0 !important;
+				height: 24px !important;
+			}
 
-	.editable-importe[data-pendiente="True"] {
-		cursor: pointer;
-	}
+				/* Span normalizado */
+				/* #tbVtasPVCtlRendDetalle td span {
+					display: inline-block;
+					height: 26px;
+					line-height: 24px;
+					padding: 2px;
+				} */
 
-	.editable-importe input {
-		width: 100%;
-		text-align: right;
-		padding: 0 4px;
-	}
+			/* Input editable */
+			#tbVtasPVCtlRendDetalle .input-importe {
+				height: 24px !important;
+				line-height: 24px !important;
+				padding: 0 2px !important;
+				box-sizing: border-box;
+				font-size: 0.72rem !important;
+				font-weight: normal !important;
+			}
 
-	#tbVtasPVCtlRendDetalle .input-importe {
-		height: 18px !important; /* más bajo */
-		padding: 0 1px !important; /* mínimo padding */
-		font-size: 0.72rem !important; /* igual a texto de tabla */
-		line-height: 16px !important; /* alinea verticalmente */
-		font-weight: normal !important;
-		border-radius: 2px !important;
-	}
+			/* Columnas especiales */
+			#tbVtasPVCtlRendDetalle td.col-mp,
+			#tbVtasPVCtlRendDetalle th.col-mp {
+				width: 20%;
+				max-width: 20%;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
 
-	#tbVtasPVCtlRendDetalle .btnEditarValor {
-		padding: 0 4px !important; /* menos padding horizontal */
-		height: 20px !important; /* más bajo */
-		line-height: 18px !important; /* alinea el ícono */
-		font-size: 0.70rem !important; /* ícono más chico */
-		border-radius: 2px !important; /* más compacto */
-	}
+			#tbVtasPVCtlRendDetalle td.col-num,
+			#tbVtasPVCtlRendDetalle th.col-num {
+				width: 13%;
+				max-width: 13%;
+				white-space: nowrap;
+			}
 
-		#tbVtasPVCtlRendDetalle .btnEditarValor i {
-			font-size: 0.85rem !important; /* ícono más pequeño */
-			line-height: 1 !important;
-		}
+			#tbVtasPVCtlRendDetalle td.col-valores,
+			#tbVtasPVCtlRendDetalle th.col-valores {
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
 
-	#tbVtasPVCtlRendDetalle td,
-	#tbVtasPVCtlRendDetalle th {
-		padding-top: 2px !important;
-		padding-bottom: 2px !important;
-	}
+			#tbVtasPVCtlRendDetalle td.col-btn,
+			#tbVtasPVCtlRendDetalle th.col-btn {
+				width: 8%;
+				max-width: 8%;
+				white-space: nowrap;
+				/* padding-left: 2px;
+				padding-right: 2px;
+				padding-top: 2px;
+				padding-bottom: 2px; */
+			}
+
+			#tbVtasPVCtlRendDetalle .btnEditarValor {
+				padding: 0 4px !important;
+				height: 20px !important;
+				line-height: 18px !important;
+				font-size: 0.70rem !important;
+				border-radius: 2px !important;
+			}
+
+				#tbVtasPVCtlRendDetalle .btnEditarValor i {
+					font-size: 0.85rem !important;
+					line-height: 1 !important;
+				}
+
 </style>
+
 <div class="table-responsive table-wrapper-500">
 	<table class="table table-sm table-hover mb-0 table-golden" id="tbVtasPVCtlRendDetalle">
 		<thead class="sticky-top table-golden-header-compact">
@@ -105,14 +126,7 @@
 				<th class="col-num">Arqueo</th>
 				<th class="col-num" title="Diferencia">Dif.</th>
 				<th class="col-valores">Valores</th>
-				@if (pendiente && tcf_id != "EF")
-				{
-					<th class="col-btn"></th>
-				}
-				else
-				{
-					<th></th>
-				}
+				<th class="col-btn"></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -137,12 +151,15 @@
 						data-tcf-id="@item.tcf_id"
 						data-rend-item="@item.rend_item"
 						data-ins-detalle="@item.ins_detalle_bool">
-						<td class="col-mp text-start" title="@item.ins_desc">@item.ins_desc</td>
+
+						<td class="col-mp text-start" title="@item.ins_desc"><span>@item.ins_desc</span></td>
+
 						<td class="col-num text-end editable-importe"
 							data-ins-id="@item.ins_id"
 							data-tcf-id="@item.tcf_id"
 							data-rend-item="@item.rend_item"
-							data-pendiente="@item.pendiente">
+							data-pendiente="@item.pendiente"
+							data-rendido="@((item.rend_importe_ok ?? 0).ToString(CultureInfo.InvariantCulture))">
 
 							@if (item.pendiente)
 							{
@@ -156,21 +173,31 @@
 								<span>@GridHelper.FormatearPrecio(item.rend_importe_ok ?? 0, TipoPrecio.Venta)</span>
 							}
 						</td>
-						<td class="col-num text-end">@GridHelper.FormatearPrecio(item.rend_importe_arq ?? 0, TipoPrecio.Venta)</td>
-						<td class="col-num text-end">@GridHelper.FormatearPrecio(dif ?? 0, TipoPrecio.Venta)</td>
+
+						<td class="col-num text-end"
+							data-arqueo="@((item.rend_importe_arq ?? 0).ToString(CultureInfo.InvariantCulture))">
+							<span>@GridHelper.FormatearPrecio(item.rend_importe_arq ?? 0, TipoPrecio.Venta)</span>
+						</td>
+
+						<td class="col-num text-end"
+							data-diferencia="@((dif ?? 0).ToString(CultureInfo.InvariantCulture))">
+							<span>@GridHelper.FormatearPrecio(dif ?? 0, TipoPrecio.Venta)</span>
+						</td>
+
 						<td class="col-valores text-start">
 							@if (item.ins_detalle_bool)
 							{
-								@item.concepto_valor
+								<span title="@item.concepto_valor">@item.concepto_valor</span>
 							}
 							else
 							{
 								@conceptoVacio
 							}
 						</td>
-						@if (item.pendiente && item.tcf_id != "EF")
-						{
-							<td class="col-btn text-center">
+
+						<td class="col-btn text-center">
+							@if (item.pendiente && item.tcf_id != "EF")
+							{
 								<button type="button"
 										class="btn btn-sm btn-info btnEditarValor"
 										data-ins-id="@item.ins_id"
@@ -180,12 +207,9 @@
 										title="Editar valores">
 									<i class="bx bx-edit"></i>
 								</button>
-							</td>
-						}
-						else
-						{
-							<td></td>
-						}
+							}
+						</td>
+
 					</tr>
 				}
 			}

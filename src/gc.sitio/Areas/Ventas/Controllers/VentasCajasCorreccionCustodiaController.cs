@@ -190,6 +190,7 @@ namespace gc.sitio.Areas.Ventas.Controllers
 				if (item != null)
 				{
 					item.rend_importe_ok = importe;
+					item.editado = true;
 					VtasPVCtlEntregaRendLista = listaTemp;
 				}
 				return Json(new { Ok = true, error = false });
@@ -207,47 +208,67 @@ namespace gc.sitio.Areas.Ventas.Controllers
 			{
 				if (string.IsNullOrEmpty(tcf_id))
 					throw new NegocioException("Faltan datos obligatorios: tcf_id");
-				string json = JsonConvert.SerializeObject(VtasPVCtlEntregaRendLista);
-				if (string.IsNullOrEmpty(json))
-					throw new NegocioException("Error al intentar parsear productos");
-				var item = VtasPVCtlEntregaRendLista.First();
-				var request = new GuardarCtlDetalleRequest()
+				var dictRespuestas = new Dictionary<string, RespuestaGenerica<RespuestaDto>>();
+				var listaTemp = VtasPVCtlEntregaRendLista.Where(x => x.editado).ToList();
+				var lista = MapperVtasPVCtlEntregaRendAux(listaTemp);
+				foreach (var itemR in lista)
 				{
-					caja_nro_proceso = item.caja_nro_proceso,
-					caja_nro_cierre = item.caja_nro_cierre,
-					caja_nro_rend = item.caja_nro_rend,
-					tcf_id = tcf_id,
-					adm_id = AdministracionId,
-					usu_id = UserName,
-					json_rend = json,
-					app = "ENTREGA"
-				};
-				PrintProperties(request);
-				var resultado = _apiVentasServicio.GuardarCtlDetalle(request, TokenCookie).Result;
-				if (resultado == null)
-					throw new NegocioException("Error al guardar detalle");
-				// Procesamiento de respuesta
-				if (resultado.Ok && !resultado.EsError && !resultado.EsWarn)
+					string json = JsonConvert.SerializeObject(new List<VtasPVCtlEntregaRendAux>() { itemR });
+					var request = new GuardarCtlDetalleRequest()
+					{
+						caja_nro_proceso = itemR.caja_nro_proceso,
+						caja_nro_cierre = itemR.caja_nro_cierre,
+						caja_nro_rend = itemR.caja_nro_rend,
+						tcf_id = tcf_id,
+						adm_id = AdministracionId,
+						usu_id = UserName,
+						json_rend = json,
+						app = "ENTREGA"
+					};
+					PrintProperties(request);
+					var resultado = _apiVentasServicio.GuardarCtlDetalle(request, TokenCookie).Result;
+					dictRespuestas[itemR.caja_nro_cierre.ToString()] = resultado;
+				}
+				// Evaluar fallos
+				var fallidos = dictRespuestas
+					.Where(x =>
+						x.Value == null ||
+						!x.Value.Ok ||
+						x.Value.EsError ||
+						(x.Value.Entidad != null && x.Value.Entidad.resultado != 0)
+					)
+					.Select(x => new
+					{
+						ent_compte = x.Key,
+						mensaje = x.Value?.Mensaje
+								   ?? x.Value?.Entidad?.resultado_msj
+								   ?? "Error desconocido"
+					})
+					.ToList();
+
+				// Si todos OK
+				if (fallidos.Count == 0)
 				{
 					return Json(new
 					{
-						ok = true,
+						Ok = true,
 						error = false,
+						warn = false,
+						msg = "Todas las entregas fueron confirmadas correctamente",
+						respuestas = dictRespuestas
 					});
 				}
-				else
+
+				// Si hubo fallos
+				return Json(new
 				{
-					// Log y respuesta de error/advertencia
-					var msj = ObtenerMensajeDesdeError(resultado.Mensaje ?? "");
-					_logger?.LogWarning("Error: {Mensaje}", msj);
-					return Json(new
-					{
-						ok = false,
-						error = true,
-						warn = resultado.EsWarn,
-						msg = msj
-					});
-				}
+					Ok = false,
+					error = true,
+					warn = false,
+					msg = "Algunas entregas no pudieron confirmarse",
+					fallidos,
+					respuestas = dictRespuestas
+				});
 			}
 			catch (Exception ex)
 			{
@@ -255,8 +276,10 @@ namespace gc.sitio.Areas.Ventas.Controllers
 			}
 		}
 
+		
+
 		[HttpPost]
-		public JsonResult MoverCtlDetalle(string ent_compte, string tcf_id)
+		public JsonResult MoverCtlDetalle(string ent_compte, string tcf_id, string caja_nro_proceso, int caja_nro_cierre, int caja_nro_rend, int rend_item)
 		{
 			try
 			{
@@ -264,17 +287,16 @@ namespace gc.sitio.Areas.Ventas.Controllers
 					throw new NegocioException("Faltan datos obligatorios: ent_compte");
 
 				var listaTemp = VtasPVCtlEntregaRendLista;
-				var item = listaTemp.First();
-				listaTemp.ForEach(x => x.ent_compte = ent_compte);
-				VtasPVCtlEntregaRendLista = listaTemp;
-				string json = JsonConvert.SerializeObject(VtasPVCtlEntregaRendLista);
+				var listaFiltrada = listaTemp.Where(x => x.caja_nro_proceso == caja_nro_proceso && x.caja_nro_cierre == caja_nro_cierre && x.caja_nro_rend == caja_nro_rend && x.rend_item == rend_item).ToList();
+				listaFiltrada.ForEach(x => x.ent_compte = ent_compte);
+				string json = JsonConvert.SerializeObject(listaFiltrada);
 				if (string.IsNullOrEmpty(json))
 					throw new NegocioException("Error al intentar parsear productos");
 				var request = new GuardarCtlDetalleRequest()
 				{
-					caja_nro_proceso = item.caja_nro_proceso,
-					caja_nro_cierre = item.caja_nro_cierre,
-					caja_nro_rend = item.caja_nro_rend,
+					caja_nro_proceso = caja_nro_proceso,
+					caja_nro_cierre = caja_nro_cierre,
+					caja_nro_rend = caja_nro_rend,
 					tcf_id = tcf_id,
 					adm_id = AdministracionId,
 					usu_id = UserName,
@@ -326,7 +348,7 @@ namespace gc.sitio.Areas.Ventas.Controllers
 				List<string> lista = ent_comptes.Split(';').ToList();
 				// Diccionario: ent_compte → respuesta de la API
 				var dictRespuestas = new Dictionary<string, RespuestaGenerica<RespuestaDto>>();
-				
+
 				foreach (var item in lista)
 				{
 					var request = new ConfirmarCtlEntregaRequest()
@@ -520,6 +542,55 @@ namespace gc.sitio.Areas.Ventas.Controllers
 			var lista = adms.Select(x => new ComboGenDto { Id = x.ent_compte, Descripcion = x.ent_compte });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
+		private List<VtasPVCtlEntregaRendAux> MapperVtasPVCtlEntregaRendAux(List<VtasPVCtlEntregaRendDto> lista)
+		{
+			var listaRet = new List<VtasPVCtlEntregaRendAux>();
+			foreach (var item in lista)
+			{
+				listaRet.Add(new VtasPVCtlEntregaRendAux()
+				{
+					adm_id=item.adm_id,
+					adm_nombre = item.adm_nombre,
+					caja_id = item.caja_id,
+					caja_nro_cierre=item.caja_nro_cierre,
+					caja_nro_proceso = item.caja_nro_proceso,
+					caja_nro_rend =item.caja_nro_rend,
+					ent_compte=item.ent_compte,
+					ins_id=item.ins_id,
+					rend_entrega=item.rend_entrega,
+					rend_estado= item.rend_estado,
+					rend_fecha= item.rend_fecha,
+					rend_importe_arq= item.rend_importe_arq,
+					rend_importe_ok= item.rend_importe_ok,
+					rend_item=item.rend_item,
+					rend_tipo=item.rend_tipo,
+					usu_apellidoynombre=item.usu_apellidoynombre,
+					usu_id=item.usu_id
+				});
+			}
+			return listaRet;
+		}
 		#endregion
+
+		public class VtasPVCtlEntregaRendAux()
+		{
+			public string ent_compte { get; set; } = string.Empty;
+			public string adm_id { get; set; } = string.Empty;
+			public string adm_nombre { get; set; } = string.Empty;
+			public string caja_nro_proceso { get; set; } = string.Empty;
+			public int caja_nro_cierre { get; set; }
+			public int caja_nro_rend { get; set; }
+			public int rend_item { get; set; }
+			public string caja_id { get; set; } = string.Empty;
+			public char rend_tipo { get; set; }
+			public DateTime rend_fecha { get; set; }
+			public string ins_id { get; set; } = string.Empty;
+			public decimal rend_importe_ok { get; set; }
+			public decimal rend_importe_arq { get; set; }
+			public string usu_id { get; set; } = string.Empty;
+			public string usu_apellidoynombre { get; set; } = string.Empty;
+			public char rend_estado { get; set; }
+			public char rend_entrega { get; set; }
+		}
 	}
 }

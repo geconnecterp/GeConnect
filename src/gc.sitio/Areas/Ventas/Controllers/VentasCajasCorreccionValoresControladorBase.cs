@@ -34,6 +34,24 @@ namespace gc.sitio.Areas.Ventas.Controllers
 			}
 		}
 
+		public List<VtasPVCtlCierresDto> VtasPVCtlCierresLista
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("VtasPVCtlCierresLista") ?? string.Empty;
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<VtasPVCtlCierresDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("VtasPVCtlCierresLista", json);
+			}
+		}
+
 		public List<VtasPVCtlRendDetalleDto> VtasPVCtlRendDetalleLista
 		{
 			get

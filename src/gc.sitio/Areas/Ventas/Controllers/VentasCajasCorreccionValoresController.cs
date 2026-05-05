@@ -132,9 +132,15 @@ namespace gc.sitio.Areas.Ventas.Controllers
 				if (!resultado.Ok)
 					throw new NegocioException(resultado.Mensaje ?? "Error al obtener datos de corrección");
 				if (resultado.ListaEntidad == null || resultado.ListaEntidad.Count == 0)
+				{
 					model.GrillaVtasPVCtlCierres = ObtenerGridCoreSmart<VtasPVCtlCierresDto>([]);
+					VtasPVCtlCierresLista = [];
+				}
 				else
+				{
 					model.GrillaVtasPVCtlCierres = ObtenerGridCoreSmart<VtasPVCtlCierresDto>(resultado.ListaEntidad ?? []);
+					VtasPVCtlCierresLista = resultado.ListaEntidad ?? [];
+				}
 
 				model.GrillaVtasPVCtlRend = ObtenerGridCoreSmart<VtasPVCtlRendDto>([]);
 				model.GrillaVtasPVCtlRendDetalle = ObtenerGridCoreSmart<VtasPVCtlRendDetalleDto>([]);
@@ -555,42 +561,64 @@ namespace gc.sitio.Areas.Ventas.Controllers
 		{
 			try
 			{
-				if (string.IsNullOrEmpty(caja_nro_proceso))
-					throw new NegocioException("Faltan datos obligatorios: nro_proceso");
-				if (caja_nro_cierre <= 0)
-					throw new NegocioException("Faltan datos obligatorios: nro_cierre");
-				var request = new ConfirmacionContableRequest()
+				var lista = VtasPVCtlCierresLista;
+				if (lista == null || lista.Count<=0)
+					throw new NegocioException("Error al obtener los datos de cierres para confirmación contable.");
+
+				var dictRespuestas = new Dictionary<string, RespuestaGenerica<RespuestaDto>>();
+				foreach (var item in lista)
 				{
-					caja_nro_proceso = caja_nro_proceso,
-					caja_nro_cierre = caja_nro_cierre,
-					adm_id = AdministracionId,
-					usu_id = UserName
-				};
-				var resultado = _apiVentasServicio.ConfirmacionContable(request, TokenCookie).Result;
-				if (resultado == null)
-					throw new NegocioException("Error al guardar detalle");
-				// Procesamiento de respuesta
-				if (resultado.Ok && !resultado.EsError && !resultado.EsWarn)
+					var request = new ConfirmacionContableRequest()
+					{
+						caja_nro_proceso = item.caja_nro_proceso,
+						caja_nro_cierre = item.caja_nro_cierre,
+						adm_id = AdministracionId,
+						usu_id = UserName
+					};
+					var resultado = _apiVentasServicio.ConfirmacionContable(request, TokenCookie).Result;
+					dictRespuestas[item.caja_nro_cierre.ToString()] = resultado;
+				}
+
+				// Evaluar fallos
+				var fallidos = dictRespuestas
+					.Where(x =>
+						x.Value == null ||
+						!x.Value.Ok ||
+						x.Value.EsError ||
+						(x.Value.Entidad != null && x.Value.Entidad.resultado != 0)
+					)
+					.Select(x => new
+					{
+						ent_compte = x.Key,
+						mensaje = x.Value?.Mensaje
+								   ?? x.Value?.Entidad?.resultado_msj
+								   ?? "Error desconocido"
+					})
+					.ToList();
+
+				// Si todos OK
+				if (fallidos.Count == 0)
 				{
 					return Json(new
 					{
-						ok = true,
+						Ok = true,
 						error = false,
+						warn = false,
+						msg = "Todas las entregas fueron confirmadas correctamente",
+						respuestas = dictRespuestas
 					});
 				}
-				else
+
+				// Si hubo fallos
+				return Json(new
 				{
-					var msj = ObtenerMensajeDesdeError(resultado.Mensaje ?? "");
-					// Log y respuesta de error/advertencia
-					_logger?.LogWarning("Error: {Mensaje}", resultado.Mensaje);
-					return Json(new
-					{
-						ok = false,
-						error = true,
-						warn = resultado.EsWarn,
-						msg = msj
-					});
-				}
+					Ok = false,
+					error = true,
+					warn = false,
+					msg = "Algunas entregas no pudieron confirmarse",
+					fallidos,
+					respuestas = dictRespuestas
+				});
 			}
 			catch (Exception ex)
 			{
@@ -724,11 +752,12 @@ namespace gc.sitio.Areas.Ventas.Controllers
 			var dato2_valor = string.IsNullOrWhiteSpace(detalle.op_dato2_valor) && string.IsNullOrWhiteSpace(detalle.op_dato2_desc) ? string.Empty : $"{detalle.op_dato2_desc}:{detalle.op_dato2_valor}";
 			var dato3_valor = string.IsNullOrWhiteSpace(detalle.op_dato3_valor) && string.IsNullOrWhiteSpace(detalle.op_dato3_desc) ? string.Empty : $"{detalle.op_dato3_desc}:{detalle.op_dato3_valor}";
 			var dato_fecha = detalle.op_fecha_valor != null ? $"Fecha Val.:{detalle.op_fecha_valor.Value:dd/MM/yyyy}" : string.Empty;
-			source.rend_dato1_valor = dato1_valor;
-			source.rend_dato2_valor = dato2_valor;
-			source.rend_dato3_valor = dato3_valor;
+			source.rend_dato1_valor = detalle.op_dato1_valor;
+			source.rend_dato2_valor = detalle.op_dato2_valor;
+			source.rend_dato3_valor = detalle.op_dato3_valor;
 			source.rend_fecha = detalle.op_fecha_valor.Value;
 			source.concepto_valor = $"{dato1_valor} {dato2_valor} {dato3_valor} {dato_fecha}";
+			source.rend_importe_ok = detalle.op_importe;
 		}
 		private IMedioDePago ObtenerModelDesdeTcf_id(string tcf_id)
 		{

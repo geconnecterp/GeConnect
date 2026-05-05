@@ -166,7 +166,8 @@ function ConfirmacionContable() {
 						else {
 							AbrirMensaje("ATENCIÓN", obj.msg, function () {
 								$("#msjModal").modal("hide");
-								InicializarBusqueda();
+								// 🔥 Redirigir al Index del módulo
+								window.location.href = homeCtlCustodiaUrl;
 								return true;
 							}, false, ["Aceptar"], "succ!", null);
 							
@@ -195,7 +196,11 @@ function GuardarCtlDetalle() {
 				PostGen(data, guardarCtlDetalleUrl, function (obj) {
 					CerrarWaiting();
 					if (obj.error === true || obj.warn === true) {
-						AbrirMensaje("ATENCIÓN", obj.msg, function () {
+						let resumen = obj.msg;
+						if (obj.fallidos && obj.fallidos.length > 0) {
+							resumen = GenerarResumenErroresConDetalles(obj.fallidos);
+						}
+						AbrirMensaje("ATENCIÓN", resumen, function () {
 							$("#msjModal").modal("hide");
 							existe_edicion = false;
 							InicializarBusqueda();
@@ -221,10 +226,54 @@ function GuardarCtlDetalle() {
 	
 }
 
+function GenerarResumenErroresConDetalles(fallidos) {
+
+	const grupos = {};
+
+	fallidos.forEach(f => {
+		const mensaje = f.mensaje || "Error desconocido";
+		const id = f.ent_compte;
+
+		if (!grupos[mensaje]) {
+			grupos[mensaje] = {
+				cantidad: 0,
+				ids: []
+			};
+		}
+
+		grupos[mensaje].cantidad++;
+		grupos[mensaje].ids.push(id);
+	});
+
+	// Construir texto final
+	let resumen = "Algunas rendiciones no pudieron guardarse:\n\n";
+
+	Object.entries(grupos).forEach(([mensaje, info]) => {
+		resumen += `• ${mensaje} (${info.cantidad})\n`;
+
+		info.ids.forEach(id => {
+			resumen += `   - Cierre ${id}\n`;
+		});
+
+		resumen += "\n";
+	});
+
+	return resumen;
+}
+
 function MoverCtlDetalle() {
 	var ent_compte = $("#listaEntregas").val();
+	var $fila = $("#tbVtasPVCtlEntregaRend tbody tr.selected-row");
 	if (!ent_compte || ent_compte === "") {
 		AbrirMensaje("ATENCIÓN", "Debe seleccionar una Entrega para mover.", function () {
+			$("#msjModal").modal("hide");
+			$("#listaEntregas").trigger('focus');
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+		return;
+	}
+	else if ($fila.length === 0) {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un elemento de Rendiciones.", function () {
 			$("#msjModal").modal("hide");
 			return true;
 		}, false, ["Aceptar"], "error!", null);
@@ -236,8 +285,12 @@ function MoverCtlDetalle() {
 			$("#msjModal").modal("hide");
 			switch (e) {
 				case "SI":
+					var caja_nro_proceso = $fila.data("caja-nro-proceso");
+					var caja_nro_cierre = $fila.data("caja-nro-cierre");
+					var caja_nro_rend = $fila.data("caja-nro-rend");
+					var rend_item = $fila.data("rend-item");
 					var tcf_id = ent_tcf_id_selected;
-					var data = { ent_compte, tcf_id }
+					var data = { ent_compte, tcf_id, caja_nro_proceso, caja_nro_cierre, caja_nro_rend, rend_item }
 					AbrirWaiting("Moviendo Entrega seleccionada...")
 					PostGen(data, moverCtlDetalleUrl, function (obj) {
 						CerrarWaiting();

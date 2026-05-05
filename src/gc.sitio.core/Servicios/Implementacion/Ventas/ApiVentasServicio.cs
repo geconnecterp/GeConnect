@@ -327,7 +327,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			catch (Exception ex)
 			{
 				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
-				return new() { Ok = false, Mensaje = "Error al buscar Presupuestos" };
+				return new() { Ok = false, Mensaje = "Error carga nuevo item de detalle" };
 			}
 		}
 
@@ -396,7 +396,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			catch (Exception ex)
 			{
 				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
-				return new() { Ok = false, Mensaje = "Error al buscar Presupuestos" };
+				return new() { Ok = false, Mensaje = "Error al guardar el detalle" };
 			}
 		}
 
@@ -465,7 +465,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			catch (Exception ex)
 			{
 				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
-				return new() { Ok = false, Mensaje = "Error al buscar Presupuestos" };
+				return new() { Ok = false, Mensaje = "Error al confirmar el Arqueo" };
 			}
 		}
 
@@ -534,7 +534,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			catch (Exception ex)
 			{
 				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
-				return new() { Ok = false, Mensaje = "Error al buscar Presupuestos" };
+				return new() { Ok = false, Mensaje = "Error al anular el Arqueo" };
 			}
 		}
 
@@ -603,7 +603,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			catch (Exception ex)
 			{
 				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
-				return new() { Ok = false, Mensaje = "Error al buscar Presupuestos" };
+				return new() { Ok = false, Mensaje = "Error al agregar un Medio de Pago" };
 			}
 		}
 
@@ -672,7 +672,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			catch (Exception ex)
 			{
 				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
-				return new() { Ok = false, Mensaje = "Error al buscar Presupuestos" };
+				return new() { Ok = false, Mensaje = "Error al realizar la Confirmación Contable" };
 			}
 		}
 
@@ -853,7 +853,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			catch (Exception ex)
 			{
 				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
-				return new() { Ok = false, Mensaje = "Error al buscar Presupuestos" };
+				return new() { Ok = false, Mensaje = "Error al confirmar la Entrega" };
 			}
 		}
 
@@ -922,7 +922,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			catch (Exception ex)
 			{
 				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
-				return new() { Ok = false, Mensaje = "Error al buscar Presupuestos" };
+				return new() { Ok = false, Mensaje = "Error al anular la Entrega" };
 			}
 		}
 	}

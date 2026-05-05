@@ -233,7 +233,11 @@ function ConfirmacionContable() {
 	PostGen(data, confirmacionContableUrl, function (obj) {
 		CerrarWaiting();
 		if (obj.error === true || obj.warn === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+			let resumen = obj.msg;
+			if (obj.fallidos && obj.fallidos.length > 0) {
+				resumen = GenerarResumenErroresConDetalles(obj.fallidos);
+			}
+			AbrirMensaje("ATENCIÓN", resumen, function () {
 				$("#msjModal").modal("hide");
 				return true;
 			}, false, ["Aceptar"], "error!", null);
@@ -241,12 +245,78 @@ function ConfirmacionContable() {
 		else {
 			AbrirMensaje("ATENCIÓN", "Se ha realizado la confirmación contable de forma exitosa.", function () {
 				$("#msjModal").modal("hide");
-				CargarGrillaVtasPVCtlCierres();
+				// 🔥 Redirigir al Index del módulo
+				window.location.href = homeCtlValoresUrl;
 				return true;
 			}, false, ["Aceptar"], "succ!", null);
 		}
 	});
 }
+
+function GenerarResumenErroresConDetalles(fallidos) {
+
+	const grupos = {};
+
+	fallidos.forEach(f => {
+		const mensaje = f.mensaje || "Error desconocido";
+		const id = f.ent_compte;
+
+		if (!grupos[mensaje]) {
+			grupos[mensaje] = {
+				cantidad: 0,
+				ids: []
+			};
+		}
+
+		grupos[mensaje].cantidad++;
+		grupos[mensaje].ids.push(id);
+	});
+
+	// Construir texto final
+	let resumen = "Algunas entregas no pudieron confirmarse:\n\n";
+
+	Object.entries(grupos).forEach(([mensaje, info]) => {
+		resumen += `• ${mensaje} (${info.cantidad})\n`;
+
+		info.ids.forEach(id => {
+			resumen += `   - Cierre ${id}\n`;
+		});
+
+		resumen += "\n";
+	});
+
+	return resumen;
+}
+
+
+
+function GenerarResumenErrores(respuestas) {
+	const contador = {};
+
+	// Recorrer todas las respuestas
+	Object.values(respuestas).forEach(r => {
+		const msg =
+			r?.mensaje ||
+			r?.entidad?.resultado_msj ||
+			"Error desconocido";
+
+		if (!contador[msg]) {
+			contador[msg] = 1;
+		} else {
+			contador[msg]++;
+		}
+	});
+
+	// Construir texto final
+	let resumen = "Algunas confirmaciones no pudieron confirmarse:\n\n";
+
+	Object.entries(contador).forEach(([mensaje, cantidad]) => {
+		resumen += `• ${mensaje} (${cantidad})\n`;
+	});
+
+	return resumen;
+}
+
 
 function CargarGrillaVtasPVCtlRend() {
 	if (!validarCierreSeleccionado()) {
@@ -786,7 +856,7 @@ const reglasValidacion = {
 	"TD": ["#listaMediosDePago", "#NroTarjeta", "#Lote", "#Cupon", "#Importe"],
 
 	"MU": ["#listaMediosDePago", "#Titular", "#NroOrden", "#Cuit", "#Importe"],
-	"BA": ["#listaMediosDePago", "#Banco", "#NroCuenta", "#NroDeposito", "#Importe"],
+	"BA": ["#listaMediosDePago", "#NroDeposito", "#Importe"],
 
 	"CH": ["#listaBcoCheqs", "#NroCheque", "#Plaza", "#FechaVto", "#Importe", "#Rel01"]
 };
@@ -1008,8 +1078,12 @@ function GuardarDetalleDeValor(tcf_id) {
 
 				// 🔥 3) ACTUALIZAR DIFERENCIA
 				const textoArqueo = $fila.find("td.col-num").eq(1).text().trim();
-				const arqueo = convertirImporteADecimal(textoArqueo);
-				const diferencia = nuevoImporte - arqueo;
+				const importeArqueo = parseFloat($fila.find("td.col-num").eq(1).data("arqueo")) || 0;
+				//FormatearPrecio
+				//const arqueo = convertirImporteADecimal(textoArqueo);
+				
+				const arqueo = toDecimalSafe(textoArqueo);
+				const diferencia = nuevoImporte - importeArqueo;
 
 				const $celdaDif = $fila.find("td.col-num").eq(2);
 				$celdaDif.text(FormatearPrecio(diferencia));
@@ -1461,6 +1535,7 @@ function GuardarCtlDetalle() {
 		else {
 			AbrirMensaje("ATENCIÓN", "Se han actualizado los datos del Detalle de Arqueo de forma exitosa.", function () {
 				$("#msjModal").modal("hide");
+				existe_edicion = false;
 				CargarGrillaVtasPVCtlRendDetalle();
 				return true;
 
@@ -1507,21 +1582,22 @@ function RecalcularDiferenciaEnFila($input) {
 	// Obtener importe OK (editado)
 	const importeOk = parseFloat($input.inputmask("unmaskedvalue")) || 0;
 
-	// Obtener importe Arqueo desde la celda correspondiente
-	const textoArqueo = $tr.find("td").eq(2).text().trim(); // columna Arqueo
-	const importeArqueo = parseFloat(textoArqueo.replace(/\./g, "").replace(",", ".")) || 0;
+	// Importe Arqueo REAL desde data-arqueo
+	const importeArqueo = parseFloat($tr.find("td").eq(2).data("arqueo")) || 0;
 
 	// Calcular diferencia
 	const dif = importeOk - importeArqueo;
 
 	// Formatear diferencia
-	const difFormateado = dif.toLocaleString("es-AR", {
+	const difFormateado = dif.toLocaleString("en-US", {
 		minimumFractionDigits: 2,
 		maximumFractionDigits: 2
 	});
 
 	// Actualizar celda Dif (columna 3)
-	$tr.find("td").eq(3).text(difFormateado);
+	const $tdDif = $tr.find("td").eq(3);
+	$tdDif.text(difFormateado);
+	$tdDif.data("diferencia", dif); // 🔥 valor real
 }
 
 function GuardarImporteEditado($input) {
@@ -1588,22 +1664,20 @@ function ActualizarTotalesEnPadre() {
 		const $tr = $(this);
 
 		// --- RENDIDO ---
-		const $tdRendido = $tr.find("td.editable-importe");
 		let rendido = 0;
+		const $tdRendido = $tr.find("td.editable-importe");
 
 		if ($tdRendido.find("input").length) {
-			rendido = toDecimalSafe($tdRendido.find("input").inputmask("unmaskedvalue"));
+			rendido = parseFloat($tdRendido.find("input").inputmask("unmaskedvalue")) || 0;
 		} else {
-			rendido = toDecimalSafe($tdRendido.text());
+			rendido = parseFloat($tdRendido.data("rendido")) || 0;
 		}
 
 		// --- ARQUEO ---
-		const $tdArqueo = $tr.find("td.col-num").eq(1);
-		const arqueo = toDecimalSafe($tdArqueo.text());
+		const arqueo = parseFloat($tr.find("td").eq(2).data("arqueo")) || 0;
 
 		// --- DIFERENCIA ---
-		const $tdDiferencia = $tr.find("td.col-num").eq(2);
-		const diferencia = toDecimalSafe($tdDiferencia.text());
+		const diferencia = parseFloat($tr.find("td").eq(3).data("diferencia")) || 0;
 
 		totalRendido += rendido;
 		totalArqueo += arqueo;
