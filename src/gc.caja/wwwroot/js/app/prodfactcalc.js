@@ -364,7 +364,8 @@ function confirmarDiferirFactura() {
 }
 
 /**
- * ✅ CORREGIDO v9.1: Ejecuta la llamada AJAX para diferir factura
+ * ✅ ACTUALIZADO v9.2: Ejecuta la llamada AJAX para diferir factura
+ * NUEVO: Flujo de limpieza y reinicio correcto
  */
 function ejecutarDiferirFactura() {
     console.log('📡 Invocando /ProductoFact/DiferirFactura...');
@@ -374,25 +375,25 @@ function ejecutarDiferirFactura() {
 
     // ❷ Llamada AJAX
     $.ajax({
-        url: '/Facturacion/ProductoFact/DiferirFactura',
+        url: DiferirFacturaUrl,
         type: 'POST',
         dataType: 'json',
         timeout: 30000,
-        success: function(response) {
+        success: function (response) {
             CerrarWaiting();
-            
+
             console.log('═══════════════════════════════════════════════════');
-            console.log('✅ RESPUESTA DE DIFERIR FACTURA');
+            console.log('✅ RESPUESTA DE DIFERIR FACTURA v9.2');
             console.log('═══════════════════════════════════════════════════');
             console.log('Response:', response);
 
             if (!response.ok) {
                 console.error('❌ Error en respuesta:', response.mensaje);
-                
+
                 AbrirMensaje(
                     "Error al Diferir Factura",
                     response.mensaje || 'No se pudo crear la factura diferida',
-                    function() {
+                    function () {
                         $("#msjModal").modal("hide");
                     },
                     false,
@@ -417,25 +418,53 @@ function ejecutarDiferirFactura() {
                     <h4 class="text-golden mb-3">${response.mensaje}</h4>
                     <p class="text-muted mb-0">El cliente podrá retomar esta compra más tarde</p>
                 </div>`,
-                function() {
+                function () {
                     $("#msjModal").modal("hide");
-                    
+
+                    // ═══════════════════════════════════════════════════
+                    // ✅ NUEVO v9.2: FLUJO DE LIMPIEZA Y REINICIO CORRECTO
+                    // ═══════════════════════════════════════════════════
+
                     setTimeout(() => {
-                        // ❃ Cerrar modal de cálculo y volver al inicio
+                        console.log('═══════════════════════════════════════════════════');
+                        console.log('🔄 INICIANDO REINICIO DEL MÓDULO DE VENTAS');
+                        console.log('═══════════════════════════════════════════════════');
+
+                        // ❶ PASO 1: Cerrar modal de cálculo
                         cerrarModalCalculoFactura();
-                        
-                        // ❹ Disparar evento para limpiar (si existe función en prodfact.js)
-                        if (typeof limpiarVentaCompleta === 'function') {
-                            limpiarVentaCompleta();
-                        }
-                        
-                        // ❺ Volver al modal de identificar cliente
+                        console.log('✅ Paso 1: Modal de cálculo cerrado');
+
+                        // ❷ PASO 2: Esperar cierre completo del modal (300ms)
                         setTimeout(() => {
-                            if (typeof abrirModalIdentificarCliente === 'function') {
-                                abrirModalIdentificarCliente();
+
+                            // ❸ PASO 3: Limpiar completamente el módulo de ventas
+                            if (typeof limpiarVentaCompleta === 'function') {
+                                limpiarVentaCompleta();
+                                console.log('✅ Paso 2: Módulo de ventas limpiado');
+                            } else {
+                                console.error('❌ Función limpiarVentaCompleta no existe');
                             }
-                        }, 500);
-                    }, 300);
+
+                            // ❹ PASO 4: Esperar limpieza completa (200ms)
+                            setTimeout(() => {
+
+                                // ❺ PASO 5: Abrir modal de identificar cliente
+                                if (typeof abrirModalIdentificarCliente === 'function') {
+                                    abrirModalIdentificarCliente();
+                                    console.log('✅ Paso 3: Modal de identificar cliente abierto');
+                                } else {
+                                    console.error('❌ Función abrirModalIdentificarCliente no existe');
+                                }
+
+                                console.log('═══════════════════════════════════════════════════');
+                                console.log('✅ REINICIO COMPLETADO - Listo para nueva venta');
+                                console.log('═══════════════════════════════════════════════════');
+
+                            }, 200); // ← Esperar limpieza
+
+                        }, 300); // ← Esperar cierre de modal
+
+                    }, 300); // ← Esperar cierre de mensaje de éxito
                 },
                 false,
                 ["Aceptar"],
@@ -443,9 +472,9 @@ function ejecutarDiferirFactura() {
                 null
             );
         },
-        error: function(xhr, status, error) {
+        error: function (xhr, status, error) {
             CerrarWaiting();
-            
+
             console.error('═══════════════════════════════════════════════════');
             console.error('❌ ERROR EN AJAX DIFERIR FACTURA');
             console.error(`   Status: ${status}`);
@@ -453,7 +482,6 @@ function ejecutarDiferirFactura() {
             console.error(`   HTTP Status: ${xhr.status}`);
             console.error('═══════════════════════════════════════════════════');
 
-            // ✅ NUEVO: Usar función centralizada
             if (esSesionExpirada(xhr.status)) {
                 manejarSesionExpirada('No se pudo diferir la factura porque su sesión ha expirado.');
                 return;
@@ -472,7 +500,7 @@ function ejecutarDiferirFactura() {
             AbrirMensaje(
                 "Error de Comunicación",
                 mensajeError,
-                function() {
+                function () {
                     $("#msjModal").modal("hide");
                 },
                 false,
@@ -529,7 +557,8 @@ function mostrarModalDiferirPago() {
 }
 
 /**
- * ✅ CORREGIDO v9.1: Ejecuta la llamada AJAX para diferir pago
+ * ✅ ACTUALIZADO v9.2: Ejecuta la llamada AJAX para diferir pago
+ * NUEVO: Flujo de limpieza y reinicio correcto
  */
 function ejecutarDiferirPago() {
     console.log('📡 Invocando /ProductoFact/DiferirPago...');
@@ -539,25 +568,25 @@ function ejecutarDiferirPago() {
 
     // ❷ Llamada AJAX
     $.ajax({
-        url: '/Facturacion/ProductoFact/DiferirPago',
+        url: DiferirPagoUrl,
         type: 'POST',
         dataType: 'json',
         timeout: 30000,
-        success: function(response) {
+        success: function (response) {
             CerrarWaiting();
-            
+
             console.log('═══════════════════════════════════════════════════');
-            console.log('✅ RESPUESTA DE DIFERIR PAGO');
+            console.log('✅ RESPUESTA DE DIFERIR PAGO v9.2');
             console.log('═══════════════════════════════════════════════════');
             console.log('Response:', response);
 
             if (!response.ok) {
                 console.error('❌ Error en respuesta:', response.mensaje);
-                
+
                 AbrirMensaje(
                     "Error al Diferir Pago",
                     response.mensaje || 'No se pudo emitir la factura',
-                    function() {
+                    function () {
                         $("#msjModal").modal("hide");
                     },
                     false,
@@ -590,30 +619,59 @@ function ejecutarDiferirPago() {
                         <i class='bx bx-printer'></i> El comprobante se imprimirá automáticamente
                     </p>
                 </div>`,
-                function() {
+                function () {
                     $("#msjModal").modal("hide");
-                    
+
+                    // ═══════════════════════════════════════════════════
+                    // ✅ NUEVO v9.2: FLUJO DE LIMPIEZA Y REINICIO CORRECTO
+                    // ═══════════════════════════════════════════════════
+
                     setTimeout(() => {
-                        // ❸ DISPARAR IMPRESIÓN DEL COMPROBANTE
+                        console.log('═══════════════════════════════════════════════════');
+                        console.log('🔄 INICIANDO REINICIO DEL MÓDULO DE VENTAS');
+                        console.log('═══════════════════════════════════════════════════');
+
+                        // ❶ DISPARAR IMPRESIÓN DEL COMPROBANTE (si aplica)
                         if (response.debe_imprimir) {
                             console.log('🖨️ Iniciando impresión de comprobante...');
                             imprimirComprobante(response.comprobante);
                         }
 
-                        // ❹ Cerrar modal y limpiar
+                        // ❷ PASO 1: Cerrar modal de cálculo
                         cerrarModalCalculoFactura();
-                        
-                        if (typeof limpiarVentaCompleta === 'function') {
-                            limpiarVentaCompleta();
-                        }
-                        
-                        // ❺ Volver al modal de identificar cliente
+                        console.log('✅ Paso 1: Modal de cálculo cerrado');
+
+                        // ❸ PASO 2: Esperar cierre completo del modal (300ms)
                         setTimeout(() => {
-                            if (typeof abrirModalIdentificarCliente === 'function') {
-                                abrirModalIdentificarCliente();
+
+                            // ❹ PASO 3: Limpiar completamente el módulo de ventas
+                            if (typeof limpiarVentaCompleta === 'function') {
+                                limpiarVentaCompleta();
+                                console.log('✅ Paso 2: Módulo de ventas limpiado');
+                            } else {
+                                console.error('❌ Función limpiarVentaCompleta no existe');
                             }
-                        }, 500);
-                    }, 300);
+
+                            // ❺ PASO 4: Esperar limpieza completa (200ms)
+                            setTimeout(() => {
+
+                                // ❻ PASO 5: Abrir modal de identificar cliente
+                                if (typeof abrirModalIdentificarCliente === 'function') {
+                                    abrirModalIdentificarCliente();
+                                    console.log('✅ Paso 3: Modal de identificar cliente abierto');
+                                } else {
+                                    console.error('❌ Función abrirModalIdentificarCliente no existe');
+                                }
+
+                                console.log('═══════════════════════════════════════════════════');
+                                console.log('✅ REINICIO COMPLETADO - Listo para nueva venta');
+                                console.log('═══════════════════════════════════════════════════');
+
+                            }, 200); // ← Esperar limpieza
+
+                        }, 300); // ← Esperar cierre de modal
+
+                    }, 300); // ← Esperar cierre de mensaje de éxito
                 },
                 false,
                 ["Aceptar"],
@@ -621,9 +679,9 @@ function ejecutarDiferirPago() {
                 null
             );
         },
-        error: function(xhr, status, error) {
+        error: function (xhr, status, error) {
             CerrarWaiting();
-            
+
             console.error('═══════════════════════════════════════════════════');
             console.error('❌ ERROR EN AJAX DIFERIR PAGO');
             console.error(`   Status: ${status}`);
@@ -631,7 +689,6 @@ function ejecutarDiferirPago() {
             console.error(`   HTTP Status: ${xhr.status}`);
             console.error('═══════════════════════════════════════════════════');
 
-            // ✅ NUEVO: Usar función centralizada
             if (esSesionExpirada(xhr.status)) {
                 manejarSesionExpirada('No se pudo diferir el pago porque su sesión ha expirado.');
                 return;
@@ -650,7 +707,7 @@ function ejecutarDiferirPago() {
             AbrirMensaje(
                 "Error de Comunicación",
                 mensajeError,
-                function() {
+                function () {
                     $("#msjModal").modal("hide");
                 },
                 false,

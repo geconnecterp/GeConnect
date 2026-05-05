@@ -1317,21 +1317,12 @@ function ejecutarCancelarFactura() {
 }
 
 /**
- * Confirma la factura
- */
-/**
- * ✅ ACTUALIZADO v7.1: Confirma la factura y abre modal de cálculo
- * 
- * CAMBIOS RESPECTO A v7.0:
- * - Incluye campo `item` en JSON de productos
- * - Mantiene orden correlativo
- */
-/**
- * ✅ ACTUALIZADO v7.2: JSON COMPLETO con TODOS los campos requeridos
+ * ✅ ACTUALIZADO v7.3: JSON COMPLETO con TODOS los campos del DTO
+ * SINCRONIZADO con ProductoFactJsonDto.cs
  */
 function confirmarFactura() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('✅ CONFIRMANDO FACTURA v7.2');
+    console.log('✅ CONFIRMANDO FACTURA v7.3');
     console.log('═══════════════════════════════════════════════════');
 
     // ❶ Validaciones previas...
@@ -1347,55 +1338,102 @@ function confirmarFactura() {
         return;
     }
 
-    // ❸ Construir JSON COMPLETO con TODOS los campos
+    // ❸ Construir JSON COMPLETO con TODOS los campos del DTO
     const productosArray = productosFactura.map((producto) => {
         return {
-            // ✅ Item correlativo
+            // ═══════════════════════════════════════════════════
+            // ✅ SECCIÓN 1: IDENTIFICACIÓN
+            // ═══════════════════════════════════════════════════
             item: producto.item || 0,
-
-            // ✅ IDs y códigos
             p_id: producto.p_id || '',
             p_id_barrado: producto.p_id_barrado || '',
             p_desc: producto.p_desc || '',
 
-            // ✅ Precios
+            // ═══════════════════════════════════════════════════
+            // ✅ SECCIÓN 2: PRECIOS
+            // ═══════════════════════════════════════════════════
             p_pcosto: producto.p_pcosto || 0,
             p_pcosto_repo: producto.p_pcosto_repo || 0,
             p_pneto: producto.p_pneto || 0,
             p_pvta: producto.p_pvta || 0,
+            p_margen_imp: producto.p_margen_imp || 0,      // ✅ NUEVO
+            p_margen_vig: producto.p_margen_vig || 0,      // ✅ NUEVO
 
-            // ✅ Cantidad y total
+            // ═══════════════════════════════════════════════════
+            // ✅ SECCIÓN 3: CANTIDAD Y TOTAL
+            // ═══════════════════════════════════════════════════
             cantidad_tot: producto.cantidad_tot || 0,
             p_pvta_tot: producto.p_pvta_tot || 0,
+            bultos: producto.bultos || 0,                  // ✅ NUEVO
 
-            // ✅ IVA
+            // ═══════════════════════════════════════════════════
+            // ✅ SECCIÓN 4: IVA
+            // ═══════════════════════════════════════════════════
             iva_situacion: producto.iva_situacion || '',
             iva_alicuota: producto.iva_alicuota || 0,
             p_iva: producto.p_iva || 0,
 
-            // ✅ Impuestos internos
+            // ═══════════════════════════════════════════════════
+            // ✅ SECCIÓN 5: IMPUESTOS INTERNOS
+            // ═══════════════════════════════════════════════════
             in_alicuota: producto.in_alicuota || 0,
             p_in: producto.p_in || 0,
 
-            // ✅ Previsión de lista
+            // ═══════════════════════════════════════════════════
+            // ✅ SECCIÓN 6: PREVISIÓN DE LISTA
+            // ═══════════════════════════════════════════════════
             lp_prevision_tot: producto.lp_prevision_tot || 0,
             lp_prevision_pin: producto.lp_prevision_pin || 0,
 
-            // ✅ Precio de oferta
+            // ═══════════════════════════════════════════════════
+            // ✅ SECCIÓN 7: PRECIO DE OFERTA
+            // ═══════════════════════════════════════════════════
             po: producto.po || false,
             po_limite: producto.po_limite || 0,
 
-            // ✅ Origen
+            // ═══════════════════════════════════════════════════
+            // ✅ SECCIÓN 8: TOTALES DE COMPROBANTE (✅ NUEVO v7.3)
+            // ═══════════════════════════════════════════════════
+            cm_gravado: producto.cm_gravado || 0,
+            cm_no_gravado: producto.cm_no_gravado || 0,
+            cm_exento: producto.cm_exento || 0,
+            cm_iva: producto.cm_iva || 0,
+            cm_ii: producto.cm_ii || 0,
+
+            // ═══════════════════════════════════════════════════
+            // ✅ SECCIÓN 9: DESCUENTOS (✅ NUEVO v7.3)
+            // ═══════════════════════════════════════════════════
+            cm_dto: producto.cm_dto || 0,
+            cm_dto_porc: producto.cm_dto_porc || 0,
+
+            // ═══════════════════════════════════════════════════
+            // ✅ SECCIÓN 10: ORIGEN
+            // ═══════════════════════════════════════════════════
             cta_id: producto.cta_id || '',
             pre_id: producto.pre_id || null,
-            cpf_nro: producto.cpf_nro || null
+            cpf_nro: producto.cpf_nro || null,
+
+            // ═══════════════════════════════════════════════════
+            // ✅ SECCIÓN 11: COMBOS (✅ NUEVO v7.3)
+            // ═══════════════════════════════════════════════════
+            cmb_p_id: producto.cmb_p_id || '',
+            cmd_cmb: producto.cmd_cmb || '',
+            cmd_cmb_id: producto.cmd_cmb_id || '',
+            cmd_cmb_dto: producto.cmd_cmb_dto || 0,
+            cmd_cmb_cant: producto.cmd_cmb_cant || 0,
+            cmd_cmb_desc: producto.cmd_cmb_desc || '',
+
+            // ═══════════════════════════════════════════════════
+            // ✅ SECCIÓN 12: CÓDIGO DE BARRAS (✅ NUEVO v7.3)
+            // ═══════════════════════════════════════════════════
+            barre: producto.barre || ''
         };
     });
 
     const jsonProductos = JSON.stringify(productosArray);
 
     console.log('═══════════════════════════════════════════════════');
-    console.log('📋 JSON COMPLETO de productos generado:');
+    console.log('📋 JSON COMPLETO de productos generado (v7.3):');
     console.log(jsonProductos);
     console.log('═══════════════════════════════════════════════════');
 
@@ -1446,7 +1484,7 @@ function confirmarFactura() {
             console.error('❌ ERROR EN CALCULAR FILAS');
             ocultarLoaderCalculando();
 
-            // ✅ NUEVO: Usar función centralizada
+            // ✅ Usar función centralizada
             if (esSesionExpirada(xhr.status)) {
                 manejarSesionExpirada('No se pudo calcular la factura porque su sesión ha expirado.');
                 return;
@@ -1555,4 +1593,93 @@ function ocultarLoaderCalculando() {
     
     // Remover overlay
     $('#overlayCalculando').remove();
+}
+
+// ════════════════════════════════════════════════════════════
+// SECCIÓN 7: LIMPIEZA COMPLETA DE VENTA (✅ NUEVO v8.0)
+// ════════════════════════════════════════════════════════════
+
+/**
+ * ✅ NUEVO v8.0: Limpia completamente el módulo de ventas
+ * Se invoca después de:
+ * - Diferir Factura
+ * - Diferir Pago
+ * - Cancelar Factura
+ * 
+ * ACCIONES:
+ * 1. Limpia arrays de productos
+ * 2. Resetea totales
+ * 3. Limpia cliente actual
+ * 4. Cierra modal de productos
+ * 5. Resetea campos de búsqueda
+ * 6. Restaura estado inicial de mensajes
+ */
+function limpiarVentaCompleta() {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🧹 LIMPIEZA COMPLETA DE VENTA v8.0');
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Limpiar arrays y variables globales
+    productosFactura = [];
+    totalFactura = 0;
+    clienteActualFactura = null;
+    modoBloqueoGrilla = null;
+    origenCargaActual = 'directo';
+
+    console.log('✅ Variables globales reseteadas');
+
+    // ❷ Limpiar grilla visual
+    $('#tbodyProductos').html(`
+        <tr id="rowSinProductos" class="compact-row">
+            <td colspan="9" class="text-center text-muted py-4">
+                <i class='bx bx-package bx-lg text-golden'></i>
+                <p class="mb-0 mt-2">
+                    <strong>No hay productos cargados</strong><br>
+                    <small>Busque un producto por código o código de barras</small>
+                </p>
+            </td>
+        </tr>
+    `);
+
+    // ❸ Resetear totales
+    $('#txtTotalFactura').val('$ 0.00');
+    $('#cantidadItems').text('0');
+
+    console.log('✅ Grilla y totales limpiados');
+
+    // ❹ Limpiar campos de búsqueda
+    $('#txtCodigoProducto').val('').prop('disabled', false);
+    $('#btnBuscarProducto').prop('disabled', false).html('<i class="bx bx-search"></i>');
+
+    // ❺ Restaurar mensaje de estado inicial
+    $('#mensajeEstadoProducto')
+        .removeClass('text-danger text-success text-info')
+        .addClass('text-muted')
+        .html('Presione <kbd>Enter</kbd> o <strong>BUSCAR</strong> para agregar producto');
+
+    console.log('✅ Campos y mensajes restaurados');
+
+    // ❻ Limpiar datos del cliente en modal de productos
+    $('#txtClienteNombreProd').val('');
+    $('#txtClienteIdProd').val('');
+    $('#txtClienteDomicilioProd').val('');
+    $('#txtCondicionAfipProd').val('');
+    $('#txtClienteCuitProd').val('');
+    $('#txtClienteEmailProd').val('');
+    $('#txtClienteMovilProd').val('');
+
+    console.log('✅ Datos del cliente limpiados del modal');
+
+    // ❼ CERRAR MODAL DE PRODUCTOS (si está abierto)
+    if ($('#modalProductosFactura').hasClass('show')) {
+        $('#modalProductosFactura').modal('hide');
+        console.log('✅ Modal de productos cerrado');
+    }
+
+    // ❽ Remover overlays (si existen)
+    $('#overlayCalculando').remove();
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('✅ LIMPIEZA COMPLETA FINALIZADA');
+    console.log('═══════════════════════════════════════════════════');
 }

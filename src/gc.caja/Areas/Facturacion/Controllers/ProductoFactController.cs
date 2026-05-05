@@ -1199,8 +1199,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                                     // ═══════════════════════════════════════════════════
                                     // ✅ SECCIÓN 7: MÁRGENES (SI EL SP LOS RETORNA)
                                     // ═══════════════════════════════════════════════════
-                                    //p_margen_imp = producto.p_margen_imp,
-                                    //p_margen_vig = producto.p_margen_vig,
+                                    p_margen_imp = 0,// producto.p_margen_imp??0,
+                                    p_margen_vig = 0,// producto.p_margen_vig??0,
 
                                     // ═══════════════════════════════════════════════════
                                     // ✅ SECCIÓN 8: TOTALES CALCULADOS POR COMPROBANTE

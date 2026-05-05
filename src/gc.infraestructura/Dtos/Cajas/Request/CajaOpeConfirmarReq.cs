@@ -9,6 +9,8 @@
         public string caja_nro_proceso { get; set; } = string.Empty;
         public int caja_nro_cierre { get; set; }
 
+        public string? usu_id_autoriza { get; set; }
+
         public string cta_id { get; set; } = string.Empty;
         public decimal ctac_dto { get; set; }
         public string co_tipo { get; set; } = "CR";
@@ -29,8 +31,8 @@
         public string json_p { get; set; } = string.Empty;
         public string json_valores { get; set; } = string.Empty;
         public string json_cancela { get; set; } = string.Empty;
-        public string json_union { get; set; } = string.Empty;
-        public string json_subtotal { get; set; } = string.Empty;
+        public string json_union { get; set; } = "{}";
+        public string json_subtotal { get; set; } = "{}";
         public string json_sorteo { get; set; } = string.Empty;
     }
 }
