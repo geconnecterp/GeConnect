@@ -143,6 +143,9 @@ namespace gc.api.core.Servicios.LineaCaja
                 new SqlParameter("@lp_id", req.lp_id),
                 new SqlParameter("@caja_nro_proceso", req.caja_nro_proceso),
                 new SqlParameter("@caja_nro_cierre", req.caja_nro_cierre),
+
+                new SqlParameter("@usu_id_autoriza", req.caja_nro_cierre),
+
                 new SqlParameter("@cta_id", req.cta_id),
                 new SqlParameter("@ctac_dto", req.ctac_dto),
                 new SqlParameter("@co_tipo", req.co_tipo),

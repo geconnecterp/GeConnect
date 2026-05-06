@@ -38,7 +38,7 @@
         public decimal p_pneto { get; set; }
 
         public bool po { get; set; }
-        public decimal po_limite { get; set; }
+        public int po_limite { get; set; }
         public decimal p_pvta { get; set; }
 
         public decimal cantidad_tot { get; set; }
