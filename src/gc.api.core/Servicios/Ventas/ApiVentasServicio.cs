@@ -339,5 +339,50 @@ namespace gc.api.core.Servicios
 			var result = _repository.EjecutarLstSpExt<AnaVtaMesDto>(sp, ps, true);
 			return result;
 		}
+
+		public List<AnaVtaMesDetalleDiarioDto> ObtenerAnaVtaMesDetalleDiaLista(AnaVtaMesRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_E_AV_DIAS;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@adm_list", request.adm_list),
+				new SqlParameter("@desde", request.desde),
+				new SqlParameter("@hasta", request.hasta),
+			 };
+
+			var result = _repository.EjecutarLstSpExt<AnaVtaMesDetalleDiarioDto>(sp, ps, true);
+			return result;
+		}
+
+		public List<AnaVtaMesDetalleHoraDto> ObtenerAnaVtaMesDetalleHoraLista(AnaVtaMesRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_E_AV_DIAS_HORA;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@adm_list", request.adm_list),
+				new SqlParameter("@desde", request.desde),
+				new SqlParameter("@hasta", request.hasta),
+			 };
+
+			var result = _repository.EjecutarLstSpExt<AnaVtaMesDetalleHoraDto>(sp, ps, true);
+			return result;
+		}
+
+		public List<AnaVtaMesDetalleSucursalDto> ObtenerAnaVtaMesDetalleSucursalLista(AnaVtaMesRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_E_AV_ADM;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@adm_list", request.adm_list),
+				new SqlParameter("@desde", request.desde),
+				new SqlParameter("@hasta", request.hasta),
+			 };
+
+			var result = _repository.EjecutarLstSpExt<AnaVtaMesDetalleSucursalDto>(sp, ps, true);
+			return result;
+		}
 	}
 }

@@ -20,5 +20,8 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<RespuestaGenerica<RespuestaDto>> ConfirmarCtlEntrega(ConfirmarCtlEntregaRequest req, string token);
 		Task<RespuestaGenerica<RespuestaDto>> AnularCtlEntrega(AnularCtlEntregaRequest req, string token);
 		List<AnaVtaMesDto> ObtenerAnaVtaMesLista(AnaVtaMesRequest request, string token);
+		List<AnaVtaMesDetalleDiarioDto> ObtenerAnaVtaMesDetalleDiaLista(AnaVtaMesRequest request, string token);
+		List<AnaVtaMesDetalleHoraDto> ObtenerAnaVtaMesDetalleHoraLista(AnaVtaMesRequest request, string token);
+		List<AnaVtaMesDetalleSucursalDto> ObtenerAnaVtaMesDetalleSucursalLista(AnaVtaMesRequest request, string token);
 	}
 }

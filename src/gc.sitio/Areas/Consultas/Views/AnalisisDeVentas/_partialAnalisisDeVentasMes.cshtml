@@ -62,9 +62,9 @@
 			{
 				foreach (var item in Model.ListaAnaVtaMes.ListaDatos)
 				{
-					var mes_ant_porc = item.mes_ant_dif_porc * 100;
+					@* var mes_ant_porc = item.mes_ant_dif_porc * 100;
 					var per_ant_dif_porc = item.per_ant_dif_porc * 100;
-					var ctacte_dif_porc = item.ctacte_dif_porc * 100;
+					var ctacte_dif_porc = item.ctacte_dif_porc * 100; *@
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase row-pedido"
 						data-mes="@item.mes"
@@ -77,8 +77,8 @@
 								<tr>
 									<td style="text-align:left; padding:0; border:0;">
 										<span class="porc-box
-											@(mes_ant_porc > 0 ? "porc-pos" : mes_ant_porc < 0 ? "porc-neg" : "porc-zero")">
-											@mes_ant_porc%
+											@(item.mes_ant_dif_porc > 0 ? "porc-pos" : item.mes_ant_dif_porc < 0 ? "porc-neg" : "porc-zero")">
+											@item.mes_ant_dif_porc%
 										</span>
 									</td>
 									<td style="text-align:right; padding:0; border:0;">
@@ -92,8 +92,8 @@
 								<tr>
 									<td style="text-align:left; padding:0; border:0;">
 										<span class="porc-box
-											@(per_ant_dif_porc > 0 ? "porc-pos" : per_ant_dif_porc < 0 ? "porc-neg" : "porc-zero")">
-											@per_ant_dif_porc%
+											@(item.per_ant_dif_porc > 0 ? "porc-pos" : item.per_ant_dif_porc < 0 ? "porc-neg" : "porc-zero")">
+											@item.per_ant_dif_porc%
 										</span>
 									</td>
 									<td style="text-align:right; padding:0; border:0;">
@@ -110,8 +110,8 @@
 								<tr>
 									<td style="text-align:left; padding:0; border:0;">
 										<span class="porc-box
-											@(ctacte_dif_porc > 0 ? "porc-pos" : ctacte_dif_porc < 0 ? "porc-neg" : "porc-zero")">
-											@ctacte_dif_porc%
+											@(item.ctacte_dif_porc > 0 ? "porc-pos" : item.ctacte_dif_porc < 0 ? "porc-neg" : "porc-zero")">
+											@item.ctacte_dif_porc%
 										</span>
 									</td>
 									<td style="text-align:right; padding:0; border:0;">

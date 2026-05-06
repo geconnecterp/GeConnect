@@ -1,4 +1,9 @@
-﻿$(function () {
+﻿var sucursales_ids_desde_filtros = null;
+let tabsDetallePendientes = 0;
+var mes_selected = null;
+var periodo_selected = null;
+
+$(function () {
 	InicializarCamposEnFiltros(false);
 	$(document).on("change", "#listaSucursales", ControlalistaSucursalesSelected);
 	$("#SucursalesList").on("dblclick", 'option', function () { $(this).remove(); })
@@ -58,6 +63,7 @@ function CargarAnalisisDeVentaMensual() {
 	var lSuc = [];
 	$("#SucursalesList").children().each(function (i, item) { lSuc.push($(item).val()) });
 	var sucursalesIds = lSuc.join(",");
+	sucursales_ids_desde_filtros = sucursalesIds;
 	var data = {
 		Desde: $("#Desde").val(),
 		Hasta: $("#Hasta").val(),
@@ -66,11 +72,152 @@ function CargarAnalisisDeVentaMensual() {
 	AbrirWaiting("Obteniendo Análisis Mensual...");
 	PostGenHtml(data, buscarAnalisisDeVentasMensualURL, function (obj) {
 		$("#divAnalisisMensual").html(obj);
+		InicializarEventosAnalisisDeVentaMensual();
 		CerrarWaiting();
 		return true
 	});
 }
 
+function InicializarEventosAnalisisDeVentaMensual() {
+	$(document).off("click", "#tbAnaVtaMes tbody tr");
+	$(document).on("click", "#tbAnaVtaMes tbody tr", function (e) {
+
+		if ($(e.target).is("button, a, .btn, i")) return;
+
+		const $nuevaFila = $(this);
+		ProcesarSeleccionFilaEnAnalisisDeVentaMensual($nuevaFila);
+	});
+}
+
+function ProcesarSeleccionFilaEnAnalisisDeVentaMensual($fila) {
+	// Quitar selección previa
+	$("#tbAnaVtaMes tbody tr").removeClass("selected-row");
+	// Marcar fila seleccionada
+	$fila.addClass("selected-row");
+
+	mes_selected = $fila.data("mes");
+	periodo_selected = $fila.data("periodo");
+
+	if (mes_selected && periodo_selected) {
+		CargarAnalisisDeVentaDetalleMes(mes_selected, periodo_selected);
+	}
+}
+
+function CargarAnalisisDeVentaDetalleMes(mes, periodo) {
+	PostGenHtml({ mes, periodo, sucursales: sucursales_ids_desde_filtros }, cargarDetalleMesURL, function (obj) {
+		$("#divAnalisisDetalleMes").html(obj);
+		CargarTabsDelDetalleMes(mes, periodo, sucursales_ids_desde_filtros);
+		return true;
+	});
+}
+
+function CargarTabsDelDetalleMes(mes, periodo, sucursales) {
+	AbrirWaiting("Cargando datos..."); // ← abrir al inicio
+	tabsDetallePendientes = 4; // ← cantidad de tabs a cargar
+	//Diario
+	CargarTabsDelDetalleMesDiario(mes, periodo, sucursales);
+	//Hora
+	CargarTabsDelDetalleMesHora(mes, periodo, sucursales);
+	//Sucursal
+	CargarTabsDelDetalleMesSucursal(mes, periodo, sucursales);
+	//Cierre
+	CargarTabsDelDetalleMesCierre();
+
+	FinalizarCargaDetalle(); // ← marcar como completado
+}
+
+function CargarTabsDelDetalleMesDiario(mes, periodo, sucursales) {
+	PostGenHtml({ mes, periodo, sucursales }, cargarDetalleMesDiarioURL, function (obj) {
+		$("#divDetalleMesDiario").html(obj);
+		InicializarEventosAnalisisDeVentaDetalleDiario();
+		FinalizarCargaDetalle(); 
+		return true;
+	});
+}
+
+function CargarTabsDelDetalleMesHora(mes, periodo, sucursales) {
+	PostGenHtml({ mes, periodo, sucursales }, cargarDetalleMesHoraURL, function (obj) {
+		$("#divDetalleMesHora").html(obj);
+		InicializarEventosAnalisisDeVentaDetalleHora();
+		FinalizarCargaDetalle(); 
+		return true;
+	});
+}
+
+function CargarTabsDelDetalleMesSucursal(mes, periodo, sucursales) {
+	PostGenHtml({ mes, periodo, sucursales }, cargarDetalleMesSucursalURL, function (obj) {
+		$("#divDetalleMesSucursal").html(obj);
+		InicializarEventosAnalisisDeVentaDetalleSucursal();
+		FinalizarCargaDetalle(); 
+		return true;
+	});
+}
+
+function CargarTabsDelDetalleMesCierre() {
+	FinalizarCargaDetalle();
+}
+
+function FinalizarCargaDetalle() {
+	tabsDetallePendientes--;
+
+	if (tabsDetallePendientes <= 0) {
+		CerrarWaiting();
+	}
+}
+
+function InicializarEventosAnalisisDeVentaDetalleDiario() {
+	$(document).off("click", "#tbAnaVtaDetalleDiario tbody tr");
+	$(document).on("click", "#tbAnaVtaDetalleDiario tbody tr", function (e) {
+
+		if ($(e.target).is("button, a, .btn, i")) return;
+
+		const $nuevaFila = $(this);
+		ProcesarSeleccionFilaEnAnalisisDeVentaDetalleDiario($nuevaFila);
+	});
+}
+
+function ProcesarSeleccionFilaEnAnalisisDeVentaDetalleDiario($fila) {
+	// Quitar selección previa
+	$("#tbAnaVtaDetalleDiario tbody tr").removeClass("selected-row");
+	// Marcar fila seleccionada
+	$fila.addClass("selected-row");
+}
+
+function InicializarEventosAnalisisDeVentaDetalleHora() {
+	$(document).off("click", "#tbAnaVtaDetalleHora tbody tr");
+	$(document).on("click", "#tbAnaVtaDetalleHora tbody tr", function (e) {
+
+		if ($(e.target).is("button, a, .btn, i")) return;
+
+		const $nuevaFila = $(this);
+		ProcesarSeleccionFilaEnAnalisisDeVentaDetalleHora($nuevaFila);
+	});
+}
+
+function ProcesarSeleccionFilaEnAnalisisDeVentaDetalleHora($fila) {
+	// Quitar selección previa
+	$("#tbAnaVtaDetalleHora tbody tr").removeClass("selected-row");
+	// Marcar fila seleccionada
+	$fila.addClass("selected-row");
+}
+
+function InicializarEventosAnalisisDeVentaDetalleSucursal() {
+	$(document).off("click", "#tbAnaVtaDetalleSucursal tbody tr");
+	$(document).on("click", "#tbAnaVtaDetalleSucursal tbody tr", function (e) {
+
+		if ($(e.target).is("button, a, .btn, i")) return;
+
+		const $nuevaFila = $(this);
+		ProcesarSeleccionFilaEnAnalisisDeVentaDetalleSucursal($nuevaFila);
+	});
+}
+
+function ProcesarSeleccionFilaEnAnalisisDeVentaDetalleSucursal($fila) {
+	// Quitar selección previa
+	$("#tbAnaVtaDetalleSucursal tbody tr").removeClass("selected-row");
+	// Marcar fila seleccionada
+	$fila.addClass("selected-row");
+}
 
 function validarFechasAnalisis() {
 	const desdeInput = document.getElementById("Desde");

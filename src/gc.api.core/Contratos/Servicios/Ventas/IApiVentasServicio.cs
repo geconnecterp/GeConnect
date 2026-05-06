@@ -21,5 +21,8 @@ namespace gc.api.core.Contratos.Servicios
 		RespuestaDto ConfirmarCtlEntrega(ConfirmarCtlEntregaRequest request);
 		RespuestaDto AnularCtlEntrega(AnularCtlEntregaRequest request);
 		List<AnaVtaMesDto> ObtenerAnaVtaMesLista(AnaVtaMesRequest request);
+		List<AnaVtaMesDetalleDiarioDto> ObtenerAnaVtaMesDetalleDiaLista(AnaVtaMesRequest request);
+		List<AnaVtaMesDetalleHoraDto> ObtenerAnaVtaMesDetalleHoraLista(AnaVtaMesRequest request);
+		List<AnaVtaMesDetalleSucursalDto> ObtenerAnaVtaMesDetalleSucursalLista(AnaVtaMesRequest request);
 	}
 }

@@ -53,6 +53,9 @@
 
 			#region Análisis de Ventas
 			public const string SP_E_AV_MES = "SPGECO_E_AV_mes";
+			public const string SP_E_AV_DIAS = "SPGECO_E_AV_dias";
+			public const string SP_E_AV_DIAS_HORA = "SPGECO_E_AV_dias_hora";
+			public const string SP_E_AV_ADM = "SPGECO_E_AV_Adm";
 			#endregion
 
 			public const string MNU_GET_MENU_LIST = "dbo.SP_web_geco_get_menu_list";

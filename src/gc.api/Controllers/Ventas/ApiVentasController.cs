@@ -288,5 +288,48 @@ namespace gc.api.Controllers.Ventas
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<AnaVtaMesDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerAnaVtaMesDetalleDiaLista(AnaVtaMesRequest request)
+		{
+			ApiResponse<List<AnaVtaMesDetalleDiarioDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _iApiVentasServicio.ObtenerAnaVtaMesDetalleDiaLista(request);
+
+			response = new ApiResponse<List<AnaVtaMesDetalleDiarioDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<AnaVtaMesDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerAnaVtaMesDetalleHoraLista(AnaVtaMesRequest request)
+		{
+			ApiResponse<List<AnaVtaMesDetalleHoraDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _iApiVentasServicio.ObtenerAnaVtaMesDetalleHoraLista(request);
+			response = new ApiResponse<List<AnaVtaMesDetalleHoraDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<AnaVtaMesDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerAnaVtaMesDetalleSucursalLista(AnaVtaMesRequest request)
+		{
+			ApiResponse<List<AnaVtaMesDetalleSucursalDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _iApiVentasServicio.ObtenerAnaVtaMesDetalleSucursalLista(request);
+			response = new ApiResponse<List<AnaVtaMesDetalleSucursalDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }

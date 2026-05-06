@@ -115,6 +115,144 @@ namespace gc.sitio.Areas.Consultas.Controllers
 			}
 		}
 
+		[HttpPost]
+		public IActionResult CargarDetalleMes(int mes, int periodo, string sucursales)
+		{
+			var model = new AnalisisDeVentaDetalleMesModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				model.sucursales = sucursales;
+				model.mes = mes;
+				model.periodo = periodo;
+				return PartialView("_partialAnalisisDeVentasDetalle", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public IActionResult CargarDetalleMesDiario(int mes, int periodo, string sucursales)
+		{
+			var model = new GridCoreSmart<AnaVtaMesDetalleDiarioDto>();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var (desde, hasta) = ObtenerRangoMes(periodo, mes);
+				var request = new AnaVtaMesRequest
+				{
+					desde = desde,
+					hasta = hasta,
+					adm_list = sucursales
+				};
+				var lista = _apiVentaServicio.ObtenerAnaVtaMesDetalleDiaLista(request, TokenCookie);
+				model = ObtenerGridCoreSmart<AnaVtaMesDetalleDiarioDto>(lista);
+				return PartialView("_partialAnalisisDeVentasDetalleDiario", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public IActionResult CargarDetalleMesHora(int mes, int periodo, string sucursales)
+		{
+			var model = new GridCoreSmart<AnaVtaMesDetalleHoraDto>();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var (desde, hasta) = ObtenerRangoMes(periodo, mes);
+				var request = new AnaVtaMesRequest
+				{
+					desde = desde,
+					hasta = hasta,
+					adm_list = sucursales
+				};
+				var lista = _apiVentaServicio.ObtenerAnaVtaMesDetalleHoraLista(request, TokenCookie);
+				model = ObtenerGridCoreSmart<AnaVtaMesDetalleHoraDto>(lista);
+				return PartialView("_partialAnalisisDeVentasDetalleHora", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public IActionResult CargarDetalleMesSucursal(int mes, int periodo, string sucursales)
+		{
+			var model = new GridCoreSmart<AnaVtaMesDetalleSucursalDto>();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var (desde, hasta) = ObtenerRangoMes(periodo, mes);
+				var request = new AnaVtaMesRequest
+				{
+					desde = desde,
+					hasta = hasta,
+					adm_list = sucursales
+				};
+				var lista = _apiVentaServicio.ObtenerAnaVtaMesDetalleSucursalLista(request, TokenCookie);
+				model = ObtenerGridCoreSmart<AnaVtaMesDetalleSucursalDto>(lista);
+				return PartialView("_partialAnalisisDeVentasDetalleSucursal", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public static (DateTime Desde, DateTime Hasta) ObtenerRangoMes(int periodo, int mes)
+		{
+			var desde = new DateTime(periodo, mes, 1);
+			var hasta = desde.AddMonths(1).AddDays(-1);
+
+			return (desde, hasta);
+		}
+
 		#region Metodos Privados
 		private void CargarDatosIniciales(FiltroAnalisisDeVentasModel model)
 		{

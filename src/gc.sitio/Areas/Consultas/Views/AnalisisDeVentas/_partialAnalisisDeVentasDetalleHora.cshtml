@@ -1,0 +1,139 @@
+﻿@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<AnaVtaMesDetalleHoraDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	.td-dual-vert {
+		padding: 0 !important;
+		line-height: 1.1;
+	}
+
+		.td-dual-vert .line {
+			display: block;
+			padding: 2px 4px;
+			text-align: right;
+		}
+
+		/* Línea superior (fa) */
+		.td-dual-vert .fa {
+			border-bottom: 1px solid #ddd;
+			font-weight: 600;
+		}
+
+		/* Línea inferior (op) */
+		.td-dual-vert .op {
+			color: #555;
+		}
+</style>
+<div class="table-responsive table-wrapper-500">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbAnaVtaDetalleHora">
+		<thead class="sticky-top table-golden-header-compact">
+			<tr class="header">
+				<th class="text-center">Día</th>
+				<th class="text-center">6 a 8</th>
+				<th class="text-center">8 a 9</th>
+				<th class="text-center">9 a 10</th>
+				<th class="text-center">10 a 11</th>
+				<th class="text-center">11 a 12</th>
+				<th class="text-center">12 a 13</th>
+				<th class="text-center">13 a 14</th>
+				<th class="text-center">14 a 15</th>
+				<th class="text-center">15 a 16</th>
+				<th class="text-center">16 a 17</th>
+				<th class="text-center">17 a 18</th>
+				<th class="text-center">18 a 19</th>
+				<th class="text-center">19 a 20</th>
+				<th class="text-center">20 a 21</th>
+				<th class="text-center">21 a 22</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+			{
+				<tr class="fila-vacia">
+					<td colspan="6" class="text-center text-muted py-2">
+						<i class="bx bx-info-circle me-1"></i>
+						No hay items para mostrar.
+					</td>
+				</tr>
+			}
+			else
+			{
+				foreach (var item in Model.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase row-pedido"
+						data-adm-list="@item.adm_list"
+						data-semana="@item.semana"
+						data-dia="@item.dia">
+						<td class="text-center">@item.dia.ToString("dd/MM/yyyy")</td>
+						<td class="td-dual-vert">
+							<div class="line fa">@GridHelper.FormatearPrecio(item.fa_6a8, TipoPrecio.Venta)</div>
+							<div class="line op">@GridHelper.FormatearPrecio(item.op_6a8, TipoPrecio.Venta)</div>
+						</td>
+						<td class="td-dual-vert">
+							<div class="line fa">@GridHelper.FormatearPrecio(item.fa_8a9, TipoPrecio.Venta)</div>
+							<div class="line op">@GridHelper.FormatearPrecio(item.op_8a9, TipoPrecio.Venta)</div>
+						</td>
+						<td class="td-dual-vert">
+							<div class="line fa">@GridHelper.FormatearPrecio(item.fa_9a10, TipoPrecio.Venta)</div>
+							<div class="line op">@GridHelper.FormatearPrecio(item.op_9a10, TipoPrecio.Venta)</div>
+						</td>
+						<td class="td-dual-vert">
+							<div class="line fa">@GridHelper.FormatearPrecio(item.fa_10a11, TipoPrecio.Venta)</div>
+							<div class="line op">@GridHelper.FormatearPrecio(item.op_10a11, TipoPrecio.Venta)</div>
+						</td>
+						<td class="td-dual-vert">
+							<div class="line fa">@GridHelper.FormatearPrecio(item.fa_11a12, TipoPrecio.Venta)</div>
+							<div class="line op">@GridHelper.FormatearPrecio(item.op_11a12, TipoPrecio.Venta)</div>
+						</td>
+						<td class="td-dual-vert">
+							<div class="line fa">@GridHelper.FormatearPrecio(item.fa_12a13, TipoPrecio.Venta)</div>
+							<div class="line op">@GridHelper.FormatearPrecio(item.op_12a13, TipoPrecio.Venta)</div>
+						</td>
+						<td class="td-dual-vert">
+							<div class="line fa">@GridHelper.FormatearPrecio(item.fa_13a14, TipoPrecio.Venta)</div>
+							<div class="line op">@GridHelper.FormatearPrecio(item.op_13a14, TipoPrecio.Venta)</div>
+						</td>
+						<td class="td-dual-vert">
+							<div class="line fa">@GridHelper.FormatearPrecio(item.fa_14a15, TipoPrecio.Venta)</div>
+							<div class="line op">@GridHelper.FormatearPrecio(item.op_14a15, TipoPrecio.Venta)</div>
+						</td>
+						<td class="td-dual-vert">
+							<div class="line fa">@GridHelper.FormatearPrecio(item.fa_15a16, TipoPrecio.Venta)</div>
+							<div class="line op">@GridHelper.FormatearPrecio(item.op_15a16, TipoPrecio.Venta)</div>
+						</td>
+						<td class="td-dual-vert">
+							<div class="line fa">@GridHelper.FormatearPrecio(item.fa_16a17, TipoPrecio.Venta)</div>
+							<div class="line op">@GridHelper.FormatearPrecio(item.op_16a17, TipoPrecio.Venta)</div>
+						</td>
+						<td class="td-dual-vert">
+							<div class="line fa">@GridHelper.FormatearPrecio(item.fa_17a18, TipoPrecio.Venta)</div>
+							<div class="line op">@GridHelper.FormatearPrecio(item.op_17a18, TipoPrecio.Venta)</div>
+						</td>
+						<td class="td-dual-vert">
+							<div class="line fa">@GridHelper.FormatearPrecio(item.fa_18a19, TipoPrecio.Venta)</div>
+							<div class="line op">@GridHelper.FormatearPrecio(item.op_18a19, TipoPrecio.Venta)</div>
+						</td>
+						<td class="td-dual-vert">
+							<div class="line fa">@GridHelper.FormatearPrecio(item.fa_19a20, TipoPrecio.Venta)</div>
+							<div class="line op">@GridHelper.FormatearPrecio(item.op_19a20, TipoPrecio.Venta)</div>
+						</td>
+						<td class="td-dual-vert">
+							<div class="line fa">@GridHelper.FormatearPrecio(item.fa_20a21, TipoPrecio.Venta)</div>
+							<div class="line op">@GridHelper.FormatearPrecio(item.op_20a21, TipoPrecio.Venta)</div>
+						</td>
+						<td class="td-dual-vert">
+							<div class="line fa">@GridHelper.FormatearPrecio(item.fa_21a22, TipoPrecio.Venta)</div>
+							<div class="line op">@GridHelper.FormatearPrecio(item.op_21a22, TipoPrecio.Venta)</div>
+						</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>
+

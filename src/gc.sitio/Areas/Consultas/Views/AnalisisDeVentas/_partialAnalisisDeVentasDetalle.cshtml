@@ -1,0 +1,71 @@
+﻿@model AnalisisDeVentaDetalleMesModel
+@{
+}
+<style>
+	.tab-disabled {
+		pointer-events: none;
+		opacity: 0.5;
+	}
+
+	.tab-content-compact {
+		/* padding: 0.75rem 0; */
+		border-radius: 0.375rem;
+		background-color: transparent;
+		padding-bottom: 0.75rem;
+		padding-right: 0;
+		padding-left: 0;
+		padding-top: 0.25rem;
+	}
+
+	.pad-min {
+		padding-top: 2px !important;
+		padding-bottom: 2px !important;
+		padding-right: 2px !important;
+		padding-left: 2px !important;
+	}
+</style>
+@Html.Hidden("mes", Model.mes)
+@Html.Hidden("periodo", Model.periodo)
+@Html.Hidden("sucursales", Model.sucursales)
+<div class="d-flex align-items-center w-100 mt-2">
+	<ul class="nav nav-tabs nav-tabs-golden" role="tablist" id="tabsAnalisisDeVentasDetalleMes">
+		<li class="nav-item" role="presentation" id="tabDetalleDiario">
+			<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-diario" aria-controls="navs-top-diario" aria-selected="true" id="btnTabDetalleDiario">
+				Diario
+			</button>
+		</li>
+		<li class="nav-item" role="presentation" id="tabDetalleHora">
+			<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-hora" aria-controls="navs-top-hora" aria-selected="false" tabindex="-1" id="btnTabDetalleHora">
+				Hora
+			</button>
+		</li>
+		<li class="nav-item" role="presentation" id="tabDetalleSucursal">
+			<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-sucursal" aria-controls="navs-top-sucursal" aria-selected="false" tabindex="-1" id="btnTabDetalleSucursal">
+				Sucursal
+			</button>
+		</li>
+		<li class="nav-item" role="presentation" id="tabDetalleCierres">
+			<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-cierre" aria-controls="navs-top-cierre" aria-selected="false" tabindex="-1" id="btnTabDetalleCierres">
+				Cierres
+			</button>
+		</li>
+	</ul>
+</div>
+<div class="tab-content tab-content-compact">
+	<div class="tab-pane fade tab-content-golden show active pad-min" id="navs-top-diario" role="tabpanel">
+		<div id="divDetalleMesDiario">
+		</div>
+	</div>
+	<div class="tab-pane fade tab-content-golden pad-min" id="navs-top-hora" role="tabpanel">
+		<div id="divDetalleMesHora">
+		</div>
+	</div>
+	<div class="tab-pane fade tab-content-golden pad-min" id="navs-top-sucursal" role="tabpanel">
+		<div id="divDetalleMesSucursal">
+		</div>
+	</div>
+	<div class="tab-pane fade tab-content-golden pad-min" id="navs-top-cierre" role="tabpanel">
+		<div id="divAnalisisCierres">
+		</div>
+	</div>
+</div>
