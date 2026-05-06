@@ -1199,8 +1199,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                                     // ═══════════════════════════════════════════════════
                                     // ✅ SECCIÓN 7: MÁRGENES (SI EL SP LOS RETORNA)
                                     // ═══════════════════════════════════════════════════
-                                    //p_margen_imp = producto.p_margen_imp,
-                                    //p_margen_vig = producto.p_margen_vig,
+                                    p_margen_imp = 0,// producto.p_margen_imp??0,
+                                    p_margen_vig = 0,// producto.p_margen_vig??0,
 
                                     // ═══════════════════════════════════════════════════
                                     // ✅ SECCIÓN 8: TOTALES CALCULADOS POR COMPROBANTE
@@ -1623,19 +1623,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
                 _logger?.LogInformation("📦 REQUEST DTO CONSTRUIDO:");
-                _logger?.LogInformation($"   caja_id: {request.caja_id}");
-                _logger?.LogInformation($"   usu_id: {request.usu_id}");
-                _logger?.LogInformation($"   adm_id: {request.adm_id}");
-                _logger?.LogInformation($"   cta_id: {request.cta_id}");
-                _logger?.LogInformation($"   co_tipo: {request.co_tipo} (DIFERIR PAGO)");
-                _logger?.LogInformation($"   tco_letra: {request.tco_letra}");
-                _logger?.LogInformation($"   afip_id: {request.afip_id}");
-                _logger?.LogInformation($"   json_p (longitud): {request.json_p.Length}");
-                _logger?.LogInformation($"   json_subtotal (longitud): {request.json_subtotal.Length}");
-                _logger?.LogInformation($"   json_sorteo (longitud): {request.json_sorteo.Length}");
-                _logger?.LogInformation($"   json_valores: {request.json_valores} (VACÍO)");
-                _logger?.LogInformation($"   json_cancela: {request.json_cancela} (VACÍO)");
-                _logger?.LogInformation($"   json_union: {request.json_union} (VACÍO)");
+                _logger?.LogInformation($"   datos: {JsonConvert.SerializeObject( request)}");               
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                 // ❾ INVOCAR SERVICIO

@@ -1,0 +1,45 @@
+// Evento para el checkbox de estado del combo
+$(document).on("change", "#chkEstadoCombo", function () {
+    var isChecked = $(this).prop("checked");
+    var nuevoEstado = isChecked ? 'A' : 'N';
+    var estadoAnterior = $("#cmb_estado").val();
+    
+    // Actualizar el valor oculto del estado
+    $("#cmb_estado").val(nuevoEstado);
+    
+    // Actualizar el texto de la etiqueta
+    $("#lblEstadoCombo").text(isChecked ? "Activo" : "No activo");
+    
+    // Si no estamos en modo nuevo/edición, y se está activando un combo inactivo
+    if (!modoNuevoCombo && isChecked && estadoAnterior === 'N') {
+        // Revertir temporalmente el cambio para que se reactive solo tras confirmación
+        $(this).prop("checked", false);
+        $("#cmb_estado").val(estadoAnterior);
+        $("#lblEstadoCombo").text("No activo");
+        
+        // Obtener el tipo de promoción o combo
+        var tipo = $("#cmb_tipo").val() === 'C' ? 'combo' : 'promoción';
+        var descripcion = $("#cmb_desc").val().trim();
+        
+        // Mostrar mensaje de confirmación
+        AbrirMensaje(
+            "ACTIVAR " + tipo.toUpperCase(),
+            `¿Está seguro que desea activar ${tipo} "${descripcion}"?`,
+            function (resp) {
+                if (resp === "SI") {
+                    // Aplicar el cambio de estado y activar
+                    $("#chkEstadoCombo").prop("checked", true);
+                    $("#cmb_estado").val('A');
+                    $("#lblEstadoCombo").text("Activo");
+                    activarComboExistente(tipo);
+                }
+                $("#msjModal").modal("hide");
+                return true;
+            },
+            true,
+            ["Activar", "Cancelar"],
+            "info!",
+            null
+        );
+    }
+});
