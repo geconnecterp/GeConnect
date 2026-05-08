@@ -62,9 +62,6 @@
 			{
 				foreach (var item in Model.ListaAnaVtaMes.ListaDatos)
 				{
-					@* var mes_ant_porc = item.mes_ant_dif_porc * 100;
-					var per_ant_dif_porc = item.per_ant_dif_porc * 100;
-					var ctacte_dif_porc = item.ctacte_dif_porc * 100; *@
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase row-pedido"
 						data-mes="@item.mes"

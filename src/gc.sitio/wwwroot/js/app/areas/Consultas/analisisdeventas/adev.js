@@ -108,6 +108,11 @@ $("#btnImprimir").on("click", function () {
 	ImprimirSegunTab(tabId);
 });
 
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
 function ImprimirSegunTab(tabId) {
 
 	switch (tabId) {
@@ -138,21 +143,227 @@ function ImprimirSegunTab(tabId) {
 }
 
 function ImprimirMensual() {
+	AbrirWaiting();
+	var tipoReporte = 1;
+	var data = { tipoReporte };
+	PostGen(data, setearTipoDeReporteUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			HandlerImprimirMensual();
+		}
+	});
+}
+
+function HandlerImprimirMensual() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var suc = ObtenerSucursalesSeleccionadasConTexto();
+		var sucursalesIds = suc.ids;
+		var sucursalesTextos = suc.textos;
+		var data = {
+			Desde: $("#Desde").val(),
+			Hasta: $("#Hasta").val(),
+			Sucursales: sucursalesIds,
+			SucursalesTextos: sucursalesTextos
+		}
+		cargarReporteEnArre(69, data, "Análisis de Venta Mensual", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function ImprimirDetalleDiario() {
+	AbrirWaiting();
+	var tipoReporte = 2;
+	var data = { tipoReporte };
+	PostGen(data, setearTipoDeReporteUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			HandlerImprimirDetalleDiario();
+		}
+	});
+}
+
+function HandlerImprimirDetalleDiario() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var suc = ObtenerSucursalesSeleccionadasConTexto();
+		var sucursalesIds = suc.ids;
+		var sucursalesTextos = suc.textos;
+		var mes = mes_selected;
+		var periodo = periodo_selected
+		var data = {
+			Mes: mes,
+			Periodo: periodo,
+			Sucursales: sucursalesIds,
+			SucursalesTextos: sucursalesTextos
+		}
+		cargarReporteEnArre(70, data, "Análisis de Venta Diario", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function ImprimirDetalleHora() {
+	AbrirWaiting();
+	var tipoReporte = 3;
+	var data = { tipoReporte };
+	PostGen(data, setearTipoDeReporteUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			HandlerImprimirDetalleHora();
+		}
+	});
+}
+
+function HandlerImprimirDetalleHora() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var suc = ObtenerSucursalesSeleccionadasConTexto();
+		var sucursalesIds = suc.ids;
+		var sucursalesTextos = suc.textos;
+		var mes = mes_selected;
+		var periodo = periodo_selected
+		var data = {
+			Mes: mes,
+			Periodo: periodo,
+			Sucursales: sucursalesIds,
+			SucursalesTextos: sucursalesTextos
+		}
+		cargarReporteEnArre(71, data, "Análisis de Venta por Hora", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function ImprimirDetalleSucursal() {
+	AbrirWaiting();
+	var tipoReporte = 4;
+	var data = { tipoReporte };
+	PostGen(data, setearTipoDeReporteUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			HandlerImprimirDetalleSucursal();
+		}
+	});
+}
+
+function HandlerImprimirDetalleSucursal() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var suc = ObtenerSucursalesSeleccionadasConTexto();
+		var sucursalesIds = suc.ids;
+		var sucursalesTextos = suc.textos;
+		var mes = mes_selected;
+		var periodo = periodo_selected
+		var data = {
+			Mes: mes,
+			Periodo: periodo,
+			Sucursales: sucursalesIds,
+			SucursalesTextos: sucursalesTextos
+		}
+		cargarReporteEnArre(72, data, "Análisis de Venta por Sucursal", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function ImprimirDetalleCierre() {
+	AbrirWaiting();
+	var tipoReporte = 5;
+	var data = { tipoReporte };
+	PostGen(data, setearTipoDeReporteUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			HandlerImprimirDetalleCierre();
+		}
+	});
+}
+
+function HandlerImprimirDetalleCierre() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var suc = ObtenerSucursalesSeleccionadasConTexto();
+		var sucursalesIds = suc.ids;
+		var sucursalesTextos = suc.textos;
+		var mes = mes_selected;
+		var periodo = periodo_selected
+		var data = {
+			Mes: mes,
+			Periodo: periodo,
+			Sucursales: sucursalesIds,
+			SucursalesTextos: sucursalesTextos
+		}
+		cargarReporteEnArre(73, data, "Análisis de Venta por Cierre", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function ImprimirAnual() {
+	AbrirWaiting();
+	var tipoReporte = 6;
+	var data = { tipoReporte };
+	PostGen(data, setearTipoDeReporteUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			HandlerImprimirDetalleAnual();
+		}
+	});
+}
+
+function HandlerImprimirDetalleAnual() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var suc = ObtenerSucursalesSeleccionadasConTexto();
+		var sucursalesIds = suc.ids;
+		var sucursalesTextos = suc.textos;
+		var data = {
+			Desde: $("#Desde").val(),
+			Hasta: $("#Hasta").val(),
+			Sucursales: sucursalesIds,
+			SucursalesTextos: sucursalesTextos
+		}
+		cargarReporteEnArre(74, data, "Análisis de Venta Anual", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function CargarAnalisisDeVentaAnual() {
@@ -235,7 +446,7 @@ function CargarAnalisisDeVentaDetalleMes(mes, periodo) {
 	PostGenHtml({ mes, periodo, sucursales: sucursales_ids_desde_filtros }, cargarDetalleMesURL, function (obj) {
 		$("#divAnalisisDetalleMes").html(obj);
 		CargarTabsDelDetalleMes(mes, periodo, sucursales_ids_desde_filtros);
-		EvaluarBotonImprimir("navs-top-mens");
+		//EvaluarBotonImprimir("navs-top-mens");
 		return true;
 	});
 }
@@ -253,6 +464,11 @@ function CargarTabsDelDetalleMes(mes, periodo, sucursales) {
 	CargarTabsDelDetalleMesCierre(mes, periodo, sucursales);
 
 	FinalizarCargaDetalle(); // ← marcar como completado
+
+	setTimeout(() => {
+		EvaluarBotonImprimir("navs-top-diario");
+	}, 1000);
+	
 }
 
 function CargarTabsDelDetalleMesDiario(mes, periodo, sucursales) {

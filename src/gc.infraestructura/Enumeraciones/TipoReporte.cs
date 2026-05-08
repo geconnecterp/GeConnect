@@ -72,5 +72,11 @@ namespace gc.infraestructura.Enumeraciones
 		R064_Orden_De_Reparto_Hoja_De_Producto = 64,
         R065_Pedido_Interno = 65,
 		R066_Pedido_Interno_Listado = 66,
+		R069_Analisis_Venta_Mensual = 69,
+		R070_Analisis_Venta_Diario = 70,
+		R071_Analisis_Venta_Op_Vta_Diario = 71,
+		R072_Analisis_Venta_Sucursal = 72,
+		R073_Analisis_Venta_Cierres = 73,
+		R074_Analisis_Venta_Anual = 74,
 	}
 }

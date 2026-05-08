@@ -37,6 +37,7 @@ namespace gc.api.core.Servicios.Reportes
             IInventarioServicio invSv,
 			IApiPedidoServicio pedSv,
             IApiOrdenDeRepartoServicio ordRepSv,
+            IApiVentasServicio ventasSv,
 			 IOptions<EmpresaGeco> empresa, ICuentaServicio ctaSv, IOrdenDePagoServicio _opSv, ILogger<ReportService> logger) : base(uow)
         {
 
@@ -107,6 +108,12 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R064_Orden_De_Reparto_Hoja_De_Producto, new R064_Orden_De_Reparto_Hoja_De_Producto(uow,ordRepSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R065_Pedido_Interno, new R065_Pedido_Interno(uow,apiProdSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R066_Pedido_Interno_Listado, new R066_Pedido_Interno_Lista(uow,apiProdSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R069_Analisis_Venta_Mensual, new R069_Analisis_Venta_Mensual(uow,ventasSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R070_Analisis_Venta_Diario, new R070_Analisis_Venta_Diario(uow,ventasSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R071_Analisis_Venta_Op_Vta_Diario, new R071_Analisis_Venta_Op_Vta_Diario(uow,ventasSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R072_Analisis_Venta_Sucursal, new R072_Analisis_Venta_Sucursal(uow,ventasSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R073_Analisis_Venta_Cierres, new R073_Analisis_Venta_Cierres(uow,ventasSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R074_Analisis_Venta_Anual, new R074_Analisis_Venta_Anual(uow,ventasSv,empresa,ctaSv, logger) },
 			}; 
             _logger = logger;
         }

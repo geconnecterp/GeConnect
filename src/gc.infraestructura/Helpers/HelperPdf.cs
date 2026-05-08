@@ -138,6 +138,7 @@ using gc.infraestructura.Dtos.Mstk;
 using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
 using gc.infraestructura.Dtos.Productos.Pedidos;
 using gc.infraestructura.Dtos.Productos.Presupuestos;
+using gc.infraestructura.Dtos.Ventas;
 using gc.infraestructura.EntidadesComunes.Options;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
@@ -5273,6 +5274,804 @@ namespace gc.infraestructura.Helpers
 				AgregarCelda(tabla, item.p_desc, chico, Element.ALIGN_LEFT);
 				AgregarCelda(tabla, item.p_id_prov ?? "", chico, Element.ALIGN_RIGHT);
 				AgregarCelda(tabla, item.p_id_barrado, chico, Element.ALIGN_CENTER);
+			}
+
+			pdf.Add(tabla);
+		}
+
+		public static void CargarRepoAnalisisDeVentaMensual(Document pdf, List<AnaVtaMesDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		{
+			pdf.SetPageSize(PageSize.A4.Rotate());
+			pdf.SetMargins(20f, 20f, 20f, 20f);
+
+			PdfPTable tabla = new(9)
+			{
+				WidthPercentage = 100
+			};
+			tabla.SetWidths([
+				1.2f, // Mes
+				2.0f, // Facturación
+				2.0f, // Fact. Ac.
+				2.2f, // Dif. Mes Ant.
+				2.2f, // Dif. Mes/Año Ant.
+				2.0f, // Costo
+				2.0f, // Rentabilidad
+				2.0f, // Rent. Ac.
+				2.2f  // Vta. CtaCte.
+			]);
+
+			void AddHeader(string texto)
+			{
+				PdfPCell c = new(new Phrase(texto, normalBold))
+				{
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					BackgroundColor = new BaseColor(230, 230, 230),
+					Padding = 4
+				};
+				tabla.AddCell(c);
+			}
+
+			AddHeader("Mes");
+			AddHeader("Facturación");
+			AddHeader("Fact. Ac.");
+			AddHeader("Dif. Mes Ant.");
+			AddHeader("Dif. Mes/Año Ant.");
+			AddHeader("Costo");
+			AddHeader("Rentabilidad");
+			AddHeader("Rent. Ac.");
+			AddHeader("Vta. CtaCte.");
+
+
+			BaseColor ColorPorcentaje(decimal valor)
+			{
+				if (valor > 0) return new BaseColor(201, 228, 255); // celeste
+				if (valor < 0) return new BaseColor(255, 224, 224); // rojo suave
+				return BaseColor.White;
+			}
+
+			foreach (var r in registros)
+			{
+				// Mes
+				tabla.AddCell(new PdfPCell(new Phrase($"{r.periodo}-{r.mes:00}", normal))
+				{ HorizontalAlignment = Element.ALIGN_CENTER });
+
+				// Facturación
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_facturacion.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Facturación acumulada
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_facturacion_acu.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Dif. Mes Ant. (porcentaje + valor)
+				{
+					PdfPTable mini = new PdfPTable(2);
+					mini.WidthPercentage = 100;
+					mini.SetWidths(new float[] { 1f, 1f });
+
+					PdfPCell porc = new PdfPCell(new Phrase($"{r.mes_ant_dif_porc}%", chico))
+					{
+						BackgroundColor = ColorPorcentaje(r.mes_ant_dif_porc),
+						HorizontalAlignment = Element.ALIGN_LEFT,
+						Padding = 2,
+						Border = Rectangle.NO_BORDER
+					};
+
+					PdfPCell val = new PdfPCell(new Phrase(r.mes_ant_dif.ToString("N2"), chico))
+					{
+						HorizontalAlignment = Element.ALIGN_RIGHT,
+						Padding = 2,
+						Border = Rectangle.NO_BORDER
+					};
+
+					mini.AddCell(porc);
+					mini.AddCell(val);
+
+					PdfPCell cont = new PdfPCell(mini);
+					tabla.AddCell(cont);
+				}
+
+				// Dif. Mes/Año Ant. (igual que arriba)
+				{
+					PdfPTable mini = new PdfPTable(2);
+					mini.WidthPercentage = 100;
+					mini.SetWidths(new float[] { 1f, 1f });
+
+					PdfPCell porc = new PdfPCell(new Phrase($"{r.per_ant_dif_porc}%", chico))
+					{
+						BackgroundColor = ColorPorcentaje(r.per_ant_dif_porc),
+						HorizontalAlignment = Element.ALIGN_LEFT,
+						Padding = 2,
+						Border = Rectangle.NO_BORDER
+					};
+
+					PdfPCell val = new PdfPCell(new Phrase(r.per_ant_dif.ToString("N2"), chico))
+					{
+						HorizontalAlignment = Element.ALIGN_RIGHT,
+						Padding = 2,
+						Border = Rectangle.NO_BORDER
+					};
+
+					mini.AddCell(porc);
+					mini.AddCell(val);
+
+					PdfPCell cont = new PdfPCell(mini);
+					tabla.AddCell(cont);
+				}
+
+				// Costo
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_costo.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Rentabilidad
+				tabla.AddCell(new PdfPCell(new Phrase(r.rentabilidad.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Rentabilidad acumulada
+				tabla.AddCell(new PdfPCell(new Phrase(r.rentabilidad_acu.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Vta. CtaCte. (porcentaje + valor)
+				{
+					PdfPTable mini = new PdfPTable(2);
+					mini.WidthPercentage = 100;
+					mini.SetWidths(new float[] { 1f, 1f });
+
+					PdfPCell porc = new PdfPCell(new Phrase($"{r.ctacte_dif_porc}%", chico))
+					{
+						BackgroundColor = ColorPorcentaje(r.ctacte_dif_porc),
+						HorizontalAlignment = Element.ALIGN_LEFT,
+						Padding = 2,
+						Border = Rectangle.NO_BORDER
+					};
+
+					PdfPCell val = new PdfPCell(new Phrase(r.ctacte_dif.ToString("N2"), chico))
+					{
+						HorizontalAlignment = Element.ALIGN_RIGHT,
+						Padding = 2,
+						Border = Rectangle.NO_BORDER
+					};
+
+					mini.AddCell(porc);
+					mini.AddCell(val);
+
+					PdfPCell cont = new PdfPCell(mini);
+					tabla.AddCell(cont);
+				}
+			}
+
+			pdf.Add(tabla);
+
+		}
+
+		public static void CargarRepoAnalisisDeVentaDiario(Document pdf, List<AnaVtaMesDetalleDiarioDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		{
+			// Página apaisada
+			pdf.SetPageSize(PageSize.A4.Rotate());
+			pdf.SetMargins(20f, 20f, 20f, 20f);
+
+			// ============================
+			// ENCABEZADO REPETIBLE
+			// ============================
+			PdfPTable header = new PdfPTable(1);
+			header.WidthPercentage = 100;
+
+			PdfPCell tituloCell = new PdfPCell(new Phrase("Análisis de Venta Diario", tituloBig))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				PaddingBottom = 5
+			};
+			header.AddCell(tituloCell);
+
+			PdfPCell subCell = new PdfPCell(new Phrase("Detalle por día", titulo))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				PaddingBottom = 10
+			};
+			header.AddCell(subCell);
+
+			header.HeaderRows = 2;
+			pdf.Add(header);
+
+			// ============================
+			// TABLA PRINCIPAL
+			// ============================
+			PdfPTable tabla = new PdfPTable(11)
+			{
+				WidthPercentage = 100
+			};
+
+			tabla.SetWidths(new float[] {
+				1.4f, // Día
+				2.0f, // Facturación
+				2.0f, // Fact. Ac.
+				1.8f, // % Acu MA
+				2.0f, // Costo
+				2.0f, // Rentabilidad
+				2.0f, // Rent. Ac.
+				2.2f, // Vta CtaCte (mini tabla)
+				2.0f, // Fact MA
+				2.0f, // Fact MI
+				2.0f  // Fact Dif
+			});
+
+			// ============================
+			// ENCABEZADOS
+			// ============================
+			void AddHeader(string texto)
+			{
+				PdfPCell c = new PdfPCell(new Phrase(texto, normalBold))
+				{
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					BackgroundColor = new BaseColor(230, 230, 230),
+					Padding = 4
+				};
+				tabla.AddCell(c);
+			}
+
+			AddHeader("Día");
+			AddHeader("Facturación");
+			AddHeader("Fact. Ac.");
+			AddHeader("% Acu. MA");
+			AddHeader("Costo");
+			AddHeader("Rentabilidad");
+			AddHeader("Rent. Ac.");
+			AddHeader("Vta. CtaCte.");
+			AddHeader("Fact. MA");
+			AddHeader("Fact. MI");
+			AddHeader("Fact. Dif.");
+
+			// ============================
+			// COLORES PARA PORCENTAJES
+			// ============================
+			BaseColor ColorPorcentaje(decimal valor)
+			{
+				if (valor > 0) return new BaseColor(201, 228, 255); // celeste
+				if (valor < 0) return new BaseColor(255, 224, 224); // rojo suave
+				return BaseColor.White;
+			}
+
+			// ============================
+			// FILAS
+			// ============================
+			foreach (var r in registros)
+			{
+				decimal fac_may_acu_porc = r.fac_may_acu_porc * 100;
+				decimal ctacte_dif_porc = r.ctacte_dif_porc * 100;
+
+				// Día
+				tabla.AddCell(new PdfPCell(new Phrase(r.dia.ToString("dd/MM/yyyy"), normal))
+				{ HorizontalAlignment = Element.ALIGN_CENTER });
+
+				// Facturación
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_facturacion.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Facturación acumulada
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_facturacion_acu.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// % Acu MA
+				tabla.AddCell(new PdfPCell(new Phrase(fac_may_acu_porc.ToString("N2") + "%", normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Costo
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_costo.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Rentabilidad
+				tabla.AddCell(new PdfPCell(new Phrase(r.rentabilidad.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Rentabilidad acumulada
+				tabla.AddCell(new PdfPCell(new Phrase(r.rentabilidad_acu.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Vta. CtaCte. (porcentaje + valor)
+				{
+					PdfPTable mini = new PdfPTable(2);
+					mini.WidthPercentage = 100;
+					mini.SetWidths(new float[] { 1f, 1f });
+
+					PdfPCell porc = new PdfPCell(new Phrase($"{ctacte_dif_porc:N2}%", chico))
+					{
+						BackgroundColor = ColorPorcentaje(ctacte_dif_porc),
+						HorizontalAlignment = Element.ALIGN_LEFT,
+						Padding = 2,
+						Border = Rectangle.NO_BORDER
+					};
+
+					PdfPCell val = new PdfPCell(new Phrase(r.ctacte_dif.ToString("N2"), chico))
+					{
+						HorizontalAlignment = Element.ALIGN_RIGHT,
+						Padding = 2,
+						Border = Rectangle.NO_BORDER
+					};
+
+					mini.AddCell(porc);
+					mini.AddCell(val);
+
+					tabla.AddCell(new PdfPCell(mini));
+				}
+
+				// Fact MA
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_fac_may.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Fact MI
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_fac_min.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Fact Dif
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_fac_dis.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+			}
+
+			pdf.Add(tabla);
+		}
+
+		public static void CargarRepoAnalisisDeVentaHora(Document pdf, List<AnaVtaMesDetalleHoraDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		{
+			// Página apaisada
+			pdf.SetPageSize(PageSize.A4.Rotate());
+			pdf.SetMargins(20f, 20f, 20f, 20f);
+
+			// ============================
+			// ENCABEZADO REPETIBLE
+			// ============================
+			PdfPTable header = new PdfPTable(1);
+			header.WidthPercentage = 100;
+
+			PdfPCell tituloCell = new PdfPCell(new Phrase("Análisis de Venta por Hora", tituloBig))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				PaddingBottom = 5
+			};
+			header.AddCell(tituloCell);
+
+			PdfPCell subCell = new PdfPCell(new Phrase("Detalle por franja horaria", titulo))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				PaddingBottom = 10
+			};
+			header.AddCell(subCell);
+
+			header.HeaderRows = 2;
+			pdf.Add(header);
+
+			// ============================
+			// TABLA PRINCIPAL
+			// ============================
+			PdfPTable tabla = new PdfPTable(16)
+			{
+				WidthPercentage = 100
+			};
+
+			tabla.SetWidths(new float[] {
+				1.6f, // Día
+				1.4f,1.4f,1.4f,1.4f,1.4f,1.4f,1.4f,1.4f,
+				1.4f,1.4f,1.4f,1.4f,1.4f,1.4f,1.4f // 6-8 ... 21-22
+			});
+
+			// ============================
+			// ENCABEZADOS
+			// ============================
+			void AddHeader(string texto)
+			{
+				PdfPCell c = new PdfPCell(new Phrase(texto, normalBold))
+				{
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					BackgroundColor = new BaseColor(230, 230, 230),
+					Padding = 4
+				};
+				tabla.AddCell(c);
+			}
+
+			AddHeader("Día");
+			AddHeader("6 a 8");
+			AddHeader("8 a 9");
+			AddHeader("9 a 10");
+			AddHeader("10 a 11");
+			AddHeader("11 a 12");
+			AddHeader("12 a 13");
+			AddHeader("13 a 14");
+			AddHeader("14 a 15");
+			AddHeader("15 a 16");
+			AddHeader("16 a 17");
+			AddHeader("17 a 18");
+			AddHeader("18 a 19");
+			AddHeader("19 a 20");
+			AddHeader("20 a 21");
+			AddHeader("21 a 22");
+
+			// ============================
+			// FUNCIÓN MINI‑CELDA (FA / OP)
+			// ============================
+			PdfPCell CeldaDual(decimal fa, decimal op)
+			{
+				PdfPTable mini = new PdfPTable(1);
+				mini.WidthPercentage = 100;
+
+				PdfPCell c1 = new PdfPCell(new Phrase(fa.ToString("N2"), chico))
+				{
+					HorizontalAlignment = Element.ALIGN_RIGHT,
+					Padding = 2,
+					Border = Rectangle.NO_BORDER
+				};
+
+				PdfPCell c2 = new PdfPCell(new Phrase(op.ToString("N2"), chico))
+				{
+					HorizontalAlignment = Element.ALIGN_RIGHT,
+					Padding = 2,
+					Border = Rectangle.NO_BORDER
+				};
+
+				// Línea divisoria entre FA y OP
+				c1.BorderWidthBottom = 0.5f;
+				c1.BorderColorBottom = new BaseColor(200, 200, 200);
+
+				mini.AddCell(c1);
+				mini.AddCell(c2);
+
+				return new PdfPCell(mini)
+				{
+					Padding = 0
+				};
+			}
+
+			// ============================
+			// FILAS
+			// ============================
+			foreach (var r in registros)
+			{
+				// Día
+				tabla.AddCell(new PdfPCell(new Phrase(r.dia.ToString("dd/MM/yyyy"), normal))
+				{ HorizontalAlignment = Element.ALIGN_CENTER });
+
+				// 6 a 8
+				tabla.AddCell(CeldaDual(r.fa_6a8, r.op_6a8));
+				tabla.AddCell(CeldaDual(r.fa_8a9, r.op_8a9));
+				tabla.AddCell(CeldaDual(r.fa_9a10, r.op_9a10));
+				tabla.AddCell(CeldaDual(r.fa_10a11, r.op_10a11));
+				tabla.AddCell(CeldaDual(r.fa_11a12, r.op_11a12));
+				tabla.AddCell(CeldaDual(r.fa_12a13, r.op_12a13));
+				tabla.AddCell(CeldaDual(r.fa_13a14, r.op_13a14));
+				tabla.AddCell(CeldaDual(r.fa_14a15, r.op_14a15));
+				tabla.AddCell(CeldaDual(r.fa_15a16, r.op_15a16));
+				tabla.AddCell(CeldaDual(r.fa_16a17, r.op_16a17));
+				tabla.AddCell(CeldaDual(r.fa_17a18, r.op_17a18));
+				tabla.AddCell(CeldaDual(r.fa_18a19, r.op_18a19));
+				tabla.AddCell(CeldaDual(r.fa_19a20, r.op_19a20));
+				tabla.AddCell(CeldaDual(r.fa_20a21, r.op_20a21));
+				tabla.AddCell(CeldaDual(r.fa_21a22, r.op_21a22));
+			}
+
+			pdf.Add(tabla);
+		}
+
+		public static void CargarRepoAnalisisDeVentaSucursal(Document pdf, List<AnaVtaMesDetalleSucursalDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		{
+			// Página vertical (no apaisada)
+			pdf.SetPageSize(PageSize.A4);
+			pdf.SetMargins(20f, 20f, 20f, 20f);
+
+			// ============================
+			// ENCABEZADO REPETIBLE
+			// ============================
+			PdfPTable header = new PdfPTable(1);
+			header.WidthPercentage = 100;
+
+			PdfPCell tituloCell = new PdfPCell(new Phrase("Análisis de Venta por Sucursal", tituloBig))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				PaddingBottom = 5
+			};
+			header.AddCell(tituloCell);
+
+			PdfPCell subCell = new PdfPCell(new Phrase("Detalle por sucursal", titulo))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				PaddingBottom = 10
+			};
+			header.AddCell(subCell);
+
+			header.HeaderRows = 2;
+			pdf.Add(header);
+
+			// ============================
+			// TABLA PRINCIPAL
+			// ============================
+			PdfPTable tabla = new PdfPTable(6)
+			{
+				WidthPercentage = 100
+			};
+
+			tabla.SetWidths(new float[] {
+				3.0f, // Sucursal
+				2.0f, // Facturación
+				1.6f, // Porcentaje
+				2.0f, // Cta Cte
+				2.0f, // Cobranza
+				2.0f  // Rentabilidad
+			});
+
+			// ============================
+			// ENCABEZADOS
+			// ============================
+			void AddHeader(string texto)
+			{
+				PdfPCell c = new PdfPCell(new Phrase(texto, normalBold))
+				{
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					BackgroundColor = new BaseColor(230, 230, 230),
+					Padding = 4
+				};
+				tabla.AddCell(c);
+			}
+
+			AddHeader("Sucursal");
+			AddHeader("Facturación");
+			AddHeader("Porcentaje");
+			AddHeader("Cta. Cte.");
+			AddHeader("Cobranza");
+			AddHeader("Rentabilidad");
+
+			// ============================
+			// FILAS
+			// ============================
+			foreach (var r in registros)
+			{
+				// Sucursal
+				tabla.AddCell(new PdfPCell(new Phrase(r.adm_nombre, normal))
+				{ HorizontalAlignment = Element.ALIGN_LEFT });
+
+				// Facturación
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_facturacion.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Porcentaje
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_facturacion_porc.ToString("N2") + "%", normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Cta. Cte.
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_ctacte.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Cobranza
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_cobranza.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Rentabilidad
+				tabla.AddCell(new PdfPCell(new Phrase(r.rentabilidad.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+			}
+
+			pdf.Add(tabla);
+		}
+
+		public static void CargarRepoAnalisisDeVentaCierre(Document pdf, List<AnaVtaMesDetalleCierreDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		{
+			// Página apaisada
+			pdf.SetPageSize(PageSize.A4.Rotate());
+			pdf.SetMargins(20f, 20f, 20f, 20f);
+
+			// ============================
+			// ENCABEZADO REPETIBLE
+			// ============================
+			PdfPTable header = new PdfPTable(1);
+			header.WidthPercentage = 100;
+
+			PdfPCell tituloCell = new PdfPCell(new Phrase("Análisis de Venta - Cierres", tituloBig))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				PaddingBottom = 5
+			};
+			header.AddCell(tituloCell);
+
+			PdfPCell subCell = new PdfPCell(new Phrase("Detalle de cierres por sucursal", titulo))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				PaddingBottom = 10
+			};
+			header.AddCell(subCell);
+
+			header.HeaderRows = 2;
+			pdf.Add(header);
+
+			// ============================
+			// TABLA PRINCIPAL
+			// ============================
+			PdfPTable tabla = new PdfPTable(11)
+			{
+				WidthPercentage = 100
+			};
+
+			tabla.SetWidths(new float[] {
+				3.0f, // Sucursal
+				1.4f, // Proceso
+				1.4f, // Cierre
+				2.0f, // Facturación
+				2.0f, // Fact. Dif.
+				2.0f, // Cta Cte
+				2.0f, // Cobranza
+				2.0f, // Cob. Dif.
+				2.0f, // Devoluciones y NC
+				2.0f, // Créditos Usados
+				2.0f  // A Rendir
+			});
+
+			// ============================
+			// ENCABEZADOS
+			// ============================
+			void AddHeader(string texto)
+			{
+				PdfPCell c = new PdfPCell(new Phrase(texto, normalBold))
+				{
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					BackgroundColor = new BaseColor(230, 230, 230),
+					Padding = 4
+				};
+				tabla.AddCell(c);
+			}
+
+			AddHeader("Sucursal");
+			AddHeader("Proceso");
+			AddHeader("Cierre");
+			AddHeader("Facturación");
+			AddHeader("Fact. Dif.");
+			AddHeader("Cta. Cte.");
+			AddHeader("Cobranza");
+			AddHeader("Cob. Dif.");
+			AddHeader("Devoluciones y NC");
+			AddHeader("Créditos Usados");
+			AddHeader("A Rendir");
+
+			// ============================
+			// FILAS
+			// ============================
+			foreach (var r in registros)
+			{
+				// Sucursal
+				tabla.AddCell(new PdfPCell(new Phrase(r.adm_nombre, normal))
+				{ HorizontalAlignment = Element.ALIGN_LEFT });
+
+				// Proceso
+				tabla.AddCell(new PdfPCell(new Phrase(r.caja_nro_proceso.ToString(), normal))
+				{ HorizontalAlignment = Element.ALIGN_CENTER });
+
+				// Cierre
+				tabla.AddCell(new PdfPCell(new Phrase(r.caja_nro_cierre.ToString(), normal))
+				{ HorizontalAlignment = Element.ALIGN_CENTER });
+
+				// Facturación
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_facturacion.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Facturación Diferida
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_facturacion_dif.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Cta. Cte.
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_ctacte.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Cobranza
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_cobranza.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Cobranza Diferida
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_cobranza_dif.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Devoluciones y NC
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_nota_credito.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Créditos Usados
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_creditos_usados.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// A Rendir
+				tabla.AddCell(new PdfPCell(new Phrase(r.a_rendir.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+			}
+
+			pdf.Add(tabla);
+		}
+
+		public static void CargarRepoAnalisisDeVentaAnual(Document pdf, List<AnaVtaMesDetalleAnualDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		{
+			// Página vertical
+			pdf.SetPageSize(PageSize.A4);
+			pdf.SetMargins(20f, 20f, 20f, 20f);
+
+			// ============================
+			// ENCABEZADO REPETIBLE
+			// ============================
+			PdfPTable header = new PdfPTable(1);
+			header.WidthPercentage = 100;
+
+			PdfPCell tituloCell = new PdfPCell(new Phrase("Análisis de Venta Anual", tituloBig))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				PaddingBottom = 5
+			};
+			header.AddCell(tituloCell);
+
+			PdfPCell subCell = new PdfPCell(new Phrase("Detalle por año", titulo))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				PaddingBottom = 10
+			};
+			header.AddCell(subCell);
+
+			header.HeaderRows = 2;
+			pdf.Add(header);
+
+			// ============================
+			// TABLA PRINCIPAL
+			// ============================
+			PdfPTable tabla = new PdfPTable(4)
+			{
+				WidthPercentage = 100
+			};
+
+			tabla.SetWidths(new float[] {
+				1.4f, // Año
+				2.2f, // Facturación
+				2.2f, // Dif. Año Anterior
+				2.2f  // Rentabilidad
+			});
+
+			// ============================
+			// ENCABEZADOS
+			// ============================
+			void AddHeader(string texto)
+			{
+				PdfPCell c = new PdfPCell(new Phrase(texto, normalBold))
+				{
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					BackgroundColor = new BaseColor(230, 230, 230),
+					Padding = 4
+				};
+				tabla.AddCell(c);
+			}
+
+			AddHeader("Año");
+			AddHeader("Facturación");
+			AddHeader("Dif. Año Anterior");
+			AddHeader("Rentabilidad");
+
+			// ============================
+			// FILAS
+			// ============================
+			foreach (var r in registros)
+			{
+				// Año
+				tabla.AddCell(new PdfPCell(new Phrase(r.periodo.ToString(), normal))
+				{ HorizontalAlignment = Element.ALIGN_CENTER });
+
+				// Facturación
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_facturacion.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Diferencia Año Anterior
+				tabla.AddCell(new PdfPCell(new Phrase(r.diferencia.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Rentabilidad
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_costo.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
 			}
 
 			pdf.Add(tabla);
