@@ -9,6 +9,7 @@ using gc.infraestructura.Dtos.Cajas.Response;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Enumeraciones;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -23,16 +24,22 @@ namespace gc.caja.Areas.Facturacion.Controllers
     {
         private readonly ICajaServicio _cajaServicio;
         private readonly IProductoFactServicio _productoFactServicio;
+        private readonly IReportesConfigService _reportesConfigService;
+        private readonly IReportesService _reportesService;
 
         public ProductoFactController(
             IOptions<AppSettings> options,
             ICajaServicio cajaServicio,
             IProductoFactServicio productoFactServicio, // ✅ INYECTAR
             IHttpContextAccessor httpContext,
+            IReportesConfigService reportesConfigService,
+            IReportesService reportesService,
             ILogger<ProductoFactController> logger) : base(options, httpContext, logger)
         {
             _cajaServicio = cajaServicio;
             _productoFactServicio = productoFactServicio; // ✅ ASIGNAR
+            _reportesConfigService = reportesConfigService;
+            _reportesService = reportesService;
         }
 
         public IActionResult Index()
@@ -657,17 +664,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
                 _logger?.LogInformation("📋 REQUEST COMPLETO:");
-                _logger?.LogInformation($"   caja_id: {request.caja_id}");
-                _logger?.LogInformation($"   usu_id: {request.usu_id}");
-                _logger?.LogInformation($"   adm_id: {request.adm_id}");
-                _logger?.LogInformation($"   lp_id: {request.lp_id}");
-                _logger?.LogInformation($"   cta_id: {request.cta_id}");
-                _logger?.LogInformation($"   ctac_dto: {request.ctac_dto}");
-                _logger?.LogInformation($"   ctc_id: {request.ctc_id}");
-                _logger?.LogInformation($"   afip_id: {request.afip_id}");
-                _logger?.LogInformation($"   tot_rows: {request.tot_rows}");
-                _logger?.LogInformation($"   tot_cantidad: {request.tot_cantidad}");
-                _logger?.LogInformation($"   tot_pvta: {request.tot_pvta}");
+                _logger?.LogInformation($"{JsonConvert.SerializeObject(request)}");              
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                 // ❾ INVOCAR SERVICIO
@@ -683,7 +680,10 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 stopwatch.Stop();
                 _logger?.LogInformation($"⏱️ Tiempo de ejecución: {stopwatch.ElapsedMilliseconds}ms");
-
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("📋 RESPONSE COMPLETO:");
+                _logger?.LogInformation($"{JsonConvert.SerializeObject(resultado)}");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
                 // ❿ VALIDAR RESPUESTA
                 if (resultado == null)
                 {
@@ -1640,6 +1640,11 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 stopwatch.Stop();
                 _logger?.LogInformation($"⏱️ Tiempo de ejecución: {stopwatch.ElapsedMilliseconds}ms");
 
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("📦 RESPONSE DTO CONSTRUIDO:");
+                _logger?.LogInformation($"   datos: {JsonConvert.SerializeObject(resultado)}");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
                 // ❿ VALIDAR RESPUESTA
                 if (resultado == null)
                 {
@@ -1728,6 +1733,169 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 {
                     ok = false,
                     mensaje = "Error inesperado al diferir el pago. Por favor, intente nuevamente."
+                });
+            }
+        }
+
+
+        // ═══════════════════════════════════════════════════
+        // ✅ NUEVO ENDPOINT v10.0 (CORREGIDO)
+        // ═══════════════════════════════════════════════════
+
+        /// <summary>
+        /// Obtiene la configuración de reportes disponibles
+        /// </summary>
+        [HttpGet("ObtenerConfigReportes")]
+        public IActionResult ObtenerConfigReportes()
+        {
+            try
+            {
+                _logger.LogInformation("📋 Solicitando configuración de reportes...");
+
+                var reportes = _reportesConfigService.ObtenerTodos();
+
+                if (reportes == null || reportes.Count == 0)
+                {
+                    _logger.LogWarning("⚠️ No hay reportes configurados en appsettings.json");
+                    return Ok(new
+                    {
+                        ok = false,
+                        mensaje = "No hay reportes configurados"
+                    });
+                }
+
+                _logger.LogInformation($"✅ Devolviendo {reportes.Count} reportes configurados");
+
+                return Ok(new
+                {
+                    ok = true,
+                    reportes = reportes
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Error al obtener configuración de reportes");
+                return StatusCode(500, new
+                {
+                    ok = false,
+                    mensaje = "Error al obtener configuración de reportes"
+                });
+            }
+        }
+
+        /// <summary>
+        /// ✅ NUEVO v10.0: Genera un reporte de comprobante (Factura A, B, etc.)
+        /// Usa FeReqDto existente en lugar de crear DTO nuevo
+        /// </summary>
+        /// <param name="request">Datos del comprobante (tco_letra, tco_id, cm_compte, cm_repetido)</param>
+        /// <returns>PDF en Base64</returns>
+        [HttpPost("GenerarReporteComprobante")]
+        public async Task<IActionResult> GenerarReporteComprobante([FromBody] FeReqDto request)
+        {
+            try
+            {
+                _logger.LogInformation("═══════════════════════════════════════════════════");
+                _logger.LogInformation("📄 GENERAR REPORTE DE COMPROBANTE v10.0");
+                _logger.LogInformation("═══════════════════════════════════════════════════");
+                _logger.LogInformation($"   tco_letra: {request.tco_letra}");
+                _logger.LogInformation($"   tco_id: {request.tco_id}");
+                _logger.LogInformation($"   cm_compte: {request.cm_compte}");
+                _logger.LogInformation($"   cm_repetido: {request.cm_repetido}");
+                _logger.LogInformation("═══════════════════════════════════════════════════");
+
+                // ❶ Validar entrada
+                if (string.IsNullOrWhiteSpace(request.tco_letra))
+                {
+                    return Ok(new RespuestaReportDto
+                    {
+                        resultado = -1,
+                        resultado_msj = "Debe especificar la letra del comprobante (tco_letra)",
+                        Base64 = string.Empty
+                    });
+                }
+
+                // ❷ Obtener configuración del reporte según la letra
+                var reporteConfig = _reportesConfigService.ObtenerPorKey(request.tco_letra);
+
+                if (reporteConfig == null)
+                {
+                    _logger.LogWarning($"⚠️ No existe configuración para comprobante tipo '{request.tco_letra}'");
+                    return Ok(new RespuestaReportDto
+                    {
+                        resultado = -1,
+                        resultado_msj = $"No se encuentra configurado el reporte para comprobante tipo '{request.tco_letra}'",
+                        Base64 = string.Empty
+                    });
+                }
+
+                _logger.LogInformation($"✅ Reporte identificado: {reporteConfig.Nombre} (ID: {reporteConfig.Id})");
+
+                // ❸ Construir solicitud para API de reportes
+                var reporteSolicitud = new ReporteSolicitudDto
+                {
+                    Reporte = (InfoReporte)int.Parse(reporteConfig.Id),
+                    Parametros = new Dictionary<string, string>
+            {
+                { "tco_id", request.tco_id ?? string.Empty },
+                { "cm_compte", request.cm_compte ?? string.Empty },
+                { "cm_repetido", request.cm_repetido ?? "0" }
+            },
+                    Titulo = reporteConfig.Nombre,
+                    Formato = "P" // PDF
+                };
+
+                _logger.LogInformation($"📡 Invocando API de Reportes con ID: {reporteConfig.Id}");
+
+                // ❹ Obtener token de autenticación
+                var token = HttpContext.Session.GetString("TKN");
+
+                if (string.IsNullOrEmpty(token))
+                {
+                    _logger.LogWarning("⚠️ No se encontró token de sesión");
+                    return Ok(new RespuestaReportDto
+                    {
+                        resultado = -1,
+                        resultado_msj = "Sesión expirada. Por favor, inicie sesión nuevamente.",
+                        Base64 = string.Empty
+                    });
+                }
+
+                // ❺ Llamar a la API de reportes usando el servicio extraído
+                var respuestaReporte = await _reportesService.ObtenerPdfDesdeAPI(reporteSolicitud, token);
+
+                if (respuestaReporte.resultado != 0)
+                {
+                    _logger.LogError($"❌ Error en API de Reportes: {respuestaReporte.resultado_msj}");
+                    return Ok(respuestaReporte);
+                }
+
+                if (string.IsNullOrWhiteSpace(respuestaReporte.Base64))
+                {
+                    _logger.LogError("❌ La API de Reportes no devolvió contenido Base64");
+                    return Ok(new RespuestaReportDto
+                    {
+                        resultado = -1,
+                        resultado_msj = "El reporte se generó pero no se obtuvo contenido",
+                        Base64 = string.Empty
+                    });
+                }
+
+                _logger.LogInformation("═══════════════════════════════════════════════════");
+                _logger.LogInformation($"✅ REPORTE GENERADO EXITOSAMENTE");
+                _logger.LogInformation($"   Tamaño Base64: {respuestaReporte.Base64.Length} caracteres");
+                _logger.LogInformation($"   Nombre archivo: {respuestaReporte.resultado_msj}");
+                _logger.LogInformation("═══════════════════════════════════════════════════");
+
+                return Ok(respuestaReporte);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Error al generar reporte de comprobante");
+                return StatusCode(500, new RespuestaReportDto
+                {
+                    resultado = -1,
+                    resultado_msj = "Error interno al generar el reporte",
+                    Base64 = string.Empty
                 });
             }
         }

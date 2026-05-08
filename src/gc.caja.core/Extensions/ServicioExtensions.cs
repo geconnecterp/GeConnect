@@ -18,7 +18,8 @@ namespace gc.sitio.core.Extensions
             services.AddScoped<ICajaServicio, CajaServicio>();
             services.AddScoped<ICajaInitServicio, CajaInitServicio>();
             services.AddScoped<IProductoFactServicio, ProductoFactServicio>();
-
+            services.AddSingleton<IReportesConfigService, ReportesConfigService>();
+            services.AddScoped<IReportesService, ReportesService>();
             return services;
         }
     }

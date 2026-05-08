@@ -364,8 +364,8 @@ function confirmarDiferirFactura() {
 }
 
 /**
- * ✅ ACTUALIZADO v9.2: Ejecuta la llamada AJAX para diferir factura
- * NUEVO: Flujo de limpieza y reinicio correcto
+ * ✅ ACTUALIZADO v10.0: Ejecuta la llamada AJAX para diferir factura
+ * NUEVO: Procesa JSON de respuesta con formato [{"tco_letra":"B","tco_id":"006","cm_compte":"0001-00000001","cm_repetido":"0"}]
  */
 function ejecutarDiferirFactura() {
     console.log('📡 Invocando /ProductoFact/DiferirFactura...');
@@ -383,11 +383,16 @@ function ejecutarDiferirFactura() {
             CerrarWaiting();
 
             console.log('═══════════════════════════════════════════════════');
-            console.log('✅ RESPUESTA DE DIFERIR FACTURA v9.2');
+            console.log('✅ RESPUESTA DE DIFERIR FACTURA v10.0');
             console.log('═══════════════════════════════════════════════════');
             console.log('Response:', response);
 
-            if (!response.ok) {
+            // ═══════════════════════════════════════════════════
+            // ✅ NUEVO v10.0: PARSEAR JSON DE COMPROBANTES DIFERIDOS
+            // ═══════════════════════════════════════════════════
+
+            // ❸ Validar que response.ok exista (compatibilidad con formato anterior)
+            if (response.ok === false) {
                 console.error('❌ Error en respuesta:', response.mensaje);
 
                 AbrirMensaje(
@@ -404,25 +409,92 @@ function ejecutarDiferirFactura() {
                 return;
             }
 
-            // ✅ ÉXITO
-            console.log('✅ Factura diferida creada exitosamente');
-            console.log(`   ID: ${response.prefactura_id}`);
-            console.log(`   Mensaje: ${response.mensaje}`);
+            // ❹ Detectar formato de respuesta: Array JSON o Objeto con .ok
+            let comprobantes = [];
 
+            if (Array.isArray(response)) {
+                // Formato nuevo: Array directo
+                comprobantes = response;
+                console.log('📋 Formato detectado: Array JSON directo');
+            } else if (response.ok === true && response.data) {
+                // Formato alternativo: {ok: true, data: [...]}
+                comprobantes = Array.isArray(response.data) ? response.data : [response.data];
+                console.log('📋 Formato detectado: Objeto con data');
+            } else if (response.ok === true) {
+                // Formato anterior: respuesta OK sin comprobantes
+                console.warn('⚠️ Respuesta OK pero sin datos de comprobantes');
+                mostrarMensajeExitoGenerico(response);
+                return;
+            } else {
+                console.error('❌ Formato de respuesta desconocido:', response);
+                mostrarMensajeError('Formato de respuesta inválido');
+                return;
+            }
+
+            // ❺ Validar que haya al menos un comprobante
+            if (comprobantes.length === 0) {
+                console.error('❌ No se recibieron comprobantes en la respuesta');
+                mostrarMensajeError('No se recibió información del comprobante diferido');
+                return;
+            }
+
+            // ❻ Procesar primer comprobante (normalmente será uno solo)
+            const comprobante = comprobantes[0];
+
+            console.log('═══════════════════════════════════════════════════');
+            console.log('📄 DATOS DEL COMPROBANTE DIFERIDO');
+            console.log('═══════════════════════════════════════════════════');
+            console.log(`   tco_letra: ${comprobante.tco_letra}`);
+            console.log(`   tco_id: ${comprobante.tco_id}`);
+            console.log(`   cm_compte: ${comprobante.cm_compte}`);
+            console.log(`   cm_repetido: ${comprobante.cm_repetido}`);
+            console.log('═══════════════════════════════════════════════════');
+
+            // ❷ Determinar tipo de comprobante según tco_letra y tco_id
+            const tipoComprobante = obtenerTipoComprobante(comprobante.tco_letra, comprobante.tco_id);
+
+            console.log(`✅ Tipo de comprobante identificado: ${tipoComprobante}`);
+
+            // ❸ Obtener número de comprobante (si está disponible)
+            const numeroComprobante = comprobante.cm_compte || 'Pendiente de asignación';
+            const esRepetido = comprobante.cm_repetido === "1" || comprobante.cm_repetido === 1;
+
+            if (esRepetido) {
+                console.warn('⚠️ Comprobante marcado como REPETIDO');
+            }
+
+            // ❹ Construir mensaje de éxito con información detallada
             AbrirMensaje(
                 "¡Factura Diferida Creada!",
                 `<div class="text-center">
                     <div class="mb-3">
                         <i class='bx bx-check-circle text-success' style="font-size: 4rem;"></i>
                     </div>
-                    <h4 class="text-golden mb-3">${response.mensaje}</h4>
-                    <p class="text-muted mb-0">El cliente podrá retomar esta compra más tarde</p>
+                    <h4 class="text-golden mb-3">Factura diferida creada exitosamente</h4>
+                    
+                    <div class="alert alert-info mb-3">
+                        <div class="mb-2">
+                            <strong class="d-block text-uppercase">${tipoComprobante}</strong>
+                            <span class="badge bg-primary fs-6">${comprobante.tco_letra}</span>
+                        </div>
+                        ${numeroComprobante !== 'Pendiente de asignación'
+                    ? `<div class="mt-2">
+                                 <small class="text-muted">Número:</small><br>
+                                 <strong>${numeroComprobante}</strong>
+                               </div>`
+                    : '<div class="mt-2"><small class="text-muted">El número se asignará al momento de facturar</small></div>'}
+                        ${esRepetido ? '<div class="mt-2"><span class="badge bg-warning">Comprobante Repetido</span></div>' : ''}
+                    </div>
+                    
+                    <p class="text-muted mb-0">
+                        <i class='bx bx-time-five'></i> El cliente podrá retomar esta compra más tarde
+                    </p>
                 </div>`,
                 function () {
                     $("#msjModal").modal("hide");
 
                     // ═══════════════════════════════════════════════════
-                    // ✅ NUEVO v9.2: FLUJO DE LIMPIEZA Y REINICIO CORRECTO
+                    // ✅ FLUJO DE LIMPIEZA Y REINICIO
                     // ═══════════════════════════════════════════════════
 
                     setTimeout(() => {
@@ -513,6 +585,130 @@ function ejecutarDiferirFactura() {
 }
 
 /**
+ * ✅ NUEVO v10.0: Determina el tipo de comprobante según letra e ID
+ * 
+ * @param {string} letra - Letra del comprobante (A, B, C, etc.)
+ * @param {string} id - ID del tipo de comprobante
+ * @returns {string} - Descripción del tipo de comprobante
+ */
+function obtenerTipoComprobante(letra, id) {
+    console.log(`🔍 Identificando comprobante: Letra="${letra}", ID="${id}"`);
+
+    // Normalizar letra a mayúscula
+    const letraNorm = (letra || '').toUpperCase().trim();
+
+    // Normalizar ID (remover ceros a la izquierda para comparación)
+    const idNorm = (id || '').trim().replace(/^0+/, '');
+
+    // ═══════════════════════════════════════════════════
+    // MAPEO DE TIPOS DE COMPROBANTES
+    // ═══════════════════════════════════════════════════
+
+    // Factura A (ID: 007 o 7)
+    if (letraNorm === 'A' && (idNorm === '7' || id === '007')) {
+        return 'Factura A';
+    }
+
+    // Factura B (ID: 006 o 6)
+    if (letraNorm === 'B' && (idNorm === '6' || id === '006')) {
+        return 'Factura B';
+    }
+
+    // Factura C (ID: 011 o 11) - Común en sistemas AFIP
+    if (letraNorm === 'C' && (idNorm === '11' || id === '011')) {
+        return 'Factura C';
+    }
+
+    // Factura M (ID: 051 o 51) - Monotributista
+    if (letraNorm === 'M' && (idNorm === '51' || id === '051')) {
+        return 'Factura M';
+    }
+
+    // Nota de Crédito A (ID: 008 o 8)
+    if (letraNorm === 'A' && (idNorm === '8' || id === '008')) {
+        return 'Nota de Crédito A';
+    }
+
+    // Nota de Crédito B (ID: 009 o 9)
+    if (letraNorm === 'B' && (idNorm === '9' || id === '009')) {
+        return 'Nota de Crédito B';
+    }
+
+    // Nota de Débito A (ID: 010 o 10)
+    if (letraNorm === 'A' && (idNorm === '10' || id === '010')) {
+        return 'Nota de Débito A';
+    }
+
+    // ═══════════════════════════════════════════════════
+    // TIPO GENÉRICO (fallback)
+    // ═══════════════════════════════════════════════════
+
+    console.warn(`⚠️ Tipo de comprobante no reconocido: Letra="${letra}", ID="${id}"`);
+    return `Comprobante ${letraNorm || 'Desconocido'}`;
+}
+
+/**
+ * ✅ NUEVO v10.0: Muestra mensaje de éxito genérico (compatibilidad con formato anterior)
+ * 
+ * @param {Object} response - Respuesta del servidor
+ */
+function mostrarMensajeExitoGenerico(response) {
+    console.log('📋 Mostrando mensaje de éxito genérico');
+
+    AbrirMensaje(
+        "¡Factura Diferida Creada!",
+        `<div class="text-center">
+            <div class="mb-3">
+                <i class='bx bx-check-circle text-success' style="font-size: 4rem;"></i>
+            </div>
+            <h4 class="text-golden mb-3">${response.mensaje || 'Factura diferida creada exitosamente'}</h4>
+            <p class="text-muted mb-0">El cliente podrá retomar esta compra más tarde</p>
+        </div>`,
+        function () {
+            $("#msjModal").modal("hide");
+
+            setTimeout(() => {
+                cerrarModalCalculoFactura();
+
+                setTimeout(() => {
+                    if (typeof limpiarVentaCompleta === 'function') {
+                        limpiarVentaCompleta();
+                    }
+
+                    setTimeout(() => {
+                        if (typeof abrirModalIdentificarCliente === 'function') {
+                            abrirModalIdentificarCliente();
+                        }
+                    }, 200);
+                }, 300);
+            }, 300);
+        },
+        false,
+        ["Aceptar"],
+        "succ!",
+        null
+    );
+}
+
+/**
+ * ✅ NUEVO v10.0: Muestra mensaje de error genérico
+ * 
+ * @param {string} mensaje - Mensaje de error
+ */
+function mostrarMensajeError(mensaje) {
+    AbrirMensaje(
+        "Error al Diferir Factura",
+        mensaje,
+        function () {
+            $("#msjModal").modal("hide");
+        },
+        false,
+        ["Aceptar"],
+        "error!",
+        null
+    );
+}
+/**
  * ✅ CORREGIDO v9.1: Modal de diferir pago con advertencias
  * Emite factura fiscal sin cobrar
  */
@@ -557,8 +753,8 @@ function mostrarModalDiferirPago() {
 }
 
 /**
- * ✅ ACTUALIZADO v9.2: Ejecuta la llamada AJAX para diferir pago
- * NUEVO: Flujo de limpieza y reinicio correcto
+ * ✅ ACTUALIZADO v10.0: Ejecuta la llamada AJAX para diferir pago
+ * NUEVO: Genera e imprime comprobante automáticamente
  */
 function ejecutarDiferirPago() {
     console.log('📡 Invocando /ProductoFact/DiferirPago...');
@@ -576,11 +772,27 @@ function ejecutarDiferirPago() {
             CerrarWaiting();
 
             console.log('═══════════════════════════════════════════════════');
-            console.log('✅ RESPUESTA DE DIFERIR PAGO v9.2');
+            console.log('✅ RESPUESTA DE DIFERIR PAGO v10.0');
             console.log('═══════════════════════════════════════════════════');
             console.log('Response:', response);
 
-            if (!response.ok) {
+            // ═══════════════════════════════════════════════════
+            // ✅ NUEVO v10.0: PARSEAR JSON DE COMPROBANTES
+            // ═══════════════════════════════════════════════════
+
+            // ❃ Detectar formato de respuesta: Array JSON o Objeto con .ok
+            let comprobantes = [];
+
+            if (Array.isArray(response)) {
+                // Formato nuevo: Array directo
+                comprobantes = response;
+                console.log('📋 Formato detectado: Array JSON directo');
+            } else if (response.ok === true && response.data) {
+                // Formato alternativo: {ok: true, data: [...]}
+                comprobantes = Array.isArray(response.data) ? response.data : [response.data];
+                console.log('📋 Formato detectado: Objeto con data');
+            } else if (response.ok === false) {
+                // Error en respuesta
                 console.error('❌ Error en respuesta:', response.mensaje);
 
                 AbrirMensaje(
@@ -595,89 +807,65 @@ function ejecutarDiferirPago() {
                     null
                 );
                 return;
+            } else {
+                console.error('❌ Formato de respuesta desconocido:', response);
+                mostrarMensajeError('Formato de respuesta inválido');
+                return;
             }
 
-            // ✅ ÉXITO
-            console.log('✅ Factura emitida con pago diferido');
-            console.log(`   Comprobante: ${response.comprobante.letra} ${response.comprobante.numero}`);
-            console.log(`   ID: ${response.comprobante.id}`);
-            console.log(`   Identificador completo: ${response.comprobante.identificador_completo}`);
+            // ❹ Validar que haya al menos un comprobante
+            if (comprobantes.length === 0) {
+                console.error('❌ No se recibieron comprobantes en la respuesta');
+                mostrarMensajeError('No se recibió información del comprobante');
+                return;
+            }
 
-            AbrirMensaje(
-                "¡Factura Emitida!",
-                `<div class="text-center">
-                    <div class="mb-3">
-                        <i class='bx bx-receipt text-success' style='font-size: 4rem;'></i>
-                    </div>
-                    <h4 class="text-golden mb-3">${response.mensaje}</h4>
-                    <div class="alert alert-info">
-                        <strong>Comprobante ${response.comprobante.letra}</strong><br>
-                        Nro: <strong>${response.comprobante.numero}</strong><br>
-                        ID: <strong>${response.comprobante.id}</strong>
-                    </div>
-                    <p class="text-muted mb-0">
-                        <i class='bx bx-printer'></i> El comprobante se imprimirá automáticamente
-                    </p>
-                </div>`,
-                function () {
-                    $("#msjModal").modal("hide");
+            // ❺ Procesar primer comprobante (normalmente será uno solo)
+            const comprobante = comprobantes[0];
 
-                    // ═══════════════════════════════════════════════════
-                    // ✅ NUEVO v9.2: FLUJO DE LIMPIEZA Y REINICIO CORRECTO
-                    // ═══════════════════════════════════════════════════
+            console.log('═══════════════════════════════════════════════════');
+            console.log('📄 DATOS DEL COMPROBANTE EMITIDO');
+            console.log('═══════════════════════════════════════════════════');
+            console.log(`   tco_letra: ${comprobante.tco_letra}`);
+            console.log(`   tco_id: ${comprobante.tco_id}`);
+            console.log(`   cm_compte: ${comprobante.cm_compte}`);
+            console.log(`   cm_repetido: ${comprobante.cm_repetido}`);
+            console.log('═══════════════════════════════════════════════════');
 
-                    setTimeout(() => {
-                        console.log('═══════════════════════════════════════════════════');
-                        console.log('🔄 INICIANDO REINICIO DEL MÓDULO DE VENTAS');
-                        console.log('═══════════════════════════════════════════════════');
+            // ❻ Determinar tipo de comprobante
+            const tipoComprobante = obtenerTipoComprobante(comprobante.tco_letra, comprobante.tco_id);
+            const numeroComprobante = comprobante.cm_compte || 'Sin número';
+            const esRepetido = comprobante.cm_repetido === "1" || comprobante.cm_repetido === 1;
 
-                        // ❶ DISPARAR IMPRESIÓN DEL COMPROBANTE (si aplica)
-                        if (response.debe_imprimir) {
-                            console.log('🖨️ Iniciando impresión de comprobante...');
-                            imprimirComprobante(response.comprobante);
-                        }
+            console.log(`✅ Tipo de comprobante identificado: ${tipoComprobante}`);
 
-                        // ❷ PASO 1: Cerrar modal de cálculo
-                        cerrarModalCalculoFactura();
-                        console.log('✅ Paso 1: Modal de cálculo cerrado');
+            if (esRepetido) {
+                console.warn('⚠️ Comprobante marcado como REPETIDO');
+            }
 
-                        // ❸ PASO 2: Esperar cierre completo del modal (300ms)
-                        setTimeout(() => {
+            // ═══════════════════════════════════════════════════
+            // ✅ NUEVO v10.0: GENERAR REPORTE DEL COMPROBANTE
+            // ═══════════════════════════════════════════════════
 
-                            // ❹ PASO 3: Limpiar completamente el módulo de ventas
-                            if (typeof limpiarVentaCompleta === 'function') {
-                                limpiarVentaCompleta();
-                                console.log('✅ Paso 2: Módulo de ventas limpiado');
-                            } else {
-                                console.error('❌ Función limpiarVentaCompleta no existe');
-                            }
+            // ❼ Llamar al módulo de reportes para generar e imprimir
+            ModuloReportes.generarYVisualizarReporte({
+                tco_letra: comprobante.tco_letra,
+                tco_id: comprobante.tco_id,
+                cm_compte: comprobante.cm_compte,
+                cm_repetido: comprobante.cm_repetido
+            }).then(function (exitoso) {
+                console.log(`📄 Generación de reporte: ${exitoso ? '✅ Exitosa' : '❌ Fallida'}`);
 
-                            // ❺ PASO 4: Esperar limpieza completa (200ms)
-                            setTimeout(() => {
+                // ❽ Mostrar mensaje de éxito (independientemente del reporte)
+                mostrarMensajeExitoDiferirPago(tipoComprobante, comprobante, numeroComprobante, esRepetido);
 
-                                // ❻ PASO 5: Abrir modal de identificar cliente
-                                if (typeof abrirModalIdentificarCliente === 'function') {
-                                    abrirModalIdentificarCliente();
-                                    console.log('✅ Paso 3: Modal de identificar cliente abierto');
-                                } else {
-                                    console.error('❌ Función abrirModalIdentificarCliente no existe');
-                                }
+            }).catch(function (error) {
+                console.error('❌ Error al generar reporte:', error);
 
-                                console.log('═══════════════════════════════════════════════════');
-                                console.log('✅ REINICIO COMPLETADO - Listo para nueva venta');
-                                console.log('═══════════════════════════════════════════════════');
+                // Aún así mostrar mensaje de éxito de la factura
+                mostrarMensajeExitoDiferirPago(tipoComprobante, comprobante, numeroComprobante, esRepetido);
+            });
 
-                            }, 200); // ← Esperar limpieza
-
-                        }, 300); // ← Esperar cierre de modal
-
-                    }, 300); // ← Esperar cierre de mensaje de éxito
-                },
-                false,
-                ["Aceptar"],
-                "succ!",
-                null
-            );
         },
         error: function (xhr, status, error) {
             CerrarWaiting();
@@ -717,6 +905,90 @@ function ejecutarDiferirPago() {
             );
         }
     });
+}
+
+/**
+ * ✅ NUEVO v10.0: Muestra mensaje de éxito al diferir pago
+ * Extrae la lógica del mensaje a función separada para reutilización
+ */
+function mostrarMensajeExitoDiferirPago(tipoComprobante, comprobante, numeroComprobante, esRepetido) {
+    AbrirMensaje(
+        "¡Factura Emitida!",
+        `<div class="text-center">
+            <div class="mb-3">
+                <i class='bx bx-receipt text-success' style='font-size: 4rem;'></i>
+            </div>
+            <h4 class="text-golden mb-3">Factura emitida con pago diferido</h4>
+            
+            <div class="alert alert-info mb-3">
+                <div class="mb-2">
+                    <strong class="d-block text-uppercase">${tipoComprobante}</strong>
+                    <span class="badge bg-primary fs-6">${comprobante.tco_letra}</span>
+                </div>
+                <div class="mt-2">
+                    <small class="text-muted">Número:</small><br>
+                    <strong>${numeroComprobante}</strong>
+                </div>
+                ${esRepetido ? '<div class="mt-2"><span class="badge bg-warning">Comprobante Repetido</span></div>' : ''}
+            </div>
+            
+            <p class="text-muted mb-0">
+                <i class='bx bx-printer'></i> El comprobante se abrió en una nueva pestaña
+            </p>
+        </div>`,
+        function () {
+            $("#msjModal").modal("hide");
+
+            // ═══════════════════════════════════════════════════
+            // ✅ FLUJO DE LIMPIEZA Y REINICIO
+            // ═══════════════════════════════════════════════════
+
+            setTimeout(() => {
+                console.log('═══════════════════════════════════════════════════');
+                console.log('🔄 INICIANDO REINICIO DEL MÓDULO DE VENTAS');
+                console.log('═══════════════════════════════════════════════════');
+
+                // ❶ PASO 1: Cerrar modal de cálculo
+                cerrarModalCalculoFactura();
+                console.log('✅ Paso 1: Modal de cálculo cerrado');
+
+                // ❷ PASO 2: Esperar cierre completo del modal (300ms)
+                setTimeout(() => {
+
+                    // ❸ PASO 3: Limpiar completamente el módulo de ventas
+                    if (typeof limpiarVentaCompleta === 'function') {
+                        limpiarVentaCompleta();
+                        console.log('✅ Paso 2: Módulo de ventas limpiado');
+                    } else {
+                        console.error('❌ Función limpiarVentaCompleta no existe');
+                    }
+
+                    // ❹ PASO 4: Esperar limpieza completa (200ms)
+                    setTimeout(() => {
+
+                        // ❺ PASO 5: Abrir modal de identificar cliente
+                        if (typeof abrirModalIdentificarCliente === 'function') {
+                            abrirModalIdentificarCliente();
+                            console.log('✅ Paso 3: Modal de identificar cliente abierto');
+                        } else {
+                            console.error('❌ Función abrirModalIdentificarCliente no existe');
+                        }
+
+                        console.log('═══════════════════════════════════════════════════');
+                        console.log('✅ REINICIO COMPLETADO - Listo para nueva venta');
+                        console.log('═══════════════════════════════════════════════════');
+
+                    }, 200); // ← Esperar limpieza
+
+                }, 300); // ← Esperar cierre de modal
+
+            }, 300); // ← Esperar cierre de mensaje de éxito
+        },
+        false,
+        ["Aceptar"],
+        "succ!",
+        null
+    );
 }
 
 /**
