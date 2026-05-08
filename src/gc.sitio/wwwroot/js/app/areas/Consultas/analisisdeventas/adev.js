@@ -30,9 +30,8 @@ $(function () {
 
 	$("#btnBuscar").on("click", function () {
 		if (validarFechasAnalisis()) {
-			var lSuc = [];
-			$("#SucursalesList").children().each(function (i, item) { lSuc.push($(item).val()) });
-			if (lSuc.length == 0) {
+			var sucursalesIds = ObtenerSucursalesSeleccionadas();
+			if (!sucursalesIds || sucursalesIds.length == 0) {
 				AbrirMensaje("ATENCIÓN", "Debe al menos seleccionar una sucursal.", function () {
 					$("#msjModal").modal("hide");
 					return true;
@@ -50,12 +49,11 @@ $(function () {
 });
 
 function InicializarPantallaPrincipal() {
-	var lSucTExt = [];
-	$("#SucursalesList").children().each(function (i, item) { lSucTExt.push($(item).text()) });
-	var sucursalesText = lSucTExt.join(", ");
+	var suc = ObtenerSucursalesSeleccionadasConTexto();
+	var sucursalesText = suc.textos;
 	var desde = $("#Desde").val();
 	var hasta = $("#Hasta").val();
-	AbrirWaiting("Cargando información..."); 
+	AbrirWaiting("Cargando información...");
 	PostGenHtml({ sucursalesText, desde, hasta }, inicializarPantallPrincipalURL, function (obj) {
 		$("#divDetalle").html(obj);
 		$(document).on('shown.bs.tab', 'button[data-bs-toggle="tab"]', function (e) {
@@ -66,6 +64,9 @@ function InicializarPantallaPrincipal() {
 			// Esperamos un tick para que Bootstrap active el tab
 			setTimeout(function () {
 				EvaluarBotonImprimir("navs-top-diario");
+				if (mes_selected && periodo_selected) {
+					CargarAnalisisDeVentaDetalleMes(mes_selected, periodo_selected);
+				}
 			}, 50);
 		});
 		$("#divFiltros").collapse("hide");
@@ -155,9 +156,8 @@ function ImprimirAnual() {
 }
 
 function CargarAnalisisDeVentaAnual() {
-	var lSuc = [];
-	$("#SucursalesList").children().each(function (i, item) { lSuc.push($(item).val()) });
-	var sucursalesIds = lSuc.join(",");
+	var suc = ObtenerSucursalesSeleccionadasConTexto();
+	var sucursalesIds = suc.ids;
 	sucursales_ids_desde_filtros = sucursalesIds;
 	var data = {
 		Desde: $("#Desde").val(),
@@ -192,9 +192,8 @@ function ProcesarSeleccionFilaEnAnalisisDeVentaAnual($fila) {
 }
 
 function CargarAnalisisDeVentaMensual() {
-	var lSuc = [];
-	$("#SucursalesList").children().each(function (i, item) { lSuc.push($(item).val()) });
-	var sucursalesIds = lSuc.join(",");
+	var suc = ObtenerSucursalesSeleccionadasConTexto();
+	var sucursalesIds = suc.ids;
 	sucursales_ids_desde_filtros = sucursalesIds;
 	var data = {
 		Desde: $("#Desde").val(),
@@ -230,10 +229,6 @@ function ProcesarSeleccionFilaEnAnalisisDeVentaMensual($fila) {
 
 	mes_selected = $fila.data("mes");
 	periodo_selected = $fila.data("periodo");
-
-	if (mes_selected && periodo_selected) {
-		CargarAnalisisDeVentaDetalleMes(mes_selected, periodo_selected);
-	}
 }
 
 function CargarAnalisisDeVentaDetalleMes(mes, periodo) {
@@ -264,7 +259,7 @@ function CargarTabsDelDetalleMesDiario(mes, periodo, sucursales) {
 	PostGenHtml({ mes, periodo, sucursales }, cargarDetalleMesDiarioURL, function (obj) {
 		$("#divDetalleMesDiario").html(obj);
 		InicializarEventosAnalisisDeVentaDetalleDiario();
-		FinalizarCargaDetalle(); 
+		FinalizarCargaDetalle();
 		return true;
 	});
 }
@@ -273,7 +268,7 @@ function CargarTabsDelDetalleMesHora(mes, periodo, sucursales) {
 	PostGenHtml({ mes, periodo, sucursales }, cargarDetalleMesHoraURL, function (obj) {
 		$("#divDetalleMesHora").html(obj);
 		InicializarEventosAnalisisDeVentaDetalleHora();
-		FinalizarCargaDetalle(); 
+		FinalizarCargaDetalle();
 		return true;
 	});
 }
@@ -282,7 +277,7 @@ function CargarTabsDelDetalleMesSucursal(mes, periodo, sucursales) {
 	PostGenHtml({ mes, periodo, sucursales }, cargarDetalleMesSucursalURL, function (obj) {
 		$("#divDetalleMesSucursal").html(obj);
 		InicializarEventosAnalisisDeVentaDetalleSucursal();
-		FinalizarCargaDetalle(); 
+		FinalizarCargaDetalle();
 		return true;
 	});
 }
@@ -437,4 +432,56 @@ function ControlalistaSucursalesSelected() {
 		var opc = "<option value=" + item + ">" + desc + "</option>"
 		$("#SucursalesList").append(opc);
 	}
+}
+
+function ObtenerSucursalesSeleccionadas() {
+
+	// 1) Obtener sucursales seleccionadas en el ListBox
+	let seleccionadas = [];
+	$("#SucursalesList option").each(function () {
+		seleccionadas.push($(this).val());
+	});
+
+	// 2) Si NO hay ninguna seleccionada → devolver TODAS las del DropDownList
+	if (seleccionadas.length === 0) {
+		$("#listaSucursales option").each(function () {
+			const val = $(this).val();
+			if (val && val !== "") {
+				seleccionadas.push(val);
+			}
+		});
+	}
+
+	// 3) Devolver como string separado por comas
+	return seleccionadas.join(",");
+}
+
+function ObtenerSucursalesSeleccionadasConTexto() {
+
+	let ids = [];
+	let textos = [];
+
+	// 1) Obtener sucursales seleccionadas en el ListBox
+	$("#SucursalesList option").each(function () {
+		ids.push($(this).val());
+		textos.push($(this).text());
+	});
+
+	// 2) Si NO hay ninguna seleccionada → devolver TODAS las del DropDownList
+	if (ids.length === 0) {
+		$("#listaSucursales option").each(function () {
+			const val = $(this).val();
+			const txt = $(this).text();
+
+			if (val && val !== "") {
+				ids.push(val);
+				textos.push(txt);
+			}
+		});
+	}
+
+	return {
+		ids: ids.join(","),
+		textos: textos.join(", ")
+	};
 }
