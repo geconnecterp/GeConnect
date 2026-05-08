@@ -3,6 +3,15 @@ let tabsDetallePendientes = 0;
 var mes_selected = null;
 var periodo_selected = null;
 
+const TabToTableMap = {
+	"navs-top-mens": "#tbAnaVtaMes",
+	"navs-top-diario": "#tbAnaVtaDetalleDiario",
+	"navs-top-hora": "#tbAnaVtaDetalleHora",
+	"navs-top-sucursal": "#tbAnaVtaDetalleSucursal",
+	"navs-top-cierre": "#tbAnaVtaDetalleCierre",
+	"navs-top-anual": "#tbAnaVtaDetalleAnual"
+};
+
 $(function () {
 	InicializarCamposEnFiltros(false);
 	$(document).on("change", "#listaSucursales", ControlalistaSucursalesSelected);
@@ -49,14 +58,137 @@ function InicializarPantallaPrincipal() {
 	AbrirWaiting("Cargando información..."); 
 	PostGenHtml({ sucursalesText, desde, hasta }, inicializarPantallPrincipalURL, function (obj) {
 		$("#divDetalle").html(obj);
+		$(document).on('shown.bs.tab', 'button[data-bs-toggle="tab"]', function (e) {
+			const tabId = $(e.target).attr("data-bs-target").replace("#", "");
+			EvaluarBotonImprimir(tabId);
+		});
+		$(document).on("click", "#btnTabDetalleMes", function () {
+			// Esperamos un tick para que Bootstrap active el tab
+			setTimeout(function () {
+				EvaluarBotonImprimir("navs-top-diario");
+			}, 50);
+		});
 		$("#divFiltros").collapse("hide");
 		$("#divDetalle").collapse("show");
 		CerrarWaiting();
 		setTimeout(() => {
 			CargarAnalisisDeVentaMensual();
+			CargarAnalisisDeVentaAnual();
 		}, 200);
 		return true
 	});
+}
+
+function EvaluarBotonImprimir(tabId) {
+
+	const tablaSelector = TabToTableMap[tabId];
+	if (!tablaSelector) {
+		$("#btnImprimir").hide();
+		return;
+	}
+
+	const $tabla = $(tablaSelector);
+
+	// Si la tabla no existe o no tiene filas de datos
+	if ($tabla.length === 0 || $tabla.find("tbody tr").length === 0) {
+		$("#btnImprimir").hide();
+		return;
+	}
+
+	// Si tiene datos → mostrar botón
+	$("#btnImprimir").show();
+
+	// Guardamos el tab actual para imprimir
+	$("#btnImprimir").data("tab-activo", tabId);
+}
+
+$("#btnImprimir").on("click", function () {
+	const tabId = $(this).data("tab-activo");
+	ImprimirSegunTab(tabId);
+});
+
+function ImprimirSegunTab(tabId) {
+
+	switch (tabId) {
+		case "navs-top-mens":
+			ImprimirMensual();
+			break;
+
+		case "navs-top-diario":
+			ImprimirDetalleDiario();
+			break;
+
+		case "navs-top-hora":
+			ImprimirDetalleHora();
+			break;
+
+		case "navs-top-sucursal":
+			ImprimirDetalleSucursal();
+			break;
+
+		case "navs-top-cierre":
+			ImprimirDetalleCierre();
+			break;
+
+		case "navs-top-anual":
+			ImprimirAnual();
+			break;
+	}
+}
+
+function ImprimirMensual() {
+}
+
+function ImprimirDetalleDiario() {
+}
+
+function ImprimirDetalleHora() {
+}
+
+function ImprimirDetalleSucursal() {
+}
+
+function ImprimirDetalleCierre() {
+}
+
+function ImprimirAnual() {
+}
+
+function CargarAnalisisDeVentaAnual() {
+	var lSuc = [];
+	$("#SucursalesList").children().each(function (i, item) { lSuc.push($(item).val()) });
+	var sucursalesIds = lSuc.join(",");
+	sucursales_ids_desde_filtros = sucursalesIds;
+	var data = {
+		Desde: $("#Desde").val(),
+		Hasta: $("#Hasta").val(),
+		Sucursales: sucursalesIds,
+	}
+	AbrirWaiting("Obteniendo Análisis Anual...");
+	PostGenHtml(data, buscarAnalisisDeVentasAnualURL, function (obj) {
+		$("#divAnalisisDetalleAnual").html(obj);
+		InicializarEventosAnalisisDeVentaAnual();
+		CerrarWaiting();
+		return true
+	});
+}
+
+function InicializarEventosAnalisisDeVentaAnual() {
+	$(document).off("click", "#tbAnaVtaDetalleAnual tbody tr");
+	$(document).on("click", "#tbAnaVtaDetalleAnual tbody tr", function (e) {
+
+		if ($(e.target).is("button, a, .btn, i")) return;
+
+		const $nuevaFila = $(this);
+		ProcesarSeleccionFilaEnAnalisisDeVentaAnual($nuevaFila);
+	});
+}
+
+function ProcesarSeleccionFilaEnAnalisisDeVentaAnual($fila) {
+	// Quitar selección previa
+	$("#tbAnaVtaDetalleAnual tbody tr").removeClass("selected-row");
+	// Marcar fila seleccionada
+	$fila.addClass("selected-row");
 }
 
 function CargarAnalisisDeVentaMensual() {
@@ -73,6 +205,7 @@ function CargarAnalisisDeVentaMensual() {
 	PostGenHtml(data, buscarAnalisisDeVentasMensualURL, function (obj) {
 		$("#divAnalisisMensual").html(obj);
 		InicializarEventosAnalisisDeVentaMensual();
+		EvaluarBotonImprimir("navs-top-mens");
 		CerrarWaiting();
 		return true
 	});
@@ -107,6 +240,7 @@ function CargarAnalisisDeVentaDetalleMes(mes, periodo) {
 	PostGenHtml({ mes, periodo, sucursales: sucursales_ids_desde_filtros }, cargarDetalleMesURL, function (obj) {
 		$("#divAnalisisDetalleMes").html(obj);
 		CargarTabsDelDetalleMes(mes, periodo, sucursales_ids_desde_filtros);
+		EvaluarBotonImprimir("navs-top-mens");
 		return true;
 	});
 }
@@ -121,7 +255,7 @@ function CargarTabsDelDetalleMes(mes, periodo, sucursales) {
 	//Sucursal
 	CargarTabsDelDetalleMesSucursal(mes, periodo, sucursales);
 	//Cierre
-	CargarTabsDelDetalleMesCierre();
+	CargarTabsDelDetalleMesCierre(mes, periodo, sucursales);
 
 	FinalizarCargaDetalle(); // ← marcar como completado
 }
@@ -153,8 +287,13 @@ function CargarTabsDelDetalleMesSucursal(mes, periodo, sucursales) {
 	});
 }
 
-function CargarTabsDelDetalleMesCierre() {
-	FinalizarCargaDetalle();
+function CargarTabsDelDetalleMesCierre(mes, periodo, sucursales) {
+	PostGenHtml({ mes, periodo, sucursales }, cargarDetalleMesCierreURL, function (obj) {
+		$("#divDetalleMesCierres").html(obj);
+		InicializarEventosAnalisisDeVentaDetalleCierres();
+		FinalizarCargaDetalle();
+		return true;
+	});
 }
 
 function FinalizarCargaDetalle() {
@@ -215,6 +354,24 @@ function InicializarEventosAnalisisDeVentaDetalleSucursal() {
 function ProcesarSeleccionFilaEnAnalisisDeVentaDetalleSucursal($fila) {
 	// Quitar selección previa
 	$("#tbAnaVtaDetalleSucursal tbody tr").removeClass("selected-row");
+	// Marcar fila seleccionada
+	$fila.addClass("selected-row");
+}
+
+function InicializarEventosAnalisisDeVentaDetalleCierres() {
+	$(document).off("click", "#tbAnaVtaDetalleCierre tbody tr");
+	$(document).on("click", "#tbAnaVtaDetalleCierre tbody tr", function (e) {
+
+		if ($(e.target).is("button, a, .btn, i")) return;
+
+		const $nuevaFila = $(this);
+		ProcesarSeleccionFilaEnAnalisisDeVentaDetalleCierres($nuevaFila);
+	});
+}
+
+function ProcesarSeleccionFilaEnAnalisisDeVentaDetalleCierres($fila) {
+	// Quitar selección previa
+	$("#tbAnaVtaDetalleCierre tbody tr").removeClass("selected-row");
 	// Marcar fila seleccionada
 	$fila.addClass("selected-row");
 }

@@ -56,6 +56,8 @@
 			public const string SP_E_AV_DIAS = "SPGECO_E_AV_dias";
 			public const string SP_E_AV_DIAS_HORA = "SPGECO_E_AV_dias_hora";
 			public const string SP_E_AV_ADM = "SPGECO_E_AV_Adm";
+			public const string SP_E_AV_ANUAL = "SPGECO_E_AV_Periodo";
+			public const string SP_E_AV_CIERRES = "SPGECO_E_AV_Cierres";
 			#endregion
 
 			public const string MNU_GET_MENU_LIST = "dbo.SP_web_geco_get_menu_list";

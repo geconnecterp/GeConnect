@@ -1,0 +1,50 @@
+﻿@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<AnaVtaMesDetalleAnualDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+</style>
+<div class="table-responsive table-wrapper-500 w-50">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbAnaVtaDetalleAnual">
+		<thead class="sticky-top table-golden-header-compact">
+			<tr class="header">
+				<th class="text-center">Año</th>
+				<th class="text-center">Facturación</th>
+				<th class="text-center">Dif. Año Anterior</th>
+				<th class="text-center">Rentabilidad</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+			{
+				<tr class="fila-vacia">
+					<td colspan="6" class="text-center text-muted py-2">
+						<i class="bx bx-info-circle me-1"></i>
+						No hay items para mostrar.
+					</td>
+				</tr>
+			}
+			else
+			{
+				foreach (var item in Model.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase row-pedido"
+						data-adm-id="@item.adm_list"
+						data-periodo="@item.periodo">
+						<td class="text-center">@item.periodo</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.co_facturacion, TipoPrecio.Venta)</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.diferencia, TipoPrecio.Venta)</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.co_costo, TipoPrecio.Venta)</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>
+
+
+

@@ -1,0 +1,62 @@
+﻿@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<AnaVtaMesDetalleCierreDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+</style>
+<div class="table-responsive table-wrapper-500">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbAnaVtaDetalleCierre">
+		<thead class="sticky-top table-golden-header-compact">
+			<tr class="header">
+				<th class="text-center">Sucursal</th>
+				<th class="text-center">Proceso</th>
+				<th class="text-center">Cierre</th>
+				<th class="text-center">Facturación</th>
+				<th class="text-center" title="Facturación Diferida">Fact. Dif.</th>
+				<th class="text-center">Cta. Cte.</th>
+				<th class="text-center">Cobranza</th>
+				<th class="text-center" title="Cobranza Diferida">Cob. Dif.</th>
+				<th class="text-center">Devoluciones y NC</th>
+				<th class="text-center">Créditos Usados</th>
+				<th class="text-center">A Rendir</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+			{
+				<tr class="fila-vacia">
+					<td colspan="6" class="text-center text-muted py-2">
+						<i class="bx bx-info-circle me-1"></i>
+						No hay items para mostrar.
+					</td>
+				</tr>
+			}
+			else
+			{
+				foreach (var item in Model.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase row-pedido"
+						data-adm-id="@item.adm_id">
+						<td class="text-start">@item.adm_nombre</td>
+						<td class="text-center">@item.caja_nro_proceso</td>
+						<td class="text-center">@item.caja_nro_cierre</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.co_facturacion, TipoPrecio.Venta)</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.co_facturacion_dif, TipoPrecio.Venta)</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.co_ctacte, TipoPrecio.Venta)</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.co_cobranza, TipoPrecio.Venta)</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.co_cobranza_dif, TipoPrecio.Venta)</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.co_nota_credito, TipoPrecio.Venta)</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.co_creditos_usados, TipoPrecio.Venta)</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.a_rendir, TipoPrecio.Venta)</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>
+
+

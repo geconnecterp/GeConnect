@@ -384,5 +384,33 @@ namespace gc.api.core.Servicios
 			var result = _repository.EjecutarLstSpExt<AnaVtaMesDetalleSucursalDto>(sp, ps, true);
 			return result;
 		}
+
+		public List<AnaVtaMesDetalleAnualDto> ObtenerAnaVtaMesDetalleAnualLista(AnaVtaMesRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_E_AV_ANUAL;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@adm_list", request.adm_list),
+			 };
+
+			var result = _repository.EjecutarLstSpExt<AnaVtaMesDetalleAnualDto>(sp, ps, true);
+			return result;
+		}
+
+		public List<AnaVtaMesDetalleCierreDto> ObtenerAnaVtaMesDetalleCierreLista(AnaVtaMesRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_E_AV_CIERRES;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@adm_list", request.adm_list),
+				new SqlParameter("@desde", request.desde),
+				new SqlParameter("@hasta", request.hasta),
+			 };
+
+			var result = _repository.EjecutarLstSpExt<AnaVtaMesDetalleCierreDto>(sp, ps, true);
+			return result;
+		}
 	}
 }

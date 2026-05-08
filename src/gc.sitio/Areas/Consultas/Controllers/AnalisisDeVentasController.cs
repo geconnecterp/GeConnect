@@ -245,6 +245,73 @@ namespace gc.sitio.Areas.Consultas.Controllers
 			}
 		}
 
+		[HttpPost]
+		public IActionResult CargarDetalleMesCierre(int mes, int periodo, string sucursales)
+		{
+			var model = new GridCoreSmart<AnaVtaMesDetalleCierreDto>();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var (desde, hasta) = ObtenerRangoMes(periodo, mes);
+				var request = new AnaVtaMesRequest
+				{
+					desde = desde,
+					hasta = hasta,
+					adm_list = sucursales
+				};
+				var lista = _apiVentaServicio.ObtenerAnaVtaMesDetalleCierreLista(request, TokenCookie);
+				model = ObtenerGridCoreSmart<AnaVtaMesDetalleCierreDto>(lista);
+				return PartialView("_partialAnalisisDeVentasDetalleCierre", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public IActionResult BuscarAnalisisDeVentasAnual(DateTime Desde, DateTime Hasta, string Sucursales)
+		{
+			var model = new GridCoreSmart<AnaVtaMesDetalleAnualDto>();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var request = new AnaVtaMesRequest
+				{
+					desde = Desde,
+					hasta = Hasta,
+					adm_list = Sucursales
+				};
+				var lista = _apiVentaServicio.ObtenerAnaVtaMesDetalleAnualLista(request, TokenCookie);
+				model = ObtenerGridCoreSmart<AnaVtaMesDetalleAnualDto>(lista);
+				return PartialView("_partialAnalisisDeVentasDetalleAnual", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
 		public static (DateTime Desde, DateTime Hasta) ObtenerRangoMes(int periodo, int mes)
 		{
 			var desde = new DateTime(periodo, mes, 1);

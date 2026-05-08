@@ -331,5 +331,33 @@ namespace gc.api.Controllers.Ventas
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<AnaVtaMesDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerAnaVtaMesDetalleAnualLista(AnaVtaMesRequest request)
+		{
+			ApiResponse<List<AnaVtaMesDetalleAnualDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _iApiVentasServicio.ObtenerAnaVtaMesDetalleAnualLista(request);
+			response = new ApiResponse<List<AnaVtaMesDetalleAnualDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<AnaVtaMesDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerAnaVtaMesDetalleCierreLista(AnaVtaMesRequest request)
+		{
+			ApiResponse<List<AnaVtaMesDetalleCierreDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _iApiVentasServicio.ObtenerAnaVtaMesDetalleCierreLista(request);
+			response = new ApiResponse<List<AnaVtaMesDetalleCierreDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }

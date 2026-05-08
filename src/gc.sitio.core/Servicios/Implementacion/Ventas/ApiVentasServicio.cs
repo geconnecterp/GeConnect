@@ -38,6 +38,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string GET_ANA_VTA_DET_DIA = "/ObtenerAnaVtaMesDetalleDiaLista";
 		private const string GET_ANA_VTA_DET_HORA = "/ObtenerAnaVtaMesDetalleHoraLista";
 		private const string GET_ANA_VTA_DET_SUCURSAL = "/ObtenerAnaVtaMesDetalleSucursalLista";
+		private const string GET_ANA_VTA_DET_ANUAL = "/ObtenerAnaVtaMesDetalleAnualLista";
+		private const string GET_ANA_VTA_DET_CIERRE = "/ObtenerAnaVtaMesDetalleCierreLista";
 
 		public ApiVentasServicio(IOptions<AppSettings> options, ILogger<ApiVentasServicio> logger) : base(options, logger, RutaAPI)
 		{
@@ -1046,6 +1048,68 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return [];
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AnaVtaMesDetalleSucursalDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public List<AnaVtaMesDetalleCierreDto> ObtenerAnaVtaMesDetalleCierreLista(AnaVtaMesRequest request, string token)
+		{
+			ApiResponse<List<AnaVtaMesDetalleCierreDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_ANA_VTA_DET_CIERRE}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return [];
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AnaVtaMesDetalleCierreDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public List<AnaVtaMesDetalleAnualDto> ObtenerAnaVtaMesDetalleAnualLista(AnaVtaMesRequest request, string token)
+		{
+			ApiResponse<List<AnaVtaMesDetalleAnualDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_ANA_VTA_DET_ANUAL}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return [];
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AnaVtaMesDetalleAnualDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
 				return apiResponse.Data;
 			}
 			else
