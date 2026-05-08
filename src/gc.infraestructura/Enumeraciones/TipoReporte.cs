@@ -74,7 +74,6 @@ namespace gc.infraestructura.Enumeraciones
 		R066_Pedido_Interno_Listado = 66,
         R067_FACTURA_A = 67,
         R068_FACTURA_B = 68,
-    }
 		R069_Analisis_Venta_Mensual = 69,
 		R070_Analisis_Venta_Diario = 70,
 		R071_Analisis_Venta_Op_Vta_Diario = 71,
