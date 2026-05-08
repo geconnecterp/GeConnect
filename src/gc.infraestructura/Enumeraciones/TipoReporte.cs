@@ -72,5 +72,7 @@ namespace gc.infraestructura.Enumeraciones
 		R064_Orden_De_Reparto_Hoja_De_Producto = 64,
         R065_Pedido_Interno = 65,
 		R066_Pedido_Interno_Listado = 66,
-	}
+        R067_FACTURA_A = 67,
+        R068_FACTURA_B = 68,
+    }
 }

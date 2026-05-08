@@ -181,5 +181,61 @@ namespace gc.api.core.Servicios.LineaCaja
                 return res[0];
             }
         }
+
+        #region Metodos invocados exclusivamente desde la api de reportes
+
+        public List<FeResDto> ObtenerFE(FeReqDto req)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_CAJA_FE;
+            var ps = new List<SqlParameter>() {
+                new SqlParameter("@tco_id", req.tco_id),
+                new SqlParameter("@cm_compte", req.cm_compte),
+                new SqlParameter("@cm_repetido", req.cm_repetido)
+            };
+
+            var res = _repository.EjecutarLstSpExt<FeResDto>(sp, ps);
+            return res;
+        }
+
+        public List<FeIvaResDto> ObtenerFEIva(FeReqDto req)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_CAJA_FE_IVA;
+            var ps = new List<SqlParameter>() {
+                new SqlParameter("@tco_id", req.tco_id),
+                new SqlParameter("@cm_compte", req.cm_compte),
+                new SqlParameter("@cm_repetido", req.cm_repetido)
+            };
+
+            var res = _repository.EjecutarLstSpExt<FeIvaResDto>(sp, ps);
+            return res;
+        }
+
+        public List<FePerResDto> ObtenerFEPer(FeReqDto req)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_CAJA_FE_PER;
+            var ps = new List<SqlParameter>() {
+                new SqlParameter("@tco_id", req.tco_id),
+                new SqlParameter("@cm_compte", req.cm_compte),
+                new SqlParameter("@cm_repetido", req.cm_repetido)
+            };
+
+            var res = _repository.EjecutarLstSpExt<FePerResDto>(sp, ps);
+            return res;
+        }
+
+        public List<FeDetResDto> ObtenerFEDetalle(FeReqDto req)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_CAJA_FE_D;
+            var ps = new List<SqlParameter>() {
+                new SqlParameter("@tco_id", req.tco_id),
+                new SqlParameter("@cm_compte", req.cm_compte),
+                new SqlParameter("@cm_repetido", req.cm_repetido)
+            };
+
+            var res = _repository.EjecutarLstSpExt<FeDetResDto>(sp, ps);
+            return res;
+        }
+        #endregion
+
     }
 }

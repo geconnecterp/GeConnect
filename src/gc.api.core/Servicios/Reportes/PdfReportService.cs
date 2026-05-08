@@ -1,6 +1,7 @@
 ﻿using gc.api.core.Contratos.Servicios;
 using gc.api.core.Contratos.Servicios.Asientos;
 using gc.api.core.Contratos.Servicios.Libros;
+using gc.api.core.Contratos.Servicios.LineaCaja;
 using gc.api.core.Contratos.Servicios.Ofertas;
 using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
@@ -37,7 +38,11 @@ namespace gc.api.core.Servicios.Reportes
             IInventarioServicio invSv,
 			IApiPedidoServicio pedSv,
             IApiOrdenDeRepartoServicio ordRepSv,
-			 IOptions<EmpresaGeco> empresa, ICuentaServicio ctaSv, IOrdenDePagoServicio _opSv, ILogger<ReportService> logger) : base(uow)
+            IApiProductoFactServicio apiFactura,
+             IOptions<EmpresaGeco> empresa, 
+             ICuentaServicio ctaSv, 
+             IOrdenDePagoServicio _opSv, 
+             ILogger<ReportService> logger) : base(uow)
         {
 
             // Se inicializa el diccionario de generadores de reportes
@@ -107,7 +112,9 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R064_Orden_De_Reparto_Hoja_De_Producto, new R064_Orden_De_Reparto_Hoja_De_Producto(uow,ordRepSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R065_Pedido_Interno, new R065_Pedido_Interno(uow,apiProdSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R066_Pedido_Interno_Listado, new R066_Pedido_Interno_Lista(uow,apiProdSv,empresa,ctaSv, logger) },
-			}; 
+                { InfoReporte.R067_FACTURA_A, new R067_FacturaA(uow,apiFactura,empresa,logger) },
+                { InfoReporte.R068_FACTURA_B, new R068_FACTURA_B(uow,apiFactura,empresa,logger) }
+            }; 
             _logger = logger;
         }
 
