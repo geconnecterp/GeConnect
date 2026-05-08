@@ -99,10 +99,10 @@
         let busquedaAvanzadaUrl = "@Url.Action("BusquedaAvanzadaV02", "ProductoFact", new { area = "Facturacion" })";
 
         // ✅ NUEVO: URL para calcular filas
-        
+
         var CalcularFilasUrl = '@Url.Action("CalcularFilas", "ProductoFact", new { area = "Facturacion" })';
         var ObtenerPreFacturasUrl = '@Url.Action("ObtenerPreFacturas", "ProductoFact", new { area = "Facturacion" })';
-        var CargarPreFacturaUrl = '@Url.Action("CargarPreFactura", "ProductoFact", new { area = "Facturacion" })';         
+        var CargarPreFacturaUrl = '@Url.Action("CargarPreFactura", "ProductoFact", new { area = "Facturacion" })';
         var ObtenerProductosDatosPrefacturaUrl = '@Url.Action("ObtenerProductosDatosPrefactura", "ProductoFact", new { area = "Facturacion" })'; // ← NUEVA
 
 
@@ -117,6 +117,8 @@
     <script src="~/js/app/prodfact.js" asp-append-version="true"></script>
     <script src="~/js/app/busquedas.js" asp-append-version="true"></script>
     <script src="~/js/app/busquedasV02.js" asp-append-version="true"></script>
+    <!-- Módulo de gestión de reportes v10.0 -->
+    <script src="~/js/app/reportes.js" asp-append-version="true"></script>
     <script src="~/js/app/prodfactcalc.js" asp-append-version="true"></script>
     <script src="~/js/app/factListaPrecio.js" asp-append-version="true"></script>
     <script src="~/js/app/factPreFactura.js" asp-append-version="true"></script>
