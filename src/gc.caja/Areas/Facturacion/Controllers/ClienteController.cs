@@ -353,7 +353,12 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return (false, resultadoDatos?.Mensaje ?? "No se pudieron obtener los datos del cliente", null, null);
                 }
 
+                
+
                 var datos = resultadoDatos.Entidad;
+
+                //resguardamos la lista de precios del cliente
+                LP_Id = datos.lp_id;
 
                 string[] nombre = datos.cta_denominacion
                     .Split([' '], StringSplitOptions.RemoveEmptyEntries);

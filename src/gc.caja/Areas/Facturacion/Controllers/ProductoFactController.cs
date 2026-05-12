@@ -570,6 +570,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation($"   - tot_cantidad: {request.tot_cantidad}");
                 _logger?.LogInformation($"   - tot_pvta: {request.tot_pvta}");
 
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation($"REQUEST: {JsonConvert.SerializeObject(request)}");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
                 // ❸ VALIDAR QUE HAYA PRODUCTOS
                 if (string.IsNullOrEmpty(request.json_p) || request.json_p == "[]")
                 {
@@ -663,7 +666,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
 
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
-                _logger?.LogInformation("📋 REQUEST COMPLETO:");
+                _logger?.LogInformation("📋 REQUEST COMPLETO CALCULO:");
                 _logger?.LogInformation($"{JsonConvert.SerializeObject(request)}");              
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
@@ -1496,10 +1499,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
         }
 
         /// <summary>
-        /// ✅ NUEVO: Diferir Pago - Emite factura sin cobrar
-        /// Genera comprobante fiscal, impacta stock e IVA Ventas, pero deja el pago pendiente
+        /// ✅ ACTUALIZADO v10.0: Diferir Pago - Emite factura sin cobrar
+        /// CORREGIDO: Parseo correcto de JSON en resultado_id
         /// </summary>
-        /// <returns>JSON con resultado de la operación y datos del comprobante</returns>
         [HttpPost]
         public async Task<JsonResult> DiferirPago()
         {
@@ -1512,7 +1514,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "Sesión expirada" });
 
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
-                _logger?.LogInformation("⏱️ DIFERIR PAGO - INICIO");
+                _logger?.LogInformation("⏱️ DIFERIR PAGO - INICIO v10.0");
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                 // ❷ VALIDAR DATOS DE CAJA
@@ -1554,7 +1556,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 string jsonProductos = JsonConvert.SerializeObject(productosFactura);
                 string jsonSubtotales = JsonConvert.SerializeObject(subtotalesFactura);
 
-                var sorteosFactura = FacturaSorteos ;
+                var sorteosFactura = FacturaSorteos;
                 string jsonSorteos = JsonConvert.SerializeObject(sorteosFactura);
 
                 _logger?.LogInformation($"✅ JSON productos (longitud): {jsonProductos.Length}");
@@ -1568,11 +1570,13 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 if (origenUpper == "F") // Consumidor Final
                 {
                     ctaId = clienteActual.cta_documento ?? string.Empty;
+                    LP_Id = cajaActual.Caja.lp_id_min;
                     _logger?.LogInformation($"✅ Cliente CF → Identificador (documento): {ctaId}");
                 }
                 else // Cliente Registrado
                 {
                     ctaId = clienteActual.cta_id ?? string.Empty;
+                    LP_Id = cajaActual.Caja.lp_id_may;
                     _logger?.LogInformation($"✅ Cliente Registrado → Identificador (cta_id): {ctaId}");
                 }
 
@@ -1608,7 +1612,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     cta_domicilio = clienteActual.cta_domicilio ?? string.Empty,
 
                     // ═══ Vendedor (opcional) ═══
-                    ve_id = string.Empty, // TODO: Obtener de sesión si aplica
+                    ve_id = string.Empty,
 
                     // ═══ JSONs de operación ═══
                     json_p = jsonProductos,
@@ -1622,8 +1626,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 };
 
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
-                _logger?.LogInformation("📦 REQUEST DTO CONSTRUIDO:");
-                _logger?.LogInformation($"   datos: {JsonConvert.SerializeObject( request)}");               
+                _logger?.LogInformation("📦 REQUEST DTO CONSTRUIDO");
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                 // ❾ INVOCAR SERVICIO
@@ -1639,11 +1642,6 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 stopwatch.Stop();
                 _logger?.LogInformation($"⏱️ Tiempo de ejecución: {stopwatch.ElapsedMilliseconds}ms");
-
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
-                _logger?.LogInformation("📦 RESPONSE DTO CONSTRUIDO:");
-                _logger?.LogInformation($"   datos: {JsonConvert.SerializeObject(resultado)}");
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                 // ❿ VALIDAR RESPUESTA
                 if (resultado == null)
@@ -1678,25 +1676,42 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
-                // ⓭ PARSEAR IDENTIFICADOR COMPUESTO
-                // Formato esperado: "A|12345|00001234|00001234" (letra + ID + Nro + repetido)
-                string identificadorCompuesto = respuestaDto.resultado_id ?? string.Empty;
-
-                _logger?.LogInformation($"✅ Identificador compuesto recibido: {identificadorCompuesto}");
-
-                // Separar componentes
-                string[] partes = identificadorCompuesto.Split('|');
-
-                string letraComprobante = partes.Length > 0 ? partes[0] : "";
-                string idComprobante = partes.Length > 1 ? partes[1] : "";
-                string nroComprobante = partes.Length > 2 ? partes[2] : "";
-                string nroComprobanteRepetido = partes.Length > 3 ? partes[3] : "";
+                // ═══════════════════════════════════════════════════════════
+                // ⓭ ✅ NUEVO v10.0: PARSEAR JSON DE COMPROBANTE CORRECTAMENTE
+                // ═══════════════════════════════════════════════════════════
 
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("🔍 PARSEANDO DATOS DEL COMPROBANTE");
+                _logger?.LogInformation($"   resultado_id raw: {respuestaDto.resultado_id}");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                // ❶ INTENTAR PARSEAR JSON
+                if (!TryParsearComprobanteJson(respuestaDto.resultado_id, out var comprobante))
+                {
+                    _logger?.LogError("❌ No se pudo parsear resultado_id como JSON");
+
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = "Error al procesar datos del comprobante. Formato inválido.",
+                        debug_resultado_id = respuestaDto.resultado_id
+                    });
+                }
+
+                // ❷ VALIDAR QUE EL COMPROBANTE SEA VÁLIDO
+                if (comprobante == null)
+                {
+                    _logger?.LogError("❌ Comprobante es null después del parseo");
+                    return Json(new { ok = false, mensaje = "Error: no se obtuvieron datos del comprobante" });
+                }
+
+                // ❸ LOGS DE DATOS PARSEADOS
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
                 _logger?.LogInformation("✅ FACTURA DIFERIDA EMITIDA EXITOSAMENTE");
-                _logger?.LogInformation($"   Letra: {letraComprobante}");
-                _logger?.LogInformation($"   ID: {idComprobante}");
-                _logger?.LogInformation($"   Nro: {nroComprobante}");
+                _logger?.LogInformation($"   Letra: {comprobante.tco_letra}");
+                _logger?.LogInformation($"   ID Tipo: {comprobante.tco_id}");
+                _logger?.LogInformation($"   Número: {comprobante.cm_compte}");
+                _logger?.LogInformation($"   Repetido: {(comprobante.EsRepetido ? "SÍ" : "NO")}");
                 _logger?.LogInformation($"   Mensaje: {respuestaDto.resultado_msj}");
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
@@ -1705,19 +1720,24 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 FacturaSubtotales = [];
                 FacturaSorteos = [];
 
-                // ⓯ RETORNAR RESPUESTA PARA IMPRESIÓN
+                // ⓯ ✅ RETORNAR RESPUESTA CORRECTA PARA FRONTEND
                 return Json(new
                 {
                     ok = true,
-                    mensaje = $"Factura {letraComprobante} Nro {nroComprobante} emitida con pago diferido",
-                    comprobante = new
+                    mensaje = $"Factura {comprobante.tco_letra} Nro {comprobante.cm_compte} emitida con pago diferido",
+
+                    // ✅ DATOS DEL COMPROBANTE EN FORMATO CORRECTO
+                    data = new[]
                     {
-                        letra = letraComprobante,
-                        id = idComprobante,
-                        numero = nroComprobante,
-                        numero_repetido = nroComprobanteRepetido,
-                        identificador_completo = identificadorCompuesto
-                    },
+                new
+                {
+                    tco_letra = comprobante.tco_letra,
+                    tco_id = comprobante.tco_id,
+                    cm_compte = comprobante.cm_compte,
+                    cm_repetido = comprobante.cm_repetido
+                }
+            },
+
                     resultado_completo = respuestaDto.resultado_msj,
                     debe_imprimir = true
                 });
@@ -1897,6 +1917,78 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     resultado_msj = "Error interno al generar el reporte",
                     Base64 = string.Empty
                 });
+            }
+        }
+
+        /// <summary>
+        /// ✅ NUEVO v10.0: Parsea el JSON de comprobante desde resultado_id
+        /// </summary>
+        /// <param name="resultadoId">JSON string con información del comprobante</param>
+        /// <param name="comprobante">DTO con datos parseados (out)</param>
+        /// <returns>true si el parseo fue exitoso, false en caso contrario</returns>
+        private bool TryParsearComprobanteJson(string resultadoId, out ComprobanteInfoDto? comprobante)
+        {
+            comprobante = null;
+
+            try
+            {
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("🔍 PARSEANDO JSON DE COMPROBANTE v10.0");
+                _logger?.LogInformation($"   JSON recibido: {resultadoId}");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                // ❶ VALIDAR QUE NO SEA NULL O VACÍO
+                if (string.IsNullOrWhiteSpace(resultadoId))
+                {
+                    _logger?.LogWarning("❌ resultado_id es null o vacío");
+                    return false;
+                }
+
+                // ❷ LIMPIAR JSON (remover espacios)
+                string jsonLimpio = resultadoId.Trim();
+
+                // ❸ VALIDAR QUE SEA UN ARRAY JSON
+                if (!jsonLimpio.StartsWith("[") || !jsonLimpio.EndsWith("]"))
+                {
+                    _logger?.LogWarning($"⚠️ El JSON no es un array válido: {jsonLimpio}");
+                    return false;
+                }
+
+                // ❹ DESERIALIZAR COMO LISTA
+                var lista = JsonConvert.DeserializeObject<List<ComprobanteInfoDto>>(jsonLimpio);
+
+                // ❺ VALIDAR QUE LA LISTA NO SEA NULL Y TENGA AL MENOS UN ELEMENTO
+                if (lista == null || lista.Count == 0)
+                {
+                    _logger?.LogWarning("❌ La deserialización retornó lista vacía o null");
+                    return false;
+                }
+
+                // ❻ TOMAR EL PRIMER ELEMENTO (normalmente será único)
+                comprobante = lista[0];
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("✅ COMPROBANTE PARSEADO EXITOSAMENTE");
+                _logger?.LogInformation($"   tco_letra: {comprobante.tco_letra}");
+                _logger?.LogInformation($"   tco_id: {comprobante.tco_id}");
+                _logger?.LogInformation($"   cm_compte: {comprobante.cm_compte}");
+                _logger?.LogInformation($"   cm_repetido: {comprobante.cm_repetido} ({(comprobante.EsRepetido ? "SÍ" : "NO")})");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                return true;
+            }
+            catch (JsonException ex)
+            {
+                _logger?.LogError($"❌ ERROR DE PARSEO JSON: {ex.Message}");
+                _logger?.LogError($"   JSON problemático: {resultadoId}");
+                _logger?.LogError($"   Stack Trace: {ex.StackTrace}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError($"❌ ERROR INESPERADO AL PARSEAR: {ex.Message}");
+                _logger?.LogError($"   Stack Trace: {ex.StackTrace}");
+                return false;
             }
         }
     }

@@ -1333,3 +1333,115 @@ function mostrarMensajeExito(mensaje) {
         alert(mensaje);
     }
 }
+
+// ════════════════════════════════════════════════════════════
+// ✅ NUEVO v10.0: UTILIDADES DE REDONDEO Y FORMATEO
+// ════════════════════════════════════════════════════════════
+
+/**
+ * ✅ NUEVO v10.0: Redondea un número a una cantidad específica de decimales
+ * Soluciona problemas de precisión de punto flotante en JavaScript
+ * 
+ * @param {number|string} valor - Valor a redondear
+ * @param {number} decimales - Cantidad de decimales (default: 2)
+ * @returns {number} - Número redondeado
+ * 
+ * @example
+ * redondear(109911.35999999999, 2) → 109911.36
+ * redondear(0.1 + 0.2, 2) → 0.30
+ * redondear("123.456", 2) → 123.46
+ */
+function redondear(valor, decimales = 2) {
+    // ❶ Validar entrada
+    if (valor === null || valor === undefined || valor === '') {
+        return 0;
+    }
+
+    // ❷ Convertir a número si es string
+    let numero = typeof valor === 'number' ? valor : parseFloat(valor);
+
+    // ❸ Validar que sea un número válido
+    if (!Number.isFinite(numero)) {
+        console.warn(`⚠️ Valor no numérico recibido en redondear(): "${valor}"`);
+        return 0;
+    }
+
+    // ❹ Validar decimales
+    if (!Number.isInteger(decimales) || decimales < 0) {
+        console.warn(`⚠️ Decimales inválidos: ${decimales}, usando 2 por defecto`);
+        decimales = 2;
+    }
+
+    // ❺ REDONDEO ROBUSTO: Usar multiplicación/división para evitar errores de precisión
+    const factor = Math.pow(10, decimales);
+    const resultado = Math.round(numero * factor) / factor;
+
+    // ❻ Validar resultado
+    if (!Number.isFinite(resultado)) {
+        console.error(`❌ Error al redondear: ${valor} → ${resultado}`);
+        return 0;
+    }
+
+    return resultado;
+}
+
+/**
+ * ✅ ACTUALIZADO v10.0: Formatea un número con separadores de miles y decimales
+ * NUEVO: Usa redondear() internamente para garantizar precisión
+ * 
+ * @param {number|string} numero - Número a formatear
+ * @param {number} decimales - Cantidad de decimales (default: 2)
+ * @returns {string} - Número formateado (ej: "1,234.56")
+ * 
+ * @example
+ * formatearNumero(109911.35999999999, 2) → "109,911.36"
+ * formatearNumero(1234.5, 2) → "1,234.50"
+ */
+function formatearNumero(numero, decimales = 2) {
+    // ❶ Redondear primero (garantiza precisión)
+    const numeroRedondeado = redondear(numero, decimales);
+
+    // ❷ Formatear con toLocaleString
+    return numeroRedondeado.toLocaleString('en-US', {
+        minimumFractionDigits: decimales,
+        maximumFractionDigits: decimales
+    });
+}
+
+/**
+ * ✅ NUEVO v10.0: Escapa caracteres HTML para prevenir XSS
+ * (Mantener esta función existente si ya estaba)
+ */
+function escapeHtml(texto) {
+    if (!texto) return '';
+
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+
+    return String(texto).replace(/[&<>"']/g, function (m) { return map[m]; });
+}
+
+/**
+ * ✅ NUEVO v10.0: Suma array de números con redondeo al final
+ * Minimiza acumulación de errores de precisión
+ * 
+ * @param {Array<number>} valores - Array de números
+ * @param {number} decimales - Decimales del resultado final
+ * @returns {number} - Suma redondeada
+ * 
+ * @example
+ * sumarConRedondeo([10.1, 20.2, 30.3], 2) → 60.60
+ */
+function sumarConRedondeo(valores, decimales = 2) {
+    if (!Array.isArray(valores) || valores.length === 0) {
+        return 0;
+    }
+
+    const suma = valores.reduce((acc, val) => acc + (parseFloat(val) || 0), 0);
+    return redondear(suma, decimales);
+}

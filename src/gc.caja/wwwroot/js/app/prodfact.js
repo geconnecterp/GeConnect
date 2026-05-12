@@ -856,14 +856,11 @@ function buscarProductoExistente(p_id) {
 }
 
 /**
- * ✅ NUEVO v8.1: Incrementa la cantidad de un producto existente
- *
- * @param {number} indice - Índice del producto en productosFactura
- * @param {number|string} cantidadAIncrementar - Cantidad a agregar
+ * ✅ ACTUALIZADO v10.0: Incrementa cantidad CON RECALCULO REDONDEADO
  */
 function incrementarCantidadProducto(indice, cantidadAIncrementar) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔄 INCREMENTANDO CANTIDAD DE PRODUCTO EXISTENTE v8.1');
+    console.log('🔄 INCREMENTANDO CANTIDAD DE PRODUCTO v10.0 (CON REDONDEO)');
     console.log('═══════════════════════════════════════════════════');
 
     if (indice < 0 || indice >= productosFactura.length) {
@@ -885,17 +882,15 @@ function incrementarCantidadProducto(indice, cantidadAIncrementar) {
 
     console.log(`   Item: ${producto.item}`);
     console.log(`   Código: ${producto.p_id}`);
-    console.log(`   Descripción: ${producto.p_desc}`);
     console.log(`   Cantidad anterior: ${cantidadAnterior}`);
-    console.log(`   Cantidad a incrementar: +${incremento}`);
+    console.log(`   Incremento: +${incremento}`);
     console.log(`   Cantidad nueva: ${cantidadNueva}`);
 
     // ❶ Actualizar cantidad
     producto.cantidad_tot = cantidadNueva;
     producto.cantidadTotal = cantidadNueva;
 
-    // ❷ Recalcular precio total
-    const precioTotalAnterior = normalizarNumero(producto.p_pvta_tot, 0);
+    // ❷ ✅ NUEVO: Recalcular precio total CON REDONDEO
     const precioTotalNuevo = calcularPrecioTotal({
         p_pvta: precioUnitario,
         cantidad_tot: cantidadNueva
@@ -904,16 +899,14 @@ function incrementarCantidadProducto(indice, cantidadAIncrementar) {
     producto.p_pvta_tot = precioTotalNuevo;
     producto.precioTotal = precioTotalNuevo;
 
-    // ❸ Sincronizar objeto original si existe
+    // ❸ Sincronizar objeto original
     if (producto._original) {
         producto._original.cantidad_tot = cantidadNueva;
         producto._original.p_pvta_tot = precioTotalNuevo;
     }
 
-    console.log(`   💰 Precio anterior: $ ${formatearNumero(precioTotalAnterior, 2)}`);
-    console.log(`   💰 Precio nuevo: $ ${formatearNumero(precioTotalNuevo, 2)}`);
-    console.log('═══════════════════════════════════════════════════');
-    console.log('✅ CANTIDAD INCREMENTADA CORRECTAMENTE');
+    console.log(`   💰 Precio unitario: $ ${formatearNumero(precioUnitario, 2)}`);
+    console.log(`   💰 Precio total REDONDEADO: $ ${formatearNumero(precioTotalNuevo, 2)}`);
     console.log('═══════════════════════════════════════════════════');
 
     return producto;
@@ -1078,14 +1071,29 @@ function agregarProductoAGrilla(producto) {
 }
 
 /**
- * ✅ NUEVO v4.0: Recalcula el total de la factura
+ * ✅ ACTUALIZADO v10.0: Recalcula el total de la factura CON REDONDEO
+ * CORREGIDO: Aplica redondeo a cada precio total antes de sumar
  */
 function recalcularTotalFactura() {
-    totalFactura = productosFactura.reduce((sum, prod) => sum + (prod.precioTotal || 0), 0);
+    console.log('═══════════════════════════════════════════════════');
+    console.log('💰 RECALCULANDO TOTAL DE FACTURA v10.0 (CON REDONDEO)');
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Sumar precios totales CON REDONDEO
+    totalFactura = productosFactura.reduce((sum, prod) => {
+        const precioTotal = redondear(prod.precioTotal || 0, 2);
+        return sum + precioTotal;
+    }, 0);
+
+    // ❷ CRÍTICO: Redondear el total final
+    totalFactura = redondear(totalFactura, 2);
+
+    console.log(`   📊 Total productos: ${productosFactura.length}`);
+    console.log(`   💵 Total calculado (redondeado): $ ${formatearNumero(totalFactura, 2)}`);
+    console.log(`   🔢 Total raw: ${totalFactura}`);
+    console.log('═══════════════════════════════════════════════════');
 
     $('#txtTotalFactura').val(`$ ${formatearNumero(totalFactura, 2)}`);
-
-    console.log(`💰 Total factura recalculado: $ ${formatearNumero(totalFactura, 2)}`);
 }
 
 
@@ -1170,22 +1178,26 @@ function actualizarGrillaProductos() {
 }
 
 /**
- * ✅ NUEVO v5.0: Calcula el precio total de un producto
- * Fórmula: Precio Venta * Cantidad
- * (IVA e Imp. Internos ya están incluidos in p_pvta)
+ * ✅ ACTUALIZADO v10.0: Calcula precio total CON REDONDEO
+ * CORREGIDO: Redondea el resultado final
  */
 function calcularPrecioTotal(producto) {
-    const precioVenta = producto.p_pvta || 0;
-    const cantidad = producto.cantidad_tot || 1;
-    
+    const precioVenta = parseFloat(producto.p_pvta) || 0;
+    const cantidad = parseFloat(producto.cantidad_tot) || 1;
+
+    // ❶ Multiplicar
     const precioTotal = precioVenta * cantidad;
-    
-    console.log(`💰 Cálculo precio total:`);
-    console.log(`   Precio Venta (incluye impuestos): $ ${precioVenta}`);
+
+    // ❷ CRÍTICO: Redondear el resultado
+    const precioTotalRedondeado = redondear(precioTotal, 2);
+
+    console.log(`💰 Cálculo precio total (CON REDONDEO):`);
+    console.log(`   Precio Venta: $ ${precioVenta}`);
     console.log(`   Cantidad: ${cantidad}`);
-    console.log(`   PRECIO TOTAL: $ ${precioTotal}`);
-    
-    return precioTotal;
+    console.log(`   Resultado sin redondear: $ ${precioTotal}`);
+    console.log(`   Resultado REDONDEADO: $ ${precioTotalRedondeado}`);
+
+    return precioTotalRedondeado;
 }
 
 /**
@@ -1595,15 +1607,14 @@ function ocultarSeccionProductos() {
 }
 
 /**
- * ✅ ACTUALIZADO v7.3: JSON COMPLETO con TODOS los campos del DTO
- * SINCRONIZADO con ProductoFactJsonDto.cs
+ * ✅ ACTUALIZADO v10.0: Confirma factura CON REDONDEO EN TODOS LOS VALORES
  */
 function confirmarFactura() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('✅ CONFIRMANDO FACTURA v7.3');
+    console.log('✅ CONFIRMANDO FACTURA v10.0 (CON REDONDEO)');
     console.log('═══════════════════════════════════════════════════');
 
-    // ❶ Validaciones previas...
+    // ❶ Validaciones...
     if (productosFactura.length === 0) {
         console.warn('⚠️ No hay productos cargados');
         mostrarMensajeError('Debe cargar al menos un producto para continuar');
@@ -1616,11 +1627,11 @@ function confirmarFactura() {
         return;
     }
 
-    // ❸ Construir JSON COMPLETO con TODOS los campos del DTO
+    // ❸ ✅ NUEVO: Construir JSON CON VALORES REDONDEADOS
     const productosArray = productosFactura.map((producto) => {
         return {
             // ═══════════════════════════════════════════════════
-            // ✅ SECCIÓN 1: IDENTIFICACIÓN
+            // ✅ IDENTIFICACIÓN
             // ═══════════════════════════════════════════════════
             item: producto.item || 0,
             p_id: producto.p_id || '',
@@ -1628,81 +1639,81 @@ function confirmarFactura() {
             p_desc: producto.p_desc || '',
 
             // ═══════════════════════════════════════════════════
-            // ✅ SECCIÓN 2: PRECIOS
+            // ✅ PRECIOS (REDONDEADOS)
             // ═══════════════════════════════════════════════════
-            p_pcosto: producto.p_pcosto || 0,
-            p_pcosto_repo: producto.p_pcosto_repo || 0,
-            p_pneto: producto.p_pneto || 0,
-            p_pvta: producto.p_pvta || 0,
-            p_margen_imp: producto.p_margen_imp || 0,      // ✅ NUEVO
-            p_margen_vig: producto.p_margen_vig || 0,      // ✅ NUEVO
+            p_pcosto: redondear(producto.p_pcosto || 0, 2),
+            p_pcosto_repo: redondear(producto.p_pcosto_repo || 0, 2),
+            p_pneto: redondear(producto.p_pneto || 0, 2),
+            p_pvta: redondear(producto.p_pvta || 0, 2),
+            p_margen_imp: redondear(producto.p_margen_imp || 0, 2),
+            p_margen_vig: redondear(producto.p_margen_vig || 0, 2),
 
             // ═══════════════════════════════════════════════════
-            // ✅ SECCIÓN 3: CANTIDAD Y TOTAL
+            // ✅ CANTIDAD Y TOTAL (REDONDEADOS)
             // ═══════════════════════════════════════════════════
-            cantidad_tot: producto.cantidad_tot || 0,
-            p_pvta_tot: producto.p_pvta_tot || 0,
-            bultos: producto.bultos || 0,                  // ✅ NUEVO
+            cantidad_tot: redondear(producto.cantidad_tot || 0, 2),
+            p_pvta_tot: redondear(producto.p_pvta_tot || 0, 2),
+            bultos: redondear(producto.bultos || 0, 0),
 
             // ═══════════════════════════════════════════════════
-            // ✅ SECCIÓN 4: IVA
+            // ✅ IVA (REDONDEADO)
             // ═══════════════════════════════════════════════════
             iva_situacion: producto.iva_situacion || '',
-            iva_alicuota: producto.iva_alicuota || 0,
-            p_iva: producto.p_iva || 0,
+            iva_alicuota: redondear(producto.iva_alicuota || 0, 2),
+            p_iva: redondear(producto.p_iva || 0, 2),
 
             // ═══════════════════════════════════════════════════
-            // ✅ SECCIÓN 5: IMPUESTOS INTERNOS
+            // ✅ IMPUESTOS INTERNOS (REDONDEADO)
             // ═══════════════════════════════════════════════════
-            in_alicuota: producto.in_alicuota || 0,
-            p_in: producto.p_in || 0,
+            in_alicuota: redondear(producto.in_alicuota || 0, 2),
+            p_in: redondear(producto.p_in || 0, 2),
 
             // ═══════════════════════════════════════════════════
-            // ✅ SECCIÓN 6: PREVISIÓN DE LISTA
+            // ✅ PREVISIÓN DE LISTA (REDONDEADO)
             // ═══════════════════════════════════════════════════
-            lp_prevision_tot: producto.lp_prevision_tot || 0,
-            lp_prevision_pin: producto.lp_prevision_pin || 0,
+            lp_prevision_tot: redondear(producto.lp_prevision_tot || 0, 2),
+            lp_prevision_pin: redondear(producto.lp_prevision_pin || 0, 2),
 
             // ═══════════════════════════════════════════════════
-            // ✅ SECCIÓN 7: PRECIO DE OFERTA
+            // ✅ PRECIO DE OFERTA (REDONDEADO)
             // ═══════════════════════════════════════════════════
             po: producto.po || false,
-            po_limite: producto.po_limite || 0,
+            po_limite: redondear(producto.po_limite || 0, 2),
 
             // ═══════════════════════════════════════════════════
-            // ✅ SECCIÓN 8: TOTALES DE COMPROBANTE (✅ NUEVO v7.3)
+            // ✅ TOTALES DE COMPROBANTE (REDONDEADO)
             // ═══════════════════════════════════════════════════
-            cm_gravado: producto.cm_gravado || 0,
-            cm_no_gravado: producto.cm_no_gravado || 0,
-            cm_exento: producto.cm_exento || 0,
-            cm_iva: producto.cm_iva || 0,
-            cm_ii: producto.cm_ii || 0,
+            cm_gravado: redondear(producto.cm_gravado || 0, 2),
+            cm_no_gravado: redondear(producto.cm_no_gravado || 0, 2),
+            cm_exento: redondear(producto.cm_exento || 0, 2),
+            cm_iva: redondear(producto.cm_iva || 0, 2),
+            cm_ii: redondear(producto.cm_ii || 0, 2),
 
             // ═══════════════════════════════════════════════════
-            // ✅ SECCIÓN 9: DESCUENTOS (✅ NUEVO v7.3)
+            // ✅ DESCUENTOS (REDONDEADO)
             // ═══════════════════════════════════════════════════
-            cm_dto: producto.cm_dto || 0,
-            cm_dto_porc: producto.cm_dto_porc || 0,
+            cm_dto: redondear(producto.cm_dto || 0, 2),
+            cm_dto_porc: redondear(producto.cm_dto_porc || 2, 2),
 
             // ═══════════════════════════════════════════════════
-            // ✅ SECCIÓN 10: ORIGEN
+            // ✅ ORIGEN (SIN CAMBIOS)
             // ═══════════════════════════════════════════════════
             cta_id: producto.cta_id || '',
             pre_id: producto.pre_id || null,
             cpf_nro: producto.cpf_nro || null,
 
             // ═══════════════════════════════════════════════════
-            // ✅ SECCIÓN 11: COMBOS (✅ NUEVO v7.3)
+            // ✅ COMBOS (SIN CAMBIOS)
             // ═══════════════════════════════════════════════════
             cmb_p_id: producto.cmb_p_id || '',
             cmd_cmb: producto.cmd_cmb || '',
             cmd_cmb_id: producto.cmd_cmb_id || '',
-            cmd_cmb_dto: producto.cmd_cmb_dto || 0,
-            cmd_cmb_cant: producto.cmd_cmb_cant || 0,
+            cmd_cmb_dto: redondear(producto.cmd_cmb_dto || 0, 2),
+            cmd_cmb_cant: redondear(producto.cmd_cmb_cant || 0, 2),
             cmd_cmb_desc: producto.cmd_cmb_desc || '',
 
             // ═══════════════════════════════════════════════════
-            // ✅ SECCIÓN 12: CÓDIGO DE BARRAS (✅ NUEVO v7.3)
+            // ✅ CÓDIGO DE BARRAS (SIN CAMBIOS)
             // ═══════════════════════════════════════════════════
             barre: producto.barre || ''
         };
@@ -1711,25 +1722,37 @@ function confirmarFactura() {
     const jsonProductos = JSON.stringify(productosArray);
 
     console.log('═══════════════════════════════════════════════════');
-    console.log('📋 JSON COMPLETO de productos generado (v7.3):');
+    console.log('📋 JSON CON VALORES REDONDEADOS generado:');
     console.log(jsonProductos);
     console.log('═══════════════════════════════════════════════════');
 
-    // ❹ Calcular totales
+    // ❹ ✅ NUEVO: Calcular totales CON REDONDEO
     const tot_rows = productosFactura.length;
-    const tot_cantidad = productosFactura.reduce((sum, p) => sum + (p.cantidad_tot || 0), 0);
-    const tot_pvta = totalFactura;
+
+    // ✅ Suma de cantidades REDONDEADA
+    const tot_cantidad = redondear(
+        productosFactura.reduce((sum, p) => sum + (parseFloat(p.cantidad_tot) || 0), 0),
+        2
+    );
+
+    // ✅ Total de precios REDONDEADO
+    const tot_pvta = redondear(totalFactura, 2);
 
     // ❺ Construir request DTO
     const request = {
         json_p: jsonProductos,
         tot_rows: tot_rows,
         tot_cantidad: tot_cantidad,
-        tot_pvta: tot_pvta,
+        tot_pvta: tot_pvta,  // ← ✅ AHORA ESTÁ REDONDEADO
         lp_id: clienteActualFactura.listaPrecio || '001'
     };
 
-    console.log('📤 Request completo a enviar:', request);
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📤 REQUEST CON TOTALES REDONDEADOS:');
+    console.log(`   tot_rows: ${tot_rows}`);
+    console.log(`   tot_cantidad: ${tot_cantidad}`);
+    console.log(`   tot_pvta: ${tot_pvta} ← ✅ REDONDEADO`);
+    console.log('═══════════════════════════════════════════════════');
 
     // ❻ Mostrar loader
     mostrarLoaderCalculando();
@@ -1762,7 +1785,6 @@ function confirmarFactura() {
             console.error('❌ ERROR EN CALCULAR FILAS');
             ocultarLoaderCalculando();
 
-            // ✅ Usar función centralizada
             if (esSesionExpirada(xhr.status)) {
                 manejarSesionExpirada('No se pudo calcular la factura porque su sesión ha expirado.');
                 return;
