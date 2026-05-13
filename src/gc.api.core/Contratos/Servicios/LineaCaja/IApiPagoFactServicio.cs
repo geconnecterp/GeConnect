@@ -1,0 +1,13 @@
+﻿using gc.infraestructura.Dtos.Cajas.Request;
+using gc.infraestructura.Dtos.Cajas.Response;
+
+namespace gc.api.core.Contratos.Servicios.LineaCaja
+{
+    public interface IApiPagoFactServicio
+    {
+        List<ValoresPendientesResDto> ObtenerValoresPendientes(ValoresPendientesReqDto req);
+        List<ValoresNCResDto> ObtenerValoresNC(ValoresNCReqDto req);
+        List<ValoresMPResDto> ObtenerValoresMP(ValoresMPReqDto req);
+        List<ValoresInsResDto> ObtenerValoresIns(ValoresInsReqDto req);
+    }
+}

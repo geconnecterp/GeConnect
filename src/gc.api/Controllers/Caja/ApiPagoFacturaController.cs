@@ -1,0 +1,94 @@
+﻿using gc.api.core.Contratos.Servicios.LineaCaja;
+using gc.api.core.Servicios.LineaCaja;
+using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos.Cajas.Request;
+using gc.infraestructura.Dtos.Cajas.Response;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System.Net;
+
+namespace gc.api.Controllers.Caja
+{
+    [Authorize]
+    [Produces("application/json")]
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ApiPagoFacturaController : ControllerBase
+    {
+        private readonly ILogger<ApiPagoFacturaController> _logger;
+        private readonly IApiPagoFactServicio _apiPagoFactServicio;
+
+        public ApiPagoFacturaController(ILogger<ApiPagoFacturaController> logger, IApiPagoFactServicio servicio)
+        {
+            _logger = logger;
+            _apiPagoFactServicio = servicio;
+        }
+        /*
+          List<ValoresPendientesResDto> ObtenerValoresPendientes(ValoresPendientesReqDto req);
+        List<ValoresNCResDto> ObtenerValoresNC(ValoresNCReqDto req);
+        List<ValoresMPResDto> ObtenerValoresMP(ValoresMPReqDto req);
+        List<ValoresInsResDto> ObtenerValoresIns(ValoresInsReqDto req); 
+         */
+
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoDatosResponseDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult ObtenerValoresPendientes(ValoresPendientesReqDto req)
+        {
+            if (req == null)
+            {
+                return BadRequest("El parámetro req es requerido.");
+            }
+
+            var res = _apiPagoFactServicio.ObtenerValoresPendientes(req);
+            return Ok(new ApiResponse<List<ValoresPendientesResDto>>(res));
+        }
+
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoDatosResponseDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult ObtenerValoresNC(ValoresNCReqDto req)
+        {
+            if (req == null)
+            {
+                return BadRequest("El parámetro req es requerido.");
+            }
+
+            var res = _apiPagoFactServicio.ObtenerValoresNC(req);
+            return Ok(new ApiResponse<List<ValoresNCResDto>>(res));
+        }
+
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoDatosResponseDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult ObtenerValoresMP(ValoresMPReqDto req)
+        {
+            if (req == null)
+            {
+                return BadRequest("El parámetro req es requerido.");
+            }
+
+            var res = _apiPagoFactServicio.ObtenerValoresMP(req);
+            return Ok(new ApiResponse<List<ValoresMPResDto>>(res));
+        }
+
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoDatosResponseDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult ObtenerValoresIns(ValoresInsReqDto req)
+        {
+            if (req == null)
+            {
+                return BadRequest("El parámetro req es requerido.");
+            }
+
+            var res = _apiPagoFactServicio.ObtenerValoresIns(req);
+            return Ok(new ApiResponse<List<ValoresInsResDto>>(res));
+        }
+    }
+}

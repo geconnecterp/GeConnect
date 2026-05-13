@@ -1,0 +1,100 @@
+﻿@{
+    // ✅ Configuración para la vista parcial de datos del cliente
+    ViewData["SufijoId"] = "Pago";
+    ViewData["MostrarTipoComprobante"] = true;
+    ViewData["TipoComprobanteTexto"] = "FACTURA A";
+}
+
+<!-- ====== MODAL DE PAGO - ESTILO GOLDEN ====== -->
+<div class="modal fade" id="modalPago" tabindex="-1" aria-labelledby="modalPagoLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content modal-golden">
+            
+            <!-- ════════════════════════════════════════════════════════ -->
+            <!-- HEADER CON DATOS DEL CLIENTE (REUTILIZABLE) -->
+            <!-- ════════════════════════════════════════════════════════ -->
+            @await Html.PartialAsync("_datosClienteComun")
+
+            <!-- Body del modal -->
+            <div class="modal-body p-4">
+                
+                <!-- Sección: Tabla de Conceptos de Pago -->
+                <div class="card card-golden mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class='bx bx-detail'></i> Conceptos de Pago</h6>
+                    </div>
+                    <div class="card-body p-2">
+                        <div class="table-responsive table-wrapper-300">
+                            <table class="table table-golden table-sm table-hover mb-0" id="tbConceptosPago">
+                                <thead class="table-golden-header sticky-top">
+                                    <tr>
+                                        <th class="text-center" style="width: 40%;">Concepto</th>
+                                        <th class="text-end" style="width: 20%;">Total</th>
+                                        <th class="text-end" style="width: 20%;"></th>
+                                        <th class="text-end" style="width: 20%;">Importe</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="row-total-pagar">
+                                        <td class="fw-bold text-danger">Total a Pagar:</td>
+                                        <td class="text-end"></td>
+                                        <td class="text-end fw-bold text-danger" id="totalPagar">0.00</td>
+                                        <td class="text-end"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Recargos</td>
+                                        <td class="text-end" id="totalRecargos">0.00</td>
+                                        <td class="text-end"></td>
+                                        <td class="text-end"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Descuentos</td>
+                                        <td class="text-end" id="totalDescuentos">0.00</td>
+                                        <td class="text-end"></td>
+                                        <td class="text-end"></td>
+                                    </tr>
+                                    <tr class="row-total-valores">
+                                        <td class="fw-bold text-primary">Total a Valores:</td>
+                                        <td class="text-end"></td>
+                                        <td class="text-end fw-bold text-primary" id="totalValores">0.00</td>
+                                        <td class="text-end"></td>
+                                    </tr>
+                                    <tr class="row-diferencia">
+                                        <td class="fw-bold text-success">Diferencia:</td>
+                                        <td class="text-end"></td>
+                                        <td class="text-end fw-bold text-success" id="diferencia">0.00</td>
+                                        <td class="text-end"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección: Botones de Acción -->
+                <div class="d-flex justify-content-center gap-3 mt-3">
+                    <button type="button" class="btn btn-warning btn-lg" id="btnAgregarPago">
+                        <i class='bx bx-plus-circle'></i>
+                        AGREGAR
+                    </button>
+                    <button type="button" class="btn btn-danger btn-lg" id="btnVolverPago">
+                        <i class='bx bx-arrow-back'></i>
+                        VOLVER
+                    </button>
+                    <button type="button" class="btn btn-success btn-lg" id="btnFinalizarPago" disabled>
+                        <i class='bx bx-check-circle'></i>
+                        FINALIZAR
+                    </button>
+                </div>
+            </div>
+
+            <!-- Footer informativo -->
+            <div class="modal-footer modal-golden-footer">
+                <small class="text-muted">
+                    <i class='bx bx-info-circle'></i>
+                    Presione AGREGAR para registrar formas de pago | FINALIZAR para confirmar el pago
+                </small>
+            </div>
+        </div>
+    </div>
+</div>

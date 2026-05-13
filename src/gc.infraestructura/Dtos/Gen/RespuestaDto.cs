@@ -1,4 +1,6 @@
 ﻿
+using Newtonsoft.Json;
+
 namespace gc.infraestructura.Dtos.Gen
 {
     public class RespuestaDto
@@ -14,6 +16,7 @@ namespace gc.infraestructura.Dtos.Gen
 
     public class RespuestaReportDto : RespuestaDto
     {
+        [JsonProperty("base64")]
         public string Base64 { get; set; } = string.Empty;
     }
 

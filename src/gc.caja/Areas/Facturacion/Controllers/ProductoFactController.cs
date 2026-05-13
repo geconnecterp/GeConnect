@@ -1758,33 +1758,65 @@ namespace gc.caja.Areas.Facturacion.Controllers
         }
 
 
-        // ═══════════════════════════════════════════════════
-        // ✅ NUEVO ENDPOINT v10.0 (CORREGIDO)
-        // ═══════════════════════════════════════════════════
-
         /// <summary>
-        /// Obtiene la configuración de reportes disponibles
+        /// ✅ CORREGIDO v11.1: Obtiene la configuración de reportes disponibles
+        /// MEJORADO: Validación de datos antes de enviar respuesta
         /// </summary>
-        [HttpGet("ObtenerConfigReportes")]
+        [HttpGet]
         public IActionResult ObtenerConfigReportes()
         {
             try
             {
-                _logger.LogInformation("📋 Solicitando configuración de reportes...");
+                _logger.LogInformation("═══════════════════════════════════════════════════");
+                _logger.LogInformation("📋 OBTENER CONFIGURACIÓN DE REPORTES v11.1");
+                _logger.LogInformation("═══════════════════════════════════════════════════");
 
                 var reportes = _reportesConfigService.ObtenerTodos();
 
-                if (reportes == null || reportes.Count == 0)
+                if (reportes == null)
                 {
-                    _logger.LogWarning("⚠️ No hay reportes configurados en appsettings.json");
+                    _logger.LogWarning("⚠️ ObtenerTodos() retornó null");
                     return Ok(new
                     {
                         ok = false,
-                        mensaje = "No hay reportes configurados"
+                        mensaje = "No hay reportes configurados (null)"
                     });
                 }
 
-                _logger.LogInformation($"✅ Devolviendo {reportes.Count} reportes configurados");
+                if (reportes.Count == 0)
+                {
+                    _logger.LogWarning("⚠️ No hay reportes configurados (array vacío)");
+                    return Ok(new
+                    {
+                        ok = false,
+                        mensaje = "No hay reportes configurados (vacío)"
+                    });
+                }
+
+                // ✅ VALIDAR cada reporte antes de enviar
+                _logger.LogInformation($"   Total de reportes: {reportes.Count}");
+                foreach (var reporte in reportes)
+                {
+                    _logger.LogInformation($"   - Key: {reporte.Key ?? "NULL"}, Nombre: {reporte.Nombre ?? "NULL"}, Id: {reporte.Id ?? "NULL"}");
+
+                    // Advertir sobre reportes con datos faltantes
+                    if (string.IsNullOrWhiteSpace(reporte.Key))
+                    {
+                        _logger.LogWarning($"   ⚠️ Reporte con Key NULL o vacía: {reporte.Nombre}");
+                    }
+                    if (string.IsNullOrWhiteSpace(reporte.Nombre))
+                    {
+                        _logger.LogWarning($"   ⚠️ Reporte con Nombre NULL o vacío: Key={reporte.Key}");
+                    }
+                    if (string.IsNullOrWhiteSpace(reporte.Id))
+                    {
+                        _logger.LogWarning($"   ⚠️ Reporte con Id NULL o vacío: {reporte.Nombre}");
+                    }
+                }
+
+                _logger.LogInformation("═══════════════════════════════════════════════════");
+                _logger.LogInformation("✅ Devolviendo configuración de reportes");
+                _logger.LogInformation("═══════════════════════════════════════════════════");
 
                 return Ok(new
                 {
@@ -1804,18 +1836,16 @@ namespace gc.caja.Areas.Facturacion.Controllers
         }
 
         /// <summary>
-        /// ✅ NUEVO v10.0: Genera un reporte de comprobante (Factura A, B, etc.)
-        /// Usa FeReqDto existente en lugar de crear DTO nuevo
+        /// ✅ CORREGIDO v11.0: Genera un reporte de comprobante (Factura A, B, etc.)
+        /// CAMBIO: Removido atributo [HttpPost("...")] que causa problemas de ruta
         /// </summary>
-        /// <param name="request">Datos del comprobante (tco_letra, tco_id, cm_compte, cm_repetido)</param>
-        /// <returns>PDF en Base64</returns>
-        [HttpPost("GenerarReporteComprobante")]
+        [HttpPost]
         public async Task<IActionResult> GenerarReporteComprobante([FromBody] FeReqDto request)
         {
             try
             {
                 _logger.LogInformation("═══════════════════════════════════════════════════");
-                _logger.LogInformation("📄 GENERAR REPORTE DE COMPROBANTE v10.0");
+                _logger.LogInformation("📄 GENERAR REPORTE DE COMPROBANTE v11.0");
                 _logger.LogInformation("═══════════════════════════════════════════════════");
                 _logger.LogInformation($"   tco_letra: {request.tco_letra}");
                 _logger.LogInformation($"   tco_id: {request.tco_id}");
@@ -1867,7 +1897,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger.LogInformation($"📡 Invocando API de Reportes con ID: {reporteConfig.Id}");
 
                 // ❹ Obtener token de autenticación
-                var token = HttpContext.Session.GetString("TKN");
+                var token = TokenCookie;
 
                 if (string.IsNullOrEmpty(token))
                 {

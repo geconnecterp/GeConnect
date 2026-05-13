@@ -63,6 +63,7 @@
 @await Html.PartialAsync("~/Areas/Facturacion/Views/shared/_cambiarListaPreciosModal.cshtml")
 @await Html.PartialAsync("~/Areas/Facturacion/Views/shared/_prefacturaModal.cshtml")
 @await Html.PartialAsync("~/Areas/Facturacion/Views/shared/_cotizacionModal.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_pagoModal.cshtml")
 
 @section Scripts {
     <script>
@@ -113,15 +114,73 @@
         var DiferirPagoUrl = '@Url.Action("DiferirPago", "ProductoFact", new { area = "Facturacion" })';
     </script>
     <script src="~/js/plugins/jquery.simplePagination.js"></script>
-    <script src="~/js/app/fact.js" asp-append-version="true"></script>
-    <script src="~/js/app/prodfact.js" asp-append-version="true"></script>
+
+    <!-- Módulo de gestión de reportes v10.0 -->
+    <!-- ✅ CRÍTICO: Cargar PRIMERO el módulo de reportes -->
+    <script src="~/js/app/reportes.js" asp-append-version="true"></script>
+
     <script src="~/js/app/busquedas.js" asp-append-version="true"></script>
     <script src="~/js/app/busquedasV02.js" asp-append-version="true"></script>
-    <!-- Módulo de gestión de reportes v10.0 -->
-    <script src="~/js/app/reportes.js" asp-append-version="true"></script>
+
+    <script src="~/js/app/fact.js" asp-append-version="true"></script>
+    <script src="~/js/app/prodfact.js" asp-append-version="true"></script>  
     <script src="~/js/app/prodfactcalc.js" asp-append-version="true"></script>
+
     <script src="~/js/app/factListaPrecio.js" asp-append-version="true"></script>
     <script src="~/js/app/factPreFactura.js" asp-append-version="true"></script>
     <script src="~/js/app/factCotizacion.js" asp-append-version="true"></script>
+    <script src="~/js/app/pagoFactura.js" asp-append-version="true"></script>
 
+
+
+    <script>
+        // ════════════════════════════════════════════════════════════
+        // ✅ SCRIPT DE DIAGNÓSTICO - REMOVER EN PRODUCCIÓN
+        // ════════════════════════════════════════════════════════════
+        $(document).ready(function() {
+            console.log('═══════════════════════════════════════════════════');
+            console.log('🔍 DIAGNÓSTICO DE MÓDULOS CARGADOS');
+            console.log('═══════════════════════════════════════════════════');
+
+            // Verificar jQuery
+            console.log(`jQuery: ${typeof jQuery !== 'undefined' ? '✅ Cargado' : '❌ NO cargado'}`);
+            if (typeof jQuery !== 'undefined') {
+                console.log(`   Versión: ${jQuery.fn.jquery}`);
+            }
+
+            // Verificar Bootstrap
+            console.log(`Bootstrap: ${typeof bootstrap !== 'undefined' ? '✅ Cargado' : '❌ NO cargado'}`);
+            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                console.log(`   Bootstrap Modal: ✅ Disponible`);
+            }
+
+            // Verificar módulos de facturación
+            const modulos = [
+                'ModuloReportes',
+                'PagoFactura',
+                'procesarPagoFactura',
+                'abrirModalCalculoFactura'
+            ];
+
+            modulos.forEach(modulo => {
+                const existe = typeof window[modulo] !== 'undefined';
+                console.log(`${modulo}: ${existe ? '✅ Disponible' : '❌ NO disponible'}`);
+
+                if (existe && typeof window[modulo] === 'object') {
+                    console.log(`   Métodos:`, Object.keys(window[modulo]));
+                }
+            });
+
+            // Verificar existencia del modal en el DOM
+            const $modalPago = $('#modalPago');
+            console.log(`#modalPago en DOM: ${$modalPago.length > 0 ? '✅ Encontrado' : '❌ NO encontrado'}`);
+
+            if ($modalPago.length > 0) {
+                console.log(`   Clases: ${$modalPago.attr('class')}`);
+                console.log(`   Backdrop: ${$modalPago.data('bs-backdrop')}`);
+            }
+
+            console.log('═══════════════════════════════════════════════════');
+        });
+    </script>
 }

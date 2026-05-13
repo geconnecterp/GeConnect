@@ -46,6 +46,136 @@ function inicializarEventosCalculoFactura() {
 }
 
 // ════════════════════════════════════════════════════════════
+// PROCESAR PAGO DE FACTURA
+// ════════════════════════════════════════════════════════════
+/**
+ * ✅ ACTUALIZADO v13.0: Abre el modal de pago con validación exhaustiva
+ * Extrae el total final de la tabla de conceptos
+ */
+function procesarPagoFactura() {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('💰 PROCESAR PAGO DE FACTURA v13.0');
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ VALIDACIÓN CRÍTICA: Verificar que el módulo PagoFactura esté disponible
+    console.log('🔍 Verificando disponibilidad del módulo PagoFactura...');
+
+    if (typeof PagoFactura === 'undefined') {
+        console.error('═══════════════════════════════════════════════════');
+        console.error('❌ CRÍTICO: Módulo PagoFactura NO está disponible');
+        console.error('═══════════════════════════════════════════════════');
+        console.error('Diagnóstico:');
+        console.error('   1. Verificar que el archivo pagoFactura.js esté cargado');
+        console.error('   2. Ruta esperada: ~/js/pagoFactura.js');
+        console.error('   3. Revisar consola del navegador para errores de carga');
+        console.error('   4. Verificar que no haya errores de sintaxis en pagoFactura.js');
+        console.error('═══════════════════════════════════════════════════');
+
+        // Mostrar mensaje al usuario
+        if (typeof AbrirMensaje === 'function') {
+            AbrirMensaje(
+                "Error del Sistema",
+                `<div class="text-center">
+                    <i class='bx bx-error-circle text-danger' style='font-size: 3rem;'></i>
+                    <h5 class="mt-3 mb-2">Módulo de Pago no disponible</h5>
+                    <p class="text-muted mb-3">
+                        El módulo de gestión de pagos no se ha cargado correctamente.<br>
+                        Por favor, recargue la página e intente nuevamente.
+                    </p>
+                    <div class="alert alert-warning text-start">
+                        <strong>Soporte técnico:</strong><br>
+                        Si el problema persiste, contacte al administrador del sistema<br>
+                        <small class="text-muted">Código de error: MOD_PAGO_NOT_LOADED</small>
+                    </div>
+                </div>`,
+                function () {
+                    $("#msjModal").modal("hide");
+                },
+                false,
+                ["Aceptar"],
+                "error!",
+                null
+            );
+        } else {
+            alert('ERROR: El módulo de pago no está disponible.\nPor favor, recargue la página e intente nuevamente.');
+        }
+
+        return;
+    }
+
+    console.log('✅ Módulo PagoFactura disponible');
+
+    // ❷ Validar que tenga el método abrirModal
+    if (typeof PagoFactura.abrirModal !== 'function') {
+        console.error('❌ PagoFactura.abrirModal no es una función');
+        mostrarMensajeError('Error: Módulo de pago con estructura incorrecta');
+        return;
+    }
+
+    console.log('✅ Método PagoFactura.abrirModal disponible');
+
+    // ❸ Extraer el total final de la tabla
+    const $tdTotalFinal = $('#tdTotalFinal');
+
+    if ($tdTotalFinal.length === 0) {
+        console.error('❌ No se encontró el elemento #tdTotalFinal en el DOM');
+        mostrarMensajeError('Error: No se pudo obtener el total de la factura');
+        return;
+    }
+
+    const totalFinalTexto = $tdTotalFinal.text().trim();
+    const totalFinal = parseFloat(totalFinalTexto.replace(/[^\d.-]/g, '')) || 0;
+
+    console.log(`💵 Total final extraído: $ ${totalFinal.toFixed(2)}`);
+    console.log(`   Texto original: "${totalFinalTexto}"`);
+
+    // ❹ Validar que el total sea mayor a 0
+    if (totalFinal <= 0) {
+        console.warn('⚠️ Total final es $0.00 o negativo');
+        mostrarMensajeAdvertencia('El total de la factura debe ser mayor a $0.00');
+        return;
+    }
+
+    // ❺ Preparar datos para el modal de pago
+    const datosPago = {
+        totales: {
+            totalPagar: totalFinal,
+            recargos: 0,
+            descuentos: 0,
+            totalValores: 0
+        },
+        puntoVenta: $('#lblPuntoVentaCalculo').text().trim() || 'GECO PV'
+    };
+
+    console.log('📋 Datos preparados para modal de pago:', datosPago);
+
+    // ❻ Abrir modal de pago
+    try {
+        console.log('🔓 Invocando PagoFactura.abrirModal()...');
+
+        const resultado = PagoFactura.abrirModal(datosPago);
+
+        if (resultado === false) {
+            console.error('❌ PagoFactura.abrirModal() retornó false');
+            mostrarMensajeError('Error al abrir el modal de pago. Revise la consola para más detalles.');
+        } else {
+            console.log('✅ Modal de pago abierto correctamente');
+        }
+    } catch (error) {
+        console.error('═══════════════════════════════════════════════════');
+        console.error('❌ EXCEPCIÓN AL ABRIR MODAL DE PAGO');
+        console.error('═══════════════════════════════════════════════════');
+        console.error('Error:', error);
+        console.error('Stack:', error.stack);
+        console.error('═══════════════════════════════════════════════════');
+
+        mostrarMensajeError(`Error al abrir el modal de pago: ${error.message}`);
+    }
+
+    console.log('═══════════════════════════════════════════════════');
+}
+
+// ════════════════════════════════════════════════════════════
 // ABRIR MODAL CON DATOS
 // ════════════════════════════════════════════════════════════
 /**
@@ -753,8 +883,8 @@ function mostrarModalDiferirPago() {
 }
 
 /**
- * ✅ ACTUALIZADO v10.0: Ejecuta la llamada AJAX para diferir pago
- * NUEVO: Genera e imprime comprobante automáticamente
+ * ✅ CORREGIDO v11.0: Ejecuta la llamada AJAX para diferir pago
+ * NUEVO: Genera reporte ANTES del mensaje de éxito
  */
 function ejecutarDiferirPago() {
     console.log('📡 Invocando /ProductoFact/DiferirPago...');
@@ -772,56 +902,26 @@ function ejecutarDiferirPago() {
             CerrarWaiting();
 
             console.log('═══════════════════════════════════════════════════');
-            console.log('✅ RESPUESTA DE DIFERIR PAGO v10.0');
+            console.log('✅ RESPUESTA DE DIFERIR PAGO v11.0');
             console.log('═══════════════════════════════════════════════════');
             console.log('Response:', response);
 
-            // ═══════════════════════════════════════════════════
-            // ✅ NUEVO v10.0: PARSEAR JSON DE COMPROBANTES
-            // ═══════════════════════════════════════════════════
-
-            // ❃ Detectar formato de respuesta: Array JSON o Objeto con .ok
-            let comprobantes = [];
-
-            if (Array.isArray(response)) {
-                // Formato nuevo: Array directo
-                comprobantes = response;
-                console.log('📋 Formato detectado: Array JSON directo');
-            } else if (response.ok === true && response.data) {
-                // Formato alternativo: {ok: true, data: [...]}
-                comprobantes = Array.isArray(response.data) ? response.data : [response.data];
-                console.log('📋 Formato detectado: Objeto con data');
-            } else if (response.ok === false) {
-                // Error en respuesta
+            // ❸ Validar respuesta básica
+            if (!response.ok) {
                 console.error('❌ Error en respuesta:', response.mensaje);
-
-                AbrirMensaje(
-                    "Error al Diferir Pago",
-                    response.mensaje || 'No se pudo emitir la factura',
-                    function () {
-                        $("#msjModal").modal("hide");
-                    },
-                    false,
-                    ["Aceptar"],
-                    "error!",
-                    null
-                );
-                return;
-            } else {
-                console.error('❌ Formato de respuesta desconocido:', response);
-                mostrarMensajeError('Formato de respuesta inválido');
+                mostrarMensajeError(response.mensaje || 'No se pudo emitir la factura');
                 return;
             }
 
-            // ❹ Validar que haya al menos un comprobante
-            if (comprobantes.length === 0) {
-                console.error('❌ No se recibieron comprobantes en la respuesta');
-                mostrarMensajeError('No se recibió información del comprobante');
+            // ❹ Validar que response.data exista y sea un array
+            if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
+                console.error('❌ No se recibieron datos del comprobante');
+                mostrarMensajeError('Error: No se recibió información del comprobante');
                 return;
             }
 
-            // ❺ Procesar primer comprobante (normalmente será uno solo)
-            const comprobante = comprobantes[0];
+            // ❺ Extraer datos del comprobante
+            const comprobante = response.data[0];
 
             console.log('═══════════════════════════════════════════════════');
             console.log('📄 DATOS DEL COMPROBANTE EMITIDO');
@@ -844,10 +944,21 @@ function ejecutarDiferirPago() {
             }
 
             // ═══════════════════════════════════════════════════
-            // ✅ NUEVO v10.0: GENERAR REPORTE DEL COMPROBANTE
+            // ✅ NUEVO v11.0: GENERAR REPORTE PRIMERO
             // ═══════════════════════════════════════════════════
 
-            // ❼ Llamar al módulo de reportes para generar e imprimir
+            console.log('═══════════════════════════════════════════════════');
+            console.log('📄 GENERANDO REPORTE DEL COMPROBANTE');
+            console.log('═══════════════════════════════════════════════════');
+
+            // ❼ VALIDAR que ModuloReportes esté disponible
+            if (typeof ModuloReportes === 'undefined') {
+                console.error('❌ ModuloReportes no está disponible');
+                mostrarMensajeError('Error: Módulo de reportes no cargado');
+                return;
+            }
+
+            // ❽ GENERAR Y VISUALIZAR REPORTE
             ModuloReportes.generarYVisualizarReporte({
                 tco_letra: comprobante.tco_letra,
                 tco_id: comprobante.tco_id,
@@ -856,13 +967,19 @@ function ejecutarDiferirPago() {
             }).then(function (exitoso) {
                 console.log(`📄 Generación de reporte: ${exitoso ? '✅ Exitosa' : '❌ Fallida'}`);
 
-                // ❽ Mostrar mensaje de éxito (independientemente del reporte)
-                mostrarMensajeExitoDiferirPago(tipoComprobante, comprobante, numeroComprobante, esRepetido);
+                // ═══════════════════════════════════════════════════
+                // ✅ AHORA SÍ: Mostrar mensaje de éxito
+                // ═══════════════════════════════════════════════════
+
+                // ❾ Esperar 500ms para que el PDF se abra
+                setTimeout(function () {
+                    mostrarMensajeExitoDiferirPago(tipoComprobante, comprobante, numeroComprobante, esRepetido);
+                }, 500);
 
             }).catch(function (error) {
                 console.error('❌ Error al generar reporte:', error);
 
-                // Aún así mostrar mensaje de éxito de la factura
+                // Aún así mostrar mensaje de éxito (la factura ya se emitió)
                 mostrarMensajeExitoDiferirPago(tipoComprobante, comprobante, numeroComprobante, esRepetido);
             });
 
@@ -908,8 +1025,8 @@ function ejecutarDiferirPago() {
 }
 
 /**
- * ✅ NUEVO v10.0: Muestra mensaje de éxito al diferir pago
- * Extrae la lógica del mensaje a función separada para reutilización
+ * ✅ ACTUALIZADO v11.0: Muestra mensaje de éxito al diferir pago
+ * Ajustado para NO mencionar "nueva pestaña" hasta después del mensaje
  */
 function mostrarMensajeExitoDiferirPago(tipoComprobante, comprobante, numeroComprobante, esRepetido) {
     AbrirMensaje(
@@ -933,7 +1050,7 @@ function mostrarMensajeExitoDiferirPago(tipoComprobante, comprobante, numeroComp
             </div>
             
             <p class="text-muted mb-0">
-                <i class='bx bx-printer'></i> El comprobante se abrió en una nueva pestaña
+                <i class='bx bx-check-circle'></i> El comprobante fue visualizado exitosamente
             </p>
         </div>`,
         function () {

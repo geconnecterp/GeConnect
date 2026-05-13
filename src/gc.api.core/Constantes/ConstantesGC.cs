@@ -38,6 +38,11 @@
             public const string SP_CAJA_FE_IVA = "SPGECO_CAJA_FE_IVA";
 			public const string SP_CAJA_FE_PER = "SPGECO_CAJA_FE_PER"; //DE PERCEPCIONES
 
+			//sobre pagos
+			public const string SP_CAJA_VAL_PENDIENTES = "SPGECO_CAJA_VALORES_PENDIENTES";
+			public const string SP_CAJA_VAL_NC = "SPGECO_CAJA_VALORES_NC";
+			public const string SP_CAJA_VAL_MP = "SPGECO_CAJA_VALORES_MP";
+			public const string SP_CAJA_VAL_INS = "SPGECO_CAJA_VALORES_INS"; //INSTRUMENTOS		
             #endregion
 
             #region VTAS

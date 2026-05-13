@@ -167,6 +167,8 @@ namespace gc.api.infra.Extensions
             //CAJA
             services.AddScoped<IApiCajaServicio, ApiCajaServicio>();
             services.AddScoped<IApiProductoFactServicio, ApiProductoFactServicio>();
+            services.AddScoped<IApiPagoFactServicio, ApiPagoFactServicio>();
+
 
             return services;
         }
