@@ -5554,8 +5554,8 @@ namespace gc.infraestructura.Helpers
 				{ HorizontalAlignment = Element.ALIGN_RIGHT });
 
 				// % Acu MA
-				tabla.AddCell(new PdfPCell(new Phrase(fac_may_acu_porc.ToString("N2") + "%", normal))
-				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+				tabla.AddCell(new PdfPCell(new Phrase($"{r.fac_may_acu_porc}%", normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = ColorPorcentaje(r.fac_may_acu_porc), });
 
 				// Costo
 				tabla.AddCell(new PdfPCell(new Phrase(r.co_costo.ToString("N2"), normal))
@@ -5703,7 +5703,7 @@ namespace gc.infraestructura.Helpers
 					Border = Rectangle.NO_BORDER
 				};
 
-				PdfPCell c2 = new PdfPCell(new Phrase(op.ToString("N2"), chico))
+				PdfPCell c2 = new PdfPCell(new Phrase(op.ToString("N0"), chico))
 				{
 					HorizontalAlignment = Element.ALIGN_RIGHT,
 					Padding = 2,
@@ -5802,6 +5802,16 @@ namespace gc.infraestructura.Helpers
 			});
 
 			// ============================
+			// COLORES PARA PORCENTAJES
+			// ============================
+			BaseColor ColorPorcentaje(decimal valor)
+			{
+				if (valor > 0) return new BaseColor(201, 228, 255); // celeste
+				if (valor < 0) return new BaseColor(255, 224, 224); // rojo suave
+				return BaseColor.White;
+			}
+
+			// ============================
 			// ENCABEZADOS
 			// ============================
 			void AddHeader(string texto)
@@ -5837,7 +5847,7 @@ namespace gc.infraestructura.Helpers
 
 				// Porcentaje
 				tabla.AddCell(new PdfPCell(new Phrase(r.co_facturacion_porc.ToString("N2") + "%", normal))
-				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+				{ HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = ColorPorcentaje(r.co_facturacion_porc), });
 
 				// Cta. Cte.
 				tabla.AddCell(new PdfPCell(new Phrase(r.co_ctacte.ToString("N2"), normal))
