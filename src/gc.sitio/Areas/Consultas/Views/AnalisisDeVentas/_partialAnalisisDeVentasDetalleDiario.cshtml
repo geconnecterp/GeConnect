@@ -48,7 +48,18 @@
 						<td class="text-center">@item.dia.ToString("dd/MM/yyyy")</td>
 						<td class="text-end">@GridHelper.FormatearPrecio(item.co_facturacion, TipoPrecio.Venta)</td>
 						<td class="text-end">@GridHelper.FormatearPrecio(item.co_facturacion_acu, TipoPrecio.Venta)</td>
-						<td class="text-end">@fac_may_acu_porc</td>
+						<td>
+							<table style="width:100%; border-collapse:collapse;">
+								<tr>
+									<td style="text-align:right; padding:0; border:0;">
+										<span class="porc-box
+											@(fac_may_acu_porc > 0 ? "porc-pos" : fac_may_acu_porc < 0 ? "porc-neg" : "porc-zero")">
+											@item.fac_may_acu_porc%
+										</span>
+									</td>
+								</tr>
+							</table>
+						</td>
 						<td class="text-end">@GridHelper.FormatearPrecio(item.co_costo, TipoPrecio.Venta)</td>
 						<td class="text-end">@GridHelper.FormatearPrecio(item.rentabilidad, TipoPrecio.Venta)</td>
 						<td class="text-end">@GridHelper.FormatearPrecio(item.rentabilidad_acu, TipoPrecio.Venta)</td>

@@ -56,6 +56,8 @@ function InicializarPantallaPrincipal() {
 	AbrirWaiting("Cargando información...");
 	PostGenHtml({ sucursalesText, desde, hasta }, inicializarPantallPrincipalURL, function (obj) {
 		$("#divDetalle").html(obj);
+		mes_selected = null;
+		periodo_selected = null;
 		$(document).on('shown.bs.tab', 'button[data-bs-toggle="tab"]', function (e) {
 			const tabId = $(e.target).attr("data-bs-target").replace("#", "");
 			EvaluarBotonImprimir(tabId);
@@ -67,7 +69,7 @@ function InicializarPantallaPrincipal() {
 				if (mes_selected && periodo_selected) {
 					CargarAnalisisDeVentaDetalleMes(mes_selected, periodo_selected);
 				}
-			}, 50);
+			}, 1000);
 		});
 		$("#divFiltros").collapse("hide");
 		$("#divDetalle").collapse("show");
@@ -81,9 +83,10 @@ function InicializarPantallaPrincipal() {
 }
 
 function EvaluarBotonImprimir(tabId) {
-
+	console.log("Evaluando botón imprimir para tab:", tabId);
 	const tablaSelector = TabToTableMap[tabId];
 	if (!tablaSelector) {
+		console.log("tablaSelector:", tablaSelector);
 		$("#btnImprimir").hide();
 		return;
 	}
@@ -92,6 +95,8 @@ function EvaluarBotonImprimir(tabId) {
 
 	// Si la tabla no existe o no tiene filas de datos
 	if ($tabla.length === 0 || $tabla.find("tbody tr").length === 0) {
+		console.log("$tabla.length:", $tabla.length);
+		console.log("$tabla.find(tbody tr).length:", $tabla.find("tbody tr").length);
 		$("#btnImprimir").hide();
 		return;
 	}
