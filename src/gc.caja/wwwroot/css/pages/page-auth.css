@@ -26,6 +26,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 100%; /* ✅ AGREGADO: Asegurar que tome todo el ancho */
 }
 
 .authentication-inner {
@@ -513,68 +514,158 @@
     }
 }
 
-/* ===== ANIMACIÓN DE CONEXIÓN ACTIVA ===== */
-.caja-info-item:first-child::before {
-    content: '';
-    width: 8px;
-    height: 8px;
-    background: #28a745;
-    border-radius: 50%;
-    position: absolute;
-    left: -4px;
-    top: 50%;
-    transform: translateY(-50%);
-    animation: blink 1.5s infinite;
+/* ===== LAYOUT HORIZONTAL PARA LOGIN CON TECLADO VIRTUAL ===== */
+
+.authentication-inner-horizontal {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
-@keyframes blink {
-    0%, 100% {
-        opacity: 1;
-        box-shadow: 0 0 5px #28a745;
+.login-horizontal-container {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+    min-height: 70vh;
+}
+
+/* COLUMNA IZQUIERDA: Información de Caja */
+.login-info-column {
+    flex: 0 0 420px; /* ✅ AUMENTADO de 400px a 420px */
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* COLUMNA DERECHA: Formulario de Login */
+.login-form-column {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.login-form-column .card-golden-login {
+    width: 100%;
+    max-width: 520px; /* ✅ AUMENTADO de 500px a 520px */
+}
+
+/* Ajuste del teclado virtual para no tapar inputs */
+.vk-container {
+    bottom: 20px !important;
+    max-width: 700px !important;
+}
+
+/* ===== RESPONSIVE HORIZONTAL LAYOUT ===== */
+
+/* Pantallas grandes y desktops */
+@media (min-width: 1201px) {
+    .login-horizontal-container {
+        gap: 2.5rem; /* ✅ Más separación en pantallas grandes */
     }
-    50% {
-        opacity: 0.3;
-        box-shadow: 0 0 2px #28a745;
+    
+    .authentication-wrapper {
+        padding-bottom: 300px; /* ✅ Espacio para el teclado */
     }
 }
 
-/* Agregar position relative al contenedor */
-.caja-info-item {
-    position: relative;
-}
-
-/* ===== ACCESIBILIDAD PARA CAJA INFO ===== */
-@media (prefers-reduced-motion: reduce) {
-    .caja-info-display,
-    .caja-info-header i,
-    .caja-info-item::before {
-        animation: none !important;
+/* Tablets y pantallas medianas */
+@media (min-width: 993px) and (max-width: 1200px) {
+    .login-horizontal-container {
+        gap: 1.5rem;
     }
 
-    .caja-info-item:hover {
-        transform: none;
+    .login-info-column {
+        flex: 0 0 360px; /* ✅ Reducir ligeramente en tablets */
+    }
+    
+    .login-form-column .card-golden-login {
+        max-width: 480px;
     }
 }
 
-/* ===== DARK MODE PARA CAJA INFO ===== */
-@media (prefers-color-scheme: dark) {
-    .caja-info-body {
-        background: #2a2a2a;
+/* ✅ CRÍTICO: Tablets pequeñas - CAMBIO A VERTICAL */
+@media (max-width: 992px) {
+    .login-horizontal-container {
+        flex-direction: column;
+        gap: 1.5rem;
+        align-items: center;
     }
 
-    .caja-info-item {
-        background: rgba(50, 50, 50, 0.5);
+    .login-info-column {
+        flex: 1;
+        width: 100%;
+        max-width: 600px;
     }
 
-    .caja-info-item:hover {
-        background: rgba(184, 134, 11, 0.15);
+    .login-form-column {
+        width: 100%;
     }
 
-    .caja-info-label {
-        color: #daa520;
+    .login-form-column .card-golden-login {
+        max-width: 600px;
     }
 
-    .caja-info-value {
-        color: #f5f5f5;
+    /* En vertical el teclado se posiciona mejor */
+    .vk-container {
+        bottom: 30px !important;
+    }
+    
+    .authentication-wrapper {
+        padding-bottom: 0; /* ✅ Quitar padding en modo vertical */
+    }
+}
+
+/* Móviles */
+@media (max-width: 768px) {
+    .authentication-wrapper {
+        min-height: auto;
+        padding: 1rem 0;
+    }
+
+    .login-horizontal-container {
+        gap: 1rem;
+        min-height: auto;
+    }
+
+    .login-info-column {
+        max-width: 100%;
+    }
+
+    .login-form-column .card-golden-login {
+        max-width: 100%;
+    }
+
+    .card-golden-login .card-body {
+        padding: 1.5rem;
+    }
+
+    .vk-container {
+        bottom: 10px !important;
+        max-width: 90vw !important;
+        padding: 12px;
+    }
+}
+
+/* Móviles pequeños */
+@media (max-width: 480px) {
+    .login-horizontal-container {
+        padding: 0 0.5rem;
+    }
+
+    .card-golden-login .card-body {
+        padding: 1.25rem;
+    }
+
+    .app-brand-golden .app-brand-text {
+        font-size: 1.5rem;
+    }
+
+    .welcome-title {
+        font-size: 1.1rem;
+    }
+
+    .welcome-subtitle {
+        font-size: 0.9rem;
     }
 }

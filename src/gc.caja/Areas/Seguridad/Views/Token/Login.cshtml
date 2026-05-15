@@ -61,23 +61,86 @@
     <!-- Content -->
     <div class="container-xxl">
         <div class="authentication-wrapper authentication-basic container-p-y">
-            <div class="authentication-inner">
-                <!-- Login Card -->
-                <div class="card card-golden-login">
-                    <div class="card-body">
-                        <!-- Logo y Marca -->
-                        <div class="app-brand-golden">
-                            <div class="app-brand-logo">
-                                <i class='bx bxs-shield-alt-2'></i>
+            <div class="authentication-inner-horizontal">
+                <!-- ✅ NUEVO ORDEN: Layout Horizontal Invertido -->
+                <div class="login-horizontal-container">
+                    
+                    <!-- ✅ COLUMNA IZQUIERDA: Formulario de Login (ARRIBA) -->
+                    <div class="login-form-column">
+                        <div class="card card-golden-login">
+                            <div class="card-body">
+                                <!-- Logo y Marca -->
+                                <div class="app-brand-golden">
+                                    <div class="app-brand-logo">
+                                        <i class='bx bxs-shield-alt-2'></i>
+                                    </div>
+                                    <span class="app-brand-text">GECONet</span>
+                                </div>
+
+                                <!-- Título de Bienvenida -->
+                                <h4 class="welcome-title text-center">¡Bienvenido al Sistema de CAJA! 👋</h4>
+                                <p class="welcome-subtitle text-center">Por favor, ingrese sus credenciales para continuar</p>
+
+                                <!-- Mensajes de Error/Info -->
+                                <div id="messageContainer"></div>
+
+                                <!-- Formulario de Login -->
+                                <form id="formAuthentication" asp-area="seguridad" asp-action="login" asp-controller="token" method="post">
+                                    @Html.AntiForgeryToken()
+
+                                    <!-- Usuario -->
+                                    <div class="mb-3">
+                                        <label for="UserName" class="form-label-golden">
+                                            <i class='bx bx-user'></i>
+                                            Usuario
+                                        </label>
+                                        <input type="text"
+                                               class="form-control form-control-golden jsteclado"
+                                               id="UserName"
+                                               name="UserName"
+                                               placeholder="Ingrese su usuario"
+                                               required
+                                               autofocus
+                                               autocomplete="username"
+                                               style="text-transform: none !important;" />
+                                    </div>
+
+                                    <!-- Contraseña -->
+                                    <div class="mb-3">
+                                        <label class="form-label-golden" for="Password">
+                                            <i class='bx bx-lock-alt'></i>
+                                            Contraseña
+                                        </label>
+                                        <div class="input-group input-group-merge input-group-golden">
+                                            <input type="password"
+                                                   id="Password"
+                                                   class="form-control form-control-golden jsteclado"
+                                                   name="Password"
+                                                   placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                                                   required
+                                                   autocomplete="current-password"
+                                                   aria-describedby="togglePassword"
+                                                   style="text-transform: none !important;" />
+                                            <span class="input-group-text cursor-pointer" id="togglePassword">
+                                                <i class="bx bx-hide" id="toggleIcon"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Botón de Ingreso -->
+                                    <div class="mb-3">
+                                        <button class="btn btn-login-golden d-grid w-100" type="submit" id="btnLogin">
+                                            <i class='bx bx-log-in-circle me-2'></i>
+                                            Ingresar
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
-                            <span class="app-brand-text">GECONet</span>
                         </div>
+                    </div>
 
-                        <!-- Título de Bienvenida -->
-                        <h4 class="welcome-title text-center">¡Bienvenido al Sistema de CAJA! 👋</h4>
-                        <p class="welcome-subtitle text-center">Por favor, ingrese sus credenciales para continuar</p>
-
-                        <!-- ✅ NUEVO: Display de Información de Caja -->
+                    <!-- ✅ COLUMNA DERECHA: Información de Caja (ABAJO) -->
+                    <div class="login-info-column">
                         <div class="caja-info-display">
                             <div class="caja-info-header">
                                 <i class='bx bx-store-alt'></i>
@@ -138,64 +201,10 @@
                             <i class='bx bx-calendar'></i>
                             <strong>Fecha:</strong> @Model.FechaNN
                         </div>
-
-                        <!-- Mensajes de Error/Info -->
-                        <div id="messageContainer"></div>
-
-                        <!-- Formulario de Login -->
-                        <form id="formAuthentication" asp-area="seguridad" asp-action="login" asp-controller="token" method="post">
-                            @Html.AntiForgeryToken()
-
-                            <!-- Usuario -->
-                            <div class="mb-3">
-                                <label for="UserName" class="form-label-golden">
-                                    <i class='bx bx-user'></i>
-                                    Usuario
-                                </label>
-                                <input type="text"
-                                       class="form-control form-control-golden jsteclado"
-                                       id="UserName"
-                                       name="UserName"
-                                       placeholder="Ingrese su usuario"
-                                       required
-                                       autofocus
-                                       autocomplete="username"
-                                       style="text-transform: none !important;" />
-                            </div>
-
-                            <!-- Contraseña -->
-                            <div class="mb-3">
-                                <label class="form-label-golden" for="Password">
-                                    <i class='bx bx-lock-alt'></i>
-                                    Contraseña
-                                </label>
-                                <div class="input-group input-group-merge input-group-golden">
-                                    <input type="password"
-                                           id="Password"
-                                           class="form-control form-control-golden jsteclado"
-                                           name="Password"
-                                           placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
-                                           required
-                                           autocomplete="current-password"
-                                           aria-describedby="togglePassword"
-                                           style="text-transform: none !important;" />
-                                    <span class="input-group-text cursor-pointer" id="togglePassword">
-                                        <i class="bx bx-hide" id="toggleIcon"></i>
-                                    </span>
-                                </div>
-                            </div>
-
-                            <!-- Botón de Ingreso -->
-                            <div class="mb-3">
-                                <button class="btn btn-login-golden d-grid w-100" type="submit" id="btnLogin">
-                                    <i class='bx bx-log-in-circle me-2'></i>
-                                    Ingresar
-                                </button>
-                            </div>
-                        </form>
                     </div>
+
                 </div>
-                <!-- /Login Card -->
+                <!-- /Login Horizontal Container -->
             </div>
         </div>
     </div>

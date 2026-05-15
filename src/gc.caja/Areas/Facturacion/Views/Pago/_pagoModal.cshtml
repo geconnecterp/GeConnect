@@ -5,65 +5,146 @@
     ViewData["TipoComprobanteTexto"] = "FACTURA A";
 }
 
-<!-- ====== MODAL DE PAGO - ESTILO GOLDEN ====== -->
-<div class="modal fade" id="modalPago" tabindex="-1" aria-labelledby="modalPagoLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
+<!-- ══════════════════════════════════════════════════════════════════════
+     🎨 MODAL DE PAGO FULLSCREEN - ESTILO GOLDEN PREMIUM
+     ══════════════════════════════════════════════════════════════════════
+     ✅ Diseño optimizado para cajeros con información grande y clara
+     ✅ Tabla de conceptos con filas amplias para mejor legibilidad
+     ✅ Colores contrastantes para identificación rápida de estados
+     ══════════════════════════════════════════════════════════════════════ -->
+
+<div class="modal fade" 
+     id="modalPago" 
+     tabindex="-1" 
+     aria-labelledby="modalPagoLabel" 
+     aria-hidden="true" 
+     data-bs-backdrop="static" 
+     data-bs-keyboard="false">
+    
+    <div class="modal-dialog modal-fullscreen">
         <div class="modal-content modal-golden">
             
-            <!-- ════════════════════════════════════════════════════════ -->
-            <!-- HEADER CON DATOS DEL CLIENTE (REUTILIZABLE) -->
-            <!-- ════════════════════════════════════════════════════════ -->
+            <!-- ════════════════════════════════════════════════════════════════ -->
+            <!-- HEADER CON DATOS DEL CLIENTE (COMPACTO) -->
+            <!-- ════════════════════════════════════════════════════════════════ -->
             @await Html.PartialAsync("_datosClienteComun")
 
-            <!-- Body del modal -->
-            <div class="modal-body p-4">
+            <!-- ════════════════════════════════════════════════════════════════ -->
+            <!-- BODY PRINCIPAL CON LAYOUT OPTIMIZADO -->
+            <!-- ════════════════════════════════════════════════════════════════ -->
+            <div class="modal-body p-4 bg-light">
                 
-                <!-- Sección: Tabla de Conceptos de Pago -->
-                <div class="card card-golden mb-3">
-                    <div class="card-header">
-                        <h6 class="mb-0"><i class='bx bx-detail'></i> Conceptos de Pago</h6>
+                <!-- ════════════════════════════════════════════════════════ -->
+                <!-- SECCIÓN 1: TABLA DE CONCEPTOS DE PAGO (GRANDE) -->
+                <!-- ════════════════════════════════════════════════════════ -->
+                <div class="card card-golden shadow-lg mb-4">
+                    <div class="card-header bg-gradient-golden-dark">
+                        <h4 class="mb-0 text-white">
+                            <i class='bx bx-detail bx-md'></i> 
+                            Conceptos de Pago
+                        </h4>
                     </div>
-                    <div class="card-body p-2">
-                        <div class="table-responsive table-wrapper-300">
-                            <table class="table table-golden table-sm table-hover mb-0" id="tbConceptosPago">
-                                <thead class="table-golden-header sticky-top">
+                    <div class="card-body p-0">
+                        <div class="table-responsive table-pago-fullscreen">
+                            <table class="table table-golden-large mb-0" id="tbConceptosPago">
+                                <thead class="table-golden-header-large sticky-top">
                                     <tr>
-                                        <th class="text-center" style="width: 40%;">Concepto</th>
-                                        <th class="text-end" style="width: 20%;">Total</th>
-                                        <th class="text-end" style="width: 20%;"></th>
-                                        <th class="text-end" style="width: 20%;">Importe</th>
+                                        <th class="text-start px-4" style="width: 50%;">
+                                            <i class='bx bx-receipt'></i> Concepto
+                                        </th>
+                                        <th class="text-end px-4" style="width: 25%;">
+                                            <i class='bx bx-dollar-circle'></i> Total
+                                        </th>
+                                        <th class="text-end px-4" style="width: 25%;">
+                                            <i class='bx bx-money'></i> Importe
+                                        </th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="tbodyConceptosPago">
+                                    <!-- ═══════════════════════════════════════════ -->
+                                    <!-- FILA 1: TOTAL A PAGAR (MUY DESTACADO) -->
+                                    <!-- ═══════════════════════════════════════════ -->
                                     <tr class="row-total-pagar">
-                                        <td class="fw-bold text-danger">Total a Pagar:</td>
-                                        <td class="text-end"></td>
-                                        <td class="text-end fw-bold text-danger" id="totalPagar">0.00</td>
-                                        <td class="text-end"></td>
+                                        <td class="px-4">
+                                            <div class="d-flex align-items-center">
+                                                <i class='bx bx-error-circle bx-lg text-danger me-3'></i>
+                                                <span class="fw-bold fs-3 text-danger">TOTAL A PAGAR</span>
+                                            </div>
+                                        </td>
+                                        <td class="text-end px-4">
+                                            <span class="badge bg-danger fs-2 px-4 py-3" id="totalPagar">
+                                                $ 0.00
+                                            </span>
+                                        </td>
+                                        <td class="text-end px-4"></td>
                                     </tr>
-                                    <tr>
-                                        <td>Recargos</td>
-                                        <td class="text-end" id="totalRecargos">0.00</td>
-                                        <td class="text-end"></td>
-                                        <td class="text-end"></td>
+
+                                    <!-- ═══════════════════════════════════════════ -->
+                                    <!-- FILA 2: RECARGOS -->
+                                    <!-- ═══════════════════════════════════════════ -->
+                                    <tr class="row-recargos">
+                                        <td class="px-4">
+                                            <div class="d-flex align-items-center">
+                                                <i class='bx bx-plus-circle bx-lg text-warning me-3'></i>
+                                                <span class="fw-semibold fs-4">Recargos</span>
+                                            </div>
+                                        </td>
+                                        <td class="text-end px-4">
+                                            <span class="fs-3 text-warning" id="totalRecargos">$ 0.00</span>
+                                        </td>
+                                        <td class="text-end px-4"></td>
                                     </tr>
-                                    <tr>
-                                        <td>Descuentos</td>
-                                        <td class="text-end" id="totalDescuentos">0.00</td>
-                                        <td class="text-end"></td>
-                                        <td class="text-end"></td>
+
+                                    <!-- ═══════════════════════════════════════════ -->
+                                    <!-- FILA 3: DESCUENTOS -->
+                                    <!-- ═══════════════════════════════════════════ -->
+                                    <tr class="row-descuentos">
+                                        <td class="px-4">
+                                            <div class="d-flex align-items-center">
+                                                <i class='bx bx-minus-circle bx-lg text-info me-3'></i>
+                                                <span class="fw-semibold fs-4">Descuentos</span>
+                                            </div>
+                                        </td>
+                                        <td class="text-end px-4">
+                                            <span class="fs-3 text-info" id="totalDescuentos">$ 0.00</span>
+                                        </td>
+                                        <td class="text-end px-4"></td>
                                     </tr>
+
+                                    <!-- ═══════════════════════════════════════════ -->
+                                    <!-- FILA 4: TOTAL A VALORES (DESTACADO) -->
+                                    <!-- ═══════════════════════════════════════════ -->
                                     <tr class="row-total-valores">
-                                        <td class="fw-bold text-primary">Total a Valores:</td>
-                                        <td class="text-end"></td>
-                                        <td class="text-end fw-bold text-primary" id="totalValores">0.00</td>
-                                        <td class="text-end"></td>
+                                        <td class="px-4">
+                                            <div class="d-flex align-items-center">
+                                                <i class='bx bx-wallet bx-lg text-primary me-3'></i>
+                                                <span class="fw-bold fs-3 text-primary">TOTAL A VALORES</span>
+                                            </div>
+                                        </td>
+                                        <td class="text-end px-4">
+                                            <span class="badge bg-primary fs-2 px-4 py-3" id="totalValores">
+                                                $ 0.00
+                                            </span>
+                                        </td>
+                                        <td class="text-end px-4"></td>
                                     </tr>
+
+                                    <!-- ═══════════════════════════════════════════ -->
+                                    <!-- FILA 5: DIFERENCIA (MUY DESTACADO) -->
+                                    <!-- ═══════════════════════════════════════════ -->
                                     <tr class="row-diferencia">
-                                        <td class="fw-bold text-success">Diferencia:</td>
-                                        <td class="text-end"></td>
-                                        <td class="text-end fw-bold text-success" id="diferencia">0.00</td>
-                                        <td class="text-end"></td>
+                                        <td class="px-4">
+                                            <div class="d-flex align-items-center">
+                                                <i class='bx bx-transfer bx-lg text-success me-3'></i>
+                                                <span class="fw-bold fs-3 text-success">DIFERENCIA</span>
+                                            </div>
+                                        </td>
+                                        <td class="text-end px-4">
+                                            <span class="badge bg-success fs-2 px-4 py-3" id="diferencia">
+                                                $ 0.00
+                                            </span>
+                                        </td>
+                                        <td class="text-end px-4"></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -71,30 +152,420 @@
                     </div>
                 </div>
 
-                <!-- Sección: Botones de Acción -->
-                <div class="d-flex justify-content-center gap-3 mt-3">
-                    <button type="button" class="btn btn-warning btn-lg" id="btnAgregarPago">
-                        <i class='bx bx-plus-circle'></i>
-                        AGREGAR
+                <!-- ════════════════════════════════════════════════════════ -->
+                <!-- SECCIÓN 2: TABLA DE FORMAS DE PAGO INGRESADAS -->
+                <!-- ════════════════════════════════════════════════════════ -->
+                <div class="card card-golden shadow-lg mb-4">
+                    <div class="card-header bg-gradient-golden">
+                        <h5 class="mb-0 text-white">
+                            <i class='bx bx-credit-card bx-md'></i> 
+                            Formas de Pago Ingresadas
+                            <span class="badge bg-white text-golden ms-3" id="badgeCantidadPagos">0 valores</span>
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive table-formas-pago-fullscreen">
+                            <table class="table table-golden-medium mb-0" id="tbFormasPago">
+                                <thead class="table-golden-header-medium sticky-top">
+                                    <tr>
+                                        <th class="text-center" style="width: 5%;">#</th>
+                                        <th class="text-start" style="width: 25%;">Forma de Pago</th>
+                                        <th class="text-end" style="width: 20%;">Importe</th>
+                                        <th class="text-start" style="width: 30%;">Observación</th>
+                                        <th class="text-center" style="width: 20%;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyFormasPago">
+                                    <tr id="rowSinFormasPago">
+                                        <td colspan="5" class="text-center py-5">
+                                            <i class='bx bx-info-circle bx-lg text-muted'></i>
+                                            <p class="text-muted mb-0 mt-3 fs-5">
+                                                No hay formas de pago registradas.<br>
+                                                <small>Presione <strong>AGREGAR</strong> para comenzar</small>
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ════════════════════════════════════════════════════════ -->
+                <!-- SECCIÓN 3: BOTONES DE ACCIÓN (GRANDES Y VISIBLES) -->
+                <!-- ════════════════════════════════════════════════════════ -->
+                <div class="d-flex justify-content-center gap-4 mt-4">
+                    <button type="button" class="btn btn-warning btn-accion-pago" id="btnAgregarPago">
+                        <i class='bx bx-plus-circle bx-lg'></i>
+                        <span>AGREGAR</span>
+                        <small class="d-block mt-1">Formas de Pago</small>
                     </button>
-                    <button type="button" class="btn btn-danger btn-lg" id="btnVolverPago">
-                        <i class='bx bx-arrow-back'></i>
-                        VOLVER
+                    
+                    <button type="button" class="btn btn-danger btn-accion-pago" id="btnVolverPago">
+                        <i class='bx bx-arrow-back bx-lg'></i>
+                        <span>VOLVER</span>
+                        <small class="d-block mt-1">Al Cálculo</small>
                     </button>
-                    <button type="button" class="btn btn-success btn-lg" id="btnFinalizarPago" disabled>
-                        <i class='bx bx-check-circle'></i>
-                        FINALIZAR
+                    
+                    <button type="button" class="btn btn-success btn-accion-pago" id="btnFinalizarPago" disabled>
+                        <i class='bx bx-check-circle bx-lg'></i>
+                        <span>FINALIZAR</span>
+                        <small class="d-block mt-1">Confirmar Pago</small>
                     </button>
                 </div>
             </div>
 
-            <!-- Footer informativo -->
-            <div class="modal-footer modal-golden-footer">
-                <small class="text-muted">
-                    <i class='bx bx-info-circle'></i>
-                    Presione AGREGAR para registrar formas de pago | FINALIZAR para confirmar el pago
-                </small>
+            <!-- ════════════════════════════════════════════════════════ -->
+            <!-- FOOTER INFORMATIVO CON ATAJOS DE TECLADO -->
+            <!-- ════════════════════════════════════════════════════════ -->
+            <div class="modal-footer bg-light border-top">
+                <div class="w-100 d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class='bx bx-info-circle text-golden'></i>
+                        <small class="text-muted">
+                            <strong>Punto de Venta:</strong> 
+                            <span class="text-golden fw-bold" id="lblPuntoVentaPago">GECO PV</span>
+                        </small>
+                    </div>
+                    <div>
+                        <small class="text-muted">
+                            <kbd>F2</kbd> Agregar | 
+                            <kbd>ESC</kbd> Volver | 
+                            <kbd>F10</kbd> Finalizar
+                        </small>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     🎨 ESTILOS ESPECÍFICOS PARA MODAL DE PAGO FULLSCREEN
+     ══════════════════════════════════════════════════════════════════════ -->
+<style>
+    /* ════════════════════════════════════════════════════════════════
+       Z-INDEX: Asegurar jerarquía correcta
+       ════════════════════════════════════════════════════════════════ */
+    #modalPago {
+        z-index: 5070 !important;
+    }
+    
+    #modalPago.modal.show ~ .modal-backdrop {
+        z-index: 5069 !important;
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       CONTENEDOR DE TABLA DE CONCEPTOS (FULLSCREEN)
+       ════════════════════════════════════════════════════════════════ */
+    .table-pago-fullscreen {
+        max-height: calc(45vh - 100px);
+        overflow-y: auto;
+        border-radius: 8px;
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       TABLA GRANDE DE CONCEPTOS
+       ════════════════════════════════════════════════════════════════ */
+    .table-golden-large {
+        font-size: 1.4rem !important;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+        .table-golden-large thead th {
+            font-size: 1.3rem !important;
+            padding: 1.25rem 1rem !important;
+            font-weight: 700 !important;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table-golden-large tbody td {
+            padding: 1.75rem 1rem !important;
+            vertical-align: middle;
+            border-bottom: 2px solid #e9ecef;
+            transition: background-color 0.2s ease;
+        }
+
+        .table-golden-large tbody tr:hover {
+            background-color: rgba(218, 165, 32, 0.08) !important;
+        }
+
+    /* ════════════════════════════════════════════════════════════════
+       FILAS DESTACADAS CON COLORES
+       ════════════════════════════════════════════════════════════════ */
+    .row-total-pagar {
+        background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(220, 53, 69, 0.05) 100%) !important;
+        border-left: 5px solid #dc3545 !important;
+    }
+
+    .row-recargos {
+        background-color: rgba(255, 193, 7, 0.05) !important;
+        border-left: 5px solid #ffc107 !important;
+    }
+
+    .row-descuentos {
+        background-color: rgba(13, 202, 240, 0.05) !important;
+        border-left: 5px solid #0dcaf0 !important;
+    }
+
+    .row-total-valores {
+        background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(13, 110, 253, 0.05) 100%) !important;
+        border-left: 5px solid #0d6efd !important;
+    }
+
+    .row-diferencia {
+        background: linear-gradient(135deg, rgba(25, 135, 84, 0.15) 0%, rgba(25, 135, 84, 0.08) 100%) !important;
+        border-left: 5px solid #198754 !important;
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       BADGES GRANDES Y LEGIBLES
+       ════════════════════════════════════════════════════════════════ */
+    .table-golden-large .badge {
+        font-size: 1.75rem !important;
+        font-weight: 700 !important;
+        padding: 0.75rem 1.5rem !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+        letter-spacing: 1px;
+        min-width: 180px;
+        display: inline-block;
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       TABLA MEDIANA DE FORMAS DE PAGO
+       ════════════════════════════════════════════════════════════════ */
+    .table-formas-pago-fullscreen {
+        max-height: calc(35vh - 80px);
+        overflow-y: auto;
+    }
+
+    .table-golden-medium {
+        font-size: 1.1rem !important;
+    }
+
+        .table-golden-medium thead th {
+            font-size: 1rem !important;
+            padding: 1rem 0.75rem !important;
+            font-weight: 600 !important;
+        }
+
+        .table-golden-medium tbody td {
+            padding: 1.25rem 0.75rem !important;
+            vertical-align: middle;
+        }
+
+    /* ════════════════════════════════════════════════════════════════
+       HEADERS CON GRADIENTE GOLDEN
+       ════════════════════════════════════════════════════════════════ */
+    .table-golden-header-large {
+        background: linear-gradient(135deg, #b8860b 0%, #daa520 100%) !important;
+        color: white !important;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .table-golden-header-medium {
+        background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%) !important;
+        color: #333 !important;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       BOTONES DE ACCIÓN GRANDES
+       ════════════════════════════════════════════════════════════════ */
+    .btn-accion-pago {
+        min-width: 220px !important;
+        min-height: 120px !important;
+        font-size: 1.5rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-radius: 12px !important;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2) !important;
+        transition: all 0.3s ease !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 1.5rem !important;
+    }
+
+        .btn-accion-pago i {
+            font-size: 2.5rem !important;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-accion-pago small {
+            font-size: 0.75rem !important;
+            font-weight: 400 !important;
+            opacity: 0.9;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        .btn-accion-pago:hover:not(:disabled) {
+            transform: translateY(-5px) !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        .btn-accion-pago:disabled {
+            opacity: 0.5 !important;
+            cursor: not-allowed !important;
+            transform: none !important;
+        }
+
+    /* ════════════════════════════════════════════════════════════════
+       CARD HEADERS CON GRADIENTE
+       ════════════════════════════════════════════════════════════════ */
+    .bg-gradient-golden {
+        background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%) !important;
+        box-shadow: 0 4px 8px rgba(212, 175, 55, 0.3) !important;
+    }
+
+    .bg-gradient-golden-dark {
+        background: linear-gradient(135deg, #b8860b 0%, #daa520 100%) !important;
+        box-shadow: 0 4px 8px rgba(184, 134, 11, 0.4) !important;
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       BADGE DE CANTIDAD DE PAGOS
+       ════════════════════════════════════════════════════════════════ */
+    .text-golden {
+        color: #b8860b !important;
+    }
+
+    #badgeCantidadPagos {
+        font-size: 1rem !important;
+        padding: 0.5rem 1rem !important;
+        font-weight: 600 !important;
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       SCROLLBAR PERSONALIZADO GOLDEN
+       ════════════════════════════════════════════════════════════════ */
+    .table-pago-fullscreen::-webkit-scrollbar,
+    .table-formas-pago-fullscreen::-webkit-scrollbar {
+        width: 12px;
+    }
+
+    .table-pago-fullscreen::-webkit-scrollbar-track,
+    .table-formas-pago-fullscreen::-webkit-scrollbar-track {
+        background: #f8f9fa;
+        border-radius: 6px;
+    }
+
+    .table-pago-fullscreen::-webkit-scrollbar-thumb,
+    .table-formas-pago-fullscreen::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+        border-radius: 6px;
+        border: 2px solid #f8f9fa;
+    }
+
+        .table-pago-fullscreen::-webkit-scrollbar-thumb:hover,
+        .table-formas-pago-fullscreen::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #b8860b 0%, #d4af37 100%);
+        }
+
+    /* ════════════════════════════════════════════════════════════════
+       RESPONSIVE PARA TABLETS Y MÓVILES
+       ════════════════════════════════════════════════════════════════ */
+    @@media (max-width: 992px) {
+        .table-golden-large {
+            font-size: 1.2rem !important;
+        }
+
+            .table-golden-large thead th {
+                font-size: 1.1rem !important;
+                padding: 1rem 0.75rem !important;
+            }
+
+            .table-golden-large tbody td {
+                padding: 1.25rem 0.75rem !important;
+            }
+
+            .table-golden-large .badge {
+                font-size: 1.4rem !important;
+                padding: 0.5rem 1rem !important;
+                min-width: 140px;
+            }
+
+        .btn-accion-pago {
+            min-width: 180px !important;
+            min-height: 100px !important;
+            font-size: 1.2rem !important;
+        }
+
+            .btn-accion-pago i {
+                font-size: 2rem !important;
+            }
+    }
+
+    @@media (max-width: 768px) {
+        .table-golden-large {
+            font-size: 1rem !important;
+        }
+
+            .table-golden-large thead th {
+                font-size: 0.9rem !important;
+                padding: 0.75rem 0.5rem !important;
+            }
+
+            .table-golden-large tbody td {
+                padding: 1rem 0.5rem !important;
+            }
+
+            .table-golden-large .badge {
+                font-size: 1.1rem !important;
+                padding: 0.4rem 0.75rem !important;
+                min-width: 120px;
+            }
+
+        .btn-accion-pago {
+            min-width: 150px !important;
+            min-height: 90px !important;
+            font-size: 1rem !important;
+        }
+
+            .btn-accion-pago i {
+                font-size: 1.75rem !important;
+            }
+
+        .d-flex.gap-4 {
+            gap: 1rem !important;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .btn-accion-pago {
+            min-width: 100% !important;
+        }
+
+        .d-flex.justify-content-center {
+            flex-direction: column !important;
+        }
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       ANIMACIONES SUAVES
+       ════════════════════════════════════════════════════════════════ */
+    @@keyframes pulseGolden {
+        0%, 100% {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        50% {
+            box-shadow: 0 6px 20px rgba(218, 165, 32, 0.4);
+        }
+    }
+
+    .badge-pulse {
+        animation: pulseGolden 2s ease-in-out infinite;
+    }
+</style>

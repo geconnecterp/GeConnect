@@ -497,7 +497,7 @@ activable {
 /* ESTILO GOLDEN PARA MODALES*/
 /* Estilos para modales con tema dorado */
 .modal-golden {
-    z-index: 9999;
+    z-index: 5000;
 }
 
     .modal-golden .modal-content {
@@ -4531,5 +4531,786 @@ input, select, textarea, button, checkbox, radio {
             font-size: 1rem;
         }
 }
+
+/* FIN ESTILOS MODAL CÁLCULO FACTURA */
+
+/* ====== ESTILOS ESPECÍFICOS PARA MODAL IDENTIFICAR CLIENTE ====== */
+
+/* ✅ NUEVO: Gradiente Azul a Celeste (Excepción para este modal) */
+.bg-gradient-blue {
+    background: linear-gradient(135deg, #1e88e5 0%, #42a5f5 50%, #64b5f6 100%) !important;
+    border-bottom: 3px solid #1565c0 !important;
+    box-shadow: 0 4px 6px rgba(30, 136, 229, 0.3) !important;
+}
+
+    /* Texto optimizado para fondo azul */
+    .bg-gradient-blue .modal-title,
+    .bg-gradient-blue h4,
+    .bg-gradient-blue h5 {
+        color: #ffffff !important;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    /* Iconos en header azul */
+    .bg-gradient-blue i {
+        color: #ffffff !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    /* Badge optimizado para header azul */
+    .bg-gradient-blue .badge {
+        background-color: rgba(255, 255, 255, 0.2) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        font-weight: 600 !important;
+    }
+
+    /* Botón de cierre optimizado */
+    .bg-gradient-blue .btn-close {
+        filter: brightness(0) invert(1) !important;
+        opacity: 0.9 !important;
+    }
+
+        .bg-gradient-blue .btn-close:hover {
+            opacity: 1 !important;
+        }
+
+/* ✅ Variante más suave (opcional) */
+.bg-gradient-blue-soft {
+    background: linear-gradient(135deg, #4fc3f7 0%, #81d4fa 50%, #b3e5fc 100%) !important;
+    border-bottom: 3px solid #0288d1 !important;
+}
+
+/* ✅ Variante más intensa (opcional) */
+.bg-gradient-blue-dark {
+    background: linear-gradient(135deg, #0d47a1 0%, #1565c0 50%, #1976d2 100%) !important;
+    border-bottom: 3px solid #01579b !important;
+}
+
+/* Campo de búsqueda destacado */
+#txtBuscarCliente {
+    border: 2px solid #1e88e5 !important;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+}
+
+    #txtBuscarCliente:focus {
+        border-color: #1565c0 !important;
+        box-shadow: 0 0 0 0.25rem rgba(30, 136, 229, 0.25) !important;
+        background-color: #e3f2fd !important;
+    }
+
+/* Input group con estilo blue */
+#modalIdentificarCliente .input-group-text.bg-blue {
+    background: linear-gradient(135deg, #1e88e5 0%, #42a5f5 100%) !important;
+    border-color: #1565c0 !important;
+    color: #ffffff !important;
+}
+
+/* Card de datos del cliente oculto por defecto */
+#cardDatosCliente {
+    display: none;
+}
+
+    #cardDatosCliente.show {
+        display: block;
+        animation: fadeInUp 0.4s ease-out;
+    }
+
+/* Alert sin cliente visible por defecto */
+#alertSinCliente {
+    display: block;
+}
+
+    #alertSinCliente.hide {
+        display: none;
+    }
+
+/* Animación de entrada para el card */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Botones de acción rápida con hover mejorado */
+#btnListaPrecios:hover,
+#btnNuevoCliente:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(30, 136, 229, 0.4) !important;
+}
+
+/* Estado disabled del botón SEGUIR */
+#btnSeguirCliente:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Kbd (teclas) con estilo blue */
+#modalIdentificarCliente kbd {
+    background-color: #1e88e5 !important;
+    color: white;
+    border-radius: 0.25rem;
+    padding: 0.2rem 0.4rem;
+    font-size: 0.875rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Labels con icono mejorados */
+#modalIdentificarCliente .form-label i {
+    margin-right: 0.25rem;
+    color: #1e88e5 !important;
+}
+
+/* Responsive para modal en pantallas pequeñas */
+@media (max-width: 768px) {
+    #modalIdentificarCliente .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    #btnListaPrecios,
+    #btnNuevoCliente {
+        padding: 1.5rem 1rem !important;
+        font-size: 0.9rem;
+    }
+
+    #btnCancelarCliente,
+    #btnSeguirCliente {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+}
+
+/* FIN ESTILOS MODAL IDENTIFICAR CLIENTE */
+
+/* FIN ESTILOS MODAL IDENTIFICAR CLIENTE */
+
+/* ====== ESTILOS ESPECÍFICOS PARA MODAL PRODUCTOS FACTURA ====== */
+
+/* ✅ NUEVO: Gradiente Verde a Verde Claro (Excepción para este modal) */
+.bg-gradient-green {
+    background: linear-gradient(135deg, #28a745 0%, #4caf50 50%, #66bb6a 100%) !important;
+    border-bottom: 3px solid #1e7e34 !important;
+    box-shadow: 0 4px 6px rgba(40, 167, 69, 0.3) !important;
+}
+
+    /* Texto optimizado para fondo verde */
+    .bg-gradient-green .modal-title,
+    .bg-gradient-green h4,
+    .bg-gradient-green h5 {
+        color: #ffffff !important;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    /* Iconos en header verde */
+    .bg-gradient-green i {
+        color: #ffffff !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    /* Badge optimizado para header verde */
+    .bg-gradient-green .badge {
+        background-color: rgba(255, 255, 255, 0.25) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.4) !important;
+        font-weight: 600 !important;
+    }
+
+    /* Botón de cierre optimizado */
+    .bg-gradient-green .btn-close {
+        filter: brightness(0) invert(1) !important;
+        opacity: 0.9 !important;
+    }
+
+        .bg-gradient-green .btn-close:hover {
+            opacity: 1 !important;
+        }
+
+/* ✅ Variante más suave (opcional) */
+.bg-gradient-green-soft {
+    background: linear-gradient(135deg, #66bb6a 0%, #81c784 50%, #a5d6a7 100%) !important;
+    border-bottom: 3px solid #388e3c !important;
+}
+
+/* ✅ Variante más intensa (opcional) */
+.bg-gradient-green-dark {
+    background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 50%, #388e3c 100%) !important;
+    border-bottom: 3px solid #0d4114 !important;
+}
+
+/* ✅ Variante con tonos esmeralda (opcional) */
+.bg-gradient-green-emerald {
+    background: linear-gradient(135deg, #00897b 0%, #26a69a 50%, #4db6ac 100%) !important;
+    border-bottom: 3px solid #00695c !important;
+}
+
+/* Estilos específicos para el modal de productos factura */
+#modalProductosFactura .form-control:focus {
+    border-color: #28a745 !important;
+    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25) !important;
+}
+
+#modalProductosFactura .form-select:focus {
+    border-color: #28a745 !important;
+    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25) !important;
+}
+
+/* Botones con acento verde */
+#modalProductosFactura .btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #4caf50 100%) !important;
+    border-color: #1e7e34 !important;
+}
+
+    #modalProductosFactura .btn-success:hover {
+        background: linear-gradient(135deg, #1e7e34 0%, #388e3c 100%) !important;
+        border-color: #145523 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+    }
+
+/* Input group con estilo verde */
+#modalProductosFactura .input-group-text.bg-green {
+    background: linear-gradient(135deg, #28a745 0%, #4caf50 100%) !important;
+    border-color: #1e7e34 !important;
+    color: #ffffff !important;
+}
+
+/* Labels con iconos en color verde */
+#modalProductosFactura .form-label i {
+    color: #28a745 !important;
+}
+
+/* Tabs con estilo verde */
+#modalProductosFactura .nav-tabs .nav-link.active {
+    color: #28a745 !important;
+    border-bottom: 3px solid #28a745 !important;
+}
+
+#modalProductosFactura .nav-tabs .nav-link:hover {
+    background-color: rgba(40, 167, 69, 0.1) !important;
+}
+
+/* Tabla con header verde */
+#modalProductosFactura .table-header-green {
+    background: linear-gradient(135deg, #28a745 0%, #4caf50 100%) !important;
+    color: #ffffff !important;
+}
+
+    #modalProductosFactura .table-header-green th {
+        color: #ffffff !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+
+/* Filas hover con acento verde */
+#modalProductosFactura .table tbody tr:hover {
+    background-color: rgba(40, 167, 69, 0.08) !important;
+}
+
+/* Filas seleccionadas con fondo verde */
+#modalProductosFactura .table tbody tr.selected-green {
+    background-color: rgba(40, 167, 69, 0.15) !important;
+    border-left: 4px solid #28a745 !important;
+}
+
+/* Badge con estilo verde */
+#modalProductosFactura .badge-green {
+    background-color: #28a745 !important;
+    color: #ffffff !important;
+}
+
+/* Alert con estilo verde */
+#modalProductosFactura .alert-success {
+    background-color: rgba(40, 167, 69, 0.1) !important;
+    border-left: 4px solid #28a745 !important;
+    color: #155724 !important;
+}
+
+/* Spinner con color verde */
+#modalProductosFactura .spinner-border-green {
+    color: #28a745 !important;
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+    border-width: 0.3em !important;
+}
+
+/* Texto de carga con estilo verde */
+#modalProductosFactura .loading-text-green {
+    color: #28a745 !important;
+    font-weight: 600;
+}
+
+/* Borde de enfoque verde para inputs */
+#modalProductosFactura input:focus,
+#modalProductosFactura select:focus,
+#modalProductosFactura textarea:focus {
+    border-color: #28a745 !important;
+    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25) !important;
+}
+
+/* Card con acento verde */
+#modalProductosFactura .card-green {
+    border-left: 4px solid #28a745 !important;
+}
+
+    #modalProductosFactura .card-green .card-header {
+        background-color: rgba(40, 167, 69, 0.1) !important;
+        color: #155724 !important;
+        border-bottom: 1px solid #28a745 !important;
+    }
+
+/* Botones de paginación con estilo verde */
+#modalProductosFactura .pagination .page-item.active .page-link {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+}
+
+#modalProductosFactura .pagination .page-link:hover {
+    background-color: rgba(40, 167, 69, 0.1) !important;
+    color: #28a745 !important;
+}
+
+/* Scrollbar con estilo verde */
+#modalProductosFactura .table-responsive::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #28a745 0%, #4caf50 100%) !important;
+}
+
+    #modalProductosFactura .table-responsive::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #1e7e34 0%, #388e3c 100%) !important;
+    }
+
+/* Switch con estilo verde */
+#modalProductosFactura .form-check-input:checked {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+}
+
+/* Progress bar con estilo verde */
+#modalProductosFactura .progress-bar-green {
+    background: linear-gradient(90deg, #28a745 0%, #4caf50 100%) !important;
+}
+
+/* Tooltip con estilo verde */
+#modalProductosFactura .tooltip-green .tooltip-inner {
+    background-color: #28a745 !important;
+}
+
+#modalProductosFactura .tooltip-green .tooltip-arrow::before {
+    border-top-color: #28a745 !important;
+}
+
+/* Responsive para modal en pantallas pequeñas */
+@media (max-width: 768px) {
+    #modalProductosFactura .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    #modalProductosFactura .btn-lg {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    #modalProductosFactura .modal-title {
+        font-size: 0.95rem;
+    }
+
+    #modalProductosFactura .table-responsive {
+        font-size: 0.85rem;
+    }
+}
+
+/* Animación de entrada para elementos verdes */
+@keyframes fadeInGreen {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#modalProductosFactura .animate-green {
+    animation: fadeInGreen 0.4s ease-out;
+}
+
+/* FIN ESTILOS MODAL PRODUCTOS FACTURA */
+
+/* FIN ESTILOS MODAL PRODUCTOS FACTURA */
+
+/* ====== ESTILOS ESPECÍFICOS PARA MODAL CÁLCULO FACTURA ====== */
+
+/* ✅ NUEVO: Gradiente Naranja a Amarillo (Excepción para este modal) */
+.bg-gradient-orange {
+    background: linear-gradient(135deg, #ff6b35 0%, #ff9500 50%, #ffc107 100%) !important;
+    border-bottom: 3px solid #e65100 !important;
+    box-shadow: 0 4px 6px rgba(255, 107, 53, 0.3) !important;
+}
+
+    /* Texto optimizado para fondo naranja */
+    .bg-gradient-orange .modal-title,
+    .bg-gradient-orange h4,
+    .bg-gradient-orange h5 {
+        color: #ffffff !important;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    /* Iconos en header naranja */
+    .bg-gradient-orange i {
+        color: #ffffff !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    /* Badge optimizado para header naranja */
+    .bg-gradient-orange .badge {
+        background-color: rgba(255, 255, 255, 0.3) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.5) !important;
+        font-weight: 600 !important;
+    }
+
+    /* Botón de cierre optimizado */
+    .bg-gradient-orange .btn-close {
+        filter: brightness(0) invert(1) !important;
+        opacity: 0.9 !important;
+    }
+
+        .bg-gradient-orange .btn-close:hover {
+            opacity: 1 !important;
+        }
+
+/* ✅ Variante más suave (opcional) */
+.bg-gradient-orange-soft {
+    background: linear-gradient(135deg, #ffb74d 0%, #ffcc80 50%, #ffe0b2 100%) !important;
+    border-bottom: 3px solid #f57c00 !important;
+}
+
+/* ✅ Variante más intensa (opcional) */
+.bg-gradient-orange-dark {
+    background: linear-gradient(135deg, #e65100 0%, #f57c00 50%, #ff9800 100%) !important;
+    border-bottom: 3px solid #bf360c !important;
+}
+
+/* ✅ Variante con tonos rojizos (opcional) */
+.bg-gradient-orange-red {
+    background: linear-gradient(135deg, #ff5722 0%, #ff6f00 50%, #ff9800 100%) !important;
+    border-bottom: 3px solid #d84315 !important;
+}
+
+/* Estilos específicos para el modal de cálculo de factura */
+#modalCalculoFactura .form-control:focus {
+    border-color: #ff9500 !important;
+    box-shadow: 0 0 0 0.25rem rgba(255, 149, 0, 0.25) !important;
+}
+
+#modalCalculoFactura .form-select:focus {
+    border-color: #ff9500 !important;
+    box-shadow: 0 0 0 0.25rem rgba(255, 149, 0, 0.25) !important;
+}
+
+/* Botones con acento naranja */
+#modalCalculoFactura .btn-warning,
+#modalCalculoFactura .btn-orange {
+    background: linear-gradient(135deg, #ff6b35 0%, #ff9500 100%) !important;
+    border-color: #e65100 !important;
+    color: #ffffff !important;
+}
+
+    #modalCalculoFactura .btn-warning:hover,
+    #modalCalculoFactura .btn-orange:hover {
+        background: linear-gradient(135deg, #e65100 0%, #f57c00 100%) !important;
+        border-color: #bf360c !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+    }
+
+/* Input group con estilo naranja */
+#modalCalculoFactura .input-group-text.bg-orange {
+    background: linear-gradient(135deg, #ff6b35 0%, #ff9500 100%) !important;
+    border-color: #e65100 !important;
+    color: #ffffff !important;
+}
+
+/* Labels con iconos en color naranja */
+#modalCalculoFactura .form-label i {
+    color: #ff9500 !important;
+}
+
+/* Tabs con estilo naranja */
+#modalCalculoFactura .nav-tabs .nav-link.active {
+    color: #ff9500 !important;
+    border-bottom: 3px solid #ff9500 !important;
+}
+
+#modalCalculoFactura .nav-tabs .nav-link:hover {
+    background-color: rgba(255, 149, 0, 0.1) !important;
+}
+
+/* Tabla con header naranja */
+#modalCalculoFactura .table-header-orange {
+    background: linear-gradient(135deg, #ff6b35 0%, #ff9500 100%) !important;
+    color: #ffffff !important;
+}
+
+    #modalCalculoFactura .table-header-orange th {
+        color: #ffffff !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+
+/* Tabla de conceptos con estilo naranja */
+#modalCalculoFactura #tbConceptosCalculo thead {
+    background: linear-gradient(135deg, #ff6b35 0%, #ff9500 100%) !important;
+}
+
+    #modalCalculoFactura #tbConceptosCalculo thead th {
+        color: #ffffff !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    }
+
+/* Filas hover con acento naranja */
+#modalCalculoFactura .table tbody tr:hover {
+    background-color: rgba(255, 149, 0, 0.08) !important;
+}
+
+/* Filas seleccionadas con fondo naranja */
+#modalCalculoFactura .table tbody tr.selected-orange {
+    background-color: rgba(255, 149, 0, 0.15) !important;
+    border-left: 4px solid #ff9500 !important;
+}
+
+/* Total final con color naranja */
+#modalCalculoFactura .total-final-calc {
+    color: #ff9500 !important;
+    text-shadow: 0 2px 4px rgba(255, 149, 0, 0.3) !important;
+}
+
+/* Footer con fondo naranja sutil */
+#modalCalculoFactura .table-golden-footer {
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%) !important;
+    border-top: 3px solid #ff9500 !important;
+}
+
+/* Badge con estilo naranja */
+#modalCalculoFactura .badge-orange {
+    background-color: #ff9500 !important;
+    color: #ffffff !important;
+}
+
+/* Alert con estilo naranja */
+#modalCalculoFactura .alert-warning {
+    background-color: rgba(255, 149, 0, 0.1) !important;
+    border-left: 4px solid #ff9500 !important;
+    color: #8a5200 !important;
+}
+
+/* Spinner con color naranja */
+#modalCalculoFactura .spinner-border-orange {
+    color: #ff9500 !important;
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+    border-width: 0.3em !important;
+}
+
+/* Texto de carga con estilo naranja */
+#modalCalculoFactura .loading-text-orange {
+    color: #ff9500 !important;
+    font-weight: 600;
+}
+
+/* Borde de enfoque naranja para inputs */
+#modalCalculoFactura input:focus,
+#modalCalculoFactura select:focus,
+#modalCalculoFactura textarea:focus {
+    border-color: #ff9500 !important;
+    box-shadow: 0 0 0 0.25rem rgba(255, 149, 0, 0.25) !important;
+}
+
+/* Card con acento naranja */
+#modalCalculoFactura .card-orange {
+    border-left: 4px solid #ff9500 !important;
+}
+
+    #modalCalculoFactura .card-orange .card-header {
+        background-color: rgba(255, 149, 0, 0.1) !important;
+        color: #8a5200 !important;
+        border-bottom: 1px solid #ff9500 !important;
+    }
+
+/* Botones del footer con estilo naranja */
+#modalCalculoFactura .footer-calc-factura .btn-warning {
+    background: linear-gradient(135deg, #ff6b35 0%, #ff9500 100%) !important;
+    border-color: #e65100 !important;
+}
+
+    #modalCalculoFactura .footer-calc-factura .btn-warning:hover {
+        background: linear-gradient(135deg, #e65100 0%, #f57c00 100%) !important;
+        transform: translateY(-2px);
+    }
+
+/* Scrollbar con estilo naranja */
+#modalCalculoFactura .table-responsive::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #ff6b35 0%, #ff9500 100%) !important;
+}
+
+    #modalCalculoFactura .table-responsive::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #e65100 0%, #f57c00 100%) !important;
+    }
+
+#modalCalculoFactura .table-calc-conceptos::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #ff6b35 0%, #ff9500 100%) !important;
+}
+
+    #modalCalculoFactura .table-calc-conceptos::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #e65100 0%, #f57c00 100%) !important;
+    }
+
+/* Switch con estilo naranja */
+#modalCalculoFactura .form-check-input:checked {
+    background-color: #ff9500 !important;
+    border-color: #ff9500 !important;
+}
+
+/* Progress bar con estilo naranja */
+#modalCalculoFactura .progress-bar-orange {
+    background: linear-gradient(90deg, #ff6b35 0%, #ffc107 100%) !important;
+}
+
+/* Tooltip con estilo naranja */
+#modalCalculoFactura .tooltip-orange .tooltip-inner {
+    background-color: #ff9500 !important;
+}
+
+#modalCalculoFactura .tooltip-orange .tooltip-arrow::before {
+    border-top-color: #ff9500 !important;
+}
+
+/* Botones de acción específicos */
+#modalCalculoFactura #btnProcesarCalculo,
+#modalCalculoFactura #btnConfirmarCalculo {
+    background: linear-gradient(135deg, #ff6b35 0%, #ff9500 100%) !important;
+    border-color: #e65100 !important;
+}
+
+    #modalCalculoFactura #btnProcesarCalculo:hover,
+    #modalCalculoFactura #btnConfirmarCalculo:hover {
+        background: linear-gradient(135deg, #e65100 0%, #f57c00 100%) !important;
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+    }
+
+/* Resaltar importes monetarios */
+#modalCalculoFactura .importe-destacado {
+    color: #ff9500 !important;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(255, 149, 0, 0.2);
+}
+
+/* Fila de subtotal con fondo naranja */
+#modalCalculoFactura .row-subtotal {
+    background-color: rgba(255, 149, 0, 0.1) !important;
+    border-top: 2px solid #ff9500 !important;
+    border-bottom: 2px solid #ff9500 !important;
+}
+
+/* Fila de total general con gradiente naranja */
+#modalCalculoFactura .total-row-orange {
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.15) 0%, rgba(255, 193, 7, 0.1) 100%) !important;
+    border-top: 3px solid #ff9500 !important;
+}
+
+/* Responsive para modal en pantallas pequeñas */
+@media (max-width: 768px) {
+    #modalCalculoFactura .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    #modalCalculoFactura .btn-lg {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+
+    #modalCalculoFactura .total-final-calc {
+        font-size: 1.8rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    #modalCalculoFactura .modal-title {
+        font-size: 0.95rem;
+    }
+
+    #modalCalculoFactura .table-responsive {
+        font-size: 0.85rem;
+    }
+
+    #modalCalculoFactura .total-final-calc {
+        font-size: 1.5rem !important;
+    }
+}
+
+/* Animación de entrada para elementos naranjas */
+@keyframes fadeInOrange {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+        box-shadow: 0 0 0 rgba(255, 149, 0, 0);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        box-shadow: 0 2px 8px rgba(255, 149, 0, 0.2);
+    }
+}
+
+#modalCalculoFactura .animate-orange {
+    animation: fadeInOrange 0.4s ease-out;
+}
+
+/* Pulso naranja para elementos destacados */
+@keyframes pulseOrange {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(255, 149, 0, 0.7);
+    }
+
+    50% {
+        box-shadow: 0 0 0 10px rgba(255, 149, 0, 0);
+    }
+}
+
+#modalCalculoFactura .pulse-orange {
+    animation: pulseOrange 2s ease-in-out infinite;
+}
+
+/* Estado de procesamiento con naranja */
+#modalCalculoFactura .processing-orange {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+    #modalCalculoFactura .processing-orange::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 2rem;
+        height: 2rem;
+        border: 3px solid #ff9500;
+        border-top: 3px solid transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
 
 /* FIN ESTILOS MODAL CÁLCULO FACTURA */

@@ -333,18 +333,20 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
-                //// ⓬ ÉXITO
-                //_logger?.LogInformation("═══════════════════════════════════════════════════");
-                //_logger?.LogInformation("✅ PRODUCTO OBTENIDO EXITOSAMENTE");
-                //_logger?.LogInformation($"   Código: {productos.respuesta}");
-                //_logger?.LogInformation($"   Mensaje: {productos.respuesta_msj}");
-                //_logger?.LogInformation("═══════════════════════════════════════════════════");
+                
+                // ⓬ ÉXITO
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("✅ PRODUCTO OBTENIDO EXITOSAMENTE");
+                _logger?.LogInformation($"   Código: {productos[0]?.p_id}");
+                _logger?.LogInformation($"   Acumula: {cajaActual.acumula}"); // ✅ NUEVO LOG
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                 return Json(new
                 {
                     ok = true,
                     mensaje = resultado.Mensaje ?? "Producto cargado correctamente",
-                    producto = productos
+                    producto = productos,
+                    acumula = cajaActual.acumula // ✅ NUEVO: Enviar flag de acumulación
                 });
             }
             catch (NegocioException ex)
@@ -2019,6 +2021,48 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogError($"❌ ERROR INESPERADO AL PARSEAR: {ex.Message}");
                 _logger?.LogError($"   Stack Trace: {ex.StackTrace}");
                 return false;
+            }
+        }
+
+        // En el método que prepara los datos para la vista (si existe)
+        // O en una nueva action para obtener configuración de caja
+
+        [HttpGet]
+        public JsonResult ObtenerConfiguracionCaja()
+        {
+            try
+            {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, mensaje = "Sesión expirada" });
+
+                var cajaActual = CajaActual;
+                if (cajaActual == null)
+                {
+                    return Json(new { ok = false, mensaje = "No hay caja abierta" });
+                }
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("⚙️ OBTENER CONFIGURACIÓN DE CAJA");
+                _logger?.LogInformation($"   Caja ID: {cajaActual.CajaId}");
+                _logger?.LogInformation($"   Acumula: {cajaActual.acumula}");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                return Json(new
+                {
+                    ok = true,
+                    configuracion = new
+                    {
+                        caja_id = cajaActual.CajaId,
+                        acumula = cajaActual.acumula,
+                        lp_id_min = cajaActual.Caja.lp_id_min,
+                        lp_id_may = cajaActual.Caja.lp_id_may
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al obtener configuración de caja");
+                return Json(new { ok = false, mensaje = "Error al obtener configuración" });
             }
         }
     }
