@@ -26,6 +26,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
         private readonly IProductoFactServicio _productoFactServicio;
         private readonly IReportesConfigService _reportesConfigService;
         private readonly IReportesService _reportesService;
+        private readonly IBackupProductosServicio _backupServicio;// ✅ NUEVO
 
         public ProductoFactController(
             IOptions<AppSettings> options,
@@ -33,6 +34,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
             IProductoFactServicio productoFactServicio, // ✅ INYECTAR
             IHttpContextAccessor httpContext,
             IReportesConfigService reportesConfigService,
+            IBackupProductosServicio backupServicio, // ✅ NUEVO
             IReportesService reportesService,
             ILogger<ProductoFactController> logger) : base(options, httpContext, logger)
         {
@@ -40,6 +42,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
             _productoFactServicio = productoFactServicio; // ✅ ASIGNAR
             _reportesConfigService = reportesConfigService;
             _reportesService = reportesService;
+            _backupServicio = backupServicio;
         }
 
         public IActionResult Index()
@@ -340,6 +343,28 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation($"   Código: {productos[0]?.p_id}");
                 _logger?.LogInformation($"   Acumula: {cajaActual.acumula}"); // ✅ NUEVO LOG
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                // ✅ NUEVO: Guardar en backup automáticamente
+                try
+                {
+                    foreach (var producto in productos)
+                    {
+                        if (producto.respuesta == 0) // Solo productos válidos
+                        {
+                            await _backupServicio.GuardarProducto(
+                                producto,
+                                cajaActual.CajaId ?? string.Empty,
+                                UserName ?? string.Empty
+                            );
+                            _logger?.LogInformation($"💾 Producto guardado en backup: {producto.p_id}");
+                        }
+                    }
+                }
+                catch (Exception exBackup)
+                {
+                    // ⚠️ No interrumpir flujo si falla backup
+                    _logger?.LogWarning(exBackup, "⚠️ Error al guardar backup (operación continúa)");
+                }
 
                 return Json(new
                 {
@@ -2063,6 +2088,146 @@ namespace gc.caja.Areas.Facturacion.Controllers
             {
                 _logger?.LogError(ex, "Error al obtener configuración de caja");
                 return Json(new { ok = false, mensaje = "Error al obtener configuración" });
+            }
+        }
+
+        /// <summary>
+        /// ✅ NUEVO v1.0: Verifica si existe un backup pendiente
+        /// </summary>
+        [HttpGet]
+        public async Task<JsonResult> VerificarBackup()
+        {
+            try
+            {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, mensaje = "Sesión expirada" });
+
+                var cajaActual = CajaActual;
+                if (cajaActual == null)
+                {
+                    return Json(new { ok = false, mensaje = "No hay caja abierta" });
+                }
+
+                bool existeBackup = await _backupServicio.ExisteBackup(
+                    cajaActual.CajaId ?? string.Empty,
+                    UserName ?? string.Empty
+                );
+
+                _logger?.LogInformation($"🔍 Verificación de backup: {(existeBackup ? "EXISTE" : "NO EXISTE")}");
+
+                return Json(new
+                {
+                    ok = true,
+                    existeBackup = existeBackup
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al verificar backup");
+                return Json(new { ok = false, mensaje = "Error al verificar backup" });
+            }
+        }
+
+        /// <summary>
+        /// ✅ NUEVO v1.0: Recupera productos desde el backup
+        /// </summary>
+        [HttpPost]
+        public async Task<JsonResult> RecuperarBackup()
+        {
+            try
+            {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, mensaje = "Sesión expirada" });
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("📂 RECUPERANDO PRODUCTOS DESDE BACKUP");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                var cajaActual = CajaActual;
+                if (cajaActual == null)
+                {
+                    _logger?.LogError("❌ No hay caja en sesión");
+                    return Json(new { ok = false, mensaje = "No hay caja abierta" });
+                }
+
+                var clienteActual = ClienteActual;
+                if (clienteActual == null)
+                {
+                    _logger?.LogError("❌ No hay cliente en sesión");
+                    return Json(new { ok = false, mensaje = "Debe seleccionar un cliente primero" });
+                }
+
+                // ❶ Recuperar productos del backup
+                var productos = await _backupServicio.RecuperarBackup(
+                    cajaActual.CajaId ?? string.Empty,
+                    UserName ?? string.Empty
+                );
+
+                if (productos == null || productos.Count == 0)
+                {
+                    _logger?.LogWarning("⚠️ No hay productos en el backup");
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = "No hay productos guardados en el respaldo"
+                    });
+                }
+
+                _logger?.LogInformation($"✅ Productos recuperados: {productos.Count}");
+
+                // ❷ Retornar productos en formato compatible con la grilla
+                return Json(new
+                {
+                    ok = true,
+                    mensaje = $"Se recuperaron {productos.Count} productos del respaldo",
+                    producto = productos, // ✅ Mismo formato que ObtenerProductoDatos
+                    acumula = cajaActual.acumula,
+                    esRecuperacion = true // ✅ Flag para identificar que es una recuperación
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "❌ Error al recuperar backup");
+                return Json(new
+                {
+                    ok = false,
+                    mensaje = "Error al recuperar productos del respaldo"
+                });
+            }
+        }
+
+        /// <summary>
+        /// ✅ NUEVO v1.0: Limpia el backup después de confirmar factura
+        /// </summary>
+        [HttpPost]
+        public async Task<JsonResult> LimpiarBackup()
+        {
+            try
+            {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, mensaje = "Sesión expirada" });
+
+                var cajaActual = CajaActual;
+                if (cajaActual == null)
+                {
+                    return Json(new { ok = false, mensaje = "No hay caja abierta" });
+                }
+
+                bool limpiado = await _backupServicio.LimpiarBackup(
+                    cajaActual.CajaId ?? string.Empty,
+                    UserName ?? string.Empty
+                );
+
+                return Json(new
+                {
+                    ok = limpiado,
+                    mensaje = limpiado ? "Respaldo eliminado" : "Error al limpiar respaldo"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al limpiar backup");
+                return Json(new { ok = false, mensaje = "Error al limpiar respaldo" });
             }
         }
     }

@@ -16,6 +16,8 @@ let origenCargaActual = 'directo'; // ✅ NUEVO: Guardar origen de carga actual
 let ultimoCambioProducto = null; // ✅ NUEVO: Permite reflejar visualmente altas/fusiones
 // ✅ NUEVO v12.0: Control de acumulación según tipo de controlador fiscal
 let cajaAcumulaProductos = true; // Default: TRUE (acumula por defecto)
+// ✅ AGREGAR AL INICIO DEL ARCHIVO (después de las variables globales)
+let tieneBackupPendiente = false; // ✅ NUEVO: Flag de backup
 // ====== CONSTANTES ======
 const TIPO_CARGA = {
     PRODUCTO: 'P',
@@ -154,8 +156,8 @@ function inicializarEventosProductos() {
     });
     
     $('#btnUltimoDetalle').on('click', function() {
-        console.log('🕒 Cargar Último Detalle...');
-        cargarUltimoDetalle();
+        console.log('🕒 Recuperar Último Detalle (Backup)...');
+        recuperarBackup();
     });   
 
     console.log('✅ Eventos configurados correctamente');
@@ -1120,6 +1122,9 @@ function agregarProductoAGrilla(producto) {
     actualizarGrillaProductos();
     $('#cantidadItems').text(productosFactura.length);
 
+    // ✅ NUEVO: Actualizar estado del botón tras agregar producto
+    actualizarEstadoBotonUltimoDetalle();
+
     return {
         accion: 'agregado',
         producto: productoNormalizado,
@@ -1500,6 +1505,25 @@ function limpiarVentaCompleta() {
     console.log('═══════════════════════════════════════════════════');
     console.log('✅ LIMPIEZA COMPLETA FINALIZADA');
     console.log('═══════════════════════════════════════════════════');
+
+
+    // ✅ NUEVO: Limpiar backup en servidor
+    $.ajax({
+        url: typeof LimpiarBackupUrl !== 'undefined' && LimpiarBackupUrl
+            ? LimpiarBackupUrl
+            : '/Facturacion/ProductoFact/LimpiarBackup',
+        type: 'POST',
+        success: function (response) {
+            if (response.ok) {
+                console.log('✅ Backup limpiado en servidor');
+                tieneBackupPendiente = false;
+                actualizarEstadoBotonUltimoDetalle();
+            }
+        },
+        error: function (xhr, status, error) {
+            console.warn('⚠️ Error al limpiar backup (no crítico)');
+        }
+    });
 }
 
 /**
@@ -1534,6 +1558,8 @@ function limpiarGrillaProductos() {
         .html('Presione <kbd>Enter</kbd> o <strong>BUSCAR</strong> para agregar producto');
 
     console.log('✅ Grilla limpiada');
+
+    actualizarEstadoBotonUltimoDetalle();
 }
 
 /**
@@ -1579,6 +1605,10 @@ function mostrarSeccionProductos(clienteData) {
                 $('#txtCodigoProducto').trigger('focus');
             }, 200);
         });
+
+
+    // ✅ NUEVO: Verificar backup al abrir modal
+    verificarBackupPendiente();
 
     console.log('✅ Modal de productos abierto correctamente');
 }
@@ -1906,4 +1936,206 @@ function ocultarLoaderCalculando() {
 
     // Remover overlay
     $('#overlayCalculando').remove();
+}
+
+// ✅ AGREGAR NUEVA FUNCIÓN DESPUÉS DE configurarListenersIntegracion
+/**
+ * ✅ NUEVO v1.0: Verifica si existe backup pendiente al abrir modal
+ */
+function verificarBackupPendiente() {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔍 VERIFICANDO BACKUP PENDIENTE v1.0');
+    console.log('═══════════════════════════════════════════════════');
+
+    const url = typeof VerificarBackupUrl !== 'undefined' && VerificarBackupUrl
+        ? VerificarBackupUrl
+        : '/Facturacion/ProductoFact/VerificarBackup';
+
+    $.ajax({
+        url: url,
+        type: 'GET',
+        success: function (response) {
+            if (response.ok) {
+                tieneBackupPendiente = response.existeBackup;
+
+                console.log(`   Backup pendiente: ${tieneBackupPendiente ? 'SÍ ✅' : 'NO ❌'}`);
+
+                // ✅ Actualizar estado del botón "Último Detalle"
+                actualizarEstadoBotonUltimoDetalle();
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error('❌ ERROR AL VERIFICAR BACKUP');
+            console.error(`   Status: ${xhr.status}`);
+            console.error(`   Error: ${error}`);
+        }
+    });
+}
+
+/**
+ * ✅ NUEVO v1.0: Actualiza estado del botón "Último Detalle"
+ * REGLA:
+ * - Si hay productos: DESHABILITADO
+ * - Si NO hay productos y HAY backup: HABILITADO (verde)
+ * - Si NO hay productos y NO HAY backup: HABILITADO (amarillo)
+ */
+function actualizarEstadoBotonUltimoDetalle() {
+    const $btn = $('#btnUltimoDetalle');
+    const hayProductos = productosFactura.length > 0;
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔄 ACTUALIZANDO ESTADO BOTÓN "ÚLTIMO DETALLE"');
+    console.log(`   Productos en grilla: ${productosFactura.length}`);
+    console.log(`   Backup pendiente: ${tieneBackupPendiente}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    if (hayProductos) {
+        // ❌ DESHABILITAR: Ya hay productos cargados
+        $btn.prop('disabled', true)
+            .removeClass('btn-warning btn-success')
+            .addClass('btn-secondary')
+            .attr('title', 'No disponible: Ya hay productos cargados')
+            .find('span.small').text('Bloqueado');
+
+        console.log('❌ Botón DESHABILITADO (hay productos cargados)');
+    } else if (tieneBackupPendiente) {
+        // ✅ HABILITAR (verde): Hay backup para recuperar
+        $btn.prop('disabled', false)
+            .removeClass('btn-warning btn-secondary')
+            .addClass('btn-success')
+            .attr('title', '¡HAY PRODUCTOS GUARDADOS! Click para recuperar')
+            .find('span.small').text('Recuperar Backup');
+
+        console.log('✅ Botón HABILITADO (verde) - Hay backup pendiente');
+    } else {
+        // ⚠️ HABILITAR (amarillo): Sin backup (estado normal)
+        $btn.prop('disabled', false)
+            .removeClass('btn-secondary btn-success')
+            .addClass('btn-warning')
+            .attr('title', 'Ver último detalle cargado')
+            .find('span.small').text('Último Detalle');
+
+        console.log('⚠️ Botón HABILITADO (amarillo) - Sin backup');
+    }
+}
+
+/**
+ * ✅ NUEVO v1.0: Recupera productos desde el backup
+ */
+function recuperarBackup() {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📂 RECUPERANDO PRODUCTOS DESDE BACKUP v1.0');
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Validar que NO haya productos ya cargados
+    if (productosFactura.length > 0) {
+        console.warn('⚠️ Ya hay productos cargados, no se puede recuperar backup');
+        mostrarMensajeError('Ya tiene productos cargados.\n\nDebe cancelar la factura para recuperar el respaldo.');
+        return;
+    }
+
+    // ❷ Confirmar recuperación
+    AbrirMensaje(
+        "Recuperar Respaldo",
+        "¿Desea recuperar los productos guardados?\n\n" +
+        "Esto cargará los productos que quedaron pendientes en la última sesión.",
+        function () {
+            $("#msjModal").modal("hide");
+            ejecutarRecuperacionBackup();
+        },
+        true,
+        ["Sí, recuperar", "Cancelar"],
+        "question",
+        null
+    );
+}
+
+/**
+ * ✅ NUEVO v1.0: Ejecuta la recuperación del backup
+ */
+function ejecutarRecuperacionBackup() {
+    console.log('⏳ Ejecutando recuperación de backup...');
+
+    const url = typeof RecuperarBackupUrl !== 'undefined' && RecuperarBackupUrl
+        ? RecuperarBackupUrl
+        : '/Facturacion/ProductoFact/RecuperarBackup';
+
+    // Mostrar loader
+    mostrarLoaderCalculando();
+
+    $.ajax({
+        url: url,
+        type: 'POST',
+        success: function (response) {
+            ocultarLoaderCalculando();
+
+            console.log('✅ RESPUESTA DE RECUPERACIÓN RECIBIDA');
+            console.log('   Response:', response);
+
+            if (!response.ok) {
+                console.error('❌ Error en recuperación:', response.mensaje);
+                mostrarMensajeError(response.mensaje || 'Error al recuperar productos del respaldo');
+                return;
+            }
+
+            // ❸ Procesar productos recuperados
+            const productos = response.producto;
+
+            if (!productos || productos.length === 0) {
+                console.warn('⚠️ No hay productos en el backup');
+                mostrarMensajeError('No hay productos guardados en el respaldo');
+                return;
+            }
+
+            console.log(`✅ Productos recuperados: ${productos.length}`);
+
+            // ❹ Agregar productos a la grilla
+            let productosAgregados = 0;
+            productos.forEach((producto, index) => {
+                if (producto.respuesta === 0) {
+                    console.log(`   [${index + 1}/${productos.length}] Agregando: ${producto.p_desc}`);
+                    agregarProductoAGrilla(producto);
+                    productosAgregados++;
+                }
+            });
+
+            // ❺ Actualizar estado
+            tieneBackupPendiente = false;
+            actualizarEstadoBotonUltimoDetalle();
+
+            // ❻ Mensaje de éxito
+            $('#mensajeEstadoProducto')
+                .removeClass('text-info text-danger text-muted')
+                .addClass('text-success')
+                .html(`<i class='bx bx-check-circle'></i> Respaldo recuperado: ${productosAgregados} productos`);
+
+            setTimeout(() => {
+                $('#mensajeEstadoProducto')
+                    .removeClass('text-success text-danger text-info')
+                    .addClass('text-muted')
+                    .html('Presione <kbd>Enter</kbd> o <strong>BUSCAR</strong> para agregar producto');
+            }, 5000);
+
+            console.log('═══════════════════════════════════════════════════');
+            console.log(`✅ RECUPERACIÓN COMPLETA: ${productosAgregados} productos`);
+            console.log('═══════════════════════════════════════════════════');
+        },
+        error: function (xhr, status, error) {
+            ocultarLoaderCalculando();
+
+            console.error('❌ ERROR AL RECUPERAR BACKUP');
+
+            if (esSesionExpirada(xhr.status)) {
+                manejarSesionExpirada();
+                return;
+            }
+
+            let mensaje = 'Error al recuperar productos del respaldo. Por favor, intente nuevamente.';
+            if (xhr.status === 500) {
+                mensaje = 'Error interno del servidor. Contacte al administrador.';
+            }
+
+            mostrarMensajeError(mensaje);
+        }
+    });
 }
