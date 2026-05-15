@@ -11,7 +11,7 @@ namespace gc.infraestructura.EntidadesComunes.Options
         public TipoFact Facturacion { get; set; }
         public TipoCnnCF TipoCnnCF { get; set; }
         public string AdmId { get; set; } = string.Empty; //Sucursal
-
+        public bool acumula { get; set; } = false;
         public CajaDatosDto Caja { get; set; } = new();
         //public string TipoCanal { get; set; } = string.Empty; //Tipo de Canal Comercial
         //public string LP { get; set; } = string.Empty; //Lista de Precios

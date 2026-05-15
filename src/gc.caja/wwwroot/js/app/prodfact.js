@@ -14,7 +14,8 @@ let clienteActualFactura = null;
 let modoBloqueoGrilla = null; // 'cotizacion' cuando se carga una cotización
 let origenCargaActual = 'directo'; // ✅ NUEVO: Guardar origen de carga actual
 let ultimoCambioProducto = null; // ✅ NUEVO: Permite reflejar visualmente altas/fusiones
-
+// ✅ NUEVO v12.0: Control de acumulación según tipo de controlador fiscal
+let cajaAcumulaProductos = true; // Default: TRUE (acumula por defecto)
 // ====== CONSTANTES ======
 const TIPO_CARGA = {
     PRODUCTO: 'P',
@@ -30,7 +31,46 @@ $(function () {
     console.log('🚀 Módulo de Productos de Factura inicializado v5.0 CORREGIDA');
     inicializarEventosProductos();
     configurarListenersIntegracion();
+    obtenerConfiguracionCaja(); // ✅ NUEVO: Obtener configuración al inicio
 });
+
+/**
+ * ✅ NUEVO v12.0: Obtiene la configuración de la caja actual
+ * Incluye el flag de acumulación de productos
+ */
+function obtenerConfiguracionCaja() {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('⚙️ OBTENIENDO CONFIGURACIÓN DE CAJA v12.0');
+    console.log('═══════════════════════════════════════════════════');
+
+    const url = typeof ObtenerConfiguracionCajaUrl !== 'undefined' && ObtenerConfiguracionCajaUrl
+        ? ObtenerConfiguracionCajaUrl
+        : '/Facturacion/ProductoFact/ObtenerConfiguracionCaja';
+
+    $.ajax({
+        url: url,
+        type: 'GET',
+        success: function (response) {
+            if (response.ok && response.configuracion) {
+                cajaAcumulaProductos = response.configuracion.acumula ?? true;
+
+                console.log('✅ CONFIGURACIÓN DE CAJA OBTENIDA:');
+                console.log(`   Caja ID: ${response.configuracion.caja_id}`);
+                console.log(`   Acumula Productos: ${cajaAcumulaProductos ? 'SÍ ✅' : 'NO ❌'}`);
+                console.log(`   Modo: ${cajaAcumulaProductos ? 'Impresión al final' : 'Impresión en tiempo real'}`);
+                console.log('═══════════════════════════════════════════════════');
+            } else {
+                console.warn('⚠️ No se pudo obtener configuración, usando default (acumula=true)');
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error('❌ ERROR AL OBTENER CONFIGURACIÓN DE CAJA');
+            console.error(`   Status: ${xhr.status}`);
+            console.error(`   Error: ${error}`);
+            console.warn('⚠️ Usando configuración por defecto (acumula=true)');
+        }
+    });
+}
 
 // ====== CONFIGURACIÓN DE LISTENERS PARA INTEGRACIÓN ======
 /**
@@ -291,6 +331,7 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
     console.log(`   Cantidad: ${cantidad}`);
     console.log(`   Bulto: ${bulto} ${bulto ? '✅ (Por bulto)' : '❌ (Por unidad)'}`);  // ✅ LOG MEJORADO
     console.log(`   Origen Carga: ${origenCarga}`);
+    console.log(`   🔧 Modo Actual: ${cajaAcumulaProductos ? 'ACUMULA ✅' : 'NO ACUMULA ❌'}`);
     console.log('═══════════════════════════════════════════════════');
     
     // ❶ Validar modo de bloqueo (cotización)
@@ -348,6 +389,20 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
                 console.log(`   📊 Cantidad calculada por SP: ${prod.cantidad_tot || 'N/A'}`);
                 console.log(`   🔧 El SP ya aplicó la lógica de unidad_pres si corresponde`);
                 console.log(`   💰 Precio total: $ ${formatearNumero((prod.p_pvta || 0) * (prod.cantidad_tot || 1), 2)}`);
+            }
+
+            // ✅ NUEVO v12.0: Actualizar flag de acumulación desde respuesta
+            if (response.hasOwnProperty('acumula')) {
+                const acumulaAnterior = cajaAcumulaProductos;
+                cajaAcumulaProductos = response.acumula;
+
+                if (acumulaAnterior !== cajaAcumulaProductos) {
+                    console.log('═══════════════════════════════════════════════════');
+                    console.log('🔄 CAMBIO DE MODO DE ACUMULACIÓN DETECTADO');
+                    console.log(`   Anterior: ${acumulaAnterior ? 'ACUMULA ✅' : 'NO ACUMULA ❌'}`);
+                    console.log(`   Nuevo: ${cajaAcumulaProductos ? 'ACUMULA ✅' : 'NO ACUMULA ❌'}`);
+                    console.log('═══════════════════════════════════════════════════');
+                }
             }
             
             if (response.ok) {
@@ -913,55 +968,76 @@ function incrementarCantidadProducto(indice, cantidadAIncrementar) {
 }
 
 /**
- * ✅ ACTUALIZADO v8.1: Agrega producto o incrementa cantidad si ya existe
- * NUEVO: Retorna el resultado de la operación para reflejarlo en pantalla
+ * ✅ ACTUALIZADO v12.0: Agrega producto CON LÓGICA DIFERENCIAL según "acumula"
+ * NUEVO: Si acumula=FALSE, siempre crea nuevo registro (no busca duplicados)
  */
 function agregarProductoAGrilla(producto) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('➕ AGREGANDO/ACTUALIZANDO PRODUCTO v8.1');
+    console.log('➕ AGREGANDO/ACTUALIZANDO PRODUCTO v12.0');
     console.log('═══════════════════════════════════════════════════');
     console.log('   Producto recibido:', producto);
+    console.log(`   🔧 Modo Acumulación: ${cajaAcumulaProductos ? 'ACUMULA ✅' : 'NO ACUMULA ❌'}`);
 
     const claveProducto = normalizarClaveProducto(producto.p_id);
     const cantidadNueva = normalizarNumero(producto.cantidad_tot, 1);
 
-    console.log(`   🔍 Validando existencia de: ${claveProducto}`);
+    console.log(`   🔍 Código producto: ${claveProducto}`);
     console.log(`   📦 Cantidad recibida: ${cantidadNueva}`);
 
-    const indiceExistente = buscarProductoExistente(claveProducto);
+    // ═══════════════════════════════════════════════════════════════════
+    // ✅ NUEVO v12.0: LÓGICA DIFERENCIAL SEGÚN "acumula"
+    // ═══════════════════════════════════════════════════════════════════
 
-    if (indiceExistente !== -1) {
-        console.log('🔄 PRODUCTO YA EXISTE - Incrementando cantidad...');
+    if (cajaAcumulaProductos) {
+        console.log('═══════════════════════════════════════════════════');
+        console.log('✅ MODO: ACUMULA PRODUCTOS (Impresión al final)');
+        console.log('═══════════════════════════════════════════════════');
 
-        const productoActualizado = incrementarCantidadProducto(indiceExistente, cantidadNueva);
+        // ❶ Buscar si el producto ya existe
+        const indiceExistente = buscarProductoExistente(claveProducto);
 
-        if (!productoActualizado) {
+        if (indiceExistente !== -1) {
+            console.log('🔄 PRODUCTO YA EXISTE - Incrementando cantidad...');
+
+            const productoActualizado = incrementarCantidadProducto(indiceExistente, cantidadNueva);
+
+            if (!productoActualizado) {
+                return {
+                    accion: 'error',
+                    producto: null,
+                    indice: indiceExistente
+                };
+            }
+
+            registrarUltimoCambioProducto('fusionado', productoActualizado, indiceExistente);
+
+            recalcularTotalFactura();
+            actualizarGrillaProductos();
+            $('#cantidadItems').text(productosFactura.length);
+
+            console.log('═══════════════════════════════════════════════════');
+            console.log('✅ CANTIDAD INCREMENTADA EXITOSAMENTE');
+            console.log(`   Total productos únicos: ${productosFactura.length}`);
+            console.log('═══════════════════════════════════════════════════');
+
             return {
-                accion: 'error',
-                producto: null,
+                accion: 'fusionado',
+                producto: productoActualizado,
                 indice: indiceExistente
             };
         }
 
-        registrarUltimoCambioProducto('fusionado', productoActualizado, indiceExistente);
-
-        recalcularTotalFactura();
-        actualizarGrillaProductos();
-        $('#cantidadItems').text(productosFactura.length);
-
+        console.log('✨ PRODUCTO NUEVO - Agregando a la grilla...');
+    } else {
         console.log('═══════════════════════════════════════════════════');
-        console.log('✅ CANTIDAD INCREMENTADA EXITOSAMENTE');
-        console.log(`   Total productos únicos: ${productosFactura.length}`);
+        console.log('⚠️ MODO: NO ACUMULA (Impresión en tiempo real)');
+        console.log('✨ SIEMPRE AGREGA COMO NUEVO REGISTRO');
         console.log('═══════════════════════════════════════════════════');
-
-        return {
-            accion: 'fusionado',
-            producto: productoActualizado,
-            indice: indiceExistente
-        };
     }
 
-    console.log('✨ PRODUCTO NUEVO - Agregando a la grilla...');
+    // ═══════════════════════════════════════════════════════════════════
+    // ❷ AGREGAR COMO PRODUCTO NUEVO (común para ambos modos)
+    // ═══════════════════════════════════════════════════════════════════
 
     const siguienteItem = productosFactura.length > 0
         ? Math.max(...productosFactura.map(p => p.item || 0)) + 1
@@ -1036,26 +1112,7 @@ function agregarProductoAGrilla(producto) {
     console.log('✅ Producto agregado con TODOS los campos:');
     console.log(`   - Item: ${productoNormalizado.item}`);
     console.log(`   - p_id: ${productoNormalizado.p_id}`);
-    console.log(`   - p_id_barrado: ${productoNormalizado.p_id_barrado}`);
-    console.log(`   - p_desc: ${productoNormalizado.p_desc}`);
-    console.log(`   - p_pcosto: ${productoNormalizado.p_pcosto}`);
-    console.log(`   - p_pcosto_repo: ${productoNormalizado.p_pcosto_repo}`);
-    console.log(`   - p_pneto: ${productoNormalizado.p_pneto}`);
-    console.log(`   - p_pvta: ${productoNormalizado.p_pvta}`);
     console.log(`   - cantidad_tot: ${productoNormalizado.cantidad_tot}`);
-    console.log(`   - p_pvta_tot: ${productoNormalizado.p_pvta_tot}`);
-    console.log(`   - iva_situacion: ${productoNormalizado.iva_situacion}`);
-    console.log(`   - iva_alicuota: ${productoNormalizado.iva_alicuota}`);
-    console.log(`   - p_iva: ${productoNormalizado.p_iva}`);
-    console.log(`   - in_alicuota: ${productoNormalizado.in_alicuota}`);
-    console.log(`   - p_in: ${productoNormalizado.p_in}`);
-    console.log(`   - po: ${productoNormalizado.po}`);
-    console.log(`   - po_limite: ${productoNormalizado.po_limite}`);
-    console.log(`   - lp_prevision_tot: ${productoNormalizado.lp_prevision_tot}`);
-    console.log(`   - lp_prevision_pin: ${productoNormalizado.lp_prevision_pin}`);
-    console.log(`   - cta_id: ${productoNormalizado.cta_id}`);
-    console.log(`   - pre_id: ${productoNormalizado.pre_id}`);
-    console.log(`   - cpf_nro: ${productoNormalizado.cpf_nro}`);
     console.log(`   📊 Total productos en grilla: ${productosFactura.length}`);
     console.log('═══════════════════════════════════════════════════');
 
