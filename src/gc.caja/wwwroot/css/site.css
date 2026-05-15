@@ -4533,3 +4533,158 @@ input, select, textarea, button, checkbox, radio {
 }
 
 /* FIN ESTILOS MODAL CÁLCULO FACTURA */
+
+/* ====== ESTILOS ESPECÍFICOS PARA MODAL IDENTIFICAR CLIENTE ====== */
+
+/* ✅ NUEVO: Gradiente Azul a Celeste (Excepción para este modal) */
+.bg-gradient-blue {
+    background: linear-gradient(135deg, #1e88e5 0%, #42a5f5 50%, #64b5f6 100%) !important;
+    border-bottom: 3px solid #1565c0 !important;
+    box-shadow: 0 4px 6px rgba(30, 136, 229, 0.3) !important;
+}
+
+    /* Texto optimizado para fondo azul */
+    .bg-gradient-blue .modal-title,
+    .bg-gradient-blue h4,
+    .bg-gradient-blue h5 {
+        color: #ffffff !important;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    /* Iconos en header azul */
+    .bg-gradient-blue i {
+        color: #ffffff !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    /* Badge optimizado para header azul */
+    .bg-gradient-blue .badge {
+        background-color: rgba(255, 255, 255, 0.2) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        font-weight: 600 !important;
+    }
+
+    /* Botón de cierre optimizado */
+    .bg-gradient-blue .btn-close {
+        filter: brightness(0) invert(1) !important;
+        opacity: 0.9 !important;
+    }
+
+        .bg-gradient-blue .btn-close:hover {
+            opacity: 1 !important;
+        }
+
+/* ✅ Variante más suave (opcional) */
+.bg-gradient-blue-soft {
+    background: linear-gradient(135deg, #4fc3f7 0%, #81d4fa 50%, #b3e5fc 100%) !important;
+    border-bottom: 3px solid #0288d1 !important;
+}
+
+/* ✅ Variante más intensa (opcional) */
+.bg-gradient-blue-dark {
+    background: linear-gradient(135deg, #0d47a1 0%, #1565c0 50%, #1976d2 100%) !important;
+    border-bottom: 3px solid #01579b !important;
+}
+
+/* Campo de búsqueda destacado */
+#txtBuscarCliente {
+    border: 2px solid #1e88e5 !important;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+}
+
+    #txtBuscarCliente:focus {
+        border-color: #1565c0 !important;
+        box-shadow: 0 0 0 0.25rem rgba(30, 136, 229, 0.25) !important;
+        background-color: #e3f2fd !important;
+    }
+
+/* Input group con estilo blue */
+#modalIdentificarCliente .input-group-text.bg-blue {
+    background: linear-gradient(135deg, #1e88e5 0%, #42a5f5 100%) !important;
+    border-color: #1565c0 !important;
+    color: #ffffff !important;
+}
+
+/* Card de datos del cliente oculto por defecto */
+#cardDatosCliente {
+    display: none;
+}
+
+    #cardDatosCliente.show {
+        display: block;
+        animation: fadeInUp 0.4s ease-out;
+    }
+
+/* Alert sin cliente visible por defecto */
+#alertSinCliente {
+    display: block;
+}
+
+    #alertSinCliente.hide {
+        display: none;
+    }
+
+/* Animación de entrada para el card */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Botones de acción rápida con hover mejorado */
+#btnListaPrecios:hover,
+#btnNuevoCliente:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(30, 136, 229, 0.4) !important;
+}
+
+/* Estado disabled del botón SEGUIR */
+#btnSeguirCliente:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Kbd (teclas) con estilo blue */
+#modalIdentificarCliente kbd {
+    background-color: #1e88e5 !important;
+    color: white;
+    border-radius: 0.25rem;
+    padding: 0.2rem 0.4rem;
+    font-size: 0.875rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Labels con icono mejorados */
+#modalIdentificarCliente .form-label i {
+    margin-right: 0.25rem;
+    color: #1e88e5 !important;
+}
+
+/* Responsive para modal en pantallas pequeñas */
+@media (max-width: 768px) {
+    #modalIdentificarCliente .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    #btnListaPrecios,
+    #btnNuevoCliente {
+        padding: 1.5rem 1rem !important;
+        font-size: 0.9rem;
+    }
+
+    #btnCancelarCliente,
+    #btnSeguirCliente {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+}
+
+/* FIN ESTILOS MODAL IDENTIFICAR CLIENTE */

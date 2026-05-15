@@ -1,17 +1,17 @@
 ﻿/*!
  * pagoFactura.js
  * Sistema de Gestión de Pago - GeConnect
- * Versión v3.0 - Corregido y optimizado
+ * Versión v4.0 - Inicialización mejorada
  * Autor: GeConnect ERP
  * Fecha: 2026
  */
 
 // ════════════════════════════════════════════════════════════
-// VALIDACIÓN DE DEPENDENCIAS
+// VALIDACIÓN DE DEPENDENCIAS INMEDIATA
 // ════════════════════════════════════════════════════════════
-(function validarDependencias() {
+(function validarDependenciasInmediata() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔍 VALIDANDO DEPENDENCIAS DE PAGO FACTURA v3.0');
+    console.log('🔍 VALIDANDO DEPENDENCIAS DE PAGO FACTURA v4.0');
     console.log('═══════════════════════════════════════════════════');
 
     const dependencias = {
@@ -42,14 +42,16 @@
 // ════════════════════════════════════════════════════════════
 // NAMESPACE GLOBAL
 // ════════════════════════════════════════════════════════════
-const PagoFactura = (() => {
+window.PagoFactura = (function() {
     'use strict';
+
+    console.log('🚀 Creando namespace PagoFactura...');
 
     // ════════════════════════════════════════════════════════
     // VARIABLES PRIVADAS
     // ════════════════════════════════════════════════════════
     let _modalPago = null;
-    let _modalCalculoFactura = null; // ← NUEVO: Referencia al modal de cálculo
+    let _modalCalculoFactura = null;
     let _datosCliente = {};
     let _conceptosPago = {
         totalPagar: 0,
@@ -65,14 +67,12 @@ const PagoFactura = (() => {
     // ════════════════════════════════════════════════════════
     const DOM = {
         modal: '#modalPago',
-        modalCalculo: '#modalCalculoFactura', // ← NUEVO
-        // Conceptos de Pago
+        modalCalculo: '#modalCalculoFactura',
         totalPagar: '#totalPagar',
         totalRecargos: '#totalRecargos',
         totalDescuentos: '#totalDescuentos',
         totalValores: '#totalValores',
         diferencia: '#diferencia',
-        // Botones
         btnAgregarPago: '#btnAgregarPago',
         btnVolverPago: '#btnVolverPago',
         btnFinalizarPago: '#btnFinalizarPago'
@@ -83,45 +83,47 @@ const PagoFactura = (() => {
     // ════════════════════════════════════════════════════════
     function init() {
         console.log('═══════════════════════════════════════════════════');
-        console.log('✅ Inicializando módulo PagoFactura v3.0');
+        console.log('✅ Inicializando módulo PagoFactura v4.0');
         console.log('═══════════════════════════════════════════════════');
 
-        // ❶ Validar que jQuery esté disponible
+        // ❶ Validar jQuery
         if (typeof $ === 'undefined') {
-            console.error('❌ jQuery no está disponible. Abortando inicialización.');
+            console.error('❌ jQuery no disponible');
             return false;
         }
 
-        // ❷ Validar que Bootstrap esté disponible
+        // ❷ Validar Bootstrap
         if (typeof bootstrap === 'undefined' || typeof bootstrap.Modal === 'undefined') {
-            console.error('❌ Bootstrap Modal no está disponible. Abortando inicialización.');
+            console.error('❌ Bootstrap Modal no disponible');
             return false;
         }
 
-        // ❸ Verificar que el modal de pago exista en el DOM
+        // ❸ Buscar modal en el DOM
         const modalElement = document.querySelector(DOM.modal);
         if (!modalElement) {
-            console.error(`❌ No se encontró el modal de pago en el DOM: ${DOM.modal}`);
+            console.error(`❌ Modal ${DOM.modal} no encontrado en el DOM`);
             return false;
         }
 
-        console.log(`✅ Modal de pago encontrado: ${DOM.modal}`);
+        console.log(`✅ Modal encontrado: ${DOM.modal}`);
 
-        // ❹ Obtener instancia del modal de pago
-        _modalPago = new bootstrap.Modal(modalElement, {
-            backdrop: 'static',
-            keyboard: false
-        });
+        // ❹ Crear instancia de Bootstrap Modal
+        try {
+            _modalPago = new bootstrap.Modal(modalElement, {
+                backdrop: 'static',
+                keyboard: false
+            });
+            console.log('✅ Instancia de Bootstrap Modal creada');
+        } catch (error) {
+            console.error('❌ Error al crear modal:', error);
+            return false;
+        }
 
-        console.log('✅ Instancia de Bootstrap Modal creada');
-
-        // ❺ Obtener referencia al modal de cálculo (si existe)
+        // ❺ Obtener modal de cálculo
         const modalCalculoElement = document.querySelector(DOM.modalCalculo);
         if (modalCalculoElement) {
-            _modalCalculoFactura = bootstrap.Modal.getInstance(modalCalculoElement);
-            if (!_modalCalculoFactura) {
-                _modalCalculoFactura = new bootstrap.Modal(modalCalculoElement);
-            }
+            _modalCalculoFactura = bootstrap.Modal.getInstance(modalCalculoElement) || 
+                                   new bootstrap.Modal(modalCalculoElement);
             console.log(`✅ Modal de cálculo encontrado: ${DOM.modalCalculo}`);
         } else {
             console.warn(`⚠️ Modal de cálculo no encontrado: ${DOM.modalCalculo}`);
@@ -142,71 +144,58 @@ const PagoFactura = (() => {
     function _vincularEventos() {
         console.log('🔧 Vinculando eventos del modal de pago...');
 
-        // Botón Agregar
-        $(DOM.btnAgregarPago).off('click').on('click', () => {
-            _agregarFormaPago();
-        });
+        $(DOM.btnAgregarPago).off('click').on('click', _agregarFormaPago);
+        $(DOM.btnVolverPago).off('click').on('click', _volverACalculoFactura);
+        $(DOM.btnFinalizarPago).off('click').on('click', _finalizarPago);
 
-        // Botón Volver
-        $(DOM.btnVolverPago).off('click').on('click', () => {
-            _volverACalculoFactura();
-        });
-
-        // Botón Finalizar
-        $(DOM.btnFinalizarPago).off('click').on('click', () => {
-            _finalizarPago();
-        });
-
-        // Evento cuando se cierra el modal
-        $(DOM.modal).off('hidden.bs.modal').on('hidden.bs.modal', () => {
-            _limpiarModal();
-        });
-
-        // Evento cuando se abre el modal
-        $(DOM.modal).off('shown.bs.modal').on('shown.bs.modal', () => {
+        $(DOM.modal).off('hidden.bs.modal').on('hidden.bs.modal', _limpiarModal);
+        $(DOM.modal).off('shown.bs.modal').on('shown.bs.modal', function() {
             console.log('📋 Modal de pago abierto');
-            _enfocarPrimerCampo();
+            setTimeout(() => $(DOM.btnAgregarPago).trigger('focus'), 300);
         });
 
-        console.log('✅ Eventos vinculados correctamente');
+        console.log('✅ Eventos vinculados');
     }
 
-    // ════════════════════════════════════════════════════════
+    // ════════════════════════════════════════════════════════════
     // ABRIR MODAL
-    // ════════════════════════════════════════════════════════
-    /**
-     * ✅ ACTUALIZADO v3.0: Abre el modal de pago y oculta el modal de cálculo
-     * 
-     * @param {Object} datosFactura - Datos de la factura y totales
-     * @param {Object} datosFactura.totales - Conceptos de pago
-     * @param {string} datosFactura.puntoVenta - Nombre del punto de venta (opcional)
-     */
+    // ════════════════════════════════════════════════════════════
     function abrirModal(datosFactura) {
         console.log('═══════════════════════════════════════════════════');
-        console.log('🔓 ABRIR MODAL DE PAGO v3.0');
+        console.log('🔓 ABRIR MODAL DE PAGO v4.1');
         console.log('═══════════════════════════════════════════════════');
 
-        // ❶ Validar que el modal esté inicializado
         if (!_modalPago) {
-            console.error('❌ Modal de pago no inicializado');
-            _mostrarError('Error: Modal de pago no disponible. Por favor, recargue la página.');
+            console.error('❌ Modal no inicializado');
+            alert('Error: Modal de pago no disponible. Por favor, recargue la página.');
             return false;
         }
 
         console.log('Datos recibidos:', datosFactura);
 
         try {
-            // ❷ Ocultar modal de cálculo (sin animación para transición suave)
+            // ❶ Ocultar modal de cálculo
             _ocultarModalCalculoFactura();
 
-            // ❸ Hidratar datos del cliente en el header
+            // ❷ Hidratar datos
             _hidratarDatosClientePago();
-
-            // ❹ Cargar conceptos de pago
             _cargarConceptosPago(datosFactura?.totales || {});
 
-            // ❺ Mostrar modal de pago
+            // ❸ Mostrar modal
             _modalPago.show();
+
+            // ❹ ✅ NUEVO: Forzar z-index DESPUÉS de mostrar el modal
+            setTimeout(() => {
+                const $modal = $('#modalPago');
+                const $backdrop = $('.modal-backdrop').last();
+
+                $modal.css('z-index', '1060');
+                $backdrop.css('z-index', '1059');
+
+                console.log('✅ Z-index ajustado:');
+                console.log(`   Modal: ${$modal.css('z-index')}`);
+                console.log(`   Backdrop: ${$backdrop.css('z-index')}`);
+            }, 100);
 
             console.log('✅ Modal de pago abierto correctamente');
             console.log('═══════════════════════════════════════════════════');
@@ -214,36 +203,29 @@ const PagoFactura = (() => {
             return true;
         } catch (error) {
             console.error('═══════════════════════════════════════════════════');
-            console.error('❌ ERROR AL ABRIR MODAL DE PAGO');
+            console.error('❌ ERROR AL ABRIR MODAL');
+            console.error(error);
             console.error('═══════════════════════════════════════════════════');
-            console.error('Error:', error);
-            console.error('Stack:', error.stack);
 
-            _mostrarError('Error al cargar el modal de pago. Por favor, intente nuevamente.');
-
+            alert('Error al abrir el modal de pago. Revise la consola para más detalles.');
             return false;
         }
     }
 
     // ════════════════════════════════════════════════════════
-    // OCULTAR MODAL DE CÁLCULO FACTURA
+    // OCULTAR MODAL DE CÁLCULO
     // ════════════════════════════════════════════════════════
-    /**
-     * ✅ NUEVO v3.0: Oculta el modal de cálculo de factura
-     * Para evitar superposición de modales
-     */
     function _ocultarModalCalculoFactura() {
-        console.log('🔒 Ocultando modal de cálculo de factura...');
+        console.log('🔒 Ocultando modal de cálculo...');
 
         if (_modalCalculoFactura) {
             try {
                 _modalCalculoFactura.hide();
-                console.log('✅ Modal de cálculo ocultado correctamente');
+                console.log('✅ Modal de cálculo ocultado');
             } catch (error) {
                 console.warn('⚠️ No se pudo ocultar el modal de cálculo:', error);
             }
         } else {
-            // Fallback: Intentar ocultar manualmente
             const $modalCalculo = $(DOM.modalCalculo);
             if ($modalCalculo.length > 0 && $modalCalculo.hasClass('show')) {
                 $modalCalculo.modal('hide');
@@ -253,57 +235,29 @@ const PagoFactura = (() => {
     }
 
     // ════════════════════════════════════════════════════════
-    // VOLVER A MODAL DE CÁLCULO FACTURA
+    // VOLVER A MODAL DE CÁLCULO
     // ════════════════════════════════════════════════════════
-    /**
-     * ✅ NUEVO v3.0: Cierra el modal de pago y reabre el modal de cálculo
-     */
     function _volverACalculoFactura() {
-        console.log('═══════════════════════════════════════════════════');
-        console.log('🔙 VOLVER A MODAL DE CÁLCULO');
-        console.log('═══════════════════════════════════════════════════');
+        console.log('🔙 Volver a modal de cálculo...');
 
-        // ❶ Cerrar modal de pago
         _cerrarModal();
 
-        // ❷ Esperar a que se cierre completamente (300ms de animación Bootstrap)
         setTimeout(() => {
-            // ❸ Reabrir modal de cálculo
             if (_modalCalculoFactura) {
-                try {
-                    _modalCalculoFactura.show();
-                    console.log('✅ Modal de cálculo reabierto correctamente');
-                } catch (error) {
-                    console.error('❌ Error al reabrir modal de cálculo:', error);
-                }
+                _modalCalculoFactura.show();
             } else {
-                // Fallback: Intentar abrir manualmente
-                const $modalCalculo = $(DOM.modalCalculo);
-                if ($modalCalculo.length > 0) {
-                    $modalCalculo.modal('show');
-                    console.log('✅ Modal de cálculo reabierto (fallback)');
-                } else {
-                    console.error('❌ No se pudo reabrir el modal de cálculo');
-                }
+                $(DOM.modalCalculo).modal('show');
             }
-        }, 350); // 300ms animación + 50ms margen de seguridad
-
-        console.log('═══════════════════════════════════════════════════');
+            console.log('✅ Modal de cálculo reabierto');
+        }, 350);
     }
 
     // ════════════════════════════════════════════════════════
     // HIDRATAR DATOS DEL CLIENTE
     // ════════════════════════════════════════════════════════
-    /**
-     * ✅ ACTUALIZADO v3.0: Hidrata datos del cliente con validación robusta
-     * Copia los datos desde el modal de cálculo (sufijo "Calc") al modal de pago (sufijo "Pago")
-     */
     function _hidratarDatosClientePago() {
-        console.log('═══════════════════════════════════════════════════');
-        console.log('📝 HIDRATAR DATOS DEL CLIENTE EN MODAL PAGO');
-        console.log('═══════════════════════════════════════════════════');
+        console.log('📝 Hidratando datos del cliente...');
 
-        // ❶ Mapeo de IDs: Origen (Calc) → Destino (Pago)
         const mapeoIds = {
             'txtClienteNombreCalc': 'txtClienteNombrePago',
             'txtClienteIdCalc': 'txtClienteIdPago',
@@ -314,75 +268,23 @@ const PagoFactura = (() => {
             'txtClienteMovilCalc': 'txtClienteMovilPago'
         };
 
-        // ❷ Copiar valores de cada campo
-        let camposCopiadosExitosos = 0;
-        let camposSinDatos = 0;
-        let camposNoEncontrados = 0;
-
-        Object.keys(mapeoIds).forEach(function (idOrigen) {
+        Object.keys(mapeoIds).forEach(idOrigen => {
             const idDestino = mapeoIds[idOrigen];
-            const $campoOrigen = $(`#${idOrigen}`);
-            const $campoDestino = $(`#${idDestino}`);
-
-            // Validar existencia de campos
-            if ($campoOrigen.length === 0) {
-                console.warn(`   ⚠️ Campo origen no encontrado: ${idOrigen}`);
-                camposNoEncontrados++;
-                return;
-            }
-
-            if ($campoDestino.length === 0) {
-                console.warn(`   ⚠️ Campo destino no encontrado: ${idDestino}`);
-                camposNoEncontrados++;
-                return;
-            }
-
-            const valorOrigen = $campoOrigen.val() || '';
-
-            if (valorOrigen.trim() === '') {
-                camposSinDatos++;
-                console.log(`   ℹ️ ${idOrigen} → ${idDestino}: (vacío)`);
-            } else {
-                camposCopiadosExitosos++;
-                console.log(`   ✅ ${idOrigen} → ${idDestino}: "${valorOrigen}"`);
-            }
-
-            $campoDestino.val(valorOrigen);
+            const valorOrigen = $(`#${idOrigen}`).val() || '';
+            $(`#${idDestino}`).val(valorOrigen);
         });
 
-        // ❸ Actualizar badge de tipo de comprobante
-        const $badgeOrigen = $('#badgeTipoComprobanteCalc');
-        const $badgeDestino = $('#badgeTipoComprobantePago');
+        // Badge
+        const badgeHtml = $('#badgeTipoComprobanteCalc').html();
+        $('#badgeTipoComprobantePago').html(badgeHtml);
 
-        if ($badgeOrigen.length > 0 && $badgeDestino.length > 0) {
-            const badgeHtml = $badgeOrigen.html();
-            const badgeTexto = $badgeOrigen.text().trim();
-
-            $badgeDestino.html(badgeHtml);
-
-            console.log(`   ✅ Badge tipo comprobante: "${badgeTexto}"`);
-        } else {
-            console.warn('   ⚠️ Badge de tipo de comprobante no encontrado');
-        }
-
-        console.log('═══════════════════════════════════════════════════');
-        console.log(`📊 Resumen de hidratación:`);
-        console.log(`   ✅ Exitosos: ${camposCopiadosExitosos}`);
-        console.log(`   ℹ️ Vacíos: ${camposSinDatos}`);
-        console.log(`   ⚠️ No encontrados: ${camposNoEncontrados}`);
-        console.log('═══════════════════════════════════════════════════');
+        console.log('✅ Datos del cliente hidratados');
     }
 
     // ════════════════════════════════════════════════════════
     // CARGAR CONCEPTOS DE PAGO
     // ════════════════════════════════════════════════════════
-    /**
-     * ✅ ACTUALIZADO v3.0: Carga conceptos de pago con validación
-     */
     function _cargarConceptosPago(totales) {
-        console.log('📊 Cargando conceptos de pago...');
-        console.log('Totales recibidos:', totales);
-
         _conceptosPago = {
             totalPagar: parseFloat(totales?.totalPagar || 0),
             recargos: parseFloat(totales?.recargos || 0),
@@ -392,12 +294,10 @@ const PagoFactura = (() => {
         };
 
         _actualizarConceptosPago();
-
-        console.log('✅ Conceptos de pago cargados:', _conceptosPago);
     }
 
     // ════════════════════════════════════════════════════════
-    // ACTUALIZAR CONCEPTOS DE PAGO EN LA UI
+    // ACTUALIZAR CONCEPTOS EN UI
     // ════════════════════════════════════════════════════════
     function _actualizarConceptosPago() {
         $(DOM.totalPagar).text(_formatearMoneda(_conceptosPago.totalPagar));
@@ -406,74 +306,37 @@ const PagoFactura = (() => {
         $(DOM.totalValores).text(_formatearMoneda(_conceptosPago.totalValores));
         $(DOM.diferencia).text(_formatearMoneda(_conceptosPago.diferencia));
 
-        // Habilitar/deshabilitar botón Finalizar según diferencia
-        const diferencia = _conceptosPago.diferencia;
-        if (Math.abs(diferencia) < 0.01) { // Diferencia == 0 (con tolerancia)
-            $(DOM.btnFinalizarPago).prop('disabled', false);
-        } else {
-            $(DOM.btnFinalizarPago).prop('disabled', true);
-        }
+        const esCero = Math.abs(_conceptosPago.diferencia) < 0.01;
+        $(DOM.btnFinalizarPago).prop('disabled', !esCero);
     }
 
     // ════════════════════════════════════════════════════════
-    // AGREGAR FORMA DE PAGO
+    // FUNCIONES DE ACCIÓN
     // ════════════════════════════════════════════════════════
     function _agregarFormaPago() {
-        console.log('➕ Agregando forma de pago...');
-        // TODO: Implementar modal secundario para seleccionar forma de pago
-
-        _mostrarInfo('Esta funcionalidad se implementará próximamente');
+        console.log('➕ Agregar forma de pago...');
+        alert('Funcionalidad en desarrollo');
     }
 
-    // ════════════════════════════════════════════════════════
-    // FINALIZAR PAGO
-    // ════════════════════════════════════════════════════════
     function _finalizarPago() {
-        console.log('═══════════════════════════════════════════════════');
-        console.log('✔️ FINALIZAR PAGO');
-        console.log('═══════════════════════════════════════════════════');
+        console.log('✔️ Finalizar pago...');
 
-        // Validar que la diferencia sea 0
         if (Math.abs(_conceptosPago.diferencia) >= 0.01) {
-            console.warn('⚠️ Diferencia no es $0.00');
-            _mostrarAdvertencia('La diferencia debe ser $0.00 para finalizar el pago');
+            alert('La diferencia debe ser $0.00');
             return;
         }
 
-        // TODO: Enviar datos al servidor
-        console.log('📡 Enviando datos del pago al servidor...');
-        console.log('Conceptos:', _conceptosPago);
-        console.log('Valores de pago:', _valoresPago);
-
-        _mostrarExito('Pago procesado correctamente');
-
-        // Cerrar modal
+        alert('Pago procesado correctamente');
         _cerrarModal();
-
-        console.log('✅ Pago finalizado correctamente');
-        console.log('═══════════════════════════════════════════════════');
     }
 
-    // ════════════════════════════════════════════════════════
-    // CERRAR MODAL
-    // ════════════════════════════════════════════════════════
     function _cerrarModal() {
-        console.log('🔙 Cerrando modal de pago...');
-
         if (_modalPago) {
             _modalPago.hide();
         }
     }
 
-    // ════════════════════════════════════════════════════════
-    // LIMPIAR MODAL
-    // ════════════════════════════════════════════════════════
     function _limpiarModal() {
-        console.log('═══════════════════════════════════════════════════');
-        console.log('🧹 Limpiando datos del modal de pago');
-        console.log('═══════════════════════════════════════════════════');
-
-        // Resetear conceptos
         _conceptosPago = {
             totalPagar: 0,
             recargos: 0,
@@ -482,29 +345,12 @@ const PagoFactura = (() => {
             diferencia: 0
         };
 
-        _valoresPago = [];
-
         _actualizarConceptosPago();
-
-        // Deshabilitar botón Finalizar
         $(DOM.btnFinalizarPago).prop('disabled', true);
-
-        console.log('✅ Modal limpiado correctamente');
-        console.log('═══════════════════════════════════════════════════');
     }
 
     // ════════════════════════════════════════════════════════
-    // ENFOCAR PRIMER CAMPO
-    // ════════════════════════════════════════════════════════
-    function _enfocarPrimerCampo() {
-        // Enfocar botón "Agregar" cuando se abre el modal
-        setTimeout(() => {
-            $(DOM.btnAgregarPago).focus();
-        }, 300);
-    }
-
-    // ════════════════════════════════════════════════════════
-    // FORMATEAR MONEDA
+    // HELPERS
     // ════════════════════════════════════════════════════════
     function _formatearMoneda(valor) {
         const numero = parseFloat(valor) || 0;
@@ -512,49 +358,6 @@ const PagoFactura = (() => {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
-    }
-
-    // ════════════════════════════════════════════════════════
-    // MENSAJES DE USUARIO
-    // ════════════════════════════════════════════════════════
-    function _mostrarError(mensaje) {
-        if (typeof GoldenMessage !== 'undefined' && typeof GoldenMessage.mostrarError === 'function') {
-            GoldenMessage.mostrarError(mensaje);
-        } else if (typeof alert !== 'undefined') {
-            alert(`ERROR: ${mensaje}`);
-        } else {
-            console.error(`ERROR: ${mensaje}`);
-        }
-    }
-
-    function _mostrarAdvertencia(mensaje) {
-        if (typeof GoldenMessage !== 'undefined' && typeof GoldenMessage.mostrarAdvertencia === 'function') {
-            GoldenMessage.mostrarAdvertencia(mensaje);
-        } else if (typeof alert !== 'undefined') {
-            alert(`ADVERTENCIA: ${mensaje}`);
-        } else {
-            console.warn(`ADVERTENCIA: ${mensaje}`);
-        }
-    }
-
-    function _mostrarInfo(mensaje) {
-        if (typeof GoldenMessage !== 'undefined' && typeof GoldenMessage.mostrarInfo === 'function') {
-            GoldenMessage.mostrarInfo(mensaje);
-        } else if (typeof alert !== 'undefined') {
-            alert(`INFO: ${mensaje}`);
-        } else {
-            console.info(`INFO: ${mensaje}`);
-        }
-    }
-
-    function _mostrarExito(mensaje) {
-        if (typeof GoldenMessage !== 'undefined' && typeof GoldenMessage.mostrarExito === 'function') {
-            GoldenMessage.mostrarExito(mensaje);
-        } else if (typeof alert !== 'undefined') {
-            alert(`ÉXITO: ${mensaje}`);
-        } else {
-            console.log(`ÉXITO: ${mensaje}`);
-        }
     }
 
     // ════════════════════════════════════════════════════════
@@ -569,22 +372,47 @@ const PagoFactura = (() => {
 })();
 
 // ════════════════════════════════════════════════════════════
-// INICIALIZACIÓN AUTOMÁTICA AL CARGAR EL DOM
+// INICIALIZACIÓN AUTOMÁTICA CON MÚLTIPLES INTENTOS
 // ════════════════════════════════════════════════════════════
-$(function () {
+(function intentarInicializar() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🚀 INICIALIZANDO MÓDULO PAGO FACTURA (document.ready)');
+    console.log('🚀 INTENTANDO INICIALIZAR PAGO FACTURA');
     console.log('═══════════════════════════════════════════════════');
 
-    const inicializadoExitosamente = PagoFactura.init();
+    let intentos = 0;
+    const maxIntentos = 5;
+    const intervalo = 200;
 
-    if (inicializadoExitosamente) {
-        console.log('✅ Módulo PagoFactura registrado en window.PagoFactura');
-        // Exponer módulo globalmente para debugging
-        window.PagoFactura = PagoFactura;
-    } else {
-        console.error('❌ El módulo PagoFactura NO se inicializó correctamente');
+    function intentar() {
+        intentos++;
+        console.log(`   Intento ${intentos}/${maxIntentos}...`);
+
+        if (typeof $ === 'undefined' || typeof bootstrap === 'undefined') {
+            console.warn('   ⏳ Esperando dependencias...');
+
+            if (intentos < maxIntentos) {
+                setTimeout(intentar, intervalo);
+            } else {
+                console.error('❌ Máximo de intentos alcanzado. Dependencias no disponibles.');
+            }
+            return;
+        }
+
+        // Dependencias disponibles
+        $(function() {
+            console.log('✅ Dependencias disponibles, inicializando...');
+
+            const exitoso = window.PagoFactura.init();
+
+            if (exitoso) {
+                console.log('✅ PagoFactura inicializado y expuesto globalmente');
+                console.log('═══════════════════════════════════════════════════');
+            } else {
+                console.error('❌ PagoFactura NO se inicializó correctamente');
+                console.log('═══════════════════════════════════════════════════');
+            }
+        });
     }
 
-    console.log('═══════════════════════════════════════════════════');
-});
+    intentar();
+})();
