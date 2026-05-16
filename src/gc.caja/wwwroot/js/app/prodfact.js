@@ -1213,10 +1213,11 @@ function actualizarGrillaProductos() {
                 ? 'table-success'
                 : '';
 
+        // ✅ NUEVO v8.2: Badges con TAMAÑO DUPLICADO usando estilos inline
         const badgeCambio = esFusionado
-            ? `<span class="badge bg-warning text-dark ms-2">Fusionado</span>`
+            ? `<span class="badge bg-warning text-dark ms-2" style="font-size: 1.0rem; padding: 0.5rem 0.75rem; font-weight: 600;">Fusionado</span>`
             : esAgregado
-                ? `<span class="badge bg-success ms-2">Nuevo</span>`
+                ? `<span class="badge bg-success ms-2" style="font-size: 1.0rem; padding: 0.5rem 0.75rem; font-weight: 600;">Nuevo</span>`
                 : '';
 
         html += `
@@ -1234,12 +1235,6 @@ function actualizarGrillaProductos() {
                 <td class="text-end">$ ${formatearNumero(normalizarNumero(producto.precioVenta, 0), 2)}</td>
                 <td class="text-end fw-bold text-success">$ ${formatearNumero(normalizarNumero(producto.precioTotal, 0), 2)}</td>
                 <td class="text-center">
-                    <button class="btn btn-primary btn-xs"
-                            type="button"
-                            title="Editar"
-                            onclick="editarProducto(${index})">
-                        <i class='bx bx-edit-alt'></i>
-                    </button>
                     <button class="btn btn-danger btn-xs"
                             type="button"
                             title="Eliminar"
@@ -2020,7 +2015,7 @@ function actualizarEstadoBotonUltimoDetalle() {
             .removeClass('btn-warning btn-secondary')
             .addClass('btn-success')
             .attr('title', '¡HAY PRODUCTOS GUARDADOS! Click para recuperar')
-            .find('span.small').text('Recuperar Backup');
+            .find('span.small').text('Último Detalle');
 
         console.log('✅ Botón HABILITADO (verde) - Hay backup pendiente');
     } else {
