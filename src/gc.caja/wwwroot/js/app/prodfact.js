@@ -970,12 +970,12 @@ function incrementarCantidadProducto(indice, cantidadAIncrementar) {
 }
 
 /**
- * ✅ ACTUALIZADO v12.0: Agrega producto CON LÓGICA DIFERENCIAL según "acumula"
- * NUEVO: Si acumula=FALSE, siempre crea nuevo registro (no busca duplicados)
+ * ✅ ACTUALIZADO v12.1: Agrega producto CON LÓGICA DIFERENCIAL según "acumula"
+ * NUEVO v2.2: Calcula item correlativo correctamente para backup
  */
 function agregarProductoAGrilla(producto) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('➕ AGREGANDO/ACTUALIZANDO PRODUCTO v12.0');
+    console.log('➕ AGREGANDO/ACTUALIZANDO PRODUCTO v12.1');
     console.log('═══════════════════════════════════════════════════');
     console.log('   Producto recibido:', producto);
     console.log(`   🔧 Modo Acumulación: ${cajaAcumulaProductos ? 'ACUMULA ✅' : 'NO ACUMULA ❌'}`);
@@ -987,7 +987,7 @@ function agregarProductoAGrilla(producto) {
     console.log(`   📦 Cantidad recibida: ${cantidadNueva}`);
 
     // ═══════════════════════════════════════════════════════════════════
-    // ✅ NUEVO v12.0: LÓGICA DIFERENCIAL SEGÚN "acumula"
+    // ✅ LÓGICA DIFERENCIAL SEGÚN "acumula"
     // ═══════════════════════════════════════════════════════════════════
 
     if (cajaAcumulaProductos) {
@@ -995,7 +995,6 @@ function agregarProductoAGrilla(producto) {
         console.log('✅ MODO: ACUMULA PRODUCTOS (Impresión al final)');
         console.log('═══════════════════════════════════════════════════');
 
-        // ❶ Buscar si el producto ya existe
         const indiceExistente = buscarProductoExistente(claveProducto);
 
         if (indiceExistente !== -1) {
@@ -1038,14 +1037,31 @@ function agregarProductoAGrilla(producto) {
     }
 
     // ═══════════════════════════════════════════════════════════════════
-    // ❷ AGREGAR COMO PRODUCTO NUEVO (común para ambos modos)
+    // ✅ ACTUALIZADO v2.2: CÁLCULO DE ITEM CORRELATIVO
     // ═══════════════════════════════════════════════════════════════════
 
-    const siguienteItem = productosFactura.length > 0
-        ? Math.max(...productosFactura.map(p => p.item || 0)) + 1
-        : 1;
+    let siguienteItem;
 
-    console.log(`📊 Item correlativo calculado: ${siguienteItem}`);
+    if (productosFactura.length === 0) {
+        // ❶ PRIMERA CARGA: Siempre item = 1
+        siguienteItem = 1;
+        console.log('🆕 PRIMER PRODUCTO DE LA SESIÓN → item = 1');
+    } else {
+        // ❷ CARGAS SUBSIGUIENTES: Calcular siguiente item
+        siguienteItem = Math.max(...productosFactura.map(p => p.item || 0)) + 1;
+        console.log(`📊 Item correlativo calculado: ${siguienteItem}`);
+    }
+
+    // ✅ VALIDACIÓN CRÍTICA: El item debe ser consistente con el servidor
+    // Si el producto viene del servidor con un item específico, respetarlo
+    if (producto.item && producto.item > 0) {
+        siguienteItem = producto.item;
+        console.log(`⚠️ Item recibido del servidor: ${siguienteItem} (se respeta)`);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // CONTINUAR CON LA NORMALIZACIÓN Y AGREGAR PRODUCTO...
+    // ═══════════════════════════════════════════════════════════════════
 
     const cantidadNormalizada = normalizarNumero(producto.cantidad_tot, 1);
     const precioVentaNormalizado = normalizarNumero(producto.p_pvta, 0);
@@ -1061,7 +1077,7 @@ function agregarProductoAGrilla(producto) {
     const poLimiteNormalizado = normalizarNumero(producto.po_limite, 0);
 
     const productoNormalizado = {
-        item: siguienteItem,
+        item: siguienteItem, // ✅ Item calculado correctamente
         p_id: producto.p_id || '???',
         p_id_barrado: producto.p_id_barrado || '',
         p_desc: producto.p_desc || 'Sin descripción',
@@ -1122,7 +1138,7 @@ function agregarProductoAGrilla(producto) {
     actualizarGrillaProductos();
     $('#cantidadItems').text(productosFactura.length);
 
-    // ✅ NUEVO: Actualizar estado del botón tras agregar producto
+    // ✅ Actualizar estado del botón tras agregar producto
     actualizarEstadoBotonUltimoDetalle();
 
     return {

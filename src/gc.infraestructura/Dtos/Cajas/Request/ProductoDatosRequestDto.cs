@@ -73,5 +73,6 @@
         public int respuesta { get; set; }
         public string respuesta_msj { get; set; } = string.Empty;
 
+        public int item { get; set; }
     }
 }

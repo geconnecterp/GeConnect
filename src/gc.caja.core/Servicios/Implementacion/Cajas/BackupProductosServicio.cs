@@ -30,6 +30,67 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore
         };
 
+        // ✅ AGREGAR DESPUÉS DEL MÉTODO InicializarBackup
+
+        /// <summary>
+        /// ✅ NUEVO v2.2: Reinicia el backup eliminando archivos previos y creando uno nuevo
+        /// Se invoca cuando se carga el primer producto (item = 1) de una nueva sesión
+        /// CRÍTICO: Garantiza que cada sesión tenga su propio backup limpio
+        /// </summary>
+        public async Task<bool> ReiniciarBackup(string cajaId, string usuarioId)
+        {
+            try
+            {
+                _logger.LogInformation("═══════════════════════════════════════════════════");
+                _logger.LogInformation("🔄 REINICIANDO BACKUP DE PRODUCTOS v2.2");
+                _logger.LogInformation("   ⚠️ NUEVA SESIÓN DETECTADA (item = 1)");
+                _logger.LogInformation($"   Caja: {cajaId}");
+                _logger.LogInformation($"   Usuario: {usuarioId}");
+                _logger.LogInformation("═══════════════════════════════════════════════════");
+
+                // ❶ PASO 1: Eliminar TODOS los backups anteriores de esta caja/usuario
+                _logger.LogInformation("📝 PASO 1: Eliminando backups previos...");
+
+                bool backupsEliminados = await LimpiarBackup(cajaId, usuarioId);
+
+                if (backupsEliminados)
+                {
+                    _logger.LogInformation("   ✅ Backups previos eliminados correctamente");
+                }
+                else
+                {
+                    _logger.LogInformation("   ℹ️ No había backups previos (primera sesión o ya limpiados)");
+                }
+
+                // ❷ PASO 2: Crear un nuevo archivo de backup limpio
+                _logger.LogInformation("📝 PASO 2: Creando nuevo archivo de backup...");
+
+                bool backupCreado = await InicializarBackup(cajaId, usuarioId);
+
+                if (!backupCreado)
+                {
+                    _logger.LogError("   ❌ Error al crear nuevo archivo de backup");
+                    return false;
+                }
+
+                _logger.LogInformation("   ✅ Nuevo archivo de backup creado");
+
+                // ❸ RESULTADO
+                _logger.LogInformation("═══════════════════════════════════════════════════");
+                _logger.LogInformation("✅ BACKUP REINICIADO EXITOSAMENTE");
+                _logger.LogInformation("   → Archivos previos eliminados");
+                _logger.LogInformation("   → Nuevo archivo creado y listo para usar");
+                _logger.LogInformation("═══════════════════════════════════════════════════");
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Error al reiniciar backup");
+                return false;
+            }
+        }
+
         /// <summary>
         /// ✅ ACTUALIZADO v2.1: Constructor con inyección de AppSettings
         /// </summary>

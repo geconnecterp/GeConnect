@@ -5,6 +5,7 @@ using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Cajas;
+using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Users;
 using gc.infraestructura.EntidadesComunes;
@@ -175,7 +176,7 @@ namespace gc.caja.Controllers
             }
         }
 
-        public List<ProductoBusquedaDto> ProductosSeleccionados
+        public List<ProductoDatosResponseDto> ProductosSeleccionados
         {
             get
             {
@@ -184,7 +185,7 @@ namespace gc.caja.Controllers
                 {
                     return [];
                 }
-                return JsonConvert.DeserializeObject<List<ProductoBusquedaDto>>(json) ?? [];
+                return JsonConvert.DeserializeObject<List<ProductoDatosResponseDto>>(json) ?? [];
             }
             set
             {

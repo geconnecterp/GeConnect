@@ -52,7 +52,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
 
         // tengo que generar una action via post que se llame ObtenerProductosDatosPrefactura
-        // que me permita recepcionar los distintos cpf_nro en una lista y luego ir iterandola
+        // que me permite recepcionar los distintos cpf_nro en una lista y luego ir iterandola
         // para obtener todos los productos desde la logica de ObtenerProductoDatos. 
         // Por un lado se debera encapsular el codigo de la action para poder ser invocada desde 
         // multiples action y por el otro lado generar una variable de session para ir acumuladno
@@ -336,17 +336,60 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
-                
-                // ⓬ ÉXITO
+
+                // ⓬ ÉXITO - GUARDAR EN BACKUP CON DETECCIÓN DE PRIMERA CARGA
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
                 _logger?.LogInformation("✅ PRODUCTO OBTENIDO EXITOSAMENTE");
                 _logger?.LogInformation($"   Código: {productos[0]?.p_id}");
-                _logger?.LogInformation($"   Acumula: {cajaActual.acumula}"); // ✅ NUEVO LOG
+                _logger?.LogInformation($"   Acumula: {cajaActual.acumula}");
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
-                // ✅ NUEVO: Guardar en backup automáticamente
+                // ✅ ACTUALIZADO v2.3: Guardar en backup con detección basada en ProductosSeleccionados
+                var productosEnSesion = ProductosSeleccionados;
                 try
                 {
+                    // ❶ CRÍTICO: Detectar si es el primer producto de la sesión
+                    // Verificar si ProductosSeleccionados está vacío
+                    
+                    bool esPrimerProductoDeSesion = productosEnSesion == null || !productosEnSesion.Any();
+                    
+                    _logger?.LogInformation("═══════════════════════════════════════════════════");
+                    _logger?.LogInformation("🔍 VERIFICANDO ESTADO DE SESIÓN");
+                    _logger?.LogInformation($"   ProductosSeleccionados Count: {productosEnSesion?.Count ?? 0}");
+                    _logger?.LogInformation($"   Es primer producto: {(esPrimerProductoDeSesion ? "SÍ ✅" : "NO ❌")}");
+                    _logger?.LogInformation("═══════════════════════════════════════════════════");
+                    
+                    // ❷ Si es el primer producto, reiniciar backup
+                    if (esPrimerProductoDeSesion)
+                    {
+                        _logger?.LogInformation("═══════════════════════════════════════════════════");
+                        _logger?.LogInformation("🆕 PRIMER PRODUCTO DE LA SESIÓN DETECTADO");
+                        _logger?.LogInformation("   → ProductosSeleccionados está vacío");
+                        _logger?.LogInformation("   → Reiniciando backup para nueva sesión...");
+                        _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                        // Reiniciar backup (eliminar archivos previos + crear nuevo)
+                        bool backupReiniciado = await _backupServicio.ReiniciarBackup(
+                            cajaActual.CajaId ?? string.Empty,
+                            UserName ?? string.Empty
+                        );
+
+                        if (backupReiniciado)
+                        {
+                            _logger?.LogInformation("✅ Backup reiniciado correctamente para nueva sesión");
+                        }
+                        else
+                        {
+                            _logger?.LogWarning("⚠️ No se pudo reiniciar el backup (operación continúa)");
+                        }
+                    }
+                    else
+                    {
+                        _logger?.LogInformation("📝 Producto subsiguiente detectado");
+                        _logger?.LogInformation($"   → Ya hay {productosEnSesion.Count} productos en sesión");
+                    }
+                    
+                    // ❸ Guardar cada producto en el backup (ya sea nuevo o existente)
                     foreach (var producto in productos)
                     {
                         if (producto.respuesta == 0) // Solo productos válidos
@@ -356,6 +399,11 @@ namespace gc.caja.Areas.Facturacion.Controllers
                                 cajaActual.CajaId ?? string.Empty,
                                 UserName ?? string.Empty
                             );
+                            //verificamos que lavariable productosEnSesion no este en null
+                            if (productosEnSesion == null)                            {productosEnSesion = [];}
+                            productosEnSesion.Add(producto);
+
+                            ProductosSeleccionados = productosEnSesion;
                             _logger?.LogInformation($"💾 Producto guardado en backup: {producto.p_id}");
                         }
                     }
@@ -371,7 +419,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     ok = true,
                     mensaje = resultado.Mensaje ?? "Producto cargado correctamente",
                     producto = productos,
-                    acumula = cajaActual.acumula // ✅ NUEVO: Enviar flag de acumulación
+                    acumula = cajaActual.acumula
                 });
             }
             catch (NegocioException ex)
@@ -460,12 +508,12 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                     //se resguarda el producto recien buscado.
                     ProductoBase = producto;
-                    if (acumularProductos)
-                    {
-                        var productos = ProductosSeleccionados;
-                        productos.Add(producto);
-                        ProductosSeleccionados = productos;
-                    }
+                    //if (acumularProductos)
+                    //{
+                    //    var productos = ProductosSeleccionados;
+                    //    productos.Add(producto);
+                    //    ProductosSeleccionados = productos;
+                    //}
                     return Json(new { error = false, producto, warn, msg, });
                 }
                 else
@@ -1742,12 +1790,12 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation($"   Mensaje: {respuestaDto.resultado_msj}");
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
-                // ⓮ LIMPIAR SESIÓN DE FACTURA
+                // ⓭ LIMPIAR SESIÓN DE FACTURA
                 FacturaProductos = new List<ProductoFactJsonDto>();
                 FacturaSubtotales = [];
                 FacturaSorteos = [];
 
-                // ⓯ ✅ RETORNAR RESPUESTA CORRECTA PARA FRONTEND
+                // ⓮ ✅ RETORNAR RESPUESTA CORRECTA PARA FRONTEND
                 return Json(new
                 {
                     ok = true,
