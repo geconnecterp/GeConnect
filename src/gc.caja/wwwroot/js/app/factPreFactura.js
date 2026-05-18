@@ -7,7 +7,8 @@
 // ════════════════════════════════════════════════════════════
 // VARIABLES GLOBALES
 // ════════════════════════════════════════════════════════════
-let preFacturaSeleccionada = null;
+// ✅ AHORA (selección múltiple)
+let preFacturasSeleccionadas = [];  // ← Array de pre-facturas seleccionadas
 let preFacturasDisponibles = [];
 
 // ════════════════════════════════════════════════════════════
@@ -19,91 +20,98 @@ $(function () {
 });
 
 // ════════════════════════════════════════════════════════════
-// EVENTOS
+// EVENTOS - ACTUALIZADO v3.2
 // ════════════════════════════════════════════════════════════
 function inicializarEventosPreFacturas() {
-    console.log('🔧 Configurando eventos de pre-facturas...');
-    
+    console.log('🔧 Configurando eventos de pre-facturas v3.2...');
+
     // Checkbox "Solo Pendientes"
     $('#chkSoloPendientes').on('change', function () {
         console.log('🔄 Filtro Solo Pendientes:', $(this).is(':checked'));
         cargarPreFacturas();
     });
-    
+
     // Checkbox "Seleccionar Todos"
     $('#chkSeleccionarTodos').on('change', function () {
         const checked = $(this).is(':checked');
         console.log('☑️ Seleccionar todos:', checked);
         toggleSeleccionarTodos(checked);
     });
-    
-    // Click en fila de la tabla
-    $(document).on('click', '#tbodyPreFacturas tr:not(#rowSinPreFacturas)', function () {
+
+    // ✅ CORREGIDO v3.2: Click en fila (excluye checkbox y su celda)
+    $(document).on('click', '#tbodyPreFacturas tr:not(#rowSinPreFacturas)', function (e) {
+        // ⚠️ CRÍTICO: Ignorar click en checkbox o su celda contenedora
+        if ($(e.target).is('input[type="checkbox"]') ||
+            $(e.target).hasClass('td-checkbox') ||
+            $(e.target).closest('.td-checkbox').length > 0) {
+            console.log('🚫 Click en checkbox ignorado por evento de fila');
+            return; // ← Salir sin procesar
+        }
+
         const preId = $(this).data('pre-id');
         if (preId) {
-            console.log('📋 Pre-factura seleccionada:', preId);
+            console.log('📋 Click en fila (no checkbox):', preId);
             seleccionarPreFactura(preId);
         }
     });
-    
-    // Checkbox individual de fila
+
+    // ✅ CORREGIDO v3.2: Checkbox individual (sin interferencia)
     $(document).on('change', '#tbodyPreFacturas .chk-prefactura', function (e) {
-        e.stopPropagation();
+        e.stopPropagation(); // ← Prevenir burbujeo al evento de fila
+
         const preId = $(this).closest('tr').data('pre-id');
-        const checked = $(this).is(':checked');
-        
-        console.log(`☑️ Checkbox fila ${preId}:`, checked);
-        
-        if (checked) {
-            seleccionarPreFactura(preId);
-        } else {
-            deseleccionarPreFactura();
-        }
+        console.log(`☑️ Checkbox individual ${preId} - Nuevo estado:`, $(this).is(':checked'));
+
+        seleccionarPreFactura(preId);
     });
-    
+
     // Botón Cancelar
     $('#btnCancelarPreFactura').on('click', function () {
-        console.log('❌ Cancelar selección de pre-factura');
+        console.log('❌ Cancelar selección de pre-facturas');
         cerrarModalPreFacturas();
     });
-    
-    // Botón Seguir
+
+    // Botón SELECCIONAR
     $('#btnSeguirPreFactura').on('click', function () {
-        console.log('✅ Confirmar pre-factura seleccionada');
-        confirmarPreFactura();
+        console.log('✅ Confirmar pre-facturas seleccionadas');
+        confirmarPreFacturas();
     });
-    
-    console.log('✅ Eventos de pre-facturas configurados');
+
+    console.log('✅ Eventos de pre-facturas v3.2 configurados');
 }
 
 // ════════════════════════════════════════════════════════════
-// ABRIR MODAL
+// ABRIR MODAL - ACTUALIZADO v3.2
 // ════════════════════════════════════════════════════════════
+
 /**
- * ✅ Abre el modal y carga las pre-facturas disponibles
+ * ✅ ACTUALIZADO v3.2: Abre el modal con soporte para selección múltiple
  */
 function abrirModalPreFacturas() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('📄 ABRIR MODAL PRE-FACTURAS');
+    console.log('📄 ABRIR MODAL PRE-FACTURAS v3.2 (Múltiple)');
     console.log('═══════════════════════════════════════════════════');
-    
+
     // ❶ Validar que haya cliente seleccionado
     if (!clienteActualFactura) {
         console.error('❌ No hay cliente seleccionado');
         mostrarMensajeError('Debe identificar un cliente antes de cargar una pre-factura');
         return;
     }
-    
+
     console.log('   Cliente actual:', clienteActualFactura.denominacion);
-    
-    // ❷ Resetear selección
-    preFacturaSeleccionada = null;
-    $('#btnSeguirPreFactura').prop('disabled', true);
-    $('#chkSeleccionarTodos').prop('checked', false);
-    
+
+    // ❷ Resetear selección múltiple
+    preFacturasSeleccionadas = [];
+    $('#btnSeguirPreFactura')
+        .prop('disabled', true)
+        .html(`<i class='bx bx-check-circle'></i> SELECCIONAR`);
+
+    $('#chkSeleccionarTodos').prop('checked', false).prop('indeterminate', false);
+
     // ❸ Mostrar modal
     $('#modalPreFacturas').modal('show');
-    
+
     // ❹ Cargar pre-facturas
     cargarPreFacturas();
 }
@@ -113,14 +121,14 @@ function abrirModalPreFacturas() {
 // ════════════════════════════════════════════════════════════
 
 /**
- * ✅ Muestra mensaje cuando no hay pre-facturas
+ * ✅ ACTUALIZADO v3.2: colspan ajustado a 6 columnas
  */
 function mostrarSinPreFacturas() {
     console.log('ℹ️ Mostrando mensaje: No hay pre-facturas disponibles');
 
     $('#tbodyPreFacturas').html(`
         <tr id="rowSinPreFacturas">
-            <td colspan="7" class="text-center text-muted py-5">
+            <td colspan="6" class="text-center text-muted py-5">
                 <i class='bx bx-file-blank bx-lg text-golden'></i>
                 <p class="mb-0 mt-2">
                     <strong>No hay pre-facturas disponibles</strong><br>
@@ -132,14 +140,14 @@ function mostrarSinPreFacturas() {
 }
 
 /**
- * ✅ Muestra error al cargar pre-facturas
+ * ✅ ACTUALIZADO v3.2: colspan ajustado a 6 columnas
  */
 function mostrarErrorCargarPreFacturas(mensaje) {
     console.error('❌ Error al cargar pre-facturas:', mensaje);
 
     $('#tbodyPreFacturas').html(`
         <tr>
-            <td colspan="7">
+            <td colspan="6">
                 <div class="alert alert-danger m-3">
                     <i class='bx bx-error-circle'></i> ${escapeHtml(mensaje)}
                 </div>
@@ -272,12 +280,11 @@ function cargarPreFacturas() {
 // RENDERIZAR PRE-FACTURAS
 // ════════════════════════════════════════════════════════════
 /**
- * ✅ CORREGIDO v2.3: Renderiza las pre-facturas en la tabla
- * ACTUALIZADO: Usa los campos correctos de la BD (cpf_*)
+ * ✅ ACTUALIZADO v3.2: Renderiza sin columna "Acción"
  */
 function renderizarPreFacturas(prefacturas) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('📝 RENDERIZANDO PRE-FACTURAS v2.3');
+    console.log('📝 RENDERIZANDO PRE-FACTURAS v3.2');
     console.log(`   Total a renderizar: ${prefacturas.length}`);
     console.log('═══════════════════════════════════════════════════');
 
@@ -289,25 +296,25 @@ function renderizarPreFacturas(prefacturas) {
 
     prefacturas.forEach(function (pf, index) {
         try {
-            // ✅ VALIDACIÓN ROBUSTA DE CAMPOS
+            // Validación
             if (!pf || typeof pf !== 'object') {
                 console.warn(`⚠️ Pre-factura [${index}] es inválida:`, pf);
                 countErrores++;
-                return; // ← Continue en forEach
+                return;
             }
 
-            // ✅ NORMALIZACIÓN DE CAMPOS CON FALLBACK (usando cpf_*)
+            // Normalización de campos
             const preId = pf.cpf_nro?.toString().trim() || `PF-${index}`;
             const cliente = pf.cpf_nombre?.trim() || 'Sin nombre';
             const documento = pf.cpf_documento?.toString().trim() || '-';
             const fecha = pf.cpf_fecha?.trim() || '-';
             const sector = pf.sec_desc?.trim() || 'Sin sector';
 
-            // ✅ LOG DETALLADO (solo primeras 3)
             if (index < 3) {
                 console.log(`   [${index}] ID: ${preId} | Cliente: ${cliente}`);
             }
 
+            // ✅ ACTUALIZADO v3.2: Sin columna "Acción", clase "td-checkbox" añadida
             const row = `
                 <tr data-pre-id="${preId}" 
                     data-index="${index}"
@@ -317,18 +324,11 @@ function renderizarPreFacturas(prefacturas) {
                     <td class="text-center">${escapeHtml(documento)}</td>
                     <td class="text-center">${escapeHtml(fecha)}</td>
                     <td>${escapeHtml(sector)}</td>
-                    <td class="text-center">
+                    <td class="text-center td-checkbox">
                         <input type="checkbox" 
                                class="form-check-input chk-prefactura"
-                               data-pre-id="${preId}">
-                    </td>
-                    <td class="text-center">
-                        <button type="button" 
-                                class="btn btn-sm btn-success"
-                                onclick="seleccionarPreFactura('${preId}')"
-                                title="Seleccionar esta pre-factura">
-                            <i class='bx bx-check-circle'></i>
-                        </button>
+                               data-pre-id="${preId}"
+                               title="Seleccionar pre-factura">
                     </td>
                 </tr>
             `;
@@ -348,124 +348,236 @@ function renderizarPreFacturas(prefacturas) {
     console.log(`   - Errores: ${countErrores}`);
     console.log('═══════════════════════════════════════════════════');
 
-    // ✅ SI NO SE RENDERIZÓ NINGUNA, MOSTRAR MENSAJE
     if (countExitosos === 0) {
         mostrarSinPreFacturas();
     }
 }
 
 // ════════════════════════════════════════════════════════════
-// SELECCIÓN DE PRE-FACTURAS
+// SELECCIÓN DE PRE-FACTURAS - VERSIÓN MÚLTIPLE v3.0
 // ════════════════════════════════════════════════════════════
+
 /**
- * ✅ CORREGIDO v2.3: Selecciona una pre-factura
- * ACTUALIZADO: Busca por cpf_nro en lugar de pre_id
+ * ✅ NUEVO v3.0: Permite selección múltiple de pre-facturas
+ * @param {string} preId - cpf_nro de la pre-factura
  */
 function seleccionarPreFactura(preId) {
-    console.log(`📋 Seleccionar pre-factura: ${preId}`);
+    console.log(`📋 Toggle selección pre-factura: ${preId}`);
 
-    // ❶ Remover selecciones anteriores
-    $('#tbodyPreFacturas tr').removeClass('selected-prefactura');
-    $('#tbodyPreFacturas .chk-prefactura').prop('checked', false);
-
-    // ❷ Marcar como seleccionada
+    // ❶ Obtener la fila
     const $row = $(`#tbodyPreFacturas tr[data-pre-id="${preId}"]`);
-    $row.addClass('selected-prefactura');
-    $row.find('.chk-prefactura').prop('checked', true);
 
-    // ③ Buscar datos completos (usando cpf_nro)
-    const prefactura = preFacturasDisponibles.find(pf => pf.cpf_nro === preId);
-
-    if (!prefactura) {
-        console.error('❌ Pre-factura no encontrada en el array');
+    if (!$row.length) {
+        console.error('❌ Fila no encontrada');
         return;
     }
 
-    // ❹ Guardar selección
-    preFacturaSeleccionada = prefactura;
+    // ❷ Verificar si ya está seleccionada
+    const estaSeleccionada = $row.hasClass('selected-prefactura');
 
-    // ❺ Habilitar botón Seguir
-    $('#btnSeguirPreFactura').prop('disabled', false);
+    if (estaSeleccionada) {
+        // ═══ DESELECCIONAR ═══
+        console.log(`   ➖ Deseleccionando: ${preId}`);
 
-    console.log('✅ Pre-factura seleccionada:', preFacturaSeleccionada);
+        // Remover visualmente
+        $row.removeClass('selected-prefactura');
+        $row.find('.chk-prefactura').prop('checked', false);
+
+        // Remover del array
+        preFacturasSeleccionadas = preFacturasSeleccionadas.filter(
+            pf => pf.cpf_nro?.toString() !== preId.toString()
+        );
+
+    } else {
+        // ═══ SELECCIONAR ═══
+        console.log(`   ➕ Seleccionando: ${preId}`);
+
+        // Buscar objeto completo
+        const prefactura = preFacturasDisponibles.find(
+            pf => pf.cpf_nro?.toString() === preId.toString()
+        );
+
+        if (!prefactura) {
+            console.error('❌ Pre-factura no encontrada en array disponible');
+            return;
+        }
+
+        // Añadir visualmente
+        $row.addClass('selected-prefactura');
+        $row.find('.chk-prefactura').prop('checked', true);
+
+        // Añadir al array (evitar duplicados)
+        const yaExiste = preFacturasSeleccionadas.some(
+            pf => pf.cpf_nro?.toString() === preId.toString()
+        );
+
+        if (!yaExiste) {
+            preFacturasSeleccionadas.push(prefactura);
+        }
+    }
+
+    // ❸ Actualizar UI
+    actualizarEstadoSeleccion();
+
+    console.log(`✅ Total seleccionadas: ${preFacturasSeleccionadas.length}`);
 }
 
 /**
- * ✅ Deselecciona la pre-factura actual
+ * ✅ ACTUALIZADO v3.1: Texto cambiado a "SELECCIONAR"
+ */
+function actualizarEstadoSeleccion() {
+    const totalSeleccionadas = preFacturasSeleccionadas.length;
+
+    console.log(`🔄 Actualizando UI - ${totalSeleccionadas} seleccionadas`);
+
+    // ❶ Habilitar/deshabilitar botón SELECCIONAR
+    $('#btnSeguirPreFactura').prop('disabled', totalSeleccionadas === 0);
+
+    // ❷ ✅ ACTUALIZADO v3.1: Texto "SELECCIONAR" con contador
+    const textoBoton = totalSeleccionadas > 0
+        ? `<i class='bx bx-check-circle'></i> SELECCIONAR (${totalSeleccionadas})`
+        : `<i class='bx bx-check-circle'></i> SELECCIONAR`;
+
+    $('#btnSeguirPreFactura').html(textoBoton);
+
+    // ❸ Sincronizar checkbox "Seleccionar Todos"
+    const totalDisponibles = $('#tbodyPreFacturas tr[data-pre-id]').length;
+    const todosMarcados = totalSeleccionadas === totalDisponibles && totalDisponibles > 0;
+
+    $('#chkSeleccionarTodos').prop('checked', todosMarcados);
+
+    // ❹ Estado indeterminado
+    if (totalSeleccionadas > 0 && !todosMarcados) {
+        $('#chkSeleccionarTodos').prop('indeterminate', true);
+    } else {
+        $('#chkSeleccionarTodos').prop('indeterminate', false);
+    }
+
+    // ❺ Actualizar contador en header
+    const $badge = $('#spanContadorSeleccion');
+    if (totalSeleccionadas > 0) {
+        $badge.text(`${totalSeleccionadas} seleccionada${totalSeleccionadas > 1 ? 's' : ''}`).show();
+    } else {
+        $badge.hide();
+    }
+}
+
+/**
+ * ✅ NUEVO v3.0: Deselecciona UNA pre-factura específica
+ * @param {string} preId - cpf_nro de la pre-factura
+ */
+function deseleccionarPreFacturaIndividual(preId) {
+    console.log(`➖ Deseleccionar individual: ${preId}`);
+
+    // Remover visualmente
+    const $row = $(`#tbodyPreFacturas tr[data-pre-id="${preId}"]`);
+    $row.removeClass('selected-prefactura');
+    $row.find('.chk-prefactura').prop('checked', false);
+
+    // Remover del array
+    preFacturasSeleccionadas = preFacturasSeleccionadas.filter(
+        pf => pf.cpf_nro?.toString() !== preId.toString()
+    );
+
+    // Actualizar UI
+    actualizarEstadoSeleccion();
+}
+
+/**
+ * ✅ ACTUALIZADO v3.0: Deselecciona TODAS las pre-facturas
  */
 function deseleccionarPreFactura() {
-    console.log('🔄 Deseleccionar pre-factura');
-    
+    console.log('🔄 Deseleccionar TODAS las pre-facturas');
+
     $('#tbodyPreFacturas tr').removeClass('selected-prefactura');
     $('#tbodyPreFacturas .chk-prefactura').prop('checked', false);
-    preFacturaSeleccionada = null;
-    $('#btnSeguirPreFactura').prop('disabled', true);
+    preFacturasSeleccionadas = [];
+
+    actualizarEstadoSeleccion();
 }
 
 /**
- * ✅ Toggle seleccionar/deseleccionar todos
+ * ✅ NUEVO v3.0: Toggle seleccionar/deseleccionar TODOS
+ * @param {boolean} checked - Estado del checkbox global
  */
 function toggleSeleccionarTodos(checked) {
-    // ⚠️ En este caso, "seleccionar todos" no tiene sentido
-    // porque solo se puede cargar UNA pre-factura a la vez
-    // Dejamos la funcionalidad deshabilitada
-    
-    console.warn('⚠️ Seleccionar todos no implementado (solo se puede seleccionar una pre-factura)');
-    $('#chkSeleccionarTodos').prop('checked', false);
+    console.log(`☑️ Seleccionar Todos: ${checked}`);
+
+    if (checked) {
+        // ═══ SELECCIONAR TODOS ═══
+        console.log(`   Seleccionando ${preFacturasDisponibles.length} pre-facturas...`);
+
+        // Limpiar selección actual
+        preFacturasSeleccionadas = [];
+
+        // Iterar sobre filas visibles
+        $('#tbodyPreFacturas tr[data-pre-id]').each(function () {
+            const $row = $(this);
+            const preId = $row.data('pre-id');
+
+            // Marcar visualmente
+            $row.addClass('selected-prefactura');
+            $row.find('.chk-prefactura').prop('checked', true);
+
+            // Buscar objeto completo
+            const prefactura = preFacturasDisponibles.find(
+                pf => pf.cpf_nro?.toString() === preId.toString()
+            );
+
+            if (prefactura) {
+                preFacturasSeleccionadas.push(prefactura);
+            }
+        });
+
+    } else {
+        // ═══ DESELECCIONAR TODOS ═══
+        deseleccionarPreFactura();
+    }
+
+    actualizarEstadoSeleccion();
+
+    console.log(`✅ Total seleccionadas: ${preFacturasSeleccionadas.length}`);
 }
 
 // ════════════════════════════════════════════════════════════
-// CONFIRMAR PRE-FACTURAS
+// CONFIRMAR PRE-FACTURAS - VERSIÓN MÚLTIPLE v3.0
 // ════════════════════════════════════════════════════════════
+
 /**
- * ✅ ACTUALIZADO v2.3: Confirma múltiples pre-facturas seleccionadas
- * NUEVO: Soporte para carga múltiple de pre-facturas
+ * ✅ ACTUALIZADO v3.0: Confirma múltiples pre-facturas seleccionadas
+ * Renombrado de singular a plural
  */
-function confirmarPreFactura() {
+function confirmarPreFacturas() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('✅ CONFIRMAR PRE-FACTURAS SELECCIONADAS v2.3');
+    console.log('✅ CONFIRMAR PRE-FACTURAS SELECCIONADAS v3.0');
     console.log('═══════════════════════════════════════════════════');
 
-    // ❶ VALIDACIÓN ROBUSTA: Obtener filas seleccionadas del DOM
-    const $filasSeleccionadas = $('#tbodyPreFacturas tr.selected-prefactura, #tbodyPreFacturas .chk-prefactura:checked').closest('tr');
-    
-    console.log(`   Filas seleccionadas en DOM: ${$filasSeleccionadas.length}`);
-
-    // ❷ VALIDACIÓN: ¿Hay selección?
-    if ($filasSeleccionadas.length === 0) {
+    // ❶ VALIDACIÓN: ¿Hay selecciones?
+    if (!preFacturasSeleccionadas || preFacturasSeleccionadas.length === 0) {
         console.error('❌ No hay pre-facturas seleccionadas');
         mostrarMensajeError('Debe seleccionar al menos una pre-factura');
         return;
     }
 
-    // ❸ EXTRAER cpf_nros DEL DOM (más robusto que usar variable global)
-    const cpf_nros = [];
-    
-    $filasSeleccionadas.each(function() {
-        const cpfNro = $(this).data('pre-id'); // ← data-pre-id contiene cpf_nro
-        
-        if (cpfNro && cpfNro !== 'undefined' && cpfNro !== 'null') {
-            cpf_nros.push(cpfNro.toString().trim());
-            console.log(`   ✅ Pre-factura agregada: ${cpfNro}`);
-        } else {
-            console.warn('⚠️ Fila sin cpf_nro válido:', $(this).html());
-        }
-    });
+    // ❷ EXTRAER cpf_nros del array en memoria (más confiable que DOM)
+    const cpf_nros = preFacturasSeleccionadas
+        .map(pf => pf.cpf_nro?.toString().trim())
+        .filter(cpfNro => cpfNro && cpfNro !== 'undefined' && cpfNro !== 'null');
 
-    // ❹ VALIDACIÓN FINAL
+    console.log(`📋 Total pre-facturas válidas: ${cpf_nros.length}`);
+    console.log(`   CPF_NROs: ${cpf_nros.join(', ')}`);
+
+    // ❸ VALIDACIÓN FINAL
     if (cpf_nros.length === 0) {
         console.error('❌ No se pudo extraer ningún cpf_nro válido');
         mostrarMensajeError('Error al procesar pre-facturas seleccionadas');
         return;
     }
 
-    console.log(`📋 Total pre-facturas válidas: ${cpf_nros.length}`);
-    console.log(`   CPF_NROs: ${cpf_nros.join(', ')}`);
-
-    // ❺ CERRAR MODAL
+    // ❹ CERRAR MODAL
     cerrarModalPreFacturas();
 
-    // ❻ INVOCAR ENDPOINT PARA CARGAR MÚLTIPLES PRE-FACTURAS
+    // ❺ INVOCAR ENDPOINT PARA CARGAR MÚLTIPLES PRE-FACTURAS
     cargarProductosDePrefacturas(cpf_nros);
 }
 
@@ -589,26 +701,30 @@ function cargarProductosDePrefacturas(cpf_nros) {
 }
 
 // ════════════════════════════════════════════════════════════
-// CERRAR MODAL
+// CERRAR MODAL - ACTUALIZADO v3.0
 // ════════════════════════════════════════════════════════════
+
 /**
- * ✅ Cierra el modal y limpia datos
+ * ✅ ACTUALIZADO v3.1: Texto cambiado a "SELECCIONAR"
  */
 function cerrarModalPreFacturas() {
-    console.log('🔙 Cerrando modal de pre-facturas...');
-    
+    console.log('🔙 Cerrando modal de pre-facturas v3.1...');
+
     // Cerrar modal
     $('#modalPreFacturas').modal('hide');
-    
-    // Limpiar datos
-    preFacturaSeleccionada = null;
+
+    // Limpiar array múltiple
+    preFacturasSeleccionadas = [];
     preFacturasDisponibles = [];
-    
-    // Restaurar botones
-    $('#btnSeguirPreFactura').prop('disabled', true);
-    $('#chkSeleccionarTodos').prop('checked', false);
-    
-    console.log('✅ Modal cerrado');
+
+    // ✅ ACTUALIZADO v3.1: Restaurar con texto "SELECCIONAR"
+    $('#btnSeguirPreFactura')
+        .prop('disabled', true)
+        .html(`<i class='bx bx-check-circle'></i> SELECCIONAR`);
+
+    $('#chkSeleccionarTodos').prop('checked', false).prop('indeterminate', false);
+
+    console.log('✅ Modal cerrado y datos limpiados');
 }
 
 //// ════════════════════════════════════════════════════════════

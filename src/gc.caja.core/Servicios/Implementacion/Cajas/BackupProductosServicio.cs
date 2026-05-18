@@ -447,7 +447,154 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
                 return false;
             }
         }
+
+        /// <summary>
+        /// ✅ NUEVO v1.1: Elimina un producto específico del backup
+        /// </summary>
+        public async Task<bool> EliminarProducto(int item, string cajaId, string usuarioId)
+        {
+            try
+            {
+                _logger.LogInformation("═══════════════════════════════════════════════════");
+                _logger.LogInformation($"🗑️ ELIMINANDO PRODUCTO DEL BACKUP - Item: {item}");
+                _logger.LogInformation($"   Caja: {cajaId}, Usuario: {usuarioId}");
+                _logger.LogInformation("═══════════════════════════════════════════════════");
+
+                // ❶ Validar parámetros
+                if (string.IsNullOrWhiteSpace(cajaId) || string.IsNullOrWhiteSpace(usuarioId))
+                {
+                    _logger.LogWarning("❌ Parámetros inválidos: cajaId o usuarioId vacíos");
+                    return false;
+                }
+
+                if (item <= 0)
+                {
+                    _logger.LogWarning($"❌ Item inválido: {item} (debe ser mayor a 0)");
+                    return false;
+                }
+
+                // �② Construir ruta del archivo
+                var nombreArchivo = ConstruirNombreArchivo(cajaId, usuarioId);
+                var rutaArchivo = Path.Combine(_backupBasePath, nombreArchivo);
+
+                // ❸ Validar que el archivo exista
+                if (!File.Exists(rutaArchivo))
+                {
+                    _logger.LogWarning($"⚠️ No existe backup en: {rutaArchivo}");
+                    return false; // ✅ No es error, simplemente no hay nada que eliminar
+                }
+
+                // ❹ Leer productos actuales
+                var jsonContenido = await File.ReadAllTextAsync(rutaArchivo);
+
+                if (string.IsNullOrWhiteSpace(jsonContenido))
+                {
+                    _logger.LogWarning("⚠️ Archivo de backup vacío");
+                    return false;
+                }
+
+                var productos = JsonConvert.DeserializeObject<List<ProductoDatosResponseDto>>(jsonContenido);
+
+                if (productos == null || productos.Count == 0)
+                {
+                    _logger.LogWarning("⚠️ No hay productos en el backup");
+                    return false;
+                }
+
+                _logger.LogInformation($"📋 Total productos antes de eliminar: {productos.Count}");
+
+                // ❺ Buscar el producto por item
+                var productoAEliminar = productos.FirstOrDefault(p => p.item == item);
+
+                if (productoAEliminar == null)
+                {
+                    _logger.LogWarning($"⚠️ No se encontró producto con item={item}");
+
+                    // 🔍 Mostrar items disponibles para debugging
+                    var itemsDisponibles = string.Join(", ", productos.Select(p => p.item));
+                    _logger.LogInformation($"   Items disponibles: [{itemsDisponibles}]");
+
+                    return false;
+                }
+
+                _logger.LogInformation($"🔍 Producto encontrado:");
+                _logger.LogInformation($"   - Item: {productoAEliminar.item}");
+                _logger.LogInformation($"   - Código: {productoAEliminar.p_id}");
+                _logger.LogInformation($"   - Descripción: {productoAEliminar.p_desc}");
+
+                // ❻ Eliminar el producto de la lista
+                productos.Remove(productoAEliminar);
+
+                _logger.LogInformation($"✅ Producto eliminado de la lista");
+                _logger.LogInformation($"📋 Total productos después de eliminar: {productos.Count}");
+
+                // ❼ Guardar lista actualizada
+                if (productos.Count == 0)
+                {
+                    // Si no quedan productos, eliminar el archivo completo
+                    _logger.LogInformation("🧹 No quedan productos, eliminando archivo de backup...");
+
+                    File.Delete(rutaArchivo);
+
+                    _logger.LogInformation("✅ Archivo de backup eliminado completamente");
+                }
+                else
+                {
+                    // Si quedan productos, guardar lista actualizada
+                    _logger.LogInformation($"💾 Guardando lista actualizada ({productos.Count} productos)...");
+
+                    var jsonActualizado = JsonConvert.SerializeObject(productos, Formatting.Indented);
+                    await File.WriteAllTextAsync(rutaArchivo, jsonActualizado);
+
+                    _logger.LogInformation("✅ Archivo de backup actualizado");
+                }
+
+                _logger.LogInformation("═══════════════════════════════════════════════════");
+                _logger.LogInformation($"✅ PRODUCTO ELIMINADO EXITOSAMENTE");
+                _logger.LogInformation($"   Item: {item}");
+                _logger.LogInformation($"   Productos restantes: {productos.Count}");
+                _logger.LogInformation("═══════════════════════════════════════════════════");
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"❌ ERROR al eliminar producto del backup (item={item})");
+                _logger.LogError($"   Mensaje: {ex.Message}");
+                _logger.LogError($"   StackTrace: {ex.StackTrace}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// ✅ HELPER: Construye el nombre del archivo de backup
+        /// Formato: backup_{cajaId}_{usuarioId}.json
+        /// </summary>
+        private string ConstruirNombreArchivo(string cajaId, string usuarioId)
+        {
+            // Limpiar caracteres no válidos para nombres de archivo
+            var cajaLimpia = LimpiarNombreArchivo(cajaId);
+            var usuarioLimpio = LimpiarNombreArchivo(usuarioId);
+
+            return $"backup_{cajaLimpia}_{usuarioLimpio}.json";
+        }
+
+        /// <summary>
+        /// ✅ HELPER: Limpia caracteres no válidos de un nombre de archivo
+        /// </summary>
+        private string LimpiarNombreArchivo(string nombre)
+        {
+            if (string.IsNullOrWhiteSpace(nombre))
+                return "default";
+
+            // Remover caracteres inválidos
+            var caracteresInvalidos = Path.GetInvalidFileNameChars();
+            var nombreLimpio = string.Join("_", nombre.Split(caracteresInvalidos, StringSplitOptions.RemoveEmptyEntries));
+
+            return nombreLimpio.Trim();
+        }
+
     }
 
-    
+
 }

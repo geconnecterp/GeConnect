@@ -970,12 +970,13 @@ function incrementarCantidadProducto(indice, cantidadAIncrementar) {
 }
 
 /**
- * ✅ ACTUALIZADO v12.1: Agrega producto CON LÓGICA DIFERENCIAL según "acumula"
+ * ✅ ACTUALIZADO v13.0: Agrega producto CON LÓGICA DIFERENCIAL según "acumula"
+ * NUEVO v13.0: Maneja excepciones de acumulación (cotizaciones, prefacturas, pesables)
  * NUEVO v2.2: Calcula item correlativo correctamente para backup
  */
 function agregarProductoAGrilla(producto) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('➕ AGREGANDO/ACTUALIZANDO PRODUCTO v12.1');
+    console.log('➕ AGREGANDO/ACTUALIZANDO PRODUCTO v13.0');
     console.log('═══════════════════════════════════════════════════');
     console.log('   Producto recibido:', producto);
     console.log(`   🔧 Modo Acumulación: ${cajaAcumulaProductos ? 'ACUMULA ✅' : 'NO ACUMULA ❌'}`);
@@ -987,10 +988,31 @@ function agregarProductoAGrilla(producto) {
     console.log(`   📦 Cantidad recibida: ${cantidadNueva}`);
 
     // ═══════════════════════════════════════════════════════════════════
-    // ✅ LÓGICA DIFERENCIAL SEGÚN "acumula"
+    // ✅ NUEVO v13.0: DETECTAR EXCEPCIONES DE ACUMULACIÓN
     // ═══════════════════════════════════════════════════════════════════
 
-    if (cajaAcumulaProductos) {
+    const esProductoPesable = (producto.up_tipo || '').toUpperCase() === 'P';
+    const esDePrefactura = !!(producto.cpf_nro && producto.cpf_nro.trim() !== '');
+    const esDePresupuesto = origenCargaActual === 'presupuesto';
+    const esDeCotizacion = origenCargaActual === 'cotizacion';
+
+    const tieneExcepcionAcumulacion = esProductoPesable || esDePrefactura || esDePresupuesto || esDeCotizacion;
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔍 VERIFICANDO EXCEPCIONES DE ACUMULACIÓN v13.0');
+    console.log('═══════════════════════════════════════════════════');
+    console.log(`   ⚖️  Es Pesable (up_tipo='P'): ${esProductoPesable ? 'SÍ ❌' : 'NO ✅'}`);
+    console.log(`   📄 Es de Pre-factura (cpf_nro): ${esDePrefactura ? 'SÍ ❌' : 'NO ✅'}`);
+    console.log(`   💰 Es de Presupuesto (origen): ${esDePresupuesto ? 'SÍ ❌' : 'NO ✅'}`);
+    console.log(`   💼 Es de Cotización (origen): ${esDeCotizacion ? 'SÍ ❌' : 'NO ✅'}`);
+    console.log(`   🚫 Tiene Excepción: ${tieneExcepcionAcumulacion ? 'SÍ (NO SE ACUMULA)' : 'NO (PUEDE ACUMULAR)'}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ✅ LÓGICA DIFERENCIAL SEGÚN "acumula" Y EXCEPCIONES
+    // ═══════════════════════════════════════════════════════════════════
+
+    if (cajaAcumulaProductos && !tieneExcepcionAcumulacion) {
         console.log('═══════════════════════════════════════════════════');
         console.log('✅ MODO: ACUMULA PRODUCTOS (Impresión al final)');
         console.log('═══════════════════════════════════════════════════');
@@ -1030,8 +1052,28 @@ function agregarProductoAGrilla(producto) {
 
         console.log('✨ PRODUCTO NUEVO - Agregando a la grilla...');
     } else {
+        // ✅ ACTUALIZADO v13.0: Mejorado mensaje de log
         console.log('═══════════════════════════════════════════════════');
-        console.log('⚠️ MODO: NO ACUMULA (Impresión en tiempo real)');
+
+        if (!cajaAcumulaProductos) {
+            console.log('⚠️ MODO: NO ACUMULA (Impresión en tiempo real)');
+        } else if (tieneExcepcionAcumulacion) {
+            console.log('⚠️ EXCEPCIÓN DETECTADA: NO SE ACUMULA');
+
+            if (esProductoPesable) {
+                console.log('   Razón: Producto PESABLE (up_tipo=P)');
+            }
+            if (esDePrefactura) {
+                console.log('   Razón: Producto de PRE-FACTURA');
+            }
+            if (esDePresupuesto) {
+                console.log('   Razón: Producto de PRESUPUESTO');
+            }
+            if (esDeCotizacion) {
+                console.log('   Razón: Producto de COTIZACIÓN');
+            }
+        }
+
         console.log('✨ SIEMPRE AGREGA COMO NUEVO REGISTRO');
         console.log('═══════════════════════════════════════════════════');
     }
@@ -1120,6 +1162,7 @@ function agregarProductoAGrilla(producto) {
         preId: producto.pre_id || null,
         cpf_nro: producto.cpf_nro || null,
         cpfNro: producto.cpf_nro || null,
+        up_tipo: producto.up_tipo || '', // ✅ NUEVO: Guardar tipo de unidad de peso
         _original: { ...producto }
     };
 
@@ -1131,6 +1174,7 @@ function agregarProductoAGrilla(producto) {
     console.log(`   - Item: ${productoNormalizado.item}`);
     console.log(`   - p_id: ${productoNormalizado.p_id}`);
     console.log(`   - cantidad_tot: ${productoNormalizado.cantidad_tot}`);
+    console.log(`   - up_tipo: ${productoNormalizado.up_tipo} ${esProductoPesable ? '⚖️ (PESABLE)' : ''}`); // ✅ NUEVO LOG
     console.log(`   📊 Total productos en grilla: ${productosFactura.length}`);
     console.log('═══════════════════════════════════════════════════');
 
@@ -1174,6 +1218,51 @@ function recalcularTotalFactura() {
     $('#txtTotalFactura').val(`$ ${formatearNumero(totalFactura, 2)}`);
 }
 
+/**
+ * ✅ NUEVO v14.0: Genera el botón de eliminar según el origen del producto
+ * 
+ * @param {Object} producto - Producto a evaluar
+ * @param {number} index - Índice en el array
+ * @returns {string} HTML del botón
+ */
+function generarBotonEliminar(producto, index) {
+    // ❶ Detectar si el producto NO puede eliminarse
+    const esDeCotizacion = producto.origenCarga === 'cotizacion';
+    const esDePresupuesto = producto.origenCarga === 'presupuesto';
+    const bloqueado = esDeCotizacion || esDePresupuesto || modoBloqueoGrilla === 'cotizacion';
+
+    if (bloqueado) {
+        // ❷ Botón DESHABILITADO con tooltip explicativo
+        let razonBloqueo = '';
+
+        if (esDeCotizacion) {
+            razonBloqueo = 'Producto de COTIZACIÓN - No se puede eliminar';
+        } else if (esDePresupuesto) {
+            razonBloqueo = 'Producto de PRESUPUESTO - No se puede eliminar';
+        } else {
+            razonBloqueo = 'Grilla bloqueada - No se pueden eliminar productos';
+        }
+
+        return `
+            <button class="btn btn-secondary btn-xs" 
+                    type="button" 
+                    disabled 
+                    title="${razonBloqueo}">
+                <i class='bx bx-lock'></i>
+            </button>
+        `;
+    }
+
+    // ❸ Botón HABILITADO normal
+    return `
+        <button class="btn btn-danger btn-xs"
+                type="button"
+                title="Eliminar producto"
+                onclick="eliminarProducto(${index})">
+            <i class='bx bx-trash'></i>
+        </button>
+    `;
+}
 
 /**
  * ✅ ACTUALIZADO v8.1: Actualiza la visualización de la grilla principal
@@ -1235,12 +1324,7 @@ function actualizarGrillaProductos() {
                 <td class="text-end">$ ${formatearNumero(normalizarNumero(producto.precioVenta, 0), 2)}</td>
                 <td class="text-end fw-bold text-success">$ ${formatearNumero(normalizarNumero(producto.precioTotal, 0), 2)}</td>
                 <td class="text-center">
-                    <button class="btn btn-danger btn-xs"
-                            type="button"
-                            title="Eliminar"
-                            onclick="eliminarProducto(${index})">
-                        <i class='bx bx-trash'></i>
-                    </button>
+                    ${generarBotonEliminar(producto, index)}
                 </td>
             </tr>
         `;
@@ -2149,4 +2233,272 @@ function ejecutarRecuperacionBackup() {
             mostrarMensajeError(mensaje);
         }
     });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SECCIÓN 3.5: ELIMINACIÓN DE PRODUCTOS (✅ NUEVO v8.4)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * ✅ ACTUALIZADO v14.0: Elimina un producto de la grilla
+ * NUEVO v14.0: Valida que NO sea de cotización o presupuesto antes de eliminar
+ * 
+ * @param {number} index - Índice del producto en el array productosFactura
+ */
+function eliminarProducto(index) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🗑️  ELIMINANDO PRODUCTO DE LA GRILLA v14.0');
+    console.log('═══════════════════════════════════════════════════');
+    console.log(`   Índice: ${index}`);
+
+    // ❶ Validar índice
+    if (index < 0 || index >= productosFactura.length) {
+        console.error(`❌ Índice inválido: ${index}`);
+        mostrarMensajeError('Error al eliminar producto: índice inválido');
+        return;
+    }
+
+    const producto = productosFactura[index];
+
+    console.log(`   Producto a eliminar:`);
+    console.log(`   - Item: ${producto.item}`);
+    console.log(`   - Código: ${producto.p_id}`);
+    console.log(`   - Descripción: ${producto.p_desc}`);
+    console.log(`   - Cantidad: ${producto.cantidad_tot}`);
+    console.log(`   - Precio Total: $ ${formatearNumero(producto.precioTotal, 2)}`);
+    console.log(`   - Origen: ${producto.origenCarga || 'desconocido'}`);
+
+    // ❷ ✅ NUEVO v14.0: VALIDAR SI PUEDE ELIMINARSE
+    const validacion = validarEliminacionProducto(producto);
+
+    if (!validacion.permitido) {
+        console.error(`❌ ELIMINACIÓN BLOQUEADA: ${validacion.razon}`);
+
+        // Mostrar mensaje de advertencia específico
+        mostrarMensajeError(validacion.razon);
+
+        return; // ← SALIR sin eliminar
+    }
+
+    // ❸ Confirmar eliminación (solo si pasó la validación)
+    AbrirMensaje(
+        "Confirmar Eliminación",
+        `¿Está seguro que desea eliminar este producto?\n\n` +
+        `${producto.p_desc}\n` +
+        `Cantidad: ${formatearNumero(producto.cantidad_tot, 2)}\n` +
+        `Total: $ ${formatearNumero(producto.precioTotal, 2)}`,
+        function () {
+            $("#msjModal").modal("hide");
+            ejecutarEliminacionProducto(index, producto);
+        },
+        true,
+        ["Sí, eliminar", "Cancelar"],
+        "warning",
+        null
+    );
+}
+
+/**
+ * ✅ ACTUALIZADO v8.5: Ejecuta eliminación con sincronización de backup
+ */
+function ejecutarEliminacionProducto(index, producto) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('⚙️ EJECUTANDO ELIMINACIÓN DE PRODUCTO v8.5 (CON BACKUP)');
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Eliminar del array
+    productosFactura.splice(index, 1);
+
+    console.log(`✅ Producto eliminado del array`);
+    console.log(`   Item eliminado: ${producto.item}`);
+    console.log(`   Productos restantes: ${productosFactura.length}`);
+
+    // ❷ Recalcular totales
+    recalcularTotalFactura();
+
+    // ❸ Actualizar grilla visual
+    actualizarGrillaProductos();
+
+    // ❹ Actualizar contador de items
+    $('#cantidadItems').text(productosFactura.length);
+
+    // ❺ Limpiar registro de último cambio si era el producto eliminado
+    if (ultimoCambioProducto && ultimoCambioProducto.indice === index) {
+        ultimoCambioProducto = null;
+    }
+
+    // ❻ ✅ NUEVO: Sincronizar eliminación con backup
+    sincronizarEliminacionBackup(producto.item);
+
+    // ❼ Actualizar estado del botón "Ultimo Detalle"
+    actualizarEstadoBotonUltimoDetalle();
+
+    // ❽ Mostrar mensaje de éxito
+    $('#mensajeEstadoProducto')
+        .removeClass('text-info text-danger text-muted')
+        .addClass('text-success')
+        .html(`<i class='bx bx-check-circle'></i> Producto eliminado correctamente`);
+
+    // ❾ Restaurar mensaje después de 3 segundos
+    setTimeout(() => {
+        $('#mensajeEstadoProducto')
+            .removeClass('text-success text-danger text-info')
+            .addClass('text-muted')
+            .html('Presione <kbd>Enter</kbd> o <strong>BUSCAR</strong> para agregar producto');
+    }, 3000);
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('✅ ELIMINACIÓN COMPLETADA EXITOSAMENTE');
+    console.log(`   - Producto eliminado: ${producto.p_desc}`);
+    console.log(`   - Total productos restantes: ${productosFactura.length}`);
+    console.log(`   - Total factura actualizado: $ ${formatearNumero(totalFactura, 2)}`);
+    console.log('═══════════════════════════════════════════════════');
+}
+
+/**
+ * ✅ NUEVO v1.1: Sincroniza eliminación con backup del servidor
+ */
+function sincronizarEliminacionBackup(item) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔄 SINCRONIZANDO ELIMINACIÓN CON BACKUP v1.1');
+    console.log(`   Item a eliminar del backup: ${item}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    const url = typeof EliminarProductoBackupUrl !== 'undefined' && EliminarProductoBackupUrl
+        ? EliminarProductoBackupUrl
+        : '/Facturacion/ProductoFact/EliminarProductoBackup';
+
+    $.ajax({
+        url: url,
+        type: 'POST',
+        data: { item: item },
+        success: function (response) {
+            if (response.ok) {
+                console.log(`✅ Producto ${item} eliminado del backup en servidor`);
+
+                // ✅ Si no quedan productos, actualizar flag de backup
+                if (productosFactura.length === 0) {
+                    tieneBackupPendiente = false;
+                }
+            } else {
+                console.warn(`⚠️ No se pudo eliminar producto ${item} del backup: ${response.mensaje}`);
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error('❌ ERROR AL SINCRONIZAR ELIMINACIÓN CON BACKUP');
+            console.error(`   Status: ${xhr.status}`);
+            console.error(`   Error: ${error}`);
+            // ⚠️ NO se interrumpe la operación (la eliminación local ya se hizo)
+        }
+    });
+}
+///**
+// * ✅ NUEVO v8.4: Ejecuta la eliminación del producto
+// *
+// * @param {number} index - Índice del producto
+// * @param {Object} producto - Objeto del producto a eliminar
+// */
+//function ejecutarEliminacionProducto(index, producto) {
+//    console.log('═══════════════════════════════════════════════════');
+//    console.log('⚙️ EJECUTANDO ELIMINACIÓN DE PRODUCTO');
+//    console.log('═══════════════════════════════════════════════════');
+
+//    // ❶ Eliminar del array
+//    productosFactura.splice(index, 1);
+
+//    console.log(`✅ Producto eliminado del array`);
+//    console.log(`   Productos restantes: ${productosFactura.length}`);
+
+//    // ❷ Recalcular totales
+//    recalcularTotalFactura();
+
+//    // ❸ Actualizar grilla visual
+//    actualizarGrillaProductos();
+
+//    // ❹ Actualizar contador de items
+//    $('#cantidadItems').text(productosFactura.length);
+
+//    // ❺ Limpiar registro de último cambio si era el producto eliminado
+//    if (ultimoCambioProducto && ultimoCambioProducto.indice === index) {
+//        ultimoCambioProducto = null;
+//    }
+
+//    // ❻ Actualizar estado del botón "Ultimo Detalle"
+//    actualizarEstadoBotonUltimoDetalle();
+
+//    // ❼ Mostrar mensaje de éxito
+//    $('#mensajeEstadoProducto')
+//        .removeClass('text-info text-danger text-muted')
+//        .addClass('text-success')
+//        .html(`<i class='bx bx-check-circle'></i> Producto eliminado correctamente`);
+
+//    // ❽ Restaurar mensaje después de 3 segundos
+//    setTimeout(() => {
+//        $('#mensajeEstadoProducto')
+//            .removeClass('text-success text-danger text-info')
+//            .addClass('text-muted')
+//            .html('Presione <kbd>Enter</kbd> o <strong>BUSCAR</strong> para agregar producto');
+//    }, 3000);
+
+//    console.log('═══════════════════════════════════════════════════');
+//    console.log('✅ ELIMINACIÓN COMPLETADA EXITOSAMENTE');
+//    console.log(`   - Producto eliminado: ${producto.p_desc}`);
+//    console.log(`   - Total productos restantes: ${productosFactura.length}`);
+//    console.log(`   - Total factura actualizado: $ ${formatearNumero(totalFactura, 2)}`);
+//    console.log('═══════════════════════════════════════════════════');
+//}
+
+/**
+ * ✅ NUEVO v14.0: Valida si un producto puede ser eliminado
+ * Productos de cotizaciones y presupuestos NO pueden eliminarse
+ * 
+ * @param {Object} producto - Objeto del producto a validar
+ * @returns {Object} { permitido: boolean, razon: string }
+ */
+function validarEliminacionProducto(producto) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔍 VALIDANDO ELIMINACIÓN DE PRODUCTO v14.0');
+    console.log('═══════════════════════════════════════════════════');
+    console.log(`   Producto: ${producto.p_desc}`);
+    console.log(`   Origen Carga: ${producto.origenCarga || 'desconocido'}`);
+    console.log(`   pre_id: ${producto.pre_id || 'null'}`);
+    console.log(`   cpf_nro: ${producto.cpf_nro || 'null'}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Verificar si proviene de COTIZACIÓN
+    if (producto.origenCarga === 'cotizacion') {
+        console.log('❌ RECHAZADO: Producto de COTIZACIÓN');
+        return {
+            permitido: false,
+            razon: 'Los productos de COTIZACIÓN no pueden eliminarse individualmente.\n\n' +
+                'Debe cancelar la factura completa para modificar la cotización.'
+        };
+    }
+
+    // ❷ Verificar si proviene de PRESUPUESTO
+    if (producto.origenCarga === 'presupuesto') {
+        console.log('❌ RECHAZADO: Producto de PRESUPUESTO');
+        return {
+            permitido: false,
+            razon: 'Los productos de PRESUPUESTO no pueden eliminarse individualmente.\n\n' +
+                'Debe cancelar la factura completa para modificar el presupuesto.'
+        };
+    }
+
+    // ❸ FALLBACK: Verificar modo de bloqueo global (por compatibilidad)
+    if (modoBloqueoGrilla === 'cotizacion') {
+        console.log('❌ RECHAZADO: Modo de bloqueo activo (cotización)');
+        return {
+            permitido: false,
+            razon: 'La grilla está bloqueada por una COTIZACIÓN cargada.\n\n' +
+                'No se pueden eliminar productos individuales.'
+        };
+    }
+
+    // ❹ PERMITIR ELIMINACIÓN
+    console.log('✅ PERMITIDO: Producto puede eliminarse');
+    return {
+        permitido: true,
+        razon: ''
+    };
 }

@@ -2,27 +2,31 @@
     ════════════════════════════════════════════════════════════
     MODAL: PRE-FACTURAS
     ════════════════════════════════════════════════════════════
-    Permite seleccionar una pre-factura pendiente para cargar
+    Permite seleccionar pre-facturas pendientes para cargar
+    VERSIÓN: v3.2 - CORREGIDO: Conflicto checkbox + Columna Acción eliminada
 *@
 
 <!-- Modal Pre-Facturas -->
-<div class="modal fade modal-golden" 
-     id="modalPreFacturas" 
-     data-bs-backdrop="static" 
-     data-bs-keyboard="false" 
-     tabindex="-1" 
-     aria-labelledby="modalPreFacturasTitle" 
+<div class="modal fade modal-golden"
+     id="modalPreFacturas"
+     data-bs-backdrop="static"
+     data-bs-keyboard="false"
+     tabindex="-1"
+     aria-labelledby="modalPreFacturasTitle"
      aria-hidden="true">
-    
-    <div class="modal-dialog modal-fullscreen">
+
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
-            
-            <!-- ════════════════════════════════════════════════════ -->
+
+            <!-- ════════════════════════════════════════════════════════ -->
             <!-- HEADER -->
-            <!-- ════════════════════════════════════════════════════ -->
+            <!-- ════════════════════════════════════════════════════════ -->
             <div class="modal-header bg-gradient-golden">
                 <h5 class="modal-title fw-bold text-white" id="modalPreFacturasTitle">
                     <i class='bx bx-file-blank'></i> Prefacturas
+                    <span id="spanContadorSeleccion" class="badge bg-white text-golden ms-2" style="display: none;">
+                        0 seleccionadas
+                    </span>
                 </h5>
             </div>
 
@@ -30,14 +34,14 @@
             <!-- BODY -->
             <!-- ════════════════════════════════════════════════════ -->
             <div class="modal-body p-4 bg-light">
-                
+
                 <!-- Filtro: Solo Pendientes -->
                 <div class="row mb-3">
                     <div class="col-12">
                         <div class="form-check form-check-lg">
-                            <input class="form-check-input" 
-                                   type="checkbox" 
-                                   id="chkSoloPendientes" 
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   id="chkSoloPendientes"
                                    checked>
                             <label class="form-check-label fw-bold" for="chkSoloPendientes">
                                 <i class='bx bx-time-five'></i> Solo Pendientes
@@ -51,26 +55,26 @@
                     <div class="card-body p-0">
                         <div class="table-responsive" style="max-height: 550px; overflow-y: auto;">
                             <table class="table table-golden table-hover table-sm mb-0" id="tbPreFacturas">
+                                <!-- ✅ ACTUALIZADO v3.2: Eliminada columna "Acción" -->
                                 <thead class="table-golden-header sticky-top">
                                     <tr>
-                                        <th class="text-center" style="width: 10%;">Código PF</th>
-                                        <th style="width: 25%;">Cliente</th>
-                                        <th class="text-center" style="width: 15%;">Docuemento</th>
-                                        <th class="text-center" style="width: 15%;">Fecha</th>
-                                        <th style="width: 20%;">Sector_sele</th>
-                                        <th class="text-center" style="width: 5%;">
-                                            <input type="checkbox" 
-                                                   class="form-check-input" 
+                                        <th class="text-center" style="width: 12%;">Código PF</th>
+                                        <th style="width: 30%;">Cliente</th>
+                                        <th class="text-center" style="width: 18%;">Documento</th>
+                                        <th class="text-center" style="width: 18%;">Fecha</th>
+                                        <th style="width: 17%;">Sector</th>
+                                        <th class="text-center" style="width: 5%;" title="Columna de selección">
+                                            <input type="checkbox"
+                                                   class="form-check-input"
                                                    id="chkSeleccionarTodos"
-                                                   title="Seleccionar todos">
+                                                   title="Seleccionar todas las pre-facturas">
                                         </th>
-                                        <th class="text-center" style="width: 10%;">Acción</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tbodyPreFacturas">
                                     <!-- Mensaje inicial -->
                                     <tr id="rowSinPreFacturas">
-                                        <td colspan="7" class="text-center text-muted py-5">
+                                        <td colspan="6" class="text-center text-muted py-5">
                                             <i class='bx bx-file-blank bx-lg text-golden'></i>
                                             <p class="mb-0 mt-2">
                                                 <strong>No hay pre-facturas disponibles</strong><br>
@@ -90,16 +94,16 @@
             <!-- FOOTER -->
             <!-- ════════════════════════════════════════════════════ -->
             <div class="modal-footer bg-white">
-                <button type="button" 
-                        class="btn btn-danger btn-lg px-5" 
+                <button type="button"
+                        class="btn btn-danger btn-lg px-5"
                         id="btnCancelarPreFactura">
                     <i class='bx bx-x-circle'></i> CANCELAR
                 </button>
-                <button type="button" 
-                        class="btn btn-success btn-lg px-5" 
+                <button type="button"
+                        class="btn btn-success btn-lg px-5"
                         id="btnSeguirPreFactura"
                         disabled>
-                    <i class='bx bx-check-circle'></i> SEGUIR
+                    <i class='bx bx-check-circle'></i> SELECCIONAR
                 </button>
             </div>
 
@@ -108,7 +112,7 @@
 </div>
 
 <!-- ════════════════════════════════════════════════════════ -->
-<!-- ESTILOS ADICIONALES -->
+<!-- ESTILOS ADICIONALES - ACTUALIZADO v3.2 -->
 <!-- ════════════════════════════════════════════════════════ -->
 <style>
     /* Fila seleccionada */
@@ -123,10 +127,20 @@
         cursor: pointer;
     }
 
+    /* ✅ NUEVO v3.2: Celda de checkbox sin hover de puntero */
+    #tbPreFacturas tbody tr td.td-checkbox {
+        cursor: default; /* ← No mostrar pointer sobre la celda del checkbox */
+    }
+
     /* Checkbox en la tabla */
     #tbPreFacturas .form-check-input {
         width: 1.2rem;
         height: 1.2rem;
-        cursor: pointer;
+        cursor: pointer; /* ← Pointer solo sobre el checkbox */
+    }
+
+    /* ✅ NUEVO v3.2: Aumentar área clickeable del checkbox */
+    #tbPreFacturas tbody tr td.td-checkbox {
+        padding: 0.75rem; /* ← Más espacio para hacer click */
     }
 </style>

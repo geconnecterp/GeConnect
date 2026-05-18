@@ -2278,6 +2278,53 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 return Json(new { ok = false, mensaje = "Error al limpiar respaldo" });
             }
         }
+
+        /// <summary>
+        /// ✅ NUEVO v1.1: Elimina un producto específico del backup
+        /// </summary>
+        /// <param name="item">Número de item correlativo del producto</param>
+        [HttpPost]
+        public async Task<JsonResult> EliminarProductoBackup(int item)
+        {
+            try
+            {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, mensaje = "Sesión expirada" });
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation($"🗑️ ELIMINAR PRODUCTO DEL BACKUP - Item: {item}");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                var cajaActual = CajaActual;
+                if (cajaActual == null)
+                {
+                    return Json(new { ok = false, mensaje = "No hay caja abierta" });
+                }
+
+                
+                bool eliminado = await _backupServicio.EliminarProducto(
+                    item,
+                    cajaActual.CajaId ?? string.Empty,
+                    UserName ?? string.Empty
+                );
+
+                if (eliminado)
+                {
+                    _logger?.LogInformation($"✅ Producto {item} eliminado del backup");
+                }
+
+                return Json(new
+                {
+                    ok = eliminado,
+                    mensaje = eliminado ? "Producto eliminado del respaldo" : "Error al eliminar producto"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al eliminar producto del backup");
+                return Json(new { ok = false, mensaje = "Error al eliminar producto del respaldo" });
+            }
+        }
     }
 
     // Necesitaremos recibir lista de códigos de pre-factura
