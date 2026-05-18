@@ -128,8 +128,39 @@ function CargarAnalisisDeValoresDeVentaDetalleMes() {
 	PostGenHtml({}, cargarDetalleMesURL, function (obj) {
 		$("#divAnalisisDetalleMes").html(obj);
 		CargarTabsDelDetalleMes();
+		InicializarEventosDetalleMes();
 		//EvaluarBotonImprimir("navs-top-mens");
 		return true;
+	});
+}
+
+function InicializarEventosDetalleMes() {
+	$(document).off('shown.bs.tab', '#tabsAnalisisDeVentasDetalleMes button[data-bs-toggle="tab"]');
+
+	$(document).on('shown.bs.tab', '#tabsAnalisisDeVentasDetalleMes button[data-bs-toggle="tab"]', function (e) {
+
+		const targetId = $(e.target).data("bs-target");
+
+		switch (targetId) {
+
+			case "#navs-top-diario":
+				CargarTabsDelDetalleMesDiario(true);
+				CargarTabsDelDetalleMesPV(false);
+				CargarTabsDelDetalleMesCB(false);
+				break;
+
+			case "#navs-top-pv":
+				CargarTabsDelDetalleMesPV(true);
+				CargarTabsDelDetalleMesDiario(false);
+				CargarTabsDelDetalleMesCB(false);
+				break;
+
+			case "#navs-top-cashback":
+				CargarTabsDelDetalleMesCB(true);
+				CargarTabsDelDetalleMesPV(false);
+				CargarTabsDelDetalleMesDiario(false);
+				break;
+		}
 	});
 }
 
