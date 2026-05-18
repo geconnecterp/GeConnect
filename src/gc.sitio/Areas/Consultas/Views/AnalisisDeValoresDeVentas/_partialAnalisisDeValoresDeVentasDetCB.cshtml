@@ -1,0 +1,57 @@
+﻿@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<AnaValDeVtaDetCBDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+</style>
+<div class="table-responsive table-wrapper-500 w-50">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbAnaDeValVtaDetalleCB">
+		<thead class="sticky-top table-golden-header-compact">
+			<tr class="header">
+				<th class="text-center">Día</th>
+				<th class="text-center">Suc.</th>
+				<th class="text-center">PV</th>
+				<th class="text-center">Medio de Pago</th>
+				<th class="text-center">Datos</th>
+				<th class="text-center">CashBack</th>
+				<th class="text-center">Importe</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+			{
+				<tr class="fila-vacia">
+					<td colspan="6" class="text-center text-muted py-2">
+						<i class="bx bx-info-circle me-1"></i>
+						No hay items para mostrar.
+					</td>
+				</tr>
+			}
+			else
+			{
+				foreach (var item in Model.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase row-pedido"
+						data-caja-nro-proceso="@item.caja_nro_proceso"
+						data-rb-compte="@item.rb_compte"
+						data-ins-id="@item.ins_id">
+						<td class="text-center">@item.rb_fecha_valor.ToString("dd/MM/yyyy")</td>
+						<td class="text-left">@item.adm_nombre</td>
+						<td class="text-center">@item.adm_id</td>
+						<td class="text-left">@item.ins_desc</td>
+						<td class="text-left">@item.rb_dato1_valor @item.rb_dato2_valor @item.rb_dato3_valor</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.cashback, TipoPrecio.Venta)</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.rb_importe, TipoPrecio.Venta)</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>
+
+
+

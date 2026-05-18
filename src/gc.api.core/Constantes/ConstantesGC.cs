@@ -70,6 +70,13 @@
 			public const string SP_E_AV_CIERRES = "SPGECO_E_AV_Cierres";
 			#endregion
 
+			#region Análisis de Valores de Ventas
+			public const string SP_E_AVALORES_MES = "SPGECO_E_AValores_mes";
+			public const string SP_E_AVALORES_DIAS = "SPGECO_E_AValores_dias";
+			public const string SP_E_AVALORES_DIAS_PV = "SPGECO_E_AValores_dias_PV";
+			public const string SP_E_AVALORES_CB = "SPGECO_E_AValores_CashBack";
+			#endregion
+
 			public const string MNU_GET_MENU_LIST = "dbo.SP_web_geco_get_menu_list";
 
 			public const string SP_BILLETERAORD_CARGA = "dbo.SP_BilleteraOrdenCarga";

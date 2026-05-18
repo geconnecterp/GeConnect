@@ -1,0 +1,197 @@
+﻿@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
+@model AnalisisDeValoresDeVentasMesModel
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	.porc-box {
+		padding: 0 4px;
+		border-radius: 3px;
+		font-weight: 600;
+		display: inline-block;
+		white-space: nowrap;
+	}
+
+	/* positivo */
+	.porc-pos {
+		background-color: #c9e4ff; /* celeste un poco más fuerte */
+		color: #004a85;
+	}
+
+	/* negativo */
+	.porc-neg {
+		background-color: #ffe0e0; /* rojo suave */
+		color: #a10000;
+	}
+
+	/* cero → sin fondo */
+	.porc-zero {
+		background-color: transparent;
+		color: #666;
+	}
+
+</style>
+<div class="table-responsive table-wrapper-500">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbAnaDeValDeVtaMes">
+		<thead class="sticky-top table-golden-header-compact">
+			<tr class="header">
+				<th class="text-center">Mes</th>
+				<th class="text-center" title="Facturación + Cobranzas">Fact. + Cob.</th>
+				<th class="text-center" title="Cuenta Corriente">Cta. Cte.(Doc)</th>
+				<th class="text-center" title="Cuenta Corriente Dist.">Cta. Cte. Dist.</th>
+				<th class="text-center">Efectivo</th>
+				<th class="text-center">Tarjetas</th>
+				<th class="text-center">Transf. Bco.</th>
+				<th class="text-center">Mutuales</th>
+				<th class="text-center">Vales</th>
+				<th class="text-center">Otros</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model == null || Model.ListaAnaDeValDeVtaMes == null || Model.ListaAnaDeValDeVtaMes.ListaDatos == null || !Model.ListaAnaDeValDeVtaMes.ListaDatos.Any())
+			{
+				<tr class="fila-vacia">
+					<td colspan="6" class="text-center text-muted py-2">
+						<i class="bx bx-info-circle me-1"></i>
+						No hay items para mostrar.
+					</td>
+				</tr>
+			}
+			else
+			{
+				foreach (var item in Model.ListaAnaDeValDeVtaMes.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase row-pedido"
+						data-mes="@item.mes"
+						data-periodo="@item.periodo">
+						<td class="text-center">@item.periodo - @item.mes</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.co_facturacion + item.co_cobranza, TipoPrecio.Venta)</td>
+						<td>
+							<table style="width:100%; border-collapse:collapse;">
+								<tr>
+									<td style="text-align:left; padding:0; border:0;">
+										<span class="porc-box
+											@(item.co_ctacte_porc > 0 ? "porc-pos" : item.co_ctacte_porc < 0 ? "porc-neg" : "porc-zero")">
+											@item.co_ctacte_porc%
+										</span>
+									</td>
+									<td style="text-align:right; padding:0; border:0;">
+										@GridHelper.FormatearPrecio(item.co_ctacte, TipoPrecio.Venta)
+									</td>
+								</tr>
+							</table>
+						</td>
+						<td>
+							<table style="width:100%; border-collapse:collapse;">
+								<tr>
+									<td style="text-align:left; padding:0; border:0;">
+										<span class="porc-box
+											@(item.co_ctacte_dist_porc > 0 ? "porc-pos" : item.co_ctacte_dist_porc < 0 ? "porc-neg" : "porc-zero")">
+											@item.co_ctacte_dist_porc%
+										</span>
+									</td>
+									<td style="text-align:right; padding:0; border:0;">
+										@GridHelper.FormatearPrecio(item.co_ctacte_dist, TipoPrecio.Venta)
+									</td>
+								</tr>
+							</table>
+						</td>
+						<td>
+							<table style="width:100%; border-collapse:collapse;">
+								<tr>
+									<td style="text-align:left; padding:0; border:0;">
+										<span class="porc-box
+											@(item.efectivos_porc > 0 ? "porc-pos" : item.efectivos_porc < 0 ? "porc-neg" : "porc-zero")">
+											@item.efectivos_porc%
+										</span>
+									</td>
+									<td style="text-align:right; padding:0; border:0;">
+										@GridHelper.FormatearPrecio(item.efectivos, TipoPrecio.Venta)
+									</td>
+								</tr>
+							</table>
+						</td>
+						<td>
+							<table style="width:100%; border-collapse:collapse;">
+								<tr>
+									<td style="text-align:left; padding:0; border:0;">
+										<span class="porc-box
+											@(item.tarjetas_porc > 0 ? "porc-pos" : item.tarjetas_porc < 0 ? "porc-neg" : "porc-zero")">
+											@item.tarjetas_porc%
+										</span>
+									</td>
+									<td style="text-align:right; padding:0; border:0;">
+										@GridHelper.FormatearPrecio(item.tarjetas, TipoPrecio.Venta)
+									</td>
+								</tr>
+							</table>
+						</td>
+						<td>
+							<table style="width:100%; border-collapse:collapse;">
+								<tr>
+									<td style="text-align:left; padding:0; border:0;">
+										<span class="porc-box
+											@(item.bco_transf_porc > 0 ? "porc-pos" : item.bco_transf_porc < 0 ? "porc-neg" : "porc-zero")">
+											@item.bco_transf_porc%
+										</span>
+									</td>
+									<td style="text-align:right; padding:0; border:0;">
+										@GridHelper.FormatearPrecio(item.bco_transf, TipoPrecio.Venta)
+									</td>
+								</tr>
+							</table>
+						</td>
+						<td>
+							<table style="width:100%; border-collapse:collapse;">
+								<tr>
+									<td style="text-align:left; padding:0; border:0;">
+										<span class="porc-box
+											@(item.mutuales_porc > 0 ? "porc-pos" : item.mutuales_porc < 0 ? "porc-neg" : "porc-zero")">
+											@item.mutuales_porc%
+										</span>
+									</td>
+									<td style="text-align:right; padding:0; border:0;">
+										@GridHelper.FormatearPrecio(item.mutuales, TipoPrecio.Venta)
+									</td>
+								</tr>
+							</table>
+						</td>
+						<td>
+							<table style="width:100%; border-collapse:collapse;">
+								<tr>
+									<td style="text-align:left; padding:0; border:0;">
+										<span class="porc-box
+											@(item.vales_porc > 0 ? "porc-pos" : item.vales_porc < 0 ? "porc-neg" : "porc-zero")">
+											@item.vales_porc%
+										</span>
+									</td>
+									<td style="text-align:right; padding:0; border:0;">
+										@GridHelper.FormatearPrecio(item.vales, TipoPrecio.Venta)
+									</td>
+								</tr>
+							</table>
+						</td>
+						<td>
+							<table style="width:100%; border-collapse:collapse;">
+								<tr>
+									<td style="text-align:left; padding:0; border:0;">
+										<span class="porc-box
+											@(item.otros_porc > 0 ? "porc-pos" : item.otros_porc < 0 ? "porc-neg" : "porc-zero")">
+											@item.otros_porc%
+										</span>
+									</td>
+									<td style="text-align:right; padding:0; border:0;">
+										@GridHelper.FormatearPrecio(item.otros, TipoPrecio.Venta)
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

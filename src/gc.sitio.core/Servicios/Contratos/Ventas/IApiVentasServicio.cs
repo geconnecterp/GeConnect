@@ -1,5 +1,6 @@
 ﻿using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Ventas;
+using gc.infraestructura.Dtos.Ventas.Request;
 
 namespace gc.sitio.core.Servicios.Contratos
 {
@@ -25,5 +26,9 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<AnaVtaMesDetalleSucursalDto> ObtenerAnaVtaMesDetalleSucursalLista(AnaVtaMesRequest request, string token);
 		List<AnaVtaMesDetalleCierreDto> ObtenerAnaVtaMesDetalleCierreLista(AnaVtaMesRequest request, string token);
 		List<AnaVtaMesDetalleAnualDto> ObtenerAnaVtaMesDetalleAnualLista(AnaVtaMesRequest request, string token);
+		List<AnaValDeVtaMesDto> ObtenerAnaDeValDeVtaMesLista(AnaDeValDeVtaMesRequest request, string token);
+		List<AnaValDeVtaDetDiarioDto> ObtenerAnaDeValDeVtaDetDiarioLista(AnaDeValDeVtaMesRequest request, string token);
+		List<AnaValDeVtaDetPVDto> ObtenerAnaDeValDeVtaDetPVLista(AnaDeValDeVtaMesRequest request, string token);
+		List<AnaValDeVtaDetCBDto> ObtenerAnaDeValDeVtaDetCBLista(AnaDeValDeVtaMesRequest request, string token);
 	}
 }

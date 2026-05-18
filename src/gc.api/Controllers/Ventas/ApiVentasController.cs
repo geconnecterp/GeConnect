@@ -6,6 +6,7 @@ using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenReparto;
 using gc.infraestructura.Dtos.Users;
 using gc.infraestructura.Dtos.Ventas;
+using gc.infraestructura.Dtos.Ventas.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -356,6 +357,62 @@ namespace gc.api.Controllers.Ventas
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _iApiVentasServicio.ObtenerAnaVtaMesDetalleCierreLista(request);
 			response = new ApiResponse<List<AnaVtaMesDetalleCierreDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<AnaValDeVtaMesDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerAnaDeValDeVtaMesLista(AnaDeValDeVtaMesRequest request)
+		{
+			ApiResponse<List<AnaValDeVtaMesDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _iApiVentasServicio.ObtenerAnaDeValDeVtaMesLista(request);
+			response = new ApiResponse<List<AnaValDeVtaMesDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<AnaValDeVtaDetDiarioDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerAnaDeValDeVtaDetDiarioLista(AnaDeValDeVtaMesRequest request)
+		{
+			ApiResponse<List<AnaValDeVtaDetDiarioDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _iApiVentasServicio.ObtenerAnaDeValDeVtaDetDiarioLista(request);
+			response = new ApiResponse<List<AnaValDeVtaDetDiarioDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<AnaValDeVtaDetPVDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerAnaDeValDeVtaDetPVLista(AnaDeValDeVtaMesRequest request)
+		{
+			ApiResponse<List<AnaValDeVtaDetPVDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _iApiVentasServicio.ObtenerAnaDeValDeVtaDetPVLista(request);
+			response = new ApiResponse<List<AnaValDeVtaDetPVDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<AnaValDeVtaDetCBDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerAnaDeValDeVtaDetCBLista(AnaDeValDeVtaMesRequest request)
+		{
+			ApiResponse<List<AnaValDeVtaDetCBDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _iApiVentasServicio.ObtenerAnaDeValDeVtaDetCBLista(request);
+			response = new ApiResponse<List<AnaValDeVtaDetCBDto>>(res);
 
 			return Ok(response);
 		}

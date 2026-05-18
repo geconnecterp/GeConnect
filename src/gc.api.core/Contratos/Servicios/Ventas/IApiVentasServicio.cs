@@ -1,6 +1,7 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Ventas;
+using gc.infraestructura.Dtos.Ventas.Request;
 
 namespace gc.api.core.Contratos.Servicios
 {
@@ -26,5 +27,9 @@ namespace gc.api.core.Contratos.Servicios
 		List<AnaVtaMesDetalleSucursalDto> ObtenerAnaVtaMesDetalleSucursalLista(AnaVtaMesRequest request);
 		List<AnaVtaMesDetalleAnualDto> ObtenerAnaVtaMesDetalleAnualLista(AnaVtaMesRequest request);
 		List<AnaVtaMesDetalleCierreDto> ObtenerAnaVtaMesDetalleCierreLista(AnaVtaMesRequest request);
+		List<AnaValDeVtaMesDto> ObtenerAnaDeValDeVtaMesLista(AnaDeValDeVtaMesRequest request);
+		List<AnaValDeVtaDetDiarioDto> ObtenerAnaDeValDeVtaDetDiarioLista(AnaDeValDeVtaMesRequest request);
+		List<AnaValDeVtaDetPVDto> ObtenerAnaDeValDeVtaDetPVLista(AnaDeValDeVtaMesRequest request);
+		List<AnaValDeVtaDetCBDto> ObtenerAnaDeValDeVtaDetCBLista(AnaDeValDeVtaMesRequest request);
 	}
 }

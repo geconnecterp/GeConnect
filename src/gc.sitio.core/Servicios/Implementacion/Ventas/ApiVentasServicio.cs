@@ -7,6 +7,7 @@ using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Users;
 using gc.infraestructura.Dtos.Ventas;
+using gc.infraestructura.Dtos.Ventas.Request;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -40,6 +41,10 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string GET_ANA_VTA_DET_SUCURSAL = "/ObtenerAnaVtaMesDetalleSucursalLista";
 		private const string GET_ANA_VTA_DET_ANUAL = "/ObtenerAnaVtaMesDetalleAnualLista";
 		private const string GET_ANA_VTA_DET_CIERRE = "/ObtenerAnaVtaMesDetalleCierreLista";
+		private const string GET_ANA_DE_VAL_DE_VTA_MES = "/ObtenerAnaDeValDeVtaMesLista";
+		private const string GET_ANA_DE_VAL_DE_VTA_DET_DIA = "/ObtenerAnaDeValDeVtaDetDiarioLista";
+		private const string GET_ANA_DE_VAL_DE_VTA_DET_PV = "/ObtenerAnaDeValDeVtaDetPVLista";
+		private const string GET_ANA_DE_VAL_DE_VTA_DET_CB = "/ObtenerAnaDeValDeVtaDetCBLista";
 
 		public ApiVentasServicio(IOptions<AppSettings> options, ILogger<ApiVentasServicio> logger) : base(options, logger, RutaAPI)
 		{
@@ -1110,6 +1115,130 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return [];
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AnaVtaMesDetalleAnualDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public List<AnaValDeVtaMesDto> ObtenerAnaDeValDeVtaMesLista(AnaDeValDeVtaMesRequest request, string token)
+		{
+			ApiResponse<List<AnaValDeVtaMesDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_ANA_DE_VAL_DE_VTA_MES}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return [];
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AnaValDeVtaMesDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public List<AnaValDeVtaDetDiarioDto> ObtenerAnaDeValDeVtaDetDiarioLista(AnaDeValDeVtaMesRequest request, string token)
+		{
+			ApiResponse<List<AnaValDeVtaDetDiarioDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_ANA_DE_VAL_DE_VTA_DET_DIA}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return [];
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AnaValDeVtaDetDiarioDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public List<AnaValDeVtaDetPVDto> ObtenerAnaDeValDeVtaDetPVLista(AnaDeValDeVtaMesRequest request, string token)
+		{
+			ApiResponse<List<AnaValDeVtaDetPVDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_ANA_DE_VAL_DE_VTA_DET_PV}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return [];
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AnaValDeVtaDetPVDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public List<AnaValDeVtaDetCBDto> ObtenerAnaDeValDeVtaDetCBLista(AnaDeValDeVtaMesRequest request, string token)
+		{
+			ApiResponse<List<AnaValDeVtaDetCBDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_ANA_DE_VAL_DE_VTA_DET_CB}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return [];
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AnaValDeVtaDetCBDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
 				return apiResponse.Data;
 			}
 			else

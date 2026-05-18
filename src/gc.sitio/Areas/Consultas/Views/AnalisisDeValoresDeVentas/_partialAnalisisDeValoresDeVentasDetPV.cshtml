@@ -1,0 +1,62 @@
+﻿@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<AnaValDeVtaDetPVDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+</style>
+<div class="table-responsive table-wrapper-500 w-50">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbAnaDeValVtaDetallePV">
+		<thead class="sticky-top table-golden-header-compact">
+			<tr class="header">
+				<th class="text-center">Día</th>
+				<th class="text-center">Suc.</th>
+				<th class="text-center">PV</th>
+				<th class="text-center">Efectivo</th>
+				<th class="text-center">Tarjetas</th>
+				<th class="text-center">Transf. Bco.</th>
+				<th class="text-center">Mutual</th>
+				<th class="text-center">Vales</th>
+				<th class="text-center">Otros</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+			{
+				<tr class="fila-vacia">
+					<td colspan="6" class="text-center text-muted py-2">
+						<i class="bx bx-info-circle me-1"></i>
+						No hay items para mostrar.
+					</td>
+				</tr>
+			}
+			else
+			{
+				foreach (var item in Model.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase row-pedido"
+						data-adm-id="@item.adm_list"
+						data-caja-nro-proceso="@item.caja_nro_proceso"
+						data-caja-nro-cierre="@item.caja_nro_cierre"
+						data-caja-id="@item.caja_id">
+						<td class="text-center">@item.dia.ToString("dd/MM/yyyy")</td>
+						<td class="text-left">@item.adm_nombre</td>
+						<td class="text-center">@item.caja_id</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.efectivos, TipoPrecio.Venta)</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.tarjetas, TipoPrecio.Venta)</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.bco_transf, TipoPrecio.Venta)</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.mutuales, TipoPrecio.Venta)</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.vales, TipoPrecio.Venta)</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.otros, TipoPrecio.Venta)</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>
+
+
+

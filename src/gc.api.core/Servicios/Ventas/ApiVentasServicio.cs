@@ -4,6 +4,7 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Ventas;
+using gc.infraestructura.Dtos.Ventas.Request;
 using Microsoft.Data.SqlClient;
 
 namespace gc.api.core.Servicios
@@ -410,6 +411,66 @@ namespace gc.api.core.Servicios
 			 };
 
 			var result = _repository.EjecutarLstSpExt<AnaVtaMesDetalleCierreDto>(sp, ps, true);
+			return result;
+		}
+
+		public List<AnaValDeVtaMesDto> ObtenerAnaDeValDeVtaMesLista(AnaDeValDeVtaMesRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_E_AVALORES_MES;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@adm_list", request.adm_list),
+				new SqlParameter("@desde", request.desde),
+				new SqlParameter("@hasta", request.hasta),
+			 };
+
+			var result = _repository.EjecutarLstSpExt<AnaValDeVtaMesDto>(sp, ps, true);
+			return result;
+		}
+
+		public List<AnaValDeVtaDetDiarioDto> ObtenerAnaDeValDeVtaDetDiarioLista(AnaDeValDeVtaMesRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_E_AVALORES_DIAS;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@adm_list", request.adm_list),
+				new SqlParameter("@desde", request.desde),
+				new SqlParameter("@hasta", request.hasta),
+			 };
+
+			var result = _repository.EjecutarLstSpExt<AnaValDeVtaDetDiarioDto>(sp, ps, true);
+			return result;
+		}
+
+		public List<AnaValDeVtaDetPVDto> ObtenerAnaDeValDeVtaDetPVLista(AnaDeValDeVtaMesRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_E_AVALORES_DIAS_PV;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@adm_list", request.adm_list),
+				new SqlParameter("@desde", request.desde),
+				new SqlParameter("@hasta", request.hasta),
+			 };
+
+			var result = _repository.EjecutarLstSpExt<AnaValDeVtaDetPVDto>(sp, ps, true);
+			return result;
+		}
+
+		public List<AnaValDeVtaDetCBDto> ObtenerAnaDeValDeVtaDetCBLista(AnaDeValDeVtaMesRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_E_AVALORES_CB;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@adm_list", request.adm_list),
+				new SqlParameter("@desde", request.desde),
+				new SqlParameter("@hasta", request.hasta),
+			 };
+
+			var result = _repository.EjecutarLstSpExt<AnaValDeVtaDetCBDto>(sp, ps, true);
 			return result;
 		}
 	}
