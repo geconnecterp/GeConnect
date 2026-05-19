@@ -10,6 +10,7 @@
 $(function () {
     console.log('📊 Modal de Cálculo de Factura inicializado v6.0');
     inicializarEventosCalculoFactura();
+    inicializarProteccionCierreCalculoFactura(); // ✅ NUEVO
 });
 
 // ════════════════════════════════════════════════════════════
@@ -493,15 +494,21 @@ function confirmarDiferirFactura() {
     );
 }
 
+// ════════════════════════════════════════════════════════════
+// REEMPLAZAR LA FUNCIÓN ejecutarDiferirFactura (LÍNEA 357 APROX)
+// ════════════════════════════════════════════════════════════
+
 /**
- * ✅ ACTUALIZADO v10.0: Ejecuta la llamada AJAX para diferir factura
- * NUEVO: Procesa JSON de respuesta con formato [{"tco_letra":"B","tco_id":"006","cm_compte":"0001-00000001","cm_repetido":"0"}]
+ * ✅ ACTUALIZADO v12.0: Ejecuta la llamada AJAX para diferir factura CON BLOQUEO
+ * NUEVO: Bloqueo completo de interfaz durante operación
  */
 function ejecutarDiferirFactura() {
-    console.log('📡 Invocando /ProductoFact/DiferirFactura...');
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📡 EJECUTAR DIFERIR FACTURA v12.0 CON BLOQUEO');
+    console.log('═══════════════════════════════════════════════════');
 
-    // ❶ Mostrar loader
-    AbrirWaiting("Creando Factura Diferida...<br><small class='text-muted'>Por favor espere</small>");
+    // ❶ ✅ NUEVO: BLOQUEAR PANTALLA
+    bloquearPantallaCalculoFactura('Creando Factura Diferida...');
 
     // ❷ Llamada AJAX
     $.ajax({
@@ -510,18 +517,13 @@ function ejecutarDiferirFactura() {
         dataType: 'json',
         timeout: 30000,
         success: function (response) {
-            CerrarWaiting();
-
-            console.log('═══════════════════════════════════════════════════');
-            console.log('✅ RESPUESTA DE DIFERIR FACTURA v10.0');
-            console.log('═══════════════════════════════════════════════════');
+            console.log('✅ RESPUESTA DE DIFERIR FACTURA RECIBIDA');
             console.log('Response:', response);
 
-            // ═══════════════════════════════════════════════════
-            // ✅ NUEVO v10.0: PARSEAR JSON DE COMPROBANTES DIFERIDOS
-            // ═══════════════════════════════════════════════════
+            // ❸ ✅ DESBLOQUEAR PANTALLA
+            desbloquearPantallaCalculoFactura();
 
-            // ❸ Validar que response.ok exista (compatibilidad con formato anterior)
+            // ❹ Validar respuesta básica
             if (response.ok === false) {
                 console.error('❌ Error en respuesta:', response.mensaje);
 
@@ -539,19 +541,16 @@ function ejecutarDiferirFactura() {
                 return;
             }
 
-            // ❹ Detectar formato de respuesta: Array JSON o Objeto con .ok
+            // ❺ Detectar formato de respuesta: Array JSON o Objeto con .ok
             let comprobantes = [];
 
             if (Array.isArray(response)) {
-                // Formato nuevo: Array directo
                 comprobantes = response;
                 console.log('📋 Formato detectado: Array JSON directo');
             } else if (response.ok === true && response.data) {
-                // Formato alternativo: {ok: true, data: [...]}
                 comprobantes = Array.isArray(response.data) ? response.data : [response.data];
                 console.log('📋 Formato detectado: Objeto con data');
             } else if (response.ok === true) {
-                // Formato anterior: respuesta OK sin comprobantes
                 console.warn('⚠️ Respuesta OK pero sin datos de comprobantes');
                 mostrarMensajeExitoGenerico(response);
                 return;
@@ -561,39 +560,36 @@ function ejecutarDiferirFactura() {
                 return;
             }
 
-            // ❺ Validar que haya al menos un comprobante
+            // ❻ Validar que haya al menos un comprobante
             if (comprobantes.length === 0) {
                 console.error('❌ No se recibieron comprobantes en la respuesta');
                 mostrarMensajeError('No se recibió información del comprobante diferido');
                 return;
             }
 
-            // ❻ Procesar primer comprobante (normalmente será uno solo)
+            // ❼ Procesar primer comprobante
             const comprobante = comprobantes[0];
 
             console.log('═══════════════════════════════════════════════════');
             console.log('📄 DATOS DEL COMPROBANTE DIFERIDO');
-            console.log('═══════════════════════════════════════════════════');
             console.log(`   tco_letra: ${comprobante.tco_letra}`);
             console.log(`   tco_id: ${comprobante.tco_id}`);
             console.log(`   cm_compte: ${comprobante.cm_compte}`);
             console.log(`   cm_repetido: ${comprobante.cm_repetido}`);
             console.log('═══════════════════════════════════════════════════');
 
-            // ❷ Determinar tipo de comprobante según tco_letra y tco_id
+            // ❽ Determinar tipo de comprobante
             const tipoComprobante = obtenerTipoComprobante(comprobante.tco_letra, comprobante.tco_id);
-
-            console.log(`✅ Tipo de comprobante identificado: ${tipoComprobante}`);
-
-            // ❸ Obtener número de comprobante (si está disponible)
             const numeroComprobante = comprobante.cm_compte || 'Pendiente de asignación';
             const esRepetido = comprobante.cm_repetido === "1" || comprobante.cm_repetido === 1;
+
+            console.log(`✅ Tipo de comprobante identificado: ${tipoComprobante}`);
 
             if (esRepetido) {
                 console.warn('⚠️ Comprobante marcado como REPETIDO');
             }
 
-            // ❹ Construir mensaje de éxito con información detallada
+            // ❾ Construir mensaje de éxito
             AbrirMensaje(
                 "¡Factura Diferida Creada!",
                 `<div class="text-center">
@@ -628,45 +624,29 @@ function ejecutarDiferirFactura() {
                     // ═══════════════════════════════════════════════════
 
                     setTimeout(() => {
-                        console.log('═══════════════════════════════════════════════════');
                         console.log('🔄 INICIANDO REINICIO DEL MÓDULO DE VENTAS');
-                        console.log('═══════════════════════════════════════════════════');
 
-                        // ❶ PASO 1: Cerrar modal de cálculo
+                        // Cerrar modal de cálculo
                         cerrarModalCalculoFactura();
-                        console.log('✅ Paso 1: Modal de cálculo cerrado');
 
-                        // ❷ PASO 2: Esperar cierre completo del modal (300ms)
                         setTimeout(() => {
-
-                            // ❸ PASO 3: Limpiar completamente el módulo de ventas
+                            // Limpiar venta completa
                             if (typeof limpiarVentaCompleta === 'function') {
                                 limpiarVentaCompleta();
-                                console.log('✅ Paso 2: Módulo de ventas limpiado');
-                            } else {
-                                console.error('❌ Función limpiarVentaCompleta no existe');
+                                console.log('✅ Módulo de ventas limpiado');
                             }
 
-                            // ❹ PASO 4: Esperar limpieza completa (200ms)
                             setTimeout(() => {
-
-                                // ❺ PASO 5: Abrir modal de identificar cliente
+                                // Abrir modal de identificar cliente
                                 if (typeof abrirModalIdentificarCliente === 'function') {
                                     abrirModalIdentificarCliente();
-                                    console.log('✅ Paso 3: Modal de identificar cliente abierto');
-                                } else {
-                                    console.error('❌ Función abrirModalIdentificarCliente no existe');
+                                    console.log('✅ Modal de identificar cliente abierto');
                                 }
 
-                                console.log('═══════════════════════════════════════════════════');
-                                console.log('✅ REINICIO COMPLETADO - Listo para nueva venta');
-                                console.log('═══════════════════════════════════════════════════');
-
-                            }, 200); // ← Esperar limpieza
-
-                        }, 300); // ← Esperar cierre de modal
-
-                    }, 300); // ← Esperar cierre de mensaje de éxito
+                                console.log('✅ REINICIO COMPLETADO');
+                            }, 200);
+                        }, 300);
+                    }, 300);
                 },
                 false,
                 ["Aceptar"],
@@ -675,20 +655,23 @@ function ejecutarDiferirFactura() {
             );
         },
         error: function (xhr, status, error) {
-            CerrarWaiting();
-
-            console.error('═══════════════════════════════════════════════════');
+            console.log('═══════════════════════════════════════════════════');
             console.error('❌ ERROR EN AJAX DIFERIR FACTURA');
             console.error(`   Status: ${status}`);
             console.error(`   Error: ${error}`);
             console.error(`   HTTP Status: ${xhr.status}`);
-            console.error('═══════════════════════════════════════════════════');
+            console.log('═══════════════════════════════════════════════════');
 
+            // ❶ ✅ DESBLOQUEAR PANTALLA
+            desbloquearPantallaCalculoFactura();
+
+            // ❷ Verificar sesión expirada
             if (esSesionExpirada(xhr.status)) {
                 manejarSesionExpirada('No se pudo diferir la factura porque su sesión ha expirado.');
                 return;
             }
 
+            // ❸ Determinar mensaje de error
             let mensajeError = 'Error de comunicación con el servidor';
 
             if (xhr.status === 500) {
@@ -712,6 +695,27 @@ function ejecutarDiferirFactura() {
             );
         }
     });
+
+    // ❿ ✅ Timeout de seguridad (30 segundos)
+    setTimeout(function () {
+        if ($('#overlayDiferimiento').length > 0 && $('#overlayDiferimiento').is(':visible')) {
+            console.warn('⚠️ Timeout de seguridad alcanzado - Desbloqueando pantalla');
+            desbloquearPantallaCalculoFactura();
+
+            AbrirMensaje(
+                "Tiempo de Espera Agotado",
+                "La operación está tomando más tiempo del esperado.\n\n" +
+                "Por favor, verifique el resultado en el sistema.",
+                function () {
+                    $("#msjModal").modal("hide");
+                },
+                false,
+                ["Aceptar"],
+                "warning",
+                null
+            );
+        }
+    }, 30000);
 }
 
 /**
@@ -882,15 +886,22 @@ function mostrarModalDiferirPago() {
     );
 }
 
+// ════════════════════════════════════════════════════════════
+// REEMPLAZAR LA FUNCIÓN ejecutarDiferirPago (LÍNEA 661 APROX)
+// ════════════════════════════════════════════════════════════
+
 /**
- * ✅ CORREGIDO v11.0: Ejecuta la llamada AJAX para diferir pago
- * NUEVO: Genera reporte ANTES del mensaje de éxito
+ * ✅ ACTUALIZADO v12.0: Ejecuta la llamada AJAX para diferir pago CON BLOQUEO
+ * NUEVO: Bloqueo completo de interfaz durante operación
+ * MANTIENE: Generación de reporte antes del mensaje de éxito
  */
 function ejecutarDiferirPago() {
-    console.log('📡 Invocando /ProductoFact/DiferirPago...');
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📡 EJECUTAR DIFERIR PAGO v12.0 CON BLOQUEO');
+    console.log('═══════════════════════════════════════════════════');
 
-    // ❶ Mostrar loader
-    AbrirWaiting("Emitiendo Factura con Pago Diferido...<br><small class='text-muted'>Por favor espere, esto puede tardar unos momentos</small>");
+    // ❶ ✅ NUEVO: BLOQUEAR PANTALLA
+    bloquearPantallaCalculoFactura('Emitiendo Factura con Pago Diferido...');
 
     // ❷ Llamada AJAX
     $.ajax({
@@ -899,40 +910,45 @@ function ejecutarDiferirPago() {
         dataType: 'json',
         timeout: 30000,
         success: function (response) {
-            CerrarWaiting();
-
-            console.log('═══════════════════════════════════════════════════');
-            console.log('✅ RESPUESTA DE DIFERIR PAGO v11.0');
-            console.log('═══════════════════════════════════════════════════');
+            console.log('✅ RESPUESTA DE DIFERIR PAGO RECIBIDA');
             console.log('Response:', response);
 
-            // ❸ Validar respuesta básica
+            // ❸ ⚠️ NO DESBLOQUEAR AÚN - El reporte necesita tiempo
+
+            // ❹ Validar respuesta básica
             if (!response.ok) {
                 console.error('❌ Error en respuesta:', response.mensaje);
+
+                // ✅ DESBLOQUEAR antes de mostrar error
+                desbloquearPantallaCalculoFactura();
+
                 mostrarMensajeError(response.mensaje || 'No se pudo emitir la factura');
                 return;
             }
 
-            // ❹ Validar que response.data exista y sea un array
+            // ❺ Validar que response.data exista y sea un array
             if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
                 console.error('❌ No se recibieron datos del comprobante');
+
+                // ✅ DESBLOQUEAR antes de mostrar error
+                desbloquearPantallaCalculoFactura();
+
                 mostrarMensajeError('Error: No se recibió información del comprobante');
                 return;
             }
 
-            // ❺ Extraer datos del comprobante
+            // ❻ Extraer datos del comprobante
             const comprobante = response.data[0];
 
             console.log('═══════════════════════════════════════════════════');
             console.log('📄 DATOS DEL COMPROBANTE EMITIDO');
-            console.log('═══════════════════════════════════════════════════');
             console.log(`   tco_letra: ${comprobante.tco_letra}`);
             console.log(`   tco_id: ${comprobante.tco_id}`);
             console.log(`   cm_compte: ${comprobante.cm_compte}`);
             console.log(`   cm_repetido: ${comprobante.cm_repetido}`);
             console.log('═══════════════════════════════════════════════════');
 
-            // ❻ Determinar tipo de comprobante
+            // ❼ Determinar tipo de comprobante
             const tipoComprobante = obtenerTipoComprobante(comprobante.tco_letra, comprobante.tco_id);
             const numeroComprobante = comprobante.cm_compte || 'Sin número';
             const esRepetido = comprobante.cm_repetido === "1" || comprobante.cm_repetido === 1;
@@ -944,21 +960,23 @@ function ejecutarDiferirPago() {
             }
 
             // ═══════════════════════════════════════════════════
-            // ✅ NUEVO v11.0: GENERAR REPORTE PRIMERO
+            // ✅ GENERAR REPORTE PRIMERO (mantener lógica existente)
             // ═══════════════════════════════════════════════════
 
-            console.log('═══════════════════════════════════════════════════');
             console.log('📄 GENERANDO REPORTE DEL COMPROBANTE');
-            console.log('═══════════════════════════════════════════════════');
 
-            // ❼ VALIDAR que ModuloReportes esté disponible
+            // ❽ VALIDAR que ModuloReportes esté disponible
             if (typeof ModuloReportes === 'undefined') {
                 console.error('❌ ModuloReportes no está disponible');
+
+                // ✅ DESBLOQUEAR antes de mostrar error
+                desbloquearPantallaCalculoFactura();
+
                 mostrarMensajeError('Error: Módulo de reportes no cargado');
                 return;
             }
 
-            // ❽ GENERAR Y VISUALIZAR REPORTE
+            // ❾ GENERAR Y VISUALIZAR REPORTE
             ModuloReportes.generarYVisualizarReporte({
                 tco_letra: comprobante.tco_letra,
                 tco_id: comprobante.tco_id,
@@ -968,37 +986,46 @@ function ejecutarDiferirPago() {
                 console.log(`📄 Generación de reporte: ${exitoso ? '✅ Exitosa' : '❌ Fallida'}`);
 
                 // ═══════════════════════════════════════════════════
-                // ✅ AHORA SÍ: Mostrar mensaje de éxito
+                // ✅ AHORA SÍ: DESBLOQUEAR Y MOSTRAR MENSAJE DE ÉXITO
                 // ═══════════════════════════════════════════════════
 
-                // ❾ Esperar 500ms para que el PDF se abra
+                // Esperar 500ms para que el PDF se abra completamente
                 setTimeout(function () {
+                    // ✅ DESBLOQUEAR PANTALLA
+                    desbloquearPantallaCalculoFactura();
+
+                    // Mostrar mensaje de éxito
                     mostrarMensajeExitoDiferirPago(tipoComprobante, comprobante, numeroComprobante, esRepetido);
                 }, 500);
 
             }).catch(function (error) {
                 console.error('❌ Error al generar reporte:', error);
 
+                // ✅ DESBLOQUEAR PANTALLA aún con error
+                desbloquearPantallaCalculoFactura();
+
                 // Aún así mostrar mensaje de éxito (la factura ya se emitió)
                 mostrarMensajeExitoDiferirPago(tipoComprobante, comprobante, numeroComprobante, esRepetido);
             });
-
         },
         error: function (xhr, status, error) {
-            CerrarWaiting();
-
-            console.error('═══════════════════════════════════════════════════');
+            console.log('═══════════════════════════════════════════════════');
             console.error('❌ ERROR EN AJAX DIFERIR PAGO');
             console.error(`   Status: ${status}`);
             console.error(`   Error: ${error}`);
             console.error(`   HTTP Status: ${xhr.status}`);
-            console.error('═══════════════════════════════════════════════════');
+            console.log('═══════════════════════════════════════════════════');
 
+            // ❶ ✅ DESBLOQUEAR PANTALLA
+            desbloquearPantallaCalculoFactura();
+
+            // ❷ Verificar sesión expirada
             if (esSesionExpirada(xhr.status)) {
                 manejarSesionExpirada('No se pudo diferir el pago porque su sesión ha expirado.');
                 return;
             }
 
+            // ❸ Determinar mensaje de error
             let mensajeError = 'Error de comunicación con el servidor';
 
             if (xhr.status === 500) {
@@ -1022,6 +1049,27 @@ function ejecutarDiferirPago() {
             );
         }
     });
+
+    // ❿ ✅ Timeout de seguridad (30 segundos)
+    setTimeout(function () {
+        if ($('#overlayDiferimiento').length > 0 && $('#overlayDiferimiento').is(':visible')) {
+            console.warn('⚠️ Timeout de seguridad alcanzado - Desbloqueando pantalla');
+            desbloquearPantallaCalculoFactura();
+
+            AbrirMensaje(
+                "Tiempo de Espera Agotado",
+                "La operación está tomando más tiempo del esperado.\n\n" +
+                "Por favor, verifique el resultado en el sistema.",
+                function () {
+                    $("#msjModal").modal("hide");
+                },
+                false,
+                ["Aceptar"],
+                "warning",
+                null
+            );
+        }
+    }, 30000);
 }
 
 /**
@@ -1150,3 +1198,86 @@ function imprimirComprobante(comprobante) {
     );
 }
 
+// ════════════════════════════════════════════════════════════
+// AGREGAR DESPUÉS DE LA LÍNEA 28 (después de inicializarEventosCalculoFactura)
+// ════════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════════
+// GESTIÓN DE BLOQUEO DE PANTALLA
+// ════════════════════════════════════════════════════════════
+
+/**
+ * ✅ NUEVO v12.0: Bloquea la interfaz durante operaciones de diferimiento
+ * @param {string} mensaje - Mensaje a mostrar durante el bloqueo
+ */
+function bloquearPantallaCalculoFactura(mensaje = 'Procesando...') {
+    console.log('🔒 Bloqueando pantalla de cálculo de factura...');
+
+    // ❶ Crear overlay si no existe
+    if ($('#overlayDiferimiento').length === 0) {
+        const overlay = `
+            <div id="overlayDiferimiento" class="loading-overlay">
+                <div class="loading-content">
+                    <div class="spinner-border text-golden" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="loading-message mt-3 mb-0 fw-bold text-golden-dark" id="mensajeDiferimiento">
+                        ${mensaje}
+                    </p>
+                    <small class="text-muted d-block mt-2">
+                        Por favor, espere un momento...
+                    </small>
+                </div>
+            </div>
+        `;
+        $('body').append(overlay);
+    } else {
+        // �② Actualizar mensaje si ya existe
+        $('#mensajeDiferimiento').text(mensaje);
+        $('#overlayDiferimiento').fadeIn(200);
+    }
+
+    // ❸ Deshabilitar TODOS los botones del modal de cálculo
+    $('#btnVolverCalculoFactura, #btnDiferirPago, #btnDiferirFactura, #btnPagarFactura').prop('disabled', true);
+
+    // ❹ Prevenir cierre del modal con ESC o clic fuera
+    $('#modalCalculoFactura').data('bs-keyboard', false);
+    $('#modalCalculoFactura').data('bs-backdrop', 'static');
+
+    console.log('✅ Pantalla de cálculo bloqueada');
+}
+
+/**
+ * ✅ NUEVO v12.0: Desbloquea la interfaz después de completar la operación
+ */
+function desbloquearPantallaCalculoFactura() {
+    console.log('🔓 Desbloqueando pantalla de cálculo...');
+
+    // ❶ Remover overlay con animación
+    $('#overlayDiferimiento').fadeOut(300, function () {
+        $(this).remove();
+    });
+
+    // ❷ Rehabilitar botones
+    $('#btnVolverCalculoFactura, #btnDiferirPago, #btnDiferirFactura, #btnPagarFactura').prop('disabled', false);
+
+    // ❸ Restaurar cierre con ESC y backdrop
+    $('#modalCalculoFactura').data('bs-keyboard', true);
+    $('#modalCalculoFactura').data('bs-backdrop', true);
+
+    console.log('✅ Pantalla de cálculo desbloqueada');
+}
+
+/**
+ * ✅ NUEVO v12.0: Protección contra cierre accidental durante operación
+ */
+function inicializarProteccionCierreCalculoFactura() {
+    $('#modalCalculoFactura').on('hide.bs.modal', function (e) {
+        // Si hay un overlay activo, prevenir cierre
+        if ($('#overlayDiferimiento').length > 0 && $('#overlayDiferimiento').is(':visible')) {
+            console.warn('⚠️ Intento de cerrar modal durante operación - BLOQUEADO');
+            e.preventDefault();
+            return false;
+        }
+    });
+}

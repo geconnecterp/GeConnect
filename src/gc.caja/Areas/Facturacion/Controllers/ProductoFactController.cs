@@ -970,6 +970,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation($"   - cta_id: {request.cta_id}");
                 _logger?.LogInformation($"   - documento: {request.documento}");
                 _logger?.LogInformation($"   - usada: {request.usada} ('{(solo_pendientes ? "Solo pendientes" : "Todas")}')");
+                _logger?.LogInformation($"   - REQUEST FULL: {JsonConvert.SerializeObject(request)}");
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                 // ❹ INVOCAR SERVICIO

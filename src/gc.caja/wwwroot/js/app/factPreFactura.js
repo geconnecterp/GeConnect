@@ -1,7 +1,7 @@
 ﻿// ════════════════════════════════════════════════════════════
 // GESTOR DE PRE-FACTURAS
 // ════════════════════════════════════════════════════════════
-// VERSIÓN v2.3 - CORREGIDA: Funciones ordenadas correctamente
+// VERSIÓN v2.4 - Mensajes unificados con mostrarMensajeEstado
 // ════════════════════════════════════════════════════════════
 
 // ════════════════════════════════════════════════════════════
@@ -15,7 +15,7 @@ let preFacturasDisponibles = [];
 // INICIALIZACIÓN
 // ════════════════════════════════════════════════════════════
 $(function () {
-    console.log('📄 Módulo de Pre-Facturas inicializado v2.3 CORREGIDA');
+    console.log('📄 Módulo de Pre-Facturas inicializado v2.4 UNIFICADO');
     inicializarEventosPreFacturas();
 });
 
@@ -86,16 +86,18 @@ function inicializarEventosPreFacturas() {
 
 /**
  * ✅ ACTUALIZADO v3.2: Abre el modal con soporte para selección múltiple
+ * ACTUALIZADO v2.4: Uso de mostrarMensajeEstado
  */
 function abrirModalPreFacturas() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('📄 ABRIR MODAL PRE-FACTURAS v3.2 (Múltiple)');
+    console.log('📄 ABRIR MODAL PRE-FACTURAS v2.4 (Múltiple)');
     console.log('═══════════════════════════════════════════════════');
 
     // ❶ Validar que haya cliente seleccionado
     if (!clienteActualFactura) {
         console.error('❌ No hay cliente seleccionado');
-        mostrarMensajeError('Debe identificar un cliente antes de cargar una pre-factura');
+        // ✅ ACTUALIZADO v2.4: Uso de mostrarMensajeEstado
+        mostrarMensajeEstado('Debe identificar un cliente antes de cargar una pre-factura', 'danger');
         return;
     }
 
@@ -546,16 +548,18 @@ function toggleSeleccionarTodos(checked) {
 /**
  * ✅ ACTUALIZADO v3.0: Confirma múltiples pre-facturas seleccionadas
  * Renombrado de singular a plural
+ * ACTUALIZADO v2.4: Uso de mostrarMensajeEstado
  */
 function confirmarPreFacturas() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('✅ CONFIRMAR PRE-FACTURAS SELECCIONADAS v3.0');
+    console.log('✅ CONFIRMAR PRE-FACTURAS SELECCIONADAS v2.4 UNIFICADO');
     console.log('═══════════════════════════════════════════════════');
 
     // ❶ VALIDACIÓN: ¿Hay selecciones?
     if (!preFacturasSeleccionadas || preFacturasSeleccionadas.length === 0) {
         console.error('❌ No hay pre-facturas seleccionadas');
-        mostrarMensajeError('Debe seleccionar al menos una pre-factura');
+        // ✅ ACTUALIZADO v2.4: Uso de mostrarMensajeEstado
+        mostrarMensajeEstado('Debe seleccionar al menos una pre-factura', 'warning');
         return;
     }
 
@@ -570,7 +574,8 @@ function confirmarPreFacturas() {
     // ❸ VALIDACIÓN FINAL
     if (cpf_nros.length === 0) {
         console.error('❌ No se pudo extraer ningún cpf_nro válido');
-        mostrarMensajeError('Error al procesar pre-facturas seleccionadas');
+        // ✅ ACTUALIZADO v2.4: Uso de mostrarMensajeEstado
+        mostrarMensajeEstado('Error al procesar pre-facturas seleccionadas', 'danger');
         return;
     }
 
@@ -585,19 +590,21 @@ function confirmarPreFacturas() {
 // CARGAR PRODUCTOS DE PRE-FACTURAS
 // ════════════════════════════════════════════════════════════
 /**
- * ✅ NUEVO v2.3: Carga productos de múltiples pre-facturas
+ * ✅ NUEVO v2.4: Carga productos de múltiples pre-facturas
  * Invoca el endpoint ObtenerProductosDatosPrefactura
+ * ACTUALIZADO v2.4: Uso de mostrarMensajeEstado
  */
 function cargarProductosDePrefacturas(cpf_nros) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('📦 CARGAR PRODUCTOS DE PRE-FACTURAS v2.3');
+    console.log('📦 CARGAR PRODUCTOS DE PRE-FACTURAS v2.4');
     console.log(`   Total a procesar: ${cpf_nros.length}`);
     console.log('═══════════════════════════════════════════════════');
 
     // ❶ VALIDACIÓN DE ENTRADA
     if (!cpf_nros || !Array.isArray(cpf_nros) || cpf_nros.length === 0) {
         console.error('❌ Lista de cpf_nros inválida');
-        mostrarMensajeError('No hay pre-facturas para procesar');
+        // ✅ ACTUALIZADO v2.4: Uso de mostrarMensajeEstado
+        mostrarMensajeEstado('No hay pre-facturas para procesar', 'warning');
         return;
     }
 
@@ -619,7 +626,7 @@ function cargarProductosDePrefacturas(cpf_nros) {
         data: JSON.stringify(cpf_nros), // ← Enviar array directo (no objeto)
         dataType: 'json',
         timeout: 30000, // 30 segundos (puede haber múltiples pre-facturas)
-        success: function(response) {
+        success: function (response) {
             console.log('═══════════════════════════════════════════════════');
             console.log('✅ RESPUESTA RECIBIDA - PRODUCTOS DE PRE-FACTURAS');
             console.log('═══════════════════════════════════════════════════');
@@ -630,46 +637,48 @@ function cargarProductosDePrefacturas(cpf_nros) {
             // ❺ VALIDACIÓN DE RESPUESTA
             if (!response || typeof response !== 'object') {
                 console.error('❌ Respuesta inválida del servidor');
-                mostrarMensajeError('Respuesta inválida del servidor');
+                mostrarMensajeEstado('Respuesta inválida del servidor', 'danger');
                 return;
             }
 
             if (!response.ok) {
                 console.error('❌ Error del servidor:', response.mensaje);
-                mostrarMensajeError(response.mensaje || 'Error al cargar productos');
+                mostrarMensajeEstado(response.mensaje || 'Error al cargar productos', 'danger');
                 return;
             }
 
             // ❻ VALIDAR QUE HAYA PRODUCTOS
             if (!response.producto || !Array.isArray(response.producto) || response.producto.length === 0) {
                 console.warn('⚠️ No se recibieron productos');
-                mostrarMensajeAdvertencia('No se encontraron productos en las pre-facturas seleccionadas');
+                // ✅ ACTUALIZADO v2.4: Uso de mostrarMensajeEstado
+                mostrarMensajeEstado('No se encontraron productos en las pre-facturas seleccionadas', 'info', 7000);
                 return;
             }
 
             // ❼ PROCESAR PRODUCTOS (igual que en prodfact.js)
             console.log(`✅ ${response.producto.length} productos recibidos`);
-            
+
             // Iterar y agregar cada producto a la grilla
             response.producto.forEach((producto, index) => {
                 console.log(`   [${index + 1}] ${producto.p_desc} - Cant: ${producto.cantidad_tot}`);
-                
+
                 // Agregar a grilla usando función de prodfact.js
                 agregarProductoAGrilla(producto);
             });
 
             // ❽ MENSAJE DE ÉXITO
             const mensaje = response.errores && response.errores.length > 0
-                ? `${response.mensaje}\n\nErrores:\n${response.errores.join('\n')}`
+                ? `${response.mensaje} - Errores: ${response.errores.join(', ')}`
                 : response.mensaje;
 
-            mostrarMensajeExito(mensaje);
+            // ✅ ACTUALIZADO v2.4: Uso de mostrarMensajeEstado
+            mostrarMensajeEstado(mensaje, 'success', 7000);
 
             console.log('═══════════════════════════════════════════════════');
             console.log('✅ PRODUCTOS DE PRE-FACTURAS CARGADOS EXITOSAMENTE');
             console.log('═══════════════════════════════════════════════════');
         },
-        error: function(xhr, status, error) {
+        error: function (xhr, status, error) {
             console.log('═══════════════════════════════════════════════════');
             console.error('❌ ERROR AL CARGAR PRODUCTOS DE PRE-FACTURAS');
             console.error(`   Status: ${status}`);
@@ -695,7 +704,8 @@ function cargarProductosDePrefacturas(cpf_nros) {
                 mensajeError = 'Se agotó el tiempo de espera. Intente nuevamente.';
             }
 
-            mostrarMensajeError(mensajeError);
+            // ✅ ACTUALIZADO v2.4: Uso de mostrarMensajeEstado (aunque esté en modal)
+            mostrarMensajeEstado(mensajeError, 'danger', 7000);
         }
     });
 }
@@ -726,27 +736,3 @@ function cerrarModalPreFacturas() {
 
     console.log('✅ Modal cerrado y datos limpiados');
 }
-
-//// ════════════════════════════════════════════════════════════
-//// HELPERS
-//// ════════════════════════════════════════════════════════════
-
-//function escapeHtml(texto) {
-//    if (typeof window.escapeHtml === 'function') {
-//        return window.escapeHtml(texto);
-//    }
-//    if (!texto) return '';
-//    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-//    return texto.replace(/[&<>"']/g, m => map[m]);
-//}
-
-//function mostrarMensajeError(mensaje) {
-//    if (typeof window.mostrarMensajeError === 'function') {
-//        window.mostrarMensajeError(mensaje);
-//    } else {
-//        console.error('💬 Error:', mensaje);
-//        AbrirMensaje("Error", mensaje, function () {
-//            $("#msjModal").modal("hide")´¿
-//        }, false, ["Aceptar"], "error!", null);
-//    }
-//}
