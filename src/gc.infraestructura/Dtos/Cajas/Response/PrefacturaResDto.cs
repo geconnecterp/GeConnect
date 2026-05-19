@@ -2,7 +2,7 @@
 {
     public class PrefacturaResDto
     {
-        public int cpf_nro { get; set; }
+        public string cpf_nro { get; set; } = string.Empty;
 
         public DateTime cpf_fecha { get; set; }
 

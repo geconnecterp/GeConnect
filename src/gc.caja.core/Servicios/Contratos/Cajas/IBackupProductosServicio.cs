@@ -39,5 +39,14 @@ namespace gc.caja.core.Servicios.Contratos.Cajas
         /// Verifica si existe un backup pendiente
         /// </summary>
         Task<bool> ExisteBackup(string cajaId, string usuarioId);
+
+        /// <summary>
+        /// ✅ NUEVO v1.1: Elimina un producto específico del backup
+        /// </summary>
+        /// <param name="item">Número de item correlativo del producto</param>
+        /// <param name="cajaId">ID de la caja</param>
+        /// <param name="usuarioId">ID del usuario</param>
+        /// <returns>True si se eliminó correctamente, False en caso contrario</returns>
+        Task<bool> EliminarProducto(int item, string cajaId, string usuarioId);
     }
 }

@@ -970,6 +970,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation($"   - cta_id: {request.cta_id}");
                 _logger?.LogInformation($"   - documento: {request.documento}");
                 _logger?.LogInformation($"   - usada: {request.usada} ('{(solo_pendientes ? "Solo pendientes" : "Todas")}')");
+                _logger?.LogInformation($"   - REQUEST FULL: {JsonConvert.SerializeObject(request)}");
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                 // ❹ INVOCAR SERVICIO
@@ -2276,6 +2277,53 @@ namespace gc.caja.Areas.Facturacion.Controllers
             {
                 _logger?.LogError(ex, "Error al limpiar backup");
                 return Json(new { ok = false, mensaje = "Error al limpiar respaldo" });
+            }
+        }
+
+        /// <summary>
+        /// ✅ NUEVO v1.1: Elimina un producto específico del backup
+        /// </summary>
+        /// <param name="item">Número de item correlativo del producto</param>
+        [HttpPost]
+        public async Task<JsonResult> EliminarProductoBackup(int item)
+        {
+            try
+            {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, mensaje = "Sesión expirada" });
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation($"🗑️ ELIMINAR PRODUCTO DEL BACKUP - Item: {item}");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                var cajaActual = CajaActual;
+                if (cajaActual == null)
+                {
+                    return Json(new { ok = false, mensaje = "No hay caja abierta" });
+                }
+
+                
+                bool eliminado = await _backupServicio.EliminarProducto(
+                    item,
+                    cajaActual.CajaId ?? string.Empty,
+                    UserName ?? string.Empty
+                );
+
+                if (eliminado)
+                {
+                    _logger?.LogInformation($"✅ Producto {item} eliminado del backup");
+                }
+
+                return Json(new
+                {
+                    ok = eliminado,
+                    mensaje = eliminado ? "Producto eliminado del respaldo" : "Error al eliminar producto"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al eliminar producto del backup");
+                return Json(new { ok = false, mensaje = "Error al eliminar producto del respaldo" });
             }
         }
     }

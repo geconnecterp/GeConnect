@@ -1445,3 +1445,59 @@ function sumarConRedondeo(valores, decimales = 2) {
     const suma = valores.reduce((acc, val) => acc + (parseFloat(val) || 0), 0);
     return redondear(suma, decimales);
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// SECCIÓN 0: FUNCIÓN CENTRALIZADA DE MENSAJES (✅ NUEVO v15.1)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * ✅ ACTUALIZADO v15.1: Muestra mensaje informativo en el área de estado
+ * CENTRALIZA todos los mensajes de información/error del módulo
+ * NUEVO v15.1: Tamaño de fuente aumentado a 1.5rem para mejor visibilidad
+ * 
+ * @param {string} mensaje - Mensaje a mostrar
+ * @param {string} tipo - Tipo: 'info', 'success', 'warning', 'danger'
+ * @param {number} duracion - Duración en ms (0 = permanente, null = 5000ms default)
+ */
+function mostrarMensajeEstado(mensaje, tipo = 'danger', duracion = 5000) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log(`📢 MENSAJE DE ESTADO v15.1: ${tipo.toUpperCase()}`);
+    console.log(`   Mensaje: ${mensaje}`);
+    console.log(`   Duración: ${duracion === 0 ? 'PERMANENTE' : duracion + 'ms'}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Mapear iconos según tipo
+    const iconos = {
+        'info': 'bx-info-circle',
+        'success': 'bx-check-circle',
+        'warning': 'bx-error-circle',
+        'danger': 'bx-error-circle'
+    };
+
+    const icono = iconos[tipo] || 'bx-info-circle';
+
+    // ❷ Remover todas las clases de color y aplicar la nueva
+    const $mensaje = $('#mensajeEstadoProducto');
+
+    $mensaje
+        .removeClass('text-info text-success text-warning text-danger text-muted')
+        .addClass(`text-${tipo}`)
+        .css('font-size', '1.5rem')  // ✅ NUEVO v15.1: Tamaño de fuente aumentado
+        .html(`<i class='bx ${icono}'></i> ${mensaje}`);
+
+    // ❸ Restaurar al estado inicial después del tiempo especificado
+    if (duracion > 0) {
+        setTimeout(() => {
+            $mensaje
+                .removeClass('text-info text-success text-warning text-danger')
+                .addClass('text-muted')
+                .css('font-size', '')  // ✅ NUEVO v15.1: Restaurar tamaño original
+                .html('Presione <kbd>Enter</kbd> o <strong>BUSCAR</strong> para agregar producto');
+        }, duracion);
+    }
+
+    // ❹ CRÍTICO: Devolver foco al input de código
+    setTimeout(() => {
+        $('#txtCodigoProducto').trigger('focus');
+    }, 100);
+}
