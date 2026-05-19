@@ -12,13 +12,17 @@ let ajaxActual = null; // ✅ NUEVO: Referencia al AJAX en curso para cancelaci�
 // FUNCIONES DE MENSAJES AL USUARIO
 // ========================================
 
+// ========================================
+// FUNCIONES DE MENSAJES AL USUARIO
+// ========================================
+
 function mostrarMensajeError(mensaje) {
     console.error('💬 Mostrando mensaje de error al usuario');
     console.error(`   Mensaje: "${mensaje}"`);
 
     // ✅ INTEGRACIÓN CON SISTEMA DE MENSAJES DEL PROYECTO
     AbrirMensaje(
-        "Error",
+        "Error de Búsqueda", // ✅ CAMBIO: Título más específico y descriptivo
         mensaje,
         function () {
             $("#msjModal").modal("hide");
@@ -36,14 +40,14 @@ function mostrarMensajeExito(mensaje) {
 
     // ✅ INTEGRACIÓN CON SISTEMA DE MENSAJES DEL PROYECTO
     AbrirMensaje(
-        "Éxito",
+        "Operación Exitosa", // ✅ CAMBIO: Título más específico
         mensaje,
         function () {
             $("#msjModal").modal("hide");
         },
         false, // No mostrar botón cancelar
         ["Aceptar"],
-        "ok!", // Tipo de icono
+        "succ!", // Tipo de icono
         null
     );
 }

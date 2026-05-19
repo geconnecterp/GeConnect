@@ -321,59 +321,95 @@ function seleccionarProductoCaja(fila) {
 }
 
 /**
- * ✅ ACTUALIZADO: Selecciona producto y coloca código en campo (sin agregar automáticamente)
+ * ✅ ACTUALIZADO v4.0: Agrega producto automáticamente si NO tiene código de barras
+ * Si tiene código de barras, lo coloca en el campo para confirmación manual
+ * 
  * @param {HTMLTableRowElement} x - Fila de la tabla seleccionada
  */
 function selectRegDbl(x) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('✅ PRODUCTO SELECCIONADO VIA BOTÓN INDIVIDUAL');
+    console.log('✅ PRODUCTO SELECCIONADO VIA BÚSQUEDA AVANZADA v4.0');
     console.log('═══════════════════════════════════════════════════');
-    
+
     // ❶ Limpiar selección visual previa
     $("#tbGridBusquedaProductos tbody tr").removeClass("selected-row");
 
-    // ❷ Seleccionar fila actual (resaltar visualmente)
+    // ❷ Seleccionar fila actual
     $(x).addClass("selected-row");
 
-    // ❸ Obtener datos del producto desde las celdas
-    const idProducto = x.cells[0].innerText.trim();     // Columna ID
-    const codigoBarras = x.cells[2].innerText.trim();   // Columna CÓDIGO EAN
-    const descripcion = x.cells[1].innerText.trim();    // Columna DESCRIPCIÓN (para log)
+    // ❸ Obtener datos del producto
+    const idProducto = x.cells[0].innerText.trim();     // Columna [0]: ID
+    const descripcion = x.cells[1].innerText.trim();    // Columna [1]: DESCRIPCIÓN
+    const codigoBarras = x.cells[2].innerText.trim();   // Columna [2]: CÓDIGO EAN
 
     console.log(`   Producto seleccionado:`);
     console.log(`   - ID: ${idProducto}`);
-    console.log(`   - Código de Barras: ${codigoBarras || '(sin código)'}`);
     console.log(`   - Descripción: ${descripcion}`);
-    
-    // ❹ CRÍTICO: Determinar qué código usar (priorizar código de barras)
-    let codigoAUsar;
-    codigoAUsar = idProducto; //solo se proporcionará el codigo del producto y no el barrado
+    console.log(`   - Código de Barras: "${codigoBarras}"`);
 
-    //if (codigoBarras && codigoBarras !== '' && codigoBarras !== '-' && codigoBarras !== 'N/A') {
-    //    codigoAUsar = codigoBarras;
-    //    console.log(`   ✅ Usando código de barras: ${codigoAUsar}`);
-    //} else {
-    //    codigoAUsar = idProducto;
-    //    console.log(`   ✅ Usando ID de producto: ${codigoAUsar}`);
-    //}
+    // ❹ CRÍTICO: Detectar si tiene código de barras válido
+    const tieneCodigoBarras = codigoBarras &&
+        codigoBarras !== '' &&
+        codigoBarras !== '-' &&
+        codigoBarras !== 'N/A' &&
+        codigoBarras.toLowerCase() !== 'sin código';
 
+    console.log(`   ✅ Tiene código de barras válido: ${tieneCodigoBarras ? 'SÍ' : 'NO'}`);
 
     // ❺ Cerrar modal de búsqueda avanzada
     $("#busquedaModal").modal("hide");
     console.log('   → Modal cerrado');
-    
-    // ❻ CRÍTICO: Colocar código en el campo de entrada (sin disparar búsqueda)
-    $("#txtCodigoProducto").val(codigoAUsar);
-    console.log(`   → Código asignado a txtCodigoProducto: ${codigoAUsar}`);
-    
-    // ❼ Hacer focus en el campo para que el operador pueda continuar
-    setTimeout(() => {
-        $("#txtCodigoProducto").trigger("focus").trigger("select");
-        console.log('   → Focus aplicado en txtCodigoProducto');
-    }, 300); // Delay para asegurar que el modal se cerró completamente
-    
-    console.log('═══════════════════════════════════════════════════');
-    console.log('⚠️  OPERADOR DEBE PRESIONAR ENTER O CLICK EN BUSCAR');
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ❻ LÓGICA DIFERENCIAL SEGÚN CÓDIGO DE BARRAS
+    // ═══════════════════════════════════════════════════════════════════
+
+    if (!tieneCodigoBarras) {
+        // ✅ CASO 1: SIN CÓDIGO DE BARRAS → Agregar automáticamente
+        console.log('═══════════════════════════════════════════════════');
+        console.log('🚀 MODO AUTOMÁTICO: Producto SIN código de barras');
+        console.log('   → Agregando directamente a la grilla...');
+        console.log('═══════════════════════════════════════════════════');
+
+        // ❼ CRÍTICO: Marcar origen como 'busquedaAvanzada' (para logs)
+        // Esta variable debe estar definida en prodfact.js
+        if (typeof origenCargaActual !== 'undefined') {
+            origenCargaActual = 'busquedaAvanzada';
+        }
+
+        // ❽ Colocar código en el input (para referencia visual)
+        setTimeout(() => {
+            $("#txtCodigoProducto").val(idProducto);
+
+            // ❾ CRÍTICO: Disparar búsqueda automática
+            // Llamar a la función que procesa la entrada de código
+            if (typeof procesarEntradaCodigo === 'function') {
+                procesarEntradaCodigo();
+            } else {
+                console.error('❌ Función procesarEntradaCodigo no encontrada');
+                // Fallback: disparar Enter manualmente
+                $("#txtCodigoProducto").trigger($.Event('keypress', { which: 13 }));
+            }
+
+            console.log('✅ Búsqueda automática disparada');
+            console.log('   → El producto se agregará a la grilla automáticamente');
+        }, 300); // Delay para asegurar que el modal se cerró
+
+    } else {
+        // ⚠️ CASO 2: CON CÓDIGO DE BARRAS → Colocar en campo (sin agregar)
+        console.log('═══════════════════════════════════════════════════');
+        console.log('⚠️ MODO MANUAL: Producto CON código de barras');
+        console.log('   → Código colocado en campo para confirmación');
+        console.log('   → Operador debe presionar ENTER o BUSCAR');
+        console.log('═══════════════════════════════════════════════════');
+
+        setTimeout(() => {
+            $("#txtCodigoProducto").val(idProducto);
+            $("#txtCodigoProducto").trigger("focus").trigger("select");
+            console.log(`   → Código "${idProducto}" listo para confirmar`);
+        }, 300);
+    }
+
     console.log('═══════════════════════════════════════════════════');
 }
 
