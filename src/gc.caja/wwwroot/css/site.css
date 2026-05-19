@@ -5314,3 +5314,27 @@ input, select, textarea, button, checkbox, radio {
     }
 
 /* FIN ESTILOS MODAL CÁLCULO FACTURA */
+
+/* Tamaño de fuente para mensajes de estado de productos */
+#mensajeEstadoProducto {
+    font-size: 1.5rem;
+    font-weight: 500;
+    line-height: 1.4;
+    transition: all 0.3s ease; /* ✅ Transición suave al cambiar */
+}
+
+    #mensajeEstadoProducto .bx {
+        font-size: 1.6rem;
+        vertical-align: middle;
+        margin-right: 0.5rem;
+    }
+
+    /* Destacar más los mensajes de error */
+    #mensajeEstadoProducto.text-danger {
+        font-weight: 600;
+    }
+
+    /* Destacar más los mensajes de éxito */
+    #mensajeEstadoProducto.text-success {
+        font-weight: 600;
+    }
