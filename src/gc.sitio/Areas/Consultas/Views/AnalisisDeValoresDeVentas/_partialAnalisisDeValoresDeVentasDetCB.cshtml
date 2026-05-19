@@ -2,6 +2,12 @@
 @using static gc.infraestructura.Helpers.GridHelper
 @model GridCoreSmart<AnaValDeVtaDetCBDto>
 @{
+	string grupoActual = string.Empty;
+	string grupoAnterior = string.Empty;
+	string leyendaAgrupador = string.Empty;
+
+	var registros = new List<AnaValDeVtaDetCBDto>();
+
 	var alt = true;
 	string clase = string.Empty;
 }
@@ -13,7 +19,6 @@
 			<tr class="header">
 				<th class="text-center">Día</th>
 				<th class="text-center">Suc.</th>
-				<th class="text-center">PV</th>
 				<th class="text-center">Medio de Pago</th>
 				<th class="text-center">Datos</th>
 				<th class="text-center">CashBack</th>
@@ -32,8 +37,25 @@
 			}
 			else
 			{
-				foreach (var item in Model.ListaDatos)
+				registros = Model.ListaDatos.OrderBy(x => x.caja_nro_proceso).ToList();
+				foreach (var item in registros)
 				{
+					grupoActual = item.caja_nro_proceso;
+					leyendaAgrupador = $"Proceso N° {grupoActual} - {item.caja_habilitacion.ToString("dd/MM/yyyy")}";
+
+					// Si cambia la cuenta, insertamos una fila de encabezado para la cuenta
+					if (grupoActual != grupoAnterior)
+					{
+						<tr class="table-secondary fw-bold">
+							<td colspan="8" class="text-center">
+								<i class="bx bx-folder me-1"></i>
+								@leyendaAgrupador
+							</td>
+						</tr>
+						grupoAnterior = grupoActual;
+						alt = true; // Reiniciar alternancia de colores después de cada familia
+					}
+
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase row-pedido"
 						data-caja-nro-proceso="@item.caja_nro_proceso"
@@ -41,7 +63,6 @@
 						data-ins-id="@item.ins_id">
 						<td class="text-center">@item.rb_fecha_valor.ToString("dd/MM/yyyy")</td>
 						<td class="text-left">@item.adm_nombre</td>
-						<td class="text-center">@item.adm_id</td>
 						<td class="text-left">@item.ins_desc</td>
 						<td class="text-left">@item.rb_dato1_valor @item.rb_dato2_valor @item.rb_dato3_valor</td>
 						<td class="text-end">@GridHelper.FormatearPrecio(item.cashback, TipoPrecio.Venta)</td>

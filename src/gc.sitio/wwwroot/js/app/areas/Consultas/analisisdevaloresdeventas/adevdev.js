@@ -4,9 +4,9 @@ let tabsDetallePendientes = 0;
 
 const TabToTableMap = {
 	"navs-top-mens": "#tbAnaDeValDeVtaMes",
-	"navs-top-diario": "#tbAnaDeValDeVtaDetalleDiario",
-	"navs-top-pv": "#tbAnaDeValDeVtaDetallePV",
-	"navs-top-cash-back": "#tbAnaDeValDeVtaDetalleCB",
+	"navs-top-diario": "#tbAnaDeValVtaDetalleDiario",
+	"navs-top-pv": "#tbAnaDeValVtaDetallePV",
+	"navs-top-cashback": "#tbAnaDeValVtaDetalleCB",
 };
 
 $(function () {
@@ -103,7 +103,7 @@ function InicializarPantallaPrincipal() {
 			// Esperamos un tick para que Bootstrap active el tab
 			setTimeout(function () {
 				CargarAnalisisDeValoresDeVentaDetalleMes();
-				EvaluarBotonImprimir("navs-top-diario");
+				//EvaluarBotonImprimir("navs-top-diario");
 			}, 500);
 		});
 		$("#divFiltros").collapse("hide");
@@ -140,25 +140,28 @@ function InicializarEventosDetalleMes() {
 	$(document).on('shown.bs.tab', '#tabsAnalisisDeVentasDetalleMes button[data-bs-toggle="tab"]', function (e) {
 
 		const targetId = $(e.target).data("bs-target");
-
+		let target = "";
 		switch (targetId) {
 
 			case "#navs-top-diario":
-				CargarTabsDelDetalleMesDiario(true);
-				CargarTabsDelDetalleMesPV(false);
-				CargarTabsDelDetalleMesCB(false);
+				target = targetId.replace("#", "");
+				CargarTabsDelDetalleMesDiario(true, target);
+				CargarTabsDelDetalleMesPV(false, target);
+				CargarTabsDelDetalleMesCB(false, target);
 				break;
 
 			case "#navs-top-pv":
-				CargarTabsDelDetalleMesPV(true);
-				CargarTabsDelDetalleMesDiario(false);
-				CargarTabsDelDetalleMesCB(false);
+				target = targetId.replace("#", "");
+				CargarTabsDelDetalleMesPV(true, target);
+				CargarTabsDelDetalleMesDiario(false, target);
+				CargarTabsDelDetalleMesCB(false, target);
 				break;
 
 			case "#navs-top-cashback":
-				CargarTabsDelDetalleMesCB(true);
-				CargarTabsDelDetalleMesPV(false);
-				CargarTabsDelDetalleMesDiario(false);
+				target = targetId.replace("#", "");
+				CargarTabsDelDetalleMesCB(true, target);
+				CargarTabsDelDetalleMesPV(false, target);
+				CargarTabsDelDetalleMesDiario(false, target);
 				break;
 		}
 	});
@@ -166,20 +169,20 @@ function InicializarEventosDetalleMes() {
 
 function CargarTabsDelDetalleMes() {
 	//Diario
-	CargarTabsDelDetalleMesDiario(true);
+	CargarTabsDelDetalleMesDiario(true, "navs-top-diario");
 	//Hora
-	CargarTabsDelDetalleMesPV(false);
+	CargarTabsDelDetalleMesPV(false, "");
 	//Sucursal
-	CargarTabsDelDetalleMesCB(false);
+	CargarTabsDelDetalleMesCB(false, "");
 	//Cierre
 
-	setTimeout(() => {
-		EvaluarBotonImprimir("navs-top-diario");
-	}, 1000);
+	//setTimeout(() => {
+	//	EvaluarBotonImprimir("navs-top-diario");
+	//}, 1000);
 
 }
 
-function CargarTabsDelDetalleMesDiario(cargar) {
+function CargarTabsDelDetalleMesDiario(cargar, tabId) {
 	if (cargar) {
 		var suc = ObtenerSucursalesSeleccionadasConTexto();
 		var sucursalesIds = suc.ids;
@@ -194,6 +197,7 @@ function CargarTabsDelDetalleMesDiario(cargar) {
 		PostGenHtml(data, cargarDetalleMesDiarioURL, function (obj) {
 			$("#divDetalleMesDiario").html(obj);
 			InicializarEventosAnalisisDeValoresDeVentaDetalleDiario();
+			EvaluarBotonImprimir(tabId);
 			CerrarWaiting();
 			return true;
 		});
@@ -221,7 +225,7 @@ function ProcesarSeleccionFilaEnAnalisisDeValoresDeVentaDetalleDiario($fila) {
 	$fila.addClass("selected-row");
 }
 
-function CargarTabsDelDetalleMesPV(cargar) {
+function CargarTabsDelDetalleMesPV(cargar, tabId) {
 	if (cargar) {
 		var suc = ObtenerSucursalesSeleccionadasConTexto();
 		var sucursalesIds = suc.ids;
@@ -236,6 +240,7 @@ function CargarTabsDelDetalleMesPV(cargar) {
 		PostGenHtml(data, cargarDetalleMesPVURL, function (obj) {
 			$("#divDetalleMesPV").html(obj);
 			InicializarEventosAnalisisDeValoresDeVentaDetallePV();
+			EvaluarBotonImprimir(tabId);
 			CerrarWaiting();
 			return true;
 		});
@@ -263,7 +268,7 @@ function ProcesarSeleccionFilaEnAnalisisDeValoresDeVentaDetallePV($fila) {
 	$fila.addClass("selected-row");
 }
 
-function CargarTabsDelDetalleMesCB(cargar) {
+function CargarTabsDelDetalleMesCB(cargar, tabId) {
 	if (cargar) {
 		var suc = ObtenerSucursalesSeleccionadasConTexto();
 		var sucursalesIds = suc.ids;
@@ -278,6 +283,7 @@ function CargarTabsDelDetalleMesCB(cargar) {
 		PostGenHtml(data, cargarDetalleMesCBURL, function (obj) {
 			$("#divDetalleMesCashback").html(obj);
 			InicializarEventosAnalisisDeValoresDeVentaDetalleCB();
+			EvaluarBotonImprimir(tabId);
 			CerrarWaiting();
 			return true;
 		});
