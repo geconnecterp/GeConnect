@@ -181,7 +181,7 @@ function BuscarProductos() {
 
     if ($modalBusqueda.length === 0) {
         console.error('❌ Modal #busquedaModal no encontrado');
-        mostrarMensajeError('Error: Modal de búsqueda no disponible');
+        mostrarMensajeEstado('Error: Modal de búsqueda no disponible', 'danger');
         return;
     }
 
@@ -215,7 +215,7 @@ function procesarEntradaCodigo() {
     const entrada = $('#txtCodigoProducto').val().trim();
     
     if (!entrada) {
-        mostrarMensajeError('Por favor, ingrese un código de producto');
+        mostrarMensajeEstado('Por favor, ingrese un código de producto', 'warning');
         return;
     }
     
@@ -303,7 +303,7 @@ function procesarCodigoConCantidad(codigo, cantidad) {
     console.log('═══════════════════════════════════════════════════');
 
     if (cantidad <= 0) {
-        mostrarMensajeError('La cantidad debe ser mayor a cero');
+        mostrarMensajeEstado('La cantidad debe ser mayor a cero', 'warning');
         return;
     }
 
@@ -339,9 +339,11 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
     // ❶ Validar modo de bloqueo (cotización)
     if (modoBloqueoGrilla === 'cotizacion' && origenCarga === 'directo') {
         console.warn('⚠️ Grilla bloqueada por cotización');
-        mostrarMensajeError(
-            'No se pueden agregar productos individuales.\n\n' +
-            'Ya se cargó una COTIZACIÓN. Debe cancelar la factura para cargar otros productos.'
+        // ✅ CAMBIO v15.0: Usar función centralizada
+        mostrarMensajeEstado(
+            'No se pueden agregar productos individuales. Ya se cargó una COTIZACIÓN. Debe cancelar la factura para cargar otros productos.',
+            'warning',
+            0  // ← Mensaje permanente
         );
         return;
     }
@@ -358,7 +360,7 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
     
     // ❹ CORREGIDO: Actualizar mensaje de estado a "Buscando..."
     $('#mensajeEstadoProducto')
-        .removeClass('text-danger text-success text-muted')  // ✅ Incluir text-muted
+        .removeClass('text-danger text-success text-muted text-warning')  // ✅ Incluir text-muted
         .addClass('text-info')
         .html(`<i class='bx bx-loader-alt bx-spin'></i> Buscando producto...`);
     
@@ -413,12 +415,14 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
                 console.error('❌ Error en respuesta:', response.mensaje);
                 
                 // ✅ CORREGIDO: Mostrar error
+                // ✅ CAMBIO v15.0: Mantener visualización en #mensajeEstadoProducto
                 $('#mensajeEstadoProducto')
-                    .removeClass('text-info text-success text-muted')  // ✅ Incluir text-muted
+                    .removeClass('text-info text-success text-muted text-warning')
                     .addClass('text-danger')
                     .html(`<i class='bx bx-error-circle'></i> ${response.mensaje}`);
                 
-                mostrarMensajeError(response.mensaje);
+                // ✅ CAMBIO v15.0: Ya NO usar mostrarMensajeError (modal)
+                // Solo mantener el mensaje en el área de estado
             }
         },
         error: function(xhr, status, error) {
@@ -441,7 +445,8 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
                 .addClass('text-danger')
                 .html(`<i class='bx bx-error-circle'></i> Error de comunicación`);
 
-            mostrarMensajeError(mensaje);
+            // ✅ CAMBIO v15.0: Usar función centralizada
+            mostrarMensajeEstado(mensaje, 'danger', 0); // ← Mensaje permanente hasta nueva acción
         },
         complete: function() {
             // Rehabilitar campo y botón
@@ -471,12 +476,8 @@ function procesarRespuestaProducto(response, origenCarga) {
     if (!producto) {
         console.warn('⚠️ No se recibió producto en la respuesta');
         
-        $('#mensajeEstadoProducto')
-            .removeClass('text-info text-success text-muted')
-            .addClass('text-danger')
-            .html(`<i class='bx bx-error-circle'></i> Producto no encontrado`);
-        
-        mostrarMensajeError('El producto no existe o no está disponible');
+        // ✅ CAMBIO v15.0: Usar función centralizada
+        mostrarMensajeEstado('Producto no encontrado', 'danger');
         return;
     }
     
@@ -489,7 +490,8 @@ function procesarRespuestaProducto(response, origenCarga) {
             .addClass('text-danger')
             .html(`<i class='bx bx-error-circle'></i> Producto no encontrado`);
         
-        mostrarMensajeError('El producto no existe o no está disponible');
+        // ✅ CAMBIO v15.0: Usar función centralizada
+        mostrarMensajeEstado('El producto no existe o no está disponible', 'danger');
         return;
     }
     
@@ -504,7 +506,8 @@ function procesarRespuestaProducto(response, origenCarga) {
         // ❶ Validar que sea un array
         if (!Array.isArray(producto)) {
             console.error('❌ Cotización no retornó un array de productos');
-            mostrarMensajeError('Error en el formato de la cotización');
+            // ✅ CAMBIO v15.0: Usar función centralizada
+            mostrarMensajeEstado('Error en el formato de la cotización', 'danger');
             return;
         }
         
@@ -528,7 +531,9 @@ function procesarRespuestaProducto(response, origenCarga) {
         
         if (productosValidos === 0) {
             console.error('❌ Ningún producto válido en la cotización');
-            mostrarMensajeError('La cotización no contiene productos válidos');
+
+            // ✅ CAMBIO v15.0: Usar función centralizada
+            mostrarMensajeEstado('La cotización no contiene productos válidos', 'danger');
             return;
         }
         
@@ -553,17 +558,17 @@ function procesarRespuestaProducto(response, origenCarga) {
         console.log('═══════════════════════════════════════════════════');
         
         $('#mensajeEstadoProducto')
-            .removeClass('text-info text-danger text-muted')
+            .removeClass('text-info text-danger text-muted text-warning')
             .addClass('text-success')
             .html(`<i class='bx bx-check-circle'></i> Cotización cargada: ${productosAgregados} productos`);
         
-        // Restaurar después de 5 segundos
+        // Restaurar después de 10 segundos
         setTimeout(() => {
             $('#mensajeEstadoProducto')
-                .removeClass('text-success text-danger text-info')
+                .removeClass('text-success text-danger text-info text-warning')
                 .addClass('text-muted')
                 .html('Presione <kbd>Enter</kbd> o <strong>BUSCAR</strong> para agregar producto');
-        }, 5000);
+        }, 10000);
         
         return; // ← SALIR (ya procesamos la cotización)
     }
@@ -765,12 +770,16 @@ function validarYAgregarProducto(producto, origenCarga) {
             return;
         }
 
+        // ✅ CAMBIO v15.0: Solo actualizar área de estado, NO modal
         $('#mensajeEstadoProducto')
-            .removeClass('text-info text-success text-muted')
+            .removeClass('text-info text-success text-muted text-warning')
             .addClass('text-danger')
             .html(`<i class='bx bx-error-circle'></i> ${mensaje}`);
 
-        mostrarMensajeError(mensaje);
+        // ✅ CAMBIO v15.0: Devolver foco
+        setTimeout(() => {
+            $('#txtCodigoProducto').trigger('focus');
+        }, 100);
         return;
     }
 
@@ -784,13 +793,13 @@ function validarYAgregarProducto(producto, origenCarga) {
     }
 
     $('#mensajeEstadoProducto')
-        .removeClass('text-info text-danger text-muted')
+        .removeClass('text-info text-danger text-muted text-warning')
         .addClass('text-success')
         .html(`<i class='bx bx-check-circle'></i> ${mensajeExito}`);
 
     setTimeout(() => {
         $('#mensajeEstadoProducto')
-            .removeClass('text-success text-danger text-info')
+            .removeClass('text-success text-danger text-info text-warning')
             .addClass('text-muted')
             .html('Presione <kbd>Enter</kbd> o <strong>BUSCAR</strong> para agregar producto');
     }, 3000);
@@ -1447,7 +1456,8 @@ function calcularTotalFactura() {
                 // Habilitar botón de confirmación
                 $('#btnConfirmarFactura').prop('disabled', false).html('<i class="bx bx-check-circle"></i> SEGUIR');
             } else {
-                mostrarMensajeError(response.mensaje || 'Error al calcular el total de la factura');
+                // ✅ CAMBIO v15.0: Usar función centralizada
+                mostrarMensajeEstado(response.mensaje || 'Error al calcular el total de la factura', 'danger');
             }
         },
         error: function (xhr, status, error) {
@@ -1465,7 +1475,8 @@ function calcularTotalFactura() {
                 mensaje = 'Error interno del servidor. Contacte al administrador.';
             }
 
-            mostrarMensajeError(mensaje);
+            // ✅ CAMBIO v15.0: Usar función centralizada
+            mostrarMensajeEstado(mensaje, 'danger', 0);
         },
         complete: function () {
             // Ocultar loader
@@ -1799,13 +1810,16 @@ function confirmarFactura() {
     // ❶ Validaciones...
     if (productosFactura.length === 0) {
         console.warn('⚠️ No hay productos cargados');
-        mostrarMensajeError('Debe cargar al menos un producto para continuar');
+        // ✅ CAMBIO v15.0: Usar función centralizada
+        mostrarMensajeEstado('Debe cargar al menos un producto para continuar', 'warning');
         return;
     }
 
     if (!clienteActualFactura) {
         console.error('❌ No hay cliente seleccionado');
-        mostrarMensajeError('Error: No hay cliente seleccionado');
+
+        // ✅ CAMBIO v15.0: Usar función centralizada
+        mostrarMensajeEstado('Error: No hay cliente seleccionado', 'danger');
         return;
     }
 
@@ -1952,12 +1966,14 @@ function confirmarFactura() {
             ocultarLoaderCalculando();
 
             if (!response || typeof response !== 'object') {
-                mostrarMensajeError('Error: Respuesta inválida del servidor');
+                // ✅ CAMBIO v15.0: Usar función centralizada
+                mostrarMensajeEstado('Error: Respuesta inválida del servidor', 'danger');
                 return;
             }
 
             if (!response.ok) {
-                mostrarMensajeError(response.mensaje || 'Error al calcular totales');
+                // ✅ CAMBIO v15.0: Usar función centralizada
+                mostrarMensajeEstado(response.mensaje || 'Error al calcular totales', 'danger');
                 return;
             }
 
@@ -1977,7 +1993,8 @@ function confirmarFactura() {
                 mensaje = 'Error interno del servidor. Contacte al administrador.';
             }
 
-            mostrarMensajeError(mensaje);
+            // ✅ CAMBIO v15.0: Usar función centralizada
+            mostrarMensajeEstado(mensaje, 'danger', 0);
         }
     });
 }
@@ -2125,7 +2142,13 @@ function recuperarBackup() {
     // ❶ Validar que NO haya productos ya cargados
     if (productosFactura.length > 0) {
         console.warn('⚠️ Ya hay productos cargados, no se puede recuperar backup');
-        mostrarMensajeError('Ya tiene productos cargados.\n\nDebe cancelar la factura para recuperar el respaldo.');
+
+        // ✅ CAMBIO v15.0: Usar función centralizada
+        mostrarMensajeEstado(
+            'Ya tiene productos cargados. Debe cancelar la factura para recuperar el respaldo.',
+            'warning',
+            0  // ← Mensaje permanente
+        );
         return;
     }
 
@@ -2169,7 +2192,12 @@ function ejecutarRecuperacionBackup() {
 
             if (!response.ok) {
                 console.error('❌ Error en recuperación:', response.mensaje);
-                mostrarMensajeError(response.mensaje || 'Error al recuperar productos del respaldo');
+
+                // ✅ CAMBIO v15.0: Usar función centralizada
+                mostrarMensajeEstado(
+                    response.mensaje || 'Error al recuperar productos del respaldo',
+                    'danger'
+                );
                 return;
             }
 
@@ -2178,7 +2206,9 @@ function ejecutarRecuperacionBackup() {
 
             if (!productos || productos.length === 0) {
                 console.warn('⚠️ No hay productos en el backup');
-                mostrarMensajeError('No hay productos guardados en el respaldo');
+
+                // ✅ CAMBIO v15.0: Usar función centralizada
+                mostrarMensajeEstado('No hay productos guardados en el respaldo', 'info');
                 return;
             }
 
@@ -2200,13 +2230,13 @@ function ejecutarRecuperacionBackup() {
 
             // ❻ Mensaje de éxito
             $('#mensajeEstadoProducto')
-                .removeClass('text-info text-danger text-muted')
+                .removeClass('text-info text-danger text-muted text-warning')
                 .addClass('text-success')
                 .html(`<i class='bx bx-check-circle'></i> Respaldo recuperado: ${productosAgregados} productos`);
 
             setTimeout(() => {
                 $('#mensajeEstadoProducto')
-                    .removeClass('text-success text-danger text-info')
+                    .removeClass('text-success text-danger text-info text-warning')
                     .addClass('text-muted')
                     .html('Presione <kbd>Enter</kbd> o <strong>BUSCAR</strong> para agregar producto');
             }, 5000);
@@ -2230,7 +2260,8 @@ function ejecutarRecuperacionBackup() {
                 mensaje = 'Error interno del servidor. Contacte al administrador.';
             }
 
-            mostrarMensajeError(mensaje);
+            // ✅ CAMBIO v15.0: Usar función centralizada
+            mostrarMensajeEstado(mensaje, 'danger', 0);
         }
     });
 }
@@ -2254,7 +2285,8 @@ function eliminarProducto(index) {
     // ❶ Validar índice
     if (index < 0 || index >= productosFactura.length) {
         console.error(`❌ Índice inválido: ${index}`);
-        mostrarMensajeError('Error al eliminar producto: índice inválido');
+        // ✅ CAMBIO v15.0: Usar función centralizada
+        mostrarMensajeEstado('Error al eliminar producto: índice inválido', 'danger');
         return;
     }
 
@@ -2274,8 +2306,8 @@ function eliminarProducto(index) {
     if (!validacion.permitido) {
         console.error(`❌ ELIMINACIÓN BLOQUEADA: ${validacion.razon}`);
 
-        // Mostrar mensaje de advertencia específico
-        mostrarMensajeError(validacion.razon);
+        // ✅ CAMBIO v15.0: Usar función centralizada (NO modal)
+        mostrarMensajeEstado(validacion.razon, 'warning', 0); // ← Mensaje permanente
 
         return; // ← SALIR sin eliminar
     }
@@ -2335,14 +2367,14 @@ function ejecutarEliminacionProducto(index, producto) {
 
     // ❽ Mostrar mensaje de éxito
     $('#mensajeEstadoProducto')
-        .removeClass('text-info text-danger text-muted')
+        .removeClass('text-info text-danger text-muted text-warning')
         .addClass('text-success')
         .html(`<i class='bx bx-check-circle'></i> Producto eliminado correctamente`);
 
     // ❾ Restaurar mensaje después de 3 segundos
     setTimeout(() => {
         $('#mensajeEstadoProducto')
-            .removeClass('text-success text-danger text-info')
+            .removeClass('text-success text-danger text-info text-warning')
             .addClass('text-muted')
             .html('Presione <kbd>Enter</kbd> o <strong>BUSCAR</strong> para agregar producto');
     }, 3000);

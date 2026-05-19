@@ -5,6 +5,8 @@
 // ====== VARIABLES GLOBALES ======
 let clienteSeleccionado = null;
 let modoEdicionCliente = false; // Control de modo edición
+let busquedaEnProceso = false; // ✅ NUEVO: Control de búsquedas concurrentes
+let ajaxActual = null; // ✅ NUEVO: Referencia al AJAX en curso para cancelación
 
 // ========================================
 // FUNCIONES DE MENSAJES AL USUARIO
@@ -46,6 +48,85 @@ function mostrarMensajeExito(mensaje) {
     );
 }
 
+// ========================================
+// ✅ NUEVO: GESTIÓN DE ESTADO DE BÚSQUEDA
+// ========================================
+
+/**
+ * Bloquea la interfaz de búsqueda para prevenir acciones concurrentes
+ */
+function bloquearInterfazBusqueda() {
+    console.log('🔒 Bloqueando interfaz de búsqueda...');
+
+    busquedaEnProceso = true;
+
+    // Deshabilitar y proteger input
+    $('#txtBuscarCliente')
+        .prop('readonly', true)
+        .addClass('pe-none') // Prevent pointer events
+        .css('opacity', '0.6');
+
+    // Deshabilitar botón de búsqueda
+    $('#btnBuscarCliente')
+        .prop('disabled', true)
+        .html('<i class="bx bx-loader-alt bx-spin"></i> Buscando...');
+
+    // Deshabilitar botones de acción
+    $('#btnListaPrecios, #btnNuevoCliente').prop('disabled', true);
+
+    console.log('✅ Interfaz bloqueada correctamente');
+}
+
+/**
+ * Desbloquea la interfaz de búsqueda después de completar la operación
+ */
+function desbloquearInterfazBusqueda() {
+    console.log('🔓 Desbloqueando interfaz de búsqueda...');
+
+    busquedaEnProceso = false;
+    ajaxActual = null;
+
+    // Restaurar input
+    $('#txtBuscarCliente')
+        .prop('readonly', false)
+        .removeClass('pe-none')
+        .css('opacity', '1');
+
+    // Restaurar botón de búsqueda
+    $('#btnBuscarCliente')
+        .prop('disabled', false)
+        .html('<i class="bx bx-search"></i> Buscar');
+
+    // Restaurar botones de acción según estado
+    actualizarEstadoBotonesAccion();
+
+    console.log('✅ Interfaz desbloqueada correctamente');
+}
+
+/**
+ * Actualiza el estado de los botones de acción según el cliente seleccionado
+ */
+function actualizarEstadoBotonesAccion() {
+    if (clienteSeleccionado) {
+        $('#btnListaPrecios').prop('disabled', false);
+        $('#btnNuevoCliente').prop('disabled', true);
+    } else {
+        $('#btnListaPrecios').prop('disabled', true);
+        $('#btnNuevoCliente').prop('disabled', false);
+    }
+}
+
+/**
+ * Cancela la búsqueda AJAX en curso si existe
+ */
+function cancelarBusquedaActual() {
+    if (ajaxActual) {
+        console.log('⚠️ Cancelando búsqueda AJAX en curso...');
+        ajaxActual.abort();
+        ajaxActual = null;
+    }
+}
+
 // ====== INICIALIZACIÓN ======
 $(function () {
     console.log('🚀 Módulo de Facturación Cargado');
@@ -67,7 +148,7 @@ function inicializaEventosFact() {
     // ========================================
     // MODAL IDENTIFICAR CLIENTE
     // ========================================
-    
+
     // Abrir modal identificar cliente (solo para pruebas o apertura manual)
     $('#btnAbrirIdentificarCliente').on('click', function () {
         abrirModalIdentificarCliente();
@@ -78,17 +159,24 @@ function inicializaEventosFact() {
         buscarCliente();
     });
 
-    // ✅ RESTAURADO v3.0: Buscar cliente (Enter) - Con detección de campo vacío
+    // ✅ MODIFICADO: Buscar cliente (Enter) - Con protección contra búsquedas concurrentes
     $('#txtBuscarCliente').on('keypress', function (e) {
         if (e.which === 13) {
             e.preventDefault();
-            
+
+            // ✅ NUEVO: Validar si hay una búsqueda en proceso
+            if (busquedaEnProceso) {
+                console.warn('⚠️ Búsqueda ya en proceso - Acción bloqueada');
+                return;
+            }
+
             const criterioBusqueda = $(this).val().trim();
-            
+
             console.log('═══════════════════════════════════════════════════');
-            console.log('⌨️ ENTER EN CAMPO BUSCAR CLIENTE v3.0');
+            console.log('⌨️ ENTER EN CAMPO BUSCAR CLIENTE v4.0');
             console.log(`   Criterio ingresado: "${criterioBusqueda}"`);
-            
+            console.log(`   busquedaEnProceso: ${busquedaEnProceso}`);
+
             if (criterioBusqueda === '') {
                 console.log('✅ CASO 1: Campo vacío - Abrir modal Nuevo CF');
                 abrirModalClienteNuevo();
@@ -97,6 +185,16 @@ function inicializaEventosFact() {
                 buscarCliente();
             }
         }
+    });
+
+    // ✅ NUEVO: Prevenir edición durante búsqueda (seguridad adicional)
+    $('#txtBuscarCliente').on('input', function (e) {
+        if (busquedaEnProceso) {
+            console.warn('⚠️ Intento de edición durante búsqueda - Bloqueado');
+            $(this).val($(this).data('lastValue') || '');
+            return false;
+        }
+        $(this).data('lastValue', $(this).val());
     });
 
     // Lista de precios
@@ -119,6 +217,11 @@ function inicializaEventosFact() {
 
     // Cancelar (solo limpia el modal)
     $('#btnCancelarCliente').on('click', function () {
+        // ✅ NUEVO: Cancelar búsqueda en curso antes de limpiar
+        if (busquedaEnProceso) {
+            cancelarBusquedaActual();
+            desbloquearInterfazBusqueda();
+        }
         limpiarModalCliente();
     });
 
@@ -137,7 +240,15 @@ function inicializaEventosFact() {
         const disparadorId = e.relatedTarget ? e.relatedTarget.id : null;
         const cierresPermitidos = ['btnCancelarCliente', 'btnSalirFacturacion'];
         const esCierrePermitido = cierresPermitidos.includes(disparadorId);
-        
+
+        // ✅ NUEVO: Prevenir cierre durante búsqueda
+        if (busquedaEnProceso) {
+            e.preventDefault();
+            console.warn('⚠️ No se puede cerrar el modal durante una búsqueda');
+            mostrarMensajeError('Espere a que finalice la búsqueda en curso');
+            return;
+        }
+
         if (!esCierrePermitido && !clienteSeleccionado) {
             e.preventDefault();
             console.warn('⚠️ Cierre no autorizado - Debe seleccionar un cliente o usar CANCELAR/SALIR');
@@ -147,7 +258,7 @@ function inicializaEventosFact() {
     // ========================================
     // MODAL CLIENTE UPDATE (NUEVO/EDITAR)
     // ========================================
-    
+
     // Validación en tiempo real del select
     $('#selTipoDocumento, #selSexoCliente').on('change', function () {
         validarCampo($(this));
@@ -180,7 +291,7 @@ function inicializaEventosFact() {
     // Guardar cliente (submit del form)
     $('#formClienteUpdate').on('submit', function (e) {
         e.preventDefault();
-        
+
         if (validarFormularioCliente()) {
             guardarCliente();
         }
@@ -204,7 +315,7 @@ function inicializaEventosFact() {
 // ====== INICIALIZACIÓN DE VISTA ======
 function inicializaVistaFact() {
     console.log('🚀 Inicializando módulo de Facturación...');
-    
+
     setTimeout(() => {
         abrirModalIdentificarCliente();
         console.log('✅ Modal de Identificar Cliente abierto automáticamente');
@@ -250,18 +361,24 @@ function limpiarModalCliente() {
     console.log('Estado actual antes de limpiar:');
     console.log('   - txtBuscarCliente:', $('#txtBuscarCliente').val());
     console.log('   - clienteSeleccionado:', clienteSeleccionado);
+    console.log('   - busquedaEnProceso:', busquedaEnProceso);
     console.log('   - cardDatosCliente visible:', $('#cardDatosCliente').is(':visible'));
     console.log('   - cardGrillaClientes existe:', $('#cardGrillaClientes').length > 0);
     console.log('   - loaderClienteTemp existe:', $('#loaderClienteTemp').length > 0);
-    
+
+    // ✅ NUEVO: Cancelar búsqueda en curso
+    if (busquedaEnProceso) {
+        cancelarBusquedaActual();
+    }
+
     // ❶ LIMPIAR VARIABLE GLOBAL
     clienteSeleccionado = null;
     console.log('✅ Variable global clienteSeleccionado limpiada');
 
     // ❷ LIMPIAR CAMPO DE BÚSQUEDA
-    $('#txtBuscarCliente').val('');
+    $('#txtBuscarCliente').val('').removeData('lastValue');
     console.log('✅ Campo de búsqueda limpiado');
-    
+
     // ❸ LIMPIAR VALORES DE LOS INPUTS (sin eliminar el HTML)
     $('#txtNombre, #txtClienteId, #txtDomicilio, #txtCondicionAfip, #txtTipoNumero, #txtEmite, #txtEmail, #txtMovil').val('');
     console.log('✅ Valores de inputs limpiados');
@@ -271,21 +388,21 @@ function limpiarModalCliente() {
         .removeClass('show')
         .hide();
     console.log('✅ Card de datos oculto');
-    
+
     // ❺ MOSTRAR EL CARD-BODY ORIGINAL (si estaba oculto por el loader)
     const $cardBody = $('#cardDatosCliente .card-body');
     if ($cardBody.length > 0) {
         $cardBody.show();
         console.log('✅ Card-body restaurado (si estaba oculto)');
     }
-    
+
     // ❻ ELIMINAR LOADER TEMPORAL (si existe)
     const $loader = $('#loaderClienteTemp');
     if ($loader.length > 0) {
         $loader.remove();
         console.log('✅ Loader temporal eliminado');
     }
-    
+
     // ❼ LIMPIAR Y OCULTAR GRILLA DE MÚLTIPLES CLIENTES
     const $grilla = $('#cardGrillaClientes');
     if ($grilla.length > 0) {
@@ -305,62 +422,101 @@ function limpiarModalCliente() {
     // ❾ DESHABILITAR BOTÓN SEGUIR
     $('#btnSeguirCliente').prop('disabled', true);
     console.log('✅ Botón SEGUIR deshabilitado');
-    
+
     // ✅ NUEVO: Ocultar botón EDITAR
     $('#btnEditarCliente').hide();
     console.log('✅ Botón EDITAR ocultado');
 
-    //activamos boton Nuevo CF y desactivamos Lista de Precios
-    $("#btnListaPrecios").prop("disabled", true);
-    $("#btnNuevoCliente").prop("disabled", false);
-    
+    // ✅ NUEVO: Desbloquear interfaz
+    desbloquearInterfazBusqueda();
+
+
     // ❿ LIMPIAR SESIÓN DEL SERVIDOR
     limpiarSesionClientesBuscados();
-    
+
     console.log('═══════════════════════════════════════════════════');
     console.log('✅ LIMPIAR MODAL CLIENTE - FINALIZADO');
     console.log('═══════════════════════════════════════════════════');
 }
 
 // ====== BÚSQUEDA DE CLIENTE ======
+/**
+ * ✅ MODIFICADO v4.0: Búsqueda de cliente con protección completa contra concurrencia
+ */
 function buscarCliente() {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔍 BUSCAR CLIENTE v4.0');
+    console.log('═══════════════════════════════════════════════════');
+
+    // ✅ NUEVO: Validar si ya hay una búsqueda en proceso
+    if (busquedaEnProceso) {
+        console.warn('⚠️ Ya hay una búsqueda en proceso - Solicitud rechazada');
+        mostrarMensajeError('Ya hay una búsqueda en proceso. Por favor espere.');
+        return;
+    }
+
     const criterioBusqueda = $('#txtBuscarCliente').val().trim();
+    console.log(`   Criterio: "${criterioBusqueda}"`);
 
     if (!criterioBusqueda) {
+        console.warn('⚠️ Criterio de búsqueda vacío');
         mostrarMensajeError('Por favor, ingrese CUIT, DNI o ID del cliente');
         return;
     }
 
-    const $btnBuscar = $('#btnBuscarCliente');
-    $btnBuscar.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Buscando...');
+    // ✅ NUEVO: Bloquear interfaz ANTES de iniciar AJAX
+    bloquearInterfazBusqueda();
 
-    const url = typeof BuscarClienteUrl !== 'undefined' && BuscarClienteUrl 
-        ? BuscarClienteUrl 
+    const url = typeof BuscarClienteUrl !== 'undefined' && BuscarClienteUrl
+        ? BuscarClienteUrl
         : '/Facturacion/Cliente/BuscarCliente';
 
-    $.ajax({
+    console.log(`📡 Iniciando búsqueda en: ${url}`);
+
+    // ✅ NUEVO: Guardar referencia al AJAX para posible cancelación
+    ajaxActual = $.ajax({
         url: url,
         type: 'POST',
         data: { criterio: criterioBusqueda },
+        timeout: 30000, // ✅ NUEVO: Timeout de 30 segundos
         success: function (response) {
+            console.log('✅ Respuesta recibida del servidor');
+            console.log('   response.ok:', response.ok);
+            console.log('   cantidadResultados:', response.cantidadResultados);
+
             if (response.ok) {
                 const cantidadResultados = response.cantidadResultados || 0;
                 $("#txtBuscarCliente").val("");
 
                 if (cantidadResultados === 1 && response.cliente) {
+                    console.log('✅ Cliente único encontrado');
                     mostrarDatosCliente(response.cliente);
                 } else if (cantidadResultados > 1) {
+                    console.log(`✅ Múltiples clientes encontrados: ${cantidadResultados}`);
                     cargarGrillaClientes();
                 } else {
+                    console.warn('⚠️ No se encontraron clientes');
                     mostrarMensajeError('No se encontraron clientes');
                     limpiarVista();
                 }
             } else {
+                console.error('❌ Error en respuesta:', response.mensaje);
                 mostrarMensajeError(response.mensaje || 'Cliente no encontrado');
                 limpiarVista();
             }
         },
-        error: function (xhr) {
+        error: function (xhr, status, error) {
+            console.error('❌ ERROR AJAX');
+            console.error('   Status:', status);
+            console.error('   HTTP Status:', xhr.status);
+            console.error('   Error:', error);
+
+            // ✅ NUEVO: No mostrar error si fue cancelación manual
+            if (status === 'abort') {
+                console.log('⚠️ Búsqueda cancelada por el usuario');
+                return;
+            }
+
             let mensaje = 'Error al buscar el cliente';
 
             // ✅ NUEVO: Usar función centralizada
@@ -369,48 +525,80 @@ function buscarCliente() {
                 return;
             }
 
-            if (xhr.status === 404) mensaje = 'Servicio no encontrado';
-            else if (xhr.status === 500) mensaje = 'Error interno del servidor';
+            if (status === 'timeout') {
+                mensaje = 'La búsqueda tardó demasiado tiempo. Intente nuevamente.';
+            } else if (xhr.status === 404) {
+                mensaje = 'Servicio no encontrado';
+            } else if (xhr.status === 500) {
+                mensaje = 'Error interno del servidor';
+            }
 
             mostrarMensajeError(mensaje);
             limpiarVista();
         },
-        complete: function () {
-            $btnBuscar.prop('disabled', false).html('<i class="bx bx-search"></i>');
+        complete: function (xhr, status) {
+            console.log('🏁 Búsqueda finalizada');
+            console.log('   Status:', status);
+
+            // ✅ NUEVO: Desbloquear interfaz SIEMPRE (éxito o error)
+            desbloquearInterfazBusqueda();
+
+            console.log('═══════════════════════════════════════════════════');
         }
     });
 }
 
 // ====== CARGAR GRILLA DE CLIENTES (AJAX) ======
+/**
+ * ✅ MODIFICADO v2.0: Cargar grilla con protección de interfaz
+ */
 function cargarGrillaClientes() {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📋 CARGAR GRILLA DE CLIENTES v2.0');
+    console.log('═══════════════════════════════════════════════════');
+
     $('#cardDatosCliente').removeClass('show').hide();
     $('#alertSinCliente').addClass('hide').hide();
-    
-    const urlTraerGrilla = typeof TraerGrillaClientesUrl !== 'undefined' && TraerGrillaClientesUrl 
-        ? TraerGrillaClientesUrl 
+
+    const urlTraerGrilla = typeof TraerGrillaClientesUrl !== 'undefined' && TraerGrillaClientesUrl
+        ? TraerGrillaClientesUrl
         : '/Facturacion/Cliente/TraerGrillaClientes';
-    
+
+    console.log(`📡 URL de grilla: ${urlTraerGrilla}`);
+
     if ($('#cardGrillaClientes').length === 0) {
         $('#alertSinCliente').after('<div class="card card-golden" id="cardGrillaClientes"></div>');
+        console.log('✅ Contenedor de grilla creado');
     }
-    
+
     $('#cardGrillaClientes').html(`
         <div class="text-center py-5">
             <i class='bx bx-loader-alt bx-spin' style='font-size: 3rem; color: #f0ad4e;'></i>
             <p class="mt-3 text-muted">Cargando resultados...</p>
         </div>
     `).show();
-    
+
+    // ✅ NUEVO: Mantener interfaz bloqueada durante carga de grilla
+    console.log('🔒 Interfaz permanece bloqueada durante carga de grilla');
+
     $.ajax({
         url: urlTraerGrilla,
         type: 'POST',
         dataType: 'html',
+        timeout: 30000,
         success: function (htmlGrilla) {
+            console.log('✅ Grilla cargada correctamente');
             $('#cardGrillaClientes').html(htmlGrilla).show().removeClass('hide').addClass('show');
             $('#btnSeguirCliente').prop('disabled', true);
             attachGrillaEventos();
+
+            // ✅ NUEVO: Desbloquear interfaz después de cargar grilla
+            desbloquearInterfazBusqueda();
         },
-        error: function (xhr) {
+        error: function (xhr, status) {
+            console.error('❌ Error al cargar grilla');
+            console.error('   Status:', status);
+
             // ✅ NUEVO: Usar función centralizada
             if (esSesionExpirada(xhr.status)) {
                 manejarSesionExpirada();
@@ -419,14 +607,20 @@ function cargarGrillaClientes() {
 
             let mensajeError = 'Error al cargar la grilla de clientes';
             if (xhr.status === 500) mensajeError = 'Error interno del servidor';
+            else if (status === 'timeout') mensajeError = 'La carga tardó demasiado tiempo';
 
             $('#cardGrillaClientes').html(`
-            <div class="alert alert-danger m-3">
-                <i class='bx bx-error-circle'></i> ${mensajeError}
-            </div>
-        `);
+                <div class="alert alert-danger m-3">
+                    <i class='bx bx-error-circle'></i> ${mensajeError}
+                </div>
+            `);
+
+            // ✅ NUEVO: Desbloquear interfaz en caso de error
+            desbloquearInterfazBusqueda();
         }
     });
+
+    console.log('═══════════════════════════════════════════════════');
 }
 
 // ====== VALIDAR CLIENTE ANTES DE SELECCIONAR ======
@@ -435,7 +629,7 @@ function validarClienteAntesDeSeleccionar($row) {
     const origenDesc = $row.data('cta-origen-desc');
     const nombre = $row.data('cta-nombre');
     const documento = $row.data('cta-documento');
-    
+
     if (origen && origen.toUpperCase() === 'N') {
         mostrarMensajeError(
             `⚠️ CLIENTE NO HABILITADO\n\n` +
@@ -443,7 +637,7 @@ function validarClienteAntesDeSeleccionar($row) {
         );
         return false;
     }
-    
+
     if (origen && origen.toUpperCase() === 'F') {
         if (!documento || documento.toString().trim() === '') {
             mostrarMensajeError(
@@ -453,7 +647,7 @@ function validarClienteAntesDeSeleccionar($row) {
             return false;
         }
     }
-    
+
     return true;
 }
 
@@ -462,17 +656,17 @@ function attachGrillaEventos() {
     $(document).off('dblclick', '.cliente-row');
     $(document).off('click', '.btn-seleccionar-cliente');
     $(document).off('click', '#btnCerrarGrilla');
-    
-    $(document).on('dblclick', '.cliente-row', function() {
+
+    $(document).on('dblclick', '.cliente-row', function () {
         const $row = $(this);
-        
+
         if (!validarClienteAntesDeSeleccionar($row)) {
             return;
         }
-        
+
         seleccionarClienteDesdeGrilla($row);
     });
-    
+
     $(document).on('click', '.btn-seleccionar-cliente', function (e) {
         e.stopPropagation();
         const $row = $(this).closest('.cliente-row');
@@ -485,17 +679,24 @@ function attachGrillaEventos() {
         if (!validarClienteAntesDeSeleccionar($row)) {
             return;
         }
-        
+
         seleccionarClienteDesdeGrilla($row);
     });
-    
-    $(document).on('click', '#btnCerrarGrilla', function() {
+
+    $(document).on('click', '#btnCerrarGrilla', function () {
         limpiarVista();
     });
 }
 
 // ====== SELECCIONAR CLIENTE DESDE GRILLA ======
+/**
+ * ✅ MODIFICADO v2.0: Selección desde grilla con bloqueo de interfaz
+ */
 function seleccionarClienteDesdeGrilla($row) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('👆 SELECCIONAR CLIENTE DESDE GRILLA v2.0');
+    console.log('═══════════════════════════════════════════════════');
+
     if (!$row || $row.length === 0) {
         mostrarMensajeError('Error: No se pudo acceder a los datos de la fila seleccionada');
         return;
@@ -514,6 +715,8 @@ function seleccionarClienteDesdeGrilla($row) {
         origenDesc: $row.data('cta-origen-desc')
     };
 
+    console.log('📊 Datos extraídos de la fila:', datosCliente);
+
     if (!datosCliente.id && !datosCliente.documento) {
         mostrarMensajeError('Error: No se pudo identificar el ID del cliente');
         return;
@@ -529,27 +732,33 @@ function seleccionarClienteDesdeGrilla($row) {
 
     if (origenUpper === 'C') {
         criterioBusqueda = datosCliente.id;
+        console.log(`   Cliente registrado - ID: ${criterioBusqueda}`);
     } else if (origenUpper === 'F') {
         if (!datosCliente.documento || datosCliente.documento.toString().trim() === '') {
             mostrarMensajeError('El consumidor final no tiene documento registrado');
             return;
         }
         criterioBusqueda = datosCliente.documento.toString();
+        console.log(`   Consumidor final - Doc: ${criterioBusqueda}`);
     } else {
         criterioBusqueda = datosCliente.id;
+        console.log(`   Otro tipo - ID: ${criterioBusqueda}`);
     }
+
+    // ✅ NUEVO: Bloquear interfaz ANTES de iniciar carga
+    bloquearInterfazBusqueda();
 
     $('#cardGrillaClientes').removeClass('show').hide().empty();
     $('#alertSinCliente').hide();
 
     const $cardBody = $('#cardDatosCliente .card-body');
-    const loaderMensaje = origenUpper === 'C' 
-        ? `ID: ${criterioBusqueda}` 
+    const loaderMensaje = origenUpper === 'C'
+        ? `ID: ${criterioBusqueda}`
         : `${datosCliente.tdocDesc}: ${criterioBusqueda}`;
 
     if ($cardBody.length > 0) {
         $cardBody.hide();
-        
+
         if ($('#loaderClienteTemp').length === 0) {
             $cardBody.after(`
                 <div id="loaderClienteTemp" class="card-body text-center py-5">
@@ -564,50 +773,81 @@ function seleccionarClienteDesdeGrilla($row) {
     $('#cardDatosCliente').show();
     $('#btnSeguirCliente').prop('disabled', true);
 
+    console.log('🔒 Interfaz bloqueada - Iniciando carga de cliente');
+    console.log('═══════════════════════════════════════════════════');
+
     buscarClientePorId(criterioBusqueda);
 }
 
 // ====== BUSCAR CLIENTE POR ID ======
+/**
+ * ✅ MODIFICADO v2.0: Búsqueda por ID con gestión de estado
+ */
 function buscarClientePorId(clienteId) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔍 BUSCAR CLIENTE POR ID v2.0');
+    console.log(`   ID: ${clienteId}`);
+    console.log('═══════════════════════════════════════════════════');
+
     if (!clienteId || clienteId.toString().trim() === '') {
+        console.error('❌ ID de cliente inválido');
         mostrarMensajeError('Error: ID de cliente inválido');
         limpiarVista();
+        desbloquearInterfazBusqueda(); // ✅ NUEVO
         return;
     }
-    
-    const url = typeof BuscarClienteUrl !== 'undefined' && BuscarClienteUrl 
-        ? BuscarClienteUrl 
+
+    const url = typeof BuscarClienteUrl !== 'undefined' && BuscarClienteUrl
+        ? BuscarClienteUrl
         : '/Facturacion/Cliente/BuscarCliente';
-    
-    $.ajax({
+
+    console.log(`📡 URL: ${url}`);
+
+    // ✅ NUEVO: Guardar referencia para posible cancelación
+    ajaxActual = $.ajax({
         url: url,
         type: 'POST',
         data: { criterio: clienteId },
         timeout: 30000,
         success: function (response) {
+            console.log('✅ Respuesta recibida');
+            console.log('   response.ok:', response.ok);
+            console.log('   cantidadResultados:', response.cantidadResultados);
+
             if (!response.ok) {
                 mostrarMensajeError(response.mensaje || 'Error al cargar los datos del cliente');
                 limpiarVista();
                 return;
             }
-            
+
             const cantidadResultados = response.cantidadResultados || 0;
-            
+
             if (cantidadResultados !== 1) {
                 mostrarMensajeError('Error: No se pudieron obtener los datos del cliente seleccionado');
                 limpiarVista();
                 return;
             }
-            
+
             if (!response.cliente) {
                 mostrarMensajeError('Error: Los datos del cliente no están disponibles');
                 limpiarVista();
                 return;
             }
-            
+
+            console.log('✅ Cliente cargado correctamente');
             mostrarDatosCliente(response.cliente);
         },
         error: function (xhr, status) {
+            console.error('❌ ERROR AJAX');
+            console.error('   Status:', status);
+            console.error('   HTTP Status:', xhr.status);
+
+            // ✅ NUEVO: No mostrar error si fue cancelación
+            if (status === 'abort') {
+                console.log('⚠️ Búsqueda cancelada');
+                return;
+            }
+
             // ✅ NUEVO: Usar función centralizada
             if (esSesionExpirada(xhr.status)) {
                 manejarSesionExpirada();
@@ -621,35 +861,56 @@ function buscarClientePorId(clienteId) {
 
             mostrarMensajeError(mensaje);
             limpiarVista();
+        },
+        complete: function (xhr, status) {
+            console.log('🏁 Búsqueda por ID finalizada');
+            console.log('   Status:', status);
+
+            // ✅ NUEVO: Desbloquear interfaz SIEMPRE
+            desbloquearInterfazBusqueda();
+
+            console.log('═══════════════════════════════════════════════════');
         }
     });
 }
 
 // ====== MOSTRAR DATOS DEL CLIENTE ======
+/**
+ * ✅ MODIFICADO v2.0: Mostrar datos con actualización de estado de botones
+ */
 function mostrarDatosCliente(cliente) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📊 MOSTRAR DATOS DEL CLIENTE v2.0');
+    console.log('═══════════════════════════════════════════════════');
+
     if ($('#cardGrillaClientes').length > 0) {
         $('#cardGrillaClientes').removeClass('show').hide().empty();
     }
-    
+
     $('#alertSinCliente').hide();
     $('#loaderClienteTemp').remove();
 
-    //activamos boton Lista de Precios y desactivamos Nuevo CF
-    $("#btnListaPrecios").prop("disabled", false);
-    $("#btnNuevoCliente").prop("disabled", true);
-    
+
+
+
+
     const $cardBody = $('#cardDatosCliente .card-body');
     if ($cardBody.length > 0) {
         $cardBody.show();
     }
-    
+
     const origenUpper = (cliente.origen || '').toUpperCase();
     const idDisplay = origenUpper === 'C' ? (cliente.id || '') : 'N/A';
-    
-    const tipoNumeroDisplay = (cliente.tdocDesc && cliente.documento) 
-        ? `${cliente.tdocDesc} ${cliente.documento}` 
+
+    const tipoNumeroDisplay = (cliente.tdocDesc && cliente.documento)
+        ? `${cliente.tdocDesc} ${cliente.documento}`
         : (cliente.tipoNumero || '');
-    
+
+    console.log('📝 Llenando campos:');
+    console.log('   Nombre:', cliente.denominacion);
+    console.log('   ID:', idDisplay);
+    console.log('   Origen:', origenUpper);
+
     $('#txtNombre').val(cliente.denominacion || '');
     $('#txtClienteId').val(idDisplay);
     $('#txtDomicilio').val(cliente.domicilio || '');
@@ -658,42 +919,53 @@ function mostrarDatosCliente(cliente) {
     $('#txtEmite').val(cliente.emite || '');
     $('#txtEmail').val(cliente.email || '');
     $('#txtMovil').val(cliente.movil || '');
-    
+
     const esConsumidorFinal = cliente.origen && cliente.origen.toUpperCase() === 'F';
-    
+
     if (esConsumidorFinal) {
         $('#btnEditarCliente').fadeIn(300);
+        console.log('✅ Botón EDITAR mostrado (Consumidor Final)');
     } else {
         $('#btnEditarCliente').fadeOut(300);
+        console.log('✅ Botón EDITAR oculto (Cliente Registrado)');
     }
-    
+
     $('#cardDatosCliente').show().removeClass('hide').addClass('show');
     $('#btnSeguirCliente').prop('disabled', false);
-    
+
     clienteSeleccionado = cliente;
+
+    // ✅ NUEVO: Actualizar estado de botones según cliente
+    actualizarEstadoBotonesAccion();
+
+    console.log('✅ Datos del cliente mostrados correctamente');
+    console.log('═══════════════════════════════════════════════════');
 }
 
 // ====== LIMPIAR VISTA ======
 function limpiarVista() {
     $('#txtNombre, #txtClienteId, #txtDomicilio, #txtCondicionAfip, #txtTipoNumero, #txtEmite, #txtEmail, #txtMovil').val('');
     $('#cardDatosCliente').removeClass('show').hide();
-    
+
     const $cardBody = $('#cardDatosCliente .card-body');
     if ($cardBody.length > 0) {
         $cardBody.show();
     }
-    
+
     $('#loaderClienteTemp').remove();
-    
+
     if ($('#cardGrillaClientes').length > 0) {
         $('#cardGrillaClientes').removeClass('show').hide().empty();
     }
-    
+
     $('#alertSinCliente').removeClass('hide').show();
     $('#btnSeguirCliente').prop('disabled', true);
     $('#btnEditarCliente').hide();
-    
+
     clienteSeleccionado = null;
+
+    // ✅ NUEVO: Actualizar botones
+    actualizarEstadoBotonesAccion();
 }
 
 // ========================================
@@ -703,12 +975,12 @@ function limpiarVista() {
 function abrirModalClienteNuevo() {
     modoEdicionCliente = false;
     limpiarFormularioCliente();
-    
+
     $('#lblTituloClienteUpdate').html('<i class="bx bx-user-plus"></i> Nuevo CF');
     $('#lblBotonAccion').text('Cargar CF');
-    
+
     $('#modalClienteUpdate').modal('show');
-    
+
     setTimeout(() => {
         $('#selTipoDocumento').trigger("focus");
     }, 500);
@@ -719,43 +991,43 @@ function abrirModalClienteEditar() {
         mostrarMensajeError('No hay cliente seleccionado para editar');
         return;
     }
-    
+
     if (!clienteSeleccionado.origen || clienteSeleccionado.origen.toUpperCase() !== 'F') {
         mostrarMensajeError('Solo se pueden editar Consumidores Finales');
         return;
     }
-    
+
     const urlObtenerCliente = typeof ObtenerClienteActualUrl !== 'undefined' && ObtenerClienteActualUrl
         ? ObtenerClienteActualUrl
         : '/Facturacion/Cliente/ObtenerClienteActual';
-    
+
     $.ajax({
         url: urlObtenerCliente,
         type: 'POST',
         timeout: 10000,
-        success: function(response) {
+        success: function (response) {
             if (!response.ok) {
                 mostrarMensajeError(response.mensaje || 'Error al obtener datos del cliente');
                 return;
             }
-            
+
             if (!response.cliente) {
                 mostrarMensajeError('Los datos del cliente no están disponibles');
                 return;
             }
-            
+
             const datosCliente = response.cliente;
-            
+
             modoEdicionCliente = true;
             limpiarFormularioCliente(true);
-            
+
             $('#lblTituloClienteUpdate').html('<i class="bx bx-edit"></i> Editar Consumidor Final');
             $('#lblBotonAccion').text('Actualizar');
-            
+
             $('#txtClienteIdUpdate').val(datosCliente.id || '');
             $('#selTipoDocumento').val(datosCliente.tipoDocumento || '96');
             $('#txtNumeroDocumento').val(datosCliente.numeroDocumento || '').prop('readonly', true);
-            
+
             let apellidoFinal = '';
             if (datosCliente.apellido && datosCliente.apellido.trim() !== '') {
                 apellidoFinal = datosCliente.apellido.trim();
@@ -764,7 +1036,7 @@ function abrirModalClienteEditar() {
                 apellidoFinal = partes.length > 0 ? partes[0] : '';
             }
             $('#txtApellidoCliente').val(apellidoFinal);
-            
+
             let nombreFinal = '';
             if (datosCliente.nombre && datosCliente.nombre.trim() !== '') {
                 nombreFinal = datosCliente.nombre.trim();
@@ -773,21 +1045,21 @@ function abrirModalClienteEditar() {
                 nombreFinal = partes.length > 1 ? partes.slice(1).join(' ') : '';
             }
             $('#txtNombreCliente').val(nombreFinal);
-            
+
             $('#selSexoCliente').val(datosCliente.sexo || 'M');
             $('#txtDomicilioCliente').val(datosCliente.domicilio || '');
             $('#txtEmailCliente').val(datosCliente.email || '');
             $('#txtMovilCliente').val(datosCliente.movil || '');
-            
+
             ajustarPlaceholderSegunTipo(false);
-            
+
             $('#modalClienteUpdate').modal('show');
-            
+
             setTimeout(() => {
                 $('#txtApellidoCliente').trigger("focus").trigger("select");
             }, 500);
         },
-        error: function(xhr, status) {
+        error: function (xhr, status) {
             // ✅ NUEVO: Usar función centralizada
             if (esSesionExpirada(xhr.status)) {
                 manejarSesionExpirada();
@@ -813,7 +1085,7 @@ function limpiarFormularioCliente(preservarModoEdicion = false) {
     $('#btnCargarCliente').removeClass('processing').prop('disabled', false);
     $('#txtNumeroDocumento').prop('readonly', false);
     ajustarPlaceholderSegunTipo(true);
-    
+
     if (!preservarModoEdicion) {
         modoEdicionCliente = false;
     }
@@ -831,7 +1103,7 @@ function confirmarCliente(cliente) {
         $(document).trigger('clienteConfirmado', [cliente]);
     }, 400);
 }
-    
+
 function limpiarSesionClientesBuscados() {
     const urlLimpiarSesion = typeof LimpiarSesionClientesUrl !== 'undefined' && LimpiarSesionClientesUrl
         ? LimpiarSesionClientesUrl
@@ -874,7 +1146,7 @@ function confirmarSalidaAlMenu() {
 
 function redirigirAlMenu() {
     limpiarSesionClientesBuscados();
-    
+
     const urlMenu = typeof MenuCajaUrl !== 'undefined' && MenuCajaUrl
         ? MenuCajaUrl
         : '/Home/Index';
@@ -1168,4 +1440,41 @@ function confirmarClienteSeleccionado() {
 
     console.log('✅ Cliente confirmado y lista de precios actualizada');
     console.log('═══════════════════════════════════════════════════');
+}
+
+// ========================================
+// ✅ NUEVO: FUNCIONES DE SESIÓN
+// ========================================
+
+/**
+ * Verifica si el código de estado HTTP corresponde a sesión expirada
+ * @param {number} statusCode - Código HTTP
+ * @returns {boolean}
+ */
+function esSesionExpirada(statusCode) {
+    return statusCode === 401 || statusCode === 403;
+}
+
+/**
+ * Maneja el escenario de sesión expirada
+ * @param {string} mensajeAdicional - Mensaje adicional opcional
+ */
+function manejarSesionExpirada(mensajeAdicional = '') {
+    console.error('🚨 SESIÓN EXPIRADA DETECTADA');
+
+    const mensaje = mensajeAdicional
+        ? `${mensajeAdicional}\n\nSerá redirigido al login.`
+        : 'Su sesión ha expirado. Será redirigido al login.';
+
+    AbrirMensaje(
+        "Sesión Expirada",
+        mensaje,
+        function () {
+            window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
+        },
+        false,
+        ["Aceptar"],
+        "warning",
+        null
+    );
 }
