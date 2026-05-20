@@ -4,9 +4,12 @@ using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Ventas;
 using gc.infraestructura.Dtos.Ventas.Request;
+using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Consultas.Models;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
@@ -16,16 +19,39 @@ namespace gc.sitio.Areas.Consultas.Controllers
 	[Area("Consultas")]
 	public class AnalisisDeValoresDeVentasController : AnalisisDeValoresDeVentasControladorBase
 	{
+		//PARA MODULO DE IMPRESION
+		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
+		private AppModulo _modulo_1; //ANALISIS_DE_VALORES_VENTA_MENSUAL
+		private AppModulo _modulo_2; //ANALISIS_DE_VALORES_VENTA_DIARIO
+		private AppModulo _modulo_3; //ANALISIS_DE_VALORES_VENTA_PV
+		private AppModulo _modulo_4; //ANALISIS_DE_VALORES_VENTA_CB
+		private string APP_MODULO_1 = AppModulos.ANALISIS_DE_VALORES_DE_VENTA_MENSUAL.ToString();
+		private string APP_MODULO_2 = AppModulos.ANALISIS_DE_VALORES_DE_VENTA_DIARIO.ToString();
+		private string APP_MODULO_3 = AppModulos.ANALISIS_DE_VALORES_DE_VENTA_PV.ToString();
+		private string APP_MODULO_4 = AppModulos.ANALISIS_DE_VALORES_DE_VENTA_CASHBACK.ToString();
+		private readonly IDocManagerServicio _docMSv;
+
+		//************************
+
 		private readonly AppSettings _setting;
 		private readonly IAdministracionServicio _administracionServicio;
 		private readonly IApiVentasServicio _apiVentaServicio;
 
 		public AnalisisDeValoresDeVentasController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<AnalisisDeValoresDeVentasController> logger,
-												   IAdministracionServicio administracionServicio, IApiVentasServicio apiVentaServicio) : base(options, contexto, logger)
+												   IAdministracionServicio administracionServicio, IApiVentasServicio apiVentaServicio,
+												   IDocManagerServicio docManager, IOptions<DocsManager> docsManager) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_administracionServicio = administracionServicio;
 			_apiVentaServicio = apiVentaServicio;
+
+			//PARA MODULO DE IMPRESION
+			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
+			_modulo_1 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_1);
+			_modulo_2 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_2);
+			_modulo_3 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_3);
+			_modulo_4 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_4);
+			_docMSv = docManager; //instancio el servicio de impresión
 		}
 
 		public IActionResult Index()
@@ -239,7 +265,64 @@ namespace gc.sitio.Areas.Consultas.Controllers
 			}
 		}
 
+		public JsonResult SetearTipoDeReporte(int tipoReporte)
+		{
+			try
+			{
+				if (tipoReporte < 0)
+					return Json(new { error = true, warn = false, msg = "Debe seleccionar un tipo de reporte." });
+
+				string titulo = string.Empty;
+				switch ((TipoDeReporte)tipoReporte)
+				{
+					case TipoDeReporte.Analisis_De_Valores_Venta_Mensual:
+						#region Gestor Impresion - Inicializacion de variables
+						titulo = "ANÁLISIS DE VALORES DE VENTA MENSUAL";
+						DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_1);
+						ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_1);
+						#endregion
+						break;
+					case TipoDeReporte.Analisis_De_Valores_Venta_Diario:
+						#region Gestor Impresion - Inicializacion de variables
+						titulo = "ANÁLISIS DE VALORES DE VENTA DIARIO";
+						DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_2);
+						ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_2);
+						#endregion
+						break;
+					case TipoDeReporte.Analisis_De_Valores_Venta_Pv:
+						#region Gestor Impresion - Inicializacion de variables
+						titulo = "ANÁLISIS DE VALORES DE VENTA PV";
+						DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_3);
+						ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_3);
+						#endregion
+						break;
+					case TipoDeReporte.Analisis_De_Valores_Venta_Cb:
+						#region Gestor Impresion - Inicializacion de variables
+						titulo = "ANÁLISIS DE VALORES VENTA CASHBACK";
+						DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_4);
+						ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_4);
+						#endregion
+						break;
+					default:
+						break;
+				}
+
+				return Json(new { error = false, warn = false, msg = "Tipo de reporte actualizado correctamente." });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar setear el tipo de reporte: {ex.Message}" });
+			}
+		}
+
 		#region Metodos Privados
+		private enum TipoDeReporte
+		{
+			Analisis_De_Valores_Venta_Mensual = 1,
+			Analisis_De_Valores_Venta_Diario = 2,
+			Analisis_De_Valores_Venta_Pv = 3,
+			Analisis_De_Valores_Venta_Cb = 4,
+		}
 		private void CargarDatosIniciales(FiltroAnalisisDeValoresDeVentasModel model)
 		{
 			var hoy = DateTime.Today;

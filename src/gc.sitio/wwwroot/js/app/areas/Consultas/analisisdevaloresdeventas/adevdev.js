@@ -410,6 +410,182 @@ function ObtenerSucursalesSeleccionadasConTexto() {
 	};
 }
 
+$("#btnImprimir").on("click", function () {
+	const tabId = $(this).data("tab-activo");
+	ImprimirSegunTab(tabId);
+});
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
+function ImprimirSegunTab(tabId) {
+
+	switch (tabId) {
+		case "navs-top-mens":
+			ImprimirMensual();
+			break;
+
+		case "navs-top-diario":
+			ImprimirDetalleDiario();
+			break;
+
+		case "navs-top-pv":
+			ImprimirDetallePV();
+			break;
+
+		case "navs-top-cashback":
+			ImprimirDetalleCashback();
+			break;
+
+	}
+}
+
+function ImprimirMensual() {
+	AbrirWaiting();
+	var tipoReporte = 1;
+	var data = { tipoReporte };
+	PostGen(data, setearTipoDeReporteUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			HandlerImprimirMensual();
+		}
+	});
+}
+
+function HandlerImprimirMensual() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var suc = ObtenerSucursalesSeleccionadasConTexto();
+		var sucursalesIds = suc.ids;
+		var sucursalesTextos = suc.textos;
+		var data = {
+			Desde: $("#Desde").val(),
+			Hasta: $("#Hasta").val(),
+			Sucursales: sucursalesIds,
+			SucursalesTextos: sucursalesTextos
+		}
+		cargarReporteEnArre(75, data, "Análisis de Valores de Venta Mensual", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function ImprimirDetalleDiario() {
+	AbrirWaiting();
+	var tipoReporte = 2;
+	var data = { tipoReporte };
+	PostGen(data, setearTipoDeReporteUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			HandlerImprimirDetalleDiario();
+		}
+	});
+}
+
+function HandlerImprimirDetalleDiario() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var suc = ObtenerSucursalesSeleccionadasConTexto();
+		var sucursalesIds = suc.ids;
+		var sucursalesTextos = suc.textos;
+		var data = {
+			Desde: $("#Desde").val(),
+			Hasta: $("#Hasta").val(),
+			Sucursales: sucursalesIds,
+			SucursalesTextos: sucursalesTextos
+		}
+		cargarReporteEnArre(76, data, "Análisis de Valores de Venta Diario", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function ImprimirDetallePV() {
+	AbrirWaiting();
+	var tipoReporte = 3;
+	var data = { tipoReporte };
+	PostGen(data, setearTipoDeReporteUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			HandlerImprimirDetallePV();
+		}
+	});
+}
+
+function HandlerImprimirDetallePV() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var suc = ObtenerSucursalesSeleccionadasConTexto();
+		var sucursalesIds = suc.ids;
+		var sucursalesTextos = suc.textos;
+		var data = {
+			Desde: $("#Desde").val(),
+			Hasta: $("#Hasta").val(),
+			Sucursales: sucursalesIds,
+			SucursalesTextos: sucursalesTextos
+		}
+		cargarReporteEnArre(77, data, "Análisis de Valores de Venta por PV", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function ImprimirDetalleCashback() {
+	AbrirWaiting();
+	var tipoReporte = 4;
+	var data = { tipoReporte };
+	PostGen(data, setearTipoDeReporteUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			HandlerImprimirDetalleCashback();
+		}
+	});
+}
+
+function HandlerImprimirDetalleCashback() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var suc = ObtenerSucursalesSeleccionadasConTexto();
+		var sucursalesIds = suc.ids;
+		var sucursalesTextos = suc.textos;
+		var data = {
+			Desde: $("#Desde").val(),
+			Hasta: $("#Hasta").val(),
+			Sucursales: sucursalesIds,
+			SucursalesTextos: sucursalesTextos
+		}
+		cargarReporteEnArre(78, data, "Análisis de Valores de Venta por PV", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
 function InicializarCamposEnFiltros(vieneDeCancelar) {
 	if (!vieneDeCancelar) {
 	}

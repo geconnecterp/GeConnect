@@ -80,5 +80,9 @@ namespace gc.infraestructura.Enumeraciones
 		R072_Analisis_Venta_Sucursal = 72,
 		R073_Analisis_Venta_Cierres = 73,
 		R074_Analisis_Venta_Anual = 74,
+		R075_Analisis_De_Valores_De_Venta_Mes = 75,
+		R076_Analisis_De_Valores_De_Venta_Diario = 76,
+		R077_Analisis_De_Valores_De_Venta_Pv = 77,
+		R078_Analisis_De_Valores_De_Venta_Cashback = 78,
 	}
 }

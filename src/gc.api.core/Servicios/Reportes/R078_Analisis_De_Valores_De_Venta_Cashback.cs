@@ -3,10 +3,15 @@ using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Mstk;
-using gc.infraestructura.Dtos.Mstk.Request;
+using gc.infraestructura.Dtos.Inventario.Request;
+using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
+using gc.infraestructura.Dtos.Productos.Pedidos;
+using gc.infraestructura.Dtos.Ventas;
+using gc.infraestructura.Dtos.Ventas.Request;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
 using iTextSharp.text;
@@ -16,24 +21,22 @@ using Microsoft.Extensions.Options;
 
 namespace gc.api.core.Servicios.Reportes
 {
-	public class R054_ReporteStockCompensado : Servicio<EntidadBase>, IGeneradorReporte
+	public class R078_Analisis_De_Valores_De_Venta_Cashback : Servicio<EntidadBase>, IGeneradorReporte
 	{
-		private readonly IConsultaServicio _consultaServicio;
-
+		private readonly IApiVentasServicio _ventasSv;
 		private readonly EmpresaGeco _empresaGeco;
 		private readonly List<string> _titulos;
 		private readonly List<string> _campos;
 		private readonly ILogger _logger;
 
-		public R054_ReporteStockCompensado(IUnitOfWork uow, IConsultaServicio consulta, IFinancieroServicio financieroServicio,
+		public R078_Analisis_De_Valores_De_Venta_Cashback(IUnitOfWork uow, IApiVentasServicio ventasSv,
 											IOptions<EmpresaGeco> empresa, ICuentaServicio consultaSv, ILogger logger) : base(uow)
 		{
-			_consultaServicio = consulta;
-
 			_empresaGeco = empresa.Value;
 			_titulos = ["N° OP", "Tipo", "Fecha", "Proveedor", "Anulada", "Usuario", "Importe"];
 			_campos = ["op_compte", "opt_desc", "op_fecha", "cta_denominacion", "op_anulada_desc", "usu_apellidoynombre", "op_importe"];
 			_logger = logger;
+			_ventasSv = ventasSv;
 		}
 
 		public string Generar(ReporteSolicitudDto solicitud)
@@ -48,10 +51,11 @@ namespace gc.api.core.Servicios.Reportes
 				var ms = new MemoryStream();
 				#region Obteniendo registros desde la base de datos
 				string tit;
-				int agrp;
-				List<ProductoStkCompensadoDto> registros = ObtenerDatos(solicitud, out tit);
+				string subtit;
+				List<AnaValDeVtaDetCBDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
 
 				solicitud.Titulo = tit;
+				solicitud.SubTitulo = subtit;
 
 				//hago el modelo de dato aca ya que necesito los datos de la cuenta
 				var regs = registros.Select(x => new
@@ -102,7 +106,7 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Open();
 
 				#region Lista 
-				HelperPdf.CargarProductosParaRptDeStkCompensado(pdf, registros, chico, normalBold);
+				HelperPdf.CargarRepoAnalisisDeValoresDeVentaCB(pdf, registros, chico, normal, normalBold, titulo, tituloBig);
 				#endregion
 
 				pdf.Close();
@@ -118,52 +122,45 @@ namespace gc.api.core.Servicios.Reportes
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error en R031");
-				throw new NegocioException("Se produjo un error al intentar generar el Reporte de strock compensado. Para mayores datos ver el log.");
+				throw new NegocioException("Se produjo un error al intentar generar el Reporte de Extracto Bancario. Para mayores datos ver el log.");
 			}
 		}
 
-		public static bool GetBoolParam(IDictionary<string, string> parametros, string clave, bool valorPorDefecto = false)
+		private List<AnaValDeVtaDetCBDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo, out string subtit)
 		{
-			if (parametros == null || !parametros.TryGetValue(clave, out var valor) || string.IsNullOrWhiteSpace(valor))
-				return valorPorDefecto;
-
-			return bool.TryParse(valor, out var resultado) ? resultado : valorPorDefecto;
-		}
-
-		private List<ProductoStkCompensadoDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo)
-		{
-			var lProv_str = solicitud.Parametros.GetValueOrDefault("lProv", "")?.ToString() ?? "";
-			var lRub_str = solicitud.Parametros.GetValueOrDefault("lRub", "")?.ToString() ?? "";
-
-			var lProv_lst = lProv_str.Trim().Length == 0 ? [] : lProv_str.Split(',').ToList();
-			var lRub_lst = lRub_str.Trim().Length == 0 ? [] : lRub_str.Split(',').ToList();
-
-			var chkEstAct = GetBoolParam(solicitud.Parametros, "chkEstAct");
-			var chkEstDisc = GetBoolParam(solicitud.Parametros, "chkEstDisc");
-
-			var dif_str = solicitud.Parametros.GetValueOrDefault("diferencia", "")?.ToString() ?? null;
-
-			titulo = $"Listado de Stock de Productos Compensados";
-			var diferencia = Convert.ToInt32(dif_str);
-
-			return _consultaServicio.ConsultarProductoStkCompensado(new ConsultarStockCompensadoRequest()
+			try
 			{
-				lProv = lProv_lst,
-				lRub = lRub_lst,
-				chkEstAct = chkEstAct,
-				chkEstDisc = chkEstDisc,
-				diferencia = diferencia,
-				Registros = 999999999,
-				Pagina = 1
-			});
+				var sucursales = solicitud.Parametros.GetValueOrDefault("Sucursales", "")?.ToString() ?? null;
+				var sucursalesTextos = solicitud.Parametros.GetValueOrDefault("SucursalesTextos", "")?.ToString() ?? null;
+				var desde = solicitud.Parametros.GetValueOrDefault("Desde", "").ToDateTime();
+				var hasta = solicitud.Parametros.GetValueOrDefault("Hasta", "").ToDateTime();
+				var request = new AnaDeValDeVtaMesRequest()
+				{
+					adm_list = sucursales,
+					desde = desde,
+					hasta = hasta
+				};
+				var listaTemp = _ventasSv.ObtenerAnaDeValDeVtaDetCBLista(request);
+				var item = listaTemp.First();
+				titulo = $"Análisis de CashBack desde el {desde:dd/MM/yyyy} al {hasta:dd/MM/yyyy}";
+				subtit = $"Sucursales: {sucursalesTextos}";
+				return listaTemp;
+			}
+			catch (Exception)
+			{
+				titulo = "";
+				subtit = "";
+				return [];
+			}
+
 		}
 
 		public string GenerarTxt(ReporteSolicitudDto solicitud)
 		{
 			#region Obteniendo registros desde la base de datos
 			string tit;
-			int agrp;
-			List<ProductoStkCompensadoDto> registros = ObtenerDatos(solicitud, out tit);
+			string subtit;
+			List<AnaValDeVtaDetCBDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
 
 			if (registros == null || registros.Count == 0)
 			{
@@ -186,8 +183,8 @@ namespace gc.api.core.Servicios.Reportes
 		{
 			#region Obteniendo registros desde la base de datos
 			string tit;
-			int agrp;
-			List<ProductoStkCompensadoDto> registros = ObtenerDatos(solicitud, out tit);
+			string subtit;
+			List<AnaValDeVtaDetCBDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
 
 			if (registros == null || registros.Count == 0)
 			{

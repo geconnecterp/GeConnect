@@ -203,8 +203,8 @@ function BuscarInfoAdicional() {
 	var admId = "";
 	datos = { pId, admId };
 	PostGenHtml(datos, BuscarInfoProdStkDepositoURL, function (obj) {
-		$("#divInfoProductoStkD").html(obj);
-		AddEventListenerToGrid("tbInfoProdStkD");
+		$("#divGrillaInfo").html(obj);
+		//AddEventListenerToGrid("tbInfoProdStkD");
 		CerrarWaiting();
 		return true
 	});

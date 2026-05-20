@@ -151,6 +151,7 @@ using System.Text.RegularExpressions;
 using static gc.infraestructura.Helpers.GridHelper;
 
 
+
 namespace gc.infraestructura.Helpers
 {
 	public static class HelperPdf
@@ -4080,7 +4081,7 @@ namespace gc.infraestructura.Helpers
 
 			foreach (var grupo in grupos)
 			{
-				PdfPTable tabla = new(11)
+				PdfPTable tabla = new(7)
 				{
 					WidthPercentage = 100
 				};
@@ -6086,6 +6087,497 @@ namespace gc.infraestructura.Helpers
 
 			pdf.Add(tabla);
 		}
+
+		public static void CargarRepoAnalisisDeValoresDeVentaMensual(Document pdf, List<AnaValDeVtaMesDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		{
+			if(registros == null || !registros.Any())
+			{
+				pdf.Add(new Paragraph("No hay datos para mostrar", normalBold));
+				return;
+			}
+
+			// Título
+			Paragraph tituloPar = new Paragraph("Análisis de Valores de Venta - Mensual", tituloBig);
+			tituloPar.Alignment = Element.ALIGN_CENTER;
+			tituloPar.SpacingAfter = 10f;
+			pdf.Add(tituloPar);
+
+			// Definición de columnas
+			float[] widths = { 1f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f };
+			PdfPTable tabla = new PdfPTable(widths);
+			tabla.WidthPercentage = 100;
+
+			// Encabezados
+			string[] headers = {
+				"Mes",
+				"Fact. + Cob.",
+				"Cta. Cte.",
+				"Cta. Cte. Dist.",
+				"Efectivo",
+				"Tarjetas",
+				"Transf. Bco.",
+				"Mutuales",
+				"Vales",
+				"Otros"
+			};
+
+			foreach (var h in headers)
+			{
+				PdfPCell celda = new PdfPCell(new Phrase(h, normalBold));
+				celda.HorizontalAlignment = Element.ALIGN_CENTER;
+				celda.BackgroundColor = new BaseColor(230, 230, 230);
+				celda.Padding = 4;
+				tabla.AddCell(celda);
+			}
+
+			// Filas
+			foreach (var item in registros)
+			{
+				tabla.AddCell(new PdfPCell(new Phrase($"{item.periodo}-{item.mes}", HelperPdf.FontChicoPredeterminado())));
+
+				// Facturación + Cobranzas
+				tabla.AddCell(CeldaSoloMonto(item.co_facturacion + item.co_cobranza, HelperPdf.FontChicoPredeterminado()));
+
+				// Cta. Cte.
+				tabla.AddCell(CeldaPorcMonto(item.co_ctacte_porc, item.co_ctacte, chico, HelperPdf.FontChicoPredeterminado()));
+
+				// Cta. Cte. Dist.
+				tabla.AddCell(CeldaPorcMonto(item.co_ctacte_dist_porc, item.co_ctacte_dist, chico, HelperPdf.FontChicoPredeterminado()));
+
+				// Efectivo
+				tabla.AddCell(CeldaPorcMonto(item.efectivos_porc, item.efectivos, chico, HelperPdf.FontChicoPredeterminado()));
+
+				// Tarjetas
+				tabla.AddCell(CeldaPorcMonto(item.tarjetas_porc, item.tarjetas, chico, HelperPdf.FontChicoPredeterminado()));
+
+				// Transferencias
+				tabla.AddCell(CeldaPorcMonto(item.bco_transf_porc, item.bco_transf, chico, HelperPdf.FontChicoPredeterminado()));
+
+				// Mutuales
+				tabla.AddCell(CeldaPorcMonto(item.mutuales_porc, item.mutuales, chico, HelperPdf.FontChicoPredeterminado()));
+
+				// Vales
+				tabla.AddCell(CeldaPorcMonto(item.vales_porc, item.vales, chico, HelperPdf.FontChicoPredeterminado()));
+
+				// Otros
+				tabla.AddCell(CeldaPorcMonto(item.otros_porc, item.otros, chico, HelperPdf.FontChicoPredeterminado()));
+			}
+
+			pdf.Add(tabla);
+		}
+
+		public static void CargarRepoAnalisisDeValoresDeVentaDiario(Document pdf, List<AnaValDeVtaDetDiarioDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		{
+			if (registros == null || !registros.Any())
+			{
+				pdf.Add(new Paragraph("No hay datos para mostrar", normalBold));
+				return;
+			}
+
+			// Título
+			Paragraph tituloPar = new Paragraph("Análisis de Valores de Venta - Diario", tituloBig);
+			tituloPar.Alignment = Element.ALIGN_CENTER;
+			tituloPar.SpacingAfter = 10f;
+			pdf.Add(tituloPar);
+
+			// Definición de columnas
+			float[] widths = { 1.6f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f };
+			PdfPTable tabla = new PdfPTable(widths);
+			tabla.WidthPercentage = 100;
+
+			// Encabezados
+			string[] headers = {
+				"Día",
+				"Fact. + Cob.",
+				"Cta. Cte.",
+				"Cta. Cte. Dist.",
+				"Efectivo",
+				"Tarjetas",
+				"Transf. Bco.",
+				"Mutuales",
+				"Vales",
+				"Otros"
+			};
+
+			foreach (var h in headers)
+			{
+				PdfPCell celda = new PdfPCell(new Phrase(h, normalBold));
+				celda.HorizontalAlignment = Element.ALIGN_CENTER;
+				celda.BackgroundColor = new BaseColor(230, 230, 230);
+				celda.Padding = 4;
+				tabla.AddCell(celda);
+			}
+
+			// Filas
+			foreach (var item in registros)
+			{
+				PdfPCell celdaDia = new PdfPCell(new Phrase(item.dia.ToString("dd/MM/yyyy"), normal));
+				celdaDia.HorizontalAlignment = Element.ALIGN_CENTER;
+				celdaDia.VerticalAlignment = Element.ALIGN_MIDDLE;
+				celdaDia.Padding = 4;
+				tabla.AddCell(celdaDia);
+
+				// Facturación + Cobranzas
+				tabla.AddCell(CeldaSoloMonto(item.co_facturacion + item.co_cobranza, normal));
+
+				// Cta. Cte.
+				tabla.AddCell(CeldaPorcMonto(item.co_ctacte_porc, item.co_ctacte, chico, normal));
+
+				// Cta. Cte. Dist.
+				tabla.AddCell(CeldaPorcMonto(item.co_ctacte_dist_porc, item.co_ctacte_dist, chico, normal));
+
+				// Efectivo
+				tabla.AddCell(CeldaDual(
+					item.efectivos_porc, item.efectivos,
+					item.efectivos_cant_porc, item.efectivos_cant,
+					chico, normal));
+
+				// Tarjetas
+				tabla.AddCell(CeldaDual(
+					item.tarjetas_porc, item.tarjetas,
+					item.tarjetas_cant_porc, item.tarjetas_cant,
+					chico, normal));
+
+				// Transferencias
+				tabla.AddCell(CeldaDual(
+					item.bco_transf_porc, item.bco_transf,
+					item.bco_transf_cant_porc, item.bco_transf_cant,
+					chico, normal));
+
+				// Mutuales
+				tabla.AddCell(CeldaDual(
+					item.mutuales_porc, item.mutuales,
+					item.mutuales_cant_porc, item.mutuales_cant,
+					chico, normal));
+
+				// Vales
+				tabla.AddCell(CeldaDual(
+					item.vales_porc, item.vales,
+					item.vales_cant_porc, item.vales_cant,
+					chico, normal));
+
+				// Otros
+				tabla.AddCell(CeldaDual(
+					item.otros_porc, item.otros,
+					item.otros_cant_porc, item.otros_cant,
+					chico, normal));
+			}
+
+			pdf.Add(tabla);
+		}
+
+		public static void CargarRepoAnalisisDeValoresDeVentaPV(Document pdf, List<AnaValDeVtaDetPVDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		{
+			if (registros == null || !registros.Any())
+			{
+				pdf.Add(new Paragraph("No hay datos para mostrar", normalBold));
+				return;
+			}
+
+			// Título
+			Paragraph tituloPar = new Paragraph("Análisis de Valores de Venta - Detalle por Punto de Venta", tituloBig);
+			tituloPar.Alignment = Element.ALIGN_CENTER;
+			tituloPar.SpacingAfter = 10f;
+			pdf.Add(tituloPar);
+
+			// Definición de columnas
+			float[] widths = { 1.6f, 2.5f, 1.4f, 2f, 2f, 2f, 2f, 2f, 2f };
+			PdfPTable tabla = new PdfPTable(widths);
+			tabla.WidthPercentage = 100;
+
+			// Encabezados
+			string[] headers = {
+				"Día",
+				"Suc.",
+				"PV",
+				"Efectivo",
+				"Tarjetas",
+				"Transf. Bco.",
+				"Mutual",
+				"Vales",
+				"Otros"
+			};
+
+			foreach (var h in headers)
+			{
+				PdfPCell celda = new PdfPCell(new Phrase(h, normalBold));
+				celda.HorizontalAlignment = Element.ALIGN_CENTER;
+				celda.BackgroundColor = new BaseColor(230, 230, 230);
+				celda.Padding = 4;
+				tabla.AddCell(celda);
+			}
+
+			// Filas
+			foreach (var item in registros)
+			{
+				// Día
+				tabla.AddCell(new PdfPCell(new Phrase(item.dia.ToString("dd/MM/yyyy"), normal)));
+
+				// Sucursal
+				PdfPCell suc = new PdfPCell(new Phrase(item.adm_nombre, normal));
+				suc.HorizontalAlignment = Element.ALIGN_LEFT;
+				tabla.AddCell(suc);
+
+				// PV
+				PdfPCell pv = new PdfPCell(new Phrase(item.caja_id, normal));
+				pv.HorizontalAlignment = Element.ALIGN_CENTER;
+				tabla.AddCell(pv);
+
+				// Efectivo
+				tabla.AddCell(CeldaSoloMonto(item.efectivos, normal));
+
+				// Tarjetas
+				tabla.AddCell(CeldaSoloMonto(item.tarjetas, normal));
+
+				// Transferencias
+				tabla.AddCell(CeldaSoloMonto(item.bco_transf, normal));
+
+				// Mutual
+				tabla.AddCell(CeldaSoloMonto(item.mutuales, normal));
+
+				// Vales
+				tabla.AddCell(CeldaSoloMonto(item.vales, normal));
+
+				// Otros
+				tabla.AddCell(CeldaSoloMonto(item.otros, normal));
+			}
+
+			pdf.Add(tabla);
+		}
+
+		public static void CargarRepoAnalisisDeValoresDeVentaCB(Document pdf, List<AnaValDeVtaDetCBDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		{
+			if (registros == null || !registros.Any())
+			{
+				pdf.Add(new Paragraph("No hay datos para mostrar", normalBold));
+				return;
+			}
+
+			// Ordenar como en el HTML
+			registros = registros.OrderBy(x => x.caja_nro_proceso).ToList();
+
+			// Título
+			Paragraph tituloPar = new Paragraph("Análisis de Valores de Venta - Cashback", tituloBig);
+			tituloPar.Alignment = Element.ALIGN_CENTER;
+			tituloPar.SpacingAfter = 10f;
+			pdf.Add(tituloPar);
+
+			// Definición de columnas
+			float[] widths = { 1.6f, 2.5f, 2.5f, 3.5f, 2f, 2f };
+			PdfPTable tabla = new PdfPTable(widths);
+			tabla.WidthPercentage = 100;
+
+			// Encabezados
+			string[] headers = {
+				"Día",
+				"Suc.",
+				"Medio de Pago",
+				"Datos",
+				"CashBack",
+				"Importe"
+			};
+
+			foreach (var h in headers)
+			{
+				PdfPCell celda = new PdfPCell(new Phrase(h, normalBold));
+				celda.HorizontalAlignment = Element.ALIGN_CENTER;
+				celda.BackgroundColor = new BaseColor(230, 230, 230);
+				celda.Padding = 4;
+				tabla.AddCell(celda);
+			}
+
+			string grupoAnterior = null;
+
+			// Filas
+			foreach (var item in registros)
+			{
+				string grupoActual = item.caja_nro_proceso;
+
+				// Si cambia el grupo → insertar fila de encabezado
+				if (grupoActual != grupoAnterior)
+				{
+					PdfPCell header = new PdfPCell(
+						new Phrase(
+							$"Proceso N° {grupoActual} - {item.caja_habilitacion:dd/MM/yyyy}",
+							normalBold
+						)
+					);
+
+					header.Colspan = 6;
+					header.BackgroundColor = new BaseColor(220, 220, 220);
+					header.HorizontalAlignment = Element.ALIGN_CENTER;
+					header.Padding = 5;
+					tabla.AddCell(header);
+
+					grupoAnterior = grupoActual;
+				}
+
+				// Día
+				tabla.AddCell(new PdfPCell(new Phrase(item.rb_fecha_valor.ToString("dd/MM/yyyy"), normal)));
+
+				// Sucursal
+				PdfPCell suc = new PdfPCell(new Phrase(item.adm_nombre, normal));
+				suc.HorizontalAlignment = Element.ALIGN_LEFT;
+				tabla.AddCell(suc);
+
+				// Medio de Pago
+				PdfPCell mp = new PdfPCell(new Phrase(item.ins_desc, normal));
+				mp.HorizontalAlignment = Element.ALIGN_LEFT;
+				tabla.AddCell(mp);
+
+				// Datos (dato1 + dato2 + dato3)
+				string datos = $"{item.rb_dato1_valor} {item.rb_dato2_valor} {item.rb_dato3_valor}".Trim();
+				PdfPCell datosCell = new PdfPCell(new Phrase(datos, normal));
+				datosCell.HorizontalAlignment = Element.ALIGN_LEFT;
+				tabla.AddCell(datosCell);
+
+				// Cashback
+				tabla.AddCell(CeldaSoloMonto(item.cashback, normal));
+
+				// Importe
+				tabla.AddCell(CeldaSoloMonto(item.rb_importe, normal));
+			}
+
+			pdf.Add(tabla);
+		}
+
+		private static PdfPCell CeldaMonto(decimal monto, Font normal)
+		{
+			PdfPCell c = new PdfPCell();
+			c.AddElement(new Phrase(GridHelper.FormatearPrecio(monto, TipoPrecio.Venta), normal));
+			c.HorizontalAlignment = Element.ALIGN_RIGHT;
+			c.Padding = 4;
+			return c;
+		}
+
+
+		private static PdfPCell CeldaDual(decimal porc, decimal monto, decimal porcCant, int cant, Font chico, Font normal)
+		{
+			PdfPCell cell = new PdfPCell();
+			cell.Padding = 4;
+
+			PdfPTable interno = new PdfPTable(2);
+			interno.WidthPercentage = 100;
+			interno.SetWidths(new float[] { 1f, 1f });
+
+			// -------------------------
+			// LÍNEA 1: % + MONTO
+			// -------------------------
+			BaseColor bg1 = porc > 0 ? new BaseColor(201, 228, 255) :
+							porc < 0 ? new BaseColor(255, 224, 224) :
+									   BaseColor.White;
+
+			BaseColor fg1 = porc > 0 ? new BaseColor(0, 74, 133) :
+							porc < 0 ? new BaseColor(161, 0, 0) :
+									   new BaseColor(102, 102, 102);
+
+			PdfPCell cPorc = new PdfPCell(new Phrase(porc.ToString("0.##") + "%", chico));
+			cPorc.BackgroundColor = bg1;
+			cPorc.Phrase.Font.Color = fg1;
+			cPorc.Border = Rectangle.NO_BORDER;
+			cPorc.HorizontalAlignment = Element.ALIGN_LEFT;
+
+			PdfPCell cMonto = new PdfPCell(new Phrase(GridHelper.FormatearPrecio(monto, TipoPrecio.Venta), normal));
+			cMonto.Border = Rectangle.NO_BORDER;
+			cMonto.HorizontalAlignment = Element.ALIGN_RIGHT;
+
+			interno.AddCell(cPorc);
+			interno.AddCell(cMonto);
+
+			// Línea divisoria (simula border-bottom)
+			PdfPCell divider = new PdfPCell(new Phrase(""));
+			divider.Colspan = 2;
+			divider.BorderWidthBottom = 0.5f;
+			divider.BorderColorBottom = new BaseColor(200, 200, 200);
+			divider.Border = Rectangle.BOTTOM_BORDER;
+			divider.Padding = 0;
+			interno.AddCell(divider);
+
+			// -------------------------
+			// LÍNEA 2: % CANT + CANTIDAD
+			// -------------------------
+			BaseColor bg2 = porcCant > 0 ? new BaseColor(201, 228, 255) :
+							porcCant < 0 ? new BaseColor(255, 224, 224) :
+										   BaseColor.White;
+
+			BaseColor fg2 = porcCant > 0 ? new BaseColor(0, 74, 133) :
+							porcCant < 0 ? new BaseColor(161, 0, 0) :
+										   new BaseColor(102, 102, 102);
+
+			PdfPCell cPorcCant = new PdfPCell(new Phrase(porcCant.ToString("0.##") + "%", chico));
+			cPorcCant.BackgroundColor = bg2;
+			cPorcCant.Phrase.Font.Color = fg2;
+			cPorcCant.Border = Rectangle.NO_BORDER;
+			cPorcCant.HorizontalAlignment = Element.ALIGN_LEFT;
+
+			PdfPCell cCant = new PdfPCell(new Phrase(cant.ToString(), normal));
+			cCant.Border = Rectangle.NO_BORDER;
+			cCant.HorizontalAlignment = Element.ALIGN_RIGHT;
+
+			interno.AddCell(cPorcCant);
+			interno.AddCell(cCant);
+
+			cell.AddElement(interno);
+
+			return cell;
+		}
+
+
+		private static PdfPCell CeldaSoloMonto(decimal monto, Font normal)
+		{
+			//PdfPCell c = new PdfPCell();
+			//c.AddElement(new Phrase(GridHelper.FormatearPrecio(monto, TipoPrecio.Venta), normal));
+			//c.HorizontalAlignment = Element.ALIGN_RIGHT;
+			//c.Padding = 4;
+			//return c;
+			PdfPCell c = new PdfPCell(new Phrase(GridHelper.FormatearPrecio(monto, TipoPrecio.Venta), normal));
+
+			c.HorizontalAlignment = Element.ALIGN_RIGHT;
+			c.VerticalAlignment = Element.ALIGN_MIDDLE; // ← clave
+			c.Padding = 4;
+
+			return c;
+		}
+
+		private static PdfPCell CeldaPorcMonto(decimal porc, decimal monto, Font chico, Font normal)
+		{
+			PdfPCell cell = new PdfPCell();
+			cell.Padding = 1;
+
+			PdfPTable interno = new PdfPTable(2);
+			interno.WidthPercentage = 100;
+			interno.SetWidths(new float[] { 30f, 70f });
+
+			// Colores
+			BaseColor bg = porc > 0 ? new BaseColor(201, 228, 255) :
+							porc < 0 ? new BaseColor(255, 224, 224) :
+									   BaseColor.White;
+
+			BaseColor fg = porc > 0 ? new BaseColor(0, 74, 133) :
+							porc < 0 ? new BaseColor(161, 0, 0) :
+									   new BaseColor(102, 102, 102);
+
+			// Porcentaje
+			PdfPCell cPorc = new PdfPCell(new Phrase(porc.ToString("0.##") + "%", chico));
+			cPorc.BackgroundColor = bg;
+			cPorc.Phrase.Font.Color = fg;
+			cPorc.Border = Rectangle.NO_BORDER;
+			cPorc.HorizontalAlignment = Element.ALIGN_LEFT;
+
+			// Monto
+			PdfPCell cMonto = new PdfPCell(new Phrase(GridHelper.FormatearPrecio(monto, TipoPrecio.Venta), normal));
+			cMonto.Border = Rectangle.NO_BORDER;
+			cMonto.HorizontalAlignment = Element.ALIGN_RIGHT;
+
+			interno.AddCell(cPorc);
+			interno.AddCell(cMonto);
+
+			cell.AddElement(interno);
+
+			return cell;
+		}
+
+
 
 		private static void AgregarEncabezado(Document pdf, PIDetalleDto reg, Font normal, Font bold)
 		{
