@@ -1349,51 +1349,78 @@ function calcularPrecioTotal(producto) {
 }
 
 /**
- * ✅ NUEVO v6.0: Abre el modal de cálculo de factura
+ * ✅ ACTUALIZADO v6.3: Abre modal parseando JSONs del servidor
  */
 function abrirModalCalculoFactura(data) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('📊 ABRIENDO MODAL DE CÁLCULO DE FACTURA');
+    console.log('📊 ABRIENDO MODAL DE CÁLCULO DE FACTURA v6.3');
     console.log('═══════════════════════════════════════════════════');
-    console.log('Datos de cálculo:', data);
-    
-    const $modal = $('#modalCalculoFactura');
-    
-    // ❶ Hidratar datos en el modal
-    $modal.find('#txtTotalGravado').val(`$ ${formatearNumero(data.tot_gravado, 2)}`);
-    $modal.find('#txtTotalExento').val(`$ ${formatearNumero(data.tot_exento, 2)}`);
-    $modal.find('#txtTotalNoGravado').val(`$ ${formatearNumero(data.tot_no_gravado, 2)}`);
-    $modal.find('#txtTotalImpuestoInterno').val(`$ ${formatearNumero(data.tot_ii, 2)}`);
-    $modal.find('#txtTotalIva').val(`$ ${formatearNumero(data.tot_iva, 2)}`);
-    $modal.find('#txtSubtotal').val(`$ ${formatearNumero(data.tot_subtotal, 2)}`);
-    $modal.find('#txtDescuentos').val(`$ ${formatearNumero(data.tot_descuentos, 2)}`);
-    $modal.find('#txtRecargo').val(`$ ${formatearNumero(data.tot_recargo, 2)}`);
-    $modal.find('#txtTotalFactura').val(`$ ${formatearNumero(data.tot_factura, 2)}`);
-    
-    // ❷ Mostrar detalles de cada producto
-    const $tbodyDetalles = $modal.find('#tbodyDetallesProductos');
-    $tbodyDetalles.empty();
-    
-    data.productos.forEach((prod, index) => {
-        const precioTotal = calcularPrecioTotal(prod);
-        
-        $tbodyDetalles.append(`
-            <tr>
-                <td class="text-center">${prod.item}</td>
-                <td class="text-start">${escapeHtml(prod.p_desc)}</td>
-                <td class="text-center">${prod.cantidad_tot}</td>
-                <td class="text-end">$ ${formatearNumero(prod.p_pvta, 2)}</td>
-                <td class="text-end">$ ${formatearNumero(precioTotal, 2)}</td>
-            </tr>
-        `);
-    });
-    
-    console.log('✅ Detalles de productos cargados en el modal');
-    
-    // ❸ Abrir modal
-    $modal.modal('show');
-    
-    console.log('✅ Modal de cálculo abierto');
+    console.log('Datos recibidos:', data);
+
+    // ❶ VALIDACIÓN: Verificar que data existe
+    if (!data) {
+        console.error('❌ Error: No se recibieron datos para el cálculo');
+        mostrarMensajeEstado('Error: No se recibieron datos del servidor', 'danger');
+        return;
+    }
+
+    // ❷ ✅ PARSEAR LOS JSONs STRING A OBJETOS
+    let subtotales = [];
+    let sorteos = [];
+    let productos = [];
+
+    try {
+        // ❸ PARSEAR json_subtotal
+        if (data.json_subtotal) {
+            subtotales = JSON.parse(data.json_subtotal);
+            console.log(`✅ json_subtotal parseado: ${subtotales.length} registros`);
+        }
+
+        // ❹ PARSEAR json_sorteo
+        if (data.json_sorteo) {
+            sorteos = JSON.parse(data.json_sorteo);
+            console.log(`✅ json_sorteo parseado: ${sorteos.length} registros`);
+        }
+
+        // ❺ PARSEAR json_p (productos)
+        if (data.json_p) {
+            productos = JSON.parse(data.json_p);
+            console.log(`✅ json_p parseado: ${productos.length} productos`);
+        }
+    } catch (error) {
+        console.error('❌ Error al parsear JSONs:', error);
+        mostrarMensajeEstado('Error al procesar datos del servidor', 'danger');
+        return;
+    }
+
+    // ❻ VALIDACIÓN: Verificar que haya subtotales
+    if (!subtotales || subtotales.length === 0) {
+        console.warn('⚠️ No hay subtotales para mostrar');
+        mostrarMensajeEstado('No se pudieron calcular los totales correctamente', 'warning');
+        return;
+    }
+
+    console.log(`✅ Validación exitosa: ${subtotales.length} subtotales detectados`);
+
+    // ❼ ✅ NUEVO: Construir objeto de datos para el modal de prodfactcalc.js
+    const datosCalculo = {
+        json_subtotal: data.json_subtotal,  // ← String JSON original
+        json_sorteo: data.json_sorteo,      // ← String JSON original
+        json_p: data.json_p,                // ← String JSON original
+
+        // ✅ AGREGAR: Objetos parseados para uso directo
+        subtotales: subtotales,
+        sorteos: sorteos,
+        productos: productos
+    };
+
+    // ❽ ✅ INVOCAR FUNCIÓN RENOMBRADA del módulo prodfactcalc.js
+    if (typeof abrirModalCalculo !== 'undefined') {
+        abrirModalCalculo(datosCalculo);  // ← Función renombrada
+    } else {
+        console.error('❌ Función abrirModalCalculoFactura no encontrada en prodfactcalc.js');
+        mostrarMensajeEstado('Error: Módulo de cálculo no cargado', 'danger');
+    }
 }
 
 /**
@@ -1782,30 +1809,28 @@ function ocultarSeccionProductos() {
 }
 
 /**
- * ✅ ACTUALIZADO v10.0: Confirma factura CON REDONDEO EN TODOS LOS VALORES
+ * ✅ ACTUALIZADO v10.1: Confirma factura CON REDONDEO Y PARSEO CORRECTO
+ * CORREGIDO: Validación correcta de response.json_p (no response.productos)
  */
 function confirmarFactura() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('✅ CONFIRMANDO FACTURA v10.0 (CON REDONDEO)');
+    console.log('✅ CONFIRMANDO FACTURA v10.1 (CON REDONDEO Y PARSEO)');
     console.log('═══════════════════════════════════════════════════');
 
-    // ❶ Validaciones...
+    // ❶ Validaciones previas
     if (productosFactura.length === 0) {
         console.warn('⚠️ No hay productos cargados');
-        // ✅ CAMBIO v15.0: Usar función centralizada
         mostrarMensajeEstado('Debe cargar al menos un producto para continuar', 'warning');
         return;
     }
 
     if (!clienteActualFactura) {
         console.error('❌ No hay cliente seleccionado');
-
-        // ✅ CAMBIO v15.0: Usar función centralizada
         mostrarMensajeEstado('Error: No hay cliente seleccionado', 'danger');
         return;
     }
 
-    // ❸ ✅ NUEVO: Construir JSON CON VALORES REDONDEADOS
+    // ❷ Construir JSON CON VALORES REDONDEADOS
     const productosArray = productosFactura.map((producto) => {
         return {
             // ═══════════════════════════════════════════════════
@@ -1904,24 +1929,20 @@ function confirmarFactura() {
     console.log(jsonProductos);
     console.log('═══════════════════════════════════════════════════');
 
-    // ❹ ✅ NUEVO: Calcular totales CON REDONDEO
+    // ❸ Calcular totales CON REDONDEO
     const tot_rows = productosFactura.length;
-
-    // ✅ Suma de cantidades REDONDEADA
     const tot_cantidad = redondear(
         productosFactura.reduce((sum, p) => sum + (parseFloat(p.cantidad_tot) || 0), 0),
         2
     );
-
-    // ✅ Total de precios REDONDEADO
     const tot_pvta = redondear(totalFactura, 2);
 
-    // ❺ Construir request DTO
+    // ❹ Construir request DTO
     const request = {
         json_p: jsonProductos,
         tot_rows: tot_rows,
         tot_cantidad: tot_cantidad,
-        tot_pvta: tot_pvta,  // ← ✅ AHORA ESTÁ REDONDEADO
+        tot_pvta: tot_pvta,
         lp_id: clienteActualFactura.listaPrecio || '001'
     };
 
@@ -1932,10 +1953,10 @@ function confirmarFactura() {
     console.log(`   tot_pvta: ${tot_pvta} ← ✅ REDONDEADO`);
     console.log('═══════════════════════════════════════════════════');
 
-    // ❻ Mostrar loader
+    // ❺ Mostrar loader
     mostrarLoaderCalculando();
 
-    // ❼ Llamar a la API
+    // ❻ Llamar a la API
     $.ajax({
         url: typeof CalcularFilasUrl !== 'undefined' && CalcularFilasUrl
             ? CalcularFilasUrl
@@ -1944,22 +1965,63 @@ function confirmarFactura() {
         contentType: 'application/json',
         data: JSON.stringify(request),
         success: function (response) {
-            console.log('✅ RESPUESTA RECIBIDA');
+            console.log('═══════════════════════════════════════════════════');
+            console.log('🔍 DIAGNÓSTICO DE RESPUESTA DEL SERVIDOR v10.1');
+            console.log('═══════════════════════════════════════════════════');
+            console.log('Response completo:', response);
+            console.log('Tipo de response:', typeof response);
+            console.log('Propiedades de response:', Object.keys(response || {}));
+            console.log('response.ok:', response?.ok);
+            console.log('response.json_p:', response?.json_p);  // ✅ CORRECCIÓN
+            console.log('Tipo de response.json_p:', typeof response?.json_p);  // ✅ CORRECCIÓN
+            console.log('response.json_subtotal:', response?.json_subtotal);
+            console.log('response.json_sorteo:', response?.json_sorteo);
+            console.log('═══════════════════════════════════════════════════');
+
             ocultarLoaderCalculando();
 
+            // ❼ VALIDACIÓN: Verificar que response existe
             if (!response || typeof response !== 'object') {
-                // ✅ CAMBIO v15.0: Usar función centralizada
+                console.error('❌ Error: Respuesta inválida del servidor');
+                console.error('   Response recibido:', response);
                 mostrarMensajeEstado('Error: Respuesta inválida del servidor', 'danger');
                 return;
             }
 
+            // ❽ VALIDACIÓN: Verificar response.ok
             if (!response.ok) {
-                // ✅ CAMBIO v15.0: Usar función centralizada
-                mostrarMensajeEstado(response.mensaje || 'Error al calcular totales', 'danger');
+                console.error('❌ Error en respuesta:', response.mensaje);
+                mostrarMensajeEstado(
+                    response.mensaje || 'Error al calcular totales',
+                    'danger'
+                );
                 return;
             }
 
-            abrirModalCalculoFactura(response);
+            // ❾ ✅ VALIDACIÓN CORRECTA: Verificar que json_p, json_subtotal existan
+            if (!response.json_p || typeof response.json_p !== 'string') {
+                console.error('❌ Error: response.json_p no es un string válido');
+                console.error('   Estructura recibida:', Object.keys(response));
+                mostrarMensajeEstado(
+                    'Error: El servidor no retornó los productos correctamente',
+                    'danger'
+                );
+                return;
+            }
+
+            if (!response.json_subtotal || typeof response.json_subtotal !== 'string') {
+                console.error('❌ Error: response.json_subtotal no es un string válido');
+                mostrarMensajeEstado(
+                    'Error: El servidor no retornó los subtotales correctamente',
+                    'danger'
+                );
+                return;
+            }
+
+            console.log(`✅ Validación exitosa: json_p y json_subtotal recibidos`);
+
+            // ❿ ✅ INVOCAR FUNCIÓN PARA ABRIR MODAL (con parseo de JSONs)
+            abrirModalCalculoFacturaConParseo(response);
         },
         error: function (xhr, status, error) {
             console.error('❌ ERROR EN CALCULAR FILAS');
@@ -1975,10 +2037,97 @@ function confirmarFactura() {
                 mensaje = 'Error interno del servidor. Contacte al administrador.';
             }
 
-            // ✅ CAMBIO v15.0: Usar función centralizada
             mostrarMensajeEstado(mensaje, 'danger', 0);
         }
     });
+}
+
+
+/**
+ * ✅ NUEVO v10.1: Parsea JSONs del servidor y abre modal de cálculo
+ * 
+ * @param {Object} response - Respuesta del servidor con json_p, json_subtotal, json_sorteo
+ */
+function abrirModalCalculoFacturaConParseo(response) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📊 PARSEANDO RESPUESTA PARA MODAL DE CÁLCULO v10.1');
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ VALIDACIÓN: Verificar que response existe
+    if (!response) {
+        console.error('❌ Error: No se recibieron datos para el cálculo');
+        mostrarMensajeEstado('Error: No se recibieron datos del servidor', 'danger');
+        return;
+    }
+
+    // ❷ ✅ PARSEAR LOS JSONs STRING A OBJETOS
+    let subtotales = [];
+    let sorteos = [];
+    let productos = [];
+
+    try {
+        // ❸ PARSEAR json_subtotal
+        if (response.json_subtotal) {
+            subtotales = JSON.parse(response.json_subtotal);
+            console.log(`✅ json_subtotal parseado: ${subtotales.length} registros`);
+        }
+
+        // ❹ PARSEAR json_sorteo
+        if (response.json_sorteo) {
+            sorteos = JSON.parse(response.json_sorteo);
+            console.log(`✅ json_sorteo parseado: ${sorteos.length} registros`);
+        }
+
+        // ❺ PARSEAR json_p (productos)
+        if (response.json_p) {
+            productos = JSON.parse(response.json_p);
+            console.log(`✅ json_p parseado: ${productos.length} productos`);
+        }
+    } catch (error) {
+        console.error('❌ Error al parsear JSONs:', error);
+        console.error('   json_subtotal:', response.json_subtotal);
+        console.error('   json_sorteo:', response.json_sorteo);
+        console.error('   json_p:', response.json_p);
+        mostrarMensajeEstado('Error al procesar datos del servidor', 'danger');
+        return;
+    }
+
+    // ❻ VALIDACIÓN: Verificar que haya subtotales
+    if (!subtotales || subtotales.length === 0) {
+        console.warn('⚠️ No hay subtotales para mostrar');
+        mostrarMensajeEstado('No se pudieron calcular los totales correctamente', 'warning');
+        return;
+    }
+
+    console.log(`✅ Validación exitosa: ${subtotales.length} subtotales detectados`);
+
+    // ❼ ✅ CONSTRUIR OBJETO DE DATOS PARA EL MODAL
+    const datosCalculo = {
+        // ✅ JSONs originales (strings) para referencia
+        json_subtotal: response.json_subtotal,
+        json_sorteo: response.json_sorteo,
+        json_p: response.json_p,
+
+        // ✅ Objetos parseados para uso directo
+        subtotales: subtotales,
+        sorteos: sorteos,
+        productos: productos,
+
+        // ✅ Mensaje de respuesta
+        mensaje: response.mensaje
+    };
+
+    console.log('📦 Datos preparados para modal:', datosCalculo);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❽ ✅ INVOCAR FUNCIÓN DEL MÓDULO prodfactcalc.js
+    if (typeof abrirModalCalculo !== 'undefined') {
+        abrirModalCalculo(datosCalculo);
+    } else {
+        console.error('❌ Función abrirModalCalculo no encontrada en prodfactcalc.js');
+        console.error('   Verificar que el archivo prodfactcalc.js esté cargado');
+        mostrarMensajeEstado('Error: Módulo de cálculo no cargado', 'danger');
+    }
 }
 
 /**
