@@ -301,13 +301,45 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 }
 
                 // ⓫ VALIDA SI EL PRODUCTO FUE SOLICITADO CON EL CODIGO DE BARRAS O CON EL ID DE PRODUCTO
-                //siempre sera un solo producto
+                // ✅ ACTUALIZADO v2.0: Valida SOLO si el producto TIENE código de barras Y NO se usó
                 var prod = resultado.ListaEntidad[0];
-                //tiene barrado y no lo utilizó
-                if (prod.sin_scan_con_barrado)
+
+                // ❶ CRÍTICO: Verificar si el producto TIENE código de barras
+                bool tieneCodigoBarras = !string.IsNullOrWhiteSpace(prod.p_id_barrado) &&
+                                         prod.p_id_barrado != "-" &&
+                                         prod.p_id_barrado.ToUpper() != "N/A" &&
+                                         prod.p_id_barrado.ToLower() != "sin código";
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("🔍 VALIDACIÓN DE CÓDIGO DE BARRAS");
+                _logger?.LogInformation($"   p_id: {prod.p_id}");
+                _logger?.LogInformation($"   p_id_barrado: {prod.p_id_barrado ?? "(null)"}");
+                _logger?.LogInformation($"   Tiene código de barras: {(tieneCodigoBarras ? "SÍ" : "NO")}");
+                _logger?.LogInformation($"   sin_scan_con_barrado: {prod.sin_scan_con_barrado}");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                // ❷ SOLO bloquear si TIENE código de barras Y NO se usó
+                if (tieneCodigoBarras && prod.sin_scan_con_barrado)
                 {
-                    _logger?.LogError("❌ Tiene barrado y no lo utilizó");
-                    return Json(new { ok = false, mensaje = "El producto tiene código de barras y debe ser escaneado o ingresado manualmente." });
+                    _logger?.LogWarning("❌ Producto con código de barras NO fue escaneado");
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = "El producto tiene código de barras y debe ser escaneado o ingresado manualmente.",
+                        tieneCodigoBarras = true,
+                        p_id = prod.p_id,
+                        p_id_barrado = prod.p_id_barrado
+                    });
+                }
+
+                // ❸ Si NO tiene código de barras, permitir continuar
+                if (!tieneCodigoBarras)
+                {
+                    _logger?.LogInformation("✅ Producto SIN código de barras → Se permite continuar");
+                }
+                else
+                {
+                    _logger?.LogInformation("✅ Producto con código de barras fue correctamente escaneado");
                 }
 
                 var productos = resultado.ListaEntidad;

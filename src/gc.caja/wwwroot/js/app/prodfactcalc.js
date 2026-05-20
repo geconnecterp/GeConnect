@@ -180,71 +180,99 @@ function procesarPagoFactura() {
 // ABRIR MODAL CON DATOS
 // ════════════════════════════════════════════════════════════
 /**
- * ✅ ACTUALIZADO v8.0: Abre el modal con los datos calculados
- * NUEVO: Hidrata datos del cliente en el header
+ * ✅ ACTUALIZADO v8.1: Abre modal con datos parseados
+ * RENOMBRADO: abrirModalCalculoFactura → abrirModalCalculo (evitar conflicto)
  * 
- * @param {Object} datosCalculo - Respuesta de CalcularFilas
- * @param {string} datosCalculo.json_subtotal - JSON con subtotales
- * @param {string} datosCalculo.json_sorteo - JSON con sorteos
- * @param {string} datosCalculo.json_p - JSON con productos procesados
+ * @param {Object} datosCalculo - Objeto con subtotales, sorteos y productos parseados
  */
-function abrirModalCalculoFactura(datosCalculo) {
+function abrirModalCalculo(datosCalculo) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('📊 ABRIR MODAL CÁLCULO DE FACTURA v8.0');
+    console.log('📊 ABRIR MODAL CÁLCULO DE FACTURA v8.1');
     console.log('═══════════════════════════════════════════════════');
     console.log('Datos recibidos:', datosCalculo);
 
     try {
-        // ❶ Parsear JSONs
-        const subtotales = parsearJSON(datosCalculo.json_subtotal, 'Subtotales');
-        const sorteos = parsearJSON(datosCalculo.json_sorteo, 'Sorteos');
-        const productos = parsearJSON(datosCalculo.json_p, 'Productos');
+        // ❶ EXTRAER DATOS PARSEADOS (ya vienen procesados desde prodfact.js)
+        const subtotales = datosCalculo.subtotales || [];
+        const sorteos = datosCalculo.sorteos || [];
+        const productos = datosCalculo.productos || [];
 
-        console.log('📋 Subtotales parseados:', subtotales);
-        console.log('🎁 Sorteos parseados:', sorteos);
-        console.log('📦 Productos parseados:', productos);
+        console.log('📋 Subtotales recibidos:', subtotales);
+        console.log('🎁 Sorteos recibidos:', sorteos);
+        console.log('📦 Productos recibidos:', productos);
 
-        // ❷ Validar que haya datos
+        // ❷ VALIDACIÓN: Verificar que haya subtotales
         if (!subtotales || subtotales.length === 0) {
             console.warn('⚠️ No hay subtotales para mostrar');
-            mostrarMensajeAdvertencia('No se pudieron calcular los totales correctamente');
+
+            AbrirMensaje(
+                "Advertencia",
+                "No se pudieron calcular los totales correctamente.\n\n" +
+                "Por favor, intente nuevamente.",
+                function () {
+                    $("#msjModal").modal("hide");
+                },
+                false,
+                ["Aceptar"],
+                "warning",
+                null
+            );
             return;
         }
 
-        // ❸ ✅ NUEVO: Hidratar datos del cliente en el header
+        console.log(`✅ Validación exitosa: ${subtotales.length} subtotales`);
+
+        // ❸ ✅ HIDRATAR DATOS DEL CLIENTE EN EL HEADER
         hidratarDatosClienteCalculo();
 
-        // ❹ Cargar conceptos en la tabla
+        // ❹ CARGAR CONCEPTOS EN LA TABLA
         cargarConceptosCalculoFactura(subtotales);
 
-        // ❺ Cargar sorteos
+        // ❺ CARGAR SORTEOS (si existen)
         cargarSorteosCalculoFactura(sorteos);
 
-        // ❻ Abrir modal
+        // ❻ ABRIR MODAL
         $('#modalCalculoFactura').modal('show');
 
-        console.log('✅ Modal de cálculo abierto correctamente');
         console.log('═══════════════════════════════════════════════════');
+        console.log('✅ MODAL DE CÁLCULO ABIERTO EXITOSAMENTE');
+        console.log(`   - ${subtotales.length} conceptos cargados`);
+        console.log(`   - ${sorteos.length} sorteos cargados`);
+        console.log(`   - ${productos.length} productos procesados`);
+        console.log('═══════════════════════════════════════════════════');
+
     } catch (error) {
         console.error('═══════════════════════════════════════════════════');
         console.error('❌ ERROR AL ABRIR MODAL DE CÁLCULO');
         console.error('═══════════════════════════════════════════════════');
         console.error('Error:', error);
         console.error('Stack:', error.stack);
-        
-        mostrarMensajeError('Error al cargar los datos de cálculo. Por favor, intente nuevamente.');
+        console.error('Datos recibidos:', datosCalculo);
+
+        AbrirMensaje(
+            "Error del Sistema",
+            "Error al cargar los datos de cálculo.\n\n" +
+            "Por favor, intente nuevamente o contacte al administrador.",
+            function () {
+                $("#msjModal").modal("hide");
+            },
+            false,
+            ["Aceptar"],
+            "error!",
+            null
+        );
     }
 }
 
 /**
- * ✅ NUEVO v8.0: Hidrata datos del cliente en el header del modal de cálculo
+ * ✅ ACTUALIZADO v8.0: Hidrata datos del cliente en el header del modal de cálculo
  * Copia los datos desde el modal de productos (sufijo "Prod") al modal de cálculo (sufijo "Calc")
  */
 function hidratarDatosClienteCalculo() {
     console.log('═══════════════════════════════════════════════════');
     console.log('📝 HIDRATAR DATOS DEL CLIENTE EN MODAL CÁLCULO');
     console.log('═══════════════════════════════════════════════════');
-    
+
     // ❶ Mapeo de IDs: Origen (Prod) → Destino (Calc)
     const mapeoIds = {
         'txtClienteNombreProd': 'txtClienteNombreCalc',
@@ -255,24 +283,21 @@ function hidratarDatosClienteCalculo() {
         'txtClienteEmailProd': 'txtClienteEmailCalc',
         'txtClienteMovilProd': 'txtClienteMovilCalc'
     };
-    
+
     // ❷ Copiar valores de cada campo
-    Object.keys(mapeoIds).forEach(function(idOrigen) {
+    Object.keys(mapeoIds).forEach(function (idOrigen) {
         const idDestino = mapeoIds[idOrigen];
         const valorOrigen = $(`#${idOrigen}`).val() || '';
-        
+
         $(`#${idDestino}`).val(valorOrigen);
-        
+
         console.log(`   ✅ ${idOrigen} → ${idDestino}: "${valorOrigen}"`);
     });
-    
+
     // ❸ Actualizar badge de tipo de comprobante
-    const badgeOrigenTexto = $('#badgeTipoComprobante').text().trim();
     const badgeOrigenHtml = $('#badgeTipoComprobante').html();
-    
     $('#badgeTipoComprobanteCalc').html(badgeOrigenHtml);
-    
-    console.log(`   ✅ Badge tipo comprobante: "${badgeOrigenTexto}"`);
+
     console.log('═══════════════════════════════════════════════════');
     console.log('✅ Datos del cliente hidratados correctamente');
     console.log('═══════════════════════════════════════════════════');
@@ -396,8 +421,8 @@ function cargarSorteosCalculoFactura(sorteos) {
     const $tbody = $('#tbodySorteos');
     $tbody.empty();
 
-    // ❶ Sin sorteos
-    if (!sorteos || sorteos.length === 0) {
+    // ❶ Sin sorteos o array vacío
+    if (!sorteos || sorteos.length === 0 || (sorteos.length === 1 && Object.keys(sorteos[0]).length === 0)) {
         $tbody.html(`
             <tr>
                 <td class="text-center text-muted py-4">
@@ -405,13 +430,19 @@ function cargarSorteosCalculoFactura(sorteos) {
                 </td>
             </tr>
         `);
+        console.log('ℹ️ No hay sorteos para mostrar');
         return;
     }
 
     // ❷ Recorrer sorteos y generar filas
-    sorteos.forEach(function (sorteo) {
-        const descripcion = sorteo.descripcion || sorteo.nombre || 'Sorteo sin nombre';
-        const detalle = sorteo.detalle || sorteo.observacion || '';
+    sorteos.forEach(function (sorteo, index) {
+        // Validar que el sorteo tenga datos
+        if (Object.keys(sorteo).length === 0) {
+            return; // Skip sorteos vacíos
+        }
+
+        const descripcion = sorteo.descripcion || sorteo.nombre || sorteo.sorteo || 'Sorteo sin nombre';
+        const detalle = sorteo.detalle || sorteo.observacion || sorteo.premio || '';
 
         const row = `
             <tr>

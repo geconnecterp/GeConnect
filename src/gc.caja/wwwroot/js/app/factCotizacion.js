@@ -1,14 +1,14 @@
 ﻿// ════════════════════════════════════════════════════════════
 // GESTOR DE COTIZACIONES
 // ════════════════════════════════════════════════════════════
-// VERSIÓN v1.6 - Bloqueo de pantalla durante diferimiento
+// VERSIÓN v1.7 - Radiobuttons nativos para selección única
 // ════════════════════════════════════════════════════════════
 // CARACTERÍSTICAS:
-// ✅ Mensajes unificados con mostrarMensajeEstado
+// ✅ Radiobuttons nativos HTML garantizan selección única
+// ✅ Click en fila activa el radiobutton automáticamente
+// ✅ Validación robusta con datos del DOM
 // ✅ Bloqueo visual durante operaciones asíncronas
-// ✅ Protección contra múltiples clics
-// ✅ Prevención de cierre accidental durante carga
-// ✅ Desbloqueo automático en éxito/error/timeout
+// ✅ Código más simple y mantenible
 // ════════════════════════════════════════════════════════════
 
 // ════════════════════════════════════════════════════════════
@@ -21,9 +21,9 @@ let cotizacionesDisponibles = [];
 // INICIALIZACIÓN
 // ════════════════════════════════════════════════════════════
 $(function () {
-    console.log('💰 Módulo de Cotizaciones inicializado v1.5 UNIFICADO');
+    console.log('💰 Módulo de Cotizaciones inicializado v1.7 RADIOBUTTONS');
     inicializarEventosCotizaciones();
-    inicializarProteccionCierreCotizaciones(); // ✅ NUEVO
+    inicializarProteccionCierreCotizaciones();
 });
 
 // ════════════════════════════════════════════════════════════
@@ -35,7 +35,6 @@ $(function () {
  */
 function inicializarProteccionCierreCotizaciones() {
     $('#modalCotizaciones').on('hide.bs.modal', function (e) {
-        // Si hay un overlay activo, prevenir cierre
         if ($('#overlayDiferimiento').length > 0 && $('#overlayDiferimiento').is(':visible')) {
             console.warn('⚠️ Intento de cerrar modal durante operación - BLOQUEADO');
             e.preventDefault();
@@ -48,34 +47,37 @@ function inicializarProteccionCierreCotizaciones() {
 // EVENTOS
 // ════════════════════════════════════════════════════════════
 function inicializarEventosCotizaciones() {
-    console.log('🔧 Configurando eventos de cotizaciones...');
+    console.log('🔧 Configurando eventos de cotizaciones v1.7...');
 
-    // ✅ CORREGIDO: Click en fila de la tabla (usa data-pre-id)
-    $(document).on('click', '#tbodyCotizaciones tr.cotizacion-row', function () {
-        const preId = $(this).data('pre-id'); // ✅ CORREGIDO
+    // ✅ NUEVO: Click en fila selecciona el radiobutton
+    $(document).on('click', '#tbodyCotizaciones tr.cotizacion-row', function (e) {
+        // Evitar doble trigger si se hizo click directo en el radio
+        if ($(e.target).is('input[type="radio"]')) {
+            return;
+        }
+
+        const $radio = $(this).find('.radio-cotizacion');
+        if ($radio.length > 0 && !$radio.prop('disabled')) {
+            $radio.prop('checked', true).trigger('change');
+        }
+    });
+
+    // ✅ NUEVO: Cambio en radiobutton actualiza selección
+    $(document).on('change', '.radio-cotizacion', function () {
+        const preId = $(this).val();
         if (preId && preId !== 'undefined') {
-            console.log('💰 Cotización seleccionada (click en fila):', preId);
+            console.log('💰 Cotización seleccionada via radio:', preId);
             seleccionarCotizacion(preId);
         }
     });
 
-    // ✅ CORREGIDO: Botón de acción en fila
-    $(document).on('click', '.btn-seleccionar-cotizacion', function (e) {
-        e.stopPropagation();
-        const preId = $(this).data('pre-id'); // ✅ CORREGIDO
-        if (preId) {
-            console.log('📋 Cotización seleccionada (click en botón):', preId);
-            seleccionarCotizacion(preId);
-        }
-    });
-
-    // Botón Cancelar
+    // ✅ Botón Cancelar
     $('#btnCancelarCotizacion').on('click', function () {
         console.log('❌ Cancelar selección de cotización');
         cerrarModalCotizaciones();
     });
 
-    // ✅ CORREGIDO: Botón Confirmar (no Seguir)
+    // ✅ Botón Confirmar
     $('#btnConfirmarCotizacion').on('click', function () {
         console.log('✅ Confirmar cotización seleccionada');
         confirmarCotizacion();
@@ -89,25 +91,22 @@ function inicializarEventosCotizaciones() {
 // ════════════════════════════════════════════════════════════
 /**
  * ✅ Abre el modal y carga las cotizaciones disponibles
- * ACTUALIZADO v1.5: Uso de mostrarMensajeEstado
  */
 function abrirModalCotizaciones() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('💰 ABRIR MODAL COTIZACIONES v1.5');
+    console.log('💰 ABRIR MODAL COTIZACIONES v1.7');
     console.log('═══════════════════════════════════════════════════');
 
     // ❶ Validar que haya cliente seleccionado
     if (!clienteActualFactura) {
         console.error('❌ No hay cliente seleccionado');
-        // ✅ ACTUALIZADO v1.5: Uso de mostrarMensajeEstado
         mostrarMensajeEstado('Debe identificar un cliente antes de cargar una cotización', 'danger');
         return;
     }
 
-    // ❷ RESTRICCIÓN: Solo clientes registrados (no consumidor final)
+    // ❷ RESTRICCIÓN: Solo clientes registrados
     if (!clienteActualFactura.id || clienteActualFactura.id === 'CF' || clienteActualFactura.id === '0') {
         console.error('❌ Cliente no válido para cotizaciones');
-        // ✅ ACTUALIZADO v1.5: Uso de mostrarMensajeEstado
         mostrarMensajeEstado(
             'Las cotizaciones solo están disponibles para clientes registrados. Los consumidores finales no pueden tener cotizaciones.',
             'warning',
@@ -119,12 +118,12 @@ function abrirModalCotizaciones() {
     console.log('   Cliente actual:', clienteActualFactura.denominacion);
     console.log('   CTA_ID:', clienteActualFactura.id);
 
-    // ❸ Mostrar nombre del cliente en el modal
+    // ❸ Mostrar nombre del cliente
     $('#lblClienteCotizacion').text(clienteActualFactura.denominacion || 'Sin nombre');
 
     // ❹ Resetear selección
     cotizacionSeleccionada = null;
-    $('#btnConfirmarCotizacion').prop('disabled', true); // ✅ CORREGIDO
+    $('#btnConfirmarCotizacion').prop('disabled', true);
 
     // ❺ Mostrar modal
     $('#modalCotizaciones').modal('show');
@@ -141,7 +140,7 @@ function abrirModalCotizaciones() {
  */
 function cargarCotizaciones() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('📡 CARGAR COTIZACIONES DESDE SERVIDOR v1.4');
+    console.log('📡 CARGAR COTIZACIONES DESDE SERVIDOR v1.7');
     console.log('═══════════════════════════════════════════════════');
 
     // ❶ Mostrar loader
@@ -177,9 +176,8 @@ function cargarCotizaciones() {
             console.log('═══════════════════════════════════════════════════');
             console.log('✅ RESPUESTA RECIBIDA DEL SERVIDOR');
             console.log('═══════════════════════════════════════════════════');
-            console.log('Response completo:', response);
 
-            // ✅ VALIDACIÓN DE RESPUESTA
+            // ✅ Validación de respuesta
             if (!response || typeof response !== 'object') {
                 console.error('❌ Respuesta inválida del servidor');
                 mostrarErrorCargarCotizaciones('Respuesta inválida del servidor');
@@ -192,7 +190,7 @@ function cargarCotizaciones() {
                 return;
             }
 
-            // ✅ VALIDAR ARRAY DE COTIZACIONES
+            // ✅ Validar array de cotizaciones
             if (!response.cotizaciones || !Array.isArray(response.cotizaciones)) {
                 console.error('❌ cotizaciones no es un array');
                 mostrarErrorCargarCotizaciones('Error en el formato de datos recibidos');
@@ -205,7 +203,7 @@ function cargarCotizaciones() {
                 return;
             }
 
-            // ✅ ÉXITO: Guardar y renderizar
+            // ✅ Éxito: Guardar y renderizar
             console.log(`✅ Se recibieron ${response.cotizaciones.length} cotizaciones`);
             cotizacionesDisponibles = response.cotizaciones;
             renderizarCotizaciones(response.cotizaciones);
@@ -245,12 +243,11 @@ function cargarCotizaciones() {
 // RENDERIZAR COTIZACIONES
 // ════════════════════════════════════════════════════════════
 /**
- * ✅ ACTUALIZADO v1.4: Renderiza las cotizaciones con estilos golden
- * CORREGIDO: Uso consistente de pre_id
+ * ✅ ACTUALIZADO v1.7: Renderiza cotizaciones con radiobuttons nativos
  */
 function renderizarCotizaciones(cotizaciones) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('📝 RENDERIZANDO COTIZACIONES v1.4 GOLDEN CORREGIDA');
+    console.log('📝 RENDERIZANDO COTIZACIONES v1.7 CON RADIOBUTTONS');
     console.log(`   Total a renderizar: ${cotizaciones.length}`);
     console.log('═══════════════════════════════════════════════════');
 
@@ -262,24 +259,18 @@ function renderizarCotizaciones(cotizaciones) {
 
     cotizaciones.forEach(function (cot, index) {
         try {
-            // ✅ VALIDACIÓN ROBUSTA DE CAMPOS
+            // ✅ Validación robusta de campos
             if (!cot || typeof cot !== 'object') {
                 console.warn(`⚠️ Cotización [${index}] es inválida:`, cot);
                 countErrores++;
                 return;
             }
 
-            // ═══════════════════════════════════════════════════════════════
-            // ✅ NORMALIZACIÓN DE CAMPOS CORREGIDA
-            // ═══════════════════════════════════════════════════════════════
-
-            // ✅ CÓDIGO: pre_id (KEY)
+            // ✅ Normalización de campos
             const preId = cot.pre_id?.toString().trim() || `COT-${index}`;
-
-            // ✅ DESCRIPCIÓN: pre_descripcion
             const descripcion = cot.pre_descripcion?.trim() || 'Sin descripción';
 
-            // ✅ FECHA: pre_fecha (puede venir como string ISO o Date)
+            // ✅ Fecha
             let fecha = '-';
             if (cot.pre_fecha) {
                 try {
@@ -295,29 +286,20 @@ function renderizarCotizaciones(cotizaciones) {
                 }
             }
 
-            // ✅ CONDICIÓN DE PAGO: pre_obs_pago
             const condicionPago = cot.pre_obs_pago?.trim() || 'Sin especificar';
-
-            // ✅ IMPORTE: importe (decimal)
             const importe = cot.importe || 0;
-
-            // ✅ ESTADO: pree_desc
             const estado = cot.pree_desc?.trim() || '';
             const estadoBadge = estado ? `<span class="badge bg-golden-light text-golden-dark badge-compact ms-2">${escapeHtml(estado)}</span>` : '';
 
-            // ═══════════════════════════════════════════════════════════════
-            // ✅ LOG DETALLADO (solo primeras 3)
-            // ═══════════════════════════════════════════════════════════════
+            // ✅ Log detallado (primeras 3)
             if (index < 3) {
                 console.log(`   [${index}] pre_id: ${preId}`);
                 console.log(`      - Descripción: ${descripcion}`);
-                console.log(`      - Fecha: ${fecha}`);
-                console.log(`      - Estado: ${estado}`);
                 console.log(`      - Importe: $${importe}`);
             }
 
             // ═══════════════════════════════════════════════════════════════
-            // ✅ CONSTRUCCIÓN DE FILA CON ESTILOS GOLDEN
+            // ✅ CONSTRUCCIÓN DE FILA CON RADIOBUTTON
             // ═══════════════════════════════════════════════════════════════
             const row = `
                 <tr data-pre-id="${preId}" 
@@ -326,35 +308,38 @@ function renderizarCotizaciones(cotizaciones) {
                     style="cursor: pointer;"
                     title="Click para seleccionar la cotización ${preId}">
                     
-                    <td class="text-center fw-bold text-golden-dark">${escapeHtml(preId)}</td>
+                    <!-- ✅ COLUMNA RADIOBUTTON -->
+                    <td class="text-center align-middle">
+                        <input type="radio" 
+                               name="radioCotizacion" 
+                               class="radio-cotizacion form-check-input" 
+                               value="${preId}"
+                               id="radio_${preId}"
+                               style="cursor: pointer; width: 1.2rem; height: 1.2rem;">
+                    </td>
                     
-                    <td class="text-truncate" title="${escapeHtml(descripcion)}">
+                    <td class="text-center fw-bold text-golden-dark align-middle">
+                        ${escapeHtml(preId)}
+                    </td>
+                    
+                    <td class="text-truncate align-middle" title="${escapeHtml(descripcion)}">
                         ${escapeHtml(descripcion)}
                         ${estadoBadge}
                     </td>
                     
-                    <td class="text-center">
+                    <td class="text-center align-middle">
                         <i class='bx bx-calendar text-muted' style="font-size: 0.9rem;"></i>
                         ${escapeHtml(fecha)}
                     </td>
                     
-                    <td class="text-truncate" title="${escapeHtml(condicionPago)}">
+                    <td class="text-truncate align-middle" title="${escapeHtml(condicionPago)}">
                         <i class='bx bx-credit-card text-muted' style="font-size: 0.9rem;"></i>
                         ${escapeHtml(condicionPago)}
                     </td>
                     
-                    <td class="text-end fw-bold text-success">
+                    <td class="text-end fw-bold text-success align-middle">
                         <i class='bx bx-dollar' style="font-size: 0.9rem;"></i>
                         ${formatearNumero(importe, 2)}
-                    </td>
-                    
-                    <td class="text-center">
-                        <button type="button" 
-                                class="btn btn-success btn-sm btn-seleccionar-cotizacion"
-                                data-pre-id="${preId}"
-                                title="Seleccionar esta cotización">
-                            <i class='bx bx-check-circle'></i> Seleccionar
-                        </button>
                     </td>
                 </tr>
             `;
@@ -374,7 +359,7 @@ function renderizarCotizaciones(cotizaciones) {
     console.log(`   - Errores: ${countErrores}`);
     console.log('═══════════════════════════════════════════════════');
 
-    // ✅ SI NO SE RENDERIZÓ NINGUNA, MOSTRAR MENSAJE
+    // ✅ Si no se renderizó ninguna, mostrar mensaje
     if (countExitosos === 0) {
         mostrarSinCotizaciones();
     }
@@ -384,26 +369,24 @@ function renderizarCotizaciones(cotizaciones) {
 // SELECCIÓN DE COTIZACIÓN
 // ════════════════════════════════════════════════════════════
 /**
- * ✅ ACTUALIZADO v1.5: Selecciona una cotización
- * CORREGIDO: Usa pre_id en lugar de cpf_nro
- * ACTUALIZADO v1.5: Uso de mostrarMensajeEstado
+ * ✅ ACTUALIZADO v1.7: Selecciona cotización y actualiza UI
  */
 function seleccionarCotizacion(preId) {
     console.log('═══════════════════════════════════════════════════');
-    console.log(`💰 SELECCIONAR COTIZACIÓN v1.5`);
+    console.log(`💰 SELECCIONAR COTIZACIÓN v1.7`);
     console.log(`   pre_id recibido: "${preId}"`);
     console.log('═══════════════════════════════════════════════════');
 
-    // ❶ VALIDACIÓN DE ENTRADA
+    // ❶ Validación de entrada
     if (!preId || preId === 'undefined' || preId === 'null') {
         console.error('❌ pre_id inválido');
         return;
     }
 
-    // ❷ Remover TODAS las selecciones anteriores
+    // ❷ Remover selección visual anterior
     $('#tbodyCotizaciones tr').removeClass('table-success selected-cotizacion');
 
-    // ❸ Marcar como seleccionada
+    // ❸ Marcar fila como seleccionada
     const $row = $(`#tbodyCotizaciones tr[data-pre-id="${preId}"]`);
 
     if ($row.length === 0) {
@@ -420,20 +403,13 @@ function seleccionarCotizacion(preId) {
     const cotizacion = cotizacionesDisponibles.find(cot => {
         const cotPreId = cot.pre_id?.toString().trim();
         const preIdBuscar = preId.toString().trim();
-
-        if (cotPreId === preIdBuscar) {
-            console.log(`   ✅ MATCH encontrado: ${cotPreId}`);
-            return true;
-        }
-        return false;
+        return cotPreId === preIdBuscar;
     });
 
     if (!cotizacion) {
         console.error('❌ Cotización no encontrada en el array');
         console.error(`   Buscando pre_id: "${preId}"`);
-        console.error(`   IDs disponibles en array:`, cotizacionesDisponibles.map(c => c.pre_id));
-
-        // ✅ ACTUALIZADO v1.5: Uso de mostrarMensajeEstado
+        console.error(`   IDs disponibles:`, cotizacionesDisponibles.map(c => c.pre_id));
         mostrarMensajeEstado('Error: No se pudieron obtener los datos de la cotización', 'danger');
         return;
     }
@@ -454,61 +430,52 @@ function seleccionarCotizacion(preId) {
 // CONFIRMAR COTIZACIÓN
 // ════════════════════════════════════════════════════════════
 /**
- * ✅ ACTUALIZADO v1.6: Confirma la cotización seleccionada con bloqueo de pantalla
- * CORREGIDO: Usa pre_id y validación robusta
- * NUEVO: Implementa bloqueo durante carga
+ * ✅ Confirma la cotización seleccionada con bloqueo de pantalla
  */
 function confirmarCotizacion() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('✅ CONFIRMAR COTIZACIÓN SELECCIONADA v1.6 CON BLOQUEO');
+    console.log('✅ CONFIRMAR COTIZACIÓN SELECCIONADA v1.7');
     console.log('═══════════════════════════════════════════════════');
 
-    // ❶ VALIDACIÓN ROBUSTA DE VARIABLE GLOBAL
+    // ❶ Validación robusta
     if (!cotizacionSeleccionada || typeof cotizacionSeleccionada !== 'object') {
         console.error('❌ cotizacionSeleccionada es null o inválido');
-        console.error('   Valor actual:', cotizacionSeleccionada);
         mostrarMensajeEstado('Debe seleccionar una cotización antes de continuar', 'warning');
         return;
     }
 
-    // ❷ VALIDACIÓN ROBUSTA: Obtener pre_id del objeto
+    // ❷ Validar pre_id
     const preId = cotizacionSeleccionada.pre_id?.toString().trim();
 
     if (!preId || preId === '' || preId === 'undefined') {
         console.error('❌ pre_id no válido en cotizacionSeleccionada');
-        console.error('   Objeto completo:', cotizacionSeleccionada);
         mostrarMensajeEstado('Error: Cotización sin código válido', 'danger');
         return;
     }
 
     console.log('   Cotización pre_id:', preId);
     console.log('   Descripción:', cotizacionSeleccionada.pre_descripcion || 'N/A');
-    console.log('   Importe:', cotizacionSeleccionada.importe || 0);
 
-    // ❸ VALIDACIÓN ADICIONAL: Verificar que existe buscarProductoPorCodigo
+    // ❸ Validar función de carga
     if (typeof buscarProductoPorCodigo !== 'function') {
         console.error('❌ Función buscarProductoPorCodigo no está definida');
         mostrarMensajeEstado('Error: Función de carga no disponible. Verifique que prodfact.js esté cargado.', 'danger', 7000);
         return;
     }
 
-    // ❹ ✅ NUEVO: BLOQUEAR PANTALLA ANTES DE CARGAR
+    // ❹ Bloquear pantalla
     bloquearPantallaDiferimiento('Cargando cotización...');
 
-    // ❺ Cerrar modal (el overlay permanecerá visible)
+    // ❺ Cerrar modal
     $('#modalCotizaciones').modal('hide');
 
-    // ❻ Pequeña demora para permitir transición del modal
+    // ❻ Invocar carga con pequeña demora
     setTimeout(function () {
         try {
-            // ❼ Cargar cotización mediante la función existente en prodfact.js
             console.log('═══════════════════════════════════════════════════');
             console.log('📡 INVOCANDO buscarProductoPorCodigo');
             console.log(`   - tipoValor: 'C'`);
             console.log(`   - valor: '${preId}'`);
-            console.log(`   - cantidad: 1`);
-            console.log(`   - bulto: true`);
-            console.log(`   - origen: 'cotizacion'`);
             console.log('═══════════════════════════════════════════════════');
 
             buscarProductoPorCodigo(
@@ -516,14 +483,10 @@ function confirmarCotizacion() {
                 preId,          // valor = pre_id
                 1,              // cantidad
                 true,           // bulto
-                'cotizacion'    // origen de carga = 'cotizacion'
+                'cotizacion'    // origen
             );
 
-            console.log('⚠️ Modo de bloqueo de grilla: COTIZACIÓN activado');
-
-            // ❽ ✅ NOTA: El desbloqueo se realizará en el callback de success/error
-            //    de buscarProductoPorCodigo (debe modificarse en prodfact.js)
-            //    Por seguridad, agregamos timeout de respaldo (15 segundos)
+            // ❼ Timeout de seguridad
             setTimeout(function () {
                 desbloquearPantallaDiferimiento();
                 console.log('⚠️ Desbloqueo por timeout de seguridad (15s)');
@@ -541,7 +504,7 @@ function confirmarCotizacion() {
 // CERRAR MODAL
 // ════════════════════════════════════════════════════════════
 /**
- * ✅ ACTUALIZADO v1.6: Cierra el modal y limpia datos (con desbloqueo de seguridad)
+ * ✅ Cierra el modal y limpia datos
  */
 function cerrarModalCotizaciones() {
     console.log('🔙 Cerrando modal de cotizaciones...');
@@ -556,7 +519,13 @@ function cerrarModalCotizaciones() {
     // ❸ Restaurar botones
     $('#btnConfirmarCotizacion').prop('disabled', true);
 
-    // ❹ ✅ NUEVO: Asegurar desbloqueo de pantalla por seguridad
+    // ❹ Desmarcar radiobuttons
+    $('.radio-cotizacion').prop('checked', false);
+
+    // ❺ Remover selección visual
+    $('#tbodyCotizaciones tr').removeClass('table-success selected-cotizacion');
+
+    // ❻ Asegurar desbloqueo
     if ($('#overlayDiferimiento').length > 0) {
         console.log('⚠️ Overlay detectado al cerrar modal - Limpiando...');
         desbloquearPantallaDiferimiento();
@@ -566,11 +535,11 @@ function cerrarModalCotizaciones() {
 }
 
 // ════════════════════════════════════════════════════════════
-// HELPERS ACTUALIZADOS CON ESTILOS GOLDEN
+// HELPERS
 // ════════════════════════════════════════════════════════════
 
 /**
- * ✅ ACTUALIZADO v1.4: Muestra mensaje cuando no hay cotizaciones
+ * ✅ Muestra mensaje cuando no hay cotizaciones
  */
 function mostrarSinCotizaciones() {
     console.log('ℹ️ Mostrando mensaje: No hay cotizaciones disponibles');
@@ -594,7 +563,7 @@ function mostrarSinCotizaciones() {
 }
 
 /**
- * ✅ ACTUALIZADO v1.4: Muestra error al cargar cotizaciones
+ * ✅ Muestra error al cargar cotizaciones
  */
 function mostrarErrorCargarCotizaciones(mensaje) {
     console.error('❌ Error al cargar cotizaciones:', mensaje);
@@ -622,12 +591,10 @@ function mostrarErrorCargarCotizaciones(mensaje) {
 
 /**
  * ✅ Bloquea la interfaz durante operaciones asíncronas
- * @param {string} mensaje - Mensaje a mostrar durante el bloqueo
  */
 function bloquearPantallaDiferimiento(mensaje = 'Procesando...') {
     console.log('🔒 Bloqueando pantalla para diferimiento...');
 
-    // ❶ Crear overlay si no existe
     if ($('#overlayDiferimiento').length === 0) {
         const overlay = `
             <div id="overlayDiferimiento" class="loading-overlay">
@@ -643,48 +610,38 @@ function bloquearPantallaDiferimiento(mensaje = 'Procesando...') {
         `;
         $('body').append(overlay);
     } else {
-        // ❷ Actualizar mensaje si ya existe
         $('#mensajeDiferimiento').text(mensaje);
         $('#overlayDiferimiento').fadeIn(200);
     }
 
-    // ❸ Deshabilitar botones críticos
-    $('#btnConfirmarCotizacion, #btnCancelarCotizacion, .btn-seleccionar-cotizacion').prop('disabled', true);
-
-    // ❹ Prevenir cierre del modal con ESC
+    $('#btnConfirmarCotizacion, #btnCancelarCotizacion').prop('disabled', true);
     $('#modalCotizaciones').data('bs-keyboard', false);
 
     console.log('✅ Pantalla bloqueada');
 }
 
 /**
- * ✅ Desbloquea la interfaz después de completar la operación
+ * ✅ Desbloquea la interfaz
  */
 function desbloquearPantallaDiferimiento() {
     console.log('🔓 Desbloqueando pantalla...');
 
-    // ❶ Remover overlay con animación
     $('#overlayDiferimiento').fadeOut(300, function () {
         $(this).remove();
     });
 
-    // ❷ Rehabilitar botones
-    $('#btnConfirmarCotizacion, #btnCancelarCotizacion, .btn-seleccionar-cotizacion').prop('disabled', false);
-
-    // ❸ Restaurar cierre con ESC
+    $('#btnConfirmarCotizacion, #btnCancelarCotizacion').prop('disabled', false);
     $('#modalCotizaciones').data('bs-keyboard', true);
 
     console.log('✅ Pantalla desbloqueada');
 }
 
 // ════════════════════════════════════════════════════════════
-// CALLBACKS PÚBLICOS PARA DESBLOQUEO
+// CALLBACKS PÚBLICOS
 // ════════════════════════════════════════════════════════════
 
 /**
- * ✅ Callback para invocar desde prodfact.js cuando se completa la carga
- * @param {boolean} exito - Indica si la carga fue exitosa
- * @param {string} mensaje - Mensaje de resultado (opcional)
+ * ✅ Callback para invocar desde prodfact.js
  */
 window.onCotizacionCargadaCompleta = function (exito, mensaje) {
     console.log('═══════════════════════════════════════════════════');
@@ -693,16 +650,13 @@ window.onCotizacionCargadaCompleta = function (exito, mensaje) {
     console.log(`   Mensaje: ${mensaje || 'N/A'}`);
     console.log('═══════════════════════════════════════════════════');
 
-    // ❶ Desbloquear pantalla
     desbloquearPantallaDiferimiento();
 
-    // ❷ Mostrar mensaje si corresponde
     if (mensaje) {
         const tipo = exito ? 'success' : 'danger';
         mostrarMensajeEstado(mensaje, tipo);
     }
 
-    // ❸ Limpiar variables de sesión
     cotizacionSeleccionada = null;
 };
 

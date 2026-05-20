@@ -18,6 +18,10 @@ let ultimoCambioProducto = null; // ✅ NUEVO: Permite reflejar visualmente alta
 let cajaAcumulaProductos = true; // Default: TRUE (acumula por defecto)
 // ✅ AGREGAR AL INICIO DEL ARCHIVO (después de las variables globales)
 let tieneBackupPendiente = false; // ✅ NUEVO: Flag de backup
+
+// ✅ EXPONER VARIABLE PARA ACCESO DESDE OTROS MÓDULOS
+window.origenCargaActual = origenCargaActual; // ← CRÍTICO para busquedasV02.js
+
 // ====== CONSTANTES ======
 const TIPO_CARGA = {
     PRODUCTO: 'P',
@@ -213,17 +217,24 @@ function BuscarProductos() {
  */
 function procesarEntradaCodigo() {
     const entrada = $('#txtCodigoProducto').val().trim();
-    
+
     if (!entrada) {
         mostrarMensajeEstado('Por favor, ingrese un código de producto', 'warning');
         return;
     }
-    
+
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔍 PROCESANDO ENTRADA DE CÓDIGO');
+    console.log('🔍 PROCESANDO ENTRADA DE CÓDIGO v4.0');
     console.log(`   Entrada: "${entrada}"`);
+    console.log(`   Origen actual: ${origenCargaActual}`); // ✅ LOG MEJORADO
     console.log('═══════════════════════════════════════════════════');
-    
+
+    // ✅ CRÍTICO: Mantener origen si viene de búsqueda avanzada
+    // Solo resetear si es entrada manual directa
+    if (origenCargaActual !== 'busquedaAvanzada') {
+        origenCargaActual = 'directo';
+    }
+
     // ❶ Detectar cantidad comodín (Ej: 5+7790070036599)
     const matchCantidad = entrada.match(REGEX_CANTIDAD_COMODIN);
     
@@ -321,21 +332,22 @@ function procesarCodigoConCantidad(codigo, cantidad) {
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * ✅ ACTUALIZADO v5.1: Busca producto por código mediante AJAX
+ * ✅ ACTUALIZADO v5.2: Busca producto por código mediante AJAX
  * LOGS MEJORADOS: Muestra claramente el estado del parámetro "bulto"
+ * NUEVO v5.2: Preserva origen de carga correctamente para búsqueda avanzada
  */
 function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, origenCarga = 'directo') {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔍 BUSCAR PRODUCTO POR CÓDIGO - v5.1');
+    console.log('🔍 BUSCAR PRODUCTO POR CÓDIGO - v5.2');
     console.log('═══════════════════════════════════════════════════');
     console.log(`   Tipo Valor: ${tipoValor}`);
     console.log(`   Valor: ${valor}`);
     console.log(`   Cantidad: ${cantidad}`);
     console.log(`   Bulto: ${bulto} ${bulto ? '✅ (Por bulto)' : '❌ (Por unidad)'}`);  // ✅ LOG MEJORADO
-    console.log(`   Origen Carga: ${origenCarga}`);
+    console.log(`   Origen Carga: ${origenCarga}`); // ✅ NUEVO LOG CRÍTICO
     console.log(`   🔧 Modo Actual: ${cajaAcumulaProductos ? 'ACUMULA ✅' : 'NO ACUMULA ❌'}`);
     console.log('═══════════════════════════════════════════════════');
-    
+
     // ❶ Validar modo de bloqueo (cotización)
     if (modoBloqueoGrilla === 'cotizacion' && origenCarga === 'directo') {
         console.warn('⚠️ Grilla bloqueada por cotización');
@@ -347,30 +359,34 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
         );
         return;
     }
-    
-    // ❷ Guardar origen de carga actual
-    origenCargaActual = origenCarga;
-    
+
+    // �② ✅ NUEVO v5.2: Guardar origen de carga ANTES de la llamada AJAX
+    const origenOriginal = origenCargaActual;
+    origenCargaActual = origenCarga; // ← Preservar origen
+
+    console.log(`✅ Origen preservado para procesamiento: "${origenCargaActual}"`);
+    console.log(`   Origen anterior era: "${origenOriginal}"`);
+
     // ❸ Deshabilitar campo y botón
     const $txtCodigo = $('#txtCodigoProducto');
     const $btnBuscar = $('#btnBuscarProducto');
-    
+
     $txtCodigo.prop('disabled', true);
     $btnBuscar.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> '); //Buscando...
-    
+
     // ❹ CORREGIDO: Actualizar mensaje de estado a "Buscando..."
     $('#mensajeEstadoProducto')
         .removeClass('text-danger text-success text-muted text-warning')  // ✅ Incluir text-muted
         .addClass('text-info')
         .html(`<i class='bx bx-loader-alt bx-spin'></i> Buscando producto...`);
-    
+
     // ❺ Construir URL
     const url = typeof ObtenerProductoDatosUrl !== 'undefined' && ObtenerProductoDatosUrl
         ? ObtenerProductoDatosUrl
         : '/Facturacion/ProductoFact/ObtenerProductoDatos';
-    
+
     console.log(`📡 URL: ${url}`);
-    
+
     // ❻ Realizar AJAX
     $.ajax({
         url: url,
@@ -381,12 +397,12 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
             cantidad: cantidad,    // 1 o cantidad del comodín (ej: 7)
             bulto: bulto           // ✅ true o false según checkbox
         },
-        success: function(response) {
+        success: function (response) {
             console.log('═══════════════════════════════════════════════════');
             console.log('✅ RESPUESTA RECIBIDA DEL SERVIDOR');
             console.log('═══════════════════════════════════════════════════');
             console.log('   Response completo:', response);
-            
+
             // ✅ NUEVO: Mostrar cálculo de cantidad en el log
             if (response.ok && response.producto) {
                 const prod = Array.isArray(response.producto) ? response.producto[0] : response.producto;
@@ -408,24 +424,26 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
                     console.log('═══════════════════════════════════════════════════');
                 }
             }
-            
+
             if (response.ok) {
-                procesarRespuestaProducto(response, origenCarga);
+                // ✅ CRÍTICO v5.2: Pasar origen de carga al procesamiento
+                console.log(`📤 Enviando producto a procesamiento con origen: "${origenCarga}"`);
+                procesarRespuestaProducto(response, origenCarga); // ← Usar parámetro recibido
             } else {
                 console.error('❌ Error en respuesta:', response.mensaje);
-                
+
                 // ✅ CORREGIDO: Mostrar error
                 // ✅ CAMBIO v15.0: Mantener visualización en #mensajeEstadoProducto
                 $('#mensajeEstadoProducto')
                     .removeClass('text-info text-success text-muted text-warning')
                     .addClass('text-danger')
                     .html(`<i class='bx bx-error-circle'></i> ${response.mensaje}`);
-                
+
                 // ✅ CAMBIO v15.0: Ya NO usar mostrarMensajeError (modal)
                 // Solo mantener el mensaje en el área de estado
             }
         },
-        error: function(xhr, status, error) {
+        error: function (xhr, status, error) {
             console.error('❌ ERROR AJAX AL BUSCAR PRODUCTO');
             ocultarLoaderCalculando();
 
@@ -448,13 +466,28 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
             // ✅ CAMBIO v15.0: Usar función centralizada
             mostrarMensajeEstado(mensaje, 'danger', 0); // ← Mensaje permanente hasta nueva acción
         },
-        complete: function() {
+        complete: function () {
+            console.log('═══════════════════════════════════════════════════');
+            console.log('🔚 AJAX COMPLETE - Finalizando búsqueda');
+            console.log('═══════════════════════════════════════════════════');
+
+            // ✅ CRÍTICO v5.2: Resetear origen SOLO si NO es búsqueda avanzada
+            if (origenCargaActual === 'busquedaAvanzada') {
+                console.log('✅ Origen "busquedaAvanzada" mantenido para siguiente operación');
+                console.log('   → El usuario puede seguir agregando productos desde búsqueda avanzada');
+            } else {
+                console.log('✅ Reseteando origen a "directo"');
+                origenCargaActual = 'directo';
+            }
+
             // Rehabilitar campo y botón
             $txtCodigo.prop('disabled', false).val('');
             $btnBuscar.prop('disabled', false).html('<i class="bx bx-search"></i>');
-            
+
             // Focus en el campo
             $txtCodigo.trigger('focus');
+
+            console.log('═══════════════════════════════════════════════════');
         }
     });
 }
@@ -746,15 +779,15 @@ function seleccionarProductoDeModal(index) {
 }
 
 /**
- * ✅ ACTUALIZADO v5.1: Valida y agrega un producto único
- * CORREGIDO: Manejo correcto de clases de color
+ * ✅ ACTUALIZADO v15.2: Valida y agrega un producto único
+ * NUEVO: Detecta origen desde búsqueda avanzada
  */
 function validarYAgregarProducto(producto, origenCarga) {
     const respuesta = producto.respuesta || 0;
     const descripcion = producto.p_desc || 'Sin descripción';
 
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔍 VALIDANDO PRODUCTO ÚNICO');
+    console.log('🔍 VALIDANDO PRODUCTO ÚNICO v15.2');
     console.log('═══════════════════════════════════════════════════');
     console.log(`   Descripción: ${descripcion}`);
     console.log(`   Respuesta: ${respuesta}`);
@@ -762,7 +795,6 @@ function validarYAgregarProducto(producto, origenCarga) {
 
     if (respuesta !== 0) {
         const mensaje = producto.respuesta_msj || 'El producto no se puede cargar';
-
         console.error(`❌ Producto con error: ${mensaje}`);
 
         if (origenCarga === 'ultimo') {
@@ -770,13 +802,11 @@ function validarYAgregarProducto(producto, origenCarga) {
             return;
         }
 
-        // ✅ CAMBIO v15.0: Solo actualizar área de estado, NO modal
         $('#mensajeEstadoProducto')
             .removeClass('text-info text-success text-muted text-warning')
             .addClass('text-danger')
             .html(`<i class='bx bx-error-circle'></i> ${mensaje}`);
 
-        // ✅ CAMBIO v15.0: Devolver foco
         setTimeout(() => {
             $('#txtCodigoProducto').trigger('focus');
         }, 100);
@@ -787,15 +817,22 @@ function validarYAgregarProducto(producto, origenCarga) {
     const resultado = agregarProductoAGrilla(producto);
 
     let mensajeExito = 'Producto agregado';
+    let iconoExito = 'bx-check-circle';
 
-    if (resultado?.accion === 'fusionado' && resultado.producto) {
+    // ✅ NUEVO: Diferenciar mensaje según origen
+    if (origenCarga === 'busquedaAvanzada') {
+        mensajeExito = 'Producto agregado desde búsqueda avanzada';
+        iconoExito = 'bx-search-alt';
+        console.log('🔍 Producto agregado desde BÚSQUEDA AVANZADA');
+    } else if (resultado?.accion === 'fusionado' && resultado.producto) {
         mensajeExito = `Cantidad actualizada: ${formatearNumero(normalizarNumero(resultado.producto.cantidadTotal, 0), 2)}`;
+        iconoExito = 'bx-refresh';
     }
 
     $('#mensajeEstadoProducto')
         .removeClass('text-info text-danger text-muted text-warning')
         .addClass('text-success')
-        .html(`<i class='bx bx-check-circle'></i> ${mensajeExito}`);
+        .html(`<i class='bx ${iconoExito}'></i> ${mensajeExito}`);
 
     setTimeout(() => {
         $('#mensajeEstadoProducto')
@@ -804,61 +841,6 @@ function validarYAgregarProducto(producto, origenCarga) {
             .html('Presione <kbd>Enter</kbd> o <strong>BUSCAR</strong> para agregar producto');
     }, 3000);
 }
-//function validarYAgregarProducto(producto, origenCarga) {
-//    const respuesta = producto.respuesta || 0;
-//    const descripcion = producto.p_desc || 'Sin descripción';
-
-//    console.log('═══════════════════════════════════════════════════');
-//    console.log(`🔍 VALIDANDO PRODUCTO ÚNICO`);
-//    console.log('═══════════════════════════════════════════════════');
-//    console.log(`   Descripción: ${descripcion}`);
-//    console.log(`   Respuesta: ${respuesta}`);
-//    console.log(`   Origen carga: ${origenCarga}`);
-
-//    // ❶ Producto con error (respuesta != 0)
-//    if (respuesta !== 0) {
-//        const mensaje = producto.respuesta_msj || 'El producto no se puede cargar';
-
-//        console.error(`❌ Producto con error: ${mensaje}`);
-
-//        // Para último detalle, ignorar silenciosamente
-//        if (origenCarga === 'ultimo') {
-//            console.log('ℹ️ Error ignorado (último detalle)');
-//            return;
-//        }
-
-//        // ✅ CORREGIDO: Eliminar TODAS las clases de color
-//        $('#mensajeEstadoProducto')
-//            .removeClass('text-info text-success text-muted')  // ✅ Incluir text-muted
-//            .addClass('text-danger')
-//            .html(`<i class='bx bx-error-circle'></i> ${mensaje}`);
-
-//        mostrarMensajeError(mensaje);
-//        return;
-//    }
-
-//    // ②  Producto válido
-//    console.log('✅ Producto válido, agregando a grilla...');
-//    agregarProductoAGrilla(producto);
-
-//    // ✅ CORREGIDO: Mensaje de éxito
-//    $('#mensajeEstadoProducto')
-//        .removeClass('text-info text-danger text-muted')  // ✅ Incluir text-muted
-//        .addClass('text-success')
-//        .html(`<i class='bx bx-check-circle'></i> Producto agregado`);
-
-//    // ✅ CORREGIDO: Restaurar estado inicial después de 3 segundos
-//    setTimeout(() => {
-//        $('#mensajeEstadoProducto')
-//            .removeClass('text-success text-danger text-info')  // ✅ Eliminar colores
-//            .addClass('text-muted')  // ✅ Restaurar text-muted
-//            .html('Presione <kbd>Enter</kbd> o <strong>BUSCAR</strong> para agregar producto');
-//    }, 3000);
-//}
-
-// ═══════════════════════════════════════════════════════════════════
-// SECCIÓN 3: GESTIÓN DE GRILLA PRINCIPAL
-// ═══════════════════════════════════════════════════════════════════
 
 function normalizarClaveProducto(p_id) {
     return String(p_id || '').trim().toUpperCase();
@@ -1367,51 +1349,78 @@ function calcularPrecioTotal(producto) {
 }
 
 /**
- * ✅ NUEVO v6.0: Abre el modal de cálculo de factura
+ * ✅ ACTUALIZADO v6.3: Abre modal parseando JSONs del servidor
  */
 function abrirModalCalculoFactura(data) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('📊 ABRIENDO MODAL DE CÁLCULO DE FACTURA');
+    console.log('📊 ABRIENDO MODAL DE CÁLCULO DE FACTURA v6.3');
     console.log('═══════════════════════════════════════════════════');
-    console.log('Datos de cálculo:', data);
-    
-    const $modal = $('#modalCalculoFactura');
-    
-    // ❶ Hidratar datos en el modal
-    $modal.find('#txtTotalGravado').val(`$ ${formatearNumero(data.tot_gravado, 2)}`);
-    $modal.find('#txtTotalExento').val(`$ ${formatearNumero(data.tot_exento, 2)}`);
-    $modal.find('#txtTotalNoGravado').val(`$ ${formatearNumero(data.tot_no_gravado, 2)}`);
-    $modal.find('#txtTotalImpuestoInterno').val(`$ ${formatearNumero(data.tot_ii, 2)}`);
-    $modal.find('#txtTotalIva').val(`$ ${formatearNumero(data.tot_iva, 2)}`);
-    $modal.find('#txtSubtotal').val(`$ ${formatearNumero(data.tot_subtotal, 2)}`);
-    $modal.find('#txtDescuentos').val(`$ ${formatearNumero(data.tot_descuentos, 2)}`);
-    $modal.find('#txtRecargo').val(`$ ${formatearNumero(data.tot_recargo, 2)}`);
-    $modal.find('#txtTotalFactura').val(`$ ${formatearNumero(data.tot_factura, 2)}`);
-    
-    // ❷ Mostrar detalles de cada producto
-    const $tbodyDetalles = $modal.find('#tbodyDetallesProductos');
-    $tbodyDetalles.empty();
-    
-    data.productos.forEach((prod, index) => {
-        const precioTotal = calcularPrecioTotal(prod);
-        
-        $tbodyDetalles.append(`
-            <tr>
-                <td class="text-center">${prod.item}</td>
-                <td class="text-start">${escapeHtml(prod.p_desc)}</td>
-                <td class="text-center">${prod.cantidad_tot}</td>
-                <td class="text-end">$ ${formatearNumero(prod.p_pvta, 2)}</td>
-                <td class="text-end">$ ${formatearNumero(precioTotal, 2)}</td>
-            </tr>
-        `);
-    });
-    
-    console.log('✅ Detalles de productos cargados en el modal');
-    
-    // ❸ Abrir modal
-    $modal.modal('show');
-    
-    console.log('✅ Modal de cálculo abierto');
+    console.log('Datos recibidos:', data);
+
+    // ❶ VALIDACIÓN: Verificar que data existe
+    if (!data) {
+        console.error('❌ Error: No se recibieron datos para el cálculo');
+        mostrarMensajeEstado('Error: No se recibieron datos del servidor', 'danger');
+        return;
+    }
+
+    // ❷ ✅ PARSEAR LOS JSONs STRING A OBJETOS
+    let subtotales = [];
+    let sorteos = [];
+    let productos = [];
+
+    try {
+        // ❸ PARSEAR json_subtotal
+        if (data.json_subtotal) {
+            subtotales = JSON.parse(data.json_subtotal);
+            console.log(`✅ json_subtotal parseado: ${subtotales.length} registros`);
+        }
+
+        // ❹ PARSEAR json_sorteo
+        if (data.json_sorteo) {
+            sorteos = JSON.parse(data.json_sorteo);
+            console.log(`✅ json_sorteo parseado: ${sorteos.length} registros`);
+        }
+
+        // ❺ PARSEAR json_p (productos)
+        if (data.json_p) {
+            productos = JSON.parse(data.json_p);
+            console.log(`✅ json_p parseado: ${productos.length} productos`);
+        }
+    } catch (error) {
+        console.error('❌ Error al parsear JSONs:', error);
+        mostrarMensajeEstado('Error al procesar datos del servidor', 'danger');
+        return;
+    }
+
+    // ❻ VALIDACIÓN: Verificar que haya subtotales
+    if (!subtotales || subtotales.length === 0) {
+        console.warn('⚠️ No hay subtotales para mostrar');
+        mostrarMensajeEstado('No se pudieron calcular los totales correctamente', 'warning');
+        return;
+    }
+
+    console.log(`✅ Validación exitosa: ${subtotales.length} subtotales detectados`);
+
+    // ❼ ✅ NUEVO: Construir objeto de datos para el modal de prodfactcalc.js
+    const datosCalculo = {
+        json_subtotal: data.json_subtotal,  // ← String JSON original
+        json_sorteo: data.json_sorteo,      // ← String JSON original
+        json_p: data.json_p,                // ← String JSON original
+
+        // ✅ AGREGAR: Objetos parseados para uso directo
+        subtotales: subtotales,
+        sorteos: sorteos,
+        productos: productos
+    };
+
+    // ❽ ✅ INVOCAR FUNCIÓN RENOMBRADA del módulo prodfactcalc.js
+    if (typeof abrirModalCalculo !== 'undefined') {
+        abrirModalCalculo(datosCalculo);  // ← Función renombrada
+    } else {
+        console.error('❌ Función abrirModalCalculoFactura no encontrada en prodfactcalc.js');
+        mostrarMensajeEstado('Error: Módulo de cálculo no cargado', 'danger');
+    }
 }
 
 /**
@@ -1800,30 +1809,28 @@ function ocultarSeccionProductos() {
 }
 
 /**
- * ✅ ACTUALIZADO v10.0: Confirma factura CON REDONDEO EN TODOS LOS VALORES
+ * ✅ ACTUALIZADO v10.1: Confirma factura CON REDONDEO Y PARSEO CORRECTO
+ * CORREGIDO: Validación correcta de response.json_p (no response.productos)
  */
 function confirmarFactura() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('✅ CONFIRMANDO FACTURA v10.0 (CON REDONDEO)');
+    console.log('✅ CONFIRMANDO FACTURA v10.1 (CON REDONDEO Y PARSEO)');
     console.log('═══════════════════════════════════════════════════');
 
-    // ❶ Validaciones...
+    // ❶ Validaciones previas
     if (productosFactura.length === 0) {
         console.warn('⚠️ No hay productos cargados');
-        // ✅ CAMBIO v15.0: Usar función centralizada
         mostrarMensajeEstado('Debe cargar al menos un producto para continuar', 'warning');
         return;
     }
 
     if (!clienteActualFactura) {
         console.error('❌ No hay cliente seleccionado');
-
-        // ✅ CAMBIO v15.0: Usar función centralizada
         mostrarMensajeEstado('Error: No hay cliente seleccionado', 'danger');
         return;
     }
 
-    // ❸ ✅ NUEVO: Construir JSON CON VALORES REDONDEADOS
+    // ❷ Construir JSON CON VALORES REDONDEADOS
     const productosArray = productosFactura.map((producto) => {
         return {
             // ═══════════════════════════════════════════════════
@@ -1922,24 +1929,20 @@ function confirmarFactura() {
     console.log(jsonProductos);
     console.log('═══════════════════════════════════════════════════');
 
-    // ❹ ✅ NUEVO: Calcular totales CON REDONDEO
+    // ❸ Calcular totales CON REDONDEO
     const tot_rows = productosFactura.length;
-
-    // ✅ Suma de cantidades REDONDEADA
     const tot_cantidad = redondear(
         productosFactura.reduce((sum, p) => sum + (parseFloat(p.cantidad_tot) || 0), 0),
         2
     );
-
-    // ✅ Total de precios REDONDEADO
     const tot_pvta = redondear(totalFactura, 2);
 
-    // ❺ Construir request DTO
+    // ❹ Construir request DTO
     const request = {
         json_p: jsonProductos,
         tot_rows: tot_rows,
         tot_cantidad: tot_cantidad,
-        tot_pvta: tot_pvta,  // ← ✅ AHORA ESTÁ REDONDEADO
+        tot_pvta: tot_pvta,
         lp_id: clienteActualFactura.listaPrecio || '001'
     };
 
@@ -1950,10 +1953,10 @@ function confirmarFactura() {
     console.log(`   tot_pvta: ${tot_pvta} ← ✅ REDONDEADO`);
     console.log('═══════════════════════════════════════════════════');
 
-    // ❻ Mostrar loader
+    // ❺ Mostrar loader
     mostrarLoaderCalculando();
 
-    // ❼ Llamar a la API
+    // ❻ Llamar a la API
     $.ajax({
         url: typeof CalcularFilasUrl !== 'undefined' && CalcularFilasUrl
             ? CalcularFilasUrl
@@ -1962,22 +1965,63 @@ function confirmarFactura() {
         contentType: 'application/json',
         data: JSON.stringify(request),
         success: function (response) {
-            console.log('✅ RESPUESTA RECIBIDA');
+            console.log('═══════════════════════════════════════════════════');
+            console.log('🔍 DIAGNÓSTICO DE RESPUESTA DEL SERVIDOR v10.1');
+            console.log('═══════════════════════════════════════════════════');
+            console.log('Response completo:', response);
+            console.log('Tipo de response:', typeof response);
+            console.log('Propiedades de response:', Object.keys(response || {}));
+            console.log('response.ok:', response?.ok);
+            console.log('response.json_p:', response?.json_p);  // ✅ CORRECCIÓN
+            console.log('Tipo de response.json_p:', typeof response?.json_p);  // ✅ CORRECCIÓN
+            console.log('response.json_subtotal:', response?.json_subtotal);
+            console.log('response.json_sorteo:', response?.json_sorteo);
+            console.log('═══════════════════════════════════════════════════');
+
             ocultarLoaderCalculando();
 
+            // ❼ VALIDACIÓN: Verificar que response existe
             if (!response || typeof response !== 'object') {
-                // ✅ CAMBIO v15.0: Usar función centralizada
+                console.error('❌ Error: Respuesta inválida del servidor');
+                console.error('   Response recibido:', response);
                 mostrarMensajeEstado('Error: Respuesta inválida del servidor', 'danger');
                 return;
             }
 
+            // ❽ VALIDACIÓN: Verificar response.ok
             if (!response.ok) {
-                // ✅ CAMBIO v15.0: Usar función centralizada
-                mostrarMensajeEstado(response.mensaje || 'Error al calcular totales', 'danger');
+                console.error('❌ Error en respuesta:', response.mensaje);
+                mostrarMensajeEstado(
+                    response.mensaje || 'Error al calcular totales',
+                    'danger'
+                );
                 return;
             }
 
-            abrirModalCalculoFactura(response);
+            // ❾ ✅ VALIDACIÓN CORRECTA: Verificar que json_p, json_subtotal existan
+            if (!response.json_p || typeof response.json_p !== 'string') {
+                console.error('❌ Error: response.json_p no es un string válido');
+                console.error('   Estructura recibida:', Object.keys(response));
+                mostrarMensajeEstado(
+                    'Error: El servidor no retornó los productos correctamente',
+                    'danger'
+                );
+                return;
+            }
+
+            if (!response.json_subtotal || typeof response.json_subtotal !== 'string') {
+                console.error('❌ Error: response.json_subtotal no es un string válido');
+                mostrarMensajeEstado(
+                    'Error: El servidor no retornó los subtotales correctamente',
+                    'danger'
+                );
+                return;
+            }
+
+            console.log(`✅ Validación exitosa: json_p y json_subtotal recibidos`);
+
+            // ❿ ✅ INVOCAR FUNCIÓN PARA ABRIR MODAL (con parseo de JSONs)
+            abrirModalCalculoFacturaConParseo(response);
         },
         error: function (xhr, status, error) {
             console.error('❌ ERROR EN CALCULAR FILAS');
@@ -1993,10 +2037,97 @@ function confirmarFactura() {
                 mensaje = 'Error interno del servidor. Contacte al administrador.';
             }
 
-            // ✅ CAMBIO v15.0: Usar función centralizada
             mostrarMensajeEstado(mensaje, 'danger', 0);
         }
     });
+}
+
+
+/**
+ * ✅ NUEVO v10.1: Parsea JSONs del servidor y abre modal de cálculo
+ * 
+ * @param {Object} response - Respuesta del servidor con json_p, json_subtotal, json_sorteo
+ */
+function abrirModalCalculoFacturaConParseo(response) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📊 PARSEANDO RESPUESTA PARA MODAL DE CÁLCULO v10.1');
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ VALIDACIÓN: Verificar que response existe
+    if (!response) {
+        console.error('❌ Error: No se recibieron datos para el cálculo');
+        mostrarMensajeEstado('Error: No se recibieron datos del servidor', 'danger');
+        return;
+    }
+
+    // ❷ ✅ PARSEAR LOS JSONs STRING A OBJETOS
+    let subtotales = [];
+    let sorteos = [];
+    let productos = [];
+
+    try {
+        // ❸ PARSEAR json_subtotal
+        if (response.json_subtotal) {
+            subtotales = JSON.parse(response.json_subtotal);
+            console.log(`✅ json_subtotal parseado: ${subtotales.length} registros`);
+        }
+
+        // ❹ PARSEAR json_sorteo
+        if (response.json_sorteo) {
+            sorteos = JSON.parse(response.json_sorteo);
+            console.log(`✅ json_sorteo parseado: ${sorteos.length} registros`);
+        }
+
+        // ❺ PARSEAR json_p (productos)
+        if (response.json_p) {
+            productos = JSON.parse(response.json_p);
+            console.log(`✅ json_p parseado: ${productos.length} productos`);
+        }
+    } catch (error) {
+        console.error('❌ Error al parsear JSONs:', error);
+        console.error('   json_subtotal:', response.json_subtotal);
+        console.error('   json_sorteo:', response.json_sorteo);
+        console.error('   json_p:', response.json_p);
+        mostrarMensajeEstado('Error al procesar datos del servidor', 'danger');
+        return;
+    }
+
+    // ❻ VALIDACIÓN: Verificar que haya subtotales
+    if (!subtotales || subtotales.length === 0) {
+        console.warn('⚠️ No hay subtotales para mostrar');
+        mostrarMensajeEstado('No se pudieron calcular los totales correctamente', 'warning');
+        return;
+    }
+
+    console.log(`✅ Validación exitosa: ${subtotales.length} subtotales detectados`);
+
+    // ❼ ✅ CONSTRUIR OBJETO DE DATOS PARA EL MODAL
+    const datosCalculo = {
+        // ✅ JSONs originales (strings) para referencia
+        json_subtotal: response.json_subtotal,
+        json_sorteo: response.json_sorteo,
+        json_p: response.json_p,
+
+        // ✅ Objetos parseados para uso directo
+        subtotales: subtotales,
+        sorteos: sorteos,
+        productos: productos,
+
+        // ✅ Mensaje de respuesta
+        mensaje: response.mensaje
+    };
+
+    console.log('📦 Datos preparados para modal:', datosCalculo);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❽ ✅ INVOCAR FUNCIÓN DEL MÓDULO prodfactcalc.js
+    if (typeof abrirModalCalculo !== 'undefined') {
+        abrirModalCalculo(datosCalculo);
+    } else {
+        console.error('❌ Función abrirModalCalculo no encontrada en prodfactcalc.js');
+        console.error('   Verificar que el archivo prodfactcalc.js esté cargado');
+        mostrarMensajeEstado('Error: Módulo de cálculo no cargado', 'danger');
+    }
 }
 
 /**
