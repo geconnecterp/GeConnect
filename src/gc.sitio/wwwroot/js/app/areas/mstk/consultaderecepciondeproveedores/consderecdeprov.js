@@ -18,7 +18,16 @@
 	});
 
 	$("#btnBuscar").on("click", function () {
-		BuscarRecepciones();
+		const [ok, msg] = ValidarFechasFiltro();
+		if (!ok) {
+			AbrirMensaje("ATENCIÓN", msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			BuscarRecepciones();
+		}
 	});
 });
 
@@ -44,12 +53,22 @@ function CargarRecepcionesDeProveedores() {
 	PostGenHtml(data, consultarRPProvUrl, function (obj) {
 		$("#divRecepciones").html(obj);
 		AjustarAlturaTabla("divRecepciones");
-		EvaluarBotonImprimir();
+		EvaluarBotonImprimir("navs-top-rec");
+		$(document).on('shown.bs.tab', 'button[data-bs-toggle="tab"]', function (e) {
+			const tabId = $(e.target).attr("data-bs-target").replace("#", "");
+			EvaluarBotonImprimir(tabId);
+		});
 		CerrarWaiting();
 	});
 }
 
-function EvaluarBotonImprimir() {
+const TabToTableMap = {
+	"navs-top-rec": "#tabRecepciones",
+	"navs-top-det": "#tabDetalle",
+};
+
+
+function EvaluarBotonImprimir(tabId) {
 	// Buscar cualquier tabla dentro de los contenedores
 	var $tabla = $("#divRecepciones table, #divDetalle table").first();
 
@@ -66,7 +85,13 @@ function EvaluarBotonImprimir() {
 	} else {
 		$("#btnImprimir").hide();
 	}
+
+	// Guardamos el tab actual para imprimir
+	$("#btnImprimir").data("tab-activo", tabId);
 }
+
+var rp_compte_seleccionado = null;
+var cta_id_seleccionada = null;
 
 function SeleccionarPeriodo(x, grid) {
 	var $row = $(x);
@@ -78,24 +103,9 @@ function SeleccionarPeriodo(x, grid) {
 	var rp = $row.data("rp-compte");
 	var cta = $row.data("cta-id");
 	consultarRPPDetalle(rp, cta);
-	//switch (tabAbm) {
-	//	//case 1:
-	//	//    break;
-	//	//case 2:
-	//	//    break;
-	//	case 3:
-	//		consultaCmpteDetalle(rp, cta);
-	//		break;
-	//	case 4:
-	//		consultaOPPDetalle(rp, cta);
-	//		break;
-	//	case 5:
-	//		consultarRPPDetalle(rp, cta);
-	//		break;
-	//	default:
-	//		return false;
-	//}
-	//se llama el detalle de comprobantes de un mes especifico
+
+	rp_compte_seleccionado = rp;
+	cta_id_seleccionada = cta;
 }
 
 function consultarRPPDetalle(rp, cta) {
@@ -121,6 +131,94 @@ function AjustarAlturaTabla() {
 	$("#divRecepciones .table-wrapper-200, #divRecepciones .table-wrapper-400")
 		.css("max-height", altoFinal + "px")
 		.css("overflow-y", "auto");
+}
+
+$("#btnImprimir").on("click", function () {
+	const tabId = $(this).data("tab-activo");
+	ImprimirSegunTab(tabId);
+});
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
+function ImprimirSegunTab(tabId) {
+
+	switch (tabId) {
+		case "navs-top-rec":
+			ImprimirRecepciones();
+			break;
+
+		case "navs-top-det":
+			ImprimirRecepcionesDetalle();
+			break;
+	}
+}
+
+function ImprimirRecepciones() {
+	AbrirWaiting();
+	var tipoReporte = 1;
+	var data = { tipoReporte };
+	PostGen(data, setearTipoDeReporteUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			HandlerImprimirRecepciones();
+		}
+	});
+}
+
+function ImprimirRecepcionesDetalle() {
+	AbrirWaiting();
+	var tipoReporte = 2;
+	var data = { tipoReporte };
+	PostGen(data, setearTipoDeReporteUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			HandlerImprimirRecepcionesDetalle();
+		}
+	});
+}
+
+function HandlerImprimirRecepciones() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var lProv = [];
+		var fechaD = $("#Desde").val();
+		var fechaH = $("#Hasta").val();
+		$("#Rel01List").children().each(function (i, item) { lProv.push($(item).val()) });
+		var proveedores = lProv.join(";");
+
+		let admId = administracion;
+
+		var data = { ctaId: proveedores, fechaD, fechaH };
+		cargarReporteEnArre(7, data, "Reporte de Recepción de Proveedores", "", admId);
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function HandlerImprimirRecepcionesDetalle() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var data = { cmptId: rp_compte_seleccionado, ctaId: cta_id_seleccionada };
+		let admId = administracion;
+		cargarReporteEnArre(8, data, "Reporte de Detalle de Recepción de Proveedores", "", admId);
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function AjustarAlturaTabla(contenedorId) {
@@ -217,4 +315,39 @@ function HandlerCheckBox() {
 			$("#SucursalesList").empty();
 		}
 	});
+}
+
+function ValidarFechasFiltro() {
+
+	let fDesde = $("#Desde").val();
+	let fHasta = $("#Hasta").val();
+
+	// 1) Validar que existan
+	if (!fDesde || !fHasta) {
+		return [false, "Debe seleccionar ambas fechas."];
+	}
+
+	// Convertir a Date
+	let dDesde = new Date(fDesde);
+	let dHasta = new Date(fHasta);
+
+	// 2) Validar fechas inválidas
+	if (isNaN(dDesde.getTime()) || isNaN(dHasta.getTime())) {
+		return [false, "Alguna de las fechas no es válida."];
+	}
+
+	// 3) Validar Desde < Hasta
+	if (dDesde > dHasta) {
+		return [false, "La fecha 'Desde' no puede ser mayor que la fecha 'Hasta'."];
+	}
+
+	// 4) Validar diferencia máxima de 60 días
+	let diffMs = dHasta - dDesde;
+	let diffDias = diffMs / (1000 * 60 * 60 * 24);
+
+	if (diffDias > 60) {
+		return [false, "El rango de fechas no puede superar los 60 días."];
+	}
+
+	return [true, ""];
 }
