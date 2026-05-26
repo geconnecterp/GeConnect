@@ -8,206 +8,196 @@
 <!-- ══════════════════════════════════════════════════════════════════════
      🎨 MODAL DE PAGO FULLSCREEN - ESTILO GOLDEN PREMIUM
      ══════════════════════════════════════════════════════════════════════
-     ✅ Diseño optimizado para cajeros con información grande y clara
-     ✅ Tabla de conceptos con filas amplias para mejor legibilidad
-     ✅ Colores contrastantes para identificación rápida de estados
+     ✅ OPTIMIZADO v19.4: Layout en 2 columnas para mejor aprovechamiento
+     ✅ Tablas paralelas: Conceptos | Formas de Pago
+     ✅ Tamaños de fuente optimizados para legibilidad sin scroll
      ══════════════════════════════════════════════════════════════════════ -->
 
-<div class="modal fade" 
-     id="modalPago" 
-     tabindex="-1" 
-     aria-labelledby="modalPagoLabel" 
-     aria-hidden="true" 
-     data-bs-backdrop="static" 
+<div class="modal fade"
+     id="modalPago"
+     tabindex="-1"
+     aria-labelledby="modalPagoLabel"
+     aria-hidden="true"
+     data-bs-backdrop="static"
      data-bs-keyboard="false">
-    
+
     <div class="modal-dialog modal-fullscreen">
         <div class="modal-content modal-golden">
-            
+
             <!-- ════════════════════════════════════════════════════════════════ -->
             <!-- HEADER CON DATOS DEL CLIENTE (COMPACTO) -->
             <!-- ════════════════════════════════════════════════════════════════ -->
             @await Html.PartialAsync("_datosClienteComun")
 
             <!-- ════════════════════════════════════════════════════════════════ -->
-            <!-- BODY PRINCIPAL CON LAYOUT OPTIMIZADO -->
+            <!-- BODY PRINCIPAL CON LAYOUT OPTIMIZADO EN 2 COLUMNAS -->
             <!-- ════════════════════════════════════════════════════════════════ -->
-            <div class="modal-body p-4 bg-light">
-                
-                <!-- ════════════════════════════════════════════════════════ -->
-                <!-- SECCIÓN 1: TABLA DE CONCEPTOS DE PAGO (OPTIMIZADA) -->
-                <!-- ════════════════════════════════════════════════════════ -->
-                <div class="card card-golden shadow-lg mb-4">
-                    <div class="card-header bg-gradient-golden-dark">
-                        <h5 class="mb-0 text-white">
-                            <i class='bx bx-detail'></i> 
-                            Conceptos de Pago
-                        </h5>
+            <div class="modal-body p-3 bg-light">
+
+                <!-- ✅ NUEVO: Layout en 2 columnas con row -->
+                <div class="row g-3">
+
+                    <!-- ════════════════════════════════════════════════════════ -->
+                    <!-- COLUMNA IZQUIERDA: CONCEPTOS DE PAGO (40% ANCHO) -->
+                    <!-- ════════════════════════════════════════════════════════ -->
+                    <div class="col-md-5">
+                        <div class="card card-golden shadow-lg h-100">
+                            <div class="card-header bg-gradient-golden-dark py-2">
+                                <h6 class="mb-0 text-white">
+                                    <i class='bx bx-detail'></i>
+                                    Conceptos de Pago
+                                </h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive table-pago-conceptos-optimizada">
+                                    <table class="table table-pago-conceptos mb-0" id="tbConceptosPago">
+                                        <thead class="table-header-pago-conceptos sticky-top">
+                                            <tr>
+                                                <th class="text-start px-2" style="width: 60%;">
+                                                    <i class='bx bx-receipt bx-sm'></i> Concepto
+                                                </th>
+                                                <th class="text-end px-2" style="width: 40%;">
+                                                    <i class='bx bx-dollar-circle bx-sm'></i> Importe
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbodyConceptosPago">
+                                            <!-- FILA 1: TOTAL A PAGAR -->
+                                            <tr class="row-total-pagar-opt">
+                                                <td class="px-2 py-2">
+                                                    <div class="d-flex align-items-center">
+                                                        <i class='bx bx-error-circle text-danger me-2'></i>
+                                                        <span class="fw-bold">TOTAL A PAGAR</span>
+                                                    </div>
+                                                </td>
+                                                <td class="text-end px-2 py-2">
+                                                    <span class="badge bg-danger px-2 py-1" id="totalPagar">
+                                                        $ 0.00
+                                                    </span>
+                                                </td>
+                                            </tr>
+
+                                            <!-- FILA 2: RECARGOS -->
+                                            <tr class="row-recargos-opt">
+                                                <td class="px-2 py-2">
+                                                    <div class="d-flex align-items-center">
+                                                        <i class='bx bx-plus-circle text-warning me-2'></i>
+                                                        <span>Recargos</span>
+                                                    </div>
+                                                </td>
+                                                <td class="text-end px-2 py-2">
+                                                    <span class="text-warning fw-semibold" id="totalRecargos">$ 0.00</span>
+                                                </td>
+                                            </tr>
+
+                                            <!-- FILA 3: DESCUENTOS -->
+                                            <tr class="row-descuentos-opt">
+                                                <td class="px-2 py-2">
+                                                    <div class="d-flex align-items-center">
+                                                        <i class='bx bx-minus-circle text-info me-2'></i>
+                                                        <span>Descuentos</span>
+                                                    </div>
+                                                </td>
+                                                <td class="text-end px-2 py-2">
+                                                    <span class="text-info fw-semibold" id="totalDescuentos">$ 0.00</span>
+                                                </td>
+                                            </tr>
+
+                                            <!-- FILA 4: TOTAL A VALORES -->
+                                            <tr class="row-total-valores-opt">
+                                                <td class="px-2 py-2">
+                                                    <div class="d-flex align-items-center">
+                                                        <i class='bx bx-wallet text-primary me-2'></i>
+                                                        <span class="fw-bold">TOTAL A VALORES</span>
+                                                    </div>
+                                                </td>
+                                                <td class="text-end px-2 py-2">
+                                                    <span class="badge bg-primary px-2 py-1" id="totalValores">
+                                                        $ 0.00
+                                                    </span>
+                                                </td>
+                                            </tr>
+
+                                            <!-- FILA 5: DIFERENCIA -->
+                                            <tr class="row-diferencia-opt">
+                                                <td class="px-2 py-2">
+                                                    <div class="d-flex align-items-center">
+                                                        <i class='bx bx-transfer text-success me-2'></i>
+                                                        <span class="fw-bold">DIFERENCIA</span>
+                                                    </div>
+                                                </td>
+                                                <td class="text-end px-2 py-2">
+                                                    <span class="badge bg-success px-2 py-1" id="diferencia">
+                                                        $ 0.00
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive table-pago-fullscreen">
-                            <table class="table table-golden-large mb-0" id="tbConceptosPago">
-                                <thead class="table-golden-header-large sticky-top">
-                                    <tr>
-                                        <th class="text-start px-3" style="width: 50%;">
-                                            <i class='bx bx-receipt'></i> Concepto
-                                        </th>
-                                        <th class="text-end px-3" style="width: 25%;">
-                                            <i class='bx bx-dollar-circle'></i> Total
-                                        </th>
-                                        <th class="text-end px-3" style="width: 25%;">
-                                            <i class='bx bx-money'></i> Importe
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tbodyConceptosPago">
-                                    <!-- ═══════════════════════════════════════════ -->
-                                    <!-- FILA 1: TOTAL A PAGAR (COMPACTO) -->
-                                    <!-- ═══════════════════════════════════════════ -->
-                                    <tr class="row-total-pagar">
-                                        <td class="px-3 py-2">
-                                            <div class="d-flex align-items-center">
-                                                <i class='bx bx-error-circle text-danger me-2'></i>
-                                                <span class="fw-bold fs-5 text-danger">TOTAL A PAGAR</span>
-                                            </div>
-                                        </td>
-                                        <td class="text-end px-3 py-2">
-                                            <span class="badge bg-danger fs-6 px-3 py-2" id="totalPagar">
-                                                $ 0.00
-                                            </span>
-                                        </td>
-                                        <td class="text-end px-3 py-2"></td>
-                                    </tr>
 
-                                    <!-- ═══════════════════════════════════════════ -->
-                                    <!-- FILA 2: RECARGOS (COMPACTO) -->
-                                    <!-- ═══════════════════════════════════════════ -->
-                                    <tr class="row-recargos">
-                                        <td class="px-3 py-2">
-                                            <div class="d-flex align-items-center">
-                                                <i class='bx bx-plus-circle text-warning me-2'></i>
-                                                <span class="fw-semibold fs-6">Recargos</span>
-                                            </div>
-                                        </td>
-                                        <td class="text-end px-3 py-2">
-                                            <span class="fs-6 text-warning" id="totalRecargos">$ 0.00</span>
-                                        </td>
-                                        <td class="text-end px-3 py-2"></td>
-                                    </tr>
-
-                                    <!-- ═══════════════════════════════════════════ -->
-                                    <!-- FILA 3: DESCUENTOS (COMPACTO) -->
-                                    <!-- ═══════════════════════════════════════════ -->
-                                    <tr class="row-descuentos">
-                                        <td class="px-3 py-2">
-                                            <div class="d-flex align-items-center">
-                                                <i class='bx bx-minus-circle text-info me-2'></i>
-                                                <span class="fw-semibold fs-6">Descuentos</span>
-                                            </div>
-                                        </td>
-                                        <td class="text-end px-3 py-2">
-                                            <span class="fs-6 text-info" id="totalDescuentos">$ 0.00</span>
-                                        </td>
-                                        <td class="text-end px-3 py-2"></td>
-                                    </tr>
-
-                                    <!-- ═══════════════════════════════════════════ -->
-                                    <!-- FILA 4: TOTAL A VALORES (COMPACTO) -->
-                                    <!-- ═══════════════════════════════════════════ -->
-                                    <tr class="row-total-valores">
-                                        <td class="px-3 py-2">
-                                            <div class="d-flex align-items-center">
-                                                <i class='bx bx-wallet text-primary me-2'></i>
-                                                <span class="fw-bold fs-5 text-primary">TOTAL A VALORES</span>
-                                            </div>
-                                        </td>
-                                        <td class="text-end px-3 py-2">
-                                            <span class="badge bg-primary fs-6 px-3 py-2" id="totalValores">
-                                                $ 0.00
-                                            </span>
-                                        </td>
-                                        <td class="text-end px-3 py-2"></td>
-                                    </tr>
-
-                                    <!-- ═══════════════════════════════════════════ -->
-                                    <!-- FILA 5: DIFERENCIA (COMPACTO) -->
-                                    <!-- ═══════════════════════════════════════════ -->
-                                    <tr class="row-diferencia">
-                                        <td class="px-3 py-2">
-                                            <div class="d-flex align-items-center">
-                                                <i class='bx bx-transfer text-success me-2'></i>
-                                                <span class="fw-bold fs-5 text-success">DIFERENCIA</span>
-                                            </div>
-                                        </td>
-                                        <td class="text-end px-3 py-2">
-                                            <span class="badge bg-success fs-6 px-3 py-2" id="diferencia">
-                                                $ 0.00
-                                            </span>
-                                        </td>
-                                        <td class="text-end px-3 py-2"></td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                    <!-- ════════════════════════════════════════════════════════ -->
+                    <!-- COLUMNA DERECHA: FORMAS DE PAGO INGRESADAS (60% ANCHO) -->
+                    <!-- ════════════════════════════════════════════════════════ -->
+                    <div class="col-md-7">
+                        <div class="card card-golden shadow-lg h-100">
+                            <div class="card-header bg-gradient-golden py-2">
+                                <h6 class="mb-0 text-white">
+                                    <i class='bx bx-credit-card'></i>
+                                    Formas de Pago Ingresadas
+                                    <span class="badge bg-white text-golden ms-2" id="badgeCantidadPagos">0 valores</span>
+                                </h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive table-formas-pago-optimizada">
+                                    <table class="table table-formas-pago mb-0" id="tbFormasPago">
+                                        <thead class="table-header-formas-pago sticky-top">
+                                            <tr>
+                                                <th class="text-center px-2" style="width: 5%;">#</th>
+                                                <th class="text-start px-2" style="width: 30%;">Forma de Pago</th>
+                                                <th class="text-end px-2" style="width: 20%;">Importe</th>
+                                                <th class="text-start px-2" style="width: 30%;">Observación</th>
+                                                <th class="text-center px-2" style="width: 15%;">Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbodyFormasPago">
+                                            <tr id="rowSinFormasPago">
+                                                <td colspan="5" class="text-center py-4">
+                                                    <i class='bx bx-info-circle bx-lg text-muted'></i>
+                                                    <p class="text-muted mb-0 mt-2">
+                                                        No hay formas de pago registradas.<br>
+                                                        <small>Presione <strong>AGREGAR</strong> para comenzar</small>
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- ════════════════════════════════════════════════════════ -->
-                <!-- SECCIÓN 2: TABLA DE FORMAS DE PAGO INGRESADAS -->
+                <!-- SECCIÓN 3: BOTONES DE ACCIÓN (OPTIMIZADOS) -->
                 <!-- ════════════════════════════════════════════════════════ -->
-                <div class="card card-golden shadow-lg mb-4">
-                    <div class="card-header bg-gradient-golden">
-                        <h5 class="mb-0 text-white">
-                            <i class='bx bx-credit-card bx-md'></i> 
-                            Formas de Pago Ingresadas
-                            <span class="badge bg-white text-golden ms-3" id="badgeCantidadPagos">0 valores</span>
-                        </h5>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive table-formas-pago-fullscreen">
-                            <table class="table table-golden-medium mb-0" id="tbFormasPago">
-                                <thead class="table-golden-header-medium sticky-top">
-                                    <tr>
-                                        <th class="text-center" style="width: 5%;">#</th>
-                                        <th class="text-start" style="width: 25%;">Forma de Pago</th>
-                                        <th class="text-end" style="width: 20%;">Importe</th>
-                                        <th class="text-start" style="width: 30%;">Observación</th>
-                                        <th class="text-center" style="width: 20%;">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tbodyFormasPago">
-                                    <tr id="rowSinFormasPago">
-                                        <td colspan="5" class="text-center py-5">
-                                            <i class='bx bx-info-circle bx-lg text-muted'></i>
-                                            <p class="text-muted mb-0 mt-3 fs-5">
-                                                No hay formas de pago registradas.<br>
-                                                <small>Presione <strong>AGREGAR</strong> para comenzar</small>
-                                            </p>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ════════════════════════════════════════════════════════ -->
-                <!-- SECCIÓN 3: BOTONES DE ACCIÓN (GRANDES Y VISIBLES) -->
-                <!-- ════════════════════════════════════════════════════════ -->
-                <div class="d-flex justify-content-center gap-4 mt-4">
-                    <button type="button" class="btn btn-warning btn-accion-pago" id="btnAgregarPago">
+                <div class="d-flex justify-content-center gap-3 mt-3">
+                    <button type="button" class="btn btn-warning btn-accion-pago-opt" id="btnAgregarPago">
                         <i class='bx bx-plus-circle bx-lg'></i>
                         <span>AGREGAR</span>
                         <small class="d-block mt-1">Formas de Pago</small>
                     </button>
-                    
-                    <button type="button" class="btn btn-danger btn-accion-pago" id="btnVolverPago">
+
+                    <button type="button" class="btn btn-danger btn-accion-pago-opt" id="btnVolverPago">
                         <i class='bx bx-arrow-back bx-lg'></i>
                         <span>VOLVER</span>
                         <small class="d-block mt-1">Al Cálculo</small>
                     </button>
-                    
-                    <button type="button" class="btn btn-success btn-accion-pago" id="btnFinalizarPago" disabled>
+
+                    <button type="button" class="btn btn-success btn-accion-pago-opt" id="btnFinalizarPago" disabled>
                         <i class='bx bx-check-circle bx-lg'></i>
                         <span>FINALIZAR</span>
                         <small class="d-block mt-1">Confirmar Pago</small>
@@ -218,19 +208,19 @@
             <!-- ════════════════════════════════════════════════════════ -->
             <!-- FOOTER INFORMATIVO CON ATAJOS DE TECLADO -->
             <!-- ════════════════════════════════════════════════════════ -->
-            <div class="modal-footer bg-light border-top">
+            <div class="modal-footer bg-light border-top py-2">
                 <div class="w-100 d-flex justify-content-between align-items-center">
                     <div>
                         <i class='bx bx-info-circle text-golden'></i>
                         <small class="text-muted">
-                            <strong>Punto de Venta:</strong> 
+                            <strong>Punto de Venta:</strong>
                             <span class="text-golden fw-bold" id="lblPuntoVentaPago">GECO PV</span>
                         </small>
                     </div>
                     <div>
                         <small class="text-muted">
-                            <kbd>F2</kbd> Agregar | 
-                            <kbd>ESC</kbd> Volver | 
+                            <kbd>F2</kbd> Agregar |
+                            <kbd>ESC</kbd> Volver |
                             <kbd>F10</kbd> Finalizar
                         </small>
                     </div>
@@ -244,7 +234,5 @@
 <input type="hidden" id="txtClienteIdPago" />
 <input type="hidden" id="txtClienteNombrePago" />
 <!-- ... resto de campos ... -->
-
 <!-- ✅ AGREGAR: Campo para adm_id -->
 <input type="hidden" id="hdnAdmId" value="@ViewBag.AdmId" />
-

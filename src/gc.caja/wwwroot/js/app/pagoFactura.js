@@ -1,8 +1,15 @@
-﻿// ════════════════════════════════════════════════════════════
-// GESTOR DE PAGO DE FACTURA
+﻿// GESTOR DE PAGO DE FACTURA
 // ════════════════════════════════════════════════════════════
-// VERSIÓN v19.4 - CORRECCIÓN: Modal Transferencias con múltiples bancos
+// VERSIÓN v19.6 - CORRECCIÓN: Reemplazo de Swal por AbrirMensaje
 // ════════════════════════════════════════════════════════════
+// CAMBIOS v19.6:
+// - ✅ CORRECCIÓN CRÍTICA: Eliminado uso de Swal (no disponible)
+// - ✅ Implementado AbrirMensaje() sistema propio del proyecto
+// - ✅ Afectados: guardarDetalleCuponEmpresa(), guardarDetalleTransferencia(), guardarDetalleValeCompra()
+//
+// CAMBIOS v19.5:
+// - Implementación completa de Cupones de Empresa/Mutuales (MU)
+//
 // CAMBIOS v19.4:
 // - ✅ CORRECCIÓN QUIRÚRGICA: Agregado case 'BA' en confirmarSeleccionInstrumento()
 // - Sin cambios en lógica de VA (mantiene funcionamiento correcto)
@@ -21,7 +28,7 @@
 // VERSIÓN ANTERIOR v16.1 - Mejora de rendimiento
 // ════════════════════════════════════════════════════════════
 // Autor: GeConnect ERP
-// Última actualización: 2026-05-25
+// Última actualización: 2026-05-26
 // ════════════════════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════════════════════
@@ -192,6 +199,58 @@ function inicializarEventosPago() {
         }
 
         console.log('✅ MODAL DE TRANSFERENCIA LIMPIADO');
+    });
+
+    /**
+ * ✅ ACTUALIZADO v19.7: Evento de limpieza automática del modal de Cupón Empresa
+ * CAMBIO: Eliminada lógica de backdrops personalizados (Bootstrap lo gestiona automáticamente)
+ */
+    $('#modalDetalleCuponEmpresa').off('hidden.bs.modal').on('hidden.bs.modal', function () {
+        console.log('🧹 LIMPIEZA AUTOMÁTICA - MODAL CUPÓN EMPRESA v19.7');
+
+        // ❶ Resetear formulario
+        const $form = $('#formDetalleCuponEmpresa');
+        $form[0].reset();
+        $form.find('.form-control').removeClass('is-invalid is-valid');
+        $('.invalid-feedback').remove();
+
+        console.log('   ✅ Formulario limpiado');
+
+        // �② Resetear labels y hidden fields
+        $('#lblEmpresaSeleccionada').text('-');
+        $('#hdnEmpresaIdCupon').val('');
+
+        console.log('   ✅ Labels reseteados');
+
+        // ❸ ✅ ELIMINADO: Ya NO es necesario limpiar backdrops manualmente
+        // Bootstrap gestiona sus propios backdrops automáticamente
+        // const $backdropCupon = $('.modal-backdrop[data-modal="cuponempresa"]');
+        // if ($backdropCupon.length > 0) {
+        //     $backdropCupon.remove();
+        // }
+
+        // ❹ Verificar otros modales (por seguridad)
+        setTimeout(() => {
+            const modalesAbiertos = $('.modal.show').length;
+
+            if (modalesAbiertos === 0) {
+                // Solo si NO hay otros modales abiertos
+                const backdropsHuerfanos = $('.modal-backdrop').length;
+
+                if (backdropsHuerfanos > 0) {
+                    console.warn(`   ⚠️ Se encontraron ${backdropsHuerfanos} backdrop(s) huérfano(s)`);
+                    $('.modal-backdrop').remove();
+                    $('body').removeClass('modal-open').css('overflow', '');
+                    console.log('   ✅ Backdrops huérfanos limpiados');
+                } else {
+                    console.log('   ✅ No hay backdrops huérfanos');
+                }
+            } else {
+                console.log(`   ℹ️ ${modalesAbiertos} modal(es) aún abierto(s) - No tocar body`);
+            }
+        }, 350); // Esperar animación de Bootstrap
+
+        console.log('✅ MODAL DE CUPÓN EMPRESA LIMPIADO');
     });
 
     console.log('✅ Eventos de pago configurados');
@@ -1307,6 +1366,14 @@ function confirmarSeleccionInstrumento() {
                 );
                 break;
 
+            // ✅ NUEVO v19.5: LOTE 4 - ÓRDENES/CUPONES DE MUTUALES
+            case 'MU': // Mutuales / Órdenes de Empresa
+                console.log('✅ Abriendo modal de Cupón/Orden de Empresa...');
+                abrirModalDetalleCuponEmpresa(
+                    window._instrumentoSeleccionado,
+                    window._tipoMedioPagoActual
+                );
+                break;
             case 'CH': // Cheque ⚠️ LOTE 4 (al final)
                 console.warn('⚠️ Modal de cheque por implementar');
                 if (typeof toastr !== 'undefined') {
@@ -1762,46 +1829,47 @@ function guardarDetalleEfectivo(instrumento, tipoMedioPago) {
     // ✅ ACTUALIZADO v18.1: Usar constante configurable
     if (monto > diferencia * LIMITE_PORCENTAJE_DIFERENCIA) {
         console.warn(`⚠️ Monto muy alto: ${monto} > ${diferencia * LIMITE_PORCENTAJE_DIFERENCIA}`);
-        console.warn(`   Diferencia pendiente: $ ${formatearNumero(diferencia, 2)}`);
-        console.warn(`   Límite permitido (${LIMITE_PORCENTAJE_DIFERENCIA * 100}%): $ ${formatearNumero(diferencia * LIMITE_PORCENTAJE_DIFERENCIA, 2)}`);
 
-        Swal.fire({
-            title: '¿Monto elevado?',
-            html: `<div class="text-start">
-                       <p class="mb-3">El monto ingresado es <strong>mayor</strong> a la diferencia pendiente:</p>
-                       <table class="table table-sm table-borderless mb-0">
-                           <tr>
-                               <td class="text-end">Monto ingresado:</td>
-                               <td class="text-start"><strong class="text-danger">${instrumento.ins_simbolo} ${formatearNumero(monto, 2)}</strong></td>
-                           </tr>
-                           <tr>
-                               <td class="text-end">Diferencia pendiente:</td>
-                               <td class="text-start"><strong class="text-warning">${instrumento.ins_simbolo} ${formatearNumero(diferencia, 2)}</strong></td>
-                           </tr>
-                           <tr>
-                               <td class="text-end">Excedente:</td>
-                               <td class="text-start"><strong class="text-info">${instrumento.ins_simbolo} ${formatearNumero(monto - diferencia, 2)}</strong></td>
-                           </tr>
-                       </table>
-                       <p class="mt-3 mb-0"><i class="bx bx-info-circle"></i> ¿Desea continuar de todos modos?</p>
-                   </div>`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: '<i class="bx bx-check"></i> Sí, continuar',
-            cancelButtonText: '<i class="bx bx-x"></i> No, corregir',
-            confirmButtonColor: '#28a745',
-            cancelButtonColor: '#6c757d',
-            customClass: {
-                popup: 'swal-wide'
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
+        const mensajeHtml = `
+        <div class="text-start">
+            <p class="mb-3">El monto ingresado es <strong>mayor</strong> a la diferencia pendiente:</p>
+            <table class="table table-sm table-borderless mb-0">
+                <tr>
+                    <td class="text-end">Monto ingresado:</td>
+                    <td class="text-start"><strong class="text-danger">${instrumento.ins_simbolo} ${formatearNumero(monto, 2)}</strong></td>
+                </tr>
+                <tr>
+                    <td class="text-end">Diferencia pendiente:</td>
+                    <td class="text-start"><strong class="text-warning">${instrumento.ins_simbolo} ${formatearNumero(diferencia, 2)}</strong></td>
+                </tr>
+                <tr>
+                    <td class="text-end">Excedente:</td>
+                    <td class="text-start"><strong class="text-info">${instrumento.ins_simbolo} ${formatearNumero(monto - diferencia, 2)}</strong></td>
+                </tr>
+            </table>
+            <p class="mt-3 mb-0"><i class="bx bx-info-circle"></i> ¿Desea continuar de todos modos?</p>
+        </div>
+    `;
+
+        AbrirMensaje(
+            "¿Monto elevado?",
+            mensajeHtml,
+            function () {
+                // Botón "Continuar"
+                $('#msjModal').modal('hide');
                 finalizarGuardadoEfectivo(monto, instrumento, tipoMedioPago);
-            } else {
-                // Hacer focus en el input para corrección
-                $('#txtMontoEfectivo').trigger("focus").trigger("select");
+            },
+            false,
+            ["Continuar", "Corregir"],
+            "warn!",
+            function () {
+                // Botón "Corregir"
+                $('#msjModal').modal('hide');
+                setTimeout(() => {
+                    $('#txtMontoEfectivo').trigger("focus").trigger("select");
+                }, 300);
             }
-        });
+        );
 
         return;
     }
@@ -2130,17 +2198,19 @@ function eliminarValor(valorId) {
     const valor = valoresPago[index];
 
     // Confirmar eliminación
-    Swal.fire({
-        title: '¿Eliminar valor?',
-        html: `<strong>${valor.tcf_desc} - ${valor.ins_desc}</strong><br>` +
-            `Importe: ${valor.ins_simbolo} ${formatearNumero(valor.importe, 2)}`,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#dc3545'
-    }).then((result) => {
-        if (result.isConfirmed) {
+    // Confirmar eliminación
+    const mensajeHtml = `
+    <strong>${escapeHtml(valor.tcf_desc)} - ${escapeHtml(valor.ins_desc)}</strong><br>
+    Importe: ${escapeHtml(valor.ins_simbolo)} ${formatearNumero(valor.importe, 2)}
+`;
+
+    AbrirMensaje(
+        "¿Eliminar valor?",
+        mensajeHtml,
+        function () {
+            // Botón "Eliminar"
+            $('#msjModal').modal('hide');
+
             // Remover del array
             valoresPago.splice(index, 1);
 
@@ -2160,9 +2230,18 @@ function eliminarValor(valorId) {
             // Actualizar total del instrumento (restar)
             actualizarTotalInstrumento(valor.ins_id, -valor.importe);
 
-            toastr.success('Valor eliminado correctamente');
+            if (typeof toastr !== 'undefined') {
+                toastr.success('Valor eliminado correctamente');
+            }
+        },
+        false,
+        ["Eliminar", "Cancelar"],
+        "warn!",
+        function () {
+            // Botón "Cancelar"
+            $('#msjModal').modal('hide');
         }
-    });
+    );
 }
 
 /**
@@ -2849,40 +2928,44 @@ function guardarDetalleValeCompra(instrumento, tipoMedioPago) {
     if (monto > diferenciaFactura * LIMITE_PORCENTAJE_DIFERENCIA) {
         console.warn(`⚠️ Monto muy alto: ${monto} > ${diferenciaFactura * LIMITE_PORCENTAJE_DIFERENCIA}`);
 
-        Swal.fire({
-            title: '¿Monto elevado?',
-            html: `<div class="text-start">
-                       <p class="mb-3">El monto ingresado es <strong>mayor</strong> a la diferencia pendiente:</p>
-                       <table class="table table-sm table-borderless mb-0">
-                           <tr>
-                               <td class="text-end">Monto ingresado:</td>
-                               <td class="text-start"><strong class="text-danger">${formatearMoneda(monto)}</strong></td>
-                           </tr>
-                           <tr>
-                               <td class="text-end">Diferencia pendiente:</td>
-                               <td class="text-start"><strong class="text-warning">${formatearMoneda(diferenciaFactura)}</strong></td>
-                           </tr>
-                           <tr>
-                               <td class="text-end">Excedente:</td>
-                               <td class="text-start"><strong class="text-info">${formatearMoneda(monto - diferenciaFactura)}</strong></td>
-                           </tr>
-                       </table>
-                       <p class="mt-3 mb-0"><i class="bx bx-info-circle"></i> ¿Desea continuar de todos modos?</p>
-                   </div>`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: '<i class="bx bx-check"></i> Sí, continuar',
-            cancelButtonText: '<i class="bx bx-x"></i> No, corregir',
-            confirmButtonColor: '#28a745',
-            cancelButtonColor: '#6c757d',
-            customClass: { popup: 'swal-wide' }
-        }).then((result) => {
-            if (result.isConfirmed) {
+        const mensajeHtml = `
+        <div class="text-start">
+            <p class="mb-3">El monto ingresado es <strong>mayor</strong> a la diferencia pendiente:</p>
+            <table class="table table-sm table-borderless mb-0">
+                <tr>
+                    <td class="text-end">Monto ingresado:</td>
+                    <td class="text-start"><strong class="text-danger">${formatearMoneda(monto)}</strong></td>
+                </tr>
+                <tr>
+                    <td class="text-end">Diferencia pendiente:</td>
+                    <td class="text-start"><strong class="text-warning">${formatearMoneda(diferenciaFactura)}</strong></td>
+                </tr>
+                <tr>
+                    <td class="text-end">Excedente:</td>
+                    <td class="text-start"><strong class="text-info">${formatearMoneda(monto - diferenciaFactura)}</strong></td>
+                </tr>
+            </table>
+            <p class="mt-3 mb-0"><i class="bx bx-info-circle"></i> ¿Desea continuar?</p>
+        </div>
+    `;
+
+        AbrirMensaje(
+            "¿Monto elevado?",
+            mensajeHtml,
+            function () {
+                $('#msjModal').modal('hide');
                 finalizarGuardadoValeCompra(monto, instrumento, tipoMedioPago);
-            } else {
-                $('#txtMontoValeCompra').trigger("focus").trigger("select");
+            },
+            false,
+            ["Continuar", "Corregir"],
+            "warn!",
+            function () {
+                $('#msjModal').modal('hide');
+                setTimeout(() => {
+                    $('#txtMontoValeCompra').trigger("focus").trigger("select");
+                }, 300);
             }
-        });
+        );
 
         return;
     }
@@ -3041,6 +3124,7 @@ function requiereModalDetalle(tcfId) {
     const tiposConModalObligatorio = [
         'VA',  // Vales de Compra
         'BA',  // ✅ NUEVO v19.3: Transferencias Bancarias
+        'MU',  // ✅ NUEVO v19.5: Órdenes/Cupones de Mutuales
     ];
 
     const requiereModal = tiposConModalObligatorio.includes(tcfId.toUpperCase());
@@ -3077,6 +3161,11 @@ function abrirModalDetalleSegunTipo(instrumento, tipoMedioPago) {
         case 'BA': // ✅ NUEVO v19.3: Transferencias Bancarias
             console.log('✅ Abriendo modal de Transferencia Bancaria...');
             abrirModalDetalleTransferencia(instrumento, tipoMedioPago);
+            break;
+
+        case 'MU': // ✅ NUEVO v19.5: Órdenes/Cupones de Mutuales
+            console.log('✅ Abriendo modal de Cupón/Orden de Empresa...');
+            abrirModalDetalleCuponEmpresa(instrumento, tipoMedioPago);
             break;
 
         case 'CH': // Cheque (LOTE 4)
@@ -3627,3 +3716,405 @@ $('#modalDetalleTransferencia').off('hidden.bs.modal').on('hidden.bs.modal', fun
     console.log('✅ MODAL DE TRANSFERENCIA LIMPIADO');
 });
 
+// ═══════════════════════════════════════════════════════════════════
+// ✅ NUEVO v19.5: LOTE 4 - FUNCIONES PARA ÓRDENES/CUPONES DE MUTUALES
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * ✅ CORREGIDO v19.7: Abre el modal de detalle de Cupón/Orden de Empresa (Mutuales)
+ * CAMBIO CRÍTICO: Usa Bootstrap.Modal.show() en lugar de manipulación manual con jQuery
+ * 
+ * FLUJO:
+ * 1. El usuario ya seleccionó una mutual/empresa del modal de instrumentos
+ * 2. Se abre este modal con la empresa pre-cargada
+ * 3. Usuario completa: Titular, Nro Orden, CUIT, Monto
+ * 
+ * @param {Object} instrumento - Mutual/Empresa seleccionada (ej: "OSDE", "Swiss Medical")
+ * @param {Object} tipoMedioPago - Tipo de MP (tcf_id='MU')
+ */
+function abrirModalDetalleCuponEmpresa(instrumento, tipoMedioPago) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔓 ABRIR MODAL DETALLE CUPÓN EMPRESA v19.7');
+    console.log(`   Empresa: ${instrumento?.ins_desc || 'N/A'} (${instrumento?.ins_id || 'N/A'})`);
+    console.log(`   Tipo MP: ${tipoMedioPago?.tcf_desc || 'N/A'}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Validar objeto instrumento
+    if (!instrumento) {
+        console.error('❌ CRÍTICO: Objeto instrumento es null/undefined');
+
+        if (typeof toastr !== 'undefined') {
+            toastr.error('Error: No se pudo cargar la información de la empresa/mutual');
+        }
+
+        return;
+    }
+
+    // ❷ Obtener elemento del modal
+    const modalElement = document.querySelector('#modalDetalleCuponEmpresa');
+
+    if (!modalElement) {
+        console.error('❌ Modal #modalDetalleCuponEmpresa no encontrado en el DOM');
+
+        if (typeof toastr !== 'undefined') {
+            toastr.error('El modal de órdenes/cupones no está disponible');
+        }
+
+        return;
+    }
+
+    // ❸ ✅ NUEVO v19.7: Obtener o crear instancia de Bootstrap Modal
+    let modalInstance = bootstrap.Modal.getInstance(modalElement);
+
+    if (!modalInstance) {
+        console.log('⚠️ Creando instancia de Bootstrap Modal...');
+
+        try {
+            modalInstance = new bootstrap.Modal(modalElement, {
+                backdrop: 'static',
+                keyboard: false
+            });
+            console.log('✅ Instancia creada correctamente');
+        } catch (error) {
+            console.error('❌ Error al crear instancia:', error);
+
+            if (typeof toastr !== 'undefined') {
+                toastr.error(`Error al inicializar el modal: ${error.message}`);
+            }
+
+            return;
+        }
+    }
+
+    // ❹ Hidratar información de la empresa/mutual seleccionada
+    $('#lblEmpresaSeleccionada').text(instrumento.ins_desc || 'Empresa sin nombre');
+    $('#hdnEmpresaIdCupon').val(instrumento.ins_id);
+
+    console.log(`   ✅ Empresa cargada: ${instrumento.ins_desc}`);
+
+    // ❺ Calcular monto sugerido (diferencia pendiente)
+    const diferencia = Math.abs(conceptosPago.diferencia || 0);
+    const montoSugerido = diferencia;
+
+    console.log(`   💰 Monto sugerido: ${formatearMoneda(montoSugerido)}`);
+
+    // ❻ Aplicar máscara monetaria al input de monto
+    const $inputMonto = $('#txtMontoCupon');
+
+    if (typeof InputMaskMonetario !== 'undefined') {
+        InputMaskMonetario.removerMascara($inputMonto);
+        InputMaskMonetario.aplicarMascaraPesos($inputMonto);
+        InputMaskMonetario.establecerValor($inputMonto, montoSugerido);
+        console.log('   ✅ Máscara monetaria aplicada');
+    } else {
+        console.warn('   ⚠️ InputMaskMonetario no disponible - usando valor sin formato');
+        $inputMonto.val(montoSugerido.toFixed(2));
+    }
+
+    // ❼ Aplicar máscara de CUIT al input correspondiente
+    const $inputCuit = $('#txtCuitCupon');
+
+    if (typeof Inputmask !== 'undefined') {
+        Inputmask({
+            mask: '99-99999999-9',
+            placeholder: '_',
+            clearIncomplete: true
+        }).mask($inputCuit[0]);
+        console.log('   ✅ Máscara de CUIT aplicada');
+    } else {
+        console.warn('   ⚠️ Inputmask no disponible para CUIT');
+    }
+
+    // ❽ Limpiar campos
+    $('#txtTitularCupon').val('');
+    $('#txtNroOrdenCupon').val('');
+    $inputCuit.val('');
+
+    // ❾ Limpiar validaciones previas
+    $('#formDetalleCuponEmpresa .form-control')
+        .removeClass('is-invalid is-valid');
+    $('.invalid-feedback').remove();
+
+    // ❿ ✅ CAMBIO CRÍTICO v19.7: Usar Bootstrap Modal.show() en lugar de jQuery manual
+    try {
+        modalInstance.show();
+        console.log('✅ Modal mostrado con Bootstrap.show()');
+
+        // ⓫ Ajustar z-index DESPUÉS de que Bootstrap lo muestre
+        setTimeout(() => {
+            $(modalElement).css('z-index', '5100');
+
+            // Ajustar z-index del backdrop más reciente
+            const $backdrops = $('.modal-backdrop');
+            if ($backdrops.length > 0) {
+                $backdrops.last().css('z-index', '5099');
+            }
+
+            console.log('   ✅ Z-index ajustado: modal=5100, backdrop=5099');
+        }, 200);
+
+    } catch (error) {
+        console.error('❌ ERROR al mostrar modal:', error);
+
+        if (typeof toastr !== 'undefined') {
+            toastr.error(`Error al abrir el modal: ${error.message}`);
+        }
+
+        return;
+    }
+
+    // ⓬ Focus en el primer campo
+    setTimeout(() => {
+        $('#txtTitularCupon').trigger('focus');
+    }, INPUT_FOCUS_TIMEOUT);
+
+    // ⓭ Vincular eventos de guardar
+    $('#btnGuardarDetalleCupon')
+        .off('click.guardarCupon')
+        .on('click.guardarCupon', function () {
+            guardarDetalleCuponEmpresa(instrumento, tipoMedioPago);
+        });
+
+    // ⓮ Vincular evento Enter en el último campo (monto)
+    $inputMonto
+        .off('keypress.enterCupon')
+        .on('keypress.enterCupon', function (e) {
+            if (e.which === 13) {
+                e.preventDefault();
+                guardarDetalleCuponEmpresa(instrumento, tipoMedioPago);
+            }
+        });
+
+    console.log('✅ Modal detalle cupón empresa configurado correctamente');
+}
+/**
+ * ✅ NUEVO v19.5: Guarda el detalle del cupón/orden de empresa
+ * 
+ * VALIDACIONES:
+ * - Titular: Obligatorio, min 3 caracteres
+ * - Nro Orden: Obligatorio, min 3 caracteres
+ * - CUIT: Obligatorio, formato válido (XX-XXXXXXXX-X)
+ * - Monto: > 0, <= Saldo factura (con tolerancia)
+ * 
+ * @param {Object} instrumento - Datos de la empresa/mutual
+ * @param {Object} tipoMedioPago - Tipo de medio de pago
+ */
+function guardarDetalleCuponEmpresa(instrumento, tipoMedioPago) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('💾 GUARDAR DETALLE CUPÓN EMPRESA v19.5');
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Obtener valores del formulario
+    const titular = $('#txtTitularCupon').val().trim();
+    const nroOrden = $('#txtNroOrdenCupon').val().trim().toUpperCase();
+    const cuit = $('#txtCuitCupon').val().trim();
+
+    console.log('📋 Datos del formulario:');
+    console.log(`   Titular: "${titular}"`);
+    console.log(`   Nro Orden: "${nroOrden}"`);
+    console.log(`   CUIT: "${cuit}"`);
+
+    // ❷ Validar Titular
+    if (!titular || titular.length < 3) {
+        console.warn('⚠️ Titular inválido');
+        mostrarErrorCampo('#txtTitularCupon', 'Debe ingresar el nombre del titular (mínimo 3 caracteres)');
+        return;
+    }
+
+    // ❸ Validar Nro Orden
+    if (!nroOrden || nroOrden.length < 3) {
+        console.warn('⚠️ Número de orden inválido');
+        mostrarErrorCampo('#txtNroOrdenCupon', 'Debe ingresar un número de orden válido (mínimo 3 caracteres)');
+        return;
+    }
+
+    // ❹ Validar CUIT (formato XX-XXXXXXXX-X)
+    const cuitRegex = /^\d{2}-\d{8}-\d{1}$/;
+
+    if (!cuit || !cuitRegex.test(cuit)) {
+        console.warn('⚠️ CUIT con formato inválido');
+        mostrarErrorCampo('#txtCuitCupon', 'El CUIT debe tener el formato XX-XXXXXXXX-X (Ej: 20-12345678-9)');
+        return;
+    }
+
+    // ❺ Obtener monto
+    let monto = 0;
+
+    if (typeof InputMaskMonetario !== 'undefined') {
+        monto = InputMaskMonetario.obtenerValorNumerico('#txtMontoCupon');
+        console.log(`   💰 Monto extraído con InputMask: ${monto}`);
+    } else {
+        const montoStr = $('#txtMontoCupon').val();
+        monto = parsearNumeroArgentino(montoStr);
+        console.warn(`   ⚠️ InputMask no disponible - usando parseo manual: ${monto}`);
+    }
+
+    // ❻ Validar monto > 0
+    if (isNaN(monto) || monto <= 0) {
+        console.warn('⚠️ Monto inválido o cero');
+        mostrarErrorCampo('#txtMontoCupon', 'Debe ingresar un monto válido mayor a cero');
+        return;
+    }
+
+    // ❼ Validar monto <= saldo factura (con tolerancia)
+    const diferenciaFactura = Math.abs(conceptosPago.diferencia || 0);
+
+    if (monto > diferenciaFactura * LIMITE_PORCENTAJE_DIFERENCIA) {
+        console.warn(`⚠️ Monto muy alto: ${monto} > ${diferenciaFactura * LIMITE_PORCENTAJE_DIFERENCIA}`);
+
+        Swal.fire({
+            title: '¿Monto elevado?',
+            html: `<div class="text-start">
+                       <p class="mb-3">El monto ingresado es <strong>mayor</strong> a la diferencia pendiente:</p>
+                       <table class="table table-sm table-borderless mb-0">
+                           <tr>
+                               <td class="text-end">Monto ingresado:</td>
+                               <td class="text-start"><strong class="text-danger">${formatearMoneda(monto)}</strong></td>
+                           </tr>
+                           <tr>
+                               <td class="text-end">Diferencia pendiente:</td>
+                               <td class="text-start"><strong class="text-warning">${formatearMoneda(diferenciaFactura)}</strong></td>
+                           </tr>
+                       </table>
+                       <p class="mt-3 mb-0"><i class="bx bx-info-circle"></i> ¿Desea continuar?</p>
+                   </div>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: '<i class="bx bx-check"></i> Sí, continuar',
+            cancelButtonText: '<i class="bx bx-x"></i> No, corregir',
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                finalizarGuardadoCuponEmpresa(monto, titular, nroOrden, cuit, instrumento, tipoMedioPago);
+            } else {
+                $('#txtMontoCupon').trigger("focus").trigger("select");
+            }
+        });
+
+        return;
+    }
+
+    // ❽ Si validaciones OK, finalizar guardado
+    finalizarGuardadoCuponEmpresa(monto, titular, nroOrden, cuit, instrumento, tipoMedioPago);
+}
+
+/**
+ * ✅ NUEVO v19.5: Finaliza el guardado del cupón/orden de empresa
+ */
+function finalizarGuardadoCuponEmpresa(monto, titular, nroOrden, cuit, instrumento, tipoMedioPago) {
+    console.log('✅ Finalizando guardado de cupón empresa...');
+    console.log(`   Monto: ${monto}`);
+    console.log(`   Empresa: ${instrumento.ins_desc}`);
+    console.log(`   Titular: ${titular}`);
+    console.log(`   Nro Orden: ${nroOrden}`);
+    console.log(`   CUIT: ${cuit}`);
+
+    // ❶ Crear objeto de detalle
+    const detalleCupon = {
+        empresa_id: instrumento.ins_id,
+        empresa_desc: instrumento.ins_desc,
+        titular: titular,
+        nro_orden: nroOrden,
+        cuit: cuit
+    };
+
+    // ❷ Crear objeto de valor
+    const nuevoValor = {
+        id: ++valorIdCounter,
+        tcf_id: tipoMedioPago.tcf_id,
+        tcf_desc: tipoMedioPago.tcf_desc,
+        ins_id: instrumento.ins_id,
+        ins_desc: instrumento.ins_desc,
+        ins_simbolo: instrumento.ins_simbolo || '$',
+        importe: monto,
+        observacion: `Orden ${nroOrden} - ${titular} (CUIT: ${cuit})`,
+        detalle: detalleCupon,
+        fecha_creacion: new Date().toISOString()
+    };
+
+    console.log('📦 Nuevo valor creado:', nuevoValor);
+
+    // ❸ Agregar a array global
+    valoresPago.push(nuevoValor);
+
+    // ❹ Agregar fila a la tabla
+    agregarFilaValor(nuevoValor);
+
+    // ❺ Actualizar totales
+    actualizarTotalesPago();
+
+    // ❻ Cerrar modal
+    cerrarModalDetalleCuponEmpresa();
+
+    // ❼ Notificación
+    if (typeof toastr !== 'undefined') {
+        toastr.success(
+            `Cupón agregado: ${formatearMoneda(monto)} - ${instrumento.ins_desc}`,
+            'Valor guardado',
+            { timeOut: 3000 }
+        );
+    }
+
+    console.log('✅ Valor de cupón empresa guardado correctamente');
+}
+
+/**
+ * ✅ SIMPLIFICADO v19.7: Cierra el modal de detalle de cupón empresa
+ * CAMBIO: Usa Bootstrap.Modal.hide() en lugar de manipulación manual
+ */
+function cerrarModalDetalleCuponEmpresa() {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔒 CERRAR MODAL DETALLE CUPÓN EMPRESA v19.7');
+    console.log('═══════════════════════════════════════════════════');
+
+    const modalElement = document.querySelector('#modalDetalleCuponEmpresa');
+
+    if (!modalElement) {
+        console.warn('⚠️ Modal #modalDetalleCuponEmpresa no encontrado');
+        return;
+    }
+
+    // ❶ Obtener instancia de Bootstrap
+    const modalInstance = bootstrap.Modal.getInstance(modalElement);
+
+    if (!modalInstance) {
+        console.warn('⚠️ No hay instancia de Bootstrap Modal');
+        return;
+    }
+
+    // ❷ ✅ Usar método nativo de Bootstrap para cerrar
+    try {
+        modalInstance.hide();
+        console.log('✅ Modal cerrado con Bootstrap.hide()');
+    } catch (error) {
+        console.error('❌ Error al cerrar modal:', error);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ✅ NUEVO v19.5: EVENTO DE LIMPIEZA AUTOMÁTICA DEL MODAL
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Evento que se dispara cuando el modal se cierra completamente
+ * Asegura limpieza exhaustiva del formulario
+ */
+$('#modalDetalleCuponEmpresa').off('hidden.bs.modal').on('hidden.bs.modal', function () {
+    console.log('🧹 LIMPIEZA AUTOMÁTICA - MODAL CUPÓN EMPRESA');
+
+    const $form = $('#formDetalleCuponEmpresa');
+    $form[0].reset();
+    $form.find('.form-control').removeClass('is-invalid is-valid');
+    $('.invalid-feedback').remove();
+
+    $('#lblEmpresaSeleccionada').text('-');
+    $('#hdnEmpresaIdCupon').val('');
+
+    const $backdropCupon = $('.modal-backdrop[data-modal="cuponempresa"]');
+    if ($backdropCupon.length > 0) {
+        $backdropCupon.remove();
+    }
+
+    console.log('✅ MODAL DE CUPÓN EMPRESA LIMPIADO');
+});
