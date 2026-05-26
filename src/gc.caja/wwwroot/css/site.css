@@ -6341,3 +6341,226 @@ input, select, textarea, button, checkbox, radio {
 }
 
 /* FIN ESTILOS MODAL DETALLE EFECTIVO */
+
+/* ════════════════════════════════════════════════════════════════
+   MODAL DETALLE TRANSFERENCIA - Z-INDEX Y ESTILOS
+   ════════════════════════════════════════════════════════════════ */
+
+/* Modal con z-index específico idéntico a Vale Compra y Efectivo */
+#modalDetalleTransferencia {
+    z-index: 5100 !important;
+}
+
+    #modalDetalleTransferencia.modal.show ~ .modal-backdrop {
+        z-index: 5099 !important;
+    }
+
+    #modalDetalleTransferencia .modal-dialog {
+        z-index: 5101 !important;
+    }
+
+/* ═══════════════════════════════════════════════════════════════
+   CAMPO: NRO TRANSFERENCIA
+   ═══════════════════════════════════════════════════════════════ */
+
+#txtNroTransferencia {
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 0.625rem 0.875rem !important;
+    border: 2px solid #DAA520 !important;
+}
+
+    #txtNroTransferencia:focus {
+        border-color: #B8860B !important;
+        box-shadow: 0 0 0 0.25rem rgba(184, 134, 11, 0.25) !important;
+        background-color: #FFFEF5 !important;
+    }
+
+    #txtNroTransferencia.is-invalid {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+        background-color: rgba(220, 53, 69, 0.05) !important;
+        animation: shakeInput 0.3s ease-in-out;
+    }
+
+    #txtNroTransferencia.is-valid {
+        border-color: #28a745 !important;
+        box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.15) !important;
+        background-color: rgba(40, 167, 69, 0.05) !important;
+    }
+
+/* ═══════════════════════════════════════════════════════════════
+   CAMPO: FECHA TRANSFERENCIA
+   ═══════════════════════════════════════════════════════════════ */
+
+#txtFechaTransferencia {
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    padding: 0.625rem 0.875rem !important;
+    border: 2px solid #DAA520 !important;
+}
+
+    #txtFechaTransferencia:focus {
+        border-color: #B8860B !important;
+        box-shadow: 0 0 0 0.25rem rgba(184, 134, 11, 0.25) !important;
+        background-color: #FFFEF5 !important;
+    }
+
+    #txtFechaTransferencia.is-invalid {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+        background-color: rgba(220, 53, 69, 0.05) !important;
+        animation: shakeInput 0.3s ease-in-out;
+    }
+
+    #txtFechaTransferencia.is-valid {
+        border-color: #28a745 !important;
+        box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.15) !important;
+        background-color: rgba(40, 167, 69, 0.05) !important;
+    }
+
+/* ═══════════════════════════════════════════════════════════════
+   CAMPO: MONTO TRANSFERENCIA (CON INPUTMASK)
+   ═══════════════════════════════════════════════════════════════ */
+
+#txtMontoTransferencia {
+    font-size: 1.3rem !important;
+    font-weight: 700 !important;
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+    padding: 0.75rem 1rem !important;
+    border: 2px solid #DAA520 !important;
+}
+
+    #txtMontoTransferencia:focus {
+        border-color: #B8860B !important;
+        box-shadow: 0 0 0 0.25rem rgba(184, 134, 11, 0.25) !important;
+        background-color: #FFFEF5 !important;
+    }
+
+    #txtMontoTransferencia.is-invalid {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+        background-color: rgba(220, 53, 69, 0.05) !important;
+        animation: shakeInput 0.3s ease-in-out;
+    }
+
+    #txtMontoTransferencia.is-valid {
+        border-color: #28a745 !important;
+        box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.15) !important;
+        background-color: rgba(40, 167, 69, 0.05) !important;
+    }
+
+/* ═══════════════════════════════════════════════════════════════
+   LABEL: INSTRUMENTO TRANSFERENCIA (BANCO)
+   ═══════════════════════════════════════════════════════════════ */
+
+#lblInstrumentoTransferencia {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MENSAJE DE ERROR
+   ═══════════════════════════════════════════════════════════════ */
+
+#errorMontoTransferencia {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BOTÓN GUARDAR
+   ═══════════════════════════════════════════════════════════════ */
+
+#btnGuardarDetalleTransferencia {
+    min-width: 120px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+    #btnGuardarDetalleTransferencia:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(218, 165, 32, 0.4);
+    }
+
+    #btnGuardarDetalleTransferencia:active {
+        transform: translateY(0);
+    }
+
+/* ═══════════════════════════════════════════════════════════════
+   ANIMACIÓN DE ENTRADA DEL MODAL
+   ═══════════════════════════════════════════════════════════════ */
+
+#modalDetalleTransferencia .modal-content {
+    animation: fadeInScaleTransferencia 0.3s ease-out;
+}
+
+@keyframes fadeInScaleTransferencia {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE PARA MODAL TRANSFERENCIA
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+    #modalDetalleTransferencia .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    #txtNroTransferencia,
+    #txtFechaTransferencia {
+        font-size: 1rem !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+
+    #txtMontoTransferencia {
+        font-size: 1.1rem !important;
+        padding: 0.625rem 0.875rem !important;
+    }
+
+    #lblInstrumentoTransferencia {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    #modalDetalleTransferencia .modal-content {
+        max-width: 100%;
+    }
+
+    #txtNroTransferencia,
+    #txtFechaTransferencia {
+        font-size: 0.95rem !important;
+        padding: 0.5rem 0.625rem !important;
+    }
+
+    #txtMontoTransferencia {
+        font-size: 1rem !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+
+    #lblInstrumentoTransferencia {
+        font-size: 0.95rem;
+    }
+
+    #btnGuardarDetalleTransferencia {
+        width: 100%;
+    }
+}
+
+/* FIN ESTILOS MODAL DETALLE TRANSFERENCIA */

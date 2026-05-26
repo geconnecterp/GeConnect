@@ -1,14 +1,21 @@
 ﻿// ════════════════════════════════════════════════════════════
 // GESTOR DE PAGO DE FACTURA
 // ════════════════════════════════════════════════════════════
-// VERSIÓN v18.1 - Correcciones de limpieza y validación
+// VERSIÓN v19.4 - CORRECCIÓN: Modal Transferencias con múltiples bancos
 // ════════════════════════════════════════════════════════════
-// CAMBIOS v18.1:
-// - Agregado evento de limpieza automática en modal de efectivo
-// - Mejorada función cerrarModalDetalleEfectivo() con limpieza exhaustiva
-// - Constante LIMITE_PORCENTAJE_DIFERENCIA para validación configurable
-// - Mensaje de validación mejorado con tabla comparativa
-// - Logs más descriptivos para debugging
+// CAMBIOS v19.4:
+// - ✅ CORRECCIÓN QUIRÚRGICA: Agregado case 'BA' en confirmarSeleccionInstrumento()
+// - Sin cambios en lógica de VA (mantiene funcionamiento correcto)
+// - Sin cambios en lógica de EF (mantiene funcionamiento correcto)
+// - Log específico para BA: "Abriendo modal de Transferencia Bancaria..."
+//
+// CAMBIOS v19.3:
+// - Implementación completa de Transferencias Bancarias (BA)
+// - Funciones: abrirModalDetalleTransferencia(), guardarDetalleTransferencia()
+// - Modal _detalleTransferencia.cshtml mejorado con InputMask
+// - Validación de fecha no futura
+// - Evento de limpieza automática
+// ════════════════════════════════════════════════════════════
 //
 // VERSIÓN ANTERIOR v18.0 - Integración de InputMask
 // VERSIÓN ANTERIOR v16.1 - Mejora de rendimiento
@@ -165,6 +172,26 @@ function inicializarEventosPago() {
         }
 
         console.log('✅ MODAL DE VALE DE COMPRA LIMPIADO');
+    });
+
+    // ❺ ✅ NUEVO v19.3: Evento de limpieza del modal de Transferencia
+    $('#modalDetalleTransferencia').off('hidden.bs.modal').on('hidden.bs.modal', function () {
+        console.log('🧹 LIMPIEZA AUTOMÁTICA - MODAL TRANSFERENCIA');
+
+        const $form = $('#formDetalleTransferencia');
+        $form[0].reset();
+        $form.find('.form-control').removeClass('is-invalid is-valid');
+        $('.invalid-feedback').remove();
+
+        $('#lblInstrumentoTransferencia').text('-');
+        $('#hdnBancoIdTransferencia').val('');
+
+        const $backdropTransf = $('.modal-backdrop[data-modal="transferencia"]');
+        if ($backdropTransf.length > 0) {
+            $backdropTransf.remove();
+        }
+
+        console.log('✅ MODAL DE TRANSFERENCIA LIMPIADO');
     });
 
     console.log('✅ Eventos de pago configurados');
@@ -1227,12 +1254,12 @@ function vincularEventosInstrumentos() {
 
 
 /**
- * ✅ ACTUALIZADO v19.0: Confirma la selección del instrumento
- * NUEVO: Agregado soporte para Vales de Compra (VA)
+ * ✅ ACTUALIZADO v19.4: Confirma la selección del instrumento
+ * CORRECCIÓN: Agregado case 'BA' para Transferencias Bancarias
  */
 function confirmarSeleccionInstrumento() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('✅ CONFIRMAR INSTRUMENTO SELECCIONADO v19.0');
+    console.log('✅ CONFIRMAR INSTRUMENTO SELECCIONADO v19.4');
     console.log('═══════════════════════════════════════════════════');
 
     if (!window._instrumentoSeleccionado) {
@@ -1263,9 +1290,18 @@ function confirmarSeleccionInstrumento() {
                 );
                 break;
 
-            // ✅ NUEVO v19.0: LOTE 2 - VALES DE COMPRA
+            // ✅ LOTE 2 - VALES DE COMPRA (FUNCIONA CORRECTAMENTE)
             case 'VA': // Vales de Compra CA
                 abrirModalDetalleValeCompra(
+                    window._instrumentoSeleccionado,
+                    window._tipoMedioPagoActual
+                );
+                break;
+
+            // ✅ NUEVO v19.4: LOTE 3 - TRANSFERENCIAS BANCARIAS
+            case 'BA': // Transferencias Bancarias
+                console.log('✅ Abriendo modal de Transferencia Bancaria...');
+                abrirModalDetalleTransferencia(
                     window._instrumentoSeleccionado,
                     window._tipoMedioPagoActual
                 );
@@ -2993,25 +3029,18 @@ function formatearMoneda(valor) {
 }
 
 /**
-* ✅ NUEVO v19.1: Determina si un tipo de medio de pago requiere SIEMPRE modal de detalle
-* incluso cuando tiene un solo instrumento
-* 
-* CASOS ESPECIALES:
-* - 'VA' (Vales de Compra): Siempre requiere modal para mostrar saldo disponible
-* - 'BA' (Bancos/Transferencias): Futuro - requiere datos bancarios
-* - 'MU' (Múltiples Monedas): Futuro - requiere selección de moneda
-* 
-* @param {string} tcfId - ID del tipo de medio de pago (ej: 'VA', 'EF', 'CH')
-* @returns {boolean} - true si requiere modal de detalle obligatorio
-*/
+ * ✅ ACTUALIZADO v19.3: Determina si un tipo de medio de pago requiere SIEMPRE modal de detalle
+ * NUEVO: Agregado 'BA' (Transferencias Bancarias)
+ * 
+ * @param {string} tcfId - ID del tipo de medio de pago
+ * @returns {boolean} - true si requiere modal de detalle obligatorio
+ */
 function requiereModalDetalle(tcfId) {
     console.log(`🔍 Verificando si ${tcfId} requiere modal de detalle...`);
 
-    // ✅ Lista de tipos que SIEMPRE requieren modal de detalle
     const tiposConModalObligatorio = [
-        'VA',  // Vales de Compra - Muestra saldo disponible
-        // 'BA',  // Bancos - Futuro: Requiere datos de transferencia
-        // 'MU',  // Múltiples Monedas - Futuro: Requiere conversión
+        'VA',  // Vales de Compra
+        'BA',  // ✅ NUEVO v19.3: Transferencias Bancarias
     ];
 
     const requiereModal = tiposConModalObligatorio.includes(tcfId.toUpperCase());
@@ -3022,15 +3051,12 @@ function requiereModalDetalle(tcfId) {
 }
 
 /**
-* ✅ NUEVO v19.1: Abre el modal de detalle correcto según el tipo de medio de pago
-* Función auxiliar para casos especiales con un solo instrumento
-* 
-* @param {Object} instrumento - Instrumento único disponible
-* @param {Object} tipoMedioPago - Tipo de medio de pago seleccionado
-*/
+ * ✅ ACTUALIZADO v19.3: Abre el modal de detalle correcto según el tipo
+ * NUEVO: Agregado case 'BA' para Transferencias Bancarias
+ */
 function abrirModalDetalleSegunTipo(instrumento, tipoMedioPago) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔓 ABRIR MODAL DETALLE SEGÚN TIPO v19.1');
+    console.log('🔓 ABRIR MODAL DETALLE SEGÚN TIPO v19.3');
     console.log(`   Tipo MP: ${tipoMedioPago.tcf_id} - ${tipoMedioPago.tcf_desc}`);
     console.log(`   Instrumento: ${instrumento.ins_desc}`);
     console.log('═══════════════════════════════════════════════════');
@@ -3038,52 +3064,35 @@ function abrirModalDetalleSegunTipo(instrumento, tipoMedioPago) {
     const tcfId = tipoMedioPago.tcf_id.toUpperCase();
 
     switch (tcfId) {
-        case 'VA': // ✅ Vales de Compra
+        case 'VA': // Vales de Compra
             console.log('✅ Abriendo modal de Vale de Compra...');
             abrirModalDetalleValeCompra(instrumento, tipoMedioPago);
             break;
 
-        case 'EF': // ✅ Efectivo
+        case 'EF': // Efectivo
             console.log('✅ Abriendo modal de Efectivo...');
             abrirModalDetalleEfectivo(instrumento, tipoMedioPago);
             break;
 
-        case 'CH': // ⚠️ Cheque (futuro)
+        case 'BA': // ✅ NUEVO v19.3: Transferencias Bancarias
+            console.log('✅ Abriendo modal de Transferencia Bancaria...');
+            abrirModalDetalleTransferencia(instrumento, tipoMedioPago);
+            break;
+
+        case 'CH': // Cheque (LOTE 4)
             console.warn('⚠️ Modal de Cheque por implementar');
             if (typeof toastr !== 'undefined') {
                 toastr.info('Funcionalidad de cheques en desarrollo');
             }
             break;
 
-        case 'TC': // ⚠️ Tarjeta Crédito (futuro)
-        case 'TD': // ⚠️ Tarjeta Débito (futuro)
-            console.warn('⚠️ Modal de Tarjeta por implementar');
-            if (typeof toastr !== 'undefined') {
-                toastr.info('Funcionalidad de tarjetas en desarrollo');
-            }
-            break;
-
-        case 'BA': // ⚠️ Bancos/Transferencias (futuro)
-            console.warn('⚠️ Modal de Transferencia Bancaria por implementar');
-            if (typeof toastr !== 'undefined') {
-                toastr.info('Funcionalidad de transferencias en desarrollo');
-            }
-            break;
-
-        case 'MU': // ⚠️ Múltiples Monedas (futuro)
-            console.warn('⚠️ Modal de Múltiples Monedas por implementar');
-            if (typeof toastr !== 'undefined') {
-                toastr.info('Funcionalidad de múltiples monedas en desarrollo');
-            }
-            break;
-
         default:
-            console.warn(`⚠️ Tipo ${tcfId} sin modal específico - Usando flujo directo`);
+            console.warn(`⚠️ Tipo ${tcfId} sin modal específico`);
             agregarValorDirecto(instrumento, tipoMedioPago);
             break;
     }
 
-    console.log('✅ Función abrirModalDetalleSegunTipo finalizada');
+    console.log('✅ Función finalizada');
 }
 
 /**
@@ -3114,3 +3123,507 @@ function validarInstrumento(instrumento) {
 
     return instrumentoValido;
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// ✅ NUEVO v19.3: FUNCIONES PARA TRANSFERENCIAS BANCARIAS
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * ✅ NUEVO v19.3: Abre el modal de detalle de Transferencia Bancaria
+ * 
+ * FLUJO:
+ * 1. El usuario ya seleccionó un banco del modal de instrumentos
+ * 2. Se abre este modal con el banco pre-cargado
+ * 3. Usuario completa: Nro Trasn, Fecha, Monto
+ * 
+ * @param {Object} instrumento - Banco seleccionado (ej: "Banco Galicia")
+ * @param {Object} tipoMedioPago - Tipo de MP (tcf_id='BA')
+ */
+function abrirModalDetalleTransferencia(instrumento, tipoMedioPago) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔓 ABRIR MODAL DETALLE TRANSFERENCIA v19.3');
+    console.log(`   Banco: ${instrumento?.ins_desc || 'N/A'} (${instrumento?.ins_id || 'N/A'})`);
+    console.log(`   Tipo MP: ${tipoMedioPago?.tcf_desc || 'N/A'}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Validar objeto instrumento
+    if (!instrumento) {
+        console.error('❌ CRÍTICO: Objeto instrumento es null/undefined');
+
+        if (typeof toastr !== 'undefined') {
+            toastr.error('Error: No se pudo cargar la información del banco');
+        }
+
+        return;
+    }
+
+    // ❷ Obtener elemento del modal
+    const $modal = $('#modalDetalleTransferencia');
+
+    if ($modal.length === 0) {
+        console.error('❌ Modal #modalDetalleTransferencia no encontrado en el DOM');
+
+        if (typeof toastr !== 'undefined') {
+            toastr.error('El modal de transferencias no está disponible');
+        }
+
+        return;
+    }
+
+    // ❸ Hidratar información del banco seleccionado
+    $('#lblInstrumentoTransferencia').text(instrumento.ins_desc || 'Banco sin nombre');
+    $('#hdnBancoIdTransferencia').val(instrumento.ins_id);
+
+    console.log(`   ✅ Banco cargado: ${instrumento.ins_desc}`);
+
+    // ❹ Establecer fecha actual por defecto
+    const fechaHoy = new Date().toISOString().split('T')[0];
+    $('#txtFechaTransferencia').val(fechaHoy);
+
+    // ❺ Calcular importe sugerido (diferencia pendiente)
+    const diferencia = Math.abs(conceptosPago.diferencia || 0);
+    const importeSugerido = diferencia;
+
+    console.log(`   💰 Importe sugerido: ${formatearMoneda(importeSugerido)}`);
+
+    // ❻ Aplicar máscara monetaria al input de monto
+    const $inputMonto = $('#txtMontoTransferencia');
+
+    if (typeof InputMaskMonetario !== 'undefined') {
+        InputMaskMonetario.removerMascara($inputMonto);
+        InputMaskMonetario.aplicarMascaraPesos($inputMonto);
+        InputMaskMonetario.establecerValor($inputMonto, importeSugerido);
+        console.log('   ✅ Máscara monetaria aplicada');
+    } else {
+        console.warn('   ⚠️ InputMaskMonetario no disponible - usando valor sin formato');
+        $inputMonto.val(importeSugerido.toFixed(2));
+    }
+
+    // ❼ Limpiar campos
+    $('#txtNroTransferencia').val('');
+
+    // ❽ Limpiar validaciones previas
+    $('#formDetalleTransferencia .form-control')
+        .removeClass('is-invalid is-valid');
+    $('.invalid-feedback').remove();
+
+    // ❾ Mostrar modal con jQuery
+    $modal
+        .addClass('show')
+        .css({
+            'display': 'block',
+            'opacity': '1',
+            'z-index': '5100'
+        })
+        .attr('aria-modal', 'true')
+        .removeAttr('aria-hidden');
+
+    // ❿ Crear backdrop
+    if ($('.modal-backdrop[data-modal="transferencia"]').length === 0) {
+        $('body').append(
+            '<div class="modal-backdrop fade show" ' +
+            'data-modal="transferencia" ' +
+            'style="z-index: 5099;"></div>'
+        );
+    }
+
+    // ⓫ Focus en el primer campo
+    setTimeout(() => {
+        $('#txtNroTransferencia').trigger('focus');
+    }, INPUT_FOCUS_TIMEOUT);
+
+    // ⓬ Vincular eventos de guardar
+    $('#btnGuardarDetalleTransferencia')
+        .off('click.guardarTransf')
+        .on('click.guardarTransf', function () {
+            guardarDetalleTransferencia(instrumento, tipoMedioPago);
+        });
+
+    // ⓭ Vincular evento Enter
+    $inputMonto
+        .off('keypress.enterTransf')
+        .on('keypress.enterTransf', function (e) {
+            if (e.which === 13) {
+                e.preventDefault();
+                guardarDetalleTransferencia(instrumento, tipoMedioPago);
+            }
+        });
+
+    console.log('✅ Modal detalle transferencia abierto correctamente');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ✅ NUEVO v19.3: FUNCIONES PARA TRANSFERENCIAS BANCARIAS
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * ✅ NUEVO v19.3: Abre el modal de detalle de Transferencia Bancaria
+ * 
+ * FLUJO:
+ * 1. El usuario ya seleccionó un banco del modal de instrumentos
+ * 2. Se abre este modal con el banco pre-cargado
+ * 3. Usuario completa: Nro Trasn, Fecha, Monto
+ * 
+ * @param {Object} instrumento - Banco seleccionado (ej: "Banco Galicia")
+ * @param {Object} tipoMedioPago - Tipo de MP (tcf_id='BA')
+ */
+function abrirModalDetalleTransferencia(instrumento, tipoMedioPago) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔓 ABRIR MODAL DETALLE TRANSFERENCIA v19.3');
+    console.log(`   Banco: ${instrumento?.ins_desc || 'N/A'} (${instrumento?.ins_id || 'N/A'})`);
+    console.log(`   Tipo MP: ${tipoMedioPago?.tcf_desc || 'N/A'}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Validar objeto instrumento
+    if (!instrumento) {
+        console.error('❌ CRÍTICO: Objeto instrumento es null/undefined');
+
+        if (typeof toastr !== 'undefined') {
+            toastr.error('Error: No se pudo cargar la información del banco');
+        }
+
+        return;
+    }
+
+    // ❷ Obtener elemento del modal
+    const $modal = $('#modalDetalleTransferencia');
+
+    if ($modal.length === 0) {
+        console.error('❌ Modal #modalDetalleTransferencia no encontrado en el DOM');
+
+        if (typeof toastr !== 'undefined') {
+            toastr.error('El modal de transferencias no está disponible');
+        }
+
+        return;
+    }
+
+    // ❸ Hidratar información del banco seleccionado
+    $('#lblInstrumentoTransferencia').text(instrumento.ins_desc || 'Banco sin nombre');
+    $('#hdnBancoIdTransferencia').val(instrumento.ins_id);
+
+    console.log(`   ✅ Banco cargado: ${instrumento.ins_desc}`);
+
+    // ❹ Establecer fecha actual por defecto
+    const fechaHoy = new Date().toISOString().split('T')[0];
+    $('#txtFechaTransferencia').val(fechaHoy);
+
+    // ❺ Calcular importe sugerido (diferencia pendiente)
+    const diferencia = Math.abs(conceptosPago.diferencia || 0);
+    const importeSugerido = diferencia;
+
+    console.log(`   💰 Importe sugerido: ${formatearMoneda(importeSugerido)}`);
+
+    // ❻ Aplicar máscara monetaria al input de monto
+    const $inputMonto = $('#txtMontoTransferencia');
+
+    if (typeof InputMaskMonetario !== 'undefined') {
+        InputMaskMonetario.removerMascara($inputMonto);
+        InputMaskMonetario.aplicarMascaraPesos($inputMonto);
+        InputMaskMonetario.establecerValor($inputMonto, importeSugerido);
+        console.log('   ✅ Máscara monetaria aplicada');
+    } else {
+        console.warn('   ⚠️ InputMaskMonetario no disponible - usando valor sin formato');
+        $inputMonto.val(importeSugerido.toFixed(2));
+    }
+
+    // ❼ Limpiar campos
+    $('#txtNroTransferencia').val('');
+
+    // ❽ Limpiar validaciones previas
+    $('#formDetalleTransferencia .form-control')
+        .removeClass('is-invalid is-valid');
+    $('.invalid-feedback').remove();
+
+    // ❾ Mostrar modal con jQuery
+    $modal
+        .addClass('show')
+        .css({
+            'display': 'block',
+            'opacity': '1',
+            'z-index': '5100'
+        })
+        .attr('aria-modal', 'true')
+        .removeAttr('aria-hidden');
+
+    // ❿ Crear backdrop
+    if ($('.modal-backdrop[data-modal="transferencia"]').length === 0) {
+        $('body').append(
+            '<div class="modal-backdrop fade show" ' +
+            'data-modal="transferencia" ' +
+            'style="z-index: 5099;"></div>'
+        );
+    }
+
+    // ⓫ Focus en el primer campo
+    setTimeout(() => {
+        $('#txtNroTransferencia').trigger('focus');
+    }, INPUT_FOCUS_TIMEOUT);
+
+    // ⓬ Vincular eventos de guardar
+    $('#btnGuardarDetalleTransferencia')
+        .off('click.guardarTransf')
+        .on('click.guardarTransf', function () {
+            guardarDetalleTransferencia(instrumento, tipoMedioPago);
+        });
+
+    // ⓭ Vincular evento Enter
+    $inputMonto
+        .off('keypress.enterTransf')
+        .on('keypress.enterTransf', function (e) {
+            if (e.which === 13) {
+                e.preventDefault();
+                guardarDetalleTransferencia(instrumento, tipoMedioPago);
+            }
+        });
+
+    console.log('✅ Modal detalle transferencia abierto correctamente');
+}
+
+/**
+* ✅ NUEVO v19.3: Guarda el detalle de la transferencia bancaria
+* 
+* VALIDACIONES:
+* - Nro Trasn: Obligatorio, min 3 caracteres
+* - Fecha: Obligatoria, no futura
+* - Monto: > 0, <= Saldo factura (con tolerancia)
+* 
+* @param {Object} instrumento - Datos del banco
+* @param {Object} tipoMedioPago - Tipo de medio de pago
+*/
+function guardarDetalleTransferencia(instrumento, tipoMedioPago) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('💾 GUARDAR DETALLE TRANSFERENCIA v19.3');
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Obtener valores del formulario
+    const nroTransferencia = $('#txtNroTransferencia').val().trim().toUpperCase();
+    const fechaTransferencia = $('#txtFechaTransferencia').val();
+
+    console.log('📋 Datos del formulario:');
+    console.log(`   Nro Trasn: "${nroTransferencia}"`);
+    console.log(`   Fecha: "${fechaTransferencia}"`);
+
+    // ❷ Validar Nro Trasn
+    if (!nroTransferencia || nroTransferencia.length < 3) {
+        console.warn('⚠️ Número de transferencia inválido');
+        mostrarErrorCampo('#txtNroTransferencia', 'Debe ingresar un número de transferencia válido (mínimo 3 caracteres)');
+        return;
+    }
+
+    // ❸ Validar Fecha
+    if (!fechaTransferencia) {
+        console.warn('⚠️ Fecha no ingresada');
+        mostrarErrorCampo('#txtFechaTransferencia', 'Debe seleccionar la fecha de la transferencia');
+        return;
+    }
+
+    // ❹ Validar fecha no futura
+    const fechaTransf = new Date(fechaTransferencia);
+    const fechaHoy = new Date();
+    fechaHoy.setHours(0, 0, 0, 0);
+
+    if (fechaTransf > fechaHoy) {
+        console.warn('⚠️ Fecha de transferencia es futura');
+        mostrarErrorCampo('#txtFechaTransferencia', 'La fecha no puede ser futura');
+        return;
+    }
+
+    // ❺ Obtener monto
+    let monto = 0;
+
+    if (typeof InputMaskMonetario !== 'undefined') {
+        monto = InputMaskMonetario.obtenerValorNumerico('#txtMontoTransferencia');
+        console.log(`   💰 Monto extraído con InputMask: ${monto}`);
+    } else {
+        const montoStr = $('#txtMontoTransferencia').val();
+        monto = parsearNumeroArgentino(montoStr);
+        console.warn(`   ⚠️ InputMask no disponible - usando parseo manual: ${monto}`);
+    }
+
+    // ❻ Validar monto > 0
+    if (isNaN(monto) || monto <= 0) {
+        console.warn('⚠️ Monto inválido o cero');
+        mostrarErrorCampo('#txtMontoTransferencia', 'Debe ingresar un monto válido mayor a cero');
+        return;
+    }
+
+    // ❼ Validar monto <= saldo factura (con tolerancia)
+    const diferenciaFactura = Math.abs(conceptosPago.diferencia || 0);
+
+    if (monto > diferenciaFactura * LIMITE_PORCENTAJE_DIFERENCIA) {
+        console.warn(`⚠️ Monto muy alto: ${monto} > ${diferenciaFactura * LIMITE_PORCENTAJE_DIFERENCIA}`);
+
+        Swal.fire({
+            title: '¿Monto elevado?',
+            html: `<div class="text-start">
+                       <p class="mb-3">El monto ingresado es <strong>mayor</strong> a la diferencia pendiente:</p>
+                       <table class="table table-sm table-borderless mb-0">
+                           <tr>
+                               <td class="text-end">Monto ingresado:</td>
+                               <td class="text-start"><strong class="text-danger">${formatearMoneda(monto)}</strong></td>
+                           </tr>
+                           <tr>
+                               <td class="text-end">Diferencia pendiente:</td>
+                               <td class="text-start"><strong class="text-warning">${formatearMoneda(diferenciaFactura)}</strong></td>
+                           </tr>
+                       </table>
+                       <p class="mt-3 mb-0"><i class="bx bx-info-circle"></i> ¿Desea continuar?</p>
+                   </div>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: '<i class="bx bx-check"></i> Sí, continuar',
+            cancelButtonText: '<i class="bx bx-x"></i> No, corregir',
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                finalizarGuardadoTransferencia(monto, nroTransferencia, fechaTransferencia, instrumento, tipoMedioPago);
+            } else {
+                $('#txtMontoTransferencia').trigger("focus").trigger("select");
+            }
+        });
+
+        return;
+    }
+
+    // ❽ Si validaciones OK, finalizar guardado
+    finalizarGuardadoTransferencia(monto, nroTransferencia, fechaTransferencia, instrumento, tipoMedioPago);
+}
+
+/**
+* ✅ NUEVO v19.3: Finaliza el guardado de la transferencia bancaria
+*/
+function finalizarGuardadoTransferencia(monto, nroTransferencia, fechaTransferencia, instrumento, tipoMedioPago) {
+    console.log('✅ Finalizando guardado de transferencia bancaria...');
+    console.log(`   Monto: ${monto}`);
+    console.log(`   Banco: ${instrumento.ins_desc}`);
+    console.log(`   Nro Trasn: ${nroTransferencia}`);
+
+    // ❶ Crear objeto de detalle
+    const detalleTransferencia = {
+        banco_id: instrumento.ins_id,
+        banco_desc: instrumento.ins_desc,
+        nro_transferencia: nroTransferencia,
+        fecha_transferencia: fechaTransferencia
+    };
+
+    // ❷ Crear objeto de valor
+    const nuevoValor = {
+        id: ++valorIdCounter,
+        tcf_id: tipoMedioPago.tcf_id,
+        tcf_desc: tipoMedioPago.tcf_desc,
+        ins_id: instrumento.ins_id,
+        ins_desc: instrumento.ins_desc,
+        ins_simbolo: instrumento.ins_simbolo || '$',
+        importe: monto,
+        observacion: `Transf ${nroTransferencia} - ${fechaTransferencia}`,
+        detalle: detalleTransferencia,
+        fecha_creacion: new Date().toISOString()
+    };
+
+    console.log('📦 Nuevo valor creado:', nuevoValor);
+
+    // ❸ Agregar a array global
+    valoresPago.push(nuevoValor);
+
+    // ❹ Agregar fila a la tabla
+    agregarFilaValor(nuevoValor);
+
+    // ❺ Actualizar totales
+    actualizarTotalesPago();
+
+    // ❻ Cerrar modal
+    cerrarModalDetalleTransferencia();
+
+    // ❼ Notificación
+    if (typeof toastr !== 'undefined') {
+        toastr.success(
+            `Transferencia agregada: ${formatearMoneda(monto)} - ${instrumento.ins_desc}`,
+            'Valor guardado',
+            { timeOut: 3000 }
+        );
+    }
+
+    console.log('✅ Valor de transferencia bancaria guardado correctamente');
+}
+
+
+/**
+* ✅ NUEVO v19.3: Cierra el modal de detalle de transferencia
+*/
+function cerrarModalDetalleTransferencia() {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔒 CERRAR MODAL DETALLE TRANSFERENCIA v19.3');
+    console.log('═══════════════════════════════════════════════════');
+
+    const $modal = $('#modalDetalleTransferencia');
+
+    if ($modal.length === 0) {
+        console.warn('⚠️ Modal #modalDetalleTransferencia no encontrado');
+        return;
+    }
+
+    // ❶ Ocultar modal
+    $modal
+        .removeClass('show')
+        .css('display', 'none')
+        .attr('aria-hidden', 'true')
+        .removeAttr('aria-modal');
+
+    console.log('   ✅ Modal ocultado');
+
+    // ❷ Remover backdrop
+    const $backdropTransf = $('.modal-backdrop[data-modal="transferencia"]');
+    if ($backdropTransf.length > 0) {
+        $backdropTransf.fadeOut(200, function () {
+            $(this).remove();
+        });
+        console.log('   ✅ Backdrop removido');
+    }
+
+    // ❸ Limpiar formulario
+    $('#formDetalleTransferencia')[0].reset();
+    $('#formDetalleTransferencia .form-control')
+        .removeClass('is-invalid is-valid');
+    $('.invalid-feedback').remove();
+
+    console.log('   ✅ Formulario limpiado');
+
+    // ❹ Resetear labels
+    $('#lblInstrumentoTransferencia').text('-');
+    $('#hdnBancoIdTransferencia').val('');
+
+    console.log('   ✅ Labels reseteados');
+
+    // ❺ Verificar otros modales
+    setTimeout(() => {
+        if ($('.modal.show').length === 0) {
+            $('body').removeClass('modal-open').css('overflow', '');
+            console.log('   ✅ Body desbloqueado');
+        }
+    }, 100);
+
+    console.log('✅ MODAL CERRADO COMPLETAMENTE');
+}
+
+// ❺ ✅ NUEVO v19.3: Evento de limpieza del modal de Transferencia
+$('#modalDetalleTransferencia').off('hidden.bs.modal').on('hidden.bs.modal', function () {
+    console.log('🧹 LIMPIEZA AUTOMÁTICA - MODAL TRANSFERENCIA');
+
+    const $form = $('#formDetalleTransferencia');
+    $form[0].reset();
+    $form.find('.form-control').removeClass('is-invalid is-valid');
+    $('.invalid-feedback').remove();
+
+    $('#lblInstrumentoTransferencia').text('-');
+    $('#hdnBancoIdTransferencia').val('');
+
+    const $backdropTransf = $('.modal-backdrop[data-modal="transferencia"]');
+    if ($backdropTransf.length > 0) {
+        $backdropTransf.remove();
+    }
+
+    console.log('✅ MODAL DE TRANSFERENCIA LIMPIADO');
+});
+

@@ -6,17 +6,40 @@
     DESCRIPCIÓN:
     Modal para ingresar los datos de una transferencia bancaria.
 
+    VERSIÓN v19.3 - Integración con pagoFactura.js + InputMask
+    
+    CAMBIOS v19.3:
+    - Input de monto con máscara monetaria (InputMask)
+    - Campo oculto para ID del banco seleccionado
+    - Validación de fecha no futura
+    - Estilos mejorados consistentes con otros modales
+
     CAMPOS:
-    - Nro Trasn. (Número de Transacción)
-    - Fecha
-    - Monto
+    - Banco: Mostrado como label (ya seleccionado del modal Instrumentos)
+    - Nro Trasn: Número de transacción/comprobante (alfanumérico)
+    - Fecha: Fecha de la operación (date picker)
+    - Monto: Importe de la transferencia (con máscara monetaria)
 
     FLUJO:
-    1. Se selecciona el banco desde modal de Instrumentos
-    2. Se completan los datos de la transferencia
+    1. Usuario selecciona MP "Transferencias Bancarias" (tcf_id='BA')
+    2. Backend devuelve lista de bancos como instrumentos
+    3. Usuario selecciona UN BANCO del modal de instrumentos
+    4. Se abre este modal con el banco pre-cargado
+    5. Usuario completa: Nro Trasn, Fecha, Monto
+    6. Se valida y agrega a la tabla de formas de pago
+
+    VALIDACIONES:
+    - Nro Trasn obligatorio (min 3 caracteres)
+    - Fecha obligatoria y no futura
+    - Monto > 0
+    - Monto <= Saldo de factura (con tolerancia)
+
+    MAPEO BD:
+    - rb_importe = Monto
+    - rb_observ = JSON con datos: {banco_id, banco_desc, nro_transf, fecha}
 
     EVENTOS:
-    - Manejados en pagoFactura.js
+    - Manejados en pagoFactura.js v19.3
 *@
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
@@ -58,43 +81,54 @@
 
                 <form id="formDetalleTransferencia">
 
-                    <!-- Información del Tipo e Instrumento (Banco) -->
+                    <!-- Información del Banco Seleccionado -->
                     <div class="alert alert-info d-flex align-items-center mb-3">
                         <i class="bx bx-info-circle me-2"></i>
-                        <div>
-                            <strong id="lblTipoMedioPagoTransferencia">Transferencias Bancarias</strong> 
-                            <span class="mx-2">|</span>
-                            <span id="lblInstrumentoTransferencia">-</span>
+                        <div class="w-100">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Transferencias Bancarias</strong> 
+                                    <span class="mx-2">|</span>
+                                    <span id="lblInstrumentoTransferencia">-</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Campo Oculto: ID del Banco -->
+                    <input type="hidden" id="hdnBancoIdTransferencia" name="bancoId">
 
                     <!-- Campo: Nro Trasn. -->
                     <div class="mb-3">
                         <label for="txtNroTransferencia" class="form-label fw-bold">
-                            Nro Trasn. <span class="text-danger">*</span>
+                            <i class="bx bx-hash"></i> Nro Trasn. <span class="text-danger">*</span>
                         </label>
                         <div class="input-group">
-                            <span class="input-group-text">
+                            <span class="input-group-text bg-golden text-white">
                                 <i class="bx bx-hash"></i>
                             </span>
                             <input type="text" 
-                                   class="form-control" 
+                                   class="form-control text-uppercase" 
                                    id="txtNroTransferencia" 
                                    name="numeroTransferencia"
-                                   placeholder="Número de transacción" 
+                                   placeholder="Ej: TRF123456789" 
+                                   maxlength="50"
                                    required 
+                                   autocomplete="off"
                                    autofocus>
                         </div>
-                        <div class="form-text">Ingrese el número de comprobante de transferencia</div>
+                        <small class="form-text text-muted">
+                            <i class="bx bx-info-circle"></i> Ingrese el número de comprobante o referencia de la transferencia
+                        </small>
                     </div>
 
                     <!-- Campo: Fecha -->
                     <div class="mb-3">
                         <label for="txtFechaTransferencia" class="form-label fw-bold">
-                            Fecha <span class="text-danger">*</span>
+                            <i class="bx bx-calendar"></i> Fecha <span class="text-danger">*</span>
                         </label>
                         <div class="input-group">
-                            <span class="input-group-text">
+                            <span class="input-group-text bg-golden text-white">
                                 <i class="bx bx-calendar"></i>
                             </span>
                             <input type="date" 
@@ -103,25 +137,33 @@
                                    name="fecha"
                                    required>
                         </div>
+                        <small class="form-text text-muted">
+                            <i class="bx bx-info-circle"></i> Fecha en que se realizó la transferencia (no puede ser futura)
+                        </small>
                     </div>
 
                     <!-- Campo: Monto -->
                     <div class="mb-3">
                         <label for="txtMontoTransferencia" class="form-label fw-bold">
-                            Monto <span class="text-danger">*</span>
+                            <i class="bx bx-dollar"></i> Monto <span class="text-danger">*</span>
                         </label>
-                        <div class="input-group">
-                            <span class="input-group-text">
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-golden text-white">
                                 <i class="bx bx-dollar"></i>
                             </span>
-                            <input type="number" 
-                                   class="form-control" 
-                                   id="txtMontoTransferencia" 
+                            <input type="text"
+                                   class="form-control form-control-lg text-end"
+                                   id="txtMontoTransferencia"
                                    name="monto"
-                                   placeholder="0.00" 
-                                   step="0.01" 
-                                   min="0.01"
-                                   required>
+                                   placeholder="$ 0,00"
+                                   required
+                                   autocomplete="off">
+                        </div>
+                        <small class="form-text text-muted">
+                            <i class="bx bx-info-circle"></i> Importe de la transferencia
+                        </small>
+                        <!-- Mensaje de Error -->
+                        <div id="errorMontoTransferencia" class="invalid-feedback" style="display: none;">
                         </div>
                     </div>
 
