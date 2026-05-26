@@ -1620,8 +1620,8 @@ function abrirModalDetalleEfectivo(instrumento, tipoMedioPago) {
 
     // ❾ Focus en el input con delay
     setTimeout(() => {
-        $inputMonto.focus().select();
-    }, 300);
+        $inputMonto.trigger("focus").trigger("select");
+    }, INPUT_FOCUS_TIMEOUT);
 
     // ❿ Vincular evento de guardar
     $('#btnGuardarDetalleEfectivo')
