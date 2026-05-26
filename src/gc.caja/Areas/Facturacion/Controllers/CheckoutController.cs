@@ -18,8 +18,17 @@ namespace gc.caja.Areas.Facturacion.Controllers
             ILogger<CheckoutController> logger) : base(options, httpContext, logger)
         {
             _pagoFactServicio = pagoFactServicio;
+
+            InicializaBancos().GetAwaiter().GetResult();
         }
 
+        private async Task InicializaBancos()
+        {
+            if (BancosLista.Count == 0 )
+            {
+               await ObtenerProveedores(_pagoFactServicio);
+            }
+        }
 
         [HttpPost]
         public async Task<IActionResult> ObtenerValoresPendientes([FromBody] ValoresPendientesReqDto req)

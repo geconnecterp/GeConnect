@@ -3,6 +3,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Cajas;
 using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Cajas.Response;
 using gc.infraestructura.Dtos.Gen;
@@ -18,6 +19,7 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
     public class CheckoutServicio : Servicio<Dto>, ICheckoutServicio
     {
         private const string RutaAPI = "/api/apipagofactura";
+        private const string RUTA_BCO_API = "/api/apibanco";
 
         private const string POST_OBTENER_VALORES_INS = "/ObtenerValoresIns";
         private const string POST_OBTENER_VALORES_MP = "/ObtenerValoresMP";
@@ -28,11 +30,62 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
         private const string POST_AGREGAR_VALOR_MANUAL = "/AgregarValorManual";
         private const string POST_FINALIZAR_PAGO = "/ConfirmarOperacionCaja";
 
+        // ✅ METODO PARA OBTENER LISTA DE BANCO
+        private const string GET_BANCO_LISTA = "/GetBancoChequeLista";
+
         public CheckoutServicio(IOptions<AppSettings> options,
             ILogger<CheckoutServicio> logger) : base(options, logger)
         {
         }
 
+        public async Task<RespuestaGenerica<ABMChequeListaDto>> GetBancoChequeLista(string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(token);
+
+                var link = $"{_appSettings.RutaBase}{RUTA_BCO_API}{GET_BANCO_LISTA}";
+                using var response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recibió respuesta válida de los datos de CF" };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ABMChequeListaDto>>>(stringData);
+                    if (apiResponse == null || apiResponse.Data == null)
+                    {
+                        return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+                    }
+
+                    return new RespuestaGenerica<ABMChequeListaDto>
+                    {
+                        Ok = true,
+                        ListaEntidad = apiResponse.Data,
+                        Mensaje = "OK"
+                    };
+                }
+                else
+                {
+                    var msg = await ReadApiErrorAsync(response);
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+                    return new() { Ok = false, Mensaje = msg };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name}");
+                return new RespuestaGenerica<ABMChequeListaDto>
+                {
+                    Ok = false,
+                    Mensaje = "Error interno al obtener las listas de bancos"
+                };
+            }
+        }
 
         public async Task<RespuestaGenerica<ValoresInsResDto>> ObtenerValoresIns(ValoresInsReqDto req, string token)
         {

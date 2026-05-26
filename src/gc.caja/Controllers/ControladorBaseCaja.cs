@@ -22,7 +22,7 @@ namespace gc.caja.Controllers
 {
     public class ControladorBaseCaja : Controller
     {
-        private readonly AppSettings _options; 
+        private readonly AppSettings _options;
         private readonly AppSettings _setting;
         protected readonly IHttpContextAccessor _context;
         internal readonly ILogger? _logger;
@@ -31,7 +31,7 @@ namespace gc.caja.Controllers
             ILogger logger)
         {
             _options = options.Value;
-            _setting = options.Value; 
+            _setting = options.Value;
             _context = contexto;
             _logger = logger;
         }
@@ -65,6 +65,39 @@ namespace gc.caja.Controllers
             {
                 //var nombre = User.Claims.First(c => c.Type.Contains("name")).Value;
                 return _context.HttpContext?.Request.Cookies[Etiqueta] ?? string.Empty;
+            }
+        }
+
+        public List<ABMChequeListaDto> BancosLista
+        {
+            get
+            {
+                string json = _context.HttpContext?.Session.GetString("BancosLista") ?? string.Empty;
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<List<ABMChequeListaDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("BancosLista", json);
+            }
+        }
+
+        protected async Task ObtenerProveedores(ICheckoutServicio _ckSv)
+        {
+            //se guardan los proveedores en session. Para ser utilizados posteriormente
+
+            var res = await _ckSv.GetBancoChequeLista(TokenCookie);
+            if (res.Ok)
+            {
+                BancosLista = res.ListaEntidad ?? [];
+            }
+            else
+            {
+                BancosLista = [new ABMChequeListaDto() { bc_id = "0000", bc_denominacion = "Sin bancos disponibles", bc_lista = "(default) Sin bancos disponibles" }];
             }
         }
 
@@ -508,7 +541,7 @@ namespace gc.caja.Controllers
         {
             lista ??= new List<T>();
             totalReg = lista.Count;
-            
+
             var pagedList = new StaticPagedList<T>(lista, pagina, cantReg, totalReg);
 
             return new GridCoreSmart<T>
