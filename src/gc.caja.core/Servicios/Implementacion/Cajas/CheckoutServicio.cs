@@ -9,24 +9,30 @@ using gc.infraestructura.Dtos.Gen;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Net;
 using System.Reflection;
 
 namespace gc.caja.core.Servicios.Implementacion.Cajas
 {
-    public class PagoFactServicio : Servicio<Dto>, IPagoFactServicio
+    public class CheckoutServicio : Servicio<Dto>, ICheckoutServicio
     {
-        private const string RutaAPI = "/api/apipagofact";
+        private const string RutaAPI = "/api/apipagofactura";
 
         private const string POST_OBTENER_VALORES_INS = "/ObtenerValoresIns";
         private const string POST_OBTENER_VALORES_MP = "/ObtenerValoresMP";
         private const string POST_OBTENER_VALORES_NC = "/ObtenerValoresNC";
         private const string POST_OBTENER_VALORES_PENDIENTES = "/ObtenerValoresPendientes";
 
-        public PagoFactServicio(IOptions<AppSettings> options, 
-            ILogger<PagoFactServicio> logger) : base(options, logger)
+        // ✅ NUEVAS CONSTANTES - FASE 1: VALORES DIRECTOS
+        private const string POST_AGREGAR_VALOR_MANUAL = "/AgregarValorManual";
+        private const string POST_FINALIZAR_PAGO = "/ConfirmarOperacionCaja";
+
+        public CheckoutServicio(IOptions<AppSettings> options,
+            ILogger<CheckoutServicio> logger) : base(options, logger)
         {
         }
+
 
         public async Task<RespuestaGenerica<ValoresInsResDto>> ObtenerValoresIns(ValoresInsReqDto req, string token)
         {
@@ -132,6 +138,12 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
             }
         }
 
+        // ✅ FASE 1: VALORES DIRECTOS - Método para obtener valores o instrumentos de nota de crédito, que son a favor del cliente
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="req">se recepciona el tipo de operacion (co_tipo) y el id del cliente (cta_id)</param>
+        /// <returns></returns>
         public async Task<RespuestaGenerica<ValoresNCResDto>> ObtenerValoresNC(ValoresNCReqDto req, string token)
         {
             try
@@ -184,6 +196,12 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
             }
         }
 
+        // ✅ FASE 1: VALORES DIRECTOS - Método para obtener valores o instrumentos pendientes (ejemplo post de tarjetas)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="req">se recepciona el tipo de operacion (co_tipo) y el id del cliente (cta_id)</param>
+        /// <returns></returns>
         public async Task<RespuestaGenerica<ValoresPendientesResDto>> ObtenerValoresPendientes(ValoresPendientesReqDto req, string token)
         {
             try

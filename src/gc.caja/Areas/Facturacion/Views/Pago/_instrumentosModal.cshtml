@@ -1,0 +1,132 @@
+﻿@*
+    ═══════════════════════════════════════════════════════════════
+    Modal de Selección de Instrumentos (Monedas)
+    ═══════════════════════════════════════════════════════════════
+
+    DESCRIPCIÓN:
+    Modal para seleccionar el instrumento/moneda de pago (Pesos, U$S, etc.)
+    después de haber elegido el tipo de medio de pago.
+
+    INTERACCIÓN:
+    - Muestra instrumentos con sus totales actuales
+    - Selección por DOBLE CLIC sobre el ítem
+    - Ítem seleccionado se resalta en azul
+    - Al confirmar, se abre el modal de detalle correspondiente
+
+    EVENTOS:
+    - Todos los eventos manejados en pagoFactura.js
+*@
+
+@using gc.infraestructura.Dtos.Tipos
+
+@{
+    var instrumentos = ViewBag.Instrumentos as List<dynamic> ?? new List<dynamic>();
+}
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- MODAL: INSTRUMENTOS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="modal fade" 
+     id="modalInstrumentos" 
+     tabindex="-1" 
+     role="dialog" 
+     aria-labelledby="modalInstrumentosLabel" 
+     aria-hidden="true" 
+     data-bs-backdrop="static" 
+     data-bs-keyboard="false">
+
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 600px;">
+        <div class="modal-content modal-golden">
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- HEADER -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-header bg-gradient-golden">
+                <h5 class="modal-title" id="modalInstrumentosLabel">
+                    <i class="bx bx-dollar-circle me-2"></i>
+                    Instrumentos
+                </h5>
+                <button type="button" 
+                        class="btn-close" 
+                        data-bs-dismiss="modal" 
+                        aria-label="Cerrar"></button>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- BODY -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-body p-0">
+
+                <!-- Header de Columnas -->
+                <div class="bg-light border-bottom py-2 px-3 d-flex">
+                    <div class="flex-grow-1">
+                        <strong class="text-muted">Instrumento</strong>
+                    </div>
+                    <div style="width: 150px; text-align: right;">
+                        <strong class="text-muted">Total</strong>
+                    </div>
+                </div>
+
+                <!-- Lista de Instrumentos -->
+                <div id="listaInstrumentos" 
+                     class="list-group list-group-flush" 
+                     style="max-height: 400px; overflow-y: auto;">
+
+                    <!-- Pesos -->
+                    <div class="list-group-item list-group-item-action instrumento-item d-flex align-items-center" 
+                         data-instrumento-id="ARS" 
+                         data-instrumento-desc="Pesos"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-dollar me-2 text-success"></i>
+                            <span class="instrumento-desc">Pesos</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="instrumento-total fw-bold text-success">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- U$S -->
+                    <div class="list-group-item list-group-item-action instrumento-item d-flex align-items-center" 
+                         data-instrumento-id="USD" 
+                         data-instrumento-desc="U$S"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-dollar-circle me-2 text-primary"></i>
+                            <span class="instrumento-desc">U$S</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="instrumento-total fw-bold text-primary">0.00</span>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- FOOTER -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-footer bg-light">
+                <button type="button" 
+                        class="btn btn-secondary" 
+                        data-bs-dismiss="modal">
+                    <i class="bx bx-x me-1"></i>
+                    Cancelar
+                </button>
+                <button type="button" 
+                        class="btn btn-golden" 
+                        id="btnConfirmarInstrumento" 
+                        disabled>
+                    <i class="bx bx-check me-1"></i>
+                    Confirmar
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>

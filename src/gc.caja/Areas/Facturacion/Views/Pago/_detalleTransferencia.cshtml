@@ -1,0 +1,153 @@
+﻿@*
+    ═══════════════════════════════════════════════════════════════
+    Modal de Detalle - Transferencia Bancaria
+    ═══════════════════════════════════════════════════════════════
+
+    DESCRIPCIÓN:
+    Modal para ingresar los datos de una transferencia bancaria.
+
+    CAMPOS:
+    - Nro Trasn. (Número de Transacción)
+    - Fecha
+    - Monto
+
+    FLUJO:
+    1. Se selecciona el banco desde modal de Instrumentos
+    2. Se completan los datos de la transferencia
+
+    EVENTOS:
+    - Manejados en pagoFactura.js
+*@
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- MODAL: DETALLE TRANSFERENCIA BANCARIA -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="modal fade" 
+     id="modalDetalleTransferencia" 
+     tabindex="-1" 
+     role="dialog" 
+     aria-labelledby="modalDetalleTransferenciaLabel" 
+     aria-hidden="true" 
+     data-bs-backdrop="static" 
+     data-bs-keyboard="false">
+
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 600px;">
+        <div class="modal-content modal-golden">
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- HEADER -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-header bg-gradient-golden">
+                <h5 class="modal-title" id="modalDetalleTransferenciaLabel">
+                    <i class="bx bx-transfer me-2"></i>
+                    Detalle - Transferencia Bancaria
+                </h5>
+                <button type="button" 
+                        class="btn-close" 
+                        data-bs-dismiss="modal" 
+                        aria-label="Cerrar"></button>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- BODY -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-body">
+
+                <form id="formDetalleTransferencia">
+
+                    <!-- Información del Tipo e Instrumento (Banco) -->
+                    <div class="alert alert-info d-flex align-items-center mb-3">
+                        <i class="bx bx-info-circle me-2"></i>
+                        <div>
+                            <strong id="lblTipoMedioPagoTransferencia">Transferencias Bancarias</strong> 
+                            <span class="mx-2">|</span>
+                            <span id="lblInstrumentoTransferencia">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Campo: Nro Trasn. -->
+                    <div class="mb-3">
+                        <label for="txtNroTransferencia" class="form-label fw-bold">
+                            Nro Trasn. <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bx bx-hash"></i>
+                            </span>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="txtNroTransferencia" 
+                                   name="numeroTransferencia"
+                                   placeholder="Número de transacción" 
+                                   required 
+                                   autofocus>
+                        </div>
+                        <div class="form-text">Ingrese el número de comprobante de transferencia</div>
+                    </div>
+
+                    <!-- Campo: Fecha -->
+                    <div class="mb-3">
+                        <label for="txtFechaTransferencia" class="form-label fw-bold">
+                            Fecha <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bx bx-calendar"></i>
+                            </span>
+                            <input type="date" 
+                                   class="form-control" 
+                                   id="txtFechaTransferencia" 
+                                   name="fecha"
+                                   required>
+                        </div>
+                    </div>
+
+                    <!-- Campo: Monto -->
+                    <div class="mb-3">
+                        <label for="txtMontoTransferencia" class="form-label fw-bold">
+                            Monto <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bx bx-dollar"></i>
+                            </span>
+                            <input type="number" 
+                                   class="form-control" 
+                                   id="txtMontoTransferencia" 
+                                   name="monto"
+                                   placeholder="0.00" 
+                                   step="0.01" 
+                                   min="0.01"
+                                   required>
+                        </div>
+                    </div>
+
+                </form>
+
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- FOOTER -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-footer bg-light">
+                <button type="button" 
+                        class="btn btn-secondary" 
+                        data-bs-dismiss="modal">
+                    <i class="bx bx-x me-1"></i>
+                    Cancelar
+                </button>
+                <button type="button" 
+                        class="btn btn-golden" 
+                        id="btnGuardarDetalleTransferencia">
+                    <i class="bx bx-save me-1"></i>
+                    Guardar
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>

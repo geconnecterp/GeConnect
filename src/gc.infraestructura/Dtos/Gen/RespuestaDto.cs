@@ -5,10 +5,14 @@ namespace gc.infraestructura.Dtos.Gen
 {
     public class RespuestaDto
     {
+        //tiene el valor 0 para indicar que se ha ejecutado el proceso, 1 para indicar que hay un warning y -1 para indicar que se ha producido un error
         public short resultado { get; set; }
+        //si resultado es 1 o -1, resultado_id puede contener un código de error o warning específico para identificar el tipo de error o warning ocurrido
         public string resultado_id { get; set; } = string.Empty;
+        //si resultado es 1 o -1, resultado_msj puede contener un mensaje descriptivo del error o warning ocurrido
         public string resultado_msj { get; set; } = string.Empty;
-        public string resultado_setfocus { get; set; } = string.Empty;
+        //si resultado es <> 0, resultado_setfocus puede contener el nombre del campo al que se le debe hacer foco para corregir el error o warning ocurrido
+        public string resultado_setfocus { get; set; } = string.Empty;        
         public Guid IdFile { get; set; }
         public DateTime hoy { get; set; }
 

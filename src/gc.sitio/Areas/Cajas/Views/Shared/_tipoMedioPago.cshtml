@@ -1,0 +1,322 @@
+﻿@* 
+    ═══════════════════════════════════════════════════════════════
+    Modal de Selección de Tipo de Medio de Pago
+    ═══════════════════════════════════════════════════════════════
+
+    DESCRIPCIÓN:
+    Modal para seleccionar el tipo de instrumento de pago (Efectivo, Cheque, 
+    Tarjetas, Transferencias, etc.) antes de ingresar los detalles del valor.
+
+    INTERACCIÓN:
+    - Selección por DOBLE CLIC sobre el ítem
+    - Ítem seleccionado se resalta en azul
+    - Al confirmar, se abre el modal específico según el tipo elegido
+
+    DATOS REQUERIDOS:
+    - @ViewBag.TiposCuentaFin: List<TipoCuentaFinDto> (tipos de cuenta financiera)
+    - @ViewBag.Instrumentos: List<InstrumentoDto> (instrumentos agrupados por TCF)
+
+    EVENTOS:
+    - dblclick: Selecciona y confirma el tipo de pago
+    - click: Solo resalta visualmente (opcional)
+*@
+
+@using gc.infraestructura.Dtos
+@using gc.infraestructura.Dtos.Tipos
+
+@{
+    var tiposCuentaFin = ViewBag.TiposCuentaFin as List<TipoCuentaFinDto> ?? new List<TipoCuentaFinDto>();
+}
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- MODAL: TIPO DE MEDIO DE PAGO -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="modal fade" id="modalTipoMedioPago" tabindex="-1" role="dialog" 
+     aria-labelledby="modalTipoMedioPagoLabel" aria-hidden="true" 
+     data-backdrop="static" data-keyboard="false">
+
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 700px;">
+        <div class="modal-content">
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- HEADER -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalTipoMedioPagoLabel">
+                    <i class="fas fa-money-check-alt me-2"></i>
+                    Tipo de Medio de Pago
+                </h5>
+                <button type="button" class="btn-close btn-close-white" 
+                        data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- BODY -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-body p-0">
+
+                <!-- Header de Columna -->
+                <div class="bg-light border-bottom py-2 px-3">
+                    <strong class="text-muted">Tipo de Pago</strong>
+                </div>
+
+                <!-- Lista de Opciones -->
+                <div id="listaTiposMedioPago" class="list-group list-group-flush" 
+                     style="max-height: 500px; overflow-y: auto;">
+
+                    @if (tiposCuentaFin.Any())
+                    {
+                        @foreach (var tipo in tiposCuentaFin)
+                        {
+                            <div class="list-group-item list-group-item-action tipo-medio-pago-item" 
+                                 data-tcf-id="@tipo.tcf_id" 
+                                 data-tcf-desc="@tipo.tcf_desc"
+                                 style="cursor: pointer; transition: all 0.2s ease;">
+
+                                <!-- Ícono según tipo -->
+                                <i class="@ObtenerIconoPorTipo(tipo.tcf_id) me-2 text-muted"></i>
+
+                                <!-- Descripción -->
+                                <span class="tipo-medio-pago-desc">@tipo.tcf_desc</span>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5 text-muted">
+                            <i class="fas fa-exclamation-circle fa-3x mb-3"></i>
+                            <p>No hay tipos de medio de pago configurados.</p>
+                        </div>
+                    }
+
+                </div>
+
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- FOOTER -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" id="btnConfirmarTipoMedioPago" disabled>
+                    <i class="fas fa-check me-1"></i>
+                    Confirmar
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ESTILOS PERSONALIZADOS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<style>
+    /* Hover en los ítems */
+    .tipo-medio-pago-item:hover {
+        background-color: #f8f9fa !important;
+        border-left: 4px solid #0d6efd !important;
+        padding-left: 12px !important;
+    }
+
+    /* Ítem seleccionado (azul - como en la imagen) */
+    .tipo-medio-pago-item.selected {
+        background-color: #cfe2ff !important;
+        border-left: 4px solid #0d6efd !important;
+        padding-left: 12px !important;
+        font-weight: 600;
+    }
+
+    /* Efecto al hacer doble clic */
+    .tipo-medio-pago-item.confirming {
+        background-color: #198754 !important;
+        color: white !important;
+        transform: scale(1.02);
+    }
+
+    /* Animación del ícono al seleccionar */
+    .tipo-medio-pago-item.selected i {
+        color: #0d6efd !important;
+        transform: scale(1.2);
+        transition: transform 0.2s ease;
+    }
+</style>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- JAVASCRIPT -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<script>
+    (function () {
+        'use strict';
+
+        // ═══════════════════════════════════════════════════════════
+        // VARIABLES GLOBALES DEL MODAL
+        // ═══════════════════════════════════════════════════════════
+
+        let tipoMedioPagoSeleccionado = null;
+        const $modal = $('#modalTipoMedioPago');
+        const $btnConfirmar = $('#btnConfirmarTipoMedioPago');
+        const $items = $('.tipo-medio-pago-item');
+
+        // ═══════════════════════════════════════════════════════════
+        // EVENTO: AL ABRIR EL MODAL
+        // ═══════════════════════════════════════════════════════════
+
+        $modal.on('show.bs.modal', function () {
+            console.log('🔓 Modal Tipo Medio de Pago - ABIERTO');
+
+            // Resetear selección
+            resetearSeleccion();
+
+            // Pre-seleccionar "Efectivos" si existe (primer ítem)
+            const $primerItem = $items.first();
+            if ($primerItem.length > 0) {
+                seleccionarItem($primerItem);
+            }
+        });
+
+        // ═══════════════════════════════════════════════════════════
+        // EVENTO: CLIC SIMPLE (SOLO SELECCIONA)
+        // ═══════════════════════════════════════════════════════════
+
+        $items.on('click', function () {
+            const $this = $(this);
+            seleccionarItem($this);
+        });
+
+        // ═══════════════════════════════════════════════════════════
+        // EVENTO: DOBLE CLIC (SELECCIONA Y CONFIRMA)
+        // ═══════════════════════════════════════════════════════════
+
+        $items.on('dblclick', function () {
+            const $this = $(this);
+
+            // Efecto visual de confirmación
+            $this.addClass('confirming');
+
+            // Seleccionar ítem
+            seleccionarItem($this);
+
+            // Esperar animación y confirmar
+            setTimeout(() => {
+                $this.removeClass('confirming');
+                confirmarSeleccion();
+            }, 300);
+        });
+
+        // ═══════════════════════════════════════════════════════════
+        // EVENTO: BOTÓN CONFIRMAR
+        // ═══════════════════════════════════════════════════════════
+
+        $btnConfirmar.on('click', function () {
+            confirmarSeleccion();
+        });
+
+        // ═══════════════════════════════════════════════════════════
+        // FUNCIÓN: SELECCIONAR ÍTEM
+        // ═══════════════════════════════════════════════════════════
+
+        function seleccionarItem($item) {
+            // Remover selección anterior
+            $items.removeClass('selected');
+
+            // Agregar selección actual
+            $item.addClass('selected');
+
+            // Guardar datos del tipo seleccionado
+            tipoMedioPagoSeleccionado = {
+                tcf_id: $item.data('tcf-id'),
+                tcf_desc: $item.data('tcf-desc')
+            };
+
+            // Habilitar botón confirmar
+            $btnConfirmar.prop('disabled', false);
+
+            console.log('✅ Tipo seleccionado:', tipoMedioPagoSeleccionado);
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // FUNCIÓN: CONFIRMAR SELECCIÓN
+        // ═══════════════════════════════════════════════════════════
+
+        function confirmarSeleccion() {
+            if (!tipoMedioPagoSeleccionado) {
+                toastr.warning('Por favor, seleccione un tipo de medio de pago.');
+                return;
+            }
+
+            console.log('🎯 Confirmando tipo de medio de pago:', tipoMedioPagoSeleccionado);
+
+            // ✅ TRIGGER EVENTO PERSONALIZADO
+            // Otros componentes pueden escuchar este evento
+            $(document).trigger('tipoMedioPagoSeleccionado', [tipoMedioPagoSeleccionado]);
+
+            // ✅ LÓGICA FUTURA: Abrir modal específico según el tipo
+            // Ejemplo:
+            // if (tipoMedioPagoSeleccionado.tcf_id === 'EF') {
+            //     $('#modalEfectivo').modal('show');
+            // } else if (tipoMedioPagoSeleccionado.tcf_id === 'CH') {
+            //     $('#modalCheque').modal('show');
+            // }
+            // ... etc
+
+            // Cerrar modal actual
+            $modal.modal('hide');
+
+            // Notificación temporal (remover cuando se implemente lógica real)
+            toastr.info(`Tipo seleccionado: ${tipoMedioPagoSeleccionado.tcf_desc}`);
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // FUNCIÓN: RESETEAR SELECCIÓN
+        // ═══════════════════════════════════════════════════════════
+
+        function resetearSeleccion() {
+            $items.removeClass('selected confirming');
+            tipoMedioPagoSeleccionado = null;
+            $btnConfirmar.prop('disabled', true);
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // FUNCIÓN GLOBAL: ABRIR MODAL (para llamar desde otros scripts)
+        // ═══════════════════════════════════════════════════════════
+
+        window.abrirModalTipoMedioPago = function () {
+            $modal.modal('show');
+        };
+
+    })();
+</script>
+
+@functions {
+    // ═══════════════════════════════════════════════════════════════
+    // FUNCIÓN AUXILIAR: OBTENER ÍCONO SEGÚN TIPO
+    // ═══════════════════════════════════════════════════════════════
+
+    private string ObtenerIconoPorTipo(string tcfId)
+    {
+        return tcfId?.ToUpper() switch
+        {
+            "EF" => "fas fa-money-bill-wave",        // Efectivo
+            "CH" => "fas fa-money-check",             // Cheques
+            "TC" => "fas fa-credit-card",             // Tarjetas de Crédito
+            "TD" => "fas fa-credit-card",             // Tarjetas de Débito
+            "TB" => "fas fa-exchange-alt",            // Transferencias Bancarias
+            "MP" => "fas fa-mobile-alt",              // Mercado Pago
+            "VA" => "fas fa-ticket-alt",              // Vales
+            "CP" => "fas fa-gift",                    // Cupones
+            "CR" => "fas fa-file-invoice-dollar",     // Créditos Impositivos
+            "CC" => "fas fa-file-invoice",            // Cuenta Corriente
+            _ => "fas fa-circle"                      // Genérico
+        };
+    }
+}

@@ -1,0 +1,175 @@
+﻿@*
+    ═══════════════════════════════════════════════════════════════
+    Modal de Detalle - Cupón/Orden de Empresa (Mutuales)
+    ═══════════════════════════════════════════════════════════════
+
+    DESCRIPCIÓN:
+    Modal para ingresar los datos de una orden de compra o cupón 
+    de mutual/empresa.
+
+    CAMPOS:
+    - Titular
+    - Nro de Orden
+    - CUIT
+    - Monto
+
+    FLUJO:
+    1. Se selecciona la mutual/empresa desde modal de Instrumentos
+    2. Se completan los datos de la orden
+
+    EVENTOS:
+    - Manejados en pagoFactura.js
+*@
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- MODAL: DETALLE CUPÓN EMPRESA -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="modal fade" 
+     id="modalDetalleCuponEmpresa" 
+     tabindex="-1" 
+     role="dialog" 
+     aria-labelledby="modalDetalleCuponEmpresaLabel" 
+     aria-hidden="true" 
+     data-bs-backdrop="static" 
+     data-bs-keyboard="false">
+
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 650px;">
+        <div class="modal-content modal-golden">
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- HEADER -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-header bg-gradient-golden">
+                <h5 class="modal-title" id="modalDetalleCuponEmpresaLabel">
+                    <i class="bx bx-purchase-tag me-2"></i>
+                    Detalle - Orden/Cupón de Empresa
+                </h5>
+                <button type="button" 
+                        class="btn-close" 
+                        data-bs-dismiss="modal" 
+                        aria-label="Cerrar"></button>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- BODY -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-body">
+
+                <form id="formDetalleCuponEmpresa">
+
+                    <!-- Información del Instrumento Seleccionado -->
+                    <div class="alert alert-info d-flex align-items-center mb-3">
+                        <i class="bx bx-info-circle me-2"></i>
+                        <div>
+                            <strong>Órdenes / Cupones de Empresas</strong> 
+                            <span class="mx-2">|</span>
+                            <span id="lblEmpresaSeleccionada">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Campo: Titular -->
+                    <div class="mb-3">
+                        <label for="txtTitularCupon" class="form-label fw-bold">
+                            Titular <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bx bx-user"></i>
+                            </span>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="txtTitularCupon" 
+                                   name="titular"
+                                   placeholder="Nombre del titular" 
+                                   required 
+                                   autofocus>
+                        </div>
+                    </div>
+
+                    <!-- Campo: Nro de Orden -->
+                    <div class="mb-3">
+                        <label for="txtNroOrdenCupon" class="form-label fw-bold">
+                            Nro de Orden <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bx bx-hash"></i>
+                            </span>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="txtNroOrdenCupon" 
+                                   name="numeroOrden"
+                                   placeholder="Número de orden/cupón" 
+                                   required>
+                        </div>
+                    </div>
+
+                    <!-- Campo: CUIT -->
+                    <div class="mb-3">
+                        <label for="txtCuitCupon" class="form-label fw-bold">
+                            CUIT <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bx bx-id-card"></i>
+                            </span>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="txtCuitCupon" 
+                                   name="cuit"
+                                   placeholder="XX-XXXXXXXX-X" 
+                                   maxlength="13"
+                                   required>
+                        </div>
+                        <div class="form-text">Formato: 20-12345678-9</div>
+                    </div>
+
+                    <!-- Campo: Monto -->
+                    <div class="mb-3">
+                        <label for="txtMontoCupon" class="form-label fw-bold">
+                            Monto <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bx bx-dollar"></i>
+                            </span>
+                            <input type="number" 
+                                   class="form-control" 
+                                   id="txtMontoCupon" 
+                                   name="monto"
+                                   placeholder="0.00" 
+                                   step="0.01" 
+                                   min="0.01"
+                                   required>
+                        </div>
+                    </div>
+
+                </form>
+
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- FOOTER -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-footer bg-light">
+                <button type="button" 
+                        class="btn btn-secondary" 
+                        data-bs-dismiss="modal">
+                    <i class="bx bx-x me-1"></i>
+                    Cancelar
+                </button>
+                <button type="button" 
+                        class="btn btn-golden" 
+                        id="btnGuardarDetalleCupon">
+                    <i class="bx bx-save me-1"></i>
+                    Guardar
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>

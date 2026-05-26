@@ -235,6 +235,11 @@ namespace gc.api.core.Servicios.LineaCaja
             var res = _repository.EjecutarLstSpExt<FeDetResDto>(sp, ps);
             return res;
         }
+
+        public RespuestaDto ConfirmarOperacionCaja(CajaOpeConfirmarReq req)
+        {
+             return CrearPagoDiferido(req);
+        }
         #endregion
 
     }
