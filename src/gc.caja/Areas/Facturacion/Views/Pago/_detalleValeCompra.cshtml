@@ -11,7 +11,16 @@
 
     FLUJO:
     1. Se selecciona el vale desde modal de Instrumentos
-    2. Se ingresa el monto a aplicar
+    2. Se carga saldo disponible del vale
+    3. Se ingresa el monto a aplicar (validado contra saldo del vale)
+
+    VALIDACIONES:
+    - Monto > 0
+    - Monto <= Saldo Disponible del Vale
+    - Monto <= Saldo a Cancelar de la Factura
+
+    MAPEO BD:
+    - rb_importe = Monto
 
     EVENTOS:
     - Manejados en pagoFactura.js
@@ -70,32 +79,55 @@
                     <div class="card bg-light mb-3">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center">
-                                <span class="text-muted">Importe disponible:</span>
-                                <span id="lblSaldoValeCompra" class="fs-5 fw-bold text-success">$ 0.00</span>
+                                <span class="text-muted">
+                                    <i class="bx bx-wallet me-1"></i>
+                                    Saldo disponible:
+                                </span>
+                                <span id="lblSaldoValeCompra" class="fs-5 fw-bold text-success">$ 0,00</span>
+                            </div>
+                            
+                            <!-- ✅ NUEVO v19.2: Alert de Fallback -->
+                            <div id="alertFallbackVale" class="alert alert-info mt-2 mb-0 py-2" style="display: none;">
+                                <small>
+                                    <i class="bx bx-info-circle"></i>
+                                    <strong>Usando saldo de factura:</strong> 
+                                    El vale no tiene saldo registrado. Se utilizará el saldo de la factura como límite.
+                                </small>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Campo Oculto: ID Vale -->
+                    <input type="hidden" id="hdnIdValeCompra" name="idVale">
+                    
+                    <!-- Campo Oculto: Saldo Disponible (para validación) -->
+                    <input type="hidden" id="hdnSaldoValeCompra" name="saldoDisponible" value="0">
+
                     <!-- Campo: Monto -->
                     <div class="mb-3">
                         <label for="txtMontoValeCompra" class="form-label fw-bold">
-                            Monto <span class="text-danger">*</span>
+                            Monto a Aplicar <span class="text-danger">*</span>
                         </label>
-                        <div class="input-group">
-                            <span class="input-group-text">
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-golden text-white">
                                 <i class="bx bx-dollar"></i>
                             </span>
-                            <input type="number" 
-                                   class="form-control" 
-                                   id="txtMontoValeCompra" 
+                            <input type="text"
+                                   class="form-control form-control-lg text-end"
+                                   id="txtMontoValeCompra"
                                    name="monto"
-                                   placeholder="0.00" 
-                                   step="0.01" 
-                                   min="0.01"
-                                   required 
+                                   placeholder="$ 0,00"
+                                   required
+                                   autocomplete="off"
                                    autofocus>
                         </div>
-                        <div class="form-text">Ingrese el monto a aplicar del vale</div>
+                        <div class="form-text">
+                            <i class="bx bx-info-circle"></i> 
+                            El monto no puede superar el saldo disponible del vale
+                        </div>
+                        <!-- Mensaje de Error -->
+                        <div id="errorMontoValeCompra" class="invalid-feedback" style="display: none;">
+                        </div>
                     </div>
 
                 </form>

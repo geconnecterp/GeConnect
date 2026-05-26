@@ -60,7 +60,24 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
                     var resp = apiResponse.Data;
                     if (!resp.Any())
                     {
-                        return new() { Ok = false, Mensaje = "No se encontraron productos según el criterio." };
+                        var def = new ValoresInsResDto
+                        {
+                            ins_id = "DEF",
+                            ins_desc = "Sin instrumentos disponibles",
+                            mon_codigo = "DEF",
+                            ins_detalle = "N",
+                            tcf_id = req.tcf_id,
+                            ins_tiene_vto = "N",
+                            ins_arqueo = "N",
+                            ins_vuelto = "N",
+                            ins_vigente = "N",
+                            ins_comision = 0,
+                            ins_comision_fija = 0,
+                            ins_ret_gan = 0,
+                            ins_ret_ib = 0,
+                            ins_ret_iva = 0
+                        };
+                        return new() { Ok = true, Mensaje = "Instrumento único.", ListaEntidad = [ def ] };
                     }
                     else
                     {

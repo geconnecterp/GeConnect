@@ -111,8 +111,8 @@ function inicializarModales() {
 }
 
 /**
- * ✅ ACTUALIZADO v18.1: Vincula todos los eventos del módulo de pago
- * NUEVO: Evento de limpieza automática del modal de efectivo
+ * ✅ ACTUALIZADO v19.0: Vincula todos los eventos del módulo de pago
+ * NUEVO: Agregado evento de limpieza del modal de Vale de Compra
  */
 function inicializarEventosPago() {
     console.log('🔧 Vinculando eventos de pago...');
@@ -128,43 +128,43 @@ function inicializarEventosPago() {
         setTimeout(() => $('#btnAgregarPago').trigger('focus'), 300);
     });
 
-    // ❸ ✅ NUEVO v18.1: Evento de limpieza del modal de efectivo
+    // ❸ Evento de limpieza del modal de efectivo
     $('#modalDetalleEfectivo').off('hidden.bs.modal').on('hidden.bs.modal', function () {
-        console.log('═══════════════════════════════════════════════════');
         console.log('🧹 LIMPIEZA AUTOMÁTICA - MODAL EFECTIVO');
-        console.log('═══════════════════════════════════════════════════');
-
-        // ❶ Limpiar valor del input
         const $input = $('#txtMontoEfectivo');
-        const valorAnterior = $input.val();
-
-        $input.val('');
-        console.log(`   📝 Input limpiado (valor anterior: "${valorAnterior}")`);
-
-        // ❷ Remover clases de validación
-        $input.removeClass('is-invalid is-valid');
-        console.log('   ✅ Clases de validación removidas');
-
-        // ❸ Remover mensajes de error
+        $input.val('').removeClass('is-invalid is-valid');
         $input.siblings('.invalid-feedback').remove();
-        $('.invalid-feedback').remove(); // Remover cualquier feedback suelto
-        console.log('   ✅ Mensajes de error removidos');
-
-        // ❹ Remover backdrop específico del modal de efectivo (si quedó huérfano)
-        const $backdropEfectivo = $('.modal-backdrop[data-modal="efectivo"]');
-        if ($backdropEfectivo.length > 0) {
-            $backdropEfectivo.remove();
-            console.log('   ✅ Backdrop huérfano removido');
-        }
-
-        // ❺ Resetear labels informativos
+        $('.invalid-feedback').remove();
         $('#lblTipoMedioPagoEfectivo').text('-');
         $('#lblInstrumentoEfectivo').text('-');
-        console.log('   ✅ Labels informativos reseteados');
+        console.log('✅ MODAL DE EFECTIVO LIMPIADO');
+    });
 
-        console.log('═══════════════════════════════════════════════════');
-        console.log('✅ MODAL DE EFECTIVO LIMPIADO COMPLETAMENTE');
-        console.log('═══════════════════════════════════════════════════');
+    // ❹ ✅ NUEVO v19.0: Evento de limpieza del modal de Vale de Compra
+    $('#modalDetalleValeCompra').off('hidden.bs.modal').on('hidden.bs.modal', function () {
+        console.log('🧹 LIMPIEZA AUTOMÁTICA - MODAL VALE DE COMPRA');
+
+        // Limpiar input
+        const $input = $('#txtMontoValeCompra');
+        $input.val('').removeClass('is-invalid is-valid').prop('disabled', false);
+
+        // Remover mensajes de error
+        $input.siblings('.invalid-feedback').remove();
+        $('.invalid-feedback').remove();
+
+        // Resetear labels
+        $('#lblValeCompraSeleccionado').text('-');
+        $('#lblSaldoValeCompra').text('$ 0,00').removeClass('text-success text-warning text-danger');
+        $('#hdnIdValeCompra').val('');
+        $('#hdnSaldoValeCompra').val('0');
+
+        // Remover backdrop huérfano
+        const $backdropVale = $('.modal-backdrop[data-modal="valecompra"]');
+        if ($backdropVale.length > 0) {
+            $backdropVale.remove();
+        }
+
+        console.log('✅ MODAL DE VALE DE COMPRA LIMPIADO');
     });
 
     console.log('✅ Eventos de pago configurados');
@@ -1227,11 +1227,12 @@ function vincularEventosInstrumentos() {
 
 
 /**
- * ✅ v17.5: Confirma la selección del instrumento
+ * ✅ ACTUALIZADO v19.0: Confirma la selección del instrumento
+ * NUEVO: Agregado soporte para Vales de Compra (VA)
  */
 function confirmarSeleccionInstrumento() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('✅ CONFIRMAR INSTRUMENTO SELECCIONADO v17.5');
+    console.log('✅ CONFIRMAR INSTRUMENTO SELECCIONADO v19.0');
     console.log('═══════════════════════════════════════════════════');
 
     if (!window._instrumentoSeleccionado) {
@@ -1255,14 +1256,22 @@ function confirmarSeleccionInstrumento() {
         const tcfId = window._tipoMedioPagoActual.tcf_id.toUpperCase();
 
         switch (tcfId) {
-            case 'EF': // Efectivo
+            case 'EF': // Efectivo ✅ IMPLEMENTADO
                 abrirModalDetalleEfectivo(
                     window._instrumentoSeleccionado,
                     window._tipoMedioPagoActual
                 );
                 break;
 
-            case 'CH': // Cheque
+            // ✅ NUEVO v19.0: LOTE 2 - VALES DE COMPRA
+            case 'VA': // Vales de Compra CA
+                abrirModalDetalleValeCompra(
+                    window._instrumentoSeleccionado,
+                    window._tipoMedioPagoActual
+                );
+                break;
+
+            case 'CH': // Cheque ⚠️ LOTE 4 (al final)
                 console.warn('⚠️ Modal de cheque por implementar');
                 if (typeof toastr !== 'undefined') {
                     toastr.info('Funcionalidad de cheques en desarrollo');
@@ -1289,17 +1298,25 @@ function confirmarSeleccionInstrumento() {
 }
 
 /**
- * ✅ NUEVO v17.1: Procesa los instrumentos según requieran detalle o no
+ * ✅ ACTUALIZADO v19.1: Procesa los instrumentos según requieran detalle o no
+ * NUEVO: Maneja casos especiales de MP que requieren modal obligatorio (VA)
+ * 
+ * CASOS:
+ * 1. Un solo instrumento + MP sin modal obligatorio → agregarValorDirecto()
+ * 2. Un solo instrumento + MP con modal obligatorio (VA) → Abrir modal detalle
+ * 3. Múltiples instrumentos → abrirModalInstrumentos()
+ * 
  * @param {Array} instrumentos - Array de instrumentos disponibles
  * @param {Object} tipoMedioPago - Tipo de medio de pago seleccionado
  */
 function procesarInstrumentos(instrumentos, tipoMedioPago) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔄 PROCESAR INSTRUMENTOS v17.1');
-    console.log(`   Total: ${instrumentos.length}`);
+    console.log('🔄 PROCESAR INSTRUMENTOS v19.1');
+    console.log(`   Tipo MP: ${tipoMedioPago.tcf_desc} (${tipoMedioPago.tcf_id})`);
+    console.log(`   Total instrumentos: ${instrumentos.length}`);
     console.log('═══════════════════════════════════════════════════');
 
-    // ❶ Verificar si hay instrumentos
+    // ❶ Validar que haya instrumentos
     if (!instrumentos || instrumentos.length === 0) {
         console.warn('⚠️ No hay instrumentos disponibles');
 
@@ -1310,32 +1327,58 @@ function procesarInstrumentos(instrumentos, tipoMedioPago) {
         return;
     }
 
-    // ❷ Clasificar instrumentos por si tienen detalle
+    // ❷ Obtener ID del tipo de medio de pago
+    const tcfId = tipoMedioPago.tcf_id.toUpperCase();
+
+    // ❸ Clasificar instrumentos por si tienen detalle
     const instrumentosConDetalle = instrumentos.filter(i => i.tiene_detalle === true);
     const instrumentosSinDetalle = instrumentos.filter(i => i.tiene_detalle === false);
 
-    console.log(`📋 Con detalle: ${instrumentosConDetalle.length}`);
-    console.log(`📋 Sin detalle: ${instrumentosSinDetalle.length}`);
+    console.log(`📋 Instrumentos con detalle: ${instrumentosConDetalle.length}`);
+    console.log(`📋 Instrumentos sin detalle: ${instrumentosSinDetalle.length}`);
 
-    // ❸ Decidir flujo según la clasificación
-    if (instrumentos.length === 1 && !instrumentos[0].tiene_detalle) {
-        // ✅ CASO 1: Un solo instrumento sin detalle (ej: Efectivo en Pesos)
-        console.log('✅ CASO 1: Instrumento único sin detalle - Agregar directamente');
+    // ❹ ✅ NUEVO v19.1: CASO ESPECIAL - Un solo instrumento
+    if (instrumentos.length === 1) {
+        const instrumentoUnico = instrumentos[0];
 
-        agregarValorDirecto(instrumentos[0], tipoMedioPago);
+        console.log('═══════════════════════════════════════════════════');
+        console.log('🔍 CASO ESPECIAL: UN SOLO INSTRUMENTO DETECTADO');
+        console.log(`   Instrumento: ${instrumentoUnico.ins_desc} (${instrumentoUnico.ins_id})`);
+        console.log(`   Tipo MP: ${tcfId}`);
+        console.log('═══════════════════════════════════════════════════');
 
-    } else if (instrumentosConDetalle.length > 0 || instrumentos.length > 1) {
-        // ✅ CASO 2: Múltiples instrumentos o con detalle (mostrar modal)
-        console.log('✅ CASO 2: Múltiples instrumentos o con detalle - Mostrar modal');
+        // ❺ Verificar si el MP requiere modal de detalle obligatorio
+        if (requiereModalDetalle(tcfId)) {
+            console.log('✅ FLUJO ESPECIAL: MP con modal obligatorio');
+            console.log(`   Abriendo modal de detalle para ${tcfId}...`);
 
-        abrirModalInstrumentos(instrumentos, tipoMedioPago);
+            // ❻ Abrir modal de detalle según el tipo
+            abrirModalDetalleSegunTipo(instrumentoUnico, tipoMedioPago);
 
-    } else {
-        // ✅ CASO 3: Múltiples instrumentos sin detalle (poco común)
-        console.log('✅ CASO 3: Múltiples instrumentos sin detalle');
+        } else {
+            console.log('✅ FLUJO NORMAL: Agregar valor directamente');
 
-        abrirModalInstrumentos(instrumentos, tipoMedioPago);
+            // ❼ Si NO tiene detalle → Agregar directo (SweetAlert)
+            if (!instrumentoUnico.tiene_detalle) {
+                console.log('   → Abriendo SweetAlert simple');
+                agregarValorDirecto(instrumentoUnico, tipoMedioPago);
+            } else {
+                // ❽ Si TIENE detalle → Abrir modal de instrumentos (por precaución)
+                console.log('   → Instrumento con detalle - Abriendo modal');
+                abrirModalInstrumentos(instrumentos, tipoMedioPago);
+            }
+        }
+
+        return; // ✅ Salir de la función
     }
+
+    // ❾ CASO NORMAL: Múltiples instrumentos
+    console.log('═══════════════════════════════════════════════════');
+    console.log('✅ FLUJO NORMAL: MÚLTIPLES INSTRUMENTOS');
+    console.log('   → Abriendo modal de selección de instrumentos');
+    console.log('═══════════════════════════════════════════════════');
+
+    abrirModalInstrumentos(instrumentos, tipoMedioPago);
 }
 
 /**
@@ -2488,4 +2531,586 @@ function procesarPagoFactura() {
     }
 
     console.log('═══════════════════════════════════════════════════');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ✅ NUEVO v19.0: LOTE 2 - FUNCIONES PARA VALES DE COMPRA
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * ✅ ACTUALIZADO v19.2: Abre el modal de detalle de Vale de Compra
+ * MEJORA: Validación defensiva del saldo + Fallback a diferencia de factura
+ * 
+ * CAMBIOS v19.2:
+ * - Validación exhaustiva del objeto instrumento
+ * - Fallback: Si saldo_vale = 0 → usar diferencia_factura
+ * - Logs de debugging mejorados
+ * - Manejo de casos extremos
+ * 
+ * @param {Object} instrumento - Objeto con datos del instrumento (vale seleccionado)
+ * @param {Object} tipoMedioPago - Tipo de medio de pago (tcf_id='VA')
+ */
+function abrirModalDetalleValeCompra(instrumento, tipoMedioPago) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔓 ABRIR MODAL DETALLE VALE DE COMPRA v19.2');
+    console.log(`   Instrumento: ${instrumento.ins_desc} (${instrumento.ins_id})`);
+    console.log(`   Tipo MP: ${tipoMedioPago.tcf_desc}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Validar objeto instrumento
+    if (!instrumento) {
+        console.error('❌ CRÍTICO: Objeto instrumento es null/undefined');
+        if (typeof toastr !== 'undefined') {
+            toastr.error('Error: No se pudo cargar la información del vale');
+        }
+        return;
+    }
+
+    // ❷ ✅ NUEVO v19.2: LOG EXHAUSTIVO DEL OBJETO INSTRUMENTO
+    console.log('📦 OBJETO INSTRUMENTO COMPLETO:');
+    console.log(JSON.stringify(instrumento, null, 2));
+    console.log('   Propiedades detectadas:');
+    console.log(`   ├─ ins_id: ${instrumento.ins_id} (Tipo: ${typeof instrumento.ins_id})`);
+    console.log(`   ├─ ins_desc: ${instrumento.ins_desc} (Tipo: ${typeof instrumento.ins_desc})`);
+    console.log(`   ├─ ins_simbolo: ${instrumento.ins_simbolo} (Tipo: ${typeof instrumento.ins_simbolo})`);
+    console.log(`   ├─ total_actual: ${instrumento.total_actual} (Tipo: ${typeof instrumento.total_actual})`);
+    console.log(`   └─ tiene_detalle: ${instrumento.tiene_detalle} (Tipo: ${typeof instrumento.tiene_detalle})`);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❸ Obtener elemento del modal
+    const $modal = $('#modalDetalleValeCompra');
+
+    if ($modal.length === 0) {
+        console.error('❌ Modal #modalDetalleValeCompra no encontrado');
+
+        if (typeof toastr !== 'undefined') {
+            toastr.error('El modal de vales de compra no está disponible');
+        }
+
+        return;
+    }
+
+    // ❹ Hidratar información del vale seleccionado
+    $('#lblValeCompraSeleccionado').text(instrumento.ins_desc || 'Vale sin nombre');
+
+    // ❺ ✅ NUEVO v19.2: OBTENER SALDO CON VALIDACIÓN DEFENSIVA
+    let saldoDisponible = parseFloat(instrumento.total_actual) || 0;
+
+    // ❻ ✅ NUEVO v19.2: OBTENER DIFERENCIA DE FACTURA
+    const diferenciaFactura = Math.abs(conceptosPago.diferencia || 0);
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('💰 ANÁLISIS DE SALDOS:');
+    console.log(`   Saldo del vale (instrumento.total_actual): ${saldoDisponible}`);
+    console.log(`   Diferencia de factura (conceptosPago.diferencia): ${diferenciaFactura}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❼ ✅ NUEVO v19.2: FALLBACK - Si saldo del vale es 0 → Usar diferencia de factura
+    let usandoFallback = false;
+
+    if (saldoDisponible <= 0 && diferenciaFactura > 0) {
+        console.warn('⚠️ FALLBACK ACTIVADO:');
+        console.warn(`   Saldo del vale es 0, pero diferencia de factura es ${formatearMoneda(diferenciaFactura)}`);
+        console.warn('   → Asignando diferencia de factura como saldo disponible');
+
+        saldoDisponible = diferenciaFactura;
+        usandoFallback = true;
+
+        // Mostrar alert informativo al usuario
+        if (typeof toastr !== 'undefined') {
+            toastr.warning(
+                `El vale no tiene saldo registrado. Se usará el saldo de la factura (${formatearMoneda(diferenciaFactura)}) como límite máximo.`,
+                'Saldo no disponible',
+                { timeOut: 5000, extendedTimeOut: 2000 }
+            );
+        }
+    }
+
+    // ❽ Mostrar saldo disponible en el modal
+    $('#lblSaldoValeCompra').text(formatearMoneda(saldoDisponible));
+    $('#hdnSaldoValeCompra').val(saldoDisponible);
+    $('#hdnIdValeCompra').val(instrumento.ins_id);
+
+    console.log(`   ✅ Saldo final a mostrar: ${formatearMoneda(saldoDisponible)} ${usandoFallback ? '(FALLBACK)' : '(REAL)'}`);
+
+    // ❾ Cambiar color del saldo según el monto
+    const $lblSaldo = $('#lblSaldoValeCompra');
+    $lblSaldo.removeClass('text-success text-warning text-danger text-info');
+
+    if (usandoFallback) {
+        // ✅ NUEVO: Color especial para fallback (azul/info)
+        $lblSaldo.addClass('text-info');
+    } else if (saldoDisponible > 1000) {
+        $lblSaldo.addClass('text-success');
+    } else if (saldoDisponible > 0) {
+        $lblSaldo.addClass('text-warning');
+    } else {
+        $lblSaldo.addClass('text-danger');
+    }
+
+    // ❿ Calcular importe sugerido (usar el menor entre saldo y diferencia)
+    let importeSugerido = Math.min(saldoDisponible, diferenciaFactura);
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('💵 CÁLCULO DE IMPORTE SUGERIDO:');
+    console.log(`   Saldo disponible: ${formatearMoneda(saldoDisponible)}`);
+    console.log(`   Diferencia factura: ${formatearMoneda(diferenciaFactura)}`);
+    console.log(`   → Importe sugerido (menor de ambos): ${formatearMoneda(importeSugerido)}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ⓫ Validar que el importe sugerido sea válido
+    if (importeSugerido <= 0) {
+        console.error('❌ CRÍTICO: Importe sugerido es 0 o negativo');
+
+        if (typeof toastr !== 'undefined') {
+            toastr.error('No hay saldo disponible para aplicar. Verifique los datos del vale.');
+        }
+
+        // Cerrar modal automáticamente
+        setTimeout(() => {
+            cerrarModalDetalleValeCompra();
+        }, 2000);
+
+        return;
+    }
+
+    // ⓬ Aplicar máscara monetaria al input
+    const $inputMonto = $('#txtMontoValeCompra');
+
+    if (typeof InputMaskMonetario !== 'undefined') {
+        InputMaskMonetario.removerMascara($inputMonto);
+        InputMaskMonetario.aplicarMascaraPesos($inputMonto);
+        InputMaskMonetario.establecerValor($inputMonto, importeSugerido);
+        console.log('   ✅ Máscara monetaria aplicada');
+    } else {
+        console.warn('   ⚠️ InputMaskMonetario no disponible - usando valor sin formato');
+        $inputMonto.val(importeSugerido.toFixed(2));
+    }
+
+    // ⓭ Limpiar validaciones previas
+    $inputMonto.removeClass('is-invalid is-valid');
+    $('.invalid-feedback').remove();
+
+    // ⓮ Mostrar modal con jQuery
+    $modal
+        .addClass('show')
+        .css({
+            'display': 'block',
+            'opacity': '1',
+            'z-index': '5100'
+        })
+        .attr('aria-modal', 'true')
+        .removeAttr('aria-hidden');
+
+    // ⓯ Crear backdrop
+    if ($('.modal-backdrop[data-modal="valecompra"]').length === 0) {
+        $('body').append(
+            '<div class="modal-backdrop fade show" ' +
+            'data-modal="valecompra" ' +
+            'style="z-index: 5099;"></div>'
+        );
+    }
+
+    // ⓰ Focus en el input
+    setTimeout(() => {
+        $inputMonto.trigger("focus").trigger("select");
+    }, INPUT_FOCUS_TIMEOUT);
+
+    // ⓱ Vincular eventos de guardar
+    $('#btnGuardarDetalleValeCompra')
+        .off('click.guardarVale')
+        .on('click.guardarVale', function () {
+            guardarDetalleValeCompra(instrumento, tipoMedioPago);
+        });
+
+    // ⓲ Vincular evento Enter
+    $inputMonto
+        .off('keypress.enterVale')
+        .on('keypress.enterVale', function (e) {
+            if (e.which === 13) {
+                e.preventDefault();
+                guardarDetalleValeCompra(instrumento, tipoMedioPago);
+            }
+        });
+
+    console.log('✅ Modal detalle vale de compra abierto correctamente');
+}
+
+/**
+ * ✅ ACTUALIZADO v19.2: Guarda el detalle del vale de compra
+ * MEJORA: Mejor manejo de validación de saldo
+ * 
+ * @param {Object} instrumento - Datos del vale
+ * @param {Object} tipoMedioPago - Tipo de medio de pago
+ */
+function guardarDetalleValeCompra(instrumento, tipoMedioPago) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('💾 GUARDAR DETALLE VALE DE COMPRA v19.2');
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Obtener monto ingresado
+    let monto = 0;
+
+    if (typeof InputMaskMonetario !== 'undefined') {
+        monto = InputMaskMonetario.obtenerValorNumerico('#txtMontoValeCompra');
+        console.log(`   💰 Monto extraído con InputMask: ${monto}`);
+    } else {
+        const montoStr = $('#txtMontoValeCompra').val();
+        monto = parsearNumeroArgentino(montoStr);
+        console.warn(`   ⚠️ InputMask no disponible - usando parseo manual: ${monto}`);
+    }
+
+    console.log(`   📝 Monto final: ${monto}`);
+
+    // ❷ Validar monto > 0
+    if (isNaN(monto) || monto <= 0) {
+        console.warn('⚠️ Monto inválido o cero');
+        mostrarErrorCampo('#txtMontoValeCompra', 'Debe ingresar un monto válido mayor a cero');
+        return;
+    }
+
+    // ❸ Obtener saldo del vale desde el hidden field
+    const saldoValeStr = $('#hdnSaldoValeCompra').val();
+    const saldoVale = parseFloat(saldoValeStr) || 0;
+
+    console.log(`   💰 Saldo del vale (desde hidden): ${saldoVale}`);
+
+    // ❹ ✅ NUEVO v19.2: Validación mejorada del saldo
+    if (saldoVale <= 0) {
+        console.error('❌ CRÍTICO: Saldo del vale es 0 o negativo');
+        console.error(`   Valor recibido: ${saldoValeStr}`);
+        console.error(`   Valor parseado: ${saldoVale}`);
+
+        mostrarErrorCampo(
+            '#txtMontoValeCompra',
+            'El saldo del vale no está disponible. Recargue la página e intente nuevamente.'
+        );
+
+        if (typeof toastr !== 'undefined') {
+            toastr.error('Saldo del vale no disponible', 'Error crítico');
+        }
+
+        return;
+    }
+
+    // ❺ Validar monto <= saldo disponible del vale
+    if (monto > saldoVale) {
+        console.warn(`⚠️ Monto supera saldo del vale: ${monto} > ${saldoVale}`);
+
+        mostrarErrorCampo(
+            '#txtMontoValeCompra',
+            `El monto supera el saldo disponible (${formatearMoneda(saldoVale)})`
+        );
+
+        return;
+    }
+
+    // ❻ Validar monto <= saldo factura (con tolerancia)
+    const diferenciaFactura = Math.abs(conceptosPago.diferencia || 0);
+
+    console.log(`   📊 Diferencia de factura: ${formatearMoneda(diferenciaFactura)}`);
+
+    if (monto > diferenciaFactura * LIMITE_PORCENTAJE_DIFERENCIA) {
+        console.warn(`⚠️ Monto muy alto: ${monto} > ${diferenciaFactura * LIMITE_PORCENTAJE_DIFERENCIA}`);
+
+        Swal.fire({
+            title: '¿Monto elevado?',
+            html: `<div class="text-start">
+                       <p class="mb-3">El monto ingresado es <strong>mayor</strong> a la diferencia pendiente:</p>
+                       <table class="table table-sm table-borderless mb-0">
+                           <tr>
+                               <td class="text-end">Monto ingresado:</td>
+                               <td class="text-start"><strong class="text-danger">${formatearMoneda(monto)}</strong></td>
+                           </tr>
+                           <tr>
+                               <td class="text-end">Diferencia pendiente:</td>
+                               <td class="text-start"><strong class="text-warning">${formatearMoneda(diferenciaFactura)}</strong></td>
+                           </tr>
+                           <tr>
+                               <td class="text-end">Excedente:</td>
+                               <td class="text-start"><strong class="text-info">${formatearMoneda(monto - diferenciaFactura)}</strong></td>
+                           </tr>
+                       </table>
+                       <p class="mt-3 mb-0"><i class="bx bx-info-circle"></i> ¿Desea continuar de todos modos?</p>
+                   </div>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: '<i class="bx bx-check"></i> Sí, continuar',
+            cancelButtonText: '<i class="bx bx-x"></i> No, corregir',
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            customClass: { popup: 'swal-wide' }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                finalizarGuardadoValeCompra(monto, instrumento, tipoMedioPago);
+            } else {
+                $('#txtMontoValeCompra').trigger("focus").trigger("select");
+            }
+        });
+
+        return;
+    }
+
+    // ❼ Si validaciones OK, finalizar guardado
+    finalizarGuardadoValeCompra(monto, instrumento, tipoMedioPago);
+}
+
+/**
+ * ✅ NUEVO v19.0: Finaliza el guardado del vale de compra
+ * @param {number} monto - Monto validado
+ * @param {Object} instrumento - Datos del vale
+ * @param {Object} tipoMedioPago - Tipo de medio de pago
+ */
+function finalizarGuardadoValeCompra(monto, instrumento, tipoMedioPago) {
+    console.log('✅ Finalizando guardado de vale de compra...');
+    console.log(`   Monto: ${monto}`);
+    console.log(`   Vale: ${instrumento.ins_desc}`);
+
+    // ❶ Crear objeto de valor
+    const nuevoValor = {
+        id: ++valorIdCounter,
+        tcf_id: tipoMedioPago.tcf_id,
+        tcf_desc: tipoMedioPago.tcf_desc,
+        ins_id: instrumento.ins_id,
+        ins_desc: instrumento.ins_desc,
+        ins_simbolo: instrumento.ins_simbolo || '$',
+        importe: monto,
+        observacion: '',
+        detalle: {
+            // Datos específicos del vale
+            id_vale: instrumento.ins_id,
+            saldo_anterior: instrumento.total_actual,
+            saldo_nuevo: instrumento.total_actual - monto
+        },
+        fecha_creacion: new Date().toISOString()
+    };
+
+    console.log('📦 Nuevo valor creado:', nuevoValor);
+
+    // ❷ Agregar a array global
+    valoresPago.push(nuevoValor);
+
+    // ❸ Agregar fila a la tabla
+    agregarFilaValor(nuevoValor);
+
+    // ❹ Actualizar totales
+    actualizarTotalesPago();
+
+    // ❺ Actualizar total del instrumento
+    actualizarTotalInstrumento(instrumento.ins_id, -monto); // NOTA: Restar porque es consumo del vale
+
+    // ❻ Cerrar modal
+    cerrarModalDetalleValeCompra();
+
+    // ❼ Notificación
+    if (typeof toastr !== 'undefined') {
+        toastr.success(
+            `Vale agregado: ${formatearMoneda(monto)}`,
+            'Valor guardado',
+            { timeOut: 3000 }
+        );
+    }
+
+    console.log('✅ Valor de vale de compra guardado correctamente');
+}
+
+/**
+ * ✅ NUEVO v19.0: Cierra el modal de detalle de vale de compra
+ */
+function cerrarModalDetalleValeCompra() {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔒 CERRAR MODAL DETALLE VALE DE COMPRA v19.0');
+    console.log('═══════════════════════════════════════════════════');
+
+    const $modal = $('#modalDetalleValeCompra');
+
+    if ($modal.length === 0) {
+        console.warn('⚠️ Modal #modalDetalleValeCompra no encontrado');
+        return;
+    }
+
+    // ❶ Ocultar modal
+    $modal
+        .removeClass('show')
+        .css('display', 'none')
+        .attr('aria-hidden', 'true')
+        .removeAttr('aria-modal');
+
+    console.log('   ✅ Modal ocultado');
+
+    // ❷ Remover backdrop
+    const $backdropVale = $('.modal-backdrop[data-modal="valecompra"]');
+    if ($backdropVale.length > 0) {
+        $backdropVale.fadeOut(200, function () {
+            $(this).remove();
+        });
+        console.log('   ✅ Backdrop removido');
+    }
+
+    // ❸ Limpiar formulario
+    const $input = $('#txtMontoValeCompra');
+    $input
+        .val('')
+        .removeClass('is-invalid is-valid');
+
+    $('.invalid-feedback').remove();
+
+    console.log('   ✅ Formulario limpiado');
+
+    // ❹ Resetear labels
+    $('#lblValeCompraSeleccionado').text('-');
+    $('#lblSaldoValeCompra').text('$ 0,00').removeClass('text-success text-warning text-danger');
+    $('#hdnIdValeCompra').val('');
+    $('#hdnSaldoValeCompra').val('0');
+
+    console.log('   ✅ Labels reseteados');
+
+    // ❺ Verificar otros modales
+    setTimeout(() => {
+        if ($('.modal.show').length === 0) {
+            $('body').removeClass('modal-open').css('overflow', '');
+            console.log('   ✅ Body desbloqueado');
+        }
+    }, 100);
+
+    console.log('✅ MODAL CERRADO COMPLETAMENTE');
+}
+
+/**
+ * ✅ NUEVO v19.0: Formatea valor a moneda argentina
+ * Función auxiliar para compatibilidad
+ * @param {number} valor - Valor numérico
+ * @returns {string} - Valor formateado (ej: "$ 1.234,56")
+ */
+function formatearMoneda(valor) {
+    if (isNaN(valor)) return '$ 0,00';
+
+    return new Intl.NumberFormat('es-AR', {
+        style: 'currency',
+        currency: 'ARS',
+        minimumFractionDigits: 2
+    }).format(valor || 0);
+}
+
+/**
+* ✅ NUEVO v19.1: Determina si un tipo de medio de pago requiere SIEMPRE modal de detalle
+* incluso cuando tiene un solo instrumento
+* 
+* CASOS ESPECIALES:
+* - 'VA' (Vales de Compra): Siempre requiere modal para mostrar saldo disponible
+* - 'BA' (Bancos/Transferencias): Futuro - requiere datos bancarios
+* - 'MU' (Múltiples Monedas): Futuro - requiere selección de moneda
+* 
+* @param {string} tcfId - ID del tipo de medio de pago (ej: 'VA', 'EF', 'CH')
+* @returns {boolean} - true si requiere modal de detalle obligatorio
+*/
+function requiereModalDetalle(tcfId) {
+    console.log(`🔍 Verificando si ${tcfId} requiere modal de detalle...`);
+
+    // ✅ Lista de tipos que SIEMPRE requieren modal de detalle
+    const tiposConModalObligatorio = [
+        'VA',  // Vales de Compra - Muestra saldo disponible
+        // 'BA',  // Bancos - Futuro: Requiere datos de transferencia
+        // 'MU',  // Múltiples Monedas - Futuro: Requiere conversión
+    ];
+
+    const requiereModal = tiposConModalObligatorio.includes(tcfId.toUpperCase());
+
+    console.log(`   ${requiereModal ? '✅' : '❌'} ${tcfId} ${requiereModal ? 'REQUIERE' : 'NO requiere'} modal obligatorio`);
+
+    return requiereModal;
+}
+
+/**
+* ✅ NUEVO v19.1: Abre el modal de detalle correcto según el tipo de medio de pago
+* Función auxiliar para casos especiales con un solo instrumento
+* 
+* @param {Object} instrumento - Instrumento único disponible
+* @param {Object} tipoMedioPago - Tipo de medio de pago seleccionado
+*/
+function abrirModalDetalleSegunTipo(instrumento, tipoMedioPago) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔓 ABRIR MODAL DETALLE SEGÚN TIPO v19.1');
+    console.log(`   Tipo MP: ${tipoMedioPago.tcf_id} - ${tipoMedioPago.tcf_desc}`);
+    console.log(`   Instrumento: ${instrumento.ins_desc}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    const tcfId = tipoMedioPago.tcf_id.toUpperCase();
+
+    switch (tcfId) {
+        case 'VA': // ✅ Vales de Compra
+            console.log('✅ Abriendo modal de Vale de Compra...');
+            abrirModalDetalleValeCompra(instrumento, tipoMedioPago);
+            break;
+
+        case 'EF': // ✅ Efectivo
+            console.log('✅ Abriendo modal de Efectivo...');
+            abrirModalDetalleEfectivo(instrumento, tipoMedioPago);
+            break;
+
+        case 'CH': // ⚠️ Cheque (futuro)
+            console.warn('⚠️ Modal de Cheque por implementar');
+            if (typeof toastr !== 'undefined') {
+                toastr.info('Funcionalidad de cheques en desarrollo');
+            }
+            break;
+
+        case 'TC': // ⚠️ Tarjeta Crédito (futuro)
+        case 'TD': // ⚠️ Tarjeta Débito (futuro)
+            console.warn('⚠️ Modal de Tarjeta por implementar');
+            if (typeof toastr !== 'undefined') {
+                toastr.info('Funcionalidad de tarjetas en desarrollo');
+            }
+            break;
+
+        case 'BA': // ⚠️ Bancos/Transferencias (futuro)
+            console.warn('⚠️ Modal de Transferencia Bancaria por implementar');
+            if (typeof toastr !== 'undefined') {
+                toastr.info('Funcionalidad de transferencias en desarrollo');
+            }
+            break;
+
+        case 'MU': // ⚠️ Múltiples Monedas (futuro)
+            console.warn('⚠️ Modal de Múltiples Monedas por implementar');
+            if (typeof toastr !== 'undefined') {
+                toastr.info('Funcionalidad de múltiples monedas en desarrollo');
+            }
+            break;
+
+        default:
+            console.warn(`⚠️ Tipo ${tcfId} sin modal específico - Usando flujo directo`);
+            agregarValorDirecto(instrumento, tipoMedioPago);
+            break;
+    }
+
+    console.log('✅ Función abrirModalDetalleSegunTipo finalizada');
+}
+
+/**
+* ✅ NUEVO v19.2: Valida y sanitiza el objeto instrumento
+* Asegura que todas las propiedades críticas existan y sean del tipo correcto
+* 
+* @param {Object} instrumento - Objeto instrumento a validar
+* @returns {Object} - Objeto validado con propiedades garantizadas
+*/
+function validarInstrumento(instrumento) {
+    console.log('🔍 Validando objeto instrumento...');
+
+    if (!instrumento) {
+        console.error('❌ Instrumento es null/undefined');
+        return null;
+    }
+
+    // Crear objeto sanitizado con valores por defecto
+    const instrumentoValido = {
+        ins_id: instrumento.ins_id || instrumento.id || '',
+        ins_desc: instrumento.ins_desc || instrumento.descripcion || 'Sin descripción',
+        ins_simbolo: instrumento.ins_simbolo || instrumento.simbolo || '$',
+        total_actual: parseFloat(instrumento.total_actual) || parseFloat(instrumento.saldo) || 0,
+        tiene_detalle: Boolean(instrumento.tiene_detalle)
+    };
+
+    console.log('✅ Instrumento validado:', instrumentoValido);
+
+    return instrumentoValido;
 }

@@ -6083,6 +6083,261 @@ input, select, textarea, button, checkbox, radio {
     }
 }
 
+/* ════════════════════════════════════════════════════════════════
+   MODAL DETALLE VALE DE COMPRA - Z-INDEX Y ESTILOS
+   ════════════════════════════════════════════════════════════════ */
+
+/* Modal con z-index específico para estar sobre modal de instrumentos */
+#modalDetalleValeCompra {
+    z-index: 5100 !important;
+}
+
+    #modalDetalleValeCompra.modal.show ~ .modal-backdrop {
+        z-index: 5099 !important;
+    }
+
+    #modalDetalleValeCompra .modal-dialog {
+        z-index: 5101 !important;
+    }
+
+/* Input de monto con estilo destacado */
+#txtMontoValeCompra {
+    font-size: 1.3rem !important;
+    font-weight: 700 !important;
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+    padding: 0.75rem 1rem !important;
+    border: 2px solid #DAA520 !important;
+}
+
+    #txtMontoValeCompra:focus {
+        border-color: #B8860B !important;
+        box-shadow: 0 0 0 0.25rem rgba(184, 134, 11, 0.25) !important;
+        background-color: #FFFEF5 !important;
+    }
+
+    #txtMontoValeCompra.is-invalid {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+        background-color: rgba(220, 53, 69, 0.05) !important;
+        animation: shakeInput 0.3s ease-in-out;
+    }
+
+    #txtMontoValeCompra.is-valid {
+        border-color: #28a745 !important;
+        box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.15) !important;
+        background-color: rgba(40, 167, 69, 0.05) !important;
+    }
+
+/* Label de saldo disponible con colores dinámicos */
+#lblSaldoValeCompra {
+    font-size: 1.4rem !important;
+    font-weight: 700 !important;
+    font-family: 'Courier New', monospace;
+    transition: all 0.3s ease;
+}
+
+    #lblSaldoValeCompra.text-success {
+        color: #28a745 !important;
+    }
+
+    #lblSaldoValeCompra.text-warning {
+        color: #ffc107 !important;
+    }
+
+    #lblSaldoValeCompra.text-danger {
+        color: #dc3545 !important;
+    }
+
+/* Card de saldo con estilo mejorado */
+#modalDetalleValeCompra .card.bg-light {
+    background: linear-gradient(135deg, rgba(248, 249, 250, 1) 0%, rgba(233, 236, 239, 1) 100%) !important;
+    border: 1px solid rgba(218, 165, 32, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Alert informativo con estilo golden */
+#modalDetalleValeCompra .alert-info {
+    background-color: rgba(218, 165, 32, 0.1) !important;
+    border-left: 4px solid #DAA520 !important;
+    color: #856404 !important;
+}
+
+/* Animación de entrada para el modal */
+#modalDetalleValeCompra .modal-content {
+    animation: fadeInScaleValeCompra 0.3s ease-out;
+}
+
+@keyframes fadeInScaleValeCompra {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Animación de error en input */
+@keyframes shakeInput {
+    0%, 100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+/* Input group text con estilo golden */
+#modalDetalleValeCompra .input-group-text.bg-golden {
+    background: linear-gradient(135deg, #DAA520 0%, #B8860B 100%) !important;
+    border-color: #B8860B !important;
+}
+
+/* Botón guardar con hover mejorado */
+#btnGuardarDetalleValeCompra {
+    min-width: 120px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+    #btnGuardarDetalleValeCompra:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(218, 165, 32, 0.4);
+    }
+
+    #btnGuardarDetalleValeCompra:active {
+        transform: translateY(0);
+    }
+
+/* Mensaje de error específico */
+#errorMontoValeCompra {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
+}
+
 /* ═══════════════════════════════════════════════════════════════
-   MEJORAS DE ACCESIBILIDAD
-   ═══════════════════════════════════════════════════════════════
+   RESPONSIVE PARA MODAL VALE COMPRA
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+    #modalDetalleValeCompra .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    #txtMontoValeCompra {
+        font-size: 1.1rem !important;
+        padding: 0.625rem 0.875rem !important;
+    }
+
+    #lblSaldoValeCompra {
+        font-size: 1.2rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    #modalDetalleValeCompra .modal-content {
+        max-width: 100%;
+    }
+
+    #txtMontoValeCompra {
+        font-size: 1rem !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+
+    #lblSaldoValeCompra {
+        font-size: 1.1rem !important;
+    }
+
+    #btnGuardarDetalleValeCompra {
+        width: 100%;
+    }
+}
+
+/* FIN ESTILOS MODAL DETALLE VALE COMPRA */
+
+/* ════════════════════════════════════════════════════════════════
+   MODAL DETALLE EFECTIVO - Z-INDEX Y ESTILOS
+   ════════════════════════════════════════════════════════════════ */
+
+/* Modal con z-index específico idéntico al de Vale Compra */
+#modalDetalleEfectivo {
+    z-index: 5100 !important;
+}
+
+    #modalDetalleEfectivo.modal.show ~ .modal-backdrop {
+        z-index: 5099 !important;
+    }
+
+    #modalDetalleEfectivo .modal-dialog {
+        z-index: 5101 !important;
+    }
+
+/* Input de monto con estilo destacado idéntico a Vale Compra */
+#txtMontoEfectivo {
+    font-size: 1.3rem !important;
+    font-weight: 700 !important;
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+    padding: 0.75rem 1rem !important;
+    border: 2px solid #DAA520 !important;
+}
+
+    #txtMontoEfectivo:focus {
+        border-color: #B8860B !important;
+        box-shadow: 0 0 0 0.25rem rgba(184, 134, 11, 0.25) !important;
+        background-color: #FFFEF5 !important;
+    }
+
+    #txtMontoEfectivo.is-invalid {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+        background-color: rgba(220, 53, 69, 0.05) !important;
+        animation: shakeInput 0.3s ease-in-out;
+    }
+
+    #txtMontoEfectivo.is-valid {
+        border-color: #28a745 !important;
+        box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.15) !important;
+        background-color: rgba(40, 167, 69, 0.05) !important;
+    }
+
+/* Animación de entrada */
+#modalDetalleEfectivo .modal-content {
+    animation: fadeInScaleEfectivo 0.3s ease-out;
+}
+
+@keyframes fadeInScaleEfectivo {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #modalDetalleEfectivo .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    #txtMontoEfectivo {
+        font-size: 1.1rem !important;
+    }
+}
+
+/* FIN ESTILOS MODAL DETALLE EFECTIVO */
