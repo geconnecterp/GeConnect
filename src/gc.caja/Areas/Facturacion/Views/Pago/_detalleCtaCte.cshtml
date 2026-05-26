@@ -1,0 +1,166 @@
+﻿@*
+    ═══════════════════════════════════════════════════════════════
+    Modal de Detalle - Cuenta Corriente (Créditos en CtaCte)
+    ═══════════════════════════════════════════════════════════════
+
+    DESCRIPCIÓN:
+    Modal con grilla para seleccionar comprobantes de crédito disponibles
+    en la cuenta corriente del cliente (Notas de Crédito, Recibos, etc.)
+
+    FUNCIONALIDAD:
+    - Muestra comprobantes disponibles
+    - Permite seleccionar/deseleccionar con checkbox
+    - Muestra monto total imputado
+    - Valida que se seleccione al menos un comprobante
+
+    EVENTOS:
+    - Manejados en pagoFactura.js
+*@
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- MODAL: DETALLE CUENTA CORRIENTE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="modal fade" 
+     id="modalDetalleCtaCte" 
+     tabindex="-1" 
+     role="dialog" 
+     aria-labelledby="modalDetalleCtaCteLabel" 
+     aria-hidden="true" 
+     data-bs-backdrop="static" 
+     data-bs-keyboard="false">
+
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content modal-golden">
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- HEADER -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-header bg-gradient-golden">
+                <h5 class="modal-title" id="modalDetalleCtaCteLabel">
+                    <i class="bx bx-receipt me-2"></i>
+                    Detalle - Créditos en Cuenta Corriente
+                </h5>
+                <button type="button" 
+                        class="btn-close" 
+                        data-bs-dismiss="modal" 
+                        aria-label="Cerrar"></button>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- BODY -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-body p-0">
+
+                <!-- Información del Cliente -->
+                <div class="bg-light border-bottom p-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <strong class="text-muted">Cliente:</strong>
+                            <span id="lblClienteCtaCte" class="ms-2">-</span>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <strong class="text-muted">Total Imputado:</strong>
+                            <span id="lblTotalImputado" class="ms-2 fs-5 fw-bold text-success">$ 0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grilla de Comprobantes -->
+                <div class="table-responsive" style="max-height: 500px;">
+                    <table class="table table-hover table-bordered mb-0" id="tablaComprobantesCtaCte">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th style="width: 50px;" class="text-center">
+                                    <input type="checkbox" 
+                                           class="form-check-input" 
+                                           id="chkSeleccionarTodos"
+                                           title="Seleccionar todos">
+                                </th>
+                                <th style="width: 120px;">Fecha</th>
+                                <th style="width: 200px;">Tipo Compte</th>
+                                <th style="width: 150px;">N° Compte</th>
+                                <th style="width: 120px;">Vencimiento</th>
+                                <th style="width: 130px;" class="text-end">Importe</th>
+                                <th style="width: 130px;" class="text-end">Imputa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyComprobantesCtaCte">
+                            <!-- Ejemplo de fila (se cargará dinámicamente) -->
+                            <tr class="comprobante-row" 
+                                data-comprobante-id="1" 
+                                data-importe="505.00">
+                                <td class="text-center">
+                                    <input type="checkbox" 
+                                           class="form-check-input chk-comprobante" 
+                                           data-comprobante-id="1"
+                                           data-importe="505.00">
+                                </td>
+                                <td>15/02/2026</td>
+                                <td>Nota Crédito A</td>
+                                <td>0014-00004125</td>
+                                <td>15/02/2026</td>
+                                <td class="text-end">505.00</td>
+                                <td class="text-end">
+                                    <span class="badge bg-success imputa-badge">505.00</span>
+                                </td>
+                            </tr>
+                            <tr class="comprobante-row" 
+                                data-comprobante-id="2" 
+                                data-importe="3000.23">
+                                <td class="text-center">
+                                    <input type="checkbox" 
+                                           class="form-check-input chk-comprobante" 
+                                           data-comprobante-id="2"
+                                           data-importe="3000.23">
+                                </td>
+                                <td>15/02/2026</td>
+                                <td>Recibo A</td>
+                                <td>00-001240041</td>
+                                <td>15/02/2026</td>
+                                <td class="text-end">3000.23</td>
+                                <td class="text-end">
+                                    <span class="badge bg-secondary imputa-badge">0.00</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Estado: Sin comprobantes -->
+                <div id="sinComprobantesCtaCte" class="text-center py-5 text-muted d-none">
+                    <i class="bx bx-file-blank bx-lg mb-3"></i>
+                    <p>No hay comprobantes de crédito disponibles para este cliente.</p>
+                </div>
+
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- FOOTER -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-footer bg-light">
+                <div class="me-auto">
+                    <span class="text-muted">Comprobantes seleccionados:</span>
+                    <span id="lblCantidadSeleccionados" class="ms-2 fw-bold">0</span>
+                </div>
+                <button type="button" 
+                        class="btn btn-secondary" 
+                        data-bs-dismiss="modal">
+                    <i class="bx bx-x me-1"></i>
+                    Cancelar
+                </button>
+                <button type="button" 
+                        class="btn btn-golden" 
+                        id="btnGuardarDetalleCtaCte"
+                        disabled>
+                    <i class="bx bx-save me-1"></i>
+                    Guardar Selección
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>

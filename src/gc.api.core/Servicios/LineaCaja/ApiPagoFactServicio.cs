@@ -22,7 +22,7 @@ namespace gc.api.core.Servicios.LineaCaja
 
         public List<ValoresInsResDto> ObtenerValoresIns(ValoresInsReqDto req)
         {
-            var sp = ConstantesGC.StoredProcedures.SP_CAJA_VAL_PENDIENTES;
+            var sp = ConstantesGC.StoredProcedures.SP_CAJA_VAL_INS;
             /*
               public string tcf_id { get; set; } = string.Empty;
         public string co_tipo { get; set; } = string.Empty;

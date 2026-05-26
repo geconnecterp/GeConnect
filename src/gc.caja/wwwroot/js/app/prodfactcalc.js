@@ -48,74 +48,35 @@ function inicializarEventosCalculoFactura() {
 
 // ════════════════════════════════════════════════════════════
 // PROCESAR PAGO DE FACTURA
-// ════════════════════════════════════════════════════════════
 /**
- * ✅ ACTUALIZADO v13.0: Abre el modal de pago con validación exhaustiva
- * Extrae el total final de la tabla de conceptos
+ * ✅ ACTUALIZADO v13.1: Abre el modal de pago con validación simplificada
+ * CAMBIO: Llama directamente a abrirModalPago() en lugar de PagoFactura.abrirModal()
  */
 function procesarPagoFactura() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('💰 PROCESAR PAGO DE FACTURA v13.0');
+    console.log('💰 PROCESAR PAGO DE FACTURA v13.1');
     console.log('═══════════════════════════════════════════════════');
 
-    // ❶ VALIDACIÓN CRÍTICA: Verificar que el módulo PagoFactura esté disponible
-    console.log('🔍 Verificando disponibilidad del módulo PagoFactura...');
+    // ❶ VALIDACIÓN: Verificar que la función abrirModalPago esté disponible
+    console.log('🔍 Verificando disponibilidad de la función abrirModalPago...');
 
-    if (typeof PagoFactura === 'undefined') {
+    if (typeof abrirModalPago !== 'function') {
         console.error('═══════════════════════════════════════════════════');
-        console.error('❌ CRÍTICO: Módulo PagoFactura NO está disponible');
+        console.error('❌ CRÍTICO: Función abrirModalPago NO está disponible');
         console.error('═══════════════════════════════════════════════════');
         console.error('Diagnóstico:');
         console.error('   1. Verificar que el archivo pagoFactura.js esté cargado');
-        console.error('   2. Ruta esperada: ~/js/pagoFactura.js');
+        console.error('   2. Ruta esperada: ~/js/app/pagoFactura.js');
         console.error('   3. Revisar consola del navegador para errores de carga');
-        console.error('   4. Verificar que no haya errores de sintaxis en pagoFactura.js');
         console.error('═══════════════════════════════════════════════════');
 
-        // Mostrar mensaje al usuario
-        if (typeof AbrirMensaje === 'function') {
-            AbrirMensaje(
-                "Error del Sistema",
-                `<div class="text-center">
-                    <i class='bx bx-error-circle text-danger' style='font-size: 3rem;'></i>
-                    <h5 class="mt-3 mb-2">Módulo de Pago no disponible</h5>
-                    <p class="text-muted mb-3">
-                        El módulo de gestión de pagos no se ha cargado correctamente.<br>
-                        Por favor, recargue la página e intente nuevamente.
-                    </p>
-                    <div class="alert alert-warning text-start">
-                        <strong>Soporte técnico:</strong><br>
-                        Si el problema persiste, contacte al administrador del sistema<br>
-                        <small class="text-muted">Código de error: MOD_PAGO_NOT_LOADED</small>
-                    </div>
-                </div>`,
-                function () {
-                    $("#msjModal").modal("hide");
-                },
-                false,
-                ["Aceptar"],
-                "error!",
-                null
-            );
-        } else {
-            alert('ERROR: El módulo de pago no está disponible.\nPor favor, recargue la página e intente nuevamente.');
-        }
-
+        mostrarMensajeError('El módulo de pago no está disponible.\nPor favor, recargue la página e intente nuevamente.');
         return;
     }
 
-    console.log('✅ Módulo PagoFactura disponible');
+    console.log('✅ Función abrirModalPago disponible');
 
-    // ❷ Validar que tenga el método abrirModal
-    if (typeof PagoFactura.abrirModal !== 'function') {
-        console.error('❌ PagoFactura.abrirModal no es una función');
-        mostrarMensajeError('Error: Módulo de pago con estructura incorrecta');
-        return;
-    }
-
-    console.log('✅ Método PagoFactura.abrirModal disponible');
-
-    // ❸ Extraer el total final de la tabla
+    // ❷ Extraer el total final de la tabla
     const $tdTotalFinal = $('#tdTotalFinal');
 
     if ($tdTotalFinal.length === 0) {
@@ -128,16 +89,15 @@ function procesarPagoFactura() {
     const totalFinal = parseFloat(totalFinalTexto.replace(/[^\d.-]/g, '')) || 0;
 
     console.log(`💵 Total final extraído: $ ${totalFinal.toFixed(2)}`);
-    console.log(`   Texto original: "${totalFinalTexto}"`);
 
-    // ❹ Validar que el total sea mayor a 0
+    // ❸ Validar que el total sea mayor a 0
     if (totalFinal <= 0) {
         console.warn('⚠️ Total final es $0.00 o negativo');
         mostrarMensajeAdvertencia('El total de la factura debe ser mayor a $0.00');
         return;
     }
 
-    // ❺ Preparar datos para el modal de pago
+    // ❹ Preparar datos para el modal de pago
     const datosPago = {
         totales: {
             totalPagar: totalFinal,
@@ -150,14 +110,14 @@ function procesarPagoFactura() {
 
     console.log('📋 Datos preparados para modal de pago:', datosPago);
 
-    // ❻ Abrir modal de pago
+    // ❺ ✅ CAMBIO CRÍTICO: Llamar directamente a la función
     try {
-        console.log('🔓 Invocando PagoFactura.abrirModal()...');
+        console.log('🔓 Invocando abrirModalPago()...');
 
-        const resultado = PagoFactura.abrirModal(datosPago);
+        const resultado = abrirModalPago(datosPago);
 
         if (resultado === false) {
-            console.error('❌ PagoFactura.abrirModal() retornó false');
+            console.error('❌ abrirModalPago() retornó false');
             mostrarMensajeError('Error al abrir el modal de pago. Revise la consola para más detalles.');
         } else {
             console.log('✅ Modal de pago abierto correctamente');

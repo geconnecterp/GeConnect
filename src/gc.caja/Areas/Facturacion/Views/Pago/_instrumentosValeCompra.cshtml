@@ -1,0 +1,283 @@
+﻿@*
+    ═══════════════════════════════════════════════════════════════
+    Modal de Instrumentos - Vales de Compra
+    ═══════════════════════════════════════════════════════════════
+
+    DESCRIPCIÓN:
+    Modal para seleccionar el vale de compra a utilizar.
+    Muestra lista de vales con su importe disponible.
+
+    INTERACCIÓN:
+    - Selección por DOBLE CLIC sobre el vale
+    - Ítem seleccionado se resalta en azul
+    - Al confirmar, se abre el modal de detalle
+
+    EVENTOS:
+    - Manejados en pagoFactura.js
+*@
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- MODAL: INSTRUMENTOS VALES DE COMPRA -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="modal fade" 
+     id="modalInstrumentosValeCompra" 
+     tabindex="-1" 
+     role="dialog" 
+     aria-labelledby="modalInstrumentosValeCompraLabel" 
+     aria-hidden="true" 
+     data-bs-backdrop="static" 
+     data-bs-keyboard="false">
+
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 700px;">
+        <div class="modal-content modal-golden">
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- HEADER -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-header bg-gradient-golden">
+                <h5 class="modal-title" id="modalInstrumentosValeCompraLabel">
+                    <i class="bx bx-gift me-2"></i>
+                    Instrumentos - Vales de Compra
+                </h5>
+                <button type="button" 
+                        class="btn-close" 
+                        data-bs-dismiss="modal" 
+                        aria-label="Cerrar"></button>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- BODY -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-body p-0">
+
+                <!-- Header de Columnas -->
+                <div class="bg-light border-bottom py-2 px-3 d-flex">
+                    <div class="flex-grow-1">
+                        <strong class="text-muted">Instrumento</strong>
+                    </div>
+                    <div style="width: 150px; text-align: right;">
+                        <strong class="text-muted">Importe</strong>
+                    </div>
+                </div>
+
+                <!-- Lista de Vales -->
+                <div id="listaInstrumentosValeCompra" 
+                     class="list-group list-group-flush" 
+                     style="max-height: 500px; overflow-y: auto;">
+
+                    <!-- VALE COMPRA AMOEM -->
+                    <div class="list-group-item list-group-item-action instrumento-vale-item d-flex align-items-center" 
+                         data-vale-id="AMOEM" 
+                         data-vale-desc="VALE COMPRA AMOEM"
+                         data-vale-importe="0.00"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-gift me-2 text-success"></i>
+                            <span>VALE COMPRA AMOEM</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="fw-bold text-success">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- VALE COMPRA AMSESA -->
+                    <div class="list-group-item list-group-item-action instrumento-vale-item d-flex align-items-center" 
+                         data-vale-id="AMSESA" 
+                         data-vale-desc="VALE COMPRA AMSESA"
+                         data-vale-importe="0.00"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-gift me-2 text-success"></i>
+                            <span>VALE COMPRA AMSESA</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="fw-bold text-success">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- VALE COMPRA EL ZONDA -->
+                    <div class="list-group-item list-group-item-action instrumento-vale-item d-flex align-items-center" 
+                         data-vale-id="EL_ZONDA" 
+                         data-vale-desc="VALE COMPRA EL ZONDA"
+                         data-vale-importe="0.00"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-gift me-2 text-success"></i>
+                            <span>VALE COMPRA EL ZONDA</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="fw-bold text-success">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- VALE COMPRA EMICAR -->
+                    <div class="list-group-item list-group-item-action instrumento-vale-item d-flex align-items-center" 
+                         data-vale-id="EMICAR" 
+                         data-vale-desc="VALE COMPRA EMICAR"
+                         data-vale-importe="0.00"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-gift me-2 text-success"></i>
+                            <span>VALE COMPRA EMICAR</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="fw-bold text-success">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- VALE COMPRA EMPL COMERCIO -->
+                    <div class="list-group-item list-group-item-action instrumento-vale-item d-flex align-items-center" 
+                         data-vale-id="EMPL_COMERCIO" 
+                         data-vale-desc="VALE COMPRA EMPL COMERCIO"
+                         data-vale-importe="0.00"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-gift me-2 text-success"></i>
+                            <span>VALE COMPRA EMPL COMERCIO</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="fw-bold text-success">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- VALE COMPRA ENERGIA SAN JUAN -->
+                    <div class="list-group-item list-group-item-action instrumento-vale-item d-flex align-items-center" 
+                         data-vale-id="ENERGIA_SJ" 
+                         data-vale-desc="VALE COMPRA ENERGIA SAN JUAN"
+                         data-vale-importe="0.00"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-gift me-2 text-success"></i>
+                            <span>VALE COMPRA ENERGIA SAN JUAN</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="fw-bold text-success">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- VALE COMPRA FABREGAS -->
+                    <div class="list-group-item list-group-item-action instrumento-vale-item d-flex align-items-center" 
+                         data-vale-id="FABREGAS" 
+                         data-vale-desc="VALE COMPRA FABREGAS"
+                         data-vale-importe="0.00"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-gift me-2 text-success"></i>
+                            <span>VALE COMPRA FABREGAS</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="fw-bold text-success">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- VALE COMPRA GREMIO A T E -->
+                    <div class="list-group-item list-group-item-action instrumento-vale-item d-flex align-items-center" 
+                         data-vale-id="GREMIO_ATE" 
+                         data-vale-desc="VALE COMPRA GREMIO A T E"
+                         data-vale-importe="0.00"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-gift me-2 text-success"></i>
+                            <span>VALE COMPRA GREMIO A T E</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="fw-bold text-success">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- VALE COMPRA GREMIO ALIMEN -->
+                    <div class="list-group-item list-group-item-action instrumento-vale-item d-flex align-items-center" 
+                         data-vale-id="GREMIO_ALIMEN" 
+                         data-vale-desc="VALE COMPRA GREMIO ALIMEN"
+                         data-vale-importe="0.00"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-gift me-2 text-success"></i>
+                            <span>VALE COMPRA GREMIO ALIMEN</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="fw-bold text-success">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- VALE COMPRA GREMIO ATSA -->
+                    <div class="list-group-item list-group-item-action instrumento-vale-item d-flex align-items-center" 
+                         data-vale-id="GREMIO_ATSA" 
+                         data-vale-desc="VALE COMPRA GREMIO ATSA"
+                         data-vale-importe="0.00"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-gift me-2 text-success"></i>
+                            <span>VALE COMPRA GREMIO ATSA</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="fw-bold text-success">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- VALE COMPRA INDIVIDRIO -->
+                    <div class="list-group-item list-group-item-action instrumento-vale-item d-flex align-items-center" 
+                         data-vale-id="INDIVIDRIO" 
+                         data-vale-desc="VALE COMPRA INDIVIDRIO"
+                         data-vale-importe="0.00"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-gift me-2 text-success"></i>
+                            <span>VALE COMPRA INDIVIDRIO</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="fw-bold text-success">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- VALE COMPRA INTA -->
+                    <div class="list-group-item list-group-item-action instrumento-vale-item d-flex align-items-center" 
+                         data-vale-id="INTA" 
+                         data-vale-desc="VALE COMPRA INTA"
+                         data-vale-importe="0.00"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-gift me-2 text-success"></i>
+                            <span>VALE COMPRA INTA</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="fw-bold text-success">0.00</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Estado: Sin vales -->
+                <div id="sinValesCompra" class="text-center py-5 text-muted d-none">
+                    <i class="bx bx-exclamation-circle bx-lg mb-3"></i>
+                    <p>No hay vales de compra disponibles.</p>
+                </div>
+
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- FOOTER -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-footer bg-light">
+                <button type="button" 
+                        class="btn btn-secondary" 
+                        data-bs-dismiss="modal">
+                    <i class="bx bx-x me-1"></i>
+                    Cancelar
+                </button>
+                <button type="button" 
+                        class="btn btn-golden" 
+                        id="btnConfirmarValeCompra" 
+                        disabled>
+                    <i class="bx bx-check me-1"></i>
+                    Confirmar
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
