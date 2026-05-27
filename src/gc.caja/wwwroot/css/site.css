@@ -5395,3 +5395,1459 @@ input, select, textarea, button, checkbox, radio {
         transform: scale(1);
     }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   4️⃣ MODAL PAGO (Cuarto modal del flujo - REFERENCIA BASE)
+   ════════════════════════════════════════════════════════════════ */
+#modalPago {
+    z-index: 5070 !important;
+}
+
+    #modalPago.modal.show ~ .modal-backdrop {
+        z-index: 5069 !important;
+    }
+
+    #modalPago .modal-dialog {
+        z-index: 5071 !important;
+    }
+
+/* ═══════════════════════════════════════════════════════════════
+   TABLA DE CONCEPTOS DE PAGO - FULLSCREEN OPTIMIZADA
+   ═══════════════════════════════════════════════════════════════ */
+
+.table-pago-fullscreen {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Header grande para tabla de conceptos */
+.table-golden-header-large th {
+    padding: 1rem 0.75rem !important;
+    font-size: 1.2rem !important;
+    font-weight: 700 !important;
+}
+
+/* Tabla large con celdas grandes */
+.table-golden-large tbody td {
+    padding: 0.875rem 0.75rem !important;
+    font-size: 1.1rem !important;
+}
+
+    .table-golden-large tbody td.text-end {
+        font-size: 1.4rem !important;
+        font-weight: 600 !important;
+    }
+
+/* Tabla de formas de pago ingresadas */
+.table-formas-pago-fullscreen {
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.table-golden-header-medium th {
+    padding: 0.75rem 0.5rem !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+}
+
+.table-golden-medium tbody td {
+    padding: 0.625rem 0.5rem !important;
+    font-size: 0.95rem !important;
+}
+
+/* Fila Total a Pagar */
+.row-total-pagar {
+    background-color: rgba(220, 53, 69, 0.05) !important;
+    border-top: 2px solid #dc3545 !important;
+    border-bottom: 2px solid #dc3545 !important;
+}
+
+/* Fila Recargos */
+.row-recargos {
+    background-color: rgba(255, 193, 7, 0.05) !important;
+}
+
+/* Fila Descuentos */
+.row-descuentos {
+    background-color: rgba(23, 162, 184, 0.05) !important;
+}
+
+/* Fila Total a Valores */
+.row-total-valores {
+    background-color: rgba(0, 123, 255, 0.05) !important;
+    border-top: 2px solid #007bff !important;
+    border-bottom: 2px solid #007bff !important;
+}
+
+/* Fila Diferencia */
+.row-diferencia {
+    background-color: rgba(40, 167, 69, 0.05) !important;
+    border-top: 3px solid #28a745 !important;
+    border-bottom: 3px solid #28a745 !important;
+}
+
+/* Botones grandes para acciones del modal de pago */
+.btn-accion-pago {
+    min-width: 180px;
+    min-height: 120px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+    .btn-accion-pago i {
+        font-size: 2.5rem;
+    }
+
+    .btn-accion-pago span {
+        font-size: 1.3rem;
+        display: block;
+    }
+
+    .btn-accion-pago small {
+        font-size: 0.9rem;
+        font-weight: 400;
+        text-transform: none;
+        opacity: 0.9;
+    }
+
+    .btn-accion-pago:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .btn-accion-pago:active {
+        transform: translateY(-2px);
+    }
+
+/* Scrollbar golden para tablas de pago */
+.table-pago-fullscreen::-webkit-scrollbar,
+.table-formas-pago-fullscreen::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.table-pago-fullscreen::-webkit-scrollbar-track,
+.table-formas-pago-fullscreen::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 5px;
+}
+
+.table-pago-fullscreen::-webkit-scrollbar-thumb,
+.table-formas-pago-fullscreen::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #DAA520 0%, #B8860B 100%);
+    border-radius: 5px;
+    border: 2px solid #f8f9fa;
+}
+
+    .table-pago-fullscreen::-webkit-scrollbar-thumb:hover,
+    .table-formas-pago-fullscreen::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #B8860B 0%, #DAA520 100%);
+    }
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE PARA MODAL DE PAGO
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 992px) {
+    .btn-accion-pago {
+        min-width: 150px;
+        min-height: 100px;
+        font-size: 1rem;
+    }
+
+        .btn-accion-pago i {
+            font-size: 2rem;
+        }
+
+        .btn-accion-pago span {
+            font-size: 1.1rem;
+        }
+
+    .table-golden-header-large th {
+        font-size: 1rem !important;
+        padding: 0.75rem 0.5rem !important;
+    }
+
+    .table-golden-large tbody td {
+        font-size: 0.95rem !important;
+        padding: 0.625rem 0.5rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .btn-accion-pago {
+        min-width: 120px;
+        min-height: 90px;
+        font-size: 0.9rem;
+        gap: 0.25rem;
+    }
+
+        .btn-accion-pago i {
+            font-size: 1.75rem;
+        }
+
+        .btn-accion-pago span {
+            font-size: 1rem;
+        }
+
+        .btn-accion-pago small {
+            font-size: 0.75rem;
+        }
+
+    .d-flex.gap-4 {
+        gap: 1rem !important;
+        flex-wrap: wrap;
+    }
+
+    .table-golden-header-large th {
+        font-size: 0.9rem !important;
+    }
+
+    .table-golden-large tbody td {
+        font-size: 0.85rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .btn-accion-pago {
+        width: 100%;
+        min-height: 80px;
+    }
+
+    .d-flex.gap-4 {
+        flex-direction: column;
+    }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   MODAL TIPO MEDIO DE PAGO - ESTILOS ESPECÍFICOS
+   ════════════════════════════════════════════════════════════════ */
+
+/* Modal con z-index específico para asegurar que esté sobre otros modales */
+#modalTipoMedioPago {
+    z-index: 5080 !important;
+}
+
+    #modalTipoMedioPago.modal.show ~ .modal-backdrop {
+        z-index: 5079 !important;
+    }
+
+    #modalTipoMedioPago .modal-dialog {
+        z-index: 5081 !important;
+    }
+
+/* Lista de tipos de medio de pago con scroll mejorado */
+#listaTiposMedioPago {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+    /* Scrollbar golden para la lista */
+    #listaTiposMedioPago::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    #listaTiposMedioPago::-webkit-scrollbar-track {
+        background: #f8f9fa;
+        border-radius: 4px;
+    }
+
+    #listaTiposMedioPago::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #DAA520 0%, #B8860B 100%);
+        border-radius: 4px;
+        border: 2px solid #f8f9fa;
+    }
+
+        #listaTiposMedioPago::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #B8860B 0%, #DAA520 100%);
+        }
+
+/* Ítem de lista con hover mejorado */
+.tipo-medio-pago-item {
+    padding: 1rem;
+    border-left: 4px solid transparent;
+    transition: all 0.2s ease;
+}
+
+    .tipo-medio-pago-item:hover {
+        background-color: rgba(218, 165, 32, 0.1) !important;
+        border-left-color: #DAA520;
+        transform: translateX(5px);
+    }
+
+    /* Ítem seleccionado (clase agregada por JavaScript) */
+    .tipo-medio-pago-item.selected {
+        background-color: rgba(30, 136, 229, 0.15) !important;
+        border-left-color: #1e88e5;
+        font-weight: 600;
+    }
+
+/* Descripción del tipo de pago */
+.tipo-medio-pago-desc {
+    font-size: 1.05rem;
+    color: #495057;
+    font-weight: 500;
+}
+
+/* Iconos con tamaño uniforme */
+.tipo-medio-pago-item i {
+    font-size: 1.5rem;
+    width: 30px;
+    text-align: center;
+}
+
+/* Header de columna con estilo sutil */
+#modalTipoMedioPago .bg-light {
+    background-color: #f8f9fa !important;
+}
+
+/* Responsive - Ajustes para móvil */
+@media (max-width: 768px) {
+    #modalTipoMedioPago .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    .tipo-medio-pago-item {
+        padding: 0.75rem;
+    }
+
+    .tipo-medio-pago-desc {
+        font-size: 0.95rem;
+    }
+
+    .tipo-medio-pago-item i {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 576px) {
+    #listaTiposMedioPago {
+        max-height: 400px;
+    }
+
+    .tipo-medio-pago-item {
+        padding: 0.625rem;
+    }
+
+    .tipo-medio-pago-desc {
+        font-size: 0.9rem;
+    }
+}
+
+/* FIN ESTILOS MODAL TIPO MEDIO DE PAGO */
+
+/* ════════════════════════════════════════════════════════════════
+   LOADING GLOBAL - OVERLAY DE BLOQUEO
+   ════════════════════════════════════════════════════════════════ */
+
+#overlayLoadingGlobal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px); /* Safari */
+}
+
+    #overlayLoadingGlobal .loading-content {
+        text-align: center;
+        background: white;
+        padding: 3rem 4rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        animation: fadeInScale 0.3s ease-out;
+    }
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Spinner dorado personalizado */
+#overlayLoadingGlobal .spinner-border {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-width: 0.4rem;
+}
+
+#overlayLoadingGlobal .text-golden {
+    color: #d4af37 !important;
+}
+
+#overlayLoadingGlobal .text-golden-dark {
+    color: #a58439 !important;
+}
+
+/* Responsive para pantallas pequeñas */
+@media (max-width: 576px) {
+    #overlayLoadingGlobal .loading-content {
+        padding: 2rem 2.5rem;
+    }
+
+    #overlayLoadingGlobal .spinner-border {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-width: 0.3rem;
+    }
+
+    #overlayLoadingGlobal #textoLoadingGlobal {
+        font-size: 1rem !important;
+    }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   MODAL INSTRUMENTOS - ESTILOS ESPECÍFICOS
+   ════════════════════════════════════════════════════════════════ */
+
+/* Modal con z-index específico para estar sobre modal de tipo medio de pago */
+#modalInstrumentos {
+    z-index: 5090 !important;
+}
+
+    #modalInstrumentos.modal.show ~ .modal-backdrop {
+        z-index: 5089 !important;
+    }
+
+    #modalInstrumentos .modal-dialog {
+        z-index: 5091 !important;
+    }
+
+/* Lista de instrumentos con scroll mejorado */
+#listaInstrumentos {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+    /* Scrollbar golden para la lista de instrumentos */
+    #listaInstrumentos::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    #listaInstrumentos::-webkit-scrollbar-track {
+        background: #f8f9fa;
+        border-radius: 4px;
+    }
+
+    #listaInstrumentos::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #DAA520 0%, #B8860B 100%);
+        border-radius: 4px;
+        border: 2px solid #f8f9fa;
+    }
+
+        #listaInstrumentos::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #B8860B 0%, #DAA520 100%);
+        }
+
+/* ═══════════════════════════════════════════════════════════════
+   ÍTEMS DE INSTRUMENTOS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Ítem de instrumento con hover mejorado */
+.instrumento-item {
+    padding: 1rem;
+    border-left: 4px solid transparent;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+    .instrumento-item:hover {
+        background-color: rgba(218, 165, 32, 0.1) !important;
+        border-left-color: #DAA520;
+        transform: translateX(5px);
+    }
+
+    /* Ítem seleccionado (clase agregada por JavaScript) */
+    .instrumento-item.selected {
+        background-color: rgba(30, 136, 229, 0.15) !important;
+        border-left-color: #1e88e5;
+        font-weight: 600;
+    }
+
+/* Descripción del instrumento */
+.instrumento-desc {
+    font-size: 1.1rem;
+    color: #495057;
+    font-weight: 500;
+}
+
+/* Total del instrumento */
+.instrumento-total {
+    font-size: 1.2rem;
+    font-family: 'Courier New', monospace;
+}
+
+/* Iconos con tamaño uniforme */
+.instrumento-item i {
+    font-size: 1.75rem;
+    width: 35px;
+    text-align: center;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   COLORES ESPECÍFICOS POR TIPO DE INSTRUMENTO
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Pesos (ARS) - Verde */
+.instrumento-item[data-instrumento-id="ARS"] i {
+    color: #28a745 !important;
+}
+
+.instrumento-item[data-instrumento-id="ARS"] .instrumento-total {
+    color: #28a745 !important;
+}
+
+/* Dólares (USD) - Azul */
+.instrumento-item[data-instrumento-id="USD"] i {
+    color: #007bff !important;
+}
+
+.instrumento-item[data-instrumento-id="USD"] .instrumento-total {
+    color: #007bff !important;
+}
+
+/* Euros (EUR) - Púrpura (si se agrega) */
+.instrumento-item[data-instrumento-id="EUR"] i {
+    color: #6f42c1 !important;
+}
+
+.instrumento-item[data-instrumento-id="EUR"] .instrumento-total {
+    color: #6f42c1 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ANIMACIONES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Animación de entrada para el modal */
+#modalInstrumentos .modal-content {
+    animation: fadeInScaleInstrumentos 0.3s ease-out;
+}
+
+@keyframes fadeInScaleInstrumentos {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Animación de actualización de totales */
+.instrumento-total.updating {
+    animation: pulseTotal 0.5s ease-in-out;
+}
+
+@keyframes pulseTotal {
+    0%, 100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Tablets y pantallas medianas */
+@media (max-width: 768px) {
+    #modalInstrumentos .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    .instrumento-item {
+        padding: 0.875rem;
+    }
+
+    .instrumento-desc {
+        font-size: 1rem;
+    }
+
+    .instrumento-total {
+        font-size: 1.1rem;
+    }
+
+    .instrumento-item i {
+        font-size: 1.5rem;
+    }
+}
+
+/* Móviles */
+@media (max-width: 576px) {
+    #listaInstrumentos {
+        max-height: 350px;
+    }
+
+    .instrumento-item {
+        padding: 0.75rem;
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 0.5rem;
+    }
+
+        .instrumento-item > div:last-child {
+            width: 100% !important;
+            text-align: left !important;
+        }
+
+    .instrumento-desc {
+        font-size: 0.95rem;
+    }
+
+    .instrumento-total {
+        font-size: 1rem;
+    }
+
+    .instrumento-item i {
+        font-size: 1.4rem;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ESTADOS ESPECIALES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Instrumento sin saldo */
+.instrumento-item.sin-saldo {
+    opacity: 0.6;
+}
+
+    .instrumento-item.sin-saldo .instrumento-total {
+        color: #6c757d !important;
+    }
+
+/* Instrumento con saldo destacado */
+.instrumento-item.con-saldo-importante .instrumento-total {
+    font-size: 1.3rem;
+    animation: pulseTotal 1s ease-in-out 2;
+}
+
+/* Estado de carga */
+.instrumento-item.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+    .instrumento-item.loading .instrumento-total {
+        position: relative;
+    }
+
+        .instrumento-item.loading .instrumento-total::after {
+            content: '';
+            position: absolute;
+            right: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 15px;
+            height: 15px;
+            border: 2px solid #DAA520;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+@keyframes spin {
+    0% {
+        transform: translateY(-50%) rotate(0deg);
+    }
+
+    100% {
+        transform: translateY(-50%) rotate(360deg);
+    }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   MODAL DETALLE VALE DE COMPRA - Z-INDEX Y ESTILOS
+   ════════════════════════════════════════════════════════════════ */
+
+/* Modal con z-index específico para estar sobre modal de instrumentos */
+#modalDetalleValeCompra {
+    z-index: 5100 !important;
+}
+
+    #modalDetalleValeCompra.modal.show ~ .modal-backdrop {
+        z-index: 5099 !important;
+    }
+
+    #modalDetalleValeCompra .modal-dialog {
+        z-index: 5101 !important;
+    }
+
+/* Input de monto con estilo destacado */
+#txtMontoValeCompra {
+    font-size: 1.3rem !important;
+    font-weight: 700 !important;
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+    padding: 0.75rem 1rem !important;
+    border: 2px solid #DAA520 !important;
+}
+
+    #txtMontoValeCompra:focus {
+        border-color: #B8860B !important;
+        box-shadow: 0 0 0 0.25rem rgba(184, 134, 11, 0.25) !important;
+        background-color: #FFFEF5 !important;
+    }
+
+    #txtMontoValeCompra.is-invalid {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+        background-color: rgba(220, 53, 69, 0.05) !important;
+        animation: shakeInput 0.3s ease-in-out;
+    }
+
+    #txtMontoValeCompra.is-valid {
+        border-color: #28a745 !important;
+        box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.15) !important;
+        background-color: rgba(40, 167, 69, 0.05) !important;
+    }
+
+/* Label de saldo disponible con colores dinámicos */
+#lblSaldoValeCompra {
+    font-size: 1.4rem !important;
+    font-weight: 700 !important;
+    font-family: 'Courier New', monospace;
+    transition: all 0.3s ease;
+}
+
+    #lblSaldoValeCompra.text-success {
+        color: #28a745 !important;
+    }
+
+    #lblSaldoValeCompra.text-warning {
+        color: #ffc107 !important;
+    }
+
+    #lblSaldoValeCompra.text-danger {
+        color: #dc3545 !important;
+    }
+
+/* Card de saldo con estilo mejorado */
+#modalDetalleValeCompra .card.bg-light {
+    background: linear-gradient(135deg, rgba(248, 249, 250, 1) 0%, rgba(233, 236, 239, 1) 100%) !important;
+    border: 1px solid rgba(218, 165, 32, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Alert informativo con estilo golden */
+#modalDetalleValeCompra .alert-info {
+    background-color: rgba(218, 165, 32, 0.1) !important;
+    border-left: 4px solid #DAA520 !important;
+    color: #856404 !important;
+}
+
+/* Animación de entrada para el modal */
+#modalDetalleValeCompra .modal-content {
+    animation: fadeInScaleValeCompra 0.3s ease-out;
+}
+
+@keyframes fadeInScaleValeCompra {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Animación de error en input */
+@keyframes shakeInput {
+    0%, 100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+/* Input group text con estilo golden */
+#modalDetalleValeCompra .input-group-text.bg-golden {
+    background: linear-gradient(135deg, #DAA520 0%, #B8860B 100%) !important;
+    border-color: #B8860B !important;
+}
+
+/* Botón guardar con hover mejorado */
+#btnGuardarDetalleValeCompra {
+    min-width: 120px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+    #btnGuardarDetalleValeCompra:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(218, 165, 32, 0.4);
+    }
+
+    #btnGuardarDetalleValeCompra:active {
+        transform: translateY(0);
+    }
+
+/* Mensaje de error específico */
+#errorMontoValeCompra {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE PARA MODAL VALE COMPRA
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+    #modalDetalleValeCompra .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    #txtMontoValeCompra {
+        font-size: 1.1rem !important;
+        padding: 0.625rem 0.875rem !important;
+    }
+
+    #lblSaldoValeCompra {
+        font-size: 1.2rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    #modalDetalleValeCompra .modal-content {
+        max-width: 100%;
+    }
+
+    #txtMontoValeCompra {
+        font-size: 1rem !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+
+    #lblSaldoValeCompra {
+        font-size: 1.1rem !important;
+    }
+
+    #btnGuardarDetalleValeCompra {
+        width: 100%;
+    }
+}
+
+/* FIN ESTILOS MODAL DETALLE VALE COMPRA */
+
+/* ════════════════════════════════════════════════════════════════
+   MODAL DETALLE EFECTIVO - Z-INDEX Y ESTILOS
+   ════════════════════════════════════════════════════════════════ */
+
+/* Modal con z-index específico idéntico al de Vale Compra */
+#modalDetalleEfectivo {
+    z-index: 5100 !important;
+}
+
+    #modalDetalleEfectivo.modal.show ~ .modal-backdrop {
+        z-index: 5099 !important;
+    }
+
+    #modalDetalleEfectivo .modal-dialog {
+        z-index: 5101 !important;
+    }
+
+/* Input de monto con estilo destacado idéntico a Vale Compra */
+#txtMontoEfectivo {
+    font-size: 1.3rem !important;
+    font-weight: 700 !important;
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+    padding: 0.75rem 1rem !important;
+    border: 2px solid #DAA520 !important;
+}
+
+    #txtMontoEfectivo:focus {
+        border-color: #B8860B !important;
+        box-shadow: 0 0 0 0.25rem rgba(184, 134, 11, 0.25) !important;
+        background-color: #FFFEF5 !important;
+    }
+
+    #txtMontoEfectivo.is-invalid {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+        background-color: rgba(220, 53, 69, 0.05) !important;
+        animation: shakeInput 0.3s ease-in-out;
+    }
+
+    #txtMontoEfectivo.is-valid {
+        border-color: #28a745 !important;
+        box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.15) !important;
+        background-color: rgba(40, 167, 69, 0.05) !important;
+    }
+
+/* Animación de entrada */
+#modalDetalleEfectivo .modal-content {
+    animation: fadeInScaleEfectivo 0.3s ease-out;
+}
+
+@keyframes fadeInScaleEfectivo {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #modalDetalleEfectivo .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    #txtMontoEfectivo {
+        font-size: 1.1rem !important;
+    }
+}
+
+/* FIN ESTILOS MODAL DETALLE EFECTIVO */
+
+/* ════════════════════════════════════════════════════════════════
+   MODAL DETALLE TRANSFERENCIA - Z-INDEX Y ESTILOS
+   ════════════════════════════════════════════════════════════════ */
+
+/* Modal con z-index específico idéntico a Vale Compra y Efectivo */
+#modalDetalleTransferencia {
+    z-index: 5100 !important;
+}
+
+    #modalDetalleTransferencia.modal.show ~ .modal-backdrop {
+        z-index: 5099 !important;
+    }
+
+    #modalDetalleTransferencia .modal-dialog {
+        z-index: 5101 !important;
+    }
+
+/* ═══════════════════════════════════════════════════════════════
+   CAMPO: NRO TRANSFERENCIA
+   ═══════════════════════════════════════════════════════════════ */
+
+#txtNroTransferencia {
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 0.625rem 0.875rem !important;
+    border: 2px solid #DAA520 !important;
+}
+
+    #txtNroTransferencia:focus {
+        border-color: #B8860B !important;
+        box-shadow: 0 0 0 0.25rem rgba(184, 134, 11, 0.25) !important;
+        background-color: #FFFEF5 !important;
+    }
+
+    #txtNroTransferencia.is-invalid {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+        background-color: rgba(220, 53, 69, 0.05) !important;
+        animation: shakeInput 0.3s ease-in-out;
+    }
+
+    #txtNroTransferencia.is-valid {
+        border-color: #28a745 !important;
+        box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.15) !important;
+        background-color: rgba(40, 167, 69, 0.05) !important;
+    }
+
+/* ═══════════════════════════════════════════════════════════════
+   CAMPO: FECHA TRANSFERENCIA
+   ═══════════════════════════════════════════════════════════════ */
+
+#txtFechaTransferencia {
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    padding: 0.625rem 0.875rem !important;
+    border: 2px solid #DAA520 !important;
+}
+
+    #txtFechaTransferencia:focus {
+        border-color: #B8860B !important;
+        box-shadow: 0 0 0 0.25rem rgba(184, 134, 11, 0.25) !important;
+        background-color: #FFFEF5 !important;
+    }
+
+    #txtFechaTransferencia.is-invalid {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+        background-color: rgba(220, 53, 69, 0.05) !important;
+        animation: shakeInput 0.3s ease-in-out;
+    }
+
+    #txtFechaTransferencia.is-valid {
+        border-color: #28a745 !important;
+        box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.15) !important;
+        background-color: rgba(40, 167, 69, 0.05) !important;
+    }
+
+/* ═══════════════════════════════════════════════════════════════
+   CAMPO: MONTO TRANSFERENCIA (CON INPUTMASK)
+   ═══════════════════════════════════════════════════════════════ */
+
+#txtMontoTransferencia {
+    font-size: 1.3rem !important;
+    font-weight: 700 !important;
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+    padding: 0.75rem 1rem !important;
+    border: 2px solid #DAA520 !important;
+}
+
+    #txtMontoTransferencia:focus {
+        border-color: #B8860B !important;
+        box-shadow: 0 0 0 0.25rem rgba(184, 134, 11, 0.25) !important;
+        background-color: #FFFEF5 !important;
+    }
+
+    #txtMontoTransferencia.is-invalid {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+        background-color: rgba(220, 53, 69, 0.05) !important;
+        animation: shakeInput 0.3s ease-in-out;
+    }
+
+    #txtMontoTransferencia.is-valid {
+        border-color: #28a745 !important;
+        box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.15) !important;
+        background-color: rgba(40, 167, 69, 0.05) !important;
+    }
+
+/* ═══════════════════════════════════════════════════════════════
+   LABEL: INSTRUMENTO TRANSFERENCIA (BANCO)
+   ═══════════════════════════════════════════════════════════════ */
+
+#lblInstrumentoTransferencia {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MENSAJE DE ERROR
+   ═══════════════════════════════════════════════════════════════ */
+
+#errorMontoTransferencia {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BOTÓN GUARDAR
+   ═══════════════════════════════════════════════════════════════ */
+
+#btnGuardarDetalleTransferencia {
+    min-width: 120px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+    #btnGuardarDetalleTransferencia:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(218, 165, 32, 0.4);
+    }
+
+    #btnGuardarDetalleTransferencia:active {
+        transform: translateY(0);
+    }
+
+/* ═══════════════════════════════════════════════════════════════
+   ANIMACIÓN DE ENTRADA DEL MODAL
+   ═══════════════════════════════════════════════════════════════ */
+
+#modalDetalleTransferencia .modal-content {
+    animation: fadeInScaleTransferencia 0.3s ease-out;
+}
+
+@keyframes fadeInScaleTransferencia {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE PARA MODAL TRANSFERENCIA
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+    #modalDetalleTransferencia .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    #txtNroTransferencia,
+    #txtFechaTransferencia {
+        font-size: 1rem !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+
+    #txtMontoTransferencia {
+        font-size: 1.1rem !important;
+        padding: 0.625rem 0.875rem !important;
+    }
+
+    #lblInstrumentoTransferencia {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    #modalDetalleTransferencia .modal-content {
+        max-width: 100%;
+    }
+
+    #txtNroTransferencia,
+    #txtFechaTransferencia {
+        font-size: 0.95rem !important;
+        padding: 0.5rem 0.625rem !important;
+    }
+
+    #txtMontoTransferencia {
+        font-size: 1rem !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+
+    #lblInstrumentoTransferencia {
+        font-size: 0.95rem;
+    }
+
+    #btnGuardarDetalleTransferencia {
+        width: 100%;
+    }
+}
+
+/* FIN ESTILOS MODAL DETALLE TRANSFERENCIA *//* ═══════════════════════════════════════════════════════════════
+   MODAL DE PAGO - LAYOUT OPTIMIZADO EN 2 COLUMNAS (v19.4)
+   ══════════════════════════════════════════════════════════════
+   ✅ NUEVO: Estilos adicionales para layout en 2 columnas
+   ✅ Reutiliza clases existentes donde es posible
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ════════════════════════════════════════════════════════════════
+   TABLA DE CONCEPTOS DE PAGO - COLUMNA IZQUIERDA (OPTIMIZADA)
+   ════════════════════════════════════════════════════════════════ */
+
+/* ✅ NUEVO: Contenedor optimizado para 2 columnas */
+.table-pago-conceptos-optimizada {
+    max-height: calc(100vh - 320px); /* Altura dinámica según viewport */
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* ✅ NUEVO: Tabla de conceptos con tamaños reducidos */
+.table-pago-conceptos {
+    font-size: 0.95rem !important; /* ⬇️ Reducido de 1.1rem */
+}
+
+    .table-pago-conceptos tbody td {
+        padding: 0.5rem 0.5rem !important; /* ⬇️ Reducido */
+        font-size: 0.95rem !important;
+        vertical-align: middle;
+    }
+
+        .table-pago-conceptos tbody td.text-end {
+            font-size: 1.1rem !important; /* ⬇️ Reducido */
+            font-weight: 600 !important;
+        }
+
+/* ✅ NUEVO: Header compacto para conceptos */
+.table-header-pago-conceptos th {
+    padding: 0.5rem 0.5rem !important;
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%) !important;
+    color: #ffffff !important;
+}
+
+/* ✅ NUEVO: Filas específicas con fondos sutiles */
+.row-total-pagar-opt {
+    background-color: rgba(220, 53, 69, 0.08) !important;
+    border-top: 2px solid #dc3545 !important;
+    border-bottom: 2px solid #dc3545 !important;
+}
+
+.row-recargos-opt {
+    background-color: rgba(255, 193, 7, 0.06) !important;
+}
+
+.row-descuentos-opt {
+    background-color: rgba(23, 162, 184, 0.06) !important;
+}
+
+.row-total-valores-opt {
+    background-color: rgba(0, 123, 255, 0.08) !important;
+    border-top: 2px solid #007bff !important;
+    border-bottom: 2px solid #007bff !important;
+}
+
+.row-diferencia-opt {
+    background-color: rgba(40, 167, 69, 0.08) !important;
+    border-top: 3px solid #28a745 !important;
+    border-bottom: 3px solid #28a745 !important;
+}
+
+/* ✅ REUTILIZAR: Badges (ya definidos globalmente, solo ajustar tamaño) */
+.table-pago-conceptos .badge {
+    font-size: 0.9rem !important;
+    padding: 0.35em 0.65em !important;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   TABLA DE FORMAS DE PAGO - COLUMNA DERECHA (OPTIMIZADA)
+   ════════════════════════════════════════════════════════════════ */
+
+/* ✅ NUEVO: Contenedor optimizado para 2 columnas */
+.table-formas-pago-optimizada {
+    max-height: calc(100vh - 320px);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* ✅ NUEVO: Tabla de formas de pago con tamaños reducidos */
+.table-formas-pago {
+    font-size: 0.9rem !important;
+}
+
+    .table-formas-pago tbody td {
+        padding: 0.5rem 0.5rem !important;
+        font-size: 0.9rem !important;
+        vertical-align: middle;
+    }
+
+/* ✅ NUEVO: Header compacto para formas de pago */
+.table-header-formas-pago th {
+    padding: 0.5rem 0.5rem !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%) !important;
+    color: #ffffff !important;
+}
+
+/* ✅ REUTILIZAR: Hover en filas (ya existe en .table-golden tbody tr:hover) */
+.table-formas-pago tbody tr:hover {
+    background-color: rgba(218, 165, 32, 0.08) !important;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   BOTONES DE ACCIÓN - TAMAÑO OPTIMIZADO
+   ════════════════════════════════════════════════════════════════ */
+
+/* ✅ NUEVO: Variante optimizada de .btn-accion-pago */
+.btn-accion-pago-opt {
+    min-width: 140px; /* ⬇️ Reducido de 180px */
+    min-height: 90px; /* ⬇️ Reducido de 120px */
+    font-size: 1rem; /* ⬇️ Reducido de 1.2rem */
+    font-weight: 700;
+    text-transform: uppercase;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+}
+
+    .btn-accion-pago-opt i {
+        font-size: 2rem; /* ⬇️ Reducido de 2.5rem */
+    }
+
+    .btn-accion-pago-opt span {
+        font-size: 1.1rem; /* ⬇️ Reducido de 1.3rem */
+        display: block;
+    }
+
+    .btn-accion-pago-opt small {
+        font-size: 0.8rem; /* ⬇️ Reducido de 0.9rem */
+        font-weight: 400;
+        text-transform: none;
+        opacity: 0.9;
+    }
+
+    .btn-accion-pago-opt:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-accion-pago-opt:active {
+        transform: translateY(-2px);
+    }
+
+/* ════════════════════════════════════════════════════════════════
+   SCROLLBARS PERSONALIZADOS (REUTILIZA LOS EXISTENTES)
+   ════════════════════════════════════════════════════════════════ */
+
+.table-pago-conceptos-optimizada::-webkit-scrollbar,
+.table-formas-pago-optimizada::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.table-pago-conceptos-optimizada::-webkit-scrollbar-track,
+.table-formas-pago-optimizada::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.table-pago-conceptos-optimizada::-webkit-scrollbar-thumb,
+.table-formas-pago-optimizada::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #DAA520 0%, #B8860B 100%);
+    border-radius: 4px;
+    border: 2px solid #f8f9fa;
+}
+
+    .table-pago-conceptos-optimizada::-webkit-scrollbar-thumb:hover,
+    .table-formas-pago-optimizada::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #B8860B 0%, #DAA520 100%);
+    }
+
+/* ════════════════════════════════════════════════════════════════
+   RESPONSIVE PARA LAYOUT DE 2 COLUMNAS
+   ════════════════════════════════════════════════════════════════ */
+
+/* Tablets grandes (mantener 2 columnas) */
+@media (min-width: 992px) and (max-width: 1399px) {
+    .table-pago-conceptos,
+    .table-formas-pago {
+        font-size: 0.85rem !important;
+    }
+
+    .btn-accion-pago-opt {
+        min-width: 120px;
+        min-height: 80px;
+        font-size: 0.9rem;
+    }
+
+        .btn-accion-pago-opt i {
+            font-size: 1.75rem;
+        }
+}
+
+/* Tablets medianas y móviles (apilar verticalmente) */
+@media (max-width: 991px) {
+    /* Volver a layout vertical */
+    #modalPago .row > div {
+        width: 100% !important;
+        margin-bottom: 1rem;
+    }
+
+    /* Reducir altura máxima */
+    .table-pago-conceptos-optimizada,
+    .table-formas-pago-optimizada {
+        max-height: 300px;
+    }
+
+    /* Botones más compactos */
+    .btn-accion-pago-opt {
+        min-width: 100px;
+        min-height: 75px;
+        font-size: 0.85rem;
+    }
+
+        .btn-accion-pago-opt i {
+            font-size: 1.5rem;
+        }
+
+        .btn-accion-pago-opt span {
+            font-size: 0.95rem;
+        }
+
+        .btn-accion-pago-opt small {
+            font-size: 0.75rem;
+        }
+
+    /* Reducir gaps */
+    .d-flex.gap-3 {
+        gap: 0.75rem !important;
+    }
+}
+
+/* Móviles pequeños */
+@media (max-width: 576px) {
+    .table-pago-conceptos,
+    .table-formas-pago {
+        font-size: 0.8rem !important;
+    }
+
+    .table-pago-conceptos-optimizada,
+    .table-formas-pago-optimizada {
+        max-height: 250px;
+    }
+
+    .btn-accion-pago-opt {
+        width: 100%;
+        min-height: 70px;
+        flex-direction: row;
+        gap: 0.5rem;
+    }
+
+        .btn-accion-pago-opt i {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+        }
+
+        .btn-accion-pago-opt span {
+            font-size: 0.9rem;
+        }
+
+        .btn-accion-pago-opt small {
+            display: none; /* Ocultar texto secundario en móvil */
+        }
+
+    .d-flex.gap-3 {
+        flex-direction: column;
+        gap: 0.5rem !important;
+    }
+}
+
+/* FIN ESTILOS MODAL PAGO OPTIMIZADO v19.4 */

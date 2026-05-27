@@ -1,0 +1,283 @@
+﻿@*
+    ═══════════════════════════════════════════════════════════════
+    Modal de Instrumentos - Cupones/Órdenes de Empresas (Mutuales)
+    ═══════════════════════════════════════════════════════════════
+
+    DESCRIPCIÓN:
+    Modal para seleccionar la mutual o empresa emisora de la orden/cupón.
+    Muestra lista de mutuales y empresas con su importe disponible.
+
+    INTERACCIÓN:
+    - Selección por DOBLE CLIC sobre la mutual/empresa
+    - Ítem seleccionado se resalta en azul
+    - Al confirmar, se abre el modal de detalle
+
+    EVENTOS:
+    - Manejados en pagoFactura.js
+*@
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- MODAL: INSTRUMENTOS CUPONES EMPRESA -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="modal fade" 
+     id="modalInstrumentosCuponEmpresa" 
+     tabindex="-1" 
+     role="dialog" 
+     aria-labelledby="modalInstrumentosCuponEmpresaLabel" 
+     aria-hidden="true" 
+     data-bs-backdrop="static" 
+     data-bs-keyboard="false">
+
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 700px;">
+        <div class="modal-content modal-golden">
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- HEADER -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-header bg-gradient-golden">
+                <h5 class="modal-title" id="modalInstrumentosCuponEmpresaLabel">
+                    <i class="bx bx-buildings me-2"></i>
+                    Instrumentos - Mutuales y Empresas
+                </h5>
+                <button type="button" 
+                        class="btn-close" 
+                        data-bs-dismiss="modal" 
+                        aria-label="Cerrar"></button>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- BODY -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-body p-0">
+
+                <!-- Header de Columnas -->
+                <div class="bg-light border-bottom py-2 px-3 d-flex">
+                    <div class="flex-grow-1">
+                        <strong class="text-muted">Instrumento</strong>
+                    </div>
+                    <div style="width: 150px; text-align: right;">
+                        <strong class="text-muted">Importe</strong>
+                    </div>
+                </div>
+
+                <!-- Lista de Mutuales/Empresas -->
+                <div id="listaInstrumentosCupon" 
+                     class="list-group list-group-flush" 
+                     style="max-height: 500px; overflow-y: auto;">
+
+                    <!-- MUTUAL UP.C.N -->
+                    <div class="list-group-item list-group-item-action instrumento-cupon-item d-flex align-items-center" 
+                         data-cupon-id="MUTUAL_UPCN" 
+                         data-cupon-desc="MUTUAL UP.C.N"
+                         data-cupon-importe="0.00"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-buildings me-2 text-info"></i>
+                            <span>MUTUAL UP.C.N</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="fw-bold text-info">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- ORDEN COMPRA CHICONI -->
+                    <div class="list-group-item list-group-item-action instrumento-cupon-item d-flex align-items-center" 
+                         data-cupon-id="ORDEN_CHICONI" 
+                         data-cupon-desc="ORDEN COMPRA CHICONI"
+                         data-cupon-importe="0.00"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-purchase-tag me-2 text-info"></i>
+                            <span>ORDEN COMPRA CHICONI</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="fw-bold text-info">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- ORDEN COMPRA ENAV -->
+                    <div class="list-group-item list-group-item-action instrumento-cupon-item d-flex align-items-center" 
+                         data-cupon-id="ORDEN_ENAV" 
+                         data-cupon-desc="ORDEN COMPRA ENAV"
+                         data-cupon-importe="0.00"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-purchase-tag me-2 text-info"></i>
+                            <span>ORDEN COMPRA ENAV</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="fw-bold text-info">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- ORDEN COMPRA SEP -->
+                    <div class="list-group-item list-group-item-action instrumento-cupon-item d-flex align-items-center" 
+                         data-cupon-id="ORDEN_SEP" 
+                         data-cupon-desc="ORDEN COMPRA SEP (SIND EMPLEADOS PUBLICOS)"
+                         data-cupon-importe="0.00"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-purchase-tag me-2 text-info"></i>
+                            <span>ORDEN COMPRA SEP (SIND EMPLEADOS PUBLICOS)</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="fw-bold text-info">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- ORDEN COMPRA TCA 2014 -->
+                    <div class="list-group-item list-group-item-action instrumento-cupon-item d-flex align-items-center" 
+                         data-cupon-id="ORDEN_TCA_2014" 
+                         data-cupon-desc="ORDEN COMPRA TCA 2014"
+                         data-cupon-importe="0.00"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-purchase-tag me-2 text-info"></i>
+                            <span>ORDEN COMPRA TCA 2014</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="fw-bold text-info">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- ORDEN DE COMPRA -->
+                    <div class="list-group-item list-group-item-action instrumento-cupon-item d-flex align-items-center" 
+                         data-cupon-id="ORDEN_COMPRA" 
+                         data-cupon-desc="ORDEN DE COMPRA"
+                         data-cupon-importe="0.00"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-purchase-tag me-2 text-info"></i>
+                            <span>ORDEN DE COMPRA</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="fw-bold text-info">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- ORDEN DE COMPRA CARMAR -->
+                    <div class="list-group-item list-group-item-action instrumento-cupon-item d-flex align-items-center" 
+                         data-cupon-id="ORDEN_CARMAR" 
+                         data-cupon-desc="ORDEN DE COMPRA CARMAR"
+                         data-cupon-importe="0.00"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-purchase-tag me-2 text-info"></i>
+                            <span>ORDEN DE COMPRA CARMAR</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="fw-bold text-info">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- ORDEN DE COMPRA HUARPE -->
+                    <div class="list-group-item list-group-item-action instrumento-cupon-item d-flex align-items-center" 
+                         data-cupon-id="ORDEN_HUARPE" 
+                         data-cupon-desc="ORDEN DE COMPRA HUARPE"
+                         data-cupon-importe="0.00"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-purchase-tag me-2 text-info"></i>
+                            <span>ORDEN DE COMPRA HUARPE</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="fw-bold text-info">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- ORDEN DE COMPRA TRIELEC -->
+                    <div class="list-group-item list-group-item-action instrumento-cupon-item d-flex align-items-center" 
+                         data-cupon-id="ORDEN_TRIELEC" 
+                         data-cupon-desc="ORDEN DE COMPRA TRIELEC"
+                         data-cupon-importe="0.00"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-purchase-tag me-2 text-info"></i>
+                            <span>ORDEN DE COMPRA TRIELEC</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="fw-bold text-info">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- ORDEN DE COMPRA VFG -->
+                    <div class="list-group-item list-group-item-action instrumento-cupon-item d-flex align-items-center" 
+                         data-cupon-id="ORDEN_VFG" 
+                         data-cupon-desc="ORDEN DE COMPRA VFG"
+                         data-cupon-importe="0.00"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-purchase-tag me-2 text-info"></i>
+                            <span>ORDEN DE COMPRA VFG</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="fw-bold text-info">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- ORDEN ENTRETELAS -->
+                    <div class="list-group-item list-group-item-action instrumento-cupon-item d-flex align-items-center" 
+                         data-cupon-id="ORDEN_ENTRETELAS" 
+                         data-cupon-desc="ORDEN ENTRETELAS"
+                         data-cupon-importe="0.00"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-purchase-tag me-2 text-info"></i>
+                            <span>ORDEN ENTRETELAS</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="fw-bold text-info">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- VALE COMPRA TERAPIA POLIVALENTE -->
+                    <div class="list-group-item list-group-item-action instrumento-cupon-item d-flex align-items-center" 
+                         data-cupon-id="VALE_TERAPIA" 
+                         data-cupon-desc="VALE COMPRA TERAPIA POLIVALENTE"
+                         data-cupon-importe="0.00"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <div class="flex-grow-1">
+                            <i class="bx bx-gift me-2 text-info"></i>
+                            <span>VALE COMPRA TERAPIA POLIVALENTE</span>
+                        </div>
+                        <div style="width: 150px; text-align: right;">
+                            <span class="fw-bold text-info">0.00</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Estado: Sin cupones -->
+                <div id="sinCuponesEmpresa" class="text-center py-5 text-muted d-none">
+                    <i class="bx bx-exclamation-circle bx-lg mb-3"></i>
+                    <p>No hay cupones o órdenes de empresas disponibles.</p>
+                </div>
+
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- FOOTER -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-footer bg-light">
+                <button type="button" 
+                        class="btn btn-secondary" 
+                        data-bs-dismiss="modal">
+                    <i class="bx bx-x me-1"></i>
+                    Cancelar
+                </button>
+                <button type="button" 
+                        class="btn btn-golden" 
+                        id="btnConfirmarCuponEmpresa" 
+                        disabled>
+                    <i class="bx bx-check me-1"></i>
+                    Confirmar
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>

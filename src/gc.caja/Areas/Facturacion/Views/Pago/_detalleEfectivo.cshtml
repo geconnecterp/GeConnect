@@ -1,0 +1,111 @@
+﻿@*
+    ═══════════════════════════════════════════════════════════════
+    Modal de Detalle - Efectivo
+    ═══════════════════════════════════════════════════════════════
+
+    DESCRIPCIÓN:
+    Modal simple para ingresar el monto en efectivo.
+
+    CAMPOS:
+    - Monto: valor del pago en efectivo
+
+    EVENTOS:
+    - Manejados en pagoFactura.js
+*@
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- MODAL: DETALLE EFECTIVO -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="modal fade" 
+     id="modalDetalleEfectivo" 
+     tabindex="-1" 
+     role="dialog" 
+     aria-labelledby="modalDetalleEfectivoLabel" 
+     aria-hidden="true" 
+     data-bs-backdrop="static" 
+     data-bs-keyboard="false">
+
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 500px;">
+        <div class="modal-content modal-golden">
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- HEADER -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-header bg-gradient-golden">
+                <h5 class="modal-title" id="modalDetalleEfectivoLabel">
+                    <i class="bx bx-money-bill-wave me-2"></i>
+                    Detalle - Efectivo
+                </h5>
+                <button type="button" 
+                        class="btn-close" 
+                        data-bs-dismiss="modal" 
+                        aria-label="Cerrar"></button>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- BODY -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-body">
+
+                <form id="formDetalleEfectivo">
+
+                    <!-- Información del Tipo e Instrumento -->
+                    <div class="alert alert-info d-flex align-items-center mb-3">
+                        <i class="bx bx-info-circle me-2"></i>
+                        <div>
+                            <strong id="lblTipoMedioPagoEfectivo">-</strong> 
+                            <span class="mx-2">|</span>
+                            <span id="lblInstrumentoEfectivo">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Campo: Monto -->
+                    <div class="mb-3">
+                        <label for="txtMontoEfectivo" class="form-label fw-bold">
+                            Monto <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-golden text-white">
+                                <i class="bx bx-dollar"></i>
+                            </span>
+                            <input type="text"
+                                   class="form-control form-control-lg text-end jsteclado jsdecimal"
+                                   id="txtMontoEfectivo"
+                                   name="monto"
+                                   placeholder="$ 0,00"
+                                   required
+                                   autocomplete="off"
+                                   autofocus>
+                        </div>
+                        <div class="form-text"><i class="bx bx-info-circle"></i> Ingrese el monto del pago en efectivo</div>
+                    </div>
+
+                </form>
+
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- FOOTER -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-footer bg-light">
+                <button type="button" 
+                        class="btn btn-secondary" 
+                        data-bs-dismiss="modal">
+                    <i class="bx bx-x me-1"></i>
+                    Cancelar
+                </button>
+                <button type="button" 
+                        class="btn btn-golden" 
+                        id="btnGuardarDetalleEfectivo">
+                    <i class="bx bx-save me-1"></i>
+                    Guardar
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>

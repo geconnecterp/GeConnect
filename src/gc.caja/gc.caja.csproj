@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Areas\Facturacion\Views\Cliente\**" />
+    <Content Remove="Areas\Facturacion\Views\Cliente\**" />
+    <EmbeddedResource Remove="Areas\Facturacion\Views\Cliente\**" />
+    <None Remove="Areas\Facturacion\Views\Cliente\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="log4net.config" />
     <Content Remove="Views\Shared\_ModalTecladoDemo.cshtml" />
   </ItemGroup>
@@ -14,7 +21,6 @@
   <ItemGroup>
     <Folder Include="Areas\Facturacion\Data\" />
     <Folder Include="Areas\Facturacion\Models\" />
-    <Folder Include="Areas\Facturacion\Views\Cliente\" />
     <Folder Include="Areas\Seguridad\Data\" />
     <Folder Include="Areas\Seguridad\Models\" />
   </ItemGroup>

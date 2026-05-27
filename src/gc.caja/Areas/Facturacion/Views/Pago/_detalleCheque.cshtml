@@ -1,0 +1,167 @@
+﻿@*
+    ═══════════════════════════════════════════════════════════════
+    Modal de Detalle - Cheque
+    ═══════════════════════════════════════════════════════════════
+
+    DESCRIPCIÓN:
+    Modal para ingresar los datos de un cheque.
+
+    CAMPOS:
+    - Banco
+    - N° CH (Número de Cheque)
+    - Fecha
+    - Monto
+
+    EVENTOS:
+    - Manejados en pagoFactura.js
+*@
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- MODAL: DETALLE CHEQUE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="modal fade" 
+     id="modalDetalleCheque" 
+     tabindex="-1" 
+     role="dialog" 
+     aria-labelledby="modalDetalleChequeLabel" 
+     aria-hidden="true" 
+     data-bs-backdrop="static" 
+     data-bs-keyboard="false">
+
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 600px;">
+        <div class="modal-content modal-golden">
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- HEADER -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-header bg-gradient-golden">
+                <h5 class="modal-title" id="modalDetalleChequeLabel">
+                    <i class="bx bx-money-check me-2"></i>
+                    Detalle - Cheque
+                </h5>
+                <button type="button" 
+                        class="btn-close" 
+                        data-bs-dismiss="modal" 
+                        aria-label="Cerrar"></button>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- BODY -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-body">
+
+                <form id="formDetalleCheque">
+
+                    <!-- Información del Tipo e Instrumento -->
+                    <div class="alert alert-info d-flex align-items-center mb-3">
+                        <i class="bx bx-info-circle me-2"></i>
+                        <div>
+                            <strong id="lblTipoMedioPagoCheque">-</strong> 
+                            <span class="mx-2">|</span>
+                            <span id="lblInstrumentoCheque">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Campo: Banco -->
+                    <div class="mb-3">
+                        <label for="txtBancoCheque" class="form-label fw-bold">
+                            Banco <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bx bx-building"></i>
+                            </span>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="txtBancoCheque" 
+                                   name="banco"
+                                   placeholder="Nombre del banco" 
+                                   required 
+                                   autofocus>
+                        </div>
+                    </div>
+
+                    <!-- Campo: N° CH -->
+                    <div class="mb-3">
+                        <label for="txtNroCheque" class="form-label fw-bold">
+                            N° CH <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bx bx-hash"></i>
+                            </span>
+                            <input type="text" 
+                                   class="form-control jsteclado jsinteger"
+                                   id="txtNroCheque" 
+                                   name="numeroCheque"
+                                   placeholder="Número de cheque" 
+                                   required>
+                        </div>
+                    </div>
+
+                    <!-- Campo: Fecha -->
+                    <div class="mb-3">
+                        <label for="txtFechaCheque" class="form-label fw-bold">
+                            Fecha <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bx bx-calendar"></i>
+                            </span>
+                            <input type="date" 
+                                   class="form-control" 
+                                   id="txtFechaCheque" 
+                                   name="fecha"
+                                   required>
+                        </div>
+                    </div>
+
+                    <!-- Campo: Monto -->
+                    <div class="mb-3">
+                        <label for="txtMontoCheque" class="form-label fw-bold">
+                            Monto <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bx bx-dollar"></i>
+                            </span>
+                            <input type="number" 
+                                   class="form-control jsteclado jsdecimal"
+                                   id="txtMontoCheque" 
+                                   name="monto"
+                                   placeholder="0.00" 
+                                   step="0.01" 
+                                   min="0.01"
+                                   required>
+                        </div>
+                    </div>
+
+                </form>
+
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- FOOTER -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-footer bg-light">
+                <button type="button" 
+                        class="btn btn-secondary" 
+                        data-bs-dismiss="modal">
+                    <i class="bx bx-x me-1"></i>
+                    Cancelar
+                </button>
+                <button type="button" 
+                        class="btn btn-golden" 
+                        id="btnGuardarDetalleCheque">
+                    <i class="bx bx-save me-1"></i>
+                    Guardar
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>

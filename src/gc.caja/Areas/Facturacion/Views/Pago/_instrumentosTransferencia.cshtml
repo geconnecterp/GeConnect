@@ -1,0 +1,125 @@
+﻿@*
+    ═══════════════════════════════════════════════════════════════
+    Modal de Instrumentos - Transferencias Bancarias
+    ═══════════════════════════════════════════════════════════════
+
+    DESCRIPCIÓN:
+    Modal para seleccionar el banco destino de la transferencia.
+    Lista los bancos configurados en el sistema.
+
+    INTERACCIÓN:
+    - Selección por DOBLE CLIC sobre el banco
+    - Ítem seleccionado se resalta en azul
+    - Al confirmar, se abre el modal de detalle de transferencia
+
+    EVENTOS:
+    - Manejados en pagoFactura.js
+*@
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- MODAL: INSTRUMENTOS TRANSFERENCIA -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="modal fade" 
+     id="modalInstrumentosTransferencia" 
+     tabindex="-1" 
+     role="dialog" 
+     aria-labelledby="modalInstrumentosTransferenciaLabel" 
+     aria-hidden="true" 
+     data-bs-backdrop="static" 
+     data-bs-keyboard="false">
+
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 600px;">
+        <div class="modal-content modal-golden">
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- HEADER -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-header bg-gradient-golden">
+                <h5 class="modal-title" id="modalInstrumentosTransferenciaLabel">
+                    <i class="bx bx-building me-2"></i>
+                    Instrumentos - Bancos
+                </h5>
+                <button type="button" 
+                        class="btn-close" 
+                        data-bs-dismiss="modal" 
+                        aria-label="Cerrar"></button>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- BODY -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-body p-0">
+
+                <!-- Header de Columna -->
+                <div class="bg-light border-bottom py-2 px-3">
+                    <strong class="text-muted">Instrumento</strong>
+                </div>
+
+                <!-- Lista de Bancos -->
+                <div id="listaInstrumentosTransferencia" 
+                     class="list-group list-group-flush" 
+                     style="max-height: 500px; overflow-y: auto;">
+
+                    <!-- Banco San Juan -->
+                    <div class="list-group-item list-group-item-action instrumento-transferencia-item" 
+                         data-banco-id="BANCO_SAN_JUAN" 
+                         data-banco-desc="Banco San Juan"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <i class="bx bx-building me-2 text-primary"></i>
+                        <span>Banco San Juan</span>
+                    </div>
+
+                    <!-- Banco Galicia Cuenta -->
+                    <div class="list-group-item list-group-item-action instrumento-transferencia-item" 
+                         data-banco-id="BANCO_GALICIA" 
+                         data-banco-desc="Banco Galicia Cuenta"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <i class="bx bx-building me-2 text-primary"></i>
+                        <span>Banco Galicia Cuenta</span>
+                    </div>
+
+                    <!-- Banco Macro -->
+                    <div class="list-group-item list-group-item-action instrumento-transferencia-item" 
+                         data-banco-id="BANCO_MACRO" 
+                         data-banco-desc="Banco Macro"
+                         style="cursor: pointer; transition: all 0.2s ease;">
+                        <i class="bx bx-building me-2 text-primary"></i>
+                        <span>Banco Macro</span>
+                    </div>
+
+                </div>
+
+                <!-- Estado: Sin bancos -->
+                <div id="sinBancosTransferencia" class="text-center py-5 text-muted d-none">
+                    <i class="bx bx-exclamation-circle bx-lg mb-3"></i>
+                    <p>No hay bancos configurados para transferencias.</p>
+                </div>
+
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- FOOTER -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+
+            <div class="modal-footer bg-light">
+                <button type="button" 
+                        class="btn btn-secondary" 
+                        data-bs-dismiss="modal">
+                    <i class="bx bx-x me-1"></i>
+                    Cancelar
+                </button>
+                <button type="button" 
+                        class="btn btn-golden" 
+                        id="btnConfirmarBancoTransferencia" 
+                        disabled>
+                    <i class="bx bx-check me-1"></i>
+                    Confirmar
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
