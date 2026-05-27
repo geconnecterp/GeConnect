@@ -15,6 +15,7 @@ using gc.infraestructura.Dtos.Almacen.Response;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
+using gc.infraestructura.Dtos.Almacen.Tr.Transferencia.Request;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.General;
@@ -102,6 +103,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string TR_AUT_Sustituto = "/TRObtenerSustituto";
 		private const string TR_AUT_Confirma_Auto = "/TRConfirmaAutorizaciones";
 		private const string TR_Ver_Conteos = "/TRVerConteos";
+		private const string TR_Lista = "/TRObtenerLista";
 		private const string TR_Validar_Transferencia = "/TRValidarTransferencia";
 		private const string PI_Detalle = "/PIDetalle";
 		private const string PI_Confirmar = "/confirmar-pedido-interno";
@@ -2966,6 +2968,37 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 				return new() { Ok = false, Mensaje = "Error" };
+			}
+		}
+
+		public async Task<List<TRObtenerListaDto>> TRObtenerLista(TRObtenerListaRequest req, string token)
+		{
+			ApiResponse<List<TRObtenerListaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(req, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaApiAlmacen}{TR_Lista}";
+
+			response = await client.PostAsync(link, contentData);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TRObtenerListaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
 			}
 		}
 	}

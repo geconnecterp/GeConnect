@@ -1,9 +1,13 @@
 ﻿using gc.api.core.Contratos.Servicios;
+using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
+using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
+using gc.infraestructura.Dtos.Almacen.Tr.Transferencia.Request;
 using gc.infraestructura.Dtos.Deposito;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -186,6 +190,23 @@ namespace gc.api.Controllers.Almacen
 			var lista = _almSv.ObtenerInfoDeBox(boxId);
 			var response = new ApiResponse<List<DepositoInfoBoxDto>>(lista);
 			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<TRObtenerListaDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public ActionResult<TRObtenerListaDto> TRObtenerLista(TRObtenerListaRequest req)
+		{
+			if (req == null)
+				return BadRequest("Request nulo.");
+			
+            var resultado = _almSv.TRObtenerLista(req);
+
+			if (resultado == null)
+				return BadRequest("no se obtuvieron datos.");
+
+			return Ok(new ApiResponse<List<TRObtenerListaDto>>(resultado));
 		}
 	}
 }

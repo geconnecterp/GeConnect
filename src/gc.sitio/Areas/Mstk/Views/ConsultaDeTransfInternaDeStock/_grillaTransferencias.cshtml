@@ -1,0 +1,56 @@
+﻿@using gc.infraestructura.Helpers
+@using gc.infraestructura.Dtos.Almacen.Tr.Transferencia
+@model GridCoreSmart<TRObtenerListaDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+</style>
+<div class="table-responsive table-wrapper-700">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbTransferencias">
+		<thead class="sticky-top table-golden-header-compact">
+			<tr class="header">
+				<th class="text-center">TR N°</th>
+				<th class="text-center">Tipo</th>
+				<th class="text-center">Fecha</th>
+				<th class="text-center">Origen</th>
+				<th class="text-center">Cargado Por</th>
+				<th class="text-center">Destino</th>
+				<th class="text-center">PI</th>
+				<th class="text-center">Rem. Interno</th>
+				<th class="text-center">Rem. N°</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+			{
+				<tr class="fila-vacia">
+					<td colspan="9" class="text-center text-muted py-2">
+						<i class="bx bx-info-circle me-1"></i>
+						No hay items para mostrar.
+					</td>
+				</tr>
+			}
+			else
+			{
+				foreach (var item in Model.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase row-transferencia"
+						data-ti="@item.ti">
+						<td class="text-center">@item.ti</td>
+						<td class="text-start">@item.tit_desc</td>
+						<td class="text-center">@item.fecha.ToString("dd/MM/yyyy")</td>
+						<td class="text-start">@item.adm_nombre_gen</td>
+						<td class="text-start">@item.usu_apellidoynombre</td>
+						<td class="text-start">@item.adm_nombre_des</td>
+						<td class="text-center">@item.pi_compte</td>
+						<td class="text-center">@item.re_compte</td>
+						<td class="text-center">@item.pv_compte</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

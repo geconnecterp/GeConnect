@@ -4,6 +4,8 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
+using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
+using gc.infraestructura.Dtos.Almacen.Tr.Transferencia.Request;
 using gc.infraestructura.Dtos.Deposito;
 using gc.infraestructura.Dtos.Gen;
 using Microsoft.Data.SqlClient;
@@ -160,6 +162,24 @@ namespace gc.api.core.Servicios
 			};
 
 			List<DepositoInfoBoxDto> response = _repository.EjecutarLstSpExt<DepositoInfoBoxDto>(sp, ps, true);
+
+			return response;
+		}
+
+		public List<TRObtenerListaDto> TRObtenerLista(TRObtenerListaRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Lista;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@tit_id",request.tit_id),
+				new SqlParameter("@adm_id_gen",request.adm_id_gen),
+				new SqlParameter("@adm_id_des",request.adm_id_des),
+				new SqlParameter("@desde",request.desde),
+				new SqlParameter("@hasta",request.hasta),
+			};
+
+			List<TRObtenerListaDto> response = _repository.EjecutarLstSpExt<TRObtenerListaDto>(sp, ps, true);
 
 			return response;
 		}

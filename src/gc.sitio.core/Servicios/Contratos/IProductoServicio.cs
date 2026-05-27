@@ -1,21 +1,22 @@
-﻿using gc.infraestructura.Dtos.Almacen;
+﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Dtos.ABM;
+using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
+using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
 using gc.infraestructura.Dtos.Almacen.Info;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Response;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
+using gc.infraestructura.Dtos.Almacen.Tr.Transferencia.Request;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.General;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
-using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
-using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
-using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
-using gc.infraestructura.Core.EntidadesComunes;
 using Microsoft.Win32;
-using gc.infraestructura.Dtos.ABM;
+using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 
 namespace gc.sitio.core.Servicios.Contratos
 {
@@ -114,5 +115,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<RespuestaGenerica<RespuestaDto>> ConfirmarPedidoInterno(ConfirmarPedidoInternoRequest request, string token);
 		Task<RespuestaGenerica<PedidoInternoListaDto>> PedidosInternosLista(QueryFilters request, string token);
 		Task<RespuestaGenerica<RespuestaDto>> CambiarEstadoPedidoInterno(PedidoInternoCambiarEstadoRequest request, string token);
+		Task<List<TRObtenerListaDto>> TRObtenerLista(TRObtenerListaRequest req, string token);
 	}
 }

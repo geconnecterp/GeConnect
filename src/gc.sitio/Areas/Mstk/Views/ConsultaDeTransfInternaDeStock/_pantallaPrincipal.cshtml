@@ -1,0 +1,89 @@
+﻿@using gc.sitio.Areas.Consultas
+@using gc.sitio.Areas.Mstk.Models.ConsultaDeTransfInternaDeStock
+@model PrincipalConsTransfIntDeStkModel
+@{
+}
+<style>
+	.tab-disabled {
+		pointer-events: none;
+		opacity: 0.5;
+	}
+
+	.tab-content-compact {
+		/* padding: 0.75rem 0; */
+		border-radius: 0.375rem;
+		background-color: transparent;
+		padding-bottom: 0.75rem;
+		padding-right: 0;
+		padding-left: 0;
+		padding-top: 0.25rem;
+	}
+</style>
+<div class="container-fluid min-vh-100 d-flex flex-column">
+	<div class="row mb-1">
+		<div class="col-12">
+			<div class="p-1 border rounded bg-light">
+				<div class="d-flex flex-column gap-1">
+
+					<!-- Línea 1: Sucursales envío / recepción -->
+					<div class="d-flex justify-content-between">
+						<div class="pe-4">
+							<strong>Sucursales de envío:</strong> @Model.SucursalesEnv
+						</div>
+						<div class="ps-4 text-end">
+							<strong>Sucursales de recepción:</strong> @Model.SucursalesRec
+						</div>
+					</div>
+
+					<!-- Línea 2: Tipos + Fechas -->
+					<div class="d-flex justify-content-between align-items-center">
+						<div class="pe-4">
+							<strong>Tipos:</strong> @Model.Tipos
+						</div>
+
+						<div class="d-flex gap-4 ps-4">
+							<div><strong>Desde:</strong> @Model.Desde.ToString("dd/MM/yyyy")</div>
+							<div><strong>Hasta:</strong> @Model.Hasta.ToString("dd/MM/yyyy")</div>
+						</div>
+					</div>
+
+				</div>
+
+
+			</div>
+		</div>
+	</div>
+	<div class="d-flex align-items-center w-100 mt-2">
+		<ul class="nav nav-tabs nav-tabs-golden" role="tablist" id="tabsReporteTransfIntDeStockPrincipal">
+			<li class="nav-item" role="presentation" id="tabTransferencias">
+				<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-trans" aria-controls="navs-top-trans" aria-selected="true" id="btnTabTransfererencias">
+					Transferencias
+				</button>
+			</li>
+			<li class="nav-item" role="presentation" id="tabConteos">
+				<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-cont" aria-controls="navs-top-cont" aria-selected="false" tabindex="-1" id="btnTabConteos">
+					Conteos
+				</button>
+			</li>
+			<li class="nav-item" role="presentation" id="tabRemito">
+				<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-rem" aria-controls="navs-top-rem" aria-selected="false" tabindex="-1" id="btnTabRemito">
+					Remito
+				</button>
+			</li>
+		</ul>
+	</div>
+	<div class="tab-content tab-content-compact">
+		<div class="tab-pane fade tab-content-golden show active" id="navs-top-trans" role="tabpanel">
+			<div id="divTransferencias">
+			</div>
+		</div>
+		<div class="tab-pane fade tab-content-golden" id="navs-top-cont" role="tabpanel">
+			<div id="divConteos">
+			</div>
+		</div>
+		<div class="tab-pane fade tab-content-golden" id="navs-top-rem" role="tabpanel">
+			<div id="divRemito">
+			</div>
+		</div>
+	</div>
+</div>

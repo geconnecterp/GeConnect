@@ -281,6 +281,7 @@
 			public const string SP_PI_Estados = "SPGECO_PI_Estados";
 			public const string SP_PI_Cerrar = "SPGECO_PI_Cerrar";
 			public const string SP_PI_Anular = "SPGECO_PI_Anular";
+			public const string SP_TR_Lista = "SPGECO_TR_Lista";
 
 			#region Financieros
 			public const string SP_F_TR_CONFIRMA = "SPGECO_F_TR_Confirma";
@@ -578,6 +579,7 @@
 			public const string SP_TIPO_MOV_STK = "SPGECO_Tipos_Mov_Stk";
 			public const string SP_INV_ESTADOS = "SPGECO_INV_Estados";
 			public const string SP_INV_TIPOS = "SPGECO_INV_Tipos";
+			public const string SP_TR_TIPOS = "SPGECO_TR_Tipos";
 			#endregion
 
 			public const string SP_SECTORES_LISTA = "SPGECO_Sectores_Lista";

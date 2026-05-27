@@ -1,6 +1,8 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
+using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
+using gc.infraestructura.Dtos.Almacen.Tr.Transferencia.Request;
 using gc.infraestructura.Dtos.Deposito;
 using gc.infraestructura.Dtos.Gen;
 
@@ -17,5 +19,6 @@ namespace gc.api.core.Contratos.Servicios
         List<TiListaProductoDto> BuscaTIListaProductos(string admId, string usuId, string ti, string boxid, string rubroid);
         List<DepositoInfoBoxDto> ObtenerListaDeBoxesPorDeposito(string depoId);
 		List<DepositoInfoBoxDto> ObtenerInfoDeBox(string boxId);
+        List<TRObtenerListaDto> TRObtenerLista(TRObtenerListaRequest request);
 	}
 }

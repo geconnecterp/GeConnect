@@ -1,0 +1,265 @@
+﻿var sucEnvIdsList = [];
+var sucRecIdsList = [];
+var tiposIdsList = [];
+
+const TabToTableMap = {
+	"navs-top-trans": "#tbTransferencias",
+	"navs-top-cont": "#tbConteos",
+	"navs-top-rem": "#tbRemito"
+};
+
+$(function () {
+
+	InicializarCamposEnFiltros();
+
+	$(document).on("change", "#listaSucursalesEnvia", ControlalistaSucursalesEnviaSelected);
+	$(document).on("change", "#listaSucursalesRecibe", ControlalistaSucursalesRecibeSelected);
+	$(document).on("change", "#listaTipos", ControlalistaTiposSelected);
+
+	$("#SucursalesEnviaList").on("dblclick", 'option', function () { $(this).remove(); })
+	$("#SucursalesRecibeList").on("dblclick", 'option', function () { $(this).remove(); })
+	$("#TiposList").on("dblclick", 'option', function () { $(this).remove(); })
+
+	$("#btnFiltro").on("click", function () {
+		if ($("#divFiltros").hasClass("show")) {
+			$("#divFiltros").collapse("hide");
+			$("#divDetalle").collapse("show");
+		}
+		else {
+			$("#divFiltros").collapse("show");
+			$("#divDetalle").collapse("hide");
+		}
+	});
+
+	$("#btnBuscar").on("click", function () {
+		InicializarPantallaPrincipal();
+	});
+});
+
+
+function EvaluarBotonImprimir(tabId) {
+	console.log("Evaluando botón imprimir para tab:", tabId);
+	const tablaSelector = TabToTableMap[tabId];
+	if (!tablaSelector) {
+		console.log("tablaSelector:", tablaSelector);
+		$("#btnImprimir").hide();
+		return;
+	}
+
+	const $tabla = $(tablaSelector);
+
+	// Si la tabla no existe o no tiene filas de datos
+	if ($tabla.length === 0 || $tabla.find("tbody tr").length === 0) {
+		console.log("$tabla.length:", $tabla.length);
+		console.log("$tabla.find(tbody tr).length:", $tabla.find("tbody tr").length);
+		$("#btnImprimir").hide();
+		return;
+	}
+
+	// Si tiene datos → mostrar botón
+	$("#btnImprimir").show();
+
+	// Guardamos el tab actual para imprimir
+	$("#btnImprimir").data("tab-activo", tabId);
+}
+
+function InicializarPantallaPrincipal() {
+	var tipos = $("#listaTipos").val();
+	
+	if (!tipos || tipos == null || tipos == undefined || tipos == "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar al menos un Tipo", function () {
+			$("#msjModal").modal("hide");
+			$("#listaTipos").trigger('focus');
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		var sucEnv = ObtenerSucursalesSeleccionadasConTexto("SucursalesEnviaList", "listaSucursalesEnvia");
+		var sucRec = ObtenerSucursalesSeleccionadasConTexto("SucursalesRecibeList", "listaSucursalesRecibe");
+		var sucursalesEnvText = sucEnv.textos;
+		var sucursalesRecText = sucRec.textos;
+		var tiposText = $("#listaTipos option:selected").text();
+		sucEnvIdsList = sucEnv.ids;
+		sucRecIdsList = sucRec.ids;
+		tiposIdsList = tipos;
+		var desde = $("#Desde").val();
+		var hasta = $("#Hasta").val();
+		AbrirWaiting("Cargando información...");
+		PostGenHtml({ sucursalesEnvText, sucursalesRecText, tiposText, desde, hasta }, inicializarPantallPrincipalURL, function (obj) {
+			$("#divDetalle").html(obj);
+			$(document).on('shown.bs.tab', 'button[data-bs-toggle="tab"]', function (e) {
+				const tabId = $(e.target).attr("data-bs-target").replace("#", "");
+				EvaluarBotonImprimir(tabId);
+			});
+			$("#divFiltros").collapse("hide");
+			$("#divDetalle").collapse("show");
+			CerrarWaiting();
+			setTimeout(() => {
+				CargarTablaTabTransferencias(tiposIdsList, sucEnvIdsList, sucRecIdsList, desde, hasta);
+			}, 100);
+			return true
+		});
+	}
+}
+
+function CargarTablaTabTransferencias(tipoIdsLista, sucursalEnvioIdsLista, sucursalRecibeIdsLista, desde, hasta) {
+	AbrirWaiting("Cargando transferencias...");
+	PostGenHtml({ tipoIdsLista, sucursalEnvioIdsLista, sucursalRecibeIdsLista, desde, hasta }, cargarTabTransferenciasURL, function (obj) {
+		$("#divTransferencias").html(obj);
+		InicializarEventosTabTransferencias();
+		CerrarWaiting();
+		return true
+	});
+}
+
+function InicializarEventosTabTransferencias() {
+	$(document).off("click", "#tbTransferencias tbody tr");
+	$(document).on("click", "#tbTransferencias tbody tr", function (e) {
+
+		if ($(e.target).is("button, a, .btn, i")) return;
+
+		const $nuevaFila = $(this);
+		ProcesarSeleccionFilaEnTabTransferencias($nuevaFila);
+	});
+}
+
+function ProcesarSeleccionFilaEnTabTransferencias($fila) {
+	// Quitar selección previa
+	$("#tbTransferencias tbody tr").removeClass("selected-row");
+	// Marcar fila seleccionada
+	$fila.addClass("selected-row");
+
+	//Seguir aca
+}
+
+function InicializarCamposEnFiltros() {
+	$("#btnImprimir").hide();
+	$("#lbChkDesdeHasta").text("Fechas");
+	$("#lbSucursalesEnvia").text("Sucursal que envía");
+	$("#lbSucursalesRecibe").text("Sucursal que recibe");
+	$("#lbTipo").text("Tipo");
+
+	$("#chkDesdeHasta").prop('checked', true);
+	$("#chkDesdeHasta").trigger("change");
+	$("#chkDesdeHasta").prop('disabled', true);
+	$("#chkSucursalesEnvia").prop('checked', false);
+	$("#chkSucursalesEnvia").trigger("change");
+	$("#chkSucursalesRecibe").prop('checked', false);
+	$("#chkSucursalesRecibe").trigger("change");
+	$("#chkTipo").prop('checked', false);
+	$("#chkTipo").trigger("change");
+
+	$("#SucursalesEnviaList").empty();
+	$("#SucursalesRecibeList").empty();
+	$("#TiposList").empty();
+
+	$("#listaSucursalesEnvia").val("");
+	$("#listaSucursalesRecibe").val("");
+	$("#listaTipos").val("");
+
+	$("#divFiltros").collapse("show");
+	$("#divDetalle").collapse("hide");
+
+
+	$("#chkSucursalesEnvia").on("click", function () {
+		if ($("#chkSucursalesEnvia").is(":checked")) {
+			$("#listaSucursalesEnvia").prop("disabled", false);
+			$("#SucursalesEnviaList").prop("disabled", false);
+			$("#listaSucursalesEnvia").trigger("focus");
+		}
+		else {
+			$("#listaSucursalesEnvia").prop("disabled", true);
+			$("#SucursalesEnviaList").prop("disabled", true);
+			$("#listaSucursalesEnvia").val("");
+			$("#SucursalesEnviaList").empty();
+		}
+	});
+
+	$("#chkSucursalesRecibe").on("click", function () {
+		if ($("#chkSucursalesRecibe").is(":checked")) {
+			$("#listaSucursalesRecibe").prop("disabled", false);
+			$("#SucursalesRecibeList").prop("disabled", false);
+			$("#listaSucursalesRecibe").trigger("focus");
+		}
+		else {
+			$("#listaSucursalesRecibe").prop("disabled", true);
+			$("#SucursalesRecibeList").prop("disabled", true);
+			$("#listaSucursalesRecibe").val("");
+			$("#SucursalesRecibeList").empty();
+		}
+	});
+
+	$("#chkTipo").on("click", function () {
+		if ($("#chkTipo").is(":checked")) {
+			$("#listaTipos").prop("disabled", false);
+			$("#TiposList").prop("disabled", false);
+			$("#listaTipos").trigger("focus");
+		}
+		else {
+			$("#listaTipos").prop("disabled", true);
+			$("#TiposList").prop("disabled", true);
+			$("#listaTipos").val("");
+			$("#TiposList").empty();
+		}
+	});
+}
+
+function ObtenerSucursalesSeleccionadasConTexto(sucList, suc) {
+
+	let ids = [];
+	let textos = [];
+
+	// 1) Obtener sucursales seleccionadas en el ListBox
+	$("#" + sucList +" option").each(function () {
+		ids.push($(this).val());
+		textos.push($(this).text());
+	});
+
+	// 2) Si NO hay ninguna seleccionada → devolver TODAS las del DropDownList
+	if (ids.length === 0) {
+		$("#" + suc + " option").each(function () {
+			const val = $(this).val();
+			const txt = $(this).text();
+
+			if (val && val !== "") {
+				ids.push(val);
+				textos.push(txt);
+			}
+		});
+	}
+
+	return {
+		ids: ids.join(","),
+		textos: textos.join(", ")
+	};
+}
+
+function ControlalistaSucursalesEnviaSelected() {
+	var item = $("#listaSucursalesEnvia").val();
+	var desc = $("#listaSucursalesEnvia option:selected").text();
+	if ($("#SucursalesEnviaList").has('option:contains("' + item + '")').length === 0 && $("#SucursalesEnviaList").has('option:contains("' + desc + '")').length === 0) {
+		var opc = "<option value=" + item + ">" + desc + "</option>"
+		$("#SucursalesEnviaList").append(opc);
+	}
+}
+
+function ControlalistaSucursalesRecibeSelected() {
+	var item = $("#listaSucursalesRecibe").val();
+	var desc = $("#listaSucursalesRecibe option:selected").text();
+	if ($("#SucursalesRecibeList").has('option:contains("' + item + '")').length === 0 && $("#SucursalesRecibeList").has('option:contains("' + desc + '")').length === 0) {
+		var opc = "<option value=" + item + ">" + desc + "</option>"
+		$("#SucursalesRecibeList").append(opc);
+	}
+}
+
+function ControlalistaTiposSelected() {
+	var item = $("#listaTipos").val();
+	var desc = $("#listaTipos option:selected").text();
+	$("#TiposList").empty();
+	var opc = "<option value=" + item + ">" + desc + "</option>"
+	$("#TiposList").append(opc);
+	//if ($("#TiposList").has('option:contains("' + item + '")').length === 0 && $("#TiposList").has('option:contains("' + desc + '")').length === 0) {
+	//	var opc = "<option value=" + item + ">" + desc + "</option>"
+	//	$("#TiposList").append(opc);
+	//}
+}

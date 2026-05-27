@@ -113,6 +113,7 @@ namespace gc.sitio.core.Extensions
 			services.AddScoped<IPedidoInternoEstadoServicio, PedidoInternoEstadoServicio>();
 			services.AddScoped<ICajaServicio, CajaServicio>();
 			services.AddScoped<IApiVentasServicio, ApiVentasServicio>();
+			services.AddScoped<ITipoTRServicio, TipoTRServicio>();
 
 			services.AddScoped<IOrdenDePagoServicio, OrdenDePagoServicio>();
 			services.AddScoped<IEtiquetaServicio, EtiquetaServicio>();
