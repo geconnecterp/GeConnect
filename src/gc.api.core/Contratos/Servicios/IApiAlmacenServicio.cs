@@ -20,5 +20,7 @@ namespace gc.api.core.Contratos.Servicios
         List<DepositoInfoBoxDto> ObtenerListaDeBoxesPorDeposito(string depoId);
 		List<DepositoInfoBoxDto> ObtenerInfoDeBox(string boxId);
         List<TRObtenerListaDto> TRObtenerLista(TRObtenerListaRequest request);
+		List<TRConteosDto> TRConteosDetalleDesdeTI(string ti);
+		List<TRRemitoDto> TRRemitoDetalleDesdeTI(string re_compte);
 	}
 }

@@ -116,5 +116,7 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<RespuestaGenerica<PedidoInternoListaDto>> PedidosInternosLista(QueryFilters request, string token);
 		Task<RespuestaGenerica<RespuestaDto>> CambiarEstadoPedidoInterno(PedidoInternoCambiarEstadoRequest request, string token);
 		Task<List<TRObtenerListaDto>> TRObtenerLista(TRObtenerListaRequest req, string token);
+		Task<List<TRConteosDto>> TRConteosDetalleDesdeTI(string ti, string token);
+		Task<List<TRRemitoDto>> TRRemitoDetalleDesdeTI(string re_compte, string token);
 	}
 }

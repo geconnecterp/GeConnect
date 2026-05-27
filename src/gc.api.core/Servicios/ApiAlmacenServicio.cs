@@ -183,5 +183,33 @@ namespace gc.api.core.Servicios
 
 			return response;
 		}
+
+        public List<TRConteosDto> TRConteosDetalleDesdeTI(string ti)
+        {
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Lista_Conteos;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@ti",ti),
+			};
+
+			List<TRConteosDto> response = _repository.EjecutarLstSpExt<TRConteosDto>(sp, ps, true);
+
+			return response;
+		}
+
+		public List<TRRemitoDto> TRRemitoDetalleDesdeTI(string re_compte)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Lista_Remito;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@re_compte",re_compte),
+			};
+
+			List<TRRemitoDto> response = _repository.EjecutarLstSpExt<TRRemitoDto>(sp, ps, true);
+
+			return response;
+		}
 	}
 }

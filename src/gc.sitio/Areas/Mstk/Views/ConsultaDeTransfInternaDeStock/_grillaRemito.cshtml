@@ -1,0 +1,59 @@
+﻿@using gc.infraestructura.Helpers
+@using gc.infraestructura.Dtos.Almacen.Tr.Transferencia
+@model GridCoreSmart<TRRemitoDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+
+	var re_compte = Model.ListaDatos?.FirstOrDefault()?.re_compte ?? string.Empty;
+}
+<style>
+</style>
+<div class="row mb-1">
+	<div class="col-12">
+		<strong>Comprobante:</strong> @re_compte
+	</div>
+</div>
+<div class="table-responsive table-wrapper-700" style="width: 65%;">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbRemito">
+		<thead class="sticky-top table-golden-header-compact">
+			<tr class="header">
+				<th class="text-center">Item</th>
+				<th class="text-center">Id</th>
+				<th class="text-center">Descripción</th>
+				<th class="text-center">Enviado</th>
+				<th class="text-center">Recibido</th>
+				<th class="text-center">Diferencia</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+			{
+				<tr class="fila-vacia">
+					<td colspan="9" class="text-center text-muted py-2">
+						<i class="bx bx-info-circle me-1"></i>
+						No hay items para mostrar.
+					</td>
+				</tr>
+			}
+			else
+			{
+				foreach (var item in Model.ListaDatos)
+				{
+					var dif = item.red_cantidad_gen - item.red_cantidad_des;
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase row-remito"
+						data-pv-compte="@item.pv_compte"
+						data-re-compte="@item.re_compte">
+						<td class="text-center">@item.red_item</td>
+						<td class="text-center">@item.p_id</td>
+						<td class="text-start">@item.p_desc</td>
+						<td class="text-end">@GridHelper.FormatearDato(item.red_cantidad_gen, GridHelper.FormatDato.Monto, true)</td>
+						<td class="text-end">@GridHelper.FormatearDato(item.red_cantidad_des, GridHelper.FormatDato.Monto, true)</td>
+						<td class="text-end">@GridHelper.FormatearDato(dif, GridHelper.FormatDato.Monto, true)</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

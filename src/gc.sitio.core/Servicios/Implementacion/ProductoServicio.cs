@@ -104,6 +104,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string TR_AUT_Confirma_Auto = "/TRConfirmaAutorizaciones";
 		private const string TR_Ver_Conteos = "/TRVerConteos";
 		private const string TR_Lista = "/TRObtenerLista";
+		private const string TR_Conteos_Detalle = "/TRConteosDetalleDesdeTI";
+		private const string TR_Remito_Detalle = "/TRRemitoDetalleDesdeTI";
 		private const string TR_Validar_Transferencia = "/TRValidarTransferencia";
 		private const string PI_Detalle = "/PIDetalle";
 		private const string PI_Confirmar = "/confirmar-pedido-interno";
@@ -3000,6 +3002,70 @@ namespace gc.sitio.core.Servicios.Implementacion
 				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
 				return new();
 			}
+		}
+
+		public async Task<List<TRConteosDto>> TRConteosDetalleDesdeTI(string ti, string token)
+		{
+			ApiResponse<List<TRConteosDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaApiAlmacen}{TR_Conteos_Detalle}?ti={ti}";
+
+			response = client.GetAsync(link).GetAwaiter().GetResult();
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TRConteosDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+
+		}
+
+		public async Task<List<TRRemitoDto>> TRRemitoDetalleDesdeTI(string re_compte, string token)
+		{
+			ApiResponse<List<TRRemitoDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaApiAlmacen}{TR_Remito_Detalle}?re_compte={re_compte}";
+
+			response = client.GetAsync(link).GetAwaiter().GetResult();
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TRRemitoDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+
 		}
 	}
 }

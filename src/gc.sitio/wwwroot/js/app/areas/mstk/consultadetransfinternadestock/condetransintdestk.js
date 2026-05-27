@@ -1,10 +1,11 @@
-﻿var sucEnvIdsList = [];
-var sucRecIdsList = [];
-var tiposIdsList = [];
+﻿let sucEnvIdsList = [];
+let sucRecIdsList = [];
+let tiposIdsList = [];
+let tabsDetallePendientes = 0;
 
 const TabToTableMap = {
 	"navs-top-trans": "#tbTransferencias",
-	"navs-top-cont": "#tbConteos",
+	"navs-top-cont": "#tbDetalleConteos",
 	"navs-top-rem": "#tbRemito"
 };
 
@@ -65,48 +66,213 @@ function EvaluarBotonImprimir(tabId) {
 
 function InicializarPantallaPrincipal() {
 	var tipos = $("#listaTipos").val();
-	
+	var sucEnv = ObtenerSucursalesSeleccionadasConTexto("SucursalesEnviaList", "listaSucursalesEnvia");
+	var sucRec = ObtenerSucursalesSeleccionadasConTexto("SucursalesRecibeList", "listaSucursalesRecibe");
+
 	if (!tipos || tipos == null || tipos == undefined || tipos == "") {
 		AbrirMensaje("ATENCIÓN", "Debe seleccionar al menos un Tipo", function () {
 			$("#msjModal").modal("hide");
 			$("#listaTipos").trigger('focus');
 			return true;
 		}, false, ["Aceptar"], "error!", null);
+		return;
 	}
-	else {
-		var sucEnv = ObtenerSucursalesSeleccionadasConTexto("SucursalesEnviaList", "listaSucursalesEnvia");
-		var sucRec = ObtenerSucursalesSeleccionadasConTexto("SucursalesRecibeList", "listaSucursalesRecibe");
-		var sucursalesEnvText = sucEnv.textos;
-		var sucursalesRecText = sucRec.textos;
-		var tiposText = $("#listaTipos option:selected").text();
-		sucEnvIdsList = sucEnv.ids;
-		sucRecIdsList = sucRec.ids;
-		tiposIdsList = tipos;
-		var desde = $("#Desde").val();
-		var hasta = $("#Hasta").val();
-		AbrirWaiting("Cargando información...");
-		PostGenHtml({ sucursalesEnvText, sucursalesRecText, tiposText, desde, hasta }, inicializarPantallPrincipalURL, function (obj) {
-			$("#divDetalle").html(obj);
-			$(document).on('shown.bs.tab', 'button[data-bs-toggle="tab"]', function (e) {
-				const tabId = $(e.target).attr("data-bs-target").replace("#", "");
-				EvaluarBotonImprimir(tabId);
-			});
-			$("#divFiltros").collapse("hide");
-			$("#divDetalle").collapse("show");
-			CerrarWaiting();
-			setTimeout(() => {
-				CargarTablaTabTransferencias(tiposIdsList, sucEnvIdsList, sucRecIdsList, desde, hasta);
-			}, 100);
-			return true
+
+	const resultado = EvaluarSeleccionDeTipo(tipos, sucEnv.ids, sucRec.ids);
+	if (!resultado.ok) {
+		AbrirMensaje("ATENCIÓN", resultado.mensaje, function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+		return;
+	}
+
+	// ✔ Si tipo != 'S', igualamos sucEnv = sucRec
+	if (resultado.sucEnvIgualado) {
+		sucEnv.ids = resultado.sucEnvIgualado.split(',');
+		sucEnv.textos = sucRec.textos; // mantenemos coherencia visual
+	}
+
+	var sucursalesEnvText = sucEnv.textos;
+	var sucursalesRecText = sucRec.textos;
+	var tiposText = $("#listaTipos option:selected").text();
+	sucEnvIdsList = sucEnv.ids;
+	sucRecIdsList = sucRec.ids;
+	tiposIdsList = tipos;
+	var desde = $("#Desde").val();
+	var hasta = $("#Hasta").val();
+	AbrirWaiting("Cargando información...");
+	PostGenHtml({ sucursalesEnvText, sucursalesRecText, tiposText, desde, hasta }, inicializarPantallPrincipalURL, function (obj) {
+		$("#divDetalle").html(obj);
+		$(document).on('shown.bs.tab', 'button[data-bs-toggle="tab"]', function (e) {
+			const tabId = $(e.target).attr("data-bs-target").replace("#", "");
+			EvaluarBotonImprimir(tabId);
 		});
+		$("#divFiltros").collapse("hide");
+		$("#divDetalle").collapse("show");
+		CerrarWaiting();
+		setTimeout(() => {
+			CargarTablaTabTransferencias(tiposIdsList, sucEnvIdsList, sucRecIdsList, desde, hasta);
+		}, 100);
+		return true
+	});
+}
+
+function FinalizarCargaDetalle() {
+	tabsDetallePendientes--;
+
+	if (tabsDetallePendientes <= 0) {
+		CerrarWaiting();
 	}
 }
+
+function HabilitarTabRemito(habilitar) {
+	const $tab = $("#btnTabRemito");
+
+	if (habilitar) {
+		$tab.removeClass("tab-disabled");
+		$tab.removeAttr("disabled");
+	} else {
+		$tab.addClass("tab-disabled");
+		$tab.attr("disabled", "disabled");
+	}
+}
+
+function HabilitarTabRemito(habilitar, mensajeTooltip) {
+	const $tab = $("#btnTabRemito");
+
+	if (habilitar) {
+		// Quitar clases y disabled
+		$tab.removeClass("tab-disabled tab-clicked");
+		$tab.removeAttr("disabled");
+
+		// Restaurar comportamiento de TAB
+		$tab.attr("data-bs-toggle", "tab");
+
+		// Eliminar tooltip si existía
+		const instance = bootstrap.Tooltip.getInstance($tab[0]);
+		if (instance) {
+			instance.dispose();
+		}
+
+		// Limpiar atributos que Bootstrap deja pegados
+		$tab.removeAttr("data-bs-original-title");
+		$tab.removeAttr("aria-describedby");
+		$tab.removeAttr("title");
+
+		// Quitar handler de click especial
+		$tab.off("click.tooltip");
+
+		return;
+	}
+
+	// -------------------------
+	// Caso DESHABILITADO
+	// -------------------------
+
+	$tab.addClass("tab-disabled");
+	$tab.attr("disabled", "disabled");
+
+	const msg = mensajeTooltip || "El remito no está disponible para esta transferencia";
+
+	// Tooltip
+	$tab.attr("title", msg);
+	$tab.attr("data-bs-toggle", "tooltip");
+
+	new bootstrap.Tooltip($tab[0]);
+
+	// Mostrar tooltip al hacer clic
+	$tab.off("click.tooltip").on("click.tooltip", function (e) {
+		e.preventDefault();
+		$tab.addClass("tab-clicked");
+
+		const tooltip = bootstrap.Tooltip.getInstance($tab[0]);
+		tooltip.show();
+
+		setTimeout(() => $tab.removeClass("tab-clicked"), 200);
+	});
+}
+
+function SeleccionarTransferencia(x, grid) {
+	var $row = $(x);
+
+	// Seleccionar visualmente la fila
+	//selectReg(x, grid); Descomentar si no se visualiza la seleccion de la fila
+
+	// Obtener valores desde los atributos data-*
+	var ti = $row.data("ti");
+	var pv_compte = $row.data("pv-compte");
+	var re_compte = $row.data("re-compte");
+	AbrirWaiting("Cargando datos..."); // ← abrir al inicio
+	tabsDetallePendientes = 2; // ← cantidad de tabs a cargar
+	consultarConteos(ti);
+	// Validación para habilitar o no el tab Remito
+	if (pv_compte && re_compte && pv_compte !== "" && re_compte !== "") {
+		HabilitarTabRemito(true, "");
+		consultarRemito(re_compte);
+	} else {
+		HabilitarTabRemito(false, "El remito no está disponible para esta transferencia");
+	}
+	FinalizarCargaDetalle(); // ← marcar como completado
+}
+
+function consultarConteos(ti) {
+	PostGenHtml({ ti }, consultarConteosURL, function (obj) {
+		$("#divConteos").html(obj);
+		FinalizarCargaDetalle();
+		CerrarWaiting();
+		return true
+	});
+}
+
+function consultarRemito(re_compte) {
+	PostGenHtml({ re_compte }, consultarRemitoURL, function (obj) {
+		$("#divRemito").html(obj);
+		FinalizarCargaDetalle();
+		CerrarWaiting();
+		return true
+	});
+}
+
+function EvaluarSeleccionDeTipo(tipo, sucEnv, sucRec) {
+
+	// Convertir strings "000,001,002" en arrays ["000","001","002"]
+	const env = sucEnv ? sucEnv.split(',').map(x => x.trim()) : [];
+	const rec = sucRec ? sucRec.split(',').map(x => x.trim()) : [];
+
+	// Caso 1: tipo = 'S'
+	if (tipo === 'S') {
+		// Buscar intersección entre env y rec
+		const repetidos = env.filter(x => rec.includes(x));
+
+		if (repetidos.length > 0) {
+			return {
+				ok: false,
+				mensaje: `Las siguientes sucursales no pueden estar en Envío y Recepción al mismo tiempo: ${repetidos.join(', ')}`
+			};
+		}
+
+		return { ok: true, mensaje: "" };
+	}
+
+	// Caso 2: tipo distinto de 'S'
+	// sucEnv debe igualarse a sucRec
+	return {
+		ok: true,
+		mensaje: "",
+		sucEnvIgualado: rec.join(',') // por si necesitás devolverlo
+	};
+}
+
 
 function CargarTablaTabTransferencias(tipoIdsLista, sucursalEnvioIdsLista, sucursalRecibeIdsLista, desde, hasta) {
 	AbrirWaiting("Cargando transferencias...");
 	PostGenHtml({ tipoIdsLista, sucursalEnvioIdsLista, sucursalRecibeIdsLista, desde, hasta }, cargarTabTransferenciasURL, function (obj) {
 		$("#divTransferencias").html(obj);
 		InicializarEventosTabTransferencias();
+		setTimeout(() => {
+			EvaluarBotonImprimir("navs-top-trans")
+		}, 1000);
 		CerrarWaiting();
 		return true
 	});
@@ -123,13 +289,41 @@ function InicializarEventosTabTransferencias() {
 	});
 }
 
-function ProcesarSeleccionFilaEnTabTransferencias($fila) {
-	// Quitar selección previa
-	$("#tbTransferencias tbody tr").removeClass("selected-row");
-	// Marcar fila seleccionada
-	$fila.addClass("selected-row");
+function InicializarEventosTabConteos() {
+	$(document).off("click", "#tbDetalleConteos tbody tr");
+	$(document).on("click", "#tbDetalleConteos tbody tr", function (e) {
 
-	//Seguir aca
+		if ($(e.target).is("button, a, .btn, i")) return;
+
+		const $nuevaFila = $(this);
+		ProcesarSeleccionFilaEnTabConteos($nuevaFila);
+	});
+}
+
+function InicializarEventosTabRemito() {
+	$(document).off("click", "#tbRemito tbody tr");
+	$(document).on("click", "#tbRemito tbody tr", function (e) {
+
+		if ($(e.target).is("button, a, .btn, i")) return;
+
+		const $nuevaFila = $(this);
+		ProcesarSeleccionFilaEnTabRemito($nuevaFila);
+	});
+}
+
+function ProcesarSeleccionFilaEnTabRemito($nuevaFila) {
+	$("#tbRemito tbody tr").removeClass("selected-row");
+	$fila.addClass("selected-row");
+}
+
+function ProcesarSeleccionFilaEnTabConteos($nuevaFila) {
+	$("#tbDetalleConteos tbody tr").removeClass("selected-row");
+	$fila.addClass("selected-row");
+}
+
+function ProcesarSeleccionFilaEnTabTransferencias($fila) {
+	$("#tbTransferencias tbody tr").removeClass("selected-row");
+	$fila.addClass("selected-row");
 }
 
 function InicializarCamposEnFiltros() {
@@ -210,7 +404,7 @@ function ObtenerSucursalesSeleccionadasConTexto(sucList, suc) {
 	let textos = [];
 
 	// 1) Obtener sucursales seleccionadas en el ListBox
-	$("#" + sucList +" option").each(function () {
+	$("#" + sucList + " option").each(function () {
 		ids.push($(this).val());
 		textos.push($(this).text());
 	});

@@ -208,5 +208,31 @@ namespace gc.api.Controllers.Almacen
 
 			return Ok(new ApiResponse<List<TRObtenerListaDto>>(resultado));
 		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult TRConteosDetalleDesdeTI(string ti)
+		{
+			if (string.IsNullOrEmpty(ti))
+			{
+				return BadRequest("Faltó especificar el ID de TI.");
+			}
+			var lista = _almSv.TRConteosDetalleDesdeTI(ti);
+			var response = new ApiResponse<List<TRConteosDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult TRRemitoDetalleDesdeTI(string re_compte)
+		{
+			if (string.IsNullOrEmpty(re_compte))
+			{
+				return BadRequest("Faltó especificar el ID de re_compte.");
+			}
+			var lista = _almSv.TRRemitoDetalleDesdeTI(re_compte);
+			var response = new ApiResponse<List<TRRemitoDto>>(lista);
+			return Ok(response);
+		}
 	}
 }

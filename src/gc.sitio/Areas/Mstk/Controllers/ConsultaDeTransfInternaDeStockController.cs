@@ -127,6 +127,60 @@ namespace gc.sitio.Areas.Mstk.Controllers
 			}
 		}
 
+		[HttpPost]
+		public IActionResult ConsultarConteos(string ti)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				
+				var lista = _productoServicio.TRConteosDetalleDesdeTI(ti, TokenCookie).Result;
+				var model = ObtenerGridCoreSmart<TRConteosDto>(lista);
+
+				return PartialView("_grillaConteos", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public IActionResult ConsultarRemito(string re_compte)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var lista = _productoServicio.TRRemitoDetalleDesdeTI(re_compte, TokenCookie).Result;
+				var model = ObtenerGridCoreSmart<TRRemitoDto>(lista);
+
+				return PartialView("_grillaRemito", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
 		#region Métodos Privados
 		private void CargarDatosIniciales(ConsultaDeTransfInternaDeStockModel model)
 		{

@@ -1,0 +1,85 @@
+﻿@using gc.infraestructura.Helpers
+@using gc.infraestructura.Dtos.Almacen.Tr.Transferencia
+@model GridCoreSmart<TRConteosDto>
+@{
+	string grupoActual = string.Empty;
+	string grupoAnterior = string.Empty;
+	string leyendaAgrupador = string.Empty;
+
+	var registros = new List<TRConteosDto>();
+
+	var alt = true;
+	string clase = string.Empty;
+
+	var ti = Model.ListaDatos?.FirstOrDefault()?.ti ?? string.Empty;
+}
+<style>
+</style>
+<div class="row mb-1">
+	<div class="col-12">
+		<strong>TI:</strong> @ti
+	</div>
+</div>
+<div class="table-responsive table-wrapper-700" style="width: 65%;">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbDetalleConteos">
+		<thead class="sticky-top table-golden-header-compact">
+			<tr class="header">
+				<th class="text-center">Box</th>
+				<th class="text-center">Id</th>
+				<th class="text-center">Descripción</th>
+				<th class="text-center">Cantidad</th>
+				<th class="text-center">Vencimiento</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+			{
+				<tr class="fila-vacia">
+					<td colspan="9" class="text-center text-muted py-2">
+						<i class="bx bx-info-circle me-1"></i>
+						No hay items para mostrar.
+					</td>
+				</tr>
+			}
+			else
+			{
+				registros = Model.ListaDatos.OrderBy(x => x.rubg_id).ToList();
+				foreach (var item in registros)
+				{
+					grupoActual = item.rubg_id;
+					leyendaAgrupador = $"Rubro: {item.rubg_desc} ({item.rubg_id})";
+
+					// Si cambia la cuenta, insertamos una fila de encabezado para la cuenta
+					if (grupoActual != grupoAnterior)
+					{
+						<tr class="table-secondary fw-bold">
+							<td colspan="8" class="text-center">
+								<i class="bx bx-folder me-1"></i>
+								@leyendaAgrupador
+							</td>
+						</tr>
+						grupoAnterior = grupoActual;
+						alt = true; // Reiniciar alternancia de colores después de cada familia
+					}
+
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase row-conteos"
+						data-p-id="@item.p_id"
+						data-rub-id="@item.rub_id"
+						data-rubg-id="@item.rubg_id">
+						<td class="text-start">@item.box_desc</td>
+						<td class="text-center">@item.box_id</td>
+						<td class="text-start">@item.p_desc</td>
+						<td class="text-end">@GridHelper.FormatearDato(item.cantidad, GridHelper.FormatDato.Monto, true)</td>
+						<td class="text-center">
+							@(item.vto == default(DateTime) || item.vto == new DateTime(1900, 1, 1)
+												? ""
+												: item.vto.ToString("dd/MM/yyyy"))
+						</td>
+					</tr>
+					
+				}
+			}
+		</tbody>
+	</table>
+</div>

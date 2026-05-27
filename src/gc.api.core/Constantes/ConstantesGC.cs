@@ -282,6 +282,8 @@
 			public const string SP_PI_Cerrar = "SPGECO_PI_Cerrar";
 			public const string SP_PI_Anular = "SPGECO_PI_Anular";
 			public const string SP_TR_Lista = "SPGECO_TR_Lista";
+			public const string SP_TR_Lista_Conteos = "SPGECO_TR_Lista_Conteos";
+			public const string SP_TR_Lista_Remito = "SPGECO_TR_Remito_d";
 
 			#region Financieros
 			public const string SP_F_TR_CONFIRMA = "SPGECO_F_TR_Confirma";

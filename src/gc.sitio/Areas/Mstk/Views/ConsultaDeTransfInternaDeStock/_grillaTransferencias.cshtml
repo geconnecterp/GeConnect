@@ -38,7 +38,10 @@
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase row-transferencia"
-						data-ti="@item.ti">
+						data-ti="@item.ti"
+						data-pv-compte="@item.pv_compte"
+						data-re-compte="@item.re_compte"
+						ondblclick="SeleccionarTransferencia(this,'tbTransferencias')">
 						<td class="text-center">@item.ti</td>
 						<td class="text-start">@item.tit_desc</td>
 						<td class="text-center">@item.fecha.ToString("dd/MM/yyyy")</td>
