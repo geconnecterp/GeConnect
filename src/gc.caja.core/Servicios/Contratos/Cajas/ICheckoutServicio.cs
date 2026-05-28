@@ -16,8 +16,10 @@ namespace gc.caja.core.Servicios.Contratos.Cajas
         Task<RespuestaGenerica<ValoresNCResDto>> ObtenerValoresNC(ValoresNCReqDto req, string token);
         Task<RespuestaGenerica<ValoresMPResDto>> ObtenerValoresMP(ValoresMPReqDto req, string token);
         Task<RespuestaGenerica<ValoresInsResDto>> ObtenerValoresIns(ValoresInsReqDto req, string token);
-
+        Task<RespuestaGenerica<RespuestaDto>> FinalizarCompra(CajaOpeConfirmarReq req, string token);
+        
         //para combo de banco
         Task<RespuestaGenerica<ABMChequeListaDto>> GetBancoChequeLista(string token);
+
     }
 }

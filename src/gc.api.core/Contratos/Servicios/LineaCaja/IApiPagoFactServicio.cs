@@ -1,5 +1,6 @@
 ﻿using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Cajas.Response;
+using gc.infraestructura.Dtos.Gen;
 
 namespace gc.api.core.Contratos.Servicios.LineaCaja
 {
@@ -9,5 +10,7 @@ namespace gc.api.core.Contratos.Servicios.LineaCaja
         List<ValoresNCResDto> ObtenerValoresNC(ValoresNCReqDto req);
         List<ValoresMPResDto> ObtenerValoresMP(ValoresMPReqDto req);
         List<ValoresInsResDto> ObtenerValoresIns(ValoresInsReqDto req);
+
+        RespuestaDto ConfirmarOperacionCaja(CajaOpeConfirmarReq req);
     }
 }

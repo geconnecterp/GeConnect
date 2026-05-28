@@ -11,7 +11,7 @@ namespace gc.api.core.Contratos.Servicios.LineaCaja
         List<PrefacturaResDto> ObtenerPrefactura(PrefacturaReqDto req);
         List<CotizacionResDto> ObtenerCotizacion(CotizacionReqDto req);
         RespuestaDto CrearPrefacturaDiferida(CajaPrefDiferidaReqDto req);
-        RespuestaDto ConfirmarOperacionCaja(CajaOpeConfirmarReq req);
+        RespuestaDto CrearPagoDiferido(CajaOpeConfirmarReq req);
 
         List<FeResDto> ObtenerFE(FeReqDto req);
         List<FeDetResDto> ObtenerFEDetalle(FeReqDto req);

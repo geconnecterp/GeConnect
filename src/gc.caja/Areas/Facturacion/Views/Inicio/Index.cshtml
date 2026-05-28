@@ -130,8 +130,9 @@
          var obtenerValoresMPUrl= "@Url.Action("ObtenerValoresMP", "checkout", new { area = "Facturacion" })";
          var obtenerValoresInsUrl = "@Url.Action("ObtenerValoresIns", "checkout", new { area = "Facturacion" })";
 
-
-
+         var obtenerBancosUrl =  "@Url.Action("obtenerBancos", "checkout", new { area = "Facturacion" })";
+           // ✅ NUEVO v20.2: URL para finalizar compra
+        var finalizarCompraUrl = "@Url.Action("FinalizarCompra", "Checkout", new { area = "Facturacion" })";
 
     </script>
     <script src="~/js/plugins/jquery.simplePagination.js"></script>

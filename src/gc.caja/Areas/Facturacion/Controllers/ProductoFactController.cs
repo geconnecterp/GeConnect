@@ -2058,77 +2058,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
             }
         }
 
-        /// <summary>
-        /// ✅ NUEVO v10.0: Parsea el JSON de comprobante desde resultado_id
-        /// </summary>
-        /// <param name="resultadoId">JSON string con información del comprobante</param>
-        /// <param name="comprobante">DTO con datos parseados (out)</param>
-        /// <returns>true si el parseo fue exitoso, false en caso contrario</returns>
-        private bool TryParsearComprobanteJson(string resultadoId, out ComprobanteInfoDto? comprobante)
-        {
-            comprobante = null;
-
-            try
-            {
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
-                _logger?.LogInformation("🔍 PARSEANDO JSON DE COMPROBANTE v10.0");
-                _logger?.LogInformation($"   JSON recibido: {resultadoId}");
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
-
-                // ❶ VALIDAR QUE NO SEA NULL O VACÍO
-                if (string.IsNullOrWhiteSpace(resultadoId))
-                {
-                    _logger?.LogWarning("❌ resultado_id es null o vacío");
-                    return false;
-                }
-
-                // ❷ LIMPIAR JSON (remover espacios)
-                string jsonLimpio = resultadoId.Trim();
-
-                // ❸ VALIDAR QUE SEA UN ARRAY JSON
-                if (!jsonLimpio.StartsWith("[") || !jsonLimpio.EndsWith("]"))
-                {
-                    _logger?.LogWarning($"⚠️ El JSON no es un array válido: {jsonLimpio}");
-                    return false;
-                }
-
-                // ❹ DESERIALIZAR COMO LISTA
-                var lista = JsonConvert.DeserializeObject<List<ComprobanteInfoDto>>(jsonLimpio);
-
-                // ❺ VALIDAR QUE LA LISTA NO SEA NULL Y TENGA AL MENOS UN ELEMENTO
-                if (lista == null || lista.Count == 0)
-                {
-                    _logger?.LogWarning("❌ La deserialización retornó lista vacía o null");
-                    return false;
-                }
-
-                // ❻ TOMAR EL PRIMER ELEMENTO (normalmente será único)
-                comprobante = lista[0];
-
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
-                _logger?.LogInformation("✅ COMPROBANTE PARSEADO EXITOSAMENTE");
-                _logger?.LogInformation($"   tco_letra: {comprobante.tco_letra}");
-                _logger?.LogInformation($"   tco_id: {comprobante.tco_id}");
-                _logger?.LogInformation($"   cm_compte: {comprobante.cm_compte}");
-                _logger?.LogInformation($"   cm_repetido: {comprobante.cm_repetido} ({(comprobante.EsRepetido ? "SÍ" : "NO")})");
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
-
-                return true;
-            }
-            catch (JsonException ex)
-            {
-                _logger?.LogError($"❌ ERROR DE PARSEO JSON: {ex.Message}");
-                _logger?.LogError($"   JSON problemático: {resultadoId}");
-                _logger?.LogError($"   Stack Trace: {ex.StackTrace}");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError($"❌ ERROR INESPERADO AL PARSEAR: {ex.Message}");
-                _logger?.LogError($"   Stack Trace: {ex.StackTrace}");
-                return false;
-            }
-        }
+       
 
         // En el método que prepara los datos para la vista (si existe)
         // O en una nueva action para obtener configuración de caja
