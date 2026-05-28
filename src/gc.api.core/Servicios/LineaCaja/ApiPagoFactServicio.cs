@@ -4,6 +4,7 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Cajas.Response;
+using gc.infraestructura.Dtos.Gen;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace gc.api.core.Servicios.LineaCaja
 {
-    public class ApiPagoFactServicio : Servicio<EntidadBase>, IApiPagoFactServicio
+    public class ApiPagoFactServicio : CajaBaseServicio, IApiPagoFactServicio
     {
         public ApiPagoFactServicio(IUnitOfWork uow) : base(uow)
         {
@@ -88,6 +89,11 @@ namespace gc.api.core.Servicios.LineaCaja
             };
             var res = _repository.EjecutarLstSpExt<ValoresPendientesResDto>(sp, ps);
             return res;
+        }
+
+        public RespuestaDto ConfirmarOperacionCaja(CajaOpeConfirmarReq req)
+        {
+            return OperacionConfirmacionBase(req);
         }
     }
 }

@@ -253,6 +253,26 @@ function inicializarEventosPago() {
         console.log('✅ MODAL DE CUPÓN EMPRESA LIMPIADO');
     });
 
+    /**
+     * ✅ ACTUALIZADO v20.3: Evento de limpieza automática del modal de cheque
+     * ELIMINADO: Ya no limpia campo de plaza
+     */
+    $('#modalDetalleCheque').off('hidden.bs.modal').on('hidden.bs.modal', function () {
+        console.log('🧹 LIMPIEZA AUTOMÁTICA - MODAL CHEQUE');
+
+        const $form = $('#formDetalleCheque');
+        $form[0].reset();
+        $form.find('.form-control, .form-select').removeClass('is-invalid is-valid');
+        $('.invalid-feedback').remove();
+
+        $('#lblTipoMedioPagoCheque').text('-');
+        $('#lblInstrumentoCheque').text('-');
+        $('#selectBancoCheque').val('').prop('disabled', true);
+
+        // ❌ ELIMINADO: Limpiar campo plaza (ya no existe)
+
+        console.log('✅ MODAL DE CHEQUE LIMPIADO');
+    });
     console.log('✅ Eventos de pago configurados');
 }
 
@@ -574,17 +594,998 @@ function volverACalculoFactura() {
     }, 300);
 }
 
+// ════════════════════════════════════════════════════════════
+// ✅ NUEVO v20.2: VALIDACIÓN DE DIFERENCIA
+// ════════════════════════════════════════════════════════════
+
 /**
- * Finaliza el pago (por implementar)
+ * ✅ NUEVO v20.2: Valida si se puede finalizar el pago según la diferencia
+ * 
+ * REGLAS DE NEGOCIO:
+ * 
+ * 1. DIFERENCIA > 0 (Falta pagar):
+ *    ❌ BLOQUEAR - Los valores no son suficientes
+ * 
+ * 2. DIFERENCIA = 0 (Exacto):
+ *    ✅ PERMITIR - Sin validación adicional
+ * 
+ * 3. DIFERENCIA < 0 (Sobrepago/Vuelto):
+ *    ⚠️ VALIDAR según tipo de valores:
+ *    - Si todos los valores son EF (Efectivo) → ✅ PERMITIR (se entregará vuelto)
+ *    - Si hay CH (Cheque) Y co_tipo='CR' (Cliente Registrado) → ✅ PERMITIR (cobranza)
+ *    - Cualquier otro caso → ❌ BLOQUEAR
+ * 
+ * @returns {Object} - { permitir: boolean, mensaje: string, advertencia?: string }
+ */
+function validarDiferenciaParaFinalizar() {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔍 VALIDAR DIFERENCIA PARA FINALIZAR v20.2');
+    console.log('═══════════════════════════════════════════════════');
+
+    const diferencia = conceptosPago.diferencia || 0;
+    const totalValores = conceptosPago.totalValores || 0;
+    const totalPagar = conceptosPago.totalPagar || 0;
+
+    console.log(`   Total a pagar: ${formatearMoneda(totalPagar)}`);
+    console.log(`   Total valores: ${formatearMoneda(totalValores)}`);
+    console.log(`   Diferencia: ${formatearMoneda(diferencia)}`);
+    console.log(`   Tipo diferencia: ${diferencia > 0 ? 'POSITIVA (falta)' : diferencia < 0 ? 'NEGATIVA (sobra)' : 'CERO (exacto)'}`);
+
+    // ═══════════════════════════════════════════════════════════
+    // CASO 1: DIFERENCIA > 0 (FALTA PAGAR)
+    // ═══════════════════════════════════════════════════════════
+    if (diferencia > 0.01) {
+        console.error('❌ DIFERENCIA POSITIVA: Falta pagar');
+        console.error(`   Monto faltante: ${formatearMoneda(diferencia)}`);
+
+        return {
+            permitir: false,
+            mensaje: `
+                <div class="text-start">
+                    <p class="mb-3">
+                        <i class='bx bx-error-circle text-danger fs-3'></i>
+                        <strong class="text-danger">Los valores ingresados no cubren el total de la factura</strong>
+                    </p>
+                    <table class="table table-sm table-bordered mb-3">
+                        <tr>
+                            <td class="text-end fw-bold">Total a pagar:</td>
+                            <td class="text-end"><strong>${formatearMoneda(totalPagar)}</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="text-end fw-bold">Total valores:</td>
+                            <td class="text-end text-warning"><strong>${formatearMoneda(totalValores)}</strong></td>
+                        </tr>
+                        <tr class="table-danger">
+                            <td class="text-end fw-bold">Falta pagar:</td>
+                            <td class="text-end"><strong class="text-danger">${formatearMoneda(diferencia)}</strong></td>
+                        </tr>
+                    </table>
+                    <p class="mb-0">
+                        <i class='bx bx-info-circle'></i> 
+                        Debe agregar más valores de pago o ajustar los montos.
+                    </p>
+                </div>
+            `
+        };
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // CASO 2: DIFERENCIA = 0 (EXACTO)
+    // ═══════════════════════════════════════════════════════════
+    if (Math.abs(diferencia) <= 0.01) {
+        console.log('✅ DIFERENCIA CERO: Monto exacto');
+        console.log('   No se requiere validación adicional');
+
+        return {
+            permitir: true,
+            mensaje: ''
+        };
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // CASO 3: DIFERENCIA < 0 (SOBREPAGO/VUELTO)
+    // ═══════════════════════════════════════════════════════════
+    console.warn('⚠️ DIFERENCIA NEGATIVA: Sobrepago detectado');
+    console.warn(`   Sobrepago: ${formatearMoneda(Math.abs(diferencia))}`);
+
+    const sobrepago = Math.abs(diferencia);
+
+    // ❶ Analizar tipos de valores ingresados
+    const tiposPago = valoresPago.map(v => v.tcf_id.toUpperCase());
+    const cantidadValores = valoresPago.length;
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📊 ANÁLISIS DE VALORES DE PAGO');
+    console.log(`   Total valores: ${cantidadValores}`);
+    console.log(`   Tipos: ${tiposPago.join(', ')}`);
+
+    // ❷ Verificar si todos son efectivo
+    const tieneSoloEfectivo = tiposPago.every(tipo => tipo === 'EF');
+    console.log(`   Solo efectivo: ${tieneSoloEfectivo ? 'SÍ ✅' : 'NO ❌'}`);
+
+    // ❸ Verificar si hay cheques
+    const tieneCheque = tiposPago.includes('CH');
+    console.log(`   Tiene cheque: ${tieneCheque ? 'SÍ ✅' : 'NO ❌'}`);
+
+    console.log('═══════════════════════════════════════════════════');
+
+    // ═══════════════════════════════════════════════════════════
+    // REGLA 1: Si todos son efectivo → PERMITIR (vuelto)
+    // ═══════════════════════════════════════════════════════════
+    if (tieneSoloEfectivo) {
+        console.log('✅ REGLA 1 APLICADA: Todos los valores son efectivo');
+        console.log('   → PERMITIR (se dará vuelto al cliente)');
+
+        return {
+            permitir: true,
+            mensaje: '',
+            advertencia: `
+                <div class="alert alert-info mb-0">
+                    <div class="d-flex align-items-center">
+                        <i class='bx bx-info-circle fs-3 me-2'></i>
+                        <div>
+                            <strong>Vuelto a entregar:</strong><br>
+                            <span class="fs-5 text-primary fw-bold">${formatearMoneda(sobrepago)}</span>
+                        </div>
+                    </div>
+                </div>
+            `,
+            vuelto: sobrepago
+        };
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // REGLA 2: Si hay cheque y es cliente registrado → PERMITIR
+    // ═══════════════════════════════════════════════════════════
+    if (tieneCheque) {
+        console.log('🔍 REGLA 2: Verificando si es cliente registrado...');
+
+        // Obtener ID del cliente desde el modal de pago
+        const ctaId = $('#txtClienteIdPago').val() || '';
+        const esClienteRegistrado = ctaId && ctaId !== 'N/A' && ctaId.trim() !== '';
+
+        console.log(`   cta_id: "${ctaId}"`);
+        console.log(`   Es cliente registrado: ${esClienteRegistrado ? 'SÍ ✅' : 'NO ❌'}`);
+
+        if (esClienteRegistrado) {
+            console.log('✅ REGLA 2 APLICADA: Hay cheque y es cliente registrado');
+            console.log('   → PERMITIR (operación de cobranza - sobrepago queda a favor del cliente)');
+
+            return {
+                permitir: true,
+                mensaje: '',
+                advertencia: `
+                    <div class="alert alert-warning mb-0">
+                        <div class="d-flex align-items-center">
+                            <i class='bx bx-info-circle fs-3 me-2'></i>
+                            <div>
+                                <strong>Operación de Cobranza</strong><br>
+                                <span class="text-muted">Sobrepago:</span> 
+                                <span class="fs-5 text-warning fw-bold">${formatearMoneda(sobrepago)}</span><br>
+                                <small class="text-muted">
+                                    El sobrepago quedará registrado a favor del cliente
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                sobrepago: sobrepago,
+                esCobranza: true
+            };
+        } else {
+            console.warn('⚠️ REGLA 2 NO APLICA: Hay cheque pero es consumidor final');
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // REGLA 3: Cualquier otro caso → BLOQUEAR
+    // ═══════════════════════════════════════════════════════════
+    console.error('❌ REGLA 3 APLICADA: Sobrepago no permitido con estos medios de pago');
+    console.error(`   Tipos de pago: ${tiposPago.join(', ')}`);
+    console.error('   → BLOQUEAR');
+
+    return {
+        permitir: false,
+        mensaje: `
+            <div class="text-start">
+                <p class="mb-3">
+                    <i class='bx bx-error-circle text-danger fs-3'></i>
+                    <strong class="text-danger">Sobrepago no permitido con estos medios de pago</strong>
+                </p>
+                <table class="table table-sm table-bordered mb-3">
+                    <tr>
+                        <td class="text-end fw-bold">Total a pagar:</td>
+                        <td class="text-end"><strong>${formatearMoneda(totalPagar)}</strong></td>
+                    </tr>
+                    <tr>
+                        <td class="text-end fw-bold">Total valores:</td>
+                        <td class="text-end text-warning"><strong>${formatearMoneda(totalValores)}</strong></td>
+                    </tr>
+                    <tr class="table-warning">
+                        <td class="text-end fw-bold">Sobrepago:</td>
+                        <td class="text-end"><strong class="text-warning">${formatearMoneda(sobrepago)}</strong></td>
+                    </tr>
+                </table>
+                <div class="alert alert-info mb-3">
+                    <strong>Reglas de negocio:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Sobrepago solo se permite con <strong>efectivo</strong></li>
+                        <li>O con <strong>cheques</strong> en operaciones de <strong>cobranza (clientes registrados)</strong></li>
+                    </ul>
+                </div>
+                <p class="mb-0">
+                    <i class='bx bx-info-circle'></i> 
+                    Ajuste los montos o use solo efectivo para poder continuar.
+                </p>
+            </div>
+        `
+    };
+}
+
+// ════════════════════════════════════════════════════════════
+// ✅ NUEVO v20.2: CONSTRUCCIÓN DE JSON_VALORES
+// ════════════════════════════════════════════════════════════
+
+/**
+ * ✅ NUEVO v20.2: Construye el array de valores de pago en formato backend
+ * Convierte valoresPago[] (frontend) → Json_Valores[] (backend)
+ * 
+ * REGLAS DE MAPEO POR TIPO DE PAGO:
+ * 
+ * EF (Efectivo):
+ *   - rb_importe: Monto pagado
+ *   - rb_dato1/2/3: Vacíos
+ *   - rb_fecha_valor: Fecha actual
+ * 
+ * CH (Cheque):
+ *   - rb_dato1_valor: Descripción del banco
+ *   - rb_dato2_valor: Número de cheque (8 dígitos, relleno ceros izq)
+ *   - rb_dato3_valor: Plaza (6 dígitos, relleno ceros izq, opcional)
+ *   - rb_fecha_valor: Fecha de vencimiento del cheque
+ *   - rb_importe: Monto del cheque
+ * 
+ * MU (Cupón Empresa/Mutual):
+ *   - rb_dato1_valor: Titular (mínimo 5 caracteres)
+ *   - rb_dato2_valor: Número de orden (10 dígitos, relleno ceros izq)
+ *   - rb_dato3_valor: CUIT (formato XX-XXXXXXXX-X)
+ *   - rb_fecha_valor: Fecha actual
+ *   - rb_importe: Monto del cupón
+ * 
+ * VA (Vale de Compra):
+ *   - rb_importe: Monto consumido
+ *   - rb_dato1/2/3: Vacíos (idéntico a efectivo)
+ *   - rb_fecha_valor: Fecha actual
+ * 
+ * BA (Transferencia Bancaria):
+ *   - rb_dato1_valor: Vacío (no se usa)
+ *   - rb_dato2_valor: Vacío (no se usa)
+ *   - rb_dato3_valor: Número de transferencia (mínimo 15 dígitos, relleno ceros izq)
+ *   - rb_fecha_valor: Fecha de transferencia
+ *   - rb_importe: Monto de la transferencia
+ * 
+ * @returns {Array<Object>} - Array de Json_Valores en formato backend
+ */
+function construirJsonValores() {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔨 CONSTRUIR JSON_VALORES v20.2');
+    console.log(`   Total valores a procesar: ${valoresPago.length}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    const jsonValores = [];
+
+    valoresPago.forEach((valor, index) => {
+        const tcfIdUpper = valor.tcf_id.toUpperCase();
+
+        console.log(`   [${index + 1}/${valoresPago.length}] Procesando: ${valor.tcf_desc} - ${valor.ins_desc}`);
+        console.log(`      Tipo: ${tcfIdUpper}`);
+        console.log(`      Monto: ${valor.ins_simbolo} ${formatearNumero(valor.importe, 2)}`);
+
+        // ❶ OBJETO BASE (común para todos los tipos)
+        const valorBackend = {
+            rb_nro_valor: (index + 1).toString().padStart(3, '0'), // "001", "002", "003"...
+            ins_id: valor.ins_id || '',
+            rb_dato1_valor: '',
+            rb_dato2_valor: '',
+            rb_dato3_valor: '',
+            rb_opcion_cuota: '0',
+            rb_cupon_manual: 'N',
+            rb_ch_dif: 'N',
+            rb_fecha_valor: new Date().toISOString().split('T')[0], // Fecha actual por defecto (YYYY-MM-DD)
+            rb_importe: parseFloat(valor.importe) || 0,
+            rb_rec: 0,
+            rb_aux: 0,
+            rb_estado: 'A', // "A" = Aplicado
+            id_externo: ''
+        };
+
+        console.log(`      rb_nro_valor: ${valorBackend.rb_nro_valor}`);
+        console.log(`      ins_id: ${valorBackend.ins_id}`);
+        console.log(`      rb_importe: ${valorBackend.rb_importe}`);
+
+        // ❷ MAPEO ESPECÍFICO SEGÚN TIPO DE PAGO
+        switch (tcfIdUpper) {
+            case 'EF': // ✅ EFECTIVO
+                console.log('      → Tipo: EFECTIVO');
+                console.log('         rb_importe: ✅ Ya cargado');
+                console.log('         rb_dato1/2/3: Vacíos');
+                console.log('         rb_fecha_valor: Fecha actual');
+                // Sin datos extras necesarios
+                break;
+
+            case 'CH': // ✅ CHEQUE
+                console.log('      → Tipo: CHEQUE');
+
+                if (valor.detalle) {
+                    // rb_dato1_valor = Descripción del Banco
+                    valorBackend.rb_dato1_valor = valor.detalle.banco_nombre || '';
+                    console.log(`         rb_dato1_valor (Banco): "${valorBackend.rb_dato1_valor}"`);
+
+                    // rb_dato2_valor = Número de Cheque (8 dígitos, relleno ceros izq)
+                    const nroCheque = (valor.detalle.nro_cheque || '').toString().padStart(8, '0');
+                    valorBackend.rb_dato2_valor = nroCheque;
+                    console.log(`         rb_dato2_valor (Nro Cheque): "${nroCheque}"`);
+
+                    // rb_dato3_valor = Plaza (6 dígitos, relleno ceros izq, opcional)
+                    const plaza = valor.detalle.plaza || '';
+                    valorBackend.rb_dato3_valor = plaza ? plaza.toString().padStart(6, '0') : '';
+                    console.log(`         rb_dato3_valor (Plaza): "${valorBackend.rb_dato3_valor || 'N/A'}"`);
+
+                    // rb_fecha_valor = Fecha de vencimiento del cheque
+                    valorBackend.rb_fecha_valor = valor.detalle.fecha_cheque || valorBackend.rb_fecha_valor;
+                    console.log(`         rb_fecha_valor (Vencimiento): ${valorBackend.rb_fecha_valor}`);
+
+                    console.log('         ✅ Cheque mapeado correctamente');
+                } else {
+                    console.warn('         ⚠️ Cheque sin detalle - Usando valores por defecto');
+                }
+                break;
+
+            case 'MU': // ✅ CUPÓN EMPRESA/MUTUAL
+                console.log('      → Tipo: CUPÓN EMPRESA/MUTUAL');
+
+                if (valor.detalle) {
+                    // rb_dato1_valor = Titular (mínimo 5 caracteres)
+                    valorBackend.rb_dato1_valor = valor.detalle.titular || '';
+                    console.log(`         rb_dato1_valor (Titular): "${valorBackend.rb_dato1_valor}"`);
+
+                    // rb_dato2_valor = Número de Orden (10 dígitos, relleno ceros izq)
+                    const nroOrden = (valor.detalle.nro_orden || '').toString().padStart(10, '0');
+                    valorBackend.rb_dato2_valor = nroOrden;
+                    console.log(`         rb_dato2_valor (Nro Orden): "${nroOrden}"`);
+
+                    // rb_dato3_valor = CUIT (formato XX-XXXXXXXX-X)
+                    valorBackend.rb_dato3_valor = valor.detalle.cuit || '';
+                    console.log(`         rb_dato3_valor (CUIT): "${valorBackend.rb_dato3_valor}"`);
+
+                    // rb_fecha_valor = Fecha actual (ya está por defecto)
+                    console.log(`         rb_fecha_valor: ${valorBackend.rb_fecha_valor}`);
+
+                    console.log('         ✅ Cupón mapeado correctamente');
+                } else {
+                    console.warn('         ⚠️ Cupón sin detalle - Usando valores por defecto');
+                }
+                break;
+
+            case 'VA': // ✅ VALE DE COMPRA (idéntico a efectivo)
+                console.log('      → Tipo: VALE DE COMPRA (idéntico a efectivo)');
+                console.log('         rb_importe: ✅ Ya cargado');
+                console.log('         rb_dato1/2/3: Vacíos');
+                console.log('         rb_fecha_valor: Fecha actual');
+                // Sin datos extras necesarios
+                break;
+
+            case 'BA': // ✅ TRANSFERENCIA BANCARIA
+                console.log('      → Tipo: TRANSFERENCIA BANCARIA');
+
+                if (valor.detalle) {
+                    // rb_dato1_valor = VACÍO (no se usa)
+                    valorBackend.rb_dato1_valor = '';
+                    console.log('         rb_dato1_valor: Vacío (no se usa)');
+
+                    // rb_dato2_valor = VACÍO (no se usa)
+                    valorBackend.rb_dato2_valor = '';
+                    console.log('         rb_dato2_valor: Vacío (no se usa)');
+
+                    // rb_dato3_valor = Número de Transferencia (mínimo 15 dígitos, relleno ceros izq)
+                    const nroTransf = (valor.detalle.nro_transferencia || '').toString().padStart(15, '0');
+                    valorBackend.rb_dato3_valor = nroTransf;
+                    console.log(`         rb_dato3_valor (Nro Transferencia): "${nroTransf}"`);
+
+                    // rb_fecha_valor = Fecha de transferencia
+                    valorBackend.rb_fecha_valor = valor.detalle.fecha_transferencia || valorBackend.rb_fecha_valor;
+                    console.log(`         rb_fecha_valor (Fecha Transf): ${valorBackend.rb_fecha_valor}`);
+
+                    console.log('         ✅ Transferencia mapeada correctamente');
+                } else {
+                    console.warn('         ⚠️ Transferencia sin detalle - Usando valores por defecto');
+                }
+                break;
+
+            case 'TC': // ⏳ TARJETA CRÉDITO (futuro)
+                console.warn('      → Tipo: TARJETA CRÉDITO');
+                console.warn('         ⚠️ Tipo pendiente de implementación');
+                console.warn('         Usando valores por defecto');
+                break;
+
+            case 'TD': // ⏳ TARJETA DÉBITO (futuro)
+                console.warn('      → Tipo: TARJETA DÉBITO');
+                console.warn('         ⚠️ Tipo pendiente de implementación');
+                console.warn('         Usando valores por defecto');
+                break;
+
+            default:
+                console.warn(`      → Tipo: ${tcfIdUpper} (DESCONOCIDO)`);
+                console.warn('         ⚠️ Tipo sin mapeo específico');
+                console.warn('         Usando valores por defecto');
+                break;
+        }
+
+        // ❸ Agregar al array
+        jsonValores.push(valorBackend);
+
+        console.log(`      ✅ Valor agregado al array: ${valor.ins_simbolo} ${formatearNumero(valorBackend.rb_importe, 2)}`);
+        console.log('');
+    });
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log(`✅ ${jsonValores.length} VALORES MAPEADOS CORRECTAMENTE`);
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📦 JSON_VALORES RESULTANTE:');
+    console.log(JSON.stringify(jsonValores, null, 2));
+    console.log('═══════════════════════════════════════════════════');
+
+    return jsonValores;
+}
+
+/**
+ * ✅ ACTUALIZADO v20.2: Finaliza el pago y envía datos al servidor
+ * INTEGRACIÓN COMPLETA: Validación + Construcción JSON + Envío
+ * 
+ * FLUJO:
+ * 1. Valida que haya formas de pago
+ * 2. Valida diferencia según reglas de negocio (Lote 2)
+ * 3. Construye payload JSON usando construirJsonValores() (Lote 3)
+ * 4. Confirma con el usuario
+ * 5. Envía datos al servidor (Lote 4)
  */
 function finalizarPago() {
-    console.log('✅ FINALIZAR PAGO (por implementar)');
+    console.log('═══════════════════════════════════════════════════');
+    console.log('✅ FINALIZAR PAGO v20.2 - FLUJO COMPLETO');
+    console.log('═══════════════════════════════════════════════════');
 
-    if (typeof toastr !== 'undefined') {
-        toastr.info('Funcionalidad en desarrollo: Finalizar pago');
-    } else {
-        alert('Funcionalidad en desarrollo');
+    // ❶ Validar que haya formas de pago
+    if (valoresPago.length === 0) {
+        console.error('❌ No hay formas de pago ingresadas');
+
+        if (typeof toastr !== 'undefined') {
+            toastr.error('Debe agregar al menos una forma de pago', 'Error');
+        }
+
+        return;
     }
+
+    console.log(`   Total formas de pago: ${valoresPago.length}`);
+
+    // ❷ Validar diferencia según reglas de negocio
+    console.log('🔍 Validando diferencia...');
+    const validacion = validarDiferenciaParaFinalizar();
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📋 RESULTADO DE VALIDACIÓN DE DIFERENCIA');
+    console.log(`   Permitir: ${validacion.permitir ? 'SÍ ✅' : 'NO ❌'}`);
+    if (validacion.advertencia) {
+        console.log('   ⚠️ Advertencia presente (vuelto o sobrepago permitido)');
+    }
+    console.log('═══════════════════════════════════════════════════');
+
+    if (!validacion.permitir) {
+        console.error('❌ Validación de diferencia FALLÓ - Operación BLOQUEADA');
+
+        AbrirMensaje(
+            "No se puede finalizar",
+            validacion.mensaje,
+            function () {
+                $("#msjModal").modal("hide");
+            },
+            false,
+            ["Aceptar"],
+            "error!",
+            null
+        );
+
+        return;
+    }
+
+    console.log('✅ Validación de diferencia EXITOSA - Puede continuar');
+
+    // ❸ Construir valores de pago en formato backend
+    console.log('🔨 Construyendo JSON de valores...');
+    const jsonValores = construirJsonValores(); // ← INTEGRACIÓN LOTE 3
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📦 JSON VALORES CONSTRUIDO');
+    console.log(`   Total valores: ${jsonValores.length}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❹ Construir mensaje adicional si hay advertencia (vuelto/sobrepago)
+    let mensajeAdicional = '';
+
+    if (validacion.advertencia) {
+        mensajeAdicional = validacion.advertencia;
+        console.log('⚠️ Mensaje de advertencia agregado al modal de confirmación');
+    }
+
+    // ❺ Construir mensaje de confirmación
+    const mensajeConfirmacion = `
+        <div class="text-start">
+            <p class="mb-3">
+                <strong class="fs-5">¿Confirmar el pago de la factura?</strong>
+            </p>
+            <table class="table table-sm table-bordered mb-3">
+                <tr>
+                    <td class="text-end fw-bold">Total a pagar:</td>
+                    <td class="text-end"><strong>${formatearMoneda(conceptosPago.totalPagar)}</strong></td>
+                </tr>
+                <tr>
+                    <td class="text-end fw-bold">Total valores:</td>
+                    <td class="text-end text-success"><strong>${formatearMoneda(conceptosPago.totalValores)}</strong></td>
+                </tr>
+                <tr>
+                    <td class="text-end fw-bold">Formas de pago:</td>
+                    <td class="text-end"><strong class="text-primary">${valoresPago.length}</strong></td>
+                </tr>
+            </table>
+            ${mensajeAdicional}
+            <div class="alert alert-warning mb-0 mt-3">
+                <i class="bx bx-info-circle"></i> 
+                Esta acción emitirá la factura fiscal y <strong>no se puede deshacer</strong>.
+            </div>
+        </div>
+    `;
+
+    // ❻ Confirmar con el usuario
+    console.log('💬 Mostrando modal de confirmación al usuario...');
+
+    AbrirMensaje(
+        "Confirmar Pago",
+        mensajeConfirmacion,
+        function (respuesta) {
+            $("#msjModal").modal("hide");
+
+            if (respuesta === "SI") {
+                console.log('✅ Usuario confirmó - Procediendo a enviar al servidor...');
+
+                // ❼ Esperar cierre del modal y enviar
+                setTimeout(() => {
+                    enviarPagoAlServidor(jsonValores); // ← INTEGRACIÓN LOTE 4
+                }, 300);
+            } else {
+                console.log('❌ Usuario canceló la operación');
+            }
+        },
+        true, // Es confirmación
+        ["Sí, Finalizar Pago", "Cancelar"],
+        "quest!",
+        null
+    );
+}
+
+// ════════════════════════════════════════════════════════════
+// ✅ NUEVO v20.2: ENVÍO DE PAGO AL SERVIDOR
+// ════════════════════════════════════════════════════════════
+
+/**
+ * ✅ NUEVO v20.2: Envía el pago al servidor mediante AJAX
+ * Similar a ejecutarDiferirPago() pero con valores de pago
+ * 
+ * FLUJO:
+ * 1. Bloquea la interfaz (loading global)
+ * 2. Prepara payload con valores y uniones
+ * 3. Envía POST al endpoint FinalizarCompra
+ * 4. Procesa respuesta del servidor
+ * 5. Genera reporte del comprobante (PDF)
+ * 6. Muestra mensaje de éxito
+ * 7. Limpia sesión y reinicia módulo
+ * 
+ * @param {Array<Object>} jsonValores - Array de Json_Valores construido
+ */
+function enviarPagoAlServidor(jsonValores) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📤 ENVIANDO PAGO AL SERVIDOR v20.2');
+    console.log('═══════════════════════════════════════════════════');
+    console.log(`   Total valores: ${jsonValores.length}`);
+    console.log(`   Total monto: ${formatearMoneda(conceptosPago.totalValores)}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Bloquear pantalla (similar a DiferirPago)
+    mostrarLoadingGlobal('Procesando pago y emitiendo factura...');
+
+    // ❷ URL del endpoint
+    const url = typeof finalizarCompraUrl !== 'undefined' && finalizarCompraUrl
+        ? finalizarCompraUrl
+        : '/Facturacion/Checkout/FinalizarCompra';
+
+    console.log(`   URL: ${url}`);
+
+    // ❸ Preparar payload
+    const payload = {
+        valores: jsonValores,
+        uniones: [] // ← Vacío por ahora (Fase 2 - JSON_Union)
+    };
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📦 PAYLOAD COMPLETO:');
+    console.log(JSON.stringify(payload, null, 2));
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❹ Llamada AJAX
+    $.ajax({
+        url: url,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(payload),
+        dataType: 'json',
+        timeout: 30000 // 30 segundos
+    })
+        .done(function (response) {
+            console.log('═══════════════════════════════════════════════════');
+            console.log('✅ RESPUESTA RECIBIDA DEL SERVIDOR');
+            console.log('═══════════════════════════════════════════════════');
+            console.log('Response completo:', response);
+
+            // ⚠️ NO OCULTAR LOADING AÚN - Esperamos generar reporte
+
+            // ❺ Validar respuesta básica
+            if (!response || response.ok === false) {
+                console.error('❌ Error en respuesta del servidor');
+                console.error('   Mensaje:', response?.mensaje || 'Sin mensaje');
+
+                ocultarLoadingGlobal();
+                procesarErrorPago(response);
+                return;
+            }
+
+            console.log('✅ Respuesta OK del servidor');
+
+            // ❻ Validar que haya datos del comprobante
+            if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
+                console.error('❌ No se recibieron datos del comprobante');
+                console.error('   response.data:', response.data);
+
+                ocultarLoadingGlobal();
+
+                mostrarMensajeError('Error: No se recibió información del comprobante');
+                return;
+            }
+
+            console.log(`✅ Datos del comprobante recibidos: ${response.data.length} comprobante(s)`);
+
+            // ❼ Extraer comprobante
+            const comprobante = response.data[0];
+
+            console.log('═══════════════════════════════════════════════════');
+            console.log('📄 COMPROBANTE EMITIDO');
+            console.log(`   tco_letra: ${comprobante.tco_letra}`);
+            console.log(`   tco_id: ${comprobante.tco_id}`);
+            console.log(`   cm_compte: ${comprobante.cm_compte}`);
+            console.log(`   cm_repetido: ${comprobante.cm_repetido}`);
+            console.log('═══════════════════════════════════════════════════');
+
+            // ❽ GENERAR REPORTE PRIMERO (como en DiferirPago)
+            console.log('📄 Iniciando generación de reporte...');
+
+            if (typeof ModuloReportes !== 'undefined') {
+                console.log('✅ ModuloReportes disponible - Generando PDF...');
+
+                ModuloReportes.generarYVisualizarReporte({
+                    tco_letra: comprobante.tco_letra,
+                    tco_id: comprobante.tco_id,
+                    cm_compte: comprobante.cm_compte,
+                    cm_repetido: comprobante.cm_repetido
+                }).then(function (exitoso) {
+                    console.log(`📄 Generación de reporte: ${exitoso ? '✅ EXITOSA' : '❌ FALLIDA'}`);
+
+                    // Esperar que se abra el PDF
+                    setTimeout(function () {
+                        console.log('⏳ PDF abierto - Desbloqueando interfaz...');
+                        ocultarLoadingGlobal();
+                        procesarPagoExitoso(comprobante);
+                    }, 500);
+
+                }).catch(function (error) {
+                    console.error('❌ ERROR al generar reporte:', error);
+                    ocultarLoadingGlobal();
+
+                    // Mostrar éxito de todos modos (la factura ya se emitió)
+                    procesarPagoExitoso(comprobante);
+                });
+            } else {
+                console.warn('⚠️ ModuloReportes NO disponible - Saltando generación de PDF');
+                ocultarLoadingGlobal();
+                procesarPagoExitoso(comprobante);
+            }
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            console.log('═══════════════════════════════════════════════════');
+            console.error('❌ ERROR EN AJAX - ENVÍO DE PAGO');
+            console.log('═══════════════════════════════════════════════════');
+            console.error('   textStatus:', textStatus);
+            console.error('   errorThrown:', errorThrown);
+            console.error('   HTTP Status:', jqXHR.status);
+            console.error('   Response Text:', jqXHR.responseText);
+            console.log('═══════════════════════════════════════════════════');
+
+            ocultarLoadingGlobal();
+
+            // ❶ Verificar sesión expirada
+            if (jqXHR.status === 401 || jqXHR.status === 403) {
+                console.error('❌ SESIÓN EXPIRADA');
+                manejarSesionExpirada('Su sesión ha expirado. Por favor, inicie sesión nuevamente.');
+                return;
+            }
+
+            // ❷ Mensaje de error genérico
+            let mensajeError = 'Error de comunicación con el servidor';
+
+            if (jqXHR.status === 500) {
+                mensajeError = 'Error interno del servidor. Contacte al administrador.';
+            } else if (jqXHR.status === 0) {
+                mensajeError = 'No se pudo conectar con el servidor. Verifique su conexión.';
+            } else if (jqXHR.responseJSON && jqXHR.responseJSON.mensaje) {
+                mensajeError = jqXHR.responseJSON.mensaje;
+            }
+
+            AbrirMensaje(
+                "Error de Comunicación",
+                mensajeError,
+                function () {
+                    $("#msjModal").modal("hide");
+                },
+                false,
+                ["Aceptar"],
+                "error!",
+                null
+            );
+        });
+
+    // ❾ Timeout de seguridad (30 segundos)
+    setTimeout(function () {
+        if ($('#overlayLoadingGlobal').length > 0 && $('#overlayLoadingGlobal').is(':visible')) {
+            console.warn('⚠️ TIMEOUT DE SEGURIDAD ALCANZADO (30s)');
+            console.warn('   Desbloqueando pantalla automáticamente...');
+
+            ocultarLoadingGlobal();
+
+            AbrirMensaje(
+                "Tiempo de Espera Agotado",
+                "La operación está tomando más tiempo del esperado.<br><br>" +
+                "Por favor, verifique el resultado en el sistema.",
+                function () {
+                    $("#msjModal").modal("hide");
+                },
+                false,
+                ["Aceptar"],
+                "warning",
+                null
+            );
+        }
+    }, 30000);
+}
+
+/**
+ * ✅ NUEVO v20.2: Procesa una respuesta exitosa del servidor
+ * Muestra mensaje de éxito y reinicia el módulo
+ * 
+ * @param {Object} comprobante - Datos del comprobante emitido
+ */
+function procesarPagoExitoso(comprobante) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('✅ PROCESANDO PAGO EXITOSO');
+    console.log('═══════════════════════════════════════════════════');
+    console.log('   Comprobante:', comprobante.cm_compte);
+
+    const tipoComprobante = obtenerTipoComprobante(comprobante.tco_letra, comprobante.tco_id);
+    const numeroComprobante = comprobante.cm_compte || 'Sin número';
+    const esRepetido = comprobante.cm_repetido === "1" || comprobante.cm_repetido === 1;
+
+    console.log(`   Tipo: ${tipoComprobante}`);
+    console.log(`   Número: ${numeroComprobante}`);
+    console.log(`   Repetido: ${esRepetido ? 'SÍ' : 'NO'}`);
+
+    // Mostrar mensaje de éxito
+    AbrirMensaje(
+        "¡Factura Emitida y Pagada!",
+        `<div class="text-center">
+            <div class="mb-3">
+                <i class='bx bx-check-circle text-success' style="font-size: 4rem;"></i>
+            </div>
+            <h4 class="text-golden mb-3">Factura emitida y pagada exitosamente</h4>
+            
+            <div class="alert alert-success mb-3">
+                <div class="mb-2">
+                    <strong class="d-block text-uppercase">${tipoComprobante}</strong>
+                    <span class="badge bg-primary fs-6">${comprobante.tco_letra}</span>
+                </div>
+                <div class="mt-2">
+                    <small class="text-muted">Número:</small><br>
+                    <strong class="fs-5">${numeroComprobante}</strong>
+                </div>
+                ${esRepetido ? '<div class="mt-2"><span class="badge bg-warning">Comprobante Repetido</span></div>' : ''}
+            </div>
+            
+            <p class="text-muted mb-0">
+                <i class='bx bx-check-circle'></i> El comprobante fue visualizado exitosamente
+            </p>
+        </div>`,
+        function () {
+            $("#msjModal").modal("hide");
+
+            // ═══════════════════════════════════════════════════
+            // ✅ FLUJO DE LIMPIEZA Y REINICIO (como en DiferirPago)
+            // ═══════════════════════════════════════════════════
+
+            setTimeout(() => {
+                console.log('═══════════════════════════════════════════════════');
+                console.log('🔄 INICIANDO REINICIO DEL MÓDULO DE VENTAS');
+                console.log('═══════════════════════════════════════════════════');
+
+                // ❶ PASO 1: Cerrar modal de pago
+                if (modalPagoInstance) {
+                    modalPagoInstance.hide();
+                    console.log('✅ Paso 1: Modal de pago cerrado');
+                }
+
+                setTimeout(() => {
+                    // ❷ PASO 2: Cerrar modal de cálculo
+                    if (typeof cerrarModalCalculoFactura === 'function') {
+                        cerrarModalCalculoFactura();
+                        console.log('✅ Paso 2: Modal de cálculo cerrado');
+                    }
+
+                    setTimeout(() => {
+                        // ❸ PASO 3: Limpiar venta completa
+                        if (typeof limpiarVentaCompleta === 'function') {
+                            limpiarVentaCompleta();
+                            console.log('✅ Paso 3: Módulo de ventas limpiado');
+                        } else {
+                            console.error('❌ Función limpiarVentaCompleta no existe');
+                        }
+
+                        setTimeout(() => {
+                            // ❹ PASO 4: Abrir modal de identificar cliente
+                            if (typeof abrirModalIdentificarCliente === 'function') {
+                                abrirModalIdentificarCliente();
+                                console.log('✅ Paso 4: Modal de identificar cliente abierto');
+                            } else {
+                                console.error('❌ Función abrirModalIdentificarCliente no existe');
+                            }
+
+                            console.log('═══════════════════════════════════════════════════');
+                            console.log('✅ REINICIO COMPLETADO - Listo para nueva venta');
+                            console.log('═══════════════════════════════════════════════════');
+
+                        }, 200); // Esperar limpieza
+                    }, 300); // Esperar cierre de modal cálculo
+                }, 300); // Esperar cierre de modal pago
+            }, 300); // Esperar cierre de mensaje de éxito
+        },
+        false,
+        ["Aceptar"],
+        "succ!",
+        null
+    );
+}
+
+/**
+ * ✅ NUEVO v20.2: Procesa un error del servidor
+ * Muestra mensaje de error al usuario
+ * 
+ * @param {Object} response - Respuesta del servidor con error
+ */
+function procesarErrorPago(response) {
+    console.error('═══════════════════════════════════════════════════');
+    console.error('❌ PROCESANDO ERROR DE PAGO');
+    console.error('═══════════════════════════════════════════════════');
+    console.error('Response:', response);
+
+    const mensajeError = response?.mensaje || 'Ocurrió un error al procesar el pago';
+
+    console.error(`   Mensaje: ${mensajeError}`);
+
+    AbrirMensaje(
+        "Error al Procesar Pago",
+        `<div class="text-start">
+            <p class="mb-3">
+                <i class='bx bx-error-circle text-danger fs-3'></i>
+                <strong class="text-danger">No se pudo procesar el pago</strong>
+            </p>
+            <div class="alert alert-danger mb-0">
+                ${escapeHtml(mensajeError)}
+            </div>
+        </div>`,
+        function () {
+            $('#msjModal').modal('hide');
+        },
+        false,
+        ["Aceptar"],
+        "error!",
+        null
+    );
+}
+
+/**
+ * ✅ REUTILIZADO: Obtiene el tipo de comprobante según letra e ID
+ * (Esta función ya existe en prodfactcalc.js, pero la agregamos aquí por si acaso)
+ * 
+ * @param {string} letra - Letra del comprobante (A, B, C, etc.)
+ * @param {string} id - ID del tipo de comprobante
+ * @returns {string} - Descripción del tipo de comprobante
+ */
+function obtenerTipoComprobante(letra, id) {
+    const letraNorm = (letra || '').toUpperCase().trim();
+    const idNorm = (id || '').trim().replace(/^0+/, '');
+
+    if (letraNorm === 'A' && (idNorm === '7' || id === '007')) return 'Factura A';
+    if (letraNorm === 'B' && (idNorm === '6' || id === '006')) return 'Factura B';
+    if (letraNorm === 'C' && (idNorm === '11' || id === '011')) return 'Factura C';
+    if (letraNorm === 'M' && (idNorm === '51' || id === '051')) return 'Factura M';
+    if (letraNorm === 'A' && (idNorm === '8' || id === '008')) return 'Nota de Crédito A';
+    if (letraNorm === 'B' && (idNorm === '9' || id === '009')) return 'Nota de Crédito B';
+    if (letraNorm === 'A' && (idNorm === '10' || id === '010')) return 'Nota de Débito A';
+
+    return `Comprobante ${letraNorm || 'Desconocido'}`;
+}
+
+/**
+ * ✅ NUEVO v20.2: Maneja sesión expirada
+ * Redirige al login o muestra mensaje
+ * 
+ * @param {string} mensaje - Mensaje a mostrar
+ */
+function manejarSesionExpirada(mensaje) {
+    console.error('═══════════════════════════════════════════════════');
+    console.error('🔒 SESIÓN EXPIRADA DETECTADA');
+    console.error('═══════════════════════════════════════════════════');
+
+    AbrirMensaje(
+        "Sesión Expirada",
+        `<div class="text-center">
+            <i class='bx bx-error-circle text-warning' style="font-size: 3rem;"></i>
+            <p class="mt-3 mb-0">${escapeHtml(mensaje)}</p>
+        </div>`,
+        function () {
+            $('#msjModal').modal('hide');
+
+            // Redirigir al login después de 1 segundo
+            setTimeout(function () {
+                window.location.href = '/Account/Login';
+            }, 1000);
+        },
+        false,
+        ["Aceptar"],
+        "warning",
+        null
+    );
+}
+
+/**
+ * ✅ NUEVO v20.2: Muestra mensaje de error genérico
+ * Función auxiliar reutilizable
+ * 
+ * @param {string} mensaje - Mensaje de error
+ */
+function mostrarMensajeError(mensaje) {
+    AbrirMensaje(
+        "Error",
+        mensaje,
+        function () {
+            $("#msjModal").modal("hide");
+        },
+        false,
+        ["Aceptar"],
+        "error!",
+        null
+    );
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1374,11 +2375,12 @@ function confirmarSeleccionInstrumento() {
                     window._tipoMedioPagoActual
                 );
                 break;
-            case 'CH': // Cheque ⚠️ LOTE 4 (al final)
-                console.warn('⚠️ Modal de cheque por implementar');
-                if (typeof toastr !== 'undefined') {
-                    toastr.info('Funcionalidad de cheques en desarrollo');
-                }
+            case 'CH': // ✅ ACTUALIZADO v20.0: Cheques
+                console.log('✅ Abriendo modal de Cheque...');
+                abrirModalDetalleCheque(
+                    window._instrumentoSeleccionado,
+                    window._tipoMedioPagoActual
+                );
                 break;
 
             case 'TC': // Tarjeta Crédito
@@ -3125,6 +4127,7 @@ function requiereModalDetalle(tcfId) {
         'VA',  // Vales de Compra
         'BA',  // ✅ NUEVO v19.3: Transferencias Bancarias
         'MU',  // ✅ NUEVO v19.5: Órdenes/Cupones de Mutuales
+        'CH',  // ✅ NUEVO v20.0: Cheques
     ];
 
     const requiereModal = tiposConModalObligatorio.includes(tcfId.toUpperCase());
@@ -3168,11 +4171,9 @@ function abrirModalDetalleSegunTipo(instrumento, tipoMedioPago) {
             abrirModalDetalleCuponEmpresa(instrumento, tipoMedioPago);
             break;
 
-        case 'CH': // Cheque (LOTE 4)
-            console.warn('⚠️ Modal de Cheque por implementar');
-            if (typeof toastr !== 'undefined') {
-                toastr.info('Funcionalidad de cheques en desarrollo');
-            }
+        case 'CH': // ✅ ACTUALIZADO v20.0: Cheques
+            console.log('✅ Abriendo modal de Cheque...');
+            abrirModalDetalleCheque(instrumento, tipoMedioPago);
             break;
 
         default:
@@ -3470,19 +4471,21 @@ function abrirModalDetalleTransferencia(instrumento, tipoMedioPago) {
 }
 
 /**
-* ✅ NUEVO v19.3: Guarda el detalle de la transferencia bancaria
-* 
-* VALIDACIONES:
-* - Nro Trasn: Obligatorio, min 3 caracteres
-* - Fecha: Obligatoria, no futura
-* - Monto: > 0, <= Saldo factura (con tolerancia)
-* 
-* @param {Object} instrumento - Datos del banco
-* @param {Object} tipoMedioPago - Tipo de medio de pago
-*/
+ * ✅ ACTUALIZADO v20.2: Guarda el detalle de la transferencia bancaria
+ * NUEVO: Validación de mínimo 15 caracteres en número de transferencia
+ * NUEVO: Validación de fecha entre ayer y hoy
+ * 
+ * VALIDACIONES:
+ * - Nro Transferencia: Obligatorio, **mínimo 15 caracteres**
+ * - Fecha: Obligatoria, **hoy - 1 día <= fecha <= hoy**
+ * - Monto: > 0, <= Saldo factura (con tolerancia)
+ * 
+ * @param {Object} instrumento - Datos del banco
+ * @param {Object} tipoMedioPago - Tipo de medio de pago
+ */
 function guardarDetalleTransferencia(instrumento, tipoMedioPago) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('💾 GUARDAR DETALLE TRANSFERENCIA v19.3');
+    console.log('💾 GUARDAR DETALLE TRANSFERENCIA v20.2');
     console.log('═══════════════════════════════════════════════════');
 
     // ❶ Obtener valores del formulario
@@ -3490,13 +4493,16 @@ function guardarDetalleTransferencia(instrumento, tipoMedioPago) {
     const fechaTransferencia = $('#txtFechaTransferencia').val();
 
     console.log('📋 Datos del formulario:');
-    console.log(`   Nro Trasn: "${nroTransferencia}"`);
+    console.log(`   Nro Transferencia: "${nroTransferencia}"`);
     console.log(`   Fecha: "${fechaTransferencia}"`);
 
-    // ❷ Validar Nro Trasn
-    if (!nroTransferencia || nroTransferencia.length < 3) {
+    // ❷ ✅ ACTUALIZADO: Validar Nro Transferencia (mínimo 15 caracteres)
+    if (!nroTransferencia || nroTransferencia.length < 15) {
         console.warn('⚠️ Número de transferencia inválido');
-        mostrarErrorCampo('#txtNroTransferencia', 'Debe ingresar un número de transferencia válido (mínimo 3 caracteres)');
+        mostrarErrorCampo(
+            '#txtNroTransferencia',
+            'Debe ingresar un número de transferencia válido (mínimo 15 caracteres)'
+        );
         return;
     }
 
@@ -3507,10 +4513,22 @@ function guardarDetalleTransferencia(instrumento, tipoMedioPago) {
         return;
     }
 
-    // ❹ Validar fecha no futura
+    // ❹ ✅ ACTUALIZADO: Validar fecha (entre ayer y hoy)
     const fechaTransf = new Date(fechaTransferencia);
     const fechaHoy = new Date();
     fechaHoy.setHours(0, 0, 0, 0);
+
+    const fechaAyer = new Date(fechaHoy);
+    fechaAyer.setDate(fechaAyer.getDate() - 1);
+
+    if (fechaTransf < fechaAyer) {
+        console.warn('⚠️ Fecha de transferencia es muy antigua');
+        mostrarErrorCampo(
+            '#txtFechaTransferencia',
+            'La fecha no puede ser anterior a ayer'
+        );
+        return;
+    }
 
     if (fechaTransf > fechaHoy) {
         console.warn('⚠️ Fecha de transferencia es futura');
@@ -3543,35 +4561,40 @@ function guardarDetalleTransferencia(instrumento, tipoMedioPago) {
     if (monto > diferenciaFactura * LIMITE_PORCENTAJE_DIFERENCIA) {
         console.warn(`⚠️ Monto muy alto: ${monto} > ${diferenciaFactura * LIMITE_PORCENTAJE_DIFERENCIA}`);
 
-        Swal.fire({
-            title: '¿Monto elevado?',
-            html: `<div class="text-start">
-                       <p class="mb-3">El monto ingresado es <strong>mayor</strong> a la diferencia pendiente:</p>
-                       <table class="table table-sm table-borderless mb-0">
-                           <tr>
-                               <td class="text-end">Monto ingresado:</td>
-                               <td class="text-start"><strong class="text-danger">${formatearMoneda(monto)}</strong></td>
-                           </tr>
-                           <tr>
-                               <td class="text-end">Diferencia pendiente:</td>
-                               <td class="text-start"><strong class="text-warning">${formatearMoneda(diferenciaFactura)}</strong></td>
-                           </tr>
-                       </table>
-                       <p class="mt-3 mb-0"><i class="bx bx-info-circle"></i> ¿Desea continuar?</p>
-                   </div>`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: '<i class="bx bx-check"></i> Sí, continuar',
-            cancelButtonText: '<i class="bx bx-x"></i> No, corregir',
-            confirmButtonColor: '#28a745',
-            cancelButtonColor: '#6c757d'
-        }).then((result) => {
-            if (result.isConfirmed) {
+        const mensajeHtml = `
+        <div class="text-start">
+            <p class="mb-3">El monto ingresado es <strong>mayor</strong> a la diferencia pendiente:</p>
+            <table class="table table-sm table-borderless mb-0">
+                <tr>
+                    <td class="text-end">Monto ingresado:</td>
+                    <td class="text-start"><strong class="text-danger">${formatearMoneda(monto)}</strong></td>
+                </tr>
+                <tr>
+                    <td class="text-end">Diferencia pendiente:</td>
+                    <td class="text-start"><strong class="text-warning">${formatearMoneda(diferenciaFactura)}</strong></td>
+                </tr>
+            </table>
+            <p class="mt-3 mb-0"><i class="bx bx-info-circle"></i> ¿Desea continuar?</p>
+        </div>
+    `;
+
+        AbrirMensaje(
+            "¿Monto elevado?",
+            mensajeHtml,
+            function () {
+                $('#msjModal').modal('hide');
                 finalizarGuardadoTransferencia(monto, nroTransferencia, fechaTransferencia, instrumento, tipoMedioPago);
-            } else {
-                $('#txtMontoTransferencia').trigger("focus").trigger("select");
+            },
+            false,
+            ["Continuar", "Corregir"],
+            "warn!",
+            function () {
+                $('#msjModal').modal('hide');
+                setTimeout(() => {
+                    $('#txtMontoTransferencia').trigger("focus").trigger("select");
+                }, 300);
             }
-        });
+        );
 
         return;
     }
@@ -3716,25 +4739,23 @@ $('#modalDetalleTransferencia').off('hidden.bs.modal').on('hidden.bs.modal', fun
     console.log('✅ MODAL DE TRANSFERENCIA LIMPIADO');
 });
 
-// ═══════════════════════════════════════════════════════════════════
-// ✅ NUEVO v19.5: LOTE 4 - FUNCIONES PARA ÓRDENES/CUPONES DE MUTUALES
-// ═══════════════════════════════════════════════════════════════════
-
 /**
- * ✅ CORREGIDO v19.7: Abre el modal de detalle de Cupón/Orden de Empresa (Mutuales)
- * CAMBIO CRÍTICO: Usa Bootstrap.Modal.show() en lugar de manipulación manual con jQuery
+ * ✅ ACTUALIZADO v20.4: Abre el modal de detalle de Cupón/Orden de Empresa (Mutuales)
+ * NUEVO: Auto-completado de Titular y CUIT desde cliente actual
+ * NUEVO: Validación de CUIT según tipo de cliente (CR/CF)
  * 
  * FLUJO:
  * 1. El usuario ya seleccionó una mutual/empresa del modal de instrumentos
  * 2. Se abre este modal con la empresa pre-cargada
- * 3. Usuario completa: Titular, Nro Orden, CUIT, Monto
+ * 3. ✅ NUEVO: Se auto-completa Titular y CUIT desde cliente actual
+ * 4. Usuario completa solo: Nro Orden y Monto
  * 
  * @param {Object} instrumento - Mutual/Empresa seleccionada (ej: "OSDE", "Swiss Medical")
  * @param {Object} tipoMedioPago - Tipo de MP (tcf_id='MU')
  */
 function abrirModalDetalleCuponEmpresa(instrumento, tipoMedioPago) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔓 ABRIR MODAL DETALLE CUPÓN EMPRESA v19.7');
+    console.log('🔓 ABRIR MODAL DETALLE CUPÓN EMPRESA v20.4');
     console.log(`   Empresa: ${instrumento?.ins_desc || 'N/A'} (${instrumento?.ins_id || 'N/A'})`);
     console.log(`   Tipo MP: ${tipoMedioPago?.tcf_desc || 'N/A'}`);
     console.log('═══════════════════════════════════════════════════');
@@ -3763,7 +4784,7 @@ function abrirModalDetalleCuponEmpresa(instrumento, tipoMedioPago) {
         return;
     }
 
-    // ❸ ✅ NUEVO v19.7: Obtener o crear instancia de Bootstrap Modal
+    // ❸ Obtener o crear instancia de Bootstrap Modal
     let modalInstance = bootstrap.Modal.getInstance(modalElement);
 
     if (!modalInstance) {
@@ -3792,13 +4813,71 @@ function abrirModalDetalleCuponEmpresa(instrumento, tipoMedioPago) {
 
     console.log(`   ✅ Empresa cargada: ${instrumento.ins_desc}`);
 
-    // ❺ Calcular monto sugerido (diferencia pendiente)
+    // ═══════════════════════════════════════════════════════════
+    // ✅ NUEVO v20.4: OBTENER DATOS DEL CLIENTE ACTUAL
+    // ═══════════════════════════════════════════════════════════
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📋 OBTENIENDO DATOS DEL CLIENTE ACTUAL');
+
+    // ❺ Obtener Titular (denominación del cliente)
+    const titular = $('#txtClienteNombrePago').val() || '';
+    console.log(`   Titular: "${titular}"`);
+
+    // ❻ Obtener CUIT/DNI
+    const cuitCliente = $('#txtClienteCuitPago').val() || '';
+    console.log(`   CUIT/DNI: "${cuitCliente}"`);
+
+    // ❼ Determinar tipo de cliente (CR o CF)
+    const ctaId = $('#txtClienteIdPago').val() || '';
+    const esClienteRegistrado = ctaId && ctaId !== 'N/A' && ctaId.trim() !== '';
+
+    console.log(`   Tipo Cliente: ${esClienteRegistrado ? 'CR (Cliente Registrado)' : 'CF (Consumidor Final)'}`);
+    console.log(`   cta_id: "${ctaId}"`);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❽ Validar que tengamos datos mínimos
+    if (!titular || titular.trim() === '') {
+        console.error('❌ CRÍTICO: No se pudo obtener el nombre del cliente');
+
+        if (typeof toastr !== 'undefined') {
+            toastr.error('Error: No se pudo obtener los datos del cliente actual');
+        }
+
+        return;
+    }
+
+    // ❾ Asignar Titular al campo (readonly)
+    $('#txtTitularCupon').val(titular);
+    console.log(`   ✅ Titular asignado al campo: "${titular}"`);
+
+    // ❿ ✅ NUEVO: VALIDAR Y ASIGNAR CUIT SEGÚN TIPO DE CLIENTE
+    const resultadoCuit = validarYAsignarCuitCuponEmpresa(cuitCliente, esClienteRegistrado);
+
+    if (!resultadoCuit.valido) {
+        console.error('❌ Validación de CUIT falló');
+
+        // Cerrar modal automáticamente
+        setTimeout(() => {
+            cerrarModalDetalleCuponEmpresa();
+        }, 100);
+
+        return;
+    }
+
+    console.log('✅ CUIT validado y asignado correctamente');
+
+    // ═══════════════════════════════════════════════════════════
+    // FIN DE NUEVA LÓGICA v20.4
+    // ═══════════════════════════════════════════════════════════
+
+    // ⓫ Calcular monto sugerido (diferencia pendiente)
     const diferencia = Math.abs(conceptosPago.diferencia || 0);
     const montoSugerido = diferencia;
 
     console.log(`   💰 Monto sugerido: ${formatearMoneda(montoSugerido)}`);
 
-    // ❻ Aplicar máscara monetaria al input de monto
+    // ⓬ Aplicar máscara monetaria al input de monto
     const $inputMonto = $('#txtMontoCupon');
 
     if (typeof InputMaskMonetario !== 'undefined') {
@@ -3811,40 +4890,25 @@ function abrirModalDetalleCuponEmpresa(instrumento, tipoMedioPago) {
         $inputMonto.val(montoSugerido.toFixed(2));
     }
 
-    // ❼ Aplicar máscara de CUIT al input correspondiente
-    const $inputCuit = $('#txtCuitCupon');
+    // ⓭ ❌ ELIMINADO: Ya NO se aplica máscara de CUIT (campo readonly)
+    // ⓮ ❌ ELIMINADO: Limpiar campo Titular (ahora es readonly)
 
-    if (typeof Inputmask !== 'undefined') {
-        Inputmask({
-            mask: '99-99999999-9',
-            placeholder: '_',
-            clearIncomplete: true
-        }).mask($inputCuit[0]);
-        console.log('   ✅ Máscara de CUIT aplicada');
-    } else {
-        console.warn('   ⚠️ Inputmask no disponible para CUIT');
-    }
-
-    // ❽ Limpiar campos
-    $('#txtTitularCupon').val('');
+    // ⓯ Limpiar solo campo Nro de Orden
     $('#txtNroOrdenCupon').val('');
-    $inputCuit.val('');
 
-    // ❾ Limpiar validaciones previas
+    // ⓰ Limpiar validaciones previas
     $('#formDetalleCuponEmpresa .form-control')
         .removeClass('is-invalid is-valid');
     $('.invalid-feedback').remove();
 
-    // ❿ ✅ CAMBIO CRÍTICO v19.7: Usar Bootstrap Modal.show() en lugar de jQuery manual
+    // ⓱ Mostrar modal con Bootstrap
     try {
         modalInstance.show();
         console.log('✅ Modal mostrado con Bootstrap.show()');
 
-        // ⓫ Ajustar z-index DESPUÉS de que Bootstrap lo muestre
         setTimeout(() => {
             $(modalElement).css('z-index', '5100');
 
-            // Ajustar z-index del backdrop más reciente
             const $backdrops = $('.modal-backdrop');
             if ($backdrops.length > 0) {
                 $backdrops.last().css('z-index', '5099');
@@ -3863,19 +4927,19 @@ function abrirModalDetalleCuponEmpresa(instrumento, tipoMedioPago) {
         return;
     }
 
-    // ⓬ Focus en el primer campo
+    // ⓲ ✅ ACTUALIZADO: Focus en Nro de Orden (ya que Titular es readonly)
     setTimeout(() => {
-        $('#txtTitularCupon').trigger('focus');
+        $('#txtNroOrdenCupon').trigger('focus');
     }, INPUT_FOCUS_TIMEOUT);
 
-    // ⓭ Vincular eventos de guardar
+    // ⓳ Vincular eventos de guardar
     $('#btnGuardarDetalleCupon')
         .off('click.guardarCupon')
         .on('click.guardarCupon', function () {
             guardarDetalleCuponEmpresa(instrumento, tipoMedioPago);
         });
 
-    // ⓮ Vincular evento Enter en el último campo (monto)
+    // ⓴ Vincular evento Enter en el último campo (monto)
     $inputMonto
         .off('keypress.enterCupon')
         .on('keypress.enterCupon', function (e) {
@@ -3887,13 +4951,263 @@ function abrirModalDetalleCuponEmpresa(instrumento, tipoMedioPago) {
 
     console.log('✅ Modal detalle cupón empresa configurado correctamente');
 }
+
 /**
- * ✅ NUEVO v19.5: Guarda el detalle del cupón/orden de empresa
+ * ✅ CORREGIDO v20.5: Valida y asigna CUIT/DNI al campo según tipo de cliente
+ * CORRECCIÓN CRÍTICA: Extrae solo los dígitos del CUIT/CUIL (elimina prefijos como "CUIL", "CUIT", espacios, etc.)
+ * 
+ * REGLAS DE NEGOCIO:
+ * 
+ * CR (Cliente Registrado):
+ *   - Si tiene CUIT válido (11 dígitos) → ✅ Asignar con formato XX-XXXXXXXX-X
+ *   - Si NO tiene CUIT o formato inválido → ❌ Bloquear + mensaje de error
+ * 
+ * CF (Consumidor Final):
+ *   - Si tiene CUIT válido (11 dígitos) → ✅ Asignar con formato XX-XXXXXXXX-X
+ *   - Si tiene solo DNI (8 dígitos) → ⚠️ Asignar DNI + mensaje informativo
+ *   - Si está vacío → ⚠️ Mensaje informativo (cajero debe solicitar)
+ * 
+ * @param {string} cuitCliente - CUIT/DNI del cliente actual (puede incluir prefijos como "CUIL", "CUIT")
+ * @param {boolean} esClienteRegistrado - true si es CR, false si es CF
+ * @returns {Object} - { valido: boolean, mensaje: string }
+ */
+function validarYAsignarCuitCuponEmpresa(cuitCliente, esClienteRegistrado) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔍 VALIDAR Y ASIGNAR CUIT v20.5');
+    console.log(`   CUIT/DNI recibido (original): "${cuitCliente}"`);
+    console.log(`   Es Cliente Registrado: ${esClienteRegistrado ? 'SÍ' : 'NO'}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    const $inputCuit = $('#txtCuitCupon');
+    const $msgCuit = $('#msgCuitCupon');
+
+    // ❶ ✅ NUEVO v20.5: Extraer SOLO los dígitos (eliminar "CUIL", "CUIT", espacios, guiones)
+    const cuitOriginal = (cuitCliente || '').trim();
+
+    // Remover palabras comunes y caracteres no numéricos excepto guiones
+    let cuitLimpio = cuitOriginal
+        .toUpperCase()
+        .replace(/CUIL\s*/g, '')    // Quitar "CUIL "
+        .replace(/CUIT\s*/g, '')    // Quitar "CUIT "
+        .replace(/DNI\s*/g, '')     // Quitar "DNI "
+        .trim();
+
+    // Extraer solo dígitos y guiones
+    const soloDigitosYGuiones = cuitLimpio.match(/[\d-]/g);
+    cuitLimpio = soloDigitosYGuiones ? soloDigitosYGuiones.join('') : '';
+
+    console.log(`   ✅ CUIT/DNI limpio (solo dígitos/guiones): "${cuitLimpio}"`);
+    console.log(`   📊 Longitud: ${cuitLimpio.length} caracteres`);
+
+    // ❷ Expresiones regulares
+    const regexCuit = /^\d{2}-\d{8}-\d{1}$/;  // XX-XXXXXXXX-X (con guiones)
+    const regexDni = /^\d{8}$/;                // 8 dígitos (solo DNI)
+    const regexCuitSinGuiones = /^\d{11}$/;    // 11 dígitos sin guiones (CUIT sin formatear)
+
+    // ❃ ✅ NUEVO: Extraer solo dígitos numéricos (sin guiones)
+    const soloDigitos = cuitLimpio.replace(/-/g, '');
+    console.log(`   🔢 Solo dígitos (sin guiones): "${soloDigitos}" (${soloDigitos.length} dígitos)`);
+
+    // ═══════════════════════════════════════════════════════════
+    // CASO 1: CLIENTE REGISTRADO (CR) - Validación estricta
+    // ═══════════════════════════════════════════════════════════
+
+    if (esClienteRegistrado) {
+        console.log('📋 VALIDANDO CLIENTE REGISTRADO (CR)...');
+
+        // ❶ Verificar si tiene formato de CUIT válido con guiones
+        if (regexCuit.test(cuitLimpio)) {
+            console.log('✅ CUIT válido con formato correcto (XX-XXXXXXXX-X)');
+
+            $inputCuit.val(cuitLimpio);
+            $msgCuit.hide();
+
+            return { valido: true };
+        }
+
+        // ❷ ✅ CORREGIDO: Verificar si tiene 11 dígitos (CUIT sin guiones o con formato inconsistente)
+        if (regexCuitSinGuiones.test(soloDigitos)) {
+            console.log('⚠️ CUIT sin guiones detectado (11 dígitos) - Formateando...');
+
+            // Formatear: "20123456789" → "20-12345678-9"
+            const cuitFormateado = soloDigitos.substring(0, 2) + '-' +
+                soloDigitos.substring(2, 10) + '-' +
+                soloDigitos.substring(10);
+
+            console.log(`   ✅ CUIT formateado: "${cuitFormateado}"`);
+
+            $inputCuit.val(cuitFormateado);
+            $msgCuit.hide();
+
+            return { valido: true };
+        }
+
+        // ❌ CR sin CUIT válido → BLOQUEAR
+        console.error('❌ CR sin CUIT válido - OPERACIÓN BLOQUEADA');
+        console.error(`   Valor original: "${cuitOriginal}"`);
+        console.error(`   Valor limpio: "${cuitLimpio}"`);
+        console.error(`   Solo dígitos: "${soloDigitos}" (${soloDigitos.length} dígitos)`);
+
+        const mensajeError = `
+            <div class="text-start">
+                <p class="mb-3">
+                    <i class='bx bx-error-circle text-danger fs-3'></i>
+                    <strong class="text-danger">Cliente sin CUIT válido</strong>
+                </p>
+                <div class="alert alert-danger mb-3">
+                    <strong>Cliente Registrado:</strong> ${$('#txtClienteNombrePago').val()}<br>
+                    <strong>CUIT actual:</strong> ${cuitOriginal || 'Sin CUIT'}<br>
+                    <strong>Dígitos detectados:</strong> ${soloDigitos} (${soloDigitos.length} dígitos)<br><br>
+                    <i class='bx bx-info-circle'></i> 
+                    El CUIT debe tener <strong>11 dígitos</strong> (formato XX-XXXXXXXX-X)
+                </div>
+                <p class="mb-0">
+                    Por favor, solicite al cliente que corrija su CUIT en 
+                    <strong>Atención al Cliente</strong> antes de continuar.
+                </p>
+            </div>
+        `;
+
+        AbrirMensaje(
+            "CUIT Inválido",
+            mensajeError,
+            function () {
+                $('#msjModal').modal('hide');
+            },
+            false,
+            ["Aceptar"],
+            "error!",
+            null
+        );
+
+        return { valido: false, mensaje: 'CR sin CUIT válido' };
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // CASO 2: CONSUMIDOR FINAL (CF) - Validación flexible
+    // ═══════════════════════════════════════════════════════════
+
+    console.log('📋 VALIDANDO CONSUMIDOR FINAL (CF)...');
+
+    // ❶ Verificar si tiene CUIT válido con guiones
+    if (regexCuit.test(cuitLimpio)) {
+        console.log('✅ CF con CUIT válido (formato con guiones)');
+
+        $inputCuit.val(cuitLimpio);
+        $msgCuit
+            .removeClass('text-warning text-danger')
+            .addClass('text-success')
+            .html('<i class="bx bx-check-circle"></i> CUIT válido')
+            .show();
+
+        return { valido: true };
+    }
+
+    // ❷ ✅ CORREGIDO: Verificar si tiene 11 dígitos (CUIT sin guiones)
+    if (regexCuitSinGuiones.test(soloDigitos)) {
+        console.log('⚠️ CF con CUIT sin guiones (11 dígitos) - Formateando...');
+
+        const cuitFormateado = soloDigitos.substring(0, 2) + '-' +
+            soloDigitos.substring(2, 10) + '-' +
+            soloDigitos.substring(10);
+
+        console.log(`   ✅ CUIT formateado: "${cuitFormateado}"`);
+
+        $inputCuit.val(cuitFormateado);
+        $msgCuit
+            .removeClass('text-warning text-danger')
+            .addClass('text-success')
+            .html('<i class="bx bx-check-circle"></i> CUIT válido (formateado automáticamente)')
+            .show();
+
+        return { valido: true };
+    }
+
+    // ❸ Verificar si tiene solo DNI (8 dígitos)
+    if (regexDni.test(soloDigitos)) {
+        console.log('⚠️ CF con DNI (sin CUIT) - 8 dígitos detectados');
+
+        $inputCuit.val(soloDigitos);
+        $msgCuit
+            .removeClass('text-success text-danger')
+            .addClass('text-warning')
+            .html(`
+                <i class="bx bx-info-circle"></i> 
+                <strong>DNI detectado (sin CUIT)</strong><br>
+                <small>Se usará el DNI para el registro. Si el cliente tiene CUIT, actualícelo en Atención al Cliente.</small>
+            `)
+            .show();
+
+        // Mostrar toastr informativo
+        if (typeof toastr !== 'undefined') {
+            toastr.warning(
+                'Se usará DNI en lugar de CUIT. Si el cliente tiene CUIT, actualícelo en Atención al Cliente.',
+                'Documento sin CUIT',
+                { timeOut: 5000 }
+            );
+        }
+
+        return { valido: true };
+    }
+
+    // ❹ CF sin documento válido → Solicitar al cajero
+    console.warn('⚠️ CF sin documento válido');
+    console.warn(`   Valor original: "${cuitOriginal}"`);
+    console.warn(`   Solo dígitos: "${soloDigitos}" (${soloDigitos.length} dígitos)`);
+
+    $inputCuit.val('');
+    $msgCuit
+        .removeClass('text-success text-warning')
+        .addClass('text-danger')
+        .html(`
+            <i class="bx bx-error-circle"></i> 
+            <strong>Sin CUIT/DNI registrado</strong><br>
+            <small>Solicite al cliente su CUIT o DNI y actualícelo en Atención al Cliente.</small>
+        `)
+        .show();
+
+    const mensajeAdvertencia = `
+        <div class="text-start">
+            <p class="mb-3">
+                <i class='bx bx-info-circle text-warning fs-3'></i>
+                <strong>Cliente sin documento registrado</strong>
+            </p>
+            <div class="alert alert-warning mb-3">
+                <strong>Consumidor Final:</strong> ${$('#txtClienteNombrePago').val()}<br>
+                <strong>Documento actual:</strong> ${cuitOriginal || 'Sin registro'}<br>
+                <strong>Dígitos detectados:</strong> ${soloDigitos} (${soloDigitos.length} dígitos)<br><br>
+                <i class='bx bx-info-circle'></i> 
+                Por favor, solicite al cliente su <strong>CUIT</strong> (11 dígitos) o <strong>DNI</strong> (8 dígitos).
+            </div>
+            <p class="mb-0">
+                Actualice el documento en <strong>Atención al Cliente</strong> antes de continuar.
+            </p>
+        </div>
+    `;
+
+    AbrirMensaje(
+        "Documento Faltante",
+        mensajeAdvertencia,
+        function () {
+            $('#msjModal').modal('hide');
+        },
+        false,
+        ["Aceptar"],
+        "warning",
+        null
+    );
+
+    return { valido: false, mensaje: 'CF sin documento' };
+}
+
+/**
+ * ✅ ACTUALIZADO v20.4: Guarda el detalle del cupón/orden de empresa
+ * NOTA: Titular y CUIT ya vienen validados (readonly desde cliente actual)
  * 
  * VALIDACIONES:
- * - Titular: Obligatorio, min 3 caracteres
- * - Nro Orden: Obligatorio, min 3 caracteres
- * - CUIT: Obligatorio, formato válido (XX-XXXXXXXX-X)
+ * - ❌ ELIMINADO: Validación de Titular (ya validado y readonly)
+ * - Nro Orden: Obligatorio, numérico, máximo 10 caracteres
+ * - ❌ ELIMINADO: Validación de CUIT (ya validado y readonly)
  * - Monto: > 0, <= Saldo factura (con tolerancia)
  * 
  * @param {Object} instrumento - Datos de la empresa/mutual
@@ -3901,43 +5215,40 @@ function abrirModalDetalleCuponEmpresa(instrumento, tipoMedioPago) {
  */
 function guardarDetalleCuponEmpresa(instrumento, tipoMedioPago) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('💾 GUARDAR DETALLE CUPÓN EMPRESA v19.5');
+    console.log('💾 GUARDAR DETALLE CUPÓN EMPRESA v20.4');
     console.log('═══════════════════════════════════════════════════');
 
     // ❶ Obtener valores del formulario
-    const titular = $('#txtTitularCupon').val().trim();
+    const titular = $('#txtTitularCupon').val().trim(); // ← readonly (ya validado)
     const nroOrden = $('#txtNroOrdenCupon').val().trim().toUpperCase();
-    const cuit = $('#txtCuitCupon').val().trim();
+    const cuit = $('#txtCuitCupon').val().trim(); // ← readonly (ya validado)
 
     console.log('📋 Datos del formulario:');
-    console.log(`   Titular: "${titular}"`);
+    console.log(`   Titular (auto): "${titular}"`);
     console.log(`   Nro Orden: "${nroOrden}"`);
-    console.log(`   CUIT: "${cuit}"`);
+    console.log(`   CUIT (auto): "${cuit}"`);
 
-    // ❷ Validar Titular
-    if (!titular || titular.length < 3) {
-        console.warn('⚠️ Titular inválido');
-        mostrarErrorCampo('#txtTitularCupon', 'Debe ingresar el nombre del titular (mínimo 3 caracteres)');
+    // ❷ ✅ SIMPLIFICADO: Solo validar Nro Orden (Titular y CUIT ya vienen validados)
+
+    if (!nroOrden || nroOrden === '') {
+        console.warn('⚠️ Número de orden vacío');
+        mostrarErrorCampo('#txtNroOrdenCupon', 'Debe ingresar el número de orden');
         return;
     }
 
-    // ❸ Validar Nro Orden
-    if (!nroOrden || nroOrden.length < 3) {
-        console.warn('⚠️ Número de orden inválido');
-        mostrarErrorCampo('#txtNroOrdenCupon', 'Debe ingresar un número de orden válido (mínimo 3 caracteres)');
+    if (!/^\d+$/.test(nroOrden)) {
+        console.warn('⚠️ Número de orden no es numérico');
+        mostrarErrorCampo('#txtNroOrdenCupon', 'El número de orden debe ser numérico');
         return;
     }
 
-    // ❹ Validar CUIT (formato XX-XXXXXXXX-X)
-    const cuitRegex = /^\d{2}-\d{8}-\d{1}$/;
-
-    if (!cuit || !cuitRegex.test(cuit)) {
-        console.warn('⚠️ CUIT con formato inválido');
-        mostrarErrorCampo('#txtCuitCupon', 'El CUIT debe tener el formato XX-XXXXXXXX-X (Ej: 20-12345678-9)');
+    if (nroOrden.length > 10) {
+        console.warn('⚠️ Número de orden demasiado largo');
+        mostrarErrorCampo('#txtNroOrdenCupon', 'El número de orden no puede tener más de 10 dígitos');
         return;
     }
 
-    // ❺ Obtener monto
+    // ❸ Obtener monto (sin cambios)
     let monto = 0;
 
     if (typeof InputMaskMonetario !== 'undefined') {
@@ -3949,53 +5260,58 @@ function guardarDetalleCuponEmpresa(instrumento, tipoMedioPago) {
         console.warn(`   ⚠️ InputMask no disponible - usando parseo manual: ${monto}`);
     }
 
-    // ❻ Validar monto > 0
+    // ❹ Validar monto > 0
     if (isNaN(monto) || monto <= 0) {
         console.warn('⚠️ Monto inválido o cero');
         mostrarErrorCampo('#txtMontoCupon', 'Debe ingresar un monto válido mayor a cero');
         return;
     }
 
-    // ❼ Validar monto <= saldo factura (con tolerancia)
+    // ❺ Validar monto <= saldo factura (sin cambios)
     const diferenciaFactura = Math.abs(conceptosPago.diferencia || 0);
 
     if (monto > diferenciaFactura * LIMITE_PORCENTAJE_DIFERENCIA) {
         console.warn(`⚠️ Monto muy alto: ${monto} > ${diferenciaFactura * LIMITE_PORCENTAJE_DIFERENCIA}`);
 
-        Swal.fire({
-            title: '¿Monto elevado?',
-            html: `<div class="text-start">
-                       <p class="mb-3">El monto ingresado es <strong>mayor</strong> a la diferencia pendiente:</p>
-                       <table class="table table-sm table-borderless mb-0">
-                           <tr>
-                               <td class="text-end">Monto ingresado:</td>
-                               <td class="text-start"><strong class="text-danger">${formatearMoneda(monto)}</strong></td>
-                           </tr>
-                           <tr>
-                               <td class="text-end">Diferencia pendiente:</td>
-                               <td class="text-start"><strong class="text-warning">${formatearMoneda(diferenciaFactura)}</strong></td>
-                           </tr>
-                       </table>
-                       <p class="mt-3 mb-0"><i class="bx bx-info-circle"></i> ¿Desea continuar?</p>
-                   </div>`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: '<i class="bx bx-check"></i> Sí, continuar',
-            cancelButtonText: '<i class="bx bx-x"></i> No, corregir',
-            confirmButtonColor: '#28a745',
-            cancelButtonColor: '#6c757d'
-        }).then((result) => {
-            if (result.isConfirmed) {
+        const mensajeHtml = `
+        <div class="text-start">
+            <p class="mb-3">El monto ingresado es <strong>mayor</strong> a la diferencia pendiente:</p>
+            <table class="table table-sm table-borderless mb-0">
+                <tr>
+                    <td class="text-end">Monto ingresado:</td>
+                    <td class="text-start"><strong class="text-danger">${formatearMoneda(monto)}</strong></td>
+                </tr>
+                <tr>
+                    <td class="text-end">Diferencia pendiente:</td>
+                    <td class="text-start"><strong class="text-warning">${formatearMoneda(diferenciaFactura)}</strong></td>
+                </tr>
+            </table>
+            <p class="mt-3 mb-0"><i class="bx bx-info-circle"></i> ¿Desea continuar?</p>
+        </div>
+    `;
+
+        AbrirMensaje(
+            "¿Monto elevado?",
+            mensajeHtml,
+            function () {
+                $('#msjModal').modal('hide');
                 finalizarGuardadoCuponEmpresa(monto, titular, nroOrden, cuit, instrumento, tipoMedioPago);
-            } else {
-                $('#txtMontoCupon').trigger("focus").trigger("select");
+            },
+            false,
+            ["Continuar", "Corregir"],
+            "warn!",
+            function () {
+                $('#msjModal').modal('hide');
+                setTimeout(() => {
+                    $('#txtMontoCupon').trigger("focus").trigger("select");
+                }, 300);
             }
-        });
+        );
 
         return;
     }
 
-    // ❽ Si validaciones OK, finalizar guardado
+    // ❻ Si validaciones OK, finalizar guardado
     finalizarGuardadoCuponEmpresa(monto, titular, nroOrden, cuit, instrumento, tipoMedioPago);
 }
 
@@ -4117,4 +5433,600 @@ $('#modalDetalleCuponEmpresa').off('hidden.bs.modal').on('hidden.bs.modal', func
     }
 
     console.log('✅ MODAL DE CUPÓN EMPRESA LIMPIADO');
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// ✅ NUEVO v20.0: LOTE 4 - FUNCIONES PARA CHEQUES
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * ✅ NUEVO v20.0: Carga la lista de bancos desde el servidor
+ * Obtiene los bancos con los que se opera (bc_id, bc_lista)
+ * 
+ * @returns {Promise<Array>} - Array de objetos {bc_id, bc_lista}
+ */
+function cargarBancos() {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📡 CARGAR BANCOS v20.0');
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ URL del endpoint
+    const url = typeof obtenerBancosUrl !== 'undefined' && obtenerBancosUrl
+        ? obtenerBancosUrl
+        : '/Facturacion/Checkout/ObtenerBancos';
+
+    console.log(`   URL: ${url}`);
+
+    // ❷ Llamada AJAX
+    return $.ajax({
+        url: url,
+        type: 'GET',
+        dataType: 'json',
+        timeout: 10000
+    })
+        .then(function (response) {
+            console.log('✅ Respuesta recibida:', response);
+
+            if (!response || !response.ok) {
+                console.warn('⚠️ Respuesta no exitosa');
+                return [];
+            }
+
+            // ✅ CORRECCIÓN: Soportar ambas propiedades (datos o bancos)
+            const bancos = response.datos || response.bancos || [];
+
+            if (!Array.isArray(bancos)) {
+                console.warn('⚠️ Datos no son un array');
+                return [];
+            }
+
+            console.log(`✅ ${bancos.length} bancos recibidos`);
+            return bancos;
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            console.error('❌ ERROR AL CARGAR BANCOS');
+            console.error('   Status:', textStatus);
+            console.error('   Error:', errorThrown);
+
+            if (typeof toastr !== 'undefined') {
+                toastr.error(`Error al cargar bancos: ${textStatus}`);
+            }
+
+            return $.Deferred().reject(new Error(`Error: ${textStatus}`)).promise();
+        });
+}
+
+/**
+ * ✅ ACTUALIZADO v20.2: Abre el modal de detalle de Cheque
+ * NUEVO: Agregado campo Plaza del Banco
+ * 
+ * @param {Object} instrumento - Instrumento seleccionado
+ * @param {Object} tipoMedioPago - Tipo de MP (tcf_id='CH')
+ */
+function abrirModalDetalleCheque(instrumento, tipoMedioPago) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔓 ABRIR MODAL DETALLE CHEQUE v20.2');
+    console.log(`   Instrumento: ${instrumento?.ins_desc || 'N/A'}`);
+    console.log(`   Tipo MP: ${tipoMedioPago?.tcf_desc || 'N/A'}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Validar instrumento
+    if (!instrumento) {
+        console.error('❌ CRÍTICO: Objeto instrumento es null/undefined');
+
+        if (typeof toastr !== 'undefined') {
+            toastr.error('Error: No se pudo cargar la información del cheque');
+        }
+
+        return;
+    }
+
+    // ❷ Obtener elemento del modal
+    const modalElement = document.querySelector('#modalDetalleCheque');
+
+    if (!modalElement) {
+        console.error('❌ Modal #modalDetalleCheque no encontrado en el DOM');
+
+        if (typeof toastr !== 'undefined') {
+            toastr.error('El modal de cheques no está disponible');
+        }
+
+        return;
+    }
+
+    // ❸ Obtener o crear instancia de Bootstrap Modal
+    let modalInstance = bootstrap.Modal.getInstance(modalElement);
+
+    if (!modalInstance) {
+        console.log('⚠️ Creando instancia de Bootstrap Modal...');
+
+        try {
+            modalInstance = new bootstrap.Modal(modalElement, {
+                backdrop: 'static',
+                keyboard: false
+            });
+            console.log('✅ Instancia creada correctamente');
+        } catch (error) {
+            console.error('❌ Error al crear instancia:', error);
+
+            if (typeof toastr !== 'undefined') {
+                toastr.error(`Error al inicializar el modal: ${error.message}`);
+            }
+
+            return;
+        }
+    }
+
+    // ❹ Hidratar información del tipo e instrumento
+    $('#lblTipoMedioPagoCheque').text(tipoMedioPago.tcf_desc);
+    $('#lblInstrumentoCheque').text(`${instrumento.ins_desc} (${instrumento.ins_simbolo})`);
+
+    // ❺ Establecer fecha actual por defecto
+    const fechaHoy = new Date().toISOString().split('T')[0];
+    $('#txtFechaCheque').val(fechaHoy);
+
+    // ❻ Calcular monto sugerido
+    const diferencia = Math.abs(conceptosPago.diferencia || 0);
+    const montoSugerido = diferencia;
+
+    console.log(`   💰 Monto sugerido: ${formatearMoneda(montoSugerido)}`);
+
+    // ❼ Aplicar máscara monetaria al input de monto
+    const $inputMonto = $('#txtMontoCheque');
+
+    if (typeof InputMaskMonetario !== 'undefined') {
+        InputMaskMonetario.removerMascara($inputMonto);
+        InputMaskMonetario.aplicarMascaraPesos($inputMonto);
+        InputMaskMonetario.establecerValor($inputMonto, montoSugerido);
+        console.log('   ✅ Máscara monetaria aplicada');
+    } else {
+        console.warn('   ⚠️ InputMaskMonetario no disponible - usando valor sin formato');
+        $inputMonto.val(montoSugerido.toFixed(2));
+    }
+
+    // ❽ Limpiar campos
+    $('#txtNroCheque').val('');
+   
+    $('#selectBancoCheque').val('').prop('disabled', true);
+
+    // ❾ Limpiar validaciones previas
+    $('#formDetalleCheque .form-control, #formDetalleCheque .form-select')
+        .removeClass('is-invalid is-valid');
+    $('.invalid-feedback').remove();
+
+    // ❿ Bloquear modal mientras carga bancos
+    bloquearModalCheque('Cargando bancos...');
+
+    // ⓫ Cargar bancos y renderizar combobox
+    cargarBancos()
+        .then(function (bancos) {
+            console.log('✅ Bancos obtenidos:', bancos);
+            renderizarComboBancos(bancos);
+            desbloquearModalCheque();
+        })
+        .catch(function (error) {
+            console.error('❌ Error al cargar bancos:', error);
+
+            $('#selectBancoCheque').html(`
+                <option value="" disabled selected>Error al cargar bancos</option>
+            `);
+
+            desbloquearModalCheque();
+
+            if (typeof toastr !== 'undefined') {
+                toastr.error('No se pudieron cargar los bancos. Intente nuevamente.');
+            }
+        });
+
+    // ⓬ Mostrar modal con Bootstrap
+    try {
+        modalInstance.show();
+        console.log('✅ Modal mostrado con Bootstrap.show()');
+
+        setTimeout(() => {
+            $(modalElement).css('z-index', '5100');
+
+            const $backdrops = $('.modal-backdrop');
+            if ($backdrops.length > 0) {
+                $backdrops.last().css('z-index', '5099');
+            }
+
+            console.log('   ✅ Z-index ajustado');
+        }, 200);
+
+    } catch (error) {
+        console.error('❌ ERROR al mostrar modal:', error);
+
+        if (typeof toastr !== 'undefined') {
+            toastr.error(`Error al abrir el modal: ${error.message}`);
+        }
+
+        return;
+    }
+
+    // ⓭ Vincular eventos de guardar
+    $('#btnGuardarDetalleCheque')
+        .off('click.guardarCheque')
+        .on('click.guardarCheque', function () {
+            guardarDetalleCheque(instrumento, tipoMedioPago);
+        });
+
+    // ⓮ Vincular evento Enter en el último campo
+    $inputMonto
+        .off('keypress.enterCheque')
+        .on('keypress.enterCheque', function (e) {
+            if (e.which === 13) {
+                e.preventDefault();
+                guardarDetalleCheque(instrumento, tipoMedioPago);
+            }
+        });
+
+    console.log('✅ Modal detalle cheque configurado correctamente');
+}
+
+/**
+ * ✅ ACTUALIZADO v20.3: Renderiza el combobox de bancos
+ * NUEVO: Incluye bc_plaza en data-attribute de cada opción
+ * 
+ * @param {Array} bancos - Array de objetos {bc_id, bc_lista, bc_plaza}
+ */
+function renderizarComboBancos(bancos) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🎨 RENDERIZAR COMBO BANCOS v20.3');
+    console.log(`   Total bancos: ${bancos?.length || 0}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    const $select = $('#selectBancoCheque');
+    $select.empty();
+
+    // ❶ Opción por defecto
+    $select.append('<option value="" disabled selected>Seleccione un banco</option>');
+
+    // �② Validar que haya bancos
+    if (!bancos || bancos.length === 0) {
+        console.warn('⚠️ No hay bancos para renderizar');
+
+        $select.append('<option value="" disabled>No hay bancos disponibles</option>');
+        $select.prop('disabled', true);
+
+        return;
+    }
+
+    // ❸ Agregar opciones de bancos con plaza en data-attribute
+    bancos.forEach(function (banco) {
+        const bcId = banco.bc_id || banco.id || '';
+        const bcLista = banco.bc_lista || banco.nombre || 'Banco sin nombre';
+        const bcPlaza = banco.bc_plaza || ''; // ✅ NUEVO: Obtener plaza del objeto
+
+        // ✅ NUEVO: Agregar data-plaza al option
+        $select.append(
+            `<option value="${escapeHtml(bcId)}" data-plaza="${escapeHtml(bcPlaza)}">${escapeHtml(bcLista)}</option>`
+        );
+
+        console.log(`   ✅ Banco: ${bcLista} (${bcId}) - Plaza: ${bcPlaza || 'N/A'}`);
+    });
+
+    // ❹ Habilitar combobox
+    $select.prop('disabled', false);
+
+    console.log('✅ Combo de bancos renderizado correctamente');
+}
+
+/**
+ * ✅ ACTUALIZADO v20.3: Guarda el detalle del cheque
+ * CAMBIO CRÍTICO: Plaza se obtiene del banco seleccionado (data-attribute)
+ * 
+ * VALIDACIONES:
+ * - Banco: Obligatorio
+ * - Nro Cheque: Obligatorio, numérico, máximo 8 caracteres
+ * - ❌ ELIMINADO: Validación de plaza (ya no es input manual)
+ * - Fecha: Obligatoria, >= hoy, <= hoy + días del MP
+ * - Monto: > 0, <= Saldo factura (con tolerancia)
+ * 
+ * @param {Object} instrumento - Datos del instrumento
+ * @param {Object} tipoMedioPago - Tipo de medio de pago
+ */
+function guardarDetalleCheque(instrumento, tipoMedioPago) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('💾 GUARDAR DETALLE CHEQUE v20.3');
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Obtener valores del formulario
+    const $selectBanco = $('#selectBancoCheque');
+    const bancoId = $selectBanco.val();
+    const bancoTexto = $selectBanco.find('option:selected').text();
+
+    // ✅ NUEVO v20.3: Obtener plaza desde data-attribute del banco seleccionado
+    const plaza = $selectBanco.find('option:selected').data('plaza') || '';
+
+    const nroCheque = $('#txtNroCheque').val().trim();
+    const fechaCheque = $('#txtFechaCheque').val();
+
+    console.log('📋 Datos del formulario:');
+    console.log(`   Banco ID: "${bancoId}"`);
+    console.log(`   Banco: "${bancoTexto}"`);
+    console.log(`   Plaza (desde BD): "${plaza || 'N/A'}"`); // ✅ NUEVO: Plaza viene del servidor
+    console.log(`   Nro Cheque: "${nroCheque}"`);
+    console.log(`   Fecha: "${fechaCheque}"`);
+
+    // ❷ Validar Banco
+    if (!bancoId || bancoId === '') {
+        console.warn('⚠️ Banco no seleccionado');
+        mostrarErrorCampo('#selectBancoCheque', 'Debe seleccionar un banco');
+        return;
+    }
+
+    // ❸ Validar Nro Cheque (numérico, máximo 8 dígitos)
+    if (!nroCheque || nroCheque === '') {
+        console.warn('⚠️ Número de cheque vacío');
+        mostrarErrorCampo('#txtNroCheque', 'Debe ingresar el número de cheque');
+        return;
+    }
+
+    if (!/^\d+$/.test(nroCheque)) {
+        console.warn('⚠️ Número de cheque no es numérico');
+        mostrarErrorCampo('#txtNroCheque', 'El número de cheque debe ser numérico');
+        return;
+    }
+
+    if (nroCheque.length > 8) {
+        console.warn('⚠️ Número de cheque demasiado largo');
+        mostrarErrorCampo('#txtNroCheque', 'El número de cheque no puede tener más de 8 dígitos');
+        return;
+    }
+
+    // ❌ ELIMINADO: Validación de plaza manual (ya no aplica)
+
+    // ❹ Validar Fecha
+    if (!fechaCheque) {
+        console.warn('⚠️ Fecha no ingresada');
+        mostrarErrorCampo('#txtFechaCheque', 'Debe seleccionar la fecha del cheque');
+        return;
+    }
+
+    // ❺ Validar fecha >= hoy
+    const fechaChq = new Date(fechaCheque);
+    const fechaHoy = new Date();
+    fechaHoy.setHours(0, 0, 0, 0);
+
+    if (fechaChq < fechaHoy) {
+        console.warn('⚠️ Fecha de cheque es pasada');
+        mostrarErrorCampo('#txtFechaCheque', 'La fecha del cheque no puede ser anterior a hoy');
+        return;
+    }
+
+    // ❻ Validar fecha <= hoy + días del MP
+    const diasMaximos = 365;
+    const fechaMaxima = new Date(fechaHoy);
+    fechaMaxima.setDate(fechaMaxima.getDate() + diasMaximos);
+
+    if (fechaChq > fechaMaxima) {
+        console.warn(`⚠️ Fecha de cheque supera el límite de ${diasMaximos} días`);
+        mostrarErrorCampo(
+            '#txtFechaCheque',
+            `La fecha del cheque no puede ser mayor a ${diasMaximos} días desde hoy`
+        );
+        return;
+    }
+
+    // ❼ Obtener monto
+    let monto = 0;
+
+    if (typeof InputMaskMonetario !== 'undefined') {
+        monto = InputMaskMonetario.obtenerValorNumerico('#txtMontoCheque');
+        console.log(`   💰 Monto extraído con InputMask: ${monto}`);
+    } else {
+        const montoStr = $('#txtMontoCheque').val();
+        monto = parsearNumeroArgentino(montoStr);
+        console.warn(`   ⚠️ InputMask no disponible - usando parseo manual: ${monto}`);
+    }
+
+    // ❽ Validar monto > 0
+    if (isNaN(monto) || monto <= 0) {
+        console.warn('⚠️ Monto inválido o cero');
+        mostrarErrorCampo('#txtMontoCheque', 'Debe ingresar un monto válido mayor a cero');
+        return;
+    }
+
+    // ❾ Validar monto <= saldo factura (con tolerancia)
+    const diferenciaFactura = Math.abs(conceptosPago.diferencia || 0);
+
+    if (monto > diferenciaFactura * LIMITE_PORCENTAJE_DIFERENCIA) {
+        console.warn(`⚠️ Monto muy alto: ${monto} > ${diferenciaFactura * LIMITE_PORCENTAJE_DIFERENCIA}`);
+
+        const mensajeHtml = `
+        <div class="text-start">
+            <p class="mb-3">El monto ingresado es <strong>mayor</strong> a la diferencia pendiente:</p>
+            <table class="table table-sm table-borderless mb-0">
+                <tr>
+                    <td class="text-end">Monto ingresado:</td>
+                    <td class="text-start"><strong class="text-danger">${formatearMoneda(monto)}</strong></td>
+                </tr>
+                <tr>
+                    <td class="text-end">Diferencia pendiente:</td>
+                    <td class="text-start"><strong class="text-warning">${formatearMoneda(diferenciaFactura)}</strong></td>
+                </tr>
+            </table>
+            <p class="mt-3 mb-0"><i class="bx bx-info-circle"></i> ¿Desea continuar?</p>
+        </div>
+    `;
+
+        AbrirMensaje(
+            "¿Monto elevado?",
+            mensajeHtml,
+            function () {
+                $('#msjModal').modal('hide');
+                finalizarGuardadoCheque(monto, bancoId, bancoTexto, nroCheque, plaza, fechaCheque, instrumento, tipoMedioPago);
+            },
+            false,
+            ["Continuar", "Corregir"],
+            "warn!",
+            function () {
+                $('#msjModal').modal('hide');
+                setTimeout(() => {
+                    $('#txtMontoCheque').trigger("focus").trigger("select");
+                }, 300);
+            }
+        );
+
+        return;
+    }
+
+    // ❿ Si validaciones OK, finalizar guardado
+    finalizarGuardadoCheque(monto, bancoId, bancoTexto, nroCheque, plaza, fechaCheque, instrumento, tipoMedioPago);
+}
+
+/**
+ * ✅ ACTUALIZADO v20.2: Finaliza el guardado del cheque
+ * NUEVO: Incluye campo plaza en el detalle
+ */
+function finalizarGuardadoCheque(monto, bancoId, bancoTexto, nroCheque, plaza, fechaCheque, instrumento, tipoMedioPago) {
+    console.log('✅ Finalizando guardado de cheque...');
+    console.log(`   Monto: ${monto}`);
+    console.log(`   Banco: ${bancoTexto} (${bancoId})`);
+    console.log(`   Nro Cheque: ${nroCheque}`);
+    console.log(`   Plaza: ${plaza || 'N/A'}`);
+    console.log(`   Fecha: ${fechaCheque}`);
+
+    // ❶ Crear objeto de detalle
+    const detalleCheque = {
+        banco_id: bancoId,
+        banco_nombre: bancoTexto,
+        nro_cheque: nroCheque,
+        plaza: plaza || '', // ✅ NUEVO: Incluir plaza
+        fecha_cheque: fechaCheque
+    };
+
+    // ❷ Crear objeto de valor
+    const nuevoValor = {
+        id: ++valorIdCounter,
+        tcf_id: tipoMedioPago.tcf_id,
+        tcf_desc: tipoMedioPago.tcf_desc,
+        ins_id: instrumento.ins_id,
+        ins_desc: instrumento.ins_desc,
+        ins_simbolo: instrumento.ins_simbolo || '$',
+        importe: monto,
+        observacion: `CH ${nroCheque} - ${bancoTexto} - ${fechaCheque}${plaza ? ' - Plaza: ' + plaza : ''}`,
+        detalle: detalleCheque,
+        fecha_creacion: new Date().toISOString()
+    };
+
+    console.log('📦 Nuevo valor creado:', nuevoValor);
+
+    // ❸ Agregar a array global
+    valoresPago.push(nuevoValor);
+
+    // ❹ Agregar fila a la tabla
+    agregarFilaValor(nuevoValor);
+
+    // ❺ Actualizar totales
+    actualizarTotalesPago();
+
+    // ❻ Cerrar modal
+    cerrarModalDetalleCheque();
+
+    // ❼ Notificación
+    if (typeof toastr !== 'undefined') {
+        toastr.success(
+            `Cheque agregado: ${formatearMoneda(monto)} - ${bancoTexto}`,
+            'Valor guardado',
+            { timeOut: 3000 }
+        );
+    }
+
+    console.log('✅ Valor de cheque guardado correctamente');
+}
+
+/**
+ * ✅ NUEVO v20.0: Cierra el modal de detalle de cheque
+ */
+function cerrarModalDetalleCheque() {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔒 CERRAR MODAL DETALLE CHEQUE v20.0');
+    console.log('═══════════════════════════════════════════════════');
+
+    const modalElement = document.querySelector('#modalDetalleCheque');
+
+    if (!modalElement) {
+        console.warn('⚠️ Modal #modalDetalleCheque no encontrado');
+        return;
+    }
+
+    // ❶ Obtener instancia de Bootstrap
+    const modalInstance = bootstrap.Modal.getInstance(modalElement);
+
+    if (!modalInstance) {
+        console.warn('⚠️ No hay instancia de Bootstrap Modal');
+        return;
+    }
+
+    // ❷ Usar método nativo de Bootstrap para cerrar
+    try {
+        modalInstance.hide();
+        console.log('✅ Modal cerrado con Bootstrap.hide()');
+    } catch (error) {
+        console.error('❌ Error al cerrar modal:', error);
+    }
+}
+
+/**
+ * ✅ NUEVO v20.0: Bloquea el modal de cheque mientras carga datos
+ * @param {string} mensaje - Mensaje a mostrar
+ */
+function bloquearModalCheque(mensaje) {
+    if ($('#overlayDetalleCheque').length === 0) {
+        $('#modalDetalleCheque .modal-content').append(`
+            <div id="overlayDetalleCheque" style="
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(255, 255, 255, 0.9);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+            ">
+                <div class="text-center">
+                    <div class="spinner-border text-golden mb-3" style="width: 2.5rem; height: 2.5rem;"></div>
+                    <p class="fw-bold text-golden-dark" id="mensajeOverlayCheque">${mensaje}</p>
+                </div>
+            </div>
+        `);
+    } else {
+        $('#mensajeOverlayCheque').text(mensaje);
+        $('#overlayDetalleCheque').fadeIn(200);
+    }
+
+    $('#btnGuardarDetalleCheque').prop('disabled', true);
+}
+
+/**
+ * ✅ NUEVO v20.0: Desbloquea el modal de cheque
+ */
+function desbloquearModalCheque() {
+    $('#overlayDetalleCheque').fadeOut(300, function () {
+        $(this).remove();
+    });
+
+    $('#btnGuardarDetalleCheque').prop('disabled', false);
+}
+
+/**
+ * ✅ NUEVO v20.0: Evento de limpieza automática del modal de cheque
+ */
+$('#modalDetalleCheque').off('hidden.bs.modal').on('hidden.bs.modal', function () {
+    console.log('🧹 LIMPIEZA AUTOMÁTICA - MODAL CHEQUE');
+
+    const $form = $('#formDetalleCheque');
+    $form[0].reset();
+    $form.find('.form-control, .form-select').removeClass('is-invalid is-valid');
+    $('.invalid-feedback').remove();
+
+    $('#lblTipoMedioPagoCheque').text('-');
+    $('#lblInstrumentoCheque').text('-');
+    $('#selectBancoCheque').val('').prop('disabled', true);
+
+    console.log('✅ MODAL DE CHEQUE LIMPIADO');
 });
