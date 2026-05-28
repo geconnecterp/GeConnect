@@ -66,12 +66,11 @@ namespace gc.caja.Areas.Facturacion.Controllers
         }
 
         /// <summary>
-        /// ✅ ACTUALIZADO v20.2: Confirmación de compra con valores de pago
-        /// NUEVO: Serialización correcta de JSON valores
-        /// NUEVO: Determinación automática de co_tipo según tipo de cliente
+        /// ✅ CORREGIDO v20.2.1: Confirmación de compra con valores de pago
+        /// CORRECCIÓN CRÍTICA: Usar DTO wrapper para recibir datos del AJAX
         /// </summary>
         [HttpPost]
-        public async Task<JsonResult> FinalizarCompra(List<Json_Valor> valores, List<Json_Union> uniones)
+        public async Task<JsonResult> FinalizarCompra([FromBody] PagoCompletoDto pagoDto)
         {
             var stopwatch = Stopwatch.StartNew();
 
@@ -82,10 +81,19 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "Sesión expirada" });
 
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
-                _logger?.LogInformation("⏱️ FINALIZAR COMPRA - INICIO v20.2");
+                _logger?.LogInformation("⏱️ FINALIZAR COMPRA - INICIO v20.2.1");
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
-                // ❷ VALIDAR DATOS DE CAJA
+                // ❷ ✅ NUEVO: VALIDAR QUE EL DTO NO SEA NULL
+                if (pagoDto == null)
+                {
+                    _logger?.LogError("❌ CRÍTICO: pagoDto es null - El modelo no se deserializó");
+                    return Json(new { ok = false, mensaje = "Error: No se recibieron datos del pago" });
+                }
+
+                _logger?.LogInformation($"✅ pagoDto recibido: Valores={pagoDto.Valores?.Count ?? 0}, Uniones={pagoDto.Uniones?.Count ?? 0}");
+
+                // ❸ VALIDAR DATOS DE CAJA
                 var cajaActual = CajaActual;
                 if (cajaActual == null)
                 {
@@ -93,7 +101,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "No hay caja abierta" });
                 }
 
-                // ❸ VALIDAR DATOS DE CLIENTE
+                // ❹ VALIDAR DATOS DE CLIENTE
                 var clienteActual = ClienteActual;
                 if (clienteActual == null)
                 {
@@ -101,7 +109,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "No hay cliente seleccionado" });
                 }
 
-                // ❹ VALIDAR QUE HAYA PRODUCTOS
+                // ❺ VALIDAR QUE HAYA PRODUCTOS
                 var productosFactura = FacturaProductos;
                 if (productosFactura == null || productosFactura.Count == 0)
                 {
@@ -109,7 +117,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "Debe cargar al menos un producto" });
                 }
 
-                // ❺ VALIDAR QUE HAYA SUBTOTALES
+                // ❻ VALIDAR QUE HAYA SUBTOTALES
                 var subtotalesFactura = FacturaSubtotales;
                 if (subtotalesFactura == null || subtotalesFactura.Count == 0)
                 {
@@ -120,16 +128,22 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation($"✅ Productos: {productosFactura.Count}");
                 _logger?.LogInformation($"✅ Subtotales: {subtotalesFactura.Count}");
 
-                // ❻ ✅ NUEVO v20.2: VALIDAR QUE HAYA VALORES DE PAGO
+                // ❼ ✅ CORREGIDO: VALIDAR QUE HAYA VALORES DE PAGO DESDE EL DTO
+                var valores = pagoDto.Valores;
+                var uniones = pagoDto.Uniones ?? new List<Json_Union>();
+
                 if (valores == null || valores.Count == 0)
                 {
-                    _logger?.LogWarning("❌ No se recibieron valores de pago");
+                    _logger?.LogWarning("❌ No se recibieron valores de pago en el DTO");
+                    _logger?.LogWarning($"   pagoDto.Valores es null: {valores == null}");
+                    _logger?.LogWarning($"   pagoDto.Valores.Count: {valores?.Count ?? 0}");
                     return Json(new { ok = false, mensaje = "Debe especificar al menos un valor de pago" });
                 }
 
                 _logger?.LogInformation($"✅ Valores de pago recibidos: {valores.Count}");
+                _logger?.LogInformation($"✅ Uniones recibidas: {uniones.Count}");
 
-                // ❼ LOG DETALLADO DE VALORES RECIBIDOS
+                // ❽ LOG DETALLADO DE VALORES RECIBIDOS
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
                 _logger?.LogInformation("📋 VALORES DE PAGO RECIBIDOS:");
                 for (int i = 0; i < valores.Count; i++)
@@ -145,14 +159,14 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 }
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
-                // ❽ SERIALIZAR JSONs
+                // ❾ SERIALIZAR JSONs
                 string jsonProductos = JsonConvert.SerializeObject(productosFactura);
                 string jsonSubtotales = JsonConvert.SerializeObject(subtotalesFactura);
 
                 var sorteosFactura = FacturaSorteos;
                 string jsonSorteos = JsonConvert.SerializeObject(sorteosFactura);
 
-                // ❾ ✅ NUEVO v20.2: SERIALIZAR JSON DE VALORES DE PAGO
+                // ❿ SERIALIZAR JSON DE VALORES DE PAGO
                 string jsonValores = JsonConvert.SerializeObject(valores);
 
                 _logger?.LogInformation($"✅ JSON productos (longitud): {jsonProductos.Length}");
@@ -160,16 +174,16 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation($"✅ JSON sorteos (longitud): {jsonSorteos.Length}");
                 _logger?.LogInformation($"✅ JSON valores (longitud): {jsonValores.Length}");
 
-                // ❿ DETERMINAR IDENTIFICADOR DEL CLIENTE Y TIPO DE OPERACIÓN
+                // ⓫ DETERMINAR IDENTIFICADOR DEL CLIENTE Y TIPO DE OPERACIÓN
                 string ctaId;
-                string coTipo; // ← ✅ NUEVO v20.2
+                string coTipo;
                 string origenUpper = clienteActual.Origen?.ToUpper() ?? "F";
 
                 if (origenUpper == "F") // Consumidor Final
                 {
                     ctaId = clienteActual.cta_documento ?? string.Empty;
                     LP_Id = cajaActual.Caja.lp_id_min;
-                    coTipo = "CF"; // ← ✅ NUEVO v20.2: Consumidor Final
+                    coTipo = "CF";
 
                     _logger?.LogInformation($"✅ Cliente CF → Identificador (documento): {ctaId}");
                     _logger?.LogInformation($"✅ co_tipo: {coTipo}");
@@ -178,13 +192,13 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 {
                     ctaId = clienteActual.cta_id ?? string.Empty;
                     LP_Id = cajaActual.Caja.lp_id_may;
-                    coTipo = "CR"; // ← ✅ NUEVO v20.2: Cliente Registrado
+                    coTipo = "CR";
 
                     _logger?.LogInformation($"✅ Cliente Registrado → Identificador (cta_id): {ctaId}");
                     _logger?.LogInformation($"✅ co_tipo: {coTipo}");
                 }
 
-                // ⓫ CONSTRUIR REQUEST DTO
+                // ⓬ CONSTRUIR REQUEST DTO
                 var request = new CajaOpeConfirmarReq
                 {
                     // ═══ Datos de caja ═══
@@ -200,7 +214,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     ctac_dto = clienteActual.ctac_dto_operacion,
                     ctc_id = clienteActual.ctc_id ?? string.Empty,
 
-                    // ═══ ✅ NUEVO v20.2: Tipo de operación DINÁMICO ═══
+                    // ═══ Tipo de operación DINÁMICO ═══
                     co_tipo = coTipo,
 
                     // ═══ Datos de comprobante ═══
@@ -223,10 +237,10 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     json_subtotal = jsonSubtotales,
                     json_sorteo = jsonSorteos,
 
-                    // ═══ ✅ NUEVO v20.2: JSONs de pago CON VALORES ═══
+                    // ═══ JSONs de pago CON VALORES ═══
                     json_valores = jsonValores,
-                    json_cancela = "{}",  // ← Vacío por ahora (Fase 2)
-                    json_union = "{}"     // ← Vacío por ahora (Fase 2)
+                    json_cancela = "{}",
+                    json_union = "{}"
                 };
 
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
@@ -234,9 +248,11 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation($"   co_tipo: {request.co_tipo}");
                 _logger?.LogInformation($"   cta_id: {request.cta_id}");
                 _logger?.LogInformation($"   json_valores (longitud): {request.json_valores.Length}");
+                _logger?.LogInformation($"   json_valores: {JsonConvert.SerializeObject(jsonValores)}");
+                _logger?.LogInformation($"   Request: {JsonConvert.SerializeObject(request)}");
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
-                // ⓬ INVOCAR SERVICIO
+                // ⓭ INVOCAR SERVICIO
                 var token = TokenCookie;
                 if (string.IsNullOrEmpty(token))
                 {
@@ -250,7 +266,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 stopwatch.Stop();
                 _logger?.LogInformation($"⏱️ Tiempo de ejecución: {stopwatch.ElapsedMilliseconds}ms");
 
-                // ⓭ VALIDAR RESPUESTA
+                // ⓮ VALIDAR RESPUESTA
                 if (resultado == null)
                 {
                     _logger?.LogError("❌ El servicio retornó null");
@@ -263,7 +279,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = resultado.Mensaje ?? "Error al procesar el pago" });
                 }
 
-                // ⓮ EXTRAER DATOS DE RESPUESTA
+                // ⓯ EXTRAER DATOS DE RESPUESTA
                 var respuestaDto = resultado.Entidad;
 
                 if (respuestaDto == null)
@@ -272,7 +288,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "Error: respuesta vacía del servidor" });
                 }
 
-                // ⓯ VALIDAR RESULTADO DEL SP
+                // ⓰ VALIDAR RESULTADO DEL SP
                 if (respuestaDto.resultado != 0)
                 {
                     _logger?.LogError($"❌ Error del SP: {respuestaDto.resultado_msj}");
@@ -283,7 +299,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
-                // ⓰ PARSEAR JSON DE COMPROBANTE
+                // ⓱ PARSEAR JSON DE COMPROBANTE
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
                 _logger?.LogInformation("🔍 PARSEANDO DATOS DEL COMPROBANTE");
                 _logger?.LogInformation($"   resultado_id raw: {respuestaDto.resultado_id}");
@@ -307,7 +323,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "Error: no se obtuvieron datos del comprobante" });
                 }
 
-                // ⓱ LOGS DE DATOS PARSEADOS
+                // ⓲ LOGS DE DATOS PARSEADOS
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
                 _logger?.LogInformation("✅ FACTURA EMITIDA Y PAGADA EXITOSAMENTE");
                 _logger?.LogInformation($"   Letra: {comprobante.tco_letra}");
@@ -317,20 +333,19 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation($"   Mensaje: {respuestaDto.resultado_msj}");
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
-                // ⓲ LIMPIAR SESIÓN DE FACTURA
+                // ⓳ LIMPIAR SESIÓN DE FACTURA
                 FacturaProductos = new List<ProductoFactJsonDto>();
                 FacturaSubtotales = [];
                 FacturaSorteos = [];
 
                 _logger?.LogInformation("✅ Sesión de factura limpiada");
 
-                // ⓳ RETORNAR RESPUESTA CORRECTA PARA FRONTEND
+                // ⓴ RETORNAR RESPUESTA CORRECTA PARA FRONTEND
                 return Json(new
                 {
                     ok = true,
                     mensaje = $"Factura {comprobante.tco_letra} Nro {comprobante.cm_compte} emitida y pagada exitosamente",
 
-                    // Datos del comprobante en formato correcto
                     data = new[]
                     {
                 new
