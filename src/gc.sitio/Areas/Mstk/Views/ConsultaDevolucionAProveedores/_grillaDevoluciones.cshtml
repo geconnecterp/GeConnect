@@ -1,0 +1,73 @@
+﻿@model DevolucionesModel
+@using gc.infraestructura.Dtos.Mstk
+@using gc.infraestructura.Helpers
+@using gc.sitio.Areas.Mstk.Models.ConsultaDevolucionAProveedores
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	.td-nowrap-ellipsis {
+		white-space: nowrap !important;
+		overflow: hidden !important;
+		text-overflow: ellipsis !important;
+		max-width: 220px; /* ajustá según tu diseño */
+		cursor: help; /* indica que tiene tooltip */
+	}
+
+</style>
+<div class="table-responsive table-wrapper-700">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbDevoluciones">
+		<thead class="sticky-top table-golden-header-compact">
+			<tr class="header">
+				<th class="text-center">Dev. Nro.</th>
+				<th class="text-center">Fecha</th>
+				<th class="text-center">Proveedor</th>
+				<th class="text-center">Sucursal</th>
+				<th class="text-center">Motivo</th>
+				<th class="text-center">Usuario</th>
+				<th class="text-center" style="width: 8%;">Remito. N°</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model == null || Model.GrillaDevoluciones == null || Model.GrillaDevoluciones.ListaDatos == null || !Model.GrillaDevoluciones.ListaDatos.Any())
+			{
+				<tr class="fila-vacia">
+					<td colspan="7" class="text-center text-muted py-2">
+						<i class="bx bx-info-circle me-1"></i>
+						No hay items para mostrar.
+					</td>
+				</tr>
+			}
+			else
+			{
+				foreach (var item in Model.GrillaDevoluciones.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase row-devolucion"
+						data-dv-compte="@item.dv_compte"
+						data-pv-compte="@item.pv_compte"
+						data-cm-compte="@item.cm_compte"
+						ondblclick="SeleccionarDevolucion(this,'tbDevoluciones')">
+						<td class="text-center">@item.dv_compte</td>
+						<td class="text-center">@item.dv_fecha.ToString("dd/MM/yy")</td>
+						<td class="text-start">@item.cta_denominacion</td>
+						<td class="text-start">@item.adm_nombre</td>
+						<td class="text-start td-nowrap-ellipsis" title="@item.dv_motivo">
+							@item.dv_motivo
+						</td>
+						<td class="text-start">@item.usu_apellidoynombre</td>
+						<td class="text-center">@item.pv_compte</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>
+<div class="row mt-3">
+	<div class="offset-md-3 col-md-6">
+		<div id="divPaginacion" class="">
+		</div>
+	</div>
+</div>

@@ -1,0 +1,83 @@
+﻿@using gc.sitio.Areas.Mstk.Models.ConsultaDeRecepcionDeProveedores
+@model PrincipalConsultaDeTransfInternaDeStockModel
+@{
+}
+<style>
+	.tab-disabled {
+		pointer-events: none;
+		opacity: 0.5;
+		transition: opacity 0.25s ease-in-out, transform 0.15s ease-in-out;
+	}
+
+		.tab-disabled.tab-clicked {
+			transform: scale(0.97);
+			opacity: 0.35;
+		}
+
+	.tab-content-compact {
+		/* padding: 0.75rem 0; */
+		border-radius: 0.375rem;
+		background-color: transparent;
+		padding-bottom: 0.75rem;
+		padding-right: 0;
+		padding-left: 0;
+		padding-top: 0.25rem;
+	}
+</style>
+
+<div class="container-fluid min-vh-100 d-flex flex-column">
+	<div class="row mb-1">
+		<div class="col-12">
+			<div class="p-1 border rounded bg-light">
+				<div class="d-flex flex-column gap-1">
+
+					<!-- Línea 1: Sucursales envío / recepción -->
+					<div class="d-flex justify-content-between">
+						<div class="pe-4">
+							<strong>Sucursales:</strong> @Model.Sucursales
+						</div>
+					</div>
+
+					<!-- Línea 2: Tipos + Fechas -->
+					<div class="d-flex justify-content-between align-items-center">
+						<div class="pe-4">
+							<strong>Proveedores:</strong> @Model.Proveedores
+						</div>
+
+						<div class="d-flex gap-4 ps-4">
+							<div><strong>Desde:</strong> @Model.Desde.ToString("dd/MM/yyyy")</div>
+							<div><strong>Hasta:</strong> @Model.Hasta.ToString("dd/MM/yyyy")</div>
+						</div>
+					</div>
+
+				</div>
+
+
+			</div>
+		</div>
+	</div>
+	<div class="d-flex align-items-center w-100 mt-2">
+		<ul class="nav nav-tabs nav-tabs-golden" role="tablist" id="tabsConsultaDevolucionAProveedores">
+			<li class="nav-item" role="presentation" id="tabDevoluciones">
+				<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-devs" aria-controls="navs-top-devs" aria-selected="true" id="btnTabDevoluciones">
+					Devoluciones
+				</button>
+			</li>
+			<li class="nav-item" role="presentation" id="tabDetalle">
+				<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-det" aria-controls="navs-top-det" aria-selected="false" tabindex="-1" id="btnTabDetalle">
+					Detalle
+				</button>
+			</li>
+		</ul>
+	</div>
+	<div class="tab-content tab-content-compact">
+		<div class="tab-pane fade tab-content-golden show active" id="navs-top-devs" role="tabpanel">
+			<div id="divDevoluciones">
+			</div>
+		</div>
+		<div class="tab-pane fade tab-content-golden" id="navs-top-det" role="tabpanel">
+			<div id="divDetalle">
+			</div>
+		</div>
+	</div>
+</div>

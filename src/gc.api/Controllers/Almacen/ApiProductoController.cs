@@ -1682,6 +1682,33 @@ namespace gc.api.Controllers.Almacen
 			return Ok(response);
 		}
 
+		[HttpPost("obtener-devolucion-proveedores")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<DevolucionProveedoresListaDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public ActionResult<DevolucionProveedoresListaDto> DevolucionAProveedoresLista(CargarDevolucionesRequest request)
+		{
+			const string msgError = "Error en la invocación de la API - Búsqueda de OR";
+			try
+			{
+				if (request == null)
+					return BadRequest("No se recepcionó el filtro de la búsqueda de PI.");
+
+				var resultados = _productosSv.DevolucionAProveedoresLista(request);
+
+				var response = new ApiResponse<List<DevolucionProveedoresListaDto>>(resultados)
+				{
+					Meta = BuildMetadataDevolucion(resultados, request)
+				};
+
+				return Ok(response);
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, msgError);
+				return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
+			}
+		}
+
 		private static PedidoInternoRequest MapToRequest(QueryFilters filtro)
 		{
 			return new PedidoInternoRequest
@@ -1702,6 +1729,42 @@ namespace gc.api.Controllers.Almacen
 		}
 
 		private static MetadataGrid? BuildMetadata(List<PedidoInternoListaDto>? lista, QueryFilters filtro)
+		{
+			if (lista == null || lista.Count == 0)
+			{
+				return new MetadataGrid
+				{
+					TotalCount = 0,
+					PageSize = filtro.Registros ?? 0,
+					CurrentPage = filtro.Pagina ?? 0,
+					TotalPages = 0,
+					HasNextPage = false,
+					HasPreviousPage = false,
+					NextPageUrl = null,
+					PreviousPageUrl = null
+				};
+			}
+
+			var reg = lista[0];
+			var pageSize = filtro.Registros ?? 0;
+			var currentPage = filtro.Pagina ?? 0;
+			var totalCount = reg.Total_registros;
+			var totalPages = reg.Total_paginas;
+
+			return new MetadataGrid
+			{
+				TotalCount = totalCount,
+				PageSize = pageSize,
+				CurrentPage = currentPage,
+				TotalPages = totalPages,
+				HasNextPage = currentPage < totalPages,
+				HasPreviousPage = currentPage > 1,
+				NextPageUrl = null,
+				PreviousPageUrl = null
+			};
+		}
+
+		private static MetadataGrid? BuildMetadataDevolucion(List<DevolucionProveedoresListaDto>? lista, CargarDevolucionesRequest filtro)
 		{
 			if (lista == null || lista.Count == 0)
 			{

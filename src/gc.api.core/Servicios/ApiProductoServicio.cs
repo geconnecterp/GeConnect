@@ -1898,5 +1898,44 @@ namespace gc.api.core.Servicios
 			List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return resp.First();
 		}
+
+		public List<DevolucionProveedoresListaDto> DevolucionAProveedoresLista(CargarDevolucionesRequest req)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_DV_LISTA;
+			var ps = new List<SqlParameter>();
+			if (req.fecha_d != default && req.fecha_h != default)
+			{
+				ps.Add(new SqlParameter("@fecha_d", req.fecha_d));
+				ps.Add(new SqlParameter("@fecha_h", req.fecha_h));
+			}
+
+			if (string.IsNullOrEmpty(req.adm_list))
+			{
+				ps.Add(new SqlParameter("@adm", false));
+			}
+			else
+			{
+				ps.Add(new SqlParameter("@adm", true));
+				ps.Add(new SqlParameter("@adm_list", req.adm_list));
+			}
+
+			if (string.IsNullOrEmpty(req.cta_list) || req.cta_list.Equals("%"))
+			{
+				ps.Add(new SqlParameter("@cta", false));
+				ps.Add(new SqlParameter("@cta_list", "%"));
+			}
+			else
+			{
+				ps.Add(new SqlParameter("@cta", true));
+				ps.Add(new SqlParameter("@cta_list", req.cta_list));
+			}
+
+			ps.Add(new SqlParameter("@registros", req.Registros));
+			ps.Add(new SqlParameter("@pagina", req.Pagina));
+
+			var ordenes = _repository.EjecutarLstSpExt<DevolucionProveedoresListaDto>(sp, ps, true);
+
+			return ordenes;
+		}
 	}
 }

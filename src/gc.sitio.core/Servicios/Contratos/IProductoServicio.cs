@@ -3,6 +3,7 @@ using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
+using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor.Request;
 using gc.infraestructura.Dtos.Almacen.Info;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Response;
@@ -118,5 +119,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<List<TRObtenerListaDto>> TRObtenerLista(TRObtenerListaRequest req, string token);
 		Task<List<TRConteosDto>> TRConteosDetalleDesdeTI(string ti, string token);
 		Task<List<TRRemitoDto>> TRRemitoDetalleDesdeTI(string re_compte, string token);
+		Task<(List<DevolucionProveedoresListaDto>, MetadataGrid)> DevolucionAProveedoresLista(CargarDevolucionesRequest filters, string token);
 	}
 }

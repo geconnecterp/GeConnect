@@ -1,4 +1,4 @@
-﻿@model ConsultaDeTransfInternaDeStockModel
+﻿@model ConsultaDevolucionAProveedoresModel
 @{
 }
 <style>
@@ -35,29 +35,6 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-6 mb-3 mt-3">
-				<div class="row">
-					<div class="col-sm-12">
-						<div class="input-group input-group-sm">
-							<div class="form-check form-check-inline form-switch mb-2">
-								<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkTipo" />
-								<label class="form-check-label" for="chkTipo" id="lbTipo"></label>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-12">
-						<div class="input-group input-group-sm">
-							<span class="input-group-text">Nombre</span>
-							@Html.DropDownListFor(m => m.TipoSeleccionada, Model.ListaTipos, "Seleccionar", new { @id = "listaTipos", disabled = "disabled", @class = "form-control inputEditable activable" })
-						</div>
-					</div>
-					<div class="col-sm-6">
-						@Html.ListBox("TiposList", null, new { @class = "form-control listbox-sm hidden", @disabled = "disabled" })
-					</div>
-				</div>
-			</div>
 		</div>
 		<div class="row">
 			<div class="col-12">
@@ -65,8 +42,8 @@
 					<div class="col-sm-12">
 						<div class="input-group input-group-sm">
 							<div class="form-check form-check-inline form-switch mb-2">
-								<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkSucursalesEnvia" />
-								<label class="form-check-label" for="chkSucursalesEnvia" id="lbSucursalesEnvia"></label>
+								<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkSucursales" />
+								<label class="form-check-label" for="chkSucursales" id="lbSucursales"></label>
 							</div>
 						</div>
 					</div>
@@ -75,36 +52,37 @@
 					<div class="col-6">
 						<div class="input-group input-group-sm">
 							<span class="input-group-text">Nombre</span>
-							@Html.DropDownListFor(m => m.SucursalEnviaSeleccionada, Model.ListaSucursalesEnvia, "Seleccionar", new { @id = "listaSucursalesEnvia", disabled = "disabled", @class = "form-control inputEditable activable" })
+							@Html.DropDownListFor(m => m.SucursalSeleccionada, Model.ListaSucursales, "Seleccionar", new { @id = "listaSucursales", disabled = "disabled", @class = "form-control inputEditable activable" })
 						</div>
 					</div>
 					<div class="col-sm-6">
-						@Html.ListBox("SucursalesEnviaList", null, new { @class = "form-control listbox-sm", @disabled = "disabled" })
+						@Html.ListBox("SucursalesList", null, new { @class = "form-control listbox-sm", @disabled = "disabled" })
 					</div>
 				</div>
 			</div>
 		</div>
-		<div class="row">
+		<div class="row mb-3 mt-3">
 			<div class="col-12">
 				<div class="row">
-					<div class="col-sm-12">
+					<div class="col-md-12 col-sm-12">
 						<div class="input-group input-group-sm">
 							<div class="form-check form-check-inline form-switch mb-2">
-								<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkSucursalesRecibe" />
-								<label class="form-check-label" for="chkSucursalesRecibe" id="lbSucursalesRecibe"></label>
+								<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRel01" />
+								<label class="form-check-label" for="chkRel01" id="lbRel01"></label>
 							</div>
 						</div>
 					</div>
 				</div>
 				<div class="row">
-					<div class="col-6">
-						<div class="input-group input-group-sm">
+					<div class="col-md-6 col-sm-6" id="divLs01">
+						<div class="input-group  input-group-sm">
 							<span class="input-group-text">Nombre</span>
-							@Html.DropDownListFor(m => m.SucursalRecibeSeleccionada, Model.ListaSucursalesRecibe, "Seleccionar", new { @id = "listaSucursalesRecibe", disabled = "disabled", @class = "form-control inputEditable activable" })
+							<input type="text" class="form-control inputEditable" name="Rel01" id="Rel01" disabled />
+							@Html.Hidden("Rel01Item")
 						</div>
 					</div>
-					<div class="col-sm-6">
-						@Html.ListBox("SucursalesRecibeList", null, new { @class = "form-control listbox-sm", @disabled = "disabled" })
+					<div class="col-md-6 col-sm-6">
+						@Html.ListBox("Rel01List", null, new { @class = "form-control", @disabled = "disabled" })
 					</div>
 				</div>
 			</div>

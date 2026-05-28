@@ -225,6 +225,7 @@
 			public const string SP_DV_DATOS = "dbo.SPGECO_DV_Datos";
 			public const string SP_DV_CONFIRMA = "dbo.SPGECO_DV_Confirmar";
 			public const string SP_DV_CARGA_CONTEOS_PREVIA = "SPGECO_DV_Cargar_Conteos_Previa";
+			public const string SP_DV_LISTA = "SPGECO_DV_Lista";
 			//
 
 			public const string SP_RPR_PENDIENTES = "spgeco_RPR_Pendientes";

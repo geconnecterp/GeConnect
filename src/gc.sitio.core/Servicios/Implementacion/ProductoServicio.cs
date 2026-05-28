@@ -19,6 +19,8 @@ using gc.infraestructura.Dtos.Almacen.Tr.Transferencia.Request;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.General;
+using gc.infraestructura.Dtos.Mstk;
+using gc.infraestructura.Dtos.Mstk.Request;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.sitio.core.Servicios.Contratos;
@@ -57,6 +59,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string DEVOLUCION_PREVIO_CARGADO = "/ObtenerDPPreviosCargados";
 		private const string DEVOLUCION_REVERTIDO = "/ObtenerDPREVERTIDO";
 		private const string DEVOLUCION_CONFIRMAR = "/ConfirmarDP";
+		private const string DEVOLUCION_LISTA = "/obtener-devolucion-proveedores";
 
 		private const string RPRAUTOPEND = "/RPRAutorizacionPendiente";
 		private const string RPRCOMPTESPEND = "/RPRObtenerAutoComptesPendientes";
@@ -3067,5 +3070,48 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 
 		}
+
+
+		public async Task<(List<DevolucionProveedoresListaDto>, MetadataGrid)> DevolucionAProveedoresLista(CargarDevolucionesRequest filters, string token)
+		{
+			try
+			{
+				ApiResponse<List<DevolucionProveedoresListaDto>>? apiResponse;
+				HelperAPI helper = new();
+
+				HttpClient client = helper.InicializaCliente(filters, token, out StringContent contentData);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{DEVOLUCION_LISTA}";
+
+				response = await client.PostAsync(link, contentData);
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<DevolucionProveedoresListaDto>>>(stringData);
+
+					return (apiResponse.Data, apiResponse.Meta);
+				}
+				else
+				{
+					string stringData = await response.Content.ReadAsStringAsync();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+
+					throw new NegocioException("Algo no fue bien y el proceso no se completó. Intente de nuevo más tarde. Si el problema persiste informe al Administrador del sistema.");
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+
+				throw new Exception("Algo no fue bien al intentar cargar las devoluciones de proveedores.");
+			}
+		}
+		
 	}
 }
