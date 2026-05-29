@@ -1,4 +1,9 @@
-﻿$(function () {
+﻿const TabToTableMap = {
+	"navs-top-devs": "#tbDevoluciones",
+	"navs-top-det": "#tbDetalle"
+};
+
+$(function () {
 	$("#pagEstado").on("change", function () {
 		var div = $("#divPaginacion");
 		cargaPaginacion();
@@ -149,8 +154,11 @@ function SeleccionarDevolucion(x, grid) {
 }
 
 function consultarDetalle(dv_compte) {
-	CerrarWaiting();
-	//Seguir aca
+	PostGenHtml({ dv_compte }, obtenerDetalleDevolucionURL, function (obj) {
+		$("#divDetalleDevolucion").html(obj);
+		CerrarWaiting();
+		return true
+	});
 }
 
 function ObtenerProveedoresSeleccionadasConTexto() {

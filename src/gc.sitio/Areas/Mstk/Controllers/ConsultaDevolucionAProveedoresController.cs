@@ -2,6 +2,7 @@
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Administracion;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor.Request;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
@@ -17,6 +18,7 @@ using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using System.Reflection;
 
 namespace gc.sitio.Areas.Mstk.Controllers
 {
@@ -104,6 +106,10 @@ namespace gc.sitio.Areas.Mstk.Controllers
 
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				if (!buscaNew)
 				{
 					lista = ListaDevoluciones.ToList();
@@ -135,6 +141,34 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				model.GrillaDevoluciones = grillaDatos;
 				return PartialView("_grillaDevoluciones", model);
 				
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> ObtenerDetalleDevolucion(string dv_compte)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				//List<DevolucionRevertidoDto>
+				var lista = await _productoServicio.ObtenerDPREVERTIDO(dv_compte, TokenCookie);
+				var model = ObtenerGridCoreSmart<DevolucionRevertidoDto>(lista);
+
+				return PartialView("_grillaDetalle", model);
 			}
 			catch (Exception ex)
 			{

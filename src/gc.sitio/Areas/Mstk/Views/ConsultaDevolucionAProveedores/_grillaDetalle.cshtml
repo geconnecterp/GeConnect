@@ -1,0 +1,50 @@
+﻿@using gc.infraestructura.Dtos.Almacen.AjusteDeStock
+@using gc.infraestructura.Helpers
+@model GridCoreSmart<DevolucionRevertidoDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+</style>
+<div class="table-responsive table-wrapper-700" style="width: 65%;">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbDetalle">
+		<thead class="sticky-top table-golden-header-compact">
+			<tr class="header">
+				<th class="text-center">Id</th>
+				<th class="text-center">Descripción</th>
+				<th class="text-center">Cantidad</th>
+				<th class="text-center">Costo</th>
+				<th class="text-center">Total</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+			{
+				<tr class="fila-vacia">
+					<td colspan="9" class="text-center text-muted py-2">
+						<i class="bx bx-info-circle me-1"></i>
+						No hay items para mostrar.
+					</td>
+				</tr>
+			}
+			else
+			{
+				foreach (var item in Model.ListaDatos)
+				{
+					var total = item.dvd_cantidad * item.dvd_pcosto;
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase row-detalle-devolucion"
+						data-dv-compte="@item.dv_compte"
+						data-p-id="@item.p_id">
+						<td class="text-center">@item.p_id</td>
+						<td class="text-start">@item.p_desc</td>
+						<td class="text-end">@GridHelper.FormatearDato(item.dvd_cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="text-end">@GridHelper.FormatearDato(item.dvd_pcosto, GridHelper.FormatDato.Monto, true)</td>
+						<td class="text-end">@GridHelper.FormatearDato(total, GridHelper.FormatDato.Monto, true)</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>
