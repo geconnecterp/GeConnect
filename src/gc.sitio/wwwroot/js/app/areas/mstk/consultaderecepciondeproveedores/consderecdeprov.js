@@ -46,10 +46,11 @@ function CargarRecepcionesDeProveedores() {
 	var fechaD = $("#Desde").val();
 	var fechaH = $("#Hasta").val();
 	$("#Rel01List").children().each(function (i, item) { lProv.push($(item).val()) });
-	var proveedores = lProv.join(";");
+	var proveedores = lProv.join(",");
 	if (proveedores == "")
 		proveedores = "%";
-	var data = { ctaId: proveedores, fechaD, fechaH };
+	var suc = ObtenerSucursalesSeleccionadasConTexto("SucursalesList", "listaSucursales").ids;
+	var data = { ctaId: proveedores, fechaD, fechaH, suc };
 	AbrirWaiting("Espere un momento mientras se presenta las recepciones del proveedor en el periodo seleccionado...");
 	PostGenHtml(data, consultarRPProvUrl, function (obj) {
 		$("#divRecepciones").html(obj);
@@ -67,6 +68,36 @@ const TabToTableMap = {
 	"navs-top-rec": "#tabRecepciones",
 	"navs-top-det": "#tabDetalle",
 };
+
+function ObtenerSucursalesSeleccionadasConTexto(sucList, suc) {
+
+	let ids = [];
+	let textos = [];
+
+	// 1) Obtener sucursales seleccionadas en el ListBox
+	$("#" + sucList + " option").each(function () {
+		ids.push($(this).val());
+		textos.push($(this).text());
+	});
+
+	// 2) Si NO hay ninguna seleccionada → devolver TODAS las del DropDownList
+	if (ids.length === 0) {
+		$("#" + suc + " option").each(function () {
+			const val = $(this).val();
+			const txt = $(this).text();
+
+			if (val && val !== "") {
+				ids.push(val);
+				textos.push(txt);
+			}
+		});
+	}
+
+	return {
+		ids: ids.join(","),
+		textos: textos.join(", ")
+	};
+}
 
 
 function EvaluarBotonImprimir(tabId) {
