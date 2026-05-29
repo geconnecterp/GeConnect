@@ -1,6 +1,14 @@
 ﻿namespace gc.infraestructura.Dtos.Cajas.Response
 {
-    public class ValoresNCResDto
+    public class ValoresNCResDto:Json_Union
+    {
+        
+        public string? ctacte { get; set; }
+        public string? carga { get; set; }
+        public string? carga_obligatoria { get; set; }
+    }
+
+    public class Json_Union
     {
         public string? cta_id { get; set; }
         public string? dia_movi { get; set; }
@@ -13,8 +21,5 @@
         public string? cv_concepto { get; set; }
         public string? ve_id { get; set; }
         public string? ccb_id { get; set; }
-        public string? ctacte { get; set; }
-        public string? carga { get; set; }
-        public string? carga_obligatoria { get; set; }
     }
 }

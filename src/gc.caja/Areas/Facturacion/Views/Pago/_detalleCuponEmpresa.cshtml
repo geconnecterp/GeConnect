@@ -3,35 +3,23 @@
     Modal de Detalle - Cupón/Orden de Empresa (Mutuales)
     ═══════════════════════════════════════════════════════════════
 
-    DESCRIPCIÓN:
-    Modal para ingresar los datos de una orden de compra o cupón 
-    de mutual/empresa.
-
-    CAMPOS:
-    - Titular
-    - Nro de Orden
-    - CUIT
-    - Monto
-
-    FLUJO:
-    1. Se selecciona la mutual/empresa desde modal de Instrumentos
-    2. Se completan los datos de la orden
-
-    EVENTOS:
-    - Manejados en pagoFactura.js
+    CAMBIOS v20.4:
+    - ✅ Campo Titular → readonly (se carga desde cliente actual)
+    - ✅ Campo CUIT → readonly (se carga desde cliente actual)
+    - ✅ Validación de CUIT según tipo de cliente (CR/CF)
 *@
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- MODAL: DETALLE CUPÓN EMPRESA -->
+<!-- MODAL: DETALLE CUPÓN EMPRESA v20.4 -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
 
-<div class="modal fade" 
-     id="modalDetalleCuponEmpresa" 
-     tabindex="-1" 
-     role="dialog" 
-     aria-labelledby="modalDetalleCuponEmpresaLabel" 
-     aria-hidden="true" 
-     data-bs-backdrop="static" 
+<div class="modal fade"
+     id="modalDetalleCuponEmpresa"
+     tabindex="-1"
+     role="dialog"
+     aria-labelledby="modalDetalleCuponEmpresaLabel"
+     aria-hidden="true"
+     data-bs-backdrop="static"
      data-bs-keyboard="false">
 
     <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 650px;">
@@ -46,9 +34,9 @@
                     <i class="bx bx-purchase-tag me-2"></i>
                     Detalle - Orden/Cupón de Empresa
                 </h5>
-                <button type="button" 
-                        class="btn-close" 
-                        data-bs-dismiss="modal" 
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
                         aria-label="Cerrar"></button>
             </div>
 
@@ -64,32 +52,37 @@
                     <div class="alert alert-info d-flex align-items-center mb-3">
                         <i class="bx bx-info-circle me-2"></i>
                         <div>
-                            <strong>Órdenes / Cupones de Empresas</strong> 
+                            <strong>Órdenes / Cupones de Empresas</strong>
                             <span class="mx-2">|</span>
                             <span id="lblEmpresaSeleccionada">-</span>
                         </div>
                     </div>
 
-                    <!-- Campo: Titular -->
+                    <!-- ✅ ACTUALIZADO v20.4: Campo Titular (readonly) -->
                     <div class="mb-3">
                         <label for="txtTitularCupon" class="form-label fw-bold">
                             Titular <span class="text-danger">*</span>
+                            <small class="text-muted fw-normal">(Cliente actual)</small>
                         </label>
                         <div class="input-group">
                             <span class="input-group-text">
                                 <i class="bx bx-user"></i>
                             </span>
-                            <input type="text" 
-                                   class="form-control" 
-                                   id="txtTitularCupon" 
+                            <input type="text"
+                                   class="form-control bg-light"
+                                   id="txtTitularCupon"
                                    name="titular"
-                                   placeholder="Nombre del titular" 
-                                   required 
-                                   autofocus>
+                                   placeholder="Se cargará automáticamente"
+                                   required
+                                   readonly>
                         </div>
+                        <small class="form-text text-muted">
+                            <i class="bx bx-lock-alt"></i>
+                            Campo automático - No editable
+                        </small>
                     </div>
 
-                    <!-- Campo: Nro de Orden -->
+                    <!-- Campo: Nro de Orden (sin cambios) -->
                     <div class="mb-3">
                         <label for="txtNroOrdenCupon" class="form-label fw-bold">
                             Nro de Orden <span class="text-danger">*</span>
@@ -98,36 +91,41 @@
                             <span class="input-group-text">
                                 <i class="bx bx-hash"></i>
                             </span>
-                            <input type="text" 
-                                   class="form-control" 
-                                   id="txtNroOrdenCupon" 
+                            <input type="text"
+                                   class="form-control"
+                                   id="txtNroOrdenCupon"
                                    name="numeroOrden"
-                                   placeholder="Número de orden/cupón" 
+                                   placeholder="Número de orden/cupón"
                                    required>
                         </div>
                     </div>
 
-                    <!-- Campo: CUIT -->
+                    <!-- ✅ ACTUALIZADO v20.4: Campo CUIT (readonly) -->
                     <div class="mb-3">
                         <label for="txtCuitCupon" class="form-label fw-bold">
                             CUIT <span class="text-danger">*</span>
+                            <small class="text-muted fw-normal">(Del cliente actual)</small>
                         </label>
                         <div class="input-group">
                             <span class="input-group-text">
                                 <i class="bx bx-id-card"></i>
                             </span>
-                            <input type="text" 
-                                   class="form-control" 
-                                   id="txtCuitCupon" 
+                            <input type="text"
+                                   class="form-control bg-light"
+                                   id="txtCuitCupon"
                                    name="cuit"
-                                   placeholder="XX-XXXXXXXX-X" 
+                                   placeholder="Se cargará automáticamente"
                                    maxlength="13"
-                                   required>
+                                   required
+                                   readonly>
                         </div>
-                        <div class="form-text">Formato: 20-12345678-9</div>
+                        <!-- ✅ NUEVO: Área para mensajes dinámicos -->
+                        <div id="msgCuitCupon" class="form-text" style="display: none;">
+                            <!-- Se llenará dinámicamente con JavaScript -->
+                        </div>
                     </div>
 
-                    <!-- Campo: Monto -->
+                    <!-- Campo: Monto (sin cambios) -->
                     <div class="mb-3">
                         <label for="txtMontoCupon" class="form-label fw-bold">
                             Monto <span class="text-danger">*</span>
@@ -136,7 +134,6 @@
                             <span class="input-group-text">
                                 <i class="bx bx-dollar"></i>
                             </span>
-                            <!-- ✅ CORREGIDO: type="text" + clase input-numeric-golden -->
                             <input type="text"
                                    class="form-control form-control-lg text-end"
                                    id="txtMontoCupon"
@@ -156,14 +153,14 @@
             <!-- ═══════════════════════════════════════════════════════ -->
 
             <div class="modal-footer bg-light">
-                <button type="button" 
-                        class="btn btn-secondary" 
+                <button type="button"
+                        class="btn btn-secondary"
                         data-bs-dismiss="modal">
                     <i class="bx bx-x me-1"></i>
                     Cancelar
                 </button>
-                <button type="button" 
-                        class="btn btn-golden" 
+                <button type="button"
+                        class="btn btn-golden"
                         id="btnGuardarDetalleCupon">
                     <i class="bx bx-save me-1"></i>
                     Guardar
@@ -174,5 +171,5 @@
     </div>
 </div>
 
-<!-- Al final del form, antes del cierre -->
+<!-- Hidden fields -->
 <input type="hidden" id="hdnEmpresaIdCupon" name="empresaId" />

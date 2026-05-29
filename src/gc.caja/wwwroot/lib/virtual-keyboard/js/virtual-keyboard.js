@@ -26,9 +26,24 @@
         ],
         numpad: {
             // Layout de 4 columnas (Grid)
-            numeric: ['7', '8', '9', '+', '4', '5', '6', '1', '2', '3', '*', '0', '.', 'ENTER'],
-            integer: ['7', '8', '9', '+', '4', '5', '6', '1', '2', '3', '*', '0', 'ENTER'], // 0 será h2 mediante lógica en render
-            tel:     ['7', '8', '9', '+', '4', '5', '6', '1', '2', '3', '-', '0', '*', 'ENTER']
+            numeric: [
+                '7', '8', '9', 'BACK',
+                '4', '5', '6', '+',
+                '1', '2', '3', '*',
+                '0', '.', 'ENTER'
+            ],
+            integer: [
+                '7', '8', '9', 'BACK',
+                '4', '5', '6', '+',
+                '1', '2', '3', '*',
+                '0', 'ENTER'
+            ],
+            tel: [
+                '7', '8', '9', 'BACK',
+                '4', '5', '6', '+',
+                '1', '2', '3', '-',
+                '0', '*', 'ENTER'
+            ]
         }
     };
 
@@ -163,13 +178,15 @@
             let className = 'vk-key';
             let label = key;
 
-            if (key === '+') className += ' vk-key-v2';
             if (key === '0' && type === 'integer') className += ' vk-key-h2';
             if (key === 'ENTER') {
                 className += ' vk-key-h2 vk-key-enter';
                 label = 'ENTER';
             }
-            if (key === 'BACK') className += ' vk-key-backspace';
+            if (key === 'BACK') {
+                className += ' vk-key-backspace';
+                label = '⌫';
+            }
 
             html += `<div class="${className}" data-key="${key}">${label}</div>`;
         });

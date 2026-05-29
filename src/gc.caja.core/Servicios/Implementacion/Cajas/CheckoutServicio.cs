@@ -38,6 +38,77 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
         {
         }
 
+        public async Task<RespuestaGenerica<RespuestaDto>> FinalizarCompra(CajaOpeConfirmarReq req,string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(req, token, out StringContent contentData);
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_FINALIZAR_PAGO}";
+
+                using var response = await client.PostAsync(link, contentData);
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        _logger.LogWarning($"{MethodBase.GetCurrentMethod().Name} - 01 - Error deserializando la respuesta de la API");
+                        return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+                    if (apiResponse == null || apiResponse.Data == null)
+                    {
+                        _logger.LogWarning($"{MethodBase.GetCurrentMethod().Name} - 02 - Error deserializando la respuesta de la API");
+                        return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+                    }
+                    var resp = apiResponse.Data;
+                    if (resp.resultado == 0 || resp.resultado == 3)
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = true,
+                            Mensaje = "OK",
+                            Entidad = apiResponse.Data
+                        };
+                    }
+                    else if (resp.resultado > 0)
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = false,
+                            EsWarn = true,
+                            EsError = false,
+                            Mensaje = resp.resultado_msj,
+                            Entidad = apiResponse.Data
+                        };
+                    }
+                    else
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = false,
+                            EsWarn = false,
+                            EsError = true,
+                            Mensaje = resp.resultado_msj,
+                            Entidad = apiResponse.Data
+                        };
+                    }
+                }
+                else
+                {
+                    var msg = await ReadApiErrorAsync(response);
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+                    return new() { Ok = false, Mensaje = msg };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+                return new() { Ok = false, Mensaje = "Hubo un error al intentar Finalizar la compra." };
+            }
+        }
+
         public async Task<RespuestaGenerica<ABMChequeListaDto>> GetBancoChequeLista(string token)
         {
             try
