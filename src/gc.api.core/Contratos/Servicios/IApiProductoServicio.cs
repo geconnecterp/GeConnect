@@ -41,6 +41,7 @@ namespace gc.api.core.Contratos.Servicios
 		List<AjustePrevioCargadoDto> ObtenerAJPreviosCargados(string admId);
 		List<AjusteRevertidoDto> ObtenerAJREVERTIDO(string ajId);
 		List<RespuestaDto> ConfirmarAjusteStk(ConfirmarAjusteStkRequest request);
+		List<AjusteDeStockListaDto> ObtenerAjusteDeStockLista(CargarAjusteDeStockListaRequest req);
 
 		List<DevolucionPrevioCargadoDto> ObtenerDPPreviosCargados(string admId, string ctaId);
 		List<DevolucionRevertidoDto> ObtenerDPREVERTIDO(string dvCompte);

@@ -446,7 +446,34 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
-        [HttpPost]
+		[HttpPost("obtener-ajuste-stock")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<AjusteDeStockListaDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public ActionResult<AjusteDeStockListaDto> ObtenerAjusteDeStockLista(CargarAjusteDeStockListaRequest request)
+		{
+			const string msgError = "Error en la invocación de la API - Búsqueda de Ajuste de Stock";
+			try
+			{
+				if (request == null)
+					return BadRequest("No se recepcionó el filtro de la búsqueda de PI.");
+
+				var resultados = _productosSv.ObtenerAjusteDeStockLista(request);
+
+				var response = new ApiResponse<List<AjusteDeStockListaDto>>(resultados)
+				{
+					Meta = BuildMetadataAjuste(resultados, request)
+				};
+
+				return Ok(response);
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, msgError);
+				return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
+			}
+		}
+
+		[HttpPost]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RespuestaDto>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
@@ -1765,6 +1792,42 @@ namespace gc.api.Controllers.Almacen
 		}
 
 		private static MetadataGrid? BuildMetadataDevolucion(List<DevolucionProveedoresListaDto>? lista, CargarDevolucionesRequest filtro)
+		{
+			if (lista == null || lista.Count == 0)
+			{
+				return new MetadataGrid
+				{
+					TotalCount = 0,
+					PageSize = filtro.Registros ?? 0,
+					CurrentPage = filtro.Pagina ?? 0,
+					TotalPages = 0,
+					HasNextPage = false,
+					HasPreviousPage = false,
+					NextPageUrl = null,
+					PreviousPageUrl = null
+				};
+			}
+
+			var reg = lista[0];
+			var pageSize = filtro.Registros ?? 0;
+			var currentPage = filtro.Pagina ?? 0;
+			var totalCount = reg.Total_registros;
+			var totalPages = reg.Total_paginas;
+
+			return new MetadataGrid
+			{
+				TotalCount = totalCount,
+				PageSize = pageSize,
+				CurrentPage = currentPage,
+				TotalPages = totalPages,
+				HasNextPage = currentPage < totalPages,
+				HasPreviousPage = currentPage > 1,
+				NextPageUrl = null,
+				PreviousPageUrl = null
+			};
+		}
+
+		private static MetadataGrid? BuildMetadataAjuste(List<AjusteDeStockListaDto>? lista, CargarAjusteDeStockListaRequest filtro)
 		{
 			if (lista == null || lista.Count == 0)
 			{

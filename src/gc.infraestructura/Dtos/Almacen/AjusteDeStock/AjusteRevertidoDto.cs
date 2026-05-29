@@ -1,7 +1,7 @@
 ﻿
 namespace gc.infraestructura.Dtos.Almacen.AjusteDeStock
 {
-	public class AjusteRevertidoDto : Dto
+	public class AjusteRevertidoDto : Dto, IProductoConUnidad
 	{
         public string as_compte { get; set; } = string.Empty;
         public DateTime as_fecha { get; set; }
@@ -28,5 +28,8 @@ namespace gc.infraestructura.Dtos.Almacen.AjusteDeStock
 		public decimal ps_bulto { get; set; } = 0.000M;
 		public DateTime vto { get; set; }
 		public string up_id { get; set; } = string.Empty;
+		public string up_tipo { get; set; } = string.Empty;
+		public string up_desc { get; set; } = string.Empty;
+		public bool PermiteDecimales => up_tipo == "P";
 	}
 }

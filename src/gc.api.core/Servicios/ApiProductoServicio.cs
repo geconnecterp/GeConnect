@@ -1,3 +1,4 @@
+using DocumentFormat.OpenXml.Drawing;
 using DocumentFormat.OpenXml.Spreadsheet;
 using gc.api.core.Constantes;
 using gc.api.core.Contratos.Servicios;
@@ -387,7 +388,36 @@ namespace gc.api.core.Servicios
             return respuesta;
         }
 
-        public List<DevolucionPrevioCargadoDto> ObtenerDPPreviosCargados(string admId, string ctaId)
+		public List<AjusteDeStockListaDto> ObtenerAjusteDeStockLista(CargarAjusteDeStockListaRequest req)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_AJ_LISTA;
+			var ps = new List<SqlParameter>();
+			if (req.fecha_d != default && req.fecha_h != default)
+			{
+				ps.Add(new SqlParameter("@fecha_d", req.fecha_d));
+				ps.Add(new SqlParameter("@fecha_h", req.fecha_h));
+			}
+
+			if (string.IsNullOrEmpty(req.adm_list))
+			{
+				ps.Add(new SqlParameter("@adm", false));
+			}
+			else
+			{
+				ps.Add(new SqlParameter("@adm", true));
+				ps.Add(new SqlParameter("@adm_list", req.adm_list));
+			}
+
+			ps.Add(new SqlParameter("@registros", req.Registros));
+			ps.Add(new SqlParameter("@pagina", req.Pagina));
+			ps.Add(new SqlParameter("@ordenar", "as_compte"));
+
+			var ordenes = _repository.EjecutarLstSpExt<AjusteDeStockListaDto>(sp, ps, true);
+
+			return ordenes;
+		}
+
+		public List<DevolucionPrevioCargadoDto> ObtenerDPPreviosCargados(string admId, string ctaId)
         {
             var sp = Constantes.ConstantesGC.StoredProcedures.SP_DV_PREVIOS_CARGADOS;
 

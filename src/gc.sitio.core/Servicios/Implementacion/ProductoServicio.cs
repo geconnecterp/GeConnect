@@ -55,6 +55,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string AJUSTE_PREVIO_CARGADO = "/ObtenerAJPreviosCargados";
 		private const string AJUSTE_REVERTIDO = "/ObtenerAJREVERTIDO";
 		private const string AJUSTE_CONFIRMAR = "/ConfirmarAjusteStk";
+		private const string AJUSTE_LISTA = "/obtener-ajuste-stock";
 
 		private const string DEVOLUCION_PREVIO_CARGADO = "/ObtenerDPPreviosCargados";
 		private const string DEVOLUCION_REVERTIDO = "/ObtenerDPREVERTIDO";
@@ -701,6 +702,48 @@ namespace gc.sitio.core.Servicios.Implementacion
 				string stringData = await response.Content.ReadAsStringAsync();
 				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
 				return new();
+			}
+		}
+
+
+		public async Task<(List<AjusteDeStockListaDto>, MetadataGrid)> ObtenerAjusteDeStockLista(CargarAjusteDeStockListaRequest filters, string token)
+		{
+			try
+			{
+				ApiResponse<List<AjusteDeStockListaDto>>? apiResponse;
+				HelperAPI helper = new();
+
+				HttpClient client = helper.InicializaCliente(filters, token, out StringContent contentData);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{AJUSTE_LISTA}";
+
+				response = await client.PostAsync(link, contentData);
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AjusteDeStockListaDto>>>(stringData);
+
+					return (apiResponse.Data, apiResponse.Meta);
+				}
+				else
+				{
+					string stringData = await response.Content.ReadAsStringAsync();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+
+					throw new NegocioException("Algo no fue bien y el proceso no se completó. Intente de nuevo más tarde. Si el problema persiste informe al Administrador del sistema.");
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+
+				throw new Exception("Algo no fue bien al intentar cargar las devoluciones de proveedores.");
 			}
 		}
 

@@ -156,9 +156,26 @@ function SeleccionarDevolucion(x, grid) {
 function consultarDetalle(dv_compte) {
 	PostGenHtml({ dv_compte }, obtenerDetalleDevolucionURL, function (obj) {
 		$("#divDetalleDevolucion").html(obj);
+		InicializarEventosTabDetalleDevolucion();
 		CerrarWaiting();
 		return true
 	});
+}
+
+function InicializarEventosTabDetalleDevolucion() {
+	$(document).off("click", "#tbDetalle tbody tr");
+	$(document).on("click", "#tbDetalle tbody tr", function (e) {
+
+		if ($(e.target).is("button, a, .btn, i")) return;
+
+		const $nuevaFila = $(this);
+		ProcesarSeleccionFilaEnTabDetalleDevolucion($nuevaFila);
+	});
+}
+
+function ProcesarSeleccionFilaEnTabDetalleDevolucion($fila) {
+	$("#tbDetalle tbody tr").removeClass("selected-row");
+	$fila.addClass("selected-row");
 }
 
 function ObtenerProveedoresSeleccionadasConTexto() {

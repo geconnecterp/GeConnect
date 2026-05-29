@@ -2,6 +2,7 @@
 using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor.Request;
 using gc.infraestructura.Dtos.Almacen.Info;
@@ -41,6 +42,7 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<List<AjustePrevioCargadoDto>> ObtenerAJPreviosCargados(string admId, string token);
 		Task<List<AjusteRevertidoDto>> ObtenerAJREVERTIDO(string ajId, string token);
 		Task<List<RespuestaDto>> ConfirmarAjusteStk(string json, string admId, string usuId, string compteOri, string token);
+		Task<(List<AjusteDeStockListaDto>, MetadataGrid)> ObtenerAjusteDeStockLista(CargarAjusteDeStockListaRequest filters, string token);
 
 		Task<List<DevolucionPrevioCargadoDto>> ObtenerDPPreviosCargados(string admId, string ctaId, string token);
 		Task<List<DevolucionRevertidoDto>> ObtenerDPREVERTIDO(string dvCompte, string token);

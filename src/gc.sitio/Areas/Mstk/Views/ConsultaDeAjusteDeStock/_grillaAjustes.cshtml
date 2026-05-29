@@ -1,0 +1,68 @@
+﻿@using gc.infraestructura.Helpers
+@using gc.sitio.Areas.Mstk.Models.ConsultaDeAjusteDeStock
+@model AjustesModel
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	.td-nowrap-ellipsis {
+		white-space: nowrap !important;
+		overflow: hidden !important;
+		text-overflow: ellipsis !important;
+		max-width: 220px; /* ajustá según tu diseño */
+		cursor: help; /* indica que tiene tooltip */
+	}
+
+</style>
+<div class="table-responsive table-wrapper-700">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbAjustes">
+		<thead class="sticky-top table-golden-header-compact">
+			<tr class="header">
+				<th class="text-center" style="width: 8%;">Ajuste Nro.</th>
+				<th class="text-center" style="width: 8%;">Fecha</th>
+				<th class="text-center">Sucursal</th>
+				<th class="text-center">Motivo</th>
+				<th class="text-center">Usuario</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model == null || Model.GrillaAjustes == null || Model.GrillaAjustes.ListaDatos == null || !Model.GrillaAjustes.ListaDatos.Any())
+			{
+				<tr class="fila-vacia">
+					<td colspan="7" class="text-center text-muted py-2">
+						<i class="bx bx-info-circle me-1"></i>
+						No hay items para mostrar.
+					</td>
+				</tr>
+			}
+			else
+			{
+				foreach (var item in Model.GrillaAjustes.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase row-ajuste"
+						data-as-compte="@item.as_compte"
+						data-dia-movi="@item.dia_movi"
+						data-at-id="@item.at_id"
+						data-ae-id="@item.ae_id"
+						ondblclick="SeleccionarAjuste(this,'tbAjustes')">
+						<td class="text-center">@item.as_compte</td>
+						<td class="text-center">@item.as_fecha.ToString("dd/MM/yy")</td>
+						<td class="text-start">@item.adm_nombre</td>
+						<td class="text-start td-nowrap-ellipsis" title="@item.as_motivo">
+							@item.as_motivo
+						</td>
+						<td class="text-start">@item.usu_apellidoynombre</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>
+<div class="row mt-3">
+	<div class="offset-md-3 col-md-6">
+		<div id="divPaginacion" class="">
+		</div>
+	</div>
+</div>
