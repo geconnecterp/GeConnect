@@ -47,7 +47,8 @@ function CargarRecepcionesDeProveedores() {
 	var fechaH = $("#Hasta").val();
 	$("#Rel01List").children().each(function (i, item) { lProv.push($(item).val()) });
 	var proveedores = lProv.join(";");
-
+	if (proveedores == "")
+		proveedores = "%";
 	var data = { ctaId: proveedores, fechaD, fechaH };
 	AbrirWaiting("Espere un momento mientras se presenta las recepciones del proveedor en el periodo seleccionado...");
 	PostGenHtml(data, consultarRPProvUrl, function (obj) {
@@ -286,6 +287,10 @@ function InicializarCamposEnFiltros() {
 
 	$("#listaSucursales").val("");
 	$("#Rel01Item").val("");
+
+	$("#chkDesdeHasta").prop('checked', true);
+	$("#chkDesdeHasta").trigger("change");
+	$("#chkDesdeHasta").prop("disabled", true);
 
 	$("#SucursalesList").prop("disabled", true);
 	$("#listaSucursales").prop("disabled", true);
