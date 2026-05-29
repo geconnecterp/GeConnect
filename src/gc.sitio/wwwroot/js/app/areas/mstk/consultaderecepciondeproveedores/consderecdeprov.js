@@ -82,15 +82,17 @@ function ObtenerSucursalesSeleccionadasConTexto(sucList, suc) {
 
 	// 2) Si NO hay ninguna seleccionada → devolver TODAS las del DropDownList
 	if (ids.length === 0) {
-		$("#" + suc + " option").each(function () {
-			const val = $(this).val();
-			const txt = $(this).text();
+		ids.push("%");
+		textos.push("Todos");
+		//$("#" + suc + " option").each(function () {
+		//	const val = $(this).val();
+		//	const txt = $(this).text();
 
-			if (val && val !== "") {
-				ids.push(val);
-				textos.push(txt);
-			}
-		});
+		//	if (val && val !== "") {
+		//		ids.push(val);
+		//		textos.push(txt);
+		//	}
+		//});
 	}
 
 	return {
