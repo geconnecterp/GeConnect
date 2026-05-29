@@ -18,7 +18,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
     public class CheckoutController : ControladorBaseCaja
     {
         private readonly ICheckoutServicio _pagoFactServicio;
-       
+
         public CheckoutController(IOptions<AppSettings> options,
             ICheckoutServicio pagoFactServicio,
             IHttpContextAccessor httpContext,
@@ -30,9 +30,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
         private async Task InicializaBancos()
         {
-            if (BancosLista.Count == 0 )
+            if (BancosLista.Count == 0)
             {
-               await ObtenerProveedores(_pagoFactServicio);
+                await ObtenerProveedores(_pagoFactServicio);
             }
         }
         /// <summary>
@@ -46,19 +46,19 @@ namespace gc.caja.Areas.Facturacion.Controllers
             try
             {
                 var lista = BancosLista;
-                if(lista==null || !lista.Any())
+                if (lista == null || !lista.Any())
                 {
                     lista = [];
                     lista.Add(new ABMChequeListaDto { bc_id = "0000", bc_denominacion = "Sin bancos disponibles", bc_lista = "(default) Sin bancos disponibles" });
                 }
                 return Json(new { ok = true, bancos = lista });
             }
-            catch(NegocioException ex)
+            catch (NegocioException ex)
             {
                 _logger?.LogWarning("⚠️ Error de negocio al obtener bancos: {Mensaje}", ex.Message);
                 return Json(new { ok = false, error = false, warn = true, mensaje = ex.Message ?? "Ocurrió un error de negocio al obtener los bancos" });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger?.LogError(ex, "❌ Excepción al obtener bancos");
                 return Json(new { ok = false, error = true, warn = false, mensaje = "Ocurrió un error al obtener los bancos" });
@@ -197,6 +197,11 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     _logger?.LogInformation($"✅ Cliente Registrado → Identificador (cta_id): {ctaId}");
                     _logger?.LogInformation($"✅ co_tipo: {coTipo}");
                 }
+
+                jsonProductos = jsonProductos.Replace("\\", "");
+                jsonSorteos = jsonSorteos.Replace("\\", "");
+                jsonSubtotales = jsonSubtotales.Replace("\\", "");
+                jsonValores = jsonValores.Replace("\\", "");
 
                 // ⓬ CONSTRUIR REQUEST DTO
                 var request = new CajaOpeConfirmarReq
@@ -506,13 +511,13 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "Debe especificar el tipo de operación" });
                 }
                 var cli = ClienteActual;
-                
-                if (cli ==null || (string.IsNullOrEmpty(cli.cta_id) && string.IsNullOrEmpty(cli.cta_documento)))
+
+                if (cli == null || (string.IsNullOrEmpty(cli.cta_id) && string.IsNullOrEmpty(cli.cta_documento)))
                 {
                     _logger?.LogWarning("❌ El identificador del cliente es requerido");
                     return Json(new { ok = false, mensaje = "Debe especificar el id de la cuenta" });
                 }
-                req.cta_id = cli.Origen=="C"? cli.cta_id:cli.cta_documento;
+                req.cta_id = cli.Origen == "C" ? cli.cta_id : cli.cta_documento;
                 // ❷ ✅ NUEVO: Obtener adm_id desde la sesión (NO desde el request)
                 // El controlador hereda de ControladorBase que ya tiene AdministracionId
                 if (string.IsNullOrEmpty(AdministracionId))

@@ -23,6 +23,13 @@ namespace gc.api.core.Servicios.LineaCaja
         {
             var sp = ConstantesGC.StoredProcedures.SP_CAJA_OPE_CONFIRMAR;
 
+            var json_sorteo = req.json_sorteo.Replace("\\", "");
+            var json_union = req.json_union.Replace("\\", "");
+            var json_valores = req.json_valores.Replace("\\", "");
+            var json_subtotal = req.json_subtotal.Replace("\\", "");
+            var json_p = req.json_p.Replace("\\", "");
+            var json_cancela = req.json_cancela.Replace("\\", "");
+
             var ps = new List<SqlParameter>()
             {
                 new SqlParameter("@caja_id", req.caja_id),
@@ -47,12 +54,12 @@ namespace gc.api.core.Servicios.LineaCaja
                 new SqlParameter("@cta_denominacion", req.cta_denominacion),
                 new SqlParameter("@cta_domicilio", req.cta_domicilio),
                 new SqlParameter("@ve_id", req.ve_id),
-                new SqlParameter("@json_p", req.json_p),
-                new SqlParameter("@json_valores", req.json_valores),
-                new SqlParameter("@json_cancela", req.json_cancela),
-                new SqlParameter("@json_union", req.json_union),
-                new SqlParameter("@json_subtotal", req.json_subtotal),
-                new SqlParameter("@json_sorteo", req.json_sorteo)
+                new SqlParameter("@json_p", json_p),
+                new SqlParameter("@json_valores", json_valores),
+                new SqlParameter("@json_cancela", json_cancela),
+                new SqlParameter("@json_union", json_union),
+                new SqlParameter("@json_subtotal", json_subtotal),
+                new SqlParameter("@json_sorteo", json_sorteo)
             };
 
             var res = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
