@@ -111,24 +111,9 @@ namespace gc.api.Controllers.Caja
             {
                 return BadRequest("El parámetro req es requerido.");
             }
-            var res = _apiProductoFactServicio.ConfirmarOperacionCaja(req);
+            var res = _apiProductoFactServicio.CrearPagoDiferido(req);
             return Ok(new ApiResponse<RespuestaDto>(res));
 
-        }
-
-        [HttpPost]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
-        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        [Route("[action]")]
-        public IActionResult ConfirmarOperacionCaja(CajaOpeConfirmarReq req)
-        {
-            if (req == null)
-            {
-                return BadRequest("El parámetro req es requerido.");
-            }
-            var res = _apiProductoFactServicio.ConfirmarOperacionCaja(req);
-            return Ok(new ApiResponse<RespuestaDto>(res));
-
-        }
+        }        
     }
 }

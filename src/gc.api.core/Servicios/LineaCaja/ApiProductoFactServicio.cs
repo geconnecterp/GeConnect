@@ -9,7 +9,7 @@ using Microsoft.Data.SqlClient;
 
 namespace gc.api.core.Servicios.LineaCaja
 {
-    public class ApiProductoFactServicio : Servicio<EntidadBase>, IApiProductoFactServicio
+    public class ApiProductoFactServicio : CajaBaseServicio, IApiProductoFactServicio
     {
         public ApiProductoFactServicio(IUnitOfWork uow) : base(uow)
         {
@@ -133,53 +133,7 @@ namespace gc.api.core.Servicios.LineaCaja
 
         public RespuestaDto CrearPagoDiferido(CajaOpeConfirmarReq req)
         {
-            var sp = ConstantesGC.StoredProcedures.SP_CAJA_OPE_CONFIRMAR;
-
-            var ps = new List<SqlParameter>()
-            {
-                new SqlParameter("@caja_id", req.caja_id),
-                new SqlParameter("@usu_id", req.usu_id),
-                new SqlParameter("@adm_id", req.adm_id),
-                new SqlParameter("@lp_id", req.lp_id),
-                new SqlParameter("@caja_nro_proceso", req.caja_nro_proceso),
-                new SqlParameter("@caja_nro_cierre", req.caja_nro_cierre),
-
-                new SqlParameter("@usu_id_autoriza", req.caja_nro_cierre),
-
-                new SqlParameter("@cta_id", req.cta_id),
-                new SqlParameter("@ctac_dto", req.ctac_dto),
-                new SqlParameter("@co_tipo", req.co_tipo),
-                new SqlParameter("@ctc_id", req.ctc_id),
-                new SqlParameter("@tco_letra", req.tco_letra),
-                new SqlParameter("@tco_id_ori", req.tco_id_ori),
-                new SqlParameter("@cm_compte_ori", req.cm_compte_ori),
-                new SqlParameter("@afip_id", req.afip_id),
-                new SqlParameter("@tdoc_id", req.tdoc_id),
-                new SqlParameter("@cta_documento", req.cta_documento),
-                new SqlParameter("@cta_denominacion", req.cta_denominacion),
-                new SqlParameter("@cta_domicilio", req.cta_domicilio),
-                new SqlParameter("@ve_id", req.ve_id),
-                new SqlParameter("@json_p", req.json_p),
-                new SqlParameter("@json_valores", req.json_valores),
-                new SqlParameter("@json_cancela", req.json_cancela),
-                new SqlParameter("@json_union", req.json_union),
-                new SqlParameter("@json_subtotal", req.json_subtotal),
-                new SqlParameter("@json_sorteo", req.json_sorteo)
-            };
-
-            var res = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
-            if (!res.Any())
-            {
-                return new()
-                {
-                    resultado = -1,
-                    resultado_msj = "No se logro obtener un resultado especifico para la operación. Intentelo nuevamente."
-                };
-            }
-            else
-            {
-                return res[0];
-            }
+            return OperacionConfirmacionBase(req);
         }
 
         #region Metodos invocados exclusivamente desde la api de reportes
@@ -236,10 +190,7 @@ namespace gc.api.core.Servicios.LineaCaja
             return res;
         }
 
-        public RespuestaDto ConfirmarOperacionCaja(CajaOpeConfirmarReq req)
-        {
-             return CrearPagoDiferido(req);
-        }
+       
         #endregion
 
     }

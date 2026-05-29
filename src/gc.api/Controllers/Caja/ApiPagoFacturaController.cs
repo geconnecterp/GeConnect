@@ -3,6 +3,7 @@ using gc.api.core.Servicios.LineaCaja;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Cajas.Response;
+using gc.infraestructura.Dtos.Gen;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -89,6 +90,21 @@ namespace gc.api.Controllers.Caja
 
             var res = _apiPagoFactServicio.ObtenerValoresIns(req);
             return Ok(new ApiResponse<List<ValoresInsResDto>>(res));
+        }
+
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult ConfirmarOperacionCaja(CajaOpeConfirmarReq req)
+        {
+            if (req == null)
+            {
+                return BadRequest("El parámetro req es requerido.");
+            }
+            var res = _apiPagoFactServicio.ConfirmarOperacionCaja(req);
+            return Ok(new ApiResponse<RespuestaDto>(res));
+
         }
     }
 }
