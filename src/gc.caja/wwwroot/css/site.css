@@ -6851,3 +6851,71 @@ input, select, textarea, button, checkbox, radio {
 }
 
 /* FIN ESTILOS MODAL PAGO OPTIMIZADO v19.4 */
+
+/* ═══════════════════════════════════════════════════════════════════
+   HIGHLIGHT TEMPORAL DE PRODUCTOS (✅ NUEVO v16.2)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/**
+ * Clase aplicada inicialmente para crear el efecto de highlight
+ */
+.producto-highlight {
+    background: linear-gradient(90deg, rgba(255, 215, 0, 0.3) 0%, /* Golden inicial */
+    rgba(255, 215, 0, 0.15) 100% /* Golden suave al final */
+    ) !important;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4) !important;
+    transition: all 0.3s ease-in-out !important;
+    animation: pulseHighlight 0.6s ease-in-out !important;
+}
+
+/**
+ * Clase para el fade out del highlight
+ */
+.producto-highlight-fade {
+    background: transparent !important;
+    box-shadow: none !important;
+    transition: all 1.2s ease-out !important;
+}
+
+/**
+ * Animación de pulso para el highlight inicial
+ */
+@keyframes pulseHighlight {
+    0% {
+        transform: scale(1);
+        background: rgba(255, 215, 0, 0.5);
+    }
+
+    50% {
+        transform: scale(1.01);
+        background: rgba(255, 215, 0, 0.3);
+    }
+
+    100% {
+        transform: scale(1);
+        background: rgba(255, 215, 0, 0.3);
+    }
+}
+
+/**
+ * Asegurar que el highlight tenga prioridad sobre otras clases
+ */
+#tbodyProductos tr.producto-highlight td {
+    background: inherit !important;
+}
+
+/**
+ * Efecto especial para productos fusionados + highlight
+ */
+#tbodyProductos tr.table-warning.producto-highlight {
+    background: linear-gradient(90deg, rgba(255, 193, 7, 0.4) 0%, /* Warning + Golden */
+    rgba(255, 193, 7, 0.2) 100% ) !important;
+}
+
+/**
+ * Efecto especial para productos agregados + highlight
+ */
+#tbodyProductos tr.table-success.producto-highlight {
+    background: linear-gradient(90deg, rgba(40, 167, 69, 0.3) 0%, /* Success + Golden */
+    rgba(40, 167, 69, 0.15) 100% ) !important;
+}

@@ -18,7 +18,8 @@ let ultimoCambioProducto = null; // ✅ NUEVO: Permite reflejar visualmente alta
 let cajaAcumulaProductos = true; // Default: TRUE (acumula por defecto)
 // ✅ AGREGAR AL INICIO DEL ARCHIVO (después de las variables globales)
 let tieneBackupPendiente = false; // ✅ NUEVO: Flag de backup
-
+// ✅ NUEVO v16.2: Timer para debounce de posicionamiento
+let posicionamientoTimer = null;
 // ✅ EXPONER VARIABLE PARA ACCESO DESDE OTROS MÓDULOS
 window.origenCargaActual = origenCargaActual; // ← CRÍTICO para busquedasV02.js
 
@@ -1029,6 +1030,18 @@ function agregarProductoAGrilla(producto) {
             actualizarGrillaProductos();
             $('#cantidadItems').text(productosFactura.length);
 
+            // ═══════════════════════════════════════════════════════════════════
+            // ✅ NUEVO v16.0: POSICIONAR PRODUCTO FUSIONADO EN VISTA
+            // ═══════════════════════════════════════════════════════════════════
+            console.log('📍 Posicionando producto fusionado en vista...');
+
+            // Esperar a que el DOM se actualice completamente (micro-delay)
+            // ✅ NUEVO v16.2: Debounce del posicionamiento
+            clearTimeout(posicionamientoTimer);
+            posicionamientoTimer = setTimeout(() => {
+                posicionarProductoEnGrilla(indiceExistente);
+            }, 50);
+
             console.log('═══════════════════════════════════════════════════');
             console.log('✅ CANTIDAD INCREMENTADA EXITOSAMENTE');
             console.log(`   Total productos únicos: ${productosFactura.length}`);
@@ -1175,6 +1188,17 @@ function agregarProductoAGrilla(producto) {
 
     // ✅ Actualizar estado del botón tras agregar producto
     actualizarEstadoBotonUltimoDetalle();
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ✅ NUEVO v16.0: POSICIONAR ÚLTIMO PRODUCTO AGREGADO EN VISTA
+    // ═══════════════════════════════════════════════════════════════════
+    console.log('📍 Posicionando último producto agregado en vista...');
+
+    // ✅ NUEVO v16.2: Debounce del posicionamiento
+    clearTimeout(posicionamientoTimer);
+    posicionamientoTimer = setTimeout(() => {
+        posicionarUltimoProducto();
+    }, 50);
 
     return {
         accion: 'agregado',
@@ -2395,6 +2419,234 @@ function ejecutarRecuperacionBackup() {
             mostrarMensajeEstado(mensaje, 'danger', 0);
         }
     });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SECCIÓN 9: POSICIONAMIENTO VISUAL EN GRILLA (✅ ACTUALIZADO v16.2)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * ✅ ACTUALIZADO v16.2: Posiciona un producto en el tope visible de la grilla
+ * NUEVO: Detecta si el producto ya está visible y omite scroll innecesario
+ * 
+ * @param {number|jQuery} registroIdentificador - Índice del producto O selector jQuery del <tr>
+ * @param {boolean} forzarScroll - Si es true, hace scroll aunque el producto esté visible (default: false)
+ * 
+ * @example
+ * // Por índice
+ * posicionarProductoEnGrilla(5);
+ * 
+ * // Por elemento jQuery
+ * const $fila = $('#tbodyProductos tr[data-index="5"]');
+ * posicionarProductoEnGrilla($fila);
+ * 
+ * // Forzar scroll aunque esté visible
+ * posicionarProductoEnGrilla(5, true);
+ */
+function posicionarProductoEnGrilla(registroIdentificador, forzarScroll = false) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📍 POSICIONANDO PRODUCTO EN GRILLA v16.2');
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ RESOLVER EL REGISTRO (por índice o por jQuery)
+    let $registro;
+
+    if (typeof registroIdentificador === 'number') {
+        console.log(`   Buscando producto por índice: ${registroIdentificador}`);
+        $registro = $(`#tbodyProductos tr[data-index="${registroIdentificador}"]`);
+    } else if (registroIdentificador instanceof jQuery) {
+        console.log('   Usando elemento jQuery proporcionado');
+        $registro = registroIdentificador;
+    } else {
+        console.error('❌ Identificador de registro inválido:', registroIdentificador);
+        return;
+    }
+
+    // �②  VALIDAR QUE EL REGISTRO EXISTE
+    if (!$registro || $registro.length === 0) {
+        console.warn('⚠️ Registro no encontrado en la grilla');
+        console.warn(`   Identificador: ${registroIdentificador}`);
+        return;
+    }
+
+    console.log(`✅ Registro encontrado:`);
+    console.log(`   - Item: ${$registro.attr('data-item')}`);
+    console.log(`   - Índice: ${$registro.attr('data-index')}`);
+
+    // ❸ BUSCAR EL CONTENEDOR SCROLLEABLE
+    const $contenedor = $registro.closest('.table-responsive');
+
+    if ($contenedor.length === 0) {
+        console.warn('⚠️ Contenedor .table-responsive no encontrado');
+        return;
+    }
+
+    console.log('✅ Contenedor scrolleable encontrado');
+
+    // ❹ ✅ NUEVO v16.2: VERIFICAR SI HAY SCROLL DISPONIBLE
+    const contenedorHeight = $contenedor.outerHeight();
+    const contenedorScrollHeight = $contenedor[0].scrollHeight;
+    const tieneScroll = contenedorScrollHeight > contenedorHeight;
+
+    console.log('📊 Dimensiones del contenedor:');
+    console.log(`   - Altura visible: ${contenedorHeight}px`);
+    console.log(`   - Altura total con scroll: ${contenedorScrollHeight}px`);
+    console.log(`   - Tiene scroll: ${tieneScroll ? 'SÍ ✅' : 'NO ❌'}`);
+
+    if (!tieneScroll && !forzarScroll) {
+        console.log('ℹ️ El contenedor no tiene scroll, omitiendo posicionamiento');
+        console.log('═══════════════════════════════════════════════════');
+
+        // ✅ APLICAR HIGHLIGHT aunque no haya scroll
+        aplicarHighlightTemporal($registro);
+        return;
+    }
+
+    // ❺ ✅ NUEVO v16.2: VERIFICAR SI EL REGISTRO YA ESTÁ VISIBLE
+    if (!forzarScroll) {
+        const esVisible = esRegistroVisibleEnViewport($registro, $contenedor);
+
+        if (esVisible) {
+            console.log('✅ El producto ya está visible en el viewport, omitiendo scroll');
+            console.log('═══════════════════════════════════════════════════');
+
+            // ✅ APLICAR HIGHLIGHT aunque ya esté visible
+            aplicarHighlightTemporal($registro);
+            return;
+        }
+    }
+
+    // ❻ OBTENER DIMENSIONES Y POSICIONES
+    const $header = $contenedor.find('thead');
+    const headerHeight = $header.outerHeight() || 0;
+
+    const registroPosition = $registro.position();
+    const scrollActual = $contenedor.scrollTop();
+
+    console.log('📊 Dimensiones para cálculo:');
+    console.log(`   - Altura del header: ${headerHeight}px`);
+    console.log(`   - Posición del registro (top): ${registroPosition.top}px`);
+    console.log(`   - Scroll actual: ${scrollActual}px`);
+
+    // ❼ CALCULAR NUEVO SCROLL
+    const offsetAdicional = 10;
+    const nuevoScroll = scrollActual + registroPosition.top - headerHeight - offsetAdicional;
+
+    console.log(`🎯 Nuevo scroll calculado: ${nuevoScroll}px`);
+
+    // ❽ VALIDAR QUE EL NUEVO SCROLL SEA VÁLIDO
+    if (nuevoScroll < 0) {
+        console.warn('⚠️ Nuevo scroll negativo, ajustando a 0');
+        $contenedor.scrollTop(0);
+    } else if (nuevoScroll > contenedorScrollHeight - contenedorHeight) {
+        console.warn('⚠️ Nuevo scroll excede límite, ajustando al máximo');
+        $contenedor.scrollTop(contenedorScrollHeight - contenedorHeight);
+    } else {
+        // ❾ DESHABILITAR ANIMACIÓN CSS TEMPORALMENTE
+        $contenedor.css('scroll-behavior', 'auto');
+
+        // ❿ APLICAR SCROLL
+        $contenedor.scrollTop(nuevoScroll);
+
+        console.log('✅ Scroll aplicado exitosamente');
+
+        // ⓫ RESTAURAR SCROLL BEHAVIOR
+        setTimeout(() => {
+            $contenedor.css('scroll-behavior', '');
+            console.log('✅ Scroll behavior restaurado');
+        }, 100);
+    }
+
+    // ⓬ ✅ NUEVO v16.2: APLICAR HIGHLIGHT TEMPORAL
+    aplicarHighlightTemporal($registro);
+
+    console.log('═══════════════════════════════════════════════════');
+}
+
+/**
+ * ✅ NUEVO v16.2: Verifica si un registro está visible en el viewport del contenedor
+ * 
+ * @param {jQuery} $registro - Elemento <tr> del producto
+ * @param {jQuery} $contenedor - Contenedor scrolleable (.table-responsive)
+ * @returns {boolean} - true si el registro está completamente visible
+ */
+function esRegistroVisibleEnViewport($registro, $contenedor) {
+    const $header = $contenedor.find('thead');
+    const headerHeight = $header.outerHeight() || 0;
+
+    const contenedorTop = $contenedor.offset().top + headerHeight;
+    const contenedorBottom = contenedorTop + $contenedor.outerHeight() - headerHeight;
+
+    const registroTop = $registro.offset().top;
+    const registroBottom = registroTop + $registro.outerHeight();
+
+    // El registro está visible si su parte superior e inferior están dentro del viewport
+    const estaVisible = registroTop >= contenedorTop && registroBottom <= contenedorBottom;
+
+    console.log('🔍 Verificando visibilidad del registro:');
+    console.log(`   - Viewport top: ${contenedorTop}px`);
+    console.log(`   - Viewport bottom: ${contenedorBottom}px`);
+    console.log(`   - Registro top: ${registroTop}px`);
+    console.log(`   - Registro bottom: ${registroBottom}px`);
+    console.log(`   - ¿Visible?: ${estaVisible ? 'SÍ ✅' : 'NO ❌'}`);
+
+    return estaVisible;
+}
+
+/**
+ * ✅ NUEVO v16.2: Aplica un highlight temporal al producto posicionado
+ * Mejora la experiencia visual del usuario
+ * 
+ * @param {jQuery} $registro - Elemento <tr> del producto
+ * @param {number} duracion - Duración del highlight en ms (default: 1500)
+ */
+function aplicarHighlightTemporal($registro, duracion = 1500) {
+    console.log('✨ Aplicando highlight temporal al producto...');
+
+    // ❶ REMOVER CLASES EXISTENTES DE HIGHLIGHT
+    $('#tbodyProductos tr').removeClass('producto-highlight producto-highlight-fade');
+
+    // ❷ AGREGAR CLASE DE HIGHLIGHT
+    $registro.addClass('producto-highlight');
+
+    // ❸ DESPUÉS DE 100MS, INICIAR FADE OUT
+    setTimeout(() => {
+        $registro.addClass('producto-highlight-fade');
+    }, 100);
+
+    // ❹ DESPUÉS DE LA DURACIÓN, REMOVER TODAS LAS CLASES
+    setTimeout(() => {
+        $registro.removeClass('producto-highlight producto-highlight-fade');
+        console.log('✅ Highlight temporal removido');
+    }, duracion);
+}
+
+/**
+ * ✅ ACTUALIZADO v16.2: Posiciona el ÚLTIMO producto agregado
+ * NUEVO: Validación de edge cases
+ */
+function posicionarUltimoProducto() {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📍 POSICIONANDO ÚLTIMO PRODUCTO v16.2');
+    console.log('═══════════════════════════════════════════════════');
+
+    if (productosFactura.length === 0) {
+        console.warn('⚠️ No hay productos en la grilla');
+        return;
+    }
+
+    // Buscar el último <tr> en el tbody
+    const $ultimaFila = $('#tbodyProductos tr[data-index]').last();
+
+    if ($ultimaFila.length === 0) {
+        console.warn('⚠️ No se encontró la última fila en el DOM');
+        return;
+    }
+
+    const indiceUltimo = $ultimaFila.attr('data-index');
+    console.log(`✅ Posicionando último producto (índice: ${indiceUltimo})`);
+
+    posicionarProductoEnGrilla($ultimaFila);
 }
 
 // ═══════════════════════════════════════════════════════════════════

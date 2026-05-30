@@ -3,6 +3,48 @@
 @{
     var hasData = Model?.ListaDatos?.Any() == true;
     var totalRegistros = hasData ? Model.ListaDatos.Count() : 0;
+
+    // ═══════════════════════════════════════════════════════════
+    // ✅ NUEVO v1.0: FUNCIÓN HELPER PARA DETERMINAR CLASE CSS
+    // ═══════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Determina la clase CSS del badge según el origen del cliente
+    /// </summary>
+    /// <param name="origen">Código de origen: 'N', 'F', 'C'</param>
+    /// <returns>Clase CSS de Bootstrap 5</returns>
+    string ObtenerClaseBadgeOrigen(string origen)
+    {
+        if (string.IsNullOrEmpty(origen))
+            return "bg-secondary"; // Gris para valores nulos/vacíos
+
+        return origen.ToUpper() switch
+        {
+            "N" => "bg-danger",    // 🔴 Rojo - Cliente No Habilitado
+            "F" => "bg-primary",   // 🔵 Azul - Consumidor Final
+            "C" => "bg-success",   // 🟢 Verde - Cliente Registrado/Habilitado
+            _ => "bg-secondary"  // ⚪ Gris - Estado Desconocido
+        };
+    }
+
+    /// <summary>
+    /// Obtiene el ícono adecuado según el origen del cliente
+    /// </summary>
+    /// <param name="origen">Código de origen</param>
+    /// <returns>Clase de ícono de Boxicons</returns>
+    string ObtenerIconoOrigen(string origen)
+    {
+        if (string.IsNullOrEmpty(origen))
+            return "bx-question-mark";
+
+        return origen.ToUpper() switch
+        {
+            "N" => "bx-x-circle",         // ❌ No Habilitado
+            "F" => "bx-user",             // 👤 Consumidor Final
+            "C" => "bx-check-circle",     // ✅ Cliente Registrado
+            _ => "bx-question-mark"     // ❓ Desconocido
+        };
+    }
 }
 
 <div class="card h-100">
@@ -12,99 +54,107 @@
             <span class="badge bg-white text-golden ms-2">@totalRegistros cliente(s)</span>
         </h6>
     </div>
-    
+
     <div class="card-body p-0">
         <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
             <table class="table table-sm table-hover mb-0 table-golden table-layout-fixed">
                 <thead class="table-golden-header sticky-top">
                     <tr class="header">
                         <th class="text-center" style="width: 10%;">ID</th>
-                        <th style="width: 30%;">Nombre / Razón Social</th>
+                        <th style="width: 25%;">Nombre / Razón Social</th>
                         <th class="text-center" style="width: 10%;">Documento</th>
                         <th style="width: 30%;">Domicilio</th>
-                        <th class="text-center" style="width: 10%;">Origen</th>
+                        <th class="text-center" style="width: 15%;">Origen</th>
                         <th class="text-center" style="width: 10%;">Acción</th>
                     </tr>
                 </thead>
                 <tbody>
-                @if (hasData)
-                {
-                    var index = 0;
-                    foreach (var item in Model.ListaDatos)
+                    @if (hasData)
                     {
-                        index++;
-                        var rowClass = (index % 2 == 0) ? "" : "alt";
-                        var domicilio = string.IsNullOrEmpty(item.Cta_Domicilio) 
-                            ? "<span class='text-muted fst-italic'>Sin domicilio</span>" 
+                        var index = 0;
+                        foreach (var item in Model.ListaDatos)
+                        {
+                            index++;
+                            var rowClass = (index % 2 == 0) ? "" : "alt";
+                            var domicilio = string.IsNullOrEmpty(item.Cta_Domicilio)
+                            ? "<span class='text-muted fst-italic'>Sin domicilio</span>"
                             : item.Cta_Domicilio;
-                        
-                        <!-- ✅ MODIFICADO: Agregados 3 data-attributes separados -->
-                        <tr class="@rowClass cliente-row compact-row" 
-                            data-cta-id="@item.Cta_Id"
-                            data-cta-nombre="@item.Cta_Denominacion"
-                            data-cta-domicilio="@(item.Cta_Domicilio ?? "")"
-                            data-cta-tdoc-id="@(item.Tdoc_Id ?? "")"
-                            data-cta-tdoc-desc="@(item.Tdoc_Desc ?? "")"
-                            data-cta-documento="@(item.Cta_Documento ?? "")"
-                            data-cta-email="@(item.Cta_Email ?? "")"
-                            data-cta-movil="@(item.Cta_Celu ?? "")"
-                            data-cta-origen="@item.Origen"
-                            data-cta-origen-desc="@item.Origen_Desc">
-                            
-                            <!-- ✅ 10% - ID -->
-                            <td class="text-center fw-bold text-golden-dark py-1">
-                                <small>@item.Cta_Id</small>
-                            </td>
-                            
-                            <!-- ✅ 30% - Nombre -->
-                            <td class="fw-semibold py-1 text-truncate" title="@item.Cta_Denominacion">
-                                <small>@item.Cta_Denominacion</small>
-                            </td>
-                            
-                            <!-- ✅ 10% - Documento -->
-                            <td class="text-center py-1">
-                                <small class="text-muted d-block" style="font-size: 0.7rem;">@item.Tdoc_Desc</small>
-                                <small class="fw-bold">@item.Cta_Documento</small>
-                            </td>
-                            
-                            <!-- ✅ 30% - Domicilio -->
-                            <td class="py-1 text-truncate" title="@(item.Cta_Domicilio ?? "Sin domicilio")">
-                                <small>@Html.Raw(domicilio)</small>
-                            </td>
-                            
-                            <!-- ✅ 10% - Origen -->
-                            <td class="text-center py-1">
-                                <span class="badge bg-golden badge-compact">
-                                    <small>@item.Origen_Desc</small>
-                                </span>
-                            </td>
-                            
-                            <!-- ✅ 10% - Acción -->
-                            <td class="text-center py-1">
-                                <button type="button" 
-                                        class="btn btn-xs btn-golden-compact btn-seleccionar-cliente" 
-                                        data-cta-id="@item.Cta_Id"
-                                        title="Seleccionar cliente">
-                                    <i class='bx bx-check-circle' style="font-size: 0.9rem;"></i>
-                                    <span class="d-none d-lg-inline ms-1" style="font-size: 0.75rem;">Seleccionar</span>
-                                </button>
+
+                            <!-- ✅ MODIFICADO: Agregados 3 data-attributes separados -->
+                            <tr class="@rowClass cliente-row compact-row"
+                                data-cta-id="@item.Cta_Id"
+                                data-cta-nombre="@item.Cta_Denominacion"
+                                data-cta-domicilio="@(item.Cta_Domicilio ?? "")"
+                                data-cta-tdoc-id="@(item.Tdoc_Id ?? "")"
+                                data-cta-tdoc-desc="@(item.Tdoc_Desc ?? "")"
+                                data-cta-documento="@(item.Cta_Documento ?? "")"
+                                data-cta-email="@(item.Cta_Email ?? "")"
+                                data-cta-movil="@(item.Cta_Celu ?? "")"
+                                data-cta-origen="@item.Origen"
+                                data-cta-origen-desc="@item.Origen_Desc">
+
+                                <!-- ✅ 10% - ID -->
+                                <td class="text-center fw-bold text-golden-dark py-1">
+                                    <small>@item.Cta_Id</small>
+                                </td>
+
+                                <!-- ✅ 25% - Nombre -->
+                                <td class="fw-semibold py-1 text-truncate" title="@item.Cta_Denominacion">
+                                    <small>@item.Cta_Denominacion</small>
+                                </td>
+
+                                <!-- ✅ 10% - Documento -->
+                                <td class="text-center py-1">
+                                    <small class="text-muted d-block" style="font-size: 0.7rem;">@item.Tdoc_Desc</small>
+                                    <small class="fw-bold">@item.Cta_Documento</small>
+                                </td>
+
+                                <!-- ✅ 30% - Domicilio -->
+                                <td class="py-1 text-truncate" title="@(item.Cta_Domicilio ?? "Sin domicilio")">
+                                    <small>@Html.Raw(domicilio)</small>
+                                </td>
+
+                                <!-- ✅ MODIFICADO v1.0: 15% - Origen con Color Dinámico -->
+                                <td class="text-center py-1">
+                                    @{
+                                        var badgeClass = ObtenerClaseBadgeOrigen(item.Origen);
+                                        var iconoOrigen = ObtenerIconoOrigen(item.Origen);
+                                    }
+                                    <span class="badge @badgeClass badge-compact d-flex align-items-center justify-content-center gap-1"
+                                          style="font-size: 0.75rem; padding: 0.35rem 0.5rem;"
+                                          title="@item.Origen_Desc">
+                                        <i class='bx @iconoOrigen' style="font-size: 0.9rem;"></i>
+                                        <small class="d-lg-inline">@item.Origen_Desc</small>
+                                        <small class="d-inline d-lg-none">@item.Origen</small>
+                                    </span>
+                                </td>
+
+                                <!-- ✅ 10% - Acción -->
+                                <td class="text-center py-1">
+                                    <button type="button"
+                                            class="btn btn-xs btn-golden-compact btn-seleccionar-cliente"
+                                            data-cta-id="@item.Cta_Id"
+                                            title="Seleccionar cliente">
+                                        <i class='bx bx-check-circle' style="font-size: 0.9rem;"></i>
+                                        <span class="d-none d-lg-inline ms-1" style="font-size: 0.75rem;">Seleccionar</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr class="empty-message">
+                            <td colspan="6" class="text-center text-muted py-3">
+                                <i class='bx bx-info-circle me-1'></i>No hay resultados para mostrar
                             </td>
                         </tr>
                     }
-                }
-                else
-                {
-                    <tr class="empty-message">
-                        <td colspan="6" class="text-center text-muted py-3">
-                            <i class='bx bx-info-circle me-1'></i>No hay resultados para mostrar
-                        </td>
-                    </tr>
-                }
                 </tbody>
             </table>
         </div>
     </div>
-    
+
     <div class="card-footer bg-light py-2">
         <div class="d-flex justify-content-between align-items-center">
             <small class="text-muted">
