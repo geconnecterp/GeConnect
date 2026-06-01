@@ -26,7 +26,7 @@ namespace gc.infraestructura.Dtos.Almacen
 		public int pi_pendiente { get; set; }
 		public string re_compte { get; set; } = string.Empty;
 		public DateTime re_fecha { get; set; }
-		public int re_dias { get; set; }
+		public int? re_dias { get; set; }
 		public bool PermiteDecimales => up_tipo == "P";
 		public bool selected { get; set; } = true;
 	}

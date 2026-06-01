@@ -127,7 +127,7 @@ $(function () {
 	$(document).on("change", "#listaDepositosModal", ControlalistaDepositosModalSelected);
 	$(document).on("click", "#btnCompraAutoBuscar", ControlaCompraAutoBuscar);
 	$(document).on("click", "#btnPasarAPI", ControlaPasarAPedidoInterno);
-	$(document).on("click", "#btnPasarAPI", ControlaPasarAPedidoInterno);
+	//$(document).on("click", "#btnPasarAPI", ControlaPasarAPedidoInterno);
 	$(document).on("click", "#btnRegresar", ControlaRegresarDesdePedidoInterno);
 	$(document).on("click", "#btnConfirmarPI", ControlaConfirmarPedidoInterno);
 

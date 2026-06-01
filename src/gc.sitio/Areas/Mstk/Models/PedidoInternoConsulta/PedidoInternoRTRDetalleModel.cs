@@ -3,9 +3,9 @@ using gc.infraestructura.Dtos.Gen;
 
 namespace gc.sitio.Areas.Mstk.Models.PedidoInternoConsulta
 {
-	public class PedidoInternoDetalleModel
+	public class PedidoInternoRTRDetalleModel
 	{
-		public GridCoreSmart<PIDetalleDto> DetalleDePedidoInterno { get; set; }
+		public GridCoreSmart<PIDetalleDto> DetalleRTR { get; set; }
 		public string Leyenda { get; set; }
 	}
 }

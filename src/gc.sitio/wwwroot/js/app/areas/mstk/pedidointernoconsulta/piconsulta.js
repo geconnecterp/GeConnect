@@ -73,8 +73,8 @@ function BuscarPedidosInternos(pag = 1) {
 			$("#divDetalle").html(html).collapse("show");
 			$("#divFiltros").collapse("hide");
 			CerrarWaiting();
-			CargarEventosDeTabs();
 			CargarPedidosInternos(filtros, url);
+			CargarEventosDeTabs();
 		});
 
 
@@ -118,6 +118,15 @@ function cargarDetalleDePedidoInterno(piCompte, pieId) {
 	});
 }
 
+function cargarRtrAsociadas(piCompte, pieId) {
+	AbrirWaiting("Cargando detalle de RTR...");
+	PostGenHtml({ pi_compte: piCompte, pieId }, detalleRTRPedidoInternoUrl, function (html) {
+		CerrarWaiting();
+		$("#divRtrAsociadas").html(html);
+		ConfigurarEventosSeleccionListaRTR();
+	});
+}
+
 function ConfigurarEventosSeleccionListaDetalleDePI() {
 	$(document).off("click", "#tbGridPedidoInternoDetalle tbody tr");
 	$(document).on("click", "#tbGridPedidoInternoDetalle tbody tr", function (e) {
@@ -134,6 +143,22 @@ function ConfigurarEventosSeleccionListaDetalleDePI() {
 	});
 }
 
+function ConfigurarEventosSeleccionListaRTR() {
+	$(document).off("click", "#tbGridPedidoInternoRTR tbody tr");
+	$(document).on("click", "#tbGridPedidoInternoRTR tbody tr", function (e) {
+		if (!$(e.target).is("button, a, .btn, i")) {
+			var $this = $(this);
+			var fueSeleccionado = $this.hasClass("selected-row");
+
+			$("#tbGridPedidoInternoRTR tbody tr").removeClass("selected-row");
+
+			if (!fueSeleccionado) {
+				$this.addClass("selected-row");
+			}
+		}
+	});
+}
+
 function CargarPedidosInternos(filtros, url) {
 	AbrirWaiting("Cargando pedidos internos...");
 	PostGenHtml(filtros, url, function (html) {
@@ -141,6 +166,31 @@ function CargarPedidosInternos(filtros, url) {
 		$("#divPedidosInternos").html(html);
 
 		configurarEventosSeleccionListaPI();
+
+		// Seleccionar automáticamente la primera fila válida
+		const $primerFila = $("#tbGridPedidosInternos tbody tr").not(".fila-vacia").first();
+
+		if ($primerFila.length > 0) {
+
+			// Marcar visualmente
+			$primerFila.addClass("selected-row");
+
+			// Obtener valores
+			const piCompte = $primerFila.data("pi-compte");
+			const pieId = $primerFila.data("pie-id");
+
+			// Guardar como seleccionado globalmente
+			piCompteSeleccionado = piCompte;
+			pieCompteSeleccionado = pieId;
+
+			// Actualizar botones
+			ActualizarEstadosDeBotonesEnPI();
+
+			// Cargar automáticamente los otros tabs
+			cargarDetalleDePedidoInterno(piCompte, pieId);
+			/* Se deshabilitan los tab de RTR para en el futuro agregar el desarrollo*/
+			//cargarRtrAsociadas(piCompte, pieId);
+		}
 
 		PostGen({}, buscarMetadataURL, function (obj) {
 			if (obj.error === true) {
@@ -158,8 +208,6 @@ function CargarPedidosInternos(filtros, url) {
 	});
 
 }
-
-
 
 function configurarEventosSeleccionListaPI() {
 	$(document).off("click", "#tbGridPedidosInternos tbody tr");

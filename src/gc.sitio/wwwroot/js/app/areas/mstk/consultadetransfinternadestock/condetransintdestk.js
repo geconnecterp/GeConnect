@@ -78,7 +78,7 @@ function InicializarPantallaPrincipal() {
 		return;
 	}
 
-	const resultado = EvaluarSeleccionDeTipo(tipos, sucEnv.ids, sucRec.ids);
+	const resultado = EvaluarSeleccionDeTipo(tipos, sucEnv.ids, sucEnv.todos_seleccionados, sucRec.ids, sucRec.todos_seleccionados);
 	if (!resultado.ok) {
 		AbrirMensaje("ATENCIÓN", resultado.mensaje, function () {
 			$("#msjModal").modal("hide");
@@ -89,7 +89,7 @@ function InicializarPantallaPrincipal() {
 
 	// ✔ Si tipo != 'S', igualamos sucEnv = sucRec
 	if (resultado.sucEnvIgualado) {
-		sucEnv.ids = resultado.sucEnvIgualado.split(',');
+		sucEnv.ids = resultado.sucEnvIgualado;
 		sucEnv.textos = sucRec.textos; // mantenemos coherencia visual
 	}
 
@@ -234,14 +234,14 @@ function consultarRemito(re_compte) {
 	});
 }
 
-function EvaluarSeleccionDeTipo(tipo, sucEnv, sucRec) {
+function EvaluarSeleccionDeTipo(tipo, sucEnv, sucEnv_Todos, sucRec, sucRec_Todos) {
 
 	// Convertir strings "000,001,002" en arrays ["000","001","002"]
 	const env = sucEnv ? sucEnv.split(',').map(x => x.trim()) : [];
 	const rec = sucRec ? sucRec.split(',').map(x => x.trim()) : [];
 
 	// Caso 1: tipo = 'S'
-	if (tipo === 'S') {
+	if (tipo === 'S' && (!sucEnv_Todos && !sucRec_Todos)) {
 		// Buscar intersección entre env y rec
 		const repetidos = env.filter(x => rec.includes(x));
 
@@ -270,6 +270,17 @@ function CargarTablaTabTransferencias(tipoIdsLista, sucursalEnvioIdsLista, sucur
 	PostGenHtml({ tipoIdsLista, sucursalEnvioIdsLista, sucursalRecibeIdsLista, desde, hasta }, cargarTabTransferenciasURL, function (obj) {
 		$("#divTransferencias").html(obj);
 		InicializarEventosTabTransferencias();
+		// Seleccionar automáticamente la primera transferencia válida
+		const $primeraFila = $("#tbTransferencias tbody tr").not(".fila-vacia").first();
+
+		if ($primeraFila.length > 0) {
+			// Marcar visualmente
+			$primeraFila.addClass("selected-row");
+
+			// Ejecutar la misma lógica que el doble clic
+			SeleccionarTransferencia($primeraFila[0], "tbTransferencias");
+		}
+
 		setTimeout(() => {
 			EvaluarBotonImprimir("navs-top-trans")
 		}, 1000);
@@ -340,8 +351,10 @@ function InicializarCamposEnFiltros() {
 	$("#chkSucursalesEnvia").trigger("change");
 	$("#chkSucursalesRecibe").prop('checked', false);
 	$("#chkSucursalesRecibe").trigger("change");
-	$("#chkTipo").prop('checked', false);
+	$("#chkTipo").prop('checked', true);
 	$("#chkTipo").trigger("change");
+	$("#chkTipo").prop('disabled', true);
+	$("#listaTipos").prop('disabled', false);
 
 	$("#SucursalesEnviaList").empty();
 	$("#SucursalesRecibeList").empty();
@@ -402,6 +415,7 @@ function ObtenerSucursalesSeleccionadasConTexto(sucList, suc) {
 
 	let ids = [];
 	let textos = [];
+	let todos = false;
 
 	// 1) Obtener sucursales seleccionadas en el ListBox
 	$("#" + sucList + " option").each(function () {
@@ -411,6 +425,7 @@ function ObtenerSucursalesSeleccionadasConTexto(sucList, suc) {
 
 	// 2) Si NO hay ninguna seleccionada → devolver TODAS las del DropDownList
 	if (ids.length === 0) {
+		todos = true;
 		$("#" + suc + " option").each(function () {
 			const val = $(this).val();
 			const txt = $(this).text();
@@ -424,7 +439,8 @@ function ObtenerSucursalesSeleccionadasConTexto(sucList, suc) {
 
 	return {
 		ids: ids.join(","),
-		textos: textos.join(", ")
+		textos: textos.join(", "),
+		todos_seleccionados: todos
 	};
 }
 

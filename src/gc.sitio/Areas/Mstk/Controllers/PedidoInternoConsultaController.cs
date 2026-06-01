@@ -272,6 +272,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 					return PartialView("_gridMensaje", CrearRespuestaError("No se encontró el Pedido Interno solicitado."));
 
 				model.DetalleDePedidoInterno = ObtenerGridCoreSmart<PIDetalleDto>(pedido);
+				model.Leyenda = pi_compte;
 				return PartialView("_partial_pedido_interno_detalle", model);
 			}
 			catch (Exception ex)
@@ -280,6 +281,31 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				return PartialView("_gridMensaje", CrearRespuestaError("Error al obtener detalle de Pedido Interno"));
 			}
 		}
+
+		/* Se deshabilitan los tab de RTR para en el futuro agregar el desarrollo*/
+		//public IActionResult DetalleRTRPedidoInterno(string pi_compte)
+		//{
+		//	var model = new PedidoInternoRTRDetalleModel();
+		//	try
+		//	{
+		//		if (!VerificarAutenticacion(out IActionResult redirectResult))
+		//			return redirectResult;
+		//		if (string.IsNullOrEmpty(pi_compte))
+		//			return PartialView("_gridMensaje", CrearRespuestaError("No se ha recibido un identificador de Pedido Interno válido."));
+
+		//		var pedido = _productoServicio.PIDetalle(pi_compte, TokenCookie).Result;
+		//		if (pedido == null)
+		//			return PartialView("_gridMensaje", CrearRespuestaError("No se encontró el Pedido Interno solicitado."));
+
+		//		model.DetalleRTR = ObtenerGridCoreSmart<PIDetalleDto>(pedido);
+		//		return PartialView("_partial_pedido_interno_rtr", model);
+		//	}
+		//	catch (Exception ex)
+		//	{
+		//		_logger?.LogError(ex, "Error al obtener detalle de RTR");
+		//		return PartialView("_gridMensaje", CrearRespuestaError("Error al obtener detalle de RTR"));
+		//	}
+		//}
 
 		#region Métodos Privados
 		enum TipoDeReporte

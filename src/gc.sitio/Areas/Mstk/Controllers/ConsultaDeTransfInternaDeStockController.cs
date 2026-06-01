@@ -106,8 +106,8 @@ namespace gc.sitio.Areas.Mstk.Controllers
 					desde = Desde,
 					hasta = Hasta,
 					tit_id = tipoIdsLista,
-					adm_id_des = sucursalEnvioIdsLista,
-					adm_id_gen = sucursalRecibeIdsLista
+					adm_id_des = sucursalRecibeIdsLista,
+					adm_id_gen = sucursalEnvioIdsLista
 				};
 				var lista = _productoServicio.TRObtenerLista(request, TokenCookie).Result;
 				var model = ObtenerGridCoreSmart<TRObtenerListaDto>(lista);
