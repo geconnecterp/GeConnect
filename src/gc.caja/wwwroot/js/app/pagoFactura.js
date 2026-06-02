@@ -321,6 +321,19 @@ function inicializarEventosPago() {
         });
     });
 
+    // ═══════════════════════════════════════════════════════════
+    // ✅ NUEVO v21.2: LIMPIEZA DE EVENTOS DE TECLADO
+    // ═══════════════════════════════════════════════════════════
+
+    /**
+     * Evento que se dispara cuando el modal de tipo medio de pago se cierra completamente
+     * Asegura limpieza de eventos de navegación con teclado
+     */
+    $('#modalTipoMedioPago').off('hidden.bs.modal.limpiezaTeclado').on('hidden.bs.modal.limpiezaTeclado', function () {
+        console.log('🔒 Modal Tipo Medio de Pago cerrado - Limpiando eventos de teclado');
+        limpiarEventosTipoMedioPago();
+    });
+
     console.log('✅ Eventos de pago configurados');
 }
 
@@ -1852,18 +1865,35 @@ function seleccionarItemTipoMedioPago($item) {
 }
 
 /**
- * ✅ ACTUALIZADO v20.7: Vincular eventos del modal de tipo medio de pago
- * NUEVO: Selección con UN SOLO CLICK (sin necesidad de confirmar)
+ * ✅ CORREGIDO v21.2: Vincular eventos del modal de tipo medio de pago
+ * CORRECCIÓN CRÍTICA: Delegación de eventos para navegación con teclado
  * 
- * CAMBIOS v20.7:
- * - Click simple → Selecciona y confirma automáticamente
- * - Eliminado evento de doble click (ya no necesario)
- * - Eliminado evento del botón confirmar (botón oculto)
+ * PROBLEMA RESUELTO:
+ * - Primera apertura: Navegación NO funcionaba (evento vinculado antes de modal visible)
+ * - Segunda apertura: Funcionaba correctamente (modal ya existía en DOM)
+ * 
+ * SOLUCIÓN:
+ * - Delegación de eventos en document (siempre disponible)
+ * - Validación de modal visible antes de procesar teclas
+ * 
+ * CAMBIOS v21.2:
+ * - Movido evento keydown de modal a document (delegación)
+ * - Agregada validación `hasClass('show')` antes de procesar
+ * - Previene bug de primera apertura sin navegación
+ * 
+ * CAMBIOS v21.1 (anteriores):
+ * - Agregada navegación con teclado (↑↓ Enter Esc)
+ * 
+ * CAMBIOS v20.7 (anteriores):
+ * - Selección con UN SOLO CLICK (sin necesidad de confirmar)
  */
 function vincularEventosTipoMedioPago() {
-    console.log('🔧 Vinculando eventos tipo medio de pago v20.7...');
+    console.log('🔧 Vinculando eventos tipo medio de pago v21.2...');
 
-    // ✅ ACTUALIZADO v20.7: Click simple selecciona Y confirma automáticamente
+    // ═══════════════════════════════════════════════════════════
+    // ✅ EVENTO DE CLICK (sin cambios)
+    // ═══════════════════════════════════════════════════════════
+
     $('.tipo-medio-pago-item').off('click').on('click', function () {
         console.log('═══════════════════════════════════════════════════');
         console.log('🖱️ CLICK EN TIPO MEDIO DE PAGO v20.7');
@@ -1883,13 +1913,219 @@ function vincularEventosTipoMedioPago() {
         }, 200); // ← Delay corto para que usuario vea el resaltado azul
     });
 
-    // ❌ ELIMINADO v20.7: Evento de doble click (ya no necesario)
-    // $('.tipo-medio-pago-item').off('dblclick').on('dblclick', function () { ... });
+    // ═══════════════════════════════════════════════════════════
+    // ✅ CORREGIDO v21.2: NAVEGACIÓN CON TECLADO
+    // ═══════════════════════════════════════════════════════════
 
-    // ❌ ELIMINADO v20.7: Evento del botón confirmar (botón está oculto)
-    // $('#btnConfirmarTipoMedioPago').off('click').on('click', confirmarSeleccionTipoMedioPago);
+    console.log('   🔧 Configurando delegación de eventos de teclado...');
 
-    console.log('✅ Eventos configurados (selección con 1 click)');
+    // ❌ ELIMINADO v21.2: Evento directo en modal (causaba bug de primera apertura)
+    // $('#modalTipoMedioPago').off('keydown.navegacion').on('keydown.navegacion', function (e) {
+    //     manejarNavegacionTeclado(e);
+    // });
+
+    // ✅ NUEVO v21.2: Delegación de eventos en document
+    $(document)
+        .off('keydown.navegacionTipoMP') // Limpiar eventos previos (evita duplicados)
+        .on('keydown.navegacionTipoMP', function (e) {
+            // ❶ Verificar que el modal esté visible y activo
+            const $modal = $('#modalTipoMedioPago');
+
+            if (!$modal.hasClass('show')) {
+                // Modal no visible, ignorar evento
+                return;
+            }
+
+            console.log(`🎹 Tecla presionada en modal visible: ${e.key}`);
+
+            // ❷ Procesar navegación con teclado
+            manejarNavegacionTeclado(e);
+        });
+
+    console.log('   ✅ Delegación de eventos configurada correctamente');
+    console.log('✅ Eventos configurados (selección con 1 click + navegación teclado delegada)');
+}
+
+/**
+ * ✅ NUEVO v21.2: Limpia eventos de navegación con teclado al cerrar modal
+ * 
+ * PROPÓSITO:
+ * - Prevenir memory leaks por eventos huérfanos
+ * - Garantizar que no queden listeners activos después de cerrar modal
+ * - Evitar conflictos con otros modales
+ * 
+ * CUÁNDO SE LLAMA:
+ * - Automáticamente al cerrar modal (evento 'hidden.bs.modal')
+ * - Ver configuración en inicializarEventosPago()
+ */
+function limpiarEventosTipoMedioPago() {
+    console.log('🧹 Limpiando eventos de navegación con teclado...');
+
+    // ❶ Remover evento delegado de document
+    $(document).off('keydown.navegacionTipoMP');
+
+    console.log('   ✅ Evento keydown.navegacionTipoMP removido de document');
+    console.log('✅ Eventos de teclado limpiados correctamente');
+}
+
+/**
+ * ✅ NUEVO v21.1: Maneja la navegación con teclado en el modal de tipo medio de pago
+ * 
+ * TECLAS SOPORTADAS:
+ * - ArrowDown (↓): Mover a siguiente item
+ * - ArrowUp (↑): Mover a item anterior
+ * - Enter: Confirmar selección actual
+ * - Escape: Cerrar modal sin confirmar
+ * 
+ * COMPORTAMIENTO:
+ * - Navegación cíclica (al llegar al final, vuelve al inicio)
+ * - Scroll automático si el item está fuera de vista
+ * - Integración con funciones existentes (sin duplicar código)
+ * 
+ * @param {KeyboardEvent} e - Evento de teclado
+ */
+function manejarNavegacionTeclado(e) {
+    // ❶ Validar que el modal esté visible
+    if (!$('#modalTipoMedioPago').hasClass('show')) {
+        return; // Modal no visible, no procesar
+    }
+
+    // ❷ Obtener todos los items visibles
+    const $items = $('.tipo-medio-pago-item:visible');
+
+    if ($items.length === 0) {
+        console.warn('⚠️ No hay items disponibles para navegar');
+        return;
+    }
+
+    // ❸ Obtener item actualmente seleccionado
+    const $itemActual = $('.tipo-medio-pago-item.selected');
+
+    if ($itemActual.length === 0) {
+        console.warn('⚠️ No hay item seleccionado');
+        return;
+    }
+
+    const indiceActual = $items.index($itemActual);
+    const totalItems = $items.length;
+
+    // ❹ Procesar tecla presionada
+    switch (e.key) {
+        case 'ArrowDown': // ↓ Siguiente
+            e.preventDefault(); // Evitar scroll del modal
+
+            console.log('⬇️ FLECHA ABAJO - Siguiente item');
+
+            // Calcular índice siguiente (cíclico)
+            const indiceSiguiente = (indiceActual + 1) % totalItems;
+            const $itemSiguiente = $items.eq(indiceSiguiente);
+
+            console.log(`   Moviendo de índice ${indiceActual} → ${indiceSiguiente}`);
+
+            // Seleccionar siguiente item
+            seleccionarItemTipoMedioPago($itemSiguiente);
+
+            // Hacer scroll si es necesario
+            scrollToItem($itemSiguiente, '#listaTiposMedioPago');
+
+            break;
+
+        case 'ArrowUp': // ↑ Anterior
+            e.preventDefault();
+
+            console.log('⬆️ FLECHA ARRIBA - Item anterior');
+
+            // Calcular índice anterior (cíclico)
+            const indiceAnterior = (indiceActual - 1 + totalItems) % totalItems;
+            const $itemAnterior = $items.eq(indiceAnterior);
+
+            console.log(`   Moviendo de índice ${indiceActual} → ${indiceAnterior}`);
+
+            // Seleccionar anterior item
+            seleccionarItemTipoMedioPago($itemAnterior);
+
+            // Hacer scroll si es necesario
+            scrollToItem($itemAnterior, '#listaTiposMedioPago');
+
+            break;
+
+        case 'Enter': // ⏎ Confirmar
+            e.preventDefault();
+
+            console.log('⏎ ENTER - Confirmando selección');
+
+            // Confirmar selección actual (sin delay)
+            confirmarSeleccionTipoMedioPago();
+
+            break;
+
+        case 'Escape': // Esc Cancelar
+            e.preventDefault();
+
+            console.log('🚫 ESCAPE - Cerrando modal');
+
+            // Cerrar modal con Bootstrap
+            if (modalTipoMedioPagoInstance) {
+                modalTipoMedioPagoInstance.hide();
+            } else {
+                $('#modalTipoMedioPago').modal('hide');
+            }
+
+            break;
+
+        default:
+            // Otras teclas no manejadas
+            break;
+    }
+}
+
+/**
+ * ✅ NUEVO v21.1: Hace scroll a un item si está fuera de la vista del contenedor
+ * 
+ * FUNCIONALIDAD:
+ * - Detecta si el item está visible dentro del contenedor scrolleable
+ * - Si está fuera de vista, hace scroll suave hasta centrarlo
+ * 
+ * @param {jQuery} $item - Item al que hacer scroll
+ * @param {string} contenedorSelector - Selector del contenedor scrolleable
+ */
+function scrollToItem($item, contenedorSelector) {
+    if (!$item || $item.length === 0) {
+        console.warn('⚠️ scrollToItem: Item inválido');
+        return;
+    }
+
+    const $contenedor = $(contenedorSelector);
+
+    if ($contenedor.length === 0) {
+        console.warn(`⚠️ scrollToItem: Contenedor ${contenedorSelector} no encontrado`);
+        return;
+    }
+
+    // ❶ Obtener posiciones
+    const itemTop = $item.position().top;
+    const itemBottom = itemTop + $item.outerHeight();
+    const contenedorHeight = $contenedor.height();
+    const scrollActual = $contenedor.scrollTop();
+
+    // ❷ Verificar si el item está fuera de vista
+    const fueraArribа = itemTop < 0;
+    const fueraAbajo = itemBottom > contenedorHeight;
+
+    // ❸ Calcular nueva posición de scroll si es necesario
+    if (fueraArribа || fueraAbajo) {
+        // Centrar el item en el contenedor
+        const nuevaPosicion = scrollActual + itemTop - (contenedorHeight / 2) + ($item.outerHeight() / 2);
+
+        console.log(`   📜 Haciendo scroll a posición ${nuevaPosicion.toFixed(0)}px`);
+
+        // Hacer scroll suave
+        $contenedor.animate({
+            scrollTop: nuevaPosicion
+        }, 200); // Animación rápida (200ms)
+    } else {
+        console.log('   ✅ Item ya está visible, no requiere scroll');
+    }
 }
 
 /**
