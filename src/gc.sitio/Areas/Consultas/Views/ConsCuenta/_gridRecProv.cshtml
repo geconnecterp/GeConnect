@@ -14,6 +14,7 @@
                 <thead class="table-dark">
                     <tr class="header">
                         <th class="text-sm-center" scope="col">RP N°</th>
+                        <th class="text-sm-center" scope="col">Proveedor</th>
                         <th class="text-sm-center" scope="col">Fecha</th>
                         <th class="text-sm-center" scope="col">Cmpte RP</th>
                         <th class="text-sm-center" scope="col">Cmpte CtaCte</th>
@@ -34,6 +35,7 @@
                             data-cta-id="@item.Cta_id"
                             class="@clase" onclick="selectReg(this,'tbGridRpProv')" ondblclick="SeleccionarPeriodo(this,'tbGridRpProv')">
                             <td class="@Model.ObtenerClase(item.Rp_compte)">@Model.FormatearDato(item.Rp_compte,FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.Cuenta)">@Model.FormatearDato(item.Cuenta, FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase(item.Rp_fecha)">@Model.FormatearDato(item.Rp_fecha, FormatDato.Fecha)</td>
                             @{
                                 string cmpte = $"({item.Tco_id_rp}) {item.Cm_compte_rp}";

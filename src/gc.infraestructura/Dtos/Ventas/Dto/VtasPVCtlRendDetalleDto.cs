@@ -37,5 +37,6 @@ namespace gc.infraestructura.Dtos.Ventas
 		public string concepto_valor { get; set; } = string.Empty;
 		public bool ins_detalle_bool => ins_detalle == 'S';
 		public bool pendiente { get; set; } //Viene desde el registro seleccionado de la clase VtasPVCtlRendDto
+		public bool puede_editar_importe => tcf_id != "EF";
 	}
 }

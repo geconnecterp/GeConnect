@@ -17,6 +17,8 @@ namespace gc.infraestructura.Dtos.Almacen.DevolucionAProveedor
 		public string cm_compte { get; set; } = string.Empty;
 		public string dia_movi { get; set; } = string.Empty;
 		public string pv_compte { get; set; } = string.Empty;
+		public string cuenta => $"{cta_denominacion} ({cta_id})";
+
 	}
 
 	public class DevolucionProveedoresListaDto : DevolucionProveedorDto

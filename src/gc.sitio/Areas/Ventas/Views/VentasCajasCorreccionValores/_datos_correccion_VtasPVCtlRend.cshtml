@@ -9,6 +9,36 @@
 		vertical-align: middle !important;
 		white-space: nowrap;
 	}
+	/* Azul pastel para diferencia positiva */
+	/* .fila-dif-positiva {
+		background-color: #dceeff !important;
+		font-weight: bold !important;
+	} */
+
+	/* Rojo pastel para diferencia negativa */
+/* 	.fila-dif-negativa {
+		background-color: #ffe0e0 !important;
+		font-weight: bold !important;
+	} */
+	/* Diferencia positiva: azul pastel */
+	#tbVtasPVCtlRend tbody tr.fila-dif-positiva,
+	#tbVtasPVCtlRend tbody tr.fila-dif-positiva td {
+		background-color: #b7dbff !important;
+		font-weight: bold !important;
+	}
+
+	/* Diferencia negativa: rojo pastel */
+	#tbVtasPVCtlRend tbody tr.fila-dif-negativa,
+	#tbVtasPVCtlRend tbody tr.fila-dif-negativa td {
+		background-color: #ffe0e0 !important;
+		font-weight: bold !important;
+	}
+
+	/* Opcional: que el hover no “borre” el color */
+	#tbVtasPVCtlRend.table-hover tbody tr.fila-dif-positiva:hover td,
+	#tbVtasPVCtlRend.table-hover tbody tr.fila-dif-negativa:hover td {
+		background-color: inherit !important;
+	}
 </style>
 <div class="table-responsive table-wrapper-500">
 	<table class="table table-sm table-hover mb-0 table-golden" id="tbVtasPVCtlRend">
@@ -37,7 +67,19 @@
 				foreach (var item in Model.ListaDatos)
 				{
 					var dif = item.rend_importe_ok - item.rend_importe_arq;
+
+					// Alternancia de filas
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+					// Estilos según diferencia
+					if (dif > 0)
+					{
+						clase += " fila-dif-positiva";
+					}
+					else if (dif < 0)
+					{
+						clase += " fila-dif-negativa";
+					}
 					<tr class="@clase row-pedido"
 						data-caja-nro-proceso="@item.caja_nro_proceso"
 						data-caja-nro-cierre="@item.caja_nro_cierre"

@@ -30,8 +30,8 @@ namespace gc.api.core.Servicios.Reportes
             _consultaServicio = consulta;
 
             _empresaGeco = empresa.Value;
-            _titulos = new List<string> { "RP N°", "Fecha", "Cmpte RP", "Cmpte CtaCte", "Sucursal", "OC", "CTL", "FAC", "VAL", "MOD", "COL" };
-            _campos = new List<string> { "RpNro", "Fecha", "CmpteRp", "CmpteCC", "Sucursal", "Oc", "Ctl", "Fac", "Val", "Mod", "Col" };
+            _titulos = new List<string> { "RP N°", "Prov", "Fecha", "Cmpte RP", "Cmpte CtaCte", "Sucursal", "OC", "CTL", "FAC", "VAL", "MOD", "COL" };
+            _campos = new List<string> { "RpNro", "Cuenta", "Fecha", "CmpteRp", "CmpteCC", "Sucursal", "Oc", "Ctl", "Fac", "Val", "Mod", "Col" };
             _cuentaSv = consultaSv;
             _logger = logger;
         }
@@ -77,6 +77,7 @@ namespace gc.api.core.Servicios.Reportes
                 var regs = registros.Select(x => new
                 {
                     RpNro = x.Rp_compte,
+					x.Cuenta,
                     Fecha = x.Rp_fecha,
                     CmpteRp = $"({x.Tco_id_rp}) {x.Cm_compte_rp}",
                     CmpteCC = $"({x.Tco_id}) {x.Cm_compte}",
@@ -104,7 +105,7 @@ namespace gc.api.core.Servicios.Reportes
                 //****=============================****/
                 //****  CAMBIAR ANCHOS DE COLUMNAS ****
                 //****=============================****/
-                anchos = [8f, 8f, 12f, 12f, 10f, 8f, 5f, 5f, 5f, 5f, 5f];
+                anchos = [6f, 16f, 6f, 10f, 10f, 10f, 8f, 5f, 5f, 5f, 5f, 5f];
 
                 var chico = HelperPdf.FontChicoPredeterminado();
                 var normal = HelperPdf.FontNormalPredeterminado();
@@ -255,7 +256,7 @@ namespace gc.api.core.Servicios.Reportes
 
         public static void GenerarTablaRecepcionesProveedor(Document pdf, List<ConsRecepcionProveedorDto> datos,float[] anchos, Font fuente)
         {
-            var tabla = HelperPdf.GeneraTabla(11, anchos, 100, 5, 10);
+            var tabla = HelperPdf.GeneraTabla(12, anchos, 100, 5, 10);
 
             bool alternar = false;
 
@@ -265,7 +266,8 @@ namespace gc.api.core.Servicios.Reportes
                 alternar = !alternar;
 
                 tabla.AddCell(CeldaTexto(item.Rp_compte, fuente, colorFondo));
-                tabla.AddCell(CeldaTexto(item.Rp_fecha.ToString("dd/MM/yyyy"), fuente, colorFondo));
+				tabla.AddCell(CeldaTexto(item.Cuenta, fuente, colorFondo));
+				tabla.AddCell(CeldaTexto(item.Rp_fecha.ToString("dd/MM/yyyy"), fuente, colorFondo));
                 tabla.AddCell(CeldaTexto($"({item.Tco_id_rp}) {item.Cm_compte_rp}", fuente, colorFondo));
                 tabla.AddCell(CeldaTexto($"({item.Tco_id}) {item.Cm_compte}", fuente, colorFondo));
                 tabla.AddCell(CeldaTexto(item.Adm_nombre, fuente, colorFondo));

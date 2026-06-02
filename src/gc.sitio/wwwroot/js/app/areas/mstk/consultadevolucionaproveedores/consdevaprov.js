@@ -120,6 +120,14 @@ function CargarTablaTabDevoluciones(pag=1) {
 
 		});
 		InicializarEventosTabDevoluciones();
+		// 🔥 Seleccionar automáticamente la primera fila y cargar el detalle
+		setTimeout(() => {
+			const $primera = $("#tbDevoluciones tbody tr.row-devolucion").first();
+			if ($primera.length) {
+				ProcesarSeleccionFilaEnTabDevoluciones($primera); // marca visualmente
+				SeleccionarDevolucion($primera[0], "tbDevoluciones"); // carga el detalle
+			}
+		}, 50);
 		CerrarWaiting();
 		return true
 	});

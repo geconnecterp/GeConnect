@@ -587,13 +587,10 @@ namespace gc.sitio.Areas.Ventas.Controllers
 						x.Value.EsError ||
 						(x.Value.Entidad != null && x.Value.Entidad.resultado != 0)
 					)
-					.Select(x => new
-					{
-						ent_compte = x.Key,
-						mensaje = x.Value?.Mensaje
-								   ?? x.Value?.Entidad?.resultado_msj
-								   ?? "Error desconocido"
-					})
+					.Select(x => x.Value?.Mensaje
+									?? x.Value?.Entidad?.resultado_msj
+									?? "Error desconocido")
+					.Distinct() // 👈 SOLO MENSAJES ÚNICOS
 					.ToList();
 
 				// Si todos OK
@@ -615,9 +612,8 @@ namespace gc.sitio.Areas.Ventas.Controllers
 					Ok = false,
 					error = true,
 					warn = false,
-					msg = "Algunas entregas no pudieron confirmarse",
-					fallidos,
-					respuestas = dictRespuestas
+					msg = "Errores en la confirmación contable",
+					errores = fallidos   
 				});
 			}
 			catch (Exception ex)

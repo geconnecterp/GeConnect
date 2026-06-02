@@ -234,8 +234,8 @@ function ConfirmacionContable() {
 		CerrarWaiting();
 		if (obj.error === true || obj.warn === true) {
 			let resumen = obj.msg;
-			if (obj.fallidos && obj.fallidos.length > 0) {
-				resumen = GenerarResumenErroresConDetalles(obj.fallidos);
+			if (obj.errores && obj.errores.length > 0) {
+				resumen = GenerarResumenErroresSimples(obj.errores);
 			}
 			AbrirMensaje("ATENCIÓN", resumen, function () {
 				$("#msjModal").modal("hide");
@@ -251,6 +251,16 @@ function ConfirmacionContable() {
 			}, false, ["Aceptar"], "succ!", null);
 		}
 	});
+}
+
+function GenerarResumenErroresSimples(errores) {
+	let resumen = "<strong>Errores en la confirmación contable:</strong><br><br>";
+
+	errores.forEach(err => {
+		resumen += `<div>• ${err}</div>`;
+	});
+
+	return resumen;
 }
 
 function GenerarResumenErroresConDetalles(fallidos) {

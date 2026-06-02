@@ -151,6 +151,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 		[HttpPost]
 		public async Task<IActionResult> ObtenerDetalleAjustes(string as_compte)
 		{
+			var model = new AjusteDeStockDetalleModel();
 			try
 			{
 				var auth = EstaAutenticado;
@@ -159,7 +160,8 @@ namespace gc.sitio.Areas.Mstk.Controllers
 
 				//List<DevolucionRevertidoDto>
 				var lista = await _productoServicio.ObtenerAJREVERTIDO(as_compte, TokenCookie);
-				var model = ObtenerGridCoreSmart<AjusteRevertidoDto>(lista);
+				model.GrillaAjusteDetalle = ObtenerGridCoreSmart<AjusteRevertidoDto>(lista);
+				model.Leyenda = as_compte;
 
 				return PartialView("_grillaDetalle", model);
 			}

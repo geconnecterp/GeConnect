@@ -99,6 +99,14 @@ function CargarTablaTabAjustes(pag = 1) {
 		});
 		EvaluarBotonImprimir("navs-top-aju");
 		InicializarEventosTabAjustes();
+		// 🔥 Seleccionar automáticamente la primera fila y cargar el detalle
+		setTimeout(() => {
+			const $primera = $("#tbAjustes tbody tr.row-ajuste").first();
+			if ($primera.length) {
+				ProcesarSeleccionFilaEnTabAjustes($primera); // marca visualmente
+				SeleccionarAjuste($primera[0], "tbAjustes");  // carga el detalle
+			}
+		}, 50);
 		CerrarWaiting();
 		return true
 	});

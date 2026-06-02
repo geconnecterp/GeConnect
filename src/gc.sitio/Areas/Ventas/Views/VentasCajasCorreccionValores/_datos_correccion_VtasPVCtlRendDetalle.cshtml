@@ -115,6 +115,10 @@
 					line-height: 1 !important;
 				}
 
+			#tbVtasPVCtlRendDetalle td.col-num.diferencia,
+			#tbVtasPVCtlRendDetalle th.col-num.diferencia {
+				padding-right: 10px !important;
+			}
 </style>
 
 <div class="table-responsive table-wrapper-500">
@@ -161,7 +165,7 @@
 							data-pendiente="@item.pendiente"
 							data-rendido="@((item.rend_importe_ok ?? 0).ToString(CultureInfo.InvariantCulture))">
 
-							@if (item.pendiente)
+							@if (item.pendiente && item.puede_editar_importe)
 							{
 								<input type="text"
 									   class="form-control form-control-sm input-importe"
@@ -179,7 +183,7 @@
 							<span>@GridHelper.FormatearPrecio(item.rend_importe_arq ?? 0, TipoPrecio.Venta)</span>
 						</td>
 
-						<td class="col-num text-end"
+						<td class="col-num diferencia text-end"
 							data-diferencia="@((dif ?? 0).ToString(CultureInfo.InvariantCulture))">
 							<span>@GridHelper.FormatearPrecio(dif ?? 0, TipoPrecio.Venta)</span>
 						</td>

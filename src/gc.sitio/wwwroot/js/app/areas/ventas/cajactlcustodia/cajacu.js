@@ -6,6 +6,8 @@ var ent_actu_bool_selected = null;
 var ent_tcf_id_selected = null;
 var guardando_importe = false;
 var existe_edicion = false;
+var ultima_rend_seleccionada = null;
+var restaurar_seleccion = false;
 
 $(function () {
 	if ($("#divDetalle").is(":visible")) {
@@ -54,8 +56,23 @@ function InicializarBusqueda() {
 		$("#divFiltro").collapse("hide");
 		$("#divDetalle").collapse("show");
 		InicializaEventosGrillaVtasPVCtlEntregas();
+
+		if (restaurar_seleccion) {
+			RestaurarSeleccionEntrega();
+			restaurar_seleccion = false; // reset
+		}
+
 		CerrarWaiting();
 	});
+}
+
+function RestaurarSeleccionEntrega() {
+	if (!ent_compte_selected) return;
+
+	const $fila = $("#tbVtasPVCtlEntrega tbody tr[data-ent-compte='" + ent_compte_selected + "']");
+	if ($fila.length) {
+		ProcesarSeleccionFilaEntrega($fila); // esto vuelve a cargar la grilla derecha
+	}
 }
 
 function InicializaEventosGrillaVtasPVCtlEntregas() {
@@ -104,8 +121,8 @@ function InicializaEventosGrillaVtasPVCtlEntregas() {
 				return; // Detener el click original
 			}
 		}
-
 		ProcesarSeleccionFilaEntrega($nuevaFila);
+
 	});
 
 	const $btn = $("#btnConfirmacionContable");
@@ -122,7 +139,10 @@ function InicializaEventosGrillaVtasPVCtlEntregas() {
 		ConfirmacionContable();
 	});
 
-	SeleccionarPrimeraFilaEntregas();
+	//SeleccionarPrimeraFilaEntregas();
+	if (!restaurar_seleccion) {
+		SeleccionarPrimeraFilaEntregas();
+	}
 }
 
 function ConfirmacionContable() {
@@ -202,12 +222,14 @@ function GuardarCtlDetalle() {
 						}
 						AbrirMensaje("ATENCIÓN", resumen, function () {
 							$("#msjModal").modal("hide");
+							restaurar_seleccion = true;   // 🔥 activar restauración
 							existe_edicion = false;
 							InicializarBusqueda();
 							return true;
 						}, false, ["Aceptar"], "error!", null);
 					}
 					else {
+						restaurar_seleccion = true;   // 🔥 activar restauración SIEMPRE
 						existe_edicion = false;
 						InicializarBusqueda();
 					}
@@ -384,7 +406,42 @@ function CargarGrillaVtasPVCtlEntregaRend() {
 			CerrarWaiting();
 			$("#divVtasPVCtlRend").html(html);
 			InicializaEventosGrillaVtasPVCtlRend();
+
+			// 🔥 restaurar selección de rendición si corresponde
+			RestaurarSeleccionRendicion();
 		});
+	}
+}
+
+function RestaurarSeleccionRendicion() {
+	if (!ultima_rend_seleccionada) return;
+	if (!ultima_rend_seleccionada.ent_compte ||
+		ultima_rend_seleccionada.ent_compte !== ent_compte_selected) {
+		return; // la rendición guardada no pertenece a esta entrega
+	}
+
+	const sel = ultima_rend_seleccionada;
+
+	const selector = [
+		"#tbVtasPVCtlEntregaRend tbody tr",
+		"[data-ent-compte='" + sel.ent_compte + "']",
+		"[data-caja-nro-proceso='" + sel.caja_nro_proceso + "']",
+		"[data-caja-nro-cierre='" + sel.caja_nro_cierre + "']",
+		"[data-caja-nro-rend='" + sel.caja_nro_rend + "']",
+		"[data-rend-item='" + sel.rend_item + "']"
+	].join("");
+
+	const $fila = $(selector);
+
+	if ($fila.length) {
+		$("#tbVtasPVCtlEntregaRend tbody tr").removeClass("selected-row");
+		$fila.addClass("selected-row");
+
+		// si tiene input editable, darle foco
+		const $input = $fila.find(".input-importe");
+		if ($input.length) {
+			$input.focus().select();
+		}
 	}
 }
 
@@ -437,6 +494,15 @@ function InicializaEventosGrillaVtasPVCtlRend() {
 		setTimeout(() => {
 			$input.select();
 		}, 10);
+
+		const $fila = $(this).closest("tr");
+		ultima_rend_seleccionada = {
+			ent_compte: $fila.data("ent-compte"),
+			caja_nro_proceso: $fila.data("caja-nro-proceso"),
+			caja_nro_cierre: $fila.data("caja-nro-cierre"),
+			caja_nro_rend: $fila.data("caja-nro-rend"),
+			rend_item: $fila.data("rend-item")
+		};
 	});
 
 	// Enter / Escape
@@ -560,6 +626,17 @@ function GuardarImporteEditado($input) {
 	});
 }
 
+function RestaurarSeleccionEntregaSinCargarDerecha() {
+	if (!ent_compte_selected) return;
+
+	const $fila = $(`#tbVtasPVCtlEntrega tbody tr[data-ent-compte="${ent_compte_selected}"]`);
+
+	if ($fila.length) {
+		$("#tbVtasPVCtlEntrega tbody tr").removeClass("selected-row");
+		$fila.addClass("selected-row");
+	}
+}
+
 function ActualizarTotalesEnPadre(ent_compte) {
 	// 1) Buscar todas las filas del detalle que correspondan a esta entrega
 	const filasDetalle = $(`#tbVtasPVCtlEntregaRend tr.row-entrega[data-ent-compte="${ent_compte}"]`);
@@ -592,6 +669,9 @@ function ActualizarTotalesEnPadre(ent_compte) {
 	if (celdaImporte.length > 0) {
 		celdaImporte.text(FormatearPrecio(total));
 	}
+
+	// 🔥 Volver a marcar la fila seleccionada en la tabla izquierda
+	RestaurarSeleccionEntregaSinCargarDerecha();
 }
 
 function CancelarEdicion($input) {
@@ -605,6 +685,14 @@ function ProcesarSeleccionFilaRendDetalle($fila) {
 
 	// Marcar fila seleccionada
 	$fila.addClass("selected-row");
+
+	ultima_rend_seleccionada = {
+		ent_compte: $fila.data("ent-compte"),
+		caja_nro_proceso: $fila.data("caja-nro-proceso"),
+		caja_nro_cierre: $fila.data("caja-nro-cierre"),
+		caja_nro_rend: $fila.data("caja-nro-rend"),
+		rend_item: $fila.data("rend-item")
+	};
 }
 
 function validarEntregaSeleccionada() {

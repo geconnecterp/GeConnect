@@ -1,12 +1,17 @@
 ﻿@using gc.infraestructura.Dtos.Almacen.AjusteDeStock
 @using gc.infraestructura.Helpers
-@model GridCoreSmart<DevolucionRevertidoDto>
+@model DetalleDevolucionModel
 @{
 	var alt = true;
 	string clase = string.Empty;
 }
 <style>
 </style>
+<div class="row mb-1">
+	<div class="col-12">
+		<strong>Devolucion N°:</strong> @Model.Leyenda
+	</div>
+</div>
 <div class="table-responsive table-wrapper-700" style="width: 65%;">
 	<table class="table table-sm table-hover mb-0 table-golden" id="tbDetalle">
 		<thead class="sticky-top table-golden-header-compact">
@@ -19,7 +24,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+			@if (Model == null || Model.GrillaDetalle == null || Model.GrillaDetalle.ListaDatos == null || !Model.GrillaDetalle.ListaDatos.Any())
 			{
 				<tr class="fila-vacia">
 					<td colspan="9" class="text-center text-muted py-2">
@@ -30,7 +35,7 @@
 			}
 			else
 			{
-				foreach (var item in Model.ListaDatos)
+				foreach (var item in Model.GrillaDetalle.ListaDatos)
 				{
 					var total = item.dvd_cantidad * item.dvd_pcosto;
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }

@@ -166,8 +166,8 @@ namespace gc.infraestructura.Dtos.Consultas
         public bool Valorizada{ get; set; }
         public bool Modificada{ get; set; }
         public bool Colector { get; set; }
-
-    }
+		public string Cuenta => $"{Cta_denominacion} ({Cta_id})";
+	}
 
     public class ConsRecepcionProveedorDetalleDto
     {
