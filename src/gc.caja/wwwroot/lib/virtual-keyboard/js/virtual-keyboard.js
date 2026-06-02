@@ -339,7 +339,7 @@
             currentY = clientY - initialY;
             xOffset = currentX;
             yOffset = currentY;
-            container.style.transform = `translate(calc(-50% + ${currentX}px), ${currentY}px)`;
+            container.style.transform = `translate(${currentX}px, ${currentY}px)`;
         }
     }
 

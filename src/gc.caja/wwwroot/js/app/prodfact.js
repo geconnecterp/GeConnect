@@ -169,6 +169,87 @@ function inicializarEventosProductos() {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// SECCIÓN 0.5: GESTIÓN DEL TECLADO DIGITAL (✅ OPTIMIZADO v18.0)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * ✅ OPTIMIZADO v18.0: Cierra el teclado virtual específico del proyecto
+ * 
+ * COMPATIBLE CON:
+ * - virtual-keyboard.js (plugin actual de gc.caja)
+ * 
+ * @returns {boolean} - true si se cerró el teclado, false si no estaba abierto
+ */
+function cerrarTecladoDigital() {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('⌨️ CERRANDO TECLADO DIGITAL v18.0 (OPTIMIZADO)');
+    console.log('═══════════════════════════════════════════════════');
+
+    let tecladoCerrado = false;
+
+    // ❶ MÉTODO PRINCIPAL: Buscar contenedor por ID
+    const $teclado = $('#virtual-keyboard');
+
+    if ($teclado.length > 0) {
+        console.log('🔍 Teclado virtual detectado (ID: virtual-keyboard)');
+
+        // ❷ VERIFICAR SI ESTÁ VISIBLE
+        const estaVisible = $teclado.css('display') !== 'none';
+
+        console.log(`   Estado actual: ${estaVisible ? 'VISIBLE ✅' : 'OCULTO ❌'}`);
+
+        if (estaVisible) {
+            // ❸ OCULTAR USANDO EL MISMO MÉTODO QUE EL PLUGIN
+            $teclado.css('display', 'none');
+            console.log('✅ Teclado ocultado correctamente');
+            tecladoCerrado = true;
+        } else {
+            console.log('ℹ️ El teclado ya estaba oculto');
+        }
+    } else {
+        console.log('ℹ️ No se detectó el contenedor #virtual-keyboard en el DOM');
+    }
+
+    // ❹ MÉTODO SECUNDARIO: Blur del input si está enfocado
+    const $input = $('#txtCodigoProducto');
+
+    if ($input.length > 0 && $input.is(':focus')) {
+        console.log('🔍 Input enfocado detectado, aplicando blur...');
+        $input.trigger('blur');
+        tecladoCerrado = true;
+    }
+
+    // ❺ RESULTADO FINAL
+    if (tecladoCerrado) {
+        console.log('═══════════════════════════════════════════════════');
+        console.log('✅ TECLADO DIGITAL CERRADO EXITOSAMENTE');
+        console.log('═══════════════════════════════════════════════════');
+    } else {
+        console.log('═══════════════════════════════════════════════════');
+        console.log('ℹ️ NO SE DETECTÓ TECLADO DIGITAL ABIERTO');
+        console.log('═══════════════════════════════════════════════════');
+    }
+
+    return tecladoCerrado;
+}
+
+/**
+ * ✅ NUEVO v18.1: Cierra el teclado con retraso (debounce)
+ * Útil para evitar conflictos con animaciones de cierre
+ * 
+ * @param {number} delay - Milisegundos de retraso (default: 100)
+ * @returns {Promise<boolean>} - Promesa que resuelve cuando se cierra el teclado
+ */
+function cerrarTecladoDigitalConRetraso(delay = 100) {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            const resultado = cerrarTecladoDigital();
+            resolve(resultado);
+        }, delay);
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // SECCIÓN 1: PROCESAMIENTO DE ENTRADA
 // ═══════════════════════════════════════════════════════════════════
 
@@ -1833,15 +1914,18 @@ function ocultarSeccionProductos() {
 }
 
 /**
- * ✅ ACTUALIZADO v10.1: Confirma factura CON REDONDEO Y PARSEO CORRECTO
- * CORREGIDO: Validación correcta de response.json_p (no response.productos)
+ * ✅ ACTUALIZADO v18.0: Confirma factura Y CIERRA TECLADO
+ * OPTIMIZADO: Código específico para virtual-keyboard.js
  */
 function confirmarFactura() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('✅ CONFIRMANDO FACTURA v10.1 (CON REDONDEO Y PARSEO)');
+    console.log('✅ CONFIRMANDO FACTURA v18.0 (CON CIERRE DE TECLADO)');
     console.log('═══════════════════════════════════════════════════');
 
-    // ❶ Validaciones previas
+    // ❶ ✅ NUEVO: CERRAR TECLADO DIGITAL ANTES DE VALIDACIONES
+    cerrarTecladoDigital();
+
+    // ❷ Validaciones previas
     if (productosFactura.length === 0) {
         console.warn('⚠️ No hay productos cargados');
         mostrarMensajeEstado('Debe cargar al menos un producto para continuar', 'warning');
@@ -1854,94 +1938,50 @@ function confirmarFactura() {
         return;
     }
 
-    // ❷ Construir JSON CON VALORES REDONDEADOS
+    // ❸ Construir JSON CON VALORES REDONDEADOS
     const productosArray = productosFactura.map((producto) => {
         return {
             // ═══════════════════════════════════════════════════
-            // ✅ IDENTIFICACIÓN
+            // (Mismo código anterior - no cambió)
             // ═══════════════════════════════════════════════════
             item: producto.item || 0,
             p_id: producto.p_id || '',
             p_id_barrado: producto.p_id_barrado || '',
             p_desc: producto.p_desc || '',
-
-            // ═══════════════════════════════════════════════════
-            // ✅ PRECIOS (REDONDEADOS)
-            // ═══════════════════════════════════════════════════
             p_pcosto: redondear(producto.p_pcosto || 0, 2),
             p_pcosto_repo: redondear(producto.p_pcosto_repo || 0, 2),
             p_pneto: redondear(producto.p_pneto || 0, 2),
             p_pvta: redondear(producto.p_pvta || 0, 2),
             p_margen_imp: redondear(producto.p_margen_imp || 0, 2),
             p_margen_vig: redondear(producto.p_margen_vig || 0, 2),
-
-            // ═══════════════════════════════════════════════════
-            // ✅ CANTIDAD Y TOTAL (REDONDEADOS)
-            // ═══════════════════════════════════════════════════
             cantidad_tot: redondear(producto.cantidad_tot || 0, 2),
             p_pvta_tot: redondear(producto.p_pvta_tot || 0, 2),
             bultos: redondear(producto.bultos || 0, 0),
-
-            // ═══════════════════════════════════════════════════
-            // ✅ IVA (REDONDEADO)
-            // ═══════════════════════════════════════════════════
             iva_situacion: producto.iva_situacion || '',
             iva_alicuota: redondear(producto.iva_alicuota || 0, 2),
             p_iva: redondear(producto.p_iva || 0, 2),
-
-            // ═══════════════════════════════════════════════════
-            // ✅ IMPUESTOS INTERNOS (REDONDEADO)
-            // ═══════════════════════════════════════════════════
             in_alicuota: redondear(producto.in_alicuota || 0, 2),
             p_in: redondear(producto.p_in || 0, 2),
-
-            // ═══════════════════════════════════════════════════
-            // ✅ PREVISIÓN DE LISTA (REDONDEADO)
-            // ═══════════════════════════════════════════════════
             lp_prevision_tot: redondear(producto.lp_prevision_tot || 0, 2),
             lp_prevision_pin: redondear(producto.lp_prevision_pin || 0, 2),
-
-            // ═══════════════════════════════════════════════════
-            // ✅ PRECIO DE OFERTA (REDONDEADO)
-            // ═══════════════════════════════════════════════════
             po: producto.po || false,
             po_limite: redondear(producto.po_limite || 0, 2),
-
-            // ═══════════════════════════════════════════════════
-            // ✅ TOTALES DE COMPROBANTE (REDONDEADO)
-            // ═══════════════════════════════════════════════════
             cm_gravado: redondear(producto.cm_gravado || 0, 2),
             cm_no_gravado: redondear(producto.cm_no_gravado || 0, 2),
             cm_exento: redondear(producto.cm_exento || 0, 2),
             cm_iva: redondear(producto.cm_iva || 0, 2),
             cm_ii: redondear(producto.cm_ii || 0, 2),
-
-            // ═══════════════════════════════════════════════════
-            // ✅ DESCUENTOS (REDONDEADO)
-            // ═══════════════════════════════════════════════════
             cm_dto: redondear(producto.cm_dto || 0, 2),
             cm_dto_porc: redondear(producto.cm_dto_porc || 2, 2),
-
-            // ═══════════════════════════════════════════════════
-            // ✅ ORIGEN (SIN CAMBIOS)
-            // ═══════════════════════════════════════════════════
             cta_id: producto.cta_id || '',
             pre_id: producto.pre_id || null,
             cpf_nro: producto.cpf_nro || null,
-
-            // ═══════════════════════════════════════════════════
-            // ✅ COMBOS (SIN CAMBIOS)
-            // ═══════════════════════════════════════════════════
             cmb_p_id: producto.cmb_p_id || '',
             cmd_cmb: producto.cmd_cmb || '',
             cmd_cmb_id: producto.cmd_cmb_id || '',
             cmd_cmb_dto: redondear(producto.cmd_cmb_dto || 0, 2),
             cmd_cmb_cant: redondear(producto.cmd_cmb_cant || 0, 2),
             cmd_cmb_desc: producto.cmd_cmb_desc || '',
-
-            // ═══════════════════════════════════════════════════
-            // ✅ CÓDIGO DE BARRAS (SIN CAMBIOS)
-            // ═══════════════════════════════════════════════════
             barre: producto.barre || ''
         };
     });
@@ -1949,11 +1989,10 @@ function confirmarFactura() {
     const jsonProductos = JSON.stringify(productosArray);
 
     console.log('═══════════════════════════════════════════════════');
-    console.log('📋 JSON CON VALORES REDONDEADOS generado:');
-    console.log(jsonProductos);
+    console.log('📋 JSON CON VALORES REDONDEADOS generado');
     console.log('═══════════════════════════════════════════════════');
 
-    // ❸ Calcular totales CON REDONDEO
+    // ❹ Calcular totales CON REDONDEO
     const tot_rows = productosFactura.length;
     const tot_cantidad = redondear(
         productosFactura.reduce((sum, p) => sum + (parseFloat(p.cantidad_tot) || 0), 0),
@@ -1961,7 +2000,7 @@ function confirmarFactura() {
     );
     const tot_pvta = redondear(totalFactura, 2);
 
-    // ❹ Construir request DTO
+    // ❺ Construir request DTO
     const request = {
         json_p: jsonProductos,
         tot_rows: tot_rows,
@@ -1974,13 +2013,13 @@ function confirmarFactura() {
     console.log('📤 REQUEST CON TOTALES REDONDEADOS:');
     console.log(`   tot_rows: ${tot_rows}`);
     console.log(`   tot_cantidad: ${tot_cantidad}`);
-    console.log(`   tot_pvta: ${tot_pvta} ← ✅ REDONDEADO`);
+    console.log(`   tot_pvta: ${tot_pvta}`);
     console.log('═══════════════════════════════════════════════════');
 
-    // ❺ Mostrar loader
+    // ❻ Mostrar loader
     mostrarLoaderCalculando();
 
-    // ❻ Llamar a la API
+    // ❼ Llamar a la API (resto del código sin cambios)
     $.ajax({
         url: typeof CalcularFilasUrl !== 'undefined' && CalcularFilasUrl
             ? CalcularFilasUrl
@@ -1989,30 +2028,15 @@ function confirmarFactura() {
         contentType: 'application/json',
         data: JSON.stringify(request),
         success: function (response) {
-            console.log('═══════════════════════════════════════════════════');
-            console.log('🔍 DIAGNÓSTICO DE RESPUESTA DEL SERVIDOR v10.1');
-            console.log('═══════════════════════════════════════════════════');
-            console.log('Response completo:', response);
-            console.log('Tipo de response:', typeof response);
-            console.log('Propiedades de response:', Object.keys(response || {}));
-            console.log('response.ok:', response?.ok);
-            console.log('response.json_p:', response?.json_p);  // ✅ CORRECCIÓN
-            console.log('Tipo de response.json_p:', typeof response?.json_p);  // ✅ CORRECCIÓN
-            console.log('response.json_subtotal:', response?.json_subtotal);
-            console.log('response.json_sorteo:', response?.json_sorteo);
-            console.log('═══════════════════════════════════════════════════');
-
+            console.log('✅ RESPUESTA RECIBIDA DEL SERVIDOR');
             ocultarLoaderCalculando();
 
-            // ❼ VALIDACIÓN: Verificar que response existe
             if (!response || typeof response !== 'object') {
                 console.error('❌ Error: Respuesta inválida del servidor');
-                console.error('   Response recibido:', response);
                 mostrarMensajeEstado('Error: Respuesta inválida del servidor', 'danger');
                 return;
             }
 
-            // ❽ VALIDACIÓN: Verificar response.ok
             if (!response.ok) {
                 console.error('❌ Error en respuesta:', response.mensaje);
                 mostrarMensajeEstado(
@@ -2022,10 +2046,8 @@ function confirmarFactura() {
                 return;
             }
 
-            // ❾ ✅ VALIDACIÓN CORRECTA: Verificar que json_p, json_subtotal existan
             if (!response.json_p || typeof response.json_p !== 'string') {
                 console.error('❌ Error: response.json_p no es un string válido');
-                console.error('   Estructura recibida:', Object.keys(response));
                 mostrarMensajeEstado(
                     'Error: El servidor no retornó los productos correctamente',
                     'danger'
@@ -2042,9 +2064,7 @@ function confirmarFactura() {
                 return;
             }
 
-            console.log(`✅ Validación exitosa: json_p y json_subtotal recibidos`);
-
-            // ❿ ✅ INVOCAR FUNCIÓN PARA ABRIR MODAL (con parseo de JSONs)
+            console.log(`✅ Validación exitosa`);
             abrirModalCalculoFacturaConParseo(response);
         },
         error: function (xhr, status, error) {
