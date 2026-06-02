@@ -8,9 +8,9 @@
 <!-- ══════════════════════════════════════════════════════════════════════
      🎨 MODAL DE PAGO FULLSCREEN - ESTILO GOLDEN PREMIUM
      ══════════════════════════════════════════════════════════════════════
-     ✅ OPTIMIZADO v19.4: Layout en 2 columnas para mejor aprovechamiento
-     ✅ Tablas paralelas: Conceptos | Formas de Pago
-     ✅ Tamaños de fuente optimizados para legibilidad sin scroll
+     ✅ OPTIMIZADO v19.6: Grids rebalanceados 33% Conceptos | 67% Formas Pago
+     ✅ Columna Observación eliminada - mostrada como tooltip en Importe
+     ✅ Footer: VOLVER (izquierda) | Info PV (centro) | FINALIZAR (derecha)
      ══════════════════════════════════════════════════════════════════════ -->
 
 <div class="modal fade"
@@ -34,13 +34,13 @@
             <!-- ════════════════════════════════════════════════════════════════ -->
             <div class="modal-body p-3 bg-light">
 
-                <!-- ✅ NUEVO: Layout en 2 columnas con row -->
+                <!-- ✅ Layout rebalanceado: 33% Conceptos | 67% Formas de Pago -->
                 <div class="row g-3">
 
                     <!-- ════════════════════════════════════════════════════════ -->
-                    <!-- COLUMNA IZQUIERDA: CONCEPTOS DE PAGO (40% ANCHO) -->
+                    <!-- COLUMNA IZQUIERDA: CONCEPTOS DE PAGO (33% ANCHO) -->
                     <!-- ════════════════════════════════════════════════════════ -->
-                    <div class="col-md-5">
+                    <div class="col-md-4">
                         <div class="card card-golden shadow-lg h-100">
                             <div class="card-header bg-gradient-golden-dark py-2">
                                 <h6 class="mb-0 text-white">
@@ -140,9 +140,9 @@
                     </div>
 
                     <!-- ════════════════════════════════════════════════════════ -->
-                    <!-- COLUMNA DERECHA: FORMAS DE PAGO INGRESADAS (60% ANCHO) -->
+                    <!-- COLUMNA DERECHA: FORMAS DE PAGO INGRESADAS (67% ANCHO) -->
                     <!-- ════════════════════════════════════════════════════════ -->
-                    <div class="col-md-7">
+                    <div class="col-md-8">
                         <div class="card card-golden shadow-lg h-100">
                             <div class="card-header bg-gradient-golden py-2">
                                 <h6 class="mb-0 text-white">
@@ -156,16 +156,18 @@
                                     <table class="table table-formas-pago mb-0" id="tbFormasPago">
                                         <thead class="table-header-formas-pago sticky-top">
                                             <tr>
-                                                <th class="text-center px-2" style="width: 5%;">#</th>
-                                                <th class="text-start px-2" style="width: 30%;">Forma de Pago</th>
-                                                <th class="text-end px-2" style="width: 20%;">Importe</th>
-                                                <th class="text-start px-2" style="width: 30%;">Observación</th>
-                                                <th class="text-center px-2" style="width: 15%;">Acciones</th>
+                                                <th class="text-center px-2" style="width: 8%;">#</th>
+                                                <th class="text-start px-2" style="width: 45%;">Forma de Pago</th>
+                                                <th class="text-end px-2" style="width: 27%;">
+                                                    <i class='bx bx-dollar-circle bx-sm'></i> Importe
+                                                    <i class='bx bx-info-circle bx-xs text-muted ms-1' title="Pase el mouse sobre el importe para ver observaciones"></i>
+                                                </th>
+                                                <th class="text-center px-2" style="width: 20%;">Acciones</th>
                                             </tr>
                                         </thead>
                                         <tbody id="tbodyFormasPago">
                                             <tr id="rowSinFormasPago">
-                                                <td colspan="5" class="text-center py-4">
+                                                <td colspan="4" class="text-center py-4">
                                                     <i class='bx bx-info-circle bx-lg text-muted'></i>
                                                     <p class="text-muted mb-0 mt-2">
                                                         No hay formas de pago registradas.<br>
@@ -182,47 +184,48 @@
                 </div>
 
                 <!-- ════════════════════════════════════════════════════════ -->
-                <!-- SECCIÓN 3: BOTONES DE ACCIÓN (OPTIMIZADOS) -->
+                <!-- ✅ BOTÓN AGREGAR - POSICIÓN CENTRADA EN BODY -->
                 <!-- ════════════════════════════════════════════════════════ -->
-                <div class="d-flex justify-content-center gap-3 mt-3">
+                <div class="d-flex justify-content-center mt-3">
                     <button type="button" class="btn btn-warning btn-accion-pago-opt" id="btnAgregarPago">
                         <i class='bx bx-plus-circle bx-lg'></i>
                         <span>AGREGAR</span>
                         <small class="d-block mt-1">Formas de Pago</small>
                     </button>
-
-                    <button type="button" class="btn btn-danger btn-accion-pago-opt" id="btnVolverPago">
-                        <i class='bx bx-arrow-back bx-lg'></i>
-                        <span>VOLVER</span>
-                        <small class="d-block mt-1">Al Cálculo</small>
-                    </button>
-
-                    <button type="button" class="btn btn-success btn-accion-pago-opt" id="btnFinalizarPago" disabled>
-                        <i class='bx bx-check-circle bx-lg'></i>
-                        <span>FINALIZAR</span>
-                        <small class="d-block mt-1">Confirmar Pago</small>
-                    </button>
                 </div>
             </div>
 
-            <!-- ════════════════════════════════════════════════════════ -->
-            <!-- FOOTER INFORMATIVO CON ATAJOS DE TECLADO -->
-            <!-- ════════════════════════════════════════════════════════ -->
+            <!-- ════════════════════════════════════════════════════════════════ -->
+            <!-- ✅ FOOTER OPTIMIZADO v19.5: VOLVER (izq) | INFO PV (centro) | FINALIZAR (der) -->
+            <!-- ════════════════════════════════════════════════════════════════ -->
             <div class="modal-footer bg-light border-top py-2">
-                <div class="w-100 d-flex justify-content-between align-items-center">
-                    <div>
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    
+                    <!-- ✅ IZQUIERDA: Botón VOLVER -->
+                    <div class="footer-section-left">
+                        <button type="button" class="btn btn-danger btn-accion-pago-opt" id="btnVolverPago">
+                            <i class='bx bx-arrow-back bx-lg'></i>
+                            <span>VOLVER</span>
+                            <small class="d-block mt-1">Al Cálculo</small>
+                        </button>
+                    </div>
+
+                    <!-- ✅ CENTRO: Información de Punto de Venta -->
+                    <div class="footer-section-center">
                         <i class='bx bx-info-circle text-golden'></i>
                         <small class="text-muted">
                             <strong>Punto de Venta:</strong>
                             <span class="text-golden fw-bold" id="lblPuntoVentaPago">GECO PV</span>
                         </small>
                     </div>
-                    <div>
-                        <small class="text-muted">
-                            <kbd>F2</kbd> Agregar |
-                            <kbd>ESC</kbd> Volver |
-                            <kbd>F10</kbd> Finalizar
-                        </small>
+
+                    <!-- ✅ DERECHA: Botón FINALIZAR -->
+                    <div class="footer-section-right">
+                        <button type="button" class="btn btn-success btn-accion-pago-opt" id="btnFinalizarPago" disabled>
+                            <i class='bx bx-check-circle bx-lg'></i>
+                            <span>FINALIZAR</span>
+                            <small class="d-block mt-1">Confirmar Pago</small>
+                        </button>
                     </div>
                 </div>
             </div>

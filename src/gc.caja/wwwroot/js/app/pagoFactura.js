@@ -281,12 +281,19 @@ function inicializarEventosPago() {
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Abre el modal de pago con los datos de la factura
+ * ✅ ACTUALIZADO v20.6: Abre el modal de pago con los datos de la factura
+ * NUEVO: Apertura automática del modal de agregar formas de pago
+ * 
+ * MEJORA UX v20.6:
+ * - Al abrir el modal de pago, automáticamente abre el modal de tipo medio de pago
+ * - Elimina un click innecesario para el cajero
+ * - Primera acción siempre es agregar una forma de pago
+ * 
  * @param {Object} datosFactura - Objeto con totales y datos del cliente
  */
 function abrirModalPago(datosFactura) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔓 ABRIR MODAL DE PAGO v16.1');
+    console.log('🔓 ABRIR MODAL DE PAGO v20.6');
     console.log('═══════════════════════════════════════════════════');
     console.log('Datos recibidos:', datosFactura);
 
@@ -318,6 +325,27 @@ function abrirModalPago(datosFactura) {
             $('#modalPago').css('z-index', '1060');
             $('.modal-backdrop').last().css('z-index', '1059');
         }, 100);
+
+        // ═══════════════════════════════════════════════════════════
+        // ✅ NUEVO v20.6: APERTURA AUTOMÁTICA DE MODAL AGREGAR
+        // ═══════════════════════════════════════════════════════════
+
+        console.log('═══════════════════════════════════════════════════');
+        console.log('🚀 INICIANDO APERTURA AUTOMÁTICA DE AGREGAR v20.6');
+        console.log('═══════════════════════════════════════════════════');
+
+        // ❽ Esperar a que el modal de pago esté completamente visible
+        setTimeout(() => {
+            console.log('⏳ Modal de pago visible - Abriendo modal de agregar...');
+
+            // ❾ Abrir modal de tipo medio de pago automáticamente
+            abrirModalTipoMedioPago();
+
+            console.log('✅ Modal de agregar formas de pago abierto automáticamente');
+            console.log('   Beneficio UX: Cajero ahorra 1 click');
+            console.log('   Primera acción necesaria: Agregar forma de pago');
+
+        }, 400); // ← Timing crítico: Esperar a que modal de pago termine animación
 
         console.log('✅ Modal de pago abierto correctamente');
         return true;

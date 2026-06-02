@@ -22,7 +22,7 @@
 
 .vk-container {
     position: fixed;
-    bottom: 70px; /*valr modificado. Original 25px */
+    bottom: 120px; /*valr modificado. Original 25px */
     right: 25px;
     z-index: 1000000;
     background: var(--vk-bg);
