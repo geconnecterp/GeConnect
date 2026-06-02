@@ -1568,25 +1568,25 @@ function manejarSesionExpirada(mensaje) {
     );
 }
 
-/**
- * ✅ NUEVO v20.2: Muestra mensaje de error genérico
- * Función auxiliar reutilizable
- * 
- * @param {string} mensaje - Mensaje de error
- */
-function mostrarMensajeError(mensaje) {
-    AbrirMensaje(
-        "Error",
-        mensaje,
-        function () {
-            $("#msjModal").modal("hide");
-        },
-        false,
-        ["Aceptar"],
-        "error!",
-        null
-    );
-}
+///**
+// * ✅ NUEVO v20.2: Muestra mensaje de error genérico
+// * Función auxiliar reutilizable
+// * 
+// * @param {string} mensaje - Mensaje de error
+// */
+//function mostrarMensajeError(mensaje) {
+//    AbrirMensaje(
+//        "Error",
+//        mensaje,
+//        function () {
+//            $("#msjModal").modal("hide");
+//        },
+//        false,
+//        ["Aceptar"],
+//        "error!",
+//        null
+//    );
+//}
 
 // ═══════════════════════════════════════════════════════════════════
 // SECCIÓN 4: FUNCIONES AUXILIARES
@@ -2664,12 +2664,12 @@ function escapeHtml(texto) {
 function mostrarMensajeError(mensaje) {
     if (typeof AbrirMensaje === 'function') {
         AbrirMensaje(
-            "Error",
+            "Atención",
             mensaje,
             function () { $("#msjModal").modal("hide"); },
             false,
             ["Aceptar"],
-            "error!",
+            "warn!",
             null
         );
     } else {

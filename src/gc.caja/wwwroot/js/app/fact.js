@@ -7,7 +7,8 @@ let clienteSeleccionado = null;
 let modoEdicionCliente = false; // Control de modo edición
 let busquedaEnProceso = false; // ✅ NUEVO: Control de búsquedas concurrentes
 let ajaxActual = null; // ✅ NUEVO: Referencia al AJAX en curso para cancelación
-
+// ✅ NUEVA VARIABLE DE CONFIGURACIÓN
+let autoConfirmarClienteUnico = true; // ← Control del comportamiento
 // ========================================
 // FUNCIONES DE MENSAJES AL USUARIO
 // ========================================
@@ -51,6 +52,25 @@ function mostrarMensajeExito(mensaje) {
         null
     );
 }
+
+function mostrarMensajeInformacion(mensaje) {
+    console.log('💬 Mostrando mensaje de INFORMACIÓN al usuario');
+    console.log(`   Mensaje: "${mensaje}"`);
+
+    // ✅ INTEGRACIÓN CON SISTEMA DE MENSAJES DEL PROYECTO
+    AbrirMensaje(
+        "Información", // ✅ CAMBIO: Título más específico
+        mensaje,
+        function () {
+            $("#msjModal").modal("hide");
+        },
+        false, // No mostrar botón cancelar
+        ["Aceptar"],
+        "info!", // Tipo de icono
+        null
+    );
+}
+
 
 // ========================================
 // ✅ NUEVO: GESTIÓN DE ESTADO DE BÚSQUEDA
@@ -245,14 +265,40 @@ function inicializaEventosFact() {
         const cierresPermitidos = ['btnCancelarCliente', 'btnSalirFacturacion'];
         const esCierrePermitido = cierresPermitidos.includes(disparadorId);
 
-        // ✅ NUEVO: Prevenir cierre durante búsqueda
-        if (busquedaEnProceso) {
+        // ══════════════════════════════════════════════════════════════════════
+        // ✅ CORREGIDO v2.0: Permitir cierre si hay cliente seleccionado
+        // ══════════════════════════════════════════════════════════════════════
+        // PROBLEMA ORIGINAL:
+        //   - Bloqueaba cierre incluso cuando búsqueda terminó exitosamente
+        //   - Validaba busquedaEnProceso ANTES de AJAX complete
+        //   - Causaba mensaje "Espere a que finalice la búsqueda" innecesario
+        //
+        // SOLUCIÓN:
+        //   - Si clienteSeleccionado existe, la búsqueda fue exitosa
+        //   - Permitir cierre aunque busquedaEnProceso = true
+        //   - Solo bloquear si búsqueda en curso SIN resultado
+        // ══════════════════════════════════════════════════════════════════════
+
+        if (busquedaEnProceso && !clienteSeleccionado) {
+            // ✅ SOLO bloquear si:
+            //    - Hay búsqueda en proceso Y
+            //    - NO hay cliente seleccionado (búsqueda no completada exitosamente)
             e.preventDefault();
-            console.warn('⚠️ No se puede cerrar el modal durante una búsqueda');
+            console.warn('⚠️ No se puede cerrar el modal durante una búsqueda en curso');
             mostrarMensajeError('Espere a que finalice la búsqueda en curso');
             return;
         }
 
+        // ✅ CASO ESPECIAL: Si hay cliente, la búsqueda fue exitosa
+        // Permitir cierre aunque busquedaEnProceso = true (complete aún no ejecutado)
+        if (clienteSeleccionado) {
+            console.log('✅ Cierre permitido: Cliente seleccionado exitosamente');
+            console.log(`   Cliente: ${clienteSeleccionado.denominacion || 'N/A'}`);
+            console.log(`   busquedaEnProceso: ${busquedaEnProceso} (ignorado porque hay cliente)`);
+            return; // ← Permitir cierre inmediatamente
+        }
+
+        // ✅ Validación de cierre no autorizado (solo si NO hay cliente)
         if (!esCierrePermitido && !clienteSeleccionado) {
             e.preventDefault();
             console.warn('⚠️ Cierre no autorizado - Debe seleccionar un cliente o usar CANCELAR/SALIR');
@@ -492,20 +538,39 @@ function buscarCliente() {
                 const cantidadResultados = response.cantidadResultados || 0;
                 $("#txtBuscarCliente").val("");
 
+                // ══════════════════════════════════════════════════════
+                // ✅ MODIFICACIÓN: Lógica de confirmación automática
+                // ══════════════════════════════════════════════════════
                 if (cantidadResultados === 1 && response.cliente) {
                     console.log('✅ Cliente único encontrado');
-                    mostrarDatosCliente(response.cliente);
-                } else if (cantidadResultados > 1) {
+
+                    // ✅ DECISIÓN: ¿Auto-confirmar o mostrar?
+                    if (autoConfirmarClienteUnico) {
+                        console.log('⚡ Modo AUTO-CONFIRMACIÓN activado');
+                        confirmarClienteAutomaticamente(response.cliente);
+                    } else {
+                        console.log('👁️ Modo MANUAL activado - Mostrar datos');
+                        mostrarDatosCliente(response.cliente);
+                    }
+                }
+                // ══════════════════════════════════════════════════════
+                // ✅ SIN CAMBIOS: Lógica de múltiples resultados
+                // ══════════════════════════════════════════════════════
+                else if (cantidadResultados > 1) {
                     console.log(`✅ Múltiples clientes encontrados: ${cantidadResultados}`);
                     cargarGrillaClientes();
-                } else {
+                }
+                // ══════════════════════════════════════════════════════
+                // ✅ SIN CAMBIOS: Lógica de sin resultados
+                // ══════════════════════════════════════════════════════
+                else {
                     console.warn('⚠️ No se encontraron clientes');
-                    mostrarMensajeError('No se encontraron clientes');
+                    mostrarMensajeInformacion('No se encontraron clientes');
                     limpiarVista();
                 }
             } else {
-                console.error('❌ Error en respuesta:', response.mensaje);
-                mostrarMensajeError(response.mensaje || 'Cliente no encontrado');
+                console.info('❌ Error en respuesta:', response.mensaje);
+                mostrarMensajeInformacion(response.mensaje || 'Cliente no encontrado');
                 limpiarVista();
             }
         },
@@ -551,6 +616,8 @@ function buscarCliente() {
         }
     });
 }
+
+
 
 // ====== CARGAR GRILLA DE CLIENTES (AJAX) ======
 /**
@@ -653,6 +720,68 @@ function validarClienteAntesDeSeleccionar($row) {
     }
 
     return true;
+}
+
+// ════════════════════════════════════════════════════════════════
+// ✅ NUEVA FUNCIÓN - Agregar después de validarClienteAntesDeSeleccionar()
+// Ubicación: Después de línea 447
+// ════════════════════════════════════════════════════════════════
+
+/**
+ * ✅ NUEVA v1.0: Valida si un cliente puede ser confirmado automáticamente
+ * 
+ * @param {object} cliente - Objeto cliente de la respuesta del servidor
+ * @returns {object} { valido: boolean, mensaje: string }
+ */
+function validarClienteParaAutoConfirmacion(cliente) {
+    console.log('🔍 Validando cliente para auto-confirmación...');
+
+    // ❶ VALIDACIÓN BÁSICA: Objeto existe
+    if (!cliente) {
+        return {
+            valido: false,
+            mensaje: 'Datos del cliente no disponibles'
+        };
+    }
+
+    const origen = (cliente.origen || '').toUpperCase();
+
+    // ❷ VALIDACIÓN: Cliente NO habilitado
+    if (origen === 'N') {
+        return {
+            valido: false,
+            mensaje: `El cliente "${cliente.denominacion}" no está habilitado para operar`
+        };
+    }
+
+    // ❸ VALIDACIÓN: Consumidor Final sin documento
+    if (origen === 'F') {
+        const documento = (cliente.documento || '').toString().trim();
+        if (!documento || documento === '') {
+            return {
+                valido: false,
+                mensaje: `El consumidor final "${cliente.denominacion}" no tiene documento registrado`
+            };
+        }
+    }
+
+    // ❹ VALIDACIÓN: Cliente registrado sin ID
+    if (origen === 'C') {
+        const id = (cliente.id || '').toString().trim();
+        if (!id || id === '') {
+            return {
+                valido: false,
+                mensaje: 'El cliente no tiene ID válido'
+            };
+        }
+    }
+
+    // ✅ TODAS LAS VALIDACIONES PASARON
+    console.log('✅ Cliente válido para auto-confirmación');
+    return {
+        valido: true,
+        mensaje: ''
+    };
 }
 
 // ====== EVENTOS DE LA GRILLA ======
@@ -815,11 +944,9 @@ function buscarClientePorId(clienteId) {
         timeout: 30000,
         success: function (response) {
             console.log('✅ Respuesta recibida');
-            console.log('   response.ok:', response.ok);
-            console.log('   cantidadResultados:', response.cantidadResultados);
 
             if (!response.ok) {
-                mostrarMensajeError(response.mensaje || 'Error al cargar los datos del cliente');
+                mostrarMensajeError(response.mensaje || 'Error al cargar datos del cliente');
                 limpiarVista();
                 return;
             }
@@ -827,7 +954,7 @@ function buscarClientePorId(clienteId) {
             const cantidadResultados = response.cantidadResultados || 0;
 
             if (cantidadResultados !== 1) {
-                mostrarMensajeError('Error: No se pudieron obtener los datos del cliente seleccionado');
+                mostrarMensajeError('Error: No se pudieron obtener los datos del cliente');
                 limpiarVista();
                 return;
             }
@@ -838,8 +965,18 @@ function buscarClientePorId(clienteId) {
                 return;
             }
 
-            console.log('✅ Cliente cargado correctamente');
-            mostrarDatosCliente(response.cliente);
+            // ══════════════════════════════════════════════════════
+            // ✅ MODIFICACIÓN: Lógica de confirmación automática
+            // ══════════════════════════════════════════════════════
+            console.log('✅ Cliente cargado correctamente desde grilla');
+
+            if (autoConfirmarClienteUnico) {
+                console.log('⚡ Auto-confirmando cliente desde grilla');
+                confirmarClienteAutomaticamente(response.cliente);
+            } else {
+                console.log('👁️ Mostrando datos de cliente desde grilla');
+                mostrarDatosCliente(response.cliente);
+            }
         },
         error: function (xhr, status) {
             console.error('❌ ERROR AJAX');
@@ -1106,6 +1243,59 @@ function confirmarCliente(cliente) {
     setTimeout(() => {
         $(document).trigger('clienteConfirmado', [cliente]);
     }, 400);
+}
+
+// ════════════════════════════════════════════════════════════════
+// ✅ NUEVA FUNCIÓN - Agregar después de confirmarCliente()
+// Ubicación: Después de línea 933
+// ════════════════════════════════════════════════════════════════
+
+/**
+ * ✅ NUEVA v1.0: Confirma cliente automáticamente sin mostrar datos
+ * 
+ * Flujo:
+ * 1. Valida que el cliente pueda ser auto-confirmado
+ * 2. Guarda en clienteSeleccionado
+ * 3. Cierra modal inmediatamente
+ * 4. Dispara evento 'clienteConfirmado'
+ * 
+ * @param {object} cliente - Objeto cliente de la búsqueda
+ */
+function confirmarClienteAutomaticamente(cliente) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('⚡ CONFIRMACIÓN AUTOMÁTICA DE CLIENTE');
+    console.log('═══════════════════════════════════════════════════');
+    console.log('   Denominación:', cliente.denominacion);
+    console.log('   Origen:', cliente.origen);
+    console.log('   ID:', cliente.id);
+
+    // ❶ VALIDACIÓN DE SEGURIDAD
+    const validacion = validarClienteParaAutoConfirmacion(cliente);
+
+    if (!validacion.valido) {
+        console.error('❌ Validación fallida:', validacion.mensaje);
+        mostrarMensajeError(validacion.mensaje);
+        limpiarVista();
+        return;
+    }
+
+    // ❷ GUARDAR CLIENTE EN VARIABLE GLOBAL
+    clienteSeleccionado = cliente;
+    console.log('✅ Cliente guardado en clienteSeleccionado');
+
+    // ❸ CERRAR MODAL INMEDIATAMENTE
+    $('#modalIdentificarCliente').modal('hide');
+    console.log('✅ Modal cerrado');
+
+    // ❹ DISPARAR EVENTO DESPUÉS DEL CIERRE
+    // Usamos el mismo setTimeout que confirmarCliente() para consistencia
+    setTimeout(() => {
+        console.log('📡 Disparando evento clienteConfirmado...');
+        $(document).trigger('clienteConfirmado', [cliente]);
+        console.log('✅ Evento disparado - Control transferido a prodfact.js');
+    }, 400); // ← Mismo delay que confirmarCliente()
+
+    console.log('═══════════════════════════════════════════════════');
 }
 
 function limpiarSesionClientesBuscados() {

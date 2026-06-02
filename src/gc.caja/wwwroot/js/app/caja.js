@@ -573,7 +573,7 @@ $(function () {
 
     function mostrarErrorCritico(mensaje) {
         AbrirMensaje(
-            "ERROR CRÍTICO",
+            "ATENCIÓN",
             mensaje,
             function () {
                 $("#msjModal").modal("hide");
@@ -581,14 +581,14 @@ $(function () {
             },
             false,
             ["Salir"],
-            "error!",
+            "warn!",
             null
         );
     }
 
     function mostrarErrorYSalir(mensaje) {
         AbrirMensaje(
-            "ERROR",
+            "INFORMACION",
             mensaje,
             function () {
                 $("#msjModal").modal("hide");
@@ -596,7 +596,7 @@ $(function () {
             },
             false,
             ["Salir"],
-            "error!",
+            "info!",
             null
         );
     }
@@ -619,9 +619,9 @@ $(function () {
     // ✅ NUEVA FUNCIÓN: Muestra error y redirige a login
     function mostrarMensajeErrorYSalir(mensaje) {
         AbrirMensaje(
-            "ERROR",
+            "informacion",
             `<div class="text-center">
-                <i class='bx bx-error-circle text-danger' style='font-size: 3rem;'></i>
+                <i class='bx bx-info-circle golden-message-info' style='font-size: 3rem;'></i>
                 <p class="mt-3">${mensaje}</p>
                 <hr>
                 <small class="text-muted">
