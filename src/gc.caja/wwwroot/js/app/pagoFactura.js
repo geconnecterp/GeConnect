@@ -1773,16 +1773,20 @@ function desbloquearModalTipoMedioPago() {
 }
 
 /**
- * Resetear selección de tipo medio de pago
+ * ✅ ACTUALIZADO v20.7: Resetear selección de tipo medio de pago
+ * CAMBIO: Ya NO manipula botón confirmar (está oculto)
  */
 function resetearSeleccionTipoMedioPago() {
     $('.tipo-medio-pago-item').removeClass('selected');
     tipoMedioPagoSeleccionado = null;
-    $('#btnConfirmarTipoMedioPago').prop('disabled', true);
+
+    // ❌ ELIMINADO v20.7: No se deshabilita botón confirmar (está oculto)
+    // $('#btnConfirmarTipoMedioPago').prop('disabled', true);
 }
 
 /**
- * Seleccionar ítem de tipo medio de pago
+ * ✅ ACTUALIZADO v20.7: Seleccionar ítem de tipo medio de pago
+ * CAMBIO: Ya NO habilita botón confirmar (está oculto)
  */
 function seleccionarItemTipoMedioPago($item) {
     $('.tipo-medio-pago-item').removeClass('selected');
@@ -1793,30 +1797,57 @@ function seleccionarItemTipoMedioPago($item) {
         tcf_desc: $item.data('tcf-desc')
     };
 
-    $('#btnConfirmarTipoMedioPago').prop('disabled', false);
+    // ❌ ELIMINADO v20.7: No se habilita botón confirmar (está oculto)
+    // $('#btnConfirmarTipoMedioPago').prop('disabled', false);
 
     console.log('✅ Tipo seleccionado:', tipoMedioPagoSeleccionado);
 }
 
 /**
- * Vincular eventos del modal de tipo medio de pago
+ * ✅ ACTUALIZADO v20.7: Vincular eventos del modal de tipo medio de pago
+ * NUEVO: Selección con UN SOLO CLICK (sin necesidad de confirmar)
+ * 
+ * CAMBIOS v20.7:
+ * - Click simple → Selecciona y confirma automáticamente
+ * - Eliminado evento de doble click (ya no necesario)
+ * - Eliminado evento del botón confirmar (botón oculto)
  */
 function vincularEventosTipoMedioPago() {
+    console.log('🔧 Vinculando eventos tipo medio de pago v20.7...');
+
+    // ✅ ACTUALIZADO v20.7: Click simple selecciona Y confirma automáticamente
     $('.tipo-medio-pago-item').off('click').on('click', function () {
-        seleccionarItemTipoMedioPago($(this));
+        console.log('═══════════════════════════════════════════════════');
+        console.log('🖱️ CLICK EN TIPO MEDIO DE PAGO v20.7');
+        console.log('═══════════════════════════════════════════════════');
+
+        const $item = $(this);
+
+        // ❶ Seleccionar visualmente el ítem
+        seleccionarItemTipoMedioPago($item);
+
+        console.log('   ✅ Ítem seleccionado visualmente');
+
+        // ❷ Confirmar automáticamente después de breve delay (feedback visual)
+        setTimeout(() => {
+            console.log('   ⏩ Confirmando selección automáticamente...');
+            confirmarSeleccionTipoMedioPago();
+        }, 200); // ← Delay corto para que usuario vea el resaltado azul
     });
 
-    $('.tipo-medio-pago-item').off('dblclick').on('dblclick', function () {
-        seleccionarItemTipoMedioPago($(this));
-        setTimeout(() => confirmarSeleccionTipoMedioPago(), 300);
-    });
+    // ❌ ELIMINADO v20.7: Evento de doble click (ya no necesario)
+    // $('.tipo-medio-pago-item').off('dblclick').on('dblclick', function () { ... });
 
-    $('#btnConfirmarTipoMedioPago').off('click').on('click', confirmarSeleccionTipoMedioPago);
+    // ❌ ELIMINADO v20.7: Evento del botón confirmar (botón está oculto)
+    // $('#btnConfirmarTipoMedioPago').off('click').on('click', confirmarSeleccionTipoMedioPago);
+
+    console.log('✅ Eventos configurados (selección con 1 click)');
 }
 
 /**
- * ✅ ACTUALIZADO v17.1: Confirmar selección de tipo medio de pago
- * Cierra el modal y dispara la carga de instrumentos
+ * ✅ SIN CAMBIOS: Confirmar selección de tipo medio de pago
+ * Esta función ahora se llama automáticamente desde el evento click
+ * (Línea 1820 - Sin modificaciones)
  */
 function confirmarSeleccionTipoMedioPago() {
     console.log('═══════════════════════════════════════════════════');
