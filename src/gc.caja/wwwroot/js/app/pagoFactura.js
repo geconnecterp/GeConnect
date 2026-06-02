@@ -273,6 +273,54 @@ function inicializarEventosPago() {
 
         console.log('✅ MODAL DE CHEQUE LIMPIADO');
     });
+
+    /**
+ * ✅ NUEVO v21.0: Eventos de selección automática para modales de instrumentos secundarios
+ * Se ejecutan cuando el modal termina de mostrarse (después de la animación)
+ */
+
+    // ═══════════════════════════════════════════════════════════════════
+    // Modal: Transferencias Bancarias
+    // ═══════════════════════════════════════════════════════════════════
+    $('#modalInstrumentosTransferencia').on('shown.bs.modal', function () {
+        console.log('🔓 Modal Transferencia mostrado - Seleccionando primer banco...');
+
+        seleccionarPrimerItemAutomatico({
+            contenedorId: '#listaInstrumentosTransferencia',
+            itemClass: '.instrumento-transferencia-item',
+            btnConfirmarId: '#btnConfirmarBancoTransferencia',
+            tipoModal: 'transferencia'
+        });
+    });
+
+    // ═══════════════════════════════════════════════════════════════════
+    // Modal: Vales de Compra
+    // ═══════════════════════════════════════════════════════════════════
+    $('#modalInstrumentosValeCompra').on('shown.bs.modal', function () {
+        console.log('🔓 Modal Vale Compra mostrado - Seleccionando primer vale...');
+
+        seleccionarPrimerItemAutomatico({
+            contenedorId: '#listaInstrumentosValeCompra',
+            itemClass: '.instrumento-vale-item',
+            btnConfirmarId: '#btnConfirmarValeCompra',
+            tipoModal: 'vale'
+        });
+    });
+
+    // ═══════════════════════════════════════════════════════════════════
+    // Modal: Cupones/Órdenes de Empresa
+    // ═══════════════════════════════════════════════════════════════════
+    $('#modalInstrumentosCuponEmpresa').on('shown.bs.modal', function () {
+        console.log('🔓 Modal Cupón Empresa mostrado - Seleccionando primera empresa...');
+
+        seleccionarPrimerItemAutomatico({
+            contenedorId: '#listaInstrumentosCupon',
+            itemClass: '.instrumento-cupon-item',
+            btnConfirmarId: '#btnConfirmarCuponEmpresa',
+            tipoModal: 'cupon'
+        });
+    });
+
     console.log('✅ Eventos de pago configurados');
 }
 
@@ -2240,14 +2288,13 @@ function abrirModalInstrumentos(instrumentos, tipoMedioPago) {
 
     console.log('✅ Función abrirModalInstrumentos finalizada');
 }
-
 /**
- * ✅ NUEVO v17.2: Renderiza la lista de instrumentos en el modal
- * @param {Array} instrumentos - Array de objetos con datos de instrumentos
+ * ✅ ACTUALIZADO v21.0: Renderiza la lista de instrumentos en el modal
+ * NUEVO: Selecciona automáticamente el primer item después de renderizar
  */
 function renderizarInstrumentos(instrumentos) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🎨 RENDERIZAR INSTRUMENTOS v17.2');
+    console.log('🎨 RENDERIZAR INSTRUMENTOS v21.0');
     console.log(`   Total: ${instrumentos.length}`);
     console.log('═══════════════════════════════════════════════════');
 
@@ -2276,7 +2323,6 @@ function renderizarInstrumentos(instrumentos) {
         const total = inst.total_actual || 0;
         const tieneDetalle = inst.tiene_detalle || false;
 
-        // Determinar icono y color según el instrumento
         let icono = 'bx bx-dollar';
         let colorClase = 'text-success';
 
@@ -2316,6 +2362,16 @@ function renderizarInstrumentos(instrumentos) {
 
     // ❸ Vincular eventos
     vincularEventosInstrumentos();
+
+    // ❹ ✅ NUEVO v21.0: Seleccionar primer item automáticamente
+    setTimeout(() => {
+        seleccionarPrimerItemAutomatico({
+            contenedorId: '#listaInstrumentos',
+            itemClass: '.instrumento-item',
+            btnConfirmarId: '#btnConfirmarInstrumento',
+            tipoModal: 'instrumentos'
+        });
+    }, 100); // ← Delay para asegurar que eventos estén vinculados
 
     console.log('✅ Instrumentos renderizados correctamente');
 }
@@ -6089,3 +6145,103 @@ $('#modalDetalleCheque').off('hidden.bs.modal').on('hidden.bs.modal', function (
 
     console.log('✅ MODAL DE CHEQUE LIMPIADO');
 });
+
+// ═══════════════════════════════════════════════════════════════════
+// ✅ NUEVO v21.0: SELECCIÓN AUTOMÁTICA DEL PRIMER ITEM EN MODALES
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * ✅ NUEVO v21.0: Selecciona automáticamente el primer item visible de una lista
+ * Función genérica reutilizable para todos los modales de instrumentos
+ * 
+ * FUNCIONALIDAD:
+ * - Busca el primer item visible que no esté deshabilitado
+ * - Aplica clase 'selected' (resaltado azul)
+ * - Habilita el botón de confirmar correspondiente
+ * - Guarda datos del item según el tipo de modal
+ * 
+ * @param {Object} config - Configuración del modal
+ * @param {string} config.contenedorId - ID del contenedor de la lista (ej: '#listaInstrumentos')
+ * @param {string} config.itemClass - Clase CSS de los items (ej: '.instrumento-item')
+ * @param {string} config.btnConfirmarId - ID del botón confirmar (ej: '#btnConfirmarInstrumento')
+ * @param {string} config.tipoModal - Tipo de modal ('instrumentos'|'transferencia'|'vale'|'cupon')
+ * @returns {boolean} - true si se seleccionó un item, false si no hay items
+ */
+function seleccionarPrimerItemAutomatico(config) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🎯 SELECCIONAR PRIMER ITEM AUTOMÁTICO v21.0');
+    console.log(`   Modal: ${config.tipoModal}`);
+    console.log(`   Contenedor: ${config.contenedorId}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Obtener todos los items visibles y no deshabilitados
+    const $items = $(`${config.contenedorId} ${config.itemClass}:visible:not(.disabled)`);
+
+    console.log(`   📊 Items encontrados: ${$items.length}`);
+
+    // ❷ Validar que existan items
+    if ($items.length === 0) {
+        console.warn('   ⚠️ No hay items disponibles para seleccionar');
+
+        // Deshabilitar botón confirmar
+        $(config.btnConfirmarId).prop('disabled', true);
+
+        return false;
+    }
+
+    // ❸ Obtener el primer item
+    const $primerItem = $items.first();
+
+    console.log('   ✅ Primer item encontrado:');
+    console.log(`      ID: ${$primerItem.data('instrumento-id') || $primerItem.data('banco-id') || $primerItem.data('vale-id') || $primerItem.data('cupon-id')}`);
+
+    // ❹ Limpiar selecciones previas
+    $items.removeClass('selected active');
+
+    // ❺ Seleccionar el primer item
+    $primerItem.addClass('selected');
+
+    // ❻ Habilitar botón confirmar
+    $(config.btnConfirmarId).prop('disabled', false);
+
+    // ❼ Guardar datos según el tipo de modal
+    switch (config.tipoModal) {
+        case 'instrumentos':
+            // Para modal de instrumentos (monedas)
+            window._instrumentoSeleccionado = {
+                ins_id: $primerItem.data('instrumento-id'),
+                ins_desc: $primerItem.data('instrumento-desc'),
+                ins_simbolo: $primerItem.data('instrumento-simbolo'),
+                tiene_detalle: $primerItem.data('instrumento-tiene-detalle'),
+                total_actual: $primerItem.data('instrumento-total')
+            };
+            console.log('   💾 _instrumentoSeleccionado guardado');
+            break;
+
+        case 'transferencia':
+        case 'vale':
+        case 'cupon':
+            // Para otros modales (no requieren guardar en variable global)
+            console.log('   ℹ️ Modal tipo secundario - No requiere variable global');
+            break;
+
+        default:
+            console.warn(`   ⚠️ Tipo de modal desconocido: ${config.tipoModal}`);
+            break;
+    }
+
+    // ❽ Scroll al item (opcional)
+    if ($primerItem[0]) {
+        $primerItem[0].scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest'
+        });
+        console.log('   📜 Scroll realizado al primer item');
+    }
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('✅ PRIMER ITEM SELECCIONADO CORRECTAMENTE');
+    console.log('═══════════════════════════════════════════════════');
+
+    return true;
+}

@@ -494,6 +494,61 @@ activable {
 }
 
 /* FIN ESTILO*/
+
+/* ═══════════════════════════════════════════════════════════════
+   ESTILOS PARA MODALES DE DETALLE - v20.8
+   ═══════════════════════════════════════════════════════════════
+   
+   Propósito: Elevar modales de detalle para mejor jerarquía visual
+   Aplicación: Modales de segundo/tercer nivel (efectivo, cheque, etc.)
+   ═══════════════════════════════════════════════════════════════ */
+
+/**
+ * Clase: modal-dialog-elevated
+ * Eleva el modal 120px hacia arriba
+ * Uso: Modales pequeños/medianos (max-width <= 650px)
+ */
+.modal-dialog-elevated {
+    margin-top: -120px !important;
+}
+
+/**
+ * Clase: modal-dialog-elevated-moderate
+ * Eleva el modal 100px hacia arriba
+ * Uso: Modales grandes (modal-xl)
+ */
+.modal-dialog-elevated-moderate {
+    margin-top: -100px !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MEDIA QUERIES - RESPONSIVIDAD
+   ═══════════════════════════════════════════════════════════════ */
+
+/**
+ * Tablets y móviles: Reducir elevación para evitar que se salga del viewport
+ */
+@media (max-width: 768px) {
+    .modal-dialog-elevated {
+        margin-top: -60px !important;
+    }
+
+    .modal-dialog-elevated-moderate {
+        margin-top: -50px !important;
+    }
+}
+
+/**
+ * Móviles pequeños: Centrado normal (sin elevación)
+ */
+@media (max-width: 576px) {
+    .modal-dialog-elevated,
+    .modal-dialog-elevated-moderate {
+        margin-top: 0 !important;
+    }
+}
+
+
 /* ESTILO GOLDEN PARA MODALES*/
 /* Estilos para modales con tema dorado */
 .modal-golden {
@@ -5863,9 +5918,43 @@ input, select, textarea, button, checkbox, radio {
 /* ═══════════════════════════════════════════════════════════════
    ÍTEMS DE INSTRUMENTOS
    ═══════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════
+   ✅ NUEVO v21.0: Estilos para item seleccionado en modales
+   ═══════════════════════════════════════════════════════════════════ */
 
+.instrumento-item.selected,
+.instrumento-transferencia-item.selected,
+.instrumento-vale-item.selected,
+.instrumento-cupon-item.selected {
+    background-color: #0d6efd !important; /* Bootstrap primary blue */
+    color: white !important;
+    border-color: #0d6efd !important;
+}
+
+    .instrumento-item.selected *,
+    .instrumento-transferencia-item.selected *,
+    .instrumento-vale-item.selected *,
+    .instrumento-cupon-item.selected * {
+        color: white !important; /* Asegurar que texto e iconos sean blancos */
+    }
+
+/* Animación suave al seleccionar */
+.instrumento-item,
+.instrumento-transferencia-item,
+.instrumento-vale-item,
+.instrumento-cupon-item {
+    transition: all 0.2s ease-in-out;
+}
+
+    /* Hover effect (solo si no está seleccionado) */
+    .instrumento-item:not(.selected):hover,
+    .instrumento-transferencia-item:not(.selected):hover,
+    .instrumento-vale-item:not(.selected):hover,
+    .instrumento-cupon-item:not(.selected):hover {
+        background-color: #f8f9fa;
+    }
 /* Ítem de instrumento con hover mejorado */
-.instrumento-item {
+/*.instrumento-item {
     padding: 1rem;
     border-left: 4px solid transparent;
     transition: all 0.2s ease;
@@ -5876,14 +5965,14 @@ input, select, textarea, button, checkbox, radio {
         background-color: rgba(218, 165, 32, 0.1) !important;
         border-left-color: #DAA520;
         transform: translateX(5px);
-    }
+    }*/
 
     /* Ítem seleccionado (clase agregada por JavaScript) */
-    .instrumento-item.selected {
+    /*.instrumento-item.selected {
         background-color: rgba(30, 136, 229, 0.15) !important;
         border-left-color: #1e88e5;
         font-weight: 600;
-    }
+    }*/
 
 /* Descripción del instrumento */
 .instrumento-desc {
