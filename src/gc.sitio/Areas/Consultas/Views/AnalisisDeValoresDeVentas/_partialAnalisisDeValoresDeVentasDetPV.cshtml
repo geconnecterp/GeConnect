@@ -1,12 +1,17 @@
 ﻿@using gc.infraestructura.Helpers
 @using static gc.infraestructura.Helpers.GridHelper
-@model GridCoreSmart<AnaValDeVtaDetPVDto>
+@model DetalleMesPVModel
 @{
 	var alt = true;
 	string clase = string.Empty;
 }
 <style>
 </style>
+<div class="row mb-1">
+	<div class="col-12">
+		<strong>Período Seleccionado:</strong> @Model.Leyenda
+	</div>
+</div>
 <div class="table-responsive table-wrapper-500 w-75">
 	<table class="table table-sm table-hover mb-0 table-golden" id="tbAnaDeValVtaDetallePV">
 		<thead class="sticky-top table-golden-header-compact">
@@ -23,7 +28,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+			@if (Model == null || Model.GrillaDetPV == null || Model.GrillaDetPV.ListaDatos == null || !Model.GrillaDetPV.ListaDatos.Any())
 			{
 				<tr class="fila-vacia">
 					<td colspan="6" class="text-center text-muted py-2">
@@ -34,7 +39,7 @@
 			}
 			else
 			{
-				foreach (var item in Model.ListaDatos)
+				foreach (var item in Model.GrillaDetPV.ListaDatos)
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase row-pedido"

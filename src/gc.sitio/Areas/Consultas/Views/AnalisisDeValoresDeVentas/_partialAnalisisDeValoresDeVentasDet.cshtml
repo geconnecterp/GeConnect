@@ -30,9 +30,14 @@
 <div class="d-flex align-items-center w-100 mt-2 justify-content-between">
 	<!-- Tabs -->
 	<ul class="nav nav-tabs nav-tabs-golden" role="tablist" id="tabsAnalisisDeVentasDetalleMes">
-		<li class="nav-item" role="presentation" id="tabDetalleDiario">
-			<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-diario" aria-controls="navs-top-diario" aria-selected="true" id="btnTabDetalleDiario">
-				Diario
+		<li class="nav-item" role="presentation" id="tabDetalleDiarioImporte">
+			<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-diario-imp" aria-controls="navs-top-diario-imp" aria-selected="true" id="btnTabDetalleDiarioImporte">
+				Diario Importes
+			</button>
+		</li>
+		<li class="nav-item" role="presentation" id="tabDetalleDiarioCantidad">
+			<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-diario-cant" aria-controls="navs-top-diario-cant" aria-selected="true" id="btnTabDetalleDiarioCantidad">
+				Diario Cantidades
 			</button>
 		</li>
 		<li class="nav-item" role="presentation" id="tabDetallePV">
@@ -48,8 +53,12 @@
 	</ul>
 </div>
 <div class="tab-content tab-content-compact">
-	<div class="tab-pane fade tab-content-golden show active pad-min" id="navs-top-diario" role="tabpanel">
-		<div id="divDetalleMesDiario">
+	<div class="tab-pane fade tab-content-golden show active pad-min" id="navs-top-diario-imp" role="tabpanel">
+		<div id="divDetalleMesDiarioImporte">
+		</div>
+	</div>
+	<div class="tab-pane fade tab-content-golden pad-min" id="navs-top-diario-cant" role="tabpanel">
+		<div id="divDetalleMesDiarioCantidad">
 		</div>
 	</div>
 	<div class="tab-pane fade tab-content-golden pad-min" id="navs-top-pv" role="tabpanel">

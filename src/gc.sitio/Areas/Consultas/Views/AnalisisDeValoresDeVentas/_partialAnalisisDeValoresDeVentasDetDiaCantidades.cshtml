@@ -1,0 +1,189 @@
+﻿@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
+@model DetalleMesDiarioModel
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	.td-dual-vert {
+		padding: 0 !important;
+		line-height: 1.1;
+	}
+
+		.td-dual-vert .line {
+			display: block;
+			padding: 2px 4px;
+		}
+
+		/* Línea superior (porcentaje + monto) */
+		.td-dual-vert .fa {
+			border-bottom: 1px solid #ddd;
+			font-weight: 600;
+			display: flex;
+			justify-content: space-between;
+		}
+
+		/* Línea inferior (cantidad + porcentaje de cantidad) */
+		.td-dual-vert .cant {
+			display: flex;
+			justify-content: space-between;
+			font-size: 0.85em;
+			color: #555;
+		}
+
+	/* Contenedor horizontal para porcentaje + valor */
+	.dual-h {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding-left: 6px;
+		padding-right: 6px;
+		width: 100%;
+	}
+
+		/* Alineación izquierda del porcentaje */
+		.dual-h .left {
+			text-align: left;
+		}
+
+		/* Alineación derecha del valor */
+		.dual-h .right {
+			text-align: right;
+		}
+</style>
+<div class="row mb-1">
+	<div class="col-12">
+		<strong>Período Seleccionado:</strong> @Model.Leyenda
+	</div>
+</div>
+<div class="table-responsive table-wrapper-700">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbAnaDeValVtaDetalleDiarioCantidad">
+		<thead class="sticky-top table-golden-header-compact">
+			<tr class="header">
+				<th class="text-center">Día</th>
+				<th class="text-center">Fact. + Cob.</th>
+				<th class="text-center">Cta. Cte. (Doc)</th>
+				<th class="text-center">Cta. Cte. (Dist)</th>
+				<th class="text-center">Efectivo</th>
+				<th class="text-center">Tarjetas</th>
+				<th class="text-center">Transf. Banc.</th>
+				<th class="text-center">Mutuales</th>
+				<th class="text-center">Vales</th>
+				<th class="text-center">Otros</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model == null || Model.GrillaDetDiario == null || Model.GrillaDetDiario.ListaDatos == null || !Model.GrillaDetDiario.ListaDatos.Any())
+			{
+				<tr class="fila-vacia">
+					<td colspan="6" class="text-center text-muted py-2">
+						<i class="bx bx-info-circle me-1"></i>
+						No hay items para mostrar.
+					</td>
+				</tr>
+			}
+			else
+			{
+				@foreach (var item in Model.GrillaDetDiario.ListaDatos)
+				{
+					<tr>
+						<td class="text-center">@item.dia.ToString("dd/MM/yyyy")</td>
+
+						<td class="text-end">
+							@GridHelper.FormatearPrecio(item.co_facturacion + item.co_cobranza, TipoPrecio.Venta)
+						</td>
+
+						<td class="text-end">
+							<div class="dual-h">
+								<span class="left porc-box @(item.co_ctacte_porc > 0 ? "porc-pos" : item.co_ctacte_porc < 0 ? "porc-neg" : "porc-zero")">
+									@item.co_ctacte_porc%
+								</span>
+								<span class="right">
+									@GridHelper.FormatearPrecio(item.co_ctacte, TipoPrecio.Venta)
+								</span>
+							</div>
+						</td>
+
+						<td class="text-end">
+							<div class="dual-h">
+								<span class="left porc-box @(item.co_ctacte_dist_porc > 0 ? "porc-pos" : item.co_ctacte_dist_porc < 0 ? "porc-neg" : "porc-zero")">
+									@item.co_ctacte_dist_porc%
+								</span>
+								<span class="right">
+									@GridHelper.FormatearPrecio(item.co_ctacte_dist, TipoPrecio.Venta)
+								</span>
+							</div>
+						</td>
+
+						<td class="text-end">
+							<div class="dual-h">
+								<span class="left porc-box @(item.efectivos_cant_porc > 0 ? "porc-pos" : item.efectivos_cant_porc < 0 ? "porc-neg" : "porc-zero")">
+									@item.efectivos_cant_porc%
+								</span>
+								<span class="right">
+									@item.efectivos_cant
+								</span>
+							</div>
+						</td>
+
+						<td class="text-end">
+							<div class="dual-h">
+								<span class="left porc-box @(item.tarjetas_cant_porc > 0 ? "porc-pos" : item.tarjetas_cant_porc < 0 ? "porc-neg" : "porc-zero")">
+									@item.tarjetas_cant_porc%
+								</span>
+								<span class="right">
+									@item.tarjetas_cant
+								</span>
+							</div>
+						</td>
+
+						<td class="text-end">
+							<div class="dual-h">
+								<span class="left porc-box @(item.bco_transf_cant_porc > 0 ? "porc-pos" : item.bco_transf_cant_porc < 0 ? "porc-neg" : "porc-zero")">
+									@item.bco_transf_cant_porc%
+								</span>
+								<span class="right">
+									@item.bco_transf_cant
+								</span>
+							</div>
+						</td>
+
+						<td class="text-end">
+							<div class="dual-h">
+								<span class="left porc-box @(item.mutuales_cant_porc > 0 ? "porc-pos" : item.mutuales_cant_porc < 0 ? "porc-neg" : "porc-zero")">
+									@item.mutuales_cant_porc%
+								</span>
+								<span class="right">
+									@item.mutuales_cant
+								</span>
+							</div>
+						</td>
+
+						<td class="text-end">
+							<div class="dual-h">
+								<span class="left porc-box @(item.vales_cant_porc > 0 ? "porc-pos" : item.vales_cant_porc < 0 ? "porc-neg" : "porc-zero")">
+									@item.vales_cant_porc%
+								</span>
+								<span class="right">
+									@item.vales_cant
+								</span>
+							</div>
+						</td>
+
+						<td class="text-end">
+							<div class="dual-h">
+								<span class="left porc-box @(item.otros_cant_porc > 0 ? "porc-pos" : item.otros_cant_porc < 0 ? "porc-neg" : "porc-zero")">
+									@item.otros_cant_porc%
+								</span>
+								<span class="right">
+									@item.otros_cant
+								</span>
+							</div>
+						</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

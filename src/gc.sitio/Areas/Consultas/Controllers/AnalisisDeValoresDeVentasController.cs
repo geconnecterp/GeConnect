@@ -167,9 +167,9 @@ namespace gc.sitio.Areas.Consultas.Controllers
 		}
 
 		[HttpPost]
-		public IActionResult CargarDetalleMesDiario(DateTime Desde, DateTime Hasta, string Sucursales)
+		public IActionResult CargarDetalleMesDiario(DateTime Desde, DateTime Hasta, string Sucursales, string Periodo, int tab)
 		{
-			var model = new GridCoreSmart<AnaValDeVtaDetDiarioDto>();
+			var model = new DetalleMesDiarioModel();
 			try
 			{
 				var auth = EstaAutenticado;
@@ -183,8 +183,12 @@ namespace gc.sitio.Areas.Consultas.Controllers
 					adm_list = Sucursales
 				};
 				var lista = _apiVentaServicio.ObtenerAnaDeValDeVtaDetDiarioLista(request, TokenCookie);
-				model = ObtenerGridCoreSmart<AnaValDeVtaDetDiarioDto>(lista);
-				return PartialView("_partialAnalisisDeValoresDeVentasDetDia", model);
+				model.GrillaDetDiario = ObtenerGridCoreSmart<AnaValDeVtaDetDiarioDto>(lista);
+				model.Leyenda = Periodo;
+				if (tab == 1)
+					return PartialView("_partialAnalisisDeValoresDeVentasDetDiaImportes", model);
+				else
+					return PartialView("_partialAnalisisDeValoresDeVentasDetDiaCantidades", model);
 			}
 			catch (Exception ex)
 			{
@@ -200,9 +204,9 @@ namespace gc.sitio.Areas.Consultas.Controllers
 		}
 
 		[HttpPost]
-		public IActionResult CargarDetalleMesPV(DateTime Desde, DateTime Hasta, string Sucursales)
+		public IActionResult CargarDetalleMesPV(DateTime Desde, DateTime Hasta, string Sucursales, string Periodo)
 		{
-			var model = new GridCoreSmart<AnaValDeVtaDetPVDto>();
+			var model = new DetalleMesPVModel();
 			try
 			{
 				var auth = EstaAutenticado;
@@ -216,7 +220,8 @@ namespace gc.sitio.Areas.Consultas.Controllers
 					adm_list = Sucursales
 				};
 				var lista = _apiVentaServicio.ObtenerAnaDeValDeVtaDetPVLista(request, TokenCookie);
-				model = ObtenerGridCoreSmart<AnaValDeVtaDetPVDto>(lista);
+				model.GrillaDetPV = ObtenerGridCoreSmart<AnaValDeVtaDetPVDto>(lista);
+				model.Leyenda = Periodo;
 				return PartialView("_partialAnalisisDeValoresDeVentasDetPV", model);
 			}
 			catch (Exception ex)
@@ -233,9 +238,9 @@ namespace gc.sitio.Areas.Consultas.Controllers
 		}
 
 		[HttpPost]
-		public IActionResult CargarDetalleMesCB(DateTime Desde, DateTime Hasta, string Sucursales)
+		public IActionResult CargarDetalleMesCB(DateTime Desde, DateTime Hasta, string Sucursales, string Periodo)
 		{
-			var model = new GridCoreSmart<AnaValDeVtaDetCBDto>();
+			var model = new DetalleMesCBModel();
 			try
 			{
 				var auth = EstaAutenticado;
@@ -249,7 +254,8 @@ namespace gc.sitio.Areas.Consultas.Controllers
 					adm_list = Sucursales
 				};
 				var lista = _apiVentaServicio.ObtenerAnaDeValDeVtaDetCBLista(request, TokenCookie);
-				model = ObtenerGridCoreSmart<AnaValDeVtaDetCBDto>(lista);
+				model.GrillaDetCB = ObtenerGridCoreSmart<AnaValDeVtaDetCBDto>(lista);
+				model.Leyenda = Periodo;
 				return PartialView("_partialAnalisisDeValoresDeVentasDetCB", model);
 			}
 			catch (Exception ex)

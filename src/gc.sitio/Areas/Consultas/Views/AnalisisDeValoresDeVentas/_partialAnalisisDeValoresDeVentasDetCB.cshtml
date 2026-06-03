@@ -1,6 +1,6 @@
 ﻿@using gc.infraestructura.Helpers
 @using static gc.infraestructura.Helpers.GridHelper
-@model GridCoreSmart<AnaValDeVtaDetCBDto>
+@model DetalleMesCBModel
 @{
 	string grupoActual = string.Empty;
 	string grupoAnterior = string.Empty;
@@ -13,6 +13,11 @@
 }
 <style>
 </style>
+<div class="row mb-1">
+	<div class="col-12">
+		<strong>Período Seleccionado:</strong> @Model.Leyenda
+	</div>
+</div>
 <div class="table-responsive table-wrapper-500 w-50">
 	<table class="table table-sm table-hover mb-0 table-golden" id="tbAnaDeValVtaDetalleCB">
 		<thead class="sticky-top table-golden-header-compact">
@@ -26,7 +31,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+			@if (Model == null || Model.GrillaDetCB == null || Model.GrillaDetCB.ListaDatos == null || !Model.GrillaDetCB.ListaDatos.Any())
 			{
 				<tr class="fila-vacia">
 					<td colspan="6" class="text-center text-muted py-2">
@@ -37,7 +42,7 @@
 			}
 			else
 			{
-				registros = Model.ListaDatos.OrderBy(x => x.caja_nro_proceso).ToList();
+				registros = Model.GrillaDetCB.ListaDatos.OrderBy(x => x.caja_nro_proceso).ToList();
 				foreach (var item in registros)
 				{
 					grupoActual = item.caja_nro_proceso;

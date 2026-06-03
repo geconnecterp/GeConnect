@@ -52,7 +52,8 @@ namespace gc.api.core.Servicios.Reportes
 				#region Obteniendo registros desde la base de datos
 				string tit;
 				string subtit;
-				List<AnaValDeVtaDetDiarioDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
+				int tabId = 0;
+				List<AnaValDeVtaDetDiarioDto> registros = ObtenerDatos(solicitud, out tit, out subtit, out tabId);
 
 				solicitud.Titulo = tit;
 				solicitud.SubTitulo = subtit;
@@ -80,6 +81,7 @@ namespace gc.api.core.Servicios.Reportes
 				anchos = [70f, 30f];
 
 				var chico = HelperPdf.FontChicoPredeterminado();
+				var medio = HelperPdf.FontMedioPredeterminado();
 				var normal = HelperPdf.FontNormalPredeterminado();
 				var normalBold = HelperPdf.FontNormalPredeterminado(true);
 				var titulo = HelperPdf.FontTituloPredeterminado();
@@ -106,7 +108,7 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Open();
 
 				#region Lista 
-				HelperPdf.CargarRepoAnalisisDeValoresDeVentaDiario(pdf, registros, chico, normal, normalBold, titulo, tituloBig);
+				HelperPdf.CargarRepoAnalisisDeValoresDeVentaDiario(pdf, registros, chico, medio, normalBold, titulo, tituloBig, tabId);
 				#endregion
 
 				pdf.Close();
@@ -126,7 +128,7 @@ namespace gc.api.core.Servicios.Reportes
 			}
 		}
 
-		private List<AnaValDeVtaDetDiarioDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo, out string subtit)
+		private List<AnaValDeVtaDetDiarioDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo, out string subtit, out int tabId)
 		{
 			try
 			{
@@ -134,6 +136,7 @@ namespace gc.api.core.Servicios.Reportes
 				var sucursalesTextos = solicitud.Parametros.GetValueOrDefault("SucursalesTextos", "")?.ToString() ?? null;
 				var desde = solicitud.Parametros.GetValueOrDefault("Desde", "").ToDateTime();
 				var hasta = solicitud.Parametros.GetValueOrDefault("Hasta", "").ToDateTime();
+				tabId = solicitud.Parametros.GetValueOrDefault("tabId", "0")?.ToInt() ?? 0;
 				var request = new AnaDeValDeVtaMesRequest()
 				{
 					adm_list = sucursales,
@@ -150,6 +153,7 @@ namespace gc.api.core.Servicios.Reportes
 			{
 				titulo = "";
 				subtit = "";
+				tabId = 0;
 				return [];
 			}
 
@@ -160,7 +164,8 @@ namespace gc.api.core.Servicios.Reportes
 			#region Obteniendo registros desde la base de datos
 			string tit;
 			string subtit;
-			List<AnaValDeVtaDetDiarioDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
+			int tabId;
+			List<AnaValDeVtaDetDiarioDto> registros = ObtenerDatos(solicitud, out tit, out subtit, out tabId);
 
 			if (registros == null || registros.Count == 0)
 			{
@@ -184,7 +189,8 @@ namespace gc.api.core.Servicios.Reportes
 			#region Obteniendo registros desde la base de datos
 			string tit;
 			string subtit;
-			List<AnaValDeVtaDetDiarioDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
+			int tabId;
+			List<AnaValDeVtaDetDiarioDto> registros = ObtenerDatos(solicitud, out tit, out subtit, out tabId);
 
 			if (registros == null || registros.Count == 0)
 			{

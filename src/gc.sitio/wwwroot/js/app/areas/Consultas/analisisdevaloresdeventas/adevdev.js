@@ -4,7 +4,8 @@ let tabsDetallePendientes = 0;
 
 const TabToTableMap = {
 	"navs-top-mens": "#tbAnaDeValDeVtaMes",
-	"navs-top-diario": "#tbAnaDeValVtaDetalleDiario",
+	"navs-top-diario-imp": "#tbAnaDeValVtaDetalleDiarioImporte",
+	"navs-top-diario-cant": "#tbAnaDeValVtaDetalleDiarioCantidad",
 	"navs-top-pv": "#tbAnaDeValVtaDetallePV",
 	"navs-top-cashback": "#tbAnaDeValVtaDetalleCB",
 };
@@ -75,6 +76,29 @@ function InicializarEventosAnalisisDeVentaMensual() {
 	});
 }
 
+function obtenerRangoDeMes(mes, periodo) {
+	// mes: 1 a 12
+	// periodo: año en formato yyyy
+
+	const desde = new Date(periodo, mes - 1, 1);
+	const hasta = new Date(periodo, mes, 0);
+
+	// Formato MM-YYYY
+	const mesStr = String(mes).padStart(2, "0");
+	const periodoStr = `${mesStr}-${periodo}`;
+
+	return {
+		desde,
+		hasta,
+		periodo_string: periodoStr
+	};
+}
+
+function formatearFecha(date) {
+	return date.toISOString().split("T")[0]; // yyyy-MM-dd
+}
+
+
 function ProcesarSeleccionFilaEnAnalisisDeVentaMensual($fila) {
 	// Quitar selección previa
 	$("#tbAnaDeValDeVtaMes tbody tr").removeClass("selected-row");
@@ -143,7 +167,14 @@ function InicializarEventosDetalleMes() {
 		let target = "";
 		switch (targetId) {
 
-			case "#navs-top-diario":
+			case "#navs-top-diario-imp":
+				target = targetId.replace("#", "");
+				CargarTabsDelDetalleMesDiario(true, target);
+				CargarTabsDelDetalleMesPV(false, target);
+				CargarTabsDelDetalleMesCB(false, target);
+				break;
+
+			case "#navs-top-diario-cant":
 				target = targetId.replace("#", "");
 				CargarTabsDelDetalleMesDiario(true, target);
 				CargarTabsDelDetalleMesPV(false, target);
@@ -169,7 +200,7 @@ function InicializarEventosDetalleMes() {
 
 function CargarTabsDelDetalleMes() {
 	//Diario
-	CargarTabsDelDetalleMesDiario(true, "navs-top-diario");
+	CargarTabsDelDetalleMesDiario(true, "navs-top-diario-imp");
 	//Hora
 	CargarTabsDelDetalleMesPV(false, "");
 	//Sucursal
@@ -184,18 +215,30 @@ function CargarTabsDelDetalleMes() {
 
 function CargarTabsDelDetalleMesDiario(cargar, tabId) {
 	if (cargar) {
+		let tab = 0;
+		if (tabId == "navs-top-diario-imp")
+			tab = 1;
+		else
+			tab = 2;
+
+		const rango = obtenerRangoDeMes(mes_selected, periodo_selected);
+		// Formato seguro para backend: yyyy-MM-dd
+		const desde = formatearFecha(rango.desde);
+		const hasta = formatearFecha(rango.hasta);
+
 		var suc = ObtenerSucursalesSeleccionadasConTexto();
 		var sucursalesIds = suc.ids;
-		var desde = $("#Desde").val();
-		var hasta = $("#Hasta").val();
 		var data = {
 			Desde: desde,
 			Hasta: hasta,
 			Sucursales: sucursalesIds,
+			Periodo: rango.periodo_string,
+			tab
 		};
 		AbrirWaiting("Cargando datos...");
 		PostGenHtml(data, cargarDetalleMesDiarioURL, function (obj) {
-			$("#divDetalleMesDiario").html(obj);
+			let div = "#divDetalleMesDiario" + (tabId === "navs-top-diario-imp" ? "Importe" : "Cantidad");
+			$(div).html(obj);
 			InicializarEventosAnalisisDeValoresDeVentaDetalleDiario();
 			EvaluarBotonImprimir(tabId);
 			CerrarWaiting();
@@ -203,7 +246,7 @@ function CargarTabsDelDetalleMesDiario(cargar, tabId) {
 		});
 	}
 	else {
-		$("#divDetalleMesDiario").empty();
+		$("#divDetalleMesDiario" + (tabId === "navs-top-diario-imp" ? "Importe" : "Cantidad")).empty();
 	}
 }
 
@@ -227,14 +270,18 @@ function ProcesarSeleccionFilaEnAnalisisDeValoresDeVentaDetalleDiario($fila) {
 
 function CargarTabsDelDetalleMesPV(cargar, tabId) {
 	if (cargar) {
+		const rango = obtenerRangoDeMes(mes_selected, periodo_selected);
+		// Formato seguro para backend: yyyy-MM-dd
+		const desde = formatearFecha(rango.desde);
+		const hasta = formatearFecha(rango.hasta);
+
 		var suc = ObtenerSucursalesSeleccionadasConTexto();
 		var sucursalesIds = suc.ids;
-		var desde = $("#Desde").val();
-		var hasta = $("#Hasta").val();
 		var data = {
 			Desde: desde,
 			Hasta: hasta,
 			Sucursales: sucursalesIds,
+			Periodo: rango.periodo_string
 		};
 		AbrirWaiting("Cargando datos...");
 		PostGenHtml(data, cargarDetalleMesPVURL, function (obj) {
@@ -270,14 +317,18 @@ function ProcesarSeleccionFilaEnAnalisisDeValoresDeVentaDetallePV($fila) {
 
 function CargarTabsDelDetalleMesCB(cargar, tabId) {
 	if (cargar) {
+		const rango = obtenerRangoDeMes(mes_selected, periodo_selected);
+		// Formato seguro para backend: yyyy-MM-dd
+		const desde = formatearFecha(rango.desde);
+		const hasta = formatearFecha(rango.hasta);
+
 		var suc = ObtenerSucursalesSeleccionadasConTexto();
 		var sucursalesIds = suc.ids;
-		var desde = $("#Desde").val();
-		var hasta = $("#Hasta").val();
 		var data = {
 			Desde: desde,
 			Hasta: hasta,
 			Sucursales: sucursalesIds,
+			Periodo: rango.periodo_string
 		};
 		AbrirWaiting("Cargando datos...");
 		PostGenHtml(data, cargarDetalleMesCBURL, function (obj) {
@@ -427,8 +478,12 @@ function ImprimirSegunTab(tabId) {
 			ImprimirMensual();
 			break;
 
-		case "navs-top-diario":
-			ImprimirDetalleDiario();
+		case "navs-top-diario-imp":
+			ImprimirDetalleDiario(tabId);
+			break;
+
+		case "navs-top-diario-cant":
+			ImprimirDetalleDiario(tabId);
 			break;
 
 		case "navs-top-pv":
@@ -478,7 +533,7 @@ function HandlerImprimirMensual() {
 	}, 500);
 }
 
-function ImprimirDetalleDiario() {
+function ImprimirDetalleDiario(tabId) {
 	AbrirWaiting();
 	var tipoReporte = 2;
 	var data = { tipoReporte };
@@ -492,14 +547,19 @@ function ImprimirDetalleDiario() {
 			}, false, ["Aceptar"], "error!", null);
 		}
 		else {
-			HandlerImprimirDetalleDiario();
+			HandlerImprimirDetalleDiario(tabId);
 		}
 	});
 }
 
-function HandlerImprimirDetalleDiario() {
+function HandlerImprimirDetalleDiario(tabId) {
 	ReseteoDeReportes();
 	setTimeout(() => {
+		let tab = 0;
+		if (tabId == "navs-top-diario-imp")
+			tab = 1;
+		else
+			tab = 2;
 		var suc = ObtenerSucursalesSeleccionadasConTexto();
 		var sucursalesIds = suc.ids;
 		var sucursalesTextos = suc.textos;
@@ -507,7 +567,8 @@ function HandlerImprimirDetalleDiario() {
 			Desde: $("#Desde").val(),
 			Hasta: $("#Hasta").val(),
 			Sucursales: sucursalesIds,
-			SucursalesTextos: sucursalesTextos
+			SucursalesTextos: sucursalesTextos,
+			tabId: tab
 		}
 		cargarReporteEnArre(76, data, "Análisis de Valores de Venta Diario", "", "");
 		invocacionGestorDoc({});
