@@ -1,9 +1,12 @@
 ﻿using gc.api.core.Constantes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
+using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Gen;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,8 +17,10 @@ namespace gc.api.core.Servicios.LineaCaja
 {
     public class CajaBaseServicio: Servicio<EntidadBase>
     {
-        public CajaBaseServicio(IUnitOfWork uow) : base(uow)
+        private readonly ILoggerHelper _logger;
+        public CajaBaseServicio(IUnitOfWork uow,ILoggerHelper logger) : base(uow)
         {
+            _logger = logger;
         }
 
 
@@ -29,6 +34,13 @@ namespace gc.api.core.Servicios.LineaCaja
             var json_subtotal = req.json_subtotal.Replace("\\", "");
             var json_p = req.json_p.Replace("\\", "");
             var json_cancela = req.json_cancela.Replace("\\", "");
+
+            _logger.Log(System.Diagnostics.TraceEventType.Information,$"json_sorteo: {json_sorteo}");
+            _logger.Log(System.Diagnostics.TraceEventType.Information,$"json_union: {json_union}");
+            _logger.Log(System.Diagnostics.TraceEventType.Information,$"json_valores: {json_valores}");
+            _logger.Log(System.Diagnostics.TraceEventType.Information,$"json_subtotal: {json_subtotal}");
+            _logger.Log(System.Diagnostics.TraceEventType.Information,$"json_p: {json_p}");
+            _logger.Log(System.Diagnostics.TraceEventType.Information,$"json_cancela: {json_cancela}");
 
             var ps = new List<SqlParameter>()
             {
@@ -73,6 +85,7 @@ namespace gc.api.core.Servicios.LineaCaja
             }
             else
             {
+                _logger.Log(System.Diagnostics.TraceEventType.Information,$"OperacionConfirmacionBase Response : {JsonConvert.SerializeObject(res)}");
                 return res[0];
             }
         }

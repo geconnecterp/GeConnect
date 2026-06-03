@@ -1,17 +1,19 @@
 ﻿using gc.api.core.Constantes;
 using gc.api.core.Contratos.Servicios.LineaCaja;
-using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
+using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Cajas.Response;
 using gc.infraestructura.Dtos.Gen;
+
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
 
 namespace gc.api.core.Servicios.LineaCaja
 {
     public class ApiProductoFactServicio : CajaBaseServicio, IApiProductoFactServicio
     {
-        public ApiProductoFactServicio(IUnitOfWork uow) : base(uow)
+        public ApiProductoFactServicio(IUnitOfWork uow,ILoggerHelper logger) : base(uow,logger)
         {
 
         }

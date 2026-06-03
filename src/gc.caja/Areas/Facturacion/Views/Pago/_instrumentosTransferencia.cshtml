@@ -122,4 +122,44 @@
 
         </div>
     </div>
+
+    @* ═══════════════════════════════════════════════════════════════ *@
+    @* ✅ NUEVO v21.3: EVENTOS DE NAVEGACIÓN CON TECLADO *@
+    @* ═══════════════════════════════════════════════════════════════ *@
+
+    <script>
+        $(function () {
+            console.log('🔧 Vinculando eventos de navegación - Modal Transferencias');
+
+            // ❶ Evento: Click en ítem de banco (selección + confirmación automática)
+            $(document).on('click', '.instrumento-transferencia-item', function () {
+                console.log('🖱️ Click en banco - Seleccionando y confirmando...');
+
+                const $item = $(this);
+
+                // Limpiar selecciones previas
+                $('.instrumento-transferencia-item').removeClass('selected');
+
+                // Seleccionar ítem actual
+                $item.addClass('selected');
+
+                // Habilitar botón confirmar
+                $('#btnConfirmarBancoTransferencia').prop('disabled', false);
+
+                // Guardar banco seleccionado (simulación de variable global)
+                const bancoId = $item.data('banco-id');
+                const bancoDesc = $item.data('banco-desc');
+
+                console.log(`   ✅ Banco seleccionado: ${bancoDesc} (${bancoId})`);
+
+                // ✅ Confirmar automáticamente después de delay
+                setTimeout(() => {
+                    console.log('   ⏩ Confirmando selección automáticamente...');
+                    $('#btnConfirmarBancoTransferencia').trigger('click');
+                }, 200); // ← 200ms para feedback visual
+            });
+
+            console.log('✅ Eventos de click vinculados');
+        });
+    </script>
 </div>
