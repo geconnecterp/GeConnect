@@ -4,31 +4,36 @@
 */
 
 :root {
-    --vk-bg: rgba(23, 23, 23, 0.95);
-    --vk-border: #404040;
-    --vk-text: #e5e5e5;
-    --vk-text-muted: #a3a3a3;
-    --vk-key-bg: #262626;
-    --vk-key-active: #404040;
-    --vk-accent: #2563eb;
-    --vk-danger: #f87171;
+    --vk-bg: rgba(10, 24, 47, 0.72); /* Hermoso celeste vidrio traslúcido profundo */
+    --vk-border: rgba(100, 180, 255, 0.22); /* Borde de cristal con sutil brillo celeste */
+    --vk-text: #f0f7ff; /* Texto blanco puro con matiz celeste suave */
+    --vk-text-muted: rgba(186, 215, 255, 0.55); /* Texto secundario celeste claro */
+    --vk-key-bg: rgba(22, 38, 70, 0.45); /* Teclas semi-transparentes de cristal mate */
+    --vk-key-active: rgba(96, 165, 250, 0.45); /* Resaltado activo celeste brillante */
+    --vk-accent: rgba(37, 120, 240, 0.85); /* Celeste/Azul vibrante */
+    --vk-danger: rgba(239, 68, 68, 0.85);
+}
+
+/* Sincronización de estructura y prevención estricta de desbordamientos (anti-overflow) */
+.vk-container,
+.vk-container * {
+    box-sizing: border-box !important;
 }
 
 .vk-container {
     position: fixed;
-    bottom: 40px;
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: 120px; /*valr modificado. Original 25px */
+    right: 25px;
     z-index: 1000000;
     background: var(--vk-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--vk-border);
-    padding: 16px;
-    border-radius: 20px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    padding: 10px; /* Reducido de 14px */
+    border-radius: 12px; /* Reducido de 18px */
+    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.1);
     width: 95vw;
-    max-width: 600px;
+    max-width: 470px; /* Tamaño más compacto para alfanumérico, era 530px */
     user-select: none;
     touch-action: none;
     display: none; /* Se activa por JS */
@@ -41,7 +46,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 8px; /* Reducido de 12px */
     cursor: grab;
 }
 
@@ -50,11 +55,11 @@
 }
 
 .vk-drag-handle {
-    width: 40px;
-    height: 5px;
+    width: 32px; /* Reducido de 40px */
+    height: 4px; /* Reducido de 5px */
     background: var(--vk-border);
     border-radius: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 6px; /* Reducido de 10px */
 }
 
 .vk-title-bar {
@@ -62,23 +67,23 @@
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    padding: 0 4px;
+    padding: 0 2px;
 }
 
 .vk-title {
     color: var(--vk-text-muted);
-    font-size: 10px;
+    font-size: 9px; /* Reducido de 10px */
     text-transform: uppercase;
-    letter-spacing: 1.5px;
+    letter-spacing: 1.2px;
     font-weight: 600;
 }
 
 .vk-close {
     cursor: pointer;
     color: var(--vk-text-muted);
-    font-size: 18px;
+    font-size: 15px; /* Reducido de 18px */
     line-height: 1;
-    padding: 4px;
+    padding: 2px;
     transition: color 0.2s;
 }
 
@@ -96,39 +101,42 @@
 .vk-alpha-section {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    flex: 1;
+    gap: 4px; /* Reducido de 6px */
+    flex: 2.5; /* Más ancho para que las teclas alfanuméricas queden perfectas */
+    min-width: 0;
 }
 
 .vk-numpad-section {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    width: 100%;
+    gap: 4px; /* Reducido de 8px */
+    flex: 1.2; /* Numpad un pelito más pequeño para amalgamar la estructura */
+    min-width: 0;
 }
 
-/* Modo solo teclado numérico (más compacto y botones más grandes) */
+/* Modo solo teclado numérico (más compacto y botones muy ligeros) */
 .vk-numpad-only {
-    max-width: 360px !important;
+    max-width: 260px !important; /* Más compacto y elegante, era 320px */
 }
 
 .vk-numpad-only .vk-body {
-    padding: 10px;
+    padding: 4px; /* Reducido de 10px */
 }
 
 .vk-numpad-only .vk-key {
-    height: 70px;
-    font-size: 22px;
+    height: 45px; /* Reducido de 56px */
+    font-size: 16px; /* Reducido de 19px */
+    border-radius: 6px;
 }
 
 .vk-numpad-only .vk-key-v2 {
-    height: 148px; /* (70 * 2) + 8px gap */
+    height: 94px; /* (45 * 2) + 4px gap */
 }
 
 .vk-row {
     display: flex;
     justify-content: space-between;
-    gap: 6px;
+    gap: 4px; /* Reducido de 6px */
     width: 100%;
 }
 
@@ -136,17 +144,17 @@
     background: var(--vk-key-bg);
     border: 1px solid var(--vk-border);
     color: var(--vk-text);
-    border-radius: 10px;
-    height: 48px;
+    border-radius: 6px; /* Reducido de 8px */
+    height: 35px; /* Reducido de 42px */
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 15px;
+    font-size: 12.5px; /* Reducido de 14px */
     font-weight: 500;
     cursor: pointer;
     transition: all 0.1s;
-    min-width: 32px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    min-width: 24px; /* Reducido de 32px */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
 
 .vk-alpha-section .vk-key {
@@ -160,7 +168,7 @@
 
 .vk-key-v2 {
     grid-row: span 2;
-    height: 102px; /* (48 * 2) + 6px gap */
+    height: 74px; /* (35 * 2) + 4px gap */
 }
 
 .vk-key-h2 {
@@ -168,12 +176,12 @@
 }
 
 .vk-key:active {
-    transform: scale(0.92);
+    transform: scale(0.94);
     background: var(--vk-key-active);
 }
 
 .vk-key-special {
-    background: #171717;
+    background: rgba(12, 28, 56, 0.65);
     color: #60a5fa;
 }
 
@@ -188,7 +196,7 @@
 }
 
 .vk-key-enter:hover {
-    background: #1d4ed8;
+    background: rgba(37, 120, 240, 1.0);
 }
 
 .vk-key-space {
@@ -204,23 +212,45 @@
 }
 
 .vk-separator {
-    width: 12px;
+    width: 14px; /* Separación prudencial para evitar colisiones */
+    position: relative;
     flex-shrink: 0;
 }
 
-/* Responsive para móviles muy pequeños */
+.vk-separator::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    left: 50%;
+    width: 1px;
+    background: rgba(100, 180, 255, 0.15); /* Elegante línea divisoria azul cristalina */
+}
+
+/* Responsive para móviles */
 @media (max-width: 600px) {
     .vk-container {
-        padding: 10px;
+        right: 10px !important;
+        left: 10px !important;
+        bottom: 15px !important;
+        width: calc(100% - 20px) !important;
+        max-width: none !important;
+        padding: 8px;
+        transform: none !important; /* Asegura que no se corra de la pantalla en móvil */
     }
     .vk-body {
         flex-direction: column;
     }
     .vk-numpad-section {
         width: 100%;
-        margin-top: 10px;
+        margin-top: 8px;
+        gap: 4px;
     }
     .vk-separator {
         display: none;
+    }
+    .vk-key {
+        height: 38px;
+        font-size: 13.5px;
     }
 }

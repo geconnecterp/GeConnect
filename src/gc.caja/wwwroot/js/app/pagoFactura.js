@@ -273,6 +273,67 @@ function inicializarEventosPago() {
 
         console.log('✅ MODAL DE CHEQUE LIMPIADO');
     });
+
+    /**
+ * ✅ NUEVO v21.0: Eventos de selección automática para modales de instrumentos secundarios
+ * Se ejecutan cuando el modal termina de mostrarse (después de la animación)
+ */
+
+    // ═══════════════════════════════════════════════════════════════════
+    // Modal: Transferencias Bancarias
+    // ═══════════════════════════════════════════════════════════════════
+    $('#modalInstrumentosTransferencia').on('shown.bs.modal', function () {
+        console.log('🔓 Modal Transferencia mostrado - Seleccionando primer banco...');
+
+        seleccionarPrimerItemAutomatico({
+            contenedorId: '#listaInstrumentosTransferencia',
+            itemClass: '.instrumento-transferencia-item',
+            btnConfirmarId: '#btnConfirmarBancoTransferencia',
+            tipoModal: 'transferencia'
+        });
+    });
+
+    // ═══════════════════════════════════════════════════════════════════
+    // Modal: Vales de Compra
+    // ═══════════════════════════════════════════════════════════════════
+    $('#modalInstrumentosValeCompra').on('shown.bs.modal', function () {
+        console.log('🔓 Modal Vale Compra mostrado - Seleccionando primer vale...');
+
+        seleccionarPrimerItemAutomatico({
+            contenedorId: '#listaInstrumentosValeCompra',
+            itemClass: '.instrumento-vale-item',
+            btnConfirmarId: '#btnConfirmarValeCompra',
+            tipoModal: 'vale'
+        });
+    });
+
+    // ═══════════════════════════════════════════════════════════════════
+    // Modal: Cupones/Órdenes de Empresa
+    // ═══════════════════════════════════════════════════════════════════
+    $('#modalInstrumentosCuponEmpresa').on('shown.bs.modal', function () {
+        console.log('🔓 Modal Cupón Empresa mostrado - Seleccionando primera empresa...');
+
+        seleccionarPrimerItemAutomatico({
+            contenedorId: '#listaInstrumentosCupon',
+            itemClass: '.instrumento-cupon-item',
+            btnConfirmarId: '#btnConfirmarCuponEmpresa',
+            tipoModal: 'cupon'
+        });
+    });
+
+    // ═══════════════════════════════════════════════════════════
+    // ✅ NUEVO v21.2: LIMPIEZA DE EVENTOS DE TECLADO
+    // ═══════════════════════════════════════════════════════════
+
+    /**
+     * Evento que se dispara cuando el modal de tipo medio de pago se cierra completamente
+     * Asegura limpieza de eventos de navegación con teclado
+     */
+    $('#modalTipoMedioPago').off('hidden.bs.modal.limpiezaTeclado').on('hidden.bs.modal.limpiezaTeclado', function () {
+        console.log('🔒 Modal Tipo Medio de Pago cerrado - Limpiando eventos de teclado');
+        limpiarEventosTipoMedioPago();
+    });
+
     console.log('✅ Eventos de pago configurados');
 }
 
@@ -281,12 +342,19 @@ function inicializarEventosPago() {
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Abre el modal de pago con los datos de la factura
+ * ✅ ACTUALIZADO v20.6: Abre el modal de pago con los datos de la factura
+ * NUEVO: Apertura automática del modal de agregar formas de pago
+ * 
+ * MEJORA UX v20.6:
+ * - Al abrir el modal de pago, automáticamente abre el modal de tipo medio de pago
+ * - Elimina un click innecesario para el cajero
+ * - Primera acción siempre es agregar una forma de pago
+ * 
  * @param {Object} datosFactura - Objeto con totales y datos del cliente
  */
 function abrirModalPago(datosFactura) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔓 ABRIR MODAL DE PAGO v16.1');
+    console.log('🔓 ABRIR MODAL DE PAGO v20.6');
     console.log('═══════════════════════════════════════════════════');
     console.log('Datos recibidos:', datosFactura);
 
@@ -318,6 +386,27 @@ function abrirModalPago(datosFactura) {
             $('#modalPago').css('z-index', '1060');
             $('.modal-backdrop').last().css('z-index', '1059');
         }, 100);
+
+        // ═══════════════════════════════════════════════════════════
+        // ✅ NUEVO v20.6: APERTURA AUTOMÁTICA DE MODAL AGREGAR
+        // ═══════════════════════════════════════════════════════════
+
+        console.log('═══════════════════════════════════════════════════');
+        console.log('🚀 INICIANDO APERTURA AUTOMÁTICA DE AGREGAR v20.6');
+        console.log('═══════════════════════════════════════════════════');
+
+        // ❽ Esperar a que el modal de pago esté completamente visible
+        setTimeout(() => {
+            console.log('⏳ Modal de pago visible - Abriendo modal de agregar...');
+
+            // ❾ Abrir modal de tipo medio de pago automáticamente
+            abrirModalTipoMedioPago();
+
+            console.log('✅ Modal de agregar formas de pago abierto automáticamente');
+            console.log('   Beneficio UX: Cajero ahorra 1 click');
+            console.log('   Primera acción necesaria: Agregar forma de pago');
+
+        }, 400); // ← Timing crítico: Esperar a que modal de pago termine animación
 
         console.log('✅ Modal de pago abierto correctamente');
         return true;
@@ -1568,25 +1657,25 @@ function manejarSesionExpirada(mensaje) {
     );
 }
 
-/**
- * ✅ NUEVO v20.2: Muestra mensaje de error genérico
- * Función auxiliar reutilizable
- * 
- * @param {string} mensaje - Mensaje de error
- */
-function mostrarMensajeError(mensaje) {
-    AbrirMensaje(
-        "Error",
-        mensaje,
-        function () {
-            $("#msjModal").modal("hide");
-        },
-        false,
-        ["Aceptar"],
-        "error!",
-        null
-    );
-}
+///**
+// * ✅ NUEVO v20.2: Muestra mensaje de error genérico
+// * Función auxiliar reutilizable
+// * 
+// * @param {string} mensaje - Mensaje de error
+// */
+//function mostrarMensajeError(mensaje) {
+//    AbrirMensaje(
+//        "Error",
+//        mensaje,
+//        function () {
+//            $("#msjModal").modal("hide");
+//        },
+//        false,
+//        ["Aceptar"],
+//        "error!",
+//        null
+//    );
+//}
 
 // ═══════════════════════════════════════════════════════════════════
 // SECCIÓN 4: FUNCIONES AUXILIARES
@@ -1745,16 +1834,20 @@ function desbloquearModalTipoMedioPago() {
 }
 
 /**
- * Resetear selección de tipo medio de pago
+ * ✅ ACTUALIZADO v20.7: Resetear selección de tipo medio de pago
+ * CAMBIO: Ya NO manipula botón confirmar (está oculto)
  */
 function resetearSeleccionTipoMedioPago() {
     $('.tipo-medio-pago-item').removeClass('selected');
     tipoMedioPagoSeleccionado = null;
-    $('#btnConfirmarTipoMedioPago').prop('disabled', true);
+
+    // ❌ ELIMINADO v20.7: No se deshabilita botón confirmar (está oculto)
+    // $('#btnConfirmarTipoMedioPago').prop('disabled', true);
 }
 
 /**
- * Seleccionar ítem de tipo medio de pago
+ * ✅ ACTUALIZADO v20.7: Seleccionar ítem de tipo medio de pago
+ * CAMBIO: Ya NO habilita botón confirmar (está oculto)
  */
 function seleccionarItemTipoMedioPago($item) {
     $('.tipo-medio-pago-item').removeClass('selected');
@@ -1765,30 +1858,280 @@ function seleccionarItemTipoMedioPago($item) {
         tcf_desc: $item.data('tcf-desc')
     };
 
-    $('#btnConfirmarTipoMedioPago').prop('disabled', false);
+    // ❌ ELIMINADO v20.7: No se habilita botón confirmar (está oculto)
+    // $('#btnConfirmarTipoMedioPago').prop('disabled', false);
 
     console.log('✅ Tipo seleccionado:', tipoMedioPagoSeleccionado);
 }
 
 /**
- * Vincular eventos del modal de tipo medio de pago
+ * ✅ CORREGIDO v21.2: Vincular eventos del modal de tipo medio de pago
+ * CORRECCIÓN CRÍTICA: Delegación de eventos para navegación con teclado
+ * 
+ * PROBLEMA RESUELTO:
+ * - Primera apertura: Navegación NO funcionaba (evento vinculado antes de modal visible)
+ * - Segunda apertura: Funcionaba correctamente (modal ya existía en DOM)
+ * 
+ * SOLUCIÓN:
+ * - Delegación de eventos en document (siempre disponible)
+ * - Validación de modal visible antes de procesar teclas
+ * 
+ * CAMBIOS v21.2:
+ * - Movido evento keydown de modal a document (delegación)
+ * - Agregada validación `hasClass('show')` antes de procesar
+ * - Previene bug de primera apertura sin navegación
+ * 
+ * CAMBIOS v21.1 (anteriores):
+ * - Agregada navegación con teclado (↑↓ Enter Esc)
+ * 
+ * CAMBIOS v20.7 (anteriores):
+ * - Selección con UN SOLO CLICK (sin necesidad de confirmar)
  */
 function vincularEventosTipoMedioPago() {
+    console.log('🔧 Vinculando eventos tipo medio de pago v21.2...');
+
+    // ═══════════════════════════════════════════════════════════
+    // ✅ EVENTO DE CLICK (sin cambios)
+    // ═══════════════════════════════════════════════════════════
+
     $('.tipo-medio-pago-item').off('click').on('click', function () {
-        seleccionarItemTipoMedioPago($(this));
+        console.log('═══════════════════════════════════════════════════');
+        console.log('🖱️ CLICK EN TIPO MEDIO DE PAGO v20.7');
+        console.log('═══════════════════════════════════════════════════');
+
+        const $item = $(this);
+
+        // ❶ Seleccionar visualmente el ítem
+        seleccionarItemTipoMedioPago($item);
+
+        console.log('   ✅ Ítem seleccionado visualmente');
+
+        // ❷ Confirmar automáticamente después de breve delay (feedback visual)
+        setTimeout(() => {
+            console.log('   ⏩ Confirmando selección automáticamente...');
+            confirmarSeleccionTipoMedioPago();
+        }, 200); // ← Delay corto para que usuario vea el resaltado azul
     });
 
-    $('.tipo-medio-pago-item').off('dblclick').on('dblclick', function () {
-        seleccionarItemTipoMedioPago($(this));
-        setTimeout(() => confirmarSeleccionTipoMedioPago(), 300);
-    });
+    // ═══════════════════════════════════════════════════════════
+    // ✅ CORREGIDO v21.2: NAVEGACIÓN CON TECLADO
+    // ═══════════════════════════════════════════════════════════
 
-    $('#btnConfirmarTipoMedioPago').off('click').on('click', confirmarSeleccionTipoMedioPago);
+    console.log('   🔧 Configurando delegación de eventos de teclado...');
+
+    // ❌ ELIMINADO v21.2: Evento directo en modal (causaba bug de primera apertura)
+    // $('#modalTipoMedioPago').off('keydown.navegacion').on('keydown.navegacion', function (e) {
+    //     manejarNavegacionTeclado(e);
+    // });
+
+    // ✅ NUEVO v21.2: Delegación de eventos en document
+    $(document)
+        .off('keydown.navegacionTipoMP') // Limpiar eventos previos (evita duplicados)
+        .on('keydown.navegacionTipoMP', function (e) {
+            // ❶ Verificar que el modal esté visible y activo
+            const $modal = $('#modalTipoMedioPago');
+
+            if (!$modal.hasClass('show')) {
+                // Modal no visible, ignorar evento
+                return;
+            }
+
+            console.log(`🎹 Tecla presionada en modal visible: ${e.key}`);
+
+            // ❷ Procesar navegación con teclado
+            manejarNavegacionTeclado(e);
+        });
+
+    console.log('   ✅ Delegación de eventos configurada correctamente');
+    console.log('✅ Eventos configurados (selección con 1 click + navegación teclado delegada)');
 }
 
 /**
- * ✅ ACTUALIZADO v17.1: Confirmar selección de tipo medio de pago
- * Cierra el modal y dispara la carga de instrumentos
+ * ✅ NUEVO v21.2: Limpia eventos de navegación con teclado al cerrar modal
+ * 
+ * PROPÓSITO:
+ * - Prevenir memory leaks por eventos huérfanos
+ * - Garantizar que no queden listeners activos después de cerrar modal
+ * - Evitar conflictos con otros modales
+ * 
+ * CUÁNDO SE LLAMA:
+ * - Automáticamente al cerrar modal (evento 'hidden.bs.modal')
+ * - Ver configuración en inicializarEventosPago()
+ */
+function limpiarEventosTipoMedioPago() {
+    console.log('🧹 Limpiando eventos de navegación con teclado...');
+
+    // ❶ Remover evento delegado de document
+    $(document).off('keydown.navegacionTipoMP');
+
+    console.log('   ✅ Evento keydown.navegacionTipoMP removido de document');
+    console.log('✅ Eventos de teclado limpiados correctamente');
+}
+
+/**
+ * ✅ NUEVO v21.1: Maneja la navegación con teclado en el modal de tipo medio de pago
+ * 
+ * TECLAS SOPORTADAS:
+ * - ArrowDown (↓): Mover a siguiente item
+ * - ArrowUp (↑): Mover a item anterior
+ * - Enter: Confirmar selección actual
+ * - Escape: Cerrar modal sin confirmar
+ * 
+ * COMPORTAMIENTO:
+ * - Navegación cíclica (al llegar al final, vuelve al inicio)
+ * - Scroll automático si el item está fuera de vista
+ * - Integración con funciones existentes (sin duplicar código)
+ * 
+ * @param {KeyboardEvent} e - Evento de teclado
+ */
+function manejarNavegacionTeclado(e) {
+    // ❶ Validar que el modal esté visible
+    if (!$('#modalTipoMedioPago').hasClass('show')) {
+        return; // Modal no visible, no procesar
+    }
+
+    // ❷ Obtener todos los items visibles
+    const $items = $('.tipo-medio-pago-item:visible');
+
+    if ($items.length === 0) {
+        console.warn('⚠️ No hay items disponibles para navegar');
+        return;
+    }
+
+    // ❸ Obtener item actualmente seleccionado
+    const $itemActual = $('.tipo-medio-pago-item.selected');
+
+    if ($itemActual.length === 0) {
+        console.warn('⚠️ No hay item seleccionado');
+        return;
+    }
+
+    const indiceActual = $items.index($itemActual);
+    const totalItems = $items.length;
+
+    // ❹ Procesar tecla presionada
+    switch (e.key) {
+        case 'ArrowDown': // ↓ Siguiente
+            e.preventDefault(); // Evitar scroll del modal
+
+            console.log('⬇️ FLECHA ABAJO - Siguiente item');
+
+            // Calcular índice siguiente (cíclico)
+            const indiceSiguiente = (indiceActual + 1) % totalItems;
+            const $itemSiguiente = $items.eq(indiceSiguiente);
+
+            console.log(`   Moviendo de índice ${indiceActual} → ${indiceSiguiente}`);
+
+            // Seleccionar siguiente item
+            seleccionarItemTipoMedioPago($itemSiguiente);
+
+            // Hacer scroll si es necesario
+            scrollToItem($itemSiguiente, '#listaTiposMedioPago');
+
+            break;
+
+        case 'ArrowUp': // ↑ Anterior
+            e.preventDefault();
+
+            console.log('⬆️ FLECHA ARRIBA - Item anterior');
+
+            // Calcular índice anterior (cíclico)
+            const indiceAnterior = (indiceActual - 1 + totalItems) % totalItems;
+            const $itemAnterior = $items.eq(indiceAnterior);
+
+            console.log(`   Moviendo de índice ${indiceActual} → ${indiceAnterior}`);
+
+            // Seleccionar anterior item
+            seleccionarItemTipoMedioPago($itemAnterior);
+
+            // Hacer scroll si es necesario
+            scrollToItem($itemAnterior, '#listaTiposMedioPago');
+
+            break;
+
+        case 'Enter': // ⏎ Confirmar
+            e.preventDefault();
+
+            console.log('⏎ ENTER - Confirmando selección');
+
+            // Confirmar selección actual (sin delay)
+            confirmarSeleccionTipoMedioPago();
+
+            break;
+
+        case 'Escape': // Esc Cancelar
+            e.preventDefault();
+
+            console.log('🚫 ESCAPE - Cerrando modal');
+
+            // Cerrar modal con Bootstrap
+            if (modalTipoMedioPagoInstance) {
+                modalTipoMedioPagoInstance.hide();
+            } else {
+                $('#modalTipoMedioPago').modal('hide');
+            }
+
+            break;
+
+        default:
+            // Otras teclas no manejadas
+            break;
+    }
+}
+
+/**
+ * ✅ NUEVO v21.1: Hace scroll a un item si está fuera de la vista del contenedor
+ * 
+ * FUNCIONALIDAD:
+ * - Detecta si el item está visible dentro del contenedor scrolleable
+ * - Si está fuera de vista, hace scroll suave hasta centrarlo
+ * 
+ * @param {jQuery} $item - Item al que hacer scroll
+ * @param {string} contenedorSelector - Selector del contenedor scrolleable
+ */
+function scrollToItem($item, contenedorSelector) {
+    if (!$item || $item.length === 0) {
+        console.warn('⚠️ scrollToItem: Item inválido');
+        return;
+    }
+
+    const $contenedor = $(contenedorSelector);
+
+    if ($contenedor.length === 0) {
+        console.warn(`⚠️ scrollToItem: Contenedor ${contenedorSelector} no encontrado`);
+        return;
+    }
+
+    // ❶ Obtener posiciones
+    const itemTop = $item.position().top;
+    const itemBottom = itemTop + $item.outerHeight();
+    const contenedorHeight = $contenedor.height();
+    const scrollActual = $contenedor.scrollTop();
+
+    // ❷ Verificar si el item está fuera de vista
+    const fueraArribа = itemTop < 0;
+    const fueraAbajo = itemBottom > contenedorHeight;
+
+    // ❸ Calcular nueva posición de scroll si es necesario
+    if (fueraArribа || fueraAbajo) {
+        // Centrar el item en el contenedor
+        const nuevaPosicion = scrollActual + itemTop - (contenedorHeight / 2) + ($item.outerHeight() / 2);
+
+        console.log(`   📜 Haciendo scroll a posición ${nuevaPosicion.toFixed(0)}px`);
+
+        // Hacer scroll suave
+        $contenedor.animate({
+            scrollTop: nuevaPosicion
+        }, 200); // Animación rápida (200ms)
+    } else {
+        console.log('   ✅ Item ya está visible, no requiere scroll');
+    }
+}
+
+/**
+ * ✅ SIN CAMBIOS: Confirmar selección de tipo medio de pago
+ * Esta función ahora se llama automáticamente desde el evento click
+ * (Línea 1820 - Sin modificaciones)
  */
 function confirmarSeleccionTipoMedioPago() {
     console.log('═══════════════════════════════════════════════════');
@@ -2181,14 +2524,13 @@ function abrirModalInstrumentos(instrumentos, tipoMedioPago) {
 
     console.log('✅ Función abrirModalInstrumentos finalizada');
 }
-
 /**
- * ✅ NUEVO v17.2: Renderiza la lista de instrumentos en el modal
- * @param {Array} instrumentos - Array de objetos con datos de instrumentos
+ * ✅ ACTUALIZADO v21.0: Renderiza la lista de instrumentos en el modal
+ * NUEVO: Selecciona automáticamente el primer item después de renderizar
  */
 function renderizarInstrumentos(instrumentos) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🎨 RENDERIZAR INSTRUMENTOS v17.2');
+    console.log('🎨 RENDERIZAR INSTRUMENTOS v21.0');
     console.log(`   Total: ${instrumentos.length}`);
     console.log('═══════════════════════════════════════════════════');
 
@@ -2217,7 +2559,6 @@ function renderizarInstrumentos(instrumentos) {
         const total = inst.total_actual || 0;
         const tieneDetalle = inst.tiene_detalle || false;
 
-        // Determinar icono y color según el instrumento
         let icono = 'bx bx-dollar';
         let colorClase = 'text-success';
 
@@ -2257,6 +2598,16 @@ function renderizarInstrumentos(instrumentos) {
 
     // ❸ Vincular eventos
     vincularEventosInstrumentos();
+
+    // ❹ ✅ NUEVO v21.0: Seleccionar primer item automáticamente
+    setTimeout(() => {
+        seleccionarPrimerItemAutomatico({
+            contenedorId: '#listaInstrumentos',
+            itemClass: '.instrumento-item',
+            btnConfirmarId: '#btnConfirmarInstrumento',
+            tipoModal: 'instrumentos'
+        });
+    }, 100); // ← Delay para asegurar que eventos estén vinculados
 
     console.log('✅ Instrumentos renderizados correctamente');
 }
@@ -2664,12 +3015,12 @@ function escapeHtml(texto) {
 function mostrarMensajeError(mensaje) {
     if (typeof AbrirMensaje === 'function') {
         AbrirMensaje(
-            "Error",
+            "Atención",
             mensaje,
             function () { $("#msjModal").modal("hide"); },
             false,
             ["Aceptar"],
-            "error!",
+            "warn!",
             null
         );
     } else {
@@ -6030,3 +6381,103 @@ $('#modalDetalleCheque').off('hidden.bs.modal').on('hidden.bs.modal', function (
 
     console.log('✅ MODAL DE CHEQUE LIMPIADO');
 });
+
+// ═══════════════════════════════════════════════════════════════════
+// ✅ NUEVO v21.0: SELECCIÓN AUTOMÁTICA DEL PRIMER ITEM EN MODALES
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * ✅ NUEVO v21.0: Selecciona automáticamente el primer item visible de una lista
+ * Función genérica reutilizable para todos los modales de instrumentos
+ * 
+ * FUNCIONALIDAD:
+ * - Busca el primer item visible que no esté deshabilitado
+ * - Aplica clase 'selected' (resaltado azul)
+ * - Habilita el botón de confirmar correspondiente
+ * - Guarda datos del item según el tipo de modal
+ * 
+ * @param {Object} config - Configuración del modal
+ * @param {string} config.contenedorId - ID del contenedor de la lista (ej: '#listaInstrumentos')
+ * @param {string} config.itemClass - Clase CSS de los items (ej: '.instrumento-item')
+ * @param {string} config.btnConfirmarId - ID del botón confirmar (ej: '#btnConfirmarInstrumento')
+ * @param {string} config.tipoModal - Tipo de modal ('instrumentos'|'transferencia'|'vale'|'cupon')
+ * @returns {boolean} - true si se seleccionó un item, false si no hay items
+ */
+function seleccionarPrimerItemAutomatico(config) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🎯 SELECCIONAR PRIMER ITEM AUTOMÁTICO v21.0');
+    console.log(`   Modal: ${config.tipoModal}`);
+    console.log(`   Contenedor: ${config.contenedorId}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Obtener todos los items visibles y no deshabilitados
+    const $items = $(`${config.contenedorId} ${config.itemClass}:visible:not(.disabled)`);
+
+    console.log(`   📊 Items encontrados: ${$items.length}`);
+
+    // ❷ Validar que existan items
+    if ($items.length === 0) {
+        console.warn('   ⚠️ No hay items disponibles para seleccionar');
+
+        // Deshabilitar botón confirmar
+        $(config.btnConfirmarId).prop('disabled', true);
+
+        return false;
+    }
+
+    // ❸ Obtener el primer item
+    const $primerItem = $items.first();
+
+    console.log('   ✅ Primer item encontrado:');
+    console.log(`      ID: ${$primerItem.data('instrumento-id') || $primerItem.data('banco-id') || $primerItem.data('vale-id') || $primerItem.data('cupon-id')}`);
+
+    // ❹ Limpiar selecciones previas
+    $items.removeClass('selected active');
+
+    // ❺ Seleccionar el primer item
+    $primerItem.addClass('selected');
+
+    // ❻ Habilitar botón confirmar
+    $(config.btnConfirmarId).prop('disabled', false);
+
+    // ❼ Guardar datos según el tipo de modal
+    switch (config.tipoModal) {
+        case 'instrumentos':
+            // Para modal de instrumentos (monedas)
+            window._instrumentoSeleccionado = {
+                ins_id: $primerItem.data('instrumento-id'),
+                ins_desc: $primerItem.data('instrumento-desc'),
+                ins_simbolo: $primerItem.data('instrumento-simbolo'),
+                tiene_detalle: $primerItem.data('instrumento-tiene-detalle'),
+                total_actual: $primerItem.data('instrumento-total')
+            };
+            console.log('   💾 _instrumentoSeleccionado guardado');
+            break;
+
+        case 'transferencia':
+        case 'vale':
+        case 'cupon':
+            // Para otros modales (no requieren guardar en variable global)
+            console.log('   ℹ️ Modal tipo secundario - No requiere variable global');
+            break;
+
+        default:
+            console.warn(`   ⚠️ Tipo de modal desconocido: ${config.tipoModal}`);
+            break;
+    }
+
+    // ❽ Scroll al item (opcional)
+    if ($primerItem[0]) {
+        $primerItem[0].scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest'
+        });
+        console.log('   📜 Scroll realizado al primer item');
+    }
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('✅ PRIMER ITEM SELECCIONADO CORRECTAMENTE');
+    console.log('═══════════════════════════════════════════════════');
+
+    return true;
+}

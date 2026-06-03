@@ -7,10 +7,15 @@
     Modal para seleccionar el tipo de instrumento de pago (Efectivo, Cheque, 
     Tarjetas, Transferencias, etc.) antes de ingresar los detalles del valor.
 
-    INTERACCIÓN:
-    - Selección por DOBLE CLIC sobre el ítem
-    - Ítem seleccionado se resalta en azul
-    - Al confirmar, se abre el modal específico según el tipo elegido
+    ✅ ACTUALIZADO v20.7: Selección con UN SOLO CLICK
+    - Usuario hace click → Opción se confirma automáticamente
+    - Botón "Confirmar" ocultado (no es necesario)
+    - Mejora UX: Elimina click extra innecesario
+
+    INTERACCIÓN v20.7:
+    - Selección por UN SOLO CLIC sobre el ítem
+    - Ítem seleccionado se resalta brevemente en azul
+    - Automáticamente se abre el modal específico según el tipo elegido
 
     EVENTOS:
     - Todos los eventos manejados en pagoFactura.js
@@ -24,7 +29,7 @@
 }
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- MODAL: TIPO DE MEDIO DE PAGO -->
+<!-- MODAL: TIPO DE MEDIO DE PAGO v20.7 -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
 
 <div class="modal fade" 
@@ -36,7 +41,7 @@
      data-bs-backdrop="static" 
      data-bs-keyboard="false">
 
-    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 700px;">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 550px;">
         <div class="modal-content modal-golden">
 
             <!-- ═══════════════════════════════════════════════════════ -->
@@ -100,7 +105,8 @@
             </div>
 
             <!-- ═══════════════════════════════════════════════════════ -->
-            <!-- FOOTER -->
+            <!-- ✅ FOOTER ACTUALIZADO v20.7 -->
+            <!-- Botón "Confirmar" ocultado (no necesario con selección 1-click) -->
             <!-- ═══════════════════════════════════════════════════════ -->
 
             <div class="modal-footer bg-light">
@@ -110,8 +116,10 @@
                     <i class="bx bx-x me-1"></i>
                     Cancelar
                 </button>
+                
+                <!-- ✅ OCULTADO v20.7: Botón confirmar (selección ahora es con 1 click) -->
                 <button type="button" 
-                        class="btn btn-golden" 
+                        class="btn btn-golden d-none" 
                         id="btnConfirmarTipoMedioPago" 
                         disabled>
                     <i class="bx bx-check me-1"></i>
