@@ -1287,21 +1287,6 @@ function formatearNumero(numero, decimales = 2) {
 }
 
 /**
- * Escapa caracteres HTML para prevenir XSS
- */
-function escapeHtml(texto) {
-    if (!texto) return '';
-    const map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
-    };
-    return texto.replace(/[&<>"']/g, m => map[m]);
-}
-
-/**
  * Muestra mensaje de error
  */
 function mostrarMensajeError(mensaje) {
@@ -1386,23 +1371,25 @@ function redondear(valor, decimales = 2) {
 }
 
 /**
- * ✅ ACTUALIZADO v10.0: Formatea un número con separadores de miles y decimales
- * NUEVO: Usa redondear() internamente para garantizar precisión
+ * ✅ ACTUALIZADO v22.0: Formatea número al estilo GeConnect (en-US)
+ * CAMBIO CRÍTICO: Reemplazado 'es-AR' por 'en-US'
  * 
- * @param {number|string} numero - Número a formatear
+ * Formato GeConnect:
+ * - Separador de miles: , (coma)
+ * - Separador decimal: . (punto)
+ * - Ejemplo: 1,234.56
+ * 
+ * @param {number} numero - Número a formatear
  * @param {number} decimales - Cantidad de decimales (default: 2)
  * @returns {string} - Número formateado (ej: "1,234.56")
- * 
- * @example
- * formatearNumero(109911.35999999999, 2) → "109,911.36"
- * formatearNumero(1234.5, 2) → "1,234.50"
  */
 function formatearNumero(numero, decimales = 2) {
-    // ❶ Redondear primero (garantiza precisión)
-    const numeroRedondeado = redondear(numero, decimales);
+    if (isNaN(numero)) {
+        console.warn(`⚠️ formatearNumero: entrada inválida (${numero})`);
+        return '0.00';
+    }
 
-    // ❷ Formatear con toLocaleString
-    return numeroRedondeado.toLocaleString('en-US', {
+    return parseFloat(numero).toLocaleString('en-US', {
         minimumFractionDigits: decimales,
         maximumFractionDigits: decimales
     });

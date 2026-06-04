@@ -3,15 +3,18 @@
     Modal de Detalle - Cupón/Orden de Empresa (Mutuales)
     ═══════════════════════════════════════════════════════════════
 
-    CAMBIOS v20.4:
-    - ✅ Campo Titular → readonly (se carga desde cliente actual)
-    - ✅ Campo CUIT → readonly (se carga desde cliente actual)
-    - ✅ Validación de CUIT según tipo de cliente (CR/CF)
+    ✅ ACTUALIZADO v24.3 - CORRECCIÓN CRÍTICA: InputMask removido
+    
+    CAMBIOS v24.3:
+    - Input de monto SIN InputMask (conflicto con teclado digital)
+    - Formato minimalista: type="text" + inputmode="decimal"
+    - Parseo manual en JavaScript con parseFloat()
+    - Validación nativa HTML5
+    
+    PROBLEMA RESUELTO:
+    - Teclado digital escribía números al revés (327 → 723)
+    - InputMask interfería con el orden de entrada de dígitos
 *@
-
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- MODAL: DETALLE CUPÓN EMPRESA v20.4 -->
-<!-- ═══════════════════════════════════════════════════════════════ -->
 
 <div class="modal fade"
      id="modalDetalleCuponEmpresa"
@@ -25,14 +28,10 @@
     <div class="modal-dialog modal-dialog-centered modal-dialog-elevated" role="document" style="max-width: 650px;">
         <div class="modal-content modal-golden">
 
-            <!-- ═══════════════════════════════════════════════════════ -->
-            <!-- HEADER -->
-            <!-- ═══════════════════════════════════════════════════════ -->
-
             <div class="modal-header bg-gradient-golden">
                 <h5 class="modal-title" id="modalDetalleCuponEmpresaLabel">
                     <i class="bx bx-purchase-tag me-2"></i>
-                    Detalle - Orden/Cupón de Empresa
+                    Detalle - Cupón/Orden de Empresa
                 </h5>
                 <button type="button"
                         class="btn-close"
@@ -40,117 +39,125 @@
                         aria-label="Cerrar"></button>
             </div>
 
-            <!-- ═══════════════════════════════════════════════════════ -->
-            <!-- BODY -->
-            <!-- ═══════════════════════════════════════════════════════ -->
-
             <div class="modal-body">
 
                 <form id="formDetalleCuponEmpresa">
 
-                    <!-- Información del Instrumento Seleccionado -->
+                    <!-- Información de la Empresa Seleccionada -->
                     <div class="alert alert-info d-flex align-items-center mb-3">
                         <i class="bx bx-info-circle me-2"></i>
-                        <div>
-                            <strong>Órdenes / Cupones de Empresas</strong>
-                            <span class="mx-2">|</span>
-                            <span id="lblEmpresaSeleccionada">-</span>
+                        <div class="w-100">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Mutuales/Órdenes de Compra</strong>
+                                    <span class="mx-2">|</span>
+                                    <span id="lblEmpresaSeleccionada">-</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- ✅ ACTUALIZADO v20.4: Campo Titular (readonly) -->
+                    <!-- Campo Oculto: ID de la Empresa -->
+                    <input type="hidden" id="hdnEmpresaIdCupon" name="empresaId">
+
+                    <!-- Campo: Titular (readonly - auto desde cliente) -->
                     <div class="mb-3">
                         <label for="txtTitularCupon" class="form-label fw-bold">
-                            Titular <span class="text-danger">*</span>
-                            <small class="text-muted fw-normal">(Cliente actual)</small>
+                            <i class="bx bx-user"></i> Titular <span class="text-danger">*</span>
                         </label>
                         <div class="input-group">
-                            <span class="input-group-text">
+                            <span class="input-group-text bg-golden text-white">
                                 <i class="bx bx-user"></i>
                             </span>
                             <input type="text"
-                                   class="form-control bg-light"
+                                   class="form-control"
                                    id="txtTitularCupon"
                                    name="titular"
-                                   placeholder="Se cargará automáticamente"
-                                   required
-                                   readonly>
+                                   readonly
+                                   required>
                         </div>
                         <small class="form-text text-muted">
-                            <i class="bx bx-lock-alt"></i>
-                            Campo automático - No editable
+                            <i class="bx bx-info-circle"></i> Nombre del titular (obtenido del cliente actual)
                         </small>
                     </div>
 
-                    <!-- Campo: Nro de Orden (sin cambios) -->
+                    <!-- Campo: Nro de Orden -->
                     <div class="mb-3">
                         <label for="txtNroOrdenCupon" class="form-label fw-bold">
-                            Nro de Orden <span class="text-danger">*</span>
+                            <i class="bx bx-hash"></i> Nro de Orden <span class="text-danger">*</span>
                         </label>
                         <div class="input-group">
-                            <span class="input-group-text">
+                            <span class="input-group-text bg-golden text-white">
                                 <i class="bx bx-hash"></i>
                             </span>
                             <input type="text"
-                                   class="form-control"
+                                   class="form-control text-uppercase jsteclado"
                                    id="txtNroOrdenCupon"
                                    name="numeroOrden"
-                                   placeholder="Número de orden/cupón"
-                                   required>
+                                   placeholder="Ej: 1234567890"
+                                   maxlength="10"
+                                   required
+                                   autocomplete="off"
+                                   autofocus>
                         </div>
+                        <small class="form-text text-muted">
+                            <i class="bx bx-info-circle"></i> Número de la orden/cupón (máximo 10 dígitos)
+                        </small>
                     </div>
 
-                    <!-- ✅ ACTUALIZADO v20.4: Campo CUIT (readonly) -->
+                    <!-- Campo: CUIT (readonly - auto desde cliente) -->
                     <div class="mb-3">
                         <label for="txtCuitCupon" class="form-label fw-bold">
-                            CUIT <span class="text-danger">*</span>
-                            <small class="text-muted fw-normal">(Del cliente actual)</small>
+                            <i class="bx bx-id-card"></i> CUIT <span class="text-danger">*</span>
                         </label>
                         <div class="input-group">
-                            <span class="input-group-text">
+                            <span class="input-group-text bg-golden text-white">
                                 <i class="bx bx-id-card"></i>
                             </span>
                             <input type="text"
-                                   class="form-control bg-light"
+                                   class="form-control"
                                    id="txtCuitCupon"
                                    name="cuit"
-                                   placeholder="Se cargará automáticamente"
-                                   maxlength="13"
-                                   required
-                                   readonly>
+                                   readonly
+                                   required>
                         </div>
-                        <!-- ✅ NUEVO: Área para mensajes dinámicos -->
-                        <div id="msgCuitCupon" class="form-text" style="display: none;">
-                            <!-- Se llenará dinámicamente con JavaScript -->
-                        </div>
+                        <small class="form-text" id="msgCuitCupon" style="display: none;">
+                            <!-- Mensaje dinámico según validación -->
+                        </small>
                     </div>
 
-                    <!-- Campo: Monto (sin cambios) -->
+                    <!-- ═══════════════════════════════════════════════════════ -->
+                    <!-- ✅ CAMPO MONTO CORREGIDO v24.3: SIN InputMask -->
+                    <!-- ═══════════════════════════════════════════════════════ -->
                     <div class="mb-3">
                         <label for="txtMontoCupon" class="form-label fw-bold">
-                            Monto <span class="text-danger">*</span>
+                            <i class="bx bx-dollar"></i> Monto <span class="text-danger">*</span>
                         </label>
-                        <div class="input-group">
-                            <span class="input-group-text">
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-golden text-white">
                                 <i class="bx bx-dollar"></i>
                             </span>
+                            <!-- ✅ CORREGIDO v24.3: Input MINIMALISTA SIN InputMask -->
                             <input type="text"
-                                   class="form-control form-control-lg text-end"
+                                   class="form-control form-control-lg text-end jsteclado jsdecimal"
                                    id="txtMontoCupon"
                                    name="monto"
-                                   placeholder="$ 0,00"
+                                   placeholder="0.00"
+                                   inputmode="decimal"
+                                   pattern="[0-9]*\.?[0-9]{0,2}"
+                                   step="0.01"
+                                   min="0.01"
                                    required
                                    autocomplete="off">
                         </div>
+                        <small class="form-text text-muted">
+                            <i class="bx bx-info-circle"></i> Importe del cupón/orden
+                        </small>
                     </div>
 
                 </form>
 
             </div>
-
-            <!-- ═══════════════════════════════════════════════════════ -->
-            <!-- FOOTER -->
-            <!-- ═══════════════════════════════════════════════════════ -->
 
             <div class="modal-footer bg-light">
                 <button type="button"
@@ -170,6 +177,3 @@
         </div>
     </div>
 </div>
-
-<!-- Hidden fields -->
-<input type="hidden" id="hdnEmpresaIdCupon" name="empresaId" />

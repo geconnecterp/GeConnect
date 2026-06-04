@@ -7155,3 +7155,42 @@ input, select, textarea, button, checkbox, radio {
 #modalInstrumentosCuponEmpresa ~ .modal-backdrop {
     z-index: 5099 !important;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   ✅ NUEVO v24.0: ESTILOS PARA TOOLTIP EN IMPORTE
+   ═══════════════════════════════════════════════════════════ */
+
+/* Tooltip personalizado para observaciones */
+.tooltip.bs-tooltip-auto[data-popper-placement^=top] .tooltip-arrow::before,
+.tooltip.bs-tooltip-top .tooltip-arrow::before {
+    border-top-color: #28a745; /* ← Verde (match con texto-success) */
+}
+
+.tooltip-inner {
+    max-width: 300px; /* ← Ancho máximo del tooltip */
+    text-align: left; /* ← Alinear texto a la izquierda */
+    padding: 8px 12px; /* ← Espaciado interno */
+    font-size: 0.875rem; /* ← Tamaño de fuente */
+    background-color: #28a745; /* ← Verde */
+    border-radius: 6px; /* ← Bordes redondeados */
+}
+
+/* Animación suave al mostrar tooltip */
+.tooltip {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+    .tooltip.show {
+        opacity: 1;
+    }
+
+/* Indicador visual en el importe (línea punteada) */
+span[data-bs-toggle="tooltip"] {
+    transition: all 0.2s ease;
+}
+
+    span[data-bs-toggle="tooltip"]:hover {
+        color: #218838 !important; /* ← Verde más oscuro al hover */
+        transform: scale(1.05); /* ← Efecto de zoom sutil */
+    }
