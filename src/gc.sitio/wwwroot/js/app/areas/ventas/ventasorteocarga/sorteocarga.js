@@ -1,4 +1,5 @@
-﻿let soSorteoSeleccionado = null;
+﻿let _pedidoLoading = false;
+let soSorteoSeleccionado = null;
 
 $(function () {
 	InicializaPantallaPedido();
@@ -29,7 +30,6 @@ function InicializaEventosSorteos() {
 	});
 }
 
-let _pedidoLoading = false;
 function buscarSorteos(pag = 1) {
 	if (_pedidoLoading) return;
 	_pedidoLoading = true;
@@ -42,7 +42,7 @@ function buscarSorteos(pag = 1) {
 			$("#divDetalle").html(html).collapse("show");
 			$("#divFiltro").collapse("hide");
 
-			//configurarEventosSeleccionPedido();
+			configurarEventosSeleccionDeSorteo();
 
 			CerrarWaiting();
 			PostGen({}, buscarMetadataURL, function (obj) {
@@ -67,6 +67,66 @@ function buscarSorteos(pag = 1) {
 		_pedidoLoading = false;
 	}
 }
+
+function configurarEventosSeleccionDeSorteo() {
+	$(document).off("click", "#tbGridSorteo tbody tr");
+	$(document).off("dblclick", "#tbGridSorteo tbody tr");
+
+	$(document).on("click", "#tbGridSorteo tbody tr", function (e) {
+
+		if (!$(e.target).is("button, a, .btn, i")) {
+
+			const $this = $(this);
+
+			// Quitar selección previa
+			$("#tbGridSorteo tbody tr").removeClass("selected-row");
+
+			// Marcar fila seleccionada
+			$this.addClass("selected-row");
+
+			// Guardar valor seleccionado
+			soSorteoSeleccionado = $this.data("so-sorteo");
+
+			// Habilitar botón imprimir
+			if (soSorteoSeleccionado) {
+				$("#btnImprimir").prop("disabled", false).show();
+			}
+		}
+	});
+
+	// ============================
+	// DOBLE‑CLICK → Cargar datos + achicar grid
+	// ============================
+	$(document).on("dblclick", "#tbGridSorteo tbody tr", function (e) {
+
+		if (!$(e.target).is("button, a, .btn, i")) {
+
+			const $this = $(this);
+			const soSorteo = $this.data("so-sorteo");
+
+			if (!soSorteo) return;
+
+			// Ejecutar funciones de carga
+			let data = { so_sorteo: soSorteo };
+			//cargarReporteEnArre(62, data, "Pedido de Cliente", "", "");
+			cargarSorteoDatos(soSorteo);
+			//cargarProductosSorteo(soSorteo);
+
+			// Achicar grid
+			const $grid = $("#divSorteo");
+			if (!$grid.hasClass("table-wrapper-100")) {
+				$grid.removeClass("table-wrapper-full").addClass("table-wrapper-small");
+			}
+
+			// Reposicionar fila seleccionada
+			setTimeout(() => {
+				posicionarRegOnTop($this, ".table-wrapper-small");
+			}, 200);
+		}
+	});
+}
+
+function cargarSorteoDatos(soSorteo) { }
 
 function buildQueryFilters(pag) {
 	const usaPeriodo = $("#chkDesdeHasta").is(":checked");

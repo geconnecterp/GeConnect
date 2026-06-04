@@ -6,11 +6,34 @@
 	string clase = string.Empty;
 }
 <style>
+	#divSorteo {
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.tabla-desactivada {
+		pointer-events: none;
+		opacity: 0.5;
+	}
+
+	.disabled-row {
+		cursor: not-allowed !important;
+	}
+
+	.table-wrapper-full {
+		max-height: calc(100vh - 250px); /* ajustá 250px según lo que ocupe tu header, filtros, etc */
+		overflow-y: auto;
+	}
+
+	.table-wrapper-small {
+		max-height: 150px !important; /* o el tamaño que quieras */
+		overflow-y: auto;
+	}
 </style>
 <div class="grid-golden h-100">
 	<div class="grid-golden-body p-1">
-		<div id="divPedido" class="table-responsive table-wrapper-full w-75">
-			<table class="table table-sm table-hover mb-0 table-golden" id="tbGridPedido">
+		<div id="divSorteo" class="table-responsive table-wrapper-full w-75">
+			<table class="table table-sm table-hover mb-0 table-golden" id="tbGridSorteo">
 				<thead class="sticky-top table-golden-header-compact">
 					<tr class="header">
 						<th class="text-center th-compact">ID</th>

@@ -1486,45 +1486,6 @@ function configurarEventosSeleccionPedido() {
     configurarEventosEliminacionProducto();
 }
 
-//function configurarEventosSeleccionPedido() {
-//    $(document).off("click", "#tbGridPedido tbody tr");
-//    $(document).on("click", "#tbGridPedido tbody tr", function (e) {
-//        if (!$(e.target).is("button, a, .btn, i")) {
-//            var $this = $(this);
-//            var fueSeleccionado = $this.hasClass("selected-row");
-
-//            $("#tbGridPedido tbody tr").removeClass("selected-row");
-
-//            if (!fueSeleccionado) {
-//                $this.addClass("selected-row");
-//                let pcCompte = $this.data("pc-compte");
-//                pcCompteSeleccionado = pcCompte;
-//                if (pcCompte) {
-//                    $("#btnImprimir").prop("disabled", false).show();
-//                    let data = { pc_compte: pcCompte };
-//                    cargarReporteEnArre(62, data, "Pedido de Cliente", "", "");
-//                    cargarPedidoDatos(pcCompte);
-//                    cargarProductosPedido(pcCompte);
-//                }
-//            }
-
-//            //achico el tamaño del grid
-//            const $grid = $("#divPedido");
-//            var gridAchicado = $grid.hasClass("table-wrapper-100");
-//            if (!gridAchicado) {
-//                $grid.removeClass("table-wrapper-300").addClass("table-wrapper-100")
-//            }
-//            setTimeout(() => {
-//                ///posiciona el select en la parte visual del grid al achicarlo
-//                posicionarRegOnTop($this, ".table-wrapper-100");
-//            }, 200);
-
-//        }
-//    });
-//    //configurando los eventos para el boton que elimina el registro.
-//    configurarEventosEliminacionProducto();
-//}
-
 let pcCompteSeleccionado = null;
 
 function cargarPedidoDatos(pcCompte) {
