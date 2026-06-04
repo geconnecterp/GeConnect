@@ -1,12 +1,15 @@
 ﻿using gc.api.Controllers.OrdenReparto;
 using gc.api.core.Contratos.Servicios;
+using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenReparto;
+using gc.infraestructura.Dtos.Productos.Pedidos;
 using gc.infraestructura.Dtos.Users;
 using gc.infraestructura.Dtos.Ventas;
 using gc.infraestructura.Dtos.Ventas.Request;
+using gc.infraestructura.Dtos.Ventas.Request.Sorteo;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -415,6 +418,82 @@ namespace gc.api.Controllers.Ventas
 			response = new ApiResponse<List<AnaValDeVtaDetCBDto>>(res);
 
 			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<SorteoCargaListaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult BuscarSorteosLista(QueryFilters filtro)
+		{
+			const string msgError = "Error en la invocación de la API - Búsqueda de Sorteos";
+			try
+			{
+				if (filtro == null)
+					return BadRequest("No se recepcionó el filtro de la búsqueda de Sorteos.");
+
+				var request = MapToRequest(filtro);
+				var resultados = _iApiVentasServicio.ObtenerSorteoLista(request);
+
+				var response = new ApiResponse<List<SorteoCargaListaDto>>(resultados)
+				{
+					Meta = BuildMetadata(resultados, filtro)
+				};
+
+				return Ok(response);
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, msgError);
+				return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
+			}
+		}
+
+		private static MetadataGrid? BuildMetadata(List<SorteoCargaListaDto>? lista, QueryFilters filtro)
+		{
+			if (lista == null || lista.Count == 0)
+			{
+				return new MetadataGrid
+				{
+					TotalCount = 0,
+					PageSize = filtro.Registros ?? 0,
+					CurrentPage = filtro.Pagina ?? 0,
+					TotalPages = 0,
+					HasNextPage = false,
+					HasPreviousPage = false,
+					NextPageUrl = null,
+					PreviousPageUrl = null
+				};
+			}
+
+			var reg = lista[0];
+			var pageSize = filtro.Registros ?? 0;
+			var currentPage = filtro.Pagina ?? 0;
+			var totalCount = reg.total_registros;
+			var totalPages = reg.total_paginas;
+
+			return new MetadataGrid
+			{
+				TotalCount = totalCount,
+				PageSize = pageSize,
+				CurrentPage = currentPage,
+				TotalPages = totalPages,
+				HasNextPage = currentPage < totalPages,
+				HasPreviousPage = currentPage > 1,
+				NextPageUrl = null,
+				PreviousPageUrl = null
+			};
+		}
+
+		private static SorteoCargaListaRequest MapToRequest(QueryFilters filtro)
+		{
+			return new SorteoCargaListaRequest
+			{
+				Registros = filtro.Registros ?? 0,
+				Pagina = filtro.Pagina ?? 0,
+				Desde = filtro.FechaD ?? DateTime.MinValue,
+				Hasta = filtro.FechaH ?? DateTime.MaxValue,
+			};
 		}
 	}
 }

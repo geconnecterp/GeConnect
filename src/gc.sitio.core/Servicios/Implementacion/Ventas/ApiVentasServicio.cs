@@ -1,10 +1,12 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos.Pedidos;
 using gc.infraestructura.Dtos.Users;
 using gc.infraestructura.Dtos.Ventas;
 using gc.infraestructura.Dtos.Ventas.Request;
@@ -45,6 +47,9 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string GET_ANA_DE_VAL_DE_VTA_DET_DIA = "/ObtenerAnaDeValDeVtaDetDiarioLista";
 		private const string GET_ANA_DE_VAL_DE_VTA_DET_PV = "/ObtenerAnaDeValDeVtaDetPVLista";
 		private const string GET_ANA_DE_VAL_DE_VTA_DET_CB = "/ObtenerAnaDeValDeVtaDetCBLista";
+
+		private const string SORTEOS_LISTA = "/BuscarSorteosLista";
+		
 
 		public ApiVentasServicio(IOptions<AppSettings> options, ILogger<ApiVentasServicio> logger) : base(options, logger, RutaAPI)
 		{
@@ -1246,6 +1251,51 @@ namespace gc.sitio.core.Servicios.Implementacion
 				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
 				return new();
+			}
+		}
+
+		public async Task<RespuestaGenerica<SorteoCargaListaDto>> BuscarSorteosLista(QueryFilters filtro, string token)
+		{
+			try
+			{
+				var helper = new HelperAPI();
+				var client = helper.InicializaCliente(filtro, token, out StringContent contentData);
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{SORTEOS_LISTA}";
+
+				using var response = await client.PostAsync(link, contentData);
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					var stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+					}
+
+					var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<SorteoCargaListaDto>>>(stringData);
+					if (apiResponse == null || apiResponse.Data == null)
+					{
+						return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+					}
+
+					return new RespuestaGenerica<SorteoCargaListaDto>
+					{
+						Ok = true,
+						Mensaje = "OK",
+						ListaEntidad = apiResponse.Data,
+						Meta = apiResponse.Meta ?? new()
+					};
+				}
+				else
+				{
+					var msg = await ReadApiErrorAsync(response);
+					_logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+					return new() { Ok = false, Mensaje = msg };
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+				return new() { Ok = false, Mensaje = "Error al buscar Sorteos" };
 			}
 		}
 	}

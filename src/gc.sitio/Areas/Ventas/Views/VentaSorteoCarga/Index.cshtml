@@ -1,0 +1,72 @@
+﻿@using gc.infraestructura.Dtos.Almacen
+@model FiltroVtaSorteoCargaModel
+@{
+	var filtro = new QueryFilters() { Modelo = ModeloFilter.VENTA_SORTEO_CARGA, Rel01 = [], Rel02 = [], Rel03 = [], Rel04 = [] };
+	List<ProductoListaDto> listaVacia = new();
+	Layout = "~/views/shared/_Layout.cshtml";
+}
+@section styles {
+	<link rel="stylesheet" href="~/css/simplePagination.css" />
+	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+}
+<style>
+</style>
+<partial name="_botonera" model="filtro" />
+<div class="collapse" id="divFiltro">
+	<div class="d-flex justify-content-center">
+		<partial name="_filtros" model="Model" />
+	</div>
+	@Html.Hidden("pagEstado", false)
+</div>
+<div class="collapse" id="divDetalle"></div>
+
+<div class="row mt-2 py-1">
+	<div class="col-5" id="divPedDatos" style="display:none">
+	</div>
+	<div class="col-7" id="divPedProds" style="display:none">
+	</div>
+</div>
+<div id="modalGestorDocumental"></div>
+<partial name="~/areas/controlcomun/views/producto/busquedaadvanceV02.cshtml" model="@listaVacia" />
+
+@section scripts {
+	<script type="text/javascript">
+		let totalRegs = 0;
+		let pagRegs = 0;
+		let pags = 0;
+		let pagina = 1;
+		let search = "";
+
+		var buscarSorteoListaUrl = "@Url.Action("BuscarSorteoLista", "ventasorteocarga", new { area = "Ventas" })";
+		let buscarMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "ventasorteocarga", new { area = "Ventas" })';
+		let homePedido = '@Url.Action("index", "ventasorteocarga", new { area = "Ventas" })';
+		// var obtenerPedidoDatosUrl = "@Url.Action("ObtenerPedidoDatos", "pedidodecliente", new { area = "Distribuidora" })";
+		// var obtenerPedidoProductoUrl = "@Url.Action("ObtenerPedidoProducto", "pedidodecliente", new { area = "Distribuidora" })";
+		// var nuevoPedidoUrl =  "@Url.Action("NuevoPedido", "pedidodecliente", new { area = "Distribuidora" })";
+		
+		// var confirmarPedidoUrl = "@Url.Action("ConfirmarPedido", "pedidodecliente", new { area = "Distribuidora" })";
+
+		//funcionalidad busqueda avanzada controlador común
+		let productoBase = null; //se hidrata en busquedas.
+		let p_id_selected = "";
+		let funcionBusquedaAvanzada = true;
+		let busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
+		let busquedaAvanzadaUrl = "@Url.Action("BusquedaAvanzadaV02", "producto", new { area = "ControlComun" })";
+		let busquedaAvanzadaModalUrl = "@Url.Action("BusquedaAvanzadaV02", "producto", new { area = "ControlComun" })";
+
+		// Gestor de impresión
+		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+		var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+		var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+		var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "GestorImpresion", new { area = "ControlComun" })";
+	</script>
+	<script src="~/js/plugins/jquery.simplePagination.js"></script>
+	<script src="~/js/app/siteGen.js"></script>@**@
+	<script src="~/lib/jstree/jstree.min.js"></script>
+	<script src="~/js/app/areas/docmngr/docmanager.js"></script>
+
+	<script src="~/js/app/busquedasV02.js"></script>
+	<script src="~/js/app/areas/ventas/ventasorteocarga/sorteocarga.js" type="text/javascript"></script>
+}

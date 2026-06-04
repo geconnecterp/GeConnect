@@ -3,8 +3,10 @@ using gc.api.core.Contratos.Servicios;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos.Pedidos;
 using gc.infraestructura.Dtos.Ventas;
 using gc.infraestructura.Dtos.Ventas.Request;
+using gc.infraestructura.Dtos.Ventas.Request.Sorteo;
 using Microsoft.Data.SqlClient;
 
 namespace gc.api.core.Servicios
@@ -472,6 +474,35 @@ namespace gc.api.core.Servicios
 
 			var result = _repository.EjecutarLstSpExt<AnaValDeVtaDetCBDto>(sp, ps, true);
 			return result;
+		}
+
+		public List<SorteoCargaListaDto> ObtenerSorteoLista(SorteoCargaListaRequest req)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_SORTEOS_LISTA;
+
+			var ps = new List<SqlParameter>();
+
+			if (req.Desde != default && req.Hasta != default)
+			{
+				ps.Add(new SqlParameter("@desde", req.Desde));
+				ps.Add(new SqlParameter("@hasta", req.Hasta));
+			}
+			else
+			{
+				ps.Add(new SqlParameter("@f", false));
+			}
+
+			ps.Add(new SqlParameter("@registros", req.Registros));
+			ps.Add(new SqlParameter("@pagina", req.Pagina));
+
+			foreach (var p in ps)
+			{
+				Console.WriteLine($"{p.ParameterName} = {p.Value}");
+			}
+
+			var pedidos = _repository.EjecutarLstSpExt<SorteoCargaListaDto>(sp, ps, true);
+
+			return pedidos;
 		}
 	}
 }

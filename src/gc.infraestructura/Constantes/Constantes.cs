@@ -100,6 +100,8 @@ namespace gc.infraestructura.Constantes
 			public const string ORDEN_DE_REPARTO = "ORDEN_DE_REPARTO";
 			public const string CAJA_CORRECCION_VALORES = "CAJA_CORRECCION_VALORES";
 			public const string CAJA_CORRECCION_CUSTODIA = "CAJA_CORRECCION_CUSTODIA";
+
+			public const string VENTA_SORTEO_CARGA = "VENTA_SORTEO_CARGA";
 		}
     }
 }

@@ -1,0 +1,79 @@
+﻿@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<SorteoCargaListaDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+</style>
+<div class="grid-golden h-100">
+	<div class="grid-golden-body p-1">
+		<div id="divPedido" class="table-responsive table-wrapper-full w-75">
+			<table class="table table-sm table-hover mb-0 table-golden" id="tbGridPedido">
+				<thead class="sticky-top table-golden-header-compact">
+					<tr class="header">
+						<th class="text-center th-compact">ID</th>
+						<th class="text-center th-compact">Descripción</th>
+						<th class="text-center th-compact">Desde</th>
+						<th class="text-center th-compact">Hasta</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model?.ListaDatos?.Any() == true)
+					{
+						foreach (var item in Model.ListaDatos)
+						{
+							if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+							<tr class="@clase"
+								data-so-sorteo="@item.so_sorteo"
+								data-cta-id="@item.cta_id">
+								<td class="text-center">
+									@item.so_sorteo
+								</td>
+								<td class="text-start">
+									@item.so_desc
+								</td>
+								<td class="text-center">
+									@item.so_desde.ToString("dd/MM/yy")
+								</td>
+								<td class="text-center">
+									@item.so_hasta.ToString("dd/MM/yy")
+								</td>
+							</tr>
+						}
+					}
+					else
+					{
+						<tr>
+							<td colspan="4" class="text-center text-muted py-2">
+								<i class="bx bx-info-circle me-1"></i>No hay sorteos disponibles
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+		@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Any())
+		{
+			<div class="d-flex justify-content-between align-items-center mt-3 px-2">
+				<div class="text-muted small">
+					<i class="bx bx-store me-1"></i>
+					Total: @Model.CantidadReg Sorteos disponibles
+				</div>
+				<div class="text-muted small">
+					@*  <span id="canalesSeleccionados">0</span> canales seleccionados *@
+				</div>
+				<div class="text-muted small">
+					@Model.DatoAux01
+				</div>
+			</div>
+		}
+	</div>
+</div>
+<div class="row">
+	<div class="offset-md-3 col-md-6">
+		<div id="divPaginacion">
+		</div>
+	</div>
+</div>

@@ -61,6 +61,10 @@
 			public const string SP_VTAS_PV_CTL_ENTREGAS_ANULAR = "SPGECO_Vtas_PV_CTL_Entregas_Anular";
 			#endregion
 
+			#region Sorteos (Ventas)
+			public const string SP_SORTEOS_LISTA = "SPGECO_Sorteos_lista";
+			#endregion
+
 			#region Análisis de Ventas
 			public const string SP_E_AV_MES = "SPGECO_E_AV_mes";
 			public const string SP_E_AV_DIAS = "SPGECO_E_AV_dias";

@@ -1,4 +1,5 @@
-﻿using gc.infraestructura.Dtos.Gen;
+﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Ventas;
 using gc.infraestructura.Dtos.Ventas.Request;
 
@@ -30,5 +31,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<AnaValDeVtaDetDiarioDto> ObtenerAnaDeValDeVtaDetDiarioLista(AnaDeValDeVtaMesRequest request, string token);
 		List<AnaValDeVtaDetPVDto> ObtenerAnaDeValDeVtaDetPVLista(AnaDeValDeVtaMesRequest request, string token);
 		List<AnaValDeVtaDetCBDto> ObtenerAnaDeValDeVtaDetCBLista(AnaDeValDeVtaMesRequest request, string token);
+		Task<RespuestaGenerica<SorteoCargaListaDto>> BuscarSorteosLista(QueryFilters filtro, string token);
 	}
 }

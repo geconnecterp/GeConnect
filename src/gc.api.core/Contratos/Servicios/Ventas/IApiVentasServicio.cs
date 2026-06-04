@@ -2,6 +2,7 @@
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Ventas;
 using gc.infraestructura.Dtos.Ventas.Request;
+using gc.infraestructura.Dtos.Ventas.Request.Sorteo;
 
 namespace gc.api.core.Contratos.Servicios
 {
@@ -31,5 +32,6 @@ namespace gc.api.core.Contratos.Servicios
 		List<AnaValDeVtaDetDiarioDto> ObtenerAnaDeValDeVtaDetDiarioLista(AnaDeValDeVtaMesRequest request);
 		List<AnaValDeVtaDetPVDto> ObtenerAnaDeValDeVtaDetPVLista(AnaDeValDeVtaMesRequest request);
 		List<AnaValDeVtaDetCBDto> ObtenerAnaDeValDeVtaDetCBLista(AnaDeValDeVtaMesRequest request);
+		List<SorteoCargaListaDto> ObtenerSorteoLista(SorteoCargaListaRequest req);
 	}
 }
