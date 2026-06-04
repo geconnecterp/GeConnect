@@ -971,5 +971,293 @@ namespace gc.caja.Controllers
                 return false;
             }
         }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // ✅ NUEVO: SECCIÓN DE VALIDACIÓN DE ESTADO DE PUNTO DE VENTA
+        // ═══════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// ✅ NUEVO v1.0: Clase interna para resultado de validación de PV
+        /// Extiende RespuestaDto con propiedades específicas de la validación
+        /// </summary>
+        protected class ValidacionPVResult
+        {
+            /// <summary>
+            /// Indica si la validación permite continuar con la operación
+            /// </summary>
+            public bool PuedeContinuar { get; set; }
+
+            /// <summary>
+            /// Objeto RespuestaDto del SP (contiene resultado, resultado_msj)
+            /// </summary>
+            public RespuestaDto RespuestaSP { get; set; } = new RespuestaDto();
+
+            /// <summary>
+            /// Tipo de controlador fiscal (ctrl_id)
+            /// </summary>
+            public string CtrlId { get; set; } = string.Empty;
+
+            /// <summary>
+            /// Tipo de llamada realizada ("I" = Inicio, "F" = Finalización)
+            /// </summary>
+            public string TipoLlamada { get; set; } = string.Empty;
+
+            /// <summary>
+            /// Helper: Indica si debe mostrar mensaje al usuario
+            /// </summary>
+            public bool MostrarMensaje => !string.IsNullOrEmpty(RespuestaSP.resultado_msj);
+
+            /// <summary>
+            /// Helper: Indica si es un caso de advertencia (puede continuar pero con mensaje)
+            /// </summary>
+            public bool EsAdvertencia => PuedeContinuar && MostrarMensaje;
+
+            /// <summary>
+            /// Helper: Indica si es un error bloqueante (no puede continuar)
+            /// </summary>
+            public bool EsErrorBloqueante => !PuedeContinuar;
+
+            /// <summary>
+            /// Helper: Acceso directo al código de resultado
+            /// </summary>
+            public short Resultado => RespuestaSP.resultado;
+
+            /// <summary>
+            /// Helper: Acceso directo al mensaje
+            /// </summary>
+            public string Mensaje => RespuestaSP.resultado_msj;
+        }
+
+        /// <summary>
+        /// ✅ NUEVO v1.0: Valida el estado del Punto de Venta según el tipo de controlador fiscal
+        /// Método factorizado reutilizable desde múltiples puntos del flujo de caja
+        /// 
+        /// REGLAS DE NEGOCIO:
+        /// 
+        /// Facturación Electrónica (ctrl_id = "-1"):
+        ///   - 0: OK → Continuar sin mensaje
+        ///   - -1: Error API AFIP → NO continuar
+        ///   - -2: AFIP sin respuesta + sin CAEA → NO continuar
+        ///   - 1: AFIP sin respuesta + CAEA vigente → Continuar CON advertencia
+        /// 
+        /// Controlador Fiscal Hasar 2G (ctrl_id = "50"):
+        ///   - 0: OK → Continuar sin mensaje
+        ///   - -1: No se pudo conectar → NO continuar
+        ///   - 1: Comprobante abierto cancelado → Continuar CON advertencia
+        /// 
+        /// Otro tipo de facturación (ctrl_id != "-1" && != "50"):
+        ///   - 0: OK → Continuar sin mensaje
+        ///   - -1: Error al facturar → NO continuar
+        /// 
+        /// </summary>
+        /// <param name="cajaServicio">Instancia del servicio de caja</param>
+        /// <param name="cajaId">ID de la caja actual</param>
+        /// <param name="ctrlId">ID del tipo de controlador fiscal</param>
+        /// <param name="nroProceso">Número de proceso de la caja</param>
+        /// <param name="nroCierre">Número de cierre de la caja</param>
+        /// <param name="tipoLlamada">"I" = Inicio (al abrir caja), "F" = Finalización (al confirmar pago)</param>
+        /// <returns>ValidacionPVResult con el resultado de la validación</returns>
+        protected async Task<ValidacionPVResult> ValidarEstadoPuntoVenta(
+            ICajaServicio cajaServicio,
+            string cajaId,
+            string ctrlId,
+            string? nroProceso,
+            string? nroCierre,
+            string tipoLlamada)
+        {
+            _logger?.LogInformation("═══════════════════════════════════════════════════");
+            _logger?.LogInformation("🔍 VALIDAR ESTADO PUNTO DE VENTA v1.0");
+            _logger?.LogInformation($"   Usuario: {UserName}");
+            _logger?.LogInformation($"   CajaId: {cajaId}");
+            _logger?.LogInformation($"   CtrlId: {ctrlId}");
+            _logger?.LogInformation($"   NroProceso: {nroProceso}");
+            _logger?.LogInformation($"   NroCierre: {nroCierre}");
+            _logger?.LogInformation($"   TipoLlamada: {tipoLlamada} ({(tipoLlamada == "I" ? "Inicio" : "Finalización")})");
+            _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+            // ❶ Preparar request para el SP
+            var reqEstadoPV = new CajaValidaPVDto
+            {
+                usu_id = UserName,
+                caja_id = cajaId,
+                adm_id = AdministracionId,
+                caja_nro_proceso = nroProceso,
+                caja_nro_cierre = nroCierre,
+                tipo_llamada = tipoLlamada
+            };
+
+            // ❷ Llamar al SP ValidaEstadoPV
+            var estadoPV = await cajaServicio.ValidaEstadoPV(reqEstadoPV, TokenCookie);
+
+            // ❸ Validar respuesta del servicio
+            if (estadoPV == null || !estadoPV.Ok || estadoPV.Entidad == null)
+            {
+                _logger?.LogWarning("❌ No se pudo obtener el estado del punto de venta");
+                _logger?.LogWarning($"   estadoPV.Ok: {estadoPV?.Ok}");
+                _logger?.LogWarning($"   estadoPV.Entidad: {(estadoPV?.Entidad != null ? "Presente" : "Null")}");
+
+                return new ValidacionPVResult
+                {
+                    PuedeContinuar = false,
+                    RespuestaSP = new RespuestaDto
+                    {
+                        resultado = -1,
+                        resultado_msj = estadoPV?.Mensaje ?? "Error al obtener estado del punto de venta."
+                    },
+                    CtrlId = ctrlId,
+                    TipoLlamada = tipoLlamada
+                };
+            }
+
+            // ❹ Log de respuesta exitosa del SP
+            _logger?.LogInformation("✅ Estado del PV obtenido exitosamente");
+            _logger?.LogInformation($"   Resultado: {estadoPV.Entidad.resultado}");
+            _logger?.LogInformation($"   Mensaje: {estadoPV.Entidad.resultado_msj ?? "(vacío)"}");
+            _logger?.LogDebug($"   Entidad completa: {JsonConvert.SerializeObject(estadoPV.Entidad)}");
+
+            // ❺ Análisis del estado según el tipo de controlador
+            bool puedeContinar = false;
+            string mensajeEstadoPV = estadoPV.Entidad.resultado_msj ?? string.Empty;
+            short resultadoEstadoPV = estadoPV.Entidad.resultado;
+
+            _logger?.LogInformation("═══════════════════════════════════════════════════");
+            _logger?.LogInformation($"📊 ANÁLISIS SEGÚN CTRL_ID: {ctrlId}");
+            _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+            switch (ctrlId)
+            {
+                // ═══════════════════════════════════════════════════════════
+                // CASO 1: FACTURACIÓN ELECTRÓNICA (ctrl_id = "-1")
+                // ═══════════════════════════════════════════════════════════
+                case "-1":
+                    _logger?.LogInformation("   Tipo: Facturación Electrónica (AFIP)");
+
+                    switch (resultadoEstadoPV)
+                    {
+                        case 0:
+                            puedeContinar = true;
+                            mensajeEstadoPV = string.Empty;
+                            _logger?.LogInformation("   ✅ Resultado 0: OK - Continuar sin mensaje");
+                            break;
+
+                        case -1:
+                            puedeContinar = false;
+                            _logger?.LogError("   ❌ Resultado -1: No se pudo conectar con API AFIP");
+                            _logger?.LogError($"      Usuario: {UserName}, CajaId: {cajaId}");
+                            break;
+
+                        case -2:
+                            puedeContinar = false;
+                            _logger?.LogError("   ❌ Resultado -2: Servidores AFIP sin respuesta y sin CAEA vigente");
+                            _logger?.LogError($"      Usuario: {UserName}, CajaId: {cajaId}");
+                            break;
+
+                        case 1:
+                            puedeContinar = true;
+                            _logger?.LogWarning("   ⚠️ Resultado 1: Usando CAEA vigente (advertencia)");
+                            _logger?.LogWarning($"      Usuario: {UserName}, CajaId: {cajaId}");
+                            break;
+
+                        default:
+                            puedeContinar = false;
+                            _logger?.LogError($"   ❌ Resultado {resultadoEstadoPV}: Estado desconocido");
+                            _logger?.LogError($"      Usuario: {UserName}, CajaId: {cajaId}");
+                            break;
+                    }
+                    break;
+
+                // ═══════════════════════════════════════════════════════════
+                // CASO 2: CONTROLADOR FISCAL HASAR 2G (ctrl_id = "50")
+                // ═══════════════════════════════════════════════════════════
+                case "50":
+                    _logger?.LogInformation("   Tipo: Controlador Fiscal Hasar 2G");
+
+                    switch (resultadoEstadoPV)
+                    {
+                        case 0:
+                            puedeContinar = true;
+                            mensajeEstadoPV = string.Empty;
+                            _logger?.LogInformation("   ✅ Resultado 0: OK - Continuar sin mensaje");
+                            break;
+
+                        case -1:
+                            puedeContinar = false;
+                            _logger?.LogError("   ❌ Resultado -1: No se pudo conectar con Controlador Fiscal");
+                            _logger?.LogError($"      Usuario: {UserName}, CajaId: {cajaId}");
+                            break;
+
+                        case 1:
+                            puedeContinar = true;
+                            _logger?.LogWarning("   ⚠️ Resultado 1: Comprobante abierto cancelado (advertencia)");
+                            _logger?.LogWarning($"      Usuario: {UserName}, CajaId: {cajaId}");
+                            break;
+
+                        default:
+                            puedeContinar = false;
+                            _logger?.LogError($"   ❌ Resultado {resultadoEstadoPV}: Estado desconocido");
+                            _logger?.LogError($"      Usuario: {UserName}, CajaId: {cajaId}");
+                            break;
+                    }
+                    break;
+
+                // ═══════════════════════════════════════════════════════════
+                // CASO 3: OTRO TIPO DE FACTURACIÓN
+                // ═══════════════════════════════════════════════════════════
+                default:
+                    _logger?.LogInformation($"   Tipo: Otro tipo de facturación (ctrl_id: {ctrlId})");
+
+                    switch (resultadoEstadoPV)
+                    {
+                        case 0:
+                            puedeContinar = true;
+                            mensajeEstadoPV = string.Empty;
+                            _logger?.LogInformation("   ✅ Resultado 0: OK - Continuar sin mensaje");
+                            break;
+
+                        case -1:
+                            puedeContinar = false;
+                            _logger?.LogError("   ❌ Resultado -1: No se pudo facturar");
+                            _logger?.LogError($"      CtrlId: {ctrlId}, Usuario: {UserName}, CajaId: {cajaId}");
+                            break;
+
+                        default:
+                            puedeContinar = false;
+                            _logger?.LogError($"   ❌ Resultado {resultadoEstadoPV}: Estado desconocido");
+                            _logger?.LogError($"      CtrlId: {ctrlId}, Usuario: {UserName}, CajaId: {cajaId}");
+                            break;
+                    }
+                    break;
+            }
+
+            _logger?.LogInformation("═══════════════════════════════════════════════════");
+            _logger?.LogInformation($"📋 RESULTADO DE VALIDACIÓN:");
+            _logger?.LogInformation($"   Puede Continuar: {(puedeContinar ? "✅ SÍ" : "❌ NO")}");
+            _logger?.LogInformation($"   Mostrar Mensaje: {(!string.IsNullOrEmpty(mensajeEstadoPV) ? "SÍ" : "NO")}");
+            _logger?.LogInformation($"   Mensaje: {mensajeEstadoPV ?? "(vacío)"}");
+            _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+            // ❻ Retornar resultado estructurado usando RespuestaDto existente
+            return new ValidacionPVResult
+            {
+                PuedeContinuar = puedeContinar,
+                RespuestaSP = new RespuestaDto
+                {
+                    resultado = resultadoEstadoPV,
+                    resultado_msj = mensajeEstadoPV,
+                    resultado_id = JsonConvert.SerializeObject(new
+                    {
+                        usuario = UserName,
+                        caja_id = cajaId,
+                        nro_proceso = nroProceso,
+                        nro_cierre = nroCierre,
+                        ctrl_id = ctrlId,
+                        tipo_llamada = tipoLlamada
+                    }),
+                    hoy = DateTime.Now
+                },
+                CtrlId = ctrlId,
+                TipoLlamada = tipoLlamada
+            };
+        }
     }
 }

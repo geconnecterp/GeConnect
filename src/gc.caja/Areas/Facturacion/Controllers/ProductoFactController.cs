@@ -1581,8 +1581,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
         }
 
         /// <summary>
-        /// ✅ ACTUALIZADO v10.0: Diferir Pago - Emite factura sin cobrar
-        /// CORREGIDO: Parseo correcto de JSON en resultado_id
+        /// ✅ ACTUALIZADO v11.0: Diferir Pago - Emite factura sin cobrar
+        /// AGREGADO: Validación de estado del Punto de Venta
         /// </summary>
         [HttpPost]
         public async Task<JsonResult> DiferirPago()
@@ -1596,7 +1596,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "Sesión expirada" });
 
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
-                _logger?.LogInformation("⏱️ DIFERIR PAGO - INICIO v10.0");
+                _logger?.LogInformation("⏱️ DIFERIR PAGO - INICIO v11.0");
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                 // ❷ VALIDAR DATOS DE CAJA
@@ -1646,19 +1646,19 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation($"✅ JSON sorteos (longitud): {jsonSorteos.Length}");
 
                 // ❼ DETERMINAR IDENTIFICADOR DEL CLIENTE SEGÚN ORIGEN
-                string? ctaId=null;
+                string? ctaId = null;
                 string? docu = null;
                 string origenUpper = clienteActual.Origen?.ToUpper() ?? "F";
 
                 if (origenUpper == "F") // Consumidor Final
                 {
-                    docu = clienteActual.cta_documento ;
+                    docu = clienteActual.cta_documento;
                     LP_Id = cajaActual.Caja.lp_id_min;
                     _logger?.LogInformation($"✅ Cliente CF → Identificador (documento): {docu}");
                 }
                 else // Cliente Registrado
                 {
-                    ctaId = clienteActual.cta_id ;
+                    ctaId = clienteActual.cta_id;
                     LP_Id = cajaActual.Caja.lp_id_may;
                     _logger?.LogInformation($"✅ Cliente Registrado → Identificador (cta_id): {ctaId}");
                 }
@@ -1712,7 +1712,58 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation("📦 REQUEST DTO CONSTRUIDO");
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
-                // ❾ INVOCAR SERVICIO
+                // ═══════════════════════════════════════════════════════════
+                // ❾ ✅ NUEVO v11.0: VALIDACIÓN DE ESTADO DEL PUNTO DE VENTA
+                // ═══════════════════════════════════════════════════════════
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("🔍 VALIDANDO ESTADO DEL PUNTO DE VENTA ANTES DE DIFERIR PAGO");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                var validacionPV = await ValidarEstadoPuntoVenta(
+                    cajaServicio: _cajaServicio,
+                    cajaId: cajaActual.CajaId ?? string.Empty,
+                    ctrlId: cajaActual.Caja.ctrl_id ?? string.Empty,
+                    nroProceso: request.caja_nro_proceso,
+                    nroCierre: request.caja_nro_cierre,
+                    tipoLlamada: "F" // ✅ "F" = Finalización (emite comprobante)
+                );
+
+                // ❿ EVALUAR RESULTADO DE VALIDACIÓN
+
+                // CASO 1: Error bloqueante - NO puede continuar
+                if (!validacionPV.PuedeContinuar)
+                {
+                    _logger?.LogError("❌ Validación de PV falló - Operación bloqueada");
+                    _logger?.LogError($"   Resultado: {validacionPV.Resultado}");
+                    _logger?.LogError($"   Mensaje: {validacionPV.Mensaje}");
+
+                    stopwatch.Stop();
+                    _logger?.LogInformation($"⏱️ Tiempo antes del bloqueo: {stopwatch.ElapsedMilliseconds}ms");
+
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = validacionPV.Mensaje,
+                        error_tipo = "estado_pv",
+                        ctrl_id = validacionPV.CtrlId,
+                        resultado_pv = validacionPV.Resultado
+                    });
+                }
+
+                // CASO 2: Advertencia - Puede continuar pero registrar mensaje
+                if (validacionPV.EsAdvertencia)
+                {
+                    _logger?.LogWarning("⚠️ Validación de PV con advertencia - Operación continúa");
+                    _logger?.LogWarning($"   Resultado: {validacionPV.Resultado}");
+                    _logger?.LogWarning($"   Mensaje: {validacionPV.Mensaje}");
+                }
+                else
+                {
+                    _logger?.LogInformation("✅ Validación de PV exitosa - Operación autorizada");
+                }
+
+                // ⓫ INVOCAR SERVICIO (continúa si validación OK o advertencia)
                 var token = TokenCookie;
                 if (string.IsNullOrEmpty(token))
                 {
@@ -1726,7 +1777,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 stopwatch.Stop();
                 _logger?.LogInformation($"⏱️ Tiempo de ejecución: {stopwatch.ElapsedMilliseconds}ms");
 
-                // ❿ VALIDAR RESPUESTA
+                // ⓬ VALIDAR RESPUESTA
                 if (resultado == null)
                 {
                     _logger?.LogError("❌ El servicio retornó null");
@@ -1739,7 +1790,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = resultado.Mensaje ?? "Error al diferir el pago" });
                 }
 
-                // ⓫ EXTRAER DATOS DE RESPUESTA
+                // ⓭ EXTRAER DATOS DE RESPUESTA
                 var respuestaDto = resultado.Entidad;
 
                 if (respuestaDto == null)
@@ -1748,7 +1799,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "Error: respuesta vacía del servidor" });
                 }
 
-                // ⓬ VALIDAR RESULTADO DEL SP
+                // ⓮ VALIDAR RESULTADO DEL SP
                 if (respuestaDto.resultado != 0)
                 {
                     _logger?.LogError($"❌ Error del SP: {respuestaDto.resultado_msj}");
@@ -1759,16 +1810,12 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
-                // ═══════════════════════════════════════════════════════════
-                // ⓭ ✅ NUEVO v10.0: PARSEAR JSON DE COMPROBANTE CORRECTAMENTE
-                // ═══════════════════════════════════════════════════════════
-
+                // ⓯ PARSEAR JSON DE COMPROBANTE
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
                 _logger?.LogInformation("🔍 PARSEANDO DATOS DEL COMPROBANTE");
                 _logger?.LogInformation($"   resultado_id raw: {respuestaDto.resultado_id}");
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
-                // ❶ INTENTAR PARSEAR JSON
                 if (!TryParsearComprobanteJson(respuestaDto.resultado_id, out var comprobante))
                 {
                     _logger?.LogError("❌ No se pudo parsear resultado_id como JSON");
@@ -1781,14 +1828,13 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
-                // ❷ VALIDAR QUE EL COMPROBANTE SEA VÁLIDO
                 if (comprobante == null)
                 {
                     _logger?.LogError("❌ Comprobante es null después del parseo");
                     return Json(new { ok = false, mensaje = "Error: no se obtuvieron datos del comprobante" });
                 }
 
-                // ❸ LOGS DE DATOS PARSEADOS
+                // ⓰ LOGS DE DATOS PARSEADOS
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
                 _logger?.LogInformation("✅ FACTURA DIFERIDA EMITIDA EXITOSAMENTE");
                 _logger?.LogInformation($"   Letra: {comprobante.tco_letra}");
@@ -1796,34 +1842,57 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation($"   Número: {comprobante.cm_compte}");
                 _logger?.LogInformation($"   Repetido: {(comprobante.EsRepetido ? "SÍ" : "NO")}");
                 _logger?.LogInformation($"   Mensaje: {respuestaDto.resultado_msj}");
+
+                // ✅ NUEVO: Log de advertencia del PV si existe
+                if (validacionPV.EsAdvertencia)
+                {
+                    _logger?.LogWarning($"   ⚠️ Advertencia PV: {validacionPV.Mensaje}");
+                }
+
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
-                // ⓭ LIMPIAR SESIÓN DE FACTURA
+                // ⓱ LIMPIAR SESIÓN DE FACTURA
                 FacturaProductos = new List<ProductoFactJsonDto>();
                 FacturaSubtotales = [];
                 FacturaSorteos = [];
 
-                // ⓮ ✅ RETORNAR RESPUESTA CORRECTA PARA FRONTEND
-                return Json(new
+                // ⓲ RETORNAR RESPUESTA (incluir advertencia si existe)
+                var respuestaFinal = new
                 {
                     ok = true,
                     mensaje = $"Factura {comprobante.tco_letra} Nro {comprobante.cm_compte} emitida con pago diferido",
 
-                    // ✅ DATOS DEL COMPROBANTE EN FORMATO CORRECTO
                     data = new[]
                     {
-                new
-                {
-                    tco_letra = comprobante.tco_letra,
-                    tco_id = comprobante.tco_id,
-                    cm_compte = comprobante.cm_compte,
-                    cm_repetido = comprobante.cm_repetido
-                }
-            },
+                        new
+                        {
+                            tco_letra = comprobante.tco_letra,
+                            tco_id = comprobante.tco_id,
+                            cm_compte = comprobante.cm_compte,
+                            cm_repetido = comprobante.cm_repetido
+                        }
+                    },
 
                     resultado_completo = respuestaDto.resultado_msj,
                     debe_imprimir = true
-                });
+                };
+
+                // ✅ NUEVO: Agregar advertencia del PV si existe
+                if (validacionPV.EsAdvertencia)
+                {
+                    return Json(new
+                    {
+                        respuestaFinal.ok,
+                        respuestaFinal.mensaje,
+                        respuestaFinal.data,
+                        respuestaFinal.resultado_completo,
+                        respuestaFinal.debe_imprimir,
+                        mensaje_advertencia = validacionPV.Mensaje,
+                        mostrar_mensaje_pv = true
+                    });
+                }
+
+                return Json(respuestaFinal);
             }
             catch (Exception ex)
             {

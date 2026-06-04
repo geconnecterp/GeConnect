@@ -913,6 +913,37 @@ function ejecutarDiferirPago() {
                 // ✅ DESBLOQUEAR antes de mostrar error
                 desbloquearPantallaCalculoFactura();
 
+                // ═══════════════════════════════════════════════════════════
+                // ✅ NUEVO v21.0: MANEJO ESPECÍFICO DE ERROR DE ESTADO PV
+                // ═══════════════════════════════════════════════════════════
+                if (response.error_tipo === 'estado_pv') {
+                    console.error('❌ Error de Estado del Punto de Venta detectado');
+                    console.error(`   ctrl_id: ${response.ctrl_id}`);
+                    console.error(`   resultado_pv: ${response.resultado_pv}`);
+
+                    AbrirMensaje(
+                        "⚠️ Error de Punto de Venta",
+                        `<div class="text-start">
+                            <div class="alert alert-danger mb-3">
+                                <i class='bx bx-error-circle'></i> <strong>NO SE PUEDE EMITIR EL COMPROBANTE</strong>
+                            </div>
+                            <p class="mb-2">${response.mensaje}</p>
+                            <div class="alert alert-info mt-3 mb-0">
+                                <i class='bx bx-info-circle'></i> Por favor, verifique el estado del controlador fiscal o contacte al administrador.
+                            </div>
+                        </div>`,
+                        function () {
+                            $("#msjModal").modal("hide");
+                        },
+                        false,
+                        ["Aceptar"],
+                        "error!",
+                        null
+                    );
+                    return;
+                }
+
+                // Error genérico
                 mostrarMensajeError(response.mensaje || 'No se pudo emitir la factura');
                 return;
             }
@@ -976,17 +1007,46 @@ function ejecutarDiferirPago() {
             }).then(function (exitoso) {
                 console.log(`📄 Generación de reporte: ${exitoso ? '✅ Exitosa' : '❌ Fallida'}`);
 
-                // ═══════════════════════════════════════════════════
-                // ✅ AHORA SÍ: DESBLOQUEAR Y MOSTRAR MENSAJE DE ÉXITO
-                // ═══════════════════════════════════════════════════
-
                 // Esperar 500ms para que el PDF se abra completamente
                 setTimeout(function () {
                     // ✅ DESBLOQUEAR PANTALLA
                     desbloquearPantallaCalculoFactura();
 
-                    // Mostrar mensaje de éxito
-                    mostrarMensajeExitoDiferirPago(tipoComprobante, comprobante, numeroComprobante, esRepetido);
+                    // ═══════════════════════════════════════════════════════════
+                    // ✅ NUEVO v21.0: VERIFICAR SI HAY ADVERTENCIA DEL PV
+                    // ═══════════════════════════════════════════════════════════
+                    if (response.mostrar_mensaje_pv && response.mensaje_advertencia) {
+                        console.warn('⚠️ Advertencia del Punto de Venta detectada');
+                        console.warn(`   Mensaje: ${response.mensaje_advertencia}`);
+
+                        AbrirMensaje(
+                            "⚠️ Advertencia del Punto de Venta",
+                            `<div class="text-start">
+                    <div class="alert alert-warning mb-3">
+                        <i class='bx bx-info-circle'></i> <strong>Factura emitida con advertencia</strong>
+                    </div>
+                    <p class="mb-2">${response.mensaje_advertencia}</p>
+                    <div class="alert alert-success mt-3 mb-0">
+                        <i class='bx bx-check-circle'></i> El comprobante fue emitido correctamente.
+                    </div>
+                </div>`,
+                            function () {
+                                $("#msjModal").modal("hide");
+
+                                // Esperar cierre del modal de advertencia antes de mostrar éxito
+                                setTimeout(() => {
+                                    mostrarMensajeExitoDiferirPago(tipoComprobante, comprobante, numeroComprobante, esRepetido);
+                                }, 300);
+                            },
+                            false,
+                            ["Continuar"],
+                            "warn!",
+                            null
+                        );
+                    } else {
+                        // Sin advertencia - Flujo normal
+                        mostrarMensajeExitoDiferirPago(tipoComprobante, comprobante, numeroComprobante, esRepetido);
+                    }
                 }, 500);
 
             }).catch(function (error) {
@@ -1272,3 +1332,99 @@ function inicializarProteccionCierreCalculoFactura() {
         }
     });
 }
+
+//// ════════════════════════════════════════════════════════════
+//// ✅ NUEVO v21.0: HELPER PARA MANEJAR ERRORES DE PV
+//// ════════════════════════════════════════════════════════════
+
+///**
+// * Verifica si la respuesta contiene un error de estado del Punto de Venta
+// * y lo maneja apropiadamente
+// * 
+// * @param {Object} response - Respuesta del servidor
+// * @returns {boolean} - true si es un error de PV (ya manejado), false en caso contrario
+// */
+//function manejarErrorEstadoPV(response) {
+//    if (response && response.error_tipo === 'estado_pv') {
+//        console.error('═══════════════════════════════════════════════════');
+//        console.error('❌ ERROR DE ESTADO DEL PUNTO DE VENTA');
+//        console.error(`   ctrl_id: ${response.ctrl_id}`);
+//        console.error(`   resultado_pv: ${response.resultado_pv}`);
+//        console.error(`   Mensaje: ${response.mensaje}`);
+//        console.error('═══════════════════════════════════════════════════');
+
+//        AbrirMensaje(
+//            "⚠️ Error de Punto de Venta",
+//            `<div class="text-start">
+//                <div class="alert alert-danger mb-3">
+//                    <i class='bx bx-error-circle'></i> <strong>NO SE PUEDE EMITIR EL COMPROBANTE</strong>
+//                </div>
+//                <p class="mb-2">${response.mensaje}</p>
+//                <div class="alert alert-info mt-3 mb-0">
+//                    <small><strong>Detalles técnicos:</strong></small><br>
+//                    <small>Controlador: ${response.ctrl_id || 'N/A'}</small><br>
+//                    <small>Código de error: ${response.resultado_pv || 'N/A'}</small>
+//                </div>
+//                <div class="alert alert-warning mt-2 mb-0">
+//                    <i class='bx bx-info-circle'></i> Por favor, verifique el estado del controlador fiscal o contacte al administrador.
+//                </div>
+//            </div>`,
+//            function () {
+//                $("#msjModal").modal("hide");
+//            },
+//            false,
+//            ["Aceptar"],
+//            "error!",
+//            null
+//        );
+
+//        return true; // ← Error de PV manejado
+//    }
+
+//    return false; // ← No es un error de PV
+//}
+
+///**
+// * Verifica si la respuesta contiene una advertencia del Punto de Venta
+// * y la muestra antes del mensaje de éxito
+// * 
+// * @param {Object} response - Respuesta del servidor
+// * @param {Function} callback - Función a ejecutar después de cerrar la advertencia
+// * @returns {boolean} - true si hay advertencia (se mostrará), false en caso contrario
+// */
+//function manejarAdvertenciaPV(response, callback) {
+//    if (response && response.mostrar_mensaje_pv && response.mensaje_advertencia) {
+//        console.warn('═══════════════════════════════════════════════════');
+//        console.warn('⚠️ ADVERTENCIA DEL PUNTO DE VENTA');
+//        console.warn(`   Mensaje: ${response.mensaje_advertencia}`);
+//        console.warn('═══════════════════════════════════════════════════');
+
+//        AbrirMensaje(
+//            "⚠️ Advertencia del Punto de Venta",
+//            `<div class="text-start">
+//                <div class="alert alert-warning mb-3">
+//                    <i class='bx bx-info-circle'></i> <strong>Factura emitida con advertencia</strong>
+//                </div>
+//                <p class="mb-2">${response.mensaje_advertencia}</p>
+//                <div class="alert alert-success mt-3 mb-0">
+//                    <i class='bx bx-check-circle'></i> El comprobante fue emitido correctamente.
+//                </div>
+//            </div>`,
+//            function () {
+//                $("#msjModal").modal("hide");
+
+//                if (typeof callback === 'function') {
+//                    setTimeout(callback, 300);
+//                }
+//            },
+//            false,
+//            ["Continuar"],
+//            "warn!",
+//            null
+//        );
+
+//        return true; // ← Advertencia manejada
+//    }
+
+//    return false; // ← No hay advertencia
+//}

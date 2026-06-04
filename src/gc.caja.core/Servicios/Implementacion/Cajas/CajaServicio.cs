@@ -28,6 +28,9 @@ namespace gc.caja.core.Servicios.Implementacion.Seguridad
         private const string GET_OBTENER_DATOS_CF = "/ObtenerDatosCF";
         private const string POST_CIERRE_CAJA_GRAL = "/CierreCajaGral";
         private const string POST_HABILITAR_CAJA_GRAL = "/HabilitarCajaGral";
+        private const string POST_VALIDA_ESTADO_PV = "/ValidaEstadoPV";
+        private const string POST_CARGA_STK_FACTURA = "/CargaStkDeFactura";
+
 
         public CajaServicio(IOptions<AppSettings> options, ILogger<CajaServicio> logger):base(options,logger)
         {
@@ -623,6 +626,144 @@ namespace gc.caja.core.Servicios.Implementacion.Seguridad
                     Ok = false,
                     Mensaje = "Error interno al buscar los datos del cliente"
                 };
+            }
+        }
+
+        public async Task<RespuestaGenerica<RespuestaDto>> ValidaEstadoPV(CajaValidaPVDto req, string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(req, token, out StringContent contentData);
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_VALIDA_ESTADO_PV}";
+
+                using var response = await client.PostAsync(link, contentData);
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+                    if (apiResponse == null || apiResponse.Data == null)
+                    {
+                        return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+                    }
+                    var resp = apiResponse.Data;
+                    if (resp.resultado == 0 || resp.resultado == 3)
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = true,
+                            Mensaje = "OK",
+                            Entidad = apiResponse.Data
+                        };
+                    }
+                    else if (resp.resultado > 0)
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = false,
+                            EsWarn = true,
+                            EsError = false,
+                            Mensaje = resp.resultado_msj,
+                            Entidad = apiResponse.Data
+                        };
+                    }
+                    else
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = false,
+                            EsWarn = false,
+                            EsError = true,
+                            Mensaje = resp.resultado_msj,
+                            Entidad = apiResponse.Data
+                        };
+                    }
+                }
+                else
+                {
+                    var msg = await ReadApiErrorAsync(response);
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+                    return new() { Ok = false, Mensaje = msg };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+                return new() { Ok = false, Mensaje = "Hubo un error al intentar verificar el estado del punto de venta." };
+            }
+        }
+
+        public async Task<RespuestaGenerica<RespuestaDto>> CargaStkDeFactura(CargaStkDto req, string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(req, token, out StringContent contentData);
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_CARGA_STK_FACTURA}";
+
+                using var response = await client.PostAsync(link, contentData);
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+                    if (apiResponse == null || apiResponse.Data == null)
+                    {
+                        return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+                    }
+                    var resp = apiResponse.Data;
+                    if (resp.resultado == 0 || resp.resultado == 3)
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = true,
+                            Mensaje = "OK",
+                            Entidad = apiResponse.Data
+                        };
+                    }
+                    else if (resp.resultado > 0)
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = false,
+                            EsWarn = true,
+                            EsError = false,
+                            Mensaje = resp.resultado_msj,
+                            Entidad = apiResponse.Data
+                        };
+                    }
+                    else
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = false,
+                            EsWarn = false,
+                            EsError = true,
+                            Mensaje = resp.resultado_msj,
+                            Entidad = apiResponse.Data
+                        };
+                    }
+                }
+                else
+                {
+                    var msg = await ReadApiErrorAsync(response);
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+                    return new() { Ok = false, Mensaje = msg };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+                return new() { Ok = false, Mensaje = "Hubo un error al intentar cargar el stock de la factura." };
             }
         }
     }
