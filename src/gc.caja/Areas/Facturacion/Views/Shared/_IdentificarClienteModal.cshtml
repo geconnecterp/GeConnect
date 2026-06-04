@@ -29,10 +29,38 @@
                                 <i class='bx bx-search'></i> Buscar
                             </button>
                         </div>
-                        <small class="text-muted d-block mt-1">
-                            <i class='bx bx-info-circle'></i>
-                            Presione <kbd>Enter</kbd> o haga clic en <strong>Buscar</strong> para identificar al cliente
-                        </small>
+
+                        <!-- ══════════════════════════════════════════════════════ -->
+                        <!-- ✅ NUEVO: Checkbox de Auto-Confirmación                -->
+                        <!-- ══════════════════════════════════════════════════════ -->
+                        <div class="d-flex align-items-start gap-2 mt-2">
+                            <!-- Checkbox a la izquierda -->
+                            <div class="form-check mt-1">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       id="chkAutoConfirmar"
+                                       checked
+                                       style="cursor: pointer;">
+                                <label class="form-check-label"
+                                       for="chkAutoConfirmar"
+                                       style="cursor: pointer;">
+                                    <i class='bx bx-zap text-success'></i>
+                                    <strong>Confirmar automáticamente</strong>
+                                </label>
+                            </div>
+
+                            <!-- Texto explicativo a la derecha -->
+                            <small class="text-muted d-block">
+                                <i class='bx bx-info-circle'></i>
+                                Presione <kbd>Enter</kbd> o <strong>Buscar</strong> para identificar al cliente.
+                                <br>
+                                <span class="text-warning">
+                                    <i class='bx bx-edit'></i>
+                                    <strong>Desactive</strong> el checkbox para poder editar datos del cliente.
+                                </span>
+                            </small>
+                        </div>
+                        <!-- ══════════════════════════════════════════════════════ -->
                     </div>
                 </div>
 
@@ -65,7 +93,6 @@
                                     <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
                                         <i class='bx bx-user'></i> Cliente
                                     </span>
-                                    <!-- ✅ CORREGIDO: ID único con sufijo Prod -->
                                     <input type="text"
                                            class="form-control form-control-sm fw-bold bg-white"
                                            id="txtNombre"
@@ -77,7 +104,6 @@
                                     <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
                                         <i class='bx bx-id-card'></i> ID
                                     </span>
-                                    <!-- ✅ CORREGIDO: ID único con sufijo Prod -->
                                     <input type="text"
                                            class="form-control form-control-sm text-center fw-bold bg-white"
                                            id="txtClienteId"
@@ -89,7 +115,6 @@
                                     <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
                                         <i class='bx bx-map'></i> Domicilio
                                     </span>
-                                    <!-- ✅ CORREGIDO: ID único con sufijo Prod -->
                                     <input type="text"
                                            class="form-control form-control-sm bg-white"
                                            id="txtDomicilio"
@@ -105,7 +130,6 @@
                                     <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
                                         <i class='bx bx-receipt'></i> AFIP
                                     </span>
-                                    <!-- ✅ CORREGIDO: ID único con sufijo Prod -->
                                     <input type="text"
                                            class="form-control form-control-sm bg-white"
                                            id="txtCondicionAfip"
@@ -117,7 +141,6 @@
                                     <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
                                         <i class='bx bx-file'></i> CUIT
                                     </span>
-                                    <!-- ✅ CORREGIDO: ID único con sufijo Prod -->
                                     <input type="text"
                                            class="form-control form-control-sm bg-white"
                                            id="txtTipoNumero"
@@ -129,23 +152,19 @@
                                     <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
                                         <i class='bx bx-file'></i> Emite
                                     </span>
-                                    <!-- ✅ CORREGIDO: ID único con sufijo Prod -->
                                     <input type="text"
                                            class="form-control form-control-sm bg-white"
                                            id="txtEmite"
                                            readonly>
                                 </div>
                             </div>
-                            @*  </div> *@
 
                             <!-- Fila 3: Email, Móvil, BOTÓN EDITAR -->
-                            @* <div class="row g-3"> *@
                             <div class="col-md-3">
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
                                         <i class='bx bx-envelope'></i> Email
                                     </span>
-                                    <!-- ✅ CORREGIDO: ID único con sufijo Prod -->
                                     <input type="text"
                                            class="form-control form-control-sm bg-white"
                                            id="txtEmail"
@@ -157,14 +176,12 @@
                                     <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">
                                         <i class='bx bx-phone'></i> Móvil
                                     </span>
-                                    <!-- ✅ CORREGIDO: ID único con sufijo Prod -->
                                     <input type="text"
                                            class="form-control form-control-sm bg-white"
                                            id="txtMovil"
                                            readonly>
                                 </div>
                             </div>
-                            <!-- ✅ NUEVO: Botón Editar (solo para Consumidores Finales) -->
                             <div class="col-md-3 d-flex align-items-end">
                                 <button type="button"
                                         class="btn btn-warning btn-sm w-100 shadow"
@@ -190,7 +207,6 @@
 
             <!-- Footer con botones de acción -->
             <div class="modal-footer d-flex justify-content-between bg-white border-top">
-                <!-- ✅ Botón SALIR (extremo izquierdo) -->
                 <div>
                     <button type="button"
                             class="btn btn-outline-secondary btn-lg shadow-sm"
@@ -200,7 +216,6 @@
                     </button>
                 </div>
 
-                <!-- Botones de acción (extremo derecho) -->
                 <div class="d-flex gap-3">
                     <button type="button"
                             class="btn btn-danger btn-lg shadow"

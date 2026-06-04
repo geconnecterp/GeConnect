@@ -7008,3 +7008,189 @@ input, select, textarea, button, checkbox, radio {
     background: linear-gradient(90deg, rgba(40, 167, 69, 0.3) 0%, /* Success + Golden */
     rgba(40, 167, 69, 0.15) 100% ) !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+       ✅ NUEVO v21.3: ESTILOS PARA MEJORAR NAVEGACIÓN CON TECLADO
+       ═══════════════════════════════════════════════════════════════ */
+
+/* Ítem seleccionado con teclado o mouse */
+.instrumento-vale-item.selected {
+    background-color: #0d6efd !important;
+    color: white !important;
+    border-left: 4px solid #0a58ca;
+    box-shadow: 0 2px 8px rgba(13, 110, 253, 0.3);
+}
+
+    .instrumento-vale-item.selected i,
+    .instrumento-vale-item.selected span {
+        color: white !important;
+    }
+
+/* Barra de scroll personalizada (mejora visual) */
+#listaInstrumentosValeCompra {
+    scrollbar-width: thin;
+    scrollbar-color: #0d6efd #f8f9fa;
+}
+
+    #listaInstrumentosValeCompra::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    #listaInstrumentosValeCompra::-webkit-scrollbar-track {
+        background: #f8f9fa;
+        border-radius: 4px;
+    }
+
+    #listaInstrumentosValeCompra::-webkit-scrollbar-thumb {
+        background: #0d6efd;
+        border-radius: 4px;
+    }
+
+        #listaInstrumentosValeCompra::-webkit-scrollbar-thumb:hover {
+            background: #0a58ca;
+        }
+
+/* Animación suave al hacer scroll con teclado */
+#listaInstrumentosValeCompra {
+    scroll-behavior: smooth;
+}
+
+    /* Indicador visual de que hay más ítems (sombra superior/inferior) */
+    #listaInstrumentosValeCompra::before {
+        content: '';
+        position: sticky;
+        top: 0;
+        display: block;
+        height: 10px;
+        background: linear-gradient(to bottom, rgba(248, 249, 250, 1), rgba(248, 249, 250, 0));
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    #listaInstrumentosValeCompra::after {
+        content: '';
+        position: sticky;
+        bottom: 0;
+        display: block;
+        height: 10px;
+        background: linear-gradient(to top, rgba(248, 249, 250, 1), rgba(248, 249, 250, 0));
+        pointer-events: none;
+        z-index: 1;
+    }
+
+/* ═══════════════════════════════════════════════════════════════
+               ✅ NUEVO v21.3: ESTILOS PARA MEJORAR NAVEGACIÓN CON TECLADO
+               ═══════════════════════════════════════════════════════════════ */
+
+/* Ítem seleccionado con teclado o mouse */
+.instrumento-cupon-item.selected {
+    background-color: #0d6efd !important;
+    color: white !important;
+    border-left: 4px solid #0a58ca;
+    box-shadow: 0 2px 8px rgba(13, 110, 253, 0.3);
+}
+
+    .instrumento-cupon-item.selected i,
+    .instrumento-cupon-item.selected span {
+        color: white !important;
+    }
+
+/* Barra de scroll personalizada */
+#listaInstrumentosCupon {
+    scrollbar-width: thin;
+    scrollbar-color: #0d6efd #f8f9fa;
+}
+
+    #listaInstrumentosCupon::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    #listaInstrumentosCupon::-webkit-scrollbar-track {
+        background: #f8f9fa;
+        border-radius: 4px;
+    }
+
+    #listaInstrumentosCupon::-webkit-scrollbar-thumb {
+        background: #0d6efd;
+        border-radius: 4px;
+    }
+
+        #listaInstrumentosCupon::-webkit-scrollbar-thumb:hover {
+            background: #0a58ca;
+        }
+
+/* Animación suave al hacer scroll con teclado */
+#listaInstrumentosCupon {
+    scroll-behavior: smooth;
+}
+
+    /* Sombras de gradiente para indicar más contenido */
+    #listaInstrumentosCupon::before {
+        content: '';
+        position: sticky;
+        top: 0;
+        display: block;
+        height: 10px;
+        background: linear-gradient(to bottom, rgba(248, 249, 250, 1), rgba(248, 249, 250, 0));
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    #listaInstrumentosCupon::after {
+        content: '';
+        position: sticky;
+        bottom: 0;
+        display: block;
+        height: 10px;
+        background: linear-gradient(to top, rgba(248, 249, 250, 1), rgba(248, 249, 250, 0));
+        pointer-events: none;
+        z-index: 1;
+    }
+
+/* ✅ CORRECCIÓN: Z-index para modal-dialog-elevated */
+#modalInstrumentosCuponEmpresa.modal.show {
+    z-index: 5100 !important;
+}
+
+#modalInstrumentosCuponEmpresa ~ .modal-backdrop {
+    z-index: 5099 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ✅ NUEVO v24.0: ESTILOS PARA TOOLTIP EN IMPORTE
+   ═══════════════════════════════════════════════════════════ */
+
+/* Tooltip personalizado para observaciones */
+.tooltip.bs-tooltip-auto[data-popper-placement^=top] .tooltip-arrow::before,
+.tooltip.bs-tooltip-top .tooltip-arrow::before {
+    border-top-color: #28a745; /* ← Verde (match con texto-success) */
+}
+
+.tooltip-inner {
+    max-width: 300px; /* ← Ancho máximo del tooltip */
+    text-align: left; /* ← Alinear texto a la izquierda */
+    padding: 8px 12px; /* ← Espaciado interno */
+    font-size: 0.875rem; /* ← Tamaño de fuente */
+    background-color: #28a745; /* ← Verde */
+    border-radius: 6px; /* ← Bordes redondeados */
+}
+
+/* Animación suave al mostrar tooltip */
+.tooltip {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+    .tooltip.show {
+        opacity: 1;
+    }
+
+/* Indicador visual en el importe (línea punteada) */
+span[data-bs-toggle="tooltip"] {
+    transition: all 0.2s ease;
+}
+
+    span[data-bs-toggle="tooltip"]:hover {
+        color: #218838 !important; /* ← Verde más oscuro al hover */
+        transform: scale(1.05); /* ← Efecto de zoom sutil */
+    }

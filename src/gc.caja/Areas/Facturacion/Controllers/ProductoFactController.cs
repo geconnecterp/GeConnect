@@ -514,38 +514,11 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     {
                         //se valida que no esta activo. Valores Noactivo Discontinuo
                         return Json(new { error = true, msg = $"El producto {producto.P_desc} se encuentra {producto.Msj}" });
-                    }
-                    ////Validación si pertenece o no al proveedor
-                    //if (!modulo.Trim().ToUpper().Equals("INV"))
-                    //{
-                    //    if (modulo.ToUpper().Equals("RTI"))
-                    //    {
-                    //        //verificamos si el producto se encuentra en el remito.
-                    //        var resp = await _remitoSv.VerificaProductoEnRemito(rm: RemitoActual.re_compte, pId: producto.P_id, TokenCookie);
-                    //        if (resp.resultado != 0)
-                    //        {
-                    //            return Json(new { error = true, msg = resp.resultado_msj });
-                    //        }
-                    //    }
-                    //    else
-                    //    {
-                    //        if (AutorizacionPendienteSeleccionada != null &&
-                    //            !AutorizacionPendienteSeleccionada.Cta_id.Equals(producto.Cta_id) && validarEstado)
-                    //        {
-                    //            warn = true;
-                    //            msg = $"El Producto NO pertenece al actual proveedor. Pertenece al Proveedor {producto.Cta_denominacion}.";
-                    //        }
-                    //    }
-                    //}
+                    }                    
 
                     //se resguarda el producto recien buscado.
                     ProductoBase = producto;
-                    //if (acumularProductos)
-                    //{
-                    //    var productos = ProductosSeleccionados;
-                    //    productos.Add(producto);
-                    //    ProductosSeleccionados = productos;
-                    //}
+                    
                     return Json(new { error = false, producto, warn, msg, });
                 }
                 else
@@ -1468,17 +1441,18 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation($"✅ JSON de productos generado (longitud: {jsonProductos.Length})");
 
                 // ❻ DETERMINAR IDENTIFICADOR DEL CLIENTE SEGÚN ORIGEN
-                string ctaId;
+                string? ctaId=null;
+                string? docu =null;
                 string origenUpper = clienteActual.Origen?.ToUpper() ?? "F";
 
                 if (origenUpper == "F") // Consumidor Final
                 {
-                    ctaId = clienteActual.cta_documento ?? string.Empty;
-                    _logger?.LogInformation($"✅ Cliente CF → Identificador (documento): {ctaId}");
+                    docu = clienteActual.cta_documento;
+                    _logger?.LogInformation($"✅ Cliente CF → Identificador (documento): {docu}");
                 }
                 else // Cliente Registrado
                 {
-                    ctaId = clienteActual.cta_id ?? string.Empty;
+                    ctaId = clienteActual.cta_id;
                     _logger?.LogInformation($"✅ Cliente Registrado → Identificador (cta_id): {ctaId}");
                 }
 
@@ -1490,10 +1464,10 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     Adm_Id = cajaActual.AdmId ?? AdministracionId,
                     Lp_Id = LP_Id ?? string.Empty,
                     Caja_Nro_Proceso = cajaActual.Caja.caja_nro_proceso ?? string.Empty,
-                    Caja_Nro_Cierre = cajaActual.Caja.caja_nro_cierre.ToInt(),
+                    Caja_Nro_Cierre = cajaActual.Caja.caja_nro_cierre,
                     Cta_Id = ctaId,
                     Tdoc_Id = clienteActual.tdoc_id ?? string.Empty,
-                    Cta_Documento = clienteActual.cta_documento ?? string.Empty,
+                    Cta_Documento = docu,
                     Cta_Denominacion = clienteActual.cta_denominacion ?? string.Empty,
                     Sec_Id = "CAJA",
                     Json_P = jsonProductos
@@ -1672,18 +1646,19 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation($"✅ JSON sorteos (longitud): {jsonSorteos.Length}");
 
                 // ❼ DETERMINAR IDENTIFICADOR DEL CLIENTE SEGÚN ORIGEN
-                string ctaId;
+                string? ctaId=null;
+                string? docu = null;
                 string origenUpper = clienteActual.Origen?.ToUpper() ?? "F";
 
                 if (origenUpper == "F") // Consumidor Final
                 {
-                    ctaId = clienteActual.cta_documento ?? string.Empty;
+                    docu = clienteActual.cta_documento ;
                     LP_Id = cajaActual.Caja.lp_id_min;
-                    _logger?.LogInformation($"✅ Cliente CF → Identificador (documento): {ctaId}");
+                    _logger?.LogInformation($"✅ Cliente CF → Identificador (documento): {docu}");
                 }
                 else // Cliente Registrado
                 {
-                    ctaId = clienteActual.cta_id ?? string.Empty;
+                    ctaId = clienteActual.cta_id ;
                     LP_Id = cajaActual.Caja.lp_id_may;
                     _logger?.LogInformation($"✅ Cliente Registrado → Identificador (cta_id): {ctaId}");
                 }
@@ -1697,7 +1672,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     adm_id = cajaActual.AdmId ?? AdministracionId,
                     lp_id = LP_Id ?? string.Empty,
                     caja_nro_proceso = cajaActual.Caja.caja_nro_proceso ?? string.Empty,
-                    caja_nro_cierre = cajaActual.Caja.caja_nro_cierre.ToInt(),
+                    caja_nro_cierre = cajaActual.Caja.caja_nro_cierre,
 
                     // ═══ Datos de cliente ═══
                     cta_id = ctaId,
@@ -1715,7 +1690,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     // ═══ Datos fiscales ═══
                     afip_id = clienteActual.afip_id ?? string.Empty,
                     tdoc_id = clienteActual.tdoc_id ?? string.Empty,
-                    cta_documento = clienteActual.cta_documento ?? string.Empty,
+                    cta_documento = docu,
                     cta_denominacion = clienteActual.cta_denominacion ?? string.Empty,
                     cta_domicilio = clienteActual.cta_domicilio ?? string.Empty,
 

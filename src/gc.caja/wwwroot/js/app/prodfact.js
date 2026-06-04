@@ -30,7 +30,25 @@ const TIPO_CARGA = {
     COTIZACION: 'C'
 };
 
-const REGEX_CANTIDAD_COMODIN = /^(\d+)\+(.+)$/; // Ej: 5+7790070036599
+// ✅ ACTUALIZADO v5.1: Permite cantidades decimales con hasta 3 decimales
+// ANTES: /^(\d+)\+(.+)$/
+// AHORA: Soporta formatos como: 5+7790070036599, 5.5+7790070036599, 5.123+004627
+/*
+Desglose del Nuevo Regex:
+Componente	Significado	Ejemplos
+^	Inicio de cadena	-
+\d+	Uno o más dígitos (parte entera)	5, 10, 123
+(?:...)	Grupo no capturante	-
+\.	Punto decimal literal	.
+\d{1,3}	De 1 a 3 dígitos decimales	.5, .12, .123
+?	El grupo decimal es opcional	Puede o no estar presente
+\+	Carácter + literal	+
+(.+)	Uno o más caracteres (código)	7790070036599, 004627
+$	Fin de cadena	-
+
+*/
+const REGEX_CANTIDAD_COMODIN = /^(\d+(?:\.\d{1,3})?)\+(.+)$/;
+
 const REGEX_BARRAS_BALANZA = /^2(\d{5})(\d{5})(\d)$/; // Formato balanza: 2 + 5 dígitos código + 5 dígitos peso + dígito verificador
 
 // ====== INICIALIZACIÓN ======
@@ -294,7 +312,8 @@ function BuscarProductos() {
 }
 
 /**
- * ✅ NUEVO v4.0: Procesa la entrada del campo de código
+ * ✅ ACTUALIZADO v5.1: Procesa la entrada del campo de código
+ * NUEVO v5.1: Soporta cantidades decimales en formato comodín
  * Detecta el tipo de entrada y ejecuta el flujo correspondiente
  */
 function procesarEntradaCodigo() {
@@ -306,9 +325,9 @@ function procesarEntradaCodigo() {
     }
 
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔍 PROCESANDO ENTRADA DE CÓDIGO v4.0');
+    console.log('🔍 PROCESANDO ENTRADA DE CÓDIGO v5.1 (DECIMALES)');
     console.log(`   Entrada: "${entrada}"`);
-    console.log(`   Origen actual: ${origenCargaActual}`); // ✅ LOG MEJORADO
+    console.log(`   Origen actual: ${origenCargaActual}`);
     console.log('═══════════════════════════════════════════════════');
 
     // ✅ CRÍTICO: Mantener origen si viene de búsqueda avanzada
@@ -317,21 +336,33 @@ function procesarEntradaCodigo() {
         origenCargaActual = 'directo';
     }
 
-    // ❶ Detectar cantidad comodín (Ej: 5+7790070036599)
+    // ❶ Detectar cantidad comodín (Ej: 5+7790070036599, 5.5+7790070036599, 5.123+004627)
     const matchCantidad = entrada.match(REGEX_CANTIDAD_COMODIN);
-    
+
     if (matchCantidad) {
-        const cantidad = parseInt(matchCantidad[1], 10);
+        const cantidadStr = matchCantidad[1];
         const codigo = matchCantidad[2];
-        
-        console.log('✅ Detectado: CANTIDAD COMODÍN');
-        console.log(`   Cantidad: ${cantidad}`);
-        console.log(`   Código: ${codigo}`);
-        
+
+        // ✅ NUEVO v5.1: Parsear como float para soportar decimales
+        const cantidad = parseFloat(cantidadStr);
+
+        console.log('✅ Detectado: CANTIDAD COMODÍN (con soporte decimal)');
+        console.log(`   Cantidad (string): "${cantidadStr}"`);
+        console.log(`   Cantidad (parsed): ${cantidad}`);
+        console.log(`   Código: "${codigo}"`);
+        console.log(`   ¿Es decimal?: ${cantidadStr.includes('.') ? 'SÍ ✅' : 'NO ❌'}`);
+
+        // ✅ NUEVO v5.1: Validar que el parseo sea exitoso
+        if (isNaN(cantidad)) {
+            console.error(`❌ Error al parsear cantidad: "${cantidadStr}"`);
+            mostrarMensajeEstado('La cantidad ingresada no es válida', 'danger');
+            return;
+        }
+
         procesarCodigoConCantidad(codigo, cantidad);
         return;
     }
-    
+
     // ❷ Si no hay comodín, procesar como código simple
     console.log('✅ Detectado: CÓDIGO SIMPLE');
     procesarCodigoSimple(entrada);
@@ -386,18 +417,43 @@ function procesarCodigoSimple(codigo) {
 
 /**
  * ✅ ACTUALIZADO v5.1: Procesa código con cantidad comodín
- * NUEVO: Respeta el checkbox "Por Bulto"
+ * NUEVO v5.1: Soporta cantidades decimales (hasta 3 decimales)
+ * Respeta el checkbox "Por Bulto"
+ * 
+ * @param {string} codigo - Código EAN o ID del producto
+ * @param {number} cantidad - Cantidad (puede ser decimal, ej: 5.123)
  */
 function procesarCodigoConCantidad(codigo, cantidad) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('📦 PROCESANDO CÓDIGO CON CANTIDAD COMODÍN v5.1');
+    console.log('📦 PROCESANDO CÓDIGO CON CANTIDAD COMODÍN v5.1 (DECIMAL)');
     console.log(`   Código: "${codigo}"`);
     console.log(`   Cantidad ingresada: ${cantidad}`);
+    console.log(`   Tipo de cantidad: ${Number.isInteger(cantidad) ? 'ENTERA' : 'DECIMAL'}`);
+
+    // ✅ NUEVO v5.1: Validar cantidad con mayor precisión
+    if (typeof cantidad !== 'number' || isNaN(cantidad)) {
+        console.error(`❌ Cantidad no es un número válido: ${cantidad}`);
+        mostrarMensajeEstado('La cantidad ingresada no es válida', 'danger');
+        return;
+    }
+
     console.log('═══════════════════════════════════════════════════');
 
     if (cantidad <= 0) {
+        console.error(`❌ Cantidad inválida: ${cantidad}`);
         mostrarMensajeEstado('La cantidad debe ser mayor a cero', 'warning');
         return;
+    }
+
+    // ✅ NUEVO v5.1: Validar máximo de 3 decimales
+    const cantidadStr = cantidad.toString();
+    const decimales = cantidadStr.split('.')[1];
+
+    if (decimales && decimales.length > 3) {
+        console.warn(`⚠️ Cantidad con más de 3 decimales detectada: ${cantidad}`);
+        console.log(`   Redondeando a 3 decimales...`);
+        cantidad = Math.round(cantidad * 1000) / 1000; // Redondear a 3 decimales
+        console.log(`   Cantidad redondeada: ${cantidad}`);
     }
 
     console.log(`   → Enviando cantidad=${cantidad}, bulto=true al servidor`);
@@ -1644,12 +1700,23 @@ function ejecutarCancelarFactura() {
 // SECCIÓN 8: LIMPIEZA COMPLETA DE VENTA (✅ NUEVO v8.0)
 // ════════════════════════════════════════════════════════════
 
+// ════════════════════════════════════════════════════════════════
+// SECCIÓN 8: LIMPIEZA COMPLETA DE VENTA (✅ ACTUALIZADO v9.0)
+// ════════════════════════════════════════════════════════════════
+
 /**
- * ✅ NUEVO v8.0: Limpia completamente el módulo de ventas
+ * ✅ ACTUALIZADO v9.0: Limpia completamente el módulo de ventas
+ * 
  * Se invoca después de:
- * - Diferir Factura
- * - Diferir Pago
- * - Cancelar Factura
+ * - Pago exitoso (preservando backup)
+ * - Diferir Factura (eliminando backup)
+ * - Diferir Pago (eliminando backup)
+ * 
+ * @param {boolean} eliminarBackup - Si es false, preserva el backup en disco (default: true)
+ * 
+ * REGLA DE NEGOCIO:
+ * - Pago exitoso: backup debe quedar disponible para próxima venta
+ * - Diferimientos: backup debe eliminarse (datos se guardaron en BD)
  * 
  * ACCIONES:
  * 1. Limpia arrays de productos
@@ -1658,10 +1725,12 @@ function ejecutarCancelarFactura() {
  * 4. Cierra modal de productos
  * 5. Resetea campos de búsqueda
  * 6. Restaura estado inicial de mensajes
+ * 7. [CONDICIONAL] Elimina backup del servidor
  */
-function limpiarVentaCompleta() {
+function limpiarVentaCompleta(eliminarBackup = true) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🧹 LIMPIEZA COMPLETA DE VENTA v8.0');
+    console.log('🧹 LIMPIEZA COMPLETA DE VENTA v9.0');
+    console.log(`   eliminarBackup: ${eliminarBackup ? 'SÍ ✅' : 'NO ❌'}`);
     console.log('═══════════════════════════════════════════════════');
 
     // ❶ Limpiar arrays y variables globales
@@ -1726,24 +1795,44 @@ function limpiarVentaCompleta() {
     console.log('✅ LIMPIEZA COMPLETA FINALIZADA');
     console.log('═══════════════════════════════════════════════════');
 
+    // ═══════════════════════════════════════════════════════════════════
+    // ✅ NUEVO v9.0: GESTIÓN CONDICIONAL DEL BACKUP
+    // ═══════════════════════════════════════════════════════════════════
 
-    // ✅ NUEVO: Limpiar backup en servidor
-    $.ajax({
-        url: typeof LimpiarBackupUrl !== 'undefined' && LimpiarBackupUrl
-            ? LimpiarBackupUrl
-            : '/Facturacion/ProductoFact/LimpiarBackup',
-        type: 'POST',
-        success: function (response) {
-            if (response.ok) {
-                console.log('✅ Backup limpiado en servidor');
-                tieneBackupPendiente = false;
-                actualizarEstadoBotonUltimoDetalle();
+    if (eliminarBackup) {
+        // ❶ CASO: Diferimientos (Factura/Pago)
+        console.log('🗑️ Eliminando backup del servidor...');
+
+        $.ajax({
+            url: typeof LimpiarBackupUrl !== 'undefined' && LimpiarBackupUrl
+                ? LimpiarBackupUrl
+                : '/Facturacion/ProductoFact/LimpiarBackup',
+            type: 'POST',
+            success: function (response) {
+                if (response.ok) {
+                    console.log('✅ Backup eliminado del servidor');
+                    tieneBackupPendiente = false;
+                    actualizarEstadoBotonUltimoDetalle();
+                }
+            },
+            error: function (xhr, status, error) {
+                console.warn('⚠️ Error al limpiar backup (no crítico)');
             }
-        },
-        error: function (xhr, status, error) {
-            console.warn('⚠️ Error al limpiar backup (no crítico)');
-        }
-    });
+        });
+    } else {
+        // ❲ CASO: Pago exitoso
+        console.log('═══════════════════════════════════════════════════');
+        console.log('💾 BACKUP PRESERVADO');
+        console.log('═══════════════════════════════════════════════════');
+        console.log('   Motivo: Pago exitoso - Disponible para próxima venta');
+        console.log('   tieneBackupPendiente: Mantener en true');
+        console.log('   Botón "Último Detalle": Permanece habilitado');
+        console.log('═══════════════════════════════════════════════════');
+
+        // ✅ NO modificar tieneBackupPendiente
+        // ✅ NO llamar a actualizarEstadoBotonUltimoDetalle()
+        // El backup permanece disponible para la próxima venta
+    }
 }
 
 /**

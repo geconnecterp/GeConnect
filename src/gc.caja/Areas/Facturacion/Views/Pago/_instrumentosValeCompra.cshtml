@@ -263,6 +263,15 @@
             <!-- ═══════════════════════════════════════════════════════ -->
 
             <div class="modal-footer bg-light">
+                <!-- ✅ Indicador de posición (visible solo al navegar con teclado) -->
+                <div id="indicadorPosicionVale"
+                     class="me-auto text-muted small d-none">
+                    <i class="bx bx-list-ul me-1"></i>
+                    <span id="posicionActualVale">1</span>
+                    <span>/</span>
+                    <span id="totalVales">12</span>
+                </div>
+
                 <button type="button" 
                         class="btn btn-secondary" 
                         data-bs-dismiss="modal">
@@ -280,4 +289,98 @@
 
         </div>
     </div>
+
+    @* ═══════════════════════════════════════════════════════════════ *@
+    @* ✅ NUEVO v21.3: EVENTOS DE NAVEGACIÓN CON TECLADO Y MEJORAS UX *@
+    @* ═══════════════════════════════════════════════════════════════ *@
+
+    <script>
+        $(function () {
+            console.log('🔧 Vinculando eventos de navegación - Modal Vales de Compra');
+
+            // ❶ Evento: Click en ítem de vale (selección + confirmación automática)
+            $(document).on('click', '.instrumento-vale-item', function () {
+                console.log('🖱️ Click en vale - Seleccionando y confirmando...');
+
+                const $item = $(this);
+
+                // Limpiar selecciones previas
+                $('.instrumento-vale-item').removeClass('selected');
+
+                // Seleccionar ítem actual
+                $item.addClass('selected');
+
+                // Habilitar botón confirmar
+                $('#btnConfirmarValeCompra').prop('disabled', false);
+
+                // Obtener datos del vale
+                const valeId = $item.data('vale-id');
+                const valeDesc = $item.data('vale-desc');
+                const valeImporte = $item.data('vale-importe');
+
+                console.log(`   ✅ Vale seleccionado: ${valeDesc} (${valeId})`);
+                console.log(`   💰 Importe disponible: $ ${valeImporte}`);
+
+                // ✅ Confirmar automáticamente después de delay
+                setTimeout(() => {
+                    console.log('   ⏩ Confirmando selección automáticamente...');
+                    $('#btnConfirmarValeCompra').trigger('click');
+                }, 200); // ← 200ms para feedback visual
+            });
+
+            // ❂ Evento: Hover en ítem de vale (mejora visual)
+            $(document).on('mouseenter', '.instrumento-vale-item', function () {
+                $(this).css({
+                    'background-color': '#f8f9fa',
+                    'transform': 'translateX(5px)',
+                    'transition': 'all 0.2s ease'
+                });
+            });
+
+            $(document).on('mouseleave', '.instrumento-vale-item', function () {
+                if (!$(this).hasClass('selected')) {
+                    $(this).css({
+                        'background-color': '',
+                        'transform': 'translateX(0)'
+                    });
+                }
+            });
+
+                // ✅ Actualizar indicador de posición al navegar con teclado
+        $(document).on('keydown.indicadorVale', function (e) {
+            if (!$('#modalInstrumentosValeCompra').hasClass('show')) return;
+
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                // Mostrar indicador
+                $('#indicadorPosicionVale').removeClass('d-none');
+
+                // Actualizar posición actual
+                setTimeout(() => {
+                    const $items = $('.instrumento-vale-item:visible');
+                    const $selected = $('.instrumento-vale-item.selected');
+                    const posicion = $items.index($selected) + 1;
+
+                    $('#posicionActualVale').text(posicion);
+                    $('#totalVales').text($items.length);
+                }, 50);
+
+                // Ocultar indicador después de 2 segundos de inactividad
+                clearTimeout(window.indicadorValeTimeout);
+                window.indicadorValeTimeout = setTimeout(() => {
+                    $('#indicadorPosicionVale').addClass('d-none');
+                }, 2000);
+            }
+        });
+
+        // Limpiar evento al cerrar modal
+        $('#modalInstrumentosValeCompra').on('hidden.bs.modal', function () {
+            $(document).off('keydown.indicadorVale');
+            $('#indicadorPosicionVale').addClass('d-none');
+        });
+
+            console.log('✅ Eventos de click y hover vinculados (12 vales)');
+        });
+    </script>
+
+   
 </div>

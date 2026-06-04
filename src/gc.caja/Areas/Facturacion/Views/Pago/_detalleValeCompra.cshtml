@@ -3,63 +3,41 @@
     Modal de Detalle - Vale de Compra
     ═══════════════════════════════════════════════════════════════
 
-    DESCRIPCIÓN:
-    Modal simple para ingresar el monto del vale de compra seleccionado.
-
-    CAMPOS:
-    - Monto: valor del vale
-
-    FLUJO:
-    1. Se selecciona el vale desde modal de Instrumentos
-    2. Se carga saldo disponible del vale
-    3. Se ingresa el monto a aplicar (validado contra saldo del vale)
-
-    VALIDACIONES:
-    - Monto > 0
-    - Monto <= Saldo Disponible del Vale
-    - Monto <= Saldo a Cancelar de la Factura
-
-    MAPEO BD:
-    - rb_importe = Monto
-
-    EVENTOS:
-    - Manejados en pagoFactura.js
+    ✅ ACTUALIZADO v24.2 - CORRECCIÓN CRÍTICA: InputMask removido
+    
+    CAMBIOS v24.2:
+    - Input de monto SIN InputMask (conflicto con teclado digital)
+    - Formato minimalista: type="text" + inputmode="decimal"
+    - Parseo manual en JavaScript con parseFloat()
+    - Validación nativa HTML5
+    
+    PROBLEMA RESUELTO:
+    - Teclado digital escribía números al revés (327 → 723)
+    - InputMask interfería con el orden de entrada de dígitos
 *@
 
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- MODAL: DETALLE VALE DE COMPRA -->
-<!-- ═══════════════════════════════════════════════════════════════ -->
-
-<div class="modal fade" 
-     id="modalDetalleValeCompra" 
-     tabindex="-1" 
-     role="dialog" 
-     aria-labelledby="modalDetalleValeCompraLabel" 
-     aria-hidden="true" 
-     data-bs-backdrop="static" 
+<div class="modal fade"
+     id="modalDetalleValeCompra"
+     tabindex="-1"
+     role="dialog"
+     aria-labelledby="modalDetalleValeCompraLabel"
+     aria-hidden="true"
+     data-bs-backdrop="static"
      data-bs-keyboard="false">
 
-    <div class="modal-dialog modal-dialog-centered modal-dialog-elevated" role="document" style="max-width: 500px;">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-elevated" role="document" style="max-width: 600px;">
         <div class="modal-content modal-golden">
-
-            <!-- ═══════════════════════════════════════════════════════ -->
-            <!-- HEADER -->
-            <!-- ═══════════════════════════════════════════════════════ -->
 
             <div class="modal-header bg-gradient-golden">
                 <h5 class="modal-title" id="modalDetalleValeCompraLabel">
                     <i class="bx bx-gift me-2"></i>
                     Detalle - Vale de Compra
                 </h5>
-                <button type="button" 
-                        class="btn-close" 
-                        data-bs-dismiss="modal" 
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
                         aria-label="Cerrar"></button>
             </div>
-
-            <!-- ═══════════════════════════════════════════════════════ -->
-            <!-- BODY -->
-            <!-- ═══════════════════════════════════════════════════════ -->
 
             <div class="modal-body">
 
@@ -68,85 +46,67 @@
                     <!-- Información del Vale Seleccionado -->
                     <div class="alert alert-info d-flex align-items-center mb-3">
                         <i class="bx bx-info-circle me-2"></i>
-                        <div>
-                            <strong>Vales de Compra CA</strong> 
-                            <span class="mx-2">|</span>
-                            <span id="lblValeCompraSeleccionado">-</span>
-                        </div>
-                    </div>
-
-                    <!-- Información de Saldo Disponible -->
-                    <div class="card bg-light mb-3">
-                        <div class="card-body">
+                        <div class="w-100">
                             <div class="d-flex justify-content-between align-items-center">
-                                <span class="text-muted">
-                                    <i class="bx bx-wallet me-1"></i>
-                                    Saldo disponible:
-                                </span>
-                                <span id="lblSaldoValeCompra" class="fs-5 fw-bold text-success">$ 0,00</span>
-                            </div>
-                            
-                            <!-- ✅ NUEVO v19.2: Alert de Fallback -->
-                            <div id="alertFallbackVale" class="alert alert-info mt-2 mb-0 py-2" style="display: none;">
-                                <small>
-                                    <i class="bx bx-info-circle"></i>
-                                    <strong>Usando saldo de factura:</strong> 
-                                    El vale no tiene saldo registrado. Se utilizará el saldo de la factura como límite.
-                                </small>
+                                <div>
+                                    <strong>Vale de Compra:</strong>
+                                    <span id="lblValeCompraSeleccionado">-</span>
+                                </div>
+                                <div>
+                                    <strong>Saldo:</strong>
+                                    <span id="lblSaldoValeCompra" class="text-success">$ 0,00</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Campo Oculto: ID Vale -->
+                    <!-- Campos Ocultos -->
                     <input type="hidden" id="hdnIdValeCompra" name="idVale">
-                    
-                    <!-- Campo Oculto: Saldo Disponible (para validación) -->
-                    <input type="hidden" id="hdnSaldoValeCompra" name="saldoDisponible" value="0">
+                    <input type="hidden" id="hdnSaldoValeCompra" name="saldoVale">
 
-                    <!-- Campo: Monto -->
+                    <!-- ═══════════════════════════════════════════════════════ -->
+                    <!-- ✅ CAMPO MONTO CORREGIDO v24.2: SIN InputMask -->
+                    <!-- ═══════════════════════════════════════════════════════ -->
                     <div class="mb-3">
                         <label for="txtMontoValeCompra" class="form-label fw-bold">
-                            Monto a Aplicar <span class="text-danger">*</span>
+                            <i class="bx bx-dollar"></i> Monto a Aplicar <span class="text-danger">*</span>
                         </label>
                         <div class="input-group input-group-lg">
                             <span class="input-group-text bg-golden text-white">
                                 <i class="bx bx-dollar"></i>
                             </span>
+                            <!-- ✅ CORREGIDO v24.2: Input MINIMALISTA SIN InputMask -->
                             <input type="text"
-                                   class="form-control form-control-lg text-end"
+                                   class="form-control form-control-lg text-end jsteclado jsdecimal"
                                    id="txtMontoValeCompra"
                                    name="monto"
-                                   placeholder="$ 0,00"
+                                   placeholder="0.00"
+                                   inputmode="decimal"
+                                   pattern="[0-9]*\.?[0-9]{0,2}"
+                                   step="0.01"
+                                   min="0.01"
                                    required
                                    autocomplete="off"
                                    autofocus>
                         </div>
-                        <div class="form-text">
-                            <i class="bx bx-info-circle"></i> 
-                            El monto no puede superar el saldo disponible del vale
-                        </div>
-                        <!-- Mensaje de Error -->
-                        <div id="errorMontoValeCompra" class="invalid-feedback" style="display: none;">
-                        </div>
+                        <small class="form-text text-muted">
+                            <i class="bx bx-info-circle"></i> Ingrese el monto a consumir del vale (no puede superar el saldo disponible)
+                        </small>
                     </div>
 
                 </form>
 
             </div>
 
-            <!-- ═══════════════════════════════════════════════════════ -->
-            <!-- FOOTER -->
-            <!-- ═══════════════════════════════════════════════════════ -->
-
             <div class="modal-footer bg-light">
-                <button type="button" 
-                        class="btn btn-secondary" 
+                <button type="button"
+                        class="btn btn-secondary"
                         data-bs-dismiss="modal">
                     <i class="bx bx-x me-1"></i>
                     Cancelar
                 </button>
-                <button type="button" 
-                        class="btn btn-golden" 
+                <button type="button"
+                        class="btn btn-golden"
                         id="btnGuardarDetalleValeCompra">
                     <i class="bx bx-save me-1"></i>
                     Guardar

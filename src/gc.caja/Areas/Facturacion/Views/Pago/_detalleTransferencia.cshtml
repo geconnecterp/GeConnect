@@ -3,79 +3,41 @@
     Modal de Detalle - Transferencia Bancaria
     ═══════════════════════════════════════════════════════════════
 
-    DESCRIPCIÓN:
-    Modal para ingresar los datos de una transferencia bancaria.
-
-    VERSIÓN v19.3 - Integración con pagoFactura.js + InputMask
+    ✅ ACTUALIZADO v24.1 - CORRECCIÓN CRÍTICA: InputMask removido
     
-    CAMBIOS v19.3:
-    - Input de monto con máscara monetaria (InputMask)
-    - Campo oculto para ID del banco seleccionado
-    - Validación de fecha no futura
-    - Estilos mejorados consistentes con otros modales
-
-    CAMPOS:
-    - Banco: Mostrado como label (ya seleccionado del modal Instrumentos)
-    - Nro Trasn: Número de transacción/comprobante (alfanumérico)
-    - Fecha: Fecha de la operación (date picker)
-    - Monto: Importe de la transferencia (con máscara monetaria)
-
-    FLUJO:
-    1. Usuario selecciona MP "Transferencias Bancarias" (tcf_id='BA')
-    2. Backend devuelve lista de bancos como instrumentos
-    3. Usuario selecciona UN BANCO del modal de instrumentos
-    4. Se abre este modal con el banco pre-cargado
-    5. Usuario completa: Nro Trasn, Fecha, Monto
-    6. Se valida y agrega a la tabla de formas de pago
-
-    VALIDACIONES:
-    - Nro Trasn obligatorio (min 3 caracteres)
-    - Fecha obligatoria y no futura
-    - Monto > 0
-    - Monto <= Saldo de factura (con tolerancia)
-
-    MAPEO BD:
-    - rb_importe = Monto
-    - rb_observ = JSON con datos: {banco_id, banco_desc, nro_transf, fecha}
-
-    EVENTOS:
-    - Manejados en pagoFactura.js v19.3
+    CAMBIOS v24.1:
+    - Input de monto SIN InputMask (conflicto con teclado digital)
+    - Formato minimalista: type="text" + inputmode="decimal"
+    - Parseo manual en JavaScript con parseFloat()
+    - Validación nativa HTML5
+    
+    PROBLEMA RESUELTO:
+    - Teclado digital escribía números al revés (327 → 723)
+    - InputMask interfería con el orden de entrada de dígitos
 *@
 
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- MODAL: DETALLE TRANSFERENCIA BANCARIA -->
-<!-- ═══════════════════════════════════════════════════════════════ -->
-
-<div class="modal fade" 
-     id="modalDetalleTransferencia" 
-     tabindex="-1" 
-     role="dialog" 
-     aria-labelledby="modalDetalleTransferenciaLabel" 
-     aria-hidden="true" 
-     data-bs-backdrop="static" 
+<div class="modal fade"
+     id="modalDetalleTransferencia"
+     tabindex="-1"
+     role="dialog"
+     aria-labelledby="modalDetalleTransferenciaLabel"
+     aria-hidden="true"
+     data-bs-backdrop="static"
      data-bs-keyboard="false">
 
     <div class="modal-dialog modal-dialog-centered modal-dialog-elevated" role="document" style="max-width: 600px;">
         <div class="modal-content modal-golden">
-
-            <!-- ═══════════════════════════════════════════════════════ -->
-            <!-- HEADER -->
-            <!-- ═══════════════════════════════════════════════════════ -->
 
             <div class="modal-header bg-gradient-golden">
                 <h5 class="modal-title" id="modalDetalleTransferenciaLabel">
                     <i class="bx bx-transfer me-2"></i>
                     Detalle - Transferencia Bancaria
                 </h5>
-                <button type="button" 
-                        class="btn-close" 
-                        data-bs-dismiss="modal" 
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
                         aria-label="Cerrar"></button>
             </div>
-
-            <!-- ═══════════════════════════════════════════════════════ -->
-            <!-- BODY -->
-            <!-- ═══════════════════════════════════════════════════════ -->
 
             <div class="modal-body">
 
@@ -87,7 +49,7 @@
                         <div class="w-100">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <strong>Transferencias Bancarias</strong> 
+                                    <strong>Transferencias Bancarias</strong>
                                     <span class="mx-2">|</span>
                                     <span id="lblInstrumentoTransferencia">-</span>
                                 </div>
@@ -95,7 +57,6 @@
                         </div>
                     </div>
 
-                    <!-- Campo Oculto: ID del Banco -->
                     <input type="hidden" id="hdnBancoIdTransferencia" name="bancoId">
 
                     <!-- Campo: Nro Trasn. -->
@@ -107,13 +68,13 @@
                             <span class="input-group-text bg-golden text-white">
                                 <i class="bx bx-hash"></i>
                             </span>
-                            <input type="text" 
+                            <input type="text"
                                    class="form-control text-uppercase jsteclado"
-                                   id="txtNroTransferencia" 
+                                   id="txtNroTransferencia"
                                    name="numeroTransferencia"
-                                   placeholder="Ej: TRF123456789" 
+                                   placeholder="Ej: TRF123456789"
                                    maxlength="50"
-                                   required 
+                                   required
                                    autocomplete="off"
                                    autofocus>
                         </div>
@@ -131,9 +92,9 @@
                             <span class="input-group-text bg-golden text-white">
                                 <i class="bx bx-calendar"></i>
                             </span>
-                            <input type="date" 
-                                   class="form-control" 
-                                   id="txtFechaTransferencia" 
+                            <input type="date"
+                                   class="form-control"
+                                   id="txtFechaTransferencia"
                                    name="fecha"
                                    required>
                         </div>
@@ -142,7 +103,9 @@
                         </small>
                     </div>
 
-                    <!-- Campo: Monto -->
+                    <!-- ═══════════════════════════════════════════════════════ -->
+                    <!-- ✅ CAMPO MONTO CORREGIDO v24.1: SIN InputMask -->
+                    <!-- ═══════════════════════════════════════════════════════ -->
                     <div class="mb-3">
                         <label for="txtMontoTransferencia" class="form-label fw-bold">
                             <i class="bx bx-dollar"></i> Monto <span class="text-danger">*</span>
@@ -151,39 +114,37 @@
                             <span class="input-group-text bg-golden text-white">
                                 <i class="bx bx-dollar"></i>
                             </span>
+                            <!-- ✅ CORREGIDO v24.1: Input MINIMALISTA SIN InputMask -->
                             <input type="text"
                                    class="form-control form-control-lg text-end jsteclado jsdecimal"
                                    id="txtMontoTransferencia"
                                    name="monto"
-                                   placeholder="$ 0,00"
+                                   placeholder="0.00"
+                                   inputmode="decimal"
+                                   pattern="[0-9]*\.?[0-9]{0,2}"
+                                   step="0.01"
+                                   min="0.01"
                                    required
                                    autocomplete="off">
                         </div>
                         <small class="form-text text-muted">
                             <i class="bx bx-info-circle"></i> Importe de la transferencia
                         </small>
-                        <!-- Mensaje de Error -->
-                        <div id="errorMontoTransferencia" class="invalid-feedback" style="display: none;">
-                        </div>
                     </div>
 
                 </form>
 
             </div>
 
-            <!-- ═══════════════════════════════════════════════════════ -->
-            <!-- FOOTER -->
-            <!-- ═══════════════════════════════════════════════════════ -->
-
             <div class="modal-footer bg-light">
-                <button type="button" 
-                        class="btn btn-secondary" 
+                <button type="button"
+                        class="btn btn-secondary"
                         data-bs-dismiss="modal">
                     <i class="bx bx-x me-1"></i>
                     Cancelar
                 </button>
-                <button type="button" 
-                        class="btn btn-golden" 
+                <button type="button"
+                        class="btn btn-golden"
                         id="btnGuardarDetalleTransferencia">
                     <i class="bx bx-save me-1"></i>
                     Guardar

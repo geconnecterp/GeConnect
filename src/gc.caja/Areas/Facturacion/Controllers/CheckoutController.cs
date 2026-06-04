@@ -212,7 +212,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     adm_id = cajaActual.AdmId ?? AdministracionId,
                     lp_id = LP_Id ?? string.Empty,
                     caja_nro_proceso = cajaActual.Caja.caja_nro_proceso ?? string.Empty,
-                    caja_nro_cierre = cajaActual.Caja.caja_nro_cierre.ToInt(),
+                    caja_nro_cierre = cajaActual.Caja.caja_nro_cierre,
 
                     // ═══ Datos de cliente ═══
                     cta_id = ctaId,

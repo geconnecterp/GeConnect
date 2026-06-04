@@ -154,31 +154,71 @@ function inicializarEventosPago() {
         console.log('✅ MODAL DE EFECTIVO LIMPIADO');
     });
 
-    // ❹ ✅ NUEVO v19.0: Evento de limpieza del modal de Vale de Compra
+    /**
+ * ✅ ACTUALIZADO v19.8: Evento de limpieza automática del modal de Vale de Compra
+ * MEJORA: Limpieza más exhaustiva y logs de debugging
+ */
     $('#modalDetalleValeCompra').off('hidden.bs.modal').on('hidden.bs.modal', function () {
-        console.log('🧹 LIMPIEZA AUTOMÁTICA - MODAL VALE DE COMPRA');
+        console.log('═══════════════════════════════════════════════════');
+        console.log('🧹 LIMPIEZA AUTOMÁTICA - MODAL VALE COMPRA v19.8');
+        console.log('═══════════════════════════════════════════════════');
 
-        // Limpiar input
+        // ❶ Resetear formulario
         const $input = $('#txtMontoValeCompra');
-        $input.val('').removeClass('is-invalid is-valid').prop('disabled', false);
+        $input
+            .val('')
+            .removeClass('is-invalid is-valid')
+            .prop('disabled', false);
 
-        // Remover mensajes de error
+        // ❷ Remover mensajes de error
         $input.siblings('.invalid-feedback').remove();
         $('.invalid-feedback').remove();
 
-        // Resetear labels
+        console.log('   ✅ Formulario limpiado');
+
+        // ❸ Resetear labels y hidden fields
         $('#lblValeCompraSeleccionado').text('-');
-        $('#lblSaldoValeCompra').text('$ 0,00').removeClass('text-success text-warning text-danger');
+        $('#lblSaldoValeCompra')
+            .text('$ 0,00')
+            .removeClass('text-success text-warning text-danger text-info');
         $('#hdnIdValeCompra').val('');
         $('#hdnSaldoValeCompra').val('0');
 
-        // Remover backdrop huérfano
-        const $backdropVale = $('.modal-backdrop[data-modal="valecompra"]');
-        if ($backdropVale.length > 0) {
-            $backdropVale.remove();
-        }
+        console.log('   ✅ Labels y campos ocultos reseteados');
 
-        console.log('✅ MODAL DE VALE DE COMPRA LIMPIADO');
+        // ❹ ✅ NUEVO v19.8: Limpieza exhaustiva de backdrops con delay adicional
+        setTimeout(() => {
+            const modalesAbiertos = $('.modal.show').length;
+
+            console.log(`   📊 Verificación final - Modales abiertos: ${modalesAbiertos}`);
+
+            if (modalesAbiertos === 0) {
+                // Solo si NO hay otros modales abiertos
+                const backdropsRestantes = $('.modal-backdrop').length;
+
+                if (backdropsRestantes > 0) {
+                    console.warn(`   ⚠️ Se encontraron ${backdropsRestantes} backdrop(s) persistente(s)`);
+
+                    $('.modal-backdrop').remove();
+                    $('body')
+                        .removeClass('modal-open')
+                        .css({
+                            'overflow': '',
+                            'padding-right': ''
+                        });
+
+                    console.log('   ✅ Backdrops persistentes limpiados forzadamente');
+                } else {
+                    console.log('   ✅ No hay backdrops persistentes');
+                }
+            } else {
+                console.log(`   ℹ️ ${modalesAbiertos} modal(es) aún abierto(s) - No tocar body`);
+            }
+        }, 400); // ← Timeout adicional para asegurar limpieza
+
+        console.log('═══════════════════════════════════════════════════');
+        console.log('✅ LIMPIEZA AUTOMÁTICA COMPLETADA');
+        console.log('═══════════════════════════════════════════════════');
     });
 
     // ❺ ✅ NUEVO v19.3: Evento de limpieza del modal de Transferencia
@@ -334,7 +374,222 @@ function inicializarEventosPago() {
         limpiarEventosTipoMedioPago();
     });
 
-    console.log('✅ Eventos de pago configurados');
+    // ═══════════════════════════════════════════════════════════
+    // ✅ NUEVO v21.3: NAVEGACIÓN CON TECLADO - MODAL DE INSTRUMENTOS GENÉRICO
+    // ═══════════════════════════════════════════════════════════
+
+    /**
+     * Modal de Instrumentos Genérico (Monedas: Pesos, U$S, etc.)
+     * 
+     * Evento 'shown.bs.modal':
+     * - Se dispara cuando el modal termina de mostrarse (después de la animación)
+     * - Habilita navegación con teclado (↑↓ Enter Esc)
+     * 
+     * Evento 'hidden.bs.modal':
+     * - Se dispara cuando el modal se cierra completamente
+     * - Limpia eventos de teclado para evitar memory leaks
+     */
+    $('#modalInstrumentos')
+        .off('shown.bs.modal.navTeclado')
+        .on('shown.bs.modal.navTeclado', function () {
+            console.log('🔓 Modal Instrumentos mostrado - Habilitando navegación con teclado...');
+
+            habilitarNavegacionTecladoInstrumentos({
+                modalId: '#modalInstrumentos',
+                contenedorId: '#listaInstrumentos',
+                itemClass: '.instrumento-item',
+                btnConfirmarId: '#btnConfirmarInstrumento',
+                onConfirmar: confirmarSeleccionInstrumento // ← Función existente (línea ~2340)
+            });
+        });
+
+    $('#modalInstrumentos')
+        .off('hidden.bs.modal.navTeclado')
+        .on('hidden.bs.modal.navTeclado', function () {
+            console.log('🔒 Modal Instrumentos cerrado - Limpiando eventos de teclado...');
+
+            limpiarNavegacionTecladoInstrumentos('#modalInstrumentos');
+        });
+
+    console.log('✅ Navegación con teclado configurada para Modal Instrumentos Genérico');
+
+    // ═══════════════════════════════════════════════════════════
+    // ✅ NUEVO v21.3: NAVEGACIÓN CON TECLADO - MODAL DE TRANSFERENCIAS BANCARIAS
+    // ═══════════════════════════════════════════════════════════
+
+    /**
+     * Modal de Instrumentos - Transferencias Bancarias
+     * 
+     * CONTEXTO:
+     * - Se abre al seleccionar tipo medio de pago "BA" (Transferencias)
+     * - Usuario selecciona el banco destino (Banco San Juan, Galicia, Macro)
+     * - Después de seleccionar banco, se abre modal de detalle de transferencia
+     * 
+     * Evento 'shown.bs.modal':
+     * - Se dispara cuando el modal termina de mostrarse
+     * - Habilita navegación con teclado (↑↓ Enter Esc)
+     * - Selecciona automáticamente el primer banco
+     * 
+     * Evento 'hidden.bs.modal':
+     * - Se dispara cuando el modal se cierra completamente
+     * - Limpia eventos de teclado para evitar memory leaks
+     */
+    $('#modalInstrumentosTransferencia')
+        .off('shown.bs.modal.navTeclado')
+        .on('shown.bs.modal.navTeclado', function () {
+            console.log('🔓 Modal Transferencias mostrado - Habilitando navegación con teclado...');
+
+            habilitarNavegacionTecladoInstrumentos({
+                modalId: '#modalInstrumentosTransferencia',
+                contenedorId: '#listaInstrumentosTransferencia',
+                itemClass: '.instrumento-transferencia-item',
+                btnConfirmarId: '#btnConfirmarBancoTransferencia',
+                onConfirmar: function () {
+                    // ✅ Callback: Simular click en botón confirmar
+                    console.log('   ⏎ Enter presionado - Confirmando banco seleccionado...');
+                    $('#btnConfirmarBancoTransferencia').trigger('click');
+                }
+            });
+        });
+
+    $('#modalInstrumentosTransferencia')
+        .off('hidden.bs.modal.navTeclado')
+        .on('hidden.bs.modal.navTeclado', function () {
+            console.log('🔒 Modal Transferencias cerrado - Limpiando eventos de teclado...');
+
+            limpiarNavegacionTecladoInstrumentos('#modalInstrumentosTransferencia');
+        });
+
+    console.log('✅ Navegación con teclado configurada para Modal Transferencias Bancarias');
+
+    // ═══════════════════════════════════════════════════════════
+    // ✅ NUEVO v21.3: NAVEGACIÓN CON TECLADO - MODAL DE VALES DE COMPRA
+    // ═══════════════════════════════════════════════════════════
+
+    /**
+     * Modal de Instrumentos - Vales de Compra
+     * 
+     * CONTEXTO:
+     * - Se abre al seleccionar tipo medio de pago "VA" (Vales de Compra)
+     * - Usuario selecciona el vale a utilizar (12 vales disponibles)
+     * - Vales: AMOEM, AMSESA, EL ZONDA, EMICAR, EMPL COMERCIO, ENERGIA SJ, 
+     *          FABREGAS, GREMIO ATE, GREMIO ALIMEN, GREMIO ATSA, INDIVIDRIO, INTA
+     * 
+     * NOTA: Lista extensa (12 ítems) → Requiere scroll automático
+     * 
+     * Evento 'shown.bs.modal':
+     * - Se dispara cuando el modal termina de mostrarse
+     * - Habilita navegación con teclado (↑↓ Enter Esc)
+     * - Selecciona automáticamente el primer vale
+     * - Scroll automático al navegar si el vale está fuera de vista
+     * 
+     * Evento 'hidden.bs.modal':
+     * - Se dispara cuando el modal se cierra completamente
+     * - Limpia eventos de teclado para evitar memory leaks
+     */
+    $('#modalInstrumentosValeCompra')
+        .off('shown.bs.modal.navTeclado')
+        .on('shown.bs.modal.navTeclado', function () {
+            console.log('🔓 Modal Vales de Compra mostrado - Habilitando navegación con teclado...');
+            console.log('   📊 Total vales: 12 (scroll automático habilitado)');
+
+            habilitarNavegacionTecladoInstrumentos({
+                modalId: '#modalInstrumentosValeCompra',
+                contenedorId: '#listaInstrumentosValeCompra',
+                itemClass: '.instrumento-vale-item',
+                btnConfirmarId: '#btnConfirmarValeCompra',
+                onConfirmar: function () {
+                    // ✅ Callback: Simular click en botón confirmar
+                    console.log('   ⏎ Enter presionado - Confirmando vale seleccionado...');
+                    $('#btnConfirmarValeCompra').trigger('click');
+                }
+            });
+
+            console.log('✅ Navegación habilitada - Usar ↑↓ para navegar entre 12 vales');
+        });
+
+    $('#modalInstrumentosValeCompra')
+        .off('hidden.bs.modal.navTeclado')
+        .on('hidden.bs.modal.navTeclado', function () {
+            console.log('🔒 Modal Vales de Compra cerrado - Limpiando eventos de teclado...');
+
+            limpiarNavegacionTecladoInstrumentos('#modalInstrumentosValeCompra');
+        });
+
+    console.log('✅ Navegación con teclado configurada para Modal Vales de Compra (12 ítems)');
+
+    // ═══════════════════════════════════════════════════════════
+    // ✅ NUEVO v21.3: NAVEGACIÓN CON TECLADO - MODAL DE CUPONES/ÓRDENES DE EMPRESA
+    // ═══════════════════════════════════════════════════════════
+
+    /**
+     * Modal de Instrumentos - Cupones/Órdenes de Empresa (Mutuales)
+     * 
+     * CONTEXTO:
+     * - Se abre al seleccionar tipo medio de pago "MU" (Mutuales)
+     * - Usuario selecciona la mutual/empresa emisora (12 empresas disponibles)
+     * - Empresas: MUTUAL UPCN, CHICONI, ENAV, SEP, TCA 2014, ORDEN DE COMPRA,
+     *             CARMAR, HUARPE, TRIELEC, VFG, ENTRETELAS, TERAPIA POLIVALENTE
+     * 
+     * NOTA TÉCNICA:
+     * - Lista extensa (12 ítems) → Requiere scroll automático
+     * - Modal con clase 'modal-dialog-elevated' → z-index puede requerir ajuste
+     * - Campos auto-completados desde cliente actual (Titular, CUIT)
+     * 
+     * Evento 'shown.bs.modal':
+     * - Se dispara cuando el modal termina de mostrarse
+     * - Habilita navegación con teclado (↑↓ Enter Esc)
+     * - Selecciona automáticamente la primera empresa/mutual
+     * - Scroll automático al navegar si el ítem está fuera de vista
+     * 
+     * Evento 'hidden.bs.modal':
+     * - Se dispara cuando el modal se cierra completamente
+     * - Limpia eventos de teclado para evitar memory leaks
+     */
+    $('#modalInstrumentosCuponEmpresa')
+        .off('shown.bs.modal.navTeclado')
+        .on('shown.bs.modal.navTeclado', function () {
+            console.log('🔓 Modal Cupones/Empresa mostrado - Habilitando navegación con teclado...');
+            console.log('   📊 Total empresas/mutuales: 12 (scroll automático habilitado)');
+            console.log('   ⚠️ Modal elevado (z-index alto) - Validando compatibilidad...');
+
+            habilitarNavegacionTecladoInstrumentos({
+                modalId: '#modalInstrumentosCuponEmpresa',
+                contenedorId: '#listaInstrumentosCupon',
+                itemClass: '.instrumento-cupon-item',
+                btnConfirmarId: '#btnConfirmarCuponEmpresa',
+                onConfirmar: function () {
+                    // ✅ Callback: Simular click en botón confirmar
+                    console.log('   ⏎ Enter presionado - Confirmando empresa/mutual seleccionada...');
+                    $('#btnConfirmarCuponEmpresa').trigger('click');
+                }
+            });
+
+            // ✅ Validar z-index del modal (modal-dialog-elevated)
+            setTimeout(() => {
+                const zIndexModal = parseInt($('#modalInstrumentosCuponEmpresa').css('z-index'));
+                console.log(`   🔍 Z-index del modal: ${zIndexModal}`);
+
+                if (zIndexModal < 5000) {
+                    console.warn('   ⚠️ Z-index bajo detectado - Aplicando corrección...');
+                    $('#modalInstrumentosCuponEmpresa').css('z-index', '5100');
+                    $('.modal-backdrop').last().css('z-index', '5099');
+                    console.log('   ✅ Z-index corregido: modal=5100, backdrop=5099');
+                }
+            }, 100);
+
+            console.log('✅ Navegación habilitada - Usar ↑↓ para navegar entre 12 empresas/mutuales');
+        });
+
+    $('#modalInstrumentosCuponEmpresa')
+        .off('hidden.bs.modal.navTeclado')
+        .on('hidden.bs.modal.navTeclado', function () {
+            console.log('🔒 Modal Cupones/Empresa cerrado - Limpiando eventos de teclado...');
+
+            limpiarNavegacionTecladoInstrumentos('#modalInstrumentosCuponEmpresa');
+        });
+
+    console.log('✅ Navegación con teclado configurada para Modal Cupones/Órdenes de Empresa (12 ítems)');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -419,30 +674,74 @@ function abrirModalPago(datosFactura) {
 }
 
 /**
- * ✅ NUEVO: Agrega una forma de pago
- * Abre el modal de tipo medio de pago
+ * ✅ ACTUALIZADO v21.4: Agrega una forma de pago
+ * CORRECCIÓN CRÍTICA: Valida diferencia <= 0 para prevenir agregado incorrecto
+ * 
+ * CAMBIOS v21.4:
+ * - Agregada validación de diferencia <= 0 (exacto o vuelto)
+ * - Mensaje informativo diferenciado según el caso
+ * - Previene apertura del modal cuando no se deben agregar más valores
+ * 
+ * REGLA DE NEGOCIO:
+ * - Solo permite agregar valores si diferencia > 0 (falta pagar)
+ * - Bloquea si diferencia = 0 (pago exacto)
+ * - Bloquea si diferencia < 0 (hay vuelto)
  */
 function agregarFormaPago() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('➕ AGREGAR FORMA DE PAGO v16.1');
+    console.log('➕ AGREGAR FORMA DE PAGO v21.4');
     console.log('═══════════════════════════════════════════════════');
 
-    // ❶ Validar que no haya diferencia $0.00
+    // ❶ Obtener diferencia actual
     const diferencia = conceptosPago.diferencia || 0;
 
-    if (Math.abs(diferencia) < 0.01) {
-        console.warn('⚠️ La diferencia ya es $0.00');
+    console.log(`   Diferencia actual: ${formatearMoneda(diferencia)}`);
+    console.log(`   Total valores actuales: ${valoresPago.length}`);
 
-        if (typeof toastr !== 'undefined') {
-            toastr.info('La diferencia ya es $0.00. No es necesario agregar más valores.');
+    // ❷ ✅ NUEVO v21.4: Validar diferencia <= 0 (exacto o vuelto)
+    if (diferencia <= 0) {
+        console.warn('⚠️ VALIDACIÓN FALLÓ: La diferencia es <= 0');
+        console.warn('   → No se puede agregar más valores');
+
+        let mensajeUsuario = '';
+        let tipoMensaje = 'info';
+
+        if (Math.abs(diferencia) < 0.01) {
+            // ═══════════════════════════════════════════════════
+            // CASO 1: Diferencia exacta ($0.00)
+            // ═══════════════════════════════════════════════════
+            console.log('   📊 Caso: Diferencia exacta ($0.00)');
+            mensajeUsuario = 'El pago ya está completo. No es necesario agregar más valores.';
+            tipoMensaje = 'info';
         } else {
-            alert('La diferencia ya es $0.00');
+            // ═══════════════════════════════════════════════════
+            // CASO 2: Diferencia negativa (vuelto)
+            // ═══════════════════════════════════════════════════
+            const vuelto = Math.abs(diferencia);
+            console.log(`   📊 Caso: Vuelto de ${formatearMoneda(vuelto)}`);
+
+            mensajeUsuario = `El pago tiene un vuelto de ${formatearMoneda(vuelto)}. No se pueden agregar más valores.`;
+            tipoMensaje = 'warning';
         }
 
-        return;
+        // ❸ Mostrar notificación al usuario
+        if (typeof toastr !== 'undefined') {
+            toastr[tipoMensaje](mensajeUsuario, 'Información');
+        } else {
+            alert(mensajeUsuario);
+        }
+
+        console.log('❌ Agregado de valores BLOQUEADO');
+        console.log('═══════════════════════════════════════════════════');
+
+        return; // ← Salir de la función
     }
 
-    // ❷ Abrir modal de tipo medio de pago
+    // ❹ Si llegó aquí, diferencia > 0 → Se puede agregar
+    console.log('✅ Diferencia > 0 - Se puede agregar valores');
+    console.log(`   Monto faltante: ${formatearMoneda(diferencia)}`);
+
+    // ❺ Abrir modal de tipo medio de pago
     abrirModalTipoMedioPago();
 }
 
@@ -1462,14 +1761,12 @@ function enviarPagoAlServidor(jsonValores) {
 }
 
 /**
- * ✅ NUEVO v20.2: Procesa una respuesta exitosa del servidor
- * Muestra mensaje de éxito y reinicia el módulo
- * 
- * @param {Object} comprobante - Datos del comprobante emitido
+ * ✅ ACTUALIZADO v20.3: Procesa una respuesta exitosa del servidor
+ * CAMBIO: Preserva backup para próxima venta
  */
 function procesarPagoExitoso(comprobante) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('✅ PROCESANDO PAGO EXITOSO');
+    console.log('✅ PROCESANDO PAGO EXITOSO v20.3');
     console.log('═══════════════════════════════════════════════════');
     console.log('   Comprobante:', comprobante.cm_compte);
 
@@ -1510,12 +1807,12 @@ function procesarPagoExitoso(comprobante) {
             $("#msjModal").modal("hide");
 
             // ═══════════════════════════════════════════════════
-            // ✅ FLUJO DE LIMPIEZA Y REINICIO (como en DiferirPago)
+            // ✅ FLUJO DE LIMPIEZA Y REINICIO (PRESERVANDO BACKUP)
             // ═══════════════════════════════════════════════════
 
             setTimeout(() => {
                 console.log('═══════════════════════════════════════════════════');
-                console.log('🔄 INICIANDO REINICIO DEL MÓDULO DE VENTAS');
+                console.log('🔄 INICIANDO REINICIO DEL MÓDULO DE VENTAS v20.3');
                 console.log('═══════════════════════════════════════════════════');
 
                 // ❶ PASO 1: Cerrar modal de pago
@@ -1532,10 +1829,14 @@ function procesarPagoExitoso(comprobante) {
                     }
 
                     setTimeout(() => {
-                        // ❸ PASO 3: Limpiar venta completa
+                        // ═══════════════════════════════════════════════════
+                        // ✅ CAMBIO CRÍTICO v20.3: PRESERVAR BACKUP
+                        // ═══════════════════════════════════════════════════
+
+                        // ❸ PASO 3: Limpiar venta SIN eliminar backup
                         if (typeof limpiarVentaCompleta === 'function') {
-                            limpiarVentaCompleta();
-                            console.log('✅ Paso 3: Módulo de ventas limpiado');
+                            limpiarVentaCompleta(false); // ← 🚨 PARÁMETRO false = PRESERVAR BACKUP
+                            console.log('✅ Paso 3: Módulo de ventas limpiado (backup preservado)');
                         } else {
                             console.error('❌ Función limpiarVentaCompleta no existe');
                         }
@@ -1550,7 +1851,7 @@ function procesarPagoExitoso(comprobante) {
                             }
 
                             console.log('═══════════════════════════════════════════════════');
-                            console.log('✅ REINICIO COMPLETADO - Listo para nueva venta');
+                            console.log('✅ REINICIO COMPLETADO - Backup disponible');
                             console.log('═══════════════════════════════════════════════════');
 
                         }, 200); // Esperar limpieza
@@ -1770,11 +2071,23 @@ function ocultarModalCalculoFactura() {
 }
 
 /**
- * Limpiar modal de pago al cerrarse
+ * ✅ ACTUALIZADO v24.0: Limpiar modal de pago al cerrarse
+ * NUEVO: Destruir todos los tooltips activos
  */
 function limpiarModalPago() {
-    console.log('🧹 Limpiando modal de pago...');
+    console.log('🧹 Limpiando modal de pago v24.0...');
 
+    // ✅ NUEVO: Destruir tooltips activos
+    $('#tbodyFormasPago [data-bs-toggle="tooltip"]').each(function () {
+        const tooltipInstance = bootstrap.Tooltip.getInstance(this);
+        if (tooltipInstance) {
+            tooltipInstance.dispose();
+        }
+    });
+
+    console.log('   ✅ Tooltips destruidos');
+
+    // Limpieza normal (sin cambios)
     datosCliente = {};
     conceptosPago = {
         totalPagar: 0,
@@ -2649,14 +2962,38 @@ function seleccionarInstrumento($item) {
 function vincularEventosInstrumentos() {
     console.log('🔧 Vinculando eventos de instrumentos...');
 
-    $('.instrumento-item').off('click').on('click', function () {
-        seleccionarInstrumento($(this));
-    });
+    // ═══════════════════════════════════════════════════════════
+    // ✅ ACTUALIZADO v21.3: SELECCIÓN CON UN SOLO CLICK + CONFIRMACIÓN AUTOMÁTICA
+    // ═══════════════════════════════════════════════════════════
 
-    $('.instrumento-item').off('dblclick').on('dblclick', function () {
-        seleccionarInstrumento($(this));
-        setTimeout(() => confirmarSeleccionInstrumento(), 300);
-    });
+    /**
+     * Evento 'click' en items de instrumentos
+     * 
+     * CAMBIOS v21.3:
+     * - Agregado delay de 200ms antes de confirmar automáticamente
+     * - Usuario ve feedback visual (resaltado azul) antes de continuar
+     * - Mejora UX: Elimina necesidad de doble click o botón confirmar
+     * 
+     * INSPIRADO EN: Selección con 1 click del modal tipo medio de pago (v20.7)
+     */
+    $('.instrumento-item').off('click').on('click', function () {
+        console.log('═══════════════════════════════════════════════════');
+        console.log('🖱️ CLICK EN INSTRUMENTO v21.3');
+        console.log('═══════════════════════════════════════════════════');
+
+        const $item = $(this);
+
+        // ❶ Seleccionar visualmente el ítem
+        seleccionarInstrumento($item);
+
+        console.log('   ✅ Ítem seleccionado visualmente');
+
+        // ❷ ✅ NUEVO: Confirmar automáticamente después de breve delay
+        setTimeout(() => {
+            console.log('   ⏩ Confirmando selección automáticamente...');
+            confirmarSeleccionInstrumento(); // ← Función existente (línea ~2340)
+        }, 200); // ← Delay de 200ms para feedback visual
+    });   
 
     $('#btnConfirmarInstrumento').off('click').on('click', confirmarSeleccionInstrumento);
 
@@ -2978,16 +3315,79 @@ function obtenerIconoMP(tcfId) {
     return iconos[tcfId.toUpperCase()] || 'bx bx-circle';
 }
 
-/**
- * Formatear número con separadores de miles
- */
-function formatearNumero(numero, decimales = 2) {
-    if (isNaN(numero)) return '0.00';
 
-    return parseFloat(numero).toLocaleString('es-AR', {
-        minimumFractionDigits: decimales,
-        maximumFractionDigits: decimales
-    });
+
+/**
+ * ✅ NUEVO v22.0: Parsea números en formato GeConnect (en-US)
+ * 
+ * Convierte texto con formato GeConnect a número JavaScript
+ * 
+ * Ejemplos:
+ *   "$ 1,234.56"       → 1234.56
+ *   "1,234,567.89"     → 1234567.89
+ *   "599.99"           → 599.99
+ *   "$ 100,000"        → 100000
+ *   "$ -500.50"        → -500.50
+ * 
+ * Formato GeConnect:
+ *   - Separador de miles: , (coma)
+ *   - Separador decimal: . (punto)
+ *   - Símbolo de moneda: $ (opcional)
+ * 
+ * @param {string} texto - Texto con formato GeConnect (ej: "$ 1,234.56")
+ * @returns {number} - Número parseado en formato estándar (ej: 1234.56)
+ */
+function parsearNumero(texto) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔢 PARSEAR NÚMERO GECONNECT v22.0');
+    console.log(`   Entrada: "${texto}"`);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Validar entrada
+    if (!texto || typeof texto !== 'string') {
+        console.warn('⚠️ Entrada inválida - No es una cadena de texto');
+        console.warn(`   Tipo recibido: ${typeof texto}`);
+        console.warn(`   Valor: ${texto}`);
+        return 0;
+    }
+
+    // ❷ Limpiar espacios iniciales/finales
+    let limpio = texto.trim();
+    console.log(`   📝 Paso 1 - Después de trim(): "${limpio}"`);
+
+    // ❸ Eliminar símbolo de moneda ($) y espacios internos
+    limpio = limpio.replace(/[$\s]/g, '');
+    console.log(`   📝 Paso 2 - Sin $ ni espacios: "${limpio}"`);
+
+    // ❹ ✅ CAMBIO CRÍTICO: Eliminar comas (separador de miles en formato GeConnect)
+    limpio = limpio.replace(/,/g, '');
+    console.log(`   📝 Paso 3 - Sin comas de miles: "${limpio}"`);
+
+    // ❺ ✅ Punto ya es decimal (no requiere transformación)
+    console.log(`   📝 Paso 4 - Punto decimal ya correcto: "${limpio}"`);
+
+    // ❻ Parsear a número flotante
+    const resultado = parseFloat(limpio);
+
+    // ❼ Validar resultado
+    if (isNaN(resultado)) {
+        console.error('═══════════════════════════════════════════════════');
+        console.error('❌ ERROR AL PARSEAR NÚMERO');
+        console.error(`   Texto original: "${texto}"`);
+        console.error(`   Texto limpio: "${limpio}"`);
+        console.error(`   Resultado: NaN`);
+        console.error('═══════════════════════════════════════════════════');
+        return 0;
+    }
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('✅ NÚMERO PARSEADO EXITOSAMENTE');
+    console.log(`   Texto original: "${texto}"`);
+    console.log(`   Número obtenido: ${resultado}`);
+    console.log(`   Formato display: ${resultado.toFixed(2)}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    return resultado;
 }
 
 /**
@@ -3029,15 +3429,19 @@ function mostrarMensajeError(mensaje) {
 }
 
 /**
- * ✅ ACTUALIZADO v18.0: Abre el modal de detalle de efectivo con InputMask
- * NUEVO: Aplica máscara monetaria argentina al input de monto
+ * ✅ ACTUALIZADO v23.1: Abre el modal de detalle de efectivo SIN InputMask
+ * CORRECCIÓN CRÍTICA: Vinculación explícita de botones cancelar/cerrar
+ * 
+ * CAMBIOS v23.1:
+ * - Agregada vinculación de botones cancelar y cerrar (X)
+ * - Garantiza cierre correcto incluso sin Bootstrap.Modal
  * 
  * @param {Object} instrumento - Objeto con datos del instrumento
  * @param {Object} tipoMedioPago - Tipo de medio de pago
  */
 function abrirModalDetalleEfectivo(instrumento, tipoMedioPago) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔓 ABRIR MODAL DETALLE EFECTIVO v18.0');
+    console.log('🔓 ABRIR MODAL DETALLE EFECTIVO v23.1 (SIN InputMask)');
     console.log(`   Instrumento: ${instrumento.ins_desc} (${instrumento.ins_id})`);
     console.log(`   Tipo MP: ${tipoMedioPago.tcf_desc}`);
     console.log('═══════════════════════════════════════════════════');
@@ -3063,47 +3467,35 @@ function abrirModalDetalleEfectivo(instrumento, tipoMedioPago) {
     const diferencia = conceptosPago.diferencia || 0;
     const importeSugerido = Math.abs(diferencia);
 
-    console.log(`💰 Importe sugerido: ${importeSugerido}`);
+    console.log(`💰 Importe sugerido: ${importeSugerido.toFixed(2)}`);
 
-    // ❹ ✅ NUEVO: Verificar y aplicar máscara según símbolo de moneda
+    // ❹ Obtener input
     const $inputMonto = $('#txtMontoEfectivo');
 
-    // Remover máscara previa (si existe)
+    // ✅ CRÍTICO v23.0: REMOVER INPUTMASK SI EXISTE
     if (typeof InputMaskMonetario !== 'undefined') {
+        console.log('🗑️ Removiendo InputMask existente...');
         InputMaskMonetario.removerMascara($inputMonto);
-
-        // Aplicar máscara según el símbolo
-        if (instrumento.ins_simbolo === '$' || instrumento.ins_simbolo === 'ARS') {
-            InputMaskMonetario.aplicarMascaraPesos($inputMonto);
-        } else if (instrumento.ins_simbolo === 'USD') {
-            InputMaskMonetario.aplicarMascaraDolares($inputMonto);
-        } else {
-            // Máscara genérica para otras monedas
-            InputMaskMonetario.aplicarMascaraMonetaria($inputMonto, {
-                prefix: `${instrumento.ins_simbolo} `
-            });
-        }
-
-        console.log(`✅ Máscara aplicada para ${instrumento.ins_simbolo}`);
-
-        // ❺ Establecer valor inicial usando la función del módulo
-        InputMaskMonetario.establecerValor($inputMonto, importeSugerido);
-    } else {
-        console.warn('⚠️ InputMaskMonetario no disponible - usando valor sin formato');
-        $inputMonto.val(importeSugerido.toFixed(2));
+        console.log('   ✅ InputMask removido correctamente');
     }
+
+    // ❺ ✅ NUEVO v23.0: Establecer valor inicial SIN FORMATO
+    $inputMonto.val(importeSugerido.toFixed(2));
+
+    console.log(`   ✅ Valor inicial: ${importeSugerido.toFixed(2)}`);
+    console.log('   ✅ Teclado digital listo para escribir');
 
     // ❻ Limpiar validaciones previas
     $inputMonto.removeClass('is-invalid is-valid');
     $('.invalid-feedback').remove();
 
-    // ❼ Mostrar modal con jQuery (evitar problemas de Bootstrap)
+    // ❼ Mostrar modal con jQuery
     $modal
         .addClass('show')
         .css({
             'display': 'block',
             'opacity': '1',
-            'z-index': '5100' // Sobre modal instrumentos (5090)
+            'z-index': '5100'
         })
         .attr('aria-modal', 'true')
         .removeAttr('aria-hidden');
@@ -3120,6 +3512,14 @@ function abrirModalDetalleEfectivo(instrumento, tipoMedioPago) {
     // ❾ Focus en el input con delay
     setTimeout(() => {
         $inputMonto.trigger("focus").trigger("select");
+
+        console.log('═══════════════════════════════════════════════════');
+        console.log('✅ INPUT LISTO PARA TECLADO DIGITAL:');
+        console.log('   - InputMask: DESACTIVADO ❌');
+        console.log('   - Teclado digital: ACTIVO ✅');
+        console.log('   - Formato: SOLO NÚMEROS (sin $, sin comas)');
+        console.log('   - Validación: NATIVA HTML5');
+        console.log('═══════════════════════════════════════════════════');
     }, INPUT_FOCUS_TIMEOUT);
 
     // ❿ Vincular evento de guardar
@@ -3139,35 +3539,66 @@ function abrirModalDetalleEfectivo(instrumento, tipoMedioPago) {
             }
         });
 
-    console.log('✅ Modal detalle efectivo abierto con máscara aplicada');
+    // ═══════════════════════════════════════════════════════════
+    // ✅ NUEVO v23.1: VINCULACIÓN EXPLÍCITA DE BOTONES DE CIERRE
+    // ═══════════════════════════════════════════════════════════
+
+    /**
+     * Maneja el click en los botones de cancelar/cerrar
+     * Garantiza cierre correcto del modal abierto con jQuery
+     */
+    $modal
+        .find('[data-bs-dismiss="modal"], .btn-close')
+        .off('click.cerrarEfectivo')
+        .on('click.cerrarEfectivo', function (e) {
+            console.log('═══════════════════════════════════════════════════');
+            console.log('🚫 BOTÓN CANCELAR/CERRAR PRESIONADO v23.1');
+            console.log('═══════════════════════════════════════════════════');
+
+            e.preventDefault(); // ← Prevenir comportamiento por defecto
+            e.stopPropagation(); // ← Detener propagación
+
+            // Cerrar con función dedicada
+            cerrarModalDetalleEfectivo();
+
+            console.log('✅ Modal cerrado desde botón cancelar/cerrar');
+        });
+
+    console.log('✅ Botones cancelar y cerrar (X) vinculados correctamente');
+    console.log('✅ Modal detalle efectivo abierto SIN InputMask');
 }
 
 /**
- * ✅ ACTUALIZADO v18.0: Guarda el detalle de efectivo usando InputMask
- * NUEVO: Extrae valor numérico limpio desde el input enmascarado
+ * ✅ ACTUALIZADO v23.0: Guarda el detalle de efectivo SIN InputMask
+ * CAMBIO: Parseo directo del valor sin InputMaskMonetario
+ * 
+ * LÓGICA:
+ * 1. Obtener valor del input como string
+ * 2. Limpiar caracteres no numéricos (excepto punto/coma decimal)
+ * 3. Parsear con parseFloat()
+ * 4. Validar y guardar
  * 
  * @param {Object} instrumento - Objeto con datos del instrumento
  * @param {Object} tipoMedioPago - Tipo de medio de pago
  */
 function guardarDetalleEfectivo(instrumento, tipoMedioPago) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('💾 GUARDAR DETALLE EFECTIVO v18.0');
+    console.log('💾 GUARDAR DETALLE EFECTIVO v23.0 (SIN InputMask)');
     console.log('═══════════════════════════════════════════════════');
 
-    // ❶ ✅ ACTUALIZADO: Obtener valor numérico usando el módulo InputMask
-    let monto = 0;
+    // ❶ ✅ ACTUALIZADO v23.0: Obtener y limpiar valor del input
+    const montoStr = $('#txtMontoEfectivo').val().trim();
 
-    if (typeof InputMaskMonetario !== 'undefined') {
-        monto = InputMaskMonetario.obtenerValorNumerico('#txtMontoEfectivo');
-        console.log(`   💰 Monto extraído con InputMask: ${monto}`);
-    } else {
-        // Fallback: parseo manual
-        const montoStr = $('#txtMontoEfectivo').val();
-        monto = parsearNumeroArgentino(montoStr);
-        console.warn(`   ⚠️ InputMask no disponible - usando parseo manual: ${monto}`);
-    }
+    // Limpiar: remover todo excepto dígitos, punto y coma
+    // Convertir coma a punto (por si el usuario usó coma decimal)
+    const montoLimpio = montoStr.replace(/[^\d.,]/g, '').replace(',', '.');
 
-    console.log(`   📝 Monto final: ${monto}`);
+    // Parsear a número flotante
+    const monto = parseFloat(montoLimpio) || 0;
+
+    console.log(`   📝 Valor del input: "${montoStr}"`);
+    console.log(`   🔧 Valor limpio: "${montoLimpio}"`);
+    console.log(`   💰 Monto parseado: ${monto}`);
 
     // ❷ Validaciones
     if (isNaN(monto) || monto <= 0) {
@@ -3176,10 +3607,9 @@ function guardarDetalleEfectivo(instrumento, tipoMedioPago) {
         return;
     }
 
-    // ❸ Validación de límite máximo (opcional)
+    // ❸ Validación de límite máximo (sin cambios)
     const diferencia = Math.abs(conceptosPago.diferencia || 0);
 
-    // ✅ ACTUALIZADO v18.1: Usar constante configurable
     if (monto > diferencia * LIMITE_PORCENTAJE_DIFERENCIA) {
         console.warn(`⚠️ Monto muy alto: ${monto} > ${diferencia * LIMITE_PORCENTAJE_DIFERENCIA}`);
 
@@ -3208,7 +3638,6 @@ function guardarDetalleEfectivo(instrumento, tipoMedioPago) {
             "¿Monto elevado?",
             mensajeHtml,
             function () {
-                // Botón "Continuar"
                 $('#msjModal').modal('hide');
                 finalizarGuardadoEfectivo(monto, instrumento, tipoMedioPago);
             },
@@ -3216,7 +3645,6 @@ function guardarDetalleEfectivo(instrumento, tipoMedioPago) {
             ["Continuar", "Corregir"],
             "warn!",
             function () {
-                // Botón "Corregir"
                 $('#msjModal').modal('hide');
                 setTimeout(() => {
                     $('#txtMontoEfectivo').trigger("focus").trigger("select");
@@ -3227,7 +3655,7 @@ function guardarDetalleEfectivo(instrumento, tipoMedioPago) {
         return;
     }
 
-    // ❹ Si validaciones OK, finalizar guardado
+    // ❹ Si validaciones OK, finalizar guardado (sin cambios)
     finalizarGuardadoEfectivo(monto, instrumento, tipoMedioPago);
 }
 
@@ -3285,16 +3713,20 @@ function finalizarGuardadoEfectivo(monto, instrumento, tipoMedioPago) {
 }
 
 /**
-* ✅ NUEVO v17.5: Agrega una fila a la tabla de formas de pago
-* @param {Object} valor - Objeto con datos del valor
-*/
+ * ✅ ACTUALIZADO v24.0: Agrega una fila a la tabla de formas de pago
+ * CORRECCIÓN: Observación como tooltip en columna Importe
+ * ELIMINADO: Columna <td> de observación
+ * 
+ * @param {Object} valor - Objeto con datos del valor
+ */
 function agregarFilaValor(valor) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('➕ AGREGAR FILA A TABLA v17.5');
+    console.log('➕ AGREGAR FILA A TABLA v24.0');
     console.log(`   ID: ${valor.id}`);
     console.log(`   Tipo: ${valor.tcf_desc}`);
     console.log(`   Instrumento: ${valor.ins_desc}`);
     console.log(`   Importe: ${valor.ins_simbolo} ${formatearNumero(valor.importe, 2)}`);
+    console.log(`   Observación: "${valor.observacion || 'Sin observaciones'}"`);
     console.log('═══════════════════════════════════════════════════');
 
     const $tbody = $('#tbodyFormasPago');
@@ -3302,7 +3734,22 @@ function agregarFilaValor(valor) {
     // ❶ Remover fila de "sin valores" si existe
     $('#rowSinFormasPago').remove();
 
-    // ❷ Construir HTML de la fila
+    // ❷ ✅ NUEVO v24.0: Preparar tooltip de observación
+    const observacion = valor.observacion || 'Sin observaciones';
+    const htmlTooltip = escapeHtml(observacion);
+
+    // Construir atributos de tooltip (Bootstrap 5)
+    const tooltipAttrs = observacion && observacion !== 'Sin observaciones'
+        ? `data-bs-toggle="tooltip" 
+           data-bs-placement="top" 
+           data-bs-html="true" 
+           data-bs-title="${htmlTooltip}"
+           style="cursor: help; border-bottom: 1px dotted #28a745;"`
+        : '';
+
+    console.log(`   📊 Tooltip: ${tooltipAttrs ? 'SÍ' : 'NO'}`);
+
+    // ❸ ✅ ACTUALIZADO: Construir HTML de la fila SIN columna observación
     const filaHtml = `
         <tr data-valor-id="${valor.id}" class="fila-valor">
             <!-- # -->
@@ -3319,19 +3766,13 @@ function agregarFilaValor(valor) {
                 <small class="text-muted">${escapeHtml(valor.ins_desc)}</small>
             </td>
             
-            <!-- Importe -->
+            <!-- ✅ Importe CON TOOLTIP de observación -->
             <td class="text-end align-middle">
-                <span class="fw-bold fs-5 text-success">
+                <span class="fw-bold fs-5 text-success" ${tooltipAttrs}>
                     ${escapeHtml(valor.ins_simbolo)} ${formatearNumero(valor.importe, 2)}
+                    ${tooltipAttrs ? '<i class="bx bx-info-circle ms-1 text-muted" style="font-size: 0.9rem;"></i>' : ''}
                 </span>
-            </td>
-            
-            <!-- Observación -->
-            <td class="align-middle">
-                <small class="text-muted fst-italic">
-                    ${valor.observacion || 'Sin observaciones'}
-                </small>
-            </td>
+            </td>                     
             
             <!-- Acciones -->
             <td class="text-center align-middle">
@@ -3344,10 +3785,31 @@ function agregarFilaValor(valor) {
         </tr>
     `;
 
-    // ❸ Agregar fila al tbody
+    // ❹ Agregar fila al tbody
     $tbody.append(filaHtml);
 
-    // ❹ Actualizar badge de cantidad
+    // ❺ ✅ NUEVO v24.0: Inicializar tooltips de Bootstrap 5
+    setTimeout(() => {
+        const tooltipTriggerList = $tbody.find('[data-bs-toggle="tooltip"]').toArray();
+
+        tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+            // Destruir tooltip previo si existe (evita duplicados)
+            const existingTooltip = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
+            if (existingTooltip) {
+                existingTooltip.dispose();
+            }
+
+            // Crear nuevo tooltip
+            new bootstrap.Tooltip(tooltipTriggerEl, {
+                container: 'body', // ← CRÍTICO: Evita problemas con overflow
+                trigger: 'hover focus' // ← Activar con hover y focus (accesibilidad)
+            });
+        });
+
+        console.log(`   ✅ ${tooltipTriggerList.length} tooltip(s) inicializado(s)`);
+    }, 100); // ← Delay para asegurar que el elemento está en el DOM
+
+    // ❻ Actualizar badge de cantidad
     const cantidadValores = valoresPago.length;
     $('#badgeCantidadPagos').text(`${cantidadValores} ${cantidadValores === 1 ? 'valor' : 'valores'}`);
 
@@ -3355,11 +3817,29 @@ function agregarFilaValor(valor) {
 }
 
 /**
-* ✅ NUEVO v17.5: Actualiza los totales del modal de pago
-*/
+ * ✅ ACTUALIZADO v21.4: Actualiza los totales del modal de pago
+ * CORRECCIÓN CRÍTICA: Control dual de botones Agregar y Finalizar
+ * 
+ * CAMBIOS v21.4:
+ * - Agregada lógica de habilitación/deshabilitación del botón "Agregar"
+ * - Lógica mejorada para botón "Finalizar" (valida vuelto con efectivo)
+ * - Logs detallados de decisión de estados
+ * 
+ * REGLAS DE NEGOCIO:
+ * 
+ * BOTÓN AGREGAR:
+ *   - ✅ Habilitado: diferencia > 0 (falta pagar)
+ *   - ❌ Deshabilitado: diferencia <= 0 (exacto o vuelto)
+ * 
+ * BOTÓN FINALIZAR:
+ *   - ✅ Habilitado si:
+ *     • diferencia === 0 (pago exacto) O
+ *     • diferencia < 0 (vuelto) Y solo efectivo
+ *   - ❌ Deshabilitado en cualquier otro caso
+ */
 function actualizarTotalesPago() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔄 ACTUALIZAR TOTALES PAGO v17.5');
+    console.log('🔄 ACTUALIZAR TOTALES PAGO v21.4');
     console.log('═══════════════════════════════════════════════════');
 
     // ❶ Calcular total de valores ingresados
@@ -3397,11 +3877,80 @@ function actualizarTotalesPago() {
         $badgeDiferencia.addClass('bg-danger'); // Rojo = SOBRA
     }
 
-    // ❻ Habilitar/deshabilitar botón finalizar
-    const puedeFinelizar = Math.abs(diferencia) < 0.01 && valoresPago.length > 0;
-    $('#btnFinalizarPago').prop('disabled', !puedeFinelizar);
+    // ═══════════════════════════════════════════════════════════
+    // ✅ NUEVO v21.4: LÓGICA MEJORADA DE HABILITACIÓN DE BOTONES
+    // ═══════════════════════════════════════════════════════════
 
-    console.log('✅ Totales actualizados');
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔧 EVALUANDO ESTADO DE BOTONES v21.4');
+
+    // ❻ Validar si se puede finalizar
+    let puedeFinalizar = false;
+
+    if (valoresPago.length === 0) {
+        // ═══════════════════════════════════════════════════════
+        // CASO 1: Sin valores ingresados
+        // ═══════════════════════════════════════════════════════
+        puedeFinalizar = false;
+        console.log('   ❌ Sin valores ingresados → Finalizar DESHABILITADO');
+    } else if (Math.abs(diferencia) < 0.01) {
+        // ═══════════════════════════════════════════════════════
+        // CASO 2: Diferencia exacta ($0.00)
+        // ═══════════════════════════════════════════════════════
+        puedeFinalizar = true;
+        console.log('   ✅ Diferencia exacta → Finalizar HABILITADO');
+    } else if (diferencia < 0) {
+        // ═══════════════════════════════════════════════════════
+        // CASO 3: Diferencia negativa (vuelto)
+        // ═══════════════════════════════════════════════════════
+        console.log('   🔍 Diferencia negativa (vuelto) → Validando tipos de pago...');
+
+        const tiposPago = valoresPago.map(v => v.tcf_id.toUpperCase());
+        const tieneSoloEfectivo = tiposPago.every(tipo => tipo === 'EF');
+
+        console.log(`      Tipos de pago: ${tiposPago.join(', ')}`);
+        console.log(`      Solo efectivo: ${tieneSoloEfectivo ? 'SÍ' : 'NO'}`);
+
+        if (tieneSoloEfectivo) {
+            puedeFinalizar = true;
+            console.log('   ✅ Solo efectivo con vuelto → Finalizar HABILITADO');
+        } else {
+            puedeFinalizar = false;
+            console.log('   ❌ Vuelto con medios no permitidos → Finalizar DESHABILITADO');
+        }
+    } else {
+        // ═══════════════════════════════════════════════════════
+        // CASO 4: Diferencia positiva (falta pagar)
+        // ═══════════════════════════════════════════════════════
+        puedeFinalizar = false;
+        console.log('   ❌ Diferencia positiva (falta pagar) → Finalizar DESHABILITADO');
+        console.log(`      Falta pagar: ${formatearMoneda(diferencia)}`);
+    }
+
+    // ❼ ✅ NUEVO v21.4: Validar si se puede agregar
+    const puedeAgregar = diferencia > 0;
+
+    if (puedeAgregar) {
+        console.log(`   ✅ Diferencia > 0 → Agregar HABILITADO`);
+        console.log(`      Monto faltante: ${formatearMoneda(diferencia)}`);
+    } else if (Math.abs(diferencia) < 0.01) {
+        console.log('   ❌ Diferencia exacta → Agregar DESHABILITADO');
+    } else {
+        console.log('   ❌ Diferencia negativa (vuelto) → Agregar DESHABILITADO');
+        console.log(`      Vuelto: ${formatearMoneda(Math.abs(diferencia))}`);
+    }
+
+    console.log('─────────────────────────────────────────────────');
+    console.log(`   🎚️ ESTADO FINAL:`);
+    console.log(`      Botón Agregar: ${puedeAgregar ? '✅ HABILITADO' : '❌ DESHABILITADO'}`);
+    console.log(`      Botón Finalizar: ${puedeFinalizar ? '✅ HABILITADO' : '❌ DESHABILITADO'}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❽ Aplicar estados a los botones
+    $('#btnAgregarPago').prop('disabled', !puedeAgregar);
+    $('#btnFinalizarPago').prop('disabled', !puedeFinalizar);
+
+    console.log('✅ Totales y botones actualizados correctamente');
 }
 
 /**
@@ -3466,12 +4015,11 @@ function mostrarErrorCampo(selector, mensaje) {
 }
 
 /**
- * ✅ ACTUALIZADO v18.1: Cierra el modal de detalle efectivo
- * MEJORA: Limpieza más exhaustiva del formulario
+ * ✅ ACTUALIZADO v23.1: Cierra el modal y dispara evento de limpieza
  */
 function cerrarModalDetalleEfectivo() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔒 CERRAR MODAL DETALLE EFECTIVO v18.1');
+    console.log('🔒 CERRAR MODAL DETALLE EFECTIVO v23.1');
     console.log('═══════════════════════════════════════════════════');
 
     const $modal = $('#modalDetalleEfectivo');
@@ -3481,7 +4029,16 @@ function cerrarModalDetalleEfectivo() {
         return;
     }
 
-    // ❶ Ocultar modal con jQuery
+    // ❶ Verificar si el modal está visible
+    const estaVisible = $modal.hasClass('show');
+    console.log(`   Modal visible: ${estaVisible ? 'SÍ' : 'NO'}`);
+
+    if (!estaVisible) {
+        console.log('   ℹ️ Modal ya está cerrado');
+        return;
+    }
+
+    // ❷ Ocultar modal
     $modal
         .removeClass('show')
         .css('display', 'none')
@@ -3490,7 +4047,7 @@ function cerrarModalDetalleEfectivo() {
 
     console.log('   ✅ Modal ocultado');
 
-    // ❷ Remover backdrop específico
+    // ❸ Remover backdrop específico
     const $backdropEfectivo = $('.modal-backdrop[data-modal="efectivo"]');
     if ($backdropEfectivo.length > 0) {
         $backdropEfectivo.fadeOut(200, function () {
@@ -3499,42 +4056,32 @@ function cerrarModalDetalleEfectivo() {
         console.log('   ✅ Backdrop removido');
     }
 
-    // ❸ Limpiar formulario (el evento hidden.bs.modal también lo hará, pero por seguridad)
-    const $input = $('#txtMontoEfectivo');
-    $input
-        .val('')
-        .removeClass('is-invalid is-valid')
-        .prop('disabled', false); // Asegurar que no quedó deshabilitado
+    // ❹ ✅ NUEVO v23.1: DISPARAR EVENTO HIDDEN.BS.MODAL MANUALMENTE
+    // Como el modal se abre con jQuery puro, debemos disparar el evento manualmente
+    console.log('   🔔 Disparando evento hidden.bs.modal...');
+    $modal.trigger('hidden.bs.modal');
+    console.log('   ✅ Evento disparado - Limpieza automática ejecutada');
 
-    // ❹ Remover todos los mensajes de validación
-    $input.siblings('.invalid-feedback').remove();
-    $('.invalid-feedback').remove();
-
-    console.log('   ✅ Formulario limpiado');
-
-    // ❺ Resetear labels
-    $('#lblTipoMedioPagoEfectivo').text('-');
-    $('#lblInstrumentoEfectivo').text('-');
-
-    console.log('   ✅ Labels reseteados');
-
-    // ❻ Verificar si hay otros modales abiertos
+    // ❺ Verificar si hay otros modales abiertos
     setTimeout(() => {
-        if ($('.modal.show').length === 0) {
+        const modalesAbiertos = $('.modal.show').length;
+        console.log(`   📊 Modales abiertos restantes: ${modalesAbiertos}`);
+
+        if (modalesAbiertos === 0) {
             $('body').removeClass('modal-open').css('overflow', '');
-            console.log('   ✅ Body desbloqueado (no hay más modales)');
+            console.log('   ✅ Body desbloqueado');
         } else {
-            console.log('   ℹ️ Otros modales aún abiertos');
+            console.log('   ℹ️ Otros modales abiertos');
         }
     }, 100);
 
-    console.log('═══════════════════════════════════════════════════');
     console.log('✅ MODAL CERRADO COMPLETAMENTE');
-    console.log('═══════════════════════════════════════════════════');
 }
 
 /**
- * ✅ NUEVO v17.5: Elimina un valor de la tabla
+ * ✅ ACTUALIZADO v24.0: Elimina un valor de la tabla
+ * NUEVO: Destruye tooltips antes de eliminar fila
+ * 
  * @param {number} valorId - ID del valor a eliminar
  */
 function eliminarValor(valorId) {
@@ -3551,11 +4098,10 @@ function eliminarValor(valorId) {
     const valor = valoresPago[index];
 
     // Confirmar eliminación
-    // Confirmar eliminación
     const mensajeHtml = `
-    <strong>${escapeHtml(valor.tcf_desc)} - ${escapeHtml(valor.ins_desc)}</strong><br>
-    Importe: ${escapeHtml(valor.ins_simbolo)} ${formatearNumero(valor.importe, 2)}
-`;
+        <strong>${escapeHtml(valor.tcf_desc)} - ${escapeHtml(valor.ins_desc)}</strong><br>
+        Importe: ${escapeHtml(valor.ins_simbolo)} ${formatearNumero(valor.importe, 2)}
+    `;
 
     AbrirMensaje(
         "¿Eliminar valor?",
@@ -3564,11 +4110,22 @@ function eliminarValor(valorId) {
             // Botón "Eliminar"
             $('#msjModal').modal('hide');
 
+            // ✅ NUEVO v24.0: Destruir tooltips antes de eliminar
+            const $fila = $(`.fila-valor[data-valor-id="${valorId}"]`);
+
+            $fila.find('[data-bs-toggle="tooltip"]').each(function () {
+                const tooltipInstance = bootstrap.Tooltip.getInstance(this);
+                if (tooltipInstance) {
+                    tooltipInstance.dispose();
+                    console.log('   ✅ Tooltip destruido antes de eliminar fila');
+                }
+            });
+
             // Remover del array
             valoresPago.splice(index, 1);
 
-            // Remover fila del DOM
-            $(`.fila-valor[data-valor-id="${valorId}"]`).fadeOut(300, function () {
+            // Remover fila del DOM con animación
+            $fila.fadeOut(300, function () {
                 $(this).remove();
 
                 // Si no quedan valores, mostrar mensaje
@@ -3771,96 +4328,20 @@ function cerrarModalInstrumentosJQuery() {
 // ════════════════════════════════════════════════════════════
 
 /**
- * ✅ NUEVO v13.2: Parsea números en formato argentino a formato numérico estándar
- * Convierte texto con formato regional argentino a número JavaScript
+ * ✅ ACTUALIZADO v22.0: Alias de compatibilidad (DEPRECADO)
  * 
- * Ejemplos:
- *   "$ 599.994,16"     → 599994.16
- *   "$ 1.234.567,89"   → 1234567.89
- *   "$ 599,99"         → 599.99
- *   "$ 100.000"        → 100000
- *   "$ -500,50"        → -500.50
+ * MIGRACIÓN:
+ * - Esta función ahora es un wrapper de parsearNumero()
+ * - Se mantiene por compatibilidad con código legacy
+ * - RECOMENDACIÓN: Migrar a parsearNumero() en nuevas implementaciones
  * 
- * Formato Argentino:
- *   - Separador de miles: . (punto)
- *   - Separador decimal: , (coma)
- *   - Símbolo de moneda: $ (opcional)
- * 
- * @param {string} texto - Texto con formato argentino (ej: "$ 599.994,16")
- * @returns {number} - Número parseado en formato estándar (ej: 599994.16)
+ * @deprecated Usar parsearNumero() en su lugar
+ * @param {string} texto - Texto con formato monetario
+ * @returns {number} - Número parseado
  */
 function parsearNumeroArgentino(texto) {
-    console.log('═══════════════════════════════════════════════════');
-    console.log('🔢 PARSEAR NÚMERO ARGENTINO v13.2');
-    console.log(`   Entrada: "${texto}"`);
-    console.log('═══════════════════════════════════════════════════');
-
-    // ❶ Validar entrada
-    if (!texto || typeof texto !== 'string') {
-        console.warn('⚠️ Entrada inválida - No es una cadena de texto');
-        console.warn(`   Tipo recibido: ${typeof texto}`);
-        console.warn(`   Valor: ${texto}`);
-        return 0;
-    }
-
-    // ❷ Limpiar espacios iniciales/finales
-    let limpio = texto.trim();
-    console.log(`   📝 Paso 1 - Después de trim(): "${limpio}"`);
-
-    // ❸ Eliminar símbolo de moneda ($) y espacios internos
-    limpio = limpio.replace(/[$\s]/g, '');
-    console.log(`   📝 Paso 2 - Sin $ ni espacios: "${limpio}"`);
-
-    // ❹ Eliminar puntos (separador de miles en formato argentino)
-    limpio = limpio.replace(/\./g, '');
-    console.log(`   📝 Paso 3 - Sin puntos de miles: "${limpio}"`);
-
-    // ❺ Reemplazar coma decimal (formato argentino) por punto (formato estándar)
-    limpio = limpio.replace(/,/g, '.');
-    console.log(`   📝 Paso 4 - Coma → punto decimal: "${limpio}"`);
-
-    // ❻ Parsear a número flotante
-    const resultado = parseFloat(limpio);
-
-    // ❼ Validar resultado
-    if (isNaN(resultado)) {
-        console.error('═══════════════════════════════════════════════════');
-        console.error('❌ ERROR AL PARSEAR NÚMERO');
-        console.error(`   Texto original: "${texto}"`);
-        console.error(`   Texto limpio: "${limpio}"`);
-        console.error(`   Resultado: NaN`);
-        console.error('═══════════════════════════════════════════════════');
-        return 0;
-    }
-
-    console.log('═══════════════════════════════════════════════════');
-    console.log('✅ NÚMERO PARSEADO EXITOSAMENTE');
-    console.log(`   Texto original: "${texto}"`);
-    console.log(`   Número obtenido: ${resultado}`);
-    console.log(`   Formato display: ${resultado.toFixed(2)}`);
-    console.log('═══════════════════════════════════════════════════');
-
-    return resultado;
-}
-
-/**
- * ✅ NUEVO v13.2: Formatea número al estilo argentino
- * Complemento de parsearNumeroArgentino() para operación inversa
- * 
- * @param {number} numero - Número a formatear
- * @param {number} decimales - Cantidad de decimales (default: 2)
- * @returns {string} - Número formateado (ej: "599.994,16")
- */
-function formatearNumero(numero, decimales = 2) {
-    if (isNaN(numero)) {
-        console.warn(`⚠️ formatearNumero: entrada inválida (${numero})`);
-        return '0,00';
-    }
-
-    return parseFloat(numero).toLocaleString('es-AR', {
-        minimumFractionDigits: decimales,
-        maximumFractionDigits: decimales
-    });
+    console.warn('⚠️ DEPRECADO: parsearNumeroArgentino() → Usar parsearNumero()');
+    return parsearNumero(texto);
 }
 
 /**
@@ -3932,8 +4413,8 @@ function procesarPagoFactura() {
 
     const totalFinalTexto = $tdTotalFinal.text().trim();
 
-    // ✅ CORREGIDO v13.2: Usar parseo específico para formato argentino
-    const totalFinal = parsearNumeroArgentino(totalFinalTexto);
+    // ✅ ACTUALIZADO v22.0: Usar parseo GeConnect
+    const totalFinal = parsearNumero(totalFinalTexto);
 
     console.log('═══════════════════════════════════════════════════');
     console.log('💵 EXTRACCIÓN DEL TOTAL FINAL');
@@ -4006,21 +4487,20 @@ function procesarPagoFactura() {
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * ✅ ACTUALIZADO v19.2: Abre el modal de detalle de Vale de Compra
- * MEJORA: Validación defensiva del saldo + Fallback a diferencia de factura
+ * ✅ ACTUALIZADO v24.2: Abre el modal de detalle de Vale de Compra SIN InputMask
+ * CORRECCIÓN CRÍTICA: Eliminado InputMask para compatibilidad con teclado digital
  * 
- * CAMBIOS v19.2:
- * - Validación exhaustiva del objeto instrumento
- * - Fallback: Si saldo_vale = 0 → usar diferencia_factura
- * - Logs de debugging mejorados
- * - Manejo de casos extremos
+ * CAMBIOS v24.2:
+ * - Removido InputMaskMonetario del input monto
+ * - Establecer valor inicial SIN FORMATO (solo números)
+ * - Teclado digital escribe correctamente
  * 
  * @param {Object} instrumento - Objeto con datos del instrumento (vale seleccionado)
  * @param {Object} tipoMedioPago - Tipo de medio de pago (tcf_id='VA')
  */
 function abrirModalDetalleValeCompra(instrumento, tipoMedioPago) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔓 ABRIR MODAL DETALLE VALE DE COMPRA v19.2');
+    console.log('🔓 ABRIR MODAL DETALLE VALE DE COMPRA v24.2 (SIN InputMask)');
     console.log(`   Instrumento: ${instrumento.ins_desc} (${instrumento.ins_id})`);
     console.log(`   Tipo MP: ${tipoMedioPago.tcf_desc}`);
     console.log('═══════════════════════════════════════════════════');
@@ -4034,18 +4514,7 @@ function abrirModalDetalleValeCompra(instrumento, tipoMedioPago) {
         return;
     }
 
-    // ❷ ✅ NUEVO v19.2: LOG EXHAUSTIVO DEL OBJETO INSTRUMENTO
-    console.log('📦 OBJETO INSTRUMENTO COMPLETO:');
-    console.log(JSON.stringify(instrumento, null, 2));
-    console.log('   Propiedades detectadas:');
-    console.log(`   ├─ ins_id: ${instrumento.ins_id} (Tipo: ${typeof instrumento.ins_id})`);
-    console.log(`   ├─ ins_desc: ${instrumento.ins_desc} (Tipo: ${typeof instrumento.ins_desc})`);
-    console.log(`   ├─ ins_simbolo: ${instrumento.ins_simbolo} (Tipo: ${typeof instrumento.ins_simbolo})`);
-    console.log(`   ├─ total_actual: ${instrumento.total_actual} (Tipo: ${typeof instrumento.total_actual})`);
-    console.log(`   └─ tiene_detalle: ${instrumento.tiene_detalle} (Tipo: ${typeof instrumento.tiene_detalle})`);
-    console.log('═══════════════════════════════════════════════════');
-
-    // ❸ Obtener elemento del modal
+    // ❷ Obtener elemento del modal
     const $modal = $('#modalDetalleValeCompra');
 
     if ($modal.length === 0) {
@@ -4058,13 +4527,13 @@ function abrirModalDetalleValeCompra(instrumento, tipoMedioPago) {
         return;
     }
 
-    // ❹ Hidratar información del vale seleccionado
+    // ❸ Hidratar información del vale seleccionado
     $('#lblValeCompraSeleccionado').text(instrumento.ins_desc || 'Vale sin nombre');
 
-    // ❺ ✅ NUEVO v19.2: OBTENER SALDO CON VALIDACIÓN DEFENSIVA
+    // ❹ Obtener saldo con validación defensiva
     let saldoDisponible = parseFloat(instrumento.total_actual) || 0;
 
-    // ❻ ✅ NUEVO v19.2: OBTENER DIFERENCIA DE FACTURA
+    // ❺ Obtener diferencia de factura
     const diferenciaFactura = Math.abs(conceptosPago.diferencia || 0);
 
     console.log('═══════════════════════════════════════════════════');
@@ -4073,7 +4542,7 @@ function abrirModalDetalleValeCompra(instrumento, tipoMedioPago) {
     console.log(`   Diferencia de factura (conceptosPago.diferencia): ${diferenciaFactura}`);
     console.log('═══════════════════════════════════════════════════');
 
-    // ❼ ✅ NUEVO v19.2: FALLBACK - Si saldo del vale es 0 → Usar diferencia de factura
+    // ❻ Fallback - Si saldo del vale es 0 → Usar diferencia de factura
     let usandoFallback = false;
 
     if (saldoDisponible <= 0 && diferenciaFactura > 0) {
@@ -4084,7 +4553,6 @@ function abrirModalDetalleValeCompra(instrumento, tipoMedioPago) {
         saldoDisponible = diferenciaFactura;
         usandoFallback = true;
 
-        // Mostrar alert informativo al usuario
         if (typeof toastr !== 'undefined') {
             toastr.warning(
                 `El vale no tiene saldo registrado. Se usará el saldo de la factura (${formatearMoneda(diferenciaFactura)}) como límite máximo.`,
@@ -4094,19 +4562,18 @@ function abrirModalDetalleValeCompra(instrumento, tipoMedioPago) {
         }
     }
 
-    // ❽ Mostrar saldo disponible en el modal
+    // ❼ Mostrar saldo disponible en el modal
     $('#lblSaldoValeCompra').text(formatearMoneda(saldoDisponible));
     $('#hdnSaldoValeCompra').val(saldoDisponible);
     $('#hdnIdValeCompra').val(instrumento.ins_id);
 
     console.log(`   ✅ Saldo final a mostrar: ${formatearMoneda(saldoDisponible)} ${usandoFallback ? '(FALLBACK)' : '(REAL)'}`);
 
-    // ❾ Cambiar color del saldo según el monto
+    // ❽ Cambiar color del saldo según el monto
     const $lblSaldo = $('#lblSaldoValeCompra');
     $lblSaldo.removeClass('text-success text-warning text-danger text-info');
 
     if (usandoFallback) {
-        // ✅ NUEVO: Color especial para fallback (azul/info)
         $lblSaldo.addClass('text-info');
     } else if (saldoDisponible > 1000) {
         $lblSaldo.addClass('text-success');
@@ -4116,7 +4583,7 @@ function abrirModalDetalleValeCompra(instrumento, tipoMedioPago) {
         $lblSaldo.addClass('text-danger');
     }
 
-    // ❿ Calcular importe sugerido (usar el menor entre saldo y diferencia)
+    // ❾ Calcular importe sugerido (usar el menor entre saldo y diferencia)
     let importeSugerido = Math.min(saldoDisponible, diferenciaFactura);
 
     console.log('═══════════════════════════════════════════════════');
@@ -4126,7 +4593,7 @@ function abrirModalDetalleValeCompra(instrumento, tipoMedioPago) {
     console.log(`   → Importe sugerido (menor de ambos): ${formatearMoneda(importeSugerido)}`);
     console.log('═══════════════════════════════════════════════════');
 
-    // ⓫ Validar que el importe sugerido sea válido
+    // ❿ Validar que el importe sugerido sea válido
     if (importeSugerido <= 0) {
         console.error('❌ CRÍTICO: Importe sugerido es 0 o negativo');
 
@@ -4134,7 +4601,6 @@ function abrirModalDetalleValeCompra(instrumento, tipoMedioPago) {
             toastr.error('No hay saldo disponible para aplicar. Verifique los datos del vale.');
         }
 
-        // Cerrar modal automáticamente
         setTimeout(() => {
             cerrarModalDetalleValeCompra();
         }, 2000);
@@ -4142,18 +4608,21 @@ function abrirModalDetalleValeCompra(instrumento, tipoMedioPago) {
         return;
     }
 
-    // ⓬ Aplicar máscara monetaria al input
+    // ⓫ Obtener input
     const $inputMonto = $('#txtMontoValeCompra');
 
+    // ✅ CRÍTICO v24.2: REMOVER INPUTMASK SI EXISTE
     if (typeof InputMaskMonetario !== 'undefined') {
+        console.log('🗑️ Removiendo InputMask existente...');
         InputMaskMonetario.removerMascara($inputMonto);
-        InputMaskMonetario.aplicarMascaraPesos($inputMonto);
-        InputMaskMonetario.establecerValor($inputMonto, importeSugerido);
-        console.log('   ✅ Máscara monetaria aplicada');
-    } else {
-        console.warn('   ⚠️ InputMaskMonetario no disponible - usando valor sin formato');
-        $inputMonto.val(importeSugerido.toFixed(2));
+        console.log('   ✅ InputMask removido correctamente');
     }
+
+    // ⓬ ✅ NUEVO v24.2: Establecer valor inicial SIN FORMATO
+    $inputMonto.val(importeSugerido.toFixed(2));
+
+    console.log(`   ✅ Valor inicial: ${importeSugerido.toFixed(2)}`);
+    console.log('   ✅ Teclado digital listo para escribir');
 
     // ⓭ Limpiar validaciones previas
     $inputMonto.removeClass('is-invalid is-valid');
@@ -4201,36 +4670,50 @@ function abrirModalDetalleValeCompra(instrumento, tipoMedioPago) {
             }
         });
 
-    console.log('✅ Modal detalle vale de compra abierto correctamente');
+    console.log('═══════════════════════════════════════════════════');
+    console.log('✅ INPUT LISTO PARA TECLADO DIGITAL:');
+    console.log('   - InputMask: DESACTIVADO ❌');
+    console.log('   - Teclado digital: ACTIVO ✅');
+    console.log('   - Formato: SOLO NÚMEROS (sin $, sin comas)');
+    console.log('   - Validación: NATIVA HTML5');
+    console.log('═══════════════════════════════════════════════════');
+
+    console.log('✅ Modal detalle vale de compra abierto SIN InputMask');
 }
 
 /**
- * ✅ ACTUALIZADO v19.2: Guarda el detalle del vale de compra
- * MEJORA: Mejor manejo de validación de saldo
+ * ✅ ACTUALIZADO v24.2: Guarda el detalle del vale de compra SIN InputMask
+ * CAMBIO CRÍTICO: Parseo directo del valor sin InputMaskMonetario
+ * 
+ * LÓGICA:
+ * 1. Obtener valor del input como string
+ * 2. Limpiar caracteres no numéricos (excepto punto/coma decimal)
+ * 3. Parsear con parseFloat()
+ * 4. Validar y guardar
  * 
  * @param {Object} instrumento - Datos del vale
  * @param {Object} tipoMedioPago - Tipo de medio de pago
  */
 function guardarDetalleValeCompra(instrumento, tipoMedioPago) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('💾 GUARDAR DETALLE VALE DE COMPRA v19.2');
+    console.log('💾 GUARDAR DETALLE VALE DE COMPRA v24.2 (SIN InputMask)');
     console.log('═══════════════════════════════════════════════════');
 
-    // ❶ Obtener monto ingresado
-    let monto = 0;
+    // ❶ ✅ ACTUALIZADO v24.2: Obtener y limpiar valor del input
+    const montoStr = $('#txtMontoValeCompra').val().trim();
 
-    if (typeof InputMaskMonetario !== 'undefined') {
-        monto = InputMaskMonetario.obtenerValorNumerico('#txtMontoValeCompra');
-        console.log(`   💰 Monto extraído con InputMask: ${monto}`);
-    } else {
-        const montoStr = $('#txtMontoValeCompra').val();
-        monto = parsearNumeroArgentino(montoStr);
-        console.warn(`   ⚠️ InputMask no disponible - usando parseo manual: ${monto}`);
-    }
+    // Limpiar: remover todo excepto dígitos, punto y coma
+    // Convertir coma a punto (por si el usuario usó coma decimal)
+    const montoLimpio = montoStr.replace(/[^\d.,]/g, '').replace(',', '.');
 
-    console.log(`   📝 Monto final: ${monto}`);
+    // Parsear a número flotante
+    const monto = parseFloat(montoLimpio) || 0;
 
-    // ❷ Validar monto > 0
+    console.log(`   📝 Valor del input: "${montoStr}"`);
+    console.log(`   🔧 Valor limpio: "${montoLimpio}"`);
+    console.log(`   💰 Monto parseado: ${monto}`);
+
+    // ❂ Validaciones (sin cambios)
     if (isNaN(monto) || monto <= 0) {
         console.warn('⚠️ Monto inválido o cero');
         mostrarErrorCampo('#txtMontoValeCompra', 'Debe ingresar un monto válido mayor a cero');
@@ -4243,7 +4726,7 @@ function guardarDetalleValeCompra(instrumento, tipoMedioPago) {
 
     console.log(`   💰 Saldo del vale (desde hidden): ${saldoVale}`);
 
-    // ❹ ✅ NUEVO v19.2: Validación mejorada del saldo
+    // ❹ Validación mejorada del saldo
     if (saldoVale <= 0) {
         console.error('❌ CRÍTICO: Saldo del vale es 0 o negativo');
         console.error(`   Valor recibido: ${saldoValeStr}`);
@@ -4387,11 +4870,18 @@ function finalizarGuardadoValeCompra(monto, instrumento, tipoMedioPago) {
 }
 
 /**
- * ✅ NUEVO v19.0: Cierra el modal de detalle de vale de compra
+ * ✅ ACTUALIZADO v19.8: Cierra el modal de detalle de vale de compra
+ * CORRECCIÓN CRÍTICA: Limpieza robusta de backdrops y estado del body
+ * 
+ * CAMBIOS v19.8:
+ * - Agregada detección y limpieza de backdrops huérfanos
+ * - Forzado de removeClass('modal-open') en body
+ * - Logs exhaustivos para debugging
+ * - Timeout de seguridad para backdrops persistentes
  */
 function cerrarModalDetalleValeCompra() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔒 CERRAR MODAL DETALLE VALE DE COMPRA v19.0');
+    console.log('🔒 CERRAR MODAL DETALLE VALE DE COMPRA v19.8');
     console.log('═══════════════════════════════════════════════════');
 
     const $modal = $('#modalDetalleValeCompra');
@@ -4401,7 +4891,16 @@ function cerrarModalDetalleValeCompra() {
         return;
     }
 
-    // ❶ Ocultar modal
+    // ❶ Verificar si el modal está visible
+    const estaVisible = $modal.hasClass('show');
+    console.log(`   Modal visible: ${estaVisible ? 'SÍ' : 'NO'}`);
+
+    if (!estaVisible) {
+        console.log('   ℹ️ Modal ya está cerrado - No es necesario cerrar');
+        return;
+    }
+
+    // ❷ Ocultar modal
     $modal
         .removeClass('show')
         .css('display', 'none')
@@ -4410,58 +4909,106 @@ function cerrarModalDetalleValeCompra() {
 
     console.log('   ✅ Modal ocultado');
 
-    // ❷ Remover backdrop
+    // ❸ ✅ NUEVO v19.8: Limpieza exhaustiva de backdrops
+    console.log('   🧹 Limpiando backdrops...');
+
+    // Buscar backdrop específico del modal
     const $backdropVale = $('.modal-backdrop[data-modal="valecompra"]');
+    console.log(`      Backdrops específicos encontrados: ${$backdropVale.length}`);
+
     if ($backdropVale.length > 0) {
         $backdropVale.fadeOut(200, function () {
             $(this).remove();
+            console.log('      ✅ Backdrop específico removido');
         });
-        console.log('   ✅ Backdrop removido');
     }
 
-    // ❸ Limpiar formulario
+    // ❹ ✅ NUEVO v19.8: Verificar backdrops huérfanos con delay
+    setTimeout(() => {
+        const modalesAbiertos = $('.modal.show').length;
+        console.log(`   📊 Modales abiertos restantes: ${modalesAbiertos}`);
+
+        if (modalesAbiertos === 0) {
+            // ✅ NO hay otros modales abiertos → Limpiar TODO
+            const backdropsHuerfanos = $('.modal-backdrop').length;
+            console.log(`   📊 Backdrops huérfanos detectados: ${backdropsHuerfanos}`);
+
+            if (backdropsHuerfanos > 0) {
+                console.warn('   ⚠️ Backdrops huérfanos encontrados - Limpiando...');
+
+                $('.modal-backdrop').fadeOut(150, function () {
+                    $(this).remove();
+                });
+
+                console.log('      ✅ Backdrops huérfanos removidos');
+            }
+
+            // ✅ Desbloquear body
+            $('body')
+                .removeClass('modal-open')
+                .css({
+                    'overflow': '',
+                    'padding-right': ''
+                });
+
+            console.log('   ✅ Body desbloqueado completamente');
+
+        } else {
+            console.log('   ℹ️ Otros modales abiertos - Manteniendo body bloqueado');
+        }
+    }, 350); // ← Esperar animación de Bootstrap (300ms) + margen
+
+    // ❺ Limpiar formulario
     const $input = $('#txtMontoValeCompra');
     $input
         .val('')
-        .removeClass('is-invalid is-valid');
+        .removeClass('is-invalid is-valid')
+        .prop('disabled', false);
 
     $('.invalid-feedback').remove();
 
     console.log('   ✅ Formulario limpiado');
 
-    // ❹ Resetear labels
+    // ❻ Resetear labels y hidden fields
     $('#lblValeCompraSeleccionado').text('-');
-    $('#lblSaldoValeCompra').text('$ 0,00').removeClass('text-success text-warning text-danger');
+    $('#lblSaldoValeCompra')
+        .text('$ 0,00')
+        .removeClass('text-success text-warning text-danger text-info');
     $('#hdnIdValeCompra').val('');
     $('#hdnSaldoValeCompra').val('0');
 
-    console.log('   ✅ Labels reseteados');
+    console.log('   ✅ Labels y campos ocultos reseteados');
 
-    // ❺ Verificar otros modales
-    setTimeout(() => {
-        if ($('.modal.show').length === 0) {
-            $('body').removeClass('modal-open').css('overflow', '');
-            console.log('   ✅ Body desbloqueado');
-        }
-    }, 100);
-
+    console.log('═══════════════════════════════════════════════════');
     console.log('✅ MODAL CERRADO COMPLETAMENTE');
+    console.log('═══════════════════════════════════════════════════');
 }
 
 /**
- * ✅ NUEVO v19.0: Formatea valor a moneda argentina
- * Función auxiliar para compatibilidad
+ * ✅ ACTUALIZADO v22.0: Formatea valor a moneda GeConnect (en-US)
+ * CAMBIO CRÍTICO: Reemplazado 'es-AR' por 'en-US'
+ * 
+ * Formato GeConnect:
+ * - Separador de miles: , (coma)
+ * - Separador decimal: . (punto)
+ * - Ejemplo: $ 1,234.56
+ * 
  * @param {number} valor - Valor numérico
- * @returns {string} - Valor formateado (ej: "$ 1.234,56")
+ * @returns {string} - Valor formateado (ej: "$ 1,234.56")
  */
 function formatearMoneda(valor) {
-    if (isNaN(valor)) return '$ 0,00';
+    if (isNaN(valor)) {
+        console.warn(`⚠️ formatearMoneda: entrada inválida (${valor})`);
+        return '$ 0.00';
+    }
 
-    return new Intl.NumberFormat('es-AR', {
+    // ✅ Usar formato en-US con símbolo $ genérico
+    return new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency: 'ARS',
-        minimumFractionDigits: 2
-    }).format(valor || 0);
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(valor || 0).replace('$', '$ '); // Espacio después del $
 }
 
 /**
@@ -4570,19 +5117,20 @@ function validarInstrumento(instrumento) {
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * ✅ NUEVO v19.3: Abre el modal de detalle de Transferencia Bancaria
+ * ✅ ACTUALIZADO v24.1: Abre el modal de detalle de Transferencia Bancaria SIN InputMask
+ * CORRECCIÓN CRÍTICA: Eliminado InputMask para compatibilidad con teclado digital
  * 
- * FLUJO:
- * 1. El usuario ya seleccionó un banco del modal de instrumentos
- * 2. Se abre este modal con el banco pre-cargado
- * 3. Usuario completa: Nro Trasn, Fecha, Monto
+ * CAMBIOS v24.1:
+ * - Removido InputMaskMonetario del input monto
+ * - Establecer valor inicial SIN FORMATO (solo números)
+ * - Teclado digital escribe correctamente
  * 
- * @param {Object} instrumento - Banco seleccionado (ej: "Banco Galicia")
+ * @param {Object} instrumento - Banco seleccionado
  * @param {Object} tipoMedioPago - Tipo de MP (tcf_id='BA')
  */
 function abrirModalDetalleTransferencia(instrumento, tipoMedioPago) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔓 ABRIR MODAL DETALLE TRANSFERENCIA v19.3');
+    console.log('🔓 ABRIR MODAL DETALLE TRANSFERENCIA v24.1 (SIN InputMask)');
     console.log(`   Banco: ${instrumento?.ins_desc || 'N/A'} (${instrumento?.ins_id || 'N/A'})`);
     console.log(`   Tipo MP: ${tipoMedioPago?.tcf_desc || 'N/A'}`);
     console.log('═══════════════════════════════════════════════════');
@@ -4625,30 +5173,33 @@ function abrirModalDetalleTransferencia(instrumento, tipoMedioPago) {
     const diferencia = Math.abs(conceptosPago.diferencia || 0);
     const importeSugerido = diferencia;
 
-    console.log(`   💰 Importe sugerido: ${formatearMoneda(importeSugerido)}`);
+    console.log(`   💰 Importe sugerido: ${importeSugerido.toFixed(2)}`);
 
-    // ❻ Aplicar máscara monetaria al input de monto
+    // ❻ Obtener input
     const $inputMonto = $('#txtMontoTransferencia');
 
+    // ✅ CRÍTICO v24.1: REMOVER INPUTMASK SI EXISTE
     if (typeof InputMaskMonetario !== 'undefined') {
+        console.log('🗑️ Removiendo InputMask existente...');
         InputMaskMonetario.removerMascara($inputMonto);
-        InputMaskMonetario.aplicarMascaraPesos($inputMonto);
-        InputMaskMonetario.establecerValor($inputMonto, importeSugerido);
-        console.log('   ✅ Máscara monetaria aplicada');
-    } else {
-        console.warn('   ⚠️ InputMaskMonetario no disponible - usando valor sin formato');
-        $inputMonto.val(importeSugerido.toFixed(2));
+        console.log('   ✅ InputMask removido correctamente');
     }
 
-    // ❼ Limpiar campos
+    // ❼ ✅ NUEVO v24.1: Establecer valor inicial SIN FORMATO
+    $inputMonto.val(importeSugerido.toFixed(2));
+
+    console.log(`   ✅ Valor inicial: ${importeSugerido.toFixed(2)}`);
+    console.log('   ✅ Teclado digital listo para escribir');
+
+    // ❽ Limpiar campos
     $('#txtNroTransferencia').val('');
 
-    // ❽ Limpiar validaciones previas
+    // ❾ Limpiar validaciones previas
     $('#formDetalleTransferencia .form-control')
         .removeClass('is-invalid is-valid');
     $('.invalid-feedback').remove();
 
-    // ❾ Mostrar modal con jQuery
+    // ❿ Mostrar modal con jQuery
     $modal
         .addClass('show')
         .css({
@@ -4659,7 +5210,7 @@ function abrirModalDetalleTransferencia(instrumento, tipoMedioPago) {
         .attr('aria-modal', 'true')
         .removeAttr('aria-hidden');
 
-    // ❿ Crear backdrop
+    // ⓫ Crear backdrop
     if ($('.modal-backdrop[data-modal="transferencia"]').length === 0) {
         $('body').append(
             '<div class="modal-backdrop fade show" ' +
@@ -4668,19 +5219,19 @@ function abrirModalDetalleTransferencia(instrumento, tipoMedioPago) {
         );
     }
 
-    // ⓫ Focus en el primer campo
+    // ⓬ Focus en el primer campo
     setTimeout(() => {
         $('#txtNroTransferencia').trigger('focus');
     }, INPUT_FOCUS_TIMEOUT);
 
-    // ⓬ Vincular eventos de guardar
+    // ⓭ Vincular eventos de guardar
     $('#btnGuardarDetalleTransferencia')
         .off('click.guardarTransf')
         .on('click.guardarTransf', function () {
             guardarDetalleTransferencia(instrumento, tipoMedioPago);
         });
 
-    // ⓭ Vincular evento Enter
+    // ⓮ Vincular evento Enter
     $inputMonto
         .off('keypress.enterTransf')
         .on('keypress.enterTransf', function (e) {
@@ -4690,153 +5241,54 @@ function abrirModalDetalleTransferencia(instrumento, tipoMedioPago) {
             }
         });
 
-    console.log('✅ Modal detalle transferencia abierto correctamente');
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// ✅ NUEVO v19.3: FUNCIONES PARA TRANSFERENCIAS BANCARIAS
-// ═══════════════════════════════════════════════════════════════════
-
-/**
- * ✅ NUEVO v19.3: Abre el modal de detalle de Transferencia Bancaria
- * 
- * FLUJO:
- * 1. El usuario ya seleccionó un banco del modal de instrumentos
- * 2. Se abre este modal con el banco pre-cargado
- * 3. Usuario completa: Nro Trasn, Fecha, Monto
- * 
- * @param {Object} instrumento - Banco seleccionado (ej: "Banco Galicia")
- * @param {Object} tipoMedioPago - Tipo de MP (tcf_id='BA')
- */
-function abrirModalDetalleTransferencia(instrumento, tipoMedioPago) {
-    console.log('═══════════════════════════════════════════════════');
-    console.log('🔓 ABRIR MODAL DETALLE TRANSFERENCIA v19.3');
-    console.log(`   Banco: ${instrumento?.ins_desc || 'N/A'} (${instrumento?.ins_id || 'N/A'})`);
-    console.log(`   Tipo MP: ${tipoMedioPago?.tcf_desc || 'N/A'}`);
-    console.log('═══════════════════════════════════════════════════');
-
-    // ❶ Validar objeto instrumento
-    if (!instrumento) {
-        console.error('❌ CRÍTICO: Objeto instrumento es null/undefined');
-
-        if (typeof toastr !== 'undefined') {
-            toastr.error('Error: No se pudo cargar la información del banco');
-        }
-
-        return;
-    }
-
-    // ❷ Obtener elemento del modal
-    const $modal = $('#modalDetalleTransferencia');
-
-    if ($modal.length === 0) {
-        console.error('❌ Modal #modalDetalleTransferencia no encontrado en el DOM');
-
-        if (typeof toastr !== 'undefined') {
-            toastr.error('El modal de transferencias no está disponible');
-        }
-
-        return;
-    }
-
-    // ❸ Hidratar información del banco seleccionado
-    $('#lblInstrumentoTransferencia').text(instrumento.ins_desc || 'Banco sin nombre');
-    $('#hdnBancoIdTransferencia').val(instrumento.ins_id);
-
-    console.log(`   ✅ Banco cargado: ${instrumento.ins_desc}`);
-
-    // ❹ Establecer fecha actual por defecto
-    const fechaHoy = new Date().toISOString().split('T')[0];
-    $('#txtFechaTransferencia').val(fechaHoy);
-
-    // ❺ Calcular importe sugerido (diferencia pendiente)
-    const diferencia = Math.abs(conceptosPago.diferencia || 0);
-    const importeSugerido = diferencia;
-
-    console.log(`   💰 Importe sugerido: ${formatearMoneda(importeSugerido)}`);
-
-    // ❻ Aplicar máscara monetaria al input de monto
-    const $inputMonto = $('#txtMontoTransferencia');
-
-    if (typeof InputMaskMonetario !== 'undefined') {
-        InputMaskMonetario.removerMascara($inputMonto);
-        InputMaskMonetario.aplicarMascaraPesos($inputMonto);
-        InputMaskMonetario.establecerValor($inputMonto, importeSugerido);
-        console.log('   ✅ Máscara monetaria aplicada');
-    } else {
-        console.warn('   ⚠️ InputMaskMonetario no disponible - usando valor sin formato');
-        $inputMonto.val(importeSugerido.toFixed(2));
-    }
-
-    // ❼ Limpiar campos
-    $('#txtNroTransferencia').val('');
-
-    // ❽ Limpiar validaciones previas
-    $('#formDetalleTransferencia .form-control')
-        .removeClass('is-invalid is-valid');
-    $('.invalid-feedback').remove();
-
-    // ❾ Mostrar modal con jQuery
-    $modal
-        .addClass('show')
-        .css({
-            'display': 'block',
-            'opacity': '1',
-            'z-index': '5100'
-        })
-        .attr('aria-modal', 'true')
-        .removeAttr('aria-hidden');
-
-    // ❿ Crear backdrop
-    if ($('.modal-backdrop[data-modal="transferencia"]').length === 0) {
-        $('body').append(
-            '<div class="modal-backdrop fade show" ' +
-            'data-modal="transferencia" ' +
-            'style="z-index: 5099;"></div>'
-        );
-    }
-
-    // ⓫ Focus en el primer campo
-    setTimeout(() => {
-        $('#txtNroTransferencia').trigger('focus');
-    }, INPUT_FOCUS_TIMEOUT);
-
-    // ⓬ Vincular eventos de guardar
-    $('#btnGuardarDetalleTransferencia')
-        .off('click.guardarTransf')
-        .on('click.guardarTransf', function () {
-            guardarDetalleTransferencia(instrumento, tipoMedioPago);
-        });
-
-    // ⓭ Vincular evento Enter
-    $inputMonto
-        .off('keypress.enterTransf')
-        .on('keypress.enterTransf', function (e) {
+    // ⓯ Navegación con Enter entre campos
+    $('#txtNroTransferencia')
+        .off('keypress.enterNavTransf')
+        .on('keypress.enterNavTransf', function (e) {
             if (e.which === 13) {
                 e.preventDefault();
-                guardarDetalleTransferencia(instrumento, tipoMedioPago);
+                console.log('⏎ Enter en Nro Transferencia - Saltando a Fecha...');
+                $('#txtFechaTransferencia').trigger('focus');
             }
         });
 
-    console.log('✅ Modal detalle transferencia abierto correctamente');
+    $('#txtFechaTransferencia')
+        .off('keypress.enterNavTransf')
+        .on('keypress.enterNavTransf', function (e) {
+            if (e.which === 13) {
+                e.preventDefault();
+                console.log('⏎ Enter en Fecha - Saltando a Monto...');
+                $('#txtMontoTransferencia').trigger('focus').trigger('select');
+            }
+        });
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('✅ INPUT LISTO PARA TECLADO DIGITAL:');
+    console.log('   - InputMask: DESACTIVADO ❌');
+    console.log('   - Teclado digital: ACTIVO ✅');
+    console.log('   - Formato: SOLO NÚMEROS (sin $, sin comas)');
+    console.log('   - Validación: NATIVA HTML5');
+    console.log('═══════════════════════════════════════════════════');
+
+    console.log('✅ Modal detalle transferencia abierto SIN InputMask');
 }
 
 /**
- * ✅ ACTUALIZADO v20.2: Guarda el detalle de la transferencia bancaria
- * NUEVO: Validación de mínimo 15 caracteres en número de transferencia
- * NUEVO: Validación de fecha entre ayer y hoy
+ * ✅ ACTUALIZADO v24.1: Guarda el detalle de la transferencia bancaria SIN InputMask
+ * CAMBIO CRÍTICO: Parseo directo del valor sin InputMaskMonetario
  * 
- * VALIDACIONES:
- * - Nro Transferencia: Obligatorio, **mínimo 15 caracteres**
- * - Fecha: Obligatoria, **hoy - 1 día <= fecha <= hoy**
- * - Monto: > 0, <= Saldo factura (con tolerancia)
+ * LÓGICA:
+ * 1. Obtener valor del input como string
+ * 2. Limpiar caracteres no numéricos (excepto punto/coma decimal)
+ * 3. Parsear con parseFloat()
+ * 4. Validar y guardar
  * 
  * @param {Object} instrumento - Datos del banco
  * @param {Object} tipoMedioPago - Tipo de medio de pago
  */
 function guardarDetalleTransferencia(instrumento, tipoMedioPago) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('💾 GUARDAR DETALLE TRANSFERENCIA v20.2');
+    console.log('💾 GUARDAR DETALLE TRANSFERENCIA v24.1 (SIN InputMask)');
     console.log('═══════════════════════════════════════════════════');
 
     // ❶ Obtener valores del formulario
@@ -4847,7 +5299,7 @@ function guardarDetalleTransferencia(instrumento, tipoMedioPago) {
     console.log(`   Nro Transferencia: "${nroTransferencia}"`);
     console.log(`   Fecha: "${fechaTransferencia}"`);
 
-    // ❷ ✅ ACTUALIZADO: Validar Nro Transferencia (mínimo 15 caracteres)
+    // ❷ Validar Nro Transferencia (mínimo 15 caracteres)
     if (!nroTransferencia || nroTransferencia.length < 15) {
         console.warn('⚠️ Número de transferencia inválido');
         mostrarErrorCampo(
@@ -4864,7 +5316,7 @@ function guardarDetalleTransferencia(instrumento, tipoMedioPago) {
         return;
     }
 
-    // ❹ ✅ ACTUALIZADO: Validar fecha (entre ayer y hoy)
+    // ❹ Validar fecha (entre ayer y hoy)
     const fechaTransf = new Date(fechaTransferencia);
     const fechaHoy = new Date();
     fechaHoy.setHours(0, 0, 0, 0);
@@ -4887,17 +5339,19 @@ function guardarDetalleTransferencia(instrumento, tipoMedioPago) {
         return;
     }
 
-    // ❺ Obtener monto
-    let monto = 0;
+    // ❺ ✅ ACTUALIZADO v24.1: Obtener y limpiar valor del input
+    const montoStr = $('#txtMontoTransferencia').val().trim();
 
-    if (typeof InputMaskMonetario !== 'undefined') {
-        monto = InputMaskMonetario.obtenerValorNumerico('#txtMontoTransferencia');
-        console.log(`   💰 Monto extraído con InputMask: ${monto}`);
-    } else {
-        const montoStr = $('#txtMontoTransferencia').val();
-        monto = parsearNumeroArgentino(montoStr);
-        console.warn(`   ⚠️ InputMask no disponible - usando parseo manual: ${monto}`);
-    }
+    // Limpiar: remover todo excepto dígitos, punto y coma
+    // Convertir coma a punto (por si el usuario usó coma decimal)
+    const montoLimpio = montoStr.replace(/[^\d.,]/g, '').replace(',', '.');
+
+    // Parsear a número flotante
+    const monto = parseFloat(montoLimpio) || 0;
+
+    console.log(`   📝 Valor del input: "${montoStr}"`);
+    console.log(`   🔧 Valor limpio: "${montoLimpio}"`);
+    console.log(`   💰 Monto parseado: ${monto}`);
 
     // ❻ Validar monto > 0
     if (isNaN(monto) || monto <= 0) {
@@ -5091,22 +5545,20 @@ $('#modalDetalleTransferencia').off('hidden.bs.modal').on('hidden.bs.modal', fun
 });
 
 /**
- * ✅ ACTUALIZADO v20.4: Abre el modal de detalle de Cupón/Orden de Empresa (Mutuales)
- * NUEVO: Auto-completado de Titular y CUIT desde cliente actual
- * NUEVO: Validación de CUIT según tipo de cliente (CR/CF)
+ * ✅ ACTUALIZADO v24.3: Abre el modal de detalle de Cupón/Orden de Empresa SIN InputMask
+ * CORRECCIÓN CRÍTICA: Eliminado InputMask para compatibilidad con teclado digital
  * 
- * FLUJO:
- * 1. El usuario ya seleccionó una mutual/empresa del modal de instrumentos
- * 2. Se abre este modal con la empresa pre-cargada
- * 3. ✅ NUEVO: Se auto-completa Titular y CUIT desde cliente actual
- * 4. Usuario completa solo: Nro Orden y Monto
+ * CAMBIOS v24.3:
+ * - Removido InputMaskMonetario del input monto
+ * - Establecer valor inicial SIN FORMATO (solo números)
+ * - Teclado digital escribe correctamente
  * 
- * @param {Object} instrumento - Mutual/Empresa seleccionada (ej: "OSDE", "Swiss Medical")
+ * @param {Object} instrumento - Mutual/Empresa seleccionada
  * @param {Object} tipoMedioPago - Tipo de MP (tcf_id='MU')
  */
 function abrirModalDetalleCuponEmpresa(instrumento, tipoMedioPago) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔓 ABRIR MODAL DETALLE CUPÓN EMPRESA v20.4');
+    console.log('🔓 ABRIR MODAL DETALLE CUPÓN EMPRESA v24.3 (SIN InputMask)');
     console.log(`   Empresa: ${instrumento?.ins_desc || 'N/A'} (${instrumento?.ins_id || 'N/A'})`);
     console.log(`   Tipo MP: ${tipoMedioPago?.tcf_desc || 'N/A'}`);
     console.log('═══════════════════════════════════════════════════');
@@ -5164,22 +5616,16 @@ function abrirModalDetalleCuponEmpresa(instrumento, tipoMedioPago) {
 
     console.log(`   ✅ Empresa cargada: ${instrumento.ins_desc}`);
 
-    // ═══════════════════════════════════════════════════════════
-    // ✅ NUEVO v20.4: OBTENER DATOS DEL CLIENTE ACTUAL
-    // ═══════════════════════════════════════════════════════════
-
+    // ❵ Obtener datos del cliente actual
     console.log('═══════════════════════════════════════════════════');
     console.log('📋 OBTENIENDO DATOS DEL CLIENTE ACTUAL');
 
-    // ❺ Obtener Titular (denominación del cliente)
     const titular = $('#txtClienteNombrePago').val() || '';
     console.log(`   Titular: "${titular}"`);
 
-    // ❻ Obtener CUIT/DNI
     const cuitCliente = $('#txtClienteCuitPago').val() || '';
     console.log(`   CUIT/DNI: "${cuitCliente}"`);
 
-    // ❼ Determinar tipo de cliente (CR o CF)
     const ctaId = $('#txtClienteIdPago').val() || '';
     const esClienteRegistrado = ctaId && ctaId !== 'N/A' && ctaId.trim() !== '';
 
@@ -5187,7 +5633,7 @@ function abrirModalDetalleCuponEmpresa(instrumento, tipoMedioPago) {
     console.log(`   cta_id: "${ctaId}"`);
     console.log('═══════════════════════════════════════════════════');
 
-    // ❽ Validar que tengamos datos mínimos
+    // ❻ Validar que tengamos datos mínimos
     if (!titular || titular.trim() === '') {
         console.error('❌ CRÍTICO: No se pudo obtener el nombre del cliente');
 
@@ -5198,11 +5644,11 @@ function abrirModalDetalleCuponEmpresa(instrumento, tipoMedioPago) {
         return;
     }
 
-    // ❾ Asignar Titular al campo (readonly)
+    // ❼ Asignar Titular al campo (readonly)
     $('#txtTitularCupon').val(titular);
     console.log(`   ✅ Titular asignado al campo: "${titular}"`);
 
-    // ❿ ✅ NUEVO: VALIDAR Y ASIGNAR CUIT SEGÚN TIPO DE CLIENTE
+    // ❽ Validar y asignar CUIT según tipo de cliente
     const resultadoCuit = validarYAsignarCuitCuponEmpresa(cuitCliente, esClienteRegistrado);
 
     if (!resultadoCuit.valido) {
@@ -5218,41 +5664,37 @@ function abrirModalDetalleCuponEmpresa(instrumento, tipoMedioPago) {
 
     console.log('✅ CUIT validado y asignado correctamente');
 
-    // ═══════════════════════════════════════════════════════════
-    // FIN DE NUEVA LÓGICA v20.4
-    // ═══════════════════════════════════════════════════════════
-
-    // ⓫ Calcular monto sugerido (diferencia pendiente)
+    // ❾ Calcular monto sugerido (diferencia pendiente)
     const diferencia = Math.abs(conceptosPago.diferencia || 0);
     const montoSugerido = diferencia;
 
     console.log(`   💰 Monto sugerido: ${formatearMoneda(montoSugerido)}`);
 
-    // ⓬ Aplicar máscara monetaria al input de monto
+    // ❿ Obtener input
     const $inputMonto = $('#txtMontoCupon');
 
+    // ✅ CRÍTICO v24.3: REMOVER INPUTMASK SI EXISTE
     if (typeof InputMaskMonetario !== 'undefined') {
+        console.log('🗑️ Removiendo InputMask existente...');
         InputMaskMonetario.removerMascara($inputMonto);
-        InputMaskMonetario.aplicarMascaraPesos($inputMonto);
-        InputMaskMonetario.establecerValor($inputMonto, montoSugerido);
-        console.log('   ✅ Máscara monetaria aplicada');
-    } else {
-        console.warn('   ⚠️ InputMaskMonetario no disponible - usando valor sin formato');
-        $inputMonto.val(montoSugerido.toFixed(2));
+        console.log('   ✅ InputMask removido correctamente');
     }
 
-    // ⓭ ❌ ELIMINADO: Ya NO se aplica máscara de CUIT (campo readonly)
-    // ⓮ ❌ ELIMINADO: Limpiar campo Titular (ahora es readonly)
+    // ⓫ ✅ NUEVO v24.3: Establecer valor inicial SIN FORMATO
+    $inputMonto.val(montoSugerido.toFixed(2));
 
-    // ⓯ Limpiar solo campo Nro de Orden
+    console.log(`   ✅ Valor inicial: ${montoSugerido.toFixed(2)}`);
+    console.log('   ✅ Teclado digital listo para escribir');
+
+    // ⓬ Limpiar solo campo Nro de Orden
     $('#txtNroOrdenCupon').val('');
 
-    // ⓰ Limpiar validaciones previas
+    // ⓭ Limpiar validaciones previas
     $('#formDetalleCuponEmpresa .form-control')
         .removeClass('is-invalid is-valid');
     $('.invalid-feedback').remove();
 
-    // ⓱ Mostrar modal con Bootstrap
+    // ⓮ Mostrar modal con Bootstrap
     try {
         modalInstance.show();
         console.log('✅ Modal mostrado con Bootstrap.show()');
@@ -5278,19 +5720,19 @@ function abrirModalDetalleCuponEmpresa(instrumento, tipoMedioPago) {
         return;
     }
 
-    // ⓲ ✅ ACTUALIZADO: Focus en Nro de Orden (ya que Titular es readonly)
+    // ⓯ Focus en Nro de Orden (ya que Titular es readonly)
     setTimeout(() => {
         $('#txtNroOrdenCupon').trigger('focus');
     }, INPUT_FOCUS_TIMEOUT);
 
-    // ⓳ Vincular eventos de guardar
+    // ⓰ Vincular eventos de guardar
     $('#btnGuardarDetalleCupon')
         .off('click.guardarCupon')
         .on('click.guardarCupon', function () {
             guardarDetalleCuponEmpresa(instrumento, tipoMedioPago);
         });
 
-    // ⓴ Vincular evento Enter en el último campo (monto)
+    // ⓱ Vincular evento Enter en el último campo (monto)
     $inputMonto
         .off('keypress.enterCupon')
         .on('keypress.enterCupon', function (e) {
@@ -5299,6 +5741,14 @@ function abrirModalDetalleCuponEmpresa(instrumento, tipoMedioPago) {
                 guardarDetalleCuponEmpresa(instrumento, tipoMedioPago);
             }
         });
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('✅ INPUT LISTO PARA TECLADO DIGITAL:');
+    console.log('   - InputMask: DESACTIVADO ❌');
+    console.log('   - Teclado digital: ACTIVO ✅');
+    console.log('   - Formato: SOLO NÚMEROS (sin $, sin comas)');
+    console.log('   - Validación: NATIVA HTML5');
+    console.log('═══════════════════════════════════════════════════');
 
     console.log('✅ Modal detalle cupón empresa configurado correctamente');
 }
@@ -5552,21 +6002,23 @@ function validarYAsignarCuitCuponEmpresa(cuitCliente, esClienteRegistrado) {
 }
 
 /**
- * ✅ ACTUALIZADO v20.4: Guarda el detalle del cupón/orden de empresa
- * NOTA: Titular y CUIT ya vienen validados (readonly desde cliente actual)
+ * ✅ ACTUALIZADO v24.3: Guarda el detalle del cupón/orden de empresa SIN InputMask
+ * CAMBIO CRÍTICO: Parseo directo del valor sin InputMaskMonetario
  * 
- * VALIDACIONES:
- * - ❌ ELIMINADO: Validación de Titular (ya validado y readonly)
- * - Nro Orden: Obligatorio, numérico, máximo 10 caracteres
- * - ❌ ELIMINADO: Validación de CUIT (ya validado y readonly)
- * - Monto: > 0, <= Saldo factura (con tolerancia)
+ * LÓGICA:
+ * 1. Obtener valor del input como string
+ * 2. Limpiar caracteres no numéricos (excepto punto/coma decimal)
+ * 3. Parsear con parseFloat()
+ * 4. Validar y guardar
+ * 
+ * NOTA: Titular y CUIT ya vienen validados (readonly desde cliente actual)
  * 
  * @param {Object} instrumento - Datos de la empresa/mutual
  * @param {Object} tipoMedioPago - Tipo de medio de pago
  */
 function guardarDetalleCuponEmpresa(instrumento, tipoMedioPago) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('💾 GUARDAR DETALLE CUPÓN EMPRESA v20.4');
+    console.log('💾 GUARDAR DETALLE CUPÓN EMPRESA v24.3 (SIN InputMask)');
     console.log('═══════════════════════════════════════════════════');
 
     // ❶ Obtener valores del formulario
@@ -5579,7 +6031,7 @@ function guardarDetalleCuponEmpresa(instrumento, tipoMedioPago) {
     console.log(`   Nro Orden: "${nroOrden}"`);
     console.log(`   CUIT (auto): "${cuit}"`);
 
-    // ❷ ✅ SIMPLIFICADO: Solo validar Nro Orden (Titular y CUIT ya vienen validados)
+    // ❷ Validar solo Nro Orden (Titular y CUIT ya vienen validados)
 
     if (!nroOrden || nroOrden === '') {
         console.warn('⚠️ Número de orden vacío');
@@ -5599,17 +6051,19 @@ function guardarDetalleCuponEmpresa(instrumento, tipoMedioPago) {
         return;
     }
 
-    // ❸ Obtener monto (sin cambios)
-    let monto = 0;
+    // ❸ ✅ ACTUALIZADO v24.3: Obtener y limpiar valor del input
+    const montoStr = $('#txtMontoCupon').val().trim();
 
-    if (typeof InputMaskMonetario !== 'undefined') {
-        monto = InputMaskMonetario.obtenerValorNumerico('#txtMontoCupon');
-        console.log(`   💰 Monto extraído con InputMask: ${monto}`);
-    } else {
-        const montoStr = $('#txtMontoCupon').val();
-        monto = parsearNumeroArgentino(montoStr);
-        console.warn(`   ⚠️ InputMask no disponible - usando parseo manual: ${monto}`);
-    }
+    // Limpiar: remover todo excepto dígitos, punto y coma
+    // Convertir coma a punto (por si el usuario usó coma decimal)
+    const montoLimpio = montoStr.replace(/[^\d.,]/g, '').replace(',', '.');
+
+    // Parsear a número flotante
+    const monto = parseFloat(montoLimpio) || 0;
+
+    console.log(`   📝 Valor del input: "${montoStr}"`);
+    console.log(`   🔧 Valor limpio: "${montoLimpio}"`);
+    console.log(`   💰 Monto parseado: ${monto}`);
 
     // ❹ Validar monto > 0
     if (isNaN(monto) || monto <= 0) {
@@ -5618,7 +6072,7 @@ function guardarDetalleCuponEmpresa(instrumento, tipoMedioPago) {
         return;
     }
 
-    // ❺ Validar monto <= saldo factura (sin cambios)
+    // ❺ Validar monto <= saldo factura
     const diferenciaFactura = Math.abs(conceptosPago.diferencia || 0);
 
     if (monto > diferenciaFactura * LIMITE_PORCENTAJE_DIFERENCIA) {
@@ -5848,15 +6302,20 @@ function cargarBancos() {
 }
 
 /**
- * ✅ ACTUALIZADO v20.2: Abre el modal de detalle de Cheque
- * NUEVO: Agregado campo Plaza del Banco
+ * ✅ ACTUALIZADO v24.4: Abre el modal de detalle de Cheque SIN InputMask
+ * CORRECCIÓN CRÍTICA: Eliminado InputMask para compatibilidad con teclado digital
+ * 
+ * CAMBIOS v24.4:
+ * - Removido InputMaskMonetario del input monto
+ * - Establecer valor inicial SIN FORMATO (solo números)
+ * - Teclado digital escribe correctamente
  * 
  * @param {Object} instrumento - Instrumento seleccionado
  * @param {Object} tipoMedioPago - Tipo de MP (tcf_id='CH')
  */
 function abrirModalDetalleCheque(instrumento, tipoMedioPago) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔓 ABRIR MODAL DETALLE CHEQUE v20.2');
+    console.log('🔓 ABRIR MODAL DETALLE CHEQUE v24.4 (SIN InputMask)');
     console.log(`   Instrumento: ${instrumento?.ins_desc || 'N/A'}`);
     console.log(`   Tipo MP: ${tipoMedioPago?.tcf_desc || 'N/A'}`);
     console.log('═══════════════════════════════════════════════════');
@@ -5922,33 +6381,35 @@ function abrirModalDetalleCheque(instrumento, tipoMedioPago) {
 
     console.log(`   💰 Monto sugerido: ${formatearMoneda(montoSugerido)}`);
 
-    // ❼ Aplicar máscara monetaria al input de monto
+    // ❼ Obtener input
     const $inputMonto = $('#txtMontoCheque');
 
+    // ✅ CRÍTICO v24.4: REMOVER INPUTMASK SI EXISTE
     if (typeof InputMaskMonetario !== 'undefined') {
+        console.log('🗑️ Removiendo InputMask existente...');
         InputMaskMonetario.removerMascara($inputMonto);
-        InputMaskMonetario.aplicarMascaraPesos($inputMonto);
-        InputMaskMonetario.establecerValor($inputMonto, montoSugerido);
-        console.log('   ✅ Máscara monetaria aplicada');
-    } else {
-        console.warn('   ⚠️ InputMaskMonetario no disponible - usando valor sin formato');
-        $inputMonto.val(montoSugerido.toFixed(2));
+        console.log('   ✅ InputMask removido correctamente');
     }
 
-    // ❽ Limpiar campos
+    // ❽ ✅ NUEVO v24.4: Establecer valor inicial SIN FORMATO
+    $inputMonto.val(montoSugerido.toFixed(2));
+
+    console.log(`   ✅ Valor inicial: ${montoSugerido.toFixed(2)}`);
+    console.log('   ✅ Teclado digital listo para escribir');
+
+    // ❾ Limpiar campos
     $('#txtNroCheque').val('');
-   
     $('#selectBancoCheque').val('').prop('disabled', true);
 
-    // ❾ Limpiar validaciones previas
+    // ❿ Limpiar validaciones previas
     $('#formDetalleCheque .form-control, #formDetalleCheque .form-select')
         .removeClass('is-invalid is-valid');
     $('.invalid-feedback').remove();
 
-    // ❿ Bloquear modal mientras carga bancos
+    // ⓫ Bloquear modal mientras carga bancos
     bloquearModalCheque('Cargando bancos...');
 
-    // ⓫ Cargar bancos y renderizar combobox
+    // ⓬ Cargar bancos y renderizar combobox
     cargarBancos()
         .then(function (bancos) {
             console.log('✅ Bancos obtenidos:', bancos);
@@ -5969,7 +6430,7 @@ function abrirModalDetalleCheque(instrumento, tipoMedioPago) {
             }
         });
 
-    // ⓬ Mostrar modal con Bootstrap
+    // ⓭ Mostrar modal con Bootstrap
     try {
         modalInstance.show();
         console.log('✅ Modal mostrado con Bootstrap.show()');
@@ -5995,14 +6456,14 @@ function abrirModalDetalleCheque(instrumento, tipoMedioPago) {
         return;
     }
 
-    // ⓭ Vincular eventos de guardar
+    // ⓮ Vincular eventos de guardar
     $('#btnGuardarDetalleCheque')
         .off('click.guardarCheque')
         .on('click.guardarCheque', function () {
             guardarDetalleCheque(instrumento, tipoMedioPago);
         });
 
-    // ⓮ Vincular evento Enter en el último campo
+    // ⓯ Vincular evento Enter en el último campo
     $inputMonto
         .off('keypress.enterCheque')
         .on('keypress.enterCheque', function (e) {
@@ -6011,6 +6472,14 @@ function abrirModalDetalleCheque(instrumento, tipoMedioPago) {
                 guardarDetalleCheque(instrumento, tipoMedioPago);
             }
         });
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('✅ INPUT LISTO PARA TECLADO DIGITAL:');
+    console.log('   - InputMask: DESACTIVADO ❌');
+    console.log('   - Teclado digital: ACTIVO ✅');
+    console.log('   - Formato: SOLO NÚMEROS (sin $, sin comas)');
+    console.log('   - Validación: NATIVA HTML5');
+    console.log('═══════════════════════════════════════════════════');
 
     console.log('✅ Modal detalle cheque configurado correctamente');
 }
@@ -6064,14 +6533,19 @@ function renderizarComboBancos(bancos) {
 }
 
 /**
- * ✅ ACTUALIZADO v20.3: Guarda el detalle del cheque
- * CAMBIO CRÍTICO: Plaza se obtiene del banco seleccionado (data-attribute)
+ * ✅ ACTUALIZADO v24.4: Guarda el detalle del cheque SIN InputMask
+ * CAMBIO CRÍTICO: Parseo directo del valor sin InputMaskMonetario
+ * 
+ * LÓGICA:
+ * 1. Obtener valor del input como string
+ * 2. Limpiar caracteres no numéricos (excepto punto/coma decimal)
+ * 3. Parsear con parseFloat()
+ * 4. Validar y guardar
  * 
  * VALIDACIONES:
  * - Banco: Obligatorio
  * - Nro Cheque: Obligatorio, numérico, máximo 8 caracteres
- * - ❌ ELIMINADO: Validación de plaza (ya no es input manual)
- * - Fecha: Obligatoria, >= hoy, <= hoy + días del MP
+ * - Fecha: Obligatoria, >= hoy, <= hoy + 365 días
  * - Monto: > 0, <= Saldo factura (con tolerancia)
  * 
  * @param {Object} instrumento - Datos del instrumento
@@ -6079,7 +6553,7 @@ function renderizarComboBancos(bancos) {
  */
 function guardarDetalleCheque(instrumento, tipoMedioPago) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('💾 GUARDAR DETALLE CHEQUE v20.3');
+    console.log('💾 GUARDAR DETALLE CHEQUE v24.4 (SIN InputMask)');
     console.log('═══════════════════════════════════════════════════');
 
     // ❶ Obtener valores del formulario
@@ -6087,7 +6561,6 @@ function guardarDetalleCheque(instrumento, tipoMedioPago) {
     const bancoId = $selectBanco.val();
     const bancoTexto = $selectBanco.find('option:selected').text();
 
-    // ✅ NUEVO v20.3: Obtener plaza desde data-attribute del banco seleccionado
     const plaza = $selectBanco.find('option:selected').data('plaza') || '';
 
     const nroCheque = $('#txtNroCheque').val().trim();
@@ -6096,7 +6569,7 @@ function guardarDetalleCheque(instrumento, tipoMedioPago) {
     console.log('📋 Datos del formulario:');
     console.log(`   Banco ID: "${bancoId}"`);
     console.log(`   Banco: "${bancoTexto}"`);
-    console.log(`   Plaza (desde BD): "${plaza || 'N/A'}"`); // ✅ NUEVO: Plaza viene del servidor
+    console.log(`   Plaza (desde BD): "${plaza || 'N/A'}"`);
     console.log(`   Nro Cheque: "${nroCheque}"`);
     console.log(`   Fecha: "${fechaCheque}"`);
 
@@ -6126,8 +6599,6 @@ function guardarDetalleCheque(instrumento, tipoMedioPago) {
         return;
     }
 
-    // ❌ ELIMINADO: Validación de plaza manual (ya no aplica)
-
     // ❹ Validar Fecha
     if (!fechaCheque) {
         console.warn('⚠️ Fecha no ingresada');
@@ -6146,7 +6617,7 @@ function guardarDetalleCheque(instrumento, tipoMedioPago) {
         return;
     }
 
-    // ❻ Validar fecha <= hoy + días del MP
+    // ❻ Validar fecha <= hoy + 365 días
     const diasMaximos = 365;
     const fechaMaxima = new Date(fechaHoy);
     fechaMaxima.setDate(fechaMaxima.getDate() + diasMaximos);
@@ -6160,17 +6631,19 @@ function guardarDetalleCheque(instrumento, tipoMedioPago) {
         return;
     }
 
-    // ❼ Obtener monto
-    let monto = 0;
+    // ❼ ✅ ACTUALIZADO v24.4: Obtener y limpiar valor del input
+    const montoStr = $('#txtMontoCheque').val().trim();
 
-    if (typeof InputMaskMonetario !== 'undefined') {
-        monto = InputMaskMonetario.obtenerValorNumerico('#txtMontoCheque');
-        console.log(`   💰 Monto extraído con InputMask: ${monto}`);
-    } else {
-        const montoStr = $('#txtMontoCheque').val();
-        monto = parsearNumeroArgentino(montoStr);
-        console.warn(`   ⚠️ InputMask no disponible - usando parseo manual: ${monto}`);
-    }
+    // Limpiar: remover todo excepto dígitos, punto y coma
+    // Convertir coma a punto (por si el usuario usó coma decimal)
+    const montoLimpio = montoStr.replace(/[^\d.,]/g, '').replace(',', '.');
+
+    // Parsear a número flotante
+    const monto = parseFloat(montoLimpio) || 0;
+
+    console.log(`   📝 Valor del input: "${montoStr}"`);
+    console.log(`   🔧 Valor limpio: "${montoLimpio}"`);
+    console.log(`   💰 Monto parseado: ${monto}`);
 
     // ❽ Validar monto > 0
     if (isNaN(monto) || monto <= 0) {
@@ -6480,4 +6953,196 @@ function seleccionarPrimerItemAutomatico(config) {
     console.log('═══════════════════════════════════════════════════');
 
     return true;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ✅ NUEVO v21.3: NAVEGACIÓN CON TECLADO EN MODALES DE INSTRUMENTOS
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * ✅ NUEVO v21.3: Habilita navegación con teclado en un modal de instrumentos
+ * Función genérica reutilizable para todos los modales de selección de instrumentos
+ * 
+ * FUNCIONALIDAD:
+ * - Navegación cíclica con flechas ↑↓
+ * - Confirmación con Enter
+ * - Cancelación con Escape
+ * - Scroll automático si el item está fuera de vista
+ * - Delegación de eventos en document (evita bug de primera apertura)
+ * 
+ * INSPIRADO EN: manejarNavegacionTeclado() del modal tipo medio de pago (v21.1)
+ * CORRECCIÓN v21.2: Usa delegación en document en lugar de modal directo
+ * 
+ * @param {Object} config - Configuración del modal
+ * @param {string} config.modalId - ID del modal (ej: '#modalInstrumentos')
+ * @param {string} config.contenedorId - ID del contenedor de la lista (ej: '#listaInstrumentos')
+ * @param {string} config.itemClass - Clase CSS de los items (ej: '.instrumento-item')
+ * @param {string} config.btnConfirmarId - ID del botón confirmar (ej: '#btnConfirmarInstrumento')
+ * @param {Function} config.onConfirmar - Callback al confirmar con Enter
+ */
+function habilitarNavegacionTecladoInstrumentos(config) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔧 HABILITAR NAVEGACIÓN CON TECLADO v21.3');
+    console.log(`   Modal: ${config.modalId}`);
+    console.log(`   Contenedor: ${config.contenedorId}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Crear namespace único para evitar conflictos entre modales
+    const namespace = `keydown.nav${config.modalId.replace(/[^a-zA-Z0-9]/g, '')}`;
+    console.log(`   📛 Namespace: ${namespace}`);
+
+    // ❷ ✅ CRÍTICO: Delegación de eventos en document (FIX v21.2)
+    // Previene bug de primera apertura donde el modal aún no está en el DOM
+    $(document)
+        .off(namespace) // Limpiar eventos previos del mismo namespace
+        .on(namespace, function (e) {
+            // ❸ Validar que el modal esté visible y activo
+            const $modal = $(config.modalId);
+
+            if (!$modal.hasClass('show')) {
+                // Modal no visible, ignorar evento
+                return;
+            }
+
+            // ❹ Obtener todos los items visibles
+            const $items = $(`${config.contenedorId} ${config.itemClass}:visible`);
+
+            if ($items.length === 0) {
+                console.warn(`⚠️ No hay items disponibles en ${config.contenedorId}`);
+                return;
+            }
+
+            // ❺ Obtener item actualmente seleccionado
+            const $itemActual = $(`${config.itemClass}.selected`);
+
+            if ($itemActual.length === 0) {
+                console.warn(`⚠️ No hay item seleccionado en ${config.contenedorId}`);
+                return;
+            }
+
+            const indiceActual = $items.index($itemActual);
+            const totalItems = $items.length;
+
+            console.log(`🎹 Tecla: ${e.key} | Índice actual: ${indiceActual}/${totalItems - 1}`);
+
+            // ❻ Procesar tecla presionada
+            switch (e.key) {
+                case 'ArrowDown': // ↓ Siguiente
+                    e.preventDefault();
+
+                    console.log('⬇️ FLECHA ABAJO - Siguiente item');
+
+                    // Calcular índice siguiente (cíclico)
+                    const indiceSiguiente = (indiceActual + 1) % totalItems;
+                    const $itemSiguiente = $items.eq(indiceSiguiente);
+
+                    console.log(`   Moviendo de índice ${indiceActual} → ${indiceSiguiente}`);
+
+                    // Seleccionar siguiente item
+                    seleccionarItemInstrumento($itemSiguiente, config);
+
+                    // Hacer scroll si es necesario
+                    scrollToItem($itemSiguiente, config.contenedorId);
+
+                    break;
+
+                case 'ArrowUp': // ↑ Anterior
+                    e.preventDefault();
+
+                    console.log('⬆️ FLECHA ARRIBA - Item anterior');
+
+                    // Calcular índice anterior (cíclico)
+                    const indiceAnterior = (indiceActual - 1 + totalItems) % totalItems;
+                    const $itemAnterior = $items.eq(indiceAnterior);
+
+                    console.log(`   Moviendo de índice ${indiceActual} → ${indiceAnterior}`);
+
+                    // Seleccionar anterior item
+                    seleccionarItemInstrumento($itemAnterior, config);
+
+                    // Hacer scroll si es necesario
+                    scrollToItem($itemAnterior, config.contenedorId);
+
+                    break;
+
+                case 'Enter': // ⏎ Confirmar
+                    e.preventDefault();
+
+                    console.log('⏎ ENTER - Confirmando selección');
+
+                    // Ejecutar callback de confirmación
+                    if (config.onConfirmar && typeof config.onConfirmar === 'function') {
+                        console.log('   ✅ Ejecutando callback onConfirmar');
+                        config.onConfirmar();
+                    } else {
+                        console.warn('   ⚠️ No hay callback onConfirmar definido');
+                    }
+
+                    break;
+
+                case 'Escape': // Esc Cancelar
+                    e.preventDefault();
+
+                    console.log('🚫 ESCAPE - Cerrando modal');
+
+                    // Cerrar modal con jQuery (compatible con Bootstrap 5)
+                    $(config.modalId).modal('hide');
+
+                    break;
+
+                default:
+                    // Otras teclas no manejadas
+                    break;
+            }
+        });
+
+    console.log(`✅ Navegación con teclado habilitada: ${namespace}`);
+}
+
+/**
+ * ✅ NUEVO v21.3: Selecciona un item específico en un modal de instrumentos
+ * Función auxiliar para unificar la lógica de selección
+ * 
+ * @param {jQuery} $item - Item jQuery a seleccionar
+ * @param {Object} config - Configuración del modal
+ */
+function seleccionarItemInstrumento($item, config) {
+    console.log(`   🔘 Seleccionando item: ${$item.data('instrumento-id') || $item.data('banco-id') || $item.data('vale-id') || $item.data('cupon-id')}`);
+
+    // ❶ Limpiar selecciones previas
+    $(`${config.itemClass}`).removeClass('selected active');
+
+    // ❷ Seleccionar el item actual
+    $item.addClass('selected');
+
+    // ❸ Habilitar botón confirmar
+    $(config.btnConfirmarId).prop('disabled', false);
+
+    console.log('   ✅ Item seleccionado correctamente');
+}
+
+/**
+ * ✅ NUEVO v21.3: Limpia eventos de navegación con teclado de un modal específico
+ * Previene memory leaks por eventos huérfanos
+ * 
+ * CUÁNDO SE LLAMA:
+ * - Automáticamente al cerrar modal (evento 'hidden.bs.modal')
+ * 
+ * @param {string} modalId - ID del modal (ej: '#modalInstrumentos')
+ */
+function limpiarNavegacionTecladoInstrumentos(modalId) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🧹 LIMPIAR NAVEGACIÓN CON TECLADO v21.3');
+    console.log(`   Modal: ${modalId}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Calcular namespace del modal
+    const namespace = `keydown.nav${modalId.replace(/[^a-zA-Z0-9]/g, '')}`;
+    console.log(`   📛 Namespace a limpiar: ${namespace}`);
+
+    // ❷ Remover evento delegado de document
+    $(document).off(namespace);
+
+    console.log('   ✅ Eventos de teclado limpiados correctamente');
+    console.log('═══════════════════════════════════════════════════');
 }

@@ -621,10 +621,10 @@ function ejecutarDiferirFactura() {
                         cerrarModalCalculoFactura();
 
                         setTimeout(() => {
-                            // Limpiar venta completa
+                            // ✅ Limpiar venta ELIMINANDO backup (productos se guardaron en pre-factura)
                             if (typeof limpiarVentaCompleta === 'function') {
-                                limpiarVentaCompleta();
-                                console.log('✅ Módulo de ventas limpiado');
+                                limpiarVentaCompleta(true); // ← 🚨 PARÁMETRO true = ELIMINAR BACKUP
+                                console.log('✅ Módulo de ventas limpiado (backup eliminado)');
                             }
 
                             setTimeout(() => {
@@ -1113,7 +1113,7 @@ function mostrarMensajeExitoDiferirPago(tipoComprobante, comprobante, numeroComp
 
                     // ❸ PASO 3: Limpiar completamente el módulo de ventas
                     if (typeof limpiarVentaCompleta === 'function') {
-                        limpiarVentaCompleta();
+                        limpiarVentaCompleta(true);
                         console.log('✅ Paso 2: Módulo de ventas limpiado');
                     } else {
                         console.error('❌ Función limpiarVentaCompleta no existe');

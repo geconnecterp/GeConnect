@@ -9,9 +9,53 @@ let busquedaEnProceso = false; // ✅ NUEVO: Control de búsquedas concurrentes
 let ajaxActual = null; // ✅ NUEVO: Referencia al AJAX en curso para cancelación
 // ✅ NUEVA VARIABLE DE CONFIGURACIÓN
 let autoConfirmarClienteUnico = true; // ← Control del comportamiento
+
 // ========================================
-// FUNCIONES DE MENSAJES AL USUARIO
+// ✅ NUEVA SECCIÓN: SINCRONIZACIÓN CHECKBOX
 // ========================================
+
+/**
+ * Sincroniza el estado del checkbox con la variable global
+ * y actualiza feedback visual
+ */
+function sincronizarAutoConfirmacion() {
+    const $checkbox = $('#chkAutoConfirmar');
+
+    if ($checkbox.length === 0) {
+        console.warn('⚠️ Checkbox #chkAutoConfirmar no encontrado - Usando valor por defecto (true)');
+        autoConfirmarClienteUnico = true;
+        return;
+    }
+
+    // Leer estado del checkbox
+    const estadoActual = $checkbox.is(':checked');
+    autoConfirmarClienteUnico = estadoActual;
+
+    // Actualizar feedback visual del label
+    const $label = $checkbox.next('label');
+    const $icono = $label.find('i.bx');
+
+    if (estadoActual) {
+        // ✅ ACTIVADO: Modo rápido
+        $icono.removeClass('bx-edit text-warning')
+            .addClass('bx-zap text-success');
+        $label.removeClass('text-danger')
+            .addClass('text-success');
+    } else {
+        // ✏️ DESACTIVADO: Modo edición
+        $icono.removeClass('bx-zap text-success')
+            .addClass('bx-edit text-warning');
+        $label.removeClass('text-success')
+            .addClass('text-warning');
+    }
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔄 SINCRONIZACIÓN DE AUTO-CONFIRMACIÓN');
+    console.log(`   Checkbox: ${estadoActual ? '☑ ACTIVADO' : '☐ DESACTIVADO'}`);
+    console.log(`   autoConfirmarClienteUnico: ${autoConfirmarClienteUnico}`);
+    console.log(`   Modo: ${estadoActual ? '⚡ RÁPIDO' : '✏️ EDICIÓN'}`);
+    console.log('═══════════════════════════════════════════════════');
+}
 
 // ========================================
 // FUNCIONES DE MENSAJES AL USUARIO
@@ -73,36 +117,36 @@ function mostrarMensajeInformacion(mensaje) {
 
 
 // ========================================
-// ✅ NUEVO: GESTIÓN DE ESTADO DE BÚSQUEDA
+// ✅ GESTIÓN DE ESTADO DE BÚSQUEDA
 // ========================================
 
 /**
- * Bloquea la interfaz de búsqueda para prevenir acciones concurrentes
+ * ✅ MODIFICADO: Ahora también bloquea el checkbox
  */
 function bloquearInterfazBusqueda() {
     console.log('🔒 Bloqueando interfaz de búsqueda...');
 
     busquedaEnProceso = true;
 
-    // Deshabilitar y proteger input
     $('#txtBuscarCliente')
         .prop('readonly', true)
-        .addClass('pe-none') // Prevent pointer events
+        .addClass('pe-none')
         .css('opacity', '0.6');
 
-    // Deshabilitar botón de búsqueda
     $('#btnBuscarCliente')
         .prop('disabled', true)
         .html('<i class="bx bx-loader-alt bx-spin"></i> Buscando...');
 
-    // Deshabilitar botones de acción
     $('#btnListaPrecios, #btnNuevoCliente').prop('disabled', true);
 
-    console.log('✅ Interfaz bloqueada correctamente');
+    // ✅ NUEVO: Bloquear checkbox durante búsqueda
+    $('#chkAutoConfirmar').prop('disabled', true);
+
+    console.log('✅ Interfaz bloqueada correctamente (incluye checkbox)');
 }
 
 /**
- * Desbloquea la interfaz de búsqueda después de completar la operación
+ * ✅ MODIFICADO: Ahora también desbloquea el checkbox
  */
 function desbloquearInterfazBusqueda() {
     console.log('🔓 Desbloqueando interfaz de búsqueda...');
@@ -110,26 +154,23 @@ function desbloquearInterfazBusqueda() {
     busquedaEnProceso = false;
     ajaxActual = null;
 
-    // Restaurar input
     $('#txtBuscarCliente')
         .prop('readonly', false)
         .removeClass('pe-none')
         .css('opacity', '1');
 
-    // Restaurar botón de búsqueda
     $('#btnBuscarCliente')
         .prop('disabled', false)
         .html('<i class="bx bx-search"></i> Buscar');
 
-    // Restaurar botones de acción según estado
     actualizarEstadoBotonesAccion();
 
-    console.log('✅ Interfaz desbloqueada correctamente');
+    // ✅ NUEVO: Desbloquear checkbox después de búsqueda
+    $('#chkAutoConfirmar').prop('disabled', false);
+
+    console.log('✅ Interfaz desbloqueada correctamente (incluye checkbox)');
 }
 
-/**
- * Actualiza el estado de los botones de acción según el cliente seleccionado
- */
 function actualizarEstadoBotonesAccion() {
     if (clienteSeleccionado) {
         $('#btnListaPrecios').prop('disabled', false);
@@ -140,9 +181,6 @@ function actualizarEstadoBotonesAccion() {
     }
 }
 
-/**
- * Cancela la búsqueda AJAX en curso si existe
- */
 function cancelarBusquedaActual() {
     if (ajaxActual) {
         console.log('⚠️ Cancelando búsqueda AJAX en curso...');
@@ -155,9 +193,8 @@ function cancelarBusquedaActual() {
 $(function () {
     console.log('🚀 Módulo de Facturación Cargado');
 
-    // ✅ NUEVO: Inicializar lista de precios por defecto
     if (typeof admLp_id === 'undefined') {
-        window.admLp_id = "001"; // Mayorista por defecto
+        window.admLp_id = "001";
         console.log('⚠️ admLp_id no estaba definida, se inicializó en "001"');
     }
 
@@ -173,22 +210,23 @@ function inicializaEventosFact() {
     // MODAL IDENTIFICAR CLIENTE
     // ========================================
 
-    // Abrir modal identificar cliente (solo para pruebas o apertura manual)
     $('#btnAbrirIdentificarCliente').on('click', function () {
         abrirModalIdentificarCliente();
     });
 
-    // Buscar cliente (botón)
+    // ✅ NUEVO: Evento del checkbox de auto-confirmación
+    $(document).on('change', '#chkAutoConfirmar', function () {
+        sincronizarAutoConfirmacion();
+    });
+
     $('#btnBuscarCliente').on('click', function () {
         buscarCliente();
     });
 
-    // ✅ MODIFICADO: Buscar cliente (Enter) - Con protección contra búsquedas concurrentes
     $('#txtBuscarCliente').on('keypress', function (e) {
         if (e.which === 13) {
             e.preventDefault();
 
-            // ✅ NUEVO: Validar si hay una búsqueda en proceso
             if (busquedaEnProceso) {
                 console.warn('⚠️ Búsqueda ya en proceso - Acción bloqueada');
                 return;
@@ -197,9 +235,10 @@ function inicializaEventosFact() {
             const criterioBusqueda = $(this).val().trim();
 
             console.log('═══════════════════════════════════════════════════');
-            console.log('⌨️ ENTER EN CAMPO BUSCAR CLIENTE v4.0');
+            console.log('⌨️ ENTER EN CAMPO BUSCAR CLIENTE v5.0');
             console.log(`   Criterio ingresado: "${criterioBusqueda}"`);
             console.log(`   busquedaEnProceso: ${busquedaEnProceso}`);
+            console.log(`   autoConfirmarClienteUnico: ${autoConfirmarClienteUnico}`);
 
             if (criterioBusqueda === '') {
                 console.log('✅ CASO 1: Campo vacío - Abrir modal Nuevo CF');
@@ -211,7 +250,6 @@ function inicializaEventosFact() {
         }
     });
 
-    // ✅ NUEVO: Prevenir edición durante búsqueda (seguridad adicional)
     $('#txtBuscarCliente').on('input', function (e) {
         if (busquedaEnProceso) {
             console.warn('⚠️ Intento de edición durante búsqueda - Bloqueado');
@@ -221,27 +259,21 @@ function inicializaEventosFact() {
         $(this).data('lastValue', $(this).val());
     });
 
-    // Lista de precios
     $('#btnListaPrecios').on('click', function () {
         console.log('🛍️ Abrir Lista de Precios...');
-        // TODO: Implementar lógica
     });
 
-    // Nuevo cliente
     $('#btnNuevoCliente').on('click', function () {
         console.log('➕ Crear Nuevo Cliente...');
         abrirModalClienteNuevo();
     });
 
-    // ✅ NUEVO: Salir al menú principal de caja
     $('#btnSalirFacturacion').on('click', function () {
         console.log('🚪 Usuario solicitó salir al menú principal...');
         confirmarSalidaAlMenu();
     });
 
-    // Cancelar (solo limpia el modal)
     $('#btnCancelarCliente').on('click', function () {
-        // ✅ NUEVO: Cancelar búsqueda en curso antes de limpiar
         if (busquedaEnProceso) {
             cancelarBusquedaActual();
             desbloquearInterfazBusqueda();
@@ -249,56 +281,31 @@ function inicializaEventosFact() {
         limpiarModalCliente();
     });
 
-    // Seguir (confirmar cliente)
     $('#btnSeguirCliente').on('click', function () {
         if (clienteSeleccionado) {
             confirmarCliente(clienteSeleccionado);
         }
     });
 
-    // ========================================
-    // PREVENIR CIERRE ACCIDENTAL DEL MODAL
-    // ========================================
-
     $('#modalIdentificarCliente').on('hide.bs.modal', function (e) {
         const disparadorId = e.relatedTarget ? e.relatedTarget.id : null;
         const cierresPermitidos = ['btnCancelarCliente', 'btnSalirFacturacion'];
         const esCierrePermitido = cierresPermitidos.includes(disparadorId);
 
-        // ══════════════════════════════════════════════════════════════════════
-        // ✅ CORREGIDO v2.0: Permitir cierre si hay cliente seleccionado
-        // ══════════════════════════════════════════════════════════════════════
-        // PROBLEMA ORIGINAL:
-        //   - Bloqueaba cierre incluso cuando búsqueda terminó exitosamente
-        //   - Validaba busquedaEnProceso ANTES de AJAX complete
-        //   - Causaba mensaje "Espere a que finalice la búsqueda" innecesario
-        //
-        // SOLUCIÓN:
-        //   - Si clienteSeleccionado existe, la búsqueda fue exitosa
-        //   - Permitir cierre aunque busquedaEnProceso = true
-        //   - Solo bloquear si búsqueda en curso SIN resultado
-        // ══════════════════════════════════════════════════════════════════════
-
         if (busquedaEnProceso && !clienteSeleccionado) {
-            // ✅ SOLO bloquear si:
-            //    - Hay búsqueda en proceso Y
-            //    - NO hay cliente seleccionado (búsqueda no completada exitosamente)
             e.preventDefault();
             console.warn('⚠️ No se puede cerrar el modal durante una búsqueda en curso');
             mostrarMensajeError('Espere a que finalice la búsqueda en curso');
             return;
         }
 
-        // ✅ CASO ESPECIAL: Si hay cliente, la búsqueda fue exitosa
-        // Permitir cierre aunque busquedaEnProceso = true (complete aún no ejecutado)
         if (clienteSeleccionado) {
             console.log('✅ Cierre permitido: Cliente seleccionado exitosamente');
             console.log(`   Cliente: ${clienteSeleccionado.denominacion || 'N/A'}`);
             console.log(`   busquedaEnProceso: ${busquedaEnProceso} (ignorado porque hay cliente)`);
-            return; // ← Permitir cierre inmediatamente
+            return;
         }
 
-        // ✅ Validación de cierre no autorizado (solo si NO hay cliente)
         if (!esCierrePermitido && !clienteSeleccionado) {
             e.preventDefault();
             console.warn('⚠️ Cierre no autorizado - Debe seleccionar un cliente o usar CANCELAR/SALIR');
@@ -309,7 +316,6 @@ function inicializaEventosFact() {
     // MODAL CLIENTE UPDATE (NUEVO/EDITAR)
     // ========================================
 
-    // Validación en tiempo real del select
     $('#selTipoDocumento, #selSexoCliente').on('change', function () {
         validarCampo($(this));
         if ($(this).attr('id') === 'selTipoDocumento') {
@@ -317,28 +323,23 @@ function inicializaEventosFact() {
         }
     });
 
-    // Validación en tiempo real de inputs
     $('#txtNumeroDocumento, #txtApellidoCliente, #txtNombreCliente, #txtEmailCliente, #txtMovilCliente').on('input', function () {
         validarCampo($(this));
     });
 
-    // Formatear número de documento y móvil (solo números)
     $('#txtNumeroDocumento, #txtMovilCliente').on('input', function () {
         let valor = $(this).val().replace(/\D/g, '');
         $(this).val(valor);
     });
 
-    // Validar email al perder foco
     $('#txtEmailCliente').on('blur', function () {
         validarEmail($(this));
     });
 
-    // Cancelar modal cliente update
     $('#btnCancelarClienteUpdate').on('click', function () {
         cerrarModalClienteUpdate();
     });
 
-    // Guardar cliente (submit del form)
     $('#formClienteUpdate').on('submit', function (e) {
         e.preventDefault();
 
@@ -347,13 +348,11 @@ function inicializaEventosFact() {
         }
     });
 
-    // ✅ NUEVO: Editar cliente (solo para Consumidores Finales)
     $('#btnEditarCliente').on('click', function () {
         console.log('✏️ Editar Consumidor Final...');
         abrirModalClienteEditar();
     });
 
-    // ✅ INTEGRACIÓN CON MÓDULO DE PRODUCTOS DE FACTURACIÓN
     $(document).on('volverAIdentificarCliente', function () {
         console.log('📡 EVENTO RECIBIDO: volverAIdentificarCliente');
         setTimeout(() => {
@@ -376,33 +375,25 @@ function inicializaVistaFact() {
 // MODAL IDENTIFICAR CLIENTE - FUNCIONES
 // ========================================
 
+/**
+ * ✅ MODIFICADO: Ahora inicializa el checkbox
+ */
 function abrirModalIdentificarCliente() {
-    // Resetear estado
     limpiarModalCliente();
 
-    // ✅ SOLUCIÓN SIMPLE: Usar jQuery para mostrar el modal
     $('#modalIdentificarCliente').modal('show');
 
-    // Focus en campo de búsqueda
     setTimeout(() => {
+        // ✅ NUEVO: Restaurar checkbox a activado
+        $('#chkAutoConfirmar').prop('checked', true).prop('disabled', false);
+        sincronizarAutoConfirmacion();
+
         $('#txtBuscarCliente').trigger("focus");
     }, 500);
 }
 
 /**
- * ✅ MODIFICADO: Limpia completamente el modal de identificar cliente
- * 
- * Esta función se ejecuta cuando el usuario hace clic en CANCELAR.
- * Debe restaurar el modal al estado inicial (#1) independientemente
- * del estado actual.
- * 
- * Estados que maneja:
- * - Estado 1: Inicial (sin búsqueda)
- * - Estado 2: Con texto sin buscar
- * - Estado 3: Cliente único encontrado
- * - Estado 4: Grilla de múltiples clientes
- * - Estado 5: Cargando desde grilla (con loader)
- * - Estado 6: Cliente cargado desde grilla
+ * ✅ MODIFICADO: Ahora resetea el checkbox
  */
 function limpiarModalCliente() {
     console.log('═══════════════════════════════════════════════════');
@@ -412,83 +403,74 @@ function limpiarModalCliente() {
     console.log('   - txtBuscarCliente:', $('#txtBuscarCliente').val());
     console.log('   - clienteSeleccionado:', clienteSeleccionado);
     console.log('   - busquedaEnProceso:', busquedaEnProceso);
+    console.log('   - autoConfirmarClienteUnico:', autoConfirmarClienteUnico);
     console.log('   - cardDatosCliente visible:', $('#cardDatosCliente').is(':visible'));
     console.log('   - cardGrillaClientes existe:', $('#cardGrillaClientes').length > 0);
     console.log('   - loaderClienteTemp existe:', $('#loaderClienteTemp').length > 0);
 
-    // ✅ NUEVO: Cancelar búsqueda en curso
     if (busquedaEnProceso) {
         cancelarBusquedaActual();
     }
 
-    // ❶ LIMPIAR VARIABLE GLOBAL
     clienteSeleccionado = null;
     console.log('✅ Variable global clienteSeleccionado limpiada');
 
-    // ❷ LIMPIAR CAMPO DE BÚSQUEDA
     $('#txtBuscarCliente').val('').removeData('lastValue');
     console.log('✅ Campo de búsqueda limpiado');
 
-    // ❸ LIMPIAR VALORES DE LOS INPUTS (sin eliminar el HTML)
     $('#txtNombre, #txtClienteId, #txtDomicilio, #txtCondicionAfip, #txtTipoNumero, #txtEmite, #txtEmail, #txtMovil').val('');
     console.log('✅ Valores de inputs limpiados');
 
-    // ❹ OCULTAR CARD DE DATOS DEL CLIENTE
     $('#cardDatosCliente')
         .removeClass('show')
         .hide();
     console.log('✅ Card de datos oculto');
 
-    // ❺ MOSTRAR EL CARD-BODY ORIGINAL (si estaba oculto por el loader)
     const $cardBody = $('#cardDatosCliente .card-body');
     if ($cardBody.length > 0) {
         $cardBody.show();
         console.log('✅ Card-body restaurado (si estaba oculto)');
     }
 
-    // ❻ ELIMINAR LOADER TEMPORAL (si existe)
     const $loader = $('#loaderClienteTemp');
     if ($loader.length > 0) {
         $loader.remove();
         console.log('✅ Loader temporal eliminado');
     }
 
-    // ❼ LIMPIAR Y OCULTAR GRILLA DE MÚLTIPLES CLIENTES
     const $grilla = $('#cardGrillaClientes');
     if ($grilla.length > 0) {
         $grilla
             .removeClass('show')
             .hide()
-            .empty(); // Vaciar contenido HTML
+            .empty();
         console.log('✅ Grilla de clientes limpiada y ocultada');
     }
 
-    // ❽ MOSTRAR ALERT DE "SIN CLIENTE"
     $('#alertSinCliente')
         .removeClass('hide')
         .show();
     console.log('✅ Alert "sin cliente" mostrado');
 
-    // ❾ DESHABILITAR BOTÓN SEGUIR
     $('#btnSeguirCliente').prop('disabled', true);
     console.log('✅ Botón SEGUIR deshabilitado');
 
-    // ✅ NUEVO: Ocultar botón EDITAR
     $('#btnEditarCliente').hide();
     console.log('✅ Botón EDITAR ocultado');
 
-    // ✅ NUEVO: Desbloquear interfaz
     desbloquearInterfazBusqueda();
 
+    // ✅ NUEVO: Restaurar checkbox a ACTIVADO
+    $('#chkAutoConfirmar').prop('checked', true).prop('disabled', false);
+    sincronizarAutoConfirmacion();
+    console.log('✅ Checkbox restaurado a ACTIVADO');
 
-    // ❿ LIMPIAR SESIÓN DEL SERVIDOR
     limpiarSesionClientesBuscados();
 
     console.log('═══════════════════════════════════════════════════');
     console.log('✅ LIMPIAR MODAL CLIENTE - FINALIZADO');
     console.log('═══════════════════════════════════════════════════');
 }
-
 // ====== BÚSQUEDA DE CLIENTE ======
 /**
  * ✅ MODIFICADO v4.0: Búsqueda de cliente con protección completa contra concurrencia
@@ -1268,8 +1250,8 @@ function confirmarClienteAutomaticamente(cliente) {
     console.log('   Denominación:', cliente.denominacion);
     console.log('   Origen:', cliente.origen);
     console.log('   ID:', cliente.id);
+    console.log('   autoConfirmarClienteUnico:', autoConfirmarClienteUnico);
 
-    // ❶ VALIDACIÓN DE SEGURIDAD
     const validacion = validarClienteParaAutoConfirmacion(cliente);
 
     if (!validacion.valido) {
@@ -1279,21 +1261,17 @@ function confirmarClienteAutomaticamente(cliente) {
         return;
     }
 
-    // ❷ GUARDAR CLIENTE EN VARIABLE GLOBAL
     clienteSeleccionado = cliente;
     console.log('✅ Cliente guardado en clienteSeleccionado');
 
-    // ❸ CERRAR MODAL INMEDIATAMENTE
     $('#modalIdentificarCliente').modal('hide');
     console.log('✅ Modal cerrado');
 
-    // ❹ DISPARAR EVENTO DESPUÉS DEL CIERRE
-    // Usamos el mismo setTimeout que confirmarCliente() para consistencia
     setTimeout(() => {
         console.log('📡 Disparando evento clienteConfirmado...');
         $(document).trigger('clienteConfirmado', [cliente]);
         console.log('✅ Evento disparado - Control transferido a prodfact.js');
-    }, 400); // ← Mismo delay que confirmarCliente()
+    }, 400);
 
     console.log('═══════════════════════════════════════════════════');
 }
