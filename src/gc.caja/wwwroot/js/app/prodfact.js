@@ -2038,13 +2038,13 @@ function confirmarFactura() {
             p_id: producto.p_id || '',
             p_id_barrado: producto.p_id_barrado || '',
             p_desc: producto.p_desc || '',
-            p_pcosto: redondear(producto.p_pcosto || 0, 2),
-            p_pcosto_repo: redondear(producto.p_pcosto_repo || 0, 2),
-            p_pneto: redondear(producto.p_pneto || 0, 2),
+            p_pcosto: redondear(producto.p_pcosto || 0, 3),
+            p_pcosto_repo: redondear(producto.p_pcosto_repo || 0, 3),
+            p_pneto: redondear(producto.p_pneto || 0, 3),
             p_pvta: redondear(producto.p_pvta || 0, 2),
             p_margen_imp: redondear(producto.p_margen_imp || 0, 2),
             p_margen_vig: redondear(producto.p_margen_vig || 0, 2),
-            cantidad_tot: redondear(producto.cantidad_tot || 0, 2),
+            cantidad_tot: redondear(producto.cantidad_tot || 0, 3),
             p_pvta_tot: redondear(producto.p_pvta_tot || 0, 2),
             bultos: redondear(producto.bultos || 0, 0),
             iva_situacion: producto.iva_situacion || '',
@@ -2086,7 +2086,7 @@ function confirmarFactura() {
     const tot_rows = productosFactura.length;
     const tot_cantidad = redondear(
         productosFactura.reduce((sum, p) => sum + (parseFloat(p.cantidad_tot) || 0), 0),
-        2
+        3
     );
     const tot_pvta = redondear(totalFactura, 2);
 
