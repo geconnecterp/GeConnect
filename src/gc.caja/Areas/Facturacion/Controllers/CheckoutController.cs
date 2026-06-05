@@ -248,17 +248,14 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     // ═══ JSONs de pago CON VALORES ═══
                     json_valores = jsonValores,
                     json_cancela = "{}",
-                    json_union = "{}"
+                    json_union = "{}",
+
+
+
+
                 };
 
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
-                _logger?.LogInformation("📦 REQUEST DTO CONSTRUIDO");
-                _logger?.LogInformation($"   co_tipo: {request.co_tipo}");
-                _logger?.LogInformation($"   cta_id: {request.cta_id}");
-                _logger?.LogInformation($"   json_valores (longitud): {request.json_valores.Length}");
-                _logger?.LogInformation($"   json_valores: {JsonConvert.SerializeObject(jsonValores)}");
-                _logger?.LogInformation($"   Request: {JsonConvert.SerializeObject(request)}");
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                
 
                 // ═══════════════════════════════════════════════════════════
                 // ⓭ ✅ NUEVO v21.0: VALIDACIÓN DE ESTADO DEL PUNTO DE VENTA
@@ -318,6 +315,19 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     _logger?.LogError("❌ No hay token de autenticación");
                     return Json(new { ok = false, mensaje = "Sesión expirada" });
                 }
+
+                //analizamos si el CAEA se activa o no para esta operación
+                request.caea = cajaActual.Caja.ctrl_id == "-1" && validacionPV.Resultado == 1 ? true : false;
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("📦 REQUEST DTO CONSTRUIDO");
+                _logger?.LogInformation($"   co_tipo: {request.co_tipo}");
+                _logger?.LogInformation($"   cta_id: {request.cta_id}");
+                _logger?.LogInformation($"   json_valores (longitud): {request.json_valores.Length}");
+                _logger?.LogInformation($"   json_valores: {JsonConvert.SerializeObject(jsonValores)}");
+                _logger?.LogInformation($"   FormaPago: {cajaActual.Caja.ctrl_id} - Resultado: {validacionPV.Resultado} - CAEA: {request.caea}");
+                _logger?.LogInformation($"   Request PAGO: {JsonConvert.SerializeObject(request)}");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                 _logger?.LogInformation("📡 Invocando servicio PagoFactServicio.FinalizarCompra...");
                 var resultado = await _pagoFactServicio.FinalizarCompra(request, token);
