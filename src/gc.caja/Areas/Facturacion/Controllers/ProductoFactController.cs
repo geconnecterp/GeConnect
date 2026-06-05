@@ -1834,6 +1834,53 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "Error: no se obtuvieron datos del comprobante" });
                 }
 
+                // ═══════════════════════════════════════════════════════════
+                // ✅ NUEVO: REGISTRACIÓN DE STOCK INDEPENDIENTE
+                // ═══════════════════════════════════════════════════════════
+                try
+                {
+                    _logger?.LogInformation("🔄 Iniciando actualización de stock para la factura...");
+                    string depoId = cajaActual.Caja.depo_id;
+
+                    if (string.IsNullOrEmpty(depoId))
+                    {
+                        _logger?.LogWarning("⚠️ No se encontró 'depo_id' en la caja actual. No se puede actualizar el stock.");
+                    }
+                    else
+                    {
+                        // Construir el ID de comprobante para el stock
+                        string stockId = $"{comprobante.tco_id}{comprobante.cm_compte}{comprobante.cm_repetido}";
+
+                        var stockRequest = new CargaStkDto
+                        {
+                            box_id = depoId,
+                            tipo = "FV",
+                            id = stockId
+                        };
+
+                        _logger?.LogInformation($"   Parámetros de stock: box_id='{stockRequest.box_id}', tipo='{stockRequest.tipo}', id='{stockRequest.id}'");
+
+                        // Usamos el _cajaServicio ya inyectado
+                        var stockResult = await _cajaServicio.CargaStkDeFactura(stockRequest, token);
+
+                        if (stockResult == null || !stockResult.Ok)
+                        {
+                            _logger?.LogError($"❌ Error al actualizar el stock: {stockResult?.Mensaje ?? "Respuesta nula del servicio."}");
+                            // NO se retorna error al cliente, el proceso principal fue exitoso.
+                        }
+                        else
+                        {
+                            _logger?.LogInformation($"✅ Stock actualizado exitosamente. Comprobante ID:{stockId}");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, "❌ EXCEPCIÓN CRÍTICA en la actualización de stock. La factura se emitió pero el stock no se actualizó.");
+                    // La excepción se captura y registra, pero no se propaga para no afectar la respuesta al cliente.
+                }
+                // ═══════════════════════════════════════════════════════════
+
                 // ⓰ LOGS DE DATOS PARSEADOS
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
                 _logger?.LogInformation("✅ FACTURA DIFERIDA EMITIDA EXITOSAMENTE");

@@ -1615,7 +1615,7 @@ function enviarPagoAlServidor(jsonValores) {
         contentType: 'application/json',
         data: JSON.stringify(payload),
         dataType: 'json',
-        timeout: 30000
+        timeout: 120000
     })
         .done(function (response) {
             console.log('═══════════════════════════════════════════════════');
@@ -4105,7 +4105,7 @@ function mostrarErrorCampo(selector, mensaje) {
     $campo.after(`<div class="invalid-feedback d-block">${escapeHtml(mensaje)}</div>`);
 
     // Focus y seleccionar
-    $campo.focus().select();
+    $campo.trigger('focus').trigger('select');
 }
 
 /**
