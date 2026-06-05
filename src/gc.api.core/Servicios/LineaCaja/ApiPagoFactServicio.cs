@@ -7,6 +7,9 @@ using gc.infraestructura.Dtos.Cajas.Response;
 using gc.infraestructura.Dtos.Gen;
 
 using Microsoft.Data.SqlClient;
+using Newtonsoft.Json;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace gc.api.core.Servicios.LineaCaja
 {
@@ -19,6 +22,7 @@ namespace gc.api.core.Servicios.LineaCaja
 
         public List<ValoresInsResDto> ObtenerValoresIns(ValoresInsReqDto req)
         {
+            _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - request:{JsonConvert.SerializeObject(req)}");
             var sp = ConstantesGC.StoredProcedures.SP_CAJA_VAL_INS;
             /*
               public string tcf_id { get; set; } = string.Empty;
@@ -38,6 +42,7 @@ namespace gc.api.core.Servicios.LineaCaja
 
         public List<ValoresMPResDto> ObtenerValoresMP(ValoresMPReqDto req)
         {
+            _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - request:{JsonConvert.SerializeObject(req)}");
             var sp = ConstantesGC.StoredProcedures.SP_CAJA_VAL_MP;
             /*
               public string co_tipo { get; set; } = string.Empty;
@@ -55,6 +60,7 @@ namespace gc.api.core.Servicios.LineaCaja
 
         public List<ValoresNCResDto> ObtenerValoresNC(ValoresNCReqDto req)
         {
+            _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - request:{JsonConvert.SerializeObject(req)}");
             var sp = ConstantesGC.StoredProcedures.SP_CAJA_VAL_NC;
             /*
                public string co_tipo { get; set; } = string.Empty;
@@ -72,6 +78,7 @@ namespace gc.api.core.Servicios.LineaCaja
 
         public List<ValoresPendientesResDto> ObtenerValoresPendientes(ValoresPendientesReqDto req)
         {
+            _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - request:{JsonConvert.SerializeObject(req)}");
             var sp = ConstantesGC.StoredProcedures.SP_CAJA_COTIZACION;
             /*
               public string co_tipo { get; set; } = string.Empty;
@@ -89,6 +96,7 @@ namespace gc.api.core.Servicios.LineaCaja
 
         public RespuestaDto ConfirmarOperacionCaja(CajaOpeConfirmarReq req)
         {
+            _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - request:{JsonConvert.SerializeObject(req)}");
             return OperacionConfirmacionBase(req);
         }
     }

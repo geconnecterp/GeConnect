@@ -265,14 +265,14 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation("🔍 VALIDANDO ESTADO DEL PUNTO DE VENTA ANTES DE FINALIZAR COMPRA");
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
-                var validacionPV = await ValidarEstadoPuntoVenta(
+                var validacionPV = ValidarEstadoPuntoVenta(
                     cajaServicio: _cajaServicio,
                     cajaId: cajaActual.CajaId ?? string.Empty,
                     ctrlId: cajaActual.Caja.ctrl_id ?? string.Empty,
                     nroProceso: request.caja_nro_proceso,
                     nroCierre: request.caja_nro_cierre,
                     tipoLlamada: "F" // ✅ "F" = Finalización (emite comprobante)
-                );
+                ).GetAwaiter().GetResult();
 
                 // ⓮ EVALUAR RESULTADO DE VALIDACIÓN
 
