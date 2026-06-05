@@ -79,7 +79,7 @@ namespace gc.api.Controllers.Caja
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaBusquedaResultadoDto>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
-        public IActionResult BusquedaClientes(string busqueda,string adm_id,string usu_id)
+        public IActionResult BusquedaClientes(string busqueda, string adm_id, string usu_id)
         {
             if (string.IsNullOrEmpty(busqueda))
             {
@@ -91,7 +91,7 @@ namespace gc.api.Controllers.Caja
                 return BadRequest("Los datos del usuario y la sucursal es necesario");
             }
 
-            var res = _apiCajaServicio.BusquedaClientes(busqueda,adm_id,usu_id);
+            var res = _apiCajaServicio.BusquedaClientes(busqueda, adm_id, usu_id);
             return Ok(new ApiResponse<List<CuentaBusquedaResultadoDto>>(res));
         }
 
@@ -113,7 +113,7 @@ namespace gc.api.Controllers.Caja
 
             var res = _apiCajaServicio.BusquedaDatosCliente(origen, valor, adm_id, usu_id);
             return Ok(new ApiResponse<CuentaDatosResultadoDto>(res));
-        }        
+        }
 
         [HttpPost]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
@@ -151,10 +151,10 @@ namespace gc.api.Controllers.Caja
         [Route("[action]")]
         public IActionResult CierreCajaGral(CajaCerrarRequest request)
         {
-			if (request == null)
-				return BadRequest("El parámetro request es requerido.");
+            if (request == null)
+                return BadRequest("El parámetro request es requerido.");
 
-			if (string.IsNullOrEmpty(request.usu_id) || string.IsNullOrEmpty(request.adm_id))
+            if (string.IsNullOrEmpty(request.usu_id) || string.IsNullOrEmpty(request.adm_id))
                 return BadRequest("Los parámetros usu_id y adm_id son requeridos.");
 
             var res = _apiCajaServicio.CierreCajaGral(request.usu_id, request.adm_id);
@@ -169,7 +169,7 @@ namespace gc.api.Controllers.Caja
         {
             if (request == null)
                 return BadRequest("El parámetro request es requerido.");
-			
+
             if (string.IsNullOrEmpty(request.usu_id) || string.IsNullOrEmpty(request.adm_id))
                 return BadRequest("Los parámetros usu_id y adm_id son requeridos.");
 
@@ -177,12 +177,40 @@ namespace gc.api.Controllers.Caja
             return Ok(new ApiResponse<RespuestaDto>(res));
         }
 
-		[HttpGet]
-		[Route("[action]")]
-		public IActionResult ObtenerPVAbiertos(string admId)
-		{
-			var res = _apiCajaServicio.ObtenerPVAbiertos(admId);
-			return Ok(new ApiResponse<List<CajaPVAbiertosDto>>(res));
-		}
-	}
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult ObtenerPVAbiertos(string admId)
+        {
+            var res = _apiCajaServicio.ObtenerPVAbiertos(admId);
+            return Ok(new ApiResponse<List<CajaPVAbiertosDto>>(res));
+        }
+
+
+        // RespuestaDto ValidaEstadoPV(CajaValidaPVDto req);
+        //RespuestaDto CargaStkDeFactura(CargaStkDto req);
+
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult ValidaEstadoPV(CajaValidaPVDto req)
+        {
+            if (req == null)
+                return BadRequest("El parámetro req es requerido.");
+            var res = _apiCajaServicio.ValidaEstadoPV(req);
+            return Ok(new ApiResponse<RespuestaDto>(res));
+        }
+
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult CargaStkDeFactura(CargaStkDto req)
+        {
+            if (req == null)
+                return BadRequest("El parámetro req es requerido.");
+            var res = _apiCajaServicio.CargaStkDeFactura(req);
+            return Ok(new ApiResponse<RespuestaDto>(res));
+        }
+    }
 }

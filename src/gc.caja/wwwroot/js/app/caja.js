@@ -363,10 +363,12 @@ $(function () {
     }
 
     /**
-     * PASO 4: Obtiene los datos de la caja después de apertura exitosa
-     * resultado = 0: Datos OK - Menú completo
-     * otro: Error - Salir
-     */
+    * PASO 4: Obtiene los datos de la caja después de apertura exitosa
+    * resultado = 0: Datos OK - Menú completo
+    * otro: Error - Salir
+    * 
+    * NUEVO: Maneja advertencias del sistema (mostrar_mensaje = true)
+    */
     function obtenerDatosCaja() {
         mostrarLoader("Cargando datos de caja...<br><small class='text-muted'>Configurando punto de venta</small>");
 
@@ -377,27 +379,95 @@ $(function () {
             success: function (response) {
                 ocultarLoader();
 
+                // 📋 LOGGING: Registrar respuesta completa para trazabilidad
+                console.log("📦 Respuesta ObtenerDatosCaja:", {
+                    ok: response.ok,
+                    resultado: response.resultado,
+                    mensaje: response.mensaje,
+                    mostrar_mensaje: response.mostrar_mensaje,
+                    mensaje_advertencia: response.mensaje_advertencia,
+                    tiene_datos: !!response.datos
+                });
+
+                // ✅ VALIDACIÓN 1: Respuesta no exitosa o resultado erróneo
                 if (!response.ok || response.resultado !== 0) {
+                    console.error("❌ Error al obtener datos de caja - Resultado:", response.resultado);
                     mostrarErrorYSalir(response.mensaje || "Error al obtener datos de caja.");
                     return;
                 }
 
-                // Datos obtenidos exitosamente - Menú completo
-                console.log("✅ Datos de caja obtenidos - Menú completo");
-                console.log("📊 Datos:", response.datos);
-                nivelAccesoMenu = 'completo';
+                // ✅ VALIDACIÓN 2: Verificar si hay mensaje de advertencia del sistema
+                const tieneAdvertencia = response.mostrar_mensaje === true && response.mensaje_advertencia;
 
-                setTimeout(() => {
-                    configurarMenuSegunAcceso();
-                    const menuModal = getModalMenu();
-                    if (menuModal) menuModal.show();
-                }, 400);
+                if (tieneAdvertencia) {
+                    console.warn("⚠️ Advertencia del sistema detectada:", response.mensaje_advertencia);
+
+                    // Construir información adicional según el tipo de controlador
+                    let datosAdicionales = construirDatosAdvertencia(response.datos);
+
+                    // Mostrar advertencia y continuar después
+                    mostrarAdvertenciaConContinuacion(
+                        response.mensaje_advertencia,
+                        function () {
+                            // Callback: Continuar con el flujo normal
+                            continuarConMenuCompleto(response);
+                        },
+                        datosAdicionales
+                    );
+                } else {
+                    // ✅ Sin advertencias: Continuar directamente
+                    console.log("✅ Datos de caja obtenidos sin advertencias - Menú completo");
+                    continuarConMenuCompleto(response);
+                }
             },
             error: function (xhr, status, error) {
                 ocultarLoader();
                 manejarErrorAjax(xhr, status, error, "obtener datos de caja");
             }
         });
+    }
+
+    /**
+     * Construye información adicional para mostrar en advertencias
+     * según el contexto y datos disponibles
+     */
+    function construirDatosAdvertencia(datos) {
+        if (!datos) return null;
+
+        let info = '';
+
+        if (datos.caja_id) {
+            info += `<i class='bx bx-store'></i> Caja: <strong>${datos.caja_id}</strong><br>`;
+        }
+
+        if (datos.caja_nombre) {
+            info += `<i class='bx bx-tag'></i> Nombre: <strong>${datos.caja_nombre}</strong><br>`;
+        }
+
+        if (datos.caja_nro_proceso) {
+            info += `<i class='bx bx-hash'></i> Proceso: <strong>${datos.caja_nro_proceso}</strong><br>`;
+        }
+
+        if (datos.usuario) {
+            info += `<i class='bx bx-user'></i> Usuario: <strong>${datos.usuario}</strong><br>`;
+        }
+
+        return info || null;
+    }
+
+    /**
+     * Continúa con el flujo normal: Configura menú completo y lo muestra
+     */
+    function continuarConMenuCompleto(response) {
+        console.log("📊 Datos de caja:", response.datos);
+
+        nivelAccesoMenu = 'completo';
+
+        setTimeout(() => {
+            configurarMenuSegunAcceso();
+            const menuModal = getModalMenu();
+            if (menuModal) menuModal.show();
+        }, 400);
     }
 
     /**
@@ -569,6 +639,57 @@ $(function () {
 
     function ocultarLoader() {
         $('#loaderOverlay').fadeOut(300);
+    }
+
+    /**
+     * Muestra un mensaje de advertencia del sistema y ejecuta callback al cerrar
+     * @param {string} mensaje - Mensaje a mostrar
+     * @param {function} callback - Función a ejecutar después de cerrar el mensaje
+     * @param {string} datos - Datos adicionales opcionales para mostrar
+     */
+    function mostrarAdvertenciaConContinuacion(mensaje, callback, datos) {
+        let contenidoHTML = `
+            <div class="text-center">
+                <i class='bx bx-info-circle text-warning' style='font-size: 3rem;'></i>
+                <p class="mt-3">${mensaje}</p>
+        `;
+
+        // Si hay datos adicionales, mostrarlos
+        if (datos) {
+            contenidoHTML += `
+                <hr>
+                <small class="text-muted">
+                    ${datos}
+                </small>
+            `;
+        }
+
+        contenidoHTML += `
+                <hr>
+                <small class="text-muted">
+                    <i class='bx bx-check-circle'></i> Puede continuar operando con la caja.
+                </small>
+            </div>
+        `;
+
+        AbrirMensaje(
+            "ADVERTENCIA DEL SISTEMA",
+            contenidoHTML,
+            function () {
+                $("#msjModal").modal("hide");
+
+                // Ejecutar callback después de cerrar el modal
+                if (typeof callback === 'function') {
+                    setTimeout(() => {
+                        callback();
+                    }, 300);
+                }
+            },
+            false,
+            ["Continuar"],
+            "warn!",
+            null
+        );
     }
 
     function mostrarErrorCritico(mensaje) {

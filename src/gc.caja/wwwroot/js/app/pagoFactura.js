@@ -1563,29 +1563,31 @@ function finalizarPago() {
 // ════════════════════════════════════════════════════════════
 
 /**
- * ✅ NUEVO v20.2: Envía el pago al servidor mediante AJAX
- * Similar a ejecutarDiferirPago() pero con valores de pago
+ * ✅ ACTUALIZADO v20.4: Envía el pago al servidor mediante AJAX
+ * NUEVO: Manejo de advertencias de validación de Punto de Venta
  * 
  * FLUJO:
  * 1. Bloquea la interfaz (loading global)
  * 2. Prepara payload con valores y uniones
  * 3. Envía POST al endpoint FinalizarCompra
- * 4. Procesa respuesta del servidor
- * 5. Genera reporte del comprobante (PDF)
- * 6. Muestra mensaje de éxito
- * 7. Limpia sesión y reinicia módulo
+ * 4. ✅ NUEVO: Detecta advertencias de PV en respuesta
+ * 5. Procesa respuesta del servidor
+ * 6. Genera reporte del comprobante (PDF)
+ * 7. ✅ NUEVO: Muestra mensaje de advertencia PV si existe
+ * 8. Muestra mensaje de éxito
+ * 9. Limpia sesión y reinicia módulo
  * 
  * @param {Array<Object>} jsonValores - Array de Json_Valores construido
  */
 function enviarPagoAlServidor(jsonValores) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('📤 ENVIANDO PAGO AL SERVIDOR v20.2');
+    console.log('📤 ENVIANDO PAGO AL SERVIDOR v20.4');
     console.log('═══════════════════════════════════════════════════');
     console.log(`   Total valores: ${jsonValores.length}`);
     console.log(`   Total monto: ${formatearMoneda(conceptosPago.totalValores)}`);
     console.log('═══════════════════════════════════════════════════');
 
-    // ❶ Bloquear pantalla (similar a DiferirPago)
+    // ❶ Bloquear pantalla
     mostrarLoadingGlobal('Procesando pago y emitiendo factura...');
 
     // ❷ URL del endpoint
@@ -1598,7 +1600,7 @@ function enviarPagoAlServidor(jsonValores) {
     // ❸ Preparar payload
     const payload = {
         valores: jsonValores,
-        uniones: [] // ← Vacío por ahora (Fase 2 - JSON_Union)
+        uniones: []
     };
 
     console.log('═══════════════════════════════════════════════════');
@@ -1613,15 +1615,13 @@ function enviarPagoAlServidor(jsonValores) {
         contentType: 'application/json',
         data: JSON.stringify(payload),
         dataType: 'json',
-        timeout: 30000 // 30 segundos
+        timeout: 120000
     })
         .done(function (response) {
             console.log('═══════════════════════════════════════════════════');
-            console.log('✅ RESPUESTA RECIBIDA DEL SERVIDOR');
+            console.log('✅ RESPUESTA RECIBIDA DEL SERVIDOR v20.4');
             console.log('═══════════════════════════════════════════════════');
             console.log('Response completo:', response);
-
-            // ⚠️ NO OCULTAR LOADING AÚN - Esperamos generar reporte
 
             // ❺ Validar respuesta básica
             if (!response || response.ok === false) {
@@ -1634,6 +1634,24 @@ function enviarPagoAlServidor(jsonValores) {
             }
 
             console.log('✅ Respuesta OK del servidor');
+
+            // ═══════════════════════════════════════════════════════════
+            // ✅ NUEVO v20.4: DETECTAR ADVERTENCIA DE VALIDACIÓN PV
+            // ═══════════════════════════════════════════════════════════
+
+            const tieneAdvertenciaPV = response.mostrar_mensaje_pv === true;
+            const mensajeAdvertenciaPV = response.mensaje_advertencia || '';
+
+            if (tieneAdvertenciaPV) {
+                console.log('═══════════════════════════════════════════════════');
+                console.log('⚠️ ADVERTENCIA DE PV DETECTADA v20.4');
+                console.log('═══════════════════════════════════════════════════');
+                console.log(`   mostrar_mensaje_pv: ${response.mostrar_mensaje_pv}`);
+                console.log(`   mensaje_advertencia: "${mensajeAdvertenciaPV}"`);
+                console.log('═══════════════════════════════════════════════════');
+            } else {
+                console.log('ℹ️ Sin advertencias de PV');
+            }
 
             // ❻ Validar que haya datos del comprobante
             if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
@@ -1659,7 +1677,7 @@ function enviarPagoAlServidor(jsonValores) {
             console.log(`   cm_repetido: ${comprobante.cm_repetido}`);
             console.log('═══════════════════════════════════════════════════');
 
-            // ❽ GENERAR REPORTE PRIMERO (como en DiferirPago)
+            // ❽ GENERAR REPORTE PRIMERO
             console.log('📄 Iniciando generación de reporte...');
 
             if (typeof ModuloReportes !== 'undefined') {
@@ -1673,24 +1691,51 @@ function enviarPagoAlServidor(jsonValores) {
                 }).then(function (exitoso) {
                     console.log(`📄 Generación de reporte: ${exitoso ? '✅ EXITOSA' : '❌ FALLIDA'}`);
 
-                    // Esperar que se abra el PDF
                     setTimeout(function () {
                         console.log('⏳ PDF abierto - Desbloqueando interfaz...');
                         ocultarLoadingGlobal();
-                        procesarPagoExitoso(comprobante);
+
+                        // ═══════════════════════════════════════════════════
+                        // ✅ NUEVO v20.4: MOSTRAR ADVERTENCIA PV ANTES DE ÉXITO
+                        // ═══════════════════════════════════════════════════
+
+                        if (tieneAdvertenciaPV && mensajeAdvertenciaPV) {
+                            mostrarAdvertenciaPV(mensajeAdvertenciaPV, function () {
+                                // Callback: Después de cerrar advertencia, mostrar éxito
+                                procesarPagoExitoso(comprobante);
+                            });
+                        } else {
+                            // Sin advertencia, mostrar éxito directamente
+                            procesarPagoExitoso(comprobante);
+                        }
+
                     }, 500);
 
                 }).catch(function (error) {
                     console.error('❌ ERROR al generar reporte:', error);
                     ocultarLoadingGlobal();
 
-                    // Mostrar éxito de todos modos (la factura ya se emitió)
-                    procesarPagoExitoso(comprobante);
+                    // ✅ NUEVO: Mostrar advertencia aunque falle el reporte
+                    if (tieneAdvertenciaPV && mensajeAdvertenciaPV) {
+                        mostrarAdvertenciaPV(mensajeAdvertenciaPV, function () {
+                            procesarPagoExitoso(comprobante);
+                        });
+                    } else {
+                        procesarPagoExitoso(comprobante);
+                    }
                 });
             } else {
                 console.warn('⚠️ ModuloReportes NO disponible - Saltando generación de PDF');
                 ocultarLoadingGlobal();
-                procesarPagoExitoso(comprobante);
+
+                // ✅ NUEVO: Mostrar advertencia aunque no haya reporte
+                if (tieneAdvertenciaPV && mensajeAdvertenciaPV) {
+                    mostrarAdvertenciaPV(mensajeAdvertenciaPV, function () {
+                        procesarPagoExitoso(comprobante);
+                    });
+                } else {
+                    procesarPagoExitoso(comprobante);
+                }
             }
         })
         .fail(function (jqXHR, textStatus, errorThrown) {
@@ -1705,14 +1750,14 @@ function enviarPagoAlServidor(jsonValores) {
 
             ocultarLoadingGlobal();
 
-            // ❶ Verificar sesión expirada
+            // Validar sesión expirada
             if (jqXHR.status === 401 || jqXHR.status === 403) {
                 console.error('❌ SESIÓN EXPIRADA');
                 manejarSesionExpirada('Su sesión ha expirado. Por favor, inicie sesión nuevamente.');
                 return;
             }
 
-            // ❷ Mensaje de error genérico
+            // Mensaje de error genérico
             let mensajeError = 'Error de comunicación con el servidor';
 
             if (jqXHR.status === 500) {
@@ -1736,7 +1781,7 @@ function enviarPagoAlServidor(jsonValores) {
             );
         });
 
-    // ❾ Timeout de seguridad (30 segundos)
+    // Timeout de seguridad (30 segundos)
     setTimeout(function () {
         if ($('#overlayLoadingGlobal').length > 0 && $('#overlayLoadingGlobal').is(':visible')) {
             console.warn('⚠️ TIMEOUT DE SEGURIDAD ALCANZADO (30s)');
@@ -1758,6 +1803,55 @@ function enviarPagoAlServidor(jsonValores) {
             );
         }
     }, 30000);
+}
+
+/**
+ * ✅ NUEVO v20.4: Muestra advertencia de validación de Punto de Venta
+ * 
+ * CASOS DE USO:
+ * - Facturación Electrónica con CAEA vigente (resultado 1)
+ * - Controlador Fiscal Hasar con comprobante cancelado (resultado 1)
+ * 
+ * @param {string} mensajeAdvertencia - Mensaje de advertencia del PV
+ * @param {Function} callback - Función a ejecutar después de cerrar la advertencia
+ */
+function mostrarAdvertenciaPV(mensajeAdvertencia, callback) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('⚠️ MOSTRANDO ADVERTENCIA DE PV v20.4');
+    console.log('═══════════════════════════════════════════════════');
+    console.log(`   Mensaje: "${mensajeAdvertencia}"`);
+    console.log('═══════════════════════════════════════════════════');
+
+    AbrirMensaje(
+        "Advertencia del Punto de Venta",
+        `<div class="text-start">
+            <p class="mb-3">
+                <i class='bx bx-info-circle text-warning fs-3'></i>
+                <strong class="text-warning">El comprobante se emitió correctamente, pero con advertencia:</strong>
+            </p>
+            <div class="alert alert-warning mb-3">
+                <i class='bx bx-error-circle'></i> ${escapeHtml(mensajeAdvertencia)}
+            </div>
+            <p class="mb-0">
+                <i class='bx bx-check-circle'></i> 
+                La factura fue registrada exitosamente en el sistema.
+            </p>
+        </div>`,
+        function () {
+            $("#msjModal").modal("hide");
+
+            // Ejecutar callback después de cerrar modal
+            if (callback && typeof callback === 'function') {
+                setTimeout(() => {
+                    callback();
+                }, 300);
+            }
+        },
+        false,
+        ["Aceptar"],
+        "warning",
+        null
+    );
 }
 
 /**
@@ -4011,7 +4105,7 @@ function mostrarErrorCampo(selector, mensaje) {
     $campo.after(`<div class="invalid-feedback d-block">${escapeHtml(mensaje)}</div>`);
 
     // Focus y seleccionar
-    $campo.focus().select();
+    $campo.trigger('focus').trigger('select');
 }
 
 /**

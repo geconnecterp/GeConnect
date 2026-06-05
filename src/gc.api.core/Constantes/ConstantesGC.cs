@@ -43,6 +43,10 @@
 			public const string SP_CAJA_VAL_NC = "SPGECO_CAJA_VALORES_NC";
 			public const string SP_CAJA_VAL_MP = "SPGECO_CAJA_VALORES_MP";
 			public const string SP_CAJA_VAL_INS = "SPGECO_CAJA_VALORES_INS"; //INSTRUMENTOS		
+
+			//verificaciones
+			public const string SP_CAJA_VALIDA_PV = "SPGECO_CAJA_Valida_PV";
+			public const string SP_CAJA_STK_CARGA = "SPGECO_STK_Carga";
             #endregion
 
             #region VTAS
