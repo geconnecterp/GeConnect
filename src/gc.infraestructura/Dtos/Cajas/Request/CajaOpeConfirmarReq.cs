@@ -34,5 +34,6 @@
         public string json_union { get; set; } = "{}";
         public string json_subtotal { get; set; } = "{}";
         public string json_sorteo { get; set; } = string.Empty;
+        public bool caea { get; set; } = false;
     }
 }

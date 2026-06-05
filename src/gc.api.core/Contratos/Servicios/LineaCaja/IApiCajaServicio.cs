@@ -17,5 +17,7 @@ namespace gc.api.core.Contratos.Servicios.LineaCaja
         RespuestaDto HabilitarCajaGral(string usu_id, string adm_id);
         List<CajaPVAbiertosDto> ObtenerPVAbiertos(string adm_id);
 
-	}
+        RespuestaDto ValidaEstadoPV(CajaValidaPVDto req);
+        RespuestaDto CargaStkDeFactura(CargaStkDto req);
+    }
 }

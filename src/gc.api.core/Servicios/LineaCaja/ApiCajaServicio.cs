@@ -189,5 +189,46 @@ namespace gc.api.core.Servicios.LineaCaja
 			List<CajaPVAbiertosDto> resp = _repository.EjecutarLstSpExt<CajaPVAbiertosDto>(sp, ps, true);
 			return resp;
 		}
-	}
+
+        public RespuestaDto ValidaEstadoPV(CajaValidaPVDto req)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_CAJA_VALIDA_PV;
+
+            var ps = new List<SqlParameter>() {
+                new SqlParameter("@caja_id", req.caja_id),
+                new SqlParameter("@usu_id", req.usu_id),
+                new SqlParameter("@adm_id", req.adm_id),
+                new SqlParameter("@caja_nro_proceso", req.caja_nro_proceso),
+                new SqlParameter("@caja_nro_cierre", req.caja_nro_cierre),
+                new SqlParameter("@tipo_llamada", req.tipo_llamada),
+            };
+
+            var res = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps);
+
+            if (res != null && res.Count > 0)
+            {
+                return res[0];
+            }
+            return new() { resultado = -1, resultado_msj = "Hubo un error al validar el PUESTO DE VENTA por lo que no se recepcionó respuesta desde la BD." };
+        }
+
+        public RespuestaDto CargaStkDeFactura(CargaStkDto req)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_CAJA_VALIDA_PV;
+
+            var ps = new List<SqlParameter>() {
+                new SqlParameter("@box_id", req.box_id),
+                new SqlParameter("@tipo", req.tipo),
+                new SqlParameter("@id", req.id)
+            };
+
+            var res = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps);
+
+            if (res != null && res.Count > 0)
+            {
+                return res[0];
+            }
+            return new() { resultado = -1, resultado_msj = "Hubo un error al intentar cargar el stock de la factura, por lo que no se recepcionó respuesta desde la BD." };
+        }
+    }
 }

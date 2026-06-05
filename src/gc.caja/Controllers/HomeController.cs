@@ -2,8 +2,10 @@
 using gc.caja.Models;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Cajas;
+using gc.infraestructura.Dtos.Cajas.Request;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System.Diagnostics;
 
 namespace gc.caja.Controllers
@@ -246,23 +248,65 @@ namespace gc.caja.Controllers
                 caja.Caja = result.Entidad;
                 CajaActual = caja;
 
-                return Json(new
+                // ═══════════════════════════════════════════════════════════
+                // ✅ NUEVO v2.0: VALIDACIÓN DE ESTADO DEL PUNTO DE VENTA
+                // ═══════════════════════════════════════════════════════════
+
+                var validacionPV = await ValidarEstadoPuntoVenta(
+                    cajaServicio: _caja,
+                    cajaId: cajaActual.CajaId,
+                    ctrlId: caja.Caja.ctrl_id,
+                    nroProceso: result?.Entidad?.caja_nro_proceso,
+                    nroCierre: result?.Entidad?.caja_nro_cierre,
+                    tipoLlamada: "I" // ← "I" = Inicio
+                );
+
+                // Si no puede continuar, retornar error
+                if (!validacionPV.PuedeContinuar)
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        resultado = validacionPV.Resultado,
+                        mensaje = validacionPV.Mensaje,
+                        mostrar_mensaje = true
+                    });
+                }
+
+                // Preparar respuesta exitosa
+                var respuestaExito = new
                 {
                     ok = true,
                     resultado = 0,
                     mensaje = "Datos obtenidos exitosamente.",
                     datos = new
                     {
-                        caja_id = result.Entidad.caja_id,
-                        caja_nombre = result.Entidad.caja_nombre,
-                        depo_id = result.Entidad.depo_id,
+                        caja_id = result?.Entidad?.caja_id,
+                        caja_nombre = result?.Entidad?.caja_nombre,
+                        depo_id = result?.Entidad?.depo_id,
                         usuario = UserName,
                         administracion = AdministracionId,
-                        dia_movi = result.Entidad.dia_movi,
-                        caja_estado = result.Entidad.caja_estado,
-                        caja_nro_proceso = result.Entidad.caja_nro_proceso
+                        dia_movi = result?.Entidad?.dia_movi,
+                        caja_estado = result?.Entidad?.caja_estado,
+                        caja_nro_proceso = result?.Entidad?.caja_nro_proceso
                     }
-                });
+                };
+
+                // Si hay advertencia, agregarla
+                if (validacionPV.EsAdvertencia)
+                {
+                    return Json(new
+                    {
+                        respuestaExito.ok,
+                        respuestaExito.resultado,
+                        respuestaExito.mensaje,
+                        respuestaExito.datos,
+                        mensaje_advertencia = validacionPV.Mensaje,
+                        mostrar_mensaje = true
+                    });
+                }
+
+                return Json(respuestaExito);
             }
             catch (Exception ex)
             {

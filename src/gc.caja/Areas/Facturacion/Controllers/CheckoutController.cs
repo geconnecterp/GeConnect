@@ -18,13 +18,16 @@ namespace gc.caja.Areas.Facturacion.Controllers
     public class CheckoutController : ControladorBaseCaja
     {
         private readonly ICheckoutServicio _pagoFactServicio;
+        private readonly ICajaServicio _cajaServicio; // ✅ NUEVO v21.0
 
         public CheckoutController(IOptions<AppSettings> options,
             ICheckoutServicio pagoFactServicio,
+            ICajaServicio cajaServicio, // ✅ NUEVO v21.0
             IHttpContextAccessor httpContext,
             ILogger<CheckoutController> logger) : base(options, httpContext, logger)
         {
             _pagoFactServicio = pagoFactServicio;
+            _cajaServicio = cajaServicio; // ✅ NUEVO v21.0
             InicializaBancos().GetAwaiter().GetResult();
         }
 
@@ -245,17 +248,65 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     // ═══ JSONs de pago CON VALORES ═══
                     json_valores = jsonValores,
                     json_cancela = "{}",
-                    json_union = "{}"
+                    json_union = "{}",
+
+
+
+
                 };
 
+                
+
+                // ═══════════════════════════════════════════════════════════
+                // ⓭ ✅ NUEVO v21.0: VALIDACIÓN DE ESTADO DEL PUNTO DE VENTA
+                // ═══════════════════════════════════════════════════════════
+
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
-                _logger?.LogInformation("📦 REQUEST DTO CONSTRUIDO");
-                _logger?.LogInformation($"   co_tipo: {request.co_tipo}");
-                _logger?.LogInformation($"   cta_id: {request.cta_id}");
-                _logger?.LogInformation($"   json_valores (longitud): {request.json_valores.Length}");
-                _logger?.LogInformation($"   json_valores: {JsonConvert.SerializeObject(jsonValores)}");
-                _logger?.LogInformation($"   Request: {JsonConvert.SerializeObject(request)}");
+                _logger?.LogInformation("🔍 VALIDANDO ESTADO DEL PUNTO DE VENTA ANTES DE FINALIZAR COMPRA");
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                var validacionPV = await ValidarEstadoPuntoVenta(
+                    cajaServicio: _cajaServicio,
+                    cajaId: cajaActual.CajaId ?? string.Empty,
+                    ctrlId: cajaActual.Caja.ctrl_id ?? string.Empty,
+                    nroProceso: request.caja_nro_proceso,
+                    nroCierre: request.caja_nro_cierre,
+                    tipoLlamada: "F" // ✅ "F" = Finalización (emite comprobante)
+                );
+
+                // ⓮ EVALUAR RESULTADO DE VALIDACIÓN
+
+                // CASO 1: Error bloqueante - NO puede continuar
+                if (!validacionPV.PuedeContinuar)
+                {
+                    _logger?.LogError("❌ Validación de PV falló - Operación bloqueada");
+                    _logger?.LogError($"   Resultado: {validacionPV.Resultado}");
+                    _logger?.LogError($"   Mensaje: {validacionPV.Mensaje}");
+
+                    stopwatch.Stop();
+                    _logger?.LogInformation($"⏱️ Tiempo antes del bloqueo: {stopwatch.ElapsedMilliseconds}ms");
+
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = validacionPV.Mensaje,
+                        error_tipo = "estado_pv",
+                        ctrl_id = validacionPV.CtrlId,
+                        resultado_pv = validacionPV.Resultado
+                    });
+                }
+
+                // CASO 2: Advertencia - Puede continuar pero registrar mensaje
+                if (validacionPV.EsAdvertencia)
+                {
+                    _logger?.LogWarning("⚠️ Validación de PV con advertencia - Operación continúa");
+                    _logger?.LogWarning($"   Resultado: {validacionPV.Resultado}");
+                    _logger?.LogWarning($"   Mensaje: {validacionPV.Mensaje}");
+                }
+                else
+                {
+                    _logger?.LogInformation("✅ Validación de PV exitosa - Operación autorizada");
+                }
 
                 // ⓭ INVOCAR SERVICIO
                 var token = TokenCookie;
@@ -264,6 +315,19 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     _logger?.LogError("❌ No hay token de autenticación");
                     return Json(new { ok = false, mensaje = "Sesión expirada" });
                 }
+
+                //analizamos si el CAEA se activa o no para esta operación
+                request.caea = cajaActual.Caja.ctrl_id == "-1" && validacionPV.Resultado == 1 ? true : false;
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("📦 REQUEST DTO CONSTRUIDO");
+                _logger?.LogInformation($"   co_tipo: {request.co_tipo}");
+                _logger?.LogInformation($"   cta_id: {request.cta_id}");
+                _logger?.LogInformation($"   json_valores (longitud): {request.json_valores.Length}");
+                _logger?.LogInformation($"   json_valores: {JsonConvert.SerializeObject(jsonValores)}");
+                _logger?.LogInformation($"   FormaPago: {cajaActual.Caja.ctrl_id} - Resultado: {validacionPV.Resultado} - CAEA: {request.caea}");
+                _logger?.LogInformation($"   Request PAGO: {JsonConvert.SerializeObject(request)}");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                 _logger?.LogInformation("📡 Invocando servicio PagoFactServicio.FinalizarCompra...");
                 var resultado = await _pagoFactServicio.FinalizarCompra(request, token);
@@ -346,25 +410,63 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation("✅ Sesión de factura limpiada");
 
                 // ⓴ RETORNAR RESPUESTA CORRECTA PARA FRONTEND
-                return Json(new
+                var respuestaFinal = new
                 {
                     ok = true,
                     mensaje = $"Factura {comprobante.tco_letra} Nro {comprobante.cm_compte} emitida y pagada exitosamente",
 
                     data = new[]
                     {
-                new
-                {
-                    tco_letra = comprobante.tco_letra,
-                    tco_id = comprobante.tco_id,
-                    cm_compte = comprobante.cm_compte,
-                    cm_repetido = comprobante.cm_repetido
-                }
-            },
+                        new
+                        {
+                            tco_letra = comprobante.tco_letra,
+                            tco_id = comprobante.tco_id,
+                            cm_compte = comprobante.cm_compte,
+                            cm_repetido = comprobante.cm_repetido
+                        }
+                    },
 
                     resultado_completo = respuestaDto.resultado_msj,
                     debe_imprimir = true
-                });
+                };
+
+                // ✅ NUEVO v21.0: Agregar advertencia del PV si existe
+                if (validacionPV.EsAdvertencia)
+                {
+                    return Json(new
+                    {
+                        respuestaFinal.ok,
+                        respuestaFinal.mensaje,
+                        respuestaFinal.data,
+                        respuestaFinal.resultado_completo,
+                        respuestaFinal.debe_imprimir,
+                        mensaje_advertencia = validacionPV.Mensaje,
+                        mostrar_mensaje_pv = true
+                    });
+                }
+
+                return Json(respuestaFinal);
+
+                //    // ⓴ RETORNAR RESPUESTA CORRECTA PARA FRONTEND
+                //    return Json(new
+                //    {
+                //        ok = true,
+                //        mensaje = $"Factura {comprobante.tco_letra} Nro {comprobante.cm_compte} emitida y pagada exitosamente",
+
+                //        data = new[]
+                //        {
+                //    new
+                //    {
+                //        tco_letra = comprobante.tco_letra,
+                //        tco_id = comprobante.tco_id,
+                //        cm_compte = comprobante.cm_compte,
+                //        cm_repetido = comprobante.cm_repetido
+                //    }
+                //},
+
+                //        resultado_completo = respuestaDto.resultado_msj,
+                //        debe_imprimir = true
+                //    });
             }
             catch (Exception ex)
             {

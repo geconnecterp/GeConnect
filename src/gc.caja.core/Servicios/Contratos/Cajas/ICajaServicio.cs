@@ -17,5 +17,8 @@ namespace gc.caja.core.Servicios.Contratos.Cajas
         Task<RespuestaGenerica<CajaDatosDto>> ObtenerDatosCF(string caja_id, string token);
         Task<RespuestaGenerica<RespuestaDto>> CierreCajaGral(string usu_id, string adm_id, string token);
         Task<RespuestaGenerica<RespuestaDto>> HabilitarCajaGral(string usu_id, string adm_id, string token);
+
+        Task<RespuestaGenerica<RespuestaDto>> ValidaEstadoPV(CajaValidaPVDto req, string token);
+        Task<RespuestaGenerica<RespuestaDto>> CargaStkDeFactura(CargaStkDto req, string token);
     }
 }

@@ -1472,7 +1472,7 @@ function actualizarGrillaProductos() {
                 <td class="text-center">
                     <span class="badge badge-compact bg-info">${formatearNumero(normalizarNumero(producto.unidadPresentacion, 1), 0)}</span>
                 </td>
-                <td class="text-end fw-bold">${formatearNumero(normalizarNumero(producto.cantidadTotal, 0), 2)}</td>
+                <td class="text-end fw-bold">${formatearNumero(normalizarNumero(producto.cantidadTotal, 0), 3)}</td>
                 <td class="text-end">$ ${formatearNumero(normalizarNumero(producto.precioVenta, 0), 2)}</td>
                 <td class="text-end fw-bold text-success">$ ${formatearNumero(normalizarNumero(producto.precioTotal, 0), 2)}</td>
                 <td class="text-center">
@@ -1497,14 +1497,15 @@ function calcularPrecioTotal(producto) {
     // ❶ Multiplicar
     const precioTotal = precioVenta * cantidad;
 
-    // ❷ CRÍTICO: Redondear el resultado
-    const precioTotalRedondeado = redondear(precioTotal, 2);
+    // ❷ CRÍTICO: NO Redondear el resultado
+    //const precioTotalRedondeado = redondear(precioTotal, 2);
+    const precioTotalRedondeado = precioTotal;
 
     console.log(`💰 Cálculo precio total (CON REDONDEO):`);
     console.log(`   Precio Venta: $ ${precioVenta}`);
     console.log(`   Cantidad: ${cantidad}`);
     console.log(`   Resultado sin redondear: $ ${precioTotal}`);
-    console.log(`   Resultado REDONDEADO: $ ${precioTotalRedondeado}`);
+    console.log(`   Resultado NO REDONDEADO: $ ${precioTotalRedondeado}`);
 
     return precioTotalRedondeado;
 }
