@@ -921,15 +921,25 @@ function ejecutarDiferirPago() {
                     console.error(`   ctrl_id: ${response.ctrl_id}`);
                     console.error(`   resultado_pv: ${response.resultado_pv}`);
 
+                    // 📝 Determinar el texto del medio de facturación según ctrl_id
+                    let textoMedio = "del controlador fiscal"; // Valor por defecto (si es 50)
+
+                    if (Number(response.ctrl_id) === -1) {
+                        textoMedio = "de la Factura Electronica";
+                    } else if (Number(response.ctrl_id) !== 50) {
+                        textoMedio = "del medio de facturación";
+                    }
+
                     AbrirMensaje(
                         "⚠️ Error de Punto de Venta",
                         `<div class="text-start">
                             <div class="alert alert-danger mb-3">
-                                <i class='bx bx-error-circle'></i> <strong>NO SE PUEDE EMITIR EL COMPROBANTE</strong>
+                                <i class='bx bx-error-circle'></i> NO SE PUEDE EMITIR EL COMPROBANTE
+                                <p class="mb-2"><strong>${response.mensaje}</strong></p>
                             </div>
-                            <p class="mb-2">${response.mensaje}</p>
+                            
                             <div class="alert alert-info mt-3 mb-0">
-                                <i class='bx bx-info-circle'></i> Por favor, verifique el estado del controlador fiscal o contacte al administrador.
+                                <i class='bx bx-info-circle'></i> Por favor, verifique el estado ${textoMedio} o contacte al administrador.
                             </div>
                         </div>`,
                         function () {

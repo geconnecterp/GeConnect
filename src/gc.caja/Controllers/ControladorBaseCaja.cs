@@ -1090,7 +1090,7 @@ namespace gc.caja.Controllers
             var estadoPV = await cajaServicio.ValidaEstadoPV(reqEstadoPV, TokenCookie);
 
             // ❸ Validar respuesta del servicio
-            if (estadoPV == null || !estadoPV.Ok || estadoPV.Entidad == null)
+            if (estadoPV == null || !estadoPV.Ok && estadoPV.Entidad.resultado!=1 || estadoPV.Entidad == null)
             {
                 _logger?.LogWarning("❌ No se pudo obtener el estado del punto de venta");
                 _logger?.LogWarning($"   estadoPV.Ok: {estadoPV?.Ok}");
