@@ -20,12 +20,14 @@ namespace gc.sitio.Areas.Ventas.Controllers
 		private readonly AppSettings _setting;
 		private readonly IRubroServicio _rubroServicio;
 		private readonly IApiVentasServicio _apiVentasServicio;
+		private readonly ICuentaServicio _cuentaServicio;
 		public VentaSorteoCargaController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<VentaSorteoCargaController> logger,
-										  IRubroServicio rubroServicio, IApiVentasServicio apiVentasServicio) : base(options, contexto, logger)
+										  IRubroServicio rubroServicio, IApiVentasServicio apiVentasServicio, ICuentaServicio cuentaServicio) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_rubroServicio = rubroServicio;
 			_apiVentasServicio = apiVentasServicio;
+			_cuentaServicio = cuentaServicio;
 		}
 
 		public IActionResult Index()
@@ -99,6 +101,123 @@ namespace gc.sitio.Areas.Ventas.Controllers
 			}
 		}
 
+		[HttpPost]
+		public async Task<IActionResult> ObtenerSorteoDatos(string so_sorteo)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
+
+				if (so_sorteo == null)
+					return PartialView("_gridMensaje", CrearRespuestaError("El Identificador del sorteo no fue recepcionado."));
+
+				var sorteo = await _apiVentasServicio.ObtenerSorteoDatos(so_sorteo, TokenCookie);
+				if (!sorteo.Ok)
+					throw new NegocioException(sorteo.Mensaje ?? "No se ha podido sorteo.");
+
+				if (sorteo.ListaEntidad == null || sorteo.ListaEntidad.Count() == 0)
+					throw new NegocioException("No se encontraron los datos del Sorteo");
+
+				sorteo.ListaEntidad.ForEach(x => x.modo_lectura = true);
+				return PartialView("_sorteoDatos", sorteo.ListaEntidad[0]);
+			}
+			catch (NegocioException ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaError("Error"));
+			}
+		}
+
+		public IActionResult ObtenerSorteoTablas()
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
+
+				return PartialView("_sorteoTablas");
+			}
+			catch (NegocioException ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaError("Error"));
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> ObtenerSorteoTablasSucursales(string so_sorteo)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
+
+				if (so_sorteo == null)
+					return PartialView("_gridMensaje", CrearRespuestaError("El Identificador del sorteo no fue recepcionado."));
+
+				var sorteoAdms = await _apiVentasServicio.ObtenerSorteoAdmDatos(so_sorteo, TokenCookie);
+				if (!sorteoAdms.Ok)
+					throw new NegocioException(sorteoAdms.Mensaje ?? "No se ha podido obtener la lista de sucursales del sorteo.");
+
+				if (sorteoAdms.ListaEntidad == null || sorteoAdms.ListaEntidad.Count() == 0)
+					throw new NegocioException("No se encontraron los datos de sucursales del Sorteo");
+
+				return PartialView("_sorteoTablas_adm", ObtenerGridCoreSmart<SorteoCargaAdmDto>(sorteoAdms.ListaEntidad));
+			}
+			catch (NegocioException ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaError("Error"));
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> ObtenerSorteoTablasProductos(string so_sorteo)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
+
+				if (so_sorteo == null)
+					return PartialView("_gridMensaje", CrearRespuestaError("El Identificador del sorteo no fue recepcionado."));
+
+				var sorteoProds = await _apiVentasServicio.ObtenerSorteoProdDatos(so_sorteo, TokenCookie);
+				if (!sorteoProds.Ok)
+					throw new NegocioException(sorteoProds.Mensaje ?? "No se ha podido obtener la lista de productos del sorteo.");
+				if (sorteoProds.ListaEntidad == null || sorteoProds.ListaEntidad.Count() == 0)
+					throw new NegocioException("No se encontraron los datos de productos del Sorteo");
+
+				return PartialView("_sorteoTablas_prod", ObtenerGridCoreSmart<SorteoCargaProdDto>(sorteoProds.ListaEntidad));
+			}
+			catch (NegocioException ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaError("Error"));
+			}
+		}
+
 		#region Metodos Privados
 		private GridCoreSmart<SorteoCargaListaDto> GenerarGridPedidos(List<SorteoCargaListaDto> lista, int page, QueryFilters filtro)
 		{
@@ -149,6 +268,10 @@ namespace gc.sitio.Areas.Ventas.Controllers
 				.ToList();
 			ViewBag.Rel02B2 = HelperMvc<ComboGenDto>.ListaGenerica(rubs);
 			#endregion
+
+
+			if (CuentasLista.Count == 0)
+				ObtenerCuentas(_cuentaServicio, 'D', "%");
 
 			var listR03 = new List<ComboGenDto>();
 			ViewBag.Rel03B2 = HelperMvc<ComboGenDto>.ListaGenerica(listR03);

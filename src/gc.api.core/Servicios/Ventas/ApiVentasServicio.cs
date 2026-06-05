@@ -504,5 +504,43 @@ namespace gc.api.core.Servicios
 
 			return pedidos;
 		}
+
+		public List<SorteoCargaDatosDto> ObtenerSorteoCargaDatos(string so_sorteo)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_SORTEOS_DATOS;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@so_sorteo", so_sorteo),
+			 };
+
+			var result = _repository.EjecutarLstSpExt<SorteoCargaDatosDto>(sp, ps, true);
+			return result;
+		}
+
+		public List<SorteoCargaAdmDto> ObtenerSorteoCargaAdm(string so_sorteo)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_SORTEOS_ADM;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@so_sorteo", so_sorteo),
+			 };
+
+			var result = _repository.EjecutarLstSpExt<SorteoCargaAdmDto>(sp, ps, true);
+			return result;
+		}
+		public List<SorteoCargaProdDto> ObtenerSorteoCargaProd(string so_sorteo)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_SORTEOS_PROD;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@so_sorteo", so_sorteo),
+			 };
+
+			var result = _repository.EjecutarLstSpExt<SorteoCargaProdDto>(sp, ps, true);
+			return result;
+		}
 	}
 }

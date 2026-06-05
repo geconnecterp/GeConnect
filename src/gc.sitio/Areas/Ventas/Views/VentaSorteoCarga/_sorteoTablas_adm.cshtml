@@ -1,0 +1,117 @@
+﻿@model GridCoreSmart<SorteoCargaAdmDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	.fixed-width-card {
+		padding-left: 0px;
+		padding-right: 0px;
+	}
+
+	.input-editable {
+		padding: 0 4px;
+		height: 24px;
+		text-align: right;
+	}
+
+	.error-range {
+		background-color: #ffdddd !important;
+	}
+
+	.input-editable {
+		height: 18px !important; /* más compacto */
+		padding: 0 1px !important; /* mínimo padding */
+		font-size: 0.70rem !important; /* letra más chica */
+		font-weight: normal !important; /* NO negrita */
+		line-height: 1 !important;
+		text-align: right !important; /* consistente con números */
+		border-radius: 2px !important;
+	}
+
+	#tbSorteoAdm td {
+		padding-top: 1px !important;
+		padding-bottom: 1px !important;
+	}
+
+		#tbSorteoAdm th:nth-child(2),
+		#tbSorteoAdm td:nth-child(2) {
+			width: auto !important;
+		}
+
+		#tbSorteoAdm th:nth-child(3),
+		#tbSorteoAdm td:nth-child(3),
+		#tbSorteoAdm th:nth-child(4),
+		#tbSorteoAdm td:nth-child(4) {
+			width: 75px !important; /* ajustá a gusto */
+			min-width: 75px !important;
+			max-width: 75px !important;
+		}
+</style>
+<div id="divCardSorteoAdm" class="card mb-2 fixed-width-card">
+	<div class="card-header py-1">
+		<h6 class="mb-0">Sucursales</h6>
+	</div>
+	<div class="card-body p-1">
+		<div class="row g-2">
+			<div class="table-responsive table-wrapper-300">
+				<table class="table table-sm table-hover mb-0 table-golden" id="tbSorteoAdm">
+					<thead class="sticky-top table-golden-header-compact">
+						<tr class="header">
+							<th class="text-center">Id</th>
+							<th class="text-center">Sucursal</th>
+							<th class="text-center">N° Desde</th>
+							<th class="text-center">N° Hasta</th>
+							<th class="text-center">
+								<input type="checkbox" id="chkAllIncluye" />
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+						{
+							<tr class="fila-vacia">
+								<td colspan="9" class="text-center text-muted py-2">
+									<i class="bx bx-info-circle me-1"></i>
+									No hay items para mostrar.
+								</td>
+							</tr>
+						}
+						else
+						{
+							foreach (var item in Model.ListaDatos)
+							{
+								if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+								<tr class="@clase row-sorteo-adm"
+									data-so-sorteo="@item.so_sorteo"
+									data-adm-id="@item.adm_id">
+									<td class="text-center">@item.adm_id</td>
+									<td class="text-start">@item.adm_nombre</td>
+									<td class="text-end">
+										<input type="text"
+											   class="form-control form-control-sm input-editable input-numero so-desde"
+											   value="@item.so_nro_desde"
+											   data-adm-id="@item.adm_id"
+											   data-campo="desde" />
+									</td>
+
+									<td class="text-end">
+										<input type="text"
+											   class="form-control form-control-sm input-editable input-numero so-hasta"
+											   value="@item.so_nro_hasta"
+											   data-adm-id="@item.adm_id"
+											   data-campo="hasta" />
+									</td>
+									<td class="text-center">
+										<input type="checkbox" class="chkIncluye" @(item.incluido ? "checked" : "") />
+									</td>
+								</tr>
+							}
+						}
+					</tbody>
+				</table>
+			</div>
+
+		</div>
+	</div>
+</div>

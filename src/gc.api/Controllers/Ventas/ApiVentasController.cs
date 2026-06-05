@@ -449,6 +449,68 @@ namespace gc.api.Controllers.Ventas
 			}
 		}
 
+		// Obtiene datos de un sorteo por id
+		[HttpGet("sorteo/{id}")]
+		public IActionResult ObtenerSorteoDatos(string id)
+		{
+			const string msgError = "Error en la invocación de la API - Obtener Datos del Sorteo";
+			try
+			{
+				if (string.IsNullOrWhiteSpace(id))
+				{
+					return BadRequest("Debe indicar el identificador del sorteo.");
+				}
+
+				var datos = _iApiVentasServicio.ObtenerSorteoCargaDatos(id);
+				return Ok(new ApiResponse<List<SorteoCargaDatosDto>>(datos));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, msgError);
+				return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
+			}
+		}
+
+		// Obtiene datos de sucursales de un sorteo por id
+		[HttpGet("sorteo/adm/{id}")]
+		public IActionResult ObtenerSorteoAdmDatos(string id)
+		{
+			const string msgError = "Error en la invocación de la API - Obtener Datos del Sorteo - Sucursales";
+			try
+			{
+				if (string.IsNullOrWhiteSpace(id))
+					return BadRequest("Debe indicar el identificador del sorteo.");
+
+				var datos = _iApiVentasServicio.ObtenerSorteoCargaAdm(id);
+				return Ok(new ApiResponse<List<SorteoCargaAdmDto>>(datos));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, msgError);
+				return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
+			}
+		}
+
+		// Obtiene datos de productos de un sorteo por id
+		[HttpGet("sorteo/prod/{id}")]
+		public IActionResult ObtenerSorteoProdDatos(string id)
+		{
+			const string msgError = "Error en la invocación de la API - Obtener Datos del Sorteo - Productos";
+			try
+			{
+				if (string.IsNullOrWhiteSpace(id))
+					return BadRequest("Debe indicar el identificador del sorteo.");
+
+				var datos = _iApiVentasServicio.ObtenerSorteoCargaProd(id);
+				return Ok(new ApiResponse<List<SorteoCargaProdDto>>(datos));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, msgError);
+				return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
+			}
+		}
+
 		private static MetadataGrid? BuildMetadata(List<SorteoCargaListaDto>? lista, QueryFilters filtro)
 		{
 			if (lista == null || lista.Count == 0)

@@ -21,9 +21,9 @@
 <div class="collapse" id="divDetalle"></div>
 
 <div class="row mt-2 py-1">
-	<div class="col-5" id="divPedDatos" style="display:none">
+	<div class="col-5" id="divSorteoDatos" style="display:none">
 	</div>
-	<div class="col-7" id="divPedProds" style="display:none">
+	<div class="col-7" id="divSorteoTablas" style="padding-left: 0px;display:none;">
 	</div>
 </div>
 <div id="modalGestorDocumental"></div>
@@ -37,11 +37,14 @@
 		let pagina = 1;
 		let search = "";
 
-		var buscarSorteoListaUrl = "@Url.Action("BuscarSorteoLista", "ventasorteocarga", new { area = "Ventas" })";
+		let buscarSorteoListaUrl = "@Url.Action("BuscarSorteoLista", "ventasorteocarga", new { area = "Ventas" })";
 		let buscarMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "ventasorteocarga", new { area = "Ventas" })';
 		let homePedido = '@Url.Action("index", "ventasorteocarga", new { area = "Ventas" })';
-		// var obtenerPedidoDatosUrl = "@Url.Action("ObtenerPedidoDatos", "pedidodecliente", new { area = "Distribuidora" })";
-		// var obtenerPedidoProductoUrl = "@Url.Action("ObtenerPedidoProducto", "pedidodecliente", new { area = "Distribuidora" })";
+		let obtenerSorteoDatosUrl = "@Url.Action("ObtenerSorteoDatos", "ventasorteocarga", new { area = "Ventas" })";
+		let autoComRel011Url = "@Url.Action("BuscarCuentas", "ventasorteocarga", new { area = "Ventas" })";
+		let obtenerSorteoTablasUrl = "@Url.Action("ObtenerSorteoTablas", "ventasorteocarga", new { area = "Ventas" })";
+		let obtenerSorteoTablasSucursalesUrl = "@Url.Action("ObtenerSorteoTablasSucursales", "ventasorteocarga", new { area = "Ventas" })";
+		let obtenerSorteoTablasProductosUrl = "@Url.Action("ObtenerSorteoTablasProductos", "ventasorteocarga", new { area = "Ventas" })";
 		// var nuevoPedidoUrl =  "@Url.Action("NuevoPedido", "pedidodecliente", new { area = "Distribuidora" })";
 		
 		// var confirmarPedidoUrl = "@Url.Action("ConfirmarPedido", "pedidodecliente", new { area = "Distribuidora" })";

@@ -110,7 +110,7 @@ function configurarEventosSeleccionDeSorteo() {
 			let data = { so_sorteo: soSorteo };
 			//cargarReporteEnArre(62, data, "Pedido de Cliente", "", "");
 			cargarSorteoDatos(soSorteo);
-			//cargarProductosSorteo(soSorteo);
+			cargarSorteoTablas(soSorteo);
 
 			// Achicar grid
 			const $grid = $("#divSorteo");
@@ -126,7 +126,197 @@ function configurarEventosSeleccionDeSorteo() {
 	});
 }
 
-function cargarSorteoDatos(soSorteo) { }
+function cargarSorteoDatos(soSorteo) {
+	var datos = { so_sorteo: soSorteo };
+	AbrirWaiting("Cargando datos del sorteo...");
+	PostGenHtml(datos, obtenerSorteoDatosUrl, function (html) {
+		$("#divSorteoDatos").html(html).show();
+		$("#btnAbmModif").prop("disabled", false);
+		$("#btnAbmElimi").prop("disabled", false);
+
+		// Debug - ayuda a identificar estados del sistema
+		console.log("cargarSorteoDatos N°: ", soSorteo,
+			"Permite edición:", true);
+
+		CerrarWaiting();
+	});
+}
+
+function cargarSorteoTablas(soSorteo) {
+	var data = {};
+	AbrirWaiting();
+	PostGenHtml(data, obtenerSorteoTablasUrl, function (html) {
+		$("#divSorteoTablas").html(html).show();
+		cargarSorteoTablasSucursales(soSorteo);
+		cargarSorteoTablasProductos(soSorteo);
+		// Debug - ayuda a identificar estados del sistema
+		console.log("cargarSorteoTablas N°: ", soSorteo);
+
+		CerrarWaiting();
+	});
+}
+
+function cargarSorteoTablasSucursales(soSorteo) {
+	var data = { so_sorteo: soSorteo };
+	AbrirWaiting("Cargando sucursales del sorteo...");
+	PostGenHtml(data, obtenerSorteoTablasSucursalesUrl, function (html) {
+		$("#divSorteoTablaSucursales").html(html).show();
+		CerrarWaiting();
+		inicializarEventosTablaSucursales();
+	});
+}
+
+function cargarSorteoTablasProductos(soSorteo) {
+	var data = { so_sorteo: soSorteo };
+	AbrirWaiting("Cargando productos del sorteo...");
+	PostGenHtml(data, obtenerSorteoTablasProductosUrl, function (html) {
+		$("#divSorteoTablaProductos").html(html).show();
+		CerrarWaiting();
+		inicializarEventosTablaProductos();
+	});
+}
+
+function inicializarEventosTablaSucursales() {
+	// Seleccionar / deseleccionar todos
+	$(document).off("change", "#chkAllIncluye");
+	$(document).on("change", "#chkAllIncluye", function () {
+		const checked = $(this).is(":checked");
+		$("#tbSorteoAdm tbody .chkIncluye").prop("checked", checked);
+	});
+
+	$(document).off("change", ".chkIncluye");
+	$(document).on("change", ".chkIncluye", function () {
+		const total = $("#tbSorteoAdm tbody .chkIncluye").length;
+		const marcados = $("#tbSorteoAdm tbody .chkIncluye:checked").length;
+
+		$("#chkAllIncluye").prop("checked", total === marcados);
+	});
+	aplicarMascaraEnteros();
+	$(document).off("blur", ".input-editable");
+	$(document).on("blur", ".input-editable", function () {
+		validarRangosSorteoAdm();
+	});
+	$(document).off("keydown", ".input-editable");
+	$(document).on("keydown", ".input-editable", function (e) {
+
+		const $inputs = $("#tbSorteoAdm .input-editable");
+		const index = $inputs.index(this);
+
+		let newIndex = index;
+
+		switch (e.key) {
+
+			case "Enter":
+			case "Tab":
+				e.preventDefault();
+				if (e.shiftKey) {
+					newIndex = (index - 1 + $inputs.length) % $inputs.length;
+				} else {
+					newIndex = (index + 1) % $inputs.length;
+				}
+				break;
+
+			case "ArrowRight":
+				e.preventDefault();
+				newIndex = (index + 1) % $inputs.length;
+				break;
+
+			case "ArrowLeft":
+				e.preventDefault();
+				newIndex = (index - 1 + $inputs.length) % $inputs.length;
+				break;
+
+			case "ArrowDown":
+				e.preventDefault();
+				newIndex = buscarInputAbajo(index, $inputs);
+				break;
+
+			case "ArrowUp":
+				e.preventDefault();
+				newIndex = buscarInputArriba(index, $inputs);
+				break;
+		}
+
+		const $next = $inputs.eq(newIndex);
+		$next.focus().select();
+	});
+
+}
+
+function buscarInputAbajo(index, $inputs) {
+	const col = index % 2; // 0 = desde, 1 = hasta
+	const fila = Math.floor(index / 2);
+
+	const totalFilas = $("#tbSorteoAdm tbody tr").length;
+	const nuevaFila = (fila + 1) % totalFilas;
+
+	return nuevaFila * 2 + col;
+}
+
+function buscarInputArriba(index, $inputs) {
+	const col = index % 2;
+	const fila = Math.floor(index / 2);
+
+	const totalFilas = $("#tbSorteoAdm tbody tr").length;
+	const nuevaFila = (fila - 1 + totalFilas) % totalFilas;
+
+	return nuevaFila * 2 + col;
+}
+
+
+function aplicarMascaraEnteros() {
+	$(".input-numero").inputmask(maskConfigEnteros);
+}
+
+function validarRangosSorteoAdm() {
+
+	let filas = [];
+
+	$("#tbSorteoAdm tbody tr").each(function () {
+
+		const desdeStr = $(this).find(".so-desde").val() || "0";
+		const hastaStr = $(this).find(".so-hasta").val() || "0";
+
+		const desde = parseInt(desdeStr.replace(/\./g, "")) || 0;
+		const hasta = parseInt(hastaStr.replace(/\./g, "")) || 0;
+
+		const admId = $(this).data("adm-id");
+
+		if (desde > 0 && hasta > 0) {
+			filas.push({ admId, desde, hasta, row: $(this) });
+		}
+	});
+
+	// Ordenar por "desde"
+	filas.sort((a, b) => a.desde - b.desde);
+
+	let error = false;
+
+	// Limpiar errores previos
+	$("#tbSorteoAdm tbody tr").removeClass("error-range");
+
+	for (let i = 0; i < filas.length - 1; i++) {
+
+		const actual = filas[i];
+		const siguiente = filas[i + 1];
+
+		// Si se solapan
+		if (actual.hasta >= siguiente.desde) {
+			error = true;
+			actual.row.addClass("error-range");
+			siguiente.row.addClass("error-range");
+		}
+	}
+
+	if (error) {
+		AbrirMensaje("ATENCIÓN", "Los rangos de numeración se solapan entre sucursales.", null, false, ["Aceptar"], "error!", null);
+	}
+
+	return !error;
+}
+
+function inicializarEventosTablaProductos() {
+}
 
 function buildQueryFilters(pag) {
 	const usaPeriodo = $("#chkDesdeHasta").is(":checked");
@@ -209,3 +399,25 @@ function obtenerUltimoLunes() {
 
 	return ultimoLunes;
 }
+
+const maskConfigEnteros = {
+	alias: "numeric",
+	groupSeparator: ".",
+	autoGroup: true,
+	digits: 0,
+	digitsOptional: false,
+	rightAlign: true,
+	prefix: '',
+	placeholder: "0",
+	clearMaskOnLostFocus: false,
+	showMaskOnHover: false,
+	showMaskOnFocus: false,
+	allowMinus: false,
+	onBeforeMask: function (value) {
+		if (value) {
+			let numValue = parseInt(value.toString().replace(/\./g, ''));
+			return isNaN(numValue) ? value : numValue.toString();
+		}
+		return value;
+	}
+};

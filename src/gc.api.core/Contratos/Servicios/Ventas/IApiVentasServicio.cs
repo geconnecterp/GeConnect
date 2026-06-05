@@ -33,5 +33,8 @@ namespace gc.api.core.Contratos.Servicios
 		List<AnaValDeVtaDetPVDto> ObtenerAnaDeValDeVtaDetPVLista(AnaDeValDeVtaMesRequest request);
 		List<AnaValDeVtaDetCBDto> ObtenerAnaDeValDeVtaDetCBLista(AnaDeValDeVtaMesRequest request);
 		List<SorteoCargaListaDto> ObtenerSorteoLista(SorteoCargaListaRequest req);
+		List<SorteoCargaDatosDto> ObtenerSorteoCargaDatos(string so_sorteo);
+		List<SorteoCargaAdmDto> ObtenerSorteoCargaAdm(string so_sorteo);
+		List<SorteoCargaProdDto> ObtenerSorteoCargaProd(string so_sorteo);
 	}
 }

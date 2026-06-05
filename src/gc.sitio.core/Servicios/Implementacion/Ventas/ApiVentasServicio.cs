@@ -49,7 +49,10 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string GET_ANA_DE_VAL_DE_VTA_DET_CB = "/ObtenerAnaDeValDeVtaDetCBLista";
 
 		private const string SORTEOS_LISTA = "/BuscarSorteosLista";
-		
+		private const string SORTEOS_DATOS = "/sorteo/";
+		private const string SORTEOS_ADM = "/sorteo/adm/";
+		private const string SORTEOS_PROD = "/sorteo/prod/";
+
 
 		public ApiVentasServicio(IOptions<AppSettings> options, ILogger<ApiVentasServicio> logger) : base(options, logger, RutaAPI)
 		{
@@ -1296,6 +1299,59 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 				return new() { Ok = false, Mensaje = "Error al buscar Sorteos" };
+			}
+		}
+
+		public async Task<RespuestaGenerica<SorteoCargaDatosDto>> ObtenerSorteoDatos(string so_sorteo, string token)
+		{
+			try
+			{
+				if (string.IsNullOrWhiteSpace(so_sorteo))
+				{
+					return new() { Ok = false, Mensaje = "Debe indicar el identificador del sorteo." };
+				}
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{SORTEOS_DATOS}{so_sorteo}";
+				return await GetListaAsync<SorteoCargaDatosDto>(link, token, "Error al obtener el Sorteo");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+				return new() { Ok = false, Mensaje = "Error al obtener el Sorteo" };
+			}
+		}
+
+		public async Task<RespuestaGenerica<SorteoCargaAdmDto>> ObtenerSorteoAdmDatos(string so_sorteo, string token)
+		{
+			try
+			{
+				if (string.IsNullOrWhiteSpace(so_sorteo))
+					return new() { Ok = false, Mensaje = "Debe indicar el identificador del sorteo." };
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{SORTEOS_ADM}{so_sorteo}";
+				return await GetListaAsync<SorteoCargaAdmDto>(link, token, "Error al obtener las sucursales del Sorteo");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+				return new() { Ok = false, Mensaje = "Error al obtener las sucursales del Sorteo" };
+			}
+		}
+
+		public async Task<RespuestaGenerica<SorteoCargaProdDto>> ObtenerSorteoProdDatos(string so_sorteo, string token)
+		{
+			try
+			{
+				if (string.IsNullOrWhiteSpace(so_sorteo))
+					return new() { Ok = false, Mensaje = "Debe indicar el identificador del sorteo." };
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{SORTEOS_PROD}{so_sorteo}";
+				return await GetListaAsync<SorteoCargaProdDto>(link, token, "Error al obtener los productos del Sorteo");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+				return new() { Ok = false, Mensaje = "Error al obtener el Sorteo" };
 			}
 		}
 	}

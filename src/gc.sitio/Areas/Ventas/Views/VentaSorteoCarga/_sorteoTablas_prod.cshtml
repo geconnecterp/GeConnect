@@ -1,0 +1,54 @@
+﻿@model GridCoreSmart<SorteoCargaProdDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	.fixed-width-card {
+		padding-left: 0px;
+		padding-right: 0px;
+	}
+</style>
+<div id="divCardSorteoProd" class="card mb-2 fixed-width-card">
+	<div class="card-header py-1">
+		<h6 class="mb-0">Productos</h6>
+	</div>
+	<div class="card-body p-1">
+		<div class="row g-2">
+			<div class="table-responsive table-wrapper-300">
+				<table class="table table-sm table-hover mb-0 table-golden" id="tbSorteoProd">
+					<thead class="sticky-top table-golden-header-compact">
+						<tr class="header">
+							<th class="text-center">Código</th>
+							<th class="text-center">Descripción</th>
+						</tr>
+					</thead>
+					<tbody>
+						@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+						{
+							<tr class="fila-vacia">
+								<td colspan="9" class="text-center text-muted py-2">
+									<i class="bx bx-info-circle me-1"></i>
+									No hay items para mostrar.
+								</td>
+							</tr>
+						}
+						else
+						{
+							foreach (var item in Model.ListaDatos)
+							{
+								if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+								<tr class="@clase row-sorteo-prod"
+									data-so-sorteo="@item.so_sorteo"
+									data-p-id="@item.p_id">
+									<td class="text-center">@item.p_id</td>
+									<td class="text-start">@item.p_desc</td>
+								</tr>
+							}
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>

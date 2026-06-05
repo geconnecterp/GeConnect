@@ -63,6 +63,9 @@
 
 			#region Sorteos (Ventas)
 			public const string SP_SORTEOS_LISTA = "SPGECO_Sorteos_lista";
+			public const string SP_SORTEOS_DATOS = "SPGECO_Sorteos_Datos";
+			public const string SP_SORTEOS_PROD = "SPGECO_Sorteos_P";
+			public const string SP_SORTEOS_ADM = "SPGECO_Sorteos_Adm";
 			#endregion
 
 			#region Análisis de Ventas
