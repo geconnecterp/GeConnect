@@ -10,6 +10,7 @@ using gc.sitio.Areas.Ventas.Models.VentaSorteoCarga;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using X.PagedList;
 
 namespace gc.sitio.Areas.Ventas.Controllers
@@ -215,6 +216,77 @@ namespace gc.sitio.Areas.Ventas.Controllers
 			{
 				_logger?.LogError(ex, "Error");
 				return PartialView("_gridMensaje", CrearRespuestaError("Error"));
+			}
+		}
+
+		[HttpPost]
+		public async Task<JsonResult> ConfirmarSorteo(ConfirmarSorteoDto dto)
+		{
+			try
+			{
+				// Verificar autenticación - consistente con otros métodos
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return Json(new { ok = false, mensaje = "No autorizado" });
+
+				if (dto == null)
+					return Json(new { ok = false, mensaje = "Los datos de confirmación no fueron recepcionados. Verifique." });
+
+				// Validaciones de entrada
+				if (dto == null || dto.Datos == null || string.IsNullOrEmpty(dto.Datos.cta_id))
+					return Json(new { ok = false, mensaje = "Los datos del sorteo son requeridos" });
+				
+				ConfirmarSorteoRequest request = new()
+				{
+					abm = dto.Abm.ToString(),
+					so_sorteo = dto.Datos.so_sorteo,
+					so_desc = dto.Datos.so_desc,
+					so_desde = dto.Datos.so_desde,
+					so_hasta = dto.Datos.so_hasta,
+					cta_id = dto.Datos.cta_id,
+					so_participan = dto.Datos.so_participan,
+					so_inclusion_acumula = dto.Datos.so_inclusion_acumula,
+					so_inclusion_tipo = dto.Datos.so_inclusion_tipo,
+					so_inclusion_valor = dto.Datos.so_inclusion_valor,
+					json_p = JsonConvert.SerializeObject(dto.Productos),
+					json_a = JsonConvert.SerializeObject(dto.Sucursales),
+					adm_id = AdministracionId,
+					usu_id = UserName,
+				};
+
+				// Llamada al servicio
+				var respuesta = await _apiVentasServicio.ConfirmarSorteo(request, TokenCookie);
+
+				// Procesamiento de respuesta
+				if (respuesta.Ok && !respuesta.EsError && !respuesta.EsWarn)
+				{
+					// Log y limpieza de datos temporales
+					var msg = $"Sorteo de {dto.Datos.cta_id}-{dto.Datos.cta_denominacion} fue guardado exitosamente.";
+					_logger?.LogInformation(msg);
+					return AnalizarRespuesta(respuesta, msg);
+				}
+				else
+				{
+					// Log y respuesta de error/advertencia
+					_logger?.LogWarning("Error en la confirmación del sorteo: {Mensaje}", respuesta.Mensaje);
+					return Json(new
+					{
+						ok = false,
+						error = respuesta.EsError,
+						warn = respuesta.EsWarn,
+						msg = respuesta.Mensaje ?? "Error al procesar el sorteo"
+					});
+				}
+			}
+			catch (Exception ex)
+			{
+				// Manejo de excepciones no esperadas
+				_logger?.LogError(ex, "Error inesperado al confirmar pedido");
+				return Json(new
+				{
+					ok = false,
+					error = true,
+					msg = "Error interno al procesar la solicitud"
+				});
 			}
 		}
 

@@ -60,15 +60,15 @@
 						<option value="I" selected="@(Model?.so_inclusion_tipo == 'I')">Importe</option>
 						<option value="C" selected="@(Model?.so_inclusion_tipo == 'C')">Cantidad</option>
 					</select>
-					<label for="tipo_valor" class="form-label form-label-sm mb-1">En Condición de:</label>
-					<select id="tipo_valor" name="tipo_valor" class="form-select form-select-sm" disabled>
-						<option value="T" selected="@(Model?.so_inclusion_tipo == 'T')">Para todos los Productos</option>
-						<option value="P" selected="@(Model?.so_inclusion_tipo == 'P')">Para cada Producto</option>
+					<label for="acumula_valor" class="form-label form-label-sm mb-1">En Condición de:</label>
+					<select id="acumula_valor" name="acumula_valor" class="form-select form-select-sm" disabled>
+						<option value="T" selected="@(Model?.so_inclusion_acumula == 'T')">Para todos los Productos</option>
+						<option value="P" selected="@(Model?.so_inclusion_acumula == 'P')">Para cada Producto</option>
 					</select>
 				</div>
 				<div class="col-md-4">
 					<label for="so_inclusion_valor" class="form-label form-label-sm mb-1">Valor:</label>
-					<input type="text" class="form-control form-control-sm" id="so_inclusion_valor" name="so_inclusion_valor"
+					<input type="text" class="form-control form-control-sm input-numero-valor" id="so_inclusion_valor" name="so_inclusion_valor"
 						   value="@Model?.so_inclusion_valor" readonly />
 				</div>
 			</div>

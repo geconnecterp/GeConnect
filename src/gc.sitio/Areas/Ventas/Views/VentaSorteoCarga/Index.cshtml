@@ -10,6 +10,11 @@
 	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
 <style>
+	.card-header {
+		min-height: 28px !important;
+		padding-top: 1px !important;
+		padding-bottom: 1px !important;
+	}
 </style>
 <partial name="_botonera" model="filtro" />
 <div class="collapse" id="divFiltro">
@@ -45,9 +50,8 @@
 		let obtenerSorteoTablasUrl = "@Url.Action("ObtenerSorteoTablas", "ventasorteocarga", new { area = "Ventas" })";
 		let obtenerSorteoTablasSucursalesUrl = "@Url.Action("ObtenerSorteoTablasSucursales", "ventasorteocarga", new { area = "Ventas" })";
 		let obtenerSorteoTablasProductosUrl = "@Url.Action("ObtenerSorteoTablasProductos", "ventasorteocarga", new { area = "Ventas" })";
-		// var nuevoPedidoUrl =  "@Url.Action("NuevoPedido", "pedidodecliente", new { area = "Distribuidora" })";
-		
-		// var confirmarPedidoUrl = "@Url.Action("ConfirmarPedido", "pedidodecliente", new { area = "Distribuidora" })";
+		let nuevoSorteoUrl =  "@Url.Action("NuevoSorteo", "ventasorteocarga", new { area = "Ventas" })";
+		let confirmarSorteoUrl = "@Url.Action("ConfirmarSorteo", "ventasorteocarga", new { area = "Ventas" })";
 
 		//funcionalidad busqueda avanzada controlador común
 		let productoBase = null; //se hidrata en busquedas.

@@ -8,6 +8,7 @@ using gc.infraestructura.Dtos.Ventas;
 using gc.infraestructura.Dtos.Ventas.Request;
 using gc.infraestructura.Dtos.Ventas.Request.Sorteo;
 using Microsoft.Data.SqlClient;
+using Org.BouncyCastle.Ocsp;
 
 namespace gc.api.core.Servicios
 {
@@ -541,6 +542,36 @@ namespace gc.api.core.Servicios
 
 			var result = _repository.EjecutarLstSpExt<SorteoCargaProdDto>(sp, ps, true);
 			return result;
+		}
+
+		public RespuestaDto ConfirmarSorteo(ConfirmarSorteoRequest req)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_SORTEOS_CONFIRMA;
+
+			var ps = new List<SqlParameter>() {
+				new("@abm", req.abm),
+				new("@so_sorteo", req.so_sorteo),
+				new("@so_desc", req.so_desc),
+				new("@so_desde", req.so_desde),
+				new("@so_hasta", req.so_hasta),
+				new("@cta_id", req.cta_id),
+				new("@so_participan", req.so_participan),
+				new("@so_inclusion_acumula", req.so_inclusion_acumula),
+				new("@so_inclusion_tipo", req.so_inclusion_tipo),
+				new("@so_inclusion_valor", req.so_inclusion_valor),
+				new("@json_p", req.json_p),
+				new("@json_a", req.json_a),
+				new("@usu_id", req.usu_id),
+				new("@adm_id", req.adm_id),
+				};
+
+
+			var respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			if (respuesta.Count == 0)
+			{
+				return new RespuestaDto() { resultado = -1, resultado_msj = "No se Recepcionó respuesta del proceso." };
+			}
+			return respuesta[0];
 		}
 	}
 }

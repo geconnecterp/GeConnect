@@ -8,10 +8,35 @@
 		padding-left: 0px;
 		padding-right: 0px;
 	}
+
+	.btn-eliminar-producto {
+		padding: 0 !important;
+		margin: 0 !important;
+		width: 18px !important;
+		height: 18px !important;
+		line-height: 18px !important;
+		display: inline-flex !important;
+		align-items: center !important;
+		justify-content: center !important;
+		border-radius: 2px !important;
+	}
+
+		.btn-eliminar-producto i {
+			font-size: 0.70rem !important;
+			line-height: 1 !important;
+		}
 </style>
 <div id="divCardSorteoProd" class="card mb-2 fixed-width-card">
-	<div class="card-header py-1">
+	<div class="card-header py-1 d-flex justify-content-between align-items-center">
 		<h6 class="mb-0">Productos</h6>
+		<button type="button"
+				class="btn btn-outline-primary p-0 px-1"
+				style="font-size: .75rem;"
+				id="btnAgregarCProducto"
+				title="Agregar Producto"
+				disabled>
+			<i class="bx bx-plus"></i>
+		</button>
 	</div>
 	<div class="card-body p-1">
 		<div class="row g-2">
@@ -21,6 +46,7 @@
 						<tr class="header">
 							<th class="text-center">Código</th>
 							<th class="text-center">Descripción</th>
+							<th class="text-center th-compact" style="width: 40px;">Acción</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -40,9 +66,19 @@
 								if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 								<tr class="@clase row-sorteo-prod"
 									data-so-sorteo="@item.so_sorteo"
-									data-p-id="@item.p_id">
+									data-p-id="@item.p_id"
+									data-p-desc="@item.p_desc">
 									<td class="text-center">@item.p_id</td>
 									<td class="text-start">@item.p_desc</td>
+									<td class="text-center">
+										<button type="button"
+												class="btn btn-sm btn-danger btn-eliminar-producto"
+												data-p-id="@item.p_id"
+												title="Eliminar producto"
+												style="display: none;">
+											<i class="bx bx-trash"></i>
+										</button>
+									</td>
 								</tr>
 							}
 						}
@@ -52,3 +88,11 @@
 		</div>
 	</div>
 </div>
+<script>
+	$(function() {
+		// ✅ CONTROLAR VISIBILIDAD DE BOTONES DE ELIMINACIÓN
+		if (typeof aplicarVisibilidadBotonesEliminar === 'function') {
+			aplicarVisibilidadBotonesEliminar();
+		}
+	});
+</script>

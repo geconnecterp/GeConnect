@@ -70,6 +70,7 @@
 			public const string SP_SORTEOS_DATOS = "SPGECO_Sorteos_Datos";
 			public const string SP_SORTEOS_PROD = "SPGECO_Sorteos_P";
 			public const string SP_SORTEOS_ADM = "SPGECO_Sorteos_Adm";
+			public const string SP_SORTEOS_CONFIRMA = "SPGECO_Sorteos_Confirma";
 			#endregion
 
 			#region Análisis de Ventas

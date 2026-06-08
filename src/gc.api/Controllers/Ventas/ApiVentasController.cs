@@ -511,6 +511,17 @@ namespace gc.api.Controllers.Ventas
 			}
 		}
 
+		[HttpPost("sorteo/confirmar")]
+		public IActionResult ConfirmarSorteo(ConfirmarSorteoRequest req)
+		{
+			if (req == null)
+			{
+				return BadRequest("No se recepcionó la información para confirmar el sorteo.");
+			}
+			var respuesta = _iApiVentasServicio.ConfirmarSorteo(req);
+			return Ok(new ApiResponse<RespuestaDto>(respuesta));
+		}
+
 		private static MetadataGrid? BuildMetadata(List<SorteoCargaListaDto>? lista, QueryFilters filtro)
 		{
 			if (lista == null || lista.Count == 0)

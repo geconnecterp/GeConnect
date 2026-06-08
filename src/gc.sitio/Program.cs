@@ -32,6 +32,11 @@ builder.Services.Configure<CookieAuthenticationOptions>(opt =>
     opt.LoginPath = new PathString($"{pathBase}/seguridad/token/login");
 });
 
+builder.Services.Configure<Microsoft.AspNetCore.Mvc.MvcOptions>(options =>
+{
+	options.MaxModelBindingCollectionSize = int.MaxValue;
+});
+
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
 .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, opt =>
  {
