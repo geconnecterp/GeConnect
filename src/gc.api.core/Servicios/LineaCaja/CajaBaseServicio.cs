@@ -17,7 +17,7 @@ namespace gc.api.core.Servicios.LineaCaja
 {
     public class CajaBaseServicio: Servicio<EntidadBase>
     {
-        private readonly ILoggerHelper _logger;
+        public readonly ILoggerHelper _logger;
         public CajaBaseServicio(IUnitOfWork uow,ILoggerHelper logger) : base(uow)
         {
             _logger = logger;

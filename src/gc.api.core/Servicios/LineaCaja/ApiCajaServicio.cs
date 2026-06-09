@@ -3,22 +3,29 @@ using gc.api.core.Contratos.Servicios.LineaCaja;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Dtos.Cajas;
 using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Gen;
 using Microsoft.Data.SqlClient;
+using Newtonsoft.Json;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 
 namespace gc.api.core.Servicios.LineaCaja
 {
     public class ApiCajaServicio : Servicio<EntidadBase>, IApiCajaServicio
     {
-        public ApiCajaServicio(IUnitOfWork uow) : base(uow)
+        private readonly ILoggerHelper _logger;
+        public ApiCajaServicio(IUnitOfWork uow, ILoggerHelper logger) : base(uow)
         {
-
+            _logger = logger;
         }
 
         public RespuestaDto ValidaIntegridadUsuarioCaja(CajaReqDto req)
         {
+            _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - request:{JsonConvert.SerializeObject(req)}");
             var sp = ConstantesGC.StoredProcedures.SP_CAJA_VALIDA_INTEGRIDAD;
 
             var ps = new List<SqlParameter>() {
@@ -38,6 +45,7 @@ namespace gc.api.core.Servicios.LineaCaja
 
         public RespuestaDto AperturaCaja(CajaReqDto reqDto)
         {
+            _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - request:{JsonConvert.SerializeObject(reqDto)}");
             var sp = ConstantesGC.StoredProcedures.SP_CAJA_APERTURA;
             var ps = new List<SqlParameter>() {
                 new SqlParameter("@usu_id", reqDto.usu_id),
@@ -54,6 +62,7 @@ namespace gc.api.core.Servicios.LineaCaja
 
         public RespuestaDto CierreCaja(CajaReqDto reqDto)
         {
+            _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - request:{JsonConvert.SerializeObject(reqDto)}");
             var sp = ConstantesGC.StoredProcedures.SP_CAJA_CIERRE;
             var ps = new List<SqlParameter>() {
                 new SqlParameter("@usu_id", reqDto.usu_id),
@@ -78,6 +87,7 @@ namespace gc.api.core.Servicios.LineaCaja
         /// <returns></returns>
         public List<CuentaBusquedaResultadoDto> BusquedaClientes(string busqueda, string adm_id, string usu_id)
         {
+            _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - busqueda:{busqueda}, adm_id:{adm_id}, usu_id:{usu_id}");
             var sp = ConstantesGC.StoredProcedures.SP_CAJA_BCUENTA;
             var ps = new List<SqlParameter>() {
                 new SqlParameter("@busqueda", busqueda),
@@ -91,6 +101,7 @@ namespace gc.api.core.Servicios.LineaCaja
 
         public CuentaDatosResultadoDto BusquedaDatosCliente(string origen, string valor, string adm_id, string usu_id)
         {
+            _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - origen:{origen}, valor:{valor}, adm_id:{adm_id}, usu_id:{usu_id}");
             var sp = ConstantesGC.StoredProcedures.SP_CAJA_BCUENTA_D;
 
             var ps = new List<SqlParameter>() {
@@ -111,6 +122,7 @@ namespace gc.api.core.Servicios.LineaCaja
         
         public RespuestaDto ConfirmaConsumidorFinal(ClienteRequestDto req)
         {
+            _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - request:{JsonConvert.SerializeObject(req)}");
             var sp = ConstantesGC.StoredProcedures.SP_CAJA_CF_CONFIRMAR;
             var ps = new List<SqlParameter>() {
                 new SqlParameter("@abm", req.Abm),
@@ -137,6 +149,7 @@ namespace gc.api.core.Servicios.LineaCaja
 
         public CajaDatosDto ObtenerDatosCF(string caja_id)
         {
+            _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - caja_id:{caja_id}");
             var sp = ConstantesGC.StoredProcedures.SP_CAJA_DATOS;
             var ps = new List<SqlParameter>() {
                 new SqlParameter("@caja_id", caja_id)
@@ -151,6 +164,7 @@ namespace gc.api.core.Servicios.LineaCaja
 
         public RespuestaDto CierreCajaGral(string usu_id, string adm_id)
         {
+            _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - usu_id:{usu_id}, adm_id:{adm_id}");
             var sp = ConstantesGC.StoredProcedures.SP_CAJA_GRAL_CIERRE;
             var ps = new List<SqlParameter>() {
                 new SqlParameter("@usu_id", usu_id),
@@ -166,6 +180,7 @@ namespace gc.api.core.Servicios.LineaCaja
 
         public RespuestaDto HabilitarCajaGral(string usu_id, string adm_id)
         {
+            _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - usu_id:{usu_id}, adm_id:{adm_id}");
             var sp = ConstantesGC.StoredProcedures.SP_CAJA_GRAL_HAB;
             var ps = new List<SqlParameter>() {
                 new SqlParameter("@usu_id", usu_id),
@@ -181,6 +196,7 @@ namespace gc.api.core.Servicios.LineaCaja
 
 		public List<CajaPVAbiertosDto> ObtenerPVAbiertos(string adm_id)
 		{
+            _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - adm_id:{adm_id}");
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_CAJA_PV_ABIERTOS;
 			var ps = new List<SqlParameter>()
 			{
@@ -192,6 +208,7 @@ namespace gc.api.core.Servicios.LineaCaja
 
         public RespuestaDto ValidaEstadoPV(CajaValidaPVDto req)
         {
+            _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - request:{JsonConvert.SerializeObject(req)}");
             var sp = ConstantesGC.StoredProcedures.SP_CAJA_VALIDA_PV;
 
             var ps = new List<SqlParameter>() {
@@ -207,6 +224,7 @@ namespace gc.api.core.Servicios.LineaCaja
 
             if (res != null && res.Count > 0)
             {
+                _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - Response:{JsonConvert.SerializeObject(res)}");
                 return res[0];
             }
             return new() { resultado = -1, resultado_msj = "Hubo un error al validar el PUESTO DE VENTA por lo que no se recepcionó respuesta desde la BD." };
@@ -214,7 +232,8 @@ namespace gc.api.core.Servicios.LineaCaja
 
         public RespuestaDto CargaStkDeFactura(CargaStkDto req)
         {
-            var sp = ConstantesGC.StoredProcedures.SP_CAJA_VALIDA_PV;
+            _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - request:{JsonConvert.SerializeObject(req)}");
+            var sp = ConstantesGC.StoredProcedures.SP_CAJA_STK_CARGA;
 
             var ps = new List<SqlParameter>() {
                 new SqlParameter("@box_id", req.box_id),

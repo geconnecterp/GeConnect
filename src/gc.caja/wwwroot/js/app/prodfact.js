@@ -620,7 +620,7 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
 
             // Rehabilitar campo y botón
             $txtCodigo.prop('disabled', false).val('');
-            $btnBuscar.prop('disabled', false).html('<i class="bx bx-search"></i>');
+            $btnBuscar.prop('disabled', false).html('<i class="bx bx-cart-add"></i> Cargar');
 
             // Focus en el campo
             $txtCodigo.trigger('focus');
@@ -1671,9 +1671,11 @@ function confirmarCancelarFactura() {
             "Confirmar Cancelación",
             "¿Está seguro que desea cancelar la factura?\n\n" +
             "Se perderán todos los productos cargados.",
-            function () {
+            function (res) {
+                if (res === "SI") {
+                    ejecutarCancelarFactura();
+                }
                 $("#msjModal").modal("hide");
-                ejecutarCancelarFactura();
             },
             true,
             ["Sí, cancelar", "No"],

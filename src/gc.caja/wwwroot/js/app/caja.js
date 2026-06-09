@@ -396,6 +396,9 @@ $(function () {
                     return;
                 }
 
+                // ✅ NUEVO: Actualizar el footer del menú con los datos recibidos
+                actualizarFooterMenu(response.datos);
+
                 // ✅ VALIDACIÓN 2: Verificar si hay mensaje de advertencia del sistema
                 const tieneAdvertencia = response.mostrar_mensaje === true && response.mensaje_advertencia;
 
@@ -1187,3 +1190,20 @@ $(function () {
     //    }
     //});
 });
+
+/**
+ * ✅ NUEVO: Actualiza la información del footer en el modal del menú.
+ * @param {object} datos - El objeto 'datos' de la respuesta AJAX.
+ */
+function actualizarFooterMenu(datos) {
+    if (!datos) {
+        console.warn("⚠️ No se proporcionaron datos para actualizar el footer del menú.");
+        return;
+    }
+
+    $("#lblPuntoVenta").text(datos.caja_nombre || '---');
+    $("#lblNroProceso").text(datos.caja_nro_proceso || '---');
+    $("#lblNroCierre").text(datos.caja.caja.caja_nro_cierre || '---');
+    $("#lblFechaHora").text(datos.caja.caja.caja_apertura || '---');
+    
+}

@@ -45,6 +45,12 @@ $(function () {
         inicializarControlesBusquedaAvanzada();
     });
 
+    $("#busquedaModal").on('shown.bs.modal', function () {
+        setTimeout(function () {
+            $('#Search').trigger('focus');
+        }, 150); // Un pequeño retraso para asegurar que el modal esté completamente visible
+    });
+
     $("#busquedaModal").on("hidden.bs.modal", function () {
         console.log("📕 Modal de búsqueda cerrado");
         inicializarControlesBusquedaAvanzada();
@@ -243,7 +249,7 @@ function generarGridSimplificadoCaja(productos, metadata) {
                 
                 <td class="text-center fw-bold">${item.p_id}</td>                          <!-- [1] ID -->
                 <td class="text-left" title="${item.p_desc || ''}">${item.p_desc || ''}</td> <!-- [2] DESC -->
-                <td class="text-center">${codigoBarras}</td>                               <!-- [3] EAN ⬅️ CRÍTICO -->
+                <td class="text-center" style="user-select: none;">${codigoBarras}</td> <!-- [3] EAN ⬅️ CRÍTICO -->
                 <td class="text-right fw-semibold text-success">$ ${precioFormateado}</td> <!-- [4] PRECIO -->
                 <td class="text-center">
                     <span class="badge ${estadoBadge}">${estadoTexto}</span>

@@ -281,14 +281,15 @@ namespace gc.caja.Controllers
                     mensaje = "Datos obtenidos exitosamente.",
                     datos = new
                     {
-                        caja_id = result?.Entidad?.caja_id,
-                        caja_nombre = result?.Entidad?.caja_nombre,
-                        depo_id = result?.Entidad?.depo_id,
+                        result?.Entidad?.caja_id,
+                        result?.Entidad?.caja_nombre,
+                        result?.Entidad?.depo_id,
                         usuario = UserName,
                         administracion = AdministracionId,
-                        dia_movi = result?.Entidad?.dia_movi,
-                        caja_estado = result?.Entidad?.caja_estado,
-                        caja_nro_proceso = result?.Entidad?.caja_nro_proceso
+                        result?.Entidad?.dia_movi,
+                        result?.Entidad?.caja_estado,
+                        result?.Entidad?.caja_nro_proceso,
+                        caja //lleva toda la info del sp, incluyendo settings y datos para el menú dinámico (botones, etc)
                     }
                 };
 

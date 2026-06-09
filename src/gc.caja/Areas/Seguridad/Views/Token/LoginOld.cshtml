@@ -101,7 +101,7 @@
                                                placeholder="Ingrese su usuario"
                                                required
                                                autofocus
-                                               autocomplete="off"
+                                               autocomplete="username"
                                                style="text-transform: none !important;" />
                                     </div>
 
@@ -118,7 +118,7 @@
                                                    name="Password"
                                                    placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
                                                    required
-                                                   autocomplete="off"
+                                                   autocomplete="current-password"
                                                    aria-describedby="togglePassword"
                                                    style="text-transform: none !important;" />
                                             <span class="input-group-text cursor-pointer" id="togglePassword">
@@ -165,7 +165,7 @@
                                         @(cajaConfig?.IP ?? "0.0.0.0")
                                     </div>
                                 </div>
-                               @*  @if (cajaConfig != null)
+                                @if (cajaConfig != null)
                                 {
                                     <div class="caja-info-item">
                                         <div class="caja-info-label">
@@ -192,7 +192,7 @@
                                             </div>
                                         </div>
                                     }
-                                } *@
+                                }
                             </div>
                         </div>
 
@@ -209,6 +209,14 @@
         </div>
     </div>
 
+    <script type="text/javascript">
+        // Variables de TempData
+        var MensajeErrorTempData = '@TempData["error"]';
+        var MensajeInfoTempData = '@TempData["info"]';
+        var MensajeWarnTempData = '@TempData["warn"]';
+        var MensajeSuccessTempData = '@TempData["succ"]';
+        var guardarEnSesionUrl = "@Url.Action("GuardarEnSesion", "Token", new { area = "Seguridad" })";
+    </script>
     <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/popper.js/umd/popper.min.js"></script>
@@ -220,13 +228,7 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/lib/virtual-keyboard/js/virtual-keyboard.js" asp-append-version="true"></script>
 
-    <script type="text/javascript">
-        // Variables de TempData
-        var MensajeErrorTempData = '@TempData["error"]';
-        var MensajeInfoTempData = '@TempData["info"]';
-        var MensajeWarnTempData = '@TempData["warn"]';
-        var MensajeSuccessTempData = '@TempData["succ"]';
-    </script>
-    <script src="~/js/app/seguridad/login.js"></script>
+    <script src="~/js/app/seguridad/caja-config-loeader.js" asp-append-version="true"></script>
+    <script src="~/js/app/seguridad/login.js" asp-append-version="true"></script>
 </body>
 </html>
