@@ -39,7 +39,7 @@ function sincronizarAutoConfirmacion() {
         // ✅ ACTIVADO: Modo rápido
         $icono.removeClass('bx-edit text-warning')
             .addClass('bx-zap text-success');
-        $label.removeClass('text-danger')
+        $label.removeClass('text-warning') // ← 🔄 CAMBIO: de 'text-danger' a 'text-warning'
             .addClass('text-success');
     } else {
         // ✏️ DESACTIVADO: Modo edición

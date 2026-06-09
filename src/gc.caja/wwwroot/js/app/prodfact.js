@@ -620,7 +620,7 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
 
             // Rehabilitar campo y botón
             $txtCodigo.prop('disabled', false).val('');
-            $btnBuscar.prop('disabled', false).html('<i class="bx bx-search"></i>');
+            $btnBuscar.prop('disabled', false).html('<i class="bx bx-cart-add"></i> Cargar');
 
             // Focus en el campo
             $txtCodigo.trigger('focus');
