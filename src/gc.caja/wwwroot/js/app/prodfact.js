@@ -1671,9 +1671,11 @@ function confirmarCancelarFactura() {
             "Confirmar Cancelación",
             "¿Está seguro que desea cancelar la factura?\n\n" +
             "Se perderán todos los productos cargados.",
-            function () {
+            function (res) {
+                if (res === "SI") {
+                    ejecutarCancelarFactura();
+                }
                 $("#msjModal").modal("hide");
-                ejecutarCancelarFactura();
             },
             true,
             ["Sí, cancelar", "No"],
