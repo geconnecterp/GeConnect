@@ -1,9 +1,9 @@
 ﻿@using gc.infraestructura.Dtos.Almacen
 @model FiltroVtaSorteoCargaModel
 @{
+	Layout = "~/views/shared/_Layout.cshtml";
 	var filtro = new QueryFilters() { Modelo = ModeloFilter.VENTA_SORTEO_CARGA, Rel01 = [], Rel02 = [], Rel03 = [], Rel04 = [] };
 	List<ProductoListaDto> listaVacia = new();
-	Layout = "~/views/shared/_Layout.cshtml";
 }
 @section styles {
 	<link rel="stylesheet" href="~/css/simplePagination.css" />
@@ -41,6 +41,10 @@
 		let pags = 0;
 		let pagina = 1;
 		let search = "";
+
+		var autoComRel01Url = "@Url.Action("BuscarProvs", "cargaprecios", new { area = "productos" })";/**/
+		var autoComRel02Url = "@Url.Action("BuscarRubros", "cargaprecios", new { area = "productos" })";/**/
+		var autoComRel03Url =  "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "cargaprecios", new { area = "productos" })";/**/
 
 		let buscarSorteoListaUrl = "@Url.Action("BuscarSorteoLista", "ventasorteocarga", new { area = "Ventas" })";
 		let buscarMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "ventasorteocarga", new { area = "Ventas" })';

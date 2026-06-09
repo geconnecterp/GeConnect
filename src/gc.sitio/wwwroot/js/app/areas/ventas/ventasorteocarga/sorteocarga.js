@@ -65,6 +65,7 @@ function InicializaEventosSorteos() {
 		desactivarTablaSorteos();
 		modoModificacionSorteo = false;
 		modoEliminacionSorteo = false;
+		soSorteoSeleccionado = null;
 
 		if (typeof nuevoSorteoUrl === 'undefined') {
 			console.error('nuevoSorteoUrl no está definido.');
@@ -73,6 +74,7 @@ function InicializaEventosSorteos() {
 
 		PostGenHtml({}, nuevoSorteoUrl, function (html) {
 			$('#divSorteoDatos').html(html).show();
+			//$('#divSorteoTablas').html(html).show();
 
 			// Primero bloqueo todo
 			$('#divSorteoDatos')
@@ -86,7 +88,7 @@ function InicializaEventosSorteos() {
 
 			// Luego habilito solo los permitidos
 			$('#divSorteoDatos')
-				.find('#so_desc, #so_desde, #so_hasta, #tipo_valor, #acumula_valor, #so_inclusion_valor, #Rel01B')
+				.find('#so_desc, #so_desde, #so_hasta, #tipo_valor, #acumula_valor, #so_inclusion_valor, #Rel01B, input[name="todos_los_prod_del_prov"]')
 				.each(function () {
 					const $el = $(this);
 					$el.prop('readonly', false)
@@ -104,7 +106,9 @@ function InicializaEventosSorteos() {
 				setTimeout(() => $first.trigger("focus"), 50);
 			}
 
-			$('#divSorteoTablaProductos').html(crearGridProdVacioHtml()).show();
+			//$('#divSorteoTablaProductos').html(crearGridProdVacioHtml()).show();
+			cargarSorteoTablas("")
+			//cargarSorteoTablasSucursales("");
 			$('#btnAgregarCProducto').prop('disabled', false);
 			$('#btnAbmAceptar').prop('disabled', false).show();
 			$('#btnAbmCancelar').prop('disabled', false).show();
@@ -135,10 +139,7 @@ function InicializaEventosSorteos() {
 			});
 
 			setTimeout(() => {
-				//aplicarReadonlyCamposPresup();
-				//finalizarInicializacion()
-				// Agregar inicialización del drag & drop aquí
-				//inicializarDragAndDropProductos();
+				agregarHandlerCheckTodosLosProveedores();
 			}, 100);
 			_pedidoOriginal = null;
 
@@ -176,9 +177,7 @@ function InicializaEventosSorteos() {
 		//aplicarReadonlyCamposPedido();
 
 		setTimeout(() => {
-			//actualizarTotalGeneralPedido();
-			// Agregar inicialización del drag & drop aquí
-			//inicializarDragAndDropProductos();
+			agregarHandlerCheckTodosLosProveedores();
 		}, 100);
 
 
@@ -386,6 +385,25 @@ function validarCliente() {
 	return false;
 }
 
+function actualizarHabilitacionFilaSucursal($row) {
+	const chk = $row.find(".chkIncluye").is(":checked");
+
+	const $inputs = $row.find(".so-desde, .so-hasta");
+
+	if (chk) {
+		// Habilitar edición
+		$inputs.prop("disabled", false)
+			.removeClass("disabled-cell");
+	} else {
+		// Deshabilitar y blanquear valores
+		$inputs.prop("disabled", true)
+			.val("")                     // ← BLANQUEAR
+			.removeClass("error-range")  // ← limpiar errores previos
+			.addClass("disabled-cell");
+	}
+}
+
+
 // ============================================================================
 // FUNCIONES DE VALIDACIÓN Y CONFIRMACIÓN DE PEDIDO
 // ============================================================================
@@ -398,39 +416,140 @@ function validarCliente() {
 function validarSorteo(abm) {
 	console.log(`🔍 Validando sorteo (Modo: ${abm})...`);
 
-	// ✅ VALIDACIÓN 1: Cliente obligatorio
+	// VALIDACIÓN 1: Cliente obligatorio
 	const ctaValidar = validarCliente();
 	if (!ctaValidar) {
-		return {
-			esValido: false,
-			mensaje: 'Debe seleccionar un cliente para el sorteo.'
-		};
+		return { esValido: false, mensaje: 'Debe seleccionar un cliente para el sorteo.' };
 	}
 
-	// ✅ VALIDACIÓN 6: Debe haber al menos un producto
-	const productos = obtenerProductosDelGrid();
-	if (productos == null || productos == undefined)
-		return;
-	if (productos.length === 0) {
-		return {
-			esValido: false,
-			mensaje: 'Debe agregar al menos un producto al sorteo'
-		};
+	// VALIDACIÓN 2: Productos (si NO está chequeado "todos los productos")
+	var chequeado = $("#todos_los_prod_del_prov").is(":checked");
+	if (!chequeado) {
+		const productos = obtenerProductosDelGrid();
+		if (!productos || productos.length === 0) {
+			return { esValido: false, mensaje: 'Debe agregar al menos un producto al sorteo.' };
+		}
 	}
 
+	// VALIDACIÓN 3: Sucursales
 	const sucursales = obtenerSucursalesDelGrid();
-	if (sucursales == null || sucursales == undefined)
-		return;
-	if (sucursales.length === 0) {
+	if (!sucursales || sucursales.length === 0) {
+		return { esValido: false, mensaje: 'Debe agregar al menos una sucursal al sorteo.' };
+	}
+
+	// Filtrar solo las seleccionadas (incluye = 1)
+	const seleccionadas = sucursales.filter(s => s.incluido === true);
+
+	if (seleccionadas.length === 0) {
+		return { esValido: false, mensaje: 'Debe seleccionar al menos una sucursal.' };
+	}
+
+	// VALIDACIÓN 4: Validar rangos individuales
+	for (let s of seleccionadas) {
+
+		if (s.so_nro_desde <= 0 || s.so_nro_hasta <= 0) {
+			return {
+				esValido: false,
+				mensaje: `Sucursal ${s.adm_nombre}: Los valores deben ser mayores a 0.`
+			};
+		}
+
+		if (s.so_nro_desde >= s.so_nro_hasta) {
+			return {
+				esValido: false,
+				mensaje: `Sucursal ${s.adm_nombre}: El valor "Desde" debe ser menor que "Hasta".`
+			};
+		}
+	}
+
+	// VALIDACIÓN 5: Solapamiento entre sucursales
+	for (let i = 0; i < seleccionadas.length; i++) {
+		for (let j = i + 1; j < seleccionadas.length; j++) {
+
+			const A = seleccionadas[i];
+			const B = seleccionadas[j];
+
+			const solapan =
+				A.so_nro_desde <= B.so_nro_hasta &&
+				B.so_nro_desde <= A.so_nro_hasta;
+
+			if (solapan) {
+				return {
+					esValido: false,
+					mensaje: `Los rangos de las sucursales "${A.adm_nombre}" y "${B.adm_nombre}" se solapan.`
+				};
+			}
+		}
+	}
+
+	// VALIDACIÓN 6: Nombre del sorteo
+	var nombre = $("#so_desc").val();
+	if (!nombre || nombre.trim() === "") {
+		return { esValido: false, mensaje: 'Debe indicar un nombre válido para el sorteo.' };
+	}
+
+	// VALIDACIÓN X: so_inclusion_valor > 0
+	let valorStr = $("#so_inclusion_valor").val() || "0";
+	let valor = parseInt(valorStr.replace(/\./g, "")) || 0;
+
+	if (valor <= 0) {
 		return {
 			esValido: false,
-			mensaje: 'Debe agregar al menos una sucursal al sorteo'
+			mensaje: 'Debe indicar un valor mayor a 0 en "Valor".'
 		};
 	}
 
 	console.log('✅ Validación exitosa');
 	return { esValido: true, mensaje: '' };
 }
+
+//function validarSorteo(abm) {
+//	console.log(`🔍 Validando sorteo (Modo: ${abm})...`);
+
+//	// ✅ VALIDACIÓN 1: Cliente obligatorio
+//	const ctaValidar = validarCliente();
+//	if (!ctaValidar) {
+//		return {
+//			esValido: false,
+//			mensaje: 'Debe seleccionar un cliente para el sorteo.'
+//		};
+//	}
+
+//	// ✅ VALIDACIÓN 6: Debe haber al menos un producto
+//	var chequeado = $("#todos_los_prod_del_prov").is(":checked");
+//	if (!chequeado) {
+//		const productos = obtenerProductosDelGrid();
+//		if (productos == null || productos == undefined)
+//			return;
+//		if (productos.length === 0) {
+//			return {
+//				esValido: false,
+//				mensaje: 'Debe agregar al menos un producto al sorteo'
+//			};
+//		}
+//	}
+
+//	const sucursales = obtenerSucursalesDelGrid();
+//	if (sucursales == null || sucursales == undefined)
+//		return;
+//	if (sucursales.length === 0) {
+//		return {
+//			esValido: false,
+//			mensaje: 'Debe agregar al menos una sucursal al sorteo'
+//		};
+//	}
+
+
+//	var nombre = $("#so_desc").val();
+//	if (!nombre || nombre == "") {
+//		return {
+//			esValido: false,
+//			mensaje: 'Debe indicar un nombre válido para el sorteo.'
+//		};
+//	}
+//	console.log('✅ Validación exitosa');
+//	return { esValido: true, mensaje: '' };
+//}
 
 // Handler para Aceptar/Confirmar Sorteo
 $(document).on('click', '#btnAbmAceptar', function (e) {
@@ -679,6 +798,11 @@ function cancelarOperacion(e) {
 		.removeClass("table-wrapper-small")
 		.addClass("table-wrapper-full");
 	activarTablaSorteos();
+
+	if ($("#divDetalle").is(":visible")) {
+		$("#divDetalle").collapse("hide");
+	}
+	$("#divFiltro").collapse("show");
 }
 
 /**
@@ -693,7 +817,7 @@ function construirSorteoConfirmaDto(abm) {
 	if (!productos || !sucursales)  return null; // 🔥 Evita continuar si hubo error
 	return {
 		Abm: abm,
-		Datos: obtenerDatosFormularioSorteo(),
+		Datos: obtenerDatosFormularioSorteo(abm),
 		Productos: productos,
 		Sucursales: sucursales
 	};
@@ -712,7 +836,7 @@ function eliminarSorteo() {
 	try {
 		const confirmacionDto = {
 			Abm: 'B',
-			Datos: obtenerDatosFormularioSorteo(),
+			Datos: obtenerDatosFormularioSorteo("B"),
 			Productos: obtenerProductosDelGrid(),
 			Sucursales: obtenerSucursalesDelGrid(),
 		};
@@ -781,8 +905,15 @@ function procesarRespuestaEliminacion(response) {
 	);
 }
 
-function obtenerDatosFormularioSorteo() {
-	let so_sorteo = soSorteoSeleccionado;
+function obtenerDatosFormularioSorteo(abm) {
+	let so_sorteo = "";
+	if (abm == "A") {
+		so_sorteo = null;
+	}
+	else {
+		so_sorteo = soSorteoSeleccionado;
+	}
+	
 	let ctaId = "";
 
 	// Si está visible el input editable del proveedor
@@ -803,6 +934,9 @@ function obtenerDatosFormularioSorteo() {
 	}
 	else {
 		so_participan = "T";
+	}
+	if (so_participan == "A") {
+		cta_id = null;
 	}
 	let so_inclusion_tipo = $('#tipo_valor').val() || '';
 	let so_inclusion_acumula = $('#acumula_valor').val() || '';
@@ -826,66 +960,70 @@ function obtenerDatosFormularioSorteo() {
 function obtenerProductosDelGrid() {
 	const productos = [];
 	const $filas = $('#tbSorteoProd tbody tr');
-	let cont = 0;
+
+	let tieneProductos = false;
 
 	$filas.each(function () {
 		const $fila = $(this);
-		cont++;
 
+		// Si es la fila "No hay items para mostrar." → ignorar
 		if ($fila.find('td[colspan]').length > 0) return;
 
 		const pId = $fila.data('p-id');
 		if (!pId) return;
 
+		tieneProductos = true;
+
 		const pDes = $fila.data('p-desc') || "";
 
 		productos.push({
 			p_id: pId,
-			p_desc: pDes,
+			p_desc: pDes
 		});
 	});
+
+	// ❗ Si no hay productos → devolver objeto vacío {}
+	if (!tieneProductos) {
+		return {};
+	}
 
 	return productos;
 }
 
+
 function obtenerSucursalesDelGrid() {
 
-	const sucursales = [];
-	const $filas = $('#tbSorteoAdm tbody tr');
+	let sucursales = [];
 
-	$filas.each(function () {
+	$("#tbSorteoAdm tbody tr").each(function () {
 
-		const $fila = $(this);
+		const $row = $(this);
 
-		// Saltar filas vacías
-		if ($fila.find('td[colspan]').length > 0) return;
+		// ❗ Solo incluir filas seleccionadas
+		const incluye = $row.find(".chkIncluye").is(":checked");
+		if (!incluye) return;
 
-		const admId = $fila.data('adm-id');
-		if (!admId) return;
+		const admId = $row.data("adm-id");
+		const admNombre = $row.data("adm-nombre");
 
-		const admNombre = $fila.find("td:nth-child(2)").text().trim();
+		const desdeStr = $row.find(".so-desde").val() || "0";
+		const hastaStr = $row.find(".so-hasta").val() || "0";
 
-		// Obtener valores desenmascarados
-		const desdeStr = $fila.find(".so-desde").val() || "0";
-		const hastaStr = $fila.find(".so-hasta").val() || "0";
-
-		const so_nro_desde = parseInt(desdeStr.replace(/\./g, "")) || 0;
-		const so_nro_hasta = parseInt(hastaStr.replace(/\./g, "")) || 0;
-
-		const incluye = $fila.find(".chkIncluye").is(":checked") ? 1 : 0;
+		const desde = parseInt(desdeStr.replace(/\./g, "")) || 0;
+		const hasta = parseInt(hastaStr.replace(/\./g, "")) || 0;
 
 		sucursales.push({
 			adm_id: admId,
 			adm_nombre: admNombre,
-			so_nro_desde: so_nro_desde,
-			so_nro_hasta: so_nro_hasta,
-			so_numerador: 0,
-			incluye: incluye
+			so_nro_desde: desde,
+			so_nro_hasta: hasta,
+			incluido: true
 		});
 	});
 
 	return sucursales;
 }
+
 
 
 function buscarSorteos(pag = 1) {
@@ -1042,11 +1180,19 @@ function inicializarEventosTablaSucursales() {
 	$(document).off("change", "#chkAllIncluye");
 	$(document).on("change", "#chkAllIncluye", function () {
 		const checked = $(this).is(":checked");
+
 		$("#tbSorteoAdm tbody .chkIncluye").prop("checked", checked);
+
+		$("#tbSorteoAdm tbody tr").each(function () {
+			actualizarHabilitacionFilaSucursal($(this));
+		});
 	});
 
 	$(document).off("change", ".chkIncluye");
 	$(document).on("change", ".chkIncluye", function () {
+		const $row = $(this).closest("tr");
+		actualizarHabilitacionFilaSucursal($row);
+
 		const total = $("#tbSorteoAdm tbody .chkIncluye").length;
 		const marcados = $("#tbSorteoAdm tbody .chkIncluye:checked").length;
 
@@ -1054,46 +1200,46 @@ function inicializarEventosTablaSucursales() {
 	});
 	aplicarMascaraEnteros();
 	$(document).off("blur", ".input-editable");
-	$(document).on("blur", ".input-editable", function () {
-		validarRangosSorteoAdm();
-	});
+	//$(document).on("blur", ".input-editable", function () {
+	//	validarRangosSorteoAdm();
+	//});
 	$(document).off("keydown", ".input-editable");
 	$(document).on("keydown", ".input-editable", function (e) {
 
+		const navegacion = ["Enter", "Tab", "ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp"];
+
+		// Si NO es una tecla de navegación → dejar escribir
+		if (!navegacion.includes(e.key)) {
+			return; // permitir escritura normal
+		}
+
+		e.preventDefault();
+
 		const $inputs = $("#tbSorteoAdm .input-editable");
 		const index = $inputs.index(this);
-
 		let newIndex = index;
 
 		switch (e.key) {
-
 			case "Enter":
 			case "Tab":
-				e.preventDefault();
-				if (e.shiftKey) {
-					newIndex = (index - 1 + $inputs.length) % $inputs.length;
-				} else {
-					newIndex = (index + 1) % $inputs.length;
-				}
+				newIndex = e.shiftKey
+					? (index - 1 + $inputs.length) % $inputs.length
+					: (index + 1) % $inputs.length;
 				break;
 
 			case "ArrowRight":
-				e.preventDefault();
 				newIndex = (index + 1) % $inputs.length;
 				break;
 
 			case "ArrowLeft":
-				e.preventDefault();
 				newIndex = (index - 1 + $inputs.length) % $inputs.length;
 				break;
 
 			case "ArrowDown":
-				e.preventDefault();
 				newIndex = buscarInputAbajo(index, $inputs);
 				break;
 
 			case "ArrowUp":
-				e.preventDefault();
 				newIndex = buscarInputArriba(index, $inputs);
 				break;
 		}
@@ -1102,6 +1248,10 @@ function inicializarEventosTablaSucursales() {
 		$next.focus().select();
 	});
 
+	// Al cargar la tabla, ajustar todas las filas
+	$("#tbSorteoAdm tbody tr").each(function () {
+		actualizarHabilitacionFilaSucursal($(this));
+	});
 }
 
 function buscarInputAbajo(index, $inputs) {
@@ -1126,7 +1276,7 @@ function buscarInputArriba(index, $inputs) {
 
 
 function aplicarMascaraEnteros() {
-	$(".input-numero").inputmask(maskConfigEnteros);
+	$(".input-numero").inputmask(maskConfigEnterosTablas);
 }
 
 function aplicarMascaraDecimales() {
@@ -1139,6 +1289,9 @@ function validarRangosSorteoAdm() {
 
 	$("#tbSorteoAdm tbody tr").each(function () {
 
+		const chk = $(this).find(".chkIncluye").is(":checked");
+		if (!chk) return; // ❗ Solo validar seleccionadas
+
 		const desdeStr = $(this).find(".so-desde").val() || "0";
 		const hastaStr = $(this).find(".so-hasta").val() || "0";
 
@@ -1147,9 +1300,7 @@ function validarRangosSorteoAdm() {
 
 		const admId = $(this).data("adm-id");
 
-		if (desde > 0 && hasta > 0) {
-			filas.push({ admId, desde, hasta, row: $(this) });
-		}
+		filas.push({ admId, desde, hasta, row: $(this) });
 	});
 
 	// Ordenar por "desde"
@@ -1157,7 +1308,6 @@ function validarRangosSorteoAdm() {
 
 	let error = false;
 
-	// Limpiar errores previos
 	$("#tbSorteoAdm tbody tr").removeClass("error-range");
 
 	for (let i = 0; i < filas.length - 1; i++) {
@@ -1165,7 +1315,6 @@ function validarRangosSorteoAdm() {
 		const actual = filas[i];
 		const siguiente = filas[i + 1];
 
-		// Si se solapan
 		if (actual.hasta >= siguiente.desde) {
 			error = true;
 			actual.row.addClass("error-range");
@@ -1219,6 +1368,16 @@ function InicializaPantallaPedido() {
 
 	$("#btnAbmAceptar, #btnAbmCancelar, #btnImprimir").prop("disabled", true).hide();
 
+	// Delegación: captura Enter en cualquiera de los inputs date del filtro
+	$(document).on("keydown", "#divFiltro input[type='date']", function (e) {
+		if (e.key === "Enter") {
+			e.preventDefault(); // evita submit o comportamientos raros
+			$("#btnBuscar").trigger("click");
+		}
+	});
+
+	agregarHandlerCheckTodosLosProveedores();
+
 	// Inicializa el período de fechas (hoy / hoy + 30 días)
 	initPeriodoFechas();
 
@@ -1232,9 +1391,29 @@ function InicializaPantallaPedido() {
 	$("#Hasta").prop("disabled", false);
 }
 
+function agregarHandlerCheckTodosLosProveedores() {
+	$(document).on("change", "input[name='todos_los_prod_del_prov']", function () {
+
+		const chk = $(this).is(":checked");
+
+		if (chk) {
+			$("#Rel01B").prop("disabled", false);
+			$("#cta_denominacion").prop("disabled", true);
+			$("#btnAgregarCProducto").prop("disabled", true);
+
+		} else {
+			$("#cta_denominacion").prop("disabled", false);
+			$("#Rel01B").prop("disabled", true);
+			$("#btnAgregarCProducto").prop("disabled", false);
+		}
+	});
+}
+
+
+
 function initPeriodoFechas() {
 	// Último lunes pasado
-	const desde = obtenerUltimoLunes();
+	const desde = obtenerPrimerDiaMesAnterior();
 
 	// Hoy
 	const hasta = new Date();
@@ -1255,6 +1434,15 @@ function initPeriodoFechas() {
 		.prop("disabled", true);
 }
 
+function obtenerPrimerDiaMesAnterior() {
+	const hoy = new Date();
+	const year = hoy.getFullYear();
+	const month = hoy.getMonth(); // 0=enero ... 11=diciembre
+
+	// Primer día del mes anterior
+	return new Date(year, month - 1, 1);
+}
+
 function obtenerUltimoLunes() {
 	const hoy = new Date();
 	const diaSemana = hoy.getDay(); // 0=Domingo ... 1=Lunes
@@ -1267,6 +1455,21 @@ function obtenerUltimoLunes() {
 
 	return ultimoLunes;
 }
+
+const maskConfigEnterosTablas = {
+	alias: "numeric",
+	groupSeparator: ".",
+	autoGroup: true,
+	digits: 0,
+	digitsOptional: false,
+	rightAlign: true,
+	prefix: '',
+	placeholder: "",
+	clearMaskOnLostFocus: false,
+	showMaskOnHover: false,
+	showMaskOnFocus: true,
+	allowMinus: false
+};
 
 const maskConfigEnteros = {
 	alias: "numeric",
@@ -1558,7 +1761,7 @@ function crearFilaProductoSorteo(producto, esAlternado) {
                         class="btn btn-sm btn-danger btn-eliminar-producto"
                         data-p-id="${datosProducto.p_id}"
                         title="Eliminar producto"
-                        style="${estaEnModoEdicionPedido() ? '' : 'display: none;'}">
+                        style="${estaEnModoEdicionSorteo() ? '' : 'display: none;'}">
                     <i class="bx bx-trash"></i>
                 </button>
             </td>

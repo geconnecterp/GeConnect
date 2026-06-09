@@ -164,15 +164,15 @@ namespace gc.sitio.Areas.Ventas.Controllers
 				if (!VerificarAutenticacion(out IActionResult redirectResult))
 					return redirectResult;
 
-				if (so_sorteo == null)
-					return PartialView("_gridMensaje", CrearRespuestaError("El Identificador del sorteo no fue recepcionado."));
-
+				//if (string.IsNullOrEmpty(so_sorteo))
+				//	return PartialView("_gridMensaje", CrearRespuestaError("El Identificador del sorteo no fue recepcionado."));
+				if (so_sorteo == null) so_sorteo = "%";
 				var sorteoAdms = await _apiVentasServicio.ObtenerSorteoAdmDatos(so_sorteo, TokenCookie);
 				if (!sorteoAdms.Ok)
 					throw new NegocioException(sorteoAdms.Mensaje ?? "No se ha podido obtener la lista de sucursales del sorteo.");
 
 				if (sorteoAdms.ListaEntidad == null || sorteoAdms.ListaEntidad.Count() == 0)
-					throw new NegocioException("No se encontraron los datos de sucursales del Sorteo");
+					return PartialView("_sorteoTablas_adm", ObtenerGridCoreSmart<SorteoCargaAdmDto>(new List<SorteoCargaAdmDto>()));
 
 				return PartialView("_sorteoTablas_adm", ObtenerGridCoreSmart<SorteoCargaAdmDto>(sorteoAdms.ListaEntidad));
 			}
@@ -196,14 +196,18 @@ namespace gc.sitio.Areas.Ventas.Controllers
 				if (!VerificarAutenticacion(out IActionResult redirectResult))
 					return redirectResult;
 
-				if (so_sorteo == null)
-					return PartialView("_gridMensaje", CrearRespuestaError("El Identificador del sorteo no fue recepcionado."));
+				//if (string.IsNullOrEmpty(so_sorteo))
+				//	return PartialView("_gridMensaje", CrearRespuestaError("El Identificador del sorteo no fue recepcionado."));
+				if (so_sorteo == null) so_sorteo = "%";
 
 				var sorteoProds = await _apiVentasServicio.ObtenerSorteoProdDatos(so_sorteo, TokenCookie);
 				if (!sorteoProds.Ok)
 					throw new NegocioException(sorteoProds.Mensaje ?? "No se ha podido obtener la lista de productos del sorteo.");
 				if (sorteoProds.ListaEntidad == null || sorteoProds.ListaEntidad.Count() == 0)
-					throw new NegocioException("No se encontraron los datos de productos del Sorteo");
+				{
+					_logger?.LogInformation("No se encontraron los datos de productos del Sorteo");
+					return PartialView("_sorteoTablas_prod", ObtenerGridCoreSmart<SorteoCargaProdDto>(new List<SorteoCargaProdDto>()));
+				}
 
 				return PartialView("_sorteoTablas_prod", ObtenerGridCoreSmart<SorteoCargaProdDto>(sorteoProds.ListaEntidad));
 			}
@@ -217,6 +221,20 @@ namespace gc.sitio.Areas.Ventas.Controllers
 				_logger?.LogError(ex, "Error");
 				return PartialView("_gridMensaje", CrearRespuestaError("Error"));
 			}
+		}
+
+		[HttpPost]
+		public IActionResult NuevoSorteo()
+		{
+			if (!VerificarAutenticacion(out IActionResult redirectResult))
+				return redirectResult;
+
+			SorteoCargaDatosDto sorteo = new();
+			sorteo.modo_lectura = false;
+			sorteo.so_participan = 'A';
+			sorteo.so_inclusion_valor = 0;
+
+			return PartialView("_sorteoDatos", sorteo);
 		}
 
 		[HttpPost]
@@ -234,7 +252,8 @@ namespace gc.sitio.Areas.Ventas.Controllers
 				// Validaciones de entrada
 				if (dto == null || dto.Datos == null || string.IsNullOrEmpty(dto.Datos.cta_id))
 					return Json(new { ok = false, mensaje = "Los datos del sorteo son requeridos" });
-				
+
+				var prods = JsonConvert.SerializeObject(dto.Productos);
 				ConfirmarSorteoRequest request = new()
 				{
 					abm = dto.Abm.ToString(),
@@ -247,12 +266,24 @@ namespace gc.sitio.Areas.Ventas.Controllers
 					so_inclusion_acumula = dto.Datos.so_inclusion_acumula,
 					so_inclusion_tipo = dto.Datos.so_inclusion_tipo,
 					so_inclusion_valor = dto.Datos.so_inclusion_valor,
-					json_p = JsonConvert.SerializeObject(dto.Productos),
-					json_a = JsonConvert.SerializeObject(dto.Sucursales),
+					json_p = prods == "null" ? "{}" : prods,
+					json_a = JsonConvert.SerializeObject(
+						dto.Sucursales.Select(s => new
+						{
+							s.so_sorteo,
+							s.adm_id,
+							s.adm_nombre,
+							s.so_nro_desde,
+							s.so_nro_hasta,
+							s.so_numerador,
+							incluido = s.incluido ? 1 : 0
+						})
+					),
 					adm_id = AdministracionId,
 					usu_id = UserName,
 				};
 
+				PrintProperties(request);
 				// Llamada al servicio
 				var respuesta = await _apiVentasServicio.ConfirmarSorteo(request, TokenCookie);
 
@@ -325,6 +356,11 @@ namespace gc.sitio.Areas.Ventas.Controllers
 		{
 			model.Desde = DateTime.Now.AddDays(-7);
 			model.Hasta = DateTime.Now;
+
+			if (ProveedoresLista.Count == 0)
+			{
+				ObtenerProveedores(_cuentaServicio, "BI");
+			}
 
 			#region Carga de Rubros
 			if (RubroLista.Count == 0)

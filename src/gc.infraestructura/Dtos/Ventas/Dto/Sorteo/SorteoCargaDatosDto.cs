@@ -15,7 +15,8 @@ namespace gc.infraestructura.Dtos.Ventas
 		public char? so_inclusion_tipo { get; set; }
 		public decimal? so_inclusion_valor { get; set; }
 		public char so_actu { get; set; }
-		public bool todos_los_prod_del_prov { get; set; } = false;
+		//public bool todos_los_prod_del_prov { get; set; } = false;
+		public bool todos_los_prod_del_prov => so_participan == 'A';
 		public bool modo_lectura { get; set; } = true;
 	}
 }
