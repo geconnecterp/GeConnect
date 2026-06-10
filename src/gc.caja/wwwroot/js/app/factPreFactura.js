@@ -733,6 +733,8 @@ function cerrarModalPreFacturas() {
         .html(`<i class='bx bx-check-circle'></i> SELECCIONAR`);
 
     $('#chkSeleccionarTodos').prop('checked', false).prop('indeterminate', false);
+    // ✅ REQUERIMIENTO: Restablecer el filtro "Solo Pendientes" al cerrar
+    $('#chkSoloPendientes').prop('checked', true);
 
     console.log('✅ Modal cerrado y datos limpiados');
 }

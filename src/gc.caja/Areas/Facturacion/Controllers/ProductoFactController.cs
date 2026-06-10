@@ -82,7 +82,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 cantidad = cantidad,
                 bulto = bulto,
                 ctc_id = canalId,
-                cta_id = identificadorCliente,
+                cta_id = clienteActual?.Origen!="F"? identificadorCliente:string.Empty,
                 ctac_dto = clienteActual?.ctac_dto_operacion ?? 0
             };
 
