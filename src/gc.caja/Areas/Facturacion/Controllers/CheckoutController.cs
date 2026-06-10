@@ -184,7 +184,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 if (origenUpper == "F") // Consumidor Final
                 {
-                    ctaId = clienteActual.cta_documento ?? string.Empty;
+                    ctaId = string.Empty;
                     LP_Id = cajaActual.Caja.lp_id_min;
                     coTipo = "CF";
 
