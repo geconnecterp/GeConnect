@@ -178,6 +178,13 @@ function InicializaEventosSorteos() {
 
 		setTimeout(() => {
 			agregarHandlerCheckTodosLosProveedores();
+			var chequeado = $("#todos_los_prod_del_prov").is(":checked");
+			if (!chequeado) {
+				$('#btnAgregarCProducto').prop('disabled', false);
+			}
+			else {
+				$('#btnAgregarCProducto').prop('disabled', true);
+			}
 		}, 100);
 
 
