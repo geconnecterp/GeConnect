@@ -27,14 +27,15 @@
         Model.Modelo != ModeloFilter.CARGA_INVENTARIO &&
         Model.Modelo != ModeloFilter.ORDEN_DE_REPARTO &&
         Model.Modelo != ModeloFilter.CAJA_CORRECCION_VALORES &&
-        Model.Modelo != ModeloFilter.CAJA_CORRECCION_CUSTODIA)
+        Model.Modelo != ModeloFilter.CAJA_CORRECCION_CUSTODIA )
     {
         if (Model.Modelo != ModeloFilter.D_IMPOSITIVO &&
         Model.Modelo != ModeloFilter.OF_REPORTE &&
         Model.Modelo != ModeloFilter.MODIF_PRECIO &&
         Model.Modelo != ModeloFilter.PROV_SIN_MOD &&
         Model.Modelo != ModeloFilter.OF_REPORTE &&
-        Model.Modelo != ModeloFilter.PRECIO_LISTA)
+        Model.Modelo != ModeloFilter.PRECIO_LISTA &&
+        Model.Modelo != ModeloFilter.VENTA_SORTEO_CONSULTA)
         {
             <div class="col-md-2 col-sm-6">
                 <div class="d-flex justify-content-sm-center">
@@ -61,7 +62,8 @@
                 Model.Modelo == ModeloFilter.PROV_SIN_MOD ||
                 Model.Modelo == ModeloFilter.OF_REPORTE ||
                 Model.Modelo == ModeloFilter.PRESUPUESTO ||
-                Model.Modelo == ModeloFilter.PEDIDO_DE_CLIENTE)
+                Model.Modelo == ModeloFilter.PEDIDO_DE_CLIENTE ||
+                Model.Modelo == ModeloFilter.VENTA_SORTEO_CONSULTA)
             {
                 <div class="col-md-2 col-sm-6">
                     <div class="d-flex justify-content-sm-center">
@@ -85,7 +87,8 @@
             Model.Modelo != ModeloFilter.OF_REPORTE &&
             Model.Modelo != ModeloFilter.MODIF_PRECIO &&
             Model.Modelo != ModeloFilter.PROV_SIN_MOD &&
-            Model.Modelo != ModeloFilter.D_IMPOSITIVO)
+            Model.Modelo != ModeloFilter.D_IMPOSITIVO &&
+            Model.Modelo != ModeloFilter.VENTA_SORTEO_CONSULTA)
             {
                 <div class="col-md-4 col-sm-6">
                     <div class="d-flex justify-content-sm-center">

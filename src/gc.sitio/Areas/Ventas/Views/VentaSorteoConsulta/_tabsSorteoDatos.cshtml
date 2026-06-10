@@ -1,0 +1,42 @@
+﻿@{
+}
+<style>
+	.tab-disabled {
+		pointer-events: none;
+		opacity: 0.5; /* opcional, para que se note que está deshabilitado */
+	}
+
+</style>
+<div class="d-flex align-items-center w-100 mt-2">
+	<ul class="nav nav-tabs nav-tabs-golden" role="tablist" id="tabsSorteoInfo">
+		<li class="nav-item" role="presentation" id="tabSorteoDatos">
+			<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-dat" aria-controls="navs-top-dat" aria-selected="true" id="btnTabSorteoDatos">
+				Datos
+			</button>
+		</li>
+		<li class="nav-item" role="presentation" id="tabSorteoComprobantes">
+			<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-com" aria-controls="navs-top-com" aria-selected="false" tabindex="-1" id="btnTabSorteoComprobantes">
+				Comprobantes
+			</button>
+		</li>
+		<li class="nav-item" role="presentation" id="tabSorteoAnalisis">
+			<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-ana" aria-controls="navs-top-ana" aria-selected="false" tabindex="-2" id="btnTabSorteoAnalisis">
+				Análisis
+			</button>
+		</li>
+	</ul>
+</div>
+<div class="tab-content tab-content-compact">
+	<div class="tab-pane fade tab-content-golden show active" id="navs-top-dat" role="tabpanel">
+		<div id="divSorteoDatos">
+		</div>
+	</div>
+	<div class="tab-pane fade tab-content-golden" id="navs-top-com" role="tabpanel">
+		<div id="divSorteoComprobantes">
+		</div>
+	</div>
+	<div class="tab-pane fade tab-content-golden" id="navs-top-ana" role="tabpanel">
+		<div id="divSorteoAnalisis">
+		</div>
+	</div>
+</div>

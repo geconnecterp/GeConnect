@@ -115,7 +115,7 @@ namespace gc.sitio.Areas.Ventas.Controllers
 
 				var sorteo = await _apiVentasServicio.ObtenerSorteoDatos(so_sorteo, TokenCookie);
 				if (!sorteo.Ok)
-					throw new NegocioException(sorteo.Mensaje ?? "No se ha podido sorteo.");
+					throw new NegocioException(sorteo.Mensaje ?? "No se ha podido obtener los datos del sorteo.");
 
 				if (sorteo.ListaEntidad == null || sorteo.ListaEntidad.Count() == 0)
 					throw new NegocioException("No se encontraron los datos del Sorteo");

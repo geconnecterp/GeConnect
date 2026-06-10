@@ -1064,7 +1064,7 @@ function buscarSorteos(pag = 1) {
 	_pedidoLoading = true;
 	pagina = pag;
 	try {
-		AbrirWaiting("Buscando Pedidos de Cliente...")
+		AbrirWaiting("Buscando Sorteos...")
 		const filtros = buildQueryFilters(pag);
 		const url = buscarSorteoListaUrl;
 		PostGenHtml(filtros, url, function (html) {

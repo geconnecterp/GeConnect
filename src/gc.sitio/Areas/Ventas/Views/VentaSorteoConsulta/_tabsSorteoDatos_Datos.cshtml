@@ -1,0 +1,257 @@
+﻿@model SorteoDatosModel
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	.fixed-width-card {
+		padding-left: 0px;
+		padding-right: 0px;
+	}
+
+	.input-editable {
+		padding: 0 4px;
+		height: 24px;
+		text-align: right;
+	}
+
+	.error-range {
+		background-color: #ffdddd !important;
+	}
+
+	.input-editable {
+		height: 18px !important; /* más compacto */
+		padding: 0 1px !important; /* mínimo padding */
+		font-size: 0.70rem !important; /* letra más chica */
+		font-weight: normal !important; /* NO negrita */
+		line-height: 1 !important;
+		text-align: right !important; /* consistente con números */
+		border-radius: 2px !important;
+	}
+
+	/* /* #tbSorteoAdm td {
+		padding-top: 1px !important;
+		padding-bottom: 1px !important;
+	}
+
+		#tbSorteoAdm th:nth-child(2),
+		#tbSorteoAdm td:nth-child(2) {
+			width: auto !important;
+		}
+
+		#tbSorteoAdm th:nth-child(3),
+		#tbSorteoAdm td:nth-child(3),
+		#tbSorteoAdm th:nth-child(4),
+		#tbSorteoAdm td:nth-child(4) {
+			width: 75px !important;
+			min-width: 75px !important;
+			max-width: 75px !important;
+		} */ */
+
+	.disabled-cell {
+		background-color: #f2f2f2 !important;
+		cursor: not-allowed !important;
+	}
+
+	.fixed-width-card {
+		padding-left: 0px;
+		padding-right: 0px;
+	}
+
+	.btn-eliminar-producto {
+		padding: 0 !important;
+		margin: 0 !important;
+		width: 18px !important;
+		height: 18px !important;
+		line-height: 18px !important;
+		display: inline-flex !important;
+		align-items: center !important;
+		justify-content: center !important;
+		border-radius: 2px !important;
+	}
+
+		.btn-eliminar-producto i {
+			font-size: 0.70rem !important;
+			line-height: 1 !important;
+		}
+</style>
+<div class="row g-2" id="divSorteoDatosLayout">
+
+	<!-- Columna 1: Datos del sorteo -->
+	<div class="col-4">
+		<div id="divSorteoDatosCard" class="card mb-2 fixed-width-card">
+			<div class="card-header py-1">
+				<h6 class="mb-0">Datos del Pedido</h6>
+			</div>
+			<div class="card-body p-2">
+				<div class="row g-2">
+					<div class="row">
+						<div class="col-md-2">
+							<label for="so_sorteo" class="form-label form-label-sm mb-1">ID</label>
+							<input type="text" class="form-control form-control-sm" id="so_sorteo" name="so_sorteo"
+								   value="@Model?.Datos?.so_sorteo" readonly />
+						</div>
+						<div class="col-md-10">
+							<label for="so_desc" class="form-label form-label-sm mb-1">Nombre</label>
+							<input type="text" class="form-control form-control-sm" id="so_desc" name="so_desc"
+								   value="@Model?.Datos?.so_desc" readonly />
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-3">
+							<label for="so_desde" class="form-label form-label-sm mb-1">Desde</label>
+							<input type="date" class="form-control form-control-sm" id="so_desde" name="so_desde"
+								   value="@Model?.Datos?.so_desde.ToString("yyyy-MM-dd")" readonly />
+						</div>
+						<div class="col-md-3">
+							<label for="so_hasta" class="form-label form-label-sm mb-1">Hasta</label>
+							<input type="date" class="form-control form-control-sm" id="so_hasta" name="so_hasta"
+								   value="@Model?.Datos?.so_hasta.ToString("yyyy-MM-dd")" readonly />
+						</div>
+						<input type="hidden" id="cta_id" name="cta_id" value="@Model?.Datos?.cta_id" />
+						<div class="col-md-6">
+							<label for="cta_denominacion" class="form-label form-label-sm mb-1">Proveedor</label>
+							<input type="text" class="form-control form-control-sm" id="cta_denominacion" name="cta_denominacion"
+								   value="@Model?.Datos?.cta_denominacion" readonly />
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-8">
+							<div class="form-check form-check-inline form-switch mb-2">
+								<input asp-for="Datos.todos_los_prod_del_prov" class="form-check-input" type="checkbox" disabled />
+								<label asp-for="Datos.todos_los_prod_del_prov" class="form-check-label">Todos los Productos del Proveedor</label>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-8">
+							<label for="tipo_valor" class="form-label form-label-sm mb-1">Evalúa:</label>
+							<select id="tipo_valor" name="tipo_valor" class="form-select form-select-sm" disabled>
+								<option value="I" selected="@(Model?.Datos?.so_inclusion_tipo == 'I')">Importe</option>
+								<option value="C" selected="@(Model?.Datos?.so_inclusion_tipo == 'C')">Cantidad</option>
+							</select>
+							<label for="acumula_valor" class="form-label form-label-sm mb-1">En Condición de:</label>
+							<select id="acumula_valor" name="acumula_valor" class="form-select form-select-sm" disabled>
+								<option value="T" selected="@(Model?.Datos?.so_inclusion_acumula == 'T')">Para todos los Productos</option>
+								<option value="P" selected="@(Model?.Datos?.so_inclusion_acumula == 'P')">Para cada Producto</option>
+							</select>
+						</div>
+						<div class="col-md-4">
+							<label for="so_inclusion_valor" class="form-label form-label-sm mb-1">Valor:</label>
+							<input type="text" class="form-control form-control-sm input-numero" id="so_inclusion_valor" name="so_inclusion_valor"
+								   value="@Model?.Datos?.so_inclusion_valor" readonly />
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Columna 2: Sucursales -->
+	<div class="col-4">
+		<div id="divSorteoTablaSucursales" class="card mb-2 fixed-width-card">
+			<div class="card-header py-1">
+				<h6 class="mb-0">Sucursales</h6>
+			</div>
+			<div class="card-body p-1">
+				<div class="row g-2">
+					<div class="table-responsive table-wrapper-300">
+						<table class="table table-sm table-hover mb-0 table-golden" id="tbSorteoAdm">
+							<thead class="sticky-top table-golden-header-compact">
+								<tr class="header">
+									<th class="text-center">Id</th>
+									<th class="text-center">Sucursal</th>
+									<th class="text-center">N° Desde</th>
+									<th class="text-center">N° Hasta</th>
+									<th class="text-center">
+										<input type="checkbox" id="chkAllIncluye" />
+									</th>
+								</tr>
+							</thead>
+							<tbody>
+								@if (Model == null || Model.Sucursales == null || Model.Sucursales.ListaDatos == null || !Model.Sucursales.ListaDatos.Any())
+								{
+									<tr class="fila-vacia">
+										<td colspan="9" class="text-center text-muted py-2">
+											<i class="bx bx-info-circle me-1"></i>
+											No hay items para mostrar.
+										</td>
+									</tr>
+								}
+								else
+								{
+									foreach (var item in Model.Sucursales.ListaDatos)
+									{
+										if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+										<tr class="@clase row-sorteo-adm"
+											data-so-sorteo="@item.so_sorteo"
+											data-adm-id="@item.adm_id"
+											data-adm-nombre="@item.adm_nombre">
+											<td class="text-center">@item.adm_id</td>
+											<td class="text-start">@item.adm_nombre</td>
+											<td class="text-end">@item.so_nro_desde</td>
+											<td class="text-end">@item.so_nro_hasta</td>
+											<td class="text-center">
+												<input type="checkbox" class="chkIncluye" @(item.incluido ? "checked" : "") disabled/>
+											</td>
+										</tr>
+									}
+								}
+							</tbody>
+						</table>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Columna 3: Productos -->
+	<div class="col-4">
+		<div id="divSorteoTablaProductos" class="card mb-2 fixed-width-card">
+			<div class="card-header py-1">
+				<h6 class="mb-0">Productos</h6>
+			</div>
+			<div class="card-body p-1">
+				<div class="row g-2">
+					<div class="table-responsive table-wrapper-300">
+						<table class="table table-sm table-hover mb-0 table-golden" id="tbSorteoProd">
+							<thead class="sticky-top table-golden-header-compact">
+								<tr class="header">
+									<th class="text-center">Código</th>
+									<th class="text-center">Descripción</th>
+								</tr>
+							</thead>
+							<tbody>
+								@if (Model == null || Model.Productos == null || Model.Productos.ListaDatos == null || !Model.Productos.ListaDatos.Any())
+								{
+									<tr class="fila-vacia">
+										<td colspan="2" class="text-center text-muted py-2">
+											<i class="bx bx-info-circle me-1"></i>
+											No hay items para mostrar.
+										</td>
+									</tr>
+								}
+								else
+								{
+									foreach (var item in Model.Productos.ListaDatos)
+									{
+										if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+										<tr class="@clase row-sorteo-prod"
+											data-so-sorteo="@item.so_sorteo"
+											data-p-id="@item.p_id"
+											data-p-desc="@item.p_desc">
+											<td class="text-center">@item.p_id</td>
+											<td class="text-start">@item.p_desc</td>
+										</tr>
+									}
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</div>

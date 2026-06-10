@@ -102,6 +102,7 @@ namespace gc.infraestructura.Constantes
 			public const string CAJA_CORRECCION_CUSTODIA = "CAJA_CORRECCION_CUSTODIA";
 
 			public const string VENTA_SORTEO_CARGA = "VENTA_SORTEO_CARGA";
+			public const string VENTA_SORTEO_CONSULTA = "VENTA_SORTEO_CONSULTA";
 		}
     }
 }

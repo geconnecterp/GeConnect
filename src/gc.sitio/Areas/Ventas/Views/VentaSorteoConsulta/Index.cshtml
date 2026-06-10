@@ -1,0 +1,68 @@
+﻿@using gc.infraestructura.Dtos.Almacen
+@model FiltroVtaSorteoCargaModel
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+	var filtro = new QueryFilters() { Modelo = ModeloFilter.VENTA_SORTEO_CONSULTA, Rel01 = [], Rel02 = [], Rel03 = [], Rel04 = [] };
+	List<ProductoListaDto> listaVacia = new();
+}
+@section styles {
+	<link rel="stylesheet" href="~/css/simplePagination.css" />
+	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+}
+<style>
+	.card-header {
+		min-height: 28px !important;
+		padding-top: 1px !important;
+		padding-bottom: 1px !important;
+	}
+</style>
+<partial name="_botonera" model="filtro" />
+<div class="collapse" id="divFiltro">
+	<div class="d-flex justify-content-center">
+		<partial name="_filtros" model="Model" />
+	</div>
+	@Html.Hidden("pagEstado", false)
+</div>
+<div class="collapse" id="divDetalle"></div>
+
+<div class="row mt-2 py-1">
+	<div class="col-12" id="divTabsSorteo" style="display:none">
+	</div>
+</div>
+<div id="modalGestorDocumental"></div>
+
+@section scripts {
+	<script type="text/javascript">
+		let totalRegs = 0;
+		let pagRegs = 0;
+		let pags = 0;
+		let pagina = 1;
+		let search = "";
+
+		let cargarTabsInicialUrl = "@Url.Action("CargarTabsInicial", "ventasorteoconsulta", new { area = "Ventas" })";
+		let buscarSorteoListaUrl = "@Url.Action("BuscarSorteoLista", "ventasorteoconsulta", new { area = "Ventas" })";
+		let buscarMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "ventasorteoconsulta", new { area = "Ventas" })';
+		let homePedido = '@Url.Action("index", "ventasorteoconsulta", new { area = "Ventas" })';
+		let obtenerSorteoDatosUrl = "@Url.Action("ObtenerSorteoDatos", "ventasorteoconsulta", new { area = "Ventas" })";
+		let autoComRel011Url = "@Url.Action("BuscarCuentas", "ventasorteocarga", new { area = "Ventas" })";
+		let obtenerSorteoTablasUrl = "@Url.Action("ObtenerSorteoTablas", "ventasorteocarga", new { area = "Ventas" })";
+		let obtenerSorteoTablasSucursalesUrl = "@Url.Action("ObtenerSorteoTablasSucursales", "ventasorteocarga", new { area = "Ventas" })";
+		let obtenerSorteoTablasProductosUrl = "@Url.Action("ObtenerSorteoTablasProductos", "ventasorteocarga", new { area = "Ventas" })";
+		let nuevoSorteoUrl =  "@Url.Action("NuevoSorteo", "ventasorteocarga", new { area = "Ventas" })";
+		let confirmarSorteoUrl = "@Url.Action("ConfirmarSorteo", "ventasorteocarga", new { area = "Ventas" })";
+
+		// Gestor de impresión
+		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+		var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+		var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+		var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "GestorImpresion", new { area = "ControlComun" })";
+	</script>
+	<script src="~/js/plugins/jquery.simplePagination.js"></script>
+	<script src="~/js/app/siteGen.js"></script>@**@
+	<script src="~/lib/jstree/jstree.min.js"></script>
+	<script src="~/js/app/areas/docmngr/docmanager.js"></script>
+
+	<script src="~/js/app/areas/ventas/ventasorteoconsulta/sorteoconsulta.js" type="text/javascript"></script>
+}
