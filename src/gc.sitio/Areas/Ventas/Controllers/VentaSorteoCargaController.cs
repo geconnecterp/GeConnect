@@ -250,8 +250,8 @@ namespace gc.sitio.Areas.Ventas.Controllers
 					return Json(new { ok = false, mensaje = "Los datos de confirmación no fueron recepcionados. Verifique." });
 
 				// Validaciones de entrada
-				if (dto == null || dto.Datos == null || string.IsNullOrEmpty(dto.Datos.cta_id))
-					return Json(new { ok = false, mensaje = "Los datos del sorteo son requeridos" });
+				if (dto == null || dto.Datos == null || (string.IsNullOrEmpty(dto.Datos.cta_id) && dto.Datos.so_participan == 'A'))
+					return Json(new { ok = false, error = true, mensaje = "Los datos de la cuenta son requeridos." });
 
 				var prods = JsonConvert.SerializeObject(dto.Productos);
 				ConfirmarSorteoRequest request = new()

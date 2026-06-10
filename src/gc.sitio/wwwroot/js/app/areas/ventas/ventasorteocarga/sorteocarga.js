@@ -353,6 +353,10 @@ function reajustarClasesAlternadas() {
 }
 
 function validarCliente() {
+	var chequeado = $("#todos_los_prod_del_prov").is(":checked");
+	if (!chequeado) {
+		return true;
+	}
 	// Caso 1: Sorteo nuevo → se usa Rel01B
 	const rel01 = $("#Rel01B");
 	if (rel01.length && !rel01.prop("readonly")) {
@@ -426,7 +430,7 @@ function validarSorteo(abm) {
 	var chequeado = $("#todos_los_prod_del_prov").is(":checked");
 	if (!chequeado) {
 		const productos = obtenerProductosDelGrid();
-		if (!productos || productos.length === 0) {
+		if (!productos || productos.length === undefined || productos.length === 0) {
 			return { esValido: false, mensaje: 'Debe agregar al menos un producto al sorteo.' };
 		}
 	}
@@ -843,26 +847,48 @@ function eliminarSorteo() {
 
 		console.log('📦 DTO de eliminación:', confirmacionDto);
 
-		$.ajax({
-			url: confirmarPedidoUrl,
-			type: 'POST',
-			contentType: 'application/json; charset=utf-8', // ⚠️ CRUCIAL
-			data: JSON.stringify(confirmacionDto), // ⚠️ SERIALIZAR EXPLÍCITAMENTE
-			dataType: 'json',
-			success: function (response) {
-				CerrarWaiting();
-				procesarRespuestaEliminacion(response);
-			},
-			error: function (xhr, status, error) {
-				CerrarWaiting();
-				console.error('❌ Error al anular pedido:', error);
-				console.error('❌ Response:', xhr.responseText);
-				ControlaMensajeError(
-					'Error al anular pedido: ' +
-					(xhr.responseJSON?.mensaje || xhr.statusText || 'Error desconocido')
-				);
+		PostGen(confirmacionDto, confirmarSorteoUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true || obj.warn === true) {
+				console.error('❌ Response:', obj.msg);
+				AbrirMensaje("ATENCIÓN", 'Error al intentar anular el sorteo: ' + (obj.msg || 'Error desconocido'), function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
 			}
+			else {
+				procesarRespuestaEliminacion(obj);
+			}
+		}, function (error, xhr) {
+			CerrarWaiting();
+			console.error('❌ Error al anular sorteo:', error);
+			console.error('❌ Response:', xhr.responseText);
+			ControlaMensajeError(
+				'Error al anular el sorteo: ' +
+				(xhr.responseJSON?.mensaje || xhr.statusText || 'Error desconocido')
+			);
 		});
+
+		//$.ajax({
+		//	url: confirmarSorteoUrl,
+		//	type: 'POST',
+		//	contentType: 'application/json; charset=utf-8', // ⚠️ CRUCIAL
+		//	data: JSON.stringify(confirmacionDto), // ⚠️ SERIALIZAR EXPLÍCITAMENTE
+		//	dataType: 'json',
+		//	success: function (response) {
+		//		CerrarWaiting();
+		//		procesarRespuestaEliminacion(response);
+		//	},
+		//	error: function (xhr, status, error) {
+		//		CerrarWaiting();
+		//		console.error('❌ Error al anular pedido:', error);
+		//		console.error('❌ Response:', xhr.responseText);
+		//		ControlaMensajeError(
+		//			'Error al anular pedido: ' +
+		//			(xhr.responseJSON?.mensaje || xhr.statusText || 'Error desconocido')
+		//		);
+		//	}
+		//});
 	} catch (error) {
 		CerrarWaiting();
 		console.error('❌ Error al construir DTO:', error);
@@ -875,12 +901,12 @@ function procesarRespuestaEliminacion(response) {
 
 	if (response.error || response.warn) {
 		if (response.error) {
-			ControlaMensajeError(response.mensaje || 'Error al anular el pedido');
+			ControlaMensajeError(response.mensaje || 'Error al anular el sorteo');
 			return;
 		}
 		else //warn
 		{
-			ControlaMensajeWarning(response.mensaje || 'Atención al intentar anular el pedido');
+			ControlaMensajeWarning(response.mensaje || 'Atención al intentar anular el sorteo');
 			return;
 		}
 
