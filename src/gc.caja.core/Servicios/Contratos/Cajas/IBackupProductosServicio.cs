@@ -48,5 +48,14 @@ namespace gc.caja.core.Servicios.Contratos.Cajas
         /// <param name="usuarioId">ID del usuario</param>
         /// <returns>True si se eliminó correctamente, False en caso contrario</returns>
         Task<bool> EliminarProducto(int item, string cajaId, string usuarioId);
+
+        /// <summary>
+        /// ✅ NUEVO v2.0: Guarda una lista de productos en bloque, reemplazando el backup actual
+        /// </summary>
+        /// <param name="productos"></param>
+        /// <param name="cajaId"></param>
+        /// <param name="usuarioId"></param>
+        /// <returns></returns>
+        Task<bool> GuardarProductosEnBloque(List<ProductoDatosResponseDto> productos, string cajaId, string usuarioId);
     }
 }

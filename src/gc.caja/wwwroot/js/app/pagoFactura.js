@@ -4044,6 +4044,24 @@ function actualizarTotalesPago() {
     $('#btnAgregarPago').prop('disabled', !puedeAgregar);
     $('#btnFinalizarPago').prop('disabled', !puedeFinalizar);
 
+    // ═══════════════════════════════════════════════════════════
+    // ✅ MEJORA UX: FINALIZACIÓN AUTOMÁTICA
+    // ═══════════════════════════════════════════════════════════
+    // Si el pago está completo (diferencia es cero) y hay al menos un valor,
+    // se dispara la finalización automáticamente para ahorrar un clic.
+    if (puedeFinalizar && Math.abs(diferencia) < 0.01 && valoresPago.length > 0) {
+        console.log('═══════════════════════════════════════════════════');
+        console.log('🚀 DISPARANDO FINALIZACIÓN AUTOMÁTICA');
+        console.log('   Razón: El pago está completo (diferencia cero)');
+        console.log('═══════════════════════════════════════════════════');
+
+        // Usamos un pequeño timeout para que el usuario perciba la actualización
+        // de la UI (diferencia en $0.00) antes de que comience el proceso final.
+        setTimeout(() => {
+            finalizarPago();
+        }, 500); // 500ms de delay para una mejor UX
+    }
+
     console.log('✅ Totales y botones actualizados correctamente');
 }
 
