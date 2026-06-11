@@ -642,6 +642,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "Datos inválidos" });
                 }
 
+                //SanitizarObjeto(request);
+
                 _logger?.LogInformation($"   Request recibido:");
                 _logger?.LogInformation($"   - caja_id: {request.caja_id}");
                 _logger?.LogInformation($"   - usu_id: {request.usu_id}");
@@ -1185,7 +1187,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 int productosAgregados = 0;
                 int erroresEncontrados = 0;
                 var errores = new List<string>();
-                int itemCorrelativo = 1; // ✅ NUEVO: Contador de items
+               // int itemCorrelativo = 1; // ✅ NUEVO: Contador de items
 
                 _logger?.LogInformation($"✅ Inicio de iteración de {cpf_nros.Count} pre-facturas");
 
@@ -1242,7 +1244,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                                     // ═══════════════════════════════════════════════════
                                     // ✅ SECCIÓN 1: IDENTIFICACIÓN
                                     // ═══════════════════════════════════════════════════
-                                    item = itemCorrelativo++, // ✅ CRÍTICO: Item correlativo
+                                    item = 0, // ✅ CRÍTICO: Item correlativo
                                     p_id = producto.p_id ?? string.Empty,
                                     p_id_barrado = producto.p_id_barrado ?? string.Empty,
                                     p_desc = producto.p_desc ?? string.Empty,
@@ -1322,7 +1324,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                                 productosAcumulados.Add(productoJson);
                                 productosAgregados++;
 
-                                _logger?.LogInformation($"  ✅ Producto {itemCorrelativo - 1}: {producto.p_desc} (Cant: {producto.cantidad_tot})");
+                                _logger?.LogInformation($"  ✅ Producto agregado: {producto.p_desc} (Cant: {producto.cantidad_tot})");
                             }
                         }
                         else

@@ -94,6 +94,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "Error: No se recibieron datos del pago" });
                 }
 
+                // ✅ PASO 1: SANEAR EL OBJETO DTO COMPLETO CON UNA SOLA LLAMADA
+                SanitizarObjeto(pagoDto);
+
                 _logger?.LogInformation($"✅ pagoDto recibido: Valores={pagoDto.Valores?.Count ?? 0}, Uniones={pagoDto.Uniones?.Count ?? 0}");
 
                 // ❸ VALIDAR DATOS DE CAJA

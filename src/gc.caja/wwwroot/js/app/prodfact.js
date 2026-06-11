@@ -1105,7 +1105,7 @@ function incrementarCantidadProducto(indice, cantidadAIncrementar) {
  */
 function agregarProductoAGrilla(producto) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('➕ AGREGANDO/ACTUALIZANDO PRODUCTO v13.0');
+    console.log('➕ AGREGANDO/ACTUALIZANDO PRODUCTO v13.1 (Frontend-Driven Item)');
     console.log('═══════════════════════════════════════════════════');
     console.log('   Producto recibido:', producto);
     console.log(`   🔧 Modo Acumulación: ${cajaAcumulaProductos ? 'ACUMULA ✅' : 'NO ACUMULA ❌'}`);
@@ -1220,7 +1220,7 @@ function agregarProductoAGrilla(producto) {
     }
 
     // ═══════════════════════════════════════════════════════════════════
-    // ✅ ACTUALIZADO v2.2: CÁLCULO DE ITEM CORRELATIVO
+    // ✅ ACTUALIZADO v13.1: CÁLCULO DE ITEM CORRELATIVO CENTRALIZADO
     // ═══════════════════════════════════════════════════════════════════
 
     let siguienteItem;
@@ -1235,12 +1235,8 @@ function agregarProductoAGrilla(producto) {
         console.log(`📊 Item correlativo calculado: ${siguienteItem}`);
     }
 
-    // ✅ VALIDACIÓN CRÍTICA: El item debe ser consistente con el servidor
-    // Si el producto viene del servidor con un item específico, respetarlo
-    if (producto.item && producto.item > 0) {
-        siguienteItem = producto.item;
-        console.log(`⚠️ Item recibido del servidor: ${siguienteItem} (se respeta)`);
-    }
+    // ✅ ELIMINADO: Se elimina la condición que respetaba el item del servidor.
+    // if (producto.item && producto.item > 0) { ... }
 
     // ═══════════════════════════════════════════════════════════════════
     // CONTINUAR CON LA NORMALIZACIÓN Y AGREGAR PRODUCTO...
@@ -1260,7 +1256,7 @@ function agregarProductoAGrilla(producto) {
     const poLimiteNormalizado = normalizarNumero(producto.po_limite, 0);
 
     const productoNormalizado = {
-        item: siguienteItem, // ✅ Item calculado correctamente
+        item: siguienteItem, // ✅ Item calculado SIEMPRE por el frontend
         p_id: producto.p_id || '???',
         p_id_barrado: producto.p_id_barrado || '',
         p_desc: producto.p_desc || 'Sin descripción',
