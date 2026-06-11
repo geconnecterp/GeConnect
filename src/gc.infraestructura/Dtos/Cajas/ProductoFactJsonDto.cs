@@ -1,7 +1,62 @@
-﻿namespace gc.infraestructura.Dtos.Cajas
+﻿using gc.infraestructura.Dtos.Cajas.Request;
+
+namespace gc.infraestructura.Dtos.Cajas
 {
     public class ProductoFactJsonDto
     {
+        public ProductoFactJsonDto()
+        {
+           
+        }
+
+        /// <summary>
+        /// ✅ NUEVO v1.0: Constructor que mapea desde ProductoDatosResponseDto.
+        /// Resuelve el error de conversión en ProductoFactController.
+        /// </summary>
+        /// <param name="p">El objeto de respuesta del servicio de productos.</param>
+        public ProductoFactJsonDto(ProductoDatosResponseDto p)
+        {
+            p_id = p.p_id ?? string.Empty;
+            p_id_barrado = p.p_id_barrado ?? string.Empty;
+            p_desc = p.p_desc ?? string.Empty;
+            p_pcosto = p.p_pcosto;
+            p_pcosto_repo = p.p_pcosto_repo;
+            in_alicuota = p.in_alicuota;
+            p_in = p.p_in;
+            iva_situacion = p.iva_situacion ?? string.Empty;
+            iva_alicuota = p.iva_alicuota;
+            p_iva = p.p_iva;
+            po = p.po;
+            po_limite = (int)p.po_limite;
+            p_pneto = p.p_pneto;
+            p_margen_imp = 0; // Valor por defecto, ya que no viene en el DTO de origen
+            p_margen_vig = 0; // Valor por defecto
+            p_pvta = p.p_pvta;
+            lp_prevision_tot = 0; // Valor por defecto
+            lp_prevision_pin = 0; // Valor por defecto
+            cantidad_tot = p.cantidad_tot;
+            p_pvta_tot = p.p_pvta * p.cantidad_tot; // Cálculo directo
+            bultos = 0; // Valor por defecto
+            cm_gravado = p.cm_gravado;
+            cm_no_gravado = p.cm_no_gravado;
+            cm_exento = p.cm_exento;
+            cm_iva = p.cm_iva;
+            cm_ii = p.cm_ii;
+            cm_dto = p.cm_dto;
+            cm_dto_porc = p.cm_dto_porc;
+            cta_id = p.cta_id ?? string.Empty;
+            pre_id = p.pre_id ?? string.Empty;
+            cpf_nro = p.cpf_nro ?? string.Empty;
+            cmb_p_id = string.Empty; // Valor por defecto
+            cmd_cmb = string.Empty; // Valor por defecto
+            cmd_cmb_id = string.Empty; // Valor por defecto
+            cmd_cmb_dto = 0; // Valor por defecto
+            cmd_cmb_cant = 0; // Valor por defecto
+            cmd_cmb_desc = string.Empty; // Valor por defecto
+            barre = string.Empty; // Valor por defecto
+            item = p.item;
+        }
+
         public string p_id { get; set; }= string.Empty;
         public string p_id_barrado { get; set; } = string.Empty;
         public string p_desc { get; set; } = string.Empty;  

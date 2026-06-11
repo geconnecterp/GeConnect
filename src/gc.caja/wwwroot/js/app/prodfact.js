@@ -104,27 +104,68 @@ function obtenerConfiguracionCaja() {
  */
 function configurarListenersIntegracion() {
     console.log('🔧 Configurando listeners de integración...');
-    
+
     // ✅ Escuchar evento personalizado cuando se confirma un cliente
-    $(document).on('clienteConfirmado', function(event, clienteData) {
+    $(document).on('clienteConfirmado', function (event, clienteData) {
         console.log('═══════════════════════════════════════════════════');
         console.log('📡 EVENTO RECIBIDO: clienteConfirmado');
         console.log('═══════════════════════════════════════════════════');
         console.log('Datos del cliente:', clienteData);
-        
+
         // Guardar cliente actual
         clienteActualFactura = clienteData;
-        
+
         // Mostrar sección de productos
         mostrarSeccionProductos(clienteData);
     });
-    
+
     // ✅ Escuchar evento quando se cancela/limpia el cliente
-    $(document).on('clienteCancelado', function() {
+    $(document).on('clienteCancelado', function () {
         console.log('📡 EVENTO RECIBIDO: clienteCancelado');
         ocultarSeccionProductos();
     });
-    
+
+    /**
+     * ✅ ACTUALIZADO v3.1: Listener para pre-facturas confirmadas.
+     * CORREGIDO: Ya no limpia la grilla. Añade los productos a los existentes.
+     */
+    $(document).on('preFacturasConfirmadas', function (event, productos) {
+        console.log('📦 EVENTO RECIBIDO: preFacturasConfirmadas v3.1');
+
+        if (!productos || productos.length === 0) {
+            console.warn('⚠️ Evento preFacturasConfirmadas recibido sin productos.');
+            return;
+        }
+
+        console.log(`   ➕ Añadiendo ${productos.length} productos de pre-factura a la grilla existente.`);
+
+        // ❌ ELIMINADO: La llamada a limpiarGrillaProductos() que causaba el reemplazo.
+        // limpiarGrillaProductos();
+
+        // ✅ ITERAR y AÑADIR cada producto nuevo.
+        // La función agregarProductoAGrilla se encargará de calcular el 'item' correlativo
+        // y añadirlo como una nueva fila, ya que los productos de pre-factura
+        // tienen la excepción de no acumulación.
+        productos.forEach(producto => {
+            agregarProductoAGrilla(producto);
+        });
+
+        console.log(`✅ Proceso de pre-factura completado. Total de productos en grilla: ${productosFactura.length}`);
+
+        // Opcional: Mostrar un mensaje de éxito más claro
+        $('#mensajeEstadoProducto')
+            .removeClass('text-info text-danger text-muted text-warning')
+            .addClass('text-success')
+            .html(`<i class='bx bx-check-circle'></i> ${productos.length} productos de pre-factura agregados.`);
+
+        setTimeout(() => {
+            $('#mensajeEstadoProducto')
+                .removeClass('text-success text-danger text-info text-warning')
+                .addClass('text-muted')
+                .html('Presione <kbd>Enter</kbd> o <strong>BUSCAR</strong> para agregar producto');
+        }, 5000);
+    });
+
     console.log('✅ Listeners de integración configurados');
 }
 

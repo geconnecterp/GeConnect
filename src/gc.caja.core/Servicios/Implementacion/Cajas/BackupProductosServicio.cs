@@ -30,6 +30,73 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore
         };
 
+        /// <summary>
+        /// ✅ NUEVO v3.0: Guarda una lista de productos en el archivo de backup en una sola operación.
+        /// Optimizado para cargas masivas como las pre-facturas.
+        /// </summary>
+        public async Task<bool> GuardarProductosEnBloque(List<ProductoDatosResponseDto> productos, string cajaId, string usuarioId)
+        {
+            try
+            {
+                _logger.LogInformation("═══════════════════════════════════════════════════");
+                _logger.LogInformation("💾 GUARDANDO PRODUCTOS EN BLOQUE EN BACKUP v3.0");
+                _logger.LogInformation($"   Total productos a guardar: {productos.Count}");
+                _logger.LogInformation($"   Caja: {cajaId}, Usuario: {usuarioId}");
+                _logger.LogInformation("═══════════════════════════════════════════════════");
+
+                if (productos == null || !productos.Any())
+                {
+                    _logger.LogWarning("⚠️ La lista de productos está vacía. No hay nada que guardar.");
+                    return true; // No es un error, simplemente no hay trabajo que hacer.
+                }
+
+                // ❶ Buscar archivo más reciente
+                string? rutaArchivo = ObtenerRutaArchivoMasReciente(cajaId, usuarioId);
+
+                // ❷ Si no existe archivo, inicializar uno nuevo
+                if (rutaArchivo == null || !File.Exists(rutaArchivo))
+                {
+                    _logger.LogWarning("⚠️ Archivo de backup no existe, inicializando...");
+                    await InicializarBackup(cajaId, usuarioId);
+                    rutaArchivo = ObtenerRutaArchivoMasReciente(cajaId, usuarioId);
+
+                    if (rutaArchivo == null)
+                    {
+                        _logger.LogError("❌ No se pudo crear archivo de backup para la operación en bloque.");
+                        return false;
+                    }
+                }
+
+                // ❸ Leer contenido actual
+                string jsonActual = await File.ReadAllTextAsync(rutaArchivo);
+                var backupData = JsonConvert.DeserializeObject<BackupDataDto>(jsonActual);
+
+                if (backupData == null)
+                {
+                    _logger.LogError("❌ Error al deserializar backup existente con Newtonsoft.Json para la operación en bloque.");
+                    return false;
+                }
+
+                // ❹ Agregar la nueva lista de productos a la existente
+                backupData.Productos.AddRange(productos);
+                backupData.FechaUltimaActualizacion = DateTime.Now;
+                backupData.CantidadProductos = backupData.Productos.Count;
+
+                // ❺ Escribir archivo actualizado
+                string jsonActualizado = JsonConvert.SerializeObject(backupData, _jsonSettings);
+                await File.WriteAllTextAsync(rutaArchivo, jsonActualizado);
+
+                _logger.LogInformation($"✅ Bloque de productos guardado. Total productos en backup: {backupData.CantidadProductos}");
+                _logger.LogInformation($"   Archivo: {Path.GetFileName(rutaArchivo)}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Error al guardar productos en bloque en el backup.");
+                return false;
+            }
+        }
+
         // ✅ AGREGAR DESPUÉS DEL MÉTODO InicializarBackup
 
         /// <summary>
