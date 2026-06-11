@@ -1259,5 +1259,98 @@ namespace gc.caja.Controllers
                 TipoLlamada = tipoLlamada
             };
         }
+
+        /// <summary>
+        /// Sanea recursivamente todas las propiedades de tipo string de un objeto para prevenir errores de formato en JSON y otros parsers.
+        /// Utiliza reflexión para inspeccionar el objeto, incluyendo listas y objetos anidados.
+        /// </summary>
+        /// <typeparam name="T">El tipo del objeto a sanear.</typeparam>
+        /// <param name="obj">La instancia del objeto a procesar.</param>
+        protected void SanitizarObjeto<T>(T obj)
+        {
+            // Si el objeto es nulo o no es una clase, no hay nada que hacer.
+            if (obj == null || !obj.GetType().IsClass)
+            {
+                return;
+            }
+
+            // Obtener todas las propiedades del objeto.
+            var properties = obj.GetType().GetProperties();
+
+            foreach (var property in properties)
+            {
+                // Solo procesar propiedades que se pueden leer y escribir.
+                if (!property.CanRead || !property.CanWrite)
+                {
+                    continue;
+                }
+
+                // CASO 1: La propiedad es un string.
+                if (property.PropertyType == typeof(string))
+                {
+                    var originalValue = (string)property.GetValue(obj);
+                    if (!string.IsNullOrEmpty(originalValue))
+                    {
+                        // Limpiar la cadena de caracteres problemáticos.
+                        // Aquí se pueden agregar más reemplazos si es necesario.
+                        var sanitizedValue = originalValue
+                            .Replace("\"", "'") // Reemplaza comillas dobles por simples.
+                            .Replace("\n", " ")
+                            .Replace("\r", " ")
+                            .Replace("\t", " ");
+
+                        // Asignar el valor saneado de nuevo a la propiedad.
+                        property.SetValue(obj, sanitizedValue.Trim());
+                    }
+                }
+                // CASO 2: La propiedad es una lista o un array.
+                else if (typeof(System.Collections.IEnumerable).IsAssignableFrom(property.PropertyType) && property.PropertyType != typeof(string))
+                {
+                    var collection = property.GetValue(obj) as System.Collections.IEnumerable;
+                    if (collection != null)
+                    {
+                        // Iterar sobre cada elemento de la colección y sanearlo recursivamente.
+                        foreach (var item in collection)
+                        {
+                            SanitizarObjeto(item);
+                        }
+                    }
+                }
+                // CASO 3: La propiedad es otro objeto (anidado).
+                else if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
+                {
+                    // Sanear el objeto anidado recursivamente.
+                    SanitizarObjeto(property.GetValue(obj));
+                }
+            }
+        }
+
+
+        // Este método debería agregarse a la clase base `ControladorBaseCaja`
+        // para que esté disponible en ambos controladores.
+
+        /// <summary>
+        /// Sanea una cadena de texto para evitar errores en la serialización JSON.
+        /// Escapa las comillas dobles y las barras invertidas.
+        /// </summary>
+        /// <param name="input">La cadena de texto a sanear.</param>
+        /// <returns>La cadena saneada, o una cadena vacía si la entrada es nula.</returns>
+        protected string SanitizarStringParaJson(string? input)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return string.Empty;
+            }
+
+            // Escapar caracteres especiales para JSON
+            // 1. Escapar barras invertidas (debe hacerse primero)
+            // 2. Escapar comillas dobles
+            // 3. Reemplazar saltos de línea y tabulaciones para mayor seguridad
+            return input.Replace("\\", "\\\\")
+                        .Replace("\"", "\\\"")
+                        .Replace("\n", "\\n")
+                        .Replace("\r", "\\r")
+                        .Replace("\t", "\\t");
+        }
     }
 }

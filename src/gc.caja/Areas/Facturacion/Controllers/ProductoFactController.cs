@@ -642,6 +642,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "Datos inválidos" });
                 }
 
+                //SanitizarObjeto(request);
+
                 _logger?.LogInformation($"   Request recibido:");
                 _logger?.LogInformation($"   - caja_id: {request.caja_id}");
                 _logger?.LogInformation($"   - usu_id: {request.usu_id}");
@@ -1108,8 +1110,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
         }
 
         /// <summary>
-        /// ✅ NUEVO: Obtiene productos de múltiples pre-facturas y acumula en sesión
-        /// CORREGIDO: Mapeo COMPLETO de todos los campos del DTO ProductoFactJsonDto
+        /// ✅ ACTUALIZADO v3.0: Obtiene productos de pre-facturas y los guarda en backup.
+        /// Ahora invoca a IBackupProductosServicio.GuardarProductosEnBloque antes de retornar.
         /// </summary>
         /// <param name="cpf_nros">Lista de códigos de pre-factura (cpf_nro)</param>
         /// <returns>JSON con productos acumulados o error</returns>
@@ -1125,7 +1127,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return redirectResult;
 
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
-                _logger?.LogInformation("📦 OBTENER PRODUCTOS DE PRE-FACTURAS - INICIO v2.0");
+                _logger?.LogInformation("📦 OBTENER PRODUCTOS DE PRE-FACTURAS - INICIO v3.0 (CON BACKUP)");
                 _logger?.LogInformation($"   Cantidad de pre-facturas: {cpf_nros?.Count ?? 0}");
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
@@ -1180,12 +1182,11 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "Error: Datos incompletos del cliente" });
                 }
 
-                // ❺ INICIALIZAR LISTA DE ACUMULACIÓN EN SESIÓN
-                var productosAcumulados = new List<ProductoFactJsonDto>();
+                // ❺ INICIALIZAR LISTA DE ACUMULACIÓN
+                var productosAcumulados = new List<ProductoDatosResponseDto>();
                 int productosAgregados = 0;
                 int erroresEncontrados = 0;
                 var errores = new List<string>();
-                int itemCorrelativo = 1; // ✅ NUEVO: Contador de items
 
                 _logger?.LogInformation($"✅ Inicio de iteración de {cpf_nros.Count} pre-facturas");
 
@@ -1205,7 +1206,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     {
                         // ❼ INVOCAR MÉTODO ENCAPSULADO (REUTILIZABLE)
                         var resultado = await ObtenerProductoDatosCommon(
-                            tipoValor: "F",           // ✅ Tipo Pre-Factura
+                            tipoValor: "F",
                             valor: cpf_nro.Trim().PadLeft(6, '0'),
                             listaPreciosId,
                             canalId,
@@ -1224,105 +1225,15 @@ namespace gc.caja.Areas.Facturacion.Controllers
                             continue;
                         }
 
-                        // ❾ ACUMULAR PRODUCTOS EN LISTA DE SESIÓN CON MAPEO COMPLETO
-                        if (resultado.ListaEntidad != null && resultado.ListaEntidad.Count > 0)
+                        // ❾ ACUMULAR PRODUCTOS VÁLIDOS
+                        if (resultado.ListaEntidad != null && resultado.ListaEntidad.Any())
                         {
-                            foreach (var producto in resultado.ListaEntidad)
+                            var productosValidos = resultado.ListaEntidad.Where(p => p.respuesta == 0).ToList();
+                            if (productosValidos.Any())
                             {
-                                // ✅ VALIDAR QUE EL PRODUCTO SEA VÁLIDO (respuesta = 0)
-                                if (producto.respuesta != 0)
-                                {
-                                    _logger?.LogWarning($"⚠️ Producto {producto.p_id} omitido: {producto.respuesta_msj}");
-                                    continue;
-                                }
-
-                                // ✅ MAPEO COMPLETO: Convertir ProductoDatosDto a ProductoFactJsonDto
-                                var productoJson = new ProductoFactJsonDto
-                                {
-                                    // ═══════════════════════════════════════════════════
-                                    // ✅ SECCIÓN 1: IDENTIFICACIÓN
-                                    // ═══════════════════════════════════════════════════
-                                    item = itemCorrelativo++, // ✅ CRÍTICO: Item correlativo
-                                    p_id = producto.p_id ?? string.Empty,
-                                    p_id_barrado = producto.p_id_barrado ?? string.Empty,
-                                    p_desc = producto.p_desc ?? string.Empty,
-
-                                    // ═══════════════════════════════════════════════════
-                                    // ✅ SECCIÓN 2: PRECIOS BASE
-                                    // ═══════════════════════════════════════════════════
-                                    p_pcosto = producto.p_pcosto,
-                                    p_pcosto_repo = producto.p_pcosto_repo,
-                                    p_pneto = producto.p_pneto,
-                                    p_pvta = producto.p_pvta,
-
-                                    // ═══════════════════════════════════════════════════
-                                    // ✅ SECCIÓN 3: CANTIDAD Y PRECIO TOTAL
-                                    // ═══════════════════════════════════════════════════
-                                    cantidad_tot = producto.cantidad_tot,
-                                    p_pvta_tot = producto.p_pvta * producto.cantidad_tot,
-
-                                    // ═══════════════════════════════════════════════════
-                                    // ✅ SECCIÓN 4: IVA
-                                    // ═══════════════════════════════════════════════════
-                                    iva_situacion = producto.iva_situacion ?? string.Empty,
-                                    iva_alicuota = producto.iva_alicuota,
-                                    p_iva = producto.p_iva,
-
-                                    // ═══════════════════════════════════════════════════
-                                    // ✅ SECCIÓN 5: IMPUESTOS INTERNOS
-                                    // ═══════════════════════════════════════════════════
-                                    in_alicuota = producto.in_alicuota,
-                                    p_in = producto.p_in,
-
-                                    // ═══════════════════════════════════════════════════
-                                    // ✅ SECCIÓN 6: PRECIO DE OFERTA
-                                    // ═══════════════════════════════════════════════════
-                                    po = producto.po,
-                                    po_limite = producto.po_limite,
-
-                                    // ═══════════════════════════════════════════════════
-                                    // ✅ SECCIÓN 7: MÁRGENES (SI EL SP LOS RETORNA)
-                                    // ═══════════════════════════════════════════════════
-                                    p_margen_imp = 0,// producto.p_margen_imp??0,
-                                    p_margen_vig = 0,// producto.p_margen_vig??0,
-
-                                    // ═══════════════════════════════════════════════════
-                                    // ✅ SECCIÓN 8: TOTALES CALCULADOS POR COMPROBANTE
-                                    // ═══════════════════════════════════════════════════
-                                    cm_gravado = producto.cm_gravado,
-                                    cm_no_gravado = producto.cm_no_gravado,
-                                    cm_exento = producto.cm_exento,
-                                    cm_iva = producto.cm_iva,
-                                    cm_ii = producto.cm_ii,
-
-                                    // ═══════════════════════════════════════════════════
-                                    // ✅ SECCIÓN 9: DESCUENTOS (OPCIONALES)
-                                    // ═══════════════════════════════════════════════════
-                                    cm_dto = producto.cm_dto,
-                                    cm_dto_porc = producto.cm_dto_porc,
-
-                                    // ═══════════════════════════════════════════════════
-                                    // ✅ SECCIÓN 10: TRAZABILIDAD DE ORIGEN
-                                    // ═══════════════════════════════════════════════════
-                                    cta_id = identificadorCliente, // ✅ Cliente actual (no del producto)
-                                    pre_id = producto.pre_id,
-                                    cpf_nro = cpf_nro, // ✅ Código de pre-factura actual
-
-                                    // ═══════════════════════════════════════════════════
-                                    // ✅ SECCIÓN 11: COMBOS (SI APLICA)
-                                    // ═══════════════════════════════════════════════════
-                                    //cmb_p_id = producto.cmb_p_id ?? string.Empty,
-                                    //cmb = producto.cmb ?? string.Empty,
-                                    //cmb_id = producto.cmb_id,
-                                    //cmb_dto = producto.cmb_dto,
-                                    //cmb_cant = producto.cmb_cant,
-                                    //cmb_desc = producto.cmb_desc
-                                };
-
-                                productosAcumulados.Add(productoJson);
-                                productosAgregados++;
-
-                                _logger?.LogInformation($"  ✅ Producto {itemCorrelativo - 1}: {producto.p_desc} (Cant: {producto.cantidad_tot})");
+                                productosAcumulados.AddRange(productosValidos);
+                                productosAgregados += productosValidos.Count;
+                                _logger?.LogInformation($"  ✅ {productosValidos.Count} productos válidos agregados desde {cpf_nro}");
                             }
                         }
                         else
@@ -1338,9 +1249,33 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     }
                 }
 
-                // ❿ GUARDAR PRODUCTOS ACUMULADOS EN SESIÓN
-                FacturaProductos = productosAcumulados;
-                _logger?.LogInformation($"✅ Total productos en sesión: {productosAcumulados.Count}");
+                // ❿ GUARDAR PRODUCTOS ACUMULADOS EN SESIÓN Y BACKUP
+                if (productosAcumulados.Any())
+                {
+                    // ✅ ACTUALIZADO v3.0: Guardar en backup ANTES de retornar
+                    _logger.LogInformation("💾 Intentando guardar productos de pre-factura en backup...");
+                    bool backupExitoso = await _backupServicio.GuardarProductosEnBloque(
+                        productosAcumulados,
+                        cajaActual.CajaId ?? string.Empty,
+                        UserName ?? string.Empty
+                    );
+
+                    if (!backupExitoso)
+                    {
+                        // Si el backup falla, se loguea una advertencia pero no se detiene el flujo.
+                        // El usuario podrá trabajar, pero los datos no estarán respaldados.
+                        _logger.LogWarning("⚠️ El guardado en backup de los productos de la pre-factura falló. La operación continuará sin respaldo.");
+                    }
+                    else
+                    {
+                        _logger.LogInformation("✅ Productos de pre-factura guardados en backup exitosamente.");
+                    }
+
+                    // Guardar en sesión para el frontend
+                    FacturaProductos = productosAcumulados.Select(p => new ProductoFactJsonDto(p)).ToList();
+                    _logger?.LogInformation($"✅ Total productos en sesión: {productosAcumulados.Count}");
+                }
+
 
                 stopwatch.Stop();
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
@@ -1372,7 +1307,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     productosAgregados = productosAgregados,
                     totalProductos = productosAcumulados.Count,
                     errores = errores.Count > 0 ? errores : null,
-                    producto = productosAcumulados // ✅ CRÍTICO: Mismo nombre que ObtenerProductoDatos
+                    productos = productosAcumulados // ✅ CRÍTICO: Nombre de propiedad corregido a 'productos'
                 });
             }
             catch (Exception ex)

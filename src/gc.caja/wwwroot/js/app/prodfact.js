@@ -104,27 +104,68 @@ function obtenerConfiguracionCaja() {
  */
 function configurarListenersIntegracion() {
     console.log('🔧 Configurando listeners de integración...');
-    
+
     // ✅ Escuchar evento personalizado cuando se confirma un cliente
-    $(document).on('clienteConfirmado', function(event, clienteData) {
+    $(document).on('clienteConfirmado', function (event, clienteData) {
         console.log('═══════════════════════════════════════════════════');
         console.log('📡 EVENTO RECIBIDO: clienteConfirmado');
         console.log('═══════════════════════════════════════════════════');
         console.log('Datos del cliente:', clienteData);
-        
+
         // Guardar cliente actual
         clienteActualFactura = clienteData;
-        
+
         // Mostrar sección de productos
         mostrarSeccionProductos(clienteData);
     });
-    
+
     // ✅ Escuchar evento quando se cancela/limpia el cliente
-    $(document).on('clienteCancelado', function() {
+    $(document).on('clienteCancelado', function () {
         console.log('📡 EVENTO RECIBIDO: clienteCancelado');
         ocultarSeccionProductos();
     });
-    
+
+    /**
+     * ✅ ACTUALIZADO v3.1: Listener para pre-facturas confirmadas.
+     * CORREGIDO: Ya no limpia la grilla. Añade los productos a los existentes.
+     */
+    $(document).on('preFacturasConfirmadas', function (event, productos) {
+        console.log('📦 EVENTO RECIBIDO: preFacturasConfirmadas v3.1');
+
+        if (!productos || productos.length === 0) {
+            console.warn('⚠️ Evento preFacturasConfirmadas recibido sin productos.');
+            return;
+        }
+
+        console.log(`   ➕ Añadiendo ${productos.length} productos de pre-factura a la grilla existente.`);
+
+        // ❌ ELIMINADO: La llamada a limpiarGrillaProductos() que causaba el reemplazo.
+        // limpiarGrillaProductos();
+
+        // ✅ ITERAR y AÑADIR cada producto nuevo.
+        // La función agregarProductoAGrilla se encargará de calcular el 'item' correlativo
+        // y añadirlo como una nueva fila, ya que los productos de pre-factura
+        // tienen la excepción de no acumulación.
+        productos.forEach(producto => {
+            agregarProductoAGrilla(producto);
+        });
+
+        console.log(`✅ Proceso de pre-factura completado. Total de productos en grilla: ${productosFactura.length}`);
+
+        // Opcional: Mostrar un mensaje de éxito más claro
+        $('#mensajeEstadoProducto')
+            .removeClass('text-info text-danger text-muted text-warning')
+            .addClass('text-success')
+            .html(`<i class='bx bx-check-circle'></i> ${productos.length} productos de pre-factura agregados.`);
+
+        setTimeout(() => {
+            $('#mensajeEstadoProducto')
+                .removeClass('text-success text-danger text-info text-warning')
+                .addClass('text-muted')
+                .html('Presione <kbd>Enter</kbd> o <strong>BUSCAR</strong> para agregar producto');
+        }, 5000);
+    });
+
     console.log('✅ Listeners de integración configurados');
 }
 
@@ -1105,7 +1146,7 @@ function incrementarCantidadProducto(indice, cantidadAIncrementar) {
  */
 function agregarProductoAGrilla(producto) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('➕ AGREGANDO/ACTUALIZANDO PRODUCTO v13.0');
+    console.log('➕ AGREGANDO/ACTUALIZANDO PRODUCTO v13.1 (Frontend-Driven Item)');
     console.log('═══════════════════════════════════════════════════');
     console.log('   Producto recibido:', producto);
     console.log(`   🔧 Modo Acumulación: ${cajaAcumulaProductos ? 'ACUMULA ✅' : 'NO ACUMULA ❌'}`);
@@ -1220,7 +1261,7 @@ function agregarProductoAGrilla(producto) {
     }
 
     // ═══════════════════════════════════════════════════════════════════
-    // ✅ ACTUALIZADO v2.2: CÁLCULO DE ITEM CORRELATIVO
+    // ✅ ACTUALIZADO v13.1: CÁLCULO DE ITEM CORRELATIVO CENTRALIZADO
     // ═══════════════════════════════════════════════════════════════════
 
     let siguienteItem;
@@ -1235,12 +1276,8 @@ function agregarProductoAGrilla(producto) {
         console.log(`📊 Item correlativo calculado: ${siguienteItem}`);
     }
 
-    // ✅ VALIDACIÓN CRÍTICA: El item debe ser consistente con el servidor
-    // Si el producto viene del servidor con un item específico, respetarlo
-    if (producto.item && producto.item > 0) {
-        siguienteItem = producto.item;
-        console.log(`⚠️ Item recibido del servidor: ${siguienteItem} (se respeta)`);
-    }
+    // ✅ ELIMINADO: Se elimina la condición que respetaba el item del servidor.
+    // if (producto.item && producto.item > 0) { ... }
 
     // ═══════════════════════════════════════════════════════════════════
     // CONTINUAR CON LA NORMALIZACIÓN Y AGREGAR PRODUCTO...
@@ -1260,7 +1297,7 @@ function agregarProductoAGrilla(producto) {
     const poLimiteNormalizado = normalizarNumero(producto.po_limite, 0);
 
     const productoNormalizado = {
-        item: siguienteItem, // ✅ Item calculado correctamente
+        item: siguienteItem, // ✅ Item calculado SIEMPRE por el frontend
         p_id: producto.p_id || '???',
         p_id_barrado: producto.p_id_barrado || '',
         p_desc: producto.p_desc || 'Sin descripción',

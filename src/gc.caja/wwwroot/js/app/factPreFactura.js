@@ -596,14 +596,13 @@ function confirmarPreFacturas() {
  */
 function cargarProductosDePrefacturas(cpf_nros) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('📦 CARGAR PRODUCTOS DE PRE-FACTURAS v2.4');
+    console.log('📦 CARGAR PRODUCTOS DE PRE-FACTURAS v3.0 (CORREGIDO)');
     console.log(`   Total a procesar: ${cpf_nros.length}`);
     console.log('═══════════════════════════════════════════════════');
 
     // ❶ VALIDACIÓN DE ENTRADA
     if (!cpf_nros || !Array.isArray(cpf_nros) || cpf_nros.length === 0) {
         console.error('❌ Lista de cpf_nros inválida');
-        // ✅ ACTUALIZADO v2.4: Uso de mostrarMensajeEstado
         mostrarMensajeEstado('No hay pre-facturas para procesar', 'warning');
         return;
     }
@@ -648,34 +647,35 @@ function cargarProductosDePrefacturas(cpf_nros) {
             }
 
             // ❻ VALIDAR QUE HAYA PRODUCTOS
-            if (!response.producto || !Array.isArray(response.producto) || response.producto.length === 0) {
-                console.warn('⚠️ No se recibieron productos');
-                // ✅ ACTUALIZADO v2.4: Uso de mostrarMensajeEstado
+            // ✅ CORREGIDO: La propiedad se llama 'productos' (en plural) en el JSON de respuesta del controller.
+            if (!response.productos || !Array.isArray(response.productos) || response.productos.length === 0) {
+                console.warn('⚠️ No se recibieron productos en la respuesta.');
                 mostrarMensajeEstado('No se encontraron productos en las pre-facturas seleccionadas', 'info', 7000);
                 return;
             }
 
-            // ❼ PROCESAR PRODUCTOS (igual que en prodfact.js)
-            console.log(`✅ ${response.producto.length} productos recibidos`);
+            // ❼ ✅ CORRECCIÓN CRÍTICA: Delegar la responsabilidad a prodfact.js
+            // En lugar de agregar los productos aquí, disparamos un evento para que
+            // el gestor principal de la grilla (prodfact.js) los maneje.
+            console.log(`📡 Disparando evento 'preFacturasConfirmadas' con ${response.productos.length} productos.`);
+            $(document).trigger('preFacturasConfirmadas', [response.productos]);
 
-            // Iterar y agregar cada producto a la grilla
-            response.producto.forEach((producto, index) => {
-                console.log(`   [${index + 1}] ${producto.p_desc} - Cant: ${producto.cantidad_tot}`);
 
-                // Agregar a grilla usando función de prodfact.js
-                agregarProductoAGrilla(producto);
-            });
+            // ❌ ELIMINADO: El bucle que llamaba a agregarProductoAGrilla directamente.
+            // response.producto.forEach((producto, index) => {
+            //     agregarProductoAGrilla(producto);
+            // });
 
-            // ❽ MENSAJE DE ÉXITO
+            // ❽ MENSAJE DE ÉXITO (opcional, ya que prodfact.js mostrará el suyo)
+            // Se puede mantener un mensaje general aquí si se desea.
             const mensaje = response.errores && response.errores.length > 0
                 ? `${response.mensaje} - Errores: ${response.errores.join(', ')}`
                 : response.mensaje;
 
-            // ✅ ACTUALIZADO v2.4: Uso de mostrarMensajeEstado
             mostrarMensajeEstado(mensaje, 'success', 7000);
 
             console.log('═══════════════════════════════════════════════════');
-            console.log('✅ PRODUCTOS DE PRE-FACTURAS CARGADOS EXITOSAMENTE');
+            console.log('✅ PROCESO DELEGADO A PRODFACT.JS EXITOSAMENTE');
             console.log('═══════════════════════════════════════════════════');
         },
         error: function (xhr, status, error) {
@@ -704,7 +704,6 @@ function cargarProductosDePrefacturas(cpf_nros) {
                 mensajeError = 'Se agotó el tiempo de espera. Intente nuevamente.';
             }
 
-            // ✅ ACTUALIZADO v2.4: Uso de mostrarMensajeEstado (aunque esté en modal)
             mostrarMensajeEstado(mensajeError, 'danger', 7000);
         }
     });
