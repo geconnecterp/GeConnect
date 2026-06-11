@@ -2,13 +2,12 @@
 using gc.api.core.Contratos.Servicios;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Productos.Pedidos;
 using gc.infraestructura.Dtos.Ventas;
 using gc.infraestructura.Dtos.Ventas.Request;
 using gc.infraestructura.Dtos.Ventas.Request.Sorteo;
 using Microsoft.Data.SqlClient;
-using Org.BouncyCastle.Ocsp;
 
 namespace gc.api.core.Servicios
 {
@@ -572,6 +571,33 @@ namespace gc.api.core.Servicios
 				return new RespuestaDto() { resultado = -1, resultado_msj = "No se Recepcionó respuesta del proceso." };
 			}
 			return respuesta[0];
+		}
+
+		public List<SorteoComptesDto> ObtenerSorteoComptesLista(SorteoCompteRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_SORTEOS_COMPTES;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@so_sorteo", request.so_sorteo),
+			 };
+
+			var result = _repository.EjecutarLstSpExt<SorteoComptesDto>(sp, ps, true);
+			return result;
+		}
+
+		public List<SorteoAnalisisProdDto> ObtenerSorteoAnalisisProdLista(SorteoAnalisisProdRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_SORTEOS_ANALISIS_PROD;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@so_sorteo", request.so_sorteo),
+				new SqlParameter("@adm_id", request.adm_id),
+			 };
+
+			var result = _repository.EjecutarLstSpExt<SorteoAnalisisProdDto>(sp, ps, true);
+			return result;
 		}
 	}
 }

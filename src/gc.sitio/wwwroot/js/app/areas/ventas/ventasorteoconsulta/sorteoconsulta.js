@@ -1,9 +1,121 @@
 ﻿let soSorteoSeleccionado = null;
 let _pedidoLoading = false;
+let tabsSorteosPendientes = 0;
+
+const TabToTableMap = {
+	"navs-top-dat": "#tbDatos",
+	"navs-top-com": "#tbGridSorteoComptes",
+	"navs-top-ana": "#tbGridSorteoAnalisisProd"
+};
+
 $(function () {
 	InicializaPantallaPedido();
 	InicializaEventosSorteos();
 });
+
+function FinalizarCargaDetalle() {
+	tabsSorteosPendientes--;
+
+	if (tabsSorteosPendientes <= 0) {
+		CerrarWaiting();
+	}
+}
+
+function EvaluarBotonImprimir(tabId) {
+	console.log("Evaluando botón imprimir para tab:", tabId);
+	const tablaSelector = TabToTableMap[tabId];
+	if (!tablaSelector) {
+		console.log("tablaSelector:", tablaSelector);
+		$("#btnImprimir").hide();
+		return;
+	}
+
+	const $tabla = $(tablaSelector);
+
+	// Si la tabla no existe o no tiene filas de datos
+	if ($tabla.length === 0 || $tabla.find("tbody tr").length === 0) {
+		console.log("$tabla.length:", $tabla.length);
+		console.log("$tabla.find(tbody tr).length:", $tabla.find("tbody tr").length);
+		$("#btnImprimir").hide();
+		return;
+	}
+
+	// Si tiene datos → mostrar botón
+	$("#btnImprimir").show();
+	if (tablaSelector == "tbGridSorteoComptes") {
+		$(document).off("click", "#btnImprimir").on("click", "#btnImprimir", ControlaImprRepoSorteoComptes);
+	}
+	else {
+		$(document).off("click", "#btnImprimir").on("click", "#btnImprimir", ControlaImprRepoSorteoAnaProds);
+	}
+	// Guardamos el tab actual para imprimir
+	$("#btnImprimir").data("tab-activo", tabId);
+}
+
+function ControlaImprRepoSorteoComptes() {
+	var filas = $("#tbGridSorteoComptes tbody tr[data-so-sorteo]").length;
+	if (filas == 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos para imprimir.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Imprimiendo listado...");
+		var tipoReporte = 1;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				CerrarWaiting();
+				ImpimirRepoSorteoComptes();
+			}
+		});
+	}
+}
+
+function ImpimirRepoSorteoComptes() {
+}
+
+function ControlaImprRepoSorteoAnaProds() {
+	var filas = $("#tbGridSorteoAnalisisProd tbody tr[data-so-sorteo]").length;
+	if (filas == 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos para imprimir.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Imprimiendo listado...");
+		var tipoReporte = 2;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				CerrarWaiting();
+				ImpimirRepoSorteoAnaProds();
+			}
+		});
+	}
+}
+
+function ImpimirRepoSorteoAnaProds() {
+
+}
 
 function InicializaEventosSorteos() {
 	$(document).off("click", "#btnImprimir");
@@ -109,7 +221,7 @@ function configurarEventosSeleccionDeSorteo() {
 			// Ejecutar funciones de carga
 			let data = { so_sorteo: soSorteo };
 			//cargarReporteEnArre(62, data, "Pedido de Cliente", "", "");
-			//cargarSorteoDatos(soSorteo);
+			tabsSorteosPendientes = 3; // ← cantidad de tabs a cargar
 			//cargarSorteoTablas(soSorteo);
 			cargarTabs();
 
@@ -128,30 +240,95 @@ function configurarEventosSeleccionDeSorteo() {
 }
 
 function cargarTabs() {
+	AbrirWaiting("Cargando datos del sorteo...")
 	var data = {};
 	PostGenHtml(data, cargarTabsInicialUrl, function (html) {
 		$("#divTabsSorteo").html(html).show();
 		// Cargar datos de los tabs internos
 		setTimeout(() => {
 			cargarTabsDatos();
+			cargarTabsComptes();
+			cargarTabsAnaProds();
 		}, 200);
 		// Debug - ayuda a identificar estados del sistema
 		console.log("cargarSorteoDatos N°: ", soSorteoSeleccionado,
 			"Permite edición:", true);
 		CerrarWaiting();
 	});
+	FinalizarCargaDetalle(); // ← marcar como completado
 }
 
 function cargarTabsDatos() {
-	AbrirWaiting("Cargando datos del sorteo...")
 	var data = { so_sorteo: soSorteoSeleccionado };
 	PostGenHtml(data, obtenerSorteoDatosUrl, function (html) {
 		$("#divSorteoDatos").html(html);
-		CerrarWaiting();
+		FinalizarCargaDetalle(); // ← marcar como completado
+		setTimeout(() => {
+			EvaluarBotonImprimir("navs-top-dat")
+		}, 1000);
 		console.log("cargarSorteoTablas N°: ", soSorteoSeleccionado,
 			"Permite edición:", true);
-		CerrarWaiting();
 	});
+}
+
+function cargarTabsComptes() {
+	var data = { so_sorteo: soSorteoSeleccionado };
+	PostGenHtml(data, obtenerSorteoComptesUrl, function (html) {
+		$("#divSorteoComprobantes").html(html);
+		InicializarEventosTabComptes();
+		FinalizarCargaDetalle(); // ← marcar como completado
+		setTimeout(() => {
+			EvaluarBotonImprimir("navs-top-com")
+		}, 1000);
+		console.log("cargarSorteoComptes N°: ", soSorteoSeleccionado,
+			"Permite edición:", true);
+	});
+}
+
+function InicializarEventosTabComptes() {
+	$(document).off("click", "#tbGridSorteoComptes tbody tr");
+	$(document).on("click", "#tbGridSorteoComptes tbody tr", function (e) {
+
+		if ($(e.target).is("button, a, .btn, i")) return;
+
+		const $nuevaFila = $(this);
+		ProcesarSeleccionFilaEnTabComptes($nuevaFila);
+	});
+}
+
+function ProcesarSeleccionFilaEnTabComptes($nuevaFila) {
+	$("#tbGridSorteoComptes tbody tr").removeClass("selected-row");
+	$nuevaFila.addClass("selected-row");
+}
+
+function cargarTabsAnaProds() {
+	var data = { so_sorteo: soSorteoSeleccionado };
+	PostGenHtml(data, obtenerSorteoAnaProdsUrl, function (html) {
+		$("#divSorteoAnalisis").html(html);
+		InicializarEventosTabAnaProds();
+		FinalizarCargaDetalle(); // ← marcar como completado
+		setTimeout(() => {
+			EvaluarBotonImprimir("navs-top-ana")
+		}, 1000);
+		console.log("cargarSorteoAnaProds N°: ", soSorteoSeleccionado,
+			"Permite edición:", true);
+	});
+}
+
+function InicializarEventosTabAnaProds() {
+	$(document).off("click", "#tbGridSorteoAnalisisProd tbody tr");
+	$(document).on("click", "#tbGridSorteoAnalisisProd tbody tr", function (e) {
+
+		if ($(e.target).is("button, a, .btn, i")) return;
+
+		const $nuevaFila = $(this);
+		ProcesarSeleccionFilaEnTabAnaProds($nuevaFila);
+	});
+}
+
+function ProcesarSeleccionFilaEnTabAnaProds($nuevaFila) {
+	$("#tbGridSorteoAnalisisProd tbody tr").removeClass("selected-row");
+	$nuevaFila.addClass("selected-row");
 }
 
 function buildQueryFilters(pag) {

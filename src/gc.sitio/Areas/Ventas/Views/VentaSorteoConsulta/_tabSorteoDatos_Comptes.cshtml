@@ -1,0 +1,54 @@
+﻿@model GridCoreSmart<SorteoComptesDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+
+</style>
+<div class="table-responsive table-wrapper-500">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbGridSorteoComptes">
+		<thead class="sticky-top table-golden-header-compact">
+			<tr class="header">
+				<th class="text-center">N° Asignado</th>
+				<th class="text-center">Tipo</th>
+				<th class="text-center">N° Comprobante</th>
+				<th class="text-center">Cliente</th>
+				<th class="text-center">Proceso</th>
+				<th class="text-center">Cierre</th>
+				<th class="text-center">Sucursal</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+			{
+				<tr class="fila-vacia">
+					<td colspan="7" class="text-center text-muted py-2">
+						<i class="bx bx-info-circle me-1"></i>
+						No hay items para mostrar.
+					</td>
+				</tr>
+			}
+			else
+			{
+				foreach (var item in Model.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase row-entrega"
+						data-so-sorteo="@item.so_sorteo"
+						data-so-nro="@item.so_nro"
+						data-tco-id="@item.tco_id"
+						data-cm-compte="@item.cm_compte">
+						<td class="text-center">@item.so_nro</td>
+						<td class="text-start">@item.tco_desc</td>
+						<td class="text-center">@item.cm_compte</td>
+						<td class="text-start">@item.cta_denominacion</td>
+						<td class="text-center">@item.caja_nro_proceso</td>
+						<td class="text-center">@item.caja_nro_cierre</td>
+						<td class="text-start">@item.adm_nombre</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

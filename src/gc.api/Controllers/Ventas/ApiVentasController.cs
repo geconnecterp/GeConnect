@@ -2,6 +2,7 @@
 using gc.api.core.Contratos.Servicios;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenReparto;
@@ -520,6 +521,34 @@ namespace gc.api.Controllers.Ventas
 			}
 			var respuesta = _iApiVentasServicio.ConfirmarSorteo(req);
 			return Ok(new ApiResponse<RespuestaDto>(respuesta));
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<SorteoComptesDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerSorteoComptesLista(SorteoCompteRequest request)
+		{
+			ApiResponse<List<SorteoComptesDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _iApiVentasServicio.ObtenerSorteoComptesLista(request);
+			response = new ApiResponse<List<SorteoComptesDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<SorteoAnalisisProdDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerSorteoAnalisisProdLista(SorteoAnalisisProdRequest request)
+		{
+			ApiResponse<List<SorteoAnalisisProdDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _iApiVentasServicio.ObtenerSorteoAnalisisProdLista(request);
+			response = new ApiResponse<List<SorteoAnalisisProdDto>>(res);
+
+			return Ok(response);
 		}
 
 		private static MetadataGrid? BuildMetadata(List<SorteoCargaListaDto>? lista, QueryFilters filtro)

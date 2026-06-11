@@ -1,6 +1,6 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Productos.Pedidos;
 using gc.infraestructura.Dtos.Ventas;
 using gc.infraestructura.Dtos.Ventas.Request;
 
@@ -37,5 +37,7 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<RespuestaGenerica<SorteoCargaAdmDto>> ObtenerSorteoAdmDatos(string so_sorteo, string token);
 		Task<RespuestaGenerica<SorteoCargaProdDto>> ObtenerSorteoProdDatos(string so_sorteo, string token);
 		Task<RespuestaGenerica<RespuestaDto>> ConfirmarSorteo(ConfirmarSorteoRequest req, string token);
+		List<SorteoComptesDto> ObtenerSorteoComptesLista(SorteoCompteRequest request, string token);
+		List<SorteoAnalisisProdDto> ObtenerSorteoAnalisisProdLista(SorteoAnalisisProdRequest request, string token);
 	}
 }

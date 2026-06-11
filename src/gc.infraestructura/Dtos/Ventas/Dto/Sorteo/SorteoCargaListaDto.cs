@@ -1,5 +1,5 @@
 ﻿
-namespace gc.infraestructura.Dtos.Ventas
+namespace gc.infraestructura.Dtos
 {
 	public class SorteoCargaListaDto : Dto
 	{

@@ -4,10 +4,7 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
-using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Productos.Pedidos;
-using gc.infraestructura.Dtos.Users;
 using gc.infraestructura.Dtos.Ventas;
 using gc.infraestructura.Dtos.Ventas.Request;
 using gc.sitio.core.Servicios.Contratos;
@@ -53,6 +50,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string SORTEOS_ADM = "/sorteo/adm/";
 		private const string SORTEOS_PROD = "/sorteo/prod/";
 		private const string SORTEOS_CONFIRMAR = "/sorteo/confirmar";
+		private const string SORTEOS_COMPTES_LISTA = "/ObtenerSorteoComptesLista";
+		private const string SORTEOS_ANALISIS_PROD_LISTA = "/ObtenerSorteoAnalisisProdLista";
 
 
 		public ApiVentasServicio(IOptions<AppSettings> options, ILogger<ApiVentasServicio> logger) : base(options, logger, RutaAPI)
@@ -1422,6 +1421,68 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 				return new() { Ok = false, Mensaje = "Error al buscar Presupuestos" };
+			}
+		}
+
+		public List<SorteoComptesDto> ObtenerSorteoComptesLista(SorteoCompteRequest request, string token)
+		{
+			ApiResponse<List<SorteoComptesDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{SORTEOS_COMPTES_LISTA}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return [];
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<SorteoComptesDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public List<SorteoAnalisisProdDto> ObtenerSorteoAnalisisProdLista(SorteoAnalisisProdRequest request, string token)
+		{
+			ApiResponse<List<SorteoAnalisisProdDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{SORTEOS_ANALISIS_PROD_LISTA}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return [];
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<SorteoAnalisisProdDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
 			}
 		}
 	}

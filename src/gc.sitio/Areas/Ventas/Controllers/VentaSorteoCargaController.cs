@@ -2,8 +2,8 @@
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Productos.Pedidos;
 using gc.infraestructura.Dtos.Ventas;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Ventas.Models.VentaSorteoCarga;

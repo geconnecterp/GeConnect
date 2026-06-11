@@ -1,6 +1,6 @@
 ﻿using gc.api.core.Entidades;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Productos.Pedidos;
 using gc.infraestructura.Dtos.Ventas;
 using gc.infraestructura.Dtos.Ventas.Request;
 using gc.infraestructura.Dtos.Ventas.Request.Sorteo;
@@ -38,5 +38,7 @@ namespace gc.api.core.Contratos.Servicios
 		List<SorteoCargaAdmDto> ObtenerSorteoCargaAdm(string so_sorteo);
 		List<SorteoCargaProdDto> ObtenerSorteoCargaProd(string so_sorteo);
 		RespuestaDto ConfirmarSorteo(ConfirmarSorteoRequest request);
+		List<SorteoComptesDto> ObtenerSorteoComptesLista(SorteoCompteRequest request);
+		List<SorteoAnalisisProdDto> ObtenerSorteoAnalisisProdLista(SorteoAnalisisProdRequest request);
 	}
 }

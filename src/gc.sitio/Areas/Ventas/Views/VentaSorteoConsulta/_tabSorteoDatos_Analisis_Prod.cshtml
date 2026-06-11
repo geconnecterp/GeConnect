@@ -1,0 +1,56 @@
+﻿@model GridCoreSmart<SorteoAnalisisProdDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+
+</style>
+<div class="table-responsive table-wrapper-500">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbGridSorteoAnalisisProd">
+		<thead class="sticky-top table-golden-header-compact">
+			<tr class="header">
+				<th class="text-center">Sucursal</th>
+				<th class="text-center">ID</th>
+				<th class="text-center">Descripción</th>
+				<th class="text-center">EAN</th>
+				<th class="text-center">Proveedor</th>
+				<th class="text-center">Cant. Comptes</th>
+				<th class="text-center">Importe Comptes</th>
+				<th class="text-center">Cant. Productos</th>
+				<th class="text-center">Importe Productos</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+			{
+				<tr class="fila-vacia">
+					<td colspan="7" class="text-center text-muted py-2">
+						<i class="bx bx-info-circle me-1"></i>
+						No hay items para mostrar.
+					</td>
+				</tr>
+			}
+			else
+			{
+				foreach (var item in Model.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase row-entrega"
+						data-so-sorteo="@item.so_sorteo"
+						data-p-id="@item.p_id">
+						<td class="text-center">@item.adm_nombre</td>
+						<td class="text-center">@item.p_id</td>
+						<td class="text-start">@item.p_desc</td>
+						<td class="text-center">@item.p_id_barrado</td>
+						<td class="text-start">@item.cta_denominacion</td>
+						<td class="text-end">@item.cant_comptes</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.importe_comptes, TipoPrecio.Venta)</td>
+						<td class="text-end">@item.cant_prod</td>
+						<td class="text-end">@GridHelper.FormatearPrecio(item.importe_prod, TipoPrecio.Venta)</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

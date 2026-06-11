@@ -2,12 +2,17 @@
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Ventas;
+using gc.infraestructura.Dtos.Ventas.Request;
+using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Ventas.Models.VentaSorteoCarga;
 using gc.sitio.Areas.Ventas.Models.VentaSorteoConsulta;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using X.PagedList;
@@ -17,14 +22,28 @@ namespace gc.sitio.Areas.Ventas.Controllers
 	[Area("Ventas")]
 	public class VentaSorteoConsultaController : VentaSorteoConsultaControladorBase
 	{
+		//PARA MODULO DE IMPRESION
+		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
+		private AppModulo _modulo_1; //SORTEO_COMPROBANTES
+		private AppModulo _modulo_2; //SORTEO_ANALISIS_PROD
+		private string APP_MODULO_1 = AppModulos.SORTEO_COMPROBANTES.ToString();
+		private string APP_MODULO_2 = AppModulos.SORTEO_ANALISIS_PROD.ToString();
+		private readonly IDocManagerServicio _docMSv;
+
 		private readonly AppSettings _setting;
 		private readonly IApiVentasServicio _apiVentasServicio;
 
 		public VentaSorteoConsultaController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<VentaSorteoConsultaController> logger,
-											 IApiVentasServicio apiVentasServicio) : base(options, contexto, logger)
+											 IApiVentasServicio apiVentasServicio, IDocManagerServicio docManager, IOptions<DocsManager> docsManager) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_apiVentasServicio = apiVentasServicio;
+
+			//PARA MODULO DE IMPRESION
+			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
+			_modulo_1 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_1);
+			_modulo_2 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_2);
+			_docMSv = docManager; //instancio el servicio de impresión
 		}
 
 		public IActionResult Index()
@@ -176,7 +195,97 @@ namespace gc.sitio.Areas.Ventas.Controllers
 			}
 		}
 
+		[HttpPost]
+		public IActionResult ObtenerSorteoTablaComptes(string so_sorteo)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
 
+				if (so_sorteo == null) return PartialView("_gridMensaje", CrearRespuestaError("El Identificador del sorteo no fue recepcionado."));
+				var sorteoComptes = _apiVentasServicio.ObtenerSorteoComptesLista(new SorteoCompteRequest { so_sorteo = so_sorteo }, TokenCookie);
+
+				if (sorteoComptes == null || sorteoComptes.Count <= 0)
+					return PartialView("_tabSorteoDatos_Comptes", ObtenerGridCoreSmart<SorteoComptesDto>(new List<SorteoComptesDto>()));
+
+				return PartialView("_tabSorteoDatos_Comptes", ObtenerGridCoreSmart<SorteoComptesDto>(sorteoComptes));
+			}
+			catch (NegocioException ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaError("Error"));
+			}
+		}
+
+		[HttpPost]
+		public IActionResult ObtenerSorteoTablaAnalisisProd(string so_sorteo)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
+
+				if (so_sorteo == null) return PartialView("_gridMensaje", CrearRespuestaError("El Identificador del sorteo no fue recepcionado."));
+				var sorteoAnalisisProd = _apiVentasServicio.ObtenerSorteoAnalisisProdLista(new SorteoAnalisisProdRequest { so_sorteo = so_sorteo, adm_id = AdministracionId }, TokenCookie);
+
+				if (sorteoAnalisisProd == null || sorteoAnalisisProd.Count <= 0)
+					return PartialView("_tabSorteoDatos_Analisis_Prod", ObtenerGridCoreSmart<SorteoAnalisisProdDto>(new List<SorteoAnalisisProdDto>()));
+
+				return PartialView("_tabSorteoDatos_Analisis_Prod", ObtenerGridCoreSmart<SorteoAnalisisProdDto>(sorteoAnalisisProd));
+			}
+			catch (NegocioException ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaError("Error"));
+			}
+		}
+
+		public JsonResult SetearTipoDeReporte(int tipoReporte)
+		{
+			try
+			{
+				if (tipoReporte < 0)
+					return Json(new { error = true, warn = false, msg = "Debe seleccionar un tipo de reporte." });
+
+				string titulo = string.Empty;
+				switch ((TipoDeReporte)tipoReporte)
+				{
+					case TipoDeReporte.RepoSorteoComptes:
+						#region Gestor Impresion - Inicializacion de variables
+						titulo = "Reporte de Comprobante de Sorteo";
+						DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_1);
+						ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_1);
+						#endregion
+						break;
+					case TipoDeReporte.RepoSorteoAnalisisProd:
+						#region Gestor Impresion - Inicializacion de variables
+						titulo = "Reporte de Análisis de Productos de Sorteo";
+						DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_2);
+						ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_2);
+						#endregion
+						break;
+					default:
+						break;
+				}
+
+				return Json(new { error = false, warn = false, msg = "Tipo de reporte actualizado correctamente." });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar setear el tipo de reporte: {ex.Message}" });
+			}
+		}
 		#region Metodos Privados
 		private GridCoreSmart<SorteoCargaListaDto> GenerarGridPedidos(List<SorteoCargaListaDto> lista, int page, QueryFilters filtro)
 		{
@@ -213,6 +322,12 @@ namespace gc.sitio.Areas.Ventas.Controllers
 		{
 			model.Desde = DateTime.Now.AddDays(-7);
 			model.Hasta = DateTime.Now;
+		}
+
+		enum TipoDeReporte
+		{
+			RepoSorteoComptes = 1,
+			RepoSorteoAnalisisProd = 2,
 		}
 		#endregion
 	}

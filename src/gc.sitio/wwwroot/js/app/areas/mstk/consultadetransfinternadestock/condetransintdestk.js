@@ -324,12 +324,12 @@ function InicializarEventosTabRemito() {
 
 function ProcesarSeleccionFilaEnTabRemito($nuevaFila) {
 	$("#tbRemito tbody tr").removeClass("selected-row");
-	$fila.addClass("selected-row");
+	$nuevaFila.addClass("selected-row");
 }
 
 function ProcesarSeleccionFilaEnTabConteos($nuevaFila) {
 	$("#tbDetalleConteos tbody tr").removeClass("selected-row");
-	$fila.addClass("selected-row");
+	$nuevaFila.addClass("selected-row");
 }
 
 function ProcesarSeleccionFilaEnTabTransferencias($fila) {
