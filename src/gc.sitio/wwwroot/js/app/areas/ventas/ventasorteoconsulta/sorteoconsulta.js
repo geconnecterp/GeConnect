@@ -1,11 +1,14 @@
 ﻿let soSorteoSeleccionado = null;
 let _pedidoLoading = false;
 let tabsSorteosPendientes = 0;
+let actualizarTabs = false;
+let actualizarTabsComptes = false;
+let actualizarTabsAnaProds = false;
 
 const TabToTableMap = {
-	"navs-top-dat": "#tbDatos",
-	"navs-top-com": "#tbGridSorteoComptes",
-	"navs-top-ana": "#tbGridSorteoAnalisisProd"
+	"btnTabSorteoDatos": "#tbDatos",
+	"btnTabSorteoComprobantes": "#tbGridSorteoComptes",
+	"btnTabSorteoAnalisis": "#tbGridSorteoAnalisisProd"
 };
 
 $(function () {
@@ -15,7 +18,7 @@ $(function () {
 
 function FinalizarCargaDetalle() {
 	tabsSorteosPendientes--;
-
+	console.log("tabsSorteosPendientes", tabsSorteosPendientes);
 	if (tabsSorteosPendientes <= 0) {
 		CerrarWaiting();
 	}
@@ -23,34 +26,45 @@ function FinalizarCargaDetalle() {
 
 function EvaluarBotonImprimir(tabId) {
 	console.log("Evaluando botón imprimir para tab:", tabId);
+
 	const tablaSelector = TabToTableMap[tabId];
 	if (!tablaSelector) {
-		console.log("tablaSelector:", tablaSelector);
 		$("#btnImprimir").hide();
 		return;
 	}
 
 	const $tabla = $(tablaSelector);
 
-	// Si la tabla no existe o no tiene filas de datos
-	if ($tabla.length === 0 || $tabla.find("tbody tr").length === 0) {
-		console.log("$tabla.length:", $tabla.length);
-		console.log("$tabla.find(tbody tr).length:", $tabla.find("tbody tr").length);
+	// Si la tabla no existe
+	if ($tabla.length === 0) {
+		$("#btnImprimir").hide();
+		return;
+	}
+
+	// Contar solo filas que NO sean la fila vacía
+	const filasValidas = $tabla.find("tbody tr").not(".fila-vacia").length;
+
+	console.log("Filas válidas:", filasValidas);
+
+	if (filasValidas === 0) {
 		$("#btnImprimir").hide();
 		return;
 	}
 
 	// Si tiene datos → mostrar botón
 	$("#btnImprimir").show();
-	if (tablaSelector == "tbGridSorteoComptes") {
+
+	// Asignar handler según tabla
+	if (tablaSelector === "#tbGridSorteoComptes") {
 		$(document).off("click", "#btnImprimir").on("click", "#btnImprimir", ControlaImprRepoSorteoComptes);
-	}
-	else {
+	} else {
 		$(document).off("click", "#btnImprimir").on("click", "#btnImprimir", ControlaImprRepoSorteoAnaProds);
 	}
-	// Guardamos el tab actual para imprimir
+
+	// Guardar tab activo
 	$("#btnImprimir").data("tab-activo", tabId);
 }
+
 
 function ControlaImprRepoSorteoComptes() {
 	var filas = $("#tbGridSorteoComptes tbody tr[data-so-sorteo]").length;
@@ -82,6 +96,13 @@ function ControlaImprRepoSorteoComptes() {
 }
 
 function ImpimirRepoSorteoComptes() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var so_sorteo = soSorteoSeleccionado;
+		var data = { so_sorteo };
+		cargarReporteEnArre(79, data, "RERPORTE SORTEO COMPROBANTES", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function ControlaImprRepoSorteoAnaProds() {
@@ -113,8 +134,21 @@ function ControlaImprRepoSorteoAnaProds() {
 	}
 }
 
-function ImpimirRepoSorteoAnaProds() {
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
 
+function ImpimirRepoSorteoAnaProds() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		const adm_id = $("#contenedorAnalisisProd").data("adm-id");
+		console.log("adm_id:", adm_id);
+		var so_sorteo = soSorteoSeleccionado;
+		var data = { so_sorteo, adm_id };
+		cargarReporteEnArre(80, data, "REPORTE SORTEO ANÁLISIS DE PRODUCTOS", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function InicializaEventosSorteos() {
@@ -218,11 +252,15 @@ function configurarEventosSeleccionDeSorteo() {
 
 			if (!soSorteo) return;
 
+
+			// 🔥 ACTUALIZAR DATA-SORTEO EN LOS TABS
+			//actualizarDataSorteoEnTabs(soSorteo);
 			// Ejecutar funciones de carga
 			let data = { so_sorteo: soSorteo };
 			//cargarReporteEnArre(62, data, "Pedido de Cliente", "", "");
-			tabsSorteosPendientes = 3; // ← cantidad de tabs a cargar
-			//cargarSorteoTablas(soSorteo);
+			tabsSorteosPendientes = 4; // ← cantidad de tabs a cargar
+			/*//InicializarEventosBotonesEnTabs();*/
+			
 			cargarTabs();
 
 			// Achicar grid
@@ -239,49 +277,158 @@ function configurarEventosSeleccionDeSorteo() {
 	});
 }
 
+function tabNecesitaRecarga($tab, soSorteoActual) {
+	const soCargado = $tab.data("sorteo-loaded");
+
+	// Si nunca cargó nada → recargar
+	if (!soCargado) return true;
+
+	// Si cambió el sorteo → recargar
+	return soCargado !== soSorteoActual;
+}
+
+function actualizarDataSorteoEnTabs(soSorteo) {
+	const $btns = $("#tabsSorteoInfo button[data-bs-toggle='tab']");
+	console.log("Tabs encontrados:", $btns.length, " | Sorteo:", soSorteo);
+
+	$btns.each(function () {
+		$(this).attr("data-sorteo", soSorteo); // si querés, usá attr para verlo en el DOM
+	});
+}
+
+let sorteo_actual = null;
+
+function InicializarEventosBotonesEnTabs() {
+
+	$(document).off("shown.bs.tab", '#tabsSorteoInfo button[data-bs-toggle="tab"]');
+	$(document).on("shown.bs.tab", '#tabsSorteoInfo button[data-bs-toggle="tab"]', function () {
+
+		const tabId = $(this).attr("id");
+		console.log("➡️ Tab visible:", tabId);
+
+		cargarSegunTabVisible();
+	});
+}
+
+function obtenerSorteoDelTabVisible() {
+	let $btn = $('#tabsSorteoInfo button.nav-link.active');
+
+	if ($btn.length === 0) {
+		$btn = $('#tabsSorteoInfo li.active button.nav-link');
+	}
+
+	// Usar attr() en lugar de data() para evitar el cache de jQuery
+	return $btn.attr("data-sorteo");
+}
+
+
+function obtenerTabVisible() {
+	// Buscar primero el botón activo
+	let $btn = $('#tabsSorteoInfo button.nav-link.active');
+
+	// Si no lo encuentra, buscar el li activo y luego su botón
+	if ($btn.length === 0) {
+		$btn = $('#tabsSorteoInfo li.active button.nav-link');
+	}
+
+	return $btn.attr("id");
+}
+
+function cargarSegunTabVisible() {
+	const tabId = obtenerTabVisible();
+	const soSorteo = obtenerSorteoDelTabVisible();
+
+	const $tab = $("#" + tabId);
+	EvaluarBotonImprimir(tabId);
+	console.log("➡️ Tab visible:", tabId, "| Sorteo actual:", soSorteo, "| Último cargado:", $tab.data("sorteo-loaded"));
+
+	if (!soSorteo) {
+		console.warn("⚠️ No hay sorteo asociado al tab visible.");
+		return;
+	}
+
+	// Si no necesita recarga → salir
+	if (!tabNecesitaRecarga($tab, soSorteo)) {
+		console.log("⏩ Tab ya cargado para este sorteo. No se recarga.");
+		return;
+	}
+
+	// Si necesita recarga → cargar y actualizar marca
+	switch (tabId) {
+		case "btnTabSorteoDatos":
+			cargarTabsDatos();
+			break;
+
+		case "btnTabSorteoComprobantes":
+			cargarTabsComptes();
+			break;
+
+		case "btnTabSorteoAnalisis":
+			cargarTabsAnaProds();
+			break;
+	}
+
+	// Marcar que este tab ya cargó este sorteo
+	$tab.data("sorteo-loaded", soSorteo);
+}
+
+
+
 function cargarTabs() {
 	AbrirWaiting("Cargando datos del sorteo...")
 	var data = {};
 	PostGenHtml(data, cargarTabsInicialUrl, function (html) {
 		$("#divTabsSorteo").html(html).show();
+		// 🔥 AHORA sí existen los tabs en el DOM
+		actualizarDataSorteoEnTabs(soSorteoSeleccionado);
+
+		InicializarEventosBotonesEnTabs();
 		// Cargar datos de los tabs internos
 		setTimeout(() => {
-			cargarTabsDatos();
-			cargarTabsComptes();
-			cargarTabsAnaProds();
+			CerrarWaiting();
+			cargarSegunTabVisible();
 		}, 200);
 		// Debug - ayuda a identificar estados del sistema
 		console.log("cargarSorteoDatos N°: ", soSorteoSeleccionado,
 			"Permite edición:", true);
-		CerrarWaiting();
 	});
-	FinalizarCargaDetalle(); // ← marcar como completado
+	//FinalizarCargaDetalle(); // ← marcar como completado
 }
 
 function cargarTabsDatos() {
-	var data = { so_sorteo: soSorteoSeleccionado };
+	AbrirWaiting("Cargando datos...");
+	const soSorteo = obtenerSorteoDelTabVisible();
+	var data = { so_sorteo: soSorteo };
 	PostGenHtml(data, obtenerSorteoDatosUrl, function (html) {
 		$("#divSorteoDatos").html(html);
-		FinalizarCargaDetalle(); // ← marcar como completado
+		
 		setTimeout(() => {
-			EvaluarBotonImprimir("navs-top-dat")
-		}, 1000);
-		console.log("cargarSorteoTablas N°: ", soSorteoSeleccionado,
+			EvaluarBotonImprimir("navs-top-dat");
+		}, 500);
+		// 🔥 Marcar que este tab ya cargó este sorteo
+		$("#btnTabSorteoDatos").data("sorteo-loaded", soSorteo);
+		console.log("cargarSorteoTablas N°: ", soSorteo,
 			"Permite edición:", true);
+		CerrarWaiting();
 	});
 }
 
 function cargarTabsComptes() {
-	var data = { so_sorteo: soSorteoSeleccionado };
+	AbrirWaiting("Cargando datos...");
+	const soSorteo = obtenerSorteoDelTabVisible();
+	var data = { so_sorteo: soSorteo };
 	PostGenHtml(data, obtenerSorteoComptesUrl, function (html) {
 		$("#divSorteoComprobantes").html(html);
 		InicializarEventosTabComptes();
 		FinalizarCargaDetalle(); // ← marcar como completado
 		setTimeout(() => {
-			EvaluarBotonImprimir("navs-top-com")
-		}, 1000);
-		console.log("cargarSorteoComptes N°: ", soSorteoSeleccionado,
+			EvaluarBotonImprimir("btnTabSorteoComprobantes");
+		}, 500);
+		// 🔥 Marcar que este tab ya cargó este sorteo
+		$("#btnTabSorteoComprobantes").data("sorteo-loaded", soSorteo);
+		console.log("cargarSorteoComptes N°: ", soSorteo,
 			"Permite edición:", true);
+		CerrarWaiting();
 	});
 }
 
@@ -302,16 +449,21 @@ function ProcesarSeleccionFilaEnTabComptes($nuevaFila) {
 }
 
 function cargarTabsAnaProds() {
-	var data = { so_sorteo: soSorteoSeleccionado };
+	AbrirWaiting("Cargando datos...");
+	const soSorteo = obtenerSorteoDelTabVisible();
+	var data = { so_sorteo: soSorteo };
 	PostGenHtml(data, obtenerSorteoAnaProdsUrl, function (html) {
 		$("#divSorteoAnalisis").html(html);
 		InicializarEventosTabAnaProds();
 		FinalizarCargaDetalle(); // ← marcar como completado
 		setTimeout(() => {
-			EvaluarBotonImprimir("navs-top-ana")
-		}, 1000);
-		console.log("cargarSorteoAnaProds N°: ", soSorteoSeleccionado,
+			EvaluarBotonImprimir("btnTabSorteoAnalisis");
+		}, 500);
+		// 🔥 Marcar que este tab ya cargó este sorteo
+		$("#btnTabSorteoAnalisis").data("sorteo-loaded", soSorteo);
+		console.log("cargarSorteoAnaProds N°: ", soSorteo,
 			"Permite edición:", true);
+		CerrarWaiting();
 	});
 }
 

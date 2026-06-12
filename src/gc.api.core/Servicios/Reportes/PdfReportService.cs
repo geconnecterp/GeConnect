@@ -125,6 +125,8 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R076_Analisis_De_Valores_De_Venta_Diario, new R076_Analisis_De_Valores_De_Venta_Diario(uow,ventasSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R077_Analisis_De_Valores_De_Venta_Pv, new R077_Analisis_De_Valores_De_Venta_Pv(uow,ventasSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R078_Analisis_De_Valores_De_Venta_Cashback, new R078_Analisis_De_Valores_De_Venta_Cashback(uow,ventasSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R079_Sorteo_Comprobantes_Consulta, new R079_Sorteo_Comprobantes_Consulta(uow,ventasSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R080_Sorteo_Analisis_De_Productos, new R080_Sorteo_Analisis_De_Productos(uow,ventasSv,empresa,ctaSv, logger) },
 			}; 
             _logger = logger;
         }

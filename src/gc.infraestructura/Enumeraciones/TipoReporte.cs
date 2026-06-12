@@ -84,5 +84,7 @@ namespace gc.infraestructura.Enumeraciones
 		R076_Analisis_De_Valores_De_Venta_Diario = 76,
 		R077_Analisis_De_Valores_De_Venta_Pv = 77,
 		R078_Analisis_De_Valores_De_Venta_Cashback = 78,
+        R079_Sorteo_Comprobantes_Consulta = 79,
+        R080_Sorteo_Analisis_De_Productos = 80,
 	}
 }

@@ -26,15 +26,16 @@ namespace gc.sitio.Areas.Ventas.Controllers
 		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
 		private AppModulo _modulo_1; //SORTEO_COMPROBANTES
 		private AppModulo _modulo_2; //SORTEO_ANALISIS_PROD
-		private string APP_MODULO_1 = AppModulos.SORTEO_COMPROBANTES.ToString();
-		private string APP_MODULO_2 = AppModulos.SORTEO_ANALISIS_PROD.ToString();
+		private string APP_MODULO_1 = AppModulos.SORTEO_COMPROBANTES_CONSULTA.ToString();
+		private string APP_MODULO_2 = AppModulos.SORTEO_ANALISIS_DE_PRODUCTOS.ToString();
 		private readonly IDocManagerServicio _docMSv;
 
 		private readonly AppSettings _setting;
 		private readonly IApiVentasServicio _apiVentasServicio;
 
 		public VentaSorteoConsultaController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<VentaSorteoConsultaController> logger,
-											 IApiVentasServicio apiVentasServicio, IDocManagerServicio docManager, IOptions<DocsManager> docsManager) : base(options, contexto, logger)
+											 IApiVentasServicio apiVentasServicio, IDocManagerServicio docManager, 
+											 IOptions<DocsManager> docsManager) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_apiVentasServicio = apiVentasServicio;
@@ -236,7 +237,7 @@ namespace gc.sitio.Areas.Ventas.Controllers
 
 				if (sorteoAnalisisProd == null || sorteoAnalisisProd.Count <= 0)
 					return PartialView("_tabSorteoDatos_Analisis_Prod", ObtenerGridCoreSmart<SorteoAnalisisProdDto>(new List<SorteoAnalisisProdDto>()));
-
+				ViewBag.AdmId = AdministracionId;
 				return PartialView("_tabSorteoDatos_Analisis_Prod", ObtenerGridCoreSmart<SorteoAnalisisProdDto>(sorteoAnalisisProd));
 			}
 			catch (NegocioException ex)

@@ -6095,7 +6095,7 @@ namespace gc.infraestructura.Helpers
 
 		public static void CargarRepoAnalisisDeValoresDeVentaMensual(Document pdf, List<AnaValDeVtaMesDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
 		{
-			if(registros == null || !registros.Any())
+			if (registros == null || !registros.Any())
 			{
 				pdf.Add(new Paragraph("No hay datos para mostrar", normalBold));
 				return;
@@ -6481,6 +6481,159 @@ namespace gc.infraestructura.Helpers
 			pdf.Add(tabla);
 		}
 
+		public static void CargarRepoSorteoCompteLista(Document pdf, List<SorteoComptesDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		{
+			if (registros == null || !registros.Any())
+			{
+				Paragraph sinDatos = new Paragraph("No hay datos para mostrar.", normalBold);
+				sinDatos.Alignment = Element.ALIGN_CENTER;
+				pdf.Add(sinDatos);
+				return;
+			}
+
+			// ---------------------------
+			// TÍTULO
+			// ---------------------------
+			Paragraph tituloReporte = new Paragraph("Análisis de Valores de Venta - Comprobantes del Sorteo", tituloBig);
+			tituloReporte.Alignment = Element.ALIGN_CENTER;
+			tituloReporte.SpacingAfter = 12f;
+			pdf.Add(tituloReporte);
+
+			// ---------------------------
+			// TABLA
+			// ---------------------------
+			PdfPTable tabla = new PdfPTable(7);
+			tabla.WidthPercentage = 100;
+			tabla.HeaderRows = 1;
+
+			// Anchos proporcionales
+			tabla.SetWidths(new float[] { 12f, 18f, 14f, 26f, 10f, 10f, 20f });
+
+			// ---------------------------
+			// ENCABEZADOS
+			// ---------------------------
+			AgregarCeldaHeader(tabla, "N° Asignado", normalBold);
+			AgregarCeldaHeader(tabla, "Tipo", normalBold);
+			AgregarCeldaHeader(tabla, "N° Comprobante", normalBold);
+			AgregarCeldaHeader(tabla, "Cliente", normalBold);
+			AgregarCeldaHeader(tabla, "Proceso", normalBold);
+			AgregarCeldaHeader(tabla, "Cierre", normalBold);
+			AgregarCeldaHeader(tabla, "Sucursal", normalBold);
+
+			// ---------------------------
+			// FILAS
+			// ---------------------------
+			bool alt = true;
+
+			foreach (var item in registros)
+			{
+				BaseColor bg = alt ? new BaseColor(245, 245, 245) : BaseColor.White;
+				alt = !alt;
+
+				AgregarCelda(tabla, item.so_nro, normal, Element.ALIGN_CENTER, bg);
+				AgregarCelda(tabla, item.tco_desc, normal, Element.ALIGN_LEFT, bg);
+				AgregarCelda(tabla, item.cm_compte, normal, Element.ALIGN_CENTER, bg);
+				AgregarCelda(tabla, item.cta_denominacion, normal, Element.ALIGN_LEFT, bg);
+				AgregarCelda(tabla, item.caja_nro_proceso, normal, Element.ALIGN_CENTER, bg);
+				AgregarCelda(tabla, item.caja_nro_cierre, normal, Element.ALIGN_CENTER, bg);
+				AgregarCelda(tabla, item.adm_nombre, normal, Element.ALIGN_LEFT, bg);
+			}
+
+			pdf.Add(tabla);
+		}
+
+		public static void CargarRepoSorteoAnalisisProdLista(Document pdf, List<SorteoAnalisisProdDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		{
+			if (registros == null || !registros.Any())
+			{
+				Paragraph sinDatos = new Paragraph("No hay datos para mostrar.", normalBold);
+				sinDatos.Alignment = Element.ALIGN_CENTER;
+				pdf.Add(sinDatos);
+				return;
+			}
+
+			// ---------------------------
+			// TÍTULO
+			// ---------------------------
+			Paragraph tituloReporte = new Paragraph("Análisis de Productos del Sorteo", tituloBig);
+			tituloReporte.Alignment = Element.ALIGN_CENTER;
+			tituloReporte.SpacingAfter = 12f;
+			pdf.Add(tituloReporte);
+
+			// ---------------------------
+			// TABLA
+			// ---------------------------
+			PdfPTable tabla = new PdfPTable(9);
+			tabla.WidthPercentage = 100;
+			tabla.HeaderRows = 1;
+
+			// Anchos proporcionales
+			tabla.SetWidths(new float[] { 14f, 10f, 26f, 14f, 22f, 10f, 14f, 12f, 14f });
+
+			// ---------------------------
+			// ENCABEZADOS
+			// ---------------------------
+			AgregarCeldaHeader(tabla, "Sucursal", normalBold);
+			AgregarCeldaHeader(tabla, "ID", normalBold);
+			AgregarCeldaHeader(tabla, "Descripción", normalBold);
+			AgregarCeldaHeader(tabla, "EAN", normalBold);
+			AgregarCeldaHeader(tabla, "Proveedor", normalBold);
+			AgregarCeldaHeader(tabla, "Cant. Comptes", normalBold);
+			AgregarCeldaHeader(tabla, "Importe Comptes", normalBold);
+			AgregarCeldaHeader(tabla, "Cant. Productos", normalBold);
+			AgregarCeldaHeader(tabla, "Importe Productos", normalBold);
+
+			// ---------------------------
+			// FILAS
+			// ---------------------------
+			bool alt = true;
+
+			foreach (var item in registros)
+			{
+				BaseColor bg = alt ? new BaseColor(245, 245, 245) : BaseColor.White;
+				alt = !alt;
+
+				AgregarCelda(tabla, item.adm_nombre, normal, Element.ALIGN_CENTER, bg);
+				AgregarCelda(tabla, item.p_id, normal, Element.ALIGN_CENTER, bg);
+				AgregarCelda(tabla, item.p_desc, normal, Element.ALIGN_LEFT, bg);
+				AgregarCelda(tabla, item.p_id_barrado, normal, Element.ALIGN_CENTER, bg);
+				AgregarCelda(tabla, item.cta_denominacion, normal, Element.ALIGN_LEFT, bg);
+
+				AgregarCelda(tabla, item.cant_comptes.ToString("N0"), normal, Element.ALIGN_RIGHT, bg);
+				AgregarCelda(tabla, item.importe_comptes.ToString("N2"), normal, Element.ALIGN_RIGHT, bg);
+
+				AgregarCelda(tabla, item.cant_prod.ToString("N0"), normal, Element.ALIGN_RIGHT, bg);
+				AgregarCelda(tabla, item.importe_prod.ToString("N2"), normal, Element.ALIGN_RIGHT, bg);
+			}
+
+			pdf.Add(tabla);
+		}
+
+		// ======================================================
+		// HELPERS
+		// ======================================================
+
+		private static void AgregarCeldaHeader(PdfPTable tabla, string texto, Font font)
+		{
+			PdfPCell celda = new PdfPCell(new Phrase(texto, font));
+			celda.HorizontalAlignment = Element.ALIGN_CENTER;
+			celda.VerticalAlignment = Element.ALIGN_MIDDLE;
+			celda.BackgroundColor = new BaseColor(230, 230, 230);
+			celda.Padding = 4f;
+			tabla.AddCell(celda);
+		}
+
+		private static void AgregarCelda(PdfPTable tabla, string texto, Font font, int align, BaseColor bg)
+		{
+			PdfPCell celda = new PdfPCell(new Phrase(texto ?? "", font));
+			celda.HorizontalAlignment = align;
+			celda.VerticalAlignment = Element.ALIGN_MIDDLE;
+			celda.BackgroundColor = bg;
+			celda.Padding = 4f;
+			tabla.AddCell(celda);
+		}
+
+
 		private static void DibujarTablaImportes(Document pdf, List<AnaValDeVtaDetDiarioDto> registros, Font chico, Font normal, Font normalBold)
 		{
 			float[] widths = { 1.6f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f };
@@ -6775,23 +6928,24 @@ namespace gc.infraestructura.Helpers
 			};
 			header.SetWidths([20f, 30f, 20f, 30f]);
 
-			header.AddCell(new PdfPCell(new Phrase("Fecha Pedido:", bold)) { 
+			header.AddCell(new PdfPCell(new Phrase("Fecha Pedido:", bold))
+			{
 				Border = 0,
 				HorizontalAlignment = Element.ALIGN_RIGHT
 			});
-			header.AddCell(new PdfPCell(new Phrase(reg.pi_fecha.ToString("dd/MM/yyyy"), normal)) 
-			{ 
+			header.AddCell(new PdfPCell(new Phrase(reg.pi_fecha.ToString("dd/MM/yyyy"), normal))
+			{
 				Border = 0,
 				HorizontalAlignment = Element.ALIGN_LEFT
 			});
 
-			header.AddCell(new PdfPCell(new Phrase("Solicitado Por:", bold)) 
-			{ 
+			header.AddCell(new PdfPCell(new Phrase("Solicitado Por:", bold))
+			{
 				Border = 0,
 				HorizontalAlignment = Element.ALIGN_RIGHT
 			});
-			header.AddCell(new PdfPCell(new Phrase(reg.usu_apellidoynombre, normal)) 
-			{ 
+			header.AddCell(new PdfPCell(new Phrase(reg.usu_apellidoynombre, normal))
+			{
 				Border = 0,
 				HorizontalAlignment = Element.ALIGN_LEFT
 			});
@@ -6849,14 +7003,14 @@ namespace gc.infraestructura.Helpers
 			pdf.Add(sep);
 		}
 
-		private static void AgregarCeldaHeader(PdfPTable tabla, string texto, Font font)
-		{
-			PdfPCell celda = new PdfPCell(new Phrase(texto, font));
-			celda.BackgroundColor = new BaseColor(230, 230, 230);
-			celda.HorizontalAlignment = Element.ALIGN_CENTER;
-			celda.Padding = 4f;
-			tabla.AddCell(celda);
-		}
+		//private static void AgregarCeldaHeader(PdfPTable tabla, string texto, Font font)
+		//{
+		//	PdfPCell celda = new PdfPCell(new Phrase(texto, font));
+		//	celda.BackgroundColor = new BaseColor(230, 230, 230);
+		//	celda.HorizontalAlignment = Element.ALIGN_CENTER;
+		//	celda.Padding = 4f;
+		//	tabla.AddCell(celda);
+		//}
 
 
 		private static PdfPCell CeldaHeader(string texto, Font f, int rowspan = 1, int colspan = 1)
