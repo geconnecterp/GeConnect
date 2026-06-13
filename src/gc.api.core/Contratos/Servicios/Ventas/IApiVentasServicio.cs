@@ -40,5 +40,6 @@ namespace gc.api.core.Contratos.Servicios
 		RespuestaDto ConfirmarSorteo(ConfirmarSorteoRequest request);
 		List<SorteoComptesDto> ObtenerSorteoComptesLista(SorteoCompteRequest request);
 		List<SorteoAnalisisProdDto> ObtenerSorteoAnalisisProdLista(SorteoAnalisisProdRequest request);
+		List<CajaProcesoListaDto> ObtenerCajaProcesoLista(CajaProcesoListaRequest req);
 	}
 }

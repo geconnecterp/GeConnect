@@ -63,6 +63,8 @@
 			public const string SP_VTAS_PV_CTL_ENTREGAS_REND = "SPGECO_Vtas_PV_CTL_Entregas_Rend";
 			public const string SP_VTAS_PV_CTL_ENTREGAS_CONFIRMAR = "SPGECO_Vtas_PV_CTL_Entregas_Confirmar";
 			public const string SP_VTAS_PV_CTL_ENTREGAS_ANULAR = "SPGECO_Vtas_PV_CTL_Entregas_Anular";
+			public const string SP_VTAS_REPO_PROCESOS = "SPGECO_Vtas_Repo_Procesos";
+			public const string SP_VTAS_REPO_PROCESOS_CIERRES = "SPGECO_Vtas_Repo_Procesos";
 			#endregion
 
 			#region Sorteos (Ventas)

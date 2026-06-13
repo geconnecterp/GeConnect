@@ -1,0 +1,92 @@
+﻿@using gc.infraestructura.Dtos
+@model GridCoreSmart<CajaProcesoListaDto>
+@{
+}
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	#divProcesos {
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.tabla-desactivada {
+		pointer-events: none;
+		opacity: 0.5;
+	}
+
+	.disabled-row {
+		cursor: not-allowed !important;
+	}
+
+	.table-wrapper-full {
+		max-height: calc(100vh - 250px); /* ajustá 250px según lo que ocupe tu header, filtros, etc */
+		overflow-y: auto;
+	}
+
+	.table-wrapper-small {
+		max-height: 150px !important; /* o el tamaño que quieras */
+		overflow-y: auto;
+	}
+</style>
+<div class="grid-golden h-100">
+	<div class="grid-golden-body p-1">
+		<div id="divProcesos" class="table-responsive table-wrapper-full">
+			<table class="table table-sm table-hover mb-0 table-golden" id="tbGridCierres">
+				<thead class="sticky-top table-golden-header-compact">
+					<tr class="header">
+						<th class="text-center th-compact">Sucursal</th>
+						<th class="text-center th-compact">N° de Proceso</th>
+						<th class="text-center th-compact">Cant. Cierres</th>
+						<th class="text-center th-compact">Apertura</th>
+						<th class="text-center th-compact">Cierre</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model?.ListaDatos?.Any() == true)
+					{
+						foreach (var item in Model.ListaDatos)
+						{
+							if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+							<tr class="@clase"
+								data-caja-nro-proceso="@item.caja_nro_proceso"
+								data-adm-id="@item.adm_id">
+								<td class="text-start">
+									@item.adm_nombre
+								</td>
+								<td class="text-center">
+									@item.caja_nro_proceso
+								</td>
+								<td class="text-end">
+									@item.caja_nro_cierres
+								</td>
+								<td class="text-center">
+									@item.caja_habilitacion.ToString()
+								</td>
+								<td class="text-center">
+									@item.caja_cierre_grl.ToString()
+								</td>
+							</tr>
+						}
+					}
+					else
+					{
+						<tr>
+							<td colspan="5" class="text-center text-muted py-2">
+								<i class="bx bx-info-circle me-1"></i>No hay procesos de caja disponibles
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="offset-md-3 col-md-6">
+		<div id="divPaginacion">
+		</div>
+	</div>
+</div>

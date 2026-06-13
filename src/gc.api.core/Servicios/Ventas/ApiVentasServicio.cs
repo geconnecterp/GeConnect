@@ -599,5 +599,43 @@ namespace gc.api.core.Servicios
 			var result = _repository.EjecutarLstSpExt<SorteoAnalisisProdDto>(sp, ps, true);
 			return result;
 		}
+
+		public List<CajaProcesoListaDto> ObtenerCajaProcesoLista(CajaProcesoListaRequest req)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_VTAS_REPO_PROCESOS_CIERRES;
+
+			var ps = new List<SqlParameter>();
+
+			if (req.Desde != default && req.Hasta != default)
+			{
+				ps.Add(new SqlParameter("@desde", req.Desde));
+				ps.Add(new SqlParameter("@hasta", req.Hasta));
+			}
+			else
+			{
+				ps.Add(new SqlParameter("@f", false));
+			}
+
+			if (req.adm_list != null && req.adm_list != "")
+			{
+				ps.Add(new SqlParameter("@adm_list", req.adm_list));
+			}
+			else
+			{
+				ps.Add(new SqlParameter("@adm_list", string.Empty));
+			}
+
+			ps.Add(new SqlParameter("@registros", req.Registros));
+			ps.Add(new SqlParameter("@pagina", req.Pagina));
+
+			foreach (var p in ps)
+			{
+				Console.WriteLine($"{p.ParameterName} = {p.Value}");
+			}
+
+			var procesos = _repository.EjecutarLstSpExt<CajaProcesoListaDto>(sp, ps, true);
+
+			return procesos;
+		}
 	}
 }

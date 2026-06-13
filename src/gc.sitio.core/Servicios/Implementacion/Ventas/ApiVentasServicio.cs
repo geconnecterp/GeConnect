@@ -53,6 +53,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string SORTEOS_COMPTES_LISTA = "/ObtenerSorteoComptesLista";
 		private const string SORTEOS_ANALISIS_PROD_LISTA = "/ObtenerSorteoAnalisisProdLista";
 
+		private const string CAJA_PROCESOS_LISTA = "/ObtenerCajaProcesoLista";
+
 
 		public ApiVentasServicio(IOptions<AppSettings> options, ILogger<ApiVentasServicio> logger) : base(options, logger, RutaAPI)
 		{
@@ -1483,6 +1485,51 @@ namespace gc.sitio.core.Servicios.Implementacion
 				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
 				return new();
+			}
+		}
+
+		public async Task<RespuestaGenerica<CajaProcesoListaDto>> ObtenerCajaProcesoLista(CajaProcesoListaRequest request, string token)
+		{
+			try
+			{
+				var helper = new HelperAPI();
+				var client = helper.InicializaCliente(request, token, out StringContent contentData);
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{CAJA_PROCESOS_LISTA}";
+
+				using var response = await client.PostAsync(link, contentData);
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					var stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+					}
+
+					var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<CajaProcesoListaDto>>>(stringData);
+					if (apiResponse == null || apiResponse.Data == null)
+					{
+						return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+					}
+
+					return new RespuestaGenerica<CajaProcesoListaDto>
+					{
+						Ok = true,
+						Mensaje = "OK",
+						ListaEntidad = apiResponse.Data,
+						Meta = apiResponse.Meta ?? new()
+					};
+				}
+				else
+				{
+					var msg = await ReadApiErrorAsync(response);
+					_logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+					return new() { Ok = false, Mensaje = msg };
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+				return new() { Ok = false, Mensaje = "Error al buscar Procesos de Cierre de Caja" };
 			}
 		}
 	}

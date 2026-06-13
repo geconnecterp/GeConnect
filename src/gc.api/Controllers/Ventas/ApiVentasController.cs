@@ -551,6 +551,34 @@ namespace gc.api.Controllers.Ventas
 			return Ok(response);
 		}
 
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CajaProcesoListaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerCajaProcesoLista(CajaProcesoListaRequest request)
+		{
+			const string msgError = "Error en la invocación de la API - Búsqueda de Procesos de Caja";
+			try
+			{
+				if (request == null)
+					return BadRequest("No se recepcionó el filtro de la búsqueda de Procesos de Caja.");
+
+				var resultados = _iApiVentasServicio.ObtenerCajaProcesoLista(request);
+
+				var response = new ApiResponse<List<CajaProcesoListaDto>>(resultados)
+				{
+					Meta = BuildMetadataProcesosCierre(resultados, request)
+				};
+
+				return Ok(response);
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, msgError);
+				return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
+			}
+		}
+
 		private static MetadataGrid? BuildMetadata(List<SorteoCargaListaDto>? lista, QueryFilters filtro)
 		{
 			if (lista == null || lista.Count == 0)
@@ -571,6 +599,42 @@ namespace gc.api.Controllers.Ventas
 			var reg = lista[0];
 			var pageSize = filtro.Registros ?? 0;
 			var currentPage = filtro.Pagina ?? 0;
+			var totalCount = reg.total_registros;
+			var totalPages = reg.total_paginas;
+
+			return new MetadataGrid
+			{
+				TotalCount = totalCount,
+				PageSize = pageSize,
+				CurrentPage = currentPage,
+				TotalPages = totalPages,
+				HasNextPage = currentPage < totalPages,
+				HasPreviousPage = currentPage > 1,
+				NextPageUrl = null,
+				PreviousPageUrl = null
+			};
+		}
+
+		private static MetadataGrid? BuildMetadataProcesosCierre(List<CajaProcesoListaDto>? lista, CajaProcesoListaRequest filtro)
+		{
+			if (lista == null || lista.Count == 0)
+			{
+				return new MetadataGrid
+				{
+					TotalCount = 0,
+					PageSize = filtro.Registros,
+					CurrentPage = filtro.Pagina,
+					TotalPages = 0,
+					HasNextPage = false,
+					HasPreviousPage = false,
+					NextPageUrl = null,
+					PreviousPageUrl = null
+				};
+			}
+
+			var reg = lista[0];
+			var pageSize = filtro.Registros;
+			var currentPage = filtro.Pagina;
 			var totalCount = reg.total_registros;
 			var totalPages = reg.total_paginas;
 

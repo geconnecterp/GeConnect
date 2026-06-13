@@ -1,0 +1,11 @@
+﻿@model ProcesosDeCajaModel
+@{
+}
+<div class="row">
+	<div class="col-6" id="divProcDeCajaProcesos">
+		@Html.Partial("_partialProcDeCaja_Procesos", Model.ListaProcesos)
+	</div>
+	<div class="col-6" id="divProcDeCajaCierres" style="padding-left: 0px;">
+		@Html.Partial("_partialProcDeCaja_Cierres", Model.ListaCierres)
+	</div>
+</div>
