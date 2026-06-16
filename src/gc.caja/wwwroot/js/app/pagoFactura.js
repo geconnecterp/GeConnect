@@ -2052,6 +2052,89 @@ function manejarSesionExpirada(mensaje) {
     );
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// ✅ NUEVO v25.0: FUNCIONES DE CONTROL DEL TECLADO VIRTUAL
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * ✅ NUEVO v25.0: Posiciona el teclado virtual junto al ancla.
+ * Se asegura de que el teclado esté visible y alineado a la izquierda.
+ */
+function posicionarTecladoVirtual() {
+    console.log('📍 Posicionando teclado virtual...');
+    const ancla = document.getElementById('teclado-ancla');
+    const teclado = document.getElementById('virtual-keyboard');
+
+    if (!teclado) {
+        console.error('❌ Teclado virtual no encontrado en el DOM.');
+        return;
+    }
+    if (!ancla) {
+        console.error('❌ Ancla #teclado-ancla no encontrada.');
+        return;
+    }
+
+    // Forzar visibilidad si está oculto
+    if (teclado.style.display !== 'flex') {
+        teclado.style.display = 'flex';
+        teclado.style.opacity = '1';
+        console.log('   ✅ Teclado forzado a ser visible.');
+    }
+
+    // Calcular posición
+    const rectAncla = ancla.getBoundingClientRect();
+    const rectTeclado = teclado.getBoundingClientRect();
+
+    // Posicionar el teclado
+    // Usamos 'transform' para no interferir con otras propiedades de posicionamiento
+    const top = rectAncla.top;
+    const left = rectAncla.left;
+
+    teclado.style.position = 'fixed';
+    teclado.style.top = `${top}px`;
+    teclado.style.left = `${left}px`;
+    teclado.style.transform = 'none'; // Resetear transform de arrastre
+
+    console.log(`   ✅ Teclado posicionado en: top=${top.toFixed(0)}px, left=${left.toFixed(0)}px`);
+}
+
+/**
+ * ✅ NUEVO v25.0: Activa el teclado para un input específico.
+ * @param {string} inputSelector - El selector del campo de entrada.
+ */
+function activarTecladoParaInput(inputSelector) {
+    console.log(`⌨️ Activando teclado para: ${inputSelector}`);
+    const input = document.querySelector(inputSelector);
+    if (!input) {
+        console.error(`❌ Input ${inputSelector} no encontrado.`);
+        return;
+    }
+
+    // 1. Simular foco en el input para que virtual-keyboard.js lo detecte y renderice.
+    input.focus();
+
+    // 2. Usar un pequeño delay para asegurar que el teclado se haya renderizado en el DOM.
+    setTimeout(() => {
+        // 3. Mover el teclado a la posición deseada.
+        posicionarTecladoVirtual();
+
+        // 4. Volver a enfocar y seleccionar el contenido del input.
+        input.focus();
+        input.select();
+    }, 150); // 150ms es un delay seguro para la renderización.
+}
+
+/**
+ * ✅ NUEVO v25.0: Oculta el teclado virtual.
+ */
+function ocultarTecladoVirtual() {
+    const teclado = document.getElementById('virtual-keyboard');
+    if (teclado) {
+        teclado.style.display = 'none';
+        console.log('⌨️ Teclado virtual ocultado.');
+    }
+}
+
 ///**
 // * ✅ NUEVO v20.2: Muestra mensaje de error genérico
 // * Función auxiliar reutilizable
@@ -2170,6 +2253,9 @@ function ocultarModalCalculoFactura() {
  */
 function limpiarModalPago() {
     console.log('🧹 Limpiando modal de pago v24.0...');
+
+    // ✅ NUEVO v25.0: Ocultar teclado si está visible
+    ocultarTecladoVirtual();
 
     // ✅ NUEVO: Destruir tooltips activos
     $('#tbodyFormasPago [data-bs-toggle="tooltip"]').each(function () {
@@ -3576,6 +3662,9 @@ function abrirModalDetalleEfectivo(instrumento, tipoMedioPago) {
     // ❺ ✅ NUEVO v23.0: Establecer valor inicial SIN FORMATO
     $inputMonto.val(importeSugerido.toFixed(2));
 
+    // Activar el teclado para este input
+    activarTecladoParaInput('#txtMontoEfectivo');
+
     console.log(`   ✅ Valor inicial: ${importeSugerido.toFixed(2)}`);
     console.log('   ✅ Teclado digital listo para escribir');
 
@@ -3790,6 +3879,9 @@ function finalizarGuardadoEfectivo(monto, instrumento, tipoMedioPago) {
 
     // ❺ Actualizar total del instrumento en modal instrumentos
     actualizarTotalInstrumento(instrumento.ins_id, monto);
+
+    // ❻ ✅ NUEVO v25.0: Ocultar teclado virtual
+    ocultarTecladoVirtual();
 
     // ❻ Cerrar modal de efectivo
     cerrarModalDetalleEfectivo();

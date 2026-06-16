@@ -1,12 +1,21 @@
-﻿<!-- Modal Identificar Cliente - Facturación -->
-<div class="modal modal-golden fade" id="modalIdentificarCliente" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalIdentificarClienteTitle" aria-hidden="true">
+﻿@{
+    // Determina el módulo actual, con "Facturacion" como valor por defecto.
+    var modulo = ViewData["Modulo"] as string ?? "Facturacion";
+}
+<!-- Modal Identificar Cliente - Facturación -->
+<div class="modal modal-golden fade" id="modalIdentificarCliente" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalIdentificarClienteTitle" aria-hidden="true" data-modulo="@modulo">
     <div class="modal-dialog modal-fullscreen">
         <div class="modal-content">
             <!-- Header con gradiente dorado -->
             <div class="modal-header bg-gradient-blue">
                 <h5 class="modal-title fw-bold" id="modalIdentificarClienteTitle">
                     <i class='bx bx-user-circle text-white'></i>
-                    FACTURACIÓN - Identificar Cliente
+                    @{
+                        var titulo = modulo == "CobranzaDiferida"
+                        ? "COBRANZA DIFERIDA - Identificar Cliente"
+                        : "FACTURACIÓN - Identificar Cliente";
+                    }
+                    @titulo
                 </h5>
             </div>
 
@@ -33,7 +42,7 @@
                         <!-- ══════════════════════════════════════════════════════ -->
                         <!-- ✅ NUEVO: Checkbox de Auto-Confirmación                -->
                         <!-- ══════════════════════════════════════════════════════ -->
-                        <div class="d-flex align-items-start gap-2 mt-2">
+                        <div id="seccionAutoConfirmar" class="d-flex align-items-start gap-2 mt-2 @(modulo == "CobranzaDiferida" ? "d-none" : "")">
                             <!-- Checkbox a la izquierda -->
                             <div class="form-check mt-1">
                                 <input class="form-check-input"
@@ -55,7 +64,7 @@
                                 Presione <kbd>Enter</kbd> o <strong>Buscar</strong> para identificar al cliente.
                                 <br>
                                 <!-- 🔄 CAMBIO: Texto y color actualizados para mayor claridad -->
-                                <span class="text-danger-emphasis">
+                                <span id="textoDesactivarEdicion" class="text-danger-emphasis @(modulo == "CobranzaDiferida" ? "d-none" : "")">
                                     <i class='bx bx-edit'></i>
                                     <strong>Desactive</strong> para editar datos (sólo Consumidores Finales).
                                 </span>
@@ -66,7 +75,7 @@
                 </div>
 
                 <!-- Separador con botones de acción rápida -->
-                <div class="row mb-4">
+                <div id="seccionAccionRapida" class="row mb-4 @(modulo == "CobranzaDiferida" ? "d-none" : "")">
                     <div class="col-md-6">
                         <button class="btn btn-warning w-100 py-3 fw-bold" id="btnListaPrecios" type="button" disabled>
                             <i class='bx bx-list-ul bx-lg'></i><br>

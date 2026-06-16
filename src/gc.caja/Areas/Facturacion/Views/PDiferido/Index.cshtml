@@ -1,0 +1,66 @@
+﻿@*
+    ✅ ACTUALIZADO v2.0: Vista principal para el módulo de Cobranza Diferida.
+    
+    Cambios desde v1.0:
+    - Agregado: Título y Layout principal.
+    - Agregado: Contenedor para la futura grilla de facturas.
+    - Agregado: Inclusión de la vista parcial _IdentificarClienteModal.
+    - Agregado: Sección de Scripts con todas las URLs necesarias para reutilizar fact.js.
+*@
+@{
+    ViewData["Title"] = "Cobranza Diferida";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@* Contenedor principal para la interfaz de Cobranza Diferida *@
+<div id="cobranza-diferida-container" class="container-fluid mt-4" style="display: none;">
+    <div class="card shadow-sm">
+        <div class="card-header bg-gradient-blue">
+            <h4 id="cliente-seleccionado-info" class="mb-0 text-white"></h4>
+        </div>
+        <div class="card-body">
+            <p>A continuación se mostrarán las facturas pendientes del cliente...</p>
+            <!-- Futuro contenido del módulo: Grilla de facturas, etc. -->
+        </div>
+    </div>
+</div>
+
+@*
+    El modal de identificación de cliente es reutilizado desde la carpeta Shared de Facturación.
+    La lógica de este modal está encapsulada en fact.js y es agnóstica al módulo que lo usa,
+    ya que solo dispara un evento 'clienteConfirmado' al finalizar.
+*@
+@await Html.PartialAsync("~/Areas/Facturacion/Views/Shared/_IdentificarClienteModal.cshtml", null, new ViewDataDictionary(ViewData) { { "Modulo", "CobranzaDiferida" } })
+@* 2. MODAL PARA MOSTRAR LAS FACTURAS PENDIENTES *@
+@await Html.PartialAsync("_FacturasPendientesModal")
+
+@section Scripts {
+    <script>
+        // =================================================================
+        // ✅ URLs DEL BACKEND PARA EL MÓDULO DE COBRANZA DIFERIDA
+        // =================================================================
+
+        // URL para volver al menú principal de caja
+        const MenuCajaUrl = '@Url.Action("Index", "Home", new { Area = "" })';
+
+        // URLs para el buscador de clientes (reutilizadas de Facturación)
+        const BuscarClienteUrl = '@Url.Action("BuscarCliente", "Cliente", new { Area = "Facturacion" })';
+        const TraerGrillaClientesUrl = '@Url.Action("TraerGrillaClientes", "Cliente", new { Area = "Facturacion" })';
+        const LimpiarSesionClientesUrl = '@Url.Action("LimpiarSesionClientes", "Cliente", new { Area = "Facturacion" })';
+        const ObtenerClienteActualUrl = '@Url.Action("ObtenerClienteActual", "Cliente", new { Area = "Facturacion" })';
+        const ActualizarConsumidorFinalUrl = '@Url.Action("ActualizarConsumidorFinal", "Cliente", new { Area = "Facturacion" })';
+
+        // URLs específicas del flujo de caja (requeridas por caja.js)
+        const cobranzaDiferidaValidarUrl = '@Url.Action("Validar", "PDiferido", new { Area = "Facturacion" })';
+        const cobranzaDiferidaInicializaUrl = '@Url.Action("Index", "PDiferido", new { Area = "Facturacion" })';
+    </script>
+
+    @*
+        1. fact.js: Contiene toda la lógica del modal de búsqueda de cliente.
+           Se carga primero porque pagoDiferido.js dependerá de sus funciones y eventos.
+        2. pagoDiferido.js: Contiene la lógica específica para el módulo de Cobranza Diferida.
+           Este script iniciará el flujo y escuchará el evento 'clienteConfirmado'.
+    *@
+    <script src="~/js/app/fact.js" asp-append-version="true"></script>
+    <script src="~/js/app/pagoDiferido.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,129 @@
+﻿@*
+    ================================================================
+    MODAL: FACTURAS PENDIENTES DE COBRANZA DIFERIDA
+    ================================================================
+    v1.0
+    - Muestra las facturas con pago diferido de un cliente.
+    - Permite seleccionar facturas para continuar con la cobranza.
+*@
+<div class="modal modal-golden fade" id="modalFacturasPendientes" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalFacturasPendientesTitle" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+
+            <!-- Header -->
+            <div class="modal-header bg-gradient-blue">
+                <h5 class="modal-title fw-bold text-white" id="modalFacturasPendientesTitle">
+                    <i class='bx bx-wallet'></i>
+                    COBRANZA DIFERIDA - Facturas Pendientes
+                </h5>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body p-3 bg-light">
+                <!-- Card con datos del cliente -->
+                <div class="card card-golden mb-3" id="cardDatosClienteFacturasPendientes">
+                    <div class="card-header">
+                        <i class='bx bx-user-check'></i> Datos del Cliente
+                    </div>
+                    <div class="card-body bg-gradient-golden p-2">
+                        <!-- Fila 1: Nombre, ID, Domicilio -->
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-5">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0"><i class='bx bx-user'></i> Cliente</span>
+                                    <input type="text" class="form-control form-control-sm fw-bold bg-white" id="txtNombrePendiente" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0"><i class='bx bx-id-card'></i> ID</span>
+                                    <input type="text" class="form-control form-control-sm text-center fw-bold bg-white" id="txtClienteIdPendiente" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0"><i class='bx bx-map'></i> Domicilio</span>
+                                    <input type="text" class="form-control form-control-sm bg-white" id="txtDomicilioPendiente" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fila 2: Condición AFIP, CUIT, Email, Móvil -->
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0"><i class='bx bx-receipt'></i> AFIP</span>
+                                    <input type="text" class="form-control form-control-sm bg-white" id="txtCondicionAfipPendiente" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0"><i class='bx bx-file'></i> CUIT/DNI</span>
+                                    <input type="text" class="form-control form-control-sm bg-white" id="txtTipoNumeroPendiente" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0"><i class='bx bx-envelope'></i> Email</span>
+                                    <input type="text" class="form-control form-control-sm bg-white" id="txtEmailPendiente" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0"><i class='bx bx-phone'></i> Móvil</span>
+                                    <input type="text" class="form-control form-control-sm bg-white" id="txtMovilPendiente" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grilla de Facturas Pendientes -->
+                <div class="card card-golden">
+                    <div class="card-body p-0">
+                        <div class="table-responsive" style="max-height: 55vh; overflow-y: auto;">
+                            <table class="table table-golden table-hover table-sm mb-0">
+                                <thead class="table-golden-header sticky-top">
+                                    <tr>
+                                        <th class="text-center" style="width: 5%;"><input type="checkbox" id="chkSeleccionarTodo" class="form-check-input" title="Seleccionar Todo"></th>
+                                        <th style="width: 15%;">Tipo</th>
+                                        <th style="width: 20%;">Comprobante</th>
+                                        <th style="width: 25%;">Cliente</th>
+                                        <th class="text-center" style="width: 15%;">Fecha</th>
+                                        <th class="text-end" style="width: 20%;">Importe</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyFacturasPendientes">
+                                    <!-- Las filas se cargarán dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Footer con Total -->
+                    <div class="card-footer bg-golden-light border-top border-golden">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-8 text-end">
+                                <span class="fw-bold text-golden-dark fs-4">TOTAL SELECCIONADO:</span>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" class="form-control form-control-lg text-end fw-bold text-success" id="txtTotalSeleccionado" readonly value="$ 0.00" style="font-size: 1.75rem; background-color: #fff; border: 2px solid var(--bs-golden-primary);">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer con botones -->
+            <div class="modal-footer d-flex justify-content-between bg-white border-top">
+                <button type="button" class="btn btn-outline-secondary btn-lg shadow-sm" id="btnCancelarSeleccionFacturas" title="Volver a identificar cliente">
+                    <i class='bx bx-arrow-back'></i> VOLVER
+                </button>
+                <div class="d-flex gap-3">
+                    <button type="button" class="btn btn-success btn-lg shadow" id="btnSeguirConCobranza" disabled title="Continuar a la cobranza">
+                        <i class='bx bx-check-circle'></i> SEGUIR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

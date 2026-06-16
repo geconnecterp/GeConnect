@@ -55,7 +55,8 @@
 </div>
 
 
-@await Html.PartialAsync("_IdentificarClienteModal")
+@* @await Html.PartialAsync("_IdentificarClienteModal") *@
+@await Html.PartialAsync("~/Areas/Facturacion/Views/Shared/_IdentificarClienteModal.cshtml", null, new ViewDataDictionary(ViewData) { { "Modulo", "Facturacion" } })
 @await Html.PartialAsync("_ClienteUpdate")
 @await Html.PartialAsync("~/Areas/Facturacion/Views/ProductoFact/_productoFactura.cshtml")
 @await Html.PartialAsync("~/Areas/Facturacion/Views/ProductoFact/_busquedaAdvanceV02.cshtml")

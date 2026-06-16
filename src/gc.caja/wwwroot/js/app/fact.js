@@ -190,18 +190,34 @@ function cancelarBusquedaActual() {
 }
 
 // ====== INICIALIZACIÓN ======
+/**
+ * ✅ ACTUALIZADO v2.0: La inicialización ahora es condicional.
+ * 
+ * El script se autoinicializa solo si está en el contexto del módulo de Facturación,
+ * buscando un elemento específico de esa vista (ej: #producto-factura-table).
+ * En otros módulos (como Cobranza Diferida), la inicialización debe ser manual
+ * llamando a `inicializaEventosFact()` y `inicializaVistaFact()`.
+ */
 $(function () {
-    console.log('🚀 Módulo de Facturación Cargado');
+    console.log('🚀 Módulo de Facturación/Cliente Cargado');
 
+    // Define admLp_id si no existe para evitar errores en otros módulos
     if (typeof admLp_id === 'undefined') {
         window.admLp_id = "001";
-        console.log('⚠️ admLp_id no estaba definida, se inicializó en "001"');
     }
 
-    console.log(`✅ Lista de precios inicial: ${admLp_id}`);
-
+    // Inicializa los eventos siempre, ya que son necesarios para el modal
     inicializaEventosFact();
-    inicializaVistaFact();
+
+    console.log('ℹ️ Eventos del modal de cliente registrados. Esperando llamada de inicialización...');
+    //// Condiciona la inicialización automática de la vista
+    //// #producto-factura-table es un ID que solo existe en la vista de Facturación.
+    //if ($('#producto-factura-table').length > 0) {
+    //    console.log('✅ Contexto de Facturación detectado. Inicializando vista automáticamente.');
+    //    inicializaVistaFact();
+    //} else {
+    //    console.log('ℹ️ Contexto diferente a Facturación. La inicialización de la vista debe ser manual.');
+    //}
 });
 
 // ====== EVENTOS PRINCIPALES ======
@@ -473,7 +489,7 @@ function limpiarModalCliente() {
 }
 // ====== BÚSQUEDA DE CLIENTE ======
 /**
- * ✅ MODIFICADO v4.0: Búsqueda de cliente con protección completa contra concurrencia
+ * ✅ MODIFICADO v5.0: Búsqueda de cliente con lógica condicional por módulo
  */
 function buscarCliente() {
     console.log('═══════════════════════════════════════════════════');
