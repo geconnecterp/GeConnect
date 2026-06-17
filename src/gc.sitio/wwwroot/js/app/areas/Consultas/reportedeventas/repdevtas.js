@@ -82,7 +82,7 @@ function CargarSeccionProcesoDeCajas(pag = 1) {
 	try {
 		AbrirWaiting("Buscando Procesos...")
 		const filtros = buildQueryFilters(pag);
-		const url = buscarProcesosDeCaja2URL;
+		const url = buscarProcesosDeCajaURL;
 		PostGenHtml(filtros, url, function (html) {
 			$("#divProcesosDeCaja").html(html);
 			InicializarEventosProcesosDeCaja();
@@ -140,14 +140,70 @@ function InicializarEventosProcesosDeCaja() {
 		const $fila = $(this);
 		ProcesarSeleccionFilaEnProcesosDeCaja($fila);
 	});
+
+	$(document).on("click", "#btnRendicionCierre", function () {
+		
+	});
+
+	$(document).on("click", "#btnAnaliticoOperacion", function () {
+		
+	});
 }
 
 function ProcesarSeleccionFilaEnProcesosDeCaja($fila) {
 	$("#tbGridProcesos tbody tr").removeClass("selected-row");
 	$fila.addClass("selected-row");
 	console.log("Fila seleccionada:", $fila.data("caja-nro-proceso"), $fila.data("adm-id"));
+	BuscarCierresDeProcesoDeCaja($fila.data("caja-nro-proceso"));
 }
 
+function BuscarCierresDeProcesoDeCaja(caja_nro_proceso) {
+	AbrirWaiting("Buscando cierres para proceso de caja " + caja_nro_proceso + "...");
+	PostGen({ caja_nro_proceso }, buscarCierresDeProcesoURL, function (html) {
+		$("#divProcDeCajaCierres").html(html);
+		InicializarEventosCierresDeProcesosDeCaja();
+		CerrarWaiting();
+	});
+}
+
+function InicializarEventosCierresDeProcesosDeCaja() {
+	console.log("Inicializando eventos de Cierres de Procesos de Caja...");
+
+	// Nos aseguramos que el contenedor exista
+	const $contenedor = $("#divProcDeCajaCierres");
+	if ($contenedor.length === 0) {
+		console.warn("No se encontró #divProcDeCajaCierres en el DOM.");
+		return;
+	}
+
+	// Quitamos cualquier handler previo
+	$contenedor.off("click", "#tbGridCierres tbody tr");
+
+	// Delegamos el click desde el contenedor fijo
+	$contenedor.on("click", "#tbGridCierres tbody tr", function (e) {
+		console.log("Click en fila de cierres de procesos de caja");
+		if ($(e.target).is("button, a, .btn, i")) {
+			console.log("Click ignorado por ser botón/link/icono");
+			return;
+		}
+
+		const $fila = $(this);
+		ProcesarSeleccionFilaEnCierresDeProcesosDeCaja($fila);
+	});
+}
+
+function ProcesarSeleccionFilaEnCierresDeProcesosDeCaja($fila) {
+	$("#tbGridCierres tbody tr").removeClass("selected-row");
+	$fila.addClass("selected-row");
+	console.log("Fila seleccionada:", $fila.data("caja-nro-proceso"), $fila.data("caja-nro-cierre"), $fila.data("caja-id"));
+	let estado = $fila.data("cierre-estado");
+	if (estado === "Abierto") {
+		$("#btnRendicionCierre").prop("disabled", true);
+	}
+	else {
+		$("#btnRendicionCierre").prop("disabled", false);
+	}
+}
 
 function buildQueryFilters(pag) {
 	var suc = ObtenerSucursalesSeleccionadasConTexto();
@@ -187,6 +243,30 @@ function EvaluarBotonImprimir(tabId) {
 
 	// Guardamos el tab actual para imprimir
 	$("#btnImprimir").data("tab-activo", tabId);
+}
+
+function ImprimirReporteRendicionCierre() {
+	AbrirWaiting();
+	var tipoReporte = 1;
+	var data = { tipoReporte };
+	PostGen(data, setearTipoDeReporteUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			HandlerImprimirMensual();
+		}
+	});
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
 }
 
 function ObtenerSucursalesSeleccionadas() {
@@ -267,12 +347,11 @@ function InicializarCamposEnFiltros(vieneDeCancelar) {
 
 	setTimeout(() => {
 		let habilitado = $("#HabilitarCambioDeSucursalSeleccionada").val();
-		if (habilitado == "False") {
+		if (habilitado == "False") 
 			$("#divListaSucursales").find("input, select, textarea, button").prop("disabled", true);
-			ControlalistaSucursalesSelected();
-		}
 		else
 			$("#divListaSucursales").find("input, select, textarea, button").prop("disabled", false);
+		ControlalistaSucursalesSelected();
 	}, 500);
 }
 

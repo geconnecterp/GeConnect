@@ -602,7 +602,7 @@ namespace gc.api.core.Servicios
 
 		public List<CajaProcesoListaDto> ObtenerCajaProcesoLista(CajaProcesoListaRequest req)
 		{
-			var sp = Constantes.ConstantesGC.StoredProcedures.SP_VTAS_REPO_PROCESOS_CIERRES;
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_VTAS_REPO_PROCESOS;
 
 			var ps = new List<SqlParameter>();
 
@@ -636,6 +636,174 @@ namespace gc.api.core.Servicios
 			var procesos = _repository.EjecutarLstSpExt<CajaProcesoListaDto>(sp, ps, true);
 
 			return procesos;
+		}
+
+		public List<CajaProcesoCierresListaDto> ObtenerCajaProcesoCierresLista(string caja_nro_proceso)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_VTAS_REPO_PROCESOS_CIERRES;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@caja_nro_proceso", caja_nro_proceso),
+			};
+
+			var result = _repository.EjecutarLstSpExt<CajaProcesoCierresListaDto>(sp, ps, true);
+			return result;
+		}
+
+		public List<RepoVtaResumenDto> ObtenerRepoVtaResumen(RepoVtaRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_VTAS_REPO_RESUMEN;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@caja_nro_proceso", request.caja_nro_proceso),
+				new SqlParameter("@caja_nro_cierre", request.caja_nro_cierre),
+			};
+
+			var result = _repository.EjecutarLstSpExt<RepoVtaResumenDto>(sp, ps, true);
+			return result;
+		}
+
+		public List<RepoVtaRendicionDto> ObtenerRepoVtaRendicion(RepoVtaRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_VTAS_REPO_RENDICION;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@caja_nro_proceso", request.caja_nro_proceso),
+				new SqlParameter("@caja_nro_cierre", request.caja_nro_cierre),
+			};
+
+			var result = _repository.EjecutarLstSpExt<RepoVtaRendicionDto>(sp, ps, true);
+			return result;
+		}
+
+		public List<RepoVtaRendicionDetalleDto> ObtenerRepoVtaRendicion(RepoVtaDetRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_VTAS_REPO_RENDICION_DETALLE;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@caja_nro_proceso", request.caja_nro_proceso),
+				new SqlParameter("@caja_nro_cierre", request.caja_nro_cierre),
+				new SqlParameter("@tcf_id", request.tcf_id),
+			};
+
+			var result = _repository.EjecutarLstSpExt<RepoVtaRendicionDetalleDto>(sp, ps, true);
+			return result;
+		}
+
+		public List<RepoVtaCtaCteDto> ObtenerRepoVtaCtaCte(RepoVtaRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_VTAS_REPO_CTACTE;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@caja_nro_proceso", request.caja_nro_proceso),
+				new SqlParameter("@caja_nro_cierre", request.caja_nro_cierre),
+			};
+
+			var result = _repository.EjecutarLstSpExt<RepoVtaCtaCteDto>(sp, ps, true);
+			return result;
+		}
+
+		public List<RepoVtaCobranzaDto> ObtenerRepoVtaCobranza(RepoVtaRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_VTAS_REPO_COBRANZAS;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@caja_nro_proceso", request.caja_nro_proceso),
+				new SqlParameter("@caja_nro_cierre", request.caja_nro_cierre),
+			};
+
+			var result = _repository.EjecutarLstSpExt<RepoVtaCobranzaDto>(sp, ps, true);
+			return result;
+		}
+
+		public List<RepoVtaAnticipoDto> ObtenerRepoVtaAnticipo(RepoVtaRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_VTAS_REPO_ANTICIPOS;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@caja_nro_proceso", request.caja_nro_proceso),
+				new SqlParameter("@caja_nro_cierre", request.caja_nro_cierre),
+			};
+
+			var result = _repository.EjecutarLstSpExt<RepoVtaAnticipoDto>(sp, ps, true);
+			return result;
+		}
+
+		public List<RepoVtaCreditoUsadoDto> ObtenerRepoVtaCreditoUsado(RepoVtaRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_VTAS_REPO_CREDITOS_USADOS;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@caja_nro_proceso", request.caja_nro_proceso),
+				new SqlParameter("@caja_nro_cierre", request.caja_nro_cierre),
+			};
+
+			var result = _repository.EjecutarLstSpExt<RepoVtaCreditoUsadoDto>(sp, ps, true);
+			return result;
+		}
+
+		public List<RepoVtaNCDto> ObtenerRepoVtaNC(RepoVtaRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_VTAS_REPO_NC;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@caja_nro_proceso", request.caja_nro_proceso),
+				new SqlParameter("@caja_nro_cierre", request.caja_nro_cierre),
+			};
+
+			var result = _repository.EjecutarLstSpExt<RepoVtaNCDto>(sp, ps, true);
+			return result;
+		}
+
+		public List<RepoVtaNDDto> ObtenerRepoVtaND(RepoVtaRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_VTAS_REPO_ND;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@caja_nro_proceso", request.caja_nro_proceso),
+				new SqlParameter("@caja_nro_cierre", request.caja_nro_cierre),
+			};
+
+			var result = _repository.EjecutarLstSpExt<RepoVtaNDDto>(sp, ps, true);
+			return result;
+		}
+
+		public List<RepoVtaCambioValoresDto> ObtenerRepoVtaCambioValores(RepoVtaRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_VTAS_REPO_CAMBIO_VALORES;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@caja_nro_proceso", request.caja_nro_proceso),
+				new SqlParameter("@caja_nro_cierre", request.caja_nro_cierre),
+			};
+
+			var result = _repository.EjecutarLstSpExt<RepoVtaCambioValoresDto>(sp, ps, true);
+			return result;
+		}
+
+		public List<RepoVtaZDto> ObtenerRepoVtaZ(RepoVtaRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_VTAS_REPO_Z;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@caja_nro_proceso", request.caja_nro_proceso),
+				new SqlParameter("@caja_nro_cierre", request.caja_nro_cierre),
+			};
+
+			var result = _repository.EjecutarLstSpExt<RepoVtaZDto>(sp, ps, true);
+			return result;
 		}
 	}
 }

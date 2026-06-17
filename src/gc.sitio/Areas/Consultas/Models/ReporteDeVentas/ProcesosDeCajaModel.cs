@@ -6,6 +6,6 @@ namespace gc.sitio.Areas.Consultas.Models.ReporteDeVentas
 	public class ProcesosDeCajaModel
 	{
 		public GridCoreSmart<CajaProcesoListaDto> ListaProcesos { get; set; }
-		public GridCoreSmart<CajaProcesoListaDto> ListaCierres { get; set; } //Reemplazar por la lista de Cierres de caja
+		public GridCoreSmart<CajaProcesoCierresListaDto> ListaCierres { get; set; } //Reemplazar por la lista de Cierres de caja
 	}
 }

@@ -64,7 +64,18 @@
 			public const string SP_VTAS_PV_CTL_ENTREGAS_CONFIRMAR = "SPGECO_Vtas_PV_CTL_Entregas_Confirmar";
 			public const string SP_VTAS_PV_CTL_ENTREGAS_ANULAR = "SPGECO_Vtas_PV_CTL_Entregas_Anular";
 			public const string SP_VTAS_REPO_PROCESOS = "SPGECO_Vtas_Repo_Procesos";
-			public const string SP_VTAS_REPO_PROCESOS_CIERRES = "SPGECO_Vtas_Repo_Procesos";
+			public const string SP_VTAS_REPO_PROCESOS_CIERRES = "SPGECO_Vtas_Repo_Cierres";
+			public const string SP_VTAS_REPO_RESUMEN = "SPGECO_Vtas_Repo_Resumen";
+			public const string SP_VTAS_REPO_RENDICION = "SPGECO_Vtas_Repo_Rend";
+			public const string SP_VTAS_REPO_RENDICION_DETALLE = "SPGECO_Vtas_Repo_Rend_d";
+			public const string SP_VTAS_REPO_CTACTE = "SPGECO_Vtas_Repo_CtaCte";
+			public const string SP_VTAS_REPO_COBRANZAS = "SPGECO_Vtas_Repo_Cobranzas";
+			public const string SP_VTAS_REPO_ANTICIPOS = "SPGECO_Vtas_Repo_Anticipos";
+			public const string SP_VTAS_REPO_CREDITOS_USADOS = "SPGECO_Vtas_Repo_Creditos_Usados";
+			public const string SP_VTAS_REPO_NC = "SPGECO_Vtas_Repo_NC";
+			public const string SP_VTAS_REPO_ND = "SPGECO_Vtas_Repo_ND";
+			public const string SP_VTAS_REPO_CAMBIO_VALORES = "SPGECO_Vtas_Repo_Cambio_Valores";
+			public const string SP_VTAS_REPO_Z = "SPGECO_Vtas_Repo_Z";
 			#endregion
 
 			#region Sorteos (Ventas)

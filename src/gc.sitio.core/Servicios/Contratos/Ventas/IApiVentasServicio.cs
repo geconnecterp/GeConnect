@@ -40,5 +40,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<SorteoComptesDto> ObtenerSorteoComptesLista(SorteoCompteRequest request, string token);
 		List<SorteoAnalisisProdDto> ObtenerSorteoAnalisisProdLista(SorteoAnalisisProdRequest request, string token);
 		Task<RespuestaGenerica<CajaProcesoListaDto>> ObtenerCajaProcesoLista(CajaProcesoListaRequest request, string token);
+		Task<RespuestaGenerica<CajaProcesoCierresListaDto>> ObtenerCajaProcesoCierresLista(string id, string token);
 	}
 }

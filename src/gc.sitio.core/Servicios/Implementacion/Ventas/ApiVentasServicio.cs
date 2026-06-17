@@ -5,6 +5,7 @@ using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Users;
 using gc.infraestructura.Dtos.Ventas;
 using gc.infraestructura.Dtos.Ventas.Request;
 using gc.sitio.core.Servicios.Contratos;
@@ -54,6 +55,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string SORTEOS_ANALISIS_PROD_LISTA = "/ObtenerSorteoAnalisisProdLista";
 
 		private const string CAJA_PROCESOS_LISTA = "/ObtenerCajaProcesoLista";
+		private const string CAJA_PROCESOS_CIERRES_LISTA = "/ObtenerCajaProcesoCierresLista";
 
 
 		public ApiVentasServicio(IOptions<AppSettings> options, ILogger<ApiVentasServicio> logger) : base(options, logger, RutaAPI)
@@ -1530,6 +1532,62 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 				return new() { Ok = false, Mensaje = "Error al buscar Procesos de Cierre de Caja" };
+			}
+		}
+
+		public async Task<RespuestaGenerica<CajaProcesoCierresListaDto>> ObtenerCajaProcesoCierresLista(string id, string token)
+		{
+			try
+			{
+				var helper = new HelperAPI();
+				var client = helper.InicializaCliente(token);
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{CAJA_PROCESOS_CIERRES_LISTA}?caja_nro_proceso={id}";
+				using var response = await client.GetAsync(link);
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					var stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						return new() { Ok = false, Mensaje = "No se recibió respuesta válida de ObtenerCajaProcesoCierresLista" };
+					}
+
+					var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<CajaProcesoCierresListaDto>>>(stringData)
+						?? throw new NegocioException("Error al deserializar los datos");
+
+					if (apiResponse.Data == null)
+					{
+						return new() { Ok = false, Mensaje = "No se encontraron datos de ObtenerCajaProcesoCierresLista." };
+					}
+
+					return new RespuestaGenerica<CajaProcesoCierresListaDto>
+					{
+						Ok = true,
+						ListaEntidad = apiResponse.Data,
+						Mensaje = "OK"
+					};
+				}
+				else
+				{
+					var errorData = await response.Content.ReadAsStringAsync();
+					_logger.LogWarning($"Error API ({response.StatusCode}): {errorData}");
+
+					return new()
+					{
+						Ok = false,
+						Mensaje = "Error al obtener ObtenerCajaProcesoCierresLista. Si el problema persiste contacte al administrador."
+					};
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name}");
+				return new RespuestaGenerica<CajaProcesoCierresListaDto>
+				{
+					Ok = false,
+					Mensaje = "Error interno al obtener ObtenerCajaProcesoCierresLista"
+				};
 			}
 		}
 	}

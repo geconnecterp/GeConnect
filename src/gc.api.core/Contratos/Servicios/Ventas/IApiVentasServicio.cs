@@ -41,5 +41,17 @@ namespace gc.api.core.Contratos.Servicios
 		List<SorteoComptesDto> ObtenerSorteoComptesLista(SorteoCompteRequest request);
 		List<SorteoAnalisisProdDto> ObtenerSorteoAnalisisProdLista(SorteoAnalisisProdRequest request);
 		List<CajaProcesoListaDto> ObtenerCajaProcesoLista(CajaProcesoListaRequest req);
+		List<CajaProcesoCierresListaDto> ObtenerCajaProcesoCierresLista(string caja_nro_proceso);
+		List<RepoVtaResumenDto> ObtenerRepoVtaResumen(RepoVtaRequest request);
+		List<RepoVtaRendicionDto> ObtenerRepoVtaRendicion(RepoVtaRequest request);
+		List<RepoVtaRendicionDetalleDto> ObtenerRepoVtaRendicion(RepoVtaDetRequest request);
+		List<RepoVtaCtaCteDto> ObtenerRepoVtaCtaCte(RepoVtaRequest request);
+		List<RepoVtaCobranzaDto> ObtenerRepoVtaCobranza(RepoVtaRequest request);
+		List<RepoVtaAnticipoDto> ObtenerRepoVtaAnticipo(RepoVtaRequest request);
+		List<RepoVtaCreditoUsadoDto> ObtenerRepoVtaCreditoUsado(RepoVtaRequest request);
+		List<RepoVtaNCDto> ObtenerRepoVtaNC(RepoVtaRequest request);
+		List<RepoVtaNDDto> ObtenerRepoVtaND(RepoVtaRequest request);
+		List<RepoVtaCambioValoresDto> ObtenerRepoVtaCambioValores(RepoVtaRequest request);
+		List<RepoVtaZDto> ObtenerRepoVtaZ(RepoVtaRequest request);
 	}
 }

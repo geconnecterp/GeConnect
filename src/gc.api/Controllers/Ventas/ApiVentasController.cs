@@ -492,26 +492,6 @@ namespace gc.api.Controllers.Ventas
 			}
 		}
 
-		// Obtiene datos de productos de un sorteo por id
-		[HttpGet("sorteo/prod/{id}")]
-		public IActionResult ObtenerSorteoProdDatos(string id)
-		{
-			const string msgError = "Error en la invocación de la API - Obtener Datos del Sorteo - Productos";
-			try
-			{
-				if (string.IsNullOrWhiteSpace(id))
-					return BadRequest("Debe indicar el identificador del sorteo.");
-
-				var datos = _iApiVentasServicio.ObtenerSorteoCargaProd(id);
-				return Ok(new ApiResponse<List<SorteoCargaProdDto>>(datos));
-			}
-			catch (Exception ex)
-			{
-				_logger?.LogError(ex, msgError);
-				return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
-			}
-		}
-
 		[HttpPost("sorteo/confirmar")]
 		public IActionResult ConfirmarSorteo(ConfirmarSorteoRequest req)
 		{
@@ -577,6 +557,24 @@ namespace gc.api.Controllers.Ventas
 				_logger?.LogError(ex, msgError);
 				return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
 			}
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<CajaProcesoCierresListaDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerCajaProcesoCierresLista(string caja_nro_proceso)
+		{
+
+			if (string.IsNullOrWhiteSpace(caja_nro_proceso))
+			{
+				_logger.LogWarning("Parámetro caja_nro_proceso se encuentra vacío o nulo.");
+				return BadRequest(new ApiResponse<string>("El parámetro caja_nro_proceso no puede estar vacío."));
+			}
+
+			var data = _iApiVentasServicio.ObtenerCajaProcesoCierresLista(caja_nro_proceso);
+			return Ok(new ApiResponse<List<CajaProcesoCierresListaDto>>(data));
+
 		}
 
 		private static MetadataGrid? BuildMetadata(List<SorteoCargaListaDto>? lista, QueryFilters filtro)

@@ -10,7 +10,7 @@
 	<div class="row mb-2">
 		<div class="col-md-6">
 			<div class="d-flex justify-content-sm-around">
-				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
+				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltros" aria-expanded="true" aria-controls="divFiltro">
 					<i class="bx bx-filter bx-xs"></i>
 				</button>
 
@@ -45,16 +45,10 @@
 		let search = "";
 
 		let inicializarPantallPrincipalURL = "@Url.Action("InicializarPantallPrincipal", "ReporteDeVentas", new { area = "consultas" })";
-		let buscarProcesosDeCaja2URL = "@Url.Action("BuscarProcesosDeCaja", "ReporteDeVentas", new { area = "consultas" })";
 		let buscarProcesosDeCajaURL = "@Url.Action("BuscarProcesosDeCaja", "ReporteDeVentas", new { area = "consultas" })";
-
-		let buscarMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "ReporteDeVentas", new { area = "consultas" })';
-		// let cargarDetalleMesDiarioURL = "@Url.Action("CargarDetalleMesDiario", "AnalisisDeVentas", new { area = "consultas" })";
-		// let cargarDetalleMesHoraURL = "@Url.Action("CargarDetalleMesHora", "AnalisisDeVentas", new { area = "consultas" })";
-		// let cargarDetalleMesSucursalURL = "@Url.Action("CargarDetalleMesSucursal", "AnalisisDeVentas", new { area = "consultas" })";
-		// let cargarDetalleMesCierreURL = "@Url.Action("CargarDetalleMesCierre", "AnalisisDeVentas", new { area = "consultas" })";
-		// let buscarAnalisisDeVentasAnualURL = "@Url.Action("BuscarAnalisisDeVentasAnual", "AnalisisDeVentas", new { area = "consultas" })";
-		// let setearTipoDeReporteUrl = "@Url.Action("SetearTipoDeReporte", "AnalisisDeVentas", new { area = "consultas" })";
+		let buscarCierresDeProcesoURL = "@Url.Action("BuscarCierresDeProceso", "ReporteDeVentas", new { area = "consultas" })";
+		let buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "ReporteDeVentas", new { area = "consultas" })";
+		let setearTipoDeReporteUrl = "@Url.Action("SetearTipoDeReporte", "ReporteDeVentas", new { area = "consultas" })";
 
 		// Gestor de impresión
 		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';

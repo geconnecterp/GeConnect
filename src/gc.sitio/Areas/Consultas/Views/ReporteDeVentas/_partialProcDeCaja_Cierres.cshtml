@@ -1,5 +1,5 @@
 ﻿@using gc.infraestructura.Dtos
-@model GridCoreSmart<CajaProcesoListaDto>
+@model GridCoreSmart<CajaProcesoCierresListaDto>
 @{
 }
 @{
@@ -37,11 +37,10 @@
 			<table class="table table-sm table-hover mb-0 table-golden" id="tbGridCierres">
 				<thead class="sticky-top table-golden-header-compact">
 					<tr class="header">
-						<th class="text-center th-compact">Sucursal</th>
-						<th class="text-center th-compact">N° de Proceso</th>
-						<th class="text-center th-compact">Cant. Cierres</th>
-						<th class="text-center th-compact">Apertura</th>
 						<th class="text-center th-compact">Cierre</th>
+						<th class="text-center th-compact">PV</th>
+						<th class="text-center th-compact">Cajero</th>
+						<th class="text-center th-compact">Estado</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -52,21 +51,20 @@
 							if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
 							<tr class="@clase"
 								data-caja-nro-proceso="@item.caja_nro_proceso"
-								data-adm-id="@item.adm_id">
+								data-caja-nro-cierre="@item.caja_nro_cierre"
+								data-caja-id="@item.caja_id"
+								data-cierre-estado="@item.estado">
+								<td class="text-center">
+									@item.caja_nro_cierre
+								</td>
+								<td class="text-center">
+									@item.caja_id
+								</td>
 								<td class="text-start">
-									@item.adm_nombre
+									@item.usu_apellidoynombre
 								</td>
-								<td class="text-center">
-									@item.caja_nro_proceso
-								</td>
-								<td class="text-end">
-									@item.caja_nro_cierres
-								</td>
-								<td class="text-center">
-									@item.caja_habilitacion.ToString()
-								</td>
-								<td class="text-center">
-									@item.caja_cierre_grl.ToString()
+								<td class="text-start">
+									@item.estado
 								</td>
 							</tr>
 						}
