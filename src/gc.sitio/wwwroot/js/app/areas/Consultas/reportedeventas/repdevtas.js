@@ -192,10 +192,15 @@ function InicializarEventosCierresDeProcesosDeCaja() {
 	});
 }
 
+let caja_nro_proceso_seleccionado = null;
+let caja_nro_cierre_seleccionado = null;
+
 function ProcesarSeleccionFilaEnCierresDeProcesosDeCaja($fila) {
 	$("#tbGridCierres tbody tr").removeClass("selected-row");
 	$fila.addClass("selected-row");
 	console.log("Fila seleccionada:", $fila.data("caja-nro-proceso"), $fila.data("caja-nro-cierre"), $fila.data("caja-id"));
+	caja_nro_proceso_seleccionado = $fila.data("caja-nro-proceso");
+	caja_nro_cierre_seleccionado = $fila.data("caja-nro-cierre");
 	let estado = $fila.data("cierre-estado");
 	if (estado === "Abierto") {
 		$("#btnRendicionCierre").prop("disabled", true);
@@ -246,22 +251,42 @@ function EvaluarBotonImprimir(tabId) {
 }
 
 function ImprimirReporteRendicionCierre() {
-	AbrirWaiting();
-	var tipoReporte = 1;
-	var data = { tipoReporte };
-	PostGen(data, setearTipoDeReporteUrl, function (obj) {
-		CerrarWaiting();
-		if (obj.error === true) {
+	if (!caja_nro_proceso_seleccionado || !caja_nro_cierre_seleccionado) {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un cierre de caja.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting();
+		var tipoReporte = 1;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
 			CerrarWaiting();
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				HandlerImprimirReporteRendicionCierre();
+			}
+		});
+	}
+}
+
+function HandlerImprimirReporteRendicionCierre() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var data = {
+			caja_nro_proceso: caja_nro_proceso_seleccionado,
+			caja_nro_cierre: caja_nro_cierre_seleccionado,
 		}
-		else {
-			HandlerImprimirMensual();
-		}
-	});
+		cargarReporteEnArre(81, data, "Reporte Rendición de Cierre de Caja", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function ReseteoDeReportes() {
