@@ -7194,3 +7194,14 @@ span[data-bs-toggle="tooltip"] {
         color: #218838 !important; /* ← Verde más oscuro al hover */
         transform: scale(1.05); /* ← Efecto de zoom sutil */
     }
+
+/* Estilo para filas de facturas que no se pueden seleccionar */
+#tblVerFacturasPendientes tbody tr.fila-deshabilitada {
+    background-color: #f2f2f2 !important; /* Fondo gris claro */
+    opacity: 0.6; /* Ligeramente transparente */
+    pointer-events: none; /* Desactiva eventos de clic en la fila */
+}
+
+    #tblVerFacturasPendientes tbody tr.fila-deshabilitada input[type="checkbox"] {
+        cursor: not-allowed; /* Cursor de "no permitido" sobre el checkbox */
+    }

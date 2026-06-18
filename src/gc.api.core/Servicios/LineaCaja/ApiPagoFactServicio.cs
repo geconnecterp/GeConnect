@@ -109,9 +109,9 @@ namespace gc.api.core.Servicios.LineaCaja
                 new SqlParameter("@caja_nro_proceso", req.caja_nro_proceso),
                 new SqlParameter("@caja_nro_cierre", req.caja_nro_cierre),
                 new SqlParameter("@cta_id", req.cta_id),
-                new SqlParameter("@tdoc_id", req.tdoc_id),
+                new SqlParameter("@tdo_codigo", req.tdo_codigo),
                 new SqlParameter("@cta_documento", req.cta_documento),
-                new SqlParameter("@carga", req.carga)
+                new SqlParameter("@tipo_carga", req.tipo_carga)
             };
             var res = _repository.EjecutarLstSpExt<FactPendienteResponseDto>(sp, ps);
             return res;

@@ -42,7 +42,8 @@ namespace gc.infraestructura.Core.EntidadesComunes.Options
         public string? PathBase { get; set; }
         public string? PathApp { get; set; }
 
-        public string RutaFileCaja { get; set; }
+        public string RutaFileCaja { get; set; } = string.Empty;
+        public string TipoCuil { get; set; } = "80";
     }
     
 }

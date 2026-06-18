@@ -226,7 +226,21 @@
                     </button>
                 </div>
 
-                <div class="d-flex gap-3">
+                <!-- Sección Central (solo para Cobranza Diferida) -->
+                <div class="footer-section-center">
+                    @if (modulo == "CobranzaDiferida")
+                    {
+                        <button type="button"
+                                class="btn btn-warning btn-lg shadow"
+                                id="btnVerFacturasPendientes"
+                                title="Ver todas las facturas pendientes de cobro">
+                            <i class='bx bx-list-ul'></i> Ver Facturas Pendientes
+                        </button>
+                    }
+                </div>
+
+                <!-- Sección Derecha -->
+                <div class="footer-section-right d-flex gap-3">
                     <button type="button"
                             class="btn btn-danger btn-lg shadow"
                             id="btnCancelarCliente"

@@ -6,6 +6,7 @@ using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Cajas;
 using gc.infraestructura.Dtos.Cajas.Request;
+using gc.infraestructura.Dtos.Cajas.Response;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Users;
 using gc.infraestructura.EntidadesComunes;
@@ -713,6 +714,46 @@ namespace gc.caja.Controllers
             {
                 var json = JsonConvert.SerializeObject(value);
                 _context.HttpContext?.Session?.SetString("FacturaSorteos", json);
+            }
+        }
+
+        public List<FactPendienteResponseDto> FacturasPendientesActuales
+        {
+            get
+            {
+                var json = _context.HttpContext?.Session?.GetString("FacturasPendientesActuales");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<FactPendienteResponseDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session?.SetString("FacturasPendientesActuales", json);
+            }
+        }
+
+        /// <summary>
+        /// ✅ NUEVO v3.0: Facturas seleccionadas por el usuario para cobrar.
+        /// Esta es una lista FILTRADA de FacturasPendientesActuales.
+        /// </summary>
+        public List<FactPendienteResponseDto> FacturasSeleccionadasParaCobro
+        {
+            get
+            {
+                var json = _context.HttpContext?.Session?.GetString("FacturasSeleccionadasParaCobro");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<FactPendienteResponseDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session?.SetString("FacturasSeleccionadasParaCobro", json);
             }
         }
 

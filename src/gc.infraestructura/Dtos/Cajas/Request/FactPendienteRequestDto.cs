@@ -12,8 +12,8 @@ namespace gc.infraestructura.Dtos.Cajas.Request
         public string? caja_nro_proceso { get; set; }
         public string? caja_nro_cierre { get; set; }
         public string cta_id { get; set; } = string.Empty;
-        public string tdoc_id { get; set; } = string.Empty;
+        public string tdo_codigo { get; set; } = string.Empty;
         public string cta_documento { get; set; } = string.Empty;
-        public string carga { get; set; } = string.Empty;  //para Cobranza diferida tiene que ir "T"
+        public string tipo_carga { get; set; } = string.Empty;  //para Cobranza diferida tiene que ir "T"
     }
 }

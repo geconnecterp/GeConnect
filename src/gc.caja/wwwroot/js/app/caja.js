@@ -631,18 +631,7 @@ $(function () {
         }, 500);
     }
 
-    // ---------------------------------------------------------
-    // FUNCIONES DE MENSAJES Y MANEJO DE ERRORES
-    // ---------------------------------------------------------
-
-    function mostrarLoader(texto) {
-        $('#loaderText').html(texto);
-        $('#loaderOverlay').fadeIn(500);
-    }
-
-    function ocultarLoader() {
-        $('#loaderOverlay').fadeOut(300);
-    }
+ 
 
     /**
      * Muestra un mensaje de advertencia del sistema y ejecuta callback al cerrar

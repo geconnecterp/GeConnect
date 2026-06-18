@@ -59,7 +59,7 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
                         return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
                     }
                     var resp = apiResponse.Data;
-                    if (resp != null || resp.Any())
+                    if (resp != null && resp.Any())
                     {
                         return new RespuestaGenerica<FactPendienteResponseDto>
                         {
@@ -68,7 +68,7 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
                             ListaEntidad = apiResponse.Data
                         };
                     }
-                    
+
                     else
                     {
                         return new RespuestaGenerica<FactPendienteResponseDto>
