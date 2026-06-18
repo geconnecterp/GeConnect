@@ -9,7 +9,7 @@ const TabToTableMap = {
 $(function () {
 	InicializarCamposEnFiltros(false);
 	InicializaEventos();
-	
+
 });
 
 function InicializaEventos() {
@@ -86,9 +86,22 @@ function CargarSeccionProcesoDeCajas(pag = 1) {
 		PostGenHtml(filtros, url, function (html) {
 			$("#divProcesosDeCaja").html(html);
 			InicializarEventosProcesosDeCaja();
-			setTimeout(function () {
-				
-			}, 1000);
+
+			// ================================
+			// AUTO-SELECCIÓN DE PRIMERA FILA
+			// ================================
+			const $filasValidas = $("#tbGridProcesos tbody tr").filter(function () {
+				// Filas que NO son la fila de "No hay cierres..."
+				return !$(this).find("td").first().attr("colspan");
+			});
+
+			if ($filasValidas.length > 0) {
+				const $primera = $filasValidas.first();
+				$primera.addClass("selected-row");
+
+				// Disparar el procesamiento como si el usuario hubiera hecho click
+				ProcesarSeleccionFilaEnProcesosDeCaja($primera);
+			}
 
 			CerrarWaiting();
 			PostGen({}, buscarMetadataURL, function (obj) {
@@ -142,11 +155,11 @@ function InicializarEventosProcesosDeCaja() {
 	});
 
 	$(document).on("click", "#btnRendicionCierre", function () {
-		
+		ImprimirReporteRendicionCierre();
 	});
 
 	$(document).on("click", "#btnAnaliticoOperacion", function () {
-		
+
 	});
 }
 
@@ -162,6 +175,23 @@ function BuscarCierresDeProcesoDeCaja(caja_nro_proceso) {
 	PostGen({ caja_nro_proceso }, buscarCierresDeProcesoURL, function (html) {
 		$("#divProcDeCajaCierres").html(html);
 		InicializarEventosCierresDeProcesosDeCaja();
+
+		// ================================
+		// AUTO-SELECCIÓN DE PRIMERA FILA
+		// ================================
+		const $filasValidas = $("#tbGridCierres tbody tr").filter(function () {
+			// Filas que NO son la fila de "No hay cierres..."
+			return !$(this).find("td").first().attr("colspan");
+		});
+
+		if ($filasValidas.length > 0) {
+			const $primera = $filasValidas.first();
+			$primera.addClass("selected-row");
+
+			// Disparar el procesamiento como si el usuario hubiera hecho click
+			ProcesarSeleccionFilaEnCierresDeProcesosDeCaja($primera);
+		}
+
 		CerrarWaiting();
 	});
 }
@@ -202,7 +232,7 @@ function ProcesarSeleccionFilaEnCierresDeProcesosDeCaja($fila) {
 	caja_nro_proceso_seleccionado = $fila.data("caja-nro-proceso");
 	caja_nro_cierre_seleccionado = $fila.data("caja-nro-cierre");
 	let estado = $fila.data("cierre-estado");
-	if (estado === "Abierto") {
+	if (estado === "Abierta") {
 		$("#btnRendicionCierre").prop("disabled", true);
 	}
 	else {
@@ -283,6 +313,7 @@ function HandlerImprimirReporteRendicionCierre() {
 		var data = {
 			caja_nro_proceso: caja_nro_proceso_seleccionado,
 			caja_nro_cierre: caja_nro_cierre_seleccionado,
+			suc: ObtenerSucursalesSeleccionadasConTexto().textos
 		}
 		cargarReporteEnArre(81, data, "Reporte Rendición de Cierre de Caja", "", "");
 		invocacionGestorDoc({});
@@ -315,7 +346,6 @@ function ObtenerSucursalesSeleccionadas() {
 	// 3) Devolver como string separado por comas
 	return seleccionadas.join(",");
 }
-
 
 function validarFechasAnalisis() {
 	const desdeInput = document.getElementById("Desde");
@@ -372,7 +402,7 @@ function InicializarCamposEnFiltros(vieneDeCancelar) {
 
 	setTimeout(() => {
 		let habilitado = $("#HabilitarCambioDeSucursalSeleccionada").val();
-		if (habilitado == "False") 
+		if (habilitado == "False")
 			$("#divListaSucursales").find("input, select, textarea, button").prop("disabled", true);
 		else
 			$("#divListaSucursales").find("input, select, textarea, button").prop("disabled", false);

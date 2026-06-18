@@ -679,7 +679,7 @@ namespace gc.api.core.Servicios
 			return result;
 		}
 
-		public List<RepoVtaRendicionDetalleDto> ObtenerRepoVtaRendicion(RepoVtaDetRequest request)
+		public List<RepoVtaRendicionDetalleDto> ObtenerRepoVtaRendicionDetalle(RepoVtaDetRequest request)
 		{
 			var sp = ConstantesGC.StoredProcedures.SP_VTAS_REPO_RENDICION_DETALLE;
 

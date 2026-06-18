@@ -44,7 +44,7 @@ namespace gc.api.core.Contratos.Servicios
 		List<CajaProcesoCierresListaDto> ObtenerCajaProcesoCierresLista(string caja_nro_proceso);
 		List<RepoVtaResumenDto> ObtenerRepoVtaResumen(RepoVtaRequest request);
 		List<RepoVtaRendicionDto> ObtenerRepoVtaRendicion(RepoVtaRequest request);
-		List<RepoVtaRendicionDetalleDto> ObtenerRepoVtaRendicion(RepoVtaDetRequest request);
+		List<RepoVtaRendicionDetalleDto> ObtenerRepoVtaRendicionDetalle(RepoVtaDetRequest request);
 		List<RepoVtaCtaCteDto> ObtenerRepoVtaCtaCte(RepoVtaRequest request);
 		List<RepoVtaCobranzaDto> ObtenerRepoVtaCobranza(RepoVtaRequest request);
 		List<RepoVtaAnticipoDto> ObtenerRepoVtaAnticipo(RepoVtaRequest request);

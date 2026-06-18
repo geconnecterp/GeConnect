@@ -585,7 +585,7 @@
 			return tabla;
 		}
 
-		protected PdfPTable GeneraCabeceraPDF2_NoFecha(ReporteSolicitudDto solicitud, Font chico, Font titulo, Font tituloBig, Image? logo, EmpresaGeco _empresaGeco)
+		protected PdfPTable GeneraCabeceraPDF2_NoFecha(ReporteSolicitudDto solicitud, Font chico, Font titulo, Font tituloBig, Image? logo, EmpresaGeco _empresaGeco, int titHorAlign = 1, int subtitHorAlign = 1)
 		{
 			PdfPTable tabla = HelperPdf.GeneraTabla(3, [10f, 20f, 70f], 100, 10, 20);
 
@@ -623,7 +623,7 @@
 			PdfPCell celdaTitulo = new PdfPCell(new Phrase(solicitud.Titulo, tituloBig))
 			{
 				Border = Rectangle.NO_BORDER,
-				HorizontalAlignment = Element.ALIGN_CENTER,
+				HorizontalAlignment = titHorAlign,
 				VerticalAlignment = Element.ALIGN_MIDDLE,
 				PaddingTop = 10f
 			};
@@ -634,7 +634,7 @@
 				celdaSubTitulo = new PdfPCell(new Paragraph(solicitud.SubTitulo, titulo))
 				{
 					Border = Rectangle.NO_BORDER,
-					HorizontalAlignment = Element.ALIGN_CENTER,
+					HorizontalAlignment = subtitHorAlign,
 					VerticalAlignment = Element.ALIGN_MIDDLE,
 					PaddingTop = 10f
 				};
