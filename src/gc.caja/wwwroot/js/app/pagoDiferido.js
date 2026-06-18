@@ -390,34 +390,130 @@ function mostrarModalVerFacturasPendientes(facturas) {
 }
 
 /**
- * ✅ ACTUALIZADO v27.0: Inicia el proceso de cobranza pasando el contexto correcto.
+ * ✅ ACTUALIZADO v4.1: Resguarda facturas FINALES antes de iniciar el pago
+ * CAMBIO CRÍTICO: Obtiene facturas desde #tbodyFacturasPendientes (modal definitivo)
+ * 
+ * FLUJO:
+ * 1. Usuario selecciona facturas en _verFacturasPendientes.cshtml (3 facturas)
+ * 2. Se resguardan en sesión (TEMPORAL)
+ * 3. Se abre _facturasPendientesModal.cshtml con esas 3 facturas
+ * 4. Usuario desmarca 2 facturas, deja solo 1
+ * 5. Click en "SEGUIR" → Esta función lee del DOM las facturas FINALES (1 factura)
+ * 6. Se envían al backend como autoridad final
  */
 function iniciarCobranza() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('💰 INICIAR COBRANZA DIFERIDA v27.0');
+    console.log('💰 INICIAR COBRANZA DIFERIDA v4.1');
     console.log('═══════════════════════════════════════════════════');
 
+    // ❶ Verificar disponibilidad de función de pago
     if (typeof iniciarProcesoPago !== 'function') {
         console.error('❌ CRÍTICO: La función `iniciarProcesoPago` de pagoFactura.js no está disponible.');
         AbrirMensaje("Error", "El módulo de pago no está disponible. Por favor, recargue la página.", null, false, ["Aceptar"], "error");
         return;
     }
 
-    $('#modalFacturasPendientes').modal('hide');
+    // ❷ ✅ CRÍTICO v4.1: Obtener facturas FINALES desde el DOM del modal definitivo
+    const $checkboxesSeleccionados = $('#tbodyFacturasPendientes input[type="checkbox"]:checked');
 
-    const totalTexto = $('#txtTotalSeleccionado').val();
-    const totalPagar = parsearNumero(totalTexto);
+    console.log(`   📋 Checkboxes seleccionados en modal definitivo: ${$checkboxesSeleccionados.length}`);
 
-    console.log(`   Total a pagar extraído: ${formatearMoneda(totalPagar)}`);
-
-    if (totalPagar <= 0) {
-        console.error('❌ El total a pagar es cero o negativo.');
-        AbrirMensaje("Error", "El monto a cobrar debe ser mayor a cero.", null, false, ["Aceptar"], "error");
+    if ($checkboxesSeleccionados.length === 0) {
+        console.warn('⚠️ No hay facturas seleccionadas en el modal definitivo');
+        AbrirMensaje(
+            "Atención",
+            "Debe seleccionar al menos una factura para cobrar.",
+            null,
+            false,
+            ["Aceptar"],
+            "warning"
+        );
         return;
     }
 
+    // ❸ Construir array de DTOs desde el DOM
+    const facturasFinales = [];
+    let erroresValidacion = 0;
+
+    $checkboxesSeleccionados.each(function (index) {
+        const $checkbox = $(this);
+
+        try {
+            // ✅ Extraer datos desde data-attributes del checkbox
+            const dto = {
+                tco_id: $checkbox.data('tco-id') || '',
+                cm_compte: $checkbox.data('cm-compte') || '',
+                cm_compte_cuota: parseInt($checkbox.data('cm-compte-cuota')) || 0
+            };
+
+            // Validación crítica
+            if (!dto.tco_id || !dto.cm_compte) {
+                console.error(`❌ Factura ${index} sin datos críticos:`, dto);
+                erroresValidacion++;
+                return; // Continuar con siguiente iteración
+            }
+
+            facturasFinales.push(dto);
+            console.log(`   ✅ Factura ${index + 1}: ${dto.tco_id} ${dto.cm_compte}`);
+
+        } catch (error) {
+            console.error(`❌ Error al procesar factura ${index}:`, error);
+            erroresValidacion++;
+        }
+    });
+
+    // ❹ Validar que se hayan construido DTOs válidos
+    if (facturasFinales.length === 0) {
+        console.error('❌ No se pudo construir ningún DTO válido');
+        AbrirMensaje(
+            "Error",
+            "No se pudieron procesar las facturas seleccionadas. Por favor, intente nuevamente.",
+            null,
+            false,
+            ["Aceptar"],
+            "error"
+        );
+        return;
+    }
+
+    if (erroresValidacion > 0) {
+        console.warn(`⚠️ Se omitieron ${erroresValidacion} facturas con datos incompletos`);
+    }
+
+    console.log(`   📋 DTOs construidos correctamente: ${facturasFinales.length}`);
+
+    // ❺ ✅ CRÍTICO v4.1: Guardar en variable global (autoridad final)
+    window._facturasSeleccionadasParaCobro = facturasFinales;
+
+    console.log('   ✅ Facturas FINALES guardadas en window._facturasSeleccionadasParaCobro');
+    console.log('   📊 Estas son las facturas que se enviarán al backend');
+
+    // ❻ Cerrar modal de facturas pendientes
+    $('#modalFacturasPendientes').modal('hide');
+
+    // ❼ Obtener total a pagar
+    const totalTexto = $('#txtTotalSeleccionado').val();
+    const totalPagar = parsearNumero(totalTexto);
+
+    console.log(`   💰 Total a pagar extraído: ${formatearMoneda(totalPagar)}`);
+
+    if (totalPagar <= 0) {
+        console.error('❌ El total a pagar es cero o negativo.');
+        AbrirMensaje(
+            "Error",
+            "El monto a cobrar debe ser mayor a cero.",
+            null,
+            false,
+            ["Aceptar"],
+            "error"
+        );
+        return;
+    }
+
+    // ❽ Esperar cierre del modal y proceder al pago
     setTimeout(() => {
-        console.log('   Invocando el proceso de pago genérico para Cobranza...');
+        console.log('   🚀 Invocando el proceso de pago genérico para Cobranza...');
+
         iniciarProcesoPago({
             totalPagar: totalPagar,
             co_tipo: 'CD',
@@ -425,20 +521,20 @@ function iniciarCobranza() {
             tituloModal: 'Cobranza Diferida',
             contextoOperacion: 'COBRANZA'
         });
+
+        console.log('   ✅ Proceso de pago iniciado correctamente');
     }, 500);
+
+    console.log('═══════════════════════════════════════════════════');
 }
 
 /**
- * ✅ CORREGIDO v6.0: Flujo robusto que BUSCA los datos del cliente en el servidor.
- * 
- * CAMBIO CRÍTICO v6.0:
- * - Después de guardar facturas, BUSCA el cliente en el servidor usando buscarClientePorId()
- * - Ya NO usa construirObjetoClienteDesdeFilaVFP() que tiene datos incompletos
- * - Garantiza que TODOS los datos del cliente estén disponibles
+ * ✅ CORREGIDO v6.4: Extrae facturas COMPLETAS desde el DOM para mostrarlas correctamente
+ * CAMBIO CRÍTICO: Ahora incluye TODOS los campos necesarios para renderizar el modal
  */
 function iniciarCobranzaDesdeVFP() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('💰 INICIAR COBRANZA (DESDE VFP) v6.0');
+    console.log('💰 INICIAR COBRANZA (DESDE VFP) v6.4');
     console.log('═══════════════════════════════════════════════════');
 
     const $filasSeleccionadas = $('#tbodyVerFacturasPendientes input[type="checkbox"]:checked');
@@ -449,193 +545,99 @@ function iniciarCobranzaDesdeVFP() {
         return;
     }
 
-    console.log(`   📦 Facturas seleccionadas: ${$filasSeleccionadas.length}`);
+    console.log(`   📦 Facturas preseleccionadas: ${$filasSeleccionadas.length}`);
+    console.log('   ℹ️ Estas facturas se mostrarán al usuario para confirmación');
 
-    const facturasSeleccionadas = [];
-    let erroresValidacion = 0;
+    // ✅ NUEVO v6.4: Extraer criterio de búsqueda del cliente desde la primera factura seleccionada
+    const $primerCheckbox = $filasSeleccionadas.first();
+    const clienteId = $primerCheckbox.data('cliente-id') || '';
+    const clienteDoc = $primerCheckbox.data('cliente-doc') || '';
 
-    // ✅ NUEVO v6.0: Guardar ID del cliente para búsqueda posterior
-    let criterioClienteBusqueda = null;
-    let origenCliente = null;
+    // Priorizar ID sobre documento para la búsqueda
+    const criterioClienteBusqueda = clienteId && clienteId !== 'CF' ? clienteId : clienteDoc;
+
+    console.log(`   🔍 Criterio de búsqueda extraído: "${criterioClienteBusqueda}"`);
+    console.log(`      Cliente ID: "${clienteId}"`);
+    console.log(`      Cliente Documento: "${clienteDoc}"`);
+
+    if (!criterioClienteBusqueda) {
+        console.error('❌ No se pudo determinar el criterio de búsqueda del cliente');
+        AbrirMensaje(
+            "Error",
+            "No se pudo identificar al cliente de las facturas seleccionadas.",
+            null,
+            false,
+            ["Aceptar"],
+            "error"
+        );
+        return;
+    }
+
+    // ✅ CORREGIDO v6.4: Construir objetos de factura COMPLETOS desde los data-* attributes
+    const facturasPreseleccionadas = [];
 
     $filasSeleccionadas.each(function (index) {
         const $checkbox = $(this);
-        const $fila = $checkbox.closest('tr');
 
         try {
-            // ✅ NUEVO v6.0: Capturar datos del cliente de la PRIMERA factura
-            if (index === 0) {
-                const clienteId = $fila.data('cta-id');
-                const clienteDoc = $fila.data('cta-documento');
+            // ✅ CRÍTICO: Extraer TODOS los campos necesarios para renderizar el modal
+            const facturaCompleta = {
+                // Identificadores principales (obligatorios para el DTO del pago)
+                tco_id: $checkbox.data('tco-id') || '',
+                cm_compte: $checkbox.data('cm-compte') || '',
+                cm_compte_cuota: parseInt($checkbox.data('cm-compte-cuota')) || 0,
 
-                // Determinar criterio de búsqueda
-                if (clienteId && clienteId !== 'CF' && clienteId !== '') {
-                    criterioClienteBusqueda = clienteId;
-                    origenCliente = 'C'; // Cliente Registrado
-                    console.log(`   📌 Cliente Registrado detectado - ID: ${criterioClienteBusqueda}`);
-                } else if (clienteDoc && clienteDoc !== '') {
-                    criterioClienteBusqueda = clienteDoc;
-                    origenCliente = 'F'; // Consumidor Final
-                    console.log(`   📌 Consumidor Final detectado - Documento: ${criterioClienteBusqueda}`);
-                } else {
-                    console.error('❌ No se pudo determinar criterio de búsqueda del cliente');
-                }
+                // ✅ NUEVO: Campos adicionales necesarios para mostrar en el modal
+                cv_fecha_vto: $checkbox.data('cv-fecha-vto') || '',
+                cv_importe: parseFloat($checkbox.data('cv-importe')) || 0,
+                cv_importe_ori: parseFloat($checkbox.data('cv-importe-ori')) || 0,
+                cv_concepto: $checkbox.data('cv-concepto') || '',
+
+                // Datos del cliente/nombre en comprobante
+                co_pd_nombre: $checkbox.data('co-pd-nombre') || '',
+                co_pd_doc: $checkbox.data('co-pd-doc') || '',
+
+                // Datos adicionales
+                dia_movi: $checkbox.data('dia-movi') || '',
+                ve_id: $checkbox.data('ve-id') || '',
+                ccb_id: $checkbox.data('ccb-id') || '',
+                ctacte: $checkbox.data('ctacte') || '',
+                carga: $checkbox.data('carga') || '',
+                carga_obligatoria: $checkbox.data('carga-obligatoria') || ''
+            };
+
+            // Validación de campos críticos
+            if (!facturaCompleta.tco_id || !facturaCompleta.cm_compte) {
+                console.warn(`⚠️ Factura ${index} sin datos críticos, omitiendo`);
+                return; // Continuar con siguiente iteración
             }
 
-            const cv_fecha_vto_raw = $checkbox.data('cv-fecha-vto');
-            const dia_movi_raw = $checkbox.data('dia-movi');
+            facturasPreseleccionadas.push(facturaCompleta);
 
-            const convertirFecha = (fecha) => {
-                if (!fecha || fecha === '' || fecha === 'null') return null;
-                if (typeof fecha === 'string' && fecha.match(/^\d{4}-\d{2}-\d{2}/)) {
-                    return fecha;
-                }
-                return null;
-            };
-
-            const convertirNumero = (valor, defaultValue = 0) => {
-                if (valor === null || valor === undefined || valor === '' || valor === 'null') {
-                    return defaultValue;
-                }
-                const numero = parseFloat(valor);
-                return isNaN(numero) ? defaultValue : numero;
-            };
-
-            const convertirEntero = (valor, defaultValue = 0) => {
-                if (valor === null || valor === undefined || valor === '' || valor === 'null') {
-                    return defaultValue;
-                }
-                const numero = parseInt(valor);
-                return isNaN(numero) ? defaultValue : numero;
-            };
-
-            const convertirString = (valor) => {
-                if (valor === null || valor === undefined || valor === 'null') return '';
-                return String(valor).trim();
-            };
-
-            const dto = {
-                cta_id: convertirString($fila.data('cta-id')),
-                co_pd_nombre: convertirString($checkbox.data('co-pd-nombre') || $fila.find('td:eq(2)').text()),
-                co_pd_doc: convertirString($checkbox.data('co-pd-doc') || $fila.data('cta-documento')),
-                tco_id: convertirString($checkbox.data('tco-id')),
-                cm_compte: convertirString($checkbox.data('cm-compte')),
-                cm_compte_cuota: convertirEntero($checkbox.data('cm-compte-cuota'), 0),
-                cv_fecha_vto: convertirFecha(cv_fecha_vto_raw),
-                cv_importe: convertirNumero($checkbox.data('cv-importe') || $fila.data('importe'), 0),
-                cv_importe_ori: convertirNumero($checkbox.data('cv-importe-ori') || $fila.data('importe'), 0),
-                cv_concepto: convertirString($checkbox.data('cv-concepto')),
-                dia_movi: convertirFecha(dia_movi_raw),
-                ve_id: convertirEntero($checkbox.data('ve-id'), null),
-                ccb_id: convertirEntero($checkbox.data('ccb-id'), null),
-                ctacte: convertirString($checkbox.data('ctacte')),
-                carga: convertirString($checkbox.data('carga')),
-                carga_obligatoria: convertirString($checkbox.data('carga-obligatoria'))
-            };
-
-            if (!dto.tco_id || !dto.cm_compte) {
-                console.error(`❌ Factura ${index} sin datos críticos:`, dto);
-                erroresValidacion++;
-                return;
-            }
-
-            facturasSeleccionadas.push(dto);
             console.log(`   ✅ Factura ${index + 1}:`, {
-                comprobante: `${dto.tco_id} ${dto.cm_compte}`,
-                importe: dto.cv_importe,
-                cliente: dto.co_pd_nombre
+                comprobante: `${facturaCompleta.tco_id} ${facturaCompleta.cm_compte}`,
+                fecha: facturaCompleta.cv_fecha_vto,
+                importe: facturaCompleta.cv_importe
             });
 
         } catch (error) {
             console.error(`❌ Error al procesar factura ${index}:`, error);
-            erroresValidacion++;
         }
     });
 
-    if (facturasSeleccionadas.length === 0) {
-        console.error('❌ No se pudo construir ningún DTO válido');
-        AbrirMensaje("Error", "No se pudieron procesar las facturas seleccionadas. Por favor, intente nuevamente.", null, false, ["Aceptar"], "error");
+    if (facturasPreseleccionadas.length === 0) {
+        console.error('❌ No se pudo construir ninguna factura válida');
+        AbrirMensaje("Error", "No se pudieron procesar las facturas seleccionadas.", null, false, ["Aceptar"], "error");
         return;
     }
 
-    // ✅ NUEVO v6.0: Validar que tenemos criterio de búsqueda
-    if (!criterioClienteBusqueda) {
-        console.error('❌ No se pudo determinar el cliente');
-        AbrirMensaje("Error", "No se pudo identificar el cliente. Por favor, intente nuevamente.", null, false, ["Aceptar"], "error");
-        return;
-    }
+    console.log(`   📋 Facturas completas construidas: ${facturasPreseleccionadas.length}`);
 
-    if (erroresValidacion > 0) {
-        console.warn(`⚠️ Se omitieron ${erroresValidacion} facturas con datos incompletos`);
-    }
-
-    console.log(`   📋 DTOs construidos correctamente: ${facturasSeleccionadas.length}`);
-
-    mostrarLoader('Guardando selección de facturas...');
-
-    $.ajax({
-        url: ResguardarFacturasPendientesUrl,
-        type: 'POST',
-        contentType: 'application/json',
-        dataType: 'json',
-        data: JSON.stringify(facturasSeleccionadas),
-        success: function (response) {
-            ocultarLoader();
-            console.log('   📥 Respuesta del servidor:', response);
-
-            if (!response || !response.ok) {
-                const mensajeError = response?.mensaje || "No se pudo guardar la selección de facturas.";
-                console.error('❌ Error del servidor:', mensajeError);
-                AbrirMensaje("Error", mensajeError, null, false, ["Aceptar"], "error");
-                return;
-            }
-
-            console.log('   ✅ Facturas resguardadas en sesión del servidor.');
-
-            // ══════════════════════════════════════════════════════════════════
-            // ✅ CAMBIO CRÍTICO v6.0: BUSCAR DATOS COMPLETOS DEL CLIENTE
-            // Ya NO usamos construirObjetoClienteDesdeFilaVFP()
-            // ══════════════════════════════════════════════════════════════════
-            console.log('═══════════════════════════════════════════════════');
-            console.log('🔍 BUSCANDO DATOS COMPLETOS DEL CLIENTE v6.0');
-            console.log(`   Criterio de búsqueda: ${criterioClienteBusqueda}`);
-            console.log(`   Origen: ${origenCliente === 'C' ? 'Cliente Registrado' : 'Consumidor Final'}`);
-            console.log('═══════════════════════════════════════════════════');
-
-            // Cerrar modal VFP
-            const $modalVFP = $('#modalVerFacturasPendientes');
-            $modalVFP.modal('hide');
-
-            // Esperar a que el modal se cierre completamente
-            $modalVFP.one('hidden.bs.modal', function () {
-                console.log('   🔄 Modal VFP cerrado, buscando cliente en servidor...');
-
-                // ✅ USAR LA FUNCIÓN DE fact.js PARA BUSCAR CLIENTE COMPLETO
-                buscarClienteYMostrarFacturas(criterioClienteBusqueda, facturasSeleccionadas);
-            });
-        },
-        error: function (xhr, status, error) {
-            ocultarLoader();
-            console.error('❌ Error AJAX:', {
-                status: xhr.status,
-                statusText: xhr.statusText,
-                responseText: xhr.responseText,
-                error: error
-            });
-
-            let mensajeError = "No se pudo conectar con el servidor para guardar la selección.";
-
-            if (xhr.responseJSON && xhr.responseJSON.mensaje) {
-                mensajeError = xhr.responseJSON.mensaje;
-            } else if (xhr.status === 400) {
-                mensajeError = "Los datos enviados no son válidos. Por favor, recargue la página e intente nuevamente.";
-            } else if (xhr.status === 0) {
-                mensajeError = "No se pudo establecer conexión con el servidor. Verifique su conexión a internet.";
-            }
-
-            AbrirMensaje("Error de Comunicación", mensajeError, null, false, ["Aceptar"], "error");
-        }
-    });
+    // ✅ CORREGIDO v6.4: Ahora se pasan facturas COMPLETAS
+    buscarClienteYMostrarFacturas(
+        criterioClienteBusqueda,
+        facturasPreseleccionadas
+    );
 
     console.log('═══════════════════════════════════════════════════');
 }

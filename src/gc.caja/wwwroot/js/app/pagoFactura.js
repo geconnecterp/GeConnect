@@ -1878,105 +1878,331 @@ function finalizarPago() {
 // ════════════════════════════════════════════════════════════
 
 /**
- * ✅ ACTUALIZADO v27.0: Envía el pago al servidor mediante AJAX
- * NUEVO: Soporte para contextos múltiples (VENTA/COBRANZA) con ModuloOrigen dinámico
+ * ✅ ACTUALIZADO v28.0: Envía el pago al servidor con soporte para Cobranza Diferida
+ * NUEVO: Si contexto es COBRANZA, incluye facturas a cancelar en el payload
  * 
- * CAMBIOS v27.0:
- * - ✅ Incluye ModuloOrigen en payload (calculado desde variables globales)
- * - ✅ Soporte para co_tipo dinámico: CR, CF, CD
- * - ✅ Detección de contexto COBRANZA para mensajes diferenciados
- * - ✅ Mantiene compatibilidad con flujo de VENTA existente
- * 
- * FLUJO:
- * 1. Bloquea la interfaz (loading global)
- * 2. Prepara payload con valores, uniones y ModuloOrigen
- * 3. Envía POST al endpoint FinalizarCompra
- * 4. Detecta advertencias de PV en respuesta
- * 5. Procesa respuesta del servidor
- * 6. Genera reporte del comprobante (PDF)
- * 7. Muestra mensaje de advertencia PV si existe
- * 8. Muestra mensaje de éxito (diferenciado por contexto)
- * 9. Limpia sesión y reinicia módulo
+ * CAMBIOS v28.0:
+ * - Detecta contexto de operación (VENTA/COBRANZA)
+ * - Si es COBRANZA, obtiene facturas desde sesión servidor
+ * - Construye array Cancelar con estructura correcta
+ * - Incluye Cancelar en payload solo si es Cobranza
  * 
  * @param {Array<Object>} jsonValores - Array de Json_Valores construido
  */
 function enviarPagoAlServidor(jsonValores) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('📤 ENVIANDO PAGO AL SERVIDOR v27.0');
+    console.log('📤 ENVIANDO PAGO AL SERVIDOR v28.0');
     console.log('═══════════════════════════════════════════════════');
     console.log(`   Total valores: ${jsonValores.length}`);
     console.log(`   Total monto: ${formatearMoneda(conceptosPago.totalValores)}`);
 
     // ═══════════════════════════════════════════════════════════
-    // ✅ NUEVO v27.0: DETERMINAR MÓDULO ORIGEN DINÁMICAMENTE
+    // ✅ NUEVO v28.0: DETECTAR CONTEXTO DE OPERACIÓN
     // ═══════════════════════════════════════════════════════════
 
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔍 DETERMINANDO MÓDULO ORIGEN v27.0');
+    console.log('🔍 DETECTANDO CONTEXTO DE OPERACIÓN v28.0');
 
-    // ❶ Obtener contexto desde variable global (establecida por iniciarProcesoPago)
+    // Obtener contexto desde variable global (establecida por iniciarProcesoPago)
     let contextoOperacion = window._contextoOperacionActual || 'VENTA';
     contextoOperacion = contextoOperacion.toUpperCase();
 
-    console.log(`   Contexto Operación (global): ${contextoOperacion}`);
+    console.log(`   Contexto detectado: ${contextoOperacion}`);
 
-    // ❷ Calcular ModuloOrigen según contexto
+    // Determinar ModuloOrigen según contexto
     let moduloOrigen = 'Facturacion'; // ← Default para VENTA
 
     if (contextoOperacion === 'COBRANZA') {
         moduloOrigen = 'CobranzaDiferida';
         console.log('   ✅ Contexto COBRANZA detectado');
         console.log('   → ModuloOrigen: CobranzaDiferida');
+        console.log('   → Se incluirán facturas a cancelar en el payload');
     } else {
         console.log('   ✅ Contexto VENTA (default)');
         console.log('   → ModuloOrigen: Facturacion');
     }
 
-    // ❸ Obtener co_tipo desde variable global (fallback a cálculo legacy)
+    // Obtener co_tipo
     let coTipo = window._coTipoActual || null;
 
     if (!coTipo) {
         console.warn('⚠️ Variable global _coTipoActual NO definida');
-        console.warn('   Aplicando fallback: Cálculo basado en cta_id');
-
         const ctaId = $('#txtClienteIdPago').val() || '';
         coTipo = ctaId && ctaId !== 'N/A' && ctaId.trim() !== '' ? 'CR' : 'CF';
-
         console.log(`   co_tipo calculado (fallback): ${coTipo}`);
     } else {
-        console.log(`   co_tipo obtenido de variable global: ${coTipo}`);
+        console.log(`   co_tipo obtenido: ${coTipo}`);
     }
 
     console.log('═══════════════════════════════════════════════════');
-    console.log('📦 CONFIGURACIÓN FINAL DEL PAYLOAD:');
-    console.log(`   ModuloOrigen: ${moduloOrigen}`);
-    console.log(`   co_tipo: ${coTipo}`);
-    console.log(`   contextoOperacion: ${contextoOperacion}`);
-    console.log('═══════════════════════════════════════════════════');
 
-    // ❹ Bloquear pantalla
+    // Bloquear pantalla
     mostrarLoadingGlobal('Procesando pago y emitiendo comprobante...');
 
-    // ❺ URL del endpoint
+    // ═══════════════════════════════════════════════════════════
+    // ✅ NUEVO v28.0: SI ES COBRANZA, OBTENER FACTURAS A CANCELAR
+    // ═══════════════════════════════════════════════════════════
+
+    if (contextoOperacion === 'COBRANZA') {
+        console.log('═══════════════════════════════════════════════════');
+        console.log('📋 OBTENIENDO FACTURAS A CANCELAR DESDE SESIÓN v28.0');
+        console.log('═══════════════════════════════════════════════════');
+
+        // Actualizar mensaje de loading
+        actualizarMensajeLoadingGlobal('Obteniendo facturas a cancelar...');
+
+        // ❶ URL del endpoint para obtener facturas desde sesión
+        const urlFacturas = typeof ObtenerFacturasPendientesSesionUrl !== 'undefined' && ObtenerFacturasPendientesSesionUrl
+            ? ObtenerFacturasPendientesSesionUrl
+            : '/Facturacion/PDiferido/ObtenerFacturasPendientesSesion';
+
+        console.log(`   URL: ${urlFacturas}`);
+
+        // ❷ Llamada AJAX para obtener facturas
+        $.ajax({
+            url: urlFacturas,
+            type: 'POST',
+            dataType: 'json',
+            timeout: 10000,
+            success: function (responseFacturas) {
+                console.log('   📥 Respuesta de facturas:', responseFacturas);
+
+                if (!responseFacturas || !responseFacturas.ok) {
+                    console.error('❌ No se pudieron obtener las facturas');
+                    ocultarLoadingGlobal();
+
+                    AbrirMensaje(
+                        "Error",
+                        "No se pudieron recuperar las facturas a cancelar.",
+                        function () { $('#msjModal').modal('hide'); },
+                        false,
+                        ["Aceptar"],
+                        "error!",
+                        null
+                    );
+                    return;
+                }
+
+                const facturasACancelar = responseFacturas.lista || [];
+                console.log(`   ✅ Facturas obtenidas: ${facturasACancelar.length}`);
+
+                // ❸ Construir array Cancelar con estructura correcta
+                const arrayCancelar = construirArrayCancelar(facturasACancelar);
+
+                console.log(`   ✅ Array Cancelar construido: ${arrayCancelar.length} items`);
+
+                // ❹ Proceder a enviar el pago con Cancelar incluido
+                enviarPayloadAlServidor(jsonValores, moduloOrigen, arrayCancelar);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.error('❌ ERROR AJAX al obtener facturas:', {
+                    status: jqXHR.status,
+                    error: errorThrown
+                });
+
+                ocultarLoadingGlobal();
+
+                AbrirMensaje(
+                    "Error de Comunicación",
+                    "No se pudo conectar con el servidor para obtener las facturas.",
+                    function () { $('#msjModal').modal('hide'); },
+                    false,
+                    ["Aceptar"],
+                    "error!",
+                    null
+                );
+            }
+        });
+
+    } else {
+        // ═══════════════════════════════════════════════════════════
+        // FLUJO NORMAL DE VENTA (sin Cancelar)
+        // ═══════════════════════════════════════════════════════════
+        console.log('   ℹ️ Contexto VENTA - Sin facturas a cancelar');
+        enviarPayloadAlServidor(jsonValores, moduloOrigen, null);
+    }
+}
+
+/**
+ * ✅ NUEVA v28.0: Construye el array Cancelar con la estructura requerida por el backend
+ * 
+ * ESTRUCTURA DE SALIDA (Json_Cancela):
+ * {
+ *     tco_id: string,        // Tipo de comprobante (ej: "001", "006")
+ *     cm_compte: string,     // Número de comprobante (ej: "00001-00000123")
+ *     cm_compte_cuota: int   // Número de cuota (default: 0)
+ * }
+ * 
+ * @param {Array<Object>} facturas - Array de facturas desde sesión servidor
+ * @returns {Array<Object>} - Array de objetos Json_Cancela
+ */
+function construirArrayCancelar(facturas) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔨 CONSTRUIR ARRAY CANCELAR v28.0');
+    console.log(`   Total facturas recibidas: ${facturas.length}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    const arrayCancelar = [];
+
+    if (!facturas || !Array.isArray(facturas) || facturas.length === 0) {
+        console.warn('⚠️ No hay facturas para procesar');
+        return arrayCancelar;
+    }
+
+    facturas.forEach((factura, index) => {
+        try {
+            // ❶ Validar datos críticos
+            if (!factura.tco_id || !factura.cm_compte) {
+                console.warn(`⚠️ Factura ${index} sin datos críticos, omitiendo:`, factura);
+                return;
+            }
+
+            // ❷ Construir objeto Json_Cancela
+            const jsonCancela = {
+                tco_id: String(factura.tco_id).trim(),
+                cm_compte: String(factura.cm_compte).trim(),
+                cm_compte_cuota: parseInt(factura.cm_compte_cuota) || 0
+            };
+
+            arrayCancelar.push(jsonCancela);
+
+            console.log(`   ✅ [${index + 1}] ${jsonCancela.tco_id} ${jsonCancela.cm_compte} (Cuota: ${jsonCancela.cm_compte_cuota})`);
+
+        } catch (error) {
+            console.error(`❌ Error al procesar factura ${index}:`, error, factura);
+        }
+    });
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log(`✅ ARRAY CANCELAR CONSTRUIDO: ${arrayCancelar.length} ITEMS`);
+    console.log('═══════════════════════════════════════════════════');
+
+    return arrayCancelar;
+}
+
+/**
+ * ✅ ACTUALIZADO v28.1: Envía el payload completo al servidor
+ * CAMBIO CRÍTICO v28.1: Prioriza facturas desde variable global si arrayCancelar está vacío
+ * 
+ * FLUJO DE PRIORIDADES:
+ * 1. arrayCancelar (parámetro explícito) - Primera prioridad
+ * 2. window._facturasSeleccionadasParaCobro (variable global) - Segunda prioridad
+ * 3. Cancelar: [] (vacío) - Si no hay facturas disponibles (modo VENTA)
+ * 
+ * CONTEXTOS SOPORTADOS:
+ * - VENTA: Cancelar = [] (sin facturas)
+ * - COBRANZA: Cancelar = facturas desde variable global o parámetro
+ * 
+ * @param {Array<Object>} jsonValores - Array de medios de pago (Json_Valor)
+ * @param {string} moduloOrigen - "Facturacion" o "CobranzaDiferida"
+ * @param {Array<Object>|null} arrayCancelar - Array de facturas a cancelar (Json_Cancela) [OPCIONAL]
+ */
+function enviarPayloadAlServidor(jsonValores, moduloOrigen, arrayCancelar) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📦 ENVIAR PAYLOAD AL SERVIDOR v28.1');
+    console.log(`   ModuloOrigen: ${moduloOrigen}`);
+    console.log(`   Valores: ${jsonValores.length}`);
+    console.log(`   Cancelar (parámetro): ${arrayCancelar ? arrayCancelar.length : 'NULL'}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Actualizar mensaje de loading
+    actualizarMensajeLoadingGlobal('Procesando pago y emitiendo comprobante...');
+
+    // ❷ URL del endpoint
     const url = typeof finalizarCompraUrl !== 'undefined' && finalizarCompraUrl
         ? finalizarCompraUrl
         : '/Facturacion/Checkout/FinalizarCompra';
 
     console.log(`   URL: ${url}`);
 
-    // ❻ ✅ ACTUALIZADO v27.0: Preparar payload CON ModuloOrigen
+    // ❸ Construir payload base
     const payload = {
-        Valores: jsonValores,   // ← Capitalizado (C# PascalCase)
-        Uniones: [],            // ← Capitalizado (C# PascalCase)
-        ModuloOrigen: moduloOrigen // ✅ NUEVO v27.0
+        Valores: jsonValores,
+        Uniones: [],
+        ModuloOrigen: moduloOrigen
     };
 
+    // ❹ ✅ CRÍTICO v28.1: Determinar facturas a cancelar (con prioridades)
+    let cancelarFinal = arrayCancelar;
+
     console.log('═══════════════════════════════════════════════════');
-    console.log('📦 PAYLOAD COMPLETO v27.0:');
+    console.log('🔍 DETERMINANDO FACTURAS A CANCELAR v28.1');
+    console.log('═══════════════════════════════════════════════════');
+
+    // ═══════════════════════════════════════════════════════════
+    // PRIORIDAD 1: Usar arrayCancelar si viene como parámetro
+    // ═══════════════════════════════════════════════════════════
+    if (cancelarFinal && Array.isArray(cancelarFinal) && cancelarFinal.length > 0) {
+        console.log('✅ PRIORIDAD 1: arrayCancelar desde parámetro');
+        console.log(`   Total facturas: ${cancelarFinal.length}`);
+
+        // Loguear primeras 3 facturas (muestra)
+        for (let i = 0; i < Math.min(3, cancelarFinal.length); i++) {
+            const f = cancelarFinal[i];
+            console.log(`   [${i + 1}] ${f.tco_id} ${f.cm_compte} (Cuota: ${f.cm_compte_cuota || 0})`);
+        }
+
+        if (cancelarFinal.length > 3) {
+            console.log(`   ... y ${cancelarFinal.length - 3} más`);
+        }
+    }
+    // ═══════════════════════════════════════════════════════════
+    // PRIORIDAD 2: Buscar en variable global
+    // ═══════════════════════════════════════════════════════════
+    else if (window._facturasSeleccionadasParaCobro &&
+        Array.isArray(window._facturasSeleccionadasParaCobro) &&
+        window._facturasSeleccionadasParaCobro.length > 0) {
+
+        console.log('✅ PRIORIDAD 2: Facturas desde variable global');
+        console.log('   Origen: window._facturasSeleccionadasParaCobro');
+
+        cancelarFinal = window._facturasSeleccionadasParaCobro;
+
+        console.log(`   Total facturas: ${cancelarFinal.length}`);
+
+        // Loguear primeras 3 facturas (muestra)
+        for (let i = 0; i < Math.min(3, cancelarFinal.length); i++) {
+            const f = cancelarFinal[i];
+            console.log(`   [${i + 1}] ${f.tco_id} ${f.cm_compte} (Cuota: ${f.cm_compte_cuota || 0})`);
+        }
+
+        if (cancelarFinal.length > 3) {
+            console.log(`   ... y ${cancelarFinal.length - 3} más`);
+        }
+    }
+    // ═══════════════════════════════════════════════════════════
+    // SIN FACTURAS: Modo VENTA
+    // ═══════════════════════════════════════════════════════════
+    else {
+        console.log('ℹ️ Sin facturas a cancelar');
+        console.log('   Contexto: VENTA (sin Cobranza Diferida)');
+        cancelarFinal = null;
+    }
+
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❺ Incluir facturas en el payload
+    if (cancelarFinal && Array.isArray(cancelarFinal) && cancelarFinal.length > 0) {
+        payload.Cancelar = cancelarFinal;
+        console.log(`✅ Campo Cancelar incluido: ${cancelarFinal.length} factura(s)`);
+    } else {
+        payload.Cancelar = [];
+        console.log('ℹ️ Campo Cancelar vacío (modo VENTA)');
+    }
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📦 PAYLOAD COMPLETO v28.1:');
+    console.log('═══════════════════════════════════════════════════');
+    console.log(`   ModuloOrigen: ${payload.ModuloOrigen}`);
+    console.log(`   Valores.length: ${payload.Valores.length}`);
+    console.log(`   Uniones.length: ${payload.Uniones.length}`);
+    console.log(`   Cancelar.length: ${payload.Cancelar.length}`);
+    console.log('═══════════════════════════════════════════════════');
+    console.log('Payload JSON completo:');
     console.log(JSON.stringify(payload, null, 2));
     console.log('═══════════════════════════════════════════════════');
 
-    // ❼ Llamada AJAX
+    // ❻ Llamada AJAX
     $.ajax({
         url: url,
         type: 'POST',
@@ -1987,15 +2213,13 @@ function enviarPagoAlServidor(jsonValores) {
     })
         .done(function (response) {
             console.log('═══════════════════════════════════════════════════');
-            console.log('✅ RESPUESTA RECIBIDA DEL SERVIDOR v27.0');
+            console.log('✅ RESPUESTA RECIBIDA DEL SERVIDOR v28.1');
             console.log('═══════════════════════════════════════════════════');
             console.log('Response completo:', response);
 
-            // ❽ Validar respuesta básica
+            // ❼ Validar respuesta básica
             if (!response || response.ok === false) {
                 console.error('❌ Error en respuesta del servidor');
-                console.error('   Mensaje:', response?.mensaje || 'Sin mensaje');
-
                 ocultarLoadingGlobal();
                 procesarErrorPago(response);
                 return;
@@ -2003,53 +2227,37 @@ function enviarPagoAlServidor(jsonValores) {
 
             console.log('✅ Respuesta OK del servidor');
 
-            // ═══════════════════════════════════════════════════════════
-            // ✅ NUEVO v20.4: DETECTAR ADVERTENCIA DE VALIDACIÓN PV
-            // ═══════════════════════════════════════════════════════════
-
+            // ❽ Detectar advertencia de PV (Punto de Venta)
             const tieneAdvertenciaPV = response.mostrar_mensaje_pv === true;
             const mensajeAdvertenciaPV = response.mensaje_advertencia || '';
 
             if (tieneAdvertenciaPV) {
-                console.log('═══════════════════════════════════════════════════');
-                console.log('⚠️ ADVERTENCIA DE PV DETECTADA v20.4');
-                console.log('═══════════════════════════════════════════════════');
-                console.log(`   mostrar_mensaje_pv: ${response.mostrar_mensaje_pv}`);
+                console.log('⚠️ ADVERTENCIA DE PV DETECTADA');
                 console.log(`   mensaje_advertencia: "${mensajeAdvertenciaPV}"`);
-                console.log('═══════════════════════════════════════════════════');
-            } else {
-                console.log('ℹ️ Sin advertencias de PV');
             }
 
-            // ❾ Validar que haya datos del comprobante
+            // ❾ Validar datos del comprobante
             if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
                 console.error('❌ No se recibieron datos del comprobante');
-                console.error('   response.data:', response.data);
-
                 ocultarLoadingGlobal();
-
                 mostrarMensajeError('Error: No se recibió información del comprobante');
                 return;
             }
 
             console.log(`✅ Datos del comprobante recibidos: ${response.data.length} comprobante(s)`);
 
-            // ❿ Extraer comprobante
             const comprobante = response.data[0];
-
-            // ⓫ ✅ NUEVO v27.0: Detectar si es CobranzaDiferida desde respuesta
             const esCobranzaDiferida = comprobante.es_cobranza_diferida === true;
 
             console.log('═══════════════════════════════════════════════════');
-            console.log('📄 COMPROBANTE EMITIDO v27.0');
+            console.log('📄 COMPROBANTE EMITIDO v28.1');
             console.log(`   tco_letra: ${comprobante.tco_letra}`);
             console.log(`   tco_id: ${comprobante.tco_id}`);
             console.log(`   cm_compte: ${comprobante.cm_compte}`);
-            console.log(`   cm_repetido: ${comprobante.cm_repetido}`);
-            console.log(`   es_cobranza_diferida: ${esCobranzaDiferida ? 'SÍ ✅' : 'NO'}`);
+            console.log(`   es_cobranza_diferida: ${esCobranzaDiferida ? 'SÍ' : 'NO'}`);
             console.log('═══════════════════════════════════════════════════');
 
-            // ⓬ GENERAR REPORTE PRIMERO
+            // ❿ Generar reporte PDF
             console.log('📄 Iniciando generación de reporte...');
 
             if (typeof ModuloReportes !== 'undefined') {
@@ -2067,46 +2275,37 @@ function enviarPagoAlServidor(jsonValores) {
                         console.log('⏳ PDF abierto - Desbloqueando interfaz...');
                         ocultarLoadingGlobal();
 
-                        // ═══════════════════════════════════════════════════
-                        // ✅ NUEVO v20.4: MOSTRAR ADVERTENCIA PV ANTES DE ÉXITO
-                        // ═══════════════════════════════════════════════════
-
                         if (tieneAdvertenciaPV && mensajeAdvertenciaPV) {
                             mostrarAdvertenciaPV(mensajeAdvertenciaPV, function () {
-                                // Callback: Después de cerrar advertencia, mostrar éxito
-                                procesarPagoExitoso(comprobante, esCobranzaDiferida); // ← ✅ NUEVO v27.0
+                                procesarPagoExitoso(comprobante, esCobranzaDiferida);
                             });
                         } else {
-                            // Sin advertencia, mostrar éxito directamente
-                            procesarPagoExitoso(comprobante, esCobranzaDiferida); // ← ✅ NUEVO v27.0
+                            procesarPagoExitoso(comprobante, esCobranzaDiferida);
                         }
-
                     }, 500);
 
                 }).catch(function (error) {
                     console.error('❌ ERROR al generar reporte:', error);
                     ocultarLoadingGlobal();
 
-                    // ✅ NUEVO: Mostrar advertencia aunque falle el reporte
                     if (tieneAdvertenciaPV && mensajeAdvertenciaPV) {
                         mostrarAdvertenciaPV(mensajeAdvertenciaPV, function () {
-                            procesarPagoExitoso(comprobante, esCobranzaDiferida); // ← ✅ NUEVO v27.0
+                            procesarPagoExitoso(comprobante, esCobranzaDiferida);
                         });
                     } else {
-                        procesarPagoExitoso(comprobante, esCobranzaDiferida); // ← ✅ NUEVO v27.0
+                        procesarPagoExitoso(comprobante, esCobranzaDiferida);
                     }
                 });
             } else {
-                console.warn('⚠️ ModuloReportes NO disponible - Saltando generación de PDF');
+                console.warn('⚠️ ModuloReportes NO disponible');
                 ocultarLoadingGlobal();
 
-                // ✅ NUEVO: Mostrar advertencia aunque no haya reporte
                 if (tieneAdvertenciaPV && mensajeAdvertenciaPV) {
                     mostrarAdvertenciaPV(mensajeAdvertenciaPV, function () {
-                        procesarPagoExitoso(comprobante, esCobranzaDiferida); // ← ✅ NUEVO v27.0
+                        procesarPagoExitoso(comprobante, esCobranzaDiferida);
                     });
                 } else {
-                    procesarPagoExitoso(comprobante, esCobranzaDiferida); // ← ✅ NUEVO v27.0
+                    procesarPagoExitoso(comprobante, esCobranzaDiferida);
                 }
             }
         })
@@ -2117,19 +2316,18 @@ function enviarPagoAlServidor(jsonValores) {
             console.error('   textStatus:', textStatus);
             console.error('   errorThrown:', errorThrown);
             console.error('   HTTP Status:', jqXHR.status);
-            console.error('   Response Text:', jqXHR.responseText);
             console.log('═══════════════════════════════════════════════════');
 
             ocultarLoadingGlobal();
 
-            // Validar sesión expirada
+            // ⓫ Validar sesión expirada
             if (jqXHR.status === 401 || jqXHR.status === 403) {
                 console.error('❌ SESIÓN EXPIRADA');
                 manejarSesionExpirada('Su sesión ha expirado. Por favor, inicie sesión nuevamente.');
                 return;
             }
 
-            // Mensaje de error genérico
+            // ⓬ Mensaje de error genérico
             let mensajeError = 'Error de comunicación con el servidor';
 
             if (jqXHR.status === 500) {
@@ -2143,9 +2341,7 @@ function enviarPagoAlServidor(jsonValores) {
             AbrirMensaje(
                 "Error de Comunicación",
                 mensajeError,
-                function () {
-                    $("#msjModal").modal("hide");
-                },
+                function () { $("#msjModal").modal("hide"); },
                 false,
                 ["Aceptar"],
                 "error!",
@@ -2153,21 +2349,16 @@ function enviarPagoAlServidor(jsonValores) {
             );
         });
 
-    // Timeout de seguridad (30 segundos)
+    // ⓭ Timeout de seguridad (30 segundos)
     setTimeout(function () {
         if ($('#overlayLoadingGlobal').length > 0 && $('#overlayLoadingGlobal').is(':visible')) {
             console.warn('⚠️ TIMEOUT DE SEGURIDAD ALCANZADO (30s)');
-            console.warn('   Desbloqueando pantalla automáticamente...');
-
             ocultarLoadingGlobal();
 
             AbrirMensaje(
                 "Tiempo de Espera Agotado",
-                "La operación está tomando más tiempo del esperado.<br><br>" +
-                "Por favor, verifique el resultado en el sistema.",
-                function () {
-                    $("#msjModal").modal("hide");
-                },
+                "La operación está tomando más tiempo del esperado.<br><br>Verifique el resultado en el sistema.",
+                function () { $("#msjModal").modal("hide"); },
                 false,
                 ["Aceptar"],
                 "warning",

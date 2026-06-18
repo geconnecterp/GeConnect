@@ -126,12 +126,18 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "Debe cargar al menos un producto" });
                 }
 
-                // ❻ VALIDAR QUE HAYA SUBTOTALES
+                // ❻ ✅ CORREGIDO v28.1: VALIDAR SUBTOTALES SOLO SI NO ES COBRANZA DIFERIDA
                 var subtotalesFactura = FacturaSubtotales;
-                if (subtotalesFactura == null || subtotalesFactura.Count == 0)
+                if (!esCobranzaDiferidaTemporal && (subtotalesFactura == null || subtotalesFactura.Count == 0))
                 {
-                    _logger?.LogWarning("❌ No hay subtotales calculados");
+                    _logger?.LogWarning("❌ No hay subtotales calculados (modo Facturación)");
                     return Json(new { ok = false, mensaje = "Debe calcular los totales primero" });
+                }
+
+                // ✅ NUEVO: Log informativo para Cobranza Diferida
+                if (esCobranzaDiferidaTemporal)
+                {
+                    _logger?.LogInformation("✅ Validaciones de productos/subtotales omitidas (Cobranza Diferida)");
                 }
 
                 _logger?.LogInformation($"✅ Productos: {productosFactura.Count}");
@@ -193,13 +199,12 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
 
                 // ✅ PASO 1: Detectar módulo origen
-                if (!string.IsNullOrEmpty(pagoDto.ModuloOrigen) &&
-                    pagoDto.ModuloOrigen.ToUpper() == "COBRANZADIFERIDA")
+                if (!string.IsNullOrEmpty(pagoDto.ModuloOrigen) &&  pagoDto.ModuloOrigen.ToUpper() == "COBRANZADIFERIDA")
                 {
                     esCobranzaDiferida = true;
 
                     _logger?.LogInformation("═══════════════════════════════════════════════════");
-                    _logger?.LogInformation("🔄 MÓDULO DETECTADO: COBRANZA DIFERIDA");
+                    _logger?.LogInformation("🔄 MÓDULO DETECTADO: COBRANZA DIFERIDA v28.1");
                     _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                     // ═══ LÓGICA ESPECÍFICA PARA COBRANZA DIFERIDA ═══
@@ -213,36 +218,126 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         return Json(new { ok = false, mensaje = "Debe seleccionar un cliente registrado para cobro diferido" });
                     }
 
-                    // ✅ OBTENER FACTURAS SELECCIONADAS DESDE SESIÓN
-                    var facturasSeleccionadas = FacturasSeleccionadasParaCobro;
+                    _logger?.LogInformation($"✅ Cliente registrado: {ctaId}");
+
+                    // ═══════════════════════════════════════════════════════════
+                    // ✅ NUEVO v28.1: PRIORIZAR FACTURAS DESDE PAYLOAD
+                    // ═══════════════════════════════════════════════════════════
+
+                    _logger?.LogInformation("═══════════════════════════════════════════════════");
+                    _logger?.LogInformation("🔍 OBTENIENDO FACTURAS A CANCELAR v28.1");
+                    _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                    List<Json_Cancela> facturasSeleccionadas = null;
+
+                    // ═══════════════════════════════════════════════════════════
+                    // PRIORIDAD 1: Intentar obtener facturas desde PAYLOAD (autoridad final)
+                    // ═══════════════════════════════════════════════════════════
+
+                    if (pagoDto.Cancelar != null && pagoDto.Cancelar.Count > 0)
+                    {
+                        _logger?.LogInformation("✅ PRIORIDAD 1: Facturas obtenidas desde PAYLOAD (autoridad final)");
+                        _logger?.LogInformation($"   Total facturas en payload: {pagoDto.Cancelar.Count}");
+
+                        facturasSeleccionadas = pagoDto.Cancelar;
+
+                        // Loguear primeras 3 facturas (muestra)
+                        for (int i = 0; i < Math.Min(3, facturasSeleccionadas.Count); i++)
+                        {
+                            var f = facturasSeleccionadas[i];
+                            _logger?.LogInformation($"   [{i + 1}] {f.tco_id} {f.cm_compte} (Cuota: {f.cm_compte_cuota})");
+                        }
+
+                        if (facturasSeleccionadas.Count > 3)
+                        {
+                            _logger?.LogInformation($"   ... y {facturasSeleccionadas.Count - 3} factura(s) más");
+                        }
+                    }
+                    // ═══════════════════════════════════════════════════════════
+                    // PRIORIDAD 2: FALLBACK - Intentar obtener de sesión
+                    // ═══════════════════════════════════════════════════════════
+                    else
+                    {
+                        _logger?.LogWarning("⚠️ PRIORIDAD 2: Payload sin facturas - Intentando obtener de SESIÓN (fallback)");
+
+                        var facturasEnSesion = FacturasSeleccionadasParaCobro;
+
+                        if (facturasEnSesion != null && facturasEnSesion.Count > 0)
+                        {
+                            _logger?.LogInformation($"✅ {facturasEnSesion.Count} factura(s) obtenidas de SESIÓN");
+
+                            // Convertir de FactPendienteResponseDto a Json_Cancela
+                            try
+                            {
+                                facturasSeleccionadas = ConvertirFacturasPendientesACancela(facturasEnSesion);
+
+                                _logger?.LogInformation($"   Conversión exitosa: {facturasSeleccionadas.Count} factura(s) convertidas");
+
+                                // Loguear primeras 3 facturas (muestra)
+                                for (int i = 0; i < Math.Min(3, facturasSeleccionadas.Count); i++)
+                                {
+                                    var f = facturasSeleccionadas[i];
+                                    _logger?.LogInformation($"   [{i + 1}] {f.tco_id} {f.cm_compte} (Cuota: {f.cm_compte_cuota})");
+                                }
+
+                                if (facturasSeleccionadas.Count > 3)
+                                {
+                                    _logger?.LogInformation($"   ... y {facturasSeleccionadas.Count - 3} factura(s) más");
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger?.LogError(ex, "❌ Error al convertir facturas de sesión");
+                                facturasSeleccionadas = null;
+                            }
+                        }
+                        else
+                        {
+                            _logger?.LogError("❌ SESIÓN también está vacía (FacturasSeleccionadasParaCobro)");
+                        }
+                    }
+
+                    // ═══════════════════════════════════════════════════════════
+                    // VALIDACIÓN FINAL: Debe haber al menos una factura
+                    // ═══════════════════════════════════════════════════════════
 
                     if (facturasSeleccionadas == null || facturasSeleccionadas.Count == 0)
                     {
-                        _logger?.LogWarning("❌ No hay facturas seleccionadas en sesión para CobranzaDiferida");
-                        return Json(new { ok = false, mensaje = "Debe seleccionar al menos una factura para cobrar" });
+                        _logger?.LogError("═══════════════════════════════════════════════════");
+                        _logger?.LogError("❌ NO HAY FACTURAS SELECCIONADAS PARA COBRANZA DIFERIDA");
+                        _logger?.LogError("═══════════════════════════════════════════════════");
+                        _logger?.LogError("   Fuentes verificadas:");
+                        _logger?.LogError("      1. Payload (pagoDto.Cancelar): Vacío o NULL");
+                        _logger?.LogError("      2. Sesión (FacturasSeleccionadasParaCobro): Vacío o NULL");
+                        _logger?.LogError("═══════════════════════════════════════════════════");
+                        _logger?.LogError("   Diagnóstico adicional:");
+                        _logger?.LogError($"      - pagoDto es NULL: {pagoDto == null}");
+                        _logger?.LogError($"      - pagoDto.Cancelar es NULL: {pagoDto?.Cancelar == null}");
+                        _logger?.LogError($"      - pagoDto.Cancelar.Count: {pagoDto?.Cancelar?.Count ?? 0}");
+                        _logger?.LogError($"      - FacturasSeleccionadasParaCobro es NULL: {FacturasSeleccionadasParaCobro == null}");
+                        _logger?.LogError($"      - FacturasSeleccionadasParaCobro.Count: {FacturasSeleccionadasParaCobro?.Count ?? 0}");
+                        _logger?.LogError("═══════════════════════════════════════════════════");
+
+                        return Json(new
+                        {
+                            ok = false,
+                            mensaje = "Debe seleccionar al menos una factura para cobrar"
+                        });
                     }
 
-                    _logger?.LogInformation($"✅ Facturas en sesión: {facturasSeleccionadas.Count}");
-                    _logger?.LogInformation($"   Facturas seleccionadas: {facturasSeleccionadas.Count(f => f.seleccionado)}");
-
-                    // ✅ CONVERTIR A CancelaJsonDto
-                    var cancelaLista = ConvertirFacturasPendientesACancela(facturasSeleccionadas);
-
-                    if (cancelaLista.Count == 0)
-                    {
-                        _logger?.LogError("❌ No se pudieron convertir las facturas seleccionadas");
-                        return Json(new { ok = false, mensaje = "Error: No se procesaron facturas para cancelación" });
-                    }
+                    _logger?.LogInformation("═══════════════════════════════════════════════════");
+                    _logger?.LogInformation($"✅ TOTAL FACTURAS A PROCESAR: {facturasSeleccionadas.Count}");
+                    _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                     // ✅ SERIALIZAR json_cancela
-                    jsonCancela = JsonConvert.SerializeObject(cancelaLista);
+                    jsonCancela = JsonConvert.SerializeObject(facturasSeleccionadas);
 
                     _logger?.LogInformation($"✅ json_cancela generado:");
                     _logger?.LogInformation($"   Longitud: {jsonCancela.Length} caracteres");
-                    _logger?.LogInformation($"   Facturas incluidas: {cancelaLista.Count}");
+                    _logger?.LogInformation($"   Facturas incluidas: {facturasSeleccionadas.Count}");
 
                     // ✅ VALIDACIÓN: En CobranzaDiferida NO debe haber productos nuevos en factura
-                    if (productosFactura.Count > 0)
+                    if (productosFactura != null && productosFactura.Count > 0)
                     {
                         _logger?.LogWarning("⚠️ CobranzaDiferida detectó productos en factura - Se omitirán");
                         productosFactura = new List<ProductoFactJsonDto>();
