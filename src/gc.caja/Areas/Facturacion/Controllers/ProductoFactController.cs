@@ -1594,6 +1594,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 else // Cliente Registrado
                 {
                     ctaId = clienteActual.cta_id;
+                    docu = clienteActual.cta_documento;
                     LP_Id = cajaActual.Caja.lp_id_may;
                     _logger?.LogInformation($"✅ Cliente Registrado → Identificador (cta_id): {ctaId}");
                 }
@@ -1645,6 +1646,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
                 _logger?.LogInformation("📦 REQUEST DTO CONSTRUIDO");
+                _logger?.LogInformation($"   Json_P: {JsonConvert.SerializeObject(request)}");
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                 // ═══════════════════════════════════════════════════════════

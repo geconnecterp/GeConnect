@@ -25,6 +25,11 @@
                             <span>FACTURACIÓN</span>
                         </button>
 
+                        <button class="btn menu-btn-enhanced btn-primary" data-action="cobranza-diferida">
+                            <i class='bx bx-dollar-circle'></i>
+                            <span>COBRANZA DIFERIDA</span>
+                        </button>
+
                         <button class="btn menu-btn-enhanced btn-orange" data-action="devolucion-nc">
                             <i class='bx bx-undo'></i>
                             <span>DEVOLUCIÓN NC</span>
@@ -40,14 +45,16 @@
                             <span>COBRANZA</span>
                         </button>
 
-                        <button class="btn menu-btn-enhanced btn-dark-red" data-action="anula-cobranza">
-                            <i class='bx bx-x-circle'></i>
-                            <span>ANULA COBRANZA</span>
-                        </button>
+                       
                     </div>
 
                     <!-- FILA 2: Distribución y Operaciones -->
                     <div class="menu-row">
+                        <button class="btn menu-btn-enhanced btn-dark-red" data-action="anula-cobranza">
+                            <i class='bx bx-x-circle'></i>
+                            <span>ANULA COBRANZA</span>
+                        </button>
+
                         <button class="btn menu-btn-enhanced btn-success" data-action="dist-facturacion">
                             <i class='bx bx-spreadsheet'></i>
                             <span>DIST. FACTURACIÓN</span>
@@ -68,19 +75,16 @@
                             <span>RENDICIONES</span>
                         </button>
 
-                        <button class="btn menu-btn-enhanced btn-secondary" data-action="cierre">
-                            <i class='bx bx-lock'></i>
-                            <span>CIERRE</span>
-                        </button>
+                       
                     </div>
 
                     <!-- FILA 3: Administración y Configuración -->
                     <div class="menu-row">
-                        <button class="btn menu-btn-enhanced btn-primary" data-action="administrador">
-                            <i class='bx bx-shield'></i>
-                            <span>ADMINISTRADOR</span>
+                        <button class="btn menu-btn-enhanced btn-secondary" data-action="cierre">
+                            <i class='bx bx-lock'></i>
+                            <span>CIERRE</span>
                         </button>
-
+                       
                         <button class="btn menu-btn-enhanced btn-purple" data-action="reportes-z">
                             <i class='bx bx-bar-chart-alt-2'></i>
                             <span>REPORTES Z</span>
@@ -90,6 +94,12 @@
                             <i class='bx bx-key'></i>
                             <span>CAMBIO PASS</span>
                         </button>
+
+                        <button class="btn menu-btn-enhanced btn-primary" data-action="administrador">
+                            <i class='bx bx-shield'></i>
+                            <span>ADMINISTRADOR</span>
+                        </button>
+
                         @* <!-- ✅ NUEVO: Botón que abre el modal del teclado demo -->
                         <button class="btn menu-btn-enhanced btn-dark-orange" data-action="demo-teclado">
                             <i class='bx bx-keyboard'></i>

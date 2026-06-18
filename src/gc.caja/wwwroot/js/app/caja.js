@@ -578,7 +578,7 @@ $(function () {
 
             case 'parcial':
                 // Deshabilitar funciones críticas que requieren caja abierta
-                $botones.filter('[data-action="facturacion"], [data-action="cobranza"], [data-action="cierre"]')
+                $botones.filter('[data-action="facturacion"], [data-action="cobranza-diferida"], [data-action="cobranza"], [data-action="cierre"]')
                     .prop('disabled', true).addClass('disabled-menu-item');
                 console.log("⚠️ Menú configurado: Acceso PARCIAL");
                 break;
@@ -631,18 +631,7 @@ $(function () {
         }, 500);
     }
 
-    // ---------------------------------------------------------
-    // FUNCIONES DE MENSAJES Y MANEJO DE ERRORES
-    // ---------------------------------------------------------
-
-    function mostrarLoader(texto) {
-        $('#loaderText').html(texto);
-        $('#loaderOverlay').fadeIn(500);
-    }
-
-    function ocultarLoader() {
-        $('#loaderOverlay').fadeOut(300);
-    }
+ 
 
     /**
      * Muestra un mensaje de advertencia del sistema y ejecuta callback al cerrar
@@ -812,6 +801,9 @@ $(function () {
             case 'facturacion':
                 abrirModuloFacturacion();
                 break;
+            case 'cobranza-diferida':
+                abrirModuloCobranzaDiferida();
+                break;
             case 'devolucion-nc':
                 abrirModuloDevolucion();
                 break;
@@ -939,6 +931,60 @@ $(function () {
                     "error!",
                     null
                 );
+            }
+        });
+    }
+
+    function abrirModuloCobranzaDiferida() {
+        console.log('💰 Iniciando validación para Cobranza Diferida...');
+        mostrarLoader("Validando datos de caja...<br><small class='text-muted'>Preparando módulo de Cobranza Diferida</small>");
+
+        $.ajax({
+            url: cobranzaDiferidaValidarUrl, // ✅ NUEVA URL
+            type: 'post',
+            dataType: 'json',
+            timeout: 10000,
+            success: function (response) {
+                ocultarLoader();
+
+                if (!response.success) {
+                    console.error("❌ Validación de datos de caja fallida para Cobranza Diferida:", response.message);
+                    AbrirMensaje(
+                        "Error de Validación",
+                        `<div class="text-center">
+                            <i class='bx bx-error-circle text-danger' style='font-size: 3rem;'></i>
+                            <p class="mt-3">${response.message}</p>
+                            <hr>
+                            <small class="text-muted">
+                                Por favor, contacte al administrador o verifique la configuración de la caja.
+                            </small>
+                        </div>`,
+                        function () { $("#msjModal").modal("hide"); },
+                        false, ["Aceptar"], "error!", null
+                    );
+                    return;
+                }
+
+                console.log("✅ Validación exitosa - Abriendo módulo de Cobranza Diferida");
+                const menuModal = getModalMenu();
+                if (menuModal) menuModal.hide();
+
+                mostrarLoader("Abriendo módulo de Cobranza Diferida...<br><small class='text-muted'>Por favor espere</small>");
+                setTimeout(() => {
+                    window.location.href = cobranzaDiferidaInicializaUrl; // ✅ NUEVA URL
+                }, 800);
+            },
+            error: function (xhr, status, error) {
+                ocultarLoader();
+                let mensajeError = "Error al validar los datos de la caja para Cobranza Diferida.";
+                if (status === 'timeout') {
+                    mensajeError = "La validación tardó demasiado tiempo. Por favor, intente nuevamente.";
+                } else if (xhr.status === 500) {
+                    mensajeError = "Error interno del servidor. Contacte al administrador.";
+                } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                    mensajeError = xhr.responseJSON.message;
+                }
+                AbrirMensaje("Error", `<div class="text-center"><i class='bx bx-error-circle text-danger' style='font-size: 3rem;'></i><p class="mt-3">${mensajeError}</p></div>`, function () { $("#msjModal").modal("hide"); }, false, ["Aceptar"], "error!", null);
             }
         });
     }

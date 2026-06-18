@@ -3,6 +3,10 @@
     ViewData["SufijoId"] = "Pago";
     ViewData["MostrarTipoComprobante"] = true;
     ViewData["TipoComprobanteTexto"] = "FACTURA A";
+
+    // ✅ NUEVO v27.0: Título y contexto dinámicos
+    var tituloModal = ViewBag.TituloModalPago ?? "Formas de Pago Ingresadas";
+    var contextoOperacion = ViewBag.ContextoOperacion ?? "VENTA"; // 'VENTA' o 'COBRANZA'
 }
 
 <!-- ══════════════════════════════════════════════════════════════════════
@@ -24,6 +28,13 @@
     <div class="modal-dialog modal-fullscreen">
         <div class="modal-content modal-golden">
 
+            <!-- ✅ HEADER CON TÍTULO DINÁMICO -->
+            <div class="modal-header bg-golden">
+                <h5 class="modal-title text-white" id="tituloFormasPago">
+                    Formas de Pago Ingresadas
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
             <!-- ════════════════════════════════════════════════════════════════ -->
             <!-- HEADER CON DATOS DEL CLIENTE (COMPACTO) -->
             <!-- ════════════════════════════════════════════════════════════════ -->
@@ -137,6 +148,8 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- ✅ NUEVO: Ancla invisible para posicionar el teclado -->
+                        <div id="teclado-ancla" class="mt-3" style="height: 0;"></div>
                     </div>
 
                     <!-- ════════════════════════════════════════════════════════ -->
@@ -147,7 +160,7 @@
                             <div class="card-header bg-gradient-golden py-2">
                                 <h6 class="mb-0 text-white">
                                     <i class='bx bx-credit-card'></i>
-                                    Formas de Pago Ingresadas
+                                    <span id="tituloFormasPago">@tituloModal</span>
                                     <span class="badge bg-white text-golden ms-2" id="badgeCantidadPagos">0 valores</span>
                                 </h6>
                             </div>
@@ -239,3 +252,5 @@
 <!-- ... resto de campos ... -->
 <!-- ✅ AGREGAR: Campo para adm_id -->
 <input type="hidden" id="hdnAdmId" value="@ViewBag.AdmId" />
+<!-- ✅ NUEVO v27.0: Campo para diferenciar contexto de operación -->
+<input type="hidden" id="hdnContextoOperacion" value="@contextoOperacion" />

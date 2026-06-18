@@ -364,6 +364,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 string[] nombre = datos.cta_denominacion
                     .Split([' '], StringSplitOptions.RemoveEmptyEntries);
 
+                // ✅ NUEVO: Validación de CUIT para clientes registrados
+                bool requiereCuit = cuenta.Origen.Equals("C", StringComparison.OrdinalIgnoreCase) && datos.tdoc_id != "80";
+
                 // ❹ Mapear a objeto de respuesta con TODOS los datos (para frontend)
                 var clienteCompleto = new
                 {
@@ -392,6 +395,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     condicionAfipId = datos.afip_id ?? string.Empty,
                     emite = $"Factura {datos.tco_letra}",
                     emiteId = datos.tco_letra,
+                    // ✅ NUEVO: Indicador de requisito de CUIT
+                    requiereCuit
                 };
 
                 // ✅ RETORNAR: objeto para frontend + DTO completo para sesión

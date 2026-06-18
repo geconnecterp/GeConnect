@@ -1,0 +1,74 @@
+﻿@*
+    ================================================================
+    MODAL: VER FACTURAS PENDIENTES (SELECCIÓN MÚLTIPLE)
+    ================================================================
+    v1.0
+    - Muestra todas las facturas con pago diferido.
+    - Permite seleccionar múltiples facturas de un MISMO cliente.
+*@
+<div class="modal modal-golden fade" id="modalVerFacturasPendientes" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalVerFacturasPendientesTitle" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+
+            <!-- Header -->
+            <div class="modal-header bg-gradient-blue">
+                <h5 class="modal-title fw-bold text-white" id="modalVerFacturasPendientesTitle">
+                    <i class='bx bx-list-ul'></i>
+                    Seleccionar Facturas para Cobranza
+                </h5>
+                <span id="spanClienteSeleccionado" class="badge bg-white text-golden ms-3 fs-6" style="display: none;"></span>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body p-3 bg-light">
+                <!-- Grilla de Facturas Pendientes -->
+                <div class="card card-golden">
+                    <div class="card-body p-0">
+                        <div class="table-responsive" style="max-height: 65vh; overflow-y: auto;">
+                            <table class="table table-golden table-hover table-sm mb-0" id="tblVerFacturasPendientes">
+                                <thead class="table-golden-header sticky-top">
+                                    <tr>
+                                        <th style="width: 10%;">Tipo</th>
+                                        <th style="width: 15%;">Comprobante</th>
+                                        <th style="width: 35%;">Cliente</th>
+                                        <th class="text-center" style="width: 15%;">Fecha</th>
+                                        <th class="text-end" style="width: 15%;">Importe</th>
+                                        <th class="text-center" style="width: 10%;">
+                                            <input type="checkbox" id="chkSeleccionarTodoVFP" class="form-check-input" title="Seleccionar Todo">
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyVerFacturasPendientes">
+                                    <!-- Las filas se cargarán dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Footer con Total -->
+                    <div class="card-footer bg-golden-light border-top border-golden">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-8 text-end">
+                                <span class="fw-bold text-golden-dark fs-4">TOTAL SELECCIONADO:</span>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" class="form-control form-control-lg text-end fw-bold text-success" id="txtTotalSeleccionadoVFP" readonly value="$ 0.00" style="font-size: 1.75rem; background-color: #fff; border: 2px solid var(--bs-golden-primary);">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer con botones -->
+            <div class="modal-footer d-flex justify-content-between bg-white border-top">
+                <button type="button" class="btn btn-outline-secondary btn-lg shadow-sm" data-bs-dismiss="modal">
+                    <i class='bx bx-x-circle'></i> CERRAR
+                </button>
+                <div class="d-flex gap-3">
+                    <button type="button" class="btn btn-success btn-lg shadow" id="btnCobrarSeleccionVFP" disabled>
+                        <i class='bx bx-check-circle'></i> COBRAR SELECCIÓN
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

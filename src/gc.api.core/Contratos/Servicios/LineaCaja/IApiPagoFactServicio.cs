@@ -10,7 +10,8 @@ namespace gc.api.core.Contratos.Servicios.LineaCaja
         List<ValoresNCResDto> ObtenerValoresNC(ValoresNCReqDto req);
         List<ValoresMPResDto> ObtenerValoresMP(ValoresMPReqDto req);
         List<ValoresInsResDto> ObtenerValoresIns(ValoresInsReqDto req);
-
         RespuestaDto ConfirmarOperacionCaja(CajaOpeConfirmarReq req);
+
+        List<FactPendienteResponseDto> ObtenerFacturasPendientes(FactPendienteRequestDto req);
     }
 }

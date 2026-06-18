@@ -171,13 +171,21 @@ function desbloquearInterfazBusqueda() {
     console.log('✅ Interfaz desbloqueada correctamente (incluye checkbox)');
 }
 
+/**
+ * ✅ NUEVO v3.1: Actualiza el estado de los botones de acción
+ */
 function actualizarEstadoBotonesAccion() {
-    if (clienteSeleccionado) {
-        $('#btnListaPrecios').prop('disabled', false);
-        $('#btnNuevoCliente').prop('disabled', true);
+    const hayCliente = clienteSeleccionado !== null;
+    const esConsumidorFinal = hayCliente && clienteSeleccionado.origen && clienteSeleccionado.origen.toUpperCase() === 'F';
+
+    // Habilitar/deshabilitar botón SEGUIR
+    $('#btnSeguirCliente').prop('disabled', !hayCliente);
+
+    // Mostrar/ocultar botón EDITAR (solo para Consumidores Finales)
+    if (esConsumidorFinal) {
+        $('#btnEditarCliente').fadeIn(300);
     } else {
-        $('#btnListaPrecios').prop('disabled', true);
-        $('#btnNuevoCliente').prop('disabled', false);
+        $('#btnEditarCliente').fadeOut(300);
     }
 }
 
@@ -190,18 +198,34 @@ function cancelarBusquedaActual() {
 }
 
 // ====== INICIALIZACIÓN ======
+/**
+ * ✅ ACTUALIZADO v2.0: La inicialización ahora es condicional.
+ * 
+ * El script se autoinicializa solo si está en el contexto del módulo de Facturación,
+ * buscando un elemento específico de esa vista (ej: #producto-factura-table).
+ * En otros módulos (como Cobranza Diferida), la inicialización debe ser manual
+ * llamando a `inicializaEventosFact()` y `inicializaVistaFact()`.
+ */
 $(function () {
-    console.log('🚀 Módulo de Facturación Cargado');
+    console.log('🚀 Módulo de Facturación/Cliente Cargado');
 
+    // Define admLp_id si no existe para evitar errores en otros módulos
     if (typeof admLp_id === 'undefined') {
         window.admLp_id = "001";
-        console.log('⚠️ admLp_id no estaba definida, se inicializó en "001"');
     }
 
-    console.log(`✅ Lista de precios inicial: ${admLp_id}`);
-
+    // Inicializa los eventos siempre, ya que son necesarios para el modal
     inicializaEventosFact();
-    inicializaVistaFact();
+
+    console.log('ℹ️ Eventos del modal de cliente registrados. Esperando llamada de inicialización...');
+    //// Condiciona la inicialización automática de la vista
+    //// #producto-factura-table es un ID que solo existe en la vista de Facturación.
+    //if ($('#producto-factura-table').length > 0) {
+    //    console.log('✅ Contexto de Facturación detectado. Inicializando vista automáticamente.');
+    //    inicializaVistaFact();
+    //} else {
+    //    console.log('ℹ️ Contexto diferente a Facturación. La inicialización de la vista debe ser manual.');
+    //}
 });
 
 // ====== EVENTOS PRINCIPALES ======
@@ -471,13 +495,14 @@ function limpiarModalCliente() {
     console.log('✅ LIMPIAR MODAL CLIENTE - FINALIZADO');
     console.log('═══════════════════════════════════════════════════');
 }
+
 // ====== BÚSQUEDA DE CLIENTE ======
 /**
- * ✅ MODIFICADO v4.0: Búsqueda de cliente con protección completa contra concurrencia
+ * ✅ MODIFICADO v5.1: Búsqueda de cliente con validación de CUIT para clientes registrados
  */
 function buscarCliente() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔍 BUSCAR CLIENTE v4.0');
+    console.log('🔍 BUSCAR CLIENTE v5.1');
     console.log('═══════════════════════════════════════════════════');
 
     // ✅ NUEVO: Validar si ya hay una búsqueda en proceso
@@ -515,16 +540,23 @@ function buscarCliente() {
             console.log('✅ Respuesta recibida del servidor');
             console.log('   response.ok:', response.ok);
             console.log('   cantidadResultados:', response.cantidadResultados);
+            console.log('   response.cliente.requiereCuit:', response.cliente ? response.cliente.requiereCuit : 'N/A');
 
             if (response.ok) {
                 const cantidadResultados = response.cantidadResultados || 0;
                 $("#txtBuscarCliente").val("");
 
-                // ══════════════════════════════════════════════════════
-                // ✅ MODIFICACIÓN: Lógica de confirmación automática
-                // ══════════════════════════════════════════════════════
                 if (cantidadResultados === 1 && response.cliente) {
                     console.log('✅ Cliente único encontrado');
+
+                    // ══════════════════════════════════════════════════════
+                    // ✅ NUEVO: Validación de requisito de CUIT
+                    // ══════════════════════════════════════════════════════
+                    if (response.cliente.requiereCuit) {
+                        console.warn('⚠️ Cliente requiere CUIT. Bloqueando avance.');
+                        manejarClienteRequiereCuit(response.cliente);
+                        return; // Detener flujo normal
+                    }
 
                     // ✅ DECISIÓN: ¿Auto-confirmar o mostrar?
                     if (autoConfirmarClienteUnico) {
@@ -535,16 +567,10 @@ function buscarCliente() {
                         mostrarDatosCliente(response.cliente);
                     }
                 }
-                // ══════════════════════════════════════════════════════
-                // ✅ SIN CAMBIOS: Lógica de múltiples resultados
-                // ══════════════════════════════════════════════════════
                 else if (cantidadResultados > 1) {
                     console.log(`✅ Múltiples clientes encontrados: ${cantidadResultados}`);
                     cargarGrillaClientes();
                 }
-                // ══════════════════════════════════════════════════════
-                // ✅ SIN CAMBIOS: Lógica de sin resultados
-                // ══════════════════════════════════════════════════════
                 else {
                     console.warn('⚠️ No se encontraron clientes');
                     mostrarMensajeInformacion('No se encontraron clientes');
@@ -599,6 +625,92 @@ function buscarCliente() {
     });
 }
 
+// ========================================
+// ✅ NUEVA FUNCIÓN: MANEJAR CLIENTE QUE REQUIERE CUIT
+// ========================================
+/**
+ * ✅ NUEVA v1.0: Gestiona la UI cuando un cliente registrado no tiene CUIT.
+ * Muestra los datos pero bloquea la confirmación.
+ * @param {object} cliente - El objeto cliente recibido del servidor.
+ */
+function manejarClienteRequiereCuit(cliente) {
+    // 1. Mostrar los datos del cliente en la interfaz
+    mostrarDatosCliente(cliente, false); // El 'false' indica que no se debe habilitar el botón 'Seguir'
+
+    // 2. Mostrar un mensaje de error claro y accionable
+    const mensaje = `El cliente <b>${cliente.denominacion}</b> no tiene un CUIT registrado.<br><br>` +
+        `Por favor, diríjase a <b>Gestión de Clientes</b> para actualizar sus datos fiscales antes de continuar.`;
+
+    mostrarMensajeError(mensaje);
+}
+
+// ====== MOSTRAR DATOS DEL CLIENTE ======
+/**
+ * ✅ MODIFICADO v2.2: Lógica de habilitación de botón centralizada en actualizarEstadoBotonesAccion
+ * @param {object} cliente - El objeto cliente a mostrar.
+ */
+function mostrarDatosCliente(cliente) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📊 MOSTRAR DATOS DEL CLIENTE v2.2');
+    console.log('═══════════════════════════════════════════════════');
+
+    if ($('#cardGrillaClientes').length > 0) {
+        $('#cardGrillaClientes').removeClass('show').hide().empty();
+    }
+
+    $('#alertSinCliente').hide();
+    $('#loaderClienteTemp').remove();
+
+
+
+
+
+    const $cardBody = $('#cardDatosCliente .card-body');
+    if ($cardBody.length > 0) {
+        $cardBody.show();
+    }
+
+    const origenUpper = (cliente.origen || '').toUpperCase();
+    const idDisplay = origenUpper === 'C' ? (cliente.id || '') : 'N/A';
+
+    const tipoNumeroDisplay = (cliente.tdocDesc && cliente.documento)
+        ? `${cliente.tdocDesc} ${cliente.documento}`
+        : (cliente.tipoNumero || '');
+
+    console.log('📝 Llenando campos:');
+    console.log('   Nombre:', cliente.denominacion);
+    console.log('   ID:', idDisplay);
+    console.log('   Origen:', origenUpper);
+
+    $('#txtNombre').val(cliente.denominacion || '');
+    $('#txtClienteId').val(idDisplay);
+    $('#txtDomicilio').val(cliente.domicilio || '');
+    $('#txtCondicionAfip').val(cliente.condicionAfip || '');
+    $('#txtTipoNumero').val(tipoNumeroDisplay);
+    $('#txtEmite').val(cliente.emite || '');
+    $('#txtEmail').val(cliente.email || '');
+    $('#txtMovil').val(cliente.movil || '');
+
+    const esConsumidorFinal = cliente.origen && cliente.origen.toUpperCase() === 'F';
+
+    if (esConsumidorFinal) {
+        $('#btnEditarCliente').fadeIn(300);
+        console.log('✅ Botón EDITAR mostrado (Consumidor Final)');
+    } else {
+        $('#btnEditarCliente').fadeOut(300);
+        console.log('✅ Botón EDITAR oculto (Cliente Registrado)');
+    }
+
+    $('#cardDatosCliente').show().removeClass('hide').addClass('show');
+
+    clienteSeleccionado = cliente;
+
+    // ✅ SIMPLIFICADO: Llamada única a la función que ahora tiene la lógica correcta
+    actualizarEstadoBotonesAccion();
+
+    console.log('✅ Datos del cliente mostrados correctamente');
+    console.log('═══════════════════════════════════════════════════');
+}
 
 
 // ====== CARGAR GRILLA DE CLIENTES (AJAX) ======
@@ -896,11 +1008,11 @@ function seleccionarClienteDesdeGrilla($row) {
 
 // ====== BUSCAR CLIENTE POR ID ======
 /**
- * ✅ MODIFICADO v2.0: Búsqueda por ID con gestión de estado
+ * ✅ MODIFICADO v2.1: Búsqueda por ID con gestión de estado y validación de CUIT
  */
 function buscarClientePorId(clienteId) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔍 BUSCAR CLIENTE POR ID v2.0');
+    console.log('🔍 BUSCAR CLIENTE POR ID v2.1');
     console.log(`   ID: ${clienteId}`);
     console.log('═══════════════════════════════════════════════════');
 
@@ -926,6 +1038,7 @@ function buscarClientePorId(clienteId) {
         timeout: 30000,
         success: function (response) {
             console.log('✅ Respuesta recibida');
+            console.log('   response.cliente.requiereCuit:', response.cliente ? response.cliente.requiereCuit : 'N/A');
 
             if (!response.ok) {
                 mostrarMensajeError(response.mensaje || 'Error al cargar datos del cliente');
@@ -948,9 +1061,15 @@ function buscarClientePorId(clienteId) {
             }
 
             // ══════════════════════════════════════════════════════
-            // ✅ MODIFICACIÓN: Lógica de confirmación automática
+            // ✅ CORRECCIÓN: Lógica de validación de CUIT ahora aquí
             // ══════════════════════════════════════════════════════
             console.log('✅ Cliente cargado correctamente desde grilla');
+
+            if (response.cliente.requiereCuit) {
+                console.warn('⚠️ Cliente requiere CUIT. Bloqueando avance.');
+                manejarClienteRequiereCuit(response.cliente);
+                return; // Detener flujo normal
+            }
 
             if (autoConfirmarClienteUnico) {
                 console.log('⚡ Auto-confirmando cliente desde grilla');
@@ -1214,17 +1333,33 @@ function limpiarFormularioCliente(preservarModoEdicion = false) {
     }
 }
 
+/**
+ * ✅ NUEVO v3.1: Confirma un cliente (usado desde btnSeguirCliente)
+ * @param {object} cliente - Cliente a confirmar
+ */
 function confirmarCliente(cliente) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('✅ CONFIRMAR CLIENTE v3.1');
+    console.log(`   Cliente: ${cliente.denominacion}`);
+    console.log('═══════════════════════════════════════════════════');
+
     if (!cliente) {
-        mostrarMensajeError('No hay cliente seleccionado');
+        mostrarMensajeError('No hay cliente para confirmar');
         return;
     }
 
+    // Actualizar lista de precios
+    const tipoCliente = (cliente.origen && cliente.origen.toUpperCase() === 'F') ? "FINAL" : "REGISTRADO";
+    actualizarListaPreciosGlobal(tipoCliente, cliente);
+
+    // Disparar evento para módulos que escuchan (pagoDiferido.js, prodfact.js, etc.)
+    $(document).trigger('clienteConfirmado', [cliente]);
+
+    // Cerrar modal
     $('#modalIdentificarCliente').modal('hide');
 
-    setTimeout(() => {
-        $(document).trigger('clienteConfirmado', [cliente]);
-    }, 400);
+    console.log('✅ Cliente confirmado exitosamente');
+    console.log('═══════════════════════════════════════════════════');
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -1233,47 +1368,19 @@ function confirmarCliente(cliente) {
 // ════════════════════════════════════════════════════════════════
 
 /**
- * ✅ NUEVA v1.0: Confirma cliente automáticamente sin mostrar datos
- * 
- * Flujo:
- * 1. Valida que el cliente pueda ser auto-confirmado
- * 2. Guarda en clienteSeleccionado
- * 3. Cierra modal inmediatamente
- * 4. Dispara evento 'clienteConfirmado'
- * 
- * @param {object} cliente - Objeto cliente de la búsqueda
+ * ✅ NUEVO v3.1: Confirmación automática de cliente único
+ * @param {object} cliente - Cliente a confirmar automáticamente
  */
 function confirmarClienteAutomaticamente(cliente) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('⚡ CONFIRMACIÓN AUTOMÁTICA DE CLIENTE');
+    console.log('⚡ CONFIRMACIÓN AUTOMÁTICA DE CLIENTE v3.1');
+    console.log(`   Cliente: ${cliente.denominacion}`);
     console.log('═══════════════════════════════════════════════════');
-    console.log('   Denominación:', cliente.denominacion);
-    console.log('   Origen:', cliente.origen);
-    console.log('   ID:', cliente.id);
-    console.log('   autoConfirmarClienteUnico:', autoConfirmarClienteUnico);
-
-    const validacion = validarClienteParaAutoConfirmacion(cliente);
-
-    if (!validacion.valido) {
-        console.error('❌ Validación fallida:', validacion.mensaje);
-        mostrarMensajeError(validacion.mensaje);
-        limpiarVista();
-        return;
-    }
 
     clienteSeleccionado = cliente;
-    console.log('✅ Cliente guardado en clienteSeleccionado');
 
-    $('#modalIdentificarCliente').modal('hide');
-    console.log('✅ Modal cerrado');
-
-    setTimeout(() => {
-        console.log('📡 Disparando evento clienteConfirmado...');
-        $(document).trigger('clienteConfirmado', [cliente]);
-        console.log('✅ Evento disparado - Control transferido a prodfact.js');
-    }, 400);
-
-    console.log('═══════════════════════════════════════════════════');
+    // Llamar a la función estándar de confirmación
+    confirmarCliente(cliente);
 }
 
 function limpiarSesionClientesBuscados() {
@@ -1612,6 +1719,40 @@ function confirmarClienteSeleccionado() {
 
     console.log('✅ Cliente confirmado y lista de precios actualizada');
     console.log('═══════════════════════════════════════════════════');
+}
+
+/**
+ * ✅ NUEVO v3.1: Obtiene los datos del cliente desde la UI
+ * @returns {object|null} Datos del cliente o null si no hay cliente
+ */
+function obtenerClienteSeleccionadoUI() {
+    if (!clienteSeleccionado) {
+        return null;
+    }
+
+    return {
+        id: clienteSeleccionado.id || '',
+        denominacion: clienteSeleccionado.denominacion || '',
+        domicilio: clienteSeleccionado.domicilio || '',
+        condicionAfip: clienteSeleccionado.condicionAfip || '',
+        tipoNumero: clienteSeleccionado.tipoNumero || '',
+        email: clienteSeleccionado.email || '',
+        movil: clienteSeleccionado.movil || '',
+        origen: clienteSeleccionado.origen || '',
+        tdocDesc: clienteSeleccionado.tdocDesc || '',
+        documento: clienteSeleccionado.documento || '',
+        lp_id: clienteSeleccionado.lp_id || '001',
+        emite: clienteSeleccionado.emite || '',
+        esConsumidorFinal: clienteSeleccionado.origen && clienteSeleccionado.origen.toUpperCase() === 'F',
+        // ✅ NUEVO: Agregar campos adicionales necesarios para Cobranza Diferida
+        cta_id: clienteSeleccionado.id || clienteSeleccionado.cta_id || '',
+        cta_documento: clienteSeleccionado.documento || clienteSeleccionado.cta_documento || '',
+        cta_celu: clienteSeleccionado.movil || clienteSeleccionado.cta_celu || '',
+        cta_email: clienteSeleccionado.email || clienteSeleccionado.cta_email || '',
+        cta_domicilio: clienteSeleccionado.domicilio || clienteSeleccionado.cta_domicilio || '',
+        afip_desc: clienteSeleccionado.condicionAfip || clienteSeleccionado.afip_desc || '',
+        tdoc_id: clienteSeleccionado.tdocId || clienteSeleccionado.tdoc_id || ''
+    };
 }
 
 // ========================================

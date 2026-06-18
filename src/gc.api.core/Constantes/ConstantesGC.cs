@@ -47,6 +47,9 @@
 			//verificaciones
 			public const string SP_CAJA_VALIDA_PV = "SPGECO_CAJA_Valida_PV";
 			public const string SP_CAJA_STK_CARGA = "SPGECO_STK_Carga";
+
+			//cobranza diferida
+			public const string SP_CAJA_FACT_DIFE = "SPGECO_CAJA_B_Facturas_pendientes";
             #endregion
 
             #region VTAS

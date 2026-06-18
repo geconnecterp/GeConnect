@@ -46,95 +46,137 @@ function inicializarEventosCalculoFactura() {
     console.log('✅ Eventos del modal de cálculo configurados');
 }
 
-// ════════════════════════════════════════════════════════════
-// PROCESAR PAGO DE FACTURA
 /**
- * ✅ ACTUALIZADO v13.1: Abre el modal de pago con validación simplificada
- * CAMBIO: Llama directamente a abrirModalPago() en lugar de PagoFactura.abrirModal()
+ * ✅ ACTUALIZADO v27.0: Utiliza la nueva función genérica `iniciarProcesoPago`
+ * y pasa el contexto de 'VENTA'.
  */
 function procesarPagoFactura() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('💰 PROCESAR PAGO DE FACTURA v13.1');
+    console.log('💰 PROCESAR PAGO DE FACTURA v27.0');
     console.log('═══════════════════════════════════════════════════');
 
-    // ❶ VALIDACIÓN: Verificar que la función abrirModalPago esté disponible
-    console.log('🔍 Verificando disponibilidad de la función abrirModalPago...');
-
-    if (typeof abrirModalPago !== 'function') {
-        console.error('═══════════════════════════════════════════════════');
-        console.error('❌ CRÍTICO: Función abrirModalPago NO está disponible');
-        console.error('═══════════════════════════════════════════════════');
-        console.error('Diagnóstico:');
-        console.error('   1. Verificar que el archivo pagoFactura.js esté cargado');
-        console.error('   2. Ruta esperada: ~/js/app/pagoFactura.js');
-        console.error('   3. Revisar consola del navegador para errores de carga');
-        console.error('═══════════════════════════════════════════════════');
-
-        mostrarMensajeError('El módulo de pago no está disponible.\nPor favor, recargue la página e intente nuevamente.');
+    // 1. Validar que la nueva función de inicio esté disponible
+    if (typeof iniciarProcesoPago !== 'function') {
+        console.error('❌ CRÍTICO: La función `iniciarProcesoPago` no está disponible.');
+        mostrarMensajeError('El módulo de pago no está actualizado. Por favor, recargue la página.');
         return;
     }
 
-    console.log('✅ Función abrirModalPago disponible');
+    // 2. Extraer el total final de la tabla
+    const totalFinalTexto = $('#tdTotalFinal').text().trim();
+    const totalFinal = parsearNumero(totalFinalTexto); // Usando la función de parseo existente
 
-    // ❷ Extraer el total final de la tabla
-    const $tdTotalFinal = $('#tdTotalFinal');
+    // 3. Determinar el tipo de operación para facturación
+    const ctaId = $('#txtClienteIdCalc').val();
+    const co_tipo = (ctaId && ctaId.trim() !== '' && ctaId !== 'N/A') ? 'CR' : 'CF';
 
-    if ($tdTotalFinal.length === 0) {
-        console.error('❌ No se encontró el elemento #tdTotalFinal en el DOM');
-        mostrarMensajeError('Error: No se pudo obtener el total de la factura');
-        return;
-    }
+    console.log(`   Total extraído: ${formatearMoneda(totalFinal)}`);
+    console.log(`   Tipo de operación determinado: ${co_tipo}`);
 
-    const totalFinalTexto = $tdTotalFinal.text().trim();
-    const totalFinal = parseFloat(totalFinalTexto.replace(/[^\d.-]/g, '')) || 0;
+    // 4. Invocar el proceso de pago genérico
+    console.log('   Invocando el proceso de pago genérico para Venta...');
+    iniciarProcesoPago({
+        totalPagar: totalFinal,
+        co_tipo: co_tipo,
+        puntoVenta: $('#lblPuntoVentaCalculo').text().trim() || 'GECO PV',
+        // ✅ NUEVO v27.0: Pasar título y contexto específicos
+        tituloModal: 'Pago de Factura',
+        contextoOperacion: 'VENTA'
+    });
 
-    console.log(`💵 Total final extraído: $ ${totalFinal.toFixed(2)}`);
-
-    // ❸ Validar que el total sea mayor a 0
-    if (totalFinal <= 0) {
-        console.warn('⚠️ Total final es $0.00 o negativo');
-        mostrarMensajeAdvertencia('El total de la factura debe ser mayor a $0.00');
-        return;
-    }
-
-    // ❹ Preparar datos para el modal de pago
-    const datosPago = {
-        totales: {
-            totalPagar: totalFinal,
-            recargos: 0,
-            descuentos: 0,
-            totalValores: 0
-        },
-        puntoVenta: $('#lblPuntoVentaCalculo').text().trim() || 'GECO PV'
-    };
-
-    console.log('📋 Datos preparados para modal de pago:', datosPago);
-
-    // ❺ ✅ CAMBIO CRÍTICO: Llamar directamente a la función
-    try {
-        console.log('🔓 Invocando abrirModalPago()...');
-
-        const resultado = abrirModalPago(datosPago);
-
-        if (resultado === false) {
-            console.error('❌ abrirModalPago() retornó false');
-            mostrarMensajeError('Error al abrir el modal de pago. Revise la consola para más detalles.');
-        } else {
-            console.log('✅ Modal de pago abierto correctamente');
-        }
-    } catch (error) {
-        console.error('═══════════════════════════════════════════════════');
-        console.error('❌ EXCEPCIÓN AL ABRIR MODAL DE PAGO');
-        console.error('═══════════════════════════════════════════════════');
-        console.error('Error:', error);
-        console.error('Stack:', error.stack);
-        console.error('═══════════════════════════════════════════════════');
-
-        mostrarMensajeError(`Error al abrir el modal de pago: ${error.message}`);
-    }
-
+    console.log('✅ Solicitud de pago delegada a `iniciarProcesoPago`.');
     console.log('═══════════════════════════════════════════════════');
 }
+
+//// ════════════════════════════════════════════════════════════
+//// PROCESAR PAGO DE FACTURA
+///**
+// * ✅ ACTUALIZADO v13.1: Abre el modal de pago con validación simplificada
+// * CAMBIO: Llama directamente a abrirModalPago() en lugar de PagoFactura.abrirModal()
+// */
+//function procesarPagoFactura() {
+//    console.log('═══════════════════════════════════════════════════');
+//    console.log('💰 PROCESAR PAGO DE FACTURA v13.1');
+//    console.log('═══════════════════════════════════════════════════');
+
+//    // ❶ VALIDACIÓN: Verificar que la función abrirModalPago esté disponible
+//    console.log('🔍 Verificando disponibilidad de la función abrirModalPago...');
+
+//    if (typeof abrirModalPago !== 'function') {
+//        console.error('═══════════════════════════════════════════════════');
+//        console.error('❌ CRÍTICO: Función abrirModalPago NO está disponible');
+//        console.error('═══════════════════════════════════════════════════');
+//        console.error('Diagnóstico:');
+//        console.error('   1. Verificar que el archivo pagoFactura.js esté cargado');
+//        console.error('   2. Ruta esperada: ~/js/app/pagoFactura.js');
+//        console.error('   3. Revisar consola del navegador para errores de carga');
+//        console.error('═══════════════════════════════════════════════════');
+
+//        mostrarMensajeError('El módulo de pago no está disponible.\nPor favor, recargue la página e intente nuevamente.');
+//        return;
+//    }
+
+//    console.log('✅ Función abrirModalPago disponible');
+
+//    // ❷ Extraer el total final de la tabla
+//    const $tdTotalFinal = $('#tdTotalFinal');
+
+//    if ($tdTotalFinal.length === 0) {
+//        console.error('❌ No se encontró el elemento #tdTotalFinal en el DOM');
+//        mostrarMensajeError('Error: No se pudo obtener el total de la factura');
+//        return;
+//    }
+
+//    const totalFinalTexto = $tdTotalFinal.text().trim();
+//    const totalFinal = parseFloat(totalFinalTexto.replace(/[^\d.-]/g, '')) || 0;
+
+//    console.log(`💵 Total final extraído: $ ${totalFinal.toFixed(2)}`);
+
+//    // ❸ Validar que el total sea mayor a 0
+//    if (totalFinal <= 0) {
+//        console.warn('⚠️ Total final es $0.00 o negativo');
+//        mostrarMensajeAdvertencia('El total de la factura debe ser mayor a $0.00');
+//        return;
+//    }
+
+//    // ❹ Preparar datos para el modal de pago
+//    const datosPago = {
+//        totales: {
+//            totalPagar: totalFinal,
+//            recargos: 0,
+//            descuentos: 0,
+//            totalValores: 0
+//        },
+//        puntoVenta: $('#lblPuntoVentaCalculo').text().trim() || 'GECO PV'
+//    };
+
+//    console.log('📋 Datos preparados para modal de pago:', datosPago);
+
+//    // ❺ ✅ CAMBIO CRÍTICO: Llamar directamente a la función
+//    try {
+//        console.log('🔓 Invocando abrirModalPago()...');
+
+//        const resultado = abrirModalPago(datosPago);
+
+//        if (resultado === false) {
+//            console.error('❌ abrirModalPago() retornó false');
+//            mostrarMensajeError('Error al abrir el modal de pago. Revise la consola para más detalles.');
+//        } else {
+//            console.log('✅ Modal de pago abierto correctamente');
+//        }
+//    } catch (error) {
+//        console.error('═══════════════════════════════════════════════════');
+//        console.error('❌ EXCEPCIÓN AL ABRIR MODAL DE PAGO');
+//        console.error('═══════════════════════════════════════════════════');
+//        console.error('Error:', error);
+//        console.error('Stack:', error.stack);
+//        console.error('═══════════════════════════════════════════════════');
+
+//        mostrarMensajeError(`Error al abrir el modal de pago: ${error.message}`);
+//    }
+
+//    console.log('═══════════════════════════════════════════════════');
+//}
 
 // ════════════════════════════════════════════════════════════
 // ABRIR MODAL CON DATOS
@@ -899,7 +941,7 @@ function ejecutarDiferirPago() {
         url: DiferirPagoUrl,
         type: 'POST',
         dataType: 'json',
-        timeout: 30000,
+        timeout: 120000,
         success: function (response) {
             console.log('✅ RESPUESTA DE DIFERIR PAGO RECIBIDA');
             console.log('Response:', response);

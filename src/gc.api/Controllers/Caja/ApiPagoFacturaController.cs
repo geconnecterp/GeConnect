@@ -106,5 +106,19 @@ namespace gc.api.Controllers.Caja
             return Ok(new ApiResponse<RespuestaDto>(res));
 
         }
+
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<FactPendienteResponseDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult ObtenerFacturasPendientes(FactPendienteRequestDto req)
+        {
+            if (req == null)
+            {
+                return BadRequest("El parámetro req es requerido.");
+            }
+            var res = _apiPagoFactServicio.ObtenerFacturasPendientes(req);
+            return Ok(new ApiResponse<List<FactPendienteResponseDto>>(res));
+        }
     }
 }

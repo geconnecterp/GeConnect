@@ -1488,3 +1488,16 @@ function mostrarMensajeEstado(mensaje, tipo = 'danger', duracion = 5000) {
         $('#txtCodigoProducto').trigger('focus');
     }, 100);
 }
+
+// ---------------------------------------------------------
+// FUNCIONES DE MENSAJES Y MANEJO DE ERRORES
+// ---------------------------------------------------------
+
+function mostrarLoader(texto) {
+    $('#loaderText').html(texto);
+    $('#loaderOverlay').fadeIn(500);
+}
+
+function ocultarLoader() {
+    $('#loaderOverlay').fadeOut(300);
+}
