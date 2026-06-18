@@ -54,6 +54,16 @@ const REGEX_BARRAS_BALANZA = /^2(\d{5})(\d{5})(\d)$/; // Formato balanza: 2 + 5 
 // ====== INICIALIZACIÓN ======
 $(function () {
     console.log('🚀 Módulo de Productos de Factura inicializado v5.0 CORREGIDA');
+
+    // ✅ NUEVO: Iniciar el flujo de identificación de cliente
+    // Llama a la función de fact.js para abrir el modal al cargar el módulo.
+    if (typeof inicializaVistaFact === 'function') {
+        console.log('▶️ Iniciando flujo de identificación de cliente desde prodfact.js...');
+        inicializaVistaFact();
+    } else {
+        console.error('❌ La función inicializaVistaFact() no está definida. Asegúrese de que fact.js se cargue antes que prodfact.js.');
+    }
+
     inicializarEventosProductos();
     configurarListenersIntegracion();
     obtenerConfiguracionCaja(); // ✅ NUEVO: Obtener configuración al inicio

@@ -99,5 +99,22 @@ namespace gc.api.core.Servicios.LineaCaja
             _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - request:{JsonConvert.SerializeObject(req)}");
             return OperacionConfirmacionBase(req);
         }
+
+        public List<FactPendienteResponseDto> ObtenerFacturasPendientes(FactPendienteRequestDto req)
+        {
+            _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - request:{JsonConvert.SerializeObject(req)}");
+            var sp = ConstantesGC.StoredProcedures.SP_CAJA_FACT_DIFE;
+           
+            var ps = new List<SqlParameter>() {
+                new SqlParameter("@caja_nro_proceso", req.caja_nro_proceso),
+                new SqlParameter("@caja_nro_cierre", req.caja_nro_cierre),
+                new SqlParameter("@cta_id", req.cta_id),
+                new SqlParameter("@tdo_codigo", req.tdo_codigo),
+                new SqlParameter("@cta_documento", req.cta_documento),
+                new SqlParameter("@tipo_carga", req.tipo_carga)
+            };
+            var res = _repository.EjecutarLstSpExt<FactPendienteResponseDto>(sp, ps);
+            return res;
+        }
     }
 }

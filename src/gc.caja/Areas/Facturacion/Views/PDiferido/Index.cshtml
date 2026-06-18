@@ -1,0 +1,106 @@
+﻿@*
+    ✅ ACTUALIZADO v3.1: Vista principal para el módulo de Cobranza Diferida.
+    
+    CAMBIO RADICAL v3.0:
+    - Ahora carga TODAS las facturas pendientes al inicio.
+    - Soporta búsqueda de cliente específico (filtrado desde sesión).
+    - Muestra directamente el modal con todas las facturas o filtradas por cliente.
+*@
+@{
+    ViewData["Title"] = "Cobranza Diferida";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // ✅ Obtener datos del controlador
+    var facturasPendientes = ViewBag.FacturasPendientes as List<gc.infraestructura.Dtos.Cajas.Response.FactPendienteResponseDto>;
+    var tieneFacturas = (bool)(ViewBag.TieneFacturas ?? false);
+    var huboError = (bool)(ViewBag.HuboError ?? false);
+    var mensajeError = ViewBag.MensajeError as string ?? string.Empty;
+}
+
+@* Contenedor oculto para mostrar mensaje si no hay facturas *@
+<div id="mensajeInicial" class="container-fluid mt-5" style="display: none;">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="alert alert-info alert-dismissible fade show shadow" role="alert">
+                <h4 class="alert-heading">
+                    <i class='bx bx-info-circle'></i> Información
+                </h4>
+                <p id="mensajeInicialTexto"></p>
+                <hr>
+                <p class="mb-0">
+                    <a href="@Url.Action("Index", "Home", new { Area = "" })" class="btn btn-primary">
+                        <i class='bx bx-arrow-back'></i> Volver al Menú Principal
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Modales necesarios *@
+@await Html.PartialAsync("~/Areas/Facturacion/Views/Shared/_IdentificarClienteModal.cshtml", null, new ViewDataDictionary(ViewData) { { "Modulo", "CobranzaDiferida" } })
+@await Html.PartialAsync("_verFacturasPendientes")
+@await Html.PartialAsync("_FacturasPendientesModal")
+
+@* Modales de pago *@
+@await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_pagoModal.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_tipoMedioPago.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_instrumentosModal.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_detalleEfectivo.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_detalleCheque.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_detalleCtaCte.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_detalleCuponEmpresa.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_detalleTransferencia.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_detalleValeCompra.cshtml")
+
+@section Scripts {
+    <script>
+        // =================================================================
+        // ✅ CONFIGURACIÓN GLOBAL v3.1
+        // =================================================================
+
+        // ✅ Datos inyectados desde el servidor
+        const FACTURAS_PENDIENTES = @Html.Raw(Json.Serialize(facturasPendientes ?? new List<gc.infraestructura.Dtos.Cajas.Response.FactPendienteResponseDto>()));
+        const TIENE_FACTURAS = @Html.Raw(tieneFacturas.ToString().ToLower());
+        const HUBO_ERROR = @Html.Raw(huboError.ToString().ToLower());
+        const MENSAJE_ERROR = '@Html.Raw(mensajeError)';
+
+        // URLs del backend
+        const MenuCajaUrl = '@Url.Action("Index", "Home", new { Area = "" })';
+        var ValidacionIntegridadUrl = "@Url.Action("ValidacionIntegridad", "Home", new { area = "" })";
+        var AperturaCajaUrl = "@Url.Action("AperturaCaja", "Home", new { area = "" })";
+        var ObtenerDatosCajaUrl = "@Url.Action("ObtenerDatosCaja", "Home", new { area = "" })";
+
+        // URLs para el buscador de clientes
+        const BuscarClienteUrl = '@Url.Action("BuscarCliente", "Cliente", new { Area = "Facturacion" })';
+        const TraerGrillaClientesUrl = '@Url.Action("TraerGrillaClientes", "Cliente", new { Area = "Facturacion" })';
+        const LimpiarSesionClientesUrl = '@Url.Action("LimpiarSesionClientes", "Cliente", new { Area = "Facturacion" })';
+        const ObtenerClienteActualUrl = '@Url.Action("ObtenerClienteActual", "Cliente", new { Area = "Facturacion" })';
+        const ActualizarConsumidorFinalUrl = '@Url.Action("ActualizarConsumidorFinal", "Cliente", new { Area = "Facturacion" })';
+
+        // URLs específicas del flujo de caja
+        const cobranzaDiferidaValidarUrl = '@Url.Action("Validar", "PDiferido", new { Area = "Facturacion" })';
+        const cobranzaDiferidaInicializaUrl = '@Url.Action("Index", "PDiferido", new { Area = "Facturacion" })';
+
+        // ✅ NUEVO v3.1: URL para obtener facturas de cliente desde sesión (filtrado)
+        const ObtenerFacturasClienteDesdeSesionUrl = '@Url.Action("ObtenerFacturasClienteDesdesesion", "PDiferido", new { Area = "Facturacion" })';
+
+        // Facturacion Pendientes
+        const VerFacturasPendientesUrl = '@Url.Action("VerFacturasPendientes", "PDiferido", new { Area = "Facturacion" })';
+        const ObtenerFacturasPendientesUrl = '@Url.Action("ObtenerFacturasPendientes", "PDiferido", new { Area = "Facturacion" })';
+        const ResguardarFacturasPendientesUrl = '@Url.Action("ResguardarFacturasPendientesSeleccionadas", "PDiferido", new { Area = "Facturacion" })';
+        const ObtenerFacturasPendientesSesionUrl = '@Url.Action("ObtenerFacturasPendientesSesion", "PDiferido", new { area = "Facturacion" })';
+
+        // CHECKOUT
+        const obtenerValoresPendientesUrl = "@Url.Action("ObtenerValoresPendientes", "checkout", new { area = "Facturacion" })";
+        const obtenerValoresNCUrl = "@Url.Action("ObtenerValoresNC", "checkout", new { area = "Facturacion" })";
+        const obtenerValoresMPUrl = "@Url.Action("ObtenerValoresMP", "checkout", new { area = "Facturacion" })";
+        const obtenerValoresInsUrl = "@Url.Action("ObtenerValoresIns", "checkout", new { area = "Facturacion" })";
+        const obtenerBancosUrl = "@Url.Action("obtenerBancos", "checkout", new { area = "Facturacion" })";
+    </script>
+
+    @* Scripts del módulo *@
+    <script src="~/js/app/fact.js" asp-append-version="true"></script>
+    <script src="~/js/app/pagoDiferido.js" asp-append-version="true"></script>
+    <script src="~/js/app/pagoFactura.js" asp-append-version="true"></script>
+}

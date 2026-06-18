@@ -21,5 +21,13 @@ namespace gc.infraestructura.Dtos.Cajas
         /// Lista de uniones entre facturas (para aplicar créditos, saldos a favor, etc.)
         /// </summary>
         public List<Json_Union> Uniones { get; set; } = new List<Json_Union>();
+
+        /// <summary>
+        /// Lista de comprobantes a cancelar (para marcar facturas como pagadas, aplicar pagos, etc.)
+        /// </summary>
+        public List<Json_Cancela> Cancelar { get; set; } = new List<Json_Cancela>();
+
+        // ✅ NUEVO: Indicador de módulo origen
+        public string ModuloOrigen { get; set; } = "Facturacion"; // "Facturacion" | "CobranzaDiferida"
     }
 }

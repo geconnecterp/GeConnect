@@ -52,6 +52,31 @@ let valoresMPCache = null;
 let valoresMPCargados = false;
 
 // ═══════════════════════════════════════════════════════════════════
+// ✅ NUEVO v27.0: VARIABLES GLOBALES PARA CONTEXTO DINÁMICO
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * co_tipo actual del proceso de pago (CR/CF/CD)
+ * Establecido por iniciarProcesoPago()
+ * @type {string}
+ */
+window._coTipoActual = null;
+
+/**
+ * Contexto de operación actual (VENTA/COBRANZA)
+ * Establecido por iniciarProcesoPago()
+ * @type {string}
+ */
+window._contextoOperacionActual = null;
+
+/**
+ * co_tipo del cache actual de valores MP
+ * Usado para invalidar cache cuando cambia el co_tipo
+ * @type {string}
+ */
+window._coTipoCache = null;
+
+// ═══════════════════════════════════════════════════════════════════
 // ✅ NUEVO v18.1: CONSTANTES DE CONFIGURACIÓN
 // ═══════════════════════════════════════════════════════════════════
 
@@ -597,6 +622,197 @@ function inicializarEventosPago() {
 // ═══════════════════════════════════════════════════════════════════
 
 /**
+ * ✅ NUEVO v27.0: Función genérica para iniciar el proceso de pago
+ * Centraliza la lógica de apertura del modal de pago para MÚLTIPLES contextos
+ * 
+ * CONTEXTOS SOPORTADOS:
+ * - VENTA: Facturación normal de productos (co_tipo: CR/CF)
+ * - COBRANZA: Cobranza de facturas diferidas (co_tipo: CD)
+ * 
+ * PARÁMETROS:
+ * @param {Object} config - Objeto de configuración
+ * @param {number} config.totalPagar - Monto total a cobrar (requerido)
+ * @param {string} config.co_tipo - Tipo de comprobante (CR/CF/CD) (requerido)
+ * @param {string} config.puntoVenta - Descripción del punto de venta (opcional, default: 'GECO PV')
+ * @param {string} config.tituloModal - Título del modal (opcional, default: 'Formas de Pago Ingresadas')
+ * @param {string} config.contextoOperacion - Contexto: 'VENTA' o 'COBRANZA' (opcional, default: 'VENTA')
+ * 
+ * @returns {boolean} - true si se abrió correctamente, false en caso de error
+ * 
+ * EJEMPLO DE USO (VENTA):
+ * ```javascript
+ * iniciarProcesoPago({
+ *     totalPagar: 1500.50,
+ *     co_tipo: 'CF',
+ *     puntoVenta: 'GECO PV',
+ *     tituloModal: 'Pago de Factura',
+ *     contextoOperacion: 'VENTA'
+ * });
+ * ```
+ * 
+ * EJEMPLO DE USO (COBRANZA):
+ * ```javascript
+ * iniciarProcesoPago({
+ *     totalPagar: 2450.00,
+ *     co_tipo: 'CD',
+ *     puntoVenta: 'GECO PD',
+ *     tituloModal: 'Cobranza Diferida',
+ *     contextoOperacion: 'COBRANZA'
+ * });
+ * ```
+ */
+
+function iniciarProcesoPago(config) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🎬 INICIAR PROCESO DE PAGO GENÉRICO v27.0');
+    console.log('═══════════════════════════════════════════════════');
+    console.log('   📋 Configuración recibida:', config);
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ❶ VALIDACIONES DE PARÁMETROS
+    // ═══════════════════════════════════════════════════════════════════
+
+    if (!config || typeof config !== 'object') {
+        console.error('❌ CRÍTICO: Configuración inválida o ausente');
+        console.error('   Se esperaba un objeto con parámetros de configuración');
+        mostrarMensajeError('Error en la configuración del módulo de pago.\n\nPor favor, recargue la página.');
+        return false;
+    }
+
+    // ❷ Validar totalPagar (OBLIGATORIO)
+    const totalPagar = parseFloat(config.totalPagar);
+
+    if (isNaN(totalPagar) || totalPagar <= 0) {
+        console.error('❌ ERROR: totalPagar inválido');
+        console.error(`   Valor recibido: ${config.totalPagar}`);
+        console.error(`   Valor parseado: ${totalPagar}`);
+        mostrarMensajeError('El monto total a pagar debe ser mayor a cero.');
+        return false;
+    }
+
+    console.log(`   ✅ Total a pagar validado: ${formatearMoneda(totalPagar)}`);
+
+    // ❸ Validar co_tipo (OBLIGATORIO)
+    const coTipo = (config.co_tipo || '').trim().toUpperCase();
+
+    if (!coTipo || coTipo === '') {
+        console.error('❌ ERROR: co_tipo no especificado');
+        mostrarMensajeError('Tipo de comprobante no especificado.\n\nPor favor, recargue la página.');
+        return false;
+    }
+
+    // ✅ Lista blanca de co_tipo permitidos
+    const coTiposPermitidos = ['CR', 'CF', 'CD'];
+
+    if (!coTiposPermitidos.includes(coTipo)) {
+        console.warn(`⚠️ ADVERTENCIA: co_tipo "${coTipo}" no está en lista blanca`);
+        console.warn(`   Tipos permitidos: ${coTiposPermitidos.join(', ')}`);
+        console.warn('   ⚠️ Continuando de todos modos (para compatibilidad futura)');
+    }
+
+    console.log(`   ✅ Tipo de comprobante: ${coTipo}`);
+
+    // ❹ Extraer parámetros opcionales con valores por defecto
+    const puntoVenta = (config.puntoVenta || 'GECO PV').trim();
+    const tituloModal = (config.tituloModal || 'Formas de Pago Ingresadas').trim();
+    const contextoOperacion = (config.contextoOperacion || 'VENTA').trim().toUpperCase();
+
+    console.log(`   📍 Punto de Venta: ${puntoVenta}`);
+    console.log(`   📝 Título del Modal: "${tituloModal}"`);
+    console.log(`   🔖 Contexto de Operación: ${contextoOperacion}`);
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ❺ VALIDAR DISPONIBILIDAD DE FUNCIÓN abrirModalPago
+    // ═══════════════════════════════════════════════════════════════════
+
+    if (typeof abrirModalPago !== 'function') {
+        console.error('═══════════════════════════════════════════════════');
+        console.error('❌ CRÍTICO: Función abrirModalPago() NO está disponible');
+        console.error('═══════════════════════════════════════════════════');
+        console.error('   Diagnóstico:');
+        console.error('   1. Verificar que el archivo pagoFactura.js esté cargado completamente');
+        console.error('   2. Verificar que no haya errores de sintaxis en pagoFactura.js');
+        console.error('   3. Revisar consola del navegador para errores de carga');
+        console.error('═══════════════════════════════════════════════════');
+
+        mostrarMensajeError('El módulo de pago no está disponible.\n\nPor favor, recargue la página e intente nuevamente.');
+        return false;
+    }
+
+    console.log('   ✅ Función abrirModalPago() disponible');
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ❻ PREPARAR DATOS PARA EL MODAL DE PAGO
+    // ═══════════════════════════════════════════════════════════════════
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📦 PREPARANDO DATOS PARA EL MODAL DE PAGO');
+
+    const datosPago = {
+        totales: {
+            totalPagar: totalPagar,
+            recargos: 0,        // ← Por ahora siempre 0 (puede extenderse en el futuro)
+            descuentos: 0,      // ← Por ahora siempre 0 (puede extenderse en el futuro)
+            totalValores: 0     // ← Se calculará dinámicamente en el modal
+        },
+        puntoVenta: puntoVenta,
+        coTipo: coTipo,                     // ✅ NUEVO v27.0: Pasamos co_tipo al modal
+        tituloModal: tituloModal,           // ✅ NUEVO v27.0: Título dinámico
+        contextoOperacion: contextoOperacion // ✅ NUEVO v27.0: Contexto de operación
+    };
+
+    console.log('   ✅ Estructura de datos construida:');
+    console.log('      totales.totalPagar:', formatearMoneda(datosPago.totales.totalPagar));
+    console.log('      totales.recargos:', formatearMoneda(datosPago.totales.recargos));
+    console.log('      totales.descuentos:', formatearMoneda(datosPago.totales.descuentos));
+    console.log('      puntoVenta:', datosPago.puntoVenta);
+    console.log('      coTipo:', datosPago.coTipo);
+    console.log('      tituloModal:', datosPago.tituloModal);
+    console.log('      contextoOperacion:', datosPago.contextoOperacion);
+    console.log('═══════════════════════════════════════════════════');
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ❼ INVOCAR abrirModalPago CON MANEJO DE ERRORES
+    // ═══════════════════════════════════════════════════════════════════
+
+    console.log('🔓 Invocando abrirModalPago()...');
+
+    try {
+        const resultado = abrirModalPago(datosPago);
+
+        if (resultado === false) {
+            console.error('❌ abrirModalPago() retornó false');
+            console.error('   El modal no pudo abrirse correctamente');
+
+            mostrarMensajeError('Error al abrir el modal de pago.\n\nRevise la consola para más detalles.');
+            return false;
+        }
+
+        console.log('═══════════════════════════════════════════════════');
+        console.log('✅ PROCESO DE PAGO INICIADO CORRECTAMENTE');
+        console.log(`   Contexto: ${contextoOperacion}`);
+        console.log(`   Monto: ${formatearMoneda(totalPagar)}`);
+        console.log(`   Tipo: ${coTipo}`);
+        console.log('═══════════════════════════════════════════════════');
+
+        return true;
+
+    } catch (error) {
+        console.error('═══════════════════════════════════════════════════');
+        console.error('❌ EXCEPCIÓN AL ABRIR MODAL DE PAGO');
+        console.error('═══════════════════════════════════════════════════');
+        console.error('   Error:', error);
+        console.error('   Mensaje:', error.message);
+        console.error('   Stack:', error.stack);
+        console.error('═══════════════════════════════════════════════════');
+
+        mostrarMensajeError(`Error al abrir el modal de pago:\n\n${error.message}\n\nPor favor, recargue la página e intente nuevamente.`);
+        return false;
+    }
+}
+
+
+/**
  * ✅ ACTUALIZADO v20.6: Abre el modal de pago con los datos de la factura
  * NUEVO: Apertura automática del modal de agregar formas de pago
  * 
@@ -605,11 +821,15 @@ function inicializarEventosPago() {
  * - Elimina un click innecesario para el cajero
  * - Primera acción siempre es agregar una forma de pago
  * 
+ * ✅ ACTUALIZADO v27.0: Soporte para contextos múltiples
+ * - Acepta parámetros adicionales: coTipo, tituloModal, contextoOperacion
+ * - Actualiza dinámicamente el título del modal según el contexto
+ * 
  * @param {Object} datosFactura - Objeto con totales y datos del cliente
  */
 function abrirModalPago(datosFactura) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🔓 ABRIR MODAL DE PAGO v20.6');
+    console.log('🔓 ABRIR MODAL DE PAGO v27.0');
     console.log('═══════════════════════════════════════════════════');
     console.log('Datos recibidos:', datosFactura);
 
@@ -632,6 +852,24 @@ function abrirModalPago(datosFactura) {
 
         // ❺ Limpiar tabla de formas de pago
         limpiarTablaFormasPago();
+
+        // ═══════════════════════════════════════════════════════════
+        // ✅ NUEVO v27.0: ACTUALIZAR TÍTULO DEL MODAL DINÁMICAMENTE
+        // ═══════════════════════════════════════════════════════════
+
+        const tituloModal = datosFactura?.tituloModal || 'Formas de Pago Ingresadas';
+        console.log(`   📝 Actualizando título del modal: "${tituloModal}"`);
+        $('#tituloFormasPago').text(tituloModal);
+
+        // ═══════════════════════════════════════════════════════════
+        // ✅ NUEVO v27.0: GUARDAR co_tipo Y contextoOperacion EN VARIABLES GLOBALES
+        // ═══════════════════════════════════════════════════════════
+
+        window._coTipoActual = datosFactura?.coTipo || 'CF';
+        window._contextoOperacionActual = datosFactura?.contextoOperacion || 'VENTA';
+
+        console.log(`   🔖 co_tipo guardado: ${window._coTipoActual}`);
+        console.log(`   🔖 contextoOperacion guardado: ${window._contextoOperacionActual}`);
 
         // ❻ Mostrar modal
         modalPagoInstance.show();
@@ -830,32 +1068,99 @@ function abrirModalTipoMedioPago() {
 }
 
 /**
- * ✅ ACTUALIZADO: Carga los tipos de medio de pago desde el servidor
- * CAMBIO v16.1: NO depende de variables globales de sesión
- * El servidor maneja automáticamente los datos de sesión
+ * ✅ ACTUALIZADO v27.0: Carga los tipos de medio de pago desde el servidor
+ * CAMBIO CRÍTICO v27.0: Usa co_tipo dinámico desde variable global
+ * 
+ * CAMBIOS v27.0:
+ * - ✅ Usa window._coTipoActual (establecido por iniciarProcesoPago)
+ * - ✅ Fallback a lógica CR/CF si la variable no existe (compatibilidad)
+ * - ✅ Soporte completo para co_tipo: CR, CF, CD (y futuros)
+ * - ✅ Cache se invalida si co_tipo cambia entre llamadas
+ * 
+ * CAMBIOS v16.1:
+ * - NO depende de variables globales de sesión
+ * - El servidor maneja automáticamente los datos de sesión
  * 
  * @returns {Promise<Array>} - Array de valores MP
  */
 function cargarValoresMP() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('📡 CARGAR VALORES MP v16.1 (SIN DATOS DE SESIÓN EN FRONTEND)');
+    console.log('📡 CARGAR VALORES MP v27.0 (CO_TIPO DINÁMICO)');
     console.log('═══════════════════════════════════════════════════');
 
-    // ❶ Verificar cache
-    if (valoresMPCargados && valoresMPCache !== null) {
+    // ═══════════════════════════════════════════════════════════════════
+    // ❶ OBTENER co_tipo DINÁMICAMENTE
+    // ═══════════════════════════════════════════════════════════════════
+
+    let coTipo = null;
+
+    // ✅ NUEVO v27.0: Intentar obtener de variable global (establecida por iniciarProcesoPago)
+    if (typeof window._coTipoActual !== 'undefined' && window._coTipoActual) {
+        coTipo = window._coTipoActual.trim().toUpperCase();
+        console.log('✅ co_tipo obtenido de variable global (iniciarProcesoPago)');
+        console.log(`   Valor: ${coTipo}`);
+    } else {
+        // ⚠️ FALLBACK: Calcular co_tipo con lógica anterior (compatibilidad con código legacy)
+        console.warn('⚠️ Variable global window._coTipoActual NO definida');
+        console.warn('   Aplicando fallback: Cálculo basado en cta_id');
+
+        const ctaId = $('#txtClienteIdPago').val() || '';
+        coTipo = ctaId && ctaId !== 'N/A' && ctaId.trim() !== '' ? 'CR' : 'CF';
+
+        console.log(`   cta_id: ${ctaId || 'N/A'}`);
+        console.log(`   co_tipo calculado (fallback): ${coTipo}`);
+    }
+
+    console.log('═══════════════════════════════════════════════════');
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ❷ VERIFICAR CACHE (INVALIDAR SI co_tipo CAMBIÓ)
+    // ═══════════════════════════════════════════════════════════════════
+
+    // ✅ NUEVO v27.0: Cache por co_tipo (evita problemas al cambiar contexto)
+    if (valoresMPCargados && valoresMPCache !== null && window._coTipoCache === coTipo) {
         console.log('✅ Valores MP encontrados en cache');
+        console.log(`   co_tipo del cache: ${window._coTipoCache}`);
+        console.log(`   co_tipo actual: ${coTipo}`);
+        console.log('   ℹ️ Cache válido - Reutilizando datos');
         return $.Deferred().resolve(valoresMPCache).promise();
     }
 
-    // ❷ Obtener datos del cliente
+    // ⚠️ Si co_tipo cambió, invalidar cache
+    if (valoresMPCargados && window._coTipoCache && window._coTipoCache !== coTipo) {
+        console.warn('⚠️ Cache invalidado - co_tipo cambió');
+        console.warn(`   co_tipo anterior: ${window._coTipoCache}`);
+        console.warn(`   co_tipo actual: ${coTipo}`);
+        valoresMPCargados = false;
+        valoresMPCache = null;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ❸ OBTENER DATOS DEL CLIENTE
+    // ═══════════════════════════════════════════════════════════════════
+
     const ctaId = $('#txtClienteIdPago').val() || '';
-    const coTipo = ctaId && ctaId !== 'N/A' && ctaId.trim() !== '' ? 'CR' : 'CF';
 
     console.log('📋 Datos de la consulta:');
     console.log(`   cta_id: ${ctaId || 'N/A'}`);
-    console.log(`   co_tipo: ${coTipo} (${coTipo === 'CF' ? 'Consumidor Final' : 'Cliente Registrado'})`);
+    console.log(`   co_tipo: ${coTipo}`);
 
-    // ❸ ✅ CAMBIO CRÍTICO: NO enviar adm_id desde el frontend
+    // ✅ Descripción del co_tipo para logs
+    const descripcionCoTipo = {
+        'CR': 'Cliente Registrado',
+        'CF': 'Consumidor Final',
+        'CD': 'Cobranza Diferida',
+        'CC': 'Cuenta Corriente' // ← Soporte futuro
+    };
+
+    const descripcion = descripcionCoTipo[coTipo] || `Tipo personalizado (${coTipo})`;
+    console.log(`   Descripción: ${descripcion}`);
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ❹ PREPARAR REQUEST DATA
+    // ═══════════════════════════════════════════════════════════════════
+
+    // ✅ CAMBIO CRÍTICO: NO enviar adm_id desde el frontend
     // El servidor lo obtendrá automáticamente desde la sesión
     const requestData = {
         co_tipo: coTipo,
@@ -864,8 +1169,12 @@ function cargarValoresMP() {
     };
 
     console.log('   ✅ adm_id: Gestionado automáticamente por el servidor');
+    console.log('═══════════════════════════════════════════════════');
 
-    // ❹ Llamada AJAX
+    // ═══════════════════════════════════════════════════════════════════
+    // ❺ LLAMADA AJAX
+    // ═══════════════════════════════════════════════════════════════════
+
     return $.ajax({
         url: typeof obtenerValoresMPUrl !== 'undefined' && obtenerValoresMPUrl
             ? obtenerValoresMPUrl
@@ -883,6 +1192,7 @@ function cargarValoresMP() {
                 console.warn('⚠️ Respuesta no exitosa');
                 valoresMPCache = [];
                 valoresMPCargados = true;
+                window._coTipoCache = coTipo; // ✅ NUEVO v27.0: Guardar co_tipo del cache
                 return [];
             }
 
@@ -892,14 +1202,18 @@ function cargarValoresMP() {
                 console.warn('⚠️ Datos no son un array');
                 valoresMPCache = [];
                 valoresMPCargados = true;
+                window._coTipoCache = coTipo; // ✅ NUEVO v27.0
                 return [];
             }
 
-            console.log(`✅ ${datos.length} tipos de medio de pago recipidos`);
+            console.log(`✅ ${datos.length} tipos de medio de pago recibidos`);
 
-            // Guardar en cache
+            // ✅ NUEVO v27.0: Guardar co_tipo junto con el cache
             valoresMPCache = datos;
             valoresMPCargados = true;
+            window._coTipoCache = coTipo;
+
+            console.log(`   📦 Cache actualizado para co_tipo: ${coTipo}`);
 
             return datos;
         })
@@ -910,6 +1224,7 @@ function cargarValoresMP() {
 
             valoresMPCache = [];
             valoresMPCargados = true;
+            window._coTipoCache = coTipo; // ✅ NUEVO v27.0
 
             return $.Deferred().reject(new Error(`Error de comunicación: ${textStatus}`)).promise();
         });
@@ -1563,52 +1878,105 @@ function finalizarPago() {
 // ════════════════════════════════════════════════════════════
 
 /**
- * ✅ ACTUALIZADO v20.4: Envía el pago al servidor mediante AJAX
- * NUEVO: Manejo de advertencias de validación de Punto de Venta
+ * ✅ ACTUALIZADO v27.0: Envía el pago al servidor mediante AJAX
+ * NUEVO: Soporte para contextos múltiples (VENTA/COBRANZA) con ModuloOrigen dinámico
+ * 
+ * CAMBIOS v27.0:
+ * - ✅ Incluye ModuloOrigen en payload (calculado desde variables globales)
+ * - ✅ Soporte para co_tipo dinámico: CR, CF, CD
+ * - ✅ Detección de contexto COBRANZA para mensajes diferenciados
+ * - ✅ Mantiene compatibilidad con flujo de VENTA existente
  * 
  * FLUJO:
  * 1. Bloquea la interfaz (loading global)
- * 2. Prepara payload con valores y uniones
+ * 2. Prepara payload con valores, uniones y ModuloOrigen
  * 3. Envía POST al endpoint FinalizarCompra
- * 4. ✅ NUEVO: Detecta advertencias de PV en respuesta
+ * 4. Detecta advertencias de PV en respuesta
  * 5. Procesa respuesta del servidor
  * 6. Genera reporte del comprobante (PDF)
- * 7. ✅ NUEVO: Muestra mensaje de advertencia PV si existe
- * 8. Muestra mensaje de éxito
+ * 7. Muestra mensaje de advertencia PV si existe
+ * 8. Muestra mensaje de éxito (diferenciado por contexto)
  * 9. Limpia sesión y reinicia módulo
  * 
  * @param {Array<Object>} jsonValores - Array de Json_Valores construido
  */
 function enviarPagoAlServidor(jsonValores) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('📤 ENVIANDO PAGO AL SERVIDOR v20.4');
+    console.log('📤 ENVIANDO PAGO AL SERVIDOR v27.0');
     console.log('═══════════════════════════════════════════════════');
     console.log(`   Total valores: ${jsonValores.length}`);
     console.log(`   Total monto: ${formatearMoneda(conceptosPago.totalValores)}`);
+
+    // ═══════════════════════════════════════════════════════════
+    // ✅ NUEVO v27.0: DETERMINAR MÓDULO ORIGEN DINÁMICAMENTE
+    // ═══════════════════════════════════════════════════════════
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔍 DETERMINANDO MÓDULO ORIGEN v27.0');
+
+    // ❶ Obtener contexto desde variable global (establecida por iniciarProcesoPago)
+    let contextoOperacion = window._contextoOperacionActual || 'VENTA';
+    contextoOperacion = contextoOperacion.toUpperCase();
+
+    console.log(`   Contexto Operación (global): ${contextoOperacion}`);
+
+    // ❷ Calcular ModuloOrigen según contexto
+    let moduloOrigen = 'Facturacion'; // ← Default para VENTA
+
+    if (contextoOperacion === 'COBRANZA') {
+        moduloOrigen = 'CobranzaDiferida';
+        console.log('   ✅ Contexto COBRANZA detectado');
+        console.log('   → ModuloOrigen: CobranzaDiferida');
+    } else {
+        console.log('   ✅ Contexto VENTA (default)');
+        console.log('   → ModuloOrigen: Facturacion');
+    }
+
+    // ❸ Obtener co_tipo desde variable global (fallback a cálculo legacy)
+    let coTipo = window._coTipoActual || null;
+
+    if (!coTipo) {
+        console.warn('⚠️ Variable global _coTipoActual NO definida');
+        console.warn('   Aplicando fallback: Cálculo basado en cta_id');
+
+        const ctaId = $('#txtClienteIdPago').val() || '';
+        coTipo = ctaId && ctaId !== 'N/A' && ctaId.trim() !== '' ? 'CR' : 'CF';
+
+        console.log(`   co_tipo calculado (fallback): ${coTipo}`);
+    } else {
+        console.log(`   co_tipo obtenido de variable global: ${coTipo}`);
+    }
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📦 CONFIGURACIÓN FINAL DEL PAYLOAD:');
+    console.log(`   ModuloOrigen: ${moduloOrigen}`);
+    console.log(`   co_tipo: ${coTipo}`);
+    console.log(`   contextoOperacion: ${contextoOperacion}`);
     console.log('═══════════════════════════════════════════════════');
 
-    // ❶ Bloquear pantalla
-    mostrarLoadingGlobal('Procesando pago y emitiendo factura...');
+    // ❹ Bloquear pantalla
+    mostrarLoadingGlobal('Procesando pago y emitiendo comprobante...');
 
-    // ❷ URL del endpoint
+    // ❺ URL del endpoint
     const url = typeof finalizarCompraUrl !== 'undefined' && finalizarCompraUrl
         ? finalizarCompraUrl
         : '/Facturacion/Checkout/FinalizarCompra';
 
     console.log(`   URL: ${url}`);
 
-    // ❸ Preparar payload
+    // ❻ ✅ ACTUALIZADO v27.0: Preparar payload CON ModuloOrigen
     const payload = {
-        valores: jsonValores,
-        uniones: []
+        Valores: jsonValores,   // ← Capitalizado (C# PascalCase)
+        Uniones: [],            // ← Capitalizado (C# PascalCase)
+        ModuloOrigen: moduloOrigen // ✅ NUEVO v27.0
     };
 
     console.log('═══════════════════════════════════════════════════');
-    console.log('📦 PAYLOAD COMPLETO:');
+    console.log('📦 PAYLOAD COMPLETO v27.0:');
     console.log(JSON.stringify(payload, null, 2));
     console.log('═══════════════════════════════════════════════════');
 
-    // ❹ Llamada AJAX
+    // ❼ Llamada AJAX
     $.ajax({
         url: url,
         type: 'POST',
@@ -1619,11 +1987,11 @@ function enviarPagoAlServidor(jsonValores) {
     })
         .done(function (response) {
             console.log('═══════════════════════════════════════════════════');
-            console.log('✅ RESPUESTA RECIBIDA DEL SERVIDOR v20.4');
+            console.log('✅ RESPUESTA RECIBIDA DEL SERVIDOR v27.0');
             console.log('═══════════════════════════════════════════════════');
             console.log('Response completo:', response);
 
-            // ❺ Validar respuesta básica
+            // ❽ Validar respuesta básica
             if (!response || response.ok === false) {
                 console.error('❌ Error en respuesta del servidor');
                 console.error('   Mensaje:', response?.mensaje || 'Sin mensaje');
@@ -1653,7 +2021,7 @@ function enviarPagoAlServidor(jsonValores) {
                 console.log('ℹ️ Sin advertencias de PV');
             }
 
-            // ❻ Validar que haya datos del comprobante
+            // ❾ Validar que haya datos del comprobante
             if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
                 console.error('❌ No se recibieron datos del comprobante');
                 console.error('   response.data:', response.data);
@@ -1666,18 +2034,22 @@ function enviarPagoAlServidor(jsonValores) {
 
             console.log(`✅ Datos del comprobante recibidos: ${response.data.length} comprobante(s)`);
 
-            // ❼ Extraer comprobante
+            // ❿ Extraer comprobante
             const comprobante = response.data[0];
 
+            // ⓫ ✅ NUEVO v27.0: Detectar si es CobranzaDiferida desde respuesta
+            const esCobranzaDiferida = comprobante.es_cobranza_diferida === true;
+
             console.log('═══════════════════════════════════════════════════');
-            console.log('📄 COMPROBANTE EMITIDO');
+            console.log('📄 COMPROBANTE EMITIDO v27.0');
             console.log(`   tco_letra: ${comprobante.tco_letra}`);
             console.log(`   tco_id: ${comprobante.tco_id}`);
             console.log(`   cm_compte: ${comprobante.cm_compte}`);
             console.log(`   cm_repetido: ${comprobante.cm_repetido}`);
+            console.log(`   es_cobranza_diferida: ${esCobranzaDiferida ? 'SÍ ✅' : 'NO'}`);
             console.log('═══════════════════════════════════════════════════');
 
-            // ❽ GENERAR REPORTE PRIMERO
+            // ⓬ GENERAR REPORTE PRIMERO
             console.log('📄 Iniciando generación de reporte...');
 
             if (typeof ModuloReportes !== 'undefined') {
@@ -1702,11 +2074,11 @@ function enviarPagoAlServidor(jsonValores) {
                         if (tieneAdvertenciaPV && mensajeAdvertenciaPV) {
                             mostrarAdvertenciaPV(mensajeAdvertenciaPV, function () {
                                 // Callback: Después de cerrar advertencia, mostrar éxito
-                                procesarPagoExitoso(comprobante);
+                                procesarPagoExitoso(comprobante, esCobranzaDiferida); // ← ✅ NUEVO v27.0
                             });
                         } else {
                             // Sin advertencia, mostrar éxito directamente
-                            procesarPagoExitoso(comprobante);
+                            procesarPagoExitoso(comprobante, esCobranzaDiferida); // ← ✅ NUEVO v27.0
                         }
 
                     }, 500);
@@ -1718,10 +2090,10 @@ function enviarPagoAlServidor(jsonValores) {
                     // ✅ NUEVO: Mostrar advertencia aunque falle el reporte
                     if (tieneAdvertenciaPV && mensajeAdvertenciaPV) {
                         mostrarAdvertenciaPV(mensajeAdvertenciaPV, function () {
-                            procesarPagoExitoso(comprobante);
+                            procesarPagoExitoso(comprobante, esCobranzaDiferida); // ← ✅ NUEVO v27.0
                         });
                     } else {
-                        procesarPagoExitoso(comprobante);
+                        procesarPagoExitoso(comprobante, esCobranzaDiferida); // ← ✅ NUEVO v27.0
                     }
                 });
             } else {
@@ -1731,10 +2103,10 @@ function enviarPagoAlServidor(jsonValores) {
                 // ✅ NUEVO: Mostrar advertencia aunque no haya reporte
                 if (tieneAdvertenciaPV && mensajeAdvertenciaPV) {
                     mostrarAdvertenciaPV(mensajeAdvertenciaPV, function () {
-                        procesarPagoExitoso(comprobante);
+                        procesarPagoExitoso(comprobante, esCobranzaDiferida); // ← ✅ NUEVO v27.0
                     });
                 } else {
-                    procesarPagoExitoso(comprobante);
+                    procesarPagoExitoso(comprobante, esCobranzaDiferida); // ← ✅ NUEVO v27.0
                 }
             }
         })
@@ -1855,14 +2227,23 @@ function mostrarAdvertenciaPV(mensajeAdvertencia, callback) {
 }
 
 /**
- * ✅ ACTUALIZADO v20.3: Procesa una respuesta exitosa del servidor
- * CAMBIO: Preserva backup para próxima venta
+ * ✅ ACTUALIZADO v27.0: Procesa una respuesta exitosa del servidor
+ * NUEVO: Mensajes diferenciados según contexto (VENTA/COBRANZA)
+ * 
+ * CAMBIOS v27.0:
+ * - ✅ Parámetro esCobranzaDiferida para diferenciar mensajes
+ * - ✅ Mensaje específico para CobranzaDiferida: "Recibo" en lugar de "Factura"
+ * - ✅ Mantiene lógica de preservación de backup (v20.3)
+ * 
+ * @param {Object} comprobante - Datos del comprobante emitido
+ * @param {boolean} esCobranzaDiferida - true si es CobranzaDiferida, false si es Venta normal
  */
-function procesarPagoExitoso(comprobante) {
+function procesarPagoExitoso(comprobante, esCobranzaDiferida = false) {
     console.log('═══════════════════════════════════════════════════');
-    console.log('✅ PROCESANDO PAGO EXITOSO v20.3');
+    console.log('✅ PROCESANDO PAGO EXITOSO v27.0');
     console.log('═══════════════════════════════════════════════════');
     console.log('   Comprobante:', comprobante.cm_compte);
+    console.log(`   Es Cobranza Diferida: ${esCobranzaDiferida ? 'SÍ' : 'NO'}`);
 
     const tipoComprobante = obtenerTipoComprobante(comprobante.tco_letra, comprobante.tco_id);
     const numeroComprobante = comprobante.cm_compte || 'Sin número';
@@ -1872,14 +2253,31 @@ function procesarPagoExitoso(comprobante) {
     console.log(`   Número: ${numeroComprobante}`);
     console.log(`   Repetido: ${esRepetido ? 'SÍ' : 'NO'}`);
 
+    // ═══════════════════════════════════════════════════════════
+    // ✅ NUEVO v27.0: MENSAJES DIFERENCIADOS POR CONTEXTO
+    // ═══════════════════════════════════════════════════════════
+
+    let tituloMensaje = '¡Factura Emitida y Pagada!';
+    let mensajePrincipal = 'Factura emitida y pagada exitosamente';
+    let iconoColor = 'text-golden'; // Color del título (opcional)
+
+    if (esCobranzaDiferida) {
+        console.log('   📋 Contexto: COBRANZA DIFERIDA');
+        tituloMensaje = '¡Cobro Procesado Exitosamente!';
+        mensajePrincipal = 'Recibo de cobranza emitido y registrado correctamente';
+        iconoColor = 'text-success'; // Verde para cobros
+    } else {
+        console.log('   📋 Contexto: VENTA NORMAL');
+    }
+
     // Mostrar mensaje de éxito
     AbrirMensaje(
-        "¡Factura Emitida y Pagada!",
+        tituloMensaje,
         `<div class="text-center">
             <div class="mb-3">
-                <i class='bx bx-check-circle text-success' style="font-size: 4rem;"></i>
+                <i class='bx bx-check-circle ${iconoColor}' style="font-size: 4rem;"></i>
             </div>
-            <h4 class="text-golden mb-3">Factura emitida y pagada exitosamente</h4>
+            <h4 class="text-golden mb-3">${mensajePrincipal}</h4>
             
             <div class="alert alert-success mb-3">
                 <div class="mb-2">
@@ -2052,6 +2450,89 @@ function manejarSesionExpirada(mensaje) {
     );
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// ✅ NUEVO v25.0: FUNCIONES DE CONTROL DEL TECLADO VIRTUAL
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * ✅ NUEVO v25.0: Posiciona el teclado virtual junto al ancla.
+ * Se asegura de que el teclado esté visible y alineado a la izquierda.
+ */
+function posicionarTecladoVirtual() {
+    console.log('📍 Posicionando teclado virtual...');
+    const ancla = document.getElementById('teclado-ancla');
+    const teclado = document.getElementById('virtual-keyboard');
+
+    if (!teclado) {
+        console.error('❌ Teclado virtual no encontrado en el DOM.');
+        return;
+    }
+    if (!ancla) {
+        console.error('❌ Ancla #teclado-ancla no encontrada.');
+        return;
+    }
+
+    // Forzar visibilidad si está oculto
+    if (teclado.style.display !== 'flex') {
+        teclado.style.display = 'flex';
+        teclado.style.opacity = '1';
+        console.log('   ✅ Teclado forzado a ser visible.');
+    }
+
+    // Calcular posición
+    const rectAncla = ancla.getBoundingClientRect();
+    const rectTeclado = teclado.getBoundingClientRect();
+
+    // Posicionar el teclado
+    // Usamos 'transform' para no interferir con otras propiedades de posicionamiento
+    const top = rectAncla.top;
+    const left = rectAncla.left;
+
+    teclado.style.position = 'fixed';
+    teclado.style.top = `${top}px`;
+    teclado.style.left = `${left}px`;
+    teclado.style.transform = 'none'; // Resetear transform de arrastre
+
+    console.log(`   ✅ Teclado posicionado en: top=${top.toFixed(0)}px, left=${left.toFixed(0)}px`);
+}
+
+/**
+ * ✅ NUEVO v25.0: Activa el teclado para un input específico.
+ * @param {string} inputSelector - El selector del campo de entrada.
+ */
+function activarTecladoParaInput(inputSelector) {
+    console.log(`⌨️ Activando teclado para: ${inputSelector}`);
+    const input = document.querySelector(inputSelector);
+    if (!input) {
+        console.error(`❌ Input ${inputSelector} no encontrado.`);
+        return;
+    }
+
+    // 1. Simular foco en el input para que virtual-keyboard.js lo detecte y renderice.
+    input.focus();
+
+    // 2. Usar un pequeño delay para asegurar que el teclado se haya renderizado en el DOM.
+    setTimeout(() => {
+        // 3. Mover el teclado a la posición deseada.
+        posicionarTecladoVirtual();
+
+        // 4. Volver a enfocar y seleccionar el contenido del input.
+        input.focus();
+        input.select();
+    }, 150); // 150ms es un delay seguro para la renderización.
+}
+
+/**
+ * ✅ NUEVO v25.0: Oculta el teclado virtual.
+ */
+function ocultarTecladoVirtual() {
+    const teclado = document.getElementById('virtual-keyboard');
+    if (teclado) {
+        teclado.style.display = 'none';
+        console.log('⌨️ Teclado virtual ocultado.');
+    }
+}
+
 ///**
 // * ✅ NUEVO v20.2: Muestra mensaje de error genérico
 // * Función auxiliar reutilizable
@@ -2170,6 +2651,9 @@ function ocultarModalCalculoFactura() {
  */
 function limpiarModalPago() {
     console.log('🧹 Limpiando modal de pago v24.0...');
+
+    // ✅ NUEVO v25.0: Ocultar teclado si está visible
+    ocultarTecladoVirtual();
 
     // ✅ NUEVO: Destruir tooltips activos
     $('#tbodyFormasPago [data-bs-toggle="tooltip"]').each(function () {
@@ -3576,6 +4060,9 @@ function abrirModalDetalleEfectivo(instrumento, tipoMedioPago) {
     // ❺ ✅ NUEVO v23.0: Establecer valor inicial SIN FORMATO
     $inputMonto.val(importeSugerido.toFixed(2));
 
+    // Activar el teclado para este input
+    activarTecladoParaInput('#txtMontoEfectivo');
+
     console.log(`   ✅ Valor inicial: ${importeSugerido.toFixed(2)}`);
     console.log('   ✅ Teclado digital listo para escribir');
 
@@ -3790,6 +4277,9 @@ function finalizarGuardadoEfectivo(monto, instrumento, tipoMedioPago) {
 
     // ❺ Actualizar total del instrumento en modal instrumentos
     actualizarTotalInstrumento(instrumento.ins_id, monto);
+
+    // ❻ ✅ NUEVO v25.0: Ocultar teclado virtual
+    ocultarTecladoVirtual();
 
     // ❻ Cerrar modal de efectivo
     cerrarModalDetalleEfectivo();

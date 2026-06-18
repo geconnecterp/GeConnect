@@ -117,9 +117,12 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 // ❺ VALIDAR QUE HAYA PRODUCTOS
                 var productosFactura = FacturaProductos;
-                if (productosFactura == null || productosFactura.Count == 0)
+                bool esCobranzaDiferidaTemporal = !string.IsNullOrEmpty(pagoDto.ModuloOrigen) &&
+                                                   pagoDto.ModuloOrigen.ToUpper() == "COBRANZADIFERIDA";
+
+                if (!esCobranzaDiferidaTemporal && (productosFactura == null || productosFactura.Count == 0))
                 {
-                    _logger?.LogWarning("❌ No hay productos en la factura");
+                    _logger?.LogWarning("❌ No hay productos en la factura (modo Facturación)");
                     return Json(new { ok = false, mensaje = "Debe cargar al menos un producto" });
                 }
 
@@ -175,39 +178,120 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 // ❿ SERIALIZAR JSON DE VALORES DE PAGO
                 string jsonValores = JsonConvert.SerializeObject(valores);
 
+                string jsonUniones = JsonConvert.SerializeObject(uniones);
+
                 _logger?.LogInformation($"✅ JSON productos (longitud): {jsonProductos.Length}");
                 _logger?.LogInformation($"✅ JSON subtotales (longitud): {jsonSubtotales.Length}");
                 _logger?.LogInformation($"✅ JSON sorteos (longitud): {jsonSorteos.Length}");
                 _logger?.LogInformation($"✅ JSON valores (longitud): {jsonValores.Length}");
 
                 // ⓫ DETERMINAR IDENTIFICADOR DEL CLIENTE Y TIPO DE OPERACIÓN
-                string ctaId;
+                string jsonCancela = "{}";
                 string coTipo;
-                string origenUpper = clienteActual.Origen?.ToUpper() ?? "F";
+                string ctaId;
+                bool esCobranzaDiferida = false;
 
-                if (origenUpper == "F") // Consumidor Final
-                {
-                    ctaId = string.Empty;
-                    LP_Id = cajaActual.Caja.lp_id_min;
-                    coTipo = "CF";
 
-                    _logger?.LogInformation($"✅ Cliente CF → Identificador (documento): {ctaId}");
-                    _logger?.LogInformation($"✅ co_tipo: {coTipo}");
-                }
-                else // Cliente Registrado
+                // ✅ PASO 1: Detectar módulo origen
+                if (!string.IsNullOrEmpty(pagoDto.ModuloOrigen) &&
+                    pagoDto.ModuloOrigen.ToUpper() == "COBRANZADIFERIDA")
                 {
+                    esCobranzaDiferida = true;
+
+                    _logger?.LogInformation("═══════════════════════════════════════════════════");
+                    _logger?.LogInformation("🔄 MÓDULO DETECTADO: COBRANZA DIFERIDA");
+                    _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                    // ═══ LÓGICA ESPECÍFICA PARA COBRANZA DIFERIDA ═══
+                    coTipo = "CD";
                     ctaId = clienteActual.cta_id ?? string.Empty;
-                    LP_Id = cajaActual.Caja.lp_id_may;
-                    coTipo = "CR";
 
-                    _logger?.LogInformation($"✅ Cliente Registrado → Identificador (cta_id): {ctaId}");
-                    _logger?.LogInformation($"✅ co_tipo: {coTipo}");
+                    // ✅ VALIDAR: Debe haber un cliente registrado
+                    if (string.IsNullOrEmpty(ctaId))
+                    {
+                        _logger?.LogError("❌ CobranzaDiferida requiere un cliente registrado (cta_id)");
+                        return Json(new { ok = false, mensaje = "Debe seleccionar un cliente registrado para cobro diferido" });
+                    }
+
+                    // ✅ OBTENER FACTURAS SELECCIONADAS DESDE SESIÓN
+                    var facturasSeleccionadas = FacturasSeleccionadasParaCobro;
+
+                    if (facturasSeleccionadas == null || facturasSeleccionadas.Count == 0)
+                    {
+                        _logger?.LogWarning("❌ No hay facturas seleccionadas en sesión para CobranzaDiferida");
+                        return Json(new { ok = false, mensaje = "Debe seleccionar al menos una factura para cobrar" });
+                    }
+
+                    _logger?.LogInformation($"✅ Facturas en sesión: {facturasSeleccionadas.Count}");
+                    _logger?.LogInformation($"   Facturas seleccionadas: {facturasSeleccionadas.Count(f => f.seleccionado)}");
+
+                    // ✅ CONVERTIR A CancelaJsonDto
+                    var cancelaLista = ConvertirFacturasPendientesACancela(facturasSeleccionadas);
+
+                    if (cancelaLista.Count == 0)
+                    {
+                        _logger?.LogError("❌ No se pudieron convertir las facturas seleccionadas");
+                        return Json(new { ok = false, mensaje = "Error: No se procesaron facturas para cancelación" });
+                    }
+
+                    // ✅ SERIALIZAR json_cancela
+                    jsonCancela = JsonConvert.SerializeObject(cancelaLista);
+
+                    _logger?.LogInformation($"✅ json_cancela generado:");
+                    _logger?.LogInformation($"   Longitud: {jsonCancela.Length} caracteres");
+                    _logger?.LogInformation($"   Facturas incluidas: {cancelaLista.Count}");
+
+                    // ✅ VALIDACIÓN: En CobranzaDiferida NO debe haber productos nuevos en factura
+                    if (productosFactura.Count > 0)
+                    {
+                        _logger?.LogWarning("⚠️ CobranzaDiferida detectó productos en factura - Se omitirán");
+                        productosFactura = new List<ProductoFactJsonDto>();
+                        jsonProductos = "[]";
+                    }
+
+                    // ✅ VALIDACIÓN: CobranzaDiferida debe tener valores de pago
+                    if (valores == null || valores.Count == 0)
+                    {
+                        _logger?.LogError("❌ CobranzaDiferida requiere valores de pago");
+                        return Json(new { ok = false, mensaje = "Debe especificar los valores de pago para el cobro" });
+                    }
+
+                    _logger?.LogInformation("═══════════════════════════════════════════════════");
+                }
+                else
+                {
+                    // ═══ LÓGICA ORIGINAL PARA FACTURACIÓN NORMAL ═══
+
+                    _logger?.LogInformation("═══════════════════════════════════════════════════");
+                    _logger?.LogInformation("📄 MÓDULO: FACTURACIÓN NORMAL");
+                    _logger?.LogInformation("═══════════════════════════════════════════════════");
+                    string origenUpper = clienteActual.Origen?.ToUpper() ?? "F";
+
+                    if (origenUpper == "F") // Consumidor Final
+                    {
+                        ctaId = string.Empty;
+                        LP_Id = cajaActual.Caja.lp_id_min;
+                        coTipo = "CF";
+
+                        _logger?.LogInformation($"✅ Cliente CF → Identificador (documento): {ctaId}");
+                        _logger?.LogInformation($"✅ co_tipo: {coTipo}");
+                    }
+                    else // Cliente Registrado
+                    {
+                        ctaId = clienteActual.cta_id ?? string.Empty;
+                        LP_Id = cajaActual.Caja.lp_id_may;
+                        coTipo = "CR";
+
+                        _logger?.LogInformation($"✅ Cliente Registrado → Identificador (cta_id): {ctaId}");
+                        _logger?.LogInformation($"✅ co_tipo: {coTipo}");
+                    }
                 }
 
                 jsonProductos = jsonProductos.Replace("\\", "");
                 jsonSorteos = jsonSorteos.Replace("\\", "");
                 jsonSubtotales = jsonSubtotales.Replace("\\", "");
                 jsonValores = jsonValores.Replace("\\", "");
+                jsonUniones = jsonUniones.Replace("\\", "");
 
                 // ⓬ CONSTRUIR REQUEST DTO
                 var request = new CajaOpeConfirmarReq
@@ -250,8 +334,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                     // ═══ JSONs de pago CON VALORES ═══
                     json_valores = jsonValores,
-                    json_cancela = "{}",
-                    json_union = "{}",
+                    json_cancela = jsonCancela, // ✅ ACTUALIZADO v22.0: Ahora dinámico
+                    json_union = jsonUniones,
 
 
 
@@ -457,9 +541,20 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 FacturaSubtotales = [];
                 FacturaSorteos = [];
 
+                // ✅ NUEVO v22.0: Limpiar facturas seleccionadas si es CobranzaDiferida
+                if (esCobranzaDiferida)
+                {
+                    FacturasSeleccionadasParaCobro = new List<FactPendienteResponseDto>();
+                    _logger?.LogInformation("✅ Sesión de FacturasSeleccionadasParaCobro limpiada");
+                }
+
                 _logger?.LogInformation("✅ Sesión de factura limpiada");
 
                 // ⓴ RETORNAR RESPUESTA CORRECTA PARA FRONTEND
+                var mensajeExito = esCobranzaDiferida
+                   ? $"Cobro de facturas procesado exitosamente. Recibo {comprobante.tco_letra} Nro {comprobante.cm_compte}"
+                   : $"Factura {comprobante.tco_letra} Nro {comprobante.cm_compte} emitida y pagada exitosamente";
+
                 var respuestaFinal = new
                 {
                     ok = true,
@@ -472,7 +567,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                             tco_letra = comprobante.tco_letra,
                             tco_id = comprobante.tco_id,
                             cm_compte = comprobante.cm_compte,
-                            cm_repetido = comprobante.cm_repetido
+                            cm_repetido = comprobante.cm_repetido,
+                            es_cobranza_diferida = esCobranzaDiferida // ✅ NUEVO: Indicador para el frontend
                         }
                     },
 
@@ -531,6 +627,86 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     mensaje = "Error inesperado al procesar el pago. Por favor, intente nuevamente."
                 });
             }
+        }
+
+        /// <summary>
+        /// ✅ NUEVO v22.0: Convierte facturas pendientes a DTO de cancelación para json_cancela
+        /// Transforma List<FactPendienteResponseDto> → List<CancelaJsonDto>
+        /// </summary>
+        /// <param name="facturas">Lista de facturas seleccionadas para cobro</param>
+        /// <returns>Lista de DTOs formateados para el campo json_cancela del SP</returns>
+        private List<Json_Cancela> ConvertirFacturasPendientesACancela(List<FactPendienteResponseDto> facturas)
+        {
+            if (facturas == null || facturas.Count == 0)
+            {
+                _logger?.LogWarning("⚠️ ConvertirFacturasPendientesACancela: Lista de facturas vacía o nula");
+                return new List<Json_Cancela>();
+            }
+
+            var resultado = new List<Json_Cancela>();
+
+            _logger?.LogInformation("═══════════════════════════════════════════════════");
+            _logger?.LogInformation($"🔄 INICIANDO CONVERSIÓN DE FACTURAS PENDIENTES");
+            _logger?.LogInformation($"   Total facturas a convertir: {facturas.Count}");
+            _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+            foreach (var factura in facturas)
+            {
+                try
+                {
+                    // ✅ VALIDACIÓN: Solo procesar facturas seleccionadas
+                    if (!factura.seleccionado)
+                    {
+                        _logger?.LogInformation($"⏭️ Factura {factura.tco_id}-{factura.cm_compte} NO seleccionada - omitida");
+                        continue;
+                    }
+
+                    var cancela = new Json_Cancela
+                    {
+                        cta_id = factura.cta_id,
+
+                        // ✅ Conversión DateTime? → string? (formato ISO esperado por SP)
+                        dia_movi = factura.dia_movi?.ToString("yyyy-MM-dd HH:mm:ss"),
+
+                        tco_id = factura.tco_id,
+                        cm_compte = factura.cm_compte,
+
+                        // ✅ Conversión segura int → short? (validación de rango)
+                        cm_compte_cuota = factura.cm_compte_cuota >= short.MinValue && factura.cm_compte_cuota <= short.MaxValue
+                            ? (short?)factura.cm_compte_cuota
+                            : null,
+
+                        cv_fecha_vto = factura.cv_fecha_vto,
+                        cv_importe = factura.cv_importe,
+                        cv_importe_ori = factura.cv_importe_ori,
+
+                        // ✅ Valores por defecto para campos no disponibles en origen
+                        cv_estado = "A", // A = Aplicado/Activo
+                        cv_fecha_carga = DateTime.Now,
+
+                        cv_concepto = factura.cv_concepto,
+
+                        // ✅ Conversión int? → string?
+                        ve_id = factura.ve_id?.ToString() ?? string.Empty,
+                        ccb_id = factura.ccb_id?.ToString() ?? string.Empty
+                    };
+
+                    resultado.Add(cancela);
+
+                    _logger?.LogInformation($"   ✅ [{resultado.Count}] {cancela.tco_id}-{cancela.cm_compte}: ${cancela.cv_importe:N2}");
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, $"❌ Error al convertir factura: tco_id={factura.tco_id}, cm_compte={factura.cm_compte}");
+                    // ✅ ROBUSTEZ: Continuar con las demás facturas
+                }
+            }
+
+            _logger?.LogInformation("═══════════════════════════════════════════════════");
+            _logger?.LogInformation($"✅ CONVERSIÓN COMPLETADA: {resultado.Count} facturas procesadas");
+            _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+            return resultado;
         }
 
         [HttpPost]
