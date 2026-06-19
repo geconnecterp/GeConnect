@@ -237,8 +237,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
         /// <param name="req"></param>
         /// <returns></returns>
         [HttpPost]
-        public JsonResult ResguardarFacturasPendientesSeleccionadas([FromBody] List<FactPendienteResponseDto> req)
+        public JsonResult ResguardarFacturasPendientesSeleccionadas([FromBody] FactsPendienteDto req)
         {
+            List<FactPendienteResponseDto> facturasSeleccionadas = new();
             try
             {
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
@@ -252,38 +253,39 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "Sesión expirada. Por favor, inicie sesión de nuevo." });
                 }
 
-                _logger?.LogInformation($"   Request recibido: {(req == null ? "NULL" : $"{req.Count} facturas")}");
+                _logger?.LogInformation($"   Request recibido: {(req == null ? "NULL" : $"{req.Facturas.Count} facturas")}");
 
-                if (req == null)
+                if (req == null || req.Facturas == null)
                 {
                     _logger?.LogWarning("❌ Se recibió una solicitud nula para resguardar facturas.");
                     return Json(new { ok = false, mensaje = "La solicitud no puede ser nula. Verifique el formato de los datos enviados." });
                 }
 
-                if (req.Count == 0)
+                if (req.Facturas.Count == 0)
                 {
                     _logger?.LogWarning("⚠️ Se recibió una lista vacía de facturas");
                     return Json(new { ok = false, mensaje = "No se recibieron facturas para resguardar." });
                 }
 
-                _logger?.LogInformation($"   📦 Procesando {req.Count} facturas:");
-                for (int i = 0; i < req.Count; i++)
+                _logger?.LogInformation($"   📦 Procesando {req.Facturas.Count} facturas:");
+                for (int i = 0; i < req.Facturas.Count; i++)
                 {
-                    var factura = req[i];
+                    var factura = req.Facturas[i];
                     _logger?.LogInformation($"      [{i + 1}] {factura.tco_id} {factura.cm_compte} - ${factura.cv_importe:N2} - {factura.co_pd_nombre}");
 
                     if (string.IsNullOrEmpty(factura.tco_id) || string.IsNullOrEmpty(factura.cm_compte))
                     {
                         _logger?.LogWarning($"      ⚠️ Factura [{i + 1}] tiene datos críticos vacíos");
                     }
+                    facturasSeleccionadas.Add(factura);
                 }
 
                 // ✅ IMPORTANTE: Estas son las facturas SELECCIONADAS para cobrar
                 // NO reemplazamos FacturasPendientesActuales (que contiene TODAS las facturas)
                 // sino que las guardamos en una variable de sesión DIFERENTE
-                FacturasSeleccionadasParaCobro = req;
+                FacturasSeleccionadasParaCobro = facturasSeleccionadas;
 
-                _logger?.LogInformation($"   ✅ Se han resguardado {req.Count} facturas SELECCIONADAS en la sesión del servidor.");
+                _logger?.LogInformation($"   ✅ Se han resguardado {req.Facturas.Count} facturas SELECCIONADAS en la sesión del servidor.");
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                 return Json(new { ok = true, mensaje = "Facturas seleccionadas guardadas correctamente." });
@@ -319,8 +321,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 _logger?.LogInformation("Se recuperaron {Count} facturas pendientes desde la sesión.", facturasEnSesion.Count);
 
-                // Limpiamos la sesión después de recuperarlas
-                FacturasSeleccionadasParaCobro = null;
+                //// Limpiamos la sesión después de recuperarlas
+                //FacturasSeleccionadasParaCobro = null;
 
                 return Json(new { ok = true, lista = facturasEnSesion });
             }

@@ -9,7 +9,7 @@ namespace gc.infraestructura.Dtos.Cajas.Response
 
         public string co_pd_doc { get; set; } = string.Empty;
 
-        public DateTime? dia_movi { get; set; }
+        public string dia_movi { get; set; } = string.Empty;
 
         public string tco_id { get; set; } = string.Empty;
 
