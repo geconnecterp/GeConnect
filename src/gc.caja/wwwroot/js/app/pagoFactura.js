@@ -1966,7 +1966,7 @@ function enviarPagoAlServidor(jsonValores) {
             timeout: 10000,
             success: function (responseFacturas) {
                 console.log('   📥 Respuesta de facturas:', responseFacturas);
-
+                //para lo unico que me sirve recuperar las facturas es para confirmar que las mismas estan. pero las tengo resguardadas en session las que se van a cobrar.
                 if (!responseFacturas || !responseFacturas.ok) {
                     console.error('❌ No se pudieron obtener las facturas');
                     ocultarLoadingGlobal();

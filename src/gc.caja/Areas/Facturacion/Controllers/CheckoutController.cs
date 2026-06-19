@@ -10,6 +10,7 @@ using gc.infraestructura.Dtos.Cajas.Response;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace gc.caja.Areas.Facturacion.Controllers
@@ -76,7 +77,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
         public async Task<JsonResult> FinalizarCompra([FromBody] PagoCompletoDto pagoDto)
         {
             var stopwatch = Stopwatch.StartNew();
-
+            List<FactPendienteResponseDto> facts = new();
             try
             {
                 // ❶ VALIDAR AUTENTICACIÓN
@@ -117,8 +118,29 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 // ❺ VALIDAR QUE HAYA PRODUCTOS
                 var productosFactura = FacturaProductos;
-                bool esCobranzaDiferidaTemporal = !string.IsNullOrEmpty(pagoDto.ModuloOrigen) &&
-                                                   pagoDto.ModuloOrigen.ToUpper() == "COBRANZADIFERIDA";
+                bool esCobranzaDiferidaTemporal = false;
+                    //!string.IsNullOrEmpty(pagoDto.ModuloOrigen) &&
+                    //                               pagoDto.ModuloOrigen.ToUpper() == "COBRANZADIFERIDA";
+
+                switch (pagoDto.ModuloOrigen.ToUpper())
+                {
+                    case "COBRANZADIFERIDA":
+                        esCobranzaDiferidaTemporal = true;
+                        decimal importe = 0.00m;
+                        facts = FacturasSeleccionadasParaCobro;
+                        // En modo Cobranza Diferida, se deberá generará FacturaSubtotales dinámicamente
+                        //[{"orden":1,"tipo":"SU","concepto":"Subtotal","base":0.00,"alicuota":0.00,"importe":JUAN PONE EL IMPROTE TOTAL A CANCELAR,"id_aux":""}]
+                        if(facts != null && facts.Count > 0)
+                        {
+                            importe = facts.Sum(f => f.cv_importe);
+                        }
+                        FacturaSubtotales = new List<FactSubtotalJsonDto> { new FactSubtotalJsonDto { orden = 1 , 
+                            tipo = "SU", 
+                            concepto = "Subtotal", @base = 0.00m, alicuota = 0.00m, importe = importe, id_aux = "" } };
+                        break;
+                    default:
+                        break;
+                }
 
                 if (!esCobranzaDiferidaTemporal && (productosFactura == null || productosFactura.Count == 0))
                 {
@@ -134,7 +156,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "Debe calcular los totales primero" });
                 }
 
-                // ✅ NUEVO: Log informativo para Cobranza Diferida
+                // ✅ NUEVO: Log informativo para Cobranza Diferida - 
+                // si es cobranza diferida tendremos que regenerar el subtotal pues debe viajar. 
                 if (esCobranzaDiferidaTemporal)
                 {
                     _logger?.LogInformation("✅ Validaciones de productos/subtotales omitidas (Cobranza Diferida)");
@@ -190,6 +213,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation($"✅ JSON subtotales (longitud): {jsonSubtotales.Length}");
                 _logger?.LogInformation($"✅ JSON sorteos (longitud): {jsonSorteos.Length}");
                 _logger?.LogInformation($"✅ JSON valores (longitud): {jsonValores.Length}");
+                _logger?.LogInformation($"✅ JSON uniones (longitud): {jsonUniones.Length}");
 
                 // ⓫ DETERMINAR IDENTIFICADOR DEL CLIENTE Y TIPO DE OPERACIÓN
                 string jsonCancela = "{}";
@@ -228,48 +252,48 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     _logger?.LogInformation("🔍 OBTENIENDO FACTURAS A CANCELAR v28.1");
                     _logger?.LogInformation("═══════════════════════════════════════════════════");
 
-                    List<Json_Cancela> facturasSeleccionadas = null;
+                    List<Json_Cancela>? facturasSeleccionadas = null;
 
                     // ═══════════════════════════════════════════════════════════
                     // PRIORIDAD 1: Intentar obtener facturas desde PAYLOAD (autoridad final)
                     // ═══════════════════════════════════════════════════════════
 
-                    if (pagoDto.Cancelar != null && pagoDto.Cancelar.Count > 0)
-                    {
-                        _logger?.LogInformation("✅ PRIORIDAD 1: Facturas obtenidas desde PAYLOAD (autoridad final)");
-                        _logger?.LogInformation($"   Total facturas en payload: {pagoDto.Cancelar.Count}");
+                    //if (pagoDto.Cancelar != null && pagoDto.Cancelar.Count > 0)
+                    //{
+                    //    _logger?.LogInformation("✅ PRIORIDAD 1: Facturas obtenidas desde PAYLOAD (autoridad final)");
+                    //    _logger?.LogInformation($"   Total facturas en payload: {pagoDto.Cancelar.Count}");
 
-                        facturasSeleccionadas = pagoDto.Cancelar;
+                    //    facturasSeleccionadas = pagoDto.Cancelar;
 
-                        // Loguear primeras 3 facturas (muestra)
-                        for (int i = 0; i < Math.Min(3, facturasSeleccionadas.Count); i++)
-                        {
-                            var f = facturasSeleccionadas[i];
-                            _logger?.LogInformation($"   [{i + 1}] {f.tco_id} {f.cm_compte} (Cuota: {f.cm_compte_cuota})");
-                        }
+                    //    // Loguear primeras 3 facturas (muestra)
+                    //    for (int i = 0; i < Math.Min(3, facturasSeleccionadas.Count); i++)
+                    //    {
+                    //        var f = facturasSeleccionadas[i];
+                    //        _logger?.LogInformation($"   [{i + 1}] {f.tco_id} {f.cm_compte} (Cuota: {f.cm_compte_cuota})");
+                    //    }
 
-                        if (facturasSeleccionadas.Count > 3)
-                        {
-                            _logger?.LogInformation($"   ... y {facturasSeleccionadas.Count - 3} factura(s) más");
-                        }
-                    }
-                    // ═══════════════════════════════════════════════════════════
-                    // PRIORIDAD 2: FALLBACK - Intentar obtener de sesión
-                    // ═══════════════════════════════════════════════════════════
-                    else
-                    {
+                    //    if (facturasSeleccionadas.Count > 3)
+                    //    {
+                    //        _logger?.LogInformation($"   ... y {facturasSeleccionadas.Count - 3} factura(s) más");
+                    //    }
+                    //}
+                    //// ═══════════════════════════════════════════════════════════
+                    //// PRIORIDAD 2: FALLBACK - Intentar obtener de sesión
+                    //// ═══════════════════════════════════════════════════════════
+                    //else
+                    //{
                         _logger?.LogWarning("⚠️ PRIORIDAD 2: Payload sin facturas - Intentando obtener de SESIÓN (fallback)");
 
-                        var facturasEnSesion = FacturasSeleccionadasParaCobro;
+                        //var facturasEnSesion = FacturasSeleccionadasParaCobro;
 
-                        if (facturasEnSesion != null && facturasEnSesion.Count > 0)
+                        if (facts != null && facts.Count > 0)
                         {
-                            _logger?.LogInformation($"✅ {facturasEnSesion.Count} factura(s) obtenidas de SESIÓN");
+                            _logger?.LogInformation($"✅ {facts.Count} factura(s) obtenidas de SESIÓN");
 
                             // Convertir de FactPendienteResponseDto a Json_Cancela
                             try
                             {
-                                facturasSeleccionadas = ConvertirFacturasPendientesACancela(facturasEnSesion);
+                                facturasSeleccionadas = ConvertirFacturasPendientesACancela(facts);
 
                                 _logger?.LogInformation($"   Conversión exitosa: {facturasSeleccionadas.Count} factura(s) convertidas");
 
@@ -295,7 +319,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         {
                             _logger?.LogError("❌ SESIÓN también está vacía (FacturasSeleccionadasParaCobro)");
                         }
-                    }
+                    //}
 
                     // ═══════════════════════════════════════════════════════════
                     // VALIDACIÓN FINAL: Debe haber al menos una factura
@@ -431,9 +455,6 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     json_valores = jsonValores,
                     json_cancela = jsonCancela, // ✅ ACTUALIZADO v22.0: Ahora dinámico
                     json_union = jsonUniones,
-
-
-
 
                 };
 
