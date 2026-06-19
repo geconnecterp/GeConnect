@@ -48,20 +48,20 @@ namespace gc.api.core.Servicios.Reportes
 
 				#region Obtención de Datos
 				List<CajaProcesoCierresListaDto> cierre = ObtenerDatos(solicitud, out tit, out subtit);
-				List<RepoVtaResumenDto> registrosResumen = ObtenerDatosResumen(solicitud); //Vamos descomentando a medida que vayamos armando el reporte
-																						   //List<RepoVtaRendicionDto> registrosRendicion = ObtenerDatosRendicion(solicitud);
-																						   //List<RepoVtaRendicionDetalleDto> registrosRendicionDetCheq = ObtenerDatosRendicionDetalleCheques(solicitud);
-																						   //List<RepoVtaRendicionDetalleDto> registrosRendicionDetTran = ObtenerDatosRendicionDetalleTransferencias(solicitud);
-																						   //List<RepoVtaRendicionDetalleDto> registrosRendicionDetTarj = ObtenerDatosRendicionDetalleTarjetas(solicitud);
-																						   //List<RepoVtaRendicionDetalleDto> registrosRendicionDetOtros = ObtenerDatosRendicionDetalleOtros(solicitud);
-																						   //List<RepoVtaCtaCteDto> registrosCtaCte = ObtenerDatosCtaCte(solicitud);
-																						   //List<RepoVtaCobranzaDto> registrosCobranzas = ObtenerDatosCobranzas(solicitud);
-																						   //List<RepoVtaAnticipoDto> registrosAnticipos = ObtenerDatosAnticipos(solicitud);
-																						   //List<RepoVtaCreditoUsadoDto> registrosCreditosUsados = ObtenerDatosCreditosUsados(solicitud);
-																						   //List<RepoVtaNCDto> registrosNC = ObtenerDatosNC(solicitud);
-																						   //List<RepoVtaNDDto> registrosND = ObtenerDatosND(solicitud);
-																						   //List<RepoVtaCambioValoresDto> registrosCambioValores = ObtenerDatosCambioValores(solicitud);
-																						   //List<RepoVtaZDto> registrosZ = ObtenerDatosZ(solicitud);
+				List<RepoVtaResumenDto> registrosResumen = ObtenerDatosResumen(solicitud); 
+				List<RepoVtaRendicionDto> registrosRendicion = ObtenerDatosRendicion(solicitud);
+				List<RepoVtaRendicionDetalleDto> registrosRendicionDetTarj = ObtenerDatosRendicionDetalleTarjetas(solicitud);
+				List<RepoVtaRendicionDetalleDto> registrosRendicionDetCheq = ObtenerDatosRendicionDetalleCheques(solicitud);//Vamos descomentando a medida que vayamos armando el reporte
+				List<RepoVtaRendicionDetalleDto> registrosRendicionDetTran = ObtenerDatosRendicionDetalleTransferencias(solicitud);
+				List<RepoVtaRendicionDetalleDto> registrosRendicionDetOtros = ObtenerDatosRendicionDetalleOtros(solicitud);
+				//List<RepoVtaCtaCteDto> registrosCtaCte = ObtenerDatosCtaCte(solicitud);
+				//List<RepoVtaCobranzaDto> registrosCobranzas = ObtenerDatosCobranzas(solicitud);
+				//List<RepoVtaAnticipoDto> registrosAnticipos = ObtenerDatosAnticipos(solicitud);
+				//List<RepoVtaCreditoUsadoDto> registrosCreditosUsados = ObtenerDatosCreditosUsados(solicitud);
+				//List<RepoVtaNCDto> registrosNC = ObtenerDatosNC(solicitud);
+				//List<RepoVtaNDDto> registrosND = ObtenerDatosND(solicitud);
+				//List<RepoVtaCambioValoresDto> registrosCambioValores = ObtenerDatosCambioValores(solicitud);
+				//List<RepoVtaZDto> registrosZ = ObtenerDatosZ(solicitud);
 				#endregion
 
 				solicitud.Titulo = tit;
@@ -110,14 +110,26 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Open();
 
 				#region Armado de Repoorte 
-				#region Sección Datos del cierre
 				#region Datos del Cierre
 				CargarRepoVtaDatosDeCierre(pdf, cierre, chico, normal, normalBold, titulo, tituloBig);
 				#endregion
 
 				#region #1 Resumen de Operaciones y Rendicion
 				CargarRepoVta_SeccionNro1_A(pdf, registrosResumen, chico, normal, normalBold, titulo, tituloBig);
+				CargarRepoVta_SeccionNro1_B(pdf, registrosResumen, chico, normal, normalBold, titulo, tituloBig);
+				//TODO Marce: falta definir de donde saco Problemas de Secuencia:
 				#endregion
+
+				#region #2 Valores Rendidos por tipo de Medio de Pago
+				CargarRepoVta_SeccionNro2_A(pdf, registrosRendicion, chico, normal, normalBold, titulo, tituloBig);
+				if (registrosRendicionDetTarj != null && registrosRendicionDetTarj.Count > 0)
+					CargarRepoVta_SeccionNro2_B(pdf, registrosRendicionDetTarj, chico, normal, normalBold, titulo, tituloBig);
+				if (registrosRendicionDetCheq != null && registrosRendicionDetCheq.Count > 0)
+					CargarRepoVta_SeccionNro2_C(pdf, registrosRendicionDetCheq, chico, normal, normalBold, titulo, tituloBig);
+				if (registrosRendicionDetTran != null && registrosRendicionDetTran.Count > 0)
+					CargarRepoVta_SeccionNro2_D(pdf, registrosRendicionDetTran, chico, normal, normalBold, titulo, tituloBig);
+				if (registrosRendicionDetOtros != null && registrosRendicionDetOtros.Count > 0)
+					CargarRepoVta_SeccionNro2_E(pdf, registrosRendicionDetOtros, chico, normal, normalBold, titulo, tituloBig);
 				#endregion
 				//HelperPdf.CargarRepoSorteoAnalisisProdLista(pdf, registros, chico, normal, normalBold, titulo, tituloBig);
 				#endregion
@@ -244,13 +256,13 @@ namespace gc.api.core.Servicios.Reportes
 		/// Sección #1 Resumen de Operaciones y Rendición
 		/// Tabla: Ingresos / Egresos en Operaciones de Caja //  Rendiciones y  Fondos de Caja
 		/// </summary>
-		/// <param name="pdf"></param>
-		/// <param name="registros"></param>
-		/// <param name="chico"></param>
-		/// <param name="normal"></param>
-		/// <param name="normalBold"></param>
-		/// <param name="titulo"></param>
-		/// <param name="tituloBig"></param>
+		/// <param name="pdf">Componente de generación de reporte</param>
+		/// <param name="registros">Lista para generar datos</param>
+		/// <param name="chico">Tipo de fuente</param>
+		/// <param name="normal">Tipo de fuente</param>
+		/// <param name="normalBold">Tipo de fuente</param>
+		/// <param name="titulo">Tipo de fuente</param>
+		/// <param name="tituloBig">Tipo de fuente</param>
 		public static void CargarRepoVta_SeccionNro1_A(Document pdf, List<RepoVtaResumenDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
 		{
 			if (registros == null || registros.Count == 0)
@@ -355,6 +367,60 @@ namespace gc.api.core.Servicios.Reportes
 				return fila;
 			}
 
+			PdfPTable TotalFila(string label, decimal valor)
+			{
+				PdfPTable fila = new PdfPTable(2);
+				fila.WidthPercentage = 100;
+				fila.SetWidths(new float[] { 60f, 40f });
+
+				// Label alineado a la derecha
+				fila.AddCell(new PdfPCell(new Phrase(label, normalBold))
+				{
+					BackgroundColor = new BaseColor(200, 200, 200), // gris más oscuro
+					Border = Rectangle.BOX,
+					BorderColor = new BaseColor(120, 120, 120),
+					HorizontalAlignment = Element.ALIGN_RIGHT,
+					Padding = 5f
+				});
+
+				// Tabla interna para signo + valor
+				PdfPTable valorTabla = new PdfPTable(2);
+				valorTabla.WidthPercentage = 100;
+				valorTabla.SetWidths(new float[] { 20f, 80f });
+
+				string signo = valor >= 0 ? "+" : "-";
+				decimal absValor = Math.Abs(valor);
+
+				valorTabla.AddCell(new PdfPCell(new Phrase(signo, normalBold))
+				{
+					BackgroundColor = new BaseColor(200, 200, 200),
+					Border = Rectangle.NO_BORDER,
+					HorizontalAlignment = Element.ALIGN_LEFT,
+					Padding = 5f
+				});
+
+				valorTabla.AddCell(new PdfPCell(new Phrase(absValor.ToString("N2"), normalBold))
+				{
+					BackgroundColor = new BaseColor(200, 200, 200),
+					Border = Rectangle.NO_BORDER,
+					HorizontalAlignment = Element.ALIGN_RIGHT,
+					Padding = 5f
+				});
+
+				PdfPCell celdaValor = new PdfPCell(valorTabla)
+				{
+					BackgroundColor = new BaseColor(200, 200, 200),
+					Border = Rectangle.BOX,
+					BorderColor = new BaseColor(120, 120, 120),
+					Padding = 0
+				};
+
+				fila.AddCell(celdaValor);
+
+				return fila;
+			}
+
+
 			// ============================================================
 			// ETIQUETA SUPERIOR
 			// ============================================================
@@ -384,7 +450,7 @@ namespace gc.api.core.Servicios.Reportes
 			tablaOp.AddCell(Celda(new Phrase(" "), Element.ALIGN_LEFT, false));
 
 			// Total con fondo gris
-			tablaOp.AddCell(TituloCelda($"Total a Rendir por Caja: {(r.total_caja >= 0 ? "+" : "-")} {Math.Abs(r.total_caja).ToString("N2")}"));
+			tablaOp.AddCell(TotalFila("Total a Rendir por Caja:", r.total_caja));
 
 			// ============================================================
 			// TABLA DERECHA
@@ -410,7 +476,8 @@ namespace gc.api.core.Servicios.Reportes
 				r.mutuales + r.vales + r.otros + r.co_ctacte +
 				r.fondo_inicial + r.fondo_final;
 
-			tablaRen.AddCell(TituloCelda($"Rendición + Fondos de Caja: {(totalRendicionFondos >= 0 ? "+" : "-")} {Math.Abs(totalRendicionFondos).ToString("N2")}"));
+			tablaRen.AddCell(TotalFila("Rendición + Fondos de Caja:", totalRendicionFondos));
+
 
 			// ============================================================
 			// TABLA CONTENEDORA
@@ -435,9 +502,856 @@ namespace gc.api.core.Servicios.Reportes
 			});
 
 			pdf.Add(tablaCont);
+
+			// ============================================================
+			// TOTALIZADOR FINAL: DIFERENCIA DE CAJA
+			// ============================================================
+
+			decimal diferencia = r.total_caja - totalRendicionFondos;
+			string signoDif = diferencia >= 0 ? "+" : "-";
+			decimal absDif = Math.Abs(diferencia);
+
+			PdfPTable tablaDif = new PdfPTable(1);
+			tablaDif.WidthPercentage = 49; // alineado con la tabla izquierda
+			tablaDif.HorizontalAlignment = Element.ALIGN_LEFT;
+			tablaDif.AddCell(TotalFila("Diferencia de Caja (Faltante):", diferencia));
+
+			pdf.Add(tablaDif);
+
+			// ============================
+			// LÍNEA HORIZONTAL NEGRA FULL WIDTH
+			// ============================
+			var linea = new iTextSharp.text.pdf.draw.LineSeparator(1f, 100f, BaseColor.Black, Element.ALIGN_CENTER, -2);
+			pdf.Add(new Chunk(linea));
+
 			pdf.Add(new Paragraph(" ", chico)); ;
 		}
 
+		public static void CargarRepoVta_SeccionNro1_B(Document pdf, List<RepoVtaResumenDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		{
+			if (registros == null || registros.Count == 0)
+				return;
+
+			var r = registros.First();
+
+			// ============================================================
+			// Helpers
+			// ============================================================
+
+			PdfPCell Celda(Phrase frase, int align = Element.ALIGN_LEFT, bool lineaInferior = true)
+			{
+				return new PdfPCell(frase)
+				{
+					Border = lineaInferior ? Rectangle.BOTTOM_BORDER : Rectangle.NO_BORDER,
+					BorderWidthBottom = 0.5f,
+					BorderColorBottom = new BaseColor(180, 180, 180),
+					HorizontalAlignment = align,
+					PaddingTop = 4f,
+					PaddingBottom = 4f,
+					PaddingLeft = 4f,
+					PaddingRight = 4f
+				};
+			}
+
+			PdfPCell TituloCelda(string texto)
+			{
+				return new PdfPCell(new Phrase(texto, normalBold))
+				{
+					BackgroundColor = new BaseColor(230, 230, 230),
+					Border = Rectangle.BOX,
+					BorderColor = new BaseColor(180, 180, 180),
+					PaddingTop = 5f,
+					PaddingBottom = 5f,
+					PaddingLeft = 4f,
+					HorizontalAlignment = Element.ALIGN_CENTER
+				};
+			}
+
+			PdfPTable Fila(string label, string valor)
+			{
+				PdfPTable fila = new PdfPTable(2);
+				fila.WidthPercentage = 100;
+				fila.SetWidths(new float[] { 60f, 40f });
+
+				fila.AddCell(Celda(new Phrase(label, normal), Element.ALIGN_RIGHT));
+				fila.AddCell(Celda(new Phrase(valor, normalBold), Element.ALIGN_RIGHT));
+
+				return fila;
+			}
+
+			// ============================================================
+			// ETIQUETA SUPERIOR
+			// ============================================================
+
+			pdf.Add(new Paragraph("2) Cantidad de Operaciones y Otras Operaciones", titulo));
+			pdf.Add(new Paragraph(" ", chico));
+
+			// ============================================================
+			// TABLA IZQUIERDA — Cantidad de Operaciones Realizadas
+			// ============================================================
+
+			PdfPTable tablaCant = new PdfPTable(1);
+			tablaCant.WidthPercentage = 100;
+
+			tablaCant.AddCell(TituloCelda("Cantidad de Operaciones Realizadas"));
+
+			tablaCant.AddCell(Fila("Facturación:", r.cant_facturacion.ToString()));
+			tablaCant.AddCell(Fila("Nota de Créditos CtaCte:", r.cant_nota_credito.ToString()));
+			tablaCant.AddCell(Fila("Cobranzas:", r.cant_cobranza.ToString()));
+			tablaCant.AddCell(Fila("Cobranzas Anuladas:", r.cant_cobranza_anu.ToString()));
+			tablaCant.AddCell(Fila("Nota de Crédito por Devolución de Dinero:", r.cant_devolucion_dinero.ToString()));
+			tablaCant.AddCell(Fila("Servicios (FS, ND, NC):", r.cant_nota_debito_prov.ToString()));
+			tablaCant.AddCell(Fila("Cobranzas de Facturas Diferidas:", r.cant_cobranza_dif.ToString()));
+			tablaCant.AddCell(Fila("Cambio de Valores / Ing. Externos:", r.cant_cambio_ing.ToString()));
+
+			int totalOperaciones =
+				r.cant_facturacion +
+				r.cant_nota_credito +
+				r.cant_cobranza +
+				r.cant_cobranza_anu +
+				r.cant_devolucion_dinero +
+				r.cant_nota_debito_prov +
+				r.cant_cobranza_dif +
+				r.cant_cambio_ing;
+
+			PdfPTable totalCantTabla = new PdfPTable(2);
+			totalCantTabla.WidthPercentage = 100;
+			totalCantTabla.SetWidths(new float[] { 60f, 40f });
+
+			// Label
+			totalCantTabla.AddCell(new PdfPCell(new Phrase("Total de Ope. Realizadas:", normalBold))
+			{
+				BackgroundColor = new BaseColor(200, 200, 200),
+				Border = Rectangle.BOX,
+				BorderColor = new BaseColor(120, 120, 120),
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				Padding = 5f
+			});
+
+			// Valor
+			totalCantTabla.AddCell(new PdfPCell(new Phrase(totalOperaciones.ToString(), normalBold))
+			{
+				BackgroundColor = new BaseColor(200, 200, 200),
+				Border = Rectangle.BOX,
+				BorderColor = new BaseColor(120, 120, 120),
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				Padding = 5f
+			});
+
+			tablaCant.AddCell(new PdfPCell(totalCantTabla)
+			{
+				Border = Rectangle.NO_BORDER,
+				Padding = 0
+			});
+
+			// ============================================================
+			// TABLA DERECHA — Importe de Otras Operaciones
+			// ============================================================
+
+			PdfPTable tablaImp = new PdfPTable(1);
+			tablaImp.WidthPercentage = 100;
+
+			tablaImp.AddCell(TituloCelda("Importe de Otras Operaciones"));
+
+			tablaImp.AddCell(Fila("NC Generadas en CtaCte.:", r.co_nota_credito.ToString("N2")));
+			tablaImp.AddCell(Fila("Notas de Débito + FS:", r.co_nota_debito_prov.ToString("N2")));
+
+			// ============================================================
+			// TABLA CONTENEDORA (dos columnas)
+			// ============================================================
+
+			PdfPTable tablaCont = new PdfPTable(2);
+			tablaCont.WidthPercentage = 100;
+			tablaCont.SetWidths(new float[] { 50f, 50f });
+
+			tablaCont.AddCell(new PdfPCell(tablaCant)
+			{
+				Border = Rectangle.BOX,
+				BorderColor = new BaseColor(180, 180, 180),
+				Padding = 5f
+			});
+
+			PdfPCell celdaImp = new PdfPCell();
+			celdaImp.Border = Rectangle.BOX;
+			celdaImp.BorderColor = new BaseColor(180, 180, 180);
+			celdaImp.Padding = 5f;
+			celdaImp.MinimumHeight = 0;     // evita estiramiento
+			celdaImp.FixedHeight = -1;      // permite altura natural
+			celdaImp.AddElement(tablaImp);  // agrega la tabla sin expandir
+
+			tablaCont.AddCell(celdaImp);
+
+			pdf.Add(tablaCont);
+			pdf.Add(new Paragraph(" ", chico));
+		}
+
+
+		/// <summary>
+		/// Sección #2 Valores Rendidos por tipo de Medio de Pago
+		/// </summary>
+		/// <param name="pdf">Componente de generación de reporte</param>
+		/// <param name="registros">Lista para generar datos</param>
+		/// <param name="chico">Tipo de fuente</param>
+		/// <param name="normal">Tipo de fuente</param>
+		/// <param name="normalBold">Tipo de fuente</param>
+		/// <param name="titulo">Tipo de fuente</param>
+		/// <param name="tituloBig">Tipo de fuente</param>
+		public static void CargarRepoVta_SeccionNro2_A(Document pdf, List<RepoVtaRendicionDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		{
+			if (registros == null || registros.Count == 0)
+				return;
+
+			// ============================================================
+			// NUEVA HOJA
+			// ============================================================
+			pdf.NewPage();
+
+			// ============================================================
+			// Helpers
+			// ============================================================
+
+			PdfPCell CeldaDato(string texto, Font font, int align = Element.ALIGN_LEFT, bool lineaInferior = true)
+			{
+				return new PdfPCell(new Phrase(texto, font))
+				{
+					Border = lineaInferior ? Rectangle.BOTTOM_BORDER : Rectangle.NO_BORDER,
+					BorderWidthBottom = 0.5f,
+					BorderColorBottom = new BaseColor(180, 180, 180),
+					HorizontalAlignment = align,
+					PaddingTop = 4f,
+					PaddingBottom = 4f,
+					PaddingLeft = 4f,
+					PaddingRight = 4f
+				};
+			}
+
+			PdfPCell CeldaTitulo(string texto)
+			{
+				return new PdfPCell(new Phrase(texto, normalBold))
+				{
+					BackgroundColor = new BaseColor(230, 230, 230),
+					Border = Rectangle.BOX,
+					BorderColor = new BaseColor(180, 180, 180),
+					PaddingTop = 5f,
+					PaddingBottom = 5f,
+					PaddingLeft = 4f,
+					HorizontalAlignment = Element.ALIGN_CENTER
+				};
+			}
+
+			PdfPCell CeldaSubtitulo(string texto)
+			{
+				return new PdfPCell(new Phrase(texto, normalBold))
+				{
+					BackgroundColor = new BaseColor(230, 230, 230),
+					Border = Rectangle.BOX,
+					BorderColor = new BaseColor(180, 180, 180),
+					Padding = 5f,
+					Colspan = 4,
+					HorizontalAlignment = Element.ALIGN_LEFT
+				};
+			}
+
+			PdfPCell CeldaTotal(string texto, Font font, bool esLabel)
+			{
+				return new PdfPCell(new Phrase(texto, font))
+				{
+					BackgroundColor = new BaseColor(200, 200, 200),
+					Border = Rectangle.BOX,
+					BorderColor = new BaseColor(120, 120, 120),
+					Padding = 5f,
+					HorizontalAlignment = esLabel ? Element.ALIGN_LEFT : Element.ALIGN_RIGHT
+				};
+			}
+
+			// ============================================================
+			// AGRUPAR POR NÚMERO DE RENDICIÓN
+			// ============================================================
+
+			var grupos = registros
+				.GroupBy(x => x.caja_nro_rend)
+				.OrderBy(g => g.Key);
+
+			foreach (var grupo in grupos)
+			{
+				var lista = grupo.OrderBy(x => x.orden).ToList();
+				var r0 = lista.First();
+
+				// ============================================================
+				// TÍTULO DE LA RENDICIÓN
+				// ============================================================
+
+				string tipo = r0.rend_tipo switch
+				{
+					"P" => "Rendición Parcial Nº ",
+					"F" => "Rendición Final Nº ",
+					"T" => "Total de Rendiciones Nº ",
+					_ => "Rendición Nº "
+				};
+
+				string fecha = r0.rend_fecha.HasValue
+					? r0.rend_fecha.Value.ToString("dd/MM/yyyy HH:mm")
+					: "";
+
+				pdf.Add(new Paragraph($"{tipo}{r0.caja_nro_rend}  {fecha}", titulo));
+				pdf.Add(new Paragraph(" ", chico));
+
+				// ============================================================
+				// TABLA PRINCIPAL
+				// ============================================================
+
+				PdfPTable tabla = new PdfPTable(4);
+				tabla.WidthPercentage = 100;
+				tabla.SetWidths(new float[] { 40f, 20f, 20f, 20f });
+
+				tabla.AddCell(CeldaTitulo("Medio de Pago"));
+				tabla.AddCell(CeldaTitulo("Arqueo Caja"));
+				tabla.AddCell(CeldaTitulo("Fondo"));
+				tabla.AddCell(CeldaTitulo("Rendición"));
+
+				// ============================================================
+				// SUBTOTALES POR TIPO DE INSTRUMENTO (tcf_id / tcf_desc)
+				// ============================================================
+
+				var subgrupos = lista
+					.GroupBy(x => x.tcf_id)
+					.OrderBy(g => g.Key);
+
+				decimal totalArqueo = 0m;
+				decimal totalFondo = 0m;
+
+				foreach (var sg in subgrupos)
+				{
+					string instrumentoDesc = sg.First().tcf_desc;
+
+					// Subtítulo del grupo (Efectivo, Tarjetas de Crédito, Cuentas Bancarias, etc.)
+					tabla.AddCell(CeldaSubtitulo(instrumentoDesc));
+
+					decimal subArqueo = 0m;
+					decimal subFondo = 0m;
+
+					foreach (var item in sg)
+					{
+						decimal arqueo = item.rendicion;
+						decimal fondo = item.fondo;
+						decimal rend = arqueo - fondo;
+
+						// Fila de datos (SIN tablas anidadas)
+						tabla.AddCell(CeldaDato(item.ins_desc, normal, Element.ALIGN_LEFT));              // Medio de Pago
+						tabla.AddCell(CeldaDato(arqueo.ToString("N2"), normalBold, Element.ALIGN_RIGHT)); // Arqueo Caja
+						tabla.AddCell(CeldaDato(fondo.ToString("N2"), normalBold, Element.ALIGN_RIGHT));  // Fondo
+						tabla.AddCell(CeldaDato(rend.ToString("N2"), normalBold, Element.ALIGN_RIGHT));   // Rendición
+
+						subArqueo += arqueo;
+						subFondo += fondo;
+					}
+
+					decimal subRend = subArqueo - subFondo;
+
+					// Fila total del grupo
+					tabla.AddCell(CeldaTotal($"Total {instrumentoDesc}:", normalBold, true));
+					tabla.AddCell(CeldaTotal(subArqueo.ToString("N2"), normalBold, false));
+					tabla.AddCell(CeldaTotal(subFondo.ToString("N2"), normalBold, false));
+					tabla.AddCell(CeldaTotal(subRend.ToString("N2"), normalBold, false));
+
+					totalArqueo += subArqueo;
+					totalFondo += subFondo;
+				}
+
+				// ============================================================
+				// TOTAL GENERAL DE LA RENDICIÓN
+				// ============================================================
+
+				decimal totalRend = totalArqueo - totalFondo;
+
+				tabla.AddCell(CeldaTotal("Total Rendición:", normalBold, true));
+				tabla.AddCell(CeldaTotal(totalArqueo.ToString("N2"), normalBold, false));
+				tabla.AddCell(CeldaTotal(totalFondo.ToString("N2"), normalBold, false));
+				tabla.AddCell(CeldaTotal(totalRend.ToString("N2"), normalBold, false));
+
+				pdf.Add(tabla);
+				pdf.Add(new Paragraph(" ", chico));
+			}
+		}
+
+		public static void CargarRepoVta_SeccionNro2_B(Document pdf, List<RepoVtaRendicionDetalleDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		{
+			if (registros == null || registros.Count == 0)
+				return;
+
+			// ============================================================
+			// Helpers
+			// ============================================================
+
+			PdfPCell Celda(string texto, Font font, int align, bool lineaInferior = true)
+			{
+				return new PdfPCell(new Phrase(texto, font))
+				{
+					Border = lineaInferior ? Rectangle.BOTTOM_BORDER : Rectangle.NO_BORDER,
+					BorderWidthBottom = 0.5f,
+					BorderColorBottom = new BaseColor(180, 180, 180),
+					HorizontalAlignment = align,
+					PaddingTop = 4f,
+					PaddingBottom = 4f,
+					PaddingLeft = 4f,
+					PaddingRight = 4f
+				};
+			}
+
+			PdfPCell TituloCelda(string texto)
+			{
+				return new PdfPCell(new Phrase(texto, normalBold))
+				{
+					BackgroundColor = new BaseColor(230, 230, 230),
+					Border = Rectangle.BOX,
+					BorderColor = new BaseColor(180, 180, 180),
+					Padding = 5f,
+					HorizontalAlignment = Element.ALIGN_CENTER
+				};
+			}
+
+			PdfPCell SubtotalCelda(string texto, int colspan)
+			{
+				return new PdfPCell(new Phrase(texto, normalBold))
+				{
+					BackgroundColor = new BaseColor(200, 200, 200),
+					Border = Rectangle.BOX,
+					BorderColor = new BaseColor(120, 120, 120),
+					Padding = 5f,
+					HorizontalAlignment = Element.ALIGN_RIGHT,
+					Colspan = colspan
+				};
+			}
+
+			// ============================================================
+			// TÍTULO GENERAL
+			// ============================================================
+
+			pdf.Add(new Paragraph("Detalle de Tarjetas", titulo));
+			pdf.Add(new Paragraph(" ", chico));
+
+			// ============================================================
+			// TABLA PRINCIPAL
+			// ============================================================
+
+			PdfPTable tabla = new PdfPTable(8);
+			tabla.WidthPercentage = 100;
+			tabla.SetWidths(new float[] { 20f, 15f, 10f, 10f, 10f, 10f, 12f, 13f });
+
+			tabla.AddCell(TituloCelda("Tarjeta"));
+			tabla.AddCell(TituloCelda("N° Tarjeta"));
+			tabla.AddCell(TituloCelda("Cuotas"));
+			tabla.AddCell(TituloCelda("N° Lote"));
+			tabla.AddCell(TituloCelda("N° Cupón"));
+			tabla.AddCell(TituloCelda("CashBack"));
+			tabla.AddCell(TituloCelda("Venta"));
+			tabla.AddCell(TituloCelda("Importe"));
+
+			// ============================================================
+			// AGRUPAR POR TARJETA (ins_desc)
+			// ============================================================
+
+			var grupos = registros
+				.GroupBy(x => x.ins_desc)
+				.OrderBy(g => g.Key);
+
+			decimal totalVenta = 0m;
+			decimal totalImporte = 0m;
+
+			foreach (var grupo in grupos)
+			{
+				string tarjeta = grupo.Key;
+				int cantidadCupones = grupo.Count();
+
+				decimal subtotalVenta = 0m;
+				decimal subtotalImporte = 0m;
+
+				// ------------------------------------------------------------
+				// FILAS DE DETALLE
+				// ------------------------------------------------------------
+				foreach (var item in grupo.OrderBy(x => x.rend_item))
+				{
+					tabla.AddCell(Celda(tarjeta, normal, Element.ALIGN_LEFT)); // Tarjeta
+					tabla.AddCell(Celda("", normal, Element.ALIGN_LEFT));      // N° Tarjeta vacío
+					tabla.AddCell(Celda("1", normalBold, Element.ALIGN_RIGHT)); // Cuotas
+					tabla.AddCell(Celda(item.rend_dato2_valor, normal, Element.ALIGN_CENTER)); // Lote
+					tabla.AddCell(Celda(item.rend_dato3_valor, normal, Element.ALIGN_CENTER)); // Cupón
+					tabla.AddCell(Celda("0.00", normalBold, Element.ALIGN_RIGHT)); // Cashback
+
+					tabla.AddCell(Celda(item.rend_importe_arq.ToString("N2"), normalBold, Element.ALIGN_RIGHT)); // Venta
+					tabla.AddCell(Celda(item.rend_importe_ok.ToString("N2"), normalBold, Element.ALIGN_RIGHT));  // Importe
+
+					subtotalVenta += item.rend_importe_arq;
+					subtotalImporte += item.rend_importe_ok;
+				}
+
+				// ------------------------------------------------------------
+				// SUBTOTAL DEL GRUPO
+				// ------------------------------------------------------------
+
+				tabla.AddCell(SubtotalCelda($"{tarjeta} - ({cantidadCupones} C):", 6));
+				tabla.AddCell(SubtotalCelda(subtotalVenta.ToString("N2"), 1));
+				tabla.AddCell(SubtotalCelda(subtotalImporte.ToString("N2"), 1));
+
+				totalVenta += subtotalVenta;
+				totalImporte += subtotalImporte;
+			}
+
+			// ============================================================
+			// TOTAL GENERAL
+			// ============================================================
+
+			tabla.AddCell(SubtotalCelda("Total - (Todas las Tarjetas):", 6));
+			tabla.AddCell(SubtotalCelda(totalVenta.ToString("N2"), 1));
+			tabla.AddCell(SubtotalCelda(totalImporte.ToString("N2"), 1));
+
+			pdf.Add(tabla);
+			pdf.Add(new Paragraph(" ", chico));
+		}
+
+		public static void CargarRepoVta_SeccionNro2_C(Document pdf, List<RepoVtaRendicionDetalleDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		{
+			if (registros == null || registros.Count == 0)
+				return;
+
+			// ============================================================
+			// Helpers
+			// ============================================================
+
+			PdfPCell Celda(string texto, Font font, int align, bool lineaInferior = true)
+			{
+				return new PdfPCell(new Phrase(texto, font))
+				{
+					Border = lineaInferior ? Rectangle.BOTTOM_BORDER : Rectangle.NO_BORDER,
+					BorderWidthBottom = 0.5f,
+					BorderColorBottom = new BaseColor(180, 180, 180),
+					HorizontalAlignment = align,
+					PaddingTop = 4f,
+					PaddingBottom = 4f,
+					PaddingLeft = 4f,
+					PaddingRight = 4f
+				};
+			}
+
+			PdfPCell TituloCelda(string texto)
+			{
+				return new PdfPCell(new Phrase(texto, normalBold))
+				{
+					BackgroundColor = new BaseColor(230, 230, 230),
+					Border = Rectangle.BOX,
+					BorderColor = new BaseColor(180, 180, 180),
+					Padding = 5f,
+					HorizontalAlignment = Element.ALIGN_CENTER
+				};
+			}
+
+			PdfPCell TotalCelda(string texto, int colspan)
+			{
+				return new PdfPCell(new Phrase(texto, normalBold))
+				{
+					BackgroundColor = new BaseColor(200, 200, 200),
+					Border = Rectangle.BOX,
+					BorderColor = new BaseColor(120, 120, 120),
+					Padding = 5f,
+					HorizontalAlignment = Element.ALIGN_RIGHT,
+					Colspan = colspan
+				};
+			}
+
+			// ============================================================
+			// TÍTULO
+			// ============================================================
+
+			pdf.Add(new Paragraph("Detalle de Cheques Rendidos por Caja - DIFERIDOS", titulo));
+			pdf.Add(new Paragraph(" ", chico));
+
+			// ============================================================
+			// TABLA PRINCIPAL
+			// ============================================================
+
+			PdfPTable tabla = new PdfPTable(7);
+			tabla.WidthPercentage = 100;
+			tabla.SetWidths(new float[] { 8f, 22f, 15f, 12f, 12f, 23f, 15f });
+
+			tabla.AddCell(TituloCelda("Rend."));
+			tabla.AddCell(TituloCelda("Banco"));
+			tabla.AddCell(TituloCelda("N° Cheque"));
+			tabla.AddCell(TituloCelda("Plaza"));
+			tabla.AddCell(TituloCelda("Fecha Vto."));
+			tabla.AddCell(TituloCelda("Cliente"));
+			tabla.AddCell(TituloCelda("Importe"));
+
+			// ============================================================
+			// FILAS
+			// ============================================================
+
+			decimal totalImporte = 0m;
+
+			foreach (var item in registros.OrderBy(x => x.caja_nro_rend))
+			{
+				string fechaVto = item.rend_fecha_valor.HasValue
+					? item.rend_fecha_valor.Value.ToString("dd/MM/yyyy")
+					: "";
+
+				string cliente = "";
+				if (!string.IsNullOrWhiteSpace(item.cta_id))
+					cliente = $"({item.cta_id}) {item.cta_denominacion}";
+				else
+					cliente = item.cta_denominacion ?? "";
+
+				tabla.AddCell(Celda(item.caja_nro_rend.ToString(), normal, Element.ALIGN_RIGHT));
+				tabla.AddCell(Celda(item.rend_dato1_valor, normal, Element.ALIGN_LEFT));
+				tabla.AddCell(Celda(item.rend_dato2_valor, normal, Element.ALIGN_RIGHT));
+				tabla.AddCell(Celda(item.rend_dato3_valor, normal, Element.ALIGN_CENTER));
+				tabla.AddCell(Celda(fechaVto, normal, Element.ALIGN_CENTER));
+				tabla.AddCell(Celda(cliente, normal, Element.ALIGN_LEFT));
+				tabla.AddCell(Celda(item.rend_importe_ok.ToString("N2"), normalBold, Element.ALIGN_RIGHT));
+
+				totalImporte += item.rend_importe_ok;
+			}
+
+			// ============================================================
+			// TOTAL
+			// ============================================================
+
+			tabla.AddCell(TotalCelda("Total Cheques:", 6));
+			tabla.AddCell(TotalCelda(totalImporte.ToString("N2"), 1));
+
+			pdf.Add(tabla);
+			pdf.Add(new Paragraph(" ", chico));
+		}
+
+		public static void CargarRepoVta_SeccionNro2_D(Document pdf, List<RepoVtaRendicionDetalleDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		{
+			if (registros == null || registros.Count == 0)
+				return;
+
+			// ============================================================
+			// Helpers
+			// ============================================================
+
+			PdfPCell Celda(string texto, Font font, int align, bool lineaInferior = true)
+			{
+				return new PdfPCell(new Phrase(texto, font))
+				{
+					Border = lineaInferior ? Rectangle.BOTTOM_BORDER : Rectangle.NO_BORDER,
+					BorderWidthBottom = 0.5f,
+					BorderColorBottom = new BaseColor(180, 180, 180),
+					HorizontalAlignment = align,
+					PaddingTop = 4f,
+					PaddingBottom = 4f,
+					PaddingLeft = 4f,
+					PaddingRight = 4f
+				};
+			}
+
+			PdfPCell TituloCelda(string texto)
+			{
+				return new PdfPCell(new Phrase(texto, normalBold))
+				{
+					BackgroundColor = new BaseColor(230, 230, 230),
+					Border = Rectangle.BOX,
+					BorderColor = new BaseColor(180, 180, 180),
+					Padding = 5f,
+					HorizontalAlignment = Element.ALIGN_CENTER
+				};
+			}
+
+			PdfPCell SubtituloCelda(string texto)
+			{
+				return new PdfPCell(new Phrase(texto, normalBold))
+				{
+					BackgroundColor = new BaseColor(230, 230, 230),
+					Border = Rectangle.BOX,
+					BorderColor = new BaseColor(180, 180, 180),
+					Padding = 5f,
+					Colspan = 4,
+					HorizontalAlignment = Element.ALIGN_LEFT
+				};
+			}
+
+			PdfPCell TotalCelda(string texto, int colspan)
+			{
+				return new PdfPCell(new Phrase(texto, normalBold))
+				{
+					BackgroundColor = new BaseColor(200, 200, 200),
+					Border = Rectangle.BOX,
+					BorderColor = new BaseColor(120, 120, 120),
+					Padding = 5f,
+					HorizontalAlignment = Element.ALIGN_RIGHT,
+					Colspan = colspan
+				};
+			}
+
+			// ============================================================
+			// TÍTULO
+			// ============================================================
+
+			pdf.Add(new Paragraph("Detalle de Transferencias / Depósitos", titulo));
+			pdf.Add(new Paragraph(" ", chico));
+
+			// ============================================================
+			// TABLA PRINCIPAL
+			// ============================================================
+
+			PdfPTable tabla = new PdfPTable(4);
+			tabla.WidthPercentage = 100;
+			tabla.SetWidths(new float[] { 20f, 20f, 40f, 20f });
+
+			tabla.AddCell(TituloCelda("N° Transf."));
+			tabla.AddCell(TituloCelda("Fecha Transf."));
+			tabla.AddCell(TituloCelda("Cliente"));
+			tabla.AddCell(TituloCelda("Importe"));
+
+			// ============================================================
+			// AGRUPAR POR ins_desc
+			// ============================================================
+
+			var grupos = registros
+				.GroupBy(x => x.ins_desc)
+				.OrderBy(g => g.Key);
+
+			decimal totalGeneral = 0m;
+
+			foreach (var grupo in grupos)
+			{
+				string etiquetaGrupo = grupo.Key;
+				decimal subtotal = 0m;
+
+				// Subtítulo del grupo
+				tabla.AddCell(SubtituloCelda(etiquetaGrupo));
+
+				foreach (var item in grupo.OrderBy(x => x.rend_item))
+				{
+					string fecha = item.rend_fecha_valor.HasValue
+						? item.rend_fecha_valor.Value.ToString("dd/MM/yyyy")
+						: "";
+
+					string cliente = "";
+					if (!string.IsNullOrWhiteSpace(item.cta_id))
+						cliente = $"({item.cta_id}) {item.cta_denominacion}";
+					else
+						cliente = item.cta_denominacion ?? "";
+
+					tabla.AddCell(Celda(item.rend_dato3_valor, normal, Element.ALIGN_RIGHT));   // N° Transf.
+					tabla.AddCell(Celda(fecha, normal, Element.ALIGN_CENTER));                 // Fecha
+					tabla.AddCell(Celda(cliente, normal, Element.ALIGN_LEFT));                 // Cliente
+					tabla.AddCell(Celda(item.rend_importe_ok.ToString("N2"), normalBold, Element.ALIGN_RIGHT)); // Importe
+
+					subtotal += item.rend_importe_ok;
+				}
+
+				// Subtotal del grupo
+				tabla.AddCell(TotalCelda($"Total {etiquetaGrupo}:", 3));
+				tabla.AddCell(TotalCelda(subtotal.ToString("N2"), 1));
+
+				totalGeneral += subtotal;
+			}
+
+			// ============================================================
+			// TOTAL GENERAL
+			// ============================================================
+
+			tabla.AddCell(TotalCelda("Total General:", 3));
+			tabla.AddCell(TotalCelda(totalGeneral.ToString("N2"), 1));
+
+			pdf.Add(tabla);
+			pdf.Add(new Paragraph(" ", chico));
+		}
+
+		public static void CargarRepoVta_SeccionNro2_E(Document pdf, List<RepoVtaRendicionDetalleDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		{
+			if (registros == null || registros.Count == 0)
+				return;
+
+			// ============================================================
+			// Helpers
+			// ============================================================
+
+			PdfPCell Celda(string texto, Font font, int align, bool lineaInferior = true)
+			{
+				return new PdfPCell(new Phrase(texto, font))
+				{
+					Border = lineaInferior ? Rectangle.BOTTOM_BORDER : Rectangle.NO_BORDER,
+					BorderWidthBottom = 0.5f,
+					BorderColorBottom = new BaseColor(180, 180, 180),
+					HorizontalAlignment = align,
+					PaddingTop = 4f,
+					PaddingBottom = 4f,
+					PaddingLeft = 4f,
+					PaddingRight = 4f
+				};
+			}
+
+			PdfPCell TituloCelda(string texto)
+			{
+				return new PdfPCell(new Phrase(texto, normalBold))
+				{
+					BackgroundColor = new BaseColor(230, 230, 230),
+					Border = Rectangle.BOX,
+					BorderColor = new BaseColor(180, 180, 180),
+					Padding = 5f,
+					HorizontalAlignment = Element.ALIGN_CENTER
+				};
+			}
+
+			PdfPCell TotalCelda(string texto, int colspan)
+			{
+				return new PdfPCell(new Phrase(texto, normalBold))
+				{
+					BackgroundColor = new BaseColor(200, 200, 200),
+					Border = Rectangle.BOX,
+					BorderColor = new BaseColor(120, 120, 120),
+					Padding = 5f,
+					HorizontalAlignment = Element.ALIGN_RIGHT,
+					Colspan = colspan
+				};
+			}
+
+			// ============================================================
+			// TÍTULO
+			// ============================================================
+
+			pdf.Add(new Paragraph("Detalle de Otros Instrumentos", titulo));
+			pdf.Add(new Paragraph(" ", chico));
+
+			// ============================================================
+			// TABLA PRINCIPAL
+			// ============================================================
+
+			PdfPTable tabla = new PdfPTable(3);
+			tabla.WidthPercentage = 100;
+			tabla.SetWidths(new float[] { 30f, 50f, 20f });
+
+			tabla.AddCell(TituloCelda("Instrumento"));
+			tabla.AddCell(TituloCelda("Concepto"));
+			tabla.AddCell(TituloCelda("Importe"));
+
+			// ============================================================
+			// FILAS
+			// ============================================================
+
+			decimal totalImporte = 0m;
+
+			foreach (var item in registros.OrderBy(x => x.ins_desc))
+			{
+				tabla.AddCell(Celda(item.ins_desc, normal, Element.ALIGN_LEFT));
+				tabla.AddCell(Celda(item.concepto_valor, normal, Element.ALIGN_LEFT));
+				tabla.AddCell(Celda(item.rend_importe_ok.ToString("N2"), normalBold, Element.ALIGN_RIGHT));
+
+				totalImporte += item.rend_importe_ok;
+			}
+
+			// ============================================================
+			// TOTAL GENERAL
+			// ============================================================
+
+			tabla.AddCell(TotalCelda("Total:", 2));
+			tabla.AddCell(TotalCelda(totalImporte.ToString("N2"), 1));
+
+			pdf.Add(tabla);
+			pdf.Add(new Paragraph(" ", chico));
+		}
 
 		#endregion
 
