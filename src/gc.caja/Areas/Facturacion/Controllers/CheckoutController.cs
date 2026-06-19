@@ -235,14 +235,14 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     coTipo = "CD";
                     ctaId = clienteActual.cta_id ?? string.Empty;
 
-                    // ✅ VALIDAR: Debe haber un cliente registrado
-                    if (string.IsNullOrEmpty(ctaId))
-                    {
-                        _logger?.LogError("❌ CobranzaDiferida requiere un cliente registrado (cta_id)");
-                        return Json(new { ok = false, mensaje = "Debe seleccionar un cliente registrado para cobro diferido" });
-                    }
+                    //// ✅ VALIDAR: Debe haber un cliente registrado
+                    //if (string.IsNullOrEmpty(ctaId))
+                    //{
+                    //    _logger?.LogError("❌ CobranzaDiferida requiere un cliente registrado (cta_id)");
+                    //    return Json(new { ok = false, mensaje = "Debe seleccionar un cliente registrado para cobro diferido" });
+                    //}
 
-                    _logger?.LogInformation($"✅ Cliente registrado: {ctaId}");
+                    //_logger?.LogInformation($"✅ Cliente registrado: {ctaId}");
 
                     // ═══════════════════════════════════════════════════════════
                     // ✅ NUEVO v28.1: PRIORIZAR FACTURAS DESDE PAYLOAD
@@ -282,7 +282,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     //// ═══════════════════════════════════════════════════════════
                     //else
                     //{
-                        _logger?.LogWarning("⚠️ PRIORIDAD 2: Payload sin facturas - Intentando obtener de SESIÓN (fallback)");
+                        //_logger?.LogWarning("⚠️ PRIORIDAD 2: Payload sin facturas - Intentando obtener de SESIÓN (fallback)");
 
                         //var facturasEnSesion = FacturasSeleccionadasParaCobro;
 
@@ -354,10 +354,11 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                     // ✅ SERIALIZAR json_cancela
-                    jsonCancela = JsonConvert.SerializeObject(facturasSeleccionadas);
+                    jsonCancela = JsonConvert.SerializeObject(facturasSeleccionadas,Formatting.None, JsonSettings);
 
                     _logger?.LogInformation($"✅ json_cancela generado:");
                     _logger?.LogInformation($"   Longitud: {jsonCancela.Length} caracteres");
+                    _logger?.LogInformation($"   Json_Cancela: {jsonCancela}");
                     _logger?.LogInformation($"   Facturas incluidas: {facturasSeleccionadas.Count}");
 
                     // ✅ VALIDACIÓN: En CobranzaDiferida NO debe haber productos nuevos en factura
@@ -782,7 +783,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         cta_id = factura.cta_id,
 
                         // ✅ Conversión DateTime? → string? (formato ISO esperado por SP)
-                        dia_movi = factura.dia_movi?.ToString("yyyy-MM-dd HH:mm:ss"),
+                        dia_movi = factura.dia_movi,
 
                         tco_id = factura.tco_id,
                         cm_compte = factura.cm_compte,

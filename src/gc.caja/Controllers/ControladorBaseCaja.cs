@@ -1366,6 +1366,17 @@ namespace gc.caja.Controllers
             }
         }
 
+        public JsonSerializerSettings JsonSettings
+        {
+            get {
+                return new JsonSerializerSettings
+                {
+                    DateFormatString = "yyyy-MM-dd HH:mm:ss.fff",
+                    DateTimeZoneHandling = DateTimeZoneHandling.Unspecified
+                };
+            }
+        }
+
 
         // Este método debería agregarse a la clase base `ControladorBaseCaja`
         // para que esté disponible en ambos controladores.

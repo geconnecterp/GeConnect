@@ -309,7 +309,7 @@ function mostrarModalVerFacturasPendientes(facturas) {
                 : 'N/A';
 
             const importe = parseFloat(factura.cv_importe || 0);
-            const clienteId = sanitizarData(factura.cta_id) || 'CF';
+            const clienteId = sanitizarData(factura.cta_id) || sanitizarData(factura.co_pd_doc) || '---';
             const clienteDoc = sanitizarData(factura.cta_documento) || '';
             const nombreCliente = sanitizarData(factura.cta_denominacion || factura.co_pd_nombre) || 'Cliente sin nombre';
 
@@ -333,7 +333,7 @@ function mostrarModalVerFacturasPendientes(facturas) {
                     data-valida="${sanitizarData(factura.valida)}">
                     <td>${factura.tco_id || 'N/A'}</td>
                     <td>${factura.cm_compte || 'N/A'}</td>
-                    <td>${nombreCliente}</td>
+                    <td>${nombreCliente} (${clienteId})</td>
                     <td class="text-center">${fecha}</td>
                     <td class="text-end fw-bold">${formatearNumero(importe, 2)}</td>
                     <td class="text-center">
@@ -446,6 +446,14 @@ function iniciarCobranza() {
         }
     };
 
+    const convertirADate = (fechaStr) => {
+        if (!fechaStr) return null;
+
+        const fecha = new Date(fechaStr.replace(' ', 'T'));
+
+        return isNaN(fecha.getTime()) ? null : fecha;
+    };
+
     // Helper para convertir string a int nullable
     const convertirAInt = (valor) => {
         if (!valor || valor === '') return null;
@@ -470,6 +478,7 @@ function iniciarCobranza() {
                 ctacte: $checkbox.data('ctacte') || '',
                 carga: $checkbox.data('carga') || '',
                 carga_obligatoria: $checkbox.data('carga-obligatoria') || '',
+                dia_movi: ($checkbox.data('dia-movi') ?? '').toString(),
 
                 // ✅ Campos numéricos
                 cm_compte_cuota: parseInt($checkbox.data('cm-compte-cuota')) || 0,
@@ -477,8 +486,7 @@ function iniciarCobranza() {
                 cv_importe_ori: parseFloat($checkbox.data('cv-importe-ori')) || 0,
 
                 // ✅ Campos DateTime? (convertidos a ISO 8601)
-                dia_movi: convertirAISODate($checkbox.data('dia-movi')),
-                cv_fecha_vto: convertirAISODate($checkbox.data('cv-fecha-vto')),
+                cv_fecha_vto: convertirADate($checkbox.data('cv-fecha-vto')),
 
                 // ✅ Campos int? (nullable)
                 ve_id: convertirAInt($checkbox.data('ve-id')),
@@ -733,7 +741,7 @@ function iniciarCobranzaDesdeVFP() {
 
     if (facturasPreseleccionadas.length === 0) {
         console.error('❌ No se pudo construir ninguna factura válida');
-        AbrirMensaje("Error", "No se pudieron procesar las facturas seleccionadas.", function () { $("#msjModal").modal("hide"); },  false, ["Aceptar"], "error");
+        AbrirMensaje("Error", "No se pudieron procesar las facturas seleccionadas.", function () { $("#msjModal").modal("hide"); }, false, ["Aceptar"], "error");
         return;
     }
 
@@ -903,7 +911,7 @@ function mostrarModalFacturasPendientes(cliente, facturas = null) {
     );
 
     $('#txtClienteIdPendiente').val(
-        primerValorNoVacio(cliente.id, cliente.cta_id, 'N/A')
+        primerValorNoVacio(cliente.id, cliente.cta_id, '')
     );
 
     $('#txtDomicilioPendiente').val(
@@ -960,13 +968,14 @@ function mostrarModalFacturasPendientes(cliente, facturas = null) {
                     : 'N/A';
 
                 const importe = parseFloat(factura.cv_importe || 0);
-
+                const clienteId = sanitizarData(factura.cta_id) || sanitizarData(factura.co_pd_doc) || '---';
+                const nombre = `${factura.co_pd_nombre || cliente.denominacion || 'N/A'} (${clienteId})`;
                 // ✅ CRÍTICO v4.0: Agregar TODOS los data-* attributes necesarios
                 const fila = `
                     <tr data-importe="${importe}">
                         <td>${factura.tco_id || 'N/A'}</td>
                         <td>${factura.cm_compte || 'N/A'}</td>
-                        <td>${factura.co_pd_nombre || cliente.denominacion || 'N/A'}</td>
+                        <td>${nombre}</td>
                         <td class="text-center">${fecha}</td>
                         <td class="text-end fw-bold">${formatearNumero(importe, 2)}</td>
                         <td class="text-center">
