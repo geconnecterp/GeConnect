@@ -159,7 +159,7 @@ function InicializarEventosProcesosDeCaja() {
 	});
 
 	$(document).on("click", "#btnAnaliticoOperacion", function () {
-
+		ImprimirReporteAnaliticoOperaciones();
 	});
 }
 
@@ -307,6 +307,33 @@ function ImprimirReporteRendicionCierre() {
 	}
 }
 
+function ImprimirReporteAnaliticoOperaciones() {
+	if (!caja_nro_proceso_seleccionado || !caja_nro_cierre_seleccionado) {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un cierre de caja.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting();
+		var tipoReporte = 2;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				HandlerImprimirReporteAnaliticoOperaciones();
+			}
+		});
+	}
+}
+
 function HandlerImprimirReporteRendicionCierre() {
 	ReseteoDeReportes();
 	setTimeout(() => {
@@ -316,6 +343,19 @@ function HandlerImprimirReporteRendicionCierre() {
 			suc: ObtenerSucursalesSeleccionadasConTexto().textos
 		}
 		cargarReporteEnArre(81, data, "Reporte Rendición de Cierre de Caja", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function HandlerImprimirReporteAnaliticoOperaciones() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var data = {
+			caja_nro_proceso: caja_nro_proceso_seleccionado,
+			caja_nro_cierre: caja_nro_cierre_seleccionado,
+			suc: ObtenerSucursalesSeleccionadasConTexto().textos
+		}
+		cargarReporteEnArre(82, data, "Reporte Analítico de Operaciones", "", "");
 		invocacionGestorDoc({});
 	}, 500);
 }

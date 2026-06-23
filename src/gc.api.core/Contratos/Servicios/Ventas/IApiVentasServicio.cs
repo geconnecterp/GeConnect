@@ -53,5 +53,6 @@ namespace gc.api.core.Contratos.Servicios
 		List<RepoVtaNDDto> ObtenerRepoVtaND(RepoVtaRequest request);
 		List<RepoVtaCambioValoresDto> ObtenerRepoVtaCambioValores(RepoVtaRequest request);
 		List<RepoVtaZDto> ObtenerRepoVtaZ(RepoVtaRequest request);
+		List<RepoVtaAnaliticoOperacionesDto> ObtenerRepoVtaAnaliticoOperaciones(RepoVtaRequest request);
 	}
 }

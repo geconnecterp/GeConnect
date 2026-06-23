@@ -805,5 +805,19 @@ namespace gc.api.core.Servicios
 			var result = _repository.EjecutarLstSpExt<RepoVtaZDto>(sp, ps, true);
 			return result;
 		}
+
+		public List<RepoVtaAnaliticoOperacionesDto> ObtenerRepoVtaAnaliticoOperaciones(RepoVtaRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_VTAS_REPO_Analitico_Operaciones;
+
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@caja_nro_proceso", request.caja_nro_proceso),
+				new SqlParameter("@caja_nro_cierre", request.caja_nro_cierre),
+			};
+
+			var result = _repository.EjecutarLstSpExt<RepoVtaAnaliticoOperacionesDto>(sp, ps, true);
+			return result;
+		}
 	}
 }

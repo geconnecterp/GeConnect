@@ -79,6 +79,7 @@
 			public const string SP_VTAS_REPO_ND = "SPGECO_Vtas_Repo_ND";
 			public const string SP_VTAS_REPO_CAMBIO_VALORES = "SPGECO_Vtas_Repo_Cambio_Valores";
 			public const string SP_VTAS_REPO_Z = "SPGECO_Vtas_Repo_Z";
+			public const string SP_VTAS_REPO_Analitico_Operaciones = "SPGECO_Vtas_Repo_Operaciones";
 			#endregion
 
 			#region Sorteos (Ventas)
