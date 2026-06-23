@@ -88,6 +88,50 @@
 
 ---
 
+## 🎭 Presentación de Cambios
+
+### ✅ REGLA DE ORO: Mínima Expresión, Máxima Claridad
+
+Al presentar código modificado, se debe seguir un principio de **foco y relevancia**. El objetivo es que los cambios sean fáciles de revisar y aplicar.
+
+#### 1. Mostrar Solo lo Relevante
+
+- **SIEMPRE** presentar el código completo de las **funciones o métodos nuevos**.
+- **SIEMPRE** presentar el código completo de las **funciones o métodos que fueron modificados**.
+- **NUNCA** presentar el archivo completo si solo se modificó una o varias funciones. El contexto debe ser la función, no el archivo.
+
+**Ejemplo Correcto:**
+
+```javascript
+// NUEVO: Función para validar email
+function validarEmail(email) {
+    // código
+}
+
+// ACTUALIZADO: Función que ahora también valida dominio
+function validarEmail(email) {
+    // código actualizado
+}
+```
+
+**Ejemplo Incorrecto:**
+
+```javascript
+// ❌ No hacer esto
+function miFuncion() {
+    // código
+    // más código
+    // incluso más código
+}
+```
+
+#### 2. Contexto Implícito
+
+- Se asume que el código presentado reemplazará la versión anterior de la misma función en el archivo especificado.
+- No es necesario usar comentarios como `// ... código existente ...` dentro de una función. La función debe presentarse como una unidad completa y atómica.
+
+---
+
 ## 🔢 Sistema de Versionado Universal
 
 ### 📌 Regla General de Versionado (APLICACIÓN UNIVERSAL)
