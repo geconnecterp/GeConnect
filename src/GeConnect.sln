@@ -68,6 +68,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gc.caja", "gc.caja\gc.caja.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gc.caja.core", "gc.caja.core\gc.caja.core.csproj", "{06ADFB3C-56A8-42A0-AA5A-9DA557FCAAEA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gc.api.gen", "gc.api.gen\gc.api.gen.csproj", "{601B2623-49CF-41E5-AB75-9B214B5B27AF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -130,6 +132,10 @@ Global
 		{06ADFB3C-56A8-42A0-AA5A-9DA557FCAAEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{06ADFB3C-56A8-42A0-AA5A-9DA557FCAAEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{06ADFB3C-56A8-42A0-AA5A-9DA557FCAAEA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{601B2623-49CF-41E5-AB75-9B214B5B27AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{601B2623-49CF-41E5-AB75-9B214B5B27AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{601B2623-49CF-41E5-AB75-9B214B5B27AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{601B2623-49CF-41E5-AB75-9B214B5B27AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -162,6 +168,7 @@ Global
 		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {2F6199AE-4876-43D4-BCA0-FE53F45C8E22}
 		{0AF4A6D9-60B6-4F57-8703-1EEB984A197E} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{06ADFB3C-56A8-42A0-AA5A-9DA557FCAAEA} = {F9DF888E-2949-40D8-B3F0-18D598BFEF64}
+		{601B2623-49CF-41E5-AB75-9B214B5B27AF} = {863DFD3A-FB01-4616-9DF5-86BF15679496}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {424B23CE-287A-4EFC-A604-29DE25F8159C}

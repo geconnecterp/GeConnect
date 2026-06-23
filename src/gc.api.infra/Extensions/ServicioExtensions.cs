@@ -2,6 +2,7 @@
 using gc.api.core.Contratos.Servicios.ABM;
 using gc.api.core.Contratos.Servicios.Asientos;
 using gc.api.core.Contratos.Servicios.Contable;
+using gc.api.core.Contratos.Servicios.Gen;
 using gc.api.core.Contratos.Servicios.Importacion;
 using gc.api.core.Contratos.Servicios.Libros;
 using gc.api.core.Contratos.Servicios.LineaCaja;
@@ -14,6 +15,7 @@ using gc.api.core.Servicios;
 using gc.api.core.Servicios.ABM;
 using gc.api.core.Servicios.Asientos;
 using gc.api.core.Servicios.Contable;
+using gc.api.core.Servicios.Gen;
 using gc.api.core.Servicios.Importacion;
 using gc.api.core.Servicios.Libros;
 using gc.api.core.Servicios.LineaCaja;
@@ -159,7 +161,9 @@ namespace gc.api.infra.Extensions
             services.AddScoped<IOrdenRepartoServicio, OrdenRepartoServicio>();
 			services.AddScoped<IApiVentasServicio, ApiVentasServicio>();
 
-			services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped<IGenServicio,GenServicio>();
+
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
             services.AddScoped(typeof(IServicio<>), typeof(Servicio<>));
             services.AddScoped(typeof(IExceptionManager), typeof(ExceptionManager));
