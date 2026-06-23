@@ -17,6 +17,7 @@ namespace gc.infraestructura.Dtos
 		public string rb_compte { get; set; } = string.Empty;
 		public string rb_compte_cobro { get; set; } = string.Empty;
 		public string co_tipo { get; set; } = string.Empty;
+		public string co_tipo_desc { get; set; } = string.Empty;
 		public string tco_id_ori { get; set; } = string.Empty;
 		public string cm_compte_ori { get; set; } = string.Empty;
 		public string rb_nc { get; set; } = string.Empty;
