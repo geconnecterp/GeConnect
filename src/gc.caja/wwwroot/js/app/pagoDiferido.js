@@ -40,14 +40,26 @@ $(function () {
         setTimeout(() => $('#modalIdentificarCliente').modal('show'), 500);
     });
 
-    $('#chkSeleccionarTodo').on('change', function () {
-        const isChecked = $(this).is(':checked');
-        $('#tbodyFacturasPendientes').find('input[type="checkbox"]').prop('checked', isChecked).trigger('change');
-    });
+    $(document)
+        .off('change.facturasPendientes', '#chkSeleccionarTodo')
+        .on('change.facturasPendientes', '#chkSeleccionarTodo', function () {
+            seleccionarTodasFacturasPendientes($(this).is(':checked'));
+        });
 
-    $(document).on('change', '#tbodyFacturasPendientes input[type="checkbox"]', function () {
-        calcularTotalSeleccionado();
-    });
+    $(document)
+        .off('change.facturasPendientes', '#tbodyFacturasPendientes input.form-check-input[type="checkbox"]')
+        .on('change.facturasPendientes', '#tbodyFacturasPendientes input.form-check-input[type="checkbox"]', function () {
+            actualizarEstadoSeleccionFacturasPendientes();
+        });
+
+    //$('#chkSeleccionarTodo').on('change', function () {
+    //    const isChecked = $(this).is(':checked');
+    //    $('#tbodyFacturasPendientes').find('input[type="checkbox"]').prop('checked', isChecked).trigger('change');
+    //});
+
+    //$(document).on('change', '#tbodyFacturasPendientes input[type="checkbox"]', function () {
+    //    calcularTotalSeleccionado();
+    //});
 
     $('#btnSeguirConCobranza').on('click', function () {
         iniciarCobranza();
@@ -75,27 +87,30 @@ $(function () {
     // Evento para el checkbox "Seleccionar Todo" del modal VFP
     $('#chkSeleccionarTodoVFP').on('change', function () {
         const isChecked = $(this).is(':checked');
-        const $checkboxes = $('#tbodyVerFacturasPendientes').find('input[type="checkbox"]');
 
-        if (isChecked && $checkboxes.length > 0) {
-            const primerCheckbox = $checkboxes.not(':disabled').first();
-            if (primerCheckbox.length === 0) return;
-
-            const clienteId = primerCheckbox.data('cliente-id');
-            const clienteDoc = primerCheckbox.data('cliente-doc');
-            clienteSeleccionadoVFP = { id: clienteId, doc: clienteDoc };
-
-            $checkboxes.each(function () {
+        if (isChecked) {
+            // Si se marca, y no hay cliente, no hacer nada.
+            // El flujo normal es que ya haya un cliente seleccionado.
+            if (!clienteSeleccionadoVFP) {
+                $(this).prop('checked', false);
+                return;
+            }
+            // Marcar todos los checkboxes del cliente seleccionado
+            $('#tbodyVerFacturasPendientes input[type="checkbox"]').each(function () {
                 const $cb = $(this);
-                const esMismoCliente = ($cb.data('cliente-id') === clienteId && $cb.data('cliente-doc') === clienteDoc);
-                $cb.prop('checked', esMismoCliente);
-                $cb.closest('tr').toggleClass('fila-deshabilitada', !esMismoCliente);
+                const esMismoCliente = ($cb.data('cliente-id') === clienteSeleccionadoVFP.id && $cb.data('cliente-doc') === clienteSeleccionadoVFP.doc);
+                if (esMismoCliente) {
+                    $cb.prop('checked', true);
+                }
             });
         } else {
+            // ✅ CORRECCIÓN: Si se desmarca, limpiar toda la selección y habilitar todas las filas.
             clienteSeleccionadoVFP = null;
-            $checkboxes.prop('checked', false);
             $('#tbodyVerFacturasPendientes tr').removeClass('fila-deshabilitada');
+            $('#tbodyVerFacturasPendientes input[type="checkbox"]').prop('checked', false);
         }
+
+        // Disparar el cálculo del total al final
         calcularTotalSeleccionadoVFP();
     });
 
@@ -156,6 +171,35 @@ $(function () {
         window.location.href = MenuCajaUrl;
     });
 });
+
+// ========================================================
+// SELECCIÓN DE FACTURAS - MODAL FACTURAS PENDIENTES
+// ========================================================
+
+function obtenerCheckboxesFacturasPendientes() {
+    return $('#tbodyFacturasPendientes input.form-check-input[type="checkbox"]');
+}
+
+function actualizarEstadoSeleccionFacturasPendientes() {
+    const $checkboxes = obtenerCheckboxesFacturasPendientes();
+    const total = $checkboxes.length;
+    const seleccionados = $checkboxes.filter(':checked').length;
+
+    $('#chkSeleccionarTodo').prop({
+        checked: total > 0 && seleccionados === total,
+        indeterminate: seleccionados > 0 && seleccionados < total
+    });
+
+    calcularTotalSeleccionado();
+}
+
+function seleccionarTodasFacturasPendientes(seleccionar) {
+    const $checkboxes = obtenerCheckboxesFacturasPendientes();
+
+    $checkboxes.prop('checked', seleccionar);
+
+    actualizarEstadoSeleccionFacturasPendientes();
+}
 
 /**
  * ✅ NUEVO v3.1: Inicializa el módulo mostrando el modal de identificación
@@ -379,6 +423,8 @@ function mostrarModalVerFacturasPendientes(facturas) {
     console.log(`   ✅ Facturas agregadas al DOM: ${facturasAgregadas}`);
 
     // Resetear estado del modal
+    cerrarTecladoDigital();
+
     clienteSeleccionadoVFP = null;
     nombreClienteVFP = '';
     $('#chkSeleccionarTodoVFP').prop('checked', false);
@@ -1015,9 +1061,13 @@ function mostrarModalFacturasPendientes(cliente, facturas = null) {
             }
         });
 
-        // Resetear controles
-        $('#chkSeleccionarTodo').prop('checked', false);
-        calcularTotalSeleccionado();
+        seleccionarTodasFacturasPendientes(true);
+
+        //// Resetear controles
+        cerrarTecladoDigital();
+
+        //$('#chkSeleccionarTodo').prop('checked', false);
+        //calcularTotalSeleccionado();
 
         // Mostrar modal
         $('#modalFacturasPendientes').modal('show');
