@@ -147,12 +147,30 @@ function BuscarVencimientos(pag) {
 		var id_ctc = $("#chkTipoClientes")[0].checked;
 		var ctc_list = [];
 		if ($("#chkTipoClientes").is(":checked")) {
-			$("#TipoClientesList").children().each(function (i, item) { ctc_list.push($(item).val()) });
+			const values = $("#TipoClientesList")
+				.children()
+				.map((i, item) => $(item).val())
+				.get()
+				.filter(v => v !== null && v !== undefined && v !== "");
+
+			if (values.length === 0)
+				ctc_list.push('%');
+			else
+				ctc_list.push(...values);
 		}
 		var id_ope = $("#chkTipoProveedores")[0].checked;
 		var ope_list = [];
 		if ($("#chkTipoProveedores").is(":checked")) {
-			$("#TipoProveedoresList").children().each(function (i, item) { ope_list.push($(item).val()) });
+			const values = $("#TipoProveedoresList")
+				.children()
+				.map((i, item) => $(item).val())
+				.get()
+				.filter(v => v !== null && v !== undefined && v !== "");
+
+			if (values.length === 0)
+				ope_list.push('%');
+			else
+				ope_list.push(...values);
 		}
 		var id_tco = $("#chkTipoComptes")[0].checked;
 		var tco_list = [];

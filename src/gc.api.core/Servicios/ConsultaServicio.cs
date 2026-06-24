@@ -250,7 +250,7 @@ namespace gc.api.core.Servicios
 					sb.Append(item);
 				}
 				ps.Add(new SqlParameter("@id_ctc", "1"));
-				ps.Add(new SqlParameter("@ctc_list", sb.ToString() + ','));
+				ps.Add(new SqlParameter("@ctc_list", FormatList(sb.ToString())));
 			}
 			else
 				ps.Add(new SqlParameter("@id_ctc", "0"));
@@ -269,7 +269,7 @@ namespace gc.api.core.Servicios
 					sb.Append(item);
 				}
 				ps.Add(new SqlParameter("@id_ope", "1"));
-				ps.Add(new SqlParameter("@ope_list", sb.ToString() + ','));
+				ps.Add(new SqlParameter("@ope_list", FormatList(sb.ToString())));
 			}
 			else
 				ps.Add(new SqlParameter("@id_ope", "0"));
@@ -298,8 +298,18 @@ namespace gc.api.core.Servicios
 			ps.Add(new SqlParameter("@ordenar", filtros.Sort ?? ""));
 
 			List<VencimientoListaDto> movFinan = _repository.EjecutarLstSpExt<VencimientoListaDto>(sp, ps, true);
-
+			Console.WriteLine("=== Parámetros enviados al SP ===");
+			foreach (var p in ps)
+			{
+				Console.WriteLine($"{p.ParameterName} = {p.Value}");
+			}
+			Console.WriteLine("=================================");
 			return movFinan;
+		}
+
+		string FormatList(string value)
+		{
+			return value == "%" ? value : value + ",";
 		}
 
 		public List<CertificadoListaDto> ConsultarCertificadosNRNP(ConsultarCertificadosRequest filtros)
