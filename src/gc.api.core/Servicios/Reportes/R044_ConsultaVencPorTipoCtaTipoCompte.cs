@@ -79,6 +79,7 @@ namespace gc.api.core.Servicios.Reportes
 				anchos = [70f, 30f];
 
 				var chico = HelperPdf.FontChicoPredeterminado();
+				var chicoBold = HelperPdf.FontChicoPredeterminado(true);
 				var normal = HelperPdf.FontNormalPredeterminado();
 				var normalBold = HelperPdf.FontNormalPredeterminado(true);
 				var titulo = HelperPdf.FontTituloPredeterminado();
@@ -105,7 +106,7 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Open();
 
 				#region Lista 
-				HelperPdf.CargarVencimientoPorTipoDeComprobante(pdf, registros, chico, normalBold);
+				HelperPdf.CargarVencimientoPorTipoDeComprobante(pdf, registros, chico, chicoBold);
 				#endregion
 
 				pdf.Close();

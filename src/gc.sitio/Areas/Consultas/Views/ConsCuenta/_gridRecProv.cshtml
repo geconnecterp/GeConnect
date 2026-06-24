@@ -33,6 +33,7 @@
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
                         <tr data-rp-compte="@item.Rp_compte"
                             data-cta-id="@item.Cta_id"
+                            data-cuenta="@item.Cuenta"
                             class="@clase" onclick="selectReg(this,'tbGridRpProv')" ondblclick="SeleccionarPeriodo(this,'tbGridRpProv')">
                             <td class="@Model.ObtenerClase(item.Rp_compte)">@Model.FormatearDato(item.Rp_compte,FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase(item.Cuenta)">@Model.FormatearDato(item.Cuenta, FormatDato.Ninguno)</td>

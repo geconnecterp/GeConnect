@@ -447,7 +447,17 @@ function CargarDetalleDeLiquidacion(leCompte) {
 	var data = { leCompte };
 	PostGenHtml(data, cargarDetalleDeLiquidacionUrl, function (obj) {
 		CerrarWaiting();
-		$("#divLiqDeEmpDetalle").html(obj);
+		const header = `
+            <div class="card mb-2">
+				<div class="card-body py-2 d-flex align-items-center gap-4">
+					<div>
+						<i class="bx bx-file me-1"></i>
+						<strong>Detalle de Liquidación N°:</strong> ${leCompte}
+					</div>
+				</div>
+			</div>
+        `;
+		$("#divLiqDeEmpDetalle").html(header + obj);
 		return true
 	}, function (obj) {
 		CerrarWaiting();

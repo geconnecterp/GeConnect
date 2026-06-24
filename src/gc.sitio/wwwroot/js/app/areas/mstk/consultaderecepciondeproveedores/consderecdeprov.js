@@ -136,18 +136,32 @@ function SeleccionarPeriodo(x, grid) {
 	// Obtener valores desde los atributos data-*
 	var rp = $row.data("rp-compte");
 	var cta = $row.data("cta-id");
-	consultarRPPDetalle(rp, cta);
+	var cuenta = $row.data("cuenta");
+	consultarRPPDetalle(rp, cta, cuenta);
 
 	rp_compte_seleccionado = rp;
 	cta_id_seleccionada = cta;
 }
 
-function consultarRPPDetalle(rp, cta) {
+function consultarRPPDetalle(rp, cta, cuenta) {
 	var data = { cmptId: rp, ctaId: cta };
 
 	AbrirWaiting("Espere un momento mientras se presenta el detalle de la Recepción seleccionada...");
 	PostGenHtml(data, consultarRPProvDetUrl, function (obj) {
-		$("#divRecepcionesDetalle").html(obj);
+		const header = `
+            <div class="card mb-2">
+				<div class="card-body py-2 d-flex align-items-center gap-4">
+					<div>
+						<i class="bx bx-file me-1"></i>
+						<strong>Comprobante N°:</strong> ${rp}
+					</div>
+					<div>
+						<strong>Cuenta:</strong> ${cuenta}
+					</div>
+				</div>
+			</div>
+        `;
+		$("#divRecepcionesDetalle").html(header + obj);
 		AjustarAlturaTabla("divRecepcionesDetalle");
 		CerrarWaiting();
 	});

@@ -136,10 +136,10 @@ namespace gc.sitio.Areas.Consultas.Controllers
 		#region Métodos Provados
 		private void CargarDatosIniciales(ConsVencTipoCtaTipoCompteModel model)
 		{
-			model.FechaVencDesde = DateTime.Today;
-			model.FechaVencHasta = DateTime.Today;
-			model.FechaGenDesde = DateTime.Today;
-			model.FechaGenHasta = DateTime.Today;
+			model.FechaVencDesde = DateTime.Today.AddYears(-30);
+			model.FechaVencHasta = DateTime.Today.AddYears(5);
+			model.FechaGenDesde = DateTime.Today.AddYears(-30);
+			model.FechaGenHasta = DateTime.Today.AddYears(-5);
 
 			if (TipoCanalLista.Count == 0)
 				ObtenerTiposDeCanal(_tipoCanalServicio);

@@ -422,7 +422,17 @@ function CargarDetalleDeAnticipo(anCompte) {
 	var data = { anCompte };
 	PostGenHtml(data, cargarDetalleDeAnticipoUrl, function (obj) {
 		CerrarWaiting();
-		$("#divAntFinanEmpDetalle").html(obj);
+		const header = `
+				<div class="card mb-2">
+					<div class="card-body py-2 d-flex align-items-center gap-4">
+						<div>
+							<i class="bx bx-file me-1"></i>
+							<strong>Detalle de Cuentas del Anticipo N°:</strong> ${anCompte}
+						</div>
+					</div>
+				</div>
+			`;
+		$("#divAntFinanEmpDetalle").html(header + obj);
 		return true
 	}, function (obj) {
 		CerrarWaiting();

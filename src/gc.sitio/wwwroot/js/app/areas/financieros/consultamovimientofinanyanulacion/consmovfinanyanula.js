@@ -301,7 +301,17 @@ function CargarDetalleDeMovimientoFinanciero(ttraSelected) {
 	var data = { tra_compte: ttraSelected };
 	PostGenHtml(data, cargarDetalleDeMovimientoFinancieroURL, function (obj) {
 		CerrarWaiting();
-		$("#divDetalleMovimiento").html(obj);
+		const header = `
+				<div class="card mb-2">
+					<div class="card-body py-2 d-flex align-items-center gap-4">
+						<div>
+							<i class="bx bx-file me-1"></i>
+							<strong>Transacción N°:</strong> ${ttraSelected}
+						</div>
+					</div>
+				</div>
+			`;
+		$("#divDetalleMovimiento").html(header + obj);
 		$("#TotalOrigen").val(formatter.format($("#TotalOrigen").val()));
 		$("#TotalDestino").val(formatter.format($("#TotalDestino").val()));
 		if ($("#TotalCtag").length) {

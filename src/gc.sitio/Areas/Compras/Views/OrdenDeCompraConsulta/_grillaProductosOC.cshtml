@@ -39,8 +39,9 @@
 								<td class="align-center tiny-row">@item.oc_fecha</td>
 								<td class="align-center tiny-row">@item.adm_nombre</td>
 								<td class="align-center tiny-row">@item.oce_desc</td>
-								<td class="align-center tiny-row">@item.usu_apellidoynombre</td>
-								<td class="align-center tiny-row">@item.oc_total</td>
+								<td class="align-left tiny-row">@item.usu_apellidoynombre</td>
+								@* <td class="align-right tiny-row">item.oc_total</td> *@
+								<td class="align-right tiny-row">@GridHelper.FormatearDato(item.oc_total, GridHelper.FormatDato.Monto, true)</td>
 								<td style="display:none;">@item.oce_id</td>
 								<td style="display:none;">@item.adm_id</td>
 							</tr>

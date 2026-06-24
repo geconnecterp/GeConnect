@@ -412,7 +412,17 @@ function selectListaOPRow(x) {
 function CargarDetalleDeOP(op_compte) {
 	var data = { cmptId: op_compte };
 	PostGenHtml(data, consultarOPProvDetUrl, function (obj) {
-		$("#divDetalleDeOP").html(obj);
+		const header = `
+            <div class="card mb-2">
+				<div class="card-body py-2 d-flex align-items-center gap-4">
+					<div>
+						<i class="bx bx-file me-1"></i>
+						<strong>Orden de Pago N°:</strong> ${op_compte}
+					</div>
+				</div>
+			</div>
+        `;
+		$("#divDetalleDeOP").html(header + obj);
 		CerrarWaiting();
 		return true
 	});

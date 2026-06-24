@@ -983,7 +983,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				_logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
-				throw new Exception("Algo no fue bien al intentar cargar los Certificados NRNP.");
+				throw new Exception("Algo no fue bien al intentar consultar stock.");
 			}
 		}
 
@@ -1024,7 +1024,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				_logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
-				throw new Exception("Algo no fue bien al intentar cargar los Certificados NRNP.");
+				throw new Exception("Algo no fue bien al intentar consultar stock valor.");
 			}
 		}
 
@@ -1065,7 +1065,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				_logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
-				throw new Exception("Algo no fue bien al intentar cargar los Certificados NRNP.");
+				throw new Exception("Algo no fue bien al intentar consultar stock compensado.");
 			}
 		}
 	}

@@ -3510,7 +3510,7 @@ namespace gc.infraestructura.Helpers
 
 				// Tabla de anticipos/documentos
 				var tabla = new PdfPTable(6) { WidthPercentage = 100 };
-				tabla.SetWidths(new float[] { 30, 10, 10, 10, 20, 20 });
+				tabla.SetWidths(new float[] { 50, 7, 7, 7, 10, 19 });
 
 				// Espacio visual entre encabezado y títulos
 				var celdaEspaciadora = new PdfPCell(new Phrase(" "))
@@ -3543,12 +3543,12 @@ namespace gc.infraestructura.Helpers
 
 				foreach (var item in grupo)
 				{
-					AgregarCelda(tabla, item.comprobante, fuenteValor, Element.ALIGN_LEFT);
-					AgregarCelda(tabla, item.cv_estado, fuenteValor, Element.ALIGN_CENTER);
-					AgregarCelda(tabla, item.cm_compte_cuota.ToString(), fuenteValor, Element.ALIGN_CENTER);
-					AgregarCelda(tabla, item.atraso.ToString(), fuenteValor, Element.ALIGN_CENTER);
-					AgregarCelda(tabla, item.cv_fecha_vto.ToString("dd/MM/yyyy"), fuenteValor, Element.ALIGN_CENTER);
-					AgregarCelda(tabla, FormatearDecimal(item.cv_importe), fuenteValor, Element.ALIGN_RIGHT);
+					AgregarCelda(tabla, item.comprobante, fuenteEtiqueta, Element.ALIGN_LEFT);
+					AgregarCelda(tabla, item.cv_estado, fuenteEtiqueta, Element.ALIGN_CENTER);
+					AgregarCelda(tabla, item.cm_compte_cuota.ToString(), fuenteEtiqueta, Element.ALIGN_CENTER);
+					AgregarCelda(tabla, item.atraso.ToString(), fuenteEtiqueta, Element.ALIGN_CENTER);
+					AgregarCelda(tabla, item.cv_fecha_vto.ToString("dd/MM/yy"), fuenteEtiqueta, Element.ALIGN_CENTER);
+					AgregarCelda(tabla, FormatearDecimal(item.cv_importe), fuenteEtiqueta, Element.ALIGN_RIGHT);
 
 					totalImporte += item.cv_importe;
 				}

@@ -28,30 +28,32 @@ $(function () {
 
 	// Cuando se oculta el filtro → mostrar detalle
 	$('#divFiltro').on('hidden.bs.collapse', function (e) {
-		if (e.target.id === 'divFiltro') {
-			const $tabla = $('#tbListaProducto');
-			if ($tabla.length > 0) { // existe en el DOM
-				const filas = $tabla.find('tbody tr').length;
+		setTimeout(() => {
+			if (e.target.id === 'divFiltro') {
+				const $tabla = $('#tbListaProducto');
+				if ($tabla.length > 0) { // existe en el DOM
+					const filas = $tabla.find('tbody tr').length;
 
-				if (filas > 0) {
-					$('#divDetalle').collapse('show');
-					console.log("divDetalle > show");
-					$('#divListaProductoParaPasarAPI').collapse('hide');
-					console.log("divListaProductoParaPasarAPI > hide");
-					$('#divBtnOpcionesPasarAPI').collapse('hide');
-					console.log("divBtnOpcionesPasarAPI > hide");
+					if (filas > 0) {
+						$('#divDetalle').collapse('show');
+						console.log("divDetalle > show");
+						$('#divListaProductoParaPasarAPI').collapse('hide');
+						console.log("divListaProductoParaPasarAPI > hide");
+						$('#divBtnOpcionesPasarAPI').collapse('hide');
+						console.log("divBtnOpcionesPasarAPI > hide");
+					} else {
+						$('#divDetalle').collapse('hide');
+						console.log("divDetalle > hide");
+						$('#divListaProductoParaPasarAPI').collapse('hide');
+						console.log("divListaProductoParaPasarAPI > hide");
+						$('#divBtnOpcionesPasarAPI').collapse('hide');
+						console.log("divBtnOpcionesPasarAPI > hide");
+					}
 				} else {
-					$('#divDetalle').collapse('hide');
-					console.log("divDetalle > hide");
-					$('#divListaProductoParaPasarAPI').collapse('hide');
-					console.log("divListaProductoParaPasarAPI > hide");
-					$('#divBtnOpcionesPasarAPI').collapse('hide');
-					console.log("divBtnOpcionesPasarAPI > hide");
+					console.warn("La tabla #tbListaProducto no existe en el DOM");
 				}
-			} else {
-				console.warn("La tabla #tbListaProducto no existe en el DOM");
-			}
-		}
+			}	
+		}, 1000);
 	});
 
 	$('#divFiltro').on('shown.bs.collapse', function () {
@@ -200,28 +202,41 @@ function ControlaPasarAPedidoInterno() {
 }
 
 function ControlaRegresarDesdePedidoInterno() {
-	AbrirMensaje(
-		'REGRESAR',
-		"¿Desea volver a la pantalla anterior?",
-		function (resp) {
-			if (resp === 'SI') {
-				mostrarPasarAPI = false;
-				$('#divDetalle').collapse('show');
-				console.log("divDetalle > show");
-				$('#divBtnOpciones').show();
-				console.log("divBtnOpciones > show");
-				$('#divBtnOpcionesPasarAPI').collapse('hide');
-				console.log("divBtnOpcionesPasarAPI > hide");
-				$('#divPasarPI').collapse('hide');
-				console.log("divPasarPI > hide");
-			}
-			$('#msjModal').modal('hide');
-		},
-		true,
-		['Confirmar', 'Cancelar'],
-		'info!',
-		null
-	);
+	if ($("#tbListaProductoParaPasarAPI tbody tr[data-id]").length > 0) {
+		AbrirMensaje(
+			'REGRESAR',
+			"¿Desea volver a la pantalla anterior?",
+			function (resp) {
+				if (resp === 'SI') {
+					mostrarPasarAPI = false;
+					$('#divDetalle').collapse('show');
+					console.log("divDetalle > show");
+					$('#divBtnOpciones').show();
+					console.log("divBtnOpciones > show");
+					$('#divBtnOpcionesPasarAPI').collapse('hide');
+					console.log("divBtnOpcionesPasarAPI > hide");
+					$('#divPasarPI').collapse('hide');
+					console.log("divPasarPI > hide");
+				}
+				$('#msjModal').modal('hide');
+			},
+			true,
+			['Si', 'No'],
+			'info!',
+			null
+		);
+	}
+	else {
+		mostrarPasarAPI = false;
+		$('#divDetalle').collapse('show');
+		console.log("divDetalle > show");
+		$('#divBtnOpciones').show();
+		console.log("divBtnOpciones > show");
+		$('#divBtnOpcionesPasarAPI').collapse('hide');
+		console.log("divBtnOpcionesPasarAPI > hide");
+		$('#divPasarPI').collapse('hide');
+		console.log("divPasarPI > hide");
+	}
 }
 
 function ControlaConfirmarPedidoInterno() {
@@ -274,15 +289,23 @@ function ConfirmarPedidoInterno(productos) {
 		else {
 			AbrirMensaje("ATENCIÓN", obj.msg, function () {
 				mostrarPasarAPI = false;
-				$('#divDetalle').collapse('show');
-				console.log("divDetalle > show");
-				$('#divBtnOpciones').show();
-				console.log("divBtnOpciones > show");
+				$('#divDetalle').collapse('hide');
+				console.log("divDetalle > hide");
+				$('#divFiltro').collapse('show');
+				console.log("divFiltro > show");
+				$('#divBtnOpciones').collapse('hide');
+				console.log("divBtnOpciones > hide");
 				$('#divBtnOpcionesPasarAPI').collapse('hide');
 				console.log("divBtnOpcionesPasarAPI > hide");
 				$('#divPasarPI').collapse('hide');
 				console.log("divPasarPI > hide");
+				$("#tbListaProducto tbody").empty();
+				console.log("tbListaProducto > body > empty");
 				$("#msjModal").modal("hide");
+				//setTimeout(() => {
+				//	ImprimirPedidoInterno(obj.id);
+				//}, 1500);
+				//window.location.href = filtrosUrl;
 				ImprimirPedidoInterno(obj.id);
 				return true;
 			}, false, ["Aceptar"], "succ!", null);
@@ -297,6 +320,11 @@ function ImprimirPedidoInterno(id) {
 		cargarReporteEnArre(65, data, "PEDIDO INTERNO", "", "");
 		invocacionGestorDoc({});
 	}, 500);
+//	var datos = {};
+//	PostGenHtml(datos, filtrosUrl, function (obj) {
+		
+//		return true
+//	});
 }
 
 function ReseteoDeReportes() {

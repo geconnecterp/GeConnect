@@ -222,7 +222,20 @@ function BuscarRprAsociadasDeOCTabClick() {
 		var ocCompte = ocIdSeleccionado;
 		var data = { ocCompte };
 		PostGenHtml(data, buscarRprAsociadaDeOrdenDeCompraURL, function (obj) {
-			$("#divRprAsociadas").html(obj);
+			const header = `
+				<div class="card mb-2">
+					<div class="card-body py-2 d-flex align-items-center gap-4">
+						<div>
+							<i class="bx bx-file me-1"></i>
+							<strong>OC N°:</strong> ${ocCompte}
+						</div>
+						<div>
+							<strong>Proveedor:</strong> ${provSeleccionado}
+						</div>
+					</div>
+				</div>
+			`;
+			$("#divRprAsociadas").html(header + obj);
 			AddEventListenerToGrid("tbListaRprAsociadaDeOC");
 			CerrarWaiting();
 			return true
@@ -242,7 +255,20 @@ function BuscarDetalleDeOCTabClick() {
 		var ocCompte = ocIdSeleccionado;
 		var data = { ocCompte };
 		PostGenHtml(data, buscarDetalleDeOrdenDeCompraURL, function (obj) {
-			$("#divDetalleDeOC").html(obj);
+			const header = `
+				<div class="card mb-2">
+					<div class="card-body py-2 d-flex align-items-center gap-4">
+						<div>
+							<i class="bx bx-file me-1"></i>
+							<strong>OC N°:</strong> ${ocCompte}
+						</div>
+						<div>
+							<strong>Proveedor:</strong> ${provSeleccionado}
+						</div>
+					</div>
+				</div>
+			`;
+			$("#divDetalleDeOC").html(header + obj);
 			AddEventListenerToGrid("tbListaDetalleOC");
 			FormatearValores("#tbGridConcepto", 1)
 			CerrarWaiting();
@@ -274,11 +300,13 @@ function selectListaOCRow(x) {
 		oceIdSeleccionado = x.cells[7].innerText.trim();
 		ocIdSeleccionado = x.cells[0].innerText.trim();
 		admIdSeleccionado = x.cells[8].innerText.trim();
+		provSeleccionado = x.cells[1].innerText.trim();
 	}
 	else {
 		oceIdSeleccionado = "";
 		ocIdSeleccionado = "";
 		admIdSeleccionado = "";
+		provSeleccionado = "";
 	}
 	ActivarBotonesTabPrincipal(oceIdSeleccionado);
 }
@@ -446,7 +474,7 @@ function BuscarOrdenesDeCompra(pag = 1) {
 		$("#btnAnularOC").on("click", function () { ModificarOC(AccionesOC.ANULAR); });
 		$("#btnLevantarOC").on("click", function () { ModificarOC(AccionesOC.LEVANTAR); });
 		$("#btnModiAdm").on("click", function () { ModificarOC(AccionesOC.MODIFICAR_ADM); });
-		FormatearValores("#tbListaOC", 6)
+		//FormatearValores("#tbListaOC", 6)
 		$("#Importe").val(formatter.format($("#Importe").val()));
 		//formatter.format(td[idx].innerText);
 		$("#divDetalle").collapse("show");

@@ -3830,7 +3830,17 @@ function CargarPedidosDelReparto(orCompte) {
 	AbrirWaiting("Cargar pedidos de la orden de reparto...");
 	const url = obtenerPedidosDeLaOrdenDeRepartoUrl;
 	PostGenHtml({ orCompte: orCompte }, url, function (html) {
-		$("#divListaPedidosDeCliente").html(html);
+		const header = `
+            <div class="card mb-2">
+				<div class="card-body py-2 d-flex align-items-center gap-4">
+					<div>
+						<i class="bx bx-file me-1"></i>
+						<strong>Orden de Reparto N°:</strong> ${orCompte}
+					</div>
+				</div>
+			</div>
+        `;
+		$("#divListaPedidosDeCliente").html(header + html);
 		CerrarWaiting();
 		configurarEventosSeleccionListaPedidosDeOR();
 		ConfigurarEstadoDeBotonesEnTabPedidosDeLaOrdenDeReparto("","")
