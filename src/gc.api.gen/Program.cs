@@ -1,3 +1,5 @@
+using gc.api.core.Contratos.Servicios.Gen;
+using gc.api.core.Servicios.Gen;
 using gc.api.infra.Datos;
 using gc.api.infra.Extensions;
 using gc.api.infra.Filtros;
@@ -9,6 +11,12 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.AddLog4Net("log4net.config", watch: true);
+
+builder.Services.AddHttpClient("ApiGen", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(builder.Configuration.GetSection("ApiSetting").GetValue<int>("TimeoutInSeconds"));
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
 
 //Activamos el Filtro de Exception General
 builder.Services.AddControllers(opt => { opt.Filters.Add<GlobalExceptionFilter>(); })
@@ -26,7 +34,7 @@ if (!string.IsNullOrEmpty(conn))
 }
 
 builder.Services.AddServicios();
-
+builder.Services.AddScoped<IGenServicio, GenServiciov02>();
 
 //Configuración del JWT
 builder.Services.AddAuthentication(opt => {

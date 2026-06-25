@@ -13,5 +13,6 @@ namespace gc.infraestructura.Responses
         public Dictionary<string, JToken>? Header { get; set; }
 
         public JToken? Body { get; set; }
+        public int TimeoutInSeconds { get; set; } = 210;
     }
 }

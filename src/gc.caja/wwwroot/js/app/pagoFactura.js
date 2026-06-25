@@ -845,7 +845,7 @@ function abrirModalPago(datosFactura) {
         ocultarModalCalculoFactura();
 
         // ❸ Hidratar datos del cliente
-        hidratarDatosClientePago();
+        hidratarDatosClientePago(datosFactura.contextoOperacion);
 
         // ❹ Cargar conceptos de pago (totales)
         cargarConceptosPago(datosFactura?.totales || {});
@@ -859,7 +859,9 @@ function abrirModalPago(datosFactura) {
 
         const tituloModal = datosFactura?.tituloModal || 'Formas de Pago Ingresadas';
         console.log(`   📝 Actualizando título del modal: "${tituloModal}"`);
-        $('#tituloFormasPago').text(tituloModal);
+        /* $('#tituloFormasPago').text(tituloModal);*/
+
+
 
         // ═══════════════════════════════════════════════════════════
         // ✅ NUEVO v27.0: GUARDAR co_tipo Y contextoOperacion EN VARIABLES GLOBALES
@@ -880,6 +882,12 @@ function abrirModalPago(datosFactura) {
             $('.modal-backdrop').last().css('z-index', '1059');
         }, 100);
 
+        //se oculta el titulo de FACTURACION Y SU TIPO DE FACTURA
+        setTimeout(() => {
+            if (datosFactura.contextoOperacion !== 'VENTA') {
+                $("#tituloFacturacion").html("<h5 class=\"mb-0 text-white\"><i class='bx bx-receipt'></i>COBRANZA DIFERIDA</h5>");
+            }
+        }, 100);
         // ═══════════════════════════════════════════════════════════
         // ✅ NUEVO v20.6: APERTURA AUTOMÁTICA DE MODAL AGREGAR
         // ═══════════════════════════════════════════════════════════
@@ -2751,29 +2759,58 @@ function ocultarTecladoVirtual() {
 /**
  * Hidratar datos del cliente en el modal de pago
  */
-function hidratarDatosClientePago() {
+function hidratarDatosClientePago(contextoOperacion) {
     console.log('📝 Hidratando datos del cliente...');
+    //analizo contexto para ver como se hidratan los datos del Cliente
+    const contexto = window._contextoOperacionActual || contextoOperacion || 'VENTA';
+    let mapeoIds = null;
+    switch (contexto) {
+        case "COBRANZA":
+            mapeoIds = {
+                'txtNombrePendiente': 'txtClienteNombrePago',
+                'txtClienteIdPendiente': 'txtClienteIdPago',
+                'txtDomicilioPendiente': 'txtClienteDomicilioPago',
+                'txtCondicionAfipPendiente': 'txtCondicionAfipPago',
+                'txtTipoNumeroPendiente': 'txtClienteCuitPago',
+                'txtEmailPendiente': 'txtClienteEmailPago',
+                'txtMovilPendiente': 'txtClienteMovilPago'
+            };
 
-    const mapeoIds = {
-        'txtClienteNombreCalc': 'txtClienteNombrePago',
-        'txtClienteIdCalc': 'txtClienteIdPago',
-        'txtClienteDomicilioCalc': 'txtClienteDomicilioPago',
-        'txtCondicionAfipCalc': 'txtCondicionAfipPago',
-        'txtClienteCuitCalc': 'txtClienteCuitPago',
-        'txtClienteEmailCalc': 'txtClienteEmailPago',
-        'txtClienteMovilCalc': 'txtClienteMovilPago'
-    };
+            break;
+        default://VENTA
 
+            mapeoIds = {
+                'txtClienteNombreCalc': 'txtClienteNombrePago',
+                'txtClienteIdCalc': 'txtClienteIdPago',
+                'txtClienteDomicilioCalc': 'txtClienteDomicilioPago',
+                'txtCondicionAfipCalc': 'txtCondicionAfipPago',
+                'txtClienteCuitCalc': 'txtClienteCuitPago',
+                'txtClienteEmailCalc': 'txtClienteEmailPago',
+                'txtClienteMovilCalc': 'txtClienteMovilPago'
+            };
+            // 2. Copiar el badge del tipo de comprobante
+            const badgeHtml = $('#badgeTipoComprobanteCalc').html();
+            $('#badgeTipoComprobantePago').html(badgeHtml);
+            break;
+    }
+    //aca se traspasan los datos desde la vista de _productoFacturaCalculo al de _pagoModal
     Object.keys(mapeoIds).forEach(function (idOrigen) {
         const idDestino = mapeoIds[idOrigen];
         const valor = $(`#${idOrigen}`).val() || '';
         $(`#${idDestino}`).val(valor);
     });
 
-    const badgeHtml = $('#badgeTipoComprobanteCalc').html();
-    $('#badgeTipoComprobantePago').html(badgeHtml);
 
-    console.log('✅ Datos hidratados');
+
+    // 3. ✅ NUEVO: Actualizar dinámicamente el título del header
+
+    const tituloHeader = contexto === 'COBRANZA' ? 'COBRANZA DIFERIDA' : 'FACTURACIÓN';
+
+    // Se reemplaza el contenido del h5, manteniendo el ícono
+    $('#headerTituloPago').html(`<i class='bx bx-receipt'></i> ${tituloHeader}`);
+
+    console.log(`   ✅ Título del header actualizado a: "${tituloHeader}"`);
+    console.log('✅ Datos del cliente y header hidratados');
 }
 
 /**
@@ -3762,7 +3799,7 @@ function vincularEventosInstrumentos() {
             console.log('   ⏩ Confirmando selección automáticamente...');
             confirmarSeleccionInstrumento(); // ← Función existente (línea ~2340)
         }, 200); // ← Delay de 200ms para feedback visual
-    });   
+    });
 
     $('#btnConfirmarInstrumento').off('click').on('click', confirmarSeleccionInstrumento);
 
@@ -4899,51 +4936,50 @@ function eliminarValor(valorId) {
     AbrirMensaje(
         "¿Eliminar valor?",
         mensajeHtml,
-        function () {
-            // Botón "Eliminar"
+        function (resp) {
             $('#msjModal').modal('hide');
+            if (resp === "SI") {
+                // Botón "Eliminar"
 
-            // ✅ NUEVO v24.0: Destruir tooltips antes de eliminar
-            const $fila = $(`.fila-valor[data-valor-id="${valorId}"]`);
+                // ✅ NUEVO v24.0: Destruir tooltips antes de eliminar
+                const $fila = $(`.fila-valor[data-valor-id="${valorId}"]`);
 
-            $fila.find('[data-bs-toggle="tooltip"]').each(function () {
-                const tooltipInstance = bootstrap.Tooltip.getInstance(this);
-                if (tooltipInstance) {
-                    tooltipInstance.dispose();
-                    console.log('   ✅ Tooltip destruido antes de eliminar fila');
+                $fila.find('[data-bs-toggle="tooltip"]').each(function () {
+                    const tooltipInstance = bootstrap.Tooltip.getInstance(this);
+                    if (tooltipInstance) {
+                        tooltipInstance.dispose();
+                        console.log('   ✅ Tooltip destruido antes de eliminar fila');
+                    }
+                });
+
+                // Remover del array
+                valoresPago.splice(index, 1);
+
+                // Remover fila del DOM con animación
+                $fila.fadeOut(300, function () {
+                    $(this).remove();
+
+                    // Si no quedan valores, mostrar mensaje
+                    if (valoresPago.length === 0) {
+                        limpiarTablaFormasPago();
+                    }
+                });
+
+                // Actualizar totales
+                actualizarTotalesPago();
+
+                // Actualizar total del instrumento (restar)
+                actualizarTotalInstrumento(valor.ins_id, -valor.importe);
+
+                if (typeof toastr !== 'undefined') {
+                    toastr.success('Valor eliminado correctamente');
                 }
-            });
-
-            // Remover del array
-            valoresPago.splice(index, 1);
-
-            // Remover fila del DOM con animación
-            $fila.fadeOut(300, function () {
-                $(this).remove();
-
-                // Si no quedan valores, mostrar mensaje
-                if (valoresPago.length === 0) {
-                    limpiarTablaFormasPago();
-                }
-            });
-
-            // Actualizar totales
-            actualizarTotalesPago();
-
-            // Actualizar total del instrumento (restar)
-            actualizarTotalInstrumento(valor.ins_id, -valor.importe);
-
-            if (typeof toastr !== 'undefined') {
-                toastr.success('Valor eliminado correctamente');
             }
         },
-        false,
+        true,
         ["Eliminar", "Cancelar"],
         "warn!",
-        function () {
-            // Botón "Cancelar"
-            $('#msjModal').modal('hide');
-        }
+        null
     );
 }
 

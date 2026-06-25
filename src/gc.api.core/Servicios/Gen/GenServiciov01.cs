@@ -14,10 +14,10 @@ using System.Web;
 
 namespace gc.api.core.Servicios.Gen
 {
-    public class GenServicio : Servicio<EntidadBase>, IGenServicio
+    public class GenServiciov01 : Servicio<EntidadBase>, IGenServicio
     {
-        private readonly ILogger<GenServicio> _logger;
-        public GenServicio(IUnitOfWork uow, ILogger<GenServicio> logger) :base(uow)
+        private readonly ILogger<GenServiciov01> _logger;
+        public GenServiciov01(IUnitOfWork uow, ILogger<GenServiciov01> logger) :base(uow)
         {
             _logger = logger;
         }
