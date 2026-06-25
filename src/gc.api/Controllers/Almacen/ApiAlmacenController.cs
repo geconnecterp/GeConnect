@@ -11,7 +11,7 @@ using gc.infraestructura.Dtos.Productos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
-using Windows.ApplicationModel.Resources.Core;
+
 
 namespace gc.api.Controllers.Almacen
 {

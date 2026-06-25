@@ -423,7 +423,8 @@ function mostrarModalVerFacturasPendientes(facturas) {
     console.log(`   ✅ Facturas agregadas al DOM: ${facturasAgregadas}`);
 
     // Resetear estado del modal
-    cerrarTecladoDigital();
+    //cerrarTecladoDigital();
+    cerrarTecladoDigitalConRetraso(150);
 
     clienteSeleccionadoVFP = null;
     nombreClienteVFP = '';
@@ -855,8 +856,8 @@ function buscarClienteYMostrarFacturas(criterioBusqueda, facturasSeleccionadas) 
                 return;
             }
 
-            const clienteCompleto = response.cliente;
-
+            clienteCompleto = response.cliente;
+            clienteActualFactura = response.cliente;
             console.log('   ✅ Cliente encontrado correctamente');
             console.log('   📊 Datos del cliente:');
             console.log(`      Nombre: ${clienteCompleto.denominacion}`);
