@@ -1032,5 +1032,16 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<LiqEmpleadoFileBcoDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<FinancieroCuentaListaDto> ObtenerFinancieroCuentaLista(string tcf_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_CUENTAS_LISTA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@tcf_id",tcf_id),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<FinancieroCuentaListaDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

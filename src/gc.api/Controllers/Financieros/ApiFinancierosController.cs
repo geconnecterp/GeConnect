@@ -741,5 +741,20 @@ namespace gc.api.Controllers.Financieros
 			response = new ApiResponse<List<LiqEmpleadoFileBcoDto>>(res);
 			return Ok(response);
 		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FinancieroCuentaListaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerFinancieroCuentaLista(string tcf_id)
+		{
+			ApiResponse<List<FinancieroCuentaListaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.ObtenerFinancieroCuentaLista(tcf_id);
+
+			response = new ApiResponse<List<FinancieroCuentaListaDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }

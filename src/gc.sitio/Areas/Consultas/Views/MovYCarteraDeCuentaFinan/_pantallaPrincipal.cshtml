@@ -1,0 +1,61 @@
+﻿@model PrincipalModel
+@{
+}
+<style>
+	.tab-disabled {
+		pointer-events: none;
+		opacity: 0.5;
+	}
+
+	.tab-content-compact {
+		/* padding: 0.75rem 0; */
+		border-radius: 0.375rem;
+		background-color: transparent;
+		padding-bottom: 0.75rem;
+		padding-right: 0;
+		padding-left: 0;
+		padding-top: 0.25rem;
+	}
+
+	#tabRendicionCierre,
+	#tabAnaliticoOperacion {
+		display: none !important;
+	}
+</style>
+<div class="container-fluid min-vh-100 d-flex flex-column">
+	<div class="row mb-1">
+		<div class="col-12">
+			<div class="p-1 border rounded bg-light">
+				<div class="d-flex justify-content-between align-items-center flex-wrap">
+					<div class="d-flex flex-wrap gap-4">
+						<div><strong>Filtros:</strong> @Model.Titulo</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="d-flex align-items-center w-100 mt-2">
+		<ul class="nav nav-tabs nav-tabs-golden" role="tablist" id="tabsMovYCarteraDeCuentaFinPrincipal">
+			<li class="nav-item" role="presentation" id="tabMovimientos">
+				<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-mov" aria-controls="navs-top-mov" aria-selected="true" id="btnTabMovimientos">
+					Movimientos
+				</button>
+			</li>
+			<li class="nav-item" role="presentation" id="tabCartera">
+				<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-car" aria-controls="navs-top-car" aria-selected="false" tabindex="-1" id="btnTabCartera">
+					Cartera
+				</button>
+			</li>
+		</ul>
+	</div>
+	<div class="tab-content tab-content-compact">
+		<div class="tab-pane fade tab-content-golden show active" id="navs-top-mov" role="tabpanel">
+			<div id="divMovimientos">
+			</div>
+		</div>
+		<div class="tab-pane fade tab-content-golden" id="navs-top-car" role="tabpanel">
+			<div id="divCartera">
+			</div>
+		</div>
+	</div>
+</div>

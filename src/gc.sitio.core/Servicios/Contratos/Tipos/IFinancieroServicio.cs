@@ -63,5 +63,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<LiqEmpleadoDetalleParaReporteDto> GetLiqEmpDetalle(string le_compte, string token);
 		RespuestaGenerica<RespuestaDto> LiqudacionDeEmpleadoAnular(FinancieroLiqDeEmpleadoAnularRequest request, string token);
 		List<LiqEmpleadoFileBcoDto> FinancieroLiqEmpleadoFileBco(FinancieroLiqEmpleadoFileBcoRequest request, string token);
+		List<FinancieroCuentaListaDto> ObtenerFinancieroCuentaLista(string tcf_id, string token);
 	}
 }

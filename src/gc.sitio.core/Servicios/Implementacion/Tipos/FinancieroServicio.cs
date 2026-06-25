@@ -75,6 +75,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string ObtenerLiqEmpDetalle = "/GetLiqEmpDetalle";
 		private const string SetLiqudacionDeEmpleadoAnular = "/LiqudacionDeEmpleadoAnular";
 		private const string ObtenerLiqEmpleadoFileBco = "/FinancieroLiqEmpleadoFileBco";
+		private const string GetFinancieroCuentaLista = "/ObtenerFinancieroCuentaLista";
 
 		private readonly AppSettings _appSettings;
 		public FinancieroServicio(IOptions<AppSettings> options, ILogger<AdministracionServicio> logger) : base(options, logger)
@@ -1798,6 +1799,43 @@ namespace gc.sitio.core.Servicios.Implementacion
 				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
 				return new();
+			}
+		}
+
+		public List<FinancieroCuentaListaDto> ObtenerFinancieroCuentaLista(string tcf_id, string token)
+		{
+			try
+			{
+				ApiResponse<List<FinancieroCuentaListaDto>> apiResponse;
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{GetFinancieroCuentaLista}?tcf_id={tcf_id}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						_logger.LogWarning($"La API no devolvió dato alguno. Sin parámetros de busqueda");
+						return [];
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<FinancieroCuentaListaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+					return apiResponse.Data;
+				}
+				else
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+					return [];
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogWarning($"Algo no fue bien. Error interno {ex.Message}");
+				return [];
 			}
 		}
 	}

@@ -63,5 +63,6 @@ namespace gc.api.core.Contratos.Servicios
         List<LiqDeEmpleadoListaDto> BuscarLiquidacionesDeEmpleados(ConsultaLiqDeEmpleadoRequest filtros);
         List<RespuestaDto> LiqudacionDeEmpleadoAnular(FinancieroLiqDeEmpleadoAnularRequest request);
         List<LiqEmpleadoFileBcoDto> FinancieroLiqEmpleadoFileBco(FinancieroLiqEmpleadoFileBcoRequest request);
+        List<FinancieroCuentaListaDto> ObtenerFinancieroCuentaLista(string tcf_id);
 	}
 }

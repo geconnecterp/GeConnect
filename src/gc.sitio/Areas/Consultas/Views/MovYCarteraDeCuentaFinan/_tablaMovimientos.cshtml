@@ -1,0 +1,115 @@
+﻿@using gc.sitio.Areas.Financieros.Models
+@model HistoricoLibroModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.GrillaHistorico.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+<style>
+    thead th {
+        position: sticky;
+        top: 0px;
+        z-index: 1; /* suficiente para estar sobre las filas */
+        background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+        color: #fff !important;
+    }
+
+    .table-wrapper {
+        /*max-height: 400px;  o lo que necesites */
+        overflow-y: auto;
+        position: relative;
+    }
+
+    #containerGridMovimientos {
+        position: relative;
+        height: 480px;
+        max-height: 480px;
+        overflow-y: auto;
+        overflow-x: hidden !important;
+        z-index: auto;
+    }
+
+    .container-auto {
+        height: auto !important;
+        max-height: none !important;
+        overflow-x: hidden !important;
+    }
+
+    .table-golden {
+        border-collapse: separate;
+        border-spacing: 0;
+        table-layout: fixed;
+    }
+
+        .table-golden thead {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+            color: #fff !important;
+        }
+
+            .table-golden thead th {
+                position: sticky;
+                top: 0;
+                z-index: 4;
+                background: linear-gradient(to bottom, #b8860b, #daa520);
+                color: #fff;
+                box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+                background-clip: padding-box;
+            }
+
+            .table-golden thead,
+            .table-golden thead th {
+                /*background-color: #b8860b;  tu dorado */
+                /* color: #333; */
+            }
+
+    #tbMovimientos th,
+    #tbMovimientos td {
+        padding: 0.01rem 0.15rem !important;
+        line-height: 1.2 !important;
+        height: auto !important;
+    }
+
+    #tbMovimientos tr {
+        height: 1.6rem !important;
+    }
+</style>
+<div class="card" style="padding-left: 0px;padding-right: 0px;">
+    <div class="card-body p-1">
+        <div class="table-responsive text-nowrap  table-wrapper-500 w-75" id="containerGridMovimientos">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbMovimientos">
+                <thead>
+                    <tr class="header">
+                        <th style="width: 5%;" class="text-sm-center" scope="col">N° MOV.</th>
+                        <th style="width: 9%;" class="text-sm-center" scope="col">FECHA</th>
+                        <th style="width: 30%;" class="text-sm-center" scope="col">CONCEPTO</th>
+                        <th style="width: 15%;" class="text-sm-center" scope="col">DEBE</th>
+                        <th style="width: 15%;" class="text-sm-center" scope="col">HABER</th>
+                        <th style="width: 8%;" class="text-sm-center" scope="col">SALDO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.GrillaHistorico != null && Model.GrillaHistorico.ListaDatos != null && Model.GrillaHistorico.ListaDatos.Count > 0)
+                    {
+                        @foreach (var item in Model.GrillaHistorico.ListaDatos)
+                        {
+                            if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                            <tr class="@clase" onclick="selectReg(this,'tbMovimientos')">
+                                <td class="@Model.GrillaHistorico.ObtenerClase(item.dia_movi) align-center">@Model.GrillaHistorico.FormatearDato(item.dia_movi, FormatDato.Ninguno)</td>
+                                <td class="@Model.GrillaHistorico.ObtenerClase(item.cf_fecha) align-center">@Model.GrillaHistorico.FormatearDato(item.cf_fecha, FormatDato.Fecha)</td>
+                                <td class="@Model.GrillaHistorico.ObtenerClase(item.cf_concepto) align-left">@Model.GrillaHistorico.FormatearDato(item.cf_concepto, FormatDato.Ninguno)</td>
+                                <td class="@Model.GrillaHistorico.ObtenerClase(item.cf_debe) align-right">@Model.GrillaHistorico.FormatearDato(item.cf_debe, FormatDato.Monto)</td>
+                                <td class="@Model.GrillaHistorico.ObtenerClase(item.cf_haber) align-right">@Model.GrillaHistorico.FormatearDato(item.cf_haber, FormatDato.Monto)</td>
+                                <td class="@Model.GrillaHistorico.ObtenerClase(item.cf_saldo) align-right">@Model.GrillaHistorico.FormatearDato(item.cf_saldo, FormatDato.Monto)</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

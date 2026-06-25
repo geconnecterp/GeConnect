@@ -1,0 +1,146 @@
+﻿@using gc.sitio.Areas.Financieros.Models
+@model CarteraModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+    var alt = true;
+    string clase = string.Empty;
+
+    string grupoActual = string.Empty;
+    string grupoAnterior = string.Empty;
+    string leyendaAgrupador = string.Empty;
+}
+<style>
+    thead th {
+        position: sticky;
+        top: 0px;
+        z-index: 1; /* suficiente para estar sobre las filas */
+        background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+        color: #fff !important;
+    }
+
+    .table-wrapper {
+        /*max-height: 400px;  o lo que necesites */
+        overflow-y: auto;
+        position: relative;
+    }
+
+    #containerGridCartera {
+        position: relative;
+        height: 480px;
+        max-height: 480px;
+        overflow-y: auto;
+        overflow-x: hidden !important;
+        z-index: auto;
+    }
+
+    .container-auto {
+        height: auto !important;
+        max-height: none !important;
+        overflow-x: hidden !important;
+    }
+
+    .table-golden {
+        border-collapse: separate;
+        border-spacing: 0;
+        table-layout: fixed;
+    }
+
+        .table-golden thead {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+            color: #fff !important;
+        }
+
+            .table-golden thead th {
+                position: sticky;
+                top: 0;
+                z-index: 4;
+                background: linear-gradient(to bottom, #b8860b, #daa520);
+                color: #fff;
+                box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+                background-clip: padding-box;
+            }
+
+            .table-golden thead,
+            .table-golden thead th {
+                /*background-color: #b8860b;  tu dorado */
+                /* color: #333; */
+            }
+
+    #tbCartera th,
+    #tbCartera td {
+        padding: 0.01rem 0.15rem !important;
+        line-height: 1.2 !important;
+        height: auto !important;
+    }
+
+    #tbCartera tr {
+        height: 1.6rem !important;
+    }
+</style>
+<div class="card" style="padding-left: 0px;padding-right: 0px;">
+    <div class="card-body p-1">
+        <div class="table-responsive text-nowrap  table-wrapper-500 w-50" id="containerGridCartera">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbCartera">
+                <thead>
+                    <tr class="header">
+                        <th style="width:10%;" class="text-sm-center" scope="col">FECHA</th>
+                        <th class="text-sm-center" scope="col">BANCO</th>
+                        <th style="width:10%;" class="text-sm-center" scope="col">N° CHEQUE</th>
+                        <th style="width:10%;" class="text-sm-center" scope="col">PLAZA</th>
+                        <th class="text-sm-center" scope="col">CLIENTE</th>
+                        <th style="width:20%;" class="text-sm-center" scope="col">IMPORTE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.GrillaCartera != null && Model.GrillaCartera.ListaDatos != null && Model.GrillaCartera.ListaDatos.Count > 0)
+                    {
+                        var registros = Model.GrillaCartera.ListaDatos.OrderBy(x => x.fc_fecha_valor).ToList();
+
+                        @foreach (var item in Model.GrillaCartera.ListaDatos)
+                        {
+                            grupoActual = item.fc_fecha_valor.Value.ToString("dd/MM/yyyy");
+                            
+					        // Si cambia la cuenta, insertamos una fila de encabezado para la cuenta
+					        if (grupoActual != grupoAnterior)
+					        {
+                                var sum = Model.GrillaCartera.ListaDatos.Where(x => x.fc_fecha_valor == item.fc_fecha_valor).ToList().Sum(z => z.fc_importe);
+                                leyendaAgrupador = $"Grupo {grupoActual} - Importe {Model.GrillaCartera.FormatearDato(sum, FormatDato.Monto)}";
+						        <tr class="table-secondary fw-bold">
+							        <td colspan="6" class="text-center">
+								        <i class="bx bx-folder me-1"></i>
+								        @leyendaAgrupador
+							        </td>
+						        </tr>
+						        grupoAnterior = grupoActual;
+						        alt = true; // Reiniciar alternancia de colores después de cada familia
+					        }
+
+                            if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+                            var cta = $"({item.cta_id}) {item.cta_denominacion}";
+                            <tr class="@clase" onclick="selectReg(this,'tbCartera')">
+                                <td class="@Model.GrillaCartera.ObtenerClase(item.fc_fecha) align-center">@Model.GrillaCartera.FormatearDato(item.fc_fecha, FormatDato.Fecha)</td>
+                                <td class="@Model.GrillaCartera.ObtenerClase(item.fc_dato1_valor) align-left">@Model.GrillaCartera.FormatearDato(item.fc_dato1_valor, FormatDato.Ninguno)</td>
+                                <td class="@Model.GrillaCartera.ObtenerClase(item.fc_dato2_valor) align-center">@Model.GrillaCartera.FormatearDato(item.fc_dato2_valor, FormatDato.Ninguno)</td>
+                                <td class="@Model.GrillaCartera.ObtenerClase(item.fc_dato3_valor) align-center">@Model.GrillaCartera.FormatearDato(item.fc_dato3_valor, FormatDato.Ninguno)</td>
+                                <td class="@Model.GrillaCartera.ObtenerClase(cta) align-left">@Model.GrillaCartera.FormatearDato(cta, FormatDato.Ninguno)</td>
+                                <td class="@Model.GrillaCartera.ObtenerClase(item.fc_importe) align-right">@Model.GrillaCartera.FormatearDato(item.fc_importe, FormatDato.Monto)</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr class="fila-vacia">
+                            <td colspan="6" class="text-center text-muted py-2">
+                                <i class="bx bx-info-circle me-1"></i>
+                                No hay items para mostrar.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
