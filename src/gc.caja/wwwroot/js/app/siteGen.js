@@ -1501,3 +1501,84 @@ function mostrarLoader(texto) {
 function ocultarLoader() {
     $('#loaderOverlay').fadeOut(300);
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// SECCIÓN 0.5: GESTIÓN DEL TECLADO DIGITAL (✅ OPTIMIZADO v18.0)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * ✅ OPTIMIZADO v18.0: Cierra el teclado virtual específico del proyecto
+ * 
+ * COMPATIBLE CON:
+ * - virtual-keyboard.js (plugin actual de gc.caja)
+ * 
+ * @returns {boolean} - true si se cerró el teclado, false si no estaba abierto
+ */
+function cerrarTecladoDigital() {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('⌨️ CERRANDO TECLADO DIGITAL v18.0 (OPTIMIZADO)');
+    console.log('═══════════════════════════════════════════════════');
+
+    let tecladoCerrado = false;
+
+    // ❶ MÉTODO PRINCIPAL: Buscar contenedor por ID
+    const $teclado = $('#virtual-keyboard');
+
+    if ($teclado.length > 0) {
+        console.log('🔍 Teclado virtual detectado (ID: virtual-keyboard)');
+
+        // ❷ VERIFICAR SI ESTÁ VISIBLE
+        const estaVisible = $teclado.css('display') !== 'none';
+
+        console.log(`   Estado actual: ${estaVisible ? 'VISIBLE ✅' : 'OCULTO ❌'}`);
+
+        if (estaVisible) {
+            // ❸ OCULTAR USANDO EL MISMO MÉTODO QUE EL PLUGIN
+            $teclado.css('display', 'none');
+            console.log('✅ Teclado ocultado correctamente');
+            tecladoCerrado = true;
+        } else {
+            console.log('ℹ️ El teclado ya estaba oculto');
+        }
+    } else {
+        console.log('ℹ️ No se detectó el contenedor #virtual-keyboard en el DOM');
+    }
+
+    // ❹ MÉTODO SECUNDARIO: Blur del input si está enfocado
+    const $input = $('#txtCodigoProducto');
+
+    if ($input.length > 0 && $input.is(':focus')) {
+        console.log('🔍 Input enfocado detectado, aplicando blur...');
+        $input.trigger('blur');
+        tecladoCerrado = true;
+    }
+
+    // ❺ RESULTADO FINAL
+    if (tecladoCerrado) {
+        console.log('═══════════════════════════════════════════════════');
+        console.log('✅ TECLADO DIGITAL CERRADO EXITOSAMENTE');
+        console.log('═══════════════════════════════════════════════════');
+    } else {
+        console.log('═══════════════════════════════════════════════════');
+        console.log('ℹ️ NO SE DETECTÓ TECLADO DIGITAL ABIERTO');
+        console.log('═══════════════════════════════════════════════════');
+    }
+
+    return tecladoCerrado;
+}
+
+/**
+ * ✅ NUEVO v18.1: Cierra el teclado con retraso (debounce)
+ * Útil para evitar conflictos con animaciones de cierre
+ * 
+ * @param {number} delay - Milisegundos de retraso (default: 100)
+ * @returns {Promise<boolean>} - Promesa que resuelve cuando se cierra el teclado
+ */
+function cerrarTecladoDigitalConRetraso(delay = 100) {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            const resultado = cerrarTecladoDigital();
+            resolve(resultado);
+        }, delay);
+    });
+}

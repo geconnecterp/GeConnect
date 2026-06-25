@@ -58,6 +58,8 @@
         // =================================================================
         // ✅ CONFIGURACIÓN GLOBAL v3.1
         // =================================================================
+        var clienteCompleto = null;
+        let clienteActualFactura = null;
 
         // ✅ Datos inyectados desde el servidor
         const FACTURAS_PENDIENTES = @Html.Raw(Json.Serialize(facturasPendientes ?? new List<gc.infraestructura.Dtos.Cajas.Response.FactPendienteResponseDto>()));
