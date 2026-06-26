@@ -227,3 +227,89 @@ function InicializarCamposEnFiltros(vieneDeCancelar) {
 		}
 	});
 }
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
+$("#btnImprimir").on("click", function () {
+	const tabId = $(this).data("tab-activo");
+	ImprimirSegunTab(tabId);
+});
+
+function ImprimirSegunTab(tabId) {
+
+	switch (tabId) {
+		case "navs-top-mov":
+			ImprimirConsCtaCteFinanciera();
+			break;
+
+		case "navs-top-car":
+			ImprimirDetalleDeValoresEnCartera();
+			break;
+	}
+}
+
+function ImprimirConsCtaCteFinanciera() {
+	AbrirWaiting();
+	var tipoReporte = 1;
+	var data = { tipoReporte };
+	PostGen(data, setearTipoDeReporteUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			HandlerImprimirConsCtaCteFinanciera();
+		}
+	});
+}
+
+function ImprimirDetalleDeValoresEnCartera() {
+	AbrirWaiting();
+	var tipoReporte = 2;
+	var data = { tipoReporte };
+	PostGen(data, setearTipoDeReporteUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			HandlerImprimirDetalleDeValoresEnCartera();
+		}
+	});
+}
+
+function HandlerImprimirConsCtaCteFinanciera() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var tipo_filtro = "R";
+		var ct_tipo = "%";
+		var desde = $("#Desde").val();
+		var hasta = $("#Hasta").val();
+		var ctaf_id = $("#listaCuentaFin").val();
+		var ctaf_desc = $("#listaCuentaFin option:selected").text();
+		var data = { FechaDesde: desde, FechaHasta: hasta, ctaf_id, ctaf_desc, tipo_filtro, ct_tipo };
+		cargarReporteEnArre(83, data, "Consulta de Cuenta Corriente Financiera", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function ImprimirDetalleDeValoresEnCartera() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var ctaf_id = $("#listaCuentaFin").val();
+		var data = { ctaf_id };
+		cargarReporteEnArre(84, data, "Detalle de Valores en Cartera", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}

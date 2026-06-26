@@ -88,5 +88,7 @@ namespace gc.infraestructura.Enumeraciones
         R080_Sorteo_Analisis_De_Productos = 80,
 		R081_Reporte_Rendicion_Cierre = 81,
 		R082_Reporte_Analitico_Operacion = 82,
+		R083_Cons_Cta_Corriente_Financiera = 83,
+		R084_Detalle_Valores_En_Cartera = 84,
 	}
 }

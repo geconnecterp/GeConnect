@@ -4,10 +4,13 @@ using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Consultas.Models;
 using gc.sitio.Areas.Financieros.Models;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
@@ -17,16 +20,31 @@ namespace gc.sitio.Areas.Consultas.Controllers
 	[Area("Consultas")]
 	public class MovYCarteraDeCuentaFinanController : MovYCarteraDeCuentaFinanControladorBase
 	{
+		//PARA MODULO DE IMPRESION
+		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
+		private AppModulo _modulo_1; //INV_REPO_STK_VS_CONTEO
+		private AppModulo _modulo_2; //INV_REPO_VAL_X_SEC
+		private string APP_MODULO_1 = AppModulos.CONS_CTA_CORRIENTE_FINANCIERA.ToString();
+		private string APP_MODULO_2 = AppModulos.DETALLE_VALORES_EN_CARTERA.ToString();
+		private readonly IDocManagerServicio _docMSv;
+
 		//************************
 		private readonly AppSettings _setting;
 		private readonly IFinancieroServicio _financieroServicio;
 		private readonly ITipoCuentaFinServicio _tipoCuentaFinServicio;
 		public MovYCarteraDeCuentaFinanController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<MovYCarteraDeCuentaFinanController> logger,
-												  IFinancieroServicio financieroServicio, ITipoCuentaFinServicio tipoCuentaFinServicio) : base(options, contexto, logger)
+												  IFinancieroServicio financieroServicio, ITipoCuentaFinServicio tipoCuentaFinServicio,
+												  IDocManagerServicio docManager, IOptions<DocsManager> docsManager) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_financieroServicio = financieroServicio;
 			_tipoCuentaFinServicio = tipoCuentaFinServicio;
+
+			//PARA MODULO DE IMPRESION
+			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
+			_modulo_1 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_1);
+			_modulo_2 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_2);
+			_docMSv = docManager; //instancio el servicio de impresión
 		}
 
 		public IActionResult Index()
@@ -187,6 +205,42 @@ namespace gc.sitio.Areas.Consultas.Controllers
 			}
 		}
 
+		public JsonResult SetearTipoDeReporte(int tipoReporte)
+		{
+			try
+			{
+				if (tipoReporte < 0)
+					return Json(new { error = true, warn = false, msg = "Debe seleccionar un tipo de reporte." });
+
+				string titulo = string.Empty;
+				switch ((TipoDeReporte)tipoReporte)
+				{
+					case TipoDeReporte.ConsCtaCteFinanciera:
+						#region Gestor Impresion - Inicializacion de variables
+						titulo = "Reporte Rendición Cierre";
+						DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_1);
+						ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_1);
+						#endregion
+						break;
+					case TipoDeReporte.DetalleDeValoresEnCartera:
+						#region Gestor Impresion - Inicializacion de variables
+						titulo = "Reporte Analítico de Operaciones";
+						DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_2);
+						ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_2);
+						#endregion
+						break;
+					default:
+						break;
+				}
+
+				return Json(new { error = false, warn = false, msg = "Tipo de reporte actualizado correctamente." });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar setear el tipo de reporte: {ex.Message}" });
+			}
+		}
+
 		#region Metodos Privados
 		private void CargarDatosIniciales(FiltroMovYCarteraDeCuentaFinanModel model)
 		{
@@ -212,6 +266,12 @@ namespace gc.sitio.Areas.Consultas.Controllers
 		{
 			var lista = cf.Select(x => new ComboGenDto { Id = x.ctaf_id, Descripcion = x.ctaf_lista });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+
+		enum TipoDeReporte
+		{
+			ConsCtaCteFinanciera = 1,
+			DetalleDeValoresEnCartera = 2
 		}
 		#endregion
 	}
