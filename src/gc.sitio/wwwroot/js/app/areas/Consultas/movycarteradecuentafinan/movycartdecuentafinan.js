@@ -140,29 +140,37 @@ function finalizarCarga() {
 
 function EvaluarBotonImprimir(tabId) {
 	console.log("Evaluando botón imprimir para tab:", tabId);
+
 	const tablaSelector = TabToTableMap[tabId];
 	if (!tablaSelector) {
-		console.log("tablaSelector:", tablaSelector);
 		$("#btnImprimir").hide();
 		return;
 	}
 
 	const $tabla = $(tablaSelector);
 
-	// Si la tabla no existe o no tiene filas de datos
-	if ($tabla.length === 0 || $tabla.find("tbody tr").length === 0) {
-		console.log("$tabla.length:", $tabla.length);
-		console.log("$tabla.find(tbody tr).length:", $tabla.find("tbody tr").length);
+	if ($tabla.length === 0) {
 		$("#btnImprimir").hide();
 		return;
 	}
 
-	// Si tiene datos → mostrar botón
+	// Buscar filas reales (NO fila-vacia)
+	const filasReales = $tabla.find("tbody tr").not(".fila-vacia");
+
+	if (filasReales.length === 0) {
+		// No hay datos reales → ocultar
+		console.log("No hay filas reales, ocultando botón imprimir");
+		$("#btnImprimir").hide();
+		return;
+	}
+
+	// Si tiene datos reales → mostrar botón
 	$("#btnImprimir").show();
 
 	// Guardamos el tab actual para imprimir
 	$("#btnImprimir").data("tab-activo", tabId);
 }
+
 
 function validarFechasAnalisis() {
 	const desdeInput = document.getElementById("Desde");
@@ -304,11 +312,12 @@ function HandlerImprimirConsCtaCteFinanciera() {
 	}, 500);
 }
 
-function ImprimirDetalleDeValoresEnCartera() {
+function HandlerImprimirDetalleDeValoresEnCartera() {
 	ReseteoDeReportes();
 	setTimeout(() => {
 		var ctaf_id = $("#listaCuentaFin").val();
-		var data = { ctaf_id };
+		var ctaf_desc = $("#listaCuentaFin option:selected").text();
+		var data = { ctaf_id, ctaf_desc };
 		cargarReporteEnArre(84, data, "Detalle de Valores en Cartera", "", "");
 		invocacionGestorDoc({});
 	}, 500);
