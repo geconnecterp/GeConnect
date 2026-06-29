@@ -13,5 +13,7 @@ namespace gc.api.core.Contratos.Servicios.LineaCaja
         RespuestaDto ConfirmarOperacionCaja(CajaOpeConfirmarReq req);
 
         List<FactPendienteResponseDto> ObtenerFacturasPendientes(FactPendienteRequestDto req);
+
+        List<CtaCteResponseDto> ObtenerCtaCte(string cta_id, string adm_id);
     }
 }

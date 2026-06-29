@@ -1,0 +1,97 @@
+﻿@*
+    ================================================================
+    MODAL: DETALLE IMPUTA - CUENTA CORRIENTE
+    ================================================================
+*@
+
+<div class="modal fade"
+     id="modalDetalleImputaCC"
+     tabindex="-1"
+     role="dialog"
+     aria-labelledby="modalDetalleImputaCCLabel"
+     aria-hidden="true"
+     data-bs-backdrop="static"
+     data-bs-keyboard="false">
+
+    <div class="modal-dialog modal-dialog-centered modal-dialog-elevated"
+         role="document"
+         style="max-width: 500px;">
+
+        <div class="modal-content modal-golden">
+
+            <div class="modal-header bg-gradient-golden">
+                <h5 class="modal-title" id="modalDetalleImputaCCLabel">
+                    <i class="bx bx-edit-alt me-2"></i>
+                    Modificar importe a imputar
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Cerrar">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <form id="formDetalleImputaCC" novalidate>
+
+                    <div class="alert alert-info d-flex align-items-center mb-3">
+                        <i class="bx bx-info-circle me-2 fs-4"></i>
+
+                        <div>
+                            <strong>Importe de la factura:</strong>
+                            <span id="lblImporteFacturaCC">$ 0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="txtImputaCC" class="form-label fw-bold">
+                            Importe a imputar
+                            <span class="text-danger">*</span>
+                        </label>
+
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-golden text-white">
+                                <i class="bx bx-dollar"></i>
+                            </span>
+
+                            <input type="text"
+                                   class="form-control form-control-lg text-end jsteclado jsdecimal"
+                                   id="txtImputaCC"
+                                   name="imputa"
+                                   placeholder="0.00"
+                                   inputmode="decimal"
+                                   autocomplete="off"
+                                   required>
+                        </div>
+
+                        <div class="form-text">
+                            <i class="bx bx-info-circle"></i>
+                            El importe debe ser mayor a cero y no puede superar el importe de la factura.
+                        </div>
+                    </div>
+
+                </form>
+
+            </div>
+
+            <div class="modal-footer bg-light">
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    <i class="bx bx-x me-1"></i>
+                    Cancelar
+                </button>
+
+                <button type="button"
+                        class="btn btn-golden"
+                        id="btnGuardarImputaCC">
+                    <i class="bx bx-save me-1"></i>
+                    Guardar
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>

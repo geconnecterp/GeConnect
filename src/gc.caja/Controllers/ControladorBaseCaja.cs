@@ -757,6 +757,42 @@ namespace gc.caja.Controllers
             }
         }
 
+        public List<CtaCteResponseDto> CuentaCorrienteDelCliente
+        {
+            get
+            {
+                var json = _context.HttpContext?.Session?.GetString("CuentaCorrienteDelCliente");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<CtaCteResponseDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session?.SetString("CuentaCorrienteDelCliente", json);
+            }
+        }
+
+        public List<CtaCteResponseDto> CuentaCorrienteDelClienteSeleccionadaParaElCobro
+        {
+            get
+            {
+                var json = _context.HttpContext?.Session?.GetString("CuentaCorrienteDelClienteSeleccionadaParaElCobro");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<CtaCteResponseDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session?.SetString("CuentaCorrienteDelClienteSeleccionadaParaElCobro", json);
+            }
+        }
+
         public List<T> OrdenarEntidad<T>(List<T> lista, string sortdir, string sort) where T : Dto
         {
             IQueryable<T> result;

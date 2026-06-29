@@ -1,0 +1,95 @@
+﻿@*
+    ================================================================
+    MODAL: MODIFICAR IMPORTE A PAGAR - CUENTA CORRIENTE
+    ================================================================
+*@
+
+<div class="modal fade"
+     id="modalModificarImporteCC"
+     tabindex="-1"
+     aria-labelledby="modalModificarImporteCCTitle"
+     aria-hidden="true"
+     data-bs-backdrop="static"
+     data-bs-keyboard="false">
+
+    <div class="modal-dialog modal-dialog-centered modal-dialog-elevated"
+         style="max-width: 500px;">
+
+        <div class="modal-content modal-golden">
+
+            <div class="modal-header bg-gradient-golden">
+                <h5 class="modal-title" id="modalModificarImporteCCTitle">
+                    <i class="bx bx-edit-alt me-2"></i>
+                    Modificar importe a pagar
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Cerrar">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <form id="formModificarImporteCC" novalidate>
+
+                    <div class="alert alert-info d-flex align-items-center mb-3">
+                        <i class="bx bx-info-circle me-2 fs-4"></i>
+
+                        <div>
+                            <strong>Importe original permitido:</strong>
+                            <span id="lblImporteOriginalCC">$ 0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="txtImportePagarCC" class="form-label fw-bold">
+                            Importe a pagar
+                            <span class="text-danger">*</span>
+                        </label>
+
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-golden text-white">
+                                <i class="bx bx-dollar"></i>
+                            </span>
+
+                            <input type="text"
+                                   class="form-control form-control-lg text-end jsteclado jsdecimal"
+                                   id="txtImportePagarCC"
+                                   name="importePagarCC"
+                                   placeholder="0.00"
+                                   inputmode="decimal"
+                                   autocomplete="off"
+                                   required>
+                        </div>
+
+                        <div class="form-text">
+                            <i class="bx bx-info-circle"></i>
+                            El importe debe ser mayor o igual a cero y no puede superar el importe original.
+                        </div>
+                    </div>
+
+                </form>
+
+            </div>
+
+            <div class="modal-footer bg-light">
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    <i class="bx bx-x me-1"></i>
+                    Cancelar
+                </button>
+
+                <button type="button"
+                        class="btn btn-golden"
+                        id="btnGuardarImporteCC">
+                    <i class="bx bx-save me-1"></i>
+                    Guardar
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>

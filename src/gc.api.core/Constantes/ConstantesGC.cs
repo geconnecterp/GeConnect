@@ -32,8 +32,10 @@
             public const string SP_CAJA_PREFACTURA_CARGA = "SPGECO_CAJA_Prefacturas_Carga";
 			public const string SP_CAJA_OPE_CONFIRMAR = "SPGECO_CAJA_Ope_Confirmar";
 
+			public const string SP_CAJA_B_CC = "SPGECO_CAJA_B_CtaCte";
+
             //sobre facturación electrónica
-			public const string SP_CAJA_FE = "SPGECO_CAJA_FE";
+            public const string SP_CAJA_FE = "SPGECO_CAJA_FE";
 			public const string SP_CAJA_FE_D = "SPGECO_CAJA_FE_D";
             public const string SP_CAJA_FE_IVA = "SPGECO_CAJA_FE_IVA";
 			public const string SP_CAJA_FE_PER = "SPGECO_CAJA_FE_PER"; //DE PERCEPCIONES

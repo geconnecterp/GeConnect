@@ -810,8 +810,8 @@ $(function () {
             case 'debito-credito':
                 abrirModuloDebitoCredito();
                 break;
-            case 'cobranza':
-                abrirModuloCobranza();
+            case 'cobranzacc':
+                abrirModuloCobranzacc();
                 break;
             case 'anula-cobranza':
                 abrirModuloAnulaCobranza();
@@ -966,10 +966,11 @@ $(function () {
                 }
 
                 console.log("✅ Validación exitosa - Abriendo módulo de Cobranza Diferida");
+                //busca el modal cargado en memoria y lo cierra
                 const menuModal = getModalMenu();
                 if (menuModal) menuModal.hide();
 
-                mostrarLoader("Abriendo módulo de Cobranza Diferida...<br><small class='text-muted'>Por favor espere</small>");
+                mostrarLoader("Abriendo módulo de Cobranza Diferida...<br><small class='text-muted'>Por favor, espere...</small>");
                 setTimeout(() => {
                     window.location.href = cobranzaDiferidaInicializaUrl; // ✅ NUEVA URL
                 }, 800);
@@ -990,7 +991,63 @@ $(function () {
     }
     function abrirModuloDevolucion() { console.log('↩️ Devolución NC...'); }
     function abrirModuloDebitoCredito() { console.log('💳 Débito y Crédito...'); }
-    function abrirModuloCobranza() { console.log('💰 Cobranza...'); }
+    function abrirModuloCobranzacc() {
+        console.log('💰 Iniciando Módulo Cobranza en Cuenta Corriente');
+        mostrarLoader("Validando datos de caja...<br><small class='text-muted'>Preparando módulo de Cobranza en Cuenta Corriente</small>");
+
+        $.ajax({
+            url: validarModuloCCUrl, // ✅ NUEVA URL
+            type: 'post',
+            dataType: 'json',
+            timeout: 10000,
+            success: function (response) {
+                ocultarLoader();
+
+                if (!response.success) {
+                    console.error("❌ Validación de autenticación fallida para Cobranza en Cuenta Corriente:", response.message);
+                    AbrirMensaje(
+                        "Error de Validación",
+                        `<div class="text-center">
+                            <i class='bx bx-error-circle text-danger' style='font-size: 3rem;'></i>
+                            <p class="mt-3">${response.message}</p>
+                            <hr>
+                            <small class="text-muted">
+                                Por favor, contacte al administrador o verifique la configuración o autentiquese nuevamente..
+                            </small>
+                        </div>`,
+                        function () {
+                            setTimeout(() => {
+                                window.location.href = MenuCajaUrl; // ✅ verifica que no esta autenticado y reenvia a Login
+                            }, 100); },
+                        false, ["Continuar"], "error!", null
+                    );
+                    return;
+                }
+
+                console.log("✅ Validación exitosa - Abriendo módulo de Cobranza en Cuenta Corriente");
+                //busca el modal cargado en memoria y lo cierra
+                const menuModal = getModalMenu();
+                if (menuModal) menuModal.hide();
+
+                mostrarLoader("Abriendo módulo de Cobranza en CUENTA CORRIENTE...<br><small class='text-muted'>Por favor, espere...</small>");
+                setTimeout(() => {
+                    window.location.href = accesoModuloCCUrl; // ✅ NUEVA URL
+                }, 800);
+            },
+            error: function (xhr, status, error) {
+                ocultarLoader();
+                let mensajeError = "Error al validar los datos de la caja para Cobranza Diferida.";
+                if (status === 'timeout') {
+                    mensajeError = "La validación tardó demasiado tiempo. Por favor, intente nuevamente.";
+                } else if (xhr.status === 500) {
+                    mensajeError = "Error interno del servidor. Contacte al administrador.";
+                } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                    mensajeError = xhr.responseJSON.message;
+                }
+                AbrirMensaje("Error", `<div class="text-center"><i class='bx bx-error-circle text-danger' style='font-size: 3rem;'></i><p class="mt-3">${mensajeError}</p></div>`, function () { $("#msjModal").modal("hide"); }, false, ["Aceptar"], "error!", null);
+            }
+        });
+    }
     function abrirModuloAnulaCobranza() { console.log('❌ Anula Cobranza...'); }
     function abrirModuloDistribucionFacturacion() { console.log('📊 Distribución Facturación...'); }
     function abrirModuloDistribucionCobranza() { console.log('📈 Distribución Cobranza...'); }
