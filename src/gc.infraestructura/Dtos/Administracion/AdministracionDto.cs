@@ -40,7 +40,7 @@ namespace gc.infraestructura.Dtos.Administracion
         //public string Adm_Mepa_Longitud { get; set; } = string.Empty;
         //public string Adm_Mepa_Calle { get; set; } = string.Empty;
         //public int Adm_Mepa_Numero { get; set; }
-        public string  lp_id { get; set; }
+        public string  lp_id { get; set; }= string.Empty;
 
     }
 }

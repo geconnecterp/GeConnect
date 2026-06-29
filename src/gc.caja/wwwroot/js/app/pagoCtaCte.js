@@ -1211,10 +1211,10 @@ function iniciarCobranza() {
             ),
 
             // Valor final que será cobrado.
-            cv_importe: imputaActual,
+            cv_importe: importeDisponible,
 
             // Valor original antes de una eventual modificación manual.
-            cv_importe_ori: imputaOriginal,
+            cv_importe_ori: imputaActual,
 
             cv_concepto: obtenerData($checkbox, 'cv-concepto'),
 
@@ -1269,24 +1269,52 @@ function iniciarCobranza() {
 
             return;
         }
+        switch (coTipo) {
+            case "CC":
+                if (!Number.isFinite(registro.cv_importe_ori) ||
+                    registro.cv_importe_ori <= 0) {
 
-        if (!Number.isFinite(registro.cv_importe) ||
-            registro.cv_importe <= 0) {
+                    errores.push(
+                        `Registro ${index + 1} (${identificador}): el importe a imputar debe ser mayor a cero.`
+                    );
 
-            errores.push(
-                `Registro ${index + 1} (${identificador}): el importe a imputar debe ser mayor a cero.`
-            );
+                    return;
+                }
+            default:
+                if (!Number.isFinite(registro.cv_importe) ||
+                    registro.cv_importe <= 0) {
 
-            return;
+                    errores.push(
+                        `Registro ${index + 1} (${identificador}): el importe a imputar debe ser mayor a cero.`
+                    );
+
+                    return;
+                }
         }
+       
 
-        if (registro.cv_importe > importeDisponible) {
-            errores.push(
-                `Registro ${index + 1} (${identificador}): el importe a imputar no puede superar $ ${formatearMontoCC(importeDisponible)}.`
-            );
+        switch (coTipo) {
+            case "CC":
+                if (registro.cv_importe_ori > importeDisponible) {
+                    errores.push(
+                        `Registro ${index + 1} (${identificador}): el importe a imputar no puede superar $ ${formatearMontoCC(importeDisponible)}.`
+                    );
 
-            return;
+                    return;
+                }
+
+                break;
+
+            default:
+                if (registro.cv_importe > importeDisponible) {
+                    errores.push(
+                        `Registro ${index + 1} (${identificador}): el importe a imputar no puede superar $ ${formatearMontoCC(importeDisponible)}.`
+                    );
+
+                    return;
+                }
         }
+        
 
         if (!Number.isFinite(registro.cv_importe_ori)) {
             errores.push(
@@ -1326,11 +1354,22 @@ function iniciarCobranza() {
 
         return;
     }
+    let totalPagar = 0.00;
+    switch (coTipo) {
+        case 'CC':
+            totalPagar = registrosSeleccionados.reduce(
+                (acumulado, registro) => acumulado + registro.cv_importe_ori,
+                0
+            );
+            break;
+        default:
+            totalPagar = registrosSeleccionados.reduce(
+                (acumulado, registro) => acumulado + registro.cv_importe,
+                0
+            );
+    }
 
-    const totalPagar = registrosSeleccionados.reduce(
-        (acumulado, registro) => acumulado + registro.cv_importe,
-        0
-    );
+    
 
     const totalRedondeado = Math.round(
         (totalPagar + Number.EPSILON) * 100

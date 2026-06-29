@@ -354,7 +354,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return (false, resultadoDatos?.Mensaje ?? "No se pudieron obtener los datos del cliente", null, null);
                 }
 
-                
+
 
                 var datos = resultadoDatos.Entidad;
 
@@ -661,9 +661,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 var nombreCompleto = $"{apellido.Trim().ToUpper()}, {nombre.Trim().ToUpper()}";
 
                 clienteActual.cta_denominacion = nombreCompleto;
-                clienteActual.cta_domicilio = domicilio?.Trim().ToUpper();
-                clienteActual.cta_email = email?.Trim().ToLower();
-                clienteActual.cta_celu = movil?.Trim();
+                clienteActual.cta_domicilio = domicilio?.Trim().ToUpper() ?? "";
+                clienteActual.cta_email = email?.Trim().ToLower() ?? "";
+                clienteActual.cta_celu = movil?.Trim() ?? "";
                 clienteActual.cta_sexo = sexo;
 
                 // Actualizar datos de documento
