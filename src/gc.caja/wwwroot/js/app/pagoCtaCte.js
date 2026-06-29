@@ -1222,7 +1222,7 @@ function iniciarCobranza() {
             ve_id: obtenerData($checkbox, 've-id'),
             ccb_id: obtenerData($checkbox, 'ccb-id'),
 
-            ctacte_id: obtenerData($checkbox, 'ctacte-id'),
+            ctacte: obtenerData($checkbox, 'ctacte'),
             carga: obtenerData($checkbox, 'carga'),
             carga_obligatoria: obtenerData($checkbox, 'carga-obligatoria')
         };
@@ -1234,7 +1234,7 @@ function iniciarCobranza() {
         if (!registro.cta_id) camposFaltantes.push('cta_id');
         if (!registro.tco_id) camposFaltantes.push('tco_id');
         if (!registro.cm_compte) camposFaltantes.push('cm_compte');
-        if (!registro.ctacte_id) camposFaltantes.push('ctacte_id');
+        if (!registro.ctacte) camposFaltantes.push('ctacte');
 
         if (camposFaltantes.length > 0) {
             errores.push(

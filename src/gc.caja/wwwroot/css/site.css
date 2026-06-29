@@ -5736,7 +5736,7 @@ input, select, textarea, button, checkbox, radio {
     .tipo-medio-pago-item:hover {
         background-color: rgba(218, 165, 32, 0.1) !important;
         border-left-color: #DAA520;
-        transform: translateX(5px);
+        /*transform: translateX(5px);*/
     }
 
     /* Ítem seleccionado (clase agregada por JavaScript) */
