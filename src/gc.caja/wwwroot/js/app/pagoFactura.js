@@ -702,7 +702,7 @@ function iniciarProcesoPago(config) {
     }
 
     // ✅ Lista blanca de co_tipo permitidos
-    const coTiposPermitidos = ['CR', 'CF', 'CD'];
+    const coTiposPermitidos = ['CR', 'CF', 'CD', 'CC'];
 
     if (!coTiposPermitidos.includes(coTipo)) {
         console.warn(`⚠️ ADVERTENCIA: co_tipo "${coTipo}" no está en lista blanca`);
@@ -885,7 +885,7 @@ function abrirModalPago(datosFactura) {
         //se oculta el titulo de FACTURACION Y SU TIPO DE FACTURA
         setTimeout(() => {
             if (datosFactura.contextoOperacion !== 'VENTA') {
-                $("#tituloFacturacion").html("<h5 class=\"mb-0 text-white\"><i class='bx bx-receipt'></i>COBRANZA DIFERIDA</h5>");
+                $("#tituloFacturacion").html(`<h5 class=\"mb-0 text-white\"><i class='bx bx-receipt'></i>${datosFactura?.tituloModal}</h5>`);                
             }
         }, 100);
         // ═══════════════════════════════════════════════════════════
@@ -1300,9 +1300,20 @@ function volverACalculoFactura() {
         modalPagoInstance.hide();
     }
 
-    setTimeout(() => {
-        $('#modalCalculoFactura').modal('show');
-    }, 300);
+    switch (window._coTipoActual) {
+        case "CC":
+            setTimeout(() => {
+                reiniciaPantallaAlVolver();
+            },200);
+            break;
+        default:
+            setTimeout(() => {
+                $('#modalCalculoFactura').modal('show');
+            }, 300);
+    }
+
+
+   
 }
 
 // ════════════════════════════════════════════════════════════
@@ -1921,10 +1932,20 @@ function enviarPagoAlServidor(jsonValores) {
     let moduloOrigen = 'Facturacion'; // ← Default para VENTA
 
     if (contextoOperacion === 'COBRANZA') {
-        moduloOrigen = 'CobranzaDiferida';
-        console.log('   ✅ Contexto COBRANZA detectado');
-        console.log('   → ModuloOrigen: CobranzaDiferida');
-        console.log('   → Se incluirán facturas a cancelar en el payload');
+        switch (window._coTipoActual) {
+            case "CC":
+                moduloOrigen = 'CuentaCorriente';
+                console.log('   ✅ Contexto CUENTA CORRIENTE detectado');
+                console.log('   → ModuloOrigen: CuentaCorriente');
+                console.log('   → Se incluirán los registros de CC a cancelar en el payload');
+                break;               
+            default: //CD
+                moduloOrigen = 'CobranzaDiferida';
+                console.log('   ✅ Contexto COBRANZA detectado');
+                console.log('   → ModuloOrigen: CobranzaDiferida');
+                console.log('   → Se incluirán facturas a cancelar en el payload');
+        }
+        
     } else {
         console.log('   ✅ Contexto VENTA (default)');
         console.log('   → ModuloOrigen: Facturacion');
@@ -1951,84 +1972,179 @@ function enviarPagoAlServidor(jsonValores) {
     // ✅ NUEVO v28.0: SI ES COBRANZA, OBTENER FACTURAS A CANCELAR
     // ═══════════════════════════════════════════════════════════
 
-    if (contextoOperacion === 'COBRANZA') {
-        console.log('═══════════════════════════════════════════════════');
-        console.log('📋 OBTENIENDO FACTURAS A CANCELAR DESDE SESIÓN v28.0');
-        console.log('═══════════════════════════════════════════════════');
+    // si es Cobranza diferida se buscaran las facturas pendientes seleccionadas
+    switch (window._coTipoActual) {
+        case "CD":
+            console.log('═══════════════════════════════════════════════════');
+            console.log('📋 OBTENIENDO FACTURAS A CANCELAR DESDE SESIÓN v28.0');
+            console.log('═══════════════════════════════════════════════════');
 
-        // Actualizar mensaje de loading
-        actualizarMensajeLoadingGlobal('Obteniendo facturas a cancelar...');
+            // Actualizar mensaje de loading
+            actualizarMensajeLoadingGlobal('Obteniendo facturas a cancelar...');
 
-        // ❶ URL del endpoint para obtener facturas desde sesión
-        const urlFacturas = typeof ObtenerFacturasPendientesSesionUrl !== 'undefined' && ObtenerFacturasPendientesSesionUrl
-            ? ObtenerFacturasPendientesSesionUrl
-            : '/Facturacion/PDiferido/ObtenerFacturasPendientesSesion';
+            // ❶ URL del endpoint para obtener facturas desde sesión
+            const urlFacturas = typeof ObtenerFacturasPendientesSesionUrl !== 'undefined' && ObtenerFacturasPendientesSesionUrl
+                ? ObtenerFacturasPendientesSesionUrl
+                : '/Facturacion/PDiferido/ObtenerFacturasPendientesSesion';
 
-        console.log(`   URL: ${urlFacturas}`);
+            console.log(`   URL: ${urlFacturas}`);
 
-        // ❷ Llamada AJAX para obtener facturas
-        $.ajax({
-            url: urlFacturas,
-            type: 'POST',
-            dataType: 'json',
-            timeout: 10000,
-            success: function (responseFacturas) {
-                console.log('   📥 Respuesta de facturas:', responseFacturas);
-                //para lo unico que me sirve recuperar las facturas es para confirmar que las mismas estan. pero las tengo resguardadas en session las que se van a cobrar.
-                if (!responseFacturas || !responseFacturas.ok) {
-                    console.error('❌ No se pudieron obtener las facturas');
+            // ❷ Llamada AJAX para obtener facturas
+            $.ajax({
+                url: urlFacturas,
+                type: 'POST',
+                dataType: 'json',
+                timeout: 10000,
+                success: function (responseFacturas) {
+                    console.log('   📥 Respuesta de facturas:', responseFacturas);
+                    //para lo unico que me sirve recuperar las facturas es para confirmar que las mismas estan. pero las tengo resguardadas en session las que se van a cobrar.
+                    if (!responseFacturas || !responseFacturas.ok) {
+                        console.error('❌ No se pudieron obtener las facturas');
+                        ocultarLoadingGlobal();
+
+                        AbrirMensaje(
+                            "Error",
+                            "No se pudieron recuperar las facturas a cancelar.",
+                            function () { $('#msjModal').modal('hide'); },
+                            false,
+                            ["Aceptar"],
+                            "error!",
+                            null
+                        );
+                        return;
+                    }
+
+                    const facturasACancelar = responseFacturas.lista || [];
+                    console.log(`   ✅ Facturas obtenidas: ${facturasACancelar.length}`);
+
+                    // ❸ Construir array Cancelar con estructura correcta
+                    const arrayCancelar = construirArrayCancelar(facturasACancelar);
+
+                    console.log(`   ✅ Array Cancelar construido: ${arrayCancelar.length} items`);
+
+                    // ❹ Proceder a enviar el pago con Cancelar incluido
+                    enviarPayloadAlServidor(jsonValores, moduloOrigen, arrayCancelar);
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error('❌ ERROR AJAX al obtener facturas:', {
+                        status: jqXHR.status,
+                        error: errorThrown
+                    });
+
                     ocultarLoadingGlobal();
 
                     AbrirMensaje(
-                        "Error",
-                        "No se pudieron recuperar las facturas a cancelar.",
+                        "Error de Comunicación",
+                        "No se pudo conectar con el servidor para obtener las facturas.",
                         function () { $('#msjModal').modal('hide'); },
                         false,
                         ["Aceptar"],
                         "error!",
                         null
                     );
-                    return;
                 }
+            });
 
-                const facturasACancelar = responseFacturas.lista || [];
-                console.log(`   ✅ Facturas obtenidas: ${facturasACancelar.length}`);
+            break
+        case "CC":
+            const ccACancelar = window._cuentaCorrienteDelClienteSeleccionadaParaElCobro || [];
+            console.log(`   ✅ Registros de CC obtenidas: ${ccACancelar.length}`);
 
-                // ❸ Construir array Cancelar con estructura correcta
-                const arrayCancelar = construirArrayCancelar(facturasACancelar);
+            // ❸ Construir array Cancelar con estructura correcta
+            const arrayCCCancelar = construirArrayCancelar(ccACancelar);
 
-                console.log(`   ✅ Array Cancelar construido: ${arrayCancelar.length} items`);
+            console.log(`   ✅ Array Cancelar construido: ${arrayCCCancelar.length} items`);
 
-                // ❹ Proceder a enviar el pago con Cancelar incluido
-                enviarPayloadAlServidor(jsonValores, moduloOrigen, arrayCancelar);
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-                console.error('❌ ERROR AJAX al obtener facturas:', {
-                    status: jqXHR.status,
-                    error: errorThrown
-                });
+            // ❹ Proceder a enviar el pago con Cancelar incluido
+            enviarPayloadAlServidor(jsonValores, moduloOrigen, arrayCCCancelar);
 
-                ocultarLoadingGlobal();
+            break;
+        default:
+            // ═══════════════════════════════════════════════════════════
+            // FLUJO NORMAL DE VENTA (sin Cancelar)
+            // ═══════════════════════════════════════════════════════════
+            console.log('   ℹ️ Contexto VENTA - Sin facturas a cancelar');
+            enviarPayloadAlServidor(jsonValores, moduloOrigen, null);
 
-                AbrirMensaje(
-                    "Error de Comunicación",
-                    "No se pudo conectar con el servidor para obtener las facturas.",
-                    function () { $('#msjModal').modal('hide'); },
-                    false,
-                    ["Aceptar"],
-                    "error!",
-                    null
-                );
-            }
-        });
-
-    } else {
-        // ═══════════════════════════════════════════════════════════
-        // FLUJO NORMAL DE VENTA (sin Cancelar)
-        // ═══════════════════════════════════════════════════════════
-        console.log('   ℹ️ Contexto VENTA - Sin facturas a cancelar');
-        enviarPayloadAlServidor(jsonValores, moduloOrigen, null);
     }
+    // if (window._coTipoActual === 'CD') {
+    //     console.log('═══════════════════════════════════════════════════');
+    //     console.log('📋 OBTENIENDO FACTURAS A CANCELAR DESDE SESIÓN v28.0');
+    //     console.log('═══════════════════════════════════════════════════');
+
+    //     // Actualizar mensaje de loading
+    //     actualizarMensajeLoadingGlobal('Obteniendo facturas a cancelar...');
+
+    //     // ❶ URL del endpoint para obtener facturas desde sesión
+    //     const urlFacturas = typeof ObtenerFacturasPendientesSesionUrl !== 'undefined' && ObtenerFacturasPendientesSesionUrl
+    //         ? ObtenerFacturasPendientesSesionUrl
+    //         : '/Facturacion/PDiferido/ObtenerFacturasPendientesSesion';
+
+    //     console.log(`   URL: ${urlFacturas}`);
+
+    //     // ❷ Llamada AJAX para obtener facturas
+    //     $.ajax({
+    //         url: urlFacturas,
+    //         type: 'POST',
+    //         dataType: 'json',
+    //         timeout: 10000,
+    //         success: function (responseFacturas) {
+    //             console.log('   📥 Respuesta de facturas:', responseFacturas);
+    //             //para lo unico que me sirve recuperar las facturas es para confirmar que las mismas estan. pero las tengo resguardadas en session las que se van a cobrar.
+    //             if (!responseFacturas || !responseFacturas.ok) {
+    //                 console.error('❌ No se pudieron obtener las facturas');
+    //                 ocultarLoadingGlobal();
+
+    //                 AbrirMensaje(
+    //                     "Error",
+    //                     "No se pudieron recuperar las facturas a cancelar.",
+    //                     function () { $('#msjModal').modal('hide'); },
+    //                     false,
+    //                     ["Aceptar"],
+    //                     "error!",
+    //                     null
+    //                 );
+    //                 return;
+    //             }
+
+    //             const facturasACancelar = responseFacturas.lista || [];
+    //             console.log(`   ✅ Facturas obtenidas: ${facturasACancelar.length}`);
+
+    //             // ❸ Construir array Cancelar con estructura correcta
+    //             const arrayCancelar = construirArrayCancelar(facturasACancelar);
+
+    //             console.log(`   ✅ Array Cancelar construido: ${arrayCancelar.length} items`);
+
+    //             // ❹ Proceder a enviar el pago con Cancelar incluido
+    //             enviarPayloadAlServidor(jsonValores, moduloOrigen, arrayCancelar);
+    //         },
+    //         error: function (jqXHR, textStatus, errorThrown) {
+    //             console.error('❌ ERROR AJAX al obtener facturas:', {
+    //                 status: jqXHR.status,
+    //                 error: errorThrown
+    //             });
+
+    //             ocultarLoadingGlobal();
+
+    //             AbrirMensaje(
+    //                 "Error de Comunicación",
+    //                 "No se pudo conectar con el servidor para obtener las facturas.",
+    //                 function () { $('#msjModal').modal('hide'); },
+    //                 false,
+    //                 ["Aceptar"],
+    //                 "error!",
+    //                 null
+    //             );
+    //         }
+    //     });
+
+    // } else {
+    //     // ═══════════════════════════════════════════════════════════
+    //     // FLUJO NORMAL DE VENTA (sin Cancelar)
+    //     // ═══════════════════════════════════════════════════════════
+    //     console.log('   ℹ️ Contexto VENTA - Sin facturas a cancelar');
+    //     enviarPayloadAlServidor(jsonValores, moduloOrigen, null);
+    // }
 }
 
 /**
@@ -2041,35 +2157,35 @@ function enviarPagoAlServidor(jsonValores) {
  *     cm_compte_cuota: int   // Número de cuota (default: 0)
  * }
  * 
- * @param {Array<Object>} facturas - Array de facturas desde sesión servidor
+ * @param {Array<Object>} registros - Array de facturas desde sesión servidor
  * @returns {Array<Object>} - Array de objetos Json_Cancela
  */
-function construirArrayCancelar(facturas) {
+function construirArrayCancelar(registros) {
     console.log('═══════════════════════════════════════════════════');
     console.log('🔨 CONSTRUIR ARRAY CANCELAR v28.0');
-    console.log(`   Total facturas recibidas: ${facturas.length}`);
+    console.log(`   Total Datos Cancelables recibidas: ${registros.length}`);
     console.log('═══════════════════════════════════════════════════');
 
     const arrayCancelar = [];
 
-    if (!facturas || !Array.isArray(facturas) || facturas.length === 0) {
-        console.warn('⚠️ No hay facturas para procesar');
+    if (!registros || !Array.isArray(registros) || registros.length === 0) {
+        console.warn('⚠️ No hay Datos Cancelables para procesar');
         return arrayCancelar;
     }
 
-    facturas.forEach((factura, index) => {
+    registros.forEach((reg, index) => {
         try {
             // ❶ Validar datos críticos
-            if (!factura.tco_id || !factura.cm_compte) {
-                console.warn(`⚠️ Factura ${index} sin datos críticos, omitiendo:`, factura);
+            if (!reg.tco_id || !reg.cm_compte) {
+                console.warn(`⚠️ Factura ${index} sin datos críticos, omitiendo:`, reg);
                 return;
             }
 
             // ❷ Construir objeto Json_Cancela
             const jsonCancela = {
-                tco_id: String(factura.tco_id).trim(),
-                cm_compte: String(factura.cm_compte).trim(),
-                cm_compte_cuota: parseInt(factura.cm_compte_cuota) || 0
+                tco_id: String(reg.tco_id).trim(),
+                cm_compte: String(reg.cm_compte).trim(),
+                cm_compte_cuota: parseInt(reg.cm_compte_cuota) || 0
             };
 
             arrayCancelar.push(jsonCancela);
@@ -2077,7 +2193,7 @@ function construirArrayCancelar(facturas) {
             console.log(`   ✅ [${index + 1}] ${jsonCancela.tco_id} ${jsonCancela.cm_compte} (Cuota: ${jsonCancela.cm_compte_cuota})`);
 
         } catch (error) {
-            console.error(`❌ Error al procesar factura ${index}:`, error, factura);
+            console.error(`❌ Error al procesar factura ${index}:`, error, reg);
         }
     });
 
@@ -2500,7 +2616,6 @@ function procesarPagoExitoso(comprobante, esCobranzaDiferida = false) {
             // ═══════════════════════════════════════════════════
             // ✅ FLUJO DE LIMPIEZA Y REINICIO (PRESERVANDO BACKUP)
             // ═══════════════════════════════════════════════════
-
             setTimeout(() => {
                 console.log('═══════════════════════════════════════════════════');
                 console.log('🔄 INICIANDO REINICIO DEL MÓDULO DE VENTAS v20.3');
@@ -2549,12 +2664,64 @@ function procesarPagoExitoso(comprobante, esCobranzaDiferida = false) {
                     }, 300); // Esperar cierre de modal cálculo
                 }, 300); // Esperar cierre de modal pago
             }, 300); // Esperar cierre de mensaje de éxito
+            
         },
         false,
         ["Aceptar"],
         "succ!",
         null
     );
+}
+
+function reiniciaPantallaAlVolver() {
+    setTimeout(() => {
+        console.log('═══════════════════════════════════════════════════');
+        console.log('🔄 INICIANDO REINICIO DEL MÓDULO DE VENTAS v20.3');
+        console.log('═══════════════════════════════════════════════════');
+
+        // ❶ PASO 1: Cerrar modal de pago
+        if (modalPagoInstance) {
+            modalPagoInstance.hide();
+            console.log('✅ Paso 1: Modal de pago cerrado');
+        }
+
+        setTimeout(() => {
+            // ❷ PASO 2: Cerrar modal de cálculo
+            if (typeof cerrarModalCalculoFactura === 'function') {
+                cerrarModalCalculoFactura();
+                console.log('✅ Paso 2: Modal de cálculo cerrado');
+            }
+
+            setTimeout(() => {
+                // ═══════════════════════════════════════════════════
+                // ✅ CAMBIO CRÍTICO v20.3: PRESERVAR BACKUP
+                // ═══════════════════════════════════════════════════
+
+                // ❸ PASO 3: Limpiar venta SIN eliminar backup
+                if (typeof limpiarVentaCompleta === 'function') {
+                    limpiarVentaCompleta(false); // ← 🚨 PARÁMETRO false = PRESERVAR BACKUP
+                    console.log('✅ Paso 3: Módulo de ventas limpiado (backup preservado)');
+                } else {
+                    console.error('❌ Función limpiarVentaCompleta no existe');
+                }
+
+                setTimeout(() => {
+                    // ❹ PASO 4: Abrir modal de identificar cliente
+                    if (typeof abrirModalIdentificarCliente === 'function') {
+                        abrirModalIdentificarCliente();
+                        console.log('✅ Paso 4: Modal de identificar cliente abierto');
+                    } else {
+                        console.error('❌ Función abrirModalIdentificarCliente no existe');
+                    }
+
+                    console.log('═══════════════════════════════════════════════════');
+                    console.log('✅ REINICIO COMPLETADO - Backup disponible');
+                    console.log('═══════════════════════════════════════════════════');
+
+                }, 200); // Esperar limpieza
+            }, 300); // Esperar cierre de modal cálculo
+        }, 300); // Esperar cierre de modal pago
+    }, 300); // Esperar cierre de mensaje de éxito
 }
 
 /**

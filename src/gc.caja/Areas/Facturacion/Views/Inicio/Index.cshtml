@@ -2,6 +2,9 @@
     ViewData["Title"] = "Facturación";
     Layout = "~/Views/Shared/_Layout.cshtml";
     BusquedaProducto busquedaProducto = new();
+
+    var modulo = "Facturacion";
+    var coTipo = string.Empty;
 }
 @section styles {
     <link rel="stylesheet" href="~/css/simplePagination.css" />
@@ -56,7 +59,8 @@
 
 
 @* @await Html.PartialAsync("_IdentificarClienteModal") *@
-@await Html.PartialAsync("~/Areas/Facturacion/Views/Shared/_IdentificarClienteModal.cshtml", null, new ViewDataDictionary(ViewData) { { "Modulo", "Facturacion" } })
+@await Html.PartialAsync("~/Areas/Facturacion/Views/Shared/_IdentificarClienteModal.cshtml", null, new ViewDataDictionary(ViewData) { { "Modulo", @modulo } })
+
 @await Html.PartialAsync("_ClienteUpdate")
 @await Html.PartialAsync("~/Areas/Facturacion/Views/ProductoFact/_productoFactura.cshtml")
 @await Html.PartialAsync("~/Areas/Facturacion/Views/ProductoFact/_busquedaAdvanceV02.cshtml")
@@ -88,6 +92,7 @@
         let funcCallBack = null;
         var dataBak = {};
         var dataBakV02 = {};
+        const coTipo = '@coTipo';
         // ═══════════════════════════════════════════════════════════
         // ✅ URLs DEL BACKEND (JavaScript Global Variables)
         // ═══════════════════════════════════════════════════════════

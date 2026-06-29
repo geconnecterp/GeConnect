@@ -30,18 +30,22 @@
 
     <script type="text/javascript">
 
-        var ValidacionIntegridadUrl = "@Url.Action("ValidacionIntegridad", "Home", new { area = "" })";
-        var AperturaCajaUrl = "@Url.Action("AperturaCaja", "Home", new { area = "" })";
-        var ObtenerDatosCajaUrl = "@Url.Action("ObtenerDatosCaja", "Home", new { area = "" })";
-        var CierreCajaUrl = "@Url.Action("CierreCaja", "Home", new { area = "" })"; // ✅ NUEVO
-        var CambioPVUrl =  "@Url.Action("CambioPuntoVenta", "Home", new { area = "" })";
+        var ValidacionIntegridadUrl = '@Url.Action("ValidacionIntegridad", "Home", new { area = "" })';
+        var AperturaCajaUrl = '@Url.Action("AperturaCaja", "Home", new { area = "" })';
+        var ObtenerDatosCajaUrl = '@Url.Action("ObtenerDatosCaja", "Home", new { area = "" })';
+        var CierreCajaUrl = '@Url.Action("CierreCaja", "Home", new { area = "" })'; // ✅ NUEVO
+        var CambioPVUrl =  '@Url.Action("CambioPuntoVenta", "Home", new { area = "" })';
 
-        var facturacionInicializaUrl = "@Url.Action("index", "Inicio", new { area = "Facturacion" })";
-        var FacturacionValidarUrl =  "@Url.Action("ValidacionInicial", "Inicio", new { area = "Facturacion" })";
+        var facturacionInicializaUrl = '@Url.Action("index", "Inicio", new { area = "Facturacion" })';
+        var FacturacionValidarUrl =  '@Url.Action("ValidacionInicial", "Inicio", new { area = "Facturacion" })';
 
         // URLs necesarias para el módulo de Cobranza Diferida y el buscador de clientes
         const cobranzaDiferidaInicializaUrl = '@Url.Action("Inicializa", "PDiferido", new { Area = "Facturacion" })';
         const cobranzaDiferidaValidarUrl = '@Url.Action("Validar", "PDiferido", new { Area = "Facturacion" })';
+
+        //URLs especificas del módulo de Cta Cte
+        const validarModuloCCUrl = '@Url.Action("validar", "cobranzactacte", new { Area = "Facturacion" })';
+        const accesoModuloCCUrl = '@Url.Action("index", "cobranzactacte", new { Area = "Facturacion" })';
     </script>
 
     <script src="~/js/app/caja.js"></script>

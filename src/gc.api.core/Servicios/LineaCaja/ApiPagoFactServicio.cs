@@ -116,5 +116,21 @@ namespace gc.api.core.Servicios.LineaCaja
             var res = _repository.EjecutarLstSpExt<FactPendienteResponseDto>(sp, ps);
             return res;
         }
+
+
+        public List<CtaCteResponseDto> ObtenerCtaCte(string cta_id,string adm_id)
+        {
+            _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - request: cta_id:{cta_id}, adm_id:{adm_id}");
+            var sp = ConstantesGC.StoredProcedures.SP_CAJA_B_CC;
+           
+            var ps = new List<SqlParameter>() {
+                new SqlParameter("@cta_id", cta_id),
+                new SqlParameter("@adm_id", adm_id),
+               
+            };
+            var res = _repository.EjecutarLstSpExt<CtaCteResponseDto>(sp, ps);
+            return res;
+        }
+
     }
 }

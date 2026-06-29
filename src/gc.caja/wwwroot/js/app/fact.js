@@ -307,7 +307,14 @@ function inicializaEventosFact() {
 
     $('#btnSeguirCliente').on('click', function () {
         if (clienteSeleccionado) {
-            confirmarCliente(clienteSeleccionado);
+            switch (coTipo) {
+                case "CC":
+                    CargaGrillaCC(clienteSeleccionado, confirmarClienteAutomaticamente);
+                    break
+                default:
+                    confirmarCliente(clienteSeleccionado);
+
+            }
         }
     });
 
@@ -559,7 +566,8 @@ function buscarCliente() {
                     }
 
                     // ✅ DECISIÓN: ¿Auto-confirmar o mostrar?
-                    if (autoConfirmarClienteUnico) {
+                    //pero no se permite para cuenta corriente. 
+                    if (autoConfirmarClienteUnico && typeof coTipo !== "undefined" && coTipo !== "CC") {
                         console.log('⚡ Modo AUTO-CONFIRMACIÓN activado');
                         confirmarClienteAutomaticamente(response.cliente);
                     } else {
@@ -798,6 +806,14 @@ function validarClienteAntesDeSeleccionar($row) {
     if (origen && origen.toUpperCase() === 'N') {
         mostrarMensajeError(
             `⚠️ CLIENTE NO HABILITADO\n\n` +
+            `El cliente "${nombre}" NO ESTÁ HABILITADO para operar.`
+        );
+        return false;
+    }
+
+    if (origen && origen.toUpperCase() === 'F' && coTipo === "CC") {
+        mostrarMensajeError(
+            `⚠️ UN CLIENTE FINAL NO PUEDE ACCEDER A ESTE MODULO. \n\n` +
             `El cliente "${nombre}" NO ESTÁ HABILITADO para operar.`
         );
         return false;
@@ -1350,7 +1366,16 @@ function confirmarCliente(cliente) {
 
     // Actualizar lista de precios
     const tipoCliente = (cliente.origen && cliente.origen.toUpperCase() === 'F') ? "FINAL" : "REGISTRADO";
-    actualizarListaPreciosGlobal(tipoCliente, cliente);
+    switch (coTipo) {
+        case "":
+        case "CR":
+        case "CF":
+            actualizarListaPreciosGlobal(tipoCliente, cliente);
+            break;
+        default:
+            break;
+    }
+
 
     // Disparar evento para módulos que escuchan (pagoDiferido.js, prodfact.js, etc.)
     $(document).trigger('clienteConfirmado', [cliente]);
@@ -1790,4 +1815,101 @@ function manejarSesionExpirada(mensajeAdicional = '') {
         "warning",
         null
     );
+}
+
+async function CargaGrillaCC(clienteSeleccionado, callback) {
+    //obtengo la cuenta del cliente
+    let ctaid = clienteSeleccionado.id;
+    let nn = clienteSeleccionado.cta_denominacion
+
+    let verifica = await verificaExistenciaRegistrosCC(ctaid);
+    //se llamará a la action verificarExistenciaCuentaCorrienteUrl para verificar si existe cuenta corriente para el cliente seleccionado
+    if (verifica) {
+        if (typeof callback === 'function') {
+            setTimeout(() => {
+                callback(clienteSeleccionado);
+            }, 100);
+        }
+    }
+
+
+}
+
+
+function verificaExistenciaRegistrosCC(ctaid) {
+    console.log('   📤 Enviando cuenta al servidor para buscar registros de CC...');
+
+    mostrarLoader('Verificando existencia de registros en CC...');
+    return new Promise((resolve) => {
+        $.ajax({
+            url: verificarExistenciaCuentaCorrienteUrl,
+            type: 'POST',
+            contentType: 'application/json',
+            dataType: 'json',
+            data: JSON.stringify(ctaid),
+            success: function (response) {
+                ocultarLoader();
+                console.log('   📥 Respuesta del servidor de verificarExistenciaCuentaCorrienteUrl:', response);
+
+                if (!response || !response.ok) {
+                    const mensajeError = response?.mensaje || "No se pudieron encontrar registros en CC para la cuenta.";
+                    console.error('❌ Error al Verificar existencia de datos en CC:', mensajeError);
+                    AbrirMensaje("Error", mensajeError, function () { $("#msjModal").modal("hide"); }, false, ["Aceptar"], "error");
+                    resolve(false);
+                    return;
+                }
+                if (response.hayDatos === false) {
+                    console.warn('⚠️ No se encontraron registros de cuenta corriente para el cliente seleccionado');
+                    AbrirMensaje("Información", response.mensaje,
+                        function () {
+                            $("#msjModal").modal("hide");
+                            resolve(false);
+                            return;
+                        }, false, ["Aceptar"],
+                        "info!", null);
+                } else {
+                    console.log('   ✅ Se Verificó existencia de datos en CC');
+                    resolve(true);
+                    return
+                }
+            },
+            error: function (xhr, status, error) {
+                ocultarLoader();
+                console.error('❌ Error AJAX al resguardar facturas:', {
+                    status: xhr.status,
+                    statusText: xhr.statusText,
+                    responseText: xhr.responseText,
+                    error: error
+                });
+
+                // ✅ Intentar parsear el mensaje de error del servidor
+                let mensajeError = "No se pudieron verificar existencia de datos en CC.";
+
+                try {
+                    if (xhr.responseJSON && xhr.responseJSON.mensaje) {
+                        mensajeError = xhr.responseJSON.mensaje;
+                    } else if (xhr.responseText) {
+                        const errorObj = JSON.parse(xhr.responseText);
+                        mensajeError = errorObj.mensaje || errorObj.title || mensajeError;
+                    }
+                } catch (e) {
+                    console.warn('No se pudo parsear respuesta de error:', e);
+                }
+
+                if (xhr.status === 400) {
+                    mensajeError = "Datos inválidos enviados al servidor. " + mensajeError;
+                } else if (xhr.status === 0) {
+                    mensajeError = "No se pudo establecer conexión con el servidor.";
+                }
+
+                AbrirMensaje("Error de Comunicación", mensajeError, function () { $("#msjModal").modal("hide"); }, false, ["Aceptar"], "error");
+                resolve(false);
+                return;
+            }
+        });
+    });
+
+
+
+    console.log('═══════════════════════════════════════════════════');
 }

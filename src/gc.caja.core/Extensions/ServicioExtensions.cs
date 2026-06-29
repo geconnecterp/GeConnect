@@ -23,6 +23,7 @@ namespace gc.sitio.core.Extensions
             services.AddScoped<IBackupProductosServicio, BackupProductosServicio>();
             services.AddScoped<ICheckoutServicio, CheckoutServicio>();
             services.AddScoped<IFactDiferidaServicio, FactDiferidaServicio>();
+            services.AddScoped<ICtaCteServicio, CtaCteServicio>();
 
             return services;
         }

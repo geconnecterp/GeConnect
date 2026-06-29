@@ -120,5 +120,19 @@ namespace gc.api.Controllers.Caja
             var res = _apiPagoFactServicio.ObtenerFacturasPendientes(req);
             return Ok(new ApiResponse<List<FactPendienteResponseDto>>(res));
         }
+
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<CtaCteResponseDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult ObtenerCtaCte(string cta_id, string adm_id)
+        {
+            if (string.IsNullOrEmpty(cta_id) || string.IsNullOrEmpty(adm_id))
+            {
+                return BadRequest("Los parámetros cta_id y adm_id son requeridos.");
+            }
+            var res = _apiPagoFactServicio.ObtenerCtaCte(cta_id, adm_id);
+            return Ok(new ApiResponse<List<CtaCteResponseDto>>(res));
+        }
     }
 }
