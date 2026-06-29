@@ -618,6 +618,7 @@
 			public const string SP_TR_TIPOS = "SPGECO_TR_Tipos";
 			#endregion
 
+			public const string SP_G_MOVIMIENTOS = "SPGECO_G_Movimientos";
 			public const string SP_SECTORES_LISTA = "SPGECO_Sectores_Lista";
 			public const string SP_USUARIOS_LISTA = "SPGECO_Usuarios_Lista";
 

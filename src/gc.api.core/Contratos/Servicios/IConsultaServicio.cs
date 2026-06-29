@@ -1,4 +1,5 @@
 ﻿using gc.api.core.Entidades;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 using gc.infraestructura.Dtos.Consultas.ConsVencTipoCtaTipoCompte;
@@ -37,5 +38,6 @@ namespace gc.api.core.Contratos.Servicios
 		List<ProductoStkDto> ConsultarProductoStk(ConsultarStockRequest filtros);
 		List<ProductoStkDto> ConsultarProductoStkValor(ConsultarStockValorizadoRequest filtros);
 		List<ProductoStkCompensadoDto> ConsultarProductoStkCompensado(ConsultarStockCompensadoRequest filtros);
+		List<MovimientoListaDto> ConsultaMovimientoLista(BuscarMovDeCuentaDirectaRequest filtros);
 	}
 }

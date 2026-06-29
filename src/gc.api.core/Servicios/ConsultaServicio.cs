@@ -1,7 +1,9 @@
-﻿using gc.api.core.Constantes;
+﻿using DocumentFormat.OpenXml.Wordprocessing;
+using gc.api.core.Constantes;
 using gc.api.core.Contratos.Servicios;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 using gc.infraestructura.Dtos.Consultas.ConsVencTipoCtaTipoCompte;
@@ -655,6 +657,39 @@ namespace gc.api.core.Servicios
 			List<ProductoStkCompensadoDto> lstProductos = _repository.EjecutarLstSpExt<ProductoStkCompensadoDto>(sp, ps, true);
 
 			return lstProductos;
+		}
+
+		public List<MovimientoListaDto> ConsultaMovimientoLista(BuscarMovDeCuentaDirectaRequest filtros)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_G_MOVIMIENTOS;
+			var ps = new List<SqlParameter>();
+			if (filtros.ctag_list != null && filtros.ctag_list.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.ctag_list)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				if (sb.Length > 1)
+					ps.Add(new SqlParameter("@ctag_list", sb.ToString() + ','));
+				else
+					ps.Add(new SqlParameter("@ctag_list", sb.ToString()));
+			}
+			else
+				ps.Add(new SqlParameter("@ctag_list", "%"));
+
+
+			ps.Add(new SqlParameter("@desde", filtros.desde));
+			ps.Add(new SqlParameter("@hasta", filtros.hasta));
+
+			List<MovimientoListaDto> res = _repository.EjecutarLstSpExt<MovimientoListaDto>(sp, ps, true);
+			return res;
 		}
 	}
 }

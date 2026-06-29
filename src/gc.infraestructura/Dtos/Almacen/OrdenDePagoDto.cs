@@ -35,9 +35,8 @@ namespace gc.infraestructura.Dtos.Almacen
 					return "No";
 				return op_anulada == 'S' ? "SI" : "NO";
 			}
-			set { _op_anulada_desc = value; }
 		}
-		private string _op_anulada_desc;
+		
 		public bool op_impreso_bool
 		{
 			get

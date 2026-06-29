@@ -3,6 +3,7 @@ using gc.api.core.Contratos.Servicios;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
@@ -11,6 +12,7 @@ using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Mstk;
 using gc.infraestructura.Dtos.Mstk.Request;
+using gc.infraestructura.Dtos.Ventas;
 using log4net.Filter;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -495,6 +497,21 @@ namespace gc.api.Controllers.Consultas
 				Meta = metadata
 			};
 			Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<MovimientoListaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ConsultaMovimientoLista(BuscarMovDeCuentaDirectaRequest request)
+		{
+			ApiResponse<List<MovimientoListaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _consSv.ConsultaMovimientoLista(request);
+
+			response = new ApiResponse<List<MovimientoListaDto>>(res);
 
 			return Ok(response);
 		}

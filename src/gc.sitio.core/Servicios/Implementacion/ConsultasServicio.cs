@@ -3,6 +3,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 using gc.infraestructura.Dtos.Consultas.ConsVencTipoCtaTipoCompte;
@@ -11,6 +12,7 @@ using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Mstk;
 using gc.infraestructura.Dtos.Mstk.Request;
+using gc.infraestructura.Dtos.Ventas;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -42,6 +44,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string CONS_PRODUCTO_STK = "/ConsultarProductoStk";
 		private const string CONS_PRODUCTO_STK_VALOR = "/ConsultarProductoStkValor";
 		private const string CONS_PRODUCTO_STK_COMP = "/ConsultarProductoStkCompensado";
+		private const string CONS_MOVIMIENTOS = "/ConsultaMovimientoLista";
 
 		private readonly AppSettings _appSettings;
         public ConsultasServicio(IOptions<AppSettings> options, ILogger<ConsultasServicio> logger) : base(options, logger)
@@ -1066,6 +1069,37 @@ namespace gc.sitio.core.Servicios.Implementacion
 				_logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
 				throw new Exception("Algo no fue bien al intentar consultar stock compensado.");
+			}
+		}
+
+		public List<MovimientoListaDto> ConsultaMovimientoLista(BuscarMovDeCuentaDirectaRequest request, string token)
+		{
+			ApiResponse<List<MovimientoListaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{CONS_MOVIMIENTOS}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return [];
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<MovimientoListaDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
 			}
 		}
 	}
