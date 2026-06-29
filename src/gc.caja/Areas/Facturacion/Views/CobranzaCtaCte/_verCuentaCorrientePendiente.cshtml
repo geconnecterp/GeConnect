@@ -1,0 +1,134 @@
+﻿@*
+    ================================================================
+    MODAL: COBRANZA CUENTA CORRIENTE
+    ================================================================
+    v1.0
+    - Estilo basado en _facturasPendientesModal.cshtml
+    - Estructura de datos basada en imagen "COBRANZA CUENTA CORRIENTE"
+*@
+
+<div class="modal modal-golden fade" id="modalCuentaCorriente" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalCuentaCorrienteTitle" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+
+            <!-- Header -->
+            <div class="modal-header bg-gradient-blue">
+                <h5 class="modal-title fw-bold text-white" id="modalCuentaCorrienteTitle">
+                    <i class='bx bx-list-check'></i>
+                    COBRANZA CUENTA CORRIENTE
+                </h5>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body p-3 bg-light">
+
+                <!-- Card con datos del cliente (Estilo de Facturas Pendientes) -->
+                <div class="card card-golden mb-3" id="cardDatosClienteCC">
+                    <div class="card-header">
+                        <i class='bx bx-user-check'></i> Datos del Cliente
+                    </div>
+                    <div class="card-body bg-gradient-golden p-2">
+                        <!-- Fila 1: Nombre, ID, Domicilio -->
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-4">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0"><i class='bx bx-user'></i> Nombre</span>
+                                    <input type="text" class="form-control form-control-sm fw-bold bg-white" id="txtNombreCC" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0"><i class='bx bx-id-card'></i> ID</span>
+                                    <input type="text" class="form-control form-control-sm text-center fw-bold bg-white" id="txtClienteIdCC" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0"><i class='bx bx-map'></i> Domicilio</span>
+                                    <input type="text" class="form-control form-control-sm bg-white" id="txtDomicilioCC" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fila 2: Condición AFIP, Tpo/N°, Email, Móvil -->
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0"><i class='bx bx-receipt'></i> Condición AFIP</span>
+                                    <input type="text" class="form-control form-control-sm bg-white" id="txtCondicionAfipCC" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0"><i class='bx bx-file'></i> Tpo/N°</span>
+                                    <input type="text" class="form-control form-control-sm bg-white" id="txtTipoNumeroCC" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0"><i class='bx bx-envelope'></i> Email</span>
+                                    <input type="text" class="form-control form-control-sm bg-white" id="txtEmailCC" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0"><i class='bx bx-phone'></i> Móvil</span>
+                                    <input type="text" class="form-control form-control-sm bg-white" id="txtMovilCC" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grilla de Cuenta Corriente -->
+                <div class="card card-golden">
+                    <div class="card-body p-0">
+                        <div class="table-responsive" style="max-height: 55vh; overflow-y: auto;">
+                            <table class="table table-golden table-hover table-sm mb-0">
+                                <thead class="table-golden-header sticky-top">
+                                    <tr class="text-dark">
+                                        <th style="width: 8%;">Tipo</th>
+                                        <th style="width: 15%;">Comprobante</th>
+                                        <th style="width: 15%;">Cliente</th>
+                                        <th style="width: 12%;">Documento</th>
+                                        <th style="width: 10%;">Fecha</th>
+                                        <th style="width: 10%;">Importe</th>
+                                        <th style="width: 10%;">Imputa</th>
+                                        <th class="text-center" style="width: 10%;">Acción</th>
+                                        <th class="text-center" style="width: 5%;"><input type="checkbox" id="chkSeleccionarTodoCC" class="form-check-input" title="Seleccionar Todo"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyCuentaCorriente">
+                                    <!-- Las filas se cargarán dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Footer con Total (Alineado a la derecha como la imagen) -->
+                    <div class="card-footer bg-golden-light border-top border-golden">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-8"></div>
+                            <div class="col-md-4 text-end">
+                                <span class="fw-bold text-golden-dark fs-4">TOTAL:</span>
+                                <input type="text" class="form-control form-control-lg text-end fw-bold text-success" id="txtTotalCC" readonly value="$ 0.00" style="font-size: 1.75rem; background-color: #fff; border: 2px solid var(--bs-golden-primary); display: inline-block; width: auto; min-width: 150px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer con botones (Mantenimiento del estilo de Facturas Pendientes) -->
+            <div class="modal-footer d-flex justify-content-between bg-white border-top">
+                <button type="button" class="btn btn-outline-secondary btn-lg shadow-sm" id="btnCancelarCC" title="Volver">
+                    <i class='bx bx-arrow-back'></i> VOLVER
+                </button>
+                <div class="d-flex gap-3">
+                    <button type="button" class="btn btn-success btn-lg shadow" id="btnSeguirCC" disabled title="Continuar">
+                        <i class='bx bx-check-circle'></i> SEGUIR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

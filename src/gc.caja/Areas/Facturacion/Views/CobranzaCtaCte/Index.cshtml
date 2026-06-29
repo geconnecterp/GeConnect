@@ -1,0 +1,88 @@
+﻿@{
+    ViewData["Title"] = "Cobranza Cuenta Corriente";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var modulo = ViewBag.ModuloCC;
+    var coTipo = ViewBag.Co_TipoCC as string ?? "CC";
+
+}
+
+<div id="mensajeInicial" class="container-fluid mt-5" >
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="alert alert-info alert-dismissible fade show shadow" role="alert">
+                <h4 class="alert-heading">
+                    <i class='bx bx-info-circle'></i> Información
+                </h4>
+                <p id="mensajeInicialTexto"></p>
+                <hr>
+                <p class="mb-0">
+                    <h2>@ViewBag.ModuloDesc</h2> 
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Modales necesarios *@
+@await Html.PartialAsync("~/Areas/Facturacion/Views/Shared/_IdentificarClienteModal.cshtml", null, new ViewDataDictionary(ViewData) { { "Modulo", @modulo } })
+@await Html.PartialAsync("~/Areas/Facturacion/Views/CobranzaCtaCte/_verCuentaCorrientePendiente.cshtml")
+@* @await Html.PartialAsync("~/Areas/Facturacion/Views/CobranzaCtaCte/_modificarImporteCuentaCorriente.cshtml") *@
+@await Html.PartialAsync("~/Areas/Facturacion/Views/CobranzaCtaCte/_detalleImputaCuentaCorriente.cshtml")
+
+
+@* Modales de pago *@
+@await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_pagoModal.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_tipoMedioPago.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_instrumentosModal.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_detalleEfectivo.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_detalleCheque.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_detalleCtaCte.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_detalleCuponEmpresa.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_detalleTransferencia.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_detalleValeCompra.cshtml")
+
+@section Scripts {
+    <script>
+        var clienteCompleto = null;
+        let clienteActualFactura = null;
+        const coTipo = '@coTipo';
+
+         // URLs del backend
+        const MenuCajaUrl = '@Url.Action("Index", "Home", new { Area = "" })';
+        var ValidacionIntegridadUrl = "@Url.Action("ValidacionIntegridad", "Home", new { area = "" })";
+        var AperturaCajaUrl = "@Url.Action("AperturaCaja", "Home", new { area = "" })";
+        var ObtenerDatosCajaUrl = "@Url.Action("ObtenerDatosCaja", "Home", new { area = "" })";
+
+        //URLs especificas del módulo de Cta Cte
+        const validarModuloCCUrl = '@Url.Action("validar", "cobranzactacte", new { Area = "Facturacion" })';
+        const accesoModuloCCUrl = '@Url.Action("index", "cobranzactacte", new { Area = "Facturacion" })';
+        const obtenerCtaCteUrl = '@Url.Action("ObtenerCtaCte", "cobranzactacte", new { Area = "Facturacion" })';
+        const verificarExistenciaCuentaCorrienteUrl = '@Url.Action("VerificaExistenciaCuentaCorriente", "cobranzactacte", new { Area = "Facturacion" })';
+        const resguardarCuentaCorrienteSeleccionadaUrl =
+            '@Url.Action(
+                            "ResguardarCuentaCorrienteSeleccionadaParaElCobro",
+                            "CobranzaCtaCte",
+            new { area = "Facturacion" }
+                    )';
+
+
+         // URLs para el buscador de clientes
+        const BuscarClienteUrl = '@Url.Action("BuscarCliente", "Cliente", new { Area = "Facturacion" })';
+        const TraerGrillaClientesUrl = '@Url.Action("TraerGrillaClientes", "Cliente", new { Area = "Facturacion" })';
+        const LimpiarSesionClientesUrl = '@Url.Action("LimpiarSesionClientes", "Cliente", new { Area = "Facturacion" })';
+        const ObtenerClienteActualUrl = '@Url.Action("ObtenerClienteActual", "Cliente", new { Area = "Facturacion" })';
+
+
+         // CHECKOUT
+        const obtenerValoresPendientesUrl = "@Url.Action("ObtenerValoresPendientes", "checkout", new { area = "Facturacion" })";
+        const obtenerValoresNCUrl = "@Url.Action("ObtenerValoresNC", "checkout", new { area = "Facturacion" })";
+        const obtenerValoresMPUrl = "@Url.Action("ObtenerValoresMP", "checkout", new { area = "Facturacion" })";
+        const obtenerValoresInsUrl = "@Url.Action("ObtenerValoresIns", "checkout", new { area = "Facturacion" })";
+        const obtenerBancosUrl = "@Url.Action("obtenerBancos", "checkout", new { area = "Facturacion" })";
+    </script>
+
+    @* Scripts del módulo *@
+    <script src="~/js/app/fact.js" asp-append-version="true"></script>
+    <script src="~/js/app/pagoFactura.js" asp-append-version="true"></script>
+    <script src="~/js/app/pagoCtaCte.js" asp-append-version="true"></script>
+}

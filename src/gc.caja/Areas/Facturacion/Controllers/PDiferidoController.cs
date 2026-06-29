@@ -12,11 +12,15 @@ namespace gc.caja.Areas.Facturacion.Controllers
     [Area("Facturacion")]
     public class PDiferidoController : ControladorBaseCaja
     {
-
+        private readonly string Co_TipoCC;
         private readonly IFactDiferidaServicio _fdiferidoSv;
+        private const string MODULO = "CobranzaDiferida";
+        private const string MODULO_DESC = "Módulo de Cobranza Diferida";
+
         public PDiferidoController(IOptions<AppSettings> options, IHttpContextAccessor contexto,
             ILogger<PDiferidoController> logger, IFactDiferidaServicio fdiferidoSv) : base(options, contexto, logger)
         {
+            Co_TipoCC = "CD";
             _fdiferidoSv = fdiferidoSv;
         }
 
@@ -49,6 +53,10 @@ namespace gc.caja.Areas.Facturacion.Controllers
             _logger?.LogInformation("═══════════════════════════════════════════════════");
             _logger?.LogInformation($"✅ Vista cargada con {resultado.Facturas?.Count ?? 0} facturas");
             _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+            ViewBag.Co_TipoCD = Co_TipoCC;
+            ViewBag.ModuloCD = MODULO;
+            ViewBag.ModuloDesc = MODULO_DESC;
 
             return View();
         }

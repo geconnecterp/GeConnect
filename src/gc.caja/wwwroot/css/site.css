@@ -7205,3 +7205,12 @@ span[data-bs-toggle="tooltip"] {
     #tblVerFacturasPendientes tbody tr.fila-deshabilitada input[type="checkbox"] {
         cursor: not-allowed; /* Cursor de "no permitido" sobre el checkbox */
     }
+
+/* CORRESPONDE A LA VISTA MODAL QUE MODIFICA EL IMPORTE DE IMPUTACION DE LA CUENTA CORRIENTE */
+#modalDetalleImputaCC.modal.show {
+    z-index: 5010 !important;
+}
+
+    #modalDetalleImputaCC.modal.show ~ .modal-backdrop {
+        z-index: 5009 !important;
+    }

@@ -473,7 +473,7 @@ function iniciarCobranza() {
             function () { $("#msjModal").modal("hide"); },
             false,
             ["Aceptar"],
-            "warning"
+            "warn!"
         );
         return;
     }
@@ -575,7 +575,7 @@ function iniciarCobranza() {
             function () { $("#msjModal").modal("hide"); },
             false,
             ["Aceptar"],
-            "error"
+            "error!"
         );
         return;
     }
