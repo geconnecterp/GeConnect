@@ -18,6 +18,18 @@ function InicializaEventos() {
 }
 
 function ImprimirDetalle() {
+    ReseteoDeReportes();
+    setTimeout(() => {
+        const filtros = buildQueryFilters();
+        let data = { ctag_list: filtros.ctag_list.join(","), desde: filtros.desde, hasta: filtros.hasta };
+        cargarReporteEnArre(85, data, "Movimiento de Cuentas Directas", "", "");
+        invocacionGestorDoc({});
+    }, 500);
+}
+
+function ReseteoDeReportes() {
+    console.log("Reseto de reportes");
+    ReporteResetArre();
 }
 
 function ValidarRangoFechas() {
