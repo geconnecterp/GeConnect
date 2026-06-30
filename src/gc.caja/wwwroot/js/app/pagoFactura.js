@@ -2229,6 +2229,20 @@ function enviarPayloadAlServidor(jsonValores, moduloOrigen, arrayCancelar) {
     console.log(`   Cancelar (parámetro): ${arrayCancelar ? arrayCancelar.length : 'NULL'}`);
     console.log('═══════════════════════════════════════════════════');
 
+    const contextoPagoConfirmado = {
+        coTipo: String(window._coTipoActual || '')
+            .trim()
+            .toUpperCase()
+    };
+
+    contextoPagoConfirmado.esCobranzaDiferida =
+        contextoPagoConfirmado.coTipo === 'CD';
+
+    console.log(
+        `   Contexto capturado para esta operación: ${contextoPagoConfirmado.coTipo || 'N/A'
+        }`
+    );
+
     // ❶ Actualizar mensaje de loading
     actualizarMensajeLoadingGlobal('Procesando pago y emitiendo comprobante...');
 
@@ -2371,7 +2385,22 @@ function enviarPayloadAlServidor(jsonValores, moduloOrigen, arrayCancelar) {
             console.log(`✅ Datos del comprobante recibidos: ${response.data.length} comprobante(s)`);
 
             const comprobante = response.data[0];
-            const esCobranzaDiferida = comprobante.es_cobranza_diferida === true;
+
+            const coTipoActual =
+                contextoPagoConfirmado.coTipo;
+
+            const esCobranzaDiferida =
+                contextoPagoConfirmado.esCobranzaDiferida;
+
+
+            console.log(
+                `   co_tipo actual: ${coTipoActual || 'N/A'}`
+            );
+
+            console.log(
+                `   Es Cobranza Diferida real: ${esCobranzaDiferida ? 'SÍ' : 'NO'
+                }`
+            );
 
             console.log('═══════════════════════════════════════════════════');
             console.log('📄 COMPROBANTE EMITIDO v28.1');
@@ -2611,60 +2640,48 @@ function procesarPagoExitoso(comprobante, esCobranzaDiferida = false) {
             </p>
         </div>`,
         function () {
-            $("#msjModal").modal("hide");
+            const $mensaje = $('#msjModal');
 
-            // ═══════════════════════════════════════════════════
-            // ✅ FLUJO DE LIMPIEZA Y REINICIO (PRESERVANDO BACKUP)
-            // ═══════════════════════════════════════════════════
-            setTimeout(() => {
-                console.log('═══════════════════════════════════════════════════');
-                console.log('🔄 INICIANDO REINICIO DEL MÓDULO DE VENTAS v20.3');
-                console.log('═══════════════════════════════════════════════════');
+            /*
+                Esta variable queda cerrada dentro del callback.
+                Conserva el contexto real recibido por procesarPagoExitoso().
+            */
+            const esCobranzaDiferidaConfirmada =
+                esCobranzaDiferida === true;
 
-                // ❶ PASO 1: Cerrar modal de pago
-                if (modalPagoInstance) {
-                    modalPagoInstance.hide();
-                    console.log('✅ Paso 1: Modal de pago cerrado');
+            let reinicioDespachado = false;
+
+            const despacharReinicioUnaVez = () => {
+                if (reinicioDespachado) {
+                    return;
                 }
 
-                setTimeout(() => {
-                    // ❷ PASO 2: Cerrar modal de cálculo
-                    if (typeof cerrarModalCalculoFactura === 'function') {
-                        cerrarModalCalculoFactura();
-                        console.log('✅ Paso 2: Modal de cálculo cerrado');
-                    }
+                reinicioDespachado = true;
 
-                    setTimeout(() => {
-                        // ═══════════════════════════════════════════════════
-                        // ✅ CAMBIO CRÍTICO v20.3: PRESERVAR BACKUP
-                        // ═══════════════════════════════════════════════════
+                ejecutarReinicioDespuesDePagoExitoso(
+                    esCobranzaDiferidaConfirmada
+                );
+            };
 
-                        // ❸ PASO 3: Limpiar venta SIN eliminar backup
-                        if (typeof limpiarVentaCompleta === 'function') {
-                            limpiarVentaCompleta(false); // ← 🚨 PARÁMETRO false = PRESERVAR BACKUP
-                            console.log('✅ Paso 3: Módulo de ventas limpiado (backup preservado)');
-                        } else {
-                            console.error('❌ Función limpiarVentaCompleta no existe');
-                        }
+            /*
+                El botón Aceptar puede cerrar el modal por Bootstrap antes o después
+                de ejecutar FunctionCallback. Por eso combinamos evento real con
+                fallback temporal, evitando quedar bloqueados si hidden no llega.
+            */
+            if ($mensaje.hasClass('show')) {
+                $mensaje
+                    .off('hidden.bs.modal.reinicioPagoExitoso')
+                    .one(
+                        'hidden.bs.modal.reinicioPagoExitoso',
+                        despacharReinicioUnaVez
+                    )
+                    .modal('hide');
 
-                        setTimeout(() => {
-                            // ❹ PASO 4: Abrir modal de identificar cliente
-                            if (typeof abrirModalIdentificarCliente === 'function') {
-                                abrirModalIdentificarCliente();
-                                console.log('✅ Paso 4: Modal de identificar cliente abierto');
-                            } else {
-                                console.error('❌ Función abrirModalIdentificarCliente no existe');
-                            }
+                setTimeout(despacharReinicioUnaVez, 800);
+                return;
+            }
 
-                            console.log('═══════════════════════════════════════════════════');
-                            console.log('✅ REINICIO COMPLETADO - Backup disponible');
-                            console.log('═══════════════════════════════════════════════════');
-
-                        }, 200); // Esperar limpieza
-                    }, 300); // Esperar cierre de modal cálculo
-                }, 300); // Esperar cierre de modal pago
-            }, 300); // Esperar cierre de mensaje de éxito
-            
+            despacharReinicioUnaVez();
         },
         false,
         ["Aceptar"],
@@ -2672,6 +2689,92 @@ function procesarPagoExitoso(comprobante, esCobranzaDiferida = false) {
         null
     );
 }
+
+function obtenerUrlIndexCobranzaDiferida() {
+    if (
+        typeof cobranzaDiferidaInicializaUrl !== 'undefined' &&
+        cobranzaDiferidaInicializaUrl
+    ) {
+        return cobranzaDiferidaInicializaUrl;
+    }
+
+    return '/Facturacion/PDiferido';
+}
+
+function redireccionarAIndexCobranzaDiferida() {
+    const urlIndex = obtenerUrlIndexCobranzaDiferida();
+
+    console.warn(
+        `⚠️ Aplicando fallback de Cobranza Diferida. Redireccionando a: ${urlIndex}`
+    );
+
+    window.location.replace(urlIndex);
+}
+
+function ejecutarReinicioDespuesDePagoExitoso(esCobranzaDiferida) {
+    /*
+        La decisión se toma con el parámetro recibido desde el flujo
+        exitoso del pago. No se vuelve a consultar _coTipoActual.
+    */
+    if (esCobranzaDiferida === true) {
+        console.log('═══════════════════════════════════════════════════');
+        console.log('🔄 REINICIO POST-COBRO: COBRANZA DIFERIDA');
+        console.log('═══════════════════════════════════════════════════');
+
+        if (typeof window.reiniciarCobranzaDiferida === 'function') {
+            try {
+                const resultado = window.reiniciarCobranzaDiferida();
+
+                /*
+                    La función es async. Si falla durante el cierre de modales,
+                    nunca debe volver al reinicio genérico de ventas.
+                */
+                Promise.resolve(resultado).catch(function (error) {
+                    console.error(
+                        '❌ Error en reiniciarCobranzaDiferida:',
+                        error
+                    );
+
+                    redireccionarAIndexCobranzaDiferida();
+                });
+
+                return;
+            } catch (error) {
+                console.error(
+                    '❌ Excepción al invocar reiniciarCobranzaDiferida:',
+                    error
+                );
+
+                redireccionarAIndexCobranzaDiferida();
+                return;
+            }
+        }
+
+        /*
+            Fallback crítico:
+            CD nunca debe ejecutar reiniciaPantallaAlVolver().
+        */
+        console.error(
+            '❌ window.reiniciarCobranzaDiferida no está disponible.'
+        );
+
+        redireccionarAIndexCobranzaDiferida();
+        return;
+    }
+
+    /*
+        Solo las ventas normales deben usar el reinicio tradicional.
+    */
+    if (typeof reiniciaPantallaAlVolver === 'function') {
+        reiniciaPantallaAlVolver();
+        return;
+    }
+
+    console.warn(
+        '⚠️ No se encontró rutina de reinicio para el flujo actual.'
+    );
+}
+
 
 function reiniciaPantallaAlVolver() {
     setTimeout(() => {
@@ -2816,88 +2919,7 @@ function manejarSesionExpirada(mensaje) {
     );
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// ✅ NUEVO v25.0: FUNCIONES DE CONTROL DEL TECLADO VIRTUAL
-// ═══════════════════════════════════════════════════════════════════
 
-/**
- * ✅ NUEVO v25.0: Posiciona el teclado virtual junto al ancla.
- * Se asegura de que el teclado esté visible y alineado a la izquierda.
- */
-function posicionarTecladoVirtual() {
-    console.log('📍 Posicionando teclado virtual...');
-    const ancla = document.getElementById('teclado-ancla');
-    const teclado = document.getElementById('virtual-keyboard');
-
-    if (!teclado) {
-        console.error('❌ Teclado virtual no encontrado en el DOM.');
-        return;
-    }
-    if (!ancla) {
-        console.error('❌ Ancla #teclado-ancla no encontrada.');
-        return;
-    }
-
-    // Forzar visibilidad si está oculto
-    if (teclado.style.display !== 'flex') {
-        teclado.style.display = 'flex';
-        teclado.style.opacity = '1';
-        console.log('   ✅ Teclado forzado a ser visible.');
-    }
-
-    // Calcular posición
-    const rectAncla = ancla.getBoundingClientRect();
-    const rectTeclado = teclado.getBoundingClientRect();
-
-    // Posicionar el teclado
-    // Usamos 'transform' para no interferir con otras propiedades de posicionamiento
-    const top = rectAncla.top;
-    const left = rectAncla.left;
-
-    teclado.style.position = 'fixed';
-    teclado.style.top = `${top}px`;
-    teclado.style.left = `${left}px`;
-    teclado.style.transform = 'none'; // Resetear transform de arrastre
-
-    console.log(`   ✅ Teclado posicionado en: top=${top.toFixed(0)}px, left=${left.toFixed(0)}px`);
-}
-
-/**
- * ✅ NUEVO v25.0: Activa el teclado para un input específico.
- * @param {string} inputSelector - El selector del campo de entrada.
- */
-function activarTecladoParaInput(inputSelector) {
-    console.log(`⌨️ Activando teclado para: ${inputSelector}`);
-    const input = document.querySelector(inputSelector);
-    if (!input) {
-        console.error(`❌ Input ${inputSelector} no encontrado.`);
-        return;
-    }
-
-    // 1. Simular foco en el input para que virtual-keyboard.js lo detecte y renderice.
-    input.focus();
-
-    // 2. Usar un pequeño delay para asegurar que el teclado se haya renderizado en el DOM.
-    setTimeout(() => {
-        // 3. Mover el teclado a la posición deseada.
-        posicionarTecladoVirtual();
-
-        // 4. Volver a enfocar y seleccionar el contenido del input.
-        input.focus();
-        input.select();
-    }, 150); // 150ms es un delay seguro para la renderización.
-}
-
-/**
- * ✅ NUEVO v25.0: Oculta el teclado virtual.
- */
-function ocultarTecladoVirtual() {
-    const teclado = document.getElementById('virtual-keyboard');
-    if (teclado) {
-        teclado.style.display = 'none';
-        console.log('⌨️ Teclado virtual ocultado.');
-    }
-}
 
 ///**
 // * ✅ NUEVO v20.2: Muestra mensaje de error genérico

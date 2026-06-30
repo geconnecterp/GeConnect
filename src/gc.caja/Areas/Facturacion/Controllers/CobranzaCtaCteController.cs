@@ -130,8 +130,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
         }
 
         [HttpPost]
-        public JsonResult ResguardarCuentaCorrienteSeleccionadaParaElCobro(
-    [FromBody] ResguardarCtaCteSeleccionadaRequestDto req)
+        public JsonResult ResguardarCuentaCorrienteSeleccionadaParaElCobro([FromBody] ResguardarCtaCteSeleccionadaRequestDto req)
         {
             try
             {
@@ -171,104 +170,106 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 var registrosSeleccionados = new List<CtaCteResponseDto>();
                 var clavesProcesadas = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-                //foreach (var registroSolicitado in req.Registros)
-                //{
-                //    if (string.IsNullOrWhiteSpace(registroSolicitado.cta_id) ||
-                //        string.IsNullOrWhiteSpace(registroSolicitado.tco_id) ||
-                //        string.IsNullOrWhiteSpace(registroSolicitado.cm_compte) ||
-                //        string.IsNullOrWhiteSpace(registroSolicitado.ctacte))
-                //    {
-                //        return Json(new
-                //        {
-                //            ok = false,
-                //            mensaje = "Uno de los registros seleccionados no posee datos identificatorios completos."
-                //        });
-                //    }
 
-                //    var clave = string.Join("|",
-                //        registroSolicitado.cta_id,
-                //        registroSolicitado.tco_id,
-                //        registroSolicitado.cm_compte,
-                //        registroSolicitado.cm_compte_cuota,
-                //        registroSolicitado.ctacte
-                //    );
+                foreach (var registroSolicitado in req.Registros)
+                {
+                    if (string.IsNullOrWhiteSpace(registroSolicitado.cta_id) ||
+                        string.IsNullOrWhiteSpace(registroSolicitado.tco_id) ||
+                        string.IsNullOrWhiteSpace(registroSolicitado.cm_compte) ||
+                        string.IsNullOrWhiteSpace(registroSolicitado.ctacte))
+                    {
+                        return Json(new
+                        {
+                            ok = false,
+                            mensaje = "Uno de los comprobantes seleccionados no posee datos identificatorios completos."
+                        });
+                    }
 
-                //    if (!clavesProcesadas.Add(clave))
-                //    {
-                //        return Json(new
-                //        {
-                //            ok = false,
-                //            mensaje = "Existen registros duplicados en la selección."
-                //        });
-                //    }
+                    var clave = string.Join("|",
+                        registroSolicitado.cta_id,
+                        registroSolicitado.tco_id,
+                        registroSolicitado.cm_compte,
+                        registroSolicitado.cm_compte_cuota,
+                        registroSolicitado.ctacte
+                    );
 
-                //    var registroOriginal = registrosDisponibles.FirstOrDefault(x =>
-                //        x.cta_id == registroSolicitado.cta_id &&
-                //        x.tco_id == registroSolicitado.tco_id &&
-                //        x.cm_compte == registroSolicitado.cm_compte &&
-                //        x.cm_compte_cuota == registroSolicitado.cm_compte_cuota &&
-                //        x.ctacte == registroSolicitado.ctacte
-                //    );
+                    if (!clavesProcesadas.Add(clave))
+                    {
+                        return Json(new
+                        {
+                            ok = false,
+                            mensaje = "Existen comprobantes duplicados en la selección."
+                        });
+                    }
 
-                //    if (registroOriginal == null)
-                //    {
-                //        return Json(new
-                //        {
-                //            ok = false,
-                //            mensaje = $"El comprobante {registroSolicitado.tco_id} {registroSolicitado.cm_compte} ya no está disponible para cobrar."
-                //        });
-                //    }
+                    var registroOriginal = registrosDisponibles.FirstOrDefault(x =>
+                        x.cta_id == registroSolicitado.cta_id &&
+                        x.tco_id == registroSolicitado.tco_id &&
+                        x.cm_compte == registroSolicitado.cm_compte &&
+                        x.cm_compte_cuota == registroSolicitado.cm_compte_cuota &&
+                        x.ctacte == registroSolicitado.ctacte
+                    );
 
-                //    if (registroSolicitado.cv_importe <= 0)
-                //    {
-                //        return Json(new
-                //        {
-                //            ok = false,
-                //            mensaje = $"El importe a imputar del comprobante {registroSolicitado.cm_compte} debe ser mayor a cero."
-                //        });
-                //    }
+                    if (registroOriginal == null)
+                    {
+                        return Json(new
+                        {
+                            ok = false,
+                            mensaje = $"El comprobante {registroSolicitado.tco_id} {registroSolicitado.cm_compte} ya no está disponible para cobrar."
+                        });
+                    }
 
-                //    if (registroSolicitado.cv_importe > registroOriginal.cv_importe)
-                //    {
-                //        return Json(new
-                //        {
-                //            ok = false,
-                //            mensaje = $"El importe a imputar del comprobante {registroSolicitado.cm_compte} supera el saldo disponible."
-                //        });
-                //    }
+                    if (registroSolicitado.cv_importe <= 0)
+                    {
+                        return Json(new
+                        {
+                            ok = false,
+                            mensaje = $"El importe del comprobante {registroSolicitado.cm_compte} debe ser mayor a cero."
+                        });
+                    }
 
-                //    // Se conservan los datos originales del servidor.
-                //    // Solo cv_importe llega como importe editable desde data-imputa.
-                //    registrosSeleccionados.Add(new CtaCteResponseDto
-                //    {
-                //        cta_id = registroOriginal.cta_id,
-                //        dia_movi = registroOriginal.dia_movi,
-                //        tco_id = registroOriginal.tco_id,
-                //        cm_compte = registroOriginal.cm_compte,
-                //        cm_compte_cuota = registroOriginal.cm_compte_cuota,
-                //        cv_fecha_vto = registroOriginal.cv_fecha_vto,
+                    // Registro original.cv_importe es el saldo pendiente real
+                    // recibido desde el servicio y almacenado en sesión.
+                    if (registroSolicitado.cv_importe > registroOriginal.cv_importe)
+                    {
+                        return Json(new
+                        {
+                            ok = false,
+                            mensaje = $"El importe del comprobante {registroSolicitado.cm_compte} supera el saldo disponible."
+                        });
+                    }
 
-                //        // Importe final a cobrar.
-                //        cv_importe = registroSolicitado.cv_importe,
+                    registrosSeleccionados.Add(new CtaCteResponseDto
+                    {
+                        cta_id = registroOriginal.cta_id,
+                        dia_movi = registroOriginal.dia_movi,
+                        tco_id = registroOriginal.tco_id,
+                        cm_compte = registroOriginal.cm_compte,
+                        cm_compte_cuota = registroOriginal.cm_compte_cuota,
+                        cv_fecha_vto = registroOriginal.cv_fecha_vto,
 
-                //        // Importe original conservado desde el servidor.
-                //        cv_importe_ori = registroOriginal.cv_importe_ori,
+                        // Este es el valor que el usuario decidió cobrar.
+                        cv_importe = registroSolicitado.cv_importe,
 
-                //        cv_concepto = registroOriginal.cv_concepto,
-                //        ve_id = registroOriginal.ve_id,
-                //        ccb_id = registroOriginal.ccb_id,
-                //        ctacte = registroOriginal.ctacte,
-                //        carga = registroOriginal.carga,
-                //        carga_obligatoria = registroOriginal.carga_obligatoria
-                //    });
-                //}
+                        // Siempre se conserva el valor histórico del servidor.
+                        cv_importe_ori = registroOriginal.cv_importe_ori,
 
-                CuentaCorrienteDelClienteSeleccionadaParaElCobro = req.Registros;
+                        cv_concepto = registroOriginal.cv_concepto,
+                        ve_id = registroOriginal.ve_id,
+                        ccb_id = registroOriginal.ccb_id,
+                        ctacte = registroOriginal.ctacte,
+                        carga = registroOriginal.carga,
+                        carga_obligatoria = registroOriginal.carga_obligatoria
+                    });
+                }
+
+                CuentaCorrienteDelClienteSeleccionadaParaElCobro =
+                    registrosSeleccionados;
 
                 _logger?.LogInformation(
                     "✅ Se resguardaron {Cantidad} registros de Cuenta Corriente. Total: {Total}",
-                    req.Registros.Count,
-                    req.Registros.Sum(x => x.cv_importe_ori)
+                    registrosSeleccionados.Count,
+                    registrosSeleccionados.Sum(x => x.cv_importe)
                 );
 
                 return Json(new

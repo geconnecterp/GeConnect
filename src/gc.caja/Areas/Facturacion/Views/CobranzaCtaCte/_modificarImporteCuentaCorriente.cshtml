@@ -20,7 +20,7 @@
             <div class="modal-header bg-gradient-golden">
                 <h5 class="modal-title" id="modalModificarImporteCCTitle">
                     <i class="bx bx-edit-alt me-2"></i>
-                    Modificar importe a pagar
+                    Modificar importe a cobrar
                 </h5>
 
                 <button type="button"
@@ -34,18 +34,27 @@
 
                 <form id="formModificarImporteCC" novalidate>
 
-                    <div class="alert alert-info d-flex align-items-center mb-3">
-                        <i class="bx bx-info-circle me-2 fs-4"></i>
+                    <div class="alert alert-info mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bx bx-info-circle me-2 fs-4"></i>
 
-                        <div>
-                            <strong>Importe original permitido:</strong>
-                            <span id="lblImporteOriginalCC">$ 0.00</span>
+                            <div>
+                                <div>
+                                    <strong>Importe original:</strong>
+                                    <span id="lblImporteOriginalCC">$ 0.00</span>
+                                </div>
+
+                                <div>
+                                    <strong>Saldo disponible para cobrar:</strong>
+                                    <span id="lblSaldoDisponibleCC">$ 0.00</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label for="txtImportePagarCC" class="form-label fw-bold">
-                            Importe a pagar
+                            Importe a cobrar
                             <span class="text-danger">*</span>
                         </label>
 
@@ -66,12 +75,16 @@
 
                         <div class="form-text">
                             <i class="bx bx-info-circle"></i>
-                            El importe debe ser mayor o igual a cero y no puede superar el importe original.
+                            El importe debe ser mayor a cero y no puede superar el saldo disponible del comprobante.
                         </div>
                     </div>
 
                 </form>
 
+                <div id="teclado-ancla-cc"
+                     class="teclado-ancla-cc"
+                     aria-hidden="true">
+                </div>
             </div>
 
             <div class="modal-footer bg-light">

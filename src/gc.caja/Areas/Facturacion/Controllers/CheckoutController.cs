@@ -177,14 +177,26 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         break;
                     case "CUENTACORRIENTE":
                         esCobranzaCtaCteTemporal = true;
+
                         ctaCtes = CuentaCorrienteDelClienteSeleccionadaParaElCobro;
+
                         if (ctaCtes != null && ctaCtes.Count > 0)
                         {
-                            importe = ctaCtes.Sum(c => c.cv_importe_ori);
+                            importe = ctaCtes.Sum(c => c.cv_importe);
                         }
-                        FacturaSubtotales = new List<FactSubtotalJsonDto> { new FactSubtotalJsonDto { orden = 1 ,
-                            tipo = "SU",
-                            concepto = "Subtotal", @base = 0.00m, alicuota = 0.00m, importe = importe, id_aux = "" } };
+
+                        FacturaSubtotales = new List<FactSubtotalJsonDto> {
+                            new ()
+                                { 
+                                    orden = 1 ,
+                                    tipo = "SU",
+                                    concepto = "Subtotal", 
+                                    @base = 0.00m, 
+                                    alicuota = 0.00m, 
+                                    importe = importe, 
+                                    id_aux = "" 
+                                } 
+                        };
 
                         if (ctaCtes != null && ctaCtes.Count > 0)
                         {
@@ -250,6 +262,30 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 // ❼ ✅ CORREGIDO: VALIDAR QUE HAYA VALORES DE PAGO DESDE EL DTO
                 var valores = pagoDto.Valores;
+                
+                //Esto protege el flujo si alguien altera el DOM o el request manualmente.
+                if (esCobranzaCtaCteTemporal)
+                {
+                    var totalSeleccionado = ctaCtes?.Sum(x => x.cv_importe) ?? 0m;
+
+                    var totalValores = valores?.Sum(x => x.rb_importe) ?? 0m;
+
+                    if (Math.Abs(totalSeleccionado - totalValores) > 0.01m)
+                    {
+                        _logger?.LogWarning(
+                            "Monto inconsistente en Cuenta Corriente. Selección: {Seleccion}. Valores: {Valores}",
+                            totalSeleccionado,
+                            totalValores
+                        );
+
+                        return Json(new
+                        {
+                            ok = false,
+                            mensaje = "El total de los medios de pago no coincide con el importe seleccionado de Cuenta Corriente."
+                        });
+                    }
+                }
+
                 var uniones = pagoDto.Uniones ?? new List<Json_Union>();
 
                 if (valores == null || valores.Count == 0)
@@ -335,7 +371,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     _logger?.LogInformation("═══════════════════════════════════════════════════");
                     _logger?.LogInformation("🔍 OBTENIENDO FACTURAS A CANCELAR v28.1");
                     _logger?.LogInformation("═══════════════════════════════════════════════════");
-                   
+
                     // ═══════════════════════════════════════════════════════════
                     // VALIDACIÓN FINAL: Debe haber al menos una factura
                     // ═══════════════════════════════════════════════════════════
@@ -680,6 +716,16 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     _logger?.LogInformation("✅ Sesión de FacturasSeleccionadasParaCobro limpiada");
                 }
 
+                if (esCobranzaCtaCteTemporal)
+                {
+                    CuentaCorrienteDelClienteSeleccionadaParaElCobro =
+                        new List<CtaCteResponseDto>();
+
+                    _logger?.LogInformation(
+                        "✅ Sesión CuentaCorrienteDelClienteSeleccionadaParaElCobro limpiada"
+                    );
+                }
+
                 _logger?.LogInformation("✅ Sesión de factura limpiada");
 
                 // ⓴ RETORNAR RESPUESTA CORRECTA PARA FRONTEND
@@ -725,7 +771,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 return Json(respuestaFinal);
 
-                
+
             }
             catch (Exception ex)
             {

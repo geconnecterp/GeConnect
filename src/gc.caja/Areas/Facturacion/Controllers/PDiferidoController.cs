@@ -28,6 +28,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
         /// ✅ ACTUALIZADO v3.0: Vista principal del módulo.
         /// Carga todas las facturas pendientes al inicio y las envía a la vista.
         /// </summary>
+        [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
         public async Task<IActionResult> Index()
         {
             _logger?.LogInformation("═══════════════════════════════════════════════════");
@@ -162,10 +163,14 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 // ❶ VALIDAR CAJA ACTUAL
                 var cajaActual = CajaActual;
-                if (cajaActual == null || string.IsNullOrEmpty(cajaActual.CajaId))
+                if (cajaActual?.Caja == null || string.IsNullOrWhiteSpace(cajaActual.CajaId))
                 {
                     _logger?.LogWarning("❌ No hay caja abierta");
-                    return (new List<FactPendienteResponseDto>(), "No hay caja abierta. Por favor, abra una caja antes de continuar.");
+
+                    return (
+                        new List<FactPendienteResponseDto>(),
+                        "No hay caja abierta. Por favor, abra una caja antes de continuar."
+                    );
                 }
 
                 _logger?.LogInformation($"   Caja actual: {cajaActual.CajaId}");
@@ -190,11 +195,21 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation($"⏱️ Tiempo de consulta: {stopwatch.ElapsedMilliseconds}ms");
 
                 // ❹ VALIDAR RESPUESTA DEL SERVICIO
-                if (!resultado.Ok || resultado == null || resultado.ListaEntidad == null)
+                if (resultado == null || !resultado.Ok || resultado.ListaEntidad == null)
                 {
-                    string mensajeError = resultado?.Mensaje ?? "No se pudieron obtener las facturas pendientes.";
-                    _logger?.LogError($"❌ Error al obtener facturas: {mensajeError}");
-                    return (new List<FactPendienteResponseDto>(), mensajeError);
+                    string mensajeError =
+                        resultado?.Mensaje ??
+                        "No se pudieron obtener las facturas pendientes.";
+
+                    _logger?.LogError(
+                        "❌ Error al obtener facturas: {Mensaje}",
+                        mensajeError
+                    );
+
+                    return (
+                        new List<FactPendienteResponseDto>(),
+                        mensajeError
+                    );
                 }
 
                 // ❺ RESGUARDAR EN SESIÓN (para operaciones posteriores)
@@ -341,131 +356,89 @@ namespace gc.caja.Areas.Facturacion.Controllers
             }
         }
 
-        ///// <summary>
-        ///// Este método maneja la solicitud POST para obtener las facturas pendientes de cobranza diferida para el cliente y caja actuales.
-        ///// </summary>
-        ///// <returns></returns>
+        [HttpPost]
+        public async Task<JsonResult> ObtenerFacturasPendientes()
+        {
+            try
+            {
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("🔄 RECARGAR FACTURAS DIFERIDAS PENDIENTES");
+                _logger?.LogInformation($"   Usuario: {UserName}");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
 
-        //private async Task<(bool,string)> VerFacturasPendientes()
-        //{
-        //    var stopwatch = Stopwatch.StartNew();
+                if (!VerificarAutenticacion(out _))
+                {
+                    _logger?.LogWarning(
+                        "❌ Sesión expirada al recargar facturas diferidas."
+                    );
 
-        //    try
-        //    {
-        //        // ❸ Caja Actual
-        //        var cajaActual = CajaActual;
-        //        if (cajaActual == null)
-        //        {
-        //            stopwatch.Stop();
-        //            _logger?.LogInformation($"⏱️ Tiempo antes del bloqueo: {stopwatch.ElapsedMilliseconds}ms");
-        //            _logger?.LogWarning("❌ No hay caja abierta");
-        //            return (false, "No hay caja abierta" );
-        //        }
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = "Sesión expirada. Por favor, inicie sesión nuevamente."
+                    });
+                }
 
+                // Esta función consulta todas las pendientes del día y,
+                // además, actualiza FacturasPendientesActuales en sesión.
+                var resultado = await CargarTodasLasFacturasPendientes();
 
-        //        var request = new FactPendienteRequestDto
-        //        {
-        //            caja_nro_cierre = cajaActual.Caja.caja_nro_cierre,
-        //            caja_nro_proceso = cajaActual.Caja.caja_nro_proceso,
-        //            cta_id = "%",
-        //            tdo_codigo = "",
-        //            cta_documento = "%",
-        //            tipo_carga = "T"
-        //        };
+                if (!string.IsNullOrWhiteSpace(resultado.MensajeError))
+                {
+                    _logger?.LogWarning(
+                        "⚠️ No se pudieron recargar las facturas pendientes: {Mensaje}",
+                        resultado.MensajeError
+                    );
 
-        //        var resultado = await _fdiferidoSv.ObtenerFacturasPendientes(request, TokenCookie);
-        //        stopwatch.Stop();
-        //        _logger?.LogInformation($"⏱️ Tiempo de ejecución: {stopwatch.ElapsedMilliseconds}ms");
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = resultado.MensajeError
+                    });
+                }
 
-        //        if (!resultado.Ok || resultado==null || resultado.ListaEntidad==null)
-        //        {
-        //            _logger?.LogError("❌ Error al obtener facturas pendientes: {Mensaje}", resultado.Mensaje ?? "Hubo problemas al intentar recuperar las facturas pendientes");
-        //            return(false, resultado.Mensaje ?? "Hubo problemas al intentar recuperar las facturas pendientes" );
-        //        }
-        //        //se resguardan las facturas pendientes existan o no, si ha termiando OK
-        //        FacturasPendientesActuales = resultado.ListaEntidad;
-        //        return (true, "");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger?.LogError(ex, "❌ Excepción al obtener facturas pendientes");
-        //        return (false, "Ocurrió un error al obtener las facturas pendientes");
-        //    }
-        //    finally
-        //    {
-        //        stopwatch.Stop();
-        //        _logger?.LogInformation("⏱️ ObtenerFacturasPendientes ejecutado en {ElapsedMilliseconds} ms", stopwatch.ElapsedMilliseconds);
-        //    }
-        //}
+                var facturasActualizadas =
+                    resultado.Facturas ?? new List<FactPendienteResponseDto>();
 
-        ///// <summary>
-        ///// Este método maneja la solicitud POST para obtener las facturas pendientes de cobranza diferida para el cliente y caja actuales.
-        ///// </summary>
-        ///// <returns></returns>
-        //[HttpPost]
-        //public async Task<JsonResult> ObtenerFacturasPendientes()
-        //{
-        //    var stopwatch = Stopwatch.StartNew();
+                // La selección anterior ya fue cobrada o abandonada.
+                // No debe contaminar una nueva cobranza.
+                FacturasSeleccionadasParaCobro =
+                    new List<FactPendienteResponseDto>();
 
-        //    try
-        //    {
-        //        // ❶ VALIDAR AUTENTICACIÓN
-        //        if (!VerificarAutenticacion(out IActionResult redirectResult))
-        //            return Json(new { ok = false, mensaje = "Sesión expirada" });
+                _logger?.LogInformation(
+                    "✅ Facturas diferidas actualizadas. Pendientes actuales: {Cantidad}",
+                    facturasActualizadas.Count
+                );
 
-        //        // ❷ Cliente Actual
-        //        var clienteActual = ClienteActual;
-        //        if (clienteActual == null)
-        //        {
-        //            stopwatch.Stop();
-        //            _logger?.LogInformation($"⏱️ Tiempo antes del bloqueo: {stopwatch.ElapsedMilliseconds}ms");
-        //            _logger?.LogWarning("❌ No hay cliente seleccionado");
-        //            return Json(new { ok = false, mensaje = "Debe seleccionar un cliente primero" });
-        //        }
+                _logger?.LogInformation(
+                    "✅ Selección temporal FacturasSeleccionadasParaCobro limpiada."
+                );
 
-        //        // ❸ Caja Actual
-        //        var cajaActual = CajaActual;
-        //        if (cajaActual == null)
-        //        {
-        //            stopwatch.Stop();
-        //            _logger?.LogInformation($"⏱️ Tiempo antes del bloqueo: {stopwatch.ElapsedMilliseconds}ms");
-        //            _logger?.LogWarning("❌ No hay caja abierta");
-        //            return Json(new { ok = false, mensaje = "No hay caja abierta" });
-        //        }
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
 
+                return Json(new
+                {
+                    ok = true,
+                    lista = facturasActualizadas,
+                    cantidad = facturasActualizadas.Count,
+                    mensaje = facturasActualizadas.Count > 0
+                        ? "Facturas pendientes actualizadas correctamente."
+                        : "No hay facturas pendientes de cobro."
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(
+                    ex,
+                    "❌ Error al recargar las facturas diferidas pendientes."
+                );
 
-        //        var request = new FactPendienteRequestDto
-        //        {
-        //            caja_nro_cierre = cajaActual.Caja.caja_nro_cierre,
-        //            caja_nro_proceso = cajaActual.Caja.caja_nro_proceso,
-        //            cta_id = clienteActual.cta_id,
-        //            tdo_codigo = clienteActual.tdoc_id,
-        //            cta_documento = clienteActual.cta_documento,
-        //            tipo_carga = ""
-        //        };
-
-        //        var resultado = await _fdiferidoSv.ObtenerFacturasPendientes(request, TokenCookie);
-        //        stopwatch.Stop();
-        //        _logger?.LogInformation($"⏱️ Tiempo de ejecución: {stopwatch.ElapsedMilliseconds}ms");
-
-        //        if (!resultado.Ok)
-        //        {
-        //            _logger?.LogError("❌ Error al obtener facturas pendientes: {Mensaje}", resultado.Mensaje);
-        //            return Json(new { ok = false, mensaje = resultado.Mensaje });
-        //        }
-
-        //        return Json(new { ok = true, lista = resultado.ListaEntidad });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger?.LogError(ex, "❌ Excepción al obtener facturas pendientes");
-        //        return Json(new { ok = false, mensaje = "Ocurrió un error al obtener las facturas pendientes" });
-        //    }
-        //    finally
-        //    {
-        //        stopwatch.Stop();
-        //        _logger?.LogInformation("⏱️ ObtenerFacturasPendientes ejecutado en {ElapsedMilliseconds} ms", stopwatch.ElapsedMilliseconds);
-        //    }
-        //}
+                return Json(new
+                {
+                    ok = false,
+                    mensaje = "Ocurrió un error inesperado al actualizar las facturas pendientes."
+                });
+            }
+        }
     }
 }
