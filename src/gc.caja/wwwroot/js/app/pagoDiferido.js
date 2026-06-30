@@ -3,7 +3,22 @@
 // ✅ v3.1 - FLUJO DUAL: Ver todas las facturas O buscar cliente específico
 // ========================================================
 let clienteSeleccionadoVFP = null;
+
 let nombreClienteVFP = '';
+
+let reinicioCobranzaDiferidaEnCurso = false;
+
+const estadoCobranzaDiferida = {
+    facturasPendientesDia: Array.isArray(FACTURAS_PENDIENTES)
+        ? [...FACTURAS_PENDIENTES]
+        : [],
+
+    reinicioEnCurso: false
+};
+
+// Permite que pagoFactura.js invoque esta rutina sin conocer el módulo.
+window.reiniciarCobranzaDiferida = reiniciarCobranzaDiferida;
+
 
 $(function () {
     console.log('═══════════════════════════════════════════════════');
@@ -80,7 +95,9 @@ $(function () {
 
         // Mostrar modal con TODAS las facturas (ya cargadas en memoria)
         setTimeout(() => {
-            mostrarModalVerFacturasPendientes(FACTURAS_PENDIENTES);
+            mostrarModalVerFacturasPendientes(
+                estadoCobranzaDiferida.facturasPendientesDia
+            );
         }, 500);
     });
 
@@ -201,52 +218,316 @@ function seleccionarTodasFacturasPendientes(seleccionar) {
     actualizarEstadoSeleccionFacturasPendientes();
 }
 
+
+async function recargarFacturasPendientesDelDia() {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔄 RECARGAR FACTURAS DIFERIDAS DEL DÍA');
+    console.log('═══════════════════════════════════════════════════');
+
+    const url =
+        typeof ObtenerFacturasPendientesUrl !== 'undefined' &&
+            ObtenerFacturasPendientesUrl
+            ? ObtenerFacturasPendientesUrl
+            : '/Facturacion/PDiferido/ObtenerFacturasPendientes';
+
+    const response = await $.ajax({
+        url: url,
+        type: 'POST',
+        dataType: 'json',
+        timeout: 30000
+    });
+
+    if (!response || response.ok !== true) {
+        throw new Error(
+            response?.mensaje ||
+            'No se pudieron actualizar las facturas pendientes.'
+        );
+    }
+
+    const lista = Array.isArray(response.lista)
+        ? response.lista
+        : Array.isArray(response.datos)
+            ? response.datos
+            : [];
+
+    estadoCobranzaDiferida.facturasPendientesDia = lista;
+
+    console.log(
+        `✅ Facturas pendientes actualizadas: ${lista.length}`
+    );
+
+    return lista;
+}
+
+function limpiarInterfazCobranzaDiferida() {
+    console.log('🧹 Limpiando interfaz de Cobranza Diferida...');
+
+    clienteSeleccionadoVFP = null;
+    nombreClienteVFP = '';
+
+    window._facturasSeleccionadasParaCobro = [];
+
+    $('#tbodyFacturasPendientes').empty();
+    $('#tbodyVerFacturasPendientes').empty();
+
+    $('#chkSeleccionarTodo').prop({
+        checked: false,
+        indeterminate: false
+    });
+
+    $('#chkSeleccionarTodoVFP').prop({
+        checked: false,
+        indeterminate: false
+    });
+
+    $('#txtTotalSeleccionado').val('$ 0.00');
+    $('#txtTotalSeleccionadoVFP').val('$ 0.00');
+
+    $('#btnSeguirConCobranza').prop('disabled', true);
+    $('#btnCobrarSeleccionVFP').prop('disabled', true);
+
+    $('#spanClienteSeleccionado')
+        .hide()
+        .text('');
+
+    $('#tbodyVerFacturasPendientes tr')
+        .removeClass('fila-deshabilitada');
+
+    $('#txtNombrePendiente').val('');
+    $('#txtClienteIdPendiente').val('');
+    $('#txtDomicilioPendiente').val('');
+    $('#txtCondicionAfipPendiente').val('');
+    $('#txtTipoNumeroPendiente').val('');
+    $('#txtEmailPendiente').val('');
+    $('#txtMovilPendiente').val('');
+
+    if (typeof cerrarTecladoDigital === 'function') {
+        cerrarTecladoDigital();
+    }
+
+    console.log('✅ Interfaz de Cobranza Diferida limpia');
+}
+
+function cerrarModalSiEstaAbierto(selector) {
+    return new Promise((resolve) => {
+        const $modal = $(selector);
+
+        if ($modal.length === 0 || !$modal.hasClass('show')) {
+            resolve();
+            return;
+        }
+
+        $modal
+            .off('hidden.bs.modal.reinicioCD')
+            .one('hidden.bs.modal.reinicioCD', function () {
+                resolve();
+            });
+
+        const instanciaBootstrap = bootstrap.Modal.getInstance(
+            $modal.get(0)
+        );
+
+        if (instanciaBootstrap) {
+            instanciaBootstrap.hide();
+        } else {
+            $modal.modal('hide');
+        }
+    });
+}
+
+
+async function cerrarModalesCobranzaDiferida() {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔒 CERRANDO MODALES DE COBRANZA DIFERIDA');
+    console.log('═══════════════════════════════════════════════════');
+
+    // ❶ Detalles de formas de pago.
+    const modalesDetalle = [
+        '#modalDetalleEfectivo',
+        '#modalDetalleCheque',
+        '#modalDetalleCtaCte',
+        '#modalDetalleCuponEmpresa',
+        '#modalDetalleTransferencia',
+        '#modalDetalleValeCompra'
+    ];
+
+    for (const selector of modalesDetalle) {
+        await cerrarModalSiEstaAbierto(selector);
+    }
+
+    // ❷ Instrumentos secundarios.
+    const modalesInstrumentos = [
+        '#modalInstrumentos',
+        '#modalInstrumentosTransferencia',
+        '#modalInstrumentosValeCompra',
+        '#modalInstrumentosCuponEmpresa'
+    ];
+
+    for (const selector of modalesInstrumentos) {
+        await cerrarModalSiEstaAbierto(selector);
+    }
+
+    // ❸ Selector de medio de pago y pago principal.
+    await cerrarModalSiEstaAbierto('#modalTipoMedioPago');
+    await cerrarModalSiEstaAbierto('#modalPago');
+
+    // ❹ Modales propios de Cobranza Diferida.
+    await cerrarModalSiEstaAbierto('#modalFacturasPendientes');
+    await cerrarModalSiEstaAbierto('#modalVerFacturasPendientes');
+
+    // ❺ El identificador puede no estar abierto, pero cerrarlo
+    // evita dejar un modal residual antes de navegar al Index.
+    await cerrarModalSiEstaAbierto('#modalIdentificarCliente');
+
+    if (typeof ocultarTecladoVirtual === 'function') {
+        ocultarTecladoVirtual();
+    }
+
+    console.log('✅ Todos los modales de Cobranza Diferida fueron cerrados.');
+}
+
+async function reiniciarCobranzaDiferida() {
+    if (reinicioCobranzaDiferidaEnCurso) {
+        console.warn(
+            '⚠️ Reinicio de Cobranza Diferida ignorado: ya existe uno en curso.'
+        );
+        return;
+    }
+
+    reinicioCobranzaDiferidaEnCurso = true;
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔄 REINICIO TOTAL DE COBRANZA DIFERIDA');
+    console.log('═══════════════════════════════════════════════════');
+
+    try {
+        // La navegación destruye el DOM, pero se cierran explícitamente
+        // los modales para evitar overlays, backdrops o transiciones activas.
+        await cerrarModalesCobranzaDiferida();
+
+        // Limpiar referencias locales antes de abandonar la pantalla.
+        clienteSeleccionadoVFP = null;
+        nombreClienteVFP = '';
+        window._facturasSeleccionadasParaCobro = [];
+
+        // No abrir modal de cliente aquí.
+        // El Index recarga las facturas y decide:
+        // - pendientes disponibles: abre identificación.
+        // - sin pendientes: muestra mensaje y botón de salida.
+        const urlIndex =
+            typeof cobranzaDiferidaInicializaUrl !== 'undefined' &&
+                cobranzaDiferidaInicializaUrl
+                ? cobranzaDiferidaInicializaUrl
+                : '/Facturacion/PDiferido';
+
+        console.log(`➡️ Redireccionando al Index: ${urlIndex}`);
+
+        // replace evita que Back vuelva a un flujo de pago ya finalizado.
+        window.location.replace(urlIndex);
+    } catch (error) {
+        reinicioCobranzaDiferidaEnCurso = false;
+
+        console.error(
+            '❌ Error al reiniciar Cobranza Diferida:',
+            error
+        );
+
+        AbrirMensaje(
+            'Error',
+            'El cobro fue procesado, pero no se pudo reiniciar la pantalla.',
+            function () {
+                $('#msjModal').modal('hide');
+            },
+            false,
+            ['Aceptar'],
+            'error!'
+        );
+    }
+}
+
+
+
+
 /**
  * ✅ NUEVO v3.1: Inicializa el módulo mostrando el modal de identificación
  */
 function inicializarModuloConModal() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('⚙️ INICIALIZAR MÓDULO CON MODAL v3.1');
+    console.log('⚙️ INICIALIZAR MÓDULO COBRANZA DIFERIDA DESDE INDEX');
     console.log('═══════════════════════════════════════════════════');
 
-    // ❶ VERIFICAR SI HUBO ERROR AL CARGAR DATOS
-    if (typeof HUBO_ERROR !== 'undefined' && HUBO_ERROR === true) {
-        console.error('❌ Hubo un error al cargar las facturas desde el servidor');
-        console.error(`   Mensaje: ${MENSAJE_ERROR}`);
+    /*
+        El Index ya consultó las pendientes del día en el servidor.
+        Esta función no debe realizar un segundo AJAX automático.
+    */
+    const facturasIniciales = Array.isArray(FACTURAS_PENDIENTES)
+        ? [...FACTURAS_PENDIENTES]
+        : [];
 
-        $('#mensajeInicialTexto').text(MENSAJE_ERROR || 'No se pudieron cargar las facturas pendientes.');
-        $('#mensajeInicial').fadeIn(500);
+    estadoCobranzaDiferida.facturasPendientesDia =
+        facturasIniciales;
+
+    console.log(
+        `   Facturas inyectadas por Index: ${facturasIniciales.length}`
+    );
+
+    console.log(
+        `   TIENE_FACTURAS: ${TIENE_FACTURAS}`
+    );
+
+    console.log(
+        `   HUBO_ERROR: ${HUBO_ERROR}`
+    );
+
+    // ❶ Error al consultar las facturas desde el controller.
+    if (HUBO_ERROR === true) {
+        $('#mensajeInicialTexto').text(
+            MENSAJE_ERROR ||
+            'No se pudieron cargar las facturas pendientes.'
+        );
+
+        $('#mensajeInicial').fadeIn(300);
+
+        console.error(
+            '❌ El Index informó un error al cargar pendientes.'
+        );
+
         return;
     }
 
-    // ❷ VERIFICAR SI HAY FACTURAS
-    if (typeof TIENE_FACTURAS !== 'undefined' && TIENE_FACTURAS === false) {
-        console.warn('⚠️ No hay facturas pendientes de cobro');
+    // ❷ El controller informó que no quedan facturas pendientes.
+    if (
+        TIENE_FACTURAS !== true ||
+        facturasIniciales.length === 0
+    ) {
+        $('#mensajeInicialTexto').text(
+            'No hay facturas diferidas pendientes de cobro en este momento.'
+        );
 
-        $('#mensajeInicialTexto').text('No hay facturas pendientes de cobro en este momento.');
-        $('#mensajeInicial').fadeIn(500);
+        $('#mensajeInicial').fadeIn(300);
+
+        console.log(
+            'ℹ️ No existen facturas pendientes. No se abrirá identificación de cliente.'
+        );
+
         return;
     }
 
-    // ❸ VERIFICAR QUE LOS DATOS EXISTAN
-    if (typeof FACTURAS_PENDIENTES === 'undefined' || !Array.isArray(FACTURAS_PENDIENTES)) {
-        console.error('❌ FACTURAS_PENDIENTES no está definida o no es un array');
+    // ❸ Hay pendientes: iniciar el flujo normal.
+    $('#mensajeInicial').hide();
 
-        $('#mensajeInicialTexto').text('Error al cargar los datos. Por favor, recargue la página.');
-        $('#mensajeInicial').fadeIn(500);
-        return;
-    }
+    console.log(
+        '✅ Hay facturas pendientes. Abriendo identificación de cliente.'
+    );
 
-    console.log(`   ✅ Facturas en memoria: ${FACTURAS_PENDIENTES.length}`);
+    setTimeout(function () {
+        if (typeof inicializaVistaFact === 'function') {
+            inicializaVistaFact();
+            return;
+        }
 
-    // ❹ ABRIR EL MODAL DE IDENTIFICACIÓN
-    // El usuario decidirá si busca un cliente o ve todas las facturas
-    setTimeout(() => {
-        console.log('   📂 Abriendo modal de identificación de cliente...');
-        inicializaVistaFact(); // Función de fact.js que inicializa el modal
+        $('#modalIdentificarCliente').modal('show');
     }, 300);
-
-    console.log('═══════════════════════════════════════════════════');
 }
 
 /**
@@ -634,13 +915,7 @@ function iniciarCobranza() {
             // ❼ Guardar también en variable global
             window._facturasSeleccionadasParaCobro = facturasFinales;
 
-            // ❽ Cerrar modal de facturas pendientes
-            $('#modalFacturasPendientes').modal('hide');
-
-            // ❾ Esperar cierre del modal y proceder al pago
-            setTimeout(() => {
-                console.log('   🚀 Invocando el proceso de pago genérico para Cobranza...');
-
+            const abrirPagoDiferido = () => {
                 iniciarProcesoPago({
                     totalPagar: totalPagar,
                     co_tipo: 'CD',
@@ -648,10 +923,37 @@ function iniciarCobranza() {
                     tituloModal: 'Cobranza Diferida',
                     contextoOperacion: 'COBRANZA'
                 });
+            };
 
-                console.log('   ✅ Proceso de pago iniciado correctamente');
-                console.log('═══════════════════════════════════════════════════');
-            }, 500);
+            const $modalFacturas = $('#modalFacturasPendientes');
+
+            if ($modalFacturas.hasClass('show')) {
+                $modalFacturas
+                    .off('hidden.bs.modal.abrirPagoCD')
+                    .one('hidden.bs.modal.abrirPagoCD', abrirPagoDiferido)
+                    .modal('hide');
+            } else {
+                abrirPagoDiferido();
+            }
+
+            // // ❽ Cerrar modal de facturas pendientes
+            // $('#modalFacturasPendientes').modal('hide');
+
+            // // ❾ Esperar cierre del modal y proceder al pago
+            // setTimeout(() => {
+            //     console.log('   🚀 Invocando el proceso de pago genérico para Cobranza...');
+
+            //     iniciarProcesoPago({
+            //         totalPagar: totalPagar,
+            //         co_tipo: 'CD',
+            //         puntoVenta: 'GECO PD',
+            //         tituloModal: 'Cobranza Diferida',
+            //         contextoOperacion: 'COBRANZA'
+            //     });
+
+            //     console.log('   ✅ Proceso de pago iniciado correctamente');
+            //     console.log('═══════════════════════════════════════════════════');
+            // }, 500);
         },
         error: function (xhr, status, error) {
             ocultarLoader();
@@ -795,10 +1097,26 @@ function iniciarCobranzaDesdeVFP() {
     console.log(`   📋 Facturas completas construidas: ${facturasPreseleccionadas.length}`);
 
     // ✅ CORREGIDO v6.4: Ahora se pasan facturas COMPLETAS
-    buscarClienteYMostrarFacturas(
-        criterioClienteBusqueda,
-        facturasPreseleccionadas
-    );
+    const abrirConfirmacionFacturas = () => {
+        buscarClienteYMostrarFacturas(
+            criterioClienteBusqueda,
+            facturasPreseleccionadas
+        );
+    };
+
+    const $modalVFP = $('#modalVerFacturasPendientes');
+
+    if ($modalVFP.hasClass('show')) {
+        $modalVFP
+            .off('hidden.bs.modal.abrirConfirmacionCD')
+            .one(
+                'hidden.bs.modal.abrirConfirmacionCD',
+                abrirConfirmacionFacturas
+            )
+            .modal('hide');
+    } else {
+        abrirConfirmacionFacturas();
+    }
 
     console.log('═══════════════════════════════════════════════════');
 }
