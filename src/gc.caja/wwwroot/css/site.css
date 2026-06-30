@@ -7214,3 +7214,39 @@ span[data-bs-toggle="tooltip"] {
     #modalDetalleImputaCC.modal.show ~ .modal-backdrop {
         z-index: 5009 !important;
     }
+
+.teclado-ancla-cc {
+    height: 0;
+    width: 100%;
+    margin-top: 0.75rem;
+    pointer-events: none;
+}
+
+/* Modal principal de Cuenta Corriente */
+#modalCuentaCorriente {
+    z-index: 5000 !important;
+}
+
+    /* Backdrop del modal principal */
+    #modalCuentaCorriente.modal.show ~ .modal-backdrop {
+        z-index: 4999 !important;
+    }
+
+/* Modal secundario de edición */
+#modalModificarImporteCC {
+    z-index: 5010 !important;
+}
+
+    #modalModificarImporteCC .modal-dialog {
+        z-index: 5011 !important;
+    }
+
+    /* Backdrop del modal secundario */
+    #modalModificarImporteCC.modal.show ~ .modal-backdrop {
+        z-index: 5009 !important;
+    }
+
+/* Teclado sobre ambos modales */
+#virtual-keyboard {
+    z-index: 5020 !important;
+}

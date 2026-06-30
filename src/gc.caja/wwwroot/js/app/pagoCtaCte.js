@@ -1,79 +1,75 @@
 ﻿// ========================================================
-// GESTOR PRINCIPAL DEL MÓDULO DE COBRANZA CUENTA CORRIENTE (CC)
-// ✅ v1.0 - FLUJO UNICO: BUSCAR SOLO CLIENTES REGISTRADOS EN LA BASE DE DATOS (CR)
+// GESTOR PRINCIPAL DEL MÓDULO DE COBRANZA CUENTA CORRIENTE
 // ========================================================
+// Regla de importes:
+// - cv_importe / data-importe: saldo actual y valor editable a cobrar.
+// - cv_importe_ori / data-importe-ori: importe histórico original. No se modifica.
+// - data-importe-bak: saldo original disponible al cargar la grilla.
+//                       Se utiliza para restaurar y como máximo permitido.
+// ========================================================
+
 let clienteSeleccionadoCC = null;
 let nombreClienteCC = '';
-let $filaCuentaCorrienteEnEdicion = null;
-let $filaImputaCCEnEdicion = null;
-
+let $filaImporteCCEnEdicion = null;
+let cobranzaCCEnCurso = false;
 
 $(function () {
     console.log('═══════════════════════════════════════════════════');
-    console.log('🚀 MÓDULO DE COBRANZA CUENTA CORRIENTE v1.0 CARGADO');
-    console.log('   MODO: Flujo único (Buscar solo clientes registrados en la base de datos)');
+    console.log('🚀 MÓDULO DE COBRANZA CUENTA CORRIENTE CARGADO');
     console.log('═══════════════════════════════════════════════════');
 
-    // El modal de identificación se abrirá primero
-    inicializarModuloConModal();
+    registrarEventosCuentaCorriente();
 
-    $(document).on('clienteConfirmado', function (event, cliente) {
-        console.log('═══════════════════════════════════════════════════');
-        console.log('✅ CLIENTE CONFIRMADO EN COBRANZA CC v1.0');
-        console.log('   Cliente:', cliente.denominacion);
-        console.log('   ID:', cliente.id);
-        console.log('═══════════════════════════════════════════════════');
-
-        // Ocultar el modal de identificación
-        $('#modalIdentificarCliente').modal('hide');
-
-        // Buscar facturas del cliente específico (FILTRADO DESDE SESIÓN)
-        obtenerDatosCCDesdeMemoria(cliente);
-    });
-
-    // ========================================================
-    // EVENTOS DE SELECCIÓN - CUENTA CORRIENTE PENDIENTE
-    // Namespace: ccPendientes
-    // ========================================================
-
-    // Checkbox general: seleccionar / deseleccionar todos los movimientos
     $(document)
-        .off('change.ccPendientes', '#chkSeleccionarTodoCC')
-        .on('change.ccPendientes', '#chkSeleccionarTodoCC', function () {
-            seleccionarTodosMovimientosCC($(this).is(':checked'));
+        .off('clienteConfirmado.ccPendientes')
+        .on('clienteConfirmado.ccPendientes', function (event, cliente) {
+            if (!cliente) {
+                console.warn('⚠️ Se recibió clienteConfirmado sin datos de cliente.');
+                return;
+            }
+
+            clienteSeleccionadoCC = cliente;
+            nombreClienteCC = obtenerPrimerValorCC(
+                cliente.denominacion,
+                cliente.cta_denominacion,
+                cliente.nombre
+            );
+
+            $('#modalIdentificarCliente').modal('hide');
+
+            obtenerDatosCCDesdeMemoria(cliente);
         });
 
-    // Checkboxes individuales generados dinámicamente dentro de la grilla
-    $(document)
-        .off(
-            'change.ccPendientes',
-            '#tbodyCuentaCorriente input.form-check-input[type="checkbox"]'
-        )
-        .on(
-            'change.ccPendientes',
-            '#tbodyCuentaCorriente input.form-check-input[type="checkbox"]',
-            function () {
-                actualizarEstadoSeleccionCC();
-            }
-    );
-
-    registrarEventosCuentaCorriente();
+    inicializarModuloConModal();
 });
 
 // ================================================================
-// EVENTOS - COBRANZA CUENTA CORRIENTE
-// Namespace: ccPendientes
+// INICIALIZACIÓN Y EVENTOS
 // ================================================================
-function registrarEventosCuentaCorriente() {
 
-    // Check general
+function inicializarModuloConModal() {
+    if (typeof inicializaVistaFact !== 'function') {
+        console.error('❌ No está disponible inicializaVistaFact() de fact.js.');
+        mostrarMensajeCC(
+            'Error',
+            'No se pudo inicializar el buscador de clientes.',
+            'error!'
+        );
+        return;
+    }
+
+    setTimeout(function () {
+        inicializaVistaFact();
+    }, 300);
+}
+
+function registrarEventosCuentaCorriente() {
     $(document)
         .off('change.ccPendientes', '#chkSeleccionarTodoCC')
         .on('change.ccPendientes', '#chkSeleccionarTodoCC', function () {
             seleccionarTodosMovimientosCC($(this).is(':checked'));
         });
 
-    // Checks individuales
     $(document)
         .off(
             'change.ccPendientes',
@@ -87,68 +83,86 @@ function registrarEventosCuentaCorriente() {
             }
         );
 
-    // Botón verde: modificar Imputa
     $(document)
         .off(
             'click.ccPendientes',
-            '#tbodyCuentaCorriente .btn-modificar-imputa-cc'
+            '#tbodyCuentaCorriente .btn-modificar-importe-cc'
         )
         .on(
             'click.ccPendientes',
-            '#tbodyCuentaCorriente .btn-modificar-imputa-cc',
+            '#tbodyCuentaCorriente .btn-modificar-importe-cc',
             function (event) {
                 event.preventDefault();
                 event.stopPropagation();
 
-                abrirModalImputaCC($(this).closest('tr'));
+                abrirModalImporteCC($(this).closest('tr'));
             }
         );
 
-    // Botón rojo: restaurar Imputa original
     $(document)
         .off(
             'click.ccPendientes',
-            '#tbodyCuentaCorriente .btn-restaurar-imputa-cc'
+            '#tbodyCuentaCorriente .btn-restaurar-importe-cc'
         )
         .on(
             'click.ccPendientes',
-            '#tbodyCuentaCorriente .btn-restaurar-imputa-cc',
+            '#tbodyCuentaCorriente .btn-restaurar-importe-cc',
             function (event) {
                 event.preventDefault();
                 event.stopPropagation();
 
-                restaurarImputaOriginalCC($(this).closest('tr'));
+                restaurarImporteDesdeBackupCC($(this).closest('tr'));
             }
         );
 
-    // Guardar desde el modal
+    // Modal definitivo recomendado.
     $(document)
-        .off('click.ccPendientes', '#btnGuardarImputaCC')
-        .on('click.ccPendientes', '#btnGuardarImputaCC', function () {
-            guardarImputaCC();
+        .off('click.ccPendientes', '#btnGuardarImporteCC')
+        .on('click.ccPendientes', '#btnGuardarImporteCC', function (event) {
+            event.preventDefault();
+            guardarImporteCC();
         });
 
-    // Permite Enter dentro del formulario
+    $(document)
+        .off('submit.ccPendientes', '#formModificarImporteCC')
+        .on('submit.ccPendientes', '#formModificarImporteCC', function (event) {
+            event.preventDefault();
+            guardarImporteCC();
+        });
+
+    // Compatibilidad temporal mientras siga cargado el modal antiguo
+    // _detalleImputaCuentaCorriente.cshtml.
+    $(document)
+        .off('click.ccPendientes', '#btnGuardarImputaCC')
+        .on('click.ccPendientes', '#btnGuardarImputaCC', function (event) {
+            event.preventDefault();
+            guardarImporteCC();
+        });
+
     $(document)
         .off('submit.ccPendientes', '#formDetalleImputaCC')
         .on('submit.ccPendientes', '#formDetalleImputaCC', function (event) {
             event.preventDefault();
-            guardarImputaCC();
+            guardarImporteCC();
         });
 
-    // Al cerrar el modal se descarta la referencia temporal a la fila.
-    $('#modalDetalleImputaCC')
+    $('#modalModificarImporteCC, #modalDetalleImputaCC')
         .off('hidden.bs.modal.ccPendientes')
         .on('hidden.bs.modal.ccPendientes', function () {
-            $filaImputaCCEnEdicion = null;
+            $filaImporteCCEnEdicion = null;
         });
 
+    $('#btnCancelarCC')
+        .off('click.ccPendientes')
+        .on('click.ccPendientes', function (event) {
+            event.preventDefault();
 
-    $('#btnCancelarCC').on('click', function () {
-        $('#modalCuentaCorriente').modal('hide');
-        // Volver a abrir el modal de identificación
-        setTimeout(() => $('#modalIdentificarCliente').modal('show'), 500);
-    });
+            $('#modalCuentaCorriente').modal('hide');
+
+            setTimeout(function () {
+                $('#modalIdentificarCliente').modal('show');
+            }, 350);
+        });
 
     $(document)
         .off('click.ccPendientes', '#btnSeguirCC')
@@ -158,172 +172,279 @@ function registrarEventosCuentaCorriente() {
 
             iniciarCobranza();
         });
+
+    $('#modalModificarImporteCC')
+        .off('hidden.bs.modal.tecladoCC')
+        .on('hidden.bs.modal.tecladoCC', function () {
+            if (typeof ocultarTecladoVirtual === 'function') {
+                ocultarTecladoVirtual();
+            }
+
+            $('#txtImportePagarCC').trigger('blur');
+
+            $filaImporteCCEnEdicion = null;
+        });
 }
 
-function restaurarImputaOriginalCC($fila) {
-    if (!$fila || $fila.length === 0) {
-        return;
-    }
+// ================================================================
+// CARGA DE DATOS Y GRILLA
+// ================================================================
 
-    const $checkbox = $fila.find(
-        'input.form-check-input[type="checkbox"]'
-    );
-
-    if (!$checkbox.is(':checked')) {
+function obtenerDatosCCDesdeMemoria(cliente) {
+    if (!cliente) {
         mostrarMensajeCC(
             'Atención',
-            'Debe seleccionar la factura antes de restaurar el importe a imputar.'
+            'No se pudo determinar el cliente seleccionado.',
+            'warn!'
         );
         return;
     }
 
-    const importe = obtenerImporteCC($fila);
-    const imputaOriginal = obtenerImputaOriginalCC($fila);
+    const ctaId = obtenerPrimerValorCC(cliente.cta_id, cliente.id);
 
-    if (!Number.isFinite(imputaOriginal) ||
-        imputaOriginal <= 0 ||
-        imputaOriginal > importe) {
-
+    if (!ctaId) {
         mostrarMensajeCC(
-            'Error',
-            'El importe original a imputar es inválido.'
+            'Atención',
+            'El cliente seleccionado no posee un identificador de cuenta válido.',
+            'warn!'
         );
         return;
     }
 
-    actualizarImputaFilaCC($fila, imputaOriginal);
+    mostrarLoaderCC('Buscando datos en Cuenta Corriente...');
 
-    calcularTotalCC();
+    $.ajax({
+        url: obtenerCtaCteUrl,
+        type: 'POST',
+        contentType: 'application/json',
+        dataType: 'json',
+        data: JSON.stringify({ cta_id: ctaId }),
+        success: function (response) {
+            ocultarLoaderCC();
+
+            if (!response || !response.ok) {
+                mostrarMensajeCC(
+                    'Información',
+                    response?.mensaje ||
+                    'No se encontraron registros de Cuenta Corriente para este cliente.',
+                    'info!'
+                );
+                return;
+            }
+
+            mostrarCtaCtePendientes(cliente, response.lista || []);
+        },
+        error: function (xhr, status, error) {
+            ocultarLoaderCC();
+
+            console.error('❌ Error obteniendo Cuenta Corriente:', {
+                status: xhr.status,
+                statusText: xhr.statusText,
+                responseText: xhr.responseText,
+                error: error
+            });
+
+            let mensaje = 'No se pudieron obtener los registros de Cuenta Corriente.';
+
+            if (xhr.responseJSON?.mensaje) {
+                mensaje = xhr.responseJSON.mensaje;
+            } else if (xhr.status === 400) {
+                mensaje = 'Los datos enviados para consultar la cuenta son inválidos.';
+            } else if (xhr.status === 0) {
+                mensaje = 'No se pudo establecer conexión con el servidor.';
+            }
+
+            mostrarMensajeCC('Error de Comunicación', mensaje, 'error!');
+        }
+    });
 }
 
-function actualizarImputaFilaCC($fila, imputa) {
-    const valor = redondearMontoCC(imputa);
+function mostrarCtaCtePendientes(cliente, registrosCuentaCorriente) {
+    const $tbody = $('#tbodyCuentaCorriente');
 
-    /*
-        attr() actualiza el HTML.
-        data() evita que jQuery siga leyendo un valor cacheado anterior.
-    */
-    $fila
-        .attr('data-imputa', valor.toFixed(2))
-        .data('imputa', valor);
+    poblarDatosClienteCC(cliente);
 
-    $fila.find('.celda-imputa-cc').text(
-        `$ ${formatearMontoCC(valor)}`
-    );
+    $tbody.empty();
+    $('#chkSeleccionarTodoCC').prop({
+        checked: false,
+        indeterminate: false
+    });
+
+    if (
+        !Array.isArray(registrosCuentaCorriente) ||
+        registrosCuentaCorriente.length === 0
+    ) {
+        $tbody.append(
+            '<tr>' +
+            '<td colspan="9" class="text-center text-muted py-4">' +
+            'No hay registros pendientes de Cuenta Corriente.' +
+            '</td>' +
+            '</tr>'
+        );
+
+        $('#txtTotalCC').val('$ 0.00');
+        $('#btnSeguirCC').prop('disabled', true);
+        $('#modalCuentaCorriente').modal('show');
+        return;
+    }
+
+    let registrosRenderizados = 0;
+
+    registrosCuentaCorriente.forEach(function (ctacte, index) {
+        try {
+            const importeActual = normalizarMontoCC(ctacte.cv_importe);
+            const importeOriginal = normalizarMontoCC(ctacte.cv_importe_ori);
+
+            // El backup es el saldo disponible recibido al cargar esta grilla.
+            // Nunca cambia durante la edición del usuario.
+            const importeBackup = importeActual;
+
+            if (
+                !Number.isFinite(importeActual) ||
+                importeActual <= 0 ||
+                !Number.isFinite(importeOriginal) ||
+                importeOriginal <= 0 ||
+                importeOriginal + 0.01 < importeActual
+            ) {
+                console.warn(
+                    `⚠️ Registro ${index + 1} omitido por importes inconsistentes.`,
+                    ctacte
+                );
+                return;
+            }
+
+            const ctaId = obtenerPrimerValorCC(
+                ctacte.cta_id,
+                cliente?.cta_id,
+                cliente?.id
+            );
+
+            const ctacteId = obtenerPrimerValorCC(
+                ctacte.ctacte,
+                ctacte.ctacte_id
+            );
+
+            const nombreCliente = obtenerPrimerValorCC(
+                cliente?.denominacion,
+                cliente?.cta_denominacion,
+                cliente?.nombre,
+                nombreClienteCC,
+                'N/A'
+            );
+
+            const nombreMostrado = ctaId
+                ? `${nombreCliente} (${ctaId})`
+                : nombreCliente;
+
+            const tipoNumero = obtenerTipoNumeroClienteCC(cliente);
+            const fecha = formatearFechaCC(ctacte.cv_fecha_vto);
+
+            const fila = `
+                <tr data-importe="${importeActual.toFixed(2)}"
+                    data-importe-ori="${importeOriginal.toFixed(2)}"
+                    data-importe-bak="${importeBackup.toFixed(2)}">
+
+                    <td>${escaparHtmlCC(ctacte.tco_id || 'N/A')}</td>
+                    <td>${escaparHtmlCC(ctacte.cm_compte || 'N/A')}</td>
+                    <td>${escaparHtmlCC(nombreMostrado)}</td>
+                    <td>${escaparHtmlCC(tipoNumero)}</td>
+                    <td class="text-center">${escaparHtmlCC(fecha)}</td>
+
+                    <td class="text-end fw-bold celda-importe-ori-cc">
+                        $ ${formatearMontoCC(importeOriginal)}
+                    </td>
+
+                    <td class="text-end fw-bold celda-importe-cc">
+                        $ ${formatearMontoCC(importeActual)}
+                    </td>
+
+                    <td class="text-center py-1">
+                        <button type="button"
+                                class="btn btn-xs btn-success btn-modificar-importe-cc btn-accion-importe-cc"
+                                title="Modificar importe a cobrar"
+                                aria-label="Modificar importe a cobrar">
+                            <i class="bx bx-edit-alt" style="font-size: 0.9rem;"></i>
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-xs btn-danger btn-restaurar-importe-cc btn-accion-importe-cc ms-1"
+                                title="Restaurar saldo disponible"
+                                aria-label="Restaurar saldo disponible">
+                            <i class="bx bx-undo" style="font-size: 0.9rem;"></i>
+                        </button>
+                    </td>
+
+                    <td class="text-center">
+                        <input type="checkbox"
+                               class="form-check-input"
+
+                               data-cta-id="${escaparHtmlCC(ctaId)}"
+                               data-dia-movi="${escaparHtmlCC(ctacte.dia_movi)}"
+                               data-tco-id="${escaparHtmlCC(ctacte.tco_id)}"
+                               data-cm-compte="${escaparHtmlCC(ctacte.cm_compte)}"
+                               data-cm-compte-cuota="${escaparHtmlCC(ctacte.cm_compte_cuota ?? 0)}"
+                               data-cv-fecha-vto="${escaparHtmlCC(ctacte.cv_fecha_vto)}"
+                               data-cv-importe="${importeActual.toFixed(2)}"
+                               data-cv-importe-ori="${importeOriginal.toFixed(2)}"
+                               data-cv-concepto="${escaparHtmlCC(ctacte.cv_concepto)}"
+                               data-ve-id="${escaparHtmlCC(ctacte.ve_id)}"
+                               data-ccb-id="${escaparHtmlCC(ctacte.ccb_id)}"
+                               data-ctacte="${escaparHtmlCC(ctacteId)}"
+                               data-carga="${escaparHtmlCC(ctacte.carga)}"
+                               data-carga-obligatoria="${escaparHtmlCC(ctacte.carga_obligatoria)}">
+                    </td>
+                </tr>
+            `;
+
+            $tbody.append(fila);
+            registrosRenderizados++;
+        } catch (error) {
+            console.error(
+                `❌ Error al renderizar registro de Cuenta Corriente ${index + 1}.`,
+                error,
+                ctacte
+            );
+        }
+    });
+
+    if (registrosRenderizados === 0) {
+        $tbody.html(
+            '<tr>' +
+            '<td colspan="9" class="text-center text-muted py-4">' +
+            'No se encontraron registros válidos para cobrar.' +
+            '</td>' +
+            '</tr>'
+        );
+
+        $('#txtTotalCC').val('$ 0.00');
+        $('#btnSeguirCC').prop('disabled', true);
+        $('#modalCuentaCorriente').modal('show');
+        return;
+    }
+
+    seleccionarTodosMovimientosCC(true);
+
+    if (typeof cerrarTecladoDigital === 'function') {
+        cerrarTecladoDigital();
+    }
+
+    $('#modalCuentaCorriente').modal('show');
 }
 
-function guardarImputaCC() {
-    if (!$filaImputaCCEnEdicion ||
-        $filaImputaCCEnEdicion.length === 0) {
-
-        mostrarMensajeCC(
-            'Atención',
-            'No se pudo determinar la factura que desea modificar.'
-        );
-        return;
-    }
-
-    const importe = obtenerImporteCC($filaImputaCCEnEdicion);
-
-    const imputaNueva = normalizarMontoCC(
-        $('#txtImputaCC').val()
-    );
-
-    if (!Number.isFinite(imputaNueva)) {
-        mostrarMensajeCC(
-            'Atención',
-            'Debe ingresar un importe válido.'
-        );
-        return;
-    }
-
-    if (imputaNueva <= 0) {
-        mostrarMensajeCC(
-            'Atención',
-            'El importe a imputar debe ser mayor a cero.'
-        );
-        return;
-    }
-
-    if (imputaNueva > importe) {
-        mostrarMensajeCC(
-            'Atención',
-            `El importe a imputar no puede superar el importe de la factura: $ ${formatearMontoCC(importe)}.`
-        );
-        return;
-    }
-
-    actualizarImputaFilaCC(
-        $filaImputaCCEnEdicion,
-        imputaNueva
-    );
-
-    $('#modalDetalleImputaCC').modal('hide');
-
-    calcularTotalCC();
-}
-
-function abrirModalImputaCC($fila) {
-    if (!$fila || $fila.length === 0) {
-        return;
-    }
-
-    const $checkbox = $fila.find(
-        'input.form-check-input[type="checkbox"]'
-    );
-
-    if (!$checkbox.is(':checked')) {
-        mostrarMensajeCC(
-            'Atención',
-            'Debe seleccionar la factura antes de modificar el importe a imputar.'
-        );
-        return;
-    }
-
-    const importe = obtenerImporteCC($fila);
-    const imputaActual = obtenerImputaCC($fila);
-
-    if (!Number.isFinite(importe) || importe <= 0) {
-        mostrarMensajeCC(
-            'Error',
-            'La factura posee un importe inválido.'
-        );
-        return;
-    }
-
-    if (!Number.isFinite(imputaActual) || imputaActual <= 0) {
-        mostrarMensajeCC(
-            'Error',
-            'La factura posee un importe inicial a imputar inválido.'
-        );
-        return;
-    }
-
-    $filaImputaCCEnEdicion = $fila;
-
-    $('#lblImporteFacturaCC').text(
-        `$ ${formatearMontoCC(importe)}`
-    );
-
-    $('#txtImputaCC')
-        .val(imputaActual.toFixed(2))
-        .attr('data-maximo-permitido', importe.toFixed(2));
-
-    $('#modalDetalleImputaCC').modal('show');
-
-    setTimeout(() => {
-        $('#txtImputaCC').trigger('focus').select();
-    }, 200);
-}
+// ================================================================
+// SELECCIÓN Y TOTALIZACIÓN
+// ================================================================
 
 function obtenerCheckboxesCuentaCorriente() {
-    return $('#tbodyCuentaCorriente input.form-check-input[type="checkbox"]');
+    return $(
+        '#tbodyCuentaCorriente input.form-check-input[type="checkbox"]'
+    );
 }
 
 function seleccionarTodosMovimientosCC(seleccionar) {
     const $checkboxes = obtenerCheckboxesCuentaCorriente();
 
-    $checkboxes.prop('checked', seleccionar);
+    $checkboxes.prop('checked', Boolean(seleccionar));
 
     actualizarEstadoSeleccionCC();
 }
@@ -338,21 +459,21 @@ function actualizarEstadoSeleccionCC() {
         indeterminate: seleccionados > 0 && seleccionados < total
     });
 
-    sincronizarAccionesImputaCC();
+    sincronizarAccionesImporteCC();
     calcularTotalCC();
 }
 
-function sincronizarAccionesImputaCC() {
+function sincronizarAccionesImporteCC() {
     $('#tbodyCuentaCorriente tr').each(function () {
         const $fila = $(this);
-
         const estaSeleccionada = $fila
             .find('input.form-check-input[type="checkbox"]')
             .is(':checked');
 
-        $fila.find('.btn-accion-imputa-cc')
+        $fila
+            .find('.btn-accion-importe-cc')
             .prop('disabled', !estaSeleccionada)
-            .attr('aria-disabled', !estaSeleccionada);
+            .attr('aria-disabled', String(!estaSeleccionada));
     });
 }
 
@@ -361,7 +482,6 @@ function calcularTotalCC() {
 
     $('#tbodyCuentaCorriente tr').each(function () {
         const $fila = $(this);
-
         const $checkbox = $fila.find(
             'input.form-check-input[type="checkbox"]'
         );
@@ -370,606 +490,748 @@ function calcularTotalCC() {
             return;
         }
 
-        const imputa = obtenerImputaCC($fila);
+        const importeActual = obtenerImporteActualCC($fila);
 
-        if (Number.isFinite(imputa) && imputa > 0) {
-            total += imputa;
+        if (Number.isFinite(importeActual) && importeActual > 0) {
+            total += importeActual;
         }
     });
 
     total = redondearMontoCC(total);
 
-    $('#txtTotalCC').val(
-        `$ ${formatearMontoCC(total)}`
-    );
-
+    $('#txtTotalCC').val(`$ ${formatearMontoCC(total)}`);
     $('#btnSeguirCC').prop('disabled', total <= 0);
+
+    return total;
 }
 
-/**
- * ✅ NUEVO v1.0: Inicializa el módulo mostrando el modal de identificación
- */
-function inicializarModuloConModal() {
-    console.log('═══════════════════════════════════════════════════');
-    console.log('⚙️ INICIALIZAR MÓDULO CON MODAL v1.0');
-    console.log('═══════════════════════════════════════════════════');
+// ================================================================
+// EDICIÓN DEL IMPORTE A COBRAR
+// ================================================================
 
-    // ❶ VERIFICAR SI HUBO ERROR AL CARGAR DATOS
-
-    // ❷ VERIFICAR SI HAY FACTURAS
-
-
-    // ❸ VERIFICAR QUE LOS DATOS EXISTAN
-
-
-    // ❹ ABRIR EL MODAL DE IDENTIFICACIÓN
-    // El usuario busca un cliente registrado en la base de datos y lo selecciona para continuar con el flujo de cobranza.
-    setTimeout(() => {
-        console.log('   📂 Abriendo modal de identificación de cliente...');
-        inicializaVistaFact(); // Función de fact.js que inicializa el modal
-    }, 300);
-
-    console.log('═══════════════════════════════════════════════════');
-}
-
-/**
- * ✅ NUEVO v1.0: Obtiene los registros de Cuenta Corriente de una cuenta especifica.
- * 
- * @param {object} cliente - Objeto con datos del cliente seleccionado
- */
-function obtenerDatosCCDesdeMemoria(cliente) {
-    console.log('═══════════════════════════════════════════════════');
-    console.log('🔍 OBTENER REGISTROS DE CTA CTE v01.01');
-    console.log(`   Cta: ${cliente.cta_id}`);
-    console.log(`   ID: ${cliente.cta_denominacion}`);
-    console.log('═══════════════════════════════════════════════════');
-
-    mostrarLoader('Buscando datos en Cuenta Corriente');
-
-    $.ajax({
-        url: obtenerCtaCteUrl,
-        type: 'POST',
-        contentType: 'application/json',
-        dataType: 'json',
-        data: JSON.stringify({ cta_id: cliente.cta_id }), // ✅ Enviamos solo el ID del cliente
-        success: function (response) {
-            ocultarLoader();
-            console.log('   📥 Respuesta de obtenerCtaCte:', response);
-
-            if (!response || !response.ok) {
-                const mensajeError = response?.mensaje || "No se encontraron registros en CC para este cliente.";
-                console.warn('⚠️ Sin registros CC para el cliente:', mensajeError);
-                AbrirMensaje("Información", mensajeError, function () { $("#msjModal").modal("hide"); }, false, ["Aceptar"], "info");
-
-                //VERIFICAR CREO QUE AUN NO LO HEMOS CERRADO
-
-                // Volver a abrir el modal de identificación
-                //setTimeout(() => $('#modalIdentificarCliente').modal('show'), 500);
-                return;
-            }
-
-            const regCC = response.lista;
-            console.log(`   ✅ Registros CC encontradas: ${regCC.length ?? 0}`);
-
-            // Mostrar modal con facturas del cliente específico
-            mostrarCtaCtePendientes(cliente, regCC);
-        },
-        error: function (xhr, status, error) {
-            ocultarLoader();
-            console.error('❌ Error AJAX:', {
-                status: xhr.status,
-                statusText: xhr.statusText,
-                responseText: xhr.responseText,
-                error: error
-            });
-
-            let mensajeError = "No se pudo obtener las facturas del cliente.";
-
-            if (xhr.responseJSON && xhr.responseJSON.mensaje) {
-                mensajeError = xhr.responseJSON.mensaje;
-            } else if (xhr.status === 400) {
-                mensajeError = "Datos inválidos. Por favor, intente nuevamente.";
-            } else if (xhr.status === 0) {
-                mensajeError = "No se pudo establecer conexión con el servidor.";
-            }
-
-            AbrirMensaje("Error de Comunicación", mensajeError, function () { $("#msjModal").modal("hide"); }, false, ["Aceptar"], "error");
-
-            // Volver a abrir el modal de identificación
-            setTimeout(() => $('#modalIdentificarCliente').modal('show'), 500);
-        }
-    });
-
-    console.log('═══════════════════════════════════════════════════');
-}
-
-/**
-* ✅ CORREGIDO v4.0: Muestra el modal con las facturas pendientes y puebla los datos del cliente.
-* CRÍTICO v4.0: Ahora agrega TODOS los data-* attributes necesarios para el resguardo posterior
-* 
-* @param {object} cliente - Datos completos del cliente
-* @param {Array} regCC - Lista de facturas pendientes (opcional, se recupera de sesión si no se provee)
-*/
-function mostrarCtaCtePendientes(cliente, regCC = null) {
-    console.log('═══════════════════════════════════════════════════');
-    console.log('📋 MOSTRAR MODAL CTA CTE PENDIENTES v4.0');
-    console.log('   Cliente:', cliente.denominacion);
-    console.log('   Registros provistos:', regCC ? regCC.length : 'Se recuperarán de sesión');
-    console.log('═══════════════════════════════════════════════════');
-
-    // ✅ HELPER: Obtener primer valor no vacío
-    const primerValorNoVacio = (...valores) => {
-        for (let valor of valores) {
-            if (valor && valor !== '' && valor !== 'null' && valor !== 'undefined') {
-                return valor;
-            }
-        }
-        return '';
-    };
-
-    // ✅ HELPER: Sanitizar valores para data-attributes
-    const sanitizarData = (valor) => {
-        if (valor === null || valor === undefined) return '';
-        return String(valor).trim();
-    };
-
-    // ❶ POBLAR DATOS DEL CLIENTE EN EL MODAL CON FALLBACKS MÚLTIPLES
-    $('#txtNombreCC').val(
-        primerValorNoVacio(cliente.denominacion, cliente.cta_denominacion, cliente.nombre)
-    );
-
-    $('#txtClienteIdCC').val(
-        primerValorNoVacio(cliente.id, cliente.cta_id, '')
-    );
-
-    $('#txtDomicilioCC').val(
-        primerValorNoVacio(cliente.domicilio, cliente.cta_domicilio)
-    );
-
-    $('#txtCondicionAfipCC').val(
-        primerValorNoVacio(cliente.condicionAfip, cliente.afip_desc, cliente.afip_id)
-    );
-
-    let tipoNumeroFinal = primerValorNoVacio(cliente.tipoNumero);
-    if (!tipoNumeroFinal && cliente.tdoc_desc && cliente.documento) {
-        tipoNumeroFinal = `${cliente.tdoc_desc} ${cliente.documento}`;
-    } else if (!tipoNumeroFinal && (cliente.tdoc_desc || cliente.documento)) {
-        tipoNumeroFinal = cliente.tdoc_desc || cliente.documento;
-    }
-    $('#txtTipoNumeroCC').val(tipoNumeroFinal);
-
-    $('#txtEmailCC').val(
-        primerValorNoVacio(cliente.email, cliente.cta_email)
-    );
-
-    $('#txtMovilCC').val(
-        primerValorNoVacio(cliente.movil, cliente.cta_celu)
-    );
-
-    console.log('   📝 Valores asignados al modal:');
-    console.log(`      Nombre: "${$('#txtNombreCC').val()}"`);
-    console.log(`      ID: "${$('#txtClienteIdCC').val()}"`);
-    console.log(`      Domicilio: "${$('#txtDomicilioCC').val()}"`);
-    console.log(`      Condición AFIP: "${$('#txtCondicionAfipCC').val()}"`);
-    console.log(`      Tipo/Número: "${$('#txtTipoNumeroCC').val()}"`);
-    console.log(`      Email: "${$('#txtEmailCC').val()}"`);
-    console.log(`      Móvil: "${$('#txtMovilCC').val()}"`);
-
-    // ❷ ✅ CORREGIDO v4.0: FUNCIÓN INTERNA PARA POBLAR LA GRILLA CON TODOS LOS DATA-ATTRIBUTES
-    const poblarGrillaCC = (listaCC) => {
-        console.log('   🔄 Poblando grilla con facturas:', listaCC.length);
-
-        const $tbody = $('#tbodyCuentaCorriente');
-        $tbody.empty();
-
-        if (!Array.isArray(listaCC) || listaCC.length === 0) {
-            console.warn('⚠️ Lista de Cuenta Corriente vacía o inválida');
-            $tbody.append('<tr><td colspan="6" class="text-center text-muted py-4">No hay facturas pendientes</td></tr>');
-            $('#modalCuentaCorriente').modal('show');
-            return;
-        }
-
-        listaCC.forEach((ctacte, index) => {
-            try {
-                const fecha = ctacte.cv_fecha_vto
-                    ? new Date(ctacte.cv_fecha_vto).toLocaleDateString('es-AR')
-                    : 'N/A';
-
-                const importe = parseFloat(ctacte.cv_importe || 0);
-                const imputa = parseFloat(ctacte.cv_importe_ori || 0);
-                const clienteId = sanitizarData(ctacte.cta_id) || '---';
-                const nombre = `${cliente.denominacion || 'N/A'} (${clienteId})`;
-                // ✅ CRÍTICO v4.0: Agregar TODOS los data-* attributes necesarios
-                const fila = `
-                    <tr data-importe="${importe}"
-                        data-imputa="${imputa}"
-                        data-imputa-ori="${imputa}">
-
-                        <td>${ctacte.tco_id || 'N/A'}</td>
-                        <td>${ctacte.cm_compte || 'N/A'}</td>
-                        <td>${nombre}</td>
-                        <td>${tipoNumeroFinal}</td>
-                        <td class="text-center">${fecha}</td>
-
-                        <td class="text-end fw-bold">
-                            ${formatearNumero(importe, 2)}
-                        </td>
-
-                        <td class="text-end fw-bold celda-imputa-cc">
-                            ${formatearNumero(imputa, 2)}
-                        </td>
-
-                        <td class="text-center py-1">
-                            <button type="button"
-                                    class="btn btn-xs btn-success btn-modificar-imputa-cc btn-accion-imputa-cc"
-                                    title="Modificar importe a imputar"
-                                    aria-label="Modificar importe a imputar">
-                                <i class="bx bx-edit-alt" style="font-size: 0.9rem;"></i>
-                            </button>
-
-                            <button type="button"
-                                    class="btn btn-xs btn-danger btn-restaurar-imputa-cc btn-accion-imputa-cc ms-1"
-                                    title="Restaurar importe original"
-                                    aria-label="Restaurar importe original">
-                                <i class="bx bx-undo" style="font-size: 0.9rem;"></i>
-                            </button>
-                        </td>
-
-                        <td class="text-center">
-                            <input type="checkbox"
-                                   class="form-check-input"
-
-                                   data-cta-id="${sanitizarData(ctacte.cta_id)}"
-                                   data-dia-movi="${sanitizarData(ctacte.dia_movi)}"
-                                   data-tco-id="${sanitizarData(ctacte.tco_id)}"
-                                   data-cm-compte="${sanitizarData(ctacte.cm_compte)}"
-                                   data-cm-compte-cuota="${ctacte.cm_compte_cuota || 0}"
-                                   data-cv-fecha-vto="${sanitizarData(ctacte.cv_fecha_vto)}"
-                                   data-cv-importe="${ctacte.cv_importe || 0}"
-                                   data-cv-importe-ori="${ctacte.cv_importe_ori || 0}"
-                                   data-cv-concepto="${sanitizarData(ctacte.cv_concepto)}"
-                                   data-ve-id="${sanitizarData(ctacte.ve_id)}"
-                                   data-ccb-id="${sanitizarData(ctacte.ccb_id)}"
-                                   data-ctacte="${sanitizarData(ctacte.ctacte)}"
-                                   data-carga="${sanitizarData(ctacte.carga)}"
-                                   data-carga-obligatoria="${sanitizarData(ctacte.carga_obligatoria)}">
-                        </td>
-                    </tr>
-                `;
-                $tbody.append(fila);
-
-                // ✅ Log de muestra para debugging (primera factura)
-                if (index === 0) {
-                    console.log('   🔍 Data-attributes agregados a primera factura:');
-                    console.log(`      tco_id: "${ctacte.tco_id}"`);
-                    console.log(`      cm_compte: "${ctacte.cm_compte}"`);
-                    console.log(`      cv_fecha_vto: "${ctacte.cv_fecha_vto}"`);
-                    console.log(`      cv_importe: ${ctacte.cv_importe}`);
-                    console.log(`      cv_importe_ori: ${ctacte.cv_importe_ori}`);
-                }
-
-            } catch (error) {
-                console.error(`❌ Error al renderizar factura ${index}:`, error, ctacte);
-            }
-        });
-
-      
-        seleccionarTodosMovimientosCC(true);
-        //// Resetear controles
-        cerrarTecladoDigital();
-
-        //$('#chkSeleccionarTodo').prop('checked', false);
-        //calcularTotalSeleccionado();
-
-        // Mostrar modal
-        $('#modalCuentaCorriente').modal('show');
-        console.log('   ✅ Modal de cuenta corriente mostrado correctamente');
-    };
-
-    // ❸ DECIDIR FUENTE DE DATOS
-    if (regCC && Array.isArray(regCC) && regCC.length > 0) {
-        console.log('   📌 Usando registros de cuenta corriente provistos por parámetro');
-        poblarGrillaCC(regCC);
-    } else {
-        console.log('   📡 Recuperando la cuenta corriente  desde sesión del servidor...');
-        mostrarLoader('Cargando registros de Cuenta Corriente del cliente...');
-
-        $.ajax({
-            url: obtenerCtaCteUrl,
-            type: 'POST',
-            success: function (response) {
-                ocultarLoader();
-                console.log('   📥 Respuesta de sesión:', response);
-
-                if (response.ok && response.lista && response.lista.length > 0) {
-                    poblarGrillaCC(response.lista);
-                } else {
-                    console.warn('⚠️ No se encontraron registros de cuenta corriente en la sesión');
-                    AbrirMensaje("Información", "No se encontraron registros de cuenta corriente pendientes para este cliente.", function () { $("#msjModal").modal("hide"); }, false, ["Aceptar"], "info");
-                }
-            },
-            error: function (xhr, status, error) {
-                ocultarLoader();
-                console.error('❌ Error al recuperar registros de cuenta corriente de sesión:', error);
-                AbrirMensaje("Error de Comunicación", "No se pudieron recuperar los registros de cuenta corriente del cliente.", function () { $("#msjModal").modal("hide"); }, false, ["Aceptar"], "error");
-            }
-        });
+function obtenerControlesModalImporteCC() {
+    // Modal recomendado: _modificarImporteCuentaCorriente.cshtml.
+    if ($('#modalModificarImporteCC').length > 0) {
+        return {
+            modalSelector: '#modalModificarImporteCC',
+            inputSelector: '#txtImportePagarCC',
+            labelOriginalSelector: '#lblImporteOriginalCC',
+            labelSaldoSelector: '#lblSaldoDisponibleCC'
+        };
     }
 
-    console.log('═══════════════════════════════════════════════════');
+    // Compatibilidad temporal con el modal anterior.
+    if ($('#modalDetalleImputaCC').length > 0) {
+        return {
+            modalSelector: '#modalDetalleImputaCC',
+            inputSelector: '#txtImputaCC',
+            labelOriginalSelector: '#lblImporteFacturaCC',
+            labelSaldoSelector: ''
+        };
+    }
+
+    return null;
 }
 
-
-function seleccionarTodosRegCtaCte(seleccionar) {
-    const $checkboxes = obtenerCheckboxesCtaCte();
-
-    $checkboxes.prop('checked', seleccionar);
-
-    actualizarEstadoSeleccionCtaCte();
-}
-
-function obtenerCheckboxesCtaCte() {
-    return $('#tbodyCuentaCorriente input.form-check-input[type="checkbox"]');
-}
-
-function actualizarEstadoSeleccionCtaCte() {
-    const $checkboxes = obtenerCheckboxesCtaCte();
-    const total = $checkboxes.length;
-    const seleccionados = $checkboxes.filter(':checked').length;
-
-    $('#chkSeleccionarTodo').prop({
-        checked: total > 0 && seleccionados === total,
-        indeterminate: seleccionados > 0 && seleccionados < total
-    });
-
-    calcularTotalSeleccionadoCC();
-}
-function calcularTotalSeleccionadoCC() {
-    let total = 0;
-    $('#tbodyCuentaCorriente tr').each(function () {
-        const $checkbox = $(this).find('input[type="checkbox"]');
-        if ($checkbox.is(':checked')) {
-            total += parseFloat($(this).data('importe') || 0);
-        }
-    });
-
-    $('#txtTotalSeleccionado').val(`$ ${formatearNumero(total, 2)}`);
-    $('#btnSeguirConCobranza').prop('disabled', total === 0);
-}
-
-function abrirModalModificarImporteCC($fila) {
+function abrirModalImporteCC($fila) {
     if (!$fila || $fila.length === 0) {
         return;
     }
 
-    const importeOriginal = obtenerImporteActualCC($fila);
+    // Validaciones y carga de datos del modal...
 
-    if (importeOriginal < 0) {
-        mostrarMensajeImporteCC(
-            'Error',
-            'El importe original del registro es inválido.'
-        );
-        return;
-    }
+    $filaImporteCCEnEdicion = $fila;
 
-    $filaCuentaCorrienteEnEdicion = $fila;
+    $('#modalModificarImporteCC')
+        .off('shown.bs.modal.tecladoCC')
+        .one('shown.bs.modal.tecladoCC', function () {
+            const $modal = $(this);
 
-    $('#lblImporteOriginalCC').text(
-        `$ ${formatearNumero(importeOriginal, 2)}`
-    );
+            $modal.css('z-index', '5010');
 
-    // Requerimiento: cargar el modal con data-importe-ori.
-    $('#txtImportePagarCC')
-        .val(importeOriginal.toFixed(2))
-        .attr('data-maximo-permitido', importeOriginal);
+            $('.modal-backdrop')
+                .last()
+                .css('z-index', '5009');
 
-    $('#modalModificarImporteCC').modal('show');
-
-    setTimeout(() => {
-        const $input = $('#txtImportePagarCC');
-
-        $input.trigger('focus');
-        $input.select();
-    }, 250);
+            if (typeof activarTecladoParaInput === 'function') {
+                activarTecladoParaInput(
+                    '#txtImportePagarCC',
+                    {
+                        anchorSelector: '#teclado-ancla-cc'
+                    }
+                );
+            } else {
+                $('#txtImportePagarCC')
+                    .trigger('focus')
+                    .select();
+            }
+        })
+        .modal('show');
 }
 
-function guardarImporteModificadoCC() {
-    if (!$filaCuentaCorrienteEnEdicion ||
-        $filaCuentaCorrienteEnEdicion.length === 0) {
-
-        mostrarMensajeImporteCC(
+function guardarImporteCC() {
+    if (
+        !$filaImporteCCEnEdicion ||
+        $filaImporteCCEnEdicion.length === 0
+    ) {
+        mostrarMensajeCC(
             'Atención',
-            'No se pudo identificar el registro que desea modificar.'
+            'No se pudo determinar el comprobante que desea modificar.',
+            'warn!'
         );
         return;
     }
 
-    const importeOriginal = obtenerImporteOriginalCC($filaCuentaCorrienteEnEdicion);
-    const importeIngresado = parsearImporteCC($('#txtImportePagarCC').val());
+    const controles = obtenerControlesModalImporteCC();
+
+    if (!controles) {
+        mostrarMensajeCC(
+            'Error',
+            'No se encontró el modal para modificar el importe.',
+            'error!'
+        );
+        return;
+    }
+
+    const importeIngresado = normalizarMontoCC(
+        $(controles.inputSelector).val()
+    );
+
+    const importeMaximo = obtenerImporteBackupCC(
+        $filaImporteCCEnEdicion
+    );
 
     if (!Number.isFinite(importeIngresado)) {
-        mostrarMensajeImporteCC(
+        mostrarMensajeCC(
             'Atención',
-            'Debe ingresar un importe válido.'
+            'Debe ingresar un importe válido.',
+            'warn!'
         );
         return;
     }
 
-    if (importeIngresado < 0) {
-        mostrarMensajeImporteCC(
+    // Para no cobrar un comprobante debe desmarcarse su checkbox.
+    if (importeIngresado <= 0) {
+        mostrarMensajeCC(
             'Atención',
-            'El importe a pagar no puede ser menor a cero.'
+            'El importe a cobrar debe ser mayor a cero.',
+            'warn!'
         );
         return;
     }
 
-    if (importeIngresado > importeOriginal) {
-        mostrarMensajeImporteCC(
+    if (!Number.isFinite(importeMaximo) || importeMaximo <= 0) {
+        mostrarMensajeCC(
+            'Error',
+            'El saldo disponible del comprobante es inválido.',
+            'error!'
+        );
+        return;
+    }
+
+    if (importeIngresado > importeMaximo + 0.01) {
+        mostrarMensajeCC(
             'Atención',
-            `El importe a pagar no puede superar el importe original de $ ${formatearNumero(importeOriginal, 2)}.`
+            `El importe a cobrar no puede superar el saldo disponible: $ ${formatearMontoCC(importeMaximo)}.`,
+            'warn!'
         );
         return;
     }
 
     actualizarImporteFilaCC(
-        $filaCuentaCorrienteEnEdicion,
+        $filaImporteCCEnEdicion,
         importeIngresado
     );
 
-    $('#modalModificarImporteCC').modal('hide');
+    $(controles.modalSelector).modal('hide');
 
-    recalcularTotalCuentaCorriente();
+    calcularTotalCC();
 }
 
-function restaurarImporteOriginalCC($fila) {
+function restaurarImporteDesdeBackupCC($fila) {
     if (!$fila || $fila.length === 0) {
         return;
     }
 
-    const importeOriginal = obtenerImporteOriginalCC($fila);
+    const $checkbox = $fila.find(
+        'input.form-check-input[type="checkbox"]'
+    );
 
-    actualizarImporteFilaCC($fila, importeOriginal);
+    if (!$checkbox.is(':checked')) {
+        mostrarMensajeCC(
+            'Atención',
+            'Debe seleccionar el comprobante antes de restaurar el importe.',
+            'warn!'
+        );
+        return;
+    }
 
-    recalcularTotalCuentaCorriente();
+    const importeBackup = obtenerImporteBackupCC($fila);
+
+    if (!Number.isFinite(importeBackup) || importeBackup <= 0) {
+        mostrarMensajeCC(
+            'Error',
+            'El saldo original disponible es inválido.',
+            'error!'
+        );
+        return;
+    }
+
+    actualizarImporteFilaCC($fila, importeBackup);
+    calcularTotalCC();
 }
 
 function actualizarImporteFilaCC($fila, importe) {
-    const importeNormalizado = redondearImporteCC(importe);
+    const importeNormalizado = redondearMontoCC(importe);
 
-    /*
-        Se actualizan ambos lugares:
-
-        1. attr: mantiene actualizado el HTML real.
-        2. data: mantiene actualizado el caché interno de jQuery.
-
-        Esto evita inconsistencias al consultar luego:
-        $fila.data('importe')
-        o
-        $fila.attr('data-importe')
-    */
     $fila
         .attr('data-importe', importeNormalizado.toFixed(2))
         .data('importe', importeNormalizado);
 
     $fila.find('.celda-importe-cc').text(
-        `$ ${formatearNumero(importeNormalizado, 2)}`
+        `$ ${formatearMontoCC(importeNormalizado)}`
     );
 }
 
 function obtenerImporteActualCC($fila) {
-    return parsearImporteCC($fila.attr('data-importe'));
+    return normalizarMontoCC($fila.attr('data-importe'));
 }
 
 function obtenerImporteOriginalCC($fila) {
-    return parsearImporteCC($fila.attr('data-importe-ori'));
+    return normalizarMontoCC($fila.attr('data-importe-ori'));
+}
+
+function obtenerImporteBackupCC($fila) {
+    return normalizarMontoCC($fila.attr('data-importe-bak'));
+}
+
+// Alias de compatibilidad para referencias anteriores.
+function abrirModalModificarImporteCC($fila) {
+    abrirModalImporteCC($fila);
+}
+
+function guardarImporteModificadoCC() {
+    guardarImporteCC();
+}
+
+function restaurarImporteOriginalCC($fila) {
+    restaurarImporteDesdeBackupCC($fila);
 }
 
 function recalcularTotalCuentaCorriente() {
-    if (typeof calcularTotalCC === 'function') {
-        calcularTotalCC();
+    return calcularTotalCC();
+}
+
+// ================================================================
+// RESGUARDO DE LA SELECCIÓN E INICIO DEL PAGO
+// ================================================================
+
+function iniciarCobranza() {
+    if (cobranzaCCEnCurso) {
+        console.warn('⚠️ Ya existe una solicitud de cobranza en curso.');
         return;
     }
 
-    console.warn('No se encontró la función calcularTotalCC().');
+    if (typeof iniciarProcesoPago !== 'function') {
+        mostrarMensajeCC(
+            'Error',
+            'El módulo de pago no está disponible. Recargue la página e intente nuevamente.',
+            'error!'
+        );
+        return;
+    }
+
+    if (
+        typeof resguardarCuentaCorrienteSeleccionadaUrl === 'undefined' ||
+        !resguardarCuentaCorrienteSeleccionadaUrl
+    ) {
+        mostrarMensajeCC(
+            'Error',
+            'No está configurada la URL para resguardar la selección de Cuenta Corriente.',
+            'error!'
+        );
+        return;
+    }
+
+    const $checkboxesSeleccionados = $(
+        '#tbodyCuentaCorriente input.form-check-input[type="checkbox"]:checked'
+    );
+
+    if ($checkboxesSeleccionados.length === 0) {
+        mostrarMensajeCC(
+            'Atención',
+            'Debe seleccionar al menos un comprobante para cobrar.',
+            'warn!'
+        );
+        return;
+    }
+
+    const registrosSeleccionados = [];
+    const errores = [];
+
+    $checkboxesSeleccionados.each(function (index) {
+        const $checkbox = $(this);
+        const $fila = $checkbox.closest('tr');
+
+        const importeActual = obtenerImporteActualCC($fila);
+        const importeOriginal = obtenerImporteOriginalCC($fila);
+        const importeMaximo = obtenerImporteBackupCC($fila);
+
+        const registro = {
+            cta_id: obtenerDataCC($checkbox, 'cta-id'),
+            dia_movi: obtenerDataCC($checkbox, 'dia-movi'),
+            tco_id: obtenerDataCC($checkbox, 'tco-id'),
+            cm_compte: obtenerDataCC($checkbox, 'cm-compte'),
+            cm_compte_cuota: convertirAEnteroCC(
+                obtenerDataCC($checkbox, 'cm-compte-cuota')
+            ),
+            cv_fecha_vto: normalizarFechaParaServidorCC(
+                obtenerDataCC($checkbox, 'cv-fecha-vto')
+            ),
+
+            // Valor final elegido por el usuario.
+            cv_importe: importeActual,
+
+            // Importe original histórico. No se modifica.
+            cv_importe_ori: importeOriginal,
+
+            cv_concepto: obtenerDataCC($checkbox, 'cv-concepto'),
+            ve_id: obtenerDataCC($checkbox, 've-id'),
+            ccb_id: obtenerDataCC($checkbox, 'ccb-id'),
+            ctacte: obtenerDataCC($checkbox, 'ctacte'),
+            carga: obtenerDataCC($checkbox, 'carga'),
+            carga_obligatoria: obtenerDataCC(
+                $checkbox,
+                'carga-obligatoria'
+            )
+        };
+
+        const identificador = `${registro.tco_id || 'N/A'} ${registro.cm_compte || 'N/A'}`;
+        const camposFaltantes = [];
+
+        if (!registro.cta_id) camposFaltantes.push('cta_id');
+        if (!registro.tco_id) camposFaltantes.push('tco_id');
+        if (!registro.cm_compte) camposFaltantes.push('cm_compte');
+        if (!registro.ctacte) camposFaltantes.push('ctacte');
+
+        if (camposFaltantes.length > 0) {
+            errores.push(
+                `Registro ${index + 1} (${identificador}): faltan ${camposFaltantes.join(', ')}.`
+            );
+            return;
+        }
+
+        if (
+            !Number.isInteger(registro.cm_compte_cuota) ||
+            registro.cm_compte_cuota < 0
+        ) {
+            errores.push(
+                `Registro ${index + 1} (${identificador}): la cuota es inválida.`
+            );
+            return;
+        }
+
+        if (!registro.cv_fecha_vto) {
+            errores.push(
+                `Registro ${index + 1} (${identificador}): la fecha de vencimiento es inválida.`
+            );
+            return;
+        }
+
+        if (!Number.isFinite(importeOriginal) || importeOriginal <= 0) {
+            errores.push(
+                `Registro ${index + 1} (${identificador}): el importe original es inválido.`
+            );
+            return;
+        }
+
+        if (!Number.isFinite(importeMaximo) || importeMaximo <= 0) {
+            errores.push(
+                `Registro ${index + 1} (${identificador}): el saldo disponible es inválido.`
+            );
+            return;
+        }
+
+        if (!Number.isFinite(importeActual) || importeActual <= 0) {
+            errores.push(
+                `Registro ${index + 1} (${identificador}): el importe a cobrar debe ser mayor a cero.`
+            );
+            return;
+        }
+
+        if (importeActual > importeMaximo + 0.01) {
+            errores.push(
+                `Registro ${index + 1} (${identificador}): el importe a cobrar no puede superar $ ${formatearMontoCC(importeMaximo)}.`
+            );
+            return;
+        }
+
+        if (importeOriginal + 0.01 < importeMaximo) {
+            errores.push(
+                `Registro ${index + 1} (${identificador}): el importe original es inconsistente con el saldo disponible.`
+            );
+            return;
+        }
+
+        registrosSeleccionados.push(registro);
+    });
+
+    if (errores.length > 0) {
+        mostrarMensajeCC(
+            'Datos incompletos',
+            `No se puede iniciar la cobranza.<br><br>${errores.map(escaparHtmlCC).join('<br>')}`,
+            'error!'
+        );
+        return;
+    }
+
+    if (registrosSeleccionados.length === 0) {
+        mostrarMensajeCC(
+            'Atención',
+            'No se pudo construir ningún comprobante válido para la cobranza.',
+            'error!'
+        );
+        return;
+    }
+
+    const totalPagar = redondearMontoCC(
+        registrosSeleccionados.reduce(function (acumulado, registro) {
+            return acumulado + registro.cv_importe;
+        }, 0)
+    );
+
+    if (totalPagar <= 0) {
+        mostrarMensajeCC(
+            'Error',
+            'El total a cobrar debe ser mayor a cero.',
+            'error!'
+        );
+        return;
+    }
+
+    cobranzaCCEnCurso = true;
+    $('#btnSeguirCC').prop('disabled', true);
+
+    mostrarLoaderCC('Preparando cobranza de Cuenta Corriente...');
+
+    $.ajax({
+        url: resguardarCuentaCorrienteSeleccionadaUrl,
+        type: 'POST',
+        contentType: 'application/json',
+        dataType: 'json',
+        data: JSON.stringify({ Registros: registrosSeleccionados }),
+
+        success: function (response) {
+            ocultarLoaderCC();
+
+            if (!response || !response.ok) {
+                cobranzaCCEnCurso = false;
+                calcularTotalCC();
+
+                mostrarMensajeCC(
+                    'Error',
+                    response?.mensaje ||
+                    'No se pudieron resguardar los comprobantes seleccionados.',
+                    'error!'
+                );
+                return;
+            }
+
+            // pagoFactura.js utiliza esta variable para armar Cancelar.
+            window._cuentaCorrienteDelClienteSeleccionadaParaElCobro =
+                registrosSeleccionados;
+
+            // Evita que un flujo previo de cobranza diferida se use por error.
+            window._facturasSeleccionadasParaCobro = null;
+
+            const iniciarPago = function () {
+                try {
+                    // pagoFactura.js hoy hidrata el contexto COBRANZA desde los
+                    // controles *Pendiente*. Este puente evita mezclar el módulo
+                    // de Cuenta Corriente con el de Cobranza Diferida.
+                    sincronizarDatosClienteParaPagoCC();
+
+                    const iniciado = iniciarProcesoPago({
+                        totalPagar: totalPagar,
+                        co_tipo: 'CC',
+                        puntoVenta: 'GECO PD',
+                        tituloModal: 'Cobranza Cuenta Corriente',
+                        contextoOperacion: 'COBRANZA'
+                    });
+
+                    if (iniciado === false) {
+                        calcularTotalCC();
+                    } else {
+                        // El pago central todavía usa el texto fijo
+                        // "COBRANZA DIFERIDA" para cualquier COBRANZA.
+                        // Se corrige visualmente para Cuenta Corriente.
+                        $('#headerTituloPago').html(
+                            "<i class='bx bx-receipt'></i> COBRANZA CUENTA CORRIENTE"
+                        );
+                    }
+                } catch (error) {
+                    console.error(
+                        '❌ Error al iniciar el proceso de pago de Cuenta Corriente.',
+                        error
+                    );
+
+                    calcularTotalCC();
+
+                    mostrarMensajeCC(
+                        'Error',
+                        'No se pudo iniciar el proceso de pago.',
+                        'error!'
+                    );
+                } finally {
+                    cobranzaCCEnCurso = false;
+                }
+            };
+
+            const $modalCuentaCorriente = $('#modalCuentaCorriente');
+
+            if ($modalCuentaCorriente.hasClass('show')) {
+                $modalCuentaCorriente
+                    .off('hidden.bs.modal.iniciarCobranzaCC')
+                    .one('hidden.bs.modal.iniciarCobranzaCC', iniciarPago)
+                    .modal('hide');
+            } else {
+                iniciarPago();
+            }
+        },
+
+        error: function (xhr, status, error) {
+            ocultarLoaderCC();
+
+            cobranzaCCEnCurso = false;
+            calcularTotalCC();
+
+            console.error(
+                '❌ Error AJAX al resguardar Cuenta Corriente:',
+                {
+                    status: xhr.status,
+                    statusText: xhr.statusText,
+                    responseText: xhr.responseText,
+                    error: error
+                }
+            );
+
+            let mensaje =
+                'No se pudieron guardar los comprobantes seleccionados en el servidor.';
+
+            if (xhr.responseJSON?.mensaje) {
+                mensaje = xhr.responseJSON.mensaje;
+            } else if (xhr.status === 400) {
+                mensaje = 'Los datos enviados son inválidos.';
+            } else if (xhr.status === 0) {
+                mensaje = 'No se pudo establecer conexión con el servidor.';
+            }
+
+            mostrarMensajeCC('Error de Comunicación', mensaje, 'error!');
+        }
+    });
 }
 
-function redondearImporteCC(valor) {
-    return Math.round((Number(valor) + Number.EPSILON) * 100) / 100;
+// ================================================================
+// HELPERS
+// ================================================================
+
+function obtenerPrimerValorCC() {
+    const valores = Array.from(arguments);
+
+    for (let i = 0; i < valores.length; i++) {
+        const valor = valores[i];
+
+        if (
+            valor !== null &&
+            valor !== undefined &&
+            String(valor).trim() !== '' &&
+            String(valor).trim().toLowerCase() !== 'null' &&
+            String(valor).trim().toLowerCase() !== 'undefined'
+        ) {
+            return String(valor).trim();
+        }
+    }
+
+    return '';
 }
 
-function parsearImporteCC(valor) {
-    if (valor === null || valor === undefined || valor === '') {
+function obtenerTipoNumeroClienteCC(cliente) {
+    if (!cliente) {
+        return '';
+    }
+
+    const tipoNumero = obtenerPrimerValorCC(cliente.tipoNumero);
+
+    if (tipoNumero) {
+        return tipoNumero;
+    }
+
+    const tipoDocumento = obtenerPrimerValorCC(
+        cliente.tdoc_desc,
+        cliente.tipoDocumento
+    );
+
+    const documento = obtenerPrimerValorCC(
+        cliente.documento,
+        cliente.nro_documento
+    );
+
+    return [tipoDocumento, documento]
+        .filter(Boolean)
+        .join(' ');
+}
+
+function poblarDatosClienteCC(cliente) {
+    $('#txtNombreCC').val(
+        obtenerPrimerValorCC(
+            cliente?.denominacion,
+            cliente?.cta_denominacion,
+            cliente?.nombre
+        )
+    );
+
+    $('#txtClienteIdCC').val(
+        obtenerPrimerValorCC(cliente?.cta_id, cliente?.id)
+    );
+
+    $('#txtDomicilioCC').val(
+        obtenerPrimerValorCC(cliente?.domicilio, cliente?.cta_domicilio)
+    );
+
+    $('#txtCondicionAfipCC').val(
+        obtenerPrimerValorCC(
+            cliente?.condicionAfip,
+            cliente?.afip_desc,
+            cliente?.afip_id
+        )
+    );
+
+    $('#txtTipoNumeroCC').val(obtenerTipoNumeroClienteCC(cliente));
+
+    $('#txtEmailCC').val(
+        obtenerPrimerValorCC(cliente?.email, cliente?.cta_email)
+    );
+
+    $('#txtMovilCC').val(
+        obtenerPrimerValorCC(cliente?.movil, cliente?.cta_celu)
+    );
+}
+
+function sincronizarDatosClienteParaPagoCC() {
+    const mapeo = [
+        ['#txtNombreCC', 'txtNombrePendiente'],
+        ['#txtClienteIdCC', 'txtClienteIdPendiente'],
+        ['#txtDomicilioCC', 'txtDomicilioPendiente'],
+        ['#txtCondicionAfipCC', 'txtCondicionAfipPendiente'],
+        ['#txtTipoNumeroCC', 'txtTipoNumeroPendiente'],
+        ['#txtEmailCC', 'txtEmailPendiente'],
+        ['#txtMovilCC', 'txtMovilPendiente']
+    ];
+
+    mapeo.forEach(function (item) {
+        const selectorOrigen = item[0];
+        const idDestino = item[1];
+        let $destino = $(`#${idDestino}`);
+
+        // Solo se crean campos puente cuando la vista de cobranza diferida
+        // no está presente en esta pantalla.
+        if ($destino.length === 0) {
+            $destino = $(
+                `<input type="hidden" id="${idDestino}" aria-hidden="true">`
+            );
+
+            $('body').append($destino);
+        }
+
+        $destino.val($(selectorOrigen).val() || '');
+    });
+}
+
+function obtenerDataCC($elemento, nombre) {
+    const valor = $elemento.attr(`data-${nombre}`);
+
+    return valor === undefined || valor === null
+        ? ''
+        : String(valor).trim();
+}
+
+function convertirAEnteroCC(valor) {
+    const texto = String(valor ?? '').trim();
+
+    if (!/^\d+$/.test(texto)) {
         return NaN;
     }
 
-    if (typeof valor === 'number') {
-        return Number.isFinite(valor)
-            ? redondearImporteCC(valor)
-            : NaN;
-    }
+    const numero = Number.parseInt(texto, 10);
 
-    let texto = String(valor)
-        .trim()
-        .replace(/\$/g, '')
-        .replace(/\s/g, '');
+    return Number.isInteger(numero) ? numero : NaN;
+}
+
+function normalizarFechaParaServidorCC(valor) {
+    const texto = String(valor ?? '').trim();
 
     if (!texto) {
-        return NaN;
+        return null;
     }
 
-    const ultimaComa = texto.lastIndexOf(',');
-    const ultimoPunto = texto.lastIndexOf('.');
-
-    /*
-        Admite:
-        1250.50
-        1250,50
-        1,250.50
-        1.250,50
-    */
-    if (ultimaComa !== -1 && ultimoPunto !== -1) {
-        if (ultimaComa > ultimoPunto) {
-            texto = texto.replace(/\./g, '').replace(',', '.');
-        } else {
-            texto = texto.replace(/,/g, '');
-        }
-    } else if (ultimaComa !== -1) {
-        texto = texto.replace(/\./g, '').replace(',', '.');
+    // ISO enviado normalmente por ASP.NET Core.
+    if (/^\d{4}-\d{2}-\d{2}(T.*)?$/.test(texto)) {
+        return texto.includes('T')
+            ? texto.replace(' ', 'T')
+            : `${texto}T00:00:00`;
     }
 
-    const importe = Number(texto);
+    // dd/MM/yyyy o dd-MM-yyyy.
+    const coincidenciaFechaLatina = texto.match(
+        /^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/
+    );
 
-    return Number.isFinite(importe)
-        ? redondearImporteCC(importe)
-        : NaN;
-}
+    if (coincidenciaFechaLatina) {
+        const dia = coincidenciaFechaLatina[1].padStart(2, '0');
+        const mes = coincidenciaFechaLatina[2].padStart(2, '0');
+        const anio = coincidenciaFechaLatina[3];
 
-function mostrarMensajeImporteCC(titulo, mensaje) {
-    if (typeof AbrirMensaje === 'function') {
-        AbrirMensaje(
-            titulo,
-            mensaje,
-            function () {
-                $('#msjModal').modal('hide');
-            },
-            false,
-            ['Aceptar'],
-            'warning'
-        );
-
-        return;
+        return `${anio}-${mes}-${dia}T00:00:00`;
     }
 
-    window.alert(`${titulo}: ${mensaje}`);
+    const fecha = new Date(texto);
+
+    return Number.isNaN(fecha.getTime())
+        ? null
+        : fecha.toISOString();
 }
 
-/**********************
-* 
-* HELPERS DE LECTURA Y FORMATO
-*
-***********************/
-function obtenerImporteCC($fila) {
-    return normalizarMontoCC(
-        $fila.attr('data-importe')
-    );
+function formatearFechaCC(valor) {
+    const fechaNormalizada = normalizarFechaParaServidorCC(valor);
+
+    if (!fechaNormalizada) {
+        return 'N/A';
+    }
+
+    const coincidencia = fechaNormalizada.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+    if (!coincidencia) {
+        return 'N/A';
+    }
+
+    return `${coincidencia[3]}/${coincidencia[2]}/${coincidencia[1]}`;
 }
 
-function obtenerImputaCC($fila) {
-    return normalizarMontoCC(
-        $fila.attr('data-imputa')
-    );
-}
-
-function obtenerImputaOriginalCC($fila) {
-    return normalizarMontoCC(
-        $fila.attr('data-imputa-ori')
-    );
+function escaparHtmlCC(valor) {
+    return String(valor ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
 
 function redondearMontoCC(valor) {
-    return Math.round(
-        (Number(valor) + Number.EPSILON) * 100
-    ) / 100;
+    const numero = Number(valor);
+
+    return Number.isFinite(numero)
+        ? Math.round((numero + Number.EPSILON) * 100) / 100
+        : NaN;
 }
 
 function normalizarMontoCC(valor) {
@@ -992,22 +1254,49 @@ function normalizarMontoCC(valor) {
         return NaN;
     }
 
-    const ultimaComa = texto.lastIndexOf(',');
-    const ultimoPunto = texto.lastIndexOf('.');
+    // Conserva únicamente números, separadores decimales/miles y signo.
+    texto = texto.replace(/[^\d,.\-]/g, '');
 
-    // Admite: 2500.50 / 2500,50 / 2,500.50 / 2.500,50
-    if (ultimaComa !== -1 && ultimoPunto !== -1) {
-        if (ultimaComa > ultimoPunto) {
-            texto = texto
-                .replace(/\./g, '')
-                .replace(',', '.');
+    if (!/^-?[\d,.]+$/.test(texto)) {
+        return NaN;
+    }
+
+    const tieneComa = texto.includes(',');
+    const tienePunto = texto.includes('.');
+
+    if (tieneComa && tienePunto) {
+        // El último separador se interpreta como decimal:
+        // 1.234,56 -> 1234.56
+        // 1,234.56 -> 1234.56
+        if (texto.lastIndexOf(',') > texto.lastIndexOf('.')) {
+            texto = texto.replace(/\./g, '').replace(',', '.');
         } else {
             texto = texto.replace(/,/g, '');
         }
-    } else if (ultimaComa !== -1) {
-        texto = texto
-            .replace(/\./g, '')
-            .replace(',', '.');
+    } else if (tieneComa) {
+        const partes = texto.split(',');
+
+        // 1,50 = decimal. 1,000 = separador de miles.
+        if (partes.length === 2 && partes[1].length <= 2) {
+            texto = partes[0].replace(/\./g, '') + '.' + partes[1];
+        } else {
+            texto = texto.replace(/,/g, '');
+        }
+    } else if (tienePunto) {
+        const partes = texto.split('.');
+
+        // 1.50 = decimal. 1.000 = separador de miles.
+        if (partes.length === 2 && partes[1].length <= 2) {
+            texto = partes[0].replace(/,/g, '') + '.' + partes[1];
+        } else if (
+            partes.length > 2 &&
+            partes[partes.length - 1].length <= 2
+        ) {
+            const decimal = partes.pop();
+            texto = partes.join('') + '.' + decimal;
+        } else {
+            texto = texto.replace(/\./g, '');
+        }
     }
 
     const monto = Number(texto);
@@ -1020,7 +1309,6 @@ function normalizarMontoCC(valor) {
 function formatearMontoCC(monto) {
     const valor = Number.isFinite(monto) ? monto : 0;
 
-    // Reutiliza el formato común del proyecto, si ya existe.
     if (typeof formatearNumero === 'function') {
         return formatearNumero(valor, 2);
     }
@@ -1031,7 +1319,31 @@ function formatearMontoCC(monto) {
     }).format(valor);
 }
 
-function mostrarMensajeCC(titulo, mensaje) {
+function mostrarLoaderCC(mensaje) {
+    if (typeof mostrarLoader === 'function') {
+        mostrarLoader(mensaje);
+        return;
+    }
+
+    if (typeof AbrirWaiting === 'function') {
+        AbrirWaiting(mensaje);
+    }
+}
+
+function ocultarLoaderCC() {
+    if (typeof ocultarLoader === 'function') {
+        ocultarLoader();
+        return;
+    }
+
+    if (typeof CerrarWaiting === 'function') {
+        CerrarWaiting(false);
+    }
+}
+
+function mostrarMensajeCC(titulo, mensaje, tipo) {
+    const tipoMensaje = tipo || 'warn!';
+
     if (typeof AbrirMensaje === 'function') {
         AbrirMensaje(
             titulo,
@@ -1041,483 +1353,10 @@ function mostrarMensajeCC(titulo, mensaje) {
             },
             false,
             ['Aceptar'],
-            'warning'
+            tipoMensaje
         );
-
         return;
     }
 
-    window.alert(`${titulo}: ${mensaje}`);
-}
-
-let cobranzaCCEnCurso = false;
-
-function iniciarCobranza() {
-    console.log('═══════════════════════════════════════════════════');
-    console.log('💰 INICIAR COBRANZA CUENTA CORRIENTE');
-    console.log('═══════════════════════════════════════════════════');
-
-    if (cobranzaCCEnCurso) {
-        console.warn('⚠️ Ya existe una solicitud de cobranza en curso.');
-        return;
-    }
-
-    // Validar disponibilidad del módulo de pago.
-    if (typeof iniciarProcesoPago !== 'function') {
-        console.error('❌ No está disponible la función iniciarProcesoPago.');
-
-        AbrirMensaje(
-            'Error',
-            'El módulo de pago no está disponible. Recargue la página e intente nuevamente.',
-            function () { $('#msjModal').modal('hide'); },
-            false,
-            ['Aceptar'],
-            'error!'
-        );
-
-        return;
-    }
-
-    const $checkboxesSeleccionados = $(
-        '#tbodyCuentaCorriente input.form-check-input[type="checkbox"]:checked'
-    );
-
-    console.log(
-        `   📋 Registros seleccionados: ${$checkboxesSeleccionados.length}`
-    );
-
-    if ($checkboxesSeleccionados.length === 0) {
-        AbrirMensaje(
-            'Atención',
-            'Debe seleccionar al menos un registro de Cuenta Corriente para cobrar.',
-            function () { $('#msjModal').modal('hide'); },
-            false,
-            ['Aceptar'],
-            'warn!'
-        );
-
-        return;
-    }
-
-    const registrosSeleccionados = [];
-    const errores = [];
-
-    const obtenerData = ($elemento, nombre) => {
-        const valor = $elemento.attr(`data-${nombre}`);
-
-        if (valor === undefined || valor === null) {
-            return '';
-        }
-
-        return String(valor).trim();
-    };
-
-    const convertirADecimal = (valor) => {
-        if (valor === null || valor === undefined || valor === '') {
-            return NaN;
-        }
-
-        if (typeof valor === 'number') {
-            return Number.isFinite(valor) ? valor : NaN;
-        }
-
-        let texto = String(valor)
-            .trim()
-            .replace(/\$/g, '')
-            .replace(/\s/g, '');
-
-        const tieneComa = texto.includes(',');
-        const tienePunto = texto.includes('.');
-
-        // Ejemplo AR: 1.234,56
-        if (tieneComa && tienePunto) {
-            if (texto.lastIndexOf(',') > texto.lastIndexOf('.')) {
-                texto = texto.replace(/\./g, '').replace(',', '.');
-            } else {
-                texto = texto.replace(/,/g, '');
-            }
-        } else if (tieneComa) {
-            texto = texto.replace(',', '.');
-        }
-
-        const numero = Number(texto);
-
-        return Number.isFinite(numero) ? numero : NaN;
-    };
-
-    const convertirAEntero = (valor) => {
-        const texto = String(valor ?? '').trim();
-
-        if (texto === '') {
-            return NaN;
-        }
-
-        const numero = Number.parseInt(texto, 10);
-
-        return Number.isInteger(numero) ? numero : NaN;
-    };
-
-    const normalizarFechaParaServidor = (valor) => {
-        const texto = String(valor ?? '').trim();
-
-        if (!texto) {
-            return null;
-        }
-
-        // Si ya viene como fecha ISO desde .NET, la conservamos.
-        if (/^\d{4}-\d{2}-\d{2}(T.*)?$/.test(texto)) {
-            return texto.replace(' ', 'T');
-        }
-
-        const fecha = new Date(texto);
-
-        if (Number.isNaN(fecha.getTime())) {
-            return null;
-        }
-
-        return fecha.toISOString();
-    };
-
-    $checkboxesSeleccionados.each(function (index) {
-        const $checkbox = $(this);
-        const $fila = $checkbox.closest('tr');
-
-        // IMPORTANTE:
-        // El importe a cobrar es el valor actual editable de la fila.
-        const imputaActual = convertirADecimal(
-            $fila.attr('data-imputa')
-        );
-
-        // Importe máximo disponible para validar la imputación.
-        const importeDisponible = convertirADecimal(
-            $fila.attr('data-importe')
-        );
-
-        // Importe de imputación original para conservar trazabilidad.
-        const imputaOriginal = convertirADecimal(
-            $fila.attr('data-imputa-ori')
-        );
-
-        const registro = {
-            cta_id: obtenerData($checkbox, 'cta-id'),
-            dia_movi: obtenerData($checkbox, 'dia-movi'),
-            tco_id: obtenerData($checkbox, 'tco-id'),
-            cm_compte: obtenerData($checkbox, 'cm-compte'),
-            cm_compte_cuota: convertirAEntero(
-                obtenerData($checkbox, 'cm-compte-cuota')
-            ),
-            cv_fecha_vto: normalizarFechaParaServidor(
-                obtenerData($checkbox, 'cv-fecha-vto')
-            ),
-
-            // Valor final que será cobrado.
-            cv_importe: importeDisponible,
-
-            // Valor original antes de una eventual modificación manual.
-            cv_importe_ori: imputaActual,
-
-            cv_concepto: obtenerData($checkbox, 'cv-concepto'),
-
-            // Ambos son string según CtaCteResponseDto.
-            ve_id: obtenerData($checkbox, 've-id'),
-            ccb_id: obtenerData($checkbox, 'ccb-id'),
-
-            ctacte: obtenerData($checkbox, 'ctacte'),
-            carga: obtenerData($checkbox, 'carga'),
-            carga_obligatoria: obtenerData($checkbox, 'carga-obligatoria')
-        };
-
-        const identificador = `${registro.tco_id} ${registro.cm_compte}`;
-
-        const camposFaltantes = [];
-
-        if (!registro.cta_id) camposFaltantes.push('cta_id');
-        if (!registro.tco_id) camposFaltantes.push('tco_id');
-        if (!registro.cm_compte) camposFaltantes.push('cm_compte');
-        if (!registro.ctacte) camposFaltantes.push('ctacte');
-
-        if (camposFaltantes.length > 0) {
-            errores.push(
-                `Registro ${index + 1} (${identificador}): faltan ${camposFaltantes.join(', ')}.`
-            );
-
-            return;
-        }
-
-        if (!Number.isInteger(registro.cm_compte_cuota) ||
-            registro.cm_compte_cuota < 0) {
-
-            errores.push(
-                `Registro ${index + 1} (${identificador}): la cuota es inválida.`
-            );
-
-            return;
-        }
-
-        if (!registro.cv_fecha_vto) {
-            errores.push(
-                `Registro ${index + 1} (${identificador}): la fecha de vencimiento es inválida.`
-            );
-
-            return;
-        }
-
-        if (!Number.isFinite(importeDisponible) || importeDisponible <= 0) {
-            errores.push(
-                `Registro ${index + 1} (${identificador}): el importe disponible es inválido.`
-            );
-
-            return;
-        }
-        switch (coTipo) {
-            case "CC":
-                if (!Number.isFinite(registro.cv_importe_ori) ||
-                    registro.cv_importe_ori <= 0) {
-
-                    errores.push(
-                        `Registro ${index + 1} (${identificador}): el importe a imputar debe ser mayor a cero.`
-                    );
-
-                    return;
-                }
-            default:
-                if (!Number.isFinite(registro.cv_importe) ||
-                    registro.cv_importe <= 0) {
-
-                    errores.push(
-                        `Registro ${index + 1} (${identificador}): el importe a imputar debe ser mayor a cero.`
-                    );
-
-                    return;
-                }
-        }
-       
-
-        switch (coTipo) {
-            case "CC":
-                if (registro.cv_importe_ori > importeDisponible) {
-                    errores.push(
-                        `Registro ${index + 1} (${identificador}): el importe a imputar no puede superar $ ${formatearMontoCC(importeDisponible)}.`
-                    );
-
-                    return;
-                }
-
-                break;
-
-            default:
-                if (registro.cv_importe > importeDisponible) {
-                    errores.push(
-                        `Registro ${index + 1} (${identificador}): el importe a imputar no puede superar $ ${formatearMontoCC(importeDisponible)}.`
-                    );
-
-                    return;
-                }
-        }
-        
-
-        if (!Number.isFinite(registro.cv_importe_ori)) {
-            errores.push(
-                `Registro ${index + 1} (${identificador}): el importe original es inválido.`
-            );
-
-            return;
-        }
-
-        registrosSeleccionados.push(registro);
-    });
-
-    if (errores.length > 0) {
-        console.error('❌ Errores de validación de Cuenta Corriente:', errores);
-
-        AbrirMensaje(
-            'Datos incompletos',
-            `No se puede iniciar la cobranza.<br><br>${errores.join('<br>')}`,
-            function () { $('#msjModal').modal('hide'); },
-            false,
-            ['Aceptar'],
-            'error!'
-        );
-
-        return;
-    }
-
-    if (registrosSeleccionados.length === 0) {
-        AbrirMensaje(
-            'Atención',
-            'No se pudo construir ningún registro válido para la cobranza.',
-            function () { $('#msjModal').modal('hide'); },
-            false,
-            ['Aceptar'],
-            'error!'
-        );
-
-        return;
-    }
-    let totalPagar = 0.00;
-    switch (coTipo) {
-        case 'CC':
-            totalPagar = registrosSeleccionados.reduce(
-                (acumulado, registro) => acumulado + registro.cv_importe_ori,
-                0
-            );
-            break;
-        default:
-            totalPagar = registrosSeleccionados.reduce(
-                (acumulado, registro) => acumulado + registro.cv_importe,
-                0
-            );
-    }
-
-    
-
-    const totalRedondeado = Math.round(
-        (totalPagar + Number.EPSILON) * 100
-    ) / 100;
-
-    if (totalRedondeado <= 0) {
-        AbrirMensaje(
-            'Error',
-            'El total a cobrar debe ser mayor a cero.',
-            function () { $('#msjModal').modal('hide'); },
-            false,
-            ['Aceptar'],
-            'error!'
-        );
-
-        return;
-    }
-
-    console.log('   ✅ Registros válidos:', registrosSeleccionados.length);
-    console.log('   💰 Total a cobrar:', totalRedondeado);
-    console.log(
-        '   📦 Primer registro:',
-        JSON.stringify(registrosSeleccionados[0], null, 2)
-    );
-
-    cobranzaCCEnCurso = true;
-    $('#btnSeguirCC').prop('disabled', true);
-
-    mostrarLoader('Preparando cobranza de Cuenta Corriente...');
-
-    $.ajax({
-        url: resguardarCuentaCorrienteSeleccionadaUrl,
-        type: 'POST',
-        contentType: 'application/json',
-        dataType: 'json',
-
-        // El nombre "Registros" debe coincidir con el request DTO C#.
-        data: JSON.stringify({
-            Registros: registrosSeleccionados
-        }),
-
-        success: function (response) {
-            ocultarLoader();
-
-            if (!response || !response.ok) {
-                cobranzaCCEnCurso = false;
-                calcularTotalCC();
-
-                const mensaje =
-                    response?.mensaje ||
-                    'No se pudieron resguardar los registros seleccionados.';
-
-                console.error('❌ Error al resguardar Cuenta Corriente:', mensaje);
-
-                AbrirMensaje(
-                    'Error',
-                    mensaje,
-                    function () { $('#msjModal').modal('hide'); },
-                    false,
-                    ['Aceptar'],
-                    'error!'
-                );
-
-                return;
-            }
-
-            console.log(
-                '✅ Registros seleccionados resguardados correctamente en sesión.'
-            );
-
-            // Útil para diagnóstico o pasos posteriores del cliente.
-            window._cuentaCorrienteDelClienteSeleccionadaParaElCobro =
-                registrosSeleccionados;
-
-            const iniciarPago = () => {
-                try {
-                    iniciarProcesoPago({
-                        totalPagar: totalRedondeado,
-                        co_tipo: 'CC',
-                        puntoVenta: 'GECO PD',
-                        tituloModal: 'Cobranza Cuenta Corriente',
-                        contextoOperacion: 'COBRANZA'
-                    });
-
-                    console.log('✅ Proceso de pago iniciado.');
-                } catch (error) {
-                    console.error('❌ Error al iniciar el proceso de pago:', error);
-
-                    AbrirMensaje(
-                        'Error',
-                        'No se pudo iniciar el proceso de pago.',
-                        function () { $('#msjModal').modal('hide'); },
-                        false,
-                        ['Aceptar'],
-                        'error!'
-                    );
-                } finally {
-                    cobranzaCCEnCurso = false;
-                }
-            };
-
-            const $modalCuentaCorriente = $('#modalCuentaCorriente');
-
-            // Espera el cierre real del modal antes de abrir el flujo de pago.
-            if ($modalCuentaCorriente.hasClass('show')) {
-                $modalCuentaCorriente
-                    .off('hidden.bs.modal.iniciarCobranzaCC')
-                    .one('hidden.bs.modal.iniciarCobranzaCC', iniciarPago)
-                    .modal('hide');
-            } else {
-                iniciarPago();
-            }
-        },
-
-        error: function (xhr, status, error) {
-            ocultarLoader();
-
-            cobranzaCCEnCurso = false;
-            calcularTotalCC();
-
-            console.error('❌ Error AJAX al resguardar Cuenta Corriente:', {
-                status: xhr.status,
-                statusText: xhr.statusText,
-                responseText: xhr.responseText,
-                error: error
-            });
-
-            let mensaje =
-                'No se pudieron guardar los registros seleccionados en el servidor.';
-
-            if (xhr.responseJSON?.mensaje) {
-                mensaje = xhr.responseJSON.mensaje;
-            } else if (xhr.status === 400) {
-                mensaje = 'Los datos enviados son inválidos.';
-            } else if (xhr.status === 0) {
-                mensaje = 'No se pudo establecer conexión con el servidor.';
-            }
-
-            AbrirMensaje(
-                'Error de Comunicación',
-                mensaje,
-                function () { $('#msjModal').modal('hide'); },
-                false,
-                ['Aceptar'],
-                'error!'
-            );
-        }
-    });
-
-    console.log('═══════════════════════════════════════════════════');
+    window.alert(`${titulo}: ${String(mensaje).replace(/<br>/g, '\n')}`);
 }

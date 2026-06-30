@@ -1582,3 +1582,191 @@ function cerrarTecladoDigitalConRetraso(delay = 100) {
         }, delay);
     });
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// ✅ NUEVO v25.0: FUNCIONES DE CONTROL DEL TECLADO VIRTUAL
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * ✅ NUEVO v25.0: Posiciona el teclado virtual junto al ancla.
+ * Se asegura de que el teclado esté visible y alineado a la izquierda.
+ */
+function posicionarTecladoVirtual(inputSelector, anchorSelector) {
+    console.log('📍 Posicionando teclado virtual...');
+
+    const teclado = document.getElementById('virtual-keyboard');
+
+    if (!teclado) {
+        console.error('❌ Teclado virtual no encontrado en el DOM.');
+        return false;
+    }
+
+    const input = inputSelector
+        ? document.querySelector(inputSelector)
+        : null;
+
+    const modalActual = input
+        ? input.closest('.modal.show')
+        : null;
+
+    let ancla = null;
+
+    // ❶ Ancla indicada explícitamente por el flujo.
+    if (anchorSelector) {
+        ancla = document.querySelector(anchorSelector);
+    }
+
+    // ❷ Ancla declarada dentro del modal actual.
+    if (!ancla && modalActual) {
+        ancla = modalActual.querySelector('[data-teclado-ancla]');
+    }
+
+    // ❸ Compatibilidad con el flujo genérico de pago.
+    if (!ancla) {
+        ancla = document.getElementById('teclado-ancla');
+    }
+
+    // ❹ Último fallback: usar el propio input como referencia.
+    const elementoReferencia = ancla || input;
+
+    if (!elementoReferencia) {
+        console.error(
+            '❌ No se encontró ancla ni input para posicionar el teclado.'
+        );
+        return false;
+    }
+
+    // Hacer visible el teclado antes de medirlo.
+    teclado.style.display = 'flex';
+    teclado.style.opacity = '1';
+    teclado.style.position = 'fixed';
+    teclado.style.transform = 'none';
+
+    const rectReferencia =
+        elementoReferencia.getBoundingClientRect();
+
+    const rectTeclado =
+        teclado.getBoundingClientRect();
+
+    const anchoTeclado = rectTeclado.width || 360;
+    const altoTeclado = rectTeclado.height || 280;
+
+    const margen = 12;
+
+    let top = rectReferencia.bottom + margen;
+    let left = rectReferencia.left;
+
+    // Si no entra debajo del campo, se muestra arriba.
+    if (top + altoTeclado > window.innerHeight - margen) {
+        top = rectReferencia.top - altoTeclado - margen;
+    }
+
+    // Evita salir por arriba.
+    if (top < margen) {
+        top = margen;
+    }
+
+    // Evita salir horizontalmente del viewport.
+    if (left + anchoTeclado > window.innerWidth - margen) {
+        left = window.innerWidth - anchoTeclado - margen;
+    }
+
+    if (left < margen) {
+        left = margen;
+    }
+
+    teclado.style.top = `${Math.round(top)}px`;
+    teclado.style.left = `${Math.round(left)}px`;
+
+    // El teclado debe estar por encima del modal activo.
+    const zIndexModal = modalActual
+        ? parseInt(window.getComputedStyle(modalActual).zIndex, 10)
+        : 0;
+
+    teclado.style.zIndex = String(
+        Math.max(Number.isFinite(zIndexModal) ? zIndexModal + 10 : 0, 5020)
+    );
+
+    console.log(
+        `✅ Teclado posicionado: top=${Math.round(top)}px, left=${Math.round(left)}px`
+    );
+
+    return true;
+}
+// function posicionarTecladoVirtual() {
+//     console.log('📍 Posicionando teclado virtual...');
+//     const ancla = document.getElementById('teclado-ancla');
+//     const teclado = document.getElementById('virtual-keyboard');
+
+//     if (!teclado) {
+//         console.error('❌ Teclado virtual no encontrado en el DOM.');
+//         return;
+//     }
+//     if (!ancla) {
+//         console.error('❌ Ancla #teclado-ancla no encontrada.');
+//         return;
+//     }
+
+//     // Forzar visibilidad si está oculto
+//     if (teclado.style.display !== 'flex') {
+//         teclado.style.display = 'flex';
+//         teclado.style.opacity = '1';
+//         console.log('   ✅ Teclado forzado a ser visible.');
+//     }
+
+//     // Calcular posición
+//     const rectAncla = ancla.getBoundingClientRect();
+//     const rectTeclado = teclado.getBoundingClientRect();
+
+//     // Posicionar el teclado
+//     // Usamos 'transform' para no interferir con otras propiedades de posicionamiento
+//     const top = rectAncla.top;
+//     const left = rectAncla.left;
+
+//     teclado.style.position = 'fixed';
+//     teclado.style.top = `${top}px`;
+//     teclado.style.left = `${left}px`;
+//     teclado.style.transform = 'none'; // Resetear transform de arrastre
+
+//     console.log(`   ✅ Teclado posicionado en: top=${top.toFixed(0)}px, left=${left.toFixed(0)}px`);
+// }
+
+/**
+ * ✅ NUEVO v25.0: Activa el teclado para un input específico.
+ * @param {string} inputSelector - El selector del campo de entrada.
+ */
+function activarTecladoParaInput(inputSelector, opciones = {}) {
+    console.log(`⌨️ Activando teclado para: ${inputSelector}`);
+
+    const input = document.querySelector(inputSelector);
+
+    if (!input) {
+        console.error(`❌ Input ${inputSelector} no encontrado.`);
+        return false;
+    }
+
+    input.focus();
+
+    setTimeout(() => {
+        posicionarTecladoVirtual(
+            inputSelector,
+            opciones.anchorSelector || null
+        );
+
+        input.focus();
+        input.select();
+    }, 150);
+
+    return true;
+}
+
+/**
+ * ✅ NUEVO v25.0: Oculta el teclado virtual.
+ */
+function ocultarTecladoVirtual() {
+    const teclado = document.getElementById('virtual-keyboard');
+    if (teclado) {
+        teclado.style.display = 'none';
+        console.log('⌨️ Teclado virtual ocultado.');
+    }
+}
