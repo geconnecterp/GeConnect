@@ -2229,6 +2229,20 @@ function enviarPayloadAlServidor(jsonValores, moduloOrigen, arrayCancelar) {
     console.log(`   Cancelar (parámetro): ${arrayCancelar ? arrayCancelar.length : 'NULL'}`);
     console.log('═══════════════════════════════════════════════════');
 
+    const contextoPagoConfirmado = {
+        coTipo: String(window._coTipoActual || '')
+            .trim()
+            .toUpperCase()
+    };
+
+    contextoPagoConfirmado.esCobranzaDiferida =
+        contextoPagoConfirmado.coTipo === 'CD';
+
+    console.log(
+        `   Contexto capturado para esta operación: ${contextoPagoConfirmado.coTipo || 'N/A'
+        }`
+    );
+
     // ❶ Actualizar mensaje de loading
     actualizarMensajeLoadingGlobal('Procesando pago y emitiendo comprobante...');
 
@@ -2372,12 +2386,11 @@ function enviarPayloadAlServidor(jsonValores, moduloOrigen, arrayCancelar) {
 
             const comprobante = response.data[0];
 
-            const coTipoActual = String(
-                window._coTipoActual || ''
-            ).trim().toUpperCase();
+            const coTipoActual =
+                contextoPagoConfirmado.coTipo;
 
             const esCobranzaDiferida =
-                coTipoActual === 'CD';
+                contextoPagoConfirmado.esCobranzaDiferida;
 
 
             console.log(
@@ -2630,87 +2643,45 @@ function procesarPagoExitoso(comprobante, esCobranzaDiferida = false) {
             const $mensaje = $('#msjModal');
 
             /*
-                El parámetro esCobranzaDiferida fue calculado cuando se recibió
-                exitosamente la respuesta de FinalizarCompra.
-        
-                No dependemos nuevamente de window._coTipoActual, porque puede
-                haber sido alterado por otro módulo, limpieza o una apertura modal.
+                Esta variable queda cerrada dentro del callback.
+                Conserva el contexto real recibido por procesarPagoExitoso().
             */
             const esCobranzaDiferidaConfirmada =
                 esCobranzaDiferida === true;
 
-            const continuarLuegoDelMensaje = () => {
-                if (esCobranzaDiferidaConfirmada) {
-                    console.log('═══════════════════════════════════════════════════');
-                    console.log('🔄 COBRANZA DIFERIDA EXITOSA');
-                    console.log('   Se reiniciará el módulo desde Index.');
-                    console.log('═══════════════════════════════════════════════════');
+            let reinicioDespachado = false;
 
-                    if (typeof window.reiniciarCobranzaDiferida === 'function') {
-                        Promise.resolve(
-                            window.reiniciarCobranzaDiferida()
-                        ).catch(function (error) {
-                            console.error(
-                                '❌ Error en reiniciarCobranzaDiferida:',
-                                error
-                            );
-
-                            const urlIndex =
-                                typeof cobranzaDiferidaInicializaUrl !== 'undefined' &&
-                                    cobranzaDiferidaInicializaUrl
-                                    ? cobranzaDiferidaInicializaUrl
-                                    : '/Facturacion/PDiferido';
-
-                            window.location.replace(urlIndex);
-                        });
-
-                        return;
-                    }
-
-                    /*
-                        Fallback crítico:
-                        aun si pagoDiferido.js no expuso la función, CD nunca debe
-                        caer al reinicio genérico de ventas.
-                    */
-                    console.error(
-                        '❌ reiniciarCobranzaDiferida no está disponible. Redireccionando directamente al Index.'
-                    );
-
-                    const urlIndex =
-                        typeof cobranzaDiferidaInicializaUrl !== 'undefined' &&
-                            cobranzaDiferidaInicializaUrl
-                            ? cobranzaDiferidaInicializaUrl
-                            : '/Facturacion/PDiferido';
-
-                    window.location.replace(urlIndex);
-
+            const despacharReinicioUnaVez = () => {
+                if (reinicioDespachado) {
                     return;
                 }
 
-                /*
-                    Solo ventas u otros módulos pueden usar el reinicio genérico.
-                */
-                if (typeof reiniciaPantallaAlVolver === 'function') {
-                    reiniciaPantallaAlVolver();
-                    return;
-                }
+                reinicioDespachado = true;
 
-                console.warn(
-                    '⚠️ No se encontró una rutina de reinicio para el módulo actual.'
+                ejecutarReinicioDespuesDePagoExitoso(
+                    esCobranzaDiferidaConfirmada
                 );
             };
 
+            /*
+                El botón Aceptar puede cerrar el modal por Bootstrap antes o después
+                de ejecutar FunctionCallback. Por eso combinamos evento real con
+                fallback temporal, evitando quedar bloqueados si hidden no llega.
+            */
             if ($mensaje.hasClass('show')) {
                 $mensaje
                     .off('hidden.bs.modal.reinicioPagoExitoso')
                     .one(
                         'hidden.bs.modal.reinicioPagoExitoso',
-                        continuarLuegoDelMensaje
+                        despacharReinicioUnaVez
                     )
                     .modal('hide');
-            } else {
-                continuarLuegoDelMensaje();
+
+                setTimeout(despacharReinicioUnaVez, 800);
+                return;
             }
+
+            despacharReinicioUnaVez();
         },
         false,
         ["Aceptar"],
@@ -2718,6 +2689,92 @@ function procesarPagoExitoso(comprobante, esCobranzaDiferida = false) {
         null
     );
 }
+
+function obtenerUrlIndexCobranzaDiferida() {
+    if (
+        typeof cobranzaDiferidaInicializaUrl !== 'undefined' &&
+        cobranzaDiferidaInicializaUrl
+    ) {
+        return cobranzaDiferidaInicializaUrl;
+    }
+
+    return '/Facturacion/PDiferido';
+}
+
+function redireccionarAIndexCobranzaDiferida() {
+    const urlIndex = obtenerUrlIndexCobranzaDiferida();
+
+    console.warn(
+        `⚠️ Aplicando fallback de Cobranza Diferida. Redireccionando a: ${urlIndex}`
+    );
+
+    window.location.replace(urlIndex);
+}
+
+function ejecutarReinicioDespuesDePagoExitoso(esCobranzaDiferida) {
+    /*
+        La decisión se toma con el parámetro recibido desde el flujo
+        exitoso del pago. No se vuelve a consultar _coTipoActual.
+    */
+    if (esCobranzaDiferida === true) {
+        console.log('═══════════════════════════════════════════════════');
+        console.log('🔄 REINICIO POST-COBRO: COBRANZA DIFERIDA');
+        console.log('═══════════════════════════════════════════════════');
+
+        if (typeof window.reiniciarCobranzaDiferida === 'function') {
+            try {
+                const resultado = window.reiniciarCobranzaDiferida();
+
+                /*
+                    La función es async. Si falla durante el cierre de modales,
+                    nunca debe volver al reinicio genérico de ventas.
+                */
+                Promise.resolve(resultado).catch(function (error) {
+                    console.error(
+                        '❌ Error en reiniciarCobranzaDiferida:',
+                        error
+                    );
+
+                    redireccionarAIndexCobranzaDiferida();
+                });
+
+                return;
+            } catch (error) {
+                console.error(
+                    '❌ Excepción al invocar reiniciarCobranzaDiferida:',
+                    error
+                );
+
+                redireccionarAIndexCobranzaDiferida();
+                return;
+            }
+        }
+
+        /*
+            Fallback crítico:
+            CD nunca debe ejecutar reiniciaPantallaAlVolver().
+        */
+        console.error(
+            '❌ window.reiniciarCobranzaDiferida no está disponible.'
+        );
+
+        redireccionarAIndexCobranzaDiferida();
+        return;
+    }
+
+    /*
+        Solo las ventas normales deben usar el reinicio tradicional.
+    */
+    if (typeof reiniciaPantallaAlVolver === 'function') {
+        reiniciaPantallaAlVolver();
+        return;
+    }
+
+    console.warn(
+        '⚠️ No se encontró rutina de reinicio para el flujo actual.'
+    );
+}
+
 
 function reiniciaPantallaAlVolver() {
     setTimeout(() => {

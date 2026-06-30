@@ -16,9 +16,6 @@ const estadoCobranzaDiferida = {
     reinicioEnCurso: false
 };
 
-// Permite que pagoFactura.js invoque esta rutina sin conocer el módulo.
-window.reiniciarCobranzaDiferida = reiniciarCobranzaDiferida;
-
 
 $(function () {
     console.log('═══════════════════════════════════════════════════');
@@ -308,7 +305,7 @@ function limpiarInterfazCobranzaDiferida() {
     console.log('✅ Interfaz de Cobranza Diferida limpia');
 }
 
-function cerrarModalSiEstaAbierto(selector) {
+function cerrarModalSiEstaAbierto(selector, timeoutMs = 800) {
     return new Promise((resolve) => {
         const $modal = $(selector);
 
@@ -317,20 +314,62 @@ function cerrarModalSiEstaAbierto(selector) {
             return;
         }
 
+        let finalizado = false;
+        let timeoutId = null;
+
+        const finalizar = (origen) => {
+            if (finalizado) {
+                return;
+            }
+
+            finalizado = true;
+
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+
+            $modal.off('hidden.bs.modal.reinicioCD');
+
+            console.log(
+                `   Modal ${selector} cerrado por: ${origen}`
+            );
+
+            resolve();
+        };
+
         $modal
-            .off('hidden.bs.modal.reinicioCD')
-            .one('hidden.bs.modal.reinicioCD', function () {
-                resolve();
-            });
+            .one(
+                'hidden.bs.modal.reinicioCD',
+                function () {
+                    finalizar('evento hidden.bs.modal');
+                }
+            );
 
-        const instanciaBootstrap = bootstrap.Modal.getInstance(
-            $modal.get(0)
-        );
+        timeoutId = setTimeout(function () {
+            console.warn(
+                `⚠️ Timeout cerrando ${selector}. Se continúa con la reinicialización.`
+            );
 
-        if (instanciaBootstrap) {
-            instanciaBootstrap.hide();
-        } else {
-            $modal.modal('hide');
+            finalizar('timeout');
+        }, timeoutMs);
+
+        try {
+            const instancia = window.bootstrap?.Modal?.getInstance(
+                $modal.get(0)
+            );
+
+            if (instancia) {
+                instancia.hide();
+            } else {
+                $modal.modal('hide');
+            }
+        } catch (error) {
+            console.error(
+                `❌ Error cerrando modal ${selector}:`,
+                error
+            );
+
+            finalizar('excepción');
         }
     });
 }
@@ -396,57 +435,38 @@ async function reiniciarCobranzaDiferida() {
 
     reinicioCobranzaDiferidaEnCurso = true;
 
+    const urlIndex =
+        typeof cobranzaDiferidaInicializaUrl !== 'undefined' &&
+            cobranzaDiferidaInicializaUrl
+            ? cobranzaDiferidaInicializaUrl
+            : '/Facturacion/PDiferido';
+
     console.log('═══════════════════════════════════════════════════');
     console.log('🔄 REINICIO TOTAL DE COBRANZA DIFERIDA');
+    console.log(`➡️ Destino final: ${urlIndex}`);
     console.log('═══════════════════════════════════════════════════');
 
     try {
-        // La navegación destruye el DOM, pero se cierran explícitamente
-        // los modales para evitar overlays, backdrops o transiciones activas.
         await cerrarModalesCobranzaDiferida();
 
-        // Limpiar referencias locales antes de abandonar la pantalla.
         clienteSeleccionadoVFP = null;
         nombreClienteVFP = '';
         window._facturasSeleccionadasParaCobro = [];
-
-        // No abrir modal de cliente aquí.
-        // El Index recarga las facturas y decide:
-        // - pendientes disponibles: abre identificación.
-        // - sin pendientes: muestra mensaje y botón de salida.
-        const urlIndex =
-            typeof cobranzaDiferidaInicializaUrl !== 'undefined' &&
-                cobranzaDiferidaInicializaUrl
-                ? cobranzaDiferidaInicializaUrl
-                : '/Facturacion/PDiferido';
-
-        console.log(`➡️ Redireccionando al Index: ${urlIndex}`);
-
-        // replace evita que Back vuelva a un flujo de pago ya finalizado.
-        window.location.replace(urlIndex);
     } catch (error) {
-        reinicioCobranzaDiferidaEnCurso = false;
-
+        /*
+            El pago ya fue confirmado por servidor.
+            Un error visual no debe impedir volver al Index.
+        */
         console.error(
-            '❌ Error al reiniciar Cobranza Diferida:',
+            '❌ Error durante cierre de modales CD:',
             error
         );
-
-        AbrirMensaje(
-            'Error',
-            'El cobro fue procesado, pero no se pudo reiniciar la pantalla.',
-            function () {
-                $('#msjModal').modal('hide');
-            },
-            false,
-            ['Aceptar'],
-            'error!'
-        );
+    } finally {
+        window.location.replace(urlIndex);
     }
 }
 
-
-
+window.reiniciarCobranzaDiferida = reiniciarCobranzaDiferida;
 
 /**
  * ✅ NUEVO v3.1: Inicializa el módulo mostrando el modal de identificación
