@@ -39,5 +39,7 @@ namespace gc.api.core.Contratos.Servicios
 		List<ProductoStkDto> ConsultarProductoStkValor(ConsultarStockValorizadoRequest filtros);
 		List<ProductoStkCompensadoDto> ConsultarProductoStkCompensado(ConsultarStockCompensadoRequest filtros);
 		List<MovimientoListaDto> ConsultaMovimientoLista(BuscarMovDeCuentaDirectaRequest filtros);
+        List<SaldoDetalleDto> BuscarSaldoDetalleCtaDistribuidora(BuscarSaldoDetalleRequest filtros);
+        List<SaldoResumenDto> BuscarSaldoResumenCtaDistribuidora(BuscarSaldoDetalleRequest filtros);
 	}
 }

@@ -1,0 +1,160 @@
+﻿@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<SaldoResumenDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+
+	string grupoActual = string.Empty;
+	string grupoAnterior = string.Empty;
+	string leyendaAgrupador = string.Empty;
+
+	var reg = Model.ListaDatos?.First();
+	var lblCol1 = "";
+	var lblCol2 = "";
+	var lblCol3 = "";
+	var lblCol4 = "";
+	if (reg != null)
+	{
+		lblCol1 = $"Ant. al {reg.hoy_m13}";
+		lblCol2 = $"Entre {reg.hoy_m13} al {reg.hoy_m7}";
+		lblCol3 = $"Entre {reg.hoy_m6} al {reg.hoy_1}";
+		lblCol4 = $"Total Vencido al {reg.hoy}";
+	}
+}
+<style>
+	thead th {
+		position: sticky;
+		top: 0px;
+		z-index: 1; /* suficiente para estar sobre las filas */
+		background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+		color: #fff !important;
+	}
+
+	.table-wrapper {
+		/*max-height: 400px;  o lo que necesites */
+		overflow-y: auto;
+		position: relative;
+	}
+
+	#containerGridResumenSaldos {
+		position: relative;
+		height: 650px;
+		max-height: 650px;
+		overflow-y: auto;
+		overflow-x: hidden !important;
+		z-index: auto;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.container-auto {
+		height: auto !important;
+		max-height: none !important;
+		overflow-x: hidden !important;
+	}
+
+	.table-golden {
+		border-collapse: separate;
+		border-spacing: 0;
+		table-layout: fixed;
+	}
+
+		.table-golden thead {
+			position: sticky;
+			top: 0;
+			z-index: 1;
+			background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+			color: #fff !important;
+		}
+
+			.table-golden thead th {
+				position: sticky;
+				top: 0;
+				z-index: 4;
+				background: linear-gradient(to bottom, #b8860b, #daa520);
+				color: #fff;
+				box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+				background-clip: padding-box;
+			}
+
+			.table-golden thead,
+			.table-golden thead th {
+				/*background-color: #b8860b;  tu dorado */
+				/* color: #333; */
+			}
+
+	#tbResumenDeSaldos th,
+	#tbResumenDeSaldos td {
+		padding: 0.01rem 0.15rem !important;
+		line-height: 1.2 !important;
+		height: auto !important;
+	}
+
+	#tbResumenDeSaldos tr {
+		height: 1.6rem !important;
+	}
+</style>
+
+<div class="card mx-auto" style="padding-left: 0px;padding-right: 0px;">
+	<div class="card-body p-1">
+		<div class="table-responsive text-nowrap  table-wrapper-500" id="containerGridResumenSaldos">
+			<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbResumenDeSaldos">
+				<thead>
+					<tr class="header">
+						<th style="width:30%;" class="text-sm-center" scope="col">CUENTA</th>
+						<th style="width:15%;" class="text-sm-center" scope="col">@lblCol1</th>
+						<th style="width:15%;" class="text-sm-center" scope="col">@lblCol2</th>
+						<th style="width:15%;" class="text-sm-center" scope="col">@lblCol3</th>
+						<th style="width:15%;" class="text-sm-center" scope="col">@lblCol4</th>
+						<th style="width:10%;" class="text-sm-center" scope="col">POR VENCER</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
+					{
+						var registros = Model.ListaDatos.OrderBy(x => x.ve_id).ToList();
+						
+						@foreach (var item in Model.ListaDatos)
+						{
+							grupoActual = item.ve_id;
+
+							// Si cambia la cuenta, insertamos una fila de encabezado para la cuenta
+							if (grupoActual != grupoAnterior)
+							{
+								leyendaAgrupador = $"Vendedor {item.ve_id} - {item.ve_nombre}";
+								<tr class="table-secondary fw-bold">
+									<td colspan="6" class="text-center">
+										<i class="bx bx-folder me-1"></i>
+										@leyendaAgrupador
+									</td>
+								</tr>
+								grupoAnterior = grupoActual;
+								alt = true; // Reiniciar alternancia de colores después de cada familia
+							}
+							var cuenta = $"{item.cta_denominacion} ({item.cta_id})";
+							var total = item.saldo_semana_ant1 + item.saldo_semana_ant2 + item.saldo_semana_ant3;
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							<tr class="@clase" onclick="selectReg(this,'tbResumenDeSaldos')">
+								<td class="@Model.ObtenerClase(cuenta) align-left">@Model.FormatearDato(cuenta, FormatDato.Ninguno)</td>
+								<td class="@Model.ObtenerClase(item.saldo_semana_ant3) align-right">@Model.FormatearDato(item.saldo_semana_ant3, FormatDato.Monto)</td>
+								<td class="@Model.ObtenerClase(item.saldo_semana_ant2) align-right">@Model.FormatearDato(item.saldo_semana_ant2, FormatDato.Monto)</td>
+								<td class="@Model.ObtenerClase(item.saldo_semana_ant1) align-right">@Model.FormatearDato(item.saldo_semana_ant1, FormatDato.Monto)</td>
+								<td class="@Model.ObtenerClase(total) align-right">@Model.FormatearDato(total, FormatDato.Monto)</td>
+								<td class="@Model.ObtenerClase(item.saldo_avecer) align-right">@Model.FormatearDato(item.saldo_avecer, FormatDato.Monto)</td>
+							</tr>
+						}
+					}
+					else
+					{
+						<tr class="fila-vacia">
+							<td colspan="6" class="text-center text-muted py-2">
+								<i class="bx bx-info-circle me-1"></i>
+								No hay items para mostrar.
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>

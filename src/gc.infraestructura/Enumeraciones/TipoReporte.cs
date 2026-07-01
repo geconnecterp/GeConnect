@@ -90,6 +90,8 @@ namespace gc.infraestructura.Enumeraciones
 		R082_Reporte_Analitico_Operacion = 82,
 		R083_Cons_Cta_Corriente_Financiera = 83,
 		R084_Detalle_Valores_En_Cartera = 84,
-		R085_Reporte_Mov_Cta_Directa = 85
+		R085_Reporte_Mov_Cta_Directa = 85,
+		R086_Saldo_Cta_Distr_Detalle = 86,
+		R087_Saldo_Cta_Distr_Resumen = 87,
 	}
 }

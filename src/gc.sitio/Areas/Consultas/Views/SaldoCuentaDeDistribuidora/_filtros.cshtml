@@ -1,0 +1,44 @@
+﻿@model FiltroSaldoCuentaDeDistribuidoraModel
+<style>
+	.hidden {
+		display: none !important;
+	}
+
+</style>
+<div class="filter-golden w-50">
+	<div class="filter-golden-body">
+		<div class="row mb-3 mt-3">
+			<div class="col-12">
+				<div class="row">
+					<div class="col-sm-12">
+						<div class="input-group input-group-sm">
+							<div class="form-check form-check-inline form-switch mb-2">
+								<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkVendedores" />
+								<label class="form-check-label" for="chkVendedores" id="lbVendedores"></label>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-6">
+						<div class="input-group input-group-sm" id="divListaVendedores">
+							@Html.DropDownListFor(m => m.VendedorSeleccionado, Model.ListaVendedores, "Seleccionar", new { @id = "listaVendedores", @class = "form-control inputEditable activable" })
+						</div>
+					</div>
+					<div class="col-sm-6">
+						@Html.ListBox("VendedoresList", null, new { @class = "form-control listbox-sm" })
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="filter-golden-footer">
+			<div class="row m-3">
+				<div class="d-flex justify-content-around">
+					<button type="button" id="btnCancel" style="width:150px;" class="btn btn-lg btn-danger"><i class="bx bx-sm bx-x-circle"></i> Inicializa</button>
+					<button type="button" id="btnBuscar" style="width:150px;" class="btn btn-lg btn-success"><i class="bx bx-sm bx-search"></i> Ver</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+

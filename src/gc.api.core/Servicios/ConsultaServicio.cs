@@ -691,5 +691,65 @@ namespace gc.api.core.Servicios
 			List<MovimientoListaDto> res = _repository.EjecutarLstSpExt<MovimientoListaDto>(sp, ps, true);
 			return res;
 		}
+
+		public List<SaldoDetalleDto> BuscarSaldoDetalleCtaDistribuidora(BuscarSaldoDetalleRequest filtros)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_CONS_C_VTO_X_VE;
+			var ps = new List<SqlParameter>();
+			if (filtros.ve_list != null && filtros.ve_list.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.ve_list)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				if (sb.Length > 1)
+					ps.Add(new SqlParameter("@ve_list", sb.ToString() + ','));
+				else
+					ps.Add(new SqlParameter("@ve_list", sb.ToString()));
+			}
+			else
+				ps.Add(new SqlParameter("@ve_list", "%"));
+
+
+			List<SaldoDetalleDto> res = _repository.EjecutarLstSpExt<SaldoDetalleDto>(sp, ps, true);
+			return res;
+		}
+
+		public List<SaldoResumenDto> BuscarSaldoResumenCtaDistribuidora(BuscarSaldoDetalleRequest filtros)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_CONS_C_VTO_X_VE_RESUMEN;
+			var ps = new List<SqlParameter>();
+			if (filtros.ve_list != null && filtros.ve_list.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.ve_list)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				if (sb.Length > 1)
+					ps.Add(new SqlParameter("@ve_list", sb.ToString() + ','));
+				else
+					ps.Add(new SqlParameter("@ve_list", sb.ToString()));
+			}
+			else
+				ps.Add(new SqlParameter("@ve_list", "%"));
+
+
+			List<SaldoResumenDto> res = _repository.EjecutarLstSpExt<SaldoResumenDto>(sp, ps, true);
+			return res;
+		}
 	}
 }

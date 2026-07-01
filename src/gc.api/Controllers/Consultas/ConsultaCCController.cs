@@ -515,5 +515,35 @@ namespace gc.api.Controllers.Consultas
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<SaldoDetalleDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult BuscarSaldoDetalleCtaDistribuidora(BuscarSaldoDetalleRequest request)
+		{
+			ApiResponse<List<SaldoDetalleDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _consSv.BuscarSaldoDetalleCtaDistribuidora(request);
+
+			response = new ApiResponse<List<SaldoDetalleDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<SaldoResumenDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult BuscarSaldoResumenCtaDistribuidora(BuscarSaldoDetalleRequest request)
+		{
+			ApiResponse<List<SaldoResumenDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _consSv.BuscarSaldoResumenCtaDistribuidora(request);
+
+			response = new ApiResponse<List<SaldoResumenDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }

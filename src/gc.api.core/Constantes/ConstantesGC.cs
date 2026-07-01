@@ -505,6 +505,8 @@
 			public const string SP_CONS_STOCK_VALOR_RUB = "SPGECO_STK_Valorizado_RUB";
 			public const string SP_CONS_STOCK_VALOR_CTA = "SPGECO_STK_Valorizado_CTA";
 			public const string SP_CONS_STOCK_COMP = "SPGECO_STK_Compensados";
+			public const string SP_CONS_C_VTO_X_VE = "SPGECO_C_Vto_X_Ve";
+			public const string SP_CONS_C_VTO_X_VE_RESUMEN = "SPGECO_C_Vto_X_Ve_Resumen";
 			#endregion
 
 			#region Certificados

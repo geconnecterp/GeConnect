@@ -14,6 +14,7 @@ $(function () {
 
 function InicializaEventos() {
 	$(document).on("change", "#listaSucursales", ControlalistaSucursalesSelected);
+	$("#SucursalesList").on("dblclick", 'option', function () { $(this).remove(); })
 	funcCallBack = CargarSeccionProcesoDeCajas;
 	$("#btnImprimir").prop("disabled", true);
 

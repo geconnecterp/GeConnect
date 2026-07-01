@@ -131,6 +131,8 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R083_Cons_Cta_Corriente_Financiera, new R083_Cons_Cta_Corriente_Financiera(uow,finServ,empresa,ctaSv, logger) },
 				{ InfoReporte.R084_Detalle_Valores_En_Cartera, new R084_Detalle_Valores_En_Cartera(uow,finServ,empresa,ctaSv, logger) },
 				{ InfoReporte.R085_Reporte_Mov_Cta_Directa, new R085_Reporte_Mov_Cta_Directa(uow,consSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R086_Saldo_Cta_Distr_Detalle, new R086_Saldo_Cta_Distr_Detalle(uow,consSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R087_Saldo_Cta_Distr_Resumen, new R087_Saldo_Cta_Distr_Resumen(uow,consSv,empresa,ctaSv, logger) },
 			}; 
             _logger = logger;
         }
