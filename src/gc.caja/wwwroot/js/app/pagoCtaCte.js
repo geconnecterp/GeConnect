@@ -170,7 +170,7 @@ function registrarEventosCuentaCorriente() {
             event.preventDefault();
             event.stopPropagation();
 
-            iniciarCobranza();
+            iniciarCobranzaCuentaCorriente();
         });
 
     $('#modalModificarImporteCC')
@@ -726,7 +726,7 @@ function recalcularTotalCuentaCorriente() {
 // RESGUARDO DE LA SELECCIÓN E INICIO DEL PAGO
 // ================================================================
 
-function iniciarCobranza() {
+function iniciarCobranzaCuentaCorriente() { 
     if (cobranzaCCEnCurso) {
         console.warn('⚠️ Ya existe una solicitud de cobranza en curso.');
         return;
@@ -946,17 +946,13 @@ function iniciarCobranza() {
 
             const iniciarPago = function () {
                 try {
-                    // pagoFactura.js hoy hidrata el contexto COBRANZA desde los
-                    // controles *Pendiente*. Este puente evita mezclar el módulo
-                    // de Cuenta Corriente con el de Cobranza Diferida.
-                    sincronizarDatosClienteParaPagoCC();
-
                     const iniciado = iniciarProcesoPago({
                         totalPagar: totalPagar,
                         co_tipo: 'CC',
                         puntoVenta: 'GECO PD',
                         tituloModal: 'Cobranza Cuenta Corriente',
-                        contextoOperacion: 'COBRANZA'
+                        contextoOperacion: 'COBRANZA',
+                        fuenteCliente: 'CUENTA_CORRIENTE'
                     });
 
                     if (iniciado === false) {
