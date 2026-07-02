@@ -74,7 +74,7 @@ $(function () {
     //});
 
     $('#btnSeguirConCobranza').on('click', function () {
-        iniciarCobranza();
+        iniciarCobranzaDiferida();  
     });
 
     // ═══════════════════════════════════════════════════════════════════
@@ -749,7 +749,7 @@ function mostrarModalVerFacturasPendientes(facturas) {
  * 5. Se envían al backend para guardarlas en sesión
  * 6. Se procede al módulo de pago
  */
-function iniciarCobranza() {
+function iniciarCobranzaDiferida() {
     console.log('═══════════════════════════════════════════════════');
     console.log('💰 INICIAR COBRANZA DIFERIDA v6.0');
     console.log('═══════════════════════════════════════════════════');
@@ -937,11 +937,12 @@ function iniciarCobranza() {
 
             const abrirPagoDiferido = () => {
                 iniciarProcesoPago({
-                    totalPagar: totalPagar,
+                    totalPagar,
                     co_tipo: 'CD',
                     puntoVenta: 'GECO PD',
                     tituloModal: 'Cobranza Diferida',
-                    contextoOperacion: 'COBRANZA'
+                    contextoOperacion: 'COBRANZA',
+                    fuenteCliente: 'FACTURAS_PENDIENTES'
                 });
             };
 

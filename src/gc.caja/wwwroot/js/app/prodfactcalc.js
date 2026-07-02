@@ -38,10 +38,9 @@ function inicializarEventosCalculoFactura() {
     });
 
     // Botón PAGAR
-    $('#btnPagarFactura').on('click', function () {
-        console.log('💰 Proceder al pago');
-        procesarPagoFactura();
-    });
+    $('#btnPagarFactura')
+        .off('click.calculoFactura')
+        .on('click.calculoFactura', iniciarPagoDesdeCalculoFactura);
     
     console.log('✅ Eventos del modal de cálculo configurados');
 }
@@ -50,42 +49,77 @@ function inicializarEventosCalculoFactura() {
  * ✅ ACTUALIZADO v27.0: Utiliza la nueva función genérica `iniciarProcesoPago`
  * y pasa el contexto de 'VENTA'.
  */
-function procesarPagoFactura() {
+function iniciarPagoDesdeCalculoFactura() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('💰 PROCESAR PAGO DE FACTURA v27.0');
+    console.log('💰 INICIAR PAGO DESDE CÁLCULO DE FACTURA');
     console.log('═══════════════════════════════════════════════════');
 
-    // 1. Validar que la nueva función de inicio esté disponible
     if (typeof iniciarProcesoPago !== 'function') {
-        console.error('❌ CRÍTICO: La función `iniciarProcesoPago` no está disponible.');
-        mostrarMensajeError('El módulo de pago no está actualizado. Por favor, recargue la página.');
+        console.error(
+            '❌ iniciarProcesoPago no está disponible.'
+        );
+
+        mostrarMensajeError(
+            'El módulo de pago no está disponible. Recargue la página e intente nuevamente.'
+        );
+
         return;
     }
 
-    // 2. Extraer el total final de la tabla
     const totalFinalTexto = $('#tdTotalFinal').text().trim();
-    const totalFinal = parsearNumero(totalFinalTexto); // Usando la función de parseo existente
+    const totalFinal = parsearNumero(totalFinalTexto);
 
-    // 3. Determinar el tipo de operación para facturación
-    const ctaId = $('#txtClienteIdCalc').val();
-    const co_tipo = (ctaId && ctaId.trim() !== '' && ctaId !== 'N/A') ? 'CR' : 'CF';
+    if (!Number.isFinite(totalFinal) || totalFinal <= 0) {
+        console.error(
+            '❌ Total inválido para iniciar pago:',
+            {
+                texto: totalFinalTexto,
+                total: totalFinal
+            }
+        );
 
-    console.log(`   Total extraído: ${formatearMoneda(totalFinal)}`);
-    console.log(`   Tipo de operación determinado: ${co_tipo}`);
+        mostrarMensajeError(
+            'El total de la factura debe ser mayor a cero.'
+        );
 
-    // 4. Invocar el proceso de pago genérico
-    console.log('   Invocando el proceso de pago genérico para Venta...');
-    iniciarProcesoPago({
+        return;
+    }
+
+    const ctaId = String(
+        $('#txtClienteIdCalc').val() || ''
+    ).trim();
+
+    const coTipo =
+        ctaId && ctaId !== 'N/A'
+            ? 'CR'
+            : 'CF';
+
+    const iniciado = iniciarProcesoPago({
         totalPagar: totalFinal,
-        co_tipo: co_tipo,
-        puntoVenta: $('#lblPuntoVentaCalculo').text().trim() || 'GECO PV',
-        // ✅ NUEVO v27.0: Pasar título y contexto específicos
+        co_tipo: coTipo,
+        puntoVenta:
+            $('#lblPuntoVentaCalculo').text().trim() ||
+            'GECO PV',
+
         tituloModal: 'Pago de Factura',
-        contextoOperacion: 'VENTA'
+        contextoOperacion: 'VENTA',
+
+        // Nuevo parámetro explícito.
+        fuenteCliente: 'CALCULO_FACTURA'
     });
 
-    console.log('✅ Solicitud de pago delegada a `iniciarProcesoPago`.');
-    console.log('═══════════════════════════════════════════════════');
+    if (iniciado === false) {
+        console.error(
+            '❌ No se pudo abrir el módulo de pago desde Facturación.'
+        );
+
+        return;
+    }
+
+    console.log('✅ Pago iniciado desde cálculo de factura.', {
+        totalFinal,
+        coTipo
+    });
 }
 
 //// ════════════════════════════════════════════════════════════
