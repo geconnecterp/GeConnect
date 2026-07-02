@@ -4,13 +4,7 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos;
-using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
-using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Inventario.Request;
-using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
-using gc.infraestructura.Dtos.Productos.Pedidos;
-using gc.infraestructura.Dtos.Ventas;
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
@@ -18,7 +12,6 @@ using iTextSharp.text;
 using iTextSharp.text.pdf;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Globalization;
 
 namespace gc.api.core.Servicios.Reportes
 {
@@ -52,11 +45,10 @@ namespace gc.api.core.Servicios.Reportes
 				var ms = new MemoryStream();
 				#region Obteniendo registros desde la base de datos
 				string tit;
-				string subtit;
-				List<MovimientoListaDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
+				List<SaldoResumenDto> registros = ObtenerDatos(solicitud, out tit);
 
 				solicitud.Titulo = tit;
-				solicitud.SubTitulo = subtit;
+				solicitud.SubTitulo = "";
 
 				//hago el modelo de dato aca ya que necesito los datos de la cuenta
 				var regs = registros.Select(x => new
@@ -67,7 +59,7 @@ namespace gc.api.core.Servicios.Reportes
 				#endregion
 				#region Scripts PDF
 				#region instanciamos el pdf
-				pdf = HelperPdf.GenerarInstanciaAndInit(ref writer, out ms, HojaSize.A4, false);
+				pdf = HelperPdf.GenerarInstanciaAndInit(ref writer, out ms, HojaSize.A4, true);
 
 				// Agregar el evento de pie de página
 				writer.PageEvent = new CustomPdfPageEventHelper(solicitud.Observacion);
@@ -108,7 +100,7 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Open();
 
 				#region Armado de Reporte
-				CargarRepoMovimientoCtaDirecta(pdf, registros, chico, normal, normalBold, titulo, tituloBig);
+				CargarRepoSaldoResumenCtaDistribuidora(pdf, registros, chico, normal, normalBold, titulo, tituloBig);
 				#endregion
 
 				pdf.Close();
@@ -129,159 +121,162 @@ namespace gc.api.core.Servicios.Reportes
 		}
 
 		#region Funciones de generacion de secciones de reportes
-		public static void CargarRepoMovimientoCtaDirecta(Document pdf, List<MovimientoListaDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		public static void CargarRepoSaldoResumenCtaDistribuidora(Document pdf, List<SaldoResumenDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
 		{
-			var grupos = registros
-		.GroupBy(r => r.ctag_id)
-		.OrderBy(g => g.Key);
+			if (registros == null || registros.Count == 0)
+				return;
 
-			decimal totalGeneral = 0m;
-			var cultura = new CultureInfo("es-AR");
+			// Agrupación por vendedor
+			var gruposVendedor = registros
+				.GroupBy(x => new { x.ve_id, x.ve_nombre })
+				.OrderBy(g => g.Key.ve_id);
 
-			// Definimos un ancho más generoso para la columna Importe
-			float[] widths = new float[] { 12f, 8f, 8f, 12f, 22f, 12f, 14f, 12f }; // última columna más ancha
-
-			foreach (var grupo in grupos)
+			foreach (var grupoV in gruposVendedor)
 			{
-				string ctagId = grupo.Key;
-				string ctagDen = grupo.First().ctag_denominacion;
+				var lista = grupoV.ToList();
 
-				decimal subtotal = grupo.Sum(x => x.cc_importe);
-				totalGeneral += subtotal;
+				// ================================
+				// ENCABEZADO DEL VENDEDOR
+				// ================================
+				PdfPTable tblVendedor = new PdfPTable(1);
+				tblVendedor.WidthPercentage = 100;
 
-				// ============================
-				// ENCABEZADO DEL GRUPO (Cuenta sin relieve + ID y Denominación con relieve)
-				// ============================
+				Chunk lblVend = new Chunk("Vendedor:", normal);
+				lblVend.SetUnderline(0.5f, -2f);
 
-				PdfPTable tblEnc = new PdfPTable(3);   // 3 columnas: Cuenta | ID | Denominación
-				tblEnc.WidthPercentage = 100;
-				tblEnc.SetWidths(new float[] { 12f, 20f, 68f }); // proporciones equilibradas
+				Chunk lblId = new Chunk($" ({grupoV.Key.ve_id}) ", normalBold);
+				Chunk lblNom = new Chunk($"{grupoV.Key.ve_nombre}", normalBold);
 
-				// --- Celda "Cuenta" (SIN relieve) ---
-				PdfPCell celCuenta = new PdfPCell(new Phrase("Cuenta", normalBold))
-				{
-					Border = Rectangle.NO_BORDER,
-					HorizontalAlignment = Element.ALIGN_LEFT,
-					PaddingBottom = 6f
-				};
+				Phrase phrVend = new Phrase();
+				phrVend.Add(lblVend);
+				phrVend.Add(lblId);
+				phrVend.Add(lblNom);
 
-				// --- Recuadro 3D para ctag_id ---
-				PdfPCell celId = new PdfPCell(new Phrase(ctagId, normalBold))
-				{
-					Padding = 6f,
-					BackgroundColor = new BaseColor(245, 245, 245),
-					BorderWidthLeft = 1.8f,
-					BorderWidthTop = 1.8f,
-					BorderWidthRight = 0.8f,
-					BorderWidthBottom = 0.8f,
-					BorderColorLeft = new BaseColor(255, 255, 255),
-					BorderColorTop = new BaseColor(255, 255, 255),
-					BorderColorRight = new BaseColor(120, 120, 120),
-					BorderColorBottom = new BaseColor(120, 120, 120),
-					HorizontalAlignment = Element.ALIGN_CENTER
-				};
+				PdfPCell celVend = new PdfPCell(phrVend);
+				celVend.Border = Rectangle.NO_BORDER;
+				celVend.PaddingBottom = 6;
+				celVend.BackgroundColor = new BaseColor(220, 230, 255); // azul suave
 
-				// --- Recuadro 3D para ctag_denominacion ---
-				PdfPCell celDen = new PdfPCell(new Phrase(ctagDen, normalBold))
-				{
-					Padding = 6f,
-					BackgroundColor = new BaseColor(245, 245, 245),
-					BorderWidthLeft = 1.8f,
-					BorderWidthTop = 1.8f,
-					BorderWidthRight = 0.8f,
-					BorderWidthBottom = 0.8f,
-					BorderColorLeft = new BaseColor(255, 255, 255),
-					BorderColorTop = new BaseColor(255, 255, 255),
-					BorderColorRight = new BaseColor(120, 120, 120),
-					BorderColorBottom = new BaseColor(120, 120, 120),
-					HorizontalAlignment = Element.ALIGN_LEFT
-				};
+				tblVendedor.AddCell(celVend);
+				pdf.Add(tblVendedor);
 
-				tblEnc.AddCell(celCuenta);
-				tblEnc.AddCell(celId);
-				tblEnc.AddCell(celDen);
-
-				pdf.Add(tblEnc);
-
-
-				// Tabla detalle
-				PdfPTable tbl = new PdfPTable(8);
+				// ================================
+				// TABLA DE RESUMEN
+				// ================================
+				PdfPTable tbl = new PdfPTable(6);
 				tbl.WidthPercentage = 100;
-				tbl.SetWidths(widths);
+				tbl.SetWidths(new float[] { 35, 13, 13, 13, 13, 13 });
 
-				AgregarHeader(tbl, "Orden Pag./Liq.", normalBold, Element.ALIGN_CENTER);
-				AgregarHeader(tbl, "Fecha", normalBold, Element.ALIGN_CENTER);
-				AgregarHeader(tbl, "Tipo Compte.", normalBold, Element.ALIGN_CENTER);
-				AgregarHeader(tbl, "Comprobante", normalBold, Element.ALIGN_CENTER);
-				AgregarHeader(tbl, "Razón Social", normalBold, Element.ALIGN_LEFT);
-				AgregarHeader(tbl, "CUIT", normalBold, Element.ALIGN_CENTER);
-				AgregarHeader(tbl, "Motivo", normalBold, Element.ALIGN_LEFT);
-				AgregarHeader(tbl, "Importe", normalBold, Element.ALIGN_RIGHT);
+				// Encabezados dinámicos
+				string h13 = lista.First().hoy_m13;
+				string h7 = lista.First().hoy_m7;
+				string h6 = lista.First().hoy_m6;
+				string h1 = lista.First().hoy_1;
+				string hoy = lista.First().hoy;
 
-				foreach (var r in grupo)
+				AddHeader(tbl, "Cuenta", normalBold, Element.ALIGN_LEFT);
+
+				AddHeader(tbl, $"Ant. {h13}", normalBold, Element.ALIGN_RIGHT, BaseColor.Red);
+				AddHeader(tbl, $"Entre {h13} al {h7}", normalBold, Element.ALIGN_RIGHT, BaseColor.Red);
+				AddHeader(tbl, $"Entre {h6} al {h1}", normalBold, Element.ALIGN_RIGHT, BaseColor.Red);
+
+				AddHeader(tbl, $"Tot. vencido al {hoy}", normalBold, Element.ALIGN_RIGHT, BaseColor.Red, bold: true);
+
+				AddHeader(tbl, "A vencer", normalBold, Element.ALIGN_RIGHT, new BaseColor(0, 0, 200), bold: true);
+
+				// Filas
+				decimal totalAnt3 = 0;
+				decimal totalAnt2 = 0;
+				decimal totalAnt1 = 0;
+				decimal totalVencido = 0;
+				decimal totalAVencer = 0;
+
+				foreach (var r in lista.OrderBy(x => x.cta_id))
 				{
-					AgregarCelda(tbl, $"{r.origen} {r.op_compte}", normal, Element.ALIGN_CENTER);
-					AgregarCelda(tbl, r.op_fecha.ToString("dd/MM/yyyy"), normal, Element.ALIGN_CENTER);
-					AgregarCelda(tbl, r.tco_id, normal, Element.ALIGN_CENTER);
-					AgregarCelda(tbl, r.cm_compte, normal, Element.ALIGN_CENTER);
-					AgregarCelda(tbl, r.cm_nombre, normal, Element.ALIGN_LEFT);
-					AgregarCelda(tbl, r.cm_cuit, normal, Element.ALIGN_CENTER);
-					AgregarCelda(tbl, r.ctag_motivo, normal, Element.ALIGN_LEFT);
-					AgregarCelda(tbl, r.cc_importe.ToString("#,##0.00", cultura), normal, Element.ALIGN_RIGHT);
+					decimal vencido = r.saldo_semana_ant1 + r.saldo_semana_ant2 + r.saldo_semana_ant3;
+
+					totalAnt3 += r.saldo_semana_ant3;
+					totalAnt2 += r.saldo_semana_ant2;
+					totalAnt1 += r.saldo_semana_ant1;
+					totalVencido += vencido;
+					totalAVencer += r.saldo_avecer;
+
+					// Cuenta
+					AddCell(tbl, $"({r.cta_id}) {r.cta_denominacion}", normal, Element.ALIGN_LEFT);
+
+					// Ant. 13
+					AddCell(tbl, r.saldo_semana_ant3.ToString("N2"), normal, Element.ALIGN_RIGHT, BaseColor.Red);
+
+					// Entre 13 al 7
+					AddCell(tbl, r.saldo_semana_ant2.ToString("N2"), normal, Element.ALIGN_RIGHT, BaseColor.Red);
+
+					// Entre 6 al 1
+					AddCell(tbl, r.saldo_semana_ant1.ToString("N2"), normal, Element.ALIGN_RIGHT, BaseColor.Red);
+
+					// Tot. vencido
+					AddCell(tbl, vencido.ToString("N2"), normalBold, Element.ALIGN_RIGHT, BaseColor.Red);
+
+					// A vencer
+					AddCell(tbl, r.saldo_avecer.ToString("N2"), normalBold, Element.ALIGN_RIGHT, new BaseColor(0, 0, 200));
 				}
 
 				pdf.Add(tbl);
 
-				// Subtotal
-				PdfPTable tblSub = new PdfPTable(8);
-				tblSub.WidthPercentage = 100;
-				tblSub.SetWidths(widths);
+				// ================================
+				// FILA TOTALIZADORA
+				// ================================
+				PdfPTable tblTot = new PdfPTable(6);
+				tblTot.WidthPercentage = 100;
+				tblTot.SetWidths(new float[] { 35, 13, 13, 13, 13, 13 });
 
-				PdfPCell celLbl = new PdfPCell(new Phrase($"Subtotal Cuenta {ctagId} - {ctagDen}", normalBold))
-				{
-					Colspan = 7,
-					Border = Rectangle.NO_BORDER,
-					HorizontalAlignment = Element.ALIGN_RIGHT
-				};
+				AddCell(tblTot, "Total:", normalBold, Element.ALIGN_LEFT);
 
-				PdfPCell celVal = new PdfPCell(new Phrase(subtotal.ToString("#,##0.00", cultura), normalBold))
-				{
-					Border = Rectangle.NO_BORDER,
-					HorizontalAlignment = Element.ALIGN_RIGHT
-				};
+				AddCell(tblTot, totalAnt3.ToString("N2"), normalBold, Element.ALIGN_RIGHT, BaseColor.Red);
+				AddCell(tblTot, totalAnt2.ToString("N2"), normalBold, Element.ALIGN_RIGHT, BaseColor.Red);
+				AddCell(tblTot, totalAnt1.ToString("N2"), normalBold, Element.ALIGN_RIGHT, BaseColor.Red);
+				AddCell(tblTot, totalVencido.ToString("N2"), normalBold, Element.ALIGN_RIGHT, BaseColor.Red);
+				AddCell(tblTot, totalAVencer.ToString("N2"), normalBold, Element.ALIGN_RIGHT, new BaseColor(0, 0, 200));
 
-				tblSub.AddCell(celLbl);
-				tblSub.AddCell(celVal);
-				pdf.Add(tblSub);
+				pdf.Add(tblTot);
 
-				pdf.Add(new Paragraph(" ", chico));
+				// Separador
+				PdfPTable tblSep = new PdfPTable(1);
+				tblSep.WidthPercentage = 100;
+
+				PdfPCell celSep = new PdfPCell(new Phrase(""));
+				celSep.BorderWidthBottom = 1;
+				celSep.BorderColorBottom = BaseColor.Gray;
+				celSep.Border = Rectangle.BOTTOM_BORDER;
+				celSep.PaddingBottom = 6;
+
+				tblSep.AddCell(celSep);
+				pdf.Add(tblSep);
 			}
+		}
 
-			// TOTAL GENERAL
-			PdfPTable tblTot = new PdfPTable(8);
-			tblTot.WidthPercentage = 100;
-			tblTot.SetWidths(widths);
+		// =====================================================
+		// HELPERS
+		// =====================================================
+		private static void AddHeader(PdfPTable tbl, string texto, Font font, int align, BaseColor color = null, bool bold = false)
+		{
+			Font f = bold ? new Font(font.BaseFont, font.Size, Font.BOLD, color ?? font.Color)
+						  : new Font(font.BaseFont, font.Size, font.Style, color ?? font.Color);
 
-			PdfPCell celLblTot = new PdfPCell(new Phrase("TOTAL", tituloBig))
-			{
-				Colspan = 7,
-				Border = Rectangle.TOP_BORDER,
-				BorderWidthTop = 2f,
-				HorizontalAlignment = Element.ALIGN_RIGHT,
-				PaddingTop = 6f
-			};
+			PdfPCell c = new PdfPCell(new Phrase(texto, f));
+			c.HorizontalAlignment = align;
+			c.Border = Rectangle.NO_BORDER;
+			c.PaddingBottom = 4;
+			tbl.AddCell(c);
+		}
 
-			PdfPCell celValTot = new PdfPCell(new Phrase(totalGeneral.ToString("#,##0.00", cultura), tituloBig))
-			{
-				Border = Rectangle.TOP_BORDER,
-				BorderWidthTop = 2f,
-				HorizontalAlignment = Element.ALIGN_RIGHT,
-				PaddingTop = 6f
-			};
+		private static void AddCell(PdfPTable tbl, string texto, Font font, int align, BaseColor color = null)
+		{
+			Font f = new Font(font.BaseFont, font.Size, font.Style, color ?? font.Color);
 
-			tblTot.AddCell(celLblTot);
-			tblTot.AddCell(celValTot);
-			pdf.Add(tblTot);
+			PdfPCell c = new PdfPCell(new Phrase(texto, f));
+			c.HorizontalAlignment = align;
+			c.Border = Rectangle.NO_BORDER;
+			tbl.AddCell(c);
 		}
 
 		#endregion
@@ -305,28 +300,23 @@ namespace gc.api.core.Servicios.Reportes
 		}
 
 
-		private List<MovimientoListaDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo, out string subtit)
+		private List<SaldoResumenDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo)
 		{
 			try
 			{
-				var ret = new List<MovimientoListaDto>();
-				var ctag_list_temp = solicitud.Parametros.GetValueOrDefault("ctag_list", "")?.ToString() ?? null;
-				List<string> lista = ctag_list_temp.Split(',').ToList();
-				var desde = solicitud.Parametros.GetValueOrDefault("desde", "").ToDateTime();
-				var hasta = solicitud.Parametros.GetValueOrDefault("hasta", "").ToDateTime();
-				titulo = $"Consulta de Cuenta de Gastos";
-				ret = _consSrv.ConsultaMovimientoLista(new BuscarMovDeCuentaDirectaRequest() { 
-					desde=desde,
-					hasta=hasta,
-					ctag_list= lista
+				var ret = new List<SaldoResumenDto>();
+				var vend_list_temp = solicitud.Parametros.GetValueOrDefault("Vendedores", "")?.ToString() ?? null;
+				List<string> lista = vend_list_temp.Split(',').ToList();
+				ret = _consSrv.BuscarSaldoResumenCtaDistribuidora(new BuscarSaldoDetalleRequest()
+				{
+					ve_list = lista,
 				});
-				subtit = $"Desde: {desde:dd/MM/yyyy} Hasta: {hasta:dd/MM/yyyy}";
+				titulo = $"Saldo de Clientes x Vendedor al {ret.First().hoy}";
 				return ret;
 			}
 			catch (Exception)
 			{
 				titulo = "";
-				subtit = "";
 				return [];
 			}
 
@@ -336,8 +326,7 @@ namespace gc.api.core.Servicios.Reportes
 		{
 			#region Obteniendo registros desde la base de datos
 			string tit;
-			string subtit;
-			List<MovimientoListaDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
+			List<SaldoResumenDto> registros = ObtenerDatos(solicitud, out tit);
 
 			if (registros == null || registros.Count == 0)
 			{
@@ -360,8 +349,7 @@ namespace gc.api.core.Servicios.Reportes
 		{
 			#region Obteniendo registros desde la base de datos
 			string tit;
-			string subtit;
-			List<MovimientoListaDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
+			List<SaldoResumenDto> registros = ObtenerDatos(solicitud, out tit);
 
 			if (registros == null || registros.Count == 0)
 			{

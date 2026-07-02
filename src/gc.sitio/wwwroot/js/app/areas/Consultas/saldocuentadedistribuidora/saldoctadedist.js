@@ -1,8 +1,8 @@
 ﻿let _pedidoLoading = false;
 let tabsDetallePendientes = 0;
 const TabToTableMap = {
-	"navs-top-det": "#btnTabDetalleDeSaldos",
-	"navs-top-res": "#btnTabResumenDeSaldos",
+	"navs-top-det": "#tbDetalleDeSaldos",
+	"navs-top-res": "#tbResumenDeSaldos",
 };
 
 $(function () {
@@ -16,7 +16,7 @@ function InicializaEventos() {
 	$("#VendedoresList").on("dblclick", 'option', function () { $(this).remove(); })
 	$(document).off("change", "listaVendedores");
 	$(document).on("change", "#listaVendedores", ControlalistaVendedoresSelected);
-	$("#btnImprimir").prop("disabled", true);
+	//$("#btnImprimir").prop("disabled", true);
 
 	$("#btnFiltro").on("click", function () {
 		if ($("#divFiltros").hasClass("show")) {
@@ -64,6 +64,7 @@ function CargarSeccionDetalleDeSaldos() {
 	PostGenHtml({ ve_list }, buscarDetalleDeSaldosURL, function (obj) {
 		$("#divDetalleDeSaldos").html(obj);
 		InicializarEventosDetalleDeSaldos();
+		EvaluarBotonImprimir("navs-top-det");
 		FinalizarCargaDetalle();
 		CerrarWaiting();
 		return true
@@ -126,6 +127,98 @@ function FinalizarCargaDetalle() {
 		CerrarWaiting();
 	}
 }
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
+function ImprimirSegunTab(tabId) {
+
+	switch (tabId) {
+		case "navs-top-det":
+			ImprimirDetalle();
+			break;
+
+		case "navs-top-res":
+			ImprimirResumen();
+			break;
+
+	}
+}
+
+function ImprimirDetalle() {
+	AbrirWaiting();
+	var tipoReporte = 1;
+	var data = { tipoReporte };
+	PostGen(data, setearTipoDeReporteUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			HandlerImprimirDetalle();
+		}
+	});
+}
+
+function ImprimirResumen() {
+	AbrirWaiting();
+	var tipoReporte = 2;
+	var data = { tipoReporte };
+	PostGen(data, setearTipoDeReporteUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			HandlerImprimirResumen();
+		}
+	});
+}
+
+function HandlerImprimirDetalle() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var vend = ObtenerVendedoresSeleccionadasConTexto();
+		var vendedoresIds = vend.ids;
+		var vendedoresTextos = vend.textos;
+		var data = {
+			Vendedores: vendedoresIds,
+			VendedoresTextos: vendedoresTextos
+		}
+		cargarReporteEnArre(86, data, "Detalle de Saldo de Cuenta de Distribuidora", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function HandlerImprimirResumen() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var vend = ObtenerVendedoresSeleccionadasConTexto();
+		var vendedoresIds = vend.ids;
+		var vendedoresTextos = vend.textos;
+		var data = {
+			Vendedores: vendedoresIds,
+			VendedoresTextos: vendedoresTextos
+		}
+		cargarReporteEnArre(87, data, "Resumen de Saldo de Cuenta de Distribuidora", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+$("#btnImprimir").on("click", function () {
+	const tabId = $(this).data("tab-activo");
+	ImprimirSegunTab(tabId);
+});
 
 function EvaluarBotonImprimir(tabId) {
 	console.log("Evaluando botón imprimir para tab:", tabId);
