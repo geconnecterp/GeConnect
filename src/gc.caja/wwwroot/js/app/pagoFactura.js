@@ -42,7 +42,20 @@ let conceptosPago = {
     totalPagar: 0,
     recargos: 0,
     descuentos: 0,
+
+    // Solo medios de pago convencionales.
+    totalOtrosValores: 0,
+
+    // Suma de importes imputados de créditos NC.
+    totalCreditosNC: 0,
+
+    // Se conserva por compatibilidad con lógica existente.
+    // Representa todo lo aplicado: NC + otros medios.
     totalValores: 0,
+
+    // Alias explícito para código nuevo.
+    totalAplicado: 0,
+
     diferencia: 0
 };
 let valoresPago = [];
@@ -51,6 +64,16 @@ let tipoMedioPagoSeleccionado = null;
 let valoresMPCache = null;
 let valoresMPCargados = false;
 
+let modalDetalleCtaCteInstance = null;
+let autorizadorUsoCreditoNcConsumidorFinal = null;
+
+const FUENTES_CLIENTE_PAGO = Object.freeze({
+    CALCULO_FACTURA: 'CALCULO_FACTURA',
+    FACTURAS_PENDIENTES: 'FACTURAS_PENDIENTES',
+    CUENTA_CORRIENTE: 'CUENTA_CORRIENTE'
+});
+
+window._fuenteClientePagoActual = null;
 // ═══════════════════════════════════════════════════════════════════
 // ✅ NUEVO v27.0: VARIABLES GLOBALES PARA CONTEXTO DINÁMICO
 // ═══════════════════════════════════════════════════════════════════
@@ -105,6 +128,704 @@ const MODAL_ANIMATION_TIMEOUT = 300;
 const INPUT_FOCUS_TIMEOUT = 300;
 
 // ═══════════════════════════════════════════════════════════════════
+// NOTAS DE CRÉDITO / CRÉDITOS DE CUENTA CORRIENTE
+// ═══════════════════════════════════════════════════════════════════
+
+// Paridad temporal definida por negocio.
+// NCC se utiliza como identidad visual/técnica del tipo NC.
+// Las NC NO se serializan dentro de json_valores.
+// Las NC seleccionadas viajarán exclusivamente en json_union.
+const INSTRUMENTOS_PREDEFINIDOS_POR_TCF = Object.freeze({
+    NC: {
+        ins_id: 'NCC',
+        ins_desc: 'Crédito en Cuenta Corriente',
+        ins_simbolo: '$'
+    }
+});
+
+const TIPOS_OPERACION_NC_PERMITIDOS = Object.freeze([
+    'CF',
+    'CR',
+    'CD',
+    'CC'
+]);
+
+const RESULTADO_CONSULTA_NC = Object.freeze({
+    PENDIENTE: 'PENDIENTE',
+    SIN_CREDITOS: 'SIN_CREDITOS',
+    CON_CREDITOS: 'CON_CREDITOS',
+    NO_APLICA: 'NO_APLICA',
+    ERROR: 'ERROR'
+});
+
+let estadoNC = crearEstadoNCVacio();
+
+function crearEstadoNCVacio() {
+    return {
+        cargando: false,
+        cargado: false,
+
+        // Resultado explícito de la consulta.
+        resultadoConsulta: RESULTADO_CONSULTA_NC.PENDIENTE,
+
+        // Mantener por compatibilidad con código actual.
+        errorCarga: false,
+        mensajeError: '',
+
+        // true cuando la consulta fue exitosa pero no devolvió créditos.
+        sinCreditos: false,
+
+        coTipo: '',
+        esConsumidorFinal: false,
+
+        // Indica que el catálogo de medios habilitó NC
+        // para el contexto actual.
+        tipoMedioPagoNcDisponible: false,
+
+        conflictoObligatorios: null,
+
+        disponibles: [],
+        seleccionados: [],
+
+        borrador: null
+    };
+}
+
+function hayCreditosNCDisponibles() {
+    return Array.isArray(estadoNC.disponibles) &&
+        estadoNC.disponibles.length > 0;
+}
+
+function hayCreditosOpcionalesNC() {
+    return estadoNC.disponibles.some(function (credito) {
+        return !credito.obligatorio;
+    });
+}
+
+function consultaNCBloqueaPago() {
+    return estadoNC.cargando === true ||
+        estadoNC.resultadoConsulta === RESULTADO_CONSULTA_NC.PENDIENTE ||
+        estadoNC.resultadoConsulta === RESULTADO_CONSULTA_NC.ERROR ||
+        estadoNC.conflictoObligatorios !== null;
+}
+
+function respuestaIndicaSinCreditosNC(response) {
+    return response?.sinCreditos === true ||
+        normalizarTextoUpper(response?.codigo) === 'SIN_CREDITOS_NC';
+}
+
+function establecerSinCreditosNC(coTipo, mensaje = '') {
+    estadoNC.cargando = false;
+    estadoNC.cargado = true;
+
+    estadoNC.resultadoConsulta =
+        RESULTADO_CONSULTA_NC.SIN_CREDITOS;
+
+    estadoNC.errorCarga = false;
+    estadoNC.mensajeError = '';
+
+    estadoNC.sinCreditos = true;
+    estadoNC.coTipo = normalizarTextoUpper(coTipo);
+
+    estadoNC.disponibles = [];
+    estadoNC.seleccionados = [];
+    estadoNC.conflictoObligatorios = null;
+
+    console.info(
+        `[NC] Sin créditos disponibles. co_tipo=${estadoNC.coTipo}. ${mensaje}`
+    );
+}
+
+function normalizarTexto(valor) {
+    return String(valor ?? '').trim();
+}
+
+function normalizarTextoUpper(valor) {
+    return normalizarTexto(valor).toUpperCase();
+}
+
+function esBanderaSi(valor) {
+    return normalizarTextoUpper(valor) === 'S';
+}
+
+function convertirNumeroNC(valor) {
+    if (typeof valor === 'number') {
+        return Number.isFinite(valor) ? valor : 0;
+    }
+
+    const texto = normalizarTexto(valor);
+
+    if (!texto) {
+        return 0;
+    }
+
+    const numero = Number(texto.replace(',', '.'));
+
+    return Number.isFinite(numero) ? numero : 0;
+}
+
+function aCentavosNC(valor) {
+    return Math.round(Math.abs(convertirNumeroNC(valor)) * 100);
+}
+
+function desdeCentavosNC(centavos) {
+    return (Number(centavos) || 0) / 100;
+}
+
+function crearClaveCreditoNC(credito) {
+    return [
+        normalizarTexto(credito.cta_id),
+        normalizarTexto(credito.dia_movi),
+        normalizarTexto(credito.tco_id),
+        normalizarTexto(credito.cm_compte),
+        normalizarTexto(credito.cm_compte_cuota),
+        normalizarTexto(credito.ccb_id),
+        normalizarTexto(credito.ve_id)
+    ].join('|');
+}
+
+function normalizarCreditoNC(creditoOriginal, indice) {
+    const saldoDisponibleCentavos = aCentavosNC(creditoOriginal.cv_importe);
+
+    return {
+        clave: crearClaveCreditoNC(creditoOriginal) || `NC-${indice}`,
+
+        obligatorio: esBanderaSi(creditoOriginal.carga_obligatoria),
+        seleccionado: false,
+
+        saldoDisponibleCentavos,
+        importeImputadoCentavos: 0,
+
+        // Conserva todos los valores originales enviados por el SP.
+        // No se debe sobrescribir cv_importe ni cv_importe_ori en UI.
+        creditoOriginal: {
+            ...creditoOriginal
+        }
+    };
+}
+
+function limpiarEstadoNC() {
+    estadoNC = crearEstadoNCVacio();
+    estadoNC.errorCarga = false;
+    estadoNC.mensajeError = '';
+    estadoNC.conflictoObligatorios = null;
+
+    $('#alertNcCfRequiereAutorizacion').addClass('d-none');
+    $('#chkSeleccionarTodos')
+        .prop('checked', false)
+        .prop('disabled', true);
+
+    $('#tbodyComprobantesCtaCte').empty();
+    $('#sinComprobantesCtaCte').addClass('d-none');
+
+    $('#lblTotalImputado').text('$ 0.00');
+    $('#lblCantidadSeleccionados').text('0');
+}
+
+function cargarValoresNC(coTipo) {
+    const deferred = $.Deferred();
+    const tipoOperacion = normalizarTextoUpper(coTipo);
+
+    if (!TIPOS_OPERACION_NC_PERMITIDOS.includes(tipoOperacion)) {
+        limpiarEstadoNC();
+
+        estadoNC.coTipo = tipoOperacion;
+        estadoNC.cargado = true;
+        estadoNC.cargando = false;
+        estadoNC.resultadoConsulta =
+            RESULTADO_CONSULTA_NC.NO_APLICA;
+
+        deferred.resolve({
+            creditos: [],
+            sinCreditos: true,
+            noAplica: true
+        });
+
+        return deferred.promise();
+    }
+
+    if (
+        typeof obtenerValoresNCUrl === 'undefined' ||
+        !obtenerValoresNCUrl
+    ) {
+        const mensaje =
+            'La URL para consultar créditos NC no está disponible.';
+
+        estadoNC.cargando = false;
+        estadoNC.cargado = false;
+        estadoNC.errorCarga = true;
+        estadoNC.mensajeError = mensaje;
+        estadoNC.resultadoConsulta =
+            RESULTADO_CONSULTA_NC.ERROR;
+
+        deferred.reject({ mensaje });
+
+        return deferred.promise();
+    }
+
+    estadoNC.cargando = true;
+    estadoNC.cargado = false;
+
+    estadoNC.errorCarga = false;
+    estadoNC.mensajeError = '';
+
+    estadoNC.sinCreditos = false;
+    estadoNC.resultadoConsulta =
+        RESULTADO_CONSULTA_NC.PENDIENTE;
+
+    estadoNC.coTipo = tipoOperacion;
+    estadoNC.esConsumidorFinal = false;
+    estadoNC.tipoMedioPagoNcDisponible = false;
+
+    estadoNC.disponibles = [];
+    estadoNC.seleccionados = [];
+    estadoNC.conflictoObligatorios = null;
+
+    console.group('[NC] CONSULTANDO CRÉDITOS DISPONIBLES');
+    console.log('URL:', obtenerValoresNCUrl);
+    console.log('co_tipo:', tipoOperacion);
+    console.groupEnd();
+
+    $.ajax({
+        url: obtenerValoresNCUrl,
+        type: 'POST',
+        contentType: 'application/json',
+        dataType: 'json',
+        timeout: 15000,
+        data: JSON.stringify({
+            co_tipo: tipoOperacion
+        })
+    })
+        .done(function (response) {
+            console.group('[NC] RESPUESTA OBTENIDA');
+            console.log(response);
+            console.groupEnd();
+
+            const creditos = Array.isArray(response?.datos)
+                ? response.datos
+                : [];
+
+            const sinCreditos =
+                respuestaIndicaSinCreditosNC(response) ||
+                (
+                    response?.ok === true &&
+                    creditos.length === 0
+                );
+
+            // Sin NC es resultado normal; no es error.
+            if (sinCreditos) {
+                establecerSinCreditosNC(
+                    tipoOperacion,
+                    response?.mensaje || ''
+                );
+
+                estadoNC.esConsumidorFinal =
+                    response?.esConsumidorFinal === true;
+
+                deferred.resolve({
+                    creditos: [],
+                    sinCreditos: true
+                });
+
+                return;
+            }
+
+            // Error real: no es seguro continuar como si no hubiera NC,
+            // porque podrían existir créditos obligatorios.
+            if (!response || response.ok !== true) {
+                const mensaje =
+                    response?.mensaje ||
+                    'No fue posible consultar los créditos disponibles.';
+
+                estadoNC.cargando = false;
+                estadoNC.cargado = false;
+
+                estadoNC.errorCarga = true;
+                estadoNC.mensajeError = mensaje;
+
+                estadoNC.resultadoConsulta =
+                    RESULTADO_CONSULTA_NC.ERROR;
+
+                deferred.reject({ mensaje, response });
+
+                return;
+            }
+
+            estadoNC.cargando = false;
+            estadoNC.cargado = true;
+
+            estadoNC.errorCarga = false;
+            estadoNC.mensajeError = '';
+
+            estadoNC.sinCreditos = false;
+            estadoNC.resultadoConsulta =
+                RESULTADO_CONSULTA_NC.CON_CREDITOS;
+
+            estadoNC.esConsumidorFinal =
+                response.esConsumidorFinal === true;
+
+            estadoNC.disponibles =
+                creditos.map(normalizarCreditoNC);
+
+            $('#alertNcCfRequiereAutorizacion')
+                .toggleClass(
+                    'd-none',
+                    !estadoNC.esConsumidorFinal
+                );
+
+            console.info(
+                `[NC] Créditos disponibles: ${estadoNC.disponibles.length}`
+            );
+
+            deferred.resolve({
+                creditos: estadoNC.disponibles,
+                sinCreditos: false
+            });
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            const mensaje =
+                jqXHR?.responseJSON?.mensaje ||
+                `No fue posible consultar los créditos disponibles (${textStatus || errorThrown || 'sin detalle'}).`;
+
+            estadoNC.cargando = false;
+            estadoNC.cargado = false;
+
+            estadoNC.errorCarga = true;
+            estadoNC.mensajeError = mensaje;
+
+            estadoNC.resultadoConsulta =
+                RESULTADO_CONSULTA_NC.ERROR;
+
+            estadoNC.disponibles = [];
+            estadoNC.seleccionados = [];
+
+            console.error('[NC] Error técnico de consulta:', {
+                status: jqXHR?.status,
+                textStatus,
+                errorThrown,
+                mensaje
+            });
+
+            deferred.reject({
+                mensaje,
+                jqXHR,
+                textStatus,
+                errorThrown
+            });
+        });
+
+    return deferred.promise();
+}
+
+function aCentavosMonto(valor) {
+    return Math.round(convertirNumeroNC(valor) * 100);
+}
+
+function obtenerTotalNetoCentavos() {
+    const totalPagar = aCentavosMonto(conceptosPago.totalPagar);
+    const recargos = aCentavosMonto(conceptosPago.recargos);
+    const descuentos = aCentavosMonto(conceptosPago.descuentos);
+
+    return Math.max(0, totalPagar + recargos - descuentos);
+}
+
+function obtenerTotalOtrosValoresCentavos() {
+    return valoresPago.reduce(function (acumulado, valor) {
+        return acumulado + aCentavosMonto(valor.importe);
+    }, 0);
+}
+
+function obtenerCreditosNCImputados() {
+    return (estadoNC.seleccionados || []).filter(function (credito) {
+        return credito.importeImputadoCentavos > 0;
+    });
+}
+
+function obtenerTotalCreditosNCCentavos() {
+    return obtenerCreditosNCImputados()
+        .reduce(function (acumulado, credito) {
+            return acumulado + credito.importeImputadoCentavos;
+        }, 0);
+}
+
+function obtenerCantidadCreditosNCImputados() {
+    return obtenerCreditosNCImputados().length;
+}
+
+function actualizarSeleccionadosNC() {
+    estadoNC.seleccionados = estadoNC.disponibles.filter(function (credito) {
+        return credito.seleccionado === true;
+    });
+}
+
+function reiniciarImputacionesNC() {
+    estadoNC.disponibles.forEach(function (credito) {
+        credito.seleccionado = false;
+        credito.importeImputadoCentavos = 0;
+    });
+
+    estadoNC.seleccionados = [];
+    estadoNC.conflictoObligatorios = null;
+}
+
+function marcarCreditoNCSeleccionado(credito, importeCentavos) {
+    credito.seleccionado = true;
+    credito.importeImputadoCentavos = Math.max(0, importeCentavos);
+}
+
+function aplicarImputacionInicialNC({
+    incluirOpcionales = false
+} = {}) {
+    reiniciarImputacionesNC();
+
+    const saldoNetoCentavos = obtenerTotalNetoCentavos();
+    const totalOtrosValoresCentavos = obtenerTotalOtrosValoresCentavos();
+
+    let saldoPendienteCentavos = Math.max(
+        0,
+        saldoNetoCentavos - totalOtrosValoresCentavos
+    );
+
+    const creditosObligatorios = estadoNC.disponibles.filter(function (credito) {
+        return credito.obligatorio === true;
+    });
+
+    const totalObligatoriosCentavos = creditosObligatorios.reduce(
+        function (acumulado, credito) {
+            return acumulado + credito.saldoDisponibleCentavos;
+        },
+        0
+    );
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('[NC] APLICANDO IMPUTACIÓN INICIAL');
+    console.log(`   Saldo neto: ${formatearMoneda(desdeCentavosNC(saldoNetoCentavos))}`);
+    console.log(`   Otros valores: ${formatearMoneda(desdeCentavosNC(totalOtrosValoresCentavos))}`);
+    console.log(`   Saldo pendiente: ${formatearMoneda(desdeCentavosNC(saldoPendienteCentavos))}`);
+    console.log(`   Créditos obligatorios: ${creditosObligatorios.length}`);
+    console.log(`   Total obligatorio: ${formatearMoneda(desdeCentavosNC(totalObligatoriosCentavos))}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    // No se inventa una regla de negocio para el caso donde los créditos
+    // obligatorios superan el importe neto a cancelar.
+    if (totalObligatoriosCentavos > saldoPendienteCentavos) {
+        estadoNC.conflictoObligatorios = {
+            totalObligatoriosCentavos,
+            saldoPendienteCentavos,
+            mensaje: 'Los créditos obligatorios superan el saldo pendiente de la operación.'
+        };
+
+        console.error('[NC] Conflicto detectado:', estadoNC.conflictoObligatorios);
+
+        return false;
+    }
+
+    // 1. Aplicar obligatorios por el importe total disponible.
+    creditosObligatorios.forEach(function (credito) {
+        marcarCreditoNCSeleccionado(
+            credito,
+            credito.saldoDisponibleCentavos
+        );
+
+        saldoPendienteCentavos -= credito.saldoDisponibleCentavos;
+    });
+
+    // 2. Consumidor Final:
+    //    solo aplica obligatorios. Las opcionales requieren autorización
+    //    administrativa, que se implementará en el paso 3.
+    if (
+        estadoNC.esConsumidorFinal ||
+        !incluirOpcionales
+    ) {
+        actualizarSeleccionadosNC();
+
+        console.log(
+            '[NC] Solo se aplicaron créditos obligatorios.'
+        );
+
+        return true;
+    }
+
+    // 3. Cliente registrado o cobranza diferida:
+    //    aplicar opcionales en el orden devuelto por el SP.
+    const creditosOpcionales = estadoNC.disponibles.filter(function (credito) {
+        return !credito.obligatorio;
+    });
+
+    for (const credito of creditosOpcionales) {
+        if (saldoPendienteCentavos <= 0) {
+            break;
+        }
+
+        const importeAImputarCentavos = Math.min(
+            credito.saldoDisponibleCentavos,
+            saldoPendienteCentavos
+        );
+
+        if (importeAImputarCentavos <= 0) {
+            continue;
+        }
+
+        marcarCreditoNCSeleccionado(
+            credito,
+            importeAImputarCentavos
+        );
+
+        saldoPendienteCentavos -= importeAImputarCentavos;
+    }
+
+    actualizarSeleccionadosNC();
+
+    console.log('[NC] Imputación automática finalizada.');
+    console.log(`   Créditos usados: ${obtenerCantidadCreditosNCImputados()}`);
+    console.log(
+        `   Total aplicado: ${formatearMoneda(
+            desdeCentavosNC(obtenerTotalCreditosNCCentavos())
+        )}`
+    );
+
+    return true;
+}
+
+function obtenerDescripcionCreditoNC(credito) {
+    const original = credito.creditoOriginal || {};
+
+    const tipo = normalizarTexto(original.tco_id) || 'Crédito';
+    const comprobante = normalizarTexto(original.cm_compte) || 'Sin comprobante';
+    const movimiento = normalizarTexto(original.dia_movi);
+
+    return movimiento
+        ? `${tipo} ${comprobante} · Mov. ${movimiento}`
+        : `${tipo} ${comprobante}`;
+}
+
+function obtenerObservacionCreditoNC(credito) {
+    const original = credito.creditoOriginal || {};
+
+    return normalizarTexto(original.cv_concepto) ||
+        'Crédito imputado en cuenta corriente.';
+}
+
+function actualizarBadgeCantidadPagos() {
+    const cantidadValores = valoresPago.length;
+    const cantidadCreditosNC = obtenerCantidadCreditosNCImputados();
+    const total = cantidadValores + cantidadCreditosNC;
+
+    $('#badgeCantidadPagos').text(
+        `${total} ${total === 1 ? 'valor' : 'valores'}`
+    );
+}
+
+function asegurarFilaSinFormasPago() {
+    const $tbody = $('#tbodyFormasPago');
+
+    const hayFilasDePago = $tbody.find(
+        'tr.fila-valor, tr.fila-credito-nc'
+    ).length > 0;
+
+    if (hayFilasDePago) {
+        $('#rowSinFormasPago').remove();
+        return;
+    }
+
+    if ($('#rowSinFormasPago').length === 0) {
+        $tbody.html(`
+            <tr id="rowSinFormasPago">
+                <td colspan="5" class="text-center py-5">
+                    <i class='bx bx-info-circle bx-lg text-muted'></i>
+                    <p class="text-muted mb-0 mt-3 fs-5">
+                        No hay formas de pago registradas.<br>
+                        <small>Presione <strong>AGREGAR</strong> para comenzar</small>
+                    </p>
+                </td>
+            </tr>
+        `);
+    }
+}
+
+function renderizarCreditosNCEnGrillaPago() {
+    const $tbody = $('#tbodyFormasPago');
+
+    $tbody.find('tr.fila-credito-nc').remove();
+
+    const creditosImputados = obtenerCreditosNCImputados();
+
+    if (creditosImputados.length === 0) {
+        asegurarFilaSinFormasPago();
+        actualizarBadgeCantidadPagos();
+        return;
+    }
+
+    $('#rowSinFormasPago').remove();
+
+    creditosImputados.forEach(function (credito, indice) {
+        const importe = desdeCentavosNC(
+            credito.importeImputadoCentavos
+        );
+
+        const descripcion = obtenerDescripcionCreditoNC(credito);
+        const observacion = obtenerObservacionCreditoNC(credito);
+
+        const accionHtml = credito.obligatorio
+            ? `
+                <span class="badge bg-warning text-dark">
+                    <i class="bx bx-lock-alt me-1"></i>
+                    Obligatorio
+                </span>
+            `
+            : `
+                <button type="button"
+                        class="btn btn-sm btn-outline-primary"
+                        onclick="editarCreditosNC()"
+                        title="Editar créditos seleccionados">
+                    <i class="bx bx-edit-alt me-1"></i>
+                    Editar
+                </button>
+            `;
+
+        const filaHtml = `
+            <tr class="fila-credito-nc"
+                data-credito-nc-clave="${escapeHtml(credito.clave)}">
+
+                <td class="text-center align-middle">
+                    <span class="badge bg-primary">NC-${indice + 1}</span>
+                </td>
+
+                <td class="align-middle">
+                    <div>
+                        <i class="bx bx-note me-2 text-primary"></i>
+                        <strong>Crédito en Cuenta Corriente</strong>
+                    </div>
+
+                    <small class="text-muted d-block">
+                        ${escapeHtml(descripcion)}
+                    </small>
+
+                    <small class="text-muted d-block">
+                        ${escapeHtml(observacion)}
+                    </small>
+                </td>
+
+                <td class="text-end align-middle">
+                    <span class="fw-bold fs-5 text-primary">
+                        ${formatearMoneda(importe)}
+                    </span>
+                </td>
+
+                <td class="text-center align-middle">
+                    ${accionHtml}
+                </td>
+            </tr>
+        `;
+
+        $tbody.append(filaHtml);
+    });
+
+    actualizarBadgeCantidadPagos();
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
 // SECCIÓN 2: INICIALIZACIÓN
 // ═══════════════════════════════════════════════════════════════════
 
@@ -136,6 +857,24 @@ function inicializarModales() {
     // ❷ Modal de tipo medio de pago (lazy loading)
     setTimeout(() => {
         const modalTipoMPElement = document.querySelector('#modalTipoMedioPago');
+
+        const modalDetalleCtaCteElement = document.querySelector(
+            '#modalDetalleCtaCte'
+        );
+
+        if (modalDetalleCtaCteElement) {
+            modalDetalleCtaCteInstance =
+                bootstrap.Modal.getInstance(modalDetalleCtaCteElement) ||
+                new bootstrap.Modal(modalDetalleCtaCteElement, {
+                    backdrop: 'static',
+                    keyboard: false
+                });
+
+            console.log('✅ Modal detalle CtaCte inicializado');
+        } else {
+            console.warn('⚠️ Modal #modalDetalleCtaCte no encontrado');
+        }
+
         if (modalTipoMPElement) {
             modalTipoMedioPagoInstance = bootstrap.Modal.getInstance(modalTipoMPElement) ||
                 new bootstrap.Modal(modalTipoMPElement, {
@@ -614,6 +1353,8 @@ function inicializarEventosPago() {
             limpiarNavegacionTecladoInstrumentos('#modalInstrumentosCuponEmpresa');
         });
 
+    inicializarEventosDetalleCtaCte();
+
     console.log('✅ Navegación con teclado configurada para Modal Cupones/Órdenes de Empresa (12 ítems)');
 }
 
@@ -721,6 +1462,34 @@ function iniciarProcesoPago(config) {
     console.log(`   📝 Título del Modal: "${tituloModal}"`);
     console.log(`   🔖 Contexto de Operación: ${contextoOperacion}`);
 
+    const fuenteCliente = normalizarTextoUpper(
+        config.fuenteCliente ||
+        (
+            contextoOperacion === 'VENTA'
+                ? FUENTES_CLIENTE_PAGO.CALCULO_FACTURA
+                : coTipo === 'CC'
+                    ? FUENTES_CLIENTE_PAGO.CUENTA_CORRIENTE
+                    : FUENTES_CLIENTE_PAGO.FACTURAS_PENDIENTES
+        )
+    );
+
+    const fuentesPermitidas = Object.values(
+        FUENTES_CLIENTE_PAGO
+    );
+
+    if (!fuentesPermitidas.includes(fuenteCliente)) {
+        console.error(
+            '❌ Fuente de cliente inválida:',
+            fuenteCliente
+        );
+
+        mostrarMensajeError(
+            'No se pudo determinar el origen de los datos del cliente.'
+        );
+
+        return false;
+    }
+
     // ═══════════════════════════════════════════════════════════════════
     // ❺ VALIDAR DISPONIBILIDAD DE FUNCIÓN abrirModalPago
     // ═══════════════════════════════════════════════════════════════════
@@ -750,15 +1519,16 @@ function iniciarProcesoPago(config) {
 
     const datosPago = {
         totales: {
-            totalPagar: totalPagar,
-            recargos: 0,        // ← Por ahora siempre 0 (puede extenderse en el futuro)
-            descuentos: 0,      // ← Por ahora siempre 0 (puede extenderse en el futuro)
-            totalValores: 0     // ← Se calculará dinámicamente en el modal
+            totalPagar,
+            recargos: 0,
+            descuentos: 0,
+            totalValores: 0
         },
-        puntoVenta: puntoVenta,
-        coTipo: coTipo,                     // ✅ NUEVO v27.0: Pasamos co_tipo al modal
-        tituloModal: tituloModal,           // ✅ NUEVO v27.0: Título dinámico
-        contextoOperacion: contextoOperacion // ✅ NUEVO v27.0: Contexto de operación
+        puntoVenta,
+        coTipo,
+        tituloModal,
+        contextoOperacion,
+        fuenteCliente
     };
 
     console.log('   ✅ Estructura de datos construida:');
@@ -844,13 +1614,34 @@ function abrirModalPago(datosFactura) {
         // ❷ Ocultar modal de cálculo (si existe)
         ocultarModalCalculoFactura();
 
-        // ❸ Hidratar datos del cliente
-        hidratarDatosClientePago(datosFactura.contextoOperacion);
+        const coTipo = normalizarTextoUpper(
+            datosFactura?.coTipo || 'CF'
+        );
 
-        // ❹ Cargar conceptos de pago (totales)
+        const contextoOperacion = normalizarTextoUpper(
+            datosFactura?.contextoOperacion || 'VENTA'
+        );
+
+        const fuenteCliente = normalizarTextoUpper(
+            datosFactura?.fuenteCliente ||
+            (
+                contextoOperacion === 'VENTA'
+                    ? FUENTES_CLIENTE_PAGO.CALCULO_FACTURA
+                    : coTipo === 'CC'
+                        ? FUENTES_CLIENTE_PAGO.CUENTA_CORRIENTE
+                        : FUENTES_CLIENTE_PAGO.FACTURAS_PENDIENTES
+            )
+        );
+
+        // El contexto actual debe existir antes de hidratar datos.
+        window._coTipoActual = coTipo;
+        window._contextoOperacionActual = contextoOperacion;
+        window._fuenteClientePagoActual = fuenteCliente;
+
+        hidratarDatosClientePago(fuenteCliente);
+
         cargarConceptosPago(datosFactura?.totales || {});
 
-        // ❺ Limpiar tabla de formas de pago
         limpiarTablaFormasPago();
 
         // ═══════════════════════════════════════════════════════════
@@ -863,12 +1654,8 @@ function abrirModalPago(datosFactura) {
 
 
 
-        // ═══════════════════════════════════════════════════════════
-        // ✅ NUEVO v27.0: GUARDAR co_tipo Y contextoOperacion EN VARIABLES GLOBALES
-        // ═══════════════════════════════════════════════════════════
+        
 
-        window._coTipoActual = datosFactura?.coTipo || 'CF';
-        window._contextoOperacionActual = datosFactura?.contextoOperacion || 'VENTA';
 
         console.log(`   🔖 co_tipo guardado: ${window._coTipoActual}`);
         console.log(`   🔖 contextoOperacion guardado: ${window._contextoOperacionActual}`);
@@ -897,17 +1684,19 @@ function abrirModalPago(datosFactura) {
         console.log('═══════════════════════════════════════════════════');
 
         // ❽ Esperar a que el modal de pago esté completamente visible
-        setTimeout(() => {
-            console.log('⏳ Modal de pago visible - Abriendo modal de agregar...');
+        inicializarNCAntesDeAbrirMediosPago();
 
-            // ❾ Abrir modal de tipo medio de pago automáticamente
-            abrirModalTipoMedioPago();
+        // setTimeout(() => {
+        //     console.log('⏳ Modal de pago visible - Abriendo modal de agregar...');
 
-            console.log('✅ Modal de agregar formas de pago abierto automáticamente');
-            console.log('   Beneficio UX: Cajero ahorra 1 click');
-            console.log('   Primera acción necesaria: Agregar forma de pago');
+        //     // ❾ Abrir modal de tipo medio de pago automáticamente
+        //     abrirModalTipoMedioPago();
 
-        }, 400); // ← Timing crítico: Esperar a que modal de pago termine animación
+        //     console.log('✅ Modal de agregar formas de pago abierto automáticamente');
+        //     console.log('   Beneficio UX: Cajero ahorra 1 click');
+        //     console.log('   Primera acción necesaria: Agregar forma de pago');
+
+        // }, 400); // ← Timing crítico: Esperar a que modal de pago termine animación
 
         console.log('✅ Modal de pago abierto correctamente');
         return true;
@@ -917,6 +1706,130 @@ function abrirModalPago(datosFactura) {
         mostrarMensajeError(`No se pudo abrir el modal de pago.\n\n${error.message}`);
         return false;
     }
+}
+
+function inicializarNCAntesDeAbrirMediosPago() {
+    const coTipo = normalizarTextoUpper(window._coTipoActual);
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('[NC] INICIALIZACIÓN AL ABRIR PAGO');
+    console.log(`   co_tipo: ${coTipo}`);
+    console.log('═══════════════════════════════════════════════════');
+
+    $('#btnAgregarPago').prop('disabled', true);
+    $('#btnFinalizarPago').prop('disabled', true);
+
+    cargarValoresNC(coTipo)
+        .done(function () {
+            const imputacionValida = aplicarImputacionInicialNC({
+                incluirOpcionales: false
+            });
+
+            renderizarCreditosNCEnGrillaPago();
+            actualizarTotalesPago();
+
+            if (!imputacionValida) {
+                const conflicto = estadoNC.conflictoObligatorios;
+
+                AbrirMensaje(
+                    'Créditos obligatorios',
+                    `
+                        <div class="text-start">
+                            <p class="mb-2">
+                                <strong>No es posible continuar con la operación.</strong>
+                            </p>
+                            <p class="mb-2">
+                                ${escapeHtml(conflicto.mensaje)}
+                            </p>
+                            <table class="table table-sm table-bordered mb-0">
+                                <tr>
+                                    <td>Total créditos obligatorios</td>
+                                    <td class="text-end">
+                                        ${formatearMoneda(
+                        desdeCentavosNC(
+                            conflicto.totalObligatoriosCentavos
+                        )
+                    )}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Saldo pendiente</td>
+                                    <td class="text-end">
+                                        ${formatearMoneda(
+                        desdeCentavosNC(
+                            conflicto.saldoPendienteCentavos
+                        )
+                    )}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    `,
+                    function () {
+                        $('#msjModal').modal('hide');
+                    },
+                    false,
+                    ['Aceptar'],
+                    'error!',
+                    null
+                );
+
+                return;
+            }
+
+            abrirModalTipoMedioPagoDespuesDeNC();
+        })
+        .fail(function (error) {
+            actualizarTotalesPago();
+
+            const mensaje = error?.mensaje ||
+                estadoNC.mensajeError ||
+                'No fue posible inicializar los créditos del cliente.';
+
+            AbrirMensaje(
+                'No se puede continuar',
+                `
+                    <div class="text-start">
+                        <p class="mb-2">
+                            No se pudieron consultar los créditos disponibles.
+                        </p>
+                        <p class="mb-0 text-danger">
+                            ${escapeHtml(mensaje)}
+                        </p>
+                    </div>
+                `,
+                function () {
+                    $('#msjModal').modal('hide');
+                },
+                false,
+                ['Aceptar'],
+                'error!',
+                null
+            );
+        });
+}
+
+
+
+function abrirModalTipoMedioPagoDespuesDeNC() {
+    const abrir = function () {
+        setTimeout(function () {
+            if (estadoNC.errorCarga || estadoNC.conflictoObligatorios) {
+                return;
+            }
+
+            abrirModalTipoMedioPago();
+        }, MODAL_ANIMATION_TIMEOUT);
+    };
+
+    if ($('#modalPago').hasClass('show')) {
+        abrir();
+        return;
+    }
+
+    $('#modalPago')
+        .off('shown.bs.modal.ncInicial')
+        .one('shown.bs.modal.ncInicial', abrir);
 }
 
 /**
@@ -937,6 +1850,37 @@ function agregarFormaPago() {
     console.log('═══════════════════════════════════════════════════');
     console.log('➕ AGREGAR FORMA DE PAGO v21.4');
     console.log('═══════════════════════════════════════════════════');
+
+    if (estadoNC.cargando) {
+        const mensaje = 'Se están consultando los créditos del cliente. Espere a que finalice la carga.';
+
+        if (typeof toastr !== 'undefined') {
+            toastr.info(mensaje, 'Créditos en Cuenta Corriente');
+        }
+
+        return;
+    }
+
+    if (estadoNC.errorCarga) {
+        const mensaje = estadoNC.mensajeError ||
+            'No fue posible consultar los créditos del cliente.';
+
+        if (typeof toastr !== 'undefined') {
+            toastr.error(mensaje, 'Pago bloqueado');
+        }
+
+        return;
+    }
+
+    if (estadoNC.conflictoObligatorios) {
+        const mensaje = estadoNC.conflictoObligatorios.mensaje;
+
+        if (typeof toastr !== 'undefined') {
+            toastr.error(mensaje, 'Pago bloqueado');
+        }
+
+        return;
+    }
 
     // ❶ Obtener diferencia actual
     const diferencia = conceptosPago.diferencia || 0;
@@ -991,6 +1935,72 @@ function agregarFormaPago() {
     abrirModalTipoMedioPago();
 }
 
+function sincronizarDisponibilidadNCConMediosPago(valoresMP) {
+    const medios = Array.isArray(valoresMP)
+        ? valoresMP
+        : [];
+
+    const existeTipoNC = medios.some(function (medio) {
+        return normalizarTextoUpper(
+            medio.tcf_id || medio.id
+        ) === 'NC';
+    });
+
+    const hayOpcionales = hayCreditosOpcionalesNC();
+
+    const puedeUsarNCVoluntaria =
+        estadoNC.resultadoConsulta ===
+        RESULTADO_CONSULTA_NC.CON_CREDITOS &&
+        !estadoNC.esConsumidorFinal &&
+        existeTipoNC &&
+        hayOpcionales;
+
+    const cambioDisponibilidad =
+        estadoNC.tipoMedioPagoNcDisponible !==
+        puedeUsarNCVoluntaria;
+
+    estadoNC.tipoMedioPagoNcDisponible =
+        puedeUsarNCVoluntaria;
+
+    // Solo al conocer el catálogo de MP se imputan opcionales.
+    // El guard evita recalcular y borrar ediciones manuales
+    // cada vez que el usuario vuelve a abrir el selector.
+    if (
+        cambioDisponibilidad &&
+        estadoNC.cargado &&
+        !estadoNC.errorCarga
+    ) {
+        const imputacionValida =
+            aplicarImputacionInicialNC({
+                incluirOpcionales:
+                    puedeUsarNCVoluntaria
+            });
+
+        renderizarCreditosNCEnGrillaPago();
+        actualizarTotalesPago();
+
+        if (!imputacionValida) {
+            console.error(
+                '[NC] Conflicto al aplicar créditos obligatorios.'
+            );
+        }
+    }
+
+    return medios.filter(function (medio) {
+        const tcfId = normalizarTextoUpper(
+            medio.tcf_id || medio.id
+        );
+
+        // NC opcional solo se muestra si hay créditos opcionales
+        // disponibles y el contexto permite usarlos.
+        if (tcfId === 'NC') {
+            return puedeUsarNCVoluntaria;
+        }
+
+        return true;
+    });
+}
+
 /**
  * ✅ NUEVO: Abre el modal de selección de tipo de medio de pago
  * Carga los datos desde el servidor
@@ -1040,7 +2050,10 @@ function abrirModalTipoMedioPago() {
             console.log('✅ Valores MP obtenidos:', valoresMP);
 
             // ❻ Renderizar opciones en el modal
-            renderizarOpcionesMP(valoresMP);
+            const mediosVisibles =
+                sincronizarDisponibilidadNCConMediosPago(valoresMP);
+
+            renderizarOpcionesMP(mediosVisibles);
 
             // ❼ Pre-seleccionar primera opción
             const $primerItem = $('.tipo-medio-pago-item').first();
@@ -1759,135 +2772,322 @@ function construirJsonValores() {
     return jsonValores;
 }
 
-/**
- * ✅ ACTUALIZADO v20.2: Finaliza el pago y envía datos al servidor
- * INTEGRACIÓN COMPLETA: Validación + Construcción JSON + Envío
- * 
- * FLUJO:
- * 1. Valida que haya formas de pago
- * 2. Valida diferencia según reglas de negocio (Lote 2)
- * 3. Construye payload JSON usando construirJsonValores() (Lote 3)
- * 4. Confirma con el usuario
- * 5. Envía datos al servidor (Lote 4)
- */
+// /**
+//  * ✅ ACTUALIZADO v20.2: Finaliza el pago y envía datos al servidor
+//  * INTEGRACIÓN COMPLETA: Validación + Construcción JSON + Envío
+//  *
+//  * FLUJO:
+//  * 1. Valida que haya formas de pago
+//  * 2. Valida diferencia según reglas de negocio (Lote 2)
+//  * 3. Construye payload JSON usando construirJsonValores() (Lote 3)
+//  * 4. Confirma con el usuario
+//  * 5. Envía datos al servidor (Lote 4)
+//  */
+// function finalizarPago() {
+//     console.log('═══════════════════════════════════════════════════');
+//     console.log('✅ FINALIZAR PAGO v20.2 - FLUJO COMPLETO');
+//     console.log('═══════════════════════════════════════════════════');
+
+//     // ❶ Validar que haya formas de pago
+//     if (valoresPago.length === 0) {
+//         console.error('❌ No hay formas de pago ingresadas');
+
+//         if (typeof toastr !== 'undefined') {
+//             toastr.error('Debe agregar al menos una forma de pago', 'Error');
+//         }
+
+//         return;
+//     }
+
+//     console.log(`   Total formas de pago: ${valoresPago.length}`);
+
+//     // ❷ Validar diferencia según reglas de negocio
+//     console.log('🔍 Validando diferencia...');
+//     const validacion = validarDiferenciaParaFinalizar();
+
+//     console.log('═══════════════════════════════════════════════════');
+//     console.log('📋 RESULTADO DE VALIDACIÓN DE DIFERENCIA');
+//     console.log(`   Permitir: ${validacion.permitir ? 'SÍ ✅' : 'NO ❌'}`);
+//     if (validacion.advertencia) {
+//         console.log('   ⚠️ Advertencia presente (vuelto o sobrepago permitido)');
+//     }
+//     console.log('═══════════════════════════════════════════════════');
+
+//     if (!validacion.permitir) {
+//         console.error('❌ Validación de diferencia FALLÓ - Operación BLOQUEADA');
+
+//         AbrirMensaje(
+//             "No se puede finalizar",
+//             validacion.mensaje,
+//             function () {
+//                 $("#msjModal").modal("hide");
+//             },
+//             false,
+//             ["Aceptar"],
+//             "error!",
+//             null
+//         );
+
+//         return;
+//     }
+
+//     console.log('✅ Validación de diferencia EXITOSA - Puede continuar');
+
+//     // ❸ Construir valores de pago en formato backend
+//     console.log('🔨 Construyendo JSON de valores...');
+//     const jsonValores = construirJsonValores(); // ← INTEGRACIÓN LOTE 3
+
+//     console.log('═══════════════════════════════════════════════════');
+//     console.log('📦 JSON VALORES CONSTRUIDO');
+//     console.log(`   Total valores: ${jsonValores.length}`);
+//     console.log('═══════════════════════════════════════════════════');
+
+//     // ❹ Construir mensaje adicional si hay advertencia (vuelto/sobrepago)
+//     let mensajeAdicional = '';
+
+//     if (validacion.advertencia) {
+//         mensajeAdicional = validacion.advertencia;
+//         console.log('⚠️ Mensaje de advertencia agregado al modal de confirmación');
+//     }
+
+//     // ❺ Construir mensaje de confirmación
+//     const mensajeConfirmacion = `
+//         <div class="text-start">
+//             <p class="mb-3">
+//                 <strong class="fs-5">¿Confirmar el pago de la factura?</strong>
+//             </p>
+//             <table class="table table-sm table-bordered mb-3">
+//                 <tr>
+//                     <td class="text-end fw-bold">Total a pagar:</td>
+//                     <td class="text-end"><strong>${formatearMoneda(conceptosPago.totalPagar)}</strong></td>
+//                 </tr>
+//                 <tr>
+//                     <td class="text-end fw-bold">Total valores:</td>
+//                     <td class="text-end text-success"><strong>${formatearMoneda(conceptosPago.totalValores)}</strong></td>
+//                 </tr>
+//                 <tr>
+//                     <td class="text-end fw-bold">Formas de pago:</td>
+//                     <td class="text-end"><strong class="text-primary">${valoresPago.length}</strong></td>
+//                 </tr>
+//             </table>
+//             ${mensajeAdicional}
+//             <div class="alert alert-warning mb-0 mt-3">
+//                 <i class="bx bx-info-circle"></i>
+//                 Esta acción emitirá la factura fiscal y <strong>no se puede deshacer</strong>.
+//             </div>
+//         </div>
+//     `;
+
+//     // ❻ Confirmar con el usuario
+//     console.log('💬 Mostrando modal de confirmación al usuario...');
+
+//     AbrirMensaje(
+//         "Confirmar Pago",
+//         mensajeConfirmacion,
+//         function (respuesta) {
+//             $("#msjModal").modal("hide");
+
+//             if (respuesta === "SI") {
+//                 console.log('✅ Usuario confirmó - Procediendo a enviar al servidor...');
+
+//                 // ❼ Esperar cierre del modal y enviar
+//                 setTimeout(() => {
+//                     enviarPagoAlServidor(jsonValores); // ← INTEGRACIÓN LOTE 4
+//                 }, 300);
+//             } else {
+//                 console.log('❌ Usuario canceló la operación');
+//             }
+//         },
+//         true, // Es confirmación
+//         ["Sí, Finalizar Pago", "Cancelar"],
+//         "quest!",
+//         null
+//     );
+// }
+
 function finalizarPago() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('✅ FINALIZAR PAGO v20.2 - FLUJO COMPLETO');
+    console.log('✅ FINALIZAR PAGO CON NC');
     console.log('═══════════════════════════════════════════════════');
 
-    // ❶ Validar que haya formas de pago
-    if (valoresPago.length === 0) {
-        console.error('❌ No hay formas de pago ingresadas');
+    const cantidadValoresConvencionales = valoresPago.length;
+    const cantidadCreditosNC = obtenerCantidadCreditosNCImputados();
 
-        if (typeof toastr !== 'undefined') {
-            toastr.error('Debe agregar al menos una forma de pago', 'Error');
-        }
+    if (
+        cantidadValoresConvencionales === 0 &&
+        cantidadCreditosNC === 0
+    ) {
+        toastr?.error(
+            'Debe agregar al menos un medio de pago o crédito aplicable.',
+            'Pago incompleto'
+        );
 
         return;
     }
 
-    console.log(`   Total formas de pago: ${valoresPago.length}`);
+    const validacionNC = validarSeleccionNCParaFinalizar();
 
-    // ❷ Validar diferencia según reglas de negocio
-    console.log('🔍 Validando diferencia...');
-    const validacion = validarDiferenciaParaFinalizar();
-
-    console.log('═══════════════════════════════════════════════════');
-    console.log('📋 RESULTADO DE VALIDACIÓN DE DIFERENCIA');
-    console.log(`   Permitir: ${validacion.permitir ? 'SÍ ✅' : 'NO ❌'}`);
-    if (validacion.advertencia) {
-        console.log('   ⚠️ Advertencia presente (vuelto o sobrepago permitido)');
-    }
-    console.log('═══════════════════════════════════════════════════');
-
-    if (!validacion.permitir) {
-        console.error('❌ Validación de diferencia FALLÓ - Operación BLOQUEADA');
-
+    if (!validacionNC.esValido) {
         AbrirMensaje(
-            "No se puede finalizar",
-            validacion.mensaje,
+            'No se puede finalizar',
+            `
+                <div class="text-start">
+                    <p class="mb-2">
+                        <strong>La imputación de créditos no es válida.</strong>
+                    </p>
+                    <ul class="mb-0">
+                        ${validacionNC.errores.map(function (error) {
+                return `<li>${escapeHtml(error)}</li>`;
+            }).join('')}
+                    </ul>
+                </div>
+            `,
             function () {
-                $("#msjModal").modal("hide");
+                $('#msjModal').modal('hide');
             },
             false,
-            ["Aceptar"],
-            "error!",
+            ['Aceptar'],
+            'error!',
             null
         );
 
         return;
     }
 
-    console.log('✅ Validación de diferencia EXITOSA - Puede continuar');
+    const validacionDiferencia = validarDiferenciaParaFinalizar();
 
-    // ❸ Construir valores de pago en formato backend
-    console.log('🔨 Construyendo JSON de valores...');
-    const jsonValores = construirJsonValores(); // ← INTEGRACIÓN LOTE 3
+    if (!validacionDiferencia.permitir) {
+        AbrirMensaje(
+            'No se puede finalizar',
+            validacionDiferencia.mensaje,
+            function () {
+                $('#msjModal').modal('hide');
+            },
+            false,
+            ['Aceptar'],
+            'error!',
+            null
+        );
 
-    console.log('═══════════════════════════════════════════════════');
-    console.log('📦 JSON VALORES CONSTRUIDO');
-    console.log(`   Total valores: ${jsonValores.length}`);
-    console.log('═══════════════════════════════════════════════════');
-
-    // ❹ Construir mensaje adicional si hay advertencia (vuelto/sobrepago)
-    let mensajeAdicional = '';
-
-    if (validacion.advertencia) {
-        mensajeAdicional = validacion.advertencia;
-        console.log('⚠️ Mensaje de advertencia agregado al modal de confirmación');
+        return;
     }
 
-    // ❺ Construir mensaje de confirmación
+    const jsonValores = construirJsonValores();
+    const jsonUniones = construirJsonUnionesNC();
+
+    const totalNC = conceptosPago.totalCreditosNC || 0;
+    const totalOtrosValores = conceptosPago.totalOtrosValores || 0;
+    const totalAplicado = conceptosPago.totalAplicado ||
+        conceptosPago.totalValores ||
+        0;
+
+    const mensajeAdicional = validacionDiferencia.advertencia || '';
+
     const mensajeConfirmacion = `
         <div class="text-start">
             <p class="mb-3">
-                <strong class="fs-5">¿Confirmar el pago de la factura?</strong>
+                <strong class="fs-5">
+                    ¿Confirmar el pago de la operación?
+                </strong>
             </p>
+
             <table class="table table-sm table-bordered mb-3">
                 <tr>
-                    <td class="text-end fw-bold">Total a pagar:</td>
-                    <td class="text-end"><strong>${formatearMoneda(conceptosPago.totalPagar)}</strong></td>
+                    <td class="text-end fw-bold">
+                        Total a pagar:
+                    </td>
+                    <td class="text-end">
+                        <strong>
+                            ${formatearMoneda(conceptosPago.totalPagar)}
+                        </strong>
+                    </td>
                 </tr>
+
                 <tr>
-                    <td class="text-end fw-bold">Total valores:</td>
-                    <td class="text-end text-success"><strong>${formatearMoneda(conceptosPago.totalValores)}</strong></td>
+                    <td class="text-end fw-bold">
+                        Créditos NC:
+                    </td>
+                    <td class="text-end text-primary">
+                        <strong>
+                            ${formatearMoneda(totalNC)}
+                        </strong>
+                    </td>
                 </tr>
+
                 <tr>
-                    <td class="text-end fw-bold">Formas de pago:</td>
-                    <td class="text-end"><strong class="text-primary">${valoresPago.length}</strong></td>
+                    <td class="text-end fw-bold">
+                        Otros valores:
+                    </td>
+                    <td class="text-end text-success">
+                        <strong>
+                            ${formatearMoneda(totalOtrosValores)}
+                        </strong>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="text-end fw-bold">
+                        Total aplicado:
+                    </td>
+                    <td class="text-end">
+                        <strong>
+                            ${formatearMoneda(totalAplicado)}
+                        </strong>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="text-end fw-bold">
+                        Créditos utilizados:
+                    </td>
+                    <td class="text-end">
+                        <strong class="text-primary">
+                            ${jsonUniones.length}
+                        </strong>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="text-end fw-bold">
+                        Medios convencionales:
+                    </td>
+                    <td class="text-end">
+                        <strong class="text-success">
+                            ${jsonValores.length}
+                        </strong>
+                    </td>
                 </tr>
             </table>
+
             ${mensajeAdicional}
+
             <div class="alert alert-warning mb-0 mt-3">
-                <i class="bx bx-info-circle"></i> 
-                Esta acción emitirá la factura fiscal y <strong>no se puede deshacer</strong>.
+                <i class="bx bx-info-circle"></i>
+                Esta acción procesará la operación y no se puede deshacer.
             </div>
         </div>
     `;
 
-    // ❻ Confirmar con el usuario
-    console.log('💬 Mostrando modal de confirmación al usuario...');
-
     AbrirMensaje(
-        "Confirmar Pago",
+        'Confirmar Pago',
         mensajeConfirmacion,
         function (respuesta) {
-            $("#msjModal").modal("hide");
+            $('#msjModal').modal('hide');
 
-            if (respuesta === "SI") {
-                console.log('✅ Usuario confirmó - Procediendo a enviar al servidor...');
-
-                // ❼ Esperar cierre del modal y enviar
-                setTimeout(() => {
-                    enviarPagoAlServidor(jsonValores); // ← INTEGRACIÓN LOTE 4
-                }, 300);
-            } else {
-                console.log('❌ Usuario canceló la operación');
+            if (respuesta !== 'SI') {
+                return;
             }
+
+            setTimeout(function () {
+                enviarPagoAlServidor(
+                    jsonValores,
+                    jsonUniones
+                );
+            }, 300);
         },
-        true, // Es confirmación
-        ["Sí, Finalizar Pago", "Cancelar"],
-        "quest!",
+        true,
+        ['Sí, Finalizar Pago', 'Cancelar'],
+        'quest!',
         null
     );
 }
@@ -1908,7 +3108,7 @@ function finalizarPago() {
  * 
  * @param {Array<Object>} jsonValores - Array de Json_Valores construido
  */
-function enviarPagoAlServidor(jsonValores) {
+function enviarPagoAlServidor(jsonValores, jsonUniones) {
     console.log('═══════════════════════════════════════════════════');
     console.log('📤 ENVIANDO PAGO AL SERVIDOR v28.0');
     console.log('═══════════════════════════════════════════════════');
@@ -2023,7 +3223,13 @@ function enviarPagoAlServidor(jsonValores) {
                     console.log(`   ✅ Array Cancelar construido: ${arrayCancelar.length} items`);
 
                     // ❹ Proceder a enviar el pago con Cancelar incluido
-                    enviarPayloadAlServidor(jsonValores, moduloOrigen, arrayCancelar);
+                    // enviarPayloadAlServidor(jsonValores, moduloOrigen, arrayCancelar);
+                    enviarPayloadAlServidor(
+                        jsonValores,
+                        jsonUniones,
+                        moduloOrigen,
+                        arrayCancelar
+                    );
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     console.error('❌ ERROR AJAX al obtener facturas:', {
@@ -2056,7 +3262,13 @@ function enviarPagoAlServidor(jsonValores) {
             console.log(`   ✅ Array Cancelar construido: ${arrayCCCancelar.length} items`);
 
             // ❹ Proceder a enviar el pago con Cancelar incluido
-            enviarPayloadAlServidor(jsonValores, moduloOrigen, arrayCCCancelar);
+            // enviarPayloadAlServidor(jsonValores, moduloOrigen, arrayCCCancelar);
+            enviarPayloadAlServidor(
+                jsonValores,
+                jsonUniones,
+                moduloOrigen,
+                arrayCCCancelar
+            );
 
             break;
         default:
@@ -2064,7 +3276,13 @@ function enviarPagoAlServidor(jsonValores) {
             // FLUJO NORMAL DE VENTA (sin Cancelar)
             // ═══════════════════════════════════════════════════════════
             console.log('   ℹ️ Contexto VENTA - Sin facturas a cancelar');
-            enviarPayloadAlServidor(jsonValores, moduloOrigen, null);
+        // enviarPayloadAlServidor(jsonValores, moduloOrigen, null);
+            enviarPayloadAlServidor(
+                jsonValores,
+                jsonUniones,
+                moduloOrigen,
+                null
+            );
 
     }
     // if (window._coTipoActual === 'CD') {
@@ -2221,7 +3439,12 @@ function construirArrayCancelar(registros) {
  * @param {string} moduloOrigen - "Facturacion" o "CobranzaDiferida"
  * @param {Array<Object>|null} arrayCancelar - Array de facturas a cancelar (Json_Cancela) [OPCIONAL]
  */
-function enviarPayloadAlServidor(jsonValores, moduloOrigen, arrayCancelar) {
+function enviarPayloadAlServidor(
+    jsonValores,
+    jsonUniones,
+    moduloOrigen,
+    arrayCancelar
+) {
     console.log('═══════════════════════════════════════════════════');
     console.log('📦 ENVIAR PAYLOAD AL SERVIDOR v28.1');
     console.log(`   ModuloOrigen: ${moduloOrigen}`);
@@ -2254,12 +3477,24 @@ function enviarPayloadAlServidor(jsonValores, moduloOrigen, arrayCancelar) {
     console.log(`   URL: ${url}`);
 
     // ❸ Construir payload base
+    // const payload = {
+    //     Valores: jsonValores,
+    //     Uniones: [],
+    //     ModuloOrigen: moduloOrigen
+    // };
+
     const payload = {
-        Valores: jsonValores,
-        Uniones: [],
+        Valores: Array.isArray(jsonValores)
+            ? jsonValores
+            : [],
+
+        Uniones: Array.isArray(jsonUniones)
+            ? jsonUniones
+            : [],
+
         ModuloOrigen: moduloOrigen
     };
-
+   
     // ❹ ✅ CRÍTICO v28.1: Determinar facturas a cancelar (con prioridades)
     let cancelarFinal = arrayCancelar;
 
@@ -2948,58 +4183,93 @@ function manejarSesionExpirada(mensaje) {
 /**
  * Hidratar datos del cliente en el modal de pago
  */
-function hidratarDatosClientePago(contextoOperacion) {
-    console.log('📝 Hidratando datos del cliente...');
-    //analizo contexto para ver como se hidratan los datos del Cliente
-    const contexto = window._contextoOperacionActual || contextoOperacion || 'VENTA';
-    let mapeoIds = null;
-    switch (contexto) {
-        case "COBRANZA":
+function hidratarDatosClientePago(fuenteCliente) {
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📝 HIDRATAR DATOS DEL CLIENTE PARA PAGO');
+    console.log('═══════════════════════════════════════════════════');
+
+    const fuente = normalizarTextoUpper(
+        fuenteCliente ||
+        window._fuenteClientePagoActual ||
+        FUENTES_CLIENTE_PAGO.CALCULO_FACTURA
+    );
+
+    let mapeoIds;
+    let tituloHeader;
+
+    switch (fuente) {
+        case FUENTES_CLIENTE_PAGO.CALCULO_FACTURA:
             mapeoIds = {
-                'txtNombrePendiente': 'txtClienteNombrePago',
-                'txtClienteIdPendiente': 'txtClienteIdPago',
-                'txtDomicilioPendiente': 'txtClienteDomicilioPago',
-                'txtCondicionAfipPendiente': 'txtCondicionAfipPago',
-                'txtTipoNumeroPendiente': 'txtClienteCuitPago',
-                'txtEmailPendiente': 'txtClienteEmailPago',
-                'txtMovilPendiente': 'txtClienteMovilPago'
+                txtClienteNombreCalc: 'txtClienteNombrePago',
+                txtClienteIdCalc: 'txtClienteIdPago',
+                txtClienteDomicilioCalc: 'txtClienteDomicilioPago',
+                txtCondicionAfipCalc: 'txtCondicionAfipPago',
+                txtClienteCuitCalc: 'txtClienteCuitPago',
+                txtClienteEmailCalc: 'txtClienteEmailPago',
+                txtClienteMovilCalc: 'txtClienteMovilPago'
             };
 
-            break;
-        default://VENTA
+            tituloHeader = 'FACTURACIÓN';
 
-            mapeoIds = {
-                'txtClienteNombreCalc': 'txtClienteNombrePago',
-                'txtClienteIdCalc': 'txtClienteIdPago',
-                'txtClienteDomicilioCalc': 'txtClienteDomicilioPago',
-                'txtCondicionAfipCalc': 'txtCondicionAfipPago',
-                'txtClienteCuitCalc': 'txtClienteCuitPago',
-                'txtClienteEmailCalc': 'txtClienteEmailPago',
-                'txtClienteMovilCalc': 'txtClienteMovilPago'
-            };
-            // 2. Copiar el badge del tipo de comprobante
-            const badgeHtml = $('#badgeTipoComprobanteCalc').html();
-            $('#badgeTipoComprobantePago').html(badgeHtml);
+            $('#badgeTipoComprobantePago').html(
+                $('#badgeTipoComprobanteCalc').html()
+            );
+
             break;
+
+        case FUENTES_CLIENTE_PAGO.FACTURAS_PENDIENTES:
+            mapeoIds = {
+                txtNombrePendiente: 'txtClienteNombrePago',
+                txtClienteIdPendiente: 'txtClienteIdPago',
+                txtDomicilioPendiente: 'txtClienteDomicilioPago',
+                txtCondicionAfipPendiente: 'txtCondicionAfipPago',
+                txtTipoNumeroPendiente: 'txtClienteCuitPago',
+                txtEmailPendiente: 'txtClienteEmailPago',
+                txtMovilPendiente: 'txtClienteMovilPago'
+            };
+
+            tituloHeader = 'COBRANZA DIFERIDA';
+            break;
+
+        case FUENTES_CLIENTE_PAGO.CUENTA_CORRIENTE:
+            mapeoIds = {
+                txtNombreCC: 'txtClienteNombrePago',
+                txtClienteIdCC: 'txtClienteIdPago',
+                txtDomicilioCC: 'txtClienteDomicilioPago',
+                txtCondicionAfipCC: 'txtCondicionAfipPago',
+                txtTipoNumeroCC: 'txtClienteCuitPago',
+                txtEmailCC: 'txtClienteEmailPago',
+                txtMovilCC: 'txtClienteMovilPago'
+            };
+
+            tituloHeader = 'COBRANZA CUENTA CORRIENTE';
+            break;
+
+        default:
+            console.error(
+                '❌ Fuente de cliente no soportada:',
+                fuente
+            );
+
+            throw new Error(
+                'No se pudo determinar la fuente de datos del cliente.'
+            );
     }
-    //aca se traspasan los datos desde la vista de _productoFacturaCalculo al de _pagoModal
-    Object.keys(mapeoIds).forEach(function (idOrigen) {
-        const idDestino = mapeoIds[idOrigen];
+
+    Object.entries(mapeoIds).forEach(function ([idOrigen, idDestino]) {
         const valor = $(`#${idOrigen}`).val() || '';
+
         $(`#${idDestino}`).val(valor);
     });
 
+    $('#headerTituloPago').html(
+        `<i class='bx bx-receipt'></i> ${tituloHeader}`
+    );
 
-
-    // 3. ✅ NUEVO: Actualizar dinámicamente el título del header
-
-    const tituloHeader = contexto === 'COBRANZA' ? 'COBRANZA DIFERIDA' : 'FACTURACIÓN';
-
-    // Se reemplaza el contenido del h5, manteniendo el ícono
-    $('#headerTituloPago').html(`<i class='bx bx-receipt'></i> ${tituloHeader}`);
-
-    console.log(`   ✅ Título del header actualizado a: "${tituloHeader}"`);
-    console.log('✅ Datos del cliente y header hidratados');
+    console.log('✅ Cliente hidratado.', {
+        fuente,
+        ctaId: $('#txtClienteIdPago').val()
+    });
 }
 
 /**
@@ -3015,14 +4285,24 @@ function cargarConceptosPago(totales) {
     conceptosPago.totalPagar = totalPagar;
     conceptosPago.recargos = recargos;
     conceptosPago.descuentos = descuentos;
+
+    conceptosPago.totalOtrosValores = 0;
+    conceptosPago.totalCreditosNC = 0;
     conceptosPago.totalValores = 0;
+    conceptosPago.totalAplicado = 0;
+
     conceptosPago.diferencia = totalPagar + recargos - descuentos;
 
     $('#totalPagar').text(`$ ${formatearNumero(totalPagar, 2)}`);
     $('#totalRecargos').text(`$ ${formatearNumero(recargos, 2)}`);
     $('#totalDescuentos').text(`$ ${formatearNumero(descuentos, 2)}`);
-    $('#totalValores').text(`$ 0.00`);
-    $('#diferencia').text(`$ ${formatearNumero(conceptosPago.diferencia, 2)}`);
+
+    $('#totalCreditosNC').text('$ 0.00');
+    $('#totalValores').text('$ 0.00');
+
+    $('#diferencia').text(
+        `$ ${formatearNumero(conceptosPago.diferencia, 2)}`
+    );
 
     console.log('✅ Conceptos cargados');
 }
@@ -3047,7 +4327,32 @@ function limpiarTablaFormasPago() {
     valoresPago = [];
     $('#badgeCantidadPagos').text('0 valores');
 
+    limpiarEstadoNC();
+
     console.log('✅ Tabla limpiada');
+}
+
+function limpiarTablaFormasPago() {
+    const $tbody = $('#tbodyFormasPago');
+
+    $tbody.html(`
+        <tr id="rowSinFormasPago">
+            <td colspan="5" class="text-center py-5">
+                <i class='bx bx-info-circle bx-lg text-muted'></i>
+                <p class="text-muted mb-0 mt-3 fs-5">
+                    No hay formas de pago registradas.<br>
+                    <small>Presione <strong>AGREGAR</strong> para comenzar</small>
+                </p>
+            </td>
+        </tr>
+    `);
+
+    valoresPago = [];
+    $('#badgeCantidadPagos').text('0 valores');
+
+    limpiarEstadoNC();
+
+    console.log('✅ Tabla de pagos y estado NC limpiados.');
 }
 
 /**
@@ -3088,7 +4393,10 @@ function limpiarModalPago() {
         totalPagar: 0,
         recargos: 0,
         descuentos: 0,
+        totalOtrosValores: 0,
+        totalCreditosNC: 0,
         totalValores: 0,
+        totalAplicado: 0,
         diferencia: 0
     };
     valoresPago = [];
@@ -3443,13 +4751,10 @@ function scrollToItem($item, contenedorSelector) {
  */
 function confirmarSeleccionTipoMedioPago() {
     console.log('═══════════════════════════════════════════════════');
-    console.log('✅ CONFIRMAR TIPO MEDIO DE PAGO v17.1');
+    console.log('✅ CONFIRMAR TIPO MEDIO DE PAGO');
     console.log('═══════════════════════════════════════════════════');
 
-    // ❶ Validar que haya selección
     if (!tipoMedioPagoSeleccionado) {
-        console.error('❌ No hay tipo de medio de pago seleccionado');
-
         if (typeof toastr !== 'undefined') {
             toastr.warning('Debe seleccionar un tipo de medio de pago');
         }
@@ -3457,18 +4762,891 @@ function confirmarSeleccionTipoMedioPago() {
         return;
     }
 
-    console.log('📋 Tipo seleccionado:', tipoMedioPagoSeleccionado);
+    const tcfId = normalizarTextoUpper(
+        tipoMedioPagoSeleccionado.tcf_id
+    );
 
-    // ❷ Cerrar modal de tipo medio de pago
+    console.log(
+        `📋 Tipo seleccionado: ${tipoMedioPagoSeleccionado.tcf_desc} (${tcfId})`
+    );
+
+    if (
+        tcfId === 'NC' &&
+        !estadoNC.tipoMedioPagoNcDisponible
+    ) {
+        toastr?.info(
+            'El cliente no posee créditos opcionales disponibles para utilizar.',
+            'Notas de Crédito'
+        );
+
+        return;
+    }
+
     if (modalTipoMedioPagoInstance) {
         modalTipoMedioPagoInstance.hide();
     }
 
-    // ❸ Esperar a que se cierre completamente el modal
-    setTimeout(() => {
-        // ❹ Cargar instrumentos disponibles para este tipo de pago
+    // NC no usa ObtenerValoresIns.
+    // Abre el selector de créditos cargados desde ObtenerValoresNC.
+    if (tcfId === 'NC') {
+        setTimeout(function () {
+            abrirModalDetalleCtaCte();
+        }, 300);
+
+        return;
+    }
+
+    setTimeout(function () {
         cargarInstrumentos(tipoMedioPagoSeleccionado);
     }, 300);
+}
+
+function clonarObjetoNC(valor) {
+    return JSON.parse(JSON.stringify(valor));
+}
+
+function obtenerCreditosBorradorNC() {
+    return Array.isArray(estadoNC.borrador)
+        ? estadoNC.borrador
+        : [];
+}
+
+function buscarCreditoBorradorNC(clave) {
+    return obtenerCreditosBorradorNC()
+        .find(function (credito) {
+            return credito.clave === clave;
+        });
+}
+
+function crearBorradorNC() {
+    estadoNC.borrador = estadoNC.disponibles.map(function (credito) {
+        return clonarObjetoNC(credito);
+    });
+}
+
+function descartarBorradorNC() {
+    estadoNC.borrador = null;
+}
+
+function convertirMontoIngresadoNC(valor) {
+    if (typeof valor === 'number') {
+        return Number.isFinite(valor)
+            ? Math.max(0, valor)
+            : 0;
+    }
+
+    let texto = normalizarTexto(valor);
+
+    if (!texto) {
+        return 0;
+    }
+
+    // Permite:
+    // 1000.50
+    // 1000,50
+    // 1.000,50
+    texto = texto.replace(/[^\d,.-]/g, '');
+
+    if (texto.includes(',')) {
+        texto = texto
+            .replace(/\./g, '')
+            .replace(',', '.');
+    }
+
+    const numero = Number(texto);
+
+    return Number.isFinite(numero)
+        ? Math.max(0, numero)
+        : 0;
+}
+
+function formatearMontoEditableNC(centavos) {
+    return desdeCentavosNC(centavos).toFixed(2);
+}
+
+function obtenerTotalNcDesdeLista(creditos) {
+    return creditos
+        .filter(function (credito) {
+            return credito.seleccionado === true &&
+                credito.importeImputadoCentavos > 0;
+        })
+        .reduce(function (acumulado, credito) {
+            return acumulado + credito.importeImputadoCentavos;
+        }, 0);
+}
+
+function obtenerTotalNcExceptoCredito(creditos, claveExcluida) {
+    return creditos
+        .filter(function (credito) {
+            return credito.clave !== claveExcluida &&
+                credito.seleccionado === true &&
+                credito.importeImputadoCentavos > 0;
+        })
+        .reduce(function (acumulado, credito) {
+            return acumulado + credito.importeImputadoCentavos;
+        }, 0);
+}
+
+function obtenerMaximoImputableCreditoNC(credito, creditos) {
+    const totalNetoCentavos = obtenerTotalNetoCentavos();
+    const totalOtrosValoresCentavos = obtenerTotalOtrosValoresCentavos();
+
+    const totalNCExceptoActual = obtenerTotalNcExceptoCredito(
+        creditos,
+        credito.clave
+    );
+
+    const saldoRestanteOperacion = Math.max(
+        0,
+        totalNetoCentavos -
+        totalOtrosValoresCentavos -
+        totalNCExceptoActual
+    );
+
+    return Math.min(
+        credito.saldoDisponibleCentavos,
+        saldoRestanteOperacion
+    );
+}
+
+function puedeEditarCreditoNC(credito) {
+    // Las obligatorias nunca se editan.
+    if (credito.obligatorio) {
+        return false;
+    }
+
+    // La autorización remota no forma parte de este módulo.
+    // Un Consumidor Final no puede utilizar créditos opcionales aquí.
+    if (estadoNC.esConsumidorFinal) {
+        return false;
+    }
+
+    //return estadoNC.autorizacionOpcionalesConcedida === true;
+
+    return true;
+}
+
+
+function obtenerNombreClienteNC() {
+    return normalizarTexto($('#txtClienteNombrePago').val()) ||
+        normalizarTexto(datosCliente?.nombre) ||
+        normalizarTexto(datosCliente?.razonSocial) ||
+        '-';
+}
+
+function formatearFechaNC(valor) {
+    const texto = normalizarTexto(valor);
+
+    if (!texto) {
+        return '-';
+    }
+
+    const fecha = new Date(texto);
+
+    if (Number.isNaN(fecha.getTime())) {
+        return escapeHtml(texto);
+    }
+
+    return new Intl.DateTimeFormat('es-AR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    }).format(fecha);
+}
+
+function validarBorradorNC(mostrarErrores) {
+    const creditos = obtenerCreditosBorradorNC();
+    const errores = [];
+
+    if (estadoNC.conflictoObligatorios) {
+        errores.push(estadoNC.conflictoObligatorios.mensaje);
+    }
+
+    const claves = new Set();
+
+    creditos.forEach(function (credito) {
+        if (claves.has(credito.clave)) {
+            errores.push(
+                `El crédito ${credito.clave} aparece más de una vez.`
+            );
+        }
+
+        claves.add(credito.clave);
+
+        if (credito.obligatorio) {
+            if (!credito.seleccionado) {
+                errores.push(
+                    'Hay un crédito obligatorio que no está seleccionado.'
+                );
+            }
+
+            if (
+                credito.importeImputadoCentavos !==
+                credito.saldoDisponibleCentavos
+            ) {
+                errores.push(
+                    'Los créditos obligatorios deben imputarse por el total disponible.'
+                );
+            }
+
+            return;
+        }
+
+        if (
+            estadoNC.esConsumidorFinal &&
+            !credito.obligatorio &&
+            credito.seleccionado
+        ) {
+            errores.push(
+                'Los créditos opcionales no están habilitados para Consumidor Final.'
+            );
+        }
+
+        // if (
+        //     estadoNC.esConsumidorFinal &&
+        //     !estadoNC.autorizacionOpcionalesConcedida &&
+        //     credito.seleccionado
+        // ) {
+        //     errores.push(
+        //         'Un Consumidor Final no puede utilizar créditos opcionales sin autorización.'
+        //     );
+        // }
+
+        if (credito.seleccionado) {
+            if (credito.importeImputadoCentavos <= 0) {
+                errores.push(
+                    'Todo crédito seleccionado debe tener un importe mayor a cero.'
+                );
+            }
+
+            if (
+                credito.importeImputadoCentavos >
+                credito.saldoDisponibleCentavos
+            ) {
+                errores.push(
+                    'Un crédito tiene un importe imputado superior a su saldo disponible.'
+                );
+            }
+        }
+    });
+
+    const totalNC = obtenerTotalNcDesdeLista(creditos);
+
+    const saldoMaximoParaNC = Math.max(
+        0,
+        obtenerTotalNetoCentavos() -
+        obtenerTotalOtrosValoresCentavos()
+    );
+
+    if (totalNC > saldoMaximoParaNC) {
+        errores.push(
+            'El total de créditos imputados supera el saldo pendiente de la operación.'
+        );
+    }
+
+    const resultado = {
+        esValido: errores.length === 0,
+        errores
+    };
+
+    if (!resultado.esValido && mostrarErrores) {
+        const htmlErrores = `
+            <div class="text-start">
+                <p class="mb-2">
+                    <strong>Revise la imputación de créditos:</strong>
+                </p>
+                <ul class="mb-0">
+                    ${errores.map(function (error) {
+            return `<li>${escapeHtml(error)}</li>`;
+        }).join('')}
+                </ul>
+            </div>
+        `;
+
+        mostrarMensajeError(htmlErrores);
+    }
+
+    return resultado;
+}
+
+function actualizarResumenBorradorNC() {
+    const creditos = obtenerCreditosBorradorNC();
+
+    const creditosImputados = creditos.filter(function (credito) {
+        return credito.seleccionado === true &&
+            credito.importeImputadoCentavos > 0;
+    });
+
+    const totalCentavos = obtenerTotalNcDesdeLista(creditos);
+
+    $('#lblTotalImputado').text(
+        formatearMoneda(desdeCentavosNC(totalCentavos))
+    );
+
+    $('#lblCantidadSeleccionados').text(
+        creditosImputados.length
+    );
+
+    const hayOpcionalesEditables = creditos.some(function (credito) {
+        return !credito.obligatorio &&
+            puedeEditarCreditoNC(credito);
+    });
+
+    const todosLosOpcionalesEditablesSeleccionados =
+        hayOpcionalesEditables &&
+        creditos
+            .filter(function (credito) {
+                return !credito.obligatorio &&
+                    puedeEditarCreditoNC(credito);
+            })
+            .every(function (credito) {
+                return credito.seleccionado === true;
+            });
+
+    $('#chkSeleccionarTodos')
+        .prop('disabled', !hayOpcionalesEditables)
+        .prop('checked', todosLosOpcionalesEditablesSeleccionados);
+
+    const validacion = validarBorradorNC(false);
+
+    $('#btnGuardarDetalleCtaCte').prop(
+        'disabled',
+        !validacion.esValido
+    );
+}
+
+function renderizarDetalleCtaCte() {
+    const $tbody = $('#tbodyComprobantesCtaCte');
+    const creditos = obtenerCreditosBorradorNC();
+
+    $('#lblClienteCtaCte').text(obtenerNombreClienteNC());
+
+    $tbody.empty();
+
+    if (creditos.length === 0) {
+        $('#sinComprobantesCtaCte').removeClass('d-none');
+        actualizarResumenBorradorNC();
+        return;
+    }
+
+    $('#sinComprobantesCtaCte').addClass('d-none');
+
+    creditos.forEach(function (credito) {
+        const original = credito.creditoOriginal || {};
+
+        const puedeEditar = puedeEditarCreditoNC(credito);
+
+        const saldoDisponible = desdeCentavosNC(
+            credito.saldoDisponibleCentavos
+        );
+
+        const importeImputado = desdeCentavosNC(
+            credito.importeImputadoCentavos
+        );
+
+        const maximoImputable = desdeCentavosNC(
+            obtenerMaximoImputableCreditoNC(credito, creditos)
+        );
+
+        const checkboxDisabled = credito.obligatorio || !puedeEditar;
+        const inputDisabled =
+            credito.obligatorio ||
+            !credito.seleccionado ||
+            !puedeEditar;
+
+        const badgeObligatorio = credito.obligatorio
+            ? `
+                <span class="badge bg-warning text-dark">
+                    <i class="bx bx-lock-alt me-1"></i> Sí
+                </span>
+            `
+            : `
+                <span class="badge bg-secondary">No</span>
+            `;
+
+        const estadoInput = credito.obligatorio
+            ? 'readonly'
+            : '';
+
+        const concepto = normalizarTexto(original.cv_concepto) || '-';
+        const tipo = normalizarTexto(original.tco_id) || '-';
+        const comprobante = normalizarTexto(original.cm_compte) || '-';
+        const movimiento = normalizarTexto(original.dia_movi) || '-';
+        const cuota = normalizarTexto(original.cm_compte_cuota) || '-';
+
+        const filaHtml = `
+            <tr class="fila-credito-nc"
+                data-nc-clave="${escapeHtml(credito.clave)}">
+
+                <td class="text-center align-middle">
+                    <input type="checkbox"
+                           class="form-check-input js-nc-seleccionar"
+                           data-nc-clave="${escapeHtml(credito.clave)}"
+                           ${credito.seleccionado ? 'checked' : ''}
+                           ${checkboxDisabled ? 'disabled' : ''}>
+                </td>
+
+                <td class="text-center align-middle">
+                    ${badgeObligatorio}
+                </td>
+
+                <td class="align-middle">
+                    ${escapeHtml(movimiento)}
+                </td>
+
+                <td class="align-middle">
+                    <div class="fw-semibold">
+                        ${escapeHtml(tipo)}
+                    </div>
+                    <small class="text-muted">
+                        ${escapeHtml(concepto)}
+                    </small>
+                </td>
+
+                <td class="align-middle">
+                    ${escapeHtml(comprobante)}
+                </td>
+
+                <td class="text-center align-middle">
+                    ${escapeHtml(cuota)}
+                </td>
+
+                <td class="align-middle">
+                    ${formatearFechaNC(original.cv_fecha_vto)}
+                </td>
+
+                <td class="text-end align-middle">
+                    <span class="fw-semibold text-primary">
+                        ${formatearMoneda(saldoDisponible)}
+                    </span>
+                </td>
+
+                <td class="text-end align-middle">
+                    <input type="text"
+                           class="form-control form-control-sm text-end js-nc-importe"
+                           data-nc-clave="${escapeHtml(credito.clave)}"
+                           data-maximo="${maximoImputable.toFixed(2)}"
+                           value="${importeImputado.toFixed(2)}"
+                           inputmode="decimal"
+                           autocomplete="off"
+                           ${estadoInput}
+                           ${inputDisabled ? 'disabled' : ''}>
+
+                    <small class="text-muted d-block mt-1">
+                        Máx.: ${formatearMoneda(maximoImputable)}
+                    </small>
+                </td>
+            </tr>
+        `;
+
+        $tbody.append(filaHtml);
+    });
+
+    actualizarResumenBorradorNC();
+}
+
+function abrirModalDetalleCtaCte() {
+    if (estadoNC.cargando) {
+        toastr?.info(
+            'Se están consultando los créditos disponibles.'
+        );
+
+        return;
+    }
+
+    if (estadoNC.errorCarga) {
+        mostrarMensajeError(
+            estadoNC.mensajeError ||
+            'No se pudieron consultar los créditos disponibles.'
+        );
+
+        return;
+    }
+
+    if (!estadoNC.cargado) {
+        mostrarMensajeError(
+            'Los créditos todavía no se encuentran disponibles.'
+        );
+
+        return;
+    }
+
+    crearBorradorNC();
+    renderizarDetalleCtaCte();
+
+    const modalElement = document.querySelector(
+        '#modalDetalleCtaCte'
+    );
+
+    if (!modalElement) {
+        mostrarMensajeError(
+            'El modal de créditos no está disponible.'
+        );
+
+        return;
+    }
+
+    modalDetalleCtaCteInstance =
+        bootstrap.Modal.getInstance(modalElement) ||
+        modalDetalleCtaCteInstance ||
+        new bootstrap.Modal(modalElement, {
+            backdrop: 'static',
+            keyboard: false
+        });
+
+    modalDetalleCtaCteInstance.show();
+}
+
+function editarCreditosNC() {
+    abrirModalDetalleCtaCte();
+}
+
+function guardarDetalleCtaCte() {
+    const validacion = validarBorradorNC(true);
+
+    if (!validacion.esValido) {
+        return;
+    }
+
+    const porClave = new Map(
+        obtenerCreditosBorradorNC().map(function (credito) {
+            return [credito.clave, credito];
+        })
+    );
+
+    estadoNC.disponibles.forEach(function (credito) {
+        const borrador = porClave.get(credito.clave);
+
+        if (!borrador) {
+            return;
+        }
+
+        credito.seleccionado = borrador.seleccionado === true;
+        credito.importeImputadoCentavos =
+            borrador.importeImputadoCentavos;
+    });
+
+    actualizarSeleccionadosNC();
+
+    renderizarCreditosNCEnGrillaPago();
+    actualizarTotalesPago();
+
+    if (modalDetalleCtaCteInstance) {
+        modalDetalleCtaCteInstance.hide();
+    }
+
+    if (typeof toastr !== 'undefined') {
+        toastr.success(
+            'La imputación de créditos fue actualizada.',
+            'Créditos en Cuenta Corriente'
+        );
+    }
+}
+
+function inicializarEventosDetalleCtaCte() {
+    console.log('🔧 Vinculando eventos de créditos NC...');
+
+    $('#modalDetalleCtaCte')
+        .off('shown.bs.modal.nc')
+        .on('shown.bs.modal.nc', function () {
+            $(this).css('z-index', '1080');
+            $('.modal-backdrop').last().css('z-index', '1075');
+        });
+
+    $('#modalDetalleCtaCte')
+        .off('hidden.bs.modal.nc')
+        .on('hidden.bs.modal.nc', function () {
+            descartarBorradorNC();
+        });
+
+    $('#btnGuardarDetalleCtaCte')
+        .off('click.nc')
+        .on('click.nc', guardarDetalleCtaCte);
+
+    $(document)
+        .off('change.nc', '#chkSeleccionarTodos')
+        .on('change.nc', '#chkSeleccionarTodos', function () {
+            const creditos = obtenerCreditosBorradorNC();
+
+            if (
+                estadoNC.esConsumidorFinal &&
+                !estadoNC.autorizacionOpcionalesConcedida
+            ) {
+                $(this).prop('checked', false);
+
+                toastr?.warning(
+                    'Debe autorizar el uso de créditos opcionales.'
+                );
+
+                return;
+            }
+
+            const seleccionar = $(this).is(':checked');
+
+            creditos
+                .filter(function (credito) {
+                    return !credito.obligatorio;
+                })
+                .forEach(function (credito) {
+                    if (!seleccionar) {
+                        credito.seleccionado = false;
+                        credito.importeImputadoCentavos = 0;
+                        return;
+                    }
+
+                    const maximo = obtenerMaximoImputableCreditoNC(
+                        credito,
+                        creditos
+                    );
+
+                    if (maximo <= 0) {
+                        credito.seleccionado = false;
+                        credito.importeImputadoCentavos = 0;
+                        return;
+                    }
+
+                    credito.seleccionado = true;
+                    credito.importeImputadoCentavos = Math.min(
+                        credito.saldoDisponibleCentavos,
+                        maximo
+                    );
+                });
+
+            renderizarDetalleCtaCte();
+        });
+
+    $(document)
+        .off('change.nc', '#tbodyComprobantesCtaCte .js-nc-seleccionar')
+        .on(
+            'change.nc',
+            '#tbodyComprobantesCtaCte .js-nc-seleccionar',
+            function () {
+                const clave = $(this).data('nc-clave');
+                const credito = buscarCreditoBorradorNC(clave);
+
+                if (!credito) {
+                    return;
+                }
+
+                if (!puedeEditarCreditoNC(credito)) {
+                    $(this).prop('checked', credito.seleccionado);
+
+                    toastr?.warning(
+                        'Este crédito no puede modificarse.'
+                    );
+
+                    return;
+                }
+
+                const seleccionado = $(this).is(':checked');
+
+                if (!seleccionado) {
+                    credito.seleccionado = false;
+                    credito.importeImputadoCentavos = 0;
+
+                    renderizarDetalleCtaCte();
+                    return;
+                }
+
+                const maximo = obtenerMaximoImputableCreditoNC(
+                    credito,
+                    obtenerCreditosBorradorNC()
+                );
+
+                if (maximo <= 0) {
+                    credito.seleccionado = false;
+                    credito.importeImputadoCentavos = 0;
+
+                    toastr?.warning(
+                        'No queda saldo pendiente para imputar este crédito.'
+                    );
+
+                    renderizarDetalleCtaCte();
+                    return;
+                }
+
+                credito.seleccionado = true;
+                credito.importeImputadoCentavos = Math.min(
+                    credito.saldoDisponibleCentavos,
+                    maximo
+                );
+
+                renderizarDetalleCtaCte();
+            }
+        );
+
+    $(document)
+        .off('change.nc', '#tbodyComprobantesCtaCte .js-nc-importe')
+        .on(
+            'change.nc',
+            '#tbodyComprobantesCtaCte .js-nc-importe',
+            function () {
+                const clave = $(this).data('nc-clave');
+                const credito = buscarCreditoBorradorNC(clave);
+
+                if (!credito || !puedeEditarCreditoNC(credito)) {
+                    return;
+                }
+
+                const importeIngresado = convertirMontoIngresadoNC(
+                    $(this).val()
+                );
+
+                const importeCentavos = Math.round(
+                    importeIngresado * 100
+                );
+
+                const maximoCentavos = obtenerMaximoImputableCreditoNC(
+                    credito,
+                    obtenerCreditosBorradorNC()
+                );
+
+                if (importeCentavos <= 0) {
+                    credito.seleccionado = false;
+                    credito.importeImputadoCentavos = 0;
+
+                    renderizarDetalleCtaCte();
+                    return;
+                }
+
+                if (importeCentavos > maximoCentavos) {
+                    credito.seleccionado = true;
+                    credito.importeImputadoCentavos = maximoCentavos;
+
+                    toastr?.warning(
+                        `El importe fue ajustado al máximo permitido: ${formatearMoneda(
+                            desdeCentavosNC(maximoCentavos)
+                        )}`
+                    );
+
+                    renderizarDetalleCtaCte();
+                    return;
+                }
+
+                credito.seleccionado = true;
+                credito.importeImputadoCentavos = importeCentavos;
+
+                renderizarDetalleCtaCte();
+            }
+        );
+
+    $(document)
+        .off('keydown.nc', '#tbodyComprobantesCtaCte .js-nc-importe')
+        .on(
+            'keydown.nc',
+            '#tbodyComprobantesCtaCte .js-nc-importe',
+            function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    $(this).trigger('change');
+                }
+            }
+        );
+
+    // $('#btnAutorizarNcCf')
+    //     .off('click.nc')
+    //     .on('click.nc', solicitarAutorizacionAdministradorNC);
+}
+
+window.registrarAutorizadorUsoCreditoNC = function (autorizador) {
+    if (typeof autorizador !== 'function') {
+        throw new Error(
+            'El autorizador de créditos NC debe ser una función.'
+        );
+    }
+
+    autorizadorUsoCreditoNcConsumidorFinal = autorizador;
+};
+
+function solicitarAutorizacionAdministradorNC() {
+    if (!estadoNC.esConsumidorFinal) {
+        return;
+    }
+
+    if (estadoNC.autorizacionOpcionalesConcedida) {
+        toastr?.info(
+            'Los créditos opcionales ya fueron autorizados.'
+        );
+
+        return;
+    }
+
+    if (typeof autorizadorUsoCreditoNcConsumidorFinal !== 'function') {
+        mostrarMensajeError(`
+            <div class="text-start">
+                <p class="mb-2">
+                    No está configurado el flujo de autorización administrativa
+                    para Consumidor Final.
+                </p>
+                <p class="mb-0">
+                    Debe conectarse el autorizador existente de
+                    <strong>Cambio de Lista de Precios</strong> mediante
+                    <code>registrarAutorizadorUsoCreditoNC(...)</code>.
+                </p>
+            </div>
+        `);
+
+        return;
+    }
+
+
+
+
+    const contexto = {
+        motivo: 'USO_CREDITO_NC_CONSUMIDOR_FINAL',
+        coTipo: estadoNC.coTipo,
+        cliente: obtenerNombreClienteNC(),
+        totalNeto: desdeCentavosNC(obtenerTotalNetoCentavos()),
+        totalObligatorio: desdeCentavosNC(
+            obtenerCreditosBorradorNC()
+                .filter(function (credito) {
+                    return credito.obligatorio;
+                })
+                .reduce(function (acumulado, credito) {
+                    return acumulado + credito.importeImputadoCentavos;
+                }, 0)
+        )
+    };
+
+    $('#btnAutorizarNcCf').prop('disabled', true);
+
+    Promise.resolve(
+        autorizadorUsoCreditoNcConsumidorFinal(contexto)
+    )
+        .then(function (resultado) {
+            if (
+                !resultado ||
+                resultado.autorizada !== true ||
+                !normalizarTexto(resultado.autorizacionId)
+            ) {
+                throw new Error(
+                    'La autorización no devolvió una evidencia válida.'
+                );
+            }
+
+            estadoNC.autorizacionOpcionalesConcedida = true;
+            estadoNC.autorizacionOpcionales = resultado;
+
+            renderizarDetalleCtaCte();
+
+            toastr?.success(
+                'Autorización concedida. Ya puede utilizar créditos opcionales.',
+                'Consumidor Final'
+            );
+        })
+        .catch(function (error) {
+            const mensaje =
+                error?.message ||
+                'La autorización fue cancelada o rechazada.';
+
+            toastr?.warning(
+                mensaje,
+                'Uso de créditos no autorizado'
+            );
+        })
+        .finally(function () {
+            $('#btnAutorizarNcCf').prop('disabled', false);
+        });
 }
 
 /**
@@ -3484,7 +5662,17 @@ function cargarInstrumentos(tipoMedioPago) {
 
     // ❶ Obtener datos del cliente
     const ctaId = $('#txtClienteIdPago').val() || '';
-    const coTipo = ctaId && ctaId !== 'N/A' && ctaId.trim() !== '' ? 'CR' : 'CF';
+
+    const coTipoContextual = normalizarTextoUpper(
+        window._coTipoActual
+    );
+
+    const coTipo = coTipoContextual ||
+        (
+            ctaId && ctaId !== 'N/A' && ctaId.trim() !== ''
+                ? 'CR'
+                : 'CF'
+        );
     const admId = $('#hdnAdmId').val() || '';
 
     console.log('📋 Datos de la consulta:');
@@ -4811,8 +6999,9 @@ function agregarFilaValor(valor) {
     }, 100); // ← Delay para asegurar que el elemento está en el DOM
 
     // ❻ Actualizar badge de cantidad
-    const cantidadValores = valoresPago.length;
-    $('#badgeCantidadPagos').text(`${cantidadValores} ${cantidadValores === 1 ? 'valor' : 'valores'}`);
+    // const cantidadValores = valoresPago.length;
+    // $('#badgeCantidadPagos').text(`${cantidadValores} ${cantidadValores === 1 ? 'valor' : 'valores'}`);
+    actualizarBadgeCantidadPagos();
 
     console.log('✅ Fila agregada correctamente');
 }
@@ -4839,137 +7028,143 @@ function agregarFilaValor(valor) {
  *   - ❌ Deshabilitado en cualquier otro caso
  */
 function actualizarTotalesPago() {
-    console.log('═══════════════════════════════════════════════════');
-    console.log('🔄 ACTUALIZAR TOTALES PAGO v21.4');
-    console.log('═══════════════════════════════════════════════════');
+    const totalNetoCentavos = obtenerTotalNetoCentavos();
+    const totalOtrosValoresCentavos = obtenerTotalOtrosValoresCentavos();
+    const totalCreditosNCCentavos = obtenerTotalCreditosNCCentavos();
 
-    // ❶ Calcular total de valores ingresados
-    const totalValores = valoresPago.reduce((sum, v) => sum + v.importe, 0);
+    const totalAplicadoCentavos =
+        totalOtrosValoresCentavos +
+        totalCreditosNCCentavos;
 
-    // ❷ Calcular diferencia
-    const totalAPagar = conceptosPago.totalPagar || 0;
-    const recargos = conceptosPago.recargos || 0;
-    const descuentos = conceptosPago.descuentos || 0;
-    const diferencia = (totalAPagar + recargos - descuentos) - totalValores;
+    const diferenciaCentavos =
+        totalNetoCentavos -
+        totalAplicadoCentavos;
 
-    // ❸ Actualizar objeto global
-    conceptosPago.totalValores = totalValores;
+    const totalOtrosValores = desdeCentavosNC(totalOtrosValoresCentavos);
+    const totalCreditosNC = desdeCentavosNC(totalCreditosNCCentavos);
+    const totalAplicado = desdeCentavosNC(totalAplicadoCentavos);
+    const diferencia = desdeCentavosNC(diferenciaCentavos);
+
+    conceptosPago.totalOtrosValores = totalOtrosValores;
+    conceptosPago.totalCreditosNC = totalCreditosNC;
+
+    // Compatibilidad con funciones existentes.
+    conceptosPago.totalValores = totalAplicado;
+    conceptosPago.totalAplicado = totalAplicado;
     conceptosPago.diferencia = diferencia;
 
-    console.log(`   Total a pagar: $ ${formatearNumero(totalAPagar, 2)}`);
-    console.log(`   Recargos: $ ${formatearNumero(recargos, 2)}`);
-    console.log(`   Descuentos: $ ${formatearNumero(descuentos, 2)}`);
-    console.log(`   Total valores: $ ${formatearNumero(totalValores, 2)}`);
-    console.log(`   Diferencia: $ ${formatearNumero(diferencia, 2)}`);
+    console.log('═══════════════════════════════════════════════════');
+    console.log('🔄 ACTUALIZAR TOTALES PAGO CON NC');
+    console.log(`   Total neto: ${formatearMoneda(desdeCentavosNC(totalNetoCentavos))}`);
+    console.log(`   Créditos NC: ${formatearMoneda(totalCreditosNC)}`);
+    console.log(`   Otros valores: ${formatearMoneda(totalOtrosValores)}`);
+    console.log(`   Total aplicado: ${formatearMoneda(totalAplicado)}`);
+    console.log(`   Diferencia: ${formatearMoneda(diferencia)}`);
+    console.log('═══════════════════════════════════════════════════');
 
-    // ❹ Actualizar UI
-    $('#totalValores').text(`$ ${formatearNumero(totalValores, 2)}`);
-    $('#diferencia').text(`$ ${formatearNumero(diferencia, 2)}`);
+    $('#totalCreditosNC').text(
+        `$ ${formatearNumero(totalCreditosNC, 2)}`
+    );
 
-    // ❺ Cambiar color del badge según diferencia
+    $('#totalValores').text(
+        `$ ${formatearNumero(totalOtrosValores, 2)}`
+    );
+
+    $('#diferencia').text(
+        `$ ${formatearNumero(diferencia, 2)}`
+    );
+
     const $badgeDiferencia = $('#diferencia');
+
     $badgeDiferencia.removeClass('bg-success bg-warning bg-danger');
 
     if (Math.abs(diferencia) < 0.01) {
-        $badgeDiferencia.addClass('bg-success'); // Verde = EXACTO
+        $badgeDiferencia.addClass('bg-success');
     } else if (diferencia > 0) {
-        $badgeDiferencia.addClass('bg-warning'); // Amarillo = FALTA
+        $badgeDiferencia.addClass('bg-warning');
     } else {
-        $badgeDiferencia.addClass('bg-danger'); // Rojo = SOBRA
+        $badgeDiferencia.addClass('bg-danger');
     }
 
-    // ═══════════════════════════════════════════════════════════
-    // ✅ NUEVO v21.4: LÓGICA MEJORADA DE HABILITACIÓN DE BOTONES
-    // ═══════════════════════════════════════════════════════════
+    const hayNCImputadas = obtenerCantidadCreditosNCImputados() > 0;
+    const hayValoresConvencionales = valoresPago.length > 0;
+    const hayAlgoAplicado = hayNCImputadas || hayValoresConvencionales;
 
-    console.log('═══════════════════════════════════════════════════');
-    console.log('🔧 EVALUANDO ESTADO DE BOTONES v21.4');
+    const pagoBloqueadoPorNC = consultaNCBloqueaPago();
 
-    // ❻ Validar si se puede finalizar
+    let puedeAgregar = false;
     let puedeFinalizar = false;
 
-    if (valoresPago.length === 0) {
-        // ═══════════════════════════════════════════════════════
-        // CASO 1: Sin valores ingresados
-        // ═══════════════════════════════════════════════════════
-        puedeFinalizar = false;
-        console.log('   ❌ Sin valores ingresados → Finalizar DESHABILITADO');
-    } else if (Math.abs(diferencia) < 0.01) {
-        // ═══════════════════════════════════════════════════════
-        // CASO 2: Diferencia exacta ($0.00)
-        // ═══════════════════════════════════════════════════════
-        puedeFinalizar = true;
-        console.log('   ✅ Diferencia exacta → Finalizar HABILITADO');
-    } else if (diferencia < 0) {
-        // ═══════════════════════════════════════════════════════
-        // CASO 3: Diferencia negativa (vuelto)
-        // ═══════════════════════════════════════════════════════
-        console.log('   🔍 Diferencia negativa (vuelto) → Validando tipos de pago...');
+    if (!pagoBloqueadoPorNC) {
+        puedeAgregar = diferencia > 0.009;
 
-        const tiposPago = valoresPago.map(v => v.tcf_id.toUpperCase());
-        const tieneSoloEfectivo = tiposPago.every(tipo => tipo === 'EF');
+        // // Importante:
+        // // Mientras no exista construcción y validación de json_union
+        // // en el paso 4, no se puede permitir finalizar una operación
+        // // que use NC. Esto evita enviar una factura con la diferencia
+        // // en cero, pero sin los créditos identificados en backend.
+        // if (!hayNCImputadas) {
+        //     if (hayValoresConvencionales && Math.abs(diferencia) < 0.01) {
+        //         puedeFinalizar = true;
+        //     } else if (hayValoresConvencionales && diferencia < -0.01) {
+        //         const tiposPago = valoresPago.map(function (valor) {
+        //             return normalizarTextoUpper(valor.tcf_id);
+        //         });
 
-        console.log(`      Tipos de pago: ${tiposPago.join(', ')}`);
-        console.log(`      Solo efectivo: ${tieneSoloEfectivo ? 'SÍ' : 'NO'}`);
+        //         const tieneSoloEfectivo = tiposPago.every(function (tipo) {
+        //             return tipo === 'EF';
+        //         });
 
-        if (tieneSoloEfectivo) {
-            puedeFinalizar = true;
-            console.log('   ✅ Solo efectivo con vuelto → Finalizar HABILITADO');
-        } else {
-            puedeFinalizar = false;
-            console.log('   ❌ Vuelto con medios no permitidos → Finalizar DESHABILITADO');
+        //         puedeFinalizar = tieneSoloEfectivo;
+        //     }
+        // }
+
+        const validacionNC = validarSeleccionNCParaFinalizar();
+
+        if (!pagoBloqueadoPorNC && validacionNC.esValido) {
+            if (
+                hayAlgoAplicado &&
+                Math.abs(diferencia) < 0.01
+            ) {
+                puedeFinalizar = true;
+            } else if (
+                diferencia < -0.01 &&
+                valoresPago.length > 0
+            ) {
+                const tiposPago = valoresPago.map(function (valor) {
+                    return normalizarTextoUpper(valor.tcf_id);
+                });
+
+                const tieneSoloEfectivo = tiposPago.every(function (tipo) {
+                    return tipo === 'EF';
+                });
+
+                puedeFinalizar = tieneSoloEfectivo;
+            }
         }
-    } else {
-        // ═══════════════════════════════════════════════════════
-        // CASO 4: Diferencia positiva (falta pagar)
-        // ═══════════════════════════════════════════════════════
-        puedeFinalizar = false;
-        console.log('   ❌ Diferencia positiva (falta pagar) → Finalizar DESHABILITADO');
-        console.log(`      Falta pagar: ${formatearMoneda(diferencia)}`);
     }
 
-    // ❼ ✅ NUEVO v21.4: Validar si se puede agregar
-    const puedeAgregar = diferencia > 0;
-
-    if (puedeAgregar) {
-        console.log(`   ✅ Diferencia > 0 → Agregar HABILITADO`);
-        console.log(`      Monto faltante: ${formatearMoneda(diferencia)}`);
-    } else if (Math.abs(diferencia) < 0.01) {
-        console.log('   ❌ Diferencia exacta → Agregar DESHABILITADO');
-    } else {
-        console.log('   ❌ Diferencia negativa (vuelto) → Agregar DESHABILITADO');
-        console.log(`      Vuelto: ${formatearMoneda(Math.abs(diferencia))}`);
-    }
-
-    console.log('─────────────────────────────────────────────────');
-    console.log(`   🎚️ ESTADO FINAL:`);
-    console.log(`      Botón Agregar: ${puedeAgregar ? '✅ HABILITADO' : '❌ DESHABILITADO'}`);
-    console.log(`      Botón Finalizar: ${puedeFinalizar ? '✅ HABILITADO' : '❌ DESHABILITADO'}`);
-    console.log('═══════════════════════════════════════════════════');
-
-    // ❽ Aplicar estados a los botones
     $('#btnAgregarPago').prop('disabled', !puedeAgregar);
     $('#btnFinalizarPago').prop('disabled', !puedeFinalizar);
 
-    // ═══════════════════════════════════════════════════════════
-    // ✅ MEJORA UX: FINALIZACIÓN AUTOMÁTICA
-    // ═══════════════════════════════════════════════════════════
-    // Si el pago está completo (diferencia es cero) y hay al menos un valor,
-    // se dispara la finalización automáticamente para ahorrar un clic.
-    if (puedeFinalizar && Math.abs(diferencia) < 0.01 && valoresPago.length > 0) {
-        console.log('═══════════════════════════════════════════════════');
-        console.log('🚀 DISPARANDO FINALIZACIÓN AUTOMÁTICA');
-        console.log('   Razón: El pago está completo (diferencia cero)');
-        console.log('═══════════════════════════════════════════════════');
+    // if (estadoNC.cargando) {
+    //     $('#btnAgregarPago').prop('disabled', true);
+    //     $('#btnFinalizarPago').prop('disabled', true);
+    // }
 
-        // Usamos un pequeño timeout para que el usuario perciba la actualización
-        // de la UI (diferencia en $0.00) antes de que comience el proceso final.
-        setTimeout(() => {
-            finalizarPago();
-        }, 500); // 500ms de delay para una mejor UX
-    }
+    // if (estadoNC.errorCarga || estadoNC.conflictoObligatorios) {
+    //     $('#btnAgregarPago').prop('disabled', true);
+    //     $('#btnFinalizarPago').prop('disabled', true);
+    // }
 
-    console.log('✅ Totales y botones actualizados correctamente');
+    actualizarBadgeCantidadPagos();
+
+    console.log(
+        `[PAGO] Aplicado=${formatearMoneda(totalAplicado)}, ` +
+        `Diferencia=${formatearMoneda(diferencia)}, ` +
+        `Agregar=${puedeAgregar}, Finalizar=${puedeFinalizar}, ` +
+        `HayAplicado=${hayAlgoAplicado}`
+    );
 }
 
 /**
@@ -5385,120 +7580,120 @@ function escapeHtml(texto) {
     });
 }
 
-/**
-* ✅ ACTUALIZADO v13.2: Abre el modal de pago con validación simplificada
-* 
-* CAMBIOS v13.2:
-* - Usa parsearNumeroArgentino() para conversión correcta de formato
-* - Logs mejorados para debugging de formato numérico
-* - Validación de precisión decimal
-* 
-* CAMBIO ANTERIOR v13.1:
-* - Llama directamente a abrirModalPago() en lugar de PagoFactura.abrirModal()
-*/
-function procesarPagoFactura() {
-    console.log('═══════════════════════════════════════════════════');
-    console.log('💰 PROCESAR PAGO DE FACTURA v13.2');
-    console.log('═══════════════════════════════════════════════════');
+// /**
+// * ✅ ACTUALIZADO v13.2: Abre el modal de pago con validación simplificada
+// * 
+// * CAMBIOS v13.2:
+// * - Usa parsearNumeroArgentino() para conversión correcta de formato
+// * - Logs mejorados para debugging de formato numérico
+// * - Validación de precisión decimal
+// * 
+// * CAMBIO ANTERIOR v13.1:
+// * - Llama directamente a abrirModalPago() en lugar de PagoFactura.abrirModal()
+// */
+// function procesarPagoFactura() {
+//     console.log('═══════════════════════════════════════════════════');
+//     console.log('💰 PROCESAR PAGO DE FACTURA v13.2');
+//     console.log('═══════════════════════════════════════════════════');
 
-    // ❶ VALIDACIÓN: Verificar que la función abrirModalPago esté disponible
-    console.log('🔍 Verificando disponibilidad de la función abrirModalPago...');
+//     // ❶ VALIDACIÓN: Verificar que la función abrirModalPago esté disponible
+//     console.log('🔍 Verificando disponibilidad de la función abrirModalPago...');
 
-    if (typeof abrirModalPago !== 'function') {
-        console.error('═══════════════════════════════════════════════════');
-        console.error('❌ CRÍTICO: Función abrirModalPago NO está disponible');
-        console.error('═══════════════════════════════════════════════════');
-        console.error('Diagnóstico:');
-        console.error('   1. Verificar que el archivo pagoFactura.js esté cargado');
-        console.error('   2. Ruta esperada: ~/js/app/pagoFactura.js');
-        console.error('   3. Revisar consola del navegador para errores de carga');
-        console.error('═══════════════════════════════════════════════════');
+//     if (typeof abrirModalPago !== 'function') {
+//         console.error('═══════════════════════════════════════════════════');
+//         console.error('❌ CRÍTICO: Función abrirModalPago NO está disponible');
+//         console.error('═══════════════════════════════════════════════════');
+//         console.error('Diagnóstico:');
+//         console.error('   1. Verificar que el archivo pagoFactura.js esté cargado');
+//         console.error('   2. Ruta esperada: ~/js/app/pagoFactura.js');
+//         console.error('   3. Revisar consola del navegador para errores de carga');
+//         console.error('═══════════════════════════════════════════════════');
 
-        mostrarMensajeError('El módulo de pago no está disponible.\nPor favor, recargue la página e intente nuevamente.');
-        return;
-    }
+//         mostrarMensajeError('El módulo de pago no está disponible.\nPor favor, recargue la página e intente nuevamente.');
+//         return;
+//     }
 
-    console.log('✅ Función abrirModalPago disponible');
+//     console.log('✅ Función abrirModalPago disponible');
 
-    // ❷ Extraer el total final de la tabla
-    const $tdTotalFinal = $('#tdTotalFinal');
+//     // ❷ Extraer el total final de la tabla
+//     const $tdTotalFinal = $('#tdTotalFinal');
 
-    if ($tdTotalFinal.length === 0) {
-        console.error('❌ No se encontró el elemento #tdTotalFinal en el DOM');
-        mostrarMensajeError('Error: No se pudo obtener el total de la factura');
-        return;
-    }
+//     if ($tdTotalFinal.length === 0) {
+//         console.error('❌ No se encontró el elemento #tdTotalFinal en el DOM');
+//         mostrarMensajeError('Error: No se pudo obtener el total de la factura');
+//         return;
+//     }
 
-    const totalFinalTexto = $tdTotalFinal.text().trim();
+//     const totalFinalTexto = $tdTotalFinal.text().trim();
 
-    // ✅ ACTUALIZADO v22.0: Usar parseo GeConnect
-    const totalFinal = parsearNumero(totalFinalTexto);
+//     // ✅ ACTUALIZADO v22.0: Usar parseo GeConnect
+//     const totalFinal = parsearNumero(totalFinalTexto);
 
-    console.log('═══════════════════════════════════════════════════');
-    console.log('💵 EXTRACCIÓN DEL TOTAL FINAL');
-    console.log(`   📝 Texto del DOM: "${totalFinalTexto}"`);
-    console.log(`   🔢 Número parseado: ${totalFinal}`);
-    console.log(`   💰 Formato display: $ ${totalFinal.toFixed(2)}`);
-    console.log(`   ✅ Decimales preservados: ${(totalFinal % 1).toFixed(2)}`);
-    console.log('═══════════════════════════════════════════════════');
+//     console.log('═══════════════════════════════════════════════════');
+//     console.log('💵 EXTRACCIÓN DEL TOTAL FINAL');
+//     console.log(`   📝 Texto del DOM: "${totalFinalTexto}"`);
+//     console.log(`   🔢 Número parseado: ${totalFinal}`);
+//     console.log(`   💰 Formato display: $ ${totalFinal.toFixed(2)}`);
+//     console.log(`   ✅ Decimales preservados: ${(totalFinal % 1).toFixed(2)}`);
+//     console.log('═══════════════════════════════════════════════════');
 
-    // ❸ Validar que el total sea mayor a 0
-    if (totalFinal <= 0) {
-        console.warn('⚠️ Total final es $0.00 o negativo');
-        mostrarMensajeAdvertencia('El total de la factura debe ser mayor a $0.00');
-        return;
-    }
+//     // ❸ Validar que el total sea mayor a 0
+//     if (totalFinal <= 0) {
+//         console.warn('⚠️ Total final es $0.00 o negativo');
+//         mostrarMensajeAdvertencia('El total de la factura debe ser mayor a $0.00');
+//         return;
+//     }
 
-    // ❹ Validar precisión del número (seguridad adicional)
-    if (totalFinal > 999999999.99) {
-        console.error('❌ Total fuera de rango permitido');
-        mostrarMensajeError('El total de la factura excede el valor máximo permitido.');
-        return;
-    }
+//     // ❹ Validar precisión del número (seguridad adicional)
+//     if (totalFinal > 999999999.99) {
+//         console.error('❌ Total fuera de rango permitido');
+//         mostrarMensajeError('El total de la factura excede el valor máximo permitido.');
+//         return;
+//     }
 
-    // ❺ Preparar datos para el modal de pago
-    const datosPago = {
-        totales: {
-            totalPagar: totalFinal,
-            recargos: 0,
-            descuentos: 0,
-            totalValores: 0
-        },
-        puntoVenta: $('#lblPuntoVentaCalculo').text().trim() || 'GECO PV'
-    };
+//     // ❺ Preparar datos para el modal de pago
+//     const datosPago = {
+//         totales: {
+//             totalPagar: totalFinal,
+//             recargos: 0,
+//             descuentos: 0,
+//             totalValores: 0
+//         },
+//         puntoVenta: $('#lblPuntoVentaCalculo').text().trim() || 'GECO PV'
+//     };
 
-    console.log('═══════════════════════════════════════════════════');
-    console.log('📋 DATOS PREPARADOS PARA MODAL DE PAGO');
-    console.log('   Estructura completa:', datosPago);
-    console.log(`   Total a pagar: $ ${datosPago.totales.totalPagar.toFixed(2)}`);
-    console.log(`   Punto de venta: ${datosPago.puntoVenta}`);
-    console.log('═══════════════════════════════════════════════════');
+//     console.log('═══════════════════════════════════════════════════');
+//     console.log('📋 DATOS PREPARADOS PARA MODAL DE PAGO');
+//     console.log('   Estructura completa:', datosPago);
+//     console.log(`   Total a pagar: $ ${datosPago.totales.totalPagar.toFixed(2)}`);
+//     console.log(`   Punto de venta: ${datosPago.puntoVenta}`);
+//     console.log('═══════════════════════════════════════════════════');
 
-    // ❻ ✅ Llamar directamente a la función
-    try {
-        console.log('🔓 Invocando abrirModalPago()...');
+//     // ❻ ✅ Llamar directamente a la función
+//     try {
+//         console.log('🔓 Invocando abrirModalPago()...');
 
-        const resultado = abrirModalPago(datosPago);
+//         const resultado = abrirModalPago(datosPago);
 
-        if (resultado === false) {
-            console.error('❌ abrirModalPago() retornó false');
-            mostrarMensajeError('Error al abrir el modal de pago. Revise la consola para más detalles.');
-        } else {
-            console.log('✅ Modal de pago abierto correctamente');
-        }
-    } catch (error) {
-        console.error('═══════════════════════════════════════════════════');
-        console.error('❌ EXCEPCIÓN AL ABRIR MODAL DE PAGO');
-        console.error('═══════════════════════════════════════════════════');
-        console.error('Error:', error);
-        console.error('Stack:', error.stack);
-        console.error('═══════════════════════════════════════════════════');
+//         if (resultado === false) {
+//             console.error('❌ abrirModalPago() retornó false');
+//             mostrarMensajeError('Error al abrir el modal de pago. Revise la consola para más detalles.');
+//         } else {
+//             console.log('✅ Modal de pago abierto correctamente');
+//         }
+//     } catch (error) {
+//         console.error('═══════════════════════════════════════════════════');
+//         console.error('❌ EXCEPCIÓN AL ABRIR MODAL DE PAGO');
+//         console.error('═══════════════════════════════════════════════════');
+//         console.error('Error:', error);
+//         console.error('Stack:', error.stack);
+//         console.error('═══════════════════════════════════════════════════');
 
-        mostrarMensajeError(`Error al abrir el modal de pago: ${error.message}`);
-    }
+//         mostrarMensajeError(`Error al abrir el modal de pago: ${error.message}`);
+//     }
 
-    console.log('═══════════════════════════════════════════════════');
-}
+//     console.log('═══════════════════════════════════════════════════');
+// }
 
 // ═══════════════════════════════════════════════════════════════════
 // ✅ NUEVO v19.0: LOTE 2 - FUNCIONES PARA VALES DE COMPRA
@@ -8164,3 +10359,216 @@ function limpiarNavegacionTecladoInstrumentos(modalId) {
     console.log('   ✅ Eventos de teclado limpiados correctamente');
     console.log('═══════════════════════════════════════════════════');
 }
+
+// function aCentavosMonto(valor) {
+//     return Math.round(convertirNumeroNC(valor) * 100);
+// }
+
+// function obtenerTotalNetoCentavos() {
+//     const totalPagar = aCentavosMonto(conceptosPago.totalPagar);
+//     const recargos = aCentavosMonto(conceptosPago.recargos);
+//     const descuentos = aCentavosMonto(conceptosPago.descuentos);
+
+//     return Math.max(0, totalPagar + recargos - descuentos);
+// }
+
+// function obtenerTotalOtrosValoresCentavos() {
+//     return valoresPago.reduce(function (acumulado, valor) {
+//         return acumulado + aCentavosMonto(valor.importe);
+//     }, 0);
+// }
+
+// function obtenerCreditosNCImputados() {
+//     return (estadoNC.seleccionados || []).filter(function (credito) {
+//         return credito.importeImputadoCentavos > 0;
+//     });
+// }
+
+function formatearImporteJsonNC(centavos) {
+    const importe = desdeCentavosNC(centavos);
+
+    // Las NC representan un crédito contable.
+    // El importe imputado viaja con signo negativo.
+    return (-Math.abs(importe)).toFixed(2);
+}
+
+function construirJsonUnionesNC() {
+    const creditosImputados = obtenerCreditosNCImputados();
+
+    const uniones = creditosImputados.map(function (credito) {
+        const original = credito.creditoOriginal || {};
+
+        return {
+            cta_id: original.cta_id ?? null,
+            dia_movi: original.dia_movi ?? null,
+            tco_id: original.tco_id ?? null,
+            cm_compte: original.cm_compte ?? null,
+            cm_compte_cuota: original.cm_compte_cuota ?? null,
+            cv_fecha_vto: original.cv_fecha_vto ?? null,
+
+            // Crédito efectivamente aplicado.
+            cv_importe: formatearImporteJsonNC(
+                credito.importeImputadoCentavos
+            ),
+
+            // Crédito original informado por el SP.
+            cv_importe_ori:
+                original.cv_importe_ori ??
+                original.cv_importe ??
+                null,
+
+            cv_concepto: original.cv_concepto ?? null,
+            ve_id: original.ve_id ?? null,
+            ccb_id: original.ccb_id ?? null
+        };
+    });
+
+    console.log('═══════════════════════════════════════════════════');
+    console.log('[NC] JSON_UNION CONSTRUIDO');
+    console.log(`   Créditos incluidos: ${uniones.length}`);
+    console.log(JSON.stringify(uniones, null, 2));
+    console.log('═══════════════════════════════════════════════════');
+
+    return uniones;
+}
+
+function validarSeleccionNCParaFinalizar() {
+    const errores = [];
+
+    switch (estadoNC.resultadoConsulta) {
+        case RESULTADO_CONSULTA_NC.PENDIENTE:
+            errores.push(
+                'Todavía se están consultando los créditos disponibles.'
+            );
+            break;
+
+        case RESULTADO_CONSULTA_NC.ERROR:
+            errores.push(
+                estadoNC.mensajeError ||
+                'No fue posible consultar los créditos disponibles.'
+            );
+            break;
+
+        case RESULTADO_CONSULTA_NC.SIN_CREDITOS:
+        case RESULTADO_CONSULTA_NC.CON_CREDITOS:
+        case RESULTADO_CONSULTA_NC.NO_APLICA:
+            break;
+
+        default:
+            errores.push(
+                'El estado de consulta de créditos es inválido.'
+            );
+            break;
+    }
+
+    if (estadoNC.conflictoObligatorios) {
+        errores.push(
+            estadoNC.conflictoObligatorios.mensaje
+        );
+    }
+
+    const creditosSeleccionados = obtenerCreditosNCImputados();
+    const claves = new Set();
+
+    creditosSeleccionados.forEach(function (credito) {
+        if (claves.has(credito.clave)) {
+            errores.push(
+                'Hay un crédito seleccionado más de una vez.'
+            );
+        }
+
+        claves.add(credito.clave);
+
+        if (credito.importeImputadoCentavos <= 0) {
+            errores.push(
+                'Todo crédito seleccionado debe tener un importe mayor a cero.'
+            );
+        }
+
+        if (
+            credito.importeImputadoCentavos >
+            credito.saldoDisponibleCentavos
+        ) {
+            errores.push(
+                'Un crédito supera el saldo disponible informado.'
+            );
+        }
+
+        if (
+            estadoNC.esConsumidorFinal &&
+            !credito.obligatorio
+        ) {
+            errores.push(
+                'Un Consumidor Final no puede utilizar créditos opcionales desde este módulo.'
+            );
+        }
+    });
+
+    const obligatoriosNoAplicados = estadoNC.disponibles.filter(
+        function (credito) {
+            return credito.obligatorio &&
+                (
+                    !credito.seleccionado ||
+                    credito.importeImputadoCentavos !==
+                    credito.saldoDisponibleCentavos
+                );
+        }
+    );
+
+    if (obligatoriosNoAplicados.length > 0) {
+        errores.push(
+            'Existen créditos obligatorios que no fueron aplicados completamente.'
+        );
+    }
+
+    const totalNCCentavos = obtenerTotalCreditosNCCentavos();
+
+    const saldoMaximoParaNcCentavos = Math.max(
+        0,
+        obtenerTotalNetoCentavos() -
+        obtenerTotalOtrosValoresCentavos()
+    );
+
+    if (totalNCCentavos > saldoMaximoParaNcCentavos) {
+        errores.push(
+            'Los créditos imputados superan el saldo pendiente de la operación.'
+        );
+    }
+
+    return {
+        esValido: errores.length === 0,
+        errores
+    };
+}
+
+// function obtenerTotalCreditosNCCentavos() {
+//     return obtenerCreditosNCImputados()
+//         .reduce(function (acumulado, credito) {
+//             return acumulado + credito.importeImputadoCentavos;
+//         }, 0);
+// }
+
+// function obtenerCantidadCreditosNCImputados() {
+//     return obtenerCreditosNCImputados().length;
+// }
+
+// function actualizarSeleccionadosNC() {
+//     estadoNC.seleccionados = estadoNC.disponibles.filter(function (credito) {
+//         return credito.seleccionado === true;
+//     });
+// }
+
+// function reiniciarImputacionesNC() {
+//     estadoNC.disponibles.forEach(function (credito) {
+//         credito.seleccionado = false;
+//         credito.importeImputadoCentavos = 0;
+//     });
+
+//     estadoNC.seleccionados = [];
+//     estadoNC.conflictoObligatorios = null;
+// }
+
+// function marcarCreditoNCSeleccionado(credito, importeCentavos) {
+//     credito.seleccionado = true;
+//     credito.importeImputadoCentavos = Math.max(0, importeCentavos);
+// }

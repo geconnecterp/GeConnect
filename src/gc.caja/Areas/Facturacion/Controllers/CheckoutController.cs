@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace gc.caja.Areas.Facturacion.Controllers
 {
@@ -68,6 +69,551 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 return Json(new { ok = false, error = true, warn = false, mensaje = "Ocurrió un error al obtener los bancos" });
             }
         }
+
+        #region Helpers de validación NC
+
+        private static bool PermiteNotasCredito(string coTipo)
+        {
+            return string.Equals(coTipo, "CF", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(coTipo, "CR", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(coTipo, "CC", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(coTipo, "CD", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private sealed class ValidacionUnionesNcResult
+        {
+            public bool Ok { get; init; }
+
+            public string Mensaje { get; init; } = string.Empty;
+
+            public List<Json_Union> Uniones { get; init; } = [];
+
+            public decimal TotalImputado { get; init; }
+        }
+
+        private static string NormalizarClaveNc(string? valor)
+        {
+            return (valor ?? string.Empty)
+                .Trim()
+                .ToUpperInvariant();
+        }
+
+        private static bool TieneIdentidadNc(Json_Union union)
+        {
+            return !string.IsNullOrWhiteSpace(union.cta_id) &&
+                   !string.IsNullOrWhiteSpace(union.dia_movi) &&
+                   !string.IsNullOrWhiteSpace(union.tco_id) &&
+                   !string.IsNullOrWhiteSpace(union.cm_compte) &&
+                   !string.IsNullOrWhiteSpace(union.cm_compte_cuota);
+        }
+
+        private static string CrearClaveNc(Json_Union union)
+        {
+            return string.Join("|", new[]
+            {
+        NormalizarClaveNc(union.cta_id),
+        NormalizarClaveNc(union.dia_movi),
+        NormalizarClaveNc(union.tco_id),
+        NormalizarClaveNc(union.cm_compte),
+        NormalizarClaveNc(union.cm_compte_cuota),
+        NormalizarClaveNc(union.ve_id),
+        NormalizarClaveNc(union.ccb_id)
+    });
+        }
+
+        private static bool TryParseImporteNc(
+            string? valor,
+            out decimal importe)
+        {
+            importe = 0m;
+
+            if (string.IsNullOrWhiteSpace(valor))
+            {
+                return false;
+            }
+
+            var texto = valor.Trim();
+
+            var estilos =
+                NumberStyles.AllowLeadingSign |
+                NumberStyles.AllowDecimalPoint |
+                NumberStyles.AllowThousands;
+
+            return decimal.TryParse(
+                       texto,
+                       estilos,
+                       CultureInfo.InvariantCulture,
+                       out importe)
+                   ||
+                   decimal.TryParse(
+                       texto,
+                       estilos,
+                       CultureInfo.GetCultureInfo("es-AR"),
+                       out importe);
+        }
+
+        private static string FormatearImporteNcJson(decimal importe)
+        {
+            return importe.ToString(
+                "0.00",
+                CultureInfo.InvariantCulture
+            );
+        }
+
+        private static Json_Union CrearUnionNcCanonica(
+            ValoresNCResDto creditoVigente,
+            decimal importeImputado)
+        {
+            var importeOriginal = !string.IsNullOrWhiteSpace(
+                creditoVigente.cv_importe_ori
+            )
+                ? creditoVigente.cv_importe_ori
+                : creditoVigente.cv_importe;
+
+            return new Json_Union
+            {
+                cta_id = creditoVigente.cta_id,
+                dia_movi = creditoVigente.dia_movi,
+                tco_id = creditoVigente.tco_id,
+                cm_compte = creditoVigente.cm_compte,
+                cm_compte_cuota = creditoVigente.cm_compte_cuota,
+                cv_fecha_vto = creditoVigente.cv_fecha_vto,
+
+                // Crédito aplicado, con signo contable negativo.
+                cv_importe = FormatearImporteNcJson(
+                    -Math.Abs(importeImputado)
+                ),
+
+                // Crédito original informado por SP.
+                cv_importe_ori = importeOriginal,
+
+                cv_concepto = creditoVigente.cv_concepto,
+                ve_id = creditoVigente.ve_id,
+                ccb_id = creditoVigente.ccb_id
+            };
+        }
+
+        private static decimal ObtenerTotalValoresConvencionales(
+    IEnumerable<Json_Valor> valores)
+        {
+            return (valores ?? Enumerable.Empty<Json_Valor>())
+                .Sum(x => x.rb_importe);
+        }
+
+        private static decimal ObtenerTotalOperacionParaNc(
+            bool esCobranzaGeneral,
+            decimal importeCobranza,
+            IEnumerable<FactSubtotalJsonDto> subtotales)
+        {
+            if (esCobranzaGeneral)
+            {
+                return importeCobranza;
+            }
+
+            // En Facturación, FacturaSubtotales debe contener importes
+            // con signo ya aplicado: subtotal + recargos - descuentos.
+            return (subtotales ?? Enumerable.Empty<FactSubtotalJsonDto>())
+                .Sum(x => x.importe);
+        }
+
+        private static bool ValidarNcContraSaldoPendiente(
+            decimal totalOperacion,
+            decimal totalValoresConvencionales,
+            decimal totalNc,
+            out string mensaje)
+        {
+            mensaje = string.Empty;
+
+            if (totalNc <= 0m)
+            {
+                return true;
+            }
+
+            if (totalOperacion <= 0m)
+            {
+                mensaje =
+                    "No se pudo determinar un total válido para aplicar Notas de Crédito.";
+
+                return false;
+            }
+
+            if (totalValoresConvencionales < 0m)
+            {
+                mensaje =
+                    "Los medios de pago convencionales contienen un importe inválido.";
+
+                return false;
+            }
+
+            var saldoPendiente = totalOperacion - totalValoresConvencionales;
+
+            if (saldoPendiente < 0m)
+            {
+                saldoPendiente = 0m;
+            }
+
+            if (totalNc > saldoPendiente + 0.01m)
+            {
+                mensaje =
+                    "El total de Notas de Crédito supera el saldo pendiente de la operación.";
+
+                return false;
+            }
+
+            return true;
+        }
+
+        private async Task<ValidacionUnionesNcResult>
+            ValidarYConstruirUnionesNcAsync(
+                List<Json_Union>? unionesSolicitadas,
+                string coTipo,
+                bool esConsumidorFinal)
+        {
+            var solicitadas = unionesSolicitadas ?? [];
+
+            var coTipoNormalizado = (coTipo ?? string.Empty)
+                .Trim()
+                .ToUpperInvariant();
+
+            if (!PermiteNotasCredito(coTipoNormalizado))
+            {
+                // El módulo actual puede finalizar normalmente,
+                // pero no admite NC hasta implementar su regla específica.
+                if (solicitadas.Count == 0)
+                {
+                    return new ValidacionUnionesNcResult
+                    {
+                        Ok = true,
+                        Uniones = [],
+                        TotalImputado = 0m
+                    };
+                }
+
+                return new ValidacionUnionesNcResult
+                {
+                    Ok = false,
+                    Mensaje =
+                        "El módulo actual no admite Notas de Crédito como forma de pago."
+                };
+            }
+
+            var cliente = ClienteActual;
+
+            if (cliente == null)
+            {
+                return new ValidacionUnionesNcResult
+                {
+                    Ok = false,
+                    Mensaje =
+                        "No hay cliente seleccionado para validar los créditos."
+                };
+            }
+
+            var cuentaCliente = string.Equals(
+                cliente.Origen,
+                "C",
+                StringComparison.OrdinalIgnoreCase
+            )
+                ? cliente.cta_id
+                : cliente.cta_documento;
+
+            if (string.IsNullOrWhiteSpace(cuentaCliente))
+            {
+                if (solicitadas.Count == 0)
+                {
+                    return new ValidacionUnionesNcResult
+                    {
+                        Ok = true,
+                        Uniones = [],
+                        TotalImputado = 0m
+                    };
+                }
+
+                return new ValidacionUnionesNcResult
+                {
+                    Ok = false,
+                    Mensaje =
+                        "No se pudo identificar la cuenta del cliente para validar los créditos."
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(AdministracionId))
+            {
+                return new ValidacionUnionesNcResult
+                {
+                    Ok = false,
+                    Mensaje =
+                        "No se encontró la administración activa para validar los créditos."
+                };
+            }
+
+            var requestNc = new ValoresNCReqDto
+            {
+                co_tipo = coTipoNormalizado,
+                cta_id = cuentaCliente,
+                adm_id = AdministracionId
+            };
+
+            var respuestaNc = await _pagoFactServicio.ObtenerValoresNC(
+                requestNc,
+                TokenCookie
+            );
+
+            if (respuestaNc == null)
+            {
+                return new ValidacionUnionesNcResult
+                {
+                    Ok = false,
+                    Mensaje =
+                        "No fue posible validar los créditos disponibles."
+                };
+            }
+
+            if (!respuestaNc.Ok)
+            {
+                return new ValidacionUnionesNcResult
+                {
+                    Ok = false,
+                    Mensaje =
+                        respuestaNc.Mensaje ??
+                        "No fue posible validar los créditos disponibles."
+                };
+            }
+
+            var creditosVigentes = respuestaNc.ListaEntidad ?? [];
+
+            var creditosPorClave = new Dictionary<
+                string,
+                ValoresNCResDto
+            >(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var credito in creditosVigentes)
+            {
+                if (!TieneIdentidadNc(credito))
+                {
+                    _logger?.LogError(
+                        "[NC] SP devolvió un crédito sin identidad completa."
+                    );
+
+                    return new ValidacionUnionesNcResult
+                    {
+                        Ok = false,
+                        Mensaje =
+                            "Se recibió un crédito inválido desde el servidor."
+                    };
+                }
+
+                var clave = CrearClaveNc(credito);
+
+                if (!creditosPorClave.TryAdd(clave, credito))
+                {
+                    _logger?.LogError(
+                        "[NC] El SP devolvió créditos duplicados. Clave={Clave}",
+                        clave
+                    );
+
+                    return new ValidacionUnionesNcResult
+                    {
+                        Ok = false,
+                        Mensaje =
+                            "Se detectaron créditos duplicados. Recargue la operación."
+                    };
+                }
+            }
+
+            var clavesSolicitadas = new HashSet<string>(
+                StringComparer.OrdinalIgnoreCase
+            );
+
+            var unionesCanonicas = new List<Json_Union>();
+            decimal totalImputado = 0m;
+
+            foreach (var unionSolicitada in solicitadas)
+            {
+                if (!TieneIdentidadNc(unionSolicitada))
+                {
+                    return new ValidacionUnionesNcResult
+                    {
+                        Ok = false,
+                        Mensaje =
+                            "Uno de los créditos seleccionados no posee identidad completa."
+                    };
+                }
+
+                var clave = CrearClaveNc(unionSolicitada);
+
+                if (!clavesSolicitadas.Add(clave))
+                {
+                    return new ValidacionUnionesNcResult
+                    {
+                        Ok = false,
+                        Mensaje =
+                            "No se puede utilizar el mismo crédito más de una vez."
+                    };
+                }
+
+                if (!creditosPorClave.TryGetValue(
+                    clave,
+                    out var creditoVigente
+                ))
+                {
+                    return new ValidacionUnionesNcResult
+                    {
+                        Ok = false,
+                        Mensaje =
+                            "Uno de los créditos seleccionados ya no está disponible. Recargue la operación."
+                    };
+                }
+
+                if (!TryParseImporteNc(
+                    unionSolicitada.cv_importe,
+                    out var importeSolicitado
+                ))
+                {
+                    return new ValidacionUnionesNcResult
+                    {
+                        Ok = false,
+                        Mensaje =
+                            "Uno de los créditos posee un importe inválido."
+                    };
+                }
+
+                var importeImputado = Math.Abs(importeSolicitado);
+
+                if (importeImputado <= 0m)
+                {
+                    return new ValidacionUnionesNcResult
+                    {
+                        Ok = false,
+                        Mensaje =
+                            "El importe imputado de un crédito debe ser mayor a cero."
+                    };
+                }
+
+                if (!TryParseImporteNc(
+                    creditoVigente.cv_importe,
+                    out var importeVigente
+                ))
+                {
+                    return new ValidacionUnionesNcResult
+                    {
+                        Ok = false,
+                        Mensaje =
+                            "No se pudo interpretar el saldo de uno de los créditos."
+                    };
+                }
+
+                var saldoDisponible = Math.Abs(importeVigente);
+
+                if (importeImputado > saldoDisponible + 0.01m)
+                {
+                    return new ValidacionUnionesNcResult
+                    {
+                        Ok = false,
+                        Mensaje =
+                            "El importe imputado supera el saldo disponible de un crédito."
+                    };
+                }
+
+                var esObligatorio = string.Equals(
+                    creditoVigente.carga_obligatoria,
+                    "S",
+                    StringComparison.OrdinalIgnoreCase
+                );
+
+                if (esConsumidorFinal && !esObligatorio)
+                {
+                    return new ValidacionUnionesNcResult
+                    {
+                        Ok = false,
+                        Mensaje =
+                            "Un Consumidor Final no puede utilizar créditos opcionales desde este módulo."
+                    };
+                }
+
+                if (
+                    esObligatorio &&
+                    Math.Abs(importeImputado - saldoDisponible) > 0.01m
+                )
+                {
+                    return new ValidacionUnionesNcResult
+                    {
+                        Ok = false,
+                        Mensaje =
+                            "Los créditos obligatorios deben aplicarse por su importe total."
+                    };
+                }
+
+                unionesCanonicas.Add(
+                    CrearUnionNcCanonica(
+                        creditoVigente,
+                        importeImputado
+                    )
+                );
+
+                totalImputado += importeImputado;
+            }
+
+            // El backend exige que todas las NC obligatorias vigentes estén presentes.
+            foreach (var creditoVigente in creditosVigentes)
+            {
+                var esObligatorio = string.Equals(
+                    creditoVigente.carga_obligatoria,
+                    "S",
+                    StringComparison.OrdinalIgnoreCase
+                );
+
+                if (!esObligatorio)
+                {
+                    continue;
+                }
+
+                if (!TryParseImporteNc(
+                    creditoVigente.cv_importe,
+                    out var importeVigente
+                ))
+                {
+                    return new ValidacionUnionesNcResult
+                    {
+                        Ok = false,
+                        Mensaje =
+                            "No se pudo interpretar el importe de un crédito obligatorio."
+                    };
+                }
+
+                if (Math.Abs(importeVigente) <= 0m)
+                {
+                    continue;
+                }
+
+                var clave = CrearClaveNc(creditoVigente);
+
+                if (!clavesSolicitadas.Contains(clave))
+                {
+                    return new ValidacionUnionesNcResult
+                    {
+                        Ok = false,
+                        Mensaje =
+                            "Existe un crédito obligatorio que no fue imputado."
+                    };
+                }
+            }
+
+            _logger?.LogInformation(
+                "[NC] Validación exitosa. CoTipo={CoTipo}, Cantidad={Cantidad}, Total={Total}",
+                coTipoNormalizado,
+                unionesCanonicas.Count,
+                totalImputado
+            );
+
+            return new ValidacionUnionesNcResult
+            {
+                Ok = true,
+                Uniones = unionesCanonicas,
+                TotalImputado = totalImputado
+            };
+        }
+        #endregion
 
         /// <summary>
         /// ✅ CORREGIDO v20.2.1: Confirmación de compra con valores de pago
@@ -129,7 +675,36 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 //!string.IsNullOrEmpty(pagoDto.ModuloOrigen) &&
                 //                               pagoDto.ModuloOrigen.ToUpper() == "COBRANZADIFERIDA";
 
-                switch (pagoDto.ModuloOrigen.ToUpper())
+                #region Normalizar ModuloOrigen
+                var moduloOrigen = (pagoDto.ModuloOrigen ?? "Facturacion")
+                            .Trim()
+                            .ToUpperInvariant();
+
+                var modulosPermitidos = new HashSet<string>(
+                    StringComparer.OrdinalIgnoreCase
+                )
+                    {
+                        "FACTURACION",
+                        "COBRANZADIFERIDA",
+                        "CUENTACORRIENTE"
+                    };
+
+                if (!modulosPermitidos.Contains(moduloOrigen))
+                {
+                    _logger?.LogWarning(
+                        "ModuloOrigen inválido: {ModuloOrigen}",
+                        moduloOrigen
+                    );
+
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = "El módulo de origen de la operación no es válido."
+                    });
+                }
+                #endregion
+
+                switch (moduloOrigen)
                 {
                     case "COBRANZADIFERIDA":
                         esCobranzaDiferidaTemporal = true;
@@ -187,15 +762,15 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                         FacturaSubtotales = new List<FactSubtotalJsonDto> {
                             new ()
-                                { 
+                                {
                                     orden = 1 ,
                                     tipo = "SU",
-                                    concepto = "Subtotal", 
-                                    @base = 0.00m, 
-                                    alicuota = 0.00m, 
-                                    importe = importe, 
-                                    id_aux = "" 
-                                } 
+                                    concepto = "Subtotal",
+                                    @base = 0.00m,
+                                    alicuota = 0.00m,
+                                    importe = importe,
+                                    id_aux = ""
+                                }
                         };
 
                         if (ctaCtes != null && ctaCtes.Count > 0)
@@ -261,43 +836,86 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation($"✅ Subtotales: {subtotalesFactura.Count}");
 
                 // ❼ ✅ CORREGIDO: VALIDAR QUE HAYA VALORES DE PAGO DESDE EL DTO
-                var valores = pagoDto.Valores;
-                
-                //Esto protege el flujo si alguien altera el DOM o el request manualmente.
+
+                var valores = pagoDto.Valores?.ToList() ?? [];
+
+                var unionesSolicitadas = pagoDto.Uniones?.ToList() ?? [];
+
+                // Cuenta Corriente todavía no utiliza NC.
+                // Mantiene exactamente su regla actual: el total de valores
+                // convencionales debe coincidir con la deuda seleccionada.
                 if (esCobranzaCtaCteTemporal)
                 {
                     var totalSeleccionado = ctaCtes?.Sum(x => x.cv_importe) ?? 0m;
 
-                    var totalValores = valores?.Sum(x => x.rb_importe) ?? 0m;
+                    var totalValoresConvencionales =
+                        ObtenerTotalValoresConvencionales(valores);
 
-                    if (Math.Abs(totalSeleccionado - totalValores) > 0.01m)
+                    if (Math.Abs(totalSeleccionado - totalValoresConvencionales) > 0.01m)
                     {
                         _logger?.LogWarning(
-                            "Monto inconsistente en Cuenta Corriente. Selección: {Seleccion}. Valores: {Valores}",
+                            "Monto inconsistente en Cuenta Corriente. Selección={Seleccion}. Valores={Valores}",
                             totalSeleccionado,
-                            totalValores
+                            totalValoresConvencionales
                         );
 
                         return Json(new
                         {
                             ok = false,
-                            mensaje = "El total de los medios de pago no coincide con el importe seleccionado de Cuenta Corriente."
+                            mensaje =
+                                "El total de los medios de pago no coincide con el importe seleccionado de Cuenta Corriente."
                         });
                     }
                 }
 
-                var uniones = pagoDto.Uniones ?? new List<Json_Union>();
+                _logger?.LogInformation(
+                    "Valores convencionales recibidos: {CantidadValores}",
+                    valores.Count
+                );
 
-                if (valores == null || valores.Count == 0)
-                {
-                    _logger?.LogWarning("❌ No se recibieron valores de pago en el DTO");
-                    _logger?.LogWarning($"   pagoDto.Valores es null: {valores == null}");
-                    _logger?.LogWarning($"   pagoDto.Valores.Count: {valores?.Count ?? 0}");
-                    return Json(new { ok = false, mensaje = "Debe especificar al menos un valor de pago" });
-                }
+                _logger?.LogInformation(
+                    "Uniones NC solicitadas: {CantidadUniones}",
+                    unionesSolicitadas.Count
+                );
+
+                //var valores = pagoDto.Valores;
+                //var unionesSolicitadas = pagoDto.Uniones;
+
+                ////Esto protege el flujo si alguien altera el DOM o el request manualmente.
+                //if (esCobranzaCtaCteTemporal)
+                //{
+                //    var totalSeleccionado = ctaCtes?.Sum(x => x.cv_importe) ?? 0m;
+
+                //    var totalValores = valores?.Sum(x => x.rb_importe) ?? 0m;
+
+                //    if (Math.Abs(totalSeleccionado - totalValores) > 0.01m)
+                //    {
+                //        _logger?.LogWarning(
+                //            "Monto inconsistente en Cuenta Corriente. Selección: {Seleccion}. Valores: {Valores}",
+                //            totalSeleccionado,
+                //            totalValores
+                //        );
+
+                //        return Json(new
+                //        {
+                //            ok = false,
+                //            mensaje = "El total de los medios de pago no coincide con el importe seleccionado de Cuenta Corriente."
+                //        });
+                //    }
+                //}
+
+                //var uniones = pagoDto.Uniones ?? new List<Json_Union>();
+
+                //if (valores == null || valores.Count == 0)
+                //{
+                //    _logger?.LogWarning("❌ No se recibieron valores de pago en el DTO");
+                //    _logger?.LogWarning($"   pagoDto.Valores es null: {valores == null}");
+                //    _logger?.LogWarning($"   pagoDto.Valores.Count: {valores?.Count ?? 0}");
+                //    return Json(new { ok = false, mensaje = "Debe especificar al menos un valor de pago" });
+                //}
 
                 _logger?.LogInformation($"✅ Valores de pago recibidos: {valores.Count}");
-                _logger?.LogInformation($"✅ Uniones recibidas: {uniones.Count}");
+                //_logger?.LogInformation($"✅ Uniones recibidas: {uniones.Count}");
 
                 // ❽ LOG DETALLADO DE VALORES RECIBIDOS
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
@@ -316,41 +934,45 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                 // ❾ SERIALIZAR JSONs
-                string jsonProductos = JsonConvert.SerializeObject(productosFactura);
-                string jsonSubtotales = JsonConvert.SerializeObject(subtotalesFactura);
+                //string jsonProductos = JsonConvert.SerializeObject(productosFactura);
+                //string jsonSubtotales = JsonConvert.SerializeObject(subtotalesFactura);
 
-                var sorteosFactura = FacturaSorteos;
-                string jsonSorteos = JsonConvert.SerializeObject(sorteosFactura);
+                //var sorteosFactura = FacturaSorteos;
+                //string jsonSorteos = JsonConvert.SerializeObject(sorteosFactura);
 
-                // ❿ SERIALIZAR JSON DE VALORES DE PAGO
-                string jsonValores = JsonConvert.SerializeObject(valores);
+                //// ❿ SERIALIZAR JSON DE VALORES DE PAGO
+                //string jsonValores = JsonConvert.SerializeObject(valores);
 
-                string jsonUniones = JsonConvert.SerializeObject(uniones);
+                //string jsonUniones = JsonConvert.SerializeObject(
+                //        uniones,
+                //        Formatting.None,
+                //        JsonSettings
+                //    );
 
-                _logger?.LogInformation($"✅ JSON productos (longitud): {jsonProductos.Length}");
-                _logger?.LogInformation($"✅ JSON subtotales (longitud): {jsonSubtotales.Length}");
-                _logger?.LogInformation($"✅ JSON sorteos (longitud): {jsonSorteos.Length}");
-                _logger?.LogInformation($"✅ JSON valores (longitud): {jsonValores.Length}");
-                _logger?.LogInformation($"✅ JSON uniones (longitud): {jsonUniones.Length}");
+                //_logger?.LogInformation($"✅ JSON productos (longitud): {jsonProductos.Length}");
+                //_logger?.LogInformation($"✅ JSON subtotales (longitud): {jsonSubtotales.Length}");
+                //_logger?.LogInformation($"✅ JSON sorteos (longitud): {jsonSorteos.Length}");
+                //_logger?.LogInformation($"✅ JSON valores (longitud): {jsonValores.Length}");
+                //_logger?.LogInformation($"✅ JSON uniones (longitud): {jsonUniones.Length}");
 
                 // ⓫ DETERMINAR IDENTIFICADOR DEL CLIENTE Y TIPO DE OPERACIÓN
-                string jsonCancela = "{}";
+                string jsonCancela = "[]";
                 string ctaId;
-                bool esCobranzaDiferida = false;
+                bool esCobranzaDiferida = esCobranzaDiferidaTemporal;
 
 
                 // ✅ PASO 1: Detectar módulo origen
                 //if (!string.IsNullOrEmpty(pagoDto.ModuloOrigen) &&  pagoDto.ModuloOrigen.ToUpper() == "COBRANZADIFERIDA")
                 if (esCobranzaGen)
                 {
-                    esCobranzaDiferida = true;
+
 
                     _logger?.LogInformation("═══════════════════════════════════════════════════");
-                    _logger?.LogInformation("🔄 MÓDULO DETECTADO: COBRANZA DIFERIDA v28.1");
+                    _logger?.LogInformation("🔄 MÓDULO DE COBRANZA DETECTADO: {ModuloOrigen}", moduloOrigen);
                     _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                     // ═══ LÓGICA ESPECÍFICA PARA COBRANZA DIFERIDA ═══
-                    switch (pagoDto.ModuloOrigen.ToUpper())
+                    switch (moduloOrigen)
                     {
                         case "COBRANZADIFERIDA":
                             coTipo = "CD";
@@ -415,17 +1037,19 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     // ✅ VALIDACIÓN: En CobranzaDiferida NO debe haber productos nuevos en factura
                     if (productosFactura != null && productosFactura.Count > 0)
                     {
-                        _logger?.LogWarning("⚠️ CobranzaDiferida detectó productos en factura - Se omitirán");
-                        productosFactura = new List<ProductoFactJsonDto>();
-                        jsonProductos = "[]";
+                        _logger?.LogWarning(
+                            "Cobranza Diferida detectó productos de sesión. Se omitirán."
+                        );
+
+                        productosFactura = [];
                     }
 
                     // ✅ VALIDACIÓN: CobranzaDiferida debe tener valores de pago
-                    if (valores == null || valores.Count == 0)
-                    {
-                        _logger?.LogError("❌ CobranzaDiferida requiere valores de pago");
-                        return Json(new { ok = false, mensaje = "Debe especificar los valores de pago para el cobro" });
-                    }
+                    //if (valores == null || valores.Count == 0)
+                    //{
+                    //    _logger?.LogError("❌ CobranzaDiferida requiere valores de pago");
+                    //    return Json(new { ok = false, mensaje = "Debe especificar los valores de pago para el cobro" });
+                    //}
 
                     _logger?.LogInformation("═══════════════════════════════════════════════════");
                 }
@@ -458,11 +1082,128 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     }
                 }
 
-                jsonProductos = jsonProductos.Replace("\\", "");
-                jsonSorteos = jsonSorteos.Replace("\\", "");
-                jsonSubtotales = jsonSubtotales.Replace("\\", "");
-                jsonValores = jsonValores.Replace("\\", "");
-                jsonUniones = jsonUniones.Replace("\\", "");
+                var esConsumidorFinal = string.Equals(
+    clienteActual.Origen,
+    "F",
+    StringComparison.OrdinalIgnoreCase
+);
+
+                // Reconsulta SPGECO_CAJA_Valores_NC y construye las uniones canónicas.
+                // Nunca se serializan directamente las uniones que llegaron del navegador.
+                var validacionNc = await ValidarYConstruirUnionesNcAsync(
+                    unionesSolicitadas,
+                    coTipo,
+                    esConsumidorFinal
+                );
+
+                if (!validacionNc.Ok)
+                {
+                    _logger?.LogWarning(
+                        "[NC] Operación rechazada. Motivo: {Mensaje}",
+                        validacionNc.Mensaje
+                    );
+
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = validacionNc.Mensaje
+                    });
+                }
+
+                // Única declaración de "uniones" dentro de FinalizarCompra.
+                var uniones = validacionNc.Uniones;
+
+                if (valores.Count == 0 && uniones.Count == 0)
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje =
+                            "Debe especificar al menos un medio de pago o una Nota de Crédito aplicable."
+                    });
+                }
+
+                // La validación de saldo pendiente solo afecta operaciones
+                // que efectivamente utilizan NC.
+                if (uniones.Count > 0)
+                {
+                    var totalOperacion = ObtenerTotalOperacionParaNc(
+                        esCobranzaGen,
+                        importe,
+                        subtotalesFactura
+                    );
+
+                    var totalValoresConvencionales =
+                        ObtenerTotalValoresConvencionales(valores);
+
+                    if (!ValidarNcContraSaldoPendiente(
+                        totalOperacion,
+                        totalValoresConvencionales,
+                        validacionNc.TotalImputado,
+                        out var mensajeNcSaldo))
+                    {
+                        _logger?.LogWarning(
+                            "[NC] Importe inválido. Operación={Operacion}, Valores={Valores}, NC={Nc}. Motivo={Motivo}",
+                            totalOperacion,
+                            totalValoresConvencionales,
+                            validacionNc.TotalImputado,
+                            mensajeNcSaldo
+                        );
+
+                        return Json(new
+                        {
+                            ok = false,
+                            mensaje = mensajeNcSaldo
+                        });
+                    }
+                }
+
+                // Serializar solamente después de validar contexto, NC y totales.
+                var sorteosFactura = FacturaSorteos ?? [];
+
+                string jsonProductos = JsonConvert.SerializeObject(
+                    productosFactura ?? [],
+                    Formatting.None,
+                    JsonSettings
+                );
+
+                string jsonSubtotales = JsonConvert.SerializeObject(
+                    subtotalesFactura ?? [],
+                    Formatting.None,
+                    JsonSettings
+                );
+
+                string jsonSorteos = JsonConvert.SerializeObject(
+                    sorteosFactura,
+                    Formatting.None,
+                    JsonSettings
+                );
+
+                string jsonValores = JsonConvert.SerializeObject(
+                    valores,
+                    Formatting.None,
+                    JsonSettings
+                );
+
+                string jsonUniones = JsonConvert.SerializeObject(
+                    uniones,
+                    Formatting.None,
+                    JsonSettings
+                );
+
+                _logger?.LogInformation(
+                    "[PAGO] JSON final construido. Valores={Valores}, NC={Uniones}, Cancela={Cancela}",
+                    valores.Count,
+                    uniones.Count,
+                    obligacionACancelar?.Count ?? 0
+                );
+
+
+                //jsonProductos = jsonProductos.Replace("\\", "");
+                //jsonSorteos = jsonSorteos.Replace("\\", "");
+                //jsonSubtotales = jsonSubtotales.Replace("\\", "");
+                //jsonValores = jsonValores.Replace("\\", "");
+                //jsonUniones = jsonUniones.Replace("\\", "");
 
                 // ⓬ CONSTRUIR REQUEST DTO
                 var request = new CajaOpeConfirmarReq
@@ -578,9 +1319,24 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation("📦 REQUEST DTO CONSTRUIDO");
                 _logger?.LogInformation($"   co_tipo: {request.co_tipo}");
                 _logger?.LogInformation($"   cta_id: {request.cta_id}");
+
+                //estas 2 lineas siguientes deberian ser comentadas luego en producción, ya que muestran datos sensibles del cliente
                 _logger?.LogInformation($"   json_valores (longitud): {request.json_valores.Length}");
                 _logger?.LogInformation($"   json_valores: {JsonConvert.SerializeObject(jsonValores)}");
+
                 _logger?.LogInformation($"   FormaPago: {cajaActual.Caja.ctrl_id} - Resultado: {validacionPV.Resultado} - CAEA: {request.caea}");
+                _logger?.LogInformation("   json_valores: {CantidadValores} valor(es)", valores.Count);
+
+                _logger?.LogInformation("   json_union: {CantidadUniones} NC(s), total imputado: {TotalNc}", uniones.Count, validacionNc.TotalImputado
+                );
+
+                _logger?.LogInformation("   json_cancela: {CantidadCancelaciones} obligación(es)", obligacionACancelar?.Count ?? 0
+                );
+
+                _logger?.LogInformation("   FormaPago: {CtrlId} - ResultadoPV: {ResultadoPV} - CAEA: {Caea}", cajaActual.Caja.ctrl_id, validacionPV.Resultado,
+                    request.caea
+                );
+
                 _logger?.LogInformation($"   Request PAGO: {JsonConvert.SerializeObject(request)}");
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
@@ -661,29 +1417,43 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     }
                     else
                     {
-                        // Construir el ID de comprobante para el stock
-                        string stockId = $"{comprobante.tco_id}{comprobante.cm_compte}{comprobante.cm_repetido}";
-
-                        var stockRequest = new CargaStkDto
+                        if (string.Equals(
+                            moduloOrigen,
+                            "FACTURACION",
+                            StringComparison.OrdinalIgnoreCase
+                        ))
                         {
-                            box_id = depoId,
-                            tipo = "FV",
-                            id = stockId
-                        };
+                            // Construir el ID de comprobante para el stock
+                            string stockId = $"{comprobante.tco_id}{comprobante.cm_compte}{comprobante.cm_repetido}";
 
-                        _logger?.LogInformation($"   Parámetros de stock: box_id='{stockRequest.box_id}', tipo='{stockRequest.tipo}', id='{stockRequest.id}'");
+                            var stockRequest = new CargaStkDto
+                            {
+                                box_id = depoId,
+                                tipo = "FV",
+                                id = stockId
+                            };
 
-                        // Usamos el _cajaServicio ya inyectado
-                        var stockResult = await _cajaServicio.CargaStkDeFactura(stockRequest, token);
+                            _logger?.LogInformation($"   Parámetros de stock: box_id='{stockRequest.box_id}', tipo='{stockRequest.tipo}', id='{stockRequest.id}'");
 
-                        if (stockResult == null || !stockResult.Ok)
-                        {
-                            _logger?.LogError($"❌ Error al actualizar el stock: {stockResult?.Mensaje ?? "Respuesta nula del servicio."}");
-                            // NO se retorna error al cliente, el proceso principal fue exitoso.
+                            // Usamos el _cajaServicio ya inyectado
+                            var stockResult = await _cajaServicio.CargaStkDeFactura(stockRequest, token);
+
+                            if (stockResult == null || !stockResult.Ok)
+                            {
+                                _logger?.LogError($"❌ Error al actualizar el stock: {stockResult?.Mensaje ?? "Respuesta nula del servicio."}");
+                                // NO se retorna error al cliente, el proceso principal fue exitoso.
+                            }
+                            else
+                            {
+                                _logger?.LogInformation($"✅ Stock actualizado exitosamente. Comprobante ID:{stockId}");
+                            }
                         }
                         else
                         {
-                            _logger?.LogInformation($"✅ Stock actualizado exitosamente. Comprobante ID:{stockId}");
+                            _logger?.LogInformation(
+                                "Actualización de stock omitida. Módulo={ModuloOrigen}",
+                                moduloOrigen
+                            );
                         }
                     }
                 }
@@ -730,13 +1500,15 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 // ⓴ RETORNAR RESPUESTA CORRECTA PARA FRONTEND
                 var mensajeExito = esCobranzaDiferida
-                   ? $"Cobro de facturas procesado exitosamente. Recibo {comprobante.tco_letra} Nro {comprobante.cm_compte}"
-                   : $"Factura {comprobante.tco_letra} Nro {comprobante.cm_compte} emitida y pagada exitosamente";
+                    ? $"Cobro de facturas procesado exitosamente. Recibo {comprobante.tco_letra} Nro {comprobante.cm_compte}"
+                    : esCobranzaCtaCteTemporal
+                        ? $"Cobro de Cuenta Corriente procesado exitosamente. Recibo {comprobante.tco_letra} Nro {comprobante.cm_compte}"
+                        : $"Factura {comprobante.tco_letra} Nro {comprobante.cm_compte} emitida y pagada exitosamente";
 
                 var respuestaFinal = new
                 {
                     ok = true,
-                    mensaje = $"Factura {comprobante.tco_letra} Nro {comprobante.cm_compte} emitida y pagada exitosamente",
+                    mensaje = mensajeExito,
 
                     data = new[]
                     {
@@ -746,7 +1518,13 @@ namespace gc.caja.Areas.Facturacion.Controllers
                             tco_id = comprobante.tco_id,
                             cm_compte = comprobante.cm_compte,
                             cm_repetido = comprobante.cm_repetido,
-                            es_cobranza_diferida = esCobranzaDiferida // ✅ NUEVO: Indicador para el frontend
+
+                            modulo_origen = moduloOrigen,
+                            es_cobranza_diferida = esCobranzaDiferida,
+                            es_cobranza_cuenta_corriente = esCobranzaCtaCteTemporal,
+
+                            cantidad_nc_aplicadas = uniones.Count,
+                            total_nc_imputado = validacionNc.TotalImputado
                         }
                     },
 
@@ -1001,56 +1779,243 @@ namespace gc.caja.Areas.Facturacion.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ObtenerValoresNC([FromBody] ValoresNCReqDto req)
+        public async Task<IActionResult> ObtenerValoresNC([FromBody] ValoresNCReqDto? req)
         {
             try
             {
+                if (!VerificarAutenticacion(out _))
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        error = true,
+                        warn = false,
+                        mensaje = "La sesión ha expirado."
+                    });
+                }
+
                 if (req == null)
                 {
-                    _logger?.LogWarning("❌ Parámetro 'req' es requerido");
-                    return Json(new { ok = false, mensaje = "Debe especificar los valores para obtener los Valores NC " });
+                    _logger?.LogWarning("[ObtenerValoresNC] Request vacío.");
+
+                    return Json(new
+                    {
+                        ok = false,
+                        error = true,
+                        warn = false,
+                        mensaje = "Debe especificar el tipo de operación."
+                    });
                 }
-                if (string.IsNullOrEmpty(req.co_tipo))
+
+                var coTipo = (req.co_tipo ?? string.Empty)
+                    .Trim()
+                    .ToUpperInvariant();
+
+                // Alcance definido para NC:
+                // CF = Facturación Consumidor Final
+                // CR = Facturación Cliente Registrado
+                // CD = Cobranza Diferida
+                var coTiposPermitidos = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                                        {
+                                            "CF",
+                                            "CR",
+                                            "CD",
+                                            "CC"
+                                        };
+
+                if (!coTiposPermitidos.Contains(coTipo))
                 {
-                    _logger?.LogWarning("❌ Parámetro 'co_tipo' es requerido");
-                    return Json(new { ok = false, mensaje = "Debe especificar el tipo de operación" });
+                    _logger?.LogWarning(
+                        "[ObtenerValoresNC] co_tipo no permitido para NC: {CoTipo}",
+                        coTipo
+                    );
+
+                    return Json(new
+                    {
+                        ok = false,
+                        error = true,
+                        warn = false,
+                        mensaje = "El contexto actual no permite consultar créditos de cuenta corriente."
+                    });
                 }
-                if (string.IsNullOrEmpty(req.cta_id))
+
+                var cliente = ClienteActual;
+
+                if (cliente == null)
                 {
-                    _logger?.LogWarning("❌ Parámetro 'cta_id' es requerido");
-                    return Json(new { ok = false, mensaje = "Debe especificar el id de la cuenta" });
+                    _logger?.LogWarning("[ObtenerValoresNC] No hay cliente en sesión.");
+
+                    return Json(new
+                    {
+                        ok = false,
+                        error = true,
+                        warn = false,
+                        mensaje = "Debe seleccionar un cliente antes de consultar créditos."
+                    });
                 }
-                if (string.IsNullOrEmpty(req.adm_id))
+
+                var esConsumidorFinal = string.Equals(
+                    cliente.Origen,
+                    "F",
+                    StringComparison.OrdinalIgnoreCase
+                );
+
+                // Para cliente registrado se usa cta_id.
+                // Para consumidor final se conserva el criterio actual del sistema:
+                // usar cta_documento si existe.
+                var cuentaCliente = string.Equals(
+                    cliente.Origen,
+                    "C",
+                    StringComparison.OrdinalIgnoreCase
+                )
+                    ? cliente.cta_id
+                    : cliente.cta_documento;
+
+                // Un consumidor final sin identificador no puede tener créditos
+                // consultables contra el SP. No debe romper el pago normal.
+                if (string.IsNullOrWhiteSpace(cuentaCliente))
                 {
-                    _logger?.LogWarning("❌ Parámetro 'adm_id' es requerido");
-                    return Json(new { ok = false, mensaje = "Debe especificar el id del administrador" });
+                    if (esConsumidorFinal)
+                    {
+                        return Json(new
+                        {
+                            ok = true,
+                            error = false,
+                            warn = false,
+
+                            sinCreditos = true,
+                            codigo = "SIN_CREDITOS_NC",
+
+                            mensaje = "El consumidor final no posee una cuenta identificable para consultar créditos.",
+                            esConsumidorFinal = true,
+
+                            datos = Array.Empty<ValoresNCResDto>()
+                        });
+                    }
+
+                    _logger?.LogWarning(
+                        "[ObtenerValoresNC] Cliente sin cta_id ni documento. Origen: {Origen}",
+                        cliente.Origen
+                    );
+
+                    return Json(new
+                    {
+                        ok = false,
+                        error = true,
+                        warn = false,
+                        mensaje = "El cliente seleccionado no posee una cuenta válida para consultar créditos."
+                    });
                 }
+
+                if (string.IsNullOrWhiteSpace(AdministracionId))
+                {
+                    _logger?.LogError(
+                        "[ObtenerValoresNC] AdministracionId no disponible en sesión."
+                    );
+
+                    return Json(new
+                    {
+                        ok = false,
+                        error = true,
+                        warn = false,
+                        mensaje = "Los datos de sesión están incompletos. Recargue la operación."
+                    });
+                }
+
+                // Nunca confiar en cta_id ni adm_id recibidos desde el navegador.
+                req.co_tipo = coTipo;
+                req.cta_id = cuentaCliente;
+                req.adm_id = AdministracionId;
+
+                _logger?.LogInformation(
+                    "[ObtenerValoresNC] Usuario={Usuario}, Adm={AdmId}, Cuenta={Cuenta}, CoTipo={CoTipo}, CF={EsCF}",
+                    UserName,
+                    req.adm_id,
+                    req.cta_id,
+                    req.co_tipo,
+                    esConsumidorFinal
+                );
+
                 var res = await _pagoFactServicio.ObtenerValoresNC(req, TokenCookie);
+
                 if (res == null)
                 {
-                    _logger?.LogWarning("❌ No se encontraron valores NC para los parámetros proporcionados");
-                    return Json(new { ok = false, mensaje = "No se encontraron valores NC para los parámetros proporcionados" });
+                    _logger?.LogError(
+                        "[ObtenerValoresNC] El servicio devolvió null. Cuenta={Cuenta}, CoTipo={CoTipo}",
+                        req.cta_id,
+                        req.co_tipo
+                    );
+
+                    return Json(new
+                    {
+                        ok = false,
+                        error = true,
+                        warn = false,
+                        mensaje = "No fue posible consultar los créditos disponibles."
+                    });
                 }
 
                 if (!res.Ok)
                 {
-                    if (res.EsError)
+                    _logger?.LogWarning(
+                        "[ObtenerValoresNC] Servicio respondió error. EsError={EsError}, EsWarn={EsWarn}, Mensaje={Mensaje}",
+                        res.EsError,
+                        res.EsWarn,
+                        res.Mensaje
+                    );
+
+                    return Json(new
                     {
-                        _logger?.LogError("❌ Error al obtener valores NC: {Mensaje}", res.Mensaje);
-                        return Json(new { ok = false, error = true, warn = false, mensaje = res.Mensaje ?? "Ocurrió un error al obtener los valores NC" });
-                    }
-                    else
-                    {
-                        _logger?.LogWarning("⚠️ Advertencia al obtener valores NC: {Mensaje}", res.Mensaje);
-                        return Json(new { ok = false, error = false, warn = true, mensaje = res.Mensaje ?? "Ocurrió una advertencia al obtener los valores NC" });
-                    }
+                        ok = false,
+                        error = res.EsError,
+                        warn = res.EsWarn || !res.EsError,
+                        mensaje = res.Mensaje ?? "No fue posible consultar los créditos disponibles."
+                    });
                 }
-                return Json(new { ok = true, error = false, warn = false, mensaje = "Valores NC obtenidos correctamente", datos = res.ListaEntidad });
+
+                var creditos = res.ListaEntidad ?? [];
+                var sinCreditos = creditos.Count == 0;
+
+                _logger?.LogInformation(
+                    "[ObtenerValoresNC] Resultado={Resultado}. Cantidad={Cantidad}. Cuenta={Cuenta}. CoTipo={CoTipo}",
+                    sinCreditos ? "SIN_CREDITOS" : "CON_CREDITOS",
+                    creditos.Count,
+                    req.cta_id,
+                    req.co_tipo
+                );
+
+                return Json(new
+                {
+                    ok = true,
+                    error = false,
+                    warn = false,
+
+                    sinCreditos,
+
+                    codigo = sinCreditos
+                        ? "SIN_CREDITOS_NC"
+                        : "CON_CREDITOS_NC",
+
+                    mensaje = sinCreditos
+                        ? "Cliente no posee créditos disponibles."
+                        : "Créditos disponibles obtenidos correctamente.",
+
+                    esConsumidorFinal,
+
+                    datos = creditos
+                });
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "❌ Excepción al obtener valores NC");
-                return Json(new { ok = false, error = true, warn = false, mensaje = "Ocurrió un error al obtener los valores NC" });
+                _logger?.LogError(ex, "[ObtenerValoresNC] Excepción no controlada.");
+
+                return Json(new
+                {
+                    ok = false,
+                    error = true,
+                    warn = false,
+                    mensaje = "Ocurrió un error al consultar los créditos disponibles."
+                });
             }
         }
 

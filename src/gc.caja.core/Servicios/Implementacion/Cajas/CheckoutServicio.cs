@@ -309,19 +309,19 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
                     }
 
                     var resp = apiResponse.Data;
-                    if (!resp.Any())
-                    {
-                        return new() { Ok = false, Mensaje = "No se encontraron productos según el criterio." };
-                    }
-                    else
-                    {
+                    //if (!resp.Any())
+                    //{
+                    //    return new() { Ok = false, Mensaje = "No se encontraron productos según el criterio." };
+                    //}
+                    //else
+                    //{
                         return new RespuestaGenerica<ValoresNCResDto>
                         {
                             Ok = true,
                             Mensaje = "OK",
                             ListaEntidad = apiResponse.Data
                         };
-                    }
+                    //}
                 }
                 else
                 {
