@@ -1,0 +1,153 @@
+﻿@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<ComisionesDeVendedoresDetalleDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+
+	string grupoActual = string.Empty;
+	string grupoAnterior = string.Empty;
+	string leyendaAgrupador = string.Empty;
+}
+<style>
+	thead th {
+		position: sticky;
+		top: 0px;
+		z-index: 1; /* suficiente para estar sobre las filas */
+		background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+		color: #fff !important;
+	}
+
+	.table-wrapper {
+		/*max-height: 400px;  o lo que necesites */
+		overflow-y: auto;
+		position: relative;
+	}
+
+	#containerGridDetalleDeVentas {
+		position: relative;
+		height: 650px;
+		max-height: 650px;
+		overflow-y: auto;
+		overflow-x: hidden !important;
+		z-index: auto;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.container-auto {
+		height: auto !important;
+		max-height: none !important;
+		overflow-x: hidden !important;
+	}
+
+	.table-golden {
+		border-collapse: separate;
+		border-spacing: 0;
+		table-layout: fixed;
+	}
+
+		.table-golden thead {
+			position: sticky;
+			top: 0;
+			z-index: 1;
+			background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+			color: #fff !important;
+		}
+
+			.table-golden thead th {
+				position: sticky;
+				top: 0;
+				z-index: 4;
+				background: linear-gradient(to bottom, #b8860b, #daa520);
+				color: #fff;
+				box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+				background-clip: padding-box;
+			}
+
+			.table-golden thead,
+			.table-golden thead th {
+				/*background-color: #b8860b;  tu dorado */
+				/* color: #333; */
+			}
+
+	#tbDetalleDeVentas th,
+	#tbDetalleDeVentas td {
+		padding: 0.01rem 0.15rem !important;
+		line-height: 1.2 !important;
+		height: auto !important;
+	}
+
+	#tbDetalleDeVentas tr {
+		height: 1.6rem !important;
+	}
+
+	tr.fila-grupo td {
+		font-weight: bold !important;
+	}
+</style>
+<div class="card mx-auto" style="padding-left: 0px;padding-right: 0px;">
+	<div class="card-body p-1">
+		<div class="table-responsive text-nowrap  table-wrapper-500" id="containerGridDetalleDeVentas">
+			<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbDetalleDeVentas">
+				<thead>
+					<tr class="header">
+						<th style="width:5%;" class="text-sm-center" scope="col">FECHA</th>
+						<th style="width:15%;" class="text-sm-center" scope="col">COMPROBANTE</th>
+						<th style="width:30%;" class="text-sm-center" scope="col">CLIENTE</th>
+						<th style="width:10%;" class="text-sm-center" scope="col">PEDIDO N°</th>
+						<th style="width:10%;" class="text-sm-center" scope="col">REPARTO N°</th>
+						<th style="width:10%;" class="text-sm-center" scope="col">VTA. NETA</th>
+						<th style="width:10%;" class="text-sm-center" scope="col">% COMI.</th>
+						<th style="width:10%;" class="text-sm-center" scope="col">COMISIÓN</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
+					{
+						var registros = Model.ListaDatos.OrderBy(x => x.ve_id).ToList();
+
+						@foreach (var item in Model.ListaDatos)
+						{
+							grupoActual = item.ve_id;
+							if (grupoActual != grupoAnterior)
+							{
+								leyendaAgrupador = $"Vendedor {item.ve_id} - {item.ve_nombre}";
+								<tr class="table-secondary fw-bold">
+									<td colspan="8" class="text-center">
+										<i class="bx bx-folder me-1"></i>
+										@leyendaAgrupador
+									</td>
+								</tr>
+								grupoAnterior = grupoActual;
+								alt = true; // Reiniciar alternancia de colores después de cada familia
+							}
+							var comprobante = $"Documento {item.cm_compte}";
+							var cuenta = $"{item.cta_denominacion} ({item.cta_id})";
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							<tr class="@clase" onclick="selectReg(this,'tbDetalleDeVentas')">
+								<td class="@Model.ObtenerClase(item.pc_fecha) align-center">@Model.FormatearDato(item.pc_fecha, FormatDato.Fecha)</td>
+								<td class="@Model.ObtenerClase(comprobante) align-center">@Model.FormatearDato(comprobante, FormatDato.Ninguno)</td>
+								<td class="@Model.ObtenerClase(cuenta) align-left">@Model.FormatearDato(cuenta, FormatDato.Ninguno)</td>
+								<td class="@Model.ObtenerClase(item.pc_compte) align-center">@Model.FormatearDato(item.pc_compte, FormatDato.Ninguno)</td>
+								<td class="@Model.ObtenerClase(item.or_compte) align-center">@Model.FormatearDato(item.or_compte, FormatDato.Ninguno)</td>
+								<td class="@Model.ObtenerClase(item.cm_total) align-right">@Model.FormatearDato(item.cm_total, FormatDato.Monto)</td>
+								<td class="@Model.ObtenerClase(item.ve_comi_porc) align-right">@GridHelper.FormatearDato(item.ve_comi_porc, FormatDato.Monto, true)</td>
+								<td class="@Model.ObtenerClase(item.ve_comi) align-right">@Model.FormatearDato(item.ve_comi, FormatDato.Monto)</td>
+							</tr>
+						}
+					}
+					else
+					{
+						<tr class="fila-vacia">
+							<td colspan="8" class="text-center text-muted py-2">
+								<i class="bx bx-info-circle me-1"></i>
+								No hay items para mostrar.
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>

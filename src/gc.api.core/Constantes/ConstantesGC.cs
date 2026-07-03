@@ -507,6 +507,8 @@
 			public const string SP_CONS_STOCK_COMP = "SPGECO_STK_Compensados";
 			public const string SP_CONS_C_VTO_X_VE = "SPGECO_C_Vto_X_Ve";
 			public const string SP_CONS_C_VTO_X_VE_RESUMEN = "SPGECO_C_Vto_X_Ve_Resumen";
+			public const string SP_CONS_C_COMISIONES_VE = "SPGECO_C_Comisiones_Ve";
+			public const string SP_CONS_C_COMISIONES_VE_RESUMEN = "SPGECO_C_Comisiones_Ve_Resumen";
 			#endregion
 
 			#region Certificados

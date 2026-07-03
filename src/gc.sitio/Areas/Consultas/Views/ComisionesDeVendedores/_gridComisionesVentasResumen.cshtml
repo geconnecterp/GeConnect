@@ -1,0 +1,138 @@
+﻿@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<ComisionesDeVendedoresResumenDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	thead th {
+		position: sticky;
+		top: 0px;
+		z-index: 1; /* suficiente para estar sobre las filas */
+		background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+		color: #fff !important;
+	}
+
+	.table-wrapper {
+		/*max-height: 400px;  o lo que necesites */
+		overflow-y: auto;
+		position: relative;
+	}
+
+	#containerGridResumenDeVentas {
+		position: relative;
+		height: 650px;
+		max-height: 650px;
+		overflow-y: auto;
+		overflow-x: hidden !important;
+		z-index: auto;
+	}
+
+	.container-auto {
+		height: auto !important;
+		max-height: none !important;
+		overflow-x: hidden !important;
+	}
+
+	.table-golden {
+		border-collapse: separate;
+		border-spacing: 0;
+		table-layout: fixed;
+	}
+
+		.table-golden thead {
+			position: sticky;
+			top: 0;
+			z-index: 1;
+			background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+			color: #fff !important;
+		}
+
+			.table-golden thead th {
+				position: sticky;
+				top: 0;
+				z-index: 4;
+				background: linear-gradient(to bottom, #b8860b, #daa520);
+				color: #fff;
+				box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+				background-clip: padding-box;
+			}
+
+			.table-golden thead,
+			.table-golden thead th {
+				/*background-color: #b8860b;  tu dorado */
+				/* color: #333; */
+			}
+
+	#tbResumenDeVentas th,
+	#tbResumenDeVentas td {
+		padding: 0.01rem 0.15rem !important;
+		line-height: 1.2 !important;
+		height: auto !important;
+	}
+
+	#tbResumenDeVentas tr {
+		height: 1.6rem !important;
+	}
+
+	tr.fila-grupo td {
+		font-weight: bold !important;
+	}
+</style>
+<div class="card mx-auto" style="padding-left: 0px;padding-right: 0px;">
+	<div class="card-body p-1">
+		<div class="table-responsive text-nowrap  table-wrapper-500 w-50" id="containerGridResumenDeVentas">
+			<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbResumenDeVentas">
+				<thead>
+					<tr class="header">
+						<th style="width:30%;" class="text-sm-center" scope="col">VENDEDOR</th>
+						<th style="width:15%;" class="text-sm-center" scope="col">VENTA NETA</th>
+						<th style="width:15%;" class="text-sm-center" scope="col">COMISIÓN</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
+					{
+						var registros = Model.ListaDatos.OrderBy(x => x.ve_id).ToList();
+
+						decimal totalVentaNeta = 0;
+						decimal totalComisiones = 0;
+
+						@foreach (var item in Model.ListaDatos)
+						{
+							var vendedor = $"{item.ve_nombre} ({item.ve_id})";
+							var venta = item.comi_fac + item.comi_nc;
+							var comi = item.comi_base_fac + item.comi_base_nc;
+
+							totalVentaNeta += venta;
+							totalComisiones += comi;
+
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							<tr class="@clase" onclick="selectReg(this,'tbResumenDeVentas')">
+								<td class="@Model.ObtenerClase(vendedor) align-left">@Model.FormatearDato(vendedor, FormatDato.Ninguno)</td>
+								<td class="@Model.ObtenerClase(venta) align-right">@Model.FormatearDato(venta, FormatDato.Monto)</td>
+								<td class="@Model.ObtenerClase(comi) align-right">@Model.FormatearDato(comi, FormatDato.Monto)</td>
+							</tr>
+						}
+
+						<!-- Fila de totales generales -->
+						<tr class="fila-grupo">
+							<td class="align-left">Totales:</td>
+							<td class="align-right">@Model.FormatearDato(totalVentaNeta, FormatDato.Monto)</td>
+							<td class="align-right">@Model.FormatearDato(totalComisiones, FormatDato.Monto)</td>
+						</tr>
+					}
+					else
+					{
+						<tr class="fila-vacia">
+							<td colspan="8" class="text-center text-muted py-2">
+								<i class="bx bx-info-circle me-1"></i>
+								No hay items para mostrar.
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>

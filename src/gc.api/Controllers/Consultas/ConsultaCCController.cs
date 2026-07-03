@@ -545,5 +545,33 @@ namespace gc.api.Controllers.Consultas
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ComisionesDeVendedoresDetalleDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult BuscarComisionDeVendedorDetalle(ComisionesDeVendedoresRequest request)
+		{
+			ApiResponse<List<ComisionesDeVendedoresDetalleDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _consSv.BuscarComisionDeVendedorDetalle(request);
+			response = new ApiResponse<List<ComisionesDeVendedoresDetalleDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ComisionesDeVendedoresResumenDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult BuscarComisionDeVendedorResumen(ComisionesDeVendedoresRequest request)
+		{
+			ApiResponse<List<ComisionesDeVendedoresResumenDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _consSv.BuscarComisionDeVendedorResumen(request);	
+			response = new ApiResponse<List<ComisionesDeVendedoresResumenDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }
