@@ -133,6 +133,8 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R085_Reporte_Mov_Cta_Directa, new R085_Reporte_Mov_Cta_Directa(uow,consSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R086_Saldo_Cta_Distr_Detalle, new R086_Saldo_Cta_Distr_Detalle(uow,consSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R087_Saldo_Cta_Distr_Resumen, new R087_Saldo_Cta_Distr_Resumen(uow,consSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R088_Comisiones_Vendedores_Detalle, new R088_Comisiones_Vendedores_Detalle(uow,consSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R089_Comisiones_Vendedores_Resumen, new R089_Comisiones_Vendedores_Resumen(uow,consSv,empresa,ctaSv, logger) },
 			}; 
             _logger = logger;
         }

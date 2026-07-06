@@ -195,3 +195,93 @@ function validarFechasAnalisis() {
 
 	return "OK";
 }
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
+function ImprimirSegunTab(tabId) {
+
+	switch (tabId) {
+		case "navs-top-detven":
+			ImprimirDetalle();
+			break;
+
+		case "navs-top-resven":
+			ImprimirResumen();
+			break;
+
+	}
+}
+
+function ImprimirDetalle() {
+	AbrirWaiting();
+	var tipoReporte = 1;
+	var data = { tipoReporte };
+	PostGen(data, setearTipoDeReporteUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			HandlerImprimirDetalle();
+		}
+	});
+}
+
+function ImprimirResumen() {
+	AbrirWaiting();
+	var tipoReporte = 2;
+	var data = { tipoReporte };
+	PostGen(data, setearTipoDeReporteUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			HandlerImprimirResumen();
+		}
+	});
+}
+
+function HandlerImprimirDetalle() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var desde = $("#Desde").val();
+		var hasta = $("#Hasta").val();
+		var data = {
+			desde: desde,
+			hasta: hasta
+		}
+		cargarReporteEnArre(88, data, "Detalle de Comisiones de Vendedores", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function HandlerImprimirResumen() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var desde = $("#Desde").val();
+		var hasta = $("#Hasta").val();
+		var data = {
+			desde: desde,
+			hasta: hasta
+		}
+		cargarReporteEnArre(89, data, "Resumen de Comisiones de Vendedores", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+$("#btnImprimir").on("click", function () {
+	const tabId = $(this).data("tab-activo");
+	ImprimirSegunTab(tabId);
+});

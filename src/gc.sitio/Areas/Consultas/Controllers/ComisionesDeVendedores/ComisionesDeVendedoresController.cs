@@ -4,8 +4,11 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Enumeraciones;
 using gc.sitio.Areas.Consultas.Models;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -14,13 +17,29 @@ namespace gc.sitio.Areas.Consultas.Controllers
 	[Area("Consultas")]
 	public class ComisionesDeVendedoresController : SaldoCuentaDeDistribuidoraControladorBase
 	{
+		//PARA MODULO DE IMPRESION
+		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
+		private AppModulo _modulo_1; //INV_REPO_STK_VS_CONTEO
+		private AppModulo _modulo_2; //INV_REPO_VAL_X_SEC
+		private string APP_MODULO_1 = AppModulos.COMISIONES_VENDEDORES_DETALLE.ToString();
+		private string APP_MODULO_2 = AppModulos.COMISIONES_VENDEDORES_RESUMEN.ToString();
+		private readonly IDocManagerServicio _docMSv;
+
 		private readonly AppSettings _setting;
 		private readonly IConsultasServicio _consultasServicio;
 		public ComisionesDeVendedoresController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<SaldoCuentaDeDistribuidoraControladorBase> logger,
-												IConsultasServicio consultasServicio) : base(options, contexto, logger)
+												IConsultasServicio consultasServicio, IDocManagerServicio docManager, IOptions<DocsManager> docsManager) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_consultasServicio = consultasServicio;
+			_docMSv = docManager;
+			_docsManager = docsManager.Value;
+
+			//PARA MODULO DE IMPRESION
+			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
+			_modulo_1 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_1);
+			_modulo_2 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_2);
+			_docMSv = docManager; //instancio el servicio de impresión
 		}
 
 		public IActionResult Index()
@@ -146,12 +165,54 @@ namespace gc.sitio.Areas.Consultas.Controllers
 			}
 		}
 
+		public JsonResult SetearTipoDeReporte(int tipoReporte)
+		{
+			try
+			{
+				if (tipoReporte < 0)
+					return Json(new { error = true, warn = false, msg = "Debe seleccionar un tipo de reporte." });
+
+				string titulo = string.Empty;
+				switch ((TipoDeReporte)tipoReporte)
+				{
+					case TipoDeReporte.ComisionesVendedoresDetalle:
+						#region Gestor Impresion - Inicializacion de variables
+						titulo = "Reporte Rendición Cierre";
+						DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_1);
+						ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_1);
+						#endregion
+						break;
+					case TipoDeReporte.ComisionesVendedoresResumen:
+						#region Gestor Impresion - Inicializacion de variables
+						titulo = "Reporte Analítico de Operaciones";
+						DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_2);
+						ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_2);
+						#endregion
+						break;
+					default:
+						break;
+				}
+
+				return Json(new { error = false, warn = false, msg = "Tipo de reporte actualizado correctamente." });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar setear el tipo de reporte: {ex.Message}" });
+			}
+		}
+
 		#region Metodos Privados
 		private void CargarDatosIniciales(FiltroComisionesDeVendedoresModel model)
 		{
 			var hoy = DateTime.Today;
 			model.Hasta = hoy;
 			model.Desde = hoy.AddDays(-60);
+		}
+
+		enum TipoDeReporte
+		{
+			ComisionesVendedoresDetalle = 1,
+			ComisionesVendedoresResumen = 2
 		}
 		#endregion
 	}

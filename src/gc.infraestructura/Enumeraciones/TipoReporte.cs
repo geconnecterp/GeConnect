@@ -93,5 +93,8 @@ namespace gc.infraestructura.Enumeraciones
 		R085_Reporte_Mov_Cta_Directa = 85,
 		R086_Saldo_Cta_Distr_Detalle = 86,
 		R087_Saldo_Cta_Distr_Resumen = 87,
+		R088_Comisiones_Vendedores_Detalle = 88,
+		R089_Comisiones_Vendedores_Resumen = 89
+
 	}
 }
