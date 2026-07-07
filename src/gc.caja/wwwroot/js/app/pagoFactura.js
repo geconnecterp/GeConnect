@@ -8513,11 +8513,11 @@ function guardarDetalleTransferencia(instrumento, tipoMedioPago) {
     console.log(`   Fecha: "${fechaTransferencia}"`);
 
     // ❷ Validar Nro Transferencia (mínimo 15 caracteres)
-    if (!nroTransferencia || nroTransferencia.length < 15) {
+    if (!nroTransferencia || nroTransferencia.length < 5) {
         console.warn('⚠️ Número de transferencia inválido');
         mostrarErrorCampo(
             '#txtNroTransferencia',
-            'Debe ingresar un número de transferencia válido (mínimo 15 caracteres)'
+            'Debe ingresar un número de transferencia válido (mínimo 5 caracteres)'
         );
         return;
     }

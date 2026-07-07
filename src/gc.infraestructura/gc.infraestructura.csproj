@@ -14,6 +14,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\..\..\..\Temp\#GECO\nc\nc_devolucion_paso1\gc.infraestructura\Dtos\Cajas\NCDevolucionContextoDto.cs" Link="Dtos\Cajas\Response\NCDevolucionContextoDto.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="BarCode.Slim" Version="2024.12.8" />
     <PackageReference Include="iTextSharp.LGPLv2.Core" Version="3.7.1" />
     <PackageReference Include="log4net" Version="3.3.1" />

@@ -173,6 +173,7 @@ namespace gc.api.infra.Extensions
             services.AddScoped<IApiCajaServicio, ApiCajaServicio>();
             services.AddScoped<IApiProductoFactServicio, ApiProductoFactServicio>();
             services.AddScoped<IApiPagoFactServicio, ApiPagoFactServicio>();
+            services.AddScoped<IApiNotaCreditoServicio, ApiNotaCreditoServicio>();
 
 
             return services;

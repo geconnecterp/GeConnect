@@ -52,6 +52,10 @@
 
 			//cobranza diferida
 			public const string SP_CAJA_FACT_DIFE = "SPGECO_CAJA_B_Facturas_pendientes";
+
+			//notas de credito
+			public const string SP_CAJA_NC_VALIDA = "SPGECO_CAJA_NC_Valida";
+			public const string SP_CAJA_NC_B_PRODUCTO = "SPGECO_CAJA_NC_B_Producto";	
             #endregion
 
             #region VTAS

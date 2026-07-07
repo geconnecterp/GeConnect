@@ -24,6 +24,7 @@ namespace gc.sitio.core.Extensions
             services.AddScoped<ICheckoutServicio, CheckoutServicio>();
             services.AddScoped<IFactDiferidaServicio, FactDiferidaServicio>();
             services.AddScoped<ICtaCteServicio, CtaCteServicio>();
+            services.AddScoped<INotaCreditoServicio, NotaCreditoServicio>();
 
             return services;
         }
