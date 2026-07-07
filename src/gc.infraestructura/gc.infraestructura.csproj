@@ -11,11 +11,7 @@
     <Compile Remove="Dtos\Financieros\Request\LiqudacionDeEmpleadoAnularReques.cs" />
     <Compile Remove="EntidadesComunes\ProductFilters.cs" />
     <Compile Remove="EntidadesComunes\SolicitudFilter.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\..\..\..\..\Temp\#GECO\nc\nc_devolucion_paso1\gc.infraestructura\Dtos\Cajas\NCDevolucionContextoDto.cs" Link="Dtos\Cajas\Response\NCDevolucionContextoDto.cs" />
-  </ItemGroup>
+  </ItemGroup>  
 
   <ItemGroup>
     <PackageReference Include="BarCode.Slim" Version="2024.12.8" />

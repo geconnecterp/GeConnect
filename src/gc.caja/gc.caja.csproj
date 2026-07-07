@@ -19,15 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\..\..\Temp\#GECO\nc\nc_devolucion_paso1\gc.caja\Areas\Facturacion\Models\NotaCredito\NCDevolucionPaso1RequestDtos.cs" Link="Models\NotaCredito\NCDevolucionPaso1RequestDtos.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Areas\Facturacion\Data\" />
     <Folder Include="Areas\Facturacion\Models\" />
     <Folder Include="Areas\Seguridad\Data\" />
     <Folder Include="Areas\Seguridad\Models\" />
-    <Folder Include="Models\NotaCredito\" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,10 +1,9 @@
-﻿using gc.caja.Areas.Facturacion.Models.NotaCredito;
-using gc.caja.Controllers;
+﻿using gc.caja.Controllers;
 using gc.caja.core.Servicios.Contratos.Cajas;
+using gc.caja.Models.NotaCredito;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Cajas.Response;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
